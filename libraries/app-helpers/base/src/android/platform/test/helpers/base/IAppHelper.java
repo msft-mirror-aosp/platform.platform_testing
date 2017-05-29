@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 The Android Open Source Project
+ * Copyright (C) 2017 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,20 +16,5 @@
 
 package android.platform.test.helpers;
 
-import android.app.Instrumentation;
-import android.support.test.uiautomator.Direction;
-
-public abstract class AbstractRecentsHelper extends AbstractStandardAppHelper {
-
-    public AbstractRecentsHelper(Instrumentation instr) {
-        super(instr);
-    }
-
-    /**
-     * Setup expectations: "Recents" is open.
-     *
-     * Flings the recent apps in the specified direction.
-     * @param dir the direction for the apps to move
-     */
-    public abstract void flingRecents(Direction dir);
+public interface IAppHelper {
 }
