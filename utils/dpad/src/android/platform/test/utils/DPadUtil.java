@@ -87,19 +87,46 @@ public class DPadUtil {
     }
 
     public boolean pressDPadLeft() {
-        return mDevice.pressDPadLeft();
+        return pressKeyCodeAndWait(KeyEvent.KEYCODE_DPAD_LEFT);
     }
 
     public boolean pressDPadRight() {
-        return mDevice.pressDPadRight();
+        return pressKeyCodeAndWait(KeyEvent.KEYCODE_DPAD_RIGHT);
     }
 
     public boolean pressDPadUp() {
-        return mDevice.pressDPadUp();
+        return pressKeyCodeAndWait(KeyEvent.KEYCODE_DPAD_UP);
     }
 
     public boolean pressDPadDown() {
-        return mDevice.pressDPadDown();
+        return pressKeyCodeAndWait(KeyEvent.KEYCODE_DPAD_DOWN);
+    }
+
+    public boolean pressDPadCenter() {
+        return pressKeyCodeAndWait(KeyEvent.KEYCODE_DPAD_CENTER);
+    }
+
+    public boolean pressEnter() {
+        return pressKeyCodeAndWait(KeyEvent.KEYCODE_ENTER);
+    }
+
+    public boolean pressPipKey() {
+        return pressKeyCodeAndWait(KeyEvent.KEYCODE_WINDOW);
+    }
+
+    public boolean pressSearch() {
+        return pressKeyCodeAndWait(KeyEvent.KEYCODE_SEARCH);
+    }
+
+    public boolean pressKeyCode(int keyCode) {
+        return pressKeyCodeAndWait(keyCode);
+    }
+    public boolean pressKeyCodeAndWait(int keyCode) {
+        boolean retVal = mDevice.pressKeyCode(keyCode);
+        // Dpad key presses will cause some UI change to occur.
+        // Wait for the accessibility event stream to become idle.
+        mDevice.waitForIdle();
+        return retVal;
     }
 
     public boolean pressHome() {
@@ -110,25 +137,10 @@ public class DPadUtil {
         return mDevice.pressBack();
     }
 
-    public boolean pressDPadCenter() {
-        return mDevice.pressDPadCenter();
-    }
-
-    public boolean pressEnter() {
-        return mDevice.pressEnter();
-    }
-
-    public boolean pressPipKey() {
-        return mDevice.pressKeyCode(KeyEvent.KEYCODE_WINDOW);
-    }
-
-    public boolean pressKeyCode(int keyCode) {
-        return mDevice.pressKeyCode(keyCode);
-    }
-
     public boolean longPressKeyCode(int keyCode) {
         try {
             mDevice.executeShellCommand(String.format("input keyevent --longpress %d", keyCode));
+            mDevice.waitForIdle();
             return true;
         } catch (IOException e) {
             // Ignore
@@ -139,14 +151,21 @@ public class DPadUtil {
 
     /**
      * Press the key code, and waits for the given condition to become true.
-     * @param condition
      * @param keyCode
+     * @param condition
+     * @param longpress
      * @param timeout
      * @param <R>
      * @return
      */
+    public <R> R pressKeyCodeAndWait(int keyCode, EventCondition<R> condition, boolean longpress,
+            long timeout) {
+        return mDevice.performActionAndWait(new KeyEventRunnable(keyCode, longpress), condition,
+                timeout);
+    }
+
     public <R> R pressKeyCodeAndWait(int keyCode, EventCondition<R> condition, long timeout) {
-        return mDevice.performActionAndWait(new KeyEventRunnable(keyCode), condition, timeout);
+        return pressKeyCodeAndWait(keyCode, condition, false, timeout);
     }
 
     public <R> R pressDPadCenterAndWait(EventCondition<R> condition, long timeout) {
@@ -161,12 +180,21 @@ public class DPadUtil {
 
     private class KeyEventRunnable implements Runnable {
         private int mKeyCode;
+        private boolean mLongPress = false;
         public KeyEventRunnable(int keyCode) {
             mKeyCode = keyCode;
         }
+        public KeyEventRunnable(int keyCode, boolean longpress) {
+            mKeyCode = keyCode;
+            mLongPress = longpress;
+        }
         @Override
         public void run() {
-            mDevice.pressKeyCode(mKeyCode);
+            if (mLongPress) {
+                longPressKeyCode(mKeyCode);
+            } else {
+                pressKeyCode(mKeyCode);
+            }
         }
     }
 }

@@ -16,6 +16,9 @@
 
 package android.support.test.launcherhelper;
 
+import android.app.Instrumentation;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
 import android.graphics.Point;
 import android.os.RemoteException;
 import android.os.SystemClock;
@@ -40,10 +43,11 @@ public class LeanbackLauncherStrategy implements ILeanbackLauncherStrategy {
     private static final int MAX_SCROLL_ATTEMPTS = 20;
     private static final int APP_LAUNCH_TIMEOUT = 10000;
     private static final int SHORT_WAIT_TIME = 5000;    // 5 sec
-    private static final int NOTIFICATION_WAIT_TIME = 30000;
+    private static final int NOTIFICATION_WAIT_TIME = 60000;
 
     protected UiDevice mDevice;
     protected DPadUtil mDPadUtil;
+    private Instrumentation mInstrumentation;
 
 
     /**
@@ -195,7 +199,15 @@ public class LeanbackLauncherStrategy implements ILeanbackLauncherStrategy {
     @Override
     public long launch(String appName, String packageName) {
         BySelector app = By.res(getSupportedLauncherPackage(), "app_banner").desc(appName);
-        return launchApp(this, app, packageName);
+        return launchApp(this, app, packageName, isGame(packageName));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setInstrumentation(Instrumentation instrumentation) {
+        mInstrumentation = instrumentation;
     }
 
     /**
@@ -355,12 +367,12 @@ public class LeanbackLauncherStrategy implements ILeanbackLauncherStrategy {
     }
 
     protected long launchApp(ILauncherStrategy launcherStrategy, BySelector app,
-            String packageName) {
-        return launchApp(launcherStrategy, app, packageName, MAX_SCROLL_ATTEMPTS);
+            String packageName, boolean isGame) {
+        return launchApp(launcherStrategy, app, packageName, isGame, MAX_SCROLL_ATTEMPTS);
     }
 
     protected long launchApp(ILauncherStrategy launcherStrategy, BySelector app,
-            String packageName, int maxScrollAttempts) {
+            String packageName, boolean isGame, int maxScrollAttempts) {
         unlockDeviceIfAsleep();
 
         if (isAppOpen(packageName)) {
@@ -370,14 +382,26 @@ public class LeanbackLauncherStrategy implements ILeanbackLauncherStrategy {
 
         // Go to the home page
         launcherStrategy.open();
-        // attempt to find the app icon if it's not already on the screen
-        UiObject2 container = launcherStrategy.openAllApps(false);
+
+        // attempt to find the app/game icon if it's not already on the screen
+        UiObject2 container;
+        if (isGame) {
+            container = selectGamesRow();
+        } else {
+            container = launcherStrategy.openAllApps(false);
+        }
         UiObject2 appIcon = container.findObject(app);
         int attempts = 0;
         while (attempts++ < maxScrollAttempts) {
+            UiObject2 focused = container.wait(Until.findObject(By.focused(true)), SHORT_WAIT_TIME);
+            if (focused == null) {
+                throw new IllegalStateException(
+                        "The App/Game row may have lost focus while activity is in transition");
+            }
+
             // Compare the focused icon and the app icon to search for.
-            UiObject2 focusedIcon = container.findObject(By.focused(true))
-                    .findObject(By.res(getSupportedLauncherPackage(), "app_banner"));
+            UiObject2 focusedIcon = focused.findObject(
+                    By.res(getSupportedLauncherPackage(), "app_banner"));
 
             if (appIcon == null) {
                 appIcon = findApp(container, focusedIcon, app);
@@ -541,21 +565,54 @@ public class LeanbackLauncherStrategy implements ILeanbackLauncherStrategy {
     }
 
     protected UiObject2 findNotificationCard(BySelector selector) {
-        // Move to the first notification, Search to the right
+        // Move to the first notification row, start searching to the right, then to the left
         mDPadUtil.pressHome();
+        UiObject2 card;
+        if ((card = findNotificationCard(selector, Direction.RIGHT)) != null) {
+            return card;
+        }
+        if ((card = findNotificationCard(selector, Direction.LEFT)) != null) {
+            return card;
+        }
+        return null;
+    }
 
-        // Find if a focused card matches a given selector
-        UiObject2 currentFocus = mDevice.findObject(getNotificationRowSelector())
-                .findObject(By.res(getSupportedLauncherPackage(), "card").focused(true));
+    /**
+     * Find the card in the Notification row that matches BySelector in a given direction.
+     * If a card is already selected, it returns regardless of the direction parameter.
+     * @param selector
+     * @param direction
+     * @return
+     */
+    protected UiObject2 findNotificationCard(BySelector selector, Direction direction) {
+        if (direction != Direction.RIGHT && direction != Direction.LEFT) {
+            throw new IllegalArgumentException("Required to go either left or right to find a card"
+                    + "in the Notification row");
+        }
+
+        // Find the Notification row
+        UiObject2 notification = mDevice.findObject(getNotificationRowSelector());
+        if (notification == null) {
+            mDPadUtil.pressHome();
+            notification = mDevice.wait(Until.findObject(getNotificationRowSelector()),
+                    SHORT_WAIT_TIME);
+            if (notification == null) {
+                throw new IllegalStateException("The Notification row is not found");
+            }
+        }
+
+        // Find a focused card in the Notification row that matches a given selector
+        UiObject2 currentFocus = notification.findObject(
+                By.res(getSupportedLauncherPackage(), "card").focused(true));
         UiObject2 previousFocus = null;
         while (!currentFocus.equals(previousFocus)) {
             if (currentFocus.hasObject(selector)) {
                 return currentFocus;   // Found
             }
-            mDPadUtil.pressDPadRight();
+            mDPadUtil.pressDPad(direction);
             previousFocus = currentFocus;
-            currentFocus = mDevice.findObject(getNotificationRowSelector())
-                    .findObject(By.res(getSupportedLauncherPackage(), "card").focused(true));
+            currentFocus = notification.findObject(
+                    By.res(getSupportedLauncherPackage(), "card").focused(true));
         }
         Log.d(LOG_TAG, "Failed to find the Notification card until it reaches the end.");
         return null;
@@ -604,7 +661,8 @@ public class LeanbackLauncherStrategy implements ILeanbackLauncherStrategy {
             throw new IllegalArgumentException("Required to go either up or down to find rows");
         }
 
-        UiObject2 currentFocused = mDevice.findObject(By.focused(true));
+        UiObject2 currentFocused = mDevice.wait(Until.findObject(By.focused(true)),
+                SHORT_WAIT_TIME);
         UiObject2 prevFocused = null;
         while (!currentFocused.equals(prevFocused)) {
             UiObject2 rowObject = mDevice.findObject(row);
@@ -614,7 +672,7 @@ public class LeanbackLauncherStrategy implements ILeanbackLauncherStrategy {
 
             mDPadUtil.pressDPad(direction);
             prevFocused = currentFocused;
-            currentFocused = mDevice.findObject(By.focused(true));
+            currentFocused = mDevice.wait(Until.findObject(By.focused(true)), SHORT_WAIT_TIME);
         }
         Log.d(LOG_TAG, "Failed to find the row until it reaches the end.");
         return null;
@@ -666,5 +724,26 @@ public class LeanbackLauncherStrategy implements ILeanbackLauncherStrategy {
         }
         Log.d(LOG_TAG, "Failed to find the setting in Settings row.");
         return null;
+    }
+
+    private boolean isGame(String packageName) {
+        boolean isGame = false;
+        if (mInstrumentation != null) {
+            try {
+                ApplicationInfo appInfo =
+                        mInstrumentation.getTargetContext().getPackageManager().getApplicationInfo(
+                                packageName, 0);
+                // TV game apps should use the "isGame" tag added since the L release. They are
+                // listed on the Games row on the Leanback Launcher.
+                isGame = ((appInfo.flags & ApplicationInfo.FLAG_IS_GAME) != 0) ||
+                        (appInfo.metaData != null && appInfo.metaData.getBoolean("isGame", false));
+                Log.i(LOG_TAG, String.format("The package %s isGame: %b", packageName, isGame));
+            } catch (PackageManager.NameNotFoundException e) {
+                Log.w(LOG_TAG,
+                        String.format("No package found: %s, error:%s", packageName, e.toString()));
+                return false;
+            }
+        }
+        return isGame;
     }
 }

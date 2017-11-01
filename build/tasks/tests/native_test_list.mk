@@ -14,15 +14,23 @@
 
 native_tests := \
     adbd_test \
-    async_io_test \
     bionic-unit-tests \
     bionic-unit-tests-static \
     bluetoothtbd_test \
+    bootstat_tests \
+    boringssl_crypto_test \
+    boringssl_ssl_test \
+    buffer_hub_queue-test \
+    buffer_hub_queue_producer-test \
     bugreportz_test \
-    camera2_test \
+    bsdiff_unittest \
     camera_client_test \
     crashcollector \
     debuggerd_test \
+    dumpstate_test \
+    dumpstate_test_fixture \
+    dumpsys_test \
+    hello_world_test \
     hwui_unit_tests \
     init_tests \
     JniInvocation_test \
@@ -31,8 +39,12 @@ native_tests := \
     libcutils_test \
     libcutils_test_static \
     libgui_test \
+    libhidl_test \
     libjavacore-unit-tests \
     liblog-unit-tests \
+    libminijail_unittest_gtest \
+    libtextclassifier_tests \
+    libvintf_test \
     libwifi-system_tests \
     linker-unit-tests \
     logcat-unit-tests \
@@ -40,21 +52,40 @@ native_tests := \
     kernel-config-unit-tests \
     malloc_debug_unit_tests \
     memory_replay_tests \
+    memunreachable_test \
     minadbd_test \
     minikin_tests \
     mtp_ffs_handle_test \
     net_test_bluetooth \
+    net_test_bta \
     net_test_btcore \
+    net_test_btif \
+    net_test_btif_profile_queue \
+    net_test_btu_message_loop \
     net_test_device \
     net_test_hci \
     net_test_osi \
+    net_test_performance \
+    net_test_stack \
+    net_test_stack_ad_parser \
+    net_test_stack_multi_adv \
+    net_test_stack_smp \
+    net_test_types \
     netd_integration_test \
     netd_unit_test \
     pagemap_test \
     perfprofd_test \
+    posix_async_io_test \
+    recovery_component_test \
+    recovery_unit_test \
+    scrape_mmap_addr \
     simpleperf_cpu_hotplug_test \
     simpleperf_unit_test \
+    syscall_filter_unittest_gtest \
     time-unit-tests \
+    update_engine_unittests \
+    vintf_object_test \
     wificond_unit_test \
     wifilogd_unit_test \
-    ziparchive-tests
+    ziparchive-tests \
+    SurfaceFlinger_test

@@ -14,7 +14,12 @@
 
 instrumentation_metric_tests := \
     crashcollector \
+    CorePerfTests \
     DocumentsUIPerfTests \
     DocumentsUIAppPerfTests \
+    MtpDocumentsProviderPerfTests \
     perf-setup.sh \
-    SurfaceComposition
+    SurfaceComposition \
+    RsBlasBenchmark \
+    ImageProcessingJB \
+    MultiUserPerfTests

@@ -13,20 +13,26 @@
 # limitations under the License.
 
 instrumentation_tests := \
+    HelloWorldTests \
+    BluetoothInstrumentationTests \
     crashcollector \
     ManagedProvisioningTests \
     FrameworksCoreTests \
+    FrameworksNetTests \
+    FrameworksNotificationTests \
     FrameworksServicesTests \
-    FrameworksUtilsTests \
+    FrameworksUtilTests \
     MtpDocumentsProviderTests \
     DocumentsUITests \
     ShellTests \
     SystemUITests \
+    TestablesTests \
     RecyclerViewTests \
     FrameworksWifiApiTests \
     FrameworksWifiTests \
     FrameworksTelephonyTests \
     ContactsProviderTests \
+    ContactsProviderTests2 \
     SettingsUnitTests \
     TelecomUnitTests \
     AndroidVCardTests \
@@ -39,5 +45,13 @@ instrumentation_tests := \
     DownloadProviderTests \
     EmergencyInfoTests \
     CalendarProviderTests \
+    SettingsLibTests \
+    RSTest \
+    PrintSpoolerOutOfProcessTests \
+    CellBroadcastReceiverUnitTests \
     TelephonyProviderTests \
-    NetworkRecommendationTests
+    CarrierConfigTests \
+    TeleServiceTests \
+    SettingsProviderTest \
+    StorageManagerUnitTests \
+    SettingsTests
