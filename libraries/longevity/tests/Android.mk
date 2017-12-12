@@ -1,4 +1,5 @@
-# Copyright (C) 2016 The Android Open Source Project
+#
+# Copyright (C) 2017 The Android Open Source Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,20 +12,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
 
 LOCAL_PATH := $(call my-dir)
-
 include $(CLEAR_VARS)
 
-LOCAL_SRC_FILES := \
-  HelloWorldTest.cpp
-
-LOCAL_CFLAGS := -Wall -Werror
-
-LOCAL_MODULE := hello_world_test
 LOCAL_MODULE_TAGS := tests
+LOCAL_PACKAGE_NAME := LongevityLibTests
+LOCAL_SDK_VERSION := 24
+LOCAL_STATIC_JAVA_LIBRARIES := longevity-lib mockito-target truth-prebuilt guava
+LOCAL_SRC_FILES := $(call all-java-files-under, src)
 
-LOCAL_COMPATIBILITY_SUITE := device-tests
-
-include $(BUILD_NATIVE_TEST)
-
+include $(BUILD_PACKAGE)
