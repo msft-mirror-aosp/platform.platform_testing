@@ -14,6 +14,7 @@
 
 native_tests := \
     adbd_test \
+    backtrace_test \
     bionic-unit-tests \
     bionic-unit-tests-static \
     bluetoothtbd_test \
@@ -42,12 +43,15 @@ native_tests := \
     libbase_test \
     libcutils_test \
     libcutils_test_static \
+    libdemangle_test \
     libgui_test \
     libhidl_test \
     libjavacore-unit-tests \
     liblog-unit-tests \
     libminijail_unittest_gtest \
+    libprocinfo_test \
     libtextclassifier_tests \
+    libunwindstack_test \
     libvintf_test \
     libwifi-system_tests \
     linker-unit-tests \
@@ -59,12 +63,16 @@ native_tests := \
     memunreachable_test \
     minadbd_test \
     minikin_tests \
+    mj_system_unittest_gtest \
+    mj_util_unittest_gtest \
     mtp_ffs_handle_test \
+    net_test_avrcp \
     net_test_bluetooth \
     net_test_bta \
     net_test_btcore \
     net_test_btif \
     net_test_btif_profile_queue \
+    net_test_btpackets \
     net_test_btu_message_loop \
     net_test_device \
     net_test_hci \
@@ -79,6 +87,7 @@ native_tests := \
     netd_unit_test \
     nfc_test_utils \
     pagemap_test \
+    perfetto_integrationtests \
     perfprofd_test \
     posix_async_io_test \
     recovery_component_test \
@@ -93,7 +102,8 @@ native_tests := \
     wificond_unit_test \
     wifilogd_unit_test \
     ziparchive-tests \
-    SurfaceFlinger_test
+    SurfaceFlinger_test \
+    lmkd_unit_test
 
 # Android Things specific tests
 ifeq ($(PRODUCT_IOT),true)

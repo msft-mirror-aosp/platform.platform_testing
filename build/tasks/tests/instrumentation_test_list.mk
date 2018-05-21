@@ -36,15 +36,14 @@ instrumentation_tests := \
     ContactsProviderTests2 \
     SettingsUnitTests \
     TelecomUnitTests \
+    TraceurUiTests \
     AndroidVCardTests \
     PermissionFunctionalTests \
     BlockedNumberProviderTest \
-    SettingsFunctionalTests \
-    LauncherFunctionalTests \
     DownloadAppFunctionalTests \
     NotificationFunctionalTests \
     DownloadProviderTests \
-    EmergencyInfoTests \
+    EmergencyInfoUnitTests \
     CalendarProviderTests \
     SettingsLibTests \
     RSTest \
@@ -53,6 +52,7 @@ instrumentation_tests := \
     TelephonyProviderTests \
     CarrierConfigTests \
     TeleServiceTests \
+    PresencePollingTests \
     SettingsProviderTest \
     SettingsTests
 
