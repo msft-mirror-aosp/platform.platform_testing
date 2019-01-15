@@ -26,6 +26,8 @@ instrumentation_tests := \
     BstatsTestApp \
     ConnTestApp \
     FrameworksServicesTests \
+    FrameworksMockingServicesTests \
+    WmTests \
     JobTestApp \
     SuspendTestApp \
     FrameworksUtilTests \
@@ -64,7 +66,8 @@ instrumentation_tests := \
     SettingsProviderTest \
     FrameworksLocationTests \
     FrameworksPrivacyLibraryTests \
-    SettingsUITests
+    SettingsUITests \
+    ExtServicesUnitTests
 
 # Android Things specific tests
 ifeq ($(PRODUCT_IOT),true)
