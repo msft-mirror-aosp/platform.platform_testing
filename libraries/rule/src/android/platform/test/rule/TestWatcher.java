@@ -15,8 +15,9 @@
  */
 package android.platform.test.rule;
 
-import android.app.UiAutomation;
+import android.os.Bundle;
 import android.support.test.uiautomator.UiDevice;
+import android.util.Log;
 import androidx.test.InstrumentationRegistry;
 
 import java.io.IOException;
@@ -25,6 +26,8 @@ import java.io.IOException;
  * A base {@link org.junit.rules.TestWatcher} with common support for platform testing.
  */
 public class TestWatcher extends org.junit.rules.TestWatcher {
+    private static final String LOG_TAG = TestWatcher.class.getSimpleName();
+
     private UiDevice mDevice;
 
     /**
@@ -46,9 +49,19 @@ public class TestWatcher extends org.junit.rules.TestWatcher {
      */
     protected String executeShellCommand(String cmd) {
         try {
+            Log.v(LOG_TAG, String.format("Executing command from %s: %s", this.getClass(), cmd));
             return getUiDevice().executeShellCommand(cmd);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    /**
+     * Returns the {@link Bundle} containing registered arguments.
+     *
+     * <p>Override this for unit testing device calls.
+     */
+    protected Bundle getArguments() {
+        return InstrumentationRegistry.getArguments();
     }
 }
