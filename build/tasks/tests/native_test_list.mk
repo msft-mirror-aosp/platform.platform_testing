@@ -112,7 +112,7 @@ native_tests := \
     perfprofd_test \
     posix_async_io_test \
     prioritydumper_test \
-    recovery_component_test \
+    puffin_unittest \
     recovery_unit_test \
     resolv_integration_test \
     resolv_unit_test \
