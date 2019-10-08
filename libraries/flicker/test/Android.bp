@@ -23,7 +23,7 @@ android_test {
     srcs: ["src/**/*.java"],
     libs: ["android.test.runner"],
     static_libs: [
-        "android-support-test",
+        "androidx.test.rules",
         "platform-test-annotations",
         "truth-prebuilt",
         "platformprotosnano",

@@ -21,13 +21,19 @@ import android.platform.test.rule.TracePointRule;
 import androidx.annotation.VisibleForTesting;
 import androidx.test.InstrumentationRegistry;
 
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.rules.TestRule;
+import org.junit.runner.Description;
+import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.FrameworkMethod;
@@ -40,6 +46,17 @@ import org.junit.runners.model.Statement;
  */
 public class Microbenchmark extends BlockJUnit4ClassRunner {
     private Bundle mArguments;
+
+    @VisibleForTesting static final String ITERATION_SEP_OPTION = "iteration-separator";
+    @VisibleForTesting static final String ITERATION_SEP_DEFAULT = "$";
+    // A constant to indicate that the iteration number is not set.
+    @VisibleForTesting static final int ITERATION_NOT_SET = -1;
+    public static final String RENAME_ITERATION_OPTION = "rename-iterations";
+
+    private String mIterationSep = ITERATION_SEP_DEFAULT;
+
+    private boolean mRenameIterations;
+    private Map<Description, Integer> mIterations = new HashMap<>();
 
     /**
      * Called reflectively on classes annotated with {@code @RunWith(Microbenchmark.class)}.
@@ -55,6 +72,12 @@ public class Microbenchmark extends BlockJUnit4ClassRunner {
     Microbenchmark(Class<?> klass, Bundle arguments) throws InitializationError {
         super(klass);
         mArguments = arguments;
+        // Parse out additional options.
+        mRenameIterations = Boolean.valueOf(arguments.getString(RENAME_ITERATION_OPTION));
+        mIterationSep =
+                arguments.containsKey(ITERATION_SEP_OPTION)
+                        ? arguments.getString(ITERATION_SEP_OPTION)
+                        : mIterationSep;
     }
 
     /**
@@ -64,8 +87,23 @@ public class Microbenchmark extends BlockJUnit4ClassRunner {
      */
     @Override
     protected Statement methodInvoker(FrameworkMethod method, Object test) {
-        Statement start = super.methodInvoker(method, test);
-        // Wrap the inner-most test method with trace points.
+        // Iterate on the test method multiple times for more data. If unset, defaults to 1.
+        Iterate<Statement> methodIterator = new Iterate<Statement>();
+        methodIterator.setOptionName("method-iterations");
+        final List<Statement> testMethodStatement =
+                methodIterator.apply(
+                        mArguments,
+                        Arrays.asList(new Statement[] {super.methodInvoker(method, test)}));
+        Statement start =
+                new Statement() {
+                    @Override
+                    public void evaluate() throws Throwable {
+                        for (Statement method : testMethodStatement) {
+                            method.evaluate();
+                        }
+                    }
+                };
+        // Wrap the multiple-iteration test method with trace points.
         start = getTracePointRule().apply(start, describeChild(method));
         // Invoke special @TightMethodRules that wrap @Test methods.
         List<TestRule> tightMethodRules =
@@ -115,4 +153,40 @@ public class Microbenchmark extends BlockJUnit4ClassRunner {
     @Retention(RetentionPolicy.RUNTIME)
     @Target({ElementType.FIELD, ElementType.METHOD})
     public @interface TightMethodRule { }
+
+
+    /**
+     * Rename the child class name to add iterations if the renaming iteration option is enabled.
+     *
+     * <p>Renaming the class here is chosen over renaming the method name because
+     *
+     * <ul>
+     *   <li>Conceptually, the runner is running a class multiple times, as opposed to a method.
+     *   <li>When instrumenting a suite in command line, by default the instrumentation command
+     *       outputs the class name only. Renaming the class helps with interpretation in this case.
+     */
+    @Override
+    protected Description describeChild(FrameworkMethod method) {
+        Description original = super.describeChild(method);
+        if (!mRenameIterations) {
+            return original;
+        }
+        return Description.createTestDescription(
+                String.join(mIterationSep, original.getClassName(),
+                        String.valueOf(mIterations.get(original))), original.getMethodName());
+    }
+
+    /**
+     * Keep track of the number of iterations for a particular method and
+     * set the current iteration count for changing the current description.
+     */
+    @Override
+    protected void runChild(final FrameworkMethod method, RunNotifier notifier) {
+        if (mRenameIterations) {
+            Description original = super.describeChild(method);
+            mIterations.computeIfPresent(original, (k, v) -> v + 1);
+            mIterations.computeIfAbsent(original, k -> 1);
+        }
+        super.runChild(method, notifier);
+    }
 }

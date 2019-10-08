@@ -23,17 +23,23 @@ import static com.android.server.wm.flicker.monitor.ScreenRecorder.getPath;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import androidx.test.runner.AndroidJUnit4;
+
 import org.junit.After;
 import org.junit.Before;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.MethodSorters;
 
 import java.io.File;
-import java.io.IOException;
 
 /**
- * Contains {@link ScreenRecorder} tests.
- * To run this test: {@code atest FlickerLibTest:ScreenRecorderTest}
+ * Contains {@link ScreenRecorder} tests. To run this test: {@code atest
+ * FlickerLibTest:ScreenRecorderTest}
  */
+@RunWith(AndroidJUnit4.class)
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class ScreenRecorderTest {
     private static final String TEST_VIDEO_FILENAME = "test.mp4";
     private ScreenRecorder mScreenRecorder;
@@ -59,7 +65,7 @@ public class ScreenRecorderTest {
     }
 
     @Test
-    public void videoCanBeSaved() throws IOException {
+    public void videoCanBeSaved() {
         mScreenRecorder.start();
         sleep(100);
         mScreenRecorder.stop();
