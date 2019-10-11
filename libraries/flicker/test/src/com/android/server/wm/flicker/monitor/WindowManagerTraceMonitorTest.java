@@ -21,20 +21,27 @@ import static com.android.server.wm.nano.WindowManagerTraceFileProto.MAGIC_NUMBE
 
 import static com.google.common.truth.Truth.assertThat;
 
+import androidx.test.runner.AndroidJUnit4;
+
 import com.android.server.wm.nano.WindowManagerTraceFileProto;
 
 import com.google.common.io.Files;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.MethodSorters;
 
 import java.io.File;
 
 /**
- * Contains {@link WindowManagerTraceMonitor} tests.
- * To run this test: {@code atest FlickerLibTest:WindowManagerTraceMonitorTest}
+ * Contains {@link WindowManagerTraceMonitor} tests. To run this test: {@code atest
+ * FlickerLibTest:WindowManagerTraceMonitorTest}
  */
+@RunWith(AndroidJUnit4.class)
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class WindowManagerTraceMonitorTest {
     private WindowManagerTraceMonitor mWindowManagerTraceMonitor;
 
@@ -46,8 +53,7 @@ public class WindowManagerTraceMonitorTest {
     @After
     public void teardown() {
         mWindowManagerTraceMonitor.stop();
-        mWindowManagerTraceMonitor.getOutputTraceFilePath("captureWindowTrace",
-                0).toFile().delete();
+        mWindowManagerTraceMonitor.getOutputTraceFilePath("captureWindowTrace").toFile().delete();
     }
 
     @Test
@@ -68,13 +74,13 @@ public class WindowManagerTraceMonitorTest {
     public void captureWindowTrace() throws Exception {
         mWindowManagerTraceMonitor.start();
         mWindowManagerTraceMonitor.stop();
-        File testFile = mWindowManagerTraceMonitor.saveTraceFile("captureWindowTrace", 0).toFile();
+        File testFile = mWindowManagerTraceMonitor.save("captureWindowTrace").toFile();
         assertThat(testFile.exists()).isTrue();
         byte[] trace = Files.toByteArray(testFile);
         assertThat(trace.length).isGreaterThan(0);
-        WindowManagerTraceFileProto mWindowTraceFileProto = WindowManagerTraceFileProto.parseFrom(
-                trace);
-        assertThat(mWindowTraceFileProto.magicNumber).isEqualTo(
-                (long) MAGIC_NUMBER_H << 32 | MAGIC_NUMBER_L);
+        WindowManagerTraceFileProto mWindowTraceFileProto =
+                WindowManagerTraceFileProto.parseFrom(trace);
+        assertThat(mWindowTraceFileProto.magicNumber)
+                .isEqualTo((long) MAGIC_NUMBER_H << 32 | MAGIC_NUMBER_L);
     }
 }

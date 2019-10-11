@@ -20,20 +20,24 @@ import android.os.RemoteException;
 import android.view.IWindowManager;
 import android.view.WindowManagerGlobal;
 
-/**
- * Captures WindowManager trace from WindowManager.
- */
+import java.nio.file.Path;
+
+/** Captures WindowManager trace from WindowManager. */
 public class WindowManagerTraceMonitor extends TraceMonitor {
-    private IWindowManager wm = WindowManagerGlobal.getWindowManagerService();
+    private IWindowManager mWm = WindowManagerGlobal.getWindowManagerService();
 
     public WindowManagerTraceMonitor() {
-        traceFileName = "wm_trace.pb";
+        this(OUTPUT_DIR);
+    }
+
+    public WindowManagerTraceMonitor(Path outputDir) {
+        super(outputDir, "wm_trace.pb");
     }
 
     @Override
     public void start() {
         try {
-            wm.startWindowTrace();
+            mWm.startWindowTrace();
         } catch (RemoteException e) {
             throw new RuntimeException("Could not start trace", e);
         }
@@ -42,14 +46,14 @@ public class WindowManagerTraceMonitor extends TraceMonitor {
     @Override
     public void stop() {
         try {
-            wm.stopWindowTrace();
+            mWm.stopWindowTrace();
         } catch (RemoteException e) {
             throw new RuntimeException("Could not stop trace", e);
         }
     }
 
     @Override
-    public boolean isEnabled() throws RemoteException{
-        return wm.isWindowTraceEnabled();
+    public boolean isEnabled() throws RemoteException {
+        return mWm.isWindowTraceEnabled();
     }
 }

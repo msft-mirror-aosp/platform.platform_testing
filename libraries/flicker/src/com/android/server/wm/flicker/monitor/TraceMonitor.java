@@ -18,54 +18,70 @@ package com.android.server.wm.flicker.monitor;
 
 import static com.android.compatibility.common.util.SystemUtil.runShellCommand;
 
-import android.os.Environment;
 import android.os.RemoteException;
 
-import com.android.internal.annotations.VisibleForTesting;
+import androidx.annotation.VisibleForTesting;
 
-import java.io.File;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Locale;
 
 /**
- * Base class for monitors containing common logic to read the trace
- * as a byte array and save the trace to another location.
+ * Base class for monitors containing common logic to read the trace as a byte array and save the
+ * trace to another location.
  */
-public abstract class TraceMonitor {
+public abstract class TraceMonitor implements ITransitionMonitor {
     public static final String TAG = "FLICKER";
     private static final String TRACE_DIR = "/data/misc/wmtrace/";
-    private static final String OUTPUT_DIR =
-            Environment.getExternalStorageDirectory().getPath();
 
-    String traceFileName;
+    private Path mOutputDir;
+    public String mTraceFileName;
 
-    abstract void start();
+    public abstract boolean isEnabled() throws RemoteException;
 
-    abstract void stop();
-
-    abstract boolean isEnabled() throws RemoteException;
+    public TraceMonitor(Path outputDir, String traceFileName) {
+        mOutputDir = outputDir;
+        mTraceFileName = traceFileName;
+    }
 
     /**
-     * Saves trace file to the external storage directory suffixing the name with the testtag
-     * and iteration.
+     * Saves trace file to the external storage directory suffixing the name with the testtag and
+     * iteration.
      *
-     * Moves the trace file from the default location via a shell command since the test app
-     * does not have security privileges to access /data/misc/wmtrace.
+     * <p>Moves the trace file from the default location via a shell command since the test app does
+     * not have security privileges to access /data/misc/wmtrace.
+     *
      * @param testTag suffix added to trace name used to identify trace
-     * @param iteration suffix added to trace name used to identify trace
      * @return Path to saved trace file
      */
-    public Path saveTraceFile(String testTag, int iteration) {
-        Path traceFileCopy = getOutputTraceFilePath(testTag, iteration);
-        String copyCommand = String.format(Locale.getDefault(), "mv %s%s %s", TRACE_DIR,
-                traceFileName, traceFileCopy.toString());
+    @Override
+    public Path save(String testTag) {
+        mOutputDir.toFile().mkdirs();
+        Path traceFileCopy = getOutputTraceFilePath(testTag);
+
+        // Move the trace file to the output directory
+        // Note: Due to b/141386109, certain devices do not allow moving the files between
+        //       directories with different encryption policies, so manually copy and then
+        //       remove the original file
+        String copyCommand =
+                String.format(
+                        Locale.getDefault(),
+                        "cp %s%s %s",
+                        TRACE_DIR,
+                        mTraceFileName,
+                        traceFileCopy.toString());
         runShellCommand(copyCommand);
+        String removeCommand =
+                String.format(
+                        Locale.getDefault(),
+                        "rm %s%s",
+                        TRACE_DIR,
+                        mTraceFileName);
+        runShellCommand(removeCommand);
         return traceFileCopy;
     }
 
     @VisibleForTesting
-    Path getOutputTraceFilePath(String testTag, int iteration) {
-        return Paths.get(OUTPUT_DIR, traceFileName + "_" + testTag + "_" + iteration);
+    public Path getOutputTraceFilePath(String testTag) {
+        return mOutputDir.resolve(mTraceFileName + "_" + testTag);
     }
 }

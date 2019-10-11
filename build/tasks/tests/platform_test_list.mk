@@ -20,7 +20,10 @@ platform_tests += \
     BandwidthEnforcementTest \
     BandwidthTests \
     BluetoothTests \
+    bluetooth_cert_stack \
+    bluetooth_stack_with_facade \
     BootHelperApp \
+    BusinessCard \
     CalculatorFunctionalTests \
     CalendarTests \
     camera_client_test \
@@ -31,9 +34,10 @@ platform_tests += \
     CtsCameraTestCases \
     CtsHardwareTestCases \
     DataIdleTest \
+    Development \
     DeviceHealthChecks \
     DeviceHealthTests \
-    DexLoggerIntegrationTests \
+    DynamicCodeLoggerIntegrationTests \
     DialerJankTests \
     DownloadManagerTestApp \
     DummyIME \
@@ -49,11 +53,11 @@ platform_tests += \
     FrameworkPerf \
     FrameworkPermissionTests \
     FrameworksCoreTests \
+    FrameworksMockingCoreTests \
     FrameworksPrivacyLibraryTests \
     FrameworksUtilTests \
     InternalLocTestApp \
     JankMicroBenchmarkTests \
-    LauncherRotationStressTest \
     MemoryUsage \
     MultiDexLegacyTestApp \
     MultiDexLegacyTestApp2 \
@@ -78,7 +82,9 @@ platform_tests += \
     PermissionFunctionalTests \
     PermissionTestAppMV1 \
     PermissionUtils \
+    PlatformScenarioTests \
     PowerPerfTest \
+    root-canal \
     SettingsUITests \
     SimpleTestApp \
     skia_dm \
@@ -102,6 +108,11 @@ platform_tests += \
     VersatileTestApp_Internal \
     VersatileTestApp_None \
     VoiceInteraction \
+    WifiStrengthScannerUtil \
+
+ifneq ($(strip $(BOARD_PERFSETUP_SCRIPT)),)
+platform_tests += perf-setup.sh
+endif
 
 ifneq ($(filter vsoc_x86 vsoc_x86_64, $(TARGET_DEVICE)),)
   platform_tests += \

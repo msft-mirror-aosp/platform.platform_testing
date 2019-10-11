@@ -16,13 +16,15 @@
 package android.support.test.launcherhelper;
 
 import android.graphics.Point;
-import android.os.Build;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.uiautomator.By;
 import android.support.test.uiautomator.BySelector;
 import android.support.test.uiautomator.Direction;
 import android.support.test.uiautomator.UiDevice;
 import android.support.test.uiautomator.UiObject2;
 import android.support.test.uiautomator.Until;
+
+import com.android.launcher3.tapl.LauncherInstrumentation;
 
 import junit.framework.Assert;
 
@@ -34,6 +36,7 @@ import java.io.IOException;
 public class NexusLauncherStrategy extends BaseLauncher3Strategy {
 
     private static final String LAUNCHER_PKG = "com.google.android.apps.nexuslauncher";
+    private LauncherInstrumentation mLauncher;
 
     @Override
     public void setUiDevice(UiDevice uiDevice) {
@@ -41,9 +44,17 @@ public class NexusLauncherStrategy extends BaseLauncher3Strategy {
         try {
             uiDevice.executeShellCommand(
                     "settings put secure swipe_up_to_switch_apps_enabled "
-                            + (isPixel2OrAbove() ? 1 : 0));
+                            + (isOreoOrAbove() ? 1 : 0));
         } catch (IOException e) {
             Assert.fail("Failed to set swipe_up_to_switch_apps_enabled, caused by: " + e);
+        }
+        try {
+            mLauncher = new LauncherInstrumentation(InstrumentationRegistry.getInstrumentation());
+
+        } catch (IllegalStateException | NoClassDefFoundError e) {
+            mLauncher =
+                    new LauncherInstrumentation(
+                            androidx.test.InstrumentationRegistry.getInstrumentation());
         }
     }
 
@@ -57,7 +68,7 @@ public class NexusLauncherStrategy extends BaseLauncher3Strategy {
      */
     @Override
     public BySelector getAllAppsSelector() {
-        return By.res(getSupportedLauncherPackage(), "apps_list_view");
+        return By.res(getSupportedLauncherPackage(), "apps_view");
     }
 
     /**
@@ -99,7 +110,7 @@ public class NexusLauncherStrategy extends BaseLauncher3Strategy {
             Assert.assertTrue("openAllApps: can't go to home screen",
                     !mDevice.hasObject(getAllAppsSelector()) && !mDevice.hasObject(
                             getLauncherOverviewSelector()));
-            if (isPixel2OrAbove()) {
+            if (isOreoOrAbove()) {
                 int midX = mDevice.getDisplayWidth() / 2;
                 int height = mDevice.getDisplayHeight();
                 // Swipe from 6/7ths down the screen to 1/7th down the screen.
@@ -127,10 +138,6 @@ public class NexusLauncherStrategy extends BaseLauncher3Strategy {
         return allAppsContainer;
     }
 
-    private boolean isPixel2OrAbove() {
-        return Build.VERSION.FIRST_SDK_INT >= Build.VERSION_CODES.O;
-    }
-
     /**
      * {@inheritDoc}
      */
@@ -154,5 +161,13 @@ public class NexusLauncherStrategy extends BaseLauncher3Strategy {
                     allWidgetsContainer, Direction.reverse(getAllWidgetsScrollDirection()));
         }
         return allWidgetsContainer;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public long launch(String appName, String packageName) {
+        return CommonLauncherHelper.getInstance(mDevice).launchApp(mLauncher, appName, packageName);
     }
 }

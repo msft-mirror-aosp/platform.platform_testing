@@ -14,14 +14,45 @@
 // limitations under the License.
 //
 
-java_library {
+java_test {
     name: "flickerlib",
     platform_apis: true,
     srcs: ["src/**/*.java"],
     static_libs: [
-        "ub-janktesthelper",
-        "cts-amwm-util",
+        "androidx.test.janktesthelper",
+        "cts-wm-util",
         "platformprotosnano",
         "layersprotosnano",
+        "truth-prebuilt",
+        "sysui-helper",
+        "launcher-helper-lib",
+    ],
+}
+
+java_library {
+    name: "flickerlib_without_helpers",
+    platform_apis: true,
+    srcs: ["src/**/*.java"],
+    exclude_srcs: ["src/**/helpers/*.java"],
+    static_libs: [
+        "cts-wm-util",
+        "platformprotosnano",
+        "layersprotosnano",
+        "truth-prebuilt",
+        "app-helpers-core",
+    ],
+}
+
+java_library {
+    name: "flickerautomationhelperlib",
+    sdk_version: "test_current",
+    srcs: [
+        "src/com/android/server/wm/flicker/helpers/AutomationUtils.java",
+        "src/com/android/server/wm/flicker/WindowUtils.java",
+    ],
+    static_libs: [
+        "sysui-helper",
+        "launcher-helper-lib",
+        "compatibility-device-util-axt",
     ],
 }

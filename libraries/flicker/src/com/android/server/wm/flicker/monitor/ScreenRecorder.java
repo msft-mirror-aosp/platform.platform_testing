@@ -20,62 +20,66 @@ import static com.android.compatibility.common.util.SystemUtil.runShellCommand;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
-import android.os.Environment;
-import androidx.annotation.VisibleForTesting;
 import android.util.Log;
+
+import androidx.annotation.VisibleForTesting;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
-/**
- * Captures screen contents and saves it as a mp4 video file.
- */
-public class ScreenRecorder {
+/** Captures screen contents and saves it as a mp4 video file. */
+public class ScreenRecorder implements ITransitionMonitor {
+    @VisibleForTesting
+    public static final Path DEFAULT_OUTPUT_PATH = OUTPUT_DIR.resolve("transition.mp4");
+
     private static final String TAG = "FLICKER";
-    private static final String OUTPUT_DIR =
-            Environment.getExternalStorageDirectory().getPath();
-    @VisibleForTesting
-    static final Path DEFAULT_OUTPUT_PATH = Paths.get(OUTPUT_DIR ,  "transition.mp4");
-    private Thread recorderThread;
+    private Thread mRecorderThread;
 
     @VisibleForTesting
-    static Path getPath(String testTag) {
-        return Paths.get(OUTPUT_DIR, testTag + ".mp4");
+    public static Path getPath(String testTag) {
+        return OUTPUT_DIR.resolve(testTag + ".mp4");
     }
 
-    private static Path getPath(String testTag, int iteration) {
-        return Paths.get(OUTPUT_DIR, testTag + "_" + Integer.toString(iteration) + ".mp4");
-    }
-
+    @Override
     public void start() {
+        OUTPUT_DIR.toFile().mkdirs();
         String command = "screenrecord " + DEFAULT_OUTPUT_PATH;
-        recorderThread = new Thread(() -> {
-            try {
-                Runtime.getRuntime().exec(command);
-            } catch (IOException e) {
-                Log.e(TAG, "Error executing " + command, e);
-            }
-        });
-        recorderThread.start();
+        mRecorderThread =
+                new Thread(
+                        () -> {
+                            try {
+                                Runtime.getRuntime().exec(command);
+                            } catch (IOException e) {
+                                Log.e(TAG, "Error executing " + command, e);
+                            }
+                        });
+        mRecorderThread.start();
     }
 
+    @Override
     public void stop() {
         runShellCommand("killall -s 2 screenrecord");
         try {
-            recorderThread.join();
+            mRecorderThread.join();
         } catch (InterruptedException e) {
             // ignore
         }
     }
 
-    public Path save(String testTag, int iteration) throws IOException {
-        return Files.move(DEFAULT_OUTPUT_PATH, getPath(testTag, iteration),
-                REPLACE_EXISTING);
-    }
+    @Override
+    public Path save(String testTag) {
+        if (!Files.exists(DEFAULT_OUTPUT_PATH)) {
+            Log.w(TAG, "No video file found on " + DEFAULT_OUTPUT_PATH);
+            return null;
+        }
 
-    public Path save(String testTag) throws IOException {
-        return Files.move(DEFAULT_OUTPUT_PATH, getPath(testTag), REPLACE_EXISTING);
+        try {
+            Path targetPath = Files.move(DEFAULT_OUTPUT_PATH, getPath(testTag), REPLACE_EXISTING);
+            Log.i(TAG, "Video saved to " + targetPath.toString());
+            return targetPath;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
