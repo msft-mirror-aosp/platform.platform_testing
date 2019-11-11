@@ -58,6 +58,8 @@ platform_tests += \
     FrameworksUtilTests \
     InternalLocTestApp \
     JankMicroBenchmarkTests \
+    libbluetooth_gd \
+    libgrpc++_unsecure \
     MemoryUsage \
     MultiDexLegacyTestApp \
     MultiDexLegacyTestApp2 \
@@ -99,6 +101,7 @@ platform_tests += \
     UiBench \
     UiBenchJankTests \
     UiBenchJankTestsWear \
+    UiBenchMicrobenchmark \
     UpdateExternalLocTestApp_v1_ext \
     UpdateExternalLocTestApp_v2_none \
     UpdateExtToIntLocTestApp_v1_ext \
