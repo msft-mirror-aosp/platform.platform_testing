@@ -101,6 +101,7 @@ platform_tests += \
     UiBench \
     UiBenchJankTests \
     UiBenchJankTestsWear \
+    UiBenchMicrobenchmark \
     UpdateExternalLocTestApp_v1_ext \
     UpdateExternalLocTestApp_v2_none \
     UpdateExtToIntLocTestApp_v1_ext \
@@ -116,7 +117,7 @@ ifneq ($(strip $(BOARD_PERFSETUP_SCRIPT)),)
 platform_tests += perf-setup.sh
 endif
 
-ifneq ($(filter vsoc_x86 vsoc_x86_64, $(TARGET_DEVICE)),)
+ifneq ($(filter vsoc_x86 vsoc_x86_64, $(TARGET_BOARD_PLATFORM)),)
   platform_tests += \
     CuttlefishRilTests \
     CuttlefishWifiTests
