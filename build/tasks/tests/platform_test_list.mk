@@ -120,7 +120,7 @@ platform_tests += \
     VersatileTestApp_None \
     VoiceInteraction \
 
-ifneq ($(filter vsoc_x86 vsoc_x86_64, $(TARGET_DEVICE)),)
+ifneq ($(filter vsoc_arm vsoc_arm64 vsoc_x86 vsoc_x86_64, $(TARGET_DEVICE)),)
   platform_tests += \
     CuttlefishRilTests \
     CuttlefishWifiTests
