@@ -18,25 +18,28 @@ package android.platform.test.scenario.system;
 
 import android.os.RemoteException;
 import android.os.SystemClock;
+import android.platform.test.option.BooleanOption;
 import android.platform.test.option.LongOption;
 import android.platform.test.scenario.annotation.Scenario;
 import android.support.test.uiautomator.UiDevice;
 import androidx.test.InstrumentationRegistry;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/**
- * Shuts the screen off and waits for a specified amount of time.
- */
+/** Shuts the screen off and waits for a specified amount of time. */
 @Scenario
 @RunWith(JUnit4.class)
 public class ScreenOff {
+    @Rule public LongOption mDurationMs = new LongOption("screenOffDurationMs").setDefault(1000L);
+
     @Rule
-    public final LongOption mDurationMs = new LongOption("screenOffDurationMs").setDefault(1000L);
+    public BooleanOption mTurnScreenBackOn =
+            new BooleanOption("screenOffTurnScreenBackOnAfterTest").setDefault(false);
 
     private UiDevice mDevice;
 
@@ -49,5 +52,18 @@ public class ScreenOff {
     public void testScreenOff() throws RemoteException {
         mDevice.sleep();
         SystemClock.sleep(mDurationMs.get());
+    }
+
+    @After
+    public void tearDown() throws RemoteException {
+        if (mTurnScreenBackOn.get()) {
+            // Wake up the display. wakeUp() is not used here as when the duration is short, the
+            // device might register a double power button press and launch camera.
+            mDevice.pressMenu();
+            mDevice.waitForIdle();
+            // Unlock the screen.
+            mDevice.pressMenu();
+            mDevice.waitForIdle();
+        }
     }
 }

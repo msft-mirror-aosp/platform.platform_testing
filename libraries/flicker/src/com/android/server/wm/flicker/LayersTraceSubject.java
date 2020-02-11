@@ -20,6 +20,7 @@ import static com.google.common.truth.Truth.assertAbout;
 import static com.google.common.truth.Truth.assertWithMessage;
 
 import android.graphics.Rect;
+import android.util.Log;
 
 import androidx.annotation.Nullable;
 
@@ -31,19 +32,17 @@ import com.google.common.truth.FailureMetadata;
 import com.google.common.truth.Subject;
 
 import java.util.List;
+import java.util.Locale;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /** Truth subject for {@link LayersTrace} objects. */
 public class LayersTraceSubject extends Subject<LayersTraceSubject, LayersTrace> {
+    public static final String TAG = "FLICKER";
+
     // Boiler-plate Subject.Factory for LayersTraceSubject
     private static final Subject.Factory<LayersTraceSubject, LayersTrace> FACTORY =
-            new Subject.Factory<LayersTraceSubject, LayersTrace>() {
-                @Override
-                public LayersTraceSubject createSubject(
-                        FailureMetadata fm, @Nullable LayersTrace target) {
-                    return new LayersTraceSubject(fm, target);
-                }
-            };
+            LayersTraceSubject::new;
 
     private AssertionsChecker<Entry> mChecker = new AssertionsChecker<>();
 
@@ -56,10 +55,23 @@ public class LayersTraceSubject extends Subject<LayersTraceSubject, LayersTrace>
         return assertAbout(FACTORY).that(entry);
     }
 
-    // User-defined entry point
+    // User-defined entry point. Ignores orphaned layers because of b/141326137
     public static LayersTraceSubject assertThat(@Nullable TransitionResult result) {
-        LayersTrace entries =
-                LayersTrace.parseFrom(result.getLayersTrace(), result.getLayersTracePath());
+        Consumer<LayersTrace.Layer> orphanLayerCallback =
+                layer ->
+                        Log.w(
+                                TAG,
+                                String.format(
+                                        Locale.getDefault(), "Ignoring orphaned layer %s", layer));
+
+        return assertThat(result, orphanLayerCallback);
+    }
+
+    // User-defined entry point
+    public static LayersTraceSubject assertThat(@Nullable TransitionResult result,
+            Consumer<LayersTrace.Layer> orphanLayerCallback) {
+        LayersTrace entries = LayersTrace.parseFrom(result.getLayersTrace(),
+                result.getLayersTracePath(), orphanLayerCallback);
         return assertWithMessage(result.toString()).about(FACTORY).that(entries);
     }
 
@@ -83,7 +95,7 @@ public class LayersTraceSubject extends Subject<LayersTraceSubject, LayersTrace>
     }
 
     public void inTheBeginning() {
-        if (getSubject().getEntries().isEmpty()) {
+        if (actual().getEntries().isEmpty()) {
             fail("No entries found.");
         }
         mChecker.checkFirstEntry();
@@ -91,7 +103,7 @@ public class LayersTraceSubject extends Subject<LayersTraceSubject, LayersTrace>
     }
 
     public void atTheEnd() {
-        if (getSubject().getEntries().isEmpty()) {
+        if (actual().getEntries().isEmpty()) {
             fail("No entries found.");
         }
         mChecker.checkLastEntry();
@@ -99,15 +111,15 @@ public class LayersTraceSubject extends Subject<LayersTraceSubject, LayersTrace>
     }
 
     private void test() {
-        List<Result> failures = mChecker.test(getSubject().getEntries());
+        List<Result> failures = mChecker.test(actual().getEntries());
         if (!failures.isEmpty()) {
             String failureLogs =
                     failures.stream().map(Result::toString).collect(Collectors.joining("\n"));
             String tracePath = "";
-            if (getSubject().getSource().isPresent()) {
+            if (actual().getSource().isPresent()) {
                 tracePath =
                         "\nLayers Trace can be found in: "
-                                + getSubject().getSource().get().toAbsolutePath()
+                                + actual().getSource().get().toAbsolutePath()
                                 + "\n";
             }
             fail(tracePath + failureLogs);

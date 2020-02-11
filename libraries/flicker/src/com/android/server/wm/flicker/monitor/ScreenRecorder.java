@@ -22,29 +22,43 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 import android.util.Log;
 
-import androidx.annotation.VisibleForTesting;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Locale;
 
 /** Captures screen contents and saves it as a mp4 video file. */
 public class ScreenRecorder implements ITransitionMonitor {
-    @VisibleForTesting
-    public static final Path DEFAULT_OUTPUT_PATH = OUTPUT_DIR.resolve("transition.mp4");
-
     private static final String TAG = "FLICKER";
+    private int mWidth;
+    private int mHeight;
+    private Path mOutputPath;
     private Thread mRecorderThread;
 
-    @VisibleForTesting
-    public static Path getPath(String testTag) {
-        return OUTPUT_DIR.resolve(testTag + ".mp4");
+    public ScreenRecorder() {
+        this(720, 1280, OUTPUT_DIR.resolve("transition.mp4"));
+    }
+
+    public ScreenRecorder(int width, int height, Path outputPath) {
+        mWidth = width;
+        mHeight = height;
+        mOutputPath = outputPath;
+    }
+
+    public Path getPath() {
+        return mOutputPath;
     }
 
     @Override
     public void start() {
-        OUTPUT_DIR.toFile().mkdirs();
-        String command = "screenrecord " + DEFAULT_OUTPUT_PATH;
+        mOutputPath.getParent().toFile().mkdirs();
+        String command =
+                String.format(
+                        Locale.getDefault(),
+                        "screenrecord --size %dx%d %s",
+                        mWidth,
+                        mHeight,
+                        mOutputPath);
         mRecorderThread =
                 new Thread(
                         () -> {
@@ -69,13 +83,14 @@ public class ScreenRecorder implements ITransitionMonitor {
 
     @Override
     public Path save(String testTag) {
-        if (!Files.exists(DEFAULT_OUTPUT_PATH)) {
-            Log.w(TAG, "No video file found on " + DEFAULT_OUTPUT_PATH);
+        if (!Files.exists(mOutputPath)) {
+            Log.w(TAG, "No video file found on " + mOutputPath);
             return null;
         }
 
         try {
-            Path targetPath = Files.move(DEFAULT_OUTPUT_PATH, getPath(testTag), REPLACE_EXISTING);
+            Path targetPath =
+                    Files.move(mOutputPath, OUTPUT_DIR.resolve(testTag + ".mp4"), REPLACE_EXISTING);
             Log.i(TAG, "Video saved to " + targetPath.toString());
             return targetPath;
         } catch (IOException e) {

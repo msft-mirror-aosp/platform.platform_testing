@@ -20,8 +20,6 @@ platform_tests += \
     BandwidthEnforcementTest \
     BandwidthTests \
     BluetoothTests \
-    bluetooth_cert_stack \
-    bluetooth_stack_with_facade \
     BootHelperApp \
     BusinessCard \
     CalculatorFunctionalTests \
@@ -58,6 +56,7 @@ platform_tests += \
     FrameworksUtilTests \
     InternalLocTestApp \
     JankMicroBenchmarkTests \
+    long_trace_config.textproto \
     MemoryUsage \
     MultiDexLegacyTestApp \
     MultiDexLegacyTestApp2 \
@@ -77,14 +76,13 @@ platform_tests += \
     NotificationFunctionalTests \
     NotificationStressTests \
     OverviewFunctionalTests \
+    perfetto_trace_processor_shell \
     PerformanceAppTest \
     PerformanceLaunch \
     PermissionFunctionalTests \
     PermissionTestAppMV1 \
     PermissionUtils \
-    PlatformScenarioTests \
     PowerPerfTest \
-    root-canal \
     SettingsUITests \
     SimpleTestApp \
     skia_dm \
@@ -94,11 +92,13 @@ platform_tests += \
     SmokeTestApp \
     SysAppJankTestsWear \
     TouchLatencyJankTestWear \
+    trace_config_detailed.textproto \
     UbSystemUiJankTests \
     UbWebViewJankTests \
     UiBench \
     UiBenchJankTests \
     UiBenchJankTestsWear \
+    UiBenchMicrobenchmark \
     UpdateExternalLocTestApp_v1_ext \
     UpdateExternalLocTestApp_v2_none \
     UpdateExtToIntLocTestApp_v1_ext \
@@ -114,8 +114,12 @@ ifneq ($(strip $(BOARD_PERFSETUP_SCRIPT)),)
 platform_tests += perf-setup.sh
 endif
 
-ifneq ($(filter vsoc_x86 vsoc_x86_64, $(TARGET_DEVICE)),)
+ifneq ($(filter vsoc_arm vsoc_arm64 vsoc_x86 vsoc_x86_64, $(TARGET_BOARD_PLATFORM)),)
   platform_tests += \
     CuttlefishRilTests \
     CuttlefishWifiTests
+endif
+
+ifeq ($(HOST_OS),linux)
+platform_tests += root-canal
 endif

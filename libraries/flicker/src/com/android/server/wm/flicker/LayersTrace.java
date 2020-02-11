@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
@@ -55,8 +56,10 @@ public class LayersTrace {
      *
      * @param data binary proto data
      * @param source Path to source of data for additional debug information
+     * @param orphanLayerCallback a callback to handle any unexpected orphan layers
      */
-    public static LayersTrace parseFrom(byte[] data, Path source) {
+    public static LayersTrace parseFrom(byte[] data, Path source,
+            Consumer<Layer> orphanLayerCallback) {
         List<Entry> entries = new ArrayList<>();
         LayersTraceFileProto fileProto;
         try {
@@ -67,10 +70,22 @@ public class LayersTrace {
         for (LayersTraceProto traceProto : fileProto.entry) {
             Entry entry =
                     Entry.fromFlattenedLayers(
-                            traceProto.elapsedRealtimeNanos, traceProto.layers.layers);
+                            traceProto.elapsedRealtimeNanos, traceProto.layers.layers,
+                            orphanLayerCallback);
             entries.add(entry);
         }
         return new LayersTrace(entries, source);
+    }
+
+    /**
+     * Parses {@code LayersTraceFileProto} from {@code data} and uses the proto to generates a list
+     * of trace entries, storing the flattened layers into its hierarchical structure.
+     *
+     * @param data binary proto data
+     * @param source Path to source of data for additional debug information
+     */
+    public static LayersTrace parseFrom(byte[] data, Path source) {
+        return parseFrom(data, source, null /* orphanLayerCallback */);
     }
 
     /**
@@ -111,8 +126,36 @@ public class LayersTrace {
             this.mRootLayers = rootLayers;
         }
 
+        /**
+         * Determines the id of the root element.
+         *
+         * <p>On some files, such as the ones used in the FlickerLib testdata, the root nodes are
+         * those that have parent=0, on newer traces, the root nodes are those that have parent=-1
+         *
+         * <p>This function keeps compatibility with both new and older traces by searching for a
+         * known root layer (Display Root) and considering its parent Id as overall root.
+         */
+        private static Layer getRootLayer(SparseArray<Layer> layerMap) {
+            Layer knownRoot = null;
+            int numKeys = layerMap.size();
+            for (int i = 0; i < numKeys; ++i) {
+                Layer currentLayer = layerMap.valueAt(i);
+                if (currentLayer.isRootLayer()) {
+                    knownRoot = currentLayer;
+                    break;
+                }
+            }
+
+            if (knownRoot == null) {
+                throw new IllegalStateException("Display root layer not found.");
+            }
+
+            return layerMap.get(knownRoot.getParentId());
+        }
+
         /** Constructs the layer hierarchy from a flattened list of layers. */
-        public static Entry fromFlattenedLayers(long timestamp, LayerProto[] protos) {
+        public static Entry fromFlattenedLayers(long timestamp, LayerProto[] protos,
+                Consumer<Layer> orphanLayerCallback) {
             SparseArray<Layer> layerMap = new SparseArray<>();
             ArrayList<Layer> orphans = new ArrayList<>();
             for (LayerProto proto : protos) {
@@ -140,17 +183,23 @@ public class LayersTrace {
                 newLayer.addParent(layerMap.get(parentId));
             }
 
-            // Remove root node (id = 0)
-            orphans.remove(layerMap.get(-1));
+            // Remove root node
+            Layer rootLayer = getRootLayer(layerMap);
+            orphans.remove(rootLayer);
             // Fail if we find orphan layers.
             orphans.forEach(
                     orphan -> {
+                        if (orphanLayerCallback != null) {
+                            // Workaround for b/141326137, ignore the existence of an orphan layer
+                            orphanLayerCallback.accept(orphan);
+                            return;
+                        }
                         String childNodes =
                                 orphan.mChildren
                                         .stream()
                                         .map(node -> Integer.toString(node.getId()))
                                         .collect(Collectors.joining(", "));
-                        int orphanId = orphan.mChildren.get(0).mProto.parent;
+                        int orphanId = orphan.mChildren.get(0).getParentId();
                         throw new RuntimeException(
                                 "Failed to parse layers trace. Found orphan layers with parent "
                                         + "layer id:"
@@ -159,7 +208,7 @@ public class LayersTrace {
                                         + childNodes);
                     });
 
-            return new Entry(timestamp, layerMap.get(-1).mChildren);
+            return new Entry(timestamp, rootLayer.mChildren);
         }
 
         /** Extracts {@link Rect} from {@link RectProto}. */
@@ -342,6 +391,18 @@ public class LayersTrace {
             return mProto.id;
         }
 
+        public int getParentId() {
+            return mProto.parent;
+        }
+
+        public String getName() {
+            if (mProto != null) {
+                return mProto.name;
+            }
+
+            return "";
+        }
+
         public boolean isActiveBufferEmpty() {
             return this.mProto.activeBuffer == null
                     || this.mProto.activeBuffer.height == 0
@@ -373,7 +434,7 @@ public class LayersTrace {
         }
 
         public boolean isRootLayer() {
-            return mParent == null || mParent.mProto == null;
+            return mParent != null && mParent.mProto == null;
         }
 
         public boolean isInvisible() {
