@@ -24,6 +24,7 @@ import java.nio.file.Path;
 
 /** Captures Layers trace from SurfaceFlinger. */
 public class LayersTraceMonitor extends TraceMonitor {
+    private static final String TRACE_FILE = "layers_trace.pb";
     private IWindowManager mWm = WindowManagerGlobal.getWindowManagerService();
 
     public LayersTraceMonitor() {
@@ -31,7 +32,7 @@ public class LayersTraceMonitor extends TraceMonitor {
     }
 
     public LayersTraceMonitor(Path outputDir) {
-        super(outputDir, "layers_trace.pb");
+        super(outputDir, TRACE_FILE);
     }
 
     @Override
@@ -45,7 +46,7 @@ public class LayersTraceMonitor extends TraceMonitor {
     }
 
     @Override
-    public boolean isEnabled() throws RemoteException {
+    public boolean isEnabled() {
         try {
             return mWm.isLayerTracing();
         } catch (RemoteException e) {

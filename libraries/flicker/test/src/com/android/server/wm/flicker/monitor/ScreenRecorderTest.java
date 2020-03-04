@@ -30,6 +30,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 
 import java.io.File;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 /**
@@ -70,7 +71,7 @@ public class ScreenRecorderTest {
         mScreenRecorder.start();
         sleep(100);
         mScreenRecorder.stop();
-        File file = mScreenRecorder.save(TEST_VIDEO_FILENAME).toFile();
-        assertThat(file.exists()).isTrue();
+        Path file = mScreenRecorder.save(TEST_VIDEO_FILENAME);
+        assertThat(Files.exists(file)).isTrue();
     }
 }

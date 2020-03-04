@@ -18,47 +18,46 @@ package com.android.server.wm.flicker.monitor;
 
 import static com.android.compatibility.common.util.SystemUtil.runShellCommand;
 
-import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
-
 import android.util.Log;
 
+import androidx.annotation.VisibleForTesting;
+
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Locale;
 
 /** Captures screen contents and saves it as a mp4 video file. */
-public class ScreenRecorder implements ITransitionMonitor {
-    private static final String TAG = "FLICKER";
+public class ScreenRecorder extends TraceMonitor {
+    private static final String TRACE_FILE = "transition.mp4";
     private int mWidth;
     private int mHeight;
-    private Path mOutputPath;
     private Thread mRecorderThread;
 
     public ScreenRecorder() {
-        this(720, 1280, OUTPUT_DIR.resolve("transition.mp4"));
+        this(720, 1280, OUTPUT_DIR, TRACE_FILE);
     }
 
-    public ScreenRecorder(int width, int height, Path outputPath) {
+    public ScreenRecorder(int width, int height, Path outputPath, String traceFile) {
+        super(outputPath, outputPath.resolve(traceFile));
         mWidth = width;
         mHeight = height;
-        mOutputPath = outputPath;
     }
 
+    @VisibleForTesting
     public Path getPath() {
         return mOutputPath;
     }
 
     @Override
     public void start() {
-        mOutputPath.getParent().toFile().mkdirs();
+        mOutputPath.toFile().mkdirs();
         String command =
                 String.format(
                         Locale.getDefault(),
                         "screenrecord --size %dx%d %s",
                         mWidth,
                         mHeight,
-                        mOutputPath);
+                        mTraceFile);
         mRecorderThread =
                 new Thread(
                         () -> {
@@ -82,19 +81,7 @@ public class ScreenRecorder implements ITransitionMonitor {
     }
 
     @Override
-    public Path save(String testTag) {
-        if (!Files.exists(mOutputPath)) {
-            Log.w(TAG, "No video file found on " + mOutputPath);
-            return null;
-        }
-
-        try {
-            Path targetPath =
-                    Files.move(mOutputPath, OUTPUT_DIR.resolve(testTag + ".mp4"), REPLACE_EXISTING);
-            Log.i(TAG, "Video saved to " + targetPath.toString());
-            return targetPath;
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+    public boolean isEnabled() {
+        return mRecorderThread != null && mRecorderThread.isAlive();
     }
 }

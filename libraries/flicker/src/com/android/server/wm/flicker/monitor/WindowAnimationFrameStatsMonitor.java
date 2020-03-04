@@ -28,7 +28,7 @@ import android.view.FrameStats;
  * <p>Adapted from {@link androidx.test.jank.internal.WindowAnimationFrameStatsMonitorImpl} using
  * the same threshold to determine jank.
  */
-public class WindowAnimationFrameStatsMonitor implements ITransitionMonitor {
+public class WindowAnimationFrameStatsMonitor extends TransitionMonitor {
 
     private static final String TAG = "FLICKER";
     // Maximum normalized error in frame duration before the frame is considered janky

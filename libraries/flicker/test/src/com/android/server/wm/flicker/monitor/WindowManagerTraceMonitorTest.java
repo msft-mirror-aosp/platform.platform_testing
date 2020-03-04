@@ -35,6 +35,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 
 import java.io.File;
+import java.nio.file.Path;
 
 /**
  * Contains {@link WindowManagerTraceMonitor} tests. To run this test: {@code atest
@@ -74,8 +75,11 @@ public class WindowManagerTraceMonitorTest {
     public void captureWindowTrace() throws Exception {
         mWindowManagerTraceMonitor.start();
         mWindowManagerTraceMonitor.stop();
-        File testFile = mWindowManagerTraceMonitor.save("captureWindowTrace").toFile();
+        Path testFilePath = mWindowManagerTraceMonitor.save("captureWindowTrace");
+        File testFile = testFilePath.toFile();
         assertThat(testFile.exists()).isTrue();
+        String calculatedChecksum = TransitionMonitor.calculateChecksum(testFilePath);
+        assertThat(calculatedChecksum).isEqualTo(mWindowManagerTraceMonitor.getChecksum());
         byte[] trace = Files.toByteArray(testFile);
         assertThat(trace.length).isGreaterThan(0);
         WindowManagerTraceFileProto mWindowTraceFileProto =

@@ -16,8 +16,12 @@
 
 package com.android.server.wm.flicker;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Collection of functional interfaces and classes representing assertions and their associated
@@ -50,13 +54,71 @@ public class Assertions {
      * Utility class to store assertions with an identifier to help generate more useful debug data
      * when dealing with multiple assertions.
      */
-    public static class NamedAssertion<T> {
-        public final TraceAssertion<T> assertion;
-        public final String name;
+    public static class NamedAssertion<T> implements TraceAssertion<T> {
+        private final TraceAssertion<T> assertion;
+        private final String name;
 
         public NamedAssertion(TraceAssertion<T> assertion, String name) {
             this.assertion = assertion;
             this.name = name;
+        }
+
+        public String getName() {
+            return this.name;
+        }
+
+        @Override
+        public Result apply(T t) {
+            return this.assertion.apply(t);
+        }
+
+        @Override
+        public String toString() {
+            return "Assertion(" + this.name + ")";
+        }
+    }
+
+    public static class CompoundAssertion<T> extends NamedAssertion<T> {
+        private final List<NamedAssertion<T>> assertions = new ArrayList<>();
+
+        public CompoundAssertion(TraceAssertion<T> assertion, String name) {
+            super(assertion, name);
+
+            add(assertion, name);
+        }
+
+        public void add(TraceAssertion<T> assertion, String name) {
+            this.assertions.add(new NamedAssertion<>(assertion, name));
+        }
+
+        @Override
+        public String getName() {
+            return this.assertions.stream().map(p -> p.name).collect(Collectors.joining(" and "));
+        }
+
+        @Override
+        public Result apply(T t) {
+            List<Result> assertionResults =
+                    this.assertions.stream().map(p -> p.apply(t)).collect(Collectors.toList());
+
+            boolean passed = assertionResults.stream().allMatch(Result::passed);
+            String reason =
+                    assertionResults
+                            .stream()
+                            .filter(p -> !p.passed())
+                            .map(p -> p.reason)
+                            .collect(Collectors.joining(" and "));
+
+            Optional<Long> timestamp = assertionResults.stream().map(p -> p.timestamp).findFirst();
+
+            return timestamp
+                    .map(p -> new Result(passed, p, this.getName(), reason))
+                    .orElseGet(() -> new Result(passed, reason));
+        }
+
+        @Override
+        public String toString() {
+            return "CompoundAssertion(" + this.getName() + ")";
         }
     }
 

@@ -35,6 +35,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 
 import java.io.File;
+import java.nio.file.Path;
 
 /**
  * Contains {@link LayersTraceMonitor} tests. To run this test: {@code atest
@@ -74,8 +75,11 @@ public class LayersTraceMonitorTest {
     public void captureLayersTrace() throws Exception {
         mLayersTraceMonitor.start();
         mLayersTraceMonitor.stop();
-        File testFile = mLayersTraceMonitor.save("captureLayersTrace").toFile();
+        Path testFilePath = mLayersTraceMonitor.save("captureWindowTrace");
+        File testFile = testFilePath.toFile();
         assertThat(testFile.exists()).isTrue();
+        String calculatedChecksum = TransitionMonitor.calculateChecksum(testFilePath);
+        assertThat(calculatedChecksum).isEqualTo(mLayersTraceMonitor.getChecksum());
         byte[] trace = Files.toByteArray(testFile);
         assertThat(trace.length).isGreaterThan(0);
         LayersTraceFileProto mLayerTraceFileProto = LayersTraceFileProto.parseFrom(trace);

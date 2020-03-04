@@ -24,6 +24,7 @@ import java.nio.file.Path;
 
 /** Captures WindowManager trace from WindowManager. */
 public class WindowManagerTraceMonitor extends TraceMonitor {
+    private static final String TRACE_FILE = "wm_trace.pb";
     private IWindowManager mWm = WindowManagerGlobal.getWindowManagerService();
 
     public WindowManagerTraceMonitor() {
@@ -31,7 +32,7 @@ public class WindowManagerTraceMonitor extends TraceMonitor {
     }
 
     public WindowManagerTraceMonitor(Path outputDir) {
-        super(outputDir, "wm_trace.pb");
+        super(outputDir, TRACE_FILE);
     }
 
     @Override

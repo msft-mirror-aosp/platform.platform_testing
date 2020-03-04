@@ -16,7 +16,7 @@
 
 package com.android.server.wm.flicker;
 
-import static com.android.server.wm.flicker.monitor.ITransitionMonitor.OUTPUT_DIR;
+import static com.android.server.wm.flicker.monitor.TransitionMonitor.OUTPUT_DIR;
 
 import android.util.Log;
 
@@ -25,15 +25,13 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import androidx.test.InstrumentationRegistry;
 
-import com.android.server.wm.flicker.monitor.ITransitionMonitor;
+import com.android.server.wm.flicker.monitor.TransitionMonitor;
 import com.android.server.wm.flicker.monitor.LayersTraceMonitor;
 import com.android.server.wm.flicker.monitor.ScreenRecorder;
 import com.android.server.wm.flicker.monitor.WindowAnimationFrameStatsMonitor;
 import com.android.server.wm.flicker.monitor.WindowManagerTraceMonitor;
 
-import com.google.common.io.Files;
-
-import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -101,8 +99,8 @@ public class TransitionRunner {
     private final LayersTraceMonitor mLayersTraceMonitor;
     private final WindowAnimationFrameStatsMonitor mFrameStatsMonitor;
 
-    private final List<ITransitionMonitor> mAllRunsMonitors;
-    private final List<ITransitionMonitor> mPerRunMonitors;
+    private final List<TransitionMonitor> mAllRunsMonitors;
+    private final List<TransitionMonitor> mPerRunMonitors;
     private final List<Runnable> mBeforeAlls;
     private final List<Runnable> mBefores;
     private final List<Runnable> mTransitions;
@@ -148,13 +146,13 @@ public class TransitionRunner {
      */
     public TransitionRunner run() {
         mResults = new ArrayList<>();
-        mAllRunsMonitors.forEach(ITransitionMonitor::start);
+        mAllRunsMonitors.forEach(TransitionMonitor::start);
         mBeforeAlls.forEach(Runnable::run);
         for (int iteration = 0; iteration < mIterations; iteration++) {
             mBefores.forEach(Runnable::run);
-            mPerRunMonitors.forEach(ITransitionMonitor::start);
+            mPerRunMonitors.forEach(TransitionMonitor::start);
             mTransitions.forEach(Runnable::run);
-            mPerRunMonitors.forEach(ITransitionMonitor::stop);
+            mPerRunMonitors.forEach(TransitionMonitor::stop);
             mAfters.forEach(Runnable::run);
             if (runJankFree() && mFrameStatsMonitor.jankyFramesDetected()) {
                 String msg =
@@ -211,19 +209,31 @@ public class TransitionRunner {
      */
     private TransitionResult saveResult(int iteration) {
         Path windowTrace = null;
+        String windowTraceChecksum = "";
         Path layerTrace = null;
+        String layerTraceChecksum = "";
         Path screenCaptureVideo = null;
+        String screenCaptureVideoChecksum = "";
 
         if (mPerRunMonitors.contains(mWmTraceMonitor)) {
             windowTrace = mWmTraceMonitor.save(mTestTag, iteration);
+            windowTraceChecksum = mWmTraceMonitor.getChecksum();
         }
         if (mPerRunMonitors.contains(mLayersTraceMonitor)) {
             layerTrace = mLayersTraceMonitor.save(mTestTag, iteration);
+            layerTraceChecksum = mLayersTraceMonitor.getChecksum();
         }
         if (mPerRunMonitors.contains(mScreenRecorder)) {
             screenCaptureVideo = mScreenRecorder.save(mTestTag, iteration);
+            screenCaptureVideoChecksum = mScreenRecorder.getChecksum();
         }
-        return new TransitionResult(layerTrace, windowTrace, screenCaptureVideo);
+        return new TransitionResult(
+                layerTrace,
+                layerTraceChecksum,
+                windowTrace,
+                windowTraceChecksum,
+                screenCaptureVideo,
+                screenCaptureVideoChecksum);
     }
 
     private boolean runJankFree() {
@@ -237,18 +247,27 @@ public class TransitionRunner {
     /** Stores paths to all test artifacts. */
     @VisibleForTesting
     public static class TransitionResult {
-        @Nullable public final Path layersTrace;
-        @Nullable public final Path windowManagerTrace;
-        @Nullable public final Path screenCaptureVideo;
+        @Nullable private final Path layersTrace;
+        private final String layersTraceChecksum;
+        @Nullable private final Path windowManagerTrace;
+        private final String windowManagerTraceChecksum;
+        @Nullable private final Path screenCaptureVideo;
+        private final String screenCaptureVideoChecksum;
         private boolean flaggedForSaving = true;
 
         public TransitionResult(
                 @Nullable Path layersTrace,
+                String layersTraceChecksum,
                 @Nullable Path windowManagerTrace,
-                @Nullable Path screenCaptureVideo) {
+                String windowManagerTraceChecksum,
+                @Nullable Path screenCaptureVideo,
+                String screenCaptureVideoChecksum) {
             this.layersTrace = layersTrace;
+            this.layersTraceChecksum = layersTraceChecksum;
             this.windowManagerTrace = windowManagerTrace;
+            this.windowManagerTraceChecksum = windowManagerTraceChecksum;
             this.screenCaptureVideo = screenCaptureVideo;
+            this.screenCaptureVideoChecksum = screenCaptureVideoChecksum;
         }
 
         public void flagForSaving() {
@@ -265,8 +284,8 @@ public class TransitionRunner {
 
         public byte[] getLayersTrace() {
             try {
-                return Files.toByteArray(this.layersTrace.toFile());
-            } catch (IOException e) {
+                return Files.readAllBytes(this.layersTrace);
+            } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         }
@@ -275,14 +294,18 @@ public class TransitionRunner {
             return layersTrace;
         }
 
+        public String getLayersTraceChecksum() {
+            return layersTraceChecksum;
+        }
+
         public boolean windowManagerTraceExists() {
             return windowManagerTrace != null && windowManagerTrace.toFile().exists();
         }
 
         public byte[] getWindowManagerTrace() {
             try {
-                return Files.toByteArray(this.windowManagerTrace.toFile());
-            } catch (IOException e) {
+                return Files.readAllBytes(this.windowManagerTrace);
+            } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         }
@@ -291,12 +314,20 @@ public class TransitionRunner {
             return windowManagerTrace;
         }
 
+        public String getWindowManagerTraceChecksum() {
+            return windowManagerTraceChecksum;
+        }
+
         public boolean screenCaptureVideoExists() {
             return screenCaptureVideo != null && screenCaptureVideo.toFile().exists();
         }
 
         public Path screenCaptureVideoPath() {
             return screenCaptureVideo;
+        }
+
+        public String getScreenCaptureVideoChecksum() {
+            return screenCaptureVideoChecksum;
         }
 
         public void delete() {
@@ -313,8 +344,8 @@ public class TransitionRunner {
         private LayersTraceMonitor mLayersTraceMonitor;
         private WindowAnimationFrameStatsMonitor mFrameStatsMonitor;
 
-        private List<ITransitionMonitor> mAllRunsMonitors = new LinkedList<>();
-        private List<ITransitionMonitor> mPerRunMonitors = new LinkedList<>();
+        private List<TransitionMonitor> mAllRunsMonitors = new LinkedList<>();
+        private List<TransitionMonitor> mPerRunMonitors = new LinkedList<>();
         private List<Runnable> mBeforeAlls = new LinkedList<>();
         private List<Runnable> mBefores = new LinkedList<>();
         private List<Runnable> mTransitions = new LinkedList<>();

@@ -44,10 +44,12 @@ import java.util.stream.Collectors;
 public class LayersTrace {
     private final List<Entry> mEntries;
     @Nullable private final Path mSource;
+    @Nullable private final String mSourceChecksum;
 
-    private LayersTrace(List<Entry> entries, Path source) {
+    private LayersTrace(List<Entry> entries, Path source, String sourceChecksum) {
         this.mEntries = entries;
         this.mSource = source;
+        this.mSourceChecksum = sourceChecksum;
     }
 
     /**
@@ -58,8 +60,21 @@ public class LayersTrace {
      * @param source Path to source of data for additional debug information
      * @param orphanLayerCallback a callback to handle any unexpected orphan layers
      */
-    public static LayersTrace parseFrom(byte[] data, Path source,
-            Consumer<Layer> orphanLayerCallback) {
+    public static LayersTrace parseFrom(
+            byte[] data, Path source, Consumer<Layer> orphanLayerCallback) {
+        return parseFrom(data, source, null /* sourceChecksum */, orphanLayerCallback);
+    }
+
+    /**
+     * Parses {@code LayersTraceFileProto} from {@code data} and uses the proto to generates a list
+     * of trace entries, storing the flattened layers into its hierarchical structure.
+     *
+     * @param data binary proto data
+     * @param source Path to source of data for additional debug information
+     * @param orphanLayerCallback a callback to handle any unexpected orphan layers
+     */
+    public static LayersTrace parseFrom(
+            byte[] data, Path source, String sourceChecksum, Consumer<Layer> orphanLayerCallback) {
         List<Entry> entries = new ArrayList<>();
         LayersTraceFileProto fileProto;
         try {
@@ -74,7 +89,18 @@ public class LayersTrace {
                             orphanLayerCallback);
             entries.add(entry);
         }
-        return new LayersTrace(entries, source);
+        return new LayersTrace(entries, source, sourceChecksum);
+    }
+
+    /**
+     * Parses {@code LayersTraceFileProto} from {@code data} and uses the proto to generates a list
+     * of trace entries, storing the flattened layers into its hierarchical structure.
+     *
+     * @param data binary proto data
+     * @param source Path to source of data for additional debug information
+     */
+    public static LayersTrace parseFrom(byte[] data, Path source, String sourceChecksum) {
+        return parseFrom(data, source, sourceChecksum, null /* orphanLayerCallback */);
     }
 
     /**
@@ -85,7 +111,7 @@ public class LayersTrace {
      * @param source Path to source of data for additional debug information
      */
     public static LayersTrace parseFrom(byte[] data, Path source) {
-        return parseFrom(data, source, null /* orphanLayerCallback */);
+        return parseFrom(data, source, null /* sourceChecksum */, null /* orphanLayerCallback */);
     }
 
     /**
@@ -95,7 +121,7 @@ public class LayersTrace {
      * @param data binary proto data
      */
     public static LayersTrace parseFrom(byte[] data) {
-        return parseFrom(data, null);
+        return parseFrom(data, null /* source */);
     }
 
     public List<Entry> getEntries() {
@@ -113,6 +139,10 @@ public class LayersTrace {
 
     public Optional<Path> getSource() {
         return Optional.ofNullable(mSource);
+    }
+
+    public String getSourceChecksum() {
+        return mSourceChecksum;
     }
 
     /** Represents a single Layer trace entry. */
@@ -305,6 +335,22 @@ public class LayersTrace {
                                     + " "
                                     + "expected:"
                                     + expectedVisibleRegion;
+                }
+            }
+            return new Result(false /* success */, this.mTimestamp, assertionName, reason);
+        }
+
+        /** Checks if a layer with name {@code layerName} exists in the hierarchy. */
+        public Result exists(String layerName) {
+            String assertionName = "exists";
+            String reason = "Could not find " + layerName;
+            for (Layer layer : asFlattenedLayers()) {
+                if (layer.mProto.name.contains(layerName)) {
+                    return new Result(
+                            true /* success */,
+                            this.mTimestamp,
+                            assertionName,
+                            layer.mProto.name + " exists");
                 }
             }
             return new Result(false /* success */, this.mTimestamp, assertionName, reason);
