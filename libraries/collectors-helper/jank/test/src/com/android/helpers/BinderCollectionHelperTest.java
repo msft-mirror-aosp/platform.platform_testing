@@ -100,7 +100,7 @@ public class BinderCollectionHelperTest {
         mHelper.addTrackedProcesses(process);
         Map<String, Integer> result = new HashMap<>();
         mHelper.parseMetrics(getBufferedReader(), result);
-        assertTrue(result.get(process) == 0);
+        assertTrue(result.get("binder_count_" + process) == 0);
     }
 
     @Test
@@ -109,7 +109,7 @@ public class BinderCollectionHelperTest {
         mHelper.addTrackedProcesses(process);
         Map<String, Integer> result = new HashMap<>();
         mHelper.parseMetrics(getBufferedReader(), result);
-        assertTrue(result.get(process) == 20);
+        assertTrue(result.get("binder_count_" + process) == 20);
     }
 
     private BufferedReader getBufferedReader() throws Exception {

@@ -163,6 +163,22 @@ public class AssertionsCheckerTest {
         assertThat(failures).hasSize(1);
     }
 
+    @Test
+    public void canFailCheckChangingAssertions_ifUsingCompoundAssertion() {
+        AssertionsChecker<SimpleEntry> checker = new AssertionsChecker<>();
+        checker.add(SimpleEntry::isData42, "isData42");
+        checker.append(SimpleEntry::isData0, "isData0");
+        checker.checkChangingAssertions();
+
+        List<Result> failures = checker.test(getTestEntries(0, 0, 0, 0, 0));
+
+        assertThat(failures).hasSize(1);
+        assertThat(failures.get(0).assertionName).contains("isData42");
+        assertThat(failures.get(0).assertionName).contains("isData0");
+        assertThat(failures.get(0).reason).contains("!is42");
+        assertThat(failures.get(0).reason).doesNotContain("!is0");
+    }
+
     static class SimpleEntry implements ITraceEntry {
         long mTimestamp;
         int mData;
@@ -178,11 +194,11 @@ public class AssertionsCheckerTest {
         }
 
         Result isData42() {
-            return new Result(this.mData == 42, this.mTimestamp, "is42", "");
+            return new Result(this.mData == 42, this.mTimestamp, "is42", "!is42");
         }
 
         Result isData0() {
-            return new Result(this.mData == 0, this.mTimestamp, "is42", "");
+            return new Result(this.mData == 0, this.mTimestamp, "is42", "!is0");
         }
     }
 }

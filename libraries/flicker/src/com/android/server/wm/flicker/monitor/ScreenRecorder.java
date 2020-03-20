@@ -18,51 +18,46 @@ package com.android.server.wm.flicker.monitor;
 
 import static com.android.compatibility.common.util.SystemUtil.runShellCommand;
 
-import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
-
 import android.util.Log;
 
 import androidx.annotation.VisibleForTesting;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Locale;
 
 /** Captures screen contents and saves it as a mp4 video file. */
-public class ScreenRecorder implements ITransitionMonitor {
-    @VisibleForTesting
-    public static final Path DEFAULT_OUTPUT_PATH = OUTPUT_DIR.resolve("transition.mp4");
-
-    private static final String TAG = "FLICKER";
+public class ScreenRecorder extends TraceMonitor {
+    private static final String TRACE_FILE = "transition.mp4";
     private int mWidth;
     private int mHeight;
     private Thread mRecorderThread;
 
     public ScreenRecorder() {
-        this(720, 1280);
+        this(720, 1280, OUTPUT_DIR, TRACE_FILE);
     }
 
-    public ScreenRecorder(int width, int height) {
+    public ScreenRecorder(int width, int height, Path outputPath, String traceFile) {
+        super(outputPath, outputPath.resolve(traceFile));
         mWidth = width;
         mHeight = height;
     }
 
     @VisibleForTesting
-    public static Path getPath(String testTag) {
-        return OUTPUT_DIR.resolve(testTag + ".mp4");
+    public Path getPath() {
+        return mOutputPath;
     }
 
     @Override
     public void start() {
-        OUTPUT_DIR.toFile().mkdirs();
+        mOutputPath.toFile().mkdirs();
         String command =
                 String.format(
                         Locale.getDefault(),
                         "screenrecord --size %dx%d %s",
                         mWidth,
                         mHeight,
-                        DEFAULT_OUTPUT_PATH);
+                        mTraceFile);
         mRecorderThread =
                 new Thread(
                         () -> {
@@ -86,18 +81,7 @@ public class ScreenRecorder implements ITransitionMonitor {
     }
 
     @Override
-    public Path save(String testTag) {
-        if (!Files.exists(DEFAULT_OUTPUT_PATH)) {
-            Log.w(TAG, "No video file found on " + DEFAULT_OUTPUT_PATH);
-            return null;
-        }
-
-        try {
-            Path targetPath = Files.move(DEFAULT_OUTPUT_PATH, getPath(testTag), REPLACE_EXISTING);
-            Log.i(TAG, "Video saved to " + targetPath.toString());
-            return targetPath;
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+    public boolean isEnabled() {
+        return mRecorderThread != null && mRecorderThread.isAlive();
     }
 }

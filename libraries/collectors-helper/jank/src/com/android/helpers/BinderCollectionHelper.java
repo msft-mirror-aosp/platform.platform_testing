@@ -169,7 +169,7 @@ public class BinderCollectionHelper implements ICollectorHelper<Integer> {
                     while ((nextCount = getNextCounter(reader)) > 0) {
                         totalCount += nextCount;
                     }
-                    result.put(currentProcess, totalCount);
+                    result.put("binder_count_" + currentProcess, totalCount);
                 }
             }
         }

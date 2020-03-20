@@ -31,7 +31,7 @@ import android.os.Bundle;
 import android.platform.test.longevity.proto.Configuration.Scenario;
 import android.platform.test.longevity.proto.Configuration.Scenario.AfterTest;
 import android.platform.test.longevity.proto.Configuration.Scenario.ExtraArg;
-import android.platform.test.longevity.samples.testing.SampleProfileSuite;
+import android.platform.test.longevity.samples.testing.SampleTimedProfileSuite;
 import androidx.test.InstrumentationRegistry;
 
 import org.junit.Assert;
@@ -114,13 +114,13 @@ public class ScheduledScenarioRunnerTest {
         Scenario testScenario =
                 Scenario.newBuilder()
                         .setAt("00:00:00")
-                        .setJourney(SampleProfileSuite.LongIdleTest.class.getName())
+                        .setJourney(SampleTimedProfileSuite.LongIdleTest.class.getName())
                         .setAfterTest(AfterTest.STAY_IN_APP)
                         .build();
         ScheduledScenarioRunner runner =
                 spy(
                         new ScheduledScenarioRunner(
-                                SampleProfileSuite.LongIdleTest.class,
+                                SampleTimedProfileSuite.LongIdleTest.class,
                                 testScenario,
                                 timeoutMs,
                                 true));
@@ -141,8 +141,7 @@ public class ScheduledScenarioRunnerTest {
                                             exception
                                                     .getTimeUnit()
                                                     .toMillis(exception.getTimeout());
-                                    long expectedTimeout =
-                                            timeoutMs - ScheduledScenarioRunner.TEARDOWN_LEEWAY_MS;
+                                    long expectedTimeout = timeoutMs - runner.getTeardownLeeway();
                                     return abs(exceptionTimeout - expectedTimeout)
                                             <= TIMING_LEEWAY_MS;
                                 });
@@ -157,13 +156,13 @@ public class ScheduledScenarioRunnerTest {
         Scenario testScenario =
                 Scenario.newBuilder()
                         .setAt("00:00:00")
-                        .setJourney(SampleProfileSuite.LongIdleTest.class.getName())
+                        .setJourney(SampleTimedProfileSuite.LongIdleTest.class.getName())
                         .setAfterTest(AfterTest.STAY_IN_APP)
                         .build();
         ScheduledScenarioRunner runner =
                 spy(
                         new ScheduledScenarioRunner(
-                                SampleProfileSuite.LongIdleTest.class,
+                                SampleTimedProfileSuite.LongIdleTest.class,
                                 testScenario,
                                 TimeUnit.SECONDS.toMillis(6),
                                 true));
@@ -181,13 +180,13 @@ public class ScheduledScenarioRunnerTest {
         Scenario testScenario =
                 Scenario.newBuilder()
                         .setAt("00:00:00")
-                        .setJourney(SampleProfileSuite.LongIdleTest.class.getName())
+                        .setJourney(SampleTimedProfileSuite.LongIdleTest.class.getName())
                         .setAfterTest(AfterTest.STAY_IN_APP)
                         .build();
         ScheduledScenarioRunner runner =
                 spy(
                         new ScheduledScenarioRunner(
-                                SampleProfileSuite.LongIdleTest.class,
+                                SampleTimedProfileSuite.LongIdleTest.class,
                                 testScenario,
                                 TimeUnit.SECONDS.toMillis(6),
                                 true));
@@ -196,8 +195,7 @@ public class ScheduledScenarioRunnerTest {
         // the leeway set in @{link ScheduledScenarioRunner}.
         verify(runner, times(1))
                 .performIdleBeforeNextScenario(
-                        getWithinMarginMatcher(
-                                ScheduledScenarioRunner.TEARDOWN_LEEWAY_MS, TIMING_LEEWAY_MS));
+                        getWithinMarginMatcher(runner.getTeardownLeeway(), TIMING_LEEWAY_MS));
     }
 
     /** Test that a test set to stay in the app after the test idles after its @Test method. */
@@ -209,13 +207,13 @@ public class ScheduledScenarioRunnerTest {
         Scenario testScenario =
                 Scenario.newBuilder()
                         .setAt("00:00:00")
-                        .setJourney(SampleProfileSuite.PassingTest.class.getName())
+                        .setJourney(SampleTimedProfileSuite.PassingTest.class.getName())
                         .setAfterTest(AfterTest.STAY_IN_APP)
                         .build();
         ScheduledScenarioRunner runner =
                 spy(
                         new ScheduledScenarioRunner(
-                                SampleProfileSuite.PassingTest.class,
+                                SampleTimedProfileSuite.PassingTest.class,
                                 testScenario,
                                 timeoutMs,
                                 true));
@@ -226,8 +224,7 @@ public class ScheduledScenarioRunnerTest {
         verify(runner, times(1))
                 .performIdleBeforeTeardown(
                         getWithinMarginMatcher(
-                                timeoutMs - 2 * ScheduledScenarioRunner.TEARDOWN_LEEWAY_MS,
-                                TIMING_LEEWAY_MS));
+                                timeoutMs - 2 * runner.getTeardownLeeway(), TIMING_LEEWAY_MS));
         // Test should have passed.
         verify(mRunNotifier, never()).fireTestFailure(any(Failure.class));
     }
@@ -241,13 +238,13 @@ public class ScheduledScenarioRunnerTest {
         Scenario testScenario =
                 Scenario.newBuilder()
                         .setAt("00:00:00")
-                        .setJourney(SampleProfileSuite.PassingTest.class.getName())
+                        .setJourney(SampleTimedProfileSuite.PassingTest.class.getName())
                         .setAfterTest(AfterTest.EXIT)
                         .build();
         ScheduledScenarioRunner runner =
                 spy(
                         new ScheduledScenarioRunner(
-                                SampleProfileSuite.PassingTest.class,
+                                SampleTimedProfileSuite.PassingTest.class,
                                 testScenario,
                                 timeoutMs,
                                 true));
@@ -268,17 +265,17 @@ public class ScheduledScenarioRunnerTest {
         Scenario testScenario =
                 Scenario.newBuilder()
                         .setAt("00:00:00")
-                        .setJourney(SampleProfileSuite.PassingTest.class.getName())
+                        .setJourney(SampleTimedProfileSuite.PassingTest.class.getName())
                         .setAfterTest(AfterTest.EXIT)
                         .build();
         Bundle ignores = new Bundle();
         ignores.putString(
                 LongevityClassRunner.FILTER_OPTION,
-                SampleProfileSuite.PassingTest.class.getCanonicalName());
+                SampleTimedProfileSuite.PassingTest.class.getCanonicalName());
         ScheduledScenarioRunner runner =
                 spy(
                         new ScheduledScenarioRunner(
-                                SampleProfileSuite.PassingTest.class,
+                                SampleTimedProfileSuite.PassingTest.class,
                                 testScenario,
                                 timeoutMs,
                                 true,
@@ -304,13 +301,13 @@ public class ScheduledScenarioRunnerTest {
         Scenario testScenario =
                 Scenario.newBuilder()
                         .setAt("00:00:00")
-                        .setJourney(SampleProfileSuite.PassingTest.class.getName())
+                        .setJourney(SampleTimedProfileSuite.PassingTest.class.getName())
                         .setAfterTest(AfterTest.STAY_IN_APP)
                         .build();
         ScheduledScenarioRunner runner =
                 spy(
                         new ScheduledScenarioRunner(
-                                SampleProfileSuite.PassingTest.class,
+                                SampleTimedProfileSuite.PassingTest.class,
                                 testScenario,
                                 TimeUnit.SECONDS.toMillis(6),
                                 false));
@@ -369,7 +366,7 @@ public class ScheduledScenarioRunnerTest {
 
     /** Test that suspension-aware sleep will sleep for the expected duration. */
     @Test
-    public void testSuspensionAwareSleep_sleepsForExpectedDurtaion() {
+    public void testSuspensionAwareSleep_sleepsForExpectedDuration() {
         long expectedSleepMillis = TimeUnit.SECONDS.toMillis(5);
         long timestampBeforeSleep = System.currentTimeMillis();
         ScheduledScenarioRunner.suspensionAwareSleep(expectedSleepMillis);
@@ -389,6 +386,23 @@ public class ScheduledScenarioRunnerTest {
         Assert.assertTrue(abs(actualSleepDuration - expectedSleepMillis) <= TIMING_LEEWAY_MS);
     }
 
+    /** Test that the teardown leeway override works. */
+    @Test
+    public void testTeardownLeewayOverride() throws Throwable {
+        Bundle args = new Bundle();
+        long leewayOverride = 1000L;
+        args.putString(
+                ScheduledScenarioRunner.TEARDOWN_LEEWAY_OPTION, String.valueOf(leewayOverride));
+        ScheduledScenarioRunner runner =
+                new ScheduledScenarioRunner(
+                        ArgumentTest.class,
+                        Scenario.newBuilder().build(),
+                        TimeUnit.SECONDS.toMillis(6),
+                        false,
+                        args);
+        Assert.assertEquals(leewayOverride, runner.getTeardownLeeway());
+    }
+
     /**
      * Helper method to get an argument matcher that checks whether the input value is equal to
      * expected value within a margin.
@@ -399,7 +413,7 @@ public class ScheduledScenarioRunnerTest {
 
     /**
      * Verify that no test failure is fired because of an assertion failure in the stubbed methods.
-     * If the verfication fails, check whether it's due the injected assertions failing. If yes,
+     * If the verification fails, check whether it's due the injected assertions failing. If yes,
      * throw that exception out; otherwise, throw the first exception.
      */
     private void verifyForAssertionFailures(final RunNotifier notifier) throws Throwable {
@@ -423,7 +437,7 @@ public class ScheduledScenarioRunnerTest {
 
     /**
      * Helper method to check whether two {@link Bundle}s are equal since the built-in {@code
-     * equals} is not properly overriden.
+     * equals} is not properly overridden.
      */
     private boolean bundlesContainSameStringKeyValuePairs(Bundle b1, Bundle b2) {
         if (b1.size() != b2.size()) {

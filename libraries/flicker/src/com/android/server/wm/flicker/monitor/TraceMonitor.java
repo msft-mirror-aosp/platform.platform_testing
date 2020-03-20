@@ -23,65 +23,50 @@ import android.os.RemoteException;
 import androidx.annotation.VisibleForTesting;
 
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Locale;
 
 /**
  * Base class for monitors containing common logic to read the trace as a byte array and save the
  * trace to another location.
  */
-public abstract class TraceMonitor implements ITransitionMonitor {
-    public static final String TAG = "FLICKER";
-    private static final String TRACE_DIR = "/data/misc/wmtrace/";
+public abstract class TraceMonitor extends TransitionMonitor {
+    private static final Path TRACE_DIR = Paths.get("/data/misc/wmtrace/");
 
-    private Path mOutputDir;
-    public String mTraceFileName;
+    protected Path mTraceFile;
 
     public abstract boolean isEnabled() throws RemoteException;
 
-    public TraceMonitor(Path outputDir, String traceFileName) {
-        mOutputDir = outputDir;
-        mTraceFileName = traceFileName;
+    TraceMonitor(Path outputDir, Path traceFile) {
+        mTraceFile = traceFile;
+        mOutputPath = outputDir;
     }
 
-    /**
-     * Saves trace file to the external storage directory suffixing the name with the testtag and
-     * iteration.
-     *
-     * <p>Moves the trace file from the default location via a shell command since the test app does
-     * not have security privileges to access /data/misc/wmtrace.
-     *
-     * @param testTag suffix added to trace name used to identify trace
-     * @return Path to saved trace file
-     */
-    @Override
-    public Path save(String testTag) {
-        mOutputDir.toFile().mkdirs();
-        Path traceFileCopy = getOutputTraceFilePath(testTag);
+    TraceMonitor(Path outputDir, String traceFileName) {
+        this(outputDir, TRACE_DIR.resolve(traceFileName));
+    }
 
-        // Move the trace file to the output directory
+    protected Path saveTrace(String testTag) {
+        Path traceFileCopy = getOutputTraceFilePath(testTag);
+        moveFile(mTraceFile, traceFileCopy);
+
+        return traceFileCopy;
+    }
+
+    protected void moveFile(Path src, Path dst) {
+        // Move the  file to the output directory
         // Note: Due to b/141386109, certain devices do not allow moving the files between
         //       directories with different encryption policies, so manually copy and then
         //       remove the original file
         String copyCommand =
-                String.format(
-                        Locale.getDefault(),
-                        "cp %s%s %s",
-                        TRACE_DIR,
-                        mTraceFileName,
-                        traceFileCopy.toString());
+                String.format(Locale.getDefault(), "cp %s %s", src.toString(), dst.toString());
         runShellCommand(copyCommand);
-        String removeCommand =
-                String.format(
-                        Locale.getDefault(),
-                        "rm %s%s",
-                        TRACE_DIR,
-                        mTraceFileName);
+        String removeCommand = String.format(Locale.getDefault(), "rm %s", src.toString());
         runShellCommand(removeCommand);
-        return traceFileCopy;
     }
 
     @VisibleForTesting
     public Path getOutputTraceFilePath(String testTag) {
-        return mOutputDir.resolve(mTraceFileName + "_" + testTag);
+        return mOutputPath.resolve(testTag + "_" + mTraceFile.getFileName());
     }
 }

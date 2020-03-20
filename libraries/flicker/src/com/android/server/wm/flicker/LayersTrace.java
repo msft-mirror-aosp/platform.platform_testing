@@ -44,10 +44,12 @@ import java.util.stream.Collectors;
 public class LayersTrace {
     private final List<Entry> mEntries;
     @Nullable private final Path mSource;
+    @Nullable private final String mSourceChecksum;
 
-    private LayersTrace(List<Entry> entries, Path source) {
+    private LayersTrace(List<Entry> entries, Path source, String sourceChecksum) {
         this.mEntries = entries;
         this.mSource = source;
+        this.mSourceChecksum = sourceChecksum;
     }
 
     /**
@@ -58,8 +60,21 @@ public class LayersTrace {
      * @param source Path to source of data for additional debug information
      * @param orphanLayerCallback a callback to handle any unexpected orphan layers
      */
-    public static LayersTrace parseFrom(byte[] data, Path source,
-            Consumer<Layer> orphanLayerCallback) {
+    public static LayersTrace parseFrom(
+            byte[] data, Path source, Consumer<Layer> orphanLayerCallback) {
+        return parseFrom(data, source, null /* sourceChecksum */, orphanLayerCallback);
+    }
+
+    /**
+     * Parses {@code LayersTraceFileProto} from {@code data} and uses the proto to generates a list
+     * of trace entries, storing the flattened layers into its hierarchical structure.
+     *
+     * @param data binary proto data
+     * @param source Path to source of data for additional debug information
+     * @param orphanLayerCallback a callback to handle any unexpected orphan layers
+     */
+    public static LayersTrace parseFrom(
+            byte[] data, Path source, String sourceChecksum, Consumer<Layer> orphanLayerCallback) {
         List<Entry> entries = new ArrayList<>();
         LayersTraceFileProto fileProto;
         try {
@@ -74,7 +89,18 @@ public class LayersTrace {
                             orphanLayerCallback);
             entries.add(entry);
         }
-        return new LayersTrace(entries, source);
+        return new LayersTrace(entries, source, sourceChecksum);
+    }
+
+    /**
+     * Parses {@code LayersTraceFileProto} from {@code data} and uses the proto to generates a list
+     * of trace entries, storing the flattened layers into its hierarchical structure.
+     *
+     * @param data binary proto data
+     * @param source Path to source of data for additional debug information
+     */
+    public static LayersTrace parseFrom(byte[] data, Path source, String sourceChecksum) {
+        return parseFrom(data, source, sourceChecksum, null /* orphanLayerCallback */);
     }
 
     /**
@@ -85,7 +111,7 @@ public class LayersTrace {
      * @param source Path to source of data for additional debug information
      */
     public static LayersTrace parseFrom(byte[] data, Path source) {
-        return parseFrom(data, source, null /* orphanLayerCallback */);
+        return parseFrom(data, source, null /* sourceChecksum */, null /* orphanLayerCallback */);
     }
 
     /**
@@ -95,7 +121,7 @@ public class LayersTrace {
      * @param data binary proto data
      */
     public static LayersTrace parseFrom(byte[] data) {
-        return parseFrom(data, null);
+        return parseFrom(data, null /* source */);
     }
 
     public List<Entry> getEntries() {
@@ -115,6 +141,10 @@ public class LayersTrace {
         return Optional.ofNullable(mSource);
     }
 
+    public String getSourceChecksum() {
+        return mSourceChecksum;
+    }
+
     /** Represents a single Layer trace entry. */
     public static class Entry implements ITraceEntry {
         private long mTimestamp;
@@ -124,6 +154,33 @@ public class LayersTrace {
         private Entry(long timestamp, List<Layer> rootLayers) {
             this.mTimestamp = timestamp;
             this.mRootLayers = rootLayers;
+        }
+
+        /**
+         * Determines the id of the root element.
+         *
+         * <p>On some files, such as the ones used in the FlickerLib testdata, the root nodes are
+         * those that have parent=0, on newer traces, the root nodes are those that have parent=-1
+         *
+         * <p>This function keeps compatibility with both new and older traces by searching for a
+         * known root layer (Display Root) and considering its parent Id as overall root.
+         */
+        private static Layer getRootLayer(SparseArray<Layer> layerMap) {
+            Layer knownRoot = null;
+            int numKeys = layerMap.size();
+            for (int i = 0; i < numKeys; ++i) {
+                Layer currentLayer = layerMap.valueAt(i);
+                if (currentLayer.isRootLayer()) {
+                    knownRoot = currentLayer;
+                    break;
+                }
+            }
+
+            if (knownRoot == null) {
+                throw new IllegalStateException("Display root layer not found.");
+            }
+
+            return layerMap.get(knownRoot.getParentId());
         }
 
         /** Constructs the layer hierarchy from a flattened list of layers. */
@@ -156,13 +213,14 @@ public class LayersTrace {
                 newLayer.addParent(layerMap.get(parentId));
             }
 
-            // Remove root node (id = 0)
-            orphans.remove(layerMap.get(-1));
+            // Remove root node
+            Layer rootLayer = getRootLayer(layerMap);
+            orphans.remove(rootLayer);
             // Fail if we find orphan layers.
             orphans.forEach(
                     orphan -> {
                         if (orphanLayerCallback != null) {
-                            // Workaround for b/141326137, ignore the existance of an orphan layer
+                            // Workaround for b/141326137, ignore the existence of an orphan layer
                             orphanLayerCallback.accept(orphan);
                             return;
                         }
@@ -171,7 +229,7 @@ public class LayersTrace {
                                         .stream()
                                         .map(node -> Integer.toString(node.getId()))
                                         .collect(Collectors.joining(", "));
-                        int orphanId = orphan.mChildren.get(0).mProto.parent;
+                        int orphanId = orphan.mChildren.get(0).getParentId();
                         throw new RuntimeException(
                                 "Failed to parse layers trace. Found orphan layers with parent "
                                         + "layer id:"
@@ -180,7 +238,7 @@ public class LayersTrace {
                                         + childNodes);
                     });
 
-            return new Entry(timestamp, layerMap.get(-1).mChildren);
+            return new Entry(timestamp, rootLayer.mChildren);
         }
 
         /** Extracts {@link Rect} from {@link RectProto}. */
@@ -282,6 +340,22 @@ public class LayersTrace {
             return new Result(false /* success */, this.mTimestamp, assertionName, reason);
         }
 
+        /** Checks if a layer with name {@code layerName} exists in the hierarchy. */
+        public Result exists(String layerName) {
+            String assertionName = "exists";
+            String reason = "Could not find " + layerName;
+            for (Layer layer : asFlattenedLayers()) {
+                if (layer.mProto.name.contains(layerName)) {
+                    return new Result(
+                            true /* success */,
+                            this.mTimestamp,
+                            assertionName,
+                            layer.mProto.name + " exists");
+                }
+            }
+            return new Result(false /* success */, this.mTimestamp, assertionName, reason);
+        }
+
         /** Checks if a layer with name {@code layerName} is visible. */
         public Result isVisible(String layerName) {
             String assertionName = "isVisible";
@@ -363,6 +437,18 @@ public class LayersTrace {
             return mProto.id;
         }
 
+        public int getParentId() {
+            return mProto.parent;
+        }
+
+        public String getName() {
+            if (mProto != null) {
+                return mProto.name;
+            }
+
+            return "";
+        }
+
         public boolean isActiveBufferEmpty() {
             return this.mProto.activeBuffer == null
                     || this.mProto.activeBuffer.height == 0
@@ -394,7 +480,7 @@ public class LayersTrace {
         }
 
         public boolean isRootLayer() {
-            return mParent == null || mParent.mProto == null;
+            return mParent != null && mParent.mProto == null;
         }
 
         public boolean isInvisible() {

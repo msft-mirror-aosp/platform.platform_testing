@@ -39,6 +39,16 @@ public class WmTraceSubject extends Subject<WmTraceSubject, WindowManagerTrace> 
             WmTraceSubject::new;
 
     private AssertionsChecker<WindowManagerTrace.Entry> mChecker = new AssertionsChecker<>();
+    private boolean mNewAssertion = true;
+
+    private void addAssertion(
+            Assertions.TraceAssertion<WindowManagerTrace.Entry> assertion, String name) {
+        if (mNewAssertion) {
+            mChecker.add(assertion, name);
+        } else {
+            mChecker.append(assertion, name);
+        }
+    }
 
     private WmTraceSubject(FailureMetadata fm, @Nullable WindowManagerTrace subject) {
         super(fm, subject);
@@ -53,7 +63,9 @@ public class WmTraceSubject extends Subject<WmTraceSubject, WindowManagerTrace> 
     public static WmTraceSubject assertThat(@Nullable TransitionResult result) {
         WindowManagerTrace entries =
                 WindowManagerTrace.parseFrom(
-                        result.getWindowManagerTrace(), result.getWindowManagerTracePath());
+                        result.getWindowManagerTrace(),
+                        result.getWindowManagerTracePath(),
+                        result.getWindowManagerTraceChecksum());
         return assertWithMessage(result.toString()).about(FACTORY).that(entries);
     }
 
@@ -72,12 +84,31 @@ public class WmTraceSubject extends Subject<WmTraceSubject, WindowManagerTrace> 
     }
 
     public WmTraceSubject then() {
+        mNewAssertion = true;
         mChecker.checkChangingAssertions();
         return this;
     }
 
+    public WmTraceSubject and() {
+        mNewAssertion = false;
+        mChecker.checkChangingAssertions();
+        return this;
+    }
+
+    /**
+     * Ignores the first entries in the trace, until the first assertion passes. If it reaches the
+     * end of the trace without passing any assertion, return a failure with the name/reason from
+     * the first assertion
+     *
+     * @return
+     */
+    public WmTraceSubject skipUntilFirstAssertion() {
+        mChecker.skipUntilFirstAssertion();
+        return this;
+    }
+
     public void inTheBeginning() {
-        if (getSubject().getEntries().isEmpty()) {
+        if (actual().getEntries().isEmpty()) {
             fail("No entries found.");
         }
         mChecker.checkFirstEntry();
@@ -85,7 +116,7 @@ public class WmTraceSubject extends Subject<WmTraceSubject, WindowManagerTrace> 
     }
 
     public void atTheEnd() {
-        if (getSubject().getEntries().isEmpty()) {
+        if (actual().getEntries().isEmpty()) {
             fail("No entries found.");
         }
         mChecker.checkLastEntry();
@@ -93,9 +124,9 @@ public class WmTraceSubject extends Subject<WmTraceSubject, WindowManagerTrace> 
     }
 
     private void test() {
-        List<Result> failures = mChecker.test(getSubject().getEntries());
+        List<Result> failures = mChecker.test(actual().getEntries());
         if (!failures.isEmpty()) {
-            Optional<Path> failureTracePath = getSubject().getSource();
+            Optional<Path> failureTracePath = actual().getSource();
             String failureLogs =
                     failures.stream().map(Result::toString).collect(Collectors.joining("\n"));
             String tracePath = "";
@@ -103,6 +134,8 @@ public class WmTraceSubject extends Subject<WmTraceSubject, WindowManagerTrace> 
                 tracePath =
                         "\nWindowManager Trace can be found in: "
                                 + failureTracePath.get().toAbsolutePath()
+                                + "\nChecksum: "
+                                + actual().getSourceChecksum()
                                 + "\n";
             }
             fail(tracePath + failureLogs);
@@ -110,49 +143,49 @@ public class WmTraceSubject extends Subject<WmTraceSubject, WindowManagerTrace> 
     }
 
     public WmTraceSubject showsAboveAppWindow(String partialWindowTitle) {
-        mChecker.add(
+        addAssertion(
                 entry -> entry.isAboveAppWindowVisible(partialWindowTitle),
                 "showsAboveAppWindow(" + partialWindowTitle + ")");
         return this;
     }
 
     public WmTraceSubject hidesAboveAppWindow(String partialWindowTitle) {
-        mChecker.add(
+        addAssertion(
                 entry -> entry.isAboveAppWindowVisible(partialWindowTitle).negate(),
                 "hidesAboveAppWindow" + "(" + partialWindowTitle + ")");
         return this;
     }
 
     public WmTraceSubject showsBelowAppWindow(String partialWindowTitle) {
-        mChecker.add(
+        addAssertion(
                 entry -> entry.isBelowAppWindowVisible(partialWindowTitle),
                 "showsBelowAppWindow(" + partialWindowTitle + ")");
         return this;
     }
 
     public WmTraceSubject hidesBelowAppWindow(String partialWindowTitle) {
-        mChecker.add(
+        addAssertion(
                 entry -> entry.isBelowAppWindowVisible(partialWindowTitle).negate(),
                 "hidesBelowAppWindow" + "(" + partialWindowTitle + ")");
         return this;
     }
 
     public WmTraceSubject showsImeWindow(String partialWindowTitle) {
-        mChecker.add(
+        addAssertion(
                 entry -> entry.isImeWindowVisible(partialWindowTitle),
                 "showsBelowAppWindow(" + partialWindowTitle + ")");
         return this;
     }
 
     public WmTraceSubject hidesImeWindow(String partialWindowTitle) {
-        mChecker.add(
+        addAssertion(
                 entry -> entry.isImeWindowVisible(partialWindowTitle).negate(),
                 "hidesImeWindow" + "(" + partialWindowTitle + ")");
         return this;
     }
 
     public WmTraceSubject showsAppWindowOnTop(String partialWindowTitle) {
-        mChecker.add(
+        addAssertion(
                 entry -> {
                     Result result = entry.isAppWindowVisible(partialWindowTitle);
                     if (result.passed()) {
@@ -165,7 +198,7 @@ public class WmTraceSubject extends Subject<WmTraceSubject, WindowManagerTrace> 
     }
 
     public WmTraceSubject hidesAppWindowOnTop(String partialWindowTitle) {
-        mChecker.add(
+        addAssertion(
                 entry -> {
                     Result result = entry.isAppWindowVisible(partialWindowTitle).negate();
                     if (result.failed()) {
@@ -178,14 +211,14 @@ public class WmTraceSubject extends Subject<WmTraceSubject, WindowManagerTrace> 
     }
 
     public WmTraceSubject showsAppWindow(String partialWindowTitle) {
-        mChecker.add(
+        addAssertion(
                 entry -> entry.isAppWindowVisible(partialWindowTitle),
                 "showsAppWindow(" + partialWindowTitle + ")");
         return this;
     }
 
     public WmTraceSubject hidesAppWindow(String partialWindowTitle) {
-        mChecker.add(
+        addAssertion(
                 entry -> entry.isAppWindowVisible(partialWindowTitle).negate(),
                 "hidesAppWindow(" + partialWindowTitle + ")");
         return this;

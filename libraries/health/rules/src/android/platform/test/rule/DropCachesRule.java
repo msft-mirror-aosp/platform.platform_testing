@@ -15,8 +15,15 @@
  */
 package android.platform.test.rule;
 
+import android.support.test.uiautomator.UiDevice;
 import androidx.annotation.VisibleForTesting;
+import androidx.test.platform.app.InstrumentationRegistry;
 import org.junit.runner.Description;
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 
 import android.os.SystemClock;
 import android.util.Log;
@@ -30,6 +37,39 @@ public class DropCachesRule extends TestWatcher {
     @VisibleForTesting static final String KEY_DROP_CACHE = "drop-cache";
     private static boolean mDropCache = true;
 
+    /**
+     * Shell equivalent of $(echo 3 > /proc/sys/vm/drop_caches)
+     *
+     * Clears out the system pagecache for files and inodes metadata.
+     */
+    public static void executeDropCaches() {
+        // Create a temporary file which contains the dropCaches command.
+        // Do this because we cannot write to /proc/sys/vm/drop_caches directly,
+        // as executeShellCommand parses the '>' character as a literal.
+        try {
+            File outputDir =
+                    InstrumentationRegistry.getInstrumentation().getContext().getCacheDir();
+            File outputFile = File.createTempFile("drop_cache_script", "sh", outputDir);
+            outputFile.setWritable(true);
+            outputFile.setExecutable(true, /*ownersOnly*/false);
+
+            String outputFilePath = outputFile.toString();
+
+            // If this works correctly, the next log-line will print 'Success'.
+            String str = "echo 3 > /proc/sys/vm/drop_caches && echo Success || echo Failure";
+            BufferedWriter writer = new BufferedWriter(new FileWriter(outputFilePath));
+            writer.write(str);
+            writer.close();
+
+            UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
+            String result = device.executeShellCommand(outputFilePath);
+            Log.v(LOG_TAG, "dropCaches output was: " + result);
+            outputFile.delete();
+        } catch (IOException e) {
+            throw new AssertionError (e);
+        }
+    }
+
     @Override
     protected void starting(Description description) {
         // Identify the filter option to use.
@@ -38,7 +78,7 @@ public class DropCachesRule extends TestWatcher {
             return;
         }
 
-        executeShellCommand("echo 3 > /proc/sys/vm/drop_caches");
+        executeDropCaches();
         // TODO: b/117868612 to identify the root cause for additional wait.
         SystemClock.sleep(3000);
     }

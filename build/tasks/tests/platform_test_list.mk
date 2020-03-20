@@ -20,8 +20,6 @@ platform_tests += \
     BandwidthEnforcementTest \
     BandwidthTests \
     BluetoothTests \
-    bluetooth_cert_stack \
-    bluetooth_stack_with_facade \
     BootHelperApp \
     BusinessCard \
     CalculatorFunctionalTests \
@@ -58,9 +56,7 @@ platform_tests += \
     FrameworksUtilTests \
     InternalLocTestApp \
     JankMicroBenchmarkTests \
-    libbluetooth_gd \
     long_trace_config.textproto \
-    libgrpc++_unsecure \
     MemoryUsage \
     MultiDexLegacyTestApp \
     MultiDexLegacyTestApp2 \
@@ -86,9 +82,8 @@ platform_tests += \
     PermissionFunctionalTests \
     PermissionTestAppMV1 \
     PermissionUtils \
-    PlatformScenarioTests \
+    PlatformCommonScenarioTests \
     PowerPerfTest \
-    root-canal \
     SettingsUITests \
     SimpleTestApp \
     skia_dm \
@@ -98,7 +93,9 @@ platform_tests += \
     SmokeTestApp \
     SysAppJankTestsWear \
     TouchLatencyJankTestWear \
+    trace_config.textproto \
     trace_config_detailed.textproto \
+    trace_config_experimental.textproto \
     UbSystemUiJankTests \
     UbWebViewJankTests \
     UiBench \
@@ -120,8 +117,12 @@ ifneq ($(strip $(BOARD_PERFSETUP_SCRIPT)),)
 platform_tests += perf-setup.sh
 endif
 
-ifneq ($(filter vsoc_x86 vsoc_x86_64, $(TARGET_BOARD_PLATFORM)),)
+ifneq ($(filter vsoc_arm vsoc_arm64 vsoc_x86 vsoc_x86_64, $(TARGET_BOARD_PLATFORM)),)
   platform_tests += \
     CuttlefishRilTests \
     CuttlefishWifiTests
+endif
+
+ifeq ($(HOST_OS),linux)
+platform_tests += root-canal
 endif

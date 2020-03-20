@@ -45,7 +45,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.List;
 
@@ -58,7 +57,7 @@ public class TransitionRunnerTest {
     @Mock private WindowManagerTraceMonitor mWindowManagerTraceMonitorMock;
     @Mock private LayersTraceMonitor mLayersTraceMonitorMock;
     @Mock private WindowAnimationFrameStatsMonitor mWindowAnimationFrameStatsMonitor;
-    @InjectMocks private TransitionBuilder mTransitionBuilder;
+    @InjectMocks private TransitionBuilder mTransitionBuilder = TransitionRunner.newBuilder();
 
     @Before
     public void init() {
@@ -165,6 +164,7 @@ public class TransitionRunnerTest {
         orderVerifier
                 .verify(mWindowManagerTraceMonitorMock)
                 .save("mCaptureWmTraceTransitionRunner", 0);
+        orderVerifier.verify(mWindowManagerTraceMonitorMock).getChecksum();
         verifyNoMoreInteractions(mWindowManagerTraceMonitorMock);
     }
 
@@ -183,6 +183,7 @@ public class TransitionRunnerTest {
         orderVerifier
                 .verify(mLayersTraceMonitorMock)
                 .save("mCaptureLayersTraceTransitionRunner", 0);
+        orderVerifier.verify(mLayersTraceMonitorMock).getChecksum();
         verifyNoMoreInteractions(mLayersTraceMonitorMock);
     }
 
@@ -202,14 +203,16 @@ public class TransitionRunnerTest {
         orderVerifier.verify(mScreenRecorderMock).start();
         orderVerifier.verify(mScreenRecorderMock).stop();
         orderVerifier.verify(mScreenRecorderMock).save("mRecordEachRun", 0);
+        orderVerifier.verify(mScreenRecorderMock).getChecksum();
         orderVerifier.verify(mScreenRecorderMock).start();
         orderVerifier.verify(mScreenRecorderMock).stop();
         orderVerifier.verify(mScreenRecorderMock).save("mRecordEachRun", 1);
+        orderVerifier.verify(mScreenRecorderMock).getChecksum();
         verifyNoMoreInteractions(mScreenRecorderMock);
     }
 
     @Test
-    public void canRecordAllRuns() throws IOException {
+    public void canRecordAllRuns() {
         doReturn(
                         Paths.get(
                                 Environment.getExternalStorageDirectory().getAbsolutePath(),
