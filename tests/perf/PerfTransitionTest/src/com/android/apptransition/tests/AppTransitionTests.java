@@ -241,12 +241,12 @@ public class AppTransitionTests extends Instrumentation {
                             String.format("%s-%d", appName, (launchCount)));
                 }
                 mLauncherStrategy.launch(appName, mComponentName.split("\\/")[0]);
-                sleep(mPostLaunchTimeout);
-                mDevice.pressHome();
-                sleep(mPostLaunchTimeout);
                 if (null != mAtraceLogger) {
                     mAtraceLogger.atraceStop();
                 }
+                sleep(mPostLaunchTimeout);
+                mDevice.pressHome();
+                sleep(mPostLaunchTimeout);
             }
             mComponentName = null;
             // Update the result with the component name

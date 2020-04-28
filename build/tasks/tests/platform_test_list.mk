@@ -20,8 +20,6 @@ platform_tests += \
     BandwidthEnforcementTest \
     BandwidthTests \
     BluetoothTests \
-    bluetooth_cert_stack \
-    bluetooth_stack_with_facade \
     BootHelperApp \
     BusinessCard \
     CalculatorFunctionalTests \
@@ -58,8 +56,8 @@ platform_tests += \
     FrameworksUtilTests \
     InternalLocTestApp \
     JankMicroBenchmarkTests \
-    libbluetooth_gd \
-    libgrpc++_unsecure \
+    long_trace_config.textproto \
+    LauncherRotationStressTest \
     MemoryUsage \
     MultiDexLegacyTestApp \
     MultiDexLegacyTestApp2 \
@@ -86,7 +84,6 @@ platform_tests += \
     PermissionUtils \
     PlatformScenarioTests \
     PowerPerfTest \
-    root-canal \
     SettingsUITests \
     SimpleTestApp \
     skia_dm \
@@ -96,12 +93,14 @@ platform_tests += \
     SmokeTestApp \
     SysAppJankTestsWear \
     TouchLatencyJankTestWear \
+    trace_config.textproto \
+    trace_config_detailed.textproto \
+    trace_config_experimental.textproto \
     UbSystemUiJankTests \
     UbWebViewJankTests \
     UiBench \
     UiBenchJankTests \
     UiBenchJankTestsWear \
-    UiBenchMicrobenchmark \
     UpdateExternalLocTestApp_v1_ext \
     UpdateExternalLocTestApp_v2_none \
     UpdateExtToIntLocTestApp_v1_ext \

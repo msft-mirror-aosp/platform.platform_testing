@@ -62,9 +62,6 @@ public class AoaDevice implements AutoCloseable {
     static final byte ACCESSORY_SET_HID_REPORT_DESC = 56;
     static final byte ACCESSORY_SEND_HID_EVENT = 57;
 
-    // Maximum attempts at restarting in accessory mode
-    static final int ACCESSORY_START_MAX_RETRIES = 5;
-
     // Touch types
     static final byte TOUCH_UP = 0b00;
     static final byte TOUCH_DOWN = 0b11;
@@ -90,11 +87,11 @@ public class AoaDevice implements AutoCloseable {
     AoaDevice(@Nonnull UsbHelper helper, @Nonnull UsbDevice delegate) {
         mHelper = helper;
         mDelegate = delegate;
-        initialize(0);
+        initialize();
     }
 
     // Configure the device, switching to accessory mode if necessary and registering the HIDs
-    private void initialize(int attempt) {
+    private void initialize() {
         if (!isValid()) {
             throw new UsbException("Invalid device connection");
         }
@@ -106,16 +103,12 @@ public class AoaDevice implements AutoCloseable {
 
         if (isAccessoryMode()) {
             registerHIDs();
-        } else if (attempt >= ACCESSORY_START_MAX_RETRIES) {
-            throw new UsbException("Failed to start accessory mode");
         } else {
-            // restart in accessory mode and try to initialize again
+            // restart in accessory mode
             mHelper.checkResult(
                     mDelegate.controlTransfer(OUTPUT, ACCESSORY_START, 0, 0, new byte[0]));
             sleep(CONFIGURE_DELAY);
-            mDelegate.close();
-            mDelegate = mHelper.getDevice(mSerialNumber, CONNECTION_TIMEOUT);
-            initialize(attempt + 1);
+            resetConnection();
         }
     }
 
@@ -157,7 +150,7 @@ public class AoaDevice implements AutoCloseable {
     public void resetConnection() {
         close();
         mDelegate = mHelper.getDevice(mSerialNumber, CONNECTION_TIMEOUT);
-        initialize(0);
+        initialize();
     }
 
     /** @return true if connection is non-null, but does not check if resetting is necessary */

@@ -26,7 +26,6 @@ import androidx.test.runner.AndroidJUnit4;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.Description;
 import org.junit.runner.notification.Failure;
@@ -224,7 +223,6 @@ public final class LogcatOnFailureCollectorTest {
     }
 
     /** Test that the logcat retrieved are within the time bounds of the test. */
-    @Ignore
     @Test
     public void testLogcatTimespan() throws Exception {
         LogcatOnFailureCollector listener = initListener();
