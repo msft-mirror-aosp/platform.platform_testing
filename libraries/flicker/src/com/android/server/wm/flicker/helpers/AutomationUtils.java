@@ -150,8 +150,7 @@ public class AutomationUtils {
                 }
 
                 // If "Clear all"  button appears, use it
-                BySelector clearAllSelector =
-                        By.res(device.getLauncherPackageName(), "clear_all_button");
+                BySelector clearAllSelector = By.res(device.getLauncherPackageName(), "clear_all");
                 UiObject2 clearAllButton = device.wait(Until.findObject(clearAllSelector), 100);
                 if (clearAllButton != null) {
                     clearAllButton.click();
