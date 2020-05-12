@@ -49,8 +49,9 @@ import java.util.Locale;
 
 /** Collection of UI Automation helper functions. */
 public class AutomationUtils {
+    protected static final long FIND_TIMEOUT = 10000;
+    private static final String IME_PACKAGE = "com.google.android.inputmethod.latin";
     private static final String SYSTEMUI_PACKAGE = "com.android.systemui";
-    private static final long FIND_TIMEOUT = 10000;
     private static final long LONG_PRESS_TIMEOUT = ViewConfiguration.getLongPressTimeout() * 2L;
     private static final String TAG = "FLICKER";
 
@@ -169,6 +170,11 @@ public class AutomationUtils {
         UiObject2 recentsButton = device.wait(Until.findObject(recentsSelector), FIND_TIMEOUT);
         assertNotNull("Unable to find 'recent items' button", recentsButton);
         recentsButton.click(LONG_PRESS_TIMEOUT);
+    }
+
+    public static boolean waitForIME(UiDevice device) {
+        UiObject2 ime = device.wait(Until.findObject(By.pkg(IME_PACKAGE)), FIND_TIMEOUT);
+        return ime != null;
     }
 
     public static void launchSplitScreen(UiDevice device) {
