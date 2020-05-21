@@ -16,12 +16,9 @@
 
 package com.android.server.wm.flicker.monitor;
 
-import static androidx.test.InstrumentationRegistry.getInstrumentation;
-
 import static com.android.server.wm.flicker.helpers.AutomationUtils.wakeUpAndGoToHomeScreen;
 
 import android.app.Instrumentation;
-import android.os.Bundle;
 import android.platform.helpers.IAppHelper;
 
 import androidx.test.InstrumentationRegistry;
@@ -47,8 +44,6 @@ public class WindowAnimationFrameStatsMonitorTest {
 
     @Before
     public void setup() {
-        android.support.test.InstrumentationRegistry.registerInstance(
-                getInstrumentation(), new Bundle());
         mInstrumentation = InstrumentationRegistry.getInstrumentation();
         mWindowAnimationFrameStatsMonitor = new WindowAnimationFrameStatsMonitor(mInstrumentation);
         wakeUpAndGoToHomeScreen();
