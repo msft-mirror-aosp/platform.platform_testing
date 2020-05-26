@@ -20,8 +20,10 @@ import android.os.Environment;
 
 import com.google.common.io.BaseEncoding;
 
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.nio.file.Files;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
@@ -86,9 +88,16 @@ public abstract class TransitionMonitor {
 
     static String calculateChecksum(Path traceFile) {
         try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] fileData = Files.readAllBytes(traceFile);
-            byte[] hash = digest.digest(fileData);
+            MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
+            FileInputStream inputStream = new FileInputStream(traceFile.toFile());
+            FileChannel channel = inputStream.getChannel();
+            ByteBuffer buffer = ByteBuffer.allocate(2048);
+            while (channel.read(buffer) != -1) {
+                buffer.flip();
+                messageDigest.update(buffer);
+                buffer.clear();
+            }
+            byte[] hash = messageDigest.digest();
             return BaseEncoding.base16().encode(hash).toLowerCase();
         } catch (NoSuchAlgorithmException e) {
             throw new IllegalArgumentException("Checksum algorithm SHA-256 not found", e);
