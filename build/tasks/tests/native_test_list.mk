@@ -50,7 +50,6 @@ native_tests := \
     installd_otapreopt_test \
     installd_service_test \
     installd_utils_test \
-    JniInvocation_test \
     libandroidfw_tests \
     libappfuse_test \
     libbase_test \
@@ -63,6 +62,7 @@ native_tests := \
     libjavacore-unit-tests \
     liblog-unit-tests \
     libminijail_unittest_gtest \
+    libnativehelper_tests \
     libnetdbpf_test \
     libperfmgr_test \
     libprocinfo_test \
