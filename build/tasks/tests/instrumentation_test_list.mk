@@ -72,6 +72,7 @@ instrumentation_tests := \
     ExtServicesUnitTests \
     FrameworksNetSmokeTests \
     FlickerTests \
+    FlickerTestApp \
 
 # Storage Manager may not exist on device
 ifneq ($(filter StorageManager, $(PRODUCT_PACKAGES)),)
