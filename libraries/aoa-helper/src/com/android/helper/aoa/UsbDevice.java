@@ -30,12 +30,14 @@ import javax.annotation.Nullable;
 /** Connected USB device. */
 public class UsbDevice implements AutoCloseable {
 
+    private final UsbHelper mHelper;
     private final IUsbNative mUsb;
     private final byte[] mDescriptor = new byte[18];
     private Pointer mHandle;
 
-    UsbDevice(@Nonnull IUsbNative usb, @Nonnull Pointer devicePointer) {
-        mUsb = usb;
+    UsbDevice(@Nonnull UsbHelper helper, @Nonnull Pointer devicePointer) {
+        mHelper = helper;
+        mUsb = helper.getUsb();
 
         // retrieve device descriptor
         mUsb.libusb_get_device_descriptor(devicePointer, mDescriptor);
@@ -47,11 +49,22 @@ public class UsbDevice implements AutoCloseable {
     }
 
     /**
-     * Performs a synchronous control transaction with unlimited timeout.
+     * Performs a synchronous control transaction with the default timeout.
      *
      * @return number of bytes transferred, or an error code
      */
     public int controlTransfer(byte requestType, byte request, int value, int index, byte[] data) {
+        int timeout = (int) mHelper.getTransferTimeout().toMillis();
+        return controlTransfer(requestType, request, value, index, data, timeout);
+    }
+
+    /**
+     * Performs a synchronous control transaction.
+     *
+     * @return number of bytes transferred, or an error code
+     */
+    public int controlTransfer(
+            byte requestType, byte request, int value, int index, byte[] data, int timeout) {
         return mUsb.libusb_control_transfer(
                 checkNotNull(mHandle),
                 requestType,
@@ -60,7 +73,7 @@ public class UsbDevice implements AutoCloseable {
                 (short) index,
                 data,
                 (short) data.length,
-                0);
+                timeout);
     }
 
     /**
