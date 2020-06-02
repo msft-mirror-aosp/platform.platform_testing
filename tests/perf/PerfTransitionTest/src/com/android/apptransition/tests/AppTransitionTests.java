@@ -121,18 +121,18 @@ public class AppTransitionTests extends Instrumentation {
         }
 
         createLaunchIntentMappings();
-        String mAppsList = mArgs.getString(LAUNCH_APPS);
-        mPreAppsList = mArgs.getString(PRE_LAUNCH_APPS);
+
+        String appsList = mArgs.getString(LAUNCH_APPS, "");
+        mPreAppsList = mArgs.getString(PRE_LAUNCH_APPS, "");
         mLaunchIterations = Integer.parseInt(mArgs.getString(KEY_LAUNCH_ITERATIONS,
                 DEFAULT_LAUNCH_COUNT));
         mPostLaunchTimeout = Integer.parseInt(mArgs.getString(KEY_POST_LAUNCH_TIMEOUT,
                 DEFAULT_POST_LAUNCH_TIMEOUT));
-        if (null == mAppsList && mAppsList.isEmpty()) {
+        if (null == appsList || appsList.isEmpty()) {
             throw new IllegalArgumentException("Need atleast one app to do the"
                     + " app transition from launcher");
         }
-        mAppsList = mAppsList.replaceAll("%"," ");
-        mAppListArray = mAppsList.split(DELIMITER);
+        mAppListArray = appsList.split(DELIMITER);
 
         // Parse the trace parameters
         mTraceDirectoryStr = mArgs.getString(KEY_TRACE_DIRECTORY);
@@ -266,11 +266,10 @@ public class AppTransitionTests extends Instrumentation {
         if (isTracesEnabled()) {
             createTraceDirectory("testAppToRecents");
         }
-        if (null == mPreAppsList && mPreAppsList.isEmpty()) {
+        if (null == mPreAppsList || mPreAppsList.isEmpty()) {
             throw new IllegalArgumentException("Need atleast few apps in the "
                     + "recents before starting the test");
         }
-        mPreAppsList = mPreAppsList.replaceAll("%"," ");
         mPreAppsListArray = mPreAppsList.split(DELIMITER);
         mPreAppsComponentName.clear();
         populateRecentsList();
@@ -311,11 +310,10 @@ public class AppTransitionTests extends Instrumentation {
         if (isTracesEnabled()) {
             createTraceDirectory("testHotLaunchFromRecents");
         }
-        if (null == mPreAppsList && mPreAppsList.isEmpty()) {
+        if (null == mPreAppsList || mPreAppsList.isEmpty()) {
             throw new IllegalArgumentException("Need atleast few apps in the"
                     + " recents before starting the test");
         }
-        mPreAppsList = mPreAppsList.replaceAll("%", " ");
         mPreAppsListArray = mPreAppsList.split(DELIMITER);
         mPreAppsComponentName.clear();
         populateRecentsList();
@@ -567,7 +565,8 @@ public class AppTransitionTests extends Instrumentation {
      * @param appNames
      */
     private void closeApps(String[] appNames) {
-        for (int i = 0; i < appNames.length; i++) {
+        int length = appNames == null ? 0 : appNames.length;
+        for (int i = 0; i < length; i++) {
             Intent startIntent = mAppLaunchIntentsMapping.get(appNames[i]);
             if (startIntent != null) {
                 String packageName = startIntent.getComponent().getPackageName();
