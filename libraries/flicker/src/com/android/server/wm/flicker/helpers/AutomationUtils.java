@@ -24,6 +24,7 @@ import static com.android.compatibility.common.util.SystemUtil.runShellCommand;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
+import android.app.Instrumentation;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Point;
@@ -43,6 +44,8 @@ import androidx.test.uiautomator.UiDevice;
 import androidx.test.uiautomator.UiObject2;
 import androidx.test.uiautomator.Until;
 
+import com.android.launcher3.tapl.LauncherInstrumentation;
+import com.android.launcher3.tapl.BaseOverview;
 import com.android.server.wm.flicker.WindowUtils;
 
 import java.util.Locale;
@@ -129,35 +132,12 @@ public class AutomationUtils {
         device.waitForIdle();
     }
 
-    public static void clearRecents(UiDevice device) {
-        if (isQuickstepEnabled(device)) {
-            openQuickstep(device);
-
-            for (int i = 0; i < 10; i++) {
-                device.swipe(
-                        device.getDisplayWidth() / 2,
-                        device.getDisplayHeight() / 2,
-                        device.getDisplayWidth(),
-                        device.getDisplayHeight() / 2,
-                        5);
-
-                BySelector noRecentItemsSelector =
-                        getLauncherOverviewSelector(device).desc("No recent items");
-                UiObject2 noRecentItems = device.wait(Until.findObject(noRecentItemsSelector), 100);
-
-                // If "No recent items"  is displayed, there're no apps to remove
-                if (noRecentItems != null) {
-                    return;
-                }
-
-                // If "Clear all"  button appears, use it
-                BySelector clearAllSelector = By.res(device.getLauncherPackageName(), "clear_all");
-                UiObject2 clearAllButton = device.wait(Until.findObject(clearAllSelector), 100);
-                if (clearAllButton != null) {
-                    clearAllButton.click();
-                    return;
-                }
-            }
+    public static void clearRecents(Instrumentation instr) {
+        LauncherInstrumentation launcher =
+                new LauncherInstrumentation(InstrumentationRegistry.getInstrumentation());
+        BaseOverview overview = launcher.pressHome().switchToOverview();
+        if (overview.hasTasks()) {
+            overview.dismissAllTasks();
         }
     }
 

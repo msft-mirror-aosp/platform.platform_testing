@@ -29,5 +29,6 @@ android_test {
         "platformprotosnano",
         "layersprotosnano",
         "flickerlib",
+        "launcher-aosp-tapl"
     ],
 }

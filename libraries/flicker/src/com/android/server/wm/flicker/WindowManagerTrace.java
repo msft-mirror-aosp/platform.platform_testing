@@ -116,6 +116,9 @@ public class WindowManagerTrace {
         private List<WindowStateProto> getWindows(WindowContainerChildProto windowContainer) {
             if (windowContainer.displayArea != null) {
                 return getWindows(windowContainer.displayArea.windowContainer);
+            } else if (windowContainer.displayContent != null
+                    && windowContainer.displayContent.windowContainer == null) {
+                return getWindows(windowContainer.displayContent.rootDisplayArea.windowContainer);
             } else if (windowContainer.displayContent != null) {
                 return getWindows(windowContainer.displayContent.windowContainer);
             } else if (windowContainer.task != null) {

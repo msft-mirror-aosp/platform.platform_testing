@@ -18,6 +18,7 @@ package com.android.server.wm.flicker;
 
 import android.app.Instrumentation;
 import android.platform.helpers.AbstractStandardAppHelper;
+import com.android.launcher3.tapl.LauncherInstrumentation;
 
 /**
  * Class to take advantage of {@code IAppHelper} interface so the same test can be run against first
@@ -26,11 +27,18 @@ import android.platform.helpers.AbstractStandardAppHelper;
 public class StandardAppHelper extends AbstractStandardAppHelper {
     private final String mPackageName;
     private final String mLauncherName;
+    private final LauncherInstrumentation mLauncher;
 
     public StandardAppHelper(Instrumentation instr, String packageName, String launcherName) {
         super(instr);
         mPackageName = packageName;
         mLauncherName = launcherName;
+        mLauncher = new LauncherInstrumentation(instr);
+    }
+
+    @Override
+    public void open() {
+        mLauncher.pressHome().switchToAllApps().getAppIcon(mLauncherName).launch(mPackageName);
     }
 
     /** {@inheritDoc} */
