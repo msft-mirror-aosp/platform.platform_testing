@@ -1,7 +1,4 @@
 platform_tests += \
-    apex_file_test \
-    apex_manifest_test \
-    apexservice_test \
     ActivityManagerPerfTests \
     ActivityManagerPerfTestsTestApp \
     AndroidTVJankTests \
@@ -57,6 +54,7 @@ platform_tests += \
     InternalLocTestApp \
     JankMicroBenchmarkTests \
     long_trace_config.textproto \
+    LauncherRotationStressTest \
     MemoryUsage \
     MultiDexLegacyTestApp \
     MultiDexLegacyTestApp2 \
