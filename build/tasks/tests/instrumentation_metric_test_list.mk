@@ -20,7 +20,6 @@ instrumentation_metric_tests := \
     DocumentsUIAppPerfTests \
     MtpServicePerfTests \
     RsBlasBenchmark \
-    ImageProcessingJB \
     MediaProviderClientTests \
     MultiUserPerfDummyApp \
     MultiUserPerfTests \
@@ -29,6 +28,8 @@ instrumentation_metric_tests := \
     TextClassifierPerfTests \
     WmPerfTests
 
+    # TODO(b/158617385): Uncomment when fixed
+    #ImageProcessingJB
     # TODO(b/72332760): Uncomment when fixed
     #DocumentsUIPerfTests
 
