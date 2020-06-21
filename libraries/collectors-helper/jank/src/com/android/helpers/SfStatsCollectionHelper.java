@@ -59,6 +59,15 @@ public class SfStatsCollectionHelper implements ICollectorHelper<Double> {
 
     private UiDevice mDevice;
 
+    private Double parseStatsValue(String v) {
+        try {
+            return Double.parseDouble(v);
+        } catch (NumberFormatException e) {
+            Log.e(LOG_TAG, "Encountered exception parsing value: " + v, e);
+            return -1.0;
+        }
+    }
+
     @Override
     public boolean startCollecting() {
         try {
@@ -87,7 +96,7 @@ public class SfStatsCollectionHelper implements ICollectorHelper<Double> {
 
         for (String key : globalPairs.keySet()) {
             String metricKey = constructKey(SFSTATS_METRICS_PREFIX, "GLOBAL", key.toUpperCase());
-            results.put(metricKey, Double.valueOf(globalPairs.get(key)));
+            results.put(metricKey, parseStatsValue(globalPairs.get(key)));
         }
 
         if (histogramPairs.containsKey(FRAME_DURATION_KEY)) {
@@ -110,13 +119,13 @@ public class SfStatsCollectionHelper implements ICollectorHelper<Double> {
             String averageFPS = layerPairs.get("averageFPS");
             results.put(
                     constructKey(SFSTATS_METRICS_PREFIX, layerName, "TOTAL_FRAMES"),
-                    Double.valueOf(totalFrames));
+                    parseStatsValue(totalFrames));
             results.put(
                     constructKey(SFSTATS_METRICS_PREFIX, layerName, "DROPPED_FRAMES"),
-                    Double.valueOf(droppedFrames));
+                    parseStatsValue(droppedFrames));
             results.put(
                     constructKey(SFSTATS_METRICS_PREFIX, layerName, "AVERAGE_FPS"),
-                    Double.valueOf(averageFPS));
+                    parseStatsValue(averageFPS));
         }
 
         return results;
