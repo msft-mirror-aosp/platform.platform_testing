@@ -15,12 +15,17 @@
 cc_test {
     name: "hello_world_test",
     srcs: ["HelloWorldTest.cpp"],
+    // TODO (b/158958526): This is an example of mainline testing in Test
+    // Mapping Suite. Will remove this after all work fine.
+    test_mainline_modules: [
+        "com.google.android.cellbroadcast.apex"
+    ],
 
     cflags: [
         "-Wall",
         "-Werror",
     ],
 
-    test_suites: ["device-tests"],
+    test_suites: ["general-tests"],
     host_supported: true,
 }
