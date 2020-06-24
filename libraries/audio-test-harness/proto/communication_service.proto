@@ -1,0 +1,39 @@
+/*
+ * Copyright (C) 2020 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+syntax = "proto3";
+
+package media.audio.test.harness;
+
+option java_package = "com.android.media.audio.test.harness.proto";
+
+
+// The Device-Host communication service definition.
+service CommunicationService {
+  // Processes request sent from Device to start audio recording.
+  rpc CaptureAudioStream(StreamAudioRecordRequest) returns (stream AudioData) {}
+}
+
+// Request to start audio record on the Host and stream recorded result back to
+// Device.
+message StreamAudioRecordRequest{
+  // TODO: this needs to be implemented.
+}
+
+// AudioData that is recorded on the Host and to be streamed back to Device.
+message AudioData {
+  // TODO: this needs to be implemented.
+}
