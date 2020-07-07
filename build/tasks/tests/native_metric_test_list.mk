@@ -22,6 +22,7 @@ native_metric_tests := \
     inputflinger_benchmarks \
     libandroidfw_benchmarks \
     libjavacore-benchmarks \
+    libpowermanager_benchmarks \
     minikin_perftests \
     mmapPerf \
     netd_benchmark \

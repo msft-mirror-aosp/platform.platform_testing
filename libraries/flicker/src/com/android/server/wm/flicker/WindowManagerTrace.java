@@ -141,7 +141,7 @@ public class WindowManagerTrace {
         /** Checks if non app window with {@code windowTitle} is visible. */
         private Optional<WindowStateProto> getNonAppWindowByIdentifier(
                 WindowStateProto windowState, String windowTitle) {
-            if (windowState.identifier.title.contains(windowTitle)) {
+            if (windowState.windowContainer.identifier.title.contains(windowTitle)) {
                 return Optional.of(windowState);
             }
 
@@ -171,7 +171,7 @@ public class WindowManagerTrace {
                     if (isVisible(foundWindow.get())) {
                         return new Result(
                                 true /* success */,
-                                foundWindow.get().identifier.title + " is visible");
+                                foundWindow.get().windowContainer.identifier.title + " is visible");
                     }
                 }
             }
@@ -216,7 +216,7 @@ public class WindowManagerTrace {
         private String getTopVisibleAppWindow(List<WindowStateProto> windows) {
             for (WindowStateProto windowState : windows) {
                 if (windowState.windowContainer.visible) {
-                    return windowState.identifier.title;
+                    return windowState.windowContainer.identifier.title;
                 }
             }
 
@@ -258,14 +258,16 @@ public class WindowManagerTrace {
         private Result isAppWindowVisible(
                 String windowTitle, boolean[] titleFound, List<WindowStateProto> windows) {
             for (WindowStateProto windowState : windows) {
-                if (windowState.identifier.title.contains(windowTitle)) {
+                if (windowState.windowContainer.identifier.title.contains(windowTitle)) {
                     titleFound[0] = true;
                     if (windowState.windowContainer.visible) {
                         return new Result(
                                 true /* success */,
                                 getTimestamp(),
                                 "isAppWindowVisible" /* assertionName */,
-                                "Window " + windowState.identifier.title + "is visible");
+                                "Window "
+                                        + windowState.windowContainer.identifier.title
+                                        + "is visible");
                     }
                 }
             }
