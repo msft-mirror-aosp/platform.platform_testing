@@ -35,6 +35,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+import java.time.Duration;
+
 /** Unit tests for {@link UsbDevice} */
 @RunWith(JUnit4.class)
 public class UsbDeviceTest {
@@ -43,6 +45,7 @@ public class UsbDeviceTest {
 
     private Pointer mHandle;
     private IUsbNative mUsb;
+    private UsbHelper mHelper;
 
     @Before
     public void setUp() {
@@ -50,6 +53,7 @@ public class UsbDeviceTest {
         mHandle = new Memory(1);
 
         mUsb = mock(IUsbNative.class);
+        mHelper = new UsbHelper(mUsb);
         // return device handle when opening connection
         when(mUsb.libusb_open(any(), any()))
                 .then(
@@ -60,7 +64,7 @@ public class UsbDeviceTest {
                             return 0;
                         });
 
-        mDevice = new UsbDevice(mUsb, mock(Pointer.class));
+        mDevice = new UsbDevice(mHelper, mock(Pointer.class));
     }
 
     @Test
@@ -75,6 +79,8 @@ public class UsbDeviceTest {
 
     @Test
     public void testControlTransfer() {
+        mHelper.setTransferTimeout(Duration.ofMillis(123L));
+
         byte[] data = new byte[]{1, 2, 3, 4};
         mDevice.controlTransfer((byte) 1, (byte) 2, 3, 4, data);
 
@@ -82,7 +88,7 @@ public class UsbDeviceTest {
         verify(mUsb).libusb_control_transfer(eq(mHandle),
                 eq((byte) 1), eq((byte) 2), eq((short) 3), eq((short) 4),
                 eq(data), eq((short) 4), // data and length
-                eq(0)); // timeout
+                eq(123)); // default timeout
     }
 
     @Test(expected = NullPointerException.class)

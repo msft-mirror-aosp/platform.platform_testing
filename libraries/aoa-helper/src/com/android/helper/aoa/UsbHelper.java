@@ -42,10 +42,15 @@ import javax.annotation.Nullable;
  */
 public class UsbHelper implements AutoCloseable {
 
+    // Interval used when waiting for a device
     private static final Duration POLL_INTERVAL = Duration.ofSeconds(1L);
+    // Default transfer timeout used by all managed devices
+    private static final Duration DEFAULT_TRANSFER_TIMEOUT = Duration.ofSeconds(10L);
 
     private final IUsbNative mUsb;
     private Pointer mContext;
+
+    private Duration mTransferTimeout = DEFAULT_TRANSFER_TIMEOUT;
 
     public UsbHelper() {
         this((IUsbNative) Native.loadLibrary("usb-1.0", IUsbNative.class));
@@ -58,6 +63,21 @@ public class UsbHelper implements AutoCloseable {
         PointerByReference context = new PointerByReference();
         checkResult(mUsb.libusb_init(context));
         mContext = context.getValue();
+    }
+
+    /** @return native libusb adapter */
+    IUsbNative getUsb() {
+        return mUsb;
+    }
+
+    /** @return default transfer timeout (Duration.ZERO indicates unlimited timeout). */
+    public Duration getTransferTimeout() {
+        return mTransferTimeout;
+    }
+
+    /** Sets the default transfer timeout used by all managed devices. */
+    public void setTransferTimeout(@Nonnull Duration transferTimeout) {
+        mTransferTimeout = transferTimeout;
     }
 
     /**
@@ -122,7 +142,7 @@ public class UsbHelper implements AutoCloseable {
 
     @VisibleForTesting
     UsbDevice connect(@Nonnull Pointer devicePointer) {
-        return new UsbDevice(mUsb, devicePointer);
+        return new UsbDevice(this, devicePointer);
     }
 
     /**
