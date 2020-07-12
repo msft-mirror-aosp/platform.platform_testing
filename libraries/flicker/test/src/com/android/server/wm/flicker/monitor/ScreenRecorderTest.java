@@ -51,7 +51,7 @@ public class ScreenRecorderTest {
 
     @After
     public void teardown() {
-        mScreenRecorder.getPath().toFile().delete();
+        mScreenRecorder.getOutputPath().toFile().delete();
         if (mSavedVideoPath != null) {
             mSavedVideoPath.toFile().delete();
         }
@@ -62,7 +62,7 @@ public class ScreenRecorderTest {
         mScreenRecorder.start();
         sleep(100);
         mScreenRecorder.stop();
-        File file = mScreenRecorder.getPath().toFile();
+        File file = mScreenRecorder.getOutputPath().toFile();
         assertThat(file.exists()).isTrue();
     }
 

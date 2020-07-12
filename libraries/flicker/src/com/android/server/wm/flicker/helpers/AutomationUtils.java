@@ -101,7 +101,7 @@ public class AutomationUtils {
                 navBarVisibleBounds = navBar.getVisibleBounds();
             } else {
                 Log.e(TAG, "Could not find nav bar, infer location");
-                navBarVisibleBounds = WindowUtils.getNavigationBarPosition(ROTATION_0);
+                navBarVisibleBounds = WindowUtils.getNavigationBarPosition(ROTATION_0).getBounds();
             }
 
             // Swipe from nav bar to 2/3rd down the screen.

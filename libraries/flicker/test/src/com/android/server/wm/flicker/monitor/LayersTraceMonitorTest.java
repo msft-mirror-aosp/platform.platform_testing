@@ -43,6 +43,7 @@ import java.nio.file.Path;
  */
 @RunWith(AndroidJUnit4.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
+// @Ignore
 public class LayersTraceMonitorTest {
     private LayersTraceMonitor mLayersTraceMonitor;
 
@@ -78,7 +79,7 @@ public class LayersTraceMonitorTest {
         Path testFilePath = mLayersTraceMonitor.save("captureWindowTrace");
         File testFile = testFilePath.toFile();
         assertThat(testFile.exists()).isTrue();
-        String calculatedChecksum = TransitionMonitor.calculateChecksum(testFilePath);
+        String calculatedChecksum = TraceMonitor.calculateChecksum(testFilePath);
         assertThat(calculatedChecksum).isEqualTo(mLayersTraceMonitor.getChecksum());
         byte[] trace = Files.toByteArray(testFile);
         assertThat(trace.length).isGreaterThan(0);

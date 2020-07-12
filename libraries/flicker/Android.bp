@@ -17,7 +17,7 @@
 java_test {
     name: "flickerlib",
     platform_apis: true,
-    srcs: ["src/**/*.java"],
+    srcs: ["src/**/*.java", "src/**/*.kt"],
     static_libs: [
         "androidx.test.janktesthelper",
         "cts-wm-util",
@@ -33,7 +33,7 @@ java_test {
 java_library {
     name: "flickerlib_without_helpers",
     platform_apis: true,
-    srcs: ["src/**/*.java"],
+    srcs: ["src/**/*.java", "src/**/*.kt"],
     exclude_srcs: ["src/**/helpers/*.java"],
     static_libs: [
         "cts-wm-util",

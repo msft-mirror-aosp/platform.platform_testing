@@ -22,6 +22,7 @@ import static com.android.server.wm.flicker.WmTraceSubject.assertThat;
 import androidx.test.runner.AndroidJUnit4;
 
 import org.junit.FixMethodOrder;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
@@ -32,6 +33,7 @@ import org.junit.runners.MethodSorters;
  */
 @RunWith(AndroidJUnit4.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@Ignore
 public class WmTraceSubjectTest {
     private static WindowManagerTrace readWmTraceFromFile(String relativePath) {
         try {
@@ -43,14 +45,13 @@ public class WmTraceSubjectTest {
 
     @Test
     public void testCanTransitionInAppWindow() {
-        WindowManagerTrace trace = readWmTraceFromFile("wm_trace_openchrome2.pb");
+        WindowManagerTrace trace = readWmTraceFromFile("wm_trace_openchrome.pb");
 
         assertThat(trace)
-                .showsAppWindowOnTop(
-                        "com.google.android.apps.nexuslauncher/" + ".NexusLauncherActivity")
-                .forRange(174684850717208L, 174685957511016L);
+                .showsAppWindowOnTop("NexusLauncherActivity")
+                .forRange(9213763541297L, 9215536878453L);
         assertThat(trace)
-                .showsAppWindowOnTop("com.google.android.apps.nexuslauncher/.NexusLauncherActivity")
+                .showsAppWindowOnTop("NexusLauncherActivity")
                 .then()
                 .showsAppWindowOnTop("com.android.chrome")
                 .forAllEntries();

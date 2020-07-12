@@ -22,10 +22,9 @@ import static com.google.common.truth.Truth.assertThat;
 
 import androidx.test.runner.AndroidJUnit4;
 
-import com.android.server.wm.flicker.Assertions.Result;
-
 import org.junit.Before;
 import org.junit.FixMethodOrder;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
@@ -54,62 +53,66 @@ public class WindowManagerTraceTest {
 
     @Test
     public void canParseAllEntries() {
-        assertThat(mTrace.getEntries().get(0).getTimestamp()).isEqualTo(241777211939236L);
+        WindowManagerTraceEntry firstEntry = mTrace.getEntries().get(0);
+        assertThat(firstEntry.getTimestamp()).isEqualTo(9213763541297L);
+        assertThat(firstEntry.getWindows().size()).isEqualTo(10);
+        assertThat(firstEntry.getVisibleWindows().size()).isEqualTo(6);
         assertThat(mTrace.getEntries().get(mTrace.getEntries().size() - 1).getTimestamp())
-                .isEqualTo(241779809471942L);
+                .isEqualTo(9216093628925L);
     }
 
+    @Ignore
     @Test
     public void canDetectAboveAppWindowVisibility() {
-        WindowManagerTrace.Entry entry = mTrace.getEntry(241777211939236L);
-        Result result = entry.isNonAppWindowVisible("NavigationBar");
-        assertThat(result.passed()).isTrue();
+        WindowManagerTraceEntry entry = mTrace.getEntry(9213763541297L);
+        entry.isNonAppWindowVisible("NavigationBar").assertPassed();
+        entry.isNonAppWindowVisible("ScreenDecorOverlay").assertPassed();
+        entry.isNonAppWindowVisible("StatusBar").assertPassed();
     }
 
     @Test
     public void canDetectBelowAppWindowVisibility() {
-        WindowManagerTrace.Entry entry = mTrace.getEntry(241777211939236L);
-        Result result = entry.isNonAppWindowVisible("wallpaper");
-        assertThat(result.passed()).isTrue();
+        mTrace.getEntry(9213763541297L)
+                .isNonAppWindowVisible("wallpaper").assertPassed();
     }
 
+    @Ignore
     @Test
     public void canDetectAppWindowVisibility() {
-        WindowManagerTrace.Entry entry = mTrace.getEntry(241777211939236L);
-        Result result = entry.isAppWindowVisible("com.google.android.apps.nexuslauncher");
-        assertThat(result.passed()).isTrue();
+        mTrace.getEntry(9213763541297L)
+                .isAppWindowVisible("com.google.android.apps.nexuslauncher").assertPassed();
     }
 
     @Test
     public void canFailWithReasonForVisibilityChecks_windowNotFound() {
-        WindowManagerTrace.Entry entry = mTrace.getEntry(241777211939236L);
-        Result result = entry.isNonAppWindowVisible("ImaginaryWindow");
-        assertThat(result.failed()).isTrue();
-        assertThat(result.reason).contains("ImaginaryWindow cannot be found");
+        mTrace.getEntry(9213763541297L)
+                .isNonAppWindowVisible("ImaginaryWindow")
+                .assertFailed("ImaginaryWindow cannot be found");
     }
 
     @Test
     public void canFailWithReasonForVisibilityChecks_windowNotVisible() {
-        WindowManagerTrace.Entry entry = mTrace.getEntry(241777211939236L);
-        Result result = entry.isNonAppWindowVisible("AssistPreviewPanel");
-        assertThat(result.failed()).isTrue();
-        assertThat(result.reason).contains("AssistPreviewPanel is invisible");
+        mTrace.getEntry(9213763541297L)
+                .isNonAppWindowVisible("InputMethod")
+                .assertFailed("InputMethod is invisible");
     }
 
+    @Ignore
     @Test
     public void canDetectAppZOrder() {
-        WindowManagerTrace.Entry entry = mTrace.getEntry(241778130296410L);
-        Result result = entry.isVisibleAppWindowOnTop("com.google.android.apps.chrome");
-        assertThat(result.passed()).isTrue();
+        mTrace.getEntry(9215551505798L)
+                .isVisibleAppWindowOnTop("com.android.chrome").assertPassed();
     }
 
+    @Ignore
     @Test
     public void canFailWithReasonForZOrderChecks_windowNotOnTop() {
-        WindowManagerTrace.Entry entry = mTrace.getEntry(241778130296410L);
-        Result result = entry.isVisibleAppWindowOnTop("com.google.android.apps.nexuslauncher");
-        assertThat(result.failed()).isTrue();
-        assertThat(result.reason).contains("wanted=com.google.android.apps.nexuslauncher");
-        assertThat(result.reason)
-                .contains("found=com.android.chrome/" + "com.google.android.apps.chrome.Main");
+        mTrace.getEntry(9215551505798L)
+                .isVisibleAppWindowOnTop("com.google.android.apps.nexuslauncher")
+                .assertFailed("wanted=com.google.android.apps.nexuslauncher");
+
+        mTrace.getEntry(9215551505798L)
+                .isVisibleAppWindowOnTop("com.google.android.apps.nexuslauncher")
+                .assertFailed("found=com.android.chrome");
     }
 }

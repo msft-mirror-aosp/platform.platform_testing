@@ -19,11 +19,12 @@ package com.android.server.wm.flicker;
 import static com.google.common.truth.Truth.assertThat;
 
 import androidx.test.runner.AndroidJUnit4;
-import com.android.server.wm.flicker.Assertions.Result;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
+
+import kotlin.jvm.functions.Function1;
 
 /**
  * Contains {@link Assertions} tests. To run this test: {@code atest FlickerLibTest:AssertionsTest}
@@ -33,32 +34,33 @@ import org.junit.runners.MethodSorters;
 public class AssertionsTest {
     @Test
     public void traceEntryAssertionCanNegateResult() {
-        Assertions.TraceAssertion<Integer> assertNumEquals42 = getIntegerTraceEntryAssertion();
+        final Function1<Integer, AssertionResult> assertNumEquals42 =
+                getIntegerTraceEntryAssertion();
 
-        assertThat(assertNumEquals42.apply(1).success).isFalse();
-        assertThat(assertNumEquals42.negate().apply(1).success).isTrue();
+        assertThat(assertNumEquals42.invoke(1).getSuccess()).isFalse();
+        assertThat(Assertions.negate(assertNumEquals42).invoke(1).getSuccess()).isTrue();
 
-        assertThat(assertNumEquals42.apply(42).success).isTrue();
-        assertThat(assertNumEquals42.negate().apply(42).success).isFalse();
+        assertThat(assertNumEquals42.invoke(42).getSuccess()).isTrue();
+        assertThat(Assertions.negate(assertNumEquals42).invoke(42).getSuccess()).isFalse();
     }
 
     @Test
     public void resultCanBeNegated() {
         String reason = "Everything is fine!";
-        Result result = new Result(true, 0, "TestAssert", reason);
-        Result negatedResult = result.negate();
+        AssertionResult result = new AssertionResult(reason, "TestAssert", 0, true);
+        AssertionResult negatedResult = result.negate();
 
-        assertThat(negatedResult.success).isFalse();
-        assertThat(negatedResult.reason).isEqualTo(reason);
-        assertThat(negatedResult.assertionName).isEqualTo("!TestAssert");
+        assertThat(negatedResult.getSuccess()).isFalse();
+        assertThat(negatedResult.getReason()).isEqualTo(reason);
+        assertThat(negatedResult.getAssertionName()).isEqualTo("!TestAssert");
     }
 
-    private Assertions.TraceAssertion<Integer> getIntegerTraceEntryAssertion() {
+    private Function1<Integer, AssertionResult> getIntegerTraceEntryAssertion() {
         return (num) -> {
             if (num == 42) {
-                return new Result(true, "Num equals 42");
+                return new AssertionResult("Num equals 42", true);
             }
-            return new Result(false, "Num doesn't equal 42, actual:" + num);
+            return new AssertionResult("Num doesn't equal 42, actual:" + num, false);
         };
     }
 }

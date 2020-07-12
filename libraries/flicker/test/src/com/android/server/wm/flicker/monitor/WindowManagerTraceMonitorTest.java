@@ -78,7 +78,7 @@ public class WindowManagerTraceMonitorTest {
         Path testFilePath = mWindowManagerTraceMonitor.save("captureWindowTrace");
         File testFile = testFilePath.toFile();
         assertThat(testFile.exists()).isTrue();
-        String calculatedChecksum = TransitionMonitor.calculateChecksum(testFilePath);
+        String calculatedChecksum = TraceMonitor.calculateChecksum(testFilePath);
         assertThat(calculatedChecksum).isEqualTo(mWindowManagerTraceMonitor.getChecksum());
         byte[] trace = Files.toByteArray(testFile);
         assertThat(trace.length).isGreaterThan(0);

@@ -20,8 +20,6 @@ import static com.google.common.truth.Truth.assertThat;
 
 import androidx.test.runner.AndroidJUnit4;
 
-import com.android.server.wm.flicker.Assertions.Result;
-
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -53,9 +51,9 @@ public class AssertionsCheckerTest {
     @Test
     public void canCheckAllEntries() {
         AssertionsChecker<SimpleEntry> checker = new AssertionsChecker<>();
-        checker.add(SimpleEntry::isData42, "isData42");
+        checker.add(it -> it.isData42(), "isData42");
 
-        List<Result> failures = checker.test(getTestEntries(1, 1, 1, 1, 1));
+        List<AssertionResult> failures = checker.test(getTestEntries(1, 1, 1, 1, 1));
 
         assertThat(failures).hasSize(5);
     }
@@ -64,33 +62,33 @@ public class AssertionsCheckerTest {
     public void canCheckFirstEntry() {
         AssertionsChecker<SimpleEntry> checker = new AssertionsChecker<>();
         checker.checkFirstEntry();
-        checker.add(SimpleEntry::isData42, "isData42");
+        checker.add(it -> it.isData42(), "isData42");
 
-        List<Result> failures = checker.test(getTestEntries(1, 1, 1, 1, 1));
+        List<AssertionResult> failures = checker.test(getTestEntries(1, 1, 1, 1, 1));
 
         assertThat(failures).hasSize(1);
-        assertThat(failures.get(0).timestamp).isEqualTo(0);
+        assertThat(failures.get(0).getTimestamp()).isEqualTo(0);
     }
 
     @Test
     public void canCheckLastEntry() {
         AssertionsChecker<SimpleEntry> checker = new AssertionsChecker<>();
         checker.checkLastEntry();
-        checker.add(SimpleEntry::isData42, "isData42");
+        checker.add(it -> it.isData42(), "isData42");
 
-        List<Result> failures = checker.test(getTestEntries(1, 1, 1, 1, 1));
+        List<AssertionResult> failures = checker.test(getTestEntries(1, 1, 1, 1, 1));
 
         assertThat(failures).hasSize(1);
-        assertThat(failures.get(0).timestamp).isEqualTo(4);
+        assertThat(failures.get(0).getTimestamp()).isEqualTo(4);
     }
 
     @Test
     public void canCheckRangeOfEntries() {
         AssertionsChecker<SimpleEntry> checker = new AssertionsChecker<>();
         checker.filterByRange(1, 2);
-        checker.add(SimpleEntry::isData42, "isData42");
+        checker.add(it -> it.isData42(), "isData42");
 
-        List<Result> failures = checker.test(getTestEntries(1, 42, 42, 1, 1));
+        List<AssertionResult> failures = checker.test(getTestEntries(1, 42, 42, 1, 1));
 
         assertThat(failures).hasSize(0);
     }
@@ -99,9 +97,9 @@ public class AssertionsCheckerTest {
     public void emptyRangePasses() {
         AssertionsChecker<SimpleEntry> checker = new AssertionsChecker<>();
         checker.filterByRange(9, 10);
-        checker.add(SimpleEntry::isData42, "isData42");
+        checker.add(it -> it.isData42(), "isData42");
 
-        List<Result> failures = checker.test(getTestEntries(1, 1, 1, 1, 1));
+        List<AssertionResult> failures = checker.test(getTestEntries(1, 1, 1, 1, 1));
 
         assertThat(failures).isEmpty();
     }
@@ -109,11 +107,11 @@ public class AssertionsCheckerTest {
     @Test
     public void canCheckChangingAssertions() {
         AssertionsChecker<SimpleEntry> checker = new AssertionsChecker<>();
-        checker.add(SimpleEntry::isData42, "isData42");
-        checker.add(SimpleEntry::isData0, "isData0");
+        checker.add(it -> it.isData42(), "isData42");
+        checker.add(it -> it.isData0(), "isData0");
         checker.checkChangingAssertions();
 
-        List<Result> failures = checker.test(getTestEntries(42, 0, 0, 0, 0));
+        List<AssertionResult> failures = checker.test(getTestEntries(42, 0, 0, 0, 0));
 
         assertThat(failures).isEmpty();
     }
@@ -123,7 +121,7 @@ public class AssertionsCheckerTest {
         AssertionsChecker<SimpleEntry> checker = new AssertionsChecker<>();
         checker.checkChangingAssertions();
 
-        List<Result> failures = checker.test(getTestEntries(42, 0, 0, 0, 0));
+        List<AssertionResult> failures = checker.test(getTestEntries(42, 0, 0, 0, 0));
 
         assertThat(failures).isEmpty();
     }
@@ -131,10 +129,10 @@ public class AssertionsCheckerTest {
     @Test
     public void canCheckChangingAssertions_withSingleAssertion() {
         AssertionsChecker<SimpleEntry> checker = new AssertionsChecker<>();
-        checker.add(SimpleEntry::isData42, "isData42");
+        checker.add(it -> it.isData42(), "isData42");
         checker.checkChangingAssertions();
 
-        List<Result> failures = checker.test(getTestEntries(42, 42, 42, 42, 42));
+        List<AssertionResult> failures = checker.test(getTestEntries(42, 42, 42, 42, 42));
 
         assertThat(failures).isEmpty();
     }
@@ -142,11 +140,11 @@ public class AssertionsCheckerTest {
     @Test
     public void canFailCheckChangingAssertions_ifStartingAssertionFails() {
         AssertionsChecker<SimpleEntry> checker = new AssertionsChecker<>();
-        checker.add(SimpleEntry::isData42, "isData42");
-        checker.add(SimpleEntry::isData0, "isData0");
+        checker.add(it -> it.isData42(), "isData42");
+        checker.add(it -> it.isData0(), "isData0");
         checker.checkChangingAssertions();
 
-        List<Result> failures = checker.test(getTestEntries(0, 0, 0, 0, 0));
+        List<AssertionResult> failures = checker.test(getTestEntries(0, 0, 0, 0, 0));
 
         assertThat(failures).hasSize(1);
     }
@@ -154,11 +152,11 @@ public class AssertionsCheckerTest {
     @Test
     public void canFailCheckChangingAssertions_ifStartingAssertionAlwaysPasses() {
         AssertionsChecker<SimpleEntry> checker = new AssertionsChecker<>();
-        checker.add(SimpleEntry::isData42, "isData42");
-        checker.add(SimpleEntry::isData0, "isData0");
+        checker.add(it -> it.isData42(), "isData42");
+        checker.add(it -> it.isData0(), "isData0");
         checker.checkChangingAssertions();
 
-        List<Result> failures = checker.test(getTestEntries(0, 0, 0, 0, 0));
+        List<AssertionResult> failures = checker.test(getTestEntries(0, 0, 0, 0, 0));
 
         assertThat(failures).hasSize(1);
     }
@@ -166,17 +164,17 @@ public class AssertionsCheckerTest {
     @Test
     public void canFailCheckChangingAssertions_ifUsingCompoundAssertion() {
         AssertionsChecker<SimpleEntry> checker = new AssertionsChecker<>();
-        checker.add(SimpleEntry::isData42, "isData42");
-        checker.append(SimpleEntry::isData0, "isData0");
+        checker.add(it -> it.isData42(), "isData42");
+        checker.append(it -> it.isData0(), "isData0");
         checker.checkChangingAssertions();
 
-        List<Result> failures = checker.test(getTestEntries(0, 0, 0, 0, 0));
+        List<AssertionResult> failures = checker.test(getTestEntries(0, 0, 0, 0, 0));
 
         assertThat(failures).hasSize(1);
-        assertThat(failures.get(0).assertionName).contains("isData42");
-        assertThat(failures.get(0).assertionName).contains("isData0");
-        assertThat(failures.get(0).reason).contains("!is42");
-        assertThat(failures.get(0).reason).doesNotContain("!is0");
+        assertThat(failures.get(0).getAssertionName()).contains("isData42");
+        assertThat(failures.get(0).getAssertionName()).contains("isData0");
+        assertThat(failures.get(0).getReason()).contains("!is42");
+        assertThat(failures.get(0).getReason()).doesNotContain("!is0");
     }
 
     static class SimpleEntry implements ITraceEntry {
@@ -193,12 +191,12 @@ public class AssertionsCheckerTest {
             return mTimestamp;
         }
 
-        Result isData42() {
-            return new Result(this.mData == 42, this.mTimestamp, "is42", "!is42");
+        AssertionResult isData42() {
+            return new AssertionResult("!is42", "is42", this.mTimestamp, this.mData == 42);
         }
 
-        Result isData0() {
-            return new Result(this.mData == 0, this.mTimestamp, "is42", "!is0");
+        AssertionResult isData0() {
+            return new AssertionResult("!is0", "is0", this.mTimestamp, this.mData == 0);
         }
     }
 }
