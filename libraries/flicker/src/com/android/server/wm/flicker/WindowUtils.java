@@ -24,11 +24,13 @@ import android.graphics.Region;
 import android.view.Surface;
 import android.view.WindowManager;
 
+import androidx.annotation.NonNull;
 import androidx.test.InstrumentationRegistry;
 
 /** Helper functions to retrieve system window sizes and positions. */
 public class WindowUtils {
 
+    @NonNull
     public static Rect getDisplayBounds() {
         Point display = new Point();
         WindowManager wm =
@@ -47,6 +49,7 @@ public class WindowUtils {
         return wm.getDefaultDisplay().getRotation();
     }
 
+    @NonNull
     public static Region getDisplayBounds(int requestedRotation) {
         Rect displayBounds = getDisplayBounds();
         int currentDisplayRotation = getCurrentRotation();
@@ -68,6 +71,7 @@ public class WindowUtils {
         return new Region(0, 0, displayBounds.width(), displayBounds.height());
     }
 
+    @NonNull
     public static Region getAppPosition(int requestedRotation) {
         Rect displayBounds = getDisplayBounds();
         int currentDisplayRotation = getCurrentRotation();
@@ -89,6 +93,7 @@ public class WindowUtils {
         return new Region(0, 0, displayBounds.width(), displayBounds.height());
     }
 
+    @NonNull
     public static Region getStatusBarPosition(int requestedRotation) {
         Resources resources = InstrumentationRegistry.getContext().getResources();
         String resourceName;
@@ -108,6 +113,7 @@ public class WindowUtils {
         return new Region(0, 0, width, height);
     }
 
+    @NonNull
     public static Region getNavigationBarPosition(int requestedRotation) {
         Rect displayBounds = getDisplayBounds();
         int displayWidth;
