@@ -23,124 +23,209 @@ import com.android.server.wm.nano.WindowStateProto
 
 /** Represents a single WindowManager trace entry.  */
 class WindowManagerTraceEntry(val proto: WindowManagerTraceProto) : ITraceEntry {
+    private var _appWindows = mutableSetOf<WindowStateProto>()
+
     override val timestamp by lazy {
         proto.elapsedRealtimeNanos
     }
 
-    /** Returns window title of the top most visible app window.  */
+    /**
+     * Returns all windows in the hierarchy
+     */
+    val windows = getWindows(
+            proto.windowManagerService.rootWindowContainer.windowContainer,
+            isAppWindow = false
+        ).toSet()
+
+    /**
+     * Return the app windows in the hierarchy.
+     * A window is considered an app window if any of its ancestors is an activity record
+     */
+    val appWindows = _appWindows.toSet()
+
+    /**
+     * Returns the non app windows in the hierarchy.
+     * A window is considered a non app window if none of its ancestors is an activity record
+     */
+    val nonAppWindows by lazy {
+        windows - appWindows
+    }
+
+    /**
+     * Returns the non app windows in the hierarchy that appear before the first app window.
+     */
+    val aboveAppWindows: List<WindowStateProto> by lazy {
+        windows.takeWhile { !appWindows.contains(it) }
+    }
+
+    /**
+     * Returns the non app windows in the hierarchy that appear after the first app window.
+     */
+    val belowAppWindows: List<WindowStateProto> by lazy {
+        windows.dropWhile { !appWindows.contains(it) }
+                .drop(appWindows.size)
+    }
+
+    /**
+     * Returns window title of the top most visible app window.
+     */
     val topVisibleAppWindow by lazy {
-        windows.filter { it.windowContainer.visible }
+        appWindows.filter { it.isVisible() }
                 .map { it.title }
                 .firstOrNull() ?: ""
     }
 
-    val windows by lazy {
-        getWindows(proto.windowManagerService.rootWindowContainer.windowContainer)
-    }
-
+    /**
+     * Returns all visible windows in the hierarchy
+     */
     val visibleWindows by lazy {
         windows.filter { it.isVisible() }
     }
 
-    private fun getWindows(windowContainer: WindowContainerProto): List<WindowStateProto> {
-        return windowContainer.children.flatMap { getWindows(it) }
-    }
+    private fun getWindows(windowContainer: WindowContainerProto, isAppWindow: Boolean)
+            = windowContainer.children.reversed().flatMap { getWindows(it, isAppWindow) }
 
-    private fun getWindows(windowContainer: WindowContainerChildProto): List<WindowStateProto> {
+    private fun getWindows(
+            windowContainer: WindowContainerChildProto,
+            isAppWindow: Boolean
+    ): List<WindowStateProto> {
         return if (windowContainer.displayArea != null) {
-            getWindows(windowContainer.displayArea.windowContainer)
+            getWindows(windowContainer.displayArea.windowContainer, isAppWindow)
         } else if (windowContainer.displayContent != null
                 && windowContainer.displayContent.windowContainer == null) {
-            getWindows(windowContainer.displayContent.rootDisplayArea.windowContainer)
+            getWindows(windowContainer.displayContent.rootDisplayArea.windowContainer, isAppWindow)
         } else if (windowContainer.displayContent != null) {
-            getWindows(windowContainer.displayContent.windowContainer)
+            getWindows(windowContainer.displayContent.windowContainer, isAppWindow)
         } else if (windowContainer.task != null) {
-            getWindows(windowContainer.task.windowContainer)
+            getWindows(windowContainer.task.windowContainer, isAppWindow)
         } else if (windowContainer.activity != null) {
-            getWindows(windowContainer.activity.windowToken.windowContainer)
+            getWindows(windowContainer.activity.windowToken.windowContainer, true)
         } else if (windowContainer.windowToken != null) {
-            getWindows(windowContainer.windowToken.windowContainer)
+            getWindows(windowContainer.windowToken.windowContainer, isAppWindow)
         } else if (windowContainer.window != null) {
+            if (isAppWindow) {
+                _appWindows.add(windowContainer.window)
+            }
             listOf(windowContainer.window)
         } else {
-            getWindows(windowContainer.windowContainer)
+            getWindows(windowContainer.windowContainer, isAppWindow)
         }
     }
 
     /** Checks if non app window with `windowTitle` is visible.  */
-    private fun getNonAppWindowByIdentifier(
+    private fun getWindowByIdentifier(
         windowState: WindowStateProto,
         windowTitle: String
     ): WindowStateProto? {
         return if (windowState.title.contains(windowTitle)) {
             windowState
         } else windowState.childWindows
-                .firstOrNull { getNonAppWindowByIdentifier(it, windowTitle) != null }
+                .firstOrNull { getWindowByIdentifier(it, windowTitle) != null }
     }
 
-    /** Checks if non app window with `windowTitle` is visible.  */
-    fun isNonAppWindowVisible(windowTitle: String): AssertionResult {
-        val assertionName = "isAppWindowVisible"
-        val foundWindow = windows
-                .firstOrNull { getNonAppWindowByIdentifier(it, windowTitle) != null }
+    private fun Collection<WindowStateProto>.isWindowVisible(
+        assertionName: String,
+        windowTitle: String,
+        isVisible: Boolean = true
+    ): AssertionResult {
+        val foundWindow = this.filter { getWindowByIdentifier(it, windowTitle) != null }
         return when {
-            windows.isEmpty() -> return AssertionResult(
+            this.isEmpty() -> return AssertionResult(
                     "No windows found",
                     assertionName,
                     timestamp,
                     success = false)
-            foundWindow == null -> AssertionResult(
+            foundWindow.isEmpty() -> AssertionResult(
                     "$windowTitle cannot be found",
                     assertionName,
                     timestamp,
                     success = false)
-            !foundWindow.isVisible() -> AssertionResult(
+            isVisible && foundWindow.none { it.isVisible() } -> AssertionResult(
                     "$windowTitle is invisible",
                     assertionName,
                     timestamp,
                     success = false)
-            else -> AssertionResult(
-                    success = true,
-                    reason = foundWindow.title + " is visible")
+            !isVisible && foundWindow.any { it.isVisible() } -> AssertionResult(
+                    "$windowTitle is visible",
+                    assertionName,
+                    timestamp,
+                    success = false)
+            else -> {
+                val reason = if (isVisible) {
+                    "${foundWindow.first { it.isVisible() }.title} is visible"
+                } else {
+                    "${foundWindow.first { !it.isVisible() }.title} is invisible"
+                }
+                AssertionResult(
+                        success = true,
+                        reason = reason)
+            }
         }
     }
 
-    /** Checks if app window with `windowTitle` is on top.  */
+    /**
+     * Checks if the non-app window with title containing [windowTitle] exists above the app
+     * windows and if its visibility is equal to [isVisible]
+     * 
+     * @param windowTitle window title to search
+     * @param isVisible if the found window should be visible or not 
+     */
+    @JvmOverloads
+    fun isAboveAppWindow(windowTitle: String, isVisible: Boolean = true): AssertionResult {
+        return aboveAppWindows.isWindowVisible(
+                "isAboveAppWindow${if (isVisible) "Visible" else "Invisible"}",
+                windowTitle,
+                isVisible)
+    }
+
+    /**
+     * Checks if the non-app window with title containing [windowTitle] exists below the app windows
+     * and if its visibility is equal to [isVisible]
+     *
+     * @param windowTitle window title to search
+     * @param isVisible if the found window should be visible or not
+     */
+    @JvmOverloads
+    fun isBelowAppWindow(windowTitle: String, isVisible: Boolean = true): AssertionResult {
+        return belowAppWindows.isWindowVisible(
+                "isBelowAppWindow${if (isVisible) "Visible" else "Invisible"}",
+                windowTitle,
+                isVisible)
+    }
+
+    /**
+     * Checks if non-app window with title containing the [windowTitle] exists above or below the
+     * app windows and if its visibility is equal to [isVisible]
+     *
+     * @param windowTitle window title to search
+     * @param isVisible if the found window should be visible or not
+     */
+    @JvmOverloads
+    fun hasNonAppWindow(windowTitle: String, isVisible: Boolean = true): AssertionResult {
+        return nonAppWindows.isWindowVisible(
+                "isAppWindowVisible", windowTitle, isVisible)
+    }
+
+    /**
+     * Checks if app window with title containing the [windowTitle] is on top
+     *
+     * @param windowTitle window title to search
+     */
     fun isVisibleAppWindowOnTop(windowTitle: String): AssertionResult {
         val success = topVisibleAppWindow.contains(windowTitle)
         val reason = "wanted=$windowTitle found=$topVisibleAppWindow"
         return AssertionResult(reason, "isAppWindowOnTop", timestamp, success)
     }
 
-    /** Checks if app window with `windowTitle` is visible.  */
+    /**
+     * Checks if app window with title containing the [windowTitle] is visible
+     *
+     * @param windowTitle window title to search
+     */
     fun isAppWindowVisible(windowTitle: String): AssertionResult {
-        val assertionName = "isAppWindowVisible"
-        val foundWindow = windows.firstOrNull {
-            it.title.contains(windowTitle) && it.windowContainer.visible
-        }
-
-        return when {
-            windows.isEmpty() -> AssertionResult(
-                    "No windows found",
-                    assertionName,
-                    timestamp,
-                    success = false)
-            foundWindow == null -> AssertionResult(
-                    "Window $windowTitle cannot be found",
-                    assertionName,
-                    timestamp,
-                    success = false)
-            !foundWindow.isVisible -> AssertionResult(
-                    "Window $windowTitle is invisible",
-                    assertionName,
-                    timestamp,
-                    success = false)
-            else -> AssertionResult(
-                    "Window " + foundWindow.title + "is visible",
-                    assertionName,
-                    timestamp,
-                    success = true)
-        }
+        return appWindows.isWindowVisible("isAppWindowVisible",
+                windowTitle,
+                isVisible = true)
     }
 
     private fun WindowStateProto.isVisible(): Boolean = this.windowContainer.visible

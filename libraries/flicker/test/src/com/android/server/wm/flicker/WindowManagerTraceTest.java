@@ -19,15 +19,19 @@ package com.android.server.wm.flicker;
 import static com.android.server.wm.flicker.TestFileUtils.readTestFile;
 
 import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.Truth.assertWithMessage;
 
 import androidx.test.runner.AndroidJUnit4;
 
+import com.android.server.wm.nano.WindowStateProto;
+
 import org.junit.Before;
 import org.junit.FixMethodOrder;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
+
+import java.util.Set;
 
 /**
  * Contains {@link WindowManagerTrace} tests. To run this test: {@code atest
@@ -61,50 +65,62 @@ public class WindowManagerTraceTest {
                 .isEqualTo(9216093628925L);
     }
 
-    @Ignore
     @Test
     public void canDetectAboveAppWindowVisibility() {
         WindowManagerTraceEntry entry = mTrace.getEntry(9213763541297L);
-        entry.isNonAppWindowVisible("NavigationBar").assertPassed();
-        entry.isNonAppWindowVisible("ScreenDecorOverlay").assertPassed();
-        entry.isNonAppWindowVisible("StatusBar").assertPassed();
+        entry.isAboveAppWindow("NavigationBar").assertPassed();
+        entry.isAboveAppWindow("ScreenDecorOverlay").assertPassed();
+        entry.isAboveAppWindow("StatusBar").assertPassed();
+
+        entry.isAboveAppWindow("pip-dismiss-overlay").assertFailed("is invisible");
+        entry.isAboveAppWindow("NotificationShade").assertFailed("is invisible");
+        entry.isAboveAppWindow("InputMethod").assertFailed("is invisible");
+        entry.isAboveAppWindow("AssistPreviewPanel").assertFailed("is invisible");
     }
 
     @Test
     public void canDetectBelowAppWindowVisibility() {
-        mTrace.getEntry(9213763541297L)
-                .isNonAppWindowVisible("wallpaper").assertPassed();
+        mTrace.getEntry(9213763541297L).hasNonAppWindow("wallpaper").assertPassed();
     }
 
-    @Ignore
+    @Test
+    public void canDetectAppWindow() {
+        Set<WindowStateProto> appWindows = mTrace.getEntry(9213763541297L).getAppWindows();
+        assertWithMessage("Unable to detect app windows").that(appWindows.size()).isEqualTo(2);
+    }
+
     @Test
     public void canDetectAppWindowVisibility() {
         mTrace.getEntry(9213763541297L)
                 .isAppWindowVisible("com.google.android.apps.nexuslauncher").assertPassed();
+
+        mTrace.getEntry(9215551505798L).isAppWindowVisible("com.android.chrome").assertPassed();
     }
 
     @Test
     public void canFailWithReasonForVisibilityChecks_windowNotFound() {
         mTrace.getEntry(9213763541297L)
-                .isNonAppWindowVisible("ImaginaryWindow")
+                .hasNonAppWindow("ImaginaryWindow")
                 .assertFailed("ImaginaryWindow cannot be found");
     }
 
     @Test
     public void canFailWithReasonForVisibilityChecks_windowNotVisible() {
         mTrace.getEntry(9213763541297L)
-                .isNonAppWindowVisible("InputMethod")
+                .hasNonAppWindow("InputMethod")
                 .assertFailed("InputMethod is invisible");
     }
 
-    @Ignore
     @Test
     public void canDetectAppZOrder() {
+        mTrace.getEntry(9215551505798L)
+                .isAppWindowVisible("com.google.android.apps.nexuslauncher")
+                .assertPassed();
+
         mTrace.getEntry(9215551505798L)
                 .isVisibleAppWindowOnTop("com.android.chrome").assertPassed();
     }
 
-    @Ignore
     @Test
     public void canFailWithReasonForZOrderChecks_windowNotOnTop() {
         mTrace.getEntry(9215551505798L)
@@ -113,6 +129,6 @@ public class WindowManagerTraceTest {
 
         mTrace.getEntry(9215551505798L)
                 .isVisibleAppWindowOnTop("com.google.android.apps.nexuslauncher")
-                .assertFailed("found=com.android.chrome");
+                .assertFailed("found=Splash Screen com.android.chrome");
     }
 }

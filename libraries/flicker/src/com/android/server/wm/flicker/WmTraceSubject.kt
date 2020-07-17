@@ -125,58 +125,100 @@ class WmTraceSubject private constructor(
             var tracePath = ""
             if (failureTracePath.isPresent) {
                 tracePath = """
-                    
+
                     WindowManager Trace can be found in: ${failureTracePath.get().toAbsolutePath()}
                     Checksum: ${actual()!!.sourceChecksum}
-                    
+
                     """.trimIndent()
             }
             fail(tracePath + failureLogs)
         }
     }
 
+
+    /**
+     * Checks if the non-app window with title containing [partialWindowTitle] exists above the app
+     * windows and is visible
+     *
+     * @param partialWindowTitle window title to search
+     */
     fun showsAboveAppWindow(partialWindowTitle: String): WmTraceSubject {
         addAssertion("showsAboveAppWindow($partialWindowTitle)") {
-            p: WindowManagerTraceEntry -> p.isAppWindowVisible(partialWindowTitle)
+            p: WindowManagerTraceEntry -> p.isAboveAppWindow(partialWindowTitle)
         }
         return this
     }
 
+    /**
+     * Checks if the non-app window with title containing [partialWindowTitle] exists above the app
+     * windows and is invisible
+     *
+     * @param partialWindowTitle window title to search
+     */
     fun hidesAboveAppWindow(partialWindowTitle: String): WmTraceSubject {
         addAssertion("hidesAboveAppWindow($partialWindowTitle)") {
-            it.isNonAppWindowVisible(partialWindowTitle).negate()
+            it.isAboveAppWindow(partialWindowTitle, isVisible = false)
         }
         return this
     }
 
+    /**
+     * Checks if the non-app window with title containing [partialWindowTitle] exists below the app
+     * windows and is visible
+     *
+     * @param partialWindowTitle window title to search
+     */
     fun showsBelowAppWindow(partialWindowTitle: String): WmTraceSubject {
         addAssertion("showsBelowAppWindow($partialWindowTitle)") {
-            it.isNonAppWindowVisible(partialWindowTitle)
+            it.isBelowAppWindow(partialWindowTitle)
         }
         return this
     }
 
+    /**
+     * Checks if the non-app window with title containing [partialWindowTitle] exists below the app
+     * windows and is invisible
+     *
+     * @param partialWindowTitle window title to search
+     */
     fun hidesBelowAppWindow(partialWindowTitle: String): WmTraceSubject {
         addAssertion("hidesBelowAppWindow($partialWindowTitle)") {
-            it.isNonAppWindowVisible(partialWindowTitle).negate()
+            it.isBelowAppWindow(partialWindowTitle, isVisible = false)
         }
         return this
     }
 
-    fun showsImeWindow(partialWindowTitle: String): WmTraceSubject {
-        addAssertion("showsBelowAppWindow($partialWindowTitle)") {
-            it.isNonAppWindowVisible(partialWindowTitle)
+    /**
+     * Checks if non-app window with title containing the [partialWindowTitle] exists above or
+     * below the app windows and is visible
+     *
+     * @param partialWindowTitle window title to search
+     */
+    fun showsNonAppWindow(partialWindowTitle: String): WmTraceSubject {
+        addAssertion("showsNonAppWindow($partialWindowTitle)") {
+            it.hasNonAppWindow(partialWindowTitle)
         }
         return this
     }
 
-    fun hidesImeWindow(partialWindowTitle: String): WmTraceSubject {
-        addAssertion("hidesImeWindow($partialWindowTitle)") {
-            it.isNonAppWindowVisible(partialWindowTitle).negate()
+    /**
+     * Checks if non-app window with title containing the [partialWindowTitle] exists above or
+     * below the app windows and is invisible
+     *
+     * @param partialWindowTitle window title to search
+     */
+    fun hidesNonAppWindow(partialWindowTitle: String): WmTraceSubject {
+        addAssertion("hidesNonAppWindow($partialWindowTitle)") {
+            it.hasNonAppWindow(partialWindowTitle, isVisible = false)
         }
         return this
     }
 
+    /**
+     * Checks if app window with title containing the [partialWindowTitle] is on top
+     *
+     * @param partialWindowTitle window title to search
+     */
     fun showsAppWindowOnTop(partialWindowTitle: String): WmTraceSubject {
         addAssertion("showsAppWindowOnTop($partialWindowTitle)") {
             var result = it.isAppWindowVisible(partialWindowTitle)
@@ -188,7 +230,12 @@ class WmTraceSubject private constructor(
         return this
     }
 
-    fun hidesAppWindowOnTop(partialWindowTitle: String): WmTraceSubject {
+    /**
+     * Checks if app window with title containing the [partialWindowTitle] is not on top
+     *
+     * @param partialWindowTitle window title to search
+     */
+    fun appWindowNotOnTop(partialWindowTitle: String): WmTraceSubject {
         addAssertion("hidesAppWindowOnTop($partialWindowTitle)") { entry: WindowManagerTraceEntry ->
             var result = entry.isAppWindowVisible(partialWindowTitle).negate()
             if (result.failed()) {
@@ -199,6 +246,11 @@ class WmTraceSubject private constructor(
         return this
     }
 
+    /**
+     * Checks if app window with title containing the [partialWindowTitle] is visible
+     *
+     * @param partialWindowTitle window title to search
+     */
     fun showsAppWindow(partialWindowTitle: String): WmTraceSubject {
         addAssertion("showsAppWindow($partialWindowTitle)") {
             it.isAppWindowVisible(partialWindowTitle)
@@ -206,6 +258,11 @@ class WmTraceSubject private constructor(
         return this
     }
 
+    /**
+     * Checks if app window with title containing the [partialWindowTitle] is invisible
+     *
+     * @param partialWindowTitle window title to search
+     */
     fun hidesAppWindow(partialWindowTitle: String): WmTraceSubject {
         addAssertion("hidesAppWindow($partialWindowTitle)") {
             it.isAppWindowVisible(partialWindowTitle).negate()
