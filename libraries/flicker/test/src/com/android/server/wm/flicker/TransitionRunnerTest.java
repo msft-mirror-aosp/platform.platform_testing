@@ -24,7 +24,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
-import android.os.Environment;
+import android.app.Instrumentation;
 
 import androidx.test.InstrumentationRegistry;
 import androidx.test.runner.AndroidJUnit4;
@@ -53,13 +53,16 @@ import java.util.List;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @Ignore
 public class TransitionRunnerTest {
+    private Instrumentation mInstrumentation = InstrumentationRegistry.getInstrumentation();
     @Mock private SimpleUiTransitions mTransitionsMock;
     @Mock private ScreenRecorder mScreenRecorderMock;
     @Mock private WindowManagerTraceMonitor mWindowManagerTraceMonitorMock;
     @Mock private LayersTraceMonitor mLayersTraceMonitorMock;
     @Mock private WindowAnimationFrameStatsMonitor mWindowAnimationFrameStatsMonitor;
-    @InjectMocks private TransitionRunner.TransitionBuilder mTransitionBuilder =
-            new TransitionRunner.TransitionBuilder(InstrumentationRegistry.getInstrumentation());
+
+    @InjectMocks
+    private TransitionRunner.TransitionBuilder mTransitionBuilder =
+            new TransitionRunner.TransitionBuilder(mInstrumentation);
 
     @Before
     public void init() {
@@ -217,7 +220,10 @@ public class TransitionRunnerTest {
     public void canRecordAllRuns() {
         doReturn(
                         Paths.get(
-                                Environment.getExternalStorageDirectory().getAbsolutePath(),
+                                mInstrumentation
+                                        .getTargetContext()
+                                        .getExternalFilesDir(null)
+                                        .getAbsolutePath(),
                                 "mRecordAllRuns.mp4"))
                 .when(mScreenRecorderMock)
                 .save("mRecordAllRuns");

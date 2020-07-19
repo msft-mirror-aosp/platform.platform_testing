@@ -21,9 +21,9 @@ import android.view.WindowManagerGlobal
 import java.nio.file.Path
 
 /** Captures Layers trace from SurfaceFlinger.  */
-open class LayersTraceMonitor @JvmOverloads constructor(
-    outputDir: Path? = OUTPUT_DIR
-) : TraceMonitor(outputDir ?: OUTPUT_DIR, "layers_trace.pb") {
+open class LayersTraceMonitor(
+    outputDir: Path
+) : TraceMonitor(outputDir, "layers_trace.pb") {
     private val windowManager= WindowManagerGlobal.getWindowManagerService()
 
     override fun start() {

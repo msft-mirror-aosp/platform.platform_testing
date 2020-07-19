@@ -21,9 +21,9 @@ import android.view.WindowManagerGlobal
 import java.nio.file.Path
 
 /** Captures WindowManager trace from WindowManager.  */
-open class WindowManagerTraceMonitor @JvmOverloads constructor(
-    outputDir: Path? = OUTPUT_DIR
-) : TraceMonitor(outputDir ?: OUTPUT_DIR, "wm_trace.pb") {
+open class WindowManagerTraceMonitor(
+    outputDir: Path
+) : TraceMonitor(outputDir, "wm_trace.pb") {
     private val windowManager= WindowManagerGlobal.getWindowManagerService()
 
     override fun start() {

@@ -190,7 +190,10 @@ class TransitionRunner private constructor(
     /** Builds a [TransitionRunner] instance.  */
     data class TransitionBuilder @JvmOverloads constructor(
         private val instrumentation: Instrumentation,
-        private val outputDir: Path? = null
+        private val outputDir: Path = instrumentation
+            .targetContext
+            .getExternalFilesDir(null)?.toPath()
+            ?: throw IllegalArgumentException("Output dir cannot be null")
     ) {
         private var runJankFree = true
         private var captureWindowManagerTrace = true
@@ -212,7 +215,7 @@ class TransitionRunner private constructor(
             val wmTraceMonitor = WindowManagerTraceMonitor(outputDir)
             val layersTraceMonitor = LayersTraceMonitor(outputDir)
             val frameStatsMonitor = WindowAnimationFrameStatsMonitor(instrumentation)
-            val screenRecorder = ScreenRecorder()
+            val screenRecorder = ScreenRecorder(outputDir)
             if (captureWindowManagerTrace) {
                 perRunMonitors.add(wmTraceMonitor)
             }

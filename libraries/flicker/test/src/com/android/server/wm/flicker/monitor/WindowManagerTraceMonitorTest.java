@@ -21,6 +21,9 @@ import static com.android.server.wm.nano.WindowManagerTraceFileProto.MAGIC_NUMBE
 
 import static com.google.common.truth.Truth.assertThat;
 
+import android.app.Instrumentation;
+
+import androidx.test.InstrumentationRegistry;
 import androidx.test.runner.AndroidJUnit4;
 
 import com.android.server.wm.nano.WindowManagerTraceFileProto;
@@ -48,7 +51,9 @@ public class WindowManagerTraceMonitorTest {
 
     @Before
     public void setup() {
-        mWindowManagerTraceMonitor = new WindowManagerTraceMonitor();
+        Instrumentation instrumentation = InstrumentationRegistry.getInstrumentation();
+        Path outputDir = instrumentation.getTargetContext().getExternalFilesDir(null).toPath();
+        mWindowManagerTraceMonitor = new WindowManagerTraceMonitor(outputDir);
     }
 
     @After

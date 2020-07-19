@@ -16,8 +16,6 @@
 
 package com.android.server.wm.flicker.monitor
 
-import android.os.Environment
-import android.os.RemoteException
 import androidx.annotation.VisibleForTesting
 import com.android.compatibility.common.util.SystemUtil
 import com.google.common.io.BaseEncoding
@@ -72,8 +70,6 @@ abstract class TraceMonitor internal constructor(
 
     companion object {
         private val TRACE_DIR = Paths.get("/data/misc/wmtrace/")
-        @JvmStatic
-        internal val OUTPUT_DIR = Paths.get(Environment.getExternalStorageDirectory().toString(), "flicker")
 
         @VisibleForTesting
         @JvmStatic

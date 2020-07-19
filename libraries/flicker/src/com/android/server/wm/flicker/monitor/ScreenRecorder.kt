@@ -24,9 +24,9 @@ import java.nio.file.Path
 
 /** Captures screen contents and saves it as a mp4 video file.  */
 open class ScreenRecorder @JvmOverloads constructor(
+    outputPath: Path,
     private val width: Int = 720,
     private val height: Int = 1280,
-    outputPath: Path = OUTPUT_DIR,
     traceFile: String = "transition.mp4"
 ) : TraceMonitor(outputPath, outputPath.resolve(traceFile)) {
     private val recorderThread: Thread by lazy {

@@ -21,8 +21,10 @@ import static android.surfaceflinger.nano.Layerstrace.LayersTraceFileProto.MAGIC
 
 import static com.google.common.truth.Truth.assertThat;
 
+import android.app.Instrumentation;
 import android.surfaceflinger.nano.Layerstrace.LayersTraceFileProto;
 
+import androidx.test.InstrumentationRegistry;
 import androidx.test.runner.AndroidJUnit4;
 
 import com.google.common.io.Files;
@@ -43,13 +45,14 @@ import java.nio.file.Path;
  */
 @RunWith(AndroidJUnit4.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-// @Ignore
 public class LayersTraceMonitorTest {
     private LayersTraceMonitor mLayersTraceMonitor;
 
     @Before
     public void setup() {
-        mLayersTraceMonitor = new LayersTraceMonitor();
+        Instrumentation instrumentation = InstrumentationRegistry.getInstrumentation();
+        Path outputDir = instrumentation.getTargetContext().getExternalFilesDir(null).toPath();
+        mLayersTraceMonitor = new LayersTraceMonitor(outputDir);
     }
 
     @After

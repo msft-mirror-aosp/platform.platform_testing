@@ -20,6 +20,9 @@ import static android.os.SystemClock.sleep;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import android.app.Instrumentation;
+
+import androidx.test.InstrumentationRegistry;
 import androidx.test.runner.AndroidJUnit4;
 
 import org.junit.After;
@@ -46,7 +49,9 @@ public class ScreenRecorderTest {
 
     @Before
     public void setup() {
-        mScreenRecorder = new ScreenRecorder();
+        Instrumentation instrumentation = InstrumentationRegistry.getInstrumentation();
+        Path outputDir = instrumentation.getTargetContext().getExternalFilesDir(null).toPath();
+        mScreenRecorder = new ScreenRecorder(outputDir);
     }
 
     @After
