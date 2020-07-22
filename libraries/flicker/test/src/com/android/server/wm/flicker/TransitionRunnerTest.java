@@ -26,6 +26,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import android.app.Instrumentation;
 
+import androidx.test.filters.FlakyTest;
 import androidx.test.InstrumentationRegistry;
 import androidx.test.runner.AndroidJUnit4;
 
@@ -36,7 +37,6 @@ import com.android.server.wm.flicker.monitor.WindowManagerTraceMonitor;
 
 import org.junit.Before;
 import org.junit.FixMethodOrder;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
@@ -51,7 +51,7 @@ import java.util.List;
 /** Contains {@link TransitionRunner} tests. {@code atest FlickerLibTest:TransitionRunnerTest} */
 @RunWith(AndroidJUnit4.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-@Ignore
+@FlakyTest
 public class TransitionRunnerTest {
     private Instrumentation mInstrumentation = InstrumentationRegistry.getInstrumentation();
     @Mock private SimpleUiTransitions mTransitionsMock;

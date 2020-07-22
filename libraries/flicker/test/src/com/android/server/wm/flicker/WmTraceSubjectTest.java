@@ -82,6 +82,28 @@ public class WmTraceSubjectTest {
     }
 
     @Test
+    public void testCanInspectBeginning() {
+        WindowManagerTrace trace = readWmTraceFromFile("wm_trace_openchrome.pb");
+
+        assertThat(trace)
+                .showsAppWindowOnTop("NexusLauncherActivity")
+                .and()
+                .showsAboveAppWindow("ScreenDecorOverlay")
+                .inTheBeginning();
+    }
+
+    @Test
+    public void testCanInspectEnd() {
+        WindowManagerTrace trace = readWmTraceFromFile("wm_trace_openchrome.pb");
+
+        assertThat(trace)
+                .showsAppWindowOnTop("com.android.chrome")
+                .and()
+                .showsAboveAppWindow("ScreenDecorOverlay")
+                .atTheEnd();
+    }
+
+    @Test
     public void testCanTransitionNonAppWindow() {
         WindowManagerTrace trace = readWmTraceFromFile("wm_trace_ime.pb");
         WmTraceSubject.assertThat(trace)

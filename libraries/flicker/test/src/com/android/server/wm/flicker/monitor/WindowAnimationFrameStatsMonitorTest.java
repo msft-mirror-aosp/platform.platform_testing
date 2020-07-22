@@ -21,6 +21,7 @@ import static com.android.server.wm.flicker.helpers.AutomationUtils.wakeUpAndGoT
 import android.app.Instrumentation;
 import android.platform.helpers.IAppHelper;
 
+import androidx.test.filters.FlakyTest;
 import androidx.test.InstrumentationRegistry;
 import androidx.test.runner.AndroidJUnit4;
 
@@ -28,7 +29,6 @@ import com.android.server.wm.flicker.StandardAppHelper;
 
 import org.junit.Before;
 import org.junit.FixMethodOrder;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
@@ -39,7 +39,7 @@ import org.junit.runners.MethodSorters;
  */
 @RunWith(AndroidJUnit4.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-@Ignore
+@FlakyTest
 public class WindowAnimationFrameStatsMonitorTest {
     private WindowAnimationFrameStatsMonitor mWindowAnimationFrameStatsMonitor;
     private Instrumentation mInstrumentation;

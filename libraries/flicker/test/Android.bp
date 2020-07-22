@@ -14,17 +14,20 @@
 // limitations under the License.
 //
 
+
 android_test {
     name: "FlickerLibTest",
     // sign this with platform cert, so this test is allowed to call private platform apis
+    manifest: "AndroidManifest.xml",
+    test_config: "AndroidTest.xml",
     certificate: "platform",
     platform_apis: true,
-    test_suites: ["tests"],
+    test_suites: ["device-tests"],
     srcs: ["src/**/*.java"],
     libs: ["android.test.runner"],
     static_libs: [
+        "androidx.test.rules",
         "flickerlib",
-        "truth-prebuilt",
         "launcher-aosp-tapl"
     ],
 }

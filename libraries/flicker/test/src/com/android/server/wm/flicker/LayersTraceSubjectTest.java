@@ -25,10 +25,10 @@ import static org.junit.Assert.fail;
 
 import android.graphics.Region;
 
+import androidx.test.filters.FlakyTest;
 import androidx.test.runner.AndroidJUnit4;
 
 import org.junit.FixMethodOrder;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
@@ -77,7 +77,7 @@ public class LayersTraceSubjectTest {
         }
     }
 
-    @Ignore
+    @FlakyTest
     @Test
     public void testCanDetectIncorrectVisibilityFromLayerTrace() {
         LayersTrace layersTraceEntries =

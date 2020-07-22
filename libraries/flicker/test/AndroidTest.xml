@@ -3,6 +3,7 @@
  * Copyright 2018 Google Inc. All Rights Reserved.
  -->
 <configuration description="Config for WindowManager Flicker Tests">
+    <option name="test-tag" value="FlickerLibTest" />
     <target_preparer class="com.android.tradefed.targetprep.DeviceSetup">
         <!-- keeps the screen on during tests -->
         <option name="screen-always-on" value="on" />
@@ -16,7 +17,7 @@
         <option name="test-file-name" value="FlickerLibTest.apk"/>
     </target_preparer>
     <test class="com.android.tradefed.testtype.AndroidJUnitTest">
-        <option name="exclude-annotation" value="org.junit.Ignore" />
+        <option name="exclude-annotation" value="androidx.test.filters.FlakyTest" />
         <option name="package" value="com.android.server.wm.flicker"/>
         <option name="hidden-api-checks" value="false" />
     </test>

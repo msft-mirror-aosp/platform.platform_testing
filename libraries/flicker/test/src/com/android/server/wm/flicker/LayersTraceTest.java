@@ -29,11 +29,11 @@ import android.graphics.Rect;
 import android.graphics.Region;
 import android.view.WindowManager;
 
+import androidx.test.filters.FlakyTest;
 import androidx.test.InstrumentationRegistry;
 import androidx.test.runner.AndroidJUnit4;
 
 import org.junit.FixMethodOrder;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
@@ -83,7 +83,7 @@ public class LayersTraceTest {
         assertWithMessage(msg).that(flattenedLayers).hasSize(47);
     }
 
-    @Ignore
+    @FlakyTest
     @Test
     public void canParseVisibleLayers() {
         LayersTrace trace = readLayerTraceFromFile("layers_trace_emptyregion.pb");

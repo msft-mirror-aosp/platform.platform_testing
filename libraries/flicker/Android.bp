@@ -19,13 +19,11 @@ java_test {
     platform_apis: true,
     srcs: ["src/**/*.java", "src/**/*.kt"],
     static_libs: [
-        "androidx.test.janktesthelper",
         "cts-wm-util",
         "platformprotosnano",
         "layersprotosnano",
         "truth-prebuilt",
-        "sysui-helper",
-        "launcher-helper-lib",
+        "app-helpers-core",
         "launcher-aosp-tapl",
     ],
 }
@@ -53,7 +51,6 @@ java_library {
         "src/com/android/server/wm/flicker/WindowUtils.java",
     ],
     static_libs: [
-        "sysui-helper",
         "launcher-helper-lib",
         "compatibility-device-util-axt",
     ],

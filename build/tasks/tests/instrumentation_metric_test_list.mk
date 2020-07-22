@@ -21,7 +21,6 @@ instrumentation_metric_tests := \
     MtpServicePerfTests \
     RsBlasBenchmark \
     ImageProcessingJB \
-    libpowermanager_benchmarks \
     MediaProviderClientTests \
     MultiUserPerfDummyApp \
     MultiUserPerfTests \

@@ -82,7 +82,6 @@ class LayersTraceSubject private constructor(
      */
     fun and(): LayersTraceSubject {
         newAssertion = false
-        assertionsChecker.checkChangingAssertions()
         return this
     }
 

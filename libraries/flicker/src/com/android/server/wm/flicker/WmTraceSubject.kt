@@ -79,7 +79,6 @@ class WmTraceSubject private constructor(
      */
     fun and(): WmTraceSubject {
         newAssertion = false
-        assertionsChecker.checkChangingAssertions()
         return this
     }
 
