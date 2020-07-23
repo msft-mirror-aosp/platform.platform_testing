@@ -141,7 +141,7 @@ public class LayersTraceTest {
         LayersTrace trace = readLayerTraceFromFile("layers_trace_emptyregion.pb");
         LayerTraceEntry entry = trace.getEntry(2308008331271L);
 
-        AssertionResult result = entry.coversRegion(getDisplayBounds());
+        AssertionResult result = entry.coversRegion(new Region(0, 0, 1440, 2960));
 
         assertThat(result.failed()).isTrue();
         assertThat(result.getReason()).contains("Region to test: SkRegion((0,0,1440,2960))");
