@@ -16,6 +16,7 @@
 
 package com.android.server.wm.flicker
 
+import android.graphics.Region
 import com.google.common.truth.FailureMetadata
 import com.google.common.truth.Subject
 import com.google.common.truth.Subject.Factory
@@ -26,7 +27,7 @@ class WmTraceSubject private constructor(
     fm: FailureMetadata,
     subject: WindowManagerTrace
 ) : Subject<WmTraceSubject, WindowManagerTrace>(fm, subject) {
-    
+
     private val assertionsChecker = AssertionsChecker<WindowManagerTraceEntry>()
     private var newAssertion = true
 
@@ -267,6 +268,18 @@ class WmTraceSubject private constructor(
             it.isAppWindowVisible(partialWindowTitle).negate()
         }
         return this
+    }
+
+    fun coversAtLeastRegion(partialWindowTitle: String, region: Region) = apply {
+        addAssertion("coversAtLeastRegion($partialWindowTitle, $region)") {
+            it.coversAtLeastRegion(partialWindowTitle, region)
+        }
+    }
+
+    fun coversAtMostRegion(partialWindowTitle: String, region: Region) = apply {
+        addAssertion("coversAtMostRegion($partialWindowTitle, $region)") {
+            it.coversAtMostRegion(partialWindowTitle, region)
+        }
     }
 
     companion object {

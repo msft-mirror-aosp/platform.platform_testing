@@ -21,6 +21,8 @@ import static com.android.server.wm.flicker.TestFileUtils.readTestFile;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
 
+import android.graphics.Region;
+
 import androidx.test.runner.AndroidJUnit4;
 
 import com.android.server.wm.nano.WindowStateProto;
@@ -76,6 +78,52 @@ public class WindowManagerTraceTest {
         entry.isAboveAppWindow("NotificationShade").assertFailed("is invisible");
         entry.isAboveAppWindow("InputMethod").assertFailed("is invisible");
         entry.isAboveAppWindow("AssistPreviewPanel").assertFailed("is invisible");
+    }
+
+    @Test
+    public void canDetectWindowCoversAtLeastRegion() {
+        WindowManagerTraceEntry entry = mTrace.getEntry(9213763541297L);
+        // Exact size
+        entry.coversAtLeastRegion("StatusBar", new Region(0, 0, 1440, 171)).assertPassed();
+        entry.coversAtLeastRegion(
+                        "com.google.android.apps.nexuslauncher", new Region(0, 0, 1440, 2960))
+                .assertPassed();
+
+        // Smaller region
+        entry.coversAtLeastRegion("StatusBar", new Region(0, 0, 100, 100)).assertPassed();
+        entry.coversAtLeastRegion(
+                        "com.google.android.apps.nexuslauncher", new Region(0, 0, 100, 100))
+                .assertPassed();
+
+        // Larger region
+        entry.coversAtLeastRegion("StatusBar", new Region(0, 0, 1441, 171))
+                .assertFailed("Uncovered region: SkRegion((1440,0,1441,171))");
+        entry.coversAtLeastRegion(
+                        "com.google.android.apps.nexuslauncher", new Region(0, 0, 1440, 2961))
+                .assertFailed("Uncovered region: SkRegion((0,2960,1440,2961))");
+    }
+
+    @Test
+    public void canDetectWindowCoversAtMostRegion() {
+        WindowManagerTraceEntry entry = mTrace.getEntry(9213763541297L);
+        // Exact size
+        entry.coversAtMostRegion("StatusBar", new Region(0, 0, 1440, 171)).assertPassed();
+        entry.coversAtMostRegion(
+                        "com.google.android.apps.nexuslauncher", new Region(0, 0, 1440, 2960))
+                .assertPassed();
+
+        // Smaller region
+        entry.coversAtMostRegion("StatusBar", new Region(0, 0, 100, 100))
+                .assertFailed("Out-of-bounds region: SkRegion((100,0,1440,100)(0,100,1440,171))");
+        entry.coversAtMostRegion(
+                        "com.google.android.apps.nexuslauncher", new Region(0, 0, 100, 100))
+                .assertFailed("Out-of-bounds region: SkRegion((100,0,1440,100)(0,100,1440,2960))");
+
+        // Larger region
+        entry.coversAtMostRegion("StatusBar", new Region(0, 0, 1441, 171)).assertPassed();
+        entry.coversAtMostRegion(
+                        "com.google.android.apps.nexuslauncher", new Region(0, 0, 1440, 2961))
+                .assertPassed();
     }
 
     @Test

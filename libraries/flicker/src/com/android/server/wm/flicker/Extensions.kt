@@ -16,30 +16,4 @@
 
 package com.android.server.wm.flicker
 
-import android.graphics.Rect
-import android.graphics.Region
-import android.surfaceflinger.nano.Layers.RectProto
-import android.surfaceflinger.nano.Layers.RegionProto
-
 internal const val FLICKER_TAG = "FLICKER"
-
-/** Extracts [Rect] from [RectProto].  */
-fun RectProto?.extract(): Rect {
-    return if (this == null) {
-        Rect()
-    } else {
-        Rect(this.left, this.top, this.right, this.bottom)
-    }
-}
-
-/**
- * Extracts [Rect] from [RegionProto] by returning a rect that encompasses all
- * the rectangles making up the region.
- */
-fun RegionProto.extract(): Region {
-    val region = Region()
-    for (proto: RectProto in this.rect) {
-        region.union(proto.extract())
-    }
-    return region
-}

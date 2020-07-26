@@ -16,6 +16,8 @@
 
 package com.android.server.wm.flicker
 
+import android.graphics.Region
+import android.graphics.nano.RectProto
 import com.android.server.wm.nano.WindowContainerChildProto
 import com.android.server.wm.nano.WindowContainerProto
 import com.android.server.wm.nano.WindowManagerTraceProto
@@ -228,8 +230,101 @@ class WindowManagerTraceEntry(val proto: WindowManagerTraceProto) : ITraceEntry 
                 isVisible = true)
     }
 
+    /**
+     * Obtains the first window with title containing [windowTitle] is visible.
+     * Computes the result based on the intersection between the [testRegion] and the window frame.
+     *
+     * @param windowTitle Name of the layer to search
+     * @param testRegion Expected visible area of the window
+     * @param resultComputation Predicate to compute a result based on the found window's region
+     */
+    private fun covers(
+        windowTitle: String,
+        testRegion: Region,
+        resultComputation: (Region) -> AssertionResult
+    ): AssertionResult {
+        val assertionName = "covers"
+        val visibilityCheck = windows.isWindowVisible(assertionName, windowTitle)
+        if (!visibilityCheck.success) {
+            return visibilityCheck
+        }
+
+        val foundWindow = windows.first { getWindowByIdentifier(it, windowTitle) != null }
+        val foundRegion = foundWindow.frameRegion
+        val testRect = testRegion.bounds
+
+        return resultComputation(foundRegion)
+    }
+
+    /**
+     * Checks if the first window with title containing [windowTitle] has a visible area of at
+     * least [testRegion], that is, if its area of the window frame covers each point in
+     * the region.
+     *
+     * @param windowTitle Name of the layer to search
+     * @param testRegion Expected visible area of the window
+     */
+    fun coversAtLeastRegion(windowTitle: String, testRegion: Region): AssertionResult {
+        return covers(windowTitle, testRegion) { windowRegion ->
+            val testRect = testRegion.bounds
+            val intersection = Region(windowRegion)
+            val covers = intersection.op(testRect, Region.Op.INTERSECT)
+                    && !intersection.op(testRect, Region.Op.XOR)
+
+            val reason = if (covers) {
+                "$windowTitle covers region $testRegion"
+            } else {
+                ("Region to test: $testRegion"
+                        + "\nUncovered region: $intersection")
+            }
+
+            AssertionResult(reason, "coversAtLeastRegion", timestamp, success = covers)
+        }
+    }
+
+    /**
+     * Checks if the first window with title containing [windowTitle] has a visible area of at
+     * most [testRegion], that is, if the region covers each point in the window frame.
+     *
+     * @param windowTitle Name of the layer to search
+     * @param testRegion Expected visible area of the window
+     */
+    fun coversAtMostRegion(windowTitle: String, testRegion: Region): AssertionResult {
+        return covers(windowTitle, testRegion) { windowRegion ->
+            val testRect = testRegion.bounds
+            val intersection = Region(windowRegion)
+            val covers = intersection.op(testRect, Region.Op.INTERSECT)
+                    && !intersection.op(windowRegion, Region.Op.XOR)
+
+            val reason = if (covers) {
+                "$windowTitle covers region $testRegion"
+            } else {
+                ("Region to test: $testRegion"
+                        + "\nOut-of-bounds region: $intersection")
+            }
+
+            AssertionResult(reason, "coversAtMostRegion", timestamp, success = covers)
+        }
+    }
+
     private fun WindowStateProto.isVisible(): Boolean = this.windowContainer.visible
 
     private val WindowStateProto.title: String
         get() = this.windowContainer.identifier.title
+
+    private val WindowStateProto.frameRegion: Region
+        get() = if (this.windowFrames != null) {
+            this.windowFrames.frame.extract()
+        } else {
+            this.frame.extract()
+        }
+
+    private fun RectProto?.extract(): Region {
+        return if (this == null) {
+            Region()
+        } else {
+            Region(this.left, this.top, this.right, this.bottom)
+        }
+    }
+
 }

@@ -43,13 +43,13 @@ data class AssertionResult @JvmOverloads constructor(
 
     @VisibleForTesting
     fun assertPassed() {
-        Truth.assertWithMessage(this.reason).that(this.passed())
+        Truth.assertWithMessage(this.reason).that(this.passed()).isTrue()
     }
 
     @JvmOverloads
     @VisibleForTesting
     fun assertFailed(reason: String? = null) {
-        Truth.assertWithMessage(this.reason).that(this.failed())
+        Truth.assertWithMessage(this.reason).that(this.failed()).isTrue()
         if (reason != null) {
             Truth.assertThat(this.reason).contains(reason)
         }

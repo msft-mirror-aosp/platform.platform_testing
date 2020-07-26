@@ -19,6 +19,8 @@ package com.android.server.wm.flicker
 import android.graphics.Rect
 import android.graphics.Region
 import android.surfaceflinger.nano.Layers
+import android.surfaceflinger.nano.Layers.RectProto
+import android.surfaceflinger.nano.Layers.RegionProto
 
 /** Represents a single layer with links to its parent and child layers.  */
 class Layer(var proto: Layers.LayerProto?) {
@@ -274,5 +276,28 @@ class Layer(var proto: Layers.LayerProto?) {
         }
 
         return value
+    }
+
+    /**
+     * Extracts [Rect] from [RectProto].
+     */
+    private fun RectProto?.extract(): Rect {
+        return if (this == null) {
+            Rect()
+        } else {
+            Rect(this.left, this.top, this.right, this.bottom)
+        }
+    }
+
+    /**
+     * Extracts [Rect] from [RegionProto] by returning a rect that encompasses all
+     * the rectangles making up the region.
+     */
+    private fun RegionProto.extract(): Region {
+        val region = Region()
+        for (proto: RectProto in this.rect) {
+            region.union(proto.extract())
+        }
+        return region
     }
 }
