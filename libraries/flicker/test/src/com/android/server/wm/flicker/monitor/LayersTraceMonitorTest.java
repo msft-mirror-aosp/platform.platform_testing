@@ -46,6 +46,7 @@ import java.nio.file.Path;
 @RunWith(AndroidJUnit4.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class LayersTraceMonitorTest {
+    private Path savedTrace = null;
     private LayersTraceMonitor mLayersTraceMonitor;
 
     @Before
@@ -58,7 +59,9 @@ public class LayersTraceMonitorTest {
     @After
     public void teardown() {
         mLayersTraceMonitor.stop();
-        mLayersTraceMonitor.getOutputTraceFilePath("captureLayersTrace").toFile().delete();
+        if (savedTrace != null) {
+            savedTrace.toFile().delete();
+        }
     }
 
     @Test
@@ -79,10 +82,10 @@ public class LayersTraceMonitorTest {
     public void captureLayersTrace() throws Exception {
         mLayersTraceMonitor.start();
         mLayersTraceMonitor.stop();
-        Path testFilePath = mLayersTraceMonitor.save("captureWindowTrace");
-        File testFile = testFilePath.toFile();
+        savedTrace = mLayersTraceMonitor.save("captureWindowTrace");
+        File testFile = savedTrace.toFile();
         assertThat(testFile.exists()).isTrue();
-        String calculatedChecksum = TraceMonitor.calculateChecksum(testFilePath);
+        String calculatedChecksum = TraceMonitor.calculateChecksum(savedTrace);
         assertThat(calculatedChecksum).isEqualTo(mLayersTraceMonitor.getChecksum());
         byte[] trace = Files.toByteArray(testFile);
         assertThat(trace.length).isGreaterThan(0);

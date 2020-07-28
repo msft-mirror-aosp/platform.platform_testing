@@ -48,7 +48,7 @@ abstract class TraceMonitor internal constructor(
 
     override fun save(testTag: String): Path {
         outputPath.toFile().mkdirs()
-        val savedTrace = getOutputTraceFilePath(testTag)
+        val savedTrace = outputPath.resolve("${testTag}_${sourceTraceFilePath.fileName}")
         moveFile(sourceTraceFilePath, savedTrace)
         checksum = calculateChecksum(savedTrace)
         return savedTrace
@@ -59,13 +59,11 @@ abstract class TraceMonitor internal constructor(
         // Note: Due to b/141386109, certain devices do not allow moving the files between
         //       directories with different encryption policies, so manually copy and then
         //       remove the original file
+        //       Moreover, the copied trace file may end up with different permissions, resulting
+        //       in b/162072200, to prevent this, ensure the files are readable after copying
         SystemUtil.runShellCommand("cp $src $dst")
+        SystemUtil.runShellCommand("chmod a+r $dst")
         SystemUtil.runShellCommand("rm $src")
-    }
-
-    @VisibleForTesting
-    fun getOutputTraceFilePath(testTag: String?): Path {
-        return outputPath.resolve("${testTag}_${sourceTraceFilePath.fileName}")
     }
 
     companion object {
