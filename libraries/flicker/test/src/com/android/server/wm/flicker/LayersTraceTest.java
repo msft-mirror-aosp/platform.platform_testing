@@ -29,9 +29,14 @@ import android.graphics.Rect;
 import android.graphics.Region;
 import android.view.WindowManager;
 
+import androidx.test.platform.app.InstrumentationRegistry;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.FlakyTest;
-import androidx.test.InstrumentationRegistry;
-import androidx.test.runner.AndroidJUnit4;
+
+import com.android.server.wm.flicker.assertions.AssertionResult;
+import com.android.server.wm.flicker.traces.layers.Layer;
+import com.android.server.wm.flicker.traces.layers.LayerTraceEntry;
+import com.android.server.wm.flicker.traces.layers.LayersTrace;
 
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -50,7 +55,11 @@ import java.util.stream.Collectors;
 public class LayersTraceTest {
     private static LayersTrace readLayerTraceFromFile(String relativePath) {
         try {
-            return LayersTrace.parseFrom(readTestFile(relativePath));
+            return LayersTrace.parseFrom(
+                    readTestFile(relativePath),
+                    /* source */ null,
+                    /* sourceChecksum */ "",
+                    /* orphanLayerCallback */ p -> false);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -60,7 +69,8 @@ public class LayersTraceTest {
         Point display = new Point();
         WindowManager wm =
                 (WindowManager)
-                        InstrumentationRegistry.getContext()
+                        InstrumentationRegistry.getInstrumentation()
+                                .getContext()
                                 .getSystemService(Context.WINDOW_SERVICE);
         wm.getDefaultDisplay().getRealSize(display);
         return new Region(new Rect(0, 0, display.x, display.y));
@@ -149,7 +159,7 @@ public class LayersTraceTest {
         assertThat(result.getReason()).contains("visible regions:");
         assertWithMessage("Reason contains list of visible regions")
                 .that(result.getReason())
-                .contains("StatusBar#0SkRegion((0,0,1440,98))");
+                .contains("StatusBar#0 - SkRegion((0,0,1440,98))");
     }
 
     // Visible region tests

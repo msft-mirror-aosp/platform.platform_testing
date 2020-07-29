@@ -14,46 +14,19 @@
  * limitations under the License.
  */
 
-package com.android.server.wm.flicker
+package com.android.server.wm.flicker.traces.windowmanager
 
 import android.graphics.Region
+import com.android.server.wm.flicker.assertions.TraceAssertion
+import com.android.server.wm.flicker.traces.SubjectBase
 import com.google.common.truth.FailureMetadata
-import com.google.common.truth.Subject
-import com.google.common.truth.Subject.Factory
 import com.google.common.truth.Truth
 
 /** Truth subject for [WindowManagerTrace] objects.  */
 class WmTraceSubject private constructor(
     fm: FailureMetadata,
-    subject: WindowManagerTrace
-) : Subject<WmTraceSubject, WindowManagerTrace>(fm, subject) {
-
-    private val assertionsChecker = AssertionsChecker<WindowManagerTraceEntry>()
-    private var newAssertion = true
-
-    private fun addAssertion(name: String, assertion: TraceAssertion<WindowManagerTraceEntry>) {
-        if (newAssertion) {
-            assertionsChecker.add(assertion, name)
-        } else {
-            assertionsChecker.append(assertion, name)
-        }
-    }
-
-    /**
-     * Run the assertions for all trace entries
-     */
-    fun forAllEntries() {
-        test()
-    }
-
-    /**
-     * Run the assertions for all trace entries within the specified time range
-     */
-    fun forRange(startTime: Long, endTime: Long) {
-        assertionsChecker.filterByRange(startTime, endTime)
-        test()
-    }
-
+    val trace: WindowManagerTrace
+) : SubjectBase<WindowManagerTrace, WindowManagerTraceEntry>(fm, trace) {
     /**
      * Signal that the last assertion set is complete. The next assertion added will start a new
      * set of assertions.
@@ -63,10 +36,9 @@ class WmTraceSubject private constructor(
      * Will produce two sets of assertions (checkA) and (checkB) and checkB will only be checked
      * after checkA passes.
      */
-    fun then(): WmTraceSubject {
+    fun then() = apply {
         newAssertion = true
         assertionsChecker.checkChangingAssertions()
-        return this
     }
 
     /**
@@ -78,10 +50,7 @@ class WmTraceSubject private constructor(
      * Will produce one sets of assertions (checkA, checkB) and the assertion will only pass is both
      * checkA and checkB pass.
      */
-    fun and(): WmTraceSubject {
-        newAssertion = false
-        return this
-    }
+    fun and() = apply { newAssertion = false }
 
     /**
      * Ignores the first entries in the trace, until the first assertion passes. If it reaches the
@@ -90,51 +59,9 @@ class WmTraceSubject private constructor(
      *
      * @return
      */
-    fun skipUntilFirstAssertion(): WmTraceSubject {
-        assertionsChecker.skipUntilFirstAssertion()
-        return this
-    }
+    fun skipUntilFirstAssertion() = apply { assertionsChecker.skipUntilFirstAssertion() }
 
-    /**
-     * Run the assertions only in the first trace entry
-     */
-    fun inTheBeginning() {
-        if (actual().entries.isEmpty()) {
-            fail("No entries found.")
-        }
-        assertionsChecker.checkFirstEntry()
-        test()
-    }
-
-    /**
-     * Run the assertions only in the last  trace entry
-     */
-    fun atTheEnd() {
-        if (actual().entries.isEmpty()) {
-            fail("No entries found.")
-        }
-        assertionsChecker.checkLastEntry()
-        test()
-    }
-
-    private fun test() {
-        val failures = assertionsChecker.test(actual().entries)
-        if (failures.isNotEmpty()) {
-            val failureTracePath = actual()!!.source
-            val failureLogs = failures.joinToString("\n") { it.toString() }
-            var tracePath = ""
-            if (failureTracePath.isPresent) {
-                tracePath = """
-
-                    WindowManager Trace can be found in: ${failureTracePath.get().toAbsolutePath()}
-                    Checksum: ${actual()!!.sourceChecksum}
-
-                    """.trimIndent()
-            }
-            fail(tracePath + failureLogs)
-        }
-    }
-
+    fun failWithMessage(message: String) = fail(message)
 
     /**
      * Checks if the non-app window with title containing [partialWindowTitle] exists above the app
@@ -142,11 +69,10 @@ class WmTraceSubject private constructor(
      *
      * @param partialWindowTitle window title to search
      */
-    fun showsAboveAppWindow(partialWindowTitle: String): WmTraceSubject {
+    fun showsAboveAppWindow(partialWindowTitle: String) = apply {
         addAssertion("showsAboveAppWindow($partialWindowTitle)") {
             p: WindowManagerTraceEntry -> p.isAboveAppWindow(partialWindowTitle)
         }
-        return this
     }
 
     /**
@@ -155,11 +81,10 @@ class WmTraceSubject private constructor(
      *
      * @param partialWindowTitle window title to search
      */
-    fun hidesAboveAppWindow(partialWindowTitle: String): WmTraceSubject {
+    fun hidesAboveAppWindow(partialWindowTitle: String) = apply {
         addAssertion("hidesAboveAppWindow($partialWindowTitle)") {
             it.isAboveAppWindow(partialWindowTitle, isVisible = false)
         }
-        return this
     }
 
     /**
@@ -168,11 +93,10 @@ class WmTraceSubject private constructor(
      *
      * @param partialWindowTitle window title to search
      */
-    fun showsBelowAppWindow(partialWindowTitle: String): WmTraceSubject {
+    fun showsBelowAppWindow(partialWindowTitle: String) = apply {
         addAssertion("showsBelowAppWindow($partialWindowTitle)") {
             it.isBelowAppWindow(partialWindowTitle)
         }
-        return this
     }
 
     /**
@@ -181,11 +105,10 @@ class WmTraceSubject private constructor(
      *
      * @param partialWindowTitle window title to search
      */
-    fun hidesBelowAppWindow(partialWindowTitle: String): WmTraceSubject {
+    fun hidesBelowAppWindow(partialWindowTitle: String) = apply {
         addAssertion("hidesBelowAppWindow($partialWindowTitle)") {
             it.isBelowAppWindow(partialWindowTitle, isVisible = false)
         }
-        return this
     }
 
     /**
@@ -194,11 +117,10 @@ class WmTraceSubject private constructor(
      *
      * @param partialWindowTitle window title to search
      */
-    fun showsNonAppWindow(partialWindowTitle: String): WmTraceSubject {
+    fun showsNonAppWindow(partialWindowTitle: String) = apply {
         addAssertion("showsNonAppWindow($partialWindowTitle)") {
             it.hasNonAppWindow(partialWindowTitle)
         }
-        return this
     }
 
     /**
@@ -207,11 +129,10 @@ class WmTraceSubject private constructor(
      *
      * @param partialWindowTitle window title to search
      */
-    fun hidesNonAppWindow(partialWindowTitle: String): WmTraceSubject {
+    fun hidesNonAppWindow(partialWindowTitle: String) = apply {
         addAssertion("hidesNonAppWindow($partialWindowTitle)") {
             it.hasNonAppWindow(partialWindowTitle, isVisible = false)
         }
-        return this
     }
 
     /**
@@ -219,7 +140,7 @@ class WmTraceSubject private constructor(
      *
      * @param partialWindowTitle window title to search
      */
-    fun showsAppWindowOnTop(partialWindowTitle: String): WmTraceSubject {
+    fun showsAppWindowOnTop(partialWindowTitle: String) = apply {
         addAssertion("showsAppWindowOnTop($partialWindowTitle)") {
             var result = it.isAppWindowVisible(partialWindowTitle)
             if (result.passed()) {
@@ -227,7 +148,6 @@ class WmTraceSubject private constructor(
             }
             result
         }
-        return this
     }
 
     /**
@@ -235,7 +155,7 @@ class WmTraceSubject private constructor(
      *
      * @param partialWindowTitle window title to search
      */
-    fun appWindowNotOnTop(partialWindowTitle: String): WmTraceSubject {
+    fun appWindowNotOnTop(partialWindowTitle: String) = apply {
         addAssertion("hidesAppWindowOnTop($partialWindowTitle)") { entry: WindowManagerTraceEntry ->
             var result = entry.isAppWindowVisible(partialWindowTitle).negate()
             if (result.failed()) {
@@ -243,7 +163,6 @@ class WmTraceSubject private constructor(
             }
             result
         }
-        return this
     }
 
     /**
@@ -251,11 +170,10 @@ class WmTraceSubject private constructor(
      *
      * @param partialWindowTitle window title to search
      */
-    fun showsAppWindow(partialWindowTitle: String): WmTraceSubject {
+    fun showsAppWindow(partialWindowTitle: String) = apply {
         addAssertion("showsAppWindow($partialWindowTitle)") {
             it.isAppWindowVisible(partialWindowTitle)
         }
-        return this
     }
 
     /**
@@ -263,11 +181,10 @@ class WmTraceSubject private constructor(
      *
      * @param partialWindowTitle window title to search
      */
-    fun hidesAppWindow(partialWindowTitle: String): WmTraceSubject {
+    fun hidesAppWindow(partialWindowTitle: String) = apply {
         addAssertion("hidesAppWindow($partialWindowTitle)") {
             it.isAppWindowVisible(partialWindowTitle).negate()
         }
-        return this
     }
 
     fun coversAtLeastRegion(partialWindowTitle: String, region: Region) = apply {
@@ -282,31 +199,32 @@ class WmTraceSubject private constructor(
         }
     }
 
+    operator fun invoke(name: String, assertion: TraceAssertion<WindowManagerTraceEntry>)
+            = apply { addAssertion(name, assertion) }
+
+    override val traceName: String
+        get() = "WindowManager"
+
     companion object {
-        // Boiler-plate Subject.Factory for WmTraceSubject
+        /**
+         * Boiler-plate Subject.Factory for WmTraceSubject
+         */
         private val FACTORY = Factory { fm: FailureMetadata, subject: WindowManagerTrace ->
             WmTraceSubject(fm, subject)
         }
 
-        // User-defined entry point
+        /**
+         * User-defined entry point
+         */
         @JvmStatic
-        fun assertThat(entry: WindowManagerTrace): WmTraceSubject {
-            return Truth.assertAbout(FACTORY).that(entry)
-        }
+        fun assertThat(entry: WindowManagerTrace)
+                = Truth.assertAbout(FACTORY).that(entry) as WmTraceSubject
 
-        // User-defined entry point
+        /**
+         * Static method for getting the subject factory (for use with assertAbout())
+         */
         @JvmStatic
-        fun assertThat(result: TransitionResult): WmTraceSubject {
-            val entries = WindowManagerTrace.parseFrom(
-                    result.windowManagerTrace,
-                    result.windowManagerTracePath,
-                    result.windowManagerTraceChecksum)
-            return Truth.assertWithMessage(result.toString()).about(FACTORY).that(entries)
-        }
-
-        // Static method for getting the subject factory (for use with assertAbout())
-        @JvmStatic
-        fun entries(): Factory<WmTraceSubject, WindowManagerTrace> {
+        fun entries(): Factory<SubjectBase<WindowManagerTrace, WindowManagerTraceEntry>, WindowManagerTrace> {
             return FACTORY
         }
     }

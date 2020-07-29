@@ -14,6 +14,18 @@
  * limitations under the License.
  */
 
-package com.android.server.wm.flicker
+package com.android.server.wm.flicker.dsl;
 
-internal const val FLICKER_TAG = "FLICKER"
+import com.android.server.wm.flicker.Flicker;
+
+/**
+ * Defines a flicker command (transition, setup, teardown) used in Java compatibility mode of the
+ * flicker tests
+ *
+ * @deprecated Used for Java compatibility only. If possible, use the Kotlin version
+ */
+@Deprecated
+@FunctionalInterface
+public interface FlickerCommandJava {
+    void invoke(Flicker environment);
+}

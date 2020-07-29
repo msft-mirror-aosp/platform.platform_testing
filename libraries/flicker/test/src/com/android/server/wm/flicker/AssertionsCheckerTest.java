@@ -18,7 +18,11 @@ package com.android.server.wm.flicker;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import androidx.test.runner.AndroidJUnit4;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
+
+import com.android.server.wm.flicker.assertions.AssertionResult;
+import com.android.server.wm.flicker.assertions.AssertionsChecker;
+import com.android.server.wm.flicker.traces.ITraceEntry;
 
 import org.junit.FixMethodOrder;
 import org.junit.Test;

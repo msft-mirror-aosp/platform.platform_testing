@@ -14,11 +14,14 @@
  * limitations under the License.
  */
 
-package com.android.server.wm.flicker
+package com.android.server.wm.flicker.traces.layers
 
 import android.graphics.Region
 import android.surfaceflinger.nano.Layers
 import android.util.SparseArray
+import androidx.annotation.VisibleForTesting
+import com.android.server.wm.flicker.assertions.AssertionResult
+import com.android.server.wm.flicker.traces.ITraceEntry
 
 /** Represents a single Layer trace entry.  */
 class LayerTraceEntry constructor(
@@ -36,8 +39,16 @@ class LayerTraceEntry constructor(
         layers
     }
 
-    /** Checks if a region specified by `testRect` is covered by all visible layers.  */
-    fun coversRegion(testRegion: Region): AssertionResult {
+    /**
+     * Checks if a region specified by [testRegion] is covered by all visible layers whose name
+     * contains [], that is,
+     * that at least one visible layer covers each point in the region.
+     *
+     * @param testRegion Region to test
+     * @param layerName Name of the layer to search, leave empty for all
+     */
+    @JvmOverloads
+    fun coversRegion(testRegion: Region, layerName: String = ""): AssertionResult {
         val testRect = testRegion.bounds
         val assertionName = "coversRegion"
         for (x in testRect.left until testRect.right) {
@@ -61,8 +72,7 @@ class LayerTraceEntry constructor(
                         if (layer.isInvisible || layer.isHiddenByParent) {
                             continue
                         }
-                        val r = layer.visibleRegion
-                        reason += "\n" + layer.name + r.toString()
+                        reason += "\n\t${layer.name} - ${layer.visibleRegion}"
                     }
                     return AssertionResult(
                             reason,
@@ -81,7 +91,11 @@ class LayerTraceEntry constructor(
     }
 
     /**
-     * Checks if a layer with name `layerName` has a visible region `expectedVisibleRegion`.
+     * Checks if a layer containing the name [layerName] has a visible region of exactly
+     * [expectedVisibleRegion].
+     *
+     * @param layerName Name of the layer to search
+     * @param expectedVisibleRegion Expected visible region of the layer
      */
     fun hasVisibleRegion(layerName: String, expectedVisibleRegion: Region): AssertionResult {
         val assertionName = "hasVisibleRegion"
@@ -115,7 +129,11 @@ class LayerTraceEntry constructor(
         return AssertionResult(reason, assertionName, timestamp, success = false)
     }
 
-    /** Checks if a layer with name `layerName` exists in the hierarchy.  */
+    /**
+     * Checks if a layer containing the name [layerName] exists in the hierarchy.
+     *
+     * @param layerName Name of the layer to search
+     */
     fun exists(layerName: String): AssertionResult {
         val assertionName = "exists"
         val reason = "Could not find $layerName"
@@ -131,7 +149,11 @@ class LayerTraceEntry constructor(
         return AssertionResult(reason, assertionName, timestamp, success = false)
     }
 
-    /** Checks if a layer with name `layerName` is visible.  */
+    /**
+     * Checks if a layer with name [layerName] is visible.
+     *
+     * @param layerName Name of the layer to search
+     */
     fun isVisible(layerName: String): AssertionResult {
         val assertionName = "isVisible"
         var reason = "Could not find $layerName"
@@ -155,6 +177,7 @@ class LayerTraceEntry constructor(
         return AssertionResult(reason, assertionName, timestamp, success = false)
     }
 
+    @VisibleForTesting
     fun getVisibleBounds(layerName: String): Region {
         return flattenedLayers.firstOrNull { it.nameContains(layerName) && it.isVisible }
                 ?.visibleRegion
@@ -233,7 +256,7 @@ class LayerTraceEntry constructor(
             // Fail if we find orphan layers.
             orphans.forEach { orphan: Layer ->
                 // Workaround for b/141326137, ignore the existence of an orphan layer
-                if (orphanLayerCallback != null && orphanLayerCallback.invoke(orphan)) {
+                if (orphanLayerCallback == null || orphanLayerCallback.invoke(orphan)) {
                     return@forEach
                 }
                 val childNodes: String = orphan.children

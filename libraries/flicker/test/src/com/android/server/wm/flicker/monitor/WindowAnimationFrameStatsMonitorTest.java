@@ -16,16 +16,16 @@
 
 package com.android.server.wm.flicker.monitor;
 
-import static com.android.server.wm.flicker.helpers.AutomationUtils.wakeUpAndGoToHomeScreen;
-
 import android.app.Instrumentation;
 import android.platform.helpers.IAppHelper;
 
 import androidx.test.filters.FlakyTest;
-import androidx.test.InstrumentationRegistry;
-import androidx.test.runner.AndroidJUnit4;
+import androidx.test.platform.app.InstrumentationRegistry;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
+import androidx.test.uiautomator.UiDevice;
 
 import com.android.server.wm.flicker.StandardAppHelper;
+import com.android.server.wm.flicker.helpers.AutomationUtilsKt;
 
 import org.junit.Before;
 import org.junit.FixMethodOrder;
@@ -48,7 +48,7 @@ public class WindowAnimationFrameStatsMonitorTest {
     public void setup() {
         mInstrumentation = InstrumentationRegistry.getInstrumentation();
         mWindowAnimationFrameStatsMonitor = new WindowAnimationFrameStatsMonitor(mInstrumentation);
-        wakeUpAndGoToHomeScreen();
+        AutomationUtilsKt.wakeUpAndGoToHomeScreen(UiDevice.getInstance(mInstrumentation));
     }
 
     @Test

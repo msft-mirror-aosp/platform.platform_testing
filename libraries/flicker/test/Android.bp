@@ -26,7 +26,7 @@ android_test {
     srcs: ["src/**/*.java"],
     libs: ["android.test.runner"],
     static_libs: [
-        "androidx.test.rules",
+        "androidx.test.ext.junit",
         "flickerlib",
         "launcher-aosp-tapl"
     ],

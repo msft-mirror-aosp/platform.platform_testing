@@ -24,8 +24,10 @@ import static com.google.common.truth.Truth.assertThat;
 import android.app.Instrumentation;
 import android.surfaceflinger.nano.Layerstrace.LayersTraceFileProto;
 
-import androidx.test.InstrumentationRegistry;
-import androidx.test.runner.AndroidJUnit4;
+import androidx.test.platform.app.InstrumentationRegistry;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
+
+import com.android.server.wm.flicker.FlickerRunResult;
 
 import com.google.common.io.Files;
 
@@ -82,7 +84,8 @@ public class LayersTraceMonitorTest {
     public void captureLayersTrace() throws Exception {
         mLayersTraceMonitor.start();
         mLayersTraceMonitor.stop();
-        savedTrace = mLayersTraceMonitor.save("captureWindowTrace");
+        FlickerRunResult.Builder builder = new FlickerRunResult.Builder(0);
+        savedTrace = mLayersTraceMonitor.save("captureWindowTrace", builder);
         File testFile = savedTrace.toFile();
         assertThat(testFile.exists()).isTrue();
         String calculatedChecksum = TraceMonitor.calculateChecksum(savedTrace);

@@ -16,6 +16,7 @@
 
 package com.android.server.wm.flicker.monitor
 
+import com.android.server.wm.flicker.FlickerRunResult
 import java.nio.file.Path
 
 /** Collects test artifacts during a UI transition.  */
@@ -32,9 +33,11 @@ interface ITransitionMonitor {
      *
      * @param testTag suffix added to artifact name
      * @param iteration suffix added to artifact name
+     * @param flickerRunResultBuilder Flicker run results
      * @return Path to saved artifact
      */
-    fun save(testTag: String, iteration: Int): Path = save("${testTag}_$iteration")
+    fun save(testTag: String, iteration: Int, flickerRunResultBuilder: FlickerRunResult.Builder): Path
+            = save("${testTag}_$iteration", flickerRunResultBuilder)
 
     /**
      * Saves any monitor artifacts to file adding `testTag` to the file name.
@@ -51,9 +54,10 @@ interface ITransitionMonitor {
      * not have security privileges to access /data/misc/wmtrace.
      *
      * @param testTag suffix added to trace name used to identify trace
+     * @param flickerRunResultBuilder Flicker run results
      * @return Path to saved trace file and file checksum (SHA-256)
      */
-    fun save(testTag: String): Path
+    fun save(testTag: String, flickerRunResultBuilder: FlickerRunResult.Builder): Path
 
     val checksum: String
 }

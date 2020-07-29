@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.server.wm.flicker
+package com.android.server.wm.flicker.assertions
 
 import androidx.annotation.VisibleForTesting
 import com.google.common.truth.Truth
@@ -25,9 +25,37 @@ data class AssertionResult @JvmOverloads constructor(
     val reason: String,
     val assertionName: String = "",
     val timestamp: Long = 0,
-    val success: Boolean
+    val success: Boolean = true
 ) {
-    /** Returns the negated `Result` and adds a negation prefix to the assertion name.  */
+    /**
+     * Creates a new instance with name and success
+     *
+     * @param assertionName Name of the assertion
+     * @param success If the assertion passes or not
+     */
+    constructor(assertionName: String, success: Boolean): this(
+            reason = "",
+            assertionName = assertionName,
+            timestamp = 0,
+            success = success
+    )
+
+    /**
+     * Creates a new instance with name and assertion to determine success.
+     *
+     * @param assertionName Name of the assertion
+     * @param predicate Expression to determine if the assertion passes or not
+     */
+    constructor(assertionName: String, predicate: () -> Boolean): this(
+        reason = "",
+        assertionName = assertionName,
+        timestamp = 0,
+        success = predicate()
+    )
+
+    /**
+     * Returns the negated `Result` and adds a negation prefix to the assertion name.
+     */
     fun negate(): AssertionResult {
         val negatedAssertionName: String = if (assertionName.startsWith(NEGATION_PREFIX)) {
             assertionName.substring(NEGATION_PREFIX.length + 1)
@@ -55,11 +83,9 @@ data class AssertionResult @JvmOverloads constructor(
         }
     }
 
-    override fun toString(): String = """
-        Timestamp: ${prettyTimestamp(timestamp)}
-        Assertion: $assertionName
-        Reason:   $reason
-        """.trimIndent()
+    override fun toString(): String = "Timestamp: ${prettyTimestamp(timestamp)}\n" +
+            "Assertion: $assertionName\n" +
+            "Reason:   ${reason.replace("\n", "\n\t")}"
 
     private fun prettyTimestamp(timestampNs: Long): String {
         var remainingNs = timestampNs

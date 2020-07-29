@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-package com.android.server.wm.flicker
+package com.android.server.wm.flicker.traces.layers
 
 import android.surfaceflinger.nano.Layerstrace
+import com.android.server.wm.flicker.traces.TraceBase
 import java.nio.file.Path
 
 /**
@@ -26,16 +27,10 @@ import java.nio.file.Path
  * Each entry is parsed into a list of [LayerTraceEntry] objects.
  */
 class LayersTrace private constructor(
-    val entries: List<LayerTraceEntry>,
-    val source: Path?,
-    val sourceChecksum: String
-) {
-    fun getEntry(timestamp: Long): LayerTraceEntry {
-        return entries.first { it.timestamp == timestamp }
-    }
-
-    fun hasSource(): Boolean = source != null
-
+        entries: List<LayerTraceEntry>,
+        source: Path?,
+        sourceChecksum: String
+): TraceBase<LayerTraceEntry>(entries, source, sourceChecksum) {
     companion object {
         /**
          * Parses `LayersTraceFileProto` from `data` and uses the proto to generates a list

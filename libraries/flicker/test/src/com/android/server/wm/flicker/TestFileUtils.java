@@ -16,14 +16,14 @@
 package com.android.server.wm.flicker;
 
 import android.content.Context;
-import androidx.test.InstrumentationRegistry;
+import androidx.test.platform.app.InstrumentationRegistry;
 import com.google.common.io.ByteStreams;
 import java.io.InputStream;
 
 /** Helper functions for test file resources. */
 class TestFileUtils {
     static byte[] readTestFile(String relativePath) throws Exception {
-        Context context = InstrumentationRegistry.getContext();
+        Context context = InstrumentationRegistry.getInstrumentation().getContext();
         InputStream in = context.getResources().getAssets().open("testdata/" + relativePath);
         return ByteStreams.toByteArray(in);
     }

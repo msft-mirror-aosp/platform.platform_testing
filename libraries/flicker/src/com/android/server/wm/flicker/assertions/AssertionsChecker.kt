@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 
-package com.android.server.wm.flicker
+package com.android.server.wm.flicker.assertions
+
+import com.android.server.wm.flicker.traces.ITraceEntry
 
 /**
  * Captures some of the common logic in [LayersTraceSubject] and [WmTraceSubject] used

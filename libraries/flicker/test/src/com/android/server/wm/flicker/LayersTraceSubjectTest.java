@@ -16,7 +16,7 @@
 
 package com.android.server.wm.flicker;
 
-import static com.android.server.wm.flicker.LayersTraceSubject.assertThat;
+import static com.android.server.wm.flicker.traces.layers.LayersTraceSubject.assertThat;
 import static com.android.server.wm.flicker.TestFileUtils.readTestFile;
 
 import static com.google.common.truth.Truth.assertWithMessage;
@@ -25,8 +25,13 @@ import static org.junit.Assert.fail;
 
 import android.graphics.Region;
 
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.FlakyTest;
-import androidx.test.runner.AndroidJUnit4;
+
+import com.android.server.wm.flicker.traces.layers.Layer;
+import com.android.server.wm.flicker.traces.layers.LayerTraceEntry;
+import com.android.server.wm.flicker.traces.layers.LayersTrace;
+import com.android.server.wm.flicker.traces.layers.LayersTraceSubject;
 
 import org.junit.FixMethodOrder;
 import org.junit.Test;

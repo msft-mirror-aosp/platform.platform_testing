@@ -23,8 +23,10 @@ import static com.google.common.truth.Truth.assertWithMessage;
 
 import android.graphics.Region;
 
-import androidx.test.runner.AndroidJUnit4;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 
+import com.android.server.wm.flicker.traces.windowmanager.WindowManagerTrace;
+import com.android.server.wm.flicker.traces.windowmanager.WindowManagerTraceEntry;
 import com.android.server.wm.nano.WindowStateProto;
 
 import org.junit.Before;

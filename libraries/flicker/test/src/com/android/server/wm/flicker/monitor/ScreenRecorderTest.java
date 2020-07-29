@@ -22,8 +22,10 @@ import static com.google.common.truth.Truth.assertThat;
 
 import android.app.Instrumentation;
 
-import androidx.test.InstrumentationRegistry;
-import androidx.test.runner.AndroidJUnit4;
+import androidx.test.platform.app.InstrumentationRegistry;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
+
+import com.android.server.wm.flicker.FlickerRunResult;
 
 import org.junit.After;
 import org.junit.Before;
@@ -76,7 +78,8 @@ public class ScreenRecorderTest {
         mScreenRecorder.start();
         sleep(100);
         mScreenRecorder.stop();
-        Path file = mScreenRecorder.save(TEST_VIDEO_FILENAME);
+        FlickerRunResult.Builder builder = new FlickerRunResult.Builder(0);
+        Path file = mScreenRecorder.save(TEST_VIDEO_FILENAME, builder);
         assertThat(Files.exists(file)).isTrue();
     }
 }

@@ -19,7 +19,8 @@ package com.android.server.wm.flicker.monitor
 import android.app.Instrumentation
 import android.util.Log
 import android.view.FrameStats
-import com.android.server.wm.flicker.FLICKER_TAG
+import com.android.server.wm.flicker.FlickerRunResult
+import com.android.server.wm.flicker.helpers.FLICKER_TAG
 import java.nio.file.Path
 import kotlin.math.max
 
@@ -78,7 +79,7 @@ open class WindowAnimationFrameStatsMonitor(
         analyze()
     }
 
-    override fun save(testTag: String): Path {
+    override fun save(testTag: String, flickerRunResultBuilder: FlickerRunResult.Builder): Path {
         throw UnsupportedOperationException("Save not implemented for this monitor")
     }
 

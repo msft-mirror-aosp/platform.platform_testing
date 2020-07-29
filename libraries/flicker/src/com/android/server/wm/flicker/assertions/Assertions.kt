@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.server.wm.flicker
+package com.android.server.wm.flicker.assertions
 
 /**
  * Checks assertion on a single trace entry.

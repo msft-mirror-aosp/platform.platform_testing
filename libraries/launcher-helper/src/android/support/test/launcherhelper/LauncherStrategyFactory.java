@@ -15,6 +15,7 @@
  */
 package android.support.test.launcherhelper;
 
+import android.app.Instrumentation;
 import android.support.test.uiautomator.UiDevice;
 import android.util.Log;
 
@@ -50,6 +51,16 @@ public class LauncherStrategyFactory {
         registerLauncherStrategy(LeanbackLauncherStrategy.class);
         registerLauncherStrategy(WearLauncherStrategy.class);
         registerLauncherStrategy(TvLauncherStrategy.class);
+    }
+
+    /**
+     * Retrieves an instance of the {@link LauncherStrategyFactory}
+     *
+     * @param instrumentation
+     * @return
+     */
+    public static LauncherStrategyFactory getInstance(Instrumentation instrumentation) {
+        return getInstance(UiDevice.getInstance(instrumentation));
     }
 
     /**

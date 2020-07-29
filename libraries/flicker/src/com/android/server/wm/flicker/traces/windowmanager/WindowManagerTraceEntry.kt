@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 
-package com.android.server.wm.flicker
+package com.android.server.wm.flicker.traces.windowmanager
 
 import android.graphics.Region
 import android.graphics.nano.RectProto
+import com.android.server.wm.flicker.assertions.AssertionResult
+import com.android.server.wm.flicker.traces.ITraceEntry
 import com.android.server.wm.nano.WindowContainerChildProto
 import com.android.server.wm.nano.WindowContainerProto
 import com.android.server.wm.nano.WindowManagerTraceProto

@@ -14,14 +14,21 @@
  * limitations under the License.
  */
 
-package com.android.server.wm.flicker
+package com.android.server.wm.flicker.traces
 
-/**
- * Common interface for Layer and WindowManager trace entries.
- */
-interface ITraceEntry {
-    /**
-     * @return timestamp of current entry
-     */
-    val timestamp: Long
+import java.nio.file.Path
+import java.util.Optional
+
+abstract class TraceBase<Entry: ITraceEntry>(
+    val entries: List<Entry>,
+    private val _source: Path?,
+    val sourceChecksum: String) {
+    val source get() = Optional.ofNullable(_source)
+
+    fun getEntry(timestamp: Long): Entry {
+        return entries.firstOrNull { it.timestamp == timestamp }
+                ?: throw RuntimeException("Entry does not exist for timestamp $timestamp")
+    }
+
+    fun hasSource(): Boolean = _source != null
 }

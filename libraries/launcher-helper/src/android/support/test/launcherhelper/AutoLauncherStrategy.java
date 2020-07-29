@@ -398,6 +398,18 @@ public class AutoLauncherStrategy implements IAutoLauncherStrategy {
                 "The feature not supported on Auto");
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public void openOverview() {
+        throw new UnsupportedOperationException("The feature not supported on Auto");
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean clearRecentAppsFromOverview() {
+        throw new UnsupportedOperationException("The feature not supported on Auto");
+    }
+
     @SuppressWarnings("unused")
     @Override
     public BySelector getAllAppsButtonSelector() {
@@ -452,6 +464,12 @@ public class AutoLauncherStrategy implements IAutoLauncherStrategy {
     public BySelector getHotSeatSelector() {
         throw new UnsupportedOperationException(
                 "The feature not supported on Auto");
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public BySelector getOverviewSelector() {
+        throw new UnsupportedOperationException("The feature not supported on Auto");
     }
 
     @SuppressWarnings("unused")

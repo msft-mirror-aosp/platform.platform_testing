@@ -18,10 +18,12 @@ package com.android.server.wm.flicker.monitor
 
 import androidx.annotation.VisibleForTesting
 import com.android.compatibility.common.util.SystemUtil
+import com.android.server.wm.flicker.FlickerRunResult
 import com.google.common.io.BaseEncoding
 import java.io.FileInputStream
 import java.io.IOException
 import java.nio.ByteBuffer
+import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.security.MessageDigest
@@ -41,15 +43,21 @@ abstract class TraceMonitor internal constructor(
 
     abstract val isEnabled: Boolean
 
+    abstract fun setResult(flickerRunResultBuilder: FlickerRunResult.Builder, traceFile: Path)
+
     internal constructor(
         outputDir: Path,
         traceFileName: String
     ) : this(outputDir, TRACE_DIR.resolve(traceFileName))
 
-    override fun save(testTag: String): Path {
+    override fun save(testTag: String, flickerRunResultBuilder: FlickerRunResult.Builder): Path {
         outputPath.toFile().mkdirs()
         val savedTrace = outputPath.resolve("${testTag}_${sourceTraceFilePath.fileName}")
         moveFile(sourceTraceFilePath, savedTrace)
+        assert(Files.exists(savedTrace)) { "Unable to save trace file" }
+
+        setResult(flickerRunResultBuilder, savedTrace)
+
         checksum = calculateChecksum(savedTrace)
         return savedTrace
     }

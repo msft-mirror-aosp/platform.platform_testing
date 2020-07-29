@@ -23,9 +23,10 @@ import static com.google.common.truth.Truth.assertThat;
 
 import android.app.Instrumentation;
 
-import androidx.test.InstrumentationRegistry;
-import androidx.test.runner.AndroidJUnit4;
+import androidx.test.platform.app.InstrumentationRegistry;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 
+import com.android.server.wm.flicker.FlickerRunResult;
 import com.android.server.wm.nano.WindowManagerTraceFileProto;
 
 import com.google.common.io.Files;
@@ -83,7 +84,8 @@ public class WindowManagerTraceMonitorTest {
     public void captureWindowTrace() throws Exception {
         mWindowManagerTraceMonitor.start();
         mWindowManagerTraceMonitor.stop();
-        savedTrace = mWindowManagerTraceMonitor.save("captureWindowTrace");
+        FlickerRunResult.Builder builder = new FlickerRunResult.Builder(0);
+        savedTrace = mWindowManagerTraceMonitor.save("captureWindowTrace", builder);
         File testFile = savedTrace.toFile();
         assertThat(testFile.exists()).isTrue();
         String calculatedChecksum = TraceMonitor.calculateChecksum(savedTrace);

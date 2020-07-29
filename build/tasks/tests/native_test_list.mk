@@ -119,6 +119,7 @@ native_tests := \
     statsd_test \
     syscall_filter_unittest_gtest \
     time-unit-tests \
+    unicode-xid_device_test_src_lib \
     update_engine_unittests \
     vintf_object_test \
     wificond_unit_test \

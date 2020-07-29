@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package com.android.server.wm.flicker
+package com.android.server.wm.flicker.traces.windowmanager
 
+import com.android.server.wm.flicker.traces.TraceBase
 import com.android.server.wm.nano.WindowManagerTraceFileProto
 import com.google.protobuf.nano.InvalidProtocolBufferNanoException
 import java.nio.file.Path
-import java.util.Optional
 
 /**
  * Contains a collection of parsed WindowManager trace entries and assertions to apply over a single
@@ -28,17 +28,10 @@ import java.util.Optional
  * Each entry is parsed into a list of [WindowManagerTraceEntry] objects.
  */
 class WindowManagerTrace private constructor(
-    val entries: List<WindowManagerTraceEntry>,
-    private val _source: Path?,
-    val sourceChecksum: String
-) {
-    val source get() = Optional.ofNullable(_source)
-
-    fun getEntry(timestamp: Long): WindowManagerTraceEntry {
-        return entries.firstOrNull { it.timestamp == timestamp }
-                ?: throw RuntimeException("Entry does not exist for timestamp $timestamp")
-    }
-
+        entries: List<WindowManagerTraceEntry>,
+        source: Path?,
+        sourceChecksum: String
+): TraceBase<WindowManagerTraceEntry>(entries, source, sourceChecksum) {
     companion object {
         /**
          * Parses `WindowManagerTraceFileProto` from `data` and uses the proto to generates

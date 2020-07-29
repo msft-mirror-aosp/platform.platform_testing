@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.server.wm.flicker
+package com.android.server.wm.flicker.traces.layers
 
 import android.graphics.Rect
 import android.graphics.Region
