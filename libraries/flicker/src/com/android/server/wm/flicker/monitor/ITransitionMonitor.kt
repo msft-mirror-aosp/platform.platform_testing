@@ -36,7 +36,7 @@ interface ITransitionMonitor {
      * @param flickerRunResultBuilder Flicker run results
      * @return Path to saved artifact
      */
-    fun save(testTag: String, iteration: Int, flickerRunResultBuilder: FlickerRunResult.Builder): Path
+    fun save(testTag: String, iteration: Int, flickerRunResultBuilder: FlickerRunResult.Builder)
             = save("${testTag}_$iteration", flickerRunResultBuilder)
 
     /**
@@ -55,9 +55,11 @@ interface ITransitionMonitor {
      *
      * @param testTag suffix added to trace name used to identify trace
      * @param flickerRunResultBuilder Flicker run results
-     * @return Path to saved trace file and file checksum (SHA-256)
      */
-    fun save(testTag: String, flickerRunResultBuilder: FlickerRunResult.Builder): Path
+    fun save(testTag: String, flickerRunResultBuilder: FlickerRunResult.Builder) {
+        throw UnsupportedOperationException("Save not implemented for this monitor")
+    }
 
     val checksum: String
+        get() = throw UnsupportedOperationException("Checksum not implemented for this monitor")
 }

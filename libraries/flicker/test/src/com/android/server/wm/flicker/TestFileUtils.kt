@@ -14,12 +14,15 @@
  * limitations under the License.
  */
 
-package com.android.server.wm.flicker.helpers
+package com.android.server.wm.flicker
 
-import android.app.Instrumentation
+import android.content.Context
+import androidx.test.platform.app.InstrumentationRegistry
+import com.google.common.io.ByteStreams
 
-internal const val FLICKER_TAG = "FLICKER"
-
-fun getDefaultFlickerOutputDir(instrumentation: Instrumentation) =
-        instrumentation.targetContext.getExternalFilesDir(null)?.toPath()
-                ?: error(IllegalArgumentException("External directory path should not be null"))
+@Throws(Exception::class)
+fun readTestFile(relativePath: String): ByteArray {
+    val context: Context = InstrumentationRegistry.getInstrumentation().context
+    val inputStream = context.resources.assets.open("testdata/$relativePath")
+    return ByteStreams.toByteArray(inputStream)
+}

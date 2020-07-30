@@ -23,7 +23,7 @@ android_test {
     certificate: "platform",
     platform_apis: true,
     test_suites: ["device-tests"],
-    srcs: ["src/**/*.java"],
+    srcs: ["src/**/*.kt"],
     libs: ["android.test.runner"],
     static_libs: [
         "androidx.test.ext.junit",

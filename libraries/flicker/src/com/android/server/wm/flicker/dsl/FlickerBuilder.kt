@@ -22,6 +22,7 @@ import android.support.test.launcherhelper.LauncherStrategyFactory
 import androidx.test.uiautomator.UiDevice
 import com.android.server.wm.flicker.Flicker
 import com.android.server.wm.flicker.FlickerDslMarker
+import com.android.server.wm.flicker.helpers.getDefaultFlickerOutputDir
 import com.android.server.wm.flicker.monitor.ITransitionMonitor
 import com.android.server.wm.flicker.traces.layers.LayersTrace
 import com.android.server.wm.flicker.traces.windowmanager.WindowManagerTrace
@@ -51,9 +52,7 @@ data class FlickerBuilder(
         /**
      * Output directory for the test results
      */
-    private val outputDir: Path = instrumentation.targetContext
-            .getExternalFilesDir(null)?.toPath()
-            ?: error(IllegalArgumentException("External directory path should not be null"))
+    private val outputDir: Path = getDefaultFlickerOutputDir(instrumentation)
 ) {
     private var testTag: String = ""
     private var iterations: Int = 1

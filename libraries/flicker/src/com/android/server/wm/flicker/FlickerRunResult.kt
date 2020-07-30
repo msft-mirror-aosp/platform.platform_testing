@@ -16,6 +16,7 @@
 
 package com.android.server.wm.flicker
 
+import com.android.server.wm.flicker.traces.FocusEvent
 import com.android.server.wm.flicker.traces.layers.LayersTrace
 import com.android.server.wm.flicker.traces.windowmanager.WindowManagerTrace
 import java.nio.file.Files
@@ -24,33 +25,37 @@ import java.nio.file.Path
 /**
  * Defines the result of a flicker run
  */
-class FlickerRunResult private constructor(
+data class FlickerRunResult (
     /**
-     *
-     */
+        *
+        */
     val iteration: Int,
     /**
-     * Path to the WindowManager trace file, if collected
-     */
-    val wmTraceFile: Path?,
+        * Path to the WindowManager trace file, if collected
+        */
+    @JvmField val wmTraceFile: Path?,
     /**
-     * Path to the SurfaceFlinger trace file, if collected
-     */
-    val layersTraceFile: Path?,
+        * Path to the SurfaceFlinger trace file, if collected
+        */
+    @JvmField val layersTraceFile: Path?,
     /**
-     * Path to screen recording of the run, if collected
-     */
-    val screenRecording: Path?
+        * Path to screen recording of the run, if collected
+        */
+    @JvmField val screenRecording: Path?,
+
+    /**
+        * List of focus events, if collected
+        */
+    val eventLog: List<FocusEvent>
 ) {
+
     /**
      * Obtain the [WindowManagerTrace] that corresponds to [wmTraceFile], or null if the
      * path is invalid
      */
     val wmTrace: WindowManagerTrace? by lazy {
-        if (wmTraceFile == null) {
-            null
-        } else {
-            val traceData = Files.readAllBytes(wmTraceFile)
+        wmTraceFile?.let {
+            val traceData = Files.readAllBytes(it)
             WindowManagerTrace.parseFrom(traceData)
         }
     }
@@ -60,10 +65,8 @@ class FlickerRunResult private constructor(
      * path is invalid
      */
     val layersTrace: LayersTrace? by lazy {
-        if (layersTraceFile == null) {
-            null
-        } else {
-            val traceData = Files.readAllBytes(layersTraceFile)
+        layersTraceFile?.let {
+            val traceData = Files.readAllBytes(it)
             LayersTrace.parseFrom(traceData)
         }
     }
@@ -82,6 +85,11 @@ class FlickerRunResult private constructor(
          */
         var screenRecording: Path? = null
 
-        fun build() = FlickerRunResult(iteration, wmTraceFile, layersTraceFile, screenRecording)
+        /**
+         * List of focus events, if collected
+         */
+        var eventLog = listOf<FocusEvent>()
+
+        fun build() = FlickerRunResult(iteration, wmTraceFile, layersTraceFile, screenRecording, eventLog)
     }
 }

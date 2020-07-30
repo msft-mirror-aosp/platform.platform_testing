@@ -14,12 +14,16 @@
  * limitations under the License.
  */
 
-package com.android.server.wm.flicker.helpers
+package com.android.server.wm.flicker.traces
 
-import android.app.Instrumentation
+class FocusEvent(override val timestamp:Long, val window:String, val focus: Focus): ITraceEntry {
+    enum class Focus {GAINED, LOST}
 
-internal const val FLICKER_TAG = "FLICKER"
+    override fun toString(): String {
+        return "$timestamp: Focus ${focus.name} $window"
+    }
 
-fun getDefaultFlickerOutputDir(instrumentation: Instrumentation) =
-        instrumentation.targetContext.getExternalFilesDir(null)?.toPath()
-                ?: error(IllegalArgumentException("External directory path should not be null"))
+    fun hasFocus(): Boolean {
+        return this.focus == Focus.GAINED
+    }
+}

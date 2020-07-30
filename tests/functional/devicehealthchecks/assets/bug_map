@@ -20,6 +20,8 @@ system_app_native_crash com.google.android.providers.media.module 154416156
 system_app_native_crash HwBinder*.*com.android.bluetooth 155074413
 system_app_native_crash ReferenceQueueD*.*com.google.android.apps.safetyhub 162103095
 system_app_native_crash Binder*.*com.google.android.apps.safetyhub 162104694
+system_app_native_crash Lite\sThread*.*com.google.android.apps.safetyhub 162379378
+system_app_native_crash BG\sThread*.*com.google.android.apps.safetyhub 162381002
 system_server_crash void.com.android.server.location.gnss.GnssBatchingProvider.enable 159504970
 SYSTEM_TOMBSTONE android.hardware.vibrator-service.drv2624 151884322
 SYSTEM_TOMBSTONE /vendor/bin/hw/android.hardware.gnss@1.0-service-qti 129282808

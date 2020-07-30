@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 The Android Open Source Project
+ * Copyright (C) 2020 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,46 +14,30 @@
  * limitations under the License.
  */
 
-package com.android.server.wm.flicker;
+package com.android.server.wm.flicker
 
-import static com.android.server.wm.flicker.TestFileUtils.readTestFile;
-import static com.android.server.wm.flicker.traces.windowmanager.WmTraceSubject.assertThat;
-
-import androidx.test.ext.junit.runners.AndroidJUnit4;
-
-import com.android.server.wm.flicker.traces.windowmanager.WindowManagerTrace;
-import com.android.server.wm.flicker.traces.windowmanager.WmTraceSubject;
-
-import org.junit.FixMethodOrder;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.MethodSorters;
+import com.android.server.wm.flicker.traces.windowmanager.WindowManagerTrace
+import com.android.server.wm.flicker.traces.windowmanager.WindowManagerTrace.Companion.parseFrom
+import com.android.server.wm.flicker.traces.windowmanager.WmTraceSubject
+import com.android.server.wm.flicker.traces.windowmanager.WmTraceSubject.Companion.assertThat
+import org.junit.FixMethodOrder
+import org.junit.Test
+import org.junit.runners.MethodSorters
 
 /**
- * Contains {@link WmTraceSubject} tests. To run this test: {@code atest
- * FlickerLibTest:WmTraceSubjectTest}
+ * Contains [WmTraceSubject] tests. To run this test: `atest
+ * FlickerLibTest:WmTraceSubjectTest`
  */
-@RunWith(AndroidJUnit4.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class WmTraceSubjectTest {
-    private static WindowManagerTrace readWmTraceFromFile(String relativePath) {
-        try {
-            return WindowManagerTrace.parseFrom(readTestFile(relativePath));
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
+class WmTraceSubjectTest {
     @Test
-    public void testVisibleAppWindowForRange() {
-        WindowManagerTrace trace = readWmTraceFromFile("wm_trace_openchrome.pb");
-
+    fun testVisibleAppWindowForRange() {
+        val trace = readWmTraceFromFile("wm_trace_openchrome.pb")
         assertThat(trace)
                 .showsAppWindowOnTop("NexusLauncherActivity")
                 .and()
                 .showsAboveAppWindow("ScreenDecorOverlay")
-                .forRange(9213763541297L, 9215536878453L);
-
+                .forRange(9213763541297L, 9215536878453L)
         assertThat(trace)
                 .showsAppWindowOnTop("com.android.chrome")
                 .and()
@@ -66,13 +50,12 @@ public class WmTraceSubjectTest {
                 .hidesAppWindow("NexusLauncherActivity")
                 .and()
                 .showsAboveAppWindow("ScreenDecorOverlay")
-                .forRange(9215551505798L, 9216093628925L);
+                .forRange(9215551505798L, 9216093628925L)
     }
 
     @Test
-    public void testCanTransitionInAppWindow() {
-        WindowManagerTrace trace = readWmTraceFromFile("wm_trace_openchrome.pb");
-
+    fun testCanTransitionInAppWindow() {
+        val trace = readWmTraceFromFile("wm_trace_openchrome.pb")
         assertThat(trace)
                 .showsAppWindowOnTop("NexusLauncherActivity")
                 .and()
@@ -81,61 +64,69 @@ public class WmTraceSubjectTest {
                 .showsAppWindowOnTop("com.android.chrome")
                 .and()
                 .showsAboveAppWindow("ScreenDecorOverlay")
-                .forAllEntries();
+                .forAllEntries()
     }
 
     @Test
-    public void testCanInspectBeginning() {
-        WindowManagerTrace trace = readWmTraceFromFile("wm_trace_openchrome.pb");
-
+    fun testCanInspectBeginning() {
+        val trace = readWmTraceFromFile("wm_trace_openchrome.pb")
         assertThat(trace)
                 .showsAppWindowOnTop("NexusLauncherActivity")
                 .and()
                 .showsAboveAppWindow("ScreenDecorOverlay")
-                .inTheBeginning();
+                .inTheBeginning()
     }
 
     @Test
-    public void testCanInspectEnd() {
-        WindowManagerTrace trace = readWmTraceFromFile("wm_trace_openchrome.pb");
-
+    fun testCanInspectEnd() {
+        val trace = readWmTraceFromFile("wm_trace_openchrome.pb")
         assertThat(trace)
                 .showsAppWindowOnTop("com.android.chrome")
                 .and()
                 .showsAboveAppWindow("ScreenDecorOverlay")
-                .atTheEnd();
+                .atTheEnd()
     }
 
     @Test
-    public void testCanTransitionNonAppWindow() {
-        WindowManagerTrace trace = readWmTraceFromFile("wm_trace_ime.pb");
-        WmTraceSubject.assertThat(trace)
+    fun testCanTransitionNonAppWindow() {
+        val trace = readWmTraceFromFile("wm_trace_ime.pb")
+        assertThat(trace)
                 .skipUntilFirstAssertion()
                 .hidesNonAppWindow("InputMethod")
                 .then()
                 .showsNonAppWindow("InputMethod")
-                .forAllEntries();
+                .forAllEntries()
     }
 
     @Test
-    public void testCanTransitionAboveAppWindow() {
-        WindowManagerTrace trace = readWmTraceFromFile("wm_trace_ime.pb");
-        WmTraceSubject.assertThat(trace)
+    fun testCanTransitionAboveAppWindow() {
+        val trace = readWmTraceFromFile("wm_trace_ime.pb")
+        assertThat(trace)
                 .skipUntilFirstAssertion()
                 .hidesAboveAppWindow("InputMethod")
                 .then()
                 .showsAboveAppWindow("InputMethod")
-                .forAllEntries();
+                .forAllEntries()
     }
 
     @Test
-    public void testCanTransitionBelowAppWindow() {
-        WindowManagerTrace trace = readWmTraceFromFile("wm_trace_open_app_cold.pb");
-        WmTraceSubject.assertThat(trace)
+    fun testCanTransitionBelowAppWindow() {
+        val trace = readWmTraceFromFile("wm_trace_open_app_cold.pb")
+        assertThat(trace)
                 .skipUntilFirstAssertion()
                 .showsBelowAppWindow("Wallpaper")
                 .then()
                 .hidesBelowAppWindow("Wallpaper")
-                .forAllEntries();
+                .forAllEntries()
+    }
+
+    companion object {
+        private fun readWmTraceFromFile(relativePath: String): WindowManagerTrace {
+            return try {
+                parseFrom(readTestFile(relativePath))
+            } catch (e: Exception) {
+                throw RuntimeException(e)
+            }
+        }
     }
 }

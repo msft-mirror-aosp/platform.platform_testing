@@ -79,13 +79,6 @@ open class WindowAnimationFrameStatsMonitor(
         analyze()
     }
 
-    override fun save(testTag: String, flickerRunResultBuilder: FlickerRunResult.Builder): Path {
-        throw UnsupportedOperationException("Save not implemented for this monitor")
-    }
-
-    override val checksum: String
-        get() = throw UnsupportedOperationException("Checksum not implemented for this monitor")
-
     fun jankyFramesDetected(): Boolean = frameStats?.frameCount ?: 0 > 0 && numJankyFrames > 0
 
     override fun toString(): String = """$frameStats
