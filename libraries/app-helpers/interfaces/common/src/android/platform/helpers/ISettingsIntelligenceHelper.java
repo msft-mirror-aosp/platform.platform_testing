@@ -22,6 +22,7 @@ public interface ISettingsIntelligenceHelper extends IAppHelper {
     public static final String PAGE_ACTION_APPLICATION = "android.settings.APPLICATION_SETTINGS";
     public static final String PAGE_ACTION_BATTERY = "android.intent.action.POWER_USAGE_SUMMARY";
     public static final String PAGE_ACTION_BLUETOOTH = "android.settings.BLUETOOTH_SETTINGS";
+    public static final String PAGE_ACTION_LOCATION = "android.settings.LOCATION_SOURCE_SETTINGS";
     public static final String PAGE_ACTION_STORAGE = "android.settings.INTERNAL_STORAGE_SETTINGS";
     public static final String PAGE_ACTION_WIFI = "android.settings.WIFI_SETTINGS";
 

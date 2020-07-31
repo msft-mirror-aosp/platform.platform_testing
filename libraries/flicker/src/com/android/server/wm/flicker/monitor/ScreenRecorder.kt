@@ -50,10 +50,6 @@ open class ScreenRecorder @JvmOverloads constructor(
     }
 
     override fun stop() {
-        if (!isEnabled) {
-            return
-        }
-
         SystemUtil.runShellCommand("killall -s 2 screenrecord")
         try {
             recorderThread.join()
