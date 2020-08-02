@@ -87,6 +87,7 @@ public class LauncherStrategyFactory {
             try {
                 ILauncherStrategy strategy = launcherStrategy.newInstance();
                 mInstanceMap.put(strategy.getSupportedLauncherPackage(), strategy);
+                mKnownLauncherStrategies.add(launcherStrategy);
             } catch (InstantiationException | IllegalAccessException e) {
                 Log.e(LOG_TAG, "exception while creating instance: "
                         + launcherStrategy.getCanonicalName());

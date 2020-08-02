@@ -3,6 +3,8 @@ package com.android.server.wm.flicker.monitor
 import android.util.EventLog
 import com.android.server.wm.flicker.FlickerRunResult
 import com.android.server.wm.flicker.traces.FocusEvent
+import junit.framework.Assert.assertEquals
+import junit.framework.Assert.assertTrue
 import org.junit.Test
 
 /**
@@ -13,8 +15,9 @@ class EventLogMonitorTest {
     @Test
     fun canCaptureFocusEventLogs() {
         val monitor = EventLogMonitor()
-        EventLog.writeEvent(INPUT_FOCUS_TAG /* input_focus */, "Focus leaving 183087b com.google.android.apps.nexuslauncher/com.google.android.apps.nexuslauncher.NexusLauncherActivity (server)")
-        EventLog.writeEvent(INPUT_FOCUS_TAG /* input_focus */, "Focus entering 4749f88 com.android.phone/com.android.phone.settings.fdn.FdnSetting (server)")
+        EventLog.writeEvent(INPUT_FOCUS_TAG /* input_focus */, "Focus entering 111 com.android.phone/com.android.phone.settings.fdn.FdnSetting (server)")
+        EventLog.writeEvent(INPUT_FOCUS_TAG /* input_focus */, "Focus leaving 222 com.google.android.apps.nexuslauncher/com.google.android.apps.nexuslauncher.NexusLauncherActivity (server)")
+        EventLog.writeEvent(INPUT_FOCUS_TAG /* input_focus */, "Focus entering 333 com.android.phone/com.android.phone.settings.fdn.FdnSetting (server)")
         monitor.start()
         EventLog.writeEvent(INPUT_FOCUS_TAG /* input_focus */, "Focus leaving 4749f88 com.android.phone/com.android.phone.settings.fdn.FdnSetting (server)")
         EventLog.writeEvent(INPUT_FOCUS_TAG /* input_focus */, "Focus entering 7c01447 com.android.phone/com.android.phone.settings.fdn.FdnSetting (server)")
@@ -24,12 +27,36 @@ class EventLogMonitorTest {
         val result = FlickerRunResult.Builder(0)
         monitor.save("test", result)
 
-        assert(result.eventLog.size == 2)
-        assert(result.eventLog[0].window.equals("4749f88 com.android.phone/com.android.phone.settings.fdn.FdnSetting (server)"))
-        assert(result.eventLog[0].focus == FocusEvent.Focus.LOST)
-        assert(result.eventLog[1].window.equals("4749f88 com.android.phone/com.android.phone.settings.fdn.FdnSetting (server)"))
-        assert(result.eventLog[1].focus == FocusEvent.Focus.GAINED)
-        assert(result.eventLog[0].timestamp <= result.eventLog[1].timestamp)
+        assertEquals(2, result.eventLog.size)
+        assertEquals("4749f88 com.android.phone/com.android.phone.settings.fdn.FdnSetting (server)", result.eventLog[0].window)
+        assertEquals(FocusEvent.Focus.LOST, result.eventLog[0].focus)
+        assertEquals("7c01447 com.android.phone/com.android.phone.settings.fdn.FdnSetting (server)", result.eventLog[1].window)
+        assertEquals(FocusEvent.Focus.GAINED, result.eventLog[1].focus)
+        assertTrue(result.eventLog[0].timestamp <= result.eventLog[1].timestamp)
+    }
+
+    @Test
+    fun onlyCapturesLastTransition() {
+        val monitor = EventLogMonitor()
+        monitor.start()
+        EventLog.writeEvent(INPUT_FOCUS_TAG /* input_focus */, "Focus leaving 11111 com.android.phone/com.android.phone.settings.fdn.FdnSetting (server)")
+        EventLog.writeEvent(INPUT_FOCUS_TAG /* input_focus */, "Focus entering 22222 com.android.phone/com.android.phone.settings.fdn.FdnSetting (server)")
+        monitor.stop()
+
+        monitor.start()
+        EventLog.writeEvent(INPUT_FOCUS_TAG /* input_focus */, "Focus leaving 479f88 com.android.phone/com.android.phone.settings.fdn.FdnSetting (server)")
+        EventLog.writeEvent(INPUT_FOCUS_TAG /* input_focus */, "Focus entering 7c01447 com.android.phone/com.android.phone.settings.fdn.FdnSetting (server)")
+        monitor.stop()
+
+        val result = FlickerRunResult.Builder(0)
+        monitor.save("test", result)
+
+        assertEquals(2, result.eventLog.size)
+        assertEquals("479f88 com.android.phone/com.android.phone.settings.fdn.FdnSetting (server)", result.eventLog[0].window)
+        assertEquals(FocusEvent.Focus.LOST, result.eventLog[0].focus)
+        assertEquals("7c01447 com.android.phone/com.android.phone.settings.fdn.FdnSetting (server)", result.eventLog[1].window)
+        assertEquals(FocusEvent.Focus.GAINED, result.eventLog[1].focus)
+        assertTrue(result.eventLog[0].timestamp <= result.eventLog[1].timestamp)
     }
 
     private companion object {

@@ -16,7 +16,9 @@
 
 package com.android.server.wm.flicker.dsl
 
-import com.android.server.wm.flicker.*
+import com.android.server.wm.flicker.FlickerDslMarker
+import com.android.server.wm.flicker.traces.EventLogSubject
+import com.android.server.wm.flicker.traces.FocusEvent
 import com.android.server.wm.flicker.traces.layers.LayerTraceEntry
 import com.android.server.wm.flicker.traces.layers.LayersTrace
 import com.android.server.wm.flicker.traces.layers.LayersTraceSubject
@@ -24,18 +26,19 @@ import com.android.server.wm.flicker.traces.windowmanager.WindowManagerTrace
 import com.android.server.wm.flicker.traces.windowmanager.WindowManagerTraceEntry
 import com.android.server.wm.flicker.traces.windowmanager.WmTraceSubject
 
-typealias WmAssertion = AssertionType<WmTraceSubject, WindowManagerTrace, WindowManagerTraceEntry>
-typealias LayersAssertion = AssertionType<LayersTraceSubject, LayersTrace, LayerTraceEntry>
-
+typealias WmAssertion = AssertionType<WmTraceSubject, WindowManagerTraceEntry>
+typealias LayersAssertion = AssertionType<LayersTraceSubject, LayerTraceEntry>
+typealias EventLogAssertion = AssertionType<EventLogSubject, FocusEvent>
 /**
  * Placeholder for components that can be asserted by the Flicker DSL
  *
- * Currently supports [WindowManagerTrace] and [LayersTrace]
+ * Currently supports [WindowManagerTrace], [LayersTrace] and list of [FocusEvent]s
  */
 @FlickerDslMarker
 class AssertionTarget {
     val wmAssertions = WmAssertion()
     val layerAssertions = LayersAssertion()
+    val eventLogAssertions = EventLogAssertion()
 
     /**
      * Assertions to check the WindowManager trace
@@ -57,5 +60,16 @@ class AssertionTarget {
      */
     fun layersTrace(assertion: LayersAssertion.() -> Unit) {
         layerAssertions.apply { assertion() }
+    }
+
+    /**
+     * Assertions to check the event log
+     *
+     * This command can be used multiple times, and the results are appended
+     *
+     * @param assertion Type of assertion determining which part of the trace will be checked
+     */
+    fun eventLog(assertion: EventLogAssertion.() -> Unit) {
+        eventLogAssertions.apply { assertion() }
     }
 }

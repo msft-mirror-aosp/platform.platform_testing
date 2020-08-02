@@ -17,6 +17,7 @@
 package com.android.server.wm.flicker.traces.windowmanager
 
 import android.graphics.Region
+import com.android.server.wm.flicker.assertions.AssertionResult
 import com.android.server.wm.flicker.assertions.TraceAssertion
 import com.android.server.wm.flicker.traces.SubjectBase
 import com.google.common.truth.FailureMetadata
@@ -136,15 +137,24 @@ class WmTraceSubject private constructor(
     }
 
     /**
-     * Checks if app window with title containing the [partialWindowTitle] is on top
+     * Checks if an app window with title containing the [partialWindowTitles] is on top
      *
-     * @param partialWindowTitle window title to search
+     * @param partialWindowTitles window title to search
      */
-    fun showsAppWindowOnTop(partialWindowTitle: String) = apply {
-        addAssertion("showsAppWindowOnTop($partialWindowTitle)") {
-            var result = it.isAppWindowVisible(partialWindowTitle)
-            if (result.passed()) {
-                result = it.isVisibleAppWindowOnTop(partialWindowTitle)
+    fun showsAppWindowOnTop(vararg partialWindowTitles: String) = apply {
+        val assertionName = "showsAppWindowOnTop(${partialWindowTitles.joinToString(",")})"
+        addAssertion(assertionName) {
+            var result = AssertionResult("No window titles to search", assertionName,
+                    success = false)
+
+            for (windowTitle in partialWindowTitles) {
+                result = it.isAppWindowVisible(windowTitle)
+                if (result.passed()) {
+                    result = it.isVisibleAppWindowOnTop(windowTitle)
+                    if (result.passed()) {
+                        break
+                    }
+                }
             }
             result
         }
@@ -184,6 +194,20 @@ class WmTraceSubject private constructor(
     fun hidesAppWindow(partialWindowTitle: String) = apply {
         addAssertion("hidesAppWindow($partialWindowTitle)") {
             it.isAppWindowVisible(partialWindowTitle).negate()
+        }
+    }
+
+    /**
+     * Checks if no app windows containing the [partialWindowTitles] overlap with each other.
+     *
+     * @param partialWindowTitles partial titles of windows to check
+     */
+    fun noWindowsOverlap(vararg partialWindowTitles: String): WmTraceSubject = apply {
+        val titles = partialWindowTitles.toSet()
+        val repr = titles.joinToString(", ")
+        require(titles.size > 1) { "Must give more than one window to check! (Given $repr)" }
+        addAssertion("noWindowsOverlap($repr)") {
+            it.noWindowsOverlap(titles)
         }
     }
 

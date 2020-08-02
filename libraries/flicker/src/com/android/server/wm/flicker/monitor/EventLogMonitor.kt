@@ -53,7 +53,7 @@ open class EventLogMonitor : ITransitionMonitor {
         } catch (e: IOException) {
             throw RuntimeException(e)
         }
-        return events.dropWhile { it.tag !=  EVENT_LOG_SEPARATOR_TAG }.drop(1)
+        return events.dropWhile { it.tag !=  EVENT_LOG_SEPARATOR_TAG || it.data.toString() != _logSeparator }.drop(1)
     }
 
 
@@ -68,14 +68,14 @@ open class EventLogMonitor : ITransitionMonitor {
     }
 
     override fun save(testTag: String, flickerRunResultBuilder: FlickerRunResult.Builder) {
-        flickerRunResultBuilder.eventLog = _logs.map {
-            val timestamp = it.timeNanos
-            val log = it.data.toString()
+        flickerRunResultBuilder.eventLog = _logs.map { event ->
+            val timestamp = event.timeNanos
+            val log = event.data.toString()
             val focusState = if (log.contains("entering")) Focus.GAINED else Focus.LOST
             // parse window from 'Focus [entering|leaving] [windowname]' by droping the first two
             // words
             var expectedWhiteSpace = 2
-            val window = log.dropWhile { it.isWhitespace() && expectedWhiteSpace-- > 0 }
+            val window = log.dropWhile { !it.isWhitespace() || --expectedWhiteSpace > 0 }.drop(1)
             FocusEvent(timestamp, window, focusState)
         }
     }

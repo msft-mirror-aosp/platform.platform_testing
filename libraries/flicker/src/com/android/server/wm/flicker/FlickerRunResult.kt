@@ -16,9 +16,12 @@
 
 package com.android.server.wm.flicker
 
+import android.util.Log
+import com.android.server.wm.flicker.helpers.FLICKER_TAG
 import com.android.server.wm.flicker.traces.FocusEvent
 import com.android.server.wm.flicker.traces.layers.LayersTrace
 import com.android.server.wm.flicker.traces.windowmanager.WindowManagerTrace
+import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
 
@@ -27,27 +30,28 @@ import java.nio.file.Path
  */
 data class FlickerRunResult (
     /**
-        *
-        */
+     * Run identifier
+     */
     val iteration: Int,
     /**
-        * Path to the WindowManager trace file, if collected
-        */
+     * Path to the WindowManager trace file, if collected
+     */
     @JvmField val wmTraceFile: Path?,
     /**
-        * Path to the SurfaceFlinger trace file, if collected
-        */
+     * Path to the SurfaceFlinger trace file, if collected
+     */
     @JvmField val layersTraceFile: Path?,
     /**
-        * Path to screen recording of the run, if collected
-        */
+     * Path to screen recording of the run, if collected
+     */
     @JvmField val screenRecording: Path?,
 
     /**
-        * List of focus events, if collected
-        */
+     * List of focus events, if collected
+     */
     val eventLog: List<FocusEvent>
 ) {
+    var failed = false
 
     /**
      * Obtain the [WindowManagerTrace] that corresponds to [wmTraceFile], or null if the
@@ -69,6 +73,23 @@ data class FlickerRunResult (
             val traceData = Files.readAllBytes(it)
             LayersTrace.parseFrom(traceData)
         }
+    }
+
+    private fun Path?.tryDelete() {
+        try {
+            this?.let { Files.deleteIfExists(it) }
+        } catch (e: IOException) {
+            Log.e(FLICKER_TAG, "Unable do delete $this", e)
+        }
+    }
+
+    /**
+     * Delete the trace files collected
+     */
+    fun cleanUp() {
+        wmTraceFile.tryDelete()
+        layersTraceFile.tryDelete()
+        screenRecording.tryDelete()
     }
 
     class Builder(private val iteration: Int) {

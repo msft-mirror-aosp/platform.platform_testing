@@ -79,11 +79,28 @@ class LayersTraceSubject private constructor(
         }
     }
 
-    fun coversRegion(rect: Rect) = this.coversRegion(Region(rect))
+    @JvmOverloads
+    fun coversAtLeastRegion(rect: Rect, layerName: String = "") 
+            = this.coversAtLeastRegion(Region(rect), layerName)
 
-    fun coversRegion(region: Region)
-            = apply{ addAssertion("coversRegion($region)") { it.coversRegion(region) } }
+    @JvmOverloads
+    fun coversAtMostRegion(rect: Rect, layerName: String = "")
+            = this.coversAtMostRegion(Region(rect), layerName)
 
+    @JvmOverloads
+    fun coversAtLeastRegion(region: Region, layerName: String = "") = apply {
+        addAssertion("coversAtLeastRegion($region, $layerName)") {
+            it.coversAtLeastRegion(region, layerName)
+        }
+    }
+
+    @JvmOverloads
+    fun coversAtMostRegion(region: Region, layerName: String = "") = apply {
+        addAssertion("coversAtMostRegion($region, $layerName") {
+            it.coversAtMostRegion(region, layerName)
+        }
+    }
+    
     fun hasVisibleRegion(layerName: String, size: Region) = apply {
         addAssertion("hasVisibleRegion($layerName$size)") {
             it.hasVisibleRegion(layerName, size)

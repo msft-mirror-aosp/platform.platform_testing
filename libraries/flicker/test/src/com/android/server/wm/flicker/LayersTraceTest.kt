@@ -21,9 +21,7 @@ import android.graphics.Point
 import android.graphics.Rect
 import android.graphics.Region
 import android.view.WindowManager
-import androidx.test.filters.FlakyTest
 import androidx.test.platform.app.InstrumentationRegistry
-import com.android.server.wm.flicker.traces.layers.Layer
 import com.android.server.wm.flicker.traces.layers.LayersTrace
 import com.android.server.wm.flicker.traces.layers.LayersTrace.Companion.parseFrom
 import com.google.common.truth.Truth
@@ -42,46 +40,77 @@ class LayersTraceTest {
     fun canParseAllLayers() {
         val trace = readLayerTraceFromFile("layers_trace_emptyregion.pb")
         Truth.assertThat(trace.entries).isNotEmpty()
-        Truth.assertThat(trace.entries[0].timestamp).isEqualTo(2307984557311L)
-        Truth.assertThat(trace.entries[trace.entries.size - 1].timestamp)
-                .isEqualTo(2308521813510L)
-        val flattenedLayers = trace.entries[0].flattenedLayers
+        Truth.assertThat(trace.entries.first().timestamp).isEqualTo(922839428857)
+        Truth.assertThat(trace.entries.last().timestamp).isEqualTo(941432656959)
+        val flattenedLayers = trace.entries.first().flattenedLayers
         val msg = "Layers:\n" + flattenedLayers.joinToString("\n\t") { it.name }
-        Truth.assertWithMessage(msg).that(flattenedLayers).hasSize(47)
+        Truth.assertWithMessage(msg).that(flattenedLayers).hasSize(57)
     }
 
-    @FlakyTest
     @Test
-    fun canParseVisibleLayers() {
-        val trace = readLayerTraceFromFile("layers_trace_emptyregion.pb")
-        Truth.assertThat(trace.entries).isNotEmpty()
-        Truth.assertThat(trace.entries[0].timestamp).isEqualTo(2307984557311L)
-        Truth.assertThat(trace.entries[trace.entries.size - 1].timestamp)
-                .isEqualTo(2308521813510L)
-        val flattenedLayers: List<Layer> = trace.entries[0].flattenedLayers
-        val visibleLayers = flattenedLayers.filter { it.isVisible && !it.isHiddenByParent }
+    fun canParseVisibleLayersLauncher() {
+        val trace = readLayerTraceFromFile("layers_trace_launch_split_screen.pb")
+        val visibleLayers = trace.getEntry(90480846872160).visibleLayers
         val msg = "Visible Layers:\n" + visibleLayers.joinToString("\n") { "\t" + it.name }
-        Truth.assertWithMessage(msg).that(visibleLayers).hasSize(9)
+        Truth.assertWithMessage(msg).that(visibleLayers).hasSize(6)
+        Truth.assertThat(msg).contains("ScreenDecorOverlay#0")
+        Truth.assertThat(msg).contains("ScreenDecorOverlayBottom#0")
+        Truth.assertThat(msg).contains("NavigationBar0#0")
+        Truth.assertThat(msg).contains("ImageWallpaper#0")
+        Truth.assertThat(msg).contains("StatusBar#0")
+        Truth.assertThat(msg).contains("NexusLauncherActivity#0")
+    }
+
+    @Test
+    fun canParseVisibleLayersSplitScreen() {
+        val trace = readLayerTraceFromFile("layers_trace_launch_split_screen.pb")
+        val visibleLayers = trace.getEntry(90493757372977).visibleLayers
+        val msg = "Visible Layers:\n" + visibleLayers.joinToString("\n") { "\t" + it.name }
+        Truth.assertWithMessage(msg).that(visibleLayers).hasSize(7)
+        Truth.assertThat(msg).contains("ScreenDecorOverlayBottom#0")
+        Truth.assertThat(msg).contains("ScreenDecorOverlay#0")
+        Truth.assertThat(msg).contains("NavigationBar0#0")
+        Truth.assertThat(msg).contains("StatusBar#0")
+        Truth.assertThat(msg).contains("DockedStackDivider#0")
+        Truth.assertThat(msg).contains("ConversationListActivity#0")
+        Truth.assertThat(msg).contains("GoogleDialtactsActivity#0")
+    }
+
+    @Test
+    fun canParseVisibleLayersInTransition() {
+        val trace = readLayerTraceFromFile("layers_trace_launch_split_screen.pb")
+        val visibleLayers = trace.getEntry(90488463619533).visibleLayers
+        val msg = "Visible Layers:\n" + visibleLayers.joinToString("\n") { "\t" + it.name }
+        Truth.assertWithMessage(msg).that(visibleLayers).hasSize(10)
+        Truth.assertThat(msg).contains("ScreenDecorOverlayBottom#0")
+        Truth.assertThat(msg).contains("ScreenDecorOverlay#0")
+        Truth.assertThat(msg).contains("NavigationBar0#0")
+        Truth.assertThat(msg).contains("StatusBar#0")
+        Truth.assertThat(msg).contains("DockedStackDivider#0")
+        Truth.assertThat(msg).contains("SnapshotStartingWindow for taskId=21 - task-snapshot-surface#0")
+        Truth.assertThat(msg).contains("SnapshotStartingWindow for taskId=21")
+        Truth.assertThat(msg).contains("NexusLauncherActivity#0")
+        Truth.assertThat(msg).contains("ImageWallpaper#0")
+        Truth.assertThat(msg).contains("ConversationListActivity#0")
     }
 
     @Test
     fun canParseLayerHierarchy() {
         val trace = readLayerTraceFromFile("layers_trace_emptyregion.pb")
         Truth.assertThat(trace.entries).isNotEmpty()
-        Truth.assertThat(trace.entries[0].timestamp).isEqualTo(2307984557311L)
-        Truth.assertThat(trace.entries[trace.entries.size - 1].timestamp)
-                .isEqualTo(2308521813510L)
-        val layers = trace.entries[0].rootLayers
-        Truth.assertThat(layers).hasSize(2)
-        Truth.assertThat(layers[0].children).hasSize(layers[0].children.size)
-        Truth.assertThat(layers[1].children).hasSize(layers[1].children.size)
+        Truth.assertThat(trace.entries.first().timestamp).isEqualTo(922839428857)
+        Truth.assertThat(trace.entries.last().timestamp).isEqualTo(941432656959)
+        val layers = trace.entries.first().rootLayers
+        Truth.assertThat(layers).hasSize(3)
+        Truth.assertThat(layers[0].children).hasSize(3)
+        Truth.assertThat(layers[1].children).isEmpty()
     }
 
     // b/76099859
     @Test
     fun canDetectOrphanLayers() {
         try {
-            readLayerTraceFromFile("layers_trace_orphanlayers.pb")
+            readLayerTraceFromFile("layers_trace_orphanlayers.pb", ignoreOrphanLayers = false)
             Assert.fail("Failed to detect orphaned layers.")
         } catch (exception: RuntimeException) {
             Truth.assertThat(exception.message)
@@ -94,77 +123,68 @@ class LayersTraceTest {
     @Test
     fun canDetectUncoveredRegion() {
         val trace = readLayerTraceFromFile("layers_trace_emptyregion.pb")
-        val entry = trace.getEntry(2308008331271L)
-        val result = entry.coversRegion(Region(0, 0, 1440, 2960))
-        Truth.assertThat(result.failed()).isTrue()
+        val entry = trace.getEntry(935346112030)
+        val result = entry.coversAtLeastRegion(Region(0, 0, 1440, 2960))
+        Truth.assertWithMessage(result.reason).that(result.failed()).isTrue()
         Truth.assertThat(result.reason).contains("Region to test: SkRegion((0,0,1440,2960))")
-        Truth.assertThat(result.reason).contains("first empty point: 0, 99")
-        Truth.assertThat(result.reason).contains("visible regions:")
-        Truth.assertWithMessage("Reason contains list of visible regions")
-                .that(result.reason)
-                .contains("StatusBar#0 - SkRegion((0,0,1440,98))")
+        Truth.assertThat(result.reason).contains("Uncovered region: SkRegion((0,171,1440,2960))")
     }
 
     // Visible region tests
     @Test
     fun canTestLayerVisibleRegion_layerDoesNotExist() {
         val trace = readLayerTraceFromFile("layers_trace_emptyregion.pb")
-        val entry = trace.getEntry(2308008331271L)
+        val entry = trace.getEntry(937229257165)
         val expectedVisibleRegion = Region(0, 0, 1, 1)
         val result = entry.hasVisibleRegion("ImaginaryLayer", expectedVisibleRegion)
-        Truth.assertThat(result.failed()).isTrue()
+        Truth.assertWithMessage(result.reason).that(result.failed()).isTrue()
         Truth.assertThat(result.reason).contains("Could not find ImaginaryLayer")
     }
 
     @Test
     fun canTestLayerVisibleRegion_layerDoesNotHaveExpectedVisibleRegion() {
         val trace = readLayerTraceFromFile("layers_trace_emptyregion.pb")
-        val entry = trace.getEntry(2307993020072L)
+        val entry = trace.getEntry(937126074082)
         val expectedVisibleRegion = Region(0, 0, 1, 1)
-        val result = entry.hasVisibleRegion("NexusLauncherActivity#2", expectedVisibleRegion)
-        Truth.assertThat(result.failed()).isTrue()
+        val result = entry.hasVisibleRegion("DockedStackDivider#0", expectedVisibleRegion)
+        Truth.assertWithMessage(result.reason).that(result.failed()).isTrue()
         Truth.assertThat(result.reason)
-                .contains(
-                        "Layer com.google.android.apps.nexuslauncher/com.google.android.apps"
-                                + ".nexuslauncher.NexusLauncherActivity#2 is invisible: activeBuffer=null"
-                                + " type != ColorLayer flags=1 (FLAG_HIDDEN set) visible region is empty")
+                .contains("Layer DockedStackDivider#0 is invisible: " +
+                        "activeBuffer=null type != ColorLayer flags=1 (FLAG_HIDDEN set) " +
+                        "visible region is empty")
     }
 
     @Test
     fun canTestLayerVisibleRegion_layerIsHiddenByParent() {
         val trace = readLayerTraceFromFile("layers_trace_emptyregion.pb")
-        val entry = trace.getEntry(2308455948035L)
+        val entry = trace.getEntry(935346112030)
         val expectedVisibleRegion = Region(0, 0, 1, 1)
-        val result = entry.hasVisibleRegion(
-                "SurfaceView - com.android.chrome/com.google.android.apps.chrome.Main",
-                expectedVisibleRegion)
-        Truth.assertThat(result.failed()).isTrue()
+        val result = entry.hasVisibleRegion("SimpleActivity#0", expectedVisibleRegion)
+        Truth.assertWithMessage(result.reason).that(result.failed()).isTrue()
         Truth.assertThat(result.reason)
-                .contains(
-                        "Layer SurfaceView - com.android.chrome/com.google.android.apps.chrome.Main#0 is "
-                                + "hidden by parent: com.android.chrome/com.google.android.apps.chrome"
-                                + ".Main#0")
+                .contains("SimpleActivity#0 is hidden by parent: " +
+                        "b5cf8d3 com.android.server.wm.flicker.testapp")
     }
 
     @Test
     fun canTestLayerVisibleRegion_incorrectRegionSize() {
         val trace = readLayerTraceFromFile("layers_trace_emptyregion.pb")
-        val entry = trace.getEntry(2308008331271L)
+        val entry = trace.getEntry(937126074082)
         val expectedVisibleRegion = Region(0, 0, 1440, 99)
         val result = entry.hasVisibleRegion("StatusBar", expectedVisibleRegion)
-        Truth.assertThat(result.failed()).isTrue()
+        Truth.assertWithMessage(result.reason).that(result.failed()).isTrue()
         Truth.assertThat(result.reason)
                 .contains("StatusBar#0 has visible "
-                        + "region:SkRegion((0,0,1440,98)) expected:SkRegion((0,0,1440,99))")
+                        + "region:SkRegion((0,0,1440,171)) expected:SkRegion((0,0,1440,99))")
     }
 
     @Test
     fun canTestLayerVisibleRegion() {
-        val trace = readLayerTraceFromFile("layers_trace_emptyregion.pb")
-        val entry = trace.getEntry(2308008331271L)
-        val expectedVisibleRegion = Region(0, 0, 1440, 98)
+        val trace = readLayerTraceFromFile("layers_trace_launch_split_screen.pb")
+        val entry = trace.getEntry(90480846872160)
+        val expectedVisibleRegion = Region(0, 0, 1080, 145)
         val result = entry.hasVisibleRegion("StatusBar", expectedVisibleRegion)
-        Truth.assertThat(result.passed()).isTrue()
+        Truth.assertWithMessage(result.reason).that(result.passed()).isTrue()
     }
 
     @Test
@@ -172,7 +192,7 @@ class LayersTraceTest {
         val trace = readLayerTraceFromFile("layers_trace_invalid_layer_visibility.pb")
         val entry = trace.getEntry(252794268378458L)
         val result = entry.isVisible("com.android.server.wm.flicker.testapp")
-        Truth.assertThat(result.failed()).isTrue()
+        Truth.assertWithMessage(result.reason).that(result.failed()).isTrue()
         Truth.assertThat(result.reason)
                 .contains(
                         "Layer com.android.server.wm.flicker.testapp/com.android.server.wm.flicker"
@@ -181,9 +201,12 @@ class LayersTraceTest {
     }
 
     companion object {
-        private fun readLayerTraceFromFile(relativePath: String): LayersTrace {
+        private fun readLayerTraceFromFile(
+                relativePath: String,
+                ignoreOrphanLayers: Boolean = true
+        ): LayersTrace {
             return try {
-                parseFrom(readTestFile(relativePath)) { false }
+                parseFrom(readTestFile(relativePath)) { ignoreOrphanLayers }
             } catch (e: Exception) {
                 throw RuntimeException(e)
             }

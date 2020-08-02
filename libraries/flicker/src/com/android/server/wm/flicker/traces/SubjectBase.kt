@@ -27,7 +27,7 @@ import com.google.common.truth.Subject
 abstract class SubjectBase<Trace : TraceBase<Entry>, Entry: ITraceEntry> protected constructor(
     fm: FailureMetadata,
     subject: Trace
-) : Subject<SubjectBase<Trace, Entry>, Trace>(fm, subject) {
+) : Subject<SubjectBase<Trace, Entry>, Trace>(fm, subject), IRangedSubject<Entry> {
     protected val assertionsChecker = AssertionsChecker<Entry>()
     protected var newAssertion = true
 
@@ -42,7 +42,7 @@ abstract class SubjectBase<Trace : TraceBase<Entry>, Entry: ITraceEntry> protect
     /**
      * Run the assertions for all trace entries
      */
-    fun forAllEntries() {
+    override fun forAllEntries() {
         assertionsChecker.checkChangingAssertions()
         test()
     }
@@ -50,7 +50,7 @@ abstract class SubjectBase<Trace : TraceBase<Entry>, Entry: ITraceEntry> protect
     /**
      * Run the assertions for all trace entries within the specified time range
      */
-    fun forRange(startTime: Long, endTime: Long) {
+    override fun forRange(startTime: Long, endTime: Long) {
         assertionsChecker.filterByRange(startTime, endTime)
         test()
     }
@@ -58,7 +58,7 @@ abstract class SubjectBase<Trace : TraceBase<Entry>, Entry: ITraceEntry> protect
     /**
      * Run the assertions only in the first trace entry
      */
-    fun inTheBeginning() {
+    override fun inTheBeginning() {
         if (actual().entries.isEmpty()) {
             fail("No entries found.")
         }
@@ -69,7 +69,7 @@ abstract class SubjectBase<Trace : TraceBase<Entry>, Entry: ITraceEntry> protect
     /**
      * Run the assertions only in the last  trace entry
      */
-    fun atTheEnd() {
+    override fun atTheEnd() {
         if (actual().entries.isEmpty()) {
             fail("No entries found.")
         }
@@ -88,13 +88,13 @@ abstract class SubjectBase<Trace : TraceBase<Entry>, Entry: ITraceEntry> protect
             var tracePath = ""
             if (failureTracePath.isPresent) {
                 tracePath = """
-                    
+
                     $traceName Trace can be found in: ${failureTracePath.get().toAbsolutePath()}
                     Checksum: ${actual().sourceChecksum}
-                    
+
                     """.trimIndent()
             }
-            fail(tracePath + failureLogs)
+            fail(tracePath + "\n" + failureLogs)
         }
     }
 

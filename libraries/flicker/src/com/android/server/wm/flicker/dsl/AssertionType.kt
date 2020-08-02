@@ -18,6 +18,7 @@ package com.android.server.wm.flicker.dsl
 
 import com.android.server.wm.flicker.*
 import com.android.server.wm.flicker.assertions.AssertionData
+import com.android.server.wm.flicker.traces.IRangedSubject
 import com.android.server.wm.flicker.traces.ITraceEntry
 import com.android.server.wm.flicker.traces.SubjectBase
 import com.android.server.wm.flicker.traces.TraceBase
@@ -28,7 +29,7 @@ import com.android.server.wm.flicker.traces.TraceBase
  * Currently supports the initial state [start], the final state [end] and all states [all]
  */
 @FlickerDslMarker
-data class AssertionType<Subject: SubjectBase<Trace, Entry>, Trace: TraceBase<Entry>, Entry: ITraceEntry>
+data class AssertionType<Subject: IRangedSubject<Entry>, Entry>
 @JvmOverloads constructor(
     /**
      * List of trace assertions

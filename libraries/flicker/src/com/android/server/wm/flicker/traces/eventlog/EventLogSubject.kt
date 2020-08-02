@@ -17,46 +17,31 @@
 package com.android.server.wm.flicker.traces
 
 import com.android.server.wm.flicker.FlickerRunResult
+import com.android.server.wm.flicker.assertions.AssertionResult
+import com.android.server.wm.flicker.assertions.AssertionsChecker
 import com.google.common.truth.FailureMetadata
 import com.google.common.truth.Subject
 import com.google.common.truth.Subject.Factory
 import com.google.common.truth.Truth
-import java.util.*
 
 /** Truth subject for [FocusEvent] objects.  */
 class EventLogSubject private constructor(
-    failureMetadata: FailureMetadata,
-    subject: List<FocusEvent>
-) : Subject<EventLogSubject, List<FocusEvent>>(failureMetadata, subject) {
-
-    private val _focusChangeList by lazy {
+        failureMetadata: FailureMetadata,
+        subject: List<FocusEvent>
+) :Subject<EventLogSubject, List<FocusEvent>>(failureMetadata, subject), IRangedSubject<FocusEvent> {
+    private val assertionsChecker = AssertionsChecker<FocusEvent>()
+    private val _focusChanges by lazy {
         val focusList = mutableListOf<String>()
         actual().firstOrNull{ !it.hasFocus() }?.let { focusList.add(it.window) }
         focusList + actual().filter { it.hasFocus() }.map { it.window }
     }
 
-    fun focusChanges(vararg windows: String) {
-        if (windows.isEmpty()) {
-            return
-        }
-        val focusChanges = _focusChangeList.dropWhile { !it.contains(windows[0])}.take(windows.size)
-        val success = windows.size <= focusChanges.size &&
-                focusChanges.zip(windows).all { (focus, search) -> focus.contains(search) }
-
-        if (!success) {
-            val failureLogs = "Expected focus to change: ${windows.joinToString(",")}\n"
-            val focusEventLogs = "\nActual:\n" + actual().joinToString("\n")
-            fail(failureLogs + focusEventLogs + _focusChangeList)
-        }
+    fun focusChanges(windows: Array<out String>) = apply {
+        assertionsChecker.addList { Companion.focusChanges(windows, _focusChanges) }
     }
 
-    fun focusDoesNotChange() {
-        val success = _focusChangeList.isEmpty()
-        if (!success) {
-            val failureLogs = "Expected no focus changes\n"
-            val focusEventLogs = "\nActual:\n" + actual().joinToString("\n")
-            fail(failureLogs + focusEventLogs)
-        }
+    fun focusDoesNotChange() = apply {
+        assertionsChecker.addList {AssertionResult("focusDoesNotChange", it.isEmpty())}
     }
 
     companion object {
@@ -66,17 +51,45 @@ class EventLogSubject private constructor(
         }
 
         // User-defined entry point
-        fun assertThat(entry: List<FocusEvent>): EventLogSubject {
-            return Truth.assertAbout(FACTORY).that(entry)
-        }
+        fun assertThat(entry: List<FocusEvent>)
+                = Truth.assertAbout(FACTORY).that(entry) as EventLogSubject
 
-        fun assertThat(result: FlickerRunResult): EventLogSubject {
-            return Truth.assertWithMessage(result.toString()).about(FACTORY).that(result.eventLog)
-        }
+        fun assertThat(result: FlickerRunResult) = assertThat(result.eventLog)
 
         // Static method for getting the subject factory (for use with assertAbout())
         fun entries(): Factory<EventLogSubject, List<FocusEvent>> {
             return FACTORY
+        }
+
+        private fun focusChanges(windows: Array<out String>, _focusChanges: List<String>):AssertionResult {
+            if (windows.isEmpty()) {
+                return AssertionResult(assertionName = "focusChanges", success = true)
+            }
+            val focusChanges = _focusChanges.dropWhile { !it.contains(windows[0])}.take(windows.size)
+            val success = windows.size <= focusChanges.size &&
+                    focusChanges.zip(windows).all { (focus, search) -> focus.contains(search) }
+
+            return AssertionResult(
+                    reason = if (success) "" else "Expected ${windows.joinToString(",")}\n",
+                    assertionName = "focusChanges",
+                    timestamp = 0,
+                    success = success
+            )
+        }
+    }
+
+    override fun forAllEntries() {
+        assertionsChecker.checkChangingAssertions()
+        test()
+    }
+
+    /**
+     * Run the assertions.
+     */
+    private fun test() {
+        val failures = assertionsChecker.test(actual())
+        if (failures.isNotEmpty()) {
+            fail(failures.joinToString("\n") { it.toString() })
         }
     }
 }

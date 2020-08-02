@@ -170,9 +170,9 @@ class WindowManagerTraceEntry(val proto: WindowManagerTraceProto) : ITraceEntry 
     /**
      * Checks if the non-app window with title containing [windowTitle] exists above the app
      * windows and if its visibility is equal to [isVisible]
-     * 
+     *
      * @param windowTitle window title to search
-     * @param isVisible if the found window should be visible or not 
+     * @param isVisible if the found window should be visible or not
      */
     @JvmOverloads
     fun isAboveAppWindow(windowTitle: String, isVisible: Boolean = true): AssertionResult {
@@ -233,16 +233,13 @@ class WindowManagerTraceEntry(val proto: WindowManagerTraceProto) : ITraceEntry 
     }
 
     /**
-     * Obtains the first window with title containing [windowTitle] is visible.
-     * Computes the result based on the intersection between the [testRegion] and the window frame.
+     * Obtains the region of the first visible window with title containing [windowTitle].
      *
      * @param windowTitle Name of the layer to search
-     * @param testRegion Expected visible area of the window
      * @param resultComputation Predicate to compute a result based on the found window's region
      */
     private fun covers(
         windowTitle: String,
-        testRegion: Region,
         resultComputation: (Region) -> AssertionResult
     ): AssertionResult {
         val assertionName = "covers"
@@ -253,7 +250,6 @@ class WindowManagerTraceEntry(val proto: WindowManagerTraceProto) : ITraceEntry 
 
         val foundWindow = windows.first { getWindowByIdentifier(it, windowTitle) != null }
         val foundRegion = foundWindow.frameRegion
-        val testRect = testRegion.bounds
 
         return resultComputation(foundRegion)
     }
@@ -267,7 +263,7 @@ class WindowManagerTraceEntry(val proto: WindowManagerTraceProto) : ITraceEntry 
      * @param testRegion Expected visible area of the window
      */
     fun coversAtLeastRegion(windowTitle: String, testRegion: Region): AssertionResult {
-        return covers(windowTitle, testRegion) { windowRegion ->
+        return covers(windowTitle) { windowRegion ->
             val testRect = testRegion.bounds
             val intersection = Region(windowRegion)
             val covers = intersection.op(testRect, Region.Op.INTERSECT)
@@ -292,7 +288,7 @@ class WindowManagerTraceEntry(val proto: WindowManagerTraceProto) : ITraceEntry 
      * @param testRegion Expected visible area of the window
      */
     fun coversAtMostRegion(windowTitle: String, testRegion: Region): AssertionResult {
-        return covers(windowTitle, testRegion) { windowRegion ->
+        return covers(windowTitle) { windowRegion ->
             val testRect = testRegion.bounds
             val intersection = Region(windowRegion)
             val covers = intersection.op(testRect, Region.Op.INTERSECT)
@@ -307,6 +303,48 @@ class WindowManagerTraceEntry(val proto: WindowManagerTraceProto) : ITraceEntry 
 
             AssertionResult(reason, "coversAtMostRegion", timestamp, success = covers)
         }
+    }
+
+    /** Checks if any of the given windows overlap with each other. */
+    fun noWindowsOverlap(partialWindowTitles: Set<String>): AssertionResult {
+        val foundWindows = partialWindowTitles.associateWith { title ->
+            windows.find { getWindowByIdentifier(it, title) != null }
+        }
+        // keep entries only for windows that we actually found by removing nulls
+        .filterValues { it != null }
+        .mapValues { (_, v) -> v!!.frameRegion }
+
+        val assertionName = "noWindowsOverlap"
+
+        // ensure we found all required windows
+        if (foundWindows.size < partialWindowTitles.size) {
+            val notFound = partialWindowTitles - foundWindows.keys
+            return AssertionResult(
+                    reason = "Could not find windows containing: [${notFound.joinToString(", ")}]",
+                    assertionName = assertionName,
+                    timestamp = timestamp,
+                    success = false
+            )
+        }
+
+        val checked = mutableSetOf<String>()
+        foundWindows.forEach { (ourTitle, ourRegion) ->
+            checked += ourTitle
+            foundWindows
+                    .filterKeys { it !in checked }
+                    .forEach { (otherTitle, otherRegion) ->
+                        if (Region(ourRegion).op(otherRegion, Region.Op.INTERSECT)) {
+                            return AssertionResult(
+                                    reason = "At least two windows overlap: $ourTitle, $otherTitle",
+                                    assertionName = assertionName,
+                                    timestamp = timestamp,
+                                    success = false
+                            )
+                        }
+                    }
+        }
+
+        return AssertionResult("No windows overlap", assertionName, timestamp, success = true)
     }
 
     private fun WindowStateProto.isVisible(): Boolean = this.windowContainer.visible

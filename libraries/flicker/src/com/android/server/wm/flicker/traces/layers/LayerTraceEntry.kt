@@ -28,66 +28,147 @@ class LayerTraceEntry constructor(
     override val timestamp: Long, // hierarchical representation of layers
     val rootLayers: List<Layer>
 ) : ITraceEntry {
+    private val _opaqueLayers = mutableListOf<Layer>()
+    private val _transparentLayers = mutableListOf<Layer>()
+    private val _rootScreenBounds by lazy {
+        val rootLayerBounds = rootLayers
+                .filter { it.proto?.sourceBounds != null }
+                .first { it.proto?.name?.startsWith("Root#0") == true }
+                .proto?.sourceBounds ?: throw IllegalStateException("Root layer must have bounds")
+
+        Region(0, 0, rootLayerBounds.bottom.toInt(), rootLayerBounds.right.toInt())
+    }
+
     val flattenedLayers by lazy {
         val layers = mutableListOf<Layer>()
-        val pendingLayers = rootLayers.toMutableList()
-        while (pendingLayers.isNotEmpty()) {
-            val layer = pendingLayers.removeAt(0)
+        val roots = rootLayers.fillOcclusionState().toMutableList()
+        while (roots.isNotEmpty()) {
+            val layer = roots.removeAt(0)
             layers.add(layer)
-            pendingLayers.addAll(layer.children)
+            roots.addAll(layer.children)
         }
         layers
     }
 
-    /**
-     * Checks if a region specified by [testRegion] is covered by all visible layers whose name
-     * contains [], that is,
-     * that at least one visible layer covers each point in the region.
-     *
-     * @param testRegion Region to test
-     * @param layerName Name of the layer to search, leave empty for all
-     */
-    @JvmOverloads
-    fun coversRegion(testRegion: Region, layerName: String = ""): AssertionResult {
-        val testRect = testRegion.bounds
-        val assertionName = "coversRegion"
-        for (x in testRect.left until testRect.right) {
-            var y = testRect.top
-            while (y < testRect.bottom) {
-                var emptyRegionFound = true
-                for (layer in flattenedLayers) {
-                    if (layer.isInvisible || layer.isHiddenByParent) {
-                        continue
-                    }
-                    if (layer.visibleRegion.contains(x, y)) {
-                        y = layer.visibleRegion.bounds.bottom
-                        emptyRegionFound = false
-                    }
+    private fun List<Layer>.topDownTraversal(): List<Layer> {
+        return this
+                .sortedBy { it.z }
+                .flatMap { it.topDownTraversal() }
+    }
+
+    val visibleLayers by lazy { flattenedLayers.filter { it.isVisible && !it.isHiddenByParent } }
+
+    val opaqueLayers: List<Layer> get() = _opaqueLayers
+
+    val transparentLayers: List<Layer> get() = _transparentLayers
+
+    private fun Layer.topDownTraversal(): List<Layer> {
+        val traverseList = mutableListOf(this)
+
+        this.children.sortedBy { it.z }
+                .forEach { childLayer ->
+                    traverseList.addAll(childLayer.topDownTraversal())
                 }
-                if (emptyRegionFound) {
-                    var reason = ("Region to test: $testRegion"
-                            + "\nfirst empty point: $x, $y"
-                            + "\nvisible regions:")
-                    for (layer in flattenedLayers) {
-                        if (layer.isInvisible || layer.isHiddenByParent) {
-                            continue
-                        }
-                        reason += "\n\t${layer.name} - ${layer.visibleRegion}"
-                    }
-                    return AssertionResult(
-                            reason,
-                            assertionName,
-                            timestamp,
-                            success = false)
+
+        return traverseList
+    }
+
+    private fun List<Layer>.fillOcclusionState(): List<Layer> {
+        val traversalList = topDownTraversal().reversed()
+
+        traversalList.forEach { layer ->
+            val visible = layer.isVisible
+
+            if (visible) {
+                layer.occludedBy.addAll(_opaqueLayers.filter { it.contains(layer) })
+                layer.partiallyOccludedBy.addAll(_opaqueLayers.filter { it.overlaps(layer) })
+                layer.coveredBy.addAll(_transparentLayers.filter { it.overlaps(layer) })
+
+                if (layer.isOpaque) {
+                    _opaqueLayers.add(layer)
+                } else {
+                    _transparentLayers.add(layer)
                 }
-                y++
             }
         }
-        return AssertionResult(
-                reason = "Region covered: $testRect",
-                assertionName = assertionName,
-                timestamp = timestamp,
-                success = true)
+
+        return this
+    }
+
+    /**
+     * Obtains the region occupied by all layers with name containing [layerName].
+     *
+     * @param layerName Name of the layer to search
+     * @param resultComputation Predicate to compute a result based on the found layer's region
+     */
+    @JvmOverloads
+    fun covers(
+        layerName: String = "",
+        resultComputation: (Region) -> AssertionResult
+    ): AssertionResult {
+        val assertionName = "coversRegion"
+        val filteredLayers = flattenedLayers.filter { it.name.contains(layerName) }
+
+        return if (filteredLayers.isEmpty()) {
+            AssertionResult("Could not find $layerName", assertionName, timestamp, success = false)
+        } else {
+            val jointRegion = Region()
+            filteredLayers
+                    .filter { it.isVisible && !it.isHiddenByParent }
+                    .forEach { jointRegion.op(it.visibleRegion, Region.Op.UNION) }
+
+            resultComputation(jointRegion)
+        }
+    }
+
+    /**
+     * Checks if all layers layers with name containing [layerName] has a visible area of at
+     * least [testRegion], that is, if its area of the layer's visible region covers each point in
+     * the region.
+     *
+     * @param testRegion Expected covered area
+     * @param layerName Name of the layer to search
+     */
+    fun coversAtLeastRegion(testRegion: Region, layerName: String = ""): AssertionResult {
+        return covers(layerName) { jointRegion ->
+            val intersection = Region(jointRegion)
+            val covers = intersection.op(testRegion, Region.Op.INTERSECT)
+                    && !intersection.op(testRegion, Region.Op.XOR)
+
+            val reason = if (covers) {
+                "Region covered $testRegion"
+            } else {
+                ("Region to test: $testRegion"
+                        + "\nUncovered region: $intersection")
+            }
+
+            AssertionResult(reason, "coversAtLeastRegion", timestamp, success = covers)
+        }
+    }
+
+    /**
+     * Checks if all layers layers with name containing [layerName] has a visible area of at
+     * most [testRegion], that is, if the region covers each point in the layer's visible region.
+     *
+     * @param testRegion Expected covered area
+     * @param layerName Name of the layer to search
+     */
+    fun coversAtMostRegion(testRegion: Region, layerName: String = ""): AssertionResult {
+        return covers(layerName) { jointRegion ->
+            val testRect = testRegion.bounds
+            val intersection = Region(jointRegion)
+            val covers = intersection.op(testRect, Region.Op.INTERSECT)
+                    && !intersection.op(jointRegion, Region.Op.XOR)
+
+            val reason = if (covers) {
+                "Region covered $testRegion"
+            } else {
+                ("Region to test: $testRegion"
+                        + "\nOut-of-bounds region: $intersection")
+            }
+
+            AssertionResult(reason, "coversAtMostRegion", timestamp, success = covers)
+        }
     }
 
     /**
@@ -101,7 +182,7 @@ class LayerTraceEntry constructor(
         val assertionName = "hasVisibleRegion"
         var reason = "Could not find $layerName"
         for (layer in flattenedLayers) {
-            if (layer.nameContains(layerName)) {
+            if (layer.name.contains(layerName)) {
                 if (layer.isHiddenByParent) {
                     reason = layer.hiddenByParentReason
                     continue
@@ -138,7 +219,7 @@ class LayerTraceEntry constructor(
         val assertionName = "exists"
         val reason = "Could not find $layerName"
         for (layer in flattenedLayers) {
-            if (layer.nameContains(layerName)) {
+            if (layer.name.contains(layerName)) {
                 return AssertionResult(
                         layer.name + " exists",
                         assertionName,
@@ -158,7 +239,7 @@ class LayerTraceEntry constructor(
         val assertionName = "isVisible"
         var reason = "Could not find $layerName"
         for (layer in flattenedLayers) {
-            if (layer.nameContains(layerName)) {
+            if (layer.name.contains(layerName)) {
                 if (layer.isHiddenByParent) {
                     reason = layer.hiddenByParentReason
                     continue
@@ -179,7 +260,7 @@ class LayerTraceEntry constructor(
 
     @VisibleForTesting
     fun getVisibleBounds(layerName: String): Region {
-        return flattenedLayers.firstOrNull { it.nameContains(layerName) && it.isVisible }
+        return flattenedLayers.firstOrNull { it.name.contains(layerName) && it.isVisible }
                 ?.visibleRegion
                 ?: Region()
     }
@@ -215,9 +296,9 @@ class LayerTraceEntry constructor(
         /** Constructs the layer hierarchy from a flattened list of layers.  */
         @JvmStatic
         fun fromFlattenedLayers(
-                timestamp: Long,
-                protos: Array<Layers.LayerProto>,
-                orphanLayerCallback: ((Layer) -> Boolean)?
+            timestamp: Long,
+            protos: Array<Layers.LayerProto>,
+            orphanLayerCallback: ((Layer) -> Boolean)?
         ): LayerTraceEntry {
             val layerMap = SparseArray<Layer>()
             val orphans = mutableListOf<Layer>()

@@ -83,9 +83,12 @@ data class AssertionResult @JvmOverloads constructor(
         }
     }
 
-    override fun toString(): String = "Timestamp: ${prettyTimestamp(timestamp)}\n" +
-            "Assertion: $assertionName\n" +
-            "Reason:   ${reason.replace("\n", "\n\t")}"
+    override fun toString(): String {
+        val timeString = if (timestamp == 0L) "" else "Timestamp: ${prettyTimestamp(timestamp)}\n"
+        return timeString +
+                "\nAssertion: $assertionName" +
+                "\nReason:   ${reason.replace("\n", "\n\t")}"
+    }
 
     private fun prettyTimestamp(timestampNs: Long): String {
         var remainingNs = timestampNs

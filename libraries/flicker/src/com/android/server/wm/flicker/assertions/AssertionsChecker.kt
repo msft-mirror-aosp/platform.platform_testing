@@ -31,6 +31,10 @@ class AssertionsChecker<T : ITraceEntry> {
     private var skipUntilFirstAssertion = false
     private var option = AssertionOption.NONE
     private val assertions = mutableListOf<CompoundAssertion<T>>()
+    /**
+     * Runs assertions over the entire list of entries.
+     */
+    private val listAssertions = mutableListOf<(List<T>) -> AssertionResult>()
 
     /**
      * Start a new set of assertions and add [assertion] to it.
@@ -39,6 +43,12 @@ class AssertionsChecker<T : ITraceEntry> {
         assertions.add(CompoundAssertion(assertion, name))
     }
 
+    /**
+     * Start a new set of assertions and add [assertion] to it.
+     */
+    fun addList(assertion: (List<T>) -> AssertionResult) {
+        listAssertions.add(assertion)
+    }
     /**
      * Append [assertion] to the last existing set of assertions.
      */
@@ -129,7 +139,7 @@ class AssertionsChecker<T : ITraceEntry> {
         var entryIndex = 0
         var assertionIndex = 0
         var lastPassedAssertionIndex = -1
-        if (assertions.size == 0) {
+        if (assertions.isEmpty() && listAssertions.isEmpty()) {
             return failures
         }
         while (assertionIndex < assertions.size && entryIndex < entries.size) {
@@ -155,10 +165,10 @@ class AssertionsChecker<T : ITraceEntry> {
                 break
             }
         }
-        if (lastPassedAssertionIndex == -1 && assertions.size > 0 && failures.isEmpty()) {
+        if (lastPassedAssertionIndex == -1 && assertions.isNotEmpty() && failures.isEmpty()) {
             failures.add(AssertionResult(success = false, reason = assertions[0].name))
         }
-        if (failures.isEmpty() && assertionIndex != assertions.size - 1) {
+        if (failures.isEmpty() && assertions.isNotEmpty() && assertionIndex != assertions.size - 1) {
             var reason = "Assertion ${assertions[assertionIndex].name} never became false"
             reason += "\n\tPassed assertions: " +
                     assertions.take(assertionIndex)
@@ -167,12 +177,13 @@ class AssertionsChecker<T : ITraceEntry> {
                     assertions.drop(assertionIndex + 1)
                             .joinToString(",") { it.name }
             val result = AssertionResult(
-                    "Not all assertions passed.$reason",
+                    reason = "Not all assertions passed.$reason",
                     assertionName = "assertChanges",
                     timestamp = 0,
                     success = false)
             failures.add(result)
         }
+        failures.addAll(listAssertions.map { it.invoke(entries) }.filter { it.failed() })
         return failures
     }
 

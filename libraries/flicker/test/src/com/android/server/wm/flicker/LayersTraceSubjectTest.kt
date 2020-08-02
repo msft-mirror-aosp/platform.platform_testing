@@ -40,23 +40,67 @@ class LayersTraceSubjectTest {
     fun testCanDetectEmptyRegionFromLayerTrace() {
         val layersTraceEntries = readLayerTraceFromFile("layers_trace_emptyregion.pb")
         try {
-            assertThat(layersTraceEntries).coversRegion(DISPLAY_REGION).forAllEntries()
+            assertThat(layersTraceEntries).coversAtLeastRegion(DISPLAY_REGION).forAllEntries()
             Assert.fail("Assertion passed")
         } catch (e: AssertionError) {
             Truth.assertWithMessage("Contains path to trace")
                     .that(e.message)
                     .contains("layers_trace_emptyregion.pb")
-            Truth.assertWithMessage("Contains timestamp").that(e.message).contains("0h38m28s8ms")
+            Truth.assertWithMessage("Contains timestamp").that(e.message).contains("0d0h15m33s674ms")
             Truth.assertWithMessage("Contains assertion function")
                     .that(e.message)
-                    .contains("coversRegion")
+                    .contains("coversAtLeastRegion")
             Truth.assertWithMessage("Contains debug info")
                     .that(e.message)
                     .contains("Region to test: $DISPLAY_REGION")
             Truth.assertWithMessage("Contains debug info")
                     .that(e.message)
-                    .contains("first empty point: 0, 99")
+                    .contains("SkRegion((0,1440,1440,2880))")
         }
+    }
+
+    @Test
+    fun testCanInspectBeginning() {
+        val layersTraceEntries = readLayerTraceFromFile("layers_trace_launch_split_screen.pb")
+        assertThat(layersTraceEntries)
+                .showsLayer("NavigationBar0#0")
+                .and()
+                .hasNotLayer("DockedStackDivider#0")
+                .and()
+                .showsLayer("NexusLauncherActivity#0")
+                .inTheBeginning()
+    }
+
+    @Test
+    fun testCanInspectEnd() {
+        val layersTraceEntries = readLayerTraceFromFile("layers_trace_launch_split_screen.pb")
+        assertThat(layersTraceEntries)
+                .showsLayer("NavigationBar0#0")
+                .and()
+                .showsLayer("DockedStackDivider#0")
+                .and()
+                .showsLayer("DockedStackDivider#0")
+                .and()
+                .showsLayer("DockedStackDivider#0")
+                .atTheEnd()
+    }
+
+    @Test
+    fun testCanDetectChangingAssertions() {
+        val layersTraceEntries = readLayerTraceFromFile("layers_trace_launch_split_screen.pb")
+        assertThat(layersTraceEntries)
+                .showsLayer("NavigationBar0#0")
+                .and()
+                .hasNotLayer("DockedStackDivider#0")
+                .then()
+                .showsLayer("NavigationBar0#0")
+                .and()
+                .hidesLayer("DockedStackDivider#0")
+                .then()
+                .showsLayer("NavigationBar0#0")
+                .and()
+                .showsLayer("DockedStackDivider#0")
+                .forAllEntries()
     }
 
     @FlakyTest
@@ -90,8 +134,7 @@ class LayersTraceSubjectTest {
     private fun detectRootLayer(fileName: String) {
         val layersTrace = readLayerTraceFromFile(fileName)
         for (entry in layersTrace.entries) {
-            val flattened: List<Layer> = entry.flattenedLayers
-            val rootLayers = flattened.filter { it.isRootLayer }
+            val rootLayers = entry.rootLayers
             Truth.assertWithMessage("Does not have any root layer")
                     .that(rootLayers.size)
                     .isGreaterThan(0)
