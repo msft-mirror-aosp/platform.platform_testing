@@ -327,21 +327,20 @@ class WindowManagerTraceEntry(val proto: WindowManagerTraceProto) : ITraceEntry 
             )
         }
 
-        val checked = mutableSetOf<String>()
-        foundWindows.forEach { (ourTitle, ourRegion) ->
-            checked += ourTitle
-            foundWindows
-                    .filterKeys { it !in checked }
-                    .forEach { (otherTitle, otherRegion) ->
-                        if (Region(ourRegion).op(otherRegion, Region.Op.INTERSECT)) {
-                            return AssertionResult(
-                                    reason = "At least two windows overlap: $ourTitle, $otherTitle",
-                                    assertionName = assertionName,
-                                    timestamp = timestamp,
-                                    success = false
-                            )
-                        }
-                    }
+        val regions = foundWindows.entries.toList()
+        for (i in regions.indices) {
+            val (ourTitle, ourRegion) = regions[i]
+            for (j in i + 1 until regions.size) {
+                val (otherTitle, otherRegion) = regions[j]
+                if (Region(ourRegion).op(otherRegion, Region.Op.INTERSECT)) {
+                    return AssertionResult(
+                            reason = "At least two windows overlap: $ourTitle, $otherTitle",
+                            assertionName = assertionName,
+                            timestamp = timestamp,
+                            success = false
+                    )
+                }
+            }
         }
 
         return AssertionResult("No windows overlap", assertionName, timestamp, success = true)
