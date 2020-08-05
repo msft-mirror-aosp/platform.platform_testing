@@ -9,12 +9,13 @@ class EventLogSubjectTest {
     fun canDetectFocusChanges() {
         val builder = FlickerRunResult.Builder(0)
         builder.eventLog =
-                listOf( FocusEvent(0, "WinB", FocusEvent.Focus.GAINED),
-                        FocusEvent(0, "test WinA window", FocusEvent.Focus.LOST),
-                        FocusEvent(0, "WinB", FocusEvent.Focus.LOST),
-                        FocusEvent(0, "test WinC", FocusEvent.Focus.GAINED))
+                listOf( FocusEvent(0, "WinB", FocusEvent.Focus.GAINED, "test"),
+                        FocusEvent(0, "test WinA window", FocusEvent.Focus.LOST, "test"),
+                        FocusEvent(0, "WinB", FocusEvent.Focus.LOST, "test"),
+                        FocusEvent(0, "test WinC", FocusEvent.Focus.GAINED, "test"))
         val result = builder.build()
-        EventLogSubject.assertThat(result).focusChanges(arrayOf("WinA", "WinB", "WinC")).forAllEntries()
+        EventLogSubject.assertThat(result).focusChanges(arrayOf("WinA", "WinB", "WinC"))
+                .forAllEntries()
         EventLogSubject.assertThat(result).focusChanges(arrayOf("WinA", "WinB")).forAllEntries()
         EventLogSubject.assertThat(result).focusChanges(arrayOf("WinB", "WinC")).forAllEntries()
         EventLogSubject.assertThat(result).focusChanges(arrayOf("WinA")).forAllEntries()
@@ -24,9 +25,7 @@ class EventLogSubjectTest {
 
     @Test
     fun canDetectFocusDoesNotChange() {
-        val builder = FlickerRunResult.Builder(0)
-        builder.eventLog = listOf()
-        val result = builder.build()
+        val result = FlickerRunResult.Builder(0).build()
         EventLogSubject.assertThat(result).focusDoesNotChange().forAllEntries()
     }
 }

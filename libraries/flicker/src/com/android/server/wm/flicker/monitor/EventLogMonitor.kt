@@ -19,10 +19,9 @@ package com.android.server.wm.flicker.monitor
 import android.util.EventLog
 import android.util.EventLog.Event
 import com.android.server.wm.flicker.FlickerRunResult
-import com.android.server.wm.flicker.traces.FocusEvent.Focus
 import com.android.server.wm.flicker.traces.FocusEvent
+import com.android.server.wm.flicker.traces.FocusEvent.Focus
 import java.io.IOException
-import java.nio.file.Path
 import java.util.*
 
 /**
@@ -70,13 +69,17 @@ open class EventLogMonitor : ITransitionMonitor {
     override fun save(testTag: String, flickerRunResultBuilder: FlickerRunResult.Builder) {
         flickerRunResultBuilder.eventLog = _logs.map { event ->
             val timestamp = event.timeNanos
-            val log = event.data.toString()
-            val focusState = if (log.contains("entering")) Focus.GAINED else Focus.LOST
-            // parse window from 'Focus [entering|leaving] [windowname]' by droping the first two
-            // words
+            val log = (event.data as Array<*>).map { it as String }
+            if (log.size != 2) {
+                throw RuntimeException("Error reading from eventlog $log")
+            }
+            val focusState = if (log[0].contains("entering")) Focus.GAINED else Focus.LOST
+            // parse window from 'Focus [entering|leaving] [windowname]'
+            // by droping the first two words
             var expectedWhiteSpace = 2
-            val window = log.dropWhile { !it.isWhitespace() || --expectedWhiteSpace > 0 }.drop(1)
-            FocusEvent(timestamp, window, focusState)
+            val window = log[0].dropWhile { !it.isWhitespace() || --expectedWhiteSpace > 0 }.drop(1)
+            val reason = log[1].removePrefix("reason=")
+            FocusEvent(timestamp, window, focusState, reason)
         }
     }
 
