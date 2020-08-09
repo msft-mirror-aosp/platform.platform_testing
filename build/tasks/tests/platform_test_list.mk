@@ -5,6 +5,7 @@ platform_tests += \
     ActivityManagerPerfTestsStubApp3 \
     ActivityManagerPerfTestsTestApp \
     AndroidTVJankTests \
+    AndroidXComposeStartupApp \
     ApiDemos \
     AppCompatibilityTest \
     AppLaunch \
