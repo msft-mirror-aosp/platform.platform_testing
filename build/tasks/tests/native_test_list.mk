@@ -90,7 +90,6 @@ native_tests := \
     net_test_btif \
     net_test_btif_profile_queue \
     net_test_btpackets \
-    net_test_btu_message_loop \
     net_test_device \
     net_test_hci \
     net_test_osi \
