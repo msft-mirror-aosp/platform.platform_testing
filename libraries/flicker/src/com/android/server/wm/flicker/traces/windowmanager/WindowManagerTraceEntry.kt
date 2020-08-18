@@ -346,6 +346,41 @@ class WindowManagerTraceEntry(val proto: WindowManagerTraceProto) : ITraceEntry 
         return AssertionResult("No windows overlap", assertionName, timestamp, success = true)
     }
 
+    /** Check if the window named [aboveWindowTitle] is above the one named [belowWindowTitle]. */
+    fun isAboveWindow(aboveWindowTitle: String, belowWindowTitle: String): AssertionResult {
+        val assertionName = "isAboveWindow"
+
+        // windows are ordered by z-order, from top to bottom
+        val aboveZ = windows.indexOfFirst { aboveWindowTitle in it.title }
+        val belowZ = windows.indexOfFirst { belowWindowTitle in it.title }
+
+        val notFound = mutableSetOf<String>().apply {
+            if (aboveZ == -1) {
+                add(aboveWindowTitle)
+            }
+            if (belowZ == -1) {
+                add(belowWindowTitle)
+            }
+        }
+
+        if (notFound.isNotEmpty()) {
+            return AssertionResult(
+                reason = "Could not find ${notFound.joinToString(" and ")}!",
+                assertionName = assertionName,
+                timestamp = timestamp,
+                success = false
+            )
+        }
+
+        // ensure the z-order
+        return AssertionResult(
+            reason = "$aboveWindowTitle is above $belowWindowTitle",
+            assertionName = assertionName,
+            timestamp = timestamp,
+            success = aboveZ < belowZ
+        )
+    }
+
     private fun WindowStateProto.isVisible(): Boolean = this.windowContainer.visible
 
     private val WindowStateProto.title: String

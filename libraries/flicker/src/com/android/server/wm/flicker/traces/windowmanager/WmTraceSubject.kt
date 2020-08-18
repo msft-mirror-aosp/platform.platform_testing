@@ -211,6 +211,20 @@ class WmTraceSubject private constructor(
         }
     }
 
+    /**
+     * Checks if the window named [aboveWindowTitle] is above the one named [belowWindowTitle] in
+     * z-order.
+     *
+     * @param aboveWindowTitle partial name of the expected top window
+     * @param belowWindowTitle partial name of the expected bottom window
+     */
+    fun isAboveWindow(aboveWindowTitle: String, belowWindowTitle: String): WmTraceSubject = apply {
+        require(aboveWindowTitle != belowWindowTitle)
+        addAssertion("$aboveWindowTitle is above $belowWindowTitle") {
+            it.isAboveWindow(aboveWindowTitle, belowWindowTitle)
+        }
+    }
+
     fun coversAtLeastRegion(partialWindowTitle: String, region: Region) = apply {
         addAssertion("coversAtLeastRegion($partialWindowTitle, $region)") {
             it.coversAtLeastRegion(partialWindowTitle, region)
