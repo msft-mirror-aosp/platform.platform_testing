@@ -23,9 +23,22 @@ import com.android.server.wm.flicker.FlickerDslMarker
  * Placeholder for test [Flicker.setup] and [Flicker.teardown] commands on the Flicker DSL
  */
 @FlickerDslMarker
-class TestCommands {
-    internal val testCommands = mutableListOf<Flicker.() -> Any>()
-    internal val runCommands = mutableListOf<Flicker.() -> Any>()
+class TestCommands private constructor(
+    internal val testCommands: MutableList<Flicker.() -> Any>,
+    internal val runCommands: MutableList<Flicker.() -> Any>
+) {
+    constructor() : this(
+        testCommands = mutableListOf<Flicker.() -> Any>(),
+        runCommands = mutableListOf<Flicker.() -> Any>()
+    )
+
+    /**
+     * Copy constructor
+     */
+    constructor(otherCommands: TestCommands) : this(
+        otherCommands.testCommands.toMutableList(),
+        otherCommands.runCommands.toMutableList()
+    )
 
     /**
      * Commands to execute once for the whole test

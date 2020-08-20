@@ -35,10 +35,21 @@ typealias EventLogAssertion = AssertionType<EventLogSubject, FocusEvent>
  * Currently supports [WindowManagerTrace], [LayersTrace] and list of [FocusEvent]s
  */
 @FlickerDslMarker
-class AssertionTarget {
-    val wmAssertions = WmAssertion()
-    val layerAssertions = LayersAssertion()
-    val eventLogAssertions = EventLogAssertion()
+class AssertionTarget private constructor(
+    val wmAssertions: WmAssertion,
+    val layerAssertions: LayersAssertion,
+    val eventLogAssertions: EventLogAssertion
+) {
+    constructor() : this(WmAssertion(), LayersAssertion(), EventLogAssertion())
+
+    /**
+     * Copy constructor
+     */
+    constructor(otherTarget: AssertionTarget) : this(
+        WmAssertion(otherTarget.wmAssertions.assertions.toMutableList()),
+        LayersAssertion(otherTarget.layerAssertions.assertions.toMutableList()),
+        EventLogAssertion(otherTarget.eventLogAssertions.assertions.toMutableList())
+    )
 
     /**
      * Assertions to check the WindowManager trace

@@ -37,44 +37,86 @@ import java.nio.file.Path
  * Build Flicker tests using Flicker DSL
  */
 @FlickerDslMarker
-data class FlickerBuilder(
-        /**
-     * Instrumentation to run the tests
-     */
+class FlickerBuilder private constructor(
     private val instrumentation: Instrumentation,
-        /**
-     * Strategy used to interact with the launcher
-     */
     private val launcherStrategy: ILauncherStrategy,
-        /**
-     * Include or discard janky runs
-     */
-    private val includeJankyRuns: Boolean = true,
-        /**
-     * Output directory for the test results
-     */
-    private val outputDir: Path = getDefaultFlickerOutputDir(instrumentation)
+    private val includeJankyRuns: Boolean,
+    private val outputDir: Path,
+    private var testTag: String,
+    private var iterations: Int,
+    private val setupCommands: TestCommands,
+    private val teardownCommands: TestCommands,
+    private val transitionCommands: MutableList<Flicker.() -> Any>,
+    private val assertions: AssertionTarget,
+    val device: UiDevice,
+    private val traceMonitors: MutableList<ITransitionMonitor>
 ) {
-    private var testTag: String = ""
-    private var iterations: Int = 1
-    private val setupCommands = TestCommands()
-    private val teardownCommands = TestCommands()
-    private val transitionCommands = mutableListOf<Flicker.() -> Any>()
-    private val assertions = AssertionTarget()
-    val device = UiDevice.getInstance(instrumentation)
+    private val frameStatsMonitor: WindowAnimationFrameStatsMonitor? = if (includeJankyRuns) {
+        null
+    } else {
+        WindowAnimationFrameStatsMonitor(instrumentation)
+    }
 
-    private val traceMonitors = mutableListOf<ITransitionMonitor>()
+    @JvmOverloads
+    /**
+     * Default flicker builder constructor
+     */
+    constructor(
+        /**
+         * Instrumentation to run the tests
+         */
+        instrumentation: Instrumentation,
+        /**
+         * Strategy used to interact with the launcher
+         */
+        launcherStrategy: ILauncherStrategy = LauncherStrategyFactory
+                .getInstance(instrumentation).launcherStrategy,
+        /**
+         * Include or discard janky runs
+         */
+        includeJankyRuns: Boolean = true,
+        /**
+         * Output directory for the test results
+         */
+        outputDir: Path = getDefaultFlickerOutputDir(instrumentation)
+    ) : this(
+        instrumentation,
+        launcherStrategy,
+        includeJankyRuns,
+        outputDir,
+        testTag = "",
+        iterations = 1,
+        setupCommands = TestCommands(),
+        teardownCommands = TestCommands(),
+        transitionCommands = mutableListOf(),
+        assertions = AssertionTarget(),
+        device = UiDevice.getInstance(instrumentation),
+        traceMonitors = mutableListOf<ITransitionMonitor>()
             .also {
                 it.add(WindowManagerTraceMonitor(outputDir))
                 it.add(LayersTraceMonitor(outputDir))
                 it.add(ScreenRecorder(outputDir))
                 it.add(EventLogMonitor())
             }
-    private val frameStatsMonitor: WindowAnimationFrameStatsMonitor? = if (includeJankyRuns) {
-        null
-    } else {
-        WindowAnimationFrameStatsMonitor(instrumentation)
-    }
+    )
+
+    /**
+     * Copy constructor
+     */
+    constructor(otherBuilder: FlickerBuilder): this(
+        otherBuilder.instrumentation,
+        otherBuilder.launcherStrategy,
+        otherBuilder.includeJankyRuns,
+        otherBuilder.outputDir.toAbsolutePath(),
+        otherBuilder.testTag,
+        otherBuilder.iterations,
+        TestCommands(otherBuilder.setupCommands),
+        TestCommands(otherBuilder.teardownCommands),
+        otherBuilder.transitionCommands.toMutableList(),
+        AssertionTarget(otherBuilder.assertions),
+        UiDevice.getInstance(otherBuilder.instrumentation),
+        otherBuilder.traceMonitors.toMutableList()
+    )
 
     /**
      * Test tag used to store the test results
@@ -180,19 +222,24 @@ data class FlickerBuilder(
      * Creates a new Flicker runner based on the current builder configuration
      */
     fun build() = Flicker(
-            instrumentation,
-            device,
-            launcherStrategy,
-            outputDir,
-            testTag,
-            iterations,
-            frameStatsMonitor,
-            traceMonitors,
-            setupCommands,
-            teardownCommands,
-            transitionCommands,
-            assertions
+        instrumentation,
+        device,
+        launcherStrategy,
+        outputDir,
+        testTag,
+        iterations,
+        frameStatsMonitor,
+        traceMonitors,
+        setupCommands,
+        teardownCommands,
+        transitionCommands,
+        assertions
     )
+
+    /**
+     * Returns a copy of the current builder with the changes of [block] applied
+     */
+    fun copy(block: FlickerBuilder.() -> Unit) = FlickerBuilder(this).apply(block)
 }
 
 /**
@@ -200,17 +247,54 @@ data class FlickerBuilder(
  *
  * Configures a builder, build a test running, executes the test and assertions
  *
- * @param instrumentation to run the test (used to interact with the device
+ * @param instrumentation to run the test (used to interact with the device)
  * @param configuration Flicker DSL configuration
  */
 @JvmOverloads
+@Deprecated(level = DeprecationLevel.WARNING,
+    message = "This method is deprecated. Prefer runFlicker instead",
+    replaceWith = ReplaceWith("runFlicker"))
 fun flicker(
     instrumentation: Instrumentation,
-    launcherStrategy: ILauncherStrategy
-        = LauncherStrategyFactory.getInstance(instrumentation).launcherStrategy,
+    launcherStrategy: ILauncherStrategy = LauncherStrategyFactory
+            .getInstance(instrumentation).launcherStrategy,
     configuration: FlickerBuilder.() -> Unit
-) = FlickerBuilder(instrumentation, launcherStrategy)
-        .apply(configuration)
-        .build()
-        .execute()
-        .makeAssertions()
+) = runFlicker(instrumentation, launcherStrategy, configuration)
+
+/**
+ * Entry point for the Flicker DSL.
+ *
+ * Configures a builder, build the test runs, executes them and checks the configured assertions
+ *
+ * @param instrumentation to run the test (used to interact with the device)
+ * @param configuration Flicker DSL configuration
+ */
+@JvmOverloads
+fun runFlicker(
+    instrumentation: Instrumentation,
+    launcherStrategy: ILauncherStrategy = LauncherStrategyFactory
+            .getInstance(instrumentation).launcherStrategy,
+    configuration: FlickerBuilder.() -> Unit
+) {
+    val builder = FlickerBuilder(instrumentation, launcherStrategy)
+    runWithFlicker(builder, configuration)
+}
+
+/**
+ * Entry point for the Flicker DSL.
+ *
+ * Creates flicker test runs based on [builder], appends any additional [configuration],
+ * executes them and checks the configured assertions
+ *
+ * The original builder object is not changed.
+ *
+ * @param builder to run the test (used to interact with the device
+ * @param configuration Flicker DSL configuration
+ */
+@JvmOverloads
+fun runWithFlicker(
+    builder: FlickerBuilder,
+    configuration: FlickerBuilder.() -> Unit = {}
+) {
+    builder.copy(configuration).build().execute().makeAssertions()
+}
