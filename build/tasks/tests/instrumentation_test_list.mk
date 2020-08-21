@@ -66,6 +66,7 @@ instrumentation_tests := \
     CarrierConfigTests \
     TeleServiceTests \
     PresencePollingTests \
+    ImsCommonTests \
     SettingsProviderTest \
     FrameworksPrivacyLibraryTests \
     SettingsUITests \
