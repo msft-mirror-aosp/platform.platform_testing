@@ -25,6 +25,7 @@ java_library {
         "memory-helper",
         "perfetto-helper",
         "power-helper",
+        "simpleperf-helper",
         "ub-uiautomator",
         "system-metric-helper",
     ],

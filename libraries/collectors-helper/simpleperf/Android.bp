@@ -1,4 +1,4 @@
-// Copyright (C) 2018 The Android Open Source Project
+// Copyright (C) 2020 The Android Open Source Project
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,20 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-cc_test {
-    name: "hello_world_test",
-    srcs: ["HelloWorldTest.cpp"],
-    // TODO (b/158958526): This is an example of mainline testing in Test
-    // Mapping Suite. Will remove this after all work fine.
-    test_mainline_modules: [
-        "com.google.android.cellbroadcast.apex"
+// Used for collecting simpleperf samples.
+java_library {
+    name: "simpleperf-helper",
+    defaults: ["tradefed_errorprone_defaults"],
+
+    srcs: ["src/**/*.java"],
+
+    static_libs: [
+        "androidx.test.runner",
+        "ub-uiautomator",
     ],
 
-    cflags: [
-        "-Wall",
-        "-Werror",
-    ],
-
-    test_suites: ["general-tests"],
-    host_supported: true,
+    sdk_version: "current",
 }
+

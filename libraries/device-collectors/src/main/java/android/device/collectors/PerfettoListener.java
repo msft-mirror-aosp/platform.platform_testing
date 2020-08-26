@@ -20,6 +20,7 @@ import android.device.collectors.annotations.OptionClass;
 import android.os.Bundle;
 import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
+import android.os.SystemClock;
 import android.util.Log;
 import androidx.annotation.VisibleForTesting;
 import com.android.helpers.PerfettoHelper;
@@ -66,6 +67,11 @@ public class PerfettoListener extends BaseMetricListener {
     public static final String PERFETTO_PREFIX = "perfetto_";
     // Skip failure metrics collection if this flag is set to true.
     public static final String SKIP_TEST_FAILURE_METRICS = "skip_test_failure_metrics";
+    // Argument to get custom time in millisecs to wait before starting the
+    // perfetto trace.
+    public static final String PERFETTO_START_WAIT_TIME_ARG = "perfetto_start_wait_time_ms";
+    // Default wait time before starting the perfetto trace.
+    public static final String DEFAULT_START_WAIT_TIME_MSECS = "3000";
 
     private final WakeLockContext mWakeLockContext;
     private final Supplier<WakeLock> mWakelockSupplier;
@@ -77,6 +83,9 @@ public class PerfettoListener extends BaseMetricListener {
     private String mConfigFileName;
     // Wait time can be customized based on the dump interval set in the trace config.
     private long mWaitTimeInMs;
+    // Wait time can be customized based on how much time to wait before starting the
+    // trace.
+    private long mWaitStartTimeInMs;
     // Perfetto traces collected during the test will be saved under this root folder.
     private String mTestOutputRoot;
     // Store the method name and invocation count to create unique file name for each trace.
@@ -152,6 +161,10 @@ public class PerfettoListener extends BaseMetricListener {
         // TODO: b/118122395 for parsing failures.
         mWaitTimeInMs =
                 Long.parseLong(args.getString(PERFETTO_WAIT_TIME_ARG, DEFAULT_WAIT_TIME_MSECS));
+
+        // TODO: b/165344369 to avoid wait time before starting the perfetto trace.
+        mWaitStartTimeInMs = Long.parseLong(
+                args.getString(PERFETTO_START_WAIT_TIME_ARG, DEFAULT_START_WAIT_TIME_MSECS));
 
         // Destination folder in the device to save all the trace files.
         // Defaulted to /sdcard/test_results if test_output_root is not passed.
@@ -354,6 +367,7 @@ public class PerfettoListener extends BaseMetricListener {
      * Start perfetto tracing using the given config file.
      */
     private void startPerfettoTracing() {
+        SystemClock.sleep(mWaitStartTimeInMs);
         mPerfettoStartSuccess = mPerfettoHelper.startCollecting(mConfigFileName,
                 mIsConfigTextProto);
         if (!mPerfettoStartSuccess) {
