@@ -17,8 +17,8 @@
 package com.android.server.wm.flicker.dsl
 
 import com.android.server.wm.flicker.FlickerDslMarker
-import com.android.server.wm.flicker.traces.EventLogSubject
-import com.android.server.wm.flicker.traces.FocusEvent
+import com.android.server.wm.flicker.traces.eventlog.EventLogSubject
+import com.android.server.wm.flicker.traces.eventlog.FocusEvent
 import com.android.server.wm.flicker.traces.layers.LayerTraceEntry
 import com.android.server.wm.flicker.traces.layers.LayersTrace
 import com.android.server.wm.flicker.traces.layers.LayersTraceSubject

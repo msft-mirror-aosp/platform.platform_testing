@@ -63,7 +63,7 @@ class LayersTraceSubject private constructor(
      */
     fun skipUntilFirstAssertion() = apply { assertionsChecker.skipUntilFirstAssertion() }
 
-    fun failWithMessage(message: String) = fail(message)
+    fun failWithMessage(message: String) = apply { fail(message) }
 
     private fun test() {
         val failures = assertionsChecker.test(actual().entries)
@@ -80,12 +80,12 @@ class LayersTraceSubject private constructor(
     }
 
     @JvmOverloads
-    fun coversAtLeastRegion(rect: Rect, layerName: String = "") 
-            = this.coversAtLeastRegion(Region(rect), layerName)
+    fun coversAtLeastRegion(rect: Rect, layerName: String = "") =
+            this.coversAtLeastRegion(Region(rect), layerName)
 
     @JvmOverloads
-    fun coversAtMostRegion(rect: Rect, layerName: String = "")
-            = this.coversAtMostRegion(Region(rect), layerName)
+    fun coversAtMostRegion(rect: Rect, layerName: String = "") =
+            this.coversAtMostRegion(Region(rect), layerName)
 
     @JvmOverloads
     fun coversAtLeastRegion(region: Region, layerName: String = "") = apply {
@@ -100,30 +100,30 @@ class LayersTraceSubject private constructor(
             it.coversAtMostRegion(region, layerName)
         }
     }
-    
+
     fun hasVisibleRegion(layerName: String, size: Region) = apply {
         addAssertion("hasVisibleRegion($layerName$size)") {
             it.hasVisibleRegion(layerName, size)
         }
     }
 
-    fun hasNotLayer(layerName: String)
-            = apply { addAssertion("hasNotLayer($layerName)") { it.exists(layerName).negate() } }
+    fun hasNotLayer(layerName: String) =
+            apply { addAssertion("hasNotLayer($layerName)") { it.exists(layerName).negate() } }
 
-    fun hasLayer(layerName: String)
-            = apply { addAssertion("hasLayer($layerName)") { it.exists(layerName) } }
+    fun hasLayer(layerName: String) =
+            apply { addAssertion("hasLayer($layerName)") { it.exists(layerName) } }
 
-    fun showsLayer(layerName: String)
-            = apply { addAssertion("showsLayer($layerName)") { it.isVisible(layerName) } }
+    fun showsLayer(layerName: String) =
+            apply { addAssertion("showsLayer($layerName)") { it.isVisible(layerName) } }
 
-    fun replaceVisibleLayer(previousLayerName: String, currentLayerName: String)
-            = apply { hidesLayer(previousLayerName).and().showsLayer(currentLayerName) }
+    fun replaceVisibleLayer(previousLayerName: String, currentLayerName: String) =
+            apply { hidesLayer(previousLayerName).and().showsLayer(currentLayerName) }
 
-    fun hidesLayer(layerName: String)
-            = apply {addAssertion("hidesLayer($layerName)") { it.isVisible(layerName).negate() } }
+    fun hidesLayer(layerName: String) =
+            apply { addAssertion("hidesLayer($layerName)") { it.isVisible(layerName).negate() } }
 
-    operator fun invoke(name: String, assertion: TraceAssertion<LayerTraceEntry>)
-            = apply { addAssertion(name, assertion) }
+    operator fun invoke(name: String, assertion: TraceAssertion<LayerTraceEntry>) =
+            apply { addAssertion(name, assertion) }
 
     override val traceName: String
         get() = "LayersTrace"
@@ -140,9 +140,8 @@ class LayersTraceSubject private constructor(
          * User-defined entry point
          */
         @JvmStatic
-        fun assertThat(entry: LayersTrace)
-                = Truth.assertAbout(FACTORY).that(entry) as LayersTraceSubject
-
+        fun assertThat(entry: LayersTrace) =
+                Truth.assertAbout(FACTORY).that(entry) as LayersTraceSubject
 
         /**
          * Static method for getting the subject factory (for use with assertAbout())

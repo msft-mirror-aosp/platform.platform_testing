@@ -66,7 +66,7 @@ abstract class TraceMonitorTest<T : TraceMonitor> {
     fun captureLayersTrace() {
         traceMonitor.start()
         traceMonitor.stop()
-        val builder = FlickerRunResult.Builder(0)
+        val builder = FlickerRunResult.Builder()
         traceMonitor.save("capturedTrace", builder)
         savedTrace = getTraceFile(builder.build()) ?: error("Could not find saved trace file")
         val testFile = savedTrace.toFile()

@@ -47,7 +47,7 @@ class LayerTraceEntry constructor(
             layers.add(layer)
             roots.addAll(layer.children)
         }
-        layers
+        layers.toList()
     }
 
     private fun List<Layer>.topDownTraversal(): List<Layer> {
@@ -132,14 +132,13 @@ class LayerTraceEntry constructor(
     fun coversAtLeastRegion(testRegion: Region, layerName: String = ""): AssertionResult {
         return covers(layerName) { jointRegion ->
             val intersection = Region(jointRegion)
-            val covers = intersection.op(testRegion, Region.Op.INTERSECT)
-                    && !intersection.op(testRegion, Region.Op.XOR)
+            val covers = intersection.op(testRegion, Region.Op.INTERSECT) &&
+                    !intersection.op(testRegion, Region.Op.XOR)
 
             val reason = if (covers) {
                 "Region covered $testRegion"
             } else {
-                ("Region to test: $testRegion"
-                        + "\nUncovered region: $intersection")
+                "Region to test: $testRegion\nUncovered region: $intersection"
             }
 
             AssertionResult(reason, "coversAtLeastRegion", timestamp, success = covers)
@@ -157,14 +156,13 @@ class LayerTraceEntry constructor(
         return covers(layerName) { jointRegion ->
             val testRect = testRegion.bounds
             val intersection = Region(jointRegion)
-            val covers = intersection.op(testRect, Region.Op.INTERSECT)
-                    && !intersection.op(jointRegion, Region.Op.XOR)
+            val covers = intersection.op(testRect, Region.Op.INTERSECT) &&
+                    !intersection.op(jointRegion, Region.Op.XOR)
 
             val reason = if (covers) {
                 "Region covered $testRegion"
             } else {
-                ("Region to test: $testRegion"
-                        + "\nOut-of-bounds region: $intersection")
+                "Region to test: $testRegion\nOut-of-bounds region: $intersection"
             }
 
             AssertionResult(reason, "coversAtMostRegion", timestamp, success = covers)
@@ -199,12 +197,12 @@ class LayerTraceEntry constructor(
                             timestamp,
                             success = true)
                 }
-                reason = (layer.name
-                        + " has visible region:"
-                        + visibleRegion
-                        + " "
-                        + "expected:"
-                        + expectedVisibleRegion)
+                reason = layer.name +
+                        " has visible region:" +
+                        visibleRegion +
+                        " " +
+                        "expected:" +
+                        expectedVisibleRegion
             }
         }
         return AssertionResult(reason, assertionName, timestamp, success = false)
@@ -345,11 +343,11 @@ class LayerTraceEntry constructor(
 
                 val orphanId: Int = orphan.children.first().parentId
                 throw RuntimeException(
-                        ("Failed to parse layers trace. Found orphan layers with parent "
-                                + "layer id:"
-                                + orphanId
-                                + " : "
-                                + childNodes))
+                        ("Failed to parse layers trace. Found orphan layers with parent " +
+                                "layer id:" +
+                                orphanId +
+                                " : " +
+                                childNodes))
             }
             return LayerTraceEntry(timestamp, rootLayer.children)
         }

@@ -62,7 +62,7 @@ class ScreenRecorderTest {
         mScreenRecorder.start()
         SystemClock.sleep(100)
         mScreenRecorder.stop()
-        val builder = FlickerRunResult.Builder(0)
+        val builder = FlickerRunResult.Builder()
         mScreenRecorder.save("test", builder)
         val file = builder.build().screenRecording
         Truth.assertThat(Files.exists(file)).isTrue()

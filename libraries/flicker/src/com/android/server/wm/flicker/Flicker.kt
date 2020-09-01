@@ -25,7 +25,7 @@ import com.android.server.wm.flicker.dsl.TestCommands
 import com.android.server.wm.flicker.helpers.FLICKER_TAG
 import com.android.server.wm.flicker.monitor.ITransitionMonitor
 import com.android.server.wm.flicker.monitor.WindowAnimationFrameStatsMonitor
-import com.android.server.wm.flicker.traces.EventLogSubject
+import com.android.server.wm.flicker.traces.eventlog.EventLogSubject
 import com.android.server.wm.flicker.traces.layers.LayersTraceSubject
 import com.android.server.wm.flicker.traces.windowmanager.WmTraceSubject
 import com.google.common.truth.Truth
@@ -118,7 +118,7 @@ data class Flicker(
                         teardown.runCommands.forEach { it.invoke(this) }
                     }
                     if (frameStatsMonitor?.jankyFramesDetected() == true) {
-                        Log.e(FLICKER_TAG, "Skipping iteration ${iteration}/${repetitions - 1} " +
+                        Log.e(FLICKER_TAG, "Skipping iteration $iteration/${repetitions - 1} " +
                                 "for test $testTag due to jank. $frameStatsMonitor")
                         continue
                     }
@@ -145,7 +145,7 @@ data class Flicker(
                         .forEach { assertion ->
                     try {
                         assertion.assertion(WmTraceSubject.assertThat(wmTrace))
-                    } catch(e: AssertionError) {
+                    } catch (e: AssertionError) {
                         iteration.failed = true
                         failures.append("\nTest failed: ${assertion.name}")
                                 .append("\nIteration: ${iteration.iteration}")
@@ -164,7 +164,7 @@ data class Flicker(
                         .forEach { assertion ->
                     try {
                         assertion.assertion(LayersTraceSubject.assertThat(layersTrace))
-                    } catch(e: AssertionError) {
+                    } catch (e: AssertionError) {
                         iteration.failed = true
                         failures.append("\nTest failed: ${assertion.name}")
                                 .append("\nIteration: ${iteration.iteration}")
@@ -179,7 +179,7 @@ data class Flicker(
             assertions.eventLogAssertions.filter { it.enabled }.forEach {
                 try {
                     it.assertion(EventLogSubject.assertThat(iteration))
-                } catch(e: AssertionError) {
+                } catch (e: AssertionError) {
                     iteration.failed = true
                     failures.append("\nTest failed: ${it.name}")
                             .append("\nIteration: ${iteration.iteration}")
@@ -193,7 +193,6 @@ data class Flicker(
             if (!iteration.failed) {
                 iteration.cleanUp()
             }
-
         }
 
         Truth.assertWithMessage(failures.toString()).that(failures.isEmpty()).isTrue()

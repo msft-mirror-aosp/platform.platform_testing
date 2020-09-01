@@ -1,15 +1,15 @@
 package com.android.server.wm.flicker
 
-import com.android.server.wm.flicker.traces.EventLogSubject
-import com.android.server.wm.flicker.traces.FocusEvent
+import com.android.server.wm.flicker.traces.eventlog.EventLogSubject
+import com.android.server.wm.flicker.traces.eventlog.FocusEvent
 import org.junit.Test
 
 class EventLogSubjectTest {
     @Test
     fun canDetectFocusChanges() {
-        val builder = FlickerRunResult.Builder(0)
+        val builder = FlickerRunResult.Builder()
         builder.eventLog =
-                listOf( FocusEvent(0, "WinB", FocusEvent.Focus.GAINED, "test"),
+                listOf(FocusEvent(0, "WinB", FocusEvent.Focus.GAINED, "test"),
                         FocusEvent(0, "test WinA window", FocusEvent.Focus.LOST, "test"),
                         FocusEvent(0, "WinB", FocusEvent.Focus.LOST, "test"),
                         FocusEvent(0, "test WinC", FocusEvent.Focus.GAINED, "test"))
@@ -25,7 +25,7 @@ class EventLogSubjectTest {
 
     @Test
     fun canDetectFocusDoesNotChange() {
-        val result = FlickerRunResult.Builder(0).build()
+        val result = FlickerRunResult.Builder().build()
         EventLogSubject.assertThat(result).focusDoesNotChange().forAllEntries()
     }
 }

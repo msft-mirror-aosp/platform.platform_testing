@@ -86,17 +86,17 @@ class WindowManagerTraceEntry(val proto: WindowManagerTraceProto) : ITraceEntry 
         windows.filter { it.isVisible() }
     }
 
-    private fun getWindows(windowContainer: WindowContainerProto, isAppWindow: Boolean)
-            = windowContainer.children.reversed().flatMap { getWindows(it, isAppWindow) }
+    private fun getWindows(windowContainer: WindowContainerProto, isAppWindow: Boolean) =
+            windowContainer.children.reversed().flatMap { getWindows(it, isAppWindow) }
 
     private fun getWindows(
-            windowContainer: WindowContainerChildProto,
-            isAppWindow: Boolean
+        windowContainer: WindowContainerChildProto,
+        isAppWindow: Boolean
     ): List<WindowStateProto> {
         return if (windowContainer.displayArea != null) {
             getWindows(windowContainer.displayArea.windowContainer, isAppWindow)
-        } else if (windowContainer.displayContent != null
-                && windowContainer.displayContent.windowContainer == null) {
+        } else if (windowContainer.displayContent != null &&
+                windowContainer.displayContent.windowContainer == null) {
             getWindows(windowContainer.displayContent.rootDisplayArea.windowContainer, isAppWindow)
         } else if (windowContainer.displayContent != null) {
             getWindows(windowContainer.displayContent.windowContainer, isAppWindow)
@@ -266,14 +266,13 @@ class WindowManagerTraceEntry(val proto: WindowManagerTraceProto) : ITraceEntry 
         return covers(windowTitle) { windowRegion ->
             val testRect = testRegion.bounds
             val intersection = Region(windowRegion)
-            val covers = intersection.op(testRect, Region.Op.INTERSECT)
-                    && !intersection.op(testRect, Region.Op.XOR)
+            val covers = intersection.op(testRect, Region.Op.INTERSECT) &&
+                    !intersection.op(testRect, Region.Op.XOR)
 
             val reason = if (covers) {
                 "$windowTitle covers region $testRegion"
             } else {
-                ("Region to test: $testRegion"
-                        + "\nUncovered region: $intersection")
+                "Region to test: $testRegion\nUncovered region: $intersection"
             }
 
             AssertionResult(reason, "coversAtLeastRegion", timestamp, success = covers)
@@ -291,14 +290,13 @@ class WindowManagerTraceEntry(val proto: WindowManagerTraceProto) : ITraceEntry 
         return covers(windowTitle) { windowRegion ->
             val testRect = testRegion.bounds
             val intersection = Region(windowRegion)
-            val covers = intersection.op(testRect, Region.Op.INTERSECT)
-                    && !intersection.op(windowRegion, Region.Op.XOR)
+            val covers = intersection.op(testRect, Region.Op.INTERSECT) &&
+                    !intersection.op(windowRegion, Region.Op.XOR)
 
             val reason = if (covers) {
                 "$windowTitle covers region $testRegion"
             } else {
-                ("Region to test: $testRegion"
-                        + "\nOut-of-bounds region: $intersection")
+                "Region to test: $testRegion\nOut-of-bounds region: $intersection"
             }
 
             AssertionResult(reason, "coversAtMostRegion", timestamp, success = covers)
@@ -400,5 +398,4 @@ class WindowManagerTraceEntry(val proto: WindowManagerTraceProto) : ITraceEntry 
             Region(this.left, this.top, this.right, this.bottom)
         }
     }
-
 }

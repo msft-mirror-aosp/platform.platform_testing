@@ -28,10 +28,10 @@ import java.nio.file.Path
  * Each entry is parsed into a list of [WindowManagerTraceEntry] objects.
  */
 class WindowManagerTrace private constructor(
-        entries: List<WindowManagerTraceEntry>,
-        source: Path?,
-        sourceChecksum: String
-): TraceBase<WindowManagerTraceEntry>(entries, source, sourceChecksum) {
+    entries: List<WindowManagerTraceEntry>,
+    source: Path?,
+    sourceChecksum: String
+) : TraceBase<WindowManagerTraceEntry>(entries, source, sourceChecksum) {
     companion object {
         /**
          * Parses `WindowManagerTraceFileProto` from `data` and uses the proto to generates

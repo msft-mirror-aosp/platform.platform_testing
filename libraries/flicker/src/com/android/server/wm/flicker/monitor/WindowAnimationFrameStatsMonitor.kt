@@ -19,9 +19,7 @@ package com.android.server.wm.flicker.monitor
 import android.app.Instrumentation
 import android.util.Log
 import android.view.FrameStats
-import com.android.server.wm.flicker.FlickerRunResult
 import com.android.server.wm.flicker.helpers.FLICKER_TAG
-import java.nio.file.Path
 import kotlin.math.max
 
 /**
@@ -39,8 +37,8 @@ open class WindowAnimationFrameStatsMonitor(
     private var longestFrameNano = 0L
 
     private fun analyze() {
-        val stats = frameStats ?: throw IllegalStateException("Frame status are only available once " +
-                "monitor has been stopped")
+        val stats = frameStats ?: throw IllegalStateException("Frame status are only available " +
+                "once the monitor has been stopped")
 
         val frameCount = stats.frameCount
         val refreshPeriodNano = stats.refreshPeriodNano

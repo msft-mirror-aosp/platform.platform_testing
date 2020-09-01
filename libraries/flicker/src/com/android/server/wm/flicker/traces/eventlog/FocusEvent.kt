@@ -14,13 +14,17 @@
  * limitations under the License.
  */
 
-package com.android.server.wm.flicker.traces
+package com.android.server.wm.flicker.traces.eventlog
 
-class FocusEvent(override val timestamp:Long,
-                 val window:String,
-                 val focus: Focus,
-                 val reason:String): ITraceEntry {
-    enum class Focus {GAINED, LOST}
+import com.android.server.wm.flicker.traces.ITraceEntry
+
+class FocusEvent(
+    override val timestamp: Long,
+    val window: String,
+    val focus: Focus,
+    val reason: String
+) : ITraceEntry {
+    enum class Focus { GAINED, LOST }
 
     override fun toString(): String {
         return "$timestamp: Focus ${focus.name} $window Reason=$reason"

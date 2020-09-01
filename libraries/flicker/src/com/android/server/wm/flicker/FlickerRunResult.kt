@@ -18,7 +18,7 @@ package com.android.server.wm.flicker
 
 import android.util.Log
 import com.android.server.wm.flicker.helpers.FLICKER_TAG
-import com.android.server.wm.flicker.traces.FocusEvent
+import com.android.server.wm.flicker.traces.eventlog.FocusEvent
 import com.android.server.wm.flicker.traces.layers.LayersTrace
 import com.android.server.wm.flicker.traces.windowmanager.WindowManagerTrace
 import java.io.IOException
@@ -28,7 +28,7 @@ import java.nio.file.Path
 /**
  * Defines the result of a flicker run
  */
-data class FlickerRunResult (
+data class FlickerRunResult(
     /**
      * Run identifier
      */
@@ -92,7 +92,7 @@ data class FlickerRunResult (
         screenRecording.tryDelete()
     }
 
-    class Builder(private val iteration: Int) {
+    class Builder @JvmOverloads constructor(private val iteration: Int = 0) {
         /**
          * Path to the WindowManager trace file, if collected
          */
@@ -111,6 +111,12 @@ data class FlickerRunResult (
          */
         var eventLog = listOf<FocusEvent>()
 
-        fun build() = FlickerRunResult(iteration, wmTraceFile, layersTraceFile, screenRecording, eventLog)
+        fun build() = FlickerRunResult(
+            iteration,
+            wmTraceFile,
+            layersTraceFile,
+            screenRecording,
+            eventLog
+        )
     }
 }

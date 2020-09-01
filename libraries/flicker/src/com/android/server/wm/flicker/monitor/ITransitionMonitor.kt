@@ -17,7 +17,6 @@
 package com.android.server.wm.flicker.monitor
 
 import com.android.server.wm.flicker.FlickerRunResult
-import java.nio.file.Path
 
 /** Collects test artifacts during a UI transition.  */
 interface ITransitionMonitor {
@@ -36,8 +35,8 @@ interface ITransitionMonitor {
      * @param flickerRunResultBuilder Flicker run results
      * @return Path to saved artifact
      */
-    fun save(testTag: String, iteration: Int, flickerRunResultBuilder: FlickerRunResult.Builder)
-            = save("${testTag}_$iteration", flickerRunResultBuilder)
+    fun save(testTag: String, iteration: Int, flickerRunResultBuilder: FlickerRunResult.Builder) =
+            save("${testTag}_$iteration", flickerRunResultBuilder)
 
     /**
      * Saves any monitor artifacts to file adding `testTag` to the file name.

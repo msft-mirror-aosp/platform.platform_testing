@@ -20,7 +20,6 @@ import android.surfaceflinger.nano.Layerstrace
 import com.android.server.wm.flicker.FlickerRunResult
 import com.google.common.truth.Truth
 import org.junit.FixMethodOrder
-import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
 import java.nio.file.Path
 

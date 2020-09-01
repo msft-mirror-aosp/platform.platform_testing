@@ -19,16 +19,16 @@ package com.android.server.wm.flicker.monitor
 import android.util.EventLog
 import android.util.EventLog.Event
 import com.android.server.wm.flicker.FlickerRunResult
-import com.android.server.wm.flicker.traces.FocusEvent
-import com.android.server.wm.flicker.traces.FocusEvent.Focus
+import com.android.server.wm.flicker.traces.eventlog.FocusEvent
+import com.android.server.wm.flicker.traces.eventlog.FocusEvent.Focus
 import java.io.IOException
-import java.util.*
+import java.util.UUID
 
 /**
  * Collects event logs during transitions.
  */
 open class EventLogMonitor : ITransitionMonitor {
-    private var _logs = listOf<Event>();
+    private var _logs = listOf<Event>()
     private lateinit var _logSeparator: String
 
     /**
@@ -38,7 +38,7 @@ open class EventLogMonitor : ITransitionMonitor {
      * @return Unique log separator.
      */
     private fun separateLogs(): String {
-        val logSeparator = UUID.randomUUID().toString();
+        val logSeparator = UUID.randomUUID().toString()
         EventLog.writeEvent(EVENT_LOG_SEPARATOR_TAG, logSeparator)
         return logSeparator
     }
@@ -52,13 +52,14 @@ open class EventLogMonitor : ITransitionMonitor {
         } catch (e: IOException) {
             throw RuntimeException(e)
         }
-        return events.dropWhile { it.tag !=  EVENT_LOG_SEPARATOR_TAG || it.data.toString() != _logSeparator }.drop(1)
+        return events.dropWhile {
+            it.tag != EVENT_LOG_SEPARATOR_TAG || it.data.toString() != _logSeparator
+        }.drop(1)
     }
-
 
     override fun start() {
         // Insert event log marker
-        _logSeparator = separateLogs();
+        _logSeparator = separateLogs()
     }
 
     override fun stop() {
@@ -74,10 +75,11 @@ open class EventLogMonitor : ITransitionMonitor {
                 throw RuntimeException("Error reading from eventlog $log")
             }
             val focusState = if (log[0].contains("entering")) Focus.GAINED else Focus.LOST
-            // parse window from 'Focus [entering|leaving] [windowname]'
-            // by droping the first two words
+            // parse window from 'Focus [entering|leaving] [window name]'
+            // by dropping the first two words
             var expectedWhiteSpace = 2
-            val window = log[0].dropWhile { !it.isWhitespace() || --expectedWhiteSpace > 0 }.drop(1)
+            val window = log[0].dropWhile { !it.isWhitespace() || --expectedWhiteSpace > 0 }
+                    .drop(1)
             val reason = log[1].removePrefix("reason=")
             FocusEvent(timestamp, window, focusState, reason)
         }

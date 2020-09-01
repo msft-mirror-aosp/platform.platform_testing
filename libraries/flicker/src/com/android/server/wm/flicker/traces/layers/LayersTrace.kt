@@ -27,10 +27,10 @@ import java.nio.file.Path
  * Each entry is parsed into a list of [LayerTraceEntry] objects.
  */
 class LayersTrace private constructor(
-        entries: List<LayerTraceEntry>,
-        source: Path?,
-        sourceChecksum: String
-): TraceBase<LayerTraceEntry>(entries, source, sourceChecksum) {
+    entries: List<LayerTraceEntry>,
+    source: Path?,
+    sourceChecksum: String
+) : TraceBase<LayerTraceEntry>(entries, source, sourceChecksum) {
     companion object {
         /**
          * Parses `LayersTraceFileProto` from `data` and uses the proto to generates a list
