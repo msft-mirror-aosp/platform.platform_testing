@@ -15,29 +15,29 @@
  */
 package com.android.helpers;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 
 import android.os.TemperatureTypeEnum;
 import android.os.ThrottlingSeverityEnum;
-import android.support.test.uiautomator.UiDevice;
+
 import androidx.test.runner.AndroidJUnit4;
+import androidx.test.uiautomator.UiDevice;
 
 import com.android.os.AtomsProto.Atom;
 import com.android.os.AtomsProto.ThermalThrottlingSeverityStateChanged;
 import com.android.os.StatsLog.EventMetricData;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertEquals;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Android Unit tests for {@link com.android.helpers.ThermalHelper}.

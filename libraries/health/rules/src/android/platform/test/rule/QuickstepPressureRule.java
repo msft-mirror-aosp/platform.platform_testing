@@ -17,9 +17,10 @@
 package android.platform.test.rule;
 
 import android.os.SystemClock;
-import android.support.test.uiautomator.By;
-import android.support.test.uiautomator.Until;
+
 import androidx.annotation.VisibleForTesting;
+import androidx.test.uiautomator.By;
+import androidx.test.uiautomator.Until;
 
 import org.junit.runner.Description;
 

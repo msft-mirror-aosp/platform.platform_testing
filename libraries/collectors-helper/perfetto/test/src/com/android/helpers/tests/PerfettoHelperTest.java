@@ -15,22 +15,21 @@
  */
 package com.android.helpers.tests;
 
-import android.support.test.uiautomator.UiDevice;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import androidx.test.InstrumentationRegistry;
 import androidx.test.runner.AndroidJUnit4;
+import androidx.test.uiautomator.UiDevice;
 
 import com.android.helpers.PerfettoHelper;
-
-import java.io.IOException;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
+import java.io.IOException;
 
 /**
  * Android Unit tests for {@link PerfettoHelper}.

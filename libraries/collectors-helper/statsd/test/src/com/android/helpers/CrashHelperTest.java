@@ -15,20 +15,20 @@
  */
 package com.android.helpers;
 
-import android.os.SystemClock;
-import android.support.test.uiautomator.UiObject2;
-import android.support.test.uiautomator.By;
-import androidx.test.runner.AndroidJUnit4;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
+import android.os.SystemClock;
+
+import androidx.test.runner.AndroidJUnit4;
+import androidx.test.uiautomator.By;
+import androidx.test.uiautomator.UiObject2;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.Map;
-
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertEquals;
 
 /**
  * Android Unit tests for {@link com.android.helpers.CrashHelper}.

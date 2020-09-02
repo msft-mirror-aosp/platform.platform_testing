@@ -17,10 +17,10 @@ java_library {
     sdk_version: "test_current",
     static_libs: [
         "androidx.test.runner",
+        "androidx.test.uiautomator",
         "app-helpers-handheld-interfaces",
         "guava",
         "memory-helper",
-        "ub-uiautomator"
     ],
     srcs: ["src/**/*.java"],
 }

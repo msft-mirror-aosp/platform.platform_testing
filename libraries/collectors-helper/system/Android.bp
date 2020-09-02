@@ -23,9 +23,9 @@ java_library {
 
     static_libs: [
         "androidx.test.runner",
+        "androidx.test.uiautomator",
         "collector-helper-utilities",
         "guava",
-        "ub-uiautomator",
     ],
 
     sdk_version: "current",

@@ -15,33 +15,32 @@
  */
 package com.android.helpers;
 
-import static com.android.helpers.MetricUtility.constructKey;
 import static com.android.helpers.JankCollectionHelper.GFXINFO_COMMAND_GET;
 import static com.android.helpers.JankCollectionHelper.GFXINFO_COMMAND_RESET;
-import static com.android.helpers.JankCollectionHelper.GfxInfoMetric.TOTAL_FRAMES;
-import static com.android.helpers.JankCollectionHelper.GfxInfoMetric.JANKY_FRAMES_COUNT;
-import static com.android.helpers.JankCollectionHelper.GfxInfoMetric.JANKY_FRAMES_PRCNT;
 import static com.android.helpers.JankCollectionHelper.GfxInfoMetric.FRAME_TIME_50TH;
 import static com.android.helpers.JankCollectionHelper.GfxInfoMetric.FRAME_TIME_90TH;
 import static com.android.helpers.JankCollectionHelper.GfxInfoMetric.FRAME_TIME_95TH;
 import static com.android.helpers.JankCollectionHelper.GfxInfoMetric.FRAME_TIME_99TH;
-import static com.android.helpers.JankCollectionHelper.GfxInfoMetric.NUM_MISSED_VSYNC;
+import static com.android.helpers.JankCollectionHelper.GfxInfoMetric.JANKY_FRAMES_COUNT;
+import static com.android.helpers.JankCollectionHelper.GfxInfoMetric.JANKY_FRAMES_PRCNT;
+import static com.android.helpers.JankCollectionHelper.GfxInfoMetric.NUM_FRAME_DEADLINE_MISSED;
 import static com.android.helpers.JankCollectionHelper.GfxInfoMetric.NUM_HIGH_INPUT_LATENCY;
-import static com.android.helpers.JankCollectionHelper.GfxInfoMetric.NUM_SLOW_UI_THREAD;
+import static com.android.helpers.JankCollectionHelper.GfxInfoMetric.NUM_MISSED_VSYNC;
 import static com.android.helpers.JankCollectionHelper.GfxInfoMetric.NUM_SLOW_BITMAP_UPLOADS;
 import static com.android.helpers.JankCollectionHelper.GfxInfoMetric.NUM_SLOW_DRAW;
-import static com.android.helpers.JankCollectionHelper.GfxInfoMetric.NUM_FRAME_DEADLINE_MISSED;
+import static com.android.helpers.JankCollectionHelper.GfxInfoMetric.NUM_SLOW_UI_THREAD;
+import static com.android.helpers.JankCollectionHelper.GfxInfoMetric.TOTAL_FRAMES;
+import static com.android.helpers.MetricUtility.constructKey;
+
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
+
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.when;
 
-import android.support.test.uiautomator.UiDevice;
 import androidx.test.runner.AndroidJUnit4;
-
-import java.io.IOException;
-import java.util.Map;
+import androidx.test.uiautomator.UiDevice;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -50,6 +49,9 @@ import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+
+import java.io.IOException;
+import java.util.Map;
 
 /** Android Unit tests for {@link JankCollectionHelper}. */
 @RunWith(AndroidJUnit4.class)
