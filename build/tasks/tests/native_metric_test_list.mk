@@ -24,6 +24,7 @@ native_metric_tests := \
     libhwbinder_benchmark \
     libjavacore-benchmarks \
     libpowermanager_benchmarks \
+    libvibratorservice_benchmarks \
     minikin_perftests \
     mmapPerf \
     netd_benchmark \
