@@ -21,13 +21,13 @@ java_library {
     static_libs: [
         "androidx.annotation_annotation",
         "androidx.test.runner",
+        "androidx.test.uiautomator",
         "jank-helper",
         "junit",
         "memory-helper",
         "perfetto-helper",
         "power-helper",
         "simpleperf-helper",
-        "ub-uiautomator",
         "system-metric-helper",
     ],
 
