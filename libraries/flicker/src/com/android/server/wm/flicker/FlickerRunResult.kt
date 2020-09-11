@@ -17,7 +17,6 @@
 package com.android.server.wm.flicker
 
 import android.util.Log
-import com.android.server.wm.flicker.helpers.FLICKER_TAG
 import com.android.server.wm.flicker.traces.eventlog.FocusEvent
 import com.android.server.wm.flicker.traces.layers.LayersTrace
 import com.android.server.wm.flicker.traces.windowmanager.WindowManagerTrace

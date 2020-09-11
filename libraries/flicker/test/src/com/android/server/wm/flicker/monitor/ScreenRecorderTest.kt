@@ -19,7 +19,7 @@ package com.android.server.wm.flicker.monitor
 import android.os.SystemClock
 import androidx.test.platform.app.InstrumentationRegistry
 import com.android.server.wm.flicker.FlickerRunResult
-import com.android.server.wm.flicker.helpers.getDefaultFlickerOutputDir
+import com.android.server.wm.flicker.getDefaultFlickerOutputDir
 import com.google.common.truth.Truth
 import org.junit.After
 import org.junit.Before

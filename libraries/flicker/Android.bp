@@ -19,44 +19,39 @@ java_test {
     platform_apis: true,
     srcs: ["src/**/*.java", "src/**/*.kt"],
     static_libs: [
-        "cts-wm-util",
-        "platformprotosnano",
-        "layersprotosnano",
-        "truth-prebuilt",
-        "app-helpers-core",
-        "launcher-helper-lib",
-        "launcher-aosp-tapl",
+        "flickerlib-core",
+        "flickerlib-helpers"
     ],
 }
 
 java_library {
-    name: "flickerlib_without_helpers",
+    name: "flickerlib-core",
     platform_apis: true,
     srcs: ["src/**/*.java", "src/**/*.kt"],
     exclude_srcs: [
-        "src/com/android/server/wm/flicker/helpers/AutomationUtils.kt",
-        "src/com/android/server/wm/flicker/helpers/WindowUtils.kt",
+        "**/helpers/*",
     ],
     static_libs: [
-        "cts-wm-util",
+        "compatibility-device-util-axt",
+        "ub-uiautomator",
+        "androidx.test.uiautomator_uiautomator",
+        "androidx.test.ext.junit",
         "platformprotosnano",
         "layersprotosnano",
         "truth-prebuilt",
-        "app-helpers-core",
-        "launcher-helper-lib",
-        "launcher-aosp-tapl",
+        "launcher-helper-lib"
     ],
 }
 
 java_library {
-    name: "flickerautomationhelperlib",
+    name: "flickerlib-helpers",
     sdk_version: "test_current",
     srcs: [
-        "src/com/android/server/wm/flicker/helpers/AutomationUtils.kt",
-        "src/com/android/server/wm/flicker/helpers/WindowUtils.kt",
+        "**/helpers/*",
     ],
     static_libs: [
-        "launcher-helper-lib",
         "compatibility-device-util-axt",
+        "app-helpers-core",
+        "launcher-helper-lib",
     ],
 }

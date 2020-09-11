@@ -16,10 +16,8 @@
 
 package com.android.server.wm.flicker.monitor
 
-import android.platform.helpers.IAppHelper
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.UiDevice
-import com.android.server.wm.flicker.StandardAppHelper
 import com.android.server.wm.flicker.helpers.wakeUpAndGoToHomeScreen
 import org.junit.Before
 import org.junit.FixMethodOrder
@@ -32,22 +30,19 @@ import org.junit.runners.MethodSorters
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class WindowAnimationFrameStatsMonitorTest {
-    private var instrumentation = InstrumentationRegistry.getInstrumentation()
-    private var frameStatsMonitor = WindowAnimationFrameStatsMonitor(instrumentation)
+    private val instrumentation = InstrumentationRegistry.getInstrumentation()
+    private val frameStatsMonitor = WindowAnimationFrameStatsMonitor(instrumentation)
+    private val uiDevice = UiDevice.getInstance(instrumentation)
+
     @Before
     fun setup() {
-        UiDevice.getInstance(instrumentation).wakeUpAndGoToHomeScreen()
+        uiDevice.wakeUpAndGoToHomeScreen()
     }
 
     @Test
     fun captureWindowAnimationFrameStats() {
         frameStatsMonitor.start()
-        val webViewBrowserHelper: IAppHelper = StandardAppHelper(
-                instrumentation,
-                packageName = "com.android.chrome",
-                appName = "Chrome")
-        webViewBrowserHelper.open()
-        webViewBrowserHelper.exit()
+        uiDevice.pressRecentApps()
         frameStatsMonitor.stop()
     }
 }

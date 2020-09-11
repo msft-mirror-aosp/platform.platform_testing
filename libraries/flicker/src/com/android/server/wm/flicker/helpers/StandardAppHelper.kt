@@ -14,25 +14,31 @@
  * limitations under the License.
  */
 
-package com.android.server.wm.flicker
+package com.android.server.wm.flicker.helpers
 
 import android.app.Instrumentation
 import android.platform.helpers.AbstractStandardAppHelper
 import android.support.test.launcherhelper.ILauncherStrategy
 import android.support.test.launcherhelper.LauncherStrategyFactory
 
-
 /**
  * Class to take advantage of {@code IAppHelper} interface so the same test can be run against first
  * party and third party apps.
  */
 open class StandardAppHelper @JvmOverloads constructor(
-        instr: Instrumentation,
-        protected val packageName: String,
-        protected val appName: String,
-        protected val launcherStrategy: ILauncherStrategy
-        = LauncherStrategyFactory.getInstance(instr).launcherStrategy
+    instr: Instrumentation,
+    protected val packageName: String,
+    protected val appName: String,
+    protected val launcherStrategy: ILauncherStrategy =
+            LauncherStrategyFactory.getInstance(instr).launcherStrategy
 ) : AbstractStandardAppHelper(instr) {
+    constructor(
+        instr: Instrumentation,
+        appName: String,
+        launcherStrategy: ILauncherStrategy =
+                LauncherStrategyFactory.getInstance(instr).launcherStrategy
+    ) : this(instr, sFlickerPackage, appName, launcherStrategy)
+
     override fun open() {
         launcherStrategy.launch(appName, packageName)
     }
@@ -49,4 +55,8 @@ open class StandardAppHelper @JvmOverloads constructor(
 
     /** {@inheritDoc}  */
     override fun dismissInitialDialogs() {}
+
+    companion object {
+        private val sFlickerPackage = "com.android.server.wm.flicker.testapp"
+    }
 }

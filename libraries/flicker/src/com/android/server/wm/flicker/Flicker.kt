@@ -22,7 +22,6 @@ import android.util.Log
 import androidx.test.uiautomator.UiDevice
 import com.android.server.wm.flicker.dsl.AssertionTarget
 import com.android.server.wm.flicker.dsl.TestCommands
-import com.android.server.wm.flicker.helpers.FLICKER_TAG
 import com.android.server.wm.flicker.monitor.ITransitionMonitor
 import com.android.server.wm.flicker.monitor.WindowAnimationFrameStatsMonitor
 import com.android.server.wm.flicker.traces.eventlog.EventLogSubject

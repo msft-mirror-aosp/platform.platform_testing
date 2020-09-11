@@ -19,7 +19,7 @@ package com.android.server.wm.flicker.monitor
 import android.app.Instrumentation
 import android.util.Log
 import android.view.FrameStats
-import com.android.server.wm.flicker.helpers.FLICKER_TAG
+import com.android.server.wm.flicker.FLICKER_TAG
 import kotlin.math.max
 
 /**

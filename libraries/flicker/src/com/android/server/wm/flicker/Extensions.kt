@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.server.wm.flicker.helpers
+package com.android.server.wm.flicker
 
 import android.app.Instrumentation
 

@@ -19,7 +19,7 @@ package com.android.server.wm.flicker.monitor
 import android.util.Log
 import com.android.compatibility.common.util.SystemUtil
 import com.android.server.wm.flicker.FlickerRunResult
-import com.android.server.wm.flicker.helpers.FLICKER_TAG
+import com.android.server.wm.flicker.FLICKER_TAG
 import java.io.IOException
 import java.nio.file.Path
 
@@ -31,7 +31,7 @@ open class ScreenRecorder @JvmOverloads constructor(
     traceFile: String = "transition.mp4"
 ) : TraceMonitor(outputPath, outputPath.resolve(traceFile)) {
     private fun createRecorderThread(): Thread {
-        val command = "screenrecord --size ${width}x${height} $sourceTraceFilePath"
+        val command = "screenrecord --size ${width}x$height $sourceTraceFilePath"
         return Thread(
                 Runnable {
                     try {
