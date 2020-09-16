@@ -25,7 +25,6 @@ import java.io.IOException
 import java.nio.ByteBuffer
 import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.Paths
 import java.security.MessageDigest
 import java.security.NoSuchAlgorithmException
 
@@ -34,8 +33,8 @@ import java.security.NoSuchAlgorithmException
  * trace to another location.
  */
 abstract class TraceMonitor internal constructor(
-        @VisibleForTesting var outputPath: Path,
-        protected var sourceTraceFilePath: Path
+    @VisibleForTesting var outputPath: Path,
+    protected var sourceTraceFilePath: Path
 ) : ITransitionMonitor {
     override var checksum: String = ""
         protected set
@@ -43,11 +42,6 @@ abstract class TraceMonitor internal constructor(
     abstract val isEnabled: Boolean
 
     abstract fun setResult(flickerRunResultBuilder: FlickerRunResult.Builder, traceFile: Path)
-
-    internal constructor(
-        outputDir: Path,
-        traceFileName: String
-    ) : this(outputDir, TRACE_DIR.resolve(traceFileName))
 
     override fun save(testTag: String, flickerRunResultBuilder: FlickerRunResult.Builder) {
         outputPath.toFile().mkdirs()
@@ -73,8 +67,6 @@ abstract class TraceMonitor internal constructor(
     }
 
     companion object {
-        private val TRACE_DIR = Paths.get("/data/misc/wmtrace/")
-
         @VisibleForTesting
         @JvmStatic
         fun calculateChecksum(traceFile: Path): String {

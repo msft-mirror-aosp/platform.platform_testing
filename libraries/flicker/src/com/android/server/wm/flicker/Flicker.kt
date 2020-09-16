@@ -20,14 +20,15 @@ import android.app.Instrumentation
 import android.support.test.launcherhelper.ILauncherStrategy
 import android.util.Log
 import androidx.test.uiautomator.UiDevice
+import com.android.server.wm.flicker.assertions.FlickerAssertionError
+import com.android.server.wm.flicker.dsl.AssertionTag
 import com.android.server.wm.flicker.dsl.AssertionTarget
 import com.android.server.wm.flicker.dsl.TestCommands
 import com.android.server.wm.flicker.monitor.ITransitionMonitor
 import com.android.server.wm.flicker.monitor.WindowAnimationFrameStatsMonitor
-import com.android.server.wm.flicker.traces.eventlog.EventLogSubject
-import com.android.server.wm.flicker.traces.layers.LayersTraceSubject
-import com.android.server.wm.flicker.traces.windowmanager.WmTraceSubject
 import com.google.common.truth.Truth
+import java.io.IOException
+import java.nio.file.Files
 import java.nio.file.Path
 
 @DslMarker
@@ -57,9 +58,9 @@ data class Flicker(
      */
     val outputDir: Path,
     /**
-     * Test tag used to store the test results
+     * Test name used to store the test results
      */
-    private val testTag: String,
+    private val testName: String,
     /**
      * Number of times the test should be executed
      */
@@ -90,6 +91,13 @@ data class Flicker(
     private val assertions: AssertionTarget
 ) {
     private val results = mutableListOf<FlickerRunResult>()
+    private val tags = AssertionTag.DEFAULT.map { it.tag }.toMutableSet()
+
+    /**
+     * Iteration identifier during test run
+     */
+    var iteration = 0
+        private set
 
     /**
      * Executes the test. The commands are executed in the following order:
@@ -106,6 +114,7 @@ data class Flicker(
             try {
                 setup.testCommands.forEach { it.invoke(this) }
                 for (iteration in 0 until repetitions) {
+                    this.iteration = iteration
                     try {
                         setup.runCommands.forEach { it.invoke(this) }
                         traceMonitors.forEach { it.start() }
@@ -118,10 +127,10 @@ data class Flicker(
                     }
                     if (frameStatsMonitor?.jankyFramesDetected() == true) {
                         Log.e(FLICKER_TAG, "Skipping iteration $iteration/${repetitions - 1} " +
-                                "for test $testTag due to jank. $frameStatsMonitor")
+                                "for test $testName due to jank. $frameStatsMonitor")
                         continue
                     }
-                    saveResult(iteration)
+                    saveResult(this.iteration)
                 }
             } finally {
                 teardown.testCommands.forEach { it.invoke(this) }
@@ -131,76 +140,89 @@ data class Flicker(
         }
     }
 
+    private fun cleanUp(failures: List<FlickerAssertionError>) {
+        results.forEach {
+            if (it.canDelete(failures)) {
+                it.cleanUp()
+            }
+        }
+    }
+
+    @Deprecated("Prefer checkAssertions", replaceWith = ReplaceWith("checkAssertions"))
+    fun makeAssertions() = checkAssertions()
+
     /**
      * Run the assertions on the trace
      */
-    fun makeAssertions() {
-        val failures = StringBuilder()
-        results.forEach { iteration ->
-            val wmTrace = iteration.wmTrace
-            if (wmTrace != null) {
-                assertions.wmAssertions
-                        .filter { it.enabled }
-                        .forEach { assertion ->
-                    try {
-                        assertion.assertion(WmTraceSubject.assertThat(wmTrace))
-                    } catch (e: AssertionError) {
-                        iteration.failed = true
-                        failures.append("\nTest failed: ${assertion.name}")
-                                .append("\nIteration: ${iteration.iteration}")
-                                .append("\nTrace: ${iteration.wmTraceFile}")
-                                .append("\n")
-                                .append(e.message)
-                                .append("\n")
-                    }
-                }
-            }
+    fun checkAssertions() {
+        val failures = results.flatMap { assertions.checkAssertions(it) }
+        this.cleanUp(failures)
+        val failureMessage = failures.joinToString("\n") { it.message }
+        Truth.assertWithMessage(failureMessage).that(failureMessage.isEmpty()).isTrue()
+    }
 
-            val layersTrace = iteration.layersTrace
-            if (layersTrace != null) {
-                assertions.layerAssertions
-                        .filter { it.enabled }
-                        .forEach { assertion ->
-                    try {
-                        assertion.assertion(LayersTraceSubject.assertThat(layersTrace))
-                    } catch (e: AssertionError) {
-                        iteration.failed = true
-                        failures.append("\nTest failed: ${assertion.name}")
-                                .append("\nIteration: ${iteration.iteration}")
-                                .append("\nTrace: ${iteration.layersTraceFile}")
-                                .append("\n")
-                                .append(e.message)
-                                .append("\n")
-                    }
-                }
-            }
+    private fun getTaggedFilePath(tag: String, file: String) =
+            "${this.testName}_${this.iteration}_${tag}_$file"
 
-            assertions.eventLogAssertions.filter { it.enabled }.forEach {
-                try {
-                    it.assertion(EventLogSubject.assertThat(iteration))
-                } catch (e: AssertionError) {
-                    iteration.failed = true
-                    failures.append("\nTest failed: ${it.name}")
-                            .append("\nIteration: ${iteration.iteration}")
-                            .append("\nEventLog: \n${iteration.eventLog.joinToString("\n")}")
-                            .append("\n")
-                            .append(e.message)
-                            .append("\n")
-                }
-            }
-
-            if (!iteration.failed) {
-                iteration.cleanUp()
-            }
+    /**
+     * Captures a snapshot of the device state and associates it with a new tag.
+     *
+     * This tag can be used to make assertions about the state of the device when the
+     * snapshot is collected.
+     *
+     * [tag] is used as part of the trace file name, thus, only valid letters and digits
+     * can be used
+     *
+     * @throws IllegalArgumentException If [tag] contains invalid characters
+     */
+    fun createTag(tag: String) {
+        if (tag in tags) {
+            throw IllegalArgumentException("Tag $tag has already been used")
         }
+        tags.add(tag)
+        val assertionTag = AssertionTag(tag)
 
-        Truth.assertWithMessage(failures.toString()).that(failures.isEmpty()).isTrue()
+        val deviceState = device.getCurrState(instrumentation.uiAutomation)
+        try {
+            val wmTraceFile = outputDir.resolve(getTaggedFilePath(tag, "wm_trace"))
+            Files.write(wmTraceFile, deviceState.wmTraceData)
+
+            val layersTraceFile = outputDir.resolve(getTaggedFilePath(tag, "layers_trace"))
+            Files.write(layersTraceFile, deviceState.layersTraceData)
+
+            val result = FlickerRunResult(
+                    assertionTag,
+                    iteration = this.iteration,
+                    wmTraceFile = wmTraceFile,
+                    layersTraceFile = layersTraceFile,
+                    wmTrace = deviceState.wmTrace,
+                    layersTrace = deviceState.layersTrace
+            )
+            results.add(result)
+        } catch (e: IOException) {
+            throw RuntimeException("Unable to create trace file: ${e.message}", e)
+        }
+    }
+
+    /**
+     * Runs a set of commands and, at the end, creates a tag containing the device state
+     *
+     * @param tag Identifier for the tag to be created
+     * @param commands Commands to execute before creating the tag
+     * @throws IllegalArgumentException If [tag] cannot be converted to a valid filename
+     */
+    fun withTag(tag: String, commands: Flicker.() -> Any) {
+        commands()
+        createTag(tag)
     }
 
     private fun saveResult(iteration: Int) {
-        val resultBuilder = FlickerRunResult.Builder(iteration)
-        traceMonitors.forEach { it.save(testTag, iteration, resultBuilder) }
-        results.add(resultBuilder.build())
+        val resultBuilder = FlickerRunResult.Builder()
+        traceMonitors.forEach { it.save(testName, iteration, resultBuilder) }
+
+        AssertionTag.DEFAULT.forEach { location ->
+            results.add(resultBuilder.build(location))
+        }
     }
 
     private fun ITransitionMonitor.tryStop() {

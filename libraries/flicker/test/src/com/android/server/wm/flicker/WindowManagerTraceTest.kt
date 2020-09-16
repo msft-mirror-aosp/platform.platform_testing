@@ -19,6 +19,7 @@ package com.android.server.wm.flicker
 import android.graphics.Region
 import com.android.server.wm.flicker.traces.windowmanager.WindowManagerTrace
 import com.android.server.wm.flicker.traces.windowmanager.WindowManagerTrace.Companion.parseFrom
+import com.android.server.wm.flicker.traces.windowmanager.WindowManagerTrace.Companion.parseFromDump
 import com.google.common.truth.Truth
 import org.junit.FixMethodOrder
 import org.junit.Test
@@ -30,8 +31,8 @@ import org.junit.runners.MethodSorters
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class WindowManagerTraceTest {
-    private var trace: WindowManagerTrace
-            = readWindowManagerTraceFromFile("wm_trace_openchrome.pb")
+    private val trace: WindowManagerTrace =
+        readWindowManagerTraceFromFile("wm_trace_openchrome.pb")
 
     @Test
     fun canParseAllEntries() {
@@ -146,6 +147,16 @@ class WindowManagerTraceTest {
         trace.getEntry(9215551505798L)
                 .isVisibleAppWindowOnTop("com.google.android.apps.nexuslauncher")
                 .assertFailed("found=Splash Screen com.android.chrome")
+    }
+
+    @Test
+    fun canParseFromDump() {
+        val trace = try {
+            parseFromDump(readTestFile("wm_trace_dump.pb"))
+        } catch (e: Exception) {
+            throw RuntimeException(e)
+        }
+        Truth.assertWithMessage("Unable to parse dump").that(trace.entries).hasSize(1)
     }
 
     companion object {

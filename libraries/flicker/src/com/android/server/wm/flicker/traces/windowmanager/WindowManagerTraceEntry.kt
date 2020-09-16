@@ -20,26 +20,27 @@ import android.graphics.Region
 import android.graphics.nano.RectProto
 import com.android.server.wm.flicker.assertions.AssertionResult
 import com.android.server.wm.flicker.traces.ITraceEntry
+import com.android.server.wm.nano.RootWindowContainerProto
 import com.android.server.wm.nano.WindowContainerChildProto
 import com.android.server.wm.nano.WindowContainerProto
 import com.android.server.wm.nano.WindowManagerTraceProto
 import com.android.server.wm.nano.WindowStateProto
 
 /** Represents a single WindowManager trace entry.  */
-class WindowManagerTraceEntry(val proto: WindowManagerTraceProto) : ITraceEntry {
-    private var _appWindows = mutableSetOf<WindowStateProto>()
+class WindowManagerTraceEntry constructor(
+    rootWindowContainer: RootWindowContainerProto,
+    override val timestamp: Long
+) : ITraceEntry {
 
-    override val timestamp by lazy {
-        proto.elapsedRealtimeNanos
-    }
+    constructor(proto: WindowManagerTraceProto):
+        this(proto.windowManagerService.rootWindowContainer, proto.elapsedRealtimeNanos)
+
+    private var _appWindows = mutableSetOf<WindowStateProto>()
 
     /**
      * Returns all windows in the hierarchy
      */
-    val windows = getWindows(
-            proto.windowManagerService.rootWindowContainer.windowContainer,
-            isAppWindow = false
-        ).toSet()
+    val windows = getWindows(rootWindowContainer.windowContainer, isAppWindow = false).toSet()
 
     /**
      * Return the app windows in the hierarchy.

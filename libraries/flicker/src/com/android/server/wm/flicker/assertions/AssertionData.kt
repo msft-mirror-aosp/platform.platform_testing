@@ -16,10 +16,16 @@
 
 package com.android.server.wm.flicker.assertions
 
+import com.android.server.wm.flicker.dsl.AssertionTag
+
 /**
  * Class containing basic data about a trace assertion for Flicker DSL
  */
 class AssertionData<T> internal constructor(
+    /**
+     * Segment of the trace where the assertion will be applied (e.g., start, end).
+     */
+    val tag: AssertionTag,
     /**
      * Name of the assertion to appear on errors
      */

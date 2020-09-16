@@ -17,6 +17,7 @@
 package com.android.server.wm.flicker.monitor
 
 import androidx.test.platform.app.InstrumentationRegistry
+import androidx.test.uiautomator.UiDevice
 import com.android.server.wm.flicker.FlickerRunResult
 import com.android.server.wm.flicker.getDefaultFlickerOutputDir
 import com.google.common.io.Files
@@ -25,21 +26,26 @@ import org.junit.After
 import org.junit.Test
 import java.nio.file.Path
 
-abstract class TraceMonitorTest<T : TraceMonitor> {
+abstract class TraceMonitorTest<T : TransitionMonitor> {
+
     lateinit var savedTrace: Path
     abstract fun getMonitor(outputDir: Path): T
     abstract fun assertTrace(traceData: ByteArray)
     abstract fun getTraceFile(result: FlickerRunResult): Path?
 
+    protected val instrumentation = InstrumentationRegistry.getInstrumentation()
+    protected val device = UiDevice.getInstance(instrumentation)
     private val traceMonitor by lazy {
-        val instrumentation = InstrumentationRegistry.getInstrumentation()
         val outputDir = getDefaultFlickerOutputDir(instrumentation)
         getMonitor(outputDir)
     }
 
     @After
     fun teardown() {
-        traceMonitor.stop()
+        device.pressHome()
+        if (traceMonitor.isEnabled) {
+            traceMonitor.stop()
+        }
         if (::savedTrace.isInitialized) {
             savedTrace.toFile().delete()
         }
@@ -76,5 +82,20 @@ abstract class TraceMonitorTest<T : TraceMonitor> {
         val trace = Files.toByteArray(testFile)
         Truth.assertThat(trace.size).isGreaterThan(0)
         assertTrace(trace)
+    }
+
+    @Test
+    fun withTracing() {
+        val trace = withTracing(instrumentation) {
+            device.pressHome()
+            device.pressRecentApps()
+        }
+
+        Truth.assertWithMessage("Could not obtain SF trace")
+            .that(trace.layersTrace.entries)
+            .isNotEmpty()
+        Truth.assertWithMessage("Could not obtain WM trace")
+            .that(trace.wmTrace.entries)
+            .isNotEmpty()
     }
 }

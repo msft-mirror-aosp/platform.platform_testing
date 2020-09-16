@@ -16,15 +16,18 @@
 
 package com.android.server.wm.flicker.monitor
 
+import androidx.test.uiautomator.UiDevice
 import com.android.server.wm.flicker.FlickerRunResult
 import com.android.server.wm.nano.WindowManagerTraceFileProto
 import com.google.common.truth.Truth
 import org.junit.FixMethodOrder
+import org.junit.Test
 import org.junit.runners.MethodSorters
 import java.nio.file.Path
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class WindowManagerTraceMonitorTest : TraceMonitorTest<WindowManagerTraceMonitor>() {
+
     override fun getMonitor(outputDir: Path) = WindowManagerTraceMonitor(outputDir)
 
     override fun assertTrace(traceData: ByteArray) {
@@ -36,5 +39,18 @@ class WindowManagerTraceMonitorTest : TraceMonitorTest<WindowManagerTraceMonitor
 
     override fun getTraceFile(result: FlickerRunResult): Path? {
         return result.wmTraceFile
+    }
+
+    @Test
+    fun withWMTracing() {
+        val trace = withWMTracing(instrumentation) {
+            val device = UiDevice.getInstance(instrumentation)
+            device.pressHome()
+            device.pressRecentApps()
+        }
+
+        Truth.assertWithMessage("Could not obtain WM trace")
+            .that(trace.entries)
+            .isNotEmpty()
     }
 }

@@ -17,9 +17,11 @@
 package com.android.server.wm.flicker.monitor
 
 import android.surfaceflinger.nano.Layerstrace
+import androidx.test.uiautomator.UiDevice
 import com.android.server.wm.flicker.FlickerRunResult
 import com.google.common.truth.Truth
 import org.junit.FixMethodOrder
+import org.junit.Test
 import org.junit.runners.MethodSorters
 import java.nio.file.Path
 
@@ -41,5 +43,18 @@ class LayersTraceMonitorTest : TraceMonitorTest<LayersTraceMonitor>() {
 
     override fun getTraceFile(result: FlickerRunResult): Path? {
         return result.layersTraceFile
+    }
+
+    @Test
+    fun withSFTracing() {
+        val trace = withSFTracing(instrumentation) {
+            val device = UiDevice.getInstance(instrumentation)
+            device.pressHome()
+            device.pressRecentApps()
+        }
+
+        Truth.assertWithMessage("Could not obtain SF trace")
+            .that(trace.entries)
+            .isNotEmpty()
     }
 }

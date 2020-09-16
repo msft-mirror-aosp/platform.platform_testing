@@ -42,7 +42,7 @@ class FlickerBuilder private constructor(
     private val launcherStrategy: ILauncherStrategy,
     private val includeJankyRuns: Boolean,
     private val outputDir: Path,
-    private var testTag: String,
+    private var testName: String,
     private var iterations: Int,
     private val setupCommands: TestCommands,
     private val teardownCommands: TestCommands,
@@ -84,7 +84,7 @@ class FlickerBuilder private constructor(
         launcherStrategy,
         includeJankyRuns,
         outputDir,
-        testTag = "",
+        testName = "",
         iterations = 1,
         setupCommands = TestCommands(),
         teardownCommands = TestCommands(),
@@ -108,7 +108,7 @@ class FlickerBuilder private constructor(
         otherBuilder.launcherStrategy,
         otherBuilder.includeJankyRuns,
         otherBuilder.outputDir.toAbsolutePath(),
-        otherBuilder.testTag,
+        otherBuilder.testName,
         otherBuilder.iterations,
         TestCommands(otherBuilder.setupCommands),
         TestCommands(otherBuilder.teardownCommands),
@@ -119,17 +119,20 @@ class FlickerBuilder private constructor(
     )
 
     /**
-     * Test tag used to store the test results
+     * Test name used to store the test results
      *
      * If reused throughout the test, only the last value is stored
      */
-    fun withTag(testTag: () -> String) {
-        val tag = testTag()
-        require(!tag.contains(" ")) {
+    fun withTestName(testName: () -> String) {
+        val name = testName()
+        require(!name.contains(" ")) {
             "The test tag can not contain spaces since it is a part of the file name"
         }
-        this.testTag = tag
+        this.testName = name
     }
+
+    @Deprecated("Prefer withTestName", replaceWith = ReplaceWith("withTestName"))
+    fun withTag(testTag: () -> String) = withTestName(testTag)
 
     /**
      * Configure a [WindowManagerTraceMonitor] to obtain [WindowManagerTrace]
@@ -226,7 +229,7 @@ class FlickerBuilder private constructor(
         device,
         launcherStrategy,
         outputDir,
-        testTag,
+        testName,
         iterations,
         frameStatsMonitor,
         traceMonitors,
@@ -296,5 +299,5 @@ fun runWithFlicker(
     builder: FlickerBuilder,
     configuration: FlickerBuilder.() -> Unit = {}
 ) {
-    builder.copy(configuration).build().execute().makeAssertions()
+    builder.copy(configuration).build().execute().checkAssertions()
 }

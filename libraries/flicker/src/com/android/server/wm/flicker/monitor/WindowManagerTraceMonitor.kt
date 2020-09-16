@@ -24,8 +24,8 @@ import java.nio.file.Path
 /** Captures WindowManager trace from WindowManager.  */
 open class WindowManagerTraceMonitor(
     outputDir: Path
-) : TraceMonitor(outputDir, "wm_trace.pb") {
-    private val windowManager= WindowManagerGlobal.getWindowManagerService()
+) : TransitionMonitor(outputDir, "wm_trace.pb") {
+    private val windowManager = WindowManagerGlobal.getWindowManagerService()
 
     override fun start() {
         try {
@@ -49,4 +49,6 @@ open class WindowManagerTraceMonitor(
     override fun setResult(flickerRunResultBuilder: FlickerRunResult.Builder, traceFile: Path) {
         flickerRunResultBuilder.wmTraceFile = traceFile
     }
+
+    override fun getTracePath(builder: FlickerRunResult.Builder) = builder.wmTraceFile
 }

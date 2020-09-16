@@ -14,12 +14,32 @@
  * limitations under the License.
  */
 
+@file:JvmName("Extensions")
 package com.android.server.wm.flicker
 
 import android.app.Instrumentation
+import android.app.UiAutomation
+import android.os.ParcelFileDescriptor
+import androidx.test.uiautomator.UiDevice
 
 internal const val FLICKER_TAG = "FLICKER"
 
 fun getDefaultFlickerOutputDir(instrumentation: Instrumentation) =
         instrumentation.targetContext.getExternalFilesDir(null)?.toPath()
                 ?: error(IllegalArgumentException("External directory path should not be null"))
+
+private fun executeCommand(uiAutomation: UiAutomation, cmd: String): ByteArray {
+    val fileDescriptor = uiAutomation.executeShellCommand(cmd)
+    ParcelFileDescriptor.AutoCloseInputStream(fileDescriptor).use { inputStream ->
+        return inputStream.readBytes()
+    }
+}
+
+private fun getCurrentWindowManagerState(uiAutomation: UiAutomation) =
+    executeCommand(uiAutomation, "dumpsys window --proto")
+
+private fun getCurrentLayersState(uiAutomation: UiAutomation) =
+    executeCommand(uiAutomation, "dumpsys SurfaceFlinger --proto")
+
+fun UiDevice.getCurrState(uiAutomation: UiAutomation) = DeviceStateDump.fromDump(
+    getCurrentWindowManagerState(uiAutomation), getCurrentLayersState(uiAutomation))

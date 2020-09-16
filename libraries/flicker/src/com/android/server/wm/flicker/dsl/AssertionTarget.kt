@@ -17,6 +17,10 @@
 package com.android.server.wm.flicker.dsl
 
 import com.android.server.wm.flicker.FlickerDslMarker
+import com.android.server.wm.flicker.assertions.FlickerAssertionError
+import com.android.server.wm.flicker.FlickerRunResult
+import com.android.server.wm.flicker.assertions.AssertionData
+import com.android.server.wm.flicker.traces.ITraceEntry
 import com.android.server.wm.flicker.traces.eventlog.EventLogSubject
 import com.android.server.wm.flicker.traces.eventlog.FocusEvent
 import com.android.server.wm.flicker.traces.layers.LayerTraceEntry
@@ -36,9 +40,9 @@ typealias EventLogAssertion = AssertionType<EventLogSubject, FocusEvent>
  */
 @FlickerDslMarker
 class AssertionTarget private constructor(
-    val wmAssertions: WmAssertion,
-    val layerAssertions: LayersAssertion,
-    val eventLogAssertions: EventLogAssertion
+    private val wmAssertions: WmAssertion,
+    private val layerAssertions: LayersAssertion,
+    private val eventLogAssertions: EventLogAssertion
 ) {
     constructor() : this(WmAssertion(), LayersAssertion(), EventLogAssertion())
 
@@ -82,5 +86,61 @@ class AssertionTarget private constructor(
      */
     fun eventLog(assertion: EventLogAssertion.() -> Unit) {
         eventLogAssertions.apply { assertion() }
+    }
+
+    private fun <Assertions : AssertionType<Subject, Entry>,
+        Entry : ITraceEntry, Subject> checkAssertions(
+            assertions: Assertions,
+            run: FlickerRunResult,
+            factory: () -> Subject,
+            failureFactory: (Throwable, AssertionData<out Subject>) -> FlickerAssertionError
+        ): List<FlickerAssertionError> {
+        return assertions
+            .filter { it.enabled && it.tag == run.assertionTag }
+            .map { it to runCatching { it.assertion(factory()) } }
+            .filter { it.second.isFailure }
+            .map {
+                val failure = it.second.exceptionOrNull()
+                    ?: error("No exception associated to ${it.first}: ${it.second}")
+                failureFactory(failure, it.first)
+            }
+    }
+
+    /**
+     * Run the assertions on a flicker test run
+     *
+     * @param run Results of a flicker test run
+     * @return List of failures
+     */
+    fun checkAssertions(run: FlickerRunResult): List<FlickerAssertionError> {
+        val failures = mutableListOf<FlickerAssertionError>()
+        run.wmTrace?.let {
+            failures.addAll(this.checkAssertions(
+                wmAssertions,
+                run,
+                { WmTraceSubject.assertThat(it) },
+                { error, assertion ->
+                    FlickerAssertionError(error, assertion, run, run.wmTraceFile)
+                }
+            ))
+        }
+
+        run.layersTrace?.let {
+            failures.addAll(this.checkAssertions(
+                layerAssertions,
+                run,
+                { LayersTraceSubject.assertThat(it) },
+                { error, assertion ->
+                    FlickerAssertionError(error, assertion, run, run.layersTraceFile)
+                }
+            ))
+        }
+
+        failures.addAll(this.checkAssertions(eventLogAssertions, run,
+                { EventLogSubject.assertThat(run) },
+                { error, assertion -> FlickerAssertionError(error, assertion, run, trace = null) }
+        ))
+
+        return failures
     }
 }

@@ -16,12 +16,9 @@
 
 package com.android.server.wm.flicker.dsl
 
-import com.android.server.wm.flicker.*
+import com.android.server.wm.flicker.FlickerDslMarker
 import com.android.server.wm.flicker.assertions.AssertionData
 import com.android.server.wm.flicker.traces.IRangedSubject
-import com.android.server.wm.flicker.traces.ITraceEntry
-import com.android.server.wm.flicker.traces.SubjectBase
-import com.android.server.wm.flicker.traces.TraceBase
 
 /**
  * Placeholder for the types of assertions are supported by the Flicker DSL
@@ -29,7 +26,7 @@ import com.android.server.wm.flicker.traces.TraceBase
  * Currently supports the initial state [start], the final state [end] and all states [all]
  */
 @FlickerDslMarker
-data class AssertionType<Subject: IRangedSubject<Entry>, Entry>
+data class AssertionType<Subject : IRangedSubject<Entry>, Entry>
 @JvmOverloads constructor(
     /**
      * List of trace assertions
@@ -39,10 +36,10 @@ data class AssertionType<Subject: IRangedSubject<Entry>, Entry>
     val assertions: List<AssertionData<Subject>> get() = _assertions
 
     /**
-     * Run the assertions only in the first trace entry
+     * Assertions to run only in the first trace entry
      *
      * Used for assertions that check the first state in the test. For example:
-     *    initial.shows(A).and().shows(B)
+     *    initialState.shows(A).and().shows(B)
      *
      * This command can be used multiple times, and the results are appended
      *
@@ -58,11 +55,11 @@ data class AssertionType<Subject: IRangedSubject<Entry>, Entry>
         bugId: Int = 0,
         assertion: Subject.() -> Subject
     ) {
-        add(name, enabled, bugId) { assertion().inTheBeginning() }
+        add(AssertionTag.START, name, enabled, bugId) { assertion().inTheBeginning() }
     }
 
     /**
-     * Run the assertions only in the last trace entry
+     * Assertions to run only in the last trace entry
      *
      * Used for assertions that check the last state in the test. For example:
      *    endState.shows(A).and().shows(B)
@@ -81,13 +78,13 @@ data class AssertionType<Subject: IRangedSubject<Entry>, Entry>
         bugId: Int = 0,
         assertion: Subject.() -> Subject
     ) {
-        add(name, enabled, bugId) { assertion().atTheEnd() }
+        add(AssertionTag.END, name, enabled, bugId) { assertion().atTheEnd() }
     }
 
     /**
-     * Run the assertions in all trace entries
+     * Assertions to run in all trace entries
      *
-     * Used for assertions that check the last state in the test. For example:
+     * Used for assertions that check all states in the test. For example:
      *    trace.shows(A).then().hides(A).and().shows(B)
      *
      * This command can be used multiple times, and the results are appended
@@ -104,10 +101,43 @@ data class AssertionType<Subject: IRangedSubject<Entry>, Entry>
         bugId: Int = 0,
         assertion: Subject.() -> Subject
     ) {
-        add(name, enabled, bugId) { assertion().forAllEntries() }
+        add(AssertionTag.ALL, name, enabled, bugId) { assertion().forAllEntries() }
     }
 
-    private fun add(name: String, enabled: Boolean, bugId: Int, assertion: Subject.() -> Unit) {
-        _assertions.add(AssertionData(name, enabled, bugId, assertion))
+    /**
+     * Assertions to run at specific moments in the trace (identified by a [tag])
+     *
+     * Used for assertions that check the state in the test when [tag] is created. For example:
+     *    taggedMoment.shows(A).and().shows(B)
+     *
+     * This command can be used multiple times, and the results are appended.
+     *
+     * To create a new tag during testing use [com.android.server.wm.flicker.Flicker.createTag]
+     *
+     * @param tag Tag used during tracing
+     * @param name Name of the assertion to appear on errors
+     * @param enabled If the assertion is enabled or not
+     * @param bugId If the assertion is disabled because of a bug, which bug is it.
+     * @param assertion Assertion command
+     */
+    @JvmOverloads
+    fun tag(
+        tag: String,
+        name: String = "",
+        enabled: Boolean = true,
+        bugId: Int = 0,
+        assertion: Subject.() -> Subject
+    ) {
+        add(AssertionTag(tag), name, enabled, bugId) { assertion().forAllEntries() }
+    }
+
+    private fun add(
+        tag: AssertionTag,
+        name: String,
+        enabled: Boolean,
+        bugId: Int,
+        assertion: Subject.() -> Unit
+    ) {
+        _assertions.add(AssertionData(tag, name, enabled, bugId, assertion))
     }
 }

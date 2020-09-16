@@ -17,6 +17,7 @@
 package com.android.server.wm.flicker.traces.windowmanager
 
 import com.android.server.wm.flicker.traces.TraceBase
+import com.android.server.wm.nano.WindowManagerServiceDumpProto
 import com.android.server.wm.nano.WindowManagerTraceFileProto
 import com.google.protobuf.nano.InvalidProtocolBufferNanoException
 import java.nio.file.Path
@@ -34,7 +35,7 @@ class WindowManagerTrace private constructor(
 ) : TraceBase<WindowManagerTraceEntry>(entries, source, sourceChecksum) {
     companion object {
         /**
-         * Parses `WindowManagerTraceFileProto` from `data` and uses the proto to generates
+         * Parses [WindowManagerTraceFileProto] from [data] and uses the proto to generates
          * a list of trace entries.
          *
          * @param data binary proto data
@@ -57,6 +58,25 @@ class WindowManagerTrace private constructor(
                 entries.add(WindowManagerTraceEntry(entryProto))
             }
             return WindowManagerTrace(entries, source, checksum)
+        }
+
+        /**
+         * Parses [WindowManagerServiceDumpProto] from [data] and uses the proto to generates
+         * a list of trace entries.
+         *
+         * @param data binary proto data
+         */
+        @JvmStatic
+        fun parseFromDump(data: ByteArray?): WindowManagerTrace {
+            val fileProto = try {
+                WindowManagerServiceDumpProto.parseFrom(data)
+            } catch (e: InvalidProtocolBufferNanoException) {
+                throw RuntimeException(e)
+            }
+            return WindowManagerTrace(
+                listOf(WindowManagerTraceEntry(fileProto.rootWindowContainer, timestamp = 0)),
+                source = null,
+                sourceChecksum = "")
         }
     }
 }
