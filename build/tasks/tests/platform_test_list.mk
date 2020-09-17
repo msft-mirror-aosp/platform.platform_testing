@@ -1,5 +1,8 @@
 platform_tests += \
     ActivityManagerPerfTests \
+    ActivityManagerPerfTestsStubApp1 \
+    ActivityManagerPerfTestsStubApp2 \
+    ActivityManagerPerfTestsStubApp3 \
     ActivityManagerPerfTestsTestApp \
     AndroidTVJankTests \
     ApiDemos \
@@ -53,7 +56,6 @@ platform_tests += \
     InternalLocTestApp \
     JankMicroBenchmarkTests \
     long_trace_config.textproto \
-    LauncherRotationStressTest \
     MemoryUsage \
     MultiDexLegacyTestApp \
     MultiDexLegacyTestApp2 \
@@ -82,6 +84,7 @@ platform_tests += \
     PlatformCommonScenarioTests \
     PowerPerfTest \
     SettingsUITests \
+    SimpleServiceTestApp \
     SimpleTestApp \
     skia_dm \
     skia_nanobench \

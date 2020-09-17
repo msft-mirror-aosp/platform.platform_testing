@@ -22,12 +22,12 @@ java_library {
     ],
 
     static_libs: [
+        "androidx.test.runner",
+        "androidx.test.uiautomator",
         "collector-helper-utilities",
+        "guava",
         "platformprotoslite",
         "statsdprotolite",
-        "androidx.test.runner",
-        "guava",
-        "ub-uiautomator",
     ],
 
     platform_apis: true,

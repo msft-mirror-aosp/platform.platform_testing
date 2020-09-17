@@ -20,17 +20,21 @@ import static com.android.helpers.SfStatsCollectionHelper.SFSTATS_COMMAND_DISABL
 import static com.android.helpers.SfStatsCollectionHelper.SFSTATS_COMMAND_DUMP;
 import static com.android.helpers.SfStatsCollectionHelper.SFSTATS_COMMAND_ENABLE_AND_CLEAR;
 import static com.android.helpers.SfStatsCollectionHelper.SFSTATS_METRICS_PREFIX;
+
 import static com.google.common.truth.Truth.assertThat;
+
 import static org.mockito.Mockito.when;
 
-import android.support.test.uiautomator.UiDevice;
-import java.io.IOException;
-import java.util.Map;
+import androidx.test.uiautomator.UiDevice;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+
+import java.io.IOException;
+import java.util.Map;
 
 public class SfStatsCollectionHelperTest {
     private static final String SFSTATS_DUMP =

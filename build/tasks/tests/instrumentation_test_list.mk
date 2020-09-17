@@ -32,7 +32,7 @@ instrumentation_tests := \
     JobTestApp \
     SuspendTestApp \
     FrameworksUtilTests \
-    MtpDocumentsProviderTests \
+    MtpServiceTests \
     MtpTests \
     DocumentsUITests \
     ShellTests \
@@ -70,6 +70,7 @@ instrumentation_tests := \
     FrameworksLocationTests \
     FrameworksPrivacyLibraryTests \
     SettingsUITests \
+    SettingsPerfTests \
     ExtServicesUnitTests\
     FrameworksNetSmokeTests\
 

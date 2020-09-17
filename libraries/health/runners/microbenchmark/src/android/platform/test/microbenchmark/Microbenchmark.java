@@ -21,7 +21,6 @@ import android.platform.test.rule.TracePointRule;
 import androidx.annotation.VisibleForTesting;
 import androidx.test.InstrumentationRegistry;
 
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -31,13 +30,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.internal.AssumptionViolatedException;
+import org.junit.internal.runners.model.EachTestNotifier;
+import org.junit.internal.runners.model.ReflectiveCallable;
+import org.junit.internal.runners.statements.RunAfters;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.BlockJUnit4ClassRunner;
-import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.FrameworkMethod;
+import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
+import org.junit.rules.RunRules;
 
 /**
  * The {@code Microbenchmark} runner allows you to run test methods repeatedly and with {@link
@@ -45,18 +49,22 @@ import org.junit.runners.model.Statement;
  * soon to follow.
  */
 public class Microbenchmark extends BlockJUnit4ClassRunner {
-    private Bundle mArguments;
 
     @VisibleForTesting static final String ITERATION_SEP_OPTION = "iteration-separator";
     @VisibleForTesting static final String ITERATION_SEP_DEFAULT = "$";
     // A constant to indicate that the iteration number is not set.
     @VisibleForTesting static final int ITERATION_NOT_SET = -1;
     public static final String RENAME_ITERATION_OPTION = "rename-iterations";
+    private static final Statement EMPTY =
+            new Statement() {
+                @Override
+                public void evaluate() throws Throwable {}
+            };
 
-    private String mIterationSep = ITERATION_SEP_DEFAULT;
-
-    private boolean mRenameIterations;
-    private Map<Description, Integer> mIterations = new HashMap<>();
+    private final String mIterationSep;
+    private final Bundle mArguments;
+    private final boolean mRenameIterations;
+    private final Map<Description, Integer> mIterations = new HashMap<>();
 
     /**
      * Called reflectively on classes annotated with {@code @RunWith(Microbenchmark.class)}.
@@ -73,11 +81,11 @@ public class Microbenchmark extends BlockJUnit4ClassRunner {
         super(klass);
         mArguments = arguments;
         // Parse out additional options.
-        mRenameIterations = Boolean.valueOf(arguments.getString(RENAME_ITERATION_OPTION));
+        mRenameIterations = Boolean.parseBoolean(arguments.getString(RENAME_ITERATION_OPTION));
         mIterationSep =
                 arguments.containsKey(ITERATION_SEP_OPTION)
                         ? arguments.getString(ITERATION_SEP_OPTION)
-                        : mIterationSep;
+                        : ITERATION_SEP_DEFAULT;
     }
 
     /**
@@ -136,7 +144,7 @@ public class Microbenchmark extends BlockJUnit4ClassRunner {
      * tests, where collection is isolated to just the method under test. This is important for when
      * {@link Before} and {@link After} methods will obscure signal reliability.
      *
-     * <p> Currently these are only registered from inside a test class as follows, but should soon
+     * <p>Currently these are only registered from inside a test class as follows, but should soon
      * be extended for command-line support.
      *
      * ```
@@ -145,15 +153,32 @@ public class Microbenchmark extends BlockJUnit4ClassRunner {
      *     @TightMethodRule
      *     public ExampleRule exampleRule = new ExampleRule();
      *
-     *     @Test
-     *     ...
+     *     @Test ...
      * }
      * ```
      */
     @Retention(RetentionPolicy.RUNTIME)
     @Target({ElementType.FIELD, ElementType.METHOD})
-    public @interface TightMethodRule { }
+    public @interface TightMethodRule {}
 
+    /**
+     * A temporary annotation that acts like the {@code @Before} but is excluded from metric
+     * collection.
+     *
+     * <p>This should be removed as soon as possible. Do not use this unless explicitly instructed
+     * to do so. You'll regret it!
+     *
+     * <p>Note that all {@code TestOption}s must be instantiated as {@code @ClassRule}s to work
+     * inside these annotations.
+     */
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target({ElementType.FIELD, ElementType.METHOD})
+    public @interface NoMetricBefore {}
+
+    /** A temporary annotation, same as the above, but for replacing {@code @After} methods. */
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target({ElementType.FIELD, ElementType.METHOD})
+    public @interface NoMetricAfter {}
 
     /**
      * Rename the child class name to add iterations if the renaming iteration option is enabled.
@@ -176,17 +201,100 @@ public class Microbenchmark extends BlockJUnit4ClassRunner {
                         String.valueOf(mIterations.get(original))), original.getMethodName());
     }
 
+    /** Re-implement the private rules wrapper from {@link BlockJUnit4ClassRunner} in JUnit 4.12. */
+    private Statement withRules(FrameworkMethod method, Object target, Statement statement) {
+        Statement result = statement;
+        List<TestRule> testRules = getTestRules(target);
+        // Apply legacy MethodRules, if they don't overlap with TestRules.
+        for (org.junit.rules.MethodRule each : rules(target)) {
+            if (!testRules.contains(each)) {
+                result = each.apply(result, method, target);
+            }
+        }
+        // Apply modern, method-level TestRules in outer statements.
+        result =
+                testRules.isEmpty()
+                        ? statement
+                        : new RunRules(result, testRules, describeChild(method));
+        return result;
+    }
+
     /**
-     * Keep track of the number of iterations for a particular method and
-     * set the current iteration count for changing the current description.
+     * Combine the {@code #runChild}, {@code #methodBlock}, and final {@code #runLeaf} methods to
+     * implement the specific {@code Microbenchmark} test behavior. In particular, (1) keep track of
+     * the number of iterations for a particular method description, and (2) run {@code
+     * NoMetricBefore} and {@code NoMetricAfter} methods outside of the {@code RunListener} test
+     * wrapping methods.
      */
     @Override
     protected void runChild(final FrameworkMethod method, RunNotifier notifier) {
+        // Update the number of iterations this method has been run.
         if (mRenameIterations) {
             Description original = super.describeChild(method);
             mIterations.computeIfPresent(original, (k, v) -> v + 1);
             mIterations.computeIfAbsent(original, k -> 1);
         }
-        super.runChild(method, notifier);
+
+        Description description = describeChild(method);
+        if (isIgnored(method)) {
+            notifier.fireTestIgnored(description);
+        } else {
+            EachTestNotifier eachNotifier = new EachTestNotifier(notifier, description);
+
+            Object test;
+            try {
+                // Fail fast if the test is not successfully created.
+                test =
+                        new ReflectiveCallable() {
+                            @Override
+                            protected Object runReflectiveCall() throws Throwable {
+                                return createTest();
+                            }
+                        }.run();
+
+                // Run {@code NoMetricBefore} methods first. Fail fast if they fail.
+                for (FrameworkMethod noMetricBefore :
+                        getTestClass().getAnnotatedMethods(NoMetricBefore.class)) {
+                    noMetricBefore.invokeExplosively(test);
+                }
+            } catch (Throwable e) {
+                eachNotifier.fireTestStarted();
+                eachNotifier.addFailure(e);
+                eachNotifier.fireTestFinished();
+                return;
+            }
+
+            Statement statement = methodInvoker(method, test);
+            statement = possiblyExpectingExceptions(method, test, statement);
+            statement = withPotentialTimeout(method, test, statement);
+            statement = withBefores(method, test, statement);
+            statement = withAfters(method, test, statement);
+            statement = withRules(method, test, statement);
+
+            // Fire test events from inside to exclude "no metric" methods.
+            eachNotifier.fireTestStarted();
+            try {
+                statement.evaluate();
+            } catch (AssumptionViolatedException e) {
+                eachNotifier.addFailedAssumption(e);
+            } catch (Throwable e) {
+                eachNotifier.addFailure(e);
+            } finally {
+                eachNotifier.fireTestFinished();
+            }
+
+            try {
+                // Run {@code NoMetricAfter} methods last, reporting all errors.
+                List<FrameworkMethod> afters =
+                        getTestClass().getAnnotatedMethods(NoMetricAfter.class);
+                if (!afters.isEmpty()) {
+                    new RunAfters(EMPTY, afters, test).evaluate();
+                }
+            } catch (AssumptionViolatedException e) {
+                eachNotifier.addFailedAssumption(e);
+            } catch (Throwable e) {
+                eachNotifier.addFailure(e);
+            }
+        }
     }
 }

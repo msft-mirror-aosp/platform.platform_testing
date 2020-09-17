@@ -17,6 +17,7 @@
 package android.platform.test.longevity;
 
 import static java.lang.Math.max;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 import android.app.AlarmManager;
 import android.app.PendingIntent;
@@ -27,14 +28,12 @@ import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.Process;
 import android.platform.test.longevity.proto.Configuration.Scenario;
-import android.platform.test.longevity.proto.Configuration.Scenario.ExtraArg;
 import android.util.Log;
 import androidx.annotation.VisibleForTesting;
 import androidx.test.InstrumentationRegistry;
 
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 import org.junit.rules.TestRule;
 import org.junit.rules.Timeout;
@@ -144,24 +143,7 @@ public class ScheduledScenarioRunner extends LongevityClassRunner {
     @Override
     protected void runChild(final FrameworkMethod method, RunNotifier notifier) {
         mStartTimeMs = System.currentTimeMillis();
-        // Keep a copy of the bundle arguments for restoring later.
-        Bundle modifiedArguments = mArguments.deepCopy();
-        for (ExtraArg argPair : mScenario.getExtrasList()) {
-            if (argPair.getKey() == null || argPair.getValue() == null) {
-                throw new IllegalArgumentException(
-                        String.format(
-                                "Each extra arg entry in scenario must have both a key and a value,"
-                                        + " but scenario is %s.",
-                                mScenario.toString()));
-            }
-            modifiedArguments.putString(argPair.getKey(), argPair.getValue());
-        }
-        InstrumentationRegistry.registerInstance(
-                InstrumentationRegistry.getInstrumentation(), modifiedArguments);
         super.runChild(method, notifier);
-        // Restore the arguments to the state prior to the scenario.
-        InstrumentationRegistry.registerInstance(
-                InstrumentationRegistry.getInstrumentation(), mArguments);
         // If there are remaining scenarios, idle until the next one starts.
         if (mShouldIdle) {
             performIdleBeforeNextScenario(getTimeRemainingForScenario());
@@ -226,11 +208,8 @@ public class ScheduledScenarioRunner extends LongevityClassRunner {
 
         String wakeUpAction =
                 String.format(
-                        "%s.%d.%d.ScheduledScenarioRunnerSleepWakeUp"
-                                .format(
-                                        context.getPackageName(),
-                                        Process.myPid(),
-                                        Thread.currentThread().getId()));
+                        "%s.%d.%d.ScheduledScenarioRunnerSleepWakeUp",
+                        context.getPackageName(), Process.myPid(), Thread.currentThread().getId());
 
         final CountDownLatch countDownLatch = new CountDownLatch(1);
         IntentFilter wakeUpActionFilter = new IntentFilter(wakeUpAction);
@@ -253,7 +232,7 @@ public class ScheduledScenarioRunner extends LongevityClassRunner {
                 AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + durationMs, pendingIntent);
 
         try {
-            countDownLatch.await(countDownLatchTimeoutMs, TimeUnit.MILLISECONDS);
+            countDownLatch.await(countDownLatchTimeoutMs, MILLISECONDS);
             Log.i(LOG_TAG, "Suspension-aware sleep ended.");
         } catch (InterruptedException e) {
             throw new RuntimeException(e);

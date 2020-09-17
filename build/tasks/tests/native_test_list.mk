@@ -39,6 +39,7 @@ native_tests := \
     dvr_api-test \
     dvr_buffer_queue-test \
     dvr_display-test \
+    gpuservice_unittest \
     gwp_asan_unittest \
     hello_world_test \
     hwui_unit_tests \
@@ -64,7 +65,6 @@ native_tests := \
     libminijail_unittest_gtest \
     libnativehelper_tests \
     libnetdbpf_test \
-    libperfmgr_test \
     libprocinfo_test \
     libtextclassifier_tests \
     libsurfaceflinger_unittest \
@@ -123,12 +123,15 @@ native_tests := \
     vintf_object_test \
     wificond_unit_test \
     ziparchive-tests \
-    BufferHub_test \
-    BufferHubServer_test \
     GraphicBuffer_test \
     NeuralNetworksTest_mt_static \
     NeuralNetworksTest_operations \
     NeuralNetworksTest_static \
+    NeuralNetworksTest_utils \
     SurfaceFlinger_test \
     lmkd_unit_test \
     vrflinger_test
+
+ifeq ($(BOARD_IS_AUTOMOTIVE), true)
+native_tests += libwatchdog_test
+endif

@@ -17,21 +17,22 @@
 package com.android.helpers;
 
 import android.os.TemperatureTypeEnum;
-import android.support.test.uiautomator.UiDevice;
 import android.util.Log;
+
 import androidx.annotation.VisibleForTesting;
 import androidx.test.InstrumentationRegistry;
+import androidx.test.uiautomator.UiDevice;
 
 import com.android.os.AtomsProto.Atom;
 import com.android.os.StatsLog.EventMetricData;
 
 import java.io.IOException;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * ThermalHelper is a helper class to collect thermal events from statsd. Currently, it identifies
