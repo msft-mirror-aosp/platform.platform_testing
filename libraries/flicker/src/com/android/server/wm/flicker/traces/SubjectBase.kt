@@ -18,13 +18,17 @@ package com.android.server.wm.flicker.traces
 
 import com.android.server.wm.flicker.assertions.AssertionsChecker
 import com.android.server.wm.flicker.assertions.TraceAssertion
+import com.android.server.wm.flicker.common.traces.IRangedSubject
+import com.android.server.wm.flicker.common.traces.ITrace
+import com.android.server.wm.flicker.common.traces.ITraceEntry
 import com.google.common.truth.FailureMetadata
 import com.google.common.truth.Subject
+import java.nio.file.Paths
 
 /**
  * Base truth subject.
  */
-abstract class SubjectBase<Trace : TraceBase<Entry>, Entry: ITraceEntry> protected constructor(
+abstract class SubjectBase<Trace : ITrace<Entry>, Entry : ITraceEntry> protected constructor(
     fm: FailureMetadata,
     subject: Trace
 ) : Subject<SubjectBase<Trace, Entry>, Trace>(fm, subject), IRangedSubject<Entry> {
@@ -83,13 +87,13 @@ abstract class SubjectBase<Trace : TraceBase<Entry>, Entry: ITraceEntry> protect
     private fun test() {
         val failures = assertionsChecker.test(actual().entries)
         if (failures.isNotEmpty()) {
-            val failureTracePath = actual().source
             val failureLogs = failures.joinToString("\n") { it.toString() }
             var tracePath = ""
-            if (failureTracePath.isPresent) {
+            if (actual().hasSource()) {
+                val failureTracePath = Paths.get(actual().source)
                 tracePath = """
 
-                    $traceName Trace can be found in: ${failureTracePath.get().toAbsolutePath()}
+                    $traceName Trace can be found in: ${failureTracePath.toAbsolutePath()}
                     Checksum: ${actual().sourceChecksum}
 
                     """.trimIndent()

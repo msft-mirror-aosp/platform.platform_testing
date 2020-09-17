@@ -16,84 +16,16 @@
 
 package com.android.server.wm.flicker.traces.layers
 
-import android.graphics.Region
 import android.surfaceflinger.nano.Layers
-import android.util.SparseArray
 import androidx.annotation.VisibleForTesting
-import com.android.server.wm.flicker.assertions.AssertionResult
-import com.android.server.wm.flicker.traces.ITraceEntry
+import com.android.server.wm.flicker.common.AssertionResult
 
 /** Represents a single Layer trace entry.  */
 class LayerTraceEntry constructor(
     override val timestamp: Long, // hierarchical representation of layers
-    val rootLayers: List<Layer>
-) : ITraceEntry {
-    private val _opaqueLayers = mutableListOf<Layer>()
-    private val _transparentLayers = mutableListOf<Layer>()
-    private val _rootScreenBounds by lazy {
-        val rootLayerBounds = rootLayers
-                .filter { it.proto?.sourceBounds != null }
-                .first { it.proto?.name?.startsWith("Root#0") == true }
-                .proto?.sourceBounds ?: throw IllegalStateException("Root layer must have bounds")
-
-        Region(0, 0, rootLayerBounds.bottom.toInt(), rootLayerBounds.right.toInt())
-    }
-
-    val flattenedLayers by lazy {
-        val layers = mutableListOf<Layer>()
-        val roots = rootLayers.fillOcclusionState().toMutableList()
-        while (roots.isNotEmpty()) {
-            val layer = roots.removeAt(0)
-            layers.add(layer)
-            roots.addAll(layer.children)
-        }
-        layers.toList()
-    }
-
-    private fun List<Layer>.topDownTraversal(): List<Layer> {
-        return this
-                .sortedBy { it.z }
-                .flatMap { it.topDownTraversal() }
-    }
-
-    val visibleLayers by lazy { flattenedLayers.filter { it.isVisible && !it.isHiddenByParent } }
-
-    val opaqueLayers: List<Layer> get() = _opaqueLayers
-
-    val transparentLayers: List<Layer> get() = _transparentLayers
-
-    private fun Layer.topDownTraversal(): List<Layer> {
-        val traverseList = mutableListOf(this)
-
-        this.children.sortedBy { it.z }
-                .forEach { childLayer ->
-                    traverseList.addAll(childLayer.topDownTraversal())
-                }
-
-        return traverseList
-    }
-
-    private fun List<Layer>.fillOcclusionState(): List<Layer> {
-        val traversalList = topDownTraversal().reversed()
-
-        traversalList.forEach { layer ->
-            val visible = layer.isVisible
-
-            if (visible) {
-                layer.occludedBy.addAll(_opaqueLayers.filter { it.contains(layer) })
-                layer.partiallyOccludedBy.addAll(_opaqueLayers.filter { it.overlaps(layer) })
-                layer.coveredBy.addAll(_transparentLayers.filter { it.overlaps(layer) })
-
-                if (layer.isOpaque) {
-                    _opaqueLayers.add(layer)
-                } else {
-                    _transparentLayers.add(layer)
-                }
-            }
-        }
-
-        return this
-    }
+    rootLayers: List<Layer>
+) : com.android.server.wm.flicker.common.traces.layers
+    .LayerTraceEntry<Layer>(timestamp, rootLayers) {
 
     /**
      * Obtains the region occupied by all layers with name containing [layerName].
@@ -104,7 +36,7 @@ class LayerTraceEntry constructor(
     @JvmOverloads
     fun covers(
         layerName: String = "",
-        resultComputation: (Region) -> AssertionResult
+        resultComputation: (android.graphics.Region) -> AssertionResult
     ): AssertionResult {
         val assertionName = "coversRegion"
         val filteredLayers = flattenedLayers.filter { it.name.contains(layerName) }
@@ -112,10 +44,12 @@ class LayerTraceEntry constructor(
         return if (filteredLayers.isEmpty()) {
             AssertionResult("Could not find $layerName", assertionName, timestamp, success = false)
         } else {
-            val jointRegion = Region()
-            filteredLayers
+            val jointRegion = android.graphics.Region()
+            val visibleLayers = filteredLayers
                     .filter { it.isVisible && !it.isHiddenByParent }
-                    .forEach { jointRegion.op(it.visibleRegion, Region.Op.UNION) }
+            visibleLayers.forEach {
+                jointRegion.op(it.visibleRegion.toAndroidRegion(), android.graphics.Region.Op.UNION)
+            }
 
             resultComputation(jointRegion)
         }
@@ -129,11 +63,12 @@ class LayerTraceEntry constructor(
      * @param testRegion Expected covered area
      * @param layerName Name of the layer to search
      */
-    fun coversAtLeastRegion(testRegion: Region, layerName: String = ""): AssertionResult {
+    fun coversAtLeastRegion(testRegion: android.graphics.Region, layerName: String = ""):
+        AssertionResult {
         return covers(layerName) { jointRegion ->
-            val intersection = Region(jointRegion)
-            val covers = intersection.op(testRegion, Region.Op.INTERSECT) &&
-                    !intersection.op(testRegion, Region.Op.XOR)
+            val intersection = android.graphics.Region(jointRegion)
+            val covers = intersection.op(testRegion, android.graphics.Region.Op.INTERSECT) &&
+                    !intersection.op(testRegion, android.graphics.Region.Op.XOR)
 
             val reason = if (covers) {
                 "Region covered $testRegion"
@@ -152,12 +87,13 @@ class LayerTraceEntry constructor(
      * @param testRegion Expected covered area
      * @param layerName Name of the layer to search
      */
-    fun coversAtMostRegion(testRegion: Region, layerName: String = ""): AssertionResult {
+    fun coversAtMostRegion(testRegion: android.graphics.Region, layerName: String = ""):
+        AssertionResult {
         return covers(layerName) { jointRegion ->
             val testRect = testRegion.bounds
-            val intersection = Region(jointRegion)
-            val covers = intersection.op(testRect, Region.Op.INTERSECT) &&
-                    !intersection.op(jointRegion, Region.Op.XOR)
+            val intersection = android.graphics.Region(jointRegion)
+            val covers = intersection.op(testRect, android.graphics.Region.Op.INTERSECT) &&
+                    !intersection.op(jointRegion, android.graphics.Region.Op.XOR)
 
             val reason = if (covers) {
                 "Region covered $testRegion"
@@ -176,7 +112,8 @@ class LayerTraceEntry constructor(
      * @param layerName Name of the layer to search
      * @param expectedVisibleRegion Expected visible region of the layer
      */
-    fun hasVisibleRegion(layerName: String, expectedVisibleRegion: Region): AssertionResult {
+    fun hasVisibleRegion(layerName: String, expectedVisibleRegion: android.graphics.Region):
+        AssertionResult {
         val assertionName = "hasVisibleRegion"
         var reason = "Could not find $layerName"
         for (layer in flattenedLayers) {
@@ -190,166 +127,49 @@ class LayerTraceEntry constructor(
                     continue
                 }
                 val visibleRegion = layer.visibleRegion
-                if ((visibleRegion == expectedVisibleRegion)) {
+                if ((visibleRegion.toAndroidRegion() == expectedVisibleRegion)) {
                     return AssertionResult(
                             layer.name + "has visible region " + expectedVisibleRegion,
                             assertionName,
                             timestamp,
                             success = true)
                 }
-                reason = layer.name +
+                reason = (layer.name +
                         " has visible region:" +
-                        visibleRegion +
+                        visibleRegion.toAndroidRegion() +
                         " " +
                         "expected:" +
-                        expectedVisibleRegion
-            }
-        }
-        return AssertionResult(reason, assertionName, timestamp, success = false)
-    }
-
-    /**
-     * Checks if a layer containing the name [layerName] exists in the hierarchy.
-     *
-     * @param layerName Name of the layer to search
-     */
-    fun exists(layerName: String): AssertionResult {
-        val assertionName = "exists"
-        val reason = "Could not find $layerName"
-        for (layer in flattenedLayers) {
-            if (layer.name.contains(layerName)) {
-                return AssertionResult(
-                        layer.name + " exists",
-                        assertionName,
-                        timestamp,
-                        success = true)
-            }
-        }
-        return AssertionResult(reason, assertionName, timestamp, success = false)
-    }
-
-    /**
-     * Checks if a layer with name [layerName] is visible.
-     *
-     * @param layerName Name of the layer to search
-     */
-    fun isVisible(layerName: String): AssertionResult {
-        val assertionName = "isVisible"
-        var reason = "Could not find $layerName"
-        for (layer in flattenedLayers) {
-            if (layer.name.contains(layerName)) {
-                if (layer.isHiddenByParent) {
-                    reason = layer.hiddenByParentReason
-                    continue
-                }
-                if (layer.isInvisible) {
-                    reason = layer.visibilityReason
-                    continue
-                }
-                return AssertionResult(
-                        layer.name + " is visible",
-                        assertionName,
-                        timestamp,
-                        success = true)
+                        expectedVisibleRegion)
             }
         }
         return AssertionResult(reason, assertionName, timestamp, success = false)
     }
 
     @VisibleForTesting
-    fun getVisibleBounds(layerName: String): Region {
+    fun getVisibleBounds(layerName: String): android.graphics.Region {
         return flattenedLayers.firstOrNull { it.name.contains(layerName) && it.isVisible }
-                ?.visibleRegion
-                ?: Region()
+                ?.visibleRegion?.toAndroidRegion()
+                ?: android.graphics.Region()
+    }
+
+    private fun com.android.server.wm.flicker.common.Region.toAndroidRegion():
+        android.graphics.Region {
+        return android.graphics.Region(bounds.left, bounds.top, bounds.right, bounds.bottom)
     }
 
     companion object {
-        /**
-         * Determines the id of the root element.
-         *
-         *
-         * On some files, such as the ones used in the FlickerLib testdata, the root nodes are
-         * those that have parent=0, on newer traces, the root nodes are those that have parent=-1
-         *
-         *
-         * This function keeps compatibility with both new and older traces by searching for a
-         * known root layer (Display Root) and considering its parent Id as overall root.
-         */
-        private fun getRootLayer(layerMap: SparseArray<Layer>): Layer {
-            var knownRoot: Layer? = null
-            val numKeys: Int = layerMap.size()
-            for (i in 0 until numKeys) {
-                val currentLayer = layerMap.valueAt(i)
-                if (currentLayer.isRootLayer) {
-                    knownRoot = currentLayer
-                    break
-                }
-            }
-            if (knownRoot == null) {
-                throw IllegalStateException("Display root layer not found.")
-            }
-            return layerMap.get(knownRoot.parentId)
-        }
-
-        /** Constructs the layer hierarchy from a flattened list of layers.  */
-        @JvmStatic
-        fun fromFlattenedLayers(
+        fun fromFlattenedProtoLayers(
             timestamp: Long,
             protos: Array<Layers.LayerProto>,
             orphanLayerCallback: ((Layer) -> Boolean)?
         ): LayerTraceEntry {
-            val layerMap = SparseArray<Layer>()
-            val orphans = mutableListOf<Layer>()
-            for (proto: Layers.LayerProto in protos) {
-                val id: Int = proto.id
-                val parentId: Int = proto.parent
-                var newLayer: Layer? = layerMap.get(id)
-                when {
-                    newLayer == null -> {
-                        newLayer = Layer(proto)
-                        layerMap.append(id, newLayer)
-                    }
-                    newLayer.proto != null -> {
-                        throw RuntimeException("Duplicate layer id found:$id")
-                    }
-                    else -> {
-                        newLayer.proto = proto
-                        orphans.remove(newLayer)
-                    }
-                }
-
-                // add parent placeholder
-                if (layerMap.get(parentId) == null) {
-                    val orphanLayer = Layer(null)
-                    layerMap.append(parentId, orphanLayer)
-                    orphans.add(orphanLayer)
-                }
-                val parentLayer = layerMap.get(parentId)
-                parentLayer.addChild(newLayer)
-                newLayer.addParent(parentLayer)
+            val layers = protos.map {
+                Layer(it)
             }
 
-            // Remove root node
-            val rootLayer = getRootLayer(layerMap)
-            orphans.remove(rootLayer)
-            // Fail if we find orphan layers.
-            orphans.forEach { orphan: Layer ->
-                // Workaround for b/141326137, ignore the existence of an orphan layer
-                if (orphanLayerCallback == null || orphanLayerCallback.invoke(orphan)) {
-                    return@forEach
-                }
-                val childNodes: String = orphan.children
-                        .joinToString(", ") { it.id.toString() }
+            val trace = fromFlattenedLayers(timestamp, layers.toTypedArray(), orphanLayerCallback)
 
-                val orphanId: Int = orphan.children.first().parentId
-                throw RuntimeException(
-                        ("Failed to parse layers trace. Found orphan layers with parent " +
-                                "layer id:" +
-                                orphanId +
-                                " : " +
-                                childNodes))
-            }
-            return LayerTraceEntry(timestamp, rootLayer.children)
+            return LayerTraceEntry(trace.timestamp, trace.rootLayers.map { it })
         }
     }
 }

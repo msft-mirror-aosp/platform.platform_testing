@@ -136,10 +136,12 @@ class FlickerRunResult private constructor(
          * Path to the WindowManager trace file, if collected
          */
         var wmTraceFile: Path? = null
+
         /**
          * Path to the SurfaceFlinger trace file, if collected
          */
         var layersTraceFile: Path? = null
+
         /**
          * Path to screen recording of the run, if collected
          */

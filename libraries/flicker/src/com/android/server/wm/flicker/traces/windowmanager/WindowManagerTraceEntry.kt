@@ -16,244 +16,40 @@
 
 package com.android.server.wm.flicker.traces.windowmanager
 
-import android.graphics.Region
-import android.graphics.nano.RectProto
-import com.android.server.wm.flicker.assertions.AssertionResult
-import com.android.server.wm.flicker.traces.ITraceEntry
 import com.android.server.wm.nano.RootWindowContainerProto
+import com.android.server.wm.flicker.common.AssertionResult
+import com.android.server.wm.flicker.common.Bounds
+import com.android.server.wm.flicker.common.Rect
+import com.android.server.wm.flicker.common.Region
+import com.android.server.wm.flicker.common.traces.windowmanager.windows.Task
+import com.android.server.wm.flicker.common.traces.windowmanager.windows.WindowContainer
+import com.android.server.wm.flicker.common.traces.windowmanager.windows.ActivityRecord
+import com.android.server.wm.flicker.common.traces.windowmanager.windows.WindowToken
+import com.android.server.wm.flicker.common.traces.windowmanager.windows.WindowState
+import com.android.server.wm.flicker.common.traces.windowmanager.windows.DisplayContent
+import com.android.server.wm.flicker.common.traces.windowmanager.windows.RootDisplayArea
+import com.android.server.wm.flicker.common.traces.windowmanager.windows.DisplayArea
 import com.android.server.wm.nano.WindowContainerChildProto
 import com.android.server.wm.nano.WindowContainerProto
 import com.android.server.wm.nano.WindowManagerTraceProto
 import com.android.server.wm.nano.WindowStateProto
+import java.lang.Exception
 
 /** Represents a single WindowManager trace entry.  */
-class WindowManagerTraceEntry constructor(
-    rootWindowContainer: RootWindowContainerProto,
-    override val timestamp: Long
-) : ITraceEntry {
-
-    constructor(proto: WindowManagerTraceProto):
-        this(proto.windowManagerService.rootWindowContainer, proto.elapsedRealtimeNanos)
-
-    private var _appWindows = mutableSetOf<WindowStateProto>()
+class WindowManagerTraceEntry(rootWindow: WindowContainer, timestamp: Long) :
+        com.android.server.wm.flicker.common.traces.windowmanager
+        .WindowManagerTraceEntry(rootWindow, timestamp) {
 
     /**
-     * Returns all windows in the hierarchy
+     * Create a WindowManagerTraceEntry directly from the proto
      */
-    val windows = getWindows(rootWindowContainer.windowContainer, isAppWindow = false).toSet()
+    constructor(proto: WindowManagerTraceProto) :
+            this(rootWindow = transformWindowManagerTraceProto(proto),
+                    timestamp = proto.elapsedRealtimeNanos)
 
-    /**
-     * Return the app windows in the hierarchy.
-     * A window is considered an app window if any of its ancestors is an activity record
-     */
-    val appWindows = _appWindows.toSet()
-
-    /**
-     * Returns the non app windows in the hierarchy.
-     * A window is considered a non app window if none of its ancestors is an activity record
-     */
-    val nonAppWindows by lazy {
-        windows - appWindows
-    }
-
-    /**
-     * Returns the non app windows in the hierarchy that appear before the first app window.
-     */
-    val aboveAppWindows: List<WindowStateProto> by lazy {
-        windows.takeWhile { !appWindows.contains(it) }
-    }
-
-    /**
-     * Returns the non app windows in the hierarchy that appear after the first app window.
-     */
-    val belowAppWindows: List<WindowStateProto> by lazy {
-        windows.dropWhile { !appWindows.contains(it) }
-                .drop(appWindows.size)
-    }
-
-    /**
-     * Returns window title of the top most visible app window.
-     */
-    val topVisibleAppWindow by lazy {
-        appWindows.filter { it.isVisible() }
-                .map { it.title }
-                .firstOrNull() ?: ""
-    }
-
-    /**
-     * Returns all visible windows in the hierarchy
-     */
-    val visibleWindows by lazy {
-        windows.filter { it.isVisible() }
-    }
-
-    private fun getWindows(windowContainer: WindowContainerProto, isAppWindow: Boolean) =
-            windowContainer.children.reversed().flatMap { getWindows(it, isAppWindow) }
-
-    private fun getWindows(
-        windowContainer: WindowContainerChildProto,
-        isAppWindow: Boolean
-    ): List<WindowStateProto> {
-        return if (windowContainer.displayArea != null) {
-            getWindows(windowContainer.displayArea.windowContainer, isAppWindow)
-        } else if (windowContainer.displayContent != null &&
-                windowContainer.displayContent.windowContainer == null) {
-            getWindows(windowContainer.displayContent.rootDisplayArea.windowContainer, isAppWindow)
-        } else if (windowContainer.displayContent != null) {
-            getWindows(windowContainer.displayContent.windowContainer, isAppWindow)
-        } else if (windowContainer.task != null) {
-            getWindows(windowContainer.task.windowContainer, isAppWindow)
-        } else if (windowContainer.activity != null) {
-            getWindows(windowContainer.activity.windowToken.windowContainer, true)
-        } else if (windowContainer.windowToken != null) {
-            getWindows(windowContainer.windowToken.windowContainer, isAppWindow)
-        } else if (windowContainer.window != null) {
-            if (isAppWindow) {
-                _appWindows.add(windowContainer.window)
-            }
-            listOf(windowContainer.window)
-        } else {
-            getWindows(windowContainer.windowContainer, isAppWindow)
-        }
-    }
-
-    /** Checks if non app window with `windowTitle` is visible.  */
-    private fun getWindowByIdentifier(
-        windowState: WindowStateProto,
-        windowTitle: String
-    ): WindowStateProto? {
-        return if (windowState.title.contains(windowTitle)) {
-            windowState
-        } else windowState.childWindows
-                .firstOrNull { getWindowByIdentifier(it, windowTitle) != null }
-    }
-
-    private fun Collection<WindowStateProto>.isWindowVisible(
-        assertionName: String,
-        windowTitle: String,
-        isVisible: Boolean = true
-    ): AssertionResult {
-        val foundWindow = this.filter { getWindowByIdentifier(it, windowTitle) != null }
-        return when {
-            this.isEmpty() -> return AssertionResult(
-                    "No windows found",
-                    assertionName,
-                    timestamp,
-                    success = false)
-            foundWindow.isEmpty() -> AssertionResult(
-                    "$windowTitle cannot be found",
-                    assertionName,
-                    timestamp,
-                    success = false)
-            isVisible && foundWindow.none { it.isVisible() } -> AssertionResult(
-                    "$windowTitle is invisible",
-                    assertionName,
-                    timestamp,
-                    success = false)
-            !isVisible && foundWindow.any { it.isVisible() } -> AssertionResult(
-                    "$windowTitle is visible",
-                    assertionName,
-                    timestamp,
-                    success = false)
-            else -> {
-                val reason = if (isVisible) {
-                    "${foundWindow.first { it.isVisible() }.title} is visible"
-                } else {
-                    "${foundWindow.first { !it.isVisible() }.title} is invisible"
-                }
-                AssertionResult(
-                        success = true,
-                        reason = reason)
-            }
-        }
-    }
-
-    /**
-     * Checks if the non-app window with title containing [windowTitle] exists above the app
-     * windows and if its visibility is equal to [isVisible]
-     *
-     * @param windowTitle window title to search
-     * @param isVisible if the found window should be visible or not
-     */
-    @JvmOverloads
-    fun isAboveAppWindow(windowTitle: String, isVisible: Boolean = true): AssertionResult {
-        return aboveAppWindows.isWindowVisible(
-                "isAboveAppWindow${if (isVisible) "Visible" else "Invisible"}",
-                windowTitle,
-                isVisible)
-    }
-
-    /**
-     * Checks if the non-app window with title containing [windowTitle] exists below the app windows
-     * and if its visibility is equal to [isVisible]
-     *
-     * @param windowTitle window title to search
-     * @param isVisible if the found window should be visible or not
-     */
-    @JvmOverloads
-    fun isBelowAppWindow(windowTitle: String, isVisible: Boolean = true): AssertionResult {
-        return belowAppWindows.isWindowVisible(
-                "isBelowAppWindow${if (isVisible) "Visible" else "Invisible"}",
-                windowTitle,
-                isVisible)
-    }
-
-    /**
-     * Checks if non-app window with title containing the [windowTitle] exists above or below the
-     * app windows and if its visibility is equal to [isVisible]
-     *
-     * @param windowTitle window title to search
-     * @param isVisible if the found window should be visible or not
-     */
-    @JvmOverloads
-    fun hasNonAppWindow(windowTitle: String, isVisible: Boolean = true): AssertionResult {
-        return nonAppWindows.isWindowVisible(
-                "isAppWindowVisible", windowTitle, isVisible)
-    }
-
-    /**
-     * Checks if app window with title containing the [windowTitle] is on top
-     *
-     * @param windowTitle window title to search
-     */
-    fun isVisibleAppWindowOnTop(windowTitle: String): AssertionResult {
-        val success = topVisibleAppWindow.contains(windowTitle)
-        val reason = "wanted=$windowTitle found=$topVisibleAppWindow"
-        return AssertionResult(reason, "isAppWindowOnTop", timestamp, success)
-    }
-
-    /**
-     * Checks if app window with title containing the [windowTitle] is visible
-     *
-     * @param windowTitle window title to search
-     */
-    fun isAppWindowVisible(windowTitle: String): AssertionResult {
-        return appWindows.isWindowVisible("isAppWindowVisible",
-                windowTitle,
-                isVisible = true)
-    }
-
-    /**
-     * Obtains the region of the first visible window with title containing [windowTitle].
-     *
-     * @param windowTitle Name of the layer to search
-     * @param resultComputation Predicate to compute a result based on the found window's region
-     */
-    private fun covers(
-        windowTitle: String,
-        resultComputation: (Region) -> AssertionResult
-    ): AssertionResult {
-        val assertionName = "covers"
-        val visibilityCheck = windows.isWindowVisible(assertionName, windowTitle)
-        if (!visibilityCheck.success) {
-            return visibilityCheck
-        }
-
-        val foundWindow = windows.first { getWindowByIdentifier(it, windowTitle) != null }
-        val foundRegion = foundWindow.frameRegion
-
-        return resultComputation(foundRegion)
-    }
+    constructor(rootWindowContainer: RootWindowContainerProto, timestamp: Long) :
+            this(rootWindow = transformWindowContainerProto(rootWindowContainer.windowContainer),
+                    timestamp = timestamp)
 
     /**
      * Checks if the first window with title containing [windowTitle] has a visible area of at
@@ -264,11 +60,24 @@ class WindowManagerTraceEntry constructor(
      * @param testRegion Expected visible area of the window
      */
     fun coversAtLeastRegion(windowTitle: String, testRegion: Region): AssertionResult {
+        return coversAtLeastRegion(windowTitle, testRegion.toAndroidRegion())
+    }
+
+    /**
+     * Checks if the first window with title containing [windowTitle] has a visible area of at
+     * least [testRegion], that is, if its area of the window frame covers each point in
+     * the region.
+     *
+     * @param windowTitle Name of the layer to search
+     * @param testRegion Expected visible area of the window
+     */
+    fun coversAtLeastRegion(windowTitle: String, testRegion: android.graphics.Region):
+            AssertionResult {
         return covers(windowTitle) { windowRegion ->
             val testRect = testRegion.bounds
-            val intersection = Region(windowRegion)
-            val covers = intersection.op(testRect, Region.Op.INTERSECT) &&
-                    !intersection.op(testRect, Region.Op.XOR)
+            val intersection = windowRegion.toAndroidRegion()
+            val covers = intersection.op(testRect, android.graphics.Region.Op.INTERSECT) &&
+                    !intersection.op(testRect, android.graphics.Region.Op.XOR)
 
             val reason = if (covers) {
                 "$windowTitle covers region $testRegion"
@@ -288,11 +97,23 @@ class WindowManagerTraceEntry constructor(
      * @param testRegion Expected visible area of the window
      */
     fun coversAtMostRegion(windowTitle: String, testRegion: Region): AssertionResult {
+        return coversAtMostRegion(windowTitle, testRegion.toAndroidRegion())
+    }
+
+    /**
+     * Checks if the first window with title containing [windowTitle] has a visible area of at
+     * most [testRegion], that is, if the region covers each point in the window frame.
+     *
+     * @param windowTitle Name of the layer to search
+     * @param testRegion Expected visible area of the window
+     */
+    fun coversAtMostRegion(windowTitle: String, testRegion: android.graphics.Region):
+            AssertionResult {
         return covers(windowTitle) { windowRegion ->
             val testRect = testRegion.bounds
-            val intersection = Region(windowRegion)
-            val covers = intersection.op(testRect, Region.Op.INTERSECT) &&
-                    !intersection.op(windowRegion, Region.Op.XOR)
+            val intersection = windowRegion.toAndroidRegion()
+            val covers = intersection.op(testRect, android.graphics.Region.Op.INTERSECT) &&
+                    !intersection.op(windowRegion.toAndroidRegion(), android.graphics.Region.Op.XOR)
 
             val reason = if (covers) {
                 "$windowTitle covers region $testRegion"
@@ -331,7 +152,8 @@ class WindowManagerTraceEntry constructor(
             val (ourTitle, ourRegion) = regions[i]
             for (j in i + 1 until regions.size) {
                 val (otherTitle, otherRegion) = regions[j]
-                if (Region(ourRegion).op(otherRegion, Region.Op.INTERSECT)) {
+                if (ourRegion.toAndroidRegion().op(otherRegion.toAndroidRegion(),
+                                android.graphics.Region.Op.INTERSECT)) {
                     return AssertionResult(
                             reason = "At least two windows overlap: $ourTitle, $otherTitle",
                             assertionName = assertionName,
@@ -364,39 +186,124 @@ class WindowManagerTraceEntry constructor(
 
         if (notFound.isNotEmpty()) {
             return AssertionResult(
-                reason = "Could not find ${notFound.joinToString(" and ")}!",
-                assertionName = assertionName,
-                timestamp = timestamp,
-                success = false
+                    reason = "Could not find ${notFound.joinToString(" and ")}!",
+                    assertionName = assertionName,
+                    timestamp = timestamp,
+                    success = false
             )
         }
 
         // ensure the z-order
         return AssertionResult(
-            reason = "$aboveWindowTitle is above $belowWindowTitle",
-            assertionName = assertionName,
-            timestamp = timestamp,
-            success = aboveZ < belowZ
+                reason = "$aboveWindowTitle is above $belowWindowTitle",
+                assertionName = assertionName,
+                timestamp = timestamp,
+                success = aboveZ < belowZ
         )
     }
 
-    private fun WindowStateProto.isVisible(): Boolean = this.windowContainer.visible
-
-    private val WindowStateProto.title: String
-        get() = this.windowContainer.identifier.title
-
-    private val WindowStateProto.frameRegion: Region
-        get() = if (this.windowFrames != null) {
-            this.windowFrames.frame.extract()
-        } else {
-            this.frame.extract()
+    companion object {
+        /**
+         * Transforms WindowManagerTraceProto into our internal representation of a Window hierarchy
+         * @return the root WindowContainer of the hierarchy
+         */
+        private fun transformWindowManagerTraceProto(
+            proto: WindowManagerTraceProto
+        ): WindowContainer {
+            return transformWindowContainerProto(
+                    proto.windowManagerService.rootWindowContainer.windowContainer)
         }
 
-    private fun RectProto?.extract(): Region {
-        return if (this == null) {
-            Region()
-        } else {
-            Region(this.left, this.top, this.right, this.bottom)
+        private fun transformWindowContainerChildProto(
+            windowContainerChild: WindowContainerChildProto
+        ): WindowContainer {
+            return if (windowContainerChild.displayArea != null) {
+                val windowContainer = transformWindowContainerProto(
+                        windowContainerChild.displayArea.windowContainer)
+                DisplayArea(windowContainer)
+            } else if (windowContainerChild.displayContent != null &&
+                    windowContainerChild.displayContent.windowContainer == null) {
+                val windowContainer = transformWindowContainerProto(
+                        windowContainerChild.displayContent.rootDisplayArea.windowContainer)
+                val displayArea = DisplayArea(windowContainer)
+                RootDisplayArea(displayArea)
+            } else if (windowContainerChild.displayContent != null) {
+                val windowContainer = transformWindowContainerProto(
+                        windowContainerChild.displayContent.windowContainer)
+                val displayArea = DisplayArea(windowContainer)
+                val rootDisplayArea = RootDisplayArea(displayArea)
+                val bound = Bounds(
+                    windowContainerChild.displayContent.displayInfo.logicalWidth,
+                    windowContainerChild.displayContent.displayInfo.logicalHeight
+                )
+                DisplayContent(rootDisplayArea, bound)
+            } else if (windowContainerChild.task != null) {
+                val windowContainer = transformWindowContainerProto(
+                        windowContainerChild.task.windowContainer)
+                Task(windowContainer)
+            } else if (windowContainerChild.activity != null) {
+                val windowContainer = transformWindowContainerProto(
+                        windowContainerChild.activity.windowToken.windowContainer)
+                val windowToken = WindowToken(windowContainer)
+                ActivityRecord(windowToken)
+            } else if (windowContainerChild.windowToken != null) {
+                val windowContainer = transformWindowContainerProto(
+                        windowContainerChild.windowToken.windowContainer)
+                WindowToken(windowContainer)
+            } else if (windowContainerChild.window != null) {
+                // Base case
+                transformWindowStateProto(windowContainerChild.window)
+            } else if (windowContainerChild.windowContainer != null) {
+                // We do not know the derived type use generic WindowContainer
+                transformWindowContainerProto(windowContainerChild.windowContainer)
+            } else {
+                throw Exception("Unhandled WindowContainerChildProto case...")
+            }
         }
+
+        private fun transformWindowStateProto(proto: WindowStateProto): WindowState {
+            val windowContainer = transformWindowContainerProto(proto.windowContainer)
+            val childWindows: Array<WindowState> = proto.childWindows.map {
+                transformWindowStateProto(it)
+            }.toTypedArray()
+            val frameProto = if (proto.windowFrames != null) {
+                proto.windowFrames.frame
+            } else {
+                proto.frame
+            }
+
+            val frame = if (frameProto == null) {
+                Rect(0, 0, 0, 0)
+            } else {
+                Rect(frameProto.left, frameProto.top, frameProto.right, frameProto.bottom)
+            }
+
+            return WindowState(windowContainer, childWindows, frame)
+        }
+
+        private fun transformWindowContainerProto(windowContainer: WindowContainerProto):
+                WindowContainer {
+            val children = windowContainer.children.map {
+                child: WindowContainerChildProto -> transformWindowContainerChildProto(child)
+            }.toTypedArray()
+            val title = windowContainer.identifier.title
+            val hashCode = windowContainer.identifier.hashCode
+            val visible = windowContainer.visible
+
+            return WindowContainer(
+                    children,
+                    title,
+                    hashCode,
+                    visible
+            )
+        }
+    }
+
+    private fun Region.toAndroidRegion(): android.graphics.Region {
+        return android.graphics.Region(bounds.left, bounds.top, bounds.right, bounds.bottom)
+    }
+
+    private fun Rect.toAndroidRect(): android.graphics.Rect {
+        return android.graphics.Rect(left, top, right, bottom)
     }
 }

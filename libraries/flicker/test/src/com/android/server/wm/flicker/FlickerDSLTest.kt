@@ -17,7 +17,7 @@
 package com.android.server.wm.flicker
 
 import androidx.test.platform.app.InstrumentationRegistry
-import com.android.server.wm.flicker.assertions.AssertionResult
+import com.android.server.wm.flicker.common.AssertionResult
 import com.android.server.wm.flicker.dsl.FlickerBuilder
 import com.android.server.wm.flicker.dsl.runWithFlicker
 import com.android.server.wm.flicker.traces.windowmanager.WmTraceSubject
@@ -105,6 +105,25 @@ class FlickerDSLTest {
                     }
                 }
             }
+        }
+    }
+
+    @Test
+    fun detectEmptyResults() {
+        try {
+            val builder = FlickerBuilder(instrumentation)
+            runWithFlicker(builder) {
+                assertions {
+                    windowManagerTrace {
+                        tag("tag") { defaultAssertion(this) }
+                    }
+                }
+            }
+            Assert.fail("Should not have allowed empty transition")
+        } catch (e: Exception) {
+            Truth.assertWithMessage("Flicker did not warn of empty transitions")
+                .that(e.message)
+                .contains("A flicker test must include transitions to run")
         }
     }
 }

@@ -16,9 +16,9 @@
 
 package com.android.server.wm.flicker.traces.windowmanager
 
-import android.graphics.Region
-import com.android.server.wm.flicker.assertions.AssertionResult
 import com.android.server.wm.flicker.assertions.TraceAssertion
+import com.android.server.wm.flicker.common.AssertionResult
+import com.android.server.wm.flicker.common.Region
 import com.android.server.wm.flicker.traces.SubjectBase
 import com.google.common.truth.FailureMetadata
 import com.google.common.truth.Truth
@@ -231,7 +231,19 @@ class WmTraceSubject private constructor(
         }
     }
 
+    fun coversAtLeastRegion(partialWindowTitle: String, region: android.graphics.Region) = apply {
+        addAssertion("coversAtLeastRegion($partialWindowTitle, $region)") {
+            it.coversAtLeastRegion(partialWindowTitle, region)
+        }
+    }
+
     fun coversAtMostRegion(partialWindowTitle: String, region: Region) = apply {
+        addAssertion("coversAtMostRegion($partialWindowTitle, $region)") {
+            it.coversAtMostRegion(partialWindowTitle, region)
+        }
+    }
+
+    fun coversAtMostRegion(partialWindowTitle: String, region: android.graphics.Region) = apply {
         addAssertion("coversAtMostRegion($partialWindowTitle, $region)") {
             it.coversAtMostRegion(partialWindowTitle, region)
         }

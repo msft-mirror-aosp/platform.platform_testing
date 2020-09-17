@@ -14,22 +14,26 @@
  * limitations under the License.
  */
 
-package com.android.server.wm.flicker.assertions
+package com.android.server.wm.flicker.common.traces
 
-import androidx.annotation.VisibleForTesting
-import com.android.server.wm.flicker.common.AssertionResult
-import com.google.common.truth.Truth
+interface IRangedSubject<Entry> {
+    /**
+     * Run the assertions for all entries.
+     */
+    fun forAllEntries()
 
-@VisibleForTesting
-fun AssertionResult.assertPassed() {
-    Truth.assertWithMessage(this.reason).that(this.passed()).isTrue()
-}
+    /**
+     * Run the assertions for entries within the specified time range.
+     */
+    fun forRange(startTime: Long, endTime: Long) { throw UnsupportedOperationException() }
 
-@JvmOverloads
-@VisibleForTesting
-fun AssertionResult.assertFailed(reason: String? = null) {
-    Truth.assertWithMessage(this.reason).that(this.failed()).isTrue()
-    if (reason != null) {
-        Truth.assertThat(this.reason).contains(reason)
-    }
+    /**
+     * Run the assertions only in the first entry.
+     */
+    fun inTheBeginning() { throw UnsupportedOperationException() }
+
+    /**
+     * Run the assertions only in the last entry.
+     */
+    fun atTheEnd() { throw UnsupportedOperationException() }
 }

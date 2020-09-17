@@ -14,14 +14,12 @@
  * limitations under the License.
  */
 
-package com.android.server.wm.flicker.traces
+package com.android.server.wm.flicker.common
 
-/**
- * Common interface for Layer and WindowManager trace entries.
- */
-interface ITraceEntry {
-    /**
-     * @return timestamp of current entry
-     */
-    val timestamp: Long
-}
+import com.android.server.wm.flicker.common.traces.windowmanager.windows.WindowContainer
+
+class WindowRect(
+    val rect: Rect,
+    val ref: WindowContainer,
+    val label: String?
+) : Rect(rect.left, rect.top, rect.right, rect.bottom)

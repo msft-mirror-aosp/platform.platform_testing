@@ -16,78 +16,53 @@
 
 package com.android.server.wm.flicker.traces.layers
 
-import android.graphics.Matrix
-import android.graphics.RectF
 import android.surfaceflinger.nano.Layers
+import com.android.server.wm.flicker.common.traces.layers.Transform
+import com.android.server.wm.flicker.common.traces.layers.Transform.Companion.FLIP_H_VAL
+import com.android.server.wm.flicker.common.traces.layers.Transform.Companion.FLIP_V_VAL
+import com.android.server.wm.flicker.common.traces.layers.Transform.Companion.ROTATE_VAL
+import com.android.server.wm.flicker.common.traces.layers.Transform.Companion.ROT_90_VAL
+import com.android.server.wm.flicker.common.traces.layers.Transform.Companion.SCALE_VAL
+import com.android.server.wm.flicker.common.traces.layers.Transform.Companion.isFlagClear
+import com.android.server.wm.flicker.common.traces.layers.Transform.Companion.isFlagSet
 
-class Transform(transform: Layers.TransformProto?, position: Layers.PositionProto?) {
-    private val matrix by lazy {
-        val x = position?.x ?: 0f
-        val y = position?.y ?: 0f
+class Transform(transform: Layers.TransformProto?, position: Layers.PositionProto?) :
+        com.android.server.wm.flicker.common.traces.layers.Transform(
+            transform?.type,
+            getMatrix(transform, position)
+        )
 
-        when {
-            transform == null || isSimpleTransform -> transform?.type.getDefaultTransform(x, y)
-            else -> Matrix().also {
-                val matrixValues = arrayOf(transform.dsdx, transform.dtdx, x,
-                        transform.dsdy, transform.dtdy, y,
-                        0.0f, 0.0f, 1.0f)
-                it.setValues(matrixValues.toFloatArray())
-            }
-        }
+private fun getMatrix(transform: Layers.TransformProto?, position: Layers.PositionProto?):
+        Transform.Matrix {
+    val x = position?.x ?: 0f
+    val y = position?.y ?: 0f
+
+    return when {
+        transform == null || Transform.isSimpleTransform(transform.type) ->
+            transform?.type.getDefaultTransform(x, y)
+        else ->
+            Transform.Matrix(transform.dsdx, transform.dtdx, x, transform.dsdy, transform.dtdy, y)
     }
+}
 
-    /**
-     * Returns true if the applying the transform on an an axis aligned rectangle
-     * results in another axis aligned rectangle.
-     */
-    val isSimpleRotation = !(transform?.type?.isFlagSet(ROT_INVALID_VAL) ?: true)
-
-    private val isSimpleTransform
-            = transform?.type?.isFlagClear(ROT_INVALID_VAL or SCALE_VAL) ?: false
-
-    private fun Int.isFlagClear(bits: Int): Boolean {
-        return this and bits > 0
-    }
-
-    private fun Int.isFlagSet(bits: Int): Boolean {
-        return this and bits == bits
-    }
-
-    private fun Int?.getDefaultTransform(x: Float, y: Float): Matrix {
-        val matrixValues = when {
-            // IDENTITY
-            this == null -> arrayOf(1f, 0f, x, 0f, 1f, y, 0f, 0f, 1f)
-            // // ROT_270 = ROT_90|FLIP_H|FLIP_V
-            isFlagSet(ROT_90_VAL or FLIP_V_VAL or FLIP_H_VAL) -> arrayOf(0f, -1f, x, 1f, 0f, y, 0f, 0f, 1f)
-            // ROT_180 = FLIP_H|FLIP_V
-            isFlagSet(FLIP_V_VAL or FLIP_H_VAL) -> arrayOf(-1f, 0f, x, 0f, -1f, y, 0f, 0f, 1f)
-            // ROT_90
-            isFlagSet(ROT_90_VAL) -> arrayOf(0f, 1f, x, -1f, 0f, y, 0f, 0f, 1f)
-            // IDENTITY
-            isFlagClear(SCALE_VAL or ROTATE_VAL) -> arrayOf(1f, 0f, x, 0f, 1f, y, 0f, 0f, 1f)
-            else -> throw IllegalStateException("Unknown transform type $this")
-        }
-
-        return Matrix().also { it.setValues(matrixValues.toFloatArray()) }
-    }
-
-    fun apply(rect: RectF?): RectF {
-        val src = rect ?: RectF()
-        val dst = RectF()
-        matrix.mapRect(dst, src)
-        return dst
-    }
-
-    companion object {
-        /* transform type flags */
-        private const val TRANSLATE_VAL = 0x0001
-        private const val ROTATE_VAL = 0x0002
-        private const val SCALE_VAL = 0x0004
-
-        /* orientation flags */
-        private const val FLIP_H_VAL = 0x0100 // (1 << 0 << 8)
-        private const val FLIP_V_VAL = 0x0200 // (1 << 1 << 8)
-        private const val ROT_90_VAL = 0x0400 // (1 << 2 << 8)
-        private const val ROT_INVALID_VAL = 0x8000 // (0x80 << 8)
+private fun Int?.getDefaultTransform(x: Float, y: Float): Transform.Matrix {
+    return when {
+        // IDENTITY
+        this == null ->
+            Transform.Matrix(1f, 0f, x, 0f, 1f, y)
+        // // ROT_270 = ROT_90|FLIP_H|FLIP_V
+        isFlagSet(ROT_90_VAL or FLIP_V_VAL or FLIP_H_VAL) ->
+            Transform.Matrix(0f, -1f, x, 1f, 0f, y)
+        // ROT_180 = FLIP_H|FLIP_V
+        isFlagSet(FLIP_V_VAL or FLIP_H_VAL) ->
+            Transform.Matrix(-1f, 0f, x, 0f, -1f, y)
+        // ROT_90
+        isFlagSet(ROT_90_VAL) ->
+            Transform.Matrix(0f, 1f, x, -1f, 0f, y)
+        // IDENTITY
+        isFlagClear(SCALE_VAL or ROTATE_VAL) ->
+            Transform.Matrix(1f, 0f, x, 0f, 1f, y)
+        else ->
+            throw IllegalStateException("Unknown transform type $this")
     }
 }

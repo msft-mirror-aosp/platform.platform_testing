@@ -17,9 +17,9 @@
 package com.android.server.wm.flicker.traces.eventlog
 
 import com.android.server.wm.flicker.FlickerRunResult
-import com.android.server.wm.flicker.assertions.AssertionResult
 import com.android.server.wm.flicker.assertions.AssertionsChecker
-import com.android.server.wm.flicker.traces.IRangedSubject
+import com.android.server.wm.flicker.common.AssertionResult
+import com.android.server.wm.flicker.common.traces.IRangedSubject
 import com.google.common.truth.FailureMetadata
 import com.google.common.truth.Subject
 import com.google.common.truth.Subject.Factory

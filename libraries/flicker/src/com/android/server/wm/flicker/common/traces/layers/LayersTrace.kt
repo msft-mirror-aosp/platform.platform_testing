@@ -14,22 +14,18 @@
  * limitations under the License.
  */
 
-package com.android.server.wm.flicker.assertions
+package com.android.server.wm.flicker.common.traces.layers
 
-import androidx.annotation.VisibleForTesting
-import com.android.server.wm.flicker.common.AssertionResult
-import com.google.common.truth.Truth
+import com.android.server.wm.flicker.common.traces.ITrace
 
-@VisibleForTesting
-fun AssertionResult.assertPassed() {
-    Truth.assertWithMessage(this.reason).that(this.passed()).isTrue()
-}
-
-@JvmOverloads
-@VisibleForTesting
-fun AssertionResult.assertFailed(reason: String? = null) {
-    Truth.assertWithMessage(this.reason).that(this.failed()).isTrue()
-    if (reason != null) {
-        Truth.assertThat(this.reason).contains(reason)
-    }
-}
+/**
+ * Contains a collection of parsed Layers trace entries and assertions to apply over a single entry.
+ *
+ *
+ * Each entry is parsed into a list of [LayerTraceEntry] objects.
+ */
+open class LayersTrace<Entry : LayerTraceEntry<LayerT>, LayerT : ILayer<LayerT>>(
+    override val entries: List<Entry>,
+    override val source: String,
+    override val sourceChecksum: String
+) : ITrace<Entry>

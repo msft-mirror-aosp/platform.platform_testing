@@ -20,11 +20,10 @@ import com.android.server.wm.flicker.FlickerDslMarker
 import com.android.server.wm.flicker.assertions.FlickerAssertionError
 import com.android.server.wm.flicker.FlickerRunResult
 import com.android.server.wm.flicker.assertions.AssertionData
-import com.android.server.wm.flicker.traces.ITraceEntry
+import com.android.server.wm.flicker.common.traces.ITraceEntry
 import com.android.server.wm.flicker.traces.eventlog.EventLogSubject
 import com.android.server.wm.flicker.traces.eventlog.FocusEvent
 import com.android.server.wm.flicker.traces.layers.LayerTraceEntry
-import com.android.server.wm.flicker.traces.layers.LayersTrace
 import com.android.server.wm.flicker.traces.layers.LayersTraceSubject
 import com.android.server.wm.flicker.traces.windowmanager.WindowManagerTrace
 import com.android.server.wm.flicker.traces.windowmanager.WindowManagerTraceEntry

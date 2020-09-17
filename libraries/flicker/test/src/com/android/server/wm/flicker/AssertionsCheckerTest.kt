@@ -16,9 +16,9 @@
 
 package com.android.server.wm.flicker
 
-import com.android.server.wm.flicker.assertions.AssertionResult
 import com.android.server.wm.flicker.assertions.AssertionsChecker
-import com.android.server.wm.flicker.traces.ITraceEntry
+import com.android.server.wm.flicker.common.AssertionResult
+import com.android.server.wm.flicker.common.traces.ITraceEntry
 import com.google.common.truth.Truth
 import org.junit.FixMethodOrder
 import org.junit.Test
@@ -150,8 +150,8 @@ class AssertionsCheckerTest {
          * Returns a list of SimpleEntry objects with `data` and incremental timestamps starting
          * at 0.
          */
-        private fun getTestEntries(vararg data: Int): List<SimpleEntry>
-                = data.indices.map { SimpleEntry(it.toLong(), data[it])
+        private fun getTestEntries(vararg data: Int): List<SimpleEntry> =
+                data.indices.map { SimpleEntry(it.toLong(), data[it])
         }
     }
 }

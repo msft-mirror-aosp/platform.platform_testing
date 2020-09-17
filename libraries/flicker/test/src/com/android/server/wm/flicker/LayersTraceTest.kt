@@ -87,7 +87,8 @@ class LayersTraceTest {
         Truth.assertThat(msg).contains("NavigationBar0#0")
         Truth.assertThat(msg).contains("StatusBar#0")
         Truth.assertThat(msg).contains("DockedStackDivider#0")
-        Truth.assertThat(msg).contains("SnapshotStartingWindow for taskId=21 - task-snapshot-surface#0")
+        Truth.assertThat(msg).contains("SnapshotStartingWindow for taskId=21 - " +
+            "task-snapshot-surface#0")
         Truth.assertThat(msg).contains("SnapshotStartingWindow for taskId=21")
         Truth.assertThat(msg).contains("NexusLauncherActivity#0")
         Truth.assertThat(msg).contains("ImageWallpaper#0")
@@ -114,8 +115,8 @@ class LayersTraceTest {
             Assert.fail("Failed to detect orphaned layers.")
         } catch (exception: RuntimeException) {
             Truth.assertThat(exception.message)
-                    .contains("Failed to parse layers trace. Found orphan layers "
-                            + "with parent layer id:1006 : 49")
+                    .contains("Failed to parse layers trace. Found orphan layer with id = 49 with" +
+                            " parentId = 1006")
         }
     }
 
@@ -174,8 +175,8 @@ class LayersTraceTest {
         val result = entry.hasVisibleRegion("StatusBar", expectedVisibleRegion)
         Truth.assertWithMessage(result.reason).that(result.failed()).isTrue()
         Truth.assertThat(result.reason)
-                .contains("StatusBar#0 has visible "
-                        + "region:SkRegion((0,0,1440,171)) expected:SkRegion((0,0,1440,99))")
+                .contains("StatusBar#0 has visible " +
+                    "region:SkRegion((0,0,1440,171)) expected:SkRegion((0,0,1440,99))")
     }
 
     @Test
@@ -195,15 +196,15 @@ class LayersTraceTest {
         Truth.assertWithMessage(result.reason).that(result.failed()).isTrue()
         Truth.assertThat(result.reason)
                 .contains(
-                        "Layer com.android.server.wm.flicker.testapp/com.android.server.wm.flicker"
-                                + ".testapp.SimpleActivity#0 is invisible: type != ColorLayer visible "
-                                + "region is empty")
+                    "Layer com.android.server.wm.flicker.testapp/com.android.server.wm.flicker" +
+                    ".testapp.SimpleActivity#0 is invisible: type != ColorLayer visible " +
+                    "region is empty")
     }
 
     companion object {
         private fun readLayerTraceFromFile(
-                relativePath: String,
-                ignoreOrphanLayers: Boolean = true
+            relativePath: String,
+            ignoreOrphanLayers: Boolean = true
         ): LayersTrace {
             return try {
                 parseFrom(readTestFile(relativePath)) { ignoreOrphanLayers }

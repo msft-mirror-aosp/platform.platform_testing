@@ -16,7 +16,7 @@
 
 package com.android.server.wm.flicker.traces.eventlog
 
-import com.android.server.wm.flicker.traces.ITraceEntry
+import com.android.server.wm.flicker.common.traces.ITraceEntry
 
 class FocusEvent(
     override val timestamp: Long,

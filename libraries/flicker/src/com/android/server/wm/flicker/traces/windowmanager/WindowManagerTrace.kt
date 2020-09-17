@@ -16,7 +16,6 @@
 
 package com.android.server.wm.flicker.traces.windowmanager
 
-import com.android.server.wm.flicker.traces.TraceBase
 import com.android.server.wm.nano.WindowManagerServiceDumpProto
 import com.android.server.wm.nano.WindowManagerTraceFileProto
 import com.google.protobuf.nano.InvalidProtocolBufferNanoException
@@ -32,7 +31,11 @@ class WindowManagerTrace private constructor(
     entries: List<WindowManagerTraceEntry>,
     source: Path?,
     sourceChecksum: String
-) : TraceBase<WindowManagerTraceEntry>(entries, source, sourceChecksum) {
+) : com.android.server.wm.flicker.common.traces.windowmanager
+        .WindowManagerTrace<WindowManagerTraceEntry>(
+    entries, source?.toString() ?: "",
+    sourceChecksum
+) {
     companion object {
         /**
          * Parses [WindowManagerTraceFileProto] from [data] and uses the proto to generates
@@ -74,7 +77,7 @@ class WindowManagerTrace private constructor(
                 throw RuntimeException(e)
             }
             return WindowManagerTrace(
-                listOf(WindowManagerTraceEntry(fileProto.rootWindowContainer, timestamp = 0)),
+                listOf(WindowManagerTraceEntry(fileProto.rootWindowContainer, 0)),
                 source = null,
                 sourceChecksum = "")
         }

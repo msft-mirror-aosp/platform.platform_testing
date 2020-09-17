@@ -110,6 +110,7 @@ data class Flicker(
      * 7) [teardown] ([TestCommands.testCommands])
      */
     fun execute() = apply {
+        require(transitions.isNotEmpty()) { "A flicker test must include transitions to run" }
         try {
             try {
                 setup.testCommands.forEach { it.invoke(this) }

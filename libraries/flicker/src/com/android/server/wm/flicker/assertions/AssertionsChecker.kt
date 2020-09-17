@@ -16,7 +16,8 @@
 
 package com.android.server.wm.flicker.assertions
 
-import com.android.server.wm.flicker.traces.ITraceEntry
+import com.android.server.wm.flicker.common.AssertionResult
+import com.android.server.wm.flicker.common.traces.ITraceEntry
 
 /**
  * Captures some of the common logic in [LayersTraceSubject] and [WmTraceSubject] used
@@ -168,7 +169,8 @@ class AssertionsChecker<T : ITraceEntry> {
         if (lastPassedAssertionIndex == -1 && assertions.isNotEmpty() && failures.isEmpty()) {
             failures.add(AssertionResult(success = false, reason = assertions[0].name))
         }
-        if (failures.isEmpty() && assertions.isNotEmpty() && assertionIndex != assertions.size - 1) {
+        if (failures.isEmpty() && assertions.isNotEmpty() &&
+                assertionIndex != assertions.size - 1) {
             var reason = "Assertion ${assertions[assertionIndex].name} never became false"
             reason += "\n\tPassed assertions: " +
                     assertions.take(assertionIndex)

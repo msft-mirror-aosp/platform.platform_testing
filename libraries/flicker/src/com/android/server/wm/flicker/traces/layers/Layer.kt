@@ -17,291 +17,36 @@
 package com.android.server.wm.flicker.traces.layers
 
 import android.graphics.Rect
-import android.graphics.RectF
-import android.graphics.Region
 import android.surfaceflinger.nano.Layers
 import android.surfaceflinger.nano.Layers.RectProto
 import android.surfaceflinger.nano.Layers.RegionProto
+import com.android.internal.R.attr.type
+import com.android.server.wm.flicker.common.Buffer
+import com.android.server.wm.flicker.common.Color
+import com.android.server.wm.flicker.common.RectF
+import com.android.server.wm.flicker.common.Region
+import com.android.server.wm.flicker.common.traces.layers.ILayer
 
 /** Represents a single layer with links to its parent and child layers.  */
-class Layer(var proto: Layers.LayerProto?) {
-    lateinit var parent: Layer
-
-    val children = mutableListOf<Layer>()
-    val occludedBy = mutableListOf<Layer>()
-    val partiallyOccludedBy = mutableListOf<Layer>()
-    val coveredBy = mutableListOf<Layer>()
-
-    fun addChild(childLayer: Layer) {
-        children.add(childLayer)
-    }
-
-    fun addParent(parentLayer: Layer) {
-        parent = parentLayer
-    }
-
-    /**
-     * Gets the layer ID
-     *
-     * @return layer ID or -1 if the layer has no proto
-     */
-    val id get() = proto?.id ?: -1
-
-    /**
-     * Gets the parent layer ID
-     *
-     * @return parent layer ID or -1 if the layer has no proto or the proto has no parent
-     */
-    val parentId get() = proto?.parent ?: -1
-
-    /**
-     * Gets the layer name
-     *
-     * @return layer name or an empty string if the layer has no proto
-     */
-    val name get() = proto?.name ?: ""
-
-    /**
-     * Gets the z order of the layer name
-     *
-     * @return z order or 0 if layer has no proto
-     */
-    val z get() = proto?.z ?: 0
-
-    /**
-     * Gets the visible region as a [Rect]
-     *
-     * @return visible region or an empty [Rect] if the layer has no proto
-     */
-    val visibleRegion get() = proto?.visibleRegion?.toRegion() ?: Region()
-
-    /**
-     * Checks if the layer's active buffer is empty
-     *
-     * An active buffer is empty if it is not in the proto or if its height or width are 0
-     *
-     * @return
-     */
-    val isActiveBufferEmpty: Boolean
-        get() {
-            val activeBuffer = proto?.activeBuffer
-            return (activeBuffer == null)
-                    || (activeBuffer.height == 0)
-                    || (activeBuffer.width == 0)
-        }
-
-    /**
-     * Checks if the layer is hidden, that is, if its flags contain 0x1 (FLAG_HIDDEN)
-     *
-     * @return
-     */
-    val isHiddenByPolicy: Boolean
-        get() {
-            val flags = proto?.flags ?: 0x0
-            return (flags and  /* FLAG_HIDDEN */0x1) != 0x0
-        }
-
-    /**
-     * Checks if the layer is visible.
-     *
-     * A layer is visible if:
-     * - it has an active buffer or has effects
-     * - is not hidden
-     * - is not transparent
-     * - not occluded by other layers
-     *
-     * @return
-     */
-    val isVisible: Boolean
-        get() {
-            return when {
-                isHiddenByPolicy -> false
-                isActiveBufferEmpty && !hasEffects -> false
-                !fillsColor -> false
-                occludedBy.isNotEmpty() -> false
-                else -> !proto?.bounds.toRect().isEmpty
-            }
-        }
-
-    val isOpaque: Boolean
-        get() {
-            val proto = proto ?: return false
-            return if (proto.color?.a != 1.0f) {
-                false
-            } else {
-                proto.isOpaque
-            }
-        }
-
-    /**
-     * Checks if the [Layer] has a color
-     *
-     * @return
-     */
-    val fillsColor: Boolean
-        get() {
-            val proto = proto ?: return false
-            return (proto.color != null
-                    && proto.color.a > 0
-                    && proto.color.r >= 0
-                    && proto.color.g >= 0
-                    && proto.color.b >= 0)
-        }
-
-    /**
-     * Checks if the [Layer] draws a shadow
-     *
-     * @return
-     */
-    val drawsShadows get() = (proto?.shadowRadius ?: 0.0f) > 0
-
-    /**
-     * Checks if the [Layer] draws has effects, which include:
-     * - is a color layer
-     * - is an effects layers which [fillsColor] or [drawsShadows]
-     *
-     * @return
-     */
-    val hasEffects: Boolean
-        get() {
-            // Support previous color layer
-            if (isColorLayer) {
-                return true
-            }
-
-        // Support newer effect layer
-        return isEffectLayer && (fillsColor || drawsShadows)
-    }
-
-    /**
-     * Gets the [Layer] type
-     *
-     * @return
-     */
-    val type get() = proto?.type ?: ""
-
-    /**
-     * Checks if the [Layer] type is BufferStateLayer or BufferQueueLayer
-     *
-     * @return
-     */
-    val isBufferLayer: Boolean
-        get() {
-            return proto?.type == "BufferStateLayer" || proto?.type == "BufferQueueLayer"
-        }
-
-    /**
-     * Checks if the [Layer] type is ColorLayer
-     *
-     * @return
-     */
-    val isColorLayer get() = type == "ColorLayer"
-
-    /**
-     * Checks if the [Layer] type is EffectLayer
-     *
-     * @return
-     */
-    val isEffectLayer get() = type == "EffectLayer"
-
-    /**
-     * Checks if the [Layer] is a root layer in the hierarchy
-     *
-     * @return
-     */
-    val isRootLayer get() = ::parent.isInitialized && parent.proto == null
-
-    /**
-     * Checks if the [Layer] is not visible
-     *
-     * @return
-     */
-    val isInvisible get() = !isVisible
-
-    /**
-     * Checks if the [Layer] is hidden by its parent
-     *
-     * @return
-     */
-    val isHiddenByParent: Boolean
-        get() = !isRootLayer && (parent.isHiddenByPolicy || parent.isHiddenByParent)
-
-    /**
-     * Gets a description of why the layer is hidden by its parent
-     *
-     * @return
-     */
-    val hiddenByParentReason: String
-        get() {
-            var reason = "Layer $name"
-            reason += if (isHiddenByParent) {
-                " is hidden by parent: " + parent.name
-            } else {
-                " is not hidden by parent: " + parent.name
-            }
-            return reason
-        }
-
-    /**
-     * Gets a description of why the layer is (in)visible
-     *
-     * @return
-     */
-    val visibilityReason: String
-        get() {
-            val proto = proto ?: return "Not proto layer attached"
-            var reason = "Layer $name"
-            if (isVisible) {
-                reason += " is visible:"
-            } else {
-                reason += " is invisible:"
-                when {
-                    proto.activeBuffer == null -> {
-                        reason += " activeBuffer=null"
-                    }
-                    proto.activeBuffer.height == 0 -> {
-                        reason += " activeBuffer.height=0"
-                    }
-                    proto.activeBuffer.width == 0 -> {
-                        reason += " activeBuffer.width=0"
-                    }
-                }
-                if (!isColorLayer) {
-                    reason += " type != ColorLayer"
-                }
-                if (isHiddenByPolicy) {
-                    reason += " flags=" + proto.flags + " (FLAG_HIDDEN set)"
-                }
-                if (proto.color == null || proto.color.a == 0f) {
-                    reason += " color.a=0"
-                }
-                if (visibleRegion.isEmpty) {
-                    reason += " visible region is empty"
-                }
-            }
-            return reason
-        }
-
-    val transform get() = Transform(proto?.transform, proto?.position)
-
-    val screenBounds: RectF
-        get() {
-            return when {
-                proto == null -> RectF()
-                proto?.screenBounds != null -> proto?.screenBounds.toRect()
-                else -> transform.apply(proto?.bounds?.toRect())
-            }
-        }
-
-    fun contains(innerLayer: Layer): Boolean {
-        return if (!this.transform.isSimpleRotation || !innerLayer.transform.isSimpleRotation) {
-            false
-        } else {
-            this.screenBounds.contains(innerLayer.screenBounds)
-        }
-    }
-
-    fun overlaps(other: Layer): Boolean = this.screenBounds.intersect(other.screenBounds)
+class Layer(val proto: Layers.LayerProto) : ILayer<Layer> {
+    val commonLayer: com.android.server.wm.flicker.common.traces.layers.Layer<Layer> =
+        com.android.server.wm.flicker.common.traces.layers.Layer(
+            proto.name ?: "",
+            proto.id ?: -1,
+            proto.parent ?: -1,
+            proto.z ?: 0,
+            proto.visibleRegion?.toRegion() ?: Region(0, 0, 0, 0),
+            proto.activeBuffer?.toBuffer(),
+            proto.flags ?: 0x0,
+            proto.bounds?.toRectF() ?: RectF(),
+            proto.color?.toColor(),
+            proto.isOpaque ?: false,
+            proto.shadowRadius ?: 0.0f,
+            proto.type ?: "",
+            proto.screenBounds?.toRectF(),
+            Transform(proto.transform, proto.position),
+            proto.sourceBounds?.toRectF()
+        )
 
     override fun toString(): String {
         var value = "$name $type $visibleRegion"
@@ -324,28 +69,100 @@ class Layer(var proto: Layers.LayerProto?) {
         }
     }
 
-    /**
-     * Extracts [Rect] from [RegionProto] by returning a rect that encompasses all
-     * the rectangles making up the region.
-     */
-    private fun RegionProto?.toRegion(): Region {
-        val region = Region()
-        if (this != null) {
-            for (proto: RectProto in this.rect) {
-                region.union(proto.toRect())
-            }
+    override val name: String
+        get() = commonLayer.name
+    override val id: Int
+        get() = commonLayer.id
+    override val parentId: Int
+        get() = commonLayer.parentId
+    override val visibleRegion: Region
+        get() = commonLayer.visibleRegion
+    override val z: Int
+        get() = commonLayer.z
+    override val sourceBounds: RectF?
+        get() = commonLayer.sourceBounds
+    override var parent: Layer
+        get() = commonLayer.parent
+        set(parent) {
+            commonLayer.parent = parent
         }
-        return region
+    override val children: MutableCollection<Layer>
+        get() = commonLayer.children
+    override val occludedBy: MutableCollection<Layer>
+        get() = commonLayer.occludedBy
+    override val partiallyOccludedBy: MutableCollection<Layer>
+        get() = commonLayer.partiallyOccludedBy
+    override val coveredBy: MutableCollection<Layer>
+        get() = commonLayer.coveredBy
+    override val isVisible: Boolean
+        get() = commonLayer.isVisible
+    override val isHiddenByParent: Boolean
+        get() = commonLayer.isHiddenByParent
+    override val isOpaque: Boolean
+        get() = commonLayer.isOpaque
+    override val hiddenByParentReason: String
+        get() = commonLayer.hiddenByParentReason
+    override val isInvisible: Boolean
+        get() = commonLayer.isInvisible
+    override val visibilityReason: String
+        get() = commonLayer.visibilityReason
+    override val transform: com.android.server.wm.flicker.common.traces.layers.Transform
+        get() = commonLayer.transform
+    override val isHiddenByPolicy: Boolean
+        get() = commonLayer.isHiddenByPolicy
+    override val screenBounds: RectF
+        get() = commonLayer.screenBounds
+
+    override fun addChild(childLayer: Layer) {
+        commonLayer.addChild(childLayer)
     }
 
-    /** Extracts [Rect] from [Layers.FloatRectProto].  */
-    fun Layers.FloatRectProto?.toRect(): RectF {
-        return if (this == null || (this.right - this.left) <= 0 || (this.bottom - this.top) <= 0) {
-            RectF()
-        } else {
-            RectF(this.left, this.top, this.right, this.bottom)
-        }
+    override fun contains(innerLayer: Layer): Boolean {
+        return commonLayer.contains(innerLayer)
     }
 
+    override fun overlaps(other: Layer): Boolean {
+        return commonLayer.overlaps(other)
+    }
+}
 
+private fun Layers.FloatRectProto.toRectF(): RectF {
+    val rect = RectF()
+    rect.left = left
+    rect.top = top
+    rect.right = right
+    rect.bottom = bottom
+
+    return rect
+}
+
+private fun Layers.ColorProto.toColor(): Color {
+    return Color(r, g, b, a)
+}
+
+private fun Layers.ActiveBufferProto.toBuffer(): Buffer {
+    return Buffer(height, width)
+}
+
+/**
+ * Extracts [Rect] from [RegionProto] by returning a rect that encompasses all
+ * the rectangles making up the region.
+ */
+private fun RegionProto.toRegion(): Region {
+    val region = android.graphics.Region(0, 0, 0, 0)
+
+    for (proto: RectProto in this.rect) {
+        region.union(proto.toRect())
+    }
+
+    val bounds = region.bounds
+    return Region(bounds.left, bounds.top, bounds.right, bounds.bottom)
+}
+
+private fun RectProto.toRect(): Rect {
+    return if ((this.right - this.left) <= 0 || (this.bottom - this.top) <= 0) {
+        Rect()
+    } else {
+        Rect(this.left, this.top, this.right, this.bottom)
+    }
 }

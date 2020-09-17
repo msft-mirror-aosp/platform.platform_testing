@@ -14,22 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.server.wm.flicker.assertions
+package com.android.server.wm.flicker.common.traces.windowmanager.windows
 
-import androidx.annotation.VisibleForTesting
-import com.android.server.wm.flicker.common.AssertionResult
-import com.google.common.truth.Truth
-
-@VisibleForTesting
-fun AssertionResult.assertPassed() {
-    Truth.assertWithMessage(this.reason).that(this.passed()).isTrue()
-}
-
-@JvmOverloads
-@VisibleForTesting
-fun AssertionResult.assertFailed(reason: String? = null) {
-    Truth.assertWithMessage(this.reason).that(this.failed()).isTrue()
-    if (reason != null) {
-        Truth.assertThat(this.reason).contains(reason)
-    }
-}
+class ActivityRecord(windowToken: WindowToken)
+    : WindowToken(windowToken)

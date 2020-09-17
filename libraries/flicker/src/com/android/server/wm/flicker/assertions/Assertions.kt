@@ -16,6 +16,8 @@
 
 package com.android.server.wm.flicker.assertions
 
+import com.android.server.wm.flicker.common.AssertionResult
+
 /**
  * Checks assertion on a single trace entry.
  *
@@ -46,15 +48,16 @@ object Assertions {
  * when dealing with multiple assertions.
  */
 open class NamedAssertion<T>(
-        private val assertion: TraceAssertion<T>,
-        open val name: String
+    private val assertion: TraceAssertion<T>,
+    open val name: String
 ) : TraceAssertion<T> {
     override fun invoke(t: T): AssertionResult = assertion.invoke(t)
 
     override fun toString(): String = "Assertion($name)"
 }
 
-class CompoundAssertion<T>(assertion: TraceAssertion<T>, name: String) : NamedAssertion<T>(assertion, name) {
+class CompoundAssertion<T>(assertion: TraceAssertion<T>, name: String) :
+        NamedAssertion<T>(assertion, name) {
     private val assertions: MutableList<NamedAssertion<T>> = ArrayList()
 
     init {

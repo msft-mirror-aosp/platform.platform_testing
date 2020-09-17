@@ -16,8 +16,6 @@
 
 package com.android.server.wm.flicker.traces.layers
 
-import android.graphics.Rect
-import android.graphics.Region
 import com.android.server.wm.flicker.assertions.TraceAssertion
 import com.android.server.wm.flicker.traces.SubjectBase
 import com.google.common.truth.FailureMetadata
@@ -72,7 +70,7 @@ class LayersTraceSubject private constructor(
             var tracePath = ""
             if (actual().hasSource()) {
                 tracePath = "Layers Trace can be found in: " +
-                        "${actual().source.get().toAbsolutePath()}" +
+                        actual().source +
                         "\nChecksum: " + actual().sourceChecksum + "\n"
             }
             fail(tracePath + failureLogs)
@@ -80,28 +78,28 @@ class LayersTraceSubject private constructor(
     }
 
     @JvmOverloads
-    fun coversAtLeastRegion(rect: Rect, layerName: String = "") =
-            this.coversAtLeastRegion(Region(rect), layerName)
+    fun coversAtLeastRegion(rect: android.graphics.Rect, layerName: String = "") =
+            this.coversAtLeastRegion(android.graphics.Region(rect), layerName)
 
     @JvmOverloads
-    fun coversAtMostRegion(rect: Rect, layerName: String = "") =
-            this.coversAtMostRegion(Region(rect), layerName)
+    fun coversAtMostRegion(rect: android.graphics.Rect, layerName: String = "") =
+            this.coversAtMostRegion(android.graphics.Region(rect), layerName)
 
     @JvmOverloads
-    fun coversAtLeastRegion(region: Region, layerName: String = "") = apply {
+    fun coversAtLeastRegion(region: android.graphics.Region, layerName: String = "") = apply {
         addAssertion("coversAtLeastRegion($region, $layerName)") {
             it.coversAtLeastRegion(region, layerName)
         }
     }
 
     @JvmOverloads
-    fun coversAtMostRegion(region: Region, layerName: String = "") = apply {
+    fun coversAtMostRegion(region: android.graphics.Region, layerName: String = "") = apply {
         addAssertion("coversAtMostRegion($region, $layerName") {
             it.coversAtMostRegion(region, layerName)
         }
     }
 
-    fun hasVisibleRegion(layerName: String, size: Region) = apply {
+    fun hasVisibleRegion(layerName: String, size: android.graphics.Region) = apply {
         addAssertion("hasVisibleRegion($layerName$size)") {
             it.hasVisibleRegion(layerName, size)
         }

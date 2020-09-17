@@ -14,22 +14,17 @@
  * limitations under the License.
  */
 
-package com.android.server.wm.flicker.assertions
+package com.android.server.wm.flicker.common.traces
 
-import androidx.annotation.VisibleForTesting
-import com.android.server.wm.flicker.common.AssertionResult
-import com.google.common.truth.Truth
+interface ITrace<Entry : ITraceEntry> {
+    val entries: List<Entry>
+    val source: String
+    val sourceChecksum: String
 
-@VisibleForTesting
-fun AssertionResult.assertPassed() {
-    Truth.assertWithMessage(this.reason).that(this.passed()).isTrue()
-}
-
-@JvmOverloads
-@VisibleForTesting
-fun AssertionResult.assertFailed(reason: String? = null) {
-    Truth.assertWithMessage(this.reason).that(this.failed()).isTrue()
-    if (reason != null) {
-        Truth.assertThat(this.reason).contains(reason)
+    fun getEntry(timestamp: Long): Entry {
+        return entries.firstOrNull { it.timestamp == timestamp }
+                ?: throw RuntimeException("Entry does not exist for timestamp $timestamp")
     }
+
+    fun hasSource(): Boolean = source.isNotEmpty()
 }

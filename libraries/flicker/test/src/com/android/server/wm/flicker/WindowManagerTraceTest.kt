@@ -16,7 +16,9 @@
 
 package com.android.server.wm.flicker
 
-import android.graphics.Region
+import com.android.server.wm.flicker.assertions.assertFailed
+import com.android.server.wm.flicker.assertions.assertPassed
+import com.android.server.wm.flicker.common.Region
 import com.android.server.wm.flicker.traces.windowmanager.WindowManagerTrace
 import com.android.server.wm.flicker.traces.windowmanager.WindowManagerTrace.Companion.parseFrom
 import com.android.server.wm.flicker.traces.windowmanager.WindowManagerTrace.Companion.parseFromDump

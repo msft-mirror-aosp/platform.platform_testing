@@ -14,21 +14,18 @@
  * limitations under the License.
  */
 
-package com.android.server.wm.flicker.traces
+package com.android.server.wm.flicker.common.traces.windowmanager.windows
 
-import java.nio.file.Path
-import java.util.Optional
+import com.android.server.wm.flicker.common.Rect
+import com.android.server.wm.flicker.common.Region
+import com.android.server.wm.flicker.common.WindowRect
 
-abstract class TraceBase<Entry: ITraceEntry>(
-    val entries: List<Entry>,
-    private val _source: Path?,
-    val sourceChecksum: String) {
-    val source get() = Optional.ofNullable(_source)
+class WindowState(
+    windowContainer: WindowContainer,
+    val childWindows: Array<WindowState>, // deprecated — kept for backward compatibility
+    frame: Rect
+) : WindowContainer(windowContainer) {
+    override val rects: List<Rect> = listOf(WindowRect(frame, this, title))
 
-    fun getEntry(timestamp: Long): Entry {
-        return entries.firstOrNull { it.timestamp == timestamp }
-                ?: throw RuntimeException("Entry does not exist for timestamp $timestamp")
-    }
-
-    fun hasSource(): Boolean = _source != null
+    val frameRegion: Region = Region(frame)
 }
