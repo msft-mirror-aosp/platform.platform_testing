@@ -12,16 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-java_library {
-    name: "platform-test-rules",
-    sdk_version: "test_current",
-    static_libs: [
+java_library_static {
+    name: "facebook-scenarios",
+    min_sdk_version: "24",
+    srcs: [ "src/**/*.java" ],
+    libs: [
         "androidx.test.runner",
         "androidx.test.uiautomator",
         "app-helpers-handheld-interfaces",
-        "guava",
-        "memory-helper",
-        "package-helper",
+        "common-platform-scenarios",
+        "handheld-app-helpers",
+        "junit",
+        "platform-test-options",
+        "platform-test-rules",
     ],
-    srcs: ["src/**/*.java"],
 }
