@@ -23,13 +23,17 @@ import java.nio.file.Path
 
 /** Captures Layers trace from SurfaceFlinger.  */
 open class LayersTraceMonitor(
-    outputDir: Path
+    outputDir: Path,
+    private val traceFlags: Int
 ) : TransitionMonitor(outputDir, "layers_trace.pb") {
+
+    constructor(outputDir: Path) : this(outputDir, TRACE_FLAGS)
+
     private val windowManager = WindowManagerGlobal.getWindowManagerService()
 
     override fun start() {
         try {
-            windowManager.setLayerTracingFlags(TRACE_FLAGS)
+            windowManager.setLayerTracingFlags(traceFlags)
             windowManager.isLayerTracing = true
         } catch (e: RemoteException) {
             throw RuntimeException("Could not start trace", e)
@@ -40,7 +44,7 @@ open class LayersTraceMonitor(
         try {
             windowManager.isLayerTracing = false
         } catch (e: RemoteException) {
-            throw RuntimeException("Could not start trace", e)
+            throw RuntimeException("Could not stop trace", e)
         }
     }
 
@@ -54,6 +58,6 @@ open class LayersTraceMonitor(
     override fun getTracePath(builder: FlickerRunResult.Builder) = builder.layersTraceFile
 
     companion object {
-        private const val TRACE_FLAGS = 0x7 // TRACE_CRITICAL|TRACE_INPUT|TRACE_COMPOSITION
+        const val TRACE_FLAGS = 0x7 // TRACE_CRITICAL|TRACE_INPUT|TRACE_COMPOSITION
     }
 }

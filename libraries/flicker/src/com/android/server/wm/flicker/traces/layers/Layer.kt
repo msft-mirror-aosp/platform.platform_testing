@@ -49,10 +49,14 @@ class Layer(val proto: Layers.LayerProto) : ILayer<Layer> {
         )
 
     override fun toString(): String {
-        var value = "$name $type $visibleRegion"
+        var value = "$name"
+        if (proto.activeBuffer.width > 0 && proto.activeBuffer.height > 0) {
+            value += " buffer:${proto.activeBuffer.width}x${proto.activeBuffer.height} " +
+                    "frame#${proto.currFrame}"
+        }
 
         if (isVisible) {
-            value += "(visible)"
+            value += " visible:$visibleRegion"
         }
 
         return value

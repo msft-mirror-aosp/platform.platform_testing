@@ -41,12 +41,17 @@ fun withWMTracing(instrumentation: Instrumentation, predicate: () -> Unit): Wind
  * the commands defined in the [predicate].
  *
  * @param instrumentation Instrumentation used to determine the test's temporary folder
+ * @param traceFlags Flags to indicate tracing level
  * @param predicate Commands to execute
  * @throws UnsupportedOperationException If tracing is already activated
  */
-fun withSFTracing(instrumentation: Instrumentation, predicate: () -> Unit): LayersTrace {
+fun withSFTracing(
+    instrumentation: Instrumentation,
+    traceFlags: Int = LayersTraceMonitor.TRACE_FLAGS,
+    predicate: () -> Unit
+): LayersTrace {
     val outputDir = getDefaultFlickerOutputDir(instrumentation).resolve("withSFTracing")
-    return LayersTrace.parseFrom(LayersTraceMonitor(outputDir).withTracing(predicate))
+    return LayersTrace.parseFrom(LayersTraceMonitor(outputDir, traceFlags).withTracing(predicate))
 }
 
 /**

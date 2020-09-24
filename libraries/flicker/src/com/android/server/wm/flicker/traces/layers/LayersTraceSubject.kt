@@ -63,6 +63,19 @@ class LayersTraceSubject private constructor(
 
     fun failWithMessage(message: String) = apply { fail(message) }
 
+    /**
+     * @return LayerSubject that can be used to make assertions on a single layer matching
+     * [name] and [frameNumber].
+     */
+    fun layer(name: String, frameNumber: Long): LayerSubject {
+        val layer = actual().entries.asSequence()
+                .flatMap { it.flattenedLayers }
+                .firstOrNull {
+                    it.name.contains(name) && it.proto.currFrame == frameNumber
+                }
+        return LayerSubject.assertThat(layer)
+    }
+
     private fun test() {
         val failures = assertionsChecker.test(actual().entries)
         if (failures.isNotEmpty()) {

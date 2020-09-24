@@ -22,6 +22,7 @@ java_library {
         "guava",
         "memory-helper",
         "package-helper",
+        "launcher-aosp-tapl",
     ],
     srcs: ["src/**/*.java"],
 }

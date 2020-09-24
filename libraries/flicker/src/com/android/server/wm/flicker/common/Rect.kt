@@ -10,4 +10,8 @@ open class Rect(
      * Returns true if the rectangle is empty (left >= right or top >= bottom)
      */
     val empty: Boolean = left >= right || top >= bottom
+    override fun toString(): String {
+        if (empty) return "[empty]"
+        return "[$left, $top, $right, $bottom]"
+    }
 }

@@ -11,4 +11,7 @@ class Region(val rect: Rect) {
 
     val bounds: Rect = rect
     val empty: Boolean = rect.empty
+    override fun toString(): String {
+        return bounds.toString()
+    }
 }
