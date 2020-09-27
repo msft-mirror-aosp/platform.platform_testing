@@ -25,7 +25,8 @@ class WindowState(
     val childWindows: Array<WindowState>, // deprecated — kept for backward compatibility
     frame: Rect
 ) : WindowContainer(windowContainer) {
-    override val rects: List<Rect> = listOf(WindowRect(frame, this, title))
+    val rect = WindowRect(frame, this, title)
+    override val rects: List<Rect> = listOf(rect)
 
     val frameRegion: Region = Region(frame)
 }

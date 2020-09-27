@@ -97,10 +97,10 @@ public interface IMapsHelper extends IAppHelper {
     /**
      * Setup expectation: On the search screen.
      *
-     * <p>Best effort attempt to go to the query screen (if not currently there),
-     * selects the results.
+     * <p>Best effort attempt to go to the query screen (if not currently there), selects the result
+     * that matches the String argument.
      */
-    public default void startSearch() {
+    public default void startSearch(String query) {
         throw new UnsupportedOperationException("Not yet implemented.");
     }
 

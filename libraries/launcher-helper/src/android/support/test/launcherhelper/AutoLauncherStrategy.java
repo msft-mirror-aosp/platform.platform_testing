@@ -77,8 +77,7 @@ public class AutoLauncherStrategy implements IAutoLauncherStrategy {
                             new Object[][] {
                                 {
                                     "Home",
-                                    By.hasDescendant(By.res(CAR_LENSPICKER, "maps_card"))
-                                            .hasDescendant(By.res(CAR_LENSPICKER, "top_card"))
+                                    By.hasDescendant(By.res(CAR_LENSPICKER, "top_card"))
                                             .hasDescendant(By.res(CAR_LENSPICKER, "bottom_card"))
                                 },
                                 {"Maps", By.pkg(MAPS_PACKAGE).depth(0)},
