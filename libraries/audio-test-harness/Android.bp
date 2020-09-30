@@ -14,45 +14,64 @@
  * limitations under the License.
  */
 
+PROTO_TOOLS = ["aprotoc", "protoc-gen-grpc-java-plugin", "soong_zip"]
+PROTO_CMD = "mkdir -p $(genDir)/gen && "+
+        "$(location aprotoc) -Iplatform_testing/libraries -Iexternal/protobuf/src "+
+        "--plugin=protoc-gen-grpc-java=$(location protoc-gen-grpc-java-plugin) --grpc-java_out=$(genDir)/gen $(in) && "+
+        "$(location soong_zip) -o $(out) -C $(genDir)/gen -D $(genDir)/gen"
+
 filegroup {
-    name: "CommunicationControllerProto",
+    name: "AudioTestHarnessServiceProto",
     srcs: [
-        "proto/communication_service.proto",
+        "proto/audio_test_harness_service.proto"
     ],
 }
 
 genrule {
-    name: "CommunicationControllerStub",
-    tools: [
-        "aprotoc",
-        "protoc-gen-grpc-java-plugin",
-        "soong_zip",
-    ],
-    cmd: "mkdir -p $(genDir)/gen && " +
-        "$(location aprotoc) -Iplatform_testing/libraries -Iexternal/protobuf/src --plugin=protoc-gen-grpc-java=$(location protoc-gen-grpc-java-plugin) --grpc-java_out=$(genDir)/gen $(in) && " +
-        "$(location soong_zip) -o $(out) -C $(genDir)/gen -D $(genDir)/gen",
+    name: "AudioTestHarnessServiceStub",
+    tools: PROTO_TOOLS,
+    cmd: PROTO_CMD,
     srcs: [
-        ":CommunicationControllerProto",
+        ":AudioTestHarnessServiceProto"
     ],
     out: [
-        "protos.srcjar",
+        "protos.srcjar"
     ],
 }
 
 java_library_host {
-    name: "communication_controller_server",
+    name: "AudioTestHarnessService",
     srcs: [
-        "src/android/media/server/CommunicationServiceImpl.java",
-        ":CommunicationControllerStub",
-        ":CommunicationControllerProto",
+        "src/main/java/com/android/media/audiotestharness/service/AudioTestHarnessImpl.java",
+        ":AudioTestHarnessServiceProto",
+        ":AudioTestHarnessServiceStub"
     ],
     static_libs: [
         "libprotobuf-java-full",
         "grpc-java",
-        "guava",
+        "guava"
     ],
     java_version: "1.8",
     proto: {
         type: "full",
-    },
+    }
+}
+
+java_test_host {
+    name: "AudioTestHarnessServiceTests",
+    test_suites: ["general-tests"],
+    srcs: [
+        "src/test/java/com/android/media/audiotestharness/service/AudioTestHarnessImplTests.java",
+        ":AudioTestHarnessServiceProto",
+        ":AudioTestHarnessServiceStub"
+    ],
+    static_libs: [
+        "AudioTestHarnessService",
+        "junit",
+        "guava"
+    ],
+    java_version: "1.8",
+    proto: {
+        type: "full",
+    }
 }

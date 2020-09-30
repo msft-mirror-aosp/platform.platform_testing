@@ -31,5 +31,7 @@ SYSTEM_TOMBSTONE android.hardware.vibrator-service.drv2624 151884322
 SYSTEM_TOMBSTONE /vendor/bin/hw/android.hardware.gnss@1.0-service-qti 129282808
 SYSTEM_TOMBSTONE /system/product/priv-app/SafetyHubLprPrebuilt/SafetyHubLprPrebuilt.apk 158504050
 SYSTEM_TOMBSTONE Binder*.*com.google.android.apps.safetyhub 162104694
+SYSTEM_TOMBSTONE ReferenceQueueD*.*com.google.android.apps.safetyhub 162103095
 SYSTEM_TOMBSTONE Lite\sThread*.*com.google.android.apps.safetyhub 162379378
 SYSTEM_TOMBSTONE BG\sThread*.*com.google.android.apps.safetyhub 162381002
+SYSTEM_TOMBSTONE android.hardwar*.*/vendor/bin/hw/android.hardware.sensors@2.0-service 163430194
