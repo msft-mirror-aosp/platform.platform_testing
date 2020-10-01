@@ -42,15 +42,17 @@ public class AutoLauncherStrategy implements IAutoLauncherStrategy {
     private static final String DIAL_PACKAGE = "com.android.car.dialer";
     private static final String ASSISTANT_PACKAGE = "com.google.android.googlequicksearchbox";
     private static final String SETTINGS_PACKAGE = "com.android.car.settings";
-    private static final String APP_SWITCH_ID = "app_switch_container";
+    private static final String APP_SWITCH_ID = "car_ui_toolbar_menu_item_icon_container";
     private static final String APP_LIST_ID = "apps_grid";
 
-    private static final long APP_LAUNCH_TIMEOUT = 10000;
+    private static final long APP_LAUNCH_TIMEOUT = 30000;
     private static final long UI_WAIT_TIMEOUT = 5000;
     private static final long POLL_INTERVAL = 100;
 
-    private static final BySelector UP_BTN = By.res(Pattern.compile(".*:id/page_up"));
-    private static final BySelector DOWN_BTN = By.res(Pattern.compile(".*:id/page_down"));
+    private static final BySelector UP_BTN =
+            By.res(Pattern.compile(".*:id/car_ui_scrollbar_page_up"));
+    private static final BySelector DOWN_BTN =
+            By.res(Pattern.compile(".*:id/car_ui_scrollbar_page_down"));
     private static final BySelector APP_SWITCH = By.res(Pattern.compile(".*:id/" + APP_SWITCH_ID));
     private static final BySelector APP_LIST = By.res(Pattern.compile(".*:id/" + APP_LIST_ID));
     private static final BySelector SCROLLABLE_APP_LIST =
@@ -88,7 +90,7 @@ public class AutoLauncherStrategy implements IAutoLauncherStrategy {
 
     protected UiDevice mDevice;
     private Instrumentation mInstrumentation;
-    private CommandsHelper mCommandsHelper;
+    protected CommandsHelper mCommandsHelper;
 
     /**
      * {@inheritDoc}
@@ -155,7 +157,15 @@ public class AutoLauncherStrategy implements IAutoLauncherStrategy {
         openMediaFacet();
 
         // Click on app switch to open app list.
-        UiObject2 appSwitch = mDevice.wait(Until.findObject(APP_SWITCH), APP_LAUNCH_TIMEOUT);
+        List<UiObject2> buttons = mDevice.wait(
+                Until.findObjects(APP_SWITCH), APP_LAUNCH_TIMEOUT);
+        int lastIndex = buttons.size() - 1;
+        /*
+         * On some media app page, there are two buttons with the same ID, 
+         * while on other media app page, only the app switch button presents.
+         * The app switch button is always the last button if not the only button.
+         */
+        UiObject2 appSwitch = buttons.get(lastIndex);
         if (appSwitch == null) {
             throw new RuntimeException("Failed to find app switch.");
         }
@@ -206,15 +216,13 @@ public class AutoLauncherStrategy implements IAutoLauncherStrategy {
     /** {@inheritDoc} */
     @Override
     public void openNotifications() {
-        String cmd = "cmd statusbar expand-notifications";
-        mCommandsHelper.executeShellCommand(cmd);
+        openNotificationFacet();
     }
 
     /** {@inheritDoc} */
     @Override
     public void pressHome() {
-        String cmd = "input keyevent KEYCODE_HOME";
-        mCommandsHelper.executeShellCommand(cmd);
+        openHomeFacet();
     }
 
     /** {@inheritDoc} */
@@ -350,6 +358,12 @@ public class AutoLauncherStrategy implements IAutoLauncherStrategy {
         } else {
             throw new RuntimeException(String.format("Application %s not found", appName));
         }
+    }
+
+    @Override
+    public void openGooglePlayStore() {
+        openApp("Play Store");
+        SystemClock.sleep(APP_LAUNCH_TIMEOUT);
     }
 
     private UiObject2 findApplication(String appName) {

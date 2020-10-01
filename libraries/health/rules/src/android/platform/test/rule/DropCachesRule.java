@@ -15,27 +15,28 @@
  */
 package android.platform.test.rule;
 
-import android.support.test.uiautomator.UiDevice;
+import android.os.SystemClock;
+import android.util.Log;
 import androidx.annotation.VisibleForTesting;
 import androidx.test.platform.app.InstrumentationRegistry;
-import org.junit.runner.Description;
 
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
-import android.os.SystemClock;
-import android.util.Log;
+import org.junit.runner.Description;
 
 /**
  * This rule will drop caches before running each test method.
  */
 public class DropCachesRule extends TestWatcher {
+
     private static final String LOG_TAG = DropCachesRule.class.getSimpleName();
 
     @VisibleForTesting static final String KEY_DROP_CACHE = "drop-cache";
-    private static boolean mDropCache = true;
+
+    private String mDropCacheScriptPath;
 
     /**
      * Shell equivalent of $(echo 3 > /proc/sys/vm/drop_caches)
@@ -43,26 +44,30 @@ public class DropCachesRule extends TestWatcher {
      * Clears out the system pagecache for files and inodes metadata.
      */
     public static void executeDropCaches() {
+        new DropCachesRule().executeDropCachesImpl();
+    }
+
+    private void executeDropCachesImpl() {
         // Create a temporary file which contains the dropCaches command.
         // Do this because we cannot write to /proc/sys/vm/drop_caches directly,
         // as executeShellCommand parses the '>' character as a literal.
         try {
             File outputDir =
                     InstrumentationRegistry.getInstrumentation().getContext().getCacheDir();
-            File outputFile = File.createTempFile("drop_cache_script", "sh", outputDir);
+            File outputFile = File.createTempFile("drop_cache_script", ".sh", outputDir);
             outputFile.setWritable(true);
             outputFile.setExecutable(true, /*ownersOnly*/false);
 
-            String outputFilePath = outputFile.toString();
+            mDropCacheScriptPath = outputFile.toString();
 
             // If this works correctly, the next log-line will print 'Success'.
             String str = "echo 3 > /proc/sys/vm/drop_caches && echo Success || echo Failure";
-            BufferedWriter writer = new BufferedWriter(new FileWriter(outputFilePath));
+            BufferedWriter writer = new BufferedWriter(new FileWriter(mDropCacheScriptPath));
             writer.write(str);
             writer.close();
 
-            UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
-            String result = device.executeShellCommand(outputFilePath);
+            String result = executeShellCommand(mDropCacheScriptPath);
+            // TODO: automatically report the output of shell commands to logcat?
             Log.v(LOG_TAG, "dropCaches output was: " + result);
             outputFile.delete();
         } catch (IOException e) {
@@ -72,14 +77,18 @@ public class DropCachesRule extends TestWatcher {
 
     @Override
     protected void starting(Description description) {
-        // Identify the filter option to use.
-        mDropCache = Boolean.parseBoolean(getArguments().getString(KEY_DROP_CACHE, "true"));
-        if (mDropCache == false) {
+        boolean dropCache = Boolean.parseBoolean(getArguments().getString(KEY_DROP_CACHE, "true"));
+        if (!dropCache) {
             return;
         }
 
-        executeDropCaches();
+        executeDropCachesImpl();
         // TODO: b/117868612 to identify the root cause for additional wait.
         SystemClock.sleep(3000);
+    }
+
+    @VisibleForTesting
+    protected String getDropCacheScriptPath() {
+        return mDropCacheScriptPath;
     }
 }

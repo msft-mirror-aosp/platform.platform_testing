@@ -22,6 +22,7 @@ import android.support.test.uiautomator.BySelector;
 import android.support.test.uiautomator.UiDevice;
 import android.support.test.uiautomator.UiObject2;
 import android.support.test.uiautomator.Until;
+import android.system.helpers.CommandsHelper;
 
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -59,6 +60,7 @@ public class VolvoLauncherStrategy extends AutoLauncherStrategy {
 
     protected UiDevice mDevice;
     private Instrumentation mInstrumentation;
+    private CommandsHelper mCommandsHelper;
 
     @Override
     public String getSupportedLauncherPackage() {
@@ -74,6 +76,7 @@ public class VolvoLauncherStrategy extends AutoLauncherStrategy {
     public void setInstrumentation(Instrumentation instrumentation) {
         super.setInstrumentation(instrumentation);
         mInstrumentation = instrumentation;
+        mCommandsHelper = CommandsHelper.getInstance(mInstrumentation);
     }
 
     @Override
@@ -97,6 +100,17 @@ public class VolvoLauncherStrategy extends AutoLauncherStrategy {
         } else {
             throw new RuntimeException(String.format("Application %s not found", appName));
         }
+    }
+
+    @Override
+    public void openGooglePlayStore() {
+        mDevice.pressHome();
+        mDevice.waitForIdle();
+        mCommandsHelper.executeShellCommand(
+                "am start -a android.intent.action.MAIN "
+                        + "-c android.intent.category.LAUNCHER "
+                        + "-n com.android.vending/"
+                        + "com.google.android.finsky.carmainactivity.MainActivity");
     }
 
     @Override
@@ -150,5 +164,19 @@ public class VolvoLauncherStrategy extends AutoLauncherStrategy {
     private UiObject2 findApplication(String appName) {
         BySelector appSelector = By.clickable(true).hasDescendant(By.text(appName));
         return mDevice.findObject(appSelector);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void openNotifications() {
+        String cmd = "cmd statusbar expand-notifications";
+        mCommandsHelper.executeShellCommand(cmd);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void pressHome() {
+        String cmd = "input keyevent KEYCODE_HOME";
+        mCommandsHelper.executeShellCommand(cmd);
     }
 }

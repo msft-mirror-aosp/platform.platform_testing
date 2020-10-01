@@ -17,11 +17,12 @@ package com.android.helpers;
 
 import android.app.KeyguardManager;
 import android.content.Context;
-import android.os.SystemClock;
 import android.hardware.display.DisplayManager;
-import android.support.test.uiautomator.UiDevice;
+import android.os.SystemClock;
 import android.view.Display;
+
 import androidx.test.InstrumentationRegistry;
+import androidx.test.uiautomator.UiDevice;
 
 import java.io.IOException;
 

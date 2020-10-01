@@ -19,8 +19,15 @@ package com.android.helpers;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 
-import android.support.test.uiautomator.UiDevice;
 import androidx.test.runner.AndroidJUnit4;
+import androidx.test.uiautomator.UiDevice;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -29,13 +36,6 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
 
 /** Android Unit tests for {@link BinderCollectionHelper}. */
 @RunWith(AndroidJUnit4.class)

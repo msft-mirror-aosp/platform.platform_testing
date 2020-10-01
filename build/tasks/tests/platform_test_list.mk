@@ -1,5 +1,8 @@
 platform_tests += \
     ActivityManagerPerfTests \
+    ActivityManagerPerfTestsStubApp1 \
+    ActivityManagerPerfTestsStubApp2 \
+    ActivityManagerPerfTestsStubApp3 \
     ActivityManagerPerfTestsTestApp \
     AndroidTVJankTests \
     ApiDemos \
@@ -8,7 +11,6 @@ platform_tests += \
     AppLaunchWear \
     AppLinkFunctionalTests \
     AppLinkTestApp \
-    AppSmoke \
     AppTransitionTests \
     AutoLocTestApp \
     AutoLocVersionedTestApp_v1 \
@@ -35,7 +37,7 @@ platform_tests += \
     DynamicCodeLoggerIntegrationTests \
     DialerJankTests \
     DownloadManagerTestApp \
-    DummyIME \
+    StubIME \
     ExternalLocAllPermsTestApp \
     ExternalLocTestApp \
     ExternalLocVersionedTestApp_v1 \
@@ -53,8 +55,8 @@ platform_tests += \
     FrameworksUtilTests \
     InternalLocTestApp \
     JankMicroBenchmarkTests \
+    LauncherIconsApp \
     long_trace_config.textproto \
-    LauncherRotationStressTest \
     MemoryUsage \
     MultiDexLegacyTestApp \
     MultiDexLegacyTestApp2 \
@@ -83,6 +85,7 @@ platform_tests += \
     PlatformCommonScenarioTests \
     PowerPerfTest \
     SettingsUITests \
+    SimpleServiceTestApp \
     SimpleTestApp \
     skia_dm \
     skia_nanobench \

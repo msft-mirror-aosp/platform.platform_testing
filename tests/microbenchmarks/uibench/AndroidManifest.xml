@@ -20,6 +20,7 @@
     <uses-permission android:name="android.permission.REAL_GET_TASKS" />
     <uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS" />
 
+    <uses-sdk android:targetSdkVersion="28" />
     <application>
         <uses-library android:name="android.test.runner" />
     </application>

@@ -26,6 +26,7 @@ import java.nio.file.Path;
 public class LayersTraceMonitor extends TraceMonitor {
     private static final String TRACE_FILE = "layers_trace.pb";
     private IWindowManager mWm = WindowManagerGlobal.getWindowManagerService();
+    private static final int TRACE_FLAGS = 0x7; // TRACE_CRITICAL|TRACE_INPUT|TRACE_COMPOSITION
 
     public LayersTraceMonitor() {
         this(OUTPUT_DIR);
@@ -37,6 +38,11 @@ public class LayersTraceMonitor extends TraceMonitor {
 
     @Override
     public void start() {
+        try {
+            mWm.setLayerTracingFlags(TRACE_FLAGS);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
         setEnabled(true);
     }
 

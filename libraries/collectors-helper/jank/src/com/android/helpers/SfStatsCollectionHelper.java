@@ -17,10 +17,12 @@ package com.android.helpers;
 
 import static com.android.helpers.MetricUtility.constructKey;
 
-import android.support.test.uiautomator.UiDevice;
 import android.util.Log;
+
 import androidx.annotation.VisibleForTesting;
 import androidx.test.InstrumentationRegistry;
+import androidx.test.uiautomator.UiDevice;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;

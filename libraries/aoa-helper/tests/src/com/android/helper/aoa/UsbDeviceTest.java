@@ -49,7 +49,7 @@ public class UsbDeviceTest {
 
     @Before
     public void setUp() {
-        // create dummy device handle
+        // create a no-op device handle
         mHandle = new Memory(1);
 
         mUsb = mock(IUsbNative.class);

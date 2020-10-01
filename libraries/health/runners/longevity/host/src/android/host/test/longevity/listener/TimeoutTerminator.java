@@ -15,18 +15,19 @@
  */
 package android.host.test.longevity.listener;
 
-import org.junit.runner.Description;
-import org.junit.runner.notification.RunNotifier;
+import static java.util.concurrent.TimeUnit.MINUTES;
 
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
+
+import org.junit.runner.Description;
+import org.junit.runner.notification.RunNotifier;
 
 /**
  * A {@link RunTerminator} for terminating early on test end due to long duration for host suites.
  */
 public class TimeoutTerminator extends RunTerminator {
     public static final String OPTION = "suite-timeout_msec";
-    protected static final long DEFAULT = TimeUnit.MINUTES.toMillis(30L);
+    protected static final long DEFAULT = MINUTES.toMillis(30L);
     protected static final long UNSET_TIMESTAMP = -1;
 
     protected long mStartTimestamp = UNSET_TIMESTAMP;

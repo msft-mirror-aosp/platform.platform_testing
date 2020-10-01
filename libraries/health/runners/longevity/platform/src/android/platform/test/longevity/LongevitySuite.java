@@ -31,10 +31,11 @@ import androidx.annotation.VisibleForTesting;
 import androidx.test.InstrumentationRegistry;
 
 import java.lang.reflect.Field;
-import java.util.function.BiFunction;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiFunction;
 
 import org.junit.internal.runners.ErrorReportingRunner;
 import org.junit.runner.Description;
@@ -53,21 +54,20 @@ public class LongevitySuite extends android.host.test.longevity.LongevitySuite {
     private static final String LOG_TAG = LongevitySuite.class.getSimpleName();
 
     public static final String RENAME_ITERATION_OPTION = "rename-iterations";
-    private boolean mRenameIterations;
+    private final boolean mRenameIterations;
 
-    private Instrumentation mInstrumentation;
     private Context mContext;
 
     // Cached {@link TimeoutTerminator} instance.
     private TimeoutTerminator mTimeoutTerminator;
 
-    private Map<Description, Integer> mIterations = new HashMap<>();
+    private final Map<Description, Integer> mIterations = new HashMap<>();
 
     /**
      * Takes a {@link Bundle} and maps all String K/V pairs into a {@link Map<String, String>}.
      *
      * @param bundle the input arguments to return in a {@link Map}
-     * @return Map<String, String> all String-to-String key, value pairs in the {@link Bundle}
+     * @return a {@code Map<String, String>} of all key, value pairs in {@code bundle}.
      */
     protected static final Map<String, String> toMap(Bundle bundle) {
         Map<String, String> result = new HashMap<>();
@@ -87,42 +87,58 @@ public class LongevitySuite extends android.host.test.longevity.LongevitySuite {
      */
     public LongevitySuite(Class<?> klass, RunnerBuilder builder)
             throws InitializationError {
-        this(klass, builder, InstrumentationRegistry.getInstrumentation(),
-                InstrumentationRegistry.getContext(), InstrumentationRegistry.getArguments());
+        this(
+                klass,
+                builder,
+                new ArrayList<Runner>(),
+                InstrumentationRegistry.getInstrumentation(),
+                InstrumentationRegistry.getContext(),
+                InstrumentationRegistry.getArguments());
+    }
+
+    /** Used to dynamically pass in test classes to run as part of the suite in subclasses. */
+    public LongevitySuite(Class<?> klass, RunnerBuilder builder, List<Runner> additional)
+            throws InitializationError {
+        this(
+                klass,
+                builder,
+                additional,
+                InstrumentationRegistry.getInstrumentation(),
+                InstrumentationRegistry.getContext(),
+                InstrumentationRegistry.getArguments());
     }
 
     /**
-     * Enables subclasses, e.g.{@link ProfileSuite}, to constuct a suite using its own list of
+     * Enables subclasses, e.g.{@link ProfileSuite}, to construct a suite using its own list of
      * Runners.
      */
     protected LongevitySuite(Class<?> klass, List<Runner> runners, Bundle args)
             throws InitializationError {
         super(klass, runners, toMap(args));
-        mInstrumentation = InstrumentationRegistry.getInstrumentation();
         mContext = InstrumentationRegistry.getContext();
 
         // Parse out additional options.
-        mRenameIterations = Boolean.valueOf(args.getString(RENAME_ITERATION_OPTION));
+        mRenameIterations = Boolean.parseBoolean(args.getString(RENAME_ITERATION_OPTION));
     }
 
-    /**
-     * Used to pass in mock-able Android features for testing.
-     */
+    /** Used to pass in mock-able Android features for testing. */
     @VisibleForTesting
-    public LongevitySuite(Class<?> klass, RunnerBuilder builder,
-            Instrumentation instrumentation, Context context, Bundle arguments)
+    public LongevitySuite(
+            Class<?> klass,
+            RunnerBuilder builder,
+            List<Runner> additional,
+            Instrumentation instrumentation,
+            Context context,
+            Bundle arguments)
             throws InitializationError {
-        this(klass, constructClassRunners(klass, builder, arguments), arguments);
+        this(klass, constructClassRunners(klass, additional, builder, arguments), arguments);
         // Overwrite instrumentation and context here with the passed-in objects.
-        mInstrumentation = instrumentation;
         mContext = context;
     }
 
-    /**
-     * Constructs the sequence of {@link Runner}s using platform composers.
-     */
+    /** Constructs the sequence of {@link Runner}s using platform composers. */
     private static List<Runner> constructClassRunners(
-                Class<?> suite, RunnerBuilder builder, Bundle args)
+            Class<?> suite, List<Runner> additional, RunnerBuilder builder, Bundle args)
             throws InitializationError {
         // TODO(b/118340229): Refactor to share logic with base class. In the meanwhile, keep the
         // logic here in sync with the base class.
@@ -153,10 +169,13 @@ public class LongevitySuite extends android.host.test.longevity.LongevitySuite {
                                 runner.getClass(), runner.getDescription().getDisplayName()));
             }
         }
-        // Construct and store custom runners for the full suite.
+        // Combine annotated runners and additional ones.
+        List<Runner> runners = builder.runners(suite, annotation.value());
+        runners.addAll(additional);
+        // Apply the modifiers to construct the full suite.
         BiFunction<Bundle, List<Runner>, List<Runner>> modifier =
                 new Iterate<Runner>().andThen(new Shuffle<Runner>());
-        return modifier.apply(args, builder.runners(suite, annotation.value()));
+        return modifier.apply(args, runners);
     }
 
     @Override
