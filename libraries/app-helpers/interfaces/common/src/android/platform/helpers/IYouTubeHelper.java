@@ -140,10 +140,25 @@ public interface IYouTubeHelper extends IAppHelper {
     public default void exitFullScreenMode() {
         throw new UnsupportedOperationException("Not yet implemented.");
     }
+
     /**
      * Setup expectation: YouTube is open on home page.
      *
      * <p>Scroll the home page by specified direction.
      */
     public void scrollHomePage(Direction direction);
+
+    /**
+     * Setup expectation: YouTube is open on home page.
+     *
+     * <p>Press home button to initiate PIP.
+     */
+    public void goToYouTubePip();
+
+    /**
+     * Setup expectation: YouTube is in PiP.
+     *
+     * <p>It presses YouTube PiP view twice to return to the main app.
+     */
+    public void backFromYouTubeFromPip();
 }
