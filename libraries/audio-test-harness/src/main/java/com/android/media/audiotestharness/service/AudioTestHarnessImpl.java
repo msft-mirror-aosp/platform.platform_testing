@@ -26,7 +26,13 @@ import io.grpc.stub.StreamObserver;
  * <p>Core service implementation for the Audio Test Harness that utilizes that Java Sound API to
  * expose audio devices connected to a host to client devices for capture and playback.
  */
-public class AudioTestHarnessImpl extends AudioTestHarnessGrpc.AudioTestHarnessImplBase {
+public final class AudioTestHarnessImpl extends AudioTestHarnessGrpc.AudioTestHarnessImplBase {
+
+    private AudioTestHarnessImpl() {}
+
+    public static AudioTestHarnessImpl create() {
+        return new AudioTestHarnessImpl();
+    }
 
     @Override
     public void capture(
