@@ -28,15 +28,15 @@ import com.google.common.truth.Truth
 /** Truth subject for [FocusEvent] objects.  */
 class EventLogSubject private constructor(
     failureMetadata: FailureMetadata,
-    subject: List<FocusEvent>
+    private val subject: List<FocusEvent>
 ) : Subject<EventLogSubject,
     List<FocusEvent>>(failureMetadata, subject),
     IRangedSubject<FocusEvent> {
     private val assertionsChecker = AssertionsChecker<FocusEvent>()
     private val _focusChanges by lazy {
         val focusList = mutableListOf<String>()
-        actual().firstOrNull { !it.hasFocus() }?.let { focusList.add(it.window) }
-        focusList + actual().filter { it.hasFocus() }.map { it.window }
+        subject.firstOrNull { !it.hasFocus() }?.let { focusList.add(it.window) }
+        focusList + subject.filter { it.hasFocus() }.map { it.window }
     }
 
     fun focusChanges(windows: Array<out String>) = apply {
@@ -100,9 +100,9 @@ class EventLogSubject private constructor(
      * Run the assertions.
      */
     private fun test() {
-        val failures = assertionsChecker.test(actual())
+        val failures = assertionsChecker.test(subject)
         if (failures.isNotEmpty()) {
-            fail(failures.joinToString("\n") { it.toString() })
+            failWithActual(failures.joinToString("\n") { it.toString() }, subject)
         }
     }
 }

@@ -45,13 +45,13 @@ public class LockContentionStressMode extends InstrumentationRunListener {
         final Context context = InstrumentationRegistry.getInstrumentation().getContext();
 
         final PackageManager pm = context.getPackageManager();
-        createLockContentionThread("PM Contention", pm::holdLock);
+        createLockContentionThread("Contention-PM", pm::holdLock);
 
         final WindowManager wm = context.getSystemService(WindowManager.class);
-        createLockContentionThread("WM Contention", wm::holdLock);
+        createLockContentionThread("Contention-WM", wm::holdLock);
 
-        final ActivityManager activityManager = context.getSystemService(ActivityManager.class);
-        createLockContentionThread("AM Contention", activityManager::holdLock);
+        final ActivityManager am = context.getSystemService(ActivityManager.class);
+        createLockContentionThread("Contention-AM", am::holdLock);
     }
 
     private void createLockContentionThread(String threadName, IntConsumer holdLockMethod) {

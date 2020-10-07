@@ -30,7 +30,7 @@ import java.nio.file.Paths
  */
 abstract class SubjectBase<Trace : ITrace<Entry>, Entry : ITraceEntry> protected constructor(
     fm: FailureMetadata,
-    subject: Trace
+    private val subject: Trace
 ) : Subject<SubjectBase<Trace, Entry>, Trace>(fm, subject), IRangedSubject<Entry> {
     protected val assertionsChecker = AssertionsChecker<Entry>()
     protected var newAssertion = true
@@ -63,9 +63,7 @@ abstract class SubjectBase<Trace : ITrace<Entry>, Entry : ITraceEntry> protected
      * Run the assertions only in the first trace entry
      */
     override fun inTheBeginning() {
-        if (actual().entries.isEmpty()) {
-            fail("No entries found.")
-        }
+        check("No entries found.").that(subject.entries).isNotEmpty()
         assertionsChecker.checkFirstEntry()
         test()
     }
@@ -74,9 +72,7 @@ abstract class SubjectBase<Trace : ITrace<Entry>, Entry : ITraceEntry> protected
      * Run the assertions only in the last  trace entry
      */
     override fun atTheEnd() {
-        if (actual().entries.isEmpty()) {
-            fail("No entries found.")
-        }
+        check("No entries found.").that(subject.entries).isNotEmpty()
         assertionsChecker.checkLastEntry()
         test()
     }
@@ -85,20 +81,20 @@ abstract class SubjectBase<Trace : ITrace<Entry>, Entry : ITraceEntry> protected
      * Run the assertions
      */
     private fun test() {
-        val failures = assertionsChecker.test(actual().entries)
+        val failures = assertionsChecker.test(subject.entries)
         if (failures.isNotEmpty()) {
             val failureLogs = failures.joinToString("\n") { it.toString() }
             var tracePath = ""
-            if (actual().hasSource()) {
-                val failureTracePath = Paths.get(actual().source)
+            if (subject.hasSource()) {
+                val failureTracePath = Paths.get(subject.source)
                 tracePath = """
 
                     $traceName Trace can be found in: ${failureTracePath.toAbsolutePath()}
-                    Checksum: ${actual().sourceChecksum}
+                    Checksum: ${subject.sourceChecksum}
 
                     """.trimIndent()
             }
-            fail(tracePath + "\n" + failureLogs)
+            failWithActual(tracePath + "\n" + failureLogs, subject)
         }
     }
 

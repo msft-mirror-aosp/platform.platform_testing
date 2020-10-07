@@ -62,7 +62,7 @@ class WmTraceSubject private constructor(
      */
     fun skipUntilFirstAssertion() = apply { assertionsChecker.skipUntilFirstAssertion() }
 
-    fun failWithMessage(message: String) = apply { fail(message) }
+    fun failWithMessage(message: String) = apply { failWithActual(message, trace) }
 
     /**
      * Checks if the non-app window with title containing [partialWindowTitle] exists above the app
@@ -259,7 +259,8 @@ class WmTraceSubject private constructor(
         /**
          * Boiler-plate Subject.Factory for WmTraceSubject
          */
-        private val FACTORY = Factory { fm: FailureMetadata, subject: WindowManagerTrace ->
+        private val FACTORY: Factory<SubjectBase<WindowManagerTrace, WindowManagerTraceEntry>,
+            WindowManagerTrace> = Factory { fm: FailureMetadata, subject: WindowManagerTrace ->
             WmTraceSubject(fm, subject)
         }
 

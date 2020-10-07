@@ -61,7 +61,7 @@ class LayersTraceSubject private constructor(
      */
     fun skipUntilFirstAssertion() = apply { assertionsChecker.skipUntilFirstAssertion() }
 
-    fun failWithMessage(message: String) = apply { fail(message) }
+    fun failWithMessage(message: String) = apply { failWithActual(message, trace) }
 
     /**
      * @return LayerSubject that can be used to make assertions on a single layer matching
@@ -77,16 +77,16 @@ class LayersTraceSubject private constructor(
     }
 
     private fun test() {
-        val failures = assertionsChecker.test(actual().entries)
+        val failures = assertionsChecker.test(trace.entries)
         if (failures.isNotEmpty()) {
             val failureLogs = failures.joinToString("\n")
             var tracePath = ""
-            if (actual().hasSource()) {
+            if (trace.hasSource()) {
                 tracePath = "Layers Trace can be found in: " +
-                        actual().source +
-                        "\nChecksum: " + actual().sourceChecksum + "\n"
+                        trace.source +
+                        "\nChecksum: " + trace.sourceChecksum + "\n"
             }
-            fail(tracePath + failureLogs)
+            failWithActual(tracePath + failureLogs, trace)
         }
     }
 
@@ -143,9 +143,8 @@ class LayersTraceSubject private constructor(
         /**
          * Boiler-plate Subject.Factory for LayersTraceSubject
          */
-        private val FACTORY = Factory { fm: FailureMetadata, subject: LayersTrace ->
-            LayersTraceSubject(fm, subject)
-        }
+        private val FACTORY: Factory<SubjectBase<LayersTrace, LayerTraceEntry>, LayersTrace> =
+        Factory { fm: FailureMetadata, subject: LayersTrace -> LayersTraceSubject(fm, subject) }
 
         /**
          * User-defined entry point
