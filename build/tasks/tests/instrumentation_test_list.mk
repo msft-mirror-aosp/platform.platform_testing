@@ -75,6 +75,8 @@ instrumentation_tests := \
     FrameworksNetSmokeTests \
     FlickerTests \
     FlickerTestApp \
+    WMShellFlickerTests \
+    WMShellFlickerTestApp \
     WMShellUnitTests \
     trace_config_detailed.textproto \
     perfetto_trace_processor_shell

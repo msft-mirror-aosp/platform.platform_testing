@@ -75,7 +75,11 @@ public class LockContentionStressMode extends InstrumentationRunListener {
             while (mLeaveStress.getNumberWaiting() == 0) {
                 SystemClock.sleep(PAUSE_BETWEEN_ATTEMPTS_MS);
                 if (Math.random() < PROBABILITY_OF_HOLDING_LOCK) {
-                    holdLockMethod.accept((int) (Math.random() * MAX_HOLDING_LOCK_TIME));
+                    try {
+                        holdLockMethod.accept((int) (Math.random() * MAX_HOLDING_LOCK_TIME));
+                    } catch (SecurityException e) {
+                        Log.i(TAG, "holdLock failed", e);
+                    }
                 }
             }
 
