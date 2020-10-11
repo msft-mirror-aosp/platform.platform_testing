@@ -36,6 +36,7 @@ public interface INotificationHelper extends IAppHelper {
             + "lorem ipsum dolor sit amet";
     String NOTIFICATION_CHANNEL_NAME = "Test Channel";
     String EXPAND_BUTTON_ID = "expand_button";
+    String BUBBLE_BUTTON = "bubble_button";
     String APP_ICON_ID = "icon";
 
     /**
@@ -92,6 +93,28 @@ public interface INotificationHelper extends IAppHelper {
      * @param pkg App to launch, when clicking on notification.
      */
     default UiObject2 postMessagingStyleNotification(String pkg) {
+        throw new UnsupportedOperationException("Not yet implemented.");
+    }
+
+    /**
+     * Setup Expectations: Shade is open
+     *
+     * <p>Posts a bubble notification. This notification is associated with a conversation
+     * shortcut, a BubbleMetadata,  and in {@link android.app.Notification.MessagingStyle}.
+     *
+     * @param senderName Name of notification sender.
+     * @param count How many bubble notifications to send.
+     */
+    default void postBubbleNotification(String senderName, int count) {
+        throw new UnsupportedOperationException("Not yet implemented.");
+    }
+
+    /**
+     * Return notification if found by text.
+     *
+     * @param text Text that notification contains.
+     */
+    default UiObject2 getNotificationByText(String text) {
         throw new UnsupportedOperationException("Not yet implemented.");
     }
 

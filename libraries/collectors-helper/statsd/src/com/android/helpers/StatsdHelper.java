@@ -175,7 +175,8 @@ public class StatsdHelper {
                 .addDefaultPullPackages("AID_SYSTEM")
                 .addDefaultPullPackages("AID_RADIO")
                 .addDefaultPullPackages("AID_STATSD")
-                .addDefaultPullPackages("AID_GPU_SERVICE");
+                .addDefaultPullPackages("AID_GPU_SERVICE")
+                .addWhitelistedAtomIds(Atom.UI_INTERACTION_FRAME_INFO_REPORTED_FIELD_NUMBER);
     }
 
     /**
