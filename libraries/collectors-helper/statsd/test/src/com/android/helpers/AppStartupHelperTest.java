@@ -68,6 +68,8 @@ public class AppStartupHelperTest {
             "cold_startup_process_start_total_count";
     private static final String WARM_LAUNCH_KEY_TEMPLATE = "warm_startup_%s";
     private static final String HOT_LAUNCH_KEY_TEMPLATE = "hot_startup_%s";
+    private static final String SOURCE_EVENT_DELAY_MILLIS_KEY_TEMPLATE =
+            "source_event_delay_millis_%s";
     // Keyword for keys to store the app startup fully drawn metric.
     private static final String FULLY_DRAWN_KEY_KEYWORD = "fully_drawn";
 
@@ -148,6 +150,14 @@ public class AppStartupHelperTest {
                 Integer.parseInt(appLaunchMetrics.get(
                         COLD_LAUNCH_PROCESS_START_TOTAL_COUNT_KEY_TEMPLATE)
                         .toString()));
+
+        // Verify source event metrics (see ActivityOptionsCompat#setLauncherSourceInfo).
+        String sourceEventDelayMetricKey = String.format(SOURCE_EVENT_DELAY_MILLIS_KEY_TEMPLATE,
+                CALENDAR_PKG_NAME);
+        assertTrue(appLaunchMetrics.keySet().contains(sourceEventDelayMetricKey));
+        assertEquals(1,
+                appLaunchMetrics.get(sourceEventDelayMetricKey).toString().split(",").length);
+
         assertTrue(mAppStartupHelper.stopCollecting());
         mHelper.get().exit();
     }

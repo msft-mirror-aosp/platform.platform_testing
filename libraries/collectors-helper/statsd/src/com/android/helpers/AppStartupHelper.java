@@ -55,6 +55,7 @@ public class AppStartupHelper implements ICollectorHelper<StringBuilder> {
     private static final String PROCESS_START = "process_start";
     private static final String PROCESS_START_DELAY = "process_start_delay";
     private static final String TRANSITION_DELAY_MILLIS = "transition_delay_millis";
+    private static final String SOURCE_EVENT_DELAY_MILLIS = "source_event_delay_millis";
     private boolean isProcStartDetailsDisabled;
 
     private StatsdHelper mStatsdHelper = new StatsdHelper();
@@ -131,6 +132,16 @@ public class AppStartupHelper implements ICollectorHelper<StringBuilder> {
                     MetricUtility.addMetric(metricTransitionKey, transitionDelayMillis,
                             appStartResultMap);
                 }
+                if (appStartAtom.hasSourceEventDelayMillis()) {
+                    int sourceEventDelayMillis = appStartAtom.getSourceEventDelayMillis();
+                    Log.i(LOG_TAG, String.format("Pkg Name: %s, SourceEventDelayMillis: %d",
+                            pkgName, sourceEventDelayMillis));
+
+                    String metricEventDelayKey = MetricUtility.constructKey(
+                            SOURCE_EVENT_DELAY_MILLIS, pkgName);
+                    MetricUtility.addMetric(metricEventDelayKey, sourceEventDelayMillis,
+                            appStartResultMap);
+                }
             }
             if (atom.hasAppStartFullyDrawn()) {
                 AppStartFullyDrawn appFullyDrawnAtom = atom.getAppStartFullyDrawn();
@@ -166,7 +177,7 @@ public class AppStartupHelper implements ICollectorHelper<StringBuilder> {
                 // Number of milliseconds it takes to finish start of the process.
                 long processStartDelayMillis = processStartTimeAtom.getProcessStartDelayMillis();
                 // Treating activity hosting type as foreground and everything else as background.
-                String hostingType = processStartTimeAtom.getHostingType().equals("activity")
+                String hostingType = processStartTimeAtom.getHostingType().contains("activity")
                         ? "fg" : "bg";
                 Log.i(LOG_TAG, String.format("Process Name: %s, Start Type: %s, Hosting Type: %s,"
                         + " ProcessStartDelayMillis: %d", processName,
