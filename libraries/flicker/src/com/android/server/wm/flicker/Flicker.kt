@@ -19,6 +19,7 @@ package com.android.server.wm.flicker
 import android.app.Instrumentation
 import android.support.test.launcherhelper.ILauncherStrategy
 import android.util.Log
+import androidx.annotation.VisibleForTesting
 import androidx.test.uiautomator.UiDevice
 import com.android.server.wm.flicker.assertions.FlickerAssertionError
 import com.android.server.wm.flicker.dsl.AssertionTag
@@ -92,15 +93,19 @@ data class Flicker(
 ) {
     private val results = mutableListOf<FlickerRunResult>()
     private val tags = AssertionTag.DEFAULT.map { it.tag }.toMutableSet()
+    @VisibleForTesting
+    var error: Throwable? = null
+        private set
 
     /**
      * Iteration identifier during test run
      */
-    var iteration = 0
-        private set
+    private var iteration = 0
 
     /**
-     * Executes the test. The commands are executed in the following order:
+     * Executes the test.
+     *
+     * The commands are executed in the following order:
      * 1) [setup] ([TestCommands.testCommands])
      * 2) [setup] ([TestCommands.runCommands])
      * 3) Start monitors
@@ -108,11 +113,20 @@ data class Flicker(
      * 5) Stop monitors
      * 6) [teardown] ([TestCommands.runCommands])
      * 7) [teardown] ([TestCommands.testCommands])
+     *
+     * If the tests were already executed, reuse the previous results
+     *
+     * @throws IllegalArgumentException If the transitions
      */
     fun execute() = apply {
         require(transitions.isNotEmpty()) { "A flicker test must include transitions to run" }
+        if (results.isNotEmpty()) {
+            Log.w(FLICKER_TAG, "Flicker test already executed. Reusing results.")
+            return this
+        }
         try {
             try {
+                error = null
                 setup.testCommands.forEach { it.invoke(this) }
                 for (iteration in 0 until repetitions) {
                     this.iteration = iteration
@@ -137,6 +151,7 @@ data class Flicker(
                 teardown.testCommands.forEach { it.invoke(this) }
             }
         } catch (e: Throwable) {
+            error = e
             throw RuntimeException(e)
         }
     }
@@ -150,13 +165,19 @@ data class Flicker(
     }
 
     @Deprecated("Prefer checkAssertions", replaceWith = ReplaceWith("checkAssertions"))
-    fun makeAssertions() = checkAssertions()
+    fun makeAssertions() = checkAssertions(includeFlakyAssertions = false)
 
     /**
      * Run the assertions on the trace
+     *
+     * @param includeFlakyAssertions If true, checks the flaky assertion
+     * @throws AssertionError If the assertions fail or the transition crashed
      */
-    fun checkAssertions() {
-        val failures = results.flatMap { assertions.checkAssertions(it) }
+    @JvmOverloads
+    fun checkAssertions(includeFlakyAssertions: Boolean = false) {
+        Truth.assertWithMessage(error?.message).that(error).isNull()
+        Truth.assertWithMessage("Transition was not executed").that(results).isNotEmpty()
+        val failures = results.flatMap { assertions.checkAssertions(it, includeFlakyAssertions) }
         this.cleanUp(failures)
         val failureMessage = failures.joinToString("\n") { it.message }
         Truth.assertWithMessage(failureMessage).that(failureMessage.isEmpty()).isTrue()
@@ -234,5 +255,9 @@ data class Flicker(
                 Log.e(FLICKER_TAG, "Unable to stop $this")
             }
         }
+    }
+
+    override fun toString(): String {
+        return this.testName
     }
 }

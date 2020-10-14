@@ -126,4 +126,23 @@ class FlickerDSLTest {
                 .contains("A flicker test must include transitions to run")
         }
     }
+
+    @Test
+    fun detectCrashedTransition() {
+        val exceptionMessage = "Crashed transition"
+        val builder = FlickerBuilder(instrumentation)
+        builder.transitions { throw RuntimeException("Crashed transition") }
+        val flicker = builder.build()
+        try {
+            flicker.execute()
+            Assert.fail("Should have raised an exception with message $exceptionMessage")
+        } catch (e: Exception) {
+            Truth.assertWithMessage("The test did not store the last exception")
+                    .that(flicker.error?.message)
+                    .contains(exceptionMessage)
+            Truth.assertWithMessage("Test exception does not contain original crash message")
+                    .that(e.message)
+                    .contains(exceptionMessage)
+        }
+    }
 }

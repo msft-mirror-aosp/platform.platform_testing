@@ -103,8 +103,8 @@ open class WindowManagerTraceEntry(val rootWindow: WindowContainer, override val
     }
 
     /**
-     * Checks if the non-app window with title containing [windowTitle] exists below the app windows
-     * and if its visibility is equal to [isVisible]
+     * Checks if the non-app window with title containing [windowTitle] exists below the app
+     * windows and if its visibility is equal to [isVisible]
      *
      * @param windowTitle window title to search
      * @param isVisible if the found window should be visible or not

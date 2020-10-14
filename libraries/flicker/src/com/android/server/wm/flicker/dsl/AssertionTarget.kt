@@ -92,10 +92,11 @@ class AssertionTarget private constructor(
             assertions: Assertions,
             run: FlickerRunResult,
             factory: () -> Subject,
-            failureFactory: (Throwable, AssertionData<out Subject>) -> FlickerAssertionError
+            failureFactory: (Throwable, AssertionData<out Subject>) -> FlickerAssertionError,
+            includeFlakyAssertions: Boolean
         ): List<FlickerAssertionError> {
         return assertions
-            .filter { it.enabled && it.tag == run.assertionTag }
+            .filter { (it.enabled || includeFlakyAssertions) && it.tag == run.assertionTag }
             .map { it to runCatching { it.assertion(factory()) } }
             .filter { it.second.isFailure }
             .map {
@@ -109,9 +110,13 @@ class AssertionTarget private constructor(
      * Run the assertions on a flicker test run
      *
      * @param run Results of a flicker test run
+     * @param includeFlakyAssertions Include flaky assertions
      * @return List of failures
      */
-    fun checkAssertions(run: FlickerRunResult): List<FlickerAssertionError> {
+    fun checkAssertions(
+        run: FlickerRunResult,
+        includeFlakyAssertions: Boolean
+    ): List<FlickerAssertionError> {
         val failures = mutableListOf<FlickerAssertionError>()
         run.wmTrace?.let {
             failures.addAll(this.checkAssertions(
@@ -120,7 +125,8 @@ class AssertionTarget private constructor(
                 { WmTraceSubject.assertThat(it) },
                 { error, assertion ->
                     FlickerAssertionError(error, assertion, run, run.wmTraceFile)
-                }
+                },
+                includeFlakyAssertions
             ))
         }
 
@@ -131,13 +137,15 @@ class AssertionTarget private constructor(
                 { LayersTraceSubject.assertThat(it) },
                 { error, assertion ->
                     FlickerAssertionError(error, assertion, run, run.layersTraceFile)
-                }
+                },
+                includeFlakyAssertions
             ))
         }
 
         failures.addAll(this.checkAssertions(eventLogAssertions, run,
-                { EventLogSubject.assertThat(run) },
-                { error, assertion -> FlickerAssertionError(error, assertion, run, trace = null) }
+            { EventLogSubject.assertThat(run) },
+            { error, assertion -> FlickerAssertionError(error, assertion, run, trace = null) },
+            includeFlakyAssertions
         ))
 
         return failures
