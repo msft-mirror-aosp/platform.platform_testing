@@ -103,25 +103,31 @@ public class StatsdHelper {
         int appBreadCrumbUniqueId = getUniqueId();
 
         // Needed for collecting gauge metric based on trigger events.
-        statsConfigBuilder.addAtomMatcher(getSimpleAtomMatcher(appBreadCrumbUniqueId,
-                Atom.APP_BREADCRUMB_REPORTED_FIELD_NUMBER));
-        statsConfigBuilder.addWhitelistedAtomIds(Atom.APP_BREADCRUMB_REPORTED_FIELD_NUMBER);
+        statsConfigBuilder
+                .addAtomMatcher(
+                        getSimpleAtomMatcher(
+                                appBreadCrumbUniqueId, Atom.APP_BREADCRUMB_REPORTED_FIELD_NUMBER))
+                .addWhitelistedAtomIds(Atom.APP_BREADCRUMB_REPORTED_FIELD_NUMBER);
 
         for (Integer atomId : atomIdList) {
             int atomUniqueId = getUniqueId();
             // Build Gauge metric config.
-            GaugeMetric.Builder gaugeMetric = GaugeMetric.newBuilder()
-                    .setId(getUniqueId())
-                    .setWhat(atomUniqueId)
-                    .setGaugeFieldsFilter(FieldFilter.newBuilder().setIncludeAll(true).build())
-                    .setMaxNumGaugeAtomsPerBucket(MAX_ATOMS)
-                    .setSamplingType(GaugeMetric.SamplingType.FIRST_N_SAMPLES)
-                    .setTriggerEvent(appBreadCrumbUniqueId)
-                    .setBucket(TimeUnit.CTS);
+            GaugeMetric gaugeMetric =
+                    GaugeMetric.newBuilder()
+                            .setId(getUniqueId())
+                            .setWhat(atomUniqueId)
+                            .setGaugeFieldsFilter(
+                                    FieldFilter.newBuilder().setIncludeAll(true).build())
+                            .setMaxNumGaugeAtomsPerBucket(MAX_ATOMS)
+                            .setSamplingType(GaugeMetric.SamplingType.FIRST_N_SAMPLES)
+                            .setTriggerEvent(appBreadCrumbUniqueId)
+                            .setBucket(TimeUnit.CTS)
+                            .build();
 
             // add the gauge config.
-            statsConfigBuilder.addAtomMatcher(getSimpleAtomMatcher(atomUniqueId, atomId))
-                    .addGaugeMetric(gaugeMetric.build());
+            statsConfigBuilder
+                    .addAtomMatcher(getSimpleAtomMatcher(atomUniqueId, atomId))
+                    .addGaugeMetric(gaugeMetric);
         }
 
         try {
@@ -145,11 +151,10 @@ public class StatsdHelper {
     /**
      * Create simple atom matcher with the given id and the field id.
      *
-     * @param id
-     * @param fieldId
-     * @return
+     * @param id a unique identifier for this {@code AtomMatcher}.
+     * @param fieldId the field id of the atom to match.
      */
-    private AtomMatcher.Builder getSimpleAtomMatcher(int id, int fieldId) {
+    private static AtomMatcher.Builder getSimpleAtomMatcher(int id, int fieldId) {
         return AtomMatcher.newBuilder()
                 .setId(id)
                 .setSimpleAtomMatcher(SimpleAtomMatcher.newBuilder()
@@ -157,10 +162,9 @@ public class StatsdHelper {
     }
 
     /**
-     * List of authorized source that can write the information into statsd.
+     * Create a statsd config with the list of authorized source that can write metrics.
      *
      * @param configId unique id of the configuration tracked by StatsManager.
-     * @return
      */
     private static StatsdConfig.Builder getSimpleSources(long configId) {
         return StatsdConfig.newBuilder()
@@ -258,11 +262,7 @@ public class StatsdHelper {
         }
     }
 
-    /**
-     * StatsManager used to configure, collect and remove the statsd config.
-     *
-     * @return StatsManager
-     */
+    /** Gets {@code StatsManager}, used to configure, collect and remove the statsd configs. */
     private StatsManager getStatsManager() {
         if (mStatsManager == null) {
             mStatsManager = (StatsManager) InstrumentationRegistry.getTargetContext().
@@ -271,41 +271,30 @@ public class StatsdHelper {
         return mStatsManager;
     }
 
-    /**
-     * Returns the package name for the UID if it is available. Otherwise return null.
-     *
-     * @param uid
-     * @return
-     */
+    /** Returns the package name associated with this UID if available, or null otherwise. */
     public String getPackageName(int uid) {
         String pkgName = InstrumentationRegistry.getTargetContext().getPackageManager()
                 .getNameForUid(uid);
         // Remove the UID appended at the end of the package name.
         if (pkgName != null) {
-            String pkgNameSplit[] = pkgName.split(String.format("\\:%d", uid));
+            String[] pkgNameSplit = pkgName.split(String.format("\\:%d", uid));
             return pkgNameSplit[0];
         }
         return pkgName;
     }
 
-    /**
-     * Set the config id tracked in the statsd.
-     */
+    /** Sets the statsd config id currently tracked by this class. */
     private void setConfigId(long configId) {
         mConfigId = configId;
     }
 
-    /**
-     * Return the config id tracked in the statsd.
-     */
+    /** Returns the statsd config id currently tracked by this class. */
     private long getConfigId() {
         return mConfigId;
     }
 
-    /**
-     * Returns the unique id
-     */
-    private int getUniqueId() {
+    /** Returns a unique identifier using a {@code UUID}'s hashcode. */
+    private static int getUniqueId() {
         return UUID.randomUUID().hashCode();
     }
 

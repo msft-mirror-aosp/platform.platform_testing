@@ -21,6 +21,7 @@ system_app_crash com.google.android.gms.backup.component.D2dTransportService 314
 system_app_crash Unable\sto\sinstantiate\sapplication\sorg.chromium.chrome.browser.ChromeApplication 161275381
 system_app_crash com.google.android.as.*\s.*\s.*\s.*\s*.*act=android.net.wifi.STATE_CHANGE 161559360
 system_app_crash com.google.android.gms.persistent[\s\S]*cf_x86_phone[\s\S]*android.database.sqlite.SQLiteConnection.execute\(SQLiteConnection.java:707\) 160157377
+system_app_crash android.telephony.ims.ImsUtListener\sorg.codeaurora.ims.ImsUtListenerImpl.mListener 169101942
 system_app_native_crash com.google.android.providers.media.module 154416156
 system_app_native_crash HwBinder*.*com.android.bluetooth 155074413
 system_app_native_crash ReferenceQueueD*.*com.google.android.apps.safetyhub 162103095

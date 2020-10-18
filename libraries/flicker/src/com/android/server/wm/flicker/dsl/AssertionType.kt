@@ -53,9 +53,9 @@ data class AssertionType<Subject : IRangedSubject<Entry>, Entry>
         name: String = "",
         enabled: Boolean = true,
         bugId: Int = 0,
-        assertion: Subject.() -> Subject
+        assertion: Subject.() -> Any
     ) {
-        add(AssertionTag.START, name, enabled, bugId) { assertion().inTheBeginning() }
+        add(AssertionTag.START, name, enabled, bugId) { apply { assertion() }.inTheBeginning() }
     }
 
     /**
@@ -76,9 +76,9 @@ data class AssertionType<Subject : IRangedSubject<Entry>, Entry>
         name: String = "",
         enabled: Boolean = true,
         bugId: Int = 0,
-        assertion: Subject.() -> Subject
+        assertion: Subject.() -> Any
     ) {
-        add(AssertionTag.END, name, enabled, bugId) { assertion().atTheEnd() }
+        add(AssertionTag.END, name, enabled, bugId) { apply { assertion() }.atTheEnd() }
     }
 
     /**
@@ -99,9 +99,9 @@ data class AssertionType<Subject : IRangedSubject<Entry>, Entry>
         name: String = "",
         enabled: Boolean = true,
         bugId: Int = 0,
-        assertion: Subject.() -> Subject
+        assertion: Subject.() -> Any
     ) {
-        add(AssertionTag.ALL, name, enabled, bugId) { assertion().forAllEntries() }
+        add(AssertionTag.ALL, name, enabled, bugId) { apply { assertion() }.forAllEntries() }
     }
 
     /**
@@ -126,9 +126,9 @@ data class AssertionType<Subject : IRangedSubject<Entry>, Entry>
         name: String = "",
         enabled: Boolean = true,
         bugId: Int = 0,
-        assertion: Subject.() -> Subject
+        assertion: Subject.() -> Any
     ) {
-        add(AssertionTag(tag), name, enabled, bugId) { assertion().forAllEntries() }
+        add(AssertionTag(tag), name, enabled, bugId) { apply { assertion() }.forAllEntries() }
     }
 
     private fun add(
