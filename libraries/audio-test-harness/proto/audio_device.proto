@@ -14,21 +14,25 @@
  * limitations under the License.
  */
 
-package com.android.media.audiotestharness.service;
+syntax = "proto3";
 
-import static org.junit.Assert.assertNotNull;
+package media.audiotestharness.service;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+option java_package = "com.android.media.audiotestharness.proto";
 
-@RunWith(JUnit4.class)
-public class AudioTestHarnessImplTests {
+// Models an audio device within the Audio Test Harness service.
+message AudioDevice {
+  // Capabilities that an audio device can have.
+  enum Capability {
+    UNKNOWN = 0;
 
-    @Test
-    public void create_returnsNonNullInstance() throws Exception {
-        assertNotNull(AudioTestHarnessImpl.create());
-    }
+    // Indicates that a given device can capture audio.
+    CAPTURE = 1;
+  }
 
-    // TODO(b/168801581): Implement Tests for the Audio Test Harness Service Implementation.
+  // The name of the device.
+  string name = 1;
+
+  // The serial number of the device, if available.
+  string serial_number = 5;
 }
