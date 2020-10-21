@@ -36,5 +36,5 @@ instrumentation_metric_tests := \
     #DocumentsUIPerfTests
 
 ifneq ($(strip $(BOARD_PERFSETUP_SCRIPT)),)
-instrumentation_metric_tests += perf-setup.sh
+instrumentation_metric_tests += perf-setup
 endif

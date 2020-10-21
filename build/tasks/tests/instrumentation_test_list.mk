@@ -82,7 +82,7 @@ instrumentation_tests := \
     perfetto_trace_processor_shell
 
 ifneq ($(strip $(BOARD_PERFSETUP_SCRIPT)),)
-instrumentation_tests += perf-setup.sh
+instrumentation_tests += perf-setup
 endif
 
 # Storage Manager may not exist on device

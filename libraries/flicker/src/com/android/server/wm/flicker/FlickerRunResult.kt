@@ -56,16 +56,25 @@ class FlickerRunResult private constructor(
      */
     val eventLog: List<FocusEvent>,
     /**
+     * Parse a [WindowManagerTrace]
+     */
+    val parseWmTrace: (() -> WindowManagerTrace?)?,
+    /**
+     * Parse a [WindowManagerTrace]
+     */
+    val parseLayersTrace: (() -> LayersTrace?)?
+) {
+    /**
      * [WindowManagerTrace] that corresponds to [wmTraceFile], or null if the
      * path is invalid
      */
-    val wmTrace: WindowManagerTrace?,
+    val wmTrace: WindowManagerTrace? get() = parseWmTrace?.invoke()
     /**
      * [LayersTrace] that corresponds to [layersTrace], or null if the
      * path is invalid
      */
-    val layersTrace: LayersTrace?
-) {
+    val layersTrace: LayersTrace? get() = parseLayersTrace?.invoke()
+
     constructor(
         assertionTag: AssertionTag,
         iteration: Int,
@@ -80,13 +89,17 @@ class FlickerRunResult private constructor(
         layersTraceFile,
         screenRecording,
         eventLog,
-        wmTrace = wmTraceFile?.let {
-            val traceData = Files.readAllBytes(it)
-            WindowManagerTrace.parseFrom(traceData)
+        parseWmTrace = {
+            wmTraceFile?.let {
+                val traceData = Files.readAllBytes(it)
+                WindowManagerTrace.parseFrom(traceData)
+            }
         },
-        layersTrace = layersTraceFile?.let {
-            val traceData = Files.readAllBytes(it)
-            LayersTrace.parseFrom(traceData)
+        parseLayersTrace = {
+            layersTraceFile?.let {
+                val traceData = Files.readAllBytes(it)
+                LayersTrace.parseFrom(traceData)
+            }
         }
     )
 
@@ -104,8 +117,8 @@ class FlickerRunResult private constructor(
         layersTraceFile,
         screenRecording = null,
         eventLog = emptyList(),
-        wmTrace = wmTrace,
-        layersTrace = layersTrace
+        parseWmTrace = { wmTrace },
+        parseLayersTrace = { layersTrace }
     )
 
     private fun Path?.tryDelete() {

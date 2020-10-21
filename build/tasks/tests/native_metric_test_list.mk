@@ -32,5 +32,5 @@ native_metric_tests := \
     VibratorHalIntegrationBenchmark
 
 ifneq ($(strip $(BOARD_PERFSETUP_SCRIPT)),)
-native_metric_tests += perf-setup.sh
+native_metric_tests += perf-setup
 endif

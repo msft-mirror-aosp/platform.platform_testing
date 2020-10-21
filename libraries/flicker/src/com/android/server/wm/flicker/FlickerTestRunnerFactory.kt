@@ -18,6 +18,8 @@ package com.android.server.wm.flicker
 
 import android.app.Instrumentation
 import android.os.Bundle
+import android.support.test.launcherhelper.ILauncherStrategy
+import android.support.test.launcherhelper.LauncherStrategyFactory
 import android.view.Surface
 import com.android.server.wm.flicker.dsl.FlickerBuilder
 
@@ -29,7 +31,9 @@ import com.android.server.wm.flicker.dsl.FlickerBuilder
 class FlickerTestRunnerFactory @JvmOverloads constructor(
     private val instrumentation: Instrumentation,
     private val supportedRotations: List<Int> = listOf(Surface.ROTATION_0, Surface.ROTATION_90),
-    private val repetitions: Int = 1
+    private val repetitions: Int = 1,
+    private val launcherStrategy: ILauncherStrategy = LauncherStrategyFactory
+        .getInstance(instrumentation).launcherStrategy
 ) {
     /**
      * Creates multiple instances of the same test, running on different device orientations
@@ -46,7 +50,7 @@ class FlickerTestRunnerFactory @JvmOverloads constructor(
         testSpecification: FlickerBuilder.(Bundle) -> Any
     ): List<Array<Any>> {
         return deviceConfigurations.map {
-            val builder = FlickerBuilder(instrumentation)
+            val builder = FlickerBuilder(instrumentation, launcherStrategy)
             val flickerTests = builder.apply { testSpecification(it) }.build()
 
             flickerTests
@@ -69,7 +73,7 @@ class FlickerTestRunnerFactory @JvmOverloads constructor(
         testSpecification: FlickerBuilder.(Bundle) -> Any
     ): List<Array<Any>> {
         return deviceConfigurations.map {
-            val builder = FlickerBuilder(instrumentation)
+            val builder = FlickerBuilder(instrumentation, launcherStrategy)
             val flickerTests = builder.apply { testSpecification(it) }.build()
 
             flickerTests
