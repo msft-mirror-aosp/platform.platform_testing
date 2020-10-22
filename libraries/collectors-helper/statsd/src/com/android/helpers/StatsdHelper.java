@@ -16,31 +16,24 @@
 
 package com.android.helpers;
 
-import android.content.Context;
 import android.app.StatsManager;
 import android.app.StatsManager.StatsUnavailableException;
+import android.content.Context;
 import android.os.SystemClock;
 import android.util.Log;
 import android.util.StatsLog;
+
 import androidx.test.InstrumentationRegistry;
 
-import com.android.internal.os.StatsdConfigProto.AtomMatcher;
-import com.android.internal.os.StatsdConfigProto.EventMetric;
-import com.android.internal.os.StatsdConfigProto.FieldFilter;
-import com.android.internal.os.StatsdConfigProto.GaugeMetric;
-import com.android.internal.os.StatsdConfigProto.SimpleAtomMatcher;
-import com.android.internal.os.StatsdConfigProto.StatsdConfig;
-import com.android.internal.os.StatsdConfigProto.TimeUnit;
-import com.android.os.AtomsProto.Atom;
-import com.android.os.StatsLog.ConfigMetricsReport;
-import com.android.os.StatsLog.ConfigMetricsReportList;
-import com.android.os.StatsLog.EventMetricData;
-import com.android.os.StatsLog.GaugeMetricData;
-import com.android.os.StatsLog.StatsLogReport;
+import com.android.internal.os.nano.StatsdConfigProto;
+import com.android.os.nano.AtomsProto;
 
-import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.nano.CodedOutputByteBufferNano;
+import com.google.protobuf.nano.InvalidProtocolBufferNanoException;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -63,20 +56,22 @@ public class StatsdHelper {
      */
     public boolean addEventConfig(List<Integer> atomIdList) {
         long configId = System.currentTimeMillis();
-        StatsdConfig.Builder statsConfigBuilder = getSimpleSources(configId);
-
+        StatsdConfigProto.StatsdConfig config = new StatsdConfigProto.StatsdConfig();
+        List<StatsdConfigProto.EventMetric> metrics = new ArrayList<>(atomIdList.size());
+        List<StatsdConfigProto.AtomMatcher> atomMatchers = new ArrayList<>(atomIdList.size());
         for (Integer atomId : atomIdList) {
             int atomUniqueId = getUniqueId();
-            statsConfigBuilder
-                    .addEventMetric(
-                            EventMetric.newBuilder()
-                                    .setId(getUniqueId())
-                                    .setWhat(atomUniqueId))
-                    .addAtomMatcher(getSimpleAtomMatcher(atomUniqueId, atomId));
+            StatsdConfigProto.EventMetric metric = new StatsdConfigProto.EventMetric();
+            metric.id = getUniqueId();
+            metric.what = atomUniqueId;
+            metrics.add(metric);
+            atomMatchers.add(getSimpleAtomMatcher(atomUniqueId, atomId));
         }
+        config.eventMetric = metrics.toArray(new StatsdConfigProto.EventMetric[0]);
+        config.atomMatcher = atomMatchers.toArray(new StatsdConfigProto.AtomMatcher[0]);
         try {
             adoptShellIdentity();
-            getStatsManager().addConfig(configId, statsConfigBuilder.build().toByteArray());
+            getStatsManager().addConfig(configId, toByteArray(config));
             dropShellIdentity();
         } catch (Exception e) {
             Log.e(LOG_TAG, "Not able to setup the event config.", e);
@@ -99,41 +94,38 @@ public class StatsdHelper {
      */
     public boolean addGaugeConfig(List<Integer> atomIdList) {
         long configId = System.currentTimeMillis();
-        StatsdConfig.Builder statsConfigBuilder = getSimpleSources(configId);
+        StatsdConfigProto.StatsdConfig config = getSimpleSources(configId);
         int appBreadCrumbUniqueId = getUniqueId();
-
+        config.whitelistedAtomIds =
+                new int[] {AtomsProto.Atom.APP_BREADCRUMB_REPORTED_FIELD_NUMBER};
+        List<StatsdConfigProto.AtomMatcher> matchers = new ArrayList<>(atomIdList.size());
+        List<StatsdConfigProto.GaugeMetric> gaugeMetrics = new ArrayList<>();
         // Needed for collecting gauge metric based on trigger events.
-        statsConfigBuilder
-                .addAtomMatcher(
-                        getSimpleAtomMatcher(
-                                appBreadCrumbUniqueId, Atom.APP_BREADCRUMB_REPORTED_FIELD_NUMBER))
-                .addWhitelistedAtomIds(Atom.APP_BREADCRUMB_REPORTED_FIELD_NUMBER);
-
+        matchers.add(
+                getSimpleAtomMatcher(
+                        appBreadCrumbUniqueId,
+                        AtomsProto.Atom.APP_BREADCRUMB_REPORTED_FIELD_NUMBER));
         for (Integer atomId : atomIdList) {
             int atomUniqueId = getUniqueId();
             // Build Gauge metric config.
-            GaugeMetric gaugeMetric =
-                    GaugeMetric.newBuilder()
-                            .setId(getUniqueId())
-                            .setWhat(atomUniqueId)
-                            .setGaugeFieldsFilter(
-                                    FieldFilter.newBuilder().setIncludeAll(true).build())
-                            .setMaxNumGaugeAtomsPerBucket(MAX_ATOMS)
-                            .setSamplingType(GaugeMetric.SamplingType.FIRST_N_SAMPLES)
-                            .setTriggerEvent(appBreadCrumbUniqueId)
-                            .setBucket(TimeUnit.CTS)
-                            .build();
-
-            // add the gauge config.
-            statsConfigBuilder
-                    .addAtomMatcher(getSimpleAtomMatcher(atomUniqueId, atomId))
-                    .addGaugeMetric(gaugeMetric);
+            StatsdConfigProto.GaugeMetric gaugeMetric = new StatsdConfigProto.GaugeMetric();
+            gaugeMetric.id = getUniqueId();
+            gaugeMetric.what = atomUniqueId;
+            StatsdConfigProto.FieldFilter fieldFilter = new StatsdConfigProto.FieldFilter();
+            fieldFilter.includeAll = true;
+            gaugeMetric.gaugeFieldsFilter = fieldFilter;
+            gaugeMetric.maxNumGaugeAtomsPerBucket = MAX_ATOMS;
+            gaugeMetric.samplingType = StatsdConfigProto.GaugeMetric.FIRST_N_SAMPLES;
+            gaugeMetric.triggerEvent = appBreadCrumbUniqueId;
+            gaugeMetric.bucket = StatsdConfigProto.CTS;
+            matchers.add(getSimpleAtomMatcher(atomUniqueId, atomId));
+            gaugeMetrics.add(gaugeMetric);
         }
-
+        config.atomMatcher = matchers.toArray(new StatsdConfigProto.AtomMatcher[0]);
+        config.gaugeMetric = gaugeMetrics.toArray(new StatsdConfigProto.GaugeMetric[0]);
         try {
             adoptShellIdentity();
-            getStatsManager().addConfig(configId,
-                    statsConfigBuilder.build().toByteArray());
+            getStatsManager().addConfig(configId, toByteArray(config));
             StatsLog.logEvent(0);
             // Dump the counters before the test started.
             SystemClock.sleep(METRIC_DELAY_MS);
@@ -148,17 +140,15 @@ public class StatsdHelper {
         return true;
     }
 
-    /**
-     * Create simple atom matcher with the given id and the field id.
-     *
-     * @param id a unique identifier for this {@code AtomMatcher}.
-     * @param fieldId the field id of the atom to match.
-     */
-    private static AtomMatcher.Builder getSimpleAtomMatcher(int id, int fieldId) {
-        return AtomMatcher.newBuilder()
-                .setId(id)
-                .setSimpleAtomMatcher(SimpleAtomMatcher.newBuilder()
-                        .setAtomId(fieldId));
+    /** Create simple atom matcher with the given id and the field id. */
+    private StatsdConfigProto.AtomMatcher getSimpleAtomMatcher(int id, int fieldId) {
+        StatsdConfigProto.AtomMatcher atomMatcher = new StatsdConfigProto.AtomMatcher();
+        atomMatcher.id = id;
+        StatsdConfigProto.SimpleAtomMatcher simpleAtomMatcher =
+                new StatsdConfigProto.SimpleAtomMatcher();
+        simpleAtomMatcher.atomId = fieldId;
+        atomMatcher.setSimpleAtomMatcher(simpleAtomMatcher);
+        return atomMatcher;
     }
 
     /**
@@ -166,76 +156,81 @@ public class StatsdHelper {
      *
      * @param configId unique id of the configuration tracked by StatsManager.
      */
-    private static StatsdConfig.Builder getSimpleSources(long configId) {
-        return StatsdConfig.newBuilder()
-                .setId(configId)
-                .addAllowedLogSource("AID_ROOT")
-                .addAllowedLogSource("AID_SYSTEM")
-                .addAllowedLogSource("AID_RADIO")
-                .addAllowedLogSource("AID_BLUETOOTH")
-                .addAllowedLogSource("AID_GRAPHICS")
-                .addAllowedLogSource("AID_STATSD")
-                .addAllowedLogSource("AID_INCIENTD")
-                .addDefaultPullPackages("AID_SYSTEM")
-                .addDefaultPullPackages("AID_RADIO")
-                .addDefaultPullPackages("AID_STATSD")
-                .addDefaultPullPackages("AID_GPU_SERVICE")
-                .addWhitelistedAtomIds(Atom.UI_INTERACTION_FRAME_INFO_REPORTED_FIELD_NUMBER);
+    private static StatsdConfigProto.StatsdConfig getSimpleSources(long configId) {
+        StatsdConfigProto.StatsdConfig config = new StatsdConfigProto.StatsdConfig();
+        config.id = configId;
+        String[] allowedLogSources =
+                new String[] {
+                    "AID_ROOT",
+                    "AID_SYSTEM",
+                    "AID_RADIO",
+                    "AID_BLUETOOTH",
+                    "AID_GRAPHICS",
+                    "AID_STATSD",
+                    "AID_INCIENTD"
+                };
+        String[] defaultPullPackages =
+                new String[] {"AID_SYSTEM", "AID_RADIO", "AID_STATSD", "AID_GPU_SERVICE"};
+        int[] whitelistedAtomIds =
+                new int[] {AtomsProto.Atom.UI_INTERACTION_FRAME_INFO_REPORTED_FIELD_NUMBER};
+        config.allowedLogSource = allowedLogSources;
+        config.defaultPullPackages = defaultPullPackages;
+        config.whitelistedAtomIds = whitelistedAtomIds;
+        return config;
     }
 
-    /**
-     * Returns the list of EventMetricData tracked under the config.
-     */
-    public List<EventMetricData> getEventMetrics() {
-        ConfigMetricsReportList reportList = null;
-        List<EventMetricData> eventData = new ArrayList<>();
+    /** Returns the list of EventMetricData tracked under the config. */
+    public List<com.android.os.nano.StatsLog.EventMetricData> getEventMetrics() {
+        com.android.os.nano.StatsLog.ConfigMetricsReportList reportList = null;
+        List<com.android.os.nano.StatsLog.EventMetricData> eventData = new ArrayList<>();
         try {
             if (getConfigId() != -1) {
                 adoptShellIdentity();
-                reportList = ConfigMetricsReportList.parser()
-                        .parseFrom(getStatsManager().getReports(getConfigId()));
+                byte[] serializedReports = getStatsManager().getReports(getConfigId());
+                reportList =
+                        com.android.os.nano.StatsLog.ConfigMetricsReportList.parseFrom(
+                                serializedReports);
                 dropShellIdentity();
             }
-        } catch (InvalidProtocolBufferException | StatsUnavailableException se) {
+        } catch (InvalidProtocolBufferNanoException | StatsUnavailableException se) {
             Log.e(LOG_TAG, "Retreiving event metrics failed.", se);
             return eventData;
         }
 
-        if (reportList != null) {
-            ConfigMetricsReport configReport = reportList.getReports(0);
-            for (StatsLogReport metric : configReport.getMetricsList()) {
-                eventData.addAll(metric.getEventMetrics().getDataList());
+        if (reportList != null && reportList.reports.length > 0) {
+            com.android.os.nano.StatsLog.ConfigMetricsReport configReport = reportList.reports[0];
+            for (com.android.os.nano.StatsLog.StatsLogReport metric : configReport.metrics) {
+                eventData.addAll(Arrays.asList(metric.getEventMetrics().data));
             }
         }
         Log.i(LOG_TAG, "Number of events: " + eventData.size());
         return eventData;
     }
 
-    /**
-     * Returns the list of GaugeMetric data tracked under the config.
-     */
-    public List<GaugeMetricData> getGaugeMetrics() {
-        ConfigMetricsReportList reportList = null;
-        List<GaugeMetricData> gaugeData = new ArrayList<>();
+    /** Returns the list of GaugeMetric data tracked under the config. */
+    public List<com.android.os.nano.StatsLog.GaugeMetricData> getGaugeMetrics() {
+        com.android.os.nano.StatsLog.ConfigMetricsReportList reportList = null;
+        List<com.android.os.nano.StatsLog.GaugeMetricData> gaugeData = new ArrayList<>();
         try {
             if (getConfigId() != -1) {
                 adoptShellIdentity();
                 StatsLog.logEvent(0);
                 // Dump the the counters after the test completed.
                 SystemClock.sleep(METRIC_DELAY_MS);
-                reportList = ConfigMetricsReportList.parser()
-                        .parseFrom(getStatsManager().getReports(getConfigId()));
+                reportList =
+                        com.android.os.nano.StatsLog.ConfigMetricsReportList.parseFrom(
+                                getStatsManager().getReports(getConfigId()));
                 dropShellIdentity();
             }
-        } catch (InvalidProtocolBufferException | StatsUnavailableException se) {
+        } catch (InvalidProtocolBufferNanoException | StatsUnavailableException se) {
             Log.e(LOG_TAG, "Retreiving gauge metrics failed.", se);
             return gaugeData;
         }
 
-        if (reportList != null) {
-            ConfigMetricsReport configReport = reportList.getReports(0);
-            for (StatsLogReport metric : configReport.getMetricsList()) {
-                gaugeData.addAll(metric.getGaugeMetrics().getDataList());
+        if (reportList != null && reportList.reports.length > 0) {
+            com.android.os.nano.StatsLog.ConfigMetricsReport configReport = reportList.reports[0];
+            for (com.android.os.nano.StatsLog.StatsLogReport metric : configReport.metrics) {
+                gaugeData.addAll(Arrays.asList(metric.getGaugeMetrics().data));
             }
         }
         Log.i(LOG_TAG, "Number of Gauge data: " + gaugeData.size());
@@ -262,6 +257,18 @@ public class StatsdHelper {
         }
     }
 
+    /** Returns the package name for the UID if it is available. Otherwise return null. */
+    public String getPackageName(int uid) {
+        String pkgName =
+                InstrumentationRegistry.getTargetContext().getPackageManager().getNameForUid(uid);
+        // Remove the UID appended at the end of the package name.
+        if (pkgName != null) {
+            String[] pkgNameSplit = pkgName.split(String.format("\\:%d", uid));
+            return pkgNameSplit[0];
+        }
+        return pkgName;
+    }
+
     /** Gets {@code StatsManager}, used to configure, collect and remove the statsd configs. */
     private StatsManager getStatsManager() {
         if (mStatsManager == null) {
@@ -272,15 +279,17 @@ public class StatsdHelper {
     }
 
     /** Returns the package name associated with this UID if available, or null otherwise. */
-    public String getPackageName(int uid) {
-        String pkgName = InstrumentationRegistry.getTargetContext().getPackageManager()
-                .getNameForUid(uid);
-        // Remove the UID appended at the end of the package name.
-        if (pkgName != null) {
-            String[] pkgNameSplit = pkgName.split(String.format("\\:%d", uid));
-            return pkgNameSplit[0];
-        }
-        return pkgName;
+    /**
+     * Serializes a {@link StatsdConfigProto.StatsdConfig}.
+     *
+     * @return byte[]
+     */
+    private static byte[] toByteArray(StatsdConfigProto.StatsdConfig config) throws IOException {
+        byte[] serialized = new byte[config.getSerializedSize()];
+        CodedOutputByteBufferNano outputByteBufferNano =
+                CodedOutputByteBufferNano.newInstance(serialized);
+        config.writeTo(outputByteBufferNano);
+        return serialized;
     }
 
     /** Sets the statsd config id currently tracked by this class. */

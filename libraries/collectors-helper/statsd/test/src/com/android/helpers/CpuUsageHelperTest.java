@@ -17,9 +17,9 @@ package com.android.helpers;
 
 import android.platform.helpers.HelperAccessor;
 import android.platform.helpers.ICalendarHelper;
+
 import androidx.test.runner.AndroidJUnit4;
 
-import com.android.helpers.CpuUsageHelper;
 
 import org.junit.Before;
 import org.junit.Test;

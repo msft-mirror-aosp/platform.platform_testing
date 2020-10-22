@@ -20,15 +20,13 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 
-import android.os.TemperatureTypeEnum;
-import android.os.ThrottlingSeverityEnum;
+import android.os.nano.OsProtoEnums;
 
 import androidx.test.runner.AndroidJUnit4;
 import androidx.test.uiautomator.UiDevice;
 
-import com.android.os.AtomsProto.Atom;
-import com.android.os.AtomsProto.ThermalThrottlingSeverityStateChanged;
-import com.android.os.StatsLog.EventMetricData;
+import com.android.os.nano.AtomsProto;
+import com.android.os.nano.StatsLog;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -85,11 +83,12 @@ public class ThermalHelperTest {
     /** Test that only the initial value shows up when there are no events. */
     @Test
     public void testInitialMetricsWithoutEvents() throws Exception {
-        when(mStatsdHelper.getEventMetrics()).thenReturn(new ArrayList<EventMetricData>());
+        when(mStatsdHelper.getEventMetrics()).thenReturn(new ArrayList<StatsLog.EventMetricData>());
         assertTrue(mThermalHelper.startCollecting());
+
         assertEquals(
                 mThermalHelper.getMetrics().get(THROTTLING_KEY).toString(),
-                String.valueOf(ThrottlingSeverityEnum.MODERATE.getNumber()));
+                String.valueOf(OsProtoEnums.MODERATE));
         assertTrue(mThermalHelper.stopCollecting());
     }
 
@@ -100,17 +99,17 @@ public class ThermalHelperTest {
                 .thenReturn(
                         getFakeEventMetrics(
                                 getThermalThrottlingSeverityStateChangedEvent(
-                                        TemperatureTypeEnum.TEMPERATURE_TYPE_SKIN,
+                                        OsProtoEnums.TEMPERATURE_TYPE_SKIN,
                                         "sensor_name",
-                                        ThrottlingSeverityEnum.LIGHT)));
+                                        OsProtoEnums.LIGHT)));
         assertTrue(mThermalHelper.startCollecting());
         Map<String, StringBuilder> metrics = mThermalHelper.getMetrics();
         assertEquals(
                 metrics.get(THROTTLING_KEY).toString(),
                 String.join(
                         ",",
-                        String.valueOf(ThrottlingSeverityEnum.MODERATE.getNumber()),
-                        String.valueOf(ThrottlingSeverityEnum.LIGHT.getNumber())));
+                        String.valueOf(OsProtoEnums.MODERATE),
+                        String.valueOf(OsProtoEnums.LIGHT)));
         assertTrue(mThermalHelper.stopCollecting());
     }
 
@@ -121,17 +120,17 @@ public class ThermalHelperTest {
                 .thenReturn(
                         getFakeEventMetrics(
                                 getThermalThrottlingSeverityStateChangedEvent(
-                                        TemperatureTypeEnum.TEMPERATURE_TYPE_SKIN,
+                                        OsProtoEnums.TEMPERATURE_TYPE_SKIN,
                                         "sensor1_name",
-                                        ThrottlingSeverityEnum.LIGHT),
+                                        OsProtoEnums.LIGHT),
                                 getThermalThrottlingSeverityStateChangedEvent(
-                                        TemperatureTypeEnum.TEMPERATURE_TYPE_CPU,
+                                        OsProtoEnums.TEMPERATURE_TYPE_CPU,
                                         "sensor2_name",
-                                        ThrottlingSeverityEnum.MODERATE),
+                                        OsProtoEnums.MODERATE),
                                 getThermalThrottlingSeverityStateChangedEvent(
-                                        TemperatureTypeEnum.TEMPERATURE_TYPE_GPU,
+                                        OsProtoEnums.TEMPERATURE_TYPE_GPU,
                                         "sensor3_name",
-                                        ThrottlingSeverityEnum.NONE)));
+                                        OsProtoEnums.NONE)));
 
         assertTrue(mThermalHelper.startCollecting());
         Map<String, StringBuilder> metrics = mThermalHelper.getMetrics();
@@ -139,40 +138,43 @@ public class ThermalHelperTest {
                 metrics.get(THROTTLING_KEY).toString(),
                 String.join(
                         ",",
-                        String.valueOf(ThrottlingSeverityEnum.MODERATE.getNumber()),
-                        String.valueOf(ThrottlingSeverityEnum.LIGHT.getNumber()),
-                        String.valueOf(ThrottlingSeverityEnum.MODERATE.getNumber()),
-                        String.valueOf(ThrottlingSeverityEnum.NONE.getNumber())));
+                        String.valueOf(OsProtoEnums.MODERATE),
+                        String.valueOf(OsProtoEnums.LIGHT),
+                        String.valueOf(OsProtoEnums.MODERATE),
+                        String.valueOf(OsProtoEnums.NONE)));
         assertTrue(mThermalHelper.stopCollecting());
     }
 
-    /** Returns a list of {@link EventMetricData} that statsd returns. */
-    private List<EventMetricData> getFakeEventMetrics(
-            ThermalThrottlingSeverityStateChanged... throttleSeverityEvents) {
-        List<EventMetricData> result = new ArrayList<>();
-        for (ThermalThrottlingSeverityStateChanged event : throttleSeverityEvents) {
-            result.add(
-                    EventMetricData.newBuilder()
-                            .setAtom(
-                                    Atom.newBuilder()
-                                            .setThermalThrottlingSeverityStateChanged(event))
-                            .build());
+    /**
+     * Returns a list of {@link com.android.os.nano.StatsLog.EventMetricData} that statsd returns.
+     */
+    private List<StatsLog.EventMetricData> getFakeEventMetrics(
+            AtomsProto.ThermalThrottlingSeverityStateChanged... throttleSeverityEvents) {
+        List<StatsLog.EventMetricData> result = new ArrayList<>();
+        for (AtomsProto.ThermalThrottlingSeverityStateChanged event : throttleSeverityEvents) {
+            AtomsProto.Atom atom = new AtomsProto.Atom();
+            atom.setThermalThrottlingSeverityStateChanged(event);
+            StatsLog.EventMetricData metricData = new StatsLog.EventMetricData();
+            metricData.atom = atom;
+            result.add(metricData);
         }
         return result;
     }
 
     /** Returns a state change protobuf for thermal throttling severity. */
-    private ThermalThrottlingSeverityStateChanged getThermalThrottlingSeverityStateChangedEvent(
-            TemperatureTypeEnum type, String name, ThrottlingSeverityEnum severity) {
-        return ThermalThrottlingSeverityStateChanged.newBuilder()
-                .setSensorType(type)
-                .setSensorName(name)
-                .setSeverity(severity)
-                .build();
+    private AtomsProto.ThermalThrottlingSeverityStateChanged
+            getThermalThrottlingSeverityStateChangedEvent(int type, String name, int severity) {
+        AtomsProto.ThermalThrottlingSeverityStateChanged stateChanged =
+                new AtomsProto.ThermalThrottlingSeverityStateChanged();
+
+        stateChanged.sensorType = type;
+        stateChanged.sensorName = name;
+        stateChanged.severity = severity;
+        return stateChanged;
     }
 
     /** Get the thermal metric key for a thermal sensor type and name. */
-    private String getMetricKey(TemperatureTypeEnum type, String name) {
+    private String getMetricKey(int type, String name) {
         return MetricUtility.constructKey(
                 "thermal", ThermalHelper.getShorthandSensorType(type), name);
     }

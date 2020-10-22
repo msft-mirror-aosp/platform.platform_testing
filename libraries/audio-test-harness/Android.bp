@@ -76,7 +76,7 @@ java_library {
 java_binary_host {
     name: "AudioTestHarnessServer",
     static_libs: [
-        "AudioTestHarnessServerLib",
+        "AudioTestHarnessServerLib"
     ],
     java_version: "1.8",
     manifest: "server-manifest.inf"
@@ -91,7 +91,13 @@ java_library_host {
         "src/main/java/com/android/media/audiotestharness/server/AudioTestHarnessServerModule.java"
     ],
     static_libs: [
-        "AudioTestHarnessService"
+        "AudioTestHarnessService",
+        "AudioTestHarnessUtility",
+
+        // gRPC Dependencies
+        "grpc-java",
+        "grpc-java-netty-shaded",
+        "opencensus-java-api"
     ],
     java_version: "1.8"
 }
@@ -131,12 +137,19 @@ java_test_host {
     name: "AudioTestHarnessServerLibTests",
     test_suites: ["general-tests"],
     srcs: [
-        "src/test/java/com/android/media/audiotestharness/server/AudioTestHarnessServerModuleTests.java"
+        "src/test/java/com/android/media/audiotestharness/server/AudioTestHarnessServerModuleTests.java",
+        "src/test/java/com/android/media/audiotestharness/server/AudioTestHarnessGrpcServerTests.java",
+        "src/test/java/com/android/media/audiotestharness/server/AudioTestHarnessTestImpl.java"
     ],
     static_libs: [
         "AudioTestHarnessServerLib",
         "junit",
-        "mockito"
+        "mockito",
+
+        // gRPC Dependencies
+        "grpc-java",
+        "grpc-java-netty-shaded",
+        "opencensus-java-api"
     ],
     java_version: "1.8"
 }

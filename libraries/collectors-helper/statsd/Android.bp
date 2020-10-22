@@ -26,8 +26,8 @@ java_library {
         "androidx.test.uiautomator",
         "collector-helper-utilities",
         "guava",
-        "platformprotoslite",
-        "statsdprotolite",
+        "platformprotosnano",
+        "statsdprotonano",
     ],
 
     platform_apis: true,

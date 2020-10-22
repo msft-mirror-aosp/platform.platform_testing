@@ -35,8 +35,8 @@ public interface AudioSystemService {
     ImmutableList<AudioDevice> getDevices() throws IOException;
 
     /**
-     * Creates a new {@link AudioCapturer} for a provided {@link AudioDevice} to capture raw audio data
-     * in the specified {@link AudioFormat}.
+     * Creates a new {@link AudioCapturer} for a provided {@link AudioDevice} to capture raw audio
+     * data in the specified {@link AudioFormat}.
      *
      * <p>For the provided {@link AudioDevice} the closes possible matching {@link AudioDevice} is
      * used. For example, if an {@link AudioDevice} with just the capability field set to [CAPTURE]

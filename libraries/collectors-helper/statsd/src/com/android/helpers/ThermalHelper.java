@@ -16,15 +16,21 @@
 
 package com.android.helpers;
 
-import android.os.TemperatureTypeEnum;
+import static android.os.nano.OsProtoEnums.TEMPERATURE_TYPE_BATTERY;
+import static android.os.nano.OsProtoEnums.TEMPERATURE_TYPE_CPU;
+import static android.os.nano.OsProtoEnums.TEMPERATURE_TYPE_GPU;
+import static android.os.nano.OsProtoEnums.TEMPERATURE_TYPE_POWER_AMPLIFIER;
+import static android.os.nano.OsProtoEnums.TEMPERATURE_TYPE_SKIN;
+import static android.os.nano.OsProtoEnums.TEMPERATURE_TYPE_USB_PORT;
+
 import android.util.Log;
 
 import androidx.annotation.VisibleForTesting;
 import androidx.test.InstrumentationRegistry;
 import androidx.test.uiautomator.UiDevice;
 
-import com.android.os.AtomsProto.Atom;
-import com.android.os.StatsLog.EventMetricData;
+import com.android.os.nano.AtomsProto;
+import com.android.os.nano.StatsLog;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -79,7 +85,7 @@ public class ThermalHelper implements ICollectorHelper<StringBuilder> {
 
         // Register the thermal event config to statsd.
         List<Integer> atomIdList = new ArrayList<>();
-        atomIdList.add(Atom.THERMAL_THROTTLING_SEVERITY_STATE_CHANGED_FIELD_NUMBER);
+        atomIdList.add(AtomsProto.Atom.THERMAL_THROTTLING_SEVERITY_STATE_CHANGED_FIELD_NUMBER);
         return getStatsdHelper().addEventConfig(atomIdList);
     }
 
@@ -92,18 +98,14 @@ public class ThermalHelper implements ICollectorHelper<StringBuilder> {
         String severityKey = MetricUtility.constructKey("thermal", "throttling", "severity");
         MetricUtility.addMetric(severityKey, mInitialSeverity, results);
 
-        List<EventMetricData> eventMetricData = getStatsdHelper().getEventMetrics();
+        List<StatsLog.EventMetricData> eventMetricData = getStatsdHelper().getEventMetrics();
         Log.i(LOG_TAG, String.format("%d thermal data points found.", eventMetricData.size()));
         // Collect all thermal throttling severity state change events.
-        for (EventMetricData dataItem : eventMetricData) {
-            if (dataItem.getAtom().hasThermalThrottlingSeverityStateChanged()) {
+        for (StatsLog.EventMetricData dataItem : eventMetricData) {
+            if (dataItem.atom.hasThermalThrottlingSeverityStateChanged()) {
                 // TODO(b/137878503): Add elapsed_timestamp_nanos for timpestamp data.
                 // Get thermal throttling severity state change data point.
-                int severity =
-                        dataItem.getAtom()
-                                .getThermalThrottlingSeverityStateChanged()
-                                .getSeverity()
-                                .getNumber();
+                int severity = dataItem.atom.getThermalThrottlingSeverityStateChanged().severity;
                 // Store the severity state change ignoring where the measurement came from.
                 MetricUtility.addMetric(severityKey, severity, results);
                 // Set the initial severity to the last value, in case #getMetrics is called again.
@@ -123,7 +125,7 @@ public class ThermalHelper implements ICollectorHelper<StringBuilder> {
 
     /** A shorthand name for temperature sensor types used in metric keys. */
     @VisibleForTesting
-    static String getShorthandSensorType(TemperatureTypeEnum type) {
+    static String getShorthandSensorType(int type) {
         switch (type) {
             case TEMPERATURE_TYPE_CPU:
                 return "cpu";

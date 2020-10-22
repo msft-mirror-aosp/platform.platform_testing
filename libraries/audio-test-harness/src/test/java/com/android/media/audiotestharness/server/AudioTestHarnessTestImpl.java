@@ -13,35 +13,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.media.audiotestharness.server.service;
+
+package com.android.media.audiotestharness.server;
 
 import com.android.media.audiotestharness.proto.AudioTestHarnessGrpc;
 import com.android.media.audiotestharness.proto.AudioTestHarnessService;
 
-import com.google.inject.Inject;
+import com.google.protobuf.ByteString;
 
 import io.grpc.stub.StreamObserver;
 
-import java.util.logging.Logger;
-
 /**
- * {@inheritDoc}
- *
- * <p>Core service implementation for the Audio Test Harness that utilizes that Java Sound API to
- * expose audio devices connected to a host to client devices for capture and playback.
+ * Test implementation of the {@link
+ * com.android.media.audiotestharness.proto.AudioTestHarnessGrpc.AudioTestHarnessImplBase} that
+ * contains stubbed methods.
  */
-public final class AudioTestHarnessImpl extends AudioTestHarnessGrpc.AudioTestHarnessImplBase {
+public class AudioTestHarnessTestImpl extends AudioTestHarnessGrpc.AudioTestHarnessImplBase {
 
-    private static final Logger LOGGER = Logger.getLogger(AudioTestHarnessImpl.class.getName());
+    public static final byte[] MESSAGE = {0x0, 0x1, 0x2, 0x3};
 
-    @Inject
-    public AudioTestHarnessImpl() {}
-
+    /**
+     * Test implementation of the <code>Capture</code> procedure that simply ignores the request and
+     * sends back a predefined response containing the {@link #MESSAGE} bytes.
+     */
     @Override
     public void capture(
             AudioTestHarnessService.CaptureRequest request,
             StreamObserver<AudioTestHarnessService.CaptureChunk> responseObserver) {
-        // TODO(b/168801581): Implement this procedure to allow for opening of capture sessions by a
-        // client.
+        responseObserver.onNext(
+                AudioTestHarnessService.CaptureChunk.newBuilder()
+                        .setData(ByteString.copyFrom(MESSAGE))
+                        .build());
+        responseObserver.onCompleted();
     }
 }
