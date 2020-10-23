@@ -60,17 +60,17 @@ public class UiInteractionFrameInfoHelper implements ICollectorHelper<StringBuil
                         String.valueOf(uiInteractionFrameInfoReported.interactionType);
 
                 MetricUtility.addMetric(
-                        MetricUtility.constructKey("total_frames_cuj", interactionType),
+                        MetricUtility.constructKey("cuj", interactionType, "total_frames"),
                         uiInteractionFrameInfoReported.totalFrames,
                         totalFramesMap);
 
                 MetricUtility.addMetric(
-                        MetricUtility.constructKey("missed_frames_cuj", interactionType),
+                        MetricUtility.constructKey("cuj", interactionType, "missed_frames"),
                         uiInteractionFrameInfoReported.missedFrames,
                         totalFramesMap);
 
                 MetricUtility.addMetric(
-                        MetricUtility.constructKey("max_frame_time_nanos_cuj", interactionType),
+                        MetricUtility.constructKey("cuj", interactionType, "max_frame_time_nanos"),
                         uiInteractionFrameInfoReported.maxFrameTimeNanos,
                         totalFramesMap);
             }

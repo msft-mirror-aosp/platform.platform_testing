@@ -85,13 +85,13 @@ public class UiInteractionFrameInfoHelperTest {
         final Map<String, StringBuilder> frameMetrics = mInteractionFrameHelper.getMetrics();
         assertTrue(
                 "No metric missed_frames_cuj_SHADE_SCROLL_FLING missing",
-                frameMetrics.containsKey("missed_frames_cuj_SHADE_SCROLL_FLING"));
+                frameMetrics.containsKey("cuj_SHADE_SCROLL_FLING_missed_frames"));
         assertTrue(
                 "No metric total_frames_cuj_SHADE_SCROLL_FLING",
-                frameMetrics.containsKey("total_frames_cuj_SHADE_SCROLL_FLING"));
+                frameMetrics.containsKey("cuj_SHADE_SCROLL_FLING_total_frames"));
         assertTrue(
                 "No metric max_frame_time_nanos_cuj_SHADE_SCROLL_FLING",
-                frameMetrics.containsKey("max_frame_time_nanos_cuj_SHADE_SCROLL_FLING"));
+                frameMetrics.containsKey("cuj_SHADE_SCROLL_FLING_max_frame_time_nanos"));
 
         assertTrue(mInteractionFrameHelper.stopCollecting());
         HelperTestUtility.sendKeyCode(KEYCODE_HOME);
