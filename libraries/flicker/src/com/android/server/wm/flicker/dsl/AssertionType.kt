@@ -51,8 +51,8 @@ data class AssertionType<Subject : IRangedSubject<Entry>, Entry>
     @JvmOverloads
     fun start(
         name: String = "",
-        enabled: Boolean = true,
         bugId: Int = 0,
+        enabled: Boolean = bugId == 0,
         assertion: Subject.() -> Any
     ) {
         add(AssertionTag.START, name, enabled, bugId) { apply { assertion() }.inTheBeginning() }
@@ -74,8 +74,8 @@ data class AssertionType<Subject : IRangedSubject<Entry>, Entry>
     @JvmOverloads
     fun end(
         name: String = "",
-        enabled: Boolean = true,
         bugId: Int = 0,
+        enabled: Boolean = bugId == 0,
         assertion: Subject.() -> Any
     ) {
         add(AssertionTag.END, name, enabled, bugId) { apply { assertion() }.atTheEnd() }
@@ -97,8 +97,8 @@ data class AssertionType<Subject : IRangedSubject<Entry>, Entry>
     @JvmOverloads
     fun all(
         name: String = "",
-        enabled: Boolean = true,
         bugId: Int = 0,
+        enabled: Boolean = bugId == 0,
         assertion: Subject.() -> Any
     ) {
         add(AssertionTag.ALL, name, enabled, bugId) { apply { assertion() }.forAllEntries() }
@@ -124,8 +124,8 @@ data class AssertionType<Subject : IRangedSubject<Entry>, Entry>
     fun tag(
         tag: String,
         name: String = "",
-        enabled: Boolean = true,
         bugId: Int = 0,
+        enabled: Boolean = bugId == 0,
         assertion: Subject.() -> Any
     ) {
         add(AssertionTag(tag), name, enabled, bugId) { apply { assertion() }.forAllEntries() }

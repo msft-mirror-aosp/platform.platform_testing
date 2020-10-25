@@ -18,8 +18,9 @@ package com.android.helpers;
 
 import android.util.Log;
 
-import com.android.os.nano.AtomsProto;
-import com.android.os.nano.StatsLog;
+import com.android.os.AtomsProto.Atom;
+import com.android.os.StatsLog.GaugeBucketInfo;
+import com.android.os.StatsLog.GaugeMetricData;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
@@ -66,8 +67,8 @@ public class CpuUsageHelper implements ICollectorHelper<Long> {
         Log.i(LOG_TAG, "Adding CpuUsage config to statsd.");
         List<Integer> atomIdList = new ArrayList<>();
         // Add the atoms to be tracked.
-        atomIdList.add(AtomsProto.Atom.CPU_TIME_PER_UID_FIELD_NUMBER);
-        atomIdList.add(AtomsProto.Atom.CPU_TIME_PER_FREQ_FIELD_NUMBER);
+        atomIdList.add(Atom.CPU_TIME_PER_UID_FIELD_NUMBER);
+        atomIdList.add(Atom.CPU_TIME_PER_FREQ_FIELD_NUMBER);
 
         if (isCpuUtilizationEnabled) {
             mStartTime = System.currentTimeMillis();
@@ -80,7 +81,7 @@ public class CpuUsageHelper implements ICollectorHelper<Long> {
     public Map<String, Long> getMetrics() {
         Map<String, Long> cpuUsageFinalMap = new HashMap<>();
 
-        List<StatsLog.GaugeMetricData> gaugeMetricList = mStatsdHelper.getGaugeMetrics();
+        List<GaugeMetricData> gaugeMetricList = mStatsdHelper.getGaugeMetrics();
 
         if (isCpuUtilizationEnabled) {
             mEndTime = System.currentTimeMillis();
@@ -88,17 +89,18 @@ public class CpuUsageHelper implements ICollectorHelper<Long> {
 
         ListMultimap<String, Long> cpuUsageMap = ArrayListMultimap.create();
 
-        for (StatsLog.GaugeMetricData gaugeMetric : gaugeMetricList) {
-            Log.v(LOG_TAG, "Bucket Size: " + gaugeMetric.bucketInfo.length);
-            for (StatsLog.GaugeBucketInfo gaugeBucketInfo : gaugeMetric.bucketInfo) {
-                for (AtomsProto.Atom atom : gaugeBucketInfo.atom) {
+        for (GaugeMetricData gaugeMetric : gaugeMetricList) {
+            Log.v(LOG_TAG, "Bucket Size: " + gaugeMetric.getBucketInfoCount());
+            for (GaugeBucketInfo gaugeBucketInfo : gaugeMetric.getBucketInfoList()) {
+                for (Atom atom : gaugeBucketInfo.getAtomList()) {
+
                     // Track CPU usage in user time and system time per package or UID
-                    if (atom.hasCpuTimePerUid()) {
-                        int uId = atom.getCpuTimePerUid().uid;
+                    if (atom.getCpuTimePerUid().hasUid()) {
+                        int uId = atom.getCpuTimePerUid().getUid();
                         String packageName = mStatsdHelper.getPackageName(uId);
                         // Convert to milliseconds to compare with CpuTimePerFreq
-                        long userTimeMillis = atom.getCpuTimePerUid().userTimeMicros / 1000;
-                        long sysTimeMillis = atom.getCpuTimePerUid().sysTimeMicros / 1000;
+                        long userTimeMillis = atom.getCpuTimePerUid().getUserTimeMicros() / 1000;
+                        long sysTimeMillis = atom.getCpuTimePerUid().getSysTimeMicros() / 1000;
                         Log.v(
                                 LOG_TAG,
                                 String.format(
@@ -128,10 +130,10 @@ public class CpuUsageHelper implements ICollectorHelper<Long> {
                     }
 
                     // Track cpu usage per cluster_id and freq_index
-                    if (atom.hasCpuTimePerFreq()) {
-                        int clusterId = atom.getCpuTimePerFreq().cluster;
-                        int freqIndex = atom.getCpuTimePerFreq().freqIndex;
-                        long timeInFreq = atom.getCpuTimePerFreq().timeMillis;
+                    if (atom.getCpuTimePerFreq().hasFreqIndex()) {
+                        int clusterId = atom.getCpuTimePerFreq().getCluster();
+                        int freqIndex = atom.getCpuTimePerFreq().getFreqIndex();
+                        long timeInFreq = atom.getCpuTimePerFreq().getTimeMillis();
                         Log.v(LOG_TAG, String.format("Cluster Id: %d FreqIndex: %d,"
                                 + " Time_in_Freq: %d", clusterId, freqIndex, timeInFreq));
                         String finalFreqIndexKey = MetricUtility.constructKey(

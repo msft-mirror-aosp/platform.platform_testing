@@ -26,8 +26,9 @@ android_test {
         "junit",
         "mockito-target-minus-junit4",
         "perfetto-helper",
-        "statsdprotonano",
+        "platformprotoslite",
     ],
     platform_apis: true,
     min_sdk_version: "26",
 }
+
