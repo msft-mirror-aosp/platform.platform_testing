@@ -29,8 +29,7 @@ import com.google.common.truth.Truth
 class EventLogSubject private constructor(
     failureMetadata: FailureMetadata,
     private val subject: List<FocusEvent>
-) : Subject<EventLogSubject,
-    List<FocusEvent>>(failureMetadata, subject),
+) : Subject(failureMetadata, subject),
     IRangedSubject<FocusEvent> {
     private val assertionsChecker = AssertionsChecker<FocusEvent>()
     private val _focusChanges by lazy {

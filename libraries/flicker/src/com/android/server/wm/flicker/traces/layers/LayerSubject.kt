@@ -26,14 +26,14 @@ import com.google.common.truth.Truth
 class LayerSubject private constructor(
     fm: FailureMetadata,
     val layer: Layer?
-) : Subject<LayerSubject, Layer?>(fm, layer) {
+) : Subject(fm, layer) {
 
     fun doesNotExist() {
-        check("doesNotExist()").that(actual()).isNull()
+        check("doesNotExist()").that(layer).isNull()
     }
 
     fun exists() {
-        checkNotNull(actual())
+        checkNotNull(layer)
     }
 
     fun hasBufferSize(size: Rect) {

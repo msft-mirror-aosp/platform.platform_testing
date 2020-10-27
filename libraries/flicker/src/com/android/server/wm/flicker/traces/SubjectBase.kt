@@ -31,7 +31,7 @@ import java.nio.file.Paths
 abstract class SubjectBase<Trace : ITrace<Entry>, Entry : ITraceEntry> protected constructor(
     fm: FailureMetadata,
     private val subject: Trace
-) : Subject<SubjectBase<Trace, Entry>, Trace>(fm, subject), IRangedSubject<Entry> {
+) : Subject(fm, subject), IRangedSubject<Entry> {
     protected val assertionsChecker = AssertionsChecker<Entry>()
     protected var newAssertion = true
 

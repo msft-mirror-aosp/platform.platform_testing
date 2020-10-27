@@ -68,7 +68,7 @@ class LayersTraceSubject private constructor(
      * [name] and [frameNumber].
      */
     fun layer(name: String, frameNumber: Long): LayerSubject {
-        val layer = actual().entries.asSequence()
+        val layer = trace.entries.asSequence()
                 .flatMap { it.flattenedLayers }
                 .firstOrNull {
                     it.name.contains(name) && it.proto.currFrame == frameNumber

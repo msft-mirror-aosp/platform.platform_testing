@@ -13,7 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package android.device.collectors;
 
-package com.android.server.wm.flicker.common
+import com.android.helpers.UiActionLatencyHelper;
 
-data class Color(val r: Float, val g: Float, val b: Float, val a: Float)
+/**
+ * A listener that captures latency for various system actions.
+ *
+ * <p>Do NOT throw exception anywhere in this class. We don't want to halt the test when metrics
+ * collection fails.
+ */
+public class UiActionLatencyListener extends BaseCollectionListener<StringBuilder> {
+    public UiActionLatencyListener() {
+        createHelperInstance(new UiActionLatencyHelper());
+    }
+}
