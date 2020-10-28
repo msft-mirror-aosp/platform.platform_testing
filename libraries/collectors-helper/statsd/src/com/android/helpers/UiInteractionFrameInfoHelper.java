@@ -18,9 +18,7 @@ package com.android.helpers;
 
 import android.util.Log;
 
-import com.android.os.AtomsProto;
-import com.android.os.AtomsProto.Atom;
-import com.android.os.StatsLog.EventMetricData;
+import com.android.os.nano.AtomsProto;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -42,7 +40,7 @@ public class UiInteractionFrameInfoHelper implements ICollectorHelper<StringBuil
     public boolean startCollecting() {
         Log.i(LOG_TAG, "Adding system interactions config to statsd.");
         List<Integer> atomIdList = new ArrayList<>();
-        atomIdList.add(Atom.UI_INTERACTION_FRAME_INFO_REPORTED_FIELD_NUMBER);
+        atomIdList.add(AtomsProto.Atom.UI_INTERACTION_FRAME_INFO_REPORTED_FIELD_NUMBER);
         return mStatsdHelper.addEventConfig(atomIdList);
     }
 
@@ -51,33 +49,68 @@ public class UiInteractionFrameInfoHelper implements ICollectorHelper<StringBuil
     public Map<String, StringBuilder> getMetrics() {
         Log.i(LOG_TAG, "get metrics.");
         Map<String, StringBuilder> frameInfoMap = new HashMap<>();
-        for (EventMetricData dataItem : mStatsdHelper.getEventMetrics()) {
-            final Atom atom = dataItem.getAtom();
+        for (com.android.os.nano.StatsLog.EventMetricData dataItem :
+                mStatsdHelper.getEventMetrics()) {
+            final AtomsProto.Atom atom = dataItem.atom;
             if (atom.hasUiInteractionFrameInfoReported()) {
                 final AtomsProto.UIInteractionFrameInfoReported uiInteractionFrameInfoReported =
                         atom.getUiInteractionFrameInfoReported();
 
                 final String interactionType =
-                        uiInteractionFrameInfoReported.getInteractionType().toString();
+                        interactionType(uiInteractionFrameInfoReported.interactionType);
 
                 MetricUtility.addMetric(
                         MetricUtility.constructKey("cuj", interactionType, "total_frames"),
-                        uiInteractionFrameInfoReported.getTotalFrames(),
+                        uiInteractionFrameInfoReported.totalFrames,
                         frameInfoMap);
 
                 MetricUtility.addMetric(
                         MetricUtility.constructKey("cuj", interactionType, "missed_frames"),
-                        uiInteractionFrameInfoReported.getMissedFrames(),
+                        uiInteractionFrameInfoReported.missedFrames,
                         frameInfoMap);
 
                 MetricUtility.addMetric(
                         MetricUtility.constructKey("cuj", interactionType, "max_frame_time_nanos"),
-                        uiInteractionFrameInfoReported.getMaxFrameTimeNanos(),
+                        uiInteractionFrameInfoReported.maxFrameTimeNanos,
                         frameInfoMap);
             }
         }
 
         return frameInfoMap;
+    }
+
+    private static String interactionType(int interactionType) {
+        // Defined in AtomsProto.java
+        switch (interactionType) {
+            case 0:
+                return "UNKNOWN";
+            case 1:
+                return "NOTIFICATION_SHADE_SWIPE";
+            case 2:
+                return "SHADE_EXPAND_COLLAPSE_LOCK";
+            case 3:
+                return "SHADE_SCROLL_FLING";
+            case 4:
+                return "SHADE_ROW_EXPAND";
+            case 5:
+                return "SHADE_ROW_SWIPE";
+            case 6:
+                return "SHADE_QS_EXPAND_COLLAPSE";
+            case 7:
+                return "SHADE_QS_SCROLL_SWIPE";
+            case 8:
+                return "LAUNCHER_APP_LAUNCH_FROM_RECENTS";
+            case 9:
+                return "LAUNCHER_APP_LAUNCH_FROM_ICON";
+            case 10:
+                return "LAUNCHER_APP_CLOSE_TO_HOME";
+            case 11:
+                return "LAUNCHER_APP_CLOSE_TO_PIP";
+            case 12:
+                return "LAUNCHER_QUICK_SWITCH";
+            default:
+                throw new IllegalArgumentException("Invalid interaction type");
+        }
     }
 
     /** Remove the statsd config. */

@@ -18,9 +18,8 @@ package com.android.helpers;
 
 import android.util.Log;
 
-import com.android.os.AtomsProto;
-import com.android.os.AtomsProto.Atom;
-import com.android.os.StatsLog.EventMetricData;
+import com.android.os.nano.AtomsProto;
+import com.android.os.nano.StatsLog;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -42,7 +41,7 @@ public class UiActionLatencyHelper implements ICollectorHelper<StringBuilder> {
     public boolean startCollecting() {
         Log.i(LOG_TAG, "Adding system actions latency config to statsd.");
         List<Integer> atomIdList = new ArrayList<>();
-        atomIdList.add(Atom.UI_ACTION_LATENCY_REPORTED_FIELD_NUMBER);
+        atomIdList.add(AtomsProto.Atom.UI_ACTION_LATENCY_REPORTED_FIELD_NUMBER);
         return mStatsdHelper.addEventConfig(atomIdList);
     }
 
@@ -51,22 +50,46 @@ public class UiActionLatencyHelper implements ICollectorHelper<StringBuilder> {
     public Map<String, StringBuilder> getMetrics() {
         Log.i(LOG_TAG, "get metrics.");
         Map<String, StringBuilder> latenciesMap = new HashMap<>();
-        for (EventMetricData dataItem : mStatsdHelper.getEventMetrics()) {
-            final Atom atom = dataItem.getAtom();
+        for (StatsLog.EventMetricData dataItem : mStatsdHelper.getEventMetrics()) {
+            final AtomsProto.Atom atom = dataItem.atom;
             if (atom.hasUiActionLatencyReported()) {
                 final AtomsProto.UIActionLatencyReported uiActionLatencyReported =
                         atom.getUiActionLatencyReported();
-
-                final String action = String.valueOf(uiActionLatencyReported.getAction());
-
+                final String action = actionType(uiActionLatencyReported.action);
                 MetricUtility.addMetric(
                         MetricUtility.constructKey("latency", action),
-                        uiActionLatencyReported.getLatencyMillis(),
+                        uiActionLatencyReported.latencyMillis,
                         latenciesMap);
             }
         }
 
         return latenciesMap;
+    }
+
+    private String actionType(int action) {
+        // Defined in AtomsProto.java
+        switch (action) {
+            case 0:
+                return "UNKNOWN";
+            case 1:
+                return "ACTION_EXPAND_PANEL";
+            case 2:
+                return "ACTION_TOGGLE_RECENTS";
+            case 3:
+                return "ACTION_FINGERPRINT_WAKE_AND_UNLOCK";
+            case 4:
+                return "ACTION_CHECK_CREDENTIAL";
+            case 5:
+                return "ACTION_CHECK_CREDENTIAL_UNLOCKED";
+            case 6:
+                return "ACTION_TURN_ON_SCREEN";
+            case 7:
+                return "ACTION_ROTATE_SCREEN";
+            case 8:
+                return "ACTION_FACE_WAKE_AND_UNLOCK";
+            default:
+                throw new IllegalArgumentException("Invalid action");
+        }
     }
 
     /** Remove the statsd config. */
