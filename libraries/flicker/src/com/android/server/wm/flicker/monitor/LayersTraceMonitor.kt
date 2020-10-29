@@ -58,6 +58,6 @@ open class LayersTraceMonitor(
     override fun getTracePath(builder: FlickerRunResult.Builder) = builder.layersTraceFile
 
     companion object {
-        const val TRACE_FLAGS = 0x7 // TRACE_CRITICAL|TRACE_INPUT|TRACE_COMPOSITION
+        const val TRACE_FLAGS = 0x47 // TRACE_CRITICAL|TRACE_INPUT|TRACE_COMPOSITION|TRACE_SYNC
     }
 }
