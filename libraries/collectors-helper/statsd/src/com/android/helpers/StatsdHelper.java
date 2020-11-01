@@ -172,7 +172,10 @@ public class StatsdHelper {
         String[] defaultPullPackages =
                 new String[] {"AID_SYSTEM", "AID_RADIO", "AID_STATSD", "AID_GPU_SERVICE"};
         int[] whitelistedAtomIds =
-                new int[] {AtomsProto.Atom.UI_INTERACTION_FRAME_INFO_REPORTED_FIELD_NUMBER};
+                new int[] {
+                    AtomsProto.Atom.UI_INTERACTION_FRAME_INFO_REPORTED_FIELD_NUMBER,
+                    AtomsProto.Atom.UI_ACTION_LATENCY_REPORTED_FIELD_NUMBER
+                };
         config.allowedLogSource = allowedLogSources;
         config.defaultPullPackages = defaultPullPackages;
         config.whitelistedAtomIds = whitelistedAtomIds;
