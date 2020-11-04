@@ -19,6 +19,7 @@ package android.device.stressmodes;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.os.SystemClock;
 import android.util.Log;
@@ -36,9 +37,9 @@ import java.util.function.BiConsumer;
 // TODO(b/169588447): Consider converting to @Rule
 public class LockContentionStressMode extends InstrumentationRunListener {
     private static final String TAG = LockContentionStressMode.class.getSimpleName();
-    private static final int PAUSE_BETWEEN_ATTEMPTS_MS = 5;
-    private static final double PROBABILITY_OF_HOLDING_LOCK = 0.5;
-    private static final int MAX_HOLDING_LOCK_TIME = 100;
+    private int mPauseBetweenAttemptsMs;
+    private double mProbabilityOfHoldingLock;
+    private int mMaxHoldingLockTimeMs;
     private final CyclicBarrier mEnterStress = new CyclicBarrier(4);
     private final CyclicBarrier mLeaveStress = new CyclicBarrier(4);
     private IBinder mHoldLockToken;
@@ -76,10 +77,10 @@ public class LockContentionStressMode extends InstrumentationRunListener {
 
             // While the main thread doesn't indicate that it wants to leave the stress mode...
             while (mLeaveStress.getNumberWaiting() == 0) {
-                SystemClock.sleep(PAUSE_BETWEEN_ATTEMPTS_MS);
-                if (Math.random() < PROBABILITY_OF_HOLDING_LOCK) {
+                SystemClock.sleep(mPauseBetweenAttemptsMs);
+                if (Math.random() < mProbabilityOfHoldingLock) {
                     holdLockMethod.accept(
-                            mHoldLockToken, (int) (Math.random() * MAX_HOLDING_LOCK_TIME));
+                            mHoldLockToken, (int) (Math.random() * mMaxHoldingLockTimeMs));
                 }
             }
 
@@ -87,6 +88,29 @@ public class LockContentionStressMode extends InstrumentationRunListener {
             mLeaveStress.await();
         } catch (InterruptedException | BrokenBarrierException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public void testRunStarted(Description description) throws Exception {
+        super.testRunStarted(description);
+        final Bundle args = InstrumentationRegistry.getArguments();
+        final String intensity = args.getString("lock-stress-intensity", "P50");
+        Log.e(TAG, "lock-stress-intensity: " + intensity);
+        switch (intensity) {
+            case "P50":
+                mPauseBetweenAttemptsMs = 5;
+                mProbabilityOfHoldingLock = 0.5;
+                mMaxHoldingLockTimeMs = 100;
+                break;
+            case "P95":
+                mPauseBetweenAttemptsMs = 0;
+                mProbabilityOfHoldingLock = 1;
+                mMaxHoldingLockTimeMs = 100;
+                break;
+            default:
+                throw new IllegalArgumentException(
+                        "lock-stress-intensity: incorrect value: " + intensity);
         }
     }
 
