@@ -18,6 +18,7 @@ package com.android.server.wm.flicker.traces
 
 import com.android.server.wm.flicker.assertions.AssertionsChecker
 import com.android.server.wm.flicker.assertions.TraceAssertion
+import com.android.server.wm.flicker.common.AssertionResult
 import com.android.server.wm.flicker.common.traces.IRangedSubject
 import com.android.server.wm.flicker.common.traces.ITrace
 import com.android.server.wm.flicker.common.traces.ITraceEntry
@@ -99,4 +100,49 @@ abstract class SubjectBase<Trace : ITrace<Entry>, Entry : ITraceEntry> protected
     }
 
     abstract val traceName: String
+
+    /**
+     * Checks whether all the trace entries on the list are visible for more than one consecutive
+     * entry
+     *
+     * @param [visibleEntries] a list of all the entries with their name, their index inside the
+     * entries list and their corresponding [ITraceEntry]
+     * @param [assertionName] the name of the assertion
+     * @return an [AssertionResult] indicating if all the entries are shown more than one
+     * consecutive time
+     */
+    protected fun visibleEntriesShownMoreThanOneConsecutiveTime(
+        visibleEntries: List<Triple<String, Int, ITraceEntry>>,
+        assertionName: String
+    ):
+            AssertionResult {
+        visibleEntries.distinct() //
+                .groupBy({ it.first }, { Pair(it.second, it.third) }) //
+                .forEach { (entryName, indexesList) ->
+            val listOfConsecutiveNumbers = getListsOfConsecutiveNumbers(indexesList)
+            listOfConsecutiveNumbers.forEach {
+                if (it.size <= 1) {
+                    val timestamp = if (it.size == 1) it[0].second.timestamp else 0L
+                    return AssertionResult(
+                            "No two consecutive visible entries shown for $entryName",
+                            assertionName, timestamp, false)
+                }
+            }
+        }
+        return AssertionResult("All visible entries are shown for more than one consecutive time",
+                assertionName,
+                0L, true)
+    }
+
+    private fun getListsOfConsecutiveNumbers(indexList: List<Pair<Int, ITraceEntry>>):
+            MutableList<MutableList<Pair<Int, ITraceEntry>>> {
+        return indexList.fold(mutableListOf()) { accumulator, index ->
+            if (accumulator.isEmpty() || accumulator.last().last().first != index.first - 1) {
+                accumulator.add(mutableListOf(index))
+            } else {
+                accumulator.last().add(index)
+            }
+            accumulator
+        }
+    }
 }

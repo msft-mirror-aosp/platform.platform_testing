@@ -16,16 +16,33 @@
 
 package android.platform.test.rule;
 
+import android.util.Log;
+
+import androidx.annotation.VisibleForTesting;
 import org.junit.runner.Description;
+import org.junit.runners.model.InitializationError;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/** This rule converts a hot startup test to a warm startup one. */
-public class WarmAppStartRule extends TestWatcher {
+/** This rule removes all the activities associated with the given package name
+ *  from the activity manager stack.
+ */
+public class RemoveAppFromStackRule extends TestWatcher {
+
+    private static final String TAG = RemoveAppFromStackRule.class.getSimpleName();
+
     private final Pattern mAppActivityRecordPattern;
 
-    public WarmAppStartRule(String appPackageName) {
+    @VisibleForTesting
+    static final String REMOVE_APP_FROM_AM_STACK = "rm-app-am-stack";
+
+    public RemoveAppFromStackRule() throws InitializationError {
+        throw new InitializationError("Must supply an application pkg name to"
+                + "remove from am stack.");
+    }
+
+    public RemoveAppFromStackRule(String appPackageName) {
         mAppActivityRecordPattern =
                 Pattern.compile(
                         "ActivityRecord\\{.*"
@@ -35,12 +52,21 @@ public class WarmAppStartRule extends TestWatcher {
 
     @Override
     protected void starting(Description description) {
+        // Check if removing the app from am stack is chosen or not.
+        boolean removeAppFromAm = Boolean
+                .parseBoolean(getArguments().getString(REMOVE_APP_FROM_AM_STACK, "true"));
+        if (!removeAppFromAm) {
+            return;
+        }
+
         // Remove the stack of the app.
-        final Matcher appActivityMatcher =
-                mAppActivityRecordPattern.matcher(
-                        executeShellCommand("dumpsys activity activities"));
+        final Matcher appActivityMatcher = mAppActivityRecordPattern.matcher(
+                executeShellCommand("dumpsys activity activities"));
         if (appActivityMatcher.find()) {
             executeShellCommand("am stack remove " + appActivityMatcher.group(1));
+            Log.v(TAG, "Removed the app from AM stack");
+        } else {
+            Log.e(TAG, "No activities stack associated with the package name is found.");
         }
 
         super.starting(description);

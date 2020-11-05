@@ -112,6 +112,18 @@ class LayersTraceSubject private constructor(
         }
     }
 
+    /** Checks that all visible layers are shown for more than one consecutive entry */
+    fun visibleLayersShownMoreThanOneConsecutiveEntry() = apply {
+        addAssertion("visibleLayersShownMoreThanOneConsecutiveEntry") {
+            val visibleLayers = trace.entries.withIndex()
+                    .flatMap { (index, layerEntry) -> layerEntry.visibleLayers
+                            .map { Triple(it.name, index, layerEntry) }
+                    }
+            visibleEntriesShownMoreThanOneConsecutiveTime(visibleLayers,
+                    "visibleLayersShownMoreThanOneConsecutiveEntry")
+        }
+    }
+
     fun hasVisibleRegion(layerName: String, size: android.graphics.Region) = apply {
         addAssertion("hasVisibleRegion($layerName$size)") {
             it.hasVisibleRegion(layerName, size)

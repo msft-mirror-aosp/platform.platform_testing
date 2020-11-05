@@ -18,7 +18,6 @@ package com.android.server.wm.flicker
 
 import android.graphics.Region
 import androidx.test.filters.FlakyTest
-import com.android.server.wm.flicker.traces.layers.Layer
 import com.android.server.wm.flicker.traces.layers.LayersTrace
 import com.android.server.wm.flicker.traces.layers.LayersTrace.Companion.parseFrom
 import com.android.server.wm.flicker.traces.layers.LayersTraceSubject
@@ -46,7 +45,9 @@ class LayersTraceSubjectTest {
             Truth.assertWithMessage("Contains path to trace")
                     .that(e.message)
                     .contains("layers_trace_emptyregion.pb")
-            Truth.assertWithMessage("Contains timestamp").that(e.message).contains("0d0h15m33s674ms")
+            Truth.assertWithMessage("Contains timestamp")
+                    .that(e.message)
+                    .contains("0d0h15m33s674ms")
             Truth.assertWithMessage("Contains assertion function")
                     .that(e.message)
                     .contains("coversAtLeastRegion")
@@ -126,9 +127,41 @@ class LayersTraceSubjectTest {
                     .contains("!isVisible")
             Truth.assertWithMessage("Contains debug info")
                     .that(e.message)
-                    .contains("com.android.server.wm.flicker.testapp/com.android.server.wm.flicker.testapp"
-                            + ".SimpleActivity#0 is visible")
+                    .contains("com.android.server.wm.flicker.testapp/" +
+                            "com.android.server.wm.flicker.testapp.SimpleActivity#0 is visible")
         }
+    }
+
+    @Test
+    fun testCanDetectInvalidVisibleLayerForMoreThanOneConsecutiveEntry() {
+        val layersTraceEntries = readLayerTraceFromFile("layers_trace_invalid_visible_layers.pb")
+        try {
+            assertThat(layersTraceEntries)
+                    .visibleLayersShownMoreThanOneConsecutiveEntry()
+                    .forAllEntries()
+            Assert.fail("Assertion passed")
+        } catch (e: AssertionError) {
+            Truth.assertWithMessage("Contains path to trace")
+                    .that(e.message)
+                    .contains("layers_trace_invalid_visible_layers.pb")
+            Truth.assertWithMessage("Contains timestamp")
+                    .that(e.message)
+                    .contains("2d18h35m56s397ms")
+            Truth.assertWithMessage("Contains assertion function")
+                    .that(e.message)
+                    .contains("visibleLayersShownMoreThanOneConsecutiveEntry")
+            Truth.assertWithMessage("Contains debug info")
+                    .that(e.message)
+                    .contains("No two consecutive visible entries shown for StatusBar#0")
+        }
+    }
+
+    @Test
+    fun testCanDetectVisibleLayersMoreThanOneConsecutiveEntry() {
+        val layersTraceEntries = readLayerTraceFromFile("layers_trace_valid_visible_layers.pb")
+        assertThat(layersTraceEntries)
+                .visibleLayersShownMoreThanOneConsecutiveEntry()
+                .forAllEntries()
     }
 
     private fun detectRootLayer(fileName: String) {

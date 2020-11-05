@@ -187,8 +187,8 @@ fun UiDevice.launchSplitScreen() {
     overviewIcon.click()
 
     val splitScreenButtonSelector = By.text("Split screen")
-    val splitScreenButton
-            = this.wait(Until.findObject(splitScreenButtonSelector), FIND_TIMEOUT)
+    val splitScreenButton =
+            this.wait(Until.findObject(splitScreenButtonSelector), FIND_TIMEOUT)
     assertNotNull("Unable to find Split screen button in Overview", splitScreenButton)
     splitScreenButton.click()
 
@@ -259,6 +259,13 @@ fun UiDevice.resizeSplitScreen(windowHeightRatio: Rational) {
  */
 fun UiDevice.hasPipWindow(): Boolean {
     return this.wait(Until.findObject(pipWindowSelector), FIND_TIMEOUT) != null
+}
+
+/**
+ * Checks if the device has a window with the package name
+ */
+fun UiDevice.hasWindow(packageName: String): Boolean {
+    return this.wait(Until.findObject(By.pkg(packageName)), FIND_TIMEOUT) != null
 }
 
 val pipWindowSelector: BySelector

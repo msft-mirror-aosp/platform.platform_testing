@@ -278,4 +278,16 @@ class WmTraceSubject private constructor(
         fun entries(): Factory<SubjectBase<WindowManagerTrace, WindowManagerTraceEntry>,
             WindowManagerTrace> = FACTORY
     }
+
+    /** Checks that all visible windows are shown for more than one consecutive entry */
+    fun visibleWindowsShownMoreThanOneConsecutiveEntry() = apply {
+        addAssertion("visibleWindowsShownMoreThanOneConsecutiveEntry") {
+            val visibleWindows = trace.entries.withIndex()
+                    .flatMap { (index, windowEntry) -> windowEntry.visibleWindows
+                            .map { Triple(it.title, index, windowEntry) }
+                    }
+            visibleEntriesShownMoreThanOneConsecutiveTime(visibleWindows,
+                    "visibleWindowsShownMoreThanOneConsecutiveEntry")
+        }
+    }
 }
