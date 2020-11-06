@@ -34,5 +34,8 @@ message AudioDevice {
   string name = 1;
 
   // The serial number of the device, if available.
-  string serial_number = 5;
+  string serial_number = 2;
+
+  // The capabilities of the device.
+  repeated Capability capabilities = 3;
 }

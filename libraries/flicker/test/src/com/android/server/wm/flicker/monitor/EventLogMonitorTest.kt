@@ -99,6 +99,40 @@ class EventLogMonitorTest {
         assertTrue(result.eventLog[0].timestamp <= result.eventLog[1].timestamp)
     }
 
+    @Test
+    fun ignoreFocusRequestLogs() {
+        val monitor = EventLogMonitor()
+        monitor.start()
+        EventLog.writeEvent(INPUT_FOCUS_TAG /* input_focus */,
+                "Focus leaving 4749f88 com.android.phone/" +
+                        "com.android.phone.settings.fdn.FdnSetting (server)",
+                "reason=test")
+        EventLog.writeEvent(INPUT_FOCUS_TAG /* input_focus */,
+                "Focus request 111 com.android.phone/" +
+                        "com.android.phone.settings.fdn.FdnSetting (server)",
+                "reason=test")
+        EventLog.writeEvent(INPUT_FOCUS_TAG /* input_focus */,
+                "Focus entering 7c01447 com.android.phone/" +
+                        "com.android.phone.settings.fdn.FdnSetting (server)",
+                "reason=test")
+        monitor.stop()
+
+        val result = FlickerRunResult.Builder()
+        monitor.save("test", result)
+
+        assertEquals(2, result.eventLog.size)
+        assertEquals(
+                "4749f88 com.android.phone/com.android.phone.settings.fdn.FdnSetting (server)",
+                result.eventLog[0].window)
+        assertEquals(FocusEvent.Focus.LOST, result.eventLog[0].focus)
+        assertEquals(
+                "7c01447 com.android.phone/com.android.phone.settings.fdn.FdnSetting (server)",
+                result.eventLog[1].window)
+        assertEquals(FocusEvent.Focus.GAINED, result.eventLog[1].focus)
+        assertTrue(result.eventLog[0].timestamp <= result.eventLog[1].timestamp)
+        assertEquals(result.eventLog[0].reason, "test")
+    }
+
     private companion object {
         const val INPUT_FOCUS_TAG = 62001
     }

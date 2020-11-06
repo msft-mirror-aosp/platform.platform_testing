@@ -2,7 +2,7 @@
 {
   "presubmit": [
     {
-      "name": "AudioTestHarnessServerLibTests",
+      "name": "audiotestharness-serverlib-tests",
       "host": true,
       "options": [
 
@@ -22,11 +22,15 @@
       ]
     },
     {
-      "name": "AudioTestHarnessServiceTests",
+      "name": "audiotestharness-javasoundlib-tests",
       "host": true
     },
     {
-      "name": "AudioTestHarnessUtilityTests",
+      "name": "audiotestharness-servicelib-tests",
+      "host": true
+    },
+    {
+      "name": "audiotestharness-utilitylib-tests",
       "host": true
     }
   ]

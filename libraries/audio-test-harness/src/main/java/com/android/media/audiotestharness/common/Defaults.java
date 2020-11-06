@@ -47,5 +47,8 @@ public final class Defaults {
      * audio boxes.
      */
     public static final AudioDevice AUDIO_DEVICE =
-            AudioDevice.newBuilder().setName("UMM-6").build();
+            AudioDevice.newBuilder()
+                    .setName("UMM6 [plughw:0,0]")
+                    .addCapabilities(AudioDevice.Capability.CAPTURE)
+                    .build();
 }

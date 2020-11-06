@@ -268,6 +268,13 @@ fun UiDevice.hasWindow(packageName: String): Boolean {
     return this.wait(Until.findObject(By.pkg(packageName)), FIND_TIMEOUT) != null
 }
 
+/**
+ * Waits until the package with that name is gone
+ */
+fun UiDevice.waitUntilGone(packageName: String): Boolean {
+    return this.wait(Until.gone(By.pkg(packageName)), FIND_TIMEOUT) != null
+}
+
 val pipWindowSelector: BySelector
     get() = By.res(SYSTEMUI_PACKAGE, "background")
 

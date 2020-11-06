@@ -68,13 +68,18 @@ open class EventLogMonitor : ITransitionMonitor {
     }
 
     override fun save(testTag: String, flickerRunResultBuilder: FlickerRunResult.Builder) {
-        flickerRunResultBuilder.eventLog = _logs.map { event ->
+        flickerRunResultBuilder.eventLog = _logs.mapNotNull { event ->
             val timestamp = event.timeNanos
             val log = (event.data as Array<*>).map { it as String }
             if (log.size != 2) {
                 throw RuntimeException("Error reading from eventlog $log")
             }
-            val focusState = if (log[0].contains("entering")) Focus.GAINED else Focus.LOST
+            val focusState =
+                    when {
+                        log[0].contains(" entering ") -> Focus.GAINED
+                        log[0].contains(" leaving ") -> Focus.LOST
+                        else -> Focus.REQUESTED
+                    }
             // parse window from 'Focus [entering|leaving] [window name]'
             // by dropping the first two words
             var expectedWhiteSpace = 2
@@ -82,6 +87,7 @@ open class EventLogMonitor : ITransitionMonitor {
                     .drop(1)
             val reason = log[1].removePrefix("reason=")
             FocusEvent(timestamp, window, focusState, reason)
+                    .takeIf { focusState != Focus.REQUESTED }
         }
     }
 

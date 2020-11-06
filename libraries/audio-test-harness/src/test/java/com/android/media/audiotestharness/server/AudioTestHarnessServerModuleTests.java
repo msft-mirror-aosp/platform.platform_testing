@@ -17,6 +17,10 @@
 package com.android.media.audiotestharness.server;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
+import com.android.media.audiotestharness.proto.AudioTestHarnessGrpc;
+import com.android.media.audiotestharness.server.service.StreamObserverOutputStreamFactory;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -49,5 +53,15 @@ public class AudioTestHarnessServerModuleTests {
     @Test
     public void getInstance_executor_returnsProperExecutor() throws Exception {
         assertEquals(mExecutor, mInjector.getInstance(Executor.class));
+    }
+
+    @Test
+    public void getInstance_AudioTestHarnessBaseImpl_returnsInstance() throws Exception {
+        assertNotNull(mInjector.getInstance(AudioTestHarnessGrpc.AudioTestHarnessImplBase.class));
+    }
+
+    @Test
+    public void getInstance_StreamObserverOutputStreamFactory_returnsInstance() throws Exception {
+        assertNotNull(mInjector.getInstance(StreamObserverOutputStreamFactory.class));
     }
 }

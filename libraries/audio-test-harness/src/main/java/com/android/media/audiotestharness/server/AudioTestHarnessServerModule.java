@@ -18,6 +18,7 @@ package com.android.media.audiotestharness.server;
 
 import com.android.media.audiotestharness.proto.AudioTestHarnessGrpc;
 import com.android.media.audiotestharness.server.service.AudioTestHarnessImpl;
+import com.android.media.audiotestharness.server.service.StreamObserverOutputStreamFactory;
 
 import com.google.common.base.Preconditions;
 import com.google.inject.AbstractModule;
@@ -58,5 +59,6 @@ public final class AudioTestHarnessServerModule extends AbstractModule {
 
         // Audio Test Harness gRPC Service Implementation
         bind(AudioTestHarnessGrpc.AudioTestHarnessImplBase.class).to(AudioTestHarnessImpl.class);
+        bind(StreamObserverOutputStreamFactory.class);
     }
 }

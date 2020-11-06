@@ -20,7 +20,7 @@ import com.android.media.audiotestharness.common.Defaults;
 import com.android.media.audiotestharness.proto.AudioDeviceOuterClass.AudioDevice;
 import com.android.media.audiotestharness.proto.AudioFormatOuterClass.AudioFormat;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import java.io.IOException;
 
@@ -28,11 +28,11 @@ import java.io.IOException;
 public interface AudioSystemService {
 
     /**
-     * Gets a {@link ImmutableList} of {@link AudioDevice}s registered within the system.
+     * Gets a {@link ImmutableSet} of {@link AudioDevice}s registered within the system.
      *
      * @throws IOException if unable to communicate with the underlying audio system.
      */
-    ImmutableList<AudioDevice> getDevices() throws IOException;
+    ImmutableSet<AudioDevice> getDevices() throws IOException;
 
     /**
      * Creates a new {@link AudioCapturer} for a provided {@link AudioDevice} to capture raw audio
