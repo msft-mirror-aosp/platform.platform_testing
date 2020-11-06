@@ -70,8 +70,8 @@ public class UiInteractionFrameInfoHelper implements ICollectorHelper<StringBuil
                         frameInfoMap);
 
                 MetricUtility.addMetric(
-                        MetricUtility.constructKey("cuj", interactionType, "max_frame_time_nanos"),
-                        uiInteractionFrameInfoReported.maxFrameTimeNanos,
+                        MetricUtility.constructKey("cuj", interactionType, "max_frame_time_ms"),
+                        uiInteractionFrameInfoReported.maxFrameTimeNanos / 1000000.0,
                         frameInfoMap);
             }
         }
