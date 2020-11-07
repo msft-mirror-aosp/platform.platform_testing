@@ -134,24 +134,6 @@ public interface IAutoSettingHelper extends IAppHelper, Scrollable {
     void openMenuWith(String... menuOptions);
 
     /**
-     * Setup expectations: settings app is open and settings menu is selected
-     *
-     * Checks if the toggle switch for the given index is checked.
-     * @param index of toggle switch.
-     * index should be passed as 0 if only one toggle switch is present on screen.
-     */
-    boolean isToggleSwitchChecked(int index);
-
-    /**
-     * Setup expectations: settings app is open and settings menu is selected
-     *
-     * Clicks the toggle switch for the given index
-     * @param index of toggle switch.
-     * index should be passed as 0 if only one toggle switch is present on screen.
-     */
-    void clickToggleSwitch(int index);
-
-    /**
      * Setup expectations: settings app is open.
      *
      * gets the value of the setting.
