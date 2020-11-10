@@ -91,7 +91,7 @@ public class UiInteractionFrameInfoHelperTest {
                 frameMetrics.containsKey("cuj_SHADE_SCROLL_FLING_total_frames"));
         assertTrue(
                 "No metric max_frame_time_nanos_cuj_SHADE_SCROLL_FLING",
-                frameMetrics.containsKey("cuj_SHADE_SCROLL_FLING_max_frame_time_nanos"));
+                frameMetrics.containsKey("cuj_SHADE_SCROLL_FLING_max_frame_time_ms"));
 
         assertTrue(mInteractionFrameHelper.stopCollecting());
         HelperTestUtility.sendKeyCode(KEYCODE_HOME);
