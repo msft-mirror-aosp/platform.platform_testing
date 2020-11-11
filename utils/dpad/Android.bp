@@ -20,7 +20,7 @@ java_library {
     name: "dpad-util",
     libs: [
         "ub-uiautomator",
-        "android-support-test",
+        "androidx.test.rules",
     ],
     srcs: ["src/**/*.java"],
     sdk_version: "current",

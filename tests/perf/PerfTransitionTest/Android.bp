@@ -21,7 +21,7 @@ android_test {
     platform_apis: true,
     certificate: "platform",
     static_libs: [
-        "android-support-test",
+        "androidx.test.rules",
         "ub-uiautomator",
         "launcher-helper-lib",
         "sysui-helper",

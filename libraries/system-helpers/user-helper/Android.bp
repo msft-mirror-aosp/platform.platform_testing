@@ -18,7 +18,7 @@ java_library {
     name: "user-helper",
     libs: [
         "ub-uiautomator",
-        "android-support-test",
+        "androidx.test.rules",
         "commands-helper",
     ],
     srcs: ["src/**/*.java"],

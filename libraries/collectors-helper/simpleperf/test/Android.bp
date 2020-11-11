@@ -20,7 +20,7 @@ java_library {
 
     static_libs: [
         "androidx.test.runner",
-        "android-support-test",
+        "androidx.test.rules",
         "simpleperf-helper",
         "junit",
 

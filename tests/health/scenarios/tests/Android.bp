@@ -59,7 +59,7 @@ android_test {
     name: "PlatformCommonScenarioTests",
     min_sdk_version: "24",
     static_libs: [
-        "android-support-test",
+        "androidx.test.rules",
         "collector-device-lib-platform",
         "common-platform-scenarios",
         "common-profile-text-protos",

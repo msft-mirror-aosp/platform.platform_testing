@@ -26,10 +26,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
 import android.service.notification.StatusBarNotification;
-import android.support.test.InstrumentationRegistry;
 import android.support.test.uiautomator.UiDevice;
 import android.util.Log;
 import android.widget.Toast;
+
+import androidx.test.InstrumentationRegistry;
 
 import java.util.List;
 

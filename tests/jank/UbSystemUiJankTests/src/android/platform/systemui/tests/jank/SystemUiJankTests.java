@@ -16,7 +16,7 @@
 
 package android.platform.systemui.tests.jank;
 
-import static android.support.test.InstrumentationRegistry.getInstrumentation;
+import static androidx.test.InstrumentationRegistry.getInstrumentation;
 
 import static org.junit.Assert.assertNotNull;
 
@@ -37,10 +37,6 @@ import android.os.RemoteException;
 import android.os.SystemClock;
 import android.os.UserHandle;
 import android.provider.Settings;
-import android.support.test.InstrumentationRegistry;
-import android.support.test.jank.GfxMonitor;
-import android.support.test.jank.JankTest;
-import android.support.test.jank.JankTestBase;
 import android.support.test.launcherhelper.LauncherStrategyFactory;
 import android.support.test.timeresulthelper.TimeResultLogger;
 import android.support.test.uiautomator.By;
@@ -52,6 +48,11 @@ import android.system.helpers.LockscreenHelper;
 import android.system.helpers.OverviewHelper;
 import android.widget.Button;
 import android.widget.ImageView;
+
+import androidx.test.InstrumentationRegistry;
+import androidx.test.jank.GfxMonitor;
+import androidx.test.jank.JankTest;
+import androidx.test.jank.JankTestBase;
 
 import com.android.launcher3.tapl.LauncherInstrumentation;
 import com.android.launcher3.tapl.Overview;

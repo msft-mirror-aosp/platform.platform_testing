@@ -18,7 +18,7 @@ java_library {
     name: "account-helper",
     libs: [
         "ub-uiautomator",
-        "android-support-test",
+        "androidx.test.rules",
         "activity-helper",
         "device-helper",
     ],

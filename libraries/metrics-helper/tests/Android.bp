@@ -24,7 +24,7 @@ android_test {
         "android.test.base",
     ],
     static_libs: [
-        "android-support-test",
+        "androidx.test.rules",
         "mockito-target-minus-junit4",
         "platform-test-annotations",
         "metrics-helper-lib",

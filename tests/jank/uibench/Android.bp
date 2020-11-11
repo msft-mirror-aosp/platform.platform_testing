@@ -19,7 +19,7 @@ android_test {
     static_libs: [
         "collector-device-lib",
         "ub-uiautomator",
-        "ub-janktesthelper",
+        "androidx.test.janktesthelper",
         "junit",
     ],
 

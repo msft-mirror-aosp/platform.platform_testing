@@ -857,7 +857,7 @@
 
     </application>
 
-    <instrumentation android:name="android.support.test.runner.AndroidJUnitRunner"
+    <instrumentation android:name="androidx.test.runner.AndroidJUnitRunner"
          android:targetPackage="android.platform.systemui.tests.jank"
          android:label="System UI Jank Tests"/>
 

@@ -18,7 +18,7 @@ android_test {
     srcs: ["src/**/*.java"],
     sdk_version: "current",
 
-    static_libs: ["android-support-test"],
+    static_libs: ["androidx.test.rules"],
     certificate: "platform",
 
     test_suites: ["device-tests"],
