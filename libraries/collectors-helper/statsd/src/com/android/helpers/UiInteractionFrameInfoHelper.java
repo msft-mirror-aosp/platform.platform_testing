@@ -18,6 +18,7 @@ package com.android.helpers;
 
 import android.util.Log;
 
+import com.android.internal.jank.InteractionJankMonitor;
 import com.android.os.nano.AtomsProto;
 
 import java.util.ArrayList;
@@ -80,37 +81,7 @@ public class UiInteractionFrameInfoHelper implements ICollectorHelper<StringBuil
     }
 
     private static String interactionType(int interactionType) {
-        // Defined in AtomsProto.java
-        switch (interactionType) {
-            case 0:
-                return "UNKNOWN";
-            case 1:
-                return "NOTIFICATION_SHADE_SWIPE";
-            case 2:
-                return "SHADE_EXPAND_COLLAPSE_LOCK";
-            case 3:
-                return "SHADE_SCROLL_FLING";
-            case 4:
-                return "SHADE_ROW_EXPAND";
-            case 5:
-                return "SHADE_ROW_SWIPE";
-            case 6:
-                return "SHADE_QS_EXPAND_COLLAPSE";
-            case 7:
-                return "SHADE_QS_SCROLL_SWIPE";
-            case 8:
-                return "LAUNCHER_APP_LAUNCH_FROM_RECENTS";
-            case 9:
-                return "LAUNCHER_APP_LAUNCH_FROM_ICON";
-            case 10:
-                return "LAUNCHER_APP_CLOSE_TO_HOME";
-            case 11:
-                return "LAUNCHER_APP_CLOSE_TO_PIP";
-            case 12:
-                return "LAUNCHER_QUICK_SWITCH";
-            default:
-                throw new IllegalArgumentException("Invalid interaction type");
-        }
+        return InteractionJankMonitor.getNameOfInteraction(interactionType);
     }
 
     /** Remove the statsd config. */
