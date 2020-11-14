@@ -58,7 +58,8 @@ public class UiInteractionFrameInfoHelper implements ICollectorHelper<StringBuil
                         atom.getUiInteractionFrameInfoReported();
 
                 final String interactionType =
-                        interactionType(uiInteractionFrameInfoReported.interactionType);
+                        InteractionJankMonitor.getNameOfInteraction(
+                                uiInteractionFrameInfoReported.interactionType);
 
                 MetricUtility.addMetric(
                         MetricUtility.constructKey("cuj", interactionType, "total_frames"),
@@ -78,10 +79,6 @@ public class UiInteractionFrameInfoHelper implements ICollectorHelper<StringBuil
         }
 
         return frameInfoMap;
-    }
-
-    private static String interactionType(int interactionType) {
-        return InteractionJankMonitor.getNameOfInteraction(interactionType);
     }
 
     /** Remove the statsd config. */

@@ -18,6 +18,7 @@ package com.android.helpers;
 
 import android.util.Log;
 
+import com.android.internal.util.LatencyTracker;
 import com.android.os.nano.AtomsProto;
 import com.android.os.nano.StatsLog;
 
@@ -55,7 +56,8 @@ public class UiActionLatencyHelper implements ICollectorHelper<StringBuilder> {
             if (atom.hasUiActionLatencyReported()) {
                 final AtomsProto.UIActionLatencyReported uiActionLatencyReported =
                         atom.getUiActionLatencyReported();
-                final String action = actionType(uiActionLatencyReported.action);
+                final String action =
+                        LatencyTracker.getNameOfAction(uiActionLatencyReported.action);
                 MetricUtility.addMetric(
                         MetricUtility.constructKey("latency", action),
                         uiActionLatencyReported.latencyMillis,
@@ -64,32 +66,6 @@ public class UiActionLatencyHelper implements ICollectorHelper<StringBuilder> {
         }
 
         return latenciesMap;
-    }
-
-    private String actionType(int action) {
-        // Defined in AtomsProto.java
-        switch (action) {
-            case 0:
-                return "UNKNOWN";
-            case 1:
-                return "ACTION_EXPAND_PANEL";
-            case 2:
-                return "ACTION_TOGGLE_RECENTS";
-            case 3:
-                return "ACTION_FINGERPRINT_WAKE_AND_UNLOCK";
-            case 4:
-                return "ACTION_CHECK_CREDENTIAL";
-            case 5:
-                return "ACTION_CHECK_CREDENTIAL_UNLOCKED";
-            case 6:
-                return "ACTION_TURN_ON_SCREEN";
-            case 7:
-                return "ACTION_ROTATE_SCREEN";
-            case 8:
-                return "ACTION_FACE_WAKE_AND_UNLOCK";
-            default:
-                throw new IllegalArgumentException("Invalid action");
-        }
     }
 
     /** Remove the statsd config. */
