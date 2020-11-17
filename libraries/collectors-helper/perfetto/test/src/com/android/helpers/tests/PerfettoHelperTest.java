@@ -35,8 +35,8 @@ import java.io.IOException;
  * Android Unit tests for {@link PerfettoHelper}.
  *
  * To run:
- * Have a valid perfetto config under /data/misc/perfetto-traces/valid_config.pb
- * Have a valid text perfetto config under /data/misc/perfetto-traces/valid_text_config.textproto
+ * Have a valid text perfetto config under /data/misc/perfetto-traces/trace_config.textproto.
+ * Use trace_config_detailed.textproto from prebuilts/tools/linux-x86_64/perfetto/configs.
  * TODO: b/119020380 to keep track of automating the above step.
  * atest CollectorsHelperTest:com.android.helpers.tests.PerfettoHelperTest
  */
@@ -46,16 +46,17 @@ public class PerfettoHelperTest {
     private static final String REMOVE_CMD = "rm %s";
     private static final String FILE_SIZE_IN_BYTES = "wc -c %s";
 
-    private PerfettoHelper perfettoHelper;
+    private PerfettoHelper mPerfettoHelper;
 
     @Before
     public void setUp() {
-        perfettoHelper = new PerfettoHelper();
+        mPerfettoHelper = new PerfettoHelper();
     }
 
     @After
     public void teardown() throws IOException {
         UiDevice uiDevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
+        mPerfettoHelper.stopCollecting(1000, "data/local/tmp/out.pb");
         uiDevice.executeShellCommand(String.format(REMOVE_CMD, "/data/local/tmp/out.pb"));
     }
 
@@ -64,7 +65,7 @@ public class PerfettoHelperTest {
      */
     @Test
     public void testNullConfigName() throws Exception {
-        assertFalse(perfettoHelper.startCollecting(null, false));
+        assertFalse(mPerfettoHelper.startCollecting(null, false));
     }
 
     /**
@@ -72,7 +73,7 @@ public class PerfettoHelperTest {
      */
     @Test
     public void testEmptyConfigName() throws Exception {
-        assertFalse(perfettoHelper.startCollecting("", false));
+        assertFalse(mPerfettoHelper.startCollecting("", false));
     }
 
     /**
@@ -80,7 +81,7 @@ public class PerfettoHelperTest {
      */
     @Test
     public void testNoConfigFile() throws Exception {
-        assertFalse(perfettoHelper.startCollecting("no_config.pb", false));
+        assertFalse(mPerfettoHelper.startCollecting("no_config.pb", false));
     }
 
     /**
@@ -88,7 +89,7 @@ public class PerfettoHelperTest {
      */
     @Test
     public void testPerfettoStartSuccess() throws Exception {
-        assertTrue(perfettoHelper.startCollecting("valid_config.pb", false));
+        assertTrue(mPerfettoHelper.startCollecting("trace_config.textproto", true));
     }
 
     /**
@@ -96,8 +97,8 @@ public class PerfettoHelperTest {
      */
     @Test
     public void testPerfettoValidOutputPath() throws Exception {
-        assertTrue(perfettoHelper.startCollecting("valid_config.pb", false));
-        assertTrue(perfettoHelper.stopCollecting(1000, "data/local/tmp/out.pb"));
+        assertTrue(mPerfettoHelper.startCollecting("trace_config.textproto", true));
+        assertTrue(mPerfettoHelper.stopCollecting(1000, "data/local/tmp/out.pb"));
     }
 
     /**
@@ -105,9 +106,9 @@ public class PerfettoHelperTest {
      */
     @Test
     public void testPerfettoInvalidOutputPath() throws Exception {
-        assertTrue(perfettoHelper.startCollecting("valid_config.pb", false));
+        assertTrue(mPerfettoHelper.startCollecting("trace_config.textproto", true));
         // Don't have permission to create new folder under /data
-        assertFalse(perfettoHelper.stopCollecting(1000, "/data/dummy/xyz/out.pb"));
+        assertFalse(mPerfettoHelper.stopCollecting(1000, "/data/xxx/xyz/out.pb"));
     }
 
     /**
@@ -116,8 +117,8 @@ public class PerfettoHelperTest {
      */
     @Test
     public void testPerfettoSuccess() throws Exception {
-        assertTrue(perfettoHelper.startCollecting("valid_config.pb", false));
-        assertTrue(perfettoHelper.stopCollecting(1000, "/data/local/tmp/out.pb"));
+        assertTrue(mPerfettoHelper.startCollecting("trace_config.textproto", true));
+        assertTrue(mPerfettoHelper.stopCollecting(1000, "/data/local/tmp/out.pb"));
         UiDevice uiDevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
         String[] fileStats = uiDevice.executeShellCommand(String.format(
                 FILE_SIZE_IN_BYTES, "/data/local/tmp/out.pb")).split(" ");
@@ -125,18 +126,5 @@ public class PerfettoHelperTest {
         assertTrue(fileSize > 0);
     }
 
-    /**
-     * Test perfetto collection returns true and output file size greater than zero
-     * if the valid perfetto config file used.
-     */
-    @Test
-    public void testTextProtoConfigSuccess() throws Exception {
-        assertTrue(perfettoHelper.startCollecting("valid_text_config.textproto", true));
-        assertTrue(perfettoHelper.stopCollecting(1000, "/data/local/tmp/out.pb"));
-        UiDevice uiDevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
-        String[] fileStats = uiDevice.executeShellCommand(String.format(
-                FILE_SIZE_IN_BYTES, "/data/local/tmp/out.pb")).split(" ");
-        int fileSize = Integer.parseInt(fileStats[0].trim());
-        assertTrue(fileSize > 0);
-    }
+
 }

@@ -24,6 +24,7 @@ import android.support.test.uiautomator.UiObject2;
 
 import androidx.test.runner.AndroidJUnit4;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -96,5 +97,10 @@ public class UiInteractionFrameInfoHelperTest {
         assertTrue(mInteractionFrameHelper.stopCollecting());
         HelperTestUtility.sendKeyCode(KEYCODE_HOME);
         SystemClock.sleep(HelperTestUtility.ACTION_DELAY);
+    }
+
+    @After
+    public void tearDown() {
+        mInteractionFrameHelper.stopCollecting();
     }
 }

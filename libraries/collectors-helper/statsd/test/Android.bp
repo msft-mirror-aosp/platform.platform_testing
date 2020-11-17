@@ -26,6 +26,7 @@ java_library {
         "junit",
         "ub-uiautomator",
         "platformprotosnano",
+        "platform-test-rules",
         "statsdprotonano",
         "mockito-target-minus-junit4",
         "launcher-aosp-tapl"

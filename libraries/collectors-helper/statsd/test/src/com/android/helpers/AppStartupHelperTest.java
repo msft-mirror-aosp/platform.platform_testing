@@ -18,12 +18,16 @@ package com.android.helpers;
 import android.os.SystemClock;
 import android.platform.helpers.HelperAccessor;
 import android.platform.helpers.ICalendarHelper;
+import android.platform.test.rule.RemoveAppFromStackRule;
 import androidx.test.runner.AndroidJUnit4;
+
 
 import com.android.helpers.AppStartupHelper;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.Description;
 import org.junit.runner.RunWith;
 
 import java.util.Map;
@@ -88,6 +92,8 @@ public class AppStartupHelperTest {
         HelperTestUtility.clearApp(String.format(KILL_TEST_APP_CMD_TEMPLATE, SETTINGS_PKG_NAME));
         // Make sure display is on and unlocked.
         HelperTestUtility.wakeUpAndUnlock();
+        // Lock the orientation.
+        HelperTestUtility.setOrientationNatural();
     }
 
     /**
@@ -294,22 +300,38 @@ public class AppStartupHelperTest {
 
     }
 
+    public class TestableRule extends RemoveAppFromStackRule {
+
+        public TestableRule(String appPackageName) {
+            super(appPackageName);
+        }
+
+        @Override
+        public void starting(Description description) {
+            super.starting(description);
+        }
+    }
+
     /**
      * Test warm launch metric.
      */
     @Test
     public void testWarmLaunchMetric() throws Exception {
-        // Launch the app once and exit it so it resides in memory.
-        mHelper.get().open();
+        TestableRule rmAppFromStack = new TestableRule(CALENDAR_PKG_NAME);
+
+
+        // Warm launch from launcher is not WAI which is tracked in b/171750079.
+        // Launch the app from home using am start command and remove the app
+        // from activity manager stack.
+        HelperTestUtility.launchPackageViaAdb(CALENDAR_PKG_NAME);
         SystemClock.sleep(HelperTestUtility.ACTION_DELAY);
-        // Press home and clear the cache explicitly.
-        HelperTestUtility.sendKeyCode(KEYCODE_HOME);
-        HelperTestUtility.clearCache();
+        rmAppFromStack.starting(Description.createTestDescription("clzz", "mthd"));
+
         SystemClock.sleep(HelperTestUtility.ACTION_DELAY);
         // Start the collection here to test warm launch.
         assertTrue(mAppStartupHelper.startCollecting());
         // Launch the app; a warm launch occurs.
-        mHelper.get().open();
+        HelperTestUtility.launchPackageViaAdb(CALENDAR_PKG_NAME);
         SystemClock.sleep(HelperTestUtility.ACTION_DELAY);
         Map<String, StringBuilder> appLaunchMetrics = mAppStartupHelper.getMetrics();
         String calendarWarmLaunchKey = String.format(WARM_LAUNCH_KEY_TEMPLATE, CALENDAR_PKG_NAME);
@@ -461,5 +483,12 @@ public class AppStartupHelperTest {
                         COLD_LAUNCH_PROCESS_START_TOTAL_COUNT_KEY_TEMPLATE));
         assertTrue(mAppStartupHelper.stopCollecting());
         mHelper.get().exit();
+    }
+
+    @After
+    public void tearDown() {
+        mAppStartupHelper.stopCollecting();
+        // Unlock the orientation
+        HelperTestUtility.unfreezeRotation();
     }
 }

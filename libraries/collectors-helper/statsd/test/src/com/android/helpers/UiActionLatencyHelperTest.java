@@ -70,12 +70,16 @@ public class UiActionLatencyHelperTest {
     public void testQuickSwitchMetric() throws Exception {
         final LauncherInstrumentation sLauncher = new LauncherInstrumentation();
 
+        // Lock the orientation.
+        HelperTestUtility.setOrientationNatural();
+
         startApp(sLauncher, "Chrome", "com.android.chrome");
         startApp(sLauncher, "Calculator", "com.google.android.calculator");
 
         assertTrue(mActionLatencyHelper.startCollecting());
 
         sLauncher.getBackground().quickSwitchToPreviousApp();
+        SystemClock.sleep(HelperTestUtility.ACTION_DELAY);
 
         // Checking metrics produced by the CUJ.
         final Map<String, StringBuilder> latencyMetrics = mActionLatencyHelper.getMetrics();
@@ -86,6 +90,10 @@ public class UiActionLatencyHelperTest {
         assertTrue(mActionLatencyHelper.stopCollecting());
         HelperTestUtility.sendKeyCode(KEYCODE_HOME);
         SystemClock.sleep(HelperTestUtility.ACTION_DELAY);
+
+        // Unlock the orientation
+        HelperTestUtility.unfreezeRotation();
+
     }
 
     private void startApp(LauncherInstrumentation sLauncher, String appName, String appPackage) {

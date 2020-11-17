@@ -20,7 +20,7 @@ import android.platform.helpers.ICalendarHelper;
 
 import androidx.test.runner.AndroidJUnit4;
 
-
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -232,5 +232,10 @@ public class CpuUsageHelperTest {
         assertTrue(cpuUsage.get(CPU_UTILIZATION) >= 0);
         assertTrue(mCpuUsageHelper.stopCollecting());
         mHelper.get().exit();
+    }
+
+    @After
+    public void tearDown() {
+        mCpuUsageHelper.stopCollecting();
     }
 }

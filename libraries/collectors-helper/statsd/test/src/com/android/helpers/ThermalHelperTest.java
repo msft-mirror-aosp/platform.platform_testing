@@ -28,6 +28,7 @@ import androidx.test.uiautomator.UiDevice;
 import com.android.os.nano.AtomsProto;
 import com.android.os.nano.StatsLog;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -177,5 +178,10 @@ public class ThermalHelperTest {
     private String getMetricKey(int type, String name) {
         return MetricUtility.constructKey(
                 "thermal", ThermalHelper.getShorthandSensorType(type), name);
+    }
+
+    @After
+    public void tearDown() {
+        mThermalHelper.stopCollecting();
     }
 }
