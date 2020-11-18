@@ -17,6 +17,7 @@
 package android.platform.test.scenario.facebook;
 
 import android.platform.helpers.HelperAccessor;
+import android.platform.test.option.IntegerOption;
 import android.platform.test.option.StringOption;
 import android.platform.test.rule.AppVersionRule;
 import android.platform.test.scenario.annotation.Scenario;
@@ -45,6 +46,9 @@ public class OpenApp {
     @ClassRule
     public static StringOption sPasswordOption = new StringOption("password").setRequired(true);
 
+    @ClassRule
+    public static IntegerOption sScrollCount = new IntegerOption("scroll-count").setDefault(3);
+
     private static HelperAccessor<IFacebookAppHelper> sHelper =
             new HelperAccessor<>(IFacebookAppHelper.class);
 
@@ -53,7 +57,7 @@ public class OpenApp {
         sHelper.get().open();
         sHelper.get().loginWithUi(sUsernameOption.get(), sPasswordOption.get());
         sHelper.get().dismissInitialDialogs();
-        sHelper.get().scrollNewsfeed(Direction.DOWN, 3);
+        sHelper.get().scrollNewsfeed(Direction.DOWN, sScrollCount.get());
         sHelper.get().exit();
     }
 }

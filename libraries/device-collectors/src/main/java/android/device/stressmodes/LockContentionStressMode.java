@@ -116,7 +116,15 @@ public class LockContentionStressMode extends InstrumentationRunListener {
 
     @Override
     public final void testStarted(Description description) throws Exception {
-        Log.d(TAG, "LockContentionStressMode.testStarted: entering lock contention mode");
+        Log.d(
+                TAG,
+                "LockContentionStressMode.testStarted: entering lock contention mode: "
+                        + "mPauseBetweenAttemptsMs="
+                        + mPauseBetweenAttemptsMs
+                        + ", mProbabilityOfHoldingLock="
+                        + mProbabilityOfHoldingLock
+                        + ", mMaxHoldingLockTimeMs="
+                        + mMaxHoldingLockTimeMs);
 
         getInstrumentation().getUiAutomation().adoptShellPermissionIdentity();
         mHoldLockToken = getInstrumentation().getContext().getPackageManager().getHoldLockToken();
