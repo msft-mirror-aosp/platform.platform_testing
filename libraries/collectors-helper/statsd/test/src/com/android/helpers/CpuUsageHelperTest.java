@@ -16,7 +16,7 @@
 package com.android.helpers;
 
 import android.platform.helpers.HelperAccessor;
-import android.platform.helpers.ICalendarHelper;
+import android.platform.helpers.ICalculatorHelper;
 
 import androidx.test.runner.AndroidJUnit4;
 
@@ -41,8 +41,8 @@ import static org.junit.Assert.assertEquals;
 @RunWith(AndroidJUnit4.class)
 public class CpuUsageHelperTest {
 
-    // Kill the calendar app.
-    private static final String KILL_TEST_APP_CMD = "am force-stop com.google.android.calendar";
+    // Kill the calculator app.
+    private static final String KILL_TEST_APP_CMD = "am force-stop com.google.android.calculator";
     // Key prefix used for cpu usage by frequency index.
     private static final String CPU_USAGE_FREQ_PREFIX = "cpu_usage_freq";
     // Key prefix used for cpu usage by package name or uid
@@ -57,8 +57,8 @@ public class CpuUsageHelperTest {
     private static final String CPU_UTILIZATION = "cpu_utilization_average_per_core_percent";
 
     private CpuUsageHelper mCpuUsageHelper;
-    private HelperAccessor<ICalendarHelper> mHelper =
-            new HelperAccessor<>(ICalendarHelper.class);
+    private HelperAccessor<ICalculatorHelper> mHelper =
+            new HelperAccessor<>(ICalculatorHelper.class);
 
     @Before
     public void setUp() {
