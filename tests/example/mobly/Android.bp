@@ -16,6 +16,5 @@ python_test_host {
     name: "mobly-hello-world-test",
     main: "hello_world_test.py",
     srcs: ["hello_world_test.py",],
-    data: ["testdata/mobly-bundled-snippets-release-signed.apk",],
     test_suites: ["general-tests"],
 }

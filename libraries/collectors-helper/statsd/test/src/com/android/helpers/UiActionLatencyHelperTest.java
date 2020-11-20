@@ -18,6 +18,7 @@ package com.android.helpers;
 import static org.junit.Assert.assertTrue;
 
 import android.os.SystemClock;
+import android.util.Log;
 
 import androidx.test.runner.AndroidJUnit4;
 
@@ -39,6 +40,8 @@ import java.util.Map;
  */
 @RunWith(AndroidJUnit4.class)
 public class UiActionLatencyHelperTest {
+    private static final String LOG_TAG = UiActionLatencyHelperTest.class.getSimpleName();
+
     // Keycode for pressing the home button.
     private static final String KEYCODE_HOME = "KEYCODE_HOME";
 
@@ -77,12 +80,15 @@ public class UiActionLatencyHelperTest {
         startApp(sLauncher, "Calculator", "com.google.android.calculator");
 
         assertTrue(mActionLatencyHelper.startCollecting());
+        Log.d(LOG_TAG, "testQuickSwitchMetric: started collecting");
 
         sLauncher.getBackground().quickSwitchToPreviousApp();
-        SystemClock.sleep(HelperTestUtility.ACTION_DELAY);
 
         // Checking metrics produced by the CUJ.
         final Map<String, StringBuilder> latencyMetrics = mActionLatencyHelper.getMetrics();
+        Log.d(
+                LOG_TAG,
+                "testQuickSwitchMetric: got metrics: " + String.join(",", latencyMetrics.keySet()));
         assertTrue(
                 "No metric latency_ACTION_TOGGLE_RECENTS",
                 latencyMetrics.containsKey("latency_ACTION_TOGGLE_RECENTS"));

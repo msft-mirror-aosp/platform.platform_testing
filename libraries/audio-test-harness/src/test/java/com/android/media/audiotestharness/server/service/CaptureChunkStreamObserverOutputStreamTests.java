@@ -28,6 +28,7 @@ import com.android.media.audiotestharness.proto.AudioTestHarnessService;
 
 import com.google.common.collect.ImmutableList;
 
+import io.grpc.stub.ServerCallStreamObserver;
 import io.grpc.stub.StreamObserver;
 
 import junitparams.JUnitParamsRunner;
@@ -325,9 +326,37 @@ public class CaptureChunkStreamObserverOutputStreamTests {
      *
      * @param writtenBytes a List of byte[]s representing each individual call to write.
      */
-    private static StreamObserver<AudioTestHarnessService.CaptureChunk>
+    private static ServerCallStreamObserver<AudioTestHarnessService.CaptureChunk>
             createStreamObserverThatWritesTo(final List<byte[]> writtenBytes) {
-        return new StreamObserver<AudioTestHarnessService.CaptureChunk>() {
+        return new ServerCallStreamObserver<AudioTestHarnessService.CaptureChunk>() {
+            @Override
+            public boolean isReady() {
+                return false;
+            }
+
+            @Override
+            public void setOnReadyHandler(Runnable onReadyHandler) {}
+
+            @Override
+            public void disableAutoInboundFlowControl() {}
+
+            @Override
+            public void request(int count) {}
+
+            @Override
+            public void setMessageCompression(boolean enable) {}
+
+            @Override
+            public boolean isCancelled() {
+                return false;
+            }
+
+            @Override
+            public void setOnCancelHandler(Runnable onCancelHandler) {}
+
+            @Override
+            public void setCompression(String compression) {}
+
             @Override
             public void onNext(AudioTestHarnessService.CaptureChunk value) {
                 writtenBytes.add(value.getData().toByteArray());

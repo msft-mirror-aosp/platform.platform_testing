@@ -17,6 +17,9 @@
 package com.android.media.audiotestharness.server;
 
 import com.android.media.audiotestharness.proto.AudioTestHarnessGrpc;
+import com.android.media.audiotestharness.server.javasound.JavaSoundModule;
+import com.android.media.audiotestharness.server.service.AudioCaptureSessionFactory;
+import com.android.media.audiotestharness.server.service.AudioCaptureSessionFactoryImpl;
 import com.android.media.audiotestharness.server.service.AudioTestHarnessImpl;
 import com.android.media.audiotestharness.server.service.StreamObserverOutputStreamFactory;
 
@@ -57,8 +60,12 @@ public final class AudioTestHarnessServerModule extends AbstractModule {
     protected void configure() {
         bind(Executor.class).toInstance(mExecutor);
 
+        // Tie the gRPC Server to the JavaSound implementation.
+        install(JavaSoundModule.create());
+
         // Audio Test Harness gRPC Service Implementation
         bind(AudioTestHarnessGrpc.AudioTestHarnessImplBase.class).to(AudioTestHarnessImpl.class);
         bind(StreamObserverOutputStreamFactory.class);
+        bind(AudioCaptureSessionFactory.class).to(AudioCaptureSessionFactoryImpl.class);
     }
 }

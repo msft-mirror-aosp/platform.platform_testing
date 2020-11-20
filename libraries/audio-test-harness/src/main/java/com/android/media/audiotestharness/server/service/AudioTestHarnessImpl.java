@@ -17,11 +17,18 @@ package com.android.media.audiotestharness.server.service;
 
 import com.android.media.audiotestharness.proto.AudioTestHarnessGrpc;
 import com.android.media.audiotestharness.proto.AudioTestHarnessService;
+import com.android.media.audiotestharness.server.core.AudioCapturer;
+import com.android.media.audiotestharness.server.core.AudioSystemService;
 
 import com.google.inject.Inject;
 
+import io.grpc.Status;
+import io.grpc.stub.ServerCallStreamObserver;
 import io.grpc.stub.StreamObserver;
 
+import java.io.IOException;
+import java.time.Duration;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -34,14 +41,59 @@ public final class AudioTestHarnessImpl extends AudioTestHarnessGrpc.AudioTestHa
 
     private static final Logger LOGGER = Logger.getLogger(AudioTestHarnessImpl.class.getName());
 
+    /** The maximum duration that a client can capture before the server manually stops capture. */
+    public static final Duration MAX_CAPTURE_DURATION = Duration.ofHours(1);
+
+    /** {@link AudioSystemService} that should be used to access audio system resources. */
+    private final AudioSystemService mAudioSystemService;
+
+    /** Factory for StreamObserverOutputStreams used during the procedure handling process. */
+    private final AudioCaptureSessionFactory mAudioCaptureSessionFactory;
+
     @Inject
-    public AudioTestHarnessImpl() {}
+    public AudioTestHarnessImpl(
+            AudioSystemService audioSystemService,
+            AudioCaptureSessionFactory audioCaptureSessionFactory) {
+        mAudioSystemService = audioSystemService;
+        mAudioCaptureSessionFactory = audioCaptureSessionFactory;
+    }
 
     @Override
     public void capture(
             AudioTestHarnessService.CaptureRequest request,
             StreamObserver<AudioTestHarnessService.CaptureChunk> responseObserver) {
-        // TODO(b/168801581): Implement this procedure to allow for opening of capture sessions by a
-        // client.
+        ServerCallStreamObserver<AudioTestHarnessService.CaptureChunk> serverCallResponseObserver =
+                (ServerCallStreamObserver<AudioTestHarnessService.CaptureChunk>) responseObserver;
+        LOGGER.info("Handling Capture procedure");
+
+        // Allocate the default AudioCapturer from the Audio System Service.
+        AudioCapturer capturer;
+        try {
+            capturer = mAudioSystemService.createDefaultCapturer();
+        } catch (IOException ioe) {
+            LOGGER.log(Level.SEVERE, "Failed to allocate default AudioCapturer", ioe);
+            serverCallResponseObserver.onError(
+                    Status.UNAVAILABLE
+                            .withCause(ioe)
+                            .withDescription("Failed to allocate default AudioCapturer")
+                            .asException());
+            return;
+        }
+
+        // Start a new capture session
+        AudioCaptureSession captureSession =
+                mAudioCaptureSessionFactory.createCaptureSession(
+                        serverCallResponseObserver, capturer);
+
+        // Start capturing and continue until either cancelled by the client or MAX_CAPTURE_DURATION
+        // is hit.
+        serverCallResponseObserver.setOnCancelHandler(captureSession::stop);
+        try {
+            captureSession.start();
+        } catch (IOException ioe) {
+            LOGGER.log(Level.SEVERE, "Internal Error while Capturing", ioe);
+            serverCallResponseObserver.onError(
+                    Status.INTERNAL.withCause(ioe).withDescription(ioe.getMessage()).asException());
+        }
     }
 }

@@ -15,13 +15,6 @@
   ~ limitations under the License.
   -->
 <configuration description="Example Mobly test.">
-    <target_preparer class="com.android.tradefed.targetprep.suite.SuiteApkInstaller">
-        <option name="cleanup-apks" value="true" />
-        <option name="install-arg" value="-d" />
-        <option name="install-arg" value="-r" />
-        <option name="install-arg" value="-g" />
-        <option name="test-file-name" value="mobly-bundled-snippets-release-signed.apk" />
-    </target_preparer>
     <target_preparer class="com.android.tradefed.targetprep.PythonVirtualenvPreparer">
       <option name="dep-module" value="mobly" />
     </target_preparer>

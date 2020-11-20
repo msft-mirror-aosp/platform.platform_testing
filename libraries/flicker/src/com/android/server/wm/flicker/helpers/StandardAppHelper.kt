@@ -16,6 +16,7 @@
 
 package com.android.server.wm.flicker.helpers
 
+import android.app.ActivityManager
 import android.app.Instrumentation
 import android.platform.helpers.AbstractStandardAppHelper
 import android.support.test.launcherhelper.ILauncherStrategy
@@ -39,6 +40,9 @@ open class StandardAppHelper @JvmOverloads constructor(
                 LauncherStrategyFactory.getInstance(instr).launcherStrategy
     ) : this(instr, sFlickerPackage, appName, launcherStrategy)
 
+    private val activityManager: ActivityManager?
+        get() = mInstrumentation.context.getSystemService(ActivityManager::class.java)
+
     override fun open() {
         launcherStrategy.launch(appName, packageName)
     }
@@ -55,6 +59,14 @@ open class StandardAppHelper @JvmOverloads constructor(
 
     /** {@inheritDoc}  */
     override fun dismissInitialDialogs() {}
+
+    /** {@inheritDoc}  */
+    override fun exit() {
+        super.exit()
+
+        // Ensure all testing components end up being closed.
+        activityManager?.forceStopPackage(packageName)
+    }
 
     companion object {
         private val sFlickerPackage = "com.android.server.wm.flicker.testapp"
