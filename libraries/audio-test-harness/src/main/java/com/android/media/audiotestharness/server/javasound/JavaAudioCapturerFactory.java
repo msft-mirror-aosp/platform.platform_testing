@@ -22,18 +22,18 @@ import com.android.media.audiotestharness.proto.AudioFormatOuterClass.AudioForma
 import com.google.common.base.Preconditions;
 import com.google.inject.Inject;
 
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executor;
 
 import javax.sound.sampled.TargetDataLine;
 
 /** Factory for {@link JavaAudioCapturer} instances. */
 public class JavaAudioCapturerFactory {
 
-    private final ExecutorService mExecutorService;
+    private final Executor mExecutor;
 
     @Inject
-    public JavaAudioCapturerFactory(ExecutorService executorService) {
-        mExecutorService = executorService;
+    public JavaAudioCapturerFactory(Executor executor) {
+        mExecutor = executor;
     }
 
     /**
@@ -50,6 +50,6 @@ public class JavaAudioCapturerFactory {
                 "targetDataLine must already be open before passed to the build() for the"
                         + " AudioCapturer");
 
-        return JavaAudioCapturer.create(audioDevice, audioFormat, targetDataLine, mExecutorService);
+        return JavaAudioCapturer.create(audioDevice, audioFormat, targetDataLine, mExecutor);
     }
 }

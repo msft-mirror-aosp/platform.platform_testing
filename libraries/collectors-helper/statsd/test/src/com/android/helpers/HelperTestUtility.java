@@ -126,7 +126,7 @@ public class HelperTestUtility {
      */
     public static void setOrientationNatural() {
         try {
-            mDevice.setOrientationNatural();
+            getUiDevice().setOrientationNatural();
         } catch (RemoteException e) {
             throw new RuntimeException(e);
         }

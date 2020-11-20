@@ -16,7 +16,7 @@
 
 package com.android.server.wm.flicker
 
-import android.graphics.Rect
+import android.graphics.Point
 import com.android.server.wm.flicker.traces.layers.LayersTrace
 import com.android.server.wm.flicker.traces.layers.LayersTrace.Companion.parseFrom
 import com.android.server.wm.flicker.traces.layers.LayersTraceSubject.Companion.assertThat
@@ -32,7 +32,7 @@ class LayerSubjectTest {
     fun canTestAssertionsOnLayer() {
         val layersTraceEntries = readLayerTraceFromFile("layers_trace_emptyregion.pb")
         assertThat(layersTraceEntries).layer("SoundVizWallpaperV2", 26033).also {
-            it.hasBufferSize(Rect(0, 0, 1440, 2960))
+            it.hasBufferSize(Point(1440, 2960))
             it.hasScalingMode(0)
         }
         assertThat(layersTraceEntries).layer("DoesntExist", 1).doesNotExist()

@@ -32,7 +32,7 @@ public final class JavaSoundModule extends AbstractModule {
     @Override
     protected void configure() {
         bind(AudioSystemService.class).to(JavaAudioSystemService.class);
-        bind(JavaAudioSystem.class).to(JavaAudioSystem.class);
-        bind(JavaAudioCapturerFactory.class).to(JavaAudioCapturerFactory.class);
+        bind(JavaAudioSystem.class).toInstance(JavaAudioSystem.getInstance());
+        bind(JavaAudioCapturerFactory.class);
     }
 }

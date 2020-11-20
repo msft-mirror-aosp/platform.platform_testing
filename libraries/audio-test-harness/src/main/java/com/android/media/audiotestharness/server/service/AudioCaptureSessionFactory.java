@@ -17,21 +17,18 @@
 package com.android.media.audiotestharness.server.service;
 
 import com.android.media.audiotestharness.proto.AudioTestHarnessService;
+import com.android.media.audiotestharness.server.core.AudioCapturer;
 
 import io.grpc.stub.ServerCallStreamObserver;
 
-/**
- * Factory class for {@link java.io.OutputStream}s that package written data into specialized the
- * proper format before writing the packaged data to a {@link io.grpc.stub.StreamObserver}
- */
-public class StreamObserverOutputStreamFactory {
+/** Factory for {@link AudioCaptureSession}s. */
+public interface AudioCaptureSessionFactory {
 
     /**
-     * Creates a new {@link CaptureChunkStreamObserverOutputStream} for the provided {@link
-     * ServerCallStreamObserver}.
+     * Creates a new {@link AudioCaptureSession} for the provided {@link AudioCapturer} with the
+     * {@link ServerCallStreamObserver} added as an input to the {@link AudioCapturer}.
      */
-    public CaptureChunkStreamObserverOutputStream createNewCaptureChunkStreamObserverOutputStream(
-            ServerCallStreamObserver<AudioTestHarnessService.CaptureChunk> streamObserver) {
-        return CaptureChunkStreamObserverOutputStream.create(streamObserver);
-    }
+    AudioCaptureSession createCaptureSession(
+            ServerCallStreamObserver<AudioTestHarnessService.CaptureChunk> chunkStreamObserver,
+            AudioCapturer audioCapturer);
 }

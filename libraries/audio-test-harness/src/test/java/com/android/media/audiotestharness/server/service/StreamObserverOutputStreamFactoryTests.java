@@ -20,7 +20,7 @@ import static org.junit.Assert.assertNotNull;
 
 import com.android.media.audiotestharness.proto.AudioTestHarnessService;
 
-import io.grpc.stub.StreamObserver;
+import io.grpc.stub.ServerCallStreamObserver;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -35,7 +35,35 @@ public class StreamObserverOutputStreamFactoryTests {
         StreamObserverOutputStreamFactory factory = new StreamObserverOutputStreamFactory();
         assertNotNull(
                 factory.createNewCaptureChunkStreamObserverOutputStream(
-                        new StreamObserver<AudioTestHarnessService.CaptureChunk>() {
+                        new ServerCallStreamObserver<AudioTestHarnessService.CaptureChunk>() {
+                            @Override
+                            public boolean isReady() {
+                                return false;
+                            }
+
+                            @Override
+                            public void setOnReadyHandler(Runnable onReadyHandler) {}
+
+                            @Override
+                            public void disableAutoInboundFlowControl() {}
+
+                            @Override
+                            public void request(int count) {}
+
+                            @Override
+                            public void setMessageCompression(boolean enable) {}
+
+                            @Override
+                            public boolean isCancelled() {
+                                return false;
+                            }
+
+                            @Override
+                            public void setOnCancelHandler(Runnable onCancelHandler) {}
+
+                            @Override
+                            public void setCompression(String compression) {}
+
                             @Override
                             public void onNext(AudioTestHarnessService.CaptureChunk value) {}
 

@@ -15,6 +15,7 @@
  */
 package com.android.server.wm.flicker.traces.layers
 
+import android.graphics.Point
 import android.graphics.Rect
 import com.google.common.truth.Fact.simpleFact
 import com.google.common.truth.FailureMetadata
@@ -33,35 +34,45 @@ class LayerSubject private constructor(
     }
 
     fun exists() {
-        checkNotNull(layer)
+        if (layer == null) {
+            failWithoutActual(simpleFact("doesn't exist"))
+        }
     }
 
-    fun hasBufferSize(size: Rect) {
-        layer ?: return failWithActual(simpleFact("doesn't exist"))
-        val bufferSize = Rect(0, 0, layer.proto.activeBuffer.width, layer.proto.activeBuffer.height)
+    fun hasBufferSize(size: Point) {
+        layer ?: return exists()
+        val bufferSize = Point(layer.proto.activeBuffer.width, layer.proto.activeBuffer.height)
         Truth.assertThat(bufferSize).isEqualTo(size)
     }
 
-    fun hasLayerSize(size: Rect) {
-        layer ?: return failWithActual(simpleFact("doesn't exist"))
+    fun hasLayerSize(size: Point) {
+        layer ?: return exists()
         val screenBoundsProto = layer.proto.screenBounds
-        val layerSize = Rect(screenBoundsProto.left.toInt(), screenBoundsProto.top.toInt(),
+        val layerBounds = Rect(screenBoundsProto.left.toInt(), screenBoundsProto.top.toInt(),
                 screenBoundsProto.right.toInt(), screenBoundsProto.bottom.toInt())
-        layerSize.also { it.offsetTo(0, 0) }
+        val layerSize = Point(layerBounds.width(), layerBounds.height())
         Truth.assertThat(layerSize).isEqualTo(size)
     }
 
     fun hasScalingMode(expectedScalingMode: Int) {
-        layer ?: return failWithActual(simpleFact("doesn't exist"))
+        layer ?: return exists()
         val actualScalingMode = layer.proto.effectiveScalingMode
         Truth.assertThat(actualScalingMode).isEqualTo(expectedScalingMode)
+    }
+
+    fun hasBufferOrientation(expectedOrientation: Int) {
+        layer ?: return exists()
+        // see Transform::getOrientation
+        val actualOrientation = (layer.proto.bufferTransform.type shr 8) and 0xFF
+        check("hasBufferTransformOrientation()")
+                .that(actualOrientation).isEqualTo(expectedOrientation)
     }
 
     companion object {
         /**
          * Boiler-plate Subject.Factory for LayerSubject
          */
-        private val FACTORY = Factory { fm: FailureMetadata, subject: Layer? ->
+        val FACTORY = Factory { fm: FailureMetadata, subject: Layer? ->
             LayerSubject(fm, subject)
         }
 

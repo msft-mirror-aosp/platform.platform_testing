@@ -79,7 +79,6 @@ public class UiActionLatencyHelperTest {
         assertTrue(mActionLatencyHelper.startCollecting());
 
         sLauncher.getBackground().quickSwitchToPreviousApp();
-        SystemClock.sleep(HelperTestUtility.ACTION_DELAY);
 
         // Checking metrics produced by the CUJ.
         final Map<String, StringBuilder> latencyMetrics = mActionLatencyHelper.getMetrics();

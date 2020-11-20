@@ -157,6 +157,12 @@ class LayerTraceEntry constructor(
         return android.graphics.Region(bounds.left, bounds.top, bounds.right, bounds.bottom)
     }
 
+    fun getLayerWithBuffer(name: String): Layer? {
+        return flattenedLayers.firstOrNull {
+            it.name.contains(name) && it.proto.activeBuffer != null
+        }
+    }
+
     companion object {
         fun fromFlattenedProtoLayers(
             timestamp: Long,

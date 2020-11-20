@@ -32,6 +32,7 @@ import com.android.media.audiotestharness.server.core.AudioCapturer;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.junit.rules.Timeout;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.ArgumentCaptor;
@@ -41,8 +42,10 @@ import org.mockito.junit.MockitoRule;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.Files;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executor;
 
 import javax.sound.sampled.TargetDataLine;
 
@@ -52,7 +55,13 @@ public class JavaAudioCapturerTests {
     @Rule public MockitoRule mMockitoRule = MockitoJUnit.rule();
     @Rule public TemporaryFolder mTemporaryFolder = new TemporaryFolder();
 
-    @Mock ExecutorService mExecutorService;
+    /**
+     * Timeout to catch breakages where the TargetDataLineWatchingPublisher infinite loops. The
+     * slowest test takes about 50ms to run so a 20x buffer for timeout should be acceptable.
+     */
+    @Rule public Timeout mTimeout = Timeout.millis(1000);
+
+    @Mock Executor mExecutor;
 
     @Mock TargetDataLine mTargetDataLine;
 
@@ -62,7 +71,7 @@ public class JavaAudioCapturerTests {
     @Test(expected = IllegalArgumentException.class)
     public void create_throwsIllegalArgumentException_closedDataLine() throws Exception {
         when(mTargetDataLine.isOpen()).thenReturn(false);
-        JavaAudioCapturer.create(TEST_DEVICE, TEST_FORMAT, mTargetDataLine, mExecutorService);
+        JavaAudioCapturer.create(TEST_DEVICE, TEST_FORMAT, mTargetDataLine, mExecutor);
     }
 
     @Test
@@ -70,8 +79,7 @@ public class JavaAudioCapturerTests {
         when(mTargetDataLine.isOpen()).thenReturn(true);
         when(mTargetDataLine.isRunning()).thenReturn(false);
 
-        JavaAudioCapturer.create(TEST_DEVICE, TEST_FORMAT, mTargetDataLine, mExecutorService)
-                .open();
+        JavaAudioCapturer.create(TEST_DEVICE, TEST_FORMAT, mTargetDataLine, mExecutor).open();
 
         verify(mTargetDataLine).start();
     }
@@ -81,11 +89,9 @@ public class JavaAudioCapturerTests {
         when(mTargetDataLine.isOpen()).thenReturn(true);
         when(mTargetDataLine.isRunning()).thenReturn(false);
 
-        JavaAudioCapturer.create(TEST_DEVICE, TEST_FORMAT, mTargetDataLine, mExecutorService)
-                .open();
+        JavaAudioCapturer.create(TEST_DEVICE, TEST_FORMAT, mTargetDataLine, mExecutor).open();
 
-        verify(mExecutorService)
-                .submit(any(JavaAudioCapturer.TargetDataLineWatchingPublisher.class));
+        verify(mExecutor).execute(any(JavaAudioCapturer.TargetDataLineWatchingPublisher.class));
     }
 
     @Test(expected = IllegalStateException.class)
@@ -93,8 +99,7 @@ public class JavaAudioCapturerTests {
         when(mTargetDataLine.isOpen()).thenReturn(true);
         when(mTargetDataLine.isRunning()).thenReturn(true);
 
-        JavaAudioCapturer.create(TEST_DEVICE, TEST_FORMAT, mTargetDataLine, mExecutorService)
-                .open();
+        JavaAudioCapturer.create(TEST_DEVICE, TEST_FORMAT, mTargetDataLine, mExecutor).open();
     }
 
     @Test(expected = IllegalStateException.class)
@@ -102,8 +107,7 @@ public class JavaAudioCapturerTests {
         when(mTargetDataLine.isOpen()).thenReturn(true);
         when(mTargetDataLine.isRunning()).thenReturn(false);
         JavaAudioCapturer capturer =
-                JavaAudioCapturer.create(
-                        TEST_DEVICE, TEST_FORMAT, mTargetDataLine, mExecutorService);
+                JavaAudioCapturer.create(TEST_DEVICE, TEST_FORMAT, mTargetDataLine, mExecutor);
 
         capturer.open();
         capturer.close();
@@ -136,17 +140,16 @@ public class JavaAudioCapturerTests {
         // Attach a byte array output stream to the runner.
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         AudioCapturer capturer =
-                JavaAudioCapturer.create(
-                        TEST_DEVICE, TEST_FORMAT, mTargetDataLine, mExecutorService);
+                JavaAudioCapturer.create(TEST_DEVICE, TEST_FORMAT, mTargetDataLine, mExecutor);
         capturer.attachOutput(byteArrayOutputStream);
         capturer.open();
 
-        verify(mExecutorService).submit(runnableArgCaptor.capture());
+        verify(mExecutor).execute(runnableArgCaptor.capture());
         JavaAudioCapturer.TargetDataLineWatchingPublisher publisher =
                 (JavaAudioCapturer.TargetDataLineWatchingPublisher) runnableArgCaptor.getValue();
 
-        // Ensure the publisher only loops once by stopping it first.
-        publisher.stop();
+        // Ensure the publisher only loops once by adding a stream that stops it.
+        capturer.attachOutput(new RunnableOutputStream(publisher::stop));
         publisher.run();
 
         // Verify output is as expected to the array.
@@ -177,17 +180,16 @@ public class JavaAudioCapturerTests {
 
         File testFile = mTemporaryFolder.newFile();
         AudioCapturer capturer =
-                JavaAudioCapturer.create(
-                        TEST_DEVICE, TEST_FORMAT, mTargetDataLine, mExecutorService);
+                JavaAudioCapturer.create(TEST_DEVICE, TEST_FORMAT, mTargetDataLine, mExecutor);
         capturer.attachOutput(testFile);
         capturer.open();
 
-        verify(mExecutorService).submit(runnableArgCaptor.capture());
+        verify(mExecutor).execute(runnableArgCaptor.capture());
         JavaAudioCapturer.TargetDataLineWatchingPublisher publisher =
                 (JavaAudioCapturer.TargetDataLineWatchingPublisher) runnableArgCaptor.getValue();
 
-        // Ensure the publisher only loops once by stopping it first.
-        publisher.stop();
+        // Ensure the publisher only loops once by adding a stream that stops it.
+        capturer.attachOutput(new RunnableOutputStream(publisher::stop));
         publisher.run();
 
         // Verify output is as expected to the array.
@@ -201,11 +203,10 @@ public class JavaAudioCapturerTests {
         ArgumentCaptor<Runnable> runnableArgCaptor = ArgumentCaptor.forClass(Runnable.class);
 
         JavaAudioCapturer capturer =
-                JavaAudioCapturer.create(
-                        TEST_DEVICE, TEST_FORMAT, mTargetDataLine, mExecutorService);
+                JavaAudioCapturer.create(TEST_DEVICE, TEST_FORMAT, mTargetDataLine, mExecutor);
         capturer.open();
 
-        verify(mExecutorService).submit(runnableArgCaptor.capture());
+        verify(mExecutor).execute(runnableArgCaptor.capture());
         JavaAudioCapturer.TargetDataLineWatchingPublisher publisher =
                 (JavaAudioCapturer.TargetDataLineWatchingPublisher) runnableArgCaptor.getValue();
 
@@ -219,13 +220,36 @@ public class JavaAudioCapturerTests {
         when(mTargetDataLine.isOpen()).thenReturn(true);
         when(mTargetDataLine.isRunning()).thenReturn(false);
         JavaAudioCapturer capturer =
-                JavaAudioCapturer.create(
-                        TEST_DEVICE, TEST_FORMAT, mTargetDataLine, mExecutorService);
+                JavaAudioCapturer.create(TEST_DEVICE, TEST_FORMAT, mTargetDataLine, mExecutor);
         capturer.open();
 
         capturer.close();
 
         verify(mTargetDataLine).stop();
         verify(mTargetDataLine).close();
+    }
+
+    /** Custom {@link OutputStream} that triggers a contained Runnable when written to. */
+    private static class RunnableOutputStream extends OutputStream {
+        private final Runnable mRunnable;
+
+        private RunnableOutputStream(Runnable runnable) {
+            mRunnable = runnable;
+        }
+
+        @Override
+        public void write(int b) throws IOException {
+            mRunnable.run();
+        }
+
+        @Override
+        public void write(byte[] b, int off, int len) throws IOException {
+            mRunnable.run();
+        }
+
+        @Override
+        public void write(byte[] b) {
+            mRunnable.run();
+        }
     }
 }

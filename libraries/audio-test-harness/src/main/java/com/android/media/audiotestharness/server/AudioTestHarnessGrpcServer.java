@@ -45,6 +45,8 @@ import java.util.logging.Logger;
  */
 public final class AudioTestHarnessGrpcServer implements AutoCloseable {
 
+    private static final int TESTING_PORT = 8080;
+
     private static final Logger LOGGER =
             Logger.getLogger(AudioTestHarnessGrpcServer.class.getName());
 
@@ -119,7 +121,7 @@ public final class AudioTestHarnessGrpcServer implements AutoCloseable {
     }
 
     public static void main(String[] args) {
-        try (AudioTestHarnessGrpcServer server = createWithDefault()) {
+        try (AudioTestHarnessGrpcServer server = createOnPort(TESTING_PORT)) {
             server.open();
 
             // Ensure that resources are cleanly stopped upon JVM shutdown.

@@ -42,6 +42,8 @@ public class SimpleperfHelper {
     private static final String REMOVE_CMD = "rm %s";
     private static final String MOVE_CMD = "mv %s %s";
 
+    private static final int SIMPLEPERF_START_WAIT_COUNT = 3;
+    private static final int SIMPLEPERF_START_WAIT_TIME = 1000;
     private static final int SIMPLEPERF_STOP_WAIT_COUNT = 12;
     private static final long SIMPLEPERF_STOP_WAIT_TIME = 5000;
 
@@ -78,7 +80,13 @@ public class SimpleperfHelper {
                 }
             }.start();
 
-            if (!isSimpleperfRunning()) {
+            int waitCount = 0;
+            while (!isSimpleperfRunning()) {
+                if (waitCount < SIMPLEPERF_START_WAIT_COUNT) {
+                    SystemClock.sleep(SIMPLEPERF_START_WAIT_TIME);
+                    waitCount++;
+                    continue;
+                }
                 Log.e(LOG_TAG, "Simpleperf sampling failed to start.");
                 return false;
             }
@@ -135,9 +143,10 @@ public class SimpleperfHelper {
                 waitCount++;
                 continue;
             }
+            Log.e(LOG_TAG, "Simpleperf failed to stop");
             return false;
         }
-        Log.e(LOG_TAG, "Simpleperf stopped successfully.");
+        Log.i(LOG_TAG, "Simpleperf stopped successfully.");
         return true;
     }
 
