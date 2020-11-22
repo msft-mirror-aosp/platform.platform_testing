@@ -18,6 +18,7 @@ package com.android.helpers;
 import android.os.SystemClock;
 import android.platform.helpers.HelperAccessor;
 import android.platform.helpers.ICalculatorHelper;
+import android.platform.helpers.IClockHelper;
 import android.platform.test.rule.RemoveAppFromStackRule;
 import androidx.test.runner.AndroidJUnit4;
 
@@ -83,6 +84,8 @@ public class AppStartupHelperTest {
     private AppStartupHelper mAppStartupHelper = new AppStartupHelper();
     private HelperAccessor<ICalculatorHelper> mHelper =
             new HelperAccessor<>(ICalculatorHelper.class);
+    private HelperAccessor<IClockHelper> mClockHelper =
+            new HelperAccessor<>(IClockHelper.class);
 
     @Before
     public void setUp() {
@@ -225,9 +228,9 @@ public class AppStartupHelperTest {
         HelperTestUtility.clearApp(String.format(KILL_TEST_APP_CMD_TEMPLATE, CALCULATOR_PKG_NAME));
 
         // Open clock app
-        HelperTestUtility.launchPackageViaAdb(CLOCK_PKG_NAME);
+        mClockHelper.get().open();
         SystemClock.sleep(HelperTestUtility.ACTION_DELAY);
-        HelperTestUtility.sendKeyCode(KEYCODE_HOME);
+        mClockHelper.get().exit();
         SystemClock.sleep(HelperTestUtility.ACTION_DELAY);
         HelperTestUtility.clearApp(String.format(KILL_TEST_APP_CMD_TEMPLATE, CLOCK_PKG_NAME));
         SystemClock.sleep(HelperTestUtility.ACTION_DELAY);
@@ -356,28 +359,29 @@ public class AppStartupHelperTest {
     @Test
     public void testHotLaunchMetric() throws Exception {
         // Launch the app once and go home so the app resides in memory.
-        HelperTestUtility.launchPackageViaAdb(CLOCK_PKG_NAME);
-        HelperTestUtility.sendKeyCode(KEYCODE_HOME);
+        mHelper.get().open();
+        SystemClock.sleep(HelperTestUtility.ACTION_DELAY);
+        mHelper.get().exit();
         // Start the collection here to test hot launch.
         assertTrue(mAppStartupHelper.startCollecting());
         SystemClock.sleep(HelperTestUtility.ACTION_DELAY);
         // Launch the app; a hot launch occurs.
-        HelperTestUtility.launchPackageViaAdb(CLOCK_PKG_NAME);
+        mHelper.get().open();
         SystemClock.sleep(HelperTestUtility.ACTION_DELAY);
         Map<String, StringBuilder> appLaunchMetrics = mAppStartupHelper.getMetrics();
-        String calculatoHotLaunchKey = String.format(HOT_LAUNCH_KEY_TEMPLATE, CLOCK_PKG_NAME);
-        assertTrue(appLaunchMetrics.keySet().contains(calculatoHotLaunchKey));
-        assertEquals(1, appLaunchMetrics.get(calculatoHotLaunchKey).toString().split(",").length);
+        String calculatorHotLaunchKey = String.format(HOT_LAUNCH_KEY_TEMPLATE, CALCULATOR_PKG_NAME);
+        assertTrue(appLaunchMetrics.keySet().contains(calculatorHotLaunchKey));
+        assertEquals(1, appLaunchMetrics.get(calculatorHotLaunchKey).toString().split(",").length);
         assertTrue(mAppStartupHelper.stopCollecting());
-        HelperTestUtility.sendKeyCode(KEYCODE_HOME);
+        mHelper.get().exit();
         SystemClock.sleep(HelperTestUtility.ACTION_DELAY);
-        HelperTestUtility.clearApp(String.format(KILL_TEST_APP_CMD_TEMPLATE, CLOCK_PKG_NAME));
+        HelperTestUtility.clearApp(String.format(KILL_TEST_APP_CMD_TEMPLATE, CALCULATOR_PKG_NAME));
         SystemClock.sleep(HelperTestUtility.ACTION_DELAY);
 
         // Verify transition metrics.
         String hotLaunchTransitionMetricKey = String.format(
                 HOT_LAUNCH_TRANSITION_DELAY_MILLIS_KEY_TEMPLATE,
-                CLOCK_PKG_NAME);
+                CALCULATOR_PKG_NAME);
         assertTrue(appLaunchMetrics.keySet().contains(hotLaunchTransitionMetricKey));
         assertEquals(1,
                 appLaunchMetrics.get(hotLaunchTransitionMetricKey).toString().split(",").length);
@@ -393,7 +397,7 @@ public class AppStartupHelperTest {
         // AppStartFullyDrawn metric to be collected.
         // Start metric collection and then launch the Clock app.
         assertTrue(mAppStartupHelper.startCollecting());
-        HelperTestUtility.launchPackageViaAdb(CLOCK_PKG_NAME);
+        mClockHelper.get().open();
         SystemClock.sleep(HelperTestUtility.ACTION_DELAY);
         // Check that the collected metrics contains the key for the AppStartFullyDrawn metric.
         boolean hasFullyDrawnKey = false;
@@ -405,7 +409,7 @@ public class AppStartupHelperTest {
         }
         assertTrue(hasFullyDrawnKey);
         assertTrue(mAppStartupHelper.stopCollecting());
-        HelperTestUtility.sendKeyCode(KEYCODE_HOME);
+        mClockHelper.get().exit();
         SystemClock.sleep(HelperTestUtility.ACTION_DELAY);
         HelperTestUtility.clearApp(String.format(KILL_TEST_APP_CMD_TEMPLATE, CLOCK_PKG_NAME));
         SystemClock.sleep(HelperTestUtility.ACTION_DELAY);
@@ -423,14 +427,14 @@ public class AppStartupHelperTest {
         // during onCreate()).
         assertTrue(mAppStartupHelper.startCollecting());
         // 1st launch and kill.
-        HelperTestUtility.launchPackageViaAdb(CLOCK_PKG_NAME);
+        mClockHelper.get().open();
         SystemClock.sleep(HelperTestUtility.ACTION_DELAY);
-        HelperTestUtility.sendKeyCode(KEYCODE_HOME);
+        mClockHelper.get().exit();
         SystemClock.sleep(HelperTestUtility.ACTION_DELAY);
         HelperTestUtility.clearApp(String.format(KILL_TEST_APP_CMD_TEMPLATE, CLOCK_PKG_NAME));
         SystemClock.sleep(HelperTestUtility.ACTION_DELAY);
         // 2nd launch.
-        HelperTestUtility.launchPackageViaAdb(CLOCK_PKG_NAME);
+        mClockHelper.get().open();
         SystemClock.sleep(HelperTestUtility.ACTION_DELAY);
         // Check that the collected metrics contains the key for the AppStartFullyDrawn metric,
         // and that there are two values under this key.
@@ -445,7 +449,7 @@ public class AppStartupHelperTest {
         }
         assertTrue(hasFullyDrawnKey);
         assertTrue(mAppStartupHelper.stopCollecting());
-        HelperTestUtility.sendKeyCode(KEYCODE_HOME);
+        mClockHelper.get().exit();
         SystemClock.sleep(HelperTestUtility.ACTION_DELAY);
         HelperTestUtility.clearApp(String.format(KILL_TEST_APP_CMD_TEMPLATE, CLOCK_PKG_NAME));
         SystemClock.sleep(HelperTestUtility.ACTION_DELAY);
