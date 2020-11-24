@@ -51,6 +51,7 @@ native_tests := \
     installd_otapreopt_test \
     installd_service_test \
     installd_utils_test \
+    keystore2_test \
     libandroidfw_tests \
     libappfuse_test \
     libbase_test \
