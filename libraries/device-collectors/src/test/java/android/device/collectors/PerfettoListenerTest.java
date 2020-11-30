@@ -234,7 +234,7 @@ public class PerfettoListenerTest {
         verify(mPerfettoHelper, times(1)).startCollecting(anyString(), anyBoolean());
         mListener.onTestEnd(mDataRecord, mTest1Desc);
         verify(mPerfettoHelper, times(1)).stopCollecting(anyLong(), anyString());
-        assertTrue((endTime - startTime) > 10000);
+        assertTrue((endTime - startTime) >= 10000);
     }
 
     /*

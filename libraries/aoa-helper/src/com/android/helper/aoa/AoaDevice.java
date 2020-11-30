@@ -16,6 +16,7 @@
 package com.android.helper.aoa;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
@@ -56,8 +57,14 @@ public class AoaDevice implements AutoCloseable {
     private static final Range<Integer> AOA_PID = Range.closed(0x2D00, 0x2D05);
     private static final ImmutableSet<Integer> ADB_PID = ImmutableSet.of(0x2D01, 0x2D03, 0x2D05);
 
+    // Simulated accessory information
+    private static final byte[] MANUFACTURER = "Android\0".getBytes(Charsets.UTF_8);
+    private static final byte[] MODEL = (AoaDevice.class.getName() + "\0").getBytes(Charsets.UTF_8);
+    private static final byte[] VERSION = "1.0\0".getBytes(Charsets.UTF_8);
+
     // AOA requests
     static final byte ACCESSORY_GET_PROTOCOL = 51;
+    static final byte ACCESSORY_SEND_STRING = 52;
     static final byte ACCESSORY_START = 53;
     static final byte ACCESSORY_REGISTER_HID = 54;
     static final byte ACCESSORY_UNREGISTER_HID = 55;
@@ -109,7 +116,13 @@ public class AoaDevice implements AutoCloseable {
         } else if (attempt >= ACCESSORY_START_MAX_RETRIES) {
             throw new UsbException("Failed to start accessory mode");
         } else {
-            // restart in accessory mode and try to initialize again
+            // Send accessory information, restart in accessory mode, and try to initialize again
+            mHelper.checkResult(
+                    mDelegate.controlTransfer(OUTPUT, ACCESSORY_SEND_STRING, 0, 0, MANUFACTURER));
+            mHelper.checkResult(
+                    mDelegate.controlTransfer(OUTPUT, ACCESSORY_SEND_STRING, 0, 1, MODEL));
+            mHelper.checkResult(
+                    mDelegate.controlTransfer(OUTPUT, ACCESSORY_SEND_STRING, 0, 3, VERSION));
             mHelper.checkResult(
                     mDelegate.controlTransfer(OUTPUT, ACCESSORY_START, 0, 0, new byte[0]));
             sleep(CONFIGURE_DELAY);
