@@ -19,7 +19,7 @@ import android.os.SystemClock;
 import android.platform.helpers.HelperAccessor;
 import android.platform.helpers.ICalculatorHelper;
 import android.platform.helpers.IClockHelper;
-import android.platform.test.rule.RemoveAppFromStackRule;
+import android.platform.test.rule.FinishActivitiesWithoutProcessKillRule;
 import androidx.test.runner.AndroidJUnit4;
 
 
@@ -303,7 +303,7 @@ public class AppStartupHelperTest {
 
     }
 
-    public class TestableRule extends RemoveAppFromStackRule {
+    public class TestableRule extends FinishActivitiesWithoutProcessKillRule {
 
         public TestableRule(String appPackageName) {
             super(appPackageName);
@@ -320,21 +320,18 @@ public class AppStartupHelperTest {
      */
     @Test
     public void testWarmLaunchMetric() throws Exception {
-        TestableRule rmAppFromStack = new TestableRule(CALCULATOR_PKG_NAME);
+        TestableRule finishActivitiesRule = new TestableRule(CALCULATOR_PKG_NAME);
 
 
-        // Warm launch from launcher is not WAI which is tracked in b/171750079.
-        // Launch the app from home using am start command and remove the app
-        // from activity manager stack.
-        HelperTestUtility.launchPackageViaAdb(CALCULATOR_PKG_NAME);
+        mHelper.get().open();
         SystemClock.sleep(HelperTestUtility.ACTION_DELAY);
-        rmAppFromStack.starting(Description.createTestDescription("clzz", "mthd"));
+        finishActivitiesRule.starting(Description.createTestDescription("clzz", "mthd"));
 
         SystemClock.sleep(HelperTestUtility.ACTION_DELAY);
         // Start the collection here to test warm launch.
         assertTrue(mAppStartupHelper.startCollecting());
         // Launch the app; a warm launch occurs.
-        HelperTestUtility.launchPackageViaAdb(CALCULATOR_PKG_NAME);
+        mHelper.get().open();
         SystemClock.sleep(HelperTestUtility.ACTION_DELAY);
         Map<String, StringBuilder> appLaunchMetrics = mAppStartupHelper.getMetrics();
         String calculatorWarmLaunchKey = String.format(WARM_LAUNCH_KEY_TEMPLATE, CALCULATOR_PKG_NAME);
