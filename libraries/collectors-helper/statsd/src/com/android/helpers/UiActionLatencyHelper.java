@@ -40,6 +40,9 @@ public class UiActionLatencyHelper implements ICollectorHelper<StringBuilder> {
     /** Set up the system actions latency statsd config. */
     @Override
     public boolean startCollecting() {
+        Log.i(LOG_TAG, "Enabling metric collection and disabling sampling.");
+        DeviceConfigHelper.setConfigValue("latency_tracker", "enabled", "true");
+        DeviceConfigHelper.setConfigValue("latency_tracker", "sampling_interval", "1");
         Log.i(LOG_TAG, "Adding system actions latency config to statsd.");
         List<Integer> atomIdList = new ArrayList<>();
         atomIdList.add(AtomsProto.Atom.UI_ACTION_LATENCY_REPORTED_FIELD_NUMBER);

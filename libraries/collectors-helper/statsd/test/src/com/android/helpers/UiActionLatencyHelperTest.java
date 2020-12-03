@@ -26,7 +26,6 @@ import com.android.launcher3.tapl.AllApps;
 import com.android.launcher3.tapl.LauncherInstrumentation;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -71,7 +70,6 @@ public class UiActionLatencyHelperTest {
 
     /** Test that shade quick switch metric is collected. Enable after b/173623876 is fixed */
     @Test
-    @Ignore
     public void testQuickSwitchMetric() throws Exception {
         final LauncherInstrumentation sLauncher = new LauncherInstrumentation();
 

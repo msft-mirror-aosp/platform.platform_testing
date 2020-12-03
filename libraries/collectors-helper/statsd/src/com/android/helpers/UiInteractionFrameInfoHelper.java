@@ -39,6 +39,9 @@ public class UiInteractionFrameInfoHelper implements ICollectorHelper<StringBuil
     /** Set up the system interactions jank statsd config. */
     @Override
     public boolean startCollecting() {
+        Log.i(LOG_TAG, "Enabling metric collection and disabling sampling.");
+        DeviceConfigHelper.setConfigValue("interaction_jank_monitor", "enabled", "true");
+        DeviceConfigHelper.setConfigValue("interaction_jank_monitor", "sampling_interval", "1");
         Log.i(LOG_TAG, "Adding system interactions config to statsd.");
         List<Integer> atomIdList = new ArrayList<>();
         atomIdList.add(AtomsProto.Atom.UI_INTERACTION_FRAME_INFO_REPORTED_FIELD_NUMBER);
