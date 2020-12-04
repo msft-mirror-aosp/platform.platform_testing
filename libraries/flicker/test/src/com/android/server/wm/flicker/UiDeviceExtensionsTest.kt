@@ -17,7 +17,11 @@
 package com.android.server.wm.flicker
 
 import androidx.test.platform.app.InstrumentationRegistry
-import androidx.test.uiautomator.UiDevice
+import com.android.server.wm.traces.parser.DeviceStateDump
+import com.android.server.wm.traces.parser.FLAG_STATE_DUMP_FLAG_LAYERS
+import com.android.server.wm.traces.parser.FLAG_STATE_DUMP_FLAG_WM
+import com.android.server.wm.traces.parser.WmStateDumpFlags
+import com.android.server.wm.traces.parser.getCurrentState
 import com.google.common.truth.Truth
 import org.junit.FixMethodOrder
 import org.junit.Test
@@ -30,10 +34,11 @@ import org.junit.runners.MethodSorters
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class UiDeviceExtensionsTest {
-    private fun getCurrState(): DeviceStateDump {
+    private fun getCurrState(
+        @WmStateDumpFlags dumpFlags: Int = FLAG_STATE_DUMP_FLAG_WM.or(FLAG_STATE_DUMP_FLAG_LAYERS)
+    ): DeviceStateDump {
         val instrumentation = InstrumentationRegistry.getInstrumentation()
-        val uiDevice = UiDevice.getInstance(instrumentation)
-        return uiDevice.getCurrState(instrumentation.uiAutomation)
+        return getCurrentState(instrumentation.uiAutomation, dumpFlags)
     }
 
     @Test
@@ -44,11 +49,29 @@ class UiDeviceExtensionsTest {
     }
 
     @Test
+    fun canFetchCurrentDeviceStateOnlyWm() {
+        val currState = getCurrState(FLAG_STATE_DUMP_FLAG_WM)
+        Truth.assertThat(currState.wmTraceData).isNotEmpty()
+        Truth.assertThat(currState.layersTraceData).isEmpty()
+        Truth.assertThat(currState.wmTrace).isNotNull()
+        Truth.assertThat(currState.layersTrace).isNull()
+    }
+
+    @Test
+    fun canFetchCurrentDeviceStateOnlyLayers() {
+        val currState = getCurrState(FLAG_STATE_DUMP_FLAG_LAYERS)
+        Truth.assertThat(currState.wmTraceData).isEmpty()
+        Truth.assertThat(currState.layersTraceData).isNotEmpty()
+        Truth.assertThat(currState.wmTrace).isNull()
+        Truth.assertThat(currState.layersTrace).isNotNull()
+    }
+
+    @Test
     fun canParseCurrentDeviceState() {
         val currState = getCurrState()
-        Truth.assertThat(currState.wmTrace.entries).hasSize(1)
-        Truth.assertThat(currState.wmTrace.entries.first().windows).isNotEmpty()
-        Truth.assertThat(currState.layersTrace.entries).hasSize(1)
-        Truth.assertThat(currState.layersTrace.entries.first().flattenedLayers).isNotEmpty()
+        Truth.assertThat(currState.wmTrace?.entries).hasSize(1)
+        Truth.assertThat(currState.wmTrace?.entries?.first()?.windowStates).isNotEmpty()
+        Truth.assertThat(currState.layersTrace?.entries).hasSize(1)
+        Truth.assertThat(currState.layersTrace?.entries?.first()?.flattenedLayers).isNotEmpty()
     }
 }

@@ -18,10 +18,11 @@ package com.android.server.wm.flicker
 
 import android.util.Log
 import com.android.server.wm.flicker.assertions.FlickerAssertionError
+import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 import com.android.server.wm.flicker.dsl.AssertionTag
 import com.android.server.wm.flicker.traces.eventlog.FocusEvent
-import com.android.server.wm.flicker.traces.layers.LayersTrace
-import com.android.server.wm.flicker.traces.windowmanager.WindowManagerTrace
+import com.android.server.wm.traces.parser.layers.LayersTrace
+import com.android.server.wm.traces.parser.windowmanager.WindowManagerTraceParser
 import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
@@ -92,7 +93,7 @@ class FlickerRunResult private constructor(
         parseWmTrace = {
             wmTraceFile?.let {
                 val traceData = Files.readAllBytes(it)
-                WindowManagerTrace.parseFrom(traceData)
+                WindowManagerTraceParser.parseFromTrace(traceData)
             }
         },
         parseLayersTrace = {

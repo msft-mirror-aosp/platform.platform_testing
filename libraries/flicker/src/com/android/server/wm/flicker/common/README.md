@@ -1,1 +1,0 @@
-Common library code used by Kotlin and JavaScript flicker library.

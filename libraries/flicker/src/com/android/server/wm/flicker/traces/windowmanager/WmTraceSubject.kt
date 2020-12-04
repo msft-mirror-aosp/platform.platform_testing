@@ -17,8 +17,10 @@
 package com.android.server.wm.flicker.traces.windowmanager
 
 import com.android.server.wm.flicker.assertions.TraceAssertion
-import com.android.server.wm.flicker.common.AssertionResult
-import com.android.server.wm.flicker.common.Region
+import com.android.server.wm.traces.common.AssertionResult
+import com.android.server.wm.traces.common.Region
+import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
+import com.android.server.wm.traces.common.windowmanager.WindowManagerState
 import com.android.server.wm.flicker.traces.SubjectBase
 import com.google.common.truth.FailureMetadata
 import com.google.common.truth.Truth
@@ -27,7 +29,7 @@ import com.google.common.truth.Truth
 class WmTraceSubject private constructor(
     fm: FailureMetadata,
     val trace: WindowManagerTrace
-) : SubjectBase<WindowManagerTrace, WindowManagerTraceEntry>(fm, trace) {
+) : SubjectBase<WindowManagerTrace, WindowManagerState>(fm, trace) {
     /**
      * Signal that the last assertion set is complete. The next assertion added will start a new
      * set of assertions.
@@ -72,7 +74,7 @@ class WmTraceSubject private constructor(
      */
     fun showsAboveAppWindow(partialWindowTitle: String) = apply {
         addAssertion("showsAboveAppWindow($partialWindowTitle)") {
-            p: WindowManagerTraceEntry -> p.isAboveAppWindow(partialWindowTitle)
+            p: WindowManagerState -> p.isAboveAppWindow(partialWindowTitle)
         }
     }
 
@@ -249,7 +251,7 @@ class WmTraceSubject private constructor(
         }
     }
 
-    operator fun invoke(name: String, assertion: TraceAssertion<WindowManagerTraceEntry>) =
+    operator fun invoke(name: String, assertion: TraceAssertion<WindowManagerState>) =
             apply { addAssertion(name, assertion) }
 
     override val traceName: String
@@ -259,7 +261,7 @@ class WmTraceSubject private constructor(
         /**
          * Boiler-plate Subject.Factory for WmTraceSubject
          */
-        private val FACTORY: Factory<SubjectBase<WindowManagerTrace, WindowManagerTraceEntry>,
+        private val FACTORY: Factory<SubjectBase<WindowManagerTrace, WindowManagerState>,
             WindowManagerTrace> = Factory { fm: FailureMetadata, subject: WindowManagerTrace ->
             WmTraceSubject(fm, subject)
         }
@@ -275,7 +277,7 @@ class WmTraceSubject private constructor(
          * Static method for getting the subject factory (for use with assertAbout())
          */
         @JvmStatic
-        fun entries(): Factory<SubjectBase<WindowManagerTrace, WindowManagerTraceEntry>,
+        fun entries(): Factory<SubjectBase<WindowManagerTrace, WindowManagerState>,
             WindowManagerTrace> = FACTORY
     }
 

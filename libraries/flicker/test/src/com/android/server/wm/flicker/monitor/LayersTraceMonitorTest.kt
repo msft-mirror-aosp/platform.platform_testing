@@ -47,7 +47,7 @@ class LayersTraceMonitorTest : TraceMonitorTest<LayersTraceMonitor>() {
 
     @Test
     fun withSFTracing() {
-        val trace = withSFTracing(instrumentation) {
+        val trace = withSFTracing {
             val device = UiDevice.getInstance(instrumentation)
             device.pressHome()
             device.pressRecentApps()

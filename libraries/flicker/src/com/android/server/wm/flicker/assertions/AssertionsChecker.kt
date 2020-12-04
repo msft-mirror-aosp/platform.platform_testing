@@ -16,8 +16,8 @@
 
 package com.android.server.wm.flicker.assertions
 
-import com.android.server.wm.flicker.common.AssertionResult
-import com.android.server.wm.flicker.common.traces.ITraceEntry
+import com.android.server.wm.traces.common.AssertionResult
+import com.android.server.wm.traces.common.ITraceEntry
 
 /**
  * Captures some of the common logic in [LayersTraceSubject] and [WmTraceSubject] used

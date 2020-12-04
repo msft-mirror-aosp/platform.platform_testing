@@ -18,7 +18,7 @@ package com.android.server.wm.flicker
 
 import com.android.server.wm.flicker.assertions.Assertions
 import com.android.server.wm.flicker.assertions.Assertions.negate
-import com.android.server.wm.flicker.common.AssertionResult
+import com.android.server.wm.traces.common.AssertionResult
 import com.google.common.truth.Truth
 import org.junit.FixMethodOrder
 import org.junit.Test

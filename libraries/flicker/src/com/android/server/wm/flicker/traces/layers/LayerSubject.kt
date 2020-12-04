@@ -17,6 +17,7 @@ package com.android.server.wm.flicker.traces.layers
 
 import android.graphics.Point
 import android.graphics.Rect
+import com.android.server.wm.traces.common.layers.Layer
 import com.google.common.truth.Fact.simpleFact
 import com.google.common.truth.FailureMetadata
 import com.google.common.truth.Subject
@@ -41,13 +42,13 @@ class LayerSubject private constructor(
 
     fun hasBufferSize(size: Point) {
         layer ?: return exists()
-        val bufferSize = Point(layer.proto.activeBuffer.width, layer.proto.activeBuffer.height)
+        val bufferSize = Point(layer.activeBuffer?.width ?: 0, layer.activeBuffer?.height ?: 0)
         Truth.assertThat(bufferSize).isEqualTo(size)
     }
 
     fun hasLayerSize(size: Point) {
         layer ?: return exists()
-        val screenBoundsProto = layer.proto.screenBounds
+        val screenBoundsProto = layer.screenBounds
         val layerBounds = Rect(screenBoundsProto.left.toInt(), screenBoundsProto.top.toInt(),
                 screenBoundsProto.right.toInt(), screenBoundsProto.bottom.toInt())
         val layerSize = Point(layerBounds.width(), layerBounds.height())
@@ -56,14 +57,15 @@ class LayerSubject private constructor(
 
     fun hasScalingMode(expectedScalingMode: Int) {
         layer ?: return exists()
-        val actualScalingMode = layer.proto.effectiveScalingMode
+        val actualScalingMode = layer.effectiveScalingMode
         Truth.assertThat(actualScalingMode).isEqualTo(expectedScalingMode)
     }
 
     fun hasBufferOrientation(expectedOrientation: Int) {
         layer ?: return exists()
         // see Transform::getOrientation
-        val actualOrientation = (layer.proto.bufferTransform.type shr 8) and 0xFF
+        val bufferTransformType = layer.bufferTransform.type ?: 0
+        val actualOrientation = (bufferTransformType shr 8) and 0xFF
         check("hasBufferTransformOrientation()")
                 .that(actualOrientation).isEqualTo(expectedOrientation)
     }

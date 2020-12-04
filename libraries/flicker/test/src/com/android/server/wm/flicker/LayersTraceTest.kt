@@ -22,8 +22,7 @@ import android.graphics.Rect
 import android.graphics.Region
 import android.view.WindowManager
 import androidx.test.platform.app.InstrumentationRegistry
-import com.android.server.wm.flicker.traces.layers.LayersTrace
-import com.android.server.wm.flicker.traces.layers.LayersTrace.Companion.parseFrom
+import com.android.server.wm.traces.parser.layers.LayersTrace
 import com.google.common.truth.Truth
 import org.junit.Assert
 import org.junit.FixMethodOrder
@@ -202,17 +201,6 @@ class LayersTraceTest {
     }
 
     companion object {
-        private fun readLayerTraceFromFile(
-            relativePath: String,
-            ignoreOrphanLayers: Boolean = true
-        ): LayersTrace {
-            return try {
-                parseFrom(readTestFile(relativePath)) { ignoreOrphanLayers }
-            } catch (e: Exception) {
-                throw RuntimeException(e)
-            }
-        }
-
         private val displayBounds: Region
             get() {
                 val display = Point()

@@ -17,7 +17,7 @@
 package com.android.server.wm.flicker
 
 import androidx.test.platform.app.InstrumentationRegistry
-import com.android.server.wm.flicker.common.AssertionResult
+import com.android.server.wm.traces.common.AssertionResult
 import com.android.server.wm.flicker.dsl.FlickerBuilder
 import com.android.server.wm.flicker.dsl.runWithFlicker
 import com.android.server.wm.flicker.traces.windowmanager.WmTraceSubject
@@ -77,7 +77,7 @@ class FlickerDSLTest {
 
     private fun defaultAssertion(trace: WmTraceSubject): WmTraceSubject {
         return trace("Has dump") {
-            AssertionResult("Has dump") { it.windows.isNotEmpty() }
+            AssertionResult("Has dump") { it.windowStates.isNotEmpty() }
         }
     }
 

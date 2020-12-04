@@ -92,7 +92,7 @@ Failed assertion message will also contain a path to the trace that was tested.
 Example of a failed test:
 
 ```
-    java.lang.AssertionError: Not true that <com.android.server.wm.flicker.common.traces.layers.LayersTrace@65da4cc>
+    java.lang.AssertionError: Not true that <com.android.server.wm.traces.common.LayersTrace@65da4cc>
     Layers Trace can be found in: /layers_trace_emptyregion.pb
     Timestamp: 2308008331271
     Assertion: coversRegion

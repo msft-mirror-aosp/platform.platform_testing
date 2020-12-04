@@ -16,6 +16,8 @@
 
 package com.android.server.wm.flicker.dsl;
 
+import static com.android.server.wm.flicker.Extensions.getDefaultFlickerOutputDir;
+
 import android.app.Instrumentation;
 import android.support.test.launcherhelper.ILauncherStrategy;
 import android.support.test.launcherhelper.LauncherStrategyFactory;
@@ -91,7 +93,7 @@ public class FlickerBuilderJava {
                 instrumentation,
                 launcherStrategy,
                 includeJankyRuns,
-                instrumentation.getTargetContext().getExternalFilesDir(null).toPath());
+                getDefaultFlickerOutputDir());
     }
 
     /**

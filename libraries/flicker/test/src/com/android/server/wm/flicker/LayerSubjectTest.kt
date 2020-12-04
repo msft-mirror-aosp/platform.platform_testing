@@ -17,11 +17,8 @@
 package com.android.server.wm.flicker
 
 import android.graphics.Point
-import com.android.server.wm.flicker.traces.layers.LayersTrace
-import com.android.server.wm.flicker.traces.layers.LayersTrace.Companion.parseFrom
 import com.android.server.wm.flicker.traces.layers.LayersTraceSubject.Companion.assertThat
 import org.junit.Test
-import java.nio.file.Paths
 
 /**
  * Contains [LayerSubject] tests. To run this test:
@@ -36,15 +33,5 @@ class LayerSubjectTest {
             it.hasScalingMode(0)
         }
         assertThat(layersTraceEntries).layer("DoesntExist", 1).doesNotExist()
-    }
-
-    companion object {
-        private fun readLayerTraceFromFile(relativePath: String): LayersTrace {
-            return try {
-                parseFrom(readTestFile(relativePath), Paths.get(relativePath))
-            } catch (e: Exception) {
-                throw RuntimeException(e)
-            }
-        }
     }
 }

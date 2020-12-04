@@ -43,7 +43,7 @@ class WindowManagerTraceMonitorTest : TraceMonitorTest<WindowManagerTraceMonitor
 
     @Test
     fun withWMTracing() {
-        val trace = withWMTracing(instrumentation) {
+        val trace = withWMTracing {
             val device = UiDevice.getInstance(instrumentation)
             device.pressHome()
             device.pressRecentApps()

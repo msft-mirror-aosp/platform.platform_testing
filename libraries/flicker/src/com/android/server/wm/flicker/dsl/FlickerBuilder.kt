@@ -29,8 +29,7 @@ import com.android.server.wm.flicker.monitor.LayersTraceMonitor
 import com.android.server.wm.flicker.monitor.ScreenRecorder
 import com.android.server.wm.flicker.monitor.WindowAnimationFrameStatsMonitor
 import com.android.server.wm.flicker.monitor.WindowManagerTraceMonitor
-import com.android.server.wm.flicker.common.traces.layers.LayersTrace
-import com.android.server.wm.flicker.traces.windowmanager.WindowManagerTrace
+import com.android.server.wm.traces.common.layers.LayersTrace
 import java.nio.file.Path
 
 /**
@@ -78,7 +77,7 @@ class FlickerBuilder private constructor(
         /**
          * Output directory for the test results
          */
-        outputDir: Path = getDefaultFlickerOutputDir(instrumentation)
+        outputDir: Path = getDefaultFlickerOutputDir()
     ) : this(
         instrumentation,
         launcherStrategy,

@@ -47,7 +47,7 @@ abstract class TraceMonitor internal constructor(
         outputPath.toFile().mkdirs()
         val savedTrace = outputPath.resolve("${testTag}_${sourceTraceFilePath.fileName}")
         moveFile(sourceTraceFilePath, savedTrace)
-        assert(Files.exists(savedTrace)) { "Unable to save trace file" }
+        require(Files.exists(savedTrace)) { "Unable to save trace file" }
 
         setResult(flickerRunResultBuilder, savedTrace)
 

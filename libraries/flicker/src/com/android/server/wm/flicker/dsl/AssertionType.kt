@@ -18,7 +18,7 @@ package com.android.server.wm.flicker.dsl
 
 import com.android.server.wm.flicker.FlickerDslMarker
 import com.android.server.wm.flicker.assertions.AssertionData
-import com.android.server.wm.flicker.common.traces.IRangedSubject
+import com.android.server.wm.traces.common.IRangedSubject
 
 /**
  * Placeholder for the types of assertions are supported by the Flicker DSL

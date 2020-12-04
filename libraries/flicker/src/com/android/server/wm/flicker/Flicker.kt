@@ -27,6 +27,7 @@ import com.android.server.wm.flicker.dsl.AssertionTarget
 import com.android.server.wm.flicker.dsl.TestCommands
 import com.android.server.wm.flicker.monitor.ITransitionMonitor
 import com.android.server.wm.flicker.monitor.WindowAnimationFrameStatsMonitor
+import com.android.server.wm.traces.parser.getCurrentState
 import com.google.common.truth.Truth
 import java.io.IOException
 import java.nio.file.Files
@@ -204,7 +205,7 @@ data class Flicker(
         tags.add(tag)
         val assertionTag = AssertionTag(tag)
 
-        val deviceState = device.getCurrState(instrumentation.uiAutomation)
+        val deviceState = getCurrentState(instrumentation.uiAutomation)
         try {
             val wmTraceFile = outputDir.resolve(getTaggedFilePath(tag, "wm_trace"))
             Files.write(wmTraceFile, deviceState.wmTraceData)

@@ -16,7 +16,7 @@
 
 package com.android.server.wm.flicker.assertions
 
-import com.android.server.wm.flicker.common.AssertionResult
+import com.android.server.wm.traces.common.AssertionResult
 
 /**
  * Checks assertion on a single trace entry.

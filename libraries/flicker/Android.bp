@@ -17,7 +17,10 @@
 java_test {
     name: "flickerlib",
     platform_apis: true,
-    srcs: ["src/**/*.java", "src/**/*.kt"],
+    srcs: [
+        "src/**/*.java",
+        "src/**/*.kt"
+    ],
     static_libs: [
         "flickerlib-core",
         "flickerlib-helpers"
@@ -27,7 +30,10 @@ java_test {
 java_library {
     name: "flickerlib-core",
     platform_apis: true,
-    srcs: ["src/**/*.java", "src/**/*.kt"],
+    srcs: [
+        "src/com/android/server/wm/flicker/**/*.java",
+        "src/com/android/server/wm/flicker/**/*.kt"
+    ],
     exclude_srcs: [
         "**/helpers/*",
     ],
@@ -36,10 +42,9 @@ java_library {
         "ub-uiautomator",
         "androidx.test.uiautomator_uiautomator",
         "androidx.test.ext.junit",
-        "platformprotosnano",
-        "layersprotosnano",
         "truth-prebuilt",
-        "launcher-helper-lib"
+        "launcher-helper-lib",
+        "wm-proto-parsers",
     ],
 }
 
@@ -47,11 +52,28 @@ java_library {
     name: "flickerlib-helpers",
     sdk_version: "test_current",
     srcs: [
-        "**/helpers/*",
+        "src/**/helpers/*.java",
+        "src/**/helpers/*.kt",
     ],
     static_libs: [
         "compatibility-device-util-axt",
         "app-helpers-core",
         "launcher-helper-lib",
+        "wm-proto-parsers",
+    ],
+}
+
+java_library {
+    name: "wm-proto-parsers",
+    sdk_version: "test_current",
+    srcs: [
+        "src/com/android/server/wm/traces/**/*.java",
+        "src/com/android/server/wm/traces/**/*.kt",
+    ],
+    static_libs: [
+        "android-support-annotations",
+        "androidx.test.ext.junit",
+        "platformprotosnano",
+        "layersprotosnano",
     ],
 }

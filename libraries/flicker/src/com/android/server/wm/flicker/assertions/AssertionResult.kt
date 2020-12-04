@@ -17,7 +17,7 @@
 package com.android.server.wm.flicker.assertions
 
 import androidx.annotation.VisibleForTesting
-import com.android.server.wm.flicker.common.AssertionResult
+import com.android.server.wm.traces.common.AssertionResult
 import com.google.common.truth.Truth
 
 @VisibleForTesting

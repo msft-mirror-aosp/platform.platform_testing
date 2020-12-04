@@ -18,10 +18,10 @@ package com.android.server.wm.flicker.traces
 
 import com.android.server.wm.flicker.assertions.AssertionsChecker
 import com.android.server.wm.flicker.assertions.TraceAssertion
-import com.android.server.wm.flicker.common.AssertionResult
-import com.android.server.wm.flicker.common.traces.IRangedSubject
-import com.android.server.wm.flicker.common.traces.ITrace
-import com.android.server.wm.flicker.common.traces.ITraceEntry
+import com.android.server.wm.traces.common.AssertionResult
+import com.android.server.wm.traces.common.IRangedSubject
+import com.android.server.wm.traces.common.ITrace
+import com.android.server.wm.traces.common.ITraceEntry
 import com.google.common.truth.FailureMetadata
 import com.google.common.truth.Subject
 import java.nio.file.Paths
