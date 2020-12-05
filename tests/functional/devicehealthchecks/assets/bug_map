@@ -30,4 +30,5 @@ SYSTEM_TOMBSTONE ReferenceQueueD*.*com.google.android.apps.safetyhub 162103095
 SYSTEM_TOMBSTONE Lite\sThread*.*com.google.android.apps.safetyhub 162379378
 SYSTEM_TOMBSTONE BG\sThread*.*com.google.android.apps.safetyhub 162381002
 SYSTEM_TOMBSTONE AsyncTask\s+#1\s+>>>\s+com.android.nfc\s+<<<[\S\s]*nfaDeviceManagementCallback[\S\s]*nfc_ncif_cmd_timeout 172057778
+SYSTEM_TOMBSTONE >>>\s+/apex/com.android.os.statsd/bin/statsd\s+<<<[\S\s]*HandleUsingDestroyedMutex 172829930
 SYSTEM_TOMBSTONE android.hardwar*.*/vendor/bin/hw/android.hardware.sensors@2.0-service 163430194

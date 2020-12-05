@@ -268,4 +268,13 @@ public interface INotificationHelper extends IAppHelper {
     default void flingFeed(UiObject2 container, Direction dir, int speed) {
         throw new UnsupportedOperationException("Not yet implemented.");
     }
+
+    /**
+     * Setup expectation: on the launcher home screen.
+     *
+     * <p>Open the notification shade by swiping on the home screen.
+     */
+    default void swipeToOpen() {
+        throw new UnsupportedOperationException("Not yet implemented.");
+    }
 }
