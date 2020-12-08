@@ -27,6 +27,56 @@ instrumentation_metric_tests := \
     MultiUserPerfTests \
     NeuralNetworksApiBenchmark \
     PackageManagerPerfTests \
+    QueriesAll0 \
+    QueriesAll1 \
+    QueriesAll2 \
+    QueriesAll3 \
+    QueriesAll4 \
+    QueriesAll5 \
+    QueriesAll6 \
+    QueriesAll7 \
+    QueriesAll8 \
+    QueriesAll9 \
+    QueriesAll10 \
+    QueriesAll11 \
+    QueriesAll12 \
+    QueriesAll13 \
+    QueriesAll14 \
+    QueriesAll15 \
+    QueriesAll16 \
+    QueriesAll17 \
+    QueriesAll18 \
+    QueriesAll19 \
+    QueriesAll20 \
+    QueriesAll21 \
+    QueriesAll22 \
+    QueriesAll23 \
+    QueriesAll24 \
+    QueriesAll25 \
+    QueriesAll26 \
+    QueriesAll27 \
+    QueriesAll28 \
+    QueriesAll29 \
+    QueriesAll30 \
+    QueriesAll31 \
+    QueriesAll32 \
+    QueriesAll33 \
+    QueriesAll34 \
+    QueriesAll35 \
+    QueriesAll36 \
+    QueriesAll37 \
+    QueriesAll38 \
+    QueriesAll39 \
+    QueriesAll40 \
+    QueriesAll41 \
+    QueriesAll42 \
+    QueriesAll43 \
+    QueriesAll44 \
+    QueriesAll45 \
+    QueriesAll46 \
+    QueriesAll47 \
+    QueriesAll48 \
+    QueriesAll49 \
     TextClassifierPerfTests \
     WmPerfTests \
     trace_config_detailed.textproto \
