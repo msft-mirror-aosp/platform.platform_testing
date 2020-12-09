@@ -28,6 +28,7 @@ import com.google.common.collect.ImmutableList;
 import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /** Helper functions for interacting with android {@link MediaStore}. */
@@ -133,9 +134,15 @@ public class MediaStoreHelper {
      * @param mimeType The MIME type of the media item, eg. "image/jpeg". {@see
      *     MediaStore.MediaColumns#MIME_TYPE}
      * @param fromGen Generation added. The returned records all have generation bigger than this.
+     * @param selection A filter declaring which rows to return, formatted as an SQL WHERE clause
+     *     (excluding the WHERE itself). Passing null will return all rows for the given URI.
+     * @param selectionArgs You may include ?s in selection, which will be replaced by the values
+     *     from selectionArgs, in the order that they appear in the selection. The values will be
+     *     bound as Strings.
      * @return A list of media {@link FileDescriptor} for specified type.
      */
-    public List<FileDescriptor> getMediaFileDescriptors(Uri uri, String mimeType, long fromGen) {
+    public List<FileDescriptor> getMediaFileDescriptors(
+            Uri uri, String mimeType, String selection, String[] selectionArgs, long fromGen) {
         ImmutableList.Builder fileListBuilder = new ImmutableList.Builder();
         StringBuilder selectionBuilder = new StringBuilder();
         List<String> argList = new ArrayList<>();
@@ -145,6 +152,13 @@ public class MediaStoreHelper {
             selectionBuilder.append(" AND ");
             selectionBuilder.append(MediaStore.MediaColumns.MIME_TYPE + "=?");
             argList.add(mimeType);
+        }
+        if (selection != null && !selection.isEmpty()) {
+            selectionBuilder.append(" AND ");
+            selectionBuilder.append(selection);
+        }
+        if (selectionArgs != null) {
+            argList.addAll(Arrays.asList(selectionArgs));
         }
         List<Long> ids =
                 getListOfIdsFromMediaStore(

@@ -79,6 +79,7 @@ instrumentation_metric_tests := \
     QueriesAll49 \
     TextClassifierPerfTests \
     WmPerfTests \
+    ImePerfTests \
     trace_config_detailed.textproto \
     perfetto_trace_processor_shell
 
