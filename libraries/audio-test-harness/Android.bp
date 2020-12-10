@@ -243,7 +243,9 @@ java_test_host {
         "audiotestharness-serverlib",
         "junit",
         "junit-params",
+
         "mockito",
+        "objenesis",
 
         // gRPC Dependencies
         "grpc-java",
@@ -252,6 +254,9 @@ java_test_host {
         "opencensus-java-contrib-grpc-metrics",
     ],
     java_version: "1.8",
+    test_options: {
+        unit_test: true,
+    },
 }
 
 java_test_host {
@@ -268,12 +273,19 @@ java_test_host {
         "junit",
         "junit-params",
         "grpc-java-testing",
-        "mockito",
+        "opencensus-java-api",
+        "opencensus-java-contrib-grpc-metrics",
         "guava",
+
+        "mockito",
+        "objenesis",
     ],
     java_version: "1.8",
     proto: {
         type: "full",
+    },
+    test_options: {
+        unit_test: true,
     },
 }
 
@@ -289,12 +301,17 @@ java_test_host {
         "audiotestharness-javasoundlib",
         "libprotobuf-java-full",
         "guava",
-        "junit",
+        "junit-host",
+
         "mockito",
+        "objenesis",
     ],
     java_version: "1.8",
     proto: {
         type: "full",
+    },
+    test_options: {
+        unit_test: true,
     },
 }
 
@@ -309,4 +326,7 @@ java_test_host {
         "junit",
     ],
     java_version: "1.8",
+    test_options: {
+        unit_test: true,
+    },
 }

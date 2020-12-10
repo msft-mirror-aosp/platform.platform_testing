@@ -1,6 +1,8 @@
 
 {
   "presubmit": [
+
+    // server
     {
       "name": "audiotestharness-serverlib-tests",
       "host": true,
@@ -31,6 +33,10 @@
     },
     {
       "name": "audiotestharness-utilitylib-tests",
+      "host": true
+    },
+    {
+      "name": "audiotestharness-client-grpclib-tests",
       "host": true
     }
   ]
