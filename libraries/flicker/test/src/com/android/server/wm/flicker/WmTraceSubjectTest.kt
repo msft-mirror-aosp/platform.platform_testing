@@ -149,6 +149,8 @@ class WmTraceSubjectTest {
     @Test
     fun testCanDetectVisibleWindowsMoreThanOneConsecutiveEntry() {
         val trace = readWmTraceFromFile("wm_trace_valid_visible_windows.pb")
-        assertThat(trace).visibleWindowsShownMoreThanOneConsecutiveEntry().forAllEntries()
+        assertThat(trace)
+                .visibleWindowsShownMoreThanOneConsecutiveEntry()
+                .forAllEntries()
     }
 }

@@ -311,4 +311,10 @@ class WindowManagerStateHelper @JvmOverloads constructor(
             (it.inputMethodWindowState?.isSurfaceShown == true &&
                 it.inputMethodWindowState?.displayId == displayId)
         }
+
+    @JvmOverloads
+    fun waitImeWindowGone(displayId: Int = Display.DEFAULT_DISPLAY): Boolean =
+            waitFor("IME window gone") {
+                it.inputMethodWindowState?.isSurfaceShown == false
+            }
 }

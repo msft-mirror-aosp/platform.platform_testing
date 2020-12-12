@@ -120,10 +120,16 @@ class LayersTraceSubject private constructor(
     /**
      * Checks that all visible layers are shown for more than one consecutive entry
      */
-    fun visibleLayersShownMoreThanOneConsecutiveEntry() = apply {
+    @JvmOverloads
+    fun visibleLayersShownMoreThanOneConsecutiveEntry(
+        ignoreLayers: List<String> = emptyList()
+    ) = apply {
         addAssertion("visibleLayersShownMoreThanOneConsecutiveEntry") {
             val visibleLayers = trace.entries.withIndex()
                     .flatMap { (index, layerEntry) -> layerEntry.visibleLayers
+                            .filter {
+                                ignoreLayers.none { layerName -> it.name in layerName }
+                            }
                             .map { Triple(it.name, index, layerEntry) }
                     }
             visibleEntriesShownMoreThanOneConsecutiveTime(visibleLayers,
