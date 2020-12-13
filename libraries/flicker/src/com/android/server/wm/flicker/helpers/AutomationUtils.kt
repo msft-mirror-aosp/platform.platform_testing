@@ -163,6 +163,23 @@ fun UiDevice.waitForIME(): Boolean {
     return ime != null
 }
 
+private fun openQuickStepAndLongPressOverviewIcon(device: UiDevice) {
+    if (device.isQuickstepEnabled()) { // Quickstep enabled
+        device.openQuickstep()
+    } else {
+        try {
+            device.pressRecentApps()
+        } catch (e: RemoteException) {
+            Log.e(TAG, "launchSplitScreen", e)
+        }
+    }
+    val overviewIconSelector = By.res(device.launcherPackageName, "icon")
+        .clazz(View::class.java)
+    val overviewIcon = device.wait(Until.findObject(overviewIconSelector), FIND_TIMEOUT)
+    assertNotNull("Unable to find app icon in Overview", overviewIcon)
+    overviewIcon.click()
+}
+
 /**
  * Opens quick step and puts the first app from the list of recently used apps into
  * split-screen
@@ -171,21 +188,7 @@ fun UiDevice.waitForIME(): Boolean {
  * not contain a button to enter split screen mode
  */
 fun UiDevice.launchSplitScreen() {
-    if (this.isQuickstepEnabled()) { // Quickstep enabled
-        this.openQuickstep()
-    } else {
-        try {
-            this.pressRecentApps()
-        } catch (e: RemoteException) {
-            Log.e(TAG, "launchSplitScreen", e)
-        }
-    }
-    val overviewIconSelector = By.res(this.launcherPackageName, "icon")
-            .clazz(View::class.java)
-    val overviewIcon = this.wait(Until.findObject(overviewIconSelector), FIND_TIMEOUT)
-    assertNotNull("Unable to find app icon in Overview", overviewIcon)
-    overviewIcon.click()
-
+    openQuickStepAndLongPressOverviewIcon(this)
     val splitScreenButtonSelector = By.text("Split screen")
     val splitScreenButton =
             this.wait(Until.findObject(splitScreenButtonSelector), FIND_TIMEOUT)
@@ -197,6 +200,18 @@ fun UiDevice.launchSplitScreen() {
     if (!this.isInSplitScreen()) {
         Assert.fail("Unable to find Split screen divider")
     }
+}
+
+/**
+ * Checks if the recent application is able to split screen(resizeable)
+ */
+fun UiDevice.canSplitScreen(): Boolean {
+    openQuickStepAndLongPressOverviewIcon(this)
+    val splitScreenButtonSelector = By.text("Split screen")
+    val canSplitScreen =
+            this.wait(Until.findObject(splitScreenButtonSelector), FIND_TIMEOUT) != null
+    this.pressHome()
+    return canSplitScreen
 }
 
 /**
