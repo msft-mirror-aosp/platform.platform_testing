@@ -16,25 +16,21 @@
 
 package com.android.media.audiotestharness.client.grpc;
 
-import static org.junit.Assert.assertNotNull;
+import com.android.media.audiotestharness.proto.AudioTestHarnessGrpc;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import com.google.common.base.Preconditions;
 
-@RunWith(JUnit4.class)
-public class GrpcAudioCaptureStreamTests {
+/** Factory for the {@link GrpcAudioCaptureStream}. */
+public class GrpcAudioCaptureStreamFactory {
+    private GrpcAudioCaptureStreamFactory() {}
 
-    private GrpcAudioCaptureStreamFactory mGrpcAudioCaptureStreamFactory;
-
-    @Before
-    public void setUp() throws Exception {
-        mGrpcAudioCaptureStreamFactory = GrpcAudioCaptureStreamFactory.create();
+    public static GrpcAudioCaptureStreamFactory create() {
+        return new GrpcAudioCaptureStreamFactory();
     }
 
-    @Test(expected = NullPointerException.class)
-    public void create_throwsNullPointerException_nullStub() throws Exception {
-        assertNotNull(mGrpcAudioCaptureStreamFactory.newStream(/* audioTestHarnessStub= */ null));
+    GrpcAudioCaptureStream newStream(
+            AudioTestHarnessGrpc.AudioTestHarnessStub audioTestHarnessStub) {
+        Preconditions.checkNotNull(audioTestHarnessStub, "audioTestHarnessStub cannot be null");
+        return GrpcAudioCaptureStream.create(audioTestHarnessStub);
     }
 }

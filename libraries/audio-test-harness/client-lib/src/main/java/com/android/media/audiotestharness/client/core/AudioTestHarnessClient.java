@@ -16,6 +16,9 @@
 
 package com.android.media.audiotestharness.client.core;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * API for the Audio Test Harness infrastructure.
  *
@@ -26,6 +29,16 @@ package com.android.media.audiotestharness.client.core;
  * host-side server but also any resources for the underlying sessions created within the system.
  */
 public abstract class AudioTestHarnessClient implements AutoCloseable {
+
+    /**
+     * {@link Set} of all {@link AudioCaptureStream}s created by this client so that when the client
+     * is closed, all of the associated streams can also be closed.
+     */
+    protected Set<AudioCaptureStream> mAudioCaptureStreams;
+
+    protected AudioTestHarnessClient() {
+        mAudioCaptureStreams = new HashSet<>();
+    }
 
     /**
      * Starts an Audio Capture Session and returns a {@link AudioCaptureStream} for interacting with

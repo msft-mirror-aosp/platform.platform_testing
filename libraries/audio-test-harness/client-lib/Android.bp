@@ -14,6 +14,11 @@
  * limitations under the License.
  */
 
+// Targets for the Audio Test Harness Client Libraries.
+// Clients can be used host or device side to communicate with an Audio
+// Test Harness Server.
+// LIBRARIES ==============================================================
+
 java_library {
     name: "audiotestharness-client-clientlib",
     host_supported: true,
@@ -28,15 +33,11 @@ java_library {
     host_supported: true,
     srcs: [
         "src/main/java/com/android/media/audiotestharness/client/core/*.java",
-        ":audiotestharness-commonproto",
     ],
     static_libs: [
         "audiotestharness-commonlib-lite",
-        "libprotobuf-java-lite",
+        "audiotestharness-commonprotolib-lite",
     ],
-    proto: {
-        type: "lite",
-    },
     sdk_version: "current",
 }
 
@@ -48,12 +49,14 @@ java_library {
     ],
     static_libs: [
         "audiotestharness-client-corelib",
+        "grpc-java-okhttp-client-lite",
+        "audiotestharness-servicegrpclib-lite",
+        "guava",
     ],
     sdk_version: "current",
 }
 
-
-// These targets must remain commented out until (b/173794291) is resolved.
+// TESTS ==============================================================
 
 java_test {
     name: "audiotestharness-client-grpclib-tests",
@@ -64,7 +67,11 @@ java_test {
     ],
     static_libs: [
         "audiotestharness-client-grpclib",
+        "grpc-java-core-inprocess",
         "junit",
+        "junit-params",
+        "mockito",
+        "objenesis",
     ],
     sdk_version: "current",
     test_options: {

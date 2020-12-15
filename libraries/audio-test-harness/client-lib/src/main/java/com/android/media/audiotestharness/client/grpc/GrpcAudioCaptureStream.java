@@ -17,6 +17,7 @@
 package com.android.media.audiotestharness.client.grpc;
 
 import com.android.media.audiotestharness.client.core.AudioCaptureStream;
+import com.android.media.audiotestharness.proto.AudioTestHarnessGrpc;
 
 import java.io.IOException;
 
@@ -26,10 +27,15 @@ public class GrpcAudioCaptureStream extends AudioCaptureStream {
     // TODO(b/168817017): Implement this class to utlize gRPC and Piped I/O streams to provide an
     // InputStream from which the audio samples can be read.
 
-    private GrpcAudioCaptureStream() {}
+    private final AudioTestHarnessGrpc.AudioTestHarnessStub mAudioTestHarnessStub;
 
-    public static GrpcAudioCaptureStream create() {
-        return new GrpcAudioCaptureStream();
+    private GrpcAudioCaptureStream(AudioTestHarnessGrpc.AudioTestHarnessStub audioTestHarnessStub) {
+        mAudioTestHarnessStub = audioTestHarnessStub;
+    }
+
+    static GrpcAudioCaptureStream create(
+            AudioTestHarnessGrpc.AudioTestHarnessStub audioTestHarnessStub) {
+        return new GrpcAudioCaptureStream(audioTestHarnessStub);
     }
 
     @Override
