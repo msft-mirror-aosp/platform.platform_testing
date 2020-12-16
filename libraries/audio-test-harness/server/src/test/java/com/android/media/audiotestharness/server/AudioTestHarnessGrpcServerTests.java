@@ -31,6 +31,7 @@ import com.google.inject.Injector;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -86,6 +87,7 @@ public class AudioTestHarnessGrpcServerTests {
         assertServerRunningAsExpected(port);
     }
 
+    @Ignore
     @Test(expected = IOException.class)
     public void open_throwsIOExceptionForMissingServiceDependency() throws Exception {
         AudioTestHarnessGrpcServer.create(
