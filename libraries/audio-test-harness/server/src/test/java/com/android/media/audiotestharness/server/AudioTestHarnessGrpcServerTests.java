@@ -87,6 +87,9 @@ public class AudioTestHarnessGrpcServerTests {
         assertServerRunningAsExpected(port);
     }
 
+    // Per (b/175643926) the following two tests are ignored since they do not run within Forrest.
+    // They do run (and pass) locally.
+
     @Ignore
     @Test(expected = IOException.class)
     public void open_throwsIOExceptionForMissingServiceDependency() throws Exception {
@@ -95,6 +98,7 @@ public class AudioTestHarnessGrpcServerTests {
                 .open();
     }
 
+    @Ignore
     @Test(expected = IOException.class)
     public void open_throwsIOException_forPortTaken() throws Exception {
         int port = PortUtility.nextAvailablePort();

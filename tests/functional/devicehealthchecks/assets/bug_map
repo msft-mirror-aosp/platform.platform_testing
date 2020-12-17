@@ -36,4 +36,5 @@ SYSTEM_TOMBSTONE >>>\s+com.android.nfc\s+<<<[\S\s]+NfcHalDeathRecipient[\S\s]+hi
 SYSTEM_TOMBSTONE imsdatadaemon\s+>>>\s/system/vendor/bin/imsdatadaemon\s<<<[\S\s]*HWAddressSanitizer[\S\s]*libdsi_netctrl 175347022
 SYSTEM_TOMBSTONE android.hardwar\s+>>>\s/vendor/bin/hw/android.hardware.nfc@1.2-service.st\s<<<[\S\s]*EX_TRANSACTION_FAILED 175342959
 SYSTEM_TOMBSTONE com.qualcomm.qti.services.secureui:sui_service\s<<<[\S\s]*null\spointer[\S\s]*libsecureui_svcsock_system 174754036
+SYSTEM_TOMBSTONE >>>\s/vendor/bin/hw/android.hardware.camera.provider@2.6-service-google\s<<<[\S\s]+libGLESv2_adreno 173663856
 SYSTEM_TOMBSTONE android.hardwar*.*/vendor/bin/hw/android.hardware.sensors@2.0-service 163430194
