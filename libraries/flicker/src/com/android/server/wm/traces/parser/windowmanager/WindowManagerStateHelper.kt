@@ -96,6 +96,14 @@ class WindowManagerStateHelper @JvmOverloads constructor(
         return success
     }
 
+    fun waitForFullScreenApp(componentName: ComponentName): Boolean =
+            waitForValidState(
+                    WaitForValidActivityState
+                            .Builder(componentName)
+                            .setWindowingMode(WindowConfiguration.WINDOWING_MODE_FULLSCREEN)
+                            .setActivityType(WindowConfiguration.ACTIVITY_TYPE_STANDARD)
+                            .build())
+
     fun waitForHomeActivityVisible(): Boolean {
         // Sometimes this function is called before we know what Home Activity is
         if (state.homeActivityName == null) {

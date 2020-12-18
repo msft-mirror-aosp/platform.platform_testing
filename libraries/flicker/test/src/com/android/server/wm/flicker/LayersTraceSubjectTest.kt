@@ -164,6 +164,24 @@ class LayersTraceSubjectTest {
                 .forAllEntries()
     }
 
+    @Test
+    fun testCanIgnoreLayerEqualNameInVisibleLayersMoreThanOneConsecutiveEntry() {
+        val layersTraceEntries = readLayerTraceFromFile(
+                "layers_trace_invalid_visible_layers.pb")
+        assertThat(layersTraceEntries)
+                .visibleLayersShownMoreThanOneConsecutiveEntry(listOf("StatusBar#0"))
+                .forAllEntries()
+    }
+
+    @Test
+    fun testCanIgnoreLayerShorterNameInVisibleLayersMoreThanOneConsecutiveEntry() {
+        val layersTraceEntries = readLayerTraceFromFile(
+                "one_visible_layer_launcher_trace.pb")
+        assertThat(layersTraceEntries)
+                .visibleLayersShownMoreThanOneConsecutiveEntry(listOf("Launcher"))
+                .forAllEntries()
+    }
+
     private fun detectRootLayer(fileName: String) {
         val layersTrace = readLayerTraceFromFile(fileName)
         for (entry in layersTrace.entries) {

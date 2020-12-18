@@ -292,7 +292,7 @@ class WmTraceSubject private constructor(
             val visibleWindows = trace.entries.withIndex()
                     .flatMap { (index, windowEntry) -> windowEntry.visibleWindows
                             .filter {
-                                ignoreWindows.none { windowName -> it.title in windowName }
+                                ignoreWindows.none { windowName -> windowName in it.title }
                             }
                             .map { Triple(it.title, index, windowEntry) }
                     }

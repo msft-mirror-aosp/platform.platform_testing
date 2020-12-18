@@ -128,7 +128,7 @@ class LayersTraceSubject private constructor(
             val visibleLayers = trace.entries.withIndex()
                     .flatMap { (index, layerEntry) -> layerEntry.visibleLayers
                             .filter {
-                                ignoreLayers.none { layerName -> it.name in layerName }
+                                ignoreLayers.none { layerName -> layerName in it.name }
                             }
                             .map { Triple(it.name, index, layerEntry) }
                     }
