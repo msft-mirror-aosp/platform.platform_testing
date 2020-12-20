@@ -39,6 +39,7 @@ import org.junit.Assert
 import org.junit.Assert.assertNotNull
 
 const val FIND_TIMEOUT: Long = 10000
+const val FAST_WAIT_TIMEOUT: Long = 0
 private const val IME_PACKAGE = "com.google.android.inputmethod.latin"
 private const val SYSTEMUI_PACKAGE = "com.android.systemui"
 private val LONG_PRESS_TIMEOUT = ViewConfiguration.getLongPressTimeout() * 2L
@@ -51,14 +52,14 @@ private const val TAG = "FLICKER"
  * transitions.
  */
 fun setFastWait() {
-    Configurator.getInstance().waitForIdleTimeout = 0
+    Configurator.getInstance().waitForIdleTimeout = FAST_WAIT_TIMEOUT
 }
 
 /**
  * Reverts [android.app.UiAutomation.waitForIdle] to default behavior.
  */
 fun setDefaultWait() {
-    Configurator.getInstance().waitForIdleTimeout = 10000
+    Configurator.getInstance().waitForIdleTimeout = FIND_TIMEOUT
 }
 
 /**
@@ -164,7 +165,7 @@ fun UiDevice.waitForIME(): Boolean {
 }
 
 private fun openQuickStepAndLongPressOverviewIcon(device: UiDevice) {
-    if (device.isQuickstepEnabled()) { // Quickstep enabled
+    if (device.isQuickstepEnabled()) {
         device.openQuickstep()
     } else {
         try {
@@ -178,6 +179,33 @@ private fun openQuickStepAndLongPressOverviewIcon(device: UiDevice) {
     val overviewIcon = device.wait(Until.findObject(overviewIconSelector), FIND_TIMEOUT)
     assertNotNull("Unable to find app icon in Overview", overviewIcon)
     overviewIcon.click()
+}
+
+fun UiDevice.openQuickStepAndClearRecentAppsFromOverview() {
+    if (this.isQuickstepEnabled()) {
+        this.openQuickstep()
+    } else {
+        try {
+            this.pressRecentApps()
+        } catch (e: RemoteException) {
+            Log.e(TAG, "launchSplitScreen", e)
+        }
+    }
+    for (i in 0..9) {
+        this.swipe(
+                this.getDisplayWidth() / 2,
+                this.getDisplayHeight() / 2,
+                this.getDisplayWidth(),
+                this.getDisplayHeight() / 2,
+                5)
+        // If "Clear all"  button appears, use it
+        val clearAllSelector = By.res(this.getLauncherPackageName(), "clear_all")
+        val clearAllButton = this.wait(Until.findObject(clearAllSelector), FAST_WAIT_TIMEOUT)
+        if (clearAllButton != null) {
+            clearAllButton.click()
+        }
+    }
+    this.pressHome()
 }
 
 /**
