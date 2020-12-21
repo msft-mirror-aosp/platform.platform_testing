@@ -249,6 +249,10 @@ fun UiDevice.isInSplitScreen(): Boolean {
     return this.wait(Until.findObject(splitScreenDividerSelector), FIND_TIMEOUT) != null
 }
 
+fun UiDevice.waitSplitScreenGone(): Boolean {
+    return this.wait(Until.gone(splitScreenDividerSelector), FIND_TIMEOUT) != null
+}
+
 private val splitScreenDividerSelector: BySelector
     get() = By.res(SYSTEMUI_PACKAGE, "docked_divider_handle")
 
@@ -271,6 +275,28 @@ fun UiDevice.exitSplitScreen() {
     divider.drag(dstPoint, 400)
     // Wait for animation to complete.
     SystemClock.sleep(2000)
+}
+
+/**
+ * Drags the split screen divider to the bottom of the screen to close it
+ *
+ * @throws AssertionError when unable to find the split screen divider
+ */
+fun UiDevice.exitSplitScreenFromBottom() {
+    // Quickstep enabled
+    val divider = this.wait(Until.findObject(splitScreenDividerSelector), FIND_TIMEOUT)
+    assertNotNull("Unable to find Split screen divider", divider)
+
+    // Drag the split screen divider to the bottom of the screen
+    val dstPoint = if (this.isRotated()) {
+        Point(this.displayWidth, this.displayWidth / 2)
+    } else {
+        Point(this.displayWidth / 2, this.displayHeight)
+    }
+    divider.drag(dstPoint, 400)
+    if (!this.waitSplitScreenGone()) {
+        Assert.fail("Split screen divider never disappeared")
+    }
 }
 
 /**
