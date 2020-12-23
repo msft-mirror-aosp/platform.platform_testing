@@ -40,6 +40,7 @@ instrumentation_tests := \
     SystemUITests \
     TestablesTests \
     FrameworksWifiApiTests \
+    FrameworksWifiNonUpdatableApiTests \
     FrameworksWifiTests \
     FrameworksTelephonyTests \
     ContactsProviderTests \
