@@ -16,11 +16,13 @@
 
 package com.android.server.wm.flicker.monitor
 
+import android.os.SystemClock
 import android.util.Log
 import com.android.compatibility.common.util.SystemUtil
 import com.android.server.wm.flicker.FlickerRunResult
 import com.android.server.wm.flicker.FLICKER_TAG
 import java.io.IOException
+import java.nio.file.Files
 import java.nio.file.Path
 
 /** Captures screen contents and saves it as a mp4 video file.  */
@@ -32,37 +34,61 @@ open class ScreenRecorder @JvmOverloads constructor(
 ) : TraceMonitor(outputPath, outputPath.resolve(traceFile)) {
     private fun createRecorderThread(): Thread {
         val command = "screenrecord --size ${width}x$height $sourceTraceFilePath"
-        return Thread(
-                Runnable {
-                    try {
-                        Runtime.getRuntime().exec(command)
-                    } catch (e: IOException) {
-                        Log.e(FLICKER_TAG, "Error executing $command", e)
-                    }
-                })
+        return Thread {
+            try {
+                Log.i(FLICKER_TAG, "Running command $command")
+                Runtime.getRuntime().exec(command)
+            } catch (e: IOException) {
+                Log.e(FLICKER_TAG, "Error executing $command", e)
+            }
+        }
     }
 
-    private var recorderThread = createRecorderThread()
+    private var recorderThread: Thread? = null
 
     override fun start() {
-        outputPath.toFile().mkdirs()
-        recorderThread.start()
+        if (recorderThread != null) {
+            Log.i(FLICKER_TAG, "Screen recorder already running")
+            return
+        }
+        Files.deleteIfExists(sourceTraceFilePath)
+        Files.createDirectories(sourceTraceFilePath.parent)
+        recorderThread = createRecorderThread()
+        recorderThread?.start()
+        var remainingTime = WAIT_TIMEOUT_MS
+        do {
+            SystemClock.sleep(WAIT_INTERVAL_MS)
+            remainingTime -= WAIT_INTERVAL_MS
+        } while (!Files.exists(sourceTraceFilePath) && remainingTime > 0)
+
+        require(Files.exists(sourceTraceFilePath)) {
+            "Screen recorder didn't start in $WAIT_TIMEOUT_MS ms" }
     }
 
     override fun stop() {
+        if (recorderThread == null) {
+            Log.i(FLICKER_TAG, "Screen recorder was not started")
+            return
+        }
+
         SystemUtil.runShellCommand("killall -s 2 screenrecord")
         try {
-            recorderThread.join()
+            recorderThread?.join()
         } catch (e: InterruptedException) {
-            // ignore
+            Log.e(FLICKER_TAG, "Failed to stop screen recording", e)
         }
-        recorderThread = createRecorderThread()
+        recorderThread = null
     }
 
     override val isEnabled: Boolean
-        get() = recorderThread.isAlive
+        get() = recorderThread?.isAlive ?: false
 
     override fun setResult(flickerRunResultBuilder: FlickerRunResult.Builder, traceFile: Path) {
         flickerRunResultBuilder.screenRecording = traceFile
+    }
+
+    companion object {
+        private const val WAIT_TIMEOUT_MS = 5000L
+        private const val WAIT_INTERVAL_MS = 500L
     }
 }

@@ -83,8 +83,10 @@ open class LayerTraceEntry constructor(
             val visible = layer.isVisible
 
             if (visible) {
-                layer.occludedBy.addAll(_opaqueLayers.filter { it.contains(layer) })
-                layer.partiallyOccludedBy.addAll(_opaqueLayers.filter { it.overlaps(layer) })
+                layer.occludedBy.addAll(_opaqueLayers
+                    .filter { it.contains(layer) && !it.hasRoundedCorners })
+                layer.partiallyOccludedBy.addAll(
+                    _opaqueLayers.filter { it.overlaps(layer) && it !in layer.occludedBy })
                 layer.coveredBy.addAll(_transparentLayers.filter { it.overlaps(layer) })
 
                 if (layer.isOpaque) {

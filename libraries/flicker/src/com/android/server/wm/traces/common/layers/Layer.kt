@@ -40,6 +40,7 @@ open class Layer(
     val color: Color?,
     private val _isOpaque: Boolean,
     val shadowRadius: Float,
+    val cornerRadius: Float,
     val type: String,
     private val _screenBounds: RectF?,
     val transform: Transform,
@@ -141,6 +142,13 @@ open class Layer(
      * @return
      */
     val drawsShadows: Boolean get() = shadowRadius > 0
+
+    /**
+     * Checks if the [Layer] has rounded corners
+     *
+     * @return
+     */
+    val hasRoundedCorners: Boolean get() = cornerRadius > 0
 
     /**
      * Checks if the [Layer] draws has effects, which include:
