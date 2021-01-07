@@ -49,6 +49,7 @@ class LayerFactory {
                     proto.color?.toColor(),
                     proto.isOpaque,
                     proto.shadowRadius,
+                    proto.cornerRadius,
                     proto.type ?: "",
                     proto.screenBounds?.toRectF(),
                     Transform(proto.transform, proto.position),
