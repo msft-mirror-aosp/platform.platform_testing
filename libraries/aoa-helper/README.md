@@ -4,20 +4,21 @@ Java utility which allows a host computer to act as a [USB host to an Android de
 ## Usage
 Connect to a device using its serial number.
 ```
-AoaDeviceManager manager = new AoaDeviceManager();
-AoaDevice device = manager.getDevice("SERIAL");
+try (UsbHelper usb = new UsbHelper();
+     AoaDevice device = usb.getAoaDevice(serialNumber)) {
+    // ...
+}
 ```
 
 Perform gestures using coordinates (`0 <= x <= 360` and `0 <= y <= 640`).
 ```
 device.click(new Point(0, 0));
-device.scroll(new Point(0, 0), new Point(360, 640));
+device.swipe(new Point(0, 0), new Point(360, 640), Duration.ofMillis(100));
 ```
 
-Write alphanumeric text, or press key combinations using [USB HID usages](https://source.android.com/devices/input/keyboard-devices).
+Write alphanumeric text or press key combinations using [USB HID usages](https://source.android.com/devices/input/keyboard-devices).
 ```
-device.write("hello world");
-device.key(0x52, 0x52, 0x51, 0x51, 0x50, 0x4F, 0x50, 0x4F, 0x05, 0x04);
+device.pressKeys(0x52, 0x52, 0x51, 0x51, 0x50, 0x4F, 0x50, 0x4F, 0x05, 0x04);
 ```
 
 Press the power `device.wakeUp()`, home `device.goHome()`, or back `device.goBack()` buttons.
