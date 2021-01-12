@@ -237,8 +237,12 @@ public class SystemUiJankTests extends JankTestBase {
             }
             builder.setContentText(Integer.toHexString(icon))
                     .setSmallIcon(icon);
-            builder.setContentIntent(PendingIntent.getActivity(
-                    context, 0, new Intent(context, DummyActivity.class), 0));
+            builder.setContentIntent(
+                    PendingIntent.getActivity(
+                            context,
+                            0,
+                            new Intent(context, DummyActivity.class),
+                            PendingIntent.FLAG_MUTABLE_UNAUDITED));
             mNotificationManager.notify(icon, builder.build());
             SystemClock.sleep(sleepBetweenDuration);
             first = false;
@@ -272,8 +276,12 @@ public class SystemUiJankTests extends JankTestBase {
 
     private Action createSmartAction(String actionTitle) {
         Context context = getInstrumentation().getContext();
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0 , new Intent(),
-                PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent pendingIntent =
+                PendingIntent.getBroadcast(
+                        context,
+                        0,
+                        new Intent(),
+                        PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE_UNAUDITED);
         Icon icon = Icon.createWithResource(context, ICONS[0]);
         return new Action.Builder(icon, actionTitle, pendingIntent)
                 .setContextual(true)
@@ -285,8 +293,12 @@ public class SystemUiJankTests extends JankTestBase {
                 .setLabel(NOTIFICATION_TEXT)
                 .build();
         Context context = getInstrumentation().getTargetContext();
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0 , new Intent(),
-                PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent pendingIntent =
+                PendingIntent.getBroadcast(
+                        context,
+                        0,
+                        new Intent(),
+                        PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE_UNAUDITED);
         Icon icon = Icon.createWithResource(context, ICONS[0]);
         Action action = new Action.Builder(icon, REPLY_TEXT, pendingIntent)
                 .addRemoteInput(remoteInput)
