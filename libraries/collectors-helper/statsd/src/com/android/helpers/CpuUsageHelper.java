@@ -41,21 +41,15 @@ public class CpuUsageHelper implements ICollectorHelper<Long> {
 
     private static final String LOG_TAG = CpuUsageHelper.class.getSimpleName();
     private static final String CPU_USAGE_PKG_UID = "cpu_usage_pkg_or_uid";
-    private static final String CPU_USAGE_FREQ = "cpu_usage_freq";
     private static final String TOTAL_CPU_USAGE = "total_cpu_usage";
-    private static final String TOTAL_CPU_USAGE_FREQ = "total_cpu_usage_freq";
-    private static final String CLUSTER_ID = "cluster";
-    private static final String FREQ_INDEX = "freq_index";
     private static final String USER_TIME = "user_time";
     private static final String SYSTEM_TIME = "system_time";
     private static final String TOTAL_CPU_TIME = "total_cpu_time";
     private static final String CPU_UTILIZATION = "cpu_utilization_average_per_core_percent";
 
     private StatsdHelper mStatsdHelper = new StatsdHelper();
-    private boolean isPerFreqDisabled;
     private boolean isPerPkgDisabled;
     private boolean isTotalPkgDisabled;
-    private boolean isTotalFreqDisabled;
     private boolean isCpuUtilizationEnabled;
     private long mStartTime;
     private long mEndTime;
@@ -67,7 +61,6 @@ public class CpuUsageHelper implements ICollectorHelper<Long> {
         List<Integer> atomIdList = new ArrayList<>();
         // Add the atoms to be tracked.
         atomIdList.add(AtomsProto.Atom.CPU_TIME_PER_UID_FIELD_NUMBER);
-        atomIdList.add(AtomsProto.Atom.CPU_TIME_PER_FREQ_FIELD_NUMBER);
 
         if (isCpuUtilizationEnabled) {
             mStartTime = System.currentTimeMillis();
@@ -126,27 +119,12 @@ public class CpuUsageHelper implements ICollectorHelper<Long> {
                         cpuUsageMap.put(UserTimeKey, userTimeMillis);
                         cpuUsageMap.put(SystemTimeKey, sysTimeMillis);
                     }
-
-                    // Track cpu usage per cluster_id and freq_index
-                    if (atom.hasCpuTimePerFreq()) {
-                        int clusterId = atom.getCpuTimePerFreq().cluster;
-                        int freqIndex = atom.getCpuTimePerFreq().freqIndex;
-                        long timeInFreq = atom.getCpuTimePerFreq().timeMillis;
-                        Log.v(LOG_TAG, String.format("Cluster Id: %d FreqIndex: %d,"
-                                + " Time_in_Freq: %d", clusterId, freqIndex, timeInFreq));
-                        String finalFreqIndexKey = MetricUtility.constructKey(
-                                CPU_USAGE_FREQ, CLUSTER_ID, String.valueOf(clusterId), FREQ_INDEX,
-                                String.valueOf(freqIndex));
-                        cpuUsageMap.put(finalFreqIndexKey, timeInFreq);
-                    }
-
                 }
             }
         }
 
         // Compute the final result map
         Long totalCpuUsage = 0L;
-        Long totalCpuFreq = 0L;
         for (String key : cpuUsageMap.keySet()) {
             List<Long> cpuUsageList = cpuUsageMap.get(key);
             if (cpuUsageList.size() > 1) {
@@ -167,27 +145,17 @@ public class CpuUsageHelper implements ICollectorHelper<Long> {
                             cpuUsageFinalMap.put(finalKey, cpuUsage);
                         }
                     }
-                    if (key.startsWith(CPU_USAGE_FREQ)
-                            && !isPerFreqDisabled) {
-                        cpuUsageFinalMap.put(key, cpuUsage);
-                    }
                 }
                 // Add the CPU time to their respective (usage or frequency) total metric.
                 if (key.startsWith(CPU_USAGE_PKG_UID)
                         && !isTotalPkgDisabled) {
                     totalCpuUsage += cpuUsage;
-                } else if (key.startsWith(CPU_USAGE_FREQ)
-                        && !isTotalFreqDisabled) {
-                    totalCpuFreq += cpuUsage;
                 }
             }
         }
         // Put the total results into the final result map.
         if (!isTotalPkgDisabled) {
             cpuUsageFinalMap.put(TOTAL_CPU_USAGE, totalCpuUsage);
-        }
-        if (!isTotalFreqDisabled) {
-            cpuUsageFinalMap.put(TOTAL_CPU_USAGE_FREQ, totalCpuFreq);
         }
 
         // Calculate cpu utilization
@@ -220,24 +188,10 @@ public class CpuUsageHelper implements ICollectorHelper<Long> {
     }
 
     /**
-     * Disable the cpu metric collection per frequency.
-     */
-    public void setDisablePerFrequency() {
-        isPerFreqDisabled = true;
-    }
-
-    /**
      * Disable the total cpu metric collection by all the packages.
      */
     public void setDisableTotalPackage() {
         isTotalPkgDisabled = true;
-    }
-
-    /**
-     * Disable the total cpu metric collection by all the frequency.
-     */
-    public void setDisableTotalFrequency() {
-        isTotalFreqDisabled = true;
     }
 
     /**

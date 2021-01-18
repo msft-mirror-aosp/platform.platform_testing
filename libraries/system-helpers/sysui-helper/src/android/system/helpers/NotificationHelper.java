@@ -254,8 +254,13 @@ public class NotificationHelper {
             toastIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             toastIntent.setAction("toast:" + text);
             toastIntent.putExtra("text", text);
-            PendingIntent pi = PendingIntent.getService(
-                    context, 58, toastIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+            PendingIntent pi =
+                    PendingIntent.getService(
+                            context,
+                            58,
+                            toastIntent,
+                            PendingIntent.FLAG_UPDATE_CURRENT
+                                    | PendingIntent.FLAG_MUTABLE_UNAUDITED);
             return pi;
         }
     }
