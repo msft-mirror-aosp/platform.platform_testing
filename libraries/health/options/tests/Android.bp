@@ -14,7 +14,8 @@
 
 android_test {
     name: "PlatformTestOptionsTests",
-    sdk_version: "24",
+    sdk_version: "30",
+    min_sdk_version: "24",
     srcs: [ "src/**/*.java" ],
     static_libs: [
         "androidx.test.runner",

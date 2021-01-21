@@ -18,6 +18,7 @@ package com.android.media.audiotestharness.client.grpc;
 
 import com.android.media.audiotestharness.client.core.AudioCaptureStream;
 import com.android.media.audiotestharness.client.core.AudioTestHarnessClient;
+import com.android.media.audiotestharness.client.core.AudioTestHarnessCommunicationException;
 import com.android.media.audiotestharness.proto.AudioTestHarnessGrpc;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -27,8 +28,9 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 
 import java.io.IOException;
-import java.util.concurrent.Executor;
+import java.util.Locale;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -52,17 +54,23 @@ public class GrpcAudioTestHarnessClient extends AudioTestHarnessClient {
     }
 
     public static GrpcAudioTestHarnessClient.Builder builder() {
-        return new Builder().setCaptureStreamFactory(GrpcAudioCaptureStreamFactory.create());
+        return new Builder();
     }
 
     @Override
     public AudioCaptureStream startCapture() {
-        AudioCaptureStream newStream =
-                mGrpcAudioCaptureStreamFactory.newStream(
-                        AudioTestHarnessGrpc.newStub(mManagedChannel));
+        AudioCaptureStream newStream;
+
+        try {
+            newStream =
+                    mGrpcAudioCaptureStreamFactory.newStream(
+                            AudioTestHarnessGrpc.newStub(mManagedChannel));
+        } catch (IOException ioe) {
+            throw new AudioTestHarnessCommunicationException(
+                    "Unable to start a new capture stream.", ioe);
+        }
 
         mAudioCaptureStreams.add(newStream);
-
         return newStream;
     }
 
@@ -88,7 +96,7 @@ public class GrpcAudioTestHarnessClient extends AudioTestHarnessClient {
 
         private String mHostname;
         private int mPort;
-        private Executor mExecutor;
+        private ScheduledExecutorService mExecutor;
         private GrpcAudioCaptureStreamFactory mGrpcAudioCaptureStreamFactory;
         private ManagedChannel mManagedChannel;
 
@@ -98,7 +106,11 @@ public class GrpcAudioTestHarnessClient extends AudioTestHarnessClient {
             Preconditions.checkNotNull(hostname, "Hostname cannot be null");
             Preconditions.checkArgument(
                     port >= MIN_PORT && port <= MAX_PORT,
-                    String.format("Port expected in range [%d, %d]", MIN_PORT, MAX_PORT));
+                    String.format(
+                            Locale.getDefault(),
+                            "Port expected in range [%d, %d]",
+                            MIN_PORT,
+                            MAX_PORT));
 
             mHostname = hostname;
             mPort = port;
@@ -106,7 +118,7 @@ public class GrpcAudioTestHarnessClient extends AudioTestHarnessClient {
             return this;
         }
 
-        public Builder setExecutor(Executor executor) {
+        public Builder setExecutor(ScheduledExecutorService executor) {
             mExecutor = executor;
             return this;
         }
@@ -131,7 +143,12 @@ public class GrpcAudioTestHarnessClient extends AudioTestHarnessClient {
                 Preconditions.checkState(mHostname != null, "Address must be set.");
 
                 if (mExecutor == null) {
-                    mExecutor = Executors.newFixedThreadPool(DEFAULT_NUM_THREADS);
+                    mExecutor = Executors.newScheduledThreadPool(DEFAULT_NUM_THREADS);
+                }
+
+                if (mGrpcAudioCaptureStreamFactory == null) {
+                    mGrpcAudioCaptureStreamFactory =
+                            GrpcAudioCaptureStreamFactory.create(mExecutor);
                 }
 
                 mManagedChannel =

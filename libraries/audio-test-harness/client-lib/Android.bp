@@ -51,6 +51,7 @@ java_library {
         "audiotestharness-client-corelib",
         "grpc-java-okhttp-client-lite",
         "audiotestharness-servicegrpclib-lite",
+        "audiotestharness-commonlib-lite",
         "guava",
     ],
     sdk_version: "current",
@@ -68,6 +69,7 @@ java_test {
     static_libs: [
         "audiotestharness-client-grpclib",
         "grpc-java-core-inprocess",
+        "grpc-java-testing",
         "junit",
         "junit-params",
         "mockito",
