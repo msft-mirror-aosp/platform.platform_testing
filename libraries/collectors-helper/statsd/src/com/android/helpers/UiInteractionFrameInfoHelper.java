@@ -48,6 +48,11 @@ public class UiInteractionFrameInfoHelper implements ICollectorHelper<StringBuil
         return mStatsdHelper.addEventConfig(atomIdList);
     }
 
+    // convert 0 to 1e-6 to make logarithmic dashboards look better.
+    static double makeLogFriendly(double metric) {
+        return Math.max(0.000001, metric);
+    }
+
     /** Collect the system interactions jank metrics from the statsd. */
     @Override
     public Map<String, StringBuilder> getMetrics() {
@@ -66,17 +71,18 @@ public class UiInteractionFrameInfoHelper implements ICollectorHelper<StringBuil
 
                 MetricUtility.addMetric(
                         MetricUtility.constructKey("cuj", interactionType, "total_frames"),
-                        uiInteractionFrameInfoReported.totalFrames,
+                        makeLogFriendly(uiInteractionFrameInfoReported.totalFrames),
                         frameInfoMap);
 
                 MetricUtility.addMetric(
                         MetricUtility.constructKey("cuj", interactionType, "missed_frames"),
-                        uiInteractionFrameInfoReported.missedFrames,
+                        makeLogFriendly(uiInteractionFrameInfoReported.missedFrames),
                         frameInfoMap);
 
                 MetricUtility.addMetric(
                         MetricUtility.constructKey("cuj", interactionType, "max_frame_time_ms"),
-                        uiInteractionFrameInfoReported.maxFrameTimeNanos / 1000000.0,
+                        makeLogFriendly(
+                                uiInteractionFrameInfoReported.maxFrameTimeNanos / 1000000.0),
                         frameInfoMap);
             }
         }

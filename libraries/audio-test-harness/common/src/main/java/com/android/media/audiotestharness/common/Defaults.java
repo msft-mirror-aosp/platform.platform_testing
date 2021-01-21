@@ -19,6 +19,8 @@ package com.android.media.audiotestharness.common;
 import com.android.media.audiotestharness.proto.AudioDeviceOuterClass.AudioDevice;
 import com.android.media.audiotestharness.proto.AudioFormatOuterClass.AudioFormat;
 
+import java.time.Duration;
+
 /**
  * Contains all the defaults for the Audio Test Harness system shared between the client and server
  * libraries.
@@ -51,4 +53,13 @@ public final class Defaults {
                     .setName("UMM6 [plughw:0,0]")
                     .addCapabilities(AudioDevice.Capability.CAPTURE)
                     .build();
+
+    /** Target size for each chunk captured and sent from host to client. */
+    public static final int CAPTURE_CHUNK_TARGET_SIZE_BYTES = 256;
+
+    /**
+     * Timeout for all calls between client and host at which point any outstanding calls will be
+     * cancelled or aborted.
+     */
+    public static final Duration SYSTEM_TIMEOUT = Duration.ofHours(1);
 }
