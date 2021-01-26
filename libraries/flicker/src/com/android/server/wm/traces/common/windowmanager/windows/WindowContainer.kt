@@ -27,13 +27,13 @@ import com.android.server.wm.traces.common.Rect
  * access internal Java/Android functionality
  *
  */
-open class WindowContainer private constructor(
+open class WindowContainer constructor(
     val title: String,
     val token: String,
     val orientation: Int,
     val isVisible: Boolean,
     configurationContainer: ConfigurationContainer,
-    protected var childContainers: Array<WindowContainerChild> = emptyArray()
+    val childrenWindows: Array<WindowContainer>
 ) : ConfigurationContainer(configurationContainer) {
     protected constructor(
         windowContainer: WindowContainer,
@@ -45,30 +45,12 @@ open class WindowContainer private constructor(
         windowContainer.orientation,
         isVisibleOverride ?: windowContainer.isVisible,
         windowContainer,
-        windowContainer.childContainers
+        windowContainer.childrenWindows
     )
-
-    constructor(
-        name: String,
-        token: String,
-        orientation: Int,
-        isVisible: Boolean,
-        configurationContainer: ConfigurationContainer
-    ) : this(name, token, orientation, isVisible, configurationContainer,
-        childContainers = emptyArray())
-
-    fun addChildrenWindows(children: List<WindowContainerChild>) {
-        childContainers = children.toMutableList().also {
-            it.addAll(childContainers)
-        }.toTypedArray()
-    }
 
     open val name: String = title
     open val kind: String = "WindowContainer"
     open val stableId: String by lazy { kind + token }
-
-    val childrenWindows: Array<WindowContainer>
-        by lazy { childContainers.mapNotNull { it.getContainer() }.toTypedArray() }
 
     open val rects: Array<Rect>
         by lazy { childrenWindows.flatMap { it.rects.toList() }.toTypedArray() }

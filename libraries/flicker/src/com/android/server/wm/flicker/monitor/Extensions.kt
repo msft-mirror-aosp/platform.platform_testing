@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 The Android Open Source Project
+ * Copyright (C) 2021 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,8 @@ package com.android.server.wm.flicker.monitor
 import com.android.server.wm.traces.parser.DeviceStateDump
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 import com.android.server.wm.flicker.getDefaultFlickerOutputDir
-import com.android.server.wm.traces.parser.layers.LayersTrace
+import com.android.server.wm.traces.common.layers.LayersTrace
+import com.android.server.wm.traces.parser.layers.LayersTraceParser
 import com.android.server.wm.traces.parser.windowmanager.WindowManagerTraceParser
 import java.nio.file.Path
 
@@ -56,7 +57,8 @@ fun withSFTracing(
     outputDir: Path = getDefaultFlickerOutputDir().resolve("withSFTracing"),
     predicate: () -> Unit
 ): LayersTrace {
-    return LayersTrace.parseFrom(LayersTraceMonitor(outputDir, traceFlags).withTracing(predicate))
+    return LayersTraceParser.parseFromTrace(
+        LayersTraceMonitor(outputDir, traceFlags).withTracing(predicate))
 }
 
 /**

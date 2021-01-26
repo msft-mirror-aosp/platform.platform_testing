@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 The Android Open Source Project
+ * Copyright (C) 2021 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 package com.android.server.wm.flicker
 
 import androidx.test.filters.FlakyTest
-import com.google.common.truth.Truth
+import org.junit.Assume
 import org.junit.Rule
 import org.junit.Test
 
@@ -29,25 +29,43 @@ import org.junit.Test
  *
  * All the enabled assertions are created in a single test and all flaky assertions are created on
  * a second test annotated with @FlakyTest
+ *
+ * @param testName Name of the test. Appears on log outputs and test dashboards
+ * @param flickerSpec Flicker test to execute
+ * @param cleanUp If this test should delete the traces and screen recording files if it passes
  */
-abstract class FlickerTestRunner(testName: String, private val flickerSpec: Flicker) {
+abstract class FlickerTestRunner(
+    testName: String,
+    private val flickerProvider: () -> Flicker,
+    private val cleanUp: Boolean
+) {
+    private val flickerSpec = flickerProvider.invoke()
+
     @get:Rule
     val flickerTestRule = FlickerTestRule(flickerSpec)
 
-    /**
-     * Tests if the transition executed successfully
-     */
-    @Test
-    fun checkTransition() {
-        Truth.assertWithMessage(flickerSpec.error?.message).that(flickerSpec.error).isNull()
+    private fun checkRequirements(onlyFlaky: Boolean) {
+        if (flickerSpec.assertions.size == 1) {
+            val isTestEnabled = flickerSpec.assertions.first().enabled
+            if (onlyFlaky) {
+                Assume.assumeFalse(isTestEnabled)
+            } else {
+                Assume.assumeTrue(isTestEnabled)
+            }
+        }
     }
 
     /**
      * Run only the enabled assertions on the recorded traces.
      */
     @Test
-    fun checkAssertions() {
-        flickerSpec.checkAssertions(includeFlakyAssertions = false)
+    fun test() {
+        checkRequirements(onlyFlaky = false)
+        flickerSpec.checkIsExecuted()
+        flickerSpec.checkAssertions(onlyFlaky = false)
+        if (cleanUp) {
+            flickerSpec.cleanUp()
+        }
     }
 
     /**
@@ -55,7 +73,12 @@ abstract class FlickerTestRunner(testName: String, private val flickerSpec: Flic
      */
     @FlakyTest
     @Test
-    fun checkFlakyAssertions() {
-        flickerSpec.checkAssertions(includeFlakyAssertions = true)
+    fun testFlaky() {
+        checkRequirements(onlyFlaky = true)
+        flickerSpec.checkIsExecuted()
+        flickerSpec.checkAssertions(onlyFlaky = true)
+        if (cleanUp) {
+            flickerSpec.cleanUp()
+        }
     }
 }

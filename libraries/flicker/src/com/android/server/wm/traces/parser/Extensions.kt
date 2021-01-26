@@ -21,6 +21,7 @@ package com.android.server.wm.traces.parser
 import android.app.UiAutomation
 import android.content.ComponentName
 import android.os.ParcelFileDescriptor
+import android.util.Log
 import com.android.server.wm.traces.common.Rect
 import com.android.server.wm.traces.common.Region
 
@@ -55,11 +56,12 @@ private fun getCurrentLayersState(uiAutomation: UiAutomation) =
 fun getCurrentState(
     uiAutomation: UiAutomation,
     @WmStateDumpFlags dumpFlags: Int = FLAG_STATE_DUMP_FLAG_WM.or(FLAG_STATE_DUMP_FLAG_LAYERS)
-): DeviceStateDump {
+): Pair<ByteArray, ByteArray> {
     if (dumpFlags == 0) {
         throw IllegalArgumentException("No dump specified")
     }
 
+    Log.d(LOG_TAG, "Requesting new device state dump")
     val wmTraceData = if (dumpFlags.and(FLAG_STATE_DUMP_FLAG_WM) > 0) {
         getCurrentWindowManagerState(uiAutomation)
     } else {
@@ -70,5 +72,17 @@ fun getCurrentState(
     } else {
         ByteArray(0)
     }
+
+    return Pair(wmTraceData, layersTraceData)
+}
+
+@JvmOverloads
+fun getCurrentStateDump(
+    uiAutomation: UiAutomation,
+    @WmStateDumpFlags dumpFlags: Int = FLAG_STATE_DUMP_FLAG_WM.or(FLAG_STATE_DUMP_FLAG_LAYERS)
+): DeviceStateDump {
+    val currentStateDump = getCurrentState(uiAutomation, dumpFlags)
+    val wmTraceData = currentStateDump.first
+    val layersTraceData = currentStateDump.second
     return DeviceStateDump.fromDump(wmTraceData, layersTraceData)
 }

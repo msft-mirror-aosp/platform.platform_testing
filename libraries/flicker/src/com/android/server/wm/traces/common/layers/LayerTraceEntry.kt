@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 The Android Open Source Project
+ * Copyright (C) 2021 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,8 @@
 
 package com.android.server.wm.traces.common.layers
 
-import com.android.server.wm.traces.common.AssertionResult
-import com.android.server.wm.traces.common.Region
 import com.android.server.wm.traces.common.ITraceEntry
+import com.android.server.wm.traces.common.prettyTimestamp
 
 /**
  * Represents a single Layer trace entry.
@@ -31,18 +30,11 @@ open class LayerTraceEntry constructor(
     override val timestamp: Long, // hierarchical representation of layers
     val rootLayers: List<Layer>
 ) : ITraceEntry {
+    private val formattedTimestamp by lazy { prettyTimestamp(timestamp) }
     private val _opaqueLayers = mutableListOf<Layer>()
     private val _transparentLayers = mutableListOf<Layer>()
-    private val _rootScreenBounds by lazy {
-        val rootLayerBounds = rootLayers
-                .filter { it.sourceBounds != null }
-                .first { it.name.startsWith("Root#0") }
-                .sourceBounds ?: throw IllegalStateException("Root layer must have bounds")
 
-        Region(0, 0, rootLayerBounds.bottom.toInt(), rootLayerBounds.right.toInt())
-    }
-
-    val flattenedLayers: List<Layer> by lazy {
+    val flattenedLayers: Array<Layer> by lazy {
         val layers = mutableListOf<Layer>()
         val roots = rootLayers.fillOcclusionState().toMutableList()
         while (roots.isNotEmpty()) {
@@ -50,7 +42,7 @@ open class LayerTraceEntry constructor(
             layers.add(layer)
             roots.addAll(layer.children)
         }
-        layers
+        layers.toTypedArray()
     }
 
     private fun List<Layer>.topDownTraversal(): List<Layer> {
@@ -59,11 +51,12 @@ open class LayerTraceEntry constructor(
                 .flatMap { it.topDownTraversal() }
     }
 
-    val visibleLayers by lazy { flattenedLayers.filter { it.isVisible && !it.isHiddenByParent } }
+    val visibleLayers: Array<Layer>
+        get() = flattenedLayers.filter { it.isVisible && !it.isHiddenByParent }.toTypedArray()
 
-    val opaqueLayers: List<Layer> get() = _opaqueLayers
+    val opaqueLayers: Array<Layer> get() = _opaqueLayers.toTypedArray()
 
-    val transparentLayers: List<Layer> get() = _transparentLayers
+    val transparentLayers: Array<Layer> get() = _transparentLayers.toTypedArray()
 
     private fun Layer.topDownTraversal(): List<Layer> {
         val traverseList = mutableListOf(this)
@@ -100,91 +93,20 @@ open class LayerTraceEntry constructor(
         return this
     }
 
-    /**
-     * Checks if a layer containing the name [layerName] has a visible region of exactly
-     * [expectedVisibleRegion].
-     *
-     * @param layerName Name of the layer to search
-     * @param expectedVisibleRegion Expected visible region of the layer
-     */
-    fun hasVisibleRegion(layerName: String, expectedVisibleRegion: Region): AssertionResult {
-        val assertionName = "hasVisibleRegion"
-        var reason = "Could not find $layerName"
-        for (layer in flattenedLayers) {
-            if (layer.name.contains(layerName)) {
-                if (layer.isHiddenByParent) {
-                    reason = layer.hiddenByParentReason
-                    continue
-                }
-                if (layer.isInvisible) {
-                    reason = layer.visibilityReason
-                    continue
-                }
-                val visibleRegion = layer.visibleRegion
-                if ((visibleRegion == expectedVisibleRegion)) {
-                    return AssertionResult(
-                            layer.name + "has visible region " + expectedVisibleRegion,
-                            assertionName,
-                            timestamp,
-                            success = true)
-                }
-                reason = (layer.name +
-                        " has visible region:" +
-                        visibleRegion +
-                        " " +
-                        "expected:" +
-                        expectedVisibleRegion)
-            }
+    fun getLayerWithBuffer(name: String): Layer? {
+        return flattenedLayers.firstOrNull {
+            it.name.contains(name) && it.activeBuffer != null
         }
-        return AssertionResult(reason, assertionName, timestamp, success = false)
     }
 
     /**
-     * Checks if a layer containing the name [layerName] exists in the hierarchy.
-     *
-     * @param layerName Name of the layer to search
+     * Check if at least one window which matches provided window name is visible.
      */
-    fun exists(layerName: String): AssertionResult {
-        val assertionName = "exists"
-        val reason = "Could not find $layerName"
-        for (layer in flattenedLayers) {
-            if (layer.name.contains(layerName)) {
-                return AssertionResult(
-                        layer.name + " exists",
-                        assertionName,
-                        timestamp,
-                        success = true)
-            }
-        }
-        return AssertionResult(reason, assertionName, timestamp, success = false)
-    }
+    fun isVisible(windowName: String): Boolean =
+        visibleLayers.any { it.name == windowName }
 
-    /**
-     * Checks if a layer with name [layerName] is visible.
-     *
-     * @param layerName Name of the layer to search
-     */
-    fun isVisible(layerName: String): AssertionResult {
-        val assertionName = "isVisible"
-        var reason = "Could not find $layerName"
-        for (layer in flattenedLayers) {
-            if (layer.name.contains(layerName)) {
-                if (layer.isHiddenByParent) {
-                    reason = layer.hiddenByParentReason
-                    continue
-                }
-                if (layer.isInvisible) {
-                    reason = layer.visibilityReason
-                    continue
-                }
-                return AssertionResult(
-                        layer.name + " is visible",
-                        assertionName,
-                        timestamp,
-                        success = true)
-            }
-        }
-        return AssertionResult(reason, assertionName, timestamp, success = false)
+    override fun toString(): String {
+        return this.formattedTimestamp
     }
 
     companion object {

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 The Android Open Source Project
+ * Copyright (C) 2021 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,21 +16,36 @@
 
 package com.android.server.wm.flicker.traces.layers
 
-import com.android.server.wm.flicker.assertions.TraceAssertion
-import com.android.server.wm.traces.parser.layers.LayerTraceEntry
-import com.android.server.wm.traces.parser.layers.LayersTrace
-import com.android.server.wm.flicker.traces.SubjectBase
-import com.google.common.truth.Fact
+import android.graphics.Rect
+import android.graphics.Region
+import com.android.server.wm.flicker.assertions.Assertion
+import com.android.server.wm.flicker.traces.FlickerFailureStrategy
+import com.android.server.wm.flicker.traces.FlickerTraceSubject
+import com.android.server.wm.traces.common.layers.LayersTrace
 import com.google.common.truth.FailureMetadata
+import com.google.common.truth.StandardSubjectBuilder
+import com.google.common.truth.Subject
 import com.google.common.truth.Subject.Factory
-import com.google.common.truth.Truth
-import com.google.common.truth.Truth.assertWithMessage
 
 /** Truth subject for [LayersTrace] objects.  */
 class LayersTraceSubject private constructor(
     fm: FailureMetadata,
     val trace: LayersTrace
-) : SubjectBase<LayersTrace, LayerTraceEntry>(fm, trace) {
+) : FlickerTraceSubject<LayerTraceEntrySubject>(fm, trace) {
+    override val defaultFacts: String by lazy {
+        buildString {
+            if (trace.hasSource()) {
+                append("Path: ${trace.source}")
+                append("\n")
+            }
+            append("Trace: $trace")
+        }
+    }
+
+    override val subjects by lazy {
+        trace.entries.map { LayerTraceEntrySubject.assertThat(it, this) }
+    }
+
     /**
      * Signal that the last assertion set is complete. The next assertion added will start a new
      * set of assertions.
@@ -40,21 +55,9 @@ class LayersTraceSubject private constructor(
      * Will produce two sets of assertions (checkA) and (checkB) and checkB will only be checked
      * after checkA passes.
      */
-    fun then() = apply {
-        newAssertion = true
-        assertionsChecker.checkChangingAssertions()
+    fun then(): LayersTraceSubject = apply {
+        startAssertionBlock()
     }
-
-    /**
-     * Signal that the last assertion set is not complete. The next assertion added will be
-     * appended to the current set of assertions.
-     *
-     * E.g.: checkA().and().checkB()
-     *
-     * Will produce one sets of assertions (checkA, checkB) and the assertion will only pass is both
-     * checkA and checkB pass.
-     */
-    fun and() = apply { newAssertion = false }
 
     /**
      * Ignores the first entries in the trace, until the first assertion passes. If it reaches the
@@ -63,55 +66,56 @@ class LayersTraceSubject private constructor(
      *
      * @return
      */
-    fun skipUntilFirstAssertion() = apply { assertionsChecker.skipUntilFirstAssertion() }
+    fun skipUntilFirstAssertion(): LayersTraceSubject = apply {
+        assertionsChecker.skipUntilFirstAssertion()
+    }
 
-    fun failWithMessage(message: String) = apply { failWithActual(message, trace) }
+    fun isEmpty(): LayersTraceSubject = apply {
+        check("Trace is empty").that(trace).isEmpty()
+    }
+
+    fun isNotEmpty() = apply {
+        check("Trace is not empty").that(trace).isNotEmpty()
+    }
 
     /**
      * @return LayerSubject that can be used to make assertions on a single layer matching
      * [name] and [frameNumber].
      */
     fun layer(name: String, frameNumber: Long): LayerSubject {
-        val layer = trace.entries.asSequence()
-                .flatMap { it.flattenedLayers }
-                .firstOrNull {
-                    it.name.contains(name) && it.currFrame == frameNumber
-                }
-        return assertWithMessage("Layer:$name frame#$frameNumber")
-                .about(LayerSubject.FACTORY).that(layer)
-    }
-
-    private fun test() {
-        val failures = assertionsChecker.test(trace.entries)
-        if (failures.isNotEmpty()) {
-            val failureLogs = failures.joinToString("\n")
-            var tracePath = ""
-            if (trace.hasSource()) {
-                tracePath = "Layers Trace can be found in: " +
-                        trace.source +
-                        "\nChecksum: " + trace.sourceChecksum + "\n"
-            }
-            failWithActual(tracePath + failureLogs, trace)
-        }
+        return subjects
+            .map { it.layer(name, frameNumber) }
+            .firstOrNull { it.isNotEmpty }
+            ?: LayerSubject.assertThat(null)
     }
 
     @JvmOverloads
-    fun coversAtLeastRegion(rect: android.graphics.Rect, layerName: String = "") =
-            this.coversAtLeastRegion(android.graphics.Region(rect), layerName)
+    fun coversAtLeastRegion(
+        rect: Rect,
+        layerName: String = ""
+    ): LayersTraceSubject = this.coversAtLeastRegion(Region(rect), layerName)
 
     @JvmOverloads
-    fun coversAtMostRegion(rect: android.graphics.Rect, layerName: String = "") =
-            this.coversAtMostRegion(android.graphics.Region(rect), layerName)
+    fun coversAtMostRegion(
+        rect: Rect,
+        layerName: String = ""
+    ): LayersTraceSubject = this.coversAtMostRegion(Region(rect), layerName)
 
     @JvmOverloads
-    fun coversAtLeastRegion(region: android.graphics.Region, layerName: String = "") = apply {
+    fun coversAtLeastRegion(
+        region: Region,
+        layerName: String = ""
+    ): LayersTraceSubject = apply {
         addAssertion("coversAtLeastRegion($region, $layerName)") {
             it.coversAtLeastRegion(region, layerName)
         }
     }
 
     @JvmOverloads
-    fun coversAtMostRegion(region: android.graphics.Region, layerName: String = "") = apply {
+    fun coversAtMostRegion(
+        region: Region,
+        layerName: String = ""
+    ): LayersTraceSubject = apply {
         addAssertion("coversAtMostRegion($region, $layerName") {
             it.coversAtMostRegion(region, layerName)
         }
@@ -123,93 +127,121 @@ class LayersTraceSubject private constructor(
     @JvmOverloads
     fun visibleLayersShownMoreThanOneConsecutiveEntry(
         ignoreLayers: List<String> = emptyList()
-    ) = apply {
-        addAssertion("visibleLayersShownMoreThanOneConsecutiveEntry") {
-            val visibleLayers = trace.entries.withIndex()
-                    .flatMap { (index, layerEntry) -> layerEntry.visibleLayers
-                            .filter {
-                                ignoreLayers.none { layerName -> layerName in it.name }
-                            }
-                            .map { Triple(it.name, index, layerEntry) }
-                    }
-            visibleEntriesShownMoreThanOneConsecutiveTime(visibleLayers,
-                    "visibleLayersShownMoreThanOneConsecutiveEntry")
+    ): LayersTraceSubject = apply {
+        visibleEntriesShownMoreThanOneConsecutiveTime { subject ->
+            subject.entry.visibleLayers
+                .filter { ignoreLayers.none { layerName -> layerName in it.name } }
+                .map { it.name }
+                .toSet()
         }
     }
 
-    fun hasVisibleRegion(layerName: String, size: android.graphics.Region) = apply {
+    fun hasVisibleRegion(
+        layerName: String,
+        size: Region
+    ): LayersTraceSubject = apply {
         addAssertion("hasVisibleRegion($layerName$size)") {
             it.hasVisibleRegion(layerName, size)
         }
     }
 
-    fun hasNotLayer(layerName: String) =
-            apply { addAssertion("hasNotLayer($layerName)") { it.exists(layerName).negate() } }
+    fun hasNotLayer(layerName: String): LayersTraceSubject =
+        apply {
+            addAssertion("hasNotLayer($layerName)") {
+                it.notExists(layerName)
+            }
+        }
 
-    fun hasLayer(layerName: String) =
-            apply { addAssertion("hasLayer($layerName)") { it.exists(layerName) } }
+    fun hasLayer(layerName: String): LayersTraceSubject =
+        apply { addAssertion("hasLayer($layerName)") { it.exists(layerName) } }
 
-    fun showsLayer(layerName: String) =
-            apply { addAssertion("showsLayer($layerName)") { it.isVisible(layerName) } }
+    fun showsLayer(layerName: String): LayersTraceSubject =
+        apply { addAssertion("showsLayer($layerName)") { it.isVisible(layerName) } }
 
-    fun replaceVisibleLayer(previousLayerName: String, currentLayerName: String) =
-            apply { hidesLayer(previousLayerName).and().showsLayer(currentLayerName) }
+    fun replaceVisibleLayer(
+        previousLayerName: String,
+        currentLayerName: String
+    ): LayersTraceSubject = apply { hidesLayer(previousLayerName).showsLayer(currentLayerName) }
 
-    fun hidesLayer(layerName: String) =
-            apply { addAssertion("hidesLayer($layerName)") { it.isVisible(layerName).negate() } }
+    fun hidesLayer(layerName: String): LayersTraceSubject =
+        apply {
+            addAssertion("hidesLayer($layerName)") {
+                it.isInvisible(layerName)
+            }
+        }
 
-    operator fun invoke(name: String, assertion: TraceAssertion<LayerTraceEntry>) =
-            apply { addAssertion(name, assertion) }
+    operator fun invoke(
+        name: String,
+        assertion: Assertion<LayerTraceEntrySubject>
+    ): LayersTraceSubject = apply { addAssertion(name, assertion) }
 
-    fun hasFrameSequence(name: String, frameNumbers: Iterable<Long>) {
+    fun hasFrameSequence(name: String, frameNumbers: Iterable<Long>): LayersTraceSubject = apply {
         val firstFrame = frameNumbers.first()
         val entries = trace.entries.asSequence()
-                // map entry to buffer layers with name
-                .map { it.getLayerWithBuffer(name) }
-                // removing all entries without the layer
-                .filterNotNull()
-                // removing all entries with the same frame number
-                .distinctBy { it.currFrame }
-                // drop until the first frame we are interested in
-                .dropWhile { layer -> layer.currFrame != firstFrame }
+            // map entry to buffer layers with name
+            .map { it.getLayerWithBuffer(name) }
+            // removing all entries without the layer
+            .filterNotNull()
+            // removing all entries with the same frame number
+            .distinctBy { it.currFrame }
+            // drop until the first frame we are interested in
+            .dropWhile { layer -> layer.currFrame != firstFrame }
 
         var numFound = 0
-        val frameNumbersMatch = entries.zip(frameNumbers.asSequence()) {
-            layer, frameNumber ->
-                numFound++
-                layer.currFrame == frameNumber
+        val frameNumbersMatch = entries.zip(frameNumbers.asSequence()) { layer, frameNumber ->
+            numFound++
+            layer.currFrame == frameNumber
         }.all { it }
         val allFramesFound = frameNumbers.count() == numFound
         if (!allFramesFound || !frameNumbersMatch) {
             val message = "Could not find Layer:" + name +
-                    " with frame sequence:" + frameNumbers.joinToString(",") +
-                    " Found:\n" + entries.joinToString("\n")
-            failWithoutActual(Fact.simpleFact(message))
+                " with frame sequence:" + frameNumbers.joinToString(",") +
+                " Found:\n" + entries.joinToString("\n")
+            fail(message)
         }
     }
 
-    override val traceName: String
-        get() = "LayersTrace"
+    /**
+     * Run the assertions for all trace entries within the specified time range
+     */
+    fun forRange(startTime: Long, endTime: Long) {
+        val subjectsInRange = subjects.filter { it.entry.timestamp in startTime..endTime }
+        assertionsChecker.test(subjectsInRange)
+    }
+
+    /**
+     * User-defined entry point for the trace entry with [timestamp]
+     *
+     * @param timestamp of the entry
+     */
+    fun entry(timestamp: Long): LayerTraceEntrySubject =
+        subjects.first { it.entry.timestamp == timestamp }
 
     companion object {
         /**
          * Boiler-plate Subject.Factory for LayersTraceSubject
          */
-        private val FACTORY: Factory<SubjectBase<LayersTrace, LayerTraceEntry>, LayersTrace> =
-        Factory { fm: FailureMetadata, subject: LayersTrace -> LayersTraceSubject(fm, subject) }
+        private val FACTORY: Factory<Subject, LayersTrace> =
+            Factory { fm, subject -> LayersTraceSubject(fm, subject) }
 
         /**
          * User-defined entry point
          */
         @JvmStatic
-        fun assertThat(entry: LayersTrace) =
-                Truth.assertAbout(FACTORY).that(entry) as LayersTraceSubject
+        fun assertThat(trace: LayersTrace): LayersTraceSubject {
+            val strategy = FlickerFailureStrategy()
+            val subject = StandardSubjectBuilder.forCustomFailureStrategy(strategy)
+                .about(FACTORY)
+                .that(trace) as LayersTraceSubject
+            strategy.init(subject)
+            return subject
+        }
 
         /**
          * Static method for getting the subject factory (for use with assertAbout())
          */
         @JvmStatic
-        fun entries(): Factory<SubjectBase<LayersTrace, LayerTraceEntry>, LayersTrace> {
+        fun entries(): Factory<Subject, LayersTrace> {
             return FACTORY
         }
     }

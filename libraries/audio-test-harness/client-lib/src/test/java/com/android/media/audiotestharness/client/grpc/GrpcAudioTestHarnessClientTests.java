@@ -81,7 +81,7 @@ public class GrpcAudioTestHarnessClientTests {
             {
                 GrpcAudioTestHarnessClient.builder()
                         .setAddress("service.google.com", 49152)
-                        .setExecutor(Executors.newSingleThreadScheduledExecutor())
+                        .setExecutor(Executors.newSingleThreadExecutor())
             },
             {
                 GrpcAudioTestHarnessClient.builder()
@@ -133,7 +133,7 @@ public class GrpcAudioTestHarnessClientTests {
         verify(mGrpcAudioCaptureStream).close();
     }
 
-    public GrpcAudioTestHarnessClient initMocksAndClient() throws Exception {
+    public GrpcAudioTestHarnessClient initMocksAndClient() {
         when(mGrpcAudioCaptureStreamFactory.newStream(any())).thenReturn(mGrpcAudioCaptureStream);
         return GrpcAudioTestHarnessClient.builder()
                 .setManagedChannel(mManagedChannel)

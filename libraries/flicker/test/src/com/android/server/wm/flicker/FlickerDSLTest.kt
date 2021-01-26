@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 The Android Open Source Project
+ * Copyright (C) 2021 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,9 @@
 package com.android.server.wm.flicker
 
 import androidx.test.platform.app.InstrumentationRegistry
-import com.android.server.wm.traces.common.AssertionResult
+import com.android.server.wm.flicker.dsl.AssertionTargetBuilder
 import com.android.server.wm.flicker.dsl.FlickerBuilder
 import com.android.server.wm.flicker.dsl.runWithFlicker
-import com.android.server.wm.flicker.traces.windowmanager.WmTraceSubject
 import com.google.common.truth.Truth
 import org.junit.Assert
 import org.junit.FixMethodOrder
@@ -52,7 +51,7 @@ class FlickerDSLTest {
             Assert.fail("Should not have allowed duplicated tags")
         } catch (e: Exception) {
             Truth.assertWithMessage("Did not prevent duplicated tag use")
-                .that(e.message)
+                .that(e.cause?.message)
                 .contains("Tag myTag has already been used")
         }
     }
@@ -70,14 +69,8 @@ class FlickerDSLTest {
             Assert.fail("Should not have allowed invalid tag name")
         } catch (e: Exception) {
             Truth.assertWithMessage("Did not validate tag name")
-                .that(e.message)
+                .that(e.cause?.message)
                 .contains("The test tag inv lid can not contain spaces")
-        }
-    }
-
-    private fun defaultAssertion(trace: WmTraceSubject): WmTraceSubject {
-        return trace("Has dump") {
-            AssertionResult("Has dump") { it.windowStates.isNotEmpty() }
         }
     }
 
@@ -93,14 +86,20 @@ class FlickerDSLTest {
             }
             assertions {
                 windowManagerTrace {
-                    tag(myTag) { defaultAssertion(this) }
+                    tag(myTag) {
+                        this.isNotEmpty()
+                    }
 
-                    start { defaultAssertion(this) }
+                    start {
+                        this.isNotEmpty()
+                    }
 
-                    end { defaultAssertion(this) }
+                    end {
+                        this.isNotEmpty()
+                    }
 
                     tag("invalid") {
-                        this.failWithMessage("`Invalid` tag was not created, so it should not " +
+                        fail("`Invalid` tag was not created, so it should not " +
                             "have been asserted")
                     }
                 }
@@ -115,7 +114,9 @@ class FlickerDSLTest {
             runWithFlicker(builder) {
                 assertions {
                     windowManagerTrace {
-                        tag("tag") { defaultAssertion(this) }
+                        tag("tag") {
+                            this.isNotEmpty()
+                        }
                     }
                 }
             }
@@ -131,18 +132,116 @@ class FlickerDSLTest {
     fun detectCrashedTransition() {
         val exceptionMessage = "Crashed transition"
         val builder = FlickerBuilder(instrumentation)
-        builder.transitions { throw RuntimeException("Crashed transition") }
+        builder.transitions { error("Crashed transition") }
         val flicker = builder.build()
         try {
             flicker.execute()
             Assert.fail("Should have raised an exception with message $exceptionMessage")
-        } catch (e: Exception) {
-            Truth.assertWithMessage("The test did not store the last exception")
-                    .that(flicker.error?.message)
-                    .contains(exceptionMessage)
+        } catch (e: Throwable) {
+            Truth.assertWithMessage("Incorrect exception message")
+                .that(e.message)
+                .contains("Unable to execute transition")
             Truth.assertWithMessage("Test exception does not contain original crash message")
-                    .that(e.message)
-                    .contains(exceptionMessage)
+                .that(e.cause?.message)
+                .contains(exceptionMessage)
         }
+    }
+
+    private fun detectFailedAssertion(assertions: AssertionTargetBuilder.() -> Any): Throwable {
+        val builder = FlickerBuilder(instrumentation)
+        return assertThrows(AssertionError::class.java) {
+            runWithFlicker(builder) {
+                transitions {
+                    device.pressHome()
+                }
+                assertions {
+                    assertions()
+                }
+            }
+        }
+    }
+
+    @Test
+    fun detectFailedWMAssertion_All() {
+        val error = detectFailedAssertion {
+            windowManagerTrace {
+                all("fail") { fail("Correct error") }
+                all("ignored", enabled = false) { fail("Ignored error") }
+            }
+        }
+        assertFailure(error).hasMessageThat().contains("Correct error")
+        assertFailure(error).hasMessageThat().doesNotContain("Ignored error")
+    }
+
+    @Test
+    fun detectFailedWMAssertion_Start() {
+        val error = detectFailedAssertion {
+            windowManagerTrace {
+                start("fail") { fail("Correct error") }
+                start("ignored", enabled = false) { fail("Ignored error") }
+            }
+        }
+        assertFailure(error).hasMessageThat().contains("Correct error")
+        assertFailure(error).hasMessageThat().doesNotContain("Ignored error")
+    }
+
+    @Test
+    fun detectFailedWMAssertion_End() {
+        val error = detectFailedAssertion {
+            windowManagerTrace {
+                end("fail") { fail("Correct error") }
+                end("ignored", enabled = false) { fail("Ignored error") }
+            }
+        }
+        assertFailure(error).hasMessageThat().contains("Correct error")
+        assertFailure(error).hasMessageThat().doesNotContain("Ignored error")
+    }
+
+    @Test
+    fun detectFailedLayersAssertion_All() {
+        val error = detectFailedAssertion {
+            layersTrace {
+                all("fail") { fail("Correct error") }
+                all("ignored", enabled = false) { fail("Ignored error") }
+            }
+        }
+        assertFailure(error).hasMessageThat().contains("Correct error")
+        assertFailure(error).hasMessageThat().doesNotContain("Ignored error")
+    }
+
+    @Test
+    fun detectFailedLayersAssertion_Start() {
+        val error = detectFailedAssertion {
+            layersTrace {
+                start("fail") { fail("Correct error") }
+                start("ignored", enabled = false) { fail("Ignored error") }
+            }
+        }
+        assertFailure(error).hasMessageThat().contains("Correct error")
+        assertFailure(error).hasMessageThat().doesNotContain("Ignored error")
+    }
+
+    @Test
+    fun detectFailedLayersAssertion_End() {
+        val error = detectFailedAssertion {
+            layersTrace {
+                end("fail") { fail("Correct error") }
+                end("ignored", enabled = false) { fail("Ignored error") }
+            }
+        }
+        assertFailure(error).hasMessageThat().contains("Correct error")
+        assertFailure(error).hasMessageThat().doesNotContain("Ignored error")
+    }
+
+    @Test
+    fun detectFailedEventLogAssertion_All() {
+        val error = detectFailedAssertion {
+            eventLog {
+                all("fail") { fail("Correct error") }
+                all("ignored", enabled = false) { fail("Ignored error") }
+            }
+        }
+        assertFailure(error).hasMessageThat().contains("Correct error")
+        assertFailure(error).hasMessageThat().doesNotContain("Ignored error")
     }
 }

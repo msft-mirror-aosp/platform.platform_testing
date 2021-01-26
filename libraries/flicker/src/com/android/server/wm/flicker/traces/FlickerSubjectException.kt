@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 The Android Open Source Project
+ * Copyright (C) 2021 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,16 @@
  * limitations under the License.
  */
 
-package com.android.media.audiotestharness.client.core;
+package com.android.server.wm.flicker.traces
+
+import com.android.server.wm.flicker.assertions.FlickerSubject
 
 /**
- * {@link RuntimeException} used when the Audio Test Harness client libraries run into an issue
- * while attempting to communicate with the host-side server.
+ * Exception thrown by [FlickerSubject]s
  */
-public class AudioTestHarnessCommunicationException extends RuntimeException {
-    public AudioTestHarnessCommunicationException(String message, Exception cause) {
-        super(message, cause);
-    }
+class FlickerSubjectException(
+    flickerSubject: FlickerSubject,
+    cause: Throwable
+) : AssertionError(flickerSubject.defaultFacts, cause) {
+    internal val facts = flickerSubject.defaultFacts
 }

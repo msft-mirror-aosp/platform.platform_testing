@@ -20,27 +20,17 @@ import com.android.media.audiotestharness.proto.AudioTestHarnessGrpc;
 
 import com.google.common.base.Preconditions;
 
-import java.io.IOException;
-import java.util.concurrent.ScheduledExecutorService;
-
 /** Factory for the {@link GrpcAudioCaptureStream}. */
 public class GrpcAudioCaptureStreamFactory {
+    private GrpcAudioCaptureStreamFactory() {}
 
-    private final ScheduledExecutorService mScheduledExecutorService;
-
-    private GrpcAudioCaptureStreamFactory(ScheduledExecutorService scheduledExecutorService) {
-        mScheduledExecutorService = scheduledExecutorService;
+    public static GrpcAudioCaptureStreamFactory create() {
+        return new GrpcAudioCaptureStreamFactory();
     }
 
-    public static GrpcAudioCaptureStreamFactory create(
-            ScheduledExecutorService scheduledExecutorService) {
-        Preconditions.checkNotNull(scheduledExecutorService);
-        return new GrpcAudioCaptureStreamFactory(scheduledExecutorService);
-    }
-
-    GrpcAudioCaptureStream newStream(AudioTestHarnessGrpc.AudioTestHarnessStub audioTestHarnessStub)
-            throws IOException {
+    GrpcAudioCaptureStream newStream(
+            AudioTestHarnessGrpc.AudioTestHarnessStub audioTestHarnessStub) {
         Preconditions.checkNotNull(audioTestHarnessStub, "audioTestHarnessStub cannot be null");
-        return GrpcAudioCaptureStream.create(audioTestHarnessStub, mScheduledExecutorService);
+        return GrpcAudioCaptureStream.create(audioTestHarnessStub);
     }
 }
