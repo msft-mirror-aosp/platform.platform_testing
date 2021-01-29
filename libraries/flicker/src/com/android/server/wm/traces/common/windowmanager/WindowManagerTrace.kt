@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 The Android Open Source Project
+ * Copyright (C) 2021 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,4 +33,13 @@ open class WindowManagerTrace(
     override val source: String,
     override val sourceChecksum: String
 ) : ITrace<WindowManagerState>,
-    List<WindowManagerState> by entries
+    List<WindowManagerState> by entries {
+    private val formattedIdentifier by lazy {
+        "WindowManagerTrace(Start: ${entries.first()}, " +
+            "End: ${entries.last()})"
+    }
+
+    override fun toString(): String {
+        return formattedIdentifier
+    }
+}

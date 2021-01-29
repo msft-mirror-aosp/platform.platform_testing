@@ -22,6 +22,7 @@ import com.android.server.wm.traces.parser.FLAG_STATE_DUMP_FLAG_LAYERS
 import com.android.server.wm.traces.parser.FLAG_STATE_DUMP_FLAG_WM
 import com.android.server.wm.traces.parser.WmStateDumpFlags
 import com.android.server.wm.traces.parser.getCurrentState
+import com.android.server.wm.traces.parser.getCurrentStateDump
 import com.google.common.truth.Truth
 import org.junit.FixMethodOrder
 import org.junit.Test
@@ -36,39 +37,48 @@ import org.junit.runners.MethodSorters
 class UiDeviceExtensionsTest {
     private fun getCurrState(
         @WmStateDumpFlags dumpFlags: Int = FLAG_STATE_DUMP_FLAG_WM.or(FLAG_STATE_DUMP_FLAG_LAYERS)
-    ): DeviceStateDump {
+    ): Pair<ByteArray, ByteArray> {
         val instrumentation = InstrumentationRegistry.getInstrumentation()
         return getCurrentState(instrumentation.uiAutomation, dumpFlags)
     }
 
+    private fun getCurrStateDump(
+        @WmStateDumpFlags dumpFlags: Int = FLAG_STATE_DUMP_FLAG_WM.or(FLAG_STATE_DUMP_FLAG_LAYERS)
+    ): DeviceStateDump {
+        val instrumentation = InstrumentationRegistry.getInstrumentation()
+        return getCurrentStateDump(instrumentation.uiAutomation, dumpFlags)
+    }
+
     @Test
     fun canFetchCurrentDeviceState() {
-        val currState = getCurrState()
-        Truth.assertThat(currState.wmTraceData).isNotEmpty()
-        Truth.assertThat(currState.layersTraceData).isNotEmpty()
+        val currState = this.getCurrState()
+        Truth.assertThat(currState.first).isNotEmpty()
+        Truth.assertThat(currState.second).isNotEmpty()
     }
 
     @Test
     fun canFetchCurrentDeviceStateOnlyWm() {
-        val currState = getCurrState(FLAG_STATE_DUMP_FLAG_WM)
-        Truth.assertThat(currState.wmTraceData).isNotEmpty()
-        Truth.assertThat(currState.layersTraceData).isEmpty()
+        val currStateDump = this.getCurrState(FLAG_STATE_DUMP_FLAG_WM)
+        Truth.assertThat(currStateDump.first).isNotEmpty()
+        Truth.assertThat(currStateDump.second).isEmpty()
+        val currState = this.getCurrStateDump(FLAG_STATE_DUMP_FLAG_WM)
         Truth.assertThat(currState.wmTrace).isNotNull()
         Truth.assertThat(currState.layersTrace).isNull()
     }
 
     @Test
     fun canFetchCurrentDeviceStateOnlyLayers() {
-        val currState = getCurrState(FLAG_STATE_DUMP_FLAG_LAYERS)
-        Truth.assertThat(currState.wmTraceData).isEmpty()
-        Truth.assertThat(currState.layersTraceData).isNotEmpty()
+        val currStateDump = this.getCurrState(FLAG_STATE_DUMP_FLAG_LAYERS)
+        Truth.assertThat(currStateDump.first).isEmpty()
+        Truth.assertThat(currStateDump.second).isNotEmpty()
+        val currState = this.getCurrStateDump(FLAG_STATE_DUMP_FLAG_LAYERS)
         Truth.assertThat(currState.wmTrace).isNull()
         Truth.assertThat(currState.layersTrace).isNotNull()
     }
 
     @Test
     fun canParseCurrentDeviceState() {
-        val currState = getCurrState()
+        val currState = this.getCurrStateDump()
         Truth.assertThat(currState.wmTrace?.entries).hasSize(1)
         Truth.assertThat(currState.wmTrace?.entries?.first()?.windowStates).isNotEmpty()
         Truth.assertThat(currState.layersTrace?.entries).hasSize(1)

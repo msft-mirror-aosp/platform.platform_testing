@@ -17,8 +17,8 @@
 package com.android.server.wm.flicker.monitor
 
 import androidx.test.uiautomator.UiDevice
-import com.android.server.wm.flicker.FlickerRunResult
 import com.android.server.wm.nano.WindowManagerTraceFileProto
+import com.android.server.wm.flicker.FlickerRunResult
 import com.google.common.truth.Truth
 import org.junit.FixMethodOrder
 import org.junit.Test
@@ -38,7 +38,7 @@ class WindowManagerTraceMonitorTest : TraceMonitorTest<WindowManagerTraceMonitor
     }
 
     override fun getTraceFile(result: FlickerRunResult): Path? {
-        return result.wmTraceFile
+        return result.traceFiles.firstOrNull { it.toString().contains("wm_trace") }
     }
 
     @Test

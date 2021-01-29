@@ -32,7 +32,7 @@ open class DisplayArea(
 
     val activities: Array<Activity> by lazy {
         if (isTaskDisplayArea) {
-            this.collectDescendants<Activity>()
+            this.collectDescendants()
         } else {
             emptyArray()
         }

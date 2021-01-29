@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 The Android Open Source Project
+ * Copyright (C) 2021 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,19 +18,14 @@ package com.android.server.wm.flicker
 
 import android.app.Instrumentation
 import android.support.test.launcherhelper.ILauncherStrategy
-import android.util.Log
 import androidx.annotation.VisibleForTesting
 import androidx.test.uiautomator.UiDevice
-import com.android.server.wm.flicker.assertions.FlickerAssertionError
-import com.android.server.wm.flicker.dsl.AssertionTag
-import com.android.server.wm.flicker.dsl.AssertionTarget
-import com.android.server.wm.flicker.dsl.TestCommands
+import com.android.server.wm.flicker.assertions.AssertionData
 import com.android.server.wm.flicker.monitor.ITransitionMonitor
 import com.android.server.wm.flicker.monitor.WindowAnimationFrameStatsMonitor
-import com.android.server.wm.traces.parser.getCurrentState
-import com.google.common.truth.Truth
-import java.io.IOException
-import java.nio.file.Files
+import com.android.server.wm.traces.common.layers.LayersTrace
+import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
+import com.android.server.wm.traces.parser.windowmanager.WindowManagerStateHelper
 import java.nio.file.Path
 
 @DslMarker
@@ -42,189 +37,120 @@ annotation class FlickerDslMarker
  * [WindowManagerTrace] and [LayersTrace]
  */
 @FlickerDslMarker
-data class Flicker(
+class Flicker(
     /**
      * Instrumentation to run the tests
      */
-    val instrumentation: Instrumentation,
+    @JvmField val instrumentation: Instrumentation,
     /**
      * Test automation component used to interact with the device
      */
-    val device: UiDevice,
+    @JvmField val device: UiDevice,
     /**
      * Strategy used to interact with the launcher
      */
-    val launcherStrategy: ILauncherStrategy,
+    @JvmField val launcherStrategy: ILauncherStrategy,
     /**
      * Output directory for test results
      */
-    val outputDir: Path,
+    @JvmField val outputDir: Path,
     /**
      * Test name used to store the test results
      */
-    private val testName: String,
+    @JvmField val testName: String,
     /**
      * Number of times the test should be executed
      */
-    private var repetitions: Int,
+    @JvmField var repetitions: Int,
     /**
      * Monitor for janky frames, when filtering out janky runs
      */
-    private val frameStatsMonitor: WindowAnimationFrameStatsMonitor?,
+    @JvmField val frameStatsMonitor: WindowAnimationFrameStatsMonitor?,
     /**
      * Enabled tracing monitors
      */
-    private val traceMonitors: List<ITransitionMonitor>,
+    @JvmField val traceMonitors: List<ITransitionMonitor>,
+    /**
+     * Commands to be executed before each run
+     */
+    @JvmField val testSetup: List<Flicker.() -> Any>,
     /**
      * Commands to be executed before the test
      */
-    private val setup: TestCommands,
+    @JvmField val runSetup: List<Flicker.() -> Any>,
     /**
      * Commands to be executed after the test
      */
-    private val teardown: TestCommands,
+    @JvmField val testTeardown: List<Flicker.() -> Any>,
+    /**
+     * Commands to be executed after the run
+     */
+    @JvmField val runTeardown: List<Flicker.() -> Any>,
     /**
      * Test commands
      */
-    private val transitions: List<Flicker.() -> Any>,
+    @JvmField val transitions: List<Flicker.() -> Any>,
     /**
      * Custom set of assertions
      */
-    private val assertions: AssertionTarget
-) {
-    private val results = mutableListOf<FlickerRunResult>()
-    private val tags = AssertionTag.DEFAULT.map { it.tag }.toMutableSet()
     @VisibleForTesting
-    var error: Throwable? = null
-        private set
-
+    @JvmField val assertions: List<AssertionData>,
     /**
-     * Iteration identifier during test run
+     * Runner to execute the test transitions
      */
-    private var iteration = 0
+    @JvmField val runner: TransitionRunner,
+    /**
+     * Helper object for WM Synchronization
+     */
+    @JvmField val wmHelper: WindowManagerStateHelper
+) {
+    var result = FlickerResult()
+        private set
 
     /**
      * Executes the test.
      *
-     * The commands are executed in the following order:
-     * 1) [setup] ([TestCommands.testCommands])
-     * 2) [setup] ([TestCommands.runCommands])
-     * 3) Start monitors
-     * 4) [transitions]
-     * 5) Stop monitors
-     * 6) [teardown] ([TestCommands.runCommands])
-     * 7) [teardown] ([TestCommands.testCommands])
-     *
-     * If the tests were already executed, reuse the previous results
-     *
-     * @throws IllegalArgumentException If the transitions
+     * @throws IllegalStateException If cannot execute the transition
      */
-    fun execute() = apply {
-        require(transitions.isNotEmpty()) { "A flicker test must include transitions to run" }
-        if (results.isNotEmpty()) {
-            Log.w(FLICKER_TAG, "Flicker test already executed. Reusing results.")
-            return this
-        }
-        try {
-            try {
-                error = null
-                setup.testCommands.forEach { it.invoke(this) }
-                for (iteration in 0 until repetitions) {
-                    this.iteration = iteration
-                    try {
-                        setup.runCommands.forEach { it.invoke(this) }
-                        traceMonitors.forEach { it.start() }
-                        frameStatsMonitor?.run { start() }
-                        transitions.forEach { it.invoke(this) }
-                    } finally {
-                        traceMonitors.forEach { it.tryStop() }
-                        frameStatsMonitor?.run { tryStop() }
-                        teardown.runCommands.forEach { it.invoke(this) }
-                    }
-                    if (frameStatsMonitor?.jankyFramesDetected() == true) {
-                        Log.e(FLICKER_TAG, "Skipping iteration $iteration/${repetitions - 1} " +
-                                "for test $testName due to jank. $frameStatsMonitor")
-                        continue
-                    }
-                    saveResult(this.iteration)
-                }
-            } finally {
-                teardown.testCommands.forEach { it.invoke(this) }
-            }
-        } catch (e: Throwable) {
-            error = e
-            throw RuntimeException(e)
+    fun execute(): Flicker = apply {
+        result = runner.execute(this)
+        val error = result.error
+        if (error != null) {
+            throw IllegalStateException("Unable to execute transition", error)
         }
     }
 
-    private fun cleanUp(failures: List<FlickerAssertionError>) {
-        results.forEach {
-            if (it.canDelete(failures)) {
-                it.cleanUp()
-            }
-        }
-    }
-
-    @Deprecated("Prefer checkAssertions", replaceWith = ReplaceWith("checkAssertions"))
-    fun makeAssertions() = checkAssertions(includeFlakyAssertions = false)
+    /**
+     * Asserts if the transition of this flicker test has ben executed
+     */
+    fun checkIsExecuted() = result.checkIsExecuted()
 
     /**
      * Run the assertions on the trace
      *
-     * @param includeFlakyAssertions If true, checks the flaky assertion
+     * @param onlyFlaky Runs only the flaky assertions
      * @throws AssertionError If the assertions fail or the transition crashed
      */
     @JvmOverloads
-    fun checkAssertions(includeFlakyAssertions: Boolean = false) {
-        Truth.assertWithMessage(error?.message).that(error).isNull()
-        Truth.assertWithMessage("Transition was not executed").that(results).isNotEmpty()
-        val failures = results.flatMap { assertions.checkAssertions(it, includeFlakyAssertions) }
-        this.cleanUp(failures)
+    fun checkAssertions(onlyFlaky: Boolean = false) {
+        if (result.isEmpty()) {
+            execute()
+        }
+        val failures = result.checkAssertions(assertions, onlyFlaky)
         val failureMessage = failures.joinToString("\n") { it.message }
-        Truth.assertWithMessage(failureMessage).that(failureMessage.isEmpty()).isTrue()
+
+        if (failureMessage.isNotEmpty()) {
+            throw AssertionError(failureMessage)
+        }
     }
 
-    private fun getTaggedFilePath(tag: String, file: String) =
-            "${this.testName}_${this.iteration}_${tag}_$file"
-
     /**
-     * Captures a snapshot of the device state and associates it with a new tag.
-     *
-     * This tag can be used to make assertions about the state of the device when the
-     * snapshot is collected.
-     *
-     * [tag] is used as part of the trace file name, thus, only valid letters and digits
-     * can be used
-     *
-     * @throws IllegalArgumentException If [tag] contains invalid characters
+     * Deletes the traces files for successful assertions and clears the cached runner results
      */
-    fun createTag(tag: String) {
-        if (tag in tags) {
-            throw IllegalArgumentException("Tag $tag has already been used")
-        }
-        tags.add(tag)
-        val assertionTag = AssertionTag(tag)
-
-        val deviceState = getCurrentState(instrumentation.uiAutomation)
-        try {
-            val wmTraceFile = outputDir.resolve(getTaggedFilePath(tag, "wm_trace"))
-            Files.write(wmTraceFile, deviceState.wmTraceData)
-
-            val layersTraceFile = outputDir.resolve(getTaggedFilePath(tag, "layers_trace"))
-            Files.write(layersTraceFile, deviceState.layersTraceData)
-
-            val result = FlickerRunResult(
-                    assertionTag,
-                    iteration = this.iteration,
-                    wmTraceFile = wmTraceFile,
-                    layersTraceFile = layersTraceFile,
-                    wmTrace = deviceState.wmTrace,
-                    layersTrace = deviceState.layersTrace
-            )
-            results.add(result)
-        } catch (e: IOException) {
-            throw RuntimeException("Unable to create trace file: ${e.message}", e)
-        }
+    fun cleanUp() {
+        runner.cleanUp()
+        result.cleanUp()
+        result = FlickerResult()
     }
 
     /**
@@ -236,26 +162,25 @@ data class Flicker(
      */
     fun withTag(tag: String, commands: Flicker.() -> Any) {
         commands()
-        createTag(tag)
+        runner.createTag(this, tag)
     }
 
-    private fun saveResult(iteration: Int) {
-        val resultBuilder = FlickerRunResult.Builder()
-        traceMonitors.forEach { it.save(testName, iteration, resultBuilder) }
-
-        AssertionTag.DEFAULT.forEach { location ->
-            results.add(resultBuilder.build(location))
-        }
+    fun createTag(tag: String) {
+        withTag(tag) {}
     }
 
-    private fun ITransitionMonitor.tryStop() {
-        this.run {
-            try {
-                stop()
-            } catch (e: Exception) {
-                Log.e(FLICKER_TAG, "Unable to stop $this")
-            }
+    @JvmOverloads
+    fun copy(newAssertion: AssertionData?, newName: String = ""): Flicker {
+        val name = if (newName.isNotEmpty()) {
+            newName
+        } else {
+            testName
         }
+        val assertion = newAssertion?.let { listOf(it) } ?: emptyList()
+        return Flicker(instrumentation, device, launcherStrategy, outputDir, name,
+            repetitions, frameStatsMonitor, traceMonitors, testSetup, runSetup,
+            testTeardown, runTeardown, transitions, assertion, runner, wmHelper
+        )
     }
 
     override fun toString(): String {

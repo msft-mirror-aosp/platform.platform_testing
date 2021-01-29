@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 The Android Open Source Project
+ * Copyright (C) 2021 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,13 +25,17 @@ import android.support.test.launcherhelper.LauncherStrategyFactory;
 import androidx.test.uiautomator.UiDevice;
 
 import com.android.server.wm.flicker.Flicker;
+import com.android.server.wm.flicker.TransitionRunner;
 import com.android.server.wm.flicker.monitor.ITransitionMonitor;
 import com.android.server.wm.flicker.monitor.LayersTraceMonitor;
 import com.android.server.wm.flicker.monitor.ScreenRecorder;
 import com.android.server.wm.flicker.monitor.WindowAnimationFrameStatsMonitor;
 import com.android.server.wm.flicker.monitor.WindowManagerTraceMonitor;
+import com.android.server.wm.flicker.traces.layers.LayerTraceEntrySubject;
 import com.android.server.wm.flicker.traces.layers.LayersTraceSubject;
-import com.android.server.wm.flicker.traces.windowmanager.WmTraceSubject;
+import com.android.server.wm.flicker.traces.windowmanager.WindowManagerStateSubject;
+import com.android.server.wm.flicker.traces.windowmanager.WindowManagerTraceSubject;
+import com.android.server.wm.traces.parser.windowmanager.WindowManagerStateHelper;
 
 import org.junit.Assert;
 
@@ -75,7 +79,7 @@ public class FlickerBuilderJava {
 
         traceMonitors.add(new WindowManagerTraceMonitor(outputDir));
         traceMonitors.add(new LayersTraceMonitor(outputDir));
-        traceMonitors.add(new ScreenRecorder(outputDir));
+        traceMonitors.add(new ScreenRecorder(outputDir, this.instrumentation.getTargetContext()));
     }
 
     /**
@@ -127,10 +131,10 @@ public class FlickerBuilderJava {
 
     private String testTag = "";
     private Integer iterations = 1;
-    private TestCommands setupCommands = new TestCommands();
-    private TestCommands teardownCommands = new TestCommands();
+    private TestCommandsBuilder setupCommands = new TestCommandsBuilder();
+    private TestCommandsBuilder teardownCommands = new TestCommandsBuilder();
     private List<Function1<? super Flicker, ?>> transitionCommands = new ArrayList<>();
-    private AssertionTarget assertions = new AssertionTarget();
+    private AssertionTargetBuilder assertions = new AssertionTargetBuilder();
     private List<ITransitionMonitor> traceMonitors = new ArrayList<>();
     private WindowAnimationFrameStatsMonitor frameStatsMonitor;
 
@@ -264,7 +268,7 @@ public class FlickerBuilderJava {
 
     /** Defines the assertions for the initial entry of the layers trace */
     public FlickerBuilderJava addLayerTraceAssertionStart(
-            FlickerAssertionJava<LayersTraceSubject> assertion) {
+            FlickerAssertionJava<LayerTraceEntrySubject> assertion) {
         assertions.layersTrace(
                 assertionData -> {
                     assertionData.start(assertion::invoke);
@@ -275,7 +279,7 @@ public class FlickerBuilderJava {
 
     /** Defines the assertions for the final entry of the layers trace */
     public FlickerBuilderJava addLayerTraceAssertionEnd(
-            FlickerAssertionJava<LayersTraceSubject> assertion) {
+            FlickerAssertionJava<LayerTraceEntrySubject> assertion) {
         assertions.layersTrace(
                 assertionData -> {
                     assertionData.end(assertion::invoke);
@@ -297,7 +301,7 @@ public class FlickerBuilderJava {
 
     /** Defines the assertions for the initial entry of the layers trace */
     public FlickerBuilderJava addWindowManagerTraceAssertionStart(
-            FlickerAssertionJava<WmTraceSubject> assertion) {
+            FlickerAssertionJava<WindowManagerStateSubject> assertion) {
         assertions.windowManagerTrace(
                 assertionData -> {
                     assertionData.start(assertion::invoke);
@@ -308,7 +312,7 @@ public class FlickerBuilderJava {
 
     /** Defines the assertions for the final entry of the layers trace */
     public FlickerBuilderJava addWindowManagerTraceAssertionEnd(
-            FlickerAssertionJava<WmTraceSubject> assertion) {
+            FlickerAssertionJava<WindowManagerStateSubject> assertion) {
         assertions.windowManagerTrace(
                 assertionData -> {
                     assertionData.end(assertion::invoke);
@@ -319,7 +323,7 @@ public class FlickerBuilderJava {
 
     /** Defines the assertions for all entries of the layers trace */
     public FlickerBuilderJava addWindowManagerTraceAssertionAll(
-            FlickerAssertionJava<WmTraceSubject> assertion) {
+            FlickerAssertionJava<WindowManagerTraceSubject> assertion) {
         assertions.windowManagerTrace(
                 assertionData -> {
                     assertionData.all(assertion::invoke);
@@ -339,9 +343,13 @@ public class FlickerBuilderJava {
                 iterations,
                 frameStatsMonitor,
                 traceMonitors,
-                setupCommands,
-                teardownCommands,
+                setupCommands.buildTestCommands(),
+                setupCommands.buildRunCommands(),
+                teardownCommands.buildTestCommands(),
+                teardownCommands.buildRunCommands(),
                 transitionCommands,
-                assertions);
+                assertions.build(),
+                new TransitionRunner(),
+                new WindowManagerStateHelper());
     }
 }

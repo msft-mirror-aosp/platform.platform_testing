@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 The Android Open Source Project
+ * Copyright (C) 2021 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +17,19 @@
 package com.android.server.wm.flicker
 
 import android.util.Log
+import androidx.annotation.VisibleForTesting
 import com.android.server.wm.flicker.assertions.FlickerAssertionError
-import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
+import com.android.server.wm.flicker.assertions.FlickerSubject
 import com.android.server.wm.flicker.dsl.AssertionTag
+import com.android.server.wm.flicker.traces.eventlog.EventLogSubject
+import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 import com.android.server.wm.flicker.traces.eventlog.FocusEvent
-import com.android.server.wm.traces.parser.layers.LayersTrace
+import com.android.server.wm.flicker.traces.layers.LayersTraceSubject
+import com.android.server.wm.flicker.traces.windowmanager.WindowManagerTraceSubject
+import com.android.server.wm.traces.common.layers.LayerTraceEntry
+import com.android.server.wm.traces.common.layers.LayersTrace
+import com.android.server.wm.traces.common.windowmanager.WindowManagerState
+import com.android.server.wm.traces.parser.layers.LayersTraceParser
 import com.android.server.wm.traces.parser.windowmanager.WindowManagerTraceParser
 import java.io.IOException
 import java.nio.file.Files
@@ -32,95 +40,40 @@ import java.nio.file.Path
  */
 class FlickerRunResult private constructor(
     /**
-     * Determines which assertions to run (e.g., start, end, all, or a custom tag)
-     */
-    var assertionTag: AssertionTag,
-    /**
      * Run identifier
      */
-    val iteration: Int,
+    @JvmField val iteration: Int,
     /**
-     * Path to the WindowManager trace file, if collected
+     * Path to the trace files associated with the result (incl. screen recording)
      */
-    @JvmField val wmTraceFile: Path?,
+    @JvmField val traceFiles: List<Path>,
     /**
-     * Path to the SurfaceFlinger trace file, if collected
+     * Determines which assertions to run (e.g., start, end, all, or a custom tag)
      */
-    @JvmField val layersTraceFile: Path?,
+    @JvmField var assertionTag: String,
     /**
-     * Path to screen recording of the run, if collected
+     * Truth subject that corresponds to a [WindowManagerTrace] or [WindowManagerState]
      */
-    @JvmField val screenRecording: Path?,
-
+    private val wmSubject: FlickerSubject?,
     /**
-     * List of focus events, if collected
+     * Truth subject that corresponds to a [LayersTrace] or [LayerTraceEntry]
      */
-    val eventLog: List<FocusEvent>,
+    private val layersSubject: FlickerSubject?,
     /**
-     * Parse a [WindowManagerTrace]
+     * Truth subject that corresponds to a list of [FocusEvent]
      */
-    val parseWmTrace: (() -> WindowManagerTrace?)?,
-    /**
-     * Parse a [WindowManagerTrace]
-     */
-    val parseLayersTrace: (() -> LayersTrace?)?
+    @VisibleForTesting
+    val eventLogSubject: EventLogSubject?
 ) {
-    /**
-     * [WindowManagerTrace] that corresponds to [wmTraceFile], or null if the
-     * path is invalid
-     */
-    val wmTrace: WindowManagerTrace? get() = parseWmTrace?.invoke()
-    /**
-     * [LayersTrace] that corresponds to [layersTrace], or null if the
-     * path is invalid
-     */
-    val layersTrace: LayersTrace? get() = parseLayersTrace?.invoke()
+    fun getSubjects(): List<FlickerSubject> {
+        val result = mutableListOf<FlickerSubject>()
 
-    constructor(
-        assertionTag: AssertionTag,
-        iteration: Int,
-        wmTraceFile: Path?,
-        layersTraceFile: Path?,
-        screenRecording: Path?,
-        eventLog: List<FocusEvent>
-    ) : this(
-        assertionTag,
-        iteration,
-        wmTraceFile,
-        layersTraceFile,
-        screenRecording,
-        eventLog,
-        parseWmTrace = {
-            wmTraceFile?.let {
-                val traceData = Files.readAllBytes(it)
-                WindowManagerTraceParser.parseFromTrace(traceData)
-            }
-        },
-        parseLayersTrace = {
-            layersTraceFile?.let {
-                val traceData = Files.readAllBytes(it)
-                LayersTrace.parseFrom(traceData)
-            }
-        }
-    )
+        wmSubject?.run { result.add(this) }
+        layersSubject?.run { result.add(this) }
+        eventLogSubject?.run { result.add(this) }
 
-    constructor(
-        assertionTag: AssertionTag,
-        iteration: Int,
-        wmTraceFile: Path?,
-        layersTraceFile: Path?,
-        wmTrace: WindowManagerTrace?,
-        layersTrace: LayersTrace?
-    ) : this(
-        assertionTag,
-        iteration,
-        wmTraceFile,
-        layersTraceFile,
-        screenRecording = null,
-        eventLog = emptyList(),
-        parseWmTrace = { wmTrace },
-        parseLayersTrace = { layersTrace }
-    )
+        return result
+    }
 
     private fun Path?.tryDelete() {
         try {
@@ -131,8 +84,8 @@ class FlickerRunResult private constructor(
     }
 
     fun canDelete(failures: List<FlickerAssertionError>): Boolean {
-        return failures.map { it.trace }.none {
-            it == this.wmTraceFile || it == this.layersTraceFile
+        return failures.flatMap { it.traceFiles }.none { failureTrace ->
+            this.traceFiles.any { it == failureTrace }
         }
     }
 
@@ -140,9 +93,7 @@ class FlickerRunResult private constructor(
      * Delete the trace files collected
      */
     fun cleanUp() {
-        wmTraceFile.tryDelete()
-        layersTraceFile.tryDelete()
-        screenRecording.tryDelete()
+        this.traceFiles.forEach { it.tryDelete() }
     }
 
     class Builder @JvmOverloads constructor(private val iteration: Int = 0) {
@@ -164,23 +115,94 @@ class FlickerRunResult private constructor(
         /**
          * List of focus events, if collected
          */
-        var eventLog = listOf<FocusEvent>()
+        var eventLog: List<FocusEvent>? = null
+
+        private fun getTraceFiles() = listOfNotNull(wmTraceFile, layersTraceFile, screenRecording)
+
+        private fun buildResult(
+            assertionTag: String,
+            wmSubject: FlickerSubject?,
+            layersSubject: FlickerSubject?,
+            eventLogSubject: EventLogSubject? = null
+        ): FlickerRunResult {
+            return FlickerRunResult(iteration,
+                getTraceFiles(),
+                assertionTag,
+                wmSubject,
+                layersSubject,
+                eventLogSubject
+            )
+        }
 
         /**
-         * Creates a new run result associated with an assertion tag
+         * Builds a new [FlickerRunResult] for a trace
          *
-         * By default assert all entries
+         * @param assertionTag Tag to associate with the result
+         * @param wmTrace WindowManager trace
+         * @param layersTrace Layers trace
          */
-        @JvmOverloads
-        fun build(assertionTag: AssertionTag = AssertionTag.ALL): FlickerRunResult {
-            return FlickerRunResult(
-                    assertionTag,
-                    iteration,
-                    wmTraceFile,
-                    layersTraceFile,
-                    screenRecording,
-                    eventLog
+        fun buildStateResult(
+            assertionTag: String,
+            wmTrace: WindowManagerTrace?,
+            layersTrace: LayersTrace?
+        ): FlickerRunResult {
+            val wmSubject = wmTrace?.let { WindowManagerTraceSubject.assertThat(it).first() }
+            val layersSubject = layersTrace?.let { LayersTraceSubject.assertThat(it).first() }
+            return buildResult(assertionTag, wmSubject, layersSubject)
+        }
+
+        @VisibleForTesting
+        fun buildEventLogResult(): FlickerRunResult {
+            val events = eventLog ?: emptyList()
+            return buildResult(
+                AssertionTag.ALL,
+                wmSubject = null,
+                layersSubject = null,
+                eventLogSubject = EventLogSubject.assertThat(events)
             )
+        }
+
+        @VisibleForTesting
+        fun buildTraceResults(): List<FlickerRunResult> {
+            var wmTrace: WindowManagerTrace? = null
+            var layersTrace: LayersTrace? = null
+
+            if (wmTrace == null && wmTraceFile != null) {
+                Log.v(FLICKER_TAG, "Parsing WM trace")
+                wmTrace = wmTraceFile?.let {
+                    val traceData = Files.readAllBytes(it)
+                    WindowManagerTraceParser.parseFromTrace(traceData)
+                }
+            }
+
+            if (layersTrace == null && layersTraceFile != null) {
+                Log.v(FLICKER_TAG, "Parsing Layers trace")
+                layersTrace = layersTraceFile?.let {
+                    val traceData = Files.readAllBytes(it)
+                    LayersTraceParser.parseFromTrace(traceData)
+                }
+            }
+
+            val wmSubject = wmTrace?.let { WindowManagerTraceSubject.assertThat(it) }
+            val layersSubject = layersTrace?.let { LayersTraceSubject.assertThat(it) }
+
+            val traceResult = buildResult(
+                AssertionTag.ALL, wmSubject, layersSubject)
+            val initialStateResult = buildResult(
+                AssertionTag.START, wmSubject?.first(), layersSubject?.first())
+            val finalStateResult = buildResult(
+                AssertionTag.END, wmSubject?.last(), layersSubject?.last())
+
+            return listOf(initialStateResult, finalStateResult, traceResult)
+        }
+
+        fun buildAll(): List<FlickerRunResult> {
+            val result = buildTraceResults().toMutableList()
+            if (eventLog != null) {
+                result.add(buildEventLogResult())
+            }
+
+            return result
         }
     }
 }

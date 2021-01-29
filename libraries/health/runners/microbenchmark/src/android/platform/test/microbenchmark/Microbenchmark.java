@@ -15,9 +15,16 @@
  */
 package android.platform.test.microbenchmark;
 
+import static android.content.Context.BATTERY_SERVICE;
+import static android.os.BatteryManager.BATTERY_PROPERTY_CAPACITY;
+import static android.os.BatteryManager.BATTERY_PROPERTY_CHARGE_COUNTER;
+
+import android.os.BatteryManager;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.platform.test.composer.Iterate;
 import android.platform.test.rule.TracePointRule;
+import android.util.Log;
 import androidx.annotation.VisibleForTesting;
 import androidx.test.InstrumentationRegistry;
 
@@ -50,6 +57,8 @@ import org.junit.rules.RunRules;
  */
 public class Microbenchmark extends BlockJUnit4ClassRunner {
 
+    private static final String LOG_TAG = Microbenchmark.class.getSimpleName();
+
     @VisibleForTesting static final String ITERATION_SEP_OPTION = "iteration-separator";
     @VisibleForTesting static final String ITERATION_SEP_DEFAULT = "$";
     // A constant to indicate that the iteration number is not set.
@@ -60,11 +69,24 @@ public class Microbenchmark extends BlockJUnit4ClassRunner {
                 @Override
                 public void evaluate() throws Throwable {}
             };
+    private static final String MIN_BATTERY_LEVEL_OPTION = "min-battery";
+
+    // Options for aligning with the battery charge (coulomb) counter for power tests. We want to
+    // start microbenchmarks just after the coulomb counter has decremented to account for the
+    // counter being quantized. The counter most accurately reflects the true value just after it
+    // decrements.
+    private static final String ALIGN_WITH_CHARGE_COUNTER_OPTION = "align-with-charge-counter";
+    private static final String COUNTER_DECREMENT_TIMEOUT_OPTION = "counter-decrement-timeout_ms";
 
     private final String mIterationSep;
     private final Bundle mArguments;
     private final boolean mRenameIterations;
+    private final int mMinBatteryLevel;
+    private final int mCounterDecrementTimeoutMs;
+    private final boolean mAlignWithChargeCounter;
     private final Map<Description, Integer> mIterations = new HashMap<>();
+
+    private final BatteryManager mBatteryManager;
 
     /**
      * Called reflectively on classes annotated with {@code @RunWith(Microbenchmark.class)}.
@@ -73,9 +95,7 @@ public class Microbenchmark extends BlockJUnit4ClassRunner {
         this(klass, InstrumentationRegistry.getArguments());
     }
 
-    /**
-     * Do not call. Called explicitly from tests to provide an arguments.
-     */
+    /** Do not call. Called explicitly from tests to provide an arguments. */
     @VisibleForTesting
     Microbenchmark(Class<?> klass, Bundle arguments) throws InitializationError {
         super(klass);
@@ -86,6 +106,44 @@ public class Microbenchmark extends BlockJUnit4ClassRunner {
                 arguments.containsKey(ITERATION_SEP_OPTION)
                         ? arguments.getString(ITERATION_SEP_OPTION)
                         : ITERATION_SEP_DEFAULT;
+        mMinBatteryLevel = Integer.parseInt(arguments.getString(MIN_BATTERY_LEVEL_OPTION, "-1"));
+        mCounterDecrementTimeoutMs =
+                Integer.parseInt(arguments.getString(COUNTER_DECREMENT_TIMEOUT_OPTION, "30000"));
+        mAlignWithChargeCounter =
+                Boolean.parseBoolean(
+                        arguments.getString(ALIGN_WITH_CHARGE_COUNTER_OPTION, "false"));
+
+        // Get the battery manager for later use.
+        mBatteryManager =
+                (BatteryManager)
+                        InstrumentationRegistry.getContext().getSystemService(BATTERY_SERVICE);
+    }
+
+    @Override
+    public void run(final RunNotifier notifier) {
+        if (mAlignWithChargeCounter) {
+            // Try to wait until the coulomb counter has just decremented to start the test.
+            int startChargeCounter = getBatteryChargeCounter();
+            long startTimestamp = SystemClock.uptimeMillis();
+            while (startChargeCounter == getBatteryChargeCounter()) {
+                if (SystemClock.uptimeMillis() - startTimestamp > mCounterDecrementTimeoutMs) {
+                    Log.d(
+                            LOG_TAG,
+                            "Timed out waiting for the counter to change. Continuing anyway.");
+                    break;
+                } else {
+                    Log.d(
+                            LOG_TAG,
+                            String.format(
+                                    "Charge counter still reads: %d. Waiting.",
+                                    startChargeCounter));
+                    SystemClock.sleep(getCounterPollingInterval());
+                }
+            }
+        }
+        Log.d(LOG_TAG, String.format("The charge counter reads: %d.", getBatteryChargeCounter()));
+
+        super.run(notifier);
     }
 
     /**
@@ -228,6 +286,10 @@ public class Microbenchmark extends BlockJUnit4ClassRunner {
      */
     @Override
     protected void runChild(final FrameworkMethod method, RunNotifier notifier) {
+        if (isBatteryLevelTooLow()) {
+            throw new TerminateEarlyException("battery level is below threshold.");
+        }
+
         // Update the number of iterations this method has been run.
         if (mRenameIterations) {
             Description original = super.describeChild(method);
@@ -295,6 +357,34 @@ public class Microbenchmark extends BlockJUnit4ClassRunner {
             } catch (Throwable e) {
                 eachNotifier.addFailure(e);
             }
+        }
+    }
+
+    /* Checks if the battery level is below the specified level where the test should terminate. */
+    @VisibleForTesting
+    public boolean isBatteryLevelTooLow() {
+        return mBatteryManager.getIntProperty(BATTERY_PROPERTY_CAPACITY) < mMinBatteryLevel;
+    }
+
+    /* Gets the current battery charge counter (coulomb counter). */
+    @VisibleForTesting
+    public int getBatteryChargeCounter() {
+        return mBatteryManager.getIntProperty(BATTERY_PROPERTY_CHARGE_COUNTER);
+    }
+
+    /* Gets the polling interval to check for changes in the battery charge counter. */
+    @VisibleForTesting
+    public long getCounterPollingInterval() {
+        return 100;
+    }
+
+    /**
+     * A {@code RuntimeException} class for terminating test runs early for some specified reason.
+     */
+    @VisibleForTesting
+    static class TerminateEarlyException extends RuntimeException {
+        public TerminateEarlyException(String message) {
+            super(String.format("Terminating early because %s", message));
         }
     }
 }

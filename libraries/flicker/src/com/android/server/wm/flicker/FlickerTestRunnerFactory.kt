@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 The Android Open Source Project
+ * Copyright (C) 2021 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import android.support.test.launcherhelper.ILauncherStrategy
 import android.support.test.launcherhelper.LauncherStrategyFactory
 import android.view.Surface
 import com.android.server.wm.flicker.dsl.FlickerBuilder
+import com.android.server.wm.traces.parser.windowmanager.WindowManagerStateHelper
 
 /**
  * Factory for creating JUnit4 compatible tests based on the flicker DSL
@@ -33,7 +34,8 @@ class FlickerTestRunnerFactory @JvmOverloads constructor(
     private val supportedRotations: List<Int> = listOf(Surface.ROTATION_0, Surface.ROTATION_90),
     private val repetitions: Int = 1,
     private val launcherStrategy: ILauncherStrategy = LauncherStrategyFactory
-        .getInstance(instrumentation).launcherStrategy
+        .getInstance(instrumentation).launcherStrategy,
+    private val wmHelper: WindowManagerStateHelper = WindowManagerStateHelper()
 ) {
     /**
      * Creates multiple instances of the same test, running on different device orientations
@@ -49,12 +51,48 @@ class FlickerTestRunnerFactory @JvmOverloads constructor(
         deviceConfigurations: List<Bundle> = getConfigNonRotationTests(),
         testSpecification: FlickerBuilder.(Bundle) -> Any
     ): List<Array<Any>> {
-        return deviceConfigurations.map {
-            val builder = FlickerBuilder(instrumentation, launcherStrategy)
-            val flickerTests = builder.apply { testSpecification(it) }.build()
+        return deviceConfigurations.flatMap {
+            val builder = FlickerBuilder(instrumentation, launcherStrategy, wmHelper = wmHelper)
+            val flickerTests = buildIndividualTests(builder.apply { testSpecification(it) })
 
             flickerTests
-        }.map { arrayOf(it.toString(), it) }
+        }.map { arrayOf(it.first, it.second, it.third) }
+    }
+
+    /**
+     * Creates multiple instances of the same test, running on different configuration
+     *
+     * @param testSpecification Segments of the test specification, if any
+     */
+    @JvmOverloads
+    fun buildTest(
+        vararg testSpecification: FlickerBuilder.(Bundle) -> Any,
+        deviceConfigurations: List<Bundle> = getConfigNonRotationTests()
+    ): List<Array<Any>> {
+        val newTestSpecification: FlickerBuilder.(Bundle) -> Any = { configuration ->
+            testSpecification.forEach {
+                this.apply { it(configuration) }
+            }
+        }
+
+        return buildTest(deviceConfigurations) { newTestSpecification(it) }
+    }
+
+    /**
+     * Creates multiple instances of the same test, running on different configuration
+     *
+     * @param baseSpecification Base specification, e.g., setup, teardown, transitions and
+     *      assertions
+     * @param testSpecification Other segments of the test specification, if any
+     */
+    @JvmOverloads
+    fun buildTest(
+        baseSpecification: FlickerBuilder.(Bundle) -> Any,
+        testSpecification: FlickerBuilder.(Bundle) -> Any,
+        deviceConfigurations: List<Bundle> = getConfigNonRotationTests()
+    ): List<Array<Any>> {
+        val fullSpecification = arrayOf(baseSpecification, testSpecification)
+        return buildTest(*fullSpecification, deviceConfigurations = deviceConfigurations)
     }
 
     /**
@@ -72,12 +110,80 @@ class FlickerTestRunnerFactory @JvmOverloads constructor(
         deviceConfigurations: List<Bundle> = getConfigRotationTests(),
         testSpecification: FlickerBuilder.(Bundle) -> Any
     ): List<Array<Any>> {
-        return deviceConfigurations.map {
-            val builder = FlickerBuilder(instrumentation, launcherStrategy)
-            val flickerTests = builder.apply { testSpecification(it) }.build()
+        return deviceConfigurations.flatMap {
+            val builder = FlickerBuilder(instrumentation, launcherStrategy, wmHelper = wmHelper)
+            val flickerTests = buildIndividualTests(builder.apply { testSpecification(it) })
 
             flickerTests
-        }.map { arrayOf(it.toString(), it) }
+        }.map { arrayOf(it.first, it.second, it.third) }
+    }
+
+    /**
+     * Creates multiple instances of the same test, running on different configuration
+     *
+     * @param testSpecification Segments of the test specification, if any
+     */
+    @JvmOverloads
+    fun buildRotationTest(
+        vararg testSpecification: FlickerBuilder.(Bundle) -> Any,
+        deviceConfigurations: List<Bundle> = getConfigRotationTests()
+    ): List<Array<Any>> {
+        val newTestSpecification: FlickerBuilder.(Bundle) -> Any = { configuration ->
+            testSpecification.forEach {
+                this.apply { it(configuration) }
+            }
+        }
+
+        return buildRotationTest(deviceConfigurations) { newTestSpecification(it) }
+    }
+
+    /**
+     * Creates multiple instances of the same test, running on different configuration
+     *
+     * @param baseSpecification Base specification, e.g., setup, teardown, transitions and
+     *      assertions
+     * @param testSpecification Other segments of the test specification, if any
+     */
+    @JvmOverloads
+    fun buildRotationTest(
+        baseSpecification: FlickerBuilder.(Bundle) -> Any,
+        testSpecification: FlickerBuilder.(Bundle) -> Any,
+        deviceConfigurations: List<Bundle> = getConfigRotationTests()
+    ): List<Array<Any>> {
+        val fullSpecification = arrayOf(baseSpecification, testSpecification)
+        return buildRotationTest(*fullSpecification, deviceConfigurations = deviceConfigurations)
+    }
+
+    /**
+     * Creates multiple flicker tests.
+     *
+     * Each test contains a single assertion, but all tests share the same setup, transition
+     * and results
+     */
+    private fun buildIndividualTests(
+        builder: FlickerBuilder
+    ): List<Triple<String, () -> Flicker, Boolean>> {
+        val transitionRunner = TransitionRunnerCached()
+        val flicker = builder.build(transitionRunner)
+        val assertionsList = flicker.assertions
+        val lastAssertionIdx = assertionsList.lastIndex
+        val onlyTransition = {
+            flicker.copy(newAssertion = null)
+        }
+
+        val result = mutableListOf(Triple(flicker.testName, onlyTransition, false))
+        result.addAll(
+            assertionsList.mapIndexed { idx, assertion ->
+                val newTestName = "${flicker.testName}_$assertion"
+                val newTest = {
+                    flicker.copy(newAssertion = assertion, newName = newTestName)
+                }
+                val cleanUp = idx == lastAssertionIdx
+
+                Triple(newTestName, newTest, cleanUp)
+            }
+        )
+        return result
     }
 
     /**

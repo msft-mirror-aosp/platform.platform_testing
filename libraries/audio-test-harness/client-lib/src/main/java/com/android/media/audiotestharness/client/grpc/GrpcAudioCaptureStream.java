@@ -147,7 +147,7 @@ public class GrpcAudioCaptureStream extends AudioCaptureStream {
         try {
             return mInputStream.read(b, off, len);
         } catch (IOException ioe) {
-            throw new IOException("Audio Test Harness gRPC Internal Error", mGrpcError);
+            throw new IOException("Audio Test Harness gRPC Internal Error", ioe);
         }
     }
 

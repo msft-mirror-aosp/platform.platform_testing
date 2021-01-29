@@ -30,7 +30,6 @@ java_library_host {
 
 java_test_host {
     name: "audiotestharness-testlib-tests",
-    test_suites: ["general-tests"],
 
     srcs: [
         "src/main/java/com/android/media/audiotestharness/tradefed/*.java",

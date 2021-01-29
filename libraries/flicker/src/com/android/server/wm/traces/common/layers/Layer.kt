@@ -78,7 +78,7 @@ open class Layer(
      * @return
      */
     val isActiveBufferEmpty: Boolean get() =
-        (activeBuffer == null) || (activeBuffer?.height == 0) || (activeBuffer?.width == 0)
+        (activeBuffer == null) || (activeBuffer.height == 0) || (activeBuffer.width == 0)
 
     /**
      * Checks if the layer is hidden, that is, if its flags contain 0x1 (FLAG_HIDDEN)
@@ -173,8 +173,8 @@ open class Layer(
      *
      * @return
      */
-    val isBufferLayer: Boolean get() =
-        type == "BufferStateLayer" || type == "BufferQueueLayer"
+    val isBufferLayer: Boolean
+        get() = type == "BufferStateLayer" || type == "BufferQueueLayer"
 
     /**
      * Checks if the [Layer] type is ColorLayer

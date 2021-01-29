@@ -111,7 +111,6 @@ java_library_host {
 
 java_test_host {
     name: "audiotestharness-serverlib-tests",
-    test_suites: ["general-tests"],
     srcs: [
         "src/test/java/com/android/media/audiotestharness/server/AudioTestHarnessServerModuleTests.java",
         "src/test/java/com/android/media/audiotestharness/server/AudioTestHarnessGrpcServerTests.java",
@@ -135,7 +134,6 @@ java_test_host {
 
 java_test_host {
     name: "audiotestharness-servicelib-tests",
-    test_suites: ["general-tests"],
     srcs: [
         "src/test/java/com/android/media/audiotestharness/server/service/*.java",
     ],
@@ -157,7 +155,6 @@ java_test_host {
 
 java_test_host {
     name: "audiotestharness-javasoundlib-tests",
-    test_suites: ["general-tests"],
     srcs: [
         "src/test/java/com/android/media/audiotestharness/server/javasound/*.java",
     ],
@@ -180,7 +177,6 @@ java_test_host {
 
 java_test_host {
     name: "audiotestharness-utilitylib-tests",
-    test_suites: ["general-tests"],
     srcs: [
         "src/test/java/com/android/media/audiotestharness/server/utility/*.java",
     ],

@@ -30,15 +30,9 @@ open class Activity(
     val frontOfTask: Boolean,
     val procId: Int,
     val isTranslucent: Boolean,
-    private val parent: WindowContainer,
     windowContainer: WindowContainer
 ) : WindowContainer(windowContainer, name, visible) {
-    init {
-        require(parent is ActivityTask) { "Activity parent must be a task" }
-    }
-
     override val kind: String = "Activity"
-    val task: ActivityTask get() = parent as ActivityTask
 
     override fun toString(): String {
         return "$kind {$token $title} state=$state visible=$isVisible"

@@ -34,6 +34,7 @@ import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
 import io.grpc.testing.GrpcCleanupRule;
 
+import org.hamcrest.CoreMatchers;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -41,7 +42,6 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.ArgumentCaptor;
-import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
@@ -246,12 +246,12 @@ public class GrpcAudioCaptureStreamTests {
     /** Configures the exception rule to expect the gRPC Communication Error exception. */
     private void expectGrpcCommunicationErrorException() throws Exception {
         mExceptionRule.expectMessage("Audio Test Harness gRPC Communication Error");
-        mExceptionRule.expectCause(ArgumentMatchers.notNull());
+        mExceptionRule.expectCause(CoreMatchers.notNullValue(Throwable.class));
     }
 
     /** Configures the exception rule to expect the gRPC Internal Error exception. */
     private void expectInternalErrorException() throws Exception {
         mExceptionRule.expectMessage("Audio Test Harness gRPC Internal Error");
-        mExceptionRule.expectCause(ArgumentMatchers.notNull());
+        mExceptionRule.expectCause(CoreMatchers.notNullValue(Throwable.class));
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 The Android Open Source Project
+ * Copyright (C) 2021 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import android.support.test.launcherhelper.LauncherStrategyFactory
 import androidx.test.uiautomator.UiDevice
 import com.android.server.wm.flicker.Flicker
 import com.android.server.wm.flicker.FlickerDslMarker
+import com.android.server.wm.flicker.TransitionRunner
 import com.android.server.wm.flicker.monitor.EventLogMonitor
 import com.android.server.wm.flicker.getDefaultFlickerOutputDir
 import com.android.server.wm.flicker.monitor.ITransitionMonitor
@@ -30,6 +31,10 @@ import com.android.server.wm.flicker.monitor.ScreenRecorder
 import com.android.server.wm.flicker.monitor.WindowAnimationFrameStatsMonitor
 import com.android.server.wm.flicker.monitor.WindowManagerTraceMonitor
 import com.android.server.wm.traces.common.layers.LayersTrace
+import com.android.server.wm.traces.common.layers.LayerTraceEntry
+import com.android.server.wm.traces.common.windowmanager.WindowManagerState
+import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
+import com.android.server.wm.traces.parser.windowmanager.WindowManagerStateHelper
 import java.nio.file.Path
 
 /**
@@ -41,12 +46,13 @@ class FlickerBuilder private constructor(
     private val launcherStrategy: ILauncherStrategy,
     private val includeJankyRuns: Boolean,
     private val outputDir: Path,
+    private val wmHelper: WindowManagerStateHelper,
     private var testName: String,
     private var iterations: Int,
-    private val setupCommands: TestCommands,
-    private val teardownCommands: TestCommands,
+    private val setupCommands: TestCommandsBuilder,
+    private val teardownCommands: TestCommandsBuilder,
     private val transitionCommands: MutableList<Flicker.() -> Any>,
-    private val assertions: AssertionTarget,
+    internal val assertions: AssertionTargetBuilder,
     val device: UiDevice,
     private val traceMonitors: MutableList<ITransitionMonitor>
 ) {
@@ -77,24 +83,29 @@ class FlickerBuilder private constructor(
         /**
          * Output directory for the test results
          */
-        outputDir: Path = getDefaultFlickerOutputDir()
+        outputDir: Path = getDefaultFlickerOutputDir(),
+        /**
+         * Helper object for WM Synchronization
+         */
+        wmHelper: WindowManagerStateHelper = WindowManagerStateHelper()
     ) : this(
         instrumentation,
         launcherStrategy,
         includeJankyRuns,
         outputDir,
+        wmHelper,
         testName = "",
         iterations = 1,
-        setupCommands = TestCommands(),
-        teardownCommands = TestCommands(),
+        setupCommands = TestCommandsBuilder(),
+        teardownCommands = TestCommandsBuilder(),
         transitionCommands = mutableListOf(),
-        assertions = AssertionTarget(),
+        assertions = AssertionTargetBuilder(),
         device = UiDevice.getInstance(instrumentation),
         traceMonitors = mutableListOf<ITransitionMonitor>()
             .also {
                 it.add(WindowManagerTraceMonitor(outputDir))
                 it.add(LayersTraceMonitor(outputDir))
-                it.add(ScreenRecorder(outputDir))
+                it.add(ScreenRecorder(outputDir, instrumentation.targetContext))
                 it.add(EventLogMonitor())
             }
     )
@@ -107,12 +118,13 @@ class FlickerBuilder private constructor(
         otherBuilder.launcherStrategy,
         otherBuilder.includeJankyRuns,
         otherBuilder.outputDir.toAbsolutePath(),
+        otherBuilder.wmHelper,
         otherBuilder.testName,
         otherBuilder.iterations,
-        TestCommands(otherBuilder.setupCommands),
-        TestCommands(otherBuilder.teardownCommands),
+        TestCommandsBuilder(otherBuilder.setupCommands),
+        TestCommandsBuilder(otherBuilder.teardownCommands),
         otherBuilder.transitionCommands.toMutableList(),
-        AssertionTarget(otherBuilder.assertions),
+        AssertionTargetBuilder(otherBuilder.assertions),
         UiDevice.getInstance(otherBuilder.instrumentation),
         otherBuilder.traceMonitors.toMutableList()
     )
@@ -138,8 +150,8 @@ class FlickerBuilder private constructor(
      *
      * By default the tracing is always active. To disable tracing return null
      *
-     * If this tracing is disabled, the assertions for [AssertionTarget.layerAssertions] will
-     * not be executed
+     * If this tracing is disabled, the assertions for [WindowManagerTrace] and
+     * [WindowManagerState] will not be executed
      */
     fun withWindowManagerTracing(traceMonitor: (Path) -> WindowManagerTraceMonitor?) {
         traceMonitors.removeIf { it is WindowManagerTraceMonitor }
@@ -155,8 +167,8 @@ class FlickerBuilder private constructor(
      *
      * By default the tracing is always active. To disable tracing return null
      *
-     * If this tracing is disabled, the assertions for [AssertionTarget.layerAssertions] will
-     * not be executed
+     * If this tracing is disabled, the assertions for [LayersTrace] and [LayerTraceEntry]
+     * will not be executed
      */
     fun withLayerTracing(traceMonitor: (Path) -> LayersTraceMonitor?) {
         traceMonitors.removeIf { it is LayersTraceMonitor }
@@ -191,39 +203,40 @@ class FlickerBuilder private constructor(
     }
 
     /**
-     * Defines the test ([TestCommands.testCommands]) and run ([TestCommands.runCommands])
+     * Defines the test ([TestCommandsBuilder.testCommands]) and run ([TestCommandsBuilder.runCommands])
      * commands executed before the [transitions] to test
      */
-    fun setup(commands: TestCommands.() -> Unit) {
+    fun setup(commands: TestCommandsBuilder.() -> Unit) {
         setupCommands.apply { commands() }
     }
 
     /**
-     * Defines the test ([TestCommands.testCommands]) and run ([TestCommands.runCommands])
+     * Defines the test ([TestCommandsBuilder.testCommands]) and run ([TestCommandsBuilder.runCommands])
      * commands executed after the [transitions] to test
      */
-    fun teardown(commands: TestCommands.() -> Unit) {
+    fun teardown(commands: TestCommandsBuilder.() -> Unit) {
         teardownCommands.apply { commands() }
     }
 
     /**
      * Defines the commands that trigger the behavior to test
      */
-    fun transitions(command: Flicker.() -> Any) {
+    fun transitions(command: Flicker.() -> Unit) {
         transitionCommands.add(command)
     }
 
     /**
      * Defines the assertions to check the recorded traces
      */
-    fun assertions(assertion: AssertionTarget.() -> Unit) {
+    fun assertions(assertion: AssertionTargetBuilder.() -> Unit) {
         assertions.apply { assertion() }
     }
 
     /**
      * Creates a new Flicker runner based on the current builder configuration
      */
-    fun build() = Flicker(
+    @JvmOverloads
+    fun build(runner: TransitionRunner = TransitionRunner()) = Flicker(
         instrumentation,
         device,
         launcherStrategy,
@@ -232,10 +245,14 @@ class FlickerBuilder private constructor(
         iterations,
         frameStatsMonitor,
         traceMonitors,
-        setupCommands,
-        teardownCommands,
+        setupCommands.buildTestCommands(),
+        setupCommands.buildRunCommands(),
+        teardownCommands.buildTestCommands(),
+        teardownCommands.buildRunCommands(),
         transitionCommands,
-        assertions
+        assertions.build(),
+        runner,
+        wmHelper
     )
 
     /**
@@ -261,7 +278,7 @@ fun flicker(
     launcherStrategy: ILauncherStrategy = LauncherStrategyFactory
             .getInstance(instrumentation).launcherStrategy,
     configuration: FlickerBuilder.() -> Unit
-) = runFlicker(instrumentation, launcherStrategy, configuration)
+) = runFlicker(instrumentation, launcherStrategy, configuration = configuration)
 
 /**
  * Entry point for the Flicker DSL.
@@ -269,6 +286,8 @@ fun flicker(
  * Configures a builder, build the test runs, executes them and checks the configured assertions
  *
  * @param instrumentation to run the test (used to interact with the device)
+ * @param launcherStrategy to interact with the device's launcher
+ * @param runner to execute the transitions
  * @param configuration Flicker DSL configuration
  */
 @JvmOverloads
@@ -276,10 +295,11 @@ fun runFlicker(
     instrumentation: Instrumentation,
     launcherStrategy: ILauncherStrategy = LauncherStrategyFactory
             .getInstance(instrumentation).launcherStrategy,
+    runner: TransitionRunner = TransitionRunner(),
     configuration: FlickerBuilder.() -> Unit
 ) {
     val builder = FlickerBuilder(instrumentation, launcherStrategy)
-    runWithFlicker(builder, configuration)
+    runWithFlicker(builder, runner, configuration)
 }
 
 /**
@@ -291,12 +311,14 @@ fun runFlicker(
  * The original builder object is not changed.
  *
  * @param builder to run the test (used to interact with the device
+ * @param runner to execute the transitions
  * @param configuration Flicker DSL configuration
  */
 @JvmOverloads
 fun runWithFlicker(
     builder: FlickerBuilder,
+    runner: TransitionRunner = TransitionRunner(),
     configuration: FlickerBuilder.() -> Unit = {}
 ) {
-    builder.copy(configuration).build().execute().checkAssertions()
+    builder.copy(configuration).build(runner).execute().checkAssertions()
 }
