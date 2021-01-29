@@ -37,7 +37,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /** Truth subject for {@link LayersTrace} objects. */
-public class LayersTraceSubject extends Subject<LayersTraceSubject, LayersTrace> {
+public class LayersTraceSubject extends Subject {
     public static final String TAG = "FLICKER";
 
     // Boiler-plate Subject.Factory for LayersTraceSubject
@@ -45,6 +45,7 @@ public class LayersTraceSubject extends Subject<LayersTraceSubject, LayersTrace>
             LayersTraceSubject::new;
 
     private AssertionsChecker<Entry> mChecker = new AssertionsChecker<>();
+    private LayersTrace mTrace;
     private boolean mNewAssertion = true;
 
     private void addAssertion(Assertions.TraceAssertion<Entry> assertion, String name) {
@@ -57,6 +58,7 @@ public class LayersTraceSubject extends Subject<LayersTraceSubject, LayersTrace>
 
     private LayersTraceSubject(FailureMetadata fm, @Nullable LayersTrace subject) {
         super(fm, subject);
+        mTrace = subject;
     }
 
     // User-defined entry point
@@ -127,36 +129,36 @@ public class LayersTraceSubject extends Subject<LayersTraceSubject, LayersTrace>
     }
 
     public void inTheBeginning() {
-        if (actual().getEntries().isEmpty()) {
-            fail("No entries found.");
+        if (mTrace.getEntries().isEmpty()) {
+            failWithActual("No entries found.", mTrace);
         }
         mChecker.checkFirstEntry();
         test();
     }
 
     public void atTheEnd() {
-        if (actual().getEntries().isEmpty()) {
-            fail("No entries found.");
+        if (mTrace.getEntries().isEmpty()) {
+            failWithActual("No entries found.", mTrace);
         }
         mChecker.checkLastEntry();
         test();
     }
 
     private void test() {
-        List<Result> failures = mChecker.test(actual().getEntries());
+        List<Result> failures = mChecker.test(mTrace.getEntries());
         if (!failures.isEmpty()) {
             String failureLogs =
                     failures.stream().map(Result::toString).collect(Collectors.joining("\n"));
             String tracePath = "";
-            if (actual().getSource().isPresent()) {
+            if (mTrace.getSource().isPresent()) {
                 tracePath =
                         "\nLayers Trace can be found in: "
-                                + actual().getSource().get().toAbsolutePath()
+                                + mTrace.getSource().get().toAbsolutePath()
                                 + "\nChecksum: "
-                                + actual().getSourceChecksum()
+                                + mTrace.getSourceChecksum()
                                 + "\n";
             }
-            fail(tracePath + failureLogs);
+            failWithActual(tracePath + failureLogs, mTrace);
         }
     }
 

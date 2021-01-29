@@ -22,7 +22,7 @@ android_test {
     certificate: "platform",
     static_libs: [
         "androidx.test.rules",
-	"androidx.test.runner",
+        "androidx.test.runner",
         "platform-test-annotations",
     ],
 

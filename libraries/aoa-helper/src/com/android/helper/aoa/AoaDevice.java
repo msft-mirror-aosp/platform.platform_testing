@@ -16,6 +16,7 @@
 package com.android.helper.aoa;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
@@ -56,8 +57,14 @@ public class AoaDevice implements AutoCloseable {
     private static final Range<Integer> AOA_PID = Range.closed(0x2D00, 0x2D05);
     private static final ImmutableSet<Integer> ADB_PID = ImmutableSet.of(0x2D01, 0x2D03, 0x2D05);
 
+    // Simulated accessory information
+    private static final byte[] MANUFACTURER = "Android\0".getBytes(Charsets.UTF_8);
+    private static final byte[] MODEL = (AoaDevice.class.getName() + "\0").getBytes(Charsets.UTF_8);
+    private static final byte[] VERSION = "1.0\0".getBytes(Charsets.UTF_8);
+
     // AOA requests
     static final byte ACCESSORY_GET_PROTOCOL = 51;
+    static final byte ACCESSORY_SEND_STRING = 52;
     static final byte ACCESSORY_START = 53;
     static final byte ACCESSORY_REGISTER_HID = 54;
     static final byte ACCESSORY_UNREGISTER_HID = 55;
@@ -85,37 +92,51 @@ public class AoaDevice implements AutoCloseable {
 
     private final UsbHelper mHelper;
     private UsbDevice mDelegate;
-    private String mSerialNumber;
+    private final String mSerialNumber;
 
     AoaDevice(@Nonnull UsbHelper helper, @Nonnull UsbDevice delegate) {
         mHelper = helper;
         mDelegate = delegate;
-        initialize(0);
-    }
-
-    // Configure the device, switching to accessory mode if necessary and registering the HIDs
-    private void initialize(int attempt) {
         if (!isValid()) {
             throw new UsbException("Invalid device connection");
         }
-
         mSerialNumber = mDelegate.getSerialNumber();
         if (mSerialNumber == null) {
-            throw new UsbException("Missing serial number");
+            throw new UsbException("Could not determine device serial number");
         }
+        initialize();
+    }
 
-        if (isAccessoryMode()) {
-            registerHIDs();
-        } else if (attempt >= ACCESSORY_START_MAX_RETRIES) {
-            throw new UsbException("Failed to start accessory mode");
-        } else {
-            // restart in accessory mode and try to initialize again
+    // Configure the device, switching to accessory mode if necessary and registering the HIDs
+    private void initialize() {
+        for (int attempt = 0; ; attempt++) {
+            if (isAccessoryMode()) {
+                registerHIDs();
+                return;
+            }
+            if (attempt >= ACCESSORY_START_MAX_RETRIES) {
+                throw new UsbException("Failed to start accessory mode after %d attempts", attempt);
+            }
+            // Send accessory information, restart in accessory mode, and try to initialize again
+            mHelper.checkResult(
+                    mDelegate.controlTransfer(OUTPUT, ACCESSORY_SEND_STRING, 0, 0, MANUFACTURER));
+            mHelper.checkResult(
+                    mDelegate.controlTransfer(OUTPUT, ACCESSORY_SEND_STRING, 0, 1, MODEL));
+            mHelper.checkResult(
+                    mDelegate.controlTransfer(OUTPUT, ACCESSORY_SEND_STRING, 0, 3, VERSION));
             mHelper.checkResult(
                     mDelegate.controlTransfer(OUTPUT, ACCESSORY_START, 0, 0, new byte[0]));
             sleep(CONFIGURE_DELAY);
             mDelegate.close();
-            mDelegate = mHelper.getDevice(mSerialNumber, CONNECTION_TIMEOUT);
-            initialize(attempt + 1);
+            reconnect();
+        }
+    }
+
+    // Reconnect to underlying USB device
+    private void reconnect() {
+        mDelegate = mHelper.getDevice(mSerialNumber, CONNECTION_TIMEOUT);
+        if (!isValid()) {
+            throw new UsbException("Timed out while reconnecting to device %s", mSerialNumber);
         }
     }
 
@@ -156,8 +177,8 @@ public class AoaDevice implements AutoCloseable {
      */
     public void resetConnection() {
         close();
-        mDelegate = mHelper.getDevice(mSerialNumber, CONNECTION_TIMEOUT);
-        initialize(0);
+        reconnect();
+        initialize();
     }
 
     /** @return true if connection is non-null, but does not check if resetting is necessary */

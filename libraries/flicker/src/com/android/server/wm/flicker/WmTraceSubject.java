@@ -33,12 +33,13 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 /** Truth subject for {@link WindowManagerTrace} objects. */
-public class WmTraceSubject extends Subject<WmTraceSubject, WindowManagerTrace> {
+public class WmTraceSubject extends Subject {
     // Boiler-plate Subject.Factory for WmTraceSubject
     private static final Subject.Factory<WmTraceSubject, WindowManagerTrace> FACTORY =
             WmTraceSubject::new;
 
     private AssertionsChecker<WindowManagerTrace.Entry> mChecker = new AssertionsChecker<>();
+    private WindowManagerTrace mTrace;
     private boolean mNewAssertion = true;
 
     private void addAssertion(
@@ -52,6 +53,7 @@ public class WmTraceSubject extends Subject<WmTraceSubject, WindowManagerTrace> 
 
     private WmTraceSubject(FailureMetadata fm, @Nullable WindowManagerTrace subject) {
         super(fm, subject);
+        mTrace = subject;
     }
 
     // User-defined entry point
@@ -108,25 +110,25 @@ public class WmTraceSubject extends Subject<WmTraceSubject, WindowManagerTrace> 
     }
 
     public void inTheBeginning() {
-        if (actual().getEntries().isEmpty()) {
-            fail("No entries found.");
+        if (mTrace.getEntries().isEmpty()) {
+            failWithActual("No entries found.", mTrace);
         }
         mChecker.checkFirstEntry();
         test();
     }
 
     public void atTheEnd() {
-        if (actual().getEntries().isEmpty()) {
-            fail("No entries found.");
+        if (mTrace.getEntries().isEmpty()) {
+            failWithActual("No entries found.", mTrace);
         }
         mChecker.checkLastEntry();
         test();
     }
 
     private void test() {
-        List<Result> failures = mChecker.test(actual().getEntries());
+        List<Result> failures = mChecker.test(mTrace.getEntries());
         if (!failures.isEmpty()) {
-            Optional<Path> failureTracePath = actual().getSource();
+            Optional<Path> failureTracePath = mTrace.getSource();
             String failureLogs =
                     failures.stream().map(Result::toString).collect(Collectors.joining("\n"));
             String tracePath = "";
@@ -135,10 +137,10 @@ public class WmTraceSubject extends Subject<WmTraceSubject, WindowManagerTrace> 
                         "\nWindowManager Trace can be found in: "
                                 + failureTracePath.get().toAbsolutePath()
                                 + "\nChecksum: "
-                                + actual().getSourceChecksum()
+                                + mTrace.getSourceChecksum()
                                 + "\n";
             }
-            fail(tracePath + failureLogs);
+            failWithActual(tracePath + failureLogs, mTrace);
         }
     }
 
