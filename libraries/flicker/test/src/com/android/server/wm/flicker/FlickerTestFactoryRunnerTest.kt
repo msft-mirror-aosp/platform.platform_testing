@@ -37,7 +37,7 @@ class FlickerTestFactoryRunnerTest {
 
     private fun FlickerBuilder.setDefaultTestCfg() = apply {
         assertions {
-            layersTrace { all { fail("First assertion") } }
+            layersTrace { all("layers") { fail("First assertion") } }
         }
     }
 
@@ -130,9 +130,9 @@ class FlickerTestFactoryRunnerTest {
             supportedRotations = listOf(Surface.ROTATION_0))
         val tests = factory.buildTest {
             assertions {
-                layersTrace { all { fail("First assertion") } }
-                windowManagerTrace { all { fail("Second assertion") } }
-                eventLog { all { fail("This assertion") } }
+                layersTrace { all("layers") { fail("First assertion") } }
+                windowManagerTrace { all("wm") { fail("Second assertion") } }
+                eventLog { all("eventLog") { fail("This assertion") } }
             }
         }
 
@@ -152,7 +152,7 @@ class FlickerTestFactoryRunnerTest {
         val base: FlickerBuilder.(Bundle) -> Unit = {
             assertions {
                 windowManagerTrace {
-                    start { it.isEmpty }
+                    start("wm") { it.isEmpty }
                 }
             }
         }
@@ -160,7 +160,7 @@ class FlickerTestFactoryRunnerTest {
         val extension: FlickerBuilder.(Bundle) -> Unit = {
             assertions {
                 windowManagerTrace {
-                    start { it.isEmpty }
+                    start("wm2") { it.isEmpty }
                 }
             }
         }

@@ -25,6 +25,7 @@ import com.android.server.wm.traces.common.windowmanager.windows.DisplayContent
 import com.android.server.wm.traces.common.windowmanager.windows.KeyguardControllerState
 import com.android.server.wm.traces.common.windowmanager.windows.RootWindowContainer
 import com.android.server.wm.traces.common.windowmanager.windows.ActivityTask
+import com.android.server.wm.traces.common.windowmanager.windows.WindowContainer
 import com.android.server.wm.traces.common.windowmanager.windows.WindowManagerPolicy
 import com.android.server.wm.traces.common.windowmanager.windows.WindowState
 
@@ -49,15 +50,18 @@ open class WindowManagerState(
     val keyguardControllerState: KeyguardControllerState,
     override val timestamp: Long = 0
 ) : ITraceEntry {
-    private val formattedTimestamp by lazy { prettyTimestamp(timestamp) }
     val kind = "entry"
     val stableId = "entry"
 
     var validityCheckFocusedWindow = true
         private set
 
+    val windowContainers: Array<WindowContainer>
+        get() = root.collectDescendants()
+
     // Displays in z-order with the top most at the front of the list, starting with primary.
-    val displays: Array<DisplayContent> by lazy { root.collectDescendants() }
+    val displays: Array<DisplayContent>
+        get() = windowContainers.filterIsInstance<DisplayContent>().toTypedArray()
 
     // Stacks in z-order with the top most at the front of the list, starting with primary display.
     val rootTasks: Array<ActivityTask>
@@ -65,7 +69,7 @@ open class WindowManagerState(
 
     // Windows in z-order with the top most at the front of the list.
     val windowStates: Array<WindowState>
-        by lazy { root.collectDescendants() }
+        get() = windowContainers.filterIsInstance<WindowState>().toTypedArray()
 
     @Deprecated("Please use windowStates instead", replaceWith = ReplaceWith("windowStates"))
     val windows: Array<WindowState>
@@ -95,7 +99,7 @@ open class WindowManagerState(
     val resumedActivitiesInStacks: Array<String>
         get() = rootTasks.map { it.resumedActivity }.filter { it.isNotEmpty() }.toTypedArray()
     val hasResumedActivitiesInStacks: Boolean
-        by lazy { rootTasks.any { it.hasResumedActivitiesInTree } }
+        get() = rootTasks.any { it.hasResumedActivitiesInTree }
     val defaultPinnedStackBounds: Rect
         get() = displays
             .lastOrNull { it.defaultPinnedStackBounds.isNotEmpty }?.defaultPinnedStackBounds
@@ -108,9 +112,8 @@ open class WindowManagerState(
         get() = getRootTask(focusedStackId)?.activityType ?: ACTIVITY_TYPE_UNDEFINED
     val focusedStackWindowingMode: Int
         get() = getRootTask(focusedStackId)?.windowingMode ?: WINDOWING_MODE_UNDEFINED
-    val resumedActivity: String by lazy {
-        focusedDisplay?.resumedActivity ?: "Default display not found"
-    }
+    val resumedActivity: String
+        get() = focusedDisplay?.resumedActivity ?: "Default display not found"
     val resumedActivitiesCount: Int get() = resumedActivitiesInStacks.size
     val stackCount: Int get() = rootTasks.size
     val displayCount: Int get() = displays.size
@@ -137,7 +140,7 @@ open class WindowManagerState(
      * Returns the rect of all the frames in the entry
      * Converted to typedArray for better compatibility with JavaScript code
      */
-    val rects: Array<Rect> by lazy { root.rects }
+    val rects: Array<Rect> = root.rects
 
     /**
      * Enable/disable the mFocusedWindow check during the computeState.
@@ -544,7 +547,7 @@ open class WindowManagerState(
     }
 
     override fun toString(): String {
-        return this.formattedTimestamp
+        return prettyTimestamp(timestamp)
     }
 
     companion object {

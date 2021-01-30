@@ -28,24 +28,26 @@ import com.android.server.wm.traces.common.prettyTimestamp
  **/
 open class LayerTraceEntry constructor(
     override val timestamp: Long, // hierarchical representation of layers
-    val rootLayers: List<Layer>
+    _rootLayers: Array<Layer>
 ) : ITraceEntry {
-    private val formattedTimestamp by lazy { prettyTimestamp(timestamp) }
-    private val _opaqueLayers = mutableListOf<Layer>()
-    private val _transparentLayers = mutableListOf<Layer>()
+    val flattenedLayers: Array<Layer> = fillFlattenedLayers(_rootLayers)
+    val rootLayers: Array<Layer> get() = flattenedLayers.filter { it.isRootLayer }.toTypedArray()
 
-    val flattenedLayers: Array<Layer> by lazy {
+    private fun fillFlattenedLayers(rootLayers: Array<Layer>): Array<Layer> {
+        val opaqueLayers = mutableListOf<Layer>()
+        val transparentLayers = mutableListOf<Layer>()
         val layers = mutableListOf<Layer>()
-        val roots = rootLayers.fillOcclusionState().toMutableList()
+        val roots = rootLayers.fillOcclusionState(
+            opaqueLayers, transparentLayers).toMutableList()
         while (roots.isNotEmpty()) {
             val layer = roots.removeAt(0)
             layers.add(layer)
             roots.addAll(layer.children)
         }
-        layers.toTypedArray()
+        return layers.toTypedArray()
     }
 
-    private fun List<Layer>.topDownTraversal(): List<Layer> {
+    private fun Array<Layer>.topDownTraversal(): List<Layer> {
         return this
                 .sortedBy { it.z }
                 .flatMap { it.topDownTraversal() }
@@ -53,10 +55,6 @@ open class LayerTraceEntry constructor(
 
     val visibleLayers: Array<Layer>
         get() = flattenedLayers.filter { it.isVisible && !it.isHiddenByParent }.toTypedArray()
-
-    val opaqueLayers: Array<Layer> get() = _opaqueLayers.toTypedArray()
-
-    val transparentLayers: Array<Layer> get() = _transparentLayers.toTypedArray()
 
     private fun Layer.topDownTraversal(): List<Layer> {
         val traverseList = mutableListOf(this)
@@ -69,23 +67,26 @@ open class LayerTraceEntry constructor(
         return traverseList
     }
 
-    private fun List<Layer>.fillOcclusionState(): List<Layer> {
+    private fun Array<Layer>.fillOcclusionState(
+        opaqueLayers: MutableList<Layer>,
+        transparentLayers: MutableList<Layer>
+    ): Array<Layer> {
         val traversalList = topDownTraversal().reversed()
 
         traversalList.forEach { layer ->
             val visible = layer.isVisible
 
             if (visible) {
-                layer.occludedBy.addAll(_opaqueLayers
+                layer.occludedBy.addAll(opaqueLayers
                     .filter { it.contains(layer) && !it.hasRoundedCorners })
                 layer.partiallyOccludedBy.addAll(
-                    _opaqueLayers.filter { it.overlaps(layer) && it !in layer.occludedBy })
-                layer.coveredBy.addAll(_transparentLayers.filter { it.overlaps(layer) })
+                    opaqueLayers.filter { it.overlaps(layer) && it !in layer.occludedBy })
+                layer.coveredBy.addAll(transparentLayers.filter { it.overlaps(layer) })
 
                 if (layer.isOpaque) {
-                    _opaqueLayers.add(layer)
+                    opaqueLayers.add(layer)
                 } else {
-                    _transparentLayers.add(layer)
+                    transparentLayers.add(layer)
                 }
             }
         }
@@ -106,14 +107,14 @@ open class LayerTraceEntry constructor(
         visibleLayers.any { it.name == windowName }
 
     override fun toString(): String {
-        return this.formattedTimestamp
+        return prettyTimestamp(timestamp)
     }
 
     companion object {
         /** Constructs the layer hierarchy from a flattened list of layers.  */
         fun fromFlattenedLayers(
             timestamp: Long,
-            layers: Array<Layer>,
+            layers: List<Layer>,
             orphanLayerCallback: ((Layer) -> Boolean)?
         ): LayerTraceEntry {
             val layerMap: MutableMap<Int, Layer> = HashMap()
@@ -164,13 +165,12 @@ open class LayerTraceEntry constructor(
                 if (orphanLayerCallback == null || orphanLayerCallback.invoke(orphan)) {
                     return@forEach
                 }
-                val orphanId: Int = orphan.parentId
                 throw RuntimeException(
                         ("Failed to parse layers trace. Found orphan layer with id = ${orphan.id}" +
                                 " with parentId = ${orphan.parentId}"))
             }
 
-            return LayerTraceEntry(timestamp, rootLayers)
+            return LayerTraceEntry(timestamp, rootLayers.toTypedArray())
         }
     }
 }

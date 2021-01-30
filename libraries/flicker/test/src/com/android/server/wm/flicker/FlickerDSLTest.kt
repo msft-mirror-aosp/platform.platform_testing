@@ -90,11 +90,11 @@ class FlickerDSLTest {
                         this.isNotEmpty()
                     }
 
-                    start {
+                    start("start") {
                         this.isNotEmpty()
                     }
 
-                    end {
+                    end("end") {
                         this.isNotEmpty()
                     }
 

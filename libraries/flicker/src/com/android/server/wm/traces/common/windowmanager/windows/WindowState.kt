@@ -34,28 +34,39 @@ open class WindowState(
     val layer: Int,
     val isSurfaceShown: Boolean,
     val windowType: Int,
-    val frame: Rect,
-    val containingFrame: Rect,
-    val parentFrame: Rect,
-    val contentFrame: Rect,
-    val contentInsets: Rect,
-    val surfaceInsets: Rect,
-    val givenContentInsets: Rect,
-    val crop: Rect,
+    private val _frame: Rect?,
+    private val _containingFrame: Rect?,
+    private val _parentFrame: Rect?,
+    private val _contentFrame: Rect?,
+    private val _contentInsets: Rect?,
+    private val _surfaceInsets: Rect?,
+    private val _givenContentInsets: Rect?,
+    private val _crop: Rect?,
     windowContainer: WindowContainer,
-    val isAppWindow: Boolean
+    val isAppWindow: Boolean,
+    override val rects: Array<Rect> = arrayOf(WindowRect(_frame ?: Rect(), windowContainer,
+        getWindowTitle(windowContainer.title)))
 ) : WindowContainer(windowContainer, getWindowTitle(windowContainer.title)) {
     override val kind: String = "Window"
+
+    val frame: Rect get() = _frame ?: Rect()
+    val containingFrame: Rect get() = _containingFrame ?: Rect()
+    val parentFrame: Rect get() = _parentFrame ?: Rect()
+    val contentFrame: Rect get() = _contentFrame ?: Rect()
+    val contentInsets: Rect get() = _contentInsets ?: Rect()
+    val surfaceInsets: Rect get() = _surfaceInsets ?: Rect()
+    val givenContentInsets: Rect get() = _givenContentInsets ?: Rect()
+    val crop: Rect get() = _crop ?: Rect()
 
     val isStartingWindow: Boolean = windowType == WINDOW_TYPE_STARTING
     val isExitingWindow: Boolean = windowType == WINDOW_TYPE_EXITING
     val isDebuggerWindow: Boolean = windowType == WINDOW_TYPE_DEBUGGER
     val isValidNavBarType: Boolean = this.type == TYPE_NAVIGATION_BAR
 
-    override val rects: Array<Rect> by lazy { arrayOf(WindowRect(frame, this, title)) }
     val frameRegion: Region = Region(frame)
 
-    override val _subWindows by lazy { this.collectDescendants<WindowState>().toMutableList() }
+    override val windows: Array<WindowState>
+        get() = this.collectDescendants()
 
     private fun getWindowTypeSuffix(windowType: Int): String {
         when (windowType) {

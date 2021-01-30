@@ -32,11 +32,9 @@ import com.google.common.truth.Truth
 class LayerTraceEntrySubject private constructor(
     fm: FailureMetadata,
     val entry: LayerTraceEntry,
-    private val trace: LayersTraceSubject?
+    trace: LayersTraceSubject?
 ) : FlickerSubject(fm, entry) {
-    override val defaultFacts: String by lazy {
-        "${trace?.defaultFacts ?: ""}\nEntry: $entry"
-    }
+    override val defaultFacts: String = "${trace?.defaultFacts ?: ""}\nEntry: $entry"
 
     val subjects by lazy {
         entry.flattenedLayers.map { LayerSubject.assertThat(it, this) }

@@ -36,11 +36,9 @@ import com.google.common.truth.Truth
 class WindowManagerStateSubject private constructor(
     fm: FailureMetadata,
     val wmState: WindowManagerState,
-    private val trace: WindowManagerTraceSubject?
+    trace: WindowManagerTraceSubject?
 ) : FlickerSubject(fm, wmState) {
-    override val defaultFacts by lazy {
-        "${trace?.defaultFacts ?: ""}\nEntry: $wmState"
-    }
+    override val defaultFacts = "${trace?.defaultFacts ?: ""}\nEntry: $wmState"
 
     fun isEmpty(): WindowManagerStateSubject = apply {
         check("State is empty")

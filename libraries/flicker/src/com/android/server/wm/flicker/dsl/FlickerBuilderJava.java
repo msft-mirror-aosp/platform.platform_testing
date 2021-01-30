@@ -271,7 +271,7 @@ public class FlickerBuilderJava {
             FlickerAssertionJava<LayerTraceEntrySubject> assertion) {
         assertions.layersTrace(
                 assertionData -> {
-                    assertionData.start(assertion::invoke);
+                    assertionData.start(/* name */ "start", assertion::invoke);
                     return null;
                 });
         return this;
@@ -282,7 +282,7 @@ public class FlickerBuilderJava {
             FlickerAssertionJava<LayerTraceEntrySubject> assertion) {
         assertions.layersTrace(
                 assertionData -> {
-                    assertionData.end(assertion::invoke);
+                    assertionData.end(/* name */ "end", assertion::invoke);
                     return null;
                 });
         return this;
@@ -293,7 +293,7 @@ public class FlickerBuilderJava {
             FlickerAssertionJava<LayersTraceSubject> assertion) {
         assertions.layersTrace(
                 assertionData -> {
-                    assertionData.all(assertion::invoke);
+                    assertionData.all(/* name */ "all", assertion::invoke);
                     return null;
                 });
         return this;
@@ -304,7 +304,7 @@ public class FlickerBuilderJava {
             FlickerAssertionJava<WindowManagerStateSubject> assertion) {
         assertions.windowManagerTrace(
                 assertionData -> {
-                    assertionData.start(assertion::invoke);
+                    assertionData.start(/* name */ "start", assertion::invoke);
                     return null;
                 });
         return this;
@@ -315,7 +315,7 @@ public class FlickerBuilderJava {
             FlickerAssertionJava<WindowManagerStateSubject> assertion) {
         assertions.windowManagerTrace(
                 assertionData -> {
-                    assertionData.end(assertion::invoke);
+                    assertionData.end(/* name */ "end", assertion::invoke);
                     return null;
                 });
         return this;
@@ -326,7 +326,7 @@ public class FlickerBuilderJava {
             FlickerAssertionJava<WindowManagerTraceSubject> assertion) {
         assertions.windowManagerTrace(
                 assertionData -> {
-                    assertionData.all(assertion::invoke);
+                    assertionData.all(/* name */ "all", assertion::invoke);
                     return null;
                 });
         return this;
