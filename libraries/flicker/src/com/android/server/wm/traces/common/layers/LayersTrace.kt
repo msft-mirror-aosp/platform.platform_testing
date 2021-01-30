@@ -34,12 +34,8 @@ open class LayersTrace(
 ) : ITrace<LayerTraceEntry>, List<LayerTraceEntry> by entries {
     constructor(entry: LayerTraceEntry): this(listOf(entry))
 
-    private val formattedIdentifier by lazy {
-        "LayersTrace(Start: ${entries.first()}, " +
-            "End: ${entries.last()})"
-    }
-
     override fun toString(): String {
-        return formattedIdentifier
+        return "LayersTrace(Start: ${entries.first()}, " +
+            "End: ${entries.last()})"
     }
 }

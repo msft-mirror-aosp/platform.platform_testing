@@ -54,7 +54,7 @@ abstract class AssertionTypeBuilder<out Trace : FlickerSubject, out Entry : Flic
      */
     @JvmOverloads
     fun start(
-        name: String = "",
+        name: String,
         bugId: Int = 0,
         enabled: Boolean = bugId == 0,
         assertion: Entry.() -> Any
@@ -80,7 +80,7 @@ abstract class AssertionTypeBuilder<out Trace : FlickerSubject, out Entry : Flic
      */
     @JvmOverloads
     fun end(
-        name: String = "",
+        name: String,
         bugId: Int = 0,
         enabled: Boolean = bugId == 0,
         assertion: Entry.() -> Any
@@ -106,7 +106,7 @@ abstract class AssertionTypeBuilder<out Trace : FlickerSubject, out Entry : Flic
      */
     @JvmOverloads
     fun all(
-        name: String = "",
+        name: String,
         bugId: Int = 0,
         enabled: Boolean = bugId == 0,
         assertion: Trace.() -> Any

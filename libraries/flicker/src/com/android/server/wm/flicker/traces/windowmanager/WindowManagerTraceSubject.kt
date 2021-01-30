@@ -31,14 +31,12 @@ class WindowManagerTraceSubject private constructor(
     fm: FailureMetadata,
     val trace: WindowManagerTrace
 ) : FlickerTraceSubject<WindowManagerStateSubject>(fm, trace) {
-    override val defaultFacts: String by lazy {
-        buildString {
-            if (trace.hasSource()) {
-                append("Path: ${trace.source}")
-                append("\n")
-            }
-            append("Trace: $trace")
+    override val defaultFacts: String = buildString {
+        if (trace.hasSource()) {
+            append("Path: ${trace.source}")
+            append("\n")
         }
+        append("Trace: $trace")
     }
 
     override val subjects by lazy {

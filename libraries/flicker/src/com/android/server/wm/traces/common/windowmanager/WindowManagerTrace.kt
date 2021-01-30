@@ -34,12 +34,8 @@ open class WindowManagerTrace(
     override val sourceChecksum: String
 ) : ITrace<WindowManagerState>,
     List<WindowManagerState> by entries {
-    private val formattedIdentifier by lazy {
-        "WindowManagerTrace(Start: ${entries.first()}, " +
-            "End: ${entries.last()})"
-    }
-
     override fun toString(): String {
-        return formattedIdentifier
+        return "WindowManagerTrace(Start: ${entries.first()}, " +
+            "End: ${entries.last()})"
     }
 }

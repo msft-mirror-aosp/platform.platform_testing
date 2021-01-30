@@ -29,15 +29,14 @@ import com.google.common.truth.Truth
 class LayerSubject private constructor(
     fm: FailureMetadata,
     val layer: Layer?,
-    private val entry: LayerTraceEntrySubject?,
+    entry: LayerTraceEntrySubject?,
     private val layerName: String? = null
 ) : FlickerSubject(fm, layer) {
     val isEmpty: Boolean get() = layer == null
     val isNotEmpty: Boolean get() = !isEmpty
 
-    override val defaultFacts: String by lazy {
+    override val defaultFacts: String =
         "${entry?.defaultFacts ?: ""}\nFrame: ${layer?.currFrame}\nLayer: ${layer?.name}"
-    }
 
     fun doesNotExist(): LayerSubject = apply {
         check("doesNotExist").that(layer).isNull()

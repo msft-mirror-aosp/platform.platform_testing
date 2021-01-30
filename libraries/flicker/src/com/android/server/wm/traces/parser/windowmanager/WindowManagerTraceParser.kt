@@ -160,10 +160,7 @@ object WindowManagerTraceParser {
         } catch (e: InvalidProtocolBufferNanoException) {
             throw RuntimeException(e)
         }
-        return WindowManagerTrace(
-            listOf(newTraceEntry(fileProto, timestamp = 0, where = "")),
-            source = "",
-            sourceChecksum = "")
+        return WindowManagerTrace(parseFromDump(fileProto), source = "", sourceChecksum = "")
     }
 
     private fun newTraceEntry(
@@ -258,8 +255,8 @@ object WindowManagerTraceParser {
                 focusedRootTaskId = proto.focusedRootTaskId,
                 resumedActivity = proto.resumedActivity?.title ?: "",
                 singleTaskInstance = proto.singleTaskInstance,
-                defaultPinnedStackBounds = proto.pinnedStackController?.defaultBounds.toRect(),
-                pinnedStackMovementBounds = proto.pinnedStackController?.movementBounds.toRect(),
+                _defaultPinnedStackBounds = proto.pinnedStackController?.defaultBounds?.toRect(),
+                _pinnedStackMovementBounds = proto.pinnedStackController?.movementBounds?.toRect(),
                 displayRect = Rect(0, 0, proto.displayInfo?.logicalWidth
                     ?: 0, proto.displayInfo?.logicalHeight ?: 0),
                 appRect = Rect(0, 0, proto.displayInfo?.appWidth ?: 0,
@@ -267,7 +264,7 @@ object WindowManagerTraceParser {
                         ?: 0),
                 dpi = proto.dpi,
                 flags = proto.displayInfo?.flags ?: 0,
-                stableBounds = proto.displayFrames?.stableBounds.toRect(),
+                _stableBounds = proto.displayFrames?.stableBounds?.toRect(),
                 surfaceSize = proto.surfaceSize,
                 focusedApp = proto.focusedApp,
                 lastTransition = appTransitionToString(
@@ -312,7 +309,7 @@ object WindowManagerTraceParser {
                 taskId = proto.id,
                 rootTaskId = proto.rootTaskId,
                 displayId = proto.displayId,
-                lastNonFullscreenBounds = proto.lastNonFullscreenBounds.toRect(),
+                _lastNonFullscreenBounds = proto.lastNonFullscreenBounds?.toRect(),
                 realActivity = proto.realActivity,
                 origActivity = proto.origActivity,
                 resizeMode = proto.resizeMode,
@@ -385,14 +382,14 @@ object WindowManagerTraceParser {
                         WindowState.WINDOW_TYPE_STARTING
                     else -> 0
                 },
-                frame = proto.windowFrames?.frame.toRect(),
-                containingFrame = proto.windowFrames?.containingFrame.toRect(),
-                parentFrame = proto.windowFrames?.parentFrame.toRect(),
-                contentFrame = proto.windowFrames?.contentFrame.toRect(),
-                contentInsets = proto.windowFrames?.contentInsets.toRect(),
-                surfaceInsets = proto.surfaceInsets.toRect(),
-                givenContentInsets = proto.givenContentInsets.toRect(),
-                crop = proto.animator?.lastClipRect.toRect(),
+                _frame = proto.windowFrames?.frame?.toRect(),
+                _containingFrame = proto.windowFrames?.containingFrame?.toRect(),
+                _parentFrame = proto.windowFrames?.parentFrame?.toRect(),
+                _contentFrame = proto.windowFrames?.contentFrame?.toRect(),
+                _contentInsets = proto.windowFrames?.contentInsets?.toRect(),
+                _surfaceInsets = proto.surfaceInsets?.toRect(),
+                _givenContentInsets = proto.givenContentInsets?.toRect(),
+                _crop = proto.animator?.lastClipRect?.toRect(),
                 windowContainer = newWindowContainer(
                     proto.windowContainer,
                     proto.windowContainer.children
@@ -421,28 +418,32 @@ object WindowManagerTraceParser {
         )
     }
 
-    private fun newConfiguration(proto: ConfigurationProto?): Configuration {
-        return Configuration(
-            windowConfiguration = if (proto?.windowConfiguration != null) {
-                newWindowConfiguration(proto.windowConfiguration)
-            } else {
-                null
-            },
-            densityDpi = proto?.densityDpi ?: 0,
-            orientation = proto?.orientation ?: 0,
-            screenHeightDp = proto?.screenHeightDp ?: 0,
-            screenWidthDp = proto?.screenHeightDp ?: 0,
-            smallestScreenWidthDp = proto?.smallestScreenWidthDp ?: 0,
-            screenLayout = proto?.screenLayout ?: 0,
-            uiMode = proto?.uiMode ?: 0
-        )
+    private fun newConfiguration(proto: ConfigurationProto?): Configuration? {
+        return if (proto == null) {
+            null
+        } else {
+            Configuration(
+                windowConfiguration = if (proto.windowConfiguration != null) {
+                    newWindowConfiguration(proto.windowConfiguration)
+                } else {
+                    null
+                },
+                densityDpi = proto.densityDpi,
+                orientation = proto.orientation,
+                screenHeightDp = proto.screenHeightDp,
+                screenWidthDp = proto.screenWidthDp,
+                smallestScreenWidthDp = proto.smallestScreenWidthDp,
+                screenLayout = proto.screenLayout,
+                uiMode = proto.uiMode
+            )
+        }
     }
 
     private fun newWindowConfiguration(proto: WindowConfigurationProto): WindowConfiguration {
         return WindowConfiguration(
-            appBounds = proto.appBounds.toRect(),
-            bounds = proto.bounds.toRect(),
-            maxBounds = proto.maxBounds.toRect(),
+            _appBounds = proto.appBounds?.toRect(),
+            _bounds = proto.bounds?.toRect(),
+            _maxBounds = proto.maxBounds?.toRect(),
             windowingMode = proto.windowingMode,
             activityType = proto.activityType
         )
@@ -509,9 +510,5 @@ object WindowManagerTraceParser {
         }
     }
 
-    private fun RectProto?.toRect() = if (this == null) {
-        Rect()
-    } else {
-        Rect(this.left, this.top, this.right, this.bottom)
-    }
+    private fun RectProto.toRect() = Rect(this.left, this.top, this.right, this.bottom)
 }

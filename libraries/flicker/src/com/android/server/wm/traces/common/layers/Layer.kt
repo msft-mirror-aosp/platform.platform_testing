@@ -36,7 +36,7 @@ open class Layer(
     val visibleRegion: Region,
     val activeBuffer: Buffer?,
     val flags: Int,
-    val bounds: RectF,
+    private val _bounds: RectF?,
     val color: Color?,
     private val _isOpaque: Boolean,
     val shadowRadius: Float,
@@ -44,7 +44,7 @@ open class Layer(
     val type: String,
     private val _screenBounds: RectF?,
     val transform: Transform,
-    val sourceBounds: RectF?,
+    private val _sourceBounds: RectF?,
     val currFrame: Long,
     val effectiveScalingMode: Int,
     val bufferTransform: Transform
@@ -69,6 +69,9 @@ open class Layer(
     fun addChild(childLayer: Layer) {
         children.add(childLayer)
     }
+
+    val bounds: RectF get() = _bounds ?: RectF()
+    val sourceBounds: RectF get() = _sourceBounds ?: RectF()
 
     /**
      * Checks if the layer's active buffer is empty
