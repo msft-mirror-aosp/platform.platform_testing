@@ -13,13 +13,9 @@
      See the License for the specific language governing permissions and
      limitations under the License.
 -->
-<configuration description="Config for device collectors host tests">
-    <option name="test-suite-tag" value="device_collectors" />
-    <test class="com.android.tradefed.testtype.HostTest">
-        <option name="class" value="com.android.collectors.DeviceCollectorsTest" />
-        <option name="class" value="com.android.collectors.ScreenshotOnFailureCollectorHostTest" />
-        <option name="class" value="com.android.collectors.BatterystatsCollectorHostTest" />
-        <option name="class" value="com.android.collectors.LogcatCollectorHostTest" />
-        <option name="class" value="com.android.loggers.DeviceFileLoggerHostTest" />
+<configuration description="Config for python tradefed hello world">
+    <option name="test-suite-tag" value="python-tradefed" />
+    <test class="com.android.tradefed.testtype.python.PythonBinaryHostTest" >
+        <option name="par-file-name" value="tradefed_hello_world" />
     </test>
 </configuration>

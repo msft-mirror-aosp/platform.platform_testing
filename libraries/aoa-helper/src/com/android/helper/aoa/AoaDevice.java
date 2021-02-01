@@ -92,30 +92,31 @@ public class AoaDevice implements AutoCloseable {
 
     private final UsbHelper mHelper;
     private UsbDevice mDelegate;
-    private String mSerialNumber;
+    private final String mSerialNumber;
 
     AoaDevice(@Nonnull UsbHelper helper, @Nonnull UsbDevice delegate) {
         mHelper = helper;
         mDelegate = delegate;
-        initialize(0);
-    }
-
-    // Configure the device, switching to accessory mode if necessary and registering the HIDs
-    private void initialize(int attempt) {
         if (!isValid()) {
             throw new UsbException("Invalid device connection");
         }
-
         mSerialNumber = mDelegate.getSerialNumber();
         if (mSerialNumber == null) {
-            throw new UsbException("Missing serial number");
+            throw new UsbException("Could not determine device serial number");
         }
+        initialize();
+    }
 
-        if (isAccessoryMode()) {
-            registerHIDs();
-        } else if (attempt >= ACCESSORY_START_MAX_RETRIES) {
-            throw new UsbException("Failed to start accessory mode");
-        } else {
+    // Configure the device, switching to accessory mode if necessary and registering the HIDs
+    private void initialize() {
+        for (int attempt = 0; ; attempt++) {
+            if (isAccessoryMode()) {
+                registerHIDs();
+                return;
+            }
+            if (attempt >= ACCESSORY_START_MAX_RETRIES) {
+                throw new UsbException("Failed to start accessory mode after %d attempts", attempt);
+            }
             // Send accessory information, restart in accessory mode, and try to initialize again
             mHelper.checkResult(
                     mDelegate.controlTransfer(OUTPUT, ACCESSORY_SEND_STRING, 0, 0, MANUFACTURER));
@@ -127,8 +128,15 @@ public class AoaDevice implements AutoCloseable {
                     mDelegate.controlTransfer(OUTPUT, ACCESSORY_START, 0, 0, new byte[0]));
             sleep(CONFIGURE_DELAY);
             mDelegate.close();
-            mDelegate = mHelper.getDevice(mSerialNumber, CONNECTION_TIMEOUT);
-            initialize(attempt + 1);
+            reconnect();
+        }
+    }
+
+    // Reconnect to underlying USB device
+    private void reconnect() {
+        mDelegate = mHelper.getDevice(mSerialNumber, CONNECTION_TIMEOUT);
+        if (!isValid()) {
+            throw new UsbException("Timed out while reconnecting to device %s", mSerialNumber);
         }
     }
 
@@ -169,8 +177,8 @@ public class AoaDevice implements AutoCloseable {
      */
     public void resetConnection() {
         close();
-        mDelegate = mHelper.getDevice(mSerialNumber, CONNECTION_TIMEOUT);
-        initialize(0);
+        reconnect();
+        initialize();
     }
 
     /** @return true if connection is non-null, but does not check if resetting is necessary */
