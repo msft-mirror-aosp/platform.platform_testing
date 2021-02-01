@@ -7,6 +7,7 @@ import android.util.Log;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.DecimalFormat;
 import java.util.Map;
 
 /**
@@ -20,6 +21,7 @@ public class MetricUtility {
     private static final String METRIC_SEPARATOR = ",";
 
     public static final int BUFFER_SIZE = 1024;
+    private static final DecimalFormat DOUBLE_FORMAT = new DecimalFormat("#0.01");
 
     /**
      * Append the given array of string to construct the final key used to track the metrics.
@@ -55,9 +57,8 @@ public class MetricUtility {
         resultMap.compute(
                 metricKey,
                 (key, value) ->
-                        (value == null)
-                                ? new StringBuilder().append(metric)
-                                : value.append(METRIC_SEPARATOR).append(metric));
+                        (value == null ? new StringBuilder() : value.append(METRIC_SEPARATOR))
+                                .append(DOUBLE_FORMAT.format(metric)));
     }
 
     /**

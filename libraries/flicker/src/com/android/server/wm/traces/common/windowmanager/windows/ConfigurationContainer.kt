@@ -24,9 +24,9 @@ package com.android.server.wm.traces.common.windowmanager.windows
  *
  */
 open class ConfigurationContainer(
-    val overrideConfiguration: Configuration,
-    val fullConfiguration: Configuration,
-    val mergedOverrideConfiguration: Configuration
+    val overrideConfiguration: Configuration?,
+    val fullConfiguration: Configuration?,
+    val mergedOverrideConfiguration: Configuration?
 ) {
     constructor(configurationContainer: ConfigurationContainer) : this(
         configurationContainer.overrideConfiguration,
@@ -34,12 +34,12 @@ open class ConfigurationContainer(
         configurationContainer.mergedOverrideConfiguration
     )
 
-    val windowingMode: Int by lazy { fullConfiguration.windowConfiguration?.windowingMode ?: 0 }
+    val windowingMode: Int get() = fullConfiguration?.windowConfiguration?.windowingMode ?: 0
 
-    open val activityType: Int by lazy { fullConfiguration.windowConfiguration?.activityType ?: 0 }
+    open val activityType: Int get() = fullConfiguration?.windowConfiguration?.activityType ?: 0
 
     open val isEmpty: Boolean
-        get() = overrideConfiguration.isEmpty &&
-            fullConfiguration.isEmpty &&
-            mergedOverrideConfiguration.isEmpty
+        get() = (overrideConfiguration?.isEmpty ?: true) &&
+            (fullConfiguration?.isEmpty ?: true) &&
+            (mergedOverrideConfiguration?.isEmpty ?: true)
 }

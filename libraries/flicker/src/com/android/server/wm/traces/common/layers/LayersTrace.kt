@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 The Android Open Source Project
+ * Copyright (C) 2021 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,8 +27,15 @@ import com.android.server.wm.traces.common.ITrace
  * access internal Java/Android functionality
  *
  */
-open class LayersTrace<Entry : LayerTraceEntry>(
-    override val entries: List<Entry>,
-    override val source: String,
-    override val sourceChecksum: String
-) : ITrace<Entry>, List<Entry> by entries
+open class LayersTrace(
+    override val entries: List<LayerTraceEntry>,
+    override val source: String = "",
+    override val sourceChecksum: String = ""
+) : ITrace<LayerTraceEntry>, List<LayerTraceEntry> by entries {
+    constructor(entry: LayerTraceEntry): this(listOf(entry))
+
+    override fun toString(): String {
+        return "LayersTrace(Start: ${entries.first()}, " +
+            "End: ${entries.last()})"
+    }
+}

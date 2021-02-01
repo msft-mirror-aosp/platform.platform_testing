@@ -27,16 +27,12 @@ open class DisplayArea(
     val isTaskDisplayArea: Boolean,
     windowContainer: WindowContainer
 ) : WindowContainer(windowContainer) {
-    override val kind: String = "DisplayArea"
-    override val stableId: String by lazy { kind + name }
-
-    val activities: Array<Activity> by lazy {
-        if (isTaskDisplayArea) {
-            this.collectDescendants<Activity>()
+    val activities: Array<Activity>
+        get() = if (isTaskDisplayArea) {
+            this.collectDescendants()
         } else {
             emptyArray()
         }
-    }
 
     fun containsActivity(activityName: String): Boolean {
         return if (!isTaskDisplayArea) {

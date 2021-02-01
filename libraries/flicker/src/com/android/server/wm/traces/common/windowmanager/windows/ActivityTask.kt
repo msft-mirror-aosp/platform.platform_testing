@@ -32,7 +32,7 @@ open class ActivityTask(
     val taskId: Int,
     val rootTaskId: Int,
     val displayId: Int,
-    val lastNonFullscreenBounds: Rect,
+    private val _lastNonFullscreenBounds: Rect?,
     val realActivity: String,
     val origActivity: String,
     val resizeMode: Int,
@@ -47,19 +47,21 @@ open class ActivityTask(
 ) : WindowContainer(windowContainer) {
     override val kind: String = "Task"
     override val name: String = taskId.toString()
-    override val isEmpty: Boolean by lazy { tasks.isEmpty() && activities.isEmpty() }
+    override val isEmpty: Boolean get() = tasks.isEmpty() && activities.isEmpty()
 
-    val isRootTask: Boolean by lazy { taskId == rootTaskId }
+    val lastNonFullscreenBounds: Rect get() = _lastNonFullscreenBounds ?: Rect()
+    val isRootTask: Boolean get() = taskId == rootTaskId
     val tasks: List<ActivityTask>
-        by lazy { this.childrenWindows.reversed().filterIsInstance<ActivityTask>() }
+        get() = this.childrenWindows.reversed().filterIsInstance<ActivityTask>()
     val activities: List<Activity>
-        by lazy { this.childrenWindows.reversed().filterIsInstance<Activity>() }
-
+        get() = this.childrenWindows.reversed().filterIsInstance<Activity>()
     /** The top task in the stack.
      */
     // NOTE: Unlike the WindowManager internals, we dump the state from top to bottom,
     //       so the indices are inverted
-    val topTask: ActivityTask? by lazy { tasks.firstOrNull() }
+    val topTask: ActivityTask? get() = tasks.firstOrNull()
+    val hasResumedActivitiesInTree: Boolean
+        get() = resumedActivity.isNotEmpty() || tasks.any { it.hasResumedActivitiesInTree }
 
     fun getTask(predicate: (ActivityTask) -> Boolean) =
         tasks.firstOrNull { predicate(it) } ?: if (predicate(this)) this else null

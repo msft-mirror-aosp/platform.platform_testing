@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 The Android Open Source Project
+ * Copyright (C) 2021 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,36 +17,42 @@ package com.android.server.wm.flicker.traces.layers
 
 import android.graphics.Point
 import android.graphics.Rect
+import com.android.server.wm.flicker.traces.FlickerFailureStrategy
+import com.android.server.wm.flicker.assertions.FlickerSubject
 import com.android.server.wm.traces.common.layers.Layer
-import com.google.common.truth.Fact.simpleFact
 import com.google.common.truth.FailureMetadata
-import com.google.common.truth.Subject
+import com.google.common.truth.StandardSubjectBuilder
 import com.google.common.truth.Subject.Factory
 import com.google.common.truth.Truth
 
 /** Truth subject for a single [Layer] entry  */
 class LayerSubject private constructor(
     fm: FailureMetadata,
-    val layer: Layer?
-) : Subject(fm, layer) {
+    val layer: Layer?,
+    entry: LayerTraceEntrySubject?,
+    private val layerName: String? = null
+) : FlickerSubject(fm, layer) {
+    val isEmpty: Boolean get() = layer == null
+    val isNotEmpty: Boolean get() = !isEmpty
 
-    fun doesNotExist() {
-        check("doesNotExist()").that(layer).isNull()
+    override val defaultFacts: String =
+        "${entry?.defaultFacts ?: ""}\nFrame: ${layer?.currFrame}\nLayer: ${layer?.name}"
+
+    fun doesNotExist(): LayerSubject = apply {
+        check("doesNotExist").that(layer).isNull()
     }
 
-    fun exists() {
-        if (layer == null) {
-            failWithoutActual(simpleFact("doesn't exist"))
-        }
+    fun exists(): LayerSubject = apply {
+        check("$layerName does not exists").that(layer).isNotNull()
     }
 
-    fun hasBufferSize(size: Point) {
+    fun hasBufferSize(size: Point): LayerSubject = apply {
         layer ?: return exists()
         val bufferSize = Point(layer.activeBuffer?.width ?: 0, layer.activeBuffer?.height ?: 0)
         Truth.assertThat(bufferSize).isEqualTo(size)
     }
 
-    fun hasLayerSize(size: Point) {
+    fun hasLayerSize(size: Point): LayerSubject = apply {
         layer ?: return exists()
         val screenBoundsProto = layer.screenBounds
         val layerBounds = Rect(screenBoundsProto.left.toInt(), screenBoundsProto.top.toInt(),
@@ -55,13 +61,13 @@ class LayerSubject private constructor(
         Truth.assertThat(layerSize).isEqualTo(size)
     }
 
-    fun hasScalingMode(expectedScalingMode: Int) {
+    fun hasScalingMode(expectedScalingMode: Int): LayerSubject = apply {
         layer ?: return exists()
         val actualScalingMode = layer.effectiveScalingMode
         Truth.assertThat(actualScalingMode).isEqualTo(expectedScalingMode)
     }
 
-    fun hasBufferOrientation(expectedOrientation: Int) {
+    fun hasBufferOrientation(expectedOrientation: Int): LayerSubject = apply {
         layer ?: return exists()
         // see Transform::getOrientation
         val bufferTransformType = layer.bufferTransform.type ?: 0
@@ -70,18 +76,59 @@ class LayerSubject private constructor(
                 .that(actualOrientation).isEqualTo(expectedOrientation)
     }
 
+    override fun toString(): String {
+        return "Layer:${layer?.name} frame#${layer?.currFrame}"
+    }
+
     companion object {
         /**
          * Boiler-plate Subject.Factory for LayerSubject
          */
-        val FACTORY = Factory { fm: FailureMetadata, subject: Layer? ->
-            LayerSubject(fm, subject)
+        @JvmStatic
+        @JvmOverloads
+        fun getFactory(entry: LayerTraceEntrySubject? = null) =
+            Factory { fm: FailureMetadata, subject: Layer? -> LayerSubject(fm, subject, entry) }
+
+        /**
+         * User-defined entry point for existing layers
+         */
+        @JvmStatic
+        @JvmOverloads
+        fun assertThat(
+            layer: Layer?,
+            entry: LayerTraceEntrySubject? = null
+        ): LayerSubject {
+            val strategy = FlickerFailureStrategy()
+            val subject = StandardSubjectBuilder.forCustomFailureStrategy(strategy)
+                .about(getFactory(entry))
+                .that(layer) as LayerSubject
+            strategy.init(subject)
+            return subject
         }
 
         /**
-         * User-defined entry point
+         * User-defined entry point for non existing layers
          */
         @JvmStatic
-        fun assertThat(entry: Layer?) = Truth.assertAbout(FACTORY).that(entry) as LayerSubject
+        internal fun assertThat(
+            name: String,
+            entry: LayerTraceEntrySubject?
+        ): LayerSubject {
+            val strategy = FlickerFailureStrategy()
+            val subject = StandardSubjectBuilder.forCustomFailureStrategy(strategy)
+                .about(getFactory(entry, name))
+                .that(null) as LayerSubject
+            strategy.init(subject)
+            return subject
+        }
+
+        /**
+         * Boiler-plate Subject.Factory for LayerSubject
+         */
+        @JvmStatic
+        internal fun getFactory(entry: LayerTraceEntrySubject?, name: String) =
+            Factory { fm: FailureMetadata, subject: Layer? ->
+                LayerSubject(fm, subject, entry, name)
+            }
     }
 }

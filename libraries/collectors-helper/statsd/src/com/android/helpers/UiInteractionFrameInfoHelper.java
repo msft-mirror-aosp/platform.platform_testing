@@ -50,7 +50,7 @@ public class UiInteractionFrameInfoHelper implements ICollectorHelper<StringBuil
 
     // convert 0 to 1e-6 to make logarithmic dashboards look better.
     static double makeLogFriendly(double metric) {
-        return Math.max(0.000001, metric);
+        return Math.max(0.01, metric);
     }
 
     /** Collect the system interactions jank metrics from the statsd. */

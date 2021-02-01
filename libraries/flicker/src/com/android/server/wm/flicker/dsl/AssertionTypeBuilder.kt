@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 The Android Open Source Project
+ * Copyright (C) 2021 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,22 +18,26 @@ package com.android.server.wm.flicker.dsl
 
 import com.android.server.wm.flicker.FlickerDslMarker
 import com.android.server.wm.flicker.assertions.AssertionData
-import com.android.server.wm.traces.common.IRangedSubject
+import com.android.server.wm.flicker.assertions.FlickerSubject
+import kotlin.reflect.KClass
 
 /**
  * Placeholder for the types of assertions are supported by the Flicker DSL
  *
- * Currently supports the initial state [start], the final state [end] and all states [all]
+ * Currently supports the initial state [start], the final state [end], all states [all] and
+ * used-defined [tag]s
  */
 @FlickerDslMarker
-data class AssertionType<Subject : IRangedSubject<Entry>, Entry>
+abstract class AssertionTypeBuilder<out Trace : FlickerSubject, out Entry : FlickerSubject>
 @JvmOverloads constructor(
     /**
      * List of trace assertions
      */
-    private val _assertions: MutableList<AssertionData<Subject>> = mutableListOf()
-) : List<AssertionData<Subject>> by _assertions {
-    val assertions: List<AssertionData<Subject>> get() = _assertions
+    protected val assertions: MutableList<AssertionData> = mutableListOf()
+) {
+    protected abstract val traceSubjectClass: KClass<out FlickerSubject>
+    protected abstract val entrySubjectClass: KClass<out FlickerSubject>
+    abstract fun copy(): AssertionTypeBuilder<Trace, Entry>
 
     /**
      * Assertions to run only in the first trace entry
@@ -50,12 +54,15 @@ data class AssertionType<Subject : IRangedSubject<Entry>, Entry>
      */
     @JvmOverloads
     fun start(
-        name: String = "",
+        name: String,
         bugId: Int = 0,
         enabled: Boolean = bugId == 0,
-        assertion: Subject.() -> Any
+        assertion: Entry.() -> Any
     ) {
-        add(AssertionTag.START, name, enabled, bugId) { apply { assertion() }.inTheBeginning() }
+        assertions.add(
+            AssertionData(AssertionTag.START, name, enabled, bugId,
+                entrySubjectClass, assertion as FlickerSubject.() -> Unit)
+        )
     }
 
     /**
@@ -73,12 +80,15 @@ data class AssertionType<Subject : IRangedSubject<Entry>, Entry>
      */
     @JvmOverloads
     fun end(
-        name: String = "",
+        name: String,
         bugId: Int = 0,
         enabled: Boolean = bugId == 0,
-        assertion: Subject.() -> Any
+        assertion: Entry.() -> Any
     ) {
-        add(AssertionTag.END, name, enabled, bugId) { apply { assertion() }.atTheEnd() }
+        assertions.add(
+            AssertionData(AssertionTag.END, name, enabled, bugId,
+                entrySubjectClass, assertion as FlickerSubject.() -> Unit)
+        )
     }
 
     /**
@@ -96,12 +106,15 @@ data class AssertionType<Subject : IRangedSubject<Entry>, Entry>
      */
     @JvmOverloads
     fun all(
-        name: String = "",
+        name: String,
         bugId: Int = 0,
         enabled: Boolean = bugId == 0,
-        assertion: Subject.() -> Any
+        assertion: Trace.() -> Any
     ) {
-        add(AssertionTag.ALL, name, enabled, bugId) { apply { assertion() }.forAllEntries() }
+        assertions.add(
+            AssertionData(AssertionTag.ALL, name, enabled, bugId,
+                traceSubjectClass, assertion as FlickerSubject.() -> Unit)
+        )
     }
 
     /**
@@ -126,18 +139,16 @@ data class AssertionType<Subject : IRangedSubject<Entry>, Entry>
         name: String = "",
         bugId: Int = 0,
         enabled: Boolean = bugId == 0,
-        assertion: Subject.() -> Any
+        assertion: Entry.() -> Any
     ) {
-        add(AssertionTag(tag), name, enabled, bugId) { apply { assertion() }.forAllEntries() }
+        assertions.add(
+            AssertionData(tag, name, enabled, bugId,
+                entrySubjectClass, assertion as FlickerSubject.() -> Unit)
+        )
     }
 
-    private fun add(
-        tag: AssertionTag,
-        name: String,
-        enabled: Boolean,
-        bugId: Int,
-        assertion: Subject.() -> Unit
-    ) {
-        _assertions.add(AssertionData(tag, name, enabled, bugId, assertion))
-    }
+    /**
+     * Builds the list of assertions
+     */
+    fun build(): List<AssertionData> = assertions.toList()
 }

@@ -36,7 +36,7 @@ open class Layer(
     val visibleRegion: Region,
     val activeBuffer: Buffer?,
     val flags: Int,
-    val bounds: RectF,
+    private val _bounds: RectF?,
     val color: Color?,
     private val _isOpaque: Boolean,
     val shadowRadius: Float,
@@ -44,7 +44,7 @@ open class Layer(
     val type: String,
     private val _screenBounds: RectF?,
     val transform: Transform,
-    val sourceBounds: RectF?,
+    private val _sourceBounds: RectF?,
     val currFrame: Long,
     val effectiveScalingMode: Int,
     val bufferTransform: Transform
@@ -70,6 +70,9 @@ open class Layer(
         children.add(childLayer)
     }
 
+    val bounds: RectF get() = _bounds ?: RectF()
+    val sourceBounds: RectF get() = _sourceBounds ?: RectF()
+
     /**
      * Checks if the layer's active buffer is empty
      *
@@ -78,7 +81,7 @@ open class Layer(
      * @return
      */
     val isActiveBufferEmpty: Boolean get() =
-        (activeBuffer == null) || (activeBuffer?.height == 0) || (activeBuffer?.width == 0)
+        (activeBuffer == null) || (activeBuffer.height == 0) || (activeBuffer.width == 0)
 
     /**
      * Checks if the layer is hidden, that is, if its flags contain 0x1 (FLAG_HIDDEN)
@@ -173,8 +176,8 @@ open class Layer(
      *
      * @return
      */
-    val isBufferLayer: Boolean get() =
-        type == "BufferStateLayer" || type == "BufferQueueLayer"
+    val isBufferLayer: Boolean
+        get() = type == "BufferStateLayer" || type == "BufferQueueLayer"
 
     /**
      * Checks if the [Layer] type is ColorLayer

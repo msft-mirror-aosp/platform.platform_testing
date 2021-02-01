@@ -159,12 +159,14 @@ class Condition<T>
         fun <T> waitFor(condition: Condition<T>): Boolean {
             val satisfier = condition.satisfier ?: condition.prepareSatisfier()
             val startTime = SystemClock.elapsedRealtime()
+            Log.v(LOG_TAG, "***Waiting for ${condition.message}")
             for (i in 1..condition.retryLimit) {
                 if (satisfier.invoke()) {
+                    Log.v(LOG_TAG, "***Waiting for ${condition.message} ... Success!")
                     return true
                 } else {
                     SystemClock.sleep(condition.retryIntervalMs)
-                    Log.i(LOG_TAG, "***Waiting for ${condition.message} ... retry=$i" +
+                    Log.v(LOG_TAG, "***Waiting for ${condition.message} ... retry=$i" +
                         " elapsed=${SystemClock.elapsedRealtime() - startTime} ms")
                     val onRetry = condition.onRetry
                     if (onRetry != null && i < condition.retryLimit) {
@@ -173,11 +175,12 @@ class Condition<T>
                 }
             }
             if (satisfier.invoke()) {
+                Log.v(LOG_TAG, "***Waiting for ${condition.message} ... Success!")
                 return true
             }
             val onFailure = condition.onFailure
             if (onFailure == null) {
-                Log.e(LOG_TAG, "Condition is not satisfied: " + condition.message)
+                Log.e(LOG_TAG, "***Waiting for ${condition.message} ... Failed!")
             } else {
                 val result = condition.lastResult
                 require(result != null) { "Missing last result for failure notification" }

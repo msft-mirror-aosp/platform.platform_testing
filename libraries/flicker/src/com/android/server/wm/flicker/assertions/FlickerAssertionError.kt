@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 The Android Open Source Project
+ * Copyright (C) 2021 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,15 +17,21 @@
 package com.android.server.wm.flicker.assertions
 
 import com.android.server.wm.flicker.FlickerRunResult
+import com.android.server.wm.flicker.dsl.AssertionTag
+import com.android.server.wm.flicker.traces.FlickerSubjectException
 import java.nio.file.Path
 import kotlin.AssertionError
 
 class FlickerAssertionError(
     cause: Throwable,
-    val assertion: AssertionData<*>,
-    val run: FlickerRunResult,
-    var trace: Path?
+    @JvmField val assertion: AssertionData,
+    @JvmField val iteration: Int,
+    @JvmField val assertionTag: String,
+    @JvmField val traceFiles: List<Path>
 ) : AssertionError(cause) {
+    constructor(cause: Throwable, assertion: AssertionData, run: FlickerRunResult)
+        : this(cause, assertion, run.iteration, run.assertionTag, run.traceFiles)
+
     override val message: String
         get() = buildString {
             append("\n")
@@ -33,11 +39,19 @@ class FlickerAssertionError(
             append(assertion.name)
             append("\n")
             append("Iteration: ")
-            append(run.iteration)
+            append(iteration)
             append("\n")
-            append("Trace: ")
-            append(trace)
+            append("Tag: ")
+            append(assertionTag)
             append("\n")
-            cause?.message?.let { append(it) }
+            // For subject exceptions, add the facts (layer/window/entry/etc)
+            // and the original cause of failure
+            if (cause is FlickerSubjectException) {
+                append(cause.facts)
+                append("\n")
+                cause.cause?.message?.let { append(it) }
+            } else {
+                cause?.message?.let { append(it) }
+            }
         }
 }

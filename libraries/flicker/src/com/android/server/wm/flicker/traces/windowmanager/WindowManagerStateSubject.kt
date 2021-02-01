@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 The Android Open Source Project
+ * Copyright (C) 2021 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,18 +18,328 @@ package com.android.server.wm.flicker.traces.windowmanager
 
 import android.content.ComponentName
 import android.view.Display
+import com.android.server.wm.flicker.assertions.FlickerSubject
+import com.android.server.wm.flicker.traces.FlickerFailureStrategy
+import com.android.server.wm.traces.common.Region
 import com.android.server.wm.traces.common.windowmanager.WindowManagerState
+import com.android.server.wm.traces.common.windowmanager.windows.WindowState
 import com.android.server.wm.traces.parser.toActivityName
+import com.android.server.wm.traces.parser.toAndroidRegion
 import com.android.server.wm.traces.parser.toWindowName
+import com.google.common.truth.Fact
 import com.google.common.truth.FailureMetadata
+import com.google.common.truth.StandardSubjectBuilder
 import com.google.common.truth.Subject
 import com.google.common.truth.Subject.Factory
 import com.google.common.truth.Truth
 
 class WindowManagerStateSubject private constructor(
     fm: FailureMetadata,
-    private val wmState: WindowManagerState
-) : Subject(fm, wmState) {
+    val wmState: WindowManagerState,
+    trace: WindowManagerTraceSubject?
+) : FlickerSubject(fm, wmState) {
+    override val defaultFacts = "${trace?.defaultFacts ?: ""}\nEntry: $wmState"
+
+    fun isEmpty(): WindowManagerStateSubject = apply {
+        check("State is empty")
+            .that(wmState.windowStates)
+            .isEmpty()
+    }
+
+    fun isNotEmpty(): WindowManagerStateSubject = apply {
+        check("State is not empty")
+            .that(wmState.windowStates)
+            .isNotEmpty()
+    }
+
+    /**
+     * Checks if the first window with title containing [windowTitle] has a visible area of at
+     * least [testRegion], that is, if its area of the window frame covers each point in
+     * the region.
+     *
+     * @param windowTitle Name of the layer to search
+     * @param testRegion Expected visible area of the window
+     */
+    fun coversAtLeastRegion(
+        windowTitle: String,
+        testRegion: Region
+    ): WindowManagerStateSubject = apply {
+        return coversAtLeastRegion(windowTitle, testRegion.toAndroidRegion())
+    }
+
+    /**
+     * Checks if the first window with title containing [windowTitle] has a visible area of at
+     * least [testRegion], that is, if its area of the window frame covers each point in
+     * the region.
+     *
+     * @param windowTitle Name of the layer to search
+     * @param testRegion Expected visible area of the window
+     */
+    fun coversAtLeastRegion(
+        windowTitle: String,
+        testRegion: android.graphics.Region
+    ): WindowManagerStateSubject = apply {
+        covers(windowTitle) { windowRegion ->
+            val testRect = testRegion.bounds
+            val intersection = windowRegion.toAndroidRegion()
+            val covers = intersection.op(testRect, android.graphics.Region.Op.INTERSECT) &&
+                !intersection.op(testRect, android.graphics.Region.Op.XOR)
+
+            if (!covers) {
+                fail(Fact.fact("Region to test", testRegion),
+                    Fact.fact("Uncovered region", intersection))
+            }
+        }
+    }
+
+    /**
+     * Checks if the first window with title containing [windowTitle] has a visible area of at
+     * most [testRegion], that is, if the region covers each point in the window frame.
+     *
+     * @param windowTitle Name of the layer to search
+     * @param testRegion Expected visible area of the window
+     */
+    fun coversAtMostRegion(
+        windowTitle: String,
+        testRegion: Region
+    ): WindowManagerStateSubject = apply {
+        coversAtMostRegion(windowTitle, testRegion.toAndroidRegion())
+    }
+
+    /**
+     * Checks if the first window with title containing [windowTitle] has a visible area of at
+     * most [testRegion], that is, if the region covers each point in the window frame.
+     *
+     * @param windowTitle Name of the layer to search
+     * @param testRegion Expected visible area of the window
+     */
+    fun coversAtMostRegion(
+        windowTitle: String,
+        testRegion: android.graphics.Region
+    ): WindowManagerStateSubject = apply {
+        covers(windowTitle) { windowRegion ->
+            val testRect = testRegion.bounds
+            val intersection = windowRegion.toAndroidRegion()
+            val covers = intersection.op(testRect, android.graphics.Region.Op.INTERSECT) &&
+                !intersection.op(windowRegion.toAndroidRegion(), android.graphics.Region.Op.XOR)
+
+            if (!covers) {
+                fail(Fact.fact("Region to test", testRegion),
+                    Fact.fact("Out-of-bounds region", intersection))
+            }
+        }
+    }
+
+    /**
+     * Obtains the region of the first visible window with title containing [windowTitle].
+     *
+     * @param windowTitle Name of the layer to search
+     * @param resultComputation Predicate to compute a result based on the found window's region
+     */
+    private fun covers(
+        windowTitle: String,
+        resultComputation: (Region) -> Unit
+    ): WindowManagerStateSubject = apply {
+        wmState.windowStates.checkVisibility(windowTitle, isVisible = true)
+
+        val foundWindow = wmState.windowStates.first { it.name.contains(windowTitle) }
+        val foundRegion = foundWindow.frameRegion
+        resultComputation(foundRegion)
+    }
+
+    /**
+     * Checks any window containing the title [windowTitle] exists in the hierarchy.
+     *
+     * @param partialWindowTitles window title to search to search
+     */
+    fun hasWindow(vararg partialWindowTitles: String): WindowManagerStateSubject = apply {
+        var found = false
+
+        for (windowTitle in partialWindowTitles) {
+            found = wmState.windowStates.any { it.name.contains(windowTitle) }
+
+            if (found) {
+                break
+            }
+        }
+        if (!found) {
+            fail("Could not find", partialWindowTitles.toList().joinToString(", "))
+        }
+    }
+
+    /**
+     * Checks if a window containing the title [windowTitle] exists in the hierarchy.
+     *
+     * @param windowTitle Title of the window to search
+     */
+    fun hasNotWindow(windowTitle: String): WindowManagerStateSubject = apply {
+        val found = wmState.windowStates.none { it.name.contains(windowTitle) }
+        if (!found) {
+            fail("Could find", windowTitle)
+        }
+    }
+
+    /**
+     * Checks a window containing the title [windowTitle] is visible
+     *
+     * @param windowTitle Title of the window to search
+     */
+    fun isVisible(windowTitle: String): WindowManagerStateSubject = apply {
+        wmState.windowStates.checkVisibility(windowTitle, isVisible = true)
+    }
+
+    /**
+     * Checks a window containing the title [windowTitle] is invisible
+     *
+     * @param windowTitle Title of the window to search
+     */
+    fun isInvisible(windowTitle: String): WindowManagerStateSubject = apply {
+        wmState.windowStates.checkVisibility(windowTitle, isVisible = false)
+    }
+
+    private fun Array<WindowState>.checkVisibility(windowTitle: String, isVisible: Boolean) {
+        if (isVisible) {
+            hasWindow(windowTitle)
+            val invisibleWindows = this.filterNot { it.isVisible }
+            if (invisibleWindows.any { it.name.contains(windowTitle) }) {
+                fail("Is Invisible", windowTitle)
+            }
+        } else {
+            try {
+                hasNotWindow(windowTitle)
+            } catch (e: AssertionError) {
+                val visibleWindows = this.filter { it.isVisible }
+                if (visibleWindows.any { it.name.contains(windowTitle) }) {
+                    fail("Is Visible", windowTitle)
+                }
+            }
+        }
+    }
+
+    /**
+     * Checks if the non-app window with title containing [windowTitle] exists above the app
+     * windows and if its visibility is equal to [isVisible]
+     *
+     * @param windowTitle window title to search
+     * @param isVisible if the found window should be visible or not
+     */
+    @JvmOverloads
+    fun isAboveAppWindow(
+        windowTitle: String,
+        isVisible: Boolean = true
+    ): WindowManagerStateSubject = apply {
+        wmState.aboveAppWindows.checkVisibility(windowTitle, isVisible)
+    }
+
+    /**
+     * Checks if the non-app window with title containing [windowTitle] exists below the app
+     * windows and if its visibility is equal to [isVisible]
+     *
+     * @param windowTitle window title to search
+     * @param isVisible if the found window should be visible or not
+     */
+    @JvmOverloads
+    fun isBelowAppWindow(
+        windowTitle: String,
+        isVisible: Boolean = true
+    ): WindowManagerStateSubject = apply {
+        wmState.belowAppWindows.checkVisibility(windowTitle, isVisible)
+    }
+
+    /**
+     * Check if the window named [aboveWindowTitle] is above the one named [belowWindowTitle].
+     *
+     * @param aboveWindowTitle name of the window that should be above
+     * @param belowWindowTitle name of the window that should be below
+     */
+    fun isAboveWindow(aboveWindowTitle: String, belowWindowTitle: String) {
+        // windows are ordered by z-order, from top to bottom
+        val aboveZ = wmState.windowStates.indexOfFirst { aboveWindowTitle in it.name }
+        val belowZ = wmState.windowStates.indexOfFirst { belowWindowTitle in it.name }
+
+        hasWindow(aboveWindowTitle)
+        hasWindow(belowWindowTitle)
+        if (aboveZ >= belowZ) {
+            fail("$aboveWindowTitle is above $belowWindowTitle")
+        }
+    }
+
+    /**
+     * Checks if non-app window with title containing the [windowTitle] exists above or below the
+     * app windows and if its visibility is equal to [isVisible]
+     *
+     * @param windowTitle window title to search
+     * @param isVisible if the found window should be visible or not
+     */
+    @JvmOverloads
+    fun hasNonAppWindow(
+        windowTitle: String,
+        isVisible: Boolean = true
+    ): WindowManagerStateSubject = apply {
+        wmState.nonAppWindows.checkVisibility(windowTitle, isVisible)
+    }
+
+    /**
+     * Checks if an app window with title containing the [partialWindowTitles] is on top
+     *
+     * @param partialWindowTitles window title to search
+     */
+    fun showsAppWindowOnTop(vararg partialWindowTitles: String): WindowManagerStateSubject = apply {
+        hasWindow(*partialWindowTitles)
+        val windowOnTop = partialWindowTitles.any { wmState.topVisibleAppWindow.contains(it) }
+
+        if (!windowOnTop) {
+            fail(Fact.fact("Not on top", partialWindowTitles),
+                Fact.fact("Found", wmState.topVisibleAppWindow))
+        }
+    }
+
+    /**
+     * Checks if any of the given windows overlap with each other.
+     *
+     * @param partialWindowTitles Title of the windows that should not overlap
+     */
+    fun noWindowsOverlap(partialWindowTitles: Set<String>): WindowManagerStateSubject = apply {
+        partialWindowTitles.forEach { hasWindow(it) }
+        val foundWindows = partialWindowTitles
+            .associateWith { title -> wmState.windowStates.find { it.name.contains(title) } }
+            // keep entries only for windows that we actually found by removing nulls
+            .filterValues { it != null }
+            .mapValues { (_, v) -> v!!.frameRegion }
+
+        val regions = foundWindows.entries.toList()
+        for (i in regions.indices) {
+            val (ourTitle, ourRegion) = regions[i]
+            for (j in i + 1 until regions.size) {
+                val (otherTitle, otherRegion) = regions[j]
+                if (ourRegion.toAndroidRegion().op(otherRegion.toAndroidRegion(),
+                        android.graphics.Region.Op.INTERSECT)) {
+                    fail(Fact.fact("Overlap", ourTitle), Fact.fact("Overlap", otherTitle))
+                }
+            }
+        }
+    }
+
+    /**
+     * Checks if app window with title containing the [windowTitle] is visible
+     *
+     * @param windowTitle window title to search
+     * @param isVisible if the found window should be visible or not
+     */
+    @JvmOverloads
+    fun hasAppWindow(
+        windowTitle: String,
+        isVisible: Boolean = true
+    ): WindowManagerStateSubject = apply {
+        wmState.appWindows.checkVisibility(windowTitle, isVisible)
+    }
+
+    /**
+     * Asserts if the display with id [displayId] has rotation [rotation]
+     *
+     * @param rotation to assert
+     * @param displayId of the target display
+     */
     @JvmOverloads
     fun isRotation(
         rotation: Int,
@@ -40,6 +350,12 @@ class WindowManagerStateSubject private constructor(
             .isEqualTo(wmState.getRotation(displayId))
     }
 
+    /**
+     * Asserts if the display with id [displayId] has rotation [rotation]
+     *
+     * @param rotation to assert
+     * @param displayId of the target display
+     */
     @JvmOverloads
     fun isNotRotation(
         rotation: Int,
@@ -54,9 +370,9 @@ class WindowManagerStateSubject private constructor(
         val windowName = activity.toWindowName()
         val activityName = activity.toActivityName()
         Truth.assertWithMessage("Activity=$activityName must exist.")
-                .that(wmState.containsActivity(activityName)).isTrue()
+            .that(wmState.containsActivity(activityName)).isTrue()
         Truth.assertWithMessage("Window=$windowName must exits.")
-                .that(wmState.containsWindow(windowName)).isTrue()
+            .that(wmState.containsWindow(windowName)).isTrue()
     }
 
     fun notContains(activity: ComponentName): WindowManagerStateSubject = apply {
@@ -74,8 +390,8 @@ class WindowManagerStateSubject private constructor(
             isHomeActivityVisible()
         } else {
             Truth.assertWithMessage("Recents activity is ${if (visible) "" else "not"} visible")
-                    .that(wmState.isRecentsActivityVisible)
-                    .isEqualTo(visible)
+                .that(wmState.isRecentsActivityVisible)
+                .isEqualTo(visible)
         }
     }
 
@@ -226,19 +542,39 @@ class WindowManagerStateSubject private constructor(
             return ComponentName.unflattenFromString(activity.name)
         }
 
+    override fun toString(): String {
+        return "WindowManagerStateSubject($wmState)"
+    }
+
     companion object {
         /**
          * Boiler-plate Subject.Factory for WindowManagerStateSubject
+         *
+         * @param trace containing the entry
          */
-        private val FACTORY = Factory { fm: FailureMetadata, subject: WindowManagerState ->
-            WindowManagerStateSubject(fm, subject)
-        }
+        private fun getFactory(
+            trace: WindowManagerTraceSubject? = null
+        ): Factory<Subject, WindowManagerState> =
+            Factory { fm, subject -> WindowManagerStateSubject(fm, subject, trace) }
 
         /**
          * User-defined entry point
+         *
+         * @param entry to assert
+         * @param trace containing the entry
          */
         @JvmStatic
-        fun assertThat(entry: WindowManagerState?) =
-            Truth.assertAbout(FACTORY).that(entry) as WindowManagerStateSubject
+        @JvmOverloads
+        fun assertThat(
+            entry: WindowManagerState,
+            trace: WindowManagerTraceSubject? = null
+        ): WindowManagerStateSubject {
+            val strategy = FlickerFailureStrategy()
+            val subject = StandardSubjectBuilder.forCustomFailureStrategy(strategy)
+                .about(getFactory(trace))
+                .that(entry) as WindowManagerStateSubject
+            strategy.init(subject)
+            return subject
+        }
     }
 }

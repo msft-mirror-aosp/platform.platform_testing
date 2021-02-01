@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 The Android Open Source Project
+ * Copyright (C) 2021 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,16 +16,16 @@
 
 package com.android.server.wm.traces.common.windowmanager
 
-import com.android.server.wm.traces.common.AssertionResult
 import com.android.server.wm.traces.common.Rect
-import com.android.server.wm.traces.common.Region
 import com.android.server.wm.traces.common.ITraceEntry
+import com.android.server.wm.traces.common.prettyTimestamp
 import com.android.server.wm.traces.common.windowmanager.windows.Activity
 import com.android.server.wm.traces.common.windowmanager.windows.DisplayArea
 import com.android.server.wm.traces.common.windowmanager.windows.DisplayContent
 import com.android.server.wm.traces.common.windowmanager.windows.KeyguardControllerState
 import com.android.server.wm.traces.common.windowmanager.windows.RootWindowContainer
 import com.android.server.wm.traces.common.windowmanager.windows.ActivityTask
+import com.android.server.wm.traces.common.windowmanager.windows.WindowContainer
 import com.android.server.wm.traces.common.windowmanager.windows.WindowManagerPolicy
 import com.android.server.wm.traces.common.windowmanager.windows.WindowState
 
@@ -45,7 +45,7 @@ open class WindowManagerState(
     val inputMethodWindowAppToken: String,
     val isHomeRecentsComponent: Boolean,
     val isDisplayFrozen: Boolean,
-    val pendingActivities: List<String>,
+    val pendingActivities: Array<String>,
     val root: RootWindowContainer,
     val keyguardControllerState: KeyguardControllerState,
     override val timestamp: Long = 0
@@ -56,96 +56,91 @@ open class WindowManagerState(
     var validityCheckFocusedWindow = true
         private set
 
+    val windowContainers: Array<WindowContainer>
+        get() = root.collectDescendants()
+
     // Displays in z-order with the top most at the front of the list, starting with primary.
-    val displays: Array<DisplayContent> by lazy { root.collectDescendants() }
+    val displays: Array<DisplayContent>
+        get() = windowContainers.filterIsInstance<DisplayContent>().toTypedArray()
 
     // Stacks in z-order with the top most at the front of the list, starting with primary display.
     val rootTasks: Array<ActivityTask>
-        by lazy { displays.flatMap { it.rootTasks.toList() }.toTypedArray() }
+        get() = displays.flatMap { it.rootTasks.toList() }.toTypedArray()
 
     // Windows in z-order with the top most at the front of the list.
     val windowStates: Array<WindowState>
-        by lazy { root.collectDescendants() }
+        get() = windowContainers.filterIsInstance<WindowState>().toTypedArray()
 
     @Deprecated("Please use windowStates instead", replaceWith = ReplaceWith("windowStates"))
     val windows: Array<WindowState>
         get() = windowStates
 
     val appWindows: Array<WindowState>
-        by lazy { windowStates.filter { it.isAppWindow }.toTypedArray() }
+        get() = windowStates.filter { it.isAppWindow }.toTypedArray()
     val nonAppWindows: Array<WindowState>
-        by lazy { windowStates.filterNot { it.isAppWindow }.toTypedArray() }
-    val aboveAppWindows: Array<WindowState> by lazy {
-        windowStates.takeWhile { !appWindows.contains(it) }.toTypedArray()
-    }
-    val belowAppWindows: Array<WindowState> by lazy {
-        windowStates
+        get() = windowStates.filterNot { it.isAppWindow }.toTypedArray()
+    val aboveAppWindows: Array<WindowState>
+        get() = windowStates.takeWhile { !appWindows.contains(it) }.toTypedArray()
+    val belowAppWindows: Array<WindowState>
+        get() = windowStates
             .dropWhile { !appWindows.contains(it) }.drop(appWindows.size).toTypedArray()
-    }
     val visibleWindows: Array<WindowState>
-        by lazy { windowStates.filter { it.isSurfaceShown }.toTypedArray() }
-    val topVisibleAppWindow: String by lazy {
-        appWindows.filter { it.isVisible }
+        get() = windowStates.filter { it.isSurfaceShown }.toTypedArray()
+    val topVisibleAppWindow: String
+        get() = appWindows.filter { it.isVisible }
             .map { it.title }
             .firstOrNull() ?: ""
-    }
 
-    val focusedDisplay: DisplayContent? by lazy { getDisplay(focusedDisplayId) }
-    val focusedStackId: Int by lazy { focusedDisplay?.focusedRootTaskId ?: -1 }
-    val focusedActivity: String by lazy { focusedDisplay?.resumedActivity ?: "" }
+    val focusedDisplay: DisplayContent? get() = getDisplay(focusedDisplayId)
+    val focusedStackId: Int get() = focusedDisplay?.focusedRootTaskId ?: -1
+    val focusedActivity: String get() = focusedDisplay?.resumedActivity ?: ""
     val resumedActivitiesInDisplays: Array<String>
-        by lazy { displays.map { it.resumedActivity }.filter { it.isNotEmpty() }.toTypedArray() }
+        get() = displays.map { it.resumedActivity }.filter { it.isNotEmpty() }.toTypedArray()
     val resumedActivitiesInStacks: Array<String>
-        by lazy { rootTasks.map { it.resumedActivity }.filter { it.isNotEmpty() }.toTypedArray() }
-    val defaultPinnedStackBounds: Rect by lazy {
-        displays.lastOrNull { it.defaultPinnedStackBounds.isNotEmpty }?.defaultPinnedStackBounds
+        get() = rootTasks.map { it.resumedActivity }.filter { it.isNotEmpty() }.toTypedArray()
+    val hasResumedActivitiesInStacks: Boolean
+        get() = rootTasks.any { it.hasResumedActivitiesInTree }
+    val defaultPinnedStackBounds: Rect
+        get() = displays
+            .lastOrNull { it.defaultPinnedStackBounds.isNotEmpty }?.defaultPinnedStackBounds
             ?: Rect()
-    }
-    val pinnedStackMovementBounds: Rect by lazy {
-        displays.lastOrNull { it.defaultPinnedStackBounds.isNotEmpty }?.pinnedStackMovementBounds
+    val pinnedStackMovementBounds: Rect
+        get() = displays
+            .lastOrNull { it.defaultPinnedStackBounds.isNotEmpty }?.pinnedStackMovementBounds
             ?: Rect()
-    }
     val focusedStackActivityType: Int
-        by lazy { getRootTask(focusedStackId)?.activityType ?: ACTIVITY_TYPE_UNDEFINED }
+        get() = getRootTask(focusedStackId)?.activityType ?: ACTIVITY_TYPE_UNDEFINED
     val focusedStackWindowingMode: Int
-        by lazy { getRootTask(focusedStackId)?.windowingMode ?: WINDOWING_MODE_UNDEFINED }
-    val resumedActivity: String by lazy {
-        focusedDisplay?.resumedActivity ?: "Default display not found"
-    }
-    val resumedActivitiesCount: Int by lazy { resumedActivitiesInStacks.size }
-    val stackCount: Int by lazy { rootTasks.size }
-    val displayCount: Int by lazy { displays.size }
-    val homeTask: ActivityTask?
-        by lazy { getStackByActivityType(ACTIVITY_TYPE_HOME)?.topTask }
-    val recentsTask: ActivityTask?
-        by lazy { getStackByActivityType(ACTIVITY_TYPE_RECENTS)?.topTask }
-    val homeActivity: Activity? by lazy { homeTask?.activities?.lastOrNull() }
-    val recentsActivity: Activity? by lazy { recentsTask?.activities?.lastOrNull() }
-    val rootTasksCount: Int by lazy { rootTasks.size }
-    val isRecentsActivityVisible: Boolean by lazy { recentsActivity?.isVisible ?: false }
-    val dreamTask: ActivityTask? by lazy {
-        getStackByActivityType(ACTIVITY_TYPE_DREAM)?.topTask
-    }
-    val defaultDisplayLastTransition: String by lazy {
-        getDefaultDisplay()?.lastTransition
+        get() = getRootTask(focusedStackId)?.windowingMode ?: WINDOWING_MODE_UNDEFINED
+    val resumedActivity: String
+        get() = focusedDisplay?.resumedActivity ?: "Default display not found"
+    val resumedActivitiesCount: Int get() = resumedActivitiesInStacks.size
+    val stackCount: Int get() = rootTasks.size
+    val displayCount: Int get() = displays.size
+    val homeTask: ActivityTask? get() = getStackByActivityType(ACTIVITY_TYPE_HOME)?.topTask
+    val recentsTask: ActivityTask? get() = getStackByActivityType(ACTIVITY_TYPE_RECENTS)?.topTask
+    val homeActivity: Activity? get() = homeTask?.activities?.lastOrNull()
+    val recentsActivity: Activity? get() = recentsTask?.activities?.lastOrNull()
+    val rootTasksCount: Int get() = rootTasks.size
+    val isRecentsActivityVisible: Boolean get() = recentsActivity?.isVisible ?: false
+    val dreamTask: ActivityTask?
+        get() = getStackByActivityType(ACTIVITY_TYPE_DREAM)?.topTask
+    val defaultDisplayLastTransition: String get() = getDefaultDisplay()?.lastTransition
             ?: "Default display not found"
-    }
-    val defaultDisplayAppTransitionState: String by lazy {
-        getDefaultDisplay()?.appTransitionState
+    val defaultDisplayAppTransitionState: String get() = getDefaultDisplay()?.appTransitionState
             ?: "Default display not found"
-    }
-    val allNavigationBarStates: List<WindowState>
-        by lazy { windowStates.filter { it.isValidNavBarType } }
-    val frontWindow: String? by lazy { windowStates.map { it.title }.firstOrNull() }
-    val stableBounds: Rect by lazy { getDefaultDisplay()?.stableBounds ?: Rect() }
+    val allNavigationBarStates: Array<WindowState>
+        get() = windowStates.filter { it.isValidNavBarType }.toTypedArray()
+    val frontWindow: String? get() = windowStates.map { it.title }.firstOrNull()
+    val stableBounds: Rect get() = getDefaultDisplay()?.stableBounds ?: Rect()
     val inputMethodWindowState: WindowState?
-        by lazy { getWindowStateForAppToken(inputMethodWindowAppToken) }
+        get() = getWindowStateForAppToken(inputMethodWindowAppToken)
 
     /**
      * Returns the rect of all the frames in the entry
      * Converted to typedArray for better compatibility with JavaScript code
      */
-    val rects: Array<Rect> by lazy { root.rects }
+    val rects: Array<Rect> = root.rects
 
     /**
      * Enable/disable the mFocusedWindow check during the computeState.
@@ -362,8 +357,10 @@ open class WindowManagerState(
     fun getTaskByActivity(activityName: String, windowingMode: Int): ActivityTask? {
         for (stack in rootTasks) {
             if (windowingMode == WINDOWING_MODE_UNDEFINED || windowingMode == stack.windowingMode) {
-                val activity = stack.getActivity(activityName)
-                if (activity != null) return activity.task
+                val task = stack.getTask { it.getActivity(activityName) != null }
+                if (task != null) {
+                    return task
+                }
             }
         }
         return null
@@ -469,29 +466,8 @@ open class WindowManagerState(
     /**
      * Check if at least one window which matches provided window name is visible.
      */
-    fun isWindowVisible(windowName: String): Boolean {
-        for (window in windowStates) {
-            if (window.title == windowName) {
-                if (window.isVisible) {
-                    return true
-                }
-            }
-        }
-        return false
-    }
-
-    fun allWindowSurfacesShown(windowName: String): Boolean {
-        var allShown = false
-        for (window in windowStates) {
-            if (window.title == windowName) {
-                if (!window.isSurfaceShown) {
-                    return false
-                }
-                allShown = true
-            }
-        }
-        return allShown
-    }
+    fun isWindowVisible(windowName: String): Boolean =
+        visibleWindows.any { it.title == windowName }
 
     /**
      * Checks whether the display contains the given activity.
@@ -541,7 +517,7 @@ open class WindowManagerState(
             if (focusedActivity.isEmpty()) {
                 append("No focused activity found...")
             }
-            if (resumedActivitiesInStacks.isEmpty()) {
+            if (!hasResumedActivitiesInStacks) {
                 append("No resumed activities found...")
             }
             if (windowStates.isEmpty()) {
@@ -566,169 +542,12 @@ open class WindowManagerState(
     fun isIncomplete(): Boolean {
         return rootTasks.isEmpty() || focusedStackId == -1 || windowStates.isEmpty() ||
             focusedApp.isEmpty() || (validityCheckFocusedWindow && focusedWindow.isEmpty()) ||
-            (focusedActivity.isEmpty() || resumedActivitiesInStacks.isEmpty()) &&
+            (focusedActivity.isEmpty() || !hasResumedActivitiesInStacks) &&
             !keyguardControllerState.isKeyguardShowing
     }
 
-    private fun Array<WindowState>.isWindowVisible(
-        assertionName: String,
-        windowTitle: String,
-        isVisible: Boolean = true
-    ): AssertionResult {
-        val foundWindow = this.filter { it.title.contains(windowTitle) }
-        return when {
-            this.isEmpty() -> AssertionResult(
-                "No windows found",
-                assertionName,
-                timestamp,
-                success = false)
-            foundWindow.isEmpty() -> AssertionResult(
-                "$windowTitle cannot be found",
-                assertionName,
-                timestamp,
-                success = false)
-            isVisible && foundWindow.none { it.isVisible } -> AssertionResult(
-                "$windowTitle is invisible",
-                assertionName,
-                timestamp,
-                success = false)
-            !isVisible && foundWindow.any { it.isVisible } -> AssertionResult(
-                "$windowTitle is visible",
-                assertionName,
-                timestamp,
-                success = false)
-            else -> {
-                val reason = if (isVisible) {
-                    "${foundWindow.first { it.isVisible }.title} is visible"
-                } else {
-                    "${foundWindow.first { !it.isVisible }.title} is invisible"
-                }
-                AssertionResult(
-                    success = true,
-                    reason = reason)
-            }
-        }
-    }
-
-    /**
-     * Checks if the non-app window with title containing [windowTitle] exists above the app
-     * windows and if its visibility is equal to [isVisible]
-     *
-     * @param windowTitle window title to search
-     * @param isVisible if the found window should be visible or not
-     */
-    fun isAboveAppWindow(windowTitle: String, isVisible: Boolean = true): AssertionResult {
-        return aboveAppWindows.isWindowVisible(
-            "isAboveAppWindow${if (isVisible) "Visible" else "Invisible"}",
-            windowTitle,
-            isVisible)
-    }
-
-    /**
-     * Checks if the non-app window with title containing [windowTitle] exists below the app
-     * windows and if its visibility is equal to [isVisible]
-     *
-     * @param windowTitle window title to search
-     * @param isVisible if the found window should be visible or not
-     */
-    fun isBelowAppWindow(windowTitle: String, isVisible: Boolean = true): AssertionResult {
-        return belowAppWindows.isWindowVisible(
-            "isBelowAppWindow${if (isVisible) "Visible" else "Invisible"}",
-            windowTitle,
-            isVisible)
-    }
-
-    /**
-     * Checks if non-app window with title containing the [windowTitle] exists above or below the
-     * app windows and if its visibility is equal to [isVisible]
-     *
-     * @param windowTitle window title to search
-     * @param isVisible if the found window should be visible or not
-     */
-    fun hasNonAppWindow(windowTitle: String, isVisible: Boolean = true): AssertionResult {
-        return nonAppWindows.isWindowVisible(
-            "hasNonAppWindow${if (isVisible) "Visible" else "Invisible"}", windowTitle, isVisible)
-    }
-
-    /**
-     * Checks if app window with title containing the [windowTitle] is on top
-     *
-     * @param windowTitle window title to search
-     */
-    fun isVisibleAppWindowOnTop(windowTitle: String): AssertionResult {
-        val success = topVisibleAppWindow.contains(windowTitle)
-        val reason = "wanted=$windowTitle found=$topVisibleAppWindow"
-        return AssertionResult(reason, "isAppWindowOnTop", timestamp, success)
-    }
-
-    /**
-     * Checks if app window with title containing the [windowTitle] is visible
-     *
-     * @param windowTitle window title to search
-     */
-    fun isAppWindowVisible(windowTitle: String): AssertionResult {
-        return appWindows.isWindowVisible("isAppWindowVisible",
-            windowTitle,
-            isVisible = true)
-    }
-
-    /**
-     * Obtains the region of the first visible window with title containing [windowTitle].
-     *
-     * @param windowTitle Name of the layer to search
-     * @param resultComputation Predicate to compute a result based on the found window's region
-     */
-    fun covers(
-        windowTitle: String,
-        resultComputation: (Region) -> AssertionResult
-    ): AssertionResult {
-        val assertionName = "covers"
-        val visibilityCheck = windowStates.isWindowVisible(assertionName, windowTitle)
-        if (!visibilityCheck.success) {
-            return visibilityCheck
-        }
-
-        val foundWindow = windowStates.first { it.title.contains(windowTitle) }
-        val foundRegion = foundWindow.frameRegion
-
-        return resultComputation(foundRegion)
-    }
-
-    /**
-     * Check if the window named [aboveWindowTitle] is above the one named [belowWindowTitle].
-     */
-    fun isAboveWindow(aboveWindowTitle: String, belowWindowTitle: String): AssertionResult {
-        val assertionName = "isAboveWindow"
-
-        // windows are ordered by z-order, from top to bottom
-        val aboveZ = windowStates.indexOfFirst { aboveWindowTitle in it.title }
-        val belowZ = windowStates.indexOfFirst { belowWindowTitle in it.title }
-
-        val notFound = mutableSetOf<String>().apply {
-            if (aboveZ == -1) {
-                add(aboveWindowTitle)
-            }
-            if (belowZ == -1) {
-                add(belowWindowTitle)
-            }
-        }
-
-        if (notFound.isNotEmpty()) {
-            return AssertionResult(
-                reason = "Could not find ${notFound.joinToString(" and ")}!",
-                assertionName = assertionName,
-                timestamp = timestamp,
-                success = false
-            )
-        }
-
-        // ensure the z-order
-        return AssertionResult(
-            reason = "$aboveWindowTitle is above $belowWindowTitle",
-            assertionName = assertionName,
-            timestamp = timestamp,
-            success = aboveZ < belowZ
-        )
+    override fun toString(): String {
+        return prettyTimestamp(timestamp)
     }
 
     companion object {

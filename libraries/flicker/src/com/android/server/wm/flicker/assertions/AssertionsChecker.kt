@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 The Android Open Source Project
+ * Copyright (C) 2021 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,88 +16,30 @@
 
 package com.android.server.wm.flicker.assertions
 
-import com.android.server.wm.traces.common.AssertionResult
-import com.android.server.wm.traces.common.ITraceEntry
+import com.google.common.truth.Fact
+import kotlin.math.max
 
 /**
- * Captures some of the common logic in [LayersTraceSubject] and [WmTraceSubject] used
- * to filter trace entries and combine multiple assertions.
+ * Runs sequences of assertions on sequences of subjects.
+ *
+ * Starting at the first assertion and first trace entry, executes the assertions iteratively
+ * on the trace until all assertions and trace entries succeed.
  *
  * @param <T> trace entry type </T>
  */
-class AssertionsChecker<T : ITraceEntry> {
-    private var filterEntriesByRange = false
-    private var filterStartTime: Long = 0
-    private var filterEndTime: Long = 0
-    private var skipUntilFirstAssertion = false
-    private var option = AssertionOption.NONE
+class AssertionsChecker<T : FlickerSubject> {
     private val assertions = mutableListOf<CompoundAssertion<T>>()
-    /**
-     * Runs assertions over the entire list of entries.
-     */
-    private val listAssertions = mutableListOf<(List<T>) -> AssertionResult>()
+    private var skipUntilFirstAssertion = false
 
-    /**
-     * Start a new set of assertions and add [assertion] to it.
-     */
-    fun add(assertion: TraceAssertion<T>, name: String) {
+    fun add(name: String, assertion: Assertion<T>) {
         assertions.add(CompoundAssertion(assertion, name))
     }
 
     /**
-     * Start a new set of assertions and add [assertion] to it.
-     */
-    fun addList(assertion: (List<T>) -> AssertionResult) {
-        listAssertions.add(assertion)
-    }
-    /**
      * Append [assertion] to the last existing set of assertions.
      */
-    fun append(assertion: TraceAssertion<T>, name: String) {
+    fun append(name: String, assertion: Assertion<T>) {
         assertions.last().add(assertion, name)
-    }
-
-    /**
-     * Ignores the first entries in the trace, until the first assertion passes. If it reaches the
-     * end of the trace without passing any assertion, return a failure with the name/reason from
-     * the first assertion
-     */
-    fun skipUntilFirstAssertion() {
-        skipUntilFirstAssertion = true
-    }
-
-    /**
-     * Run the assertions for all trace entries within the specified time range
-     */
-    fun filterByRange(startTime: Long, endTime: Long) {
-        filterEntriesByRange = true
-        filterStartTime = startTime
-        filterEndTime = endTime
-    }
-
-    private fun setOption(option: AssertionOption) {
-        require(!(this.option != AssertionOption.NONE && option != this.option)) {
-            "Cannot use ${this.option} option with $option option."
-        }
-        this.option = option
-    }
-
-    /**
-     * Run the assertions only in the first trace entry
-     */
-    fun checkFirstEntry() {
-        setOption(AssertionOption.CHECK_FIRST_ENTRY)
-    }
-
-    /**
-     * Run the assertions only in the last  trace entry
-     */
-    fun checkLastEntry() {
-        setOption(AssertionOption.CHECK_LAST_ENTRY)
-    }
-
-    fun checkChangingAssertions() {
-        setOption(AssertionOption.CHECK_CHANGING_ASSERTIONS)
     }
 
     /**
@@ -106,20 +48,7 @@ class AssertionsChecker<T : ITraceEntry> {
      * @param entries list of entries to perform assertions on
      * @return list of failed assertion results
      */
-    fun test(entries: List<T>): List<AssertionResult> {
-        val filteredEntries = if (filterEntriesByRange) {
-            entries.filter { it.timestamp in filterStartTime..filterEndTime }
-        } else {
-            entries
-        }
-
-        return when (option) {
-            AssertionOption.CHECK_CHANGING_ASSERTIONS -> assertChanges(filteredEntries)
-            AssertionOption.CHECK_FIRST_ENTRY -> assertEntry(filteredEntries.first())
-            AssertionOption.CHECK_LAST_ENTRY -> assertEntry(filteredEntries.last())
-            else -> assertAll(filteredEntries)
-        }
-    }
+    fun test(entries: List<T>): Unit = assertChanges(entries)
 
     /**
      * Steps through each trace entry checking if provided assertions are true in the order they are
@@ -135,78 +64,60 @@ class AssertionsChecker<T : ITraceEntry> {
      * passes, this allows the trace to be recorded for longer periods, and the checks to happen
      * only after some time.
      */
-    private fun assertChanges(entries: List<T>): List<AssertionResult> {
-        val failures: MutableList<AssertionResult> = ArrayList()
+    private fun assertChanges(entries: List<T>) {
+        if (assertions.isEmpty() || entries.isEmpty()) {
+            return
+        }
+
+        val failures = mutableListOf<Throwable>()
         var entryIndex = 0
         var assertionIndex = 0
         var lastPassedAssertionIndex = -1
-        if (assertions.isEmpty() && listAssertions.isEmpty()) {
-            return failures
-        }
         while (assertionIndex < assertions.size && entryIndex < entries.size) {
-            val currentAssertion: NamedAssertion<T> = assertions[assertionIndex]
-            val result: AssertionResult = currentAssertion.invoke(entries[entryIndex])
-            val ignoreFailure = skipUntilFirstAssertion && lastPassedAssertionIndex == -1
-            if (result.passed()) {
+            val currentAssertion = assertions[assertionIndex]
+            val currEntry = entries[entryIndex]
+            try {
+                currentAssertion.invoke(currEntry)
                 lastPassedAssertionIndex = assertionIndex
                 entryIndex++
-                continue
-            }
-            if (ignoreFailure) {
-                entryIndex++
-                continue
-            }
-            if (lastPassedAssertionIndex != assertionIndex) {
-                failures.add(result)
-                break
-            }
-            assertionIndex++
-            if (assertionIndex == assertions.size) {
-                failures.add(result)
-                break
+            } catch (e: Throwable) {
+                val ignoreFailure = skipUntilFirstAssertion && lastPassedAssertionIndex == -1
+                if (ignoreFailure) {
+                    entryIndex++
+                    continue
+                }
+                if (lastPassedAssertionIndex != assertionIndex) {
+                    val prevEntry = entries[max(entryIndex - 1, 0)]
+                    prevEntry.fail(e)
+                }
+                assertionIndex++
+                if (assertionIndex == assertions.size) {
+                    val prevEntry = entries[max(entryIndex - 1, 0)]
+                    prevEntry.fail(e)
+                }
             }
         }
         if (lastPassedAssertionIndex == -1 && assertions.isNotEmpty() && failures.isEmpty()) {
-            failures.add(AssertionResult(success = false, reason = assertions[0].name))
+            entries.first().fail("Assertion never passed", assertions.first())
         }
-        if (failures.isEmpty() && assertions.isNotEmpty() &&
-                assertionIndex != assertions.size - 1) {
-            var reason = "Assertion ${assertions[assertionIndex].name} never became false"
-            reason += "\n\tPassed assertions: " +
-                    assertions.take(assertionIndex)
-                            .joinToString(",") { it.name }
-            reason += "\n\tUntested assertions: " +
-                    assertions.drop(assertionIndex + 1)
-                            .joinToString(",") { it.name }
-            val result = AssertionResult(
-                    reason = "Not all assertions passed.$reason",
-                    assertionName = "assertChanges",
-                    timestamp = 0,
-                    success = false)
-            failures.add(result)
-        }
-        failures.addAll(listAssertions.map { it.invoke(entries) }.filter { it.failed() })
-        return failures
-    }
 
-    private fun assertEntry(entry: T): List<AssertionResult> {
-        val failures: MutableList<AssertionResult> = ArrayList()
-        for (assertion in assertions) {
-            val result: AssertionResult = assertion.invoke(entry)
-            if (result.failed()) {
-                failures.add(result)
-            }
-        }
-        return failures
-    }
-
-    private fun assertAll(entries: List<T>): List<AssertionResult> {
-        return assertions.flatMap { assertion ->
-            entries.map(assertion).filter { it.failed() }
+        if (failures.isEmpty() && assertionIndex != assertions.lastIndex) {
+            val reason = listOf(
+                Fact.fact("Assertion never became false", assertions[assertionIndex]),
+                Fact.fact("Passed assertions", assertions.take(assertionIndex).joinToString(",")),
+                Fact.fact("Untested assertions",
+                    assertions.drop(assertionIndex + 1).joinToString(","))
+            )
+            entries.first().fail(reason)
         }
     }
 
-    private enum class AssertionOption {
-        NONE, CHECK_CHANGING_ASSERTIONS, CHECK_FIRST_ENTRY, CHECK_LAST_ENTRY
+    /**
+     * Ignores the first entries in the trace, until the first assertion passes. If it reaches the
+     * end of the trace without passing any assertion, return a failure with the name/reason from
+     * the first assertion
+     */
+    fun skipUntilFirstAssertion() {
+        skipUntilFirstAssertion = true
     }
 }

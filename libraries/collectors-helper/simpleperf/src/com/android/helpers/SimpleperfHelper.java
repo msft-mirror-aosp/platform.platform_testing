@@ -65,15 +65,20 @@ public class SimpleperfHelper {
             new Thread() {
                 @Override
                 public void run() {
+                    String startCommand =
+                            String.format(
+                                    SIMPLEPERF_START_CMD,
+                                    subcommand,
+                                    SIMPLEPERF_TMP_FILE_PATH,
+                                    arguments);
+                    Log.i(LOG_TAG, String.format("Start command: %s", startCommand));
                     UiDevice uiDevice =
                             UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
                     try {
-                        uiDevice.executeShellCommand(
-                                String.format(
-                                        SIMPLEPERF_START_CMD,
-                                        subcommand,
-                                        SIMPLEPERF_TMP_FILE_PATH,
-                                        arguments));
+                        String startOutput = uiDevice.executeShellCommand(startCommand);
+                        Log.i(
+                                LOG_TAG,
+                                String.format("Simpleperf start command output - %s", startOutput));
                     } catch (IOException e) {
                         Log.e(LOG_TAG, "Failed to start simpleperf.");
                     }

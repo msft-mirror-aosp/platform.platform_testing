@@ -42,7 +42,7 @@ class LayersTraceMonitorTest : TraceMonitorTest<LayersTraceMonitor>() {
     }
 
     override fun getTraceFile(result: FlickerRunResult): Path? {
-        return result.layersTraceFile
+        return result.traceFiles.firstOrNull { it.toString().contains("layers_trace") }
     }
 
     @Test

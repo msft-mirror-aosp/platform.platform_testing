@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 The Android Open Source Project
+ * Copyright (C) 2021 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,71 +16,58 @@
 
 package com.android.server.wm.flicker.assertions
 
-import com.android.server.wm.traces.common.AssertionResult
-
 /**
  * Checks assertion on a single trace entry.
  *
  * @param <T> trace entry type to perform the assertion on. </T>
  */
-typealias TraceAssertion<T> = (T) -> AssertionResult
-
-/**
- * Collection of functional interfaces and classes representing assertions and their associated
- * results. Assertions are functions that are applied over a single trace entry and returns a result
- * which includes a detailed reason if the assertion fails.
- */
-object Assertions {
-    @JvmStatic
-    fun <T> ((T) -> AssertionResult).negate(): TraceAssertion<T> {
-        return { it: T -> this.invoke(it).negate() }
-    }
-}
-
-/**
- * Returns an assertion that represents the logical negation of this assertion.
- *
- * @return a assertion that represents the logical negation of this assertion
- */
+typealias Assertion<T> = (T) -> Unit
 
 /**
  * Utility class to store assertions with an identifier to help generate more useful debug data
  * when dealing with multiple assertions.
  */
-open class NamedAssertion<T>(
-    private val assertion: TraceAssertion<T>,
+open class NamedAssertion<T> (
+    private val assertion: Assertion<T>,
     open val name: String
-) : TraceAssertion<T> {
-    override fun invoke(t: T): AssertionResult = assertion.invoke(t)
+) : Assertion<T> {
+    override fun invoke(target: T): Unit = assertion.invoke(target)
 
     override fun toString(): String = "Assertion($name)"
 }
 
-class CompoundAssertion<T>(assertion: TraceAssertion<T>, name: String) :
-        NamedAssertion<T>(assertion, name) {
-    private val assertions: MutableList<NamedAssertion<T>> = ArrayList()
+/**
+ * Utility class to store assertions composed of multiple individual assertions
+ */
+class CompoundAssertion<T>(assertion: Assertion<T>, name: String) :
+    NamedAssertion<T>(assertion, name) {
+    private val assertions = mutableListOf<NamedAssertion<T>>()
 
     init {
         add(assertion, name)
     }
 
     override val name: String
-        get() = assertions.joinToString(" and ") { p: NamedAssertion<T> -> p.name }
+        get() = assertions.joinToString(" and ") { it.name }
 
-    override fun invoke(t: T): AssertionResult {
-        val assertionResults = assertions.map { it.invoke(t) }
-        val passed = assertionResults.all { it.passed() }
-        val reason = assertionResults
-                .filterNot { it.passed() }
-                .joinToString(" and ") { it.reason }
-        return assertionResults
-                .map { AssertionResult(reason, name, it.timestamp, passed) }
-                .firstOrNull() ?: AssertionResult(reason, success = passed)
+    /**
+     * Executes all [assertions] on [target]
+     */
+    override fun invoke(target: T) {
+        val failure = assertions.mapNotNull {
+            kotlin.runCatching { it.invoke(target) }.exceptionOrNull()
+        }.firstOrNull()
+        if (failure != null) {
+            throw failure
+        }
     }
 
-    override fun toString(): String = "CompoundAssertion($name)"
+    override fun toString(): String = name
 
-    fun add(assertion: TraceAssertion<T>, name: String) {
+    /**
+     * Adds a new assertion to the list
+     */
+    fun add(assertion: Assertion<T>, name: String) {
         assertions.add(NamedAssertion(assertion, name))
     }
 }

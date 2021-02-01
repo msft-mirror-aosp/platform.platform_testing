@@ -21,36 +21,9 @@ package com.android.server.wm.flicker.dsl
  * representing inital, final and all trace states.
  *
  * In addition, it is possible to create custom trace locations (tags).
- *
- * @param tag Tag identifier containing only letters and digits
- * @throws IllegalArgumentException If [tag] contains anything besides letters and digits
  */
-data class AssertionTag(val tag: String) {
-    init {
-        require(!tag.contains(" ")) {
-            "The test tag $tag can not contain spaces since it is a part of the file name"
-        }
-    }
-
-    companion object {
-        /**
-         * Assert only the initial trace entry (initial state)
-         */
-        @JvmField
-        val START = AssertionTag("start")
-        /**
-         * Assert only the final trace entry (final state)
-         */
-        @JvmField
-        val END = AssertionTag("end")
-        /**
-         * Assert all trace entries
-         */
-        @JvmField
-        val ALL = AssertionTag("all")
-        /**
-         * Default assertions available for all flicker tests
-         */
-        val DEFAULT = listOf(START, END, ALL)
-    }
+object AssertionTag {
+    const val START = "start"
+    const val END = "end"
+    const val ALL = "end"
 }

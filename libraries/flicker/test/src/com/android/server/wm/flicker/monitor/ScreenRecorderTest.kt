@@ -16,7 +16,9 @@
 
 package com.android.server.wm.flicker.monitor
 
+import android.app.Instrumentation
 import android.os.SystemClock
+import androidx.test.platform.app.InstrumentationRegistry
 import com.android.server.wm.flicker.FlickerRunResult
 import com.android.server.wm.flicker.getDefaultFlickerOutputDir
 import com.google.common.truth.Truth
@@ -33,11 +35,12 @@ import java.nio.file.Files
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class ScreenRecorderTest {
+    private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
     private lateinit var mScreenRecorder: ScreenRecorder
     @Before
     fun setup() {
         val outputDir = getDefaultFlickerOutputDir()
-        mScreenRecorder = ScreenRecorder(outputDir)
+        mScreenRecorder = ScreenRecorder(outputDir, instrumentation.targetContext)
     }
 
     @After
@@ -52,7 +55,9 @@ class ScreenRecorderTest {
         SystemClock.sleep(100)
         mScreenRecorder.stop()
         val file = mScreenRecorder.outputPath.toFile()
-        Truth.assertThat(file.exists()).isTrue()
+        Truth.assertWithMessage("Screen recording file not found")
+            .that(file.exists())
+            .isTrue()
     }
 
     @Test
@@ -62,7 +67,16 @@ class ScreenRecorderTest {
         mScreenRecorder.stop()
         val builder = FlickerRunResult.Builder()
         mScreenRecorder.save("test", builder)
-        val file = builder.build().screenRecording
-        Truth.assertThat(Files.exists(file)).isTrue()
+        val traces = builder.buildTraceResults().mapNotNull { result ->
+            result.traceFiles.firstOrNull {
+                it.toString().contains("transition")
+            }
+        }
+        traces.forEach {
+            Truth.assertWithMessage("Trace file $it not found").that(Files.exists(it)).isTrue()
+        }
+        traces.forEach {
+            Files.deleteIfExists(it)
+        }
     }
 }
