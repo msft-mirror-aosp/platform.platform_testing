@@ -125,7 +125,7 @@ open class StandardAppHelper @JvmOverloads constructor(
      * Uses UiAutomation to detect when the app is open
      */
     @JvmOverloads
-    fun launchViaIntent(
+    open fun launchViaIntent(
         expectedPackageName: String = "",
         action: String? = null,
         stringExtras: Map<String, String> = mapOf()
@@ -140,7 +140,7 @@ open class StandardAppHelper @JvmOverloads constructor(
      * until the app window is visible
      */
     @JvmOverloads
-    fun launchViaIntent(
+    open fun launchViaIntent(
         wmHelper: WindowManagerStateHelper,
         expectedWindowName: String = "",
         action: String? = null,

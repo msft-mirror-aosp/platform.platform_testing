@@ -18,6 +18,7 @@ package com.android.server.wm.flicker
 
 import android.app.Instrumentation
 import android.support.test.launcherhelper.ILauncherStrategy
+import android.util.Log
 import androidx.annotation.VisibleForTesting
 import androidx.test.uiautomator.UiDevice
 import com.android.server.wm.flicker.assertions.AssertionData
@@ -102,9 +103,9 @@ class Flicker(
     /**
      * Helper object for WM Synchronization
      */
-    @JvmField val wmHelper: WindowManagerStateHelper
+    val wmHelper: WindowManagerStateHelper
 ) {
-    var result = FlickerResult()
+    var result: FlickerResult? = null
         private set
 
     /**
@@ -113,17 +114,20 @@ class Flicker(
      * @throws IllegalStateException If cannot execute the transition
      */
     fun execute(): Flicker = apply {
-        result = runner.execute(this)
-        val error = result.error
-        if (error != null) {
-            throw IllegalStateException("Unable to execute transition", error)
-        }
+        val result = runner.execute(this)
+        this.result = result
+        checkIsExecuted()
     }
 
     /**
      * Asserts if the transition of this flicker test has ben executed
      */
-    fun checkIsExecuted() = result.checkIsExecuted()
+    private fun checkIsExecuted() {
+        val error = result?.error
+        if (error != null) {
+            throw IllegalStateException("Unable to execute transition", error)
+        }
+    }
 
     /**
      * Run the assertions on the trace
@@ -132,10 +136,14 @@ class Flicker(
      * @throws AssertionError If the assertions fail or the transition crashed
      */
     @JvmOverloads
-    fun checkAssertions(onlyFlaky: Boolean = false) {
-        if (result.isEmpty()) {
-            execute()
-        }
+    fun checkAssertions(assertionName: String = "", onlyFlaky: Boolean = false) {
+        checkIsExecuted()
+        val result = result
+        requireNotNull(result)
+
+        val assertions = assertions.filter { assertionName.isEmpty() || it.name == assertionName }
+        require(assertions.isNotEmpty()) { "No assertions to check" }
+
         val failures = result.checkAssertions(assertions, onlyFlaky)
         val failureMessage = failures.joinToString("\n") { it.message }
 
@@ -146,11 +154,12 @@ class Flicker(
 
     /**
      * Deletes the traces files for successful assertions and clears the cached runner results
+     *
      */
-    fun cleanUp() {
-        runner.cleanUp()
-        result.cleanUp()
-        result = FlickerResult()
+    fun clear() {
+        Log.v(FLICKER_TAG, "Cleaning up spec $testName")
+        result?.cleanUp()
+        result = null
     }
 
     /**
@@ -167,20 +176,6 @@ class Flicker(
 
     fun createTag(tag: String) {
         withTag(tag) {}
-    }
-
-    @JvmOverloads
-    fun copy(newAssertion: AssertionData?, newName: String = ""): Flicker {
-        val name = if (newName.isNotEmpty()) {
-            newName
-        } else {
-            testName
-        }
-        val assertion = newAssertion?.let { listOf(it) } ?: emptyList()
-        return Flicker(instrumentation, device, launcherStrategy, outputDir, name,
-            repetitions, frameStatsMonitor, traceMonitors, testSetup, runSetup,
-            testTeardown, runTeardown, transitions, assertion, runner, wmHelper
-        )
     }
 
     override fun toString(): String {
