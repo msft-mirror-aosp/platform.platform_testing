@@ -87,7 +87,7 @@ class FlickerBuilder private constructor(
         /**
          * Helper object for WM Synchronization
          */
-        wmHelper: WindowManagerStateHelper = WindowManagerStateHelper()
+        wmHelper: WindowManagerStateHelper = WindowManagerStateHelper(instrumentation)
     ) : this(
         instrumentation,
         launcherStrategy,

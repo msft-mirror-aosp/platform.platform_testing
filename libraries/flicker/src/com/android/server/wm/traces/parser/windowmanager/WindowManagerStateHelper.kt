@@ -17,6 +17,7 @@
 package com.android.server.wm.traces.parser.windowmanager
 
 import android.app.ActivityTaskManager
+import android.app.Instrumentation
 import android.app.WindowConfiguration
 import android.content.ComponentName
 import android.os.SystemClock
@@ -35,11 +36,15 @@ import com.android.server.wm.traces.parser.toWindowName
 
 open class WindowManagerStateHelper @JvmOverloads constructor(
     /**
+     * Instrumentation to run the tests
+     */
+    private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation(),
+    /**
      * Predicate to supply a new UI information
      */
     private val deviceDumpSupplier: () -> Dump = {
         val currState = getCurrentStateDump(
-            InstrumentationRegistry.getInstrumentation().uiAutomation)
+            instrumentation.uiAutomation)
         Dump(
             currState.wmTrace?.entries?.first() ?: error("Unable to parse WM trace"),
             currState.layersTrace?.entries?.first() ?: error("Unable to parse Layers trace")
@@ -55,6 +60,13 @@ open class WindowManagerStateHelper @JvmOverloads constructor(
     private val retryIntervalMs: Long = 500L
 ) {
     private lateinit var homeActivity: ComponentName
+
+    /**
+     * Fetches the current device state
+     */
+    val currentState: Dump
+        get() = computeState(ignoreInvalidStates = true)
+
     /**
      * Queries the supplier for a new device state
      *
@@ -420,14 +432,18 @@ open class WindowManagerStateHelper @JvmOverloads constructor(
         }
 
     companion object {
-        private const val NAV_BAR_WINDOW_NAME = "NavigationBar0"
-        private const val STATUS_BAR_WINDOW_NAME = "StatusBar"
+        @VisibleForTesting
+        const val NAV_BAR_WINDOW_NAME = "NavigationBar0"
+        @VisibleForTesting
+        const val STATUS_BAR_WINDOW_NAME = "StatusBar"
         @VisibleForTesting
         const val NAV_BAR_LAYER_NAME = "$NAV_BAR_WINDOW_NAME#0"
         @VisibleForTesting
         const val STATUS_BAR_LAYER_NAME = "$STATUS_BAR_WINDOW_NAME#0"
-        private const val ROTATION_LAYER_NAME = "RotationLayer#0"
-        private const val IME_LAYER_NAME = "InputMethod#0"
+        @VisibleForTesting
+        const val ROTATION_LAYER_NAME = "RotationLayer#0"
+        @VisibleForTesting
+        const val IME_LAYER_NAME = "InputMethod#0"
     }
 
     data class Dump(

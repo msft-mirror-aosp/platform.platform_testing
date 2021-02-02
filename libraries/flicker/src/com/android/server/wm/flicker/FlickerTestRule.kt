@@ -16,7 +16,6 @@
 
 package com.android.server.wm.flicker
 
-import android.util.Log
 import org.junit.rules.TestRule
 import org.junit.runner.Description
 import org.junit.runners.model.Statement
@@ -24,18 +23,26 @@ import org.junit.runners.model.Statement
 /**
  * JUnit rule that runs the flicker tests.
  *
- * @param flickerSpec A flicker object to run
+ * Ensure a single executed test is in the test cache
+ *
+ * @param testSpec Flicker test specification
  */
-class FlickerTestRule(private val flickerSpec: Flicker) : TestRule {
+class FlickerTestRule(private val testSpec: FlickerTestRunnerFactory.TestSpec) : TestRule {
+    private val testFactory = FlickerTestRunnerFactory.getInstance()
+    private val _flicker = testFactory.get(testSpec)
+    internal val flicker: Flicker
+        get() = _flicker ?: error("Unable to find test for ${testSpec.testName}")
+
     override fun apply(base: Statement, description: Description): Statement =
         object : Statement() {
             override fun evaluate() {
-                try {
-                    flickerSpec.execute()
-                } catch (e: Throwable) {
-                    Log.e(FLICKER_TAG, "Failed to run transition", e)
+                testFactory.assertUpToOneTestExecuted()
+                if (testSpec.cleanUp) {
+                    testFactory.remove(testSpec)
+                } else {
+                    flicker.execute()
+                    base.evaluate()
                 }
-                base.evaluate()
             }
         }
 }

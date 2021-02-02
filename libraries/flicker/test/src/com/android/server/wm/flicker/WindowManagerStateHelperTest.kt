@@ -20,6 +20,7 @@ import android.content.ComponentName
 import android.view.Display
 import android.view.Surface
 import androidx.test.filters.FlakyTest
+import androidx.test.platform.app.InstrumentationRegistry
 import com.android.server.wm.flicker.traces.windowmanager.WindowManagerStateSubject
 import com.android.server.wm.traces.common.Buffer
 import com.android.server.wm.traces.common.Color
@@ -48,7 +49,8 @@ class WindowManagerStateHelperTest {
         deviceDumpSupplier: () -> Dump,
         numRetries: Int = 5,
         retryIntervalMs: Long = 500L
-    ) : WindowManagerStateHelper(deviceDumpSupplier, numRetries, retryIntervalMs) {
+    ) : WindowManagerStateHelper(InstrumentationRegistry.getInstrumentation(),
+        deviceDumpSupplier, numRetries, retryIntervalMs) {
         var wmState = computeState(ignoreInvalidStates = true).wmState
         override fun computeState(ignoreInvalidStates: Boolean): Dump {
             val state = super.computeState(ignoreInvalidStates)

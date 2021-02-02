@@ -26,7 +26,7 @@ package com.android.server.wm.flicker
 class TransitionRunnerCached @JvmOverloads constructor(
     private val runner: TransitionRunner = TransitionRunner()
 ) : TransitionRunner() {
-    private var result = FlickerResult()
+    private var result: FlickerResult? = null
 
     /**
      * {@inheritDoc}
@@ -34,15 +34,10 @@ class TransitionRunnerCached @JvmOverloads constructor(
      * @param flicker test specification
      */
     override fun run(flicker: Flicker): FlickerResult {
-        if (result.isEmpty()) {
+        if (result?.isEmpty() != false) {
             result = runner.run(flicker)
         }
 
-        return result
-    }
-
-    override fun cleanUp() {
-        result = FlickerResult()
-        runner.cleanUp()
+        return result ?: error("Result should not be empty")
     }
 }

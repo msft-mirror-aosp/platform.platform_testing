@@ -350,6 +350,6 @@ public class FlickerBuilderJava {
                 transitionCommands,
                 assertions.build(),
                 new TransitionRunner(),
-                new WindowManagerStateHelper());
+                new WindowManagerStateHelper(instrumentation));
     }
 }
