@@ -317,6 +317,67 @@ public final class MicrobenchmarkTest {
     }
 
     /**
+     * Test successive iteration will not be executed when the terminate on test fail
+     * option is enabled.
+     */
+    @Test
+    public void testTerminateOnTestFailOptionEnabled() throws InitializationError {
+        Bundle args = new Bundle();
+        args.putString("iterations", "2");
+        args.putString("rename-iterations", "false");
+        args.putString("terminate-on-test-fail", "true");
+        LoggingMicrobenchmark loggingRunner = new LoggingMicrobenchmark(
+                LoggingFailedTest.class, args);
+        loggingRunner.setOperationLog(new ArrayList<String>());
+        Result result = new JUnitCore().run(loggingRunner);
+        assertThat(result.wasSuccessful()).isFalse();
+        assertThat(loggingRunner.getOperationLog())
+                .containsExactly(
+                        "before",
+                        "tight before",
+                        "begin: testMethod("
+                                + "android.platform.test.microbenchmark.MicrobenchmarkTest"
+                                + "$LoggingFailedTest)",
+                        "end",
+                        "after")
+                .inOrder();
+    }
+
+    /**
+     * Test successive iteration will be executed when the terminate on test fail
+     * option is disabled.
+     */
+    @Test
+    public void testTerminateOnTestFailOptionDisabled() throws InitializationError {
+        Bundle args = new Bundle();
+        args.putString("iterations", "2");
+        args.putString("rename-iterations", "false");
+        args.putString("terminate-on-test-fail", "false");
+        LoggingMicrobenchmark loggingRunner = new LoggingMicrobenchmark(
+                LoggingFailedTest.class, args);
+        loggingRunner.setOperationLog(new ArrayList<String>());
+        Result result = new JUnitCore().run(loggingRunner);
+        assertThat(result.wasSuccessful()).isFalse();
+        assertThat(loggingRunner.getOperationLog())
+                .containsExactly(
+                        "before",
+                        "tight before",
+                        "begin: testMethod("
+                                + "android.platform.test.microbenchmark.MicrobenchmarkTest"
+                                + "$LoggingFailedTest)",
+                        "end",
+                        "after",
+                        "before",
+                        "tight before",
+                        "begin: testMethod("
+                                + "android.platform.test.microbenchmark.MicrobenchmarkTest"
+                                + "$LoggingFailedTest)",
+                        "end",
+                        "after")
+                .inOrder();
+    }
+
+    /**
      * An extensions of the {@link Microbenchmark} runner that logs the start and end of collecting
      * traces. It also passes the operation log to the provided test {@code Class}, if it is a
      * {@link LoggingTest}. This is used for ensuring the proper order for evaluating test {@link
@@ -409,6 +470,13 @@ public final class MicrobenchmarkTest {
                     }
                 };
             }
+        }
+    }
+
+    public static class LoggingFailedTest extends LoggingTest {
+        @Test
+        public void testMethod() {
+            throw new RuntimeException("I failed.");
         }
     }
 }

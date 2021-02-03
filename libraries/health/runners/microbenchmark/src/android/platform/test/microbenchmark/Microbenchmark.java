@@ -78,12 +78,15 @@ public class Microbenchmark extends BlockJUnit4ClassRunner {
     private static final String ALIGN_WITH_CHARGE_COUNTER_OPTION = "align-with-charge-counter";
     private static final String COUNTER_DECREMENT_TIMEOUT_OPTION = "counter-decrement-timeout_ms";
 
+    private static final String TERMINATE_ON_TEST_FAIL_OPTION = "terminate-on-test-fail";
+
     private final String mIterationSep;
     private final Bundle mArguments;
     private final boolean mRenameIterations;
     private final int mMinBatteryLevel;
     private final int mCounterDecrementTimeoutMs;
     private final boolean mAlignWithChargeCounter;
+    private final boolean mTerminateOnTestFailure;
     private final Map<Description, Integer> mIterations = new HashMap<>();
 
     private final BatteryManager mBatteryManager;
@@ -112,6 +115,10 @@ public class Microbenchmark extends BlockJUnit4ClassRunner {
         mAlignWithChargeCounter =
                 Boolean.parseBoolean(
                         arguments.getString(ALIGN_WITH_CHARGE_COUNTER_OPTION, "false"));
+
+        mTerminateOnTestFailure =
+                Boolean.parseBoolean(
+                        arguments.getString(TERMINATE_ON_TEST_FAIL_OPTION, "false"));
 
         // Get the battery manager for later use.
         mBatteryManager =
@@ -323,6 +330,9 @@ public class Microbenchmark extends BlockJUnit4ClassRunner {
                 eachNotifier.fireTestStarted();
                 eachNotifier.addFailure(e);
                 eachNotifier.fireTestFinished();
+                if(mTerminateOnTestFailure) {
+                    throw new TerminateEarlyException("test failed.");
+                }
                 return;
             }
 
@@ -333,14 +343,17 @@ public class Microbenchmark extends BlockJUnit4ClassRunner {
             statement = withAfters(method, test, statement);
             statement = withRules(method, test, statement);
 
+            boolean testFailed = false;
             // Fire test events from inside to exclude "no metric" methods.
             eachNotifier.fireTestStarted();
             try {
                 statement.evaluate();
             } catch (AssumptionViolatedException e) {
                 eachNotifier.addFailedAssumption(e);
+                testFailed = true;
             } catch (Throwable e) {
                 eachNotifier.addFailure(e);
+                testFailed = true;
             } finally {
                 eachNotifier.fireTestFinished();
             }
@@ -354,8 +367,14 @@ public class Microbenchmark extends BlockJUnit4ClassRunner {
                 }
             } catch (AssumptionViolatedException e) {
                 eachNotifier.addFailedAssumption(e);
+                testFailed = true;
             } catch (Throwable e) {
                 eachNotifier.addFailure(e);
+                testFailed = true;
+            }
+
+            if(mTerminateOnTestFailure && testFailed) {
+                throw new TerminateEarlyException("test failed.");
             }
         }
     }
@@ -387,4 +406,5 @@ public class Microbenchmark extends BlockJUnit4ClassRunner {
             super(String.format("Terminating early because %s", message));
         }
     }
+
 }

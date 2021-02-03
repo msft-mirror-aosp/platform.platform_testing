@@ -41,7 +41,7 @@ import org.junit.Assert.assertNotNull
 const val FIND_TIMEOUT: Long = 10000
 const val FAST_WAIT_TIMEOUT: Long = 0
 const val IME_PACKAGE = "com.google.android.inputmethod.latin"
-private const val SYSTEMUI_PACKAGE = "com.android.systemui"
+const val SYSTEMUI_PACKAGE = "com.android.systemui"
 private val LONG_PRESS_TIMEOUT = ViewConfiguration.getLongPressTimeout() * 2L
 private const val TAG = "FLICKER"
 
