@@ -23,6 +23,7 @@ import androidx.test.uiautomator.UiDevice
 import com.android.server.wm.flicker.Flicker
 import com.android.server.wm.flicker.FlickerDslMarker
 import com.android.server.wm.flicker.TransitionRunner
+import com.android.server.wm.flicker.assertions.AssertionBlock
 import com.android.server.wm.flicker.monitor.EventLogMonitor
 import com.android.server.wm.flicker.getDefaultFlickerOutputDir
 import com.android.server.wm.flicker.monitor.ITransitionMonitor
@@ -52,7 +53,7 @@ class FlickerBuilder private constructor(
     private val setupCommands: TestCommandsBuilder,
     private val teardownCommands: TestCommandsBuilder,
     private val transitionCommands: MutableList<Flicker.() -> Any>,
-    internal val assertions: AssertionTargetBuilder,
+    internal val assertions: AssertionBlockBuilder,
     val device: UiDevice,
     private val traceMonitors: MutableList<ITransitionMonitor>
 ) {
@@ -99,7 +100,7 @@ class FlickerBuilder private constructor(
         setupCommands = TestCommandsBuilder(),
         teardownCommands = TestCommandsBuilder(),
         transitionCommands = mutableListOf(),
-        assertions = AssertionTargetBuilder(),
+        assertions = AssertionBlockBuilder(),
         device = UiDevice.getInstance(instrumentation),
         traceMonitors = mutableListOf<ITransitionMonitor>()
             .also {
@@ -124,7 +125,7 @@ class FlickerBuilder private constructor(
         TestCommandsBuilder(otherBuilder.setupCommands),
         TestCommandsBuilder(otherBuilder.teardownCommands),
         otherBuilder.transitionCommands.toMutableList(),
-        AssertionTargetBuilder(otherBuilder.assertions),
+        AssertionBlockBuilder(otherBuilder.assertions),
         UiDevice.getInstance(otherBuilder.instrumentation),
         otherBuilder.traceMonitors.toMutableList()
     )
@@ -228,7 +229,7 @@ class FlickerBuilder private constructor(
     /**
      * Defines the assertions to check the recorded traces
      */
-    fun assertions(assertion: AssertionTargetBuilder.() -> Unit) {
+    fun assertions(assertion: AssertionBlockBuilder.() -> Unit) {
         assertions.apply { assertion() }
     }
 
@@ -320,5 +321,6 @@ fun runWithFlicker(
     runner: TransitionRunner = TransitionRunner(),
     configuration: FlickerBuilder.() -> Unit = {}
 ) {
-    builder.copy(configuration).build(runner).execute().checkAssertions()
+    builder.copy(configuration).build(runner).execute().checkAssertions(
+        block = AssertionBlock.PRESUBMIT.or(AssertionBlock.POSTSUBMIT))
 }

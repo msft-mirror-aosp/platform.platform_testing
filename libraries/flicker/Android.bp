@@ -45,6 +45,7 @@ java_library {
         "truth-prebuilt",
         "launcher-helper-lib",
         "wm-proto-parsers",
+        "platform-test-annotations",
     ],
 }
 

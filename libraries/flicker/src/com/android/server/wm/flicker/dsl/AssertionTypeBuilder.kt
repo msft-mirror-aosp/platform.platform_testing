@@ -17,8 +17,15 @@
 package com.android.server.wm.flicker.dsl
 
 import com.android.server.wm.flicker.FlickerDslMarker
+import com.android.server.wm.flicker.assertions.AssertionBlock
 import com.android.server.wm.flicker.assertions.AssertionData
 import com.android.server.wm.flicker.assertions.FlickerSubject
+import com.android.server.wm.flicker.traces.eventlog.EventLogSubject
+import com.android.server.wm.flicker.traces.eventlog.FocusEventSubject
+import com.android.server.wm.flicker.traces.layers.LayerTraceEntrySubject
+import com.android.server.wm.flicker.traces.layers.LayersTraceSubject
+import com.android.server.wm.flicker.traces.windowmanager.WindowManagerStateSubject
+import com.android.server.wm.flicker.traces.windowmanager.WindowManagerTraceSubject
 import kotlin.reflect.KClass
 
 /**
@@ -28,16 +35,28 @@ import kotlin.reflect.KClass
  * used-defined [tag]s
  */
 @FlickerDslMarker
-abstract class AssertionTypeBuilder<out Trace : FlickerSubject, out Entry : FlickerSubject>
+open class AssertionTypeBuilder<out Trace : FlickerSubject, out Entry : FlickerSubject>
 @JvmOverloads constructor(
+    /**
+     * Moment where the assertion should run
+     */
+    @AssertionBlock protected val block: Int,
+    /**
+     * Type of flicker subject for trace assertions
+     */
+    protected val traceSubjectClass: KClass<out FlickerSubject>,
+    /**
+     * Type of flicker subject for entry assertions
+     */
+    protected val entrySubjectClass: KClass<out FlickerSubject>,
     /**
      * List of trace assertions
      */
     protected val assertions: MutableList<AssertionData> = mutableListOf()
 ) {
-    protected abstract val traceSubjectClass: KClass<out FlickerSubject>
-    protected abstract val entrySubjectClass: KClass<out FlickerSubject>
-    abstract fun copy(): AssertionTypeBuilder<Trace, Entry>
+    open fun copy(): AssertionTypeBuilder<Trace, Entry> {
+        return AssertionTypeBuilder(block, traceSubjectClass, entrySubjectClass, assertions)
+    }
 
     /**
      * Assertions to run only in the first trace entry
@@ -48,21 +67,12 @@ abstract class AssertionTypeBuilder<out Trace : FlickerSubject, out Entry : Flic
      * This command can be used multiple times, and the results are appended
      *
      * @param name Name of the assertion to appear on errors
-     * @param enabled If the assertion is enabled or not
-     * @param bugId If the assertion is disabled because of a bug, which bug is it.
+     * @param bugId Associated with the assertion
      * @param assertion Assertion command
      */
     @JvmOverloads
-    fun start(
-        name: String,
-        bugId: Int = 0,
-        enabled: Boolean = bugId == 0,
-        assertion: Entry.() -> Any
-    ) {
-        assertions.add(
-            AssertionData(AssertionTag.START, name, enabled, bugId,
-                entrySubjectClass, assertion as FlickerSubject.() -> Unit)
-        )
+    open fun start(name: String, bugId: Int = 0, assertion: Entry.() -> Any) {
+        addEntry(AssertionTag.START, name, bugId, assertion = assertion)
     }
 
     /**
@@ -74,21 +84,12 @@ abstract class AssertionTypeBuilder<out Trace : FlickerSubject, out Entry : Flic
      * This command can be used multiple times, and the results are appended
      *
      * @param name Name of the assertion to appear on errors
-     * @param enabled If the assertion is enabled or not
-     * @param bugId If the assertion is disabled because of a bug, which bug is it.
+     * @param bugId Associated with the assertion
      * @param assertion Assertion command
      */
     @JvmOverloads
-    fun end(
-        name: String,
-        bugId: Int = 0,
-        enabled: Boolean = bugId == 0,
-        assertion: Entry.() -> Any
-    ) {
-        assertions.add(
-            AssertionData(AssertionTag.END, name, enabled, bugId,
-                entrySubjectClass, assertion as FlickerSubject.() -> Unit)
-        )
+    open fun end(name: String, bugId: Int = 0, assertion: Entry.() -> Any) {
+        addEntry(AssertionTag.END, name, bugId, assertion = assertion)
     }
 
     /**
@@ -100,21 +101,12 @@ abstract class AssertionTypeBuilder<out Trace : FlickerSubject, out Entry : Flic
      * This command can be used multiple times, and the results are appended
      *
      * @param name Name of the assertion to appear on errors
-     * @param enabled If the assertion is enabled or not
-     * @param bugId If the assertion is disabled because of a bug, which bug is it.
+     * @param bugId Associated with the assertion
      * @param assertion Assertion command
      */
     @JvmOverloads
-    fun all(
-        name: String,
-        bugId: Int = 0,
-        enabled: Boolean = bugId == 0,
-        assertion: Trace.() -> Any
-    ) {
-        assertions.add(
-            AssertionData(AssertionTag.ALL, name, enabled, bugId,
-                traceSubjectClass, assertion as FlickerSubject.() -> Unit)
-        )
+    open fun all(name: String, bugId: Int = 0, assertion: Trace.() -> Any) {
+        addTrace(name, bugId, assertion = assertion)
     }
 
     /**
@@ -129,21 +121,36 @@ abstract class AssertionTypeBuilder<out Trace : FlickerSubject, out Entry : Flic
      *
      * @param tag Tag used during tracing
      * @param name Name of the assertion to appear on errors
-     * @param enabled If the assertion is enabled or not
-     * @param bugId If the assertion is disabled because of a bug, which bug is it.
+     * @param bugId Associated with the assertion
      * @param assertion Assertion command
      */
     @JvmOverloads
-    fun tag(
+    open fun tag(tag: String, name: String = tag, bugId: Int = 0, assertion: Entry.() -> Any) {
+        addEntry(tag, name, bugId, assertion = assertion)
+    }
+
+    protected fun addEntry(
         tag: String,
-        name: String = "",
-        bugId: Int = 0,
-        enabled: Boolean = bugId == 0,
+        name: String,
+        bugId: Int,
+        @AssertionBlock block: Int = this.block,
         assertion: Entry.() -> Any
     ) {
         assertions.add(
-            AssertionData(tag, name, enabled, bugId,
-                entrySubjectClass, assertion as FlickerSubject.() -> Unit)
+            AssertionData(tag, name, bugId, entrySubjectClass, block,
+                assertion as FlickerSubject.() -> Unit)
+        )
+    }
+
+    protected fun addTrace(
+        name: String,
+        bugId: Int,
+        @AssertionBlock block: Int = this.block,
+        assertion: Trace.() -> Any
+    ) {
+        assertions.add(
+            AssertionData(AssertionTag.ALL, name, bugId, traceSubjectClass, block,
+                assertion as FlickerSubject.() -> Unit)
         )
     }
 
@@ -151,4 +158,29 @@ abstract class AssertionTypeBuilder<out Trace : FlickerSubject, out Entry : Flic
      * Builds the list of assertions
      */
     fun build(): List<AssertionData> = assertions.toList()
+
+    companion object {
+        fun newWMAssertions(@AssertionBlock block: Int):
+            AssertionTypeBuilder<WindowManagerTraceSubject, WindowManagerStateSubject> {
+            return AssertionTypeBuilder(block, WindowManagerTraceSubject::class,
+                WindowManagerStateSubject::class)
+        }
+
+        fun newLayerAssertions(@AssertionBlock block: Int):
+            AssertionTypeBuilder<LayersTraceSubject, LayerTraceEntrySubject> {
+            return AssertionTypeBuilder(block, LayersTraceSubject::class,
+                LayerTraceEntrySubject::class)
+        }
+
+        fun newEventLogAssertions(@AssertionBlock block: Int):
+            AssertionTypeBuilder<EventLogSubject, FocusEventSubject> {
+            return AssertionTypeBuilder(block, EventLogSubject::class,
+                FocusEventSubject::class)
+        }
+    }
 }
+
+typealias WmAssertionBuilder = AssertionTypeBuilder<WindowManagerTraceSubject,
+    WindowManagerStateSubject>
+typealias LayersAssertionBuilder = AssertionTypeBuilder<LayersTraceSubject, LayerTraceEntrySubject>
+typealias EventLogAssertionBuilder = AssertionTypeBuilder<EventLogSubject, FocusEventSubject>

@@ -17,9 +17,14 @@
 package com.android.server.wm.flicker.dsl
 
 import com.android.server.wm.flicker.FlickerDslMarker
+import com.android.server.wm.flicker.assertions.AssertionBlock
 import com.android.server.wm.flicker.assertions.AssertionData
+import com.android.server.wm.flicker.traces.eventlog.EventLogSubject
 import com.android.server.wm.flicker.traces.eventlog.FocusEvent
+import com.android.server.wm.flicker.traces.eventlog.FocusEventSubject
+import com.android.server.wm.flicker.traces.layers.LayerTraceEntrySubject
 import com.android.server.wm.flicker.traces.layers.LayersTraceSubject
+import com.android.server.wm.flicker.traces.windowmanager.WindowManagerStateSubject
 import com.android.server.wm.flicker.traces.windowmanager.WindowManagerTraceSubject
 
 /**
@@ -28,21 +33,24 @@ import com.android.server.wm.flicker.traces.windowmanager.WindowManagerTraceSubj
  * Currently supports [WindowManagerTraceSubject], [LayersTraceSubject] and list of [FocusEvent]s
  */
 @FlickerDslMarker
-class AssertionTargetBuilder private constructor(
-    private val wmAssertionsBuilder: WmAssertionBuilder = WmAssertionBuilder(),
-    private val layerAssertionsBuilder: LayersAssertionBuilder = LayersAssertionBuilder(),
-    private val eventLogAssertionsBuilder: EventLogAssertionBuilder = EventLogAssertionBuilder()
+class AssertionTargetBuilder constructor(
+    private val wmAssertionsBuilder: WmAssertionBuilder,
+    private val layerAssertionsBuilder: LayersAssertionBuilder,
+    private val eventLogAssertionsBuilder: EventLogAssertionBuilder
 ) {
-    constructor() : this(WmAssertionBuilder(), LayersAssertionBuilder(),
-        EventLogAssertionBuilder())
+    constructor(@AssertionBlock block: Int): this(
+        AssertionTypeBuilder.newWMAssertions(block),
+            AssertionTypeBuilder.newLayerAssertions(block),
+            AssertionTypeBuilder.newEventLogAssertions(block)
+    )
 
     /**
      * Copy constructor
      */
-    constructor(otherTarget: AssertionTargetBuilder) : this(
-        otherTarget.wmAssertionsBuilder.copy() as WmAssertionBuilder,
-        otherTarget.layerAssertionsBuilder.copy() as LayersAssertionBuilder,
-        otherTarget.eventLogAssertionsBuilder.copy() as EventLogAssertionBuilder
+    constructor(other: AssertionTargetBuilder) : this(
+        other.wmAssertionsBuilder.copy(),
+        other.layerAssertionsBuilder.copy(),
+        other.eventLogAssertionsBuilder.copy()
     )
 
     fun build(): List<AssertionData> {
@@ -61,7 +69,10 @@ class AssertionTargetBuilder private constructor(
      * @param assertion Type of assertion determining which part of the trace will be
      * checked (e.g., start, end, all)
      */
-    fun windowManagerTrace(assertion: WmAssertionBuilder.() -> Unit) {
+    fun windowManagerTrace(
+        assertion: AssertionTypeBuilder<WindowManagerTraceSubject,
+            WindowManagerStateSubject>.() -> Unit
+    ) {
         wmAssertionsBuilder.apply { assertion() }
     }
 
@@ -73,7 +84,9 @@ class AssertionTargetBuilder private constructor(
      * @param assertion Type of assertion determining which part of the trace will be
      * checked (e.g., start, end, all)
      */
-    fun layersTrace(assertion: LayersAssertionBuilder.() -> Unit) {
+    fun layersTrace(
+        assertion: AssertionTypeBuilder<LayersTraceSubject, LayerTraceEntrySubject>.() -> Unit
+    ) {
         layerAssertionsBuilder.apply { assertion() }
     }
 
@@ -84,7 +97,9 @@ class AssertionTargetBuilder private constructor(
      *
      * @param assertion Type of assertion determining which part of the trace will be checked
      */
-    fun eventLog(assertion: EventLogAssertionBuilder.() -> Unit) {
+    fun eventLog(
+        assertion: AssertionTypeBuilder<EventLogSubject, FocusEventSubject>.() -> Unit
+    ) {
         eventLogAssertionsBuilder.apply { assertion() }
     }
 }
