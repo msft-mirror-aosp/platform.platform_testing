@@ -101,8 +101,6 @@ open class StandardAppHelper @JvmOverloads constructor(
 
     /** {@inheritDoc}  */
     override fun exit() {
-        super.exit()
-
         // Ensure all testing components end up being closed.
         activityManager?.forceStopPackage(component.packageName)
     }
@@ -158,6 +156,9 @@ open class StandardAppHelper @JvmOverloads constructor(
         }
         wmHelper.waitForNavBarStatusBarVisible()
         wmHelper.waitForAppTransitionIdle()
+
+        // Ensure WindowManagerService wait until all animations have completed
+        mInstrumentation.getUiAutomation().syncInputTransactions()
     }
 
     companion object {
