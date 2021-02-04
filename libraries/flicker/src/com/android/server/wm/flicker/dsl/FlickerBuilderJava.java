@@ -134,7 +134,11 @@ public class FlickerBuilderJava {
     private TestCommandsBuilder setupCommands = new TestCommandsBuilder();
     private TestCommandsBuilder teardownCommands = new TestCommandsBuilder();
     private List<Function1<? super Flicker, ?>> transitionCommands = new ArrayList<>();
-    private AssertionTargetBuilder assertions = new AssertionTargetBuilder();
+    private AssertionTargetBuilder assertions =
+            new AssertionTargetBuilder(
+                    LegacyAssertionTypeBuilder.Companion.newWMAssertions(),
+                    LegacyAssertionTypeBuilder.Companion.newLayerAssertions(),
+                    LegacyAssertionTypeBuilder.Companion.newEventLogAssertions());
     private List<ITransitionMonitor> traceMonitors = new ArrayList<>();
     private WindowAnimationFrameStatsMonitor frameStatsMonitor;
 

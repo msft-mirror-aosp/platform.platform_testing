@@ -16,9 +16,17 @@
 
 package com.android.server.wm.flicker.assertions
 
+import android.annotation.IntDef
+import android.platform.test.annotations.Presubmit
+import androidx.test.filters.FlakyTest
 import com.android.server.wm.flicker.FlickerRunResult
-import com.android.server.wm.flicker.dsl.AssertionTag
+import com.android.server.wm.flicker.FlickerTestRunner
+import com.android.server.wm.flicker.FlickerTestRunnerFactory
+import com.android.server.wm.flicker.assertions.AssertionBlock.Companion.FLAKY
+import com.android.server.wm.flicker.assertions.AssertionBlock.Companion.PRESUBMIT
+import com.android.server.wm.flicker.assertions.AssertionBlock.Companion.POSTSUBMIT
 import kotlin.reflect.KClass
+import org.junit.Test
 
 /**
  * Class containing basic data about a trace assertion for Flicker DSL
@@ -33,10 +41,6 @@ data class AssertionData internal constructor(
      */
     @JvmField val name: String,
     /**
-     * If the assertion is enabled or not
-     */
-    @JvmField val enabled: Boolean,
-    /**
      * If the assertion is disabled because of a bug, which bug is it.
       */
     @JvmField val bugId: Int,
@@ -44,6 +48,10 @@ data class AssertionData internal constructor(
      * Expected run result type
      */
     @JvmField val expectedSubjectClass: KClass<out FlickerSubject>,
+    /**
+     * Moment where the assertion should run
+     */
+    @JvmField @AssertionBlock val block: Int,
     /**
      * Assertion command
      */
@@ -53,10 +61,11 @@ data class AssertionData internal constructor(
      * Extracts the data from the result and executes the assertion
      *
      * @param run Run to be asserted
+     * @param block Moment where the assertion should run
      */
-    fun checkAssertion(run: FlickerRunResult, onlyFlaky: Boolean) {
-        val shouldRun = (this.enabled && !onlyFlaky) || (!this.enabled && onlyFlaky)
-        val correctTag = tag.isEmpty() || tag == run.assertionTag
+    fun checkAssertion(run: FlickerRunResult, @AssertionBlock block: Int) {
+        val shouldRun = this.block.and(block) > 0
+        val correctTag = tag == run.assertionTag
         if (shouldRun && correctTag) {
             val subjects = run.getSubjects()
             subjects.forEach { subject ->
@@ -69,5 +78,24 @@ data class AssertionData internal constructor(
 
     override fun toString(): String {
         return name
+    }
+}
+
+/**
+ * Moments where the assertions should be executed
+ *
+ * This information is used by [FlickerTestRunner] to execute tests created through the
+ * [FlickerTestRunnerFactory].
+ *
+ * Assertions using the [PRESUBMIT] are translated into tests annotated with [Test] and [Presubmit].
+ * Assertions using the [POSTSUBMIT] are translated into tests annotated with [Test].
+ * Assertions using the [FLAKY] are translated into tests annotated with [Test] and [FlakyTest].
+ */
+@IntDef(value = [PRESUBMIT, POSTSUBMIT, FLAKY])
+annotation class AssertionBlock {
+    companion object {
+        const val PRESUBMIT = 1
+        const val POSTSUBMIT = 2
+        const val FLAKY = 4
     }
 }

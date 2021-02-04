@@ -16,7 +16,9 @@
 
 package com.android.server.wm.flicker
 
+import android.platform.test.annotations.Presubmit
 import androidx.test.filters.FlakyTest
+import com.android.server.wm.flicker.assertions.AssertionBlock
 import org.junit.Assume
 import org.junit.Rule
 import org.junit.Test
@@ -36,25 +38,27 @@ abstract class FlickerTestRunner(protected val testSpec: FlickerTestRunnerFactor
     @get:Rule
     val flickerTestRule = FlickerTestRule(testSpec)
 
-    private fun checkRequirements(onlyFlaky: Boolean) {
+    private fun checkRequirements(@AssertionBlock block: Int) {
         if (testSpec.assertionName.isNotEmpty()) {
-            val isTestEnabled = flickerTestRule.flicker.assertions
-                .firstOrNull { it.name == testSpec.assertionName }?.enabled ?: false
-            if (onlyFlaky) {
-                Assume.assumeFalse(isTestEnabled)
-            } else {
-                Assume.assumeTrue(isTestEnabled)
-            }
+            val firstBlock = flickerTestRule.flicker.assertions.first().block
+            Assume.assumeTrue(firstBlock == block)
         }
     }
 
     /**
      * Run only the enabled assertions on the recorded traces.
      */
+    @Presubmit
     @Test
     fun test() {
-        checkRequirements(onlyFlaky = false)
-        flickerTestRule.flicker.checkAssertions(testSpec.assertionName, onlyFlaky = false)
+        checkRequirements(AssertionBlock.PRESUBMIT)
+        flickerTestRule.flicker.checkAssertions(testSpec.assertionName, AssertionBlock.PRESUBMIT)
+    }
+
+    @Test
+    fun testPostSubmit() {
+        checkRequirements(AssertionBlock.POSTSUBMIT)
+        flickerTestRule.flicker.checkAssertions(testSpec.assertionName, AssertionBlock.POSTSUBMIT)
     }
 
     /**
@@ -63,7 +67,7 @@ abstract class FlickerTestRunner(protected val testSpec: FlickerTestRunnerFactor
     @FlakyTest
     @Test
     fun testFlaky() {
-        checkRequirements(onlyFlaky = true)
-        flickerTestRule.flicker.checkAssertions(testSpec.assertionName, onlyFlaky = true)
+        checkRequirements(AssertionBlock.FLAKY)
+        flickerTestRule.flicker.checkAssertions(testSpec.assertionName, AssertionBlock.FLAKY)
     }
 }
