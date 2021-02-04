@@ -67,7 +67,7 @@ class ScreenRecorderTest {
         mScreenRecorder.stop()
         val builder = FlickerRunResult.Builder()
         mScreenRecorder.save("test", builder)
-        val traces = builder.buildTraceResults().mapNotNull { result ->
+        val traces = builder.buildAll().mapNotNull { result ->
             result.traceFiles.firstOrNull {
                 it.toString().contains("transition")
             }

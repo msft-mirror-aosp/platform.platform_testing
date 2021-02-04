@@ -17,8 +17,6 @@
 package com.android.server.wm.flicker
 
 import android.util.Log
-import com.android.server.wm.flicker.dsl.AssertionTag
-import com.android.server.wm.flicker.dsl.TestCommandsBuilder
 import com.android.server.wm.flicker.monitor.ITransitionMonitor
 import com.android.server.wm.traces.parser.DeviceStateDump
 import com.android.server.wm.traces.parser.getCurrentState
@@ -72,13 +70,9 @@ open class TransitionRunner {
             "Number of repetitions must be greater than 0" }
     }
 
-    private fun internalCleanUp() {
+    private fun cleanUp() {
         tags.clear()
         tagsResults.clear()
-    }
-
-    open fun cleanUp() {
-        internalCleanUp()
     }
 
     /**

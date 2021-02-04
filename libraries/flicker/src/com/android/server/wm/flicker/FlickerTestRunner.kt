@@ -30,23 +30,16 @@ import org.junit.Test
  * All the enabled assertions are created in a single test and all flaky assertions are created on
  * a second test annotated with @FlakyTest
  *
- * @param testName Name of the test. Appears on log outputs and test dashboards
- * @param flickerSpec Flicker test to execute
- * @param cleanUp If this test should delete the traces and screen recording files if it passes
+ * @param testSpec Flicker test specification
  */
-abstract class FlickerTestRunner(
-    testName: String,
-    private val flickerProvider: () -> Flicker,
-    private val cleanUp: Boolean
-) {
-    private val flickerSpec = flickerProvider.invoke()
-
+abstract class FlickerTestRunner(protected val testSpec: FlickerTestRunnerFactory.TestSpec) {
     @get:Rule
-    val flickerTestRule = FlickerTestRule(flickerSpec)
+    val flickerTestRule = FlickerTestRule(testSpec)
 
     private fun checkRequirements(onlyFlaky: Boolean) {
-        if (flickerSpec.assertions.size == 1) {
-            val isTestEnabled = flickerSpec.assertions.first().enabled
+        if (testSpec.assertionName.isNotEmpty()) {
+            val isTestEnabled = flickerTestRule.flicker.assertions
+                .firstOrNull { it.name == testSpec.assertionName }?.enabled ?: false
             if (onlyFlaky) {
                 Assume.assumeFalse(isTestEnabled)
             } else {
@@ -61,11 +54,7 @@ abstract class FlickerTestRunner(
     @Test
     fun test() {
         checkRequirements(onlyFlaky = false)
-        flickerSpec.checkIsExecuted()
-        flickerSpec.checkAssertions(onlyFlaky = false)
-        if (cleanUp) {
-            flickerSpec.cleanUp()
-        }
+        flickerTestRule.flicker.checkAssertions(testSpec.assertionName, onlyFlaky = false)
     }
 
     /**
@@ -75,10 +64,6 @@ abstract class FlickerTestRunner(
     @Test
     fun testFlaky() {
         checkRequirements(onlyFlaky = true)
-        flickerSpec.checkIsExecuted()
-        flickerSpec.checkAssertions(onlyFlaky = true)
-        if (cleanUp) {
-            flickerSpec.cleanUp()
-        }
+        flickerTestRule.flicker.checkAssertions(testSpec.assertionName, onlyFlaky = true)
     }
 }
