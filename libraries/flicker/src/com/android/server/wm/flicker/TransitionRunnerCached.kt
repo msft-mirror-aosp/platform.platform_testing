@@ -30,8 +30,6 @@ class TransitionRunnerCached @JvmOverloads constructor(
 
     /**
      * {@inheritDoc}
-     *
-     * @param flicker test specification
      */
     override fun run(flicker: Flicker): FlickerResult {
         if (result?.isEmpty() != false) {
@@ -39,5 +37,12 @@ class TransitionRunnerCached @JvmOverloads constructor(
         }
 
         return result ?: error("Result should not be empty")
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    override fun createTag(flicker: Flicker, tag: String) {
+        runner.createTag(flicker, tag)
     }
 }

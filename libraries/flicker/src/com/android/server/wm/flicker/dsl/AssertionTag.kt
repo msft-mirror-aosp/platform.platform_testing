@@ -25,5 +25,5 @@ package com.android.server.wm.flicker.dsl
 object AssertionTag {
     const val START = "start"
     const val END = "end"
-    const val ALL = "end"
+    const val ALL = "all"
 }

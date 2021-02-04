@@ -17,9 +17,15 @@
 package com.android.server.wm.flicker
 
 import androidx.test.platform.app.InstrumentationRegistry
-import com.android.server.wm.flicker.dsl.AssertionTargetBuilder
+import com.android.server.wm.flicker.dsl.AssertionBlockBuilder
 import com.android.server.wm.flicker.dsl.FlickerBuilder
 import com.android.server.wm.flicker.dsl.runWithFlicker
+import com.android.server.wm.flicker.traces.eventlog.EventLogSubject
+import com.android.server.wm.flicker.traces.eventlog.FocusEventSubject
+import com.android.server.wm.flicker.traces.layers.LayerTraceEntrySubject
+import com.android.server.wm.flicker.traces.layers.LayersTraceSubject
+import com.android.server.wm.flicker.traces.windowmanager.WindowManagerStateSubject
+import com.android.server.wm.flicker.traces.windowmanager.WindowManagerTraceSubject
 import com.google.common.truth.Truth
 import org.junit.Assert
 import org.junit.FixMethodOrder
@@ -34,26 +40,83 @@ import org.junit.runners.MethodSorters
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class FlickerDSLTest {
     private val instrumentation = InstrumentationRegistry.getInstrumentation()
+    private val TAG = "tag"
 
     @Test
-    fun preventDuplicatedTag() {
-        val builder = FlickerBuilder(instrumentation)
-
-        try {
-            runWithFlicker(builder) {
-                transitions {
-                    this.createTag("myTag")
-                    this.withTag("myTag") {
-                        this.device.pressHome()
+    fun checkExpectedSubjectClass() {
+        val flicker = FlickerBuilder(instrumentation).apply {
+            assertions {
+                presubmit {
+                    windowManagerTrace {
+                        start("start") { }
+                        end("end") { }
+                        tag(TAG) { }
+                        all("all") { }
+                    }
+                    layersTrace {
+                        start("start") { }
+                        end("end") { }
+                        tag(TAG) { }
+                        all("all") { }
+                    }
+                    eventLog {
+                        start("start") { }
+                        end("end") { }
+                        tag(TAG) { }
+                        all("all") { }
                     }
                 }
             }
-            Assert.fail("Should not have allowed duplicated tags")
-        } catch (e: Exception) {
-            Truth.assertWithMessage("Did not prevent duplicated tag use")
-                .that(e.cause?.message)
-                .contains("Tag myTag has already been used")
+        }.build()
+
+        val expectedClasses = listOf(
+            WindowManagerStateSubject::class,
+            WindowManagerStateSubject::class,
+            WindowManagerStateSubject::class,
+            WindowManagerTraceSubject::class,
+            LayerTraceEntrySubject::class,
+            LayerTraceEntrySubject::class,
+            LayerTraceEntrySubject::class,
+            LayersTraceSubject::class,
+            FocusEventSubject::class,
+            FocusEventSubject::class,
+            FocusEventSubject::class,
+            EventLogSubject::class
+        )
+
+        val actualClasses = flicker.assertions.map { it.expectedSubjectClass }
+
+        Truth.assertWithMessage("Unexpected subject type")
+            .that(actualClasses)
+            .isEqualTo(expectedClasses)
+    }
+
+    @Test
+    fun supportDuplicatedTag() {
+        val builder = FlickerBuilder(instrumentation)
+        var count = 0
+
+        runWithFlicker(builder) {
+            transitions {
+                this.createTag(TAG)
+                this.withTag(TAG) {
+                    this.device.pressHome()
+                }
+            }
+            assertions {
+                presubmit {
+                    windowManagerTrace {
+                        tag(TAG) {
+                            count++
+                        }
+                    }
+                }
+            }
         }
+
+        Truth.assertWithMessage("Should have asserted $TAG 2x")
+            .that(count)
+            .isEqualTo(2)
     }
 
     @Test
@@ -78,15 +141,14 @@ class FlickerDSLTest {
     fun assertCreatedTags() {
         val builder = FlickerBuilder(instrumentation)
 
-        val myTag = "myTag"
         runWithFlicker(builder) {
             transitions {
-                this.createTag(myTag)
+                this.createTag(TAG)
                 device.pressHome()
             }
             assertions {
                 windowManagerTrace {
-                    tag(myTag) {
+                    tag(TAG) {
                         this.isNotEmpty()
                     }
 
@@ -98,7 +160,7 @@ class FlickerDSLTest {
                         this.isNotEmpty()
                     }
 
-                    tag("invalid") {
+                    tag("invalid", "invalid") {
                         fail("`Invalid` tag was not created, so it should not " +
                             "have been asserted")
                     }
@@ -114,7 +176,7 @@ class FlickerDSLTest {
             runWithFlicker(builder) {
                 assertions {
                     windowManagerTrace {
-                        tag("tag") {
+                        tag(TAG) {
                             this.isNotEmpty()
                         }
                     }
@@ -147,11 +209,12 @@ class FlickerDSLTest {
         }
     }
 
-    private fun detectFailedAssertion(assertions: AssertionTargetBuilder.() -> Any): Throwable {
+    private fun detectFailedAssertion(assertions: AssertionBlockBuilder.() -> Any): Throwable {
         val builder = FlickerBuilder(instrumentation)
         return assertThrows(AssertionError::class.java) {
             runWithFlicker(builder) {
                 transitions {
+                    createTag(TAG)
                     device.pressHome()
                 }
                 assertions {
@@ -198,6 +261,18 @@ class FlickerDSLTest {
     }
 
     @Test
+    fun detectFailedWMAssertion_Tag() {
+        val error = detectFailedAssertion {
+            windowManagerTrace {
+                tag(TAG) { fail("Correct error") }
+                tag(TAG, enabled = false) { fail("Ignored error") }
+            }
+        }
+        assertFailure(error).hasMessageThat().contains("Correct error")
+        assertFailure(error).hasMessageThat().doesNotContain("Ignored error")
+    }
+
+    @Test
     fun detectFailedLayersAssertion_All() {
         val error = detectFailedAssertion {
             layersTrace {
@@ -227,6 +302,18 @@ class FlickerDSLTest {
             layersTrace {
                 end("fail") { fail("Correct error") }
                 end("ignored", enabled = false) { fail("Ignored error") }
+            }
+        }
+        assertFailure(error).hasMessageThat().contains("Correct error")
+        assertFailure(error).hasMessageThat().doesNotContain("Ignored error")
+    }
+
+    @Test
+    fun detectFailedLayersAssertion_Tag() {
+        val error = detectFailedAssertion {
+            layersTrace {
+                tag(TAG) { fail("Correct error") }
+                tag(TAG, enabled = false) { fail("Ignored error") }
             }
         }
         assertFailure(error).hasMessageThat().contains("Correct error")

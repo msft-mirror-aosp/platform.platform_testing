@@ -16,6 +16,7 @@
 
 package com.android.server.wm.flicker
 
+import com.android.server.wm.flicker.assertions.AssertionBlock
 import com.android.server.wm.flicker.assertions.AssertionData
 import com.android.server.wm.flicker.assertions.FlickerAssertionError
 import com.google.common.truth.Truth
@@ -53,18 +54,18 @@ data class FlickerResult(
     /**
      * Run the assertions on the trace
      *
-     * @param onlyFlaky Runs only the flaky assertions
+     * @param block Moment where the assertion should run
      * @throws AssertionError If the assertions fail or the transition crashed
      */
     internal fun checkAssertions(
         assertions: List<AssertionData>,
-        onlyFlaky: Boolean
+        @AssertionBlock block: Int
     ): List<FlickerAssertionError> {
         checkIsExecuted()
         val currFailures: List<FlickerAssertionError> = runs.flatMap { run ->
             assertions.mapNotNull { assertion ->
                 try {
-                    assertion.checkAssertion(run, onlyFlaky)
+                    assertion.checkAssertion(run, block)
                     null
                 } catch (error: Throwable) {
                     FlickerAssertionError(error, assertion, run)

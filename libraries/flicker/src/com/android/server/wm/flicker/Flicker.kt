@@ -21,6 +21,7 @@ import android.support.test.launcherhelper.ILauncherStrategy
 import android.util.Log
 import androidx.annotation.VisibleForTesting
 import androidx.test.uiautomator.UiDevice
+import com.android.server.wm.flicker.assertions.AssertionBlock
 import com.android.server.wm.flicker.assertions.AssertionData
 import com.android.server.wm.flicker.monitor.ITransitionMonitor
 import com.android.server.wm.flicker.monitor.WindowAnimationFrameStatsMonitor
@@ -132,11 +133,11 @@ class Flicker(
     /**
      * Run the assertions on the trace
      *
-     * @param onlyFlaky Runs only the flaky assertions
+     * @param block Moment where the assertion should run
      * @throws AssertionError If the assertions fail or the transition crashed
      */
     @JvmOverloads
-    fun checkAssertions(assertionName: String = "", onlyFlaky: Boolean = false) {
+    fun checkAssertions(assertionName: String = "", @AssertionBlock block: Int) {
         checkIsExecuted()
         val result = result
         requireNotNull(result)
@@ -144,7 +145,7 @@ class Flicker(
         val assertions = assertions.filter { assertionName.isEmpty() || it.name == assertionName }
         require(assertions.isNotEmpty()) { "No assertions to check" }
 
-        val failures = result.checkAssertions(assertions, onlyFlaky)
+        val failures = result.checkAssertions(assertions, block)
         val failureMessage = failures.joinToString("\n") { it.message }
 
         if (failureMessage.isNotEmpty()) {

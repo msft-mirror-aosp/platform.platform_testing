@@ -150,14 +150,12 @@ open class TransitionRunner {
      * [tag] is used as part of the trace file name, thus, only valid letters and digits
      * can be used
      *
+     * @param flicker test specification
      * @throws IllegalArgumentException If [tag] contains invalid characters
      */
-    fun createTag(flicker: Flicker, tag: String) {
+    open fun createTag(flicker: Flicker, tag: String) {
         require(!tag.contains(" ")) {
             "The test tag $tag can not contain spaces since it is a part of the file name"
-        }
-        if (tag in tags) {
-            throw IllegalArgumentException("Tag $tag has already been used")
         }
         tags.add(tag)
 
