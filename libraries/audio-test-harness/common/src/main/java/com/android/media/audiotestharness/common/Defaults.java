@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 The Android Open Source Project
+ * Copyright (C) 2021 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,4 +62,12 @@ public final class Defaults {
      * cancelled or aborted.
      */
     public static final Duration SYSTEM_TIMEOUT = Duration.ofHours(1);
+
+    /**
+     * The port that the device attempts to connect to by default.
+     *
+     * <p>During test set up actions, requests are forwarded from this port on the device to the
+     * server port on the host.
+     */
+    public static final int DEVICE_PORT = 55555;
 }

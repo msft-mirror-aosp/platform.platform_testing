@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 The Android Open Source Project
+ * Copyright (C) 2021 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,35 +42,37 @@ import java.util.Iterator;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-/** Tests for the {@link AudioTestHarnessGrpcServer} class. */
+/** Tests for the {@link AudioTestHarnessGrpcServer} class and its factory. */
 @RunWith(JUnit4.class)
 public class AudioTestHarnessGrpcServerTests {
 
-    /**
-     * Tests for the {@link AudioTestHarnessGrpcServer#create(int, ExecutorService, Injector)},
-     * {@link AudioTestHarnessGrpcServer#createOnPort(int)}, and {@link
-     * AudioTestHarnessGrpcServer#createWithDefault()} methods.
-     */
+    /** Tests for the {@link AudioTestHarnessGrpcServerFactory} methods. */
     @Test(expected = NullPointerException.class)
-    public void create_throwsNullPointerException_nullExecutor() throws Exception {
-        AudioTestHarnessGrpcServer.create(
-                /* port= */ 80, /* executor= */ null, Guice.createInjector());
-    }
-
-    @Test(expected = NullPointerException.class)
-    public void create_throwsNullPointerException_nullInjector() throws Exception {
-        AudioTestHarnessGrpcServer.create(
-                /* port= */ 80, Executors.newSingleThreadExecutor(), /* injector= */ null);
+    public void createFactoryWithExecutorService_throwsNullPointerException_nullExecutor()
+            throws Exception {
+        AudioTestHarnessGrpcServerFactory.createFactoryWithExecutorService(/* executor= */ null);
     }
 
     @Test
-    public void createWithDefault_returnsNonNullResult() throws Exception {
-        assertNotNull(AudioTestHarnessGrpcServer.createWithDefault());
+    public void createFactory_returnsNonNullResult() throws Exception {
+        assertNotNull(AudioTestHarnessGrpcServerFactory.createFactory());
     }
 
     @Test
     public void createWithPort_returnsNonNullResult() throws Exception {
-        assertNotNull(AudioTestHarnessGrpcServer.createOnPort(/* port= */ 80));
+        assertNotNull(
+                AudioTestHarnessGrpcServerFactory.createFactory().createOnPort(/* port= */ 80));
+    }
+
+    @Test
+    public void createOnTestingPort_returnsNonNullResult() throws Exception {
+        assertNotNull(AudioTestHarnessGrpcServerFactory.createFactory().createOnTestingPort());
+    }
+
+    @Test
+    public void createOnNextAvailablePort_returnsNonNullResult() throws Exception {
+        assertNotNull(
+                AudioTestHarnessGrpcServerFactory.createFactory().createOnNextAvailablePort());
     }
 
     /** Tests for the {@link AudioTestHarnessGrpcServer#open()} method. */
@@ -93,8 +95,9 @@ public class AudioTestHarnessGrpcServerTests {
     @Ignore
     @Test(expected = IOException.class)
     public void open_throwsIOExceptionForMissingServiceDependency() throws Exception {
-        AudioTestHarnessGrpcServer.create(
-                        8080, Executors.newSingleThreadExecutor(), Guice.createInjector())
+        AudioTestHarnessGrpcServerFactory.createInternal(
+                        Executors.newSingleThreadExecutor(), Guice.createInjector())
+                .createOnPort(PortUtility.nextAvailablePort())
                 .open();
     }
 
@@ -142,7 +145,8 @@ public class AudioTestHarnessGrpcServerTests {
                         binder ->
                                 binder.bind(AudioTestHarnessGrpc.AudioTestHarnessImplBase.class)
                                         .to(AudioTestHarnessTestImpl.class));
-        return AudioTestHarnessGrpcServer.create(port, executorService, injector);
+        return AudioTestHarnessGrpcServerFactory.createInternal(executorService, injector)
+                .createOnPort(port);
     }
 
     /**

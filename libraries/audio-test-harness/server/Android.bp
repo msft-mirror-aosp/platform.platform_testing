@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 The Android Open Source Project
+ * Copyright (C) 2021 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,8 +47,7 @@ java_binary_host {
 java_library_host {
     name: "audiotestharness-serverlib",
     srcs: [
-        "src/main/java/com/android/media/audiotestharness/server/AudioTestHarnessGrpcServer.java",
-        "src/main/java/com/android/media/audiotestharness/server/AudioTestHarnessServerModule.java",
+        "src/main/java/com/android/media/audiotestharness/server/*.java",
     ],
     static_libs: [
         "audiotestharness-servicelib",
@@ -112,9 +111,7 @@ java_library_host {
 java_test_host {
     name: "audiotestharness-serverlib-tests",
     srcs: [
-        "src/test/java/com/android/media/audiotestharness/server/AudioTestHarnessServerModuleTests.java",
-        "src/test/java/com/android/media/audiotestharness/server/AudioTestHarnessGrpcServerTests.java",
-        "src/test/java/com/android/media/audiotestharness/server/AudioTestHarnessTestImpl.java",
+        "src/test/java/com/android/media/audiotestharness/server/*.java",
     ],
     static_libs: [
         "audiotestharness-serverlib",
