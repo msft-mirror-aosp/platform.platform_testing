@@ -45,4 +45,13 @@ class TransitionRunnerCached @JvmOverloads constructor(
     override fun createTag(flicker: Flicker, tag: String) {
         runner.createTag(flicker, tag)
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    override fun cleanUp() {
+        super.cleanUp()
+        result?.cleanUp()
+        result = null
+    }
 }

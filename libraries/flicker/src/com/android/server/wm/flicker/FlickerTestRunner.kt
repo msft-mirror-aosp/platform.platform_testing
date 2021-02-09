@@ -17,6 +17,7 @@
 package com.android.server.wm.flicker
 
 import android.platform.test.annotations.Presubmit
+import android.platform.test.annotations.Postsubmit
 import androidx.test.filters.FlakyTest
 import com.android.server.wm.flicker.assertions.AssertionBlock
 import org.junit.Assume
@@ -38,27 +39,21 @@ abstract class FlickerTestRunner(protected val testSpec: FlickerTestRunnerFactor
     @get:Rule
     val flickerTestRule = FlickerTestRule(testSpec)
 
-    private fun checkRequirements(@AssertionBlock block: Int) {
-        if (testSpec.assertionName.isNotEmpty()) {
-            val firstBlock = flickerTestRule.flicker.assertions.first().block
-            Assume.assumeTrue(firstBlock == block)
-        }
-    }
-
     /**
      * Run only the enabled assertions on the recorded traces.
      */
     @Presubmit
     @Test
-    fun test() {
-        checkRequirements(AssertionBlock.PRESUBMIT)
-        flickerTestRule.flicker.checkAssertions(testSpec.assertionName, AssertionBlock.PRESUBMIT)
+    fun presubmit() {
+        Assume.assumeTrue(testSpec.assertion.block.and(AssertionBlock.PRESUBMIT) > 0)
+        flickerTestRule.flicker.checkAssertion(testSpec.assertion)
     }
 
+    @Postsubmit
     @Test
-    fun testPostSubmit() {
-        checkRequirements(AssertionBlock.POSTSUBMIT)
-        flickerTestRule.flicker.checkAssertions(testSpec.assertionName, AssertionBlock.POSTSUBMIT)
+    fun postsubmit() {
+        Assume.assumeTrue(testSpec.assertion.block.and(AssertionBlock.POSTSUBMIT) > 0)
+        flickerTestRule.flicker.checkAssertion(testSpec.assertion)
     }
 
     /**
@@ -66,8 +61,8 @@ abstract class FlickerTestRunner(protected val testSpec: FlickerTestRunnerFactor
      */
     @FlakyTest
     @Test
-    fun testFlaky() {
-        checkRequirements(AssertionBlock.FLAKY)
-        flickerTestRule.flicker.checkAssertions(testSpec.assertionName, AssertionBlock.FLAKY)
+    fun flaky() {
+        Assume.assumeTrue(testSpec.assertion.block.and(AssertionBlock.FLAKY) > 0)
+        flickerTestRule.flicker.checkAssertion(testSpec.assertion)
     }
 }
