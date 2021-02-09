@@ -61,12 +61,10 @@ data class AssertionData internal constructor(
      * Extracts the data from the result and executes the assertion
      *
      * @param run Run to be asserted
-     * @param block Moment where the assertion should run
      */
-    fun checkAssertion(run: FlickerRunResult, @AssertionBlock block: Int) {
-        val shouldRun = this.block.and(block) > 0
+    fun checkAssertion(run: FlickerRunResult) {
         val correctTag = tag == run.assertionTag
-        if (shouldRun && correctTag) {
+        if (correctTag) {
             val subjects = run.getSubjects()
             subjects.forEach { subject ->
                 if (expectedSubjectClass.isInstance(subject)) {

@@ -22,7 +22,7 @@ import android.support.test.launcherhelper.ILauncherStrategy
 import android.support.test.launcherhelper.LauncherStrategyFactory
 import android.util.Log
 import android.view.Surface
-import androidx.annotation.VisibleForTesting
+import com.android.server.wm.flicker.assertions.AssertionData
 import com.android.server.wm.flicker.dsl.FlickerBuilder
 
 /**
@@ -31,8 +31,6 @@ import com.android.server.wm.flicker.dsl.FlickerBuilder
  * This class recreates behavior from JUnit5 TestFactory that is not available on JUnit4
  */
 open class FlickerTestRunnerFactory {
-    protected val cachedTests = mutableMapOf<String, Flicker>()
-
     /**
      * Creates multiple instances of the same test, running on different device orientations
      *
@@ -150,23 +148,14 @@ open class FlickerTestRunnerFactory {
         builder: FlickerBuilder
     ): List<TestSpec> {
         val flicker = builder.build(runner = TransitionRunnerCached())
-        require(cachedTests[flicker.testName] == null) {
-            "A test spec with name ${flicker.testName} already exists"
-        }
-        cachedTests[flicker.testName] = flicker
-        Log.v(FLICKER_TAG, "Adding ${flicker.testName} to cache. " +
-            "Current cache size: ${cachedTests.size}")
+        Log.v(FLICKER_TAG, "Creating ${flicker.testName}.")
         val assertionsList = flicker.assertions
-        val lastAssertionIdx = assertionsList.lastIndex
 
-        val result = mutableListOf(TestSpec(flicker.testName))
-        result.addAll(
-            assertionsList.map { assertion ->
-                TestSpec(flicker.testName, assertion.name)
-            }
-        )
+        val result = assertionsList.map { assertion ->
+            TestSpec(flicker, assertion)
+        }.toMutableList()
 
-        result.add(TestSpec(flicker.testName, "CLEANUP", cleanUp = true))
+        result.add(TestSpec(flicker, _assertion = null, cleanUp = true))
         return result
     }
 
@@ -209,73 +198,6 @@ open class FlickerTestRunnerFactory {
             }
     }
 
-    /**
-     * Removes all entries from the cache.
-     *
-     * Using during self-tests of the library
-     */
-    @VisibleForTesting
-    fun removeAll() {
-        Log.v(FLICKER_TAG, "Removing all tags from cache")
-        val keys = cachedTests.keys.toSet()
-        keys.forEach { remove(it, isCleanUp = true) }
-    }
-
-    /**
-     * Fetches a test case [testSpecification] from the cache
-     *
-     * @param testSpecification Test to fetch
-     * @throws IllegalStateException if the test doesn't exist
-     */
-    open fun get(testSpecification: TestSpec): Flicker? {
-        val testName = testSpecification.testName
-        return cachedTests[testName]
-    }
-
-    /**
-     * Cleanup all tests from the cache.
-     *
-     * This is necessary because JUnit's ParameterizedRunner keeps a reference to the list of
-     * test cases until the whole test suite finishes, this prevents GC from removing executed
-     * traces
-     *
-     * @param testSpecification Test to remove
-     */
-    open fun remove(testSpecification: TestSpec) {
-        remove(testSpecification.testName, testSpecification.cleanUp)
-    }
-
-    protected open fun remove(testName: String, isCleanUp: Boolean) {
-        val flickerSpec = cachedTests.remove(testName)
-        Log.v(FLICKER_TAG, "Cleaning up $testName")
-        require(isCleanUp || flickerSpec?.testName == testName) {
-            "Unable to remove test $testName from cache"
-        }
-        flickerSpec?.clear()
-    }
-
-    /**
-     * Ensure that none of only 1 test has a result associated with it (cached)
-     *
-     * This method is used during execution to prevent tests from skipping the cleanup step,
-     * allowing GC to remove tests from memory before the test suite finishes
-     *
-     * @throws IllegalStateException if the more than 1 test have a result
-     */
-    fun assertUpToOneTestExecuted() {
-        Log.v(FLICKER_TAG, "Ensuring up to one test in the cache is executed")
-        var alreadyExecuted = ""
-        cachedTests.forEach { (testName, flicker) ->
-            if (flicker.result != null) {
-                require(alreadyExecuted.isEmpty()) {
-                    "Test ${flicker.testName} wants " +
-                        "to execute but $alreadyExecuted was not cleaned up"
-                }
-                alreadyExecuted = testName
-            }
-        }
-    }
-
     companion object {
         private lateinit var instance: FlickerTestRunnerFactory
 
@@ -296,16 +218,18 @@ open class FlickerTestRunnerFactory {
      * @param cleanUp If this test should delete the traces and screen recording files if it passes
      */
     data class TestSpec(
-        @JvmField val testName: String,
-        @JvmField val assertionName: String = "",
+        @JvmField val test: Flicker,
+        private val _assertion: AssertionData?,
         @JvmField val cleanUp: Boolean = false
     ) {
+        val assertion: AssertionData get() = _assertion ?: error("No assertion specified")
+
         override fun toString(): String {
             return buildString {
-                append(testName)
+                append(test.testName)
 
-                if (assertionName.isNotEmpty()) {
-                    append("_$assertionName")
+                if (_assertion?.name?.isNotEmpty() == true) {
+                    append("_${assertion.name}")
                 }
             }
         }

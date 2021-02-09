@@ -17,7 +17,7 @@
 // Contains the Trade Federation extensions for the Audio Test Harness system.
 
 java_library_host {
-    name: "audiotestharness-testlib",
+    name: "audiotestharness-tradefed-lib",
 
     srcs: [
         "src/main/java/com/android/media/audiotestharness/tradefed/*.java",
@@ -33,13 +33,13 @@ java_library_host {
 }
 
 java_test_host {
-    name: "audiotestharness-testlib-tests",
+    name: "audiotestharness-tradefed-lib-tests",
     srcs: [
         "src/test/java/com/android/media/audiotestharness/tradefed/*.java",
     ],
     static_libs: [
         "junit",
-        "audiotestharness-testlib",
+        "audiotestharness-tradefed-lib",
         "audiotestharness-serverlib",
         "tradefed",
         "mockito",

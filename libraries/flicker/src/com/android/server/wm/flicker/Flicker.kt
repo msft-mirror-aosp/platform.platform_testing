@@ -136,16 +136,33 @@ class Flicker(
      * @param block Moment where the assertion should run
      * @throws AssertionError If the assertions fail or the transition crashed
      */
-    @JvmOverloads
-    fun checkAssertions(assertionName: String = "", @AssertionBlock block: Int) {
+    fun checkAssertions(@AssertionBlock block: Int) {
+        checkIsExecuted()
+        val result = result
+        requireNotNull(result)
+        require(assertions.isNotEmpty()) { "No assertions to check" }
+
+        val assertions = assertions.filter { it.block.and(block) > 0 }
+        val failures = result.checkAssertions(assertions)
+        val failureMessage = failures.joinToString("\n") { it.message }
+
+        if (failureMessage.isNotEmpty()) {
+            throw AssertionError(failureMessage)
+        }
+    }
+
+    /**
+     * Run an assertion on the trace
+     *
+     * @param assertion Assertion to run
+     * @throws AssertionError If the assertions fail or the transition crashed
+     */
+    fun checkAssertion(assertion: AssertionData) {
         checkIsExecuted()
         val result = result
         requireNotNull(result)
 
-        val assertions = assertions.filter { assertionName.isEmpty() || it.name == assertionName }
-        require(assertions.isNotEmpty()) { "No assertions to check" }
-
-        val failures = result.checkAssertions(assertions, block)
+        val failures = result.checkAssertions(listOf(assertion))
         val failureMessage = failures.joinToString("\n") { it.message }
 
         if (failureMessage.isNotEmpty()) {
@@ -159,6 +176,7 @@ class Flicker(
      */
     fun clear() {
         Log.v(FLICKER_TAG, "Cleaning up spec $testName")
+        runner.cleanUp()
         result?.cleanUp()
         result = null
     }

@@ -70,9 +70,13 @@ open class TransitionRunner {
             "Number of repetitions must be greater than 0" }
     }
 
-    private fun cleanUp() {
+    private fun tagCleanUp() {
         tags.clear()
         tagsResults.clear()
+    }
+
+    open fun cleanUp() {
+        tagCleanUp()
     }
 
     /**
@@ -115,7 +119,7 @@ open class TransitionRunner {
 
         runs.addAll(tagsResults)
         val result = FlickerResult(runs.toList(), tags.toSet(), executionError)
-        cleanUp()
+        tagCleanUp()
         return result
     }
 
