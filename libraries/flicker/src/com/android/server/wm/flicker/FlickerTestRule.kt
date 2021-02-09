@@ -23,22 +23,25 @@ import org.junit.runners.model.Statement
 /**
  * JUnit rule that runs the flicker tests.
  *
- * Ensure a single executed test is in the test cache
- *
- * @param testSpec Flicker test specification
+ * @param flicker Flicker test
+ * @param cleanUp If the rule should cleanup instead of executing the test
  */
-class FlickerTestRule(private val testSpec: FlickerTestRunnerFactory.TestSpec) : TestRule {
-    private val testFactory = FlickerTestRunnerFactory.getInstance()
-    private val _flicker = testFactory.get(testSpec)
-    internal val flicker: Flicker
-        get() = _flicker ?: error("Unable to find test for ${testSpec.testName}")
+class FlickerTestRule @JvmOverloads constructor(
+    val flicker: Flicker,
+    val cleanUp: Boolean = false
+) : TestRule {
+    /**
+     * JUnit rule that runs the flicker tests.
+     *
+     * @param testSpec Flicker test specification
+     */
+    constructor(testSpec: FlickerTestRunnerFactory.TestSpec): this(testSpec.test, testSpec.cleanUp)
 
     override fun apply(base: Statement, description: Description): Statement =
         object : Statement() {
             override fun evaluate() {
-                testFactory.assertUpToOneTestExecuted()
-                if (testSpec.cleanUp) {
-                    testFactory.remove(testSpec)
+                if (cleanUp) {
+                    flicker.clear()
                 } else {
                     flicker.execute()
                     base.evaluate()

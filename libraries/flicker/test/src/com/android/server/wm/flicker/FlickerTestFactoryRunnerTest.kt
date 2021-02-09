@@ -22,11 +22,8 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.android.server.wm.flicker.dsl.FlickerBuilder
 import com.google.common.truth.Truth.assertWithMessage
 import org.junit.FixMethodOrder
-import org.junit.Rule
 import org.junit.Test
-import org.junit.rules.TestRule
 import org.junit.runners.MethodSorters
-import org.junit.runners.model.Statement
 
 /**
  * Contains [FlickerTestRunnerFactory] tests.
@@ -43,16 +40,6 @@ class FlickerTestFactoryRunnerTest {
         withTestName { "${cfg.startRotationName}_${cfg.endRotationName}_" }
         assertions {
             layersTrace { all("layers") { fail("First assertion") } }
-        }
-    }
-
-    @get:Rule
-    val emptyCacheRule = TestRule { base, _ ->
-        object : Statement() {
-            override fun evaluate() {
-                testFactory.removeAll()
-                base.evaluate()
-            }
         }
     }
 
@@ -78,10 +65,9 @@ class FlickerTestFactoryRunnerTest {
             this.setDefaultTestCfg(cfg)
             validateTest(cfg)
         }
-        // Should have 1 test for transition, 1 for the assertion,
-        // and 1 for cleanup in each orientation
+        // Should have 1 for the assertion and 1 for cleanup in each orientation
         assertWithMessage("Flicker should create tests for 0 and 90 degrees")
-            .that(actual).hasSize(6)
+            .that(actual).hasSize(4)
     }
 
     @Test
@@ -90,10 +76,9 @@ class FlickerTestFactoryRunnerTest {
                 this.setDefaultTestCfg(cfg)
                 validateRotationTest(cfg)
             }
-        // Should have 1 test for transition, 1 for the assertion,
-        // and 1 for cleanup in each orientation
+        // Should have 1 for each assertion and 1 for cleanup in each orientation
         assertWithMessage("Flicker should create tests for 0 and 90 degrees")
-            .that(actual).hasSize(6)
+            .that(actual).hasSize(4)
     }
 
     @Test
@@ -105,9 +90,39 @@ class FlickerTestFactoryRunnerTest {
                 this.setDefaultTestCfg(cfg)
                 validateRotationTest(cfg, rotations)
             }
-        // Should have 1 test for transition and 1 for the assertions in each rotation
+            .map { it.first() as FlickerTestRunnerFactory.TestSpec }
+        // Should have 1 for the assertions in each rotation
+        assertWithMessage("Flicker should create tests for 0/90/180/270 degrees")
+            .that(actual).hasSize(24)
+
+        actual.forEachIndexed { index, flicker ->
+            val expectedCleanUp = index % 2 == 1
+            assertWithMessage("Test $index should be cleanup")
+                .that(flicker.cleanUp)
+                .isEqualTo(expectedCleanUp)
+        }
+    }
+
+    @Test
+    fun checkBuildCustomRotationsTestCleanup() {
+        val rotations = listOf(Surface.ROTATION_0, Surface.ROTATION_90, Surface.ROTATION_180,
+            Surface.ROTATION_270)
+        val actual = testFactory.buildRotationTest(instrumentation,
+            supportedRotations = rotations) { cfg ->
+            this.setDefaultTestCfg(cfg)
+            assertions { windowManagerTrace { start("start") { fail("Fail WM assertion") } } }
+            validateRotationTest(cfg, rotations)
+        }.map { it.first() as FlickerTestRunnerFactory.TestSpec }
+        // Should have 1 for the assertions in each rotation
         assertWithMessage("Flicker should create tests for 0/90/180/270 degrees")
             .that(actual).hasSize(36)
+
+        actual.forEachIndexed { index, flicker ->
+            val expectedCleanUp = index % 3 == 2
+            assertWithMessage("Test $index should be cleanup")
+                .that(flicker.cleanUp)
+                .isEqualTo(expectedCleanUp)
+        }
     }
 
     @Test
@@ -120,10 +135,9 @@ class FlickerTestFactoryRunnerTest {
             assertWithMessage("Could not find custom payload data")
                 .that(cfg.getBoolean("test", false)).isTrue()
         }
-        // Should have 1 test for transition and 1 for the assertions in each orientation
-        assertWithMessage("Flicker should create 1 test for transition, 1 for assertion, " +
-            "and 1 for cleanup")
-            .that(tests).hasSize(3)
+        // Should have 1 for each assertion and 1 fo rcleanup in each orientation
+        assertWithMessage("Flicker should create 2 for assertion")
+            .that(tests).hasSize(2)
     }
 
     private fun assertHasAssertion(flicker: Flicker, assertionName: String) {
@@ -143,18 +157,20 @@ class FlickerTestFactoryRunnerTest {
             }
         }.map { it.first() as FlickerTestRunnerFactory.TestSpec }
 
-        assertWithMessage("Factory should have created 5 tests, one for transition, " +
-            "3 with a single assertion each and 1 for cleanup")
+        assertWithMessage("Factory should have created 4 tests," +
+            " 3 with a single assertion each and 1 for cleanup")
             .that(tests)
-            .hasSize(5)
+            .hasSize(4)
 
         tests.forEach { testSpec ->
-            val test = testFactory.get(testSpec)
-                ?: error("Unable to find test for ${testSpec.testName}")
-            if (testSpec.assertionName.isNotEmpty() && !testSpec.cleanUp) {
-                assertHasAssertion(test, testSpec.assertionName)
+            val test = testSpec.test
+            if (!testSpec.cleanUp && testSpec.assertion.name.isNotEmpty()) {
+                assertHasAssertion(test, testSpec.assertion.name)
             }
         }
+
+        assertWithMessage("Last test should be cleanup")
+            .that(tests.last().cleanUp).isTrue()
     }
 
     @Test
@@ -178,18 +194,18 @@ class FlickerTestFactoryRunnerTest {
         val tests = testFactory.buildTest(instrumentation,
             base, extension, supportedRotations = listOf(Surface.ROTATION_0))
             .map { it.first() as FlickerTestRunnerFactory.TestSpec }
-        assertWithMessage("Factory should have created 4 tests, 1 for transition and 2 " +
-            "tests with a single assertion each, and 1 for cleanup")
+        assertWithMessage("Factory should have created 2 tests with a single assertion each," +
+            " and 1 test for cleanup")
                 .that(tests)
-                .hasSize(4)
+                .hasSize(3)
 
         tests.forEach { testSpec ->
-            val test = testFactory.get(testSpec)
-                ?: error("Unable to find test for ${testSpec.testName}")
-            if (testSpec.assertionName.isNotEmpty() && !testSpec.cleanUp) {
-                assertHasAssertion(test, testSpec.assertionName)
+            if (!testSpec.cleanUp) {
+                assertHasAssertion(testSpec.test, testSpec.assertion.name)
             }
         }
+        assertWithMessage("Last test should be cleanup")
+            .that(tests.last().cleanUp).isTrue()
     }
 
     @Test
@@ -200,8 +216,8 @@ class FlickerTestFactoryRunnerTest {
         }.map { it.first() as FlickerTestRunnerFactory.TestSpec }
 
         actual.forEachIndexed { index, testSpec ->
-            val expectedCleanUp = index % 3 == 2
-            assertWithMessage("Entry $index should${if (expectedCleanUp) "" else " not"} cleanup")
+            val expectedCleanUp = index % 2 == 1
+            assertWithMessage("Entry $index should cleanup")
                 .that(testSpec.cleanUp)
                 .isEqualTo(expectedCleanUp)
         }
@@ -214,9 +230,7 @@ class FlickerTestFactoryRunnerTest {
             validateTest(cfg)
         }.map { it.first() as FlickerTestRunnerFactory.TestSpec }
 
-        val tests = actual.map { testFactory.get(it)
-            ?: error("Unable to find test for ${it.testName}")
-        }
+        val tests = actual.map { it.test }
 
         (1 until tests.size).forEach { index ->
             val prevTest = tests[index - 1]

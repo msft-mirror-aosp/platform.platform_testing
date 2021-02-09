@@ -16,7 +16,6 @@
 
 package com.android.server.wm.flicker
 
-import com.android.server.wm.flicker.assertions.AssertionBlock
 import com.android.server.wm.flicker.assertions.AssertionData
 import com.android.server.wm.flicker.assertions.FlickerAssertionError
 import com.google.common.truth.Truth
@@ -46,7 +45,7 @@ data class FlickerResult(
     /**
      * Asserts if the transition of this flicker test has ben executed
      */
-    internal fun checkIsExecuted() {
+    private fun checkIsExecuted() {
         Truth.assertWithMessage(error?.message).that(error).isNull()
         Truth.assertWithMessage("Transition was not executed").that(runs).isNotEmpty()
     }
@@ -58,14 +57,13 @@ data class FlickerResult(
      * @throws AssertionError If the assertions fail or the transition crashed
      */
     internal fun checkAssertions(
-        assertions: List<AssertionData>,
-        @AssertionBlock block: Int
+        assertions: List<AssertionData>
     ): List<FlickerAssertionError> {
         checkIsExecuted()
         val currFailures: List<FlickerAssertionError> = runs.flatMap { run ->
             assertions.mapNotNull { assertion ->
                 try {
-                    assertion.checkAssertion(run, block)
+                    assertion.checkAssertion(run)
                     null
                 } catch (error: Throwable) {
                     FlickerAssertionError(error, assertion, run)
