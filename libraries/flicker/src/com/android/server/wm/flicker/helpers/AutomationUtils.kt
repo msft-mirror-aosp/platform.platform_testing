@@ -27,6 +27,7 @@ import android.util.Rational
 import android.view.Surface
 import android.view.View
 import android.view.ViewConfiguration
+import androidx.annotation.VisibleForTesting
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.BySelector
 import androidx.test.uiautomator.Configurator
@@ -41,6 +42,7 @@ import org.junit.Assert.assertNotNull
 const val FIND_TIMEOUT: Long = 10000
 const val FAST_WAIT_TIMEOUT: Long = 0
 const val IME_PACKAGE = "com.google.android.inputmethod.latin"
+@VisibleForTesting
 const val SYSTEMUI_PACKAGE = "com.android.systemui"
 private val LONG_PRESS_TIMEOUT = ViewConfiguration.getLongPressTimeout() * 2L
 private const val TAG = "FLICKER"
@@ -352,6 +354,8 @@ val pipWindowSelector: BySelector
  *
  * @throws AssertionError when unable to find the Pip window
  */
+@Deprecated("This method doesn't work on all platforms (e.g. TV). prefer " +
+    "PipAppHelper.closePipWindow instead")
 fun UiDevice.closePipWindow() {
     val pipWindow = this.findObject(pipWindowSelector)
     assertNotNull("PIP window not found", pipWindow)
@@ -368,6 +372,8 @@ fun UiDevice.closePipWindow() {
  *
  * @throws AssertionError when unable to find the Pip window
  */
+@Deprecated("This method doesn't work on all platforms (e.g. TV). prefer " +
+    "PipAppHelper.expandPipWindowToApp instead")
 fun UiDevice.expandPipWindow() {
     val pipWindow = this.findObject(pipWindowSelector)
     assertNotNull("PIP window not found", pipWindow)
