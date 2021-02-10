@@ -15,6 +15,11 @@
  */
 
 // Contains the Trade Federation extensions for the Audio Test Harness system.
+//
+// Per b/178739059 while the tradefed_java_library_host should be able to
+// automatically copy the JAR to the out/host/<target>/tradefed directory
+// it is currently non-functional. So, we instead use a regular
+// java_library_host and manually copy the JAR with the Android.mk file.
 
 java_library_host {
     name: "audiotestharness-tradefed-lib",

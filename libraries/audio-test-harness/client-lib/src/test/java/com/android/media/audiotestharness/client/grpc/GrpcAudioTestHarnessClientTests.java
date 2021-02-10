@@ -63,11 +63,6 @@ public class GrpcAudioTestHarnessClientTests {
         GrpcAudioTestHarnessClient.builder().setAddress("localhost", /* port= */ -123);
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void build_throwsIllegalStateException_hostNotSet() throws Exception {
-        GrpcAudioTestHarnessClient.builder().build();
-    }
-
     @Test
     @Parameters(method = "getBuildParameters")
     public void build_returnsNonNullInstance_validParameters(

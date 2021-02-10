@@ -19,6 +19,7 @@ package com.android.media.audiotestharness.client.grpc;
 import com.android.media.audiotestharness.client.core.AudioCaptureStream;
 import com.android.media.audiotestharness.client.core.AudioTestHarnessClient;
 import com.android.media.audiotestharness.client.core.AudioTestHarnessCommunicationException;
+import com.android.media.audiotestharness.common.Defaults;
 import com.android.media.audiotestharness.proto.AudioTestHarnessGrpc;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -42,6 +43,7 @@ public class GrpcAudioTestHarnessClient extends AudioTestHarnessClient {
     private static final int MIN_PORT = 0;
     private static final int MAX_PORT = 65535;
     private static final int DEFAULT_NUM_THREADS = 8;
+    private static final String LOCALHOST = "localhost";
 
     private final ManagedChannel mManagedChannel;
     private final GrpcAudioCaptureStreamFactory mGrpcAudioCaptureStreamFactory;
@@ -54,7 +56,7 @@ public class GrpcAudioTestHarnessClient extends AudioTestHarnessClient {
     }
 
     public static GrpcAudioTestHarnessClient.Builder builder() {
-        return new Builder();
+        return new Builder().setAddress(LOCALHOST, Defaults.DEVICE_PORT);
     }
 
     @Override
@@ -153,9 +155,10 @@ public class GrpcAudioTestHarnessClient extends AudioTestHarnessClient {
 
                 mManagedChannel =
                         ManagedChannelBuilder.forAddress(mHostname, mPort)
-                                .executor(mExecutor)
                                 .usePlaintext()
+                                .executor(mExecutor)
                                 .build();
+                LOGGER.info(String.format("New Client on for %s:%d", mHostname, mPort));
             }
 
             return new GrpcAudioTestHarnessClient(mGrpcAudioCaptureStreamFactory, mManagedChannel);

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 The Android Open Source Project
+ * Copyright (C) 2021 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,13 @@
  * limitations under the License.
  */
 
-package android.platform.test.scenario.sleep;
+// Contains the Trade Federation extensions for the Audio Test Harness system.
+// BINARIES ==============================================================
 
-import android.platform.test.microbenchmark.Microbenchmark;
-import android.platform.test.rule.GarbageCollectRule;
-
-import org.junit.Rule;
-import org.junit.runner.RunWith;
-
-/** Idle memory microbenchmark for SystemUI. */
-@RunWith(Microbenchmark.class)
-public class IdleSystemUiMemoryMicrobenchmark extends IdleMicrobenchmark {
-    // Method-level rules
-    @Rule public GarbageCollectRule gcRule = new GarbageCollectRule("com.android.systemui");
+java_binary_host {
+    name: "audiotestharness-audiosystemdiagnostic",
+    srcs: [
+        "src/com/android/media/audiotestharness/utilities/AudioSystemDiagnostic.java",
+    ],
+    manifest: "audiosystemdiagnostic-manifest.inf",
 }
