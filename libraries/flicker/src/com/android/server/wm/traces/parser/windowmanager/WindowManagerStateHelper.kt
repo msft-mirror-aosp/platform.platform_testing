@@ -20,6 +20,8 @@ import android.app.ActivityTaskManager
 import android.app.Instrumentation
 import android.app.WindowConfiguration
 import android.content.ComponentName
+import android.graphics.Rect
+import android.graphics.Region
 import android.os.SystemClock
 import android.util.Log
 import android.view.Display
@@ -29,9 +31,11 @@ import com.android.server.wm.traces.common.layers.LayerTraceEntry
 import com.android.server.wm.traces.common.windowmanager.WindowManagerState
 import com.android.server.wm.traces.parser.getCurrentStateDump
 import com.android.server.wm.traces.common.windowmanager.windows.ConfigurationContainer
+import com.android.server.wm.traces.common.windowmanager.windows.WindowContainer
 import com.android.server.wm.traces.parser.Condition
 import com.android.server.wm.traces.parser.LOG_TAG
 import com.android.server.wm.traces.parser.toActivityName
+import com.android.server.wm.traces.parser.toAndroidRect
 import com.android.server.wm.traces.parser.toWindowName
 
 open class WindowManagerStateHelper @JvmOverloads constructor(
@@ -430,6 +434,27 @@ open class WindowManagerStateHelper @JvmOverloads constructor(
 
             result
         }
+
+    /**
+     * Obtains a [WindowContainer] from the current device state, or null if the WindowContainer
+     * doesn't exist
+     */
+    fun getWindow(activity: ComponentName): WindowContainer? {
+        val windowName = activity.toWindowName()
+        return this.currentState.wmState.windowContainers
+            .firstOrNull { it.title == windowName }
+    }
+
+    /**
+     * Obtains the region of a window in the state, or an empty [Rect] is there are none
+     */
+    fun getWindowRegion(activity: ComponentName): Region {
+        val window = getWindow(activity)
+
+        val region = Region()
+        window?.rects?.forEach { region.op(it.toAndroidRect(), Region.Op.UNION) }
+        return region
+    }
 
     companion object {
         @VisibleForTesting
