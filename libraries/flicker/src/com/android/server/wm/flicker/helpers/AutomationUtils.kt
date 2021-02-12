@@ -158,14 +158,6 @@ private fun longPressRecents(device: UiDevice) {
     recentsButton.click(LONG_PRESS_TIMEOUT)
 }
 
-/**
- * Wait for any IME view to appear
- */
-fun UiDevice.waitForIME(): Boolean {
-    val ime = this.wait(Until.findObject(By.pkg(IME_PACKAGE)), FIND_TIMEOUT)
-    return ime != null
-}
-
 private fun openQuickStepAndLongPressOverviewIcon(device: UiDevice) {
     if (device.isQuickstepEnabled()) {
         device.openQuickstep()
@@ -326,13 +318,6 @@ fun UiDevice.resizeSplitScreen(windowHeightRatio: Rational) {
 }
 
 /**
- * Checks if the device has a Pip window
- */
-fun UiDevice.hasPipWindow(): Boolean {
-    return this.wait(Until.findObject(pipWindowSelector), FIND_TIMEOUT) != null
-}
-
-/**
  * Checks if the device has a window with the package name
  */
 fun UiDevice.hasWindow(packageName: String): Boolean {
@@ -344,41 +329,6 @@ fun UiDevice.hasWindow(packageName: String): Boolean {
  */
 fun UiDevice.waitUntilGone(packageName: String): Boolean {
     return this.wait(Until.gone(By.pkg(packageName)), FIND_TIMEOUT) != null
-}
-
-val pipWindowSelector: BySelector
-    get() = By.res(SYSTEMUI_PACKAGE, "background")
-
-/**
- * Closes the active Pip window by clicking on its close button
- *
- * @throws AssertionError when unable to find the Pip window
- */
-@Deprecated("This method doesn't work on all platforms (e.g. TV). prefer " +
-    "PipAppHelper.closePipWindow instead")
-fun UiDevice.closePipWindow() {
-    val pipWindow = this.findObject(pipWindowSelector)
-    assertNotNull("PIP window not found", pipWindow)
-    pipWindow.click()
-    val exitPipObject = this.findObject(By.res(SYSTEMUI_PACKAGE, "dismiss"))
-    assertNotNull("PIP window dismiss button not found", pipWindow)
-    exitPipObject.click()
-    // Wait for animation to complete.
-    SystemClock.sleep(2000)
-}
-
-/**
- * Expands the active Pip window by double clicking it
- *
- * @throws AssertionError when unable to find the Pip window
- */
-@Deprecated("This method doesn't work on all platforms (e.g. TV). prefer " +
-    "PipAppHelper.expandPipWindowToApp instead")
-fun UiDevice.expandPipWindow() {
-    val pipWindow = this.findObject(pipWindowSelector)
-    assertNotNull("PIP window not found", pipWindow)
-    pipWindow.click()
-    pipWindow.click()
 }
 
 fun stopPackage(context: Context, packageName: String) {
