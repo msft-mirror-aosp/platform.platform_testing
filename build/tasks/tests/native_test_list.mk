@@ -72,7 +72,7 @@ native_tests := \
     libprocinfo_test \
     libtextclassifier_tests \
     libsurfaceflinger_unittest \
-    libunwindstack_test \
+    libunwindstack_unit_test \
     libvintf_test \
     linker-unit-tests \
     logcat-unit-tests \
