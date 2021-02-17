@@ -20,6 +20,6 @@ import android.platform.test.microbenchmark.Microbenchmark;
 
 import org.junit.runner.RunWith;
 
-/** Base class for idle memory microbenchmarks for different processes. */
+/** Idle microbenchmark. */
 @RunWith(Microbenchmark.class)
-public abstract class IdleMemoryMicrobenchmarkBase extends Idle {}
+public class IdleMicrobenchmark extends Idle {}
