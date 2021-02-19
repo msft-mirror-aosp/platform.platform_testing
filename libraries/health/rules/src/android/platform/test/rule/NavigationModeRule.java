@@ -70,8 +70,8 @@ public class NavigationModeRule extends TestWatcher {
 
         Log.d(TAG, "setActiveOverlay: " + overlayPackage + "...");
         try {
-            UiDevice.getInstance(getInstrumentation())
-                    .executeShellCommand("cmd overlay enable-exclusive " + overlayPackage);
+            UiDevice.getInstance(getInstrumentation()).executeShellCommand(
+                    "cmd overlay enable-exclusive --category " + overlayPackage);
         } catch (IOException e) {
             e.printStackTrace();
             return false;
