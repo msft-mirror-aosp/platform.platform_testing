@@ -53,18 +53,27 @@ public interface IMapsHelper extends IAppHelper {
     /**
      * Setup expectation: Destination is selected.
      *
-     * Goes to the details screen for the selected destination.
+     * <p>Goes to the details screen for the selected destination.
      */
-    default public void openAddressDetails() {
+    public default void openAddressDetails() {
         throw new UnsupportedOperationException("Not yet implemented.");
     }
 
     /**
      * Setup expectation: On the destination details screen.
      *
-     * Flings down the destination details screen.
+     * <p>Flings the destination details screen (must be UP or DOWN).
      */
-    default public void flingAddressDetails() {
+    public default void flingAddressDetails(Direction dir) {
+        throw new UnsupportedOperationException("Not yet implemented.");
+    }
+
+    /**
+     * Setup expectation: On the destination details screen.
+     *
+     * <p>Closes the destination details screen.
+     */
+    public default void closeAddressDetails() {
         throw new UnsupportedOperationException("Not yet implemented.");
     }
 
