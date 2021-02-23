@@ -80,6 +80,11 @@ public class UiInteractionFrameInfoHelper implements ICollectorHelper<StringBuil
                         frameInfoMap);
 
                 MetricUtility.addMetric(
+                        MetricUtility.constructKey("cuj", interactionType, "sf_missed_frames"),
+                        makeLogFriendly(uiInteractionFrameInfoReported.sfMissedFrames),
+                        frameInfoMap);
+
+                MetricUtility.addMetric(
                         MetricUtility.constructKey("cuj", interactionType, "max_frame_time_ms"),
                         makeLogFriendly(
                                 uiInteractionFrameInfoReported.maxFrameTimeNanos / 1000000.0),
