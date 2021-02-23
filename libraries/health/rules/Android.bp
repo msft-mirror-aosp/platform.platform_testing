@@ -23,6 +23,7 @@ java_library {
         "memory-helper",
         "package-helper",
         "launcher-aosp-tapl",
+        "flickerlib",
     ],
     srcs: ["src/**/*.java"],
 }

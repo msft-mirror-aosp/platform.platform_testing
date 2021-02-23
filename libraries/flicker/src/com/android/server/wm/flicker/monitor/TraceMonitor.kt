@@ -54,6 +54,15 @@ abstract class TraceMonitor internal constructor(
         checksum = calculateChecksum(savedTrace)
     }
 
+    fun save(testTag: String) {
+        outputPath.toFile().mkdirs()
+        val savedTrace = outputPath.resolve("${testTag}_${sourceTraceFilePath.fileName}")
+        moveFile(sourceTraceFilePath, savedTrace)
+        require(Files.exists(savedTrace)) { "Unable to save trace file $savedTrace" }
+
+        checksum = calculateChecksum(savedTrace)
+    }
+
     private fun moveFile(src: Path, dst: Path) {
         // Move the  file to the output directory
         // Note: Due to b/141386109, certain devices do not allow moving the files between
