@@ -18,6 +18,10 @@
 // These are libraries that can be used either host-side or device-side.
 // LIBRARIES ==============================================================
 
+package {
+    default_applicable_licenses: ["Android-Apache-2.0"],
+}
+
 java_library {
     name: "audiotestharness-commonlib-lite",
     host_supported: true,

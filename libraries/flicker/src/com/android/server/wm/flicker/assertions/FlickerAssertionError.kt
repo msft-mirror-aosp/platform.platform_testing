@@ -17,7 +17,6 @@
 package com.android.server.wm.flicker.assertions
 
 import com.android.server.wm.flicker.FlickerRunResult
-import com.android.server.wm.flicker.dsl.AssertionTag
 import com.android.server.wm.flicker.traces.FlickerSubjectException
 import java.nio.file.Path
 import kotlin.AssertionError
@@ -35,8 +34,7 @@ class FlickerAssertionError(
     override val message: String
         get() = buildString {
             append("\n")
-            append("Test failed: ")
-            append(assertion.name)
+            append("Test failed")
             append("\n")
             append("Iteration: ")
             append(iteration)

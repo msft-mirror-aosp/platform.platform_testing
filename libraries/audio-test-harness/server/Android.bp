@@ -19,6 +19,10 @@
 // any connected gRPC clients either on another host or a device.
 // BINARIES ==============================================================
 
+package {
+    default_applicable_licenses: ["Android-Apache-2.0"],
+}
+
 java_binary_host {
     name: "audiotestharness-clicapturer",
     srcs: [

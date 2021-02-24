@@ -19,9 +19,7 @@ package com.android.server.wm.flicker
 import android.app.Instrumentation
 import android.support.test.launcherhelper.ILauncherStrategy
 import android.util.Log
-import androidx.annotation.VisibleForTesting
 import androidx.test.uiautomator.UiDevice
-import com.android.server.wm.flicker.assertions.AssertionBlock
 import com.android.server.wm.flicker.assertions.AssertionData
 import com.android.server.wm.flicker.monitor.ITransitionMonitor
 import com.android.server.wm.flicker.monitor.WindowAnimationFrameStatsMonitor
@@ -93,11 +91,6 @@ class Flicker(
      */
     @JvmField val transitions: List<Flicker.() -> Any>,
     /**
-     * Custom set of assertions
-     */
-    @VisibleForTesting
-    @JvmField val assertions: List<AssertionData>,
-    /**
      * Runner to execute the test transitions
      */
     @JvmField val runner: TransitionRunner,
@@ -124,30 +117,12 @@ class Flicker(
      * Asserts if the transition of this flicker test has ben executed
      */
     private fun checkIsExecuted() {
+        if (result == null) {
+            execute()
+        }
         val error = result?.error
         if (error != null) {
             throw IllegalStateException("Unable to execute transition", error)
-        }
-    }
-
-    /**
-     * Run the assertions on the trace
-     *
-     * @param block Moment where the assertion should run
-     * @throws AssertionError If the assertions fail or the transition crashed
-     */
-    fun checkAssertions(@AssertionBlock block: Int) {
-        checkIsExecuted()
-        val result = result
-        requireNotNull(result)
-        require(assertions.isNotEmpty()) { "No assertions to check" }
-
-        val assertions = assertions.filter { it.block.and(block) > 0 }
-        val failures = result.checkAssertions(assertions)
-        val failureMessage = failures.joinToString("\n") { it.message }
-
-        if (failureMessage.isNotEmpty()) {
-            throw AssertionError(failureMessage)
         }
     }
 
