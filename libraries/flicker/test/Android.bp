@@ -15,6 +15,10 @@
 //
 
 
+package {
+    default_applicable_licenses: ["Android-Apache-2.0"],
+}
+
 android_test {
     name: "FlickerLibTest",
     // sign this with platform cert, so this test is allowed to call private platform apis

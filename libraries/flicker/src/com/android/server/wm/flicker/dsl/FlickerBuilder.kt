@@ -23,7 +23,6 @@ import androidx.test.uiautomator.UiDevice
 import com.android.server.wm.flicker.Flicker
 import com.android.server.wm.flicker.FlickerDslMarker
 import com.android.server.wm.flicker.TransitionRunner
-import com.android.server.wm.flicker.assertions.AssertionBlock
 import com.android.server.wm.flicker.monitor.EventLogMonitor
 import com.android.server.wm.flicker.getDefaultFlickerOutputDir
 import com.android.server.wm.flicker.monitor.ITransitionMonitor
@@ -53,7 +52,6 @@ class FlickerBuilder private constructor(
     private val setupCommands: TestCommandsBuilder,
     private val teardownCommands: TestCommandsBuilder,
     private val transitionCommands: MutableList<Flicker.() -> Any>,
-    internal val assertions: AssertionBlockBuilder,
     val device: UiDevice,
     private val traceMonitors: MutableList<ITransitionMonitor>
 ) {
@@ -100,7 +98,6 @@ class FlickerBuilder private constructor(
         setupCommands = TestCommandsBuilder(),
         teardownCommands = TestCommandsBuilder(),
         transitionCommands = mutableListOf(),
-        assertions = AssertionBlockBuilder(),
         device = UiDevice.getInstance(instrumentation),
         traceMonitors = mutableListOf<ITransitionMonitor>()
             .also {
@@ -125,7 +122,6 @@ class FlickerBuilder private constructor(
         TestCommandsBuilder(otherBuilder.setupCommands),
         TestCommandsBuilder(otherBuilder.teardownCommands),
         otherBuilder.transitionCommands.toMutableList(),
-        AssertionBlockBuilder(otherBuilder.assertions),
         UiDevice.getInstance(otherBuilder.instrumentation),
         otherBuilder.traceMonitors.toMutableList()
     )
@@ -143,8 +139,12 @@ class FlickerBuilder private constructor(
         this.testName = name
     }
 
-    @Deprecated("Prefer withTestName", replaceWith = ReplaceWith("withTestName"))
-    fun withTag(testTag: () -> String) = withTestName(testTag)
+    /**
+     * Disable [WindowManagerTraceMonitor].
+     */
+    fun withoutWindowManagerTracing() {
+        withWindowManagerTracing { null }
+    }
 
     /**
      * Configure a [WindowManagerTraceMonitor] to obtain [WindowManagerTrace]
@@ -161,6 +161,13 @@ class FlickerBuilder private constructor(
         if (newMonitor != null) {
             traceMonitors.add(newMonitor)
         }
+    }
+
+    /**
+     * Disable [LayersTraceMonitor].
+     */
+    fun withoutLayerTracing() {
+        withLayerTracing { null }
     }
 
     /**
@@ -227,13 +234,6 @@ class FlickerBuilder private constructor(
     }
 
     /**
-     * Defines the assertions to check the recorded traces
-     */
-    fun assertions(assertion: AssertionBlockBuilder.() -> Unit) {
-        assertions.apply { assertion() }
-    }
-
-    /**
      * Creates a new Flicker runner based on the current builder configuration
      */
     @JvmOverloads
@@ -251,7 +251,6 @@ class FlickerBuilder private constructor(
         teardownCommands.buildTestCommands(),
         teardownCommands.buildRunCommands(),
         transitionCommands,
-        assertions.build(),
         runner,
         wmHelper
     )
@@ -260,67 +259,4 @@ class FlickerBuilder private constructor(
      * Returns a copy of the current builder with the changes of [block] applied
      */
     fun copy(block: FlickerBuilder.() -> Unit) = FlickerBuilder(this).apply(block)
-}
-
-/**
- * Entry point for the Flicker DSL.
- *
- * Configures a builder, build a test running, executes the test and assertions
- *
- * @param instrumentation to run the test (used to interact with the device)
- * @param configuration Flicker DSL configuration
- */
-@JvmOverloads
-@Deprecated(level = DeprecationLevel.WARNING,
-    message = "This method is deprecated. Prefer runFlicker instead",
-    replaceWith = ReplaceWith("runFlicker"))
-fun flicker(
-    instrumentation: Instrumentation,
-    launcherStrategy: ILauncherStrategy = LauncherStrategyFactory
-            .getInstance(instrumentation).launcherStrategy,
-    configuration: FlickerBuilder.() -> Unit
-) = runFlicker(instrumentation, launcherStrategy, configuration = configuration)
-
-/**
- * Entry point for the Flicker DSL.
- *
- * Configures a builder, build the test runs, executes them and checks the configured assertions
- *
- * @param instrumentation to run the test (used to interact with the device)
- * @param launcherStrategy to interact with the device's launcher
- * @param runner to execute the transitions
- * @param configuration Flicker DSL configuration
- */
-@JvmOverloads
-fun runFlicker(
-    instrumentation: Instrumentation,
-    launcherStrategy: ILauncherStrategy = LauncherStrategyFactory
-            .getInstance(instrumentation).launcherStrategy,
-    runner: TransitionRunner = TransitionRunner(),
-    configuration: FlickerBuilder.() -> Unit
-) {
-    val builder = FlickerBuilder(instrumentation, launcherStrategy)
-    runWithFlicker(builder, runner, configuration)
-}
-
-/**
- * Entry point for the Flicker DSL.
- *
- * Creates flicker test runs based on [builder], appends any additional [configuration],
- * executes them and checks the configured assertions
- *
- * The original builder object is not changed.
- *
- * @param builder to run the test (used to interact with the device
- * @param runner to execute the transitions
- * @param configuration Flicker DSL configuration
- */
-@JvmOverloads
-fun runWithFlicker(
-    builder: FlickerBuilder,
-    runner: TransitionRunner = TransitionRunner(),
-    configuration: FlickerBuilder.() -> Unit = {}
-) {
-    builder.copy(configuration).build(runner).execute().checkAssertions(
-        block = AssertionBlock.PRESUBMIT.or(AssertionBlock.POSTSUBMIT))
 }

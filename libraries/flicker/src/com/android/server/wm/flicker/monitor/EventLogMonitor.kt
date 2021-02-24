@@ -52,7 +52,7 @@ open class EventLogMonitor : ITransitionMonitor {
         } catch (e: IOException) {
             throw RuntimeException(e)
         }
-        return events.dropWhile {
+        return events.filter { it.data != null }.dropWhile {
             it.tag != EVENT_LOG_SEPARATOR_TAG || it.data.toString() != _logSeparator
         }.drop(1)
     }

@@ -17,11 +17,11 @@ LOCAL_PATH:= $(call my-dir)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := AndroidXComposeStartupApp
+LOCAL_LICENSE_KINDS := SPDX-license-identifier-Apache-2.0
+LOCAL_LICENSE_CONDITIONS := notice
 LOCAL_MODULE_CLASS := APPS
 LOCAL_MODULE_TAGS := optional
 LOCAL_PREBUILT_MODULE_FILE := prebuilts/misc/common/androidx-perf/ui_apks_compose-integration-tests-demos_compose-demos-testapp-release.apk
 LOCAL_CERTIFICATE := PRESIGNED
 LOCAL_MODULE_PATH := $(TARGET_OUT_DATA)/local/tmp
 include $(BUILD_PREBUILT)
-
-

@@ -21,6 +21,10 @@
 // it is currently non-functional. So, we instead use a regular
 // java_library_host and manually copy the JAR with the Android.mk file.
 
+package {
+    default_applicable_licenses: ["Android-Apache-2.0"],
+}
+
 java_library_host {
     name: "audiotestharness-tradefed-lib",
 

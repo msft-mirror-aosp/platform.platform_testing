@@ -287,6 +287,12 @@ open class WindowManagerStateHelper @JvmOverloads constructor(
         }
     }
 
+    fun waitForSurfaceAppeared(surfaceName: String): Boolean {
+        return waitFor("$surfaceName surface is appeared") {
+            it.wmState.isWindowSurfaceShown(surfaceName)
+        }
+    }
+
     fun waitWindowingModeTopFocus(
         windowingMode: Int,
         topFocus: Boolean,
