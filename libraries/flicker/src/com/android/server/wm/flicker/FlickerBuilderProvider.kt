@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 The Android Open Source Project
+ * Copyright (C) 2021 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,18 +14,9 @@
  * limitations under the License.
  */
 
-package com.android.server.wm.flicker.dsl;
+package com.android.server.wm.flicker
 
-import com.android.server.wm.flicker.Flicker;
-
-/**
- * Defines a flicker command (transition, setup, teardown) used in Java compatibility mode of the
- * flicker tests
- *
- * @deprecated Used for Java compatibility only. If possible, use the Kotlin version
- */
-@Deprecated
-@FunctionalInterface
-public interface FlickerCommandJava {
-    void invoke(Flicker environment);
-}
+@kotlin.annotation.Retention(AnnotationRetention.RUNTIME)
+@Target(AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY_GETTER,
+    AnnotationTarget.PROPERTY_SETTER)
+annotation class FlickerBuilderProvider

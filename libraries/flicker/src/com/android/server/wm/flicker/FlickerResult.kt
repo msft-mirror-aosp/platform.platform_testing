@@ -53,7 +53,6 @@ data class FlickerResult(
     /**
      * Run the assertions on the trace
      *
-     * @param block Moment where the assertion should run
      * @throws AssertionError If the assertions fail or the transition crashed
      */
     internal fun checkAssertions(
@@ -61,7 +60,7 @@ data class FlickerResult(
     ): List<FlickerAssertionError> {
         checkIsExecuted()
         val currFailures: List<FlickerAssertionError> = runs.flatMap { run ->
-            assertions.mapNotNull { assertion ->
+            assertions.filter { it.tag == run.assertionTag }.mapNotNull { assertion ->
                 try {
                     assertion.checkAssertion(run)
                     null

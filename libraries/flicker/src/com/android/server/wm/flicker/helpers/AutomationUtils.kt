@@ -36,11 +36,13 @@ import androidx.test.uiautomator.Until
 import com.android.compatibility.common.util.SystemUtil
 import com.android.server.wm.flicker.helpers.WindowUtils.displayBounds
 import com.android.server.wm.flicker.helpers.WindowUtils.getNavigationBarPosition
+import com.android.server.wm.traces.parser.windowmanager.WindowManagerStateHelper
 import org.junit.Assert
 import org.junit.Assert.assertNotNull
 
 const val FIND_TIMEOUT: Long = 10000
 const val FAST_WAIT_TIMEOUT: Long = 0
+const val DOCKED_STACK_DIVIDER = "DockedStackDivider"
 const val IME_PACKAGE = "com.google.android.inputmethod.latin"
 @VisibleForTesting
 const val SYSTEMUI_PACKAGE = "com.android.systemui"
@@ -83,11 +85,14 @@ fun UiDevice.isRotated(): Boolean {
 /**
  * Reopens the first device window from the list of recent apps (overview)
  */
-fun UiDevice.reopenAppFromOverview() {
+fun UiDevice.reopenAppFromOverview(
+    wmHelper: WindowManagerStateHelper
+) {
     val x = this.displayWidth / 2
     val y = this.displayHeight / 2
     this.click(x, y)
-    this.waitForIdle()
+
+    wmHelper.waitForAppTransitionIdle()
 }
 
 /**
@@ -95,7 +100,9 @@ fun UiDevice.reopenAppFromOverview() {
  *
  * @throws AssertionError When quickstep does not appear
  */
-fun UiDevice.openQuickstep() {
+fun UiDevice.openQuickstep(
+    wmHelper: WindowManagerStateHelper
+) {
     if (this.isQuickstepEnabled()) {
         val navBar = this.findObject(By.res(SYSTEMUI_PACKAGE, "navigation_bar_frame"))
         val navBarVisibleBounds: Rect
@@ -144,7 +151,8 @@ fun UiDevice.openQuickstep() {
         recents = this.wait(Until.findObject(recentsSysUISelector), FIND_TIMEOUT)
     }
     assertNotNull("Recent items didn't appear", recents)
-    this.waitForIdle()
+    wmHelper.waitForNavBarStatusBarVisible()
+    wmHelper.waitForAppTransitionIdle()
 }
 
 private fun getLauncherOverviewSelector(device: UiDevice): BySelector {
@@ -158,9 +166,20 @@ private fun longPressRecents(device: UiDevice) {
     recentsButton.click(LONG_PRESS_TIMEOUT)
 }
 
-private fun openQuickStepAndLongPressOverviewIcon(device: UiDevice) {
+/**
+ * Wait for any IME view to appear
+ */
+fun UiDevice.waitForIME(): Boolean {
+    val ime = this.wait(Until.findObject(By.pkg(IME_PACKAGE)), FIND_TIMEOUT)
+    return ime != null
+}
+
+private fun openQuickStepAndLongPressOverviewIcon(
+    device: UiDevice,
+    wmHelper: WindowManagerStateHelper
+) {
     if (device.isQuickstepEnabled()) {
-        device.openQuickstep()
+        device.openQuickstep(wmHelper)
     } else {
         try {
             device.pressRecentApps()
@@ -175,9 +194,11 @@ private fun openQuickStepAndLongPressOverviewIcon(device: UiDevice) {
     overviewIcon.click()
 }
 
-fun UiDevice.openQuickStepAndClearRecentAppsFromOverview() {
+fun UiDevice.openQuickStepAndClearRecentAppsFromOverview(
+    wmHelper: WindowManagerStateHelper
+) {
     if (this.isQuickstepEnabled()) {
-        this.openQuickstep()
+        this.openQuickstep(wmHelper)
     } else {
         try {
             this.pressRecentApps()
@@ -209,8 +230,10 @@ fun UiDevice.openQuickStepAndClearRecentAppsFromOverview() {
  * @throws AssertionError when unable to open the list of recently used apps, or when it does
  * not contain a button to enter split screen mode
  */
-fun UiDevice.launchSplitScreen() {
-    openQuickStepAndLongPressOverviewIcon(this)
+fun UiDevice.launchSplitScreen(
+    wmHelper: WindowManagerStateHelper
+) {
+    openQuickStepAndLongPressOverviewIcon(this, wmHelper)
     val splitScreenButtonSelector = By.text("Split screen")
     val splitScreenButton =
             this.wait(Until.findObject(splitScreenButtonSelector), FIND_TIMEOUT)
@@ -218,7 +241,9 @@ fun UiDevice.launchSplitScreen() {
     splitScreenButton.click()
 
     // Wait for animation to complete.
-    SystemClock.sleep(2000)
+    this.wait(Until.findObject(splitScreenDividerSelector), FIND_TIMEOUT)
+    wmHelper.waitForSurfaceAppeared(DOCKED_STACK_DIVIDER)
+
     if (!this.isInSplitScreen()) {
         Assert.fail("Unable to find Split screen divider")
     }
@@ -227,8 +252,10 @@ fun UiDevice.launchSplitScreen() {
 /**
  * Checks if the recent application is able to split screen(resizeable)
  */
-fun UiDevice.canSplitScreen(): Boolean {
-    openQuickStepAndLongPressOverviewIcon(this)
+fun UiDevice.canSplitScreen(
+    wmHelper: WindowManagerStateHelper
+): Boolean {
+    openQuickStepAndLongPressOverviewIcon(this, wmHelper)
     val splitScreenButtonSelector = By.text("Split screen")
     val canSplitScreen =
             this.wait(Until.findObject(splitScreenButtonSelector), FIND_TIMEOUT) != null

@@ -16,6 +16,10 @@
 
 // Contains the Trade Federation extensions for the Audio Test Harness system.
 
+package {
+    default_applicable_licenses: ["Android-Apache-2.0"],
+}
+
 java_library_host {
     name: "audiotestharness-testlib",
 
