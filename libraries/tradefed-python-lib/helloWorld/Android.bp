@@ -13,6 +13,10 @@
 // limitations under the License.
 
 // Example hello world test that can run in Tradefed
+package {
+    default_applicable_licenses: ["Android-Apache-2.0"],
+}
+
 python_binary_host {
   name: "tradefed_hello_world",
   main: "test_hello_world.py",
@@ -33,4 +37,3 @@ python_binary_host {
     },
   }
 }
-

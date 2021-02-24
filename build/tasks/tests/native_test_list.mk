@@ -51,6 +51,9 @@ native_tests := \
     installd_otapreopt_test \
     installd_service_test \
     installd_utils_test \
+    keystore2_crypto_test_rust \
+    keystore2_km_compat_test \
+    keystore2_selinux_test \
     keystore2_test \
     libandroidfw_tests \
     libappfuse_test \
@@ -69,7 +72,7 @@ native_tests := \
     libprocinfo_test \
     libtextclassifier_tests \
     libsurfaceflinger_unittest \
-    libunwindstack_test \
+    libunwindstack_unit_test \
     libvintf_test \
     linker-unit-tests \
     logcat-unit-tests \
@@ -109,6 +112,7 @@ native_tests := \
     posix_async_io_test \
     prioritydumper_test \
     puffin_unittest \
+    quiche_device_test_src_lib \
     recovery_unit_test \
     resolv_gold_test \
     resolv_integration_test \
