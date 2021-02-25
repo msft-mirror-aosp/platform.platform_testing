@@ -15,7 +15,24 @@
  */
 package android.device.collectors;
 
+import static com.android.internal.jank.InteractionJankMonitor.PROP_NOTIFY_CUJ_EVENT;
+
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.os.Bundle;
+
+import com.android.helpers.MetricUtility;
 import com.android.helpers.UiInteractionFrameInfoHelper;
+import com.android.internal.annotations.GuardedBy;
+import com.android.internal.jank.InteractionJankMonitor;
+
+import org.junit.runner.Description;
+import org.junit.runner.Result;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * A listener that captures jank for various system interactions.
@@ -24,7 +41,154 @@ import com.android.helpers.UiInteractionFrameInfoHelper;
  * collection fails.
  */
 public class UiInteractionFrameInfoListener extends BaseCollectionListener<StringBuilder> {
+    private static final long POLLING_INTERVAL_MS = 100;
+    private static final String CMD_ENABLE_NOTIFY =
+            String.format("setprop %s %d", PROP_NOTIFY_CUJ_EVENT, 1);
+    private static final String CMD_DISABLE_NOTIFY =
+            String.format("setprop %s %d", PROP_NOTIFY_CUJ_EVENT, 0);
+
+    private final MetricsLoggedReceiver mReceiver = new MetricsLoggedReceiver();
+    private final Object mLock = new Object();
+
+    @GuardedBy("mLock")
+    private final Set<String> mExpectedCujSet = new HashSet<>();
+
+    @GuardedBy("mLock")
+    private final Set<String> mLoggedCujSet = new HashSet<>();
+
+    @GuardedBy("mLock")
+    private TimestampRecord mCurrentTestTimestamp;
+
+    @GuardedBy("mLock")
+    private boolean mMetricsReady;
+
     public UiInteractionFrameInfoListener() {
         createHelperInstance(new UiInteractionFrameInfoHelper());
+    }
+
+    @Override
+    public void onTestRunStart(DataRecord runData, Description description) {
+        getInstrumentation().getUiAutomation().executeShellCommand(CMD_ENABLE_NOTIFY);
+        super.onTestRunStart(runData, description);
+        mHelper.startCollecting();
+    }
+
+    @Override
+    public void onTestRunEnd(DataRecord runData, Result result) {
+        super.onTestRunEnd(runData, result);
+        mHelper.stopCollecting();
+        getInstrumentation().getUiAutomation().executeShellCommand(CMD_DISABLE_NOTIFY);
+    }
+
+    @Override
+    protected boolean onTestStartAlternative(DataRecord data) {
+        synchronized (mLock) {
+            mCurrentTestTimestamp = new TimestampRecord();
+            mCurrentTestTimestamp.begin(System.nanoTime());
+        }
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(InteractionJankMonitor.ACTION_SESSION_BEGIN);
+        filter.addAction(InteractionJankMonitor.ACTION_METRICS_LOGGED);
+        getInstrumentation().getContext().registerReceiver(mReceiver, filter);
+        return true;
+    }
+
+    @Override
+    protected boolean onTestEndAlternative(DataRecord data) {
+        try {
+            synchronized (mLock) {
+                mCurrentTestTimestamp.end(System.nanoTime());
+                while (!mMetricsReady) {
+                    mLock.wait(POLLING_INTERVAL_MS);
+                }
+                processMetrics(data);
+            }
+        } catch (InterruptedException e) {
+        } finally {
+            synchronized (mLock) {
+                mMetricsReady = false;
+                mExpectedCujSet.clear();
+                mLoggedCujSet.clear();
+            }
+            getInstrumentation().getContext().unregisterReceiver(mReceiver);
+        }
+        return true;
+    }
+
+    private void processMetrics(DataRecord data) throws InterruptedException {
+        final Set<String> foundCujSet = new HashSet<>();
+        DataRecord metricsData = new DataRecord();
+        while (!(foundCujSet.size() == mLoggedCujSet.size())) {
+            super.collectMetrics(metricsData);
+            if (!metricsData.hasMetrics()) {
+                mLock.wait(POLLING_INTERVAL_MS);
+                continue;
+            }
+            Bundle bundle = metricsData.createBundleFromMetrics();
+            for (String key : bundle.keySet()) {
+                for (String cujName : mLoggedCujSet) {
+                    if (key.startsWith(cujName)) {
+                        data.addStringMetric(key, bundle.getString(key));
+                        foundCujSet.add(cujName);
+                        break;
+                    }
+                }
+            }
+            metricsData.clear();
+        }
+    }
+
+    private static class TimestampRecord {
+        private long begin = Long.MAX_VALUE;
+        private long end = Long.MAX_VALUE;
+
+        void begin(long timestamp) {
+            begin = timestamp;
+        }
+
+        void end(long timestamp) {
+            end = timestamp;
+        }
+
+        boolean isInRange(long timestamp) {
+            return begin <= timestamp && timestamp <= end;
+        }
+    }
+
+    private class MetricsLoggedReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            String name = intent.getStringExtra(InteractionJankMonitor.BUNDLE_KEY_CUJ_NAME);
+            long timestamp = intent.getLongExtra(InteractionJankMonitor.BUNDLE_KEY_TIMESTAMP, -1L);
+
+            if (InteractionJankMonitor.ACTION_SESSION_BEGIN.equals(action)) {
+                handleSessionBegin(name, timestamp);
+            } else if (InteractionJankMonitor.ACTION_METRICS_LOGGED.equals(action)) {
+                handleMetricsLogged(name);
+            }
+        }
+
+        private void handleSessionBegin(String name, long timestamp) {
+            synchronized (mLock) {
+                if (mCurrentTestTimestamp.isInRange(timestamp)) {
+                    mExpectedCujSet.add(name);
+                }
+            }
+        }
+
+        private void handleMetricsLogged(String name) {
+            synchronized (mLock) {
+                if (mExpectedCujSet.contains(name)) {
+                    mLoggedCujSet.add(
+                            MetricUtility.constructKey(
+                                    UiInteractionFrameInfoHelper.KEY_PREFIX_CUJ, name));
+                    if (mLoggedCujSet.size() == mExpectedCujSet.size()) {
+                        mMetricsReady = true;
+                        mLock.notifyAll();
+                    }
+                }
+            }
+        }
     }
 }

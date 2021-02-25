@@ -16,6 +16,9 @@
 
 package com.android.helpers;
 
+import static com.android.helpers.MetricUtility.addMetric;
+import static com.android.helpers.MetricUtility.constructKey;
+
 import android.util.Log;
 
 import com.android.internal.jank.InteractionJankMonitor;
@@ -33,6 +36,7 @@ import java.util.Map;
 public class UiInteractionFrameInfoHelper implements ICollectorHelper<StringBuilder> {
 
     private static final String LOG_TAG = UiInteractionFrameInfoHelper.class.getSimpleName();
+    public static final String KEY_PREFIX_CUJ = "cuj";
 
     private final StatsdHelper mStatsdHelper = new StatsdHelper();
 
@@ -69,23 +73,23 @@ public class UiInteractionFrameInfoHelper implements ICollectorHelper<StringBuil
                         InteractionJankMonitor.getNameOfInteraction(
                                 uiInteractionFrameInfoReported.interactionType);
 
-                MetricUtility.addMetric(
-                        MetricUtility.constructKey("cuj", interactionType, "total_frames"),
+                addMetric(
+                        constructKey(KEY_PREFIX_CUJ, interactionType, "total_frames"),
                         makeLogFriendly(uiInteractionFrameInfoReported.totalFrames),
                         frameInfoMap);
 
-                MetricUtility.addMetric(
-                        MetricUtility.constructKey("cuj", interactionType, "missed_frames"),
+                addMetric(
+                        constructKey(KEY_PREFIX_CUJ, interactionType, "missed_frames"),
                         makeLogFriendly(uiInteractionFrameInfoReported.missedFrames),
                         frameInfoMap);
 
-                MetricUtility.addMetric(
-                        MetricUtility.constructKey("cuj", interactionType, "sf_missed_frames"),
+                addMetric(
+                        constructKey(KEY_PREFIX_CUJ, interactionType, "sf_missed_frames"),
                         makeLogFriendly(uiInteractionFrameInfoReported.sfMissedFrames),
                         frameInfoMap);
 
-                MetricUtility.addMetric(
-                        MetricUtility.constructKey("cuj", interactionType, "max_frame_time_ms"),
+                addMetric(
+                        constructKey(KEY_PREFIX_CUJ, interactionType, "max_frame_time_ms"),
                         makeLogFriendly(
                                 uiInteractionFrameInfoReported.maxFrameTimeNanos / 1000000.0),
                         frameInfoMap);
