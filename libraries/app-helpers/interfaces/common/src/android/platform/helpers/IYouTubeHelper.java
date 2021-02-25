@@ -49,6 +49,14 @@ public interface IYouTubeHelper extends IAppHelper {
     public void goToHomePage();
 
     /**
+     * Setup expectations: YouTube app is open.
+     *
+     * <p>This method keeps pressing the back button until library page button is accessible and
+     * clicked.
+     */
+    public void goToLibraryPage();
+
+    /**
      * Setup expectations: YouTube is on the home page.
      *
      * This method scrolls to the top of the home page and clicks the search button.
@@ -145,8 +153,19 @@ public interface IYouTubeHelper extends IAppHelper {
      * Setup expectation: YouTube is open on home page.
      *
      * <p>Scroll the home page by specified direction.
+     *
+     * @param direction The direction of the scroll, must be UP or DOWN.
      */
     public void scrollHomePage(Direction direction);
+
+    /**
+     * Setup expectations: YouTube app is open on library page.
+     *
+     * <p>This method will scroll the library page in the specified direction.
+     *
+     * @param direction The direction of the scroll, must be UP or DOWN.
+     */
+    public void scrollLibraryPage(Direction direction);
 
     /**
      * Setup expectation: YouTube is open on home page.
