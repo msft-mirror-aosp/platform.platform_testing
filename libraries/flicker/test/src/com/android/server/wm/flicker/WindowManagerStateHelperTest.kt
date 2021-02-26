@@ -139,13 +139,13 @@ class WindowManagerStateHelperTest {
         try {
             WindowManagerStateSubject
                 .assertThat(helper.wmState)
-                .isImeWindowShown(Display.DEFAULT_DISPLAY)
+                .isImeWindowVisible(Display.DEFAULT_DISPLAY)
             error("IME state should not be available")
         } catch (e: AssertionError) {
             helper.waitImeWindowShown(Display.DEFAULT_DISPLAY)
             WindowManagerStateSubject
                 .assertThat(helper.wmState)
-                .isImeWindowShown(Display.DEFAULT_DISPLAY)
+                .isImeWindowVisible(Display.DEFAULT_DISPLAY)
         }
     }
 
@@ -156,13 +156,13 @@ class WindowManagerStateHelperTest {
         try {
             WindowManagerStateSubject
                 .assertThat(helper.wmState)
-                .isImeWindowShown()
+                .isImeWindowVisible()
             error("IME state should not be available")
         } catch (e: AssertionError) {
             helper.waitImeWindowShown()
             WindowManagerStateSubject
                 .assertThat(helper.wmState)
-                .isImeWindowNotShown()
+                .isImeWindowInvisible()
         }
     }
 
@@ -272,15 +272,15 @@ class WindowManagerStateHelperTest {
             retryIntervalMs = 1)
         WindowManagerStateSubject
             .assertThat(helper.wmState)
-            .isRotation(Surface.ROTATION_0)
+            .hasRotation(Surface.ROTATION_0)
         helper.waitForRotation(Surface.ROTATION_270)
         WindowManagerStateSubject
             .assertThat(helper.wmState)
-            .isRotation(Surface.ROTATION_270)
+            .hasRotation(Surface.ROTATION_270)
         helper.waitForRotation(Surface.ROTATION_0)
         WindowManagerStateSubject
             .assertThat(helper.wmState)
-            .isRotation(Surface.ROTATION_0)
+            .hasRotation(Surface.ROTATION_0)
     }
 
     @Test
@@ -291,7 +291,7 @@ class WindowManagerStateHelperTest {
             retryIntervalMs = 1)
         WindowManagerStateSubject
             .assertThat(helper.wmState)
-            .isRotation(Surface.ROTATION_0)
+            .hasRotation(Surface.ROTATION_0)
         try {
             helper.waitForRotation(Surface.ROTATION_90)
             error("Should not have reached orientation ${Surface.ROTATION_90}")
@@ -299,7 +299,7 @@ class WindowManagerStateHelperTest {
             WindowManagerStateSubject
                 .assertThat(helper.wmState)
                 .isNotRotation(Surface.ROTATION_90)
-                .isRotation(Surface.ROTATION_0)
+                .hasRotation(Surface.ROTATION_0)
         }
     }
 

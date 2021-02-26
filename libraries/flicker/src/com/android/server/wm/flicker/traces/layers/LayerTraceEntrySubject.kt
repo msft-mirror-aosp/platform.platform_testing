@@ -16,19 +16,45 @@
 
 package com.android.server.wm.flicker.traces.layers
 
+import android.graphics.Rect
 import android.graphics.Region
+import com.android.server.wm.flicker.assertions.Assertion
 import com.android.server.wm.flicker.assertions.FlickerSubject
 import com.android.server.wm.flicker.traces.FlickerFailureStrategy
 import com.android.server.wm.flicker.traces.FlickerSubjectException
+import com.android.server.wm.traces.common.layers.Layer
 import com.android.server.wm.traces.common.layers.LayerTraceEntry
 import com.android.server.wm.traces.parser.toAndroidRegion
 import com.google.common.truth.ExpectFailure
 import com.google.common.truth.Fact
 import com.google.common.truth.FailureMetadata
+import com.google.common.truth.FailureStrategy
 import com.google.common.truth.StandardSubjectBuilder
 import com.google.common.truth.Subject
 import com.google.common.truth.Truth
 
+/**
+ * Truth subject for [LayerTraceEntry] objects, used to make assertions over behaviors that
+ * occur on a single SurfaceFlinger state.
+ *
+ * To make assertions over a specific state from a trace it is recommended to create a subject
+ * using [LayersTraceSubject.assertThat](myTrace) and select the specific state using:
+ *     [LayersTraceSubject.first]
+ *     [LayersTraceSubject.last]
+ *     [LayersTraceSubject.entry]
+ *
+ * Alternatively, it is also possible to use [LayerTraceEntrySubject.assertThat](myState) or
+ * Truth.assertAbout([LayerTraceEntrySubject.getFactory]), however they will provide less debug
+ * information because it uses Truth's default [FailureStrategy].
+ *
+ * Example:
+ *    val trace = LayersTraceParser.parseFromTrace(myTraceFile)
+ *    val subject = LayersTraceSubject.assertThat(trace).first()
+ *        .contains("ValidLayer")
+ *        .notContains("ImaginaryLayer")
+ *        .coversExactly(DISPLAY_AREA)
+ *        { myCustomAssertion(this) }
+ */
 class LayerTraceEntrySubject private constructor(
     fm: FailureMetadata,
     val entry: LayerTraceEntry,
@@ -40,22 +66,42 @@ class LayerTraceEntrySubject private constructor(
         entry.flattenedLayers.map { LayerSubject.assertThat(it, this) }
     }
 
+    /**
+     * Executes a custom [assertion] on the current subject
+     */
+    operator fun invoke(assertion: Assertion<LayerTraceEntry>): LayerTraceEntrySubject = apply {
+        assertion(this.entry)
+    }
+
+    /**
+     * Asserts that current entry subject has an [LayerTraceEntry.timestamp] equals to
+     * [timestamp]
+     */
     fun hasTimestamp(timestamp: Long): LayerTraceEntrySubject = apply {
         check("Wrong  entry timestamp").that(entry.timestamp).isEqualTo(timestamp)
     }
 
+    /**
+     * Asserts that the current SurfaceFlinger state doesn't contain layers
+     */
     fun isEmpty(): LayerTraceEntrySubject = apply {
         check("Entry should not be empty")
             .that(entry.flattenedLayers)
             .isEmpty()
     }
 
+    /**
+     * Asserts that the current SurfaceFlinger state contains layers
+     */
     fun isNotEmpty(): LayerTraceEntrySubject = apply {
         check("Entry should not be empty")
             .that(entry.flattenedLayers)
             .isNotEmpty()
     }
 
+    /**
+     * Asserts that the current SurfaceFlinger state has [numberLayers] layers
+     */
     fun hasLayersSize(numberLayers: Int): LayerTraceEntrySubject = apply {
         check("Wrong number of layers in entry")
             .that(entry.flattenedLayers.size)
@@ -63,15 +109,15 @@ class LayerTraceEntrySubject private constructor(
     }
 
     /**
-     * Checks if all layers layers with name containing [layerName] has a visible area of at
-     * least [testRegion], that is, if its area of the layer's visible region covers each point in
-     * the region.
+     * Asserts that the visible area covered by any [Layer] with [Layer.name] containing
+     * [layerName] covers at least [testRegion], that is, if its area of the layer's visible
+     * region covers each point in the region.
      *
      * @param testRegion Expected covered area
      * @param layerName Name of the layer to search
      */
     @JvmOverloads
-    fun coversAtLeastRegion(
+    fun coversAtLeast(
         testRegion: Region,
         layerName: String = ""
     ): LayerTraceEntrySubject = apply {
@@ -88,30 +134,63 @@ class LayerTraceEntrySubject private constructor(
     }
 
     /**
-     * Checks if all layers layers with name containing [layerName] has a visible area of at
-     * least [testRegion], that is, if its area of the layer's visible region covers each point in
-     * the region.
+     * Asserts that the visible area covered by any [Layer] with [Layer.name] containing
+     * [layerName] covers at least [testRegion], that is, if its area of the layer's visible
+     * region covers each point in the region.
      *
      * @param testRegion Expected covered area
      * @param layerName Name of the layer to search
      */
     @JvmOverloads
-    fun coversAtLeastRegion(
+    fun coversAtLeast(
         testRegion: com.android.server.wm.traces.common.Region,
         layerName: String = ""
     ): LayerTraceEntrySubject = apply {
-        coversAtLeastRegion(testRegion.toAndroidRegion(), layerName)
+        coversAtLeast(testRegion.toAndroidRegion(), layerName)
     }
 
     /**
-     * Checks if all layers layers with name containing [layerName] has a visible area of at
-     * most [testRegion], that is, if the region covers each point in the layer's visible region.
+     * Asserts that the visible area covered by any [Layer] with [Layer.name] containing
+     * [layerName] covers at least [testRect], that is, if its area of the layer's visible
+     * region covers each point in the region.
+     *
+     * @param testRect Expected covered area
+     * @param layerName Name of the layer to search
+     */
+    @JvmOverloads
+    fun coversAtLeast(
+        testRect: com.android.server.wm.traces.common.Rect,
+        layerName: String = ""
+    ): LayerTraceEntrySubject = apply {
+        coversAtLeast(com.android.server.wm.traces.common.Region(testRect), layerName)
+    }
+
+    /**
+     * Asserts that the visible area covered by any [Layer] with [Layer.name] containing
+     * [layerName] covers at least [testRect], that is, if its area of the layer's visible
+     * region covers each point in the region.
+     *
+     * @param testRect Expected covered area
+     * @param layerName Name of the layer to search
+     */
+    @JvmOverloads
+    fun coversAtLeast(
+        testRect: Rect,
+        layerName: String = ""
+    ): LayerTraceEntrySubject = apply {
+        coversAtLeast(Region(testRect), layerName)
+    }
+
+    /**
+     * Asserts that the visible area covered by any [Layer] with [Layer.name] containing
+     * [layerName] covers at most [testRegion], that is, if the area of any layer doesn't
+     * cover any point outside of [testRegion].
      *
      * @param testRegion Expected covered area
      * @param layerName Name of the layer to search
      */
     @JvmOverloads
-    fun coversAtMostRegion(
+    fun coversAtMost(
         testRegion: Region,
         layerName: String = ""
     ): LayerTraceEntrySubject = apply {
@@ -129,32 +208,66 @@ class LayerTraceEntrySubject private constructor(
     }
 
     /**
-     * Checks if all layers layers with name containing [layerName] has a visible area of at
-     * most [testRegion], that is, if the region covers each point in the layer's visible region.
+     * Asserts that the visible area covered by any [Layer] with [Layer.name] containing
+     * [layerName] covers at most [testRegion], that is, if the area of any layer doesn't
+     * cover any point outside of [testRegion].
      *
      * @param testRegion Expected covered area
      * @param layerName Name of the layer to search
      */
     @JvmOverloads
-    fun coversAtMostRegion(
+    fun coversAtMost(
         testRegion: com.android.server.wm.traces.common.Region,
         layerName: String = ""
     ): LayerTraceEntrySubject = apply {
-        coversAtMostRegion(testRegion.toAndroidRegion(), layerName)
+        coversAtMost(testRegion.toAndroidRegion(), layerName)
     }
 
     /**
-     * Obtains the region occupied by all layers with name containing [layerName].
+     * Asserts that the visible area covered by any [Layer] with [Layer.name] containing
+     * [layerName] covers at most [testRect], that is, if the area of any layer doesn't
+     * cover any point outside of [testRect].
+     *
+     * @param testRect Expected covered area
+     * @param layerName Name of the layer to search
+     */
+    @JvmOverloads
+    fun coversAtMost(
+        testRect: com.android.server.wm.traces.common.Rect,
+        layerName: String = ""
+    ): LayerTraceEntrySubject = apply {
+        coversAtMost(com.android.server.wm.traces.common.Region(testRect), layerName)
+    }
+
+    /**
+     * Asserts that the visible area covered by any [Layer] with [Layer.name] containing
+     * [layerName] covers at most [testRect], that is, if the area of any layer doesn't
+     * cover any point outside of [testRect].
+     *
+     * @param testRect Expected covered area
+     * @param layerName Name of the layer to search
+     */
+    @JvmOverloads
+    fun coversAtMost(
+        testRect: Rect,
+        layerName: String = ""
+    ): LayerTraceEntrySubject = apply {
+        coversAtMost(Region(testRect), layerName)
+    }
+
+    /**
+     * Obtains the region occupied by all layers with name containing [layerName] and applies
+     * [resultPredicate] on the result
      *
      * @param layerName Name of the layer to search
-     * @param resultComputation Predicate to compute a result based on the found layer's region
+     * @param resultPredicate Predicates to compute a result based on the found layer's region
      */
     @JvmOverloads
     fun covers(
         layerName: String = "",
-        resultComputation: (Region) -> Unit
+        resultPredicate: (Region) -> Unit
     ): LayerTraceEntrySubject = apply {
-        exists(layerName)
+        contains(layerName)
         val filteredLayers = entry.flattenedLayers.filter { it.name.contains(layerName) }
 
         val jointRegion = Region()
@@ -164,22 +277,23 @@ class LayerTraceEntrySubject private constructor(
             jointRegion.op(it.visibleRegion.toAndroidRegion(), Region.Op.UNION)
         }
 
-        resultComputation(jointRegion)
+        resultPredicate(jointRegion)
     }
 
     /**
-     * Checks if a layer containing the name [layerName] has a visible region of exactly
-     * [expectedVisibleRegion].
+     * Asserts that a [Layer] with [Layer.name] containing [layerName] has a visible region
+     * of exactly [expectedVisibleRegion].
      *
      * @param layerName Name of the layer to search
      * @param expectedVisibleRegion Expected visible region of the layer
      */
-    fun hasVisibleRegion(
-        layerName: String,
-        expectedVisibleRegion: Region
+    @JvmOverloads
+    fun coversExactly(
+        expectedVisibleRegion: Region,
+        layerName: String = ""
     ): LayerTraceEntrySubject = apply {
-        exists(layerName)
-        var reason: Fact? = Fact.simpleFact("")
+        contains(layerName)
+        var reason: Fact? = null
         var visibleRegion = com.android.server.wm.traces.common.Region()
         for (layer in entry.flattenedLayers) {
             if (layer.name.contains(layerName)) {
@@ -204,25 +318,27 @@ class LayerTraceEntrySubject private constructor(
     }
 
     /**
-     * Checks if a layer containing the name [layerName] has a visible region of exactly
-     * [expectedVisibleRegion].
+     * Asserts that a [Layer] with [Layer.name] containing [layerName] has a visible region
+     * of exactly [expectedVisibleRegion].
      *
      * @param layerName Name of the layer to search
      * @param expectedVisibleRegion Expected visible region of the layer
      */
-    fun hasVisibleRegion(
-        layerName: String,
-        expectedVisibleRegion: com.android.server.wm.traces.common.Region
+    @JvmOverloads
+    fun coversExactly(
+        expectedVisibleRegion: com.android.server.wm.traces.common.Region,
+        layerName: String = ""
     ): LayerTraceEntrySubject = apply {
-        hasVisibleRegion(layerName, expectedVisibleRegion.toAndroidRegion())
+        coversExactly(expectedVisibleRegion.toAndroidRegion(), layerName)
     }
 
     /**
-     * Checks if a layer containing the name [layerName] exists in the hierarchy.
+     * Asserts that the SurfaceFlinger state contains a [Layer] with [Layer.name] containing
+     * [layerName].
      *
      * @param layerName Name of the layer to search
      */
-    fun exists(layerName: String): LayerTraceEntrySubject = apply {
+    fun contains(layerName: String): LayerTraceEntrySubject = apply {
         val found = entry.flattenedLayers.any { it.name.contains(layerName) }
         if (!found) {
             fail("Could not find", layerName)
@@ -230,11 +346,11 @@ class LayerTraceEntrySubject private constructor(
     }
 
     /**
-     * Checks if a layer containing the name [layerName] exists in the hierarchy.
+     * Asserts that the SurfaceFlinger state doesn't contain a [Layer] with [Layer.name] containing
      *
      * @param layerName Name of the layer to search
      */
-    fun notExists(layerName: String): LayerTraceEntrySubject = apply {
+    fun notContains(layerName: String): LayerTraceEntrySubject = apply {
         val found = entry.flattenedLayers.none { it.name.contains(layerName) }
         if (!found) {
             fail("Could find", layerName)
@@ -242,12 +358,12 @@ class LayerTraceEntrySubject private constructor(
     }
 
     /**
-     * Checks if a layer with name [layerName] is visible.
+     * Asserts that a [Layer] with [Layer.name] containing [layerName] is visible.
      *
      * @param layerName Name of the layer to search
      */
     fun isVisible(layerName: String): LayerTraceEntrySubject = apply {
-        exists(layerName)
+        contains(layerName)
         var reason: Fact? = null
         for (layer in entry.flattenedLayers) {
             if (layer.name.contains(layerName)) {
@@ -269,7 +385,8 @@ class LayerTraceEntrySubject private constructor(
     }
 
     /**
-     * Checks if a layer with name [layerName] is not visible.
+     * Asserts that a [Layer] with [Layer.name] containing [layerName] doesn't exist or
+     * is invisible.
      *
      * @param layerName Name of the layer to search
      */
@@ -286,6 +403,12 @@ class LayerTraceEntrySubject private constructor(
     }
 
     /**
+     * Obtains a [LayerSubject] for the first occurrence of a [Layer] with [Layer.name]
+     * containing [name] in [frameNumber].
+     *
+     * Always returns a subject, event when the layer doesn't exist. To verify if layer
+     * actually exists in the hierarchy use [LayerSubject.exists] or [LayerSubject.doesNotExist]
+     *
      * @return LayerSubject that can be used to make assertions on a single layer matching
      * [name] and [frameNumber].
      */
@@ -310,7 +433,11 @@ class LayerTraceEntrySubject private constructor(
             Factory { fm, subject -> LayerTraceEntrySubject(fm, subject, trace) }
 
         /**
-         * User-defined entry point
+         * Creates a [LayerTraceEntrySubject] to representing a SurfaceFlinger state[entry],
+         * which can be used to make assertions.
+         *
+         * @param entry SurfaceFlinger trace entry
+         * @param trace Trace that contains this entry (optional)
          */
         @JvmStatic
         @JvmOverloads
