@@ -16,7 +16,6 @@
 
 package com.android.server.wm.flicker
 
-import android.os.Bundle
 import android.view.Surface
 import com.android.server.wm.flicker.assertions.AssertionData
 import com.android.server.wm.flicker.assertions.FlickerSubject
@@ -31,7 +30,7 @@ import com.android.server.wm.flicker.traces.windowmanager.WindowManagerTraceSubj
  * Specification of a flicker test for JUnit ParameterizedRunner class
  */
 data class FlickerTestParameter(
-    @JvmField val config: Bundle,
+    @JvmField val config: MutableMap<String, Any?>,
     @JvmField val name: String = defaultName(config)
 ) {
     internal var internalFlicker: Flicker? = null
@@ -92,7 +91,7 @@ data class FlickerTestParameter(
     override fun toString(): String = name
 
     companion object {
-        fun defaultName(config: Bundle) = buildString {
+        fun defaultName(config: Map<String, Any?>) = buildString {
             append(config.startRotationName)
             if (config.endRotation != config.startRotation) {
                 append("_${config.endRotationName}")
@@ -163,17 +162,17 @@ internal const val REPETITIONS = "repetitions"
 internal const val START_ROTATION = "startRotation"
 internal const val END_ROTATION = "endRotation"
 
-val Bundle.repetitions
-    get() = this.getInt(REPETITIONS, 1)
+val Map<String, Any?>.repetitions: Int
+    get() = this.getOrDefault(REPETITIONS, 1) as Int
 
-val Bundle.startRotation
-    get() = this.getInt(START_ROTATION, Surface.ROTATION_0)
+val Map<String, Any?>.startRotation: Int
+    get() = this.getOrDefault(START_ROTATION, Surface.ROTATION_0) as Int
 
-val Bundle.endRotation
-    get() = this.getInt(END_ROTATION, startRotation)
+val Map<String, Any?>.endRotation: Int
+    get() = this.getOrDefault(END_ROTATION, startRotation) as Int
 
-val Bundle.startRotationName
+val Map<String, Any?>.startRotationName: String
     get() = Surface.rotationToString(startRotation)
 
-val Bundle.endRotationName
+val Map<String, Any?>.endRotationName: String
     get() = Surface.rotationToString(endRotation)

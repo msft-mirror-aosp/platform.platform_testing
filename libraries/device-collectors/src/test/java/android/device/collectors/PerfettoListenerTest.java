@@ -209,7 +209,7 @@ public class PerfettoListenerTest {
         mListener.onTestEnd(mDataRecord, mTest1Desc);
         verify(mPerfettoHelper, times(1)).stopCollecting(anyLong(), anyString());
         // Test for wait time of 3 secs before starting the trace.
-        assertTrue((endTime - startTime) > Long
+        assertTrue((endTime - startTime) >= Long
                 .parseLong(PerfettoListener.DEFAULT_START_WAIT_TIME_MSECS));
     }
 

@@ -19,9 +19,15 @@ package com.android.server.wm.flicker.monitor
 import android.os.RemoteException
 import android.view.WindowManagerGlobal
 import com.android.server.wm.flicker.FlickerRunResult
+import com.android.server.wm.flicker.traces.layers.LayersTraceSubject
+import com.android.server.wm.traces.common.layers.LayersTrace
 import java.nio.file.Path
 
-/** Captures Layers trace from SurfaceFlinger.  */
+/**
+ * Captures [LayersTrace] from SurfaceFlinger.
+ *
+ * Use [LayersTraceSubject.assertThat] to make assertions on the trace
+ */
 open class LayersTraceMonitor(
     outputDir: Path,
     private val traceFlags: Int

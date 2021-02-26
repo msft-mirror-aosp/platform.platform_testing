@@ -50,7 +50,7 @@ class LayersTraceSubjectTest {
         val layersTraceEntries = readLayerTraceFromFile("layers_trace_emptyregion.pb")
         try {
             assertThat(layersTraceEntries)
-                .coversAtLeastRegion(DISPLAY_REGION)
+                .coversAtLeast(DISPLAY_REGION)
                 .forAllEntries()
             error("Assertion should not have passed")
         } catch (e: Throwable) {
@@ -65,7 +65,7 @@ class LayersTraceSubjectTest {
         assertThat(layersTraceEntries)
             .first()
             .isVisible("NavigationBar0#0")
-            .notExists("DockedStackDivider#0")
+            .notContains("DockedStackDivider#0")
             .isVisible("NexusLauncherActivity#0")
     }
 
@@ -82,14 +82,14 @@ class LayersTraceSubjectTest {
     fun testCanDetectChangingAssertions() {
         val layersTraceEntries = readLayerTraceFromFile("layers_trace_launch_split_screen.pb")
         assertThat(layersTraceEntries)
-            .showsLayer("NavigationBar0#0")
-            .hasNotLayer("DockedStackDivider#0")
+            .isVisible("NavigationBar0#0")
+            .notContains("DockedStackDivider#0")
             .then()
-            .showsLayer("NavigationBar0#0")
-            .hidesLayer("DockedStackDivider#0")
+            .isVisible("NavigationBar0#0")
+            .isInvisible("DockedStackDivider#0")
             .then()
-            .showsLayer("NavigationBar0#0")
-            .showsLayer("DockedStackDivider#0")
+            .isVisible("NavigationBar0#0")
+            .isVisible("DockedStackDivider#0")
             .forAllEntries()
     }
 
@@ -99,9 +99,9 @@ class LayersTraceSubjectTest {
         val layersTraceEntries = readLayerTraceFromFile("layers_trace_invalid_layer_visibility.pb")
         val error = assertThrows(AssertionError::class.java) {
             assertThat(layersTraceEntries)
-                .showsLayer("com.android.server.wm.flicker.testapp")
+                .isVisible("com.android.server.wm.flicker.testapp")
                 .then()
-                .hidesLayer("com.android.server.wm.flicker.testapp")
+                .isInvisible("com.android.server.wm.flicker.testapp")
                 .forAllEntries()
         }
 

@@ -19,14 +19,19 @@ package com.android.server.wm.flicker.monitor
 import android.os.RemoteException
 import android.view.WindowManagerGlobal
 import com.android.server.wm.flicker.FlickerRunResult
+import com.android.server.wm.flicker.traces.windowmanager.WindowManagerTraceSubject
+import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 import java.nio.file.Path
 
-/** Captures WindowManager trace from WindowManager.  */
+/**
+ * Captures [WindowManagerTrace] from WindowManager.
+ *
+ * Use [WindowManagerTraceSubject.assertThat] to make assertions on the trace
+ */
 open class WindowManagerTraceMonitor(
     outputDir: Path
 ) : TransitionMonitor(outputDir, "wm_trace.pb") {
     private val windowManager = WindowManagerGlobal.getWindowManagerService()
-
     override fun start() {
         try {
             windowManager.startWindowTrace()
