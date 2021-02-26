@@ -19,14 +19,39 @@ package com.android.server.wm.flicker.traces.windowmanager
 import com.android.server.wm.flicker.assertions.Assertion
 import com.android.server.wm.flicker.traces.FlickerFailureStrategy
 import com.android.server.wm.flicker.traces.FlickerTraceSubject
+import com.android.server.wm.traces.common.Rect
 import com.android.server.wm.traces.common.Region
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
+import com.android.server.wm.traces.common.windowmanager.windows.WindowState
 import com.google.common.truth.FailureMetadata
+import com.google.common.truth.FailureStrategy
 import com.google.common.truth.StandardSubjectBuilder
 import com.google.common.truth.Subject
 import com.google.common.truth.Truth
 
-/** Truth subject for [WindowManagerTrace] objects.  */
+/**
+ * Truth subject for [WindowManagerTrace] objects, used to make assertions over behaviors that
+ * occur throughout a whole trace.
+ *
+ * To make assertions over a trace it is recommended to create a subject using
+ * [WindowManagerTraceSubject.assertThat](myTrace). Alternatively, it is also possible to use
+ * Truth.assertAbout(WindowManagerTraceSubject.FACTORY), however it will provide less debug
+ * information because it uses Truth's default [FailureStrategy].
+ *
+ * Example:
+ *    val trace = WindowManagerTraceParser.parseFromTrace(myTraceFile)
+ *    val subject = WindowManagerTraceSubject.assertThat(trace)
+ *        .contains("ValidWindow")
+ *        .notContains("ImaginaryWindow")
+ *        .showsAboveAppWindow("NavigationBar")
+ *        .forAllEntries()
+ *
+ * Example2:
+ *    val trace = WindowManagerTraceParser.parseFromTrace(myTraceFile)
+ *    val subject = WindowManagerTraceSubject.assertThat(trace) {
+ *        check("Custom check") { myCustomAssertion(this) }
+ *    }
+ */
 class WindowManagerTraceSubject private constructor(
     fm: FailureMetadata,
     val trace: WindowManagerTrace
@@ -129,7 +154,7 @@ class WindowManagerTraceSubject private constructor(
      */
     fun showsNonAppWindow(partialWindowTitle: String): WindowManagerTraceSubject = apply {
         addAssertion("showsNonAppWindow($partialWindowTitle)") {
-            it.hasNonAppWindow(partialWindowTitle)
+            it.containsNonAppWindow(partialWindowTitle)
         }
     }
 
@@ -141,7 +166,7 @@ class WindowManagerTraceSubject private constructor(
      */
     fun hidesNonAppWindow(partialWindowTitle: String): WindowManagerTraceSubject = apply {
         addAssertion("hidesNonAppWindow($partialWindowTitle)") {
-            it.hasNonAppWindow(partialWindowTitle, isVisible = false)
+            it.containsNonAppWindow(partialWindowTitle, isVisible = false)
         }
     }
 
@@ -167,7 +192,7 @@ class WindowManagerTraceSubject private constructor(
      */
     fun appWindowNotOnTop(partialWindowTitle: String): WindowManagerTraceSubject = apply {
         addAssertion("hidesAppWindowOnTop($partialWindowTitle)") {
-            it.hasAppWindow(partialWindowTitle, isVisible = false)
+            it.containsAppWindow(partialWindowTitle, isVisible = false)
         }
     }
 
@@ -178,7 +203,7 @@ class WindowManagerTraceSubject private constructor(
      */
     fun showsAppWindow(partialWindowTitle: String): WindowManagerTraceSubject = apply {
         addAssertion("showsAppWindow($partialWindowTitle)") {
-            it.hasAppWindow(partialWindowTitle, isVisible = true)
+            it.containsAppWindow(partialWindowTitle, isVisible = true)
         }
     }
 
@@ -189,7 +214,7 @@ class WindowManagerTraceSubject private constructor(
      */
     fun hidesAppWindow(partialWindowTitle: String): WindowManagerTraceSubject = apply {
         addAssertion("hidesAppWindow($partialWindowTitle)") {
-            it.hasAppWindow(partialWindowTitle, isVisible = false)
+            it.containsAppWindow(partialWindowTitle, isVisible = false)
         }
     }
 
@@ -199,11 +224,12 @@ class WindowManagerTraceSubject private constructor(
      * @param partialWindowTitles partial titles of windows to check
      */
     fun noWindowsOverlap(vararg partialWindowTitles: String): WindowManagerTraceSubject = apply {
-        val titles = partialWindowTitles.toSet()
-        val repr = titles.joinToString(", ")
-        require(titles.size > 1) { "Must give more than one window to check! (Given $repr)" }
+        val repr = partialWindowTitles.joinToString(", ")
+        require(partialWindowTitles.size > 1) {
+            "Must give more than one window to check! (Given $repr)"
+        }
         addAssertion("noWindowsOverlap($repr)") {
-            it.noWindowsOverlap(titles)
+            it.noWindowsOverlap(*partialWindowTitles)
         }
     }
 
@@ -224,33 +250,139 @@ class WindowManagerTraceSubject private constructor(
         }
     }
 
-    fun coversAtLeastRegion(
-        partialWindowTitle: String,
-        region: Region
+    /**
+     * Asserts that the visible area covered by the first [WindowState] with [WindowState.title]
+     * containing [partialWindowTitle] covers at least [testRegion], that is, if its area of the
+     * window's bounds cover each point in the region.
+     *
+     * @param partialWindowTitle Name of the layer to search
+     * @param testRegion Expected visible area of the window
+     */
+    fun coversAtLeast(
+        testRegion: Region,
+        partialWindowTitle: String
     ): WindowManagerTraceSubject = apply {
-        addAssertion("coversAtLeastRegion($partialWindowTitle, $region)") {
-            it.coversAtLeastRegion(partialWindowTitle, region)
+        addAssertion("coversAtLeastRegion($partialWindowTitle, $testRegion)") {
+            it.coversAtLeast(testRegion, partialWindowTitle)
         }
     }
 
-    fun coversAtLeastRegion(partialWindowTitle: String, region: android.graphics.Region) = apply {
-        addAssertion("coversAtLeastRegion($partialWindowTitle, $region)") {
-            it.coversAtLeastRegion(partialWindowTitle, region)
-        }
-    }
-
-    fun coversAtMostRegion(
-        partialWindowTitle: String,
-        region: Region
+    /**
+     * Asserts that the visible area covered by the first [WindowState] with [WindowState.title]
+     * containing [partialWindowTitle] covers at least [testRegion], that is, if its area of the
+     * window's bounds cover each point in the region.
+     *
+     * @param partialWindowTitle Name of the layer to search
+     * @param testRegion Expected visible area of the window
+     */
+    fun coversAtLeast(
+        testRegion: android.graphics.Region,
+        partialWindowTitle: String
     ): WindowManagerTraceSubject = apply {
-        addAssertion("coversAtMostRegion($partialWindowTitle, $region)") {
-            it.coversAtMostRegion(partialWindowTitle, region)
+        addAssertion("coversAtLeastRegion($partialWindowTitle, $testRegion)") {
+            it.coversAtLeast(testRegion, partialWindowTitle)
         }
     }
 
-    fun coversAtMostRegion(partialWindowTitle: String, region: android.graphics.Region) = apply {
-        addAssertion("coversAtMostRegion($partialWindowTitle, $region)") {
-            it.coversAtMostRegion(partialWindowTitle, region)
+    /**
+     * Asserts that the visible area covered by the first [WindowState] with [WindowState.title]
+     * containing [partialWindowTitle] covers at least [testRect], that is, if its area of the
+     * window's bounds cover each point in the region.
+     *
+     * @param partialWindowTitle Name of the layer to search
+     * @param testRect Expected visible area of the window
+     */
+    fun coversAtLeast(
+        testRect: android.graphics.Rect,
+        partialWindowTitle: String
+    ): WindowManagerTraceSubject = apply {
+        addAssertion("coversAtLeastRegion($partialWindowTitle, $testRect)") {
+            it.coversAtLeast(testRect, partialWindowTitle)
+        }
+    }
+
+    /**
+     * Asserts that the visible area covered by the first [WindowState] with [WindowState.title]
+     * containing [partialWindowTitle] covers at least [testRect], that is, if its area of the
+     * window's bounds cover each point in the region.
+     *
+     * @param partialWindowTitle Name of the layer to search
+     * @param testRect Expected visible area of the window
+     */
+    fun coversAtLeast(
+        testRect: Rect,
+        partialWindowTitle: String
+    ): WindowManagerTraceSubject = apply {
+        addAssertion("coversAtLeastRegion($partialWindowTitle, $testRect)") {
+            it.coversAtLeast(testRect, partialWindowTitle)
+        }
+    }
+
+    /**
+     * Asserts that the visible area covered by the first [WindowState] with [WindowState.title]
+     * containing [partialWindowTitle] covers at most [testRegion], that is, if the area of the
+     * window state bounds don't cover any point outside of [testRegion].
+     *
+     * @param partialWindowTitle Name of the layer to search
+     * @param testRegion Expected visible area of the window
+     */
+    fun coversAtMost(
+        testRegion: Region,
+        partialWindowTitle: String
+    ): WindowManagerTraceSubject = apply {
+        addAssertion("coversAtMostRegion($partialWindowTitle, $testRegion)") {
+            it.coversAtMost(testRegion, partialWindowTitle)
+        }
+    }
+
+    /**
+     * Asserts that the visible area covered by the first [WindowState] with [WindowState.title]
+     * containing [partialWindowTitle] covers at most [testRegion], that is, if the area of the
+     * window state bounds don't cover any point outside of [testRegion].
+     *
+     * @param partialWindowTitle Name of the layer to search
+     * @param testRegion Expected visible area of the window
+     */
+    fun coversAtMost(
+        testRegion: android.graphics.Region,
+        partialWindowTitle: String
+    ): WindowManagerTraceSubject = apply {
+        addAssertion("coversAtMostRegion($partialWindowTitle, $testRegion)") {
+            it.coversAtMost(testRegion, partialWindowTitle)
+        }
+    }
+
+    /**
+     * Asserts that the visible area covered by the first [WindowState] with [WindowState.title]
+     * containing [partialWindowTitle] covers at most [testRect], that is, if the area of the
+     * window state bounds don't cover any point outside of [testRect].
+     *
+     * @param partialWindowTitle Name of the layer to search
+     * @param testRect Expected visible area of the window
+     */
+    fun coversAtMost(
+        testRect: Rect,
+        partialWindowTitle: String
+    ): WindowManagerTraceSubject = apply {
+        addAssertion("coversAtMostRegion($partialWindowTitle, $testRect)") {
+            it.coversAtMost(testRect, partialWindowTitle)
+        }
+    }
+
+    /**
+     * Asserts that the visible area covered by the first [WindowState] with [WindowState.title]
+     * containing [partialWindowTitle] covers at most [testRect], that is, if the area of the
+     * window state bounds don't cover any point outside of [testRect].
+     *
+     * @param partialWindowTitle Name of the layer to search
+     * @param testRect Expected visible area of the window
+     */
+    fun coversAtMost(
+        testRect: android.graphics.Rect,
+        partialWindowTitle: String
+    ): WindowManagerTraceSubject = apply {
+        addAssertion("coversAtMostRegion($partialWindowTitle, $testRect)") {
+            it.coversAtMost(testRect, partialWindowTitle)
         }
     }
 
@@ -271,6 +403,9 @@ class WindowManagerTraceSubject private constructor(
         }
     }
 
+    /**
+     * Executes a custom [assertion] on the current subject
+     */
     operator fun invoke(
         name: String,
         assertion: Assertion<WindowManagerStateSubject>
@@ -300,14 +435,17 @@ class WindowManagerTraceSubject private constructor(
             Factory { fm, subject -> WindowManagerTraceSubject(fm, subject) }
 
         /**
-         * User-defined entry point
+         * Creates a [WindowManagerTraceSubject] representing a WindowManager trace,
+         * which can be used to make assertions.
+         *
+         * @param trace WindowManager trace
          */
         @JvmStatic
-        fun assertThat(entry: WindowManagerTrace): WindowManagerTraceSubject {
+        fun assertThat(trace: WindowManagerTrace): WindowManagerTraceSubject {
             val strategy = FlickerFailureStrategy()
             val subject = StandardSubjectBuilder.forCustomFailureStrategy(strategy)
                 .about(FACTORY)
-                .that(entry) as WindowManagerTraceSubject
+                .that(trace) as WindowManagerTraceSubject
             strategy.init(subject)
             return subject
         }

@@ -16,7 +16,6 @@
 
 package com.android.server.wm.flicker
 
-import android.os.Bundle
 import android.view.Surface
 
 /**
@@ -38,10 +37,7 @@ open class FlickerTestParameterFactory {
         return supportedRotations
             .map { rotation ->
                 FlickerTestParameter(
-                    Bundle().also {
-                        it.putInt(START_ROTATION, rotation)
-                        it.putInt(REPETITIONS, repetitions)
-                    }
+                    mutableMapOf(START_ROTATION to rotation, REPETITIONS to repetitions)
                 )
             }
     }
@@ -61,11 +57,11 @@ open class FlickerTestParameterFactory {
             .filter { (start, end) -> start != end }
             .map { (start, end) ->
                 FlickerTestParameter(
-                    Bundle().also {
-                        it.putInt(START_ROTATION, start)
-                        it.putInt(END_ROTATION, end)
-                        it.putInt(REPETITIONS, repetitions)
-                    }
+                    mutableMapOf(
+                        START_ROTATION to start,
+                        END_ROTATION to end,
+                        REPETITIONS to repetitions
+                    )
                 )
             }
     }

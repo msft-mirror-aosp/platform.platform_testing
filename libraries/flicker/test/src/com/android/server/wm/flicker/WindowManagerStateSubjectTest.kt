@@ -61,29 +61,29 @@ class WindowManagerStateSubjectTest {
     fun canDetectWindowCoversAtLeastRegion_exactSize() {
         assertThat(trace)
             .entry(9213763541297)
-            .coversAtLeastRegion("StatusBar", Region(0, 0, 1440, 171))
-            .coversAtLeastRegion("com.google.android.apps.nexuslauncher", Region(0, 0, 1440, 2960))
+            .coversAtLeast(Region(0, 0, 1440, 171), "StatusBar")
+            .coversAtLeast(Region(0, 0, 1440, 2960), "com.google.android.apps.nexuslauncher")
     }
 
     @Test
     fun canDetectWindowCoversAtLeastRegion_smallerRegion() {
         assertThat(trace)
             .entry(9213763541297)
-            .coversAtLeastRegion("StatusBar", Region(0, 0, 100, 100))
-            .coversAtLeastRegion("com.google.android.apps.nexuslauncher", Region(0, 0, 100, 100))
+            .coversAtLeast(Region(0, 0, 100, 100), "StatusBar")
+            .coversAtLeast(Region(0, 0, 100, 100), "com.google.android.apps.nexuslauncher")
     }
 
     @Test
     fun canDetectWindowCoversAtLeastRegion_largerRegion() {
         val subject = assertThat(trace).entry(9213763541297)
         var failure = assertThrows(FlickerSubjectException::class.java) {
-            subject.coversAtLeastRegion("StatusBar", Region(0, 0, 1441, 171))
+            subject.coversAtLeast(Region(0, 0, 1441, 171), "StatusBar")
         }
         assertFailure(failure).factValue("Uncovered region").contains("SkRegion((1440,0,1441,171))")
 
         failure = assertThrows(FlickerSubjectException::class.java) {
-            subject.coversAtLeastRegion("com.google.android.apps.nexuslauncher",
-                Region(0, 0, 1440, 2961))
+            subject.coversAtLeast(Region(0, 0, 1440, 2961),
+                "com.google.android.apps.nexuslauncher")
         }
         assertFailure(failure).factValue("Uncovered region")
             .contains("SkRegion((0,2960,1440,2961))")
@@ -93,23 +93,23 @@ class WindowManagerStateSubjectTest {
     fun canDetectWindowCoversAtMostRegion_extactSize() {
         assertThat(trace)
             .entry(9213763541297)
-            .coversAtMostRegion("StatusBar", Region(0, 0, 1440, 171))
-            .coversAtMostRegion("com.google.android.apps.nexuslauncher", Region(0, 0, 1440, 2960))
+            .coversAtMost(Region(0, 0, 1440, 171), "StatusBar")
+            .coversAtMost(Region(0, 0, 1440, 2960), "com.google.android.apps.nexuslauncher")
     }
 
     @Test
     fun canDetectWindowCoversAtMostRegion_smallerRegion() {
         val subject = assertThat(trace).entry(9213763541297)
         var failure = assertThrows(FlickerSubjectException::class.java) {
-            subject.coversAtMostRegion("StatusBar",
-                Region(0, 0, 100, 100))
+            subject.coversAtMost(Region(0, 0, 100, 100),
+                "StatusBar")
         }
         assertFailure(failure).factValue("Out-of-bounds region")
             .contains("SkRegion((100,0,1440,100)(0,100,1440,171))")
 
         failure = assertThrows(FlickerSubjectException::class.java) {
-            subject.coversAtMostRegion("com.google.android.apps.nexuslauncher",
-                Region(0, 0, 100, 100))
+            subject.coversAtMost(Region(0, 0, 100, 100),
+                "com.google.android.apps.nexuslauncher")
         }
         assertFailure(failure).factValue("Out-of-bounds region")
             .contains("SkRegion((100,0,1440,100)(0,100,1440,2960))")
@@ -119,26 +119,26 @@ class WindowManagerStateSubjectTest {
     fun canDetectWindowCoversAtMostRegion_largerRegion() {
         assertThat(trace)
             .entry(9213763541297)
-            .coversAtMostRegion("StatusBar", Region(0, 0, 1441, 171))
-            .coversAtMostRegion("com.google.android.apps.nexuslauncher", Region(0, 0, 1440, 2961))
+            .coversAtMost(Region(0, 0, 1441, 171), "StatusBar")
+            .coversAtMost(Region(0, 0, 1440, 2961), "com.google.android.apps.nexuslauncher")
     }
 
     @Test
     fun canDetectBelowAppWindowVisibility() {
         assertThat(trace)
             .entry(9213763541297)
-            .hasNonAppWindow("wallpaper")
+            .containsNonAppWindow("wallpaper")
     }
 
     @Test
     fun canDetectAppWindowVisibility() {
         assertThat(trace)
             .entry(9213763541297)
-            .hasAppWindow("com.google.android.apps.nexuslauncher")
+            .containsAppWindow("com.google.android.apps.nexuslauncher")
 
         assertThat(trace)
             .entry(9215551505798)
-            .hasAppWindow("com.android.chrome")
+            .containsAppWindow("com.android.chrome")
     }
 
     @Test
@@ -146,7 +146,7 @@ class WindowManagerStateSubjectTest {
         val failure = assertThrows(FlickerSubjectException::class.java) {
             assertThat(trace)
                 .entry(9213763541297)
-                .hasNonAppWindow("ImaginaryWindow")
+                .containsNonAppWindow("ImaginaryWindow")
         }
         assertFailure(failure).factValue("Could not find")
             .contains("ImaginaryWindow")
@@ -157,7 +157,7 @@ class WindowManagerStateSubjectTest {
         val failure = assertThrows(FlickerSubjectException::class.java) {
             assertThat(trace)
                 .entry(9213763541297)
-                .hasNonAppWindow("InputMethod")
+                .containsNonAppWindow("InputMethod")
         }
         assertFailure(failure).factValue("Is Invisible")
             .contains("InputMethod")
@@ -167,7 +167,7 @@ class WindowManagerStateSubjectTest {
     fun canDetectAppZOrder() {
         assertThat(trace)
             .entry(9215551505798)
-            .hasAppWindow("com.google.android.apps.nexuslauncher", isVisible = true)
+            .containsAppWindow("com.google.android.apps.nexuslauncher", isVisible = true)
             .showsAppWindowOnTop("com.android.chrome")
     }
 

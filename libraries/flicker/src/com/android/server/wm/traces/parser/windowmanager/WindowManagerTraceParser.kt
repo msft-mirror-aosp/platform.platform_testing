@@ -255,8 +255,8 @@ object WindowManagerTraceParser {
                 focusedRootTaskId = proto.focusedRootTaskId,
                 resumedActivity = proto.resumedActivity?.title ?: "",
                 singleTaskInstance = proto.singleTaskInstance,
-                _defaultPinnedStackBounds = proto.pinnedStackController?.defaultBounds?.toRect(),
-                _pinnedStackMovementBounds = proto.pinnedStackController?.movementBounds?.toRect(),
+                _defaultPinnedStackBounds = proto.pinnedTaskController?.defaultBounds?.toRect(),
+                _pinnedStackMovementBounds = proto.pinnedTaskController?.movementBounds?.toRect(),
                 displayRect = Rect(0, 0, proto.displayInfo?.logicalWidth
                     ?: 0, proto.displayInfo?.logicalHeight ?: 0),
                 appRect = Rect(0, 0, proto.displayInfo?.appWidth ?: 0,
