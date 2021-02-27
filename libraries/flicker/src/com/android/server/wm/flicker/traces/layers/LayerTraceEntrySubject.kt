@@ -58,7 +58,7 @@ import com.google.common.truth.Truth
 class LayerTraceEntrySubject private constructor(
     fm: FailureMetadata,
     val entry: LayerTraceEntry,
-    trace: LayersTraceSubject?
+    val trace: LayersTraceSubject?
 ) : FlickerSubject(fm, entry) {
     override val defaultFacts: String = "${trace?.defaultFacts ?: ""}\nEntry: $entry"
 
