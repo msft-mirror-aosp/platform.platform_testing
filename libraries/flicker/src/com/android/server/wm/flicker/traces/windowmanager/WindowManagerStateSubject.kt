@@ -62,7 +62,7 @@ import com.google.common.truth.Truth
 class WindowManagerStateSubject private constructor(
     fm: FailureMetadata,
     val wmState: WindowManagerState,
-    trace: WindowManagerTraceSubject?
+    val trace: WindowManagerTraceSubject?
 ) : FlickerSubject(fm, wmState) {
     override val defaultFacts = "${trace?.defaultFacts ?: ""}\nEntry: $wmState"
 
