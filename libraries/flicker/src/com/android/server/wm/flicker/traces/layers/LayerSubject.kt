@@ -48,7 +48,7 @@ import com.google.common.truth.Truth
 class LayerSubject private constructor(
     fm: FailureMetadata,
     val layer: Layer?,
-    entry: LayerTraceEntrySubject?,
+    val entry: LayerTraceEntrySubject?,
     private val layerName: String? = null
 ) : FlickerSubject(fm, layer) {
     val isEmpty: Boolean get() = layer == null
