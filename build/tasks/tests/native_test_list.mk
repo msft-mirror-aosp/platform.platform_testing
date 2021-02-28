@@ -52,7 +52,6 @@ native_tests := \
     installd_service_test \
     installd_utils_test \
     keystore2_crypto_test_rust \
-    keystore2_km_compat_test \
     keystore2_selinux_test \
     keystore2_test \
     libandroidfw_tests \
