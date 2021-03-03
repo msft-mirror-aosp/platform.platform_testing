@@ -71,6 +71,15 @@ public interface IMapsHelper extends IAppHelper {
     /**
      * Setup expectation: On the destination details screen.
      *
+     * <p>Scrolls the destination details screen (must be UP or DOWN).
+     */
+    public default void scrollAddressDetails(Direction dir) {
+        throw new UnsupportedOperationException("Not yet implemented.");
+    }
+
+    /**
+     * Setup expectation: On the destination details screen.
+     *
      * <p>Closes the destination details screen.
      */
     public default void closeAddressDetails() {
