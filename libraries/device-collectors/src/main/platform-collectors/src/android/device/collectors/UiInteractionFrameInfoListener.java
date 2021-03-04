@@ -41,7 +41,9 @@ import java.util.Set;
  * collection fails.
  */
 public class UiInteractionFrameInfoListener extends BaseCollectionListener<StringBuilder> {
+    private static final String TAG = UiInteractionFrameInfoListener.class.getSimpleName();
     private static final long POLLING_INTERVAL_MS = 100;
+    private static final long POLLING_MAX_TIMES = 300;
     private static final String CMD_ENABLE_NOTIFY =
             String.format("setprop %s %d", PROP_NOTIFY_CUJ_EVENT, 1);
     private static final String CMD_DISABLE_NOTIFY =
@@ -98,10 +100,14 @@ public class UiInteractionFrameInfoListener extends BaseCollectionListener<Strin
         try {
             synchronized (mLock) {
                 mCurrentTestTimestamp.end(System.nanoTime());
-                while (!mMetricsReady) {
+                for (int i = 0; i < POLLING_MAX_TIMES && !mMetricsReady; i++) {
                     mLock.wait(POLLING_INTERVAL_MS);
                 }
-                processMetrics(data);
+                if (mMetricsReady) {
+                    processMetrics(data);
+                } else {
+                    throw new AssertionError("metrics not ready until polling max times!");
+                }
             }
         } catch (InterruptedException e) {
         } finally {
@@ -164,6 +170,8 @@ public class UiInteractionFrameInfoListener extends BaseCollectionListener<Strin
 
             if (InteractionJankMonitor.ACTION_SESSION_BEGIN.equals(action)) {
                 handleSessionBegin(name, timestamp);
+            } else if (InteractionJankMonitor.ACTION_SESSION_CANCEL.equals(action)) {
+                handleSessionCancelled(name);
             } else if (InteractionJankMonitor.ACTION_METRICS_LOGGED.equals(action)) {
                 handleMetricsLogged(name);
             }
@@ -173,6 +181,16 @@ public class UiInteractionFrameInfoListener extends BaseCollectionListener<Strin
             synchronized (mLock) {
                 if (mCurrentTestTimestamp.isInRange(timestamp)) {
                     mExpectedCujSet.add(name);
+                }
+            }
+        }
+
+        private void handleSessionCancelled(String name) {
+            synchronized (mLock) {
+                mExpectedCujSet.remove(name);
+                if (mLoggedCujSet.size() == mExpectedCujSet.size()) {
+                    mMetricsReady = true;
+                    mLock.notifyAll();
                 }
             }
         }
