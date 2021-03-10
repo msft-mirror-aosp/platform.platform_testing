@@ -13,6 +13,10 @@
 // limitations under the License.
 
 // Used for collecting memory metrics.
+package {
+    default_applicable_licenses: ["Android-Apache-2.0"],
+}
+
 java_library {
     name: "memory-helper",
     defaults: ["tradefed_errorprone_defaults"],
@@ -30,4 +34,3 @@ java_library {
 
     sdk_version: "current",
 }
-
