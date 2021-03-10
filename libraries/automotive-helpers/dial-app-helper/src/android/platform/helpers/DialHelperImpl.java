@@ -433,7 +433,7 @@ public class DialHelperImpl extends AbstractAutoStandardAppHelper implements IAu
     }
 
     /** This method is used to open the contacts menu */
-    private void openContacts() {
+    public void openContacts() {
         UiObject2 contactMenuButton = waitUntilFindUiObject(MENU_CONTACT);
         if (contactMenuButton != null) {
             clickAndWaitForIdle(contactMenuButton);
