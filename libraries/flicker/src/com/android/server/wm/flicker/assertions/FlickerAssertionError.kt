@@ -42,6 +42,13 @@ class FlickerAssertionError(
             append("Tag: ")
             append(assertionTag)
             append("\n")
+            append("Files: ")
+            append("\n")
+            traceFiles.forEach {
+                append("\t")
+                append(it)
+                append("\n")
+            }
             // For subject exceptions, add the facts (layer/window/entry/etc)
             // and the original cause of failure
             if (cause is FlickerSubjectException) {
