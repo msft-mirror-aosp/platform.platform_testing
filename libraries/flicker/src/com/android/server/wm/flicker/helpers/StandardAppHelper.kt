@@ -123,10 +123,14 @@ open class StandardAppHelper @JvmOverloads constructor(
     private fun waitForActivityDestroyed(
         wmHelper: WindowManagerStateHelper
     ) {
-        wmHelper.waitForActivityState(component, WindowManagerState.STATE_DESTROYED)
+        val activityName = component.toActivityName()
+        wmHelper.waitFor("state of $activityName to be ${WindowManagerState.STATE_DESTROYED}") {
+            !it.wmState.containsActivity(activityName) ||
+                it.wmState.hasActivityState(activityName, WindowManagerState.STATE_DESTROYED)
+        }
         wmHelper.waitForAppTransitionIdle()
         // Ensure WindowManagerService wait until all animations have completed
-        mInstrumentation.getUiAutomation().syncInputTransactions()
+        mInstrumentation.uiAutomation.syncInputTransactions()
     }
 
     private fun launchAppViaIntent(
