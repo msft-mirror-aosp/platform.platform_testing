@@ -18,30 +18,12 @@ package android.platform.helpers;
 
 import android.app.Instrumentation;
 import android.support.test.uiautomator.By;
-import android.support.test.uiautomator.BySelector;
 import android.support.test.uiautomator.Direction;
 import android.support.test.uiautomator.UiObject2;
-import android.support.test.uiautomator.Until;
 
 /** This helper extends NotificationHelperImpl to accommodate for Auto specific UI */
 public class AutoNotificationHelperImpl extends NotificationHelperImpl
         implements IAutoNotificationHelper {
-    private static final int UI_RESPONSE_WAIT_MS = 5000;
-
-    private static final String SYSTEMUI_PACKAGE = "com.android.systemui";
-    private static final String NOTIFICATION_LIST_ID = "notifications";
-    private static final String CLEAR_ALL_BUTTON_ID = "clear_all_button";
-    private static final String STATUS_BAR_ID = "car_top_bar";
-    private static final String RECYCLER_VIEW_CLASS = "androidx.recyclerview.widget.RecyclerView";
-    private static final String NOTIFICATION_VIEW = "notification_view";
-    private static final String OPEN_NOTIFICATION = "service call statusbar 1";
-
-    private static final BySelector NOTIFICATION_LIST =
-            By.res(SYSTEMUI_PACKAGE, NOTIFICATION_LIST_ID).clazz(RECYCLER_VIEW_CLASS);
-    private static final BySelector NOTIFICATIONS = By.res(SYSTEMUI_PACKAGE, NOTIFICATION_VIEW);
-    private static final BySelector CLEAR_ALL_BUTTON =
-            By.res(SYSTEMUI_PACKAGE, CLEAR_ALL_BUTTON_ID);
-    private static final BySelector STATUS_BAR_GROUND = By.res(SYSTEMUI_PACKAGE, STATUS_BAR_ID);
 
     public AutoNotificationHelperImpl(Instrumentation instr) {
         super(instr);
@@ -66,7 +48,12 @@ public class AutoNotificationHelperImpl extends NotificationHelperImpl
      */
     @Override
     public boolean isAppInForeground() {
-        return mDevice.hasObject(NOTIFICATIONS);
+        return (findUiObject(
+                        getResourceFromConfig(
+                                AutoConfigConstants.NOTIFICATIONS,
+                                AutoConfigConstants.EXPANDED_NOTIFICATIONS_SCREEN,
+                                AutoConfigConstants.NOTIFICATION_VIEW))
+                != null);
     }
 
     /** {@inheritDoc} */
@@ -75,8 +62,12 @@ public class AutoNotificationHelperImpl extends NotificationHelperImpl
         scrollThroughNotifications();
         if (clearAllBtnExist()) {
             UiObject2 clear_all_btn =
-                    mDevice.wait(Until.findObject(CLEAR_ALL_BUTTON), UI_RESPONSE_WAIT_MS);
-            clear_all_btn.click();
+                    findUiObject(
+                            getResourceFromConfig(
+                                    AutoConfigConstants.NOTIFICATIONS,
+                                    AutoConfigConstants.EXPANDED_NOTIFICATIONS_SCREEN,
+                                    AutoConfigConstants.CLEAR_ALL_BUTTON));
+            clickAndWaitForIdleScreen(clear_all_btn);
         } else {
             throw new RuntimeException("Cannot find Clear All button");
         }
@@ -85,11 +76,17 @@ public class AutoNotificationHelperImpl extends NotificationHelperImpl
     /** {@inheritDoc} */
     @Override
     public boolean checkNotificationExists(String title) {
-        executeShellCommand(OPEN_NOTIFICATION);
+        executeShellCommand(getApplicationConfig(AutoConfigConstants.OPEN_NOTIFICATIONS_COMMAND));
         UiObject2 notification_list =
-                mDevice.wait(Until.findObject(NOTIFICATION_LIST), UI_RESPONSE_WAIT_MS);
-        UiObject2 postedNotification =
-                mDevice.wait(Until.findObject(By.text(title)), UI_RESPONSE_WAIT_MS);
+                findUiObject(
+                        getResourceFromConfig(
+                                        AutoConfigConstants.NOTIFICATIONS,
+                                        AutoConfigConstants.EXPANDED_NOTIFICATIONS_SCREEN,
+                                        AutoConfigConstants.NOTIFICATION_LIST)
+                                .clazz(
+                                        getApplicationConfig(
+                                                AutoConfigConstants.RECYCLER_VIEW_CLASS)));
+        UiObject2 postedNotification = findUiObject(By.text(title));
         // This scrolls the notification list until the notification is found
         // or reaches to the bottom when "Clear All" button is presented.
         while (postedNotification == null && isAppInForeground()) {
@@ -97,8 +94,7 @@ public class AutoNotificationHelperImpl extends NotificationHelperImpl
                 break;
             }
             notification_list.scroll(Direction.DOWN, 20, 300);
-            postedNotification =
-                    mDevice.wait(Until.findObject(By.text(title)), UI_RESPONSE_WAIT_MS);
+            postedNotification = findUiObject(By.text(title));
         }
         return postedNotification != null;
     }
@@ -106,10 +102,9 @@ public class AutoNotificationHelperImpl extends NotificationHelperImpl
     /** {@inheritDoc} */
     @Override
     public void removeNotification(String title) {
-        mDevice.wait(Until.gone(By.text(title)), UI_RESPONSE_WAIT_MS);
-        executeShellCommand(OPEN_NOTIFICATION);
-        UiObject2 postedNotification =
-                mDevice.wait(Until.findObject(By.text(title)), UI_RESPONSE_WAIT_MS);
+        waitForGone(By.text(title));
+        executeShellCommand(getApplicationConfig(AutoConfigConstants.OPEN_NOTIFICATIONS_COMMAND));
+        UiObject2 postedNotification = findUiObject(By.text(title));
         postedNotification.swipe(Direction.LEFT, 1.0f);
     }
 
@@ -117,14 +112,22 @@ public class AutoNotificationHelperImpl extends NotificationHelperImpl
     @Override
     public void openNotification() {
         UiObject2 statusBar =
-                mDevice.wait(Until.findObject(STATUS_BAR_GROUND), UI_RESPONSE_WAIT_MS);
+                findUiObject(
+                        getResourceFromConfig(
+                                AutoConfigConstants.NOTIFICATIONS,
+                                AutoConfigConstants.EXPANDED_NOTIFICATIONS_SCREEN,
+                                AutoConfigConstants.STATUS_BAR));
         statusBar.swipe(Direction.DOWN, 1.0f, 500);
     }
 
     private void scrollThroughNotifications() {
-        executeShellCommand(OPEN_NOTIFICATION);
+        executeShellCommand(getApplicationConfig(AutoConfigConstants.OPEN_NOTIFICATIONS_COMMAND));
         UiObject2 notification_list =
-                mDevice.wait(Until.findObject(NOTIFICATION_LIST), UI_RESPONSE_WAIT_MS);
+                findUiObject(
+                        getResourceFromConfig(
+                                AutoConfigConstants.NOTIFICATIONS,
+                                AutoConfigConstants.EXPANDED_NOTIFICATIONS_SCREEN,
+                                AutoConfigConstants.NOTIFICATION_LIST));
         int max_swipe = 5;
         while (max_swipe > 0 && isAppInForeground()) {
             if (clearAllBtnExist()) {
@@ -138,7 +141,11 @@ public class AutoNotificationHelperImpl extends NotificationHelperImpl
 
     private boolean clearAllBtnExist() {
         UiObject2 clear_all_btn =
-                mDevice.wait(Until.findObject(CLEAR_ALL_BUTTON), UI_RESPONSE_WAIT_MS);
+                findUiObject(
+                        getResourceFromConfig(
+                                AutoConfigConstants.NOTIFICATIONS,
+                                AutoConfigConstants.EXPANDED_NOTIFICATIONS_SCREEN,
+                                AutoConfigConstants.CLEAR_ALL_BUTTON));
         return clear_all_btn != null;
     }
 }
