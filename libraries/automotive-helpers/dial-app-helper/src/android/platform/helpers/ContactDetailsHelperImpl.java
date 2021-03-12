@@ -19,33 +19,13 @@ package android.platform.helpers;
 import android.app.Instrumentation;
 import android.platform.helpers.exceptions.UnknownUiException;
 import android.support.test.uiautomator.By;
-import android.support.test.uiautomator.BySelector;
 import android.support.test.uiautomator.UiObject2;
-import android.support.test.uiautomator.Until;
+
+import android.os.SystemClock;
 
 public class ContactDetailsHelperImpl extends AbstractAutoStandardAppHelper
         implements IAutoDialContactDetailsHelper {
-
     private static final String LOG_TAG = DialHelperImpl.class.getSimpleName();
-    private static final String DIAL_APP_PACKAGE = "com.android.car.dialer";
-
-    private static final int UI_RESPONSE_WAIT_MS = 10000;
-
-    private static final BySelector MENU_CONTACT =
-            By.clickable(true).hasDescendant(By.text("Contacts"));
-
-    private static final BySelector CONTACT_LIST =
-            By.res(DIAL_APP_PACKAGE, "list_view").scrollable(true);
-    private static final BySelector PAGE_UP_BUTTON = By.res(DIAL_APP_PACKAGE, "page_up");
-    private static final BySelector CONTACT_FAVORITE_BUTTON =
-            By.res(DIAL_APP_PACKAGE, "contact_details_favorite_button");
-    private static final BySelector CONTACT_NUMBER = By.res(DIAL_APP_PACKAGE, "call_action_id");
-    private static final BySelector BACK_BUTTON =
-            By.res(DIAL_APP_PACKAGE, "car_ui_toolbar_nav_icon_container");
-
-    private static final String PHONE_LAUNCH_COMMAND =
-            "am start -a android.intent.action.MAIN -c android.intent.category.LAUNCHER "
-                    + "-n com.android.car.dialer/.ui.TelecomActivity";
 
     public ContactDetailsHelperImpl(Instrumentation instr) {
         super(instr);
@@ -54,14 +34,16 @@ public class ContactDetailsHelperImpl extends AbstractAutoStandardAppHelper
     /** {@inheritDoc} */
     @Override
     public String getPackage() {
-        return DIAL_APP_PACKAGE;
+        return getApplicationConfig(AutoConfigConstants.DIAL_PACKAGE);
     }
 
     /** {@inheritDoc} */
     public void open() {
-        mDevice.pressHome();
-        mDevice.waitForIdle();
-        executeShellCommand(PHONE_LAUNCH_COMMAND);
+        pressHome();
+        waitForIdle();
+        String phone_launch_command =
+                "am start -n " + getApplicationConfig(AutoConfigConstants.PHONE_ACTIVITY);
+        executeShellCommand(phone_launch_command);
     }
 
     /** {@inheritDoc} */
@@ -72,9 +54,14 @@ public class ContactDetailsHelperImpl extends AbstractAutoStandardAppHelper
 
     /** {@inheritDoc} */
     public void addRemoveFavoriteContact() {
-        UiObject2 favoriteButton = waitUntilFindUiObject(CONTACT_FAVORITE_BUTTON);
+        UiObject2 favoriteButton =
+                findUiObject(
+                        getResourceFromConfig(
+                                AutoConfigConstants.PHONE,
+                                AutoConfigConstants.CONTACTS_VIEW,
+                                AutoConfigConstants.ADD_CONTACT_TO_FAVORITE));
         if (favoriteButton != null) {
-            clickAndWaitForIdle(favoriteButton);
+            clickAndWaitForIdleScreen(favoriteButton);
         } else {
             throw new UnknownUiException("Unable to find add favorite button");
         }
@@ -82,23 +69,37 @@ public class ContactDetailsHelperImpl extends AbstractAutoStandardAppHelper
 
     /** {@inheritDoc} */
     public void makeCallFromDetailsPageByType(ContactType contactType) {
-        String numberType;
+        UiObject2 number = null;
         switch (contactType) {
             case HOME:
-                numberType = "Home";
+                number =
+                        findUiObject(
+                                getResourceFromConfig(
+                                        AutoConfigConstants.PHONE,
+                                        AutoConfigConstants.CONTACTS_VIEW,
+                                        AutoConfigConstants.CONTACT_TYPE_HOME));
                 break;
             case WORK:
-                numberType = "Work";
+                number =
+                        findUiObject(
+                                getResourceFromConfig(
+                                        AutoConfigConstants.PHONE,
+                                        AutoConfigConstants.CONTACTS_VIEW,
+                                        AutoConfigConstants.CONTACT_TYPE_WORK));
                 break;
             case MOBILE:
-                numberType = "Mobile";
+                number =
+                        findUiObject(
+                                getResourceFromConfig(
+                                        AutoConfigConstants.PHONE,
+                                        AutoConfigConstants.CONTACTS_VIEW,
+                                        AutoConfigConstants.CONTACT_TYPE_MOBILE));
                 break;
             default:
-                numberType = "Undefined";
+                number = findUiObject(By.text("undefined"));
         }
-        UiObject2 number = waitUntilFindUiObject(By.text(numberType));
         if (number != null) {
-            clickAndWaitForIdle(number.getParent());
+            clickAndWaitForIdleScreen(number.getParent());
         } else {
             throw new UnknownUiException("Unable to find number in contact details");
         }
@@ -106,32 +107,21 @@ public class ContactDetailsHelperImpl extends AbstractAutoStandardAppHelper
 
     /** {@inheritDoc} */
     public void closeDetailsPage() {
-        UiObject2 backButton = waitUntilFindUiObject(BACK_BUTTON);
-        if (backButton != null) {
-            clickAndWaitForIdle(backButton);
-        } else {
-            throw new UnknownUiException("Unable to find back button");
+        // count is used to avoid infinite loop in case someone invokes
+        // after exiting settings application
+        int count = 5;
+        while (count > 0
+                && findUiObject(
+                                By.clickable(true)
+                                        .hasDescendant(
+                                                getResourceFromConfig(
+                                                        AutoConfigConstants.PHONE,
+                                                        AutoConfigConstants.DIAL_PAD_VIEW,
+                                                        AutoConfigConstants.DIAL_PAD_MENU)))
+                        == null) {
+            pressBack();
+            SystemClock.sleep(3000); // to avoid stale object error
+            count--;
         }
-    }
-
-    /**
-     * This method is used to click on an UiObject2 and wait for device idle after click.
-     *
-     * @param uiObject UiObject2 to click.
-     */
-    private void clickAndWaitForIdle(UiObject2 uiObject2) {
-        uiObject2.click();
-        mDevice.waitForIdle();
-    }
-
-    /**
-     * This method is used to find UiObject2 corresponding to the selector
-     *
-     * @param selector BySelector to be found
-     * @return UiObject2 UiObject2 found for the corresponding selector
-     */
-    private UiObject2 waitUntilFindUiObject(BySelector selector) {
-        UiObject2 uiObject2 = mDevice.wait(Until.findObject(selector), UI_RESPONSE_WAIT_MS);
-        return uiObject2;
     }
 }

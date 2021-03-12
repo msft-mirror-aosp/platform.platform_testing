@@ -30,37 +30,24 @@ import android.os.SystemClock;
 import android.support.test.uiautomator.By;
 import android.support.test.uiautomator.BySelector;
 import android.support.test.uiautomator.UiObject2;
-import android.support.test.uiautomator.Until;
 
 import java.util.List;
+import java.util.ArrayList;
 import java.util.stream.Collectors;
 
 public class AutoNotificationMockingHelperImpl extends NotificationHelperImpl
         implements IAutoNotificationMockingHelper {
 
     private static final int UI_RESPONSE_WAIT_MS = 5000;
-    private static final int LONG_UI_RESPONSE_WAIT_MS = 10000;
 
-    private static final String SYSTEMUI_PACKAGE = "com.android.systemui";
     private static final String NOTIFICATION_CHANNEL_ID = "auto_test_channel_id";
     private static final String NOTIFICATION_CHANNEL_NAME = "Test Channel";
     private static final String NOTIFICATION_TITLE_TEXT = "AUTO TEST NOTIFICATION";
-    private static final String APP_ICON_ID = "app_icon";
-    private static final String APP_NAME_ID = "header_text";
-    private static final String NOTIFICATION_TITLE_ID = "notification_body_title";
-    private static final String NOTIFICATION_BODY_ID = "notification_body_content";
     private static final String NOTIFICATION_CONTENT_TEXT_FORMAT = "Test notification %d";
-    private static final String OPEN_NOTIFICATION = "service call statusbar 1";
 
-    private static final BySelector[] NOTIFICATION_REQUIRED_FIELDS = {
-        By.res(SYSTEMUI_PACKAGE, APP_ICON_ID),
-        By.res(SYSTEMUI_PACKAGE, APP_NAME_ID),
-        By.res(SYSTEMUI_PACKAGE, NOTIFICATION_TITLE_ID),
-        By.res(SYSTEMUI_PACKAGE, NOTIFICATION_BODY_ID)
-    };
+    private static final List<BySelector> NOTIFICATION_REQUIRED_FIELDS = new ArrayList<>();
 
     private static final int NOTIFICATION_DEPTH = 6;
-    private static final long SHORT_TRANSITION_WAIT = 1500;
 
     private NotificationManager mNotificationManager;
 
@@ -73,6 +60,26 @@ public class AutoNotificationMockingHelperImpl extends NotificationHelperImpl
                         NOTIFICATION_CHANNEL_NAME,
                         NotificationManager.IMPORTANCE_HIGH);
         mNotificationManager.createNotificationChannel(channel);
+        NOTIFICATION_REQUIRED_FIELDS.add(
+                getResourceFromConfig(
+                        AutoConfigConstants.NOTIFICATIONS,
+                        AutoConfigConstants.EXPANDED_NOTIFICATIONS_SCREEN,
+                        AutoConfigConstants.APP_ICON));
+        NOTIFICATION_REQUIRED_FIELDS.add(
+                getResourceFromConfig(
+                        AutoConfigConstants.NOTIFICATIONS,
+                        AutoConfigConstants.EXPANDED_NOTIFICATIONS_SCREEN,
+                        AutoConfigConstants.APP_NAME));
+        NOTIFICATION_REQUIRED_FIELDS.add(
+                getResourceFromConfig(
+                        AutoConfigConstants.NOTIFICATIONS,
+                        AutoConfigConstants.EXPANDED_NOTIFICATIONS_SCREEN,
+                        AutoConfigConstants.NOTIFICATION_TITLE));
+        NOTIFICATION_REQUIRED_FIELDS.add(
+                getResourceFromConfig(
+                        AutoConfigConstants.NOTIFICATIONS,
+                        AutoConfigConstants.EXPANDED_NOTIFICATIONS_SCREEN,
+                        AutoConfigConstants.NOTIFICATION_BODY));
     }
 
     /** {@inheritDoc} */
@@ -148,7 +155,7 @@ public class AutoNotificationMockingHelperImpl extends NotificationHelperImpl
                     String.format("Unable to find notification with title %s", title));
         }
         for (BySelector selector : NOTIFICATION_REQUIRED_FIELDS) {
-            UiObject2 obj = mDevice.wait(Until.findObject(selector), UI_RESPONSE_WAIT_MS);
+            UiObject2 obj = findUiObject(selector);
             if (obj == null) {
                 throw new RuntimeException("Unable to find required notification field");
             }
@@ -157,9 +164,8 @@ public class AutoNotificationMockingHelperImpl extends NotificationHelperImpl
     }
 
     private boolean checkNotificationExists(String title) {
-        executeShellCommand(OPEN_NOTIFICATION);
-        UiObject2 postedNotification =
-                mDevice.wait(Until.findObject(By.text(title)), UI_RESPONSE_WAIT_MS);
+        executeShellCommand(getApplicationConfig(AutoConfigConstants.OPEN_NOTIFICATIONS_COMMAND));
+        UiObject2 postedNotification = findUiObject(By.text(title));
         return postedNotification != null;
     }
 
@@ -183,10 +189,12 @@ public class AutoNotificationMockingHelperImpl extends NotificationHelperImpl
 
     private List<UiObject2> getNotificationStack() {
         List<UiObject2> objects =
-                mDevice.wait(
-                        Until.findObjects(
-                                By.res(SYSTEMUI_PACKAGE, "card_view").maxDepth(NOTIFICATION_DEPTH)),
-                        SHORT_TRANSITION_WAIT);
+                findUiObjects(
+                        getResourceFromConfig(
+                                AutoConfigConstants.NOTIFICATIONS,
+                                AutoConfigConstants.EXPANDED_NOTIFICATIONS_SCREEN,
+                                AutoConfigConstants.CARD_VIEW),
+                        NOTIFICATION_DEPTH);
         return objects.stream().map(o -> o.getParent().getParent()).collect(Collectors.toList());
     }
 }

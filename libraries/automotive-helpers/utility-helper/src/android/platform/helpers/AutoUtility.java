@@ -40,17 +40,6 @@ public class AutoUtility {
     private static Instrumentation mInstrumentation = InstrumentationRegistry.getInstrumentation();
     private static UiDevice mDevice = UiDevice.getInstance(mInstrumentation);
 
-    public static final String DISPLAY_SETTINGS = "DISPLAY";
-    public static final String SOUND_SETTINGS = "SOUND";
-    public static final String NETWORK_AND_INTERNET_SETTINGS = "NETWORK_AND_INTERNET";
-    public static final String BLUETOOTH_SETTINGS = "BLUETOOTH";
-    public static final String APPS_AND_NOTIFICATIONS_SETTINGS = "APPS_AND_NOTIFICATIONS";
-    public static final String DATE_AND_TIME_SETTINGS = "DATE_AND_TIME";
-    public static final String SYSTEM_SETTINGS = "SYSTEM";
-    public static final String USER_SETTINGS = "USERS";
-    public static final String ACCOUNT_SETTINGS = "ACCOUNTS";
-    public static final String SECURITY_SETTINGS = "SECURITY";
-
     public static void exitSuw() {
         mDevice.pressHome();
         dismissInitialUserNoticeUiServiceDialog();
