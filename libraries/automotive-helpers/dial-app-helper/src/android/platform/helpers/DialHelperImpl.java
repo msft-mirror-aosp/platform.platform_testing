@@ -23,77 +23,13 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
 import android.support.test.uiautomator.By;
 import android.support.test.uiautomator.BySelector;
-import android.support.test.uiautomator.UiObject;
 import android.support.test.uiautomator.UiObject2;
-import android.support.test.uiautomator.UiObjectNotFoundException;
-import android.support.test.uiautomator.UiScrollable;
-import android.support.test.uiautomator.UiSelector;
-import android.support.test.uiautomator.Until;
 
 import java.util.regex.Pattern;
+import android.os.SystemClock;
 
 public class DialHelperImpl extends AbstractAutoStandardAppHelper implements IAutoDialHelper {
-
     private static final String LOG_TAG = DialHelperImpl.class.getSimpleName();
-    private static final String DIAL_APP_PACKAGE = "com.android.car.dialer";
-    private static final String CALL_LISTVIEW_CLASSNAME = android.widget.TextView.class.getName();
-    private static final String PHONE = "Phone";
-    private static final String CAR_SPEAKERS = "Car speakers";
-    private static final String FIRST_NAME = "First name";
-    private static final String LAST_NAME = "Last name";
-
-    private static final int UI_RESPONSE_WAIT_MS = 10000;
-
-    private static final BySelector MENU_DIAL_A_NUMBER =
-            By.clickable(true).hasDescendant(By.text("Dialpad"));
-    private static final BySelector MENU_CALL_HISTORY =
-            By.clickable(true).hasDescendant(By.text("Recents"));
-    private static final BySelector MENU_CONTACT =
-            By.clickable(true).hasDescendant(By.text("Contacts"));
-    private static final BySelector MENU_FAVORITES =
-            By.clickable(true)
-                    .hasDescendant(
-                            By.text(Pattern.compile("favo.?rite.?", Pattern.CASE_INSENSITIVE)));
-    private static final BySelector CALL_TIME = By.text("00:00");
-
-    private static final BySelector CALL_BUTTON = By.res(DIAL_APP_PACKAGE, "call_button");
-    private static final BySelector END_BUTTON = By.res(DIAL_APP_PACKAGE, "end_call_button");
-    private static final BySelector DELETE_BUTTON = By.res(DIAL_APP_PACKAGE, "delete_button");
-    private static final BySelector DIAL_CONTACT = By.res(DIAL_APP_PACKAGE, "user_profile_title");
-    private static final BySelector DIAL_CONTACT_IN_DIALPAD = By.res(DIAL_APP_PACKAGE, "title");
-    private static final BySelector IN_CALL_DIALPAD =
-            By.res(DIAL_APP_PACKAGE, "toggle_dialpad_button");
-    private static final BySelector MUTE_BUTTON = By.res(DIAL_APP_PACKAGE, "mute_button");
-    private static final BySelector DIAL_PAD = By.res(DIAL_APP_PACKAGE, "dialpad_fragment");
-    private static final BySelector CALL_HISTORY = By.res(DIAL_APP_PACKAGE, "call_action_id");
-    private static final BySelector VOICE_CHANNEL_BUTTON =
-            By.res(DIAL_APP_PACKAGE, "voice_channel_view");
-    private static final BySelector CONTACT_NAME_IN_DIALER =
-            By.res(DIAL_APP_PACKAGE, "user_profile_title");
-    private static final BySelector CONTACT_TYPE =
-            By.res(DIAL_APP_PACKAGE, "user_profile_phone_number");
-    private static final BySelector CONTACT_LIST =
-            By.res(DIAL_APP_PACKAGE, "list_view").scrollable(true);
-    private static final BySelector PAGE_UP_BUTTON =
-            By.res(DIAL_APP_PACKAGE, "car_ui_scrollbar_page_up");
-    private static final BySelector PAGE_DOWN_BUTTON =
-            By.res(DIAL_APP_PACKAGE, "car_ui_scrollbar_page_down");
-    private static final BySelector CONTACT_NAME_IN_CONTACTS = By.res(DIAL_APP_PACKAGE, "title");
-    private static final BySelector DIALER_SEARCH_BUTTON =
-            By.res(DIAL_APP_PACKAGE, "menu_item_search");
-    private static final BySelector DIALER_SETTINGS_BUTTON =
-            By.res(DIAL_APP_PACKAGE, "menu_item_setting");
-    private static final BySelector BACK_BUTTON =
-            By.res(DIAL_APP_PACKAGE, "car_ui_toolbar_nav_icon_container");
-    private static final BySelector CONTACT_ORDER_BUTTON =
-            By.clickable(true).hasDescendant(By.text("Contact order"));
-    private static final BySelector SEARCH_CONTACTS_BOX =
-            By.res(DIAL_APP_PACKAGE, "car_ui_toolbar_search_bar");
-    private static final BySelector SEARCH_RESULT = By.res(DIAL_APP_PACKAGE, "contact_name");
-
-    private static final String PHONE_LAUNCH_COMMAND =
-            "am start -a android.intent.action.MAIN -c android.intent.category.LAUNCHER "
-                    + "-n com.android.car.dialer/.ui.TelecomActivity";
 
     private BluetoothManager mBluetoothManager;
     private BluetoothAdapter mBluetoothAdapter;
@@ -108,15 +44,17 @@ public class DialHelperImpl extends AbstractAutoStandardAppHelper implements IAu
 
     /** {@inheritDoc} */
     public void open() {
-        mDevice.pressHome();
-        mDevice.waitForIdle();
-        executeShellCommand(PHONE_LAUNCH_COMMAND);
+        pressHome();
+        waitForIdle();
+        String phone_launch_command =
+                "am start -n " + getApplicationConfig(AutoConfigConstants.PHONE_ACTIVITY);
+        executeShellCommand(phone_launch_command);
     }
 
     /** {@inheritDoc} */
     @Override
     public String getPackage() {
-        return DIAL_APP_PACKAGE;
+        return getApplicationConfig(AutoConfigConstants.DIAL_PACKAGE);
     }
 
     /** {@inheritDoc} */
@@ -127,38 +65,55 @@ public class DialHelperImpl extends AbstractAutoStandardAppHelper implements IAu
 
     /** {@inheritDoc} */
     public void makeCall() {
-        UiObject2 dialButton = waitUntilFindUiObject(CALL_BUTTON);
+        BySelector dialButtonSelector =
+                getResourceFromConfig(
+                        AutoConfigConstants.PHONE,
+                        AutoConfigConstants.DIAL_PAD_VIEW,
+                        AutoConfigConstants.MAKE_CALL);
+        UiObject2 dialButton = findUiObject(dialButtonSelector);
         if (dialButton != null) {
-            clickAndWaitForGone(dialButton, CALL_BUTTON);
+            clickAndWaitForGone(dialButton, dialButtonSelector);
         } else {
             throw new UnknownUiException("Unable to find call button.");
         }
-        mDevice.waitForWindowUpdate(DIAL_APP_PACKAGE, UI_RESPONSE_WAIT_MS);
-        mDevice.wait(Until.findObject(CALL_TIME), UI_RESPONSE_WAIT_MS);
+        waitForWindowUpdate(getApplicationConfig(AutoConfigConstants.DIAL_PACKAGE));
+        SystemClock.sleep(3000); // Wait for the call to go through
     }
 
     /** {@inheritDoc} */
     public void endCall() {
-        UiObject2 endButton = waitUntilFindUiObject(END_BUTTON);
+        BySelector endButtonSelector =
+                getResourceFromConfig(
+                        AutoConfigConstants.PHONE,
+                        AutoConfigConstants.IN_CALL_VIEW,
+                        AutoConfigConstants.END_CALL);
+        UiObject2 endButton = findUiObject(endButtonSelector);
         if (endButton != null) {
-            clickAndWaitForGone(endButton, END_BUTTON);
+            clickAndWaitForGone(endButton, endButtonSelector);
         } else {
             throw new UnknownUiException("Unable to find end call button.");
         }
-        mDevice.waitForWindowUpdate(DIAL_APP_PACKAGE, UI_RESPONSE_WAIT_MS);
+        waitForWindowUpdate(getApplicationConfig(AutoConfigConstants.DIAL_PACKAGE));
     }
 
     /** {@inheritDoc} */
     public void dialANumber(String phoneNumber) {
         enterNumber(phoneNumber);
-        mDevice.waitForIdle();
+        waitForIdle();
     }
 
     /** {@inheritDoc} */
     public void openCallHistory() {
-        UiObject2 historyMenuButton = waitUntilFindUiObject(MENU_CALL_HISTORY);
+        BySelector callHistorySelector =
+                By.clickable(true)
+                        .hasDescendant(
+                                getResourceFromConfig(
+                                        AutoConfigConstants.PHONE,
+                                        AutoConfigConstants.CALL_HISTORY_VIEW,
+                                        AutoConfigConstants.CALL_HISTORY_MENU));
+        UiObject2 historyMenuButton = findUiObject(callHistorySelector);
         if (historyMenuButton != null) {
-            clickAndWaitForIdle(historyMenuButton);
+            clickAndWaitForIdleScreen(historyMenuButton);
         } else {
             throw new UnknownUiException("Unable to find call history menu.");
         }
@@ -168,7 +123,7 @@ public class DialHelperImpl extends AbstractAutoStandardAppHelper implements IAu
     public void callContact(String contactName) {
         openContacts();
         dialFromList(contactName);
-        mDevice.wait(Until.findObject(CALL_TIME), UI_RESPONSE_WAIT_MS);
+        SystemClock.sleep(3000); // Wait for the call to go through
     }
 
     /** {@inheritDoc} */
@@ -184,16 +139,21 @@ public class DialHelperImpl extends AbstractAutoStandardAppHelper implements IAu
     /** {@inheritDoc} */
     public void callMostRecentHistory() {
         UiObject2 recentCallHistory = getCallHistory();
-        clickAndWaitForIdle(recentCallHistory);
+        clickAndWaitForIdleScreen(recentCallHistory);
     }
 
     /** {@inheritDoc} */
     public void deleteDialedNumber() {
         String phoneNumber = getDialInNumber();
-        UiObject2 deleteButton = waitUntilFindUiObject(DELETE_BUTTON);
+        UiObject2 deleteButton =
+                findUiObject(
+                        getResourceFromConfig(
+                                AutoConfigConstants.PHONE,
+                                AutoConfigConstants.DIAL_PAD_VIEW,
+                                AutoConfigConstants.DELETE_NUMBER));
         for (int index = 0; index < phoneNumber.length(); ++index) {
             if (deleteButton != null) {
-                clickAndWaitForIdle(deleteButton);
+                clickAndWaitForIdleScreen(deleteButton);
             } else {
                 throw new UnknownUiException("Unable to find delete button");
             }
@@ -202,42 +162,67 @@ public class DialHelperImpl extends AbstractAutoStandardAppHelper implements IAu
 
     /** {@inheritDoc} */
     public String getDialInNumber() {
-        UiObject2 dialInNumber = waitUntilFindUiObject(DIAL_CONTACT_IN_DIALPAD);
+        UiObject2 dialInNumber =
+                findUiObject(
+                        getResourceFromConfig(
+                                AutoConfigConstants.PHONE,
+                                AutoConfigConstants.DIAL_PAD_VIEW,
+                                AutoConfigConstants.DIALED_NUMBER));
         String phoneNumber = dialInNumber.getText();
         return phoneNumber;
     }
 
     /** {@inheritDoc} */
     public String getDialedNumber() {
-        UiObject2 dialedNumber = waitUntilFindUiObject(DIAL_CONTACT);
+        UiObject2 dialedNumber =
+                findUiObject(
+                        getResourceFromConfig(
+                                AutoConfigConstants.PHONE,
+                                AutoConfigConstants.IN_CALL_VIEW,
+                                AutoConfigConstants.DIALED_CONTACT_TITLE));
         String phoneNumber = dialedNumber.getText();
         return phoneNumber;
     }
 
     /** {@inheritDoc} */
     public String getDialedContactName() {
-        UiObject2 dialedContactName = waitUntilFindUiObject(DIAL_CONTACT);
+        UiObject2 dialedContactName =
+                findUiObject(
+                        getResourceFromConfig(
+                                AutoConfigConstants.PHONE,
+                                AutoConfigConstants.IN_CALL_VIEW,
+                                AutoConfigConstants.DIALED_CONTACT_TITLE));
         String callerName = dialedContactName.getText();
         return callerName;
     }
 
     /** {@inheritDoc} */
     public void inCallDialPad(String phoneNumber) {
-        UiObject2 dialPad = waitUntilFindUiObject(IN_CALL_DIALPAD);
+        UiObject2 dialPad =
+                findUiObject(
+                        getResourceFromConfig(
+                                AutoConfigConstants.PHONE,
+                                AutoConfigConstants.IN_CALL_VIEW,
+                                AutoConfigConstants.SWITCH_TO_DIAL_PAD));
         if (dialPad != null) {
-            clickAndWaitForIdle(dialPad);
+            clickAndWaitForIdleScreen(dialPad);
         } else {
             throw new UnknownUiException("Unable to find in-call dial pad");
         }
         enterNumber(phoneNumber);
-        mDevice.waitForIdle();
+        waitForIdle();
     }
 
     /** {@inheritDoc} */
     public void muteCall() {
-        UiObject2 muteButton = waitUntilFindUiObject(MUTE_BUTTON);
+        UiObject2 muteButton =
+                findUiObject(
+                        getResourceFromConfig(
+                                AutoConfigConstants.PHONE,
+                                AutoConfigConstants.IN_CALL_VIEW,
+                                AutoConfigConstants.MUTE_CALL));
         if (muteButton != null) {
-            clickAndWaitForIdle(muteButton);
+            clickAndWaitForIdleScreen(muteButton);
         } else {
             throw new UnknownUiException("Unable to find mute call button.");
         }
@@ -245,9 +230,14 @@ public class DialHelperImpl extends AbstractAutoStandardAppHelper implements IAu
 
     /** {@inheritDoc} */
     public void unmuteCall() {
-        UiObject2 muteButton = waitUntilFindUiObject(MUTE_BUTTON);
+        UiObject2 muteButton =
+                findUiObject(
+                        getResourceFromConfig(
+                                AutoConfigConstants.PHONE,
+                                AutoConfigConstants.IN_CALL_VIEW,
+                                AutoConfigConstants.MUTE_CALL));
         if (muteButton != null) {
-            clickAndWaitForIdle(muteButton);
+            clickAndWaitForIdleScreen(muteButton);
         } else {
             throw new UnknownUiException("Unable to find unmute call button.");
         }
@@ -255,9 +245,9 @@ public class DialHelperImpl extends AbstractAutoStandardAppHelper implements IAu
 
     /** {@inheritDoc} */
     public void dialFromList(String contact) {
-        UiObject2 contactToCall = waitUntilFindUiObject(By.text(contact));
+        UiObject2 contactToCall = findUiObject(By.text(contact));
         if (contactToCall != null) {
-            clickAndWaitForIdle(contactToCall);
+            clickAndWaitForIdleScreen(contactToCall);
         } else {
             scrollThroughCallList(contact);
         }
@@ -265,19 +255,41 @@ public class DialHelperImpl extends AbstractAutoStandardAppHelper implements IAu
 
     /** {@inheritDoc} */
     public void changeAudioSource(AudioSource source) {
-        UiObject2 voiceChannelButton = waitUntilFindUiObject(VOICE_CHANNEL_BUTTON);
-        clickAndWaitForIdle(voiceChannelButton);
-        String channelString = CAR_SPEAKERS;
+        UiObject2 voiceChannelButton =
+                findUiObject(
+                        getResourceFromConfig(
+                                AutoConfigConstants.PHONE,
+                                AutoConfigConstants.IN_CALL_VIEW,
+                                AutoConfigConstants.CHANGE_VOICE_CHANNEL));
+        clickAndWaitForIdleScreen(voiceChannelButton);
+        UiObject2 channelButton;
         if (source == AudioSource.PHONE) {
-            channelString = PHONE;
+            channelButton =
+                    findUiObject(
+                            getResourceFromConfig(
+                                    AutoConfigConstants.PHONE,
+                                    AutoConfigConstants.IN_CALL_VIEW,
+                                    AutoConfigConstants.VOICE_CHANNEL_PHONE));
+        } else {
+            channelButton =
+                    findUiObject(
+                            getResourceFromConfig(
+                                    AutoConfigConstants.PHONE,
+                                    AutoConfigConstants.IN_CALL_VIEW,
+                                    AutoConfigConstants.VOICE_CHANNEL_CAR));
         }
-        UiObject2 channelButton = waitUntilFindUiObject(By.text(channelString));
-        clickAndWaitForIdle(channelButton);
+        clickAndWaitForIdleScreen(channelButton);
+        SystemClock.sleep(3000);
     }
 
     /** {@inheritDoc} */
     public String getContactName() {
-        UiObject2 contactName = waitUntilFindUiObject(CONTACT_NAME_IN_DIALER);
+        UiObject2 contactName =
+                findUiObject(
+                        getResourceFromConfig(
+                                AutoConfigConstants.PHONE,
+                                AutoConfigConstants.IN_CALL_VIEW,
+                                AutoConfigConstants.DIALED_CONTACT_TITLE));
         if (contactName != null) {
             return contactName.getText();
         } else {
@@ -287,7 +299,14 @@ public class DialHelperImpl extends AbstractAutoStandardAppHelper implements IAu
 
     /** {@inheritDoc} */
     public String getContactType() {
-        UiObject2 contactDetail = waitUntilFindUiObject(CONTACT_TYPE);
+        // Contact number displayed on screen contains type
+        // e.g. Mobile xxx-xxx-xxxx , Work xxx-xxx-xxxx
+        UiObject2 contactDetail =
+                findUiObject(
+                        getResourceFromConfig(
+                                AutoConfigConstants.PHONE,
+                                AutoConfigConstants.IN_CALL_VIEW,
+                                AutoConfigConstants.DIALED_CONTACT_NUMBER));
         if (contactDetail != null) {
             return contactDetail.getText();
         } else {
@@ -298,7 +317,12 @@ public class DialHelperImpl extends AbstractAutoStandardAppHelper implements IAu
     /** {@inheritDoc} */
     public void searchContactsByName(String contact) {
         openSearchContact();
-        UiObject2 searchBox = waitUntilFindUiObject(SEARCH_CONTACTS_BOX);
+        UiObject2 searchBox =
+                findUiObject(
+                        getResourceFromConfig(
+                                AutoConfigConstants.PHONE,
+                                AutoConfigConstants.CONTACTS_VIEW,
+                                AutoConfigConstants.CONTACT_SEARCH_BAR));
         if (searchBox != null) {
             searchBox.setText(contact);
         } else {
@@ -309,7 +333,12 @@ public class DialHelperImpl extends AbstractAutoStandardAppHelper implements IAu
     /** {@inheritDoc} */
     public void searchContactsByNumber(String number) {
         openSearchContact();
-        UiObject2 searchBox = waitUntilFindUiObject(SEARCH_CONTACTS_BOX);
+        UiObject2 searchBox =
+                findUiObject(
+                        getResourceFromConfig(
+                                AutoConfigConstants.PHONE,
+                                AutoConfigConstants.CONTACTS_VIEW,
+                                AutoConfigConstants.CONTACT_SEARCH_BAR));
         if (searchBox != null) {
             searchBox.setText(number);
         } else {
@@ -319,19 +348,19 @@ public class DialHelperImpl extends AbstractAutoStandardAppHelper implements IAu
 
     /** {@inheritDoc} */
     public String getFirstSearchResult() {
-        UiObject2 searchResult = waitUntilFindUiObject(SEARCH_RESULT);
+        UiObject2 searchResult =
+                findUiObject(
+                        getResourceFromConfig(
+                                AutoConfigConstants.PHONE,
+                                AutoConfigConstants.CONTACTS_VIEW,
+                                AutoConfigConstants.SEARCH_RESULT));
         String result;
         if (searchResult != null) {
             result = searchResult.getText();
         } else {
             throw new UnknownUiException("Unable to find the search result");
         }
-        UiObject2 backButton = waitUntilFindUiObject(BACK_BUTTON);
-        if (backButton != null) {
-            clickAndWaitForIdle(backButton);
-        } else {
-            throw new UnknownUiException("Unable to find back button");
-        }
+        pressBack();
         return result;
     }
 
@@ -339,42 +368,63 @@ public class DialHelperImpl extends AbstractAutoStandardAppHelper implements IAu
     public void sortContactListBy(OrderType orderType) {
         openContacts();
         openSettings();
-        UiObject2 contactOrderButton = waitUntilFindUiObject(CONTACT_ORDER_BUTTON);
-        clickAndWaitForIdle(contactOrderButton);
-        String order;
+        UiObject2 contactOrderButton =
+                findUiObject(
+                        By.clickable(true)
+                                .hasDescendant(
+                                        getResourceFromConfig(
+                                                AutoConfigConstants.PHONE,
+                                                AutoConfigConstants.CONTACTS_VIEW,
+                                                AutoConfigConstants.CONTACT_ORDER)));
+        clickAndWaitForIdleScreen(contactOrderButton);
+        UiObject2 orderButton;
         if (orderType == OrderType.FIRST_NAME) {
-            order = FIRST_NAME;
+            orderButton =
+                    findUiObject(
+                            getResourceFromConfig(
+                                    AutoConfigConstants.PHONE,
+                                    AutoConfigConstants.CONTACTS_VIEW,
+                                    AutoConfigConstants.SORT_BY_FIRST_NAME));
         } else {
-            order = LAST_NAME;
+            orderButton =
+                    findUiObject(
+                            getResourceFromConfig(
+                                    AutoConfigConstants.PHONE,
+                                    AutoConfigConstants.CONTACTS_VIEW,
+                                    AutoConfigConstants.SORT_BY_LAST_NAME));
         }
-        UiObject2 orderButton = waitUntilFindUiObject(By.text(order));
         if (orderButton != null) {
-            clickAndWaitForIdle(orderButton);
+            clickAndWaitForIdleScreen(orderButton);
         } else {
             throw new UnknownUiException("Unable to find dialer settings button");
         }
-        UiObject2 contactsMenu = waitUntilFindUiObject(MENU_CONTACT);
+        UiObject2 contactsMenu =
+                findUiObject(
+                        getResourceFromConfig(
+                                AutoConfigConstants.PHONE,
+                                AutoConfigConstants.CONTACTS_VIEW,
+                                AutoConfigConstants.CONTACTS_MENU));
         while (contactsMenu == null) {
-            UiObject2 backButton = waitUntilFindUiObject(BACK_BUTTON);
-            clickAndWaitForIdle(backButton);
-            contactsMenu = waitUntilFindUiObject(MENU_CONTACT);
+            pressBack();
+            contactsMenu =
+                    findUiObject(
+                            getResourceFromConfig(
+                                    AutoConfigConstants.PHONE,
+                                    AutoConfigConstants.CONTACTS_VIEW,
+                                    AutoConfigConstants.CONTACTS_MENU));
         }
     }
 
     /** {@inheritDoc} */
     public String getFirstContactFromContactList() {
         openContacts();
-        UiObject2 scrollObject = waitUntilFindUiObject(CONTACT_LIST);
-        // Contacts has more than one page
-        if (scrollObject != null) {
-            UiObject2 pageUpButton = waitUntilFindUiObject(PAGE_UP_BUTTON);
-            // go back to the top of the contacts page
-            while (pageUpButton.isEnabled()) {
-                pageUpButton.click();
-                pageUpButton = waitUntilFindUiObject(PAGE_UP_BUTTON);
-            }
-        }
-        UiObject2 firstContact = waitUntilFindUiObject(CONTACT_NAME_IN_CONTACTS);
+        scrollToTop();
+        UiObject2 firstContact =
+                findUiObject(
+                        getResourceFromConfig(
+                                AutoConfigConstants.PHONE,
+                                AutoConfigConstants.CONTACTS_VIEW,
+                                AutoConfigConstants.CONTACT_NAME));
         if (firstContact != null) {
             return firstContact.getText();
         } else {
@@ -385,84 +435,92 @@ public class DialHelperImpl extends AbstractAutoStandardAppHelper implements IAu
     /** {@inheritDoc} */
     public boolean isContactInFavorites(String contact) {
         openFavorites();
-        UiObject2 obj = waitUntilFindUiObject(By.text(contact));
+        UiObject2 obj = findUiObject(By.text(contact));
         return obj != null;
     }
 
     /** {@inheritDoc} */
     public void openDetailsPage(String contactName) {
         openContacts();
-        boolean isContactFound = false;
-        UiObject2 scrollObject = waitUntilFindUiObject(CONTACT_LIST);
-        if (scrollObject != null) {
-            UiObject2 pageUpButton = waitUntilFindUiObject(PAGE_UP_BUTTON);
-            // go back to the top of the contacts page
-            while (pageUpButton.isEnabled()) {
-                pageUpButton.click();
-                pageUpButton = waitUntilFindUiObject(PAGE_UP_BUTTON);
-            }
-            UiObject2 pageDownButton = waitUntilFindUiObject(PAGE_DOWN_BUTTON);
-            while (pageDownButton.isEnabled()) {
-                UiObject2 contact = waitUntilFindUiObject(By.text(contactName));
-                if (contact != null) {
-                    UiObject2 contactDetailButton = contact.getParent().getChildren().get(4);
-                    clickAndWaitForIdle(contactDetailButton);
-                    isContactFound = true;
-                    break;
-                }
-                pageDownButton.click();
-            }
-        }
-        if (!isContactFound) {
-            UiObject2 contact = waitUntilFindUiObject(By.text(contactName));
-            if (contact != null) {
-                UiObject2 contactDetailButton = contact.getParent().getChildren().get(4);
-                clickAndWaitForIdle(contactDetailButton);
+        UiObject2 contact =
+                scrollAndFindUiObject(
+                        By.text(Pattern.compile(contactName, Pattern.CASE_INSENSITIVE)));
+        if (contact != null) {
+            UiObject2 contactDetailButton;
+            UiObject2 showDetailsButton =
+                    findUiObject(
+                            getResourceFromConfig(
+                                    AutoConfigConstants.PHONE,
+                                    AutoConfigConstants.CONTACTS_VIEW,
+                                    AutoConfigConstants.CONTACT_DETAIL));
+            if (showDetailsButton == null) {
+                contactDetailButton = contact;
             } else {
-                throw new UnknownUiException(
-                        String.format("Unable to find contact name %s.", contactName));
+                int lastIndex = contact.getParent().getChildren().size() - 1;
+                contactDetailButton = contact.getParent().getChildren().get(lastIndex);
             }
+            clickAndWaitForIdleScreen(contactDetailButton);
+        } else {
+            throw new UnknownUiException(
+                    String.format("Unable to find contact name %s.", contactName));
         }
     }
 
     /** This method is used to get the first history in the Recents tab. */
     private UiObject2 getCallHistory() {
-        UiObject2 callHistory = waitUntilFindUiObject(CALL_HISTORY).getParent();
+        UiObject2 callHistory =
+                findUiObject(
+                                getResourceFromConfig(
+                                        AutoConfigConstants.PHONE,
+                                        AutoConfigConstants.CALL_HISTORY_VIEW,
+                                        AutoConfigConstants.CALL_HISTORY_INFO))
+                        .getParent();
         UiObject2 recentCallHistory = callHistory.getChildren().get(2);
         return recentCallHistory;
     }
 
     /** This method is used to open the contacts menu */
     public void openContacts() {
-        UiObject2 contactMenuButton = waitUntilFindUiObject(MENU_CONTACT);
+        BySelector contactMenuSelector =
+                By.clickable(true)
+                        .hasDescendant(
+                                getResourceFromConfig(
+                                        AutoConfigConstants.PHONE,
+                                        AutoConfigConstants.CONTACTS_VIEW,
+                                        AutoConfigConstants.CONTACTS_MENU));
+        UiObject2 contactMenuButton = findUiObject(contactMenuSelector);
         if (contactMenuButton != null) {
-            clickAndWaitForIdle(contactMenuButton);
+            clickAndWaitForIdleScreen(contactMenuButton);
         } else {
             throw new UnknownUiException("Unable to find Contacts menu.");
-        }
-        UiObject2 pageUpButton = waitUntilFindUiObject(PAGE_UP_BUTTON);
-        while (pageUpButton != null && pageUpButton.isEnabled()) {
-            pageUpButton.click();
-            pageUpButton = waitUntilFindUiObject(PAGE_UP_BUTTON);
         }
     }
 
     /** This method opens the contact search window. */
     private void openSearchContact() {
         UiObject2 searchContact =
-                mDevice.wait(Until.findObject(DIALER_SEARCH_BUTTON), UI_RESPONSE_WAIT_MS);
+                findUiObject(
+                        getResourceFromConfig(
+                                AutoConfigConstants.PHONE,
+                                AutoConfigConstants.CONTACTS_VIEW,
+                                AutoConfigConstants.SEARCH_CONTACT));
         if (searchContact != null) {
-            clickAndWaitForIdle(searchContact);
+            clickAndWaitForIdleScreen(searchContact);
         } else {
             throw new UnknownUiException("Unable to find the search contact button.");
         }
     }
+
     /** This method opens the settings for contact. */
     private void openSettings() {
         UiObject2 settingButton =
-                mDevice.wait(Until.findObject(DIALER_SETTINGS_BUTTON), UI_RESPONSE_WAIT_MS);
+                findUiObject(
+                        getResourceFromConfig(
+                                AutoConfigConstants.PHONE,
+                                AutoConfigConstants.CONTACTS_VIEW,
+                                AutoConfigConstants.CONTACT_SETTINGS));
         if (settingButton != null) {
-            clickAndWaitForIdle(settingButton);
+            clickAndWaitForIdleScreen(settingButton);
         } else {
             throw new UnknownUiException("Unable to find dialer settings button");
         }
@@ -470,9 +528,16 @@ public class DialHelperImpl extends AbstractAutoStandardAppHelper implements IAu
 
     /** This method opens the Favorites tab. */
     private void openFavorites() {
-        UiObject2 favoritesMenuButton = waitUntilFindUiObject(MENU_FAVORITES);
+        BySelector favoritesMenuSelector =
+                By.clickable(true)
+                        .hasDescendant(
+                                getResourceFromConfig(
+                                        AutoConfigConstants.PHONE,
+                                        AutoConfigConstants.FAVORITES_VIEW,
+                                        AutoConfigConstants.FAVORITES_MENU));
+        UiObject2 favoritesMenuButton = findUiObject(favoritesMenuSelector);
         if (favoritesMenuButton != null) {
-            clickAndWaitForIdle(favoritesMenuButton);
+            clickAndWaitForIdleScreen(favoritesMenuButton);
         } else {
             throw new UnknownUiException("Unable to find Favorites menu.");
         }
@@ -490,18 +555,10 @@ public class DialHelperImpl extends AbstractAutoStandardAppHelper implements IAu
      * @param contact contact number or name to be dialed
      */
     private void scrollThroughCallList(String contact) {
-        try {
-            UiScrollable callList = new UiScrollable(new UiSelector().scrollable(true));
-            callList.setAsVerticalList();
-            UiObject callListItem =
-                    callList.getChildByText(
-                            new UiSelector().className(CALL_LISTVIEW_CLASSNAME), contact);
-            if (callListItem != null) {
-                callListItem.clickAndWaitForNewWindow(UI_RESPONSE_WAIT_MS);
-            }
-        } catch (UiObjectNotFoundException exception) {
-            throw new UnknownUiException(
-                    "Unable to find provided contact in the call list " + contact);
+        UiObject2 contactObject =
+                scrollAndFindUiObject(By.text(Pattern.compile(contact, Pattern.CASE_INSENSITIVE)));
+        if (contactObject != null) {
+            clickAndWaitForIdleScreen(contactObject);
         }
     }
 
@@ -514,52 +571,25 @@ public class DialHelperImpl extends AbstractAutoStandardAppHelper implements IAu
         if (phoneNumber == null) {
             throw new UnknownUiException("No phone number provided");
         }
-        mDevice.pressHome();
-        mDevice.waitForIdle();
-        executeShellCommand("am start -a android.intent.action.DIAL");
-        UiObject2 dial_pad = waitUntilFindUiObject(DIAL_PAD);
+        pressHome();
+        waitForIdle();
+        executeShellCommand(getApplicationConfig(AutoConfigConstants.OPEN_DIAL_PAD_COMMAND));
+        UiObject2 dial_pad =
+                findUiObject(
+                        getResourceFromConfig(
+                                AutoConfigConstants.PHONE,
+                                AutoConfigConstants.DIAL_PAD_VIEW,
+                                AutoConfigConstants.DIAL_PAD_FRAGMENT));
         if (dial_pad == null) {
             throw new UnknownUiException("Unable to find dial pad");
         }
         char[] array = phoneNumber.toCharArray();
         for (char ch : array) {
-            UiObject2 numberButton = waitUntilFindUiObject(By.text(Character.toString(ch)));
+            UiObject2 numberButton = findUiObject(By.text(Character.toString(ch)));
             if (numberButton == null) {
                 throw new UnknownUiException("Unable to find number" + phoneNumber);
             }
-            clickAndWaitForIdle(numberButton);
+            clickAndWaitForIdleScreen(numberButton);
         }
-    }
-
-    /**
-     * This method is used to click on an UiObject2 and wait until it is gone
-     *
-     * @param uiObject2 uiObject to be clicked
-     * @param selector BySelector to be gone
-     */
-    private void clickAndWaitForGone(UiObject2 uiObject2, BySelector selector) {
-        uiObject2.click();
-        mDevice.wait(Until.gone(selector), UI_RESPONSE_WAIT_MS);
-    }
-
-    /**
-     * This method is used to click on an UiObject2 and wait for device idle after click.
-     *
-     * @param uiObject UiObject2 to click.
-     */
-    private void clickAndWaitForIdle(UiObject2 uiObject2) {
-        uiObject2.click();
-        mDevice.waitForIdle();
-    }
-
-    /**
-     * This method is used to find UiObject2 corresponding to the selector
-     *
-     * @param selector BySelector to be found
-     * @return UiObject2 UiObject2 found for the corresponding selector
-     */
-    private UiObject2 waitUntilFindUiObject(BySelector selector) {
-        UiObject2 uiObject2 = mDevice.wait(Until.findObject(selector), UI_RESPONSE_WAIT_MS);
-        return uiObject2;
     }
 }

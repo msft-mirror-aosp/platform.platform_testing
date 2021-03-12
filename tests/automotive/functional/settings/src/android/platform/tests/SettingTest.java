@@ -21,6 +21,7 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 import android.app.UiModeManager;
+import android.platform.helpers.AutoConfigConstants;
 import android.platform.helpers.AutoUtility;
 import android.platform.helpers.IAutoAppInfoSettingsHelper;
 import android.platform.helpers.IAutoSettingHelper;
@@ -62,43 +63,43 @@ public class SettingTest {
 
     @Test
     public void testDisplaySettings() {
-        mSettingHelper.get().openSetting(AutoUtility.DISPLAY_SETTINGS);
+        mSettingHelper.get().openSetting(AutoConfigConstants.DISPLAY_SETTINGS);
     }
 
     @Test
     public void testSoundSettings() {
-        mSettingHelper.get().openSetting(AutoUtility.SOUND_SETTINGS);
+        mSettingHelper.get().openSetting(AutoConfigConstants.SOUND_SETTINGS);
     }
 
     @Test
     public void testAppinfoSettings() {
-        mSettingHelper.get().openSetting(AutoUtility.APPS_AND_NOTIFICATIONS_SETTINGS);
+        mSettingHelper.get().openSetting(AutoConfigConstants.APPS_AND_NOTIFICATIONS_SETTINGS);
         mAppInfoSettingsHelper.get().showAllApps();
     }
 
     @Test
     public void testDateTimeSettings() {
-        mSettingHelper.get().openSetting(AutoUtility.DATE_AND_TIME_SETTINGS);
+        mSettingHelper.get().openSetting(AutoConfigConstants.DATE_AND_TIME_SETTINGS);
     }
 
     @Test
     public void testUsersSettings() {
-        mSettingHelper.get().openSetting(AutoUtility.USER_SETTINGS);
+        mSettingHelper.get().openSetting(AutoConfigConstants.USER_SETTINGS);
     }
 
     @Test
     public void testAccountsSettings() {
-        mSettingHelper.get().openSetting(AutoUtility.ACCOUNT_SETTINGS);
+        mSettingHelper.get().openSetting(AutoConfigConstants.ACCOUNT_SETTINGS);
     }
 
     @Test
     public void testSystemSettings() {
-        mSettingHelper.get().openSetting(AutoUtility.SYSTEM_SETTINGS);
+        mSettingHelper.get().openSetting(AutoConfigConstants.SYSTEM_SETTINGS);
     }
 
     @Test
     public void testBluetoothSettings() {
-        mSettingHelper.get().openSetting(AutoUtility.BLUETOOTH_SETTINGS);
+        mSettingHelper.get().openSetting(AutoConfigConstants.BLUETOOTH_SETTINGS);
         mSettingHelper.get().turnOnOffBluetooth(false);
         assertFalse(mSettingHelper.get().isBluetoothOn());
         mSettingHelper.get().turnOnOffBluetooth(true);

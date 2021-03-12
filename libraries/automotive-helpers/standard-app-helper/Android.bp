@@ -26,7 +26,7 @@ java_library {
         "app-helpers-core",
     ],
     static_libs: [
-        "androidx.test.runner",
+        "automotive-utility-helper",
     ],
     srcs: ["src/**/*.java"],
     sdk_version: "test_current",
