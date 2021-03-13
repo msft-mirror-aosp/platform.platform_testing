@@ -29,7 +29,7 @@ import io.grpc.stub.StreamObserver;
  */
 public class AudioTestHarnessTestImpl extends AudioTestHarnessGrpc.AudioTestHarnessImplBase {
 
-    public static final byte[] MESSAGE = {0x0, 0x1, 0x2, 0x3};
+    public static final byte[] MESSAGE = {0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7};
 
     /**
      * Test implementation of the <code>Capture</code> procedure that simply ignores the request and

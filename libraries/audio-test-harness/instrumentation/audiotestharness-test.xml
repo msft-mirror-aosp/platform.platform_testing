@@ -28,7 +28,9 @@
         <option name="apk-path" value="out/target/product/generic/testcases/audiotestharness-instrumentation-app/arm/audiotestharness-instrumentation-app.apk"/>
     </target_preparer>
 
-    <metrics_collector class="com.android.media.audiotestharness.tradefed.AudioTestHarnessHermeticServerManagingMetricCollector" />
+    <metrics_collector class="com.android.media.audiotestharness.tradefed.AudioTestHarnessHermeticServerManagingMetricCollector">
+        <option name="capture-device" value="UMM-6"/>
+    </metrics_collector>
 
     <metrics_collector class="com.android.tradefed.device.metric.FilePullerLogCollector">
         <option name="directory-keys" value="/data/data/com.android.media.audiotestharness.instrumentation/files" />

@@ -30,6 +30,8 @@ import io.grpc.stub.StreamObserver;
 import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
@@ -54,6 +56,10 @@ public class GrpcAudioCaptureStream extends AudioCaptureStream {
      * recorded at CD quality.
      */
     private static final int BUFFER_SIZE = 35 * Defaults.CAPTURE_CHUNK_TARGET_SIZE_BYTES;
+
+    private static final int NUM_CHANNELS_MONO = 1;
+    private static final int BITS_PER_SAMPLE_16BIT = 16;
+    private static final int BYTES_PER_SAMPLE_16BIT = BITS_PER_SAMPLE_16BIT / 8;
 
     private final Context.CancellableContext mCancellableContext;
     private final PipedInputStream mInputStream;
@@ -138,6 +144,17 @@ public class GrpcAudioCaptureStream extends AudioCaptureStream {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * <p>In general test use, this method is not preferred, and instead the {@link #read(short[],
+     * int, int)} method should be used as that method provides better handling to ensure that
+     * complete samples are read. By contrast, this (and the other read methods) only provide access
+     * to the raw byte data coming from the host.
+     *
+     * <p>The standard read methods can be used with the {@link #getAudioFormat()} to build
+     * extensions on the raw data.
+     */
     @Override
     public int read(byte[] b, int off, int len) throws IOException {
         if (mGrpcError != null) {
@@ -212,6 +229,52 @@ public class GrpcAudioCaptureStream extends AudioCaptureStream {
         } catch (IOException ioe) {
             throw new IOException("Audio Test Harness gRPC Internal Error", ioe);
         }
+    }
+
+    @Override
+    public int read(short[] samples, int offset, int len) throws IOException {
+        if (offset < 0 || offset > samples.length) {
+            throw new IllegalArgumentException("Invalid offset");
+        }
+
+        if (len < 0 || len + offset > samples.length) {
+            throw new IllegalArgumentException("Invalid len");
+        }
+
+        if (getAudioFormat().getSampleSizeBits() != BITS_PER_SAMPLE_16BIT
+                || !getAudioFormat().getSigned()) {
+            throw new IllegalArgumentException(
+                    "Bad audio format, this method can only be used to read signed 16-bit integer "
+                            + "audio samples");
+        }
+
+        // Nobody should ask for zero samples, but if they do, simply return since we have no
+        // work to do.
+        if (len == 0) {
+            return 0;
+        }
+
+        // Read from the stream, ensuring that we either read up to the maximum our buffer can
+        // handle, or we are reading complete samples from the stream as determined by the
+        // number of bytes we expect per sample and the number of channels.
+        byte[] buffer = new byte[len * BYTES_PER_SAMPLE_16BIT * getAudioFormat().getChannels()];
+        int read = 0;
+        do {
+            read += read(buffer, read, buffer.length - read);
+        } while (read % (BYTES_PER_SAMPLE_16BIT * getAudioFormat().getChannels()) != 0);
+
+        // Calculate the number of frames we were able to read, and copy that exact
+        // number of samples into the provided array.
+        int samplesRead = read / BYTES_PER_SAMPLE_16BIT;
+        ByteBuffer.wrap(buffer)
+                .order(
+                        getAudioFormat().getBigEndian()
+                                ? ByteOrder.BIG_ENDIAN
+                                : ByteOrder.LITTLE_ENDIAN)
+                .asShortBuffer()
+                .get(samples, offset, samplesRead);
+
+        return samplesRead;
     }
 
     /**

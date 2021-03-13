@@ -16,9 +16,14 @@
 
 package com.android.media.audiotestharness.tradefed;
 
+import static com.google.common.collect.ImmutableList.toImmutableList;
+
 import com.android.media.audiotestharness.common.Defaults;
+import com.android.media.audiotestharness.proto.AudioDeviceOuterClass;
 import com.android.media.audiotestharness.server.AudioTestHarnessGrpcServer;
 import com.android.media.audiotestharness.server.AudioTestHarnessGrpcServerFactory;
+import com.android.media.audiotestharness.server.config.SharedHostConfiguration;
+import com.android.tradefed.config.Option;
 import com.android.tradefed.device.DeviceNotAvailableException;
 import com.android.tradefed.device.ITestDevice;
 import com.android.tradefed.device.metric.BaseDeviceMetricCollector;
@@ -30,6 +35,8 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -71,27 +78,54 @@ public class AudioTestHarnessHermeticServerManagingMetricCollector
 
     private AudioTestHarnessGrpcServer mAudioTestHarnessGrpcServer;
 
+    @Option(
+            name = "capture-device",
+            description = "The capture device(s) to use for test " + "execution.")
+    private final List<String> mCaptureDevices;
+
     public AudioTestHarnessHermeticServerManagingMetricCollector() {
-        this(AudioTestHarnessGrpcServerFactory.createFactory());
+        this(AudioTestHarnessGrpcServerFactory.createFactory(), new ArrayList<>());
     }
 
     @VisibleForTesting
     AudioTestHarnessHermeticServerManagingMetricCollector(
-            AudioTestHarnessGrpcServerFactory audioTestHarnessGrpcServerFactory) {
+            AudioTestHarnessGrpcServerFactory audioTestHarnessGrpcServerFactory,
+            List<String> captureDevices) {
         Preconditions.checkNotNull(
                 audioTestHarnessGrpcServerFactory,
                 "audioTestHarnessGrpcServerFactory cannot be null");
         mAudioTestHarnessGrpcServerFactory = audioTestHarnessGrpcServerFactory;
+        mCaptureDevices = captureDevices;
     }
 
     @Override
     public void onTestRunStart(DeviceMetricData runData) {
         super.onTestRunStart(runData);
 
-        LogUtil.CLog.i("Starting Audio Test Harness");
+        LogUtil.CLog.i("Starting Audio Test Harness...");
+
+        // Use the default configuration if no devices are specified, otherwise, create a
+        // configuration containing the specified devices.
+        SharedHostConfiguration sharedHostConfiguration =
+                mCaptureDevices.isEmpty()
+                        ? null
+                        : SharedHostConfiguration.create(
+                                mCaptureDevices.stream()
+                                        .map(
+                                                (name) ->
+                                                        AudioDeviceOuterClass.AudioDevice
+                                                                .newBuilder()
+                                                                .setName(name)
+                                                                .addCapabilities(
+                                                                        AudioDeviceOuterClass
+                                                                                .AudioDevice
+                                                                                .Capability.CAPTURE)
+                                                                .build())
+                                        .collect(toImmutableList()));
 
         mAudioTestHarnessGrpcServer =
-                mAudioTestHarnessGrpcServerFactory.createOnNextAvailablePort();
+                mAudioTestHarnessGrpcServerFactory.createOnNextAvailablePort(
+                        sharedHostConfiguration);
 
         // Ensure that the server's logs are output through the TradeFed logging system.
         // This needs to be called after the server is instantiated to ensure
@@ -115,7 +149,7 @@ public class AudioTestHarnessHermeticServerManagingMetricCollector
             DeviceMetricData runData, Map<String, MetricMeasurement.Metric> currentRunMetrics) {
         super.onTestRunEnd(runData, currentRunMetrics);
 
-        LogUtil.CLog.i("Stopping Audio Test Harness");
+        LogUtil.CLog.i("Stopping Audio Test Harness...");
 
         mAudioTestHarnessGrpcServer.close();
         mAudioTestHarnessGrpcServerFactory.close();

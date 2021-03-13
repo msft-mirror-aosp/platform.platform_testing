@@ -17,14 +17,17 @@
 package com.android.media.audiotestharness.tradefed;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.android.media.audiotestharness.proto.AudioDeviceOuterClass;
 import com.android.media.audiotestharness.server.AudioTestHarnessGrpcServer;
 import com.android.media.audiotestharness.server.AudioTestHarnessGrpcServerFactory;
+import com.android.media.audiotestharness.server.config.SharedHostConfiguration;
 import com.android.tradefed.device.DeviceNotAvailableException;
 import com.android.tradefed.device.ITestDevice;
 import com.android.tradefed.device.metric.DeviceMetricData;
@@ -39,10 +42,13 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
@@ -68,14 +74,17 @@ public class AudioTestHarnessHermeticServerManagingMetricCollectorTests {
 
     private DeviceMetricData mTestDeviceMetricData;
 
+    private List<String> mCaptureDevices;
+
     @Before
     public void setUp() throws Exception {
-        when(mAudioTestHarnessGrpcServerFactory.createOnNextAvailablePort())
+        when(mAudioTestHarnessGrpcServerFactory.createOnNextAvailablePort(any()))
                 .thenReturn(mAudioTestHarnessGrpcServer);
 
+        mCaptureDevices = new ArrayList<>();
         mMetricCollector =
                 new AudioTestHarnessHermeticServerManagingMetricCollector(
-                        mAudioTestHarnessGrpcServerFactory);
+                        mAudioTestHarnessGrpcServerFactory, mCaptureDevices);
 
         when(mInvocationContext.getDevices())
                 .thenReturn(ImmutableList.of(mTestDeviceOne, mTestDeviceTwo));
@@ -108,7 +117,35 @@ public class AudioTestHarnessHermeticServerManagingMetricCollectorTests {
     @Test
     public void onTestRunStart_buildsServerFromFactoryOnAvailablePort() {
         mMetricCollector.onTestRunStart(mTestDeviceMetricData);
-        verify(mAudioTestHarnessGrpcServerFactory).createOnNextAvailablePort();
+        verify(mAudioTestHarnessGrpcServerFactory).createOnNextAvailablePort(any());
+    }
+
+    @Test
+    public void onTestRunStart_usesDefaultSharedHostConfigurationWhenNoCaptureDevices() {
+        mMetricCollector.onTestRunStart(mTestDeviceMetricData);
+        verify(mAudioTestHarnessGrpcServerFactory).createOnNextAvailablePort(null);
+    }
+
+    @Test
+    public void onTestRunStart_usesCustomSharedHostConfigurationWhenCaptureDevicesSet() {
+        ArgumentCaptor<SharedHostConfiguration> configurationCaptor =
+                ArgumentCaptor.forClass(SharedHostConfiguration.class);
+        mCaptureDevices.add("TestDevice");
+
+        mMetricCollector.onTestRunStart(mTestDeviceMetricData);
+
+        verify(mAudioTestHarnessGrpcServerFactory)
+                .createOnNextAvailablePort(configurationCaptor.capture());
+
+        SharedHostConfiguration config = configurationCaptor.getValue();
+        assertNotNull(config);
+        assertEquals(1, config.captureDevices().size());
+        assertEquals(
+                AudioDeviceOuterClass.AudioDevice.newBuilder()
+                        .setName("TestDevice")
+                        .addCapabilities(AudioDeviceOuterClass.AudioDevice.Capability.CAPTURE)
+                        .build(),
+                config.captureDevices().get(0));
     }
 
     @Test

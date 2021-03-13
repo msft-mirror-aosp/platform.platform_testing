@@ -50,7 +50,7 @@ public final class Defaults {
      */
     public static final AudioDevice AUDIO_DEVICE =
             AudioDevice.newBuilder()
-                    .setName("UMM6_3 [plughw:4,0]")
+                    .setName("UMM-6")
                     .addCapabilities(AudioDevice.Capability.CAPTURE)
                     .build();
 

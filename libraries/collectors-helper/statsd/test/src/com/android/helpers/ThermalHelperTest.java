@@ -146,6 +146,38 @@ public class ThermalHelperTest {
         assertTrue(mThermalHelper.stopCollecting());
     }
 
+    /** Test that the temperature section is parsed correctly. */
+    @Test
+    public void testParseTemperature() throws Exception {
+        // Use real data for this test. It should work everywhere.
+        mThermalHelper = new ThermalHelper();
+        mThermalHelper.setStatsdHelper(mStatsdHelper);
+        assertTrue(mThermalHelper.startCollecting());
+        Map<String, StringBuilder> metrics = mThermalHelper.getMetrics();
+        // Validate at least 2 temperature keys exist with all 3 metrics.
+        int statusMetricsFound = 0;
+        int valueMetricsFound = 0;
+        int typeMetricsFound = 0;
+        for (String key : metrics.keySet()) {
+            if (!key.startsWith("temperature")) {
+                continue;
+            }
+
+            if (key.endsWith("status")) {
+                statusMetricsFound++;
+            } else if (key.endsWith("value")) {
+                valueMetricsFound++;
+            } else if (key.endsWith("type")) {
+                typeMetricsFound++;
+            }
+        }
+
+        assertTrue(
+                "Didn't find at least 2 status, value, and type temperature metrics.",
+                statusMetricsFound >= 2 && valueMetricsFound >= 2 && typeMetricsFound >= 2);
+        assertTrue(mThermalHelper.stopCollecting());
+    }
+
     /**
      * Returns a list of {@link com.android.os.nano.StatsLog.EventMetricData} that statsd returns.
      */

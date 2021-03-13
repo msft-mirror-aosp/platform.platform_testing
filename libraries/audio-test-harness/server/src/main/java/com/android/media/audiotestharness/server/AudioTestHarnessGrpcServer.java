@@ -16,6 +16,7 @@
 package com.android.media.audiotestharness.server;
 
 import com.android.media.audiotestharness.proto.AudioTestHarnessGrpc;
+import com.android.media.audiotestharness.server.config.SharedHostConfiguration;
 
 import com.google.common.base.Preconditions;
 import com.google.inject.ConfigurationException;
@@ -73,7 +74,8 @@ public class AudioTestHarnessGrpcServer implements AutoCloseable {
 
     public static void main(String[] args) {
         try (AudioTestHarnessGrpcServer server =
-                AudioTestHarnessGrpcServerFactory.createFactory().createOnTestingPort()) {
+                AudioTestHarnessGrpcServerFactory.createFactory()
+                        .createOnTestingPort(SharedHostConfiguration.getDefault())) {
             server.open();
 
             // Ensure that resources are cleanly stopped upon JVM shutdown.

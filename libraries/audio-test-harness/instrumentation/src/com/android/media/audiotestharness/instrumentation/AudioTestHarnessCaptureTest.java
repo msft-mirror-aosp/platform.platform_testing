@@ -25,7 +25,6 @@ import android.util.Log;
 import com.android.media.audiotestharness.client.core.AudioCaptureStream;
 import com.android.media.audiotestharness.client.core.AudioTestHarnessClient;
 import com.android.media.audiotestharness.client.grpc.GrpcAudioTestHarnessClient;
-import com.android.media.audiotestharness.proto.AudioFormatOuterClass.AudioFormat;
 
 import com.google.common.io.Files;
 
@@ -33,7 +32,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.time.Duration;
 
 /** Sample test that demonstrates the capture functionality of the Audio Test Harness */
 public class AudioTestHarnessCaptureTest extends ActivityInstrumentationTestCase2<MainActivity> {
@@ -79,82 +77,36 @@ public class AudioTestHarnessCaptureTest extends ActivityInstrumentationTestCase
                 // Playback the test file (Lollipop.ogg) and capture three seconds of audio
                 // from the harness, ensuring that it is written as a test artifact.
                 MediaPlayer mediaPlayer = startAudioFilePlayback(TEST_FILE);
-                byte[] captured =
-                        captureBlockingFromStream(
-                                audioCaptureStream, Duration.ofSeconds(TEST_DURATION));
-                writeBytesToAppStorage("testPlayAudioFile_outputsAudio.pcm", captured);
+
+                // Create a buffer for three seconds of audio captured from the device.
+                int numSamplesRequired =
+                        Math.round(3 * audioCaptureStream.getAudioFormat().getSampleRate());
+                short[] samples = new short[numSamplesRequired];
+
+                // Capture three seconds of audio from the stream.
+                int samplesRead = 0;
+                while (samplesRead < numSamplesRequired) {
+                    samplesRead +=
+                            audioCaptureStream.read(
+                                    samples, samplesRead, samples.length - samplesRead);
+                }
+
+                // Write file to storage and cleanup resources.
+                writeSamplesToAppStorage("testPlayAudioFile_outputsAudio.pcm", samples);
                 mediaPlayer.release();
 
                 // Verify that the amplitude was far above ambient and thus audio playback
                 // was heard by the microphone.
-                int maxAmplitude =
-                        calculateMaxAmplitudeFromCapturedAudio(
-                                audioCaptureStream.getAudioFormat(), captured);
+                int maxAmplitude = Math.abs(samples[0]);
+                for (int i = 1; i < samples.length; i++) {
+                    maxAmplitude = Math.max(maxAmplitude, Math.abs(samples[i]));
+                }
+
                 Log.v(TAG, String.format("Maximum Amplitude of Capture: %d", maxAmplitude));
                 assertTrue(
                         "Could not detect audio playback", maxAmplitude > TEST_AMPLITUDE_THRESHOLD);
             }
         }
-    }
-
-    /** Calculates the maximum amplitude of a given recording from provided raw audio data. */
-    private static int calculateMaxAmplitudeFromCapturedAudio(
-            AudioFormat audioFormat, byte[] capturedAudioBytes) {
-        if (audioFormat.getSampleSizeBits() != BITS_PER_SAMPLE_16BIT
-                || audioFormat.getChannels() != NUM_CHANNELS_MONO) {
-            throw new UnsupportedOperationException(
-                    "Currently only supports 16-bit mono audio data");
-        }
-
-        // Convert the data into the signed PCM values.
-        short[] samples = new short[capturedAudioBytes.length / 2];
-        ByteBuffer.wrap(capturedAudioBytes)
-                .order(audioFormat.getBigEndian() ? ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN)
-                .asShortBuffer()
-                .get(samples);
-
-        int maxAmplitude = 0;
-        for (int i = 0; i < samples.length; i++) {
-            maxAmplitude = Math.max(maxAmplitude, Math.abs(samples[i]));
-        }
-
-        return maxAmplitude;
-    }
-
-    /**
-     * Captures a given duration of audio from the provided {@link AudioCaptureStream} returning a
-     * byte[] of the raw audio.
-     *
-     * @throws IOException if any errors occur while reading from the {@link AudioCaptureStream}.
-     */
-    private static byte[] captureBlockingFromStream(
-            AudioCaptureStream captureStream, Duration captureDuration) throws IOException {
-
-        // Calculate the bitrate in bytes per second of the incoming stream.
-        AudioFormat format = captureStream.getAudioFormat();
-        int bitrate =
-                (format.getSampleSizeBits()
-                                * Math.round(format.getSampleRate())
-                                * format.getChannels())
-                        / 8;
-
-        // Rate at which we read from the input stream.
-        int readRateBytes = bitrate / 10;
-
-        // Number of bytes to read before we know we collected the right duration of audio.
-        int captureSizeBytes = (int) (bitrate * captureDuration.getSeconds());
-
-        // Number of bytes to allocate for our capture, slightly larger to account for
-        // irregular read amounts from the stream.
-        int captureArraySizeBytes = (int) captureSizeBytes + readRateBytes;
-
-        int bytesRead = 0;
-        byte[] captureBytes = new byte[captureArraySizeBytes];
-        while (bytesRead < captureSizeBytes) {
-            bytesRead += captureStream.read(captureBytes, bytesRead, readRateBytes);
-        }
-
-        return captureBytes;
     }
 
     /**
@@ -195,12 +147,12 @@ public class AudioTestHarnessCaptureTest extends ActivityInstrumentationTestCase
     }
 
     /**
-     * Writes a provided byte[] to app storage with a given filename. These files are picked up as
+     * Writes a provided short[] to app storage with a given filename. These files are picked up as
      * test artifacts after the test completes. Any existing files are overwritten.
      *
      * @throws IOException if any errors occur while writing the file.
      */
-    private void writeBytesToAppStorage(String filename, byte[] toWrite) throws IOException {
+    private void writeSamplesToAppStorage(String filename, short[] toWrite) throws IOException {
         File outputFile = new File(getActivity().getFilesDir(), filename);
 
         if (outputFile.exists()) {
@@ -208,7 +160,13 @@ public class AudioTestHarnessCaptureTest extends ActivityInstrumentationTestCase
         }
         outputFile.createNewFile();
 
-        Files.write(toWrite, outputFile);
+        // Convert our samples into a raw PCM file written little endian.
+        ByteBuffer buf = ByteBuffer.allocate(toWrite.length * 2).order(ByteOrder.LITTLE_ENDIAN);
+        for (short value : toWrite) {
+            buf.putShort(value);
+        }
+
+        Files.write(buf.array(), outputFile);
 
         Log.v(TAG, String.format("Wrote file (%s) of size (%d)", outputFile, toWrite.length));
     }

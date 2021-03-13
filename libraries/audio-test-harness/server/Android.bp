@@ -57,6 +57,8 @@ java_library_host {
         "audiotestharness-servicelib",
         "audiotestharness-utilitylib",
         "audiotestharness-javasoundlib",
+        "audiotestharness-corelib",
+        "audiotestharness-configlib",
         "audiotestharness-servicegrpclib-full",
         "grpc-java-netty-shaded",
     ],
@@ -75,6 +77,25 @@ java_library_host {
 }
 
 java_library_host {
+    name: "audiotestharness-configlib",
+    srcs: [
+        "src/main/java/com/android/media/audiotestharness/server/config/*.java",
+    ],
+    libs: [
+        "auto_value_annotations",
+    ],
+    static_libs: [
+        "audiotestharness-commonlib-full",
+        "audiotestharness-commonprotolib-full",
+        "guava",
+        "guice",
+    ],
+    plugins: [
+        "auto_value_plugin",
+    ],
+}
+
+java_library_host {
     name: "audiotestharness-servicelib",
     srcs: [
         "src/main/java/com/android/media/audiotestharness/server/service/*.java",
@@ -84,6 +105,7 @@ java_library_host {
         "audiotestharness-commonprotolib-full",
         "audiotestharness-servicegrpclib-full",
         "audiotestharness-corelib",
+        "audiotestharness-configlib",
         "guava",
         "guice",
     ],

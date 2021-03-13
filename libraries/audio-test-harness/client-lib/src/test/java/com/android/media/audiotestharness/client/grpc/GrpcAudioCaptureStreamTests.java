@@ -46,6 +46,8 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.time.Duration;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -192,6 +194,52 @@ public class GrpcAudioCaptureStreamTests {
         GrpcAudioCaptureStream grpcAudioCaptureStream = buildCaptureStreamWithPendingGrpcError();
 
         grpcAudioCaptureStream.read(new byte[AudioTestHarnessTestImpl.MESSAGE.length]);
+    }
+
+    @Test
+    public void read_shortSamples_readsAsExpected() throws Exception {
+        GrpcAudioCaptureStream grpcAudioCaptureStream =
+                GrpcAudioCaptureStream.create(mAudioTestHarnessStub, mScheduledExecutorService);
+        short[] expected = new short[AudioTestHarnessTestImpl.MESSAGE.length / 2];
+        ByteBuffer.wrap(AudioTestHarnessTestImpl.MESSAGE)
+                .order(ByteOrder.LITTLE_ENDIAN)
+                .asShortBuffer()
+                .get(expected);
+
+        short[] actual = new short[AudioTestHarnessTestImpl.MESSAGE.length / 2];
+        int numRead =
+                grpcAudioCaptureStream.read(actual, /* offset= */ 0, /* max= */ actual.length);
+
+        assertArrayEquals(expected, actual);
+        assertEquals(AudioTestHarnessTestImpl.MESSAGE.length / 2, numRead);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void read_shortSamples_throwsIllegalArgumentException_negativeOffset() throws Exception {
+        GrpcAudioCaptureStream grpcAudioCaptureStream =
+                GrpcAudioCaptureStream.create(mAudioTestHarnessStub, mScheduledExecutorService);
+        grpcAudioCaptureStream.read(/* samples= */ new short[4], /* offset= */ -25, /* max= */ 1);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void read_shortSamples_throwsIllegalArgumentException_offsetTooLarge() throws Exception {
+        GrpcAudioCaptureStream grpcAudioCaptureStream =
+                GrpcAudioCaptureStream.create(mAudioTestHarnessStub, mScheduledExecutorService);
+        grpcAudioCaptureStream.read(/* samples= */ new short[4], /* offset= */ 25, /* max= */ 1);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void read_shortSamples_throwsIllegalArgumentException_negativeLen() throws Exception {
+        GrpcAudioCaptureStream grpcAudioCaptureStream =
+                GrpcAudioCaptureStream.create(mAudioTestHarnessStub, mScheduledExecutorService);
+        grpcAudioCaptureStream.read(/* samples= */ new short[4], /* offset= */ 0, /* max= */ -24);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void read_shortSamples_throwsIllegalArgumentException_lenTooLarge() throws Exception {
+        GrpcAudioCaptureStream grpcAudioCaptureStream =
+                GrpcAudioCaptureStream.create(mAudioTestHarnessStub, mScheduledExecutorService);
+        grpcAudioCaptureStream.read(/* samples= */ new short[4], /* offset= */ 0, /* max= */ 24);
     }
 
     @Test

@@ -16,17 +16,24 @@
 
 package com.android.media.audiotestharness.server;
 
+import com.android.media.audiotestharness.proto.AudioTestHarnessGrpc;
+import com.android.media.audiotestharness.server.config.SharedHostConfiguration;
+import com.android.media.audiotestharness.server.config.SharedHostConfigurationModule;
 import com.android.media.audiotestharness.server.utility.PortUtility;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.google.inject.Key;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Logger;
+
+import javax.annotation.Nullable;
 
 /**
  * Factory for {@link AudioTestHarnessGrpcServer} instances.
@@ -57,11 +64,20 @@ public class AudioTestHarnessGrpcServerFactory implements AutoCloseable {
      */
     private final ExecutorService mExecutorService;
 
-    private final Injector mInjector;
+    /**
+     * {@link AbstractModule} that should be used as the base module for the system's dependency
+     * injection. This can be overridden for testing or to substitute other implementations.
+     *
+     * <p>At the minimum, this module must be able to provide an instance of the {@link
+     * com.android.media.audiotestharness.proto.AudioTestHarnessGrpc.AudioTestHarnessImplBase} which
+     * is required by the system at runtime.
+     */
+    private final AbstractModule mBaseModule;
 
-    private AudioTestHarnessGrpcServerFactory(ExecutorService executorService, Injector injector) {
+    private AudioTestHarnessGrpcServerFactory(
+            ExecutorService executorService, AbstractModule baseModule) {
         mExecutorService = executorService;
-        mInjector = injector;
+        mBaseModule = baseModule;
     }
 
     /**
@@ -71,9 +87,9 @@ public class AudioTestHarnessGrpcServerFactory implements AutoCloseable {
      */
     public static AudioTestHarnessGrpcServerFactory createFactory() {
         ExecutorService executorService = Executors.newFixedThreadPool(DEFAULT_THREAD_COUNT);
-        return new AudioTestHarnessGrpcServerFactory(
+        return createInternal(
                 Executors.newFixedThreadPool(DEFAULT_THREAD_COUNT),
-                Guice.createInjector(AudioTestHarnessServerModule.create(executorService)));
+                AudioTestHarnessServerModule.create(executorService));
     }
 
     /**
@@ -86,16 +102,15 @@ public class AudioTestHarnessGrpcServerFactory implements AutoCloseable {
     public static AudioTestHarnessGrpcServerFactory createFactoryWithExecutorService(
             ExecutorService executorService) {
         return createInternal(
-                executorService,
-                Guice.createInjector(AudioTestHarnessServerModule.create(executorService)));
+                executorService, AudioTestHarnessServerModule.create(executorService));
     }
 
     @VisibleForTesting
     static AudioTestHarnessGrpcServerFactory createInternal(
-            ExecutorService executorService, Injector injector) {
+            ExecutorService executorService, AbstractModule baseModule) {
         return new AudioTestHarnessGrpcServerFactory(
                 Preconditions.checkNotNull(executorService, "ExecutorService cannot be null."),
-                Preconditions.checkNotNull(injector, "Injector cannot be null."));
+                baseModule);
     }
 
     /**
@@ -103,25 +118,68 @@ public class AudioTestHarnessGrpcServerFactory implements AutoCloseable {
      *
      * <p>This port is not reserved or used until the server's {@link
      * AudioTestHarnessGrpcServer#open()} method is called.
+     *
+     * @param sharedHostConfiguration the {@link SharedHostConfiguration} that should be used in the
+     *     system. This can be used to override configurable values (such as the device's capture
+     *     device) from their defaults.
      */
-    public AudioTestHarnessGrpcServer createOnPort(int port) {
-        LOGGER.finest(String.format("createOnPort(%d)", port));
-        return new AudioTestHarnessGrpcServer(port, mExecutorService, mInjector);
+    public AudioTestHarnessGrpcServer createOnPort(
+            int port, @Nullable SharedHostConfiguration sharedHostConfiguration) {
+        LOGGER.finest(String.format("createOnPort(%d, %s)", port, sharedHostConfiguration));
+        LOGGER.info(
+                String.format(
+                        "Shared Host Configuration is (%s)",
+                        sharedHostConfiguration == null ? "Default" : sharedHostConfiguration));
+
+        // Create an injector for the Audio Test Harness server, if a custom sharedHostConfiguration
+        // was provided, then we add another module which provides this configuration, otherwise,
+        // we create the module with mBaseModule only.
+        Injector injector =
+                sharedHostConfiguration == null
+                        ? Guice.createInjector(mBaseModule)
+                        : Guice.createInjector(
+                                mBaseModule,
+                                SharedHostConfigurationModule.create(sharedHostConfiguration));
+
+        // Verify that the AudioTestHarnessImplBase class is bound, without this binding, the server
+        // will not operate.
+        if (injector.getExistingBinding(
+                        Key.get(AudioTestHarnessGrpc.AudioTestHarnessImplBase.class))
+                == null) {
+            throw new IllegalStateException(
+                    "Cannot create new AudioTestHarnessGrpcServer because there is no binding for"
+                            + " the Audio Test Harness gRPC Service in the module provided at "
+                            + "factory creation.");
+        }
+
+        return new AudioTestHarnessGrpcServer(port, mExecutorService, injector);
     }
 
-    /** Creates a new {@link AudioTestHarnessGrpcServer} on the {@link #TESTING_PORT}. */
-    public AudioTestHarnessGrpcServer createOnTestingPort() {
+    /**
+     * Creates a new {@link AudioTestHarnessGrpcServer} on the {@link #TESTING_PORT}.
+     *
+     * @param sharedHostConfiguration the {@link SharedHostConfiguration} that should be used in the
+     *     system. This can be used to override configurable values (such as the device's capture
+     *     device) from their defaults.
+     */
+    public AudioTestHarnessGrpcServer createOnTestingPort(
+            @Nullable SharedHostConfiguration sharedHostConfiguration) {
         LOGGER.finest("createOnTestingPort()");
-        return createOnPort(TESTING_PORT);
+        return createOnPort(TESTING_PORT, sharedHostConfiguration);
     }
 
     /**
      * Creates a new {@link AudioTestHarnessGrpcServer} on the next available port within the
      * dynamic port range.
+     *
+     * @param sharedHostConfiguration the {@link SharedHostConfiguration} that should be used in the
+     *     system. This can be used to override configurable values (such as the device's capture
+     *     device) from their defaults.
      */
-    public AudioTestHarnessGrpcServer createOnNextAvailablePort() {
+    public AudioTestHarnessGrpcServer createOnNextAvailablePort(
+            @Nullable SharedHostConfiguration sharedHostConfiguration) {
         LOGGER.finest("createOnNextAvailablePort()");
-        return createOnPort(PortUtility.nextAvailablePort());
+        return createOnPort(PortUtility.nextAvailablePort(), sharedHostConfiguration);
     }
 
     /** Shuts down the {@link ExecutorService} used by the factory. */
