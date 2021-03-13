@@ -37,6 +37,14 @@ internal fun readWmTraceFromFile(relativePath: String): WindowManagerTrace {
     }
 }
 
+internal fun readWmTraceFromDumpFile(relativePath: String): WindowManagerTrace {
+    return try {
+        WindowManagerTraceParser.parseFromDump(readTestFile(relativePath))
+    } catch (e: Exception) {
+        throw RuntimeException(e)
+    }
+}
+
 internal fun readLayerTraceFromFile(
     relativePath: String,
     ignoreOrphanLayers: Boolean = true

@@ -65,9 +65,6 @@ open class WindowState(
 
     val frameRegion: Region = Region(frame)
 
-    override val windows: Array<WindowState>
-        get() = this.collectDescendants()
-
     private fun getWindowTypeSuffix(windowType: Int): String {
         when (windowType) {
             WINDOW_TYPE_STARTING -> return " STARTING"

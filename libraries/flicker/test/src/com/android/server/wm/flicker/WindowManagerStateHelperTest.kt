@@ -303,6 +303,16 @@ class WindowManagerStateHelperTest {
         }
     }
 
+    @Test
+    fun canDetectResumedActivitiesInStacks() {
+        val trace = readWmTraceFromDumpFile("wm_trace_resumed_activities_in_stack.pb")
+        val entry = trace.first()
+        Truth.assertWithMessage("Trace should have a resumed activity in stacks")
+            .that(entry.resumedActivities)
+            .asList()
+            .hasSize(1)
+    }
+
     @FlakyTest
     @Test
     fun canWaitForRecents() {

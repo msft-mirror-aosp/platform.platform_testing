@@ -53,9 +53,6 @@ open class WindowManagerState(
     val kind = "entry"
     val stableId = "entry"
 
-    var validityCheckFocusedWindow = true
-        private set
-
     val windowContainers: Array<WindowContainer>
         get() = root.collectDescendants()
 
@@ -93,13 +90,18 @@ open class WindowManagerState(
 
     val focusedDisplay: DisplayContent? get() = getDisplay(focusedDisplayId)
     val focusedStackId: Int get() = focusedDisplay?.focusedRootTaskId ?: -1
-    val focusedActivity: String get() = focusedDisplay?.resumedActivity ?: ""
+    val focusedActivity: String get() {
+        val focusedDisplay = focusedDisplay
+        return if (focusedDisplay != null && focusedDisplay.resumedActivity.isNotEmpty()) {
+            focusedDisplay.resumedActivity
+        } else {
+            getActivityForWindow(focusedWindow, focusedDisplayId)?.name ?: ""
+        }
+    }
     val resumedActivitiesInDisplays: Array<String>
-        get() = displays.map { it.resumedActivity }.filter { it.isNotEmpty() }.toTypedArray()
-    val resumedActivitiesInStacks: Array<String>
-        get() = rootTasks.map { it.resumedActivity }.filter { it.isNotEmpty() }.toTypedArray()
-    val hasResumedActivitiesInStacks: Boolean
-        get() = rootTasks.any { it.hasResumedActivitiesInTree }
+        get() = displays.flatMap { display ->
+            display.rootTasks.flatMap { it.resumedActivities.toList() }
+        }.toTypedArray()
     val defaultPinnedStackBounds: Rect
         get() = displays
             .lastOrNull { it.defaultPinnedStackBounds.isNotEmpty }?.defaultPinnedStackBounds
@@ -112,9 +114,9 @@ open class WindowManagerState(
         get() = getRootTask(focusedStackId)?.activityType ?: ACTIVITY_TYPE_UNDEFINED
     val focusedStackWindowingMode: Int
         get() = getRootTask(focusedStackId)?.windowingMode ?: WINDOWING_MODE_UNDEFINED
-    val resumedActivity: String
-        get() = focusedDisplay?.resumedActivity ?: "Default display not found"
-    val resumedActivitiesCount: Int get() = resumedActivitiesInStacks.size
+    val resumedActivities: Array<String>
+        get() = rootTasks.flatMap { it.resumedActivities.toList() }.toTypedArray()
+    val resumedActivitiesCount: Int get() = resumedActivities.size
     val stackCount: Int get() = rootTasks.size
     val displayCount: Int get() = displays.size
     val homeTask: ActivityTask? get() = getStackByActivityType(ACTIVITY_TYPE_HOME)?.topTask
@@ -141,13 +143,6 @@ open class WindowManagerState(
      * Converted to typedArray for better compatibility with JavaScript code
      */
     val rects: Array<Rect> = root.rects
-
-    /**
-     * Enable/disable the mFocusedWindow check during the computeState.
-     */
-    fun setValidityCheckWithFocusedWindow(validityCheckFocusedWindow: Boolean) {
-        this.validityCheckFocusedWindow = validityCheckFocusedWindow
-    }
 
     fun getDefaultDisplay(): DisplayContent? =
         displays.firstOrNull { it.id == DEFAULT_DISPLAY }
@@ -187,12 +182,10 @@ open class WindowManagerState(
     fun getResumedActivitiesCountInPackage(packageName: String): Int {
         val componentPrefix = "$packageName/"
         var count = 0
-        for (i in displays.indices.reversed()) {
-            val mStacks = displays[i].rootTasks
-            for (j in mStacks.indices.reversed()) {
-                val resumedActivity = mStacks[j].resumedActivity
-                if (resumedActivity.isNotEmpty() && resumedActivity.startsWith(componentPrefix)) {
-                    count++
+        displays.forEach { display ->
+            display.rootTasks.forEach { task ->
+                count += task.resumedActivities.count {
+                    it.isNotEmpty() && it.startsWith(componentPrefix)
                 }
             }
         }
@@ -259,6 +252,25 @@ open class WindowManagerState(
                 stack.containsActivity(activityName)
             }
         }.firstOrNull()
+    }
+
+    /**
+     * Get the first activity on display with id [displayId], containing a window whose title
+     * contains [partialWindowTitle]
+     *
+     * @param partialWindowTitle window title to search
+     * @param displayId display where to search the activity
+     */
+    @JvmOverloads
+    fun getActivityForWindow(
+        partialWindowTitle: String,
+        displayId: Int = DEFAULT_DISPLAY
+    ): Activity? {
+        return displays.firstOrNull { it.id == displayId }?.rootTasks?.map { stack ->
+            stack.getActivity { activity ->
+                activity.hasWindow(partialWindowTitle)
+            }
+        }?.firstOrNull()
     }
 
     /** Get the stack position on its display. */
@@ -517,7 +529,7 @@ open class WindowManagerState(
             if (focusedActivity.isEmpty()) {
                 append("No focused activity found...")
             }
-            if (!hasResumedActivitiesInStacks) {
+            if (resumedActivities.isEmpty()) {
                 append("No resumed activities found...")
             }
             if (windowStates.isEmpty()) {
@@ -532,17 +544,14 @@ open class WindowManagerState(
             if (keyguardControllerState.isKeyguardShowing) {
                 append("Keyguard showing...")
             }
-            if (!validityCheckFocusedWindow) {
-                append("Validity check...")
-            }
         }
     }
 
     fun isComplete(): Boolean = !isIncomplete()
     fun isIncomplete(): Boolean {
         return rootTasks.isEmpty() || focusedStackId == -1 || windowStates.isEmpty() ||
-            focusedApp.isEmpty() || (validityCheckFocusedWindow && focusedWindow.isEmpty()) ||
-            (focusedActivity.isEmpty() || !hasResumedActivitiesInStacks) &&
+            (focusedApp.isEmpty() && homeActivity == null) || focusedWindow.isEmpty() ||
+            (focusedActivity.isEmpty() || resumedActivities.isEmpty()) &&
             !keyguardControllerState.isKeyguardShowing
     }
 

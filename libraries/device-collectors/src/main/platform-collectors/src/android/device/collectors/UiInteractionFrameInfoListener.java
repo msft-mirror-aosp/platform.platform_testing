@@ -91,6 +91,7 @@ public class UiInteractionFrameInfoListener extends BaseCollectionListener<Strin
         IntentFilter filter = new IntentFilter();
         filter.addAction(InteractionJankMonitor.ACTION_SESSION_BEGIN);
         filter.addAction(InteractionJankMonitor.ACTION_METRICS_LOGGED);
+        filter.addAction(InteractionJankMonitor.ACTION_SESSION_CANCEL);
         getInstrumentation().getContext().registerReceiver(mReceiver, filter);
         return true;
     }

@@ -63,8 +63,6 @@ open class WindowManagerStateHelper @JvmOverloads constructor(
      */
     private val retryIntervalMs: Long = 500L
 ) {
-    private lateinit var homeActivity: ComponentName
-
     /**
      * Fetches the current device state
      */
@@ -92,10 +90,6 @@ open class WindowManagerStateHelper @JvmOverloads constructor(
             }
         }
 
-        val homeActivityName = newState.wmState.homeActivityName
-        if (homeActivityName != null) {
-            homeActivity = homeActivityName
-        }
         return newState
     }
 
@@ -142,13 +136,7 @@ open class WindowManagerStateHelper @JvmOverloads constructor(
                             .build())
 
     fun waitForHomeActivityVisible(): Boolean {
-        // Sometimes this function is called before we know what Home Activity is
-        if (!::homeActivity.isInitialized) {
-            Log.i(LOG_TAG, "Computing state to determine Home Activity")
-            computeState()
-            require(::homeActivity.isInitialized) { "Could not identify home activity in state" }
-        }
-        return waitForValidState(WaitForValidActivityState(homeActivity)) &&
+        return waitFor { it.wmState.homeActivity?.isVisible == true } &&
             waitForNavBarStatusBarVisible() &&
             waitForAppTransitionIdle()
     }
@@ -321,7 +309,7 @@ open class WindowManagerStateHelper @JvmOverloads constructor(
             return true
         }
         if (!state.wmState.keyguardControllerState.isKeyguardShowing &&
-            !state.wmState.hasResumedActivitiesInStacks) {
+            state.wmState.resumedActivities.isEmpty()) {
             if (!state.wmState.keyguardControllerState.isKeyguardShowing) {
                 Log.i(LOG_TAG, "***resumedActivitiesCount=0")
             } else {

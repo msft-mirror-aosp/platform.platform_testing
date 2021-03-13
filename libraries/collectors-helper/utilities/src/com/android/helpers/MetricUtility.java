@@ -21,7 +21,7 @@ public class MetricUtility {
     private static final String METRIC_SEPARATOR = ",";
 
     public static final int BUFFER_SIZE = 1024;
-    private static final DecimalFormat DOUBLE_FORMAT = new DecimalFormat("#0.01");
+    private static final DecimalFormat DOUBLE_FORMAT = new DecimalFormat("#0.000001");
 
     /**
      * Append the given array of string to construct the final key used to track the metrics.
