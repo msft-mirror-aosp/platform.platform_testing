@@ -34,6 +34,15 @@ open class Activity(
 ) : WindowContainer(windowContainer, name, visible) {
     override val kind: String = "Activity"
 
+    /**
+     * Checks if the activity contains a window with title containing [partialWindowTitle]
+     *
+     * @param partialWindowTitle window title to search
+     */
+    fun hasWindow(partialWindowTitle: String): Boolean {
+        return this.windows.any { it.title.contains(partialWindowTitle) }
+    }
+
     override fun toString(): String {
         return "$kind {$token $title} state=$state visible=$isVisible"
     }

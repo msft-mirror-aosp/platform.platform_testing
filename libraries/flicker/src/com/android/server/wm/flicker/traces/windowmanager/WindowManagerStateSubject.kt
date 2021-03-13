@@ -617,7 +617,7 @@ class WindowManagerStateSubject private constructor(
     }
 
     /**
-     * Asserts that WindowManager state has a [WindowManagerState.resumedActivity]
+     * Asserts that WindowManager state has a [WindowManagerState.resumedActivities]
      * matching [activity]
      *
      * @param activity Component name to search
@@ -625,12 +625,13 @@ class WindowManagerStateSubject private constructor(
     fun hasResumedActivity(activity: ComponentName): WindowManagerStateSubject = apply {
         val activityComponentName = activity.toActivityName()
         Truth.assertWithMessage("Invalid resumed activity")
-            .that(activityComponentName)
-            .isEqualTo(wmState.resumedActivity)
+            .that(wmState.resumedActivities)
+            .asList()
+            .contains(activityComponentName)
     }
 
     /**
-     * Asserts that WindowManager state [WindowManagerState.resumedActivity] doesn't
+     * Asserts that WindowManager state [WindowManagerState.resumedActivities] doesn't
      * match [activity]
      *
      * @param activity Component name to search
@@ -638,8 +639,9 @@ class WindowManagerStateSubject private constructor(
     fun hasNotResumedActivity(activity: ComponentName): WindowManagerStateSubject = apply {
         val activityComponentName = activity.toActivityName()
         Truth.assertWithMessage("Has resumed activity")
-            .that(wmState.resumedActivity)
-            .isNotEqualTo(activityComponentName)
+            .that(wmState.resumedActivities)
+            .asList()
+            .doesNotContain(activityComponentName)
     }
 
     /**
@@ -714,9 +716,19 @@ class WindowManagerStateSubject private constructor(
      */
     @JvmOverloads
     fun isHomeActivityVisible(isVisible: Boolean = true): WindowManagerStateSubject = apply {
-        val homeActivity = wmState.homeActivityName
-        require(homeActivity != null)
-        hasActivityAndWindowVisibility(homeActivity, isVisible)
+        if (isVisible) {
+            Truth.assertWithMessage("Home activity doesn't exist")
+                .that(wmState.homeActivity)
+                .isNotNull()
+
+            Truth.assertWithMessage("Home activity is not visible")
+                .that(wmState.homeActivity?.isVisible)
+                .isTrue()
+        } else {
+            Truth.assertWithMessage("Home activity is visible")
+                .that(wmState.homeActivity?.isVisible ?: false)
+                .isFalse()
+        }
     }
 
     /**

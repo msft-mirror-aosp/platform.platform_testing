@@ -73,7 +73,16 @@ data class FlickerResult(
         return currFailures
     }
 
+    /**
+     * Remove from the device the trace files associated with passed runs.
+     *
+     * If an test fails, or if the transition crashes, retain all traces related to
+     * that run.
+     */
     fun cleanUp() {
+        if (error != null) {
+            return
+        }
         runs.forEach {
             if (it.canDelete(failures)) {
                 it.cleanUp()

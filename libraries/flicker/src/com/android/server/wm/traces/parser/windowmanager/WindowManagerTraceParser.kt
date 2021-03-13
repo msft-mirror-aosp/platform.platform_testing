@@ -313,7 +313,7 @@ object WindowManagerTraceParser {
                 realActivity = proto.realActivity,
                 origActivity = proto.origActivity,
                 resizeMode = proto.resizeMode,
-                resumedActivity = proto.resumedActivity?.title ?: "",
+                _resumedActivity = proto.resumedActivity?.title ?: "",
                 animatingBounds = proto.animatingBounds,
                 surfaceWidth = proto.surfaceWidth,
                 surfaceHeight = proto.surfaceHeight,

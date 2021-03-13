@@ -36,7 +36,7 @@ open class ActivityTask(
     val realActivity: String,
     val origActivity: String,
     val resizeMode: Int,
-    val resumedActivity: String,
+    private val _resumedActivity: String,
     var animatingBounds: Boolean,
     val surfaceWidth: Int,
     val surfaceHeight: Int,
@@ -60,8 +60,17 @@ open class ActivityTask(
     // NOTE: Unlike the WindowManager internals, we dump the state from top to bottom,
     //       so the indices are inverted
     val topTask: ActivityTask? get() = tasks.firstOrNull()
-    val hasResumedActivitiesInTree: Boolean
-        get() = resumedActivity.isNotEmpty() || tasks.any { it.hasResumedActivitiesInTree }
+    val resumedActivities: Array<String> get() {
+        val result = mutableSetOf<String>()
+        if (this._resumedActivity.isNotEmpty()) {
+            result.add(this._resumedActivity)
+        }
+        val activitiesInChildren = this.tasks
+            .flatMap { it.resumedActivities.toList() }
+            .filter { it.isNotEmpty() }
+        result.addAll(activitiesInChildren)
+        return result.toTypedArray()
+    }
 
     fun getTask(predicate: (ActivityTask) -> Boolean) =
         tasks.firstOrNull { predicate(it) } ?: if (predicate(this)) this else null

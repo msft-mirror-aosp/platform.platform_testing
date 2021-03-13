@@ -50,6 +50,8 @@ public class ThermalHelper implements ICollectorHelper<StringBuilder> {
     private static final int UNDEFINED_SEVERITY = -1;
     private static final Pattern SEVERITY_DUMPSYS_PATTERN =
             Pattern.compile("Thermal Status: (\\d+)");
+    private static final Pattern TEMPERATURE_DUMPSYS_PATTERN =
+            Pattern.compile(".*mValue=(.*), mType=(.*), mName=(.*), mStatus=(\\d+).*");
 
     private StatsdHelper mStatsdHelper;
     private UiDevice mDevice;
@@ -70,10 +72,10 @@ public class ThermalHelper implements ICollectorHelper<StringBuilder> {
                 }
             }
         } catch (NumberFormatException nfe) {
-            Log.w(LOG_TAG, String.format("Couldn't identify severity. Error parsing: %s", nfe));
+            Log.e(LOG_TAG, String.format("Couldn't identify severity. Error parsing: %s", nfe));
             return false;
         } catch (IOException ioe) {
-            Log.w(LOG_TAG, String.format("Failed to query thermalservice. Error: %s", ioe));
+            Log.e(LOG_TAG, String.format("Failed to query thermalservice. Error: %s", ioe));
             return false;
         }
 
@@ -111,6 +113,43 @@ public class ThermalHelper implements ICollectorHelper<StringBuilder> {
                 // Set the initial severity to the last value, in case #getMetrics is called again.
                 mInitialSeverity = severity;
             }
+        }
+
+        try {
+            String[] output = getDevice().executeShellCommand("dumpsys thermalservice").split("\n");
+            boolean inCurrentTempSection = false;
+            for (String line : output) {
+                Matcher temperatureMatcher = TEMPERATURE_DUMPSYS_PATTERN.matcher(line);
+                if (inCurrentTempSection && temperatureMatcher.matches()) {
+                    Log.v(LOG_TAG, "Matched " + line);
+                    String name = temperatureMatcher.group(3);
+                    MetricUtility.addMetric(
+                            MetricUtility.constructKey("temperature", name, "value"),
+                            Double.parseDouble(temperatureMatcher.group(1)), // value group
+                            results);
+                    MetricUtility.addMetric(
+                            MetricUtility.constructKey("temperature", name, "type"),
+                            Integer.parseInt(temperatureMatcher.group(2)), // type group
+                            results);
+                    MetricUtility.addMetric(
+                            MetricUtility.constructKey("temperature", name, "status"),
+                            Integer.parseInt(temperatureMatcher.group(4)), // status group
+                            results);
+                }
+
+                if (line.contains("Current temperatures")) {
+                    inCurrentTempSection = true;
+                } else if (line.trim().startsWith("Current") || line.trim().startsWith("Cached")) {
+                    // We're entering another section of data.
+                    inCurrentTempSection = false;
+                }
+            }
+        } catch (NumberFormatException nfe) {
+            Log.e(
+                    LOG_TAG,
+                    String.format("Couldn't identify temperature info. Error parsing: %s", nfe));
+        } catch (IOException ioe) {
+            Log.e(LOG_TAG, String.format("Failed to query thermalservice. Error: %s", ioe));
         }
 
         return results;

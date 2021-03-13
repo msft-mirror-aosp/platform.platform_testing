@@ -14,6 +14,19 @@
 
 native_tests := \
     adbd_test \
+    android_logger_device_test_src_lib \
+    anyhow_device_test_src_lib \
+    anyhow_device_test_tests_test_autotrait \
+    anyhow_device_test_tests_test_boxed \
+    anyhow_device_test_tests_test_chain \
+    anyhow_device_test_tests_test_context \
+    anyhow_device_test_tests_test_convert \
+    anyhow_device_test_tests_test_downcast \
+    anyhow_device_test_tests_test_ffi \
+    anyhow_device_test_tests_test_fmt \
+    anyhow_device_test_tests_test_macros \
+    anyhow_device_test_tests_test_repr \
+    anyhow_device_test_tests_test_source \
     audio_health_tests \
     backtrace_test \
     bionic-unit-tests \
@@ -54,6 +67,9 @@ native_tests := \
     keystore2_crypto_test_rust \
     keystore2_selinux_test \
     keystore2_test \
+    lazy_static_device_test_src_lib \
+    lazy_static_device_test_tests_no_std \
+    lazy_static_device_test_tests_test \
     libandroidfw_tests \
     libappfuse_test \
     libbase_test \
@@ -116,14 +132,35 @@ native_tests := \
     resolv_gold_test \
     resolv_integration_test \
     resolv_unit_test \
+    ring_device_test_src_lib \
+    ring_device_test_tests_aead_tests \
+    ring_device_test_tests_agreement_tests \
+    ring_device_test_tests_constant_time_tests \
+    ring_device_test_tests_digest_tests \
+    ring_device_test_tests_ecdsa_tests \
+    ring_device_test_tests_ed25519_tests \
+    ring_device_test_tests_hkdf_tests \
+    ring_device_test_tests_hmac_tests \
+    ring_device_test_tests_pbkdf2_tests \
+    ring_device_test_tests_quic_tests \
+    ring_device_test_tests_rand_tests \
+    ring_device_test_tests_rsa_tests \
+    ring_device_test_tests_signature_tests \
     scrape_mmap_addr \
     simpleperf_cpu_hotplug_test \
     simpleperf_unit_test \
     statsd_test \
     syscall_filter_unittest_gtest \
     time-unit-tests \
+    tokio-test_device_test_src_lib \
+    tokio-test_device_test_tests_block_on \
+    tokio-test_device_test_tests_io \
+    tokio-test_device_test_tests_macros \
     unicode-xid_device_test_src_lib \
     update_engine_unittests \
+    url_device_test_src_lib \
+    url_device_test_tests_data \
+    url_device_test_tests_unit \
     vintf_object_test \
     wificond_unit_test \
     ziparchive-tests \
