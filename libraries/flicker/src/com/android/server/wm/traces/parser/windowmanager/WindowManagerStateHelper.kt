@@ -164,9 +164,18 @@ open class WindowManagerStateHelper @JvmOverloads constructor(
         waitFor("Rotation: $rotation") {
             val currRotation = it.wmState.getRotation(displayId)
             val rotationLayerExists = it.layerState.isVisible(ROTATION_LAYER_NAME)
+            val blackSurfaceLayerExists = it.layerState.isVisible(BLACK_SURFACE_LAYER_NAME)
+            val anyLayerAnimating = it.layerState.visibleLayers.any { layer ->
+                !layer.transform.isSimpleRotation
+            }
             Log.v(LOG_TAG, "currRotation($currRotation) " +
+                "anyLayerAnimating($anyLayerAnimating) " +
+                "blackSurfaceLayerExists($blackSurfaceLayerExists) " +
                 "rotationLayerExists($rotationLayerExists)")
-            currRotation == rotation
+            currRotation == rotation &&
+                !anyLayerAnimating &&
+                !rotationLayerExists &&
+                !blackSurfaceLayerExists
         }
 
     /**
@@ -461,6 +470,8 @@ open class WindowManagerStateHelper @JvmOverloads constructor(
         const val STATUS_BAR_LAYER_NAME = "$STATUS_BAR_WINDOW_NAME#0"
         @VisibleForTesting
         const val ROTATION_LAYER_NAME = "RotationLayer#0"
+        @VisibleForTesting
+        const val BLACK_SURFACE_LAYER_NAME = "BackColorSurface#0"
         @VisibleForTesting
         const val IME_LAYER_NAME = "InputMethod#0"
     }
