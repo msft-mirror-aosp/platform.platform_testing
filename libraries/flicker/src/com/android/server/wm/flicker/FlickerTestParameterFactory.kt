@@ -17,6 +17,7 @@
 package com.android.server.wm.flicker
 
 import android.view.Surface
+import android.view.WindowManagerPolicyConstants
 
 /**
  * Factory for creating JUnit4 compatible tests based on the flicker DSL
@@ -32,14 +33,16 @@ open class FlickerTestParameterFactory {
     @JvmOverloads
     open fun getConfigNonRotationTests(
         supportedRotations: List<Int> = listOf(Surface.ROTATION_0, Surface.ROTATION_90),
+        supportedNavigationModes: List<String> = listOf(
+            WindowManagerPolicyConstants.NAV_BAR_MODE_3BUTTON_OVERLAY,
+            WindowManagerPolicyConstants.NAV_BAR_MODE_GESTURAL_OVERLAY),
         repetitions: Int = 1
     ): List<FlickerTestParameter> {
-        return supportedRotations
-            .map { rotation ->
-                FlickerTestParameter(
-                    mutableMapOf(START_ROTATION to rotation, REPETITIONS to repetitions)
-                )
+        return supportedNavigationModes.flatMap { navBarMode ->
+            supportedRotations.map { rotation ->
+                createParam(repetitions, navBarMode, rotation)
             }
+        }
     }
 
     /**
@@ -50,21 +53,34 @@ open class FlickerTestParameterFactory {
     @JvmOverloads
     open fun getConfigRotationTests(
         supportedRotations: List<Int> = listOf(Surface.ROTATION_0, Surface.ROTATION_90),
+        supportedNavigationModes: List<String> = listOf(
+            WindowManagerPolicyConstants.NAV_BAR_MODE_3BUTTON_OVERLAY,
+            WindowManagerPolicyConstants.NAV_BAR_MODE_GESTURAL_OVERLAY),
         repetitions: Int = 1
     ): List<FlickerTestParameter> {
-        return supportedRotations
+        return supportedNavigationModes.flatMap { navBarMode ->
+            supportedRotations
             .flatMap { start -> supportedRotations.map { end -> start to end } }
             .filter { (start, end) -> start != end }
             .map { (start, end) ->
-                FlickerTestParameter(
-                    mutableMapOf(
-                        START_ROTATION to start,
-                        END_ROTATION to end,
-                        REPETITIONS to repetitions
-                    )
-                )
+                createParam(repetitions, navBarMode, start, end)
             }
+        }
     }
+
+    private fun createParam(
+        repetitions: Int,
+        navBarMode: String,
+        startRotation: Int,
+        endRotation: Int = startRotation
+    ) = FlickerTestParameter(
+        mutableMapOf(
+            NAV_BAR_MODE to navBarMode,
+            START_ROTATION to startRotation,
+            END_ROTATION to endRotation,
+            REPETITIONS to repetitions
+        )
+    )
 
     companion object {
         private lateinit var instance: FlickerTestParameterFactory

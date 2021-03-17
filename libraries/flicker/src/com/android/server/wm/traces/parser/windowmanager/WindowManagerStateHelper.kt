@@ -474,6 +474,10 @@ open class WindowManagerStateHelper @JvmOverloads constructor(
         const val BLACK_SURFACE_LAYER_NAME = "BackColorSurface#0"
         @VisibleForTesting
         const val IME_LAYER_NAME = "InputMethod#0"
+        @VisibleForTesting
+        const val SPLASH_SCREEN_NAME = "Splash Screen"
+        @VisibleForTesting
+        const val SNAPSHOT_WINDOW_NAME = "SnapshotStartingWindow"
     }
 
     data class Dump(

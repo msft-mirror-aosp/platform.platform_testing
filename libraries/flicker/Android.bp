@@ -50,6 +50,7 @@ java_library {
         "launcher-helper-lib",
         "wm-proto-parsers",
         "platform-test-annotations",
+        "platform-test-core-rules",
     ],
 }
 
