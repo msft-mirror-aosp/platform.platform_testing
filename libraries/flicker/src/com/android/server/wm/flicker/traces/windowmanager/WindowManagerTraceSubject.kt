@@ -23,6 +23,7 @@ import com.android.server.wm.traces.common.Rect
 import com.android.server.wm.traces.common.Region
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 import com.android.server.wm.traces.common.windowmanager.windows.WindowState
+import com.android.server.wm.traces.parser.windowmanager.WindowManagerStateHelper
 import com.google.common.truth.FailureMetadata
 import com.google.common.truth.FailureStrategy
 import com.google.common.truth.StandardSubjectBuilder
@@ -390,7 +391,8 @@ class WindowManagerTraceSubject private constructor(
      * Checks that all visible layers are shown for more than one consecutive entry
      */
     fun visibleWindowsShownMoreThanOneConsecutiveEntry(
-        ignoreWindows: List<String> = emptyList()
+        ignoreWindows: List<String> = listOf(WindowManagerStateHelper.SPLASH_SCREEN_NAME,
+            WindowManagerStateHelper.SNAPSHOT_WINDOW_NAME)
     ): WindowManagerTraceSubject = apply {
         visibleEntriesShownMoreThanOneConsecutiveTime { subject ->
             subject.wmState.windowStates

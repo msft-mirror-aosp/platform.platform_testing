@@ -52,7 +52,7 @@ open class TransitionRunner {
      * @param flicker test specification
      * @throws IllegalArgumentException If the transitions are empty or repetitions is set to 0
      */
-    fun execute(flicker: Flicker): FlickerResult {
+    open fun execute(flicker: Flicker): FlickerResult {
         check(flicker)
         return run(flicker)
     }
@@ -63,20 +63,16 @@ open class TransitionRunner {
      * @param flicker test specification
      * @throws IllegalArgumentException If the transitions are empty or repetitions is set to 0
      */
-    private fun check(flicker: Flicker) {
+    protected fun check(flicker: Flicker) {
         require(flicker.transitions.isNotEmpty()) {
             "A flicker test must include transitions to run" }
         require(flicker.repetitions > 0) {
             "Number of repetitions must be greater than 0" }
     }
 
-    private fun tagCleanUp() {
+    open fun cleanUp() {
         tags.clear()
         tagsResults.clear()
-    }
-
-    open fun cleanUp() {
-        tagCleanUp()
     }
 
     /**
@@ -119,7 +115,7 @@ open class TransitionRunner {
 
         runs.addAll(tagsResults)
         val result = FlickerResult(runs.toList(), tags.toSet(), executionError)
-        tagCleanUp()
+        cleanUp()
         return result
     }
 

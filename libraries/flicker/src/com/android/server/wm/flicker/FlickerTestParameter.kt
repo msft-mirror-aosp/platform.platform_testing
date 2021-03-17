@@ -17,6 +17,7 @@
 package com.android.server.wm.flicker
 
 import android.view.Surface
+import android.view.WindowManagerPolicyConstants
 import com.android.server.wm.flicker.assertions.AssertionData
 import com.android.server.wm.flicker.assertions.FlickerSubject
 import com.android.server.wm.flicker.dsl.AssertionTag
@@ -96,6 +97,9 @@ data class FlickerTestParameter(
             if (config.endRotation != config.startRotation) {
                 append("_${config.endRotationName}")
             }
+            if (config.navBarMode.isNotEmpty()) {
+                append("_${config.navBarModeName}")
+            }
         }
 
         @JvmStatic
@@ -161,6 +165,7 @@ data class FlickerTestParameter(
 internal const val REPETITIONS = "repetitions"
 internal const val START_ROTATION = "startRotation"
 internal const val END_ROTATION = "endRotation"
+internal const val NAV_BAR_MODE = "navBarMode"
 
 val Map<String, Any?>.repetitions: Int
     get() = this.getOrDefault(REPETITIONS, 1) as Int
@@ -176,3 +181,15 @@ val Map<String, Any?>.startRotationName: String
 
 val Map<String, Any?>.endRotationName: String
     get() = Surface.rotationToString(endRotation)
+
+val Map<String, Any?>.navBarMode: String
+    get() = this.getOrDefault(NAV_BAR_MODE,
+        WindowManagerPolicyConstants.NAV_BAR_MODE_GESTURAL_OVERLAY) as String
+
+val Map<String, Any?>.navBarModeName
+    get() = when (this.navBarMode) {
+        WindowManagerPolicyConstants.NAV_BAR_MODE_3BUTTON_OVERLAY -> "3_BUTTON_NAV"
+        WindowManagerPolicyConstants.NAV_BAR_MODE_2BUTTON_OVERLAY -> "2_BUTTON_NAV"
+        WindowManagerPolicyConstants.NAV_BAR_MODE_GESTURAL_OVERLAY -> "GESTURAL_NAV"
+        else -> "UNKNOWN_NAV_BAR_MODE(${this.navBarMode}"
+    }

@@ -101,6 +101,13 @@ public interface IChromeHelper extends IAppHelper {
     /**
      * Setup expectations: Chrome is open on a page.
      *
+     * <p>This method will add a new tab and land on the webpage of given url.
+     */
+    public abstract void addNewTab(String url);
+
+    /**
+     * Setup expectations: Chrome is open on a page.
+     *
      * <p>This method will go to tab switcher by clicking tab switcher button.
      */
     public abstract void openTabSwitcher();
@@ -117,7 +124,7 @@ public interface IChromeHelper extends IAppHelper {
      *
      * <p>This method will close all tabs.
      */
-    public void closeAllTabs();
+    public abstract void closeAllTabs();
 
     /**
      * Setup expectations: Chrome is open on a page and the tabs are treated as apps.
