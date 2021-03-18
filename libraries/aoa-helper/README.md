@@ -18,7 +18,7 @@ device.swipe(new Point(0, 0), new Point(360, 640), Duration.ofMillis(100));
 
 Write alphanumeric text or press key combinations using [USB HID usages](https://source.android.com/devices/input/keyboard-devices).
 ```
-device.pressKeys(0x52, 0x52, 0x51, 0x51, 0x50, 0x4F, 0x50, 0x4F, 0x05, 0x04);
+device.pressKeys(new AoaKey(0x04, AoaKey.Modifier.SHIFT), new AoaKey(0x52));
 ```
 
 Press the power `device.wakeUp()`, home `device.goHome()`, or back `device.goBack()` buttons.
