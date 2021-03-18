@@ -73,7 +73,7 @@ import javax.annotation.Nonnull;
 @RunWith(JUnit4.class)
 public class AoaDeviceTest {
 
-    private static final int HID_COUNT = AoaDevice.HID.values().length;
+    private static final int HID_COUNT = AoaHID.values().length;
     private static final String SERIAL_NUMBER = "serial-number";
     private static final int INVALID_VID = 0x0000;
     private static final int ADB_DISABLED_PID = 0x2D00;
@@ -247,15 +247,15 @@ public class AoaDeviceTest {
     @Test
     public void testPressKeys() {
         mDevice = createDevice();
-        mDevice.pressKeys(1, null, 2);
+        mDevice.pressKeys(new AoaKey(1), null, new AoaKey(2, AoaKey.Modifier.SHIFT));
 
         InOrder order = inOrder(mDelegate);
         // press and release 1
-        verifyHidRequest(order, times(1), AoaDevice.HID.KEYBOARD, (byte) 1);
-        verifyHidRequest(order, times(1), AoaDevice.HID.KEYBOARD, (byte) 0);
+        verifyHidRequest(order, times(1), AoaHID.KEYBOARD, (byte) 0, (byte) 1);
+        verifyHidRequest(order, times(1), AoaHID.KEYBOARD, (byte) 0, (byte) 0);
         // skip null, and press and release 2
-        verifyHidRequest(order, times(1), AoaDevice.HID.KEYBOARD, (byte) 2);
-        verifyHidRequest(order, times(1), AoaDevice.HID.KEYBOARD, (byte) 0);
+        verifyHidRequest(order, times(1), AoaHID.KEYBOARD, (byte) 2, (byte) 2);
+        verifyHidRequest(order, times(1), AoaHID.KEYBOARD, (byte) 0, (byte) 0);
     }
 
     @Test
@@ -263,7 +263,7 @@ public class AoaDeviceTest {
         mDevice = createDevice();
         mDevice.wakeUp();
 
-        verifyHidRequest(times(1), AoaDevice.HID.SYSTEM, SYSTEM_WAKE);
+        verifyHidRequest(times(1), AoaHID.SYSTEM, SYSTEM_WAKE);
     }
 
     @Test
@@ -271,7 +271,7 @@ public class AoaDeviceTest {
         mDevice = createDevice();
         mDevice.goHome();
 
-        verifyHidRequest(times(1), AoaDevice.HID.SYSTEM, SYSTEM_HOME);
+        verifyHidRequest(times(1), AoaHID.SYSTEM, SYSTEM_HOME);
     }
 
     @Test
@@ -279,7 +279,7 @@ public class AoaDeviceTest {
         mDevice = createDevice();
         mDevice.goBack();
 
-        verifyHidRequest(times(1), AoaDevice.HID.SYSTEM, SYSTEM_BACK);
+        verifyHidRequest(times(1), AoaHID.SYSTEM, SYSTEM_BACK);
     }
 
     @Test
@@ -331,12 +331,11 @@ public class AoaDeviceTest {
                 .controlTransfer(anyByte(), eq(request), anyInt(), anyInt(), any());
     }
 
-    private void verifyHidRequest(VerificationMode mode, AoaDevice.HID hid, byte... data) {
+    private void verifyHidRequest(VerificationMode mode, AoaHID hid, byte... data) {
         verifyHidRequest(null, mode, hid, data);
     }
 
-    private void verifyHidRequest(
-            InOrder order, VerificationMode mode, AoaDevice.HID hid, byte... data) {
+    private void verifyHidRequest(InOrder order, VerificationMode mode, AoaHID hid, byte... data) {
         UsbDevice verifier =
                 order == null ? verify(mDelegate, mode) : order.verify(mDelegate, mode);
         verifier.controlTransfer(
@@ -354,7 +353,7 @@ public class AoaDeviceTest {
                 .controlTransfer(
                         anyByte(),
                         eq(ACCESSORY_SEND_HID_EVENT),
-                        eq(AoaDevice.HID.TOUCH_SCREEN.getId()),
+                        eq(AoaHID.TOUCH_SCREEN.getId()),
                         anyInt(),
                         captor.capture());
 
