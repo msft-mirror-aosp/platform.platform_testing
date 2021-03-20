@@ -111,6 +111,22 @@ public class SettingHelperImpl extends AbstractAutoStandardAppHelper implements 
         return menuObject;
     }
 
+    @Override
+    public void findSettingMenuAndClick(String setting) {
+        UiObject2 settingMenu = findSettingMenu(setting);
+        if (settingMenu != null) {
+            clickAndWaitForIdleScreen(settingMenu);
+        } else {
+            throw new RuntimeException("Unable to find setting menu");
+        }
+    }
+
+    @Override
+    public String getPageTitleText() {
+        UiObject2 pageToolbarTitle = getPageTitle();
+        return pageToolbarTitle.getText();
+    }
+
     /** {@inheritDoc} */
     @Override
     public void openFullSettings() {
