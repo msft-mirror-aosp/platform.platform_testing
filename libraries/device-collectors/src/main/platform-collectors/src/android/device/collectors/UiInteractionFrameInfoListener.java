@@ -107,7 +107,7 @@ public class UiInteractionFrameInfoListener extends BaseCollectionListener<Strin
                 if (mMetricsReady) {
                     processMetrics(data);
                 } else {
-                    throw new AssertionError("metrics not ready until polling max times!");
+                    throw new IllegalStateException("metrics not ready until polling max times!");
                 }
             }
         } catch (InterruptedException e) {
