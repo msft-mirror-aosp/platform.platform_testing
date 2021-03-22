@@ -28,7 +28,6 @@ import com.google.common.truth.FailureMetadata
 import com.google.common.truth.FailureStrategy
 import com.google.common.truth.StandardSubjectBuilder
 import com.google.common.truth.Subject
-import com.google.common.truth.Truth
 
 /**
  * Truth subject for [WindowManagerTrace] objects, used to make assertions over behaviors that
@@ -179,7 +178,7 @@ class WindowManagerTraceSubject private constructor(
     fun showsAppWindowOnTop(vararg partialWindowTitles: String): WindowManagerTraceSubject = apply {
         val assertionName = "showsAppWindowOnTop(${partialWindowTitles.joinToString(",")})"
         addAssertion(assertionName) {
-            Truth.assertWithMessage("No window titles to search")
+            check("No window titles to search")
                 .that(partialWindowTitles)
                 .isNotEmpty()
             it.showsAppWindowOnTop(*partialWindowTitles)

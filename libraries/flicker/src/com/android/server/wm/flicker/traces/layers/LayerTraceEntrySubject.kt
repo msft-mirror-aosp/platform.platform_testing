@@ -31,7 +31,6 @@ import com.google.common.truth.FailureMetadata
 import com.google.common.truth.FailureStrategy
 import com.google.common.truth.StandardSubjectBuilder
 import com.google.common.truth.Subject
-import com.google.common.truth.Truth
 
 /**
  * Truth subject for [LayerTraceEntry] objects, used to make assertions over behaviors that
@@ -307,7 +306,9 @@ class LayerTraceEntrySubject private constructor(
                 }
                 reason = null
                 visibleRegion = layer.visibleRegion
-                Truth.assertThat(visibleRegion.toAndroidRegion()).isEqualTo(expectedVisibleRegion)
+                check("Incorrect visible region")
+                    .that(visibleRegion.toAndroidRegion())
+                    .isEqualTo(expectedVisibleRegion)
                 break
             }
         }
