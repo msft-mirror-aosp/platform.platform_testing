@@ -10,8 +10,6 @@ platform_tests += \
     AppCompatibilityTest \
     AppLaunch \
     AppLaunchWear \
-    AppLinkFunctionalTests \
-    AppLinkTestApp \
     AppTransitionTests \
     AutoLocTestApp \
     AutoLocVersionedTestApp_v1 \
