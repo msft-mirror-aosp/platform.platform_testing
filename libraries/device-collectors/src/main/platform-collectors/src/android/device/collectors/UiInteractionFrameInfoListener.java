@@ -122,6 +122,22 @@ public class UiInteractionFrameInfoListener extends BaseCollectionListener<Strin
         return true;
     }
 
+    private void reduceMetrics(DataRecord data, String key, String value) {
+        if (data == null || key.isEmpty() || value.isEmpty()) return;
+
+        double result = 0;
+        String[] tokens = value.split(MetricUtility.METRIC_SEPARATOR);
+        for (String token : tokens) {
+            if (key.endsWith(UiInteractionFrameInfoHelper.SUFFIX_MAX_FRAME_MS)) {
+                result = Double.max(result, Double.parseDouble(token));
+            } else {
+                result += Double.parseDouble(token);
+                result = UiInteractionFrameInfoHelper.makeLogFriendly(Math.floor(result));
+            }
+        }
+        data.addStringMetric(key, Double.toString(result));
+    }
+
     private void processMetrics(DataRecord data) throws InterruptedException {
         final Set<String> foundCujSet = new HashSet<>();
         DataRecord metricsData = new DataRecord();
@@ -135,7 +151,7 @@ public class UiInteractionFrameInfoListener extends BaseCollectionListener<Strin
             for (String key : bundle.keySet()) {
                 for (String cujName : mLoggedCujSet) {
                     if (key.startsWith(cujName)) {
-                        data.addStringMetric(key, bundle.getString(key));
+                        reduceMetrics(data, key, bundle.getString(key));
                         foundCujSet.add(cujName);
                         break;
                     }
