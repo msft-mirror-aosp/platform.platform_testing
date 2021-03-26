@@ -37,6 +37,7 @@ public class UiInteractionFrameInfoHelper implements ICollectorHelper<StringBuil
 
     private static final String LOG_TAG = UiInteractionFrameInfoHelper.class.getSimpleName();
     public static final String KEY_PREFIX_CUJ = "cuj";
+    public static final String SUFFIX_MAX_FRAME_MS = "max_frame_time_ms";
 
     private final StatsdHelper mStatsdHelper = new StatsdHelper();
 
@@ -53,7 +54,7 @@ public class UiInteractionFrameInfoHelper implements ICollectorHelper<StringBuil
     }
 
     // convert 0 to 1e-6 to make logarithmic dashboards look better.
-    static double makeLogFriendly(double metric) {
+    public static double makeLogFriendly(double metric) {
         return Math.max(0.01, metric);
     }
 
@@ -89,7 +90,7 @@ public class UiInteractionFrameInfoHelper implements ICollectorHelper<StringBuil
                         frameInfoMap);
 
                 addMetric(
-                        constructKey(KEY_PREFIX_CUJ, interactionType, "max_frame_time_ms"),
+                        constructKey(KEY_PREFIX_CUJ, interactionType, SUFFIX_MAX_FRAME_MS),
                         makeLogFriendly(
                                 uiInteractionFrameInfoReported.maxFrameTimeNanos / 1000000.0),
                         frameInfoMap);
