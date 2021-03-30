@@ -19,12 +19,12 @@ import android.graphics.Point
 import com.android.server.wm.flicker.assertions.Assertion
 import com.android.server.wm.flicker.traces.FlickerFailureStrategy
 import com.android.server.wm.flicker.assertions.FlickerSubject
+import com.android.server.wm.flicker.traces.RegionSubject
 import com.android.server.wm.traces.common.layers.Layer
 import com.google.common.truth.FailureMetadata
 import com.google.common.truth.FailureStrategy
 import com.google.common.truth.StandardSubjectBuilder
 import com.google.common.truth.Subject.Factory
-import com.google.common.truth.Truth
 
 /**
  * Truth subject for [Layer] objects, used to make assertions over behaviors that occur on a
@@ -53,6 +53,7 @@ class LayerSubject private constructor(
 ) : FlickerSubject(fm, layer) {
     val isEmpty: Boolean get() = layer == null
     val isNotEmpty: Boolean get() = !isEmpty
+    val visibleRegion: RegionSubject get() = RegionSubject.assertThat(layer?.visibleRegion, this)
 
     override val defaultFacts: String =
         "${entry?.defaultFacts ?: ""}\nFrame: ${layer?.currFrame}\nLayer: ${layer?.name}"
@@ -88,7 +89,7 @@ class LayerSubject private constructor(
     fun hasBufferSize(size: Point): LayerSubject = apply {
         layer ?: return exists()
         val bufferSize = Point(layer.activeBuffer?.width ?: 0, layer.activeBuffer?.height ?: 0)
-        Truth.assertThat(bufferSize).isEqualTo(size)
+        check("Incorrect buffer size").that(bufferSize).isEqualTo(size)
     }
 
     /**
@@ -100,7 +101,7 @@ class LayerSubject private constructor(
     fun hasLayerSize(size: Point): LayerSubject = apply {
         layer ?: return exists()
         val layerSize = Point(layer.screenBounds.width.toInt(), layer.screenBounds.height.toInt())
-        Truth.assertThat(layerSize).isEqualTo(size)
+        check("Incorrect number of layers").that(layerSize).isEqualTo(size)
     }
 
     /**
@@ -110,7 +111,7 @@ class LayerSubject private constructor(
     fun hasScalingMode(expectedScalingMode: Int): LayerSubject = apply {
         layer ?: return exists()
         val actualScalingMode = layer.effectiveScalingMode
-        Truth.assertThat(actualScalingMode).isEqualTo(expectedScalingMode)
+        check("Incorrect scaling mode").that(actualScalingMode).isEqualTo(expectedScalingMode)
     }
 
     /**

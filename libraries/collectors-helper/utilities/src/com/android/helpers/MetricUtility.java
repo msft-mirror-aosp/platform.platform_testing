@@ -18,7 +18,7 @@ public class MetricUtility {
 
     private static final String TAG = MetricUtility.class.getSimpleName();
     private static final String KEY_JOIN = "_";
-    private static final String METRIC_SEPARATOR = ",";
+    public static final String METRIC_SEPARATOR = ",";
 
     public static final int BUFFER_SIZE = 1024;
     private static final DecimalFormat DOUBLE_FORMAT = new DecimalFormat("#0.000001");

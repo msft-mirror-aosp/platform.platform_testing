@@ -180,7 +180,7 @@ class LayersTraceSubject private constructor(
         layerName: String = ""
     ): LayersTraceSubject = apply {
         addAssertion("coversAtLeast($testRegion, $layerName)") {
-            it.coversAtLeast(testRegion, layerName)
+            it.visibleRegion(layerName).coversAtLeast(testRegion)
         }
     }
 
@@ -198,7 +198,7 @@ class LayersTraceSubject private constructor(
         layerName: String = ""
     ): LayersTraceSubject = apply {
         addAssertion("coversAtLeast($testRegion, $layerName)") {
-            it.coversAtLeast(testRegion, layerName)
+            it.visibleRegion(layerName).coversAtLeast(testRegion)
         }
     }
 
@@ -216,7 +216,7 @@ class LayersTraceSubject private constructor(
         layerName: String = ""
     ): LayersTraceSubject = apply {
         addAssertion("coversAtMost($testRegion, $layerName") {
-            it.coversAtMost(testRegion, layerName)
+            it.visibleRegion(layerName).coversAtMost(testRegion)
         }
     }
 
@@ -234,7 +234,7 @@ class LayersTraceSubject private constructor(
         layerName: String = ""
     ): LayersTraceSubject = apply {
         addAssertion("coversAtMost($testRegion, $layerName") {
-            it.coversAtMost(testRegion, layerName)
+            it.visibleRegion(layerName).coversAtMost(testRegion)
         }
     }
 
@@ -267,7 +267,7 @@ class LayersTraceSubject private constructor(
         layerName: String = ""
     ): LayersTraceSubject = apply {
         addAssertion("coversExactly($layerName$expectedVisibleRegion)") {
-            it.coversExactly(expectedVisibleRegion, layerName)
+            it.visibleRegion(layerName).coversExactly(expectedVisibleRegion)
         }
     }
 

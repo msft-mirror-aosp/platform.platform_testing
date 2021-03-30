@@ -21,8 +21,7 @@ import android.view.Display
 import com.android.server.wm.flicker.assertions.Assertion
 import com.android.server.wm.flicker.assertions.FlickerSubject
 import com.android.server.wm.flicker.traces.FlickerFailureStrategy
-import com.android.server.wm.traces.common.Rect
-import com.android.server.wm.traces.common.Region
+import com.android.server.wm.flicker.traces.RegionSubject
 import com.android.server.wm.traces.common.windowmanager.WindowManagerState
 import com.android.server.wm.traces.common.windowmanager.windows.Activity
 import com.android.server.wm.traces.common.windowmanager.windows.WindowState
@@ -35,7 +34,6 @@ import com.google.common.truth.FailureStrategy
 import com.google.common.truth.StandardSubjectBuilder
 import com.google.common.truth.Subject
 import com.google.common.truth.Subject.Factory
-import com.google.common.truth.Truth
 
 /**
  * Truth subject for [WindowManagerState] objects, used to make assertions over behaviors that
@@ -95,161 +93,22 @@ class WindowManagerStateSubject private constructor(
     }
 
     /**
-     * Asserts that the visible area covered by the first [WindowState] with [WindowState.title]
-     * containing [windowTitle] covers at least [testRect], that is, if its area of the window's
-     * bounds cover each point in the region.
+     * Obtains the region occupied by all windows with name containing [windowTitle]
      *
      * @param windowTitle Name of the layer to search
-     * @param testRect Expected visible area of the window
      */
-    fun coversAtLeast(
-        testRect: Rect,
-        windowTitle: String
-    ): WindowManagerStateSubject = apply {
-        return coversAtLeast(Region(testRect), windowTitle)
-    }
+    @JvmOverloads
+    fun frameRegion(windowTitle: String = ""): RegionSubject {
+        val selectedWindows = wmState.windowStates
+            .filter { it.name.contains(windowTitle) }
+        val visibleWindows = selectedWindows.filter { it.isVisible }
+        val frameRegions = selectedWindows.map { it.frameRegion }
 
-    /**
-     * Asserts that the visible area covered by the first [WindowState] with [WindowState.title]
-     * containing [windowTitle] covers at least [testRect], that is, if its area of the window's
-     * bounds cover each point in the region.
-     *
-     * @param windowTitle Name of the layer to search
-     * @param testRect Expected visible area of the window
-     */
-    fun coversAtLeast(
-        testRect: android.graphics.Rect,
-        windowTitle: String
-    ): WindowManagerStateSubject = apply {
-        return coversAtLeast(android.graphics.Region(testRect), windowTitle)
-    }
+        val invisibleWindowFacts = selectedWindows
+            .filterNot { it in visibleWindows }
+            .map { Fact.fact("Is Invisible", it.name) }
 
-    /**
-     * Asserts that the visible area covered by the first [WindowState] with [WindowState.title]
-     * containing [windowTitle] covers at least [testRegion], that is, if its area of the window's
-     * bounds cover each point in the region.
-     *
-     * @param windowTitle Name of the layer to search
-     * @param testRegion Expected visible area of the window
-     */
-    fun coversAtLeast(
-        testRegion: Region,
-        windowTitle: String
-    ): WindowManagerStateSubject = apply {
-        return coversAtLeast(testRegion.toAndroidRegion(), windowTitle)
-    }
-
-    /**
-     * Asserts that the visible area covered by the first [WindowState] with [WindowState.title]
-     * containing [windowTitle] covers at least [testRegion], that is, if its area of the window's
-     * bounds cover each point in the region.
-     *
-     * @param windowTitle Name of the layer to search
-     * @param testRegion Expected visible area of the window
-     */
-    fun coversAtLeast(
-        testRegion: android.graphics.Region,
-        windowTitle: String
-    ): WindowManagerStateSubject = apply {
-        covers(windowTitle) { windowRegion ->
-            val testRect = testRegion.bounds
-            val intersection = windowRegion.toAndroidRegion()
-            val covers = intersection.op(testRect, android.graphics.Region.Op.INTERSECT) &&
-                !intersection.op(testRect, android.graphics.Region.Op.XOR)
-
-            if (!covers) {
-                fail(Fact.fact("Region to test", testRegion),
-                    Fact.fact("Uncovered region", intersection))
-            }
-        }
-    }
-
-    /**
-     * Asserts that the visible area covered by the first [WindowState] with [WindowState.title]
-     * containing [windowTitle] covers at most [testRect], that is, if the area of the
-     * window state bounds don't cover any point outside of [testRect].
-     *
-     * @param windowTitle Name of the layer to search
-     * @param testRect Expected visible area of the window
-     */
-    fun coversAtMost(
-        testRect: android.graphics.Rect,
-        windowTitle: String
-    ): WindowManagerStateSubject = apply {
-        coversAtMost(android.graphics.Region(testRect), windowTitle)
-    }
-
-    /**
-     * Asserts that the visible area covered by the first [WindowState] with [WindowState.title]
-     * containing [windowTitle] covers at most [testRect], that is, if the area of the
-     * window state bounds don't cover any point outside of [testRect].
-     *
-     * @param windowTitle Name of the layer to search
-     * @param testRect Expected visible area of the window
-     */
-    fun coversAtMost(
-        testRect: Rect,
-        windowTitle: String
-    ): WindowManagerStateSubject = apply {
-        coversAtMost(Region(testRect), windowTitle)
-    }
-
-    /**
-     * Asserts that the visible area covered by the first [WindowState] with [WindowState.title]
-     * containing [windowTitle] covers at most [testRegion], that is, if the area of the
-     * window state bounds don't cover any point outside of [testRegion].
-     *
-     * @param windowTitle Name of the layer to search
-     * @param testRegion Expected visible area of the window
-     */
-    fun coversAtMost(
-        testRegion: Region,
-        windowTitle: String
-    ): WindowManagerStateSubject = apply {
-        coversAtMost(testRegion.toAndroidRegion(), windowTitle)
-    }
-
-    /**
-     * Asserts that the visible area covered by the first [WindowState] with [WindowState.title]
-     * containing [windowTitle] covers at most [testRegion], that is, if the area of the
-     * window state bounds don't cover any point outside of [testRegion].
-     *
-     * @param windowTitle Name of the layer to search
-     * @param testRegion Expected visible area of the window
-     */
-    fun coversAtMost(
-        testRegion: android.graphics.Region,
-        windowTitle: String
-    ): WindowManagerStateSubject = apply {
-        covers(windowTitle) { windowRegion ->
-            val testRect = testRegion.bounds
-            val intersection = windowRegion.toAndroidRegion()
-            val covers = intersection.op(testRect, android.graphics.Region.Op.INTERSECT) &&
-                !intersection.op(windowRegion.toAndroidRegion(), android.graphics.Region.Op.XOR)
-
-            if (!covers) {
-                fail(Fact.fact("Region to test", testRegion),
-                    Fact.fact("Out-of-bounds region", intersection))
-            }
-        }
-    }
-
-    /**
-     * Obtains the region of the first visible window with title containing [windowTitle]
-     * and applies [resultPredicate] on the result
-     *
-     * @param windowTitle Name of the layer to search
-     * @param resultPredicate Predicate to compute a result based on the found window's region
-     */
-    private fun covers(
-        windowTitle: String,
-        resultPredicate: (Region) -> Unit
-    ): WindowManagerStateSubject = apply {
-        wmState.windowStates.checkVisibility(windowTitle, isVisible = true)
-
-        val foundWindow = wmState.windowStates.first { it.name.contains(windowTitle) }
-        val foundRegion = foundWindow.frameRegion
-        resultPredicate(foundRegion)
+        return RegionSubject.assertThat(frameRegions, this, invisibleWindowFacts)
     }
 
     /**
@@ -471,7 +330,7 @@ class WindowManagerStateSubject private constructor(
         rotation: Int,
         displayId: Int = Display.DEFAULT_DISPLAY
     ): WindowManagerStateSubject = apply {
-        Truth.assertWithMessage("Rotation should be $rotation")
+        check("Rotation should be $rotation")
             .that(rotation)
             .isEqualTo(wmState.getRotation(displayId))
     }
@@ -487,7 +346,7 @@ class WindowManagerStateSubject private constructor(
         rotation: Int,
         displayId: Int = Display.DEFAULT_DISPLAY
     ): WindowManagerStateSubject = apply {
-        Truth.assertWithMessage("Rotation should not be $rotation")
+        check("Rotation should not be $rotation")
             .that(rotation)
             .isNotEqualTo(wmState.getRotation(displayId))
     }
@@ -502,9 +361,9 @@ class WindowManagerStateSubject private constructor(
     fun contains(activity: ComponentName): WindowManagerStateSubject = apply {
         val windowName = activity.toWindowName()
         val activityName = activity.toActivityName()
-        Truth.assertWithMessage("Activity=$activityName must exist.")
+        check("Activity=$activityName must exist.")
             .that(wmState.containsActivity(activityName)).isTrue()
-        Truth.assertWithMessage("Window=$windowName must exits.")
+        check("Window=$windowName must exits.")
             .that(wmState.containsWindow(windowName)).isTrue()
     }
 
@@ -518,9 +377,9 @@ class WindowManagerStateSubject private constructor(
     fun notContains(activity: ComponentName): WindowManagerStateSubject = apply {
         val windowName = activity.toWindowName()
         val activityName = activity.toActivityName()
-        Truth.assertWithMessage("Activity=$activityName must NOT exist.")
+        check("Activity=$activityName must NOT exist.")
             .that(wmState.containsActivity(activityName)).isFalse()
-        Truth.assertWithMessage("Window=$windowName must NOT exits.")
+        check("Window=$windowName must NOT exits.")
             .that(wmState.containsWindow(windowName)).isFalse()
     }
 
@@ -529,7 +388,7 @@ class WindowManagerStateSubject private constructor(
         if (wmState.isHomeRecentsComponent) {
             isHomeActivityVisible()
         } else {
-            Truth.assertWithMessage("Recents activity is ${if (visible) "" else "not"} visible")
+            check("Recents activity is ${if (visible) "" else "not"} visible")
                 .that(wmState.isRecentsActivityVisible)
                 .isEqualTo(visible)
         }
@@ -544,26 +403,26 @@ class WindowManagerStateSubject private constructor(
      *   - a focused app
      */
     fun isValid(): WindowManagerStateSubject = apply {
-        Truth.assertWithMessage("Must have stacks").that(wmState.stackCount).isGreaterThan(0)
+        check("Must have stacks").that(wmState.stackCount).isGreaterThan(0)
         // TODO: Update when keyguard will be shown on multiple displays
         if (!wmState.keyguardControllerState.isKeyguardShowing) {
-            Truth.assertWithMessage("There should be at least one resumed activity in the system.")
+            check("There should be at least one resumed activity in the system.")
                 .that(wmState.resumedActivitiesCount).isGreaterThan(0)
         }
-        Truth.assertWithMessage("Must have focus activity.")
+        check("Must have focus activity.")
             .that(wmState.focusedActivity).isNotEmpty()
         wmState.rootTasks.forEach { aStack ->
             val stackId = aStack.rootTaskId
             aStack.tasks.forEach { aTask ->
-                Truth.assertWithMessage("Stack can only contain its own tasks")
+                check("Stack can only contain its own tasks")
                     .that(stackId).isEqualTo(aTask.rootTaskId)
             }
         }
-        Truth.assertWithMessage("Must have front window.")
+        check("Must have front window.")
             .that(wmState.frontWindow).isNotEmpty()
-        Truth.assertWithMessage("Must have focused window.")
+        check("Must have focused window.")
             .that(wmState.focusedWindow).isNotEmpty()
-        Truth.assertWithMessage("Must have app.")
+        check("Must have app.")
             .that(wmState.focusedApp).isNotEmpty()
     }
 
@@ -575,10 +434,10 @@ class WindowManagerStateSubject private constructor(
      */
     fun hasFocusedActivity(activity: ComponentName): WindowManagerStateSubject = apply {
         val activityComponentName = activity.toActivityName()
-        Truth.assertWithMessage("Focused activity invalid")
+        check("Focused activity invalid")
             .that(activityComponentName)
             .isEqualTo(wmState.focusedActivity)
-        Truth.assertWithMessage("Focused app invalid")
+        check("Focused app invalid")
             .that(activityComponentName)
             .isEqualTo(wmState.focusedApp)
     }
@@ -591,10 +450,10 @@ class WindowManagerStateSubject private constructor(
      */
     fun hasNotFocusedActivity(activity: ComponentName): WindowManagerStateSubject = apply {
         val activityComponentName = activity.toActivityName()
-        Truth.assertWithMessage("Has focused activity")
+        check("Has focused activity")
             .that(wmState.focusedActivity)
             .isNotEqualTo(activityComponentName)
-        Truth.assertWithMessage("Has focused app")
+        check("Has focused app")
             .that(wmState.focusedApp)
             .isNotEqualTo(activityComponentName)
     }
@@ -611,7 +470,7 @@ class WindowManagerStateSubject private constructor(
         displayId: Int = Display.DEFAULT_DISPLAY
     ): WindowManagerStateSubject = apply {
         val activityComponentName = activity.toActivityName()
-        Truth.assertWithMessage("Focused app invalid")
+        check("Focused app invalid")
             .that(activityComponentName)
             .isEqualTo(wmState.getDisplay(displayId)?.focusedApp)
     }
@@ -624,7 +483,7 @@ class WindowManagerStateSubject private constructor(
      */
     fun hasResumedActivity(activity: ComponentName): WindowManagerStateSubject = apply {
         val activityComponentName = activity.toActivityName()
-        Truth.assertWithMessage("Invalid resumed activity")
+        check("Invalid resumed activity")
             .that(wmState.resumedActivities)
             .asList()
             .contains(activityComponentName)
@@ -638,7 +497,7 @@ class WindowManagerStateSubject private constructor(
      */
     fun hasNotResumedActivity(activity: ComponentName): WindowManagerStateSubject = apply {
         val activityComponentName = activity.toActivityName()
-        Truth.assertWithMessage("Has resumed activity")
+        check("Has resumed activity")
             .that(wmState.resumedActivities)
             .asList()
             .doesNotContain(activityComponentName)
@@ -651,7 +510,7 @@ class WindowManagerStateSubject private constructor(
      * @param windowTitle window title to search
      */
     fun isFocused(windowTitle: String): WindowManagerStateSubject = apply {
-        Truth.assertWithMessage("Invalid focused window")
+        check("Invalid focused window")
             .that(windowTitle)
             .isEqualTo(wmState.focusedWindow)
     }
@@ -663,7 +522,7 @@ class WindowManagerStateSubject private constructor(
      * @param windowTitle window title to search
      */
     fun isWindowNotFocused(windowTitle: String): WindowManagerStateSubject = apply {
-        Truth.assertWithMessage("Has focused window")
+        check("Has focused window")
             .that(wmState.focusedWindow)
             .isNotEqualTo(windowTitle)
     }
@@ -695,17 +554,15 @@ class WindowManagerStateSubject private constructor(
         // Check existence of activity and window.
         val windowName = activity.toWindowName()
         val activityName = activity.toActivityName()
-        Truth.assertWithMessage("Activity=$activityName must exist.")
+        check("Activity=$activityName must exist.")
             .that(wmState.containsActivity(activityName)).isTrue()
-        Truth.assertWithMessage("Window=$windowName must exist.")
+        check("Window=$windowName must exist.")
             .that(wmState.containsWindow(windowName)).isTrue()
 
         // Check visibility of activity and window.
-        Truth.assertWithMessage("Activity=$activityName must ${if (visible) "" else " NOT"}" +
-            " be visible.")
+        check("Activity=$activityName must ${if (visible) "" else " NOT"} be visible.")
             .that(visible).isEqualTo(wmState.isActivityVisible(activityName))
-        Truth.assertWithMessage("Window=$windowName must ${if (visible) "" else " NOT"}" +
-            " have shown surface.")
+        check("Window=$windowName must ${if (visible) "" else " NOT"} have shown surface.")
             .that(visible).isEqualTo(wmState.isWindowSurfaceShown(windowName))
     }
 
@@ -717,15 +574,15 @@ class WindowManagerStateSubject private constructor(
     @JvmOverloads
     fun isHomeActivityVisible(isVisible: Boolean = true): WindowManagerStateSubject = apply {
         if (isVisible) {
-            Truth.assertWithMessage("Home activity doesn't exist")
+            check("Home activity doesn't exist")
                 .that(wmState.homeActivity)
                 .isNotNull()
 
-            Truth.assertWithMessage("Home activity is not visible")
+            check("Home activity is not visible")
                 .that(wmState.homeActivity?.isVisible)
                 .isTrue()
         } else {
-            Truth.assertWithMessage("Home activity is visible")
+            check("Home activity is visible")
                 .that(wmState.homeActivity?.isVisible ?: false)
                 .isFalse()
         }
@@ -739,11 +596,11 @@ class WindowManagerStateSubject private constructor(
         displayId: Int = Display.DEFAULT_DISPLAY
     ): WindowManagerStateSubject = apply {
         val imeWinState = wmState.inputMethodWindowState
-        Truth.assertWithMessage("IME window must exist")
+        check("IME window must exist")
             .that(imeWinState).isNotNull()
-        Truth.assertWithMessage("IME window must be shown")
+        check("IME window must be shown")
             .that(imeWinState?.isSurfaceShown ?: false).isTrue()
-        Truth.assertWithMessage("IME window must be on the given display")
+        check("IME window must be on the given display")
             .that(displayId).isEqualTo(imeWinState?.displayId ?: -1)
     }
 
@@ -755,10 +612,10 @@ class WindowManagerStateSubject private constructor(
         displayId: Int = Display.DEFAULT_DISPLAY
     ): WindowManagerStateSubject = apply {
         val imeWinState = wmState.inputMethodWindowState
-        Truth.assertWithMessage("IME window must not be shown")
+        check("IME window must not be shown")
             .that(imeWinState?.isSurfaceShown ?: false).isFalse()
         if (imeWinState?.isSurfaceShown == true) {
-            Truth.assertWithMessage("IME window must not be on the given display")
+            check("IME window must not be on the given display")
                 .that(displayId).isNotEqualTo(imeWinState.displayId)
         }
     }

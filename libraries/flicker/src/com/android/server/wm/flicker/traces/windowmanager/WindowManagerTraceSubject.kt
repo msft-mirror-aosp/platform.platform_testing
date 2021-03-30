@@ -28,7 +28,6 @@ import com.google.common.truth.FailureMetadata
 import com.google.common.truth.FailureStrategy
 import com.google.common.truth.StandardSubjectBuilder
 import com.google.common.truth.Subject
-import com.google.common.truth.Truth
 
 /**
  * Truth subject for [WindowManagerTrace] objects, used to make assertions over behaviors that
@@ -179,7 +178,7 @@ class WindowManagerTraceSubject private constructor(
     fun showsAppWindowOnTop(vararg partialWindowTitles: String): WindowManagerTraceSubject = apply {
         val assertionName = "showsAppWindowOnTop(${partialWindowTitles.joinToString(",")})"
         addAssertion(assertionName) {
-            Truth.assertWithMessage("No window titles to search")
+            check("No window titles to search")
                 .that(partialWindowTitles)
                 .isNotEmpty()
             it.showsAppWindowOnTop(*partialWindowTitles)
@@ -264,7 +263,7 @@ class WindowManagerTraceSubject private constructor(
         partialWindowTitle: String
     ): WindowManagerTraceSubject = apply {
         addAssertion("coversAtLeastRegion($partialWindowTitle, $testRegion)") {
-            it.coversAtLeast(testRegion, partialWindowTitle)
+            it.frameRegion(partialWindowTitle).coversAtLeast(testRegion)
         }
     }
 
@@ -281,7 +280,7 @@ class WindowManagerTraceSubject private constructor(
         partialWindowTitle: String
     ): WindowManagerTraceSubject = apply {
         addAssertion("coversAtLeastRegion($partialWindowTitle, $testRegion)") {
-            it.coversAtLeast(testRegion, partialWindowTitle)
+            it.frameRegion(partialWindowTitle).coversAtLeast(testRegion)
         }
     }
 
@@ -298,7 +297,7 @@ class WindowManagerTraceSubject private constructor(
         partialWindowTitle: String
     ): WindowManagerTraceSubject = apply {
         addAssertion("coversAtLeastRegion($partialWindowTitle, $testRect)") {
-            it.coversAtLeast(testRect, partialWindowTitle)
+            it.frameRegion(partialWindowTitle).coversAtLeast(testRect)
         }
     }
 
@@ -315,7 +314,7 @@ class WindowManagerTraceSubject private constructor(
         partialWindowTitle: String
     ): WindowManagerTraceSubject = apply {
         addAssertion("coversAtLeastRegion($partialWindowTitle, $testRect)") {
-            it.coversAtLeast(testRect, partialWindowTitle)
+            it.frameRegion(partialWindowTitle).coversAtLeast(testRect)
         }
     }
 
@@ -332,7 +331,7 @@ class WindowManagerTraceSubject private constructor(
         partialWindowTitle: String
     ): WindowManagerTraceSubject = apply {
         addAssertion("coversAtMostRegion($partialWindowTitle, $testRegion)") {
-            it.coversAtMost(testRegion, partialWindowTitle)
+            it.frameRegion(partialWindowTitle).coversAtMost(testRegion)
         }
     }
 
@@ -349,7 +348,7 @@ class WindowManagerTraceSubject private constructor(
         partialWindowTitle: String
     ): WindowManagerTraceSubject = apply {
         addAssertion("coversAtMostRegion($partialWindowTitle, $testRegion)") {
-            it.coversAtMost(testRegion, partialWindowTitle)
+            it.frameRegion(partialWindowTitle).coversAtMost(testRegion)
         }
     }
 
@@ -366,7 +365,7 @@ class WindowManagerTraceSubject private constructor(
         partialWindowTitle: String
     ): WindowManagerTraceSubject = apply {
         addAssertion("coversAtMostRegion($partialWindowTitle, $testRect)") {
-            it.coversAtMost(testRect, partialWindowTitle)
+            it.frameRegion(partialWindowTitle).coversAtMost(testRect)
         }
     }
 
@@ -383,7 +382,55 @@ class WindowManagerTraceSubject private constructor(
         partialWindowTitle: String
     ): WindowManagerTraceSubject = apply {
         addAssertion("coversAtMostRegion($partialWindowTitle, $testRect)") {
-            it.coversAtMost(testRect, partialWindowTitle)
+            it.frameRegion(partialWindowTitle).coversAtMost(testRect)
+        }
+    }
+
+    /**
+     * Asserts that the visible area covered by the first [WindowState] with [WindowState.title]
+     * containing [partialWindowTitle] covers exactly [testRegion].
+     *
+     * @param partialWindowTitle Name of the layer to search
+     * @param testRegion Expected visible area of the window
+     */
+    fun coversExactly(
+        testRegion: android.graphics.Region,
+        partialWindowTitle: String
+    ): WindowManagerTraceSubject = apply {
+        addAssertion("coversExactly($partialWindowTitle, $testRegion)") {
+            it.frameRegion(partialWindowTitle).coversExactly(testRegion)
+        }
+    }
+
+    /**
+     * Asserts that the visible area covered by the first [WindowState] with [WindowState.title]
+     * containing [partialWindowTitle] covers exactly [testRect].
+     *
+     * @param partialWindowTitle Name of the layer to search
+     * @param testRect Expected visible area of the window
+     */
+    fun coversExactly(
+        testRect: Rect,
+        partialWindowTitle: String
+    ): WindowManagerTraceSubject = apply {
+        addAssertion("coversExactly($partialWindowTitle, $testRect)") {
+            it.frameRegion(partialWindowTitle).coversExactly(testRect)
+        }
+    }
+
+    /**
+     * Asserts that the visible area covered by the first [WindowState] with [WindowState.title]
+     * containing [partialWindowTitle] covers exactly [testRect].
+     *
+     * @param partialWindowTitle Name of the layer to search
+     * @param testRect Expected visible area of the window
+     */
+    fun coversExactly(
+        testRect: android.graphics.Rect,
+        partialWindowTitle: String
+    ): WindowManagerTraceSubject = apply {
+        addAssertion("coversExactly($partialWindowTitle, $testRect)") {
+            it.frameRegion(partialWindowTitle).coversExactly(testRect)
         }
     }
 
