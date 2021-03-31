@@ -35,7 +35,7 @@ abstract class FlickerSubject(
      *
      * @param reason for the failure
      */
-    fun fail(reason: List<Fact>): FlickerSubject = apply {
+    open fun fail(reason: List<Fact>): FlickerSubject = apply {
         require(reason.isNotEmpty()) { "Failure should contain at least 1 fact" }
         val facts = reason.drop(1).toTypedArray()
         failWithoutActual(reason.first(), *facts)

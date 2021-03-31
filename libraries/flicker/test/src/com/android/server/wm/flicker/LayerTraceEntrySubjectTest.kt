@@ -67,6 +67,7 @@ class LayerTraceEntrySubjectTest {
         val expectedRegion = Region(0, 0, 1440, 2960)
         val error = assertThrows(AssertionError::class.java) {
             LayersTraceSubject.assertThat(trace).entry(935346112030)
+                .visibleRegion()
                 .coversAtLeast(expectedRegion)
         }
         assertFailure(error)
@@ -86,7 +87,8 @@ class LayerTraceEntrySubjectTest {
         val expectedVisibleRegion = Region(0, 0, 1, 1)
         val error = assertThrows(AssertionError::class.java) {
             LayersTraceSubject.assertThat(trace).entry(937229257165)
-                .coversExactly(expectedVisibleRegion, imaginaryLayer)
+                .visibleRegion(imaginaryLayer)
+                .coversExactly(expectedVisibleRegion)
         }
         assertFailure(error)
             .factValue("Could not find")
@@ -99,7 +101,8 @@ class LayerTraceEntrySubjectTest {
         val expectedVisibleRegion = Region(0, 0, 1, 1)
         val error = assertThrows(AssertionError::class.java) {
             LayersTraceSubject.assertThat(trace).entry(937126074082)
-                .coversExactly(expectedVisibleRegion, "DockedStackDivider#0")
+                .visibleRegion("DockedStackDivider#0")
+                .coversExactly(expectedVisibleRegion)
         }
         assertFailure(error)
             .factValue("Is Invisible")
@@ -113,7 +116,8 @@ class LayerTraceEntrySubjectTest {
         val expectedVisibleRegion = Region(0, 0, 1, 1)
         val error = assertThrows(AssertionError::class.java) {
             LayersTraceSubject.assertThat(trace).entry(935346112030)
-                .coversExactly(expectedVisibleRegion, "SimpleActivity#0")
+                .visibleRegion("SimpleActivity#0")
+                .coversExactly(expectedVisibleRegion)
         }
         assertFailure(error)
             .factValue("Hidden by parent")
@@ -126,10 +130,11 @@ class LayerTraceEntrySubjectTest {
         val expectedVisibleRegion = Region(0, 0, 1440, 99)
         val error = assertThrows(AssertionError::class.java) {
             LayersTraceSubject.assertThat(trace).entry(937126074082)
-                .coversExactly(expectedVisibleRegion, "StatusBar")
+                .visibleRegion("StatusBar")
+                .coversExactly(expectedVisibleRegion)
         }
         assertFailure(error)
-            .factValue("expected")
+            .factValue("Region to test")
             .contains("SkRegion((0,0,1440,99))")
     }
 
@@ -138,7 +143,8 @@ class LayerTraceEntrySubjectTest {
         val trace = readLayerTraceFromFile("layers_trace_launch_split_screen.pb")
         val expectedVisibleRegion = Region(0, 0, 1080, 145)
         LayersTraceSubject.assertThat(trace).entry(90480846872160)
-            .coversExactly(expectedVisibleRegion, "StatusBar")
+            .visibleRegion("StatusBar")
+            .coversExactly(expectedVisibleRegion)
     }
 
     @Test

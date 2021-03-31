@@ -21,8 +21,7 @@ import android.view.Display
 import com.android.server.wm.flicker.assertions.Assertion
 import com.android.server.wm.flicker.assertions.FlickerSubject
 import com.android.server.wm.flicker.traces.FlickerFailureStrategy
-import com.android.server.wm.traces.common.Rect
-import com.android.server.wm.traces.common.Region
+import com.android.server.wm.flicker.traces.RegionSubject
 import com.android.server.wm.traces.common.windowmanager.WindowManagerState
 import com.android.server.wm.traces.common.windowmanager.windows.Activity
 import com.android.server.wm.traces.common.windowmanager.windows.WindowState
@@ -94,161 +93,22 @@ class WindowManagerStateSubject private constructor(
     }
 
     /**
-     * Asserts that the visible area covered by the first [WindowState] with [WindowState.title]
-     * containing [windowTitle] covers at least [testRect], that is, if its area of the window's
-     * bounds cover each point in the region.
+     * Obtains the region occupied by all windows with name containing [windowTitle]
      *
      * @param windowTitle Name of the layer to search
-     * @param testRect Expected visible area of the window
      */
-    fun coversAtLeast(
-        testRect: Rect,
-        windowTitle: String
-    ): WindowManagerStateSubject = apply {
-        return coversAtLeast(Region(testRect), windowTitle)
-    }
+    @JvmOverloads
+    fun frameRegion(windowTitle: String = ""): RegionSubject {
+        val selectedWindows = wmState.windowStates
+            .filter { it.name.contains(windowTitle) }
+        val visibleWindows = selectedWindows.filter { it.isVisible }
+        val frameRegions = selectedWindows.map { it.frameRegion }
 
-    /**
-     * Asserts that the visible area covered by the first [WindowState] with [WindowState.title]
-     * containing [windowTitle] covers at least [testRect], that is, if its area of the window's
-     * bounds cover each point in the region.
-     *
-     * @param windowTitle Name of the layer to search
-     * @param testRect Expected visible area of the window
-     */
-    fun coversAtLeast(
-        testRect: android.graphics.Rect,
-        windowTitle: String
-    ): WindowManagerStateSubject = apply {
-        return coversAtLeast(android.graphics.Region(testRect), windowTitle)
-    }
+        val invisibleWindowFacts = selectedWindows
+            .filterNot { it in visibleWindows }
+            .map { Fact.fact("Is Invisible", it.name) }
 
-    /**
-     * Asserts that the visible area covered by the first [WindowState] with [WindowState.title]
-     * containing [windowTitle] covers at least [testRegion], that is, if its area of the window's
-     * bounds cover each point in the region.
-     *
-     * @param windowTitle Name of the layer to search
-     * @param testRegion Expected visible area of the window
-     */
-    fun coversAtLeast(
-        testRegion: Region,
-        windowTitle: String
-    ): WindowManagerStateSubject = apply {
-        return coversAtLeast(testRegion.toAndroidRegion(), windowTitle)
-    }
-
-    /**
-     * Asserts that the visible area covered by the first [WindowState] with [WindowState.title]
-     * containing [windowTitle] covers at least [testRegion], that is, if its area of the window's
-     * bounds cover each point in the region.
-     *
-     * @param windowTitle Name of the layer to search
-     * @param testRegion Expected visible area of the window
-     */
-    fun coversAtLeast(
-        testRegion: android.graphics.Region,
-        windowTitle: String
-    ): WindowManagerStateSubject = apply {
-        covers(windowTitle) { windowRegion ->
-            val testRect = testRegion.bounds
-            val intersection = windowRegion.toAndroidRegion()
-            val covers = intersection.op(testRect, android.graphics.Region.Op.INTERSECT) &&
-                !intersection.op(testRect, android.graphics.Region.Op.XOR)
-
-            if (!covers) {
-                fail(Fact.fact("Region to test", testRegion),
-                    Fact.fact("Uncovered region", intersection))
-            }
-        }
-    }
-
-    /**
-     * Asserts that the visible area covered by the first [WindowState] with [WindowState.title]
-     * containing [windowTitle] covers at most [testRect], that is, if the area of the
-     * window state bounds don't cover any point outside of [testRect].
-     *
-     * @param windowTitle Name of the layer to search
-     * @param testRect Expected visible area of the window
-     */
-    fun coversAtMost(
-        testRect: android.graphics.Rect,
-        windowTitle: String
-    ): WindowManagerStateSubject = apply {
-        coversAtMost(android.graphics.Region(testRect), windowTitle)
-    }
-
-    /**
-     * Asserts that the visible area covered by the first [WindowState] with [WindowState.title]
-     * containing [windowTitle] covers at most [testRect], that is, if the area of the
-     * window state bounds don't cover any point outside of [testRect].
-     *
-     * @param windowTitle Name of the layer to search
-     * @param testRect Expected visible area of the window
-     */
-    fun coversAtMost(
-        testRect: Rect,
-        windowTitle: String
-    ): WindowManagerStateSubject = apply {
-        coversAtMost(Region(testRect), windowTitle)
-    }
-
-    /**
-     * Asserts that the visible area covered by the first [WindowState] with [WindowState.title]
-     * containing [windowTitle] covers at most [testRegion], that is, if the area of the
-     * window state bounds don't cover any point outside of [testRegion].
-     *
-     * @param windowTitle Name of the layer to search
-     * @param testRegion Expected visible area of the window
-     */
-    fun coversAtMost(
-        testRegion: Region,
-        windowTitle: String
-    ): WindowManagerStateSubject = apply {
-        coversAtMost(testRegion.toAndroidRegion(), windowTitle)
-    }
-
-    /**
-     * Asserts that the visible area covered by the first [WindowState] with [WindowState.title]
-     * containing [windowTitle] covers at most [testRegion], that is, if the area of the
-     * window state bounds don't cover any point outside of [testRegion].
-     *
-     * @param windowTitle Name of the layer to search
-     * @param testRegion Expected visible area of the window
-     */
-    fun coversAtMost(
-        testRegion: android.graphics.Region,
-        windowTitle: String
-    ): WindowManagerStateSubject = apply {
-        covers(windowTitle) { windowRegion ->
-            val testRect = testRegion.bounds
-            val intersection = windowRegion.toAndroidRegion()
-            val covers = intersection.op(testRect, android.graphics.Region.Op.INTERSECT) &&
-                !intersection.op(windowRegion.toAndroidRegion(), android.graphics.Region.Op.XOR)
-
-            if (!covers) {
-                fail(Fact.fact("Region to test", testRegion),
-                    Fact.fact("Out-of-bounds region", intersection))
-            }
-        }
-    }
-
-    /**
-     * Obtains the region of the first visible window with title containing [windowTitle]
-     * and applies [resultPredicate] on the result
-     *
-     * @param windowTitle Name of the layer to search
-     * @param resultPredicate Predicate to compute a result based on the found window's region
-     */
-    private fun covers(
-        windowTitle: String,
-        resultPredicate: (Region) -> Unit
-    ): WindowManagerStateSubject = apply {
-        wmState.windowStates.checkVisibility(windowTitle, isVisible = true)
-
-        val foundWindow = wmState.windowStates.first { it.name.contains(windowTitle) }
-        val foundRegion = foundWindow.frameRegion
-        resultPredicate(foundRegion)
+        return RegionSubject.assertThat(frameRegions, this, invisibleWindowFacts)
     }
 
     /**

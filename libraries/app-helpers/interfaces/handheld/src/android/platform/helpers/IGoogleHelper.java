@@ -21,6 +21,28 @@ import android.support.test.uiautomator.UiObject2;
 
 public interface IGoogleHelper extends IAppHelper {
 
+    public enum SearchResultTab {
+        ALL("All"),
+        IMAGES("Images"),
+        VIDEOS("Videos"),
+        NEWS("News"),
+        MAPS("Maps"),
+        BOOKS("Books"),
+        SHOPPING("Shopping"),
+        FLIGHTS("Flights");
+
+        private final String mDisplayName;
+
+        SearchResultTab(String displayName) {
+            mDisplayName = displayName;
+        }
+
+        @Override
+        public String toString() {
+            return mDisplayName;
+        }
+    }
+
     /**
      * Setup expectations: Google app open
      *
@@ -78,6 +100,17 @@ public interface IGoogleHelper extends IAppHelper {
     }
 
     /**
+     * Setup expectations: Google app open to a search result.
+     *
+     * <p>This method scroll the search results.
+     *
+     * @param dir The direction of the fling, must be UP or DOWN.
+     */
+    public default void scrollSearchResults(Direction dir) {
+        throw new UnsupportedOperationException("Not yet implemented.");
+    }
+
+    /**
      * Setup expectations: In home.
      *
      * <p>This method flings right to Google Feed.
@@ -124,6 +157,15 @@ public interface IGoogleHelper extends IAppHelper {
      * @param speed The speed of scroll.
      */
     public void scrollFeed(UiObject2 container, Direction dir, int speed);
+
+    /**
+     * Setup expectations: Google app open and has done a search.
+     *
+     * <p>This method will go to the specified search result tab.
+     *
+     * @param tab one of the tabs of the search result page.
+     */
+    public abstract void openSearchResultTab(IGoogleHelper.SearchResultTab tab);
 
     /**
      * Setup expectations: In home.

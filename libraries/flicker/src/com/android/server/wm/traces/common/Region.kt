@@ -16,7 +16,7 @@
 
 package com.android.server.wm.traces.common
 
-class Region(val rect: Rect) {
+data class Region(val rect: Rect) {
     constructor(region: Region) : this(Rect(
         region.bounds.left,
         region.bounds.top,

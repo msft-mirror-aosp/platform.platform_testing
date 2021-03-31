@@ -16,4 +16,4 @@
 
 package com.android.server.wm.traces.common
 
-class Buffer(val height: Int, val width: Int)
+data class Buffer(val height: Int, val width: Int)
