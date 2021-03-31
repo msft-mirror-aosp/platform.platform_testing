@@ -116,13 +116,19 @@ object WindowUtils {
         }
         val navBarWidth = getDimensionPixelSize("navigation_bar_width")
         val navBarHeight = navigationBarHeight
-        return if (!requestedRotation.isRotated() || isGesturalNavigationEnabled) {
+
+        return when {
             // nav bar is at the bottom of the screen
-            Region(0, displayHeight - navBarHeight, displayWidth, displayHeight)
-        } else return if (requestedRotation == Surface.ROTATION_90) {
-            Region(0, 0, navBarWidth, displayHeight)
-        } else {
-            Region(displayWidth - navBarWidth, 0, displayWidth, displayHeight)
+            requestedRotation in listOf(Surface.ROTATION_0, Surface.ROTATION_180) ||
+                isGesturalNavigationEnabled ->
+                Region(0, displayHeight - navBarHeight, displayWidth, displayHeight)
+            // nav bar is at the right side
+            requestedRotation == Surface.ROTATION_90 ->
+                Region(displayWidth - navBarWidth, 0, displayWidth, displayHeight)
+            // nav bar is at the left side
+            requestedRotation == Surface.ROTATION_270 ->
+                Region(0, 0, navBarWidth, displayHeight)
+            else -> error("Unknown rotation $requestedRotation")
         }
     }
 

@@ -290,4 +290,42 @@ open class Layer(
             }
         }
     }
+
+    override fun equals(other: Any?): Boolean {
+        return other is Layer &&
+            other.parentId == this.parentId &&
+            other.name == this.name &&
+            other.flags == this.flags &&
+            other.currFrame == this.currFrame &&
+            other.activeBuffer == this.activeBuffer &&
+            other.visibleRegion == this.visibleRegion
+    }
+
+    override fun hashCode(): Int {
+        var result = name.hashCode()
+        result = 31 * result + id
+        result = 31 * result + parentId
+        result = 31 * result + z
+        result = 31 * result + visibleRegion.hashCode()
+        result = 31 * result + (activeBuffer?.hashCode() ?: 0)
+        result = 31 * result + flags
+        result = 31 * result + (_bounds?.hashCode() ?: 0)
+        result = 31 * result + (color?.hashCode() ?: 0)
+        result = 31 * result + _isOpaque.hashCode()
+        result = 31 * result + shadowRadius.hashCode()
+        result = 31 * result + cornerRadius.hashCode()
+        result = 31 * result + type.hashCode()
+        result = 31 * result + (_screenBounds?.hashCode() ?: 0)
+        result = 31 * result + transform.hashCode()
+        result = 31 * result + (_sourceBounds?.hashCode() ?: 0)
+        result = 31 * result + currFrame.hashCode()
+        result = 31 * result + effectiveScalingMode
+        result = 31 * result + bufferTransform.hashCode()
+        result = 31 * result + parent.hashCode()
+        result = 31 * result + children.hashCode()
+        result = 31 * result + occludedBy.hashCode()
+        result = 31 * result + partiallyOccludedBy.hashCode()
+        result = 31 * result + coveredBy.hashCode()
+        return result
+    }
 }

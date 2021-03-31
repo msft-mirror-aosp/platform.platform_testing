@@ -33,6 +33,18 @@ open class Rect(
 
     val isNotEmpty = !isEmpty
 
+    override fun equals(other: Any?): Boolean {
+        return other?.toString() == this.toString()
+    }
+
+    override fun hashCode(): Int {
+        var result = left
+        result = 31 * result + top
+        result = 31 * result + right
+        result = 31 * result + bottom
+        return result
+    }
+
     override fun toString(): String {
         return if (isEmpty) {
             "[empty]"

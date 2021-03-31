@@ -59,31 +59,34 @@ class WindowManagerStateSubjectTest {
 
     @Test
     fun canDetectWindowCoversAtLeastRegion_exactSize() {
-        assertThat(trace)
+        val entry = assertThat(trace)
             .entry(9213763541297)
-            .coversAtLeast(Region(0, 0, 1440, 171), "StatusBar")
-            .coversAtLeast(Region(0, 0, 1440, 2960), "com.google.android.apps.nexuslauncher")
+
+        entry.frameRegion("StatusBar").coversAtLeast(Region(0, 0, 1440, 171))
+        entry.frameRegion("com.google.android.apps.nexuslauncher")
+            .coversAtLeast(Region(0, 0, 1440, 2960))
     }
 
     @Test
     fun canDetectWindowCoversAtLeastRegion_smallerRegion() {
-        assertThat(trace)
+        val entry = assertThat(trace)
             .entry(9213763541297)
-            .coversAtLeast(Region(0, 0, 100, 100), "StatusBar")
-            .coversAtLeast(Region(0, 0, 100, 100), "com.google.android.apps.nexuslauncher")
+        entry.frameRegion("StatusBar").coversAtLeast(Region(0, 0, 100, 100))
+        entry.frameRegion("com.google.android.apps.nexuslauncher")
+            .coversAtLeast(Region(0, 0, 100, 100))
     }
 
     @Test
     fun canDetectWindowCoversAtLeastRegion_largerRegion() {
         val subject = assertThat(trace).entry(9213763541297)
         var failure = assertThrows(FlickerSubjectException::class.java) {
-            subject.coversAtLeast(Region(0, 0, 1441, 171), "StatusBar")
+            subject.frameRegion("StatusBar").coversAtLeast(Region(0, 0, 1441, 171))
         }
         assertFailure(failure).factValue("Uncovered region").contains("SkRegion((1440,0,1441,171))")
 
         failure = assertThrows(FlickerSubjectException::class.java) {
-            subject.coversAtLeast(Region(0, 0, 1440, 2961),
-                "com.google.android.apps.nexuslauncher")
+            subject.frameRegion("com.google.android.apps.nexuslauncher")
+                .coversAtLeast(Region(0, 0, 1440, 2961))
         }
         assertFailure(failure).factValue("Uncovered region")
             .contains("SkRegion((0,2960,1440,2961))")
@@ -91,25 +94,25 @@ class WindowManagerStateSubjectTest {
 
     @Test
     fun canDetectWindowCoversAtMostRegion_extactSize() {
-        assertThat(trace)
+        val entry = assertThat(trace)
             .entry(9213763541297)
-            .coversAtMost(Region(0, 0, 1440, 171), "StatusBar")
-            .coversAtMost(Region(0, 0, 1440, 2960), "com.google.android.apps.nexuslauncher")
+        entry.frameRegion("StatusBar").coversAtMost(Region(0, 0, 1440, 171))
+        entry.frameRegion("com.google.android.apps.nexuslauncher")
+            .coversAtMost(Region(0, 0, 1440, 2960))
     }
 
     @Test
     fun canDetectWindowCoversAtMostRegion_smallerRegion() {
         val subject = assertThat(trace).entry(9213763541297)
         var failure = assertThrows(FlickerSubjectException::class.java) {
-            subject.coversAtMost(Region(0, 0, 100, 100),
-                "StatusBar")
+            subject.frameRegion("StatusBar").coversAtMost(Region(0, 0, 100, 100))
         }
         assertFailure(failure).factValue("Out-of-bounds region")
             .contains("SkRegion((100,0,1440,100)(0,100,1440,171))")
 
         failure = assertThrows(FlickerSubjectException::class.java) {
-            subject.coversAtMost(Region(0, 0, 100, 100),
-                "com.google.android.apps.nexuslauncher")
+            subject.frameRegion("com.google.android.apps.nexuslauncher")
+                .coversAtMost(Region(0, 0, 100, 100))
         }
         assertFailure(failure).factValue("Out-of-bounds region")
             .contains("SkRegion((100,0,1440,100)(0,100,1440,2960))")
@@ -117,10 +120,12 @@ class WindowManagerStateSubjectTest {
 
     @Test
     fun canDetectWindowCoversAtMostRegion_largerRegion() {
-        assertThat(trace)
+        val entry = assertThat(trace)
             .entry(9213763541297)
-            .coversAtMost(Region(0, 0, 1441, 171), "StatusBar")
-            .coversAtMost(Region(0, 0, 1440, 2961), "com.google.android.apps.nexuslauncher")
+
+        entry.frameRegion("StatusBar").coversAtMost(Region(0, 0, 1441, 171))
+        entry.frameRegion("com.google.android.apps.nexuslauncher")
+            .coversAtMost(Region(0, 0, 1440, 2961))
     }
 
     @Test

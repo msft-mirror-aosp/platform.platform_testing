@@ -16,13 +16,15 @@
 
 package com.android.server.wm.traces.common
 
-class RectF {
-    var left: Float = 0f
-    var top: Float = 0f
-    var right: Float = 0f
+data class RectF(
+    var left: Float = 0f,
+    var top: Float = 0f,
+    var right: Float = 0f,
     var bottom: Float = 0f
+) {
     val height: Float get() = bottom - top
     val width: Float get() = right - left
+
     /**
      * Returns true if the rectangle is empty (left >= right or top >= bottom)
      */
