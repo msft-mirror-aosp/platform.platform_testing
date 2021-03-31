@@ -19,6 +19,7 @@ import android.graphics.Point
 import com.android.server.wm.flicker.assertions.Assertion
 import com.android.server.wm.flicker.traces.FlickerFailureStrategy
 import com.android.server.wm.flicker.assertions.FlickerSubject
+import com.android.server.wm.flicker.traces.RegionSubject
 import com.android.server.wm.traces.common.layers.Layer
 import com.google.common.truth.FailureMetadata
 import com.google.common.truth.FailureStrategy
@@ -52,6 +53,7 @@ class LayerSubject private constructor(
 ) : FlickerSubject(fm, layer) {
     val isEmpty: Boolean get() = layer == null
     val isNotEmpty: Boolean get() = !isEmpty
+    val visibleRegion: RegionSubject get() = RegionSubject.assertThat(layer?.visibleRegion, this)
 
     override val defaultFacts: String =
         "${entry?.defaultFacts ?: ""}\nFrame: ${layer?.currFrame}\nLayer: ${layer?.name}"

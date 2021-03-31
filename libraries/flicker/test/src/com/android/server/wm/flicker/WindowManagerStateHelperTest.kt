@@ -98,7 +98,7 @@ class WindowManagerStateHelperTest {
         )
     }
 
-    private fun createImaginaryVisibleLayers(vararg names: String): List<Layer> {
+    private fun createImaginaryVisibleLayers(names: List<String>): List<Layer> {
         val root = createImaginaryLayer("root", -1, id = "root".hashCode(), parentId = -1)
         val layers = mutableListOf(root)
         names.forEachIndexed { index, name ->
@@ -113,15 +113,19 @@ class WindowManagerStateHelperTest {
         startingTimestamp: Long = 0
     ): () -> WindowManagerStateHelper.Dump {
         val iterator = this.dropWhile { it.timestamp < startingTimestamp }.iterator()
-        val layerTraceEntry = LayerTraceEntry.fromFlattenedLayers(0,
-            createImaginaryVisibleLayers(
-                WindowManagerStateHelper.STATUS_BAR_LAYER_NAME,
-                WindowManagerStateHelper.NAV_BAR_LAYER_NAME),
-            orphanLayerCallback = null)
         return {
             if (iterator.hasNext()) {
+                val wmState = iterator.next()
+                val layerList = mutableListOf(WindowManagerStateHelper.STATUS_BAR_LAYER_NAME,
+                    WindowManagerStateHelper.NAV_BAR_LAYER_NAME)
+
+                if (wmState.inputMethodWindowState?.isSurfaceShown == true) {
+                    layerList.add(WindowManagerStateHelper.IME_LAYER_NAME)
+                }
+                val layerTraceEntry = LayerTraceEntry.fromFlattenedLayers(0,
+                    createImaginaryVisibleLayers(layerList), orphanLayerCallback = null)
                 WindowManagerStateHelper.Dump(
-                    iterator.next(),
+                    wmState,
                     layerTraceEntry
                 )
             } else {

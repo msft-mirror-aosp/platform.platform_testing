@@ -19,6 +19,7 @@ package com.android.server.wm.flicker.traces.windowmanager
 import com.android.server.wm.flicker.assertions.Assertion
 import com.android.server.wm.flicker.assertions.FlickerSubject
 import com.android.server.wm.flicker.traces.FlickerFailureStrategy
+import com.android.server.wm.flicker.traces.RegionSubject
 import com.android.server.wm.traces.common.windowmanager.windows.WindowState
 import com.google.common.truth.FailureMetadata
 import com.google.common.truth.FailureStrategy
@@ -50,6 +51,7 @@ class WindowStateSubject private constructor(
 ) : FlickerSubject(fm, windowState) {
     val isEmpty: Boolean get() = windowState == null
     val isNotEmpty: Boolean get() = !isEmpty
+    val frame: RegionSubject get() = RegionSubject.assertThat(windowState?.frame, this)
 
     override val defaultFacts: String =
         "${entry?.defaultFacts ?: ""}\nWindowTitle: ${windowState?.title}"
