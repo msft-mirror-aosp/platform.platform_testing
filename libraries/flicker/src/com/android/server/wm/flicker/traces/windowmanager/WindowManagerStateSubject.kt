@@ -620,6 +620,21 @@ class WindowManagerStateSubject private constructor(
         }
     }
 
+    /**
+     * Asserts that an activity [activity] exists and is in PIP mode
+     */
+    fun isInPipMode(
+        activity: ComponentName
+    ): WindowManagerStateSubject = apply {
+        val windowName = activity.toWindowName()
+        contains(windowName)
+        val pinnedWindows = wmState.pinnedWindows
+            .map { it.title }
+        check("Window not in PIP mode")
+            .that(pinnedWindows)
+            .contains(windowName)
+    }
+
     private val WindowManagerState.homeActivityName: ComponentName?
         get() {
             val activity = homeActivity ?: return null
