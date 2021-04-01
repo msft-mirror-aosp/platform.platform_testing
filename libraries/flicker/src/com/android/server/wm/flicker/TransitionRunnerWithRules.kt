@@ -20,6 +20,7 @@ import android.platform.test.rule.NavigationModeRule
 import android.platform.test.rule.PressHomeRule
 import android.platform.test.rule.UnlockScreenRule
 import com.android.server.wm.flicker.rules.ChangeDisplayOrientationRule
+import com.android.server.wm.flicker.rules.RemoveAllTasksButHomeRule
 import org.junit.rules.RuleChain
 import org.junit.runner.Description
 import org.junit.runners.model.Statement
@@ -34,6 +35,7 @@ class TransitionRunnerWithRules(private val testConfig: Map<String, Any?>) : Tra
 
     private fun buildDefaultSetupRules(): RuleChain {
         return RuleChain.outerRule(ChangeDisplayOrientationRule(testConfig.startRotation))
+            .around(RemoveAllTasksButHomeRule())
             .around(NavigationModeRule(testConfig.navBarMode))
             .around(PressHomeRule())
             .around(UnlockScreenRule())

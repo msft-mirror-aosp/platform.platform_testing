@@ -21,4 +21,7 @@ python_test_host {
     main: "hello_world_test.py",
     srcs: ["hello_world_test.py",],
     test_suites: ["general-tests"],
+    test_options: {
+        unit_test: false,
+    },
 }
