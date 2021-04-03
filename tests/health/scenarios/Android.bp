@@ -27,5 +27,6 @@ java_library_static {
         "platform-test-options",
         "platform-test-rules",
         "ub-uiautomator",
+        "microbenchmark-device-lib",
     ],
 }
