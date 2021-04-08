@@ -13,6 +13,11 @@
 # limitations under the License.
 
 instrumentation_metric_tests := \
+    ActivityManagerPerfTests \
+    ActivityManagerPerfTestsTestApp \
+    ActivityManagerPerfTestsStubApp1 \
+    ActivityManagerPerfTestsStubApp2 \
+    ActivityManagerPerfTestsStubApp3 \
     AutofillPerfTests \
     BlobStorePerfTests \
     crashcollector \

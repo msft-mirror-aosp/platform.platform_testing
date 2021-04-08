@@ -13,23 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package android.platform.test.scenario.generic;
 
-package com.android.server.wm.traces.common
+import android.platform.test.microbenchmark.Microbenchmark;
 
-data class Region(val rect: Rect) {
-    constructor(region: Region) : this(Rect(
-        region.bounds.left,
-        region.bounds.top,
-        region.bounds.right,
-        region.bounds.bottom))
+import org.junit.runner.RunWith;
 
-    constructor(left: Int, top: Int, right: Int, bottom: Int) : this(Rect(left, top, right, bottom))
-
-    constructor() : this(Rect())
-
-    val bounds: Rect = rect
-    val isEmpty: Boolean = rect.isEmpty
-    override fun toString(): String {
-        return bounds.toString()
-    }
-}
+@RunWith(Microbenchmark.class)
+public class OpenAppsFromHomeMicrobenchmark extends OpenAppsFromHome {}

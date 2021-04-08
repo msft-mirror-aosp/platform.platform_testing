@@ -84,7 +84,9 @@ platform_tests += \
     PlatformCommonScenarioTests \
     PowerPerfTest \
     SettingsUITests \
-    SimpleServiceTestApp \
+    SimpleServiceTestApp1 \
+    SimpleServiceTestApp2 \
+    SimpleServiceTestApp3 \
     SimpleTestApp \
     skia_dm \
     skia_nanobench \

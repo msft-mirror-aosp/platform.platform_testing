@@ -19,11 +19,31 @@ package android.platform.helpers;
 public interface ISettingsIntelligenceHelper extends IAppHelper {
 
     public static final String PAGE_ACTION_HOME = "";
+    public static final String PAGE_ACTION_ABOUT_PHONE = "android.settings.DEVICE_INFO_SETTINGS";
+    public static final String PAGE_ACTION_ACCESSIBILITY =
+            "android.settings.ACCESSIBILITY_SETTINGS";
+    public static final String PAGE_ACTION_ACCOUNT = "android.settings.SYNC_SETTINGS";
     public static final String PAGE_ACTION_APPLICATION = "android.settings.APPLICATION_SETTINGS";
+    public static final String PAGE_ACTION_APP_NOTIFICATIONS =
+            "android.settings.NOTIFICATION_SETTINGS";
     public static final String PAGE_ACTION_BATTERY = "android.intent.action.POWER_USAGE_SUMMARY";
     public static final String PAGE_ACTION_BLUETOOTH = "android.settings.BLUETOOTH_SETTINGS";
+    public static final String PAGE_ACTION_CONNECTED_CAST = "android.settings.CAST_SETTINGS";
+    public static final String PAGE_ACTION_DIGITAL_WELLBEING =
+            "com.google.android.apps.wellbeing/.settings.TopLevelSettingsActivity";
+    public static final String PAGE_ACTION_DISPLAY = "android.settings.DISPLAY_SETTINGS";
     public static final String PAGE_ACTION_LOCATION = "android.settings.LOCATION_SOURCE_SETTINGS";
+    public static final String PAGE_ACTION_NETWORK_INTERNET = "android.settings.WIRELESS_SETTINGS";
+    public static final String PAGE_ACTION_WIFI_TETHERING_HOTSPOT =
+            "com.android.settings.WIFI_TETHER_SETTINGS";
+    public static final String PAGE_ACTION_PRIVACY = "android.settings.PRIVACY_SETTINGS";
+    public static final String PAGE_ACTION_SEARCH = "android.settings.APP_SEARCH_SETTINGS";
+    public static final String PAGE_ACTION_SECURITY = "android.settings.SECURITY_SETTINGS";
+    public static final String PAGE_ACTION_SOUND = "android.settings.SOUND_SETTINGS";
+    public static final String PAGE_ACTION_SOUND_RINGTONE = "android.intent.action.RINGTONE_PICKER";
     public static final String PAGE_ACTION_STORAGE = "android.settings.INTERNAL_STORAGE_SETTINGS";
+    public static final String PAGE_ACTION_SYSTEM_UPDATE =
+            "com.google.android.gms/.update.SystemUpdateActivity";
     public static final String PAGE_ACTION_WIFI = "android.settings.WIFI_SETTINGS";
 
     /**

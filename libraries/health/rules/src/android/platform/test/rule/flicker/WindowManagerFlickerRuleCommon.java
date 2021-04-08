@@ -32,7 +32,7 @@ public class WindowManagerFlickerRuleCommon extends WindowManagerFlickerRuleBase
 
     private static final String TAG = WindowManagerFlickerRuleCommon.class.getSimpleName();
 
-    protected void validateFlickerConditions(WindowManagerTrace wmTrace) {
+    protected void validateWMFlickerConditions(WindowManagerTrace wmTrace) {
         // Verify that there’s an non-app window with names NavigationBar, StatusBar above
         // the app window and is visible in all winscope log entries.
         WindowManagerTraceSubject.assertThat(wmTrace)
@@ -45,6 +45,6 @@ public class WindowManagerFlickerRuleCommon extends WindowManagerFlickerRuleBase
         WindowManagerTraceSubject.assertThat(wmTrace)
                 .visibleWindowsShownMoreThanOneConsecutiveEntry(new LinkedList<String>())
                 .forAllEntries();
-        Log.v(TAG, "Successfully verified the flicker conditions.");
+        Log.v(TAG, "Successfully verified the window manager flicker conditions.");
     }
 }

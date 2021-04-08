@@ -412,30 +412,34 @@ open class WindowManagerStateHelper @JvmOverloads constructor(
         return !state.wmState.isComplete()
     }
 
+    /**
+     * Waits until the IME window and layer are visible
+     */
     @JvmOverloads
     fun waitImeWindowShown(displayId: Int = Display.DEFAULT_DISPLAY): Boolean =
         waitFor("IME window shown") {
             val imeSurfaceShown = it.wmState.inputMethodWindowState?.isSurfaceShown == true
             val imeDisplay = it.wmState.inputMethodWindowState?.displayId
-            val result = imeSurfaceShown && imeDisplay == displayId
+            val imeLayerShown = it.layerState.isVisible(IME_LAYER_NAME)
+            val result = imeSurfaceShown && imeLayerShown && imeDisplay == displayId
 
             Log.v(LOG_TAG, "Current: $result " +
                 "imeSurfaceShown($imeSurfaceShown) " +
+                "imeLayerShown($imeLayerShown) " +
                 "imeDisplay($imeDisplay)")
             result
         }
 
+    /**
+     * Waits until the IME layer is no longer visible. Cannot wait for the window as
+     * its visibility information is updated at a later state and is not reliable in
+     * the trace
+     */
     fun waitImeWindowGone(): Boolean =
         waitFor("IME window gone") {
-            val imeSurfaceShown = it.wmState.inputMethodWindowState?.isSurfaceShown == true
             val imeLayerShown = it.layerState.isVisible(IME_LAYER_NAME)
-            val result = !imeSurfaceShown || !imeLayerShown
-
-            Log.v(LOG_TAG, "Current: $result " +
-                "imeSurfaceShown($imeSurfaceShown) " +
-                "imeLayerShown($imeLayerShown)")
-
-            result
+            Log.v(LOG_TAG, "imeLayerShown($imeLayerShown)")
+            !imeLayerShown
         }
 
     /**

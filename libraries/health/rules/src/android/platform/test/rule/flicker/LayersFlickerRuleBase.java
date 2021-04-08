@@ -19,30 +19,30 @@ package android.platform.test.rule.flicker;
 import android.os.Environment;
 import android.util.Log;
 
-import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace;
+import com.android.server.wm.traces.common.layers.LayersTrace;
 
 /**
- * Base class that encapsulates the logic for enabling the window manager trace, parsing the
- * window manager trace. Extend this class to add validation for window manager trace based
+ * Base class that encapsulates the logic for enabling the layers trace, parsing the
+ * surface flinger trace. Extend this class to add validation for layers trace based
  * flicker conditions.
  */
-public abstract class WindowManagerFlickerRuleBase extends FlickerRuleBase {
+public abstract class LayersFlickerRuleBase extends FlickerRuleBase {
 
-    private static final String TAG = WindowManagerFlickerRuleBase.class.getSimpleName();
+    private static final String TAG = LayersFlickerRuleBase.class.getSimpleName();
 
-    WindowManagerFlickerRuleBase() {
-        enableWmTrace();
-        Log.v(TAG, "Enabled the window manager trace.");
+    LayersFlickerRuleBase() {
+        enableLayerTrace();
+        Log.v(TAG, "Enabled the surface flinger trace.");
     }
 
     protected void validateFlickerConditions() {
-        validateWMFlickerConditions(getWindowManagerTrace());
+        validateLayersFlickerConditions(getLayersTrace());
     }
 
     /**
-     * Override this method to provide window manager trace based flicker validations.
+     * Override this method to provide layers trace based flicker validations.
      *
-     * @param windowManagerTrace
+     * @param layersTrace
      */
-    protected abstract void validateWMFlickerConditions(WindowManagerTrace windowManagerTrace);
+    protected abstract void validateLayersFlickerConditions(LayersTrace layersTrace);
 }
