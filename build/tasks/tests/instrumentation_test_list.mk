@@ -44,7 +44,6 @@ instrumentation_tests := \
     FrameworksWifiTests \
     FrameworksTelephonyTests \
     ContactsProviderTests \
-    ContactsProviderTests2 \
     SettingsUnitTests \
     TelecomUnitTests \
     TraceurUiTests \
