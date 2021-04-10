@@ -88,6 +88,18 @@ public abstract class AbstractAutoStandardAppHelper extends AbstractStandardAppH
         // Nothing to dismiss
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public String getLauncherName() {
+        throw new UnsupportedOperationException("Operation not supported.");
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String getPackage() {
+        throw new UnsupportedOperationException("Operation not supported.");
+    }
+
     /**
      * Executes a shell command on device, and return the standard output in string.
      *
@@ -117,6 +129,11 @@ public abstract class AbstractAutoStandardAppHelper extends AbstractStandardAppH
     /** Press Back Button on the Device */
     protected void pressBack() {
         mDevice.pressBack();
+    }
+
+    /** Press Enter Button on the Device */
+    protected void pressEnter() {
+        mDevice.pressEnter();
     }
 
     /** Wait for the device to be idle */
@@ -384,6 +401,17 @@ public abstract class AbstractAutoStandardAppHelper extends AbstractStandardAppH
                 && AutoConfigConstants.DESCRIPTION.equals(configResource.getResourceType())) {
             return By.desc(
                     Pattern.compile(configResource.getResourceValue(), Pattern.CASE_INSENSITIVE));
+        }
+
+        // CLASS
+        if (configResource != null
+                && AutoConfigConstants.CLASS.equals(configResource.getResourceType())) {
+            if (configResource.getResourcePackage() != null
+                    && !configResource.getResourcePackage().isEmpty()) {
+                return By.clazz(
+                        configResource.getResourcePackage(), configResource.getResourceValue());
+            }
+            return By.clazz(configResource.getResourceValue());
         }
 
         return null;

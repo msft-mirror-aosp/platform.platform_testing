@@ -22,6 +22,7 @@ public class AutoConfigConstants {
     public static final String RESOURCE_ID = "RESOURCE_ID";
     public static final String TEXT = "TEXT";
     public static final String DESCRIPTION = "DESCRIPTION";
+    public static final String CLASS = "CLASS";
 
     // SETTINGS
     public static final String SETTINGS = "SETTINGS";
@@ -69,14 +70,63 @@ public class AutoConfigConstants {
     public static final String DENY_ANYWAY_BUTTON = "DENY_ANYWAY_BUTTON";
     // Date and Time
     public static final String DATE_AND_TIME_SETTINGS = "DATE_AND_TIME";
+    public static final String AUTOMATIC_DATE_AND_TIME = "AUTOMATIC_DATE_AND_TIME";
+    public static final String AUTOMATIC_TIME_ZONE = "AUTOMATIC_TIME_ZONE";
+    public static final String SET_DATE = "SET_DATE";
+    public static final String SET_TIME = "SET_TIME";
+    public static final String SELECT_TIME_ZONE = "SELECT_TIME_ZONE";
+    public static final String USE_24_HOUR_FORMAT = "USE_24_HOUR_FORMAT";
+    // OK_BUTTON from Apps and Info Settings
+    public static final String NUMBER_PICKER_WIDGET = "NUMBER_PICKER_WIDGET";
+    public static final String EDIT_TEXT_WIDGET = "EDIT_TEXT_WIDGET";
     // System
     public static final String SYSTEM_SETTINGS = "SYSTEM";
+    public static final String ABOUT_MENU = "ABOUT_MENU";
+    public static final String RESET_OPTIONS_MENU = "RESET_OPTIONS_MENU";
+    public static final String LANGUAGES_AND_INPUT_MENU = "LANGUAGES_AND_INPUT_MENU";
+    public static final String DEVICE_MODEL = "DEVICE_MODEL";
+    public static final String ANDROID_VERSION = "ANDROID_VERSION";
+    public static final String ANDROID_SECURITY_PATCH_LEVEL = "ANDROID_SECURITY_PATCH_LEVEL";
+    public static final String KERNEL_VERSION = "KERNEL_VERSION";
+    public static final String BUILD_NUMBER = "BUILD_NUMBER";
+    public static final String RECYCLER_VIEW_WIDGET = "RECYCLER_VIEW_WIDGET";
+    public static final String RESET_NETWORK = "RESET_NETWORK";
+    public static final String RESET_SETTINGS = "RESET_SETTINGS";
+    public static final String RESET_APP_PREFERENCES = "RESET_APP_PREFERENCES";
+    public static final String RESET_APPS = "RESET_APPS";
+    public static final String LANGUAGES_MENU = "LANGUAGES_MENU";
+    public static final String LANGUAGES_MENU_IN_SELECTED_LANGUAGE =
+            "LANGUAGES_MENU_IN_SELECTED_LANGUAGE";
     // Users
     public static final String USER_SETTINGS = "USERS";
     // Accounts
     public static final String ACCOUNT_SETTINGS = "ACCOUNTS";
+    public static final String ADD_ACCOUNT = "ADD_ACCOUNT";
+    public static final String ADD_GOOGLE_ACCOUNT = "ADD_GOOGLE_ACCOUNT";
+    public static final String SIGN_IN_ON_CAR_SCREEN = "SIGN_IN_ON_CAR_SCREEN";
+    public static final String GOOGLE_SIGN_IN_SCREEN = "GOOGLE_SIGN_IN_SCREEN";
+    public static final String ENTER_EMAIL = "ENTER_EMAIL";
+    // Same ENTER_PASSWORD is applicable for Security Settings
+    public static final String ENTER_PASSWORD = "ENTER_PASSWORD";
+    // Same NEXT_BUTTON is applicable for Media Center
+    public static final String NEXT_BUTTON = "NEXT_BUTTON";
+    public static final String DONE_BUTTON = "DONE_BUTTON";
+    // Same REMOVE_BUTTON is applicable for Security Settings
+    public static final String REMOVE_BUTTON = "REMOVE_BUTTON";
+    public static final String REMOVE_ACCOUNT_BUTTON = "REMOVE_ACCOUNT_BUTTON";
     // Security
     public static final String SECURITY_SETTINGS = "SECURITY";
+    public static final String TITLE = "TITLE";
+    public static final String CHOOSE_LOCK_TYPE = "CHOOSE_LOCK_TYPE";
+    public static final String LOCK_TYPE_PASSWORD = "LOCK_TYPE_PASSWORD";
+    public static final String LOCK_TYPE_PIN = "LOCK_TYPE_PIN";
+    public static final String LOCK_TYPE_NONE = "LOCK_TYPE_NONE";
+    public static final String CONTINUE_BUTTON = "CONTINUE_BUTTON";
+    public static final String CONFIRM_BUTTON = "CONFIRM_BUTTON";
+    // ENTER_PASSWORD from Account Settings
+    public static final String PIN_PAD = "PIN_PAD";
+    public static final String ENTER_PIN_BUTTON = "ENTER_PIN_BUTTON";
+    // REMOVE_BUTTON from Account Settings
 
     // PHONE
     public static final String PHONE = "PHONE";
@@ -140,4 +190,22 @@ public class AutoConfigConstants {
     public static final String NOTIFICATION_TITLE = "NOTIFICATION_TITLE";
     public static final String NOTIFICATION_BODY = "NOTIFICATION_BODY";
     public static final String CARD_VIEW = "CARD_VIEW";
+
+    // Media Center
+    public static final String MEDIA_CENTER = "MEDIA_CENTER";
+    public static final String MEDIA_CENTER_PACKAGE = "MEDIA_CENTER_PACKAGE";
+    public static final String MEDIA_ACTIVITY = "MEDIA_ACTIVITY";
+    // Media Center Screen
+    public static final String MEDIA_CENTER_SCREEN = "MEDIA_CENTER_SCREEN";
+    public static final String PLAY_PAUSE_BUTTON = "PLAY_PAUSE_BUTTON";
+    // NEXT_BUTTON from Account Settings
+    public static final String PREVIOUS_BUTTON = "PREVIOUS_BUTTON";
+    public static final String SHUFFLE_BUTTON = "SHUFFLE_BUTTON";
+    public static final String PLAY_QUEUE_BUTTON = "PLAY_QUEUE_BUTTON";
+    public static final String MINIMIZED_MEDIA_CONTROLS = "MINIMIZED_MEDIA_CONTROLS";
+    public static final String TRACK_NAME = "TRACK_NAME";
+    public static final String TRACK_NAME_MINIMIZED_CONTROL = "TRACK_NAME_MINIMIZED_CONTROL";
+    public static final String BACK_BUTTON = "BACK_BUTTON";
+    // Media Center On Home Screen
+    public static final String MEDIA_CENTER_ON_HOME_SCREEN = "MEDIA_CENTER_ON_HOME_SCREEN";
 }

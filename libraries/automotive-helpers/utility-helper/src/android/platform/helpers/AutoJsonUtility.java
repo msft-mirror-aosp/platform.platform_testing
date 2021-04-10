@@ -115,6 +115,10 @@ public class AutoJsonUtility {
         // Notifications
         configUtilityMap.put(
                 AutoConfigConstants.NOTIFICATIONS, AutoNotificationsConfigUtility.getInstance());
+
+        // Media Center
+        configUtilityMap.put(
+                AutoConfigConstants.MEDIA_CENTER, AutoMediaCenterConfigUtility.getInstance());
     }
 
     /** Build Config Maps */

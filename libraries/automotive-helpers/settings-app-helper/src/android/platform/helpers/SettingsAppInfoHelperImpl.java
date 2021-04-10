@@ -19,6 +19,8 @@ package android.platform.helpers;
 import static junit.framework.Assert.assertTrue;
 
 import android.app.Instrumentation;
+import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.support.test.uiautomator.By;
 import android.support.test.uiautomator.BySelector;
 import android.support.test.uiautomator.UiObject2;
@@ -232,5 +234,18 @@ public class SettingsAppInfoHelperImpl extends AbstractAutoStandardAppHelper
             scrollScreenIndex = 1;
         }
         return scrollScreenIndex;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean isApplicationDisabled(String packageName) {
+        boolean applicationDisabled = false;
+        try {
+            PackageManager pm = mInstrumentation.getContext().getPackageManager();
+            applicationDisabled = !(pm.getApplicationInfo(packageName, 0).enabled);
+        } catch (NameNotFoundException e) {
+            throw new RuntimeException(String.format("Failed to find package: %s", packageName), e);
+        }
+        return applicationDisabled;
     }
 }
