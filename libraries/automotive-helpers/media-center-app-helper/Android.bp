@@ -1,3 +1,4 @@
+//
 // Copyright (C) 2021 The Android Open Source Project
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -11,24 +12,24 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
 
 package {
     default_applicable_licenses: ["Android-Apache-2.0"],
 }
 
-android_test {
-    name: "AndroidAutomotiveSettingsTests",
-    min_sdk_version: "24",
+java_library {
+    name: "automotive-media-center-app-helper",
+    libs: [
+        "ub-uiautomator",
+        "app-helpers-auto-interfaces",
+        "automotive-utility-helper",
+        "android.car",
+    ],
     static_libs: [
         "androidx.test.runner",
-        "androidx.test.rules",
-        "automotive-settings-app-helper",
-        "automotive-utility-helper",
-        "app-helpers-auto-interfaces",
-        "ub-uiautomator",
-        "hamcrest-library",
-        "platform-test-options",
+        "automotive-standard-app-helper",
     ],
     srcs: ["src/**/*.java"],
-    test_suites: ["catbox"],
+    sdk_version: "test_current",
 }
