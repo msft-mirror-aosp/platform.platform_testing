@@ -17,12 +17,12 @@ package {
 }
 
 android_test {
-    name: "AndroidAutomotiveSettingsTests",
+    name: "AndroidAutomotiveMediaCenterTests",
     min_sdk_version: "24",
     static_libs: [
         "androidx.test.runner",
         "androidx.test.rules",
-        "automotive-settings-app-helper",
+        "automotive-media-center-app-helper",
         "automotive-utility-helper",
         "app-helpers-auto-interfaces",
         "ub-uiautomator",
