@@ -43,11 +43,13 @@ import java.util.Set;
 public class UiInteractionFrameInfoListener extends BaseCollectionListener<StringBuilder> {
     private static final String TAG = UiInteractionFrameInfoListener.class.getSimpleName();
     private static final long POLLING_INTERVAL_MS = 100;
-    private static final long POLLING_MAX_TIMES = 300;
+    private static final long POLLING_MAX_TIMES = 100;
+    private static final long DELAY_TOGGLE_PANEL_MS = 100;
     private static final String CMD_ENABLE_NOTIFY =
             String.format("setprop %s %d", PROP_NOTIFY_CUJ_EVENT, 1);
     private static final String CMD_DISABLE_NOTIFY =
             String.format("setprop %s %d", PROP_NOTIFY_CUJ_EVENT, 0);
+    private static final String CMD_TOGGLE_PANEL = "su shell service call statusbar 3";
 
     private final MetricsLoggedReceiver mReceiver = new MetricsLoggedReceiver();
     private final Object mLock = new Object();
@@ -72,19 +74,18 @@ public class UiInteractionFrameInfoListener extends BaseCollectionListener<Strin
     public void onTestRunStart(DataRecord runData, Description description) {
         getInstrumentation().getUiAutomation().executeShellCommand(CMD_ENABLE_NOTIFY);
         super.onTestRunStart(runData, description);
-        mHelper.startCollecting();
     }
 
     @Override
     public void onTestRunEnd(DataRecord runData, Result result) {
         super.onTestRunEnd(runData, result);
-        mHelper.stopCollecting();
         getInstrumentation().getUiAutomation().executeShellCommand(CMD_DISABLE_NOTIFY);
     }
 
     @Override
     protected boolean onTestStartAlternative(DataRecord data) {
         synchronized (mLock) {
+            mMetricsReady = false;
             mCurrentTestTimestamp = new TimestampRecord();
             mCurrentTestTimestamp.begin(System.nanoTime());
         }
@@ -93,6 +94,7 @@ public class UiInteractionFrameInfoListener extends BaseCollectionListener<Strin
         filter.addAction(InteractionJankMonitor.ACTION_METRICS_LOGGED);
         filter.addAction(InteractionJankMonitor.ACTION_SESSION_CANCEL);
         getInstrumentation().getContext().registerReceiver(mReceiver, filter);
+        mHelper.startCollecting();
         return true;
     }
 
@@ -101,13 +103,19 @@ public class UiInteractionFrameInfoListener extends BaseCollectionListener<Strin
         try {
             synchronized (mLock) {
                 mCurrentTestTimestamp.end(System.nanoTime());
-                for (int i = 0; i < POLLING_MAX_TIMES && !mMetricsReady; i++) {
-                    mLock.wait(POLLING_INTERVAL_MS);
-                }
-                if (mMetricsReady) {
-                    processMetrics(data);
+                if (mExpectedCujSet.size() > 0) {
+                    for (int i = 0; i < POLLING_MAX_TIMES && !mMetricsReady; i++) {
+                        flushSurfaceFlingerCallback();
+                        mLock.wait(POLLING_INTERVAL_MS);
+                    }
+                    if (mMetricsReady) {
+                        processMetrics(data);
+                    } else {
+                        throw new IllegalStateException("metrics not ready: ex="
+                                + mExpectedCujSet + ", log=" + mLoggedCujSet);
+                    }
                 } else {
-                    throw new IllegalStateException("metrics not ready until polling max times!");
+                    throw new IllegalStateException("No expected CUJ!");
                 }
             }
         } catch (InterruptedException e) {
@@ -118,8 +126,18 @@ public class UiInteractionFrameInfoListener extends BaseCollectionListener<Strin
                 mLoggedCujSet.clear();
             }
             getInstrumentation().getContext().unregisterReceiver(mReceiver);
+            mHelper.stopCollecting();
         }
         return true;
+    }
+
+    private void flushSurfaceFlingerCallback() throws InterruptedException {
+        try {
+            getInstrumentation().getUiAutomation().executeShellCommand(CMD_TOGGLE_PANEL);
+            Thread.sleep(DELAY_TOGGLE_PANEL_MS);
+        } finally {
+            getInstrumentation().getUiAutomation().executeShellCommand(CMD_TOGGLE_PANEL);
+        }
     }
 
     private void reduceMetrics(DataRecord data, String key, String value) {
@@ -204,8 +222,8 @@ public class UiInteractionFrameInfoListener extends BaseCollectionListener<Strin
 
         private void handleSessionCancelled(String name) {
             synchronized (mLock) {
-                mExpectedCujSet.remove(name);
-                if (mLoggedCujSet.size() == mExpectedCujSet.size()) {
+                boolean valid = mExpectedCujSet.remove(name);
+                if (valid && (mLoggedCujSet.size() == mExpectedCujSet.size())) {
                     mMetricsReady = true;
                     mLock.notifyAll();
                 }
