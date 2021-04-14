@@ -44,9 +44,7 @@ public class UiInteractionFrameInfoHelper implements ICollectorHelper<StringBuil
     /** Set up the system interactions jank statsd config. */
     @Override
     public boolean startCollecting() {
-        Log.i(LOG_TAG, "Enabling metric collection and disabling sampling.");
-        DeviceConfigHelper.setConfigValue("interaction_jank_monitor", "enabled", "true");
-        DeviceConfigHelper.setConfigValue("interaction_jank_monitor", "sampling_interval", "1");
+        enforceSampling(true);
         Log.i(LOG_TAG, "Adding system interactions config to statsd.");
         List<Integer> atomIdList = new ArrayList<>();
         atomIdList.add(AtomsProto.Atom.UI_INTERACTION_FRAME_INFO_REPORTED_FIELD_NUMBER);
@@ -56,6 +54,17 @@ public class UiInteractionFrameInfoHelper implements ICollectorHelper<StringBuil
     // convert 0 to 1e-6 to make logarithmic dashboards look better.
     public static double makeLogFriendly(double metric) {
         return Math.max(0.01, metric);
+    }
+
+    /**
+     * Enabling metric collection and disabling sampling.
+     *
+     * @param enabled true to enable sampling, false to disable.
+     */
+    public void enforceSampling(boolean enabled) {
+        final String namespace = "interaction_jank_monitor";
+        DeviceConfigHelper.setConfigValue(namespace, "enabled", enabled ? "true" : "false");
+        DeviceConfigHelper.setConfigValue(namespace, "sampling_interval", "1");
     }
 
     /** Collect the system interactions jank metrics from the statsd. */
@@ -103,6 +112,7 @@ public class UiInteractionFrameInfoHelper implements ICollectorHelper<StringBuil
     /** Remove the statsd config. */
     @Override
     public boolean stopCollecting() {
+        enforceSampling(false);
         return mStatsdHelper.removeStatsConfig();
     }
 }
