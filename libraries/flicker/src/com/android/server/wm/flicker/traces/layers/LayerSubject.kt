@@ -43,7 +43,7 @@ import com.google.common.truth.Subject.Factory
  *        .layer("ValidLayer")
  *        .exists()
  *        .hasBufferSize(BUFFER_SIZE)
- *        { myCustomAssertion(this) }
+ *        .invoke { myCustomAssertion(this) }
  */
 class LayerSubject private constructor(
     fm: FailureMetadata,
@@ -64,6 +64,11 @@ class LayerSubject private constructor(
     operator fun invoke(assertion: Assertion<Layer>): LayerSubject = apply {
         layer ?: return exists()
         assertion(this.layer)
+    }
+
+    /** {@inheritDoc} */
+    override fun clone(): FlickerSubject {
+        return LayerSubject(fm, layer, entry, layerName)
     }
 
     /**

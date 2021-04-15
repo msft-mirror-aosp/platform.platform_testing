@@ -46,7 +46,7 @@ import com.google.common.truth.StandardSubjectBuilder
 class WindowStateSubject private constructor(
     fm: FailureMetadata,
     val windowState: WindowState?,
-    entry: WindowManagerStateSubject?,
+    private val entry: WindowManagerStateSubject?,
     private val windowTitle: String? = null
 ) : FlickerSubject(fm, windowState) {
     val isEmpty: Boolean get() = windowState == null
@@ -62,6 +62,11 @@ class WindowStateSubject private constructor(
     operator fun invoke(assertion: Assertion<WindowState>): WindowStateSubject = apply {
         windowState ?: return exists()
         assertion(this.windowState)
+    }
+
+    /** {@inheritDoc} */
+    override fun clone(): FlickerSubject {
+        return WindowStateSubject(fm, windowState, entry, windowTitle)
     }
 
     /**

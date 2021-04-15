@@ -28,6 +28,11 @@ class FocusEventSubject(
 ) : FlickerSubject(fm, event) {
     override val defaultFacts by lazy { event.toString() }
 
+    /** {@inheritDoc} */
+    override fun clone(): FlickerSubject {
+        return FocusEventSubject(fm, event, trace)
+    }
+
     fun hasFocus() {
         check("Does not have focus")
             .that(event.hasFocus())
