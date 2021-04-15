@@ -44,47 +44,47 @@ data class FlickerTestParameter(
         internalFlicker?.clear()
     }
 
-    fun assertWmStart(assertion: WindowManagerStateSubject.() -> Any) {
+    fun assertWmStart(assertion: WindowManagerStateSubject.() -> Unit) {
         val assertionData = buildWmStartAssertion(assertion)
         this.flicker.checkAssertion(assertionData)
     }
 
-    fun assertWmEnd(assertion: WindowManagerStateSubject.() -> Any) {
+    fun assertWmEnd(assertion: WindowManagerStateSubject.() -> Unit) {
         val assertionData = buildWmEndAssertion(assertion)
         this.flicker.checkAssertion(assertionData)
     }
 
-    fun assertWm(assertion: WindowManagerTraceSubject.() -> Any) {
+    fun assertWm(assertion: WindowManagerTraceSubject.() -> Unit) {
         val assertionData = buildWMAssertion(assertion)
         this.flicker.checkAssertion(assertionData)
     }
 
-    fun assertWmTag(tag: String, assertion: WindowManagerStateSubject.() -> Any) {
+    fun assertWmTag(tag: String, assertion: WindowManagerStateSubject.() -> Unit) {
         val assertionData = buildWMTagAssertion(tag, assertion)
         this.flicker.checkAssertion(assertionData)
     }
 
-    fun assertLayersStart(assertion: LayerTraceEntrySubject.() -> Any) {
+    fun assertLayersStart(assertion: LayerTraceEntrySubject.() -> Unit) {
         val assertionData = buildLayersStartAssertion(assertion)
         this.flicker.checkAssertion(assertionData)
     }
 
-    fun assertLayersEnd(assertion: LayerTraceEntrySubject.() -> Any) {
+    fun assertLayersEnd(assertion: LayerTraceEntrySubject.() -> Unit) {
         val assertionData = buildLayersEndAssertion(assertion)
         this.flicker.checkAssertion(assertionData)
     }
 
-    fun assertLayers(assertion: LayersTraceSubject.() -> Any) {
+    fun assertLayers(assertion: LayersTraceSubject.() -> Unit) {
         val assertionData = buildLayersAssertion(assertion)
         this.flicker.checkAssertion(assertionData)
     }
 
-    fun assertLayersTag(tag: String, assertion: LayerTraceEntrySubject.() -> Any) {
+    fun assertLayersTag(tag: String, assertion: LayerTraceEntrySubject.() -> Unit) {
         val assertionData = buildLayersTagAssertion(tag, assertion)
         this.flicker.checkAssertion(assertionData)
     }
 
-    fun assertEventLog(assertion: EventLogSubject.() -> Any) {
+    fun assertEventLog(assertion: EventLogSubject.() -> Unit) {
         val assertionData = buildEventLogAssertion(assertion)
         this.flicker.checkAssertion(assertionData)
     }
@@ -103,59 +103,70 @@ data class FlickerTestParameter(
         }
 
         @JvmStatic
-        fun buildWmStartAssertion(assertion: WindowManagerStateSubject.() -> Any): AssertionData =
+        fun buildWmStartAssertion(assertion: WindowManagerStateSubject.() -> Unit): AssertionData =
             AssertionData(tag = AssertionTag.START,
                 expectedSubjectClass = WindowManagerStateSubject::class,
                 assertion = assertion as FlickerSubject.() -> Unit)
 
         @JvmStatic
-        fun buildWmEndAssertion(assertion: WindowManagerStateSubject.() -> Any): AssertionData =
+        fun buildWmEndAssertion(assertion: WindowManagerStateSubject.() -> Unit): AssertionData =
             AssertionData(tag = AssertionTag.END,
                 expectedSubjectClass = WindowManagerStateSubject::class,
                 assertion = assertion as FlickerSubject.() -> Unit)
 
         @JvmStatic
-        fun buildWMAssertion(assertion: WindowManagerTraceSubject.() -> Any): AssertionData =
-            AssertionData(tag = AssertionTag.ALL,
+        fun buildWMAssertion(assertion: WindowManagerTraceSubject.() -> Unit): AssertionData {
+            val closedAssertion: WindowManagerTraceSubject.() -> Unit = {
+                assertion()
+                this.forAllEntries()
+            }
+            return AssertionData(tag = AssertionTag.ALL,
                 expectedSubjectClass = WindowManagerTraceSubject::class,
-                assertion = assertion as FlickerSubject.() -> Unit)
+                assertion = closedAssertion as FlickerSubject.() -> Unit)
+        }
 
         @JvmStatic
         fun buildWMTagAssertion(
             tag: String,
-            assertion: WindowManagerStateSubject.() -> Any
+            assertion: WindowManagerStateSubject.() -> Unit
         ): AssertionData = AssertionData(tag = tag,
             expectedSubjectClass = WindowManagerStateSubject::class,
             assertion = assertion as FlickerSubject.() -> Unit)
 
         @JvmStatic
-        fun buildLayersStartAssertion(assertion: LayerTraceEntrySubject.() -> Any): AssertionData =
+        fun buildLayersStartAssertion(assertion: LayerTraceEntrySubject.() -> Unit): AssertionData =
             AssertionData(tag = AssertionTag.START,
                 expectedSubjectClass = LayerTraceEntrySubject::class,
                 assertion = assertion as FlickerSubject.() -> Unit)
 
         @JvmStatic
-        fun buildLayersEndAssertion(assertion: LayerTraceEntrySubject.() -> Any): AssertionData =
+        fun buildLayersEndAssertion(assertion: LayerTraceEntrySubject.() -> Unit): AssertionData =
             AssertionData(tag = AssertionTag.END,
                 expectedSubjectClass = LayerTraceEntrySubject::class,
                 assertion = assertion as FlickerSubject.() -> Unit)
 
         @JvmStatic
-        fun buildLayersAssertion(assertion: LayersTraceSubject.() -> Any): AssertionData =
-            AssertionData(tag = AssertionTag.ALL,
+        fun buildLayersAssertion(assertion: LayersTraceSubject.() -> Unit): AssertionData {
+            val closedAssertion: LayersTraceSubject.() -> Unit = {
+                assertion()
+                this.forAllEntries()
+            }
+
+            return AssertionData(tag = AssertionTag.ALL,
                 expectedSubjectClass = LayersTraceSubject::class,
-                assertion = assertion as FlickerSubject.() -> Unit)
+                assertion = closedAssertion as FlickerSubject.() -> Unit)
+        }
 
         @JvmStatic
         fun buildLayersTagAssertion(
             tag: String,
-            assertion: LayerTraceEntrySubject.() -> Any
+            assertion: LayerTraceEntrySubject.() -> Unit
         ): AssertionData = AssertionData(tag = tag,
             expectedSubjectClass = LayerTraceEntrySubject::class,
             assertion = assertion as FlickerSubject.() -> Unit)
 
         @JvmStatic
-        fun buildEventLogAssertion(assertion: EventLogSubject.() -> Any): AssertionData =
+        fun buildEventLogAssertion(assertion: EventLogSubject.() -> Unit): AssertionData =
             AssertionData(tag = AssertionTag.ALL,
                 expectedSubjectClass = EventLogSubject::class,
                 assertion = assertion as FlickerSubject.() -> Unit)

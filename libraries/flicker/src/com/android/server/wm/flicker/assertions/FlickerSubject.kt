@@ -25,10 +25,11 @@ import com.google.common.truth.Subject
  * Base subject for flicker assertions
  */
 abstract class FlickerSubject(
-    fm: FailureMetadata,
+    protected val fm: FailureMetadata,
     data: Any?
 ) : Subject(fm, data) {
     abstract val defaultFacts: String
+    abstract fun clone(): FlickerSubject
 
     /**
      * Fails an assertion on a subject

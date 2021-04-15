@@ -42,11 +42,7 @@ data class AssertionData internal constructor(
      * @param run Run to be asserted
      */
     fun checkAssertion(run: FlickerRunResult) {
-        val subjects = run.getSubjects()
-        subjects.forEach { subject ->
-            if (expectedSubjectClass.isInstance(subject)) {
-                assertion(subject)
-            }
-        }
+        val subjects = run.getSubjects().firstOrNull { expectedSubjectClass.isInstance(it) }
+        subjects?.run { assertion(this) }
     }
 }
