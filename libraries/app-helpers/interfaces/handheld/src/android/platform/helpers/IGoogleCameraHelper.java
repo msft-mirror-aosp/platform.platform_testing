@@ -85,6 +85,15 @@ public interface IGoogleCameraHelper extends IAppHelper {
     public void capturePhoto();
 
     /**
+     * Setup expectation: in Camera mode with the capture button present.
+     *
+     * <p>This method will capture a long shot and block until the transaction is complete.
+     *
+     * @param durationMs duration of video in milliseconds
+     */
+    public void captureLongShot(long durationMs);
+
+    /**
      * Setup expectation: in Video mode with the capture button present.
      *
      * This method will capture a video of length timeInMs and block until the transaction is

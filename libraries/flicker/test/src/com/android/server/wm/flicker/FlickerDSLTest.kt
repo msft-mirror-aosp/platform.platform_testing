@@ -18,6 +18,8 @@ package com.android.server.wm.flicker
 
 import android.app.Instrumentation
 import androidx.test.platform.app.InstrumentationRegistry
+import com.android.server.wm.flicker.assertions.AssertionData
+import com.android.server.wm.flicker.assertions.FlickerSubject
 import com.android.server.wm.flicker.dsl.AssertionTag
 import com.android.server.wm.flicker.dsl.FlickerBuilder
 import com.android.server.wm.flicker.traces.eventlog.EventLogSubject
@@ -30,6 +32,7 @@ import org.junit.Assert
 import org.junit.FixMethodOrder
 import org.junit.Test
 import org.junit.runners.MethodSorters
+import kotlin.reflect.KClass
 
 /**
  * Contains [Flicker] and [FlickerBuilder] tests.
@@ -40,104 +43,98 @@ import org.junit.runners.MethodSorters
 class FlickerDSLTest {
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
     private val TAG = "tag"
+    private var executed = false
+
+    private fun runFlicker(assertion: AssertionData) {
+        executed = false
+        val builder = FlickerBuilder(instrumentation)
+        builder.transitions {
+            withTag(TAG) {
+                device.pressHome()
+            }
+        }
+        val flicker = builder.build()
+        flicker.execute()
+        flicker.checkAssertion(assertion)
+        Truth.assertWithMessage("Assertion was not executed")
+            .that(executed)
+            .isTrue()
+    }
+
+    private fun validateAssertion(
+        assertion: AssertionData,
+        expectedSubjectClass: KClass<out FlickerSubject>,
+        expectedTag: String
+    ) {
+        Truth.assertWithMessage("Unexpected subject type")
+            .that(assertion.expectedSubjectClass)
+            .isEqualTo(expectedSubjectClass)
+        Truth.assertWithMessage("Unexpected tag")
+            .that(assertion.tag)
+            .isEqualTo(expectedTag)
+    }
 
     @Test
     fun checkBuiltWMStartAssertion() {
-        val assertion = FlickerTestParameter.buildWmStartAssertion { }
-        Truth.assertWithMessage("Unexpected subject type")
-            .that(assertion.expectedSubjectClass)
-            .isEqualTo(WindowManagerStateSubject::class)
-        Truth.assertWithMessage("Unexpected tag")
-            .that(assertion.tag)
-            .isEqualTo(AssertionTag.START)
+        val assertion = FlickerTestParameter.buildWmStartAssertion { executed = true }
+        validateAssertion(assertion, WindowManagerStateSubject::class, AssertionTag.START)
+        runFlicker(assertion)
     }
 
     @Test
     fun checkBuiltWMEndAssertion() {
-        val assertion = FlickerTestParameter.buildWmEndAssertion { }
-        Truth.assertWithMessage("Unexpected subject type")
-            .that(assertion.expectedSubjectClass)
-            .isEqualTo(WindowManagerStateSubject::class)
-        Truth.assertWithMessage("Unexpected tag")
-            .that(assertion.tag)
-            .isEqualTo(AssertionTag.END)
+        val assertion = FlickerTestParameter.buildWmEndAssertion { executed = true }
+        validateAssertion(assertion, WindowManagerStateSubject::class, AssertionTag.END)
+        runFlicker(assertion)
     }
 
     @Test
     fun checkBuiltWMAssertion() {
-        val assertion = FlickerTestParameter.buildWMAssertion { }
-        Truth.assertWithMessage("Unexpected subject type")
-            .that(assertion.expectedSubjectClass)
-            .isEqualTo(WindowManagerTraceSubject::class)
-        Truth.assertWithMessage("Unexpected tag")
-            .that(assertion.tag)
-            .isEqualTo(AssertionTag.ALL)
+        val assertion = FlickerTestParameter.buildWMAssertion { executed = true }
+        validateAssertion(assertion, WindowManagerTraceSubject::class, AssertionTag.ALL)
+        runFlicker(assertion)
     }
 
     @Test
     fun checkBuiltWMTagAssertion() {
-        val assertion = FlickerTestParameter.buildWMTagAssertion(TAG) { }
-        Truth.assertWithMessage("Unexpected subject type")
-            .that(assertion.expectedSubjectClass)
-            .isEqualTo(WindowManagerStateSubject::class)
-        Truth.assertWithMessage("Unexpected tag")
-            .that(assertion.tag)
-            .isEqualTo(TAG)
+        val assertion = FlickerTestParameter.buildWMTagAssertion(TAG) { executed = true }
+        validateAssertion(assertion, WindowManagerStateSubject::class, TAG)
+        runFlicker(assertion)
     }
 
     @Test
     fun checkBuiltLayersStartAssertion() {
-        val assertion = FlickerTestParameter.buildLayersStartAssertion { }
-        Truth.assertWithMessage("Unexpected subject type")
-            .that(assertion.expectedSubjectClass)
-            .isEqualTo(LayerTraceEntrySubject::class)
-        Truth.assertWithMessage("Unexpected tag")
-            .that(assertion.tag)
-            .isEqualTo(AssertionTag.START)
+        val assertion = FlickerTestParameter.buildLayersStartAssertion { executed = true }
+        validateAssertion(assertion, LayerTraceEntrySubject::class, AssertionTag.START)
+        runFlicker(assertion)
     }
 
     @Test
     fun checkBuiltLayersEndAssertion() {
-        val assertion = FlickerTestParameter.buildLayersEndAssertion { }
-        Truth.assertWithMessage("Unexpected subject type")
-            .that(assertion.expectedSubjectClass)
-            .isEqualTo(LayerTraceEntrySubject::class)
-        Truth.assertWithMessage("Unexpected tag")
-            .that(assertion.tag)
-            .isEqualTo(AssertionTag.END)
+        val assertion = FlickerTestParameter.buildLayersEndAssertion { executed = true }
+        validateAssertion(assertion, LayerTraceEntrySubject::class, AssertionTag.END)
+        runFlicker(assertion)
     }
 
     @Test
     fun checkBuiltLayersAssertion() {
-        val assertion = FlickerTestParameter.buildLayersAssertion { }
-        Truth.assertWithMessage("Unexpected subject type")
-            .that(assertion.expectedSubjectClass)
-            .isEqualTo(LayersTraceSubject::class)
-        Truth.assertWithMessage("Unexpected tag")
-            .that(assertion.tag)
-            .isEqualTo(AssertionTag.ALL)
+        val assertion = FlickerTestParameter.buildLayersAssertion { executed = true }
+        validateAssertion(assertion, LayersTraceSubject::class, AssertionTag.ALL)
+        runFlicker(assertion)
     }
 
     @Test
     fun checkBuiltLayersTagAssertion() {
-        val assertion = FlickerTestParameter.buildLayersTagAssertion(TAG) { }
-        Truth.assertWithMessage("Unexpected subject type")
-            .that(assertion.expectedSubjectClass)
-            .isEqualTo(LayerTraceEntrySubject::class)
-        Truth.assertWithMessage("Unexpected tag")
-            .that(assertion.tag)
-            .isEqualTo(TAG)
+        val assertion = FlickerTestParameter.buildLayersTagAssertion(TAG) { executed = true }
+        validateAssertion(assertion, LayerTraceEntrySubject::class, TAG)
+        runFlicker(assertion)
     }
 
     @Test
     fun checkBuiltEventLogAssertion() {
-        val assertion = FlickerTestParameter.buildEventLogAssertion { }
-        Truth.assertWithMessage("Unexpected subject type")
-            .that(assertion.expectedSubjectClass)
-            .isEqualTo(EventLogSubject::class)
-        Truth.assertWithMessage("Unexpected tag")
-            .that(assertion.tag)
-            .isEqualTo(AssertionTag.ALL)
+        val assertion = FlickerTestParameter.buildEventLogAssertion { executed = true }
+        validateAssertion(assertion, EventLogSubject::class, AssertionTag.ALL)
+        runFlicker(assertion)
     }
 
     @Test

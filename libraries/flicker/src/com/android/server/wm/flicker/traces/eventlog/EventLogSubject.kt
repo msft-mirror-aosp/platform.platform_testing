@@ -16,7 +16,6 @@
 
 package com.android.server.wm.flicker.traces.eventlog
 
-import com.android.server.wm.flicker.FlickerRunResult
 import com.android.server.wm.flicker.assertions.AssertionsChecker
 import com.android.server.wm.flicker.assertions.FlickerSubject
 import com.google.common.truth.Fact
@@ -35,6 +34,11 @@ class EventLogSubject private constructor(
         val first = subjects.first().defaultFacts
         val last = subjects.last().defaultFacts
         "EventLogSubject($first, $last)"
+    }
+
+    /** {@inheritDoc} */
+    override fun clone(): FlickerSubject {
+        return EventLogSubject(fm, trace)
     }
 
     private val subjects by lazy {
