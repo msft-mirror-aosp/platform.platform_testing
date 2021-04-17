@@ -60,14 +60,30 @@ public class JankCollectionHelper implements ICollectorHelper<Double> {
                 "total_frames"),
         // Example: "Janky frames: 785 (3.85%)"
         JANKY_FRAMES_COUNT(
-                Pattern.compile(".*Janky frames: (\\d+) \\((.+)\\%\\).*", Pattern.DOTALL),
+                Pattern.compile(
+                        ".*Janky frames: (\\d+) \\(([0-9]+[\\.]?[0-9]+)\\%\\).*", Pattern.DOTALL),
                 1,
                 "janky_frames_count"),
         // Example: "Janky frames: 785 (3.85%)"
         JANKY_FRAMES_PRCNT(
-                Pattern.compile(".*Janky frames: (\\d+) \\((.+)\\%\\).*", Pattern.DOTALL),
+                Pattern.compile(
+                        ".*Janky frames: (\\d+) \\(([0-9]+[\\.]?[0-9]+)\\%\\).*", Pattern.DOTALL),
                 2,
                 "janky_frames_percent"),
+        // Example: "Janky frames (legacy): 785 (3.85%)"
+        JANKY_FRAMES_LEGACY_COUNT(
+                Pattern.compile(
+                        ".*Janky frames \\(legacy\\): (\\d+) \\(([0-9]+[\\.]?[0-9]+)\\%\\).*",
+                        Pattern.DOTALL),
+                1,
+                "janky_frames_legacy_count"),
+        // Example: "Janky frames (legacy): 785 (3.85%)"
+        JANKY_FRAMES_LEGACY_PRCNT(
+                Pattern.compile(
+                        ".*Janky frames \\(legacy\\): (\\d+) \\(([0-9]+[\\.]?[0-9]+)\\%\\).*",
+                        Pattern.DOTALL),
+                2,
+                "janky_frames_legacy_percent"),
         // Example: "50th percentile: 9ms"
         FRAME_TIME_50TH(
                 Pattern.compile(".*50th percentile: (\\d+)ms.*", Pattern.DOTALL),

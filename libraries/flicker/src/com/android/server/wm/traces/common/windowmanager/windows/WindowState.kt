@@ -28,7 +28,7 @@ import com.android.server.wm.traces.common.WindowRect
  *
  */
 open class WindowState(
-    val type: Int,
+    val attributes: WindowLayoutParams,
     val displayId: Int,
     val stackId: Int,
     val layer: Int,
@@ -48,6 +48,7 @@ open class WindowState(
         getWindowTitle(windowContainer.title)))
 ) : WindowContainer(windowContainer, getWindowTitle(windowContainer.title)) {
     override val kind: String = "Window"
+    override val isVisible: Boolean get() = super.isVisible && attributes.alpha > 0
 
     val frame: Rect get() = _frame ?: Rect()
     val containingFrame: Rect get() = _containingFrame ?: Rect()
@@ -61,7 +62,7 @@ open class WindowState(
     val isStartingWindow: Boolean = windowType == WINDOW_TYPE_STARTING
     val isExitingWindow: Boolean = windowType == WINDOW_TYPE_EXITING
     val isDebuggerWindow: Boolean = windowType == WINDOW_TYPE_DEBUGGER
-    val isValidNavBarType: Boolean = this.type == TYPE_NAVIGATION_BAR
+    val isValidNavBarType: Boolean = attributes.isValidNavBarType
 
     val frameRegion: Region = Region(frame)
 
@@ -78,13 +79,13 @@ open class WindowState(
 
     override fun toString(): String {
         return "$kind: {$token $title${getWindowTypeSuffix(windowType)}} " +
-            "type=$type cf=$containingFrame pf=$parentFrame"
+            "type=${attributes.type} cf=$containingFrame pf=$parentFrame"
     }
 
     override fun equals(other: Any?): Boolean {
         return other is WindowState &&
             other.kind == kind &&
-            other.type == type &&
+            other.attributes == attributes &&
             other.token == token &&
             other.title == title &&
             other.containingFrame == containingFrame &&
@@ -92,7 +93,7 @@ open class WindowState(
     }
 
     override fun hashCode(): Int {
-        var result = type
+        var result = attributes.hashCode()
         result = 31 * result + displayId
         result = 31 * result + stackId
         result = 31 * result + layer
@@ -123,11 +124,6 @@ open class WindowState(
 
         internal const val STARTING_WINDOW_PREFIX = "Starting "
         internal const val DEBUGGER_WINDOW_PREFIX = "Waiting For Debugger: "
-
-        /**
-         * @see WindowManager.LayoutParams
-         */
-        private const val TYPE_NAVIGATION_BAR = 2019
 
         private fun getWindowTitle(title: String): String {
             return when {
