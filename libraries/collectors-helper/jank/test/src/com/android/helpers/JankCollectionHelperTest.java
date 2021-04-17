@@ -26,6 +26,7 @@ import static com.android.helpers.JankCollectionHelper.GfxInfoMetric.JANKY_FRAME
 import static com.android.helpers.JankCollectionHelper.GfxInfoMetric.JANKY_FRAMES_LEGACY_COUNT;
 import static com.android.helpers.JankCollectionHelper.GfxInfoMetric.JANKY_FRAMES_LEGACY_PRCNT;
 import static com.android.helpers.JankCollectionHelper.GfxInfoMetric.NUM_FRAME_DEADLINE_MISSED;
+import static com.android.helpers.JankCollectionHelper.GfxInfoMetric.NUM_FRAME_DEADLINE_MISSED_LEGACY;
 import static com.android.helpers.JankCollectionHelper.GfxInfoMetric.NUM_HIGH_INPUT_LATENCY;
 import static com.android.helpers.JankCollectionHelper.GfxInfoMetric.NUM_MISSED_VSYNC;
 import static com.android.helpers.JankCollectionHelper.GfxInfoMetric.NUM_SLOW_BITMAP_UPLOADS;
@@ -73,6 +74,7 @@ public class JankCollectionHelperTest {
                     + "\nNumber Slow UI thread: 0"
                     + "\nNumber Slow bitmap uploads: 0"
                     + "\nNumber Slow issue draw commands: 0"
+                    + "\nNumber Frame deadline missed (legacy): 0"
                     + "\nNumber Frame deadline missed: 0";
     private static final String GFXINFO_GET_FORMAT =
             "\n\n** Graphics info for pid 9999 [%s] **"
@@ -89,6 +91,7 @@ public class JankCollectionHelperTest {
                     + "\nNumber Slow UI thread: 3"
                     + "\nNumber Slow bitmap uploads: 4"
                     + "\nNumber Slow issue draw commands: 5"
+                    + "\nNumber Frame deadline missed (legacy): 3"
                     + "\nNumber Frame deadline missed: 6";
 
     private @Mock UiDevice mUiDevice;
@@ -139,6 +142,9 @@ public class JankCollectionHelperTest {
         assertThat(metrics.get(buildMetricKey("pkg1", NUM_SLOW_DRAW.getMetricId()))).isEqualTo(5.0);
         assertThat(metrics.get(buildMetricKey("pkg1", NUM_FRAME_DEADLINE_MISSED.getMetricId())))
                 .isEqualTo(6.0);
+        assertThat(
+                metrics.get(buildMetricKey("pkg1", NUM_FRAME_DEADLINE_MISSED_LEGACY.getMetricId())))
+                        .isEqualTo(3.0);
         mHelper.stopCollecting();
     }
 
@@ -296,7 +302,8 @@ public class JankCollectionHelperTest {
                         buildMetricKey("pkg1", NUM_SLOW_UI_THREAD.getMetricId()),
                         buildMetricKey("pkg1", NUM_SLOW_BITMAP_UPLOADS.getMetricId()),
                         buildMetricKey("pkg1", NUM_SLOW_DRAW.getMetricId()),
-                        buildMetricKey("pkg1", NUM_FRAME_DEADLINE_MISSED.getMetricId()));
+                        buildMetricKey("pkg1", NUM_FRAME_DEADLINE_MISSED.getMetricId()),
+                        buildMetricKey("pkg1", NUM_FRAME_DEADLINE_MISSED_LEGACY.getMetricId()));
         mHelper.stopCollecting();
     }
 
