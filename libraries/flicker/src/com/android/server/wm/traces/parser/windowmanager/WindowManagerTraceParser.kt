@@ -21,6 +21,7 @@ import android.content.nano.ConfigurationProto
 import android.graphics.nano.RectProto
 import android.util.Log
 import android.view.nano.ViewProtoEnums
+import android.view.nano.WindowLayoutParamsProto
 import com.android.server.wm.traces.common.windowmanager.windows.Configuration
 import com.android.server.wm.traces.common.Rect
 import com.android.server.wm.traces.common.windowmanager.windows.WindowConfiguration
@@ -52,6 +53,7 @@ import com.android.server.wm.nano.WindowManagerServiceDumpProto
 import com.android.server.wm.nano.WindowManagerTraceFileProto
 import com.android.server.wm.nano.WindowStateProto
 import com.android.server.wm.nano.WindowTokenProto
+import com.android.server.wm.traces.common.windowmanager.windows.WindowLayoutParams
 import com.android.server.wm.traces.parser.LOG_TAG
 import com.google.protobuf.nano.InvalidProtocolBufferNanoException
 import java.nio.file.Path
@@ -369,7 +371,7 @@ object WindowManagerTraceParser {
         } else {
             val identifierName = proto.windowContainer.identifier?.title ?: ""
             WindowState(
-                type = proto.attributes?.type ?: 0,
+                attributes = newWindowLayerParams(proto.attributes),
                 displayId = proto.displayId,
                 stackId = proto.stackId,
                 layer = proto.animator?.surface?.layer ?: 0,
@@ -406,6 +408,41 @@ object WindowManagerTraceParser {
                 isAppWindow = isActivityInTree
             )
         }
+    }
+
+    private fun newWindowLayerParams(proto: WindowLayoutParamsProto?): WindowLayoutParams {
+        return WindowLayoutParams(
+            type = proto?.type ?: 0,
+            x = proto?.x ?: 0,
+            y = proto?.y ?: 0,
+            width = proto?.width ?: 0,
+            height = proto?.height ?: 0,
+            horizontalMargin = proto?.horizontalMargin ?: 0f,
+            verticalMargin = proto?.verticalMargin ?: 0f,
+            gravity = proto?.gravity ?: 0,
+            softInputMode = proto?.softInputMode ?: 0,
+            format = proto?.format ?: 0,
+            windowAnimations = proto?.windowAnimations ?: 0,
+            alpha = proto?.alpha ?: 0f,
+            screenBrightness = proto?.screenBrightness ?: 0f,
+            buttonBrightness = proto?.buttonBrightness ?: 0f,
+            rotationAnimation = proto?.rotationAnimation ?: 0,
+            preferredRefreshRate = proto?.preferredRefreshRate ?: 0f,
+            preferredDisplayModeId = proto?.preferredDisplayModeId ?: 0,
+            hasSystemUiListeners = proto?.hasSystemUiListeners ?: false,
+            inputFeatureFlags = proto?.inputFeatureFlags ?: 0,
+            userActivityTimeout = proto?.userActivityTimeout ?: 0,
+            colorMode = proto?.colorMode ?: 0,
+            flags = proto?.flags ?: 0,
+            privateFlags = proto?.privateFlags ?: 0,
+            systemUiVisibilityFlags = proto?.systemUiVisibilityFlags ?: 0,
+            subtreeSystemUiVisibilityFlags = proto?.subtreeSystemUiVisibilityFlags ?: 0,
+            appearance = proto?.appearance ?: 0,
+            behavior = proto?.behavior ?: 0,
+            fitInsetsTypes = proto?.fitInsetsTypes ?: 0,
+            fitInsetsSides = proto?.fitInsetsSides ?: 0,
+            fitIgnoreVisibility = proto?.fitIgnoreVisibility ?: false
+        )
     }
 
     private fun newConfigurationContainer(
@@ -461,7 +498,7 @@ object WindowManagerTraceParser {
                 title = nameOverride ?: proto.identifier?.title ?: "",
                 token = proto.identifier?.hashCode?.toString(16) ?: "",
                 orientation = proto.orientation,
-                isVisible = proto.visible,
+                _isVisible = proto.visible,
                 configurationContainer = newConfigurationContainer(
                     proto.configurationContainer),
                 children.toTypedArray()

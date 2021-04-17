@@ -265,7 +265,6 @@ open class WindowManagerState(
      * @param partialWindowTitle window title to search
      * @param displayId display where to search the activity
      */
-    @JvmOverloads
     fun getActivityForWindow(
         partialWindowTitle: String,
         displayId: Int = DEFAULT_DISPLAY
@@ -436,11 +435,11 @@ open class WindowManagerState(
         windowStates.filter { ws ->
             ((ws.title == packageName ||
                 ws.title.startsWith("$packageName/")) &&
-                restrictToTypes.any { type -> type == ws.type })
+                restrictToTypes.any { type -> type == ws.attributes.type })
         }
 
     fun getMatchingWindowType(type: Int): List<WindowState> =
-        windowStates.filter { it.type == type }
+        windowStates.filter { it.attributes.type == type }
 
     fun getMatchingWindowTokens(windowName: String): List<String> =
         windowStates.filter { it.title === windowName }.map { it.token }
@@ -510,7 +509,7 @@ open class WindowManagerState(
     }
 
     fun findFirstWindowWithType(type: Int): WindowState? =
-        windowStates.firstOrNull { it.type == type }
+        windowStates.firstOrNull { it.attributes.type == type }
 
     fun getZOrder(w: WindowState): Int = windowStates.size - windowStates.indexOf(w)
 
