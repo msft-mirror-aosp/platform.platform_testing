@@ -23,6 +23,8 @@ import static com.android.helpers.JankCollectionHelper.GfxInfoMetric.FRAME_TIME_
 import static com.android.helpers.JankCollectionHelper.GfxInfoMetric.FRAME_TIME_99TH;
 import static com.android.helpers.JankCollectionHelper.GfxInfoMetric.JANKY_FRAMES_COUNT;
 import static com.android.helpers.JankCollectionHelper.GfxInfoMetric.JANKY_FRAMES_PRCNT;
+import static com.android.helpers.JankCollectionHelper.GfxInfoMetric.JANKY_FRAMES_LEGACY_COUNT;
+import static com.android.helpers.JankCollectionHelper.GfxInfoMetric.JANKY_FRAMES_LEGACY_PRCNT;
 import static com.android.helpers.JankCollectionHelper.GfxInfoMetric.NUM_FRAME_DEADLINE_MISSED;
 import static com.android.helpers.JankCollectionHelper.GfxInfoMetric.NUM_HIGH_INPUT_LATENCY;
 import static com.android.helpers.JankCollectionHelper.GfxInfoMetric.NUM_MISSED_VSYNC;
@@ -61,6 +63,7 @@ public class JankCollectionHelperTest {
                     + "\n"
                     + "\nTotal frames rendered: 0"
                     + "\nJanky frames: 0 (00.00%%)"
+                    + "\nJanky frames (legacy): 0 (00.00%%)"
                     + "\n50th percentile: 0ms"
                     + "\n90th percentile: 0ms"
                     + "\n95th percentile: 0ms"
@@ -76,6 +79,7 @@ public class JankCollectionHelperTest {
                     + "\n"
                     + "\nTotal frames rendered: 900"
                     + "\nJanky frames: 300 (33.33%%)"
+                    + "\nJanky frames (legacy): 200 (22.22%%)"
                     + "\n50th percentile: 150ms"
                     + "\n90th percentile: 190ms"
                     + "\n95th percentile: 195ms"
@@ -112,6 +116,10 @@ public class JankCollectionHelperTest {
                 .isEqualTo(300.0);
         assertThat(metrics.get(buildMetricKey("pkg1", JANKY_FRAMES_PRCNT.getMetricId())))
                 .isEqualTo(33.33);
+        assertThat(metrics.get(buildMetricKey("pkg1", JANKY_FRAMES_LEGACY_COUNT.getMetricId())))
+                .isEqualTo(200.0);
+        assertThat(metrics.get(buildMetricKey("pkg1", JANKY_FRAMES_LEGACY_PRCNT.getMetricId())))
+                .isEqualTo(22.22);
         assertThat(metrics.get(buildMetricKey("pkg1", FRAME_TIME_50TH.getMetricId())))
                 .isEqualTo(150.0);
         assertThat(metrics.get(buildMetricKey("pkg1", FRAME_TIME_90TH.getMetricId())))
@@ -277,6 +285,8 @@ public class JankCollectionHelperTest {
                         buildMetricKey("pkg1", TOTAL_FRAMES.getMetricId()),
                         buildMetricKey("pkg1", JANKY_FRAMES_COUNT.getMetricId()),
                         buildMetricKey("pkg1", JANKY_FRAMES_PRCNT.getMetricId()),
+                        buildMetricKey("pkg1", JANKY_FRAMES_LEGACY_COUNT.getMetricId()),
+                        buildMetricKey("pkg1", JANKY_FRAMES_LEGACY_PRCNT.getMetricId()),
                         buildMetricKey("pkg1", FRAME_TIME_50TH.getMetricId()),
                         buildMetricKey("pkg1", FRAME_TIME_90TH.getMetricId()),
                         buildMetricKey("pkg1", FRAME_TIME_95TH.getMetricId()),
