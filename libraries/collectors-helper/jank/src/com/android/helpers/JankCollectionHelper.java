@@ -134,6 +134,12 @@ public class JankCollectionHelper implements ICollectorHelper<Double> {
                 Pattern.compile(".*Number Frame deadline missed: (\\d+).*", Pattern.DOTALL),
                 1,
                 "deadline_missed"),
+        // Number Frame deadline missed (legacy): 0
+        NUM_FRAME_DEADLINE_MISSED_LEGACY(
+                Pattern.compile(
+                        ".*Number Frame deadline missed \\(legacy\\): (\\d+).*", Pattern.DOTALL),
+                1,
+                "deadline_missed_legacy"),
         // Example: "50th gpu percentile: 9ms"
         GPU_FRAME_TIME_50TH(
                 Pattern.compile(".*50th gpu percentile: (\\d+)ms.*", Pattern.DOTALL),
