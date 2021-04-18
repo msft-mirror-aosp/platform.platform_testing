@@ -46,6 +46,8 @@ native_tests := \
     confirmationui_invocation_test \
     crashcollector \
     debuggerd_test \
+    doh_ffi_test \
+    doh_unit_test \
     dumpstate_test \
     dumpstate_test_fixture \
     dumpsys_test \
