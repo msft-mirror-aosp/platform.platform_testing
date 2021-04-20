@@ -21,6 +21,25 @@ import android.support.test.uiautomator.UiObject2;
 
 public interface IGoogleHelper extends IAppHelper {
 
+    public enum NavigationTab {
+        DISCOVER("Discover"),
+        SNAPSHOT("Snapshot"),
+        SEARCH("Search"),
+        COLLECTIONS("Collections"),
+        MORE("More");
+
+        private final String text;
+
+        NavigationTab(String text) {
+            this.text = text;
+        }
+
+        @Override
+        public String toString() {
+            return text;
+        }
+    };
+
     public enum SearchResultTab {
         ALL("All"),
         IMAGES("Images"),
@@ -58,6 +77,13 @@ public interface IGoogleHelper extends IAppHelper {
      * <p>This method will return the query from the search
      */
     public String getSearchQuery();
+
+    /**
+     * Setup expectations: Google app open.
+     *
+     * <p>This method goes to the specified tab, such as Discover, Search, Collections.
+     */
+    public void navigateToTab(NavigationTab tab);
 
     /**
      * Setup expectations: In home and with search bar.
