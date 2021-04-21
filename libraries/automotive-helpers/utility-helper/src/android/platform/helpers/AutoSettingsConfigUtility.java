@@ -393,6 +393,36 @@ public class AutoSettingsConfigUtility implements IAutoConfigUtility {
     private void loadDefaultDateAndTimeSettingsConfig(
             Map<String, AutoConfiguration> mSettingsConfigMap) {
         AutoConfiguration dateAndTimeSettingsConfiguration = new AutoConfiguration();
+        dateAndTimeSettingsConfiguration.addResource(
+                AutoConfigConstants.AUTOMATIC_DATE_AND_TIME,
+                new AutoConfigResource(AutoConfigConstants.TEXT, "Automatic date & time"));
+        dateAndTimeSettingsConfiguration.addResource(
+                AutoConfigConstants.AUTOMATIC_TIME_ZONE,
+                new AutoConfigResource(AutoConfigConstants.TEXT, "Automatic time zone"));
+        dateAndTimeSettingsConfiguration.addResource(
+                AutoConfigConstants.SET_DATE,
+                new AutoConfigResource(AutoConfigConstants.TEXT, "Set date"));
+        dateAndTimeSettingsConfiguration.addResource(
+                AutoConfigConstants.SET_TIME,
+                new AutoConfigResource(AutoConfigConstants.TEXT, "Set time"));
+        dateAndTimeSettingsConfiguration.addResource(
+                AutoConfigConstants.SELECT_TIME_ZONE,
+                new AutoConfigResource(AutoConfigConstants.TEXT, "Select time zone"));
+        dateAndTimeSettingsConfiguration.addResource(
+                AutoConfigConstants.USE_24_HOUR_FORMAT,
+                new AutoConfigResource(AutoConfigConstants.TEXT, "Use 24-hour format"));
+        dateAndTimeSettingsConfiguration.addResource(
+                AutoConfigConstants.OK_BUTTON,
+                new AutoConfigResource(
+                        AutoConfigConstants.RESOURCE_ID,
+                        "toolbar_menu_item_0",
+                        SETTING_APP_PACKAGE));
+        dateAndTimeSettingsConfiguration.addResource(
+                AutoConfigConstants.NUMBER_PICKER_WIDGET,
+                new AutoConfigResource(AutoConfigConstants.CLASS, "android.widget.NumberPicker"));
+        dateAndTimeSettingsConfiguration.addResource(
+                AutoConfigConstants.EDIT_TEXT_WIDGET,
+                new AutoConfigResource(AutoConfigConstants.CLASS, "android.widget.EditText"));
         mSettingsConfigMap.put(
                 AutoConfigConstants.DATE_AND_TIME_SETTINGS, dateAndTimeSettingsConfiguration);
     }
@@ -400,6 +430,53 @@ public class AutoSettingsConfigUtility implements IAutoConfigUtility {
     private void loadDefaultSystemSettingsConfig(
             Map<String, AutoConfiguration> mSettingsConfigMap) {
         AutoConfiguration systemSettingsConfiguration = new AutoConfiguration();
+        systemSettingsConfiguration.addResource(
+                AutoConfigConstants.ABOUT_MENU,
+                new AutoConfigResource(AutoConfigConstants.TEXT, "About"));
+        systemSettingsConfiguration.addResource(
+                AutoConfigConstants.RESET_OPTIONS_MENU,
+                new AutoConfigResource(AutoConfigConstants.TEXT, "Reset options"));
+        systemSettingsConfiguration.addResource(
+                AutoConfigConstants.LANGUAGES_AND_INPUT_MENU,
+                new AutoConfigResource(AutoConfigConstants.TEXT, "Languages & input"));
+        systemSettingsConfiguration.addResource(
+                AutoConfigConstants.DEVICE_MODEL,
+                new AutoConfigResource(AutoConfigConstants.TEXT, "Model & hardware"));
+        systemSettingsConfiguration.addResource(
+                AutoConfigConstants.ANDROID_VERSION,
+                new AutoConfigResource(AutoConfigConstants.TEXT, "Android version"));
+        systemSettingsConfiguration.addResource(
+                AutoConfigConstants.ANDROID_SECURITY_PATCH_LEVEL,
+                new AutoConfigResource(AutoConfigConstants.TEXT, "Android security patch level"));
+        systemSettingsConfiguration.addResource(
+                AutoConfigConstants.KERNEL_VERSION,
+                new AutoConfigResource(AutoConfigConstants.TEXT, "Kernel Version"));
+        systemSettingsConfiguration.addResource(
+                AutoConfigConstants.BUILD_NUMBER,
+                new AutoConfigResource(AutoConfigConstants.TEXT, "Build number"));
+        systemSettingsConfiguration.addResource(
+                AutoConfigConstants.RECYCLER_VIEW_WIDGET,
+                new AutoConfigResource(
+                        AutoConfigConstants.CLASS, "androidx.recyclerview.widget.RecyclerView"));
+        systemSettingsConfiguration.addResource(
+                AutoConfigConstants.RESET_NETWORK,
+                new AutoConfigResource(AutoConfigConstants.TEXT, "Reset network"));
+        systemSettingsConfiguration.addResource(
+                AutoConfigConstants.RESET_SETTINGS,
+                new AutoConfigResource(AutoConfigConstants.TEXT, "RESET SETTINGS"));
+        systemSettingsConfiguration.addResource(
+                AutoConfigConstants.RESET_APP_PREFERENCES,
+                new AutoConfigResource(AutoConfigConstants.TEXT, "Reset app preferences"));
+        systemSettingsConfiguration.addResource(
+                AutoConfigConstants.RESET_APPS,
+                new AutoConfigResource(AutoConfigConstants.TEXT, "RESET APPS"));
+        systemSettingsConfiguration.addResource(
+                AutoConfigConstants.LANGUAGES_MENU,
+                new AutoConfigResource(AutoConfigConstants.TEXT, "Languages"));
+        // Selected Language Spanish by default
+        systemSettingsConfiguration.addResource(
+                AutoConfigConstants.LANGUAGES_MENU_IN_SELECTED_LANGUAGE,
+                new AutoConfigResource(AutoConfigConstants.TEXT, "Idiomas"));
         mSettingsConfigMap.put(AutoConfigConstants.SYSTEM_SETTINGS, systemSettingsConfiguration);
     }
 
@@ -411,12 +488,80 @@ public class AutoSettingsConfigUtility implements IAutoConfigUtility {
     private void loadDefaultAccountSettingsConfig(
             Map<String, AutoConfiguration> mSettingsConfigMap) {
         AutoConfiguration accountSettingsConfiguration = new AutoConfiguration();
+        accountSettingsConfiguration.addResource(
+                AutoConfigConstants.ADD_ACCOUNT,
+                new AutoConfigResource(AutoConfigConstants.TEXT, "ADD ACCOUNT"));
+        accountSettingsConfiguration.addResource(
+                AutoConfigConstants.ADD_GOOGLE_ACCOUNT,
+                new AutoConfigResource(AutoConfigConstants.TEXT, "Google"));
+        accountSettingsConfiguration.addResource(
+                AutoConfigConstants.SIGN_IN_ON_CAR_SCREEN,
+                new AutoConfigResource(AutoConfigConstants.TEXT, "Sign in on car screen"));
+        accountSettingsConfiguration.addResource(
+                AutoConfigConstants.GOOGLE_SIGN_IN_SCREEN,
+                new AutoConfigResource(AutoConfigConstants.TEXT, "Sign in to your Google Account"));
+        accountSettingsConfiguration.addResource(
+                AutoConfigConstants.ENTER_EMAIL,
+                new AutoConfigResource(AutoConfigConstants.CLASS, "android.widget.EditText"));
+        accountSettingsConfiguration.addResource(
+                AutoConfigConstants.ENTER_PASSWORD,
+                new AutoConfigResource(AutoConfigConstants.CLASS, "android.widget.EditText"));
+        accountSettingsConfiguration.addResource(
+                AutoConfigConstants.NEXT_BUTTON,
+                new AutoConfigResource(AutoConfigConstants.TEXT, "Next"));
+        accountSettingsConfiguration.addResource(
+                AutoConfigConstants.DONE_BUTTON,
+                new AutoConfigResource(AutoConfigConstants.TEXT, "Done"));
+        accountSettingsConfiguration.addResource(
+                AutoConfigConstants.REMOVE_BUTTON,
+                new AutoConfigResource(AutoConfigConstants.TEXT, "Remove"));
+        accountSettingsConfiguration.addResource(
+                AutoConfigConstants.REMOVE_ACCOUNT_BUTTON,
+                new AutoConfigResource(AutoConfigConstants.TEXT, "Remove Account"));
         mSettingsConfigMap.put(AutoConfigConstants.ACCOUNT_SETTINGS, accountSettingsConfiguration);
     }
 
     private void loadDefaultSecuritySettingsConfig(
             Map<String, AutoConfiguration> mSettingsConfigMap) {
         AutoConfiguration securitySettingsConfiguration = new AutoConfiguration();
+        securitySettingsConfiguration.addResource(
+                AutoConfigConstants.TITLE,
+                new AutoConfigResource(
+                        AutoConfigConstants.RESOURCE_ID,
+                        "car_ui_toolbar_title",
+                        SETTING_APP_PACKAGE));
+        securitySettingsConfiguration.addResource(
+                AutoConfigConstants.CHOOSE_LOCK_TYPE,
+                new AutoConfigResource(AutoConfigConstants.TEXT, "Choose a lock type"));
+        securitySettingsConfiguration.addResource(
+                AutoConfigConstants.LOCK_TYPE_PASSWORD,
+                new AutoConfigResource(AutoConfigConstants.TEXT, "Password"));
+        securitySettingsConfiguration.addResource(
+                AutoConfigConstants.LOCK_TYPE_PIN,
+                new AutoConfigResource(AutoConfigConstants.TEXT, "PIN"));
+        securitySettingsConfiguration.addResource(
+                AutoConfigConstants.LOCK_TYPE_NONE,
+                new AutoConfigResource(AutoConfigConstants.TEXT, "None"));
+        securitySettingsConfiguration.addResource(
+                AutoConfigConstants.CONTINUE_BUTTON,
+                new AutoConfigResource(AutoConfigConstants.TEXT, "Continue"));
+        securitySettingsConfiguration.addResource(
+                AutoConfigConstants.CONFIRM_BUTTON,
+                new AutoConfigResource(AutoConfigConstants.TEXT, "Confirm"));
+        securitySettingsConfiguration.addResource(
+                AutoConfigConstants.ENTER_PASSWORD,
+                new AutoConfigResource(AutoConfigConstants.CLASS, "android.widget.EditText"));
+        securitySettingsConfiguration.addResource(
+                AutoConfigConstants.PIN_PAD,
+                new AutoConfigResource(
+                        AutoConfigConstants.RESOURCE_ID, "pin_pad", SETTING_APP_PACKAGE));
+        securitySettingsConfiguration.addResource(
+                AutoConfigConstants.ENTER_PIN_BUTTON,
+                new AutoConfigResource(
+                        AutoConfigConstants.RESOURCE_ID, "key_enter", SETTING_APP_PACKAGE));
+        securitySettingsConfiguration.addResource(
+                AutoConfigConstants.REMOVE_BUTTON,
+                new AutoConfigResource(AutoConfigConstants.TEXT, "Remove"));
         mSettingsConfigMap.put(
                 AutoConfigConstants.SECURITY_SETTINGS, securitySettingsConfiguration);
     }

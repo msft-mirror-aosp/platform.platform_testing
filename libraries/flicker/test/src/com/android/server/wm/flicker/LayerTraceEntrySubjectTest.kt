@@ -105,9 +105,8 @@ class LayerTraceEntrySubjectTest {
                 .coversExactly(expectedVisibleRegion)
         }
         assertFailure(error)
-            .factValue("Is Invisible")
-            .contains("activeBuffer=null type != ColorLayer flags=1 (FLAG_HIDDEN set) " +
-                "visible region is empty")
+            .factValue("Covered region")
+            .contains("SkRegion()")
     }
 
     @Test
@@ -120,8 +119,8 @@ class LayerTraceEntrySubjectTest {
                 .coversExactly(expectedVisibleRegion)
         }
         assertFailure(error)
-            .factValue("Hidden by parent")
-            .contains("b5cf8d3 com.android.server.wm.flicker.testapp")
+            .factValue("Covered region")
+            .contains("SkRegion()")
     }
 
     @Test

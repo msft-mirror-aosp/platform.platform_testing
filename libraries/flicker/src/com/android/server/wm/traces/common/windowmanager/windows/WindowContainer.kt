@@ -31,7 +31,7 @@ open class WindowContainer constructor(
     val title: String,
     val token: String,
     val orientation: Int,
-    val isVisible: Boolean,
+    _isVisible: Boolean,
     configurationContainer: ConfigurationContainer,
     val childrenWindows: Array<WindowContainer>
 ) : ConfigurationContainer(configurationContainer) {
@@ -48,6 +48,7 @@ open class WindowContainer constructor(
         windowContainer.childrenWindows
     )
 
+    open val isVisible: Boolean = _isVisible
     open val name: String = title
     private val _kind = this::class.simpleName ?: error("Unable to determine class")
     open val kind: String = _kind

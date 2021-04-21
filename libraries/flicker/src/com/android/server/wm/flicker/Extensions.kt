@@ -29,3 +29,7 @@ internal const val FLICKER_TAG = "FLICKER"
  */
 fun getDefaultFlickerOutputDir() =
         Paths.get("/sdcard/flicker")
+
+internal fun String.containsAny(vararg values: String): Boolean {
+    return values.isEmpty() || values.any { search -> this.contains(search) }
+}

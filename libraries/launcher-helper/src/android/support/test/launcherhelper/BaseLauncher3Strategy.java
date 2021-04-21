@@ -82,7 +82,7 @@ public abstract class BaseLauncher3Strategy implements ILauncherStrategy {
     }
 
     boolean isOreoOrAbove() {
-        return Build.VERSION.FIRST_SDK_INT >= Build.VERSION_CODES.O;
+        return Build.VERSION.DEVICE_INITIAL_SDK_INT >= Build.VERSION_CODES.O;
     }
 
     /**

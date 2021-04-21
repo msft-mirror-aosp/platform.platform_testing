@@ -68,9 +68,9 @@ class FlickerRunResult private constructor(
     fun getSubjects(): List<FlickerSubject> {
         val result = mutableListOf<FlickerSubject>()
 
-        wmSubject?.run { result.add(this) }
-        layersSubject?.run { result.add(this) }
-        eventLogSubject?.run { result.add(this) }
+        wmSubject?.run { result.add(this.clone()) }
+        layersSubject?.run { result.add(this.clone()) }
+        eventLogSubject?.run { result.add(this.clone()) }
 
         return result
     }

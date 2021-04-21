@@ -15,6 +15,9 @@
 native_tests := \
     adbd_test \
     android_logger_device_test_src_lib \
+    android_logger_device_test_tests_config_log_level \
+    android_logger_device_test_tests_default_init \
+    android_logger_device_test_tests_multiple_init \
     anyhow_device_test_src_lib \
     anyhow_device_test_tests_test_autotrait \
     anyhow_device_test_tests_test_boxed \
@@ -46,6 +49,8 @@ native_tests := \
     confirmationui_invocation_test \
     crashcollector \
     debuggerd_test \
+    doh_ffi_test \
+    doh_unit_test \
     dumpstate_test \
     dumpstate_test_fixture \
     dumpsys_test \
@@ -68,7 +73,6 @@ native_tests := \
     keystore2_selinux_test \
     keystore2_test \
     lazy_static_device_test_src_lib \
-    lazy_static_device_test_tests_no_std \
     lazy_static_device_test_tests_test \
     libandroidfw_tests \
     libappfuse_test \

@@ -27,6 +27,7 @@ android_test {
         "app-helpers-auto-interfaces",
         "ub-uiautomator",
         "hamcrest-library",
+        "platform-test-options",
     ],
     srcs: ["src/**/*.java"],
     test_suites: ["catbox"],

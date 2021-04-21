@@ -122,6 +122,9 @@ class AssertionsCheckerTest {
         private val entry: SimpleEntry
     ) : FlickerSubject(failureMetadata, entry) {
         override val defaultFacts: String = "SimpleEntry(${entry.mData})"
+        override fun clone(): FlickerSubject {
+            return SimpleEntrySubject(fm, entry)
+        }
 
         fun isData42() = apply {
             check("is42").that(entry.mData).isEqualTo(42)

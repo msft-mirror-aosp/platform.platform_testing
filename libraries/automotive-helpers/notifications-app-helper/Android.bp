@@ -23,7 +23,6 @@ java_library {
     libs: [
         "ub-uiautomator",
         "app-helpers-auto-interfaces",
-        "app-helpers-handheld-interfaces",
     ],
     static_libs: [
         "truth-prebuilt",

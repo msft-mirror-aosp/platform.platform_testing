@@ -44,20 +44,19 @@ class TransitionRunnerWithRules(private val testConfig: Map<String, Any?>) : Tra
     private fun buildTransitionRule(flicker: Flicker): Statement {
         return object : Statement() {
                 override fun evaluate() {
-                    result = execute(flicker)
+                    result = runTransition(flicker)
                 }
             }
+    }
+
+    private fun runTransition(flicker: Flicker): FlickerResult {
+        return super.run(flicker)
     }
 
     private fun buildTransitionChain(flicker: Flicker): Statement {
         val setupRules = buildDefaultSetupRules()
         val transitionRule = buildTransitionRule(flicker)
         return setupRules.apply(transitionRule, Description.EMPTY)
-    }
-
-    override fun execute(flicker: Flicker): FlickerResult {
-        check(flicker)
-        return super.run(flicker)
     }
 
     override fun cleanUp() {

@@ -30,8 +30,8 @@ import android.support.test.uiautomator.UiScrollable;
 import android.support.test.uiautomator.UiSelector;
 import androidx.test.InstrumentationRegistry;
 
+import java.util.List;
 import java.util.regex.Pattern;
-
 
 public class SettingHelperImpl extends AbstractAutoStandardAppHelper implements IAutoSettingHelper {
 
@@ -322,9 +322,9 @@ public class SettingHelperImpl extends AbstractAutoStandardAppHelper implements 
                             AutoConfigConstants.PERMISSIONS_PAGE_TITLE)
                 };
         for (BySelector selector : selectors) {
-            UiObject2 pageTitle = findUiObject(selector);
-            if (pageTitle != null) {
-                return pageTitle;
+            List<UiObject2> pageTitles = findUiObjects(selector);
+            if (pageTitles != null && pageTitles.size() > 0) {
+                return pageTitles.get(pageTitles.size() - 1);
             }
         }
         throw new RuntimeException("Unable to find page title");
@@ -337,6 +337,7 @@ public class SettingHelperImpl extends AbstractAutoStandardAppHelper implements 
         // after exiting settings application
         int count = 5;
         while (count > 0
+                && isAppInForeground()
                 && findUiObject(
                                 By.text(
                                         getApplicationConfig(
