@@ -15,6 +15,9 @@
 native_tests := \
     adbd_test \
     android_logger_device_test_src_lib \
+    android_logger_device_test_tests_config_log_level \
+    android_logger_device_test_tests_default_init \
+    android_logger_device_test_tests_multiple_init \
     anyhow_device_test_src_lib \
     anyhow_device_test_tests_test_autotrait \
     anyhow_device_test_tests_test_boxed \
