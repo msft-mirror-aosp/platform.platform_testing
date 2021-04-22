@@ -17,28 +17,33 @@
 package android.platform.helpers;
 
 import android.app.Instrumentation;
+import android.os.SystemClock;
 import android.support.test.uiautomator.By;
 import android.support.test.uiautomator.Direction;
 import android.support.test.uiautomator.UiObject2;
 
-/** This helper extends NotificationHelperImpl to accommodate for Auto specific UI */
-public class AutoNotificationHelperImpl extends NotificationHelperImpl
+/** Helper for Notifications on Automotive device */
+public class AutoNotificationHelperImpl extends AbstractAutoStandardAppHelper
         implements IAutoNotificationHelper {
+
+    private static final int UI_RESPONSE_WAIT_MS = 1000;
 
     public AutoNotificationHelperImpl(Instrumentation instr) {
         super(instr);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * Setup expectation: None.
+     *
+     * <p>Open notification, do nothing if notification is already open.
+     */
     @Override
-    public void openNotificationbyIndex(int index) {
-        throw new UnsupportedOperationException("Not yet implemented.");
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void openNotificationByTitle(String title, String expectedPkg) {
-        throw new UnsupportedOperationException("Not yet implemented.");
+    public void open() {
+        if (!isAppInForeground()) {
+            executeShellCommand(
+                    getApplicationConfig(AutoConfigConstants.OPEN_NOTIFICATIONS_COMMAND));
+            SystemClock.sleep(UI_RESPONSE_WAIT_MS);
+        }
     }
 
     /**
