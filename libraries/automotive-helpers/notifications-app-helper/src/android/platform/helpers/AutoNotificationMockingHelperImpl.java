@@ -35,7 +35,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 
-public class AutoNotificationMockingHelperImpl extends NotificationHelperImpl
+public class AutoNotificationMockingHelperImpl extends AbstractAutoStandardAppHelper
         implements IAutoNotificationMockingHelper {
 
     private static final int UI_RESPONSE_WAIT_MS = 5000;
@@ -43,6 +43,7 @@ public class AutoNotificationMockingHelperImpl extends NotificationHelperImpl
     private static final String NOTIFICATION_CHANNEL_ID = "auto_test_channel_id";
     private static final String NOTIFICATION_CHANNEL_NAME = "Test Channel";
     private static final String NOTIFICATION_TITLE_TEXT = "AUTO TEST NOTIFICATION";
+    private static final String NOTIFICATION_CONTENT_TEXT = "Test notification content";
     private static final String NOTIFICATION_CONTENT_TEXT_FORMAT = "Test notification %d";
 
     private static final List<BySelector> NOTIFICATION_REQUIRED_FIELDS = new ArrayList<>();
@@ -118,29 +119,6 @@ public class AutoNotificationMockingHelperImpl extends NotificationHelperImpl
             builder.setContentText(String.format(NOTIFICATION_CONTENT_TEXT_FORMAT, i));
             mNotificationManager.notify(i, builder.build());
         }
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public UiObject2 postMessagingStyleNotification(String pkg) {
-        String personName = "John Doe";
-        Person person = new Person.Builder().setName(personName).build();
-        postNotification(
-                getBuilder(pkg)
-                        .setStyle(
-                                new Notification.MessagingStyle(person)
-                                        .addMessage(
-                                                new Message(
-                                                        "Message 1",
-                                                        SystemClock.currentThreadTimeMillis(),
-                                                        person))));
-
-        for (UiObject2 notification : getNotificationStack()) {
-            if (notification.hasObject(By.text(personName))) {
-                return notification;
-            }
-        }
-        throw new AssertionError("Couldn't find posted notification");
     }
 
     /** {@inheritDoc} */
