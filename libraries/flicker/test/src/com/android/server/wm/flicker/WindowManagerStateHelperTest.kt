@@ -24,6 +24,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.android.server.wm.flicker.traces.windowmanager.WindowManagerStateSubject
 import com.android.server.wm.traces.common.Buffer
 import com.android.server.wm.traces.common.Color
+import com.android.server.wm.traces.common.Rect
 import com.android.server.wm.traces.common.RectF
 import com.android.server.wm.traces.common.Region
 import com.android.server.wm.traces.common.layers.Layer
@@ -94,7 +95,10 @@ class WindowManagerStateHelperTest {
             _sourceBounds = rect,
             currFrame = 0,
             effectiveScalingMode = 0,
-            bufferTransform = transform
+            bufferTransform = transform,
+            hwcCompositionType = 0,
+            hwcCrop = RectF(),
+            hwcFrame = Rect()
         )
     }
 

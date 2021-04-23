@@ -18,6 +18,7 @@ package com.android.server.wm.traces.common.layers
 
 import com.android.server.wm.traces.common.Buffer
 import com.android.server.wm.traces.common.Color
+import com.android.server.wm.traces.common.Rect
 import com.android.server.wm.traces.common.Region
 import com.android.server.wm.traces.common.RectF
 
@@ -47,7 +48,10 @@ open class Layer(
     private val _sourceBounds: RectF?,
     val currFrame: Long,
     val effectiveScalingMode: Int,
-    val bufferTransform: Transform
+    val bufferTransform: Transform,
+    val hwcCompositionType: Int,
+    val hwcCrop: RectF,
+    val hwcFrame: Rect
 ) {
     lateinit var parent: Layer
 
