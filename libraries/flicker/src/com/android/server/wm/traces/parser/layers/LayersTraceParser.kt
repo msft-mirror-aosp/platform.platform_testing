@@ -163,7 +163,10 @@ class LayersTraceParser {
                     proto.sourceBounds?.toRectF(),
                     proto.currFrame,
                     proto.effectiveScalingMode,
-                    Transform(proto.bufferTransform, position = null)
+                    Transform(proto.bufferTransform, position = null),
+                    proto.hwcCompositionType,
+                    proto.hwcCrop.toRectF() ?: RectF(),
+                    proto.hwcFrame.toRect()
             )
         }
 
@@ -202,7 +205,7 @@ class LayersTraceParser {
                 val region = android.graphics.Region(0, 0, 0, 0)
 
                 for (proto: RectProto in this.rect) {
-                    region.union(proto.toRect())
+                    region.union(proto.toAndroidRect())
                 }
 
                 val bounds = region.bounds
@@ -211,11 +214,22 @@ class LayersTraceParser {
         }
 
         @JvmStatic
-        private fun RectProto.toRect(): Rect {
+        private fun RectProto.toAndroidRect(): Rect {
             return if ((this.right - this.left) <= 0 || (this.bottom - this.top) <= 0) {
                 Rect()
             } else {
                 Rect(this.left, this.top, this.right, this.bottom)
+            }
+        }
+
+        @JvmStatic
+        private fun RectProto?.toRect(): com.android.server.wm.traces.common.Rect {
+            return if ((this == null) ||
+                ((this.right - this.left) <= 0 || (this.bottom - this.top) <= 0)) {
+                com.android.server.wm.traces.common.Rect()
+            } else {
+                com.android.server.wm.traces.common.Rect(
+                    this.left, this.top, this.right, this.bottom)
             }
         }
     }
