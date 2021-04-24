@@ -19,18 +19,16 @@ import static com.google.common.truth.Truth.assertThat;
 import static junit.framework.Assert.fail;
 
 import android.os.SystemClock;
-import android.platform.test.util.TimedAction;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
 public final class TimedActionTest {
-    // Note that 10 milliseconds is very short and the surrounding code may take some time to execute.
-    // We have to use a scaling factor (multiplier) for tests that is large enough to ensure we have
-    // slept and waited after and small enough that the test doesn't get too long.
+    // Note that 10 milliseconds is very short and the surrounding code may take some time to
+    // execute. We have to use a scaling factor (multiplier) for tests that is large enough to
+    // ensure we have slept and waited after and small enough that the test doesn't get too long.
     private static final long VERY_SHORT_DURATION_MS = 10L;
     private static final int ACTION_TIME_MULTIPLIER = 10;
 
