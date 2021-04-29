@@ -45,7 +45,6 @@ public class DumpsysServiceHelper implements ICollectorHelper<String> {
 
     private String[] mServiceNames = {};
     private UiDevice mUiDevice;
-    private Map<String, String> metrics = new HashMap<>();
 
     public void setUp(String... serviceNames) {
         if (serviceNames == null) {
@@ -62,21 +61,21 @@ public class DumpsysServiceHelper implements ICollectorHelper<String> {
     @Override
     public boolean startCollecting() {
         mUiDevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
-        metrics.clear();
         return true;
     }
 
     @Override
     public Map<String, String> getMetrics() {
+        Map<String, String> metrics = new HashMap<>();
+        for (String serviceName : mServiceNames) {
+            String outputPath = runDumpsysCmd(serviceName);
+            metrics.put(String.format(DUMPSYS_SERVICE_KEY, serviceName), outputPath);
+        }
         return metrics;
     }
 
     @Override
     public boolean stopCollecting() {
-        for (String serviceName : mServiceNames) {
-            String outputPath = runDumpsysCmd(serviceName);
-            metrics.put(String.format(DUMPSYS_SERVICE_KEY, serviceName), outputPath);
-        }
         return true;
     }
 
