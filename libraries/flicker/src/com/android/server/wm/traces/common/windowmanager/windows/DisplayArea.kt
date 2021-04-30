@@ -43,6 +43,6 @@ open class DisplayArea(
     }
 
     override fun toString(): String {
-        return "$kind {$token $title} isTaskArea=$isTaskDisplayArea"
+        return "${this::class.simpleName} {$token $title} isTaskArea=$isTaskDisplayArea"
     }
 }

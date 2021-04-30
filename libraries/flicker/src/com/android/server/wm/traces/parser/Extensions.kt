@@ -28,7 +28,7 @@ import com.android.server.wm.traces.common.Region
 internal const val LOG_TAG = "AMWM_FLICKER"
 
 fun Region.toAndroidRegion(): android.graphics.Region {
-    return android.graphics.Region(bounds.left, bounds.top, bounds.right, bounds.bottom)
+    return android.graphics.Region(left, top, right, bottom)
 }
 
 fun Rect.toAndroidRect(): android.graphics.Rect {

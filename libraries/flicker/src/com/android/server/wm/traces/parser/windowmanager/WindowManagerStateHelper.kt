@@ -32,10 +32,11 @@ import com.android.server.wm.traces.common.windowmanager.WindowManagerState
 import com.android.server.wm.traces.parser.getCurrentStateDump
 import com.android.server.wm.traces.common.windowmanager.windows.ConfigurationContainer
 import com.android.server.wm.traces.common.windowmanager.windows.WindowContainer
+import com.android.server.wm.traces.common.windowmanager.windows.WindowState
 import com.android.server.wm.traces.parser.Condition
 import com.android.server.wm.traces.parser.LOG_TAG
 import com.android.server.wm.traces.parser.toActivityName
-import com.android.server.wm.traces.parser.toAndroidRect
+import com.android.server.wm.traces.parser.toAndroidRegion
 import com.android.server.wm.traces.parser.toWindowName
 
 open class WindowManagerStateHelper @JvmOverloads constructor(
@@ -208,17 +209,25 @@ open class WindowManagerStateHelper @JvmOverloads constructor(
             val navBarWindowVisible = it.wmState.isWindowVisible(NAV_BAR_WINDOW_NAME)
             val statusBarWindowVisible = it.wmState.isWindowVisible(STATUS_BAR_WINDOW_NAME)
             val navBarLayerVisible = it.layerState.isVisible(NAV_BAR_LAYER_NAME)
+            val navBarLayerAlpha = it.layerState.getLayerWithBuffer(NAV_BAR_LAYER_NAME)
+                ?.color?.a ?: 0f
             val statusBarLayerVisible = it.layerState.isVisible(STATUS_BAR_LAYER_NAME)
+            val statusBarLayerAlpha = it.layerState.getLayerWithBuffer(STATUS_BAR_LAYER_NAME)
+                ?.color?.a ?: 0f
             val result = navBarWindowVisible &&
                 navBarLayerVisible &&
                 statusBarWindowVisible &&
-                statusBarLayerVisible
+                statusBarLayerVisible &&
+                navBarLayerAlpha == 1f &&
+                statusBarLayerAlpha == 1f
 
             Log.v(LOG_TAG, "Current $result " +
                 "navBarWindowVisible($navBarWindowVisible) " +
                 "navBarLayerVisible($navBarLayerVisible) " +
                 "statusBarWindowVisible($statusBarWindowVisible) " +
-                "statusBarLayerVisible($statusBarLayerVisible)")
+                "statusBarLayerVisible($statusBarLayerVisible) " +
+                "navBarLayerAlpha($navBarLayerAlpha) " +
+                "statusBarLayerAlpha($statusBarLayerAlpha)")
 
             result
         }
@@ -446,9 +455,9 @@ open class WindowManagerStateHelper @JvmOverloads constructor(
      * Obtains a [WindowContainer] from the current device state, or null if the WindowContainer
      * doesn't exist
      */
-    fun getWindow(activity: ComponentName): WindowContainer? {
+    fun getWindow(activity: ComponentName): WindowState? {
         val windowName = activity.toWindowName()
-        return this.currentState.wmState.windowContainers
+        return this.currentState.wmState.windowStates
             .firstOrNull { it.title == windowName }
     }
 
@@ -457,10 +466,7 @@ open class WindowManagerStateHelper @JvmOverloads constructor(
      */
     fun getWindowRegion(activity: ComponentName): Region {
         val window = getWindow(activity)
-
-        val region = Region()
-        window?.rects?.forEach { region.op(it.toAndroidRect(), Region.Op.UNION) }
-        return region
+        return window?.frameRegion?.toAndroidRegion() ?: Region()
     }
 
     companion object {

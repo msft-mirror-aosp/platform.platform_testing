@@ -19,6 +19,7 @@ package com.android.server.wm.flicker.assertions
 import com.android.server.wm.flicker.traces.FlickerSubjectException
 import com.google.common.truth.Fact
 import com.google.common.truth.FailureMetadata
+import com.google.common.truth.StandardSubjectBuilder
 import com.google.common.truth.Subject
 
 /**
@@ -88,4 +89,10 @@ abstract class FlickerSubject(
             throw FlickerSubjectException(this, reason)
         }
     }
+
+    /**
+     * Function to make external assertions using the subjects
+     * Necessary because check is protected and final in the Truth library
+     */
+    fun verify(message: String): StandardSubjectBuilder = check(message)
 }

@@ -28,7 +28,7 @@ import com.android.server.wm.traces.common.Rect
 import com.android.server.wm.traces.common.RectF
 import com.android.server.wm.traces.common.Region
 import com.android.server.wm.traces.common.layers.Layer
-import com.android.server.wm.traces.common.layers.LayerTraceEntry
+import com.android.server.wm.traces.common.layers.LayerTraceEntryBuilder
 import com.android.server.wm.traces.common.layers.Transform
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 import com.android.server.wm.traces.parser.windowmanager.WindowManagerStateHelper
@@ -70,19 +70,19 @@ class WindowManagerStateHelperTest {
 
     private fun createImaginaryLayer(name: String, index: Int, id: Int, parentId: Int): Layer {
         val transform = Transform(0, Transform.Matrix(0f, 0f, 0f, 0f, 0f, 0f))
-        val rect = RectF().also {
-            it.left = index.toFloat()
-            it.top = index.toFloat()
-            it.right = index.toFloat() + 1
-            it.bottom = index.toFloat() + 1
-        }
+        val rect = RectF(
+            left = index.toFloat(),
+            top = index.toFloat(),
+            right = index.toFloat() + 1,
+            bottom = index.toFloat() + 1
+        )
         return Layer(
             name,
             id,
             parentId,
             z = 0,
-            visibleRegion = Region(0, 0, 1, 1),
-            activeBuffer = Buffer(1, 1),
+            visibleRegion = Region(rect.toRect()),
+            activeBuffer = Buffer(1, 1, 1, 1),
             flags = 0,
             _bounds = rect,
             color = Color(0f, 0f, 0f, 1f),
@@ -97,8 +97,12 @@ class WindowManagerStateHelperTest {
             effectiveScalingMode = 0,
             bufferTransform = transform,
             hwcCompositionType = 0,
-            hwcCrop = RectF(),
-            hwcFrame = Rect()
+            hwcCrop = RectF.EMPTY,
+            hwcFrame = Rect.EMPTY,
+            crop = rect.toRect(),
+            backgroundBlurRadius = 0,
+            isRelativeOf = false,
+            zOrderRelativeOfId = -1
         )
     }
 
@@ -126,8 +130,8 @@ class WindowManagerStateHelperTest {
                 if (wmState.inputMethodWindowState?.isSurfaceShown == true) {
                     layerList.add(WindowManagerStateHelper.IME_LAYER_NAME)
                 }
-                val layerTraceEntry = LayerTraceEntry.fromFlattenedLayers(0,
-                    createImaginaryVisibleLayers(layerList), orphanLayerCallback = null)
+                val layerTraceEntry = LayerTraceEntryBuilder(timestamp = 0,
+                    layers = createImaginaryVisibleLayers(layerList)).build()
                 WindowManagerStateHelper.Dump(
                     wmState,
                     layerTraceEntry
