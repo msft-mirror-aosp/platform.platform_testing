@@ -27,6 +27,6 @@ open class RootWindowContainer(
     windowContainer: WindowContainer
 ) : WindowContainer(windowContainer) {
     override fun toString(): String {
-        return "RootWindowContainer: {$token $title}"
+        return "${this::class.simpleName}: {$token $title}"
     }
 }

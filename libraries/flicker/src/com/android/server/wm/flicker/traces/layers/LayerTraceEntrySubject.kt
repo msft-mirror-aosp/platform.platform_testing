@@ -119,18 +119,13 @@ class LayerTraceEntrySubject private constructor(
     fun visibleRegion(vararg partialLayerNames: String): RegionSubject {
         val selectedLayers = entry.flattenedLayers
             .filter { it.name.containsAny(*partialLayerNames) }
-        val visibleLayers = selectedLayers.filter { it.isVisible && !it.isHiddenByParent }
-        val visibleAreas = visibleLayers.map { it.visibleRegion }
+        val visibleLayers = selectedLayers.filter { it.isVisible }
+        val visibleAreas = visibleLayers.mapNotNull { it.visibleRegion }
 
         val invisibleLayerFacts = selectedLayers
-            .filter { it.isInvisible || it.isHiddenByParent }
-            .mapNotNull {
-                when {
-                    it.isInvisible -> Fact.fact("Is Invisible", it.visibilityReason)
-                    it.isHiddenByParent -> Fact.fact("Hidden by parent", it.hiddenByParentReason)
-                    else -> null
-                }
-            }.toMutableList()
+            .filter { it.isInvisible }
+            .map { Fact.fact("Is Invisible", "${it.name} - ${it.visibilityReason}") }
+            .toMutableList()
 
         if (selectedLayers.isEmpty()) {
             partialLayerNames.forEach { layerName ->
@@ -178,7 +173,7 @@ class LayerTraceEntrySubject private constructor(
             .filter { it.name.containsAny(*partialLayerNames) }
         for (layer in filteredLayers) {
             if (layer.isHiddenByParent) {
-                reason = Fact.fact("Hidden by parent", layer.hiddenByParentReason)
+                reason = Fact.fact("Hidden by parent", layer.parent.name)
                 continue
             }
             if (layer.isInvisible) {

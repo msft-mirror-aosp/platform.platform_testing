@@ -63,6 +63,10 @@ open class EventLogMonitor : ITransitionMonitor {
     }
 
     override fun stop() {
+        if (!::_logSeparator.isInitialized) {
+            _logs = emptyList()
+            return
+        }
         // Read event log from log marker till end
         _logs = getEventLogs(EVENT_LOG_INPUT_FOCUS_TAG)
     }

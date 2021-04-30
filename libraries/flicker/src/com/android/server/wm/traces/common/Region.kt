@@ -16,20 +16,31 @@
 
 package com.android.server.wm.traces.common
 
-data class Region(val rect: Rect) {
-    constructor(region: Region) : this(Rect(
-        region.bounds.left,
-        region.bounds.top,
-        region.bounds.right,
-        region.bounds.bottom))
+class Region(val rects: Array<Rect>) : Rect(
+    rects.map { it.left }.min() ?: 0,
+    rects.map { it.top }.min() ?: 0,
+    rects.map { it.right }.max() ?: 0,
+    rects.map { it.bottom }.max() ?: 0
+) {
+    constructor(
+        left: Int,
+        top: Int,
+        right: Int,
+        bottom: Int
+    ) : this(Rect(left, top, right, bottom))
 
-    constructor(left: Int, top: Int, right: Int, bottom: Int) : this(Rect(left, top, right, bottom))
+    constructor(rect: Rect): this(arrayOf(rect))
 
-    constructor() : this(Rect())
+    constructor(rect: RectF): this(
+        Rect(rect.left.toInt(), rect.top.toInt(), rect.right.toInt(), rect.bottom.toInt()))
 
-    val bounds: Rect = rect
-    val isEmpty: Boolean = rect.isEmpty
+    constructor() : this(Rect.EMPTY)
+
     override fun toString(): String {
-        return bounds.toString()
+        return rects.joinToString(", ")
+    }
+
+    companion object {
+        val EMPTY = Region()
     }
 }

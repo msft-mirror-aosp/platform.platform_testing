@@ -496,7 +496,7 @@ class RegionSubject(
 
         private fun mergeRegions(regions: List<Region>): android.graphics.Region {
             val region = android.graphics.Region()
-            regions.forEach { region.op(it.rect.toAndroidRect(), android.graphics.Region.Op.UNION) }
+            regions.forEach { region.op(it.toAndroidRect(), android.graphics.Region.Op.UNION) }
             return region
         }
 

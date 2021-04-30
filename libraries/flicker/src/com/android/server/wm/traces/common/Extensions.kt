@@ -23,7 +23,8 @@ private const val HOUR_AS_NANOSECONDS: Long = 3600000000000
 private const val DAY_AS_NANOSECONDS: Long = 86400000000000
 
 internal fun prettyTimestamp(timestampNs: Long): String {
-    var remainingNs = timestampNs
+    // Necessary for compatibility with JS Number
+    var remainingNs = "$timestampNs".toLong()
     val prettyTimestamp = StringBuilder()
 
     val timeUnitToNanoSeconds = mapOf(
