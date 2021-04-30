@@ -32,8 +32,6 @@ open class Activity(
     val isTranslucent: Boolean,
     windowContainer: WindowContainer
 ) : WindowContainer(windowContainer, name, visible) {
-    override val kind: String = "Activity"
-
     /**
      * Checks if the activity contains a window with title containing [partialWindowTitle]
      *
@@ -44,6 +42,6 @@ open class Activity(
     }
 
     override fun toString(): String {
-        return "$kind {$token $title} state=$state visible=$isVisible"
+        return "${this::class.simpleName}: {$token $title} state=$state visible=$isVisible"
     }
 }

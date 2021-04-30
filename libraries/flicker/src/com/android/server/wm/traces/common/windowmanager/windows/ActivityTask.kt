@@ -32,7 +32,7 @@ open class ActivityTask(
     val taskId: Int,
     val rootTaskId: Int,
     val displayId: Int,
-    private val _lastNonFullscreenBounds: Rect?,
+    _lastNonFullscreenBounds: Rect?,
     val realActivity: String,
     val origActivity: String,
     val resizeMode: Int,
@@ -45,16 +45,16 @@ open class ActivityTask(
     val minHeight: Int,
     windowContainer: WindowContainer
 ) : WindowContainer(windowContainer) {
-    override val kind: String = "Task"
+    override val isVisible: Boolean = false
     override val name: String = taskId.toString()
     override val isEmpty: Boolean get() = tasks.isEmpty() && activities.isEmpty()
 
-    val lastNonFullscreenBounds: Rect get() = _lastNonFullscreenBounds ?: Rect()
+    val lastNonFullscreenBounds: Rect = _lastNonFullscreenBounds ?: Rect.EMPTY
     val isRootTask: Boolean get() = taskId == rootTaskId
     val tasks: List<ActivityTask>
-        get() = this.childrenWindows.reversed().filterIsInstance<ActivityTask>()
+        get() = this.children.reversed().filterIsInstance<ActivityTask>()
     val activities: List<Activity>
-        get() = this.childrenWindows.reversed().filterIsInstance<Activity>()
+        get() = this.children.reversed().filterIsInstance<Activity>()
     /** The top task in the stack.
      */
     // NOTE: Unlike the WindowManager internals, we dump the state from top to bottom,
@@ -94,6 +94,6 @@ open class ActivityTask(
     fun containsActivity(activityName: String) = getActivity(activityName) != null
 
     override fun toString(): String {
-        return "$kind: {$token $title} id=$taskId bounds=$bounds"
+        return "${this::class.simpleName}: {$token $title} id=$taskId bounds=$bounds"
     }
 }

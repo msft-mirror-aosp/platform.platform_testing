@@ -30,13 +30,13 @@ open class DisplayContent(
     val focusedRootTaskId: Int,
     val resumedActivity: String,
     val singleTaskInstance: Boolean,
-    private val _defaultPinnedStackBounds: Rect?,
-    private val _pinnedStackMovementBounds: Rect?,
+    _defaultPinnedStackBounds: Rect?,
+    _pinnedStackMovementBounds: Rect?,
     val displayRect: Rect,
     val appRect: Rect,
     val dpi: Int,
     val flags: Int,
-    private val _stableBounds: Rect?,
+    _stableBounds: Rect?,
     val surfaceSize: Int,
     val focusedApp: String,
     val lastTransition: String,
@@ -45,12 +45,12 @@ open class DisplayContent(
     val lastOrientation: Int,
     windowContainer: WindowContainer
 ) : WindowContainer(windowContainer) {
-    override val kind: String = "Display"
     override val name: String = id.toString()
+    override val isVisible: Boolean = false
 
-    val defaultPinnedStackBounds: Rect get() = _defaultPinnedStackBounds ?: Rect()
-    val pinnedStackMovementBounds: Rect get() = _pinnedStackMovementBounds ?: Rect()
-    val stableBounds: Rect get() = _stableBounds ?: Rect()
+    val defaultPinnedStackBounds: Rect = _defaultPinnedStackBounds ?: Rect.EMPTY
+    val pinnedStackMovementBounds: Rect = _pinnedStackMovementBounds ?: Rect.EMPTY
+    val stableBounds: Rect = _stableBounds ?: Rect.EMPTY
 
     val rootTasks: Array<ActivityTask>
         get() {
@@ -68,9 +68,7 @@ open class DisplayContent(
             }
             // Add root tasks controlled by an organizer
             rootOrganizedTasks.reversed().forEach { task ->
-                for (j in task.childrenWindows.indices.reversed()) {
-                    tasks.add(task.childrenWindows[j] as ActivityTask)
-                }
+                tasks.addAll(task.children.reversed().map { it as ActivityTask })
             }
 
             return tasks.toTypedArray()
@@ -92,6 +90,7 @@ open class DisplayContent(
     }
 
     override fun toString(): String {
-        return "$kind #$id: name=$title mDisplayRect=$displayRect mAppRect=$appRect mFlags=$flags"
+        return "${this::class.simpleName} #$id: name=$title mDisplayRect=$displayRect " +
+            "mAppRect=$appRect mFlags=$flags"
     }
 }
