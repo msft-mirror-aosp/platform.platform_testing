@@ -157,8 +157,6 @@ native_tests := \
     syscall_filter_unittest_gtest \
     time-unit-tests \
     tokio_device_test_tests_buffered \
-    tokio_device_test_tests_fs_file \
-    tokio_device_test_tests_fs_link \
     tokio_device_test_tests_io_async_read \
     tokio_device_test_tests_io_copy_bidirectional \
     tokio_device_test_tests_io_lines \
@@ -173,24 +171,13 @@ native_tests := \
     tokio_device_test_tests_io_write_int \
     tokio_device_test_tests_macros_join \
     tokio_device_test_tests_no_rt \
-    tokio_device_test_tests_process_issue_2174 \
-    tokio_device_test_tests_process_issue_42 \
-    tokio_device_test_tests_process_smoke \
     tokio_device_test_tests_rt_basic \
     tokio_device_test_tests_rt_threaded \
-    tokio_device_test_tests_signal_ctrl_c \
-    tokio_device_test_tests_signal_drop_rt \
-    tokio_device_test_tests_signal_drop_signal \
-    tokio_device_test_tests_signal_multi_rt \
-    tokio_device_test_tests_signal_no_rt \
-    tokio_device_test_tests_signal_notify_both \
-    tokio_device_test_tests_signal_twice \
     tokio_device_test_tests_sync_barrier \
     tokio_device_test_tests_sync_broadcast \
     tokio_device_test_tests_sync_errors \
     tokio_device_test_tests_sync_mpsc \
     tokio_device_test_tests_sync_mutex_owned \
-    tokio_device_test_tests_sync_once_cell \
     tokio_device_test_tests_sync_rwlock \
     tokio_device_test_tests_sync_watch \
     tokio_device_test_tests_task_local \
@@ -199,11 +186,8 @@ native_tests := \
     tokio_device_test_tests_tcp_echo \
     tokio_device_test_tests_tcp_into_std \
     tokio_device_test_tests_tcp_shutdown \
-    tokio_device_test_tests_time_interval \
     tokio_device_test_tests_time_rt \
-    tokio_device_test_tests_time_timeout \
     tokio_device_test_tests_uds_split \
-    tokio_device_test_tests_uds_stream \
     tokio-test_device_test_src_lib \
     tokio-test_device_test_tests_block_on \
     tokio-test_device_test_tests_io \
