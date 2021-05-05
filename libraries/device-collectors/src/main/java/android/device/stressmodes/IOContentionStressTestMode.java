@@ -34,18 +34,20 @@ import org.junit.runner.Description;
 import java.io.File;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * This stressor test read file from a mp4 file and write to a new file to simulate the IO
  * contention.
  */
 public class IOContentionStressTestMode extends InstrumentationRunListener {
-    private static final String TAG = BackgroundTranscodingStressTestMode.class.getSimpleName();
+    private static final String TAG = IOContentionStressTestMode.class.getSimpleName();
     private Context mContext;
     private static final int MAX_SAMPLE_SIZE = 256 * 1024;
-
     private ContentResolver mContentResolver;
     private boolean mStop = false;
+    private ExecutorService mExecutorService = null;
 
     public IOContentionStressTestMode() {
         mContext = InstrumentationRegistry.getInstrumentation().getContext();
@@ -53,6 +55,7 @@ public class IOContentionStressTestMode extends InstrumentationRunListener {
                 .getUiAutomation()
                 .adoptShellPermissionIdentity("android.permission.WRITE_MEDIA_STORAGE");
         mContentResolver = mContext.getContentResolver();
+        mExecutorService = Executors.newSingleThreadExecutor();
     }
 
     public final void doCopyFile() throws Exception {
@@ -60,7 +63,7 @@ public class IOContentionStressTestMode extends InstrumentationRunListener {
         String path = "/data/local/tmp/testHevc.mp4";
         final File file = new File(path);
 
-        Log.i(TAG, "Transcoding file " + file);
+        Log.i(TAG, "Copying file " + file);
 
         // Create a file Uri: file:///data/user/0/android.media.cts/cache/HevcTranscode.mp4
         Uri destinationUri =
@@ -142,15 +145,29 @@ public class IOContentionStressTestMode extends InstrumentationRunListener {
 
     @Override
     public final void testStarted(Description description) throws Exception {
+        mExecutorService = Executors.newSingleThreadExecutor();
         Log.i(TAG, "IOContentionStressTestMode stress started");
-        while (!mStop) {
-            doCopyFile();
-        }
+        mExecutorService.submit(
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        while (!mStop) {
+                            try {
+                                doCopyFile();
+                            } catch (Exception ex) {
+                                Log.e(TAG, "Copy file get exception: " + ex);
+                            }
+                        }
+                    }
+                });
     }
 
     @Override
     public final void testFinished(Description description) throws Exception {
         Log.i(TAG, "IOContentionStressTestMode stress finished");
         mStop = true;
+        if (mExecutorService != null) {
+            mExecutorService.shutdown();
+        }
     }
 }
