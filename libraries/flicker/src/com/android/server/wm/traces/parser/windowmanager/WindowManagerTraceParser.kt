@@ -53,6 +53,7 @@ import com.android.server.wm.nano.WindowManagerServiceDumpProto
 import com.android.server.wm.nano.WindowManagerTraceFileProto
 import com.android.server.wm.nano.WindowStateProto
 import com.android.server.wm.nano.WindowTokenProto
+import com.android.server.wm.traces.common.Bounds
 import com.android.server.wm.traces.common.windowmanager.windows.WindowLayoutParams
 import com.android.server.wm.traces.parser.LOG_TAG
 import com.google.protobuf.nano.InvalidProtocolBufferNanoException
@@ -384,6 +385,8 @@ object WindowManagerTraceParser {
                         WindowState.WINDOW_TYPE_STARTING
                     else -> 0
                 },
+                requestedSize = Bounds(proto.requestedWidth, proto.requestedHeight),
+                surfacePosition = proto.surfacePosition?.toRect(),
                 _frame = proto.windowFrames?.frame?.toRect(),
                 _containingFrame = proto.windowFrames?.containingFrame?.toRect(),
                 _parentFrame = proto.windowFrames?.parentFrame?.toRect(),

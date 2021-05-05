@@ -16,6 +16,7 @@
 
 package com.android.server.wm.traces.common.windowmanager.windows
 
+import com.android.server.wm.traces.common.Bounds
 import com.android.server.wm.traces.common.Rect
 import com.android.server.wm.traces.common.Region
 
@@ -33,6 +34,8 @@ open class WindowState(
     val layer: Int,
     val isSurfaceShown: Boolean,
     val windowType: Int,
+    val requestedSize: Bounds,
+    val surfacePosition: Rect?,
     _frame: Rect?,
     _containingFrame: Rect?,
     _parentFrame: Rect?,

@@ -107,7 +107,19 @@ data class RectF(
      */
     fun intersection(r: RectF): RectF = intersection(r.left, r.top, r.right, r.bottom)
 
+    fun prettyPrint(): String = prettyPrint(this)
+
+    override fun toString(): String = if (isEmpty) "[empty]" else prettyPrint()
+
     companion object {
         val EMPTY = RectF()
+
+        fun prettyPrint(rect: RectF): String {
+            val left = FloatFormatter.format(rect.left)
+            val top = FloatFormatter.format(rect.top)
+            val right = FloatFormatter.format(rect.right)
+            val bottom = FloatFormatter.format(rect.bottom)
+            return "($left, $top) - ($right, $bottom)"
+        }
     }
 }
