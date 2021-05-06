@@ -26,6 +26,10 @@ open class Bounds(val width: Int, val height: Int) {
     val size: Bounds
         get() = Bounds(width, height)
 
+    open fun prettyPrint(): String = prettyPrint(this)
+
+    override fun toString(): String = if (isEmpty) "[empty]" else prettyPrint()
+
     override fun equals(other: Any?): Boolean =
         other is Bounds &&
             other.height == height &&
@@ -39,5 +43,7 @@ open class Bounds(val width: Int, val height: Int) {
 
     companion object {
         val EMPTY: Bounds = Bounds(0, 0)
+
+        fun prettyPrint(bounds: Bounds): String = "${bounds.width} x ${bounds.height}"
     }
 }

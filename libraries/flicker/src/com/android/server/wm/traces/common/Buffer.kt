@@ -17,6 +17,8 @@
 package com.android.server.wm.traces.common
 
 class Buffer(width: Int, height: Int, val stride: Int, val format: Int) : Bounds(width, height) {
+    override fun prettyPrint(): String = prettyPrint(this)
+
     override fun equals(other: Any?): Boolean =
         other is Buffer &&
         other.height == height &&
@@ -34,5 +36,8 @@ class Buffer(width: Int, height: Int, val stride: Int, val format: Int) : Bounds
 
     companion object {
         val EMPTY: Buffer = Buffer(0, 0, 0, 0)
+
+        fun prettyPrint(buffer: Buffer): String = "w:${buffer.width}, h:${buffer.height}, " +
+            "stride:${buffer.stride}, format:${buffer.format}"
     }
 }

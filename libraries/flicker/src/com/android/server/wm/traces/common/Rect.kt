@@ -40,6 +40,8 @@ open class Rect(
         return RectF(left.toFloat(), top.toFloat(), right.toFloat(), bottom.toFloat())
     }
 
+    open fun prettyPrint(): String = prettyPrint(this)
+
     override fun equals(other: Any?): Boolean = other?.toString() == this.toString()
 
     /**
@@ -79,15 +81,12 @@ open class Rect(
         return result
     }
 
-    override fun toString(): String {
-        return if (isEmpty) {
-            "[empty]"
-        } else {
-            "[$left, $top, $right, $bottom]"
-        }
-    }
+    override fun toString(): String = if (isEmpty) "[empty]" else prettyPrint()
 
     companion object {
         val EMPTY = Rect()
+
+        fun prettyPrint(rect: Rect): String = "(${rect.left}, ${rect.top}) - " +
+            "(${rect.right}, ${rect.bottom})"
     }
 }
