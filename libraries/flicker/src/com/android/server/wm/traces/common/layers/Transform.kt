@@ -46,7 +46,59 @@ open class Transform(val type: Int?, val matrix: Matrix) {
             return matrix.dsdx * matrix.dtdy != matrix.dtdx * matrix.dsdy
         }
 
-    private val isSimpleTransform = isSimpleTransform(type)
+    private val typeFlags: Array<String>
+        get() {
+            if (type == null) {
+                return arrayOf("IDENTITY")
+            }
+
+            val result = mutableListOf<String>()
+
+            if (type.isFlagClear(SCALE_VAL or ROTATE_VAL or TRANSLATE_VAL)) {
+                result.add("IDENTITY")
+            }
+
+            if (type.isFlagSet(SCALE_VAL)) {
+                result.add("SCALE")
+            }
+
+            if (type.isFlagSet(TRANSLATE_VAL)) {
+                result.add("TRANSLATE")
+            }
+
+            when {
+                type.isFlagSet(ROT_INVALID_VAL) -> result.add("ROT_INVALID")
+                type.isFlagSet(ROT_90_VAL or FLIP_V_VAL or FLIP_H_VAL) -> result.add("ROT_270")
+                type.isFlagSet(FLIP_V_VAL or FLIP_H_VAL) -> result.add("ROT_180")
+                else -> {
+                    if (type.isFlagSet(ROT_90_VAL)) {
+                        result.add("ROT_90")
+                    }
+                    if (type.isFlagSet(FLIP_V_VAL)) {
+                        result.add("FLIP_V")
+                    }
+                    if (type.isFlagSet(FLIP_H_VAL)) {
+                        result.add("FLIP_H")
+                    }
+                }
+            }
+
+            if (result.isEmpty()) {
+                throw RuntimeException("Unknown transform type $type")
+            }
+
+            return result.toTypedArray()
+        }
+
+    fun prettyPrint(): String {
+        val transformType = typeFlags.joinToString("|")
+
+        if (isSimpleTransform(type)) {
+            return transformType
+        }
+
+        return "$transformType ${matrix.prettyPrint()}"
+    }
 
     fun apply(bounds: RectF?): RectF {
         return multiplyRect(matrix, bounds ?: RectF.EMPTY)
@@ -63,7 +115,9 @@ open class Transform(val type: Int?, val matrix: Matrix) {
         val dsdy: Float,
         val dtdy: Float,
         val ty: Float
-    )
+    ) {
+        fun prettyPrint(): String = "dsdx:$dsdx   dtdx:$dtdx   dsdy:$dsdy   dtdy:$dtdy"
+    }
 
     private data class Vec2(val x: Float, val y: Float)
 
