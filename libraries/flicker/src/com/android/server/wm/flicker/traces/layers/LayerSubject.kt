@@ -100,7 +100,7 @@ class LayerSubject private constructor(
      */
     fun hasBufferSize(size: Bounds): LayerSubject = apply {
         layer ?: return exists()
-        val bufferSize = Bounds(layer.activeBuffer?.width ?: 0, layer.activeBuffer?.height ?: 0)
+        val bufferSize = layer.activeBuffer?.size ?: Bounds.EMPTY
         check("Incorrect buffer size").that(bufferSize).isEqualTo(size)
     }
 
