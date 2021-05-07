@@ -61,7 +61,11 @@ data class ChangeDisplayOrientationRule @JvmOverloads constructor(
                 }
 
                 wmHelper.waitForRotation(rotation)
-                wmHelper.waitForNavBarStatusBarVisible()
+                // During seamless rotation the app window is shown
+                val currWmState = wmHelper.currentState.wmState
+                if (currWmState.visibleWindows.none { it.isFullscreen }) {
+                    wmHelper.waitForNavBarStatusBarVisible()
+                }
                 wmHelper.waitForAppTransitionIdle()
 
                 // Ensure WindowManagerService wait until all animations have completed

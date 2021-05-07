@@ -57,6 +57,7 @@ open class WindowState(
     val surfaceInsets: Rect = _surfaceInsets ?: Rect.EMPTY
     val givenContentInsets: Rect = _givenContentInsets ?: Rect.EMPTY
     val crop: Rect = _crop ?: Rect.EMPTY
+    override val isFullscreen: Boolean get() = this.attributes.flags.and(FLAG_FULLSCREEN) > 0
 
     val isStartingWindow: Boolean = windowType == WINDOW_TYPE_STARTING
     val isExitingWindow: Boolean = windowType == WINDOW_TYPE_EXITING
@@ -112,6 +113,13 @@ open class WindowState(
     }
 
     companion object {
+        /**
+         * From {@see android.view.WindowManager.FLAG_FULLSCREEN}.
+         *
+         * This class is shared between JVM and JS (Winscope) and cannot access
+         * Android internals
+         */
+        private const val FLAG_FULLSCREEN = 0x00000400
         internal const val WINDOW_TYPE_STARTING = 1
         internal const val WINDOW_TYPE_EXITING = 2
         private const val WINDOW_TYPE_DEBUGGER = 3
