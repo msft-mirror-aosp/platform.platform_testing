@@ -148,9 +148,6 @@ class LayersTraceSubjectTest {
     @Test
     fun testCanDetectVisibleLayersMoreThanOneConsecutiveEntry() {
         testCanDetectVisibleLayersMoreThanOneConsecutiveEntry(
-            readLayerTraceFromFile("layers_trace_valid_visible_layers.pb"))
-
-        testCanDetectVisibleLayersMoreThanOneConsecutiveEntry(
             readLayerTraceFromFile("layers_trace_snapshot_visible.pb"))
     }
 

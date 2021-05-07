@@ -16,31 +16,12 @@
 
 package com.android.server.wm.traces.common
 
-class Region(val rects: Array<Rect>) : Rect(
-    rects.map { it.left }.min() ?: 0,
-    rects.map { it.top }.min() ?: 0,
-    rects.map { it.right }.max() ?: 0,
-    rects.map { it.bottom }.max() ?: 0
-) {
-    constructor(
-        left: Int,
-        top: Int,
-        right: Int,
-        bottom: Int
-    ) : this(Rect(left, top, right, bottom))
-
-    constructor(rect: Rect): this(arrayOf(rect))
-
-    constructor(rect: RectF): this(
-        Rect(rect.left.toInt(), rect.top.toInt(), rect.right.toInt(), rect.bottom.toInt()))
-
-    constructor() : this(Rect.EMPTY)
+data class Point(val x: Int, val y: Int) {
+    fun prettyPrint(): String = prettyPrint(this)
 
     override fun toString(): String = prettyPrint()
 
-    override fun prettyPrint(): String = rects.joinToString(", ") { it.prettyPrint() }
-
     companion object {
-        val EMPTY = Region()
+        fun prettyPrint(point: Point): String = "(${point.x}, ${point.y})"
     }
 }

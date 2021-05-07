@@ -26,20 +26,20 @@ import com.android.server.wm.traces.common.Rect
  *
  */
 open class WindowConfiguration(
-    private val _appBounds: Rect?,
-    private val _bounds: Rect?,
-    private val _maxBounds: Rect?,
+    _appBounds: Rect?,
+    _bounds: Rect?,
+    _maxBounds: Rect?,
     val windowingMode: Int,
     val activityType: Int
 ) {
-    val appBounds: Rect get() = _appBounds ?: Rect()
-    val bounds: Rect get() = _bounds ?: Rect()
-    val maxBounds: Rect get() = _maxBounds ?: Rect()
+    val appBounds: Rect = _appBounds ?: Rect.EMPTY
+    val bounds: Rect = _bounds ?: Rect.EMPTY
+    val maxBounds: Rect = _maxBounds ?: Rect.EMPTY
 
     val isEmpty: Boolean
-        get() = _appBounds?.isEmpty ?: true &&
-            _bounds?.isEmpty ?: true &&
-            _maxBounds?.isEmpty ?: true &&
+        get() = appBounds.isEmpty &&
+            bounds.isEmpty &&
+            maxBounds.isEmpty &&
             windowingMode == 0 &&
             activityType == 0
 }

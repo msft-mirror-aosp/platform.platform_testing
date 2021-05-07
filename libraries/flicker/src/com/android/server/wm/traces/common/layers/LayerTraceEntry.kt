@@ -28,6 +28,8 @@ import com.android.server.wm.traces.common.prettyTimestamp
  **/
 open class LayerTraceEntry constructor(
     override val timestamp: Long, // hierarchical representation of layers
+    val hwcBlob: String,
+    val where: String,
     _rootLayers: Array<Layer>
 ) : ITraceEntry {
     val flattenedLayers: Array<Layer> = fillFlattenedLayers(_rootLayers)
@@ -54,7 +56,7 @@ open class LayerTraceEntry constructor(
     }
 
     val visibleLayers: Array<Layer>
-        get() = flattenedLayers.filter { it.isVisible && !it.isHiddenByParent }.toTypedArray()
+        get() = flattenedLayers.filter { it.isVisible }.toTypedArray()
 
     private fun Layer.topDownTraversal(): List<Layer> {
         val traverseList = mutableListOf(this)
@@ -96,7 +98,7 @@ open class LayerTraceEntry constructor(
 
     fun getLayerWithBuffer(name: String): Layer? {
         return flattenedLayers.firstOrNull {
-            it.name.contains(name) && it.activeBuffer != null
+            it.name.contains(name) && it.activeBuffer.isNotEmpty
         }
     }
 
@@ -108,69 +110,5 @@ open class LayerTraceEntry constructor(
 
     override fun toString(): String {
         return prettyTimestamp(timestamp)
-    }
-
-    companion object {
-        /** Constructs the layer hierarchy from a flattened list of layers.  */
-        fun fromFlattenedLayers(
-            timestamp: Long,
-            layers: List<Layer>,
-            orphanLayerCallback: ((Layer) -> Boolean)?
-        ): LayerTraceEntry {
-            val layerMap: MutableMap<Int, Layer> = HashMap()
-            val orphans = mutableListOf<Layer>()
-
-            for (layer in layers) {
-                val id = layer.id
-
-                if (layerMap.containsKey(id)) {
-                    throw RuntimeException("Duplicate layer id found: $id")
-                }
-                layerMap[id] = layer
-            }
-
-            for (layer in layers) {
-                val parentId = layer.parentId
-
-                val parentLayer = layerMap[parentId]
-                if (parentLayer == null) {
-                    orphans.add(layer)
-                    continue
-                }
-                parentLayer.addChild(layer)
-                layer.parent = parentLayer
-            }
-
-            // Getting the first orphan works because when dumping the layers, the root layer comes
-            // first, and given that orphans are added in the same order as the layers are provided
-            // in the first orphan layer should be the root layer.
-            val rootLayer = orphans.firstOrNull() ?: throw IllegalStateException(
-                "Display root layer not found.")
-            orphans.remove(rootLayer)
-
-            // Find all root layers (any sibling of the root layer is considered a root layer in the trace)
-            val rootLayers = mutableListOf(rootLayer)
-            for (orphan in orphans) {
-                if (orphan.parentId == rootLayer.parentId) {
-                    rootLayers.add(orphan)
-                }
-            }
-
-            // Remove RootLayers from orphans
-            orphans.removeAll(rootLayers)
-
-            // Fail if we find orphan layers.
-            orphans.forEach { orphan ->
-                // Workaround for b/141326137, ignore the existence of an orphan layer
-                if (orphanLayerCallback == null || orphanLayerCallback.invoke(orphan)) {
-                    return@forEach
-                }
-                throw RuntimeException(
-                        ("Failed to parse layers trace. Found orphan layer with id = ${orphan.id}" +
-                                " with parentId = ${orphan.parentId}"))
-            }
-
-            return LayerTraceEntry(timestamp, rootLayers.toTypedArray())
-        }
     }
 }

@@ -95,7 +95,7 @@ class WindowManagerTraceTest {
 
         this.superclass?.accessProperties(obj)
         if (obj is WindowContainer) {
-            obj.childrenWindows.forEach { it::class.java.accessProperties(it) }
+            obj.children.forEach { it::class.java.accessProperties(it) }
         }
     }
 

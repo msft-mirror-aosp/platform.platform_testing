@@ -16,7 +16,34 @@
 
 package com.android.server.wm.traces.common
 
-data class Bounds(
-    val width: Int,
-    val height: Int
-)
+open class Bounds(val width: Int, val height: Int) {
+    open val isEmpty: Boolean
+        get() = height == 0 || width == 0
+
+    val isNotEmpty: Boolean
+        get() = !isEmpty
+
+    val size: Bounds
+        get() = Bounds(width, height)
+
+    open fun prettyPrint(): String = prettyPrint(this)
+
+    override fun toString(): String = if (isEmpty) "[empty]" else prettyPrint()
+
+    override fun equals(other: Any?): Boolean =
+        other is Bounds &&
+            other.height == height &&
+            other.width == width
+
+    override fun hashCode(): Int {
+        var result = width
+        result = 31 * result + height
+        return result
+    }
+
+    companion object {
+        val EMPTY: Bounds = Bounds(0, 0)
+
+        fun prettyPrint(bounds: Bounds): String = "${bounds.width} x ${bounds.height}"
+    }
+}

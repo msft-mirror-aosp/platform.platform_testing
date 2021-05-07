@@ -16,9 +16,9 @@
 
 package com.android.server.wm.traces.common.windowmanager.windows
 
+import com.android.server.wm.traces.common.Bounds
 import com.android.server.wm.traces.common.Rect
 import com.android.server.wm.traces.common.Region
-import com.android.server.wm.traces.common.WindowRect
 
 /**
  * Represents a window in the window manager hierarchy
@@ -34,30 +34,30 @@ open class WindowState(
     val layer: Int,
     val isSurfaceShown: Boolean,
     val windowType: Int,
-    private val _frame: Rect?,
-    private val _containingFrame: Rect?,
-    private val _parentFrame: Rect?,
-    private val _contentFrame: Rect?,
-    private val _contentInsets: Rect?,
-    private val _surfaceInsets: Rect?,
-    private val _givenContentInsets: Rect?,
-    private val _crop: Rect?,
+    val requestedSize: Bounds,
+    val surfacePosition: Rect?,
+    _frame: Rect?,
+    _containingFrame: Rect?,
+    _parentFrame: Rect?,
+    _contentFrame: Rect?,
+    _contentInsets: Rect?,
+    _surfaceInsets: Rect?,
+    _givenContentInsets: Rect?,
+    _crop: Rect?,
     windowContainer: WindowContainer,
-    val isAppWindow: Boolean,
-    override val rects: Array<Rect> = arrayOf(WindowRect(_frame ?: Rect(), windowContainer,
-        getWindowTitle(windowContainer.title)))
+    val isAppWindow: Boolean
 ) : WindowContainer(windowContainer, getWindowTitle(windowContainer.title)) {
-    override val kind: String = "Window"
     override val isVisible: Boolean get() = super.isVisible && attributes.alpha > 0
 
-    val frame: Rect get() = _frame ?: Rect()
-    val containingFrame: Rect get() = _containingFrame ?: Rect()
-    val parentFrame: Rect get() = _parentFrame ?: Rect()
-    val contentFrame: Rect get() = _contentFrame ?: Rect()
-    val contentInsets: Rect get() = _contentInsets ?: Rect()
-    val surfaceInsets: Rect get() = _surfaceInsets ?: Rect()
-    val givenContentInsets: Rect get() = _givenContentInsets ?: Rect()
-    val crop: Rect get() = _crop ?: Rect()
+    val frame: Rect = _frame ?: Rect.EMPTY
+    val containingFrame: Rect = _containingFrame ?: Rect.EMPTY
+    val parentFrame: Rect = _parentFrame ?: Rect.EMPTY
+    val contentFrame: Rect = _contentFrame ?: Rect.EMPTY
+    val contentInsets: Rect = _contentInsets ?: Rect.EMPTY
+    val surfaceInsets: Rect = _surfaceInsets ?: Rect.EMPTY
+    val givenContentInsets: Rect = _givenContentInsets ?: Rect.EMPTY
+    val crop: Rect = _crop ?: Rect.EMPTY
+    override val isFullscreen: Boolean get() = this.attributes.flags.and(FLAG_FULLSCREEN) > 0
 
     val isStartingWindow: Boolean = windowType == WINDOW_TYPE_STARTING
     val isExitingWindow: Boolean = windowType == WINDOW_TYPE_EXITING
@@ -66,25 +66,21 @@ open class WindowState(
 
     val frameRegion: Region = Region(frame)
 
-    private fun getWindowTypeSuffix(windowType: Int): String {
+    private fun getWindowTypeSuffix(windowType: Int): String =
         when (windowType) {
-            WINDOW_TYPE_STARTING -> return " STARTING"
-            WINDOW_TYPE_EXITING -> return " EXITING"
-            WINDOW_TYPE_DEBUGGER -> return " DEBUGGER"
-            else -> {
-            }
+            WINDOW_TYPE_STARTING -> " STARTING"
+            WINDOW_TYPE_EXITING -> " EXITING"
+            WINDOW_TYPE_DEBUGGER -> " DEBUGGER"
+            else -> ""
         }
-        return ""
-    }
 
-    override fun toString(): String {
-        return "$kind: {$token $title${getWindowTypeSuffix(windowType)}} " +
-            "type=${attributes.type} cf=$containingFrame pf=$parentFrame"
-    }
+    override fun toString(): String = "${this::class.simpleName}: " +
+        "{$token $title${getWindowTypeSuffix(windowType)}} " +
+        "type=${attributes.type} cf=$containingFrame pf=$parentFrame"
 
     override fun equals(other: Any?): Boolean {
         return other is WindowState &&
-            other.kind == kind &&
+            other.stableId == stableId &&
             other.attributes == attributes &&
             other.token == token &&
             other.title == title &&
@@ -108,7 +104,6 @@ open class WindowState(
         result = 31 * result + givenContentInsets.hashCode()
         result = 31 * result + crop.hashCode()
         result = 31 * result + isAppWindow.hashCode()
-        result = 31 * result + kind.hashCode()
         result = 31 * result + isStartingWindow.hashCode()
         result = 31 * result + isExitingWindow.hashCode()
         result = 31 * result + isDebuggerWindow.hashCode()
@@ -118,6 +113,13 @@ open class WindowState(
     }
 
     companion object {
+        /**
+         * From {@see android.view.WindowManager.FLAG_FULLSCREEN}.
+         *
+         * This class is shared between JVM and JS (Winscope) and cannot access
+         * Android internals
+         */
+        private const val FLAG_FULLSCREEN = 0x00000400
         internal const val WINDOW_TYPE_STARTING = 1
         internal const val WINDOW_TYPE_EXITING = 2
         private const val WINDOW_TYPE_DEBUGGER = 3

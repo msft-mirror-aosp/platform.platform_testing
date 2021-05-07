@@ -17,10 +17,10 @@
 package com.android.server.wm.traces.common
 
 data class RectF(
-    var left: Float = 0f,
-    var top: Float = 0f,
-    var right: Float = 0f,
-    var bottom: Float = 0f
+    val left: Float = 0f,
+    val top: Float = 0f,
+    val right: Float = 0f,
+    val bottom: Float = 0f
 ) {
     val height: Float get() = bottom - top
     val width: Float get() = right - left
@@ -30,6 +30,17 @@ data class RectF(
      */
     val isEmpty: Boolean
         get() = width == 0f || height == 0f
+    val isNotEmpty: Boolean
+        get() = !isEmpty
+
+    /**
+     * Returns a [Rect] version fo this rectangle.
+     *
+     * All fractional parts are rounded to 0
+     */
+    fun toRect(): Rect {
+        return Rect(left.toInt(), top.toInt(), right.toInt(), bottom.toInt())
+    }
 
     /**
      * Returns true iff the specified rectangle r is inside or equal to this
@@ -59,27 +70,30 @@ data class RectF(
      * rectangle.
      * @param bottom The bottom of the rectangle being intersected with this
      * rectangle.
-     * @return true if the specified rectangle and this rectangle intersect
-     * (and this rectangle is then set to that intersection) else
-     * return false and do not change this rectangle.
+     * @return A rectangle with the intersection coordinates
      */
-    fun intersect(left: Float, top: Float, right: Float, bottom: Float): Boolean {
+    fun intersection(left: Float, top: Float, right: Float, bottom: Float): RectF {
         if (this.left < right && left < this.right && this.top < bottom && top < this.bottom) {
+            var intersectionLeft = 0f
+            var intersectionTop = 0f
+            var intersectionRight = 0f
+            var intersectionBottom = 0f
+
             if (this.left < left) {
-                this.left = left
+                intersectionLeft = left
             }
             if (this.top < top) {
-                this.top = top
+                intersectionTop = top
             }
             if (this.right > right) {
-                this.right = right
+                intersectionRight = right
             }
             if (this.bottom > bottom) {
-                this.bottom = bottom
+                intersectionBottom = bottom
             }
-            return true
+            return RectF(intersectionLeft, intersectionTop, intersectionRight, intersectionBottom)
         }
-        return false
+        return EMPTY
     }
 
     /**
@@ -89,11 +103,23 @@ data class RectF(
      * is empty. To just test for intersection, use intersects()
      *
      * @param r The rectangle being intersected with this rectangle.
-     * @return true if the specified rectangle and this rectangle intersect
-     * (and this rectangle is then set to that intersection) else
-     * return false and do not change this rectangle.
+     * @return A rectangle with the intersection coordinates
      */
-    fun intersect(r: RectF): Boolean {
-        return intersect(r.left, r.top, r.right, r.bottom)
+    fun intersection(r: RectF): RectF = intersection(r.left, r.top, r.right, r.bottom)
+
+    fun prettyPrint(): String = prettyPrint(this)
+
+    override fun toString(): String = if (isEmpty) "[empty]" else prettyPrint()
+
+    companion object {
+        val EMPTY = RectF()
+
+        fun prettyPrint(rect: RectF): String {
+            val left = FloatFormatter.format(rect.left)
+            val top = FloatFormatter.format(rect.top)
+            val right = FloatFormatter.format(rect.right)
+            val bottom = FloatFormatter.format(rect.bottom)
+            return "($left, $top) - ($right, $bottom)"
+        }
     }
 }

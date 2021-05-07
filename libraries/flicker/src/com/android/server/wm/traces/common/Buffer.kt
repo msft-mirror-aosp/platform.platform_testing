@@ -16,4 +16,28 @@
 
 package com.android.server.wm.traces.common
 
-data class Buffer(val height: Int, val width: Int)
+class Buffer(width: Int, height: Int, val stride: Int, val format: Int) : Bounds(width, height) {
+    override fun prettyPrint(): String = prettyPrint(this)
+
+    override fun equals(other: Any?): Boolean =
+        other is Buffer &&
+        other.height == height &&
+        other.width == width &&
+        other.stride == stride &&
+        other.format == format
+
+    override fun hashCode(): Int {
+        var result = height
+        result = 31 * result + width
+        result = 31 * result + stride
+        result = 31 * result + format
+        return result
+    }
+
+    companion object {
+        val EMPTY: Buffer = Buffer(0, 0, 0, 0)
+
+        fun prettyPrint(buffer: Buffer): String = "w:${buffer.width}, h:${buffer.height}, " +
+            "stride:${buffer.stride}, format:${buffer.format}"
+    }
+}

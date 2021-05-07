@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 The Android Open Source Project
+ * Copyright (C) 2021 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,22 @@
 
 package com.android.server.wm.traces.common
 
-import com.android.server.wm.traces.common.windowmanager.windows.WindowContainer
+import kotlin.math.min
 
-class WindowRect(
-    val rect: Rect,
-    val ref: WindowContainer,
-    val label: String?
-) : Rect(rect.left, rect.top, rect.right, rect.bottom)
+/**
+ * A formatter to print floats with 3 decimal digits.
+ *
+ * This is necessary because multiplatform kotlin projects don't support String.format
+ * yet (issue KT-21644)
+ */
+object FloatFormatter {
+    fun format(value: Float): String {
+        val strValue = value.toString()
+        val dotIndex = strValue.indexOf(".")
+        return if (dotIndex > -1) {
+            strValue.substring(0, min(strValue.length, dotIndex + 4))
+        } else {
+            "$strValue.000"
+        }
+    }
+}

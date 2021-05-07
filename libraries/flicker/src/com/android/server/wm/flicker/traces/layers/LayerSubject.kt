@@ -20,6 +20,7 @@ import com.android.server.wm.flicker.assertions.Assertion
 import com.android.server.wm.flicker.traces.FlickerFailureStrategy
 import com.android.server.wm.flicker.assertions.FlickerSubject
 import com.android.server.wm.flicker.traces.RegionSubject
+import com.android.server.wm.traces.common.Bounds
 import com.android.server.wm.traces.common.layers.Layer
 import com.google.common.truth.FailureMetadata
 import com.google.common.truth.FailureStrategy
@@ -85,15 +86,21 @@ class LayerSubject private constructor(
         check("$layerName does not exists").that(layer).isNotNull()
     }
 
+    @Deprecated("Prefer hasBufferSize(bounds)")
+    fun hasBufferSize(size: Point): LayerSubject = apply {
+        val bounds = Bounds(size.x, size.y)
+        hasBufferSize(bounds)
+    }
+
     /**
      * Asserts that current subject has an [Layer.activeBuffer] with width equals to [Point.x]
      * and height equals to [Point.y]
      *
      * @param size expected buffer size
      */
-    fun hasBufferSize(size: Point): LayerSubject = apply {
+    fun hasBufferSize(size: Bounds): LayerSubject = apply {
         layer ?: return exists()
-        val bufferSize = Point(layer.activeBuffer?.width ?: 0, layer.activeBuffer?.height ?: 0)
+        val bufferSize = layer.activeBuffer?.size ?: Bounds.EMPTY
         check("Incorrect buffer size").that(bufferSize).isEqualTo(size)
     }
 

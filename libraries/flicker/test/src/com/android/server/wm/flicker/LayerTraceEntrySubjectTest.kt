@@ -76,7 +76,7 @@ class LayerTraceEntrySubjectTest {
 
         assertFailure(error)
             .factValue("Uncovered region")
-            .contains("SkRegion((0,171,1440,2960))")
+            .contains("SkRegion((0,1440,1440,2960))")
     }
 
     // Visible region tests
@@ -155,6 +155,6 @@ class LayerTraceEntrySubjectTest {
         }
         assertFailure(error)
             .factValue("Is Invisible")
-            .contains("type != ColorLayer visible region is empty")
+            .contains("Bounds is 0x0")
     }
 }

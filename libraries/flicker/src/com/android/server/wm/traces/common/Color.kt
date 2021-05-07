@@ -16,4 +16,26 @@
 
 package com.android.server.wm.traces.common
 
-data class Color(val r: Float, val g: Float, val b: Float, val a: Float)
+data class Color(val r: Float, val g: Float, val b: Float, val a: Float) {
+    val isEmpty: Boolean
+        get() = a == 0f || r < 0 || g < 0 || b < 0
+
+    val isNotEmpty: Boolean
+        get() = !isEmpty
+
+    fun prettyPrint(): String = prettyPrint(this)
+
+    override fun toString(): String = if (isEmpty) "[empty]" else prettyPrint()
+
+    companion object {
+        val EMPTY = Color(r = -1f, g = -1f, b = -1f, a = 0f)
+
+        fun prettyPrint(color: Color): String {
+            val r = FloatFormatter.format(color.r)
+            val g = FloatFormatter.format(color.g)
+            val b = FloatFormatter.format(color.b)
+            val a = FloatFormatter.format(color.a)
+            return "r:$r g:$g b:$b a:$a"
+        }
+    }
+}

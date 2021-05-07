@@ -24,12 +24,84 @@ open class Transform(val type: Int?, val matrix: Matrix) {
      * Returns true if the applying the transform on an an axis aligned rectangle
      * results in another axis aligned rectangle.
      */
-    val isSimpleRotation = !(type?.isFlagSet(ROT_INVALID_VAL) ?: true)
+    val isSimpleRotation: Boolean = !(type?.isFlagSet(ROT_INVALID_VAL) ?: true)
 
-    private val isSimpleTransform = isSimpleTransform(type)
+    /**
+     * The transformation matrix is defined as the product of:
+     * | cos(a) -sin(a) |  \/  | X 0 |
+     * | sin(a)  cos(a) |  /\  | 0 Y |
+     *
+     * where a is a rotation angle, and X and Y are scaling factors.
+     * A transformation matrix is invalid when either X or Y is zero,
+     * as a rotation matrix is valid for any angle. When either X or Y
+     * is 0, then the scaling matrix is not invertible, which makes the
+     * transformation matrix not invertible as well. A 2D matrix with
+     * components | A B | is not invertible if and only if AD - BC = 0.
+     *            | C D |
+     * This check is included above.
+     */
+    val isValid: Boolean
+        get() {
+            // determinant of transform
+            return matrix.dsdx * matrix.dtdy != matrix.dtdx * matrix.dsdy
+        }
+
+    private val typeFlags: Array<String>
+        get() {
+            if (type == null) {
+                return arrayOf("IDENTITY")
+            }
+
+            val result = mutableListOf<String>()
+
+            if (type.isFlagClear(SCALE_VAL or ROTATE_VAL or TRANSLATE_VAL)) {
+                result.add("IDENTITY")
+            }
+
+            if (type.isFlagSet(SCALE_VAL)) {
+                result.add("SCALE")
+            }
+
+            if (type.isFlagSet(TRANSLATE_VAL)) {
+                result.add("TRANSLATE")
+            }
+
+            when {
+                type.isFlagSet(ROT_INVALID_VAL) -> result.add("ROT_INVALID")
+                type.isFlagSet(ROT_90_VAL or FLIP_V_VAL or FLIP_H_VAL) -> result.add("ROT_270")
+                type.isFlagSet(FLIP_V_VAL or FLIP_H_VAL) -> result.add("ROT_180")
+                else -> {
+                    if (type.isFlagSet(ROT_90_VAL)) {
+                        result.add("ROT_90")
+                    }
+                    if (type.isFlagSet(FLIP_V_VAL)) {
+                        result.add("FLIP_V")
+                    }
+                    if (type.isFlagSet(FLIP_H_VAL)) {
+                        result.add("FLIP_H")
+                    }
+                }
+            }
+
+            if (result.isEmpty()) {
+                throw RuntimeException("Unknown transform type $type")
+            }
+
+            return result.toTypedArray()
+        }
+
+    fun prettyPrint(): String {
+        val transformType = typeFlags.joinToString("|")
+
+        if (isSimpleTransform(type)) {
+            return transformType
+        }
+
+        return "$transformType ${matrix.prettyPrint()}"
+    }
 
     fun apply(bounds: RectF?): RectF {
-        return multiplyRect(matrix, bounds ?: RectF())
+        return multiplyRect(matrix, bounds ?: RectF.EMPTY)
     }
 
     //          |dsdx dsdy  tx|
@@ -43,7 +115,9 @@ open class Transform(val type: Int?, val matrix: Matrix) {
         val dsdy: Float,
         val dtdy: Float,
         val ty: Float
-    )
+    ) {
+        fun prettyPrint(): String = "dsdx:$dsdx   dtdx:$dtdx   dsdy:$dsdy   dtdy:$dtdy"
+    }
 
     private data class Vec2(val x: Float, val y: Float)
 
@@ -57,13 +131,12 @@ open class Transform(val type: Int?, val matrix: Matrix) {
         val leftBottom = multiplyVec2(matrix, rect.left, rect.bottom)
         val rightBottom = multiplyVec2(matrix, rect.right, rect.bottom)
 
-        val outrect = RectF()
-        outrect.left = arrayOf(leftTop.x, rightTop.x, leftBottom.x, rightBottom.x).min() ?: 0f
-        outrect.top = arrayOf(leftTop.y, rightTop.y, leftBottom.y, rightBottom.y).min() ?: 0f
-        outrect.right = arrayOf(leftTop.x, rightTop.x, leftBottom.x, rightBottom.x).min() ?: 0f
-        outrect.bottom = arrayOf(leftTop.y, rightTop.y, leftBottom.y, rightBottom.y).min() ?: 0f
-
-        return outrect
+        return RectF(
+            left = arrayOf(leftTop.x, rightTop.x, leftBottom.x, rightBottom.x).min() ?: 0f,
+            top = arrayOf(leftTop.y, rightTop.y, leftBottom.y, rightBottom.y).min() ?: 0f,
+            right = arrayOf(leftTop.x, rightTop.x, leftBottom.x, rightBottom.x).min() ?: 0f,
+            bottom = arrayOf(leftTop.y, rightTop.y, leftBottom.y, rightBottom.y).min() ?: 0f
+        )
     }
 
     private fun multiplyVec2(matrix: Matrix, x: Float, y: Float): Vec2 {

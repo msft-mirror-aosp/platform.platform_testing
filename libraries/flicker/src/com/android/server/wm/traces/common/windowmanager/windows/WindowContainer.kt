@@ -33,7 +33,7 @@ open class WindowContainer constructor(
     val orientation: Int,
     _isVisible: Boolean,
     configurationContainer: ConfigurationContainer,
-    val childrenWindows: Array<WindowContainer>
+    val children: Array<WindowContainer>
 ) : ConfigurationContainer(configurationContainer) {
     protected constructor(
         windowContainer: WindowContainer,
@@ -45,18 +45,14 @@ open class WindowContainer constructor(
         windowContainer.orientation,
         isVisibleOverride ?: windowContainer.isVisible,
         windowContainer,
-        windowContainer.childrenWindows
+        windowContainer.children
     )
 
     open val isVisible: Boolean = _isVisible
     open val name: String = title
-    private val _kind = this::class.simpleName ?: error("Unable to determine class")
-    open val kind: String = _kind
-    val stableId: String = _kind + token + title
-
-    open val rects: Array<Rect> = childrenWindows.flatMap { it.rects.toList() }.toTypedArray()
+    val stableId: String get() = "${this::class.simpleName} $token $title"
     open val isFullscreen: Boolean = false
-    open val bounds: Rect = Rect()
+    open val bounds: Rect = Rect.EMPTY
 
     val windows: Array<WindowState>
         get() = this.collectDescendants()
@@ -64,7 +60,7 @@ open class WindowContainer constructor(
     fun traverseTopDown(): List<WindowContainer> {
         val traverseList = mutableListOf(this)
 
-        this.childrenWindows.reversed()
+        this.children.reversed()
             .forEach { childLayer ->
                 traverseList.addAll(childLayer.traverseTopDown())
             }
@@ -113,18 +109,6 @@ open class WindowContainer constructor(
         }
 
         return name
-    }
-
-    private fun shortenName(name: String): String {
-        val classParts = name.split(".")
-
-        if (classParts.size <= 3) {
-            return name
-        }
-
-        val className = classParts.last()
-
-        return "${classParts[0]}.${classParts[1]}.(...).$className"
     }
 
     override val isEmpty: Boolean
