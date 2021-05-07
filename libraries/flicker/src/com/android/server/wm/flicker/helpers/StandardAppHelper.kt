@@ -182,8 +182,13 @@ open class StandardAppHelper @JvmOverloads constructor(
         wmHelper.waitFor("App is shown") {
             it.wmState.isComplete() && it.wmState.isWindowVisible(window)
         }
-        wmHelper.waitForNavBarStatusBarVisible()
+
         wmHelper.waitForAppTransitionIdle()
+        // During seamless rotation the app window is shown
+        val currWmState = wmHelper.currentState.wmState
+        if (currWmState.visibleWindows.none { it.isFullscreen }) {
+            wmHelper.waitForNavBarStatusBarVisible()
+        }
 
         // Ensure WindowManagerService wait until all animations have completed
         mInstrumentation.getUiAutomation().syncInputTransactions()

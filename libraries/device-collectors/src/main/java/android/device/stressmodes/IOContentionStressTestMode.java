@@ -146,6 +146,7 @@ public class IOContentionStressTestMode extends InstrumentationRunListener {
     @Override
     public final void testStarted(Description description) throws Exception {
         mExecutorService = Executors.newSingleThreadExecutor();
+        mStop = false;
         Log.i(TAG, "IOContentionStressTestMode stress started");
         mExecutorService.submit(
                 new Runnable() {
