@@ -132,10 +132,10 @@ open class Transform(val type: Int?, val matrix: Matrix) {
         val rightBottom = multiplyVec2(matrix, rect.right, rect.bottom)
 
         return RectF(
-            left = arrayOf(leftTop.x, rightTop.x, leftBottom.x, rightBottom.x).min() ?: 0f,
-            top = arrayOf(leftTop.y, rightTop.y, leftBottom.y, rightBottom.y).min() ?: 0f,
-            right = arrayOf(leftTop.x, rightTop.x, leftBottom.x, rightBottom.x).min() ?: 0f,
-            bottom = arrayOf(leftTop.y, rightTop.y, leftBottom.y, rightBottom.y).min() ?: 0f
+            left = arrayOf(leftTop.x, rightTop.x, leftBottom.x, rightBottom.x).minOrNull() ?: 0f,
+            top = arrayOf(leftTop.y, rightTop.y, leftBottom.y, rightBottom.y).minOrNull() ?: 0f,
+            right = arrayOf(leftTop.x, rightTop.x, leftBottom.x, rightBottom.x).minOrNull() ?: 0f,
+            bottom = arrayOf(leftTop.y, rightTop.y, leftBottom.y, rightBottom.y).minOrNull() ?: 0f
         )
     }
 
