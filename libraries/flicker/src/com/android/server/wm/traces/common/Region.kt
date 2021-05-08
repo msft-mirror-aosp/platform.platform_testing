@@ -17,10 +17,10 @@
 package com.android.server.wm.traces.common
 
 class Region(val rects: Array<Rect>) : Rect(
-    rects.map { it.left }.min() ?: 0,
-    rects.map { it.top }.min() ?: 0,
-    rects.map { it.right }.max() ?: 0,
-    rects.map { it.bottom }.max() ?: 0
+    rects.map { it.left }.minOrNull() ?: 0,
+    rects.map { it.top }.minOrNull() ?: 0,
+    rects.map { it.right }.maxOrNull() ?: 0,
+    rects.map { it.bottom }.maxOrNull() ?: 0
 ) {
     constructor(
         left: Int,
