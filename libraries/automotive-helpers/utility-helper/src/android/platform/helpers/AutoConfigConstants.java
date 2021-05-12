@@ -153,7 +153,7 @@ public class AutoConfigConstants {
     // Contacts Screen
     public static final String CONTACTS_VIEW = "CONTACTS_VIEW";
     public static final String CONTACTS_MENU = "CONTACTS_MENU";
-    public static final String CONTACT_INFO = "CALL_HISTORY_INFO";
+    public static final String CONTACT_INFO = "CONTACT_INFO";
     public static final String CONTACT_NAME = "CONTACT_NAME";
     public static final String CONTACT_DETAIL = "CONTACT_DETAIL";
     public static final String ADD_CONTACT_TO_FAVORITE = "ADD_CONTACT_TO_FAVORITE";
