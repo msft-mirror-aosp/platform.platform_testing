@@ -36,12 +36,20 @@
     <option name="test-tag" value="UiBenchMicrobenchmarks" />
 
     <test class="com.android.tradefed.testtype.AndroidJUnitTest" >
+        <option name="instrumentation-arg" key="newRunListenerMode" value="true" />
         <option name="package" value="com.android.uibench.microbenchmark" />
-        <option name="class" value="com.android.uibench.microbenchmark.UiBenchDialogListFlingMicrobenchmark#testDialogListFling" />
-        <option name="device-listeners" value="android.device.collectors.PerfettoListener,android.device.collectors.SfStatsListener" />
+        <!-- Uncomment the below option to run only subset of tests -->
+        <!-- <option name="class" value="com.android.uibench.microbenchmark.UiBenchDialogListFlingMicrobenchmark#testDialogListFling" /> -->
+        <option name="device-listeners" value="android.device.collectors.PerfettoListener,android.device.collectors.JankListener,android.device.collectors.SfStatsListener" />
+        <option name="instrumentation-arg" key="iterations" value="2" />
+        <!-- Args are used for renaming the test name with the iteration number -->
+        <option name="instrumentation-arg" key="rename-iterations" value="true" />
+        <option name="instrumentation-arg" key="iteration-separator" value="$" />
+        <!-- Perfetto trace related arguments -->
         <option name="instrumentation-arg" key="perfetto_config_text_proto" value="true" />
         <option name="instrumentation-arg" key="perfetto_config_file" value="trace_config.textproto" />
-        <option name="instrumentation-arg" key="newRunListenerMode" value="true" />
+        <!-- Jank listener related arguments -->
+        <option name="instrumentation-arg" key="jank-listener:jank-package-names" value="com.android.test.uibench" />
     </test>
 
 </configuration>
