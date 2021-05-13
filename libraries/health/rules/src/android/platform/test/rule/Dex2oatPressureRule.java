@@ -53,7 +53,7 @@ public class Dex2oatPressureRule extends TestWatcher {
 
     // A switch for turning the stressor off for quick a/b comparisons.
     public static final String ENABLE_OPTION = "dex2oat-stressor-enable";
-    private boolean mEnabled = true;
+    private boolean mEnabled = false;
 
     @VisibleForTesting public static final String DEX2OAT_RUNNING_CHECK_COMMAND = "pgrep dex2oat";
     public static final String LIST_PACKAGES_COMMAND = "pm list packages";
@@ -68,7 +68,7 @@ public class Dex2oatPressureRule extends TestWatcher {
 
     @Override
     protected void starting(Description description) {
-        mEnabled = Boolean.valueOf(getArguments().getString(ENABLE_OPTION, String.valueOf(true)));
+        mEnabled = Boolean.valueOf(getArguments().getString(ENABLE_OPTION, String.valueOf(false)));
         if (!mEnabled) {
             return;
         }
