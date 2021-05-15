@@ -99,6 +99,7 @@ public class CompilationFilterRule extends TestWatcher {
                     Log.d(LOG_TAG, String.format("Received compile cmd response: %s", response));
                     throw new RuntimeException(String.format("Failed to compile %s.", app));
                 } else {
+                    Log.d(LOG_TAG, String.format("Test %s compiled successfully", testId));
                     mCompiledTests.add(testId);
                 }
             }
