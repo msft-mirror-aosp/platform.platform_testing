@@ -15,6 +15,10 @@
 //
 
 // Android Unit Test target
+package {
+    default_applicable_licenses: ["Android-Apache-2.0"],
+}
+
 android_test {
     name: "CollectorDeviceLibPlatformTest",
     defaults: ["tradefed_errorprone_defaults"],
@@ -32,4 +36,3 @@ android_test {
     platform_apis: true,
     min_sdk_version: "26",
 }
-
