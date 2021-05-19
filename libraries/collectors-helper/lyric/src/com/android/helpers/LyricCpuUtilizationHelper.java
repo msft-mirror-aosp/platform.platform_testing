@@ -39,9 +39,10 @@ public class LyricCpuUtilizationHelper implements ICollectorHelper<Double> {
 
     private static final String DUMPSYS_CMD = "dumpsys media.camera";
 
-    private static final Pattern TIME_REGEX_PATTERN = Pattern.compile("(\\d+\\.?\\d*)(ms|us|)");
+    private static final Pattern TIME_REGEX_PATTERN =
+            Pattern.compile("((?:-|)\\d+\\.?\\d*)([a-zA-Z]*)");
 
-    private static final String TIME_REGEX = "(\\d+\\.?\\d*)(?:ms|us|)";
+    private static final String TIME_REGEX = "((?:-|)\\d+\\.?\\d*[a-zA-Z]*)";
 
     private static final Pattern CPU_USAGE_PATTERN =
             Pattern.compile(
@@ -117,6 +118,7 @@ public class LyricCpuUtilizationHelper implements ICollectorHelper<Double> {
         return metrics;
     }
 
+    /** Takes a time string and returns the value in milliseconds. */
     private static Double parseTime(String timeString) {
         Matcher matcher = TIME_REGEX_PATTERN.matcher(timeString);
         if (!matcher.find()) {
@@ -124,8 +126,15 @@ public class LyricCpuUtilizationHelper implements ICollectorHelper<Double> {
         }
         double value = Double.parseDouble(matcher.group(1));
         String unit = matcher.group(2);
-        if (unit.equals("us")) {
-            value /= 1000;
+        switch (unit) {
+            case "us":
+                value /= 1000;
+                break;
+            case "s":
+                value *= 1000;
+                break;
+            default:
+                break;
         }
         return value;
     }
