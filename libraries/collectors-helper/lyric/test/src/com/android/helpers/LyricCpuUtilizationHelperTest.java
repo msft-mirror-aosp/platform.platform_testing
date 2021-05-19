@@ -41,7 +41,7 @@ public class LyricCpuUtilizationHelperTest {
                 "CPU Usage during ProcessInput for [>] p2 cam2_retiming:empty_group after 593"
                         + " invocations - User: 1.709118ms (Max: 3.67ms Min:0) System: 425.17025us"
                         + " (Max: 3.372ms Min:0) Wall: 50.14003675ms (Max: 55.676595ms"
-                        + " Min:50.046468ms)";
+                        + " Min:-1.5s)";
 
         Map<String, Double> metrics = LyricCpuUtilizationHelper.processLine(testString);
 
@@ -58,7 +58,7 @@ public class LyricCpuUtilizationHelperTest {
         assertEquals(
                 Double.valueOf(0), metrics.get(String.format(METRIC_KEY, node, "user_time_min")));
         assertEquals(
-                Double.valueOf(425.17025),
+                Double.valueOf(0.42517025),
                 metrics.get(String.format(METRIC_KEY, node, "system_time")));
         assertEquals(
                 Double.valueOf(3.372),
@@ -72,7 +72,7 @@ public class LyricCpuUtilizationHelperTest {
                 Double.valueOf(55.676595),
                 metrics.get(String.format(METRIC_KEY, node, "wall_time_max")));
         assertEquals(
-                Double.valueOf(50.046468),
+                Double.valueOf(-1500),
                 metrics.get(String.format(METRIC_KEY, node, "wall_time_min")));
     }
 }
