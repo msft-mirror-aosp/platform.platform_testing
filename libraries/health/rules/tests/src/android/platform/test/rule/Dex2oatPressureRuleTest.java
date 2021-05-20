@@ -96,7 +96,8 @@ public class Dex2oatPressureRuleTest {
     @Test
     public void testInvokesCompilation() throws Throwable {
         String packageName = "success.20";
-        stubInstrumentationArgs(Dex2oatPressureRule.PACKAGES_OPTION, packageName);
+        stubInstrumentationArgs(Dex2oatPressureRule.PACKAGES_OPTION, packageName,
+                                Dex2oatPressureRule.ENABLE_OPTION, String.valueOf(true));
         stubInstalledPackages(Arrays.asList(packageName));
         fakeWhetherDex2oatIsRunningCheck(0);
         rule.apply(createTestStatement(10L), TEST_DESCRIPTION).evaluate();
@@ -107,7 +108,8 @@ public class Dex2oatPressureRuleTest {
     public void testInvokesCompilationCyclically() throws Throwable {
         List<String> packages =
                 Arrays.asList("success.10.pkg1", "success.20.pkg2", "success.30.pkg3");
-        stubInstrumentationArgs(Dex2oatPressureRule.PACKAGES_OPTION, String.join(",", packages));
+        stubInstrumentationArgs(Dex2oatPressureRule.PACKAGES_OPTION, String.join(",", packages),
+                                Dex2oatPressureRule.ENABLE_OPTION, String.valueOf(true));
         stubInstalledPackages(packages);
         fakeWhetherDex2oatIsRunningCheck(0);
         rule.apply(createTestStatement(150L), TEST_DESCRIPTION).evaluate();
@@ -124,7 +126,8 @@ public class Dex2oatPressureRuleTest {
     public void testSchedulesCompilationUntilTestEnds() throws Throwable {
         List<String> packages =
                 Arrays.asList("success.100.pkg1", "success.200.pkg2", "success.300.pkg3");
-        stubInstrumentationArgs(Dex2oatPressureRule.PACKAGES_OPTION, String.join(",", packages));
+        stubInstrumentationArgs(Dex2oatPressureRule.PACKAGES_OPTION, String.join(",", packages),
+                                Dex2oatPressureRule.ENABLE_OPTION, String.valueOf(true));
         stubInstalledPackages(packages);
         fakeWhetherDex2oatIsRunningCheck(0);
 
@@ -149,7 +152,8 @@ public class Dex2oatPressureRuleTest {
     @Test
     public void testNoAdditionalCompilationIsTriggeredAfterTestFinishes() throws Throwable {
         List<String> packages = Arrays.asList("success.100.pkg1", "success.200.pkg2");
-        stubInstrumentationArgs(Dex2oatPressureRule.PACKAGES_OPTION, String.join(",", packages));
+        stubInstrumentationArgs(Dex2oatPressureRule.PACKAGES_OPTION, String.join(",", packages),
+                                Dex2oatPressureRule.ENABLE_OPTION, String.valueOf(true));
         stubInstalledPackages(packages);
         fakeWhetherDex2oatIsRunningCheck(0);
 
@@ -181,7 +185,8 @@ public class Dex2oatPressureRuleTest {
     @Test
     public void testFailedCompilationDoesNotBlockOtherCompilations() throws Throwable {
         List<String> packages = Arrays.asList("failure.10", "success.10");
-        stubInstrumentationArgs(Dex2oatPressureRule.PACKAGES_OPTION, String.join(",", packages));
+        stubInstrumentationArgs(Dex2oatPressureRule.PACKAGES_OPTION, String.join(",", packages),
+                                Dex2oatPressureRule.ENABLE_OPTION, String.valueOf(true));
         stubInstalledPackages(packages);
         fakeWhetherDex2oatIsRunningCheck(0);
         rule.apply(createTestStatement(50L), TEST_DESCRIPTION).evaluate();
@@ -193,7 +198,8 @@ public class Dex2oatPressureRuleTest {
     @Test
     public void testWaitsUntilDex2oatIsRunningBeforeTest() throws Throwable {
         String packageName = "success.150";
-        stubInstrumentationArgs(Dex2oatPressureRule.PACKAGES_OPTION, packageName);
+        stubInstrumentationArgs(Dex2oatPressureRule.PACKAGES_OPTION, packageName,
+                                Dex2oatPressureRule.ENABLE_OPTION, String.valueOf(true));
         stubInstalledPackages(Arrays.asList(packageName));
         int checksBeforeDex2oatIsRunning = 5;
         fakeWhetherDex2oatIsRunningCheck(checksBeforeDex2oatIsRunning);
@@ -214,7 +220,8 @@ public class Dex2oatPressureRuleTest {
         expectedException.expectMessage("dex2oat still isn't running");
 
         String packageName = "success.150";
-        stubInstrumentationArgs(Dex2oatPressureRule.PACKAGES_OPTION, packageName);
+        stubInstrumentationArgs(Dex2oatPressureRule.PACKAGES_OPTION, packageName,
+                                Dex2oatPressureRule.ENABLE_OPTION, String.valueOf(true));
         stubInstalledPackages(Arrays.asList(packageName));
         fakeWhetherDex2oatIsRunningCheck(-1);
 
@@ -233,7 +240,9 @@ public class Dex2oatPressureRuleTest {
                     Dex2oatPressureRule.PACKAGES_OPTION,
                     packageName,
                     Dex2oatPressureRule.COMPILATION_FILTER_OPTION,
-                    filter);
+                    filter,
+                    Dex2oatPressureRule.ENABLE_OPTION,
+                    String.valueOf(true));
             rule.apply(createTestStatement(10L), TEST_DESCRIPTION).evaluate();
             verify(rule, atLeastOnce()).runCompileCommand(any(String.class), eq(filter));
         }
@@ -248,7 +257,9 @@ public class Dex2oatPressureRuleTest {
                 Dex2oatPressureRule.PACKAGES_OPTION,
                 packageName,
                 Dex2oatPressureRule.COMPILATION_FILTER_OPTION,
-                "not a filter");
+                "not a filter",
+                Dex2oatPressureRule.ENABLE_OPTION,
+                String.valueOf(true));
         stubInstalledPackages(Arrays.asList(packageName));
         fakeWhetherDex2oatIsRunningCheck(0);
         rule.apply(createTestStatement(10L), TEST_DESCRIPTION).evaluate();
@@ -260,7 +271,8 @@ public class Dex2oatPressureRuleTest {
         expectedException.expectMessage(packages.get(1));
         expectedException.expectMessage("not installed");
 
-        stubInstrumentationArgs(Dex2oatPressureRule.PACKAGES_OPTION, String.join(",", packages));
+        stubInstrumentationArgs(Dex2oatPressureRule.PACKAGES_OPTION, String.join(",", packages),
+                                Dex2oatPressureRule.ENABLE_OPTION, String.valueOf(true));
         stubInstalledPackages(Arrays.asList(packages.get(0)));
         rule.apply(createTestStatement(10L), TEST_DESCRIPTION).evaluate();
     }
@@ -289,13 +301,15 @@ public class Dex2oatPressureRuleTest {
         fakeWhetherDex2oatIsRunningCheck(0);
         // Run the first test.
         stubInstrumentationArgs(
-                Dex2oatPressureRule.PACKAGES_OPTION, String.join(",", test1PackageNames));
+                Dex2oatPressureRule.PACKAGES_OPTION, String.join(",", test1PackageNames),
+                Dex2oatPressureRule.ENABLE_OPTION, String.valueOf(true));
         rule.apply(createTestStatement(10L), TEST_DESCRIPTION).evaluate();
         ArgumentCaptor<String> compiledInTest1 = ArgumentCaptor.forClass(String.class);
         verify(rule, atLeastOnce()).runCompileCommand(compiledInTest1.capture(), any(String.class));
         // Run the second test.
         stubInstrumentationArgs(
-                Dex2oatPressureRule.PACKAGES_OPTION, String.join(",", test2PackageNames));
+                Dex2oatPressureRule.PACKAGES_OPTION, String.join(",", test2PackageNames),
+                Dex2oatPressureRule.ENABLE_OPTION, String.valueOf(true));
         rule.apply(createTestStatement(10L), TEST_DESCRIPTION).evaluate();
         ArgumentCaptor<String> compiledInBothTests = ArgumentCaptor.forClass(String.class);
         verify(rule, atLeastOnce())
