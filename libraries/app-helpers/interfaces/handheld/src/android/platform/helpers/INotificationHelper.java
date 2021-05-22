@@ -246,6 +246,16 @@ public interface INotificationHelper extends IAppHelper {
     }
 
     /**
+     * Setup expectation: On the expanding notification screen.
+     *
+     * <p>Get the UiObject2 of Quick Settings container. Quick settings container works both in
+     * expanded and collapsed state, that is contains both QuickQuickSettings and QuickSettings
+     */
+    default UiObject2 getQuickSettingsContainer() {
+        throw new UnsupportedOperationException("Not yet implemented.");
+    }
+
+    /**
      * Scroll feeds on Notifications screen
      *
      * <p>Setup expectations: Notification is open with lots of notifications.
