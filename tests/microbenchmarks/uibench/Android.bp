@@ -30,9 +30,17 @@ android_test {
 
     libs: ["android.test.base.stubs"],
 
-    data: [":perfetto_artifacts"],
+    data: [":perfetto_artifacts",
+           ":UiBench",],
 
     sdk_version: "test_current",
+
+    test_config: "configs/uibench-all.xml",
+
+    test_options: {
+        extra_test_configs: ["configs/uibench-dialoglist.xml",
+                             "configs/uibench-invalidate.xml",],
+    },
 
     test_suites: ["device-tests"],
 }
