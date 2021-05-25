@@ -28,7 +28,10 @@ public interface IYouTubeHelper extends IAppHelper {
         QUALITY_480p ("480p"),
         QUALITY_720p ("720p"),
         QUALITY_1080p("1080p"),
-        QUALITY_MAX("max");
+        QUALITY_MAX("max"),
+        QUALITY_HIGHER_QUALITY("Higher picture quality"),
+        QUALITY_DATA_SAVER("Data saver"),
+        QUALITY_ADVANCED("Advanced");
 
         private final String text;
 
