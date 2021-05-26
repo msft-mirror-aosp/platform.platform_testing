@@ -48,6 +48,10 @@ public class PerfettoListener extends BaseMetricListener {
     private static final String DEFAULT_CONFIG_FILE = "trace_config.pb";
     // Default wait time before stopping the perfetto trace.
     private static final String DEFAULT_WAIT_TIME_MSECS = "3000";
+    // Option to pass the folder name which contains the perfetto trace config file.
+    private static final String PERFETTO_CONFIG_ROOT_DIR_ARG = "perfetto_config_root_dir";
+    // Default folder name to look for the perfetto config file.
+    private static final String DEFAULT_PERFETTO_CONFIG_ROOT_DIR = "/data/misc/perfetto-traces/";
     // Default output folder to store the perfetto output traces.
     private static final String DEFAULT_OUTPUT_ROOT = "/sdcard/test_results";
     // Argument to indicate the perfetto config file is text proto file.
@@ -78,6 +82,7 @@ public class PerfettoListener extends BaseMetricListener {
     private final WakeLockAcquirer mWakeLockAcquirer;
     private final WakeLockReleaser mWakeLockReleaser;
 
+    private String mConfigRootDir;
     // Trace config file name to use while collecting the trace which is defaulted to
     // trace_config.pb. It can be changed via the perfetto_config_file arg.
     private String mConfigFileName;
@@ -141,6 +146,14 @@ public class PerfettoListener extends BaseMetricListener {
 
         // Whether to collect the for the entire test run or per test.
         mIsCollectPerRun = Boolean.parseBoolean(args.getString(COLLECT_PER_RUN));
+
+        // Root directory path containing the perfetto config file.
+        mConfigRootDir = args.getString(PERFETTO_CONFIG_ROOT_DIR_ARG,
+                DEFAULT_PERFETTO_CONFIG_ROOT_DIR);
+        if(!mConfigRootDir.endsWith("/")) {
+            mConfigRootDir = mConfigRootDir.concat("/");
+        }
+        mPerfettoHelper.setPerfettoConfigRootDir(mConfigRootDir);
 
         // Whether the config is text proto or not. By default set to false.
         mIsConfigTextProto = Boolean.parseBoolean(args.getString(PERFETTO_CONFIG_TEXT_PROTO));

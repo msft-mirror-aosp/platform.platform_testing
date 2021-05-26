@@ -51,10 +51,12 @@ public class PerfettoHelperTest {
     @Before
     public void setUp() {
         mPerfettoHelper = new PerfettoHelper();
+        mPerfettoHelper.setPerfettoConfigRootDir("/data/misc/perfetto-traces/");
     }
 
     @After
     public void teardown() throws IOException {
+        mPerfettoHelper.setPerfettoConfigRootDir("/data/misc/perfetto-traces/");
         UiDevice uiDevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
         mPerfettoHelper.stopCollecting(1000, "data/local/tmp/out.pb");
         uiDevice.executeShellCommand(String.format(REMOVE_CMD, "/data/local/tmp/out.pb"));
@@ -74,6 +76,21 @@ public class PerfettoHelperTest {
     @Test
     public void testEmptyConfigName() throws Exception {
         assertFalse(mPerfettoHelper.startCollecting("", false));
+    }
+
+    @Test
+    public void testNullRootDirName() throws Exception {
+        mPerfettoHelper.setPerfettoConfigRootDir(null);
+        assertFalse(mPerfettoHelper.startCollecting("trace_config.textproto", false));
+    }
+
+    /**
+     * Test perfetto collection returns false if the config file name is empty.
+     */
+    @Test
+    public void testEmptyRootDirName() throws Exception {
+        mPerfettoHelper.setPerfettoConfigRootDir("");
+        assertFalse(mPerfettoHelper.startCollecting("trace_config.textproto", false));
     }
 
     /**
@@ -126,5 +143,14 @@ public class PerfettoHelperTest {
         assertTrue(fileSize > 0);
     }
 
+    /**
+     * Test perfetto collection returns false when referring to the config root directory
+     * which does not contain perfetto config file.
+     */
+    @Test
+    public void testPerfettoFailureInvalidConfigRoot() throws Exception {
+        mPerfettoHelper.setPerfettoConfigRootDir("/data/misc/invalid-folder/");
+        assertFalse(mPerfettoHelper.startCollecting("trace_config.textproto", true));
+    }
 
 }
