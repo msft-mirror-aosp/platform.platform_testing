@@ -39,7 +39,7 @@ abstract class TransitionMonitor(
      * @param predicate Commands to execute
      * @throws UnsupportedOperationException If tracing is already activated
      */
-    internal fun withTracing(predicate: () -> Unit): ByteArray {
+    fun withTracing(predicate: () -> Unit): ByteArray {
         if (this.isEnabled) {
             throw UnsupportedOperationException("Chained 'withTracing' calls are not supported")
         }
