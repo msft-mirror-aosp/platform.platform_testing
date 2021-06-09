@@ -137,7 +137,7 @@ open class WindowManagerStateHelper @JvmOverloads constructor(
                             .build())
 
     fun waitForHomeActivityVisible(): Boolean {
-        return waitFor { it.wmState.homeActivity?.isVisible == true } &&
+        return waitFor("homeActivityVisible") { it.wmState.homeActivity?.isVisible == true } &&
             waitForNavBarStatusBarVisible() &&
             waitForAppTransitionIdle()
     }
