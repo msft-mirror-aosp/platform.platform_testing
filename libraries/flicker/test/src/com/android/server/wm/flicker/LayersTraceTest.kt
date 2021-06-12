@@ -51,4 +51,14 @@ class LayersTraceTest {
     fun testCanDetectRootLayerAOSP() {
         detectRootLayer("layers_trace_root_aosp.pb")
     }
+
+    @Test
+    fun testCanParseTraceWithoutHWC() {
+        val layersTrace = readLayerTraceFromFile("layers_trace_no_hwc_composition.pb")
+        layersTrace.forEach { entry ->
+            Truth.assertWithMessage("Should have visible layers in all trace entries")
+                .that(entry.visibleLayers).asList()
+                .isNotEmpty()
+        }
+    }
 }

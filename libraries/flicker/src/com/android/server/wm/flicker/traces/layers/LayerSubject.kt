@@ -54,7 +54,21 @@ class LayerSubject private constructor(
 ) : FlickerSubject(fm, layer) {
     val isEmpty: Boolean get() = layer == null
     val isNotEmpty: Boolean get() = !isEmpty
-    val visibleRegion: RegionSubject get() = RegionSubject.assertThat(layer?.visibleRegion, this)
+    val isVisible: Boolean get() = layer?.isVisible == true
+    val isInvisible: Boolean get() = layer?.isVisible == false
+    val name: String get() = layer?.name ?: ""
+
+    /**
+     * Visible region calculated by the Composition Engine
+     */
+    val visibleRegion: RegionSubject get() =
+        RegionSubject.assertThat(layer?.visibleRegion, listOf(this))
+    /**
+     * Visible region calculated by the Composition Engine (when available) or calculated
+     * based on the layer bounds and transform
+     */
+    val screenBounds: RegionSubject get() =
+        RegionSubject.assertThat(layer?.screenBounds, listOf(this))
 
     override val defaultFacts: String =
         "${entry?.defaultFacts ?: ""}\nFrame: ${layer?.currFrame}\nLayer: ${layer?.name}"

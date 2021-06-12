@@ -124,4 +124,37 @@ class LayersTraceEntryTest {
                     " parentId = 1006")
         }
     }
+
+    @Test
+    fun testCanParseNonCroppedLayerWithHWC() {
+        val layerName = "BackColorSurface#0"
+        val layersTrace = readLayerTraceFromFile("layers_trace_backcolorsurface.pb")
+        val entry = layersTrace.getEntry(131954021476)
+        Truth.assertWithMessage("$layerName should not be visible")
+            .that(entry.visibleLayers.map { it.name })
+            .doesNotContain(layerName)
+        val layer = entry.flattenedLayers.first { it.name == layerName }
+        Truth.assertWithMessage("$layerName should be invisible because of HWC region")
+            .that(layer.visibilityReason)
+            .contains("Visible region calculated by Composition Engine is empty")
+    }
+
+    @Test
+    fun testCanParseNonCroppedLayerWithoutHWC() {
+        val layersTrace = readLayerTraceFromFile("layers_trace_no_hwc_composition.pb")
+        val entry = layersTrace.getEntry(238517209878020)
+        Truth.assertWithMessage("IME should be visible")
+            .that(entry.visibleLayers.map { it.name })
+            .contains("InputMethod#0")
+
+        val messagesApp = "com.google.android.apps.messaging/" +
+            "com.google.android.apps.messaging.ui.ConversationListActivity#0"
+        Truth.assertWithMessage("Messages app should not be visible")
+            .that(entry.visibleLayers.map { it.name })
+            .doesNotContain(messagesApp)
+
+        Truth.assertWithMessage("Should have visible layers in all trace entries")
+            .that(entry.flattenedLayers.map { it.name })
+            .doesNotContain(messagesApp)
+    }
 }
