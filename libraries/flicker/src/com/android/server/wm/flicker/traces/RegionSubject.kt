@@ -19,6 +19,7 @@ package com.android.server.wm.flicker.traces
 import androidx.annotation.VisibleForTesting
 import com.android.server.wm.flicker.assertions.FlickerSubject
 import com.android.server.wm.traces.common.Rect
+import com.android.server.wm.traces.common.RectF
 import com.android.server.wm.traces.common.Region
 import com.android.server.wm.traces.parser.toAndroidRect
 import com.android.server.wm.traces.parser.toAndroidRegion
@@ -32,9 +33,8 @@ import com.google.common.truth.StandardSubjectBuilder
  */
 class RegionSubject(
     fm: FailureMetadata,
-    private val subject: FlickerSubject?,
-    val region: android.graphics.Region,
-    private val failureFacts: List<Fact>
+    private val subjects: List<FlickerSubject>,
+    val region: android.graphics.Region
 ) : FlickerSubject(fm, region) {
     private val topPositionSubject
         get() = check(MSG_ERROR_TOP_POSITION).that(region.bounds.top)
@@ -51,17 +51,14 @@ class RegionSubject(
     private val Rect.area get() = this.width * this.height
 
     override val defaultFacts: String = buildString {
-        if (subject?.defaultFacts != null) {
-            append(subject.defaultFacts)
-            append("\n")
-        }
+        subjects.forEach { subject -> appendln(subject.defaultFacts) }
     }
 
     /**
      * {@inheritDoc}
      */
     override fun clone(): FlickerSubject {
-        return RegionSubject(fm, subject, region, failureFacts)
+        return RegionSubject(fm, subjects, region)
     }
 
     /**
@@ -69,7 +66,6 @@ class RegionSubject(
      */
     override fun fail(reason: List<Fact>): FlickerSubject {
         val newReason = reason.toMutableList()
-        newReason.addAll(failureFacts)
         return super.fail(newReason)
     }
 
@@ -358,7 +354,6 @@ class RegionSubject(
         val isNotEmpty = intersection.op(testRegion, android.graphics.Region.Op.XOR)
 
         if (isNotEmpty) {
-            intersection.op(testRegion, android.graphics.Region.Op.INTERSECT)
             fail(Fact.fact("Region to test", testRegion),
                 Fact.fact("Covered region", region),
                 Fact.fact("Uncovered region", intersection))
@@ -494,10 +489,14 @@ class RegionSubject(
         @VisibleForTesting
         const val MSG_ERROR_AREA = "Incorrect rect area"
 
-        private fun mergeRegions(regions: List<Region>): android.graphics.Region {
-            val region = android.graphics.Region()
-            regions.forEach { region.op(it.toAndroidRect(), android.graphics.Region.Op.UNION) }
-            return region
+        private fun mergeRegions(regions: Array<Region>): android.graphics.Region {
+            val result = android.graphics.Region()
+            regions.forEach { region ->
+                region.rects.forEach { rect ->
+                    result.op(rect.toAndroidRect(), android.graphics.Region.Op.UNION)
+                }
+            }
+            return result
         }
 
         /**
@@ -506,12 +505,38 @@ class RegionSubject(
         @JvmStatic
         @JvmOverloads
         fun getFactory(
-            flickerSubject: FlickerSubject? = null,
-            layerVisibilityFacts: List<Fact> = emptyList()
+            flickerSubjects: List<FlickerSubject> = emptyList()
         ) = Factory { fm: FailureMetadata, region: android.graphics.Region? ->
-                val subjectRegion = region ?: android.graphics.Region()
-                RegionSubject(fm, flickerSubject, subjectRegion, layerVisibilityFacts)
-            }
+            val subjectRegion = region ?: android.graphics.Region()
+            RegionSubject(fm, flickerSubjects, subjectRegion)
+        }
+
+        /**
+         * User-defined entry point for existing android regions
+         */
+        @JvmStatic
+        @JvmOverloads
+        fun assertThat(
+            region: android.graphics.Region?,
+            flickerSubjects: List<FlickerSubject> = emptyList()
+        ): RegionSubject {
+            val strategy = FlickerFailureStrategy()
+            val subject = StandardSubjectBuilder.forCustomFailureStrategy(strategy)
+                .about(getFactory(flickerSubjects))
+                .that(region ?: android.graphics.Region()) as RegionSubject
+            strategy.init(subject)
+            return subject
+        }
+
+        /**
+         * User-defined entry point for existing rects
+         */
+        @JvmStatic
+        @JvmOverloads
+        fun assertThat(
+            rect: Array<Rect>,
+            flickerSubjects: List<FlickerSubject> = emptyList()
+        ): RegionSubject = assertThat(Region(rect), flickerSubjects)
 
         /**
          * User-defined entry point for existing rects
@@ -520,17 +545,28 @@ class RegionSubject(
         @JvmOverloads
         fun assertThat(
             rect: Rect?,
-            flickerSubject: FlickerSubject? = null,
-            layerVisibilityFacts: List<Fact> = emptyList()
-        ): RegionSubject {
-            val region = android.graphics.Region(rect?.toAndroidRect() ?: android.graphics.Rect())
-            val strategy = FlickerFailureStrategy()
-            val subject = StandardSubjectBuilder.forCustomFailureStrategy(strategy)
-                .about(getFactory(flickerSubject, layerVisibilityFacts))
-                .that(region) as RegionSubject
-            strategy.init(subject)
-            return subject
-        }
+            flickerSubjects: List<FlickerSubject> = emptyList()
+        ): RegionSubject = assertThat(Region(rect), flickerSubjects)
+
+        /**
+         * User-defined entry point for existing rects
+         */
+        @JvmStatic
+        fun assertThat(
+            rect: RectF?,
+            flickerSubjects: List<FlickerSubject> = emptyList()
+        ): RegionSubject = assertThat(rect?.toRect(), flickerSubjects)
+
+        /**
+         * User-defined entry point for existing rects
+         */
+        @JvmStatic
+        fun assertThat(
+            rect: Array<RectF>,
+            flickerSubjects: List<FlickerSubject> = emptyList()
+        ): RegionSubject = assertThat(
+            mergeRegions(rect.map { Region(it.toRect()) }.toTypedArray()),
+            flickerSubjects)
 
         /**
          * User-defined entry point for existing regions
@@ -538,18 +574,9 @@ class RegionSubject(
         @JvmStatic
         @JvmOverloads
         fun assertThat(
-            regions: List<Region>,
-            flickerSubject: FlickerSubject? = null,
-            layerVisibilityFacts: List<Fact> = emptyList()
-        ): RegionSubject {
-            val mergedRegion = mergeRegions(regions)
-            val strategy = FlickerFailureStrategy()
-            val subject = StandardSubjectBuilder.forCustomFailureStrategy(strategy)
-                .about(getFactory(flickerSubject, layerVisibilityFacts))
-                .that(mergedRegion) as RegionSubject
-            strategy.init(subject)
-            return subject
-        }
+            regions: Array<Region>,
+            flickerSubjects: List<FlickerSubject> = emptyList()
+        ): RegionSubject = assertThat(mergeRegions(regions), flickerSubjects)
 
         /**
          * User-defined entry point for existing regions
@@ -558,14 +585,7 @@ class RegionSubject(
         @JvmOverloads
         fun assertThat(
             region: Region?,
-            flickerSubject: FlickerSubject? = null
-        ): RegionSubject {
-            val strategy = FlickerFailureStrategy()
-            val subject = StandardSubjectBuilder.forCustomFailureStrategy(strategy)
-                .about(getFactory(flickerSubject))
-                .that(region?.toAndroidRegion()) as RegionSubject
-            strategy.init(subject)
-            return subject
-        }
+            flickerSubjects: List<FlickerSubject> = emptyList()
+        ): RegionSubject = assertThat(region?.toAndroidRegion(), flickerSubjects)
     }
 }

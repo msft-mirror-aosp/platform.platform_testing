@@ -51,7 +51,10 @@ class WindowStateSubject private constructor(
 ) : FlickerSubject(fm, windowState) {
     val isEmpty: Boolean get() = windowState == null
     val isNotEmpty: Boolean get() = !isEmpty
-    val frame: RegionSubject get() = RegionSubject.assertThat(windowState?.frame, this)
+    val isVisible: Boolean get() = windowState?.isVisible == true
+    val isInvisible: Boolean get() = windowState?.isVisible == false
+    val name: String get() = windowState?.name ?: windowTitle ?: ""
+    val frame: RegionSubject get() = RegionSubject.assertThat(windowState?.frame, listOf(this))
 
     override val defaultFacts: String =
         "${entry?.defaultFacts ?: ""}\nWindowTitle: ${windowState?.title}"

@@ -147,13 +147,21 @@ class LayersTraceParser {
 
         @JvmStatic
         private fun newLayer(proto: Layers.LayerProto): Layer {
+            // Differentiate between the cases when there's no HWC data on
+            // the trace, and when the visible region is actually empty
+            val activeBuffer = proto.activeBuffer.toBuffer()
+            var visibleRegion = proto.visibleRegion.toRegion()
+            if (visibleRegion == null && activeBuffer.isEmpty) {
+                visibleRegion = Region.EMPTY
+            }
+            val crop = getCrop(proto.crop)
             return Layer(
                     proto.name ?: "",
                     proto.id,
                     proto.parent,
                     proto.z,
-                    proto.visibleRegion.toRegion(),
-                    proto.activeBuffer.toBuffer(),
+                    visibleRegion,
+                    activeBuffer,
                     proto.flags,
                     proto.bounds?.toRectF() ?: RectF.EMPTY,
                     proto.color.toColor(),
@@ -171,7 +179,7 @@ class LayersTraceParser {
                     proto.hwcCrop.toRectF() ?: RectF.EMPTY,
                     proto.hwcFrame.toRect(),
                     proto.backgroundBlurRadius,
-                    proto.crop.toRect(),
+                    crop,
                     proto.isRelativeOf,
                     proto.zOrderRelativeOf
             )
@@ -200,14 +208,29 @@ class LayersTraceParser {
             return Buffer(width, height, stride, format)
         }
 
+        @JvmStatic
+        private fun getCrop(crop: RectProto?): com.android.server.wm.traces.common.Rect? {
+            return when {
+                crop == null -> com.android.server.wm.traces.common.Rect.EMPTY
+                // crop (0,0) (-1,-1) means no crop
+                crop.right == -1 && crop.left == 0 && crop.bottom == -1 && crop.top == 0 ->
+                    null
+                (crop.right - crop.left) <= 0 || (crop.bottom - crop.top) <= 0 ->
+                    com.android.server.wm.traces.common.Rect.EMPTY
+                else ->
+                    com.android.server.wm.traces.common.Rect(
+                        crop.left, crop.top, crop.right, crop.bottom)
+            }
+        }
+
         /**
          * Extracts [Rect] from [RegionProto] by returning a rect that encompasses all
          * the rectangles making up the region.
          */
         @JvmStatic
-        private fun RegionProto?.toRegion(): Region {
+        private fun RegionProto?.toRegion(): Region? {
             return if (this == null) {
-                Region.EMPTY
+                null
             } else {
                 val rects = this.rect.map { it.toRect() }.toTypedArray()
                 return Region(rects)

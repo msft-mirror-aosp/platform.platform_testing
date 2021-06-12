@@ -53,7 +53,7 @@ open class Layer(
     val hwcCrop: RectF,
     val hwcFrame: Rect,
     val backgroundBlurRadius: Int,
-    val crop: Rect,
+    val crop: Rect?,
     val isRelativeOf: Boolean,
     val zOrderRelativeOfId: Int
 ) {
@@ -123,7 +123,7 @@ open class Layer(
                 isActiveBufferEmpty && !hasEffects -> false
                 !fillsColor -> false
                 occludedBy.isNotEmpty() -> false
-                visibleRegion?.isEmpty ?: true -> false
+                visibleRegion?.isEmpty ?: false -> false
                 else -> !bounds.isEmpty
             }
         }
@@ -237,7 +237,7 @@ open class Layer(
                 isHiddenByParent -> "Hidden by parent ${parent.name}"
                 isBufferLayer && isActiveBufferEmpty -> "Buffer is empty"
                 color.isEmpty -> "Alpha is 0"
-                crop.isEmpty -> "Crop is 0x0"
+                crop?.isEmpty ?: false -> "Crop is 0x0"
                 bounds.isEmpty -> "Bounds is 0x0"
                 !transform.isValid -> "Transform is invalid"
                 isRelativeOf && zOrderRelativeOf == null -> "RelativeOf layer has been removed"
@@ -247,7 +247,7 @@ open class Layer(
                     val occludedByIds = occludedBy.joinToString(", ") { it.id.toString() }
                     "Layer is occluded by: $occludedByIds"
                 }
-                visibleRegion?.isEmpty ?: true ->
+                visibleRegion?.isEmpty ?: false ->
                     "Visible region calculated by Composition Engine is empty"
                 else -> "Unknown"
             }
