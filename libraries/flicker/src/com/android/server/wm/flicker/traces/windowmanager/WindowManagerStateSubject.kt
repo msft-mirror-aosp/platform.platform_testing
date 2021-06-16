@@ -667,6 +667,25 @@ class WindowManagerStateSubject private constructor(
         } ?: WindowStateSubject.assertThat(name, this)
     }
 
+    /**
+     * Obtains a [WindowStateSubject] for the first occurrence of a [WindowState] matching
+     * [predicate].
+     *
+     * Always returns a subject, event when the layer doesn't exist. To verify if layer
+     * actually exists in the hierarchy use [WindowStateSubject.exists] or
+     * [WindowStateSubject.doesNotExist]
+     *
+     * @param predicate to search for a [WindowState]
+     * @param name Name of the subject to use when not found (optional)
+     *
+     * @return [WindowStateSubject] that can be used to make assertions on a single [WindowState]
+     */
+    fun windowState(name: String = "", predicate: (WindowState) -> Boolean): WindowStateSubject {
+        return subjects.firstOrNull {
+            it.windowState?.run { predicate(this) } ?: false
+        } ?: WindowStateSubject.assertThat(name, this)
+    }
+
     override fun toString(): String {
         return "WindowManagerStateSubject($wmState)"
     }

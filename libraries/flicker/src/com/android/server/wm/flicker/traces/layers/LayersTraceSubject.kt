@@ -117,6 +117,24 @@ class LayersTraceSubject private constructor(
     }
 
     /**
+     * @return List of [LayerSubject]s matching [name] in the order they appear on the trace
+     */
+    fun layers(name: String): List<LayerSubject> {
+        return subjects
+            .map { it.layer { layer -> layer.name.contains(name) } }
+            .filter { it.isNotEmpty }
+    }
+
+    /**
+     * @return List of [LayerSubject]s matching [predicate] in the order they appear on the trace
+     */
+    fun layers(predicate: (Layer) -> Boolean): List<LayerSubject> {
+        return subjects
+            .map { it.layer { layer -> predicate(layer) } }
+            .filter { it.isNotEmpty }
+    }
+
+    /**
      * Asserts that the visible area covered by any [Layer] with [Layer.name] containing any of
      * [layerName] covers at least [testRegion], that is, if its area of the layer's visible
      * region covers each point in the region.

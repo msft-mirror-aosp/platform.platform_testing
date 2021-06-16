@@ -105,6 +105,26 @@ class WindowManagerTraceSubject private constructor(
     }
 
     /**
+     * @return List of [WindowStateSubject]s matching [partialWindowTitle] in the order they
+     *      appear on the trace
+     */
+    fun windowStates(partialWindowTitle: String): List<WindowStateSubject> {
+        return subjects
+            .map { it.windowState { windows -> windows.title.contains(partialWindowTitle) } }
+            .filter { it.isNotEmpty }
+    }
+
+    /**
+     * @return List of [WindowStateSubject]s matching [predicate] in the order they
+     *      appear on the trace
+     */
+    fun windowStates(predicate: (WindowState) -> Boolean): List<WindowStateSubject> {
+        return subjects
+            .map { it.windowState { window -> predicate(window) } }
+            .filter { it.isNotEmpty }
+    }
+
+    /**
      * Checks if the non-app window with title containing [partialWindowTitle] exists above the app
      * windows and is visible
      *
