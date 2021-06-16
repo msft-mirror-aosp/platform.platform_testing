@@ -222,9 +222,26 @@ class LayerTraceEntrySubject private constructor(
      * [name] and [frameNumber].
      */
     fun layer(name: String, frameNumber: Long): LayerSubject {
+        return layer(name) {
+            it.name.contains(name) && it.currFrame == frameNumber
+        }
+    }
+
+    /**
+     * Obtains a [LayerSubject] for the first occurrence of a [Layer] matching [predicate]
+     *
+     * Always returns a subject, event when the layer doesn't exist. To verify if layer
+     * actually exists in the hierarchy use [LayerSubject.exists] or [LayerSubject.doesNotExist]
+     *
+     * @param predicate to search for a layer
+     * @param name Name of the subject to use when not found (optional)
+     *
+     * @return [LayerSubject] that can be used to make assertions
+     */
+    @JvmOverloads
+    fun layer(name: String = "", predicate: (Layer) -> Boolean): LayerSubject {
         return subjects.firstOrNull {
-            it.layer?.name?.contains(name) == true &&
-                it.layer.currFrame == frameNumber
+            it.layer?.run { predicate(this) } ?: false
         } ?: LayerSubject.assertThat(name, this)
     }
 

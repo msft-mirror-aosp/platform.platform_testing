@@ -19,6 +19,7 @@ package com.android.server.wm.flicker
 import com.android.server.wm.flicker.traces.FlickerSubjectException
 import com.android.server.wm.flicker.traces.windowmanager.WindowManagerTraceSubject
 import com.android.server.wm.flicker.traces.windowmanager.WindowManagerTraceSubject.Companion.assertThat
+import com.google.common.truth.Truth
 import org.junit.FixMethodOrder
 import org.junit.Test
 import org.junit.runners.MethodSorters
@@ -133,5 +134,18 @@ class WindowManagerTraceSubjectTest {
     fun testCanDetectVisibleWindowsMoreThanOneConsecutiveEntry() {
         val trace = readWmTraceFromFile("wm_trace_valid_visible_windows.pb")
         assertThat(trace).visibleWindowsShownMoreThanOneConsecutiveEntry().forAllEntries()
+    }
+
+    @Test
+    fun testCanAssertWindowStateSequence() {
+        val windowStates = assertThat(chromeTrace).windowStates(
+            "com.android.chrome/org.chromium.chrome.browser.firstrun.FirstRunActivity")
+        val visibilityChange = windowStates.zipWithNext { current, next ->
+            current.windowState?.isVisible != next.windowState?.isVisible
+        }
+
+        Truth.assertWithMessage("Visibility should have changed only 1x in the trace")
+            .that(visibilityChange.count { it })
+            .isEqualTo(1)
     }
 }

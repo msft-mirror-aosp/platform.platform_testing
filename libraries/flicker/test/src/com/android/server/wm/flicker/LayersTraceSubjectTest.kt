@@ -16,10 +16,10 @@
 
 package com.android.server.wm.flicker
 
-import android.graphics.Region
 import androidx.test.filters.FlakyTest
 import com.android.server.wm.flicker.traces.layers.LayersTraceSubject
 import com.android.server.wm.flicker.traces.layers.LayersTraceSubject.Companion.assertThat
+import com.android.server.wm.traces.common.Region
 import com.android.server.wm.traces.common.layers.LayersTrace
 import com.google.common.truth.Truth
 import org.junit.FixMethodOrder
@@ -193,7 +193,27 @@ class LayersTraceSubjectTest {
         detectRootLayer("layers_trace_root_aosp.pb")
     }
 
+    @Test
+    fun testCanDetectLayerExpanding() {
+        val layersTraceEntries = readLayerTraceFromFile("layers_trace_openchrome.pb")
+        val animation = assertThat(layersTraceEntries).layers("animation-leash of app_transition#0")
+        // Obtain the area of each layer and checks if the next area is
+        // greater or equal to the previous one
+        val areas = animation.map {
+            val region = it.layer?.visibleRegion ?: Region()
+            val area = region.width * region.height
+            area
+        }
+        val expanding = areas.zipWithNext { currentArea, nextArea ->
+            nextArea >= currentArea
+        }
+
+        Truth.assertWithMessage("Animation leash should be expanding")
+            .that(expanding.all { it })
+            .isTrue()
+    }
+
     companion object {
-        private val DISPLAY_REGION = Region(0, 0, 1440, 2880)
+        private val DISPLAY_REGION = android.graphics.Region(0, 0, 1440, 2880)
     }
 }
