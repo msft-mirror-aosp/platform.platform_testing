@@ -61,4 +61,43 @@ class LayersTraceTest {
                 .isNotEmpty()
         }
     }
+
+    @Test
+    fun canTestLayerOccludedBy_appLayerHasVisibleRegion() {
+        val trace = readLayerTraceFromFile("layers_trace_occluded.pb")
+        val entry = trace.getEntry(1700382131522L)
+        val layer = entry.getLayerWithBuffer(
+                "com.android.server.wm.flicker.testapp.SimpleActivity#0")
+        Truth.assertWithMessage("App should be visible")
+                .that(layer?.visibleRegion?.isEmpty).isFalse()
+        Truth.assertWithMessage("App should visible region")
+                .that(layer?.visibleRegion?.toString())
+                .contains("(346, 1583) - (1094, 2839)")
+
+        val splashScreenLayer = entry.getLayerWithBuffer(
+                "Splash Screen com.android.server.wm.flicker.testapp.SimpleActivity#0")
+        Truth.assertWithMessage("Splash screen should be visible")
+                .that(layer?.visibleRegion?.isEmpty).isFalse()
+        Truth.assertWithMessage("Splash screen visible region")
+                .that(layer?.visibleRegion?.toString())
+                .contains("(346, 1583) - (1094, 2839)")
+    }
+
+    @Test
+    fun canTestLayerOccludedBy_appLayerIsOccludedBySplashScreen() {
+        val layerName = "com.android.server.wm.flicker.testapp.SimpleActivity#0"
+        val trace = readLayerTraceFromFile("layers_trace_occluded.pb")
+        val entry = trace.getEntry(1700382131522L)
+        val layer = entry.getLayerWithBuffer(layerName)
+        val occludedBy = layer?.occludedBy ?: mutableListOf()
+        val partiallyOccludedBy = layer?.partiallyOccludedBy ?: mutableListOf()
+        Truth.assertWithMessage("Layer $layerName should not be occluded")
+                .that(occludedBy).isEmpty()
+        Truth.assertWithMessage("Layer $layerName should be partially occluded")
+                .that(partiallyOccludedBy).isNotEmpty()
+        Truth.assertWithMessage("Layer $layerName should be partially occluded")
+                .that(partiallyOccludedBy.joinToString())
+                .contains("Splash Screen com.android.server.wm.flicker.testapp#0 " +
+                        "buffer:1440x3040 frame#1 visible:(346, 1583) - (1094, 2839)")
+    }
 }
