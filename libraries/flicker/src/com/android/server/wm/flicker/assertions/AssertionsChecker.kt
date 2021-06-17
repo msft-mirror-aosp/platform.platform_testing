@@ -16,6 +16,8 @@
 
 package com.android.server.wm.flicker.assertions
 
+import android.util.Log
+import com.android.server.wm.flicker.FLICKER_TAG
 import com.google.common.truth.Fact
 import kotlin.math.max
 
@@ -77,6 +79,9 @@ class AssertionsChecker<T : FlickerSubject> {
             val currentAssertion = assertions[assertionIndex]
             val currEntry = entries[entryIndex]
             try {
+                Log.v(FLICKER_TAG, "Checking Assertion: " +
+                        "${assertionIndex + 1}/${assertions.size}:[${currentAssertion.name}]\t" +
+                        "Entry: ${entryIndex + 1}/${entries.size} $currEntry")
                 currentAssertion.invoke(currEntry)
                 lastPassedAssertionIndex = assertionIndex
                 entryIndex++
