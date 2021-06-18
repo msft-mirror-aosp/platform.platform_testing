@@ -163,20 +163,25 @@ open class WindowManagerStateHelper @JvmOverloads constructor(
     @JvmOverloads
     fun waitForRotation(rotation: Int, displayId: Int = Display.DEFAULT_DISPLAY): Boolean =
         waitFor("Rotation: $rotation") {
-            val currRotation = it.wmState.getRotation(displayId)
-            val rotationLayerExists = it.layerState.isVisible(ROTATION_LAYER_NAME)
-            val blackSurfaceLayerExists = it.layerState.isVisible(BLACK_SURFACE_LAYER_NAME)
-            val anyLayerAnimating = it.layerState.visibleLayers.any { layer ->
-                !layer.transform.isSimpleRotation
+            if (!it.wmState.canRotate) {
+                Log.v(LOG_TAG, "Rotation is not allowed in the state")
+                true
+            } else {
+                val currRotation = it.wmState.getRotation(displayId)
+                val rotationLayerExists = it.layerState.isVisible(ROTATION_LAYER_NAME)
+                val blackSurfaceLayerExists = it.layerState.isVisible(BLACK_SURFACE_LAYER_NAME)
+                val anyLayerAnimating = it.layerState.visibleLayers.any { layer ->
+                    !layer.transform.isSimpleRotation
+                }
+                Log.v(LOG_TAG, "currRotation($currRotation) " +
+                    "anyLayerAnimating($anyLayerAnimating) " +
+                    "blackSurfaceLayerExists($blackSurfaceLayerExists) " +
+                    "rotationLayerExists($rotationLayerExists)")
+                currRotation == rotation &&
+                    !anyLayerAnimating &&
+                    !rotationLayerExists &&
+                    !blackSurfaceLayerExists
             }
-            Log.v(LOG_TAG, "currRotation($currRotation) " +
-                "anyLayerAnimating($anyLayerAnimating) " +
-                "blackSurfaceLayerExists($blackSurfaceLayerExists) " +
-                "rotationLayerExists($rotationLayerExists)")
-            currRotation == rotation &&
-                !anyLayerAnimating &&
-                !rotationLayerExists &&
-                !blackSurfaceLayerExists
         }
 
     /**

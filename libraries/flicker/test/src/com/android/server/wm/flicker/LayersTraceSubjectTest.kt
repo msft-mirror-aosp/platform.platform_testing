@@ -194,6 +194,14 @@ class LayersTraceSubjectTest {
     }
 
     @Test
+    fun canTestLayerOccludedBy_appLayerIsNotVisible() {
+        val trace = readLayerTraceFromFile("layers_trace_occluded.pb")
+        val entry = assertThat(trace).entry(1700382131522L)
+        entry.isVisible(
+                "com.android.server.wm.flicker.testapp.SimpleActivity#0")
+    }
+
+    @Test
     fun testCanDetectLayerExpanding() {
         val layersTraceEntries = readLayerTraceFromFile("layers_trace_openchrome.pb")
         val animation = assertThat(layersTraceEntries).layers("animation-leash of app_transition#0")

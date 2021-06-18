@@ -96,6 +96,12 @@ open class WindowManagerState(
             .filter { it.windowingMode == WINDOWING_MODE_PINNED }
             .toTypedArray()
 
+    /**
+     * Checks if the device state supports rotation, i.e., if the rotation sensor is
+     * enabled (e.g., launcher) and if the rotation not fixed
+     */
+    val canRotate: Boolean
+        get() = policy?.isFixedOrientation != true && policy?.isOrientationNoSensor != true
     val focusedDisplay: DisplayContent? get() = getDisplay(focusedDisplayId)
     val focusedStackId: Int get() = focusedDisplay?.focusedRootTaskId ?: -1
     val focusedActivity: String get() {

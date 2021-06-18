@@ -73,11 +73,11 @@ data class RectF(
      * @return A rectangle with the intersection coordinates
      */
     fun intersection(left: Float, top: Float, right: Float, bottom: Float): RectF {
-        if (this.left < right && left < this.right && this.top < bottom && top < this.bottom) {
-            var intersectionLeft = 0f
-            var intersectionTop = 0f
-            var intersectionRight = 0f
-            var intersectionBottom = 0f
+        if (this.left < right && left < this.right && this.top <= bottom && top <= this.bottom) {
+            var intersectionLeft = this.left
+            var intersectionTop = this.top
+            var intersectionRight = this.right
+            var intersectionBottom = this.bottom
 
             if (this.left < left) {
                 intersectionLeft = left
