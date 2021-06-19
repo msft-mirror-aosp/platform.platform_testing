@@ -24,7 +24,7 @@ import com.android.server.wm.traces.common.windowmanager.windows.DisplayArea
 import com.android.server.wm.traces.common.windowmanager.windows.DisplayContent
 import com.android.server.wm.traces.common.windowmanager.windows.KeyguardControllerState
 import com.android.server.wm.traces.common.windowmanager.windows.RootWindowContainer
-import com.android.server.wm.traces.common.windowmanager.windows.ActivityTask
+import com.android.server.wm.traces.common.windowmanager.windows.Task
 import com.android.server.wm.traces.common.windowmanager.windows.WindowContainer
 import com.android.server.wm.traces.common.windowmanager.windows.WindowManagerPolicy
 import com.android.server.wm.traces.common.windowmanager.windows.WindowState
@@ -65,7 +65,7 @@ open class WindowManagerState(
         get() = windowContainers.filterIsInstance<DisplayContent>().toTypedArray()
 
     // Stacks in z-order with the top most at the front of the list, starting with primary display.
-    val rootTasks: Array<ActivityTask>
+    val rootTasks: Array<Task>
         get() = displays.flatMap { it.rootTasks.toList() }.toTypedArray()
 
     // Windows in z-order with the top most at the front of the list.
@@ -127,14 +127,13 @@ open class WindowManagerState(
     val resumedActivitiesCount: Int get() = resumedActivities.size
     val stackCount: Int get() = rootTasks.size
     val displayCount: Int get() = displays.size
-    val homeTask: ActivityTask? get() = getStackByActivityType(ACTIVITY_TYPE_HOME)?.topTask
-    val recentsTask: ActivityTask? get() = getStackByActivityType(ACTIVITY_TYPE_RECENTS)?.topTask
+    val homeTask: Task? get() = getStackByActivityType(ACTIVITY_TYPE_HOME)?.topTask
+    val recentsTask: Task? get() = getStackByActivityType(ACTIVITY_TYPE_RECENTS)?.topTask
     val homeActivity: Activity? get() = homeTask?.activities?.lastOrNull()
     val recentsActivity: Activity? get() = recentsTask?.activities?.lastOrNull()
     val rootTasksCount: Int get() = rootTasks.size
     val isRecentsActivityVisible: Boolean get() = recentsActivity?.isVisible ?: false
-    val dreamTask: ActivityTask?
-        get() = getStackByActivityType(ACTIVITY_TYPE_DREAM)?.topTask
+    val dreamTask: Task? get() = getStackByActivityType(ACTIVITY_TYPE_DREAM)?.topTask
     val defaultDisplayLastTransition: String get() = getDefaultDisplay()?.lastTransition
             ?: "Default display not found"
     val defaultDisplayAppTransitionState: String get() = getDefaultDisplay()?.appTransitionState
@@ -216,7 +215,7 @@ open class WindowManagerState(
         return count
     }
 
-    fun getRootTask(taskId: Int): ActivityTask? =
+    fun getRootTask(taskId: Int): Task? =
         rootTasks.firstOrNull { it.rootTaskId == taskId }
 
     fun getRotation(displayId: Int): Int =
@@ -225,10 +224,10 @@ open class WindowManagerState(
     fun getOrientation(displayId: Int): Int =
             getDisplay(displayId)?.lastOrientation ?: error("Default display not found")
 
-    fun getStackByActivityType(activityType: Int): ActivityTask? =
+    fun getStackByActivityType(activityType: Int): Task? =
         rootTasks.firstOrNull { it.activityType == activityType }
 
-    fun getStandardStackByWindowingMode(windowingMode: Int): ActivityTask? =
+    fun getStandardStackByWindowingMode(windowingMode: Int): Task? =
         rootTasks.firstOrNull {
             it.activityType == ACTIVITY_TYPE_STANDARD &&
                 it.windowingMode == windowingMode
@@ -248,7 +247,7 @@ open class WindowManagerState(
     }
 
     /** Get the stack on its display.  */
-    fun getStackByActivity(activityName: String): ActivityTask? {
+    fun getStackByActivity(activityName: String): Task? {
         return displays.map { display ->
             display.rootTasks.reversed().firstOrNull { stack ->
                 stack.containsActivity(activityName)
@@ -364,10 +363,10 @@ open class WindowManagerState(
     fun getStackIdByActivity(activityName: String): Int =
         getTaskByActivity(activityName)?.rootTaskId ?: INVALID_STACK_ID
 
-    fun getTaskByActivity(activityName: String): ActivityTask? =
+    fun getTaskByActivity(activityName: String): Task? =
         getTaskByActivity(activityName, WINDOWING_MODE_UNDEFINED)
 
-    fun getTaskByActivity(activityName: String, windowingMode: Int): ActivityTask? {
+    fun getTaskByActivity(activityName: String, windowingMode: Int): Task? {
         for (stack in rootTasks) {
             if (windowingMode == WINDOWING_MODE_UNDEFINED || windowingMode == stack.windowingMode) {
                 val task = stack.getTask { it.getActivity(activityName) != null }
@@ -511,7 +510,7 @@ open class WindowManagerState(
 
     fun getZOrder(w: WindowState): Int = windowStates.size - windowStates.indexOf(w)
 
-    fun getStandardRootStackByWindowingMode(windowingMode: Int): ActivityTask? {
+    fun getStandardRootStackByWindowingMode(windowingMode: Int): Task? {
         for (task in rootTasks) {
             if (task.activityType != ACTIVITY_TYPE_STANDARD) {
                 continue
