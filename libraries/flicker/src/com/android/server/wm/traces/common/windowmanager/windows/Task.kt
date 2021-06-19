@@ -25,7 +25,7 @@ import com.android.server.wm.traces.common.Rect
  * access internal Java/Android functionality
  *
  */
-open class ActivityTask(
+open class Task(
     override val activityType: Int,
     override val isFullscreen: Boolean,
     override val bounds: Rect,
@@ -51,15 +51,17 @@ open class ActivityTask(
 
     val lastNonFullscreenBounds: Rect = _lastNonFullscreenBounds ?: Rect.EMPTY
     val isRootTask: Boolean get() = taskId == rootTaskId
-    val tasks: List<ActivityTask>
-        get() = this.children.reversed().filterIsInstance<ActivityTask>()
+    val tasks: List<Task>
+        get() = this.children.reversed().filterIsInstance<Task>()
+    val taskFragments: List<TaskFragment>
+        get() = this.children.reversed().filterIsInstance<TaskFragment>()
     val activities: List<Activity>
         get() = this.children.reversed().filterIsInstance<Activity>()
     /** The top task in the stack.
      */
     // NOTE: Unlike the WindowManager internals, we dump the state from top to bottom,
     //       so the indices are inverted
-    val topTask: ActivityTask? get() = tasks.firstOrNull()
+    val topTask: Task? get() = tasks.firstOrNull()
     val resumedActivities: Array<String> get() {
         val result = mutableSetOf<String>()
         if (this._resumedActivity.isNotEmpty()) {
@@ -72,12 +74,12 @@ open class ActivityTask(
         return result.toTypedArray()
     }
 
-    fun getTask(predicate: (ActivityTask) -> Boolean) =
+    fun getTask(predicate: (Task) -> Boolean) =
         tasks.firstOrNull { predicate(it) } ?: if (predicate(this)) this else null
 
     fun getTask(taskId: Int) = getTask { t -> t.taskId == taskId }
 
-    fun forAllTasks(consumer: (ActivityTask) -> Any) {
+    fun forAllTasks(consumer: (Task) -> Any) {
         tasks.forEach { consumer(it) }
     }
 

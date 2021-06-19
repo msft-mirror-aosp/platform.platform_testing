@@ -16,10 +16,12 @@
 
 package com.android.server.wm.flicker
 
+import android.content.ComponentName
 import android.platform.test.rule.NavigationModeRule
 import android.platform.test.rule.PressHomeRule
 import android.platform.test.rule.UnlockScreenRule
 import com.android.server.wm.flicker.rules.ChangeDisplayOrientationRule
+import com.android.server.wm.flicker.rules.LaunchAppRule
 import com.android.server.wm.flicker.rules.RemoveAllTasksButHomeRule
 import org.junit.rules.RuleChain
 import org.junit.runner.Description
@@ -33,12 +35,26 @@ import org.junit.runners.model.Statement
 class TransitionRunnerWithRules(private val testConfig: Map<String, Any?>) : TransitionRunner() {
     private var result: FlickerResult? = null
 
+    /**
+     * Create the default flicker test setup rules. In order:
+     *   - unlock device
+     *   - change orientation
+     *   - change navigation mode
+     *   - launch an app
+     *   - remove all apps
+     *   - go to home screen
+     *
+     * (b/186740751) An app should be launched because, after changing the navigation mode,
+     * the first app launch is handled as a screen size change (similar to a rotation), this
+     * causes different problems during testing (e.g. IME now shown on app launch)
+     */
     private fun buildDefaultSetupRules(): RuleChain {
-        return RuleChain.outerRule(ChangeDisplayOrientationRule(testConfig.startRotation))
-            .around(RemoveAllTasksButHomeRule())
+        return RuleChain.outerRule(UnlockScreenRule())
             .around(NavigationModeRule(testConfig.navBarMode))
+            .around(LaunchAppRule(DUMMY_APP))
+            .around(RemoveAllTasksButHomeRule())
+            .around(ChangeDisplayOrientationRule(testConfig.startRotation))
             .around(PressHomeRule())
-            .around(UnlockScreenRule())
     }
 
     private fun buildTransitionRule(flicker: Flicker): Statement {
@@ -77,5 +93,10 @@ class TransitionRunnerWithRules(private val testConfig: Map<String, Any?>) : Tra
         } finally {
             cleanUp()
         }
+    }
+
+    companion object {
+        private val DUMMY_APP = ComponentName("com.google.android.apps.messaging",
+            "com.google.android.apps.messaging.ui.ConversationListActivity")
     }
 }
