@@ -88,14 +88,14 @@ public class SimpleperfListenerTest {
     public void testSimpleperfPerTestSuccessFlow() throws Exception {
         Bundle b = new Bundle();
         mListener = initListener(b);
-        doReturn(true).when(mSimpleperfHelper).startCollecting();
+        doReturn(true).when(mSimpleperfHelper).startCollecting(anyString(), anyString());
         doReturn(true).when(mSimpleperfHelper).stopCollecting(anyString());
         // Test run start behavior
         mListener.testRunStarted(mRunDesc);
 
         // Test test start behavior
         mListener.testStarted(mTest1Desc);
-        verify(mSimpleperfHelper, times(1)).startCollecting();
+        verify(mSimpleperfHelper, times(1)).startCollecting(anyString(), anyString());
         mListener.onTestEnd(mDataRecord, mTest1Desc);
         verify(mSimpleperfHelper, times(1)).stopCollecting(anyString());
     }
@@ -110,14 +110,14 @@ public class SimpleperfListenerTest {
         b.putString(SimpleperfListener.SKIP_TEST_FAILURE_METRICS, "false");
         mListener = initListener(b);
 
-        doReturn(true).when(mSimpleperfHelper).startCollecting();
+        doReturn(true).when(mSimpleperfHelper).startCollecting(anyString(), anyString());
         doReturn(true).when(mSimpleperfHelper).stopCollecting(anyString());
         // Test run start behavior
         mListener.testRunStarted(mRunDesc);
 
         // Test test start behavior
         mListener.testStarted(mTest1Desc);
-        verify(mSimpleperfHelper, times(1)).startCollecting();
+        verify(mSimpleperfHelper, times(1)).startCollecting(anyString(), anyString());
 
         // Test fail behaviour
         Failure failureDesc = new Failure(FAKE_TEST_DESCRIPTION, new Exception());
@@ -136,14 +136,14 @@ public class SimpleperfListenerTest {
         b.putString(SimpleperfListener.SKIP_TEST_FAILURE_METRICS, "true");
         mListener = initListener(b);
 
-        doReturn(true).when(mSimpleperfHelper).startCollecting();
+        doReturn(true).when(mSimpleperfHelper).startCollecting(anyString(), anyString());
         doReturn(true).when(mSimpleperfHelper).stopSimpleperf();
         // Test run start behavior
         mListener.testRunStarted(mRunDesc);
 
         // Test test start behavior
         mListener.testStarted(mTest1Desc);
-        verify(mSimpleperfHelper, times(1)).startCollecting();
+        verify(mSimpleperfHelper, times(1)).startCollecting(anyString(), anyString());
 
         // Test fail behaviour
         Failure failureDesc = new Failure(FAKE_TEST_DESCRIPTION, new Exception());
@@ -161,14 +161,14 @@ public class SimpleperfListenerTest {
         Bundle b = new Bundle();
         b.putString(SimpleperfListener.COLLECT_PER_RUN, "true");
         mListener = initListener(b);
-        doReturn(true).when(mSimpleperfHelper).startCollecting();
+        doReturn(true).when(mSimpleperfHelper).startCollecting(anyString(), anyString());
         doReturn(true).when(mSimpleperfHelper).stopCollecting(anyString());
 
         // Test run start behavior
         mListener.onTestRunStart(mListener.createDataRecord(), FAKE_DESCRIPTION);
-        verify(mSimpleperfHelper, times(1)).startCollecting();
+        verify(mSimpleperfHelper, times(1)).startCollecting(anyString(), anyString());
         mListener.testStarted(mTest1Desc);
-        verify(mSimpleperfHelper, times(1)).startCollecting();
+        verify(mSimpleperfHelper, times(1)).startCollecting(anyString(), anyString());
         mListener.onTestEnd(mDataRecord, mTest1Desc);
         verify(mSimpleperfHelper, times(0)).stopCollecting(anyString());
         mListener.onTestRunEnd(mListener.createDataRecord(), new Result());
@@ -183,11 +183,11 @@ public class SimpleperfListenerTest {
         Bundle b = new Bundle();
         b.putString(SimpleperfListener.COLLECT_PER_RUN, "true");
         mListener = initListener(b);
-        doReturn(false).when(mSimpleperfHelper).startCollecting();
+        doReturn(false).when(mSimpleperfHelper).startCollecting(anyString(), anyString());
 
         // Test run start behavior
         mListener.onTestRunStart(mListener.createDataRecord(), FAKE_DESCRIPTION);
-        verify(mSimpleperfHelper, times(1)).startCollecting();
+        verify(mSimpleperfHelper, times(1)).startCollecting(anyString(), anyString());
         mListener.onTestRunEnd(mListener.createDataRecord(), new Result());
         verify(mSimpleperfHelper, times(0)).stopCollecting(anyString());
     }
@@ -199,14 +199,14 @@ public class SimpleperfListenerTest {
     public void testSimpleperfStartFailureFlow() throws Exception {
         Bundle b = new Bundle();
         mListener = initListener(b);
-        doReturn(false).when(mSimpleperfHelper).startCollecting();
+        doReturn(false).when(mSimpleperfHelper).startCollecting(anyString(), anyString());
 
         // Test run start behavior
         mListener.testRunStarted(mRunDesc);
 
         // Test test start behavior
         mListener.testStarted(mTest1Desc);
-        verify(mSimpleperfHelper, times(1)).startCollecting();
+        verify(mSimpleperfHelper, times(1)).startCollecting(anyString(), anyString());
         mListener.onTestEnd(mDataRecord, mTest1Desc);
         verify(mSimpleperfHelper, times(0)).stopCollecting(anyString());
     }
@@ -219,7 +219,7 @@ public class SimpleperfListenerTest {
     public void testSimpleperfInvocationCount() throws Exception {
         Bundle b = new Bundle();
         mListener = initListener(b);
-        doReturn(true).when(mSimpleperfHelper).startCollecting();
+        doReturn(true).when(mSimpleperfHelper).startCollecting(anyString(), anyString());
         doReturn(true).when(mSimpleperfHelper).stopCollecting(anyString());
 
         // Test run start behavior
@@ -227,19 +227,19 @@ public class SimpleperfListenerTest {
 
         // Test1 invocation 1 start behavior
         mListener.testStarted(mTest1Desc);
-        verify(mSimpleperfHelper, times(1)).startCollecting();
+        verify(mSimpleperfHelper, times(1)).startCollecting(anyString(), anyString());
         mListener.onTestEnd(mDataRecord, mTest1Desc);
         verify(mSimpleperfHelper, times(1)).stopCollecting(anyString());
 
         // Test1 invocation 2 start behaviour
         mListener.testStarted(mTest1Desc);
-        verify(mSimpleperfHelper, times(2)).startCollecting();
+        verify(mSimpleperfHelper, times(2)).startCollecting(anyString(), anyString());
         mListener.onTestEnd(mDataRecord, mTest1Desc);
         verify(mSimpleperfHelper, times(2)).stopCollecting(anyString());
 
         // Test2 invocation 1 start behaviour
         mListener.testStarted(mTest2Desc);
-        verify(mSimpleperfHelper, times(3)).startCollecting();
+        verify(mSimpleperfHelper, times(3)).startCollecting(anyString(), anyString());
         mDataRecord = mListener.createDataRecord();
         mListener.onTestEnd(mDataRecord, mTest2Desc);
         verify(mSimpleperfHelper, times(3)).stopCollecting(anyString());

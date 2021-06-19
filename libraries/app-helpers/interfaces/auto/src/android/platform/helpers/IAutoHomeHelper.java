@@ -52,4 +52,11 @@ public interface IAutoHomeHelper extends IAppHelper {
      * <p>Checks if exists a media widget.
      */
     boolean hasMediaWidget();
+
+    /**
+     * Setup expectations: Should be on home screen.
+     *
+     * <p>Checks if exists a assistant widget.
+     */
+    boolean hasAssistantWidget();
 }

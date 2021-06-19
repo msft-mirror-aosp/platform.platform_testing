@@ -21,7 +21,7 @@ package {
 java_library {
     name: "accessibility-helper",
     libs: [
-        "android-support-test",
+        "androidx.test.rules",
         "ub-uiautomator",
         "settings-helper",
         "package-helper",
