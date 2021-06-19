@@ -52,12 +52,12 @@ open class DisplayContent(
     val pinnedStackMovementBounds: Rect = _pinnedStackMovementBounds ?: Rect.EMPTY
     val stableBounds: Rect = _stableBounds ?: Rect.EMPTY
 
-    val rootTasks: Array<ActivityTask>
+    val rootTasks: Array<Task>
         get() {
-            val tasks = this.collectDescendants<ActivityTask> { it.isRootTask }.toMutableList()
+            val tasks = this.collectDescendants<Task> { it.isRootTask }.toMutableList()
             // TODO(b/149338177): figure out how CTS tests deal with organizer. For now,
             //                    don't treat them as regular stacks
-            val rootOrganizedTasks = mutableListOf<ActivityTask>()
+            val rootOrganizedTasks = mutableListOf<Task>()
             val reversedTaskList = tasks.reversed()
             reversedTaskList.forEach { task ->
                 // Skip tasks created by an organizer
@@ -68,7 +68,7 @@ open class DisplayContent(
             }
             // Add root tasks controlled by an organizer
             rootOrganizedTasks.reversed().forEach { task ->
-                tasks.addAll(task.children.reversed().map { it as ActivityTask })
+                tasks.addAll(task.children.reversed().map { it as Task })
             }
 
             return tasks.toTypedArray()
