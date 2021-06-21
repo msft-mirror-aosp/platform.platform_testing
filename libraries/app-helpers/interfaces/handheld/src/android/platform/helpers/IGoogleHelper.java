@@ -21,6 +21,47 @@ import android.support.test.uiautomator.UiObject2;
 
 public interface IGoogleHelper extends IAppHelper {
 
+    public enum NavigationTab {
+        DISCOVER("Discover"),
+        SNAPSHOT("Snapshot"),
+        SEARCH("Search"),
+        COLLECTIONS("Collections"),
+        MORE("More");
+
+        private final String text;
+
+        NavigationTab(String text) {
+            this.text = text;
+        }
+
+        @Override
+        public String toString() {
+            return text;
+        }
+    };
+
+    public enum SearchResultTab {
+        ALL("All"),
+        IMAGES("Images"),
+        VIDEOS("Videos"),
+        NEWS("News"),
+        MAPS("Maps"),
+        BOOKS("Books"),
+        SHOPPING("Shopping"),
+        FLIGHTS("Flights");
+
+        private final String mDisplayName;
+
+        SearchResultTab(String displayName) {
+            mDisplayName = displayName;
+        }
+
+        @Override
+        public String toString() {
+            return mDisplayName;
+        }
+    }
+
     /**
      * Setup expectations: Google app open
      *
@@ -36,6 +77,13 @@ public interface IGoogleHelper extends IAppHelper {
      * <p>This method will return the query from the search
      */
     public String getSearchQuery();
+
+    /**
+     * Setup expectations: Google app open.
+     *
+     * <p>This method goes to the specified tab, such as Discover, Search, Collections.
+     */
+    public void navigateToTab(NavigationTab tab);
 
     /**
      * Setup expectations: In home and with search bar.
@@ -74,6 +122,17 @@ public interface IGoogleHelper extends IAppHelper {
      * @param dir The direction of the fling, must be UP or DOWN.
      */
     public default void flingSearchResults(Direction dir) {
+        throw new UnsupportedOperationException("Not yet implemented.");
+    }
+
+    /**
+     * Setup expectations: Google app open to a search result.
+     *
+     * <p>This method scroll the search results.
+     *
+     * @param dir The direction of the fling, must be UP or DOWN.
+     */
+    public default void scrollSearchResults(Direction dir) {
         throw new UnsupportedOperationException("Not yet implemented.");
     }
 
@@ -124,6 +183,15 @@ public interface IGoogleHelper extends IAppHelper {
      * @param speed The speed of scroll.
      */
     public void scrollFeed(UiObject2 container, Direction dir, int speed);
+
+    /**
+     * Setup expectations: Google app open and has done a search.
+     *
+     * <p>This method will go to the specified search result tab.
+     *
+     * @param tab one of the tabs of the search result page.
+     */
+    public abstract void openSearchResultTab(IGoogleHelper.SearchResultTab tab);
 
     /**
      * Setup expectations: In home.

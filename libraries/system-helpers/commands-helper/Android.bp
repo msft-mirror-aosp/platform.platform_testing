@@ -22,7 +22,7 @@ java_library {
     name: "commands-helper",
     libs: [
         "ub-uiautomator",
-        "android-support-test",
+        "androidx.test.rules",
     ],
     srcs: ["src/**/*.java"],
     sdk_version: "current",
