@@ -16,7 +16,7 @@
 
 package com.android.helpers;
 
-import static org.junit.Assert.assertEquals;
+import static com.google.common.truth.Truth.assertThat;
 
 import androidx.test.runner.AndroidJUnit4;
 
@@ -35,44 +35,62 @@ public class LyricCpuUtilizationHelperTest {
 
     private static final String METRIC_KEY = "cpu_util_%s_%s";
 
+    private static final Double METRIC_VALUE_THRESHOLD = 0.00001;
+
     @Test
-    public void testProcessLine() {
+    public void testProcessOutput() {
+
         String testString =
-                "CPU Usage during ProcessInput for [>] p2 cam2_retiming:empty_group after 593"
-                        + " invocations - User: 1.709118ms (Max: 3.67ms Min:0) System: 425.17025us"
-                        + " (Max: 3.372ms Min:0) Wall: 50.14003675ms (Max: 55.676595ms"
-                        + " Min:-1.5s)";
+                "[>] p2 retiming:empty_group after 2994 invocations\n"
+                    + "  System CPU: 222.601us (Max: 1.819ms Min: 0)\n"
+                    + "  User CPU: 698.4612us (Max: 2.023ms Min: 0)\n"
+                    + "  Wall Time: 50.36290575ms (Max: 61.2205ms Min: 50.035889ms)\n"
+                    + "  Processing frequency 19.7906(Hz), Duty cycle: 99.671%\n"
+                    + "  Average Graph Runner Scheduling Delay is 132.352us (Max: 10.517701ms Min:"
+                    + " 20.956us)  with 0 of it due to waiting for a particular"
+                    + " thread/reserialization\n"
+                    + "  Spent 98.1711% of each ProcessInput (Mean duration: 50.36290575ms Max:"
+                    + " 61.2205ms Min: 50.035889ms) waiting for something (or on overhead).\n"
+                    + "  On average per process call, there were 0 (Max: 0 Min: 0) "
+                    + " reserializations into another queue and 0.999664 (Max: 1 Min: 0)  wakes"
+                    + " and 0.830996 involuntary and 12.9198 voluntary context switches"
+                    + " (+GraphRunner overhead).";
 
-        Map<String, Double> metrics = LyricCpuUtilizationHelper.processLine(testString);
+        Map<String, Double> metrics = LyricCpuUtilizationHelper.processOutput(testString);
 
-        String node = "cam2_retiming-empty_group";
-        assertEquals(
-                Double.valueOf(593),
-                metrics.get(String.format(METRIC_KEY, node, "number_of_invocations")));
-        assertEquals(
-                Double.valueOf(1.709118),
-                metrics.get(String.format(METRIC_KEY, node, "user_time")));
-        assertEquals(
-                Double.valueOf(3.67),
-                metrics.get(String.format(METRIC_KEY, node, "user_time_max")));
-        assertEquals(
-                Double.valueOf(0), metrics.get(String.format(METRIC_KEY, node, "user_time_min")));
-        assertEquals(
-                Double.valueOf(0.42517025),
-                metrics.get(String.format(METRIC_KEY, node, "system_time")));
-        assertEquals(
-                Double.valueOf(3.372),
-                metrics.get(String.format(METRIC_KEY, node, "system_time_max")));
-        assertEquals(
-                Double.valueOf(0), metrics.get(String.format(METRIC_KEY, node, "system_time_min")));
-        assertEquals(
-                Double.valueOf(50.14003675),
-                metrics.get(String.format(METRIC_KEY, node, "wall_time")));
-        assertEquals(
-                Double.valueOf(55.676595),
-                metrics.get(String.format(METRIC_KEY, node, "wall_time_max")));
-        assertEquals(
-                Double.valueOf(-1500),
-                metrics.get(String.format(METRIC_KEY, node, "wall_time_min")));
+        String node = "retiming-empty_group";
+        assertThat(metrics.get(String.format(METRIC_KEY, node, "number_of_invocations")))
+                .isWithin(METRIC_VALUE_THRESHOLD)
+                .of(2994);
+        assertThat(metrics.get(String.format(METRIC_KEY, node, "user_time")))
+                .isWithin(METRIC_VALUE_THRESHOLD)
+                .of(0.6984612);
+        assertThat(metrics.get(String.format(METRIC_KEY, node, "user_time")))
+                .isWithin(METRIC_VALUE_THRESHOLD)
+                .of(0.6984612);
+        assertThat(metrics.get(String.format(METRIC_KEY, node, "user_time_max")))
+                .isWithin(METRIC_VALUE_THRESHOLD)
+                .of(2.023);
+        assertThat(metrics.get(String.format(METRIC_KEY, node, "user_time_min")))
+                .isWithin(METRIC_VALUE_THRESHOLD)
+                .of(0);
+        assertThat(metrics.get(String.format(METRIC_KEY, node, "system_time")))
+                .isWithin(METRIC_VALUE_THRESHOLD)
+                .of(0.222601);
+        assertThat(metrics.get(String.format(METRIC_KEY, node, "system_time_max")))
+                .isWithin(METRIC_VALUE_THRESHOLD)
+                .of(1.819);
+        assertThat(metrics.get(String.format(METRIC_KEY, node, "system_time_min")))
+                .isWithin(METRIC_VALUE_THRESHOLD)
+                .of(0);
+        assertThat(metrics.get(String.format(METRIC_KEY, node, "wall_time")))
+                .isWithin(METRIC_VALUE_THRESHOLD)
+                .of(50.36290575);
+        assertThat(metrics.get(String.format(METRIC_KEY, node, "wall_time_max")))
+                .isWithin(METRIC_VALUE_THRESHOLD)
+                .of(61.2205);
+        assertThat(metrics.get(String.format(METRIC_KEY, node, "wall_time_min")))
+                .isWithin(METRIC_VALUE_THRESHOLD)
+                .of(50.035889);
     }
 }

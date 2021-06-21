@@ -21,9 +21,7 @@ import androidx.annotation.VisibleForTesting;
 import androidx.test.InstrumentationRegistry;
 import androidx.test.uiautomator.UiDevice;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.StringReader;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -39,26 +37,30 @@ public class LyricCpuUtilizationHelper implements ICollectorHelper<Double> {
 
     private static final String DUMPSYS_CMD = "dumpsys media.camera";
 
-    private static final Pattern TIME_REGEX_PATTERN =
+    private static final Pattern METRIC_REGEX_PATTERN =
             Pattern.compile("((?:-|)\\d+\\.?\\d*)([a-zA-Z]*)");
 
-    private static final String TIME_REGEX = "((?:-|)\\d+\\.?\\d*[a-zA-Z]*)";
+    private static final String METRIC_REGEX = "((?:-|)\\d+\\.?\\d*[a-zA-Z]*)";
 
     private static final Pattern CPU_USAGE_PATTERN =
             Pattern.compile(
                     String.format(
-                            "CPU Usage during ProcessInput for \\[(?:>|\\s)] p\\d+ (.*) after"
-                                + " (\\d+) invocations - User: %s \\(Max: %s Min:%s\\) System: %s"
-                                + " \\(Max: %s Min:%s\\) Wall: %s \\(Max: %s Min:%s\\)",
-                            TIME_REGEX,
-                            TIME_REGEX,
-                            TIME_REGEX,
-                            TIME_REGEX,
-                            TIME_REGEX,
-                            TIME_REGEX,
-                            TIME_REGEX,
-                            TIME_REGEX,
-                            TIME_REGEX));
+                            "\\[(?:>|\\s)] p\\d+ (.*) after (\\d+) invocations\n"
+                                + "  System CPU: %1$s \\(Max: %1$s Min: %1$s\\)\n"
+                                + "  User CPU: %1$s \\(Max: %1$s Min: %1$s\\)\n"
+                                + "  Wall Time: %1$s \\(Max: %1$s Min: %1$s\\)\n"
+                                + "  Processing frequency %1$s\\(Hz\\), Duty cycle: %1$s%%\n"
+                                + "  Average Graph Runner Scheduling Delay is %1$s \\(Max: %1$s"
+                                + " Min: %1$s\\)  with %1$s of it due to waiting for a particular"
+                                + " thread/reserialization\n"
+                                + "  Spent %1$s%% of each ProcessInput \\(Mean duration: %1$s Max:"
+                                + " %1$s Min: %1$s\\) waiting for something \\(or on"
+                                + " overhead\\).\n"
+                                + "  On average per process call, there were %1$s \\(Max: %1$s"
+                                + " Min: %1$s\\)  reserializations into another queue and %1$s"
+                                + " \\(Max: %1$s Min: %1$s\\)  wakes and %1$s involuntary and %1$s"
+                                + " voluntary context switches \\(\\+GraphRunner overhead\\).",
+                            METRIC_REGEX));
 
     private static final String METRIC_KEY = "cpu_util_%s_%s";
 
@@ -72,19 +74,13 @@ public class LyricCpuUtilizationHelper implements ICollectorHelper<Double> {
 
     @Override
     public Map<String, Double> getMetrics() {
-        Map<String, Double> metrics = new HashMap<>();
         try {
             String res = mUiDevice.executeShellCommand(DUMPSYS_CMD);
-            BufferedReader bufReader = new BufferedReader(new StringReader(res));
-            String line = bufReader.readLine();
-            while (line != null) {
-                metrics.putAll(processLine(line));
-                line = bufReader.readLine();
-            }
+            return processOutput(res);
         } catch (IOException e) {
             Log.e(TAG, "Failed to collect Lyric CPU metrics.");
         }
-        return metrics;
+        return new HashMap<>();
     }
 
     @Override
@@ -93,24 +89,29 @@ public class LyricCpuUtilizationHelper implements ICollectorHelper<Double> {
     }
 
     @VisibleForTesting
-    static Map<String, Double> processLine(String line) {
-        Matcher matcher = CPU_USAGE_PATTERN.matcher(line);
+    static Map<String, Double> processOutput(String output) {
         Map<String, Double> metrics = new HashMap<>();
-        if (!matcher.find()) {
-            return metrics;
+        Matcher matcher = CPU_USAGE_PATTERN.matcher(output);
+        while (matcher.find()) {
+            metrics.putAll(processMatch(matcher));
         }
+        return metrics;
+    }
+
+    private static Map<String, Double> processMatch(Matcher matcher) {
+        Map<String, Double> metrics = new HashMap<>();
         String node = matcher.group(1).replace(":", "-");
         metrics.put(
                 String.format(METRIC_KEY, node, "number_of_invocations"),
                 Double.parseDouble(matcher.group(2)));
-        metrics.put(String.format(METRIC_KEY, node, "user_time"), parseTime(matcher.group(3)));
-        metrics.put(String.format(METRIC_KEY, node, "user_time_max"), parseTime(matcher.group(4)));
-        metrics.put(String.format(METRIC_KEY, node, "user_time_min"), parseTime(matcher.group(5)));
-        metrics.put(String.format(METRIC_KEY, node, "system_time"), parseTime(matcher.group(6)));
+        metrics.put(String.format(METRIC_KEY, node, "system_time"), parseTime(matcher.group(3)));
         metrics.put(
-                String.format(METRIC_KEY, node, "system_time_max"), parseTime(matcher.group(7)));
+                String.format(METRIC_KEY, node, "system_time_max"), parseTime(matcher.group(4)));
         metrics.put(
-                String.format(METRIC_KEY, node, "system_time_min"), parseTime(matcher.group(8)));
+                String.format(METRIC_KEY, node, "system_time_min"), parseTime(matcher.group(5)));
+        metrics.put(String.format(METRIC_KEY, node, "user_time"), parseTime(matcher.group(6)));
+        metrics.put(String.format(METRIC_KEY, node, "user_time_max"), parseTime(matcher.group(7)));
+        metrics.put(String.format(METRIC_KEY, node, "user_time_min"), parseTime(matcher.group(8)));
         metrics.put(String.format(METRIC_KEY, node, "wall_time"), parseTime(matcher.group(9)));
         metrics.put(String.format(METRIC_KEY, node, "wall_time_max"), parseTime(matcher.group(10)));
         metrics.put(String.format(METRIC_KEY, node, "wall_time_min"), parseTime(matcher.group(11)));
@@ -120,7 +121,7 @@ public class LyricCpuUtilizationHelper implements ICollectorHelper<Double> {
 
     /** Takes a time string and returns the value in milliseconds. */
     private static Double parseTime(String timeString) {
-        Matcher matcher = TIME_REGEX_PATTERN.matcher(timeString);
+        Matcher matcher = METRIC_REGEX_PATTERN.matcher(timeString);
         if (!matcher.find()) {
             throw new IllegalArgumentException("Time string does not match the expected format.");
         }
