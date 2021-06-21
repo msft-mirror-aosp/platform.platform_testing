@@ -1,9 +1,4 @@
 {
-  "mainline-presubmit": [
-    {
-      "name": "hello_world_test[com.google.android.cellbroadcast.apex]"
-    }
-  ],
   "presubmit": [
     {
       "name": "hello_world_test"
