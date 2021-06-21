@@ -23,16 +23,18 @@ java_library {
     srcs: ["java/**/*.java"],
 
     static_libs: [
+        "androidx.annotation_annotation",
         "androidx.test.runner",
+        "androidx.test.uiautomator",
         "jank-helper",
         "junit",
+        "lyric-metric-helper",
         "memory-helper",
         "perfetto-helper",
         "power-helper",
         "simpleperf-helper",
-        "ub-uiautomator",
         "system-metric-helper",
     ],
 
-    sdk_version: "current",
+    sdk_version: "test_current",
 }

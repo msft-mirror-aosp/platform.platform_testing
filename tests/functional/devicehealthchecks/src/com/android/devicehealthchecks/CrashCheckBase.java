@@ -69,7 +69,9 @@ abstract class CrashCheckBase {
         long timestamp = 0;
         DropBoxManager.Entry entry;
         int crashCount = 0;
-        StringBuilder errorDetails = new StringBuilder("Error details:\n");
+        StringBuilder errorDetails = new StringBuilder("\nPlease triage this boot crash:\n");
+        errorDetails.append("go/how-to-triage-devicehealthchecks\n");
+        errorDetails.append("Error Details:\n");
         while (null != (entry = dropbox.getNextEntry(label, timestamp))) {
             String dropboxSnippet;
             try {
@@ -77,19 +79,27 @@ abstract class CrashCheckBase {
             } finally {
                 entry.close();
             }
-            KnownFailureItem k = mKnownFailures.findMatchedKnownFailure(label, dropboxSnippet);
-            if (k != null && !mIncludeKnownFailures) {
-                Log.i(
-                        LOG_TAG,
-                        String.format(
-                                "Ignored a known failure, type: %s, pattern: %s, bug: b/%s",
-                                label, k.failurePattern, k.bugNumber));
-            } else {
+            if (dropboxSnippet == null) {
                 crashCount++;
+
                 errorDetails.append(label);
-                errorDetails.append(": ");
-                errorDetails.append(truncate(dropboxSnippet, MAX_CRASH_SNIPPET_LINES));
-                errorDetails.append("    ...\n");
+                errorDetails.append(": (missing details)\n");
+            }
+            else {
+              KnownFailureItem k = mKnownFailures.findMatchedKnownFailure(label, dropboxSnippet);
+              if (k != null && !mIncludeKnownFailures) {
+                  Log.i(
+                          LOG_TAG,
+                          String.format(
+                                  "Ignored a known failure, type: %s, pattern: %s, bug: b/%s",
+                                  label, k.failurePattern, k.bugNumber));
+              } else {
+                  crashCount++;
+                  errorDetails.append(label);
+                  errorDetails.append(": ");
+                  errorDetails.append(truncate(dropboxSnippet, MAX_CRASH_SNIPPET_LINES));
+                  errorDetails.append("    ...\n");
+              }
             }
             timestamp = entry.getTimeMillis();
         }
