@@ -16,10 +16,10 @@
 
 package android.platform.test.rule;
 
-import android.support.test.uiautomator.UiDevice;
 import android.text.TextUtils;
 
 import androidx.test.platform.app.InstrumentationRegistry;
+import androidx.test.uiautomator.UiDevice;
 
 import org.junit.runner.Description;
 
