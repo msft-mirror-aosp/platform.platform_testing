@@ -233,9 +233,12 @@ public final class MicrobenchmarkTest {
 
     /** Test that the microbenchmark will terminate if the battery is too low. */
     @Test
-    public void testBatteryIsTooLow() throws InitializationError {
-        Microbenchmark runner = Mockito.spy(new Microbenchmark(LoggingTest.class, new Bundle()));
-        doReturn(true).when(runner).isBatteryLevelTooLow();
+    public void testStopsEarly_ifBatteryLevelIsBelowThreshold() throws InitializationError {
+        Bundle args = new Bundle();
+        args.putString(Microbenchmark.MIN_BATTERY_LEVEL_OPTION, "50");
+        args.putString(Microbenchmark.MAX_BATTERY_DRAIN_OPTION, "20");
+        Microbenchmark runner = Mockito.spy(new Microbenchmark(LoggingTest.class, args));
+        doReturn(49).when(runner).getBatteryLevel();
 
         RunNotifier notifier = Mockito.mock(RunNotifier.class);
         runner.run(notifier);
@@ -252,7 +255,34 @@ public final class MicrobenchmarkTest {
                 throwable instanceof TerminateEarlyException);
         assertThat(throwable)
                 .hasMessageThat()
-                .matches("Terminating early because battery level is below threshold.");
+                .matches("Terminating early.*battery level.*threshold.");
+    }
+
+    /** Test that the microbenchmark will terminate if the battery is too low. */
+    @Test
+    public void testStopsEarly_ifBatteryDrainIsAboveThreshold() throws InitializationError {
+        Bundle args = new Bundle();
+        args.putString(Microbenchmark.MIN_BATTERY_LEVEL_OPTION, "40");
+        args.putString(Microbenchmark.MAX_BATTERY_DRAIN_OPTION, "20");
+        Microbenchmark runner = Mockito.spy(new Microbenchmark(LoggingTest.class, args));
+        doReturn(80).doReturn(50).when(runner).getBatteryLevel();
+
+        RunNotifier notifier = Mockito.mock(RunNotifier.class);
+        runner.run(notifier);
+
+        ArgumentCaptor<Failure> failureCaptor = ArgumentCaptor.forClass(Failure.class);
+        verify(notifier).fireTestFailure(failureCaptor.capture());
+
+        Failure failure = failureCaptor.getValue();
+        Throwable throwable = failure.getException();
+        assertTrue(
+                String.format(
+                        "Exception was not a TerminateEarlyException. Instead, it was: %s",
+                        throwable.getClass()),
+                throwable instanceof TerminateEarlyException);
+        assertThat(throwable)
+                .hasMessageThat()
+                .matches("Terminating early.*battery drain.*threshold.");
     }
 
     /** Test that the microbenchmark will align starting with the battery charge counter. */

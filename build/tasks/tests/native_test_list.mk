@@ -15,6 +15,9 @@
 native_tests := \
     adbd_test \
     android_logger_device_test_src_lib \
+    android_logger_device_test_tests_config_log_level \
+    android_logger_device_test_tests_default_init \
+    android_logger_device_test_tests_multiple_init \
     anyhow_device_test_src_lib \
     anyhow_device_test_tests_test_autotrait \
     anyhow_device_test_tests_test_boxed \
@@ -46,6 +49,8 @@ native_tests := \
     confirmationui_invocation_test \
     crashcollector \
     debuggerd_test \
+    doh_ffi_test \
+    doh_unit_test \
     dumpstate_test \
     dumpstate_test_fixture \
     dumpsys_test \
@@ -68,7 +73,6 @@ native_tests := \
     keystore2_selinux_test \
     keystore2_test \
     lazy_static_device_test_src_lib \
-    lazy_static_device_test_tests_no_std \
     lazy_static_device_test_tests_test \
     libandroidfw_tests \
     libappfuse_test \
@@ -152,18 +156,13 @@ native_tests := \
     statsd_test \
     syscall_filter_unittest_gtest \
     time-unit-tests \
-    tokio_device_test_tests_async_send_sync \
+    tokio_device_test_tests__require_full \
     tokio_device_test_tests_buffered \
-    tokio_device_test_tests_fs \
-    tokio_device_test_tests_fs_copy \
-    tokio_device_test_tests_fs_dir \
-    tokio_device_test_tests_fs_file \
-    tokio_device_test_tests_fs_file_mocked \
-    tokio_device_test_tests_fs_link \
     tokio_device_test_tests_io_async_fd \
     tokio_device_test_tests_io_async_read \
     tokio_device_test_tests_io_chain \
     tokio_device_test_tests_io_copy \
+    tokio_device_test_tests_io_copy_bidirectional \
     tokio_device_test_tests_io_driver \
     tokio_device_test_tests_io_driver_drop \
     tokio_device_test_tests_io_lines \
@@ -189,22 +188,10 @@ native_tests := \
     tokio_device_test_tests_net_bind_resource \
     tokio_device_test_tests_net_lookup_host \
     tokio_device_test_tests_no_rt \
-    tokio_device_test_tests_process_issue_2174 \
-    tokio_device_test_tests_process_issue_42 \
     tokio_device_test_tests_process_kill_on_drop \
-    tokio_device_test_tests_process_smoke \
     tokio_device_test_tests_rt_basic \
     tokio_device_test_tests_rt_common \
     tokio_device_test_tests_rt_threaded \
-    tokio_device_test_tests_signal_ctrl_c \
-    tokio_device_test_tests_signal_drop_recv \
-    tokio_device_test_tests_signal_drop_rt \
-    tokio_device_test_tests_signal_drop_signal \
-    tokio_device_test_tests_signal_multi_rt \
-    tokio_device_test_tests_signal_no_rt \
-    tokio_device_test_tests_signal_notify_both \
-    tokio_device_test_tests_signal_twice \
-    tokio_device_test_tests_signal_usr1 \
     tokio_device_test_tests_sync_barrier \
     tokio_device_test_tests_sync_broadcast \
     tokio_device_test_tests_sync_errors \
@@ -230,13 +217,10 @@ native_tests := \
     tokio_device_test_tests_tcp_shutdown \
     tokio_device_test_tests_tcp_socket \
     tokio_device_test_tests_tcp_split \
-    tokio_device_test_tests_tcp_stream \
-    tokio_device_test_tests_test_clock \
+    tokio_device_test_tests_time_rt \
     tokio_device_test_tests_udp \
     tokio_device_test_tests_uds_cred \
-    tokio_device_test_tests_uds_datagram \
     tokio_device_test_tests_uds_split \
-    tokio_device_test_tests_uds_stream \
     tokio-test_device_test_src_lib \
     tokio-test_device_test_tests_block_on \
     tokio-test_device_test_tests_io \
