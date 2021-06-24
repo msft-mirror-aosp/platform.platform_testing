@@ -119,6 +119,16 @@ public class AutoJsonUtility {
         // Media Center
         configUtilityMap.put(
                 AutoConfigConstants.MEDIA_CENTER, AutoMediaCenterConfigUtility.getInstance());
+
+        // App Grid
+        configUtilityMap.put(AutoConfigConstants.APP_GRID, AutoAppGridConfigUtility.getInstance());
+
+        // Home
+        configUtilityMap.put(AutoConfigConstants.HOME, AutoHomeConfigUtility.getInstance());
+
+        // Lock Screen
+        configUtilityMap.put(
+                AutoConfigConstants.LOCK_SCREEN, AutoLockScreenConfigUtility.getInstance());
     }
 
     /** Build Config Maps */
