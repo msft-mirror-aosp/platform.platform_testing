@@ -18,6 +18,7 @@ package android.platform.helpers;
 
 import android.app.Instrumentation;
 import android.content.ActivityNotFoundException;
+import android.os.SystemClock;
 import android.util.Log;
 
 import android.graphics.Rect;
@@ -41,11 +42,11 @@ public abstract class AbstractAutoStandardAppHelper extends AbstractStandardAppH
 
     private AutoJsonUtility mAutoJsonUtil;
 
-    private static final int UI_RESPONSE_WAIT_MS = 10000;
+    private static final int UI_RESPONSE_WAIT_MS = 5000;
     private static final float DEFAULT_SCROLL_PERCENT = 100f;
-    private static final int DEFAULT_SCROLL_TIME_MS = 1000;
+    private static final int DEFAULT_SCROLL_TIME_MS = 500;
 
-    private static final int MAX_SCROLLS = 10;
+    private static final int MAX_SCROLLS = 5;
 
     public AbstractAutoStandardAppHelper(Instrumentation instrumentation) {
         super(instrumentation);
@@ -136,6 +137,12 @@ public abstract class AbstractAutoStandardAppHelper extends AbstractStandardAppH
         mDevice.pressEnter();
     }
 
+    /** Press power button */
+    protected void pressPowerButton() {
+        executeShellCommand("input keyevent KEYCODE_POWER");
+        SystemClock.sleep(UI_RESPONSE_WAIT_MS);
+    }
+
     /** Wait for the device to be idle */
     protected void waitForIdle() {
         mDevice.waitForIdle();
@@ -217,7 +224,7 @@ public abstract class AbstractAutoStandardAppHelper extends AbstractStandardAppH
      * Scroll down from the top of the scrollable region to bottom of the scrollable region (i.e. by
      * one page).
      */
-    protected boolean scrollDownOnePage() {
+    public boolean scrollDownOnePage() {
         return scrollDownOnePage(0);
     }
 
@@ -233,7 +240,7 @@ public abstract class AbstractAutoStandardAppHelper extends AbstractStandardAppH
      * Scroll up from the bottom of the scrollable region to top of the scrollable region (i.e. by
      * one page).
      */
-    protected boolean scrollUpOnePage() {
+    public boolean scrollUpOnePage() {
         return scrollUpOnePage(0);
     }
 
