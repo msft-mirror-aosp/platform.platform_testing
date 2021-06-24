@@ -28,27 +28,6 @@ public interface IAutoHomeHelper extends IAppHelper {
     /**
      * Setup expectations: Should be on home screen.
      *
-     * Checks if exists a weather widget.
-     */
-    boolean hasWeatherWidget();
-
-    /**
-     * Setup expectations: Should be on home screen.
-     *
-     * @return to get current user name shown on home screen.
-     */
-    String getUserName();
-
-    /**
-     * Setup expectations: Should be on home screen.
-     *
-     * @return to get current date in LocalDate format.
-     */
-    String getDate();
-
-    /**
-     * Setup expectations: Should be on home screen.
-     *
      * <p>Checks if exists a media widget.
      */
     boolean hasMediaWidget();
