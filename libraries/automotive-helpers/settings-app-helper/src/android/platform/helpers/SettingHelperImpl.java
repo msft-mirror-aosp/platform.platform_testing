@@ -219,14 +219,10 @@ public class SettingHelperImpl extends AbstractAutoStandardAppHelper implements 
     public boolean isHotspotOn() {
         UiObject2 enableOption =
                 findUiObject(
-                                getResourceFromConfig(
-                                        AutoConfigConstants.SETTINGS,
-                                        AutoConfigConstants.NETWORK_AND_INTERNET_SETTINGS,
-                                        AutoConfigConstants.TOGGLE_HOTSPOT))
-                        .getChildren()
-                        .get(1)
-                        .getChildren()
-                        .get(0);
+                        getResourceFromConfig(
+                                AutoConfigConstants.SETTINGS,
+                                AutoConfigConstants.NETWORK_AND_INTERNET_SETTINGS,
+                                AutoConfigConstants.TOGGLE_HOTSPOT));
         return enableOption.isChecked();
     }
 

@@ -61,7 +61,7 @@ public class AccountSettingTest {
 
     @Before
     public void openAccountsFacet() {
-        mSettingHelper.get().openSetting(AutoConfigConstants.ACCOUNT_SETTINGS);
+        mSettingHelper.get().openSetting(AutoConfigConstants.PROFILE_ACCOUNT_SETTINGS);
     }
 
     @After
@@ -72,7 +72,7 @@ public class AccountSettingTest {
     @Test
     public void testAddRemoveAccount() {
         mAccountsHelper.get().addAccount(mAccountEmail.get(), mAccountPassword.get());
-        mSettingHelper.get().openSetting(AutoConfigConstants.ACCOUNT_SETTINGS);
+        mSettingHelper.get().openSetting(AutoConfigConstants.PROFILE_ACCOUNT_SETTINGS);
         assertTrue(mAccountsHelper.get().doesEmailExist(mAccountEmail.get()));
         mAccountsHelper.get().removeAccount(mAccountEmail.get());
         assertFalse(mAccountsHelper.get().doesEmailExist(mAccountEmail.get()));

@@ -24,6 +24,29 @@ public class AutoConfigConstants {
     public static final String DESCRIPTION = "DESCRIPTION";
     public static final String CLASS = "CLASS";
 
+    // App Grid
+    public static final String APP_GRID = "APP_GRID";
+    public static final String APP_GRID_ACTIVITY = "APP_GRID_ACTIVITY";
+    public static final String APP_GRID_PACKAGE = "APP_GRID_PACKAGE";
+    public static final String APP_GRID_VIEW = "APP_GRID_VIEW";
+    public static final String APP_GRID_VIEW_ID = "APP_GRID_VIEW_ID";
+    public static final String APPLICATION_NAME = "APPLICATION_NAME";
+    public static final String OPEN_APP_GRID_COMMAND = "OPEN_APP_GRID_COMMAND";
+
+    // Home
+    public static final String BOTTOM_CARD = "BOTTOM_CARD";
+    public static final String HOME = "HOME";
+    public static final String HOME_PACKAGE = "HOME_PACKAGE";
+    public static final String HOME_VIEW = "HOME_VIEW";
+    public static final String MAP_CARD = "MAP_CARD";
+    public static final String TOP_CARD = "TOP_CARD";
+
+    // Lock Screen
+    public static final String LOCK_SCREEN = "LOCK_SCREEN";
+    public static final String LOCK_SCREEN_PACKAGE = "LOCK_SCREEN_PACKAGE";
+    public static final String LOCK_SCREEN_VIEW = "LOCK_SCREEN_VIEW";
+    public static final String ENTER_KEY = "ENTER_KEY";
+
     // SETTINGS
     public static final String SETTINGS = "SETTINGS";
     public static final String SETTINGS_TITLE_TEXT = "SETTINGS_TITLE_TEXT";
@@ -97,10 +120,9 @@ public class AutoConfigConstants {
     public static final String LANGUAGES_MENU = "LANGUAGES_MENU";
     public static final String LANGUAGES_MENU_IN_SELECTED_LANGUAGE =
             "LANGUAGES_MENU_IN_SELECTED_LANGUAGE";
-    // Users
-    public static final String USER_SETTINGS = "USERS";
+
     // Accounts
-    public static final String ACCOUNT_SETTINGS = "ACCOUNTS";
+    public static final String PROFILE_ACCOUNT_SETTINGS = "PROFILES_ACCOUNTS";
     public static final String ADD_ACCOUNT = "ADD_ACCOUNT";
     public static final String ADD_GOOGLE_ACCOUNT = "ADD_GOOGLE_ACCOUNT";
     public static final String SIGN_IN_ON_CAR_SCREEN = "SIGN_IN_ON_CAR_SCREEN";
