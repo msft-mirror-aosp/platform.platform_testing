@@ -196,9 +196,9 @@ public class AutoSettingsConfigUtility implements IAutoConfigUtility {
         mSettingsOptionsMap.put(
                 AutoConfigConstants.DATE_AND_TIME_SETTINGS,
                 new String[] {"Automatic date & time", "Automatic time zone"});
-        mSettingsOptionsMap.put(AutoConfigConstants.USER_SETTINGS, new String[] {"Guest"});
         mSettingsOptionsMap.put(
-                AutoConfigConstants.ACCOUNT_SETTINGS, new String[] {"Automatically sync data"});
+                AutoConfigConstants.PROFILE_ACCOUNT_SETTINGS,
+                new String[] {"Automatically sync data"});
         mSettingsOptionsMap.put(
                 AutoConfigConstants.SYSTEM_SETTINGS, new String[] {"About", "Legal information"});
         mSettingsOptionsMap.put(AutoConfigConstants.SECURITY_SETTINGS, new String[] {});
@@ -216,8 +216,8 @@ public class AutoSettingsConfigUtility implements IAutoConfigUtility {
                 new String[] {"Apps & notifications"});
         mSettingsPathMap.put(
                 AutoConfigConstants.DATE_AND_TIME_SETTINGS, new String[] {"Date & time"});
-        mSettingsPathMap.put(AutoConfigConstants.USER_SETTINGS, new String[] {"Users"});
-        mSettingsPathMap.put(AutoConfigConstants.ACCOUNT_SETTINGS, new String[] {"Accounts"});
+        mSettingsPathMap.put(
+                AutoConfigConstants.PROFILE_ACCOUNT_SETTINGS, new String[] {"Profiles & accounts"});
         mSettingsPathMap.put(AutoConfigConstants.SYSTEM_SETTINGS, new String[] {"System"});
         mSettingsPathMap.put(AutoConfigConstants.SECURITY_SETTINGS, new String[] {"Security"});
     }
@@ -250,9 +250,6 @@ public class AutoSettingsConfigUtility implements IAutoConfigUtility {
 
         // System Settings Config
         loadDefaultSystemSettingsConfig(mSettingsConfigMap);
-
-        // Users Settings Config
-        loadDefaultUserSettingsConfig(mSettingsConfigMap);
 
         // Account Settings Config
         loadDefaultAccountSettingsConfig(mSettingsConfigMap);
@@ -321,13 +318,13 @@ public class AutoSettingsConfigUtility implements IAutoConfigUtility {
         AutoConfiguration networkSettingsConfiguration = new AutoConfiguration();
         networkSettingsConfiguration.addResource(
                 AutoConfigConstants.TOGGLE_WIFI,
-                new AutoConfigResource(
-                        AutoConfigConstants.RESOURCE_ID,
-                        "action_widget_container",
-                        SETTING_APP_PACKAGE));
+                new AutoConfigResource(AutoConfigConstants.DESCRIPTION, "Wi‑Fi toggle switch"));
         networkSettingsConfiguration.addResource(
                 AutoConfigConstants.TOGGLE_HOTSPOT,
-                new AutoConfigResource(AutoConfigConstants.DESCRIPTION, "Hotspot toggle switch"));
+                new AutoConfigResource(
+                        AutoConfigConstants.RESOURCE_ID,
+                        "car_ui_secondary_action_concrete",
+                        SETTING_APP_PACKAGE));
         mSettingsConfigMap.put(
                 AutoConfigConstants.NETWORK_AND_INTERNET_SETTINGS, networkSettingsConfiguration);
     }
@@ -480,11 +477,6 @@ public class AutoSettingsConfigUtility implements IAutoConfigUtility {
         mSettingsConfigMap.put(AutoConfigConstants.SYSTEM_SETTINGS, systemSettingsConfiguration);
     }
 
-    private void loadDefaultUserSettingsConfig(Map<String, AutoConfiguration> mSettingsConfigMap) {
-        AutoConfiguration userSettingsConfiguration = new AutoConfiguration();
-        mSettingsConfigMap.put(AutoConfigConstants.USER_SETTINGS, userSettingsConfiguration);
-    }
-
     private void loadDefaultAccountSettingsConfig(
             Map<String, AutoConfiguration> mSettingsConfigMap) {
         AutoConfiguration accountSettingsConfiguration = new AutoConfiguration();
@@ -518,7 +510,8 @@ public class AutoSettingsConfigUtility implements IAutoConfigUtility {
         accountSettingsConfiguration.addResource(
                 AutoConfigConstants.REMOVE_ACCOUNT_BUTTON,
                 new AutoConfigResource(AutoConfigConstants.TEXT, "Remove Account"));
-        mSettingsConfigMap.put(AutoConfigConstants.ACCOUNT_SETTINGS, accountSettingsConfiguration);
+        mSettingsConfigMap.put(
+                AutoConfigConstants.PROFILE_ACCOUNT_SETTINGS, accountSettingsConfiguration);
     }
 
     private void loadDefaultSecuritySettingsConfig(
