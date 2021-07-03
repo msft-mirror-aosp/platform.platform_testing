@@ -270,8 +270,12 @@ fun UiDevice.isInSplitScreen(): Boolean {
     return this.wait(Until.findObject(splitScreenDividerSelector), FIND_TIMEOUT) != null
 }
 
-fun UiDevice.waitSplitScreenGone(): Boolean {
-    return this.wait(Until.gone(splitScreenDividerSelector), FIND_TIMEOUT) != null
+fun waitSplitScreenGone(wmHelper: WindowManagerStateHelper): Boolean {
+    val dividerGone = wmHelper.waitFor("stackDividerGone") {
+        !it.layerState.isVisible(DOCKED_STACK_DIVIDER)
+    }
+    wmHelper.waitForAppTransitionIdle()
+    return dividerGone
 }
 
 private val splitScreenDividerSelector: BySelector
@@ -303,7 +307,7 @@ fun UiDevice.exitSplitScreen() {
  *
  * @throws AssertionError when unable to find the split screen divider
  */
-fun UiDevice.exitSplitScreenFromBottom() {
+fun UiDevice.exitSplitScreenFromBottom(wmHelper: WindowManagerStateHelper) {
     // Quickstep enabled
     val divider = this.wait(Until.findObject(splitScreenDividerSelector), FIND_TIMEOUT)
     assertNotNull("Unable to find Split screen divider", divider)
@@ -315,7 +319,7 @@ fun UiDevice.exitSplitScreenFromBottom() {
         Point(this.displayWidth / 2, this.displayHeight)
     }
     divider.drag(dstPoint, 400)
-    if (!this.waitSplitScreenGone()) {
+    if (!waitSplitScreenGone(wmHelper)) {
         Assert.fail("Split screen divider never disappeared")
     }
 }
