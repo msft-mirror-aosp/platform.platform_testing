@@ -83,13 +83,8 @@ public class SettingTest {
     }
 
     @Test
-    public void testUsersSettings() {
-        mSettingHelper.get().openSetting(AutoConfigConstants.USER_SETTINGS);
-    }
-
-    @Test
     public void testAccountsSettings() {
-        mSettingHelper.get().openSetting(AutoConfigConstants.ACCOUNT_SETTINGS);
+        mSettingHelper.get().openSetting(AutoConfigConstants.PROFILE_ACCOUNT_SETTINGS);
     }
 
     @Test
