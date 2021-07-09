@@ -33,11 +33,22 @@ abstract class FlickerTraceSubject<EntrySubject : FlickerSubject>(
 
     abstract val subjects: List<EntrySubject>
 
-    protected fun addAssertion(name: String, assertion: Assertion<EntrySubject>) {
+    /**
+     * Adds a new assertion block (if preceded by [then]) or appends an assertion to the
+     * latest existing assertion block
+     *
+     * @param name Assertion name
+     * @param isOptional If this assertion is optional or must pass
+     */
+    protected fun addAssertion(
+        name: String,
+        isOptional: Boolean = false,
+        assertion: Assertion<EntrySubject>
+    ) {
         if (newAssertionBlock) {
-            assertionsChecker.add(name, assertion)
+            assertionsChecker.add(name, isOptional, assertion)
         } else {
-            assertionsChecker.append(name, assertion)
+            assertionsChecker.append(name, isOptional, assertion)
         }
         newAssertionBlock = false
     }
@@ -68,7 +79,30 @@ abstract class FlickerTraceSubject<EntrySubject : FlickerSubject>(
      * Will produce two sets of assertions (checkA) and (checkB) and checkB will only be checked
      * after checkA passes.
      */
-    protected fun startAssertionBlock() {
+    open fun then(): FlickerTraceSubject<EntrySubject> = apply {
+        startAssertionBlock()
+    }
+
+    /**
+     * Ignores the first entries in the trace, until the first assertion passes. If it reaches the
+     * end of the trace without passing any assertion, return a failure with the name/reason from
+     * the first assertion
+     *
+     * @return
+     */
+    open fun skipUntilFirstAssertion(): FlickerTraceSubject<EntrySubject> =
+        apply { assertionsChecker.skipUntilFirstAssertion() }
+
+    /**
+     * Signal that the last assertion set is complete. The next assertion added will start a new
+     * set of assertions.
+     *
+     * E.g.: checkA().then().checkB()
+     *
+     * Will produce two sets of assertions (checkA) and (checkB) and checkB will only be checked
+     * after checkA passes.
+     */
+    private fun startAssertionBlock() {
         newAssertionBlock = true
     }
 
@@ -76,7 +110,7 @@ abstract class FlickerTraceSubject<EntrySubject : FlickerSubject>(
      * Checks whether all the trace entries on the list are visible for more than one consecutive
      * entry
      *
-     * @param [visibleEntries] a list of all the entries with their name and index
+     * @param [visibleEntriesProvider] a list of all the entries with their name and index
      */
     protected fun visibleEntriesShownMoreThanOneConsecutiveTime(
         visibleEntriesProvider: (EntrySubject) -> Set<String>

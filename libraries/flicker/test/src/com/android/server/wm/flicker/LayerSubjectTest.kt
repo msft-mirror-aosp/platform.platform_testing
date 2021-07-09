@@ -17,7 +17,7 @@
 package com.android.server.wm.flicker
 
 import com.android.server.wm.flicker.traces.layers.LayersTraceSubject.Companion.assertThat
-import com.android.server.wm.traces.common.Bounds
+import com.android.server.wm.traces.common.Size
 import com.google.common.truth.Truth
 import org.junit.FixMethodOrder
 import org.junit.Test
@@ -50,7 +50,7 @@ class LayerSubjectTest {
         val layersTraceEntries = readLayerTraceFromFile("layers_trace_emptyregion.pb")
         assertThat(layersTraceEntries)
             .layer("SoundVizWallpaperV2", 26033)
-            .hasBufferSize(Bounds(1440, 2960))
+            .hasBufferSize(Size(1440, 2960))
             .hasScalingMode(0)
 
         assertThat(layersTraceEntries)

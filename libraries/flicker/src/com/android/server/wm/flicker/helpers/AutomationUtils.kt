@@ -242,7 +242,8 @@ fun UiDevice.launchSplitScreen(
 
     // Wait for animation to complete.
     this.wait(Until.findObject(splitScreenDividerSelector), FIND_TIMEOUT)
-    wmHelper.waitForSurfaceAppeared(DOCKED_STACK_DIVIDER)
+    wmHelper.waitFor("stackDividerAppear") { it.layerState.isVisible(DOCKED_STACK_DIVIDER) }
+    wmHelper.waitForAppTransitionIdle()
 
     if (!this.isInSplitScreen()) {
         Assert.fail("Unable to find Split screen divider")

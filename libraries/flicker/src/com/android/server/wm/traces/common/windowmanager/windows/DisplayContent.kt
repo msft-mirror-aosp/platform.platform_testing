@@ -30,13 +30,13 @@ open class DisplayContent(
     val focusedRootTaskId: Int,
     val resumedActivity: String,
     val singleTaskInstance: Boolean,
-    _defaultPinnedStackBounds: Rect?,
-    _pinnedStackMovementBounds: Rect?,
+    val defaultPinnedStackBounds: Rect,
+    val pinnedStackMovementBounds: Rect,
     val displayRect: Rect,
     val appRect: Rect,
     val dpi: Int,
     val flags: Int,
-    _stableBounds: Rect?,
+    val stableBounds: Rect,
     val surfaceSize: Int,
     val focusedApp: String,
     val lastTransition: String,
@@ -47,10 +47,6 @@ open class DisplayContent(
 ) : WindowContainer(windowContainer) {
     override val name: String = id.toString()
     override val isVisible: Boolean = false
-
-    val defaultPinnedStackBounds: Rect = _defaultPinnedStackBounds ?: Rect.EMPTY
-    val pinnedStackMovementBounds: Rect = _pinnedStackMovementBounds ?: Rect.EMPTY
-    val stableBounds: Rect = _stableBounds ?: Rect.EMPTY
 
     val rootTasks: Array<Task>
         get() {

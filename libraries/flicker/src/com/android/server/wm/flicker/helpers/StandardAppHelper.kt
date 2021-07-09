@@ -54,9 +54,6 @@ open class StandardAppHelper @JvmOverloads constructor(
     ): this(instr, appName,
         ComponentName.createRelative(packageName, ".$activity"), launcherStrategy)
 
-    val windowName: String = component.toWindowName()
-    val activityName: String = component.toActivityName()
-
     private val activityManager: ActivityManager?
         get() = mInstrumentation.context.getSystemService(ActivityManager::class.java)
 
@@ -109,7 +106,6 @@ open class StandardAppHelper @JvmOverloads constructor(
     /**
      * Exits the activity and wait for activity destroyed
      */
-    @JvmOverloads
     fun exit(
         wmHelper: WindowManagerStateHelper
     ) {
@@ -177,7 +173,7 @@ open class StandardAppHelper @JvmOverloads constructor(
         val window = if (expectedWindowName.isNotEmpty()) {
             expectedWindowName
         } else {
-            windowName
+            component.toWindowName()
         }
         wmHelper.waitFor("App is shown") {
             it.wmState.isComplete() && it.wmState.isWindowVisible(window)

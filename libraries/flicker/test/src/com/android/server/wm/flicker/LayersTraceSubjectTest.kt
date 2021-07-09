@@ -16,11 +16,13 @@
 
 package com.android.server.wm.flicker
 
+import android.content.ComponentName
 import androidx.test.filters.FlakyTest
 import com.android.server.wm.flicker.traces.layers.LayersTraceSubject
 import com.android.server.wm.flicker.traces.layers.LayersTraceSubject.Companion.assertThat
 import com.android.server.wm.traces.common.Region
 import com.android.server.wm.traces.common.layers.LayersTrace
+import com.android.server.wm.traces.parser.windowmanager.WindowManagerStateHelper
 import com.google.common.truth.Truth
 import org.junit.FixMethodOrder
 import org.junit.Test
@@ -64,9 +66,9 @@ class LayersTraceSubjectTest {
         val layersTraceEntries = readLayerTraceFromFile("layers_trace_launch_split_screen.pb")
         assertThat(layersTraceEntries)
             .first()
-            .isVisible("NavigationBar0#0")
-            .notContains("DockedStackDivider#0")
-            .isVisible("NexusLauncherActivity#0")
+            .isVisible(WindowManagerStateHelper.NAV_BAR_COMPONENT)
+            .notContains(DOCKER_STACK_DIVIDER_COMPONENT)
+            .isVisible(LAUNCHER_COMPONENT)
     }
 
     @Test
@@ -74,22 +76,22 @@ class LayersTraceSubjectTest {
         val layersTraceEntries = readLayerTraceFromFile("layers_trace_launch_split_screen.pb")
         assertThat(layersTraceEntries)
             .last()
-            .isVisible("NavigationBar0#0")
-            .isVisible("DockedStackDivider#0")
+            .isVisible(WindowManagerStateHelper.NAV_BAR_COMPONENT)
+            .isVisible(DOCKER_STACK_DIVIDER_COMPONENT)
     }
 
     @Test
     fun testCanDetectChangingAssertions() {
         val layersTraceEntries = readLayerTraceFromFile("layers_trace_launch_split_screen.pb")
         assertThat(layersTraceEntries)
-            .isVisible("NavigationBar0#0")
-            .notContains("DockedStackDivider#0")
+            .isVisible(WindowManagerStateHelper.NAV_BAR_COMPONENT)
+            .notContains(DOCKER_STACK_DIVIDER_COMPONENT)
             .then()
-            .isVisible("NavigationBar0#0")
-            .isInvisible("DockedStackDivider#0")
+            .isVisible(WindowManagerStateHelper.NAV_BAR_COMPONENT)
+            .isInvisible(DOCKER_STACK_DIVIDER_COMPONENT)
             .then()
-            .isVisible("NavigationBar0#0")
-            .isVisible("DockedStackDivider#0")
+            .isVisible(WindowManagerStateHelper.NAV_BAR_COMPONENT)
+            .isVisible(DOCKER_STACK_DIVIDER_COMPONENT)
             .forAllEntries()
     }
 
@@ -99,9 +101,9 @@ class LayersTraceSubjectTest {
         val layersTraceEntries = readLayerTraceFromFile("layers_trace_invalid_layer_visibility.pb")
         val error = assertThrows(AssertionError::class.java) {
             assertThat(layersTraceEntries)
-                .isVisible("com.android.server.wm.flicker.testapp")
+                .isVisible(SIMPLE_APP_COMPONENT)
                 .then()
-                .isInvisible("com.android.server.wm.flicker.testapp")
+                .isInvisible(SIMPLE_APP_COMPONENT)
                 .forAllEntries()
         }
 
@@ -156,7 +158,8 @@ class LayersTraceSubjectTest {
         val layersTraceEntries = readLayerTraceFromFile(
                 "layers_trace_invalid_visible_layers.pb")
         assertThat(layersTraceEntries)
-                .visibleLayersShownMoreThanOneConsecutiveEntry(listOf("StatusBar#0"))
+                .visibleLayersShownMoreThanOneConsecutiveEntry(
+                    listOf(WindowManagerStateHelper.STATUS_BAR_COMPONENT))
                 .forAllEntries()
     }
 
@@ -164,15 +167,17 @@ class LayersTraceSubjectTest {
     fun testCanIgnoreLayerShorterNameInVisibleLayersMoreThanOneConsecutiveEntry() {
         val layersTraceEntries = readLayerTraceFromFile(
                 "one_visible_layer_launcher_trace.pb")
+        val launcherComponent = ComponentName("com.google.android.apps.nexuslauncher",
+                "com.google.android.apps.nexuslauncher.NexusLauncherActivity#1")
         assertThat(layersTraceEntries)
-                .visibleLayersShownMoreThanOneConsecutiveEntry(listOf("Launcher"))
+                .visibleLayersShownMoreThanOneConsecutiveEntry(listOf(launcherComponent))
                 .forAllEntries()
     }
 
     private fun detectRootLayer(fileName: String) {
         val layersTrace = readLayerTraceFromFile(fileName)
         for (entry in layersTrace.entries) {
-            val rootLayers = entry.rootLayers
+            val rootLayers = entry.children
             Truth.assertWithMessage("Does not have any root layer")
                     .that(rootLayers.size)
                     .isGreaterThan(0)
@@ -194,11 +199,10 @@ class LayersTraceSubjectTest {
     }
 
     @Test
-    fun canTestLayerOccludedBy_appLayerIsNotVisible() {
+    fun canTestLayerOccludedByAppLayerIsNotVisible() {
         val trace = readLayerTraceFromFile("layers_trace_occluded.pb")
         val entry = assertThat(trace).entry(1700382131522L)
-        entry.isVisible(
-                "com.android.server.wm.flicker.testapp.SimpleActivity#0")
+        entry.isVisible(SIMPLE_APP_COMPONENT)
     }
 
     @Test

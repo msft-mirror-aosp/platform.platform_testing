@@ -31,7 +31,7 @@ class LayersTraceTest {
     private fun detectRootLayer(fileName: String) {
         val layersTrace = readLayerTraceFromFile(fileName)
         for (entry in layersTrace.entries) {
-            val rootLayers = entry.rootLayers
+            val rootLayers = entry.children
             Truth.assertWithMessage("Does not have any root layer")
                 .that(rootLayers.size)
                 .isGreaterThan(0)
@@ -89,15 +89,15 @@ class LayersTraceTest {
         val trace = readLayerTraceFromFile("layers_trace_occluded.pb")
         val entry = trace.getEntry(1700382131522L)
         val layer = entry.getLayerWithBuffer(layerName)
-        val occludedBy = layer?.occludedBy ?: mutableListOf()
-        val partiallyOccludedBy = layer?.partiallyOccludedBy ?: mutableListOf()
+        val occludedBy = layer?.occludedBy ?: emptyArray()
+        val partiallyOccludedBy = layer?.partiallyOccludedBy ?: emptyArray()
         Truth.assertWithMessage("Layer $layerName should not be occluded")
                 .that(occludedBy).isEmpty()
         Truth.assertWithMessage("Layer $layerName should be partially occluded")
                 .that(partiallyOccludedBy).isNotEmpty()
         Truth.assertWithMessage("Layer $layerName should be partially occluded")
                 .that(partiallyOccludedBy.joinToString())
-                .contains("Splash Screen com.android.server.wm.flicker.testapp#0 " +
-                        "buffer:1440x3040 frame#1 visible:(346, 1583) - (1094, 2839)")
+                .contains("Splash Screen com.android.server.wm.flicker.testapp#0 buffer:w:1440, " +
+                        "h:3040, stride:1472, format:1 frame#1 visible:(346, 1583) - (1094, 2839)")
     }
 }

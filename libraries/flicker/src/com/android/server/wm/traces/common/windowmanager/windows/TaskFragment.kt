@@ -30,12 +30,12 @@ open class TaskFragment(
     val minHeight: Int,
     windowContainer: WindowContainer
 ) : WindowContainer(windowContainer) {
-    val tasks: List<Task>
-        get() = this.children.reversed().filterIsInstance<Task>()
-    val taskFragments: List<TaskFragment>
-        get() = this.children.reversed().filterIsInstance<TaskFragment>()
-    val activities: List<Activity>
-        get() = this.children.reversed().filterIsInstance<Activity>()
+    val tasks: Array<Task>
+        get() = this.children.reversed().filterIsInstance<Task>().toTypedArray()
+    val taskFragments: Array<TaskFragment>
+        get() = this.children.reversed().filterIsInstance<TaskFragment>().toTypedArray()
+    val activities: Array<Activity>
+        get() = this.children.reversed().filterIsInstance<Activity>().toTypedArray()
 
     override fun toString(): String {
         return "${this::class.simpleName}: {$token $title} bounds=$bounds"

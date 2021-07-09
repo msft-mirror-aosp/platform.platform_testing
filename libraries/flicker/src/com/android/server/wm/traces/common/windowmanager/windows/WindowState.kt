@@ -16,7 +16,7 @@
 
 package com.android.server.wm.traces.common.windowmanager.windows
 
-import com.android.server.wm.traces.common.Bounds
+import com.android.server.wm.traces.common.Size
 import com.android.server.wm.traces.common.Rect
 import com.android.server.wm.traces.common.Region
 
@@ -34,31 +34,22 @@ open class WindowState(
     val layer: Int,
     val isSurfaceShown: Boolean,
     val windowType: Int,
-    val requestedSize: Bounds,
+    val requestedSize: Size,
     val surfacePosition: Rect?,
-    _frame: Rect?,
-    _containingFrame: Rect?,
-    _parentFrame: Rect?,
-    _contentFrame: Rect?,
-    _contentInsets: Rect?,
-    _surfaceInsets: Rect?,
-    _givenContentInsets: Rect?,
-    _crop: Rect?,
+    val frame: Rect,
+    val containingFrame: Rect,
+    val parentFrame: Rect,
+    val contentFrame: Rect,
+    val contentInsets: Rect,
+    val surfaceInsets: Rect,
+    val givenContentInsets: Rect,
+    val crop: Rect,
     windowContainer: WindowContainer,
     val isAppWindow: Boolean
 ) : WindowContainer(windowContainer, getWindowTitle(windowContainer.title)) {
     override val isVisible: Boolean get() = super.isVisible && attributes.alpha > 0
 
-    val frame: Rect = _frame ?: Rect.EMPTY
-    val containingFrame: Rect = _containingFrame ?: Rect.EMPTY
-    val parentFrame: Rect = _parentFrame ?: Rect.EMPTY
-    val contentFrame: Rect = _contentFrame ?: Rect.EMPTY
-    val contentInsets: Rect = _contentInsets ?: Rect.EMPTY
-    val surfaceInsets: Rect = _surfaceInsets ?: Rect.EMPTY
-    val givenContentInsets: Rect = _givenContentInsets ?: Rect.EMPTY
-    val crop: Rect = _crop ?: Rect.EMPTY
     override val isFullscreen: Boolean get() = this.attributes.flags.and(FLAG_FULLSCREEN) > 0
-
     val isStartingWindow: Boolean = windowType == WINDOW_TYPE_STARTING
     val isExitingWindow: Boolean = windowType == WINDOW_TYPE_EXITING
     val isDebuggerWindow: Boolean = windowType == WINDOW_TYPE_DEBUGGER

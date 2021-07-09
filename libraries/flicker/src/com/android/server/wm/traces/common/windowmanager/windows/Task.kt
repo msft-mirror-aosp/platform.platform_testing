@@ -32,7 +32,7 @@ open class Task(
     val taskId: Int,
     val rootTaskId: Int,
     val displayId: Int,
-    _lastNonFullscreenBounds: Rect?,
+    val lastNonFullscreenBounds: Rect,
     val realActivity: String,
     val origActivity: String,
     val resizeMode: Int,
@@ -48,15 +48,15 @@ open class Task(
     override val isVisible: Boolean = false
     override val name: String = taskId.toString()
     override val isEmpty: Boolean get() = tasks.isEmpty() && activities.isEmpty()
+    override val stableId: String get() = "${super.stableId} $taskId"
 
-    val lastNonFullscreenBounds: Rect = _lastNonFullscreenBounds ?: Rect.EMPTY
     val isRootTask: Boolean get() = taskId == rootTaskId
-    val tasks: List<Task>
-        get() = this.children.reversed().filterIsInstance<Task>()
-    val taskFragments: List<TaskFragment>
-        get() = this.children.reversed().filterIsInstance<TaskFragment>()
-    val activities: List<Activity>
-        get() = this.children.reversed().filterIsInstance<Activity>()
+    val tasks: Array<Task>
+        get() = this.children.reversed().filterIsInstance<Task>().toTypedArray()
+    val taskFragments: Array<TaskFragment>
+        get() = this.children.reversed().filterIsInstance<TaskFragment>().toTypedArray()
+    val activities: Array<Activity>
+        get() = this.children.reversed().filterIsInstance<Activity>().toTypedArray()
     /** The top task in the stack.
      */
     // NOTE: Unlike the WindowManager internals, we dump the state from top to bottom,
@@ -85,12 +85,12 @@ open class Task(
 
     fun getActivity(predicate: (Activity) -> Boolean): Activity? {
         return activities.firstOrNull { predicate(it) }
-            ?: tasks.flatMap { it.activities }
+            ?: tasks.flatMap { it.activities.toList() }
                 .firstOrNull { predicate(it) }
     }
 
     fun getActivity(activityName: String): Activity? {
-        return getActivity { activity -> activity.title == activityName }
+        return getActivity { activity -> activity.title.contains(activityName) }
     }
 
     fun containsActivity(activityName: String) = getActivity(activityName) != null

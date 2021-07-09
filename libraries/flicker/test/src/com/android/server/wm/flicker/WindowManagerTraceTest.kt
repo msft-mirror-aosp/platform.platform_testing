@@ -61,7 +61,7 @@ class WindowManagerTraceTest {
         } catch (e: Exception) {
             throw RuntimeException(e)
         }
-        assertWithMessage("Unable to parse dump").that(trace.entries).hasSize(1)
+        assertWithMessage("Unable to parse dump").that(trace).hasSize(1)
     }
 
     /**
