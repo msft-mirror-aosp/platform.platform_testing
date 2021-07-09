@@ -16,14 +16,15 @@
 
 package com.android.server.wm.flicker.traces.layers
 
+import android.content.ComponentName
 import com.android.server.wm.flicker.assertions.Assertion
 import com.android.server.wm.flicker.assertions.FlickerSubject
-import com.android.server.wm.flicker.containsAny
 import com.android.server.wm.flicker.traces.FlickerFailureStrategy
 import com.android.server.wm.flicker.traces.FlickerSubjectException
 import com.android.server.wm.flicker.traces.RegionSubject
 import com.android.server.wm.traces.common.layers.Layer
 import com.android.server.wm.traces.common.layers.LayerTraceEntry
+import com.android.server.wm.traces.parser.toLayerName
 import com.google.common.truth.ExpectFailure
 import com.google.common.truth.Fact
 import com.google.common.truth.FailureMetadata
@@ -77,14 +78,6 @@ class LayerTraceEntrySubject private constructor(
     }
 
     /**
-     * Asserts that current entry subject has an [LayerTraceEntry.timestamp] equals to
-     * [timestamp]
-     */
-    fun hasTimestamp(timestamp: Long): LayerTraceEntrySubject = apply {
-        check("Wrong  entry timestamp").that(entry.timestamp).isEqualTo(timestamp)
-    }
-
-    /**
      * Asserts that the current SurfaceFlinger state doesn't contain layers
      */
     fun isEmpty(): LayerTraceEntrySubject = apply {
@@ -103,31 +96,23 @@ class LayerTraceEntrySubject private constructor(
     }
 
     /**
-     * Asserts that the current SurfaceFlinger state has [numberLayers] layers
-     */
-    fun hasLayersSize(numberLayers: Int): LayerTraceEntrySubject = apply {
-        check("Wrong number of layers in entry")
-            .that(entry.flattenedLayers.size)
-            .isEqualTo(numberLayers)
-    }
-
-    /**
-     * Obtains the region occupied by all layers with name containing any of [partialLayerNames]
+     * Obtains the region occupied by all layers with name containing [component]
      *
-     * @param partialLayerNames Name of the layer to search
+     * @param component Component to search
      * @param useCompositionEngineRegionOnly If true, uses only the region calculated from the
      *   Composition Engine (CE) -- visibleRegion in the proto definition. Otherwise calculates
      *   the visible region when the information is not available from the CE
      */
     fun visibleRegion(
-        vararg partialLayerNames: String,
+        component: ComponentName? = null,
         useCompositionEngineRegionOnly: Boolean = true
     ): RegionSubject {
+        val layerName = component?.toLayerName() ?: ""
         val selectedLayers = subjects
-            .filter { it.name.containsAny(*partialLayerNames) }
+            .filter { it.name.contains(layerName) }
 
         if (selectedLayers.isEmpty()) {
-            fail("Could not find", partialLayerNames.joinToString(", "))
+            fail(Fact.fact("Could not find", layerName))
         }
 
         val visibleLayers = selectedLayers.filter { it.isVisible }
@@ -141,74 +126,94 @@ class LayerTraceEntrySubject private constructor(
     }
 
     /**
-     * Asserts that the SurfaceFlinger state contains a [Layer] with [Layer.name] containing any of
-     * [partialLayerNames].
+     * Asserts the state contains a [Layer] with [Layer.name] containing [component].
      *
-     * @param partialLayerNames Name of the layers to search
+     * @param component Name of the layers to search
      */
-    fun contains(vararg partialLayerNames: String): LayerTraceEntrySubject = apply {
-        val found = entry.flattenedLayers.any { it.name.containsAny(*partialLayerNames) }
-        if (partialLayerNames.isNotEmpty() && !found) {
-            fail("Could not find", partialLayerNames.joinToString(", "))
-        }
-    }
-
-    /**
-     * Asserts that the SurfaceFlinger state doesn't contain a [Layer] with [Layer.name] containing any of
-     *
-     * @param partialLayerNames Name of the layers to search
-     */
-    fun notContains(vararg partialLayerNames: String): LayerTraceEntrySubject = apply {
-        val found = entry.flattenedLayers.none { it.name.containsAny(*partialLayerNames) }
+    fun contains(component: ComponentName): LayerTraceEntrySubject = apply {
+        val layerName = component.toLayerName()
+        val found = entry.flattenedLayers.any { it.name.contains(layerName) }
         if (!found) {
-            fail("Could find", partialLayerNames)
+            fail(Fact.fact("Could not find", layerName))
         }
     }
 
     /**
-     * Asserts that a [Layer] with [Layer.name] containing any of [partialLayerNames] is visible.
+     * Asserts the state doesn't contain a [Layer] with [Layer.name] containing any of
      *
-     * @param partialLayerNames Name of the layers to search
+     * @param component Name of the layers to search
      */
-    fun isVisible(vararg partialLayerNames: String): LayerTraceEntrySubject = apply {
-        contains(*partialLayerNames)
+    fun notContains(component: ComponentName): LayerTraceEntrySubject = apply {
+        val layerName = component.toLayerName()
+        val foundEntry = subjects.firstOrNull { it.name.contains(layerName) }
+        foundEntry?.fail(Fact.fact("Could find", foundEntry))
+    }
+
+    /**
+     * Asserts that a [Layer] with [Layer.name] containing [component] is visible.
+     *
+     * @param component Name of the layers to search
+     */
+    fun isVisible(component: ComponentName): LayerTraceEntrySubject = apply {
+        contains(component)
+        var target: FlickerSubject? = null
         var reason: Fact? = null
-        val filteredLayers = entry.flattenedLayers
-            .filter { it.name.containsAny(*partialLayerNames) }
+        val layerName = component.toLayerName()
+        val filteredLayers = subjects
+            .filter { it.name.contains(layerName) }
         for (layer in filteredLayers) {
-            if (layer.isHiddenByParent) {
-                reason = Fact.fact("Hidden by parent", layer.parent.name)
+            if (layer.layer?.isHiddenByParent == true) {
+                reason = Fact.fact("Hidden by parent", layer.layer.parent?.name)
+                target = layer
                 continue
             }
             if (layer.isInvisible) {
-                reason = Fact.fact("Is Invisible", layer.visibilityReason)
+                reason = Fact.fact("Is Invisible", layer.layer?.visibilityReason)
+                target = layer
                 continue
             }
             reason = null
+            target = null
             break
         }
 
-        if (reason != null) {
-            fail(reason)
-        }
+        reason?.run { target?.fail(reason) }
     }
 
     /**
-     * Asserts that a [Layer] with [Layer.name] containing any of [partialLayerNames] doesn't exist or
+     * Asserts that a [Layer] with [Layer.name] containing [component] doesn't exist or
      * is invisible.
      *
-     * @param partialLayerNames Name of the layers to search
+     * @param component Name of the layers to search
      */
-    fun isInvisible(vararg partialLayerNames: String): LayerTraceEntrySubject = apply {
+    fun isInvisible(component: ComponentName): LayerTraceEntrySubject = apply {
         try {
-            isVisible(*partialLayerNames)
+            isVisible(component)
         } catch (e: FlickerSubjectException) {
             val cause = e.cause
             require(cause is AssertionError)
             ExpectFailure.assertThat(cause).factKeys().isNotEmpty()
             return@apply
         }
-        fail("Layer is visible", partialLayerNames)
+        val layerName = component.toLayerName()
+        val foundEntry = subjects
+                .firstOrNull { it.name.contains(layerName) && it.isVisible }
+        foundEntry?.fail(Fact.fact("Is visible", foundEntry))
+    }
+
+    /**
+     * Obtains a [LayerSubject] for the first occurrence of a [Layer] with [Layer.name]
+     * containing [component].
+     * Always returns a subject, event when the layer doesn't exist. To verify if layer
+     * actually exists in the hierarchy use [LayerSubject.exists] or [LayerSubject.doesNotExist]
+     *
+     * @return LayerSubject that can be used to make assertions on a single layer matching
+     */
+    fun layer(component: ComponentName): LayerSubject {
+        val name = component.toLayerName()
+        return layer {
+            it.name.contains(name)
+        }
     }
 
     /**

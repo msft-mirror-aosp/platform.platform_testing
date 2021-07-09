@@ -50,6 +50,47 @@ class AssertionsCheckerTest {
     }
 
     @Test
+    fun canCheckChangingAssertions_IgnoreOptionalStart() {
+        val checker = AssertionsChecker<SimpleEntrySubject>()
+        checker.add("isData1", isOptional = true) { it.isData1() }
+        checker.add("isData42") { it.isData42() }
+        checker.add("isData0") { it.isData0() }
+        checker.test(getTestEntries(42, 0, 0, 0, 0))
+    }
+
+    @Test
+    fun canCheckChangingAssertions_IgnoreOptionalEnd() {
+        val checker = AssertionsChecker<SimpleEntrySubject>()
+        checker.add("isData42") { it.isData42() }
+        checker.add("isData0") { it.isData0() }
+        checker.add("isData1", isOptional = true) { it.isData1() }
+        checker.test(getTestEntries(42, 0, 0, 0, 0))
+    }
+
+    @Test
+    fun canCheckChangingAssertions_IgnoreOptionalMiddle() {
+        val checker = AssertionsChecker<SimpleEntrySubject>()
+        checker.add("isData42") { it.isData42() }
+        checker.add("isData1", isOptional = true) { it.isData1() }
+        checker.add("isData0") { it.isData0() }
+        checker.test(getTestEntries(42, 0, 0, 0, 0))
+    }
+
+    @Test
+    fun canCheckChangingAssertions_IgnoreOptionalMultiple() {
+        val checker = AssertionsChecker<SimpleEntrySubject>()
+        checker.add("isData1", isOptional = true) { it.isData1() }
+        checker.add("isData1", isOptional = true) { it.isData1() }
+        checker.add("isData42") { it.isData42() }
+        checker.add("isData1", isOptional = true) { it.isData1() }
+        checker.add("isData1", isOptional = true) { it.isData1() }
+        checker.add("isData0") { it.isData0() }
+        checker.add("isData1", isOptional = true) { it.isData1() }
+        checker.add("isData1", isOptional = true) { it.isData1() }
+        checker.test(getTestEntries(42, 0, 0, 0, 0))
+    }
+
+    @Test
     fun canCheckChangingAssertions_withNoAssertions() {
         val checker = AssertionsChecker<SimpleEntrySubject>()
         checker.test(getTestEntries(42, 0, 0, 0, 0))
@@ -98,7 +139,7 @@ class AssertionsCheckerTest {
             require(failure is FlickerSubjectException) { "Unknown failure $failure" }
             assertFailure(failure.cause)
                 .hasMessageThat()
-                .contains("Assertion never became false: isData42")
+                .contains("Assertion never failed: isData42")
         }
     }
 
@@ -132,6 +173,10 @@ class AssertionsCheckerTest {
 
         fun isData0() = apply {
             check("is0").that(entry.mData).isEqualTo(0)
+        }
+
+        fun isData1() = apply {
+            check("is1").that(entry.mData).isEqualTo(1)
         }
 
         companion object {

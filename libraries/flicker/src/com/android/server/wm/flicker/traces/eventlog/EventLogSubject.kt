@@ -52,7 +52,7 @@ class EventLogSubject private constructor(
         focusList + trace.filter { it.hasFocus() }.map { it.window }
     }
 
-    fun focusChanges(windows: Array<out String>) = apply {
+    fun focusChanges(vararg windows: String) = apply {
         if (windows.isNotEmpty()) {
             val focusChanges = _focusChanges
                 .dropWhile { !it.contains(windows.first()) }

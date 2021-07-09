@@ -38,7 +38,8 @@ open class Activity(
      * @param partialWindowTitle window title to search
      */
     fun hasWindow(partialWindowTitle: String): Boolean {
-        return this.windows.any { it.title.contains(partialWindowTitle) }
+        return collectDescendants<WindowState> { it.title.contains(partialWindowTitle) }
+                .isNotEmpty()
     }
 
     override fun toString(): String {
