@@ -291,7 +291,7 @@ open class WindowManagerState(
     }
 
     override fun toString(): String {
-        return prettyTimestamp(timestamp)
+        return "${prettyTimestamp(timestamp)} (timestamp=$timestamp)"
     }
 
     companion object {

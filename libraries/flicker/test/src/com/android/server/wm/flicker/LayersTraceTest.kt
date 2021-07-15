@@ -16,6 +16,7 @@
 
 package com.android.server.wm.flicker
 
+import com.android.server.wm.flicker.traces.layers.LayersTraceSubject
 import com.android.server.wm.traces.common.layers.LayersTrace
 import com.google.common.truth.Truth
 import org.junit.FixMethodOrder
@@ -99,5 +100,17 @@ class LayersTraceTest {
                 .that(partiallyOccludedBy.joinToString())
                 .contains("Splash Screen com.android.server.wm.flicker.testapp#0 buffer:w:1440, " +
                         "h:3040, stride:1472, format:1 frame#1 visible:(346, 1583) - (1094, 2839)")
+    }
+
+    @Test
+    fun exceptionContainsDebugInfo() {
+        val layersTraceEntries = readLayerTraceFromFile("layers_trace_emptyregion.pb")
+        val error = assertThrows(AssertionError::class.java) {
+            LayersTraceSubject.assertThat(layersTraceEntries)
+                    .isEmpty()
+        }
+        Truth.assertThat(error).hasMessageThat().contains("Trace start")
+        Truth.assertThat(error).hasMessageThat().contains("Trace start")
+        Truth.assertThat(error).hasMessageThat().contains("Trace file")
     }
 }

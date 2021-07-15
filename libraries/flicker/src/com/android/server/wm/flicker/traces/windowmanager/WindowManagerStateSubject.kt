@@ -61,12 +61,14 @@ import com.google.common.truth.Subject.Factory
 class WindowManagerStateSubject private constructor(
     fm: FailureMetadata,
     val wmState: WindowManagerState,
-    val trace: WindowManagerTraceSubject?
+    val trace: WindowManagerTraceSubject?,
+    override val parent: FlickerSubject?
 ) : FlickerSubject(fm, wmState) {
-    override val defaultFacts = "${trace?.defaultFacts ?: ""}\nEntry: $wmState"
+    override val timestamp: Long get() = wmState.timestamp
+    override val selfFacts = listOf(Fact.fact("Entry", wmState))
 
     val subjects by lazy {
-        wmState.windowStates.map { WindowStateSubject.assertThat(it, this) }
+        wmState.windowStates.map { WindowStateSubject.assertThat(it, this, timestamp) }
     }
 
     val appWindows: List<WindowStateSubject>
@@ -92,7 +94,7 @@ class WindowManagerStateSubject private constructor(
 
     /** {@inheritDoc} */
     override fun clone(): FlickerSubject {
-        return WindowManagerStateSubject(fm, wmState, trace)
+        return WindowManagerStateSubject(fm, wmState, trace, parent)
     }
 
     /**
@@ -124,7 +126,7 @@ class WindowManagerStateSubject private constructor(
 
         val visibleWindows = selectedWindows.filter { it.isVisible }
         val frameRegions = visibleWindows.mapNotNull { it.windowState?.frameRegion }.toTypedArray()
-        return RegionSubject.assertThat(frameRegions, selectedWindows)
+        return RegionSubject.assertThat(frameRegions, this)
     }
 
     /**
@@ -489,7 +491,7 @@ class WindowManagerStateSubject private constructor(
     fun windowState(name: String): WindowStateSubject {
         return subjects.firstOrNull {
             it.windowState?.name?.contains(name) == true
-        } ?: WindowStateSubject.assertThat(name, this)
+        } ?: WindowStateSubject.assertThat(name, this, timestamp)
     }
 
     /**
@@ -505,7 +507,7 @@ class WindowManagerStateSubject private constructor(
     fun windowState(name: String = "", predicate: (WindowState) -> Boolean): WindowStateSubject {
         return subjects.firstOrNull {
             it.windowState?.run { predicate(this) } ?: false
-        } ?: WindowStateSubject.assertThat(name, this)
+        } ?: WindowStateSubject.assertThat(name, this, timestamp)
     }
 
     override fun toString(): String {
@@ -516,28 +518,30 @@ class WindowManagerStateSubject private constructor(
         /**
          * Boiler-plate Subject.Factory for WindowManagerStateSubject
          *
-         * @param trace containing the entry
+         * @param parent containing the entry
          */
         private fun getFactory(
-            trace: WindowManagerTraceSubject? = null
+            trace: WindowManagerTraceSubject?,
+            parent: FlickerSubject?
         ): Factory<Subject, WindowManagerState> =
-            Factory { fm, subject -> WindowManagerStateSubject(fm, subject, trace) }
+            Factory { fm, subject -> WindowManagerStateSubject(fm, subject, trace, parent) }
 
         /**
          * User-defined entry point
          *
          * @param entry to assert
-         * @param trace containing the entry
+         * @param parent containing the entry
          */
         @JvmStatic
         @JvmOverloads
         fun assertThat(
             entry: WindowManagerState,
-            trace: WindowManagerTraceSubject? = null
+            trace: WindowManagerTraceSubject? = null,
+            parent: FlickerSubject? = null
         ): WindowManagerStateSubject {
             val strategy = FlickerFailureStrategy()
             val subject = StandardSubjectBuilder.forCustomFailureStrategy(strategy)
-                .about(getFactory(trace))
+                .about(getFactory(trace, parent))
                 .that(entry) as WindowManagerStateSubject
             strategy.init(subject)
             return subject

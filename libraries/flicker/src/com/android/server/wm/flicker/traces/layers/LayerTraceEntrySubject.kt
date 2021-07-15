@@ -24,6 +24,7 @@ import com.android.server.wm.flicker.traces.FlickerSubjectException
 import com.android.server.wm.flicker.traces.RegionSubject
 import com.android.server.wm.traces.common.layers.Layer
 import com.android.server.wm.traces.common.layers.LayerTraceEntry
+import com.android.server.wm.traces.common.layers.LayersTrace
 import com.android.server.wm.traces.parser.toLayerName
 import com.google.common.truth.ExpectFailure
 import com.google.common.truth.Fact
@@ -57,12 +58,14 @@ import com.google.common.truth.Subject
 class LayerTraceEntrySubject private constructor(
     fm: FailureMetadata,
     val entry: LayerTraceEntry,
-    val trace: LayersTraceSubject?
+    val trace: LayersTrace?,
+    override val parent: FlickerSubject?
 ) : FlickerSubject(fm, entry) {
-    override val defaultFacts: String = "${trace?.defaultFacts ?: ""}\nEntry: $entry"
+    override val timestamp: Long get() = entry.timestamp
+    override val selfFacts = listOf(Fact.fact("Entry", entry))
 
     val subjects by lazy {
-        entry.flattenedLayers.map { LayerSubject.assertThat(it, this) }
+        entry.flattenedLayers.map { LayerSubject.assertThat(it, this, timestamp) }
     }
 
     /**
@@ -74,7 +77,7 @@ class LayerTraceEntrySubject private constructor(
 
     /** {@inheritDoc} */
     override fun clone(): FlickerSubject {
-        return LayerTraceEntrySubject(fm, entry, trace)
+        return LayerTraceEntrySubject(fm, entry, trace, parent)
     }
 
     /**
@@ -118,10 +121,10 @@ class LayerTraceEntrySubject private constructor(
         val visibleLayers = selectedLayers.filter { it.isVisible }
         return if (useCompositionEngineRegionOnly) {
             val visibleAreas = visibleLayers.mapNotNull { it.layer?.visibleRegion }.toTypedArray()
-            RegionSubject.assertThat(visibleAreas, selectedLayers)
+            RegionSubject.assertThat(visibleAreas, this)
         } else {
             val visibleAreas = visibleLayers.mapNotNull { it.layer?.screenBounds }.toTypedArray()
-            RegionSubject.assertThat(visibleAreas, selectedLayers)
+            RegionSubject.assertThat(visibleAreas, this)
         }
     }
 
@@ -247,7 +250,7 @@ class LayerTraceEntrySubject private constructor(
     fun layer(name: String = "", predicate: (Layer) -> Boolean): LayerSubject {
         return subjects.firstOrNull {
             it.layer?.run { predicate(this) } ?: false
-        } ?: LayerSubject.assertThat(name, this)
+        } ?: LayerSubject.assertThat(name, this, timestamp)
     }
 
     override fun toString(): String {
@@ -259,26 +262,28 @@ class LayerTraceEntrySubject private constructor(
          * Boiler-plate Subject.Factory for LayersTraceSubject
          */
         private fun getFactory(
-            trace: LayersTraceSubject? = null
+            trace: LayersTrace?,
+            parent: FlickerSubject?
         ): Factory<Subject, LayerTraceEntry> =
-            Factory { fm, subject -> LayerTraceEntrySubject(fm, subject, trace) }
+            Factory { fm, subject -> LayerTraceEntrySubject(fm, subject, trace, parent) }
 
         /**
          * Creates a [LayerTraceEntrySubject] to representing a SurfaceFlinger state[entry],
          * which can be used to make assertions.
          *
          * @param entry SurfaceFlinger trace entry
-         * @param trace Trace that contains this entry (optional)
+         * @param parent Trace that contains this entry (optional)
          */
         @JvmStatic
         @JvmOverloads
         fun assertThat(
             entry: LayerTraceEntry,
-            trace: LayersTraceSubject? = null
+            trace: LayersTrace? = null,
+            parent: FlickerSubject? = null
         ): LayerTraceEntrySubject {
             val strategy = FlickerFailureStrategy()
             val subject = StandardSubjectBuilder.forCustomFailureStrategy(strategy)
-                .about(getFactory(trace))
+                .about(getFactory(trace, parent))
                 .that(entry) as LayerTraceEntrySubject
             strategy.init(subject)
             return subject
@@ -289,8 +294,9 @@ class LayerTraceEntrySubject private constructor(
          */
         @JvmStatic
         @JvmOverloads
-        fun entries(trace: LayersTraceSubject? = null): Factory<Subject, LayerTraceEntry> {
-            return getFactory(trace)
-        }
+        fun entries(
+            trace: LayersTrace? = null,
+            parent: FlickerSubject? = null
+        ): Factory<Subject, LayerTraceEntry> = getFactory(trace, parent)
     }
 }

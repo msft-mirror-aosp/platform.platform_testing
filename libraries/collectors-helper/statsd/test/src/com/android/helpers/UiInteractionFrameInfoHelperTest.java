@@ -17,6 +17,7 @@ package com.android.helpers;
 
 import static org.junit.Assert.assertTrue;
 
+import android.app.Application;
 import android.os.SystemClock;
 import android.platform.helpers.HelperAccessor;
 import android.platform.helpers.INotificationHelper;
@@ -73,11 +74,12 @@ public class UiInteractionFrameInfoHelperTest {
         assertTrue(mInteractionFrameHelper.startCollecting());
         final HelperAccessor<INotificationHelper> notificationHelper =
                 new HelperAccessor<>(INotificationHelper.class);
+        notificationHelper.get().setAppName(Application.getProcessName());
 
         // The CUJ
-        UiObject2 notification = notificationHelper.get().postBigTextNotification(null /* pkg */);
         notificationHelper.get().open();
-        notification.click(3000);
+        UiObject2 notification = notificationHelper.get().postBigTextNotification(null /* pkg */);
+        notificationHelper.get().showGuts(notification);
         notificationHelper.get().hideGuts(notification);
         notificationHelper.get().cancelNotifications();
         notificationHelper.get().exit();

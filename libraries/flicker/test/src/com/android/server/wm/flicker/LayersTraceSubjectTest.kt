@@ -41,10 +41,9 @@ class LayersTraceSubjectTest {
             assertThat(layersTraceEntries)
                 .isEmpty()
         }
-        Truth.assertThat(error).hasMessageThat().contains("Trace:")
-        Truth.assertThat(error).hasMessageThat().contains("Path: ")
-        Truth.assertThat(error).hasMessageThat().contains("Start:")
-        Truth.assertThat(error).hasMessageThat().contains("End:")
+        Truth.assertThat(error).hasMessageThat().contains("Trace start")
+        Truth.assertThat(error).hasMessageThat().contains("Trace end")
+        Truth.assertThat(error).hasMessageThat().contains("Trace file")
     }
 
     @Test
