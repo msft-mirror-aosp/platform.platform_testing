@@ -27,6 +27,7 @@ import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 import com.android.server.wm.traces.common.windowmanager.windows.WindowState
 import com.android.server.wm.traces.parser.toWindowName
 import com.android.server.wm.traces.parser.windowmanager.WindowManagerStateHelper
+import com.google.common.truth.Fact
 import com.google.common.truth.FailureMetadata
 import com.google.common.truth.FailureStrategy
 import com.google.common.truth.StandardSubjectBuilder
@@ -57,23 +58,24 @@ import com.google.common.truth.Subject
  */
 class WindowManagerTraceSubject private constructor(
     fm: FailureMetadata,
-    val trace: WindowManagerTrace
+    val trace: WindowManagerTrace,
+    override val parent: WindowManagerTraceSubject?
 ) : FlickerTraceSubject<WindowManagerStateSubject>(fm, trace) {
-    override val defaultFacts: String = buildString {
-        if (trace.hasSource()) {
-            append("Path: ${trace.source}")
-            append("\n")
-        }
-        append("Trace: $trace")
-    }
+    override val selfFacts
+        get() = super.selfFacts.toMutableList()
+            .also {
+                if (trace.hasSource()) {
+                    it.add(Fact.fact("Trace file", trace.source))
+                }
+            }
 
     override val subjects by lazy {
-        trace.entries.map { WindowManagerStateSubject.assertThat(it, this) }
+        trace.entries.map { WindowManagerStateSubject.assertThat(it, this, this) }
     }
 
     /** {@inheritDoc} */
     override fun clone(): FlickerSubject {
-        return WindowManagerTraceSubject(fm, trace)
+        return WindowManagerTraceSubject(fm, trace, parent)
     }
 
     /** {@inheritDoc} */
@@ -561,8 +563,10 @@ class WindowManagerTraceSubject private constructor(
         /**
          * Boiler-plate Subject.Factory for WmTraceSubject
          */
-        private val FACTORY: Factory<Subject, WindowManagerTrace> =
-            Factory { fm, subject -> WindowManagerTraceSubject(fm, subject) }
+        private fun getFactory(
+            parent: WindowManagerTraceSubject?
+        ): Factory<Subject, WindowManagerTrace> =
+            Factory { fm, subject -> WindowManagerTraceSubject(fm, subject, parent) }
 
         /**
          * Creates a [WindowManagerTraceSubject] representing a WindowManager trace,
@@ -571,10 +575,14 @@ class WindowManagerTraceSubject private constructor(
          * @param trace WindowManager trace
          */
         @JvmStatic
-        fun assertThat(trace: WindowManagerTrace): WindowManagerTraceSubject {
+        @JvmOverloads
+        fun assertThat(
+            trace: WindowManagerTrace,
+            parent: WindowManagerTraceSubject? = null
+        ): WindowManagerTraceSubject {
             val strategy = FlickerFailureStrategy()
             val subject = StandardSubjectBuilder.forCustomFailureStrategy(strategy)
-                .about(FACTORY)
+                .about(getFactory(parent))
                 .that(trace) as WindowManagerTraceSubject
             strategy.init(subject)
             return subject
@@ -584,6 +592,8 @@ class WindowManagerTraceSubject private constructor(
          * Static method for getting the subject factory (for use with assertAbout())
          */
         @JvmStatic
-        fun entries(): Factory<Subject, WindowManagerTrace> = FACTORY
+        fun entries(
+            parent: WindowManagerTraceSubject?
+        ): Factory<Subject, WindowManagerTrace> = getFactory(parent)
     }
 }

@@ -185,4 +185,14 @@ class WindowManagerTraceSubjectTest {
             .that(visibilityChange.count { it })
             .isEqualTo(1)
     }
+
+    @Test
+    fun exceptionContainsDebugInfo() {
+        val error = assertThrows(AssertionError::class.java) {
+            assertThat(chromeTrace).isEmpty()
+        }
+        Truth.assertThat(error).hasMessageThat().contains("Trace start")
+        Truth.assertThat(error).hasMessageThat().contains("Trace start")
+        Truth.assertThat(error).hasMessageThat().contains("Trace file")
+    }
 }

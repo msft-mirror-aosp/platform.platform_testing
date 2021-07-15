@@ -22,6 +22,7 @@ import com.android.server.wm.flicker.traces.windowmanager.WindowManagerStateSubj
 import com.android.server.wm.flicker.traces.windowmanager.WindowManagerTraceSubject.Companion.assertThat
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 import com.android.server.wm.traces.parser.windowmanager.WindowManagerStateHelper
+import com.google.common.truth.Truth
 import org.junit.FixMethodOrder
 import org.junit.Test
 import org.junit.runners.MethodSorters
@@ -34,6 +35,18 @@ import java.lang.AssertionError
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class WindowManagerStateSubjectTest {
     private val trace: WindowManagerTrace by lazy { readWmTraceFromFile("wm_trace_openchrome.pb") }
+
+    @Test
+    fun exceptionContainsDebugInfo() {
+        val error = assertThrows(AssertionError::class.java) {
+            assertThat(trace).first().contains(IMAGINARY_COMPONENT)
+        }
+        Truth.assertThat(error).hasMessageThat().contains(IMAGINARY_COMPONENT.className)
+        Truth.assertThat(error).hasMessageThat().contains("Trace start")
+        Truth.assertThat(error).hasMessageThat().contains("Trace start")
+        Truth.assertThat(error).hasMessageThat().contains("Trace file")
+        Truth.assertThat(error).hasMessageThat().contains("Entry")
+    }
 
     @Test
     fun canDetectAboveAppWindowVisibility_isVisible() {

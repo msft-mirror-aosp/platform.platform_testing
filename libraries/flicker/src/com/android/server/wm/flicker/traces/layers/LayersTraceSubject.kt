@@ -29,6 +29,7 @@ import com.android.server.wm.traces.parser.toAndroidRect
 import com.android.server.wm.traces.parser.toAndroidRegion
 import com.android.server.wm.traces.parser.toLayerName
 import com.android.server.wm.traces.parser.windowmanager.WindowManagerStateHelper
+import com.google.common.truth.Fact
 import com.google.common.truth.FailureMetadata
 import com.google.common.truth.FailureStrategy
 import com.google.common.truth.StandardSubjectBuilder
@@ -60,20 +61,18 @@ import com.google.common.truth.Subject.Factory
  */
 class LayersTraceSubject private constructor(
     fm: FailureMetadata,
-    val trace: LayersTrace
+    val trace: LayersTrace,
+    override val parent: LayersTraceSubject?
 ) : FlickerTraceSubject<LayerTraceEntrySubject>(fm, trace) {
-    override val defaultFacts: String by lazy {
-        buildString {
-            if (trace.hasSource()) {
-                append("Path: ${trace.source}")
-                append("\n")
+    override val selfFacts
+        get() = super.selfFacts.toMutableList()
+            .also {
+                if (trace.hasSource()) {
+                    it.add(Fact.fact("Trace file", trace.source))
+                }
             }
-            append("Trace: $trace")
-        }
-    }
-
     override val subjects by lazy {
-        trace.entries.map { LayerTraceEntrySubject.assertThat(it, this) }
+        trace.entries.map { LayerTraceEntrySubject.assertThat(it, trace, this) }
     }
 
     /**
@@ -85,7 +84,7 @@ class LayersTraceSubject private constructor(
 
     /** {@inheritDoc} */
     override fun clone(): FlickerSubject {
-        return LayersTraceSubject(fm, trace)
+        return LayersTraceSubject(fm, trace, parent)
     }
 
     /** {@inheritDoc} */
@@ -107,7 +106,7 @@ class LayersTraceSubject private constructor(
         return subjects
             .map { it.layer(name, frameNumber) }
             .firstOrNull { it.isNotEmpty }
-            ?: LayerSubject.assertThat(null)
+            ?: LayerSubject.assertThat(null, this, timestamp = subjects.first().entry.timestamp)
     }
 
     /**
@@ -390,8 +389,8 @@ class LayersTraceSubject private constructor(
         /**
          * Boiler-plate Subject.Factory for LayersTraceSubject
          */
-        private val FACTORY: Factory<Subject, LayersTrace> =
-            Factory { fm, subject -> LayersTraceSubject(fm, subject) }
+        private fun getFactory(parent: LayersTraceSubject?): Factory<Subject, LayersTrace> =
+            Factory { fm, subject -> LayersTraceSubject(fm, subject, parent) }
 
         /**
          * Creates a [LayersTraceSubject] to representing a SurfaceFlinger trace,
@@ -400,10 +399,11 @@ class LayersTraceSubject private constructor(
          * @param trace SurfaceFlinger trace
          */
         @JvmStatic
-        fun assertThat(trace: LayersTrace): LayersTraceSubject {
+        @JvmOverloads
+        fun assertThat(trace: LayersTrace, parent: LayersTraceSubject? = null): LayersTraceSubject {
             val strategy = FlickerFailureStrategy()
             val subject = StandardSubjectBuilder.forCustomFailureStrategy(strategy)
-                .about(FACTORY)
+                .about(getFactory(parent))
                 .that(trace) as LayersTraceSubject
             strategy.init(subject)
             return subject
@@ -413,8 +413,8 @@ class LayersTraceSubject private constructor(
          * Static method for getting the subject factory (for use with assertAbout())
          */
         @JvmStatic
-        fun entries(): Factory<Subject, LayersTrace> {
-            return FACTORY
+        fun entries(parent: LayersTraceSubject?): Factory<Subject, LayersTrace> {
+            return getFactory(parent)
         }
     }
 }

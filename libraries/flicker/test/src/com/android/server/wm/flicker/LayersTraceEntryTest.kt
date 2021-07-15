@@ -38,9 +38,10 @@ class LayersTraceEntryTest {
                 .first()
                 .contains(IMAGINARY_COMPONENT)
         }
-        Truth.assertThat(error).hasMessageThat().contains("Trace:")
-        Truth.assertThat(error).hasMessageThat().contains("Path: ")
-        Truth.assertThat(error).hasMessageThat().contains("Entry:")
+        Truth.assertThat(error).hasMessageThat().contains("Trace start")
+        Truth.assertThat(error).hasMessageThat().contains("Trace end")
+        Truth.assertThat(error).hasMessageThat().contains("Entry")
+        Truth.assertThat(error).hasMessageThat().contains("Trace file")
     }
 
     @Test

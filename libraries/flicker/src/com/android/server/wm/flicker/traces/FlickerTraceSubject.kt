@@ -19,6 +19,8 @@ package com.android.server.wm.flicker.traces
 import com.android.server.wm.flicker.assertions.Assertion
 import com.android.server.wm.flicker.assertions.AssertionsChecker
 import com.android.server.wm.flicker.assertions.FlickerSubject
+import com.android.server.wm.traces.common.prettyTimestamp
+import com.google.common.truth.Fact
 import com.google.common.truth.FailureMetadata
 
 /**
@@ -28,6 +30,16 @@ abstract class FlickerTraceSubject<EntrySubject : FlickerSubject>(
     fm: FailureMetadata,
     data: Any?
 ) : FlickerSubject(fm, data) {
+    override val timestamp: Long get() = subjects.first().timestamp
+    override val selfFacts by lazy {
+        val firstTimestamp = subjects.first().timestamp
+        val lastTimestamp = subjects.last().timestamp
+        val first = "${prettyTimestamp(firstTimestamp)} (timestamp=$firstTimestamp)"
+        val last = "${prettyTimestamp(lastTimestamp)} (timestamp=$lastTimestamp)"
+        listOf(Fact.fact("Trace start", first),
+                Fact.fact("Trace end", last))
+    }
+
     protected val assertionsChecker = AssertionsChecker<EntrySubject>()
     private var newAssertionBlock = true
 

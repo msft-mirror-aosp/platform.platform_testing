@@ -16,44 +16,36 @@
 
 package com.android.server.wm.flicker
 
-import com.android.server.wm.flicker.traces.layers.LayerSubject
-import com.android.server.wm.flicker.traces.layers.LayersTraceSubject.Companion.assertThat
-import com.android.server.wm.traces.common.Size
+import com.android.server.wm.flicker.traces.windowmanager.WindowManagerTraceSubject
+import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 import com.google.common.truth.Truth
-import org.junit.FixMethodOrder
 import org.junit.Test
-import org.junit.runners.MethodSorters
 
-/**
- * Contains [LayerSubject] tests. To run this test:
- * `atest FlickerLibTest:LayerSubjectTest`
- */
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
-class LayerSubjectTest {
+class WindowStateSubjectTest {
+    private val trace: WindowManagerTrace by lazy { readWmTraceFromFile("wm_trace_openchrome.pb") }
+
     @Test
     fun exceptionContainsDebugInfoImaginary() {
-        val layersTraceEntries = readLayerTraceFromFile("layers_trace_emptyregion.pb")
         val error = assertThrows(AssertionError::class.java) {
-            assertThat(layersTraceEntries)
-                .first()
-                .layer("ImaginaryLayer", 0)
-                .exists()
+            WindowManagerTraceSubject.assertThat(trace)
+                    .first()
+                    .windowState(IMAGINARY_COMPONENT.className)
+                    .exists()
         }
-        Truth.assertThat(error).hasMessageThat().contains("ImaginaryLayer")
+        Truth.assertThat(error).hasMessageThat().contains(IMAGINARY_COMPONENT.className)
         Truth.assertThat(error).hasMessageThat().contains("What?")
         Truth.assertThat(error).hasMessageThat().contains("Where?")
         Truth.assertThat(error).hasMessageThat().contains("Entry")
         Truth.assertThat(error).hasMessageThat().contains("Trace start")
         Truth.assertThat(error).hasMessageThat().contains("Trace start")
         Truth.assertThat(error).hasMessageThat().contains("Trace file")
-        Truth.assertThat(error).hasMessageThat().contains("Layer name")
+        Truth.assertThat(error).hasMessageThat().contains("Window title")
     }
 
     @Test
     fun exceptionContainsDebugInfoConcrete() {
-        val layersTraceEntries = readLayerTraceFromFile("layers_trace_emptyregion.pb")
         val error = assertThrows(AssertionError::class.java) {
-            assertThat(layersTraceEntries)
+            WindowManagerTraceSubject.assertThat(trace)
                     .first()
                     .subjects
                     .first()
@@ -66,18 +58,5 @@ class LayerSubjectTest {
         Truth.assertThat(error).hasMessageThat().contains("Trace start")
         Truth.assertThat(error).hasMessageThat().contains("Trace file")
         Truth.assertThat(error).hasMessageThat().contains("Entry")
-    }
-
-    @Test
-    fun canTestAssertionsOnLayer() {
-        val layersTraceEntries = readLayerTraceFromFile("layers_trace_emptyregion.pb")
-        assertThat(layersTraceEntries)
-            .layer("SoundVizWallpaperV2", 26033)
-            .hasBufferSize(Size(1440, 2960))
-            .hasScalingMode(0)
-
-        assertThat(layersTraceEntries)
-            .layer("DoesntExist", 1)
-            .doesNotExist()
     }
 }

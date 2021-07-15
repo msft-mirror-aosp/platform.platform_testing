@@ -21,6 +21,7 @@ import com.android.server.wm.flicker.assertions.FlickerSubject
 import com.android.server.wm.flicker.traces.FlickerFailureStrategy
 import com.android.server.wm.flicker.traces.FlickerSubjectException
 import com.android.server.wm.traces.common.ITraceEntry
+import com.google.common.truth.Fact
 import com.google.common.truth.FailureMetadata
 import com.google.common.truth.StandardSubjectBuilder
 import com.google.common.truth.Subject
@@ -162,7 +163,9 @@ class AssertionsCheckerTest {
         failureMetadata: FailureMetadata,
         private val entry: SimpleEntry
     ) : FlickerSubject(failureMetadata, entry) {
-        override val defaultFacts: String = "SimpleEntry(${entry.mData})"
+        override val timestamp: Long get() = 0
+        override val parent: FlickerSubject? get() = null
+        override val selfFacts = listOf(Fact.fact("SimpleEntry", entry.mData.toString()))
         override fun clone(): FlickerSubject {
             return SimpleEntrySubject(fm, entry)
         }

@@ -117,6 +117,6 @@ open class LayerTraceEntry constructor(
         visibleLayers.any { it.name.contains(windowName) }
 
     override fun toString(): String {
-        return prettyTimestamp(timestamp)
+        return "${prettyTimestamp(timestamp)} (timestamp=$timestamp)"
     }
 }
