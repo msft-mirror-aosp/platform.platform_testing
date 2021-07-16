@@ -209,6 +209,15 @@ public interface INotificationHelper extends IAppHelper {
     }
 
     /**
+     * Sets expected app name for notifications.
+     *
+     * @param appName Package name.
+     */
+    default void setAppName(String appName) {
+        throw new UnsupportedOperationException("Not yet implemented.");
+    }
+
+    /**
      * Long press on notification to show its hidden menu (a.k.a. guts)
      *
      * @param notification Notification.

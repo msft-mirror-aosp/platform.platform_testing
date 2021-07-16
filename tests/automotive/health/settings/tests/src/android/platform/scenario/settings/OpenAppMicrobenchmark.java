@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package android.platform.scenario.settings;
+package android.platform.test.scenario.settings;
 
-import android.platform.scenario.AppStartupRunRule;
+import android.platform.test.scenario.AppStartupRunRule;
 import android.platform.test.microbenchmark.Microbenchmark;
 
 import org.junit.Rule;
