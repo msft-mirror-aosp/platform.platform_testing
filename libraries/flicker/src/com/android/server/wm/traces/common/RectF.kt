@@ -111,6 +111,26 @@ data class RectF(
 
     override fun toString(): String = if (isEmpty) "[empty]" else prettyPrint()
 
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is RectF) return false
+
+        if (left != other.left) return false
+        if (top != other.top) return false
+        if (right != other.right) return false
+        if (bottom != other.bottom) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = left.hashCode()
+        result = 31 * result + top.hashCode()
+        result = 31 * result + right.hashCode()
+        result = 31 * result + bottom.hashCode()
+        return result
+    }
+
     companion object {
         val EMPTY = RectF()
 

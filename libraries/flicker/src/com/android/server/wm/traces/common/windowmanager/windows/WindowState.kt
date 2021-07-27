@@ -70,13 +70,29 @@ open class WindowState(
         "type=${attributes.type} cf=$containingFrame pf=$parentFrame"
 
     override fun equals(other: Any?): Boolean {
-        return other is WindowState &&
-            other.stableId == stableId &&
-            other.attributes == attributes &&
-            other.token == token &&
-            other.title == title &&
-            other.containingFrame == containingFrame &&
-            other.parentFrame == parentFrame
+        if (this === other) return true
+        if (other !is WindowState) return false
+
+        if (name != other.name) return false
+        if (attributes != other.attributes) return false
+        if (displayId != other.displayId) return false
+        if (stackId != other.stackId) return false
+        if (layer != other.layer) return false
+        if (isSurfaceShown != other.isSurfaceShown) return false
+        if (windowType != other.windowType) return false
+        if (requestedSize != other.requestedSize) return false
+        if (surfacePosition != other.surfacePosition) return false
+        if (frame != other.frame) return false
+        if (containingFrame != other.containingFrame) return false
+        if (parentFrame != other.parentFrame) return false
+        if (contentFrame != other.contentFrame) return false
+        if (contentInsets != other.contentInsets) return false
+        if (surfaceInsets != other.surfaceInsets) return false
+        if (givenContentInsets != other.givenContentInsets) return false
+        if (crop != other.crop) return false
+        if (isAppWindow != other.isAppWindow) return false
+
+        return true
     }
 
     override fun hashCode(): Int {

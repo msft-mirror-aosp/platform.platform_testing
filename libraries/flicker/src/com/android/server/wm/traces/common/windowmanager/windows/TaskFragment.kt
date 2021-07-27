@@ -40,4 +40,25 @@ open class TaskFragment(
     override fun toString(): String {
         return "${this::class.simpleName}: {$token $title} bounds=$bounds"
     }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is TaskFragment) return false
+
+        if (activityType != other.activityType) return false
+        if (displayId != other.displayId) return false
+        if (minWidth != other.minWidth) return false
+        if (minHeight != other.minHeight) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = super.hashCode()
+        result = 31 * result + activityType
+        result = 31 * result + displayId
+        result = 31 * result + minWidth
+        result = 31 * result + minHeight
+        return result
+    }
 }
