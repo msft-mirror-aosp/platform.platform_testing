@@ -98,4 +98,50 @@ open class Task(
     override fun toString(): String {
         return "${this::class.simpleName}: {$token $title} id=$taskId bounds=$bounds"
     }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is Task) return false
+
+        if (activityType != other.activityType) return false
+        if (isFullscreen != other.isFullscreen) return false
+        if (bounds != other.bounds) return false
+        if (taskId != other.taskId) return false
+        if (rootTaskId != other.rootTaskId) return false
+        if (displayId != other.displayId) return false
+        if (realActivity != other.realActivity) return false
+        if (resizeMode != other.resizeMode) return false
+        if (minWidth != other.minWidth) return false
+        if (minHeight != other.minHeight) return false
+        if (name != other.name) return false
+        if (orientation != other.orientation) return false
+        if (title != other.title) return false
+        if (token != other.token) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = super.hashCode()
+        result = 31 * result + activityType
+        result = 31 * result + isFullscreen.hashCode()
+        result = 31 * result + bounds.hashCode()
+        result = 31 * result + taskId
+        result = 31 * result + rootTaskId
+        result = 31 * result + displayId
+        result = 31 * result + lastNonFullscreenBounds.hashCode()
+        result = 31 * result + realActivity.hashCode()
+        result = 31 * result + origActivity.hashCode()
+        result = 31 * result + resizeMode
+        result = 31 * result + _resumedActivity.hashCode()
+        result = 31 * result + animatingBounds.hashCode()
+        result = 31 * result + surfaceWidth
+        result = 31 * result + surfaceHeight
+        result = 31 * result + createdByOrganizer.hashCode()
+        result = 31 * result + minWidth
+        result = 31 * result + minHeight
+        result = 31 * result + isVisible.hashCode()
+        result = 31 * result + name.hashCode()
+        return result
+    }
 }

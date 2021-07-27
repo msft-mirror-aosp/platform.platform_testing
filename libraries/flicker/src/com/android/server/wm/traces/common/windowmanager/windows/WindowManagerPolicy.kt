@@ -73,4 +73,42 @@ data class WindowManagerPolicy(
         private const val SCREEN_ORIENTATION_USER_PORTRAIT = 12
         private const val SCREEN_ORIENTATION_LOCKED = 14
     }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is WindowManagerPolicy) return false
+
+        if (focusedAppToken != other.focusedAppToken) return false
+        if (forceStatusBar != other.forceStatusBar) return false
+        if (forceStatusBarFromKeyguard != other.forceStatusBarFromKeyguard) return false
+        if (keyguardDrawComplete != other.keyguardDrawComplete) return false
+        if (keyguardOccluded != other.keyguardOccluded) return false
+        if (keyguardOccludedChanged != other.keyguardOccludedChanged) return false
+        if (keyguardOccludedPending != other.keyguardOccludedPending) return false
+        if (lastSystemUiFlags != other.lastSystemUiFlags) return false
+        if (orientation != other.orientation) return false
+        if (rotation != other.rotation) return false
+        if (rotationMode != other.rotationMode) return false
+        if (screenOnFully != other.screenOnFully) return false
+        if (windowManagerDrawComplete != other.windowManagerDrawComplete) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = focusedAppToken.hashCode()
+        result = 31 * result + forceStatusBar.hashCode()
+        result = 31 * result + forceStatusBarFromKeyguard.hashCode()
+        result = 31 * result + keyguardDrawComplete.hashCode()
+        result = 31 * result + keyguardOccluded.hashCode()
+        result = 31 * result + keyguardOccludedChanged.hashCode()
+        result = 31 * result + keyguardOccludedPending.hashCode()
+        result = 31 * result + lastSystemUiFlags
+        result = 31 * result + orientation
+        result = 31 * result + rotation
+        result = 31 * result + rotationMode
+        result = 31 * result + screenOnFully.hashCode()
+        result = 31 * result + windowManagerDrawComplete.hashCode()
+        return result
+    }
 }

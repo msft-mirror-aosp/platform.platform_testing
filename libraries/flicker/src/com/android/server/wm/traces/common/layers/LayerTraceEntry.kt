@@ -119,4 +119,8 @@ open class LayerTraceEntry constructor(
     override fun toString(): String {
         return "${prettyTimestamp(timestamp)} (timestamp=$timestamp)"
     }
+
+    override fun equals(other: Any?): Boolean {
+        return other is LayerTraceEntry && other.timestamp == this.timestamp
+    }
 }

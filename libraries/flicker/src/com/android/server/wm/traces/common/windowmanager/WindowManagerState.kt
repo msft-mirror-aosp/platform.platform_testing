@@ -328,4 +328,7 @@ open class WindowManagerState(
             return (dp * densityDpi / DENSITY_DEFAULT + 0.5f).toInt()
         }
     }
+    override fun equals(other: Any?): Boolean {
+        return other is WindowManagerState && other.timestamp == this.timestamp
+    }
 }

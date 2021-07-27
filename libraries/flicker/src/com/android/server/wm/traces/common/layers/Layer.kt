@@ -304,4 +304,78 @@ data class Layer(
             }
         }
     }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is Layer) return false
+
+        if (name != other.name) return false
+        if (id != other.id) return false
+        if (parentId != other.parentId) return false
+        if (z != other.z) return false
+        if (visibleRegion != other.visibleRegion) return false
+        if (activeBuffer != other.activeBuffer) return false
+        if (flags != other.flags) return false
+        if (bounds != other.bounds) return false
+        if (color != other.color) return false
+        if (shadowRadius != other.shadowRadius) return false
+        if (cornerRadius != other.cornerRadius) return false
+        if (type != other.type) return false
+        if (transform != other.transform) return false
+        if (sourceBounds != other.sourceBounds) return false
+        if (currFrame != other.currFrame) return false
+        if (effectiveScalingMode != other.effectiveScalingMode) return false
+        if (bufferTransform != other.bufferTransform) return false
+        if (hwcCompositionType != other.hwcCompositionType) return false
+        if (hwcCrop != other.hwcCrop) return false
+        if (hwcFrame != other.hwcFrame) return false
+        if (backgroundBlurRadius != other.backgroundBlurRadius) return false
+        if (crop != other.crop) return false
+        if (isRelativeOf != other.isRelativeOf) return false
+        if (zOrderRelativeOfId != other.zOrderRelativeOfId) return false
+        if (stableId != other.stableId) return false
+        if (parent != other.parent) return false
+        if (zOrderRelativeOf != other.zOrderRelativeOf) return false
+        if (zOrderRelativeParentOf != other.zOrderRelativeParentOf) return false
+        if (isMissing != other.isMissing) return false
+        if (isOpaque != other.isOpaque) return false
+        if (screenBounds != other.screenBounds) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = name.hashCode()
+        result = 31 * result + id
+        result = 31 * result + parentId
+        result = 31 * result + z
+        result = 31 * result + (visibleRegion?.hashCode() ?: 0)
+        result = 31 * result + activeBuffer.hashCode()
+        result = 31 * result + flags
+        result = 31 * result + bounds.hashCode()
+        result = 31 * result + color.hashCode()
+        result = 31 * result + shadowRadius.hashCode()
+        result = 31 * result + cornerRadius.hashCode()
+        result = 31 * result + type.hashCode()
+        result = 31 * result + transform.hashCode()
+        result = 31 * result + sourceBounds.hashCode()
+        result = 31 * result + currFrame.hashCode()
+        result = 31 * result + effectiveScalingMode
+        result = 31 * result + bufferTransform.hashCode()
+        result = 31 * result + hwcCompositionType
+        result = 31 * result + hwcCrop.hashCode()
+        result = 31 * result + hwcFrame.hashCode()
+        result = 31 * result + backgroundBlurRadius
+        result = 31 * result + (crop?.hashCode() ?: 0)
+        result = 31 * result + isRelativeOf.hashCode()
+        result = 31 * result + zOrderRelativeOfId
+        result = 31 * result + stableId.hashCode()
+        result = 31 * result + (parent?.hashCode() ?: 0)
+        result = 31 * result + (zOrderRelativeOf?.hashCode() ?: 0)
+        result = 31 * result + zOrderRelativeParentOf
+        result = 31 * result + isMissing.hashCode()
+        result = 31 * result + isOpaque.hashCode()
+        result = 31 * result + screenBounds.hashCode()
+        return result
+    }
 }

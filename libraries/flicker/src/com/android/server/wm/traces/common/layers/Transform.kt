@@ -182,4 +182,22 @@ open class Transform(val type: Int?, val matrix: Matrix) {
             return this and bits == bits
         }
     }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is Transform) return false
+
+        if (type != other.type) return false
+        if (matrix != other.matrix) return false
+        if (isSimpleRotation != other.isSimpleRotation) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = type ?: 0
+        result = 31 * result + matrix.hashCode()
+        result = 31 * result + isSimpleRotation.hashCode()
+        return result
+    }
 }
