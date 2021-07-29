@@ -510,6 +510,30 @@ public class AutoSettingsConfigUtility implements IAutoConfigUtility {
         accountSettingsConfiguration.addResource(
                 AutoConfigConstants.REMOVE_ACCOUNT_BUTTON,
                 new AutoConfigResource(AutoConfigConstants.TEXT, "Remove Account"));
+        accountSettingsConfiguration.addResource(
+                AutoConfigConstants.MANAGE_OTHER_PROFILES,
+                new AutoConfigResource(AutoConfigConstants.TEXT, "Manage other profiles"));
+        accountSettingsConfiguration.addResource(
+                AutoConfigConstants.ADD_PROFILE,
+                new AutoConfigResource(AutoConfigConstants.TEXT, "Add.*profile"));
+        accountSettingsConfiguration.addResource(
+                AutoConfigConstants.OK, new AutoConfigResource(AutoConfigConstants.TEXT, "OK"));
+        accountSettingsConfiguration.addResource(
+                AutoConfigConstants.DELETE_SELF,
+                new AutoConfigResource(AutoConfigConstants.TEXT, "Delete this profile"));
+        accountSettingsConfiguration.addResource(
+                AutoConfigConstants.DELETE,
+                new AutoConfigResource(AutoConfigConstants.TEXT, "Delete"));
+        accountSettingsConfiguration.addResource(
+                AutoConfigConstants.MAKE_ADMIN,
+                new AutoConfigResource(AutoConfigConstants.TEXT, "Make Admin"));
+        accountSettingsConfiguration.addResource(
+                AutoConfigConstants.MAKE_ADMIN_CONFIRM,
+                new AutoConfigResource(AutoConfigConstants.TEXT, "Yes, make admin"));
+        accountSettingsConfiguration.addResource(
+                AutoConfigConstants.TIME_PATTERN,
+                new AutoConfigResource(
+                        AutoConfigConstants.TEXT, "(1[012]|[1-9]):[0-5][0-9](\\s)?.*"));
         mSettingsConfigMap.put(
                 AutoConfigConstants.PROFILE_ACCOUNT_SETTINGS, accountSettingsConfiguration);
     }
