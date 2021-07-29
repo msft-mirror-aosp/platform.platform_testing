@@ -121,6 +121,16 @@ public class AutoConfigConstants {
     public static final String LANGUAGES_MENU_IN_SELECTED_LANGUAGE =
             "LANGUAGES_MENU_IN_SELECTED_LANGUAGE";
 
+    // MU profiles
+    public static final String MANAGE_OTHER_PROFILES = "MANAGE_OTHER_PROFILES";
+    public static final String ADD_PROFILE = "ADD_PROFILE";
+    public static final String OK = "OK";
+    public static final String DELETE_SELF = "DELETE_SELF";
+    public static final String DELETE = "DELETE";
+    public static final String MAKE_ADMIN = "MAKE_ADMIN";
+    public static final String MAKE_ADMIN_CONFIRM = "MAKE_ADMIN_CONFIRM";
+    public static final String TIME_PATTERN = "TIME_PATTERN";
+
     // Accounts
     public static final String PROFILE_ACCOUNT_SETTINGS = "PROFILES_ACCOUNTS";
     public static final String ADD_ACCOUNT = "ADD_ACCOUNT";
