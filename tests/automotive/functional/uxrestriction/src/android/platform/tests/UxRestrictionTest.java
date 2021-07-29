@@ -94,21 +94,12 @@ public class UxRestrictionTest {
     }
 
     @Test
-    public void testRestrictedAppNotificationSettings() {
+    public void testRestrictedAppSettings() {
         mSettingHelper.get().openFullSettings();
         String currentTitle = mSettingHelper.get().getPageTitleText();
-        mSettingHelper.findSettingMenuAndClick(AutoConfigConstants.APPS_AND_NOTIFICATIONS_SETTINGS);
-        String newTitle = mSettingHelper.gget().etPageTitleText();
-        assertTrue("Apps & notification settings is not disabled", currentTitle.equals(newTitle));
-    }
-
-    @Test
-    public void testRestrictedDateTimeSettings() {
-        mSettingHelper.get().openFullSettings();
-        String currentTitle = mSettingHelper.get().getPageTitleText();
-        mSettingHelper.get().findSettingMenuAndClick(AutoConfigConstants.DATE_AND_TIME_SETTINGS);
+        mSettingHelper.get().findSettingMenuAndClick(AutoConfigConstants.APPS_SETTINGS);
         String newTitle = mSettingHelper.get().getPageTitleText();
-        assertTrue("Date & time settings is not disabled", currentTitle.equals(newTitle));
+        assertTrue("Apps & notification settings is not disabled", currentTitle.equals(newTitle));
     }
 
     @Test
@@ -133,7 +124,7 @@ public class UxRestrictionTest {
     public void testRestrictedSystemSettings() {
         mSettingHelper.get().openFullSettings();
         String currentTitle = mSettingHelper.get().getPageTitleText();
-        mSettingHelper.get().findSettingMenuAndClick(AutoUtility.SYSTEM_SETTINGS);
+        mSettingHelper.get().findSettingMenuAndClick(AutoConfigConstants.SYSTEM_SETTINGS);
         String newTitle = mSettingHelper.get().getPageTitleText();
         assertTrue("System settings is not disabled", currentTitle.equals(newTitle));
     }
