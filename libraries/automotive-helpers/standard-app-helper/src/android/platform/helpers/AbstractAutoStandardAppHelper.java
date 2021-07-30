@@ -169,24 +169,46 @@ public abstract class AbstractAutoStandardAppHelper extends AbstractStandardAppH
      */
     private boolean scroll(Direction direction, float percent, long timeMs, int index) {
         boolean canScrollMoreInGivenDircetion = false;
+        List<UiObject2> upButtons =
+                findUiObjects(
+                        getResourceFromConfig(
+                                AutoConfigConstants.SETTINGS,
+                                AutoConfigConstants.FULL_SETTINGS,
+                                AutoConfigConstants.UP_BUTTON));
+        List<UiObject2> downButtons =
+                findUiObjects(
+                        getResourceFromConfig(
+                                AutoConfigConstants.SETTINGS,
+                                AutoConfigConstants.FULL_SETTINGS,
+                                AutoConfigConstants.DOWN_BUTTON));
         List<UiObject2> scrollableObjects = findUiObjects(By.scrollable(true));
-        if (scrollableObjects == null || scrollableObjects.size() == 0) {
+        if (scrollableObjects == null || upButtons == null || scrollableObjects.size() == 0) {
             return canScrollMoreInGivenDircetion;
         }
-        if ((scrollableObjects.size() - 1) < index) {
+        if (upButtons.size() == 1 || (scrollableObjects.size() - 1) < index) {
             // reset index as it is invalid
             index = 0;
         }
-        UiObject2 scrollable = scrollableObjects.get(index);
-        if (scrollable != null) {
-            scrollable.setGestureMargins(
-                    getScrollableMargin(scrollable, false), // left
-                    getScrollableMargin(scrollable, true), // top
-                    getScrollableMargin(scrollable, false), // right
-                    getScrollableMargin(scrollable, true)); // bottom
-            int scrollSpeed = getScrollSpeed(scrollable, timeMs);
-            canScrollMoreInGivenDircetion =
-                    scrollable.scroll(direction, percent / 100, scrollSpeed);
+        if (upButtons != null) {
+            UiObject2 upButton = upButtons.get(index);
+            UiObject2 downButton = downButtons.get(index);
+            if (direction == Direction.UP) {
+                clickAndWaitForIdleScreen(upButton);
+            } else if (direction == Direction.DOWN) {
+                clickAndWaitForIdleScreen(downButton);
+            }
+        } else {
+            UiObject2 scrollable = scrollableObjects.get(index);
+            if (scrollable != null) {
+                scrollable.setGestureMargins(
+                        getScrollableMargin(scrollable, false), // left
+                        getScrollableMargin(scrollable, true), // top
+                        getScrollableMargin(scrollable, false), // right
+                        getScrollableMargin(scrollable, true)); // bottom
+                int scrollSpeed = getScrollSpeed(scrollable, timeMs);
+                canScrollMoreInGivenDircetion =
+                        scrollable.scroll(direction, percent / 100, scrollSpeed);
+            }
         }
         return canScrollMoreInGivenDircetion;
     }
@@ -401,6 +423,12 @@ public abstract class AbstractAutoStandardAppHelper extends AbstractStandardAppH
                 && AutoConfigConstants.TEXT.equals(configResource.getResourceType())) {
             return By.text(
                     Pattern.compile(configResource.getResourceValue(), Pattern.CASE_INSENSITIVE));
+        }
+
+        // TEXT_CONTAINS
+        if (configResource != null
+                && AutoConfigConstants.TEXT_CONTAINS.equals(configResource.getResourceType())) {
+            return By.textContains(configResource.getResourceValue());
         }
 
         // DESCRIPTION
