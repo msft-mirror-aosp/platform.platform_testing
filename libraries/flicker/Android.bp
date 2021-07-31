@@ -58,6 +58,7 @@ java_library {
         "wm-proto-parsers",
         "platform-test-annotations",
         "platform-test-core-rules",
+        "health-testing-utils",
     ],
 }
 
