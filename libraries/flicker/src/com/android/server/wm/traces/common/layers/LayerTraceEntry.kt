@@ -32,8 +32,12 @@ open class LayerTraceEntry constructor(
     val where: String,
     _rootLayers: Array<Layer>
 ) : ITraceEntry {
+    val isVisible = true
+    val stableId: String get() = this::class.simpleName ?: error("Unable to determine class")
+    val name: String get() = prettyTimestamp(timestamp)
+
     val flattenedLayers: Array<Layer> = fillFlattenedLayers(_rootLayers)
-    val rootLayers: Array<Layer> get() = flattenedLayers.filter { it.isRootLayer }.toTypedArray()
+    val children: Array<Layer> get() = flattenedLayers.filter { it.isRootLayer }.toTypedArray()
 
     private fun fillFlattenedLayers(rootLayers: Array<Layer>): Array<Layer> {
         val opaqueLayers = mutableListOf<Layer>()
@@ -79,11 +83,15 @@ open class LayerTraceEntry constructor(
             val visible = layer.isVisible
 
             if (visible) {
-                layer.occludedBy.addAll(opaqueLayers
-                    .filter { it.contains(layer) && !it.hasRoundedCorners })
-                layer.partiallyOccludedBy.addAll(
-                    opaqueLayers.filter { it.overlaps(layer) && it !in layer.occludedBy })
-                layer.coveredBy.addAll(transparentLayers.filter { it.overlaps(layer) })
+                val occludedBy = opaqueLayers
+                        .filter { it.contains(layer) && !it.hasRoundedCorners }.toTypedArray()
+                layer.addOccludedBy(occludedBy)
+                val partiallyOccludedBy = opaqueLayers
+                        .filter { it.overlaps(layer) && it !in layer.occludedBy }
+                        .toTypedArray()
+                layer.addPartiallyOccludedBy(partiallyOccludedBy)
+                val coveredBy = transparentLayers.filter { it.overlaps(layer) }.toTypedArray()
+                layer.addCoveredBy(coveredBy)
 
                 if (layer.isOpaque) {
                     opaqueLayers.add(layer)
@@ -106,9 +114,13 @@ open class LayerTraceEntry constructor(
      * Check if at least one window which matches provided window name is visible.
      */
     fun isVisible(windowName: String): Boolean =
-        visibleLayers.any { it.name == windowName }
+        visibleLayers.any { it.name.contains(windowName) }
 
     override fun toString(): String {
-        return prettyTimestamp(timestamp)
+        return "${prettyTimestamp(timestamp)} (timestamp=$timestamp)"
+    }
+
+    override fun equals(other: Any?): Boolean {
+        return other is LayerTraceEntry && other.timestamp == this.timestamp
     }
 }

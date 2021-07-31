@@ -46,7 +46,6 @@ class LayersTraceParser {
          *
          * @param data binary proto data
          * @param source Path to source of data for additional debug information
-         * @param sourceChecksum Checksum of the source file
          * @param orphanLayerCallback a callback to handle any unexpected orphan layers
          */
         @JvmOverloads
@@ -54,10 +53,9 @@ class LayersTraceParser {
         fun parseFromTrace(
             data: ByteArray,
             source: Path? = null,
-            sourceChecksum: String = "",
             orphanLayerCallback: ((Layer) -> Boolean)? = null
         ): LayersTrace {
-            val fileProto: Layerstrace.LayersTraceFileProto
+            var fileProto: Layerstrace.LayersTraceFileProto? = null
             try {
                 measureTimeMillis {
                     fileProto = Layerstrace.LayersTraceFileProto.parseFrom(data)
@@ -67,7 +65,9 @@ class LayersTraceParser {
             } catch (e: Exception) {
                 throw RuntimeException(e)
             }
-            return parseFromTrace(fileProto, source, sourceChecksum, orphanLayerCallback)
+            return fileProto?.let {
+                parseFromTrace(it, source, orphanLayerCallback)
+            } ?: error("Unable to read trace file")
         }
 
         /**
@@ -76,7 +76,6 @@ class LayersTraceParser {
          *
          * @param proto Parsed proto data
          * @param source Path to source of data for additional debug information
-         * @param sourceChecksum Checksum of the source file
          * @param orphanLayerCallback a callback to handle any unexpected orphan layers
          */
         @JvmOverloads
@@ -84,7 +83,6 @@ class LayersTraceParser {
         fun parseFromTrace(
             proto: Layerstrace.LayersTraceFileProto,
             source: Path? = null,
-            sourceChecksum: String = "",
             orphanLayerCallback: ((Layer) -> Boolean)? = null
         ): LayersTrace {
             val entries: MutableList<LayerTraceEntry> = ArrayList()
@@ -100,7 +98,7 @@ class LayersTraceParser {
             }
             Log.v(LOG_TAG, "Parsing duration (Layers Trace): ${traceParseTime}ms " +
                 "(avg ${traceParseTime / entries.size}ms per entry)")
-            return LayersTrace(entries, source?.toString() ?: "", sourceChecksum)
+            return LayersTrace(entries.toTypedArray(), source?.toString() ?: "")
         }
 
         /**
@@ -139,7 +137,7 @@ class LayersTraceParser {
             where: String = "",
             orphanLayerCallback: ((Layer) -> Boolean)? = null
         ): LayerTraceEntry {
-            val layers = protos.map { newLayer(it) }
+            val layers = protos.map { newLayer(it) }.toTypedArray()
             val builder = LayerTraceEntryBuilder(timestamp, layers, hwcBlob, where)
             builder.setOrphanLayerCallback(orphanLayerCallback)
             return builder.build()
@@ -171,7 +169,7 @@ class LayersTraceParser {
                     proto.type ?: "",
                     proto.screenBounds?.toRectF(),
                     Transform(proto.transform, proto.position),
-                    proto.sourceBounds?.toRectF(),
+                    proto.sourceBounds?.toRectF() ?: RectF.EMPTY,
                     proto.currFrame,
                     proto.effectiveScalingMode,
                     Transform(proto.bufferTransform, position = null),

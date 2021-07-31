@@ -37,6 +37,7 @@ import com.android.server.wm.traces.parser.Condition
 import com.android.server.wm.traces.parser.LOG_TAG
 import com.android.server.wm.traces.parser.toActivityName
 import com.android.server.wm.traces.parser.toAndroidRegion
+import com.android.server.wm.traces.parser.toLayerName
 import com.android.server.wm.traces.parser.toWindowName
 
 open class WindowManagerStateHelper @JvmOverloads constructor(
@@ -137,7 +138,7 @@ open class WindowManagerStateHelper @JvmOverloads constructor(
                             .build())
 
     fun waitForHomeActivityVisible(): Boolean {
-        return waitFor { it.wmState.homeActivity?.isVisible == true } &&
+        return waitFor("homeActivityVisible") { it.wmState.homeActivity?.isVisible == true } &&
             waitForNavBarStatusBarVisible() &&
             waitForAppTransitionIdle()
     }
@@ -147,51 +148,33 @@ open class WindowManagerStateHelper @JvmOverloads constructor(
             it.wmState.isRecentsActivityVisible
         }
 
-    fun waitForAodShowing(): Boolean =
-        waitFor("AOD showing") {
-            it.wmState.keyguardControllerState.isAodShowing
-        }
-
-    fun waitForKeyguardGone(): Boolean =
-        waitFor("Keyguard gone") {
-            !it.wmState.keyguardControllerState.isKeyguardShowing
-        }
-
     /**
      * Wait for specific rotation for the default display. Values are Surface#Rotation
      */
     @JvmOverloads
     fun waitForRotation(rotation: Int, displayId: Int = Display.DEFAULT_DISPLAY): Boolean =
         waitFor("Rotation: $rotation") {
-            val currRotation = it.wmState.getRotation(displayId)
-            val rotationLayerExists = it.layerState.isVisible(ROTATION_LAYER_NAME)
-            val blackSurfaceLayerExists = it.layerState.isVisible(BLACK_SURFACE_LAYER_NAME)
-            val anyLayerAnimating = it.layerState.visibleLayers.any { layer ->
-                !layer.transform.isSimpleRotation
+            if (!it.wmState.canRotate) {
+                Log.v(LOG_TAG, "Rotation is not allowed in the state")
+                true
+            } else {
+                val currRotation = it.wmState.getRotation(displayId)
+                val rotationLayerExists = it.layerState.isVisible(
+                        ROTATION_COMPONENT.toLayerName())
+                val blackSurfaceLayerExists = it.layerState.isVisible(
+                        BLACK_SURFACE_COMPONENT.toLayerName())
+                val anyLayerAnimating = it.layerState.visibleLayers.any { layer ->
+                    !layer.transform.isSimpleRotation
+                }
+                Log.v(LOG_TAG, "currRotation($currRotation) " +
+                    "anyLayerAnimating($anyLayerAnimating) " +
+                    "blackSurfaceLayerExists($blackSurfaceLayerExists) " +
+                    "rotationLayerExists($rotationLayerExists)")
+                currRotation == rotation &&
+                    !anyLayerAnimating &&
+                    !rotationLayerExists &&
+                    !blackSurfaceLayerExists
             }
-            Log.v(LOG_TAG, "currRotation($currRotation) " +
-                "anyLayerAnimating($anyLayerAnimating) " +
-                "blackSurfaceLayerExists($blackSurfaceLayerExists) " +
-                "rotationLayerExists($rotationLayerExists)")
-            currRotation == rotation &&
-                !anyLayerAnimating &&
-                !rotationLayerExists &&
-                !blackSurfaceLayerExists
-        }
-
-    /**
-     * Wait for specific orientation for the default display.
-     * Values are ActivityInfo.ScreenOrientation
-     */
-    @JvmOverloads
-    fun waitForLastOrientation(
-        orientation: Int,
-        displayId: Int = Display.DEFAULT_DISPLAY
-    ): Boolean =
-        waitFor("LastOrientation: $orientation") {
-            val result = it.wmState.getOrientation(displayId)
-            Log.v(LOG_TAG, "Current: $result Expected: $orientation")
-            result == orientation
         }
 
     fun waitForActivityState(activity: ComponentName, activityState: String): Boolean {
@@ -206,13 +189,17 @@ open class WindowManagerStateHelper @JvmOverloads constructor(
      */
     fun waitForNavBarStatusBarVisible(): Boolean =
         waitFor("Navigation and Status bar to be visible") {
-            val navBarWindowVisible = it.wmState.isWindowVisible(NAV_BAR_WINDOW_NAME)
-            val statusBarWindowVisible = it.wmState.isWindowVisible(STATUS_BAR_WINDOW_NAME)
-            val navBarLayerVisible = it.layerState.isVisible(NAV_BAR_LAYER_NAME)
-            val navBarLayerAlpha = it.layerState.getLayerWithBuffer(NAV_BAR_LAYER_NAME)
+            val navBarWindowName = NAV_BAR_COMPONENT.toWindowName()
+            val navBarLayerName = NAV_BAR_COMPONENT.toLayerName()
+            val statusBarWindowName = STATUS_BAR_COMPONENT.toWindowName()
+            val statusBarLayerName = STATUS_BAR_COMPONENT.toLayerName()
+            val navBarWindowVisible = it.wmState.isWindowVisible(navBarWindowName)
+            val navBarLayerVisible = it.layerState.isVisible(navBarLayerName)
+            val navBarLayerAlpha = it.layerState.getLayerWithBuffer(navBarLayerName)
                 ?.color?.a ?: 0f
-            val statusBarLayerVisible = it.layerState.isVisible(STATUS_BAR_LAYER_NAME)
-            val statusBarLayerAlpha = it.layerState.getLayerWithBuffer(STATUS_BAR_LAYER_NAME)
+            val statusBarWindowVisible = it.wmState.isWindowVisible(statusBarWindowName)
+            val statusBarLayerVisible = it.layerState.isVisible(statusBarLayerName)
+            val statusBarLayerAlpha = it.layerState.getLayerWithBuffer(statusBarLayerName)
                 ?.color?.a ?: 0f
             val result = navBarWindowVisible &&
                 navBarLayerVisible &&
@@ -270,13 +257,6 @@ open class WindowManagerStateHelper @JvmOverloads constructor(
         }
     }
 
-    fun waitForPendingActivityContain(activity: ComponentName): Boolean {
-        val activityName: String = activity.toActivityName()
-        return waitFor("$activityName in pending list") {
-            it.wmState.pendingActivityContain(activityName)
-        }
-    }
-
     @JvmOverloads
     fun waitForAppTransitionIdle(displayId: Int = Display.DEFAULT_DISPLAY): Boolean =
         waitFor("app transition idle on Display $displayId") {
@@ -288,24 +268,15 @@ open class WindowManagerStateHelper @JvmOverloads constructor(
 
     fun waitForWindowSurfaceDisappeared(componentName: ComponentName): Boolean {
         val windowName = componentName.toWindowName()
-        return waitFor("$windowName's surface is disappeared") {
+        return waitFor("$windowName's surface disappears") {
             !it.wmState.isWindowSurfaceShown(windowName)
         }
     }
 
     fun waitForSurfaceAppeared(surfaceName: String): Boolean {
-        return waitFor("$surfaceName surface is appeared") {
+        return waitFor("$surfaceName surface appears") {
             it.wmState.isWindowSurfaceShown(surfaceName)
         }
-    }
-
-    fun waitWindowingModeTopFocus(
-        windowingMode: Int,
-        topFocus: Boolean,
-        message: String
-    ): Boolean = waitFor(message) {
-        val stack = it.wmState.getStandardStackByWindowingMode(windowingMode)
-        (stack != null && topFocus == (it.wmState.focusedStackId == stack.rootTaskId))
     }
 
     @JvmOverloads
@@ -425,11 +396,11 @@ open class WindowManagerStateHelper @JvmOverloads constructor(
      * Waits until the IME window and layer are visible
      */
     @JvmOverloads
-    fun waitImeWindowShown(displayId: Int = Display.DEFAULT_DISPLAY): Boolean =
+    fun waitImeShown(displayId: Int = Display.DEFAULT_DISPLAY): Boolean =
         waitFor("IME window shown") {
             val imeSurfaceShown = it.wmState.inputMethodWindowState?.isSurfaceShown == true
             val imeDisplay = it.wmState.inputMethodWindowState?.displayId
-            val imeLayerShown = it.layerState.isVisible(IME_LAYER_NAME)
+            val imeLayerShown = it.layerState.isVisible(IME_COMPONENT.toLayerName())
             val result = imeSurfaceShown && imeLayerShown && imeDisplay == displayId
 
             Log.v(LOG_TAG, "Current: $result " +
@@ -444,9 +415,9 @@ open class WindowManagerStateHelper @JvmOverloads constructor(
      * its visibility information is updated at a later state and is not reliable in
      * the trace
      */
-    fun waitImeWindowGone(): Boolean =
+    fun waitImeGone(): Boolean =
         waitFor("IME window gone") {
-            val imeLayerShown = it.layerState.isVisible(IME_LAYER_NAME)
+            val imeLayerShown = it.layerState.isVisible(IME_COMPONENT.toWindowName())
             Log.v(LOG_TAG, "imeLayerShown($imeLayerShown)")
             !imeLayerShown
         }
@@ -471,23 +442,26 @@ open class WindowManagerStateHelper @JvmOverloads constructor(
 
     companion object {
         @VisibleForTesting
-        const val NAV_BAR_WINDOW_NAME = "NavigationBar0"
+        @JvmStatic
+        val NAV_BAR_COMPONENT = ComponentName("", "NavigationBar0")
         @VisibleForTesting
-        const val STATUS_BAR_WINDOW_NAME = "StatusBar"
+        @JvmStatic
+        val STATUS_BAR_COMPONENT = ComponentName("", "StatusBar")
         @VisibleForTesting
-        const val NAV_BAR_LAYER_NAME = "$NAV_BAR_WINDOW_NAME#0"
+        @JvmStatic
+        val ROTATION_COMPONENT = ComponentName("", "RotationLayer")
         @VisibleForTesting
-        const val STATUS_BAR_LAYER_NAME = "$STATUS_BAR_WINDOW_NAME#0"
+        @JvmStatic
+        val BLACK_SURFACE_COMPONENT = ComponentName("", "BackColorSurface")
         @VisibleForTesting
-        const val ROTATION_LAYER_NAME = "RotationLayer#0"
+        @JvmStatic
+        val IME_COMPONENT = ComponentName("", "InputMethod")
         @VisibleForTesting
-        const val BLACK_SURFACE_LAYER_NAME = "BackColorSurface#0"
+        @JvmStatic
+        val SPLASH_SCREEN_COMPONENT = ComponentName("", "Splash Screen")
         @VisibleForTesting
-        const val IME_LAYER_NAME = "InputMethod#0"
-        @VisibleForTesting
-        const val SPLASH_SCREEN_NAME = "Splash Screen"
-        @VisibleForTesting
-        const val SNAPSHOT_WINDOW_NAME = "SnapshotStartingWindow"
+        @JvmStatic
+        val SNAPSHOT_COMPONENT = ComponentName("", "SnapshotStartingWindow")
     }
 
     data class Dump(

@@ -21,7 +21,7 @@ package com.android.server.wm.traces.common.layers
  */
 class LayerTraceEntryBuilder(
     timestamp: Any,
-    layers: List<Layer>,
+    layers: Array<Layer>,
     val hwcBlob: String = "",
     val where: String = ""
 ) {
@@ -31,7 +31,7 @@ class LayerTraceEntryBuilder(
     private val orphans = mutableListOf<Layer>()
     private val layers = setLayers(layers)
 
-    private fun setLayers(layers: List<Layer>): Map<Int, Layer> {
+    private fun setLayers(layers: Array<Layer>): Map<Int, Layer> {
         val result = mutableMapOf<Int, Layer>()
         layers.forEach { layer ->
             val id = layer.id

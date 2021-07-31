@@ -28,14 +28,29 @@ import com.android.server.wm.traces.common.ITrace
  * access internal Java/Android functionality
  *
  */
-open class WindowManagerTrace(
-    override val entries: List<WindowManagerState>,
-    override val source: String,
-    override val sourceChecksum: String
+data class WindowManagerTrace(
+    override val entries: Array<WindowManagerState>,
+    override val source: String
 ) : ITrace<WindowManagerState>,
-    List<WindowManagerState> by entries {
+    List<WindowManagerState> by entries.toList() {
     override fun toString(): String {
         return "WindowManagerTrace(Start: ${entries.first()}, " +
             "End: ${entries.last()})"
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is WindowManagerTrace) return false
+
+        if (!entries.contentEquals(other.entries)) return false
+        if (source != other.source) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = entries.contentHashCode()
+        result = 31 * result + source.hashCode()
+        return result
     }
 }

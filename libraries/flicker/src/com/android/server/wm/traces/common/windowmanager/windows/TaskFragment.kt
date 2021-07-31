@@ -30,14 +30,35 @@ open class TaskFragment(
     val minHeight: Int,
     windowContainer: WindowContainer
 ) : WindowContainer(windowContainer) {
-    val tasks: List<Task>
-        get() = this.children.reversed().filterIsInstance<Task>()
-    val taskFragments: List<TaskFragment>
-        get() = this.children.reversed().filterIsInstance<TaskFragment>()
-    val activities: List<Activity>
-        get() = this.children.reversed().filterIsInstance<Activity>()
+    val tasks: Array<Task>
+        get() = this.children.reversed().filterIsInstance<Task>().toTypedArray()
+    val taskFragments: Array<TaskFragment>
+        get() = this.children.reversed().filterIsInstance<TaskFragment>().toTypedArray()
+    val activities: Array<Activity>
+        get() = this.children.reversed().filterIsInstance<Activity>().toTypedArray()
 
     override fun toString(): String {
         return "${this::class.simpleName}: {$token $title} bounds=$bounds"
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is TaskFragment) return false
+
+        if (activityType != other.activityType) return false
+        if (displayId != other.displayId) return false
+        if (minWidth != other.minWidth) return false
+        if (minHeight != other.minHeight) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = super.hashCode()
+        result = 31 * result + activityType
+        result = 31 * result + displayId
+        result = 31 * result + minWidth
+        result = 31 * result + minHeight
+        return result
     }
 }

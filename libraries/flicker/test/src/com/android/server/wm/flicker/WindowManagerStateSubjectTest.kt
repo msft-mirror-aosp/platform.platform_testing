@@ -21,6 +21,8 @@ import com.android.server.wm.flicker.traces.FlickerSubjectException
 import com.android.server.wm.flicker.traces.windowmanager.WindowManagerStateSubject
 import com.android.server.wm.flicker.traces.windowmanager.WindowManagerTraceSubject.Companion.assertThat
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
+import com.android.server.wm.traces.parser.windowmanager.WindowManagerStateHelper
+import com.google.common.truth.Truth
 import org.junit.FixMethodOrder
 import org.junit.Test
 import org.junit.runners.MethodSorters
@@ -35,24 +37,36 @@ class WindowManagerStateSubjectTest {
     private val trace: WindowManagerTrace by lazy { readWmTraceFromFile("wm_trace_openchrome.pb") }
 
     @Test
+    fun exceptionContainsDebugInfo() {
+        val error = assertThrows(AssertionError::class.java) {
+            assertThat(trace).first().contains(IMAGINARY_COMPONENT)
+        }
+        Truth.assertThat(error).hasMessageThat().contains(IMAGINARY_COMPONENT.className)
+        Truth.assertThat(error).hasMessageThat().contains("Trace start")
+        Truth.assertThat(error).hasMessageThat().contains("Trace start")
+        Truth.assertThat(error).hasMessageThat().contains("Trace file")
+        Truth.assertThat(error).hasMessageThat().contains("Entry")
+    }
+
+    @Test
     fun canDetectAboveAppWindowVisibility_isVisible() {
         assertThat(trace)
             .entry(9213763541297)
-            .isAboveAppWindow("NavigationBar")
-            .isAboveAppWindow("ScreenDecorOverlay")
-            .isAboveAppWindow("StatusBar")
+            .isAboveAppWindow(WindowManagerStateHelper.NAV_BAR_COMPONENT)
+            .isAboveAppWindow(SCREEN_DECOR_COMPONENT)
+            .isAboveAppWindow(WindowManagerStateHelper.STATUS_BAR_COMPONENT)
     }
 
     @Test
     fun canDetectAboveAppWindowVisibility_isInvisible() {
         val subject = assertThat(trace).entry(9213763541297)
         var failure = assertThrows(AssertionError::class.java) {
-            subject.isAboveAppWindow("pip-dismiss-overlay")
+            subject.isAboveAppWindow(PIP_DISMISS_COMPONENT)
         }
         assertFailure(failure).factValue("Is Invisible").contains("pip-dismiss-overlay")
 
         failure = assertThrows(AssertionError::class.java) {
-            subject.isAboveAppWindow("NavigationBar", isVisible = false)
+            subject.isAboveAppWindow(WindowManagerStateHelper.NAV_BAR_COMPONENT, isVisible = false)
         }
         assertFailure(failure).factValue("Is Visible").contains("NavigationBar")
     }
@@ -62,8 +76,9 @@ class WindowManagerStateSubjectTest {
         val entry = assertThat(trace)
             .entry(9213763541297)
 
-        entry.frameRegion("StatusBar").coversAtLeast(Region(0, 0, 1440, 171))
-        entry.frameRegion("com.google.android.apps.nexuslauncher")
+        entry.frameRegion(WindowManagerStateHelper.STATUS_BAR_COMPONENT)
+                .coversAtLeast(Region(0, 0, 1440, 171))
+        entry.frameRegion(LAUNCHER_COMPONENT)
             .coversAtLeast(Region(0, 0, 1440, 2960))
     }
 
@@ -71,8 +86,9 @@ class WindowManagerStateSubjectTest {
     fun canDetectWindowCoversAtLeastRegion_smallerRegion() {
         val entry = assertThat(trace)
             .entry(9213763541297)
-        entry.frameRegion("StatusBar").coversAtLeast(Region(0, 0, 100, 100))
-        entry.frameRegion("com.google.android.apps.nexuslauncher")
+        entry.frameRegion(WindowManagerStateHelper.STATUS_BAR_COMPONENT)
+                .coversAtLeast(Region(0, 0, 100, 100))
+        entry.frameRegion(LAUNCHER_COMPONENT)
             .coversAtLeast(Region(0, 0, 100, 100))
     }
 
@@ -80,12 +96,13 @@ class WindowManagerStateSubjectTest {
     fun canDetectWindowCoversAtLeastRegion_largerRegion() {
         val subject = assertThat(trace).entry(9213763541297)
         var failure = assertThrows(FlickerSubjectException::class.java) {
-            subject.frameRegion("StatusBar").coversAtLeast(Region(0, 0, 1441, 171))
+            subject.frameRegion(WindowManagerStateHelper.STATUS_BAR_COMPONENT)
+                    .coversAtLeast(Region(0, 0, 1441, 171))
         }
         assertFailure(failure).factValue("Uncovered region").contains("SkRegion((1440,0,1441,171))")
 
         failure = assertThrows(FlickerSubjectException::class.java) {
-            subject.frameRegion("com.google.android.apps.nexuslauncher")
+            subject.frameRegion(LAUNCHER_COMPONENT)
                 .coversAtLeast(Region(0, 0, 1440, 2961))
         }
         assertFailure(failure).factValue("Uncovered region")
@@ -96,8 +113,9 @@ class WindowManagerStateSubjectTest {
     fun canDetectWindowCoversAtMostRegion_extactSize() {
         val entry = assertThat(trace)
             .entry(9213763541297)
-        entry.frameRegion("StatusBar").coversAtMost(Region(0, 0, 1440, 171))
-        entry.frameRegion("com.google.android.apps.nexuslauncher")
+        entry.frameRegion(WindowManagerStateHelper.STATUS_BAR_COMPONENT)
+                .coversAtMost(Region(0, 0, 1440, 171))
+        entry.frameRegion(LAUNCHER_COMPONENT)
             .coversAtMost(Region(0, 0, 1440, 2960))
     }
 
@@ -105,13 +123,14 @@ class WindowManagerStateSubjectTest {
     fun canDetectWindowCoversAtMostRegion_smallerRegion() {
         val subject = assertThat(trace).entry(9213763541297)
         var failure = assertThrows(FlickerSubjectException::class.java) {
-            subject.frameRegion("StatusBar").coversAtMost(Region(0, 0, 100, 100))
+            subject.frameRegion(WindowManagerStateHelper.STATUS_BAR_COMPONENT)
+                    .coversAtMost(Region(0, 0, 100, 100))
         }
         assertFailure(failure).factValue("Out-of-bounds region")
             .contains("SkRegion((100,0,1440,100)(0,100,1440,171))")
 
         failure = assertThrows(FlickerSubjectException::class.java) {
-            subject.frameRegion("com.google.android.apps.nexuslauncher")
+            subject.frameRegion(LAUNCHER_COMPONENT)
                 .coversAtMost(Region(0, 0, 100, 100))
         }
         assertFailure(failure).factValue("Out-of-bounds region")
@@ -123,8 +142,9 @@ class WindowManagerStateSubjectTest {
         val entry = assertThat(trace)
             .entry(9213763541297)
 
-        entry.frameRegion("StatusBar").coversAtMost(Region(0, 0, 1441, 171))
-        entry.frameRegion("com.google.android.apps.nexuslauncher")
+        entry.frameRegion(WindowManagerStateHelper.STATUS_BAR_COMPONENT)
+                .coversAtMost(Region(0, 0, 1441, 171))
+        entry.frameRegion(LAUNCHER_COMPONENT)
             .coversAtMost(Region(0, 0, 1440, 2961))
     }
 
@@ -132,18 +152,45 @@ class WindowManagerStateSubjectTest {
     fun canDetectBelowAppWindowVisibility() {
         assertThat(trace)
             .entry(9213763541297)
-            .containsNonAppWindow("wallpaper")
+            .containsNonAppWindow(WALLPAPER_COMPONENT)
     }
 
     @Test
     fun canDetectAppWindowVisibility() {
         assertThat(trace)
             .entry(9213763541297)
-            .containsAppWindow("com.google.android.apps.nexuslauncher")
+            .containsAppWindow(LAUNCHER_COMPONENT)
 
         assertThat(trace)
             .entry(9215551505798)
-            .containsAppWindow("com.android.chrome")
+            .containsAppWindow(CHROME_SPLASH_SCREEN_COMPONENT)
+    }
+
+    @Test
+    fun canDetectAppWindowVisibilitySubject() {
+        val trace = readWmTraceFromFile("wm_trace_launcher_visible_background.pb")
+        val firstEntry = assertThat(trace).first()
+        val appWindowNames = firstEntry.wmState.appWindows.map { it.name }
+        firstEntry.verify("has1AppWindow").that(appWindowNames).hasSize(3)
+        firstEntry.verify("has1AppWindow").that(appWindowNames)
+                .contains("com.android.server.wm.flicker.testapp/" +
+                        "com.android.server.wm.flicker.testapp.SimpleActivity")
+    }
+
+    @Test
+    fun canDetectLauncherVisibility() {
+        val trace = readWmTraceFromFile("wm_trace_launcher_visible_background.pb")
+        val subject = assertThat(trace)
+        val firstTrace = subject.first()
+        firstTrace.isInvisible(LAUNCHER_COMPONENT)
+
+        val lastTrace = subject.last()
+        lastTrace.isVisible(LAUNCHER_COMPONENT)
+
+        subject.isAppWindowInvisible(LAUNCHER_COMPONENT)
+                .then()
+                .isAppWindowVisible(LAUNCHER_COMPONENT)
+                .forAllEntries()
     }
 
     @Test
@@ -151,10 +198,10 @@ class WindowManagerStateSubjectTest {
         val failure = assertThrows(FlickerSubjectException::class.java) {
             assertThat(trace)
                 .entry(9213763541297)
-                .containsNonAppWindow("ImaginaryWindow")
+                .containsNonAppWindow(IMAGINARY_COMPONENT)
         }
-        assertFailure(failure).factValue("Could not find")
-            .contains("ImaginaryWindow")
+        assertFailure(failure).hasMessageThat()
+            .contains(IMAGINARY_COMPONENT.packageName)
     }
 
     @Test
@@ -162,18 +209,18 @@ class WindowManagerStateSubjectTest {
         val failure = assertThrows(FlickerSubjectException::class.java) {
             assertThat(trace)
                 .entry(9213763541297)
-                .containsNonAppWindow("InputMethod")
+                .containsNonAppWindow(WindowManagerStateHelper.IME_COMPONENT)
         }
         assertFailure(failure).factValue("Is Invisible")
-            .contains("InputMethod")
+            .contains(WindowManagerStateHelper.IME_COMPONENT.packageName)
     }
 
     @Test
     fun canDetectAppZOrder() {
         assertThat(trace)
             .entry(9215551505798)
-            .containsAppWindow("com.google.android.apps.nexuslauncher", isVisible = true)
-            .showsAppWindowOnTop("com.android.chrome")
+            .containsAppWindow(LAUNCHER_COMPONENT, isVisible = true)
+            .isAppWindowOnTop(CHROME_SPLASH_SCREEN_COMPONENT)
     }
 
     @Test
@@ -181,10 +228,18 @@ class WindowManagerStateSubjectTest {
         val failure = assertThrows(FlickerSubjectException::class.java) {
             assertThat(trace)
                 .entry(9215551505798)
-                .showsAppWindowOnTop("com.google.android.apps.nexuslauncher")
+                .isAppWindowOnTop(LAUNCHER_COMPONENT)
         }
         assertFailure(failure)
             .factValue("Found")
-            .contains("Splash Screen com.android.chrome")
+            .contains(CHROME_SPLASH_SCREEN_COMPONENT.packageName)
+    }
+
+    @Test
+    fun canDetectActivityVisibility() {
+        val trace = readWmTraceFromFile("wm_trace_split_screen.pb")
+        val lastEntry = assertThat(trace).last()
+        lastEntry.isVisible(SHELL_SPLIT_SCREEN_PRIMARY_COMPONENT)
+        lastEntry.isVisible(SHELL_SPLIT_SCREEN_SECONDARY_COMPONENT)
     }
 }

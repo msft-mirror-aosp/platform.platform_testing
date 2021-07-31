@@ -81,8 +81,6 @@ abstract class TraceMonitorTest<T : TransitionMonitor> {
         savedTrace = getTraceFile(result) ?: error("Could not find saved trace file")
         val testFile = savedTrace.toFile()
         Truth.assertThat(testFile.exists()).isTrue()
-        val calculatedChecksum = TraceMonitor.calculateChecksum(savedTrace)
-        Truth.assertThat(calculatedChecksum).isEqualTo(traceMonitor.checksum)
         val trace = Files.toByteArray(testFile)
         Truth.assertThat(trace.size).isGreaterThan(0)
         assertTrace(trace)

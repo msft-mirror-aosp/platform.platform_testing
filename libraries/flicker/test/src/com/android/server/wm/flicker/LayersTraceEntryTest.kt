@@ -36,11 +36,12 @@ class LayersTraceEntryTest {
         val error = assertThrows(AssertionError::class.java) {
             assertThat(layersTraceEntries)
                 .first()
-                .contains("ImaginaryLayer")
+                .contains(IMAGINARY_COMPONENT)
         }
-        Truth.assertThat(error).hasMessageThat().contains("Trace:")
-        Truth.assertThat(error).hasMessageThat().contains("Path: ")
-        Truth.assertThat(error).hasMessageThat().contains("Entry:")
+        Truth.assertThat(error).hasMessageThat().contains("Trace start")
+        Truth.assertThat(error).hasMessageThat().contains("Trace end")
+        Truth.assertThat(error).hasMessageThat().contains("Entry")
+        Truth.assertThat(error).hasMessageThat().contains("Trace file")
     }
 
     @Test
@@ -107,8 +108,8 @@ class LayersTraceEntryTest {
         Truth.assertThat(trace.entries.first().timestamp).isEqualTo(922839428857)
         Truth.assertThat(trace.entries.last().timestamp).isEqualTo(941432656959)
         Truth.assertThat(trace.entries.first().flattenedLayers).asList().hasSize(57)
-        val layers = trace.entries.first().rootLayers
-        Truth.assertThat(layers[0].children).hasSize(3)
+        val layers = trace.entries.first().children
+        Truth.assertThat(layers[0].children).asList().hasSize(3)
         Truth.assertThat(layers[1].children).isEmpty()
     }
 

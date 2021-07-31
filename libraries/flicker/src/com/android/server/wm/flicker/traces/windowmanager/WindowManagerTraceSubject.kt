@@ -16,6 +16,7 @@
 
 package com.android.server.wm.flicker.traces.windowmanager
 
+import android.content.ComponentName
 import com.android.server.wm.flicker.assertions.Assertion
 import com.android.server.wm.flicker.assertions.FlickerSubject
 import com.android.server.wm.flicker.traces.FlickerFailureStrategy
@@ -24,7 +25,9 @@ import com.android.server.wm.traces.common.Rect
 import com.android.server.wm.traces.common.Region
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 import com.android.server.wm.traces.common.windowmanager.windows.WindowState
+import com.android.server.wm.traces.parser.toWindowName
 import com.android.server.wm.traces.parser.windowmanager.WindowManagerStateHelper
+import com.google.common.truth.Fact
 import com.google.common.truth.FailureMetadata
 import com.google.common.truth.FailureStrategy
 import com.google.common.truth.StandardSubjectBuilder
@@ -55,46 +58,32 @@ import com.google.common.truth.Subject
  */
 class WindowManagerTraceSubject private constructor(
     fm: FailureMetadata,
-    val trace: WindowManagerTrace
+    val trace: WindowManagerTrace,
+    override val parent: WindowManagerTraceSubject?
 ) : FlickerTraceSubject<WindowManagerStateSubject>(fm, trace) {
-    override val defaultFacts: String = buildString {
-        if (trace.hasSource()) {
-            append("Path: ${trace.source}")
-            append("\n")
-        }
-        append("Trace: $trace")
-    }
+    override val selfFacts
+        get() = super.selfFacts.toMutableList()
+            .also {
+                if (trace.hasSource()) {
+                    it.add(Fact.fact("Trace file", trace.source))
+                }
+            }
 
     override val subjects by lazy {
-        trace.entries.map { WindowManagerStateSubject.assertThat(it, this) }
+        trace.entries.map { WindowManagerStateSubject.assertThat(it, this, this) }
     }
 
     /** {@inheritDoc} */
     override fun clone(): FlickerSubject {
-        return WindowManagerTraceSubject(fm, trace)
+        return WindowManagerTraceSubject(fm, trace, parent)
     }
 
-    /**
-     * Signal that the last assertion set is complete. The next assertion added will start a new
-     * set of assertions.
-     *
-     * E.g.: checkA().then().checkB()
-     *
-     * Will produce two sets of assertions (checkA) and (checkB) and checkB will only be checked
-     * after checkA passes.
-     */
-    fun then(): WindowManagerTraceSubject =
-        apply { startAssertionBlock() }
+    /** {@inheritDoc} */
+    override fun then(): WindowManagerTraceSubject = apply { super.then() }
 
-    /**
-     * Ignores the first entries in the trace, until the first assertion passes. If it reaches the
-     * end of the trace without passing any assertion, return a failure with the name/reason from
-     * the first assertion
-     *
-     * @return
-     */
-    fun skipUntilFirstAssertion(): WindowManagerTraceSubject =
-        apply { assertionsChecker.skipUntilFirstAssertion() }
+    /** {@inheritDoc} */
+    override fun skipUntilFirstAssertion(): WindowManagerTraceSubject =
+        apply { super.skipUntilFirstAssertion() }
 
     fun isEmpty(): WindowManagerTraceSubject = apply {
         check("Trace is empty").that(trace).isEmpty()
@@ -105,353 +94,440 @@ class WindowManagerTraceSubject private constructor(
     }
 
     /**
-     * Checks if the non-app window with title containing [partialWindowTitle] exists above the app
+     * @return List of [WindowStateSubject]s matching [partialWindowTitle] in the order they
+     *      appear on the trace
+     */
+    fun windowStates(partialWindowTitle: String): List<WindowStateSubject> {
+        return subjects
+            .map { it.windowState { windows -> windows.title.contains(partialWindowTitle) } }
+            .filter { it.isNotEmpty }
+    }
+
+    /**
+     * @return List of [WindowStateSubject]s matching [predicate] in the order they
+     *      appear on the trace
+     */
+    fun windowStates(predicate: (WindowState) -> Boolean): List<WindowStateSubject> {
+        return subjects
+            .map { it.windowState { window -> predicate(window) } }
+            .filter { it.isNotEmpty }
+    }
+
+    /**
+     * Checks if a [WindowState] with [WindowState.title] equal to [ComponentName.toWindowName]
+     * doesn't exist in the state
+     *
+     * @param activity Component name to search
+     * @param isOptional If this assertion is optional or must pass
+     */
+    @JvmOverloads
+    fun notContains(
+        activity: ComponentName,
+        isOptional: Boolean = false
+    ): WindowManagerTraceSubject = apply {
+        addAssertion("notContains(${activity.toWindowName()})", isOptional) {
+            it.notContains(activity, ignoreActivity = true)
+        }
+    }
+
+    /**
+     * Checks if the non-app window with title containing [activity] exists above the app
      * windows and is visible
      *
-     * @param partialWindowTitle window title to search
+     * @param activity Component to search
+     * @param isOptional If this assertion is optional or must pass
      */
-    fun showsAboveAppWindow(vararg partialWindowTitle: String): WindowManagerTraceSubject = apply {
-        addAssertion("showsAboveAppWindow($partialWindowTitle)") {
-            it.isAboveAppWindow(*partialWindowTitle)
+    @JvmOverloads
+    fun isAboveAppWindowVisible(
+        activity: ComponentName,
+        isOptional: Boolean = false
+    ): WindowManagerTraceSubject = apply {
+        addAssertion("isAboveAppWindowVisible(${activity.toWindowName()})", isOptional) {
+            it.isAboveAppWindow(activity)
         }
     }
 
     /**
-     * Checks if the non-app window with title containing [partialWindowTitle] exists above the app
+     * Checks if the non-app window with title containing [activity] exists above the app
      * windows and is invisible
      *
-     * @param partialWindowTitle window title to search
+     * @param activity Component to search
+     * @param isOptional If this assertion is optional or must pass
      */
-    fun hidesAboveAppWindow(vararg partialWindowTitle: String): WindowManagerTraceSubject = apply {
-        addAssertion("hidesAboveAppWindow($partialWindowTitle)") {
-            it.isAboveAppWindow(*partialWindowTitle, isVisible = false)
+    @JvmOverloads
+    fun isAboveAppWindowInvisible(
+        activity: ComponentName,
+        isOptional: Boolean = false
+    ): WindowManagerTraceSubject = apply {
+        addAssertion("isAboveAppWindowInvisible(${activity.toWindowName()})", isOptional) {
+            it.isAboveAppWindow(activity, isVisible = false)
         }
     }
 
     /**
-     * Checks if the non-app window with title containing [partialWindowTitle] exists below the app
+     * Checks if the non-app window with title containing [activity] exists below the app
      * windows and is visible
      *
-     * @param partialWindowTitle window title to search
+     * @param activity Component to search
+     * @param isOptional If this assertion is optional or must pass
      */
-    fun showsBelowAppWindow(vararg partialWindowTitle: String): WindowManagerTraceSubject = apply {
-        addAssertion("showsBelowAppWindow($partialWindowTitle)") {
-            it.isBelowAppWindow(*partialWindowTitle)
+    @JvmOverloads
+    fun isBelowAppWindowVisible(
+        activity: ComponentName,
+        isOptional: Boolean = false
+    ): WindowManagerTraceSubject = apply {
+        addAssertion("isBelowAppWindowVisible(${activity.toWindowName()})", isOptional) {
+            it.isBelowAppWindow(activity)
         }
     }
 
     /**
-     * Checks if the non-app window with title containing [partialWindowTitle] exists below the app
+     * Checks if the non-app window with title containing [activity] exists below the app
      * windows and is invisible
      *
-     * @param partialWindowTitle window title to search
+     * @param activity Component to search
+     * @param isOptional If this assertion is optional or must pass
      */
-    fun hidesBelowAppWindow(vararg partialWindowTitle: String): WindowManagerTraceSubject = apply {
-        addAssertion("hidesBelowAppWindow($partialWindowTitle)") {
-            it.isBelowAppWindow(*partialWindowTitle, isVisible = false)
+    @JvmOverloads
+    fun isBelowAppWindowInvisible(
+        activity: ComponentName,
+        isOptional: Boolean = false
+    ): WindowManagerTraceSubject = apply {
+        addAssertion("isBelowAppWindowInvisible(${activity.toWindowName()})", isOptional) {
+            it.isBelowAppWindow(activity, isVisible = false)
         }
     }
 
     /**
-     * Checks if non-app window with title containing the [partialWindowTitle] exists above or
+     * Checks if non-app window with title containing the [activity] exists above or
      * below the app windows and is visible
      *
-     * @param partialWindowTitle window title to search
+     * @param activity Component to search
+     * @param isOptional If this assertion is optional or must pass
      */
-    fun showsNonAppWindow(vararg partialWindowTitle: String): WindowManagerTraceSubject = apply {
-        addAssertion("showsNonAppWindow($partialWindowTitle)") {
-            it.containsNonAppWindow(*partialWindowTitle)
+    @JvmOverloads
+    fun isNonAppWindowVisible(
+        activity: ComponentName,
+        isOptional: Boolean = false
+    ): WindowManagerTraceSubject = apply {
+        addAssertion("isNonAppWindowVisible(${activity.toWindowName()})", isOptional) {
+            it.containsNonAppWindow(activity)
         }
     }
 
     /**
-     * Checks if non-app window with title containing the [partialWindowTitle] exists above or
+     * Checks if non-app window with title containing the [activity] exists above or
      * below the app windows and is invisible
      *
-     * @param partialWindowTitle window title to search
+     * @param activity Component to search
+     * @param isOptional If this assertion is optional or must pass
      */
-    fun hidesNonAppWindow(vararg partialWindowTitle: String): WindowManagerTraceSubject = apply {
-        addAssertion("hidesNonAppWindow($partialWindowTitle)") {
-            it.containsNonAppWindow(*partialWindowTitle, isVisible = false)
+    @JvmOverloads
+    fun isNonAppWindowInvisible(
+        activity: ComponentName,
+        isOptional: Boolean = false
+    ): WindowManagerTraceSubject = apply {
+        addAssertion("isNonAppWindowInvisible(${activity.toWindowName()})", isOptional) {
+            it.containsNonAppWindow(activity, isVisible = false)
         }
     }
 
     /**
-     * Checks if an app window with title containing the [partialWindowTitles] is on top
+     * Checks if app window with title containing the [activity] is on top
      *
-     * @param partialWindowTitles window title to search
+     * @param activity Component to search
+     * @param isOptional If this assertion is optional or must pass
      */
-    fun showsAppWindowOnTop(vararg partialWindowTitles: String): WindowManagerTraceSubject = apply {
-        val assertionName = "showsAppWindowOnTop(${partialWindowTitles.joinToString(",")})"
-        addAssertion(assertionName) {
-            check("No window titles to search")
-                .that(partialWindowTitles)
-                .isNotEmpty()
-            it.showsAppWindowOnTop(*partialWindowTitles)
+    @JvmOverloads
+    fun isAppWindowOnTop(
+        activity: ComponentName,
+        isOptional: Boolean = false
+    ): WindowManagerTraceSubject = apply {
+        addAssertion("isAppWindowOnTop(${activity.toWindowName()})", isOptional) {
+            it.isAppWindowOnTop(activity)
         }
     }
 
     /**
-     * Checks if app window with title containing the [partialWindowTitle] is not on top
+     * Checks if app window with title containing the [activity] is not on top
      *
-     * @param partialWindowTitle window title to search
+     * @param activity Component to search
+     * @param isOptional If this assertion is optional or must pass
      */
-    fun appWindowNotOnTop(vararg partialWindowTitle: String): WindowManagerTraceSubject = apply {
-        addAssertion("hidesAppWindowOnTop($partialWindowTitle)") {
-            it.containsAppWindow(*partialWindowTitle, isVisible = false)
+    @JvmOverloads
+    fun appWindowNotOnTop(
+        activity: ComponentName,
+        isOptional: Boolean = false
+    ): WindowManagerTraceSubject = apply {
+        addAssertion("appWindowNotOnTop(${activity.toWindowName()})", isOptional) {
+            it.containsAppWindow(activity, isVisible = false)
         }
     }
 
     /**
-     * Checks if app window with title containing the [partialWindowTitle] is visible
+     * Checks if app window with title containing the [activity] is visible
      *
-     * @param partialWindowTitle window title to search
+     * @param activity Component to search
+     * @param isOptional If this assertion is optional or must pass
+     * @param ignoreActivity If the activity check should be ignored or not
      */
-    fun showsAppWindow(vararg partialWindowTitle: String): WindowManagerTraceSubject = apply {
-        addAssertion("showsAppWindow($partialWindowTitle)") {
-            it.containsAppWindow(*partialWindowTitle, isVisible = true)
+    @JvmOverloads
+    fun isAppWindowVisible(
+        activity: ComponentName,
+        isOptional: Boolean = false,
+        ignoreActivity: Boolean = false
+    ): WindowManagerTraceSubject = apply {
+        addAssertion("isAppWindowVisible(${activity.toWindowName()})", isOptional) {
+            it.containsAppWindow(activity, isVisible = true, ignoreActivity = ignoreActivity)
         }
     }
 
     /**
-     * Checks if app window with title containing the [partialWindowTitle] is invisible
+     * Checks if app window with title containing the [activity] is invisible
      *
-     * @param partialWindowTitle window title to search
+     * @param activity Component to search
+     * @param isOptional If this assertion is optional or must pass
+     * @param ignoreActivity If the activity check should be ignored or not
      */
-    fun hidesAppWindow(vararg partialWindowTitle: String): WindowManagerTraceSubject = apply {
-        addAssertion("hidesAppWindow($partialWindowTitle)") {
-            it.containsAppWindow(*partialWindowTitle, isVisible = false)
+    @JvmOverloads
+    fun isAppWindowInvisible(
+        activity: ComponentName,
+        isOptional: Boolean = false,
+        ignoreActivity: Boolean = false
+    ): WindowManagerTraceSubject = apply {
+        addAssertion("isAppWindowInvisible(${activity.toWindowName()})", isOptional) {
+            it.containsAppWindow(activity, isVisible = false, ignoreActivity = ignoreActivity)
         }
     }
 
     /**
-     * Checks if no app windows containing the [partialWindowTitles] overlap with each other.
+     * Checks if no app windows containing the [activity] overlap with each other.
      *
-     * @param partialWindowTitles partial titles of windows to check
+     * @param activity Component to search
      */
-    fun noWindowsOverlap(vararg partialWindowTitles: String): WindowManagerTraceSubject = apply {
-        val repr = partialWindowTitles.joinToString(", ")
-        require(partialWindowTitles.size > 1) {
-            "Must give more than one window to check! (Given $repr)"
-        }
+    fun noWindowsOverlap(vararg activity: ComponentName): WindowManagerTraceSubject = apply {
+        val repr = activity.joinToString(", ") { it.toWindowName() }
+        verify("Must give more than one window to check! (Given $repr)")
+                .that(activity)
+                .hasLength(1)
         addAssertion("noWindowsOverlap($repr)") {
-            it.noWindowsOverlap(*partialWindowTitles)
+            it.noWindowsOverlap(*activity)
         }
     }
 
     /**
-     * Checks if the window named [aboveWindowTitle] is above the one named [belowWindowTitle] in
+     * Checks if the window named [aboveWindow] is above the one named [belowWindow] in
      * z-order.
      *
-     * @param aboveWindowTitle partial name of the expected top window
-     * @param belowWindowTitle partial name of the expected bottom window
+     * @param aboveWindow Expected top window
+     * @param belowWindow Expected bottom window
      */
     fun isAboveWindow(
-        aboveWindowTitle: String,
-        belowWindowTitle: String
+        aboveWindow: ComponentName,
+        belowWindow: ComponentName
     ): WindowManagerTraceSubject = apply {
+        val aboveWindowTitle = aboveWindow.toWindowName()
+        val belowWindowTitle = belowWindow.toWindowName()
         require(aboveWindowTitle != belowWindowTitle)
         addAssertion("$aboveWindowTitle is above $belowWindowTitle") {
-            it.isAboveWindow(aboveWindowTitle, belowWindowTitle)
+            it.isAboveWindow(aboveWindow, belowWindow)
         }
     }
 
     /**
-     * Asserts that the visible area covered by the first [WindowState] with [WindowState.title]
-     * containing [partialWindowTitle] covers at least [testRegion], that is, if its area of the
-     * window's bounds cover each point in the region.
+     * Asserts the visible area covered by the [WindowState]s matching [activity] covers at least
+     * [testRegion], that is, if its area of the window's bounds cover each point in the region.
      *
-     * @param partialWindowTitle Name of the layer to search
+     * @param activity Component to search
      * @param testRegion Expected visible area of the window
      */
     fun coversAtLeast(
         testRegion: Region,
-        partialWindowTitle: String
+        activity: ComponentName?
     ): WindowManagerTraceSubject = apply {
-        addAssertion("coversAtLeastRegion($partialWindowTitle, $testRegion)") {
-            it.frameRegion(partialWindowTitle).coversAtLeast(testRegion)
+        addAssertion("coversAtLeastRegion(${activity?.toWindowName()}, $testRegion)") {
+            it.frameRegion(activity).coversAtLeast(testRegion)
         }
     }
 
     /**
-     * Asserts that the visible area covered by the first [WindowState] with [WindowState.title]
-     * containing [partialWindowTitle] covers at least [testRegion], that is, if its area of the
-     * window's bounds cover each point in the region.
+     * Asserts the visible area covered by the [WindowState]s matching [activity] covers at least
+     * [testRegion], that is, if its area of the window's bounds cover each point in the region.
      *
-     * @param partialWindowTitle Name of the layer to search
+     * @param activity Component to search
      * @param testRegion Expected visible area of the window
      */
     fun coversAtLeast(
         testRegion: android.graphics.Region,
-        partialWindowTitle: String
+        activity: ComponentName?
     ): WindowManagerTraceSubject = apply {
-        addAssertion("coversAtLeastRegion($partialWindowTitle, $testRegion)") {
-            it.frameRegion(partialWindowTitle).coversAtLeast(testRegion)
+        addAssertion("coversAtLeastRegion(${activity?.toWindowName()}, $testRegion)") {
+            it.frameRegion(activity).coversAtLeast(testRegion)
         }
     }
 
     /**
-     * Asserts that the visible area covered by the first [WindowState] with [WindowState.title]
-     * containing [partialWindowTitle] covers at least [testRect], that is, if its area of the
-     * window's bounds cover each point in the region.
+     * Asserts the visible area covered by the [WindowState]s matching [activity] covers at least
+     * [testRect], that is, if its area of the window's bounds cover each point in the region.
      *
-     * @param partialWindowTitle Name of the layer to search
+     * @param activity Component to search
      * @param testRect Expected visible area of the window
      */
     fun coversAtLeast(
         testRect: android.graphics.Rect,
-        partialWindowTitle: String
+        activity: ComponentName?
     ): WindowManagerTraceSubject = apply {
-        addAssertion("coversAtLeastRegion($partialWindowTitle, $testRect)") {
-            it.frameRegion(partialWindowTitle).coversAtLeast(testRect)
+        addAssertion("coversAtLeastRegion(${activity?.toWindowName()}, $testRect)") {
+            it.frameRegion(activity).coversAtLeast(testRect)
         }
     }
 
     /**
-     * Asserts that the visible area covered by the first [WindowState] with [WindowState.title]
-     * containing [partialWindowTitle] covers at least [testRect], that is, if its area of the
-     * window's bounds cover each point in the region.
+     * Asserts the visible area covered by the [WindowState]s matching [activity] covers at least
+     * [testRect], that is, if its area of the window's bounds cover each point in the region.
      *
-     * @param partialWindowTitle Name of the layer to search
+     * @param activity Component to search
      * @param testRect Expected visible area of the window
      */
     fun coversAtLeast(
         testRect: Rect,
-        partialWindowTitle: String
+        activity: ComponentName?
     ): WindowManagerTraceSubject = apply {
-        addAssertion("coversAtLeastRegion($partialWindowTitle, $testRect)") {
-            it.frameRegion(partialWindowTitle).coversAtLeast(testRect)
+        addAssertion("coversAtLeastRegion(${activity?.toWindowName()}, $testRect)") {
+            it.frameRegion(activity).coversAtLeast(testRect)
         }
     }
 
     /**
-     * Asserts that the visible area covered by the first [WindowState] with [WindowState.title]
-     * containing [partialWindowTitle] covers at most [testRegion], that is, if the area of the
-     * window state bounds don't cover any point outside of [testRegion].
+     * Asserts the visible area covered by the [WindowState]s matching [activity] covers at most
+     * [testRegion], that is, if the area of the window state bounds don't cover any point outside
+     * of [testRegion].
      *
-     * @param partialWindowTitle Name of the layer to search
+     * @param activity Component to search
      * @param testRegion Expected visible area of the window
      */
     fun coversAtMost(
         testRegion: Region,
-        partialWindowTitle: String
+        activity: ComponentName?
     ): WindowManagerTraceSubject = apply {
-        addAssertion("coversAtMostRegion($partialWindowTitle, $testRegion)") {
-            it.frameRegion(partialWindowTitle).coversAtMost(testRegion)
+        addAssertion("coversAtMostRegion(${activity?.toWindowName()}, $testRegion)") {
+            it.frameRegion(activity).coversAtMost(testRegion)
         }
     }
 
     /**
-     * Asserts that the visible area covered by the first [WindowState] with [WindowState.title]
-     * containing [partialWindowTitle] covers at most [testRegion], that is, if the area of the
-     * window state bounds don't cover any point outside of [testRegion].
+     * Asserts the visible area covered by the [WindowState]s matching [activity] covers at most
+     * [testRegion], that is, if the area of the window state bounds don't cover any point outside
+     * of [testRegion].
      *
-     * @param partialWindowTitle Name of the layer to search
+     * @param activity Component to search
      * @param testRegion Expected visible area of the window
      */
     fun coversAtMost(
         testRegion: android.graphics.Region,
-        partialWindowTitle: String
+        activity: ComponentName?
     ): WindowManagerTraceSubject = apply {
-        addAssertion("coversAtMostRegion($partialWindowTitle, $testRegion)") {
-            it.frameRegion(partialWindowTitle).coversAtMost(testRegion)
+        addAssertion("coversAtMostRegion(${activity?.toWindowName()}, $testRegion)") {
+            it.frameRegion(activity).coversAtMost(testRegion)
         }
     }
 
     /**
-     * Asserts that the visible area covered by the first [WindowState] with [WindowState.title]
-     * containing [partialWindowTitle] covers at most [testRect], that is, if the area of the
-     * window state bounds don't cover any point outside of [testRect].
+     * Asserts the visible area covered by the [WindowState]s matching [activity] covers at most
+     * [testRect], that is, if the area of the window state bounds don't cover any point outside
+     * of [testRect].
      *
-     * @param partialWindowTitle Name of the layer to search
+     * @param activity Component to search
      * @param testRect Expected visible area of the window
      */
     fun coversAtMost(
         testRect: Rect,
-        partialWindowTitle: String
+        activity: ComponentName?
     ): WindowManagerTraceSubject = apply {
-        addAssertion("coversAtMostRegion($partialWindowTitle, $testRect)") {
-            it.frameRegion(partialWindowTitle).coversAtMost(testRect)
+        addAssertion("coversAtMostRegion(${activity?.toWindowName()}, $testRect)") {
+            it.frameRegion(activity).coversAtMost(testRect)
         }
     }
 
     /**
-     * Asserts that the visible area covered by the first [WindowState] with [WindowState.title]
-     * containing [partialWindowTitle] covers at most [testRect], that is, if the area of the
-     * window state bounds don't cover any point outside of [testRect].
+     * Asserts the visible area covered by the [WindowState]s matching [activity] covers at most
+     * [testRect], that is, if the area of the window state bounds don't cover any point outside
+     * of [testRect].
      *
-     * @param partialWindowTitle Name of the layer to search
+     * @param activity Component to search
      * @param testRect Expected visible area of the window
      */
     fun coversAtMost(
         testRect: android.graphics.Rect,
-        partialWindowTitle: String
+        activity: ComponentName?
     ): WindowManagerTraceSubject = apply {
-        addAssertion("coversAtMostRegion($partialWindowTitle, $testRect)") {
-            it.frameRegion(partialWindowTitle).coversAtMost(testRect)
+        addAssertion("coversAtMostRegion(${activity?.toWindowName()}, $testRect)") {
+            it.frameRegion(activity).coversAtMost(testRect)
         }
     }
 
     /**
-     * Asserts that the visible area covered by the first [WindowState] with [WindowState.title]
-     * containing [partialWindowTitle] covers exactly [testRegion].
+     * Asserts the visible area covered by the [WindowState]s matching [activity] covers exactly
+     * [testRegion].
      *
-     * @param partialWindowTitle Name of the layer to search
+     * @param activity Component to search
      * @param testRegion Expected visible area of the window
      */
     fun coversExactly(
         testRegion: android.graphics.Region,
-        partialWindowTitle: String
+        activity: ComponentName?
     ): WindowManagerTraceSubject = apply {
-        addAssertion("coversExactly($partialWindowTitle, $testRegion)") {
-            it.frameRegion(partialWindowTitle).coversExactly(testRegion)
+        addAssertion("coversExactly(${activity?.toWindowName()}, $testRegion)") {
+            it.frameRegion(activity).coversExactly(testRegion)
         }
     }
 
     /**
-     * Asserts that the visible area covered by the first [WindowState] with [WindowState.title]
-     * containing [partialWindowTitle] covers exactly [testRect].
+     * Asserts the visible area covered by the [WindowState]s matching [activity] covers exactly
+     * [testRegion].
      *
-     * @param partialWindowTitle Name of the layer to search
+     * @param activity Component to search
      * @param testRect Expected visible area of the window
      */
     fun coversExactly(
         testRect: Rect,
-        partialWindowTitle: String
+        activity: ComponentName?
     ): WindowManagerTraceSubject = apply {
-        addAssertion("coversExactly($partialWindowTitle, $testRect)") {
-            it.frameRegion(partialWindowTitle).coversExactly(testRect)
+        addAssertion("coversExactly(${activity?.toWindowName()}, $testRect)") {
+            it.frameRegion(activity).coversExactly(testRect)
         }
     }
 
     /**
-     * Asserts that the visible area covered by the first [WindowState] with [WindowState.title]
-     * containing [partialWindowTitle] covers exactly [testRect].
+     * Asserts the visible area covered by the [WindowState]s matching [activity] covers exactly
+     * [testRect].
      *
-     * @param partialWindowTitle Name of the layer to search
+     * @param activity Component to search
      * @param testRect Expected visible area of the window
      */
     fun coversExactly(
         testRect: android.graphics.Rect,
-        partialWindowTitle: String
+        activity: ComponentName?
     ): WindowManagerTraceSubject = apply {
-        addAssertion("coversExactly($partialWindowTitle, $testRect)") {
-            it.frameRegion(partialWindowTitle).coversExactly(testRect)
+        addAssertion("coversExactly(${activity?.toWindowName()}, $testRect)") {
+            it.frameRegion(activity).coversExactly(testRect)
         }
     }
 
     /**
      * Checks that all visible layers are shown for more than one consecutive entry
      */
+    @JvmOverloads
     fun visibleWindowsShownMoreThanOneConsecutiveEntry(
-        ignoreWindows: List<String> = listOf(WindowManagerStateHelper.SPLASH_SCREEN_NAME,
-            WindowManagerStateHelper.SNAPSHOT_WINDOW_NAME)
+        ignoreWindows: List<ComponentName> = listOf(
+            WindowManagerStateHelper.SPLASH_SCREEN_COMPONENT,
+            WindowManagerStateHelper.SNAPSHOT_COMPONENT)
     ): WindowManagerTraceSubject = apply {
         visibleEntriesShownMoreThanOneConsecutiveTime { subject ->
             subject.wmState.windowStates
                 .filter { it.isVisible }
                 .filter {
-                    ignoreWindows.none { windowName -> windowName in it.title }
+                    ignoreWindows.none { windowName -> windowName.toWindowName() in it.title }
                 }
                 .map { it.name }
                 .toSet()
@@ -463,8 +539,9 @@ class WindowManagerTraceSubject private constructor(
      */
     operator fun invoke(
         name: String,
+        isOptional: Boolean = false,
         assertion: Assertion<WindowManagerStateSubject>
-    ): WindowManagerTraceSubject = apply { addAssertion(name, assertion) }
+    ): WindowManagerTraceSubject = apply { addAssertion(name, isOptional, assertion) }
 
     /**
      * Run the assertions for all trace entries within the specified time range
@@ -486,8 +563,10 @@ class WindowManagerTraceSubject private constructor(
         /**
          * Boiler-plate Subject.Factory for WmTraceSubject
          */
-        private val FACTORY: Factory<Subject, WindowManagerTrace> =
-            Factory { fm, subject -> WindowManagerTraceSubject(fm, subject) }
+        private fun getFactory(
+            parent: WindowManagerTraceSubject?
+        ): Factory<Subject, WindowManagerTrace> =
+            Factory { fm, subject -> WindowManagerTraceSubject(fm, subject, parent) }
 
         /**
          * Creates a [WindowManagerTraceSubject] representing a WindowManager trace,
@@ -496,10 +575,14 @@ class WindowManagerTraceSubject private constructor(
          * @param trace WindowManager trace
          */
         @JvmStatic
-        fun assertThat(trace: WindowManagerTrace): WindowManagerTraceSubject {
+        @JvmOverloads
+        fun assertThat(
+            trace: WindowManagerTrace,
+            parent: WindowManagerTraceSubject? = null
+        ): WindowManagerTraceSubject {
             val strategy = FlickerFailureStrategy()
             val subject = StandardSubjectBuilder.forCustomFailureStrategy(strategy)
-                .about(FACTORY)
+                .about(getFactory(parent))
                 .that(trace) as WindowManagerTraceSubject
             strategy.init(subject)
             return subject
@@ -509,6 +592,8 @@ class WindowManagerTraceSubject private constructor(
          * Static method for getting the subject factory (for use with assertAbout())
          */
         @JvmStatic
-        fun entries(): Factory<Subject, WindowManagerTrace> = FACTORY
+        fun entries(
+            parent: WindowManagerTraceSubject?
+        ): Factory<Subject, WindowManagerTrace> = getFactory(parent)
     }
 }

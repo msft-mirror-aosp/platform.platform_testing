@@ -16,6 +16,7 @@
 
 package com.android.server.wm.traces.common.layers
 
+import com.android.server.wm.traces.common.FloatFormatter
 import com.android.server.wm.traces.common.RectF
 
 open class Transform(val type: Int?, val matrix: Matrix) {
@@ -100,6 +101,8 @@ open class Transform(val type: Int?, val matrix: Matrix) {
         return "$transformType ${matrix.prettyPrint()}"
     }
 
+    override fun toString(): String = prettyPrint()
+
     fun apply(bounds: RectF?): RectF {
         return multiplyRect(matrix, bounds ?: RectF.EMPTY)
     }
@@ -116,7 +119,13 @@ open class Transform(val type: Int?, val matrix: Matrix) {
         val dtdy: Float,
         val ty: Float
     ) {
-        fun prettyPrint(): String = "dsdx:$dsdx   dtdx:$dtdx   dsdy:$dsdy   dtdy:$dtdy"
+        fun prettyPrint(): String {
+            val dsdx = FloatFormatter.format(dsdx)
+            val dtdx = FloatFormatter.format(dtdx)
+            val dsdy = FloatFormatter.format(dsdy)
+            val dtdy = FloatFormatter.format(dtdy)
+            return "dsdx:$dsdx   dtdx:$dtdx   dsdy:$dsdy   dtdy:$dtdy"
+        }
     }
 
     private data class Vec2(val x: Float, val y: Float)
@@ -172,5 +181,23 @@ open class Transform(val type: Int?, val matrix: Matrix) {
         fun Int.isFlagSet(bits: Int): Boolean {
             return this and bits == bits
         }
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is Transform) return false
+
+        if (type != other.type) return false
+        if (matrix != other.matrix) return false
+        if (isSimpleRotation != other.isSimpleRotation) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = type ?: 0
+        result = 31 * result + matrix.hashCode()
+        result = 31 * result + isSimpleRotation.hashCode()
+        return result
     }
 }

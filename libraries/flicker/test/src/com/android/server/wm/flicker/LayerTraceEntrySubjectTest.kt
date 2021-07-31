@@ -19,6 +19,8 @@ package com.android.server.wm.flicker
 import android.graphics.Region
 import com.android.server.wm.flicker.traces.layers.LayerTraceEntrySubject
 import com.android.server.wm.flicker.traces.layers.LayersTraceSubject
+import com.android.server.wm.traces.parser.toWindowName
+import com.android.server.wm.traces.parser.windowmanager.WindowManagerStateHelper
 import com.google.common.truth.Truth
 import org.junit.FixMethodOrder
 import org.junit.Test
@@ -36,28 +38,30 @@ class LayerTraceEntrySubjectTest {
         val error = assertThrows(AssertionError::class.java) {
             LayersTraceSubject.assertThat(layersTraceEntries)
                 .first()
-                .contains("ImaginaryLayer")
+                .contains(IMAGINARY_COMPONENT)
         }
-        Truth.assertThat(error).hasMessageThat().contains("Trace:")
-        Truth.assertThat(error).hasMessageThat().contains("Path: ")
-        Truth.assertThat(error).hasMessageThat().contains("Entry:")
+        Truth.assertThat(error).hasMessageThat().contains(IMAGINARY_COMPONENT.className)
+        Truth.assertThat(error).hasMessageThat().contains("Trace start")
+        Truth.assertThat(error).hasMessageThat().contains("Trace start")
+        Truth.assertThat(error).hasMessageThat().contains("Trace file")
+        Truth.assertThat(error).hasMessageThat().contains("Entry")
     }
 
     @Test
     fun testCanInspectBeginning() {
         val layersTraceEntries = readLayerTraceFromFile("layers_trace_launch_split_screen.pb")
         LayerTraceEntrySubject.assertThat(layersTraceEntries.entries.first())
-            .isVisible("NavigationBar0#0")
-            .notContains("DockedStackDivider#0")
-            .isVisible("NexusLauncherActivity#0")
+            .isVisible(WindowManagerStateHelper.NAV_BAR_COMPONENT)
+            .notContains(DOCKER_STACK_DIVIDER_COMPONENT)
+            .isVisible(LAUNCHER_COMPONENT)
     }
 
     @Test
     fun testCanInspectEnd() {
         val layersTraceEntries = readLayerTraceFromFile("layers_trace_launch_split_screen.pb")
         LayerTraceEntrySubject.assertThat(layersTraceEntries.entries.last())
-            .isVisible("NavigationBar0#0")
-            .isVisible("DockedStackDivider#0")
+            .isVisible(WindowManagerStateHelper.NAV_BAR_COMPONENT)
+            .isVisible(DOCKER_STACK_DIVIDER_COMPONENT)
     }
 
     // b/75276931
@@ -82,17 +86,16 @@ class LayerTraceEntrySubjectTest {
     // Visible region tests
     @Test
     fun canTestLayerVisibleRegion_layerDoesNotExist() {
-        val imaginaryLayer = "ImaginaryLayer"
         val trace = readLayerTraceFromFile("layers_trace_emptyregion.pb")
         val expectedVisibleRegion = Region(0, 0, 1, 1)
         val error = assertThrows(AssertionError::class.java) {
             LayersTraceSubject.assertThat(trace).entry(937229257165)
-                .visibleRegion(imaginaryLayer)
+                .visibleRegion(IMAGINARY_COMPONENT)
                 .coversExactly(expectedVisibleRegion)
         }
         assertFailure(error)
             .factValue("Could not find")
-            .isEqualTo(imaginaryLayer)
+                .contains(IMAGINARY_COMPONENT.toWindowName())
     }
 
     @Test
@@ -101,7 +104,7 @@ class LayerTraceEntrySubjectTest {
         val expectedVisibleRegion = Region(0, 0, 1, 1)
         val error = assertThrows(AssertionError::class.java) {
             LayersTraceSubject.assertThat(trace).entry(937126074082)
-                .visibleRegion("DockedStackDivider#0")
+                .visibleRegion(DOCKER_STACK_DIVIDER_COMPONENT)
                 .coversExactly(expectedVisibleRegion)
         }
         assertFailure(error)
@@ -115,7 +118,7 @@ class LayerTraceEntrySubjectTest {
         val expectedVisibleRegion = Region(0, 0, 1, 1)
         val error = assertThrows(AssertionError::class.java) {
             LayersTraceSubject.assertThat(trace).entry(935346112030)
-                .visibleRegion("SimpleActivity#0")
+                .visibleRegion(SIMPLE_APP_COMPONENT)
                 .coversExactly(expectedVisibleRegion)
         }
         assertFailure(error)
@@ -129,7 +132,7 @@ class LayerTraceEntrySubjectTest {
         val expectedVisibleRegion = Region(0, 0, 1440, 99)
         val error = assertThrows(AssertionError::class.java) {
             LayersTraceSubject.assertThat(trace).entry(937126074082)
-                .visibleRegion("StatusBar")
+                .visibleRegion(WindowManagerStateHelper.STATUS_BAR_COMPONENT)
                 .coversExactly(expectedVisibleRegion)
         }
         assertFailure(error)
@@ -142,7 +145,7 @@ class LayerTraceEntrySubjectTest {
         val trace = readLayerTraceFromFile("layers_trace_launch_split_screen.pb")
         val expectedVisibleRegion = Region(0, 0, 1080, 145)
         LayersTraceSubject.assertThat(trace).entry(90480846872160)
-            .visibleRegion("StatusBar")
+            .visibleRegion(WindowManagerStateHelper.STATUS_BAR_COMPONENT)
             .coversExactly(expectedVisibleRegion)
     }
 
@@ -151,7 +154,7 @@ class LayerTraceEntrySubjectTest {
         val trace = readLayerTraceFromFile("layers_trace_invalid_layer_visibility.pb")
         val error = assertThrows(AssertionError::class.java) {
             LayersTraceSubject.assertThat(trace).entry(252794268378458)
-                .isVisible("com.android.server.wm.flicker.testapp")
+                .isVisible(SIMPLE_APP_COMPONENT)
         }
         assertFailure(error)
             .factValue("Is Invisible")
@@ -167,7 +170,8 @@ class LayerTraceEntrySubjectTest {
         entry.visibleRegion(useCompositionEngineRegionOnly = false)
             .coversExactly(Region(0, 0, 1440, 2960))
 
-        entry.visibleRegion("InputMethod#0", useCompositionEngineRegionOnly = false)
+        entry.visibleRegion(WindowManagerStateHelper.IME_COMPONENT,
+            useCompositionEngineRegionOnly = false)
             .coversExactly(Region(0, 171, 1440, 2960))
     }
 }

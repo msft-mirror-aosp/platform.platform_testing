@@ -79,9 +79,9 @@ class UiDeviceExtensionsTest {
     @Test
     fun canParseCurrentDeviceState() {
         val currState = this.getCurrStateDump()
-        Truth.assertThat(currState.wmTrace?.entries).hasSize(1)
+        Truth.assertThat(currState.wmTrace?.entries ?: emptyArray()).asList().hasSize(1)
         Truth.assertThat(currState.wmTrace?.entries?.first()?.windowStates).isNotEmpty()
-        Truth.assertThat(currState.layersTrace?.entries).hasSize(1)
+        Truth.assertThat(currState.layersTrace?.entries ?: emptyArray()).asList().hasSize(1)
         Truth.assertThat(currState.layersTrace?.entries?.first()?.flattenedLayers).isNotEmpty()
     }
 }

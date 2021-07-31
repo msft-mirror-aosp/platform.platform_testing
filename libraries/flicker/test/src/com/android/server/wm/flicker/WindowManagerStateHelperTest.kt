@@ -31,6 +31,7 @@ import com.android.server.wm.traces.common.layers.Layer
 import com.android.server.wm.traces.common.layers.LayerTraceEntryBuilder
 import com.android.server.wm.traces.common.layers.Transform
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
+import com.android.server.wm.traces.parser.toLayerName
 import com.android.server.wm.traces.parser.windowmanager.WindowManagerStateHelper
 import com.google.common.truth.Truth
 import org.junit.FixMethodOrder
@@ -84,7 +85,7 @@ class WindowManagerStateHelperTest {
             visibleRegion = Region(rect.toRect()),
             activeBuffer = Buffer(1, 1, 1, 1),
             flags = 0,
-            _bounds = rect,
+            bounds = rect,
             color = Color(0f, 0f, 0f, 1f),
             _isOpaque = true,
             shadowRadius = 0f,
@@ -92,7 +93,7 @@ class WindowManagerStateHelperTest {
             type = "",
             _screenBounds = rect,
             transform = transform,
-            _sourceBounds = rect,
+            sourceBounds = rect,
             currFrame = 0,
             effectiveScalingMode = 0,
             bufferTransform = transform,
@@ -106,15 +107,16 @@ class WindowManagerStateHelperTest {
         )
     }
 
-    private fun createImaginaryVisibleLayers(names: List<String>): List<Layer> {
+    private fun createImaginaryVisibleLayers(names: List<ComponentName>): Array<Layer> {
         val root = createImaginaryLayer("root", -1, id = "root".hashCode(), parentId = -1)
         val layers = mutableListOf(root)
         names.forEachIndexed { index, name ->
             layers.add(
-                createImaginaryLayer(name, index, id = name.hashCode(), parentId = root.id)
+                createImaginaryLayer(name.toLayerName(), index, id = name.hashCode(),
+                        parentId = root.id)
             )
         }
-        return layers
+        return layers.toTypedArray()
     }
 
     private fun WindowManagerTrace.asSupplier(
@@ -124,11 +126,11 @@ class WindowManagerStateHelperTest {
         return {
             if (iterator.hasNext()) {
                 val wmState = iterator.next()
-                val layerList = mutableListOf(WindowManagerStateHelper.STATUS_BAR_LAYER_NAME,
-                    WindowManagerStateHelper.NAV_BAR_LAYER_NAME)
+                val layerList = mutableListOf(WindowManagerStateHelper.STATUS_BAR_COMPONENT,
+                    WindowManagerStateHelper.NAV_BAR_COMPONENT)
 
                 if (wmState.inputMethodWindowState?.isSurfaceShown == true) {
-                    layerList.add(WindowManagerStateHelper.IME_LAYER_NAME)
+                    layerList.add(WindowManagerStateHelper.IME_COMPONENT)
                 }
                 val layerTraceEntry = LayerTraceEntryBuilder(timestamp = 0,
                     layers = createImaginaryVisibleLayers(layerList)).build()
@@ -151,30 +153,32 @@ class WindowManagerStateHelperTest {
         try {
             WindowManagerStateSubject
                 .assertThat(helper.wmState)
-                .isImeWindowVisible(Display.DEFAULT_DISPLAY)
+                .isVisible(WindowManagerStateHelper.IME_COMPONENT)
             error("IME state should not be available")
         } catch (e: AssertionError) {
-            helper.waitImeWindowShown(Display.DEFAULT_DISPLAY)
+            helper.waitImeShown(Display.DEFAULT_DISPLAY)
             WindowManagerStateSubject
                 .assertThat(helper.wmState)
-                .isImeWindowVisible(Display.DEFAULT_DISPLAY)
+                .isVisible(WindowManagerStateHelper.IME_COMPONENT)
         }
     }
 
     @Test
     fun canFailImeNotShown() {
-        val supplier = readWmTraceFromFile("wm_trace_ime.pb").asSupplier()
-        val helper = TestWindowManagerStateHelper(supplier, retryIntervalMs = 1)
+        val trace = readWmTraceFromFile("wm_trace_ime.pb")
+        val supplier = trace.asSupplier()
+        val helper = TestWindowManagerStateHelper(supplier, numRetries = trace.entries.size,
+                retryIntervalMs = 1)
         try {
             WindowManagerStateSubject
                 .assertThat(helper.wmState)
-                .isImeWindowVisible()
+                .isVisible(WindowManagerStateHelper.IME_COMPONENT)
             error("IME state should not be available")
         } catch (e: AssertionError) {
-            helper.waitImeWindowShown()
+            helper.waitImeShown()
             WindowManagerStateSubject
                 .assertThat(helper.wmState)
-                .isImeWindowInvisible()
+                .isVisible(WindowManagerStateHelper.IME_COMPONENT)
         }
     }
 
@@ -293,26 +297,6 @@ class WindowManagerStateHelperTest {
         WindowManagerStateSubject
             .assertThat(helper.wmState)
             .hasRotation(Surface.ROTATION_0)
-    }
-
-    @Test
-    fun canFailRotationNotReached() {
-        val trace = readWmTraceFromFile("wm_trace_rotation.pb")
-        val supplier = trace.asSupplier()
-        val helper = TestWindowManagerStateHelper(supplier, numRetries = trace.entries.size,
-            retryIntervalMs = 1)
-        WindowManagerStateSubject
-            .assertThat(helper.wmState)
-            .hasRotation(Surface.ROTATION_0)
-        try {
-            helper.waitForRotation(Surface.ROTATION_90)
-            error("Should not have reached orientation ${Surface.ROTATION_90}")
-        } catch (e: IllegalStateException) {
-            WindowManagerStateSubject
-                .assertThat(helper.wmState)
-                .isNotRotation(Surface.ROTATION_90)
-                .hasRotation(Surface.ROTATION_0)
-        }
     }
 
     @Test
