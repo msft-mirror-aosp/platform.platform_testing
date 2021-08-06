@@ -16,14 +16,14 @@
 
 package com.android.server.wm.flicker.service
 
-import com.android.server.wm.traces.common.layers.LayerTraceEntry
-import com.android.server.wm.traces.common.windowmanager.WindowManagerState
+import com.android.server.wm.traces.common.layers.LayersTrace
+import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 
 /**
  * Synchronizes traces and invoke all concrete tag producers.
  */
 class TaggingEngine {
-    fun tag(wmState: WindowManagerState, sfState: LayerTraceEntry) {
+    fun tag(wmTrace: WindowManagerTrace, sfTrace: LayersTrace) {
         // TODO: Synchronize traces and invoke all concrete tag producers
     }
 }

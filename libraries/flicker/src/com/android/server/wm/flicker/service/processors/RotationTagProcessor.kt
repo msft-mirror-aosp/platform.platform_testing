@@ -17,11 +17,11 @@
 package com.android.server.wm.flicker.service.processors
 
 import com.android.server.wm.flicker.service.ITagProcessor
-import com.android.server.wm.traces.common.layers.LayerTraceEntry
-import com.android.server.wm.traces.common.windowmanager.WindowManagerState
+import com.android.server.wm.traces.common.layers.LayersTrace
+import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 
 class RotationTagProcessor : ITagProcessor {
-    override fun addTags(wmState: WindowManagerState, sfState: LayerTraceEntry) {
+    override fun addTags(wmTrace: WindowManagerTrace, sfTrace: LayersTrace) {
         // TODO: Implement one basic tag processor
     }
 }
