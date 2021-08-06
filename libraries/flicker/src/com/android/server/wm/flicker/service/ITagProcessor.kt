@@ -16,8 +16,8 @@
 
 package com.android.server.wm.flicker.service
 
-import com.android.server.wm.traces.common.layers.LayerTraceEntry
-import com.android.server.wm.traces.common.windowmanager.WindowManagerState
+import com.android.server.wm.traces.common.layers.LayersTrace
+import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 
 /**
  * Interface for the WM Flicker Tag Processor component.
@@ -29,5 +29,5 @@ interface ITagProcessor {
      * @param wmTrace Window Manager trace
      * @param sfTrace Surface Flinger trace
      */
-    fun addTags(wmState: WindowManagerState, sfState: LayerTraceEntry)
+    fun addTags(wmTrace: WindowManagerTrace, sfTrace: LayersTrace)
 }

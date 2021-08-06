@@ -16,14 +16,14 @@
 
 package com.android.server.wm.flicker.service
 
-import com.android.server.wm.traces.common.layers.LayerTraceEntry
-import com.android.server.wm.traces.common.windowmanager.WindowManagerState
+import com.android.server.wm.traces.common.layers.LayersTrace
+import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 
 /**
  * The entry point for WM Flicker Service.
  */
 class FlickerService {
-    fun process(wmState: WindowManagerState, sfState: LayerTraceEntry) {
+    fun process(wmTrace: WindowManagerTrace, sfTrace: LayersTrace) {
         // TODO(b/195121852): Call the Tagging Engine and the Assertion Engine
     }
 }

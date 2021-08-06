@@ -16,14 +16,14 @@
 
 package com.android.server.wm.flicker.service
 
-import com.android.server.wm.traces.common.layers.LayerTraceEntry
-import com.android.server.wm.traces.common.windowmanager.WindowManagerState
+import com.android.server.wm.traces.common.layers.LayersTrace
+import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 
 /**
  * Invokes the configured detectors and summarizes the results.
  */
 class AssertionEngine {
-    fun analyze(wmState: WindowManagerState, sfState: LayerTraceEntry) {
+    fun analyze(wmTrace: WindowManagerTrace, sfTrace: LayersTrace) {
         // TODO(b/195121852): Invokes the configured detectors and summarizes the results
     }
 }
