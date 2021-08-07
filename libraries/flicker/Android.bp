@@ -95,5 +95,16 @@ java_library {
         "androidx.test.ext.junit",
         "platformprotosnano",
         "layersprotosnano",
+        "flicker-tags-proto",
     ],
+}
+
+java_library {
+    name: "flicker-tags-proto",
+    srcs: [
+        "**/*.proto",
+    ],
+    optimize: {
+        enabled: false
+    }
 }

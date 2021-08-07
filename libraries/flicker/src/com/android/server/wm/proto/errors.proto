@@ -1,0 +1,23 @@
+syntax = "proto2";
+
+package com.android.server.wm.flicker;
+
+// Each message has its own class file created.
+option java_multiple_files = true;
+
+message FlickerErrorProto {
+  required string stacktrace = 1;
+  required string message = 2;
+  optional int32 layerId = 3;
+  optional string windowToken = 4;
+  optional int32 taskId = 5;
+}
+
+message FlickerErrorStateProto {
+  required int64 timestamp = 1;
+  repeated FlickerErrorProto errors = 2;
+}
+
+message FlickerErrorTraceProto {
+  repeated FlickerErrorStateProto states = 1;
+}
