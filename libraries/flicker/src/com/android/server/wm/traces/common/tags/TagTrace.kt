@@ -17,7 +17,6 @@
 package com.android.server.wm.traces.common.tags
 
 import com.android.server.wm.traces.common.ITrace
-import java.io.Serializable
 
 /**
  * Holds the entire list of [TagState]s representing an entire trace that has been tagged.
@@ -28,7 +27,6 @@ data class TagTrace(
     override val entries: Array<TagState>,
     override val source: String
 ) : ITrace<TagState>,
-    Serializable,
     List<TagState> by entries.toList() {
     override fun toString(): String = "FlickerTagTrace(Start: ${entries.first()}, " +
             "End: ${entries.last()})"
