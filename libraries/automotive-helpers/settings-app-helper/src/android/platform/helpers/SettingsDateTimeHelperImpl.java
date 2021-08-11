@@ -57,7 +57,7 @@ public class SettingsDateTimeHelperImpl extends AbstractAutoStandardAppHelper
                         getResourceFromConfig(
                                 AutoConfigConstants.SETTINGS,
                                 AutoConfigConstants.DATE_AND_TIME_SETTINGS,
-                                AutoConfigConstants.AUTOMATIC_DATE_AND_TIME));
+                                AutoConfigConstants.SET_TIME_AUTOMATICALLY));
         if (autoDateTimeSwitchWidget.isChecked()) {
             clickAndWaitForWindowUpdate(
                     getApplicationConfig(AutoConfigConstants.SETTINGS_PACKAGE), autoDateTimeMenu);
@@ -144,7 +144,7 @@ public class SettingsDateTimeHelperImpl extends AbstractAutoStandardAppHelper
                         getResourceFromConfig(
                                 AutoConfigConstants.SETTINGS,
                                 AutoConfigConstants.DATE_AND_TIME_SETTINGS,
-                                AutoConfigConstants.AUTOMATIC_DATE_AND_TIME));
+                                AutoConfigConstants.SET_TIME_AUTOMATICALLY));
         if (autoDateTimeSwitchWidget.isChecked()) {
             clickAndWaitForWindowUpdate(
                     getApplicationConfig(AutoConfigConstants.SETTINGS_PACKAGE), autoDateTimeMenu);
@@ -183,7 +183,7 @@ public class SettingsDateTimeHelperImpl extends AbstractAutoStandardAppHelper
                         getResourceFromConfig(
                                 AutoConfigConstants.SETTINGS,
                                 AutoConfigConstants.DATE_AND_TIME_SETTINGS,
-                                AutoConfigConstants.AUTOMATIC_DATE_AND_TIME));
+                                AutoConfigConstants.SET_TIME_AUTOMATICALLY));
         if (autoDateTimeSwitchWidget.isChecked()) {
             clickAndWaitForWindowUpdate(
                     getApplicationConfig(AutoConfigConstants.SETTINGS_PACKAGE), autoDateTimeMenu);
@@ -304,7 +304,7 @@ public class SettingsDateTimeHelperImpl extends AbstractAutoStandardAppHelper
                         getResourceFromConfig(
                                 AutoConfigConstants.SETTINGS,
                                 AutoConfigConstants.DATE_AND_TIME_SETTINGS,
-                                AutoConfigConstants.AUTOMATIC_TIME_ZONE));
+                                AutoConfigConstants.SET_TIME_ZONE_AUTOMATICALLY));
         if (getAutoTimeZoneSwitchWidget().isChecked()) {
             clickAndWaitForWindowUpdate(
                     getApplicationConfig(AutoConfigConstants.SETTINGS_PACKAGE), autoTimeZoneMenu);
@@ -406,7 +406,7 @@ public class SettingsDateTimeHelperImpl extends AbstractAutoStandardAppHelper
                 getResourceFromConfig(
                         AutoConfigConstants.SETTINGS,
                         AutoConfigConstants.DATE_AND_TIME_SETTINGS,
-                        AutoConfigConstants.AUTOMATIC_DATE_AND_TIME));
+                        AutoConfigConstants.SET_TIME_AUTOMATICALLY));
     }
 
     private UiObject2 getAutoTimeZoneSwitchWidget() {
@@ -414,7 +414,7 @@ public class SettingsDateTimeHelperImpl extends AbstractAutoStandardAppHelper
                 getResourceFromConfig(
                         AutoConfigConstants.SETTINGS,
                         AutoConfigConstants.DATE_AND_TIME_SETTINGS,
-                        AutoConfigConstants.AUTOMATIC_TIME_ZONE));
+                        AutoConfigConstants.SET_TIME_ZONE_AUTOMATICALLY));
     }
 
     private UiObject2 getUseTwentyFourHourFormatSwitchWidget() {

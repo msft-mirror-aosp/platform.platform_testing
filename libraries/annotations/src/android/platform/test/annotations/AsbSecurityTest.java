@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 The Android Open Source Project
+ * Copyright (C) 2021 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,25 +22,13 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Marks the type of test with purpose of evaluating security vulnerabilities.
- *
+ * Marks the type of test with purpose of evaluating security vulnerabilities against the Android
+ * Security Bulletin (ASB).
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.TYPE})
-public @interface SecurityTest {
-
-    // Denotes the patch level when the test was introduced
-    /** @deprecated @see android.platform.test.annotations.AsbSecurityTest */
-    @Deprecated
-    String minPatchLevel() default "";
-
-    // Denotes the CVE ID(s), comma-separated, to which this test applies.
-    /** @deprecated @see android.platform.test.annotations.AsbSecurityTest */
-    @Deprecated
-    String cve() default "";
-
-    // Denotes the scope (platform/kernel/vendor) to which this test applies.
-    /** @deprecated @see android.platform.test.annotations.AsbSecurityTest */
-    @Deprecated
-    String scope() default "";
+public @interface AsbSecurityTest {
+    /** The CVE bug id which contains the ASA hotlists. */
+    long[] cveBugId();
 }
+
