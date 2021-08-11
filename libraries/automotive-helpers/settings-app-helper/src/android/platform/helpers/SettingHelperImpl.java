@@ -136,7 +136,7 @@ public class SettingHelperImpl extends AbstractAutoStandardAppHelper implements 
     /** {@inheritDoc} */
     @Override
     public void openQuickSettings() {
-        stopSettingsApplication();
+        pressHome();
         executeShellCommand(getApplicationConfig(AutoConfigConstants.OPEN_QUICK_SETTINGS_COMMAND));
         UiObject2 settingObject =
                 findUiObject(
@@ -314,7 +314,7 @@ public class SettingHelperImpl extends AbstractAutoStandardAppHelper implements 
                             AutoConfigConstants.PAGE_TITLE),
                     getResourceFromConfig(
                             AutoConfigConstants.SETTINGS,
-                            AutoConfigConstants.APPS_AND_NOTIFICATIONS_SETTINGS,
+                            AutoConfigConstants.APPS_SETTINGS,
                             AutoConfigConstants.PERMISSIONS_PAGE_TITLE)
                 };
         for (BySelector selector : selectors) {

@@ -58,17 +58,17 @@ public class SettingsSecurityHelperImpl extends AbstractAutoStandardAppHelper
             // CHOOSE_LOCK_TYPE is already open
             return;
         }
-        UiObject2 chooseLockTypeMenu =
+        UiObject2 profileLockMenu =
                 scrollAndFindUiObject(
                         getResourceFromConfig(
                                 AutoConfigConstants.SETTINGS,
                                 AutoConfigConstants.SECURITY_SETTINGS,
-                                AutoConfigConstants.CHOOSE_LOCK_TYPE));
-        if (chooseLockTypeMenu == null) {
+                                AutoConfigConstants.PROFILE_LOCK));
+        if (profileLockMenu == null) {
             throw new RuntimeException("Unable to find Choose a lock type menu.");
         }
         clickAndWaitForWindowUpdate(
-                getApplicationConfig(AutoConfigConstants.SETTINGS_PACKAGE), chooseLockTypeMenu);
+                getApplicationConfig(AutoConfigConstants.SETTINGS_PACKAGE), profileLockMenu);
     }
 
     private void typePasswordOnTextEditor(String password) {
