@@ -18,6 +18,7 @@ package android.platform.helpers;
 
 import android.app.Instrumentation;
 import android.content.ActivityNotFoundException;
+import android.os.SystemClock;
 import android.util.Log;
 
 import android.graphics.Rect;
@@ -41,11 +42,11 @@ public abstract class AbstractAutoStandardAppHelper extends AbstractStandardAppH
 
     private AutoJsonUtility mAutoJsonUtil;
 
-    private static final int UI_RESPONSE_WAIT_MS = 10000;
+    private static final int UI_RESPONSE_WAIT_MS = 5000;
     private static final float DEFAULT_SCROLL_PERCENT = 100f;
-    private static final int DEFAULT_SCROLL_TIME_MS = 1000;
+    private static final int DEFAULT_SCROLL_TIME_MS = 500;
 
-    private static final int MAX_SCROLLS = 10;
+    private static final int MAX_SCROLLS = 5;
 
     public AbstractAutoStandardAppHelper(Instrumentation instrumentation) {
         super(instrumentation);
@@ -136,6 +137,12 @@ public abstract class AbstractAutoStandardAppHelper extends AbstractStandardAppH
         mDevice.pressEnter();
     }
 
+    /** Press power button */
+    protected void pressPowerButton() {
+        executeShellCommand("input keyevent KEYCODE_POWER");
+        SystemClock.sleep(UI_RESPONSE_WAIT_MS);
+    }
+
     /** Wait for the device to be idle */
     protected void waitForIdle() {
         mDevice.waitForIdle();
@@ -162,24 +169,46 @@ public abstract class AbstractAutoStandardAppHelper extends AbstractStandardAppH
      */
     private boolean scroll(Direction direction, float percent, long timeMs, int index) {
         boolean canScrollMoreInGivenDircetion = false;
+        List<UiObject2> upButtons =
+                findUiObjects(
+                        getResourceFromConfig(
+                                AutoConfigConstants.SETTINGS,
+                                AutoConfigConstants.FULL_SETTINGS,
+                                AutoConfigConstants.UP_BUTTON));
+        List<UiObject2> downButtons =
+                findUiObjects(
+                        getResourceFromConfig(
+                                AutoConfigConstants.SETTINGS,
+                                AutoConfigConstants.FULL_SETTINGS,
+                                AutoConfigConstants.DOWN_BUTTON));
         List<UiObject2> scrollableObjects = findUiObjects(By.scrollable(true));
-        if (scrollableObjects == null || scrollableObjects.size() == 0) {
+        if (scrollableObjects == null || upButtons == null || scrollableObjects.size() == 0) {
             return canScrollMoreInGivenDircetion;
         }
-        if ((scrollableObjects.size() - 1) < index) {
+        if (upButtons.size() == 1 || (scrollableObjects.size() - 1) < index) {
             // reset index as it is invalid
             index = 0;
         }
-        UiObject2 scrollable = scrollableObjects.get(index);
-        if (scrollable != null) {
-            scrollable.setGestureMargins(
-                    getScrollableMargin(scrollable, false), // left
-                    getScrollableMargin(scrollable, true), // top
-                    getScrollableMargin(scrollable, false), // right
-                    getScrollableMargin(scrollable, true)); // bottom
-            int scrollSpeed = getScrollSpeed(scrollable, timeMs);
-            canScrollMoreInGivenDircetion =
-                    scrollable.scroll(direction, percent / 100, scrollSpeed);
+        if (upButtons != null) {
+            UiObject2 upButton = upButtons.get(index);
+            UiObject2 downButton = downButtons.get(index);
+            if (direction == Direction.UP) {
+                clickAndWaitForIdleScreen(upButton);
+            } else if (direction == Direction.DOWN) {
+                clickAndWaitForIdleScreen(downButton);
+            }
+        } else {
+            UiObject2 scrollable = scrollableObjects.get(index);
+            if (scrollable != null) {
+                scrollable.setGestureMargins(
+                        getScrollableMargin(scrollable, false), // left
+                        getScrollableMargin(scrollable, true), // top
+                        getScrollableMargin(scrollable, false), // right
+                        getScrollableMargin(scrollable, true)); // bottom
+                int scrollSpeed = getScrollSpeed(scrollable, timeMs);
+                canScrollMoreInGivenDircetion =
+                        scrollable.scroll(direction, percent / 100, scrollSpeed);
+            }
         }
         return canScrollMoreInGivenDircetion;
     }
@@ -217,7 +246,7 @@ public abstract class AbstractAutoStandardAppHelper extends AbstractStandardAppH
      * Scroll down from the top of the scrollable region to bottom of the scrollable region (i.e. by
      * one page).
      */
-    protected boolean scrollDownOnePage() {
+    public boolean scrollDownOnePage() {
         return scrollDownOnePage(0);
     }
 
@@ -233,7 +262,7 @@ public abstract class AbstractAutoStandardAppHelper extends AbstractStandardAppH
      * Scroll up from the bottom of the scrollable region to top of the scrollable region (i.e. by
      * one page).
      */
-    protected boolean scrollUpOnePage() {
+    public boolean scrollUpOnePage() {
         return scrollUpOnePage(0);
     }
 
@@ -394,6 +423,12 @@ public abstract class AbstractAutoStandardAppHelper extends AbstractStandardAppH
                 && AutoConfigConstants.TEXT.equals(configResource.getResourceType())) {
             return By.text(
                     Pattern.compile(configResource.getResourceValue(), Pattern.CASE_INSENSITIVE));
+        }
+
+        // TEXT_CONTAINS
+        if (configResource != null
+                && AutoConfigConstants.TEXT_CONTAINS.equals(configResource.getResourceType())) {
+            return By.textContains(configResource.getResourceValue());
         }
 
         // DESCRIPTION

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package android.platform.scenario;
+package android.platform.test.scenario;
 
 import android.os.SystemClock;
 import android.platform.test.rule.TestWatcher;
