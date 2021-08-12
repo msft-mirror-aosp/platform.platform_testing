@@ -36,6 +36,34 @@ fun Rect.toAndroidRect(): android.graphics.Rect {
 }
 
 /**
+ * Subtracts [other] region from this [this] region
+ */
+fun Region.minus(other: Region): android.graphics.Region = minus(other.toAndroidRegion())
+
+/**
+ * Subtracts [other] region from this [this] region
+ */
+fun Region.minus(other: android.graphics.Region): android.graphics.Region {
+    val thisRegion = this.toAndroidRegion()
+    thisRegion.op(other, android.graphics.Region.Op.XOR)
+    return thisRegion
+}
+
+/**
+ * Adds [other] region to this [this] region
+ */
+fun Region.plus(other: Region): android.graphics.Region = plus(other.toAndroidRegion())
+
+/**
+ * Adds [other] region to this [this] region
+ */
+fun Region.plus(other: android.graphics.Region): android.graphics.Region {
+    val thisRegion = this.toAndroidRegion()
+    thisRegion.op(other, android.graphics.Region.Op.XOR)
+    return thisRegion
+}
+
+/**
  * Obtains the layer name from the component name.
  *
  * See [ComponentName.toWindowName] for additional information

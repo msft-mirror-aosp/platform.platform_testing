@@ -22,6 +22,7 @@ import com.android.server.wm.flicker.traces.layers.LayersTraceSubject
 import com.android.server.wm.flicker.traces.layers.LayersTraceSubject.Companion.assertThat
 import com.android.server.wm.traces.common.Region
 import com.android.server.wm.traces.common.layers.LayersTrace
+import com.android.server.wm.traces.parser.minus
 import com.android.server.wm.traces.parser.windowmanager.WindowManagerStateHelper
 import com.google.common.truth.Truth
 import org.junit.FixMethodOrder
@@ -224,7 +225,39 @@ class LayersTraceSubjectTest {
             .isTrue()
     }
 
+    @Test
+    fun checkVisibleRegionAppMinusPipLayer() {
+        val layersTraceEntries = readLayerTraceFromFile("layers_trace_pip_wmshell.pb")
+        val subject = assertThat(layersTraceEntries).last()
+
+        try {
+            subject.visibleRegion(FIXED_APP).coversExactly(DISPLAY_REGION_ROTATED)
+            error("Layer is partially covered by a Pip layer and should " +
+                "not cover the device screen")
+        } catch (e: AssertionError) {
+            val pipRegion = subject.visibleRegion(PIP_APP).region
+            val expectedWithoutPip = DISPLAY_REGION_ROTATED.minus(pipRegion)
+            subject.visibleRegion(FIXED_APP)
+                    .coversExactly(expectedWithoutPip)
+        }
+    }
+
+    @Test
+    fun checkVisibleRegionAppPlusPipLayer() {
+        val layersTraceEntries = readLayerTraceFromFile("layers_trace_pip_wmshell.pb")
+        val subject = assertThat(layersTraceEntries).last()
+        val pipRegion = subject.visibleRegion(PIP_APP).region
+        subject.visibleRegion(FIXED_APP)
+                .plus(pipRegion)
+                .coversExactly(DISPLAY_REGION_ROTATED)
+    }
+
     companion object {
         private val DISPLAY_REGION = android.graphics.Region(0, 0, 1440, 2880)
+        private val DISPLAY_REGION_ROTATED = Region(0, 0, 2160, 1080)
+        private const val SHELL_APP_PACKAGE = "com.android.wm.shell.flicker.testapp"
+        private val FIXED_APP = ComponentName(SHELL_APP_PACKAGE,
+                "$SHELL_APP_PACKAGE.FixedActivity")
+        private val PIP_APP = ComponentName(SHELL_APP_PACKAGE, "$SHELL_APP_PACKAGE.PipActivity")
     }
 }
