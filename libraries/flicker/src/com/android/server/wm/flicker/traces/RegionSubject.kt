@@ -75,6 +75,34 @@ class RegionSubject(
     }
 
     /**
+     * Subtracts [other] from this subject [region]
+     */
+    fun minus(other: Region): RegionSubject = minus(other.toAndroidRegion())
+
+    /**
+     * Subtracts [other] from this subject [region]
+     */
+    fun minus(other: android.graphics.Region): RegionSubject {
+        val remainingRegion = android.graphics.Region(this.region)
+        remainingRegion.op(other, android.graphics.Region.Op.XOR)
+        return assertThat(remainingRegion, this)
+    }
+
+    /**
+     * Adds [other] to this subject [region]
+     */
+    fun plus(other: Region): RegionSubject = plus(other.toAndroidRegion())
+
+    /**
+     * Adds [other] to this subject [region]
+     */
+    fun plus(other: android.graphics.Region): RegionSubject {
+        val remainingRegion = android.graphics.Region(this.region)
+        remainingRegion.op(other, android.graphics.Region.Op.UNION)
+        return assertThat(remainingRegion, this)
+    }
+
+    /**
      * Asserts that the top and bottom coordinates of [RegionSubject.region] are smaller
      * or equal to those of [region].
      *
