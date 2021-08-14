@@ -60,6 +60,13 @@ public interface IPhotosHelper extends IAppHelper {
     public void goToMainScreen();
 
     /**
+     * Setup expectation: Photos is open.
+     *
+     * <p>This method will go to the top of the main screen.
+     */
+    public void goToTopOfMainScreen();
+
+    /**
      * Setup expectations: Photos is open.
      *
      * <p>This method will go to device folder screen.
@@ -142,6 +149,19 @@ public interface IPhotosHelper extends IAppHelper {
      */
     public boolean scrollPhotosGrid(
             UiObject2 container, Direction direction, float percentOfPhotoSize, int speed);
+
+    /**
+     * Setup expectations: Photos is open and a page contains pictures or albums is open.
+     *
+     * <p>This method will swipe to scroll the page in the specified direction.
+     *
+     * <p>This method needs to check the UI object additionally.
+     *
+     * @param container The container with scrollable elements.
+     * @param direction The direction of the scroll, must be UP or DOWN.
+     * @param percent The distance of scroll as a percentage of Photo size.
+     */
+    public void scrollPhotosGridBySwiping(UiObject2 container, Direction direction, float percent);
 
     /**
      * Setup expectation: Photos is open and a page contains pictures or albums is open.
