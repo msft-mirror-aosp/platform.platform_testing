@@ -13,30 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package android.platform.test.scenario.mediacenter.bluetooth;
 
+package android.platform.test.scenario.mediacenter;
+
+import android.platform.helpers.HelperAccessor;
+import android.platform.helpers.IAutoMediaHelper;
 import android.platform.test.scenario.annotation.Scenario;
-import android.support.test.uiautomator.UiDevice;
-import androidx.test.InstrumentationRegistry;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-import java.io.IOException;
-
-/** Opens Bluetooth application */
+/** Opens the Settings application and exits after. */
 @Scenario
 @RunWith(JUnit4.class)
-public class OpenMedia {
+public class OpenApp {
+    static HelperAccessor<IAutoMediaHelper> sHelper = new HelperAccessor<>(IAutoMediaHelper.class);
+
     @Test
-    public void testOpen() throws IOException {
-        UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
-                .executeShellCommand(
-                        "am start -a android.car.intent.action.MEDIA_TEMPLATE -e "
-                                + "android.car.intent.extra.MEDIA_COMPONENT "
-                                + "com.android.bluetooth"
-                                + "/com.android.bluetooth.avrcpcontroller"
-                                + ".BluetoothMediaBrowseService");
+    public void testOpen() {
+        sHelper.get().open();
     }
 }
