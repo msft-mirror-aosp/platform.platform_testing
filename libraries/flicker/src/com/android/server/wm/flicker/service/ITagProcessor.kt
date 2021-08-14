@@ -17,6 +17,7 @@
 package com.android.server.wm.flicker.service
 
 import com.android.server.wm.traces.common.layers.LayersTrace
+import com.android.server.wm.traces.common.tags.TagTrace
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 
 /**
@@ -27,7 +28,7 @@ interface ITagProcessor {
      * Adds tags to the received traces.
      *
      * @param wmTrace Window Manager trace
-     * @param sfTrace Surface Flinger trace
+     * @param layersTrace Surface Flinger trace
      */
-    fun addTags(wmTrace: WindowManagerTrace, sfTrace: LayersTrace)
+    fun generateTags(wmTrace: WindowManagerTrace, layersTrace: LayersTrace): TagTrace
 }

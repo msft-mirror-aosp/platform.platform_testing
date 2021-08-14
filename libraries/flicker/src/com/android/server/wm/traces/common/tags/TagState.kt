@@ -7,10 +7,12 @@ import com.android.server.wm.traces.common.prettyTimestamp
  * Holds the list of tags corresponding to a particular state at a particular time in trace.
  * @param timestamp Timestamp of the state
  * @param tags Array of tags contained in the state
+ * @param isFallback False indicate if the tag timestamp was found or true if a default tag is made
  */
 data class TagState(
     override val timestamp: Long,
-    val tags: Array<Tag>
+    val tags: Array<Tag>,
+    val isFallback: Boolean = false
 ) : ITraceEntry {
     override fun toString(): String = "FlickerTagState(timestamp=${prettyTimestamp(timestamp)}, " +
             "tags=$tags)"

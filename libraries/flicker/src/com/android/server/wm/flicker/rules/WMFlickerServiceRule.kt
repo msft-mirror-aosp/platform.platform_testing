@@ -16,6 +16,7 @@
 
 package com.android.server.wm.flicker.rules
 
+import com.android.server.wm.flicker.getDefaultFlickerOutputDir
 import com.android.server.wm.flicker.monitor.LayersTraceMonitor
 import com.android.server.wm.flicker.monitor.TraceMonitor
 import com.android.server.wm.flicker.monitor.TransitionMonitor.Companion.WINSCOPE_EXT
@@ -29,12 +30,14 @@ import org.junit.rules.TestWatcher
 import org.junit.runner.Description
 import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.Paths
 
 /**
  * Collect the WM and SF traces, parse them and call the WM Flicker Service after the test
  */
-open class WMFlickerServiceRule : TestWatcher() {
+open class WMFlickerServiceRule @JvmOverloads constructor(
+    private val outputDir: Path = getDefaultFlickerOutputDir(),
+    private val testTag: String = "fass"
+) : TestWatcher() {
     private val traceMonitors = mutableListOf<TraceMonitor>()
     protected var wmTrace: WindowManagerTrace? = null
     protected var layersTrace: LayersTrace? = null
@@ -97,11 +100,5 @@ open class WMFlickerServiceRule : TestWatcher() {
     private fun getLayersTrace(traceFilePath: Path): LayersTrace {
         val layersTraceByteArray: ByteArray = Files.readAllBytes(traceFilePath)
         return LayersTraceParser.parseFromTrace(layersTraceByteArray)
-    }
-
-    companion object {
-        @JvmStatic
-        private val outputDir = Paths.get("/sdcard/fass")
-        private val testTag = "fass"
     }
 }
