@@ -15,15 +15,57 @@
  */
 
 package com.android.server.wm.flicker.service
-
+import android.util.Log
+import com.android.server.wm.flicker.getDefaultFlickerOutputDir
+import com.android.server.wm.flicker.service.processors.TransitionProcessor
 import com.android.server.wm.traces.common.layers.LayersTrace
+import com.android.server.wm.traces.common.tags.TagState
+import com.android.server.wm.traces.common.tags.TagTrace
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
+import com.android.server.wm.traces.parser.tags.toProto
+import java.nio.file.Files.createDirectories
+import java.nio.file.Files.write
 
 /**
- * Synchronizes traces and invoke all concrete tag producers.
+ * Invokes all concrete tag producers and writes to a .winscope file
  */
 class TaggingEngine {
-    fun tag(wmTrace: WindowManagerTrace, sfTrace: LayersTrace) {
-        // TODO: Synchronize traces and invoke all concrete tag producers
+    private val transitions = listOf<TransitionProcessor>(
+        // TODO: Keep adding new transition processors to invoke
+    )
+
+    /**
+     * Generate tags denoting start and end points for all [transitions] within traces
+     * @param wmTrace - WindowManager trace
+     * @param sfTrace - SurfaceFlinger trace
+     */
+    fun tag(wmTrace: WindowManagerTrace, sfTrace: LayersTrace): TagTrace {
+        val allStates = transitions.flatMap {
+            it.generateTags(wmTrace, sfTrace).entries.asList()
+        }
+
+        /**
+         * Ensure all tag states with the same timestamp are merged
+         */
+        val tagStates = allStates.distinct()
+            .groupBy({ it.timestamp }, { it.tags.asList() })
+            .mapValues { TagState(it.key, it.value.flatten().toTypedArray()) }
+            .values.toTypedArray()
+
+        val tagTrace = TagTrace(tagStates, "")
+        writeFile(tagTrace)
+        return tagTrace
+    }
+
+    /**
+     * Stores the tagged traced in a .winscope file
+     */
+    private fun writeFile(tagTrace: TagTrace) {
+        val bytes = tagTrace.toProto().toByteArray()
+        val fileName = "${tagTrace.hashCode()}.winscope"
+        val outFile = getDefaultFlickerOutputDir().resolve(fileName)
+        Log.i("FLICKER_TAG_TRACE", outFile.toString())
+        createDirectories(getDefaultFlickerOutputDir())
+        write(outFile, bytes)
     }
 }

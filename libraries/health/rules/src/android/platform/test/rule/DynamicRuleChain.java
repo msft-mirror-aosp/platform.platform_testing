@@ -45,14 +45,26 @@ import java.util.List;
 public class DynamicRuleChain implements TestRule {
     private static final String LOG_TAG = DynamicRuleChain.class.getSimpleName();
 
-    @VisibleForTesting static final String RULES_OPTION = "dynamic-rules";
+    @VisibleForTesting static final String DEFAULT_RULES_OPTION = "dynamic-rules";
 
     @VisibleForTesting static final String RULES_PACKAGE = "android.platform.test.rule";
+
+    private String mRulesOptionName = DEFAULT_RULES_OPTION;
+
+    public DynamicRuleChain() {}
+
+    public DynamicRuleChain(String rulesOptionName) {
+        if (rulesOptionName == null || rulesOptionName.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Rules option name override must not be null or empty.");
+        }
+        mRulesOptionName = rulesOptionName;
+    }
 
     @Override
     public Statement apply(final Statement base, final Description description) {
         Bundle args = getArguments();
-        List<String> ruleNames = Arrays.asList(args.getString(RULES_OPTION, "").split(","));
+        List<String> ruleNames = Arrays.asList(args.getString(mRulesOptionName, "").split(","));
         // The inner rules need to be applied first, so reverse the class names first.
         Collections.reverse(ruleNames);
         // Instantiate rules and apply them one-by-one.
