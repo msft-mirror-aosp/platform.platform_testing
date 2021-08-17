@@ -13,25 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package android.platform.test.scenario.evs;
 
-import android.platform.helpers.HelperAccessor;
-import android.platform.helpers.IAutoCarEvsServiceHelper;
-import android.platform.test.scenario.annotation.Scenario;
+package android.platform.test.scenario.mediacenter;
 
-import org.junit.Test;
+import android.platform.test.scenario.AppStartupRunRule;
+import android.platform.test.microbenchmark.Microbenchmark;
+
+import org.junit.Rule;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 
-@Scenario
-@RunWith(JUnit4.class)
-public class OpenApp {
+@RunWith(Microbenchmark.class)
+public class OpenAppMicrobenchmark extends OpenApp {
 
-    static HelperAccessor<IAutoCarEvsServiceHelper> sHelper =
-            new HelperAccessor<>(IAutoCarEvsServiceHelper.class);
-
-    @Test
-    public void testOpen() {
-        sHelper.get().startEvsPreview();
-    }
+    @Rule public AppStartupRunRule mAppStartupRunRule = new AppStartupRunRule<>(sHelper.get());
 }
