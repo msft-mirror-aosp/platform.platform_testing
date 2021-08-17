@@ -16,7 +16,7 @@
 
 package com.android.server.wm.flicker.service
 
-import com.android.server.wm.flicker.assertions.FlickerAssertionError
+import com.android.server.wm.traces.common.errors.ErrorTrace
 import com.android.server.wm.traces.common.layers.LayersTrace
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 
@@ -28,8 +28,11 @@ interface IFlickerDetector {
      * Analyzes the tagged traces to detect flickers.
      *
      * @param wmTrace Window Manager trace
-     * @param sfTrace Surface Flinger trace
-     * @return A list containing all failures
+     * @param layersTrace Surface Flinger trace
+     * @return An error trace
      */
-    fun analyze(wmTrace: WindowManagerTrace, sfTrace: LayersTrace): List<FlickerAssertionError>
+    fun analyze(
+        wmTrace: WindowManagerTrace,
+        layersTrace: LayersTrace
+    ): ErrorTrace
 }

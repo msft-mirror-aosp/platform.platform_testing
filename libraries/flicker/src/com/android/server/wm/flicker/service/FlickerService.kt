@@ -16,14 +16,55 @@
 
 package com.android.server.wm.flicker.service
 
+import com.android.server.wm.traces.common.errors.ErrorTrace
 import com.android.server.wm.traces.common.layers.LayersTrace
+import com.android.server.wm.traces.common.tags.TagTrace
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 
 /**
- * The entry point for WM Flicker Service.
+ * Contains the logic for Flicker as a Service.
  */
 class FlickerService {
-    fun process(wmTrace: WindowManagerTrace, sfTrace: LayersTrace) {
-        // TODO(b/195121852): Call the Tagging Engine and the Assertion Engine
+    /**
+     * The entry point for WM Flicker Service.
+     *
+     * Calls the Tagging Engine and the Assertion Engine.
+     *
+     * @param wmTrace Window Manager trace
+     * @param layersTrace Surface Flinger trace
+     * @return A list containing all failures
+     */
+    fun process(
+        wmTrace: WindowManagerTrace,
+        layersTrace: LayersTrace
+    ): ErrorTrace {
+        val taggingEngine = TaggingEngine()
+        val tagTrace = taggingEngine.tag(wmTrace, layersTrace)
+        injectTags(wmTrace, layersTrace, tagTrace)
+
+        val assertionEngine = AssertionEngine()
+        return assertionEngine.analyze(wmTrace, layersTrace)
+    }
+
+    /**
+     * Connects the tags from [TagTrace] to [WindowManagerTrace] and [LayersTrace].
+     */
+    private fun injectTags(
+        wmTrace: WindowManagerTrace,
+        layersTrace: LayersTrace,
+        tagTrace: TagTrace
+    ) {
+        tagTrace.entries.forEach { state ->
+            state.tags.forEach {
+                if (it.taskId != -1) {
+                    val wmState = wmTrace.getEntry(timestamp = state.timestamp)
+                    wmState.addTag(it.transition)
+                }
+                if (it.layerId != -1) {
+                    val layersEntry = layersTrace.getEntry(timestamp = state.timestamp)
+                    layersEntry.addTag(it.transition)
+                }
+            }
+        }
     }
 }
