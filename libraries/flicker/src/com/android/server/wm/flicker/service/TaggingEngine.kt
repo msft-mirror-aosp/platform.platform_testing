@@ -15,14 +15,16 @@
  */
 
 package com.android.server.wm.flicker.service
+
 import android.util.Log
 import com.android.server.wm.flicker.getDefaultFlickerOutputDir
-import com.android.server.wm.flicker.service.processors.TransitionProcessor
+import com.android.server.wm.flicker.service.processors.AppLaunchProcessor
 import com.android.server.wm.traces.common.layers.LayersTrace
 import com.android.server.wm.traces.common.tags.TagState
 import com.android.server.wm.traces.common.tags.TagTrace
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 import com.android.server.wm.traces.parser.tags.toProto
+import java.io.IOException
 import java.nio.file.Files.createDirectories
 import java.nio.file.Files.write
 
@@ -30,18 +32,19 @@ import java.nio.file.Files.write
  * Invokes all concrete tag producers and writes to a .winscope file
  */
 class TaggingEngine {
-    private val transitions = listOf<TransitionProcessor>(
+    private val transitions = listOf<ITagProcessor>(
         // TODO: Keep adding new transition processors to invoke
+        AppLaunchProcessor()
     )
 
     /**
      * Generate tags denoting start and end points for all [transitions] within traces
      * @param wmTrace - WindowManager trace
-     * @param sfTrace - SurfaceFlinger trace
+     * @param layersTrace - SurfaceFlinger trace
      */
-    fun tag(wmTrace: WindowManagerTrace, sfTrace: LayersTrace): TagTrace {
+    fun tag(wmTrace: WindowManagerTrace, layersTrace: LayersTrace): TagTrace {
         val allStates = transitions.flatMap {
-            it.generateTags(wmTrace, sfTrace).entries.asList()
+            it.generateTags(wmTrace, layersTrace).entries.asList()
         }
 
         /**
@@ -62,10 +65,16 @@ class TaggingEngine {
      */
     private fun writeFile(tagTrace: TagTrace) {
         val bytes = tagTrace.toProto().toByteArray()
+        // TODO(b/196595789): Change the outputDir and testTag based on the test rule parameters
         val fileName = "${tagTrace.hashCode()}.winscope"
         val outFile = getDefaultFlickerOutputDir().resolve(fileName)
-        Log.i("FLICKER_TAG_TRACE", outFile.toString())
-        createDirectories(getDefaultFlickerOutputDir())
-        write(outFile, bytes)
+
+        try {
+            Log.i("FLICKER_TAG_TRACE", outFile.toString())
+            createDirectories(getDefaultFlickerOutputDir())
+            write(outFile, bytes)
+        } catch (e: IOException) {
+            throw RuntimeException("Unable to create trace file: ${e.message}", e)
+        }
     }
 }

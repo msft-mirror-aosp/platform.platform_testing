@@ -21,7 +21,6 @@ package com.android.server.wm.traces.parser.errors
 import com.android.server.wm.flicker.FlickerErrorProto
 import com.android.server.wm.flicker.FlickerErrorStateProto
 import com.android.server.wm.flicker.FlickerErrorTraceProto
-import com.android.server.wm.flicker.FlickerTagTraceProto
 import com.android.server.wm.traces.common.errors.ErrorState
 import com.android.server.wm.traces.common.errors.ErrorTrace
 import com.android.server.wm.traces.common.errors.Error
@@ -30,8 +29,8 @@ fun ErrorTrace.toProto(): FlickerErrorTraceProto = FlickerErrorTraceProto
     .newBuilder()
     .addAllStates(this.entries.map { it.toProto() })
     .setMagicNumber(
-        FlickerTagTraceProto.MagicNumber.MAGIC_NUMBER_H.number.toLong() shl 32 or
-            FlickerTagTraceProto.MagicNumber.MAGIC_NUMBER_L.number.toLong()
+        FlickerErrorTraceProto.MagicNumber.MAGIC_NUMBER_H.number.toLong() shl 32 or
+            FlickerErrorTraceProto.MagicNumber.MAGIC_NUMBER_L.number.toLong()
     )
     .build()
 

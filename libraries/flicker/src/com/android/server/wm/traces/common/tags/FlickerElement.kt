@@ -14,20 +14,20 @@
  * limitations under the License.
  */
 
-package com.android.server.wm.flicker.service
+package com.android.server.wm.traces.common.tags
 
 /**
  * Base class for common flicker components (WM and SF state) and saves the
  * list of flicker tags.
  */
-abstract class FlickerElement {
-    private val tags = mutableSetOf<TransitionTag>()
+open class FlickerElement {
+    private val tags = mutableSetOf<Transition>()
 
-    fun getTags(): Set<TransitionTag> {
+    fun getTags(): Set<Transition> {
         return tags
     }
 
-    fun addTag(tag: TransitionTag) {
+    fun addTag(tag: Transition) {
         tags.add(tag)
     }
 }

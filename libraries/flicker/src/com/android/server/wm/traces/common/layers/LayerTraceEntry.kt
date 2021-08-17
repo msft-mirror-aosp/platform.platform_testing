@@ -16,6 +16,7 @@
 
 package com.android.server.wm.traces.common.layers
 
+import com.android.server.wm.traces.common.tags.FlickerElement
 import com.android.server.wm.traces.common.ITraceEntry
 import com.android.server.wm.traces.common.prettyTimestamp
 
@@ -31,7 +32,7 @@ open class LayerTraceEntry constructor(
     val hwcBlob: String,
     val where: String,
     _rootLayers: Array<Layer>
-) : ITraceEntry {
+) : ITraceEntry, FlickerElement() {
     val isVisible = true
     val stableId: String get() = this::class.simpleName ?: error("Unable to determine class")
     val name: String get() = prettyTimestamp(timestamp)

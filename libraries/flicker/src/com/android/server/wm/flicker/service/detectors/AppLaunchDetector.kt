@@ -16,16 +16,28 @@
 
 package com.android.server.wm.flicker.service.detectors
 
-import com.android.server.wm.flicker.assertions.FlickerAssertionError
 import com.android.server.wm.flicker.service.IFlickerDetector
+import com.android.server.wm.traces.common.errors.Error
+import com.android.server.wm.traces.common.errors.ErrorState
+import com.android.server.wm.traces.common.errors.ErrorTrace
 import com.android.server.wm.traces.common.layers.LayersTrace
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 
 class AppLaunchDetector : IFlickerDetector {
     override fun analyze(
         wmTrace: WindowManagerTrace,
-        sfTrace: LayersTrace
-    ): List<FlickerAssertionError> {
-        return emptyList()
+        layersTrace: LayersTrace
+    ): ErrorTrace {
+        // TODO(b/196574615): Remove the mock data and add the assertions for App Launch
+        return ErrorTrace(arrayOf(ErrorState(
+            arrayOf(
+                Error(
+                    stacktrace = "test stacktrace",
+                    message = "Test message error",
+                    layerId = -1,
+                    windowToken = "",
+                    taskId = 2
+                )
+            ), wmTrace.entries[0].timestamp)), "")
     }
 }
