@@ -16,8 +16,6 @@
 package android.platform.test.rule;
 
 import static com.google.common.truth.Truth.assertThat;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.spy;
 
 import android.os.Bundle;
 
@@ -209,20 +207,16 @@ public class DynamicRuleChainTest {
     }
 
     private DynamicRuleChain createWithRuleNames(String... ruleNames) {
-        DynamicRuleChain chain = spy(new DynamicRuleChain());
         Bundle args = new Bundle();
         args.putString(DynamicRuleChain.DEFAULT_RULES_OPTION, String.join(",", ruleNames));
-        doReturn(args).when(chain).getArguments();
-        return chain;
+        return new DynamicRuleChain(args);
     }
 
     private DynamicRuleChain createWithRulesOptionNameAndRuleNames(
             String rulesOptionName, String... ruleNames) {
-        DynamicRuleChain chain = spy(new DynamicRuleChain(rulesOptionName));
         Bundle args = new Bundle();
         args.putString(rulesOptionName, String.join(",", ruleNames));
-        doReturn(args).when(chain).getArguments();
-        return chain;
+        return new DynamicRuleChain(rulesOptionName, args);
     }
 
     public static class Rule1 extends TestWatcher {
