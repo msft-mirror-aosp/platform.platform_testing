@@ -22,10 +22,10 @@ import android.media.ApplicationMediaCapabilities;
 import android.net.Uri;
 import android.util.Log;
 import android.media.MediaFormat;
-import android.media.MediaTranscodeManager;
-import android.media.MediaTranscodeManager.TranscodingRequest;
-import android.media.MediaTranscodeManager.TranscodingSession;
-import android.media.MediaTranscodeManager.VideoTranscodingRequest;
+import android.media.MediaTranscodingManager;
+import android.media.MediaTranscodingManager.TranscodingRequest;
+import android.media.MediaTranscodingManager.TranscodingSession;
+import android.media.MediaTranscodingManager.VideoTranscodingRequest;
 import static org.junit.Assert.assertNotNull;
 
 import androidx.test.InstrumentationRegistry;
@@ -40,7 +40,7 @@ import java.util.concurrent.Executors;
 public class BackgroundTranscodingStressTestMode extends InstrumentationRunListener {
     private static final String TAG = BackgroundTranscodingStressTestMode.class.getSimpleName();
     private Context mContext;
-    private MediaTranscodeManager mMediaTranscodeManager = null;
+    private MediaTranscodingManager mMediaTranscodingManager = null;
 
     // Default setting for transcoding to H.264.
     private static final String MIME_TYPE = MediaFormat.MIMETYPE_VIDEO_AVC;
@@ -55,8 +55,8 @@ public class BackgroundTranscodingStressTestMode extends InstrumentationRunListe
         InstrumentationRegistry.getInstrumentation()
                 .getUiAutomation()
                 .adoptShellPermissionIdentity("android.permission.WRITE_MEDIA_STORAGE");
-        mMediaTranscodeManager = mContext.getSystemService(MediaTranscodeManager.class);
-        assertNotNull(mMediaTranscodeManager);
+        mMediaTranscodingManager = mContext.getSystemService(MediaTranscodingManager.class);
+        assertNotNull(mMediaTranscodingManager);
     }
 
     @Override
@@ -99,7 +99,7 @@ public class BackgroundTranscodingStressTestMode extends InstrumentationRunListe
         Log.d(TAG, "transcoding to format: " + videoTrackFormat);
 
         mTranscodingSession =
-                mMediaTranscodeManager.enqueueRequest(
+                mMediaTranscodingManager.enqueueRequest(
                         request,
                         listenerExecutor,
                         transcodingSession -> {
