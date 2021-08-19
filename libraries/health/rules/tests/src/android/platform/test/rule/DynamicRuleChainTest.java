@@ -16,8 +16,6 @@
 package android.platform.test.rule;
 
 import static com.google.common.truth.Truth.assertThat;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.spy;
 
 import android.os.Bundle;
 
@@ -170,12 +168,55 @@ public class DynamicRuleChainTest {
                         "Rule1 finished");
     }
 
+    @Test
+    public void testRulesOptionNameOverride() throws Throwable {
+        DynamicRuleChain chain =
+                createWithRulesOptionNameAndRuleNames(
+                        "override-rules",
+                        "DynamicRuleChainTest$Rule2",
+                        "android.platform.test.rule.DynamicRuleChainTest$Rule1");
+        Statement applied = chain.apply(mStatement, DESCRIPTION);
+        applied.evaluate();
+        assertThat(sLogs)
+                .containsExactly(
+                        "Rule2 starting",
+                        "Rule1 starting",
+                        "Test execution",
+                        "Rule1 finished",
+                        "Rule2 finished");
+    }
+
+    @Test
+    public void testRulesOptionNameOverrideWithNullThrows() throws Throwable {
+        expectedException.expectMessage(String.format("null or empty"));
+        DynamicRuleChain chain =
+                createWithRulesOptionNameAndRuleNames(
+                        null,
+                        "DynamicRuleChainTest$Rule2",
+                        "android.platform.test.rule.DynamicRuleChainTest$Rule1");
+    }
+
+    @Test
+    public void testRulesOptionNameOverrideWithEmptyThrows() throws Throwable {
+        expectedException.expectMessage(String.format("null or empty"));
+        DynamicRuleChain chain =
+                createWithRulesOptionNameAndRuleNames(
+                        "",
+                        "DynamicRuleChainTest$Rule2",
+                        "android.platform.test.rule.DynamicRuleChainTest$Rule1");
+    }
+
     private DynamicRuleChain createWithRuleNames(String... ruleNames) {
-        DynamicRuleChain chain = spy(new DynamicRuleChain());
         Bundle args = new Bundle();
-        args.putString(DynamicRuleChain.RULES_OPTION, String.join(",", ruleNames));
-        doReturn(args).when(chain).getArguments();
-        return chain;
+        args.putString(DynamicRuleChain.DEFAULT_RULES_OPTION, String.join(",", ruleNames));
+        return new DynamicRuleChain(args);
+    }
+
+    private DynamicRuleChain createWithRulesOptionNameAndRuleNames(
+            String rulesOptionName, String... ruleNames) {
+        Bundle args = new Bundle();
+        args.putString(rulesOptionName, String.join(",", ruleNames));
+        return new DynamicRuleChain(rulesOptionName, args);
     }
 
     public static class Rule1 extends TestWatcher {
