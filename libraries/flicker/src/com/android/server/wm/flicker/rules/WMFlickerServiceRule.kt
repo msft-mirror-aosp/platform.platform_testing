@@ -74,8 +74,11 @@ open class WMFlickerServiceRule @JvmOverloads constructor(
      * Remove the WM trace and layers trace files collected from previous test runs.
      */
     private fun cleanupTraceFiles() {
-        Files.deleteIfExists(getFilePath("wm_trace"))
-        Files.deleteIfExists(getFilePath("layers_trace"))
+        Files.list(outputDir).forEach { file ->
+            if (!Files.isDirectory(file)) {
+                Files.delete(file)
+            }
+        }
     }
 
     private fun getFilePath(file: String) = outputDir.resolve("${testTag}_$file$WINSCOPE_EXT")
