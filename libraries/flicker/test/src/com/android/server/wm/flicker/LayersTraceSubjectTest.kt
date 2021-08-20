@@ -81,6 +81,21 @@ class LayersTraceSubjectTest {
     }
 
     @Test
+    fun testAssertionsOnRange() {
+        val layersTraceEntries = readLayerTraceFromFile("layers_trace_launch_split_screen.pb")
+
+        assertThat(layersTraceEntries)
+            .isVisible(WindowManagerStateHelper.NAV_BAR_COMPONENT)
+            .isInvisible(DOCKER_STACK_DIVIDER_COMPONENT)
+            .forRange(90480846872160L, 90480994138424L)
+
+        assertThat(layersTraceEntries)
+            .isVisible(WindowManagerStateHelper.NAV_BAR_COMPONENT)
+            .isVisible(DOCKER_STACK_DIVIDER_COMPONENT)
+            .forRange(90491795074136L, 90493757372977L)
+    }
+
+    @Test
     fun testCanDetectChangingAssertions() {
         val layersTraceEntries = readLayerTraceFromFile("layers_trace_launch_split_screen.pb")
         assertThat(layersTraceEntries)
