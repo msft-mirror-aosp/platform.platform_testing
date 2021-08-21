@@ -108,4 +108,10 @@ abstract class FlickerSubject(
      * Necessary because check is protected and final in the Truth library
      */
     fun verify(message: String): StandardSubjectBuilder = check(message)
+
+    companion object {
+        @VisibleForTesting
+        @JvmStatic
+        val ASSERTION_TAG = "Assertion"
+    }
 }

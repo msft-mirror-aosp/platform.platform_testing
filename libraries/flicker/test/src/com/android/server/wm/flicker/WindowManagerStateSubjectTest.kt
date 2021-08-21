@@ -17,6 +17,7 @@
 package com.android.server.wm.flicker
 
 import android.graphics.Region
+import com.android.server.wm.flicker.assertions.FlickerSubject
 import com.android.server.wm.flicker.traces.FlickerSubjectException
 import com.android.server.wm.flicker.traces.windowmanager.WindowManagerStateSubject
 import com.android.server.wm.flicker.traces.windowmanager.WindowManagerTraceSubject.Companion.assertThat
@@ -47,13 +48,14 @@ class WindowManagerStateSubjectTest {
     @Test
     fun exceptionContainsDebugInfo() {
         val error = assertThrows(AssertionError::class.java) {
-            assertThat(trace).first().contains(IMAGINARY_COMPONENT)
+            assertThat(trace).first().frameRegion(IMAGINARY_COMPONENT)
         }
         Truth.assertThat(error).hasMessageThat().contains(IMAGINARY_COMPONENT.className)
         Truth.assertThat(error).hasMessageThat().contains("Trace start")
         Truth.assertThat(error).hasMessageThat().contains("Trace start")
         Truth.assertThat(error).hasMessageThat().contains("Trace file")
         Truth.assertThat(error).hasMessageThat().contains("Entry")
+        Truth.assertThat(error).hasMessageThat().contains(FlickerSubject.ASSERTION_TAG)
     }
 
     @Test

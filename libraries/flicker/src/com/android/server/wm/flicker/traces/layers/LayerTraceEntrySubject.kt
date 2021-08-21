@@ -115,7 +115,11 @@ class LayerTraceEntrySubject private constructor(
             .filter { it.name.contains(layerName) }
 
         if (selectedLayers.isEmpty()) {
-            fail(Fact.fact("Could not find", layerName))
+            fail(listOf(
+                Fact.fact(ASSERTION_TAG, "visibleRegion(${component?.toLayerName() ?: "<any>"})"),
+                Fact.fact("Use composition engine region", useCompositionEngineRegionOnly),
+                Fact.fact("Could not find", layerName))
+            )
         }
 
         val visibleLayers = selectedLayers.filter { it.isVisible }
@@ -137,7 +141,8 @@ class LayerTraceEntrySubject private constructor(
         val layerName = component.toLayerName()
         val found = entry.flattenedLayers.any { it.name.contains(layerName) }
         if (!found) {
-            fail(Fact.fact("Could not find", layerName))
+            fail(Fact.fact(ASSERTION_TAG, "contains(${component.toLayerName()})"),
+                Fact.fact("Could not find", layerName))
         }
     }
 
@@ -149,7 +154,8 @@ class LayerTraceEntrySubject private constructor(
     fun notContains(component: ComponentName): LayerTraceEntrySubject = apply {
         val layerName = component.toLayerName()
         val foundEntry = subjects.firstOrNull { it.name.contains(layerName) }
-        foundEntry?.fail(Fact.fact("Could find", foundEntry))
+        foundEntry?.fail(Fact.fact(ASSERTION_TAG, "notContains(${component.toLayerName()})"),
+            Fact.fact("Could find", foundEntry))
     }
 
     /**
@@ -180,7 +186,9 @@ class LayerTraceEntrySubject private constructor(
             break
         }
 
-        reason?.run { target?.fail(reason) }
+        reason?.run {
+            target?.fail(Fact.fact(ASSERTION_TAG, "isVisible(${component.toLayerName()})"), reason)
+        }
     }
 
     /**
@@ -201,7 +209,8 @@ class LayerTraceEntrySubject private constructor(
         val layerName = component.toLayerName()
         val foundEntry = subjects
                 .firstOrNull { it.name.contains(layerName) && it.isVisible }
-        foundEntry?.fail(Fact.fact("Is visible", foundEntry))
+        foundEntry?.fail(Fact.fact(ASSERTION_TAG, "isInvisible(${component.toLayerName()})"),
+            Fact.fact("Is visible", foundEntry))
     }
 
     /**
