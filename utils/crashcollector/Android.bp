@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2017 The Android Open Source Project
+// Copyright (C) 2016 The Android Open Source Project
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,27 +14,20 @@
 // limitations under the License.
 //
 
-// Android Unit Test target
 package {
+    // See: http://go/android-license-faq
     default_applicable_licenses: ["Android-Apache-2.0"],
 }
 
-android_test {
-    name: "CollectorDeviceLibTest",
-    defaults: ["tradefed_errorprone_defaults"],
+java_test {
+    name: "crashcollector_test",
+    installable: true,
+    srcs: ["src/**/*.java"],
+    test_suites: ["device-tests"],
+}
 
-    srcs: ["android/**/*.java"],
-    static_libs: [
-        "androidx.test.ext.junit",
-        "androidx.test.runner",
-        "collector-device-lib",
-        "junit",
-        "mockito-target-minus-junit4",
-        "perfetto-helper",
-        "ub-uiautomator",
-    ],
-
-    sdk_version: "current",
-
-    test_suites: ["general-tests"],
+java_binary {
+    name: "crashcollector",
+    srcs: ["src/**/*.java"],
+    wrapper: "crashcollector",
 }

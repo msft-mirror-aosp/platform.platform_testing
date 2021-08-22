@@ -23,6 +23,7 @@ import android.os.BatteryManager;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.platform.test.composer.Iterate;
+import android.platform.test.rule.DynamicRuleChain;
 import android.platform.test.rule.TracePointRule;
 import android.util.Log;
 import androidx.annotation.VisibleForTesting;
@@ -32,6 +33,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -64,12 +66,17 @@ public class Microbenchmark extends BlockJUnit4ClassRunner {
     // A constant to indicate that the iteration number is not set.
     @VisibleForTesting static final int ITERATION_NOT_SET = -1;
     public static final String RENAME_ITERATION_OPTION = "rename-iterations";
-    private static final Statement EMPTY =
+    private static final Statement EMPTY_STATEMENT =
             new Statement() {
                 @Override
                 public void evaluate() throws Throwable {}
             };
-    private static final String MIN_BATTERY_LEVEL_OPTION = "min-battery";
+    @VisibleForTesting static final String MIN_BATTERY_LEVEL_OPTION = "min-battery";
+    @VisibleForTesting static final String MAX_BATTERY_DRAIN_OPTION = "max-battery-drain";
+    // Use these options to inject rules at runtime via the command line. For details, please see
+    // documentation for DynamicRuleChain.
+    @VisibleForTesting static final String DYNAMIC_OUTER_RULES_OPTION = "outer-rules";
+    @VisibleForTesting static final String DYNAMIC_INNER_RULES_OPTION = "inner-rules";
 
     // Options for aligning with the battery charge (coulomb) counter for power tests. We want to
     // start microbenchmarks just after the coulomb counter has decremented to account for the
@@ -84,10 +91,12 @@ public class Microbenchmark extends BlockJUnit4ClassRunner {
     private final Bundle mArguments;
     private final boolean mRenameIterations;
     private final int mMinBatteryLevel;
+    private final int mMaxBatteryDrain;
     private final int mCounterDecrementTimeoutMs;
     private final boolean mAlignWithChargeCounter;
     private final boolean mTerminateOnTestFailure;
     private final Map<Description, Integer> mIterations = new HashMap<>();
+    private int mStartBatteryLevel;
 
     private final BatteryManager mBatteryManager;
 
@@ -110,6 +119,7 @@ public class Microbenchmark extends BlockJUnit4ClassRunner {
                         ? arguments.getString(ITERATION_SEP_OPTION)
                         : ITERATION_SEP_DEFAULT;
         mMinBatteryLevel = Integer.parseInt(arguments.getString(MIN_BATTERY_LEVEL_OPTION, "-1"));
+        mMaxBatteryDrain = Integer.parseInt(arguments.getString(MAX_BATTERY_DRAIN_OPTION, "100"));
         mCounterDecrementTimeoutMs =
                 Integer.parseInt(arguments.getString(COUNTER_DECREMENT_TIMEOUT_OPTION, "30000"));
         mAlignWithChargeCounter =
@@ -149,6 +159,8 @@ public class Microbenchmark extends BlockJUnit4ClassRunner {
             }
         }
         Log.d(LOG_TAG, String.format("The charge counter reads: %d.", getBatteryChargeCounter()));
+
+        mStartBatteryLevel = getBatteryLevel();
 
         super.run(notifier);
     }
@@ -269,7 +281,11 @@ public class Microbenchmark extends BlockJUnit4ClassRunner {
     /** Re-implement the private rules wrapper from {@link BlockJUnit4ClassRunner} in JUnit 4.12. */
     private Statement withRules(FrameworkMethod method, Object target, Statement statement) {
         Statement result = statement;
-        List<TestRule> testRules = getTestRules(target);
+        List<TestRule> testRules = new ArrayList<>();
+        // Inner dynamic rules should be included first because RunRules applies rules inside-out.
+        testRules.add(new DynamicRuleChain(DYNAMIC_INNER_RULES_OPTION, mArguments));
+        testRules.addAll(getTestRules(target));
+        testRules.add(new DynamicRuleChain(DYNAMIC_OUTER_RULES_OPTION, mArguments));
         // Apply legacy MethodRules, if they don't overlap with TestRules.
         for (org.junit.rules.MethodRule each : rules(target)) {
             if (!testRules.contains(each)) {
@@ -277,10 +293,7 @@ public class Microbenchmark extends BlockJUnit4ClassRunner {
             }
         }
         // Apply modern, method-level TestRules in outer statements.
-        result =
-                testRules.isEmpty()
-                        ? statement
-                        : new RunRules(result, testRules, describeChild(method));
+        result = new RunRules(result, testRules, describeChild(method));
         return result;
     }
 
@@ -293,8 +306,10 @@ public class Microbenchmark extends BlockJUnit4ClassRunner {
      */
     @Override
     protected void runChild(final FrameworkMethod method, RunNotifier notifier) {
-        if (isBatteryLevelTooLow()) {
-            throw new TerminateEarlyException("battery level is below threshold.");
+        if (isBatteryLevelBelowMin()) {
+            throw new TerminateEarlyException("the battery level is below the threshold.");
+        } else if (isBatteryDrainAboveMax()) {
+            throw new TerminateEarlyException("the battery drain is above the threshold.");
         }
 
         // Update the number of iterations this method has been run.
@@ -363,7 +378,7 @@ public class Microbenchmark extends BlockJUnit4ClassRunner {
                 List<FrameworkMethod> afters =
                         getTestClass().getAnnotatedMethods(NoMetricAfter.class);
                 if (!afters.isEmpty()) {
-                    new RunAfters(EMPTY, afters, test).evaluate();
+                    new RunAfters(EMPTY_STATEMENT, afters, test).evaluate();
                 }
             } catch (AssumptionViolatedException e) {
                 eachNotifier.addFailedAssumption(e);
@@ -380,9 +395,19 @@ public class Microbenchmark extends BlockJUnit4ClassRunner {
     }
 
     /* Checks if the battery level is below the specified level where the test should terminate. */
+    private boolean isBatteryLevelBelowMin() {
+        return getBatteryLevel() < mMinBatteryLevel;
+    }
+
+    /* Checks if the battery level has drained enough to where the test should terminate. */
+    private boolean isBatteryDrainAboveMax() {
+        return mStartBatteryLevel - getBatteryLevel() > mMaxBatteryDrain;
+    }
+
+    /* Gets the current battery level (as a percentage). */
     @VisibleForTesting
-    public boolean isBatteryLevelTooLow() {
-        return mBatteryManager.getIntProperty(BATTERY_PROPERTY_CAPACITY) < mMinBatteryLevel;
+    public int getBatteryLevel() {
+        return mBatteryManager.getIntProperty(BATTERY_PROPERTY_CAPACITY);
     }
 
     /* Gets the current battery charge counter (coulomb counter). */

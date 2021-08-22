@@ -156,37 +156,70 @@ native_tests := \
     statsd_test \
     syscall_filter_unittest_gtest \
     time-unit-tests \
+    tokio_device_test_tests__require_full \
     tokio_device_test_tests_buffered \
+    tokio_device_test_tests_io_async_fd \
     tokio_device_test_tests_io_async_read \
+    tokio_device_test_tests_io_chain \
+    tokio_device_test_tests_io_copy \
     tokio_device_test_tests_io_copy_bidirectional \
+    tokio_device_test_tests_io_driver \
+    tokio_device_test_tests_io_driver_drop \
     tokio_device_test_tests_io_lines \
     tokio_device_test_tests_io_mem_stream \
     tokio_device_test_tests_io_read \
     tokio_device_test_tests_io_read_buf \
+    tokio_device_test_tests_io_read_exact \
+    tokio_device_test_tests_io_read_line \
     tokio_device_test_tests_io_read_to_end \
+    tokio_device_test_tests_io_read_to_string \
+    tokio_device_test_tests_io_read_until \
+    tokio_device_test_tests_io_split \
     tokio_device_test_tests_io_take \
     tokio_device_test_tests_io_write \
     tokio_device_test_tests_io_write_all \
     tokio_device_test_tests_io_write_buf \
     tokio_device_test_tests_io_write_int \
     tokio_device_test_tests_macros_join \
+    tokio_device_test_tests_macros_pin \
+    tokio_device_test_tests_macros_select \
+    tokio_device_test_tests_macros_test \
+    tokio_device_test_tests_macros_try_join \
+    tokio_device_test_tests_net_bind_resource \
+    tokio_device_test_tests_net_lookup_host \
     tokio_device_test_tests_no_rt \
+    tokio_device_test_tests_process_kill_on_drop \
     tokio_device_test_tests_rt_basic \
+    tokio_device_test_tests_rt_common \
     tokio_device_test_tests_rt_threaded \
     tokio_device_test_tests_sync_barrier \
     tokio_device_test_tests_sync_broadcast \
     tokio_device_test_tests_sync_errors \
     tokio_device_test_tests_sync_mpsc \
+    tokio_device_test_tests_sync_mutex \
     tokio_device_test_tests_sync_mutex_owned \
+    tokio_device_test_tests_sync_notify \
+    tokio_device_test_tests_sync_oneshot \
     tokio_device_test_tests_sync_rwlock \
+    tokio_device_test_tests_sync_semaphore \
+    tokio_device_test_tests_sync_semaphore_owned \
     tokio_device_test_tests_sync_watch \
+    tokio_device_test_tests_task_abort \
+    tokio_device_test_tests_task_blocking \
     tokio_device_test_tests_task_local \
     tokio_device_test_tests_task_local_set \
     tokio_device_test_tests_tcp_accept \
+    tokio_device_test_tests_tcp_connect \
     tokio_device_test_tests_tcp_echo \
+    tokio_device_test_tests_tcp_into_split \
     tokio_device_test_tests_tcp_into_std \
+    tokio_device_test_tests_tcp_peek \
     tokio_device_test_tests_tcp_shutdown \
+    tokio_device_test_tests_tcp_socket \
+    tokio_device_test_tests_tcp_split \
     tokio_device_test_tests_time_rt \
+    tokio_device_test_tests_udp \
+    tokio_device_test_tests_uds_cred \
     tokio_device_test_tests_uds_split \
     tokio-test_device_test_src_lib \
     tokio-test_device_test_tests_block_on \
