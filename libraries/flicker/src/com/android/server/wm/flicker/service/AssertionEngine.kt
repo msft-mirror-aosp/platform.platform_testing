@@ -17,7 +17,7 @@
 package com.android.server.wm.flicker.service
 
 import android.util.Log
-import com.android.server.wm.flicker.getDefaultFlickerOutputDir
+import com.android.server.wm.flicker.service.FlickerService.Companion.getFassFilePath
 import com.android.server.wm.flicker.service.detectors.AppLaunchDetector
 import com.android.server.wm.traces.common.errors.ErrorState
 import com.android.server.wm.traces.common.errors.ErrorTrace
@@ -25,51 +25,47 @@ import com.android.server.wm.traces.common.layers.LayersTrace
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 import com.android.server.wm.traces.parser.errors.toProto
 import java.io.IOException
-import java.nio.file.Files.createDirectories
-import java.nio.file.Files.write
+import java.nio.file.Files
+import java.nio.file.Path
 
 /**
  * Invokes the configured detectors and summarizes the results.
  */
-class AssertionEngine {
+class AssertionEngine(private val outputDir: Path, private val testTag: String) {
     private val flickerDetectors = listOf<IFlickerDetector>(
         // TODO: Add new detectors to invoke
         AppLaunchDetector()
     )
 
-    fun analyze(wmTrace: WindowManagerTrace, sfTrace: LayersTrace): ErrorTrace {
-        val allStates = mutableListOf<ErrorState>()
-
-        for (flickerDetector in flickerDetectors) {
-            allStates.addAll(flickerDetector.analyze(wmTrace, sfTrace).entries.asList())
+    fun analyze(wmTrace: WindowManagerTrace, layersTrace: LayersTrace): ErrorTrace {
+        val allStates = flickerDetectors.flatMap {
+            it.analyze(wmTrace, layersTrace).entries.asList()
         }
 
         /* Ensure all error states with same timestamp are merged */
         val errorStates = allStates.distinct()
                 .groupBy({ it.timestamp }, { it.errors.asList() })
-                .mapValues { ErrorState(it.value.flatten().toTypedArray(), it.key) }
+                .mapValues { (key, value) -> ErrorState(value.flatten().toTypedArray(), key) }
                 .values.toTypedArray()
 
-        val errorTrace = ErrorTrace(errorStates, "")
+        val errorTrace = ErrorTrace(errorStates, source = "")
         writeFile(errorTrace)
         return errorTrace
     }
 
     /**
-     * Stores the error trace in a .winscope file
+     * Stores the error trace in a .winscope file.
      */
     private fun writeFile(errorTrace: ErrorTrace) {
-        val bytes = errorTrace.toProto().toByteArray()
-        // TODO(b/196595789): Change the outputDir and testTag based on the test rule parameters
-        val fileName = "${errorTrace.hashCode()}.winscope"
-        val outFile = getDefaultFlickerOutputDir().resolve(fileName)
+        val errorTraceBytes = errorTrace.toProto().toByteArray()
+        val errorTraceFile = getFassFilePath(outputDir, testTag, "error_trace")
 
         try {
-            Log.i("FLICKER_ERROR_TRACE", outFile.toString())
-            createDirectories(getDefaultFlickerOutputDir())
-            write(outFile, bytes)
+            Log.i("FLICKER_ERROR_TRACE", errorTraceFile.toString())
+            Files.createDirectories(errorTraceFile.parent)
+            Files.write(errorTraceFile, errorTraceBytes)
         } catch (e: IOException) {
-            throw RuntimeException("Unable to create trace file: ${e.message}", e)
+            throw RuntimeException("Unable to create error trace file: ${e.message}", e)
         }
     }
 }

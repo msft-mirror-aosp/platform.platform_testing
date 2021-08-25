@@ -112,6 +112,14 @@ open class LayerTraceEntry constructor(
     }
 
     /**
+     * Checks the transform of any layer is not a simple rotation
+     */
+    fun isAnimating(windowName: String = ""): Boolean {
+        val layers = flattenedLayers.filter { it.name.contains(windowName) }
+        return layers.any { layer -> !layer.transform.isSimpleRotation }
+    }
+
+    /**
      * Check if at least one window which matches provided window name is visible.
      */
     fun isVisible(windowName: String): Boolean =

@@ -16,10 +16,12 @@
 
 package com.android.server.wm.flicker.service
 
+import com.android.server.wm.flicker.monitor.TransitionMonitor.Companion.WINSCOPE_EXT
 import com.android.server.wm.traces.common.errors.ErrorTrace
 import com.android.server.wm.traces.common.layers.LayersTrace
 import com.android.server.wm.traces.common.tags.TagTrace
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
+import java.nio.file.Path
 
 /**
  * Contains the logic for Flicker as a Service.
@@ -36,13 +38,15 @@ class FlickerService {
      */
     fun process(
         wmTrace: WindowManagerTrace,
-        layersTrace: LayersTrace
+        layersTrace: LayersTrace,
+        outputDir: Path,
+        testTag: String
     ): ErrorTrace {
-        val taggingEngine = TaggingEngine()
+        val taggingEngine = TaggingEngine(outputDir, testTag)
         val tagTrace = taggingEngine.tag(wmTrace, layersTrace)
         injectTags(wmTrace, layersTrace, tagTrace)
 
-        val assertionEngine = AssertionEngine()
+        val assertionEngine = AssertionEngine(outputDir, testTag)
         return assertionEngine.analyze(wmTrace, layersTrace)
     }
 
@@ -66,5 +70,18 @@ class FlickerService {
                 }
             }
         }
+    }
+
+    companion object {
+        /**
+         * Returns the computed path for the Fass files.
+         *
+         * @param outputDir the output directory for the trace file
+         * @param testTag the tag to identify the test
+         * @param file the name of the trace file
+         * @return the path to the trace file
+         */
+        fun getFassFilePath(outputDir: Path, testTag: String, file: String): Path =
+                outputDir.resolve("${testTag}_$file$WINSCOPE_EXT")
     }
 }
