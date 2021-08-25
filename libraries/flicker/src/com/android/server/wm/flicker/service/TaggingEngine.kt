@@ -17,7 +17,6 @@
 package com.android.server.wm.flicker.service
 
 import android.util.Log
-import com.android.server.wm.flicker.getDefaultFlickerOutputDir
 import com.android.server.wm.flicker.service.processors.AppLaunchProcessor
 import com.android.server.wm.traces.common.layers.LayersTrace
 import com.android.server.wm.traces.common.tags.TagState
@@ -25,13 +24,13 @@ import com.android.server.wm.traces.common.tags.TagTrace
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 import com.android.server.wm.traces.parser.tags.toProto
 import java.io.IOException
-import java.nio.file.Files.createDirectories
-import java.nio.file.Files.write
+import java.nio.file.Files
+import java.nio.file.Path
 
 /**
  * Invokes all concrete tag producers and writes to a .winscope file
  */
-class TaggingEngine {
+class TaggingEngine(private val outputDir: Path, private val testTag: String) {
     private val transitions = listOf<ITagProcessor>(
         // TODO: Keep adding new transition processors to invoke
         AppLaunchProcessor()
@@ -52,29 +51,27 @@ class TaggingEngine {
          */
         val tagStates = allStates.distinct()
             .groupBy({ it.timestamp }, { it.tags.asList() })
-            .mapValues { TagState(it.key, it.value.flatten().toTypedArray()) }
+            .mapValues { (key, value) -> TagState(key, value.flatten().toTypedArray()) }
             .values.toTypedArray()
 
-        val tagTrace = TagTrace(tagStates, "")
+        val tagTrace = TagTrace(tagStates, source = "")
         writeFile(tagTrace)
         return tagTrace
     }
 
     /**
-     * Stores the tagged traced in a .winscope file
+     * Stores the tag trace in a .winscope file.
      */
     private fun writeFile(tagTrace: TagTrace) {
-        val bytes = tagTrace.toProto().toByteArray()
-        // TODO(b/196595789): Change the outputDir and testTag based on the test rule parameters
-        val fileName = "${tagTrace.hashCode()}.winscope"
-        val outFile = getDefaultFlickerOutputDir().resolve(fileName)
+        val tagTraceBytes = tagTrace.toProto().toByteArray()
+        val tagTraceFile = FlickerService.getFassFilePath(outputDir, testTag, "tag_trace")
 
         try {
-            Log.i("FLICKER_TAG_TRACE", outFile.toString())
-            createDirectories(getDefaultFlickerOutputDir())
-            write(outFile, bytes)
+            Log.i("FLICKER_TAG_TRACE", tagTraceFile.toString())
+            Files.createDirectories(tagTraceFile.parent)
+            Files.write(tagTraceFile, tagTraceBytes)
         } catch (e: IOException) {
-            throw RuntimeException("Unable to create trace file: ${e.message}", e)
+            throw RuntimeException("Unable to create error trace file: ${e.message}", e)
         }
     }
 }

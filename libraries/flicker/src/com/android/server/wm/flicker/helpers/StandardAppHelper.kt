@@ -176,7 +176,8 @@ open class StandardAppHelper @JvmOverloads constructor(
             component.toWindowName()
         }
         wmHelper.waitFor("App is shown") {
-            it.wmState.isComplete() && it.wmState.isWindowVisible(window)
+            it.wmState.isComplete() && it.wmState.isWindowVisible(window) &&
+                !it.layerState.isAnimating()
         }
 
         wmHelper.waitForAppTransitionIdle()

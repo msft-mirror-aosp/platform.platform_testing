@@ -113,4 +113,23 @@ class LayersTraceTest {
         Truth.assertThat(error).hasMessageThat().contains("Trace start")
         Truth.assertThat(error).hasMessageThat().contains("Trace file")
     }
+
+    @Test
+    fun canFilter() {
+        val trace = readLayerTraceFromFile("layers_trace_openchrome.pb")
+        val splitlayersTrace = trace.filter(71607477186189, 71607812120180)
+
+        Truth.assertThat(splitlayersTrace).isNotEmpty()
+
+        Truth.assertThat(splitlayersTrace.entries.first().timestamp).isEqualTo(71607477186189)
+        Truth.assertThat(splitlayersTrace.entries.last().timestamp).isEqualTo(71607812120180)
+    }
+
+    @Test
+    fun canFilter_wrongTimestamps() {
+        val trace = readLayerTraceFromFile("layers_trace_openchrome.pb")
+        val splitLayersTrace = trace.filter(9213763541297, 9215895891561)
+
+        Truth.assertThat(splitLayersTrace).isEmpty()
+    }
 }

@@ -137,4 +137,21 @@ class WindowManagerTraceTest {
         assertThat(entry.getIsIncompleteReason())
             .contains("No resumed activities found")
     }
+
+    @Test
+    fun canFilter() {
+        val splitWmTrace = trace.filter(9215895891561, 9216093628925)
+
+        assertThat(splitWmTrace).isNotEmpty()
+
+        assertThat(splitWmTrace.entries.first().timestamp).isEqualTo(9215895891561)
+        assertThat(splitWmTrace.entries.last().timestamp).isEqualTo(9216093628925)
+    }
+
+    @Test
+    fun canFilter_wrongTimestamps() {
+        val splitWmTrace = trace.filter(71607477186189, 71607812120180)
+
+        assertThat(splitWmTrace).isEmpty()
+    }
 }
