@@ -16,7 +16,6 @@
 
 package com.android.server.wm.traces.common.windowmanager
 
-import com.android.server.wm.traces.common.tags.FlickerElement
 import com.android.server.wm.traces.common.ITraceEntry
 import com.android.server.wm.traces.common.prettyTimestamp
 import com.android.server.wm.traces.common.windowmanager.windows.Activity
@@ -48,7 +47,7 @@ open class WindowManagerState(
     val root: RootWindowContainer,
     val keyguardControllerState: KeyguardControllerState,
     override val timestamp: Long = 0
-) : ITraceEntry, FlickerElement() {
+) : ITraceEntry {
     val isVisible: Boolean = true
     val stableId: String get() = this::class.simpleName ?: error("Unable to determine class")
     val name: String get() = prettyTimestamp(timestamp)

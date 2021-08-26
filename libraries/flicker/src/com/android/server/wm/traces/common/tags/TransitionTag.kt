@@ -17,17 +17,10 @@
 package com.android.server.wm.traces.common.tags
 
 /**
- * Base class for common flicker components (WM and SF state) and saves the
- * list of flicker tags.
+ * Saves the information about a transition tag.
  */
-open class FlickerElement {
-    private val tags = mutableSetOf<Transition>()
-
-    fun getTags(): Set<Transition> {
-        return tags
-    }
-
-    fun addTag(tag: Transition) {
-        tags.add(tag)
-    }
-}
+data class TransitionTag(
+    var tag: Tag,
+    var startTimestamp: Long,
+    var endTimestamp: Long
+)

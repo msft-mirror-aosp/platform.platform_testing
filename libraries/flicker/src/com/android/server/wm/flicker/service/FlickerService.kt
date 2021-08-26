@@ -19,7 +19,6 @@ package com.android.server.wm.flicker.service
 import com.android.server.wm.flicker.monitor.TransitionMonitor.Companion.WINSCOPE_EXT
 import com.android.server.wm.traces.common.errors.ErrorTrace
 import com.android.server.wm.traces.common.layers.LayersTrace
-import com.android.server.wm.traces.common.tags.TagTrace
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 import java.nio.file.Path
 
@@ -44,32 +43,9 @@ class FlickerService {
     ): ErrorTrace {
         val taggingEngine = TaggingEngine(outputDir, testTag)
         val tagTrace = taggingEngine.tag(wmTrace, layersTrace)
-        injectTags(wmTrace, layersTrace, tagTrace)
 
         val assertionEngine = AssertionEngine(outputDir, testTag)
-        return assertionEngine.analyze(wmTrace, layersTrace)
-    }
-
-    /**
-     * Connects the tags from [TagTrace] to [WindowManagerTrace] and [LayersTrace].
-     */
-    private fun injectTags(
-        wmTrace: WindowManagerTrace,
-        layersTrace: LayersTrace,
-        tagTrace: TagTrace
-    ) {
-        tagTrace.entries.forEach { state ->
-            state.tags.forEach {
-                if (it.taskId != -1) {
-                    val wmState = wmTrace.getEntry(timestamp = state.timestamp)
-                    wmState.addTag(it.transition)
-                }
-                if (it.layerId != -1) {
-                    val layersEntry = layersTrace.getEntry(timestamp = state.timestamp)
-                    layersEntry.addTag(it.transition)
-                }
-            }
-        }
+        return assertionEngine.analyze(wmTrace, layersTrace, tagTrace)
     }
 
     companion object {
