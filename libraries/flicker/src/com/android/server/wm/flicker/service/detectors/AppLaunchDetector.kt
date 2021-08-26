@@ -24,20 +24,37 @@ import com.android.server.wm.traces.common.layers.LayersTrace
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 
 class AppLaunchDetector : IFlickerDetector {
-    override fun analyze(
-        wmTrace: WindowManagerTrace,
-        layersTrace: LayersTrace
-    ): ErrorTrace {
+    override fun analyzeWmTrace(wmTrace: WindowManagerTrace): ErrorTrace {
         // TODO(b/196574615): Remove the mock data and add the assertions for App Launch
-        return ErrorTrace(arrayOf(ErrorState(
-            arrayOf(
-                Error(
-                    stacktrace = "test stacktrace",
-                    message = "Test message error",
-                    layerId = -1,
-                    windowToken = "",
-                    taskId = 2
-                )
-            ), wmTrace.entries[0].timestamp)), "")
+        if (wmTrace.entries.isNotEmpty()) {
+            return ErrorTrace(arrayOf(ErrorState(
+                arrayOf(
+                    Error(
+                        stacktrace = "test stacktrace",
+                        message = "Test message error",
+                        layerId = -1,
+                        windowToken = "",
+                        taskId = 2
+                    )
+                ), wmTrace.entries.first().timestamp)), source = "")
+        }
+        return ErrorTrace(emptyArray(), source = "")
+    }
+
+    override fun analyzeLayersTrace(layersTrace: LayersTrace): ErrorTrace {
+        // TODO(b/196574615): Remove the mock data and add the assertions for App Launch
+        if (layersTrace.entries.isNotEmpty()) {
+            return ErrorTrace(arrayOf(ErrorState(
+                arrayOf(
+                    Error(
+                        stacktrace = "test stacktrace",
+                        message = "Test message error",
+                        layerId = 2,
+                        windowToken = "",
+                        taskId = -1
+                    )
+                ), layersTrace.entries.last().timestamp)), source = "")
+        }
+        return ErrorTrace(emptyArray(), source = "")
     }
 }

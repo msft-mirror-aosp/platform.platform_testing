@@ -25,14 +25,18 @@ import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
  */
 interface IFlickerDetector {
     /**
-     * Analyzes the tagged traces to detect flickers.
+     * Analyzes a [WindowManagerTrace] trace to detect flickers.
      *
      * @param wmTrace Window Manager trace
+     * @return An error trace
+     */
+    fun analyzeWmTrace(wmTrace: WindowManagerTrace): ErrorTrace
+
+    /**
+     * Analyzes a [LayersTrace] trace to detect flickers.
+     *
      * @param layersTrace Surface Flinger trace
      * @return An error trace
      */
-    fun analyze(
-        wmTrace: WindowManagerTrace,
-        layersTrace: LayersTrace
-    ): ErrorTrace
+    fun analyzeLayersTrace(layersTrace: LayersTrace): ErrorTrace
 }
