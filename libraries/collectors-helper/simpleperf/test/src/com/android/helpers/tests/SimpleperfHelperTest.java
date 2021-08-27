@@ -15,21 +15,21 @@
  */
 package com.android.helpers.tests;
 
-import android.support.test.uiautomator.UiDevice;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import androidx.test.InstrumentationRegistry;
 import androidx.test.runner.AndroidJUnit4;
+import androidx.test.uiautomator.UiDevice;
 
 import com.android.helpers.SimpleperfHelper;
-
-import java.io.IOException;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import java.io.IOException;
 
 /**
  * Android Unit tests for {@link SimpleperfHelper}.
@@ -41,6 +41,8 @@ public class SimpleperfHelperTest {
 
     private static final String REMOVE_CMD = "rm %s";
     private static final String FILE_SIZE_IN_BYTES = "wc -c %s";
+    private static final String DEFAULT_SUBCOMMAND = "record";
+    private static final String DEFAULT_ARGUMENTS = "-g --post-unwind=yes -f 500 -a --exclude-perf";
 
     private SimpleperfHelper simpleperfHelper;
 
@@ -59,20 +61,20 @@ public class SimpleperfHelperTest {
     /** Test simpleperf collection starts collecting properly. */
     @Test
     public void testSimpleperfStartSuccess() throws Exception {
-        assertTrue(simpleperfHelper.startCollecting());
+        assertTrue(simpleperfHelper.startCollecting(DEFAULT_SUBCOMMAND, DEFAULT_ARGUMENTS));
     }
 
     /** Test if the path name is prefixed with /. */
     @Test
     public void testSimpleperfValidOutputPath() throws Exception {
-        assertTrue(simpleperfHelper.startCollecting());
+        assertTrue(simpleperfHelper.startCollecting(DEFAULT_SUBCOMMAND, DEFAULT_ARGUMENTS));
         assertTrue(simpleperfHelper.stopCollecting("data/local/tmp/perf.data"));
     }
 
     /** Test the invalid output path. */
     @Test
     public void testSimpleperfInvalidOutputPath() throws Exception {
-        assertTrue(simpleperfHelper.startCollecting());
+        assertTrue(simpleperfHelper.startCollecting(DEFAULT_SUBCOMMAND, DEFAULT_ARGUMENTS));
         // Don't have permission to create new folder under /data
         assertFalse(simpleperfHelper.stopCollecting("/data/dummy/xyz/perf.data"));
     }
@@ -80,7 +82,7 @@ public class SimpleperfHelperTest {
     /** Test simpleperf collection returns true and output file size greater than zero */
     @Test
     public void testSimpleperfSuccess() throws Exception {
-        assertTrue(simpleperfHelper.startCollecting());
+        assertTrue(simpleperfHelper.startCollecting(DEFAULT_SUBCOMMAND, DEFAULT_ARGUMENTS));
         Thread.sleep(1000);
         assertTrue(simpleperfHelper.stopCollecting("/data/local/tmp/perf.data"));
         Thread.sleep(1000);
