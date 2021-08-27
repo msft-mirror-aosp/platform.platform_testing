@@ -36,6 +36,7 @@ import androidx.test.uiautomator.Until
 import com.android.compatibility.common.util.SystemUtil
 import com.android.server.wm.flicker.helpers.WindowUtils.displayBounds
 import com.android.server.wm.flicker.helpers.WindowUtils.getNavigationBarPosition
+import com.android.server.wm.traces.parser.windowmanager.WindowManagerConditionsFactory
 import com.android.server.wm.traces.parser.windowmanager.WindowManagerStateHelper
 import org.junit.Assert
 import org.junit.Assert.assertNotNull
@@ -151,8 +152,11 @@ fun UiDevice.openQuickstep(
         recents = this.wait(Until.findObject(recentsSysUISelector), FIND_TIMEOUT)
     }
     assertNotNull("Recent items didn't appear", recents)
-    wmHelper.waitForNavBarStatusBarVisible()
-    wmHelper.waitForAppTransitionIdle()
+    wmHelper.waitFor(
+        WindowManagerConditionsFactory.isNavBarVisible(),
+        WindowManagerConditionsFactory.isStatusBarVisible(),
+        WindowManagerConditionsFactory.isAppTransitionIdle()
+    )
 }
 
 private fun getLauncherOverviewSelector(device: UiDevice): BySelector {
@@ -242,8 +246,9 @@ fun UiDevice.launchSplitScreen(
 
     // Wait for animation to complete.
     this.wait(Until.findObject(splitScreenDividerSelector), FIND_TIMEOUT)
-    wmHelper.waitFor("stackDividerAppear") { it.layerState.isVisible(DOCKED_STACK_DIVIDER) }
-    wmHelper.waitForAppTransitionIdle()
+    wmHelper.waitFor(
+        WindowManagerConditionsFactory.isLayerVisible(DOCKED_STACK_DIVIDER),
+        WindowManagerConditionsFactory.isAppTransitionIdle())
 
     if (!this.isInSplitScreen()) {
         Assert.fail("Unable to find Split screen divider")
@@ -272,11 +277,9 @@ fun UiDevice.isInSplitScreen(): Boolean {
 }
 
 fun waitSplitScreenGone(wmHelper: WindowManagerStateHelper): Boolean {
-    val dividerGone = wmHelper.waitFor("stackDividerGone") {
-        !it.layerState.isVisible(DOCKED_STACK_DIVIDER)
-    }
-    wmHelper.waitForAppTransitionIdle()
-    return dividerGone
+    return wmHelper.waitFor(
+        WindowManagerConditionsFactory.isLayerVisible(DOCKED_STACK_DIVIDER),
+        WindowManagerConditionsFactory.isAppTransitionIdle())
 }
 
 private val splitScreenDividerSelector: BySelector
