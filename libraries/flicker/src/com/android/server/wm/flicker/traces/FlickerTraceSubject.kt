@@ -32,8 +32,8 @@ abstract class FlickerTraceSubject<EntrySubject : FlickerSubject>(
 ) : FlickerSubject(fm, data) {
     override val timestamp: Long get() = subjects.first().timestamp
     override val selfFacts by lazy {
-        val firstTimestamp = subjects.first().timestamp
-        val lastTimestamp = subjects.last().timestamp
+        val firstTimestamp = subjects.firstOrNull()?.timestamp ?: 0L
+        val lastTimestamp = subjects.lastOrNull()?.timestamp ?: 0L
         val first = "${prettyTimestamp(firstTimestamp)} (timestamp=$firstTimestamp)"
         val last = "${prettyTimestamp(lastTimestamp)} (timestamp=$lastTimestamp)"
         listOf(Fact.fact("Trace start", first),
@@ -148,4 +148,7 @@ abstract class FlickerTraceSubject<EntrySubject : FlickerSubject>(
             lastEntry.fail("$lastNew is not visible for 2 entries")
         }
     }
+
+    override fun toString(): String = "${this::class.simpleName}" +
+            "(${subjects.firstOrNull()?.timestamp ?: 0},${subjects.lastOrNull()?.timestamp ?: 0})"
 }

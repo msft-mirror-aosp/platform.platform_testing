@@ -64,6 +64,18 @@ class LayersTraceTest {
     }
 
     @Test
+    fun canParseFromDumpWithDisplay() {
+        val trace = readLayerTraceFromFile("layers_dump_with_display.pb")
+        Truth.assertWithMessage("Dump is not empty")
+            .that(trace)
+            .isNotEmpty()
+        Truth.assertWithMessage("Dump contains display is not empty")
+            .that(trace.first().displays)
+            .asList()
+            .isNotEmpty()
+    }
+
+    @Test
     fun canTestLayerOccludedBy_appLayerHasVisibleRegion() {
         val trace = readLayerTraceFromFile("layers_trace_occluded.pb")
         val entry = trace.getEntry(1700382131522L)

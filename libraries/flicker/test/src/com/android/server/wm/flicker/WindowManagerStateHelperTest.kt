@@ -135,6 +135,7 @@ class WindowManagerStateHelperTest {
                     layerList.add(WindowManagerStateHelper.IME_COMPONENT)
                 }
                 val layerTraceEntry = LayerTraceEntryBuilder(timestamp = 0,
+                    displays = emptyArray(),
                     layers = createImaginaryVisibleLayers(layerList)).build()
                 WindowManagerStateHelper.Dump(
                     wmState,

@@ -55,7 +55,7 @@ class DeviceStateDump(
                     null
                 },
                 layersTrace = if (layersTraceData.isNotEmpty()) {
-                    LayersTraceParser.parseFromDump(layersTraceData)
+                    LayersTraceParser.parseFromTrace(layersTraceData)
                 } else {
                     null
                 }
