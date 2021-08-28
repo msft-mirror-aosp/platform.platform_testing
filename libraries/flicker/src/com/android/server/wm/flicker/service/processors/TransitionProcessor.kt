@@ -16,19 +16,17 @@
 
 package com.android.server.wm.flicker.service.processors
 
+import com.android.server.wm.flicker.FLICKER_TAG
 import com.android.server.wm.flicker.service.ITagProcessor
-import com.android.server.wm.traces.common.layers.LayerTraceEntry
 import com.android.server.wm.traces.common.layers.LayersTrace
 import com.android.server.wm.traces.common.tags.Tag
 import com.android.server.wm.traces.common.tags.TagState
 import com.android.server.wm.traces.common.tags.TagTrace
-import com.android.server.wm.traces.common.tags.Transition
-import com.android.server.wm.traces.common.windowmanager.WindowManagerState
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
+import com.android.server.wm.traces.parser.windowmanager.WindowManagerStateHelper
 
 abstract class TransitionProcessor : ITagProcessor {
-    private var tagStates = mutableListOf<TagState>()
-    abstract val transition: Transition
+    abstract fun getInitialState(tags: MutableMap<Long, MutableList<Tag>>): FSMState
 
     /**
      * Add the start and end tags corresponding to the transition from
@@ -42,82 +40,58 @@ abstract class TransitionProcessor : ITagProcessor {
         wmTrace: WindowManagerTrace,
         layersTrace: LayersTrace
     ): TagTrace {
-        var wmStates = wmTrace.entries.iterator()
-        var sfStates = layersTrace.entries.iterator()
-        val finalTime = wmTrace.entries.last().timestamp
+        val tags = mutableMapOf<Long, MutableList<Tag>>()
+        var currPosition: FSMState? = getInitialState(tags)
 
-        /**
-         * If WmState or sfState finish, then it is not possible to tag the end state, hence we
-         * check both wmStates and sfStates have next stat
-         */
-        while (wmStates.hasNext() and sfStates.hasNext()) {
-            val startTag = findStartTag(wmStates, sfStates)
-            if (startTag != null) {
-                tagStates.add(startTag)
-                tagStates.add(findEndTag(wmStates, sfStates, startTag, finalTime))
-            }
+        val dumpList = createDumpList(wmTrace, layersTrace)
+        val dumpIterator = dumpList.iterator()
+
+        // keep always a reference to previous, current and next states
+        var previous: WindowManagerStateHelper.Dump?
+        var current: WindowManagerStateHelper.Dump? = null
+        var next: WindowManagerStateHelper.Dump? = dumpIterator.next()
+        while (currPosition != null) {
+            previous = current
+            current = next
+            next = if (dumpIterator.hasNext()) dumpIterator.next() else null
+            requireNotNull(current) { "Current state shouldn't be null" }
+            val newPosition = currPosition.process(previous, current, next)
+            currPosition = newPosition
         }
-        return TagTrace(tagStates.toTypedArray(), "")
+
+        return buildTagTrace(tags)
     }
 
-    protected abstract fun findStartTag(
-        wmStates: Iterator<WindowManagerState>,
-        layersEntries: Iterator<LayerTraceEntry>
-    ): TagState?
-
-    private fun findEndTag(
-        wmStates: Iterator<WindowManagerState>,
-        layersEntries: Iterator<LayerTraceEntry>,
-        startTagState: TagState,
-        finalTime: Long
-    ): TagState {
-        val endTag = if (wmStates.hasNext() and layersEntries.hasNext()) {
-            doFindEndTag(wmStates, layersEntries, startTagState.tags.first().id)
-        } else {
-            null
+    private fun buildTagTrace(tags: MutableMap<Long, MutableList<Tag>>): TagTrace {
+        val tagStates = tags.map { entry ->
+            val timestamp = entry.key
+            val stateTags = entry.value
+            TagState(timestamp, stateTags.toTypedArray())
         }
-        return endTag ?: createFinalEndTag(startTagState, finalTime)
+        return TagTrace(tagStates.toTypedArray(), source = "")
     }
 
-    protected fun createTagState(
-        timestamp: Long,
-        id: Int,
-        isStartTag: Boolean,
-        layerId: Int = -1,
-        windowToken: String = "",
-        taskId: Int = -1,
-        isFallback: Boolean = false
-    ) = TagState(
-            timestamp = timestamp,
-            isFallback = isFallback,
-            tags = arrayOf(
-                Tag(
-                    id = id,
-                    transition = transition,
-                    isStartTag = isStartTag,
-                    taskId = taskId,
-                    windowToken = windowToken,
-                    layerId = layerId
-                )
-            )
-        )
+    companion object {
+        @JvmStatic
+        protected val LOG_TAG = "$FLICKER_TAG-PROC"
 
-    private fun createFinalEndTag(startTagState: TagState, finalTime: Long): TagState {
-        val startTag = startTagState.tags.first()
-        return createTagState(
-            timestamp = finalTime,
-            id = startTag.id,
-            isStartTag = false,
-            windowToken = startTag.windowToken,
-            taskId = startTag.taskId,
-            layerId = startTag.layerId,
-            isFallback = true
-        )
+        internal fun createDumpList(
+            wmTrace: WindowManagerTrace,
+            layersTrace: LayersTrace
+        ): List<WindowManagerStateHelper.Dump> {
+            val wmTimestamps = wmTrace.map { it.timestamp }.toTypedArray()
+            val layersTimestamps = layersTrace.map { it.timestamp }.toTypedArray()
+            val fullTimestamps = sortedSetOf(*wmTimestamps, *layersTimestamps)
+
+            return fullTimestamps.map { baseTimestamp ->
+                val wmState = wmTrace
+                    .lastOrNull { it.timestamp <= baseTimestamp }
+                    ?: wmTrace.first()
+                val layerState = layersTrace
+                    .lastOrNull { it.timestamp <= baseTimestamp }
+                    ?: layersTrace.first()
+                WindowManagerStateHelper.Dump(wmState, layerState)
+            }.distinctBy { Pair(it.wmState.timestamp, it.layerState.timestamp) }
+        }
     }
-
-    abstract fun doFindEndTag(
-        wmStates: Iterator<WindowManagerState>,
-        layersEntries: Iterator<LayerTraceEntry>,
-        startTagId: Int
-    ): TagState?
 }

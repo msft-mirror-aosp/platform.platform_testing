@@ -28,8 +28,8 @@ data class TagTrace(
     override val source: String
 ) : ITrace<TagState>,
     List<TagState> by entries.toList() {
-    override fun toString(): String = "FlickerTagTrace(Start: ${entries.first()}, " +
-            "End: ${entries.last()})"
+    override fun toString(): String = "FlickerTagTrace(${entries.firstOrNull()?.timestamp ?: 0}, " +
+            "${entries.lastOrNull()?.timestamp ?: 0})"
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

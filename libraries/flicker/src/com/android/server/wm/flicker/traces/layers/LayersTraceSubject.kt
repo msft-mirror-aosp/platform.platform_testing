@@ -213,7 +213,7 @@ class LayersTraceSubject private constructor(
     fun coversAtLeast(
         testRegion: com.android.server.wm.traces.common.Region,
         component: ComponentName? = null
-    ): LayersTraceSubject = this.coversAtLeast(testRegion.toAndroidRegion())
+    ): LayersTraceSubject = this.coversAtLeast(testRegion.toAndroidRegion(), component)
 
     /**
      * Asserts that the visible area covered by any [Layer] with [Layer.name] containing any of
@@ -245,7 +245,7 @@ class LayersTraceSubject private constructor(
     fun coversAtMost(
         testRegion: com.android.server.wm.traces.common.Region,
         component: ComponentName? = null
-    ): LayersTraceSubject = this.coversAtMost(testRegion.toAndroidRegion())
+    ): LayersTraceSubject = this.coversAtMost(testRegion.toAndroidRegion(), component)
 
     /**
      * Checks that all visible layers are shown for more than one consecutive entry
