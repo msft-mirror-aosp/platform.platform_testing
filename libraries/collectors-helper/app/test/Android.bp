@@ -1,4 +1,4 @@
-// Copyright (C) 2020 The Android Open Source Project
+// Copyright (C) 2021 The Android Open Source Project
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,16 +16,17 @@ package {
     default_applicable_licenses: ["Android-Apache-2.0"],
 }
 
-android_test {
-    name: "CollectorsHelperAospTest",
+java_library {
+    name: "app-collector-helper-test",
     defaults: ["tradefed_errorprone_defaults"],
 
+    srcs: ["src/**/*.java"],
+
     static_libs: [
-        "perfetto-helper-test",
-        "app-collector-helper-test",
-        "jank-helper-test",
-        "memory-helper-test",
-        "system-helper-test",
+        "androidx.test.runner",
+        "junit",
+        "mockito-target",
+        "app-collector-helper",
     ],
 
     sdk_version: "current",
