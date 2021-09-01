@@ -21,4 +21,4 @@ package com.android.server.wm.flicker.annotation
  */
 @Retention(AnnotationRetention.RUNTIME)
 @Target(AnnotationTarget.FUNCTION, AnnotationTarget.CLASS)
-annotation class Group2
+annotation class Group4
