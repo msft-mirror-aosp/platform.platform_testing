@@ -136,7 +136,7 @@ public class SettingHelperImpl extends AbstractAutoStandardAppHelper implements 
     /** {@inheritDoc} */
     @Override
     public void openQuickSettings() {
-        stopSettingsApplication();
+        pressHome();
         executeShellCommand(getApplicationConfig(AutoConfigConstants.OPEN_QUICK_SETTINGS_COMMAND));
         UiObject2 settingObject =
                 findUiObject(
@@ -219,14 +219,10 @@ public class SettingHelperImpl extends AbstractAutoStandardAppHelper implements 
     public boolean isHotspotOn() {
         UiObject2 enableOption =
                 findUiObject(
-                                getResourceFromConfig(
-                                        AutoConfigConstants.SETTINGS,
-                                        AutoConfigConstants.NETWORK_AND_INTERNET_SETTINGS,
-                                        AutoConfigConstants.TOGGLE_HOTSPOT))
-                        .getChildren()
-                        .get(1)
-                        .getChildren()
-                        .get(0);
+                        getResourceFromConfig(
+                                AutoConfigConstants.SETTINGS,
+                                AutoConfigConstants.NETWORK_AND_INTERNET_SETTINGS,
+                                AutoConfigConstants.TOGGLE_HOTSPOT));
         return enableOption.isChecked();
     }
 
@@ -318,7 +314,7 @@ public class SettingHelperImpl extends AbstractAutoStandardAppHelper implements 
                             AutoConfigConstants.PAGE_TITLE),
                     getResourceFromConfig(
                             AutoConfigConstants.SETTINGS,
-                            AutoConfigConstants.APPS_AND_NOTIFICATIONS_SETTINGS,
+                            AutoConfigConstants.APPS_SETTINGS,
                             AutoConfigConstants.PERMISSIONS_PAGE_TITLE)
                 };
         for (BySelector selector : selectors) {
