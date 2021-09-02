@@ -14,15 +14,17 @@
  * limitations under the License.
  */
 
-package com.android.server.wm.flicker
+package com.android.server.wm.flicker.layers
 
-import com.android.server.wm.traces.common.layers.LayerTraceEntry
+import com.android.server.wm.flicker.IMAGINARY_COMPONENT
+import com.android.server.wm.flicker.assertThrows
+import com.android.server.wm.flicker.readLayerTraceFromFile
 import com.android.server.wm.flicker.traces.layers.LayersTraceSubject.Companion.assertThat
+import com.android.server.wm.traces.common.layers.LayerTraceEntry
 import com.google.common.truth.Truth
 import org.junit.FixMethodOrder
 import org.junit.Test
 import org.junit.runners.MethodSorters
-import kotlin.AssertionError
 
 /**
  * Contains [LayerTraceEntry] tests. To run this test: `atest

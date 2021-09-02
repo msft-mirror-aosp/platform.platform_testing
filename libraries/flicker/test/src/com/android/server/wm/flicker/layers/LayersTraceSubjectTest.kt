@@ -14,10 +14,16 @@
  * limitations under the License.
  */
 
-package com.android.server.wm.flicker
+package com.android.server.wm.flicker.layers
 
 import android.content.ComponentName
 import androidx.test.filters.FlakyTest
+import com.android.server.wm.flicker.DOCKER_STACK_DIVIDER_COMPONENT
+import com.android.server.wm.flicker.LAUNCHER_COMPONENT
+import com.android.server.wm.flicker.SIMPLE_APP_COMPONENT
+import com.android.server.wm.flicker.assertFailure
+import com.android.server.wm.flicker.assertThrows
+import com.android.server.wm.flicker.readLayerTraceFromFile
 import com.android.server.wm.flicker.traces.layers.LayersTraceSubject
 import com.android.server.wm.flicker.traces.layers.LayersTraceSubject.Companion.assertThat
 import com.android.server.wm.traces.common.Region

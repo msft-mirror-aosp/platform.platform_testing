@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
-package com.android.server.wm.flicker
+package com.android.server.wm.flicker.layers
 
+import com.android.server.wm.flicker.assertThrows
+import com.android.server.wm.flicker.readLayerTraceFromFile
 import com.android.server.wm.flicker.traces.layers.LayersTraceSubject
 import com.android.server.wm.traces.common.layers.LayersTrace
 import com.google.common.truth.Truth

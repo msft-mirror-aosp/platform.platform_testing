@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
-package com.android.server.wm.flicker
+package com.android.server.wm.flicker.windowmanager
 
+import com.android.server.wm.flicker.readTestFile
+import com.android.server.wm.flicker.readWmTraceFromFile
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 import com.android.server.wm.traces.common.windowmanager.WindowManagerState
 import com.android.server.wm.traces.common.windowmanager.windows.WindowContainer
