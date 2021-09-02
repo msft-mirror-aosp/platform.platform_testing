@@ -14,9 +14,12 @@
  * limitations under the License.
  */
 
-package com.android.server.wm.flicker
+package com.android.server.wm.flicker.service
 
-import com.android.server.wm.flicker.service.AssertionEngine
+import com.android.server.wm.flicker.getDefaultFlickerOutputDir
+import com.android.server.wm.flicker.readLayerTraceFromFile
+import com.android.server.wm.flicker.readTagTraceFromFile
+import com.android.server.wm.flicker.readWmTraceFromFile
 import com.android.server.wm.traces.common.tags.Tag
 import com.android.server.wm.traces.common.tags.Transition
 import com.android.server.wm.traces.common.tags.TransitionTag

@@ -14,8 +14,11 @@
  * limitations under the License.
  */
 
-package com.android.server.wm.flicker
+package com.android.server.wm.flicker.service
 
+import com.android.server.wm.flicker.FlickerTagProto
+import com.android.server.wm.flicker.FlickerTagStateProto
+import com.android.server.wm.flicker.FlickerTagTraceProto
 import com.android.server.wm.traces.common.tags.Transition
 import com.android.server.wm.traces.parser.tags.TagTraceParserUtil
 import com.google.common.truth.Truth.assertThat

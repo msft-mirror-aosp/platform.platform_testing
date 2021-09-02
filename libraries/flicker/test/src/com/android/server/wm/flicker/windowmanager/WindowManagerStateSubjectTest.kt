@@ -14,10 +14,21 @@
  * limitations under the License.
  */
 
-package com.android.server.wm.flicker
+package com.android.server.wm.flicker.windowmanager
 
 import android.graphics.Region
+import com.android.server.wm.flicker.CHROME_SPLASH_SCREEN_COMPONENT
+import com.android.server.wm.flicker.IMAGINARY_COMPONENT
+import com.android.server.wm.flicker.LAUNCHER_COMPONENT
+import com.android.server.wm.flicker.PIP_DISMISS_COMPONENT
+import com.android.server.wm.flicker.SCREEN_DECOR_COMPONENT
+import com.android.server.wm.flicker.SHELL_SPLIT_SCREEN_PRIMARY_COMPONENT
+import com.android.server.wm.flicker.SHELL_SPLIT_SCREEN_SECONDARY_COMPONENT
+import com.android.server.wm.flicker.WALLPAPER_COMPONENT
+import com.android.server.wm.flicker.assertFailure
+import com.android.server.wm.flicker.assertThrows
 import com.android.server.wm.flicker.assertions.FlickerSubject
+import com.android.server.wm.flicker.readWmTraceFromFile
 import com.android.server.wm.flicker.traces.FlickerSubjectException
 import com.android.server.wm.flicker.traces.windowmanager.WindowManagerStateSubject
 import com.android.server.wm.flicker.traces.windowmanager.WindowManagerTraceSubject.Companion.assertThat

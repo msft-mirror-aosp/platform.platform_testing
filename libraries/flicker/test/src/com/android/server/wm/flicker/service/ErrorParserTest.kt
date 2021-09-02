@@ -14,8 +14,11 @@
  * limitations under the License.
  */
 
-package com.android.server.wm.flicker
+package com.android.server.wm.flicker.service
 
+import com.android.server.wm.flicker.FlickerErrorProto
+import com.android.server.wm.flicker.FlickerErrorStateProto
+import com.android.server.wm.flicker.FlickerErrorTraceProto
 import com.android.server.wm.traces.parser.errors.ErrorTraceParserUtil
 import com.google.common.truth.Truth.assertThat
 import org.junit.FixMethodOrder

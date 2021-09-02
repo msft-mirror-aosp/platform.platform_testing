@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 The Android Open Source Project
+ * Copyright (C) 2021 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,15 @@
  * limitations under the License.
  */
 
-package com.android.server.wm.flicker
+package com.android.server.wm.flicker.windowmanager
 
 import android.content.ComponentName
 import android.view.Display
 import android.view.Surface
 import androidx.test.filters.FlakyTest
 import androidx.test.platform.app.InstrumentationRegistry
+import com.android.server.wm.flicker.readWmTraceFromDumpFile
+import com.android.server.wm.flicker.readWmTraceFromFile
 import com.android.server.wm.flicker.traces.windowmanager.WindowManagerStateSubject
 import com.android.server.wm.traces.common.Buffer
 import com.android.server.wm.traces.common.Color

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.server.wm.flicker
+package com.android.server.wm.flicker.service
 
 import com.android.server.wm.flicker.rules.WMFlickerServiceRule
 import com.google.common.truth.Truth
