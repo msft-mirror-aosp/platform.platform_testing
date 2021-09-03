@@ -1,4 +1,4 @@
-//Copyright (C) 2016 The Android Open Source Project
+//Copyright (C) 2021 The Android Open Source Project
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,20 +17,16 @@ package {
 }
 
 android_test {
-    name: "HelloWorldTests",
+    name: "PerfSetupTests",
 
     srcs: ["src/**/*.java"],
-    sdk_version: "current",
+    sdk_version: "test_current",
     min_sdk_version: "21",
 
     static_libs: ["androidx.test.runner"],
     certificate: "platform",
 
-    test_config: "configs/hello-world.xml",
-
-    test_options: {
-        extra_test_configs: ["configs/hallo-welt.xml",],
-    },
+    test_config: "configs/perf-setup.xml",
 
     test_suites: ["device-tests"],
 }

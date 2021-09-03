@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Copyright (C) 2017 The Android Open Source Project
+<!-- Copyright (C) 2021 The Android Open Source Project
 
      Licensed under the Apache License, Version 2.0 (the "License");
      you may not use this file except in compliance with the License.
@@ -14,19 +14,24 @@
      limitations under the License.
 -->
 <configuration description="Runs sample instrumentation test.">
-    <option name="test-suite-tag" value="apct" />
-    <option name="test-suite-tag" value="apct-instrumentation" />
-    <target_preparer class="com.android.tradefed.targetprep.TestFilePushSetup" />
+    <target_preparer class="com.android.tradefed.targetprep.RootTargetPreparer"/>
     <target_preparer class="com.android.tradefed.targetprep.TestAppInstallSetup">
-        <option name="test-file-name" value="HelloWorldTests.apk" />
+        <option name="test-file-name" value="PerfSetupTests.apk" />
     </target_preparer>
-    <target_preparer class="com.android.tradefed.targetprep.PushFilePreparer" />
-    <target_preparer class="com.android.tradefed.targetprep.RunCommandTargetPreparer" />
 
-    <option name="test-suite-tag" value="apct" />
-    <option name="test-tag" value="SampleInstrumentationTest" />
+    <target_preparer class="com.android.tradefed.targetprep.PushFilePreparer">
+        <option name="push" value="perf-setup.sh->/data/local/tmp/perf-setup.sh" />
+        <option name="cleanup" value="true" />
+    </target_preparer>
+
+    <target_preparer class="com.android.tradefed.targetprep.RunCommandTargetPreparer">
+        <option name="run-command" value="chmod 755 /data/local/tmp/perf-setup.sh" />
+        <option name="run-command" value="/data/local/tmp/perf-setup.sh" />,
+        <option name="throw-if-cmd-fail" value="true" />
+    </target_preparer>
+
     <test class="com.android.tradefed.testtype.AndroidJUnitTest" >
-        <option name="package" value="android.test.example.helloworld" />
+        <option name="package" value="android.test.perfsetup" />
         <option name="runner" value="androidx.test.runner.AndroidJUnitRunner" />
     </test>
 </configuration>
