@@ -26,7 +26,6 @@ import kotlin.math.min
  * Base state for a FSM
  */
 abstract class FSMState(protected val tags: MutableMap<Long, MutableList<Tag>>) {
-    private var lastTagId = -1
     abstract fun process(
         previous: WindowManagerStateHelper.Dump?,
         current: WindowManagerStateHelper.Dump,
@@ -41,7 +40,7 @@ abstract class FSMState(protected val tags: MutableMap<Long, MutableList<Tag>>) 
         taskId: Int = -1
     ) {
         val timestamp = min(state.wmState.timestamp, state.layerState.timestamp)
-        val tagId = lastTagId++
+        val tagId = ++lastTagId
         val startTag = Tag(id = tagId, transition, isStartTag = true, layerId = layerId,
             windowToken = windowToken, taskId = taskId)
         tags.putIfAbsent(timestamp, mutableListOf())
@@ -63,4 +62,8 @@ abstract class FSMState(protected val tags: MutableMap<Long, MutableList<Tag>>) 
     }
 
     protected fun hasOpenTag() = tags.values.flatten().size % 2 != 0
+
+    companion object {
+        private var lastTagId = -1
+    }
 }

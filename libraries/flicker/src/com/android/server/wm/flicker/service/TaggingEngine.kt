@@ -17,7 +17,9 @@
 package com.android.server.wm.flicker.service
 
 import android.util.Log
-import com.android.server.wm.flicker.service.processors.AppLaunchProcessor
+import com.android.server.wm.flicker.service.processors.ImeAppearProcessor
+import com.android.server.wm.flicker.service.processors.ImeDisappearProcessor
+import com.android.server.wm.flicker.service.processors.RotationProcessor
 import com.android.server.wm.traces.common.layers.LayersTrace
 import com.android.server.wm.traces.common.tags.TagState
 import com.android.server.wm.traces.common.tags.TagTrace
@@ -31,9 +33,11 @@ import java.nio.file.Path
  * Invokes all concrete tag producers and writes to a .winscope file
  */
 class TaggingEngine(private val outputDir: Path, private val testTag: String) {
-    private val transitions = listOf<ITagProcessor>(
+    private val transitions = listOf(
         // TODO: Keep adding new transition processors to invoke
-        AppLaunchProcessor()
+        ImeAppearProcessor(),
+        ImeDisappearProcessor(),
+        RotationProcessor()
     )
 
     /**

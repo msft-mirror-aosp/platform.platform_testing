@@ -18,9 +18,12 @@ package com.android.server.wm.traces.parser.windowmanager
 
 import android.content.ComponentName
 import android.view.Display
+import com.android.server.wm.traces.common.layers.Layer
+import com.android.server.wm.traces.common.layers.LayerTraceEntry
+import com.android.server.wm.traces.common.layers.Transform.Companion.isFlagSet
 import com.android.server.wm.traces.common.windowmanager.WindowManagerState
-import com.android.server.wm.traces.parser.ConditionList
 import com.android.server.wm.traces.parser.Condition
+import com.android.server.wm.traces.parser.ConditionList
 import com.android.server.wm.traces.parser.toActivityName
 import com.android.server.wm.traces.parser.toLayerName
 import com.android.server.wm.traces.parser.toWindowName
@@ -174,6 +177,31 @@ object WindowManagerConditionsFactory {
         Condition("isLayerVisible[$layerName]") {
             it.layerState.isVisible(layerName)
         }
+
+    fun isLayerColorAlphaOne(
+        component: ComponentName
+    ): Condition<WindowManagerStateHelper.Dump> =
+        Condition("isLayerColorAlphaOne[${component.toLayerName()}]") {
+            val layers = it.layerState.getVisibleLayersByName(component)
+            layers.any { layer -> layer.color.a == 1.0f }
+        }
+
+    fun isLayerTransformFlagSet(
+        component: ComponentName,
+        transform: Int
+    ): Condition<WindowManagerStateHelper.Dump> =
+        Condition("isLayerTransformFlagSet[${component.toLayerName()}]") {
+            val layers = it.layerState.getVisibleLayersByName(component)
+            layers.any { layer ->
+                layer.transform.type?.isFlagSet(transform) ?: false
+            }
+        }
+
+    private fun LayerTraceEntry.getVisibleLayersByName(
+        component: ComponentName
+    ): List<Layer> = this.visibleLayers.filter {
+        it.name.contains(component.toLayerName())
+    }
 
     fun isLayerVisible(
         component: ComponentName
