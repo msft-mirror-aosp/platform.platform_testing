@@ -49,6 +49,30 @@ class AssertionEngineTest {
                 windowToken = "",
                 layerId = -1
             )
+        ),
+        TransitionTag(
+            startTimestamp = 9213763541297,
+            endTimestamp = 9215895891561,
+            tag = Tag(
+                id = 2,
+                transition = Transition.IME_APPEAR,
+                isStartTag = true,
+                taskId = -1,
+                windowToken = "DummyAPP",
+                layerId = -1
+            )
+        ),
+        TransitionTag(
+            startTimestamp = 9213763541297,
+            endTimestamp = 9215895891561,
+            tag = Tag(
+                id = 3,
+                transition = Transition.ROTATION,
+                isStartTag = true,
+                taskId = -1,
+                windowToken = "",
+                layerId = -1
+            )
         )
     )
 
@@ -63,6 +87,18 @@ class AssertionEngineTest {
                 taskId = -1,
                 windowToken = "",
                 layerId = 2
+            )
+        ),
+        TransitionTag(
+            startTimestamp = 71607477186189,
+            endTimestamp = 71607812120180,
+            tag = Tag(
+                id = 2,
+                transition = Transition.ROTATION,
+                isStartTag = true,
+                taskId = -1,
+                windowToken = "",
+                layerId = -1
             )
         )
     )
@@ -116,10 +152,24 @@ class AssertionEngineTest {
     }
 
     @Test
-    fun canSplitLayersTrace() {
+    fun canSplitLayersTrace_layerId() {
         val layersTrace = readLayerTraceFromFile("layers_trace_openchrome.pb")
         val blocks = assertionEngine
             .splitLayersTraceByTags(layersTrace, layersTagsList, Transition.APP_LAUNCH)
+
+        Truth.assertThat(blocks).isNotEmpty()
+        Truth.assertThat(blocks.size).isEqualTo(1)
+
+        val entries = blocks.first().entries
+        Truth.assertThat(entries.first().timestamp).isEqualTo(71607477186189)
+        Truth.assertThat(entries.last().timestamp).isEqualTo(71607812120180)
+    }
+
+    @Test
+    fun canSplitLayersTrace_emptyTag() {
+        val layersTrace = readLayerTraceFromFile("layers_trace_openchrome.pb")
+        val blocks = assertionEngine
+                .splitLayersTraceByTags(layersTrace, layersTagsList, Transition.ROTATION)
 
         Truth.assertThat(blocks).isNotEmpty()
         Truth.assertThat(blocks.size).isEqualTo(1)
@@ -153,10 +203,38 @@ class AssertionEngineTest {
     }
 
     @Test
-    fun canSplitWmTrace() {
+    fun canSplitWmTrace_taskId() {
         val wmTrace = readWmTraceFromFile("wm_trace_openchrome.pb")
         val blocks = assertionEngine
             .splitWmTraceByTags(wmTrace, wmTagsList, Transition.APP_LAUNCH)
+
+        Truth.assertThat(blocks).isNotEmpty()
+        Truth.assertThat(blocks.size).isEqualTo(1)
+
+        val entries = blocks.first().entries
+        Truth.assertThat(entries.first().timestamp).isEqualTo(9213763541297)
+        Truth.assertThat(entries.last().timestamp).isEqualTo(9215895891561)
+    }
+
+    @Test
+    fun canSplitWmTrace_windowToken() {
+        val wmTrace = readWmTraceFromFile("wm_trace_openchrome.pb")
+        val blocks = assertionEngine
+                .splitWmTraceByTags(wmTrace, wmTagsList, Transition.IME_APPEAR)
+
+        Truth.assertThat(blocks).isNotEmpty()
+        Truth.assertThat(blocks.size).isEqualTo(1)
+
+        val entries = blocks.first().entries
+        Truth.assertThat(entries.first().timestamp).isEqualTo(9213763541297)
+        Truth.assertThat(entries.last().timestamp).isEqualTo(9215895891561)
+    }
+
+    @Test
+    fun canSplitWmTrace_emptyTag() {
+        val wmTrace = readWmTraceFromFile("wm_trace_openchrome.pb")
+        val blocks = assertionEngine
+                .splitWmTraceByTags(wmTrace, wmTagsList, Transition.ROTATION)
 
         Truth.assertThat(blocks).isNotEmpty()
         Truth.assertThat(blocks.size).isEqualTo(1)

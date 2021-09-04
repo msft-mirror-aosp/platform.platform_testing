@@ -19,7 +19,6 @@ package com.android.server.wm.flicker.service
 import android.util.Log
 import androidx.annotation.VisibleForTesting
 import com.android.server.wm.flicker.service.FlickerService.Companion.getFassFilePath
-import com.android.server.wm.flicker.service.detectors.AppLaunchDetector
 import com.android.server.wm.traces.common.errors.ErrorState
 import com.android.server.wm.traces.common.errors.ErrorTrace
 import com.android.server.wm.traces.common.layers.LayersTrace
@@ -39,7 +38,6 @@ import java.nio.file.Path
 class AssertionEngine(private val outputDir: Path, private val testTag: String) {
     private val flickerDetectors = mapOf<IFlickerDetector, Transition>(
         // TODO: Add new detectors to invoke
-        AppLaunchDetector() to Transition.APP_LAUNCH
     )
 
     fun analyze(
@@ -119,8 +117,10 @@ class AssertionEngine(private val outputDir: Path, private val testTag: String) 
     ): List<WindowManagerTrace> {
         val wmTags = transitionTags
             .filter { transitionTag ->
-                transitionTag.tag.layerId == -1 && transitionTag.tag.transition == transition
-            }
+                transitionTag.tag.taskId > 0 ||
+                transitionTag.tag.windowToken.isNotEmpty() ||
+                transitionTag.isEmpty()
+            }.filter { transitionTag -> transitionTag.tag.transition == transition }
 
         return wmTags.map { tag -> wmTrace.filter(tag.startTimestamp, tag.endTimestamp) }
     }
@@ -140,9 +140,8 @@ class AssertionEngine(private val outputDir: Path, private val testTag: String) 
         transition: Transition
     ): List<LayersTrace> {
         val layersTags = transitionTags
-            .filter { transitionTag ->
-                transitionTag.tag.layerId > 0 && transitionTag.tag.transition == transition
-            }
+            .filter { transitionTag -> transitionTag.tag.layerId > 0 || transitionTag.isEmpty() }
+            .filter { transitionTag -> transitionTag.tag.transition == transition }
 
         return layersTags.map { tag ->
             layersTrace.filter(tag.startTimestamp, tag.endTimestamp)

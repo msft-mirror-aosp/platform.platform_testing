@@ -18,10 +18,13 @@ package com.android.server.wm.traces.parser.windowmanager
 
 import android.content.ComponentName
 import android.view.Display
+import android.view.WindowManager
 import com.android.server.wm.traces.common.layers.Layer
 import com.android.server.wm.traces.common.layers.LayerTraceEntry
 import com.android.server.wm.traces.common.layers.Transform.Companion.isFlagSet
 import com.android.server.wm.traces.common.windowmanager.WindowManagerState
+import com.android.server.wm.traces.common.windowmanager.windows.Activity
+import com.android.server.wm.traces.common.windowmanager.windows.WindowState
 import com.android.server.wm.traces.parser.Condition
 import com.android.server.wm.traces.parser.ConditionList
 import com.android.server.wm.traces.parser.toActivityName
@@ -230,5 +233,16 @@ object WindowManagerConditionsFactory {
     private fun isImeSurfaceShown(): Condition<WindowManagerStateHelper.Dump> =
         Condition("isImeSurfaceShown") {
             it.wmState.inputMethodWindowState?.isSurfaceShown == true
+        }
+
+    fun isAppLaunchEnded(taskId: Int): Condition<WindowManagerStateHelper.Dump> =
+        Condition("containsVisibleAppLaunchWindow[$taskId]") { dump ->
+            val windowStates = dump.wmState.getRootTask(taskId)?.activities?.flatMap {
+                it.children.filterIsInstance<WindowState>()
+            }
+            windowStates != null && windowStates.none { window ->
+                window.attributes.type == WindowManager.LayoutParams.TYPE_APPLICATION_STARTING &&
+                        window.isVisible
+            }
         }
 }
