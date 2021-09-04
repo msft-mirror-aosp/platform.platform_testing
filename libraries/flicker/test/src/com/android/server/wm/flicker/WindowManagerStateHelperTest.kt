@@ -30,6 +30,7 @@ import com.android.server.wm.traces.common.Region
 import com.android.server.wm.traces.common.layers.Layer
 import com.android.server.wm.traces.common.layers.LayerTraceEntryBuilder
 import com.android.server.wm.traces.common.layers.Transform
+import com.android.server.wm.traces.common.windowmanager.WindowManagerState
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 import com.android.server.wm.traces.parser.toLayerName
 import com.android.server.wm.traces.parser.windowmanager.WindowManagerStateHelper
@@ -45,6 +46,7 @@ import org.junit.runners.MethodSorters
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class WindowManagerStateHelperTest {
     class TestWindowManagerStateHelper(
+        _wmState: WindowManagerState,
         /**
          * Predicate to supply a new UI information
          */
@@ -53,11 +55,11 @@ class WindowManagerStateHelperTest {
         retryIntervalMs: Long = 500L
     ) : WindowManagerStateHelper(InstrumentationRegistry.getInstrumentation(),
         deviceDumpSupplier, numRetries, retryIntervalMs) {
-        var wmState = computeState(ignoreInvalidStates = true).wmState
-        override fun computeState(ignoreInvalidStates: Boolean): Dump {
-            val state = super.computeState(ignoreInvalidStates)
-            wmState = state.wmState
-            return state
+        var wmState: WindowManagerState = _wmState
+            private set
+
+        override fun updateCurrState(value: Dump) {
+            wmState = value.wmState
         }
     }
 
@@ -133,6 +135,7 @@ class WindowManagerStateHelperTest {
                     layerList.add(WindowManagerStateHelper.IME_COMPONENT)
                 }
                 val layerTraceEntry = LayerTraceEntryBuilder(timestamp = 0,
+                    displays = emptyArray(),
                     layers = createImaginaryVisibleLayers(layerList)).build()
                 WindowManagerStateHelper.Dump(
                     wmState,
@@ -148,8 +151,8 @@ class WindowManagerStateHelperTest {
     fun canWaitForIme() {
         val trace = readWmTraceFromFile("wm_trace_ime.pb")
         val supplier = trace.asSupplier()
-        val helper = TestWindowManagerStateHelper(supplier, numRetries = trace.entries.size,
-            retryIntervalMs = 1)
+        val helper = TestWindowManagerStateHelper(trace.first(), supplier,
+            numRetries = trace.entries.size, retryIntervalMs = 1)
         try {
             WindowManagerStateSubject
                 .assertThat(helper.wmState)
@@ -167,8 +170,8 @@ class WindowManagerStateHelperTest {
     fun canFailImeNotShown() {
         val trace = readWmTraceFromFile("wm_trace_ime.pb")
         val supplier = trace.asSupplier()
-        val helper = TestWindowManagerStateHelper(supplier, numRetries = trace.entries.size,
-                retryIntervalMs = 1)
+        val helper = TestWindowManagerStateHelper(trace.first(), supplier,
+            numRetries = trace.entries.size, retryIntervalMs = 1)
         try {
             WindowManagerStateSubject
                 .assertThat(helper.wmState)
@@ -186,8 +189,8 @@ class WindowManagerStateHelperTest {
     fun canWaitForWindow() {
         val trace = readWmTraceFromFile("wm_trace_open_app_cold.pb")
         val supplier = trace.asSupplier()
-        val helper = TestWindowManagerStateHelper(supplier, numRetries = trace.entries.size,
-            retryIntervalMs = 1)
+        val helper = TestWindowManagerStateHelper(trace.first(), supplier,
+            numRetries = trace.entries.size, retryIntervalMs = 1)
         try {
             WindowManagerStateSubject
                 .assertThat(helper.wmState)
@@ -205,7 +208,8 @@ class WindowManagerStateHelperTest {
     fun canFailWindowNotShown() {
         val trace = readWmTraceFromFile("wm_trace_open_app_cold.pb")
         val supplier = trace.asSupplier()
-        val helper = TestWindowManagerStateHelper(supplier, numRetries = 3, retryIntervalMs = 1)
+        val helper = TestWindowManagerStateHelper(trace.first(), supplier,
+            numRetries = 3, retryIntervalMs = 1)
         try {
             WindowManagerStateSubject
                 .assertThat(helper.wmState)
@@ -223,8 +227,8 @@ class WindowManagerStateHelperTest {
     fun canDetectHomeActivityVisibility() {
         val trace = readWmTraceFromFile("wm_trace_open_and_close_chrome.pb")
         val supplier = trace.asSupplier()
-        val helper = TestWindowManagerStateHelper(supplier, numRetries = trace.entries.size,
-            retryIntervalMs = 1)
+        val helper = TestWindowManagerStateHelper(trace.first(), supplier,
+            numRetries = trace.entries.size, retryIntervalMs = 1)
         WindowManagerStateSubject
             .assertThat(helper.wmState)
             .isHomeActivityVisible()
@@ -242,8 +246,8 @@ class WindowManagerStateHelperTest {
     fun canWaitActivityRemoved() {
         val trace = readWmTraceFromFile("wm_trace_open_and_close_chrome.pb")
         val supplier = trace.asSupplier()
-        val helper = TestWindowManagerStateHelper(supplier, numRetries = trace.entries.size,
-            retryIntervalMs = 1)
+        val helper = TestWindowManagerStateHelper(trace.first(), supplier,
+            numRetries = trace.entries.size, retryIntervalMs = 1)
         WindowManagerStateSubject
             .assertThat(helper.wmState)
             .isHomeActivityVisible()
@@ -262,9 +266,11 @@ class WindowManagerStateHelperTest {
     @Test
     fun canWaitAppStateIdle() {
         val trace = readWmTraceFromFile("wm_trace_open_and_close_chrome.pb")
-        val supplier = trace.asSupplier(startingTimestamp = 69443911868523)
-        val helper = TestWindowManagerStateHelper(supplier, numRetries = trace.entries.size,
-            retryIntervalMs = 1)
+        val initialTimestamp = 69443911868523
+        val supplier = trace.asSupplier(startingTimestamp = initialTimestamp)
+        val initialEntry = trace.getEntry(initialTimestamp)
+        val helper = TestWindowManagerStateHelper(initialEntry, supplier,
+            numRetries = trace.entries.size, retryIntervalMs = 1)
         try {
             WindowManagerStateSubject
                 .assertThat(helper.wmState)
@@ -284,8 +290,8 @@ class WindowManagerStateHelperTest {
     fun canWaitForRotation() {
         val trace = readWmTraceFromFile("wm_trace_rotation.pb")
         val supplier = trace.asSupplier()
-        val helper = TestWindowManagerStateHelper(supplier, numRetries = trace.entries.size,
-            retryIntervalMs = 1)
+        val helper = TestWindowManagerStateHelper(trace.first(), supplier,
+            numRetries = trace.entries.size, retryIntervalMs = 1)
         WindowManagerStateSubject
             .assertThat(helper.wmState)
             .hasRotation(Surface.ROTATION_0)
@@ -314,8 +320,8 @@ class WindowManagerStateHelperTest {
     fun canWaitForRecents() {
         val trace = readWmTraceFromFile("wm_trace_open_recents.pb")
         val supplier = trace.asSupplier()
-        val helper = TestWindowManagerStateHelper(supplier, numRetries = trace.entries.size,
-            retryIntervalMs = 1)
+        val helper = TestWindowManagerStateHelper(trace.first(), supplier,
+            numRetries = trace.entries.size, retryIntervalMs = 1)
         WindowManagerStateSubject
             .assertThat(helper.wmState)
             .isRecentsActivityVisible(visible = false)

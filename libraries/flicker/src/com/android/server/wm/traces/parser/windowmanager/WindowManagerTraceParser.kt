@@ -60,6 +60,7 @@ import com.android.server.wm.traces.common.windowmanager.windows.WindowToken
 import com.android.server.wm.traces.parser.LOG_TAG
 import com.google.protobuf.nano.InvalidProtocolBufferNanoException
 import java.nio.file.Path
+import kotlin.math.max
 import kotlin.system.measureTimeMillis
 
 object WindowManagerTraceParser {
@@ -131,7 +132,7 @@ object WindowManagerTraceParser {
         }
 
         Log.v(LOG_TAG, "Parsing duration (WM Trace): ${traceParseTime}ms " +
-            "(avg ${traceParseTime / entries.size}ms per entry)")
+            "(avg ${traceParseTime / max(entries.size, 1)}ms per entry)")
         return WindowManagerTrace(entries.toTypedArray(), "${source?.toAbsolutePath()}")
     }
 

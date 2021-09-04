@@ -22,8 +22,9 @@ package com.android.server.wm.traces.common.layers
 class LayerTraceEntryBuilder(
     timestamp: Any,
     layers: Array<Layer>,
-    val hwcBlob: String = "",
-    val where: String = ""
+    private val displays: Array<Display>,
+    private val hwcBlob: String = "",
+    private val where: String = ""
 ) {
     // Necessary for compatibility with JS number type
     private val timestamp: Long = "$timestamp".toLong()
@@ -129,6 +130,6 @@ class LayerTraceEntryBuilder(
         // Fail if we find orphan layers.
         notifyOrphansLayers()
 
-        return LayerTraceEntry(timestamp, hwcBlob, where, rootLayers.toTypedArray())
+        return LayerTraceEntry(timestamp, hwcBlob, where, displays, rootLayers.toTypedArray())
     }
 }

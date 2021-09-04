@@ -64,6 +64,18 @@ class LayersTraceTest {
     }
 
     @Test
+    fun canParseFromDumpWithDisplay() {
+        val trace = readLayerTraceFromFile("layers_dump_with_display.pb")
+        Truth.assertWithMessage("Dump is not empty")
+            .that(trace)
+            .isNotEmpty()
+        Truth.assertWithMessage("Dump contains display is not empty")
+            .that(trace.first().displays)
+            .asList()
+            .isNotEmpty()
+    }
+
+    @Test
     fun canTestLayerOccludedBy_appLayerHasVisibleRegion() {
         val trace = readLayerTraceFromFile("layers_trace_occluded.pb")
         val entry = trace.getEntry(1700382131522L)
@@ -112,5 +124,24 @@ class LayersTraceTest {
         Truth.assertThat(error).hasMessageThat().contains("Trace start")
         Truth.assertThat(error).hasMessageThat().contains("Trace start")
         Truth.assertThat(error).hasMessageThat().contains("Trace file")
+    }
+
+    @Test
+    fun canFilter() {
+        val trace = readLayerTraceFromFile("layers_trace_openchrome.pb")
+        val splitlayersTrace = trace.filter(71607477186189, 71607812120180)
+
+        Truth.assertThat(splitlayersTrace).isNotEmpty()
+
+        Truth.assertThat(splitlayersTrace.entries.first().timestamp).isEqualTo(71607477186189)
+        Truth.assertThat(splitlayersTrace.entries.last().timestamp).isEqualTo(71607812120180)
+    }
+
+    @Test
+    fun canFilter_wrongTimestamps() {
+        val trace = readLayerTraceFromFile("layers_trace_openchrome.pb")
+        val splitLayersTrace = trace.filter(9213763541297, 9215895891561)
+
+        Truth.assertThat(splitLayersTrace).isEmpty()
     }
 }

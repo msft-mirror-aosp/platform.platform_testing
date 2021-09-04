@@ -126,6 +126,10 @@ open class Transform(val type: Int?, val matrix: Matrix) {
             val dtdy = FloatFormatter.format(dtdy)
             return "dsdx:$dsdx   dtdx:$dtdx   dsdy:$dsdy   dtdy:$dtdy"
         }
+
+        companion object {
+            val EMPTY: Matrix = Matrix(0f, 0f, 0f, 0f, 0f, 0f)
+        }
     }
 
     private data class Vec2(val x: Float, val y: Float)
@@ -159,6 +163,8 @@ open class Transform(val type: Int?, val matrix: Matrix) {
     }
 
     companion object {
+        val EMPTY: Transform = Transform(type = null, matrix = Matrix.EMPTY)
+
         /* transform type flags */
         const val TRANSLATE_VAL = 0x0001
         const val ROTATE_VAL = 0x0002

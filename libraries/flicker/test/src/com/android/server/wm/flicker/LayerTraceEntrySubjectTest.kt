@@ -17,6 +17,7 @@
 package com.android.server.wm.flicker
 
 import android.graphics.Region
+import com.android.server.wm.flicker.assertions.FlickerSubject
 import com.android.server.wm.flicker.traces.layers.LayerTraceEntrySubject
 import com.android.server.wm.flicker.traces.layers.LayersTraceSubject
 import com.android.server.wm.traces.parser.toWindowName
@@ -38,13 +39,14 @@ class LayerTraceEntrySubjectTest {
         val error = assertThrows(AssertionError::class.java) {
             LayersTraceSubject.assertThat(layersTraceEntries)
                 .first()
-                .contains(IMAGINARY_COMPONENT)
+                .visibleRegion(IMAGINARY_COMPONENT)
         }
         Truth.assertThat(error).hasMessageThat().contains(IMAGINARY_COMPONENT.className)
         Truth.assertThat(error).hasMessageThat().contains("Trace start")
         Truth.assertThat(error).hasMessageThat().contains("Trace start")
         Truth.assertThat(error).hasMessageThat().contains("Trace file")
         Truth.assertThat(error).hasMessageThat().contains("Entry")
+        Truth.assertThat(error).hasMessageThat().contains(FlickerSubject.ASSERTION_TAG)
     }
 
     @Test

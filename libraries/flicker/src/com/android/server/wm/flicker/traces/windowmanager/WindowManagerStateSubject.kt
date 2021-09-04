@@ -121,7 +121,8 @@ class WindowManagerStateSubject private constructor(
         val selectedWindows = subjects.filter { it.name.contains(windowName) }
 
         if (selectedWindows.isEmpty()) {
-            fail("Could not find", windowName)
+            fail(Fact.fact(ASSERTION_TAG, "frameRegion(${component?.toWindowName() ?: "<any>"})"),
+                    Fact.fact("Could not find", windowName))
         }
 
         val visibleWindows = selectedWindows.filter { it.isVisible }
@@ -141,7 +142,7 @@ class WindowManagerStateSubject private constructor(
         componentName: ComponentName,
         isVisible: Boolean = true
     ): WindowManagerStateSubject = apply {
-        hasWindowVisibility(aboveAppWindows, componentName, isVisible = isVisible)
+        hasWindowVisibility("isAboveAppWindow", aboveAppWindows, componentName, isVisible)
     }
 
     /**
@@ -156,7 +157,7 @@ class WindowManagerStateSubject private constructor(
         component: ComponentName,
         isVisible: Boolean = true
     ): WindowManagerStateSubject = apply {
-        hasWindowVisibility(belowAppWindows, component, isVisible = isVisible)
+        hasWindowVisibility("isBelowAppWindow", belowAppWindows, component, isVisible)
     }
 
     /**
@@ -179,7 +180,10 @@ class WindowManagerStateSubject private constructor(
         val aboveZ = wmState.windowStates.indexOfFirst { aboveWindowTitle in it.name }
         val belowZ = wmState.windowStates.indexOfFirst { belowWindowTitle in it.name }
         if (aboveZ >= belowZ) {
-            fail("$aboveWindowTitle is above $belowWindowTitle")
+            fail(Fact.fact(ASSERTION_TAG, "isAboveWindow(above=${aboveWindow.toWindowName()}, " +
+                "below=${belowWindow.toWindowName()}"),
+                    Fact.fact("Above", aboveWindowTitle),
+                    Fact.fact("Below", belowWindowTitle))
         }
     }
 
@@ -195,7 +199,7 @@ class WindowManagerStateSubject private constructor(
         component: ComponentName,
         isVisible: Boolean = true
     ): WindowManagerStateSubject = apply {
-        hasWindowVisibility(nonAppWindows, component, isVisible = isVisible)
+        hasWindowVisibility("containsNonAppWindow", nonAppWindows, component, isVisible)
     }
 
     /**
@@ -206,8 +210,9 @@ class WindowManagerStateSubject private constructor(
     fun isAppWindowOnTop(component: ComponentName): WindowManagerStateSubject = apply {
         val windowName = component.toWindowName()
         if (!wmState.topVisibleAppWindow.contains(windowName)) {
-            fail(Fact.fact("Not on top", component.toWindowName()),
-                    Fact.fact("Found", wmState.topVisibleAppWindow))
+            fail(Fact.fact(ASSERTION_TAG, "isAppWindowOnTop${component.toWindowName()}"),
+                Fact.fact("Not on top", component.toWindowName()),
+                Fact.fact("Found", wmState.topVisibleAppWindow))
         }
     }
 
@@ -233,7 +238,10 @@ class WindowManagerStateSubject private constructor(
                 val (otherTitle, otherRegion) = regions[j]
                 if (ourRegion.toAndroidRegion().op(otherRegion.toAndroidRegion(),
                         android.graphics.Region.Op.INTERSECT)) {
-                    fail(Fact.fact("Overlap", ourTitle), Fact.fact("Overlap", otherTitle))
+                    fail(Fact.fact(ASSERTION_TAG,
+                            "noWindowsOverlap${component.joinToString { it.toWindowName() }}"),
+                        Fact.fact("Overlap", ourTitle),
+                        Fact.fact("Overlap", otherTitle))
                 }
             }
         }
@@ -258,7 +266,7 @@ class WindowManagerStateSubject private constructor(
         if (!ignoreActivity && component.packageName.isNotEmpty()) {
             hasActivityVisibility(component, isVisible = isVisible)
         }
-        hasWindowVisibility(appWindows, component, isVisible = isVisible)
+        hasWindowVisibility("containsAppWindow", appWindows, component, isVisible)
     }
 
     /**
@@ -385,7 +393,7 @@ class WindowManagerStateSubject private constructor(
         if (!ignoreActivity && component.packageName.isNotEmpty()) {
             hasActivityVisibility(component, isVisible = true)
         }
-        hasWindowVisibility(subjects, component, isVisible = true)
+        hasWindowVisibility("isVisible", subjects, component, isVisible = true)
     }
 
     /**
@@ -406,7 +414,7 @@ class WindowManagerStateSubject private constructor(
         if (!ignoreActivity && component.packageName.isNotEmpty()) {
             hasActivityVisibility(component, isVisible = false)
         }
-        hasWindowVisibility(subjects, component, isVisible = false)
+        hasWindowVisibility("isInvisible", subjects, component, isVisible = false)
     }
 
     private fun hasActivityVisibility(component: ComponentName, isVisible: Boolean) {
@@ -421,6 +429,7 @@ class WindowManagerStateSubject private constructor(
     }
 
     private fun hasWindowVisibility(
+        assertionName: String,
         subjectList: List<WindowStateSubject>,
         component: ComponentName,
         isVisible: Boolean
@@ -433,11 +442,12 @@ class WindowManagerStateSubject private constructor(
         val windowsWithVisibility = foundWindows.filter { it.isVisible == isVisible }
 
         if (windowsWithVisibility.isEmpty()) {
-            if (isVisible) {
-                foundWindows.first().fail("Is Invisible", windowName)
-            } else {
-                foundWindows.first().fail("Is Visible", windowName)
-            }
+            val errorTag = if (isVisible) "Is Invisible" else "Is Visible"
+            val facts = listOf<Fact>(
+                Fact.fact(ASSERTION_TAG, "$assertionName(${component.toWindowName()})"),
+                Fact.fact(errorTag, windowName)
+            )
+            foundWindows.first().fail(facts)
         }
     }
 

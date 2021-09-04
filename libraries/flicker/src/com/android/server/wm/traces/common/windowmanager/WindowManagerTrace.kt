@@ -53,4 +53,20 @@ data class WindowManagerTrace(
         result = 31 * result + source.hashCode()
         return result
     }
+
+    /**
+     * Split the trace by the start and end timestamp.
+     *
+     * @param from the start timestamp
+     * @param to the end timestamp
+     * @return the subtrace trace(from, to)
+     */
+    fun filter(from: Long, to: Long): WindowManagerTrace {
+        return WindowManagerTrace(
+            this.entries
+                .dropWhile { it.timestamp < from }
+                .dropLastWhile { it.timestamp > to }
+                .toTypedArray(),
+            source = "")
+    }
 }
