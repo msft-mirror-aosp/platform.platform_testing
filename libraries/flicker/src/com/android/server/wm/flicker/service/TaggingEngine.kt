@@ -17,6 +17,7 @@
 package com.android.server.wm.flicker.service
 
 import android.util.Log
+import com.android.server.wm.flicker.service.processors.AppLaunchProcessor
 import com.android.server.wm.flicker.service.processors.ImeAppearProcessor
 import com.android.server.wm.flicker.service.processors.ImeDisappearProcessor
 import com.android.server.wm.flicker.service.processors.RotationProcessor
@@ -35,6 +36,7 @@ import java.nio.file.Path
 class TaggingEngine(private val outputDir: Path, private val testTag: String) {
     private val transitions = listOf(
         // TODO: Keep adding new transition processors to invoke
+        AppLaunchProcessor(),
         ImeAppearProcessor(),
         ImeDisappearProcessor(),
         RotationProcessor()
