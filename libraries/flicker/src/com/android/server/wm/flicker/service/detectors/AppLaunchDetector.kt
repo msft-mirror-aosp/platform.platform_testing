@@ -32,7 +32,7 @@ class AppLaunchDetector : IFlickerDetector {
                     Error(
                         stacktrace = "test stacktrace",
                         message = "Test message error",
-                        layerId = -1,
+                        layerId = 0,
                         windowToken = "",
                         taskId = 2
                     )
@@ -51,7 +51,7 @@ class AppLaunchDetector : IFlickerDetector {
                         message = "Test message error",
                         layerId = 2,
                         windowToken = "",
-                        taskId = -1
+                        taskId = 0
                     )
                 ), layersTrace.entries.last().timestamp)), source = "")
         }

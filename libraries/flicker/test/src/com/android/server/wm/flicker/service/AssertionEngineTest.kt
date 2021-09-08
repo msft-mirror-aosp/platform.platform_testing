@@ -47,7 +47,7 @@ class AssertionEngineTest {
                 isStartTag = true,
                 taskId = 4,
                 windowToken = "",
-                layerId = -1
+                layerId = 0
             )
         ),
         TransitionTag(
@@ -57,9 +57,9 @@ class AssertionEngineTest {
                 id = 2,
                 transition = Transition.IME_APPEAR,
                 isStartTag = true,
-                taskId = -1,
+                taskId = 0,
                 windowToken = "DummyAPP",
-                layerId = -1
+                layerId = 0
             )
         ),
         TransitionTag(
@@ -69,9 +69,9 @@ class AssertionEngineTest {
                 id = 3,
                 transition = Transition.ROTATION,
                 isStartTag = true,
-                taskId = -1,
+                taskId = 0,
                 windowToken = "",
-                layerId = -1
+                layerId = 0
             )
         )
     )
@@ -84,7 +84,7 @@ class AssertionEngineTest {
                 id = 1,
                 transition = Transition.APP_LAUNCH,
                 isStartTag = true,
-                taskId = -1,
+                taskId = 0,
                 windowToken = "",
                 layerId = 2
             )
@@ -96,9 +96,9 @@ class AssertionEngineTest {
                 id = 2,
                 transition = Transition.ROTATION,
                 isStartTag = true,
-                taskId = -1,
+                taskId = 0,
                 windowToken = "",
-                layerId = -1
+                layerId = 0
             )
         )
     )
@@ -111,7 +111,7 @@ class AssertionEngineTest {
                 id = 1,
                 transition = Transition.APP_LAUNCH,
                 isStartTag = true,
-                taskId = -1,
+                taskId = 0,
                 windowToken = "",
                 layerId = 2
             )
@@ -125,7 +125,7 @@ class AssertionEngineTest {
                 isStartTag = true,
                 taskId = 4,
                 windowToken = "",
-                layerId = -1
+                layerId = 0
             )
         ),
         TransitionTag(
@@ -135,7 +135,7 @@ class AssertionEngineTest {
                 id = 2,
                 transition = Transition.APP_CLOSE,
                 isStartTag = true,
-                taskId = -1,
+                taskId = 0,
                 windowToken = "",
                 layerId = 3
             )

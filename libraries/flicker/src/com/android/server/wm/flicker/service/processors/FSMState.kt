@@ -35,9 +35,9 @@ abstract class FSMState(protected val tags: MutableMap<Long, MutableList<Tag>>) 
     protected fun addStartTransitionTag(
         state: WindowManagerStateHelper.Dump,
         transition: Transition,
-        layerId: Int = -1,
+        layerId: Int = 0,
         windowToken: String = "",
-        taskId: Int = -1
+        taskId: Int = 0
     ) {
         val timestamp = min(state.wmState.timestamp, state.layerState.timestamp)
         val tagId = ++lastTagId
@@ -50,9 +50,9 @@ abstract class FSMState(protected val tags: MutableMap<Long, MutableList<Tag>>) 
     protected fun addEndTransitionTag(
         state: WindowManagerStateHelper.Dump,
         transition: Transition,
-        layerId: Int = -1,
+        layerId: Int = 0,
         windowToken: String = "",
-        taskId: Int = -1
+        taskId: Int = 0
     ) {
         val timestamp = max(state.wmState.timestamp, state.layerState.timestamp)
         val endTag = Tag(id = lastTagId, transition, isStartTag = false, layerId = layerId,
