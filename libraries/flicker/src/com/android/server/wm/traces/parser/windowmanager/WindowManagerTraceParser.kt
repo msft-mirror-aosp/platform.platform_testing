@@ -531,6 +531,7 @@ object WindowManagerTraceParser {
                 _isVisible = proto.visible,
                 configurationContainer = newConfigurationContainer(
                     proto.configurationContainer),
+                layerId = proto.surfaceControl?.layerId ?: 0,
                 children = children.toTypedArray()
             )
         }

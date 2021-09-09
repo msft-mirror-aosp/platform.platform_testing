@@ -14,19 +14,18 @@
  * limitations under the License.
  */
 
-package com.android.server.wm.traces.common.tags
+package android.platform.test.scenario.annotation;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * Saves the information about a transition tag.
+ * Identifies scenario that should be run only on large screen devices. Note that this annotation
+ * doesn't do any filtering for screen size, it's up to the test author to annotate the test
+ * correctly.
  */
-data class TransitionTag(
-    var tag: Tag,
-    var startTimestamp: Long,
-    var endTimestamp: Long
-) {
-    fun isEmpty(): Boolean {
-        return this.tag.layerId == 0 &&
-            this.tag.taskId == 0 &&
-            this.tag.windowToken.isEmpty()
-    }
-}
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE, ElementType.METHOD})
+public @interface LargeScreenOnly {}

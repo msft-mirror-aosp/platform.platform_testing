@@ -14,19 +14,12 @@
  * limitations under the License.
  */
 
-package com.android.server.wm.traces.common.tags
+package com.android.server.wm.flicker.service.detectors
 
 /**
- * Saves the information about a transition tag.
+ * Stores data for FASS assertions.
  */
-data class TransitionTag(
-    var tag: Tag,
-    var startTimestamp: Long,
-    var endTimestamp: Long
-) {
-    fun isEmpty(): Boolean {
-        return this.tag.layerId == 0 &&
-            this.tag.taskId == 0 &&
-            this.tag.windowToken.isEmpty()
-    }
-}
+data class AssertionData(
+    var name: String,
+    var category: String
+)

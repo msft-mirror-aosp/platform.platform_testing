@@ -31,6 +31,7 @@ open class WindowContainer constructor(
     val title: String,
     val token: String,
     val orientation: Int,
+    val layerId: Int,
     _isVisible: Boolean,
     configurationContainer: ConfigurationContainer,
     val children: Array<WindowContainer>
@@ -43,6 +44,7 @@ open class WindowContainer constructor(
         titleOverride ?: windowContainer.title,
         windowContainer.token,
         windowContainer.orientation,
+        windowContainer.layerId,
         isVisibleOverride ?: windowContainer.isVisible,
         windowContainer,
         windowContainer.children
