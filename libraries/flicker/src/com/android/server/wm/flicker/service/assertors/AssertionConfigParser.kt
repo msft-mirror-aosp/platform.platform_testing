@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.server.wm.flicker.service.detectors
+package com.android.server.wm.flicker.service.assertors
 
 import android.util.Log
 import com.android.server.wm.flicker.FLICKER_TAG
