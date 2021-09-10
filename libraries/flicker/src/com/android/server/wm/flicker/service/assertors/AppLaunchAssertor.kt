@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-package com.android.server.wm.flicker.service.detectors
+package com.android.server.wm.flicker.service.assertors
 
-import com.android.server.wm.flicker.service.IFlickerDetector
+import com.android.server.wm.flicker.service.ITransitionAssertor
 import com.android.server.wm.traces.common.errors.Error
 import com.android.server.wm.traces.common.errors.ErrorState
 import com.android.server.wm.traces.common.errors.ErrorTrace
 import com.android.server.wm.traces.common.layers.LayersTrace
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 
-class AppLaunchDetector : IFlickerDetector {
+class AppLaunchAssertor : ITransitionAssertor {
     override fun analyzeWmTrace(wmTrace: WindowManagerTrace): ErrorTrace {
         // TODO(b/196574615): Remove the mock data and add the assertions for App Launch
         if (wmTrace.entries.isNotEmpty()) {

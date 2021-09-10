@@ -14,39 +14,37 @@
  * limitations under the License.
  */
 
-package android.platform.scenario.multiuser;
+package android.platform.tests;
 
-import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertTrue;
 
 import android.content.pm.UserInfo;
-import android.platform.helpers.AutoConfigConstants;
 import android.platform.helpers.AutoUtility;
 import android.platform.helpers.HelperAccessor;
-import android.platform.helpers.IAutoProfileHelper;
+import android.platform.helpers.IAutoUserHelper;
 import android.platform.helpers.IAutoSettingHelper;
 import android.platform.helpers.MultiUserHelper;
+import android.platform.scenario.multiuser.MultiUserConstants;
 import androidx.test.runner.AndroidJUnit4;
 import org.junit.After;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
  * This test will create user through API and delete the same user from UI
- *
- * <p>It should be running under user 0, otherwise instrumentation may be killed after user
- * switched.
+ * <p> Set system property to run MU test: adb shell setprop fw.stop_bg_users_on_switch 0
  */
 @RunWith(AndroidJUnit4.class)
-public class DeleteGuestNotAllowed {
+public class SwitchUserQuickSettings {
 
     private static final String guestUser = MultiUserConstants.GUEST_NAME;
-    private HelperAccessor<IAutoProfileHelper> mProfilesHelper;
+    private final MultiUserHelper mMultiUserHelper = MultiUserHelper.getInstance();
+    private HelperAccessor<IAutoUserHelper> mUsersHelper;
     private HelperAccessor<IAutoSettingHelper> mSettingHelper;
 
-    public DeleteGuestNotAllowed() {
-        mProfilesHelper = new HelperAccessor<>(IAutoProfileHelper.class);
+    public SwitchUserQuickSettings() {
+        mUsersHelper = new HelperAccessor<>(IAutoUserHelper.class);
         mSettingHelper = new HelperAccessor<>(IAutoSettingHelper.class);
     }
 
@@ -55,19 +53,20 @@ public class DeleteGuestNotAllowed {
         AutoUtility.exitSuw();
     }
 
-    @Before
-    public void openAccountsFacet() {
-        mSettingHelper.get().openSetting(AutoConfigConstants.PROFILE_ACCOUNT_SETTINGS);
-    }
-
     @After
     public void goBackToHomeScreen() {
         mSettingHelper.get().goBackToSettingsScreen();
     }
 
     @Test
-    public void testDeleteGuestNotAllowed() throws Exception {
-        // verify that guest user cannot be seen and deleted from list of profiles
-        assertFalse(mProfilesHelper.get().isProfilePresent(guestUser));
+    public void testSwitchUser() throws Exception {
+        UserInfo previousUser = mMultiUserHelper.getCurrentForegroundUserInfo();
+        // switch to Guest
+        mUsersHelper.get().switchUser(previousUser.name, guestUser);
+        UserInfo currentUser = mMultiUserHelper.getCurrentForegroundUserInfo();
+        // verify the user switch
+        assertTrue(currentUser.name.equals(guestUser));
+        // switch to initial user before terminating the test
+        mUsersHelper.get().switchUser(currentUser.name, previousUser.name);
     }
 }

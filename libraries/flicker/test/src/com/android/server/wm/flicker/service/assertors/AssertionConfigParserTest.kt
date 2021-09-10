@@ -17,8 +17,6 @@
 package com.android.server.wm.flicker.service.assertors
 
 import com.android.server.wm.flicker.readTestFile
-import com.android.server.wm.flicker.service.detectors.AssertionConfigParser
-import com.android.server.wm.flicker.service.detectors.AssertionData
 import com.google.common.truth.Truth
 import org.junit.FixMethodOrder
 import org.junit.Test

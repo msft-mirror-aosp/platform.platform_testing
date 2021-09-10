@@ -22,7 +22,7 @@ import android.content.pm.UserInfo;
 import android.platform.helpers.AutoConfigConstants;
 import android.platform.helpers.AutoUtility;
 import android.platform.helpers.HelperAccessor;
-import android.platform.helpers.IAutoProfileHelper;
+import android.platform.helpers.IAutoUserHelper;
 import android.platform.helpers.IAutoSettingHelper;
 import android.platform.helpers.MultiUserHelper;
 import androidx.test.runner.AndroidJUnit4;
@@ -39,14 +39,14 @@ import org.junit.runner.RunWith;
  * switched.
  */
 @RunWith(AndroidJUnit4.class)
-public class DeleteCurrentLastAdminUser {
+public class DeleteLastAdminUser {
 
     private final MultiUserHelper mMultiUserHelper = MultiUserHelper.getInstance();
-    private HelperAccessor<IAutoProfileHelper> mProfilesHelper;
+    private HelperAccessor<IAutoUserHelper> mUsersHelper;
     private HelperAccessor<IAutoSettingHelper> mSettingHelper;
 
-    public DeleteCurrentLastAdminUser() {
-        mProfilesHelper = new HelperAccessor<>(IAutoProfileHelper.class);
+    public DeleteLastAdminUser() {
+        mUsersHelper = new HelperAccessor<>(IAutoUserHelper.class);
         mSettingHelper = new HelperAccessor<>(IAutoSettingHelper.class);
     }
 
@@ -70,9 +70,11 @@ public class DeleteCurrentLastAdminUser {
         // add new user
         UserInfo initialUser = mMultiUserHelper.getCurrentForegroundUserInfo();
         // user deleted self
-        mProfilesHelper.get().deleteCurrentProfile();
+        mUsersHelper.get().deleteCurrentUser();
         UserInfo newUser = mMultiUserHelper.getCurrentForegroundUserInfo();
         // verify that user is deleted
         assertTrue((initialUser.id != newUser.id) && (initialUser.name.equals(newUser.name)));
     }
+
 }
+

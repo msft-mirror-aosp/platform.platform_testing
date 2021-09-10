@@ -21,9 +21,9 @@ import com.android.server.wm.traces.common.layers.LayersTrace
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 
 /**
- * Interface for the WM Flicker Service Detector component.
+ * Interface for the WM Flicker Service Assertor component.
  */
-interface IFlickerDetector {
+interface ITransitionAssertor {
     /**
      * Analyzes a [WindowManagerTrace] trace to detect flickers.
      *

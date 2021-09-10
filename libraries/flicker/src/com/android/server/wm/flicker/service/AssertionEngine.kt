@@ -33,11 +33,11 @@ import java.nio.file.Files
 import java.nio.file.Path
 
 /**
- * Invokes the configured detectors and summarizes the results.
+ * Invokes the configured assertors and summarizes the results.
  */
 class AssertionEngine(private val outputDir: Path, private val testTag: String) {
-    private val flickerDetectors = mapOf<IFlickerDetector, Transition>(
-        // TODO: Add new detectors to invoke
+    private val flickerAssertors = mapOf<ITransitionAssertor, Transition>(
+        // TODO: Add new assertors to invoke
     )
 
     fun analyze(
@@ -48,18 +48,18 @@ class AssertionEngine(private val outputDir: Path, private val testTag: String) 
         val allStates = mutableListOf<ErrorState>()
         val transitionTags = getTransitionTags(tagTrace)
 
-        flickerDetectors.forEach { (detector, transition) ->
+        flickerAssertors.forEach { (assertor, transition) ->
             allStates.addAll(
                 splitWmTraceByTags(wmTrace, transitionTags, transition)
                     .flatMap { block ->
-                        detector.analyzeWmTrace(block).entries.asList()
+                        assertor.analyzeWmTrace(block).entries.asList()
                     }
             )
 
             allStates.addAll(
                 splitLayersTraceByTags(layersTrace, transitionTags, transition)
                     .flatMap { block ->
-                        detector.analyzeLayersTrace(block).entries.asList()
+                        assertor.analyzeLayersTrace(block).entries.asList()
                     }
             )
         }
