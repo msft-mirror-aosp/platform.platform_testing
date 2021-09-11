@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package android.platform.scenario.multiuser;
+package android.platform.tests;
 
 import static junit.framework.Assert.assertFalse;
 
@@ -22,9 +22,10 @@ import android.os.SystemClock;
 import android.platform.helpers.AutoConfigConstants;
 import android.platform.helpers.AutoUtility;
 import android.platform.helpers.HelperAccessor;
-import android.platform.helpers.IAutoProfileHelper;
+import android.platform.helpers.IAutoUserHelper;
 import android.platform.helpers.IAutoSettingHelper;
 import android.platform.helpers.MultiUserHelper;
+import android.platform.scenario.multiuser.MultiUserConstants;
 import androidx.test.runner.AndroidJUnit4;
 import org.junit.After;
 import org.junit.BeforeClass;
@@ -33,22 +34,19 @@ import org.junit.runner.RunWith;
 
 /**
  * This test will create user through API and delete the same user from UI
- *
- * <p>It should be running under user 0, otherwise instrumentation may be killed after user
- * switched.
  */
 @RunWith(AndroidJUnit4.class)
-public class DeleteNonAdminUser {
+public class DeleteAdminUser {
 
     private static final String userName = MultiUserConstants.SECONDARY_USER_NAME;
     private static final int WAIT_TIME = 10000;
     private final MultiUserHelper mMultiUserHelper = MultiUserHelper.getInstance();
-    private HelperAccessor<IAutoProfileHelper> mProfilesHelper;
+    private HelperAccessor<IAutoUserHelper> mUsersHelper;
     private HelperAccessor<IAutoSettingHelper> mSettingHelper;
     private int mTargetUserId;
 
-    public DeleteNonAdminUser() {
-        mProfilesHelper = new HelperAccessor<>(IAutoProfileHelper.class);
+    public DeleteAdminUser() {
+        mUsersHelper = new HelperAccessor<>(IAutoUserHelper.class);
         mSettingHelper = new HelperAccessor<>(IAutoSettingHelper.class);
     }
 
@@ -69,8 +67,10 @@ public class DeleteNonAdminUser {
         SystemClock.sleep(WAIT_TIME);
         // make the new user admin and delete new user
         mSettingHelper.get().openSetting(AutoConfigConstants.PROFILE_ACCOUNT_SETTINGS);
-        mProfilesHelper.get().deleteProfile(userName);
+        mUsersHelper.get().makeUserAdmin(userName);
+        mSettingHelper.get().openSetting(AutoConfigConstants.PROFILE_ACCOUNT_SETTINGS);
+        mUsersHelper.get().deleteUser(userName);
         // verify new user was deleted
-        assertFalse(mProfilesHelper.get().isProfilePresent(userName));
+        assertFalse(mUsersHelper.get().isUserPresent(userName));
     }
 }

@@ -22,11 +22,12 @@ import android.support.test.uiautomator.By;
 import android.support.test.uiautomator.UiObject2;
 import android.util.Log;
 
+
 /**
- * Implementation of {@link IAutoProfileHelper} to support tests of account settings
+ * Implementation of {@link IAutoUserHelper} to support tests of account settings
  */
-public class SettingProfileHelperImpl extends AbstractAutoStandardAppHelper
-    implements IAutoProfileHelper {
+public class SettingUserHelperImpl extends AbstractAutoStandardAppHelper
+    implements IAutoUserHelper {
 
     // Packages
     private static final String APP_NAME = AutoConfigConstants.SETTINGS;
@@ -36,9 +37,9 @@ public class SettingProfileHelperImpl extends AbstractAutoStandardAppHelper
     private static final int UI_RESPONSE_WAIT_MS = 10000;
 
     //constants
-    private static final String TAG = "SettingProfileHelperImpl";
+    private static final String TAG = "SettingUserHelperImpl";
 
-    public SettingProfileHelperImpl(Instrumentation instr) {
+    public SettingUserHelperImpl(Instrumentation instr) {
         super(instr);
     }
 
@@ -55,7 +56,7 @@ public class SettingProfileHelperImpl extends AbstractAutoStandardAppHelper
      */
     // Add a new user
     @Override
-    public void addProfile() {
+    public void addUser() {
         clickbutton(AutoConfigConstants.ADD_PROFILE);
         clickbutton(AutoConfigConstants.OK);
         SystemClock.sleep(UI_RESPONSE_WAIT_MS);
@@ -63,8 +64,8 @@ public class SettingProfileHelperImpl extends AbstractAutoStandardAppHelper
 
     // delete an existing user
     @Override
-    public void deleteProfile(String user) {
-        if (isProfilePresent(user)) {
+    public void deleteUser(String user) {
+        if (isUserPresent(user)) {
             clickbutton(user);
             clickbutton(AutoConfigConstants.DELETE);
             clickbutton(AutoConfigConstants.DELETE);
@@ -72,9 +73,9 @@ public class SettingProfileHelperImpl extends AbstractAutoStandardAppHelper
         }
     }
 
-    // delete self profile
+    // delete self User
     @Override
-    public void deleteCurrentProfile() {
+    public void deleteCurrentUser() {
         clickbutton(AutoConfigConstants.DELETE_SELF);
         clickbutton(AutoConfigConstants.DELETE);
         SystemClock.sleep(UI_RESPONSE_WAIT_MS);
@@ -85,49 +86,50 @@ public class SettingProfileHelperImpl extends AbstractAutoStandardAppHelper
      */
     // check if a user is present in the list of existing users
     @Override
-    public boolean isProfilePresent(String user) {
-        UiObject2 AddProfileButton =
+    public boolean isUserPresent(String user) {
+        UiObject2 addUserButton =
             scrollAndFindUiObject(
                 getResourceFromConfig(APP_NAME, APP_CONFIG, AutoConfigConstants.ADD_PROFILE));
         Log.v(
             TAG,
             String.format(
                 "AddProfileButton = %s ; UI_Obj = %s",
-                AutoConfigConstants.ADD_PROFILE, AddProfileButton));
-        if (AddProfileButton == null) {
+                AutoConfigConstants.ADD_PROFILE, addUserButton));
+        if (addUserButton == null) {
             clickbutton(AutoConfigConstants.MANAGE_OTHER_PROFILES);
-            UiObject2 profileObject = scrollAndFindUiObject(By.text(user));
-            return profileObject != null;
+            UiObject2 UserObject = scrollAndFindUiObject(By.text(user));
+            return UserObject != null;
         }
         return false;
     }
 
-    // switch profile from current user to given user
+    // switch User from current user to given user
     @Override
-    public void switchProfile(String userFrom, String userTo) {
+    public void switchUser(String userFrom, String userTo) {
         goToQuickSettings();
         clickbutton(userFrom);
         clickbutton(userTo);
         SystemClock.sleep(UI_RESPONSE_WAIT_MS);
     }
 
-    // add profile via quick settings
+    // add User via quick settings
     @Override
-    public void addProfileQuickSettings(String userFrom) {
+    public void addUserQuickSettings(String userFrom) {
         goToQuickSettings();
         clickbutton(userFrom);
-        addProfile();
+        addUser();
     }
 
     // make an existing user admin
     @Override
     public void makeUserAdmin(String user) {
-        if (isProfilePresent(user)) {
+        if (isUserPresent(user)) {
             clickbutton(user);
             clickbutton(AutoConfigConstants.MAKE_ADMIN);
             clickbutton(AutoConfigConstants.MAKE_ADMIN_CONFIRM);
         }
     }
+
 
     // click an on-screen element if expected text for that element is present
     private void clickbutton(String button_text) {
@@ -148,7 +150,7 @@ public class SettingProfileHelperImpl extends AbstractAutoStandardAppHelper
         SystemClock.sleep(UI_RESPONSE_WAIT_MS);
     }
 
-    // go to quick Settings for switching profile
+    // go to quick Settings for switching User
     private void goToQuickSettings() {
         clickbutton(AutoConfigConstants.TIME_PATTERN);
     }

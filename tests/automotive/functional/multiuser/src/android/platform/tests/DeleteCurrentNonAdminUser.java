@@ -14,37 +14,38 @@
  * limitations under the License.
  */
 
-package android.platform.scenario.multiuser;
+package android.platform.tests;
 
 import static junit.framework.Assert.assertTrue;
 
 import android.content.pm.UserInfo;
+import android.platform.helpers.AutoConfigConstants;
 import android.platform.helpers.AutoUtility;
 import android.platform.helpers.HelperAccessor;
-import android.platform.helpers.IAutoProfileHelper;
+import android.platform.helpers.IAutoUserHelper;
 import android.platform.helpers.IAutoSettingHelper;
 import android.platform.helpers.MultiUserHelper;
+import android.platform.scenario.multiuser.MultiUserConstants;
 import androidx.test.runner.AndroidJUnit4;
 import org.junit.After;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
  * This test will create user through API and delete the same user from UI
- *
- * <p>It should be running under user 0, otherwise instrumentation may be killed after user
- * switched.
+ * <p> Set system property to run MU test: adb shell setprop fw.stop_bg_users_on_switch 0
  */
 @RunWith(AndroidJUnit4.class)
-public class AddUserQuickSettings {
+public class DeleteCurrentNonAdminUser {
 
     private final MultiUserHelper mMultiUserHelper = MultiUserHelper.getInstance();
-    private HelperAccessor<IAutoProfileHelper> mProfilesHelper;
+    private HelperAccessor<IAutoUserHelper> mUsersHelper;
     private HelperAccessor<IAutoSettingHelper> mSettingHelper;
 
-    public AddUserQuickSettings() {
-        mProfilesHelper = new HelperAccessor<>(IAutoProfileHelper.class);
+    public DeleteCurrentNonAdminUser() {
+        mUsersHelper = new HelperAccessor<>(IAutoUserHelper.class);
         mSettingHelper = new HelperAccessor<>(IAutoSettingHelper.class);
     }
 
@@ -53,23 +54,30 @@ public class AddUserQuickSettings {
         AutoUtility.exitSuw();
     }
 
+    @Before
+    public void openAccountsFacet() {
+        mSettingHelper.get().openSetting(AutoConfigConstants.PROFILE_ACCOUNT_SETTINGS);
+    }
+
     @After
     public void goBackToHomeScreen() {
         mSettingHelper.get().goBackToSettingsScreen();
     }
 
     @Test
-    public void testAddUser() throws Exception {
-        // create new user quick settings
+    public void testRemoveUserSelf() throws Exception {
+        // add new user
         UserInfo initialUser = mMultiUserHelper.getCurrentForegroundUserInfo();
-        mProfilesHelper.get().addProfileQuickSettings(initialUser.name);
-        // switched to new user
+        mUsersHelper.get().addUser();
+        // switched to new user and user deleted self
         UserInfo newUser = mMultiUserHelper.getCurrentForegroundUserInfo();
-        // switch from new user to initial user
-        mProfilesHelper.get().switchProfile(newUser.name, initialUser.name);
-        // verify new user is seen in list of users
-        assertTrue(mMultiUserHelper.getUserByName(newUser.name) != null);
-        // remove new user
-        mMultiUserHelper.removeUser(newUser);
+        mSettingHelper.get().openSetting(AutoConfigConstants.PROFILE_ACCOUNT_SETTINGS);
+        mUsersHelper.get().deleteCurrentUser();
+        // goes to guest user, switch back to initial user
+        UserInfo guestUser = mMultiUserHelper.getCurrentForegroundUserInfo();
+        mMultiUserHelper.switchAndWaitForStable(
+            initialUser.id, MultiUserConstants.WAIT_FOR_IDLE_TIME_MS);
+        // verify that user is deleted
+        assertTrue(mMultiUserHelper.getUserByName(newUser.name) == null);
     }
 }

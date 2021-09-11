@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package android.platform.scenario.multiuser;
+package android.platform.tests;
 
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
@@ -23,9 +23,10 @@ import android.content.pm.UserInfo;
 import android.platform.helpers.AutoConfigConstants;
 import android.platform.helpers.AutoUtility;
 import android.platform.helpers.HelperAccessor;
-import android.platform.helpers.IAutoProfileHelper;
+import android.platform.helpers.IAutoUserHelper;
 import android.platform.helpers.IAutoSettingHelper;
 import android.platform.helpers.MultiUserHelper;
+import android.platform.scenario.multiuser.MultiUserConstants;
 import android.util.Log;
 import androidx.test.runner.AndroidJUnit4;
 import org.junit.After;
@@ -35,20 +36,18 @@ import org.junit.runner.RunWith;
 
 /**
  * This test will create user through API and delete the same user from UI
- *
- * <p>It should be running under user 0, otherwise instrumentation may be killed after user
- * switched.
+ * <p> Set system property to run MU test: adb shell setprop fw.stop_bg_users_on_switch 0
  */
 @RunWith(AndroidJUnit4.class)
 public class DeleteGuestSelfNotAllowed {
 
     private static final String guestUser = MultiUserConstants.GUEST_NAME;
     private final MultiUserHelper mMultiUserHelper = MultiUserHelper.getInstance();
-    private HelperAccessor<IAutoProfileHelper> mProfilesHelper;
+    private HelperAccessor<IAutoUserHelper> mUsersHelper;
     private HelperAccessor<IAutoSettingHelper> mSettingHelper;
 
     public DeleteGuestSelfNotAllowed() {
-        mProfilesHelper = new HelperAccessor<>(IAutoProfileHelper.class);
+        mUsersHelper = new HelperAccessor<>(IAutoUserHelper.class);
         mSettingHelper = new HelperAccessor<>(IAutoSettingHelper.class);
     }
 
@@ -66,14 +65,14 @@ public class DeleteGuestSelfNotAllowed {
     public void testDeleteGuestNotAllowed() throws Exception {
         UserInfo previousUser = mMultiUserHelper.getCurrentForegroundUserInfo();
         // switch to Guest and verify the user switch
-        mProfilesHelper.get().switchProfile(previousUser.name, guestUser);
+        mUsersHelper.get().switchUser(previousUser.name, guestUser);
         UserInfo currentUser = mMultiUserHelper.getCurrentForegroundUserInfo();
         assertTrue(currentUser.name.equals(guestUser));
         boolean IsDeleteAllowed = true;
         // try to delete self - runtime exception encountered
         try {
             mSettingHelper.get().openSetting(AutoConfigConstants.PROFILE_ACCOUNT_SETTINGS);
-            mProfilesHelper.get().deleteCurrentProfile();
+            mUsersHelper.get().deleteCurrentUser();
         } catch (RuntimeException err) {
             Log.v(
                 "DeleteGuestSelfNotAllowed",
@@ -82,6 +81,6 @@ public class DeleteGuestSelfNotAllowed {
         }
         assertFalse(IsDeleteAllowed);
         // switch to initial user before terminating the test
-        mProfilesHelper.get().switchProfile(currentUser.name, previousUser.name);
+        mUsersHelper.get().switchUser(currentUser.name, previousUser.name);
     }
 }
