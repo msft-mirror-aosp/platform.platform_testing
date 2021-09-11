@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package android.platform.scenario.multiuser;
+package android.platform.tests;
 
 import static junit.framework.Assert.assertTrue;
 
@@ -22,9 +22,10 @@ import android.content.pm.UserInfo;
 import android.platform.helpers.AutoConfigConstants;
 import android.platform.helpers.AutoUtility;
 import android.platform.helpers.HelperAccessor;
-import android.platform.helpers.IAutoProfileHelper;
+import android.platform.helpers.IAutoUserHelper;
 import android.platform.helpers.IAutoSettingHelper;
 import android.platform.helpers.MultiUserHelper;
+import android.platform.scenario.multiuser.MultiUserConstants;
 import androidx.test.runner.AndroidJUnit4;
 import org.junit.After;
 import org.junit.Before;
@@ -34,19 +35,18 @@ import org.junit.runner.RunWith;
 
 /**
  * This test will create user through API and delete the same user from UI
- *
- * <p>It should be running under user 0, otherwise instrumentation may be killed after user
- * switched.
+ * <p> Set system property to run MU test: adb shell setprop fw.stop_bg_users_on_switch 0
  */
 @RunWith(AndroidJUnit4.class)
-public class AddUserSettings {
+public class SwitchToGuestFromNonAdmin {
 
+    private static final String guestUser = MultiUserConstants.GUEST_NAME;
     private final MultiUserHelper mMultiUserHelper = MultiUserHelper.getInstance();
-    private HelperAccessor<IAutoProfileHelper> mProfilesHelper;
+    private HelperAccessor<IAutoUserHelper> mUsersHelper;
     private HelperAccessor<IAutoSettingHelper> mSettingHelper;
 
-    public AddUserSettings() {
-        mProfilesHelper = new HelperAccessor<>(IAutoProfileHelper.class);
+    public SwitchToGuestFromNonAdmin() {
+        mUsersHelper = new HelperAccessor<>(IAutoUserHelper.class);
         mSettingHelper = new HelperAccessor<>(IAutoSettingHelper.class);
     }
 
@@ -66,17 +66,20 @@ public class AddUserSettings {
     }
 
     @Test
-    public void testAddUser() throws Exception {
-        // create new user
+    public void testSwitchToGuest() throws Exception {
+        // add new user
         UserInfo initialUser = mMultiUserHelper.getCurrentForegroundUserInfo();
-        mProfilesHelper.get().addProfile();
-        // switched to new user
+        mUsersHelper.get().addUser();
+        // switched to new user account
         UserInfo newUser = mMultiUserHelper.getCurrentForegroundUserInfo();
-        // switch from new user to initial user
-        mProfilesHelper.get().switchProfile(newUser.name, initialUser.name);
-        // verify new user is seen in list of users
-        assertTrue(mMultiUserHelper.getUserByName(newUser.name) != null);
-        // remove new user
+        // switch to guest from new user
+        mUsersHelper.get().switchUser(newUser.name, guestUser);
+        // verify the user switch
+        UserInfo currentUser = mMultiUserHelper.getCurrentForegroundUserInfo();
+        assertTrue(currentUser.name.equals(guestUser));
+        // switch to initial user and delete new user before terminating the test
+        mMultiUserHelper.switchAndWaitForStable(
+            initialUser.id, MultiUserConstants.WAIT_FOR_IDLE_TIME_MS);
         mMultiUserHelper.removeUser(newUser);
     }
 }
