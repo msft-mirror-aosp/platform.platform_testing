@@ -16,49 +16,49 @@
 
 package android.platform.helpers;
 
-public interface IAutoProfileHelper extends IAppHelper {
+public interface IAutoUserHelper extends IAppHelper {
 
     /**
      * Setup expectation: Profiles and Accounts setting is open.
      *
      * <p>This method is to add an a new user.
      */
-    void addProfile();
+    void addUser();
 
     /**
      * Setup expectation: Profiles and Accounts setting is open.
      *
      * <p>This method is to add an a new user.
      */
-    void addProfileQuickSettings(String userName);
+    void addUserQuickSettings(String userName);
 
     /**
      * Setup expectation: Profiles and Accounts setting is open.
      *
      * <p>This method is to delete an existing user.
      */
-    void deleteProfile(String user);
+    void deleteUser(String user);
 
     /**
      * Setup expectation: Profiles and Accounts setting is open.
      *
      * <p>This method is to delete user's own profile.
      */
-    void deleteCurrentProfile();
+    void deleteCurrentUser();
 
     /**
      * Setup expectation: Profiles and Accounts setting is open.
      *
      * <p>This method is to check if user already exists.
      */
-    boolean isProfilePresent(String userName);
+    boolean isUserPresent(String userName);
 
     /**
      * Setup expectation: Profiles and Accounts setting is open.
      *
      * <p>This method is to switch between existing users.
      */
-    void switchProfile(String userFrom, String userTo);
+    void switchUser(String userFrom, String userTo);
 
     /**
      * Setup expectation: Profiles and Accounts setting is open.
