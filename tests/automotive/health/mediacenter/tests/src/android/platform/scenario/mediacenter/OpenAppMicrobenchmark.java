@@ -14,20 +14,16 @@
  * limitations under the License.
  */
 
-package android.platform.scenario.multiuser;
+package android.platform.test.scenario.mediacenter;
 
+import android.platform.test.scenario.AppStartupRunRule;
 import android.platform.test.microbenchmark.Microbenchmark;
-import android.platform.test.microbenchmark.Microbenchmark.TightMethodRule;
-import android.platform.test.rule.StopwatchRule;
-import android.platform.test.scenario.SleepAtTestFinishRule;
+
 import org.junit.Rule;
 import org.junit.runner.RunWith;
 
 @RunWith(Microbenchmark.class)
-public class SwitchToNewSecondaryUserBenchmark extends SwitchToNewSecondaryUser {
-    @Rule
-    public SleepAtTestFinishRule sleepRule =
-            new SleepAtTestFinishRule(MultiUserConstants.WAIT_FOR_IDLE_TIME_MS);
+public class OpenAppMicrobenchmark extends OpenApp {
 
-    @TightMethodRule public StopwatchRule stopwatchRule = new StopwatchRule();
+    @Rule public AppStartupRunRule mAppStartupRunRule = new AppStartupRunRule<>(sHelper.get());
 }

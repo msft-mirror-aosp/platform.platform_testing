@@ -13,28 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package android.platform.test.scenario.dial;
+
+package android.platform.test.scenario.mediacenter;
 
 import android.platform.helpers.HelperAccessor;
+import android.platform.helpers.IAutoMediaHelper;
 import android.platform.test.scenario.annotation.Scenario;
-import android.platform.helpers.IAutoDialHelper;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Scroll down and up in contacts screen of dialer app */
+/** Opens the Settings application and exits after. */
 @Scenario
 @RunWith(JUnit4.class)
-public class ScrollContactList {
-    static HelperAccessor<IAutoDialHelper> sHelper = new HelperAccessor<>(IAutoDialHelper.class);
+public class OpenApp {
+    static HelperAccessor<IAutoMediaHelper> sHelper = new HelperAccessor<>(IAutoMediaHelper.class);
 
     @Test
-    public void testScrollDownAndUp() {
-        sHelper.get().openContacts();
-        // test scroll down by one page.
-        sHelper.get().scrollDownOnePage();
-        // test scroll up by one page.
-        sHelper.get().scrollUpOnePage();
+    public void testOpen() {
+        sHelper.get().open();
     }
 }

@@ -16,17 +16,18 @@ package {
     default_applicable_licenses: ["Android-Apache-2.0"],
 }
 
-java_library_static {
-    name: "automotive-app-grid-scenarios",
-    min_sdk_version: "24",
-    srcs: [ "src/**/*.java" ],
-    libs: [
+java_library {
+    name: "app-collector-helper-test",
+    defaults: ["tradefed_errorprone_defaults"],
+
+    srcs: ["src/**/*.java"],
+
+    static_libs: [
         "androidx.test.runner",
-        "automotive-app-grid-helper",
-        "app-helpers-auto-interfaces",
-        "common-platform-scenarios",
-        "platform-test-options",
-        "platform-test-rules",
-        "ub-uiautomator",
+        "junit",
+        "mockito-target",
+        "app-collector-helper",
     ],
+
+    sdk_version: "current",
 }
