@@ -27,8 +27,7 @@ import com.android.server.wm.flicker.assertions.FlickerSubject
 import com.android.server.wm.flicker.readLayerTraceFromFile
 import com.android.server.wm.flicker.traces.layers.LayerTraceEntrySubject
 import com.android.server.wm.flicker.traces.layers.LayersTraceSubject
-import com.android.server.wm.traces.parser.toWindowName
-import com.android.server.wm.traces.parser.windowmanager.WindowManagerStateHelper
+import com.android.server.wm.traces.common.FlickerComponentName
 import com.google.common.truth.Truth
 import org.junit.FixMethodOrder
 import org.junit.Test
@@ -60,7 +59,7 @@ class LayerTraceEntrySubjectTest {
     fun testCanInspectBeginning() {
         val layersTraceEntries = readLayerTraceFromFile("layers_trace_launch_split_screen.pb")
         LayerTraceEntrySubject.assertThat(layersTraceEntries.entries.first())
-            .isVisible(WindowManagerStateHelper.NAV_BAR_COMPONENT)
+            .isVisible(FlickerComponentName.NAV_BAR)
             .notContains(DOCKER_STACK_DIVIDER_COMPONENT)
             .isVisible(LAUNCHER_COMPONENT)
     }
@@ -69,7 +68,7 @@ class LayerTraceEntrySubjectTest {
     fun testCanInspectEnd() {
         val layersTraceEntries = readLayerTraceFromFile("layers_trace_launch_split_screen.pb")
         LayerTraceEntrySubject.assertThat(layersTraceEntries.entries.last())
-            .isVisible(WindowManagerStateHelper.NAV_BAR_COMPONENT)
+            .isVisible(FlickerComponentName.NAV_BAR)
             .isVisible(DOCKER_STACK_DIVIDER_COMPONENT)
     }
 
@@ -141,7 +140,7 @@ class LayerTraceEntrySubjectTest {
         val expectedVisibleRegion = Region(0, 0, 1440, 99)
         val error = assertThrows(AssertionError::class.java) {
             LayersTraceSubject.assertThat(trace).entry(937126074082)
-                .visibleRegion(WindowManagerStateHelper.STATUS_BAR_COMPONENT)
+                .visibleRegion(FlickerComponentName.STATUS_BAR)
                 .coversExactly(expectedVisibleRegion)
         }
         assertFailure(error)
@@ -154,7 +153,7 @@ class LayerTraceEntrySubjectTest {
         val trace = readLayerTraceFromFile("layers_trace_launch_split_screen.pb")
         val expectedVisibleRegion = Region(0, 0, 1080, 145)
         LayersTraceSubject.assertThat(trace).entry(90480846872160)
-            .visibleRegion(WindowManagerStateHelper.STATUS_BAR_COMPONENT)
+            .visibleRegion(FlickerComponentName.STATUS_BAR)
             .coversExactly(expectedVisibleRegion)
     }
 
@@ -179,7 +178,7 @@ class LayerTraceEntrySubjectTest {
         entry.visibleRegion(useCompositionEngineRegionOnly = false)
             .coversExactly(Region(0, 0, 1440, 2960))
 
-        entry.visibleRegion(WindowManagerStateHelper.IME_COMPONENT,
+        entry.visibleRegion(FlickerComponentName.IME,
             useCompositionEngineRegionOnly = false)
             .coversExactly(Region(0, 171, 1440, 2960))
     }

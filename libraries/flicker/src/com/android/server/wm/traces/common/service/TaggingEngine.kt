@@ -14,43 +14,47 @@
  * limitations under the License.
  */
 
-package com.android.server.wm.flicker.service
+package com.android.server.wm.traces.common.service
 
-import android.util.Log
-import com.android.server.wm.flicker.FLICKER_TAG
+import com.android.server.wm.traces.common.service.processors.ImeDisappearProcessor
+import com.android.server.wm.traces.common.service.processors.ImeAppearProcessor
 import com.android.server.wm.traces.common.layers.LayersTrace
 import com.android.server.wm.traces.common.service.processors.AppLaunchProcessor
-import com.android.server.wm.traces.common.service.processors.ImeAppearProcessor
-import com.android.server.wm.traces.common.service.processors.ImeDisappearProcessor
 import com.android.server.wm.traces.common.service.processors.RotationProcessor
 import com.android.server.wm.traces.common.tags.TagState
 import com.android.server.wm.traces.common.tags.TagTrace
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
-import java.nio.file.Path
 
 /**
  * Invokes all concrete tag producers and writes to a .winscope file
+ *
+ * The timestamp constructor must be a string due to lack of Kotlin/KotlinJS Long compatibility
+ *
+ * The traces are passed as constructor arguments due to name mangling in KotlinJS
+ *
+ * @param logger Platform dependent function for logging
+ * @param wmTrace WindowManager trace
+ * @param layersTrace SurfaceFlinger trace
  */
-class TaggingEngine(private val outputDir: Path, private val testTag: String) {
+class TaggingEngine(
+    private val wmTrace: WindowManagerTrace,
+    private val layersTrace: LayersTrace,
+    private val logger: (String) -> Unit
+) {
     private val transitions = listOf(
         // TODO: Keep adding new transition processors to invoke
-        AppLaunchProcessor { log(it) },
-        ImeAppearProcessor { log(it) },
-        ImeDisappearProcessor { log(it) },
-        RotationProcessor { log(it) }
+        ImeAppearProcessor(logger),
+        ImeDisappearProcessor(logger),
+        RotationProcessor(logger),
+        AppLaunchProcessor(logger)
     )
-
-    private fun log(value: String) {
-        Log.v(FLICKER_TAG, value)
-    }
 
     /**
      * Generate tags denoting start and end points for all [transitions] within traces
-     * @param wmTrace - WindowManager trace
-     * @param layersTrace - SurfaceFlinger trace
      */
-    fun tag(wmTrace: WindowManagerTrace, layersTrace: LayersTrace): TagTrace {
+    fun run(): TagTrace {
         val allStates = transitions.flatMap {
+            logger.invoke("Generating tags for ${it::class.simpleName}")
             it.generateTags(wmTrace, layersTrace).entries.asList()
         }
 

@@ -88,7 +88,7 @@ class ErrorTraceParserUtil {
                     }
                     states.add(
                             ErrorState(
-                                timestamp = stateProto.timestamp,
+                                _timestamp = stateProto.timestamp.toString(),
                                 errors = errors.toTypedArray()))
                 }
                 traceParseTime += errorParseTime

@@ -18,6 +18,7 @@ package com.android.server.wm.flicker.service.processors
 
 import com.android.server.wm.flicker.readLayerTraceFromFile
 import com.android.server.wm.flicker.readWmTraceFromFile
+import com.android.server.wm.traces.common.service.processors.AppLaunchProcessor
 import com.google.common.truth.Truth
 import org.junit.Test
 
@@ -26,6 +27,7 @@ import org.junit.Test
  * FlickerLibTest:AppLaunchProcessorTest`
  */
 class AppLaunchProcessorTest {
+    private val processor = AppLaunchProcessor { }
     /**
      * Scenarios expecting tags
      */
@@ -84,8 +86,7 @@ class AppLaunchProcessorTest {
 
     @Test
     fun tagsColdAppLaunch() {
-        val tagStates = AppLaunchProcessor()
-                .generateTags(wmTraceColdAppLaunch, sfTraceColdAppLaunch).entries
+        val tagStates = processor.generateTags(wmTraceColdAppLaunch, sfTraceColdAppLaunch).entries
         Truth.assertThat(tagStates.size).isEqualTo(2)
 
         val startTagTimestamp = 268309543090536 // Represents 3d2h31m49s543ms
@@ -96,8 +97,8 @@ class AppLaunchProcessorTest {
 
     @Test
     fun tagsWarmAppLaunch() {
-        val tagStates = AppLaunchProcessor()
-                .generateTags(wmTraceWarmAppLaunch, sfTraceWarmAppLaunch).entries
+        val tagStates = processor
+            .generateTags(wmTraceWarmAppLaunch, sfTraceWarmAppLaunch).entries
         Truth.assertThat(tagStates.size).isEqualTo(2)
 
         val startTagTimestamp = 237300088466617 // Represents 2d17h55m0s88ms
@@ -108,8 +109,8 @@ class AppLaunchProcessorTest {
 
     @Test
     fun tagsAppLaunchByIntent() {
-        val tagStates = AppLaunchProcessor()
-                .generateTags(wmTraceAppLaunchByIntent, sfTraceAppLaunchByIntent).entries
+        val tagStates = processor
+            .generateTags(wmTraceAppLaunchByIntent, sfTraceAppLaunchByIntent).entries
         Truth.assertThat(tagStates.size).isEqualTo(2)
 
         val startTagTimestamp = 80872063113909 // Represents 0d22h27m52s63ms
@@ -120,8 +121,8 @@ class AppLaunchProcessorTest {
 
     @Test
     fun tagsAppLaunchWithRotation() {
-        val tagStates = AppLaunchProcessor()
-                .generateTags(wmTraceAppLaunchWithRotation, sfTraceAppLaunchWithRotation).entries
+        val tagStates = processor
+            .generateTags(wmTraceAppLaunchWithRotation, sfTraceAppLaunchWithRotation).entries
         Truth.assertThat(tagStates.size).isEqualTo(2)
 
         val startTagTimestamp = 17864904019309 // Represents 0d4h57m44s904ms
@@ -132,15 +133,14 @@ class AppLaunchProcessorTest {
 
     @Test
     fun doesNotTagComposeNewMessage() {
-        val tagStates = AppLaunchProcessor()
-                .generateTags(wmTraceComposeNewMessage, sfTraceComposeNewMessage).entries
+        val tagStates = processor
+            .generateTags(wmTraceComposeNewMessage, sfTraceComposeNewMessage).entries
         Truth.assertThat(tagStates).isEmpty()
     }
 
     @Test
     fun doesNotTagRotation() {
-        val tagStates = AppLaunchProcessor()
-                .generateTags(wmTraceRotation, sfTraceRotation).entries
+        val tagStates = processor.generateTags(wmTraceRotation, sfTraceRotation).entries
         Truth.assertThat(tagStates).isEmpty()
     }
 }

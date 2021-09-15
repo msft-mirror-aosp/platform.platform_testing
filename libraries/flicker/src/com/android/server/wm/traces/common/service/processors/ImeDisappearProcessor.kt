@@ -14,47 +14,47 @@
  * limitations under the License.
  */
 
-package com.android.server.wm.flicker.service.processors
+package com.android.server.wm.traces.common.service.processors
 
-import android.util.Log
+import com.android.server.wm.traces.common.ConditionList
+import com.android.server.wm.traces.common.DeviceStateDump
+import com.android.server.wm.traces.common.FlickerComponentName
+import com.android.server.wm.traces.common.WindowManagerConditionsFactory.isImeShown
+import com.android.server.wm.traces.common.WindowManagerConditionsFactory.isLayerColorAlphaOne
+import com.android.server.wm.traces.common.WindowManagerConditionsFactory.isLayerTransformFlagSet
+import com.android.server.wm.traces.common.layers.LayerTraceEntry
 import com.android.server.wm.traces.common.layers.Transform
+import com.android.server.wm.traces.common.service.PlatformConsts
 import com.android.server.wm.traces.common.tags.Tag
 import com.android.server.wm.traces.common.tags.Transition
-import com.android.server.wm.traces.parser.ConditionList
-import com.android.server.wm.traces.parser.toLayerName
-import com.android.server.wm.traces.parser.windowmanager.WindowManagerConditionsFactory.isImeShown
-import com.android.server.wm.traces.parser.windowmanager.WindowManagerConditionsFactory.isLayerColorAlphaOne
-import com.android.server.wm.traces.parser.windowmanager.WindowManagerConditionsFactory.isLayerTransformFlagSet
-import com.android.server.wm.traces.parser.windowmanager.WindowManagerStateHelper
-import com.android.server.wm.traces.parser.windowmanager.WindowManagerStateHelper.Companion.IME_COMPONENT
+import com.android.server.wm.traces.common.windowmanager.WindowManagerState
 
-class ImeDisappearProcessor : TransitionProcessor() {
+class ImeDisappearProcessor(logger: (String) -> Unit) : TransitionProcessor(logger) {
     override fun getInitialState(tags: MutableMap<Long, MutableList<Tag>>) =
         WaitImeDisappearStart(tags)
 
     /**
      * Base state for the FSM, check if there are more WM and SF states to process
      */
-    abstract class BaseState(tags: MutableMap<Long, MutableList<Tag>>) : FSMState(tags) {
+    abstract inner class BaseState(tags: MutableMap<Long, MutableList<Tag>>) : FSMState(tags) {
         protected abstract fun doProcessState(
-            previous: WindowManagerStateHelper.Dump?,
-            current: WindowManagerStateHelper.Dump,
-            next: WindowManagerStateHelper.Dump
+            previous: DeviceStateDump<WindowManagerState, LayerTraceEntry>?,
+            current: DeviceStateDump<WindowManagerState, LayerTraceEntry>,
+            next: DeviceStateDump<WindowManagerState, LayerTraceEntry>
         ): FSMState
 
         override fun process(
-            previous: WindowManagerStateHelper.Dump?,
-            current: WindowManagerStateHelper.Dump,
-            next: WindowManagerStateHelper.Dump?
+            previous: DeviceStateDump<WindowManagerState, LayerTraceEntry>?,
+            current: DeviceStateDump<WindowManagerState, LayerTraceEntry>,
+            next: DeviceStateDump<WindowManagerState, LayerTraceEntry>?
         ): FSMState? {
             return if (next != null) {
                 doProcessState(previous, current, next)
             } else {
                 // last state
-                Log.v(LOG_TAG,
-                        "(${current.layerState.timestamp}) Trace has reached the end")
+                logger.invoke("(${current.layerState.timestamp}) Trace has reached the end")
                 if (hasOpenTag()) {
-                    Log.v(LOG_TAG, "(${current.layerState.timestamp}) Has an open tag, " +
+                    logger.invoke("(${current.layerState.timestamp}) Has an open tag, " +
                             "closing it on the last SF state")
                     addEndTransitionTag(current, Transition.IME_DISAPPEAR)
                 }
@@ -68,32 +68,32 @@ class ImeDisappearProcessor : TransitionProcessor() {
      * Different conditions required for IME closing by gesture (layer color alpha < 1), compared
      * to IME closing via app close (layer translate SCALE_VAL bit set)
      */
-    class WaitImeDisappearStart(
+    inner class WaitImeDisappearStart(
         tags: MutableMap<Long, MutableList<Tag>>
     ) : BaseState(tags) {
-        private val isImeShown = isImeShown()
+        private val isImeShown = isImeShown(PlatformConsts.DEFAULT_DISPLAY)
         private val isImeAppeared =
             ConditionList(listOf(
                 isImeShown,
-                isLayerColorAlphaOne(IME_COMPONENT),
-                isLayerTransformFlagSet(IME_COMPONENT, Transform.TRANSLATE_VAL),
-                isLayerTransformFlagSet(IME_COMPONENT, Transform.SCALE_VAL).negate()
+                isLayerColorAlphaOne(FlickerComponentName.IME),
+                isLayerTransformFlagSet(FlickerComponentName.IME, Transform.TRANSLATE_VAL),
+                isLayerTransformFlagSet(FlickerComponentName.IME, Transform.SCALE_VAL).negate()
             ))
         private val isImeDisappearByGesture =
             ConditionList(listOf(
                 isImeShown,
-                isLayerColorAlphaOne(IME_COMPONENT).negate()
+                isLayerColorAlphaOne(FlickerComponentName.IME).negate()
             ))
         private val isImeDisappearByAppClose =
             ConditionList(listOf(
                 isImeShown,
-                isLayerTransformFlagSet(IME_COMPONENT, Transform.SCALE_VAL)
+                isLayerTransformFlagSet(FlickerComponentName.IME, Transform.SCALE_VAL)
             ))
 
         override fun doProcessState(
-            previous: WindowManagerStateHelper.Dump?,
-            current: WindowManagerStateHelper.Dump,
-            next: WindowManagerStateHelper.Dump
+            previous: DeviceStateDump<WindowManagerState, LayerTraceEntry>?,
+            current: DeviceStateDump<WindowManagerState, LayerTraceEntry>,
+            next: DeviceStateDump<WindowManagerState, LayerTraceEntry>
         ): FSMState {
             if (previous == null) return this
 
@@ -102,17 +102,17 @@ class ImeDisappearProcessor : TransitionProcessor() {
                 isImeDisappearByAppClose.isSatisfied(current))) {
                 processImeDisappearing(current)
             } else {
-                Log.v(LOG_TAG, "(${current.layerState.timestamp}) IME disappear not started.")
+                logger.invoke("(${current.layerState.timestamp}) IME disappear not started.")
                 this
             }
         }
 
         private fun processImeDisappearing(
-            current: WindowManagerStateHelper.Dump
+            current: DeviceStateDump<WindowManagerState, LayerTraceEntry>
         ): FSMState {
-            Log.v(LOG_TAG, "(${current.layerState.timestamp}) IME disappear started.")
+            logger.invoke("(${current.layerState.timestamp}) IME disappear started.")
             val inputMethodLayer = current.layerState.visibleLayers.first {
-                it.name.contains(IME_COMPONENT.toLayerName())
+                it.name.contains(FlickerComponentName.IME.toLayerName())
             }
             addStartTransitionTag(current, Transition.IME_DISAPPEAR, layerId = inputMethodLayer.id)
             return WaitImeDisappearFinished(tags, inputMethodLayer.id)
@@ -123,23 +123,24 @@ class ImeDisappearProcessor : TransitionProcessor() {
      * FSM state to check when the IME disappear has finished i.e. when the input method layer is
      * no longer visible.
      */
-    class WaitImeDisappearFinished(
+    inner class WaitImeDisappearFinished(
         tags: MutableMap<Long, MutableList<Tag>>,
         private val layerId: Int
     ) : BaseState(tags) {
+        private val imeNotShown = isImeShown(PlatformConsts.DEFAULT_DISPLAY).negate()
         override fun doProcessState(
-            previous: WindowManagerStateHelper.Dump?,
-            current: WindowManagerStateHelper.Dump,
-            next: WindowManagerStateHelper.Dump
+            previous: DeviceStateDump<WindowManagerState, LayerTraceEntry>?,
+            current: DeviceStateDump<WindowManagerState, LayerTraceEntry>,
+            next: DeviceStateDump<WindowManagerState, LayerTraceEntry>
         ): FSMState {
-            return if (isImeShown().negate().isSatisfied(current)) {
+            return if (imeNotShown.isSatisfied(current)) {
                 // tag on the last complete state at the start
-                Log.v(LOG_TAG, "(${current.layerState.timestamp}) IME disappear end detected.")
+                logger.invoke("(${current.layerState.timestamp}) IME disappear end detected.")
                 addEndTransitionTag(current, Transition.IME_DISAPPEAR, layerId = layerId)
                 // return to start to wait for a second IME disappear
                 WaitImeDisappearStart(tags)
             } else {
-                Log.v(LOG_TAG, "(${current.layerState.timestamp}) IME disappear not finished.")
+                logger.invoke("(${current.layerState.timestamp}) IME disappear not finished.")
                 this
             }
         }

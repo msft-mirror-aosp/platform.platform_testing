@@ -16,12 +16,12 @@
 
 package com.android.server.wm.flicker.service
 
-import android.content.ComponentName
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.UiDevice
 import com.android.server.wm.flicker.helpers.StandardAppHelper
 import com.android.server.wm.flicker.helpers.wakeUpAndGoToHomeScreen
 import com.android.server.wm.flicker.rules.WMFlickerServiceRule
+import com.android.server.wm.traces.common.FlickerComponentName
 import org.junit.FixMethodOrder
 import org.junit.Rule
 import org.junit.Test
@@ -34,7 +34,7 @@ import org.junit.runners.MethodSorters
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class RotationMockTest {
-    private val DUMMY_APP = ComponentName("com.google.android.apps.messaging",
+    private val DUMMY_APP = FlickerComponentName("com.google.android.apps.messaging",
             "com.google.android.apps.messaging.ui.ConversationListActivity")
 
     val instrumentation = InstrumentationRegistry.getInstrumentation()

@@ -17,9 +17,9 @@
 package com.android.server.wm.flicker.rules
 
 import android.app.Instrumentation
-import android.content.ComponentName
 import androidx.test.platform.app.InstrumentationRegistry
 import com.android.server.wm.flicker.helpers.StandardAppHelper
+import com.android.server.wm.traces.common.FlickerComponentName
 import com.android.server.wm.traces.parser.windowmanager.WindowManagerStateHelper
 import org.junit.rules.TestWatcher
 import org.junit.runner.Description
@@ -31,7 +31,7 @@ import org.junit.runner.Description
  * @param instrumentation Instrumentation mechanism to use
  */
 data class LaunchAppRule @JvmOverloads constructor(
-    private val component: ComponentName,
+    private val component: FlickerComponentName,
     private val appName: String = "",
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
 ) : TestWatcher() {

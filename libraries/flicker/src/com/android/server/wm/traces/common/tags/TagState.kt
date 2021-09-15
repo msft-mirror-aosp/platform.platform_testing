@@ -5,15 +5,19 @@ import com.android.server.wm.traces.common.prettyTimestamp
 
 /**
  * Holds the list of tags corresponding to a particular state at a particular time in trace.
- * @param timestamp Timestamp of the state
+ *
+ * The timestamp constructor must be a string due to lack of Kotlin/KotlinJS Long compatibility
+ *
+ * @param _timestamp Timestamp of the state
  * @param tags Array of tags contained in the state
  * @param isFallback False indicate if the tag timestamp was found or true if a default tag is made
  */
-data class TagState(
-    override val timestamp: Long,
+class TagState(
+    _timestamp: String,
     val tags: Array<Tag>,
     val isFallback: Boolean = false
 ) : ITraceEntry {
+    override val timestamp: Long = _timestamp.toLong()
     override fun toString(): String = "FlickerTagState(timestamp=${prettyTimestamp(timestamp)}, " +
             "tags=$tags)"
 

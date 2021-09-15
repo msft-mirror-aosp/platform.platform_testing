@@ -16,19 +16,17 @@
 
 package com.android.server.wm.flicker.traces.layers
 
-import android.content.ComponentName
 import android.graphics.Rect
 import android.graphics.Region
 import com.android.server.wm.flicker.assertions.Assertion
 import com.android.server.wm.flicker.assertions.FlickerSubject
 import com.android.server.wm.flicker.traces.FlickerFailureStrategy
 import com.android.server.wm.flicker.traces.FlickerTraceSubject
+import com.android.server.wm.traces.common.FlickerComponentName
 import com.android.server.wm.traces.common.layers.Layer
 import com.android.server.wm.traces.common.layers.LayersTrace
 import com.android.server.wm.traces.parser.toAndroidRect
 import com.android.server.wm.traces.parser.toAndroidRegion
-import com.android.server.wm.traces.parser.toLayerName
-import com.android.server.wm.traces.parser.windowmanager.WindowManagerStateHelper
 import com.google.common.truth.Fact
 import com.google.common.truth.FailureMetadata
 import com.google.common.truth.FailureStrategy
@@ -138,7 +136,7 @@ class LayersTraceSubject private constructor(
     @JvmOverloads
     fun coversAtLeast(
         testRegion: Rect,
-        component: ComponentName? = null
+        component: FlickerComponentName? = null
     ): LayersTraceSubject = this.coversAtLeast(Region(testRegion), component)
 
     /**
@@ -152,7 +150,7 @@ class LayersTraceSubject private constructor(
     @JvmOverloads
     fun coversAtLeast(
         testRegion: com.android.server.wm.traces.common.Rect,
-        component: ComponentName? = null
+        component: FlickerComponentName? = null
     ): LayersTraceSubject = this.coversAtLeast(testRegion.toAndroidRect(), component)
 
     /**
@@ -166,7 +164,7 @@ class LayersTraceSubject private constructor(
     @JvmOverloads
     fun coversAtMost(
         testRegion: Rect,
-        component: ComponentName? = null
+        component: FlickerComponentName? = null
     ): LayersTraceSubject = this.coversAtMost(Region(testRegion), component)
 
     /**
@@ -180,7 +178,7 @@ class LayersTraceSubject private constructor(
     @JvmOverloads
     fun coversAtMost(
         testRegion: com.android.server.wm.traces.common.Rect,
-        component: ComponentName? = null
+        component: FlickerComponentName? = null
     ): LayersTraceSubject = this.coversAtMost(testRegion.toAndroidRect(), component)
 
     /**
@@ -194,7 +192,7 @@ class LayersTraceSubject private constructor(
     @JvmOverloads
     fun coversAtLeast(
         testRegion: Region,
-        component: ComponentName? = null
+        component: FlickerComponentName? = null
     ): LayersTraceSubject = apply {
         addAssertion("coversAtLeast($testRegion, ${component?.toLayerName()})") {
             it.visibleRegion(component).coversAtLeast(testRegion)
@@ -212,7 +210,7 @@ class LayersTraceSubject private constructor(
     @JvmOverloads
     fun coversAtLeast(
         testRegion: com.android.server.wm.traces.common.Region,
-        component: ComponentName? = null
+        component: FlickerComponentName? = null
     ): LayersTraceSubject = this.coversAtLeast(testRegion.toAndroidRegion(), component)
 
     /**
@@ -226,7 +224,7 @@ class LayersTraceSubject private constructor(
     @JvmOverloads
     fun coversAtMost(
         testRegion: Region,
-        component: ComponentName? = null
+        component: FlickerComponentName? = null
     ): LayersTraceSubject = apply {
         addAssertion("coversAtMost($testRegion, ${component?.toLayerName()}") {
             it.visibleRegion(component).coversAtMost(testRegion)
@@ -244,7 +242,7 @@ class LayersTraceSubject private constructor(
     @JvmOverloads
     fun coversAtMost(
         testRegion: com.android.server.wm.traces.common.Region,
-        component: ComponentName? = null
+        component: FlickerComponentName? = null
     ): LayersTraceSubject = this.coversAtMost(testRegion.toAndroidRegion(), component)
 
     /**
@@ -252,8 +250,8 @@ class LayersTraceSubject private constructor(
      */
     @JvmOverloads
     fun visibleLayersShownMoreThanOneConsecutiveEntry(
-        ignoreLayers: List<ComponentName> = listOf(WindowManagerStateHelper.SPLASH_SCREEN_COMPONENT,
-            WindowManagerStateHelper.SNAPSHOT_COMPONENT)
+        ignoreLayers: List<FlickerComponentName> = listOf(FlickerComponentName.SPLASH_SCREEN,
+            FlickerComponentName.SNAPSHOT)
     ): LayersTraceSubject = apply {
         visibleEntriesShownMoreThanOneConsecutiveTime { subject ->
             subject.entry.visibleLayers
@@ -273,7 +271,7 @@ class LayersTraceSubject private constructor(
     @JvmOverloads
     fun coversExactly(
         expectedVisibleRegion: Region,
-        component: ComponentName? = null
+        component: FlickerComponentName? = null
     ): LayersTraceSubject = apply {
         addAssertion("coversExactly($component$expectedVisibleRegion)") {
             it.visibleRegion(component).coversExactly(expectedVisibleRegion)
@@ -288,7 +286,10 @@ class LayersTraceSubject private constructor(
      * @param isOptional If this assertion is optional or must pass
      */
     @JvmOverloads
-    fun notContains(component: ComponentName, isOptional: Boolean = false): LayersTraceSubject =
+    fun notContains(
+        component: FlickerComponentName,
+        isOptional: Boolean = false
+    ): LayersTraceSubject =
         apply {
             addAssertion("notContains(${component.toLayerName()})", isOptional) {
                 it.notContains(component)
@@ -303,7 +304,10 @@ class LayersTraceSubject private constructor(
      * @param isOptional If this assertion is optional or must pass
      */
     @JvmOverloads
-    fun contains(component: ComponentName, isOptional: Boolean = false): LayersTraceSubject =
+    fun contains(
+        component: FlickerComponentName,
+        isOptional: Boolean = false
+    ): LayersTraceSubject =
         apply { addAssertion("contains(${component.toLayerName()})", isOptional) {
             it.contains(component) }
         }
@@ -315,7 +319,10 @@ class LayersTraceSubject private constructor(
      * @param component Name of the layer to search
      */
     @JvmOverloads
-    fun isVisible(component: ComponentName, isOptional: Boolean = false): LayersTraceSubject =
+    fun isVisible(
+        component: FlickerComponentName,
+        isOptional: Boolean = false
+    ): LayersTraceSubject =
         apply { addAssertion("isVisible(${component.toLayerName()})", isOptional) {
             it.isVisible(component) }
         }
@@ -327,7 +334,10 @@ class LayersTraceSubject private constructor(
      * @param component Name of the layer to search
      */
     @JvmOverloads
-    fun isInvisible(component: ComponentName, isOptional: Boolean = false): LayersTraceSubject =
+    fun isInvisible(
+        component: FlickerComponentName,
+        isOptional: Boolean = false
+    ): LayersTraceSubject =
         apply {
             addAssertion("isInvisible(${component.toLayerName()})", isOptional) {
                 it.isInvisible(component)

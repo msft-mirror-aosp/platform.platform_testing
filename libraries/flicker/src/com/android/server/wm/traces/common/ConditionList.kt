@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.server.wm.traces.parser
+package com.android.server.wm.traces.common
 
 /**
  * The utility class to validate a set of conditions

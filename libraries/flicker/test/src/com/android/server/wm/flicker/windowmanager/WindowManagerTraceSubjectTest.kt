@@ -29,10 +29,8 @@ import com.android.server.wm.flicker.readWmTraceFromFile
 import com.android.server.wm.flicker.traces.FlickerSubjectException
 import com.android.server.wm.flicker.traces.windowmanager.WindowManagerTraceSubject
 import com.android.server.wm.flicker.traces.windowmanager.WindowManagerTraceSubject.Companion.assertThat
+import com.android.server.wm.traces.common.FlickerComponentName
 import com.google.common.truth.Truth
-import com.android.server.wm.traces.parser.windowmanager.WindowManagerStateHelper.Companion.IME_COMPONENT
-import com.android.server.wm.traces.parser.windowmanager.WindowManagerStateHelper.Companion.NAV_BAR_COMPONENT
-import com.android.server.wm.traces.parser.windowmanager.WindowManagerStateHelper.Companion.SNAPSHOT_COMPONENT
 import org.junit.FixMethodOrder
 import org.junit.Test
 import org.junit.runners.MethodSorters
@@ -88,7 +86,7 @@ class WindowManagerTraceSubjectTest {
         val subject = assertThat(trace)
         subject.isAppWindowOnTop(LAUNCHER_COMPONENT)
                 .then()
-                .isAppWindowOnTop(SNAPSHOT_COMPONENT)
+                .isAppWindowOnTop(FlickerComponentName.SNAPSHOT)
                 .then()
                 .isAppWindowOnTop(CHROME_COMPONENT)
     }
@@ -142,16 +140,16 @@ class WindowManagerTraceSubjectTest {
     fun testCanTransitionNonAppWindow() {
         assertThat(imeTrace)
             .skipUntilFirstAssertion()
-            .isNonAppWindowInvisible(IME_COMPONENT)
+            .isNonAppWindowInvisible(FlickerComponentName.IME)
             .then()
-            .isNonAppWindowVisible(IME_COMPONENT)
+            .isNonAppWindowVisible(FlickerComponentName.IME)
             .forAllEntries()
     }
 
     @Test(expected = AssertionError::class)
     fun testCanDetectOverlappingWindows() {
         assertThat(imeTrace)
-            .noWindowsOverlap(IME_COMPONENT, NAV_BAR_COMPONENT,
+            .noWindowsOverlap(FlickerComponentName.IME, FlickerComponentName.NAV_BAR,
                     IME_ACTIVITY_COMPONENT)
             .forAllEntries()
     }
@@ -160,9 +158,9 @@ class WindowManagerTraceSubjectTest {
     fun testCanTransitionAboveAppWindow() {
         assertThat(imeTrace)
             .skipUntilFirstAssertion()
-            .isAboveAppWindowInvisible(IME_COMPONENT)
+            .isAboveAppWindowInvisible(FlickerComponentName.IME)
             .then()
-            .isAboveAppWindowVisible(IME_COMPONENT)
+            .isAboveAppWindowVisible(FlickerComponentName.IME)
             .forAllEntries()
     }
 

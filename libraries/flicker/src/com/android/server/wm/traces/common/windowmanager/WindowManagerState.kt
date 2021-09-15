@@ -33,6 +33,8 @@ import com.android.server.wm.traces.common.windowmanager.windows.WindowState
  * This is a generic object that is reused by both Flicker and Winscope and cannot
  * access internal Java/Android functionality
  *
+ * The timestamp constructor must be a string due to lack of Kotlin/KotlinJS Long compatibility
+ *
  **/
 open class WindowManagerState(
     val where: String,
@@ -46,8 +48,9 @@ open class WindowManagerState(
     val pendingActivities: Array<String>,
     val root: RootWindowContainer,
     val keyguardControllerState: KeyguardControllerState,
-    override val timestamp: Long = 0
+    _timestamp: String = "0"
 ) : ITraceEntry {
+    override val timestamp: Long = _timestamp.toLong()
     val isVisible: Boolean = true
     val stableId: String get() = this::class.simpleName ?: error("Unable to determine class")
     val name: String get() = prettyTimestamp(timestamp)
@@ -289,6 +292,8 @@ open class WindowManagerState(
             (focusedActivity.isEmpty() || resumedActivities.isEmpty()) &&
             !keyguardControllerState.isKeyguardShowing
     }
+
+    fun asTrace(): WindowManagerTrace = WindowManagerTrace(arrayOf(this), source = "")
 
     override fun toString(): String {
         return "${prettyTimestamp(timestamp)} (timestamp=$timestamp)"

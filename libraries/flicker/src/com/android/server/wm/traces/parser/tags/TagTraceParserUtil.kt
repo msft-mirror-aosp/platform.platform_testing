@@ -90,7 +90,7 @@ class TagTraceParserUtil {
                     }
                     states.add(
                             TagState(
-                                    timestamp = stateProto.timestamp,
+                                    _timestamp = stateProto.timestamp.toString(),
                                     tags = tags.toTypedArray()))
                 }
                 traceParseTime += tagParseTime

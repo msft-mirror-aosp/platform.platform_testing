@@ -19,25 +19,26 @@ package com.android.server.wm.traces.parser.windowmanager
 import android.app.ActivityTaskManager
 import android.app.Instrumentation
 import android.app.WindowConfiguration
-import android.content.ComponentName
 import android.graphics.Rect
 import android.graphics.Region
+import android.os.SystemClock
 import android.util.Log
 import android.view.Display
-import androidx.annotation.VisibleForTesting
 import androidx.test.platform.app.InstrumentationRegistry
-import com.android.server.wm.traces.common.layers.LayerTraceEntry
-import com.android.server.wm.traces.common.windowmanager.WindowManagerState
 import com.android.server.wm.traces.common.windowmanager.windows.ConfigurationContainer
 import com.android.server.wm.traces.common.windowmanager.windows.WindowContainer
 import com.android.server.wm.traces.common.windowmanager.windows.WindowState
-import com.android.server.wm.traces.parser.Condition
+import com.android.server.wm.traces.common.Condition
+import com.android.server.wm.traces.common.DeviceStateDump
+import com.android.server.wm.traces.common.FlickerComponentName
+import com.android.server.wm.traces.common.FlickerComponentName.Companion.IME
 import com.android.server.wm.traces.parser.LOG_TAG
-import com.android.server.wm.traces.parser.WaitCondition
+import com.android.server.wm.traces.common.WaitCondition
+import com.android.server.wm.traces.common.layers.LayerTraceEntry
+import com.android.server.wm.traces.common.WindowManagerConditionsFactory
+import com.android.server.wm.traces.common.windowmanager.WindowManagerState
 import com.android.server.wm.traces.parser.getCurrentStateDump
-import com.android.server.wm.traces.parser.toActivityName
 import com.android.server.wm.traces.parser.toAndroidRegion
-import com.android.server.wm.traces.parser.toWindowName
 
 open class WindowManagerStateHelper @JvmOverloads constructor(
     /**
@@ -47,12 +48,11 @@ open class WindowManagerStateHelper @JvmOverloads constructor(
     /**
      * Predicate to supply a new UI information
      */
-    private val deviceDumpSupplier: () -> Dump = {
-        val currState = getCurrentStateDump(
-            instrumentation.uiAutomation)
-        Dump(
-            currState.wmTrace?.entries?.first() ?: error("Unable to parse WM trace"),
-            currState.layersTrace?.entries?.first() ?: error("Unable to parse Layers trace")
+    private val deviceDumpSupplier: () -> DeviceStateDump<WindowManagerState, LayerTraceEntry> = {
+        val currState = getCurrentStateDump(instrumentation.uiAutomation)
+        DeviceStateDump(
+            currState.wmState ?: error("Unable to parse WM trace"),
+            currState.layerState ?: error("Unable to parse Layers trace")
         )
     },
     /**
@@ -64,16 +64,12 @@ open class WindowManagerStateHelper @JvmOverloads constructor(
      */
     private val retryIntervalMs: Long = WaitCondition.DEFAULT_RETRY_INTERVAL_MS
 ) {
-    private var internalState: Dump? = null
+    private var internalState: DeviceStateDump<WindowManagerState, LayerTraceEntry>? = null
 
     /**
      * Queries the supplier for a new device state
-     *
-     * @param ignoreInvalidStates If false, retries up to [numRetries] times (with a sleep
-     * interval of [retryIntervalMs] ms to obtain a complete WM state, otherwise returns the
-     * first state
      */
-    val currentState: Dump
+    val currentState: DeviceStateDump<WindowManagerState, LayerTraceEntry>
         get() {
             if (internalState == null) {
                 internalState = deviceDumpSupplier.invoke()
@@ -83,14 +79,19 @@ open class WindowManagerStateHelper @JvmOverloads constructor(
             return internalState ?: error("Unable to fetch an internal state")
     }
 
-    protected open fun updateCurrState(value: Dump) {
+    protected open fun updateCurrState(
+        value: DeviceStateDump<WindowManagerState, LayerTraceEntry>
+    ) {
         internalState = value
     }
 
-    private fun createConditionBuilder(): WaitCondition.Builder<Dump> =
-        WaitCondition.Builder(deviceDumpSupplier, numRetries, retryIntervalMs)
+    private fun createConditionBuilder():
+        WaitCondition.Builder<DeviceStateDump<WindowManagerState, LayerTraceEntry>> =
+        WaitCondition.Builder(deviceDumpSupplier, numRetries)
             .onSuccess { updateCurrState(it) }
             .onFailure { updateCurrState(it) }
+            .onLog { Log.d(LOG_TAG, it) }
+            .onRetry { SystemClock.sleep(retryIntervalMs) }
 
     private fun ConfigurationContainer.isWindowingModeCompatible(
         requestedWindowingMode: Int
@@ -125,10 +126,10 @@ open class WindowManagerStateHelper @JvmOverloads constructor(
         return success
     }
 
-    fun waitForFullScreenApp(componentName: ComponentName): Boolean =
+    fun waitForFullScreenApp(component: FlickerComponentName): Boolean =
             waitForValidState(
                     WaitForValidActivityState
-                            .Builder(componentName)
+                            .Builder(component)
                             .setWindowingMode(WindowConfiguration.WINDOWING_MODE_FULLSCREEN)
                             .setActivityType(WindowConfiguration.ACTIVITY_TYPE_STANDARD)
                             .build())
@@ -136,7 +137,8 @@ open class WindowManagerStateHelper @JvmOverloads constructor(
     fun waitForHomeActivityVisible(): Boolean =
         createConditionBuilder()
             .withCondition(WindowManagerConditionsFactory.isHomeActivityVisible())
-            .withCondition(WindowManagerConditionsFactory.isAppTransitionIdle())
+            .withCondition(
+                WindowManagerConditionsFactory.isAppTransitionIdle(Display.DEFAULT_DISPLAY))
             .withCondition(WindowManagerConditionsFactory.isNavBarVisible())
             .withCondition(WindowManagerConditionsFactory.isStatusBarVisible())
             .build()
@@ -165,12 +167,13 @@ open class WindowManagerStateHelper @JvmOverloads constructor(
                     hasRotationCondition.isSatisfied(it)
                 }
             }
-            .withCondition(WindowManagerConditionsFactory.isAppTransitionIdle())
+            .withCondition(
+                WindowManagerConditionsFactory.isAppTransitionIdle(Display.DEFAULT_DISPLAY))
             .build()
             .waitFor()
     }
 
-    fun waitForActivityState(activity: ComponentName, activityState: String): Boolean {
+    fun waitForActivityState(activity: FlickerComponentName, activityState: String): Boolean {
         val activityName = activity.toActivityName()
         return createConditionBuilder()
             .withCondition("state of $activityName to be $activityState") {
@@ -190,21 +193,23 @@ open class WindowManagerStateHelper @JvmOverloads constructor(
             .build()
             .waitFor()
 
-    fun waitForVisibleWindow(component: ComponentName): Boolean =
+    fun waitForVisibleWindow(component: FlickerComponentName): Boolean =
         createConditionBuilder()
             .withCondition(WindowManagerConditionsFactory.containsActivity(component))
             .withCondition(WindowManagerConditionsFactory.containsWindow(component))
             .withCondition(WindowManagerConditionsFactory.isActivityVisible(component))
             .withCondition(WindowManagerConditionsFactory.isWindowSurfaceShown(component))
-            .withCondition(WindowManagerConditionsFactory.isAppTransitionIdle())
+            .withCondition(
+                WindowManagerConditionsFactory.isAppTransitionIdle(Display.DEFAULT_DISPLAY))
             .build()
             .waitFor()
 
-    fun waitForActivityRemoved(component: ComponentName): Boolean =
+    fun waitForActivityRemoved(component: FlickerComponentName): Boolean =
         createConditionBuilder()
             .withCondition(WindowManagerConditionsFactory.containsActivity(component).negate())
             .withCondition(WindowManagerConditionsFactory.containsWindow(component).negate())
-            .withCondition(WindowManagerConditionsFactory.isAppTransitionIdle())
+            .withCondition(
+                WindowManagerConditionsFactory.isAppTransitionIdle(Display.DEFAULT_DISPLAY))
             .build()
             .waitFor()
 
@@ -215,11 +220,12 @@ open class WindowManagerStateHelper @JvmOverloads constructor(
             .build()
             .waitFor()
 
-    fun waitForWindowSurfaceDisappeared(componentName: ComponentName): Boolean {
-        val condition = WindowManagerConditionsFactory.isWindowSurfaceShown(componentName).negate()
+    fun waitForWindowSurfaceDisappeared(component: FlickerComponentName): Boolean {
+        val condition = WindowManagerConditionsFactory.isWindowSurfaceShown(component).negate()
         return createConditionBuilder()
             .withCondition(condition)
-            .withCondition(WindowManagerConditionsFactory.isAppTransitionIdle())
+            .withCondition(
+                WindowManagerConditionsFactory.isAppTransitionIdle(Display.DEFAULT_DISPLAY))
             .build()
             .waitFor()
     }
@@ -227,11 +233,14 @@ open class WindowManagerStateHelper @JvmOverloads constructor(
     fun waitForSurfaceAppeared(surfaceName: String): Boolean =
         createConditionBuilder()
             .withCondition(WindowManagerConditionsFactory.isWindowSurfaceShown(surfaceName))
-            .withCondition(WindowManagerConditionsFactory.isAppTransitionIdle())
+            .withCondition(
+                WindowManagerConditionsFactory.isAppTransitionIdle(Display.DEFAULT_DISPLAY))
             .build()
             .waitFor()
 
-    fun waitFor(vararg conditions: Condition<Dump>): Boolean {
+    fun waitFor(
+        vararg conditions: Condition<DeviceStateDump<WindowManagerState, LayerTraceEntry>>
+    ): Boolean {
         val builder = createConditionBuilder()
         conditions.forEach { builder.withCondition(it) }
         return builder.build().waitFor()
@@ -240,7 +249,7 @@ open class WindowManagerStateHelper @JvmOverloads constructor(
     @JvmOverloads
     fun waitFor(
         message: String = "",
-        waitCondition: (Dump) -> Boolean
+        waitCondition: (DeviceStateDump<WindowManagerState, LayerTraceEntry>) -> Boolean
     ): Boolean = createConditionBuilder()
             .withCondition(message, waitCondition)
             .build()
@@ -250,7 +259,7 @@ open class WindowManagerStateHelper @JvmOverloads constructor(
      * @return true if should wait for some activities to become visible.
      */
     private fun shouldWaitForActivities(
-        state: Dump,
+        state: DeviceStateDump<WindowManagerState, LayerTraceEntry>,
         vararg waitForActivitiesVisible: WaitForValidActivityState
     ): Boolean {
         if (waitForActivitiesVisible.isEmpty()) {
@@ -307,7 +316,8 @@ open class WindowManagerStateHelper @JvmOverloads constructor(
     fun waitImeShown(displayId: Int = Display.DEFAULT_DISPLAY): Boolean =
         createConditionBuilder()
             .withCondition(WindowManagerConditionsFactory.isImeShown(displayId))
-            .withCondition(WindowManagerConditionsFactory.isAppTransitionIdle())
+            .withCondition(
+                WindowManagerConditionsFactory.isAppTransitionIdle(Display.DEFAULT_DISPLAY))
             .build()
             .waitFor()
 
@@ -318,8 +328,9 @@ open class WindowManagerStateHelper @JvmOverloads constructor(
      */
     fun waitImeGone(): Boolean =
         createConditionBuilder()
-            .withCondition(WindowManagerConditionsFactory.isLayerVisible(IME_COMPONENT).negate())
-            .withCondition(WindowManagerConditionsFactory.isAppTransitionIdle())
+            .withCondition(WindowManagerConditionsFactory.isLayerVisible(IME).negate())
+            .withCondition(
+                WindowManagerConditionsFactory.isAppTransitionIdle(Display.DEFAULT_DISPLAY))
             .build()
             .waitFor()
 
@@ -327,7 +338,7 @@ open class WindowManagerStateHelper @JvmOverloads constructor(
      * Obtains a [WindowContainer] from the current device state, or null if the WindowContainer
      * doesn't exist
      */
-    fun getWindow(activity: ComponentName): WindowState? {
+    fun getWindow(activity: FlickerComponentName): WindowState? {
         val windowName = activity.toWindowName()
         return this.currentState.wmState.windowStates
             .firstOrNull { it.title == windowName }
@@ -336,43 +347,8 @@ open class WindowManagerStateHelper @JvmOverloads constructor(
     /**
      * Obtains the region of a window in the state, or an empty [Rect] is there are none
      */
-    fun getWindowRegion(activity: ComponentName): Region {
+    fun getWindowRegion(activity: FlickerComponentName): Region {
         val window = getWindow(activity)
         return window?.frameRegion?.toAndroidRegion() ?: Region()
     }
-
-    companion object {
-        @VisibleForTesting
-        @JvmStatic
-        val NAV_BAR_COMPONENT = ComponentName("", "NavigationBar0")
-        @VisibleForTesting
-        @JvmStatic
-        val STATUS_BAR_COMPONENT = ComponentName("", "StatusBar")
-        @VisibleForTesting
-        @JvmStatic
-        val ROTATION_COMPONENT = ComponentName("", "RotationLayer")
-        @VisibleForTesting
-        @JvmStatic
-        val BLACK_SURFACE_COMPONENT = ComponentName("", "BackColorSurface")
-        @VisibleForTesting
-        @JvmStatic
-        val IME_COMPONENT = ComponentName("", "InputMethod")
-        @VisibleForTesting
-        @JvmStatic
-        val SPLASH_SCREEN_COMPONENT = ComponentName("", "Splash Screen")
-        @VisibleForTesting
-        @JvmStatic
-        val SNAPSHOT_COMPONENT = ComponentName("", "SnapshotStartingWindow")
-    }
-
-    data class Dump(
-        /**
-         * Window manager state
-         */
-        @JvmField val wmState: WindowManagerState,
-        /**
-         * Layers state
-         */
-        @JvmField val layerState: LayerTraceEntry
-    )
 }

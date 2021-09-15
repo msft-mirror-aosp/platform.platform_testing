@@ -16,7 +16,6 @@
 
 package com.android.server.wm.flicker.layers
 
-import android.content.ComponentName
 import androidx.test.filters.FlakyTest
 import com.android.server.wm.flicker.DOCKER_STACK_DIVIDER_COMPONENT
 import com.android.server.wm.flicker.LAUNCHER_COMPONENT
@@ -26,10 +25,10 @@ import com.android.server.wm.flicker.assertThrows
 import com.android.server.wm.flicker.readLayerTraceFromFile
 import com.android.server.wm.flicker.traces.layers.LayersTraceSubject
 import com.android.server.wm.flicker.traces.layers.LayersTraceSubject.Companion.assertThat
+import com.android.server.wm.traces.common.FlickerComponentName
 import com.android.server.wm.traces.common.Region
 import com.android.server.wm.traces.common.layers.LayersTrace
 import com.android.server.wm.traces.parser.minus
-import com.android.server.wm.traces.parser.windowmanager.WindowManagerStateHelper
 import com.google.common.truth.Truth
 import org.junit.FixMethodOrder
 import org.junit.Test
@@ -72,7 +71,7 @@ class LayersTraceSubjectTest {
         val layersTraceEntries = readLayerTraceFromFile("layers_trace_launch_split_screen.pb")
         assertThat(layersTraceEntries)
             .first()
-            .isVisible(WindowManagerStateHelper.NAV_BAR_COMPONENT)
+            .isVisible(FlickerComponentName.NAV_BAR)
             .notContains(DOCKER_STACK_DIVIDER_COMPONENT)
             .isVisible(LAUNCHER_COMPONENT)
     }
@@ -82,7 +81,7 @@ class LayersTraceSubjectTest {
         val layersTraceEntries = readLayerTraceFromFile("layers_trace_launch_split_screen.pb")
         assertThat(layersTraceEntries)
             .last()
-            .isVisible(WindowManagerStateHelper.NAV_BAR_COMPONENT)
+            .isVisible(FlickerComponentName.NAV_BAR)
             .isVisible(DOCKER_STACK_DIVIDER_COMPONENT)
     }
 
@@ -91,12 +90,12 @@ class LayersTraceSubjectTest {
         val layersTraceEntries = readLayerTraceFromFile("layers_trace_launch_split_screen.pb")
 
         assertThat(layersTraceEntries)
-            .isVisible(WindowManagerStateHelper.NAV_BAR_COMPONENT)
+            .isVisible(FlickerComponentName.NAV_BAR)
             .isInvisible(DOCKER_STACK_DIVIDER_COMPONENT)
             .forRange(90480846872160L, 90480994138424L)
 
         assertThat(layersTraceEntries)
-            .isVisible(WindowManagerStateHelper.NAV_BAR_COMPONENT)
+            .isVisible(FlickerComponentName.NAV_BAR)
             .isVisible(DOCKER_STACK_DIVIDER_COMPONENT)
             .forRange(90491795074136L, 90493757372977L)
     }
@@ -105,13 +104,13 @@ class LayersTraceSubjectTest {
     fun testCanDetectChangingAssertions() {
         val layersTraceEntries = readLayerTraceFromFile("layers_trace_launch_split_screen.pb")
         assertThat(layersTraceEntries)
-            .isVisible(WindowManagerStateHelper.NAV_BAR_COMPONENT)
+            .isVisible(FlickerComponentName.NAV_BAR)
             .notContains(DOCKER_STACK_DIVIDER_COMPONENT)
             .then()
-            .isVisible(WindowManagerStateHelper.NAV_BAR_COMPONENT)
+            .isVisible(FlickerComponentName.NAV_BAR)
             .isInvisible(DOCKER_STACK_DIVIDER_COMPONENT)
             .then()
-            .isVisible(WindowManagerStateHelper.NAV_BAR_COMPONENT)
+            .isVisible(FlickerComponentName.NAV_BAR)
             .isVisible(DOCKER_STACK_DIVIDER_COMPONENT)
             .forAllEntries()
     }
@@ -180,7 +179,7 @@ class LayersTraceSubjectTest {
                 "layers_trace_invalid_visible_layers.pb")
         assertThat(layersTraceEntries)
                 .visibleLayersShownMoreThanOneConsecutiveEntry(
-                    listOf(WindowManagerStateHelper.STATUS_BAR_COMPONENT))
+                    listOf(FlickerComponentName.STATUS_BAR))
                 .forAllEntries()
     }
 
@@ -188,7 +187,7 @@ class LayersTraceSubjectTest {
     fun testCanIgnoreLayerShorterNameInVisibleLayersMoreThanOneConsecutiveEntry() {
         val layersTraceEntries = readLayerTraceFromFile(
                 "one_visible_layer_launcher_trace.pb")
-        val launcherComponent = ComponentName("com.google.android.apps.nexuslauncher",
+        val launcherComponent = FlickerComponentName("com.google.android.apps.nexuslauncher",
                 "com.google.android.apps.nexuslauncher.NexusLauncherActivity#1")
         assertThat(layersTraceEntries)
                 .visibleLayersShownMoreThanOneConsecutiveEntry(listOf(launcherComponent))
@@ -277,8 +276,9 @@ class LayersTraceSubjectTest {
         private val DISPLAY_REGION = android.graphics.Region(0, 0, 1440, 2880)
         private val DISPLAY_REGION_ROTATED = Region(0, 0, 2160, 1080)
         private const val SHELL_APP_PACKAGE = "com.android.wm.shell.flicker.testapp"
-        private val FIXED_APP = ComponentName(SHELL_APP_PACKAGE,
+        private val FIXED_APP = FlickerComponentName(SHELL_APP_PACKAGE,
                 "$SHELL_APP_PACKAGE.FixedActivity")
-        private val PIP_APP = ComponentName(SHELL_APP_PACKAGE, "$SHELL_APP_PACKAGE.PipActivity")
+        private val PIP_APP = FlickerComponentName(SHELL_APP_PACKAGE,
+            "$SHELL_APP_PACKAGE.PipActivity")
     }
 }

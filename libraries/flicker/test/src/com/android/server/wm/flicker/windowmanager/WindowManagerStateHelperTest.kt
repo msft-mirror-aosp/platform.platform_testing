@@ -16,7 +16,6 @@
 
 package com.android.server.wm.flicker.windowmanager
 
-import android.content.ComponentName
 import android.view.Display
 import android.view.Surface
 import androidx.test.filters.FlakyTest
@@ -26,15 +25,17 @@ import com.android.server.wm.flicker.readWmTraceFromFile
 import com.android.server.wm.flicker.traces.windowmanager.WindowManagerStateSubject
 import com.android.server.wm.traces.common.Buffer
 import com.android.server.wm.traces.common.Color
+import com.android.server.wm.traces.common.DeviceStateDump
+import com.android.server.wm.traces.common.FlickerComponentName
 import com.android.server.wm.traces.common.Rect
 import com.android.server.wm.traces.common.RectF
 import com.android.server.wm.traces.common.Region
 import com.android.server.wm.traces.common.layers.Layer
+import com.android.server.wm.traces.common.layers.LayerTraceEntry
 import com.android.server.wm.traces.common.layers.LayerTraceEntryBuilder
 import com.android.server.wm.traces.common.layers.Transform
 import com.android.server.wm.traces.common.windowmanager.WindowManagerState
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
-import com.android.server.wm.traces.parser.toLayerName
 import com.android.server.wm.traces.parser.windowmanager.WindowManagerStateHelper
 import com.google.common.truth.Truth
 import org.junit.FixMethodOrder
@@ -52,7 +53,7 @@ class WindowManagerStateHelperTest {
         /**
          * Predicate to supply a new UI information
          */
-        deviceDumpSupplier: () -> Dump,
+        deviceDumpSupplier: () -> DeviceStateDump<WindowManagerState, LayerTraceEntry>,
         numRetries: Int = 5,
         retryIntervalMs: Long = 500L
     ) : WindowManagerStateHelper(InstrumentationRegistry.getInstrumentation(),
@@ -60,18 +61,16 @@ class WindowManagerStateHelperTest {
         var wmState: WindowManagerState = _wmState
             private set
 
-        override fun updateCurrState(value: Dump) {
+        override fun updateCurrState(value: DeviceStateDump<WindowManagerState, LayerTraceEntry>) {
             wmState = value.wmState
         }
     }
 
-    private fun String.toComponentName() =
-        ComponentName.unflattenFromString(this) ?: error("Unable to extract component name")
-
-    private val chromeComponentName = ("com.android.chrome/org.chromium.chrome.browser" +
-        ".firstrun.FirstRunActivity").toComponentName()
-    private val simpleAppComponentName = "com.android.server.wm.flicker.testapp/.SimpleActivity"
-        .toComponentName()
+    private val chromeComponent = FlickerComponentName.unflattenFromString(
+        "com.android.chrome/org.chromium.chrome.browser" +
+        ".firstrun.FirstRunActivity")
+    private val simpleAppComponentName = FlickerComponentName.unflattenFromString(
+        "com.android.server.wm.flicker.testapp/.SimpleActivity")
 
     private fun createImaginaryLayer(name: String, index: Int, id: Int, parentId: Int): Layer {
         val transform = Transform(0, Transform.Matrix(0f, 0f, 0f, 0f, 0f, 0f))
@@ -111,7 +110,7 @@ class WindowManagerStateHelperTest {
         )
     }
 
-    private fun createImaginaryVisibleLayers(names: List<ComponentName>): Array<Layer> {
+    private fun createImaginaryVisibleLayers(names: List<FlickerComponentName>): Array<Layer> {
         val root = createImaginaryLayer("root", -1, id = "root".hashCode(), parentId = -1)
         val layers = mutableListOf(root)
         names.forEachIndexed { index, name ->
@@ -125,24 +124,21 @@ class WindowManagerStateHelperTest {
 
     private fun WindowManagerTrace.asSupplier(
         startingTimestamp: Long = 0
-    ): () -> WindowManagerStateHelper.Dump {
+    ): () -> DeviceStateDump<WindowManagerState, LayerTraceEntry> {
         val iterator = this.dropWhile { it.timestamp < startingTimestamp }.iterator()
         return {
             if (iterator.hasNext()) {
                 val wmState = iterator.next()
-                val layerList = mutableListOf(WindowManagerStateHelper.STATUS_BAR_COMPONENT,
-                    WindowManagerStateHelper.NAV_BAR_COMPONENT)
+                val layerList = mutableListOf(FlickerComponentName.STATUS_BAR,
+                    FlickerComponentName.NAV_BAR)
 
                 if (wmState.inputMethodWindowState?.isSurfaceShown == true) {
-                    layerList.add(WindowManagerStateHelper.IME_COMPONENT)
+                    layerList.add(FlickerComponentName.IME)
                 }
                 val layerTraceEntry = LayerTraceEntryBuilder(timestamp = 0,
                     displays = emptyArray(),
                     layers = createImaginaryVisibleLayers(layerList)).build()
-                WindowManagerStateHelper.Dump(
-                    wmState,
-                    layerTraceEntry
-                )
+                DeviceStateDump(wmState, layerTraceEntry)
             } else {
                 error("Reached the end of the trace")
             }
@@ -158,13 +154,13 @@ class WindowManagerStateHelperTest {
         try {
             WindowManagerStateSubject
                 .assertThat(helper.wmState)
-                .isVisible(WindowManagerStateHelper.IME_COMPONENT)
+                .isVisible(FlickerComponentName.IME)
             error("IME state should not be available")
         } catch (e: AssertionError) {
             helper.waitImeShown(Display.DEFAULT_DISPLAY)
             WindowManagerStateSubject
                 .assertThat(helper.wmState)
-                .isVisible(WindowManagerStateHelper.IME_COMPONENT)
+                .isVisible(FlickerComponentName.IME)
         }
     }
 
@@ -177,13 +173,13 @@ class WindowManagerStateHelperTest {
         try {
             WindowManagerStateSubject
                 .assertThat(helper.wmState)
-                .isVisible(WindowManagerStateHelper.IME_COMPONENT)
+                .isVisible(FlickerComponentName.IME)
             error("IME state should not be available")
         } catch (e: AssertionError) {
             helper.waitImeShown()
             WindowManagerStateSubject
                 .assertThat(helper.wmState)
-                .isVisible(WindowManagerStateHelper.IME_COMPONENT)
+                .isVisible(FlickerComponentName.IME)
         }
     }
 
@@ -234,7 +230,7 @@ class WindowManagerStateHelperTest {
         WindowManagerStateSubject
             .assertThat(helper.wmState)
             .isHomeActivityVisible()
-        helper.waitForVisibleWindow(chromeComponentName)
+        helper.waitForVisibleWindow(chromeComponent)
         WindowManagerStateSubject
             .assertThat(helper.wmState)
             .isHomeActivityVisible(false)
@@ -253,15 +249,15 @@ class WindowManagerStateHelperTest {
         WindowManagerStateSubject
             .assertThat(helper.wmState)
             .isHomeActivityVisible()
-            .notContains(chromeComponentName)
-        helper.waitForVisibleWindow(chromeComponentName)
+            .notContains(chromeComponent)
+        helper.waitForVisibleWindow(chromeComponent)
         WindowManagerStateSubject
             .assertThat(helper.wmState)
-            .isVisible(chromeComponentName)
-        helper.waitForActivityRemoved(chromeComponentName)
+            .isVisible(chromeComponent)
+        helper.waitForActivityRemoved(chromeComponent)
         WindowManagerStateSubject
             .assertThat(helper.wmState)
-            .notContains(chromeComponentName)
+            .notContains(chromeComponent)
             .isHomeActivityVisible()
     }
 

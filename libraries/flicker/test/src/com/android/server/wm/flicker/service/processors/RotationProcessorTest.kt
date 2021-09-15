@@ -18,6 +18,7 @@ package com.android.server.wm.flicker.service.processors
 
 import com.android.server.wm.flicker.readLayerTraceFromFile
 import com.android.server.wm.flicker.readWmTraceFromFile
+import com.android.server.wm.traces.common.service.processors.RotationProcessor
 import com.google.common.truth.Truth
 import org.junit.FixMethodOrder
 import org.junit.Test
@@ -37,7 +38,7 @@ class RotationProcessorTest {
         const val SEAMLESS_ROTATION_END = 981560560070L
     }
 
-    private val rotationProcessor = RotationProcessor()
+    private val rotationProcessor = RotationProcessor { }
     private val tagsRegularRotationTagFinalState by lazy {
         val wmTrace = readWmTraceFromFile(
             "regular_rotation_in_last_state_wm_trace.winscope")
