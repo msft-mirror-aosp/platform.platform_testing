@@ -16,10 +16,10 @@
 
 package com.android.server.wm.flicker.service
 
-import com.android.server.wm.flicker.getDefaultFlickerOutputDir
 import com.android.server.wm.flicker.readLayerTraceFromFile
 import com.android.server.wm.flicker.readTagTraceFromFile
 import com.android.server.wm.flicker.readWmTraceFromFile
+import com.android.server.wm.traces.common.service.AssertionEngine
 import com.android.server.wm.traces.common.tags.Tag
 import com.android.server.wm.traces.common.tags.Transition
 import com.android.server.wm.traces.common.tags.TransitionTag
@@ -34,7 +34,7 @@ import org.junit.runners.MethodSorters
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class AssertionEngineTest {
-    private val assertionEngine = AssertionEngine(getDefaultFlickerOutputDir(), "fass_test")
+    private val assertionEngine = AssertionEngine { }
 
     // TODO(b/197632497): Replace mocked Transition tag lists with tag trace files
     private val wmTagsList = listOf(

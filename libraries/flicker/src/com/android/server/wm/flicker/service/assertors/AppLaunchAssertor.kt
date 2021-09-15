@@ -16,11 +16,11 @@
 
 package com.android.server.wm.flicker.service.assertors
 
-import com.android.server.wm.flicker.service.ITransitionAssertor
 import com.android.server.wm.traces.common.errors.Error
 import com.android.server.wm.traces.common.errors.ErrorState
 import com.android.server.wm.traces.common.errors.ErrorTrace
 import com.android.server.wm.traces.common.layers.LayersTrace
+import com.android.server.wm.traces.common.service.ITransitionAssertor
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 
 class AppLaunchAssertor : ITransitionAssertor {
@@ -36,7 +36,7 @@ class AppLaunchAssertor : ITransitionAssertor {
                         windowToken = "",
                         taskId = 2
                     )
-                ), wmTrace.entries.first().timestamp)), source = "")
+                ), wmTrace.entries.first().timestamp.toString())), source = "")
         }
         return ErrorTrace(emptyArray(), source = "")
     }
@@ -53,7 +53,7 @@ class AppLaunchAssertor : ITransitionAssertor {
                         windowToken = "",
                         taskId = 0
                     )
-                ), layersTrace.entries.last().timestamp)), source = "")
+                ), layersTrace.entries.last().timestamp.toString())), source = "")
         }
         return ErrorTrace(emptyArray(), source = "")
     }

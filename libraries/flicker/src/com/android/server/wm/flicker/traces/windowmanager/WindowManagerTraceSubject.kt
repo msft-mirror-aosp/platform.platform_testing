@@ -16,17 +16,15 @@
 
 package com.android.server.wm.flicker.traces.windowmanager
 
-import android.content.ComponentName
 import com.android.server.wm.flicker.assertions.Assertion
 import com.android.server.wm.flicker.assertions.FlickerSubject
 import com.android.server.wm.flicker.traces.FlickerFailureStrategy
 import com.android.server.wm.flicker.traces.FlickerTraceSubject
+import com.android.server.wm.traces.common.FlickerComponentName
 import com.android.server.wm.traces.common.Rect
 import com.android.server.wm.traces.common.Region
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 import com.android.server.wm.traces.common.windowmanager.windows.WindowState
-import com.android.server.wm.traces.parser.toWindowName
-import com.android.server.wm.traces.parser.windowmanager.WindowManagerStateHelper
 import com.google.common.truth.Fact
 import com.google.common.truth.FailureMetadata
 import com.google.common.truth.FailureStrategy
@@ -122,7 +120,7 @@ class WindowManagerTraceSubject private constructor(
      */
     @JvmOverloads
     fun notContains(
-        activity: ComponentName,
+        activity: FlickerComponentName,
         isOptional: Boolean = false
     ): WindowManagerTraceSubject = apply {
         addAssertion("notContains(${activity.toWindowName()})", isOptional) {
@@ -139,7 +137,7 @@ class WindowManagerTraceSubject private constructor(
      */
     @JvmOverloads
     fun isAboveAppWindowVisible(
-        activity: ComponentName,
+        activity: FlickerComponentName,
         isOptional: Boolean = false
     ): WindowManagerTraceSubject = apply {
         addAssertion("isAboveAppWindowVisible(${activity.toWindowName()})", isOptional) {
@@ -156,7 +154,7 @@ class WindowManagerTraceSubject private constructor(
      */
     @JvmOverloads
     fun isAboveAppWindowInvisible(
-        activity: ComponentName,
+        activity: FlickerComponentName,
         isOptional: Boolean = false
     ): WindowManagerTraceSubject = apply {
         addAssertion("isAboveAppWindowInvisible(${activity.toWindowName()})", isOptional) {
@@ -173,7 +171,7 @@ class WindowManagerTraceSubject private constructor(
      */
     @JvmOverloads
     fun isBelowAppWindowVisible(
-        activity: ComponentName,
+        activity: FlickerComponentName,
         isOptional: Boolean = false
     ): WindowManagerTraceSubject = apply {
         addAssertion("isBelowAppWindowVisible(${activity.toWindowName()})", isOptional) {
@@ -190,7 +188,7 @@ class WindowManagerTraceSubject private constructor(
      */
     @JvmOverloads
     fun isBelowAppWindowInvisible(
-        activity: ComponentName,
+        activity: FlickerComponentName,
         isOptional: Boolean = false
     ): WindowManagerTraceSubject = apply {
         addAssertion("isBelowAppWindowInvisible(${activity.toWindowName()})", isOptional) {
@@ -207,7 +205,7 @@ class WindowManagerTraceSubject private constructor(
      */
     @JvmOverloads
     fun isNonAppWindowVisible(
-        activity: ComponentName,
+        activity: FlickerComponentName,
         isOptional: Boolean = false
     ): WindowManagerTraceSubject = apply {
         addAssertion("isNonAppWindowVisible(${activity.toWindowName()})", isOptional) {
@@ -224,7 +222,7 @@ class WindowManagerTraceSubject private constructor(
      */
     @JvmOverloads
     fun isNonAppWindowInvisible(
-        activity: ComponentName,
+        activity: FlickerComponentName,
         isOptional: Boolean = false
     ): WindowManagerTraceSubject = apply {
         addAssertion("isNonAppWindowInvisible(${activity.toWindowName()})", isOptional) {
@@ -240,7 +238,7 @@ class WindowManagerTraceSubject private constructor(
      */
     @JvmOverloads
     fun isAppWindowOnTop(
-        activity: ComponentName,
+        activity: FlickerComponentName,
         isOptional: Boolean = false
     ): WindowManagerTraceSubject = apply {
         addAssertion("isAppWindowOnTop(${activity.toWindowName()})", isOptional) {
@@ -256,7 +254,7 @@ class WindowManagerTraceSubject private constructor(
      */
     @JvmOverloads
     fun appWindowNotOnTop(
-        activity: ComponentName,
+        activity: FlickerComponentName,
         isOptional: Boolean = false
     ): WindowManagerTraceSubject = apply {
         addAssertion("appWindowNotOnTop(${activity.toWindowName()})", isOptional) {
@@ -273,7 +271,7 @@ class WindowManagerTraceSubject private constructor(
      */
     @JvmOverloads
     fun isAppWindowVisible(
-        activity: ComponentName,
+        activity: FlickerComponentName,
         isOptional: Boolean = false,
         ignoreActivity: Boolean = false
     ): WindowManagerTraceSubject = apply {
@@ -291,7 +289,7 @@ class WindowManagerTraceSubject private constructor(
      */
     @JvmOverloads
     fun isAppWindowInvisible(
-        activity: ComponentName,
+        activity: FlickerComponentName,
         isOptional: Boolean = false,
         ignoreActivity: Boolean = false
     ): WindowManagerTraceSubject = apply {
@@ -305,7 +303,7 @@ class WindowManagerTraceSubject private constructor(
      *
      * @param activity Component to search
      */
-    fun noWindowsOverlap(vararg activity: ComponentName): WindowManagerTraceSubject = apply {
+    fun noWindowsOverlap(vararg activity: FlickerComponentName): WindowManagerTraceSubject = apply {
         val repr = activity.joinToString(", ") { it.toWindowName() }
         verify("Must give more than one window to check! (Given $repr)")
                 .that(activity)
@@ -323,8 +321,8 @@ class WindowManagerTraceSubject private constructor(
      * @param belowWindow Expected bottom window
      */
     fun isAboveWindow(
-        aboveWindow: ComponentName,
-        belowWindow: ComponentName
+        aboveWindow: FlickerComponentName,
+        belowWindow: FlickerComponentName
     ): WindowManagerTraceSubject = apply {
         val aboveWindowTitle = aboveWindow.toWindowName()
         val belowWindowTitle = belowWindow.toWindowName()
@@ -343,7 +341,7 @@ class WindowManagerTraceSubject private constructor(
      */
     fun coversAtLeast(
         testRegion: Region,
-        activity: ComponentName?
+        activity: FlickerComponentName?
     ): WindowManagerTraceSubject = apply {
         addAssertion("coversAtLeastRegion(${activity?.toWindowName()}, $testRegion)") {
             it.frameRegion(activity).coversAtLeast(testRegion)
@@ -359,7 +357,7 @@ class WindowManagerTraceSubject private constructor(
      */
     fun coversAtLeast(
         testRegion: android.graphics.Region,
-        activity: ComponentName?
+        activity: FlickerComponentName?
     ): WindowManagerTraceSubject = apply {
         addAssertion("coversAtLeastRegion(${activity?.toWindowName()}, $testRegion)") {
             it.frameRegion(activity).coversAtLeast(testRegion)
@@ -375,7 +373,7 @@ class WindowManagerTraceSubject private constructor(
      */
     fun coversAtLeast(
         testRect: android.graphics.Rect,
-        activity: ComponentName?
+        activity: FlickerComponentName?
     ): WindowManagerTraceSubject = apply {
         addAssertion("coversAtLeastRegion(${activity?.toWindowName()}, $testRect)") {
             it.frameRegion(activity).coversAtLeast(testRect)
@@ -391,7 +389,7 @@ class WindowManagerTraceSubject private constructor(
      */
     fun coversAtLeast(
         testRect: Rect,
-        activity: ComponentName?
+        activity: FlickerComponentName?
     ): WindowManagerTraceSubject = apply {
         addAssertion("coversAtLeastRegion(${activity?.toWindowName()}, $testRect)") {
             it.frameRegion(activity).coversAtLeast(testRect)
@@ -408,7 +406,7 @@ class WindowManagerTraceSubject private constructor(
      */
     fun coversAtMost(
         testRegion: Region,
-        activity: ComponentName?
+        activity: FlickerComponentName?
     ): WindowManagerTraceSubject = apply {
         addAssertion("coversAtMostRegion(${activity?.toWindowName()}, $testRegion)") {
             it.frameRegion(activity).coversAtMost(testRegion)
@@ -425,7 +423,7 @@ class WindowManagerTraceSubject private constructor(
      */
     fun coversAtMost(
         testRegion: android.graphics.Region,
-        activity: ComponentName?
+        activity: FlickerComponentName?
     ): WindowManagerTraceSubject = apply {
         addAssertion("coversAtMostRegion(${activity?.toWindowName()}, $testRegion)") {
             it.frameRegion(activity).coversAtMost(testRegion)
@@ -442,7 +440,7 @@ class WindowManagerTraceSubject private constructor(
      */
     fun coversAtMost(
         testRect: Rect,
-        activity: ComponentName?
+        activity: FlickerComponentName?
     ): WindowManagerTraceSubject = apply {
         addAssertion("coversAtMostRegion(${activity?.toWindowName()}, $testRect)") {
             it.frameRegion(activity).coversAtMost(testRect)
@@ -459,7 +457,7 @@ class WindowManagerTraceSubject private constructor(
      */
     fun coversAtMost(
         testRect: android.graphics.Rect,
-        activity: ComponentName?
+        activity: FlickerComponentName?
     ): WindowManagerTraceSubject = apply {
         addAssertion("coversAtMostRegion(${activity?.toWindowName()}, $testRect)") {
             it.frameRegion(activity).coversAtMost(testRect)
@@ -475,7 +473,7 @@ class WindowManagerTraceSubject private constructor(
      */
     fun coversExactly(
         testRegion: android.graphics.Region,
-        activity: ComponentName?
+        activity: FlickerComponentName?
     ): WindowManagerTraceSubject = apply {
         addAssertion("coversExactly(${activity?.toWindowName()}, $testRegion)") {
             it.frameRegion(activity).coversExactly(testRegion)
@@ -491,7 +489,7 @@ class WindowManagerTraceSubject private constructor(
      */
     fun coversExactly(
         testRect: Rect,
-        activity: ComponentName?
+        activity: FlickerComponentName?
     ): WindowManagerTraceSubject = apply {
         addAssertion("coversExactly(${activity?.toWindowName()}, $testRect)") {
             it.frameRegion(activity).coversExactly(testRect)
@@ -507,7 +505,7 @@ class WindowManagerTraceSubject private constructor(
      */
     fun coversExactly(
         testRect: android.graphics.Rect,
-        activity: ComponentName?
+        activity: FlickerComponentName?
     ): WindowManagerTraceSubject = apply {
         addAssertion("coversExactly(${activity?.toWindowName()}, $testRect)") {
             it.frameRegion(activity).coversExactly(testRect)
@@ -519,9 +517,9 @@ class WindowManagerTraceSubject private constructor(
      */
     @JvmOverloads
     fun visibleWindowsShownMoreThanOneConsecutiveEntry(
-        ignoreWindows: List<ComponentName> = listOf(
-            WindowManagerStateHelper.SPLASH_SCREEN_COMPONENT,
-            WindowManagerStateHelper.SNAPSHOT_COMPONENT)
+        ignoreWindows: List<FlickerComponentName> = listOf(
+            FlickerComponentName.SPLASH_SCREEN,
+            FlickerComponentName.SNAPSHOT)
     ): WindowManagerTraceSubject = apply {
         visibleEntriesShownMoreThanOneConsecutiveTime { subject ->
             subject.wmState.windowStates

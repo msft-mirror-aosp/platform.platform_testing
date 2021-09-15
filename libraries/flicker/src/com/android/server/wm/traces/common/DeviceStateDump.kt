@@ -14,21 +14,22 @@
  * limitations under the License.
  */
 
-package com.android.server.wm.flicker.service
+package com.android.server.wm.traces.common
 
-import com.android.server.wm.traces.common.layers.LayersTrace
-import com.android.server.wm.traces.common.tags.TagTrace
-import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
+import com.android.server.wm.traces.common.layers.LayerTraceEntry
+import com.android.server.wm.traces.common.windowmanager.WindowManagerState
 
 /**
- * Interface for the WM Flicker Tag Processor component.
+ * Represents a state dump containing the [WindowManagerState] and the [LayerTraceEntry] both
+ * parsed and in raw (byte) data.
  */
-interface ITagProcessor {
+class DeviceStateDump<WMType : WindowManagerState?, LayerType : LayerTraceEntry?>(
     /**
-     * Adds tags to the received traces.
-     *
-     * @param wmTrace Window Manager trace
-     * @param layersTrace Surface Flinger trace
+     * Parsed [WindowManagerState]
      */
-    fun generateTags(wmTrace: WindowManagerTrace, layersTrace: LayersTrace): TagTrace
-}
+    val wmState: WMType,
+    /**
+     * Parsed [LayerTraceEntry]
+     */
+    val layerState: LayerType
+)

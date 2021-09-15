@@ -14,10 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.server.wm.traces.parser
-
-import android.os.SystemClock
-import android.util.Log
+package com.android.server.wm.traces.common
 
 /**
  * The utility class to wait a condition with customized options.
@@ -41,14 +38,13 @@ import android.util.Log
  *         .waitFor()
  * </pre>
 
- * @param message The message to show what is waiting for.
  * @param condition If it returns true, that means the condition is satisfied.
  */
 class WaitCondition<T> private constructor(
     private val supplier: () -> T,
     private val condition: Condition<T>,
     private val retryLimit: Int,
-    private val retryIntervalMs: Long,
+    private val onLog: ((String) -> Unit)?,
     private val onFailure: ((T) -> Any)?,
     private val onRetry: ((T) -> Any)?,
     private val onSuccess: ((T) -> Any)?
@@ -57,20 +53,17 @@ class WaitCondition<T> private constructor(
      * @return `false` if the condition does not satisfy within the time limit.
      */
     fun waitFor(): Boolean {
-        val startTime = SystemClock.elapsedRealtime()
-        Log.v(LOG_TAG, "***Waiting for $condition")
+        onLog?.invoke("***Waiting for $condition")
         var currState: T? = null
         for (i in 0..retryLimit) {
             currState = supplier.invoke()
             if (condition.isSatisfied(currState)) {
-                Log.v(LOG_TAG, "***Waiting for $condition ... Success!")
+                onLog?.invoke("***Waiting for $condition ... Success!")
                 onSuccess?.invoke(currState)
                 return true
             } else {
-                SystemClock.sleep(retryIntervalMs)
                 val detailedMessage = condition.getMessage(currState)
-                Log.v(LOG_TAG, "***Waiting for $detailedMessage... retry=${i + 1}" +
-                    " elapsed=${SystemClock.elapsedRealtime() - startTime} ms")
+                onLog?.invoke("***Waiting for $detailedMessage... retry=${i + 1}")
                 if (i < retryLimit) {
                     onRetry?.invoke(currState)
                 }
@@ -82,7 +75,7 @@ class WaitCondition<T> private constructor(
         } else {
             condition.toString()
         }
-        Log.e(LOG_TAG, "***Waiting for $detailedMessage ... Failed!")
+        onLog?.invoke("***Waiting for $detailedMessage ... Failed!")
         if (onFailure != null) {
             require(currState != null) { "Missing last result for failure notification" }
             onFailure.invoke(currState)
@@ -92,13 +85,13 @@ class WaitCondition<T> private constructor(
 
     class Builder<T>(
         private val supplier: () -> T,
-        private var retryLimit: Int,
-        private var retryIntervalMs: Long
+        private var retryLimit: Int
     ) {
         private val conditions = mutableListOf<Condition<T>>()
         private var onFailure: ((T) -> Any)? = null
         private var onRetry: ((T) -> Any)? = null
         private var onSuccess: ((T) -> Any)? = null
+        private var onLog: ((String) -> Unit)? = null
 
         fun withCondition(condition: Condition<T>) =
             apply { conditions.add(condition) }
@@ -122,6 +115,9 @@ class WaitCondition<T> private constructor(
         fun onFailure(onFailure: (T) -> Any): Builder<T> =
             apply { this.onFailure = onFailure }
 
+        fun onLog(onLog: (String) -> Unit): Builder<T> =
+            apply { this.onLog = onLog }
+
         fun onRetry(onRetry: ((T) -> Any)? = null): Builder<T> =
             apply { this.onRetry = onRetry }
 
@@ -130,7 +126,7 @@ class WaitCondition<T> private constructor(
 
         fun build(): WaitCondition<T> =
             WaitCondition(supplier, ConditionList(spreadConditionList()), retryLimit,
-                retryIntervalMs, onFailure, onRetry, onSuccess)
+                onLog, onFailure, onRetry, onSuccess)
     }
 
     companion object {

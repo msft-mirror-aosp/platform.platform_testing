@@ -16,13 +16,13 @@
 
 package com.android.server.wm.flicker
 
-import android.content.ComponentName
 import android.platform.test.rule.NavigationModeRule
 import android.platform.test.rule.PressHomeRule
 import android.platform.test.rule.UnlockScreenRule
 import com.android.server.wm.flicker.rules.ChangeDisplayOrientationRule
 import com.android.server.wm.flicker.rules.LaunchAppRule
 import com.android.server.wm.flicker.rules.RemoveAllTasksButHomeRule
+import com.android.server.wm.traces.common.FlickerComponentName
 import org.junit.rules.RuleChain
 import org.junit.runner.Description
 import org.junit.runners.model.Statement
@@ -96,7 +96,7 @@ class TransitionRunnerWithRules(private val testConfig: Map<String, Any?>) : Tra
     }
 
     companion object {
-        private val DUMMY_APP = ComponentName("com.google.android.apps.messaging",
+        private val DUMMY_APP = FlickerComponentName("com.google.android.apps.messaging",
             "com.google.android.apps.messaging.ui.ConversationListActivity")
     }
 }

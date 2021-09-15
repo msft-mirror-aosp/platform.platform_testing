@@ -39,8 +39,8 @@ open class WMFlickerServiceRule @JvmOverloads constructor(
 ) : TestWatcher() {
     private val traceMonitors = mutableListOf<TraceMonitor>()
 
-    protected var wmTrace: WindowManagerTrace? = null
-    protected var layersTrace: LayersTrace? = null
+    protected var wmTrace: WindowManagerTrace = WindowManagerTrace(emptyArray(), source = "")
+    protected var layersTrace: LayersTrace = LayersTrace(emptyArray(), source = "")
 
     override fun starting(description: Description?) {
         setupMonitors()
@@ -57,13 +57,12 @@ open class WMFlickerServiceRule @JvmOverloads constructor(
             it.save(testTag)
         }
 
+        Files.createDirectories(outputDir)
         wmTrace = getWindowManagerTrace(getFassFilePath(outputDir, testTag, "wm_trace"))
         layersTrace = getLayersTrace(getFassFilePath(outputDir, testTag, "layers_trace"))
 
         val flickerService = FlickerService()
-        if (wmTrace != null && layersTrace != null) {
-            flickerService.process(wmTrace!!, layersTrace!!, outputDir, testTag)
-        }
+        flickerService.process(wmTrace, layersTrace, outputDir, testTag)
     }
 
     private fun setupMonitors() {

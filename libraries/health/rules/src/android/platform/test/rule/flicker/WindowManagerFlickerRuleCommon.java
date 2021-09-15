@@ -16,10 +16,10 @@
 
 package android.platform.test.rule.flicker;
 
-import android.content.ComponentName;
 import android.util.Log;
 
 import com.android.server.wm.flicker.traces.windowmanager.WindowManagerTraceSubject;
+import com.android.server.wm.traces.common.FlickerComponentName;
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace;
 
 /**
@@ -29,8 +29,10 @@ import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace;
 public class WindowManagerFlickerRuleCommon extends WindowManagerFlickerRuleBase {
 
     private static final String TAG = WindowManagerFlickerRuleCommon.class.getSimpleName();
-    private static final ComponentName NAV_BAR_COMPONENT = new ComponentName("", "NavigationBar0");
-    private static final ComponentName STATUS_BAR_COMPONENT = new ComponentName("", "StatusBar");
+    private static final FlickerComponentName NAV_BAR_COMPONENT =
+            new FlickerComponentName("", "NavigationBar0");
+    private static final FlickerComponentName STATUS_BAR_COMPONENT =
+            new FlickerComponentName("", "StatusBar");
 
     protected void validateWMFlickerConditions(WindowManagerTrace wmTrace) {
         // Verify that there’s an non-app window with names NavigationBar, StatusBar above

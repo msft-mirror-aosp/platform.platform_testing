@@ -14,11 +14,8 @@
  * limitations under the License.
  */
 
-package com.android.server.wm.flicker.service
+package com.android.server.wm.traces.common.service
 
-import android.util.Log
-import androidx.annotation.VisibleForTesting
-import com.android.server.wm.flicker.service.FlickerService.Companion.getFassFilePath
 import com.android.server.wm.traces.common.errors.ErrorState
 import com.android.server.wm.traces.common.errors.ErrorTrace
 import com.android.server.wm.traces.common.layers.LayersTrace
@@ -27,17 +24,13 @@ import com.android.server.wm.traces.common.tags.TagTrace
 import com.android.server.wm.traces.common.tags.Transition
 import com.android.server.wm.traces.common.tags.TransitionTag
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
-import com.android.server.wm.traces.parser.errors.toProto
-import java.io.IOException
-import java.nio.file.Files
-import java.nio.file.Path
 
 /**
  * Invokes the configured assertors and summarizes the results.
  */
-class AssertionEngine(private val outputDir: Path, private val testTag: String) {
+class AssertionEngine(private val logger: (String) -> Unit) {
     private val flickerAssertors = mapOf<ITransitionAssertor, Transition>(
-        // TODO: Add new assertors to invoke
+        // TODO: Add new detectors to invoke
     )
 
     fun analyze(
@@ -67,12 +60,11 @@ class AssertionEngine(private val outputDir: Path, private val testTag: String) 
         /* Ensure all error states with same timestamp are merged */
         val errorStates = allStates.distinct()
                 .groupBy({ it.timestamp }, { it.errors.asList() })
-                .mapValues { (key, value) -> ErrorState(value.flatten().toTypedArray(), key) }
+                .mapValues { (key, value) ->
+                    ErrorState(value.flatten().toTypedArray(), key.toString()) }
                 .values.toTypedArray()
 
-        val errorTrace = ErrorTrace(errorStates, source = "")
-        writeFile(errorTrace)
-        return errorTrace
+        return ErrorTrace(errorStates, source = "")
     }
 
     /**
@@ -81,7 +73,6 @@ class AssertionEngine(private val outputDir: Path, private val testTag: String) 
      * @param tagTrace Tag Trace
      * @return a list with [TransitionTag]
      */
-    @VisibleForTesting
     fun getTransitionTags(tagTrace: TagTrace): List<TransitionTag> {
         return tagTrace.entries.flatMap { state ->
             state.tags.filter { tag -> tag.isStartTag }
@@ -109,7 +100,6 @@ class AssertionEngine(private val outputDir: Path, private val testTag: String) 
      * @param transition the [Transition] to filter the list by
      * @return a list with [WindowManagerTrace] blocks
      */
-    @VisibleForTesting
     fun splitWmTraceByTags(
         wmTrace: WindowManagerTrace,
         transitionTags: List<TransitionTag>,
@@ -133,7 +123,6 @@ class AssertionEngine(private val outputDir: Path, private val testTag: String) 
      * @param transition the [Transition] to filter the list by
      * @return a list with [LayersTrace] blocks
      */
-    @VisibleForTesting
     fun splitLayersTraceByTags(
         layersTrace: LayersTrace,
         transitionTags: List<TransitionTag>,
@@ -145,22 +134,6 @@ class AssertionEngine(private val outputDir: Path, private val testTag: String) 
 
         return layersTags.map { tag ->
             layersTrace.filter(tag.startTimestamp, tag.endTimestamp)
-        }
-    }
-
-    /**
-     * Stores the error trace in a .winscope file.
-     */
-    private fun writeFile(errorTrace: ErrorTrace) {
-        val errorTraceBytes = errorTrace.toProto().toByteArray()
-        val errorTraceFile = getFassFilePath(outputDir, testTag, "error_trace")
-
-        try {
-            Log.i("FLICKER_ERROR_TRACE", errorTraceFile.toString())
-            Files.createDirectories(errorTraceFile.parent)
-            Files.write(errorTraceFile, errorTraceBytes)
-        } catch (e: IOException) {
-            throw RuntimeException("Unable to create error trace file: ${e.message}", e)
         }
     }
 }

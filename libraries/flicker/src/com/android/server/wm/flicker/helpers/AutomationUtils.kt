@@ -24,6 +24,7 @@ import android.os.RemoteException
 import android.os.SystemClock
 import android.util.Log
 import android.util.Rational
+import android.view.Display
 import android.view.Surface
 import android.view.View
 import android.view.ViewConfiguration
@@ -36,7 +37,7 @@ import androidx.test.uiautomator.Until
 import com.android.compatibility.common.util.SystemUtil
 import com.android.server.wm.flicker.helpers.WindowUtils.displayBounds
 import com.android.server.wm.flicker.helpers.WindowUtils.getNavigationBarPosition
-import com.android.server.wm.traces.parser.windowmanager.WindowManagerConditionsFactory
+import com.android.server.wm.traces.common.WindowManagerConditionsFactory
 import com.android.server.wm.traces.parser.windowmanager.WindowManagerStateHelper
 import org.junit.Assert
 import org.junit.Assert.assertNotNull
@@ -155,7 +156,7 @@ fun UiDevice.openQuickstep(
     wmHelper.waitFor(
         WindowManagerConditionsFactory.isNavBarVisible(),
         WindowManagerConditionsFactory.isStatusBarVisible(),
-        WindowManagerConditionsFactory.isAppTransitionIdle()
+        WindowManagerConditionsFactory.isAppTransitionIdle(Display.DEFAULT_DISPLAY)
     )
 }
 
@@ -248,7 +249,7 @@ fun UiDevice.launchSplitScreen(
     this.wait(Until.findObject(splitScreenDividerSelector), FIND_TIMEOUT)
     wmHelper.waitFor(
         WindowManagerConditionsFactory.isLayerVisible(DOCKED_STACK_DIVIDER),
-        WindowManagerConditionsFactory.isAppTransitionIdle())
+        WindowManagerConditionsFactory.isAppTransitionIdle(Display.DEFAULT_DISPLAY))
 
     if (!this.isInSplitScreen()) {
         Assert.fail("Unable to find Split screen divider")
@@ -279,7 +280,7 @@ fun UiDevice.isInSplitScreen(): Boolean {
 fun waitSplitScreenGone(wmHelper: WindowManagerStateHelper): Boolean {
     return wmHelper.waitFor(
         WindowManagerConditionsFactory.isLayerVisible(DOCKED_STACK_DIVIDER),
-        WindowManagerConditionsFactory.isAppTransitionIdle())
+        WindowManagerConditionsFactory.isAppTransitionIdle(Display.DEFAULT_DISPLAY))
 }
 
 private val splitScreenDividerSelector: BySelector

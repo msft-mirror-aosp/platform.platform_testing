@@ -14,18 +14,19 @@
  * limitations under the License.
  */
 
-package com.android.server.wm.flicker.service.processors
+package com.android.server.wm.traces.common.service.processors
 
-import com.android.server.wm.flicker.FLICKER_TAG
-import com.android.server.wm.flicker.service.ITagProcessor
+import com.android.server.wm.traces.common.DeviceStateDump
+import com.android.server.wm.traces.common.layers.LayerTraceEntry
+import com.android.server.wm.traces.common.service.ITagProcessor
 import com.android.server.wm.traces.common.layers.LayersTrace
 import com.android.server.wm.traces.common.tags.Tag
 import com.android.server.wm.traces.common.tags.TagState
 import com.android.server.wm.traces.common.tags.TagTrace
+import com.android.server.wm.traces.common.windowmanager.WindowManagerState
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
-import com.android.server.wm.traces.parser.windowmanager.WindowManagerStateHelper
 
-abstract class TransitionProcessor : ITagProcessor {
+abstract class TransitionProcessor(internal val logger: (String) -> Unit) : ITagProcessor {
     abstract fun getInitialState(tags: MutableMap<Long, MutableList<Tag>>): FSMState
 
     /**
@@ -47,9 +48,9 @@ abstract class TransitionProcessor : ITagProcessor {
         val dumpIterator = dumpList.iterator()
 
         // keep always a reference to previous, current and next states
-        var previous: WindowManagerStateHelper.Dump?
-        var current: WindowManagerStateHelper.Dump? = null
-        var next: WindowManagerStateHelper.Dump? = dumpIterator.next()
+        var previous: DeviceStateDump<WindowManagerState, LayerTraceEntry>?
+        var current: DeviceStateDump<WindowManagerState, LayerTraceEntry>? = null
+        var next: DeviceStateDump<WindowManagerState, LayerTraceEntry>? = dumpIterator.next()
         while (currPosition != null) {
             previous = current
             current = next
@@ -66,22 +67,19 @@ abstract class TransitionProcessor : ITagProcessor {
         val tagStates = tags.map { entry ->
             val timestamp = entry.key
             val stateTags = entry.value
-            TagState(timestamp, stateTags.toTypedArray())
+            TagState(timestamp.toString(), stateTags.toTypedArray())
         }
         return TagTrace(tagStates.toTypedArray(), source = "")
     }
 
     companion object {
-        @JvmStatic
-        protected val LOG_TAG = "$FLICKER_TAG-PROC"
-
         internal fun createDumpList(
             wmTrace: WindowManagerTrace,
             layersTrace: LayersTrace
-        ): List<WindowManagerStateHelper.Dump> {
+        ): List<DeviceStateDump<WindowManagerState, LayerTraceEntry>> {
             val wmTimestamps = wmTrace.map { it.timestamp }.toTypedArray()
             val layersTimestamps = layersTrace.map { it.timestamp }.toTypedArray()
-            val fullTimestamps = sortedSetOf(*wmTimestamps, *layersTimestamps)
+            val fullTimestamps = setOf(*wmTimestamps, *layersTimestamps).sorted()
 
             return fullTimestamps.map { baseTimestamp ->
                 val wmState = wmTrace
@@ -90,7 +88,7 @@ abstract class TransitionProcessor : ITagProcessor {
                 val layerState = layersTrace
                     .lastOrNull { it.timestamp <= baseTimestamp }
                     ?: layersTrace.first()
-                WindowManagerStateHelper.Dump(wmState, layerState)
+                DeviceStateDump(wmState, layerState)
             }.distinctBy { Pair(it.wmState.timestamp, it.layerState.timestamp) }
         }
     }

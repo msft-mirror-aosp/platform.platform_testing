@@ -14,43 +14,43 @@
  * limitations under the License.
  */
 
-package com.android.server.wm.flicker.service.processors
+package com.android.server.wm.traces.common.service.processors
 
-import android.util.Log
-import android.view.WindowManager.LayoutParams.TYPE_APPLICATION_STARTING
+import com.android.server.wm.traces.common.DeviceStateDump
+import com.android.server.wm.traces.common.WindowManagerConditionsFactory.isAppLaunchEnded
+import com.android.server.wm.traces.common.layers.LayerTraceEntry
+import com.android.server.wm.traces.common.service.PlatformConsts
 import com.android.server.wm.traces.common.tags.Tag
 import com.android.server.wm.traces.common.tags.Transition
 import com.android.server.wm.traces.common.windowmanager.WindowManagerState
 import com.android.server.wm.traces.common.windowmanager.windows.Activity
 import com.android.server.wm.traces.common.windowmanager.windows.WindowState
-import com.android.server.wm.traces.parser.windowmanager.WindowManagerConditionsFactory.isAppLaunchEnded
-import com.android.server.wm.traces.parser.windowmanager.WindowManagerStateHelper
 
-class AppLaunchProcessor : TransitionProcessor() {
+class AppLaunchProcessor(logger: (String) -> Unit) : TransitionProcessor(logger) {
     override fun getInitialState(tags: MutableMap<Long, MutableList<Tag>>) =
             InitialState(tags)
 
     /**
      * Base state for the FSM, check if there are more WM and SF states to process
      */
-    abstract class BaseState(tags: MutableMap<Long, MutableList<Tag>>) : FSMState(tags) {
+    abstract inner class BaseState(tags: MutableMap<Long, MutableList<Tag>>) : FSMState(tags) {
         protected abstract fun doProcessState(
-            previous: WindowManagerStateHelper.Dump?,
-            current: WindowManagerStateHelper.Dump,
-            next: WindowManagerStateHelper.Dump
+            previous: DeviceStateDump<WindowManagerState, LayerTraceEntry>?,
+            current: DeviceStateDump<WindowManagerState, LayerTraceEntry>,
+            next: DeviceStateDump<WindowManagerState, LayerTraceEntry>
         ): FSMState
 
         override fun process(
-            previous: WindowManagerStateHelper.Dump?,
-            current: WindowManagerStateHelper.Dump,
-            next: WindowManagerStateHelper.Dump?
+            previous: DeviceStateDump<WindowManagerState, LayerTraceEntry>?,
+            current: DeviceStateDump<WindowManagerState, LayerTraceEntry>,
+            next: DeviceStateDump<WindowManagerState, LayerTraceEntry>?
         ): FSMState? {
             return when (next) {
                 null -> {
                     // last state
-                    Log.v(LOG_TAG, "(${current.layerState.timestamp}) Trace has reached the end")
+                    logger.invoke("(${current.layerState.timestamp}) Trace has reached the end")
                     if (hasOpenTag()) {
-                        Log.v(LOG_TAG, "(${current.layerState.timestamp}) Has an open tag, " +
+                        logger.invoke("(${current.layerState.timestamp}) Has an open tag, " +
                                 "closing it on the last SF state")
                         addEndTransitionTag(current, Transition.IME_APPEAR)
                     }
@@ -64,18 +64,16 @@ class AppLaunchProcessor : TransitionProcessor() {
     /**
      * Initial FSM state that passes the current app launch activity if any to the next state.
      */
-    class InitialState(
+    inner class InitialState(
         tags: MutableMap<Long, MutableList<Tag>>
     ) : BaseState(tags) {
-        private val processor = AppLaunchProcessor()
-
         override fun doProcessState(
-            previous: WindowManagerStateHelper.Dump?,
-            current: WindowManagerStateHelper.Dump,
-            next: WindowManagerStateHelper.Dump
+            previous: DeviceStateDump<WindowManagerState, LayerTraceEntry>?,
+            current: DeviceStateDump<WindowManagerState, LayerTraceEntry>,
+            next: DeviceStateDump<WindowManagerState, LayerTraceEntry>
         ): FSMState {
-            val prevTaskActivities = processor.filterVisibleAppStartActivities(current.wmState)
-            val prevAppLaunchActivity = processor.appLaunchActivityWithSurface(prevTaskActivities)
+            val prevTaskActivities = filterVisibleAppStartActivities(current.wmState)
+            val prevAppLaunchActivity = appLaunchActivityWithSurface(prevTaskActivities)
 
             return WaitNewAppLaunchActivity(tags, prevAppLaunchActivity)
         }
@@ -83,19 +81,18 @@ class AppLaunchProcessor : TransitionProcessor() {
 
     /**
      * Finds the app launch when a new [WindowManagerState] contains an activity that is resuming or
-     * initializing, with a SplashScreen Window that has type [TYPE_APPLICATION_STARTING] and
-     * window's surface is showing. This condition should not be true in the previous timestamp.
+     * initializing, with a SplashScreen Window that has type
+     * [PlatformConsts.TYPE_APPLICATION_STARTING] and window's surface is showing. This condition
+     * should not be true in the previous timestamp.
      */
-    class WaitNewAppLaunchActivity(
+    inner class WaitNewAppLaunchActivity(
         tags: MutableMap<Long, MutableList<Tag>>,
         private val prevAppLaunchActivity: Activity?
     ) : BaseState(tags) {
-        private val processor = AppLaunchProcessor()
-
         override fun doProcessState(
-            previous: WindowManagerStateHelper.Dump?,
-            current: WindowManagerStateHelper.Dump,
-            next: WindowManagerStateHelper.Dump
+            previous: DeviceStateDump<WindowManagerState, LayerTraceEntry>?,
+            current: DeviceStateDump<WindowManagerState, LayerTraceEntry>,
+            next: DeviceStateDump<WindowManagerState, LayerTraceEntry>
         ): FSMState {
             if (previous == null) return this
 
@@ -103,11 +100,11 @@ class AppLaunchProcessor : TransitionProcessor() {
              * Activities that have started and surfaced that were not already doing so in the
              * previous timestamp.
              */
-            val currTaskActivities = processor.filterVisibleAppStartActivities(current.wmState)
-            val currAppLaunchActivity = processor.appLaunchActivityWithSurface(currTaskActivities)
+            val currTaskActivities = filterVisibleAppStartActivities(current.wmState)
+            val currAppLaunchActivity = appLaunchActivityWithSurface(currTaskActivities)
 
             val startingActivityName = if (currAppLaunchActivity != null &&
-                    currAppLaunchActivity != prevAppLaunchActivity) {
+                currAppLaunchActivity != prevAppLaunchActivity) {
                 currAppLaunchActivity.name
             } else ""
 
@@ -115,13 +112,12 @@ class AppLaunchProcessor : TransitionProcessor() {
                 val taskId = current.wmState.rootTasks.first {
                     it.containsActivity(startingActivityName)
                 }.taskId
-                Log.v(Transition.APP_LAUNCH.name,
-                        "(${current.wmState.timestamp}) Task $taskId appears to have launched")
+                logger.invoke("(${current.wmState.timestamp}) " +
+                    "Task $taskId appears to have launched")
                 addStartTransitionTag(current, Transition.IME_APPEAR, taskId = taskId)
                 WaitAppLaunchEnded(tags, taskId)
             } else {
-                Log.v(Transition.APP_LAUNCH.name,
-                        "(${current.wmState.timestamp}) No Start of App Launch Detected")
+                logger.invoke("(${current.wmState.timestamp}) No Start of App Launch Detected")
                 WaitNewAppLaunchActivity(tags, currAppLaunchActivity)
             }
         }
@@ -142,7 +138,8 @@ class AppLaunchProcessor : TransitionProcessor() {
     ): Activity? {
         return activities.firstOrNull { activity ->
             activity.children.filterIsInstance<WindowState>().any { window ->
-                window.attributes.type == TYPE_APPLICATION_STARTING && window.isSurfaceShown
+                window.attributes.type == PlatformConsts.TYPE_APPLICATION_STARTING &&
+                    window.isSurfaceShown
             }
         }
     }
@@ -151,24 +148,23 @@ class AppLaunchProcessor : TransitionProcessor() {
      * Wait for SplashScreen window under the app task to no longer be visible as the splash screen
      * has finished its job.
      */
-    class WaitAppLaunchEnded(
+    inner class WaitAppLaunchEnded(
         tags: MutableMap<Long, MutableList<Tag>>,
         private val taskId: Int
     ) : BaseState(tags) {
         override fun doProcessState(
-            previous: WindowManagerStateHelper.Dump?,
-            current: WindowManagerStateHelper.Dump,
-            next: WindowManagerStateHelper.Dump
+            previous: DeviceStateDump<WindowManagerState, LayerTraceEntry>?,
+            current: DeviceStateDump<WindowManagerState, LayerTraceEntry>,
+            next: DeviceStateDump<WindowManagerState, LayerTraceEntry>
         ): FSMState {
             val timestamp = current.wmState.timestamp
 
             return if (isAppLaunchEnded(taskId).isSatisfied(current)) {
-                Log.v(Transition.APP_LAUNCH.name,
-                        "($timestamp) App has finished launching with task $taskId")
+                logger.invoke("($timestamp) App has finished launching with task $taskId")
                 addEndTransitionTag(current, Transition.APP_LAUNCH, taskId = taskId)
                 InitialState(tags)
             } else {
-                Log.v(Transition.APP_LAUNCH.name, "($timestamp) No end of app launch detected")
+                logger.invoke("($timestamp) No end of app launch detected")
                 this
             }
         }

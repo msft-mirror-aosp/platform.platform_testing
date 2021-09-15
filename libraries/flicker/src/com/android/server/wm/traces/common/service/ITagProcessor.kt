@@ -14,29 +14,21 @@
  * limitations under the License.
  */
 
-package com.android.server.wm.flicker.service
+package com.android.server.wm.traces.common.service
 
-import com.android.server.wm.traces.common.errors.ErrorTrace
 import com.android.server.wm.traces.common.layers.LayersTrace
+import com.android.server.wm.traces.common.tags.TagTrace
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 
 /**
- * Interface for the WM Flicker Service Assertor component.
+ * Interface for the WM Flicker Tag Processor component.
  */
-interface ITransitionAssertor {
+interface ITagProcessor {
     /**
-     * Analyzes a [WindowManagerTrace] trace to detect flickers.
+     * Adds tags to the received traces.
      *
      * @param wmTrace Window Manager trace
-     * @return An error trace
-     */
-    fun analyzeWmTrace(wmTrace: WindowManagerTrace): ErrorTrace
-
-    /**
-     * Analyzes a [LayersTrace] trace to detect flickers.
-     *
      * @param layersTrace Surface Flinger trace
-     * @return An error trace
      */
-    fun analyzeLayersTrace(layersTrace: LayersTrace): ErrorTrace
+    fun generateTags(wmTrace: WindowManagerTrace, layersTrace: LayersTrace): TagTrace
 }

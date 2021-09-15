@@ -28,9 +28,8 @@ import androidx.test.uiautomator.By
 import androidx.test.uiautomator.BySelector
 import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.Until
+import com.android.server.wm.traces.common.FlickerComponentName
 import com.android.server.wm.traces.common.windowmanager.WindowManagerState
-import com.android.server.wm.traces.parser.toActivityName
-import com.android.server.wm.traces.parser.toWindowName
 import com.android.server.wm.traces.parser.windowmanager.WindowManagerStateHelper
 
 /**
@@ -40,7 +39,7 @@ import com.android.server.wm.traces.parser.windowmanager.WindowManagerStateHelpe
 open class StandardAppHelper @JvmOverloads constructor(
     instr: Instrumentation,
     @JvmField val appName: String,
-    @JvmField val component: ComponentName,
+    @JvmField val component: FlickerComponentName,
     protected val launcherStrategy: ILauncherStrategy =
         LauncherStrategyFactory.getInstance(instr).launcherStrategy
 ) : AbstractStandardAppHelper(instr) {
@@ -52,7 +51,7 @@ open class StandardAppHelper @JvmOverloads constructor(
         launcherStrategy: ILauncherStrategy =
             LauncherStrategyFactory.getInstance(instr).launcherStrategy
     ): this(instr, appName,
-        ComponentName.createRelative(packageName, ".$activity"), launcherStrategy)
+        FlickerComponentName(packageName, ".$activity"), launcherStrategy)
 
     private val activityManager: ActivityManager?
         get() = mInstrumentation.context.getSystemService(ActivityManager::class.java)
@@ -85,7 +84,7 @@ open class StandardAppHelper @JvmOverloads constructor(
         val intent = Intent()
         intent.addCategory(Intent.CATEGORY_LAUNCHER)
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        intent.component = component
+        intent.component = ComponentName(component.packageName, component.className)
         return intent
     }
 

@@ -18,6 +18,7 @@ package com.android.server.wm.flicker.service.processors
 
 import com.android.server.wm.flicker.readLayerTraceFromFile
 import com.android.server.wm.flicker.readWmTraceFromFile
+import com.android.server.wm.traces.common.service.processors.ImeAppearProcessor
 import com.google.common.truth.Truth
 import org.junit.FixMethodOrder
 import org.junit.Test
@@ -28,7 +29,7 @@ import org.junit.runners.MethodSorters
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class ImeAppearProcessorTest {
-    private val processor = ImeAppearProcessor()
+    private val processor = ImeAppearProcessor { }
 
     private val tagsImeAppearWithGesture by lazy {
         val wmTrace = readWmTraceFromFile(

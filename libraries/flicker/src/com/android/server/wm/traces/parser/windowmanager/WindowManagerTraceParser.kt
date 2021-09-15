@@ -188,7 +188,7 @@ object WindowManagerTraceParser {
             root = newRootWindowContainer(proto.rootWindowContainer),
             keyguardControllerState = newKeyguardControllerState(
                 proto.rootWindowContainer.keyguardController),
-            timestamp = timestamp
+            _timestamp = timestamp.toString()
         )
     }
 

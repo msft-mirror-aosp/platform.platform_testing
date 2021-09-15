@@ -14,47 +14,32 @@
  * limitations under the License.
  */
 
-package com.android.server.wm.traces.parser.windowmanager
+package com.android.server.wm.traces.common
 
-import android.content.ComponentName
-import android.view.Display
-import android.view.WindowManager
 import com.android.server.wm.traces.common.layers.Layer
 import com.android.server.wm.traces.common.layers.LayerTraceEntry
 import com.android.server.wm.traces.common.layers.Transform.Companion.isFlagSet
+import com.android.server.wm.traces.common.service.PlatformConsts
 import com.android.server.wm.traces.common.windowmanager.WindowManagerState
-import com.android.server.wm.traces.common.windowmanager.windows.Activity
 import com.android.server.wm.traces.common.windowmanager.windows.WindowState
-import com.android.server.wm.traces.parser.Condition
-import com.android.server.wm.traces.parser.ConditionList
-import com.android.server.wm.traces.parser.toActivityName
-import com.android.server.wm.traces.parser.toLayerName
-import com.android.server.wm.traces.parser.toWindowName
-import com.android.server.wm.traces.parser.windowmanager.WindowManagerStateHelper.Companion.BLACK_SURFACE_COMPONENT
-import com.android.server.wm.traces.parser.windowmanager.WindowManagerStateHelper.Companion.IME_COMPONENT
-import com.android.server.wm.traces.parser.windowmanager.WindowManagerStateHelper.Companion.ROTATION_COMPONENT
 
 object WindowManagerConditionsFactory {
-    private val navBarWindowName =
-        WindowManagerStateHelper.NAV_BAR_COMPONENT.toWindowName()
-    private val navBarLayerName =
-        WindowManagerStateHelper.NAV_BAR_COMPONENT.toLayerName()
-    private val statusBarWindowName =
-        WindowManagerStateHelper.STATUS_BAR_COMPONENT.toWindowName()
-    private val statusBarLayerName =
-        WindowManagerStateHelper.STATUS_BAR_COMPONENT.toLayerName()
+    private val navBarWindowName = FlickerComponentName.NAV_BAR.toWindowName()
+    private val navBarLayerName = FlickerComponentName.NAV_BAR.toLayerName()
+    private val statusBarWindowName = FlickerComponentName.STATUS_BAR.toWindowName()
+    private val statusBarLayerName = FlickerComponentName.STATUS_BAR.toLayerName()
 
     /**
      * Condition to check if the nav bar window is visible
      */
-    fun isNavBarVisible(): Condition<WindowManagerStateHelper.Dump> =
+    fun isNavBarVisible(): Condition<DeviceStateDump<WindowManagerState, LayerTraceEntry>> =
         ConditionList(listOf(
             isNavBarWindowVisible(), isNavBarLayerVisible(), isNavBarLayerOpaque()))
 
     /**
      * Condition to check if the nav bar window is visible
      */
-    fun isNavBarWindowVisible(): Condition<WindowManagerStateHelper.Dump> =
+    fun isNavBarWindowVisible(): Condition<DeviceStateDump<WindowManagerState, LayerTraceEntry>> =
         Condition("isNavBarWindowVisible") {
             it.wmState.isWindowVisible(navBarWindowName)
         }
@@ -62,13 +47,13 @@ object WindowManagerConditionsFactory {
     /**
      * Condition to check if the nav bar layer is visible
      */
-    fun isNavBarLayerVisible(): Condition<WindowManagerStateHelper.Dump> =
+    fun isNavBarLayerVisible(): Condition<DeviceStateDump<WindowManagerState, LayerTraceEntry>> =
         isLayerVisible(navBarLayerName)
 
     /**
      * Condition to check if the nav bar layer is opaque
      */
-    fun isNavBarLayerOpaque(): Condition<WindowManagerStateHelper.Dump> =
+    fun isNavBarLayerOpaque(): Condition<DeviceStateDump<WindowManagerState, LayerTraceEntry>> =
         Condition("isNavBarLayerOpaque") {
             it.layerState.getLayerWithBuffer(navBarLayerName)
                 ?.color?.a ?: 0f == 1f
@@ -77,14 +62,15 @@ object WindowManagerConditionsFactory {
     /**
      * Condition to check if the status bar window is visible
      */
-    fun isStatusBarVisible(): Condition<WindowManagerStateHelper.Dump> =
+    fun isStatusBarVisible(): Condition<DeviceStateDump<WindowManagerState, LayerTraceEntry>> =
         ConditionList(listOf(
             isStatusBarWindowVisible(), isStatusBarLayerVisible(), isStatusBarLayerOpaque()))
 
     /**
      * Condition to check if the nav bar window is visible
      */
-    fun isStatusBarWindowVisible(): Condition<WindowManagerStateHelper.Dump> =
+    fun isStatusBarWindowVisible():
+        Condition<DeviceStateDump<WindowManagerState, LayerTraceEntry>> =
         Condition("isStatusBarWindowVisible") {
             it.wmState.isWindowVisible(statusBarWindowName)
         }
@@ -92,107 +78,105 @@ object WindowManagerConditionsFactory {
     /**
      * Condition to check if the nav bar layer is visible
      */
-    fun isStatusBarLayerVisible(): Condition<WindowManagerStateHelper.Dump> =
+    fun isStatusBarLayerVisible(): Condition<DeviceStateDump<WindowManagerState, LayerTraceEntry>> =
         isLayerVisible(statusBarLayerName)
 
     /**
      * Condition to check if the nav bar layer is opaque
      */
-    fun isStatusBarLayerOpaque(): Condition<WindowManagerStateHelper.Dump> =
+    fun isStatusBarLayerOpaque(): Condition<DeviceStateDump<WindowManagerState, LayerTraceEntry>> =
         Condition("isStatusBarLayerOpaque") {
             it.layerState.getLayerWithBuffer(statusBarLayerName)
                 ?.color?.a ?: 0f == 1f
         }
 
-    fun isHomeActivityVisible(): Condition<WindowManagerStateHelper.Dump> =
+    fun isHomeActivityVisible(): Condition<DeviceStateDump<WindowManagerState, LayerTraceEntry>> =
         Condition("isHomeActivityVisible") {
             it.wmState.homeActivity?.isVisible == true
         }
 
-    @JvmOverloads
     fun isAppTransitionIdle(
-        displayId: Int = Display.DEFAULT_DISPLAY
-    ): Condition<WindowManagerStateHelper.Dump> =
+        displayId: Int
+    ): Condition<DeviceStateDump<WindowManagerState, LayerTraceEntry>> =
         Condition("isAppTransitionIdle[$displayId]") {
             it.wmState.getDisplay(displayId)
                 ?.appTransitionState == WindowManagerState.APP_STATE_IDLE
         }
 
     fun containsActivity(
-        component: ComponentName
-    ): Condition<WindowManagerStateHelper.Dump> =
+        component: FlickerComponentName
+    ): Condition<DeviceStateDump<WindowManagerState, LayerTraceEntry>> =
         Condition("containsActivity[${component.toActivityName()}]") {
             it.wmState.containsActivity(component.toActivityName())
         }
 
     fun containsWindow(
-        component: ComponentName
-    ): Condition<WindowManagerStateHelper.Dump> =
+        component: FlickerComponentName
+    ): Condition<DeviceStateDump<WindowManagerState, LayerTraceEntry>> =
         Condition("containsWindow[${component.toWindowName()}]") {
             it.wmState.containsWindow(component.toWindowName())
         }
 
     fun isWindowSurfaceShown(
         windowName: String
-    ): Condition<WindowManagerStateHelper.Dump> =
+    ): Condition<DeviceStateDump<WindowManagerState, LayerTraceEntry>> =
         Condition("isWindowSurfaceShown[$windowName]") {
             it.wmState.isWindowSurfaceShown(windowName)
         }
 
     fun isWindowSurfaceShown(
-        component: ComponentName
-    ): Condition<WindowManagerStateHelper.Dump> =
+        component: FlickerComponentName
+    ): Condition<DeviceStateDump<WindowManagerState, LayerTraceEntry>> =
         isWindowSurfaceShown(component.toWindowName())
 
     fun isActivityVisible(
-        component: ComponentName
-    ): Condition<WindowManagerStateHelper.Dump> =
+        component: FlickerComponentName
+    ): Condition<DeviceStateDump<WindowManagerState, LayerTraceEntry>> =
         Condition("isActivityVisible") {
             it.wmState.isActivityVisible(component.toActivityName())
         }
 
-    fun isWMStateComplete(): Condition<WindowManagerStateHelper.Dump> =
+    fun isWMStateComplete(): Condition<DeviceStateDump<WindowManagerState, LayerTraceEntry>> =
         Condition("isWMStateComplete") {
             it.wmState.isComplete()
         }
 
-    @JvmOverloads
     fun hasRotation(
         expectedRotation: Int,
-        displayId: Int = Display.DEFAULT_DISPLAY
-    ): Condition<WindowManagerStateHelper.Dump> {
-        val hasRotationCondition = Condition<WindowManagerStateHelper.Dump>(
+        displayId: Int
+    ): Condition<DeviceStateDump<WindowManagerState, LayerTraceEntry>> {
+        val hasRotationCondition = Condition<DeviceStateDump<WindowManagerState, LayerTraceEntry>>(
             "hasRotation[$expectedRotation, display=$displayId]") {
             val currRotation = it.wmState.getRotation(displayId)
             currRotation == expectedRotation
         }
         return ConditionList(listOf(
             hasRotationCondition,
-            isLayerVisible(ROTATION_COMPONENT).negate(),
-            isLayerVisible(BLACK_SURFACE_COMPONENT).negate(),
+            isLayerVisible(FlickerComponentName.ROTATION).negate(),
+            isLayerVisible(FlickerComponentName.BACK_SURFACE).negate(),
             hasLayersAnimating().negate()
         ))
     }
 
     fun isLayerVisible(
         layerName: String
-    ): Condition<WindowManagerStateHelper.Dump> =
+    ): Condition<DeviceStateDump<WindowManagerState, LayerTraceEntry>> =
         Condition("isLayerVisible[$layerName]") {
             it.layerState.isVisible(layerName)
         }
 
     fun isLayerColorAlphaOne(
-        component: ComponentName
-    ): Condition<WindowManagerStateHelper.Dump> =
+        component: FlickerComponentName
+    ): Condition<DeviceStateDump<WindowManagerState, LayerTraceEntry>> =
         Condition("isLayerColorAlphaOne[${component.toLayerName()}]") {
             val layers = it.layerState.getVisibleLayersByName(component)
             layers.any { layer -> layer.color.a == 1.0f }
         }
 
     fun isLayerTransformFlagSet(
-        component: ComponentName,
+        component: FlickerComponentName,
         transform: Int
-    ): Condition<WindowManagerStateHelper.Dump> =
+    ): Condition<DeviceStateDump<WindowManagerState, LayerTraceEntry>> =
         Condition("isLayerTransformFlagSet[${component.toLayerName()}]") {
             val layers = it.layerState.getVisibleLayersByName(component)
             layers.any { layer ->
@@ -201,47 +185,52 @@ object WindowManagerConditionsFactory {
         }
 
     private fun LayerTraceEntry.getVisibleLayersByName(
-        component: ComponentName
+        component: FlickerComponentName
     ): List<Layer> = this.visibleLayers.filter {
         it.name.contains(component.toLayerName())
     }
 
     fun isLayerVisible(
-        component: ComponentName
-    ): Condition<WindowManagerStateHelper.Dump> = isLayerVisible(component.toLayerName())
+        component: FlickerComponentName
+    ): Condition<DeviceStateDump<WindowManagerState, LayerTraceEntry>> =
+        isLayerVisible(component.toLayerName())
 
-    fun hasLayersAnimating(): Condition<WindowManagerStateHelper.Dump> =
+    fun hasLayersAnimating(): Condition<DeviceStateDump<WindowManagerState, LayerTraceEntry>> =
         Condition("hasLayersAnimating") {
             it.layerState.isAnimating()
         }
 
-    @JvmOverloads
     fun isImeShown(
-        displayId: Int = Display.DEFAULT_DISPLAY
-    ): Condition<WindowManagerStateHelper.Dump> =
+        displayId: Int
+    ): Condition<DeviceStateDump<WindowManagerState, LayerTraceEntry>> =
         ConditionList(listOf(
-            isImeOnDisplay(displayId), isLayerVisible(IME_COMPONENT), isImeSurfaceShown(),
-            isWindowSurfaceShown(IME_COMPONENT)))
+            isImeOnDisplay(displayId),
+            isLayerVisible(FlickerComponentName.IME),
+            isImeSurfaceShown(),
+            isWindowSurfaceShown(FlickerComponentName.IME.toWindowName())
+        ))
 
     private fun isImeOnDisplay(
-        displayId: Int = Display.DEFAULT_DISPLAY
-    ): Condition<WindowManagerStateHelper.Dump> =
+        displayId: Int
+    ): Condition<DeviceStateDump<WindowManagerState, LayerTraceEntry>> =
         Condition("isImeOnDisplay[$displayId]") {
             it.wmState.inputMethodWindowState?.displayId == displayId
         }
 
-    private fun isImeSurfaceShown(): Condition<WindowManagerStateHelper.Dump> =
+    private fun isImeSurfaceShown():
+        Condition<DeviceStateDump<WindowManagerState, LayerTraceEntry>> =
         Condition("isImeSurfaceShown") {
             it.wmState.inputMethodWindowState?.isSurfaceShown == true
         }
 
-    fun isAppLaunchEnded(taskId: Int): Condition<WindowManagerStateHelper.Dump> =
+    fun isAppLaunchEnded(taskId: Int):
+        Condition<DeviceStateDump<WindowManagerState, LayerTraceEntry>> =
         Condition("containsVisibleAppLaunchWindow[$taskId]") { dump ->
             val windowStates = dump.wmState.getRootTask(taskId)?.activities?.flatMap {
                 it.children.filterIsInstance<WindowState>()
             }
             windowStates != null && windowStates.none { window ->
-                window.attributes.type == WindowManager.LayoutParams.TYPE_APPLICATION_STARTING &&
+                window.attributes.type == PlatformConsts.TYPE_APPLICATION_STARTING &&
                         window.isVisible
             }
         }

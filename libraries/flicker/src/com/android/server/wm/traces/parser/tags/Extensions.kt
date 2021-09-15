@@ -18,14 +18,19 @@
 
 package com.android.server.wm.traces.parser.tags
 
+import android.util.Log
 import com.android.server.wm.flicker.FlickerTagProto
 import com.android.server.wm.flicker.FlickerTagStateProto
 import com.android.server.wm.flicker.FlickerTagTraceProto
 import com.android.server.wm.traces.common.tags.Tag
 import com.android.server.wm.traces.common.tags.TagState
 import com.android.server.wm.traces.common.tags.TagTrace
+import com.android.server.wm.traces.parser.LOG_TAG
+import java.nio.file.Files
+import java.nio.file.Path
 
-fun TagTrace.toProto(): FlickerTagTraceProto = FlickerTagTraceProto
+fun TagTrace.writeToFile(outputFile: Path) {
+    val proto = FlickerTagTraceProto
         .newBuilder()
         .addAllStates(this.entries.map { it.toProto() })
         .setMagicNumber(
@@ -34,18 +39,29 @@ fun TagTrace.toProto(): FlickerTagTraceProto = FlickerTagTraceProto
         )
         .build()
 
+    val tagTraceBytes = proto.toByteArray()
+
+    try {
+        Log.d(LOG_TAG, outputFile.toString())
+        Files.createDirectories(outputFile.parent)
+        Files.write(outputFile, tagTraceBytes)
+    } catch (e: Exception) {
+        throw RuntimeException("Unable to create error trace file: ${e.message}", e)
+    }
+}
+
 fun TagState.toProto(): FlickerTagStateProto = FlickerTagStateProto
-        .newBuilder()
-        .addAllTags(this.tags.map { it.toProto() })
-        .setTimestamp(this.timestamp)
-        .build()
+    .newBuilder()
+    .addAllTags(this.tags.map { it.toProto() })
+    .setTimestamp(this.timestamp)
+    .build()
 
 fun Tag.toProto(): FlickerTagProto = FlickerTagProto
-        .newBuilder()
-        .setIsStartTag(this.isStartTag)
-        .setTransition(FlickerTagProto.Transition.valueOf(this.transition.name))
-        .setId(this.id)
-        .setTaskId(this.taskId)
-        .setWindowToken(this.windowToken)
-        .setLayerId(this.layerId)
-        .build()
+    .newBuilder()
+    .setIsStartTag(this.isStartTag)
+    .setTransition(FlickerTagProto.Transition.valueOf(this.transition.name))
+    .setId(this.id)
+    .setTaskId(this.taskId)
+    .setWindowToken(this.windowToken)
+    .setLayerId(this.layerId)
+    .build()
