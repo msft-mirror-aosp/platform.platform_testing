@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-package com.android.server.wm.traces.common.service
+package com.android.server.wm.flicker.service
 
 import com.android.server.wm.traces.common.errors.ErrorState
 import com.android.server.wm.traces.common.errors.ErrorTrace
 import com.android.server.wm.traces.common.layers.LayersTrace
+import com.android.server.wm.traces.common.service.ITransitionAssertor
 import com.android.server.wm.traces.common.tags.Tag
 import com.android.server.wm.traces.common.tags.TagTrace
 import com.android.server.wm.traces.common.tags.Transition

@@ -19,7 +19,6 @@ package com.android.server.wm.flicker.service
 import com.android.server.wm.flicker.readLayerTraceFromFile
 import com.android.server.wm.flicker.readTagTraceFromFile
 import com.android.server.wm.flicker.readWmTraceFromFile
-import com.android.server.wm.traces.common.service.AssertionEngine
 import com.android.server.wm.traces.common.tags.Tag
 import com.android.server.wm.traces.common.tags.Transition
 import com.android.server.wm.traces.common.tags.TransitionTag

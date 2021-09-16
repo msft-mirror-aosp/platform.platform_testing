@@ -21,7 +21,6 @@ import com.android.server.wm.flicker.FLICKER_TAG
 import com.android.server.wm.flicker.monitor.TransitionMonitor.Companion.WINSCOPE_EXT
 import com.android.server.wm.traces.common.errors.ErrorTrace
 import com.android.server.wm.traces.common.layers.LayersTrace
-import com.android.server.wm.traces.common.service.AssertionEngine
 import com.android.server.wm.traces.common.service.TaggingEngine
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 import com.android.server.wm.traces.parser.errors.writeToFile
