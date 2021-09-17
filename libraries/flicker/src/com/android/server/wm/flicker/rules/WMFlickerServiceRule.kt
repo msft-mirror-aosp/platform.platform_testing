@@ -16,8 +16,10 @@
 
 package com.android.server.wm.flicker.rules
 
+import androidx.test.platform.app.InstrumentationRegistry
 import com.android.server.wm.flicker.getDefaultFlickerOutputDir
 import com.android.server.wm.flicker.monitor.LayersTraceMonitor
+import com.android.server.wm.flicker.monitor.ScreenRecorder
 import com.android.server.wm.flicker.monitor.TraceMonitor
 import com.android.server.wm.flicker.monitor.WindowManagerTraceMonitor
 import com.android.server.wm.flicker.service.FlickerService
@@ -68,6 +70,10 @@ open class WMFlickerServiceRule @JvmOverloads constructor(
     private fun setupMonitors() {
         traceMonitors.add(WindowManagerTraceMonitor(outputDir))
         traceMonitors.add(LayersTraceMonitor(outputDir))
+        traceMonitors.add(ScreenRecorder(
+            outputDir,
+            InstrumentationRegistry.getInstrumentation().targetContext)
+        )
     }
 
     /**

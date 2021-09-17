@@ -111,6 +111,12 @@ open class LayerTraceEntry constructor(
         }
     }
 
+    fun getLayerById(
+        layerId: Int
+    ): Layer? = this.flattenedLayers.firstOrNull {
+        it.id == layerId
+    }
+
     /**
      * Checks the transform of any layer is not a simple rotation
      */

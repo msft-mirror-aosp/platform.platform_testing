@@ -73,6 +73,7 @@ instrumentation_tests := \
     SettingsPerfTests \
     ExtServicesUnitTests \
     FrameworksNetSmokeTests \
+    FlickerLibTest \
     FlickerTests \
     FlickerTestApp \
     WMShellFlickerTests \
