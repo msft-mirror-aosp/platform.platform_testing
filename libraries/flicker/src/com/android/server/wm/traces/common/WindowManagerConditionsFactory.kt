@@ -184,6 +184,15 @@ object WindowManagerConditionsFactory {
             }
         }
 
+    fun isLayerTransformFlagSet(
+        layerId: Int,
+        transform: Int
+    ): Condition<DeviceStateDump<WindowManagerState, LayerTraceEntry>> =
+        Condition("isLayerTransformFlagSet[$layerId]") {
+            val layer = it.layerState.getLayerById(layerId)
+            layer?.transform?.type?.isFlagSet(transform) ?: false
+        }
+
     private fun LayerTraceEntry.getVisibleLayersByName(
         component: FlickerComponentName
     ): List<Layer> = this.visibleLayers.filter {
@@ -198,6 +207,28 @@ object WindowManagerConditionsFactory {
     fun hasLayersAnimating(): Condition<DeviceStateDump<WindowManagerState, LayerTraceEntry>> =
         Condition("hasLayersAnimating") {
             it.layerState.isAnimating()
+        }
+
+    fun isPipWindowLayerSizeMatch(
+        layerId: Int
+    ): Condition<DeviceStateDump<WindowManagerState, LayerTraceEntry>> =
+        Condition("isPipWindowLayerSizeMatch") {
+            val pipWindow = it.wmState.pinnedWindows.firstOrNull { it.layerId == layerId }
+                ?: error("Unable to find window with layerId $layerId")
+            val windowHeight = pipWindow.frame.height.toFloat()
+            val windowWidth = pipWindow.frame.width.toFloat()
+
+            val pipLayer = it.layerState.getLayerById(layerId)
+            val layerHeight = pipLayer?.sourceBounds?.height
+                ?: error("Unable to find layer with id $layerId")
+            val layerWidth = pipLayer.sourceBounds.width
+
+            windowHeight == layerHeight && windowWidth == layerWidth
+        }
+
+    fun hasPipWindow(): Condition<DeviceStateDump<WindowManagerState, LayerTraceEntry>> =
+        Condition("hasPipWindow") {
+            it.wmState.hasPipWindow()
         }
 
     fun isImeShown(
