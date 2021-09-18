@@ -18,6 +18,7 @@ package com.android.server.wm.traces.common
 
 import com.android.server.wm.traces.common.layers.Layer
 import com.android.server.wm.traces.common.layers.LayerTraceEntry
+import com.android.server.wm.traces.common.layers.Transform
 import com.android.server.wm.traces.common.layers.Transform.Companion.isFlagSet
 import com.android.server.wm.traces.common.service.PlatformConsts
 import com.android.server.wm.traces.common.windowmanager.WindowManagerState
@@ -188,10 +189,19 @@ object WindowManagerConditionsFactory {
         layerId: Int,
         transform: Int
     ): Condition<DeviceStateDump<WindowManagerState, LayerTraceEntry>> =
-        Condition("isLayerTransformFlagSet[$layerId]") {
+        Condition("isLayerTransformFlagSet[$layerId, $transform]") {
             val layer = it.layerState.getLayerById(layerId)
             layer?.transform?.type?.isFlagSet(transform) ?: false
         }
+
+    fun isLayerTransformIdentity(
+        layerId: Int
+    ): Condition<DeviceStateDump<WindowManagerState, LayerTraceEntry>> =
+        ConditionList(listOf(
+            isLayerTransformFlagSet(layerId, Transform.SCALE_VAL).negate(),
+            isLayerTransformFlagSet(layerId, Transform.TRANSLATE_VAL).negate(),
+            isLayerTransformFlagSet(layerId, Transform.ROTATE_VAL).negate()
+        ))
 
     private fun LayerTraceEntry.getVisibleLayersByName(
         component: FlickerComponentName

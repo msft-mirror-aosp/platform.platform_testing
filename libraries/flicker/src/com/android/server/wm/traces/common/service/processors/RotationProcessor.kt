@@ -184,10 +184,11 @@ class RotationProcessor(logger: (String) -> Unit) : TransitionProcessor(logger) 
     }
 
     companion object {
-        private fun LayerTraceEntry.screenBounds() = this.children
+        private fun LayerTraceEntry.screenBounds() = this.displays.sortedBy { it.id }.firstOrNull()
+            ?.layerStackSpace?.toRectF() ?: this.children
             .sortedBy { it.id }
             .firstOrNull { it.isRootLayer }
-            ?.screenBounds ?: RectF.EMPTY
+            ?.screenBounds ?: error("Unable to identify screen bounds (display is empty in proto)")
 
         private fun WindowManagerState.displaySize() = getDefaultDisplay()
             ?.displayRect?.toRectF() ?: RectF.EMPTY
