@@ -17,9 +17,10 @@
 package com.android.server.wm.traces.common.service
 
 import com.android.server.wm.traces.common.layers.LayersTrace
-import com.android.server.wm.traces.common.service.processors.ImeDisappearProcessor
-import com.android.server.wm.traces.common.service.processors.ImeAppearProcessor
 import com.android.server.wm.traces.common.service.processors.AppLaunchProcessor
+import com.android.server.wm.traces.common.service.processors.ImeAppearProcessor
+import com.android.server.wm.traces.common.service.processors.ImeDisappearProcessor
+import com.android.server.wm.traces.common.service.processors.PipCloseProcessor
 import com.android.server.wm.traces.common.service.processors.PipEnterProcessor
 import com.android.server.wm.traces.common.service.processors.RotationProcessor
 import com.android.server.wm.traces.common.tags.TagState
@@ -48,7 +49,8 @@ class TaggingEngine(
         ImeAppearProcessor(logger),
         ImeDisappearProcessor(logger),
         RotationProcessor(logger),
-        PipEnterProcessor(logger)
+        PipEnterProcessor(logger),
+        PipCloseProcessor(logger)
     )
 
     /**

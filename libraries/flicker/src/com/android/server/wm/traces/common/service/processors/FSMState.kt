@@ -56,9 +56,9 @@ abstract class FSMState(protected val tags: MutableMap<Long, MutableList<Tag>>) 
         transition: Transition,
         layerId: Int = 0,
         windowToken: String = "",
-        taskId: Int = 0
+        taskId: Int = 0,
+        timestamp: Long = max(state.wmState.timestamp, state.layerState.timestamp)
     ) {
-        val timestamp = max(state.wmState.timestamp, state.layerState.timestamp)
         val endTag = Tag(id = lastTagId, transition, isStartTag = false, layerId = layerId,
             windowToken = windowToken, taskId = taskId)
         if (!tags.containsKey(timestamp)) {
