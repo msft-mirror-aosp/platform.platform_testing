@@ -33,7 +33,6 @@ platform_tests += \
     DataIdleTest \
     Development \
     DeviceHealthChecks \
-    DeviceHealthTests \
     DynamicCodeLoggerIntegrationTests \
     DialerJankTests \
     DownloadManagerTestApp \
