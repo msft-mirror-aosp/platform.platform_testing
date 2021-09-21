@@ -1,59 +1,62 @@
-[
-  {
-    "name": "RotationAssertor",
-    "assertions": {
-      "presubmit": {
-        "wmTrace": [
-          "navBarWindowIsVisible"
-        ],
-        "layersTrace" : [
-          "navBarLayerIsVisible"
-        ]
-      },
-      "postsubmit": {
-        "wmTrace": [ ],
-        "layersTrace" : [ ]
-      },
-      "flaky": {
-        "wmTrace": [
-          "launcherWindowBecomesInvisible"
-        ],
-        "layersTrace" : [
-          "visibleLayersShownMoreThanOneConsecutiveEntry",
-          "entireScreenCovered"
-        ]
+{
+  "assertors": [
+    {
+      "name": "RotationAssertions",
+      "transition": "ROTATION",
+      "assertions": {
+        "presubmit": {
+          "wmTrace": [
+            "navBarWindowIsVisible"
+          ],
+          "layersTrace": [
+            "navBarLayerIsVisible"
+          ]
+        },
+        "postsubmit": {
+          "wmTrace": [],
+          "layersTrace": ["entireScreenCovered"]
+        },
+        "flaky": {
+          "wmTrace": [
+            "launcherWindowBecomesInvisible"
+          ],
+          "layersTrace": [
+            "visibleLayersShownMoreThanOneConsecutiveEntry"
+          ]
+        }
+      }
+    },
+    {
+      "name": "AppLaunchAssertions",
+      "transition": "APP_LAUNCH",
+      "assertions": {
+        "presubmit": {
+          "wmTrace": [
+            "navBarWindowIsVisible",
+            "statusBarWindowIsVisible",
+            "visibleWindowsShownMoreThanOneConsecutiveEntry",
+            "appWindowReplacesLauncherAsTopWindow"
+          ],
+          "layersTrace": [
+            "navBarLayerIsVisible",
+            "navBarLayerRotatesAndScales",
+            "visibleLayersShownMoreThanOneConsecutiveEntry"
+          ]
+        },
+        "postsubmit": {
+          "wmTrace": [],
+          "layersTrace": [
+            "statusBarLayerIsVisible",
+            "statusBarLayerRotatesScales"
+          ]
+        },
+        "flaky": {
+          "wmTrace": [
+            "entireScreenCovered"
+          ],
+          "layersTrace": []
+        }
       }
     }
-  },
-  {
-    "name": "AppLaunchAssertor",
-    "assertions": {
-      "presubmit": {
-        "wmTrace": [
-          "navBarWindowIsVisible",
-          "statusBarWindowIsVisible",
-          "visibleWindowsShownMoreThanOneConsecutiveEntry",
-          "appWindowReplacesLauncherAsTopWindow"
-        ],
-        "layersTrace" : [
-          "navBarLayerIsVisible",
-          "navBarLayerRotatesAndScales",
-          "visibleLayersShownMoreThanOneConsecutiveEntry"
-        ]
-      },
-      "postsubmit": {
-        "wmTrace": [ ],
-        "layersTrace" : [
-          "statusBarLayerIsVisible",
-          "statusBarLayerRotatesScales"
-        ]
-      },
-      "flaky": {
-        "wmTrace": [
-          "entireScreenCovered"
-        ],
-        "layersTrace" : [ ]
-      }
-    }
-  }
-]
+  ]
+}

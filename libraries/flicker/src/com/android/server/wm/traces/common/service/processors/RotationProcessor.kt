@@ -70,7 +70,7 @@ class RotationProcessor(logger: (String) -> Unit) : TransitionProcessor(logger) 
      * Initial FSM state, obtains the current display size and start searching
      * for display size changes
      */
-    open inner class InitialState(
+    inner class InitialState(
         tags: MutableMap<Long, MutableList<Tag>>
     ) : BaseState(tags) {
         override fun doProcessState(

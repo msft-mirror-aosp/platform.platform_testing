@@ -18,25 +18,31 @@ package com.android.server.wm.flicker.service.assertors
 
 import android.util.Log
 import com.android.server.wm.flicker.FLICKER_TAG
+import com.android.server.wm.traces.common.tags.Transition
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 
 object AssertionConfigParser {
+    private const val ASSERTORS_KEY = "assertors"
     private const val NAME_KEY = "name"
+    private const val TRANSITION_KEY = "transition"
     private const val ASSERTIONS_KEY = "assertions"
-    private const val WM_TRACE_KEY = "wmTrace"
-    private const val LAYERS_TRACE_KEY = "layersTrace"
-    private const val PRESUBMIT_KEY = "presubmit"
-    private const val POSTSUBMIT_KEY = "postsubmit"
-    private const val FLAKY_KEY = "flaky"
+
+    internal const val PRESUBMIT_KEY = "presubmit"
+    internal const val POSTSUBMIT_KEY = "postsubmit"
+    internal const val FLAKY_KEY = "flaky"
+    internal const val WM_TRACE_KEY = "wmTrace"
+    internal const val LAYERS_TRACE_KEY = "layersTrace"
 
     /**
      * Parses assertor config JSON file. The format expected is:
      * <pre>
-     * [
+     * {
+     *  "assertors": [
      *   {
-     *      "name": "RotationAssertor",
+     *      "name": "com.android.server.wm.flicker.service.assertors.RotationAssertor",
+     *      "transition": "ROTATION",
      *      "assertions": {
      *         "presubmit": {
      *              "wmTrace": [
@@ -59,7 +65,8 @@ object AssertionConfigParser {
      *          }
      *      }
      *   }
-     * ]
+     *  ]
+     * }
      * </pre>
      *
      * @param config string containing a json file
@@ -67,19 +74,26 @@ object AssertionConfigParser {
      */
     @JvmStatic
     fun parseConfigFile(config: String): Array<AssertorConfigModel> {
-        val assertionsList = mutableListOf<AssertorConfigModel>()
+        val assertorsConfig = mutableListOf<AssertorConfigModel>()
         try {
-            val jsonArray = JSONArray(config)
+            val jsonArray = JSONObject(config).getJSONArray(ASSERTORS_KEY)
 
             for (i in 0 until jsonArray.length()) {
                 val jsonObject = jsonArray.getJSONObject(i)
                 val jsonAssertions = jsonObject.getJSONObject(ASSERTIONS_KEY)
-                assertionsList.add(
+
+                val assertionsList =
+                    parseAssertionObject(jsonAssertions
+                        .getJSONObject(PRESUBMIT_KEY), PRESUBMIT_KEY) +
+                    parseAssertionObject(jsonAssertions
+                        .getJSONObject(POSTSUBMIT_KEY), POSTSUBMIT_KEY) +
+                    parseAssertionObject(jsonAssertions.getJSONObject(FLAKY_KEY), FLAKY_KEY)
+
+                assertorsConfig.add(
                     AssertorConfigModel(
                         jsonObject.getString(NAME_KEY),
-                        parseAssertionObject(jsonAssertions.getJSONObject(PRESUBMIT_KEY)),
-                        parseAssertionObject(jsonAssertions.getJSONObject(POSTSUBMIT_KEY)),
-                        parseAssertionObject(jsonAssertions.getJSONObject(FLAKY_KEY))
+                        Transition.valueOf(jsonObject.getString(TRANSITION_KEY)),
+                        assertionsList
                     )
                 )
             }
@@ -87,29 +101,35 @@ object AssertionConfigParser {
             Log.e(FLICKER_TAG, "Unable to parse the json object", e)
         }
 
-        return assertionsList.toTypedArray()
+        return assertorsConfig.toTypedArray()
     }
 
     /**
      * Parses an assertions JSONObject configuration.
      *
-     * @param assertionCategoryObject a [JSONObject] with assertion names and categories
+     * @param assertionCategoryObject a [JSONObject] with assertion names and traces
+     * @param category the category of the assertion (presubmit/postsubmit/flaky)
      * @return an array of assertion details
      */
     @JvmStatic
-    private fun parseAssertionObject(assertionCategoryObject: JSONObject): Array<AssertionData> {
+    private fun parseAssertionObject(
+        assertionCategoryObject: JSONObject,
+        category: String
+    ): Array<AssertionData> {
         val assertions = mutableListOf<AssertionData>()
         try {
             assertions.addAll(
                 parseAssertionArray(
                     assertionCategoryObject.getJSONArray(WM_TRACE_KEY),
-                    WM_TRACE_KEY
+                    WM_TRACE_KEY,
+                    category
                 )
             )
             assertions.addAll(
                 parseAssertionArray(
                     assertionCategoryObject.getJSONArray(LAYERS_TRACE_KEY),
-                    LAYERS_TRACE_KEY
+                    LAYERS_TRACE_KEY,
+                    category
                 )
             )
         } catch (e: JSONException) {
@@ -123,18 +143,20 @@ object AssertionConfigParser {
      * Splits an assertions JSONArray into an array of [AssertionData].
      *
      * @param assertionsArray a [JSONArray] with assertion names
-     * @param category trace on which the assertion should be run
+     * @param trace trace on which the assertion should be run
+     * @param category the category of the assertion (presubmit/postsubmit/flaky)
      * @return an array of assertion details
      */
     @JvmStatic
     private fun parseAssertionArray(
         assertionsArray: JSONArray,
+        trace: String,
         category: String
     ): Array<AssertionData> {
         val assertions = mutableListOf<AssertionData>()
         try {
             for (i in 0 until assertionsArray.length()) {
-                assertions.add(AssertionData(assertionsArray.getString(i), category))
+                assertions.add(AssertionData(assertionsArray.getString(i), trace, category))
             }
         } catch (e: JSONException) {
             Log.e(FLICKER_TAG, "Unable to parse the json object", e)

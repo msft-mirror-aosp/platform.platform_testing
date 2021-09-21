@@ -16,32 +16,31 @@
 
 package com.android.server.wm.flicker.service.assertors
 
+import com.android.server.wm.traces.common.tags.Transition
+
 /**
  * Represents an assertor configuration.
  */
 data class AssertorConfigModel(
     var name: String,
-    var presubmit: Array<AssertionData>,
-    var postsubmit: Array<AssertionData>,
-    var flaky: Array<AssertionData>
+    var transition: Transition,
+    var assertions: Array<AssertionData> = emptyArray()
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is AssertorConfigModel) return false
 
         if (name != other.name) return false
-        if (!presubmit.contentEquals(other.presubmit)) return false
-        if (!postsubmit.contentEquals(other.postsubmit)) return false
-        if (!flaky.contentEquals(other.flaky)) return false
+        if (transition != other.transition) return false
+        if (!assertions.contentEquals(other.assertions)) return false
 
         return true
     }
 
     override fun hashCode(): Int {
         var result = name.hashCode()
-        result = 31 * result + presubmit.contentHashCode()
-        result = 31 * result + postsubmit.contentHashCode()
-        result = 31 * result + flaky.contentHashCode()
+        result = 31 * result + transition.hashCode()
+        result = 31 * result + assertions.contentHashCode()
         return result
     }
 }

@@ -44,6 +44,9 @@ java_library {
         "src/com/android/server/wm/flicker/**/*.java",
         "src/com/android/server/wm/flicker/**/*.kt"
     ],
+    java_resource_dirs: [
+        "src/com/android/server/wm/flicker/service/resources/"
+    ],
     exclude_srcs: [
         "**/helpers/*",
     ],

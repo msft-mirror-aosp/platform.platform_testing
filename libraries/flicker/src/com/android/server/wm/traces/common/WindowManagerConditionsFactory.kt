@@ -166,6 +166,13 @@ object WindowManagerConditionsFactory {
             it.layerState.isVisible(layerName)
         }
 
+    fun isLayerVisible(
+        layerId: Int
+    ): Condition<DeviceStateDump<WindowManagerState, LayerTraceEntry>> =
+        Condition("isLayerVisible[$layerId]") {
+            it.layerState.getLayerById(layerId)?.isVisible ?: false
+        }
+
     fun isLayerColorAlphaOne(
         component: FlickerComponentName
     ): Condition<DeviceStateDump<WindowManagerState, LayerTraceEntry>> =
@@ -174,15 +181,22 @@ object WindowManagerConditionsFactory {
             layers.any { layer -> layer.color.a == 1.0f }
         }
 
+    fun isLayerColorAlphaOne(
+        layerId: Int
+    ): Condition<DeviceStateDump<WindowManagerState, LayerTraceEntry>> =
+        Condition("isLayerColorAlphaOne[$layerId]") {
+            val layer = it.layerState.getLayerById(layerId)
+            layer?.color?.a == 1.0f
+        }
+
     fun isLayerTransformFlagSet(
         component: FlickerComponentName,
         transform: Int
     ): Condition<DeviceStateDump<WindowManagerState, LayerTraceEntry>> =
-        Condition("isLayerTransformFlagSet[${component.toLayerName()}]") {
+        Condition("isLayerTransformFlagSet[" +
+            "${component.toLayerName()},transform=$transform]") {
             val layers = it.layerState.getVisibleLayersByName(component)
-            layers.any { layer ->
-                layer.transform.type?.isFlagSet(transform) ?: false
-            }
+            layers.any { layer -> isTransformFlagSet(layer, transform) }
         }
 
     fun isLayerTransformFlagSet(
@@ -203,7 +217,10 @@ object WindowManagerConditionsFactory {
             isLayerTransformFlagSet(layerId, Transform.ROTATE_VAL).negate()
         ))
 
-    private fun LayerTraceEntry.getVisibleLayersByName(
+    private fun isTransformFlagSet(layer: Layer, transform: Int): Boolean =
+        layer.transform.type?.isFlagSet(transform) ?: false
+
+    fun LayerTraceEntry.getVisibleLayersByName(
         component: FlickerComponentName
     ): List<Layer> = this.visibleLayers.filter {
         it.name.contains(component.toLayerName())
@@ -272,7 +289,7 @@ object WindowManagerConditionsFactory {
             }
             windowStates != null && windowStates.none { window ->
                 window.attributes.type == PlatformConsts.TYPE_APPLICATION_STARTING &&
-                        window.isVisible
+                    window.isVisible
             }
         }
 }

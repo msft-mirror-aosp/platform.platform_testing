@@ -17,6 +17,7 @@
 package com.android.server.wm.flicker.service.assertors
 
 import com.android.server.wm.flicker.readTestFile
+import com.android.server.wm.traces.common.tags.Transition
 import com.google.common.truth.Truth
 import org.junit.FixMethodOrder
 import org.junit.Test
@@ -33,18 +34,21 @@ class AssertionConfigParserTest {
         val jsonByteArray = readTestFile("assertors/assertionsConfig.json")
         val assertions = AssertionConfigParser.parseConfigFile(String(jsonByteArray))
 
-        val presubmitAssertions = arrayOf(
-            AssertionData("navBarWindowIsVisible", "wmTrace"),
-            AssertionData("navBarLayerIsVisible", "layersTrace")
+        val rotationAssertions = arrayOf(
+            AssertionData("navBarWindowIsVisible", "wmTrace", "presubmit"),
+            AssertionData("navBarLayerIsVisible", "layersTrace", "presubmit"),
+            AssertionData("entireScreenCovered", "layersTrace", "postsubmit"),
+            AssertionData("launcherWindowBecomesInvisible", "wmTrace", "flaky"),
+            AssertionData("visibleLayersShownMoreThanOneConsecutiveEntry", "layersTrace", "flaky")
         )
         Truth.assertThat(assertions.size).isEqualTo(2)
-        Truth.assertThat(assertions[0].name).isEqualTo("RotationAssertor")
-        Truth.assertThat(assertions[0].presubmit).isEqualTo(presubmitAssertions)
-        Truth.assertThat(assertions[0].postsubmit).isEmpty()
-        Truth.assertThat(assertions[0].flaky.size).isEqualTo(3)
+        Truth.assertThat(assertions[0].name).isEqualTo("RotationAssertions")
+        Truth.assertThat(assertions[0].transition).isEqualTo(Transition.ROTATION)
+        Truth.assertThat(assertions[0].assertions.size).isEqualTo(5)
+        Truth.assertThat(assertions[0].assertions).isEqualTo(rotationAssertions)
 
-        val flakyAssertion = AssertionData("entireScreenCovered", "wmTrace")
-        Truth.assertThat(assertions[1].flaky.size).isEqualTo(1)
-        Truth.assertThat(assertions[1].flaky[0]).isEqualTo(flakyAssertion)
+        val appLaunchAssertion = AssertionData("entireScreenCovered", "wmTrace", "flaky")
+        Truth.assertThat(assertions[1].assertions.size).isEqualTo(10)
+        Truth.assertThat(assertions[1].assertions[9]).isEqualTo(appLaunchAssertion)
     }
 }

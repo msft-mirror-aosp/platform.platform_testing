@@ -28,119 +28,134 @@ import org.junit.Test
  */
 class AppLaunchProcessorTest {
     private val processor = AppLaunchProcessor { }
+
     /**
      * Scenarios expecting tags
      */
-    private val wmTraceColdAppLaunch =
-            readWmTraceFromFile(
-                    "tagprocessors/applaunch/cold/WindowManagerTrace.winscope"
-            )
-    private val sfTraceColdAppLaunch =
-            readLayerTraceFromFile(
-                    "tagprocessors/applaunch/cold/SurfaceFlingerTrace.winscope"
-            )
-    private val wmTraceWarmAppLaunch =
-            readWmTraceFromFile(
-                    "tagprocessors/applaunch/warm/WindowManagerTrace.winscope"
-            )
-    private val sfTraceWarmAppLaunch =
-            readLayerTraceFromFile(
-                    "tagprocessors/applaunch/warm/SurfaceFlingerTrace.winscope"
-            )
-    private val wmTraceAppLaunchByIntent =
-            readWmTraceFromFile(
-                    "tagprocessors/applaunch/intent/WindowManagerTrace.winscope"
-            )
-    private val sfTraceAppLaunchByIntent =
-            readLayerTraceFromFile(
-                    "tagprocessors/applaunch/intent/SurfaceFlingerTrace.winscope"
-            )
-    private val wmTraceAppLaunchWithRotation =
-            readWmTraceFromFile(
-                    "tagprocessors/applaunch/withrot/WindowManagerTrace.winscope"
-            )
-    private val sfTraceAppLaunchWithRotation =
-            readLayerTraceFromFile(
-                    "tagprocessors/applaunch/withrot/SurfaceFlingerTrace.winscope"
-            )
+    private val tagsColdAppLaunch by lazy {
+        val wmTrace = readWmTraceFromFile(
+            "tagprocessors/applaunch/cold/WindowManagerTrace.winscope"
+        )
+        val layersTrace = readLayerTraceFromFile(
+            "tagprocessors/applaunch/cold/SurfaceFlingerTrace.winscope"
+        )
+        processor.generateTags(wmTrace, layersTrace)
+    }
+
+    private val tagsWarmAppLaunch by lazy {
+        val wmTrace = readWmTraceFromFile(
+            "tagprocessors/applaunch/warm/WindowManagerTrace.winscope"
+        )
+        val layersTrace = readLayerTraceFromFile(
+            "tagprocessors/applaunch/warm/SurfaceFlingerTrace.winscope"
+        )
+        processor.generateTags(wmTrace, layersTrace)
+    }
+
+    private val tagsAppLaunchByIntent by lazy {
+        val wmTrace = readWmTraceFromFile(
+            "tagprocessors/applaunch/intent/WindowManagerTrace.winscope"
+        )
+        val layersTrace = readLayerTraceFromFile(
+            "tagprocessors/applaunch/intent/SurfaceFlingerTrace.winscope"
+        )
+        processor.generateTags(wmTrace, layersTrace)
+    }
+
+    private val tagsAppLaunchWithRotation by lazy {
+        val wmTrace = readWmTraceFromFile(
+            "tagprocessors/applaunch/withrot/WindowManagerTrace.winscope"
+        )
+        val layersTrace = readLayerTraceFromFile(
+            "tagprocessors/applaunch/withrot/SurfaceFlingerTrace.winscope"
+        )
+        processor.generateTags(wmTrace, layersTrace)
+    }
 
     /**
      * Scenarios expecting no tags
      */
-    private val wmTraceComposeNewMessage =
-            readWmTraceFromFile(
-                    "tagprocessors/ime/appear/bygesture/WindowManagerTrace.winscope"
-            )
-    private val sfTraceComposeNewMessage =
-            readLayerTraceFromFile(
-                    "tagprocessors/ime/appear/bygesture/SurfaceFlingerTrace.winscope"
-            )
-    private val wmTraceRotation =
-            readWmTraceFromFile(
-                    "tagprocessors/rotation/verticaltohorizontal/WindowManagerTrace.winscope"
-            )
-    private val sfTraceRotation =
-            readLayerTraceFromFile(
-                    "tagprocessors/rotation/verticaltohorizontal/SurfaceFlingerTrace.winscope"
-            )
+    private val tagsComposeNewMessage by lazy {
+        val wmTrace = readWmTraceFromFile(
+            "tagprocessors/ime/appear/bygesture/WindowManagerTrace.winscope"
+        )
+        val layersTrace = readLayerTraceFromFile(
+            "tagprocessors/ime/appear/bygesture/SurfaceFlingerTrace.winscope"
+        )
+        processor.generateTags(wmTrace, layersTrace)
+    }
+
+    private val tagsRotation by lazy {
+        val wmTrace = readWmTraceFromFile(
+            "tagprocessors/rotation/verticaltohorizontal/WindowManagerTrace.winscope"
+        )
+        val layersTrace = readLayerTraceFromFile(
+            "tagprocessors/rotation/verticaltohorizontal/SurfaceFlingerTrace.winscope"
+        )
+        processor.generateTags(wmTrace, layersTrace)
+    }
 
     @Test
     fun tagsColdAppLaunch() {
-        val tagStates = processor.generateTags(wmTraceColdAppLaunch, sfTraceColdAppLaunch).entries
-        Truth.assertThat(tagStates.size).isEqualTo(2)
-
-        val startTagTimestamp = 268309543090536 // Represents 3d2h31m49s543ms
-        val endTagTimestamp = 268310230837688 // Represents 3d2h31m50s230ms
-        Truth.assertThat(tagStates.first().timestamp).isEqualTo(startTagTimestamp)
-        Truth.assertThat(tagStates.last().timestamp).isEqualTo(endTagTimestamp)
+        val tagTrace = tagsColdAppLaunch
+        Truth.assertWithMessage("Should have 2 app launch tags")
+            .that(tagTrace)
+            .hasSize(2)
+        val startTagTimestamp = 192568912054261 // Represents 2d5h29m28s912ms
+        val endTagTimestamp = 192569897936182 // Represents 2d5h29m29s897ms
+        Truth.assertThat(tagTrace.first().timestamp).isEqualTo(startTagTimestamp)
+        Truth.assertThat(tagTrace.last().timestamp).isEqualTo(endTagTimestamp)
     }
 
     @Test
     fun tagsWarmAppLaunch() {
-        val tagStates = processor
-            .generateTags(wmTraceWarmAppLaunch, sfTraceWarmAppLaunch).entries
-        Truth.assertThat(tagStates.size).isEqualTo(2)
-
-        val startTagTimestamp = 237300088466617 // Represents 2d17h55m0s88ms
-        val endTagTimestamp = 237300592571094 // Represents 2d17h55m0s592ms
-        Truth.assertThat(tagStates.first().timestamp).isEqualTo(startTagTimestamp)
-        Truth.assertThat(tagStates.last().timestamp).isEqualTo(endTagTimestamp)
+        val tagTrace = tagsWarmAppLaunch
+        Truth.assertWithMessage("Should have 2 app launch tags")
+            .that(tagTrace)
+            .hasSize(2)
+        val startTagTimestamp = 192782254751712 // Represents 2d5h33m2s275ms
+        val endTagTimestamp = 192782828336352 // Represents 2d5h33m2s828ms
+        Truth.assertThat(tagTrace.first().timestamp).isEqualTo(startTagTimestamp)
+        Truth.assertThat(tagTrace.last().timestamp).isEqualTo(endTagTimestamp)
     }
 
     @Test
     fun tagsAppLaunchByIntent() {
-        val tagStates = processor
-            .generateTags(wmTraceAppLaunchByIntent, sfTraceAppLaunchByIntent).entries
-        Truth.assertThat(tagStates.size).isEqualTo(2)
-
-        val startTagTimestamp = 80872063113909 // Represents 0d22h27m52s63ms
-        val endTagTimestamp = 80872910948056 // Represents 0d22h27m52s910ms
-        Truth.assertThat(tagStates.first().timestamp).isEqualTo(startTagTimestamp)
-        Truth.assertThat(tagStates.last().timestamp).isEqualTo(endTagTimestamp)
+        val tagTrace = tagsAppLaunchByIntent
+        Truth.assertWithMessage("Should have 2 app launch tags")
+            .that(tagTrace)
+            .hasSize(2)
+        val startTagTimestamp = 192613118153196 // Represents 2d5h30m13s118ms
+        val endTagTimestamp = 192614112528399 // Represents 2d5h30m14s112ms
+        Truth.assertThat(tagTrace.first().timestamp).isEqualTo(startTagTimestamp)
+        Truth.assertThat(tagTrace.last().timestamp).isEqualTo(endTagTimestamp)
     }
 
     @Test
     fun tagsAppLaunchWithRotation() {
-        val tagStates = processor
-            .generateTags(wmTraceAppLaunchWithRotation, sfTraceAppLaunchWithRotation).entries
-        Truth.assertThat(tagStates.size).isEqualTo(2)
-
-        val startTagTimestamp = 17864904019309 // Represents 0d4h57m44s904ms
-        val endTagTimestamp = 17865482335252 // Represents 0d4h57m45s482ms
-        Truth.assertThat(tagStates.first().timestamp).isEqualTo(startTagTimestamp)
-        Truth.assertThat(tagStates.last().timestamp).isEqualTo(endTagTimestamp)
+        val tagTrace = tagsAppLaunchWithRotation
+        Truth.assertWithMessage("Should have 2 app launch tags")
+            .that(tagTrace)
+            .hasSize(2)
+        val startTagTimestamp = 192631295932194 // Represents 2d5h30m31s295ms
+        val endTagTimestamp = 192632120383579 // Represents 2d5h30m32s120ms
+        Truth.assertThat(tagTrace.first().timestamp).isEqualTo(startTagTimestamp)
+        Truth.assertThat(tagTrace.last().timestamp).isEqualTo(endTagTimestamp)
     }
 
     @Test
     fun doesNotTagComposeNewMessage() {
-        val tagStates = processor
-            .generateTags(wmTraceComposeNewMessage, sfTraceComposeNewMessage).entries
-        Truth.assertThat(tagStates).isEmpty()
+        val tagTrace = tagsComposeNewMessage
+        Truth.assertWithMessage("Should have 0 app launch tags")
+            .that(tagTrace)
+            .isEmpty()
     }
 
     @Test
     fun doesNotTagRotation() {
-        val tagStates = processor.generateTags(wmTraceRotation, sfTraceRotation).entries
-        Truth.assertThat(tagStates).isEmpty()
+        val tagTrace = tagsRotation
+        Truth.assertWithMessage("Should have 0 app launch tags")
+            .that(tagTrace)
+            .isEmpty()
     }
 }

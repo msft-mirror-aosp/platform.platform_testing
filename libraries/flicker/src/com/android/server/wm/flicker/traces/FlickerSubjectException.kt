@@ -26,7 +26,7 @@ class FlickerSubjectException(
     subject: FlickerSubject,
     cause: Throwable
 ) : AssertionError(cause.message, if (cause is FlickerSubjectException) null else cause) {
-    private val timestamp = subject.timestamp
+    internal val timestamp = subject.timestamp
     private val prettyTimestamp =
             if (timestamp > 0) "${prettyTimestamp(timestamp)} (timestamp=$timestamp)" else ""
 

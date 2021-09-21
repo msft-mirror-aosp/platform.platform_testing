@@ -17,18 +17,21 @@
 package com.android.server.wm.traces.common.service.processors
 
 import com.android.server.wm.traces.common.DeviceStateDump
-import com.android.server.wm.traces.common.WindowManagerConditionsFactory.isAppLaunchEnded
+import com.android.server.wm.traces.common.WindowManagerConditionsFactory.hasLayersAnimating
+import com.android.server.wm.traces.common.WindowManagerConditionsFactory.isAppTransitionIdle
+import com.android.server.wm.traces.common.WindowManagerConditionsFactory.isWMStateComplete
 import com.android.server.wm.traces.common.layers.LayerTraceEntry
-import com.android.server.wm.traces.common.service.PlatformConsts
+import com.android.server.wm.traces.common.service.PlatformConsts.TYPE_APPLICATION_STARTING
 import com.android.server.wm.traces.common.tags.Tag
 import com.android.server.wm.traces.common.tags.Transition
 import com.android.server.wm.traces.common.windowmanager.WindowManagerState
-import com.android.server.wm.traces.common.windowmanager.windows.Activity
 import com.android.server.wm.traces.common.windowmanager.windows.WindowState
 
 class AppLaunchProcessor(logger: (String) -> Unit) : TransitionProcessor(logger) {
+    private val transition = Transition.APP_LAUNCH
+
     override fun getInitialState(tags: MutableMap<Long, MutableList<Tag>>) =
-            InitialState(tags)
+        WaitUntilSnapshotLayersStartAnimating(tags)
 
     /**
      * Base state for the FSM, check if there are more WM and SF states to process
@@ -51,8 +54,8 @@ class AppLaunchProcessor(logger: (String) -> Unit) : TransitionProcessor(logger)
                     logger.invoke("(${current.layerState.timestamp}) Trace has reached the end")
                     if (hasOpenTag()) {
                         logger.invoke("(${current.layerState.timestamp}) Has an open tag, " +
-                                "closing it on the last SF state")
-                        addEndTransitionTag(current, Transition.IME_APPEAR)
+                            "closing it on the last SF state")
+                        addEndTransitionTag(current, transition)
                     }
                     null
                 }
@@ -64,30 +67,8 @@ class AppLaunchProcessor(logger: (String) -> Unit) : TransitionProcessor(logger)
     /**
      * Initial FSM state that passes the current app launch activity if any to the next state.
      */
-    inner class InitialState(
+    inner class WaitUntilSnapshotLayersStartAnimating(
         tags: MutableMap<Long, MutableList<Tag>>
-    ) : BaseState(tags) {
-        override fun doProcessState(
-            previous: DeviceStateDump<WindowManagerState, LayerTraceEntry>?,
-            current: DeviceStateDump<WindowManagerState, LayerTraceEntry>,
-            next: DeviceStateDump<WindowManagerState, LayerTraceEntry>
-        ): FSMState {
-            val prevTaskActivities = filterVisibleAppStartActivities(current.wmState)
-            val prevAppLaunchActivity = appLaunchActivityWithSurface(prevTaskActivities)
-
-            return WaitNewAppLaunchActivity(tags, prevAppLaunchActivity)
-        }
-    }
-
-    /**
-     * Finds the app launch when a new [WindowManagerState] contains an activity that is resuming or
-     * initializing, with a SplashScreen Window that has type
-     * [PlatformConsts.TYPE_APPLICATION_STARTING] and window's surface is showing. This condition
-     * should not be true in the previous timestamp.
-     */
-    inner class WaitNewAppLaunchActivity(
-        tags: MutableMap<Long, MutableList<Tag>>,
-        private val prevAppLaunchActivity: Activity?
     ) : BaseState(tags) {
         override fun doProcessState(
             previous: DeviceStateDump<WindowManagerState, LayerTraceEntry>?,
@@ -96,75 +77,63 @@ class AppLaunchProcessor(logger: (String) -> Unit) : TransitionProcessor(logger)
         ): FSMState {
             if (previous == null) return this
 
-            /**
-             * Activities that have started and surfaced that were not already doing so in the
-             * previous timestamp.
-             */
-            val currTaskActivities = filterVisibleAppStartActivities(current.wmState)
-            val currAppLaunchActivity = appLaunchActivityWithSurface(currTaskActivities)
+            val startingWindows = current.wmState.rootTasks.flatMap { task ->
+                task.activities.flatMap { activity ->
+                    activity.children.filterIsInstance<WindowState>().filter { window ->
+                        window.attributes.type == TYPE_APPLICATION_STARTING
+                    }
+                }
+            }
 
-            val startingActivityName = if (currAppLaunchActivity != null &&
-                currAppLaunchActivity != prevAppLaunchActivity) {
-                currAppLaunchActivity.name
-            } else ""
-
-            return if (startingActivityName.isNotEmpty()) {
-                val taskId = current.wmState.rootTasks.first {
-                    it.containsActivity(startingActivityName)
-                }.taskId
-                logger.invoke("(${current.wmState.timestamp}) " +
-                    "Task $taskId appears to have launched")
-                addStartTransitionTag(current, Transition.IME_APPEAR, taskId = taskId)
-                WaitAppLaunchEnded(tags, taskId)
+            val snapshotLayersAreAnimating = startingWindows.toList().filter { window ->
+                val prevLayer = previous.layerState.getLayerById(window.layerId)
+                val currLayer = current.layerState.getLayerById(window.layerId)
+                if (prevLayer != null && currLayer != null) {
+                    !prevLayer.isScaling && currLayer.isScaling
+                } else {
+                    false
+                }
+            }
+            // Only want to tag when one app is being launched.
+            // Other scenarios like app pairs enter are ignored.
+            return if (snapshotLayersAreAnimating.size == 1) {
+                val layerId = snapshotLayersAreAnimating.first().layerId
+                addStartTransitionTag(previous, transition,
+                    layerId = layerId,
+                    timestamp = previous.layerState.timestamp
+                )
+                WaitUntilAppSnapshotLayerIsIdentity(tags, layerId)
             } else {
-                logger.invoke("(${current.wmState.timestamp}) No Start of App Launch Detected")
-                WaitNewAppLaunchActivity(tags, currAppLaunchActivity)
+                this
             }
         }
     }
 
-    fun filterVisibleAppStartActivities(
-        wmState: WindowManagerState
-    ): List<Activity> {
-        return wmState.rootTasks.flatMap { task ->
-            task.activities.filter {
-                (it.state == "RESUMED" || it.state == "INITIALIZING") && it.isVisible
-            }
-        }
-    }
-
-    fun appLaunchActivityWithSurface(
-        activities: List<Activity>
-    ): Activity? {
-        return activities.firstOrNull { activity ->
-            activity.children.filterIsInstance<WindowState>().any { window ->
-                window.attributes.type == PlatformConsts.TYPE_APPLICATION_STARTING &&
-                    window.isSurfaceShown
-            }
-        }
-    }
-
-    /**
-     * Wait for SplashScreen window under the app task to no longer be visible as the splash screen
-     * has finished its job.
-     */
-    inner class WaitAppLaunchEnded(
+    inner class WaitUntilAppSnapshotLayerIsIdentity(
         tags: MutableMap<Long, MutableList<Tag>>,
-        private val taskId: Int
+        private val layerId: Int
     ) : BaseState(tags) {
+        private val areLayersAnimating = hasLayersAnimating()
+        private val wmStateIdle = isAppTransitionIdle(/* default display */ 0)
+        private val wmStateComplete = isWMStateComplete()
+
         override fun doProcessState(
             previous: DeviceStateDump<WindowManagerState, LayerTraceEntry>?,
             current: DeviceStateDump<WindowManagerState, LayerTraceEntry>,
             next: DeviceStateDump<WindowManagerState, LayerTraceEntry>
         ): FSMState {
-            val timestamp = current.wmState.timestamp
+            val snapshotLayerGone = current.layerState.getLayerById(layerId) == null
+            val isStableState = wmStateIdle.isSatisfied(current) ||
+                wmStateComplete.isSatisfied(current) ||
+                areLayersAnimating.negate().isSatisfied(current)
 
-            return if (isAppLaunchEnded(taskId).isSatisfied(current)) {
-                logger.invoke("($timestamp) App has finished launching with task $taskId")
-                addEndTransitionTag(current, Transition.APP_LAUNCH, taskId = taskId)
-                InitialState(tags)
+            return if (snapshotLayerGone && isStableState) {
+                addEndTransitionTag(current, transition,
+                    layerId = layerId,
+                    timestamp = current.layerState.timestamp
+                )
+                WaitUntilSnapshotLayersStartAnimating(tags)
             } else {
-                logger.invoke("($timestamp) No end of app launch detected")
                 this
             }
         }
