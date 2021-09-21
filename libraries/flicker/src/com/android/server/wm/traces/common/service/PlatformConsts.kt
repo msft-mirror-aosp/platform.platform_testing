@@ -32,4 +32,32 @@ object PlatformConsts {
      * is used by JVM and KotlinJS
      */
     const val TYPE_APPLICATION_STARTING = 3
+
+    /**
+     * Rotation constant: 0 degree rotation (natural orientation)
+     *
+     * Duplicated from [Surface.ROTATION_0] because this class is used by JVM and KotlinJS
+     */
+    const val ROTATION_0 = 0
+
+    /**
+     * Rotation constant: 90 degree rotation.
+     *
+     * Duplicated from [Surface.ROTATION_90] because this class is used by JVM and KotlinJS
+     */
+    const val ROTATION_90 = 1
+
+    /**
+     * Rotation constant: 180 degree rotation.
+     *
+     * Duplicated from [Surface.ROTATION_180] because this class is used by JVM and KotlinJS
+     */
+    const val ROTATION_180 = 2
+
+    /**
+     * Rotation constant: 270 degree rotation.
+     *
+     * Duplicated from [Surface.ROTATION_270] because this class is used by JVM and KotlinJS
+     */
+    const val ROTATION_270 = 3
 }

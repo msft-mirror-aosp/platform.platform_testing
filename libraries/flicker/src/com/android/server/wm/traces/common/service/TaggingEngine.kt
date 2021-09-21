@@ -17,11 +17,9 @@
 package com.android.server.wm.traces.common.service
 
 import com.android.server.wm.traces.common.layers.LayersTrace
-import com.android.server.wm.traces.common.service.processors.AppLaunchProcessor
-import com.android.server.wm.traces.common.service.processors.ImeAppearProcessor
-import com.android.server.wm.traces.common.service.processors.ImeDisappearProcessor
 import com.android.server.wm.traces.common.service.processors.PipCloseProcessor
 import com.android.server.wm.traces.common.service.processors.PipEnterProcessor
+import com.android.server.wm.traces.common.service.processors.PipExitProcessor
 import com.android.server.wm.traces.common.service.processors.RotationProcessor
 import com.android.server.wm.traces.common.tags.TagState
 import com.android.server.wm.traces.common.tags.TagTrace
@@ -45,12 +43,11 @@ class TaggingEngine(
 ) {
     private val transitions = listOf(
         // TODO: Keep adding new transition processors to invoke
-        AppLaunchProcessor(logger),
-        ImeAppearProcessor(logger),
-        ImeDisappearProcessor(logger),
+        // TODO(b/199886445): Add processors back once they are fixed
         RotationProcessor(logger),
         PipEnterProcessor(logger),
-        PipCloseProcessor(logger)
+        PipCloseProcessor(logger),
+        PipExitProcessor(logger)
     )
 
     /**

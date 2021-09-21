@@ -18,6 +18,7 @@ package com.android.server.wm.traces.common.layers
 
 import com.android.server.wm.traces.common.FloatFormatter
 import com.android.server.wm.traces.common.RectF
+import com.android.server.wm.traces.common.service.PlatformConsts
 
 open class Transform(val type: Int?, val matrix: Matrix) {
 
@@ -46,6 +47,20 @@ open class Transform(val type: Int?, val matrix: Matrix) {
             // determinant of transform
             return matrix.dsdx * matrix.dtdy != matrix.dtdx * matrix.dsdy
         }
+
+    fun getRotation(): Int {
+        if (type == null) {
+            return PlatformConsts.ROTATION_0
+        }
+
+        return when {
+            type.isFlagClear(SCALE_VAL or ROTATE_VAL or TRANSLATE_VAL) -> PlatformConsts.ROTATION_0
+            type.isFlagSet(ROT_90_VAL) -> PlatformConsts.ROTATION_90
+            type.isFlagSet(FLIP_V_VAL or FLIP_H_VAL) -> PlatformConsts.ROTATION_180
+            type.isFlagSet(ROT_90_VAL or FLIP_V_VAL or FLIP_H_VAL) -> PlatformConsts.ROTATION_270
+            else -> PlatformConsts.ROTATION_0
+        }
+    }
 
     private val typeFlags: Array<String>
         get() {

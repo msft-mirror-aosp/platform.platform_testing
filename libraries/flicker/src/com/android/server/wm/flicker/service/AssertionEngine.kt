@@ -16,10 +16,12 @@
 
 package com.android.server.wm.flicker.service
 
+import com.android.server.wm.flicker.service.assertors.AssertorConfigModel
+import com.android.server.wm.flicker.service.assertors.TransitionAssertor
+import com.android.server.wm.flicker.service.assertors.readConfigurationFile
 import com.android.server.wm.traces.common.errors.ErrorState
 import com.android.server.wm.traces.common.errors.ErrorTrace
 import com.android.server.wm.traces.common.layers.LayersTrace
-import com.android.server.wm.traces.common.service.ITransitionAssertor
 import com.android.server.wm.traces.common.tags.Tag
 import com.android.server.wm.traces.common.tags.TagTrace
 import com.android.server.wm.traces.common.tags.Transition
@@ -30,9 +32,8 @@ import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
  * Invokes the configured assertors and summarizes the results.
  */
 class AssertionEngine(private val logger: (String) -> Unit) {
-    private val flickerAssertors = mapOf<ITransitionAssertor, Transition>(
-        // TODO: Add new detectors to invoke
-    )
+    private val configuration: Array<AssertorConfigModel> =
+        readConfigurationFile(FlickerService.configFileName)
 
     fun analyze(
         wmTrace: WindowManagerTrace,
@@ -42,7 +43,9 @@ class AssertionEngine(private val logger: (String) -> Unit) {
         val allStates = mutableListOf<ErrorState>()
         val transitionTags = getTransitionTags(tagTrace)
 
-        flickerAssertors.forEach { (assertor, transition) ->
+        configuration.forEach { assertorConfiguration ->
+            val assertor = TransitionAssertor(assertorConfiguration, logger)
+            val transition = assertorConfiguration.transition
             allStates.addAll(
                 splitWmTraceByTags(wmTrace, transitionTags, transition)
                     .flatMap { block ->

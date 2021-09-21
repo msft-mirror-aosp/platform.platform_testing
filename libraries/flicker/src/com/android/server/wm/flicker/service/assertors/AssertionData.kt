@@ -21,5 +21,6 @@ package com.android.server.wm.flicker.service.assertors
  */
 data class AssertionData(
     var name: String,
+    var trace: String,
     var category: String
 )

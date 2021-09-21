@@ -43,7 +43,7 @@ class RotationMockTest {
     val rule = WMFlickerServiceRuleTest()
 
     @Test
-    fun startServiceTest() {
+    fun startRotationServiceTest() {
         val device = UiDevice.getInstance(instrumentation)
 
         device.wakeUpAndGoToHomeScreen()

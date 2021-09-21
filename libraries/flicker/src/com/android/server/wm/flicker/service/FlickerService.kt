@@ -69,5 +69,10 @@ class FlickerService {
          */
         internal fun getFassFilePath(outputDir: Path, testTag: String, file: String): Path =
                 outputDir.resolve("${testTag}_$file$WINSCOPE_EXT")
+
+        /**
+         * Returns the name of the assertors configuration file.
+         */
+        internal val configFileName = "config.json"
     }
 }

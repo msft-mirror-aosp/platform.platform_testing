@@ -245,3 +245,7 @@ native_tests := \
 ifeq ($(BOARD_IS_AUTOMOTIVE), true)
 native_tests += libwatchdog_test
 endif
+
+ifneq ($(strip $(BOARD_PERFSETUP_SCRIPT)),)
+native_tests += perf-setup
+endif

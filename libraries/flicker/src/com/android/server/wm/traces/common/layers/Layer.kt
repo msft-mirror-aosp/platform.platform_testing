@@ -19,8 +19,9 @@ package com.android.server.wm.traces.common.layers
 import com.android.server.wm.traces.common.Buffer
 import com.android.server.wm.traces.common.Color
 import com.android.server.wm.traces.common.Rect
-import com.android.server.wm.traces.common.Region
 import com.android.server.wm.traces.common.RectF
+import com.android.server.wm.traces.common.Region
+import com.android.server.wm.traces.common.layers.Transform.Companion.isFlagSet
 
 /**
  * Represents a single layer with links to its parent and child layers.
@@ -83,6 +84,16 @@ data class Layer(
         get() = _coveredBy.toTypedArray()
     var isMissing: Boolean = false
         internal set
+
+    val isScaling: Boolean
+        get() = isTransformFlagSet(Transform.SCALE_VAL)
+    val isTranslating: Boolean
+        get() = isTransformFlagSet(Transform.TRANSLATE_VAL)
+    val isRotating: Boolean
+        get() = isTransformFlagSet(Transform.ROTATE_VAL)
+
+    private fun isTransformFlagSet(transform: Int): Boolean =
+            this.transform.type?.isFlagSet(transform) ?: false
 
     /**
      * Checks if the layer's active buffer is empty
