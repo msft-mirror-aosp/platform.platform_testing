@@ -73,21 +73,23 @@ class WindowManagerStateSubjectTest {
     fun canDetectAboveAppWindowVisibility_isVisible() {
         assertThat(trace)
             .entry(traceFirstFrameTimestamp)
-            .isAboveAppWindow(FlickerComponentName.NAV_BAR)
-            .isAboveAppWindow(SCREEN_DECOR_COMPONENT)
-            .isAboveAppWindow(FlickerComponentName.STATUS_BAR)
+            .containsAboveAppWindow(FlickerComponentName.NAV_BAR)
+            .containsAboveAppWindow(SCREEN_DECOR_COMPONENT)
+            .containsAboveAppWindow(FlickerComponentName.STATUS_BAR)
     }
 
     @Test
     fun canDetectAboveAppWindowVisibility_isInvisible() {
         val subject = assertThat(trace).entry(traceFirstFrameTimestamp)
         var failure = assertThrows(AssertionError::class.java) {
-            subject.isAboveAppWindow(PIP_DISMISS_COMPONENT)
+            subject.containsAboveAppWindow(PIP_DISMISS_COMPONENT)
+                .isNonAppWindowVisible(PIP_DISMISS_COMPONENT)
         }
         assertFailure(failure).factValue("Is Invisible").contains("pip-dismiss-overlay")
 
         failure = assertThrows(AssertionError::class.java) {
-            subject.isAboveAppWindow(FlickerComponentName.NAV_BAR, isVisible = false)
+            subject.containsAboveAppWindow(FlickerComponentName.NAV_BAR)
+                .isNonAppWindowInvisible(FlickerComponentName.NAV_BAR)
         }
         assertFailure(failure).factValue("Is Visible").contains("NavigationBar")
     }
@@ -249,15 +251,21 @@ class WindowManagerStateSubjectTest {
         val trace = readWmTraceFromFile("wm_trace_launcher_visible_background.pb")
         val subject = assertThat(trace)
         val firstTrace = subject.first()
-        firstTrace.isInvisible(LAUNCHER_COMPONENT)
+        firstTrace.isAppWindowInvisible(LAUNCHER_COMPONENT)
 
+        // launcher is at the same time visible an invisible because it
+        // contains 2 windows with the exact same name
         val lastTrace = subject.last()
-        lastTrace.isVisible(LAUNCHER_COMPONENT)
+        lastTrace.isAppWindowInvisible(LAUNCHER_COMPONENT)
+
+        subject.isAppWindowNotOnTop(LAUNCHER_COMPONENT)
+            .isAppWindowInvisible(LAUNCHER_COMPONENT)
+            .then()
+            .isAppWindowOnTop(LAUNCHER_COMPONENT)
+            .forAllEntries()
 
         subject.isAppWindowInvisible(LAUNCHER_COMPONENT)
-                .then()
-                .isAppWindowVisible(LAUNCHER_COMPONENT)
-                .forAllEntries()
+            .forAllEntries()
     }
 
     @Test
@@ -277,6 +285,7 @@ class WindowManagerStateSubjectTest {
             assertThat(trace)
                 .entry(traceFirstFrameTimestamp)
                 .containsNonAppWindow(FlickerComponentName.IME)
+                .isNonAppWindowVisible(FlickerComponentName.IME)
         }
         assertFailure(failure).factValue("Is Invisible")
             .contains(FlickerComponentName.IME.packageName)
@@ -286,8 +295,10 @@ class WindowManagerStateSubjectTest {
     fun canDetectAppZOrder() {
         assertThat(trace)
             .entry(traceFirstChromeFlashScreenTimestamp)
-            .containsAppWindow(LAUNCHER_COMPONENT, isVisible = true)
-            .isAppWindowOnTop(CHROME_SPLASH_SCREEN_COMPONENT)
+            .containsAppWindow(LAUNCHER_COMPONENT)
+            .isAppWindowVisible(LAUNCHER_COMPONENT)
+            .isAboveWindow(CHROME_SPLASH_SCREEN_COMPONENT, LAUNCHER_COMPONENT)
+            .isAppWindowOnTop(LAUNCHER_COMPONENT)
     }
 
     @Test
@@ -295,18 +306,18 @@ class WindowManagerStateSubjectTest {
         val failure = assertThrows(FlickerSubjectException::class.java) {
             assertThat(trace)
                 .entry(traceFirstChromeFlashScreenTimestamp)
-                .isAppWindowOnTop(LAUNCHER_COMPONENT)
+                .isAppWindowOnTop(CHROME_SPLASH_SCREEN_COMPONENT)
         }
         assertFailure(failure)
             .factValue("Found")
-            .contains(CHROME_SPLASH_SCREEN_COMPONENT.packageName)
+            .contains(LAUNCHER_COMPONENT.packageName)
     }
 
     @Test
     fun canDetectActivityVisibility() {
         val trace = readWmTraceFromFile("wm_trace_split_screen.pb")
         val lastEntry = assertThat(trace).last()
-        lastEntry.isVisible(SHELL_SPLIT_SCREEN_PRIMARY_COMPONENT)
-        lastEntry.isVisible(SHELL_SPLIT_SCREEN_SECONDARY_COMPONENT)
+        lastEntry.isAppWindowVisible(SHELL_SPLIT_SCREEN_PRIMARY_COMPONENT)
+        lastEntry.isAppWindowVisible(SHELL_SPLIT_SCREEN_SECONDARY_COMPONENT)
     }
 }

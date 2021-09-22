@@ -87,9 +87,17 @@ open class WindowManagerState(
         get() = windowStates
             .dropWhile { !appWindows.contains(it) }.drop(appWindows.size).toTypedArray()
     val visibleWindows: Array<WindowState>
-        get() = windowStates.filter { it.isSurfaceShown }.toTypedArray()
+        get() = windowStates
+            .filter { it.isVisible }
+            .filter { window ->
+                val activities = getActivitiesForWindow(window.title)
+                val activity = activities.firstOrNull { it.children.contains(window) }
+                activity?.isVisible ?: true
+            }
+            .toTypedArray()
     val topVisibleAppWindow: String
-        get() = appWindows.filter { it.isVisible }
+        get() = visibleWindows
+            .filter { it.isAppWindow }
             .map { it.title }
             .firstOrNull() ?: ""
     val pinnedWindows: Array<WindowState>
@@ -110,7 +118,7 @@ open class WindowManagerState(
         return if (focusedDisplay != null && focusedDisplay.resumedActivity.isNotEmpty()) {
             focusedDisplay.resumedActivity
         } else {
-            getActivityForWindow(focusedWindow, focusedDisplayId)?.name ?: ""
+            getActivitiesForWindow(focusedWindow, focusedDisplayId).firstOrNull()?.name ?: ""
         }
     }
     val resumedActivities: Array<String>
@@ -165,21 +173,21 @@ open class WindowManagerState(
         }
 
     /**
-     * Get the first activity on display with id [displayId], containing a window whose title
+     * Get the all activities on display with id [displayId], containing a window whose title
      * contains [partialWindowTitle]
      *
      * @param partialWindowTitle window title to search
      * @param displayId display where to search the activity
      */
-    fun getActivityForWindow(
+    fun getActivitiesForWindow(
         partialWindowTitle: String,
         displayId: Int = DEFAULT_DISPLAY
-    ): Activity? {
-        return displays.firstOrNull { it.id == displayId }?.rootTasks?.map { stack ->
+    ): List<Activity> {
+        return displays.firstOrNull { it.id == displayId }?.rootTasks?.mapNotNull { stack ->
             stack.getActivity { activity ->
                 activity.hasWindow(partialWindowTitle)
             }
-        }?.firstOrNull()
+        } ?: emptyList()
     }
 
     fun containsActivity(activityName: String): Boolean =

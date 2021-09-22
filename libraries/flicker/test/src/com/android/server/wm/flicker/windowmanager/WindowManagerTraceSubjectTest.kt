@@ -52,8 +52,8 @@ class WindowManagerTraceSubjectTest {
             .forRange(9213763541297L, 9215536878453L)
 
         assertThat(chromeTrace)
-            .isAppWindowOnTop(CHROME_SPLASH_SCREEN_COMPONENT)
-            .isAppWindowVisible(LAUNCHER_COMPONENT)
+            .isAppWindowOnTop(LAUNCHER_COMPONENT)
+            .isAppWindowInvisible(CHROME_SPLASH_SCREEN_COMPONENT)
             .isAboveAppWindowVisible(SCREEN_DECOR_COMPONENT)
             .then()
             .isAppWindowOnTop(CHROME_SPLASH_SCREEN_COMPONENT)
@@ -110,7 +110,7 @@ class WindowManagerTraceSubjectTest {
         assertThat(chromeTrace)
             .first()
             .isAppWindowOnTop(LAUNCHER_COMPONENT)
-            .isAboveAppWindow(SCREEN_DECOR_COMPONENT)
+            .containsAboveAppWindow(SCREEN_DECOR_COMPONENT)
     }
 
     @Test
@@ -133,7 +133,7 @@ class WindowManagerTraceSubjectTest {
         assertThat(chromeTrace)
             .last()
             .isAppWindowOnTop(CHROME_COMPONENT)
-            .isAboveAppWindow(SCREEN_DECOR_COMPONENT)
+            .containsAboveAppWindow(SCREEN_DECOR_COMPONENT)
     }
 
     @Test

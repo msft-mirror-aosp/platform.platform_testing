@@ -36,7 +36,7 @@ import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.Until
 import com.android.compatibility.common.util.SystemUtil
 import com.android.server.wm.flicker.helpers.WindowUtils.displayBounds
-import com.android.server.wm.flicker.helpers.WindowUtils.getNavigationBarPosition
+import com.android.server.wm.flicker.helpers.WindowUtils.estimateNavigationBarPosition
 import com.android.server.wm.traces.common.WindowManagerConditionsFactory
 import com.android.server.wm.traces.parser.windowmanager.WindowManagerStateHelper
 import org.junit.Assert
@@ -114,7 +114,7 @@ fun UiDevice.openQuickstep(
             navBar.visibleBounds
         } else {
             Log.e(TAG, "Could not find nav bar, infer location")
-            getNavigationBarPosition(Surface.ROTATION_0).bounds
+            estimateNavigationBarPosition(Surface.ROTATION_0).bounds
         }
 
         val startX = navBarVisibleBounds.centerX()

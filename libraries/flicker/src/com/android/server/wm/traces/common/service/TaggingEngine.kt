@@ -17,6 +17,7 @@
 package com.android.server.wm.traces.common.service
 
 import com.android.server.wm.traces.common.layers.LayersTrace
+import com.android.server.wm.traces.common.service.processors.AppLaunchProcessor
 import com.android.server.wm.traces.common.service.processors.PipCloseProcessor
 import com.android.server.wm.traces.common.service.processors.PipEnterProcessor
 import com.android.server.wm.traces.common.service.processors.PipExitProcessor
@@ -45,6 +46,7 @@ class TaggingEngine(
         // TODO: Keep adding new transition processors to invoke
         // TODO(b/199886445): Add processors back once they are fixed
         RotationProcessor(logger),
+        AppLaunchProcessor(logger),
         PipEnterProcessor(logger),
         PipCloseProcessor(logger),
         PipExitProcessor(logger)

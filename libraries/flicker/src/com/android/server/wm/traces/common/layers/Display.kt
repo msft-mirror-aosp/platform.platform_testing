@@ -23,7 +23,7 @@ import com.android.server.wm.traces.common.Size
  * Representation of a Display in the SF trace
  */
 data class Display(
-    val id: Long,
+    val id: ULong,
     val name: String,
     val layerStackId: Int,
     val size: Size,
@@ -56,7 +56,7 @@ data class Display(
 
     companion object {
         val EMPTY = Display(
-            id = -1,
+            id = 0.toULong(),
             name = "EMPTY",
             layerStackId = -1,
             size = Size.EMPTY,
