@@ -18,7 +18,6 @@
 package com.android.server.wm.flicker.service.assertors
 
 import android.content.ComponentName
-import android.view.Surface
 import com.android.server.wm.flicker.helpers.WindowUtils
 import com.android.server.wm.flicker.traces.layers.LayersTraceSubject
 import com.android.server.wm.flicker.traces.windowmanager.WindowManagerTraceSubject
@@ -73,29 +72,29 @@ fun LayersTraceSubject.statusBarLayerIsVisible() {
 }
 
 fun LayersTraceSubject.navBarLayerRotatesAndScales() {
-    val startRotation = this.first().entry.displays.sortedBy { it.id }.firstOrNull()
-            ?.transform?.getRotation() ?: Surface.ROTATION_0
-    val endRotation = this.last().entry.displays.sortedBy { it.id }.firstOrNull()
-            ?.transform?.getRotation() ?: Surface.ROTATION_0
+    val startDisplay = this.first().entry.displays.minByOrNull { it.id }
+            ?: throw RuntimeException("There is no display!")
+    val endDisplay = this.last().entry.displays.minByOrNull { it.id }
+            ?: throw RuntimeException("There is no display!")
 
     this.first().visibleRegion(FlickerComponentName.NAV_BAR)
-            .coversExactly(WindowUtils.getNavigationBarPosition(startRotation))
+            .coversExactly(WindowUtils.getNavigationBarPosition(startDisplay))
 
     this.last().visibleRegion(FlickerComponentName.NAV_BAR)
-            .coversExactly(WindowUtils.getNavigationBarPosition(endRotation))
+            .coversExactly(WindowUtils.getNavigationBarPosition(endDisplay))
 }
 
 fun LayersTraceSubject.statusBarLayerRotatesScales() {
-    val startRotation = this.first().entry.displays.sortedBy { it.id }.firstOrNull()
-            ?.transform?.getRotation() ?: Surface.ROTATION_0
-    val endRotation = this.last().entry.displays.sortedBy { it.id }.firstOrNull()
-            ?.transform?.getRotation() ?: Surface.ROTATION_0
+    val startDisplay = this.first().entry.displays.minByOrNull { it.id }
+            ?: throw RuntimeException("There is no display!")
+    val endDisplay = this.last().entry.displays.minByOrNull { it.id }
+            ?: throw RuntimeException("There is no display!")
 
     this.first().visibleRegion(FlickerComponentName.STATUS_BAR)
-            .coversExactly(WindowUtils.getNavigationBarPosition(startRotation))
+            .coversExactly(WindowUtils.getStatusBarPosition(startDisplay))
 
     this.last().visibleRegion(FlickerComponentName.STATUS_BAR)
-            .coversExactly(WindowUtils.getNavigationBarPosition(endRotation))
+            .coversExactly(WindowUtils.getStatusBarPosition(endDisplay))
 }
 
 fun WindowManagerTraceSubject.statusBarWindowIsAlwaysInvisible() {

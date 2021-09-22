@@ -44,7 +44,7 @@ class WindowManagerTraceTest {
         val firstEntry = trace.entries[0]
         assertThat(firstEntry.timestamp).isEqualTo(9213763541297L)
         assertThat(firstEntry.windowStates.size).isEqualTo(10)
-        assertThat(firstEntry.visibleWindows.size).isEqualTo(6)
+        assertThat(firstEntry.visibleWindows.size).isEqualTo(5)
         assertThat(trace.entries[trace.entries.size - 1].timestamp)
                 .isEqualTo(9216093628925L)
     }

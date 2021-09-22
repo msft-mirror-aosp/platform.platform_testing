@@ -154,13 +154,13 @@ class WindowManagerStateHelperTest {
         try {
             WindowManagerStateSubject
                 .assertThat(helper.wmState)
-                .isVisible(FlickerComponentName.IME)
+                .isNonAppWindowVisible(FlickerComponentName.IME)
             error("IME state should not be available")
         } catch (e: AssertionError) {
             helper.waitImeShown(Display.DEFAULT_DISPLAY)
             WindowManagerStateSubject
                 .assertThat(helper.wmState)
-                .isVisible(FlickerComponentName.IME)
+                .isNonAppWindowVisible(FlickerComponentName.IME)
         }
     }
 
@@ -173,13 +173,13 @@ class WindowManagerStateHelperTest {
         try {
             WindowManagerStateSubject
                 .assertThat(helper.wmState)
-                .isVisible(FlickerComponentName.IME)
+                .isNonAppWindowVisible(FlickerComponentName.IME)
             error("IME state should not be available")
         } catch (e: AssertionError) {
             helper.waitImeShown()
             WindowManagerStateSubject
                 .assertThat(helper.wmState)
-                .isVisible(FlickerComponentName.IME)
+                .isNonAppWindowVisible(FlickerComponentName.IME)
         }
     }
 
@@ -192,13 +192,13 @@ class WindowManagerStateHelperTest {
         try {
             WindowManagerStateSubject
                 .assertThat(helper.wmState)
-                .contains(simpleAppComponentName)
+                .containsAppWindow(simpleAppComponentName)
             error("Chrome window should not exist in the start of the trace")
         } catch (e: AssertionError) {
             helper.waitForVisibleWindow(simpleAppComponentName)
             WindowManagerStateSubject
                 .assertThat(helper.wmState)
-                .isVisible(simpleAppComponentName)
+                .isAppWindowVisible(simpleAppComponentName)
         }
     }
 
@@ -211,7 +211,7 @@ class WindowManagerStateHelperTest {
         try {
             WindowManagerStateSubject
                 .assertThat(helper.wmState)
-                .contains(simpleAppComponentName)
+                .containsAppWindow(simpleAppComponentName)
             error("SimpleActivity window should not exist in the start of the trace")
         } catch (e: AssertionError) {
             helper.waitForVisibleWindow(simpleAppComponentName)
@@ -233,7 +233,7 @@ class WindowManagerStateHelperTest {
         helper.waitForVisibleWindow(chromeComponent)
         WindowManagerStateSubject
             .assertThat(helper.wmState)
-            .isHomeActivityVisible(false)
+            .isHomeActivityInvisible()
         helper.waitForHomeActivityVisible()
         WindowManagerStateSubject
             .assertThat(helper.wmState)
@@ -253,7 +253,7 @@ class WindowManagerStateHelperTest {
         helper.waitForVisibleWindow(chromeComponent)
         WindowManagerStateSubject
             .assertThat(helper.wmState)
-            .isVisible(chromeComponent)
+            .isAppWindowVisible(chromeComponent)
         helper.waitForActivityRemoved(chromeComponent)
         WindowManagerStateSubject
             .assertThat(helper.wmState)
@@ -322,7 +322,7 @@ class WindowManagerStateHelperTest {
             numRetries = trace.entries.size, retryIntervalMs = 1)
         WindowManagerStateSubject
             .assertThat(helper.wmState)
-            .isRecentsActivityVisible(visible = false)
+            .isRecentsActivityInvisible()
         helper.waitForRecentsActivityVisible()
         WindowManagerStateSubject
             .assertThat(helper.wmState)
