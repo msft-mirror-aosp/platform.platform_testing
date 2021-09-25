@@ -25,7 +25,9 @@ import kotlin.math.max
 import kotlin.math.min
 
 /**
- * Base state for a FSM
+ * Represents the Finite State Machine used by tagging processors and implements adding start and
+ * end tags.
+ * @param tags represents the map of timestamps associated with tag(s).
  */
 abstract class FSMState(protected val tags: MutableMap<Long, MutableList<Tag>>) {
     abstract fun process(
