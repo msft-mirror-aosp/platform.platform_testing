@@ -22,44 +22,17 @@ import com.android.server.wm.traces.common.tags.Tag
 import com.android.server.wm.traces.common.tags.Transition
 import com.android.server.wm.traces.common.windowmanager.WindowManagerState
 
+/**
+ * This processor creates tags when an app is launched.
+ * @param logger logs by invoking any event messages
+ */
 class AppLaunchProcessor(logger: (String) -> Unit) : TransitionProcessor(logger) {
-    private val transition = Transition.APP_LAUNCH
+    override val transition = Transition.APP_LAUNCH
     private val windowsBecomeVisible =
         HashMap<Int, DeviceStateDump<WindowManagerState, LayerTraceEntry>>()
 
     override fun getInitialState(tags: MutableMap<Long, MutableList<Tag>>) =
         WaitUntilWindowIsInVisibleActivity(tags)
-
-    /**
-     * Base state for the FSM, check if there are more WM and SF states to process
-     */
-    abstract inner class BaseState(tags: MutableMap<Long, MutableList<Tag>>) : FSMState(tags) {
-        protected abstract fun doProcessState(
-            previous: DeviceStateDump<WindowManagerState, LayerTraceEntry>?,
-            current: DeviceStateDump<WindowManagerState, LayerTraceEntry>,
-            next: DeviceStateDump<WindowManagerState, LayerTraceEntry>
-        ): FSMState
-
-        override fun process(
-            previous: DeviceStateDump<WindowManagerState, LayerTraceEntry>?,
-            current: DeviceStateDump<WindowManagerState, LayerTraceEntry>,
-            next: DeviceStateDump<WindowManagerState, LayerTraceEntry>?
-        ): FSMState? {
-            return when (next) {
-                null -> {
-                    // last state
-                    logger.invoke("(${current.layerState.timestamp}) Trace has reached the end")
-                    if (hasOpenTag()) {
-                        logger.invoke("(${current.layerState.timestamp}) Has an open tag, " +
-                            "closing it on the last SF state")
-                        addEndTransitionTag(current, transition)
-                    }
-                    null
-                }
-                else -> doProcessState(previous, current, next)
-            }
-        }
-    }
 
     /**
      * FSM state that stores any newly visible window activities (start tag)

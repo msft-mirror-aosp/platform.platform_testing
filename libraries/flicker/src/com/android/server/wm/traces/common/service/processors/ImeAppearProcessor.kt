@@ -30,39 +30,14 @@ import com.android.server.wm.traces.common.tags.Tag
 import com.android.server.wm.traces.common.tags.Transition
 import com.android.server.wm.traces.common.windowmanager.WindowManagerState
 
+/**
+ * This processor creates tags when the keyboard starts and finishes appearing.
+ * @param logger logs by invoking any event messages
+ */
 class ImeAppearProcessor(logger: (String) -> Unit) : TransitionProcessor(logger) {
+    override val transition = Transition.IME_APPEAR
     override fun getInitialState(tags: MutableMap<Long, MutableList<Tag>>) =
         WaitInputMethodVisible(tags)
-
-    /**
-     * Base state for the FSM, check if there are more WM and SF states to process
-     */
-    abstract inner class BaseState(tags: MutableMap<Long, MutableList<Tag>>) : FSMState(tags) {
-        protected abstract fun doProcessState(
-            previous: DeviceStateDump<WindowManagerState, LayerTraceEntry>?,
-            current: DeviceStateDump<WindowManagerState, LayerTraceEntry>,
-            next: DeviceStateDump<WindowManagerState, LayerTraceEntry>
-        ): FSMState
-
-        override fun process(
-            previous: DeviceStateDump<WindowManagerState, LayerTraceEntry>?,
-            current: DeviceStateDump<WindowManagerState, LayerTraceEntry>,
-            next: DeviceStateDump<WindowManagerState, LayerTraceEntry>?
-        ): FSMState? {
-            return if (next != null) {
-                doProcessState(previous, current, next)
-            } else {
-                // last state
-                logger.invoke("(${current.layerState.timestamp}) Trace has reached the end")
-                if (hasOpenTag()) {
-                    logger.invoke("(${current.layerState.timestamp}) Has an open tag, " +
-                        "closing it on the last SF state")
-                    addEndTransitionTag(current, Transition.IME_APPEAR)
-                }
-                null
-            }
-        }
-    }
 
     /**
      * FSM state that waits until the InputMethod is visible in both WM and SF.
@@ -96,7 +71,7 @@ class ImeAppearProcessor(logger: (String) -> Unit) : TransitionProcessor(logger)
             val inputMethodLayer = current.layerState.visibleLayers.first {
                 it.name.contains(FlickerComponentName.IME.toLayerName())
             }
-            addStartTransitionTag(current, Transition.IME_APPEAR, layerId = inputMethodLayer.id)
+            addStartTransitionTag(current, transition, layerId = inputMethodLayer.id)
             return WaitImeAppearFinished(tags, inputMethodLayer.id)
         }
     }
@@ -119,7 +94,7 @@ class ImeAppearProcessor(logger: (String) -> Unit) : TransitionProcessor(logger)
             return if (isImeAppearFinished) {
                 // tag on the last complete state at the start
                 logger.invoke("(${current.layerState.timestamp}) Ime appear end detected.")
-                addEndTransitionTag(current, Transition.IME_APPEAR, layerId = layerId)
+                addEndTransitionTag(current, transition, layerId = layerId)
                 // return to start to wait for a second IME appear
                 WaitInputMethodVisible(tags)
             } else {

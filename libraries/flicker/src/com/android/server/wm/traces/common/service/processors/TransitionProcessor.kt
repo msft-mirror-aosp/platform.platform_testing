@@ -18,16 +18,33 @@ package com.android.server.wm.traces.common.service.processors
 
 import com.android.server.wm.traces.common.DeviceStateDump
 import com.android.server.wm.traces.common.layers.LayerTraceEntry
-import com.android.server.wm.traces.common.service.ITagProcessor
 import com.android.server.wm.traces.common.layers.LayersTrace
+import com.android.server.wm.traces.common.service.ITagProcessor
 import com.android.server.wm.traces.common.tags.Tag
 import com.android.server.wm.traces.common.tags.TagState
 import com.android.server.wm.traces.common.tags.TagTrace
+import com.android.server.wm.traces.common.tags.Transition
 import com.android.server.wm.traces.common.windowmanager.WindowManagerState
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 
+/**
+ * This class implements the relevant methods such as generating tags, creating dumps for the
+ * WindowManager and SurfaceFlinger traces, and ensuring the 1:1 correspondence between the start
+ * and end tags invariant is maintained by [BaseFsmState].
+ */
 abstract class TransitionProcessor(internal val logger: (String) -> Unit) : ITagProcessor {
-    abstract fun getInitialState(tags: MutableMap<Long, MutableList<Tag>>): FSMState
+    abstract val transition: Transition
+    abstract fun getInitialState(tags: MutableMap<Long, MutableList<Tag>>): BaseState
+
+    abstract inner class BaseState(
+        tags: MutableMap<Long, MutableList<Tag>>
+    ) : BaseFsmState(tags, logger, transition) {
+        abstract override fun doProcessState(
+            previous: DeviceStateDump<WindowManagerState, LayerTraceEntry>?,
+            current: DeviceStateDump<WindowManagerState, LayerTraceEntry>,
+            next: DeviceStateDump<WindowManagerState, LayerTraceEntry>
+        ): FSMState
+    }
 
     /**
      * Add the start and end tags corresponding to the transition from
