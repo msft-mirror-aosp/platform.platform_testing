@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package android.platform.scenario.multiuser;
+package android.platform.tests;
 
 import static junit.framework.Assert.assertTrue;
 

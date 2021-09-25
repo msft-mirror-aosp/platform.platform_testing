@@ -18,6 +18,7 @@ package android.platform.tests;
 
 import static junit.framework.Assert.assertTrue;
 
+import android.os.SystemClock;
 import android.content.pm.UserInfo;
 import android.platform.helpers.AutoConfigConstants;
 import android.platform.helpers.AutoUtility;
@@ -40,9 +41,12 @@ import org.junit.runner.RunWith;
 @RunWith(AndroidJUnit4.class)
 public class DeleteCurrentNonAdminUser {
 
+    private static final String userName = MultiUserConstants.SECONDARY_USER_NAME;
+    private static final int WAIT_TIME = 10000;
     private final MultiUserHelper mMultiUserHelper = MultiUserHelper.getInstance();
     private HelperAccessor<IAutoUserHelper> mUsersHelper;
     private HelperAccessor<IAutoSettingHelper> mSettingHelper;
+    private int mTargetUserId;
 
     public DeleteCurrentNonAdminUser() {
         mUsersHelper = new HelperAccessor<>(IAutoUserHelper.class);
@@ -54,11 +58,6 @@ public class DeleteCurrentNonAdminUser {
         AutoUtility.exitSuw();
     }
 
-    @Before
-    public void openAccountsFacet() {
-        mSettingHelper.get().openSetting(AutoConfigConstants.PROFILE_ACCOUNT_SETTINGS);
-    }
-
     @After
     public void goBackToHomeScreen() {
         mSettingHelper.get().goBackToSettingsScreen();
@@ -66,15 +65,18 @@ public class DeleteCurrentNonAdminUser {
 
     @Test
     public void testRemoveUserSelf() throws Exception {
-        // add new user
         UserInfo initialUser = mMultiUserHelper.getCurrentForegroundUserInfo();
-        mUsersHelper.get().addUser();
-        // switched to new user and user deleted self
+        // add new user
+        mTargetUserId = mMultiUserHelper.createUser(userName, false);
+        SystemClock.sleep(WAIT_TIME);
+        // switch to new user
+        mMultiUserHelper.switchAndWaitForStable(
+            mTargetUserId, MultiUserConstants.WAIT_FOR_IDLE_TIME_MS);
         UserInfo newUser = mMultiUserHelper.getCurrentForegroundUserInfo();
+        // user deleted self
         mSettingHelper.get().openSetting(AutoConfigConstants.PROFILE_ACCOUNT_SETTINGS);
         mUsersHelper.get().deleteCurrentUser();
         // goes to guest user, switch back to initial user
-        UserInfo guestUser = mMultiUserHelper.getCurrentForegroundUserInfo();
         mMultiUserHelper.switchAndWaitForStable(
             initialUser.id, MultiUserConstants.WAIT_FOR_IDLE_TIME_MS);
         // verify that user is deleted
