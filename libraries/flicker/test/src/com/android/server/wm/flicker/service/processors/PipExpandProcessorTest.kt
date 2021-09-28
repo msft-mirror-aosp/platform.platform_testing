@@ -20,17 +20,24 @@ import com.android.server.wm.flicker.readLayerTraceFromFile
 import com.android.server.wm.flicker.readWmTraceFromFile
 import com.android.server.wm.traces.common.service.processors.PipExpandProcessor
 import com.google.common.truth.Truth
+import org.junit.FixMethodOrder
 import org.junit.Test
+import org.junit.runners.MethodSorters
 
+/**
+ * Contains [PipExpandProcessor] tests. To run this test:
+ * `atest FlickerLibTest:PipExpandProcessorTest`
+ */
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class PipExpandProcessorTest {
     private val processor = PipExpandProcessor { }
 
     private val tagsPipExpanding by lazy {
         val wmTrace = readWmTraceFromFile(
-            "tagprocessors/pip/pipclose/WindowManagerTrace.winscope"
+            "tagprocessors/pip/expand/WindowManagerTrace.winscope"
         )
         val layersTrace = readLayerTraceFromFile(
-            "tagprocessors/pip/pipclose/SurfaceFlingerTrace.winscope"
+            "tagprocessors/pip/expand/SurfaceFlingerTrace.winscope"
         )
         processor.generateTags(wmTrace, layersTrace)
     }
@@ -46,9 +53,9 @@ class PipExpandProcessorTest {
     }
 
     @Test
-    fun generatesPipCloseTags() {
+    fun generatesPipExpandTags() {
         val tagTrace = tagsPipExpanding
-        Truth.assertWithMessage("Should have 2 pip close tags")
+        Truth.assertWithMessage("Should have 2 pip expand tags")
             .that(tagTrace)
             .hasSize(2)
         val startTagTimestamp = 2881856703699 // 0d0h48m1s856ms
@@ -60,7 +67,7 @@ class PipExpandProcessorTest {
     @Test
     fun doesntTagPipEnterTwice() {
         val tagTrace = tagsPipEnterTwice
-        Truth.assertWithMessage("Should have 0 pip close tags")
+        Truth.assertWithMessage("Should have 0 pip expand tags")
             .that(tagTrace)
             .hasSize(0)
     }

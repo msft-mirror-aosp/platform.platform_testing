@@ -29,26 +29,15 @@ import org.junit.runners.MethodSorters
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class AssertionConfigParserTest {
+
     @Test
     fun canParseConfigFile() {
         val jsonByteArray = readTestFile("assertors/assertionsConfig.json")
-        val assertions = AssertionConfigParser.parseConfigFile(String(jsonByteArray))
-
-        val rotationAssertions = arrayOf(
-            AssertionData("navBarWindowIsVisible", "wmTrace", "presubmit"),
-            AssertionData("navBarLayerIsVisible", "layersTrace", "presubmit"),
-            AssertionData("entireScreenCovered", "layersTrace", "postsubmit"),
-            AssertionData("launcherWindowBecomesInvisible", "wmTrace", "flaky"),
-            AssertionData("visibleLayersShownMoreThanOneConsecutiveEntry", "layersTrace", "flaky")
-        )
-        Truth.assertThat(assertions.size).isEqualTo(2)
-        Truth.assertThat(assertions[0].name).isEqualTo("RotationAssertions")
-        Truth.assertThat(assertions[0].transition).isEqualTo(Transition.ROTATION)
-        Truth.assertThat(assertions[0].assertions.size).isEqualTo(5)
-        Truth.assertThat(assertions[0].assertions).isEqualTo(rotationAssertions)
-
-        val appLaunchAssertion = AssertionData("entireScreenCovered", "wmTrace", "flaky")
-        Truth.assertThat(assertions[1].assertions.size).isEqualTo(10)
-        Truth.assertThat(assertions[1].assertions[9]).isEqualTo(appLaunchAssertion)
+        val assertionConfigurations = AssertionConfigParser.parseConfigFile(String(jsonByteArray))
+        Truth.assertThat(assertionConfigurations).hasSize(23)
+        Truth.assertThat(assertionConfigurations.first().transitionType)
+            .isEqualTo(Transition.ROTATION)
+        Truth.assertThat(assertionConfigurations.last().transitionType)
+            .isEqualTo(Transition.APP_LAUNCH)
     }
 }

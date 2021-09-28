@@ -16,9 +16,8 @@
 
 package com.android.server.wm.flicker.service
 
-import com.android.server.wm.flicker.service.assertors.AssertorConfigModel
+import com.android.server.wm.flicker.service.assertors.AssertionData
 import com.android.server.wm.flicker.service.assertors.TransitionAssertor
-import com.android.server.wm.flicker.service.assertors.readConfigurationFile
 import com.android.server.wm.traces.common.errors.ErrorState
 import com.android.server.wm.traces.common.errors.ErrorTrace
 import com.android.server.wm.traces.common.layers.LayersTrace
@@ -31,38 +30,36 @@ import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 /**
  * Invokes the configured assertors and summarizes the results.
  */
-class AssertionEngine(private val logger: (String) -> Unit) {
-    private val configuration: Array<AssertorConfigModel> =
-        readConfigurationFile(FlickerService.configFileName)
+class AssertionEngine(
+    private val assertions: List<AssertionData>,
+    private val logger: (String) -> Unit
+) {
+    private val knownTypes = assertions.map { it.transitionType }
 
     fun analyze(
         wmTrace: WindowManagerTrace,
         layersTrace: LayersTrace,
         tagTrace: TagTrace
     ): ErrorTrace {
-        val allStates = mutableListOf<ErrorState>()
-        val transitionTags = getTransitionTags(tagTrace)
+        val errors = mutableListOf<ErrorState>()
+        val allTransitions = getTransitionTags(tagTrace)
 
-        configuration.forEach { assertorConfiguration ->
-            val assertor = TransitionAssertor(assertorConfiguration, logger)
-            val transition = assertorConfiguration.transition
-            allStates.addAll(
-                splitWmTraceByTags(wmTrace, transitionTags, transition)
-                    .flatMap { block ->
-                        assertor.analyzeWmTrace(block).entries.asList()
-                    }
-            )
+        allTransitions
+            .filter { knownTypes.contains(it.tag.transition) }
+            .forEach { transition ->
+                val (filteredWmTrace, filteredLayersTrace) =
+                    splitTraces(transition, wmTrace, layersTrace)
 
-            allStates.addAll(
-                splitLayersTraceByTags(layersTrace, transitionTags, transition)
-                    .flatMap { block ->
-                        assertor.analyzeLayersTrace(block).entries.asList()
-                    }
-            )
-        }
+                val assertionsOfType = assertions
+                    .filter { it.transitionType == transition.tag.transition }
+                val assertor = TransitionAssertor(assertionsOfType, logger)
+                val errorTrace = assertor.analyze(
+                    transition.tag, filteredWmTrace, filteredLayersTrace)
+                errors.addAll(errorTrace)
+            }
 
         /* Ensure all error states with same timestamp are merged */
-        val errorStates = allStates.distinct()
+        val errorStates = errors.distinct()
                 .groupBy({ it.timestamp }, { it.errors.asList() })
                 .mapValues { (key, value) ->
                     ErrorState(value.flatten().toTypedArray(), key.toString()) }
@@ -97,47 +94,20 @@ class AssertionEngine(private val logger: (String) -> Unit) {
     }
 
     /**
-     * Splits a wmTrace by a [Transition].
+     * Splits a [WindowManagerTrace] and a [LayersTrace] by a [Transition].
      *
+     * @param tag a list with all [TransitionTag]s
      * @param wmTrace Window Manager trace
-     * @param transitionTags a list with all [TransitionTag]s
-     * @param transition the [Transition] to filter the list by
+     * @param layersTrace Surface Flinger trace
      * @return a list with [WindowManagerTrace] blocks
      */
-    fun splitWmTraceByTags(
+    fun splitTraces(
+        tag: TransitionTag,
         wmTrace: WindowManagerTrace,
-        transitionTags: List<TransitionTag>,
-        transition: Transition
-    ): List<WindowManagerTrace> {
-        val wmTags = transitionTags
-            .filter { transitionTag ->
-                transitionTag.tag.taskId > 0 ||
-                transitionTag.tag.windowToken.isNotEmpty() ||
-                transitionTag.isEmpty()
-            }.filter { transitionTag -> transitionTag.tag.transition == transition }
-
-        return wmTags.map { tag -> wmTrace.filter(tag.startTimestamp, tag.endTimestamp) }
-    }
-
-    /**
-     * Splits a layersTrace by a [Transition].
-     *
-     * @param layersTrace Surface Flinger trace
-     * @param transitionTags a list with all [TransitionTag]s
-     * @param transition the [Transition] to filter the list by
-     * @return a list with [LayersTrace] blocks
-     */
-    fun splitLayersTraceByTags(
-        layersTrace: LayersTrace,
-        transitionTags: List<TransitionTag>,
-        transition: Transition
-    ): List<LayersTrace> {
-        val layersTags = transitionTags
-            .filter { transitionTag -> transitionTag.tag.layerId > 0 || transitionTag.isEmpty() }
-            .filter { transitionTag -> transitionTag.tag.transition == transition }
-
-        return layersTags.map { tag ->
-            layersTrace.filter(tag.startTimestamp, tag.endTimestamp)
-        }
+        layersTrace: LayersTrace
+    ): Pair<WindowManagerTrace, LayersTrace> {
+        val filteredWmTrace = wmTrace.filter(tag.startTimestamp, tag.endTimestamp)
+        val filteredLayersTrace = layersTrace.filter(tag.startTimestamp, tag.endTimestamp)
+        return Pair(filteredWmTrace, filteredLayersTrace)
     }
 }

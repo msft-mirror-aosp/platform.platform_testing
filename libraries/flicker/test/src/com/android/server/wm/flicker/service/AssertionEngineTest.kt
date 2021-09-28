@@ -16,12 +16,15 @@
 
 package com.android.server.wm.flicker.service
 
+import androidx.test.filters.FlakyTest
 import com.android.server.wm.flicker.readLayerTraceFromFile
 import com.android.server.wm.flicker.readTagTraceFromFile
 import com.android.server.wm.flicker.readWmTraceFromFile
+import com.android.server.wm.traces.common.layers.LayersTrace
 import com.android.server.wm.traces.common.tags.Tag
 import com.android.server.wm.traces.common.tags.Transition
 import com.android.server.wm.traces.common.tags.TransitionTag
+import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 import com.google.common.truth.Truth
 import org.junit.FixMethodOrder
 import org.junit.Test
@@ -32,9 +35,9 @@ import org.junit.runners.MethodSorters
  * `atest FlickerLibTest:AssertionEngineTest`
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@FlakyTest
 class AssertionEngineTest {
-    private val assertionEngine = AssertionEngine { }
-
+    private val assertionEngine = AssertionEngine(emptyList()) { }
     // TODO(b/197632497): Replace mocked Transition tag lists with tag trace files
     private val wmTagsList = listOf(
         TransitionTag(
@@ -153,13 +156,14 @@ class AssertionEngineTest {
     @Test
     fun canSplitLayersTrace_layerId() {
         val layersTrace = readLayerTraceFromFile("layers_trace_openchrome.pb")
-        val blocks = assertionEngine
-            .splitLayersTraceByTags(layersTrace, layersTagsList, Transition.APP_LAUNCH)
+        val blocks = layersTagsList
+            .filter { it.tag.transition == Transition.APP_LAUNCH }
+            .map { assertionEngine.splitTraces(it, EMPTY_WM_TRACE, layersTrace) }
 
         Truth.assertThat(blocks).isNotEmpty()
         Truth.assertThat(blocks.size).isEqualTo(1)
 
-        val entries = blocks.first().entries
+        val entries = blocks.first().second.entries
         Truth.assertThat(entries.first().timestamp).isEqualTo(71607477186189)
         Truth.assertThat(entries.last().timestamp).isEqualTo(71607812120180)
     }
@@ -167,13 +171,14 @@ class AssertionEngineTest {
     @Test
     fun canSplitLayersTrace_emptyTag() {
         val layersTrace = readLayerTraceFromFile("layers_trace_openchrome.pb")
-        val blocks = assertionEngine
-                .splitLayersTraceByTags(layersTrace, layersTagsList, Transition.ROTATION)
+        val blocks = layersTagsList
+            .filter { it.tag.transition == Transition.ROTATION }
+            .map { assertionEngine.splitTraces(it, EMPTY_WM_TRACE, layersTrace) }
 
         Truth.assertThat(blocks).isNotEmpty()
         Truth.assertThat(blocks.size).isEqualTo(1)
 
-        val entries = blocks.first().entries
+        val entries = blocks.first().second.entries
         Truth.assertThat(entries.first().timestamp).isEqualTo(71607477186189)
         Truth.assertThat(entries.last().timestamp).isEqualTo(71607812120180)
     }
@@ -181,13 +186,14 @@ class AssertionEngineTest {
     @Test
     fun canSplitLayersTrace_mergedTags() {
         val layersTrace = readLayerTraceFromFile("layers_trace_openchrome.pb")
-        val blocks = assertionEngine
-            .splitLayersTraceByTags(layersTrace, mergedTagsList, Transition.APP_CLOSE)
+        val blocks = layersTagsList
+            .filter { it.tag.transition == Transition.APP_LAUNCH }
+            .map { assertionEngine.splitTraces(it, EMPTY_WM_TRACE, layersTrace) }
 
         Truth.assertThat(blocks).isNotEmpty()
         Truth.assertThat(blocks.size).isEqualTo(1)
 
-        val entries = blocks.first().entries
+        val entries = blocks.first().second.entries
         Truth.assertThat(entries.first().timestamp).isEqualTo(71607812120180)
         Truth.assertThat(entries.last().timestamp).isEqualTo(71608330503774)
     }
@@ -195,8 +201,9 @@ class AssertionEngineTest {
     @Test
     fun canSplitLayersTrace_noTags() {
         val layersTrace = readLayerTraceFromFile("layers_trace_openchrome.pb")
-        val blocks = assertionEngine
-            .splitLayersTraceByTags(layersTrace, wmTagsList, Transition.APP_LAUNCH)
+        val blocks = wmTagsList
+            .filter { it.tag.transition == Transition.APP_CLOSE }
+            .map { assertionEngine.splitTraces(it, EMPTY_WM_TRACE, layersTrace) }
 
         Truth.assertThat(blocks).isEmpty()
     }
@@ -204,13 +211,14 @@ class AssertionEngineTest {
     @Test
     fun canSplitWmTrace_taskId() {
         val wmTrace = readWmTraceFromFile("wm_trace_openchrome.pb")
-        val blocks = assertionEngine
-            .splitWmTraceByTags(wmTrace, wmTagsList, Transition.APP_LAUNCH)
+        val blocks = wmTagsList
+            .filter { it.tag.transition == Transition.APP_LAUNCH }
+            .map { assertionEngine.splitTraces(it, wmTrace, EMPTY_LAYERS_TRACE) }
 
         Truth.assertThat(blocks).isNotEmpty()
         Truth.assertThat(blocks.size).isEqualTo(1)
 
-        val entries = blocks.first().entries
+        val entries = blocks.first().first.entries
         Truth.assertThat(entries.first().timestamp).isEqualTo(9213763541297)
         Truth.assertThat(entries.last().timestamp).isEqualTo(9215895891561)
     }
@@ -218,13 +226,14 @@ class AssertionEngineTest {
     @Test
     fun canSplitWmTrace_windowToken() {
         val wmTrace = readWmTraceFromFile("wm_trace_openchrome.pb")
-        val blocks = assertionEngine
-                .splitWmTraceByTags(wmTrace, wmTagsList, Transition.IME_APPEAR)
+        val blocks = wmTagsList
+            .filter { it.tag.transition == Transition.IME_APPEAR }
+            .map { assertionEngine.splitTraces(it, wmTrace, EMPTY_LAYERS_TRACE) }
 
         Truth.assertThat(blocks).isNotEmpty()
         Truth.assertThat(blocks.size).isEqualTo(1)
 
-        val entries = blocks.first().entries
+        val entries = blocks.first().first.entries
         Truth.assertThat(entries.first().timestamp).isEqualTo(9213763541297)
         Truth.assertThat(entries.last().timestamp).isEqualTo(9215895891561)
     }
@@ -232,13 +241,14 @@ class AssertionEngineTest {
     @Test
     fun canSplitWmTrace_emptyTag() {
         val wmTrace = readWmTraceFromFile("wm_trace_openchrome.pb")
-        val blocks = assertionEngine
-                .splitWmTraceByTags(wmTrace, wmTagsList, Transition.ROTATION)
+        val blocks = wmTagsList
+            .filter { it.tag.transition == Transition.ROTATION }
+            .map { assertionEngine.splitTraces(it, wmTrace, EMPTY_LAYERS_TRACE) }
 
         Truth.assertThat(blocks).isNotEmpty()
         Truth.assertThat(blocks.size).isEqualTo(1)
 
-        val entries = blocks.first().entries
+        val entries = blocks.first().first.entries
         Truth.assertThat(entries.first().timestamp).isEqualTo(9213763541297)
         Truth.assertThat(entries.last().timestamp).isEqualTo(9215895891561)
     }
@@ -246,13 +256,14 @@ class AssertionEngineTest {
     @Test
     fun canSplitWmTrace_mergedTags() {
         val wmTrace = readWmTraceFromFile("wm_trace_openchrome.pb")
-        val blocks = assertionEngine
-            .splitWmTraceByTags(wmTrace, mergedTagsList, Transition.APP_CLOSE)
+        val blocks = mergedTagsList
+            .filter { it.tag.transition == Transition.APP_CLOSE }
+            .map { assertionEngine.splitTraces(it, wmTrace, EMPTY_LAYERS_TRACE) }
 
         Truth.assertThat(blocks).isNotEmpty()
         Truth.assertThat(blocks.size).isEqualTo(1)
 
-        val entries = blocks.first().entries
+        val entries = blocks.first().first.entries
         Truth.assertThat(entries.first().timestamp).isEqualTo(9215895891561)
         Truth.assertThat(entries.last().timestamp).isEqualTo(9216093628925)
     }
@@ -260,9 +271,15 @@ class AssertionEngineTest {
     @Test
     fun canSplitWmTrace_noTags() {
         val wmTrace = readWmTraceFromFile("wm_trace_openchrome.pb")
-        val blocks = assertionEngine
-            .splitWmTraceByTags(wmTrace, layersTagsList, Transition.APP_LAUNCH)
+        val blocks = layersTagsList
+            .filter { it.tag.transition == Transition.APP_CLOSE }
+            .map { assertionEngine.splitTraces(it, wmTrace, EMPTY_LAYERS_TRACE) }
 
         Truth.assertThat(blocks).isEmpty()
+    }
+
+    companion object {
+        private val EMPTY_WM_TRACE = WindowManagerTrace(emptyArray(), source = "")
+        private val EMPTY_LAYERS_TRACE = LayersTrace(emptyArray(), source = "")
     }
 }

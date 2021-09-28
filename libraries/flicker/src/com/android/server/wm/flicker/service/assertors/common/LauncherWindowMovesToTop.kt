@@ -14,19 +14,11 @@
  * limitations under the License.
  */
 
-package com.android.server.wm.traces.common.tags
+package com.android.server.wm.flicker.service.assertors.common
+
+import com.android.server.wm.flicker.service.assertors.Components
 
 /**
- * Represents all the possible transitions to be tagged.
+ * Checks that [Components.LAUNCHER] starts not on top and moves to top during the transition
  */
-enum class Transition(private val transitionName: String) {
-    ROTATION("Rotation"),
-    APP_LAUNCH("AppLaunching"),
-    APP_CLOSE("AppClosing"),
-    PIP_ENTER("PipEntering"),
-    PIP_RESIZE("PipResizing"),
-    PIP_EXPAND("PipExpanding"),
-    PIP_EXIT("PipExiting"),
-    IME_APPEAR("ImeAppearing"),
-    IME_DISAPPEAR("ImeDisappearing");
-}
+class LauncherWindowMovesToTop : WindowMovesToTop(Components.LAUNCHER.toWindowName())

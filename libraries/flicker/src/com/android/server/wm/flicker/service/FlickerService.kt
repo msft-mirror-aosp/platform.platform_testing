@@ -19,6 +19,7 @@ package com.android.server.wm.flicker.service
 import android.util.Log
 import com.android.server.wm.flicker.FLICKER_TAG
 import com.android.server.wm.flicker.monitor.TransitionMonitor.Companion.WINSCOPE_EXT
+import com.android.server.wm.flicker.service.assertors.AssertionData
 import com.android.server.wm.traces.common.errors.ErrorTrace
 import com.android.server.wm.traces.common.layers.LayersTrace
 import com.android.server.wm.traces.common.service.TaggingEngine
@@ -30,7 +31,9 @@ import java.nio.file.Path
 /**
  * Contains the logic for Flicker as a Service.
  */
-class FlickerService {
+class FlickerService @JvmOverloads constructor(
+    private val assertions: List<AssertionData> = AssertionData.readConfiguration()
+) {
     /**
      * The entry point for WM Flicker Service.
      *
@@ -51,7 +54,7 @@ class FlickerService {
         val tagTraceFile = getFassFilePath(outputDir, testTag, "tag_trace")
         tagTrace.writeToFile(tagTraceFile)
 
-        val assertionEngine = AssertionEngine { Log.v("$FLICKER_TAG-ASSERT", it) }
+        val assertionEngine = AssertionEngine(assertions) { Log.v("$FLICKER_TAG-ASSERT", it) }
         val errorTrace = assertionEngine.analyze(wmTrace, layersTrace, tagTrace)
         val errorTraceFile = getFassFilePath(outputDir, testTag, "error_trace")
         errorTrace.writeToFile(errorTraceFile)
@@ -69,10 +72,5 @@ class FlickerService {
          */
         internal fun getFassFilePath(outputDir: Path, testTag: String, file: String): Path =
                 outputDir.resolve("${testTag}_$file$WINSCOPE_EXT")
-
-        /**
-         * Returns the name of the assertors configuration file.
-         */
-        internal val configFileName = "config.json"
     }
 }

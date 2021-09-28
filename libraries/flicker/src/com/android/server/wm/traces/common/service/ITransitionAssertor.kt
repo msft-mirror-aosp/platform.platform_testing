@@ -18,6 +18,7 @@ package com.android.server.wm.traces.common.service
 
 import com.android.server.wm.traces.common.errors.ErrorTrace
 import com.android.server.wm.traces.common.layers.LayersTrace
+import com.android.server.wm.traces.common.tags.Tag
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 
 /**
@@ -25,18 +26,12 @@ import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
  */
 interface ITransitionAssertor {
     /**
-     * Analyzes a [WindowManagerTrace] trace to detect flickers.
+     * Analyzes a [WindowManagerTrace] and/or a [LayersTrace] trace to detect flickers.
      *
+     * @param tag Tag for the transition
      * @param wmTrace Window Manager trace
-     * @return An error trace
-     */
-    fun analyzeWmTrace(wmTrace: WindowManagerTrace): ErrorTrace
-
-    /**
-     * Analyzes a [LayersTrace] trace to detect flickers.
-     *
      * @param layersTrace Surface Flinger trace
      * @return An error trace
      */
-    fun analyzeLayersTrace(layersTrace: LayersTrace): ErrorTrace
+    fun analyze(tag: Tag, wmTrace: WindowManagerTrace, layersTrace: LayersTrace): ErrorTrace
 }

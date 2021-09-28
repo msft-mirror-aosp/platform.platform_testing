@@ -20,37 +20,44 @@ import com.android.server.wm.flicker.readLayerTraceFromFile
 import com.android.server.wm.flicker.readWmTraceFromFile
 import com.android.server.wm.traces.common.service.processors.AppCloseProcessor
 import com.google.common.truth.Truth
+import org.junit.FixMethodOrder
 import org.junit.Test
+import org.junit.runners.MethodSorters
 
+/**
+ * Contains [AppCloseProcessor] tests. To run this test:
+ * `atest FlickerLibTest:AppCloseProcessorTest`
+ */
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class AppCloseProcessorTest {
     private val processor = AppCloseProcessor { }
 
     private val tagAppCloseByBackButton by lazy {
         val wmTrace = readWmTraceFromFile(
-                "tagprocessors/appclose/backbutton/WindowManagerTrace.winscope"
+            "tagprocessors/appclose/backbutton/WindowManagerTrace.winscope"
         )
         val layersTrace = readLayerTraceFromFile(
-                "tagprocessors/appclose/backbutton/SurfaceFlingerTrace.winscope"
+            "tagprocessors/appclose/backbutton/SurfaceFlingerTrace.winscope"
         )
         processor.generateTags(wmTrace, layersTrace)
     }
 
     private val tagAppCloseBySwipeUp by lazy {
         val wmTrace = readWmTraceFromFile(
-                "tagprocessors/appclose/swipeup/WindowManagerTrace.winscope"
+            "tagprocessors/appclose/swipeup/WindowManagerTrace.winscope"
         )
         val layersTrace = readLayerTraceFromFile(
-                "tagprocessors/appclose/swipeup/SurfaceFlingerTrace.winscope"
+            "tagprocessors/appclose/swipeup/SurfaceFlingerTrace.winscope"
         )
         processor.generateTags(wmTrace, layersTrace)
     }
 
     private val tagAppCloseBySwitchingApps by lazy {
         val wmTrace = readWmTraceFromFile(
-                "tagprocessors/appclose/switchapp/WindowManagerTrace.winscope"
+            "tagprocessors/appclose/switchapp/WindowManagerTrace.winscope"
         )
         val layersTrace = readLayerTraceFromFile(
-                "tagprocessors/appclose/switchapp/SurfaceFlingerTrace.winscope"
+            "tagprocessors/appclose/switchapp/SurfaceFlingerTrace.winscope"
         )
         processor.generateTags(wmTrace, layersTrace)
     }

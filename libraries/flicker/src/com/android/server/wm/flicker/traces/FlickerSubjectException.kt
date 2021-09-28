@@ -23,7 +23,7 @@ import com.android.server.wm.traces.common.prettyTimestamp
  * Exception thrown by [FlickerSubject]s
  */
 class FlickerSubjectException(
-    subject: FlickerSubject,
+    internal val subject: FlickerSubject,
     cause: Throwable
 ) : AssertionError(cause.message, if (cause is FlickerSubjectException) null else cause) {
     internal val timestamp = subject.timestamp

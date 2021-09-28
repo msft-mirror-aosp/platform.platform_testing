@@ -24,36 +24,40 @@ import org.junit.FixMethodOrder
 import org.junit.Test
 import org.junit.runners.MethodSorters
 
+/**
+ * Contains [PipExitProcessor] tests. To run this test:
+ * `atest FlickerLibTest:PipExitProcessorTest`
+ */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class PipExitProcessorTest {
     private val processor = PipExitProcessor { }
 
     private val tagPipExitByDismissButton by lazy {
         val wmTrace = readWmTraceFromFile(
-    "tagprocessors/pip/pipexit/dismissbutton/WindowManagerTrace.winscope"
+            "tagprocessors/pip/exit/dismissbutton/WindowManagerTrace.winscope"
         )
         val layersTrace = readLayerTraceFromFile(
-    "tagprocessors/pip/pipexit/dismissbutton/SurfaceFlingerTrace.winscope"
+            "tagprocessors/pip/exit/dismissbutton/SurfaceFlingerTrace.winscope"
         )
         processor.generateTags(wmTrace, layersTrace)
     }
 
     private val tagPipExitBySwipe by lazy {
         val wmTrace = readWmTraceFromFile(
-    "tagprocessors/pip/pipexit/swipe/WindowManagerTrace.winscope"
+            "tagprocessors/pip/exit/swipe/WindowManagerTrace.winscope"
         )
         val layersTrace = readLayerTraceFromFile(
-    "tagprocessors/pip/pipexit/swipe/SurfaceFlingerTrace.winscope"
+            "tagprocessors/pip/exit/swipe/SurfaceFlingerTrace.winscope"
         )
         processor.generateTags(wmTrace, layersTrace)
     }
 
-    private val tagPipClose by lazy {
+    private val tagPipExpand by lazy {
         val wmTrace = readWmTraceFromFile(
-    "tagprocessors/pip/pipclose/expand/WindowManagerTrace.winscope"
+            "tagprocessors/pip/expand/expand/WindowManagerTrace.winscope"
         )
         val layersTrace = readLayerTraceFromFile(
-    "tagprocessors/pip/pipclose/expand/SurfaceFlingerTrace.winscope"
+            "tagprocessors/pip/expand/expand/SurfaceFlingerTrace.winscope"
         )
         processor.generateTags(wmTrace, layersTrace)
     }
@@ -83,8 +87,8 @@ class PipExitProcessorTest {
     }
 
     @Test
-    fun doesNotTagPipExitOnPipClose() {
-        val tagTrace = tagPipClose
+    fun doesNotTagPipExitOnPipExpand() {
+        val tagTrace = tagPipExpand
         Truth.assertWithMessage("Should have 0 pip exit tags")
             .that(tagTrace)
             .hasSize(0)

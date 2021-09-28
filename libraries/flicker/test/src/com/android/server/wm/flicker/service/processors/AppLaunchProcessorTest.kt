@@ -23,8 +23,8 @@ import com.google.common.truth.Truth
 import org.junit.Test
 
 /**
- * Contains [AppLaunchProcessor] tests. To run this test: `atest
- * FlickerLibTest:AppLaunchProcessorTest`
+ * Contains [AppLaunchProcessor] tests. To run this test:
+ * `atest FlickerLibTest:AppLaunchProcessorTest`
  */
 class AppLaunchProcessorTest {
     private val processor = AppLaunchProcessor { }
