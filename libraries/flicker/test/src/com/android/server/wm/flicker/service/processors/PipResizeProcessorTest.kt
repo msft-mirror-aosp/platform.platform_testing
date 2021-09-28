@@ -20,27 +20,34 @@ import com.android.server.wm.flicker.readLayerTraceFromFile
 import com.android.server.wm.flicker.readWmTraceFromFile
 import com.android.server.wm.traces.common.service.processors.PipResizeProcessor
 import com.google.common.truth.Truth
+import org.junit.FixMethodOrder
 import org.junit.Test
+import org.junit.runners.MethodSorters
 
+/**
+ * Contains [PipResizeProcessor] tests. To run this test:
+ * `atest FlickerLibTest:PipResizeProcessorTest`
+ */
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class PipResizeProcessorTest {
     private val processor = PipResizeProcessor { }
 
     private val tagsPipResizingToExpand by lazy {
         val wmTrace = readWmTraceFromFile(
-    "tagprocessors/pip/pipresize/expand/WindowManagerTrace.winscope"
+            "tagprocessors/pip/resize/expand/WindowManagerTrace.winscope"
         )
         val layersTrace = readLayerTraceFromFile(
-    "tagprocessors/pip/pipresize/expand/SurfaceFlingerTrace.winscope"
+            "tagprocessors/pip/resize/expand/SurfaceFlingerTrace.winscope"
         )
         processor.generateTags(wmTrace, layersTrace)
     }
 
     private val tagsPipResizingToShrink by lazy {
         val wmTrace = readWmTraceFromFile(
-    "tagprocessors/pip/pipresize/shrink/WindowManagerTrace.winscope"
+            "tagprocessors/pip/resize/shrink/WindowManagerTrace.winscope"
         )
         val layersTrace = readLayerTraceFromFile(
-    "tagprocessors/pip/pipresize/shrink/SurfaceFlingerTrace.winscope"
+            "tagprocessors/pip/resize/shrink/SurfaceFlingerTrace.winscope"
         )
         processor.generateTags(wmTrace, layersTrace)
     }

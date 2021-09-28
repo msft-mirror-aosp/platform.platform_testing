@@ -14,19 +14,11 @@
  * limitations under the License.
  */
 
-package com.android.server.wm.traces.common.tags
+package com.android.server.wm.flicker.service.assertors
 
-/**
- * Represents all the possible transitions to be tagged.
- */
-enum class Transition(private val transitionName: String) {
-    ROTATION("Rotation"),
-    APP_LAUNCH("AppLaunching"),
-    APP_CLOSE("AppClosing"),
-    PIP_ENTER("PipEntering"),
-    PIP_RESIZE("PipResizing"),
-    PIP_EXPAND("PipExpanding"),
-    PIP_EXIT("PipExiting"),
-    IME_APPEAR("ImeAppearing"),
-    IME_DISAPPEAR("ImeDisappearing");
+import com.android.server.wm.traces.common.FlickerComponentName
+
+object Components {
+    val LAUNCHER = FlickerComponentName("com.google.android.apps.nexuslauncher",
+        "com.google.android.apps.nexuslauncher.NexusLauncherActivity")
 }

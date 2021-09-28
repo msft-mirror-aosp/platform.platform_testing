@@ -25,7 +25,8 @@ import org.junit.Test
 import org.junit.runners.MethodSorters
 
 /**
- * Tests for Ime Disappear Processor.
+ * Contains [ImeDisappearProcessor] tests. To run this test:
+ * `atest FlickerLibTest:ImeDisappearProcessorTest`
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class ImeDisappearProcessorTest {
@@ -33,40 +34,40 @@ class ImeDisappearProcessorTest {
 
     private val tagsImeDisappearWithGestureOpenAndClose by lazy {
         val wmTrace = readWmTraceFromFile(
-                "tagprocessors/ime/disappear/bygesture/openandclose/WindowManagerTrace.winscope"
+            "tagprocessors/ime/disappear/bygesture/openandclose/WindowManagerTrace.winscope"
         )
         val layersTrace = readLayerTraceFromFile(
-                "tagprocessors/ime/disappear/bygesture/openandclose/SurfaceFlingerTrace.winscope"
+            "tagprocessors/ime/disappear/bygesture/openandclose/SurfaceFlingerTrace.winscope"
         )
         processor.generateTags(wmTrace, layersTrace)
     }
 
     private val tagsImeDisappearOnAppOpenAndClose by lazy {
         val wmTrace = readWmTraceFromFile(
-                "tagprocessors/ime/disappear/closeapp/openandclose/WindowManagerTrace.winscope"
+            "tagprocessors/ime/disappear/closeapp/openandclose/WindowManagerTrace.winscope"
         )
         val layersTrace = readLayerTraceFromFile(
-                "tagprocessors/ime/disappear/closeapp/openandclose/SurfaceFlingerTrace.winscope"
+            "tagprocessors/ime/disappear/closeapp/openandclose/SurfaceFlingerTrace.winscope"
         )
         processor.generateTags(wmTrace, layersTrace)
     }
 
     private val tagsImeDisappearWithGestureClose by lazy {
         val wmTrace = readWmTraceFromFile(
-                "tagprocessors/ime/disappear/bygesture/close/WindowManagerTrace.winscope"
+            "tagprocessors/ime/disappear/bygesture/close/WindowManagerTrace.winscope"
         )
         val layersTrace = readLayerTraceFromFile(
-                "tagprocessors/ime/disappear/bygesture/close/SurfaceFlingerTrace.winscope"
+            "tagprocessors/ime/disappear/bygesture/close/SurfaceFlingerTrace.winscope"
         )
         processor.generateTags(wmTrace, layersTrace)
     }
 
     private val tagsImeDisappearOnAppClose by lazy {
         val wmTrace = readWmTraceFromFile(
-                "tagprocessors/ime/disappear/closeapp/close/WindowManagerTrace.winscope"
+            "tagprocessors/ime/disappear/closeapp/close/WindowManagerTrace.winscope"
         )
         val layersTrace = readLayerTraceFromFile(
-                "tagprocessors/ime/disappear/closeapp/close/SurfaceFlingerTrace.winscope"
+            "tagprocessors/ime/disappear/closeapp/close/SurfaceFlingerTrace.winscope"
         )
         processor.generateTags(wmTrace, layersTrace)
     }
@@ -75,8 +76,8 @@ class ImeDisappearProcessorTest {
     fun generatesImeDisappearTagsWithGestureOpenAndCloseIme() {
         val tagTrace = tagsImeDisappearWithGestureOpenAndClose
         Truth.assertWithMessage("Should have 2 IME disappear tags")
-                .that(tagTrace)
-                .hasSize(2)
+            .that(tagTrace)
+            .hasSize(2)
         val startTagTimestamp = 69234720627579 // 19h13m54s720ms
         val endTagTimestamp = 69234929459162 // 19h13m54s929ms
         Truth.assertThat(tagTrace.first().timestamp).isEqualTo(startTagTimestamp)
@@ -87,8 +88,8 @@ class ImeDisappearProcessorTest {
     fun generatesImeDisappearTagsOnAppOpenAndClose() {
         val tagTrace = tagsImeDisappearOnAppOpenAndClose
         Truth.assertWithMessage("Should have 2 IME disappear tags")
-                .that(tagTrace)
-                .hasSize(2)
+            .that(tagTrace)
+            .hasSize(2)
         val startTagTimestamp = 69524600678331 // 19h18m44s600ms
         val endTagTimestamp = 69524958584304 // 19h18m44s958ms
         Truth.assertThat(tagTrace.first().timestamp).isEqualTo(startTagTimestamp)
@@ -99,8 +100,8 @@ class ImeDisappearProcessorTest {
     fun generatesImeDisappearTagsWithGestureCloseIme() {
         val tagTrace = tagsImeDisappearWithGestureClose
         Truth.assertWithMessage("Should have 2 IME disappear tags")
-                .that(tagTrace)
-                .hasSize(2)
+            .that(tagTrace)
+            .hasSize(2)
 
         val startTagTimestamp = 69387450340971 // 19h16m27s450ms
         val endTagTimestamp = 69387644316302 // 19h16m27s644ms
@@ -112,8 +113,8 @@ class ImeDisappearProcessorTest {
     fun generatesImeDisappearTagsOnAppClose() {
         val tagTrace = tagsImeDisappearOnAppClose
         Truth.assertWithMessage("Should have 2 IME disappear tags")
-                .that(tagTrace)
-                .hasSize(2)
+            .that(tagTrace)
+            .hasSize(2)
 
         val startTagTimestamp = 69635457764375 // 19h20m35s457ms
         val endTagTimestamp = 69635765486645 // 19h20m35s765ms

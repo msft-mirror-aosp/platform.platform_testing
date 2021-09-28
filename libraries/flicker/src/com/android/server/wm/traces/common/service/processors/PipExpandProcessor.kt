@@ -30,7 +30,7 @@ import com.android.server.wm.traces.common.windowmanager.WindowManagerState
  * @param logger logs by invoking any event messages
  */
 class PipExpandProcessor(logger: (String) -> Unit) : TransitionProcessor(logger) {
-    override val transition = Transition.PIP_CLOSE
+    override val transition = Transition.PIP_EXPAND
     private val scalingLayers =
         HashMap<Int, DeviceStateDump<WindowManagerState, LayerTraceEntry>>()
 

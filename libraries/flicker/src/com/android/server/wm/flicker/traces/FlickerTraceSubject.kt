@@ -127,6 +127,9 @@ abstract class FlickerTraceSubject<EntrySubject : FlickerSubject>(
     protected fun visibleEntriesShownMoreThanOneConsecutiveTime(
         visibleEntriesProvider: (EntrySubject) -> Set<String>
     ) {
+        if (subjects.isEmpty()) {
+            return
+        }
         var lastVisible = visibleEntriesProvider(subjects.first())
         val lastNew = lastVisible.toMutableSet()
 
