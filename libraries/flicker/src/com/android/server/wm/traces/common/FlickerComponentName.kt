@@ -106,6 +106,8 @@ data class FlickerComponentName(
         val IME = FlickerComponentName("", "InputMethod")
         val SPLASH_SCREEN = FlickerComponentName("", "Splash Screen")
         val SNAPSHOT = FlickerComponentName("", "SnapshotStartingWindow")
+        val WALLPAPER_BBQ_WRAPPER =
+                FlickerComponentName("", "Wallpaper BBQ wrapper")
 
         fun unflattenFromString(str: String): FlickerComponentName {
             val sep = str.indexOf('/')
