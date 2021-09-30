@@ -55,7 +55,7 @@ LOCAL_PREBUILT_MODULE_FILE := prebuilts/tools/linux-x86_64/perfetto/configs/trac
 include $(BUILD_PREBUILT)
 
 include $(CLEAR_VARS)
-LOCAL_MODULE := trace_config_multi_user_tests.textproto
+LOCAL_MODULE := trace_config_multi_user_cuj_tests.textproto
 LOCAL_LICENSE_KINDS := SPDX-license-identifier-Apache-2.0
 LOCAL_LICENSE_CONDITIONS := notice
 LOCAL_MODULE_CLASS := ETC

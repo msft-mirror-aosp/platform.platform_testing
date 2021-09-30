@@ -158,6 +158,12 @@ public class AutoMediaCenterConfigUtility implements IAutoConfigUtility {
 
         // Default Media Center on Home Screen Config
         loadDefaultMediaCenterOnHomeScreenConfig(mMediaCenterConfigMap);
+
+        // Default Media Apps Grid Screen Config
+        loadDefaultMediaCenterAppsGridConfig(mMediaCenterConfigMap);
+
+        // Default Media Apps UI Config
+        loadDefaultMediaApp(mMediaCenterConfigMap);
     }
 
     private void loadDefaultMediaCenterAppConfig(Map<String, String> mApplicationConfigMap) {
@@ -235,5 +241,39 @@ public class AutoMediaCenterConfigUtility implements IAutoConfigUtility {
         mMediaCenterConfigMap.put(
                 AutoConfigConstants.MEDIA_CENTER_ON_HOME_SCREEN,
                 mediaCenterOnHomeScreenConfiguration);
+    }
+
+    private void loadDefaultMediaCenterAppsGridConfig(
+            Map<String, AutoConfiguration> mMediaCenterConfigMap) {
+        AutoConfiguration mediaCenterAppsGridConfiguration = new AutoConfiguration();
+        mediaCenterAppsGridConfiguration.addResource(
+                AutoConfigConstants.MEDIA_APPS_GRID_TITLE,
+                new AutoConfigResource(
+                        AutoConfigConstants.RESOURCE_ID,
+                        "car_ui_toolbar_title", CAR_LAUNCHER_PACKAGE));
+        mediaCenterAppsGridConfiguration.addResource(
+                AutoConfigConstants.MEDIA_APPS_GRID_APP_NAME,
+                new AutoConfigResource(
+                        AutoConfigConstants.RESOURCE_ID,
+                        "app_name", CAR_LAUNCHER_PACKAGE));
+        mMediaCenterConfigMap.put(
+                AutoConfigConstants.MEDIA_APPS_GRID, mediaCenterAppsGridConfiguration);
+    }
+
+    private void loadDefaultMediaApp(
+            Map<String, AutoConfiguration> mMediaCenterConfigMap) {
+        AutoConfiguration mediaAppConfiguration = new AutoConfiguration();
+        mediaAppConfiguration.addResource(
+                AutoConfigConstants.MEDIA_APP_DROP_DOWN_MENU,
+                new AutoConfigResource(
+                        AutoConfigConstants.RESOURCE_ID,
+                        "car_ui_toolbar_menu_item_icon", MEDIA_CENTER_PACKAGE));
+        mediaAppConfiguration.addResource(
+                AutoConfigConstants.MEDIA_APP_TITLE,
+                new AutoConfigResource(
+                        AutoConfigConstants.RESOURCE_ID,
+                        "car_ui_toolbar_title", MEDIA_CENTER_PACKAGE));
+        mMediaCenterConfigMap.put(
+                AutoConfigConstants.MEDIA_APP, mediaAppConfiguration);
     }
 }
