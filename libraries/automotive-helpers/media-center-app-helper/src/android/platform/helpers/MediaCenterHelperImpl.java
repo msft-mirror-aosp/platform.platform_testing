@@ -26,13 +26,14 @@ import android.os.SystemClock;
 import android.platform.helpers.exceptions.UnknownUiException;
 import android.support.test.uiautomator.By;
 import android.support.test.uiautomator.Direction;
-import android.support.test.uiautomator.UiObject2;
 import android.support.test.uiautomator.UiObject;
+import android.support.test.uiautomator.UiObject2;
 import android.support.test.uiautomator.UiObjectNotFoundException;
 import android.support.test.uiautomator.UiScrollable;
 import android.support.test.uiautomator.UiSelector;
 
 import java.util.List;
+import java.util.regex.Pattern;
 
 public class MediaCenterHelperImpl extends AbstractAutoStandardAppHelper
         implements IAutoMediaHelper {
@@ -343,7 +344,9 @@ public class MediaCenterHelperImpl extends AbstractAutoStandardAppHelper
         }
     }
 
-    /** Minimize the Now Playing window. */
+    /**
+     * Minimize the Now Playing window.
+     */
     private void minimizeNowPlaying() {
         UiObject2 trackNameText =
                 findUiObject(
@@ -382,5 +385,58 @@ public class MediaCenterHelperImpl extends AbstractAutoStandardAppHelper
         }
         PlaybackState state = controllers.get(0).getPlaybackState();
         return state.getState() == PlaybackState.STATE_PLAYING;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String getMediaAppTitle() {
+        UiObject2 mediaAppTitle = findUiObject(getResourceFromConfig(
+                AutoConfigConstants.MEDIA_CENTER,
+                AutoConfigConstants.MEDIA_APP,
+                AutoConfigConstants.MEDIA_APP_TITLE));
+        if (mediaAppTitle == null) {
+            throw new UnknownUiException("Unable to find Media app title text.");
+        }
+        return mediaAppTitle.getText();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void openMediaAppMenuItems() {
+        List<UiObject2> menuItemElements = findUiObjects(getResourceFromConfig(
+                AutoConfigConstants.MEDIA_CENTER,
+                AutoConfigConstants.MEDIA_APP,
+                AutoConfigConstants.MEDIA_APP_DROP_DOWN_MENU));
+        if (menuItemElements.size() == 0) {
+            throw new UnknownUiException("Unable to find Media drop down.");
+        }
+        clickAndWaitForIdleScreen(menuItemElements.get(1));
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean areMediaAppsPresent(List<String> mediaAppsNames) {
+        UiObject2 mediaAppPageTitle =
+                findUiObject(
+                        getResourceFromConfig(
+                                AutoConfigConstants.MEDIA_CENTER,
+                                AutoConfigConstants.MEDIA_APPS_GRID,
+                                AutoConfigConstants.MEDIA_APPS_GRID_TITLE));
+        if (mediaAppPageTitle == null) {
+            throw new RuntimeException("Media apps grid activity not open.");
+        }
+        if (mediaAppsNames == null || mediaAppsNames.size() == 0) {
+            return false;
+        }
+        // Scroll and find media apps in Media App Grid
+        for (String expectedApp : mediaAppsNames) {
+            UiObject2 mediaApp =
+                    scrollAndFindUiObject(
+                            By.text(Pattern.compile(expectedApp, Pattern.CASE_INSENSITIVE)));
+            if (mediaApp == null || !mediaApp.getText().equals(expectedApp)) {
+                return false;
+            }
+        }
+        return true;
     }
 }
