@@ -37,6 +37,7 @@ class ErrorParserTest {
             .setWindowToken("token")
             .setMessage("Error!")
             .setStacktrace("stacktrace of error")
+            .setAssertionName("LayerIsVisibleAtStart")
             .build()
     private val state = FlickerErrorStateProto.newBuilder()
             .setTimestamp(100)

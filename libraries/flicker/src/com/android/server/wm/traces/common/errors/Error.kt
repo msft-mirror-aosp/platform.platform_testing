@@ -23,11 +23,13 @@ package com.android.server.wm.traces.common.errors
  * @param layerId The layer which the error is associated with
  * @param windowToken The window which the error is associated with
  * @param taskId The task which the error is associated with
+ * @param assertionName The class name of the assertion that generated the error
  */
 data class Error(
     val stacktrace: String,
     val message: String,
     val layerId: Int = 0,
     val windowToken: String = "",
-    val taskId: Int = 0
+    val taskId: Int = 0,
+    val assertionName: String = ""
 )
