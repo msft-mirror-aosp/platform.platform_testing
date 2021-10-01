@@ -66,4 +66,5 @@ fun Error.toProto(): FlickerErrorProto = FlickerErrorProto
     .setLayerId(this.layerId)
     .setWindowToken(this.windowToken)
     .setTaskId(this.taskId)
+    .setAssertionName(this.assertionName)
     .build()

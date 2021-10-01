@@ -18,6 +18,8 @@ package com.android.server.wm.flicker
 
 import android.util.Log
 import com.android.server.wm.flicker.monitor.ITransitionMonitor
+import com.android.server.wm.traces.common.ConditionList
+import com.android.server.wm.traces.common.WindowManagerConditionsFactory
 import com.android.server.wm.traces.parser.DeviceDumpParser
 import com.android.server.wm.traces.parser.getCurrentState
 import java.io.IOException
@@ -81,6 +83,10 @@ open class TransitionRunner {
      * @param flicker test specification
      */
     internal open fun run(flicker: Flicker): FlickerResult {
+        val uiStableCondition = ConditionList(listOf(
+            WindowManagerConditionsFactory.isWMStateComplete(),
+            WindowManagerConditionsFactory.hasLayersAnimating().negate()
+        ))
         val runs = mutableListOf<FlickerRunResult>()
         var executionError: Throwable? = null
         try {
@@ -89,10 +95,12 @@ open class TransitionRunner {
                 for (iteration in 0 until flicker.repetitions) {
                     try {
                         flicker.runSetup.forEach { it.invoke(flicker) }
+                        flicker.wmHelper.waitFor(uiStableCondition)
                         flicker.traceMonitors.forEach { it.start() }
                         flicker.frameStatsMonitor?.run { start() }
                         flicker.transitions.forEach { it.invoke(flicker) }
                     } finally {
+                        flicker.wmHelper.waitFor(uiStableCondition)
                         flicker.traceMonitors.forEach { it.tryStop() }
                         flicker.frameStatsMonitor?.run { tryStop() }
                         flicker.runTeardown.forEach { it.invoke(flicker) }

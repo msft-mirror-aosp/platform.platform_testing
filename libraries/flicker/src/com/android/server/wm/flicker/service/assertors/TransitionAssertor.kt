@@ -90,7 +90,8 @@ class TransitionAssertor(
                         stacktrace = exception.stackTraceToString(),
                         message = exception.message,
                         layerId = layer?.id ?: 0,
-                        windowToken = window?.token ?: ""
+                        windowToken = window?.token ?: "",
+                        assertionName = assertion.name
                     )
                     errors.getValue(exception.timestamp).add(errorEntry)
                 }
