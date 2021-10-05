@@ -34,4 +34,5 @@ SYSTEM_TOMBSTONE imsdatadaemon\s+>>>\s/system/vendor/bin/imsdatadaemon\s<<<[\S\s
 SYSTEM_TOMBSTONE com.qualcomm.qti.services.secureui:sui_service\s<<<[\S\s]*null\spointer[\S\s]*libsecureui_svcsock_system 174754036
 SYSTEM_TOMBSTONE >>>\s/vendor/bin/hw/android.hardware.camera.provider@2.6-service-google\s<<<[\S\s]+libGLESv2_adreno 173663856
 SYSTEM_TOMBSTONE (coral|flame|sunfish)[\s\S]+enableInternal\s+>>>\s+com.android.nfc\s<<<[\s\S]+JNI\sFatalError\scalled:\senableInternal 187522327
+SYSTEM_TOMBSTONE applyRouting\s+>>>\scom.android.nfc\s<<<[\S\s]+JNI\sFatalError\scalled:\sapplyRouting 187061650
 SYSTEM_TOMBSTONE android.hardwar*.*/vendor/bin/hw/android.hardware.sensors@2.0-service 163430194
