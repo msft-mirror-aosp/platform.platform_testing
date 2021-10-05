@@ -47,7 +47,6 @@ native_tests := \
     camera_client_test \
     clatd_test \
     confirmationui_invocation_test \
-    crashcollector \
     debuggerd_test \
     doh_ffi_test \
     doh_unit_test \
