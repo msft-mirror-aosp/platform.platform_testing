@@ -45,14 +45,33 @@ import java.util.List;
 public class DynamicRuleChain implements TestRule {
     private static final String LOG_TAG = DynamicRuleChain.class.getSimpleName();
 
-    @VisibleForTesting static final String RULES_OPTION = "dynamic-rules";
+    @VisibleForTesting static final String DEFAULT_RULES_OPTION = "dynamic-rules";
 
     @VisibleForTesting static final String RULES_PACKAGE = "android.platform.test.rule";
 
+    private String mRulesOptionName = DEFAULT_RULES_OPTION;
+    private Bundle mArgs;
+
+    public DynamicRuleChain() {
+        this(InstrumentationRegistry.getArguments());
+    }
+
+    public DynamicRuleChain(Bundle args) {
+        mArgs = args;
+    }
+
+    public DynamicRuleChain(String rulesOptionName, Bundle args) {
+        this(args);
+        if (rulesOptionName == null || rulesOptionName.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Rules option name override must not be null or empty.");
+        }
+        mRulesOptionName = rulesOptionName;
+    }
+
     @Override
     public Statement apply(final Statement base, final Description description) {
-        Bundle args = getArguments();
-        List<String> ruleNames = Arrays.asList(args.getString(RULES_OPTION, "").split(","));
+        List<String> ruleNames = Arrays.asList(mArgs.getString(mRulesOptionName, "").split(","));
         // The inner rules need to be applied first, so reverse the class names first.
         Collections.reverse(ruleNames);
         // Instantiate rules and apply them one-by-one.
@@ -100,12 +119,6 @@ public class DynamicRuleChain implements TestRule {
             statement = rule.apply(statement, description);
         }
         return statement;
-    }
-
-    /** Get instrumentation arguments. Exposed to allow spying for testing. */
-    @VisibleForTesting
-    protected Bundle getArguments() {
-        return InstrumentationRegistry.getArguments();
     }
 
     private TestRule loadRuleByFullyQualifiedName(String name) throws Exception {
