@@ -26,6 +26,7 @@ java_library_static {
     static_libs: [
         "guava",
         "junit",
+        "platform-test-annotations",
     ],
 }
 
