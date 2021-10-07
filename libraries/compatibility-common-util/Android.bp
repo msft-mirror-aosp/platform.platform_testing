@@ -13,6 +13,10 @@
 // limitations under the License.
 
 // Build the common utility library for use device-side
+package {
+    default_applicable_licenses: ["Android-Apache-2.0"],
+}
+
 java_library_static {
     name: "compatibility-common-util-devicesidelib",
     sdk_version: "current",
@@ -22,6 +26,7 @@ java_library_static {
     static_libs: [
         "guava",
         "junit",
+        "platform-test-annotations",
     ],
 }
 

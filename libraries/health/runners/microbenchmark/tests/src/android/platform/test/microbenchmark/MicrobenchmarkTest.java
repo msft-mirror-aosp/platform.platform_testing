@@ -16,21 +16,34 @@
 package android.platform.test.microbenchmark;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
 import android.os.Bundle;
+import android.os.SystemClock;
+import android.platform.test.microbenchmark.Microbenchmark.TerminateEarlyException;
+import android.platform.test.rule.TestWatcher;
 import android.platform.test.rule.TracePointRule;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runner.JUnitCore;
 import org.junit.runner.Result;
 import org.junit.runner.RunWith;
+import org.junit.runner.notification.Failure;
+import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.JUnit4;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,6 +53,15 @@ import java.util.List;
  */
 @RunWith(JUnit4.class)
 public final class MicrobenchmarkTest {
+    // Static logs are needed to validate dynamic rules, which are instantiated reflectively and
+    // cannot access non-static variables.
+    private static List<String> sLogs = new ArrayList<>();
+
+    @Before
+    public void setUp() {
+        sLogs.clear();
+    }
+
     /**
      * Tests that iterations are respected for microbenchmark tests.
      */
@@ -220,6 +242,233 @@ public final class MicrobenchmarkTest {
                 .inOrder();
     }
 
+    /** Test that the microbenchmark will terminate if the battery is too low. */
+    @Test
+    public void testStopsEarly_ifBatteryLevelIsBelowThreshold() throws InitializationError {
+        Bundle args = new Bundle();
+        args.putString(Microbenchmark.MIN_BATTERY_LEVEL_OPTION, "50");
+        args.putString(Microbenchmark.MAX_BATTERY_DRAIN_OPTION, "20");
+        Microbenchmark runner = Mockito.spy(new Microbenchmark(LoggingTest.class, args));
+        doReturn(49).when(runner).getBatteryLevel();
+
+        RunNotifier notifier = Mockito.mock(RunNotifier.class);
+        runner.run(notifier);
+
+        ArgumentCaptor<Failure> failureCaptor = ArgumentCaptor.forClass(Failure.class);
+        verify(notifier).fireTestFailure(failureCaptor.capture());
+
+        Failure failure = failureCaptor.getValue();
+        Throwable throwable = failure.getException();
+        assertTrue(
+                String.format(
+                        "Exception was not a TerminateEarlyException. Instead, it was: %s",
+                        throwable.getClass()),
+                throwable instanceof TerminateEarlyException);
+        assertThat(throwable)
+                .hasMessageThat()
+                .matches("Terminating early.*battery level.*threshold.");
+    }
+
+    /** Test that the microbenchmark will terminate if the battery is too low. */
+    @Test
+    public void testStopsEarly_ifBatteryDrainIsAboveThreshold() throws InitializationError {
+        Bundle args = new Bundle();
+        args.putString(Microbenchmark.MIN_BATTERY_LEVEL_OPTION, "40");
+        args.putString(Microbenchmark.MAX_BATTERY_DRAIN_OPTION, "20");
+        Microbenchmark runner = Mockito.spy(new Microbenchmark(LoggingTest.class, args));
+        doReturn(80).doReturn(50).when(runner).getBatteryLevel();
+
+        RunNotifier notifier = Mockito.mock(RunNotifier.class);
+        runner.run(notifier);
+
+        ArgumentCaptor<Failure> failureCaptor = ArgumentCaptor.forClass(Failure.class);
+        verify(notifier).fireTestFailure(failureCaptor.capture());
+
+        Failure failure = failureCaptor.getValue();
+        Throwable throwable = failure.getException();
+        assertTrue(
+                String.format(
+                        "Exception was not a TerminateEarlyException. Instead, it was: %s",
+                        throwable.getClass()),
+                throwable instanceof TerminateEarlyException);
+        assertThat(throwable)
+                .hasMessageThat()
+                .matches("Terminating early.*battery drain.*threshold.");
+    }
+
+    /** Test that the microbenchmark will align starting with the battery charge counter. */
+    @Test
+    public void testAlignWithBatteryChargeCounter() throws InitializationError {
+        Bundle args = new Bundle();
+        args.putString("align-with-charge-counter", "true");
+        args.putString("counter-decrement-timeout_ms", "5000");
+
+        Microbenchmark runner = Mockito.spy(new Microbenchmark(LoggingTest.class, args));
+        doReturn(99999)
+                .doReturn(99999)
+                .doReturn(99999)
+                .doReturn(88888)
+                .when(runner)
+                .getBatteryChargeCounter();
+        doReturn(10L).when(runner).getCounterPollingInterval();
+
+        RunNotifier notifier = Mockito.mock(RunNotifier.class);
+
+        Thread thread =
+                new Thread(
+                        new Runnable() {
+                            public void run() {
+                                runner.run(notifier);
+                            }
+                        });
+
+        thread.start();
+        SystemClock.sleep(20);
+        verify(notifier, never()).fireTestStarted(any(Description.class));
+        SystemClock.sleep(20);
+        verify(notifier).fireTestStarted(any(Description.class));
+    }
+
+    /** Test that the microbenchmark counter alignment will time out if there's no change. */
+    @Test
+    public void testAlignWithBatteryChargeCounter_timesOut() throws InitializationError {
+        Bundle args = new Bundle();
+        args.putString("align-with-charge-counter", "true");
+        args.putString("counter-decrement-timeout_ms", "30");
+
+        Microbenchmark runner = Mockito.spy(new Microbenchmark(LoggingTest.class, args));
+        doReturn(99999).when(runner).getBatteryChargeCounter();
+        doReturn(10L).when(runner).getCounterPollingInterval();
+
+        RunNotifier notifier = Mockito.mock(RunNotifier.class);
+
+        Thread thread =
+                new Thread(
+                        new Runnable() {
+                            public void run() {
+                                runner.run(notifier);
+                            }
+                        });
+
+        thread.start();
+        SystemClock.sleep(20);
+        verify(notifier, never()).fireTestStarted(any(Description.class));
+        SystemClock.sleep(30);
+        verify(notifier).fireTestStarted(any(Description.class));
+    }
+
+    /**
+     * Test successive iteration will not be executed when the terminate on test fail
+     * option is enabled.
+     */
+    @Test
+    public void testTerminateOnTestFailOptionEnabled() throws InitializationError {
+        Bundle args = new Bundle();
+        args.putString("iterations", "2");
+        args.putString("rename-iterations", "false");
+        args.putString("terminate-on-test-fail", "true");
+        LoggingMicrobenchmark loggingRunner = new LoggingMicrobenchmark(
+                LoggingFailedTest.class, args);
+        loggingRunner.setOperationLog(new ArrayList<String>());
+        Result result = new JUnitCore().run(loggingRunner);
+        assertThat(result.wasSuccessful()).isFalse();
+        assertThat(loggingRunner.getOperationLog())
+                .containsExactly(
+                        "before",
+                        "tight before",
+                        "begin: testMethod("
+                                + "android.platform.test.microbenchmark.MicrobenchmarkTest"
+                                + "$LoggingFailedTest)",
+                        "end",
+                        "after")
+                .inOrder();
+    }
+
+    /**
+     * Test successive iteration will be executed when the terminate on test fail
+     * option is disabled.
+     */
+    @Test
+    public void testTerminateOnTestFailOptionDisabled() throws InitializationError {
+        Bundle args = new Bundle();
+        args.putString("iterations", "2");
+        args.putString("rename-iterations", "false");
+        args.putString("terminate-on-test-fail", "false");
+        LoggingMicrobenchmark loggingRunner = new LoggingMicrobenchmark(
+                LoggingFailedTest.class, args);
+        loggingRunner.setOperationLog(new ArrayList<String>());
+        Result result = new JUnitCore().run(loggingRunner);
+        assertThat(result.wasSuccessful()).isFalse();
+        assertThat(loggingRunner.getOperationLog())
+                .containsExactly(
+                        "before",
+                        "tight before",
+                        "begin: testMethod("
+                                + "android.platform.test.microbenchmark.MicrobenchmarkTest"
+                                + "$LoggingFailedTest)",
+                        "end",
+                        "after",
+                        "before",
+                        "tight before",
+                        "begin: testMethod("
+                                + "android.platform.test.microbenchmark.MicrobenchmarkTest"
+                                + "$LoggingFailedTest)",
+                        "end",
+                        "after")
+                .inOrder();
+    }
+
+    /**
+     * Test successive iteration will be executed when the terminate on test fail option is
+     * disabled.
+     */
+    @Test
+    public void testDynamicRuleInjection() throws InitializationError {
+        Bundle args = new Bundle();
+        args.putString("iterations", "2");
+        args.putString("rename-iterations", "false");
+        args.putString("terminate-on-test-fail", "false");
+        args.putString(Microbenchmark.DYNAMIC_INNER_RULES_OPTION, LoggingRule1.class.getName());
+        args.putString(Microbenchmark.DYNAMIC_OUTER_RULES_OPTION, LoggingRule2.class.getName());
+        LoggingMicrobenchmark loggingRunner =
+                new LoggingMicrobenchmark(LoggingTestWithRule.class, args);
+        loggingRunner.setOperationLog(sLogs);
+        new JUnitCore().run(loggingRunner);
+        assertThat(sLogs)
+                .containsExactly(
+                        "logging rule 2 starting",
+                        "hardcoded rule starting",
+                        "logging rule 1 starting",
+                        "before",
+                        "tight before",
+                        "begin: testMethod("
+                                + "android.platform.test.microbenchmark.MicrobenchmarkTest"
+                                + "$LoggingTestWithRule)",
+                        "test",
+                        "end",
+                        "tight after",
+                        "after",
+                        "logging rule 1 finished",
+                        "hardcoded rule finished",
+                        "logging rule 2 finished",
+                        "logging rule 2 starting",
+                        "hardcoded rule starting",
+                        "logging rule 1 starting",
+                        "before",
+                        "tight before",
+                        "begin: testMethod("
+                                + "android.platform.test.microbenchmark.MicrobenchmarkTest"
+                                + "$LoggingTestWithRule)",
+                        "test",
+                        "end",
+                        "tight after",
+                        "after",
+                        "logging rule 1 finished",
+                        "hardcoded rule finished",
+                        "logging rule 2 finished")
+                .inOrder();
+    }
+
     /**
      * An extensions of the {@link Microbenchmark} runner that logs the start and end of collecting
      * traces. It also passes the operation log to the provided test {@code Class}, if it is a
@@ -313,6 +562,53 @@ public final class MicrobenchmarkTest {
                     }
                 };
             }
+        }
+    }
+
+    public static class LoggingTestWithRule extends LoggingTest {
+        @Rule
+        public TestRule hardCodedRule =
+                new TestWatcher() {
+                    @Override
+                    public void starting(Description description) {
+                        sLogs.add("hardcoded rule starting");
+                    }
+
+                    @Override
+                    public void finished(Description description) {
+                        sLogs.add("hardcoded rule finished");
+                    }
+                };
+    }
+
+    public static class LoggingFailedTest extends LoggingTest {
+        @Test
+        public void testMethod() {
+            throw new RuntimeException("I failed.");
+        }
+    }
+
+    public static class LoggingRule1 extends TestWatcher {
+        @Override
+        public void starting(Description description) {
+            sLogs.add("logging rule 1 starting");
+        }
+
+        @Override
+        public void finished(Description description) {
+            sLogs.add("logging rule 1 finished");
+        }
+    }
+
+    public static class LoggingRule2 extends TestWatcher {
+        @Override
+        public void starting(Description description) {
+            sLogs.add("logging rule 2 starting");
+        }
+
+        @Override
+        public void finished(Description description) {
+            sLogs.add("logging rule 2 finished");
         }
     }
 }

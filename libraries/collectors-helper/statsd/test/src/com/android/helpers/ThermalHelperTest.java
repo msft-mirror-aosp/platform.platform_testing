@@ -15,29 +15,29 @@
  */
 package com.android.helpers;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.when;
 
-import android.os.TemperatureTypeEnum;
-import android.os.ThrottlingSeverityEnum;
-import android.support.test.uiautomator.UiDevice;
+import android.os.nano.OsProtoEnums;
+
 import androidx.test.runner.AndroidJUnit4;
+import androidx.test.uiautomator.UiDevice;
 
-import com.android.os.AtomsProto.Atom;
-import com.android.os.AtomsProto.ThermalThrottlingSeverityStateChanged;
-import com.android.os.StatsLog.EventMetricData;
+import com.android.os.nano.AtomsProto;
+import com.android.os.nano.StatsLog;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertEquals;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Android Unit tests for {@link com.android.helpers.ThermalHelper}.
@@ -51,6 +51,31 @@ public class ThermalHelperTest {
     private static final String THROTTLING_KEY =
             MetricUtility.constructKey("thermal", "throttling", "severity");
     private static final String FAKE_SERVICE_DUMP = "F\nA\nK\nE\nThermal Status: 2\nO\nK";
+    private static final String SERVICE_DUMP_TEMPLATE =
+            "IsStatusOverride: false\n"
+                    + "ThermalEventListeners:\n"
+                    + "        callbacks: 1\n"
+                    + "        killed: false\n"
+                    + "        broadcasts count: -1\n"
+                    + "ThermalStatusListeners:\n"
+                    + "        callbacks: 1\n"
+                    + "        killed: false\n"
+                    + "        broadcasts count: -1\n"
+                    + "Thermal Status: 0\n"
+                    + "Cached temperatures:\n"
+                    + "        Temperature{mValue=45.67, mType=3, mName=cached temperature sensor,"
+                    + " mStatus=0}\n"
+                    + "HAL Ready: true\n"
+                    + "HAL connection:\n"
+                    + "        ThermalHAL 2.0 connected: yes\n"
+                    + "Current temperatures from HAL:\n"
+                    + "        Temperature{mValue=%s, mType=3, mName=%s, mStatus=0}\n"
+                    + "        Temperature{mValue=45.6, mType=3, mName=test temperature sensor2,"
+                    + " mStatus=0}\n"
+                    + "        Temperature{mValue=56.789, mType=3, mName=test temperature sensor3,"
+                    + " mStatus=0}\n"
+                    + "Current cooling devices from HAL:\n"
+                    + "        CoolingDevice{mValue=100, mType=0, mName=test cooling device}";
 
     private ThermalHelper mThermalHelper;
     private StatsdHelper mStatsdHelper;
@@ -85,11 +110,12 @@ public class ThermalHelperTest {
     /** Test that only the initial value shows up when there are no events. */
     @Test
     public void testInitialMetricsWithoutEvents() throws Exception {
-        when(mStatsdHelper.getEventMetrics()).thenReturn(new ArrayList<EventMetricData>());
+        when(mStatsdHelper.getEventMetrics()).thenReturn(new ArrayList<StatsLog.EventMetricData>());
         assertTrue(mThermalHelper.startCollecting());
+
         assertEquals(
                 mThermalHelper.getMetrics().get(THROTTLING_KEY).toString(),
-                String.valueOf(ThrottlingSeverityEnum.MODERATE.getNumber()));
+                String.valueOf(OsProtoEnums.MODERATE));
         assertTrue(mThermalHelper.stopCollecting());
     }
 
@@ -100,17 +126,17 @@ public class ThermalHelperTest {
                 .thenReturn(
                         getFakeEventMetrics(
                                 getThermalThrottlingSeverityStateChangedEvent(
-                                        TemperatureTypeEnum.TEMPERATURE_TYPE_SKIN,
+                                        OsProtoEnums.TEMPERATURE_TYPE_SKIN,
                                         "sensor_name",
-                                        ThrottlingSeverityEnum.LIGHT)));
+                                        OsProtoEnums.LIGHT)));
         assertTrue(mThermalHelper.startCollecting());
         Map<String, StringBuilder> metrics = mThermalHelper.getMetrics();
         assertEquals(
                 metrics.get(THROTTLING_KEY).toString(),
                 String.join(
                         ",",
-                        String.valueOf(ThrottlingSeverityEnum.MODERATE.getNumber()),
-                        String.valueOf(ThrottlingSeverityEnum.LIGHT.getNumber())));
+                        String.valueOf(OsProtoEnums.MODERATE),
+                        String.valueOf(OsProtoEnums.LIGHT)));
         assertTrue(mThermalHelper.stopCollecting());
     }
 
@@ -121,17 +147,17 @@ public class ThermalHelperTest {
                 .thenReturn(
                         getFakeEventMetrics(
                                 getThermalThrottlingSeverityStateChangedEvent(
-                                        TemperatureTypeEnum.TEMPERATURE_TYPE_SKIN,
+                                        OsProtoEnums.TEMPERATURE_TYPE_SKIN,
                                         "sensor1_name",
-                                        ThrottlingSeverityEnum.LIGHT),
+                                        OsProtoEnums.LIGHT),
                                 getThermalThrottlingSeverityStateChangedEvent(
-                                        TemperatureTypeEnum.TEMPERATURE_TYPE_CPU,
+                                        OsProtoEnums.TEMPERATURE_TYPE_CPU,
                                         "sensor2_name",
-                                        ThrottlingSeverityEnum.MODERATE),
+                                        OsProtoEnums.MODERATE),
                                 getThermalThrottlingSeverityStateChangedEvent(
-                                        TemperatureTypeEnum.TEMPERATURE_TYPE_GPU,
+                                        OsProtoEnums.TEMPERATURE_TYPE_GPU,
                                         "sensor3_name",
-                                        ThrottlingSeverityEnum.NONE)));
+                                        OsProtoEnums.NONE)));
 
         assertTrue(mThermalHelper.startCollecting());
         Map<String, StringBuilder> metrics = mThermalHelper.getMetrics();
@@ -139,41 +165,173 @@ public class ThermalHelperTest {
                 metrics.get(THROTTLING_KEY).toString(),
                 String.join(
                         ",",
-                        String.valueOf(ThrottlingSeverityEnum.MODERATE.getNumber()),
-                        String.valueOf(ThrottlingSeverityEnum.LIGHT.getNumber()),
-                        String.valueOf(ThrottlingSeverityEnum.MODERATE.getNumber()),
-                        String.valueOf(ThrottlingSeverityEnum.NONE.getNumber())));
+                        String.valueOf(OsProtoEnums.MODERATE),
+                        String.valueOf(OsProtoEnums.LIGHT),
+                        String.valueOf(OsProtoEnums.MODERATE),
+                        String.valueOf(OsProtoEnums.NONE)));
         assertTrue(mThermalHelper.stopCollecting());
     }
 
-    /** Returns a list of {@link EventMetricData} that statsd returns. */
-    private List<EventMetricData> getFakeEventMetrics(
-            ThermalThrottlingSeverityStateChanged... throttleSeverityEvents) {
-        List<EventMetricData> result = new ArrayList<>();
-        for (ThermalThrottlingSeverityStateChanged event : throttleSeverityEvents) {
-            result.add(
-                    EventMetricData.newBuilder()
-                            .setAtom(
-                                    Atom.newBuilder()
-                                            .setThermalThrottlingSeverityStateChanged(event))
-                            .build());
+    /** Test that the temperature section is parsed correctly. */
+    @Test
+    public void testParseTemperature() throws Exception {
+        // Use real data for this test. It should work everywhere, except for
+        // aosp_cf_x86_64_phone-userdebug.
+        mThermalHelper = new ThermalHelper();
+        mThermalHelper.setStatsdHelper(mStatsdHelper);
+        assertTrue(mThermalHelper.startCollecting());
+        Map<String, StringBuilder> metrics = mThermalHelper.getMetrics();
+        // Validate at least 2 temperature keys exist with all 3 metrics.
+        int statusMetricsFound = 0;
+        int valueMetricsFound = 0;
+        int typeMetricsFound = 0;
+        for (String key : metrics.keySet()) {
+            if (!key.startsWith("temperature")) {
+                continue;
+            }
+
+            if (key.endsWith("status")) {
+                statusMetricsFound++;
+            } else if (key.endsWith("value")) {
+                valueMetricsFound++;
+            } else if (key.endsWith("type")) {
+                typeMetricsFound++;
+            }
+        }
+
+        assertTrue(
+                "Didn't find at least 2 status, value, and type temperature metrics.",
+                statusMetricsFound >= 2 && valueMetricsFound >= 2 && typeMetricsFound >= 2);
+        assertTrue(mThermalHelper.stopCollecting());
+    }
+
+    /** Test that the mock temperature section is parsed correctly. */
+    @Test
+    public void testParseTemperatureMock() throws Exception {
+        // Use mock data for this test.
+        final String correctName = "test temperature sensor";
+        final double correctValue = 32.1;
+        final String correctOutput =
+                String.format(SERVICE_DUMP_TEMPLATE, String.valueOf(correctValue), correctName);
+        when(mDevice.executeShellCommand(ThermalHelper.DUMP_THERMALSERVICE_CMD))
+                .thenReturn(correctOutput);
+        Map<String, StringBuilder> metrics = mThermalHelper.getMetrics();
+        // Validate at least 2 temperature keys exist with all 3 metrics.
+        int statusMetricsFound = 0;
+        int valueMetricsFound = 0;
+        int typeMetricsFound = 0;
+        for (String key : metrics.keySet()) {
+            if (!key.startsWith("temperature")) {
+                continue;
+            }
+
+            if (key.endsWith("status")) {
+                statusMetricsFound++;
+            } else if (key.endsWith("value")) {
+                valueMetricsFound++;
+            } else if (key.endsWith("type")) {
+                typeMetricsFound++;
+            }
+        }
+
+        assertTrue(
+                "Didn't find at least 2 status, value, and type temperature metrics.",
+                statusMetricsFound >= 2 && valueMetricsFound >= 2 && typeMetricsFound >= 2);
+    }
+
+    /** Test getting temperature value from DUT correctly. */
+    @Test
+    public void testGetTemperature() throws Exception {
+        final double THRESHOLD = 0.0001;
+        final String correctName = "test temperature sensor";
+        final double correctValue = 32.1;
+        final String correctOutput =
+                String.format(SERVICE_DUMP_TEMPLATE, String.valueOf(correctValue), correctName);
+
+        when(mDevice.executeShellCommand(ThermalHelper.DUMP_THERMALSERVICE_CMD))
+                .thenReturn(correctOutput);
+        assertTrue(Math.abs(mThermalHelper.getTemperature(correctName) - correctValue) < THRESHOLD);
+    }
+
+    /** Test failing to get temperature value from DUT. */
+    @Test
+    public void testGetTemperatureFailed() throws Exception {
+        final String correctName = "test temperature sensor";
+        final double correctValue = 32.1;
+        final String correctOutput =
+                String.format(SERVICE_DUMP_TEMPLATE, String.valueOf(correctValue), correctName);
+        final String expectedMessage = "Failed to get temperature of ";
+
+        final String badName = "bad temperature sensor";
+        when(mDevice.executeShellCommand(ThermalHelper.DUMP_THERMALSERVICE_CMD))
+                .thenReturn(correctOutput);
+        Exception exception1 =
+                assertThrows(
+                        IllegalArgumentException.class,
+                        () -> {
+                            mThermalHelper.getTemperature(badName);
+                        });
+        assertTrue(exception1.getMessage().contains(expectedMessage));
+
+        final String badOutput = String.format(SERVICE_DUMP_TEMPLATE, "bad", correctName);
+        when(mDevice.executeShellCommand(ThermalHelper.DUMP_THERMALSERVICE_CMD))
+                .thenReturn(badOutput);
+        Exception exception2 =
+                assertThrows(
+                        IllegalArgumentException.class,
+                        () -> {
+                            mThermalHelper.getTemperature(correctName);
+                        });
+        assertTrue(exception2.getMessage().contains(expectedMessage));
+
+        final String badOutputEmpty = String.format(SERVICE_DUMP_TEMPLATE, "", correctName);
+        when(mDevice.executeShellCommand(ThermalHelper.DUMP_THERMALSERVICE_CMD))
+                .thenReturn(badOutputEmpty);
+        Exception exception3 =
+                assertThrows(
+                        IllegalArgumentException.class,
+                        () -> {
+                            mThermalHelper.getTemperature(correctName);
+                        });
+        assertTrue(exception3.getMessage().contains(expectedMessage));
+    }
+
+    /**
+     * Returns a list of {@link com.android.os.nano.StatsLog.EventMetricData} that statsd returns.
+     */
+    private List<StatsLog.EventMetricData> getFakeEventMetrics(
+            AtomsProto.ThermalThrottlingSeverityStateChanged... throttleSeverityEvents) {
+        List<StatsLog.EventMetricData> result = new ArrayList<>();
+        for (AtomsProto.ThermalThrottlingSeverityStateChanged event : throttleSeverityEvents) {
+            AtomsProto.Atom atom = new AtomsProto.Atom();
+            atom.setThermalThrottlingSeverityStateChanged(event);
+            StatsLog.EventMetricData metricData = new StatsLog.EventMetricData();
+            metricData.atom = atom;
+            result.add(metricData);
         }
         return result;
     }
 
     /** Returns a state change protobuf for thermal throttling severity. */
-    private ThermalThrottlingSeverityStateChanged getThermalThrottlingSeverityStateChangedEvent(
-            TemperatureTypeEnum type, String name, ThrottlingSeverityEnum severity) {
-        return ThermalThrottlingSeverityStateChanged.newBuilder()
-                .setSensorType(type)
-                .setSensorName(name)
-                .setSeverity(severity)
-                .build();
+    private AtomsProto.ThermalThrottlingSeverityStateChanged
+            getThermalThrottlingSeverityStateChangedEvent(int type, String name, int severity) {
+        AtomsProto.ThermalThrottlingSeverityStateChanged stateChanged =
+                new AtomsProto.ThermalThrottlingSeverityStateChanged();
+
+        stateChanged.sensorType = type;
+        stateChanged.sensorName = name;
+        stateChanged.severity = severity;
+        return stateChanged;
     }
 
     /** Get the thermal metric key for a thermal sensor type and name. */
-    private String getMetricKey(TemperatureTypeEnum type, String name) {
+    private String getMetricKey(int type, String name) {
         return MetricUtility.constructKey(
                 "thermal", ThermalHelper.getShorthandSensorType(type), name);
+    }
+
+    @After
+    public void tearDown() {
+        mThermalHelper.stopCollecting();
     }
 }

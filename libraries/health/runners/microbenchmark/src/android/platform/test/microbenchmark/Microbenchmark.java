@@ -15,9 +15,17 @@
  */
 package android.platform.test.microbenchmark;
 
+import static android.content.Context.BATTERY_SERVICE;
+import static android.os.BatteryManager.BATTERY_PROPERTY_CAPACITY;
+import static android.os.BatteryManager.BATTERY_PROPERTY_CHARGE_COUNTER;
+
+import android.os.BatteryManager;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.platform.test.composer.Iterate;
+import android.platform.test.rule.DynamicRuleChain;
 import android.platform.test.rule.TracePointRule;
+import android.util.Log;
 import androidx.annotation.VisibleForTesting;
 import androidx.test.InstrumentationRegistry;
 
@@ -25,6 +33,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -50,21 +59,46 @@ import org.junit.rules.RunRules;
  */
 public class Microbenchmark extends BlockJUnit4ClassRunner {
 
+    private static final String LOG_TAG = Microbenchmark.class.getSimpleName();
+
     @VisibleForTesting static final String ITERATION_SEP_OPTION = "iteration-separator";
     @VisibleForTesting static final String ITERATION_SEP_DEFAULT = "$";
     // A constant to indicate that the iteration number is not set.
     @VisibleForTesting static final int ITERATION_NOT_SET = -1;
     public static final String RENAME_ITERATION_OPTION = "rename-iterations";
-    private static final Statement EMPTY =
+    private static final Statement EMPTY_STATEMENT =
             new Statement() {
                 @Override
                 public void evaluate() throws Throwable {}
             };
+    @VisibleForTesting static final String MIN_BATTERY_LEVEL_OPTION = "min-battery";
+    @VisibleForTesting static final String MAX_BATTERY_DRAIN_OPTION = "max-battery-drain";
+    // Use these options to inject rules at runtime via the command line. For details, please see
+    // documentation for DynamicRuleChain.
+    @VisibleForTesting static final String DYNAMIC_OUTER_RULES_OPTION = "outer-rules";
+    @VisibleForTesting static final String DYNAMIC_INNER_RULES_OPTION = "inner-rules";
+
+    // Options for aligning with the battery charge (coulomb) counter for power tests. We want to
+    // start microbenchmarks just after the coulomb counter has decremented to account for the
+    // counter being quantized. The counter most accurately reflects the true value just after it
+    // decrements.
+    private static final String ALIGN_WITH_CHARGE_COUNTER_OPTION = "align-with-charge-counter";
+    private static final String COUNTER_DECREMENT_TIMEOUT_OPTION = "counter-decrement-timeout_ms";
+
+    private static final String TERMINATE_ON_TEST_FAIL_OPTION = "terminate-on-test-fail";
 
     private final String mIterationSep;
     private final Bundle mArguments;
     private final boolean mRenameIterations;
+    private final int mMinBatteryLevel;
+    private final int mMaxBatteryDrain;
+    private final int mCounterDecrementTimeoutMs;
+    private final boolean mAlignWithChargeCounter;
+    private final boolean mTerminateOnTestFailure;
     private final Map<Description, Integer> mIterations = new HashMap<>();
+    private int mStartBatteryLevel;
+
+    private final BatteryManager mBatteryManager;
 
     /**
      * Called reflectively on classes annotated with {@code @RunWith(Microbenchmark.class)}.
@@ -73,9 +107,7 @@ public class Microbenchmark extends BlockJUnit4ClassRunner {
         this(klass, InstrumentationRegistry.getArguments());
     }
 
-    /**
-     * Do not call. Called explicitly from tests to provide an arguments.
-     */
+    /** Do not call. Called explicitly from tests to provide an arguments. */
     @VisibleForTesting
     Microbenchmark(Class<?> klass, Bundle arguments) throws InitializationError {
         super(klass);
@@ -86,6 +118,51 @@ public class Microbenchmark extends BlockJUnit4ClassRunner {
                 arguments.containsKey(ITERATION_SEP_OPTION)
                         ? arguments.getString(ITERATION_SEP_OPTION)
                         : ITERATION_SEP_DEFAULT;
+        mMinBatteryLevel = Integer.parseInt(arguments.getString(MIN_BATTERY_LEVEL_OPTION, "-1"));
+        mMaxBatteryDrain = Integer.parseInt(arguments.getString(MAX_BATTERY_DRAIN_OPTION, "100"));
+        mCounterDecrementTimeoutMs =
+                Integer.parseInt(arguments.getString(COUNTER_DECREMENT_TIMEOUT_OPTION, "30000"));
+        mAlignWithChargeCounter =
+                Boolean.parseBoolean(
+                        arguments.getString(ALIGN_WITH_CHARGE_COUNTER_OPTION, "false"));
+
+        mTerminateOnTestFailure =
+                Boolean.parseBoolean(
+                        arguments.getString(TERMINATE_ON_TEST_FAIL_OPTION, "false"));
+
+        // Get the battery manager for later use.
+        mBatteryManager =
+                (BatteryManager)
+                        InstrumentationRegistry.getContext().getSystemService(BATTERY_SERVICE);
+    }
+
+    @Override
+    public void run(final RunNotifier notifier) {
+        if (mAlignWithChargeCounter) {
+            // Try to wait until the coulomb counter has just decremented to start the test.
+            int startChargeCounter = getBatteryChargeCounter();
+            long startTimestamp = SystemClock.uptimeMillis();
+            while (startChargeCounter == getBatteryChargeCounter()) {
+                if (SystemClock.uptimeMillis() - startTimestamp > mCounterDecrementTimeoutMs) {
+                    Log.d(
+                            LOG_TAG,
+                            "Timed out waiting for the counter to change. Continuing anyway.");
+                    break;
+                } else {
+                    Log.d(
+                            LOG_TAG,
+                            String.format(
+                                    "Charge counter still reads: %d. Waiting.",
+                                    startChargeCounter));
+                    SystemClock.sleep(getCounterPollingInterval());
+                }
+            }
+        }
+        Log.d(LOG_TAG, String.format("The charge counter reads: %d.", getBatteryChargeCounter()));
+
+        mStartBatteryLevel = getBatteryLevel();
+
+        super.run(notifier);
     }
 
     /**
@@ -204,7 +281,11 @@ public class Microbenchmark extends BlockJUnit4ClassRunner {
     /** Re-implement the private rules wrapper from {@link BlockJUnit4ClassRunner} in JUnit 4.12. */
     private Statement withRules(FrameworkMethod method, Object target, Statement statement) {
         Statement result = statement;
-        List<TestRule> testRules = getTestRules(target);
+        List<TestRule> testRules = new ArrayList<>();
+        // Inner dynamic rules should be included first because RunRules applies rules inside-out.
+        testRules.add(new DynamicRuleChain(DYNAMIC_INNER_RULES_OPTION, mArguments));
+        testRules.addAll(getTestRules(target));
+        testRules.add(new DynamicRuleChain(DYNAMIC_OUTER_RULES_OPTION, mArguments));
         // Apply legacy MethodRules, if they don't overlap with TestRules.
         for (org.junit.rules.MethodRule each : rules(target)) {
             if (!testRules.contains(each)) {
@@ -212,10 +293,7 @@ public class Microbenchmark extends BlockJUnit4ClassRunner {
             }
         }
         // Apply modern, method-level TestRules in outer statements.
-        result =
-                testRules.isEmpty()
-                        ? statement
-                        : new RunRules(result, testRules, describeChild(method));
+        result = new RunRules(result, testRules, describeChild(method));
         return result;
     }
 
@@ -228,6 +306,12 @@ public class Microbenchmark extends BlockJUnit4ClassRunner {
      */
     @Override
     protected void runChild(final FrameworkMethod method, RunNotifier notifier) {
+        if (isBatteryLevelBelowMin()) {
+            throw new TerminateEarlyException("the battery level is below the threshold.");
+        } else if (isBatteryDrainAboveMax()) {
+            throw new TerminateEarlyException("the battery drain is above the threshold.");
+        }
+
         // Update the number of iterations this method has been run.
         if (mRenameIterations) {
             Description original = super.describeChild(method);
@@ -261,6 +345,9 @@ public class Microbenchmark extends BlockJUnit4ClassRunner {
                 eachNotifier.fireTestStarted();
                 eachNotifier.addFailure(e);
                 eachNotifier.fireTestFinished();
+                if(mTerminateOnTestFailure) {
+                    throw new TerminateEarlyException("test failed.");
+                }
                 return;
             }
 
@@ -271,14 +358,17 @@ public class Microbenchmark extends BlockJUnit4ClassRunner {
             statement = withAfters(method, test, statement);
             statement = withRules(method, test, statement);
 
+            boolean testFailed = false;
             // Fire test events from inside to exclude "no metric" methods.
             eachNotifier.fireTestStarted();
             try {
                 statement.evaluate();
             } catch (AssumptionViolatedException e) {
                 eachNotifier.addFailedAssumption(e);
+                testFailed = true;
             } catch (Throwable e) {
                 eachNotifier.addFailure(e);
+                testFailed = true;
             } finally {
                 eachNotifier.fireTestFinished();
             }
@@ -288,13 +378,58 @@ public class Microbenchmark extends BlockJUnit4ClassRunner {
                 List<FrameworkMethod> afters =
                         getTestClass().getAnnotatedMethods(NoMetricAfter.class);
                 if (!afters.isEmpty()) {
-                    new RunAfters(EMPTY, afters, test).evaluate();
+                    new RunAfters(EMPTY_STATEMENT, afters, test).evaluate();
                 }
             } catch (AssumptionViolatedException e) {
                 eachNotifier.addFailedAssumption(e);
+                testFailed = true;
             } catch (Throwable e) {
                 eachNotifier.addFailure(e);
+                testFailed = true;
+            }
+
+            if(mTerminateOnTestFailure && testFailed) {
+                throw new TerminateEarlyException("test failed.");
             }
         }
     }
+
+    /* Checks if the battery level is below the specified level where the test should terminate. */
+    private boolean isBatteryLevelBelowMin() {
+        return getBatteryLevel() < mMinBatteryLevel;
+    }
+
+    /* Checks if the battery level has drained enough to where the test should terminate. */
+    private boolean isBatteryDrainAboveMax() {
+        return mStartBatteryLevel - getBatteryLevel() > mMaxBatteryDrain;
+    }
+
+    /* Gets the current battery level (as a percentage). */
+    @VisibleForTesting
+    public int getBatteryLevel() {
+        return mBatteryManager.getIntProperty(BATTERY_PROPERTY_CAPACITY);
+    }
+
+    /* Gets the current battery charge counter (coulomb counter). */
+    @VisibleForTesting
+    public int getBatteryChargeCounter() {
+        return mBatteryManager.getIntProperty(BATTERY_PROPERTY_CHARGE_COUNTER);
+    }
+
+    /* Gets the polling interval to check for changes in the battery charge counter. */
+    @VisibleForTesting
+    public long getCounterPollingInterval() {
+        return 100;
+    }
+
+    /**
+     * A {@code RuntimeException} class for terminating test runs early for some specified reason.
+     */
+    @VisibleForTesting
+    static class TerminateEarlyException extends RuntimeException {
+        public TerminateEarlyException(String message) {
+            super(String.format("Terminating early because %s", message));
+        }
+    }
+
 }
