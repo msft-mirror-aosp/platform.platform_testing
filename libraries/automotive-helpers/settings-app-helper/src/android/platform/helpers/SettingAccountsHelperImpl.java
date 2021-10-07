@@ -50,7 +50,7 @@ public class SettingAccountsHelperImpl extends AbstractAutoStandardAppHelper
                     scrollAndFindUiObject(
                             getResourceFromConfig(
                                     AutoConfigConstants.SETTINGS,
-                                    AutoConfigConstants.ACCOUNT_SETTINGS,
+                                    AutoConfigConstants.PROFILE_ACCOUNT_SETTINGS,
                                     AutoConfigConstants.DONE_BUTTON));
             if (doneButtonObject == null) {
                 throw new RuntimeException("Unable to find Done button.");
@@ -64,7 +64,7 @@ public class SettingAccountsHelperImpl extends AbstractAutoStandardAppHelper
                 scrollAndFindUiObject(
                         getResourceFromConfig(
                                 AutoConfigConstants.SETTINGS,
-                                AutoConfigConstants.ACCOUNT_SETTINGS,
+                                AutoConfigConstants.PROFILE_ACCOUNT_SETTINGS,
                                 AutoConfigConstants.ADD_ACCOUNT));
         if (addAccountObject == null) {
             throw new RuntimeException("Unable to find Add Account button.");
@@ -76,7 +76,7 @@ public class SettingAccountsHelperImpl extends AbstractAutoStandardAppHelper
                                 .hasDescendant(
                                         getResourceFromConfig(
                                                 AutoConfigConstants.SETTINGS,
-                                                AutoConfigConstants.ACCOUNT_SETTINGS,
+                                                AutoConfigConstants.PROFILE_ACCOUNT_SETTINGS,
                                                 AutoConfigConstants.SIGN_IN_ON_CAR_SCREEN)));
         if (signInOnCarScreen == null) {
             throw new RuntimeException("Unable to find Sign In on Car Screen button.");
@@ -85,7 +85,7 @@ public class SettingAccountsHelperImpl extends AbstractAutoStandardAppHelper
         scrollAndFindUiObject(
                 getResourceFromConfig(
                         AutoConfigConstants.SETTINGS,
-                        AutoConfigConstants.ACCOUNT_SETTINGS,
+                        AutoConfigConstants.PROFILE_ACCOUNT_SETTINGS,
                         AutoConfigConstants.GOOGLE_SIGN_IN_SCREEN));
     }
 
@@ -103,7 +103,7 @@ public class SettingAccountsHelperImpl extends AbstractAutoStandardAppHelper
                     scrollAndFindUiObject(
                             getResourceFromConfig(
                                     AutoConfigConstants.SETTINGS,
-                                    AutoConfigConstants.ACCOUNT_SETTINGS,
+                                    AutoConfigConstants.PROFILE_ACCOUNT_SETTINGS,
                                     AutoConfigConstants.REMOVE_BUTTON));
             if (removeButtonObject == null) {
                 throw new RuntimeException("Unable to find Remove button.");
@@ -113,7 +113,7 @@ public class SettingAccountsHelperImpl extends AbstractAutoStandardAppHelper
                     scrollAndFindUiObject(
                             getResourceFromConfig(
                                     AutoConfigConstants.SETTINGS,
-                                    AutoConfigConstants.ACCOUNT_SETTINGS,
+                                    AutoConfigConstants.PROFILE_ACCOUNT_SETTINGS,
                                     AutoConfigConstants.REMOVE_ACCOUNT_BUTTON));
             if (removeButtonObject == null) {
                 throw new RuntimeException("Unable to find Remove Account button.");
@@ -150,13 +150,13 @@ public class SettingAccountsHelperImpl extends AbstractAutoStandardAppHelper
         BySelector selector =
                 getResourceFromConfig(
                         AutoConfigConstants.SETTINGS,
-                        AutoConfigConstants.ACCOUNT_SETTINGS,
+                        AutoConfigConstants.PROFILE_ACCOUNT_SETTINGS,
                         AutoConfigConstants.ENTER_EMAIL);
         if (isPassword) {
             selector =
                     getResourceFromConfig(
                             AutoConfigConstants.SETTINGS,
-                            AutoConfigConstants.ACCOUNT_SETTINGS,
+                            AutoConfigConstants.PROFILE_ACCOUNT_SETTINGS,
                             AutoConfigConstants.ENTER_PASSWORD);
         }
         UiObject2 input = scrollAndFindUiObject(selector);
@@ -170,7 +170,7 @@ public class SettingAccountsHelperImpl extends AbstractAutoStandardAppHelper
                 scrollAndFindUiObject(
                         getResourceFromConfig(
                                 AutoConfigConstants.SETTINGS,
-                                AutoConfigConstants.ACCOUNT_SETTINGS,
+                                AutoConfigConstants.PROFILE_ACCOUNT_SETTINGS,
                                 AutoConfigConstants.NEXT_BUTTON));
         if (nextButtonObject == null) {
             throw new RuntimeException("Unable to find Next button.");
