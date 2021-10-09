@@ -16,33 +16,22 @@
 
 package com.android.server.wm.flicker.service.assertors.common
 
-import com.android.server.wm.flicker.service.assertors.BaseAssertion
 import com.android.server.wm.flicker.service.assertors.Components
 import com.android.server.wm.flicker.traces.layers.LayersTraceSubject
 import com.android.server.wm.flicker.traces.windowmanager.WindowManagerTraceSubject
-import com.android.server.wm.traces.common.FlickerComponentName
 import com.android.server.wm.traces.common.tags.Tag
 
 /**
  * Checks that [getWindowState] is the top visible app window at the start of the transition and
  * that it is replaced by [Components.LAUNCHER] during the transition
  */
-class LauncherWindowReplacesAppAsTopWindow : BaseAssertion() {
-    private fun getWindowState(tag: Tag, wmSubject: WindowManagerTraceSubject) =
-        wmSubject.subjects.first().subjects
-            .firstOrNull { it.windowState?.token == tag.windowToken }
-            ?: wmSubject.subjects.first().subjects
-                .firstOrNull { it.windowState?.layer == tag.layerId }
-            ?: error("Unable to identify app from tag")
-
+class LauncherWindowReplacesAppAsTopWindow : AppComponentBaseTest() {
     override fun doEvaluate(
         tag: Tag,
         wmSubject: WindowManagerTraceSubject,
         layerSubject: LayersTraceSubject
     ) {
-        val window = getWindowState(tag, wmSubject)
-        val appComponent = FlickerComponentName.unflattenFromString(window.name)
-        wmSubject.isAppWindowOnTop(appComponent)
+        wmSubject.isAppWindowOnTop(getComponentName(tag, wmSubject))
             .then()
             .isAppWindowOnTop(Components.LAUNCHER)
     }

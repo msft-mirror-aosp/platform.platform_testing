@@ -22,6 +22,7 @@ import com.android.server.wm.flicker.helpers.StandardAppHelper
 import com.android.server.wm.flicker.helpers.wakeUpAndGoToHomeScreen
 import com.android.server.wm.flicker.rules.WMFlickerServiceRule
 import com.android.server.wm.traces.common.FlickerComponentName
+import com.android.server.wm.traces.parser.windowmanager.WindowManagerStateHelper
 import org.junit.FixMethodOrder
 import org.junit.Rule
 import org.junit.Test
@@ -34,10 +35,8 @@ import org.junit.runners.MethodSorters
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class RotationMockTest {
-    private val DUMMY_APP = FlickerComponentName("com.google.android.apps.messaging",
-            "com.google.android.apps.messaging.ui.ConversationListActivity")
-
-    val instrumentation = InstrumentationRegistry.getInstrumentation()
+    private val instrumentation = InstrumentationRegistry.getInstrumentation()
+    private val dummyAppHelper = StandardAppHelper(instrumentation, "dummyApp", DUMMY_APP)
 
     @get:Rule
     val rule = WMFlickerServiceRuleTest()
@@ -45,13 +44,19 @@ class RotationMockTest {
     @Test
     fun startRotationServiceTest() {
         val device = UiDevice.getInstance(instrumentation)
+        val wmHelper = WindowManagerStateHelper(instrumentation)
 
         device.wakeUpAndGoToHomeScreen()
-        StandardAppHelper(instrumentation, "dummyApp", DUMMY_APP).launchViaIntent()
-        device.waitForIdle()
+        wmHelper.waitForHomeActivityVisible()
+        dummyAppHelper.launchViaIntent(wmHelper)
         device.setOrientationLeft()
         instrumentation.uiAutomation.syncInputTransactions()
         device.setOrientationNatural()
         instrumentation.uiAutomation.syncInputTransactions()
+    }
+
+    companion object {
+        private val DUMMY_APP = FlickerComponentName("com.google.android.apps.messaging",
+                "com.google.android.apps.messaging.ui.ConversationListActivity")
     }
 }

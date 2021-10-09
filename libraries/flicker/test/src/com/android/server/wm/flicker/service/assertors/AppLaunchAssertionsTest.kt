@@ -21,54 +21,51 @@ import com.android.server.wm.flicker.readTestFile
 import com.android.server.wm.flicker.readWmTraceFromFile
 import com.android.server.wm.traces.common.tags.Tag
 import com.android.server.wm.traces.common.tags.Transition
-import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 import com.google.common.truth.Truth
 import org.junit.FixMethodOrder
 import org.junit.Test
 import org.junit.runners.MethodSorters
 
 /**
- * Contains tests for rotation assertions. To run this test:
- * `atest FlickerLibTest:RotationAssertionsTest`
+ * Contains tests for App Launch assertions. To run this test:
+ * `atest FlickerLibTest:AppLaunchAssertionsTest`
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-class RotationAssertionsTest {
+class AppLaunchAssertionsTest {
     private val jsonByteArray = readTestFile("assertors/config.json")
     private val assertions =
         AssertionConfigParser.parseConfigFile(String(jsonByteArray))
-            .filter { it.transitionType == Transition.ROTATION }
+            .filter { it.transitionType == Transition.APP_LAUNCH }
 
-    private val rotationAssertor = TransitionAssertor(assertions) { }
+    private val appLaunchAssertor = TransitionAssertor(assertions) { }
 
     @Test
-    fun testValidRotationWmTrace() {
-        val wmTrace = readWmTraceFromFile("assertors/rotation/WindowManagerTrace.winscope")
-        val layersTrace = readLayerTraceFromFile("assertors/rotation/SurfaceFlingerTrace.winscope")
-        val errorTrace = rotationAssertor.analyze(ROTATION_TAG, wmTrace, layersTrace)
+    fun testValidAppLaunchTraces() {
+        val wmTrace = readWmTraceFromFile(
+            "assertors/appLaunch/WindowManagerTrace.winscope")
+        val layersTrace = readLayerTraceFromFile(
+            "assertors/appLaunch/SurfaceFlingerTrace.winscope")
+        val errorTrace = appLaunchAssertor.analyze(VALID_APP_LAUNCH_TAG, wmTrace, layersTrace)
 
         Truth.assertThat(errorTrace).isEmpty()
     }
 
     @Test
-    fun testValidRotationLayersTrace() {
-        val trace = readLayerTraceFromFile("assertors/rotation/SurfaceFlingerTrace.winscope")
-        val errorTrace = rotationAssertor.analyze(ROTATION_TAG, EMPTY_WM_TRACE, trace)
-
-        Truth.assertThat(errorTrace).isEmpty()
-    }
-
-    @Test
-    fun testInvalidRotationLayersTrace() {
-        val trace = readLayerTraceFromFile(
-            "assertors/rotation/SurfaceFlingerInvalidTrace.winscope")
-        val errorTrace = rotationAssertor.analyze(ROTATION_TAG, EMPTY_WM_TRACE, trace)
+    fun testInvalidAppLaunchTraces() {
+        val wmTrace = readWmTraceFromFile(
+            "assertors/appLaunch/WindowManagerInvalidTrace.winscope")
+        val layersTrace = readLayerTraceFromFile(
+            "assertors/appLaunch/SurfaceFlingerInvalidTrace.winscope")
+        val errorTrace = appLaunchAssertor.analyze(INVALID_APP_LAUNCH_TAG, wmTrace, layersTrace)
 
         Truth.assertThat(errorTrace).isNotEmpty()
         Truth.assertThat(errorTrace.entries.size).isEqualTo(1)
     }
 
     companion object {
-        private val EMPTY_WM_TRACE = WindowManagerTrace(emptyArray(), source = "")
-        private val ROTATION_TAG = Tag(1, Transition.ROTATION, true)
+        private val VALID_APP_LAUNCH_TAG = Tag(1, Transition.APP_LAUNCH, true,
+            windowToken = "e91fbda")
+        private val INVALID_APP_LAUNCH_TAG = Tag(2, Transition.APP_LAUNCH, true,
+            windowToken = "ffc3b1f")
     }
 }
