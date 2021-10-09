@@ -16,19 +16,27 @@
 
 package com.android.server.wm.flicker.service.assertors.common
 
+import com.android.server.wm.flicker.service.assertors.Components
 import com.android.server.wm.flicker.traces.layers.LayersTraceSubject
 import com.android.server.wm.flicker.traces.windowmanager.WindowManagerTraceSubject
 import com.android.server.wm.traces.common.tags.Tag
 
-open class NonAppWindowBecomesVisible(windowName: String) : ComponentBaseTest(windowName) {
+/**
+ * Asserts that:
+ *     [Components.LAUNCHER] is visible at the start of the trace
+ *     [Components.LAUNCHER] becomes invisible during the trace and (in the same entry)
+ *     [getWindowState] becomes visible
+ *     [getWindowState] remains visible until the end of the trace
+ */
+class AppLayerReplacesLauncher : AppComponentBaseTest() {
     /** {@inheritDoc} */
     override fun doEvaluate(
         tag: Tag,
         wmSubject: WindowManagerTraceSubject,
         layerSubject: LayersTraceSubject
     ) {
-        wmSubject.isNonAppWindowInvisible(component)
+        layerSubject.isVisible(Components.LAUNCHER)
             .then()
-            .isAppWindowVisible(component)
+            .isVisible(getComponentName(tag, wmSubject))
     }
 }

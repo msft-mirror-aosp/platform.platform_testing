@@ -16,19 +16,27 @@
 
 package com.android.server.wm.flicker.service.assertors.common
 
-import com.android.server.wm.flicker.traces.layers.LayersTraceSubject
+import com.android.server.wm.flicker.service.assertors.BaseAssertion
+import com.android.server.wm.flicker.traces.FlickerSubjectException
 import com.android.server.wm.flicker.traces.windowmanager.WindowManagerTraceSubject
+import com.android.server.wm.traces.common.FlickerComponentName
 import com.android.server.wm.traces.common.tags.Tag
 
-open class NonAppWindowBecomesVisible(windowName: String) : ComponentBaseTest(windowName) {
-    /** {@inheritDoc} */
-    override fun doEvaluate(
+abstract class AppComponentBaseTest : BaseAssertion() {
+    protected fun getComponentName(
         tag: Tag,
-        wmSubject: WindowManagerTraceSubject,
-        layerSubject: LayersTraceSubject
-    ) {
-        wmSubject.isNonAppWindowInvisible(component)
-            .then()
-            .isAppWindowVisible(component)
+        wmSubject: WindowManagerTraceSubject
+    ): FlickerComponentName {
+        try {
+            val windowName = getWindowState(tag, wmSubject).name
+            return FlickerComponentName.unflattenFromString(windowName)
+        } catch (e: Throwable) {
+            throw FlickerSubjectException(wmSubject, e)
+        }
     }
+
+    private fun getWindowState(tag: Tag, wmSubject: WindowManagerTraceSubject) =
+        wmSubject.subjects.last().windowState {
+            it.layerId == tag.layerId || it.token == tag.windowToken
+        }
 }
