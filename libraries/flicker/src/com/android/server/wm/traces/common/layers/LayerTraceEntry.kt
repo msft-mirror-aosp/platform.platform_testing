@@ -27,7 +27,7 @@ import com.android.server.wm.traces.common.prettyTimestamp
  *
  **/
 open class LayerTraceEntry constructor(
-    override val timestamp: Long, // hierarchical representation of layers
+    override val timestamp: Long,
     val hwcBlob: String,
     val where: String,
     val displays: Array<Display>,
@@ -111,6 +111,8 @@ open class LayerTraceEntry constructor(
         }
     }
 
+    fun getLayerById(layerId: Int): Layer? = flattenedLayers.firstOrNull { it.id == layerId }
+
     /**
      * Checks the transform of any layer is not a simple rotation
      */
@@ -124,6 +126,8 @@ open class LayerTraceEntry constructor(
      */
     fun isVisible(windowName: String): Boolean =
         visibleLayers.any { it.name.contains(windowName) }
+
+    fun asTrace(): LayersTrace = LayersTrace(arrayOf(this), source = "")
 
     override fun toString(): String {
         return "${prettyTimestamp(timestamp)} (timestamp=$timestamp)"

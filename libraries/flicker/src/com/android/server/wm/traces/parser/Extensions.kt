@@ -22,8 +22,12 @@ import android.app.UiAutomation
 import android.content.ComponentName
 import android.os.ParcelFileDescriptor
 import android.util.Log
+import com.android.server.wm.traces.common.DeviceStateDump
+import com.android.server.wm.traces.common.FlickerComponentName
 import com.android.server.wm.traces.common.Rect
 import com.android.server.wm.traces.common.Region
+import com.android.server.wm.traces.common.layers.LayerTraceEntry
+import com.android.server.wm.traces.common.windowmanager.WindowManagerState
 
 internal const val LOG_TAG = "AMWM_FLICKER"
 
@@ -61,52 +65,6 @@ fun Region.plus(other: android.graphics.Region): android.graphics.Region {
     val thisRegion = this.toAndroidRegion()
     thisRegion.op(other, android.graphics.Region.Op.XOR)
     return thisRegion
-}
-
-/**
- * Obtains the layer name from the component name.
- *
- * See [ComponentName.toWindowName] for additional information
- */
-fun ComponentName.toLayerName(): String {
-    var result = this.toWindowName()
-    if (result.contains("/") && !result.contains("#")) {
-        result = "$result#"
-    }
-
-    return result
-}
-
-/**
- * Obtains the activity name from the component name.
- *
- * See [ComponentName.toWindowName] for additional information
- */
-fun ComponentName.toActivityName(): String {
-    return when {
-        this.packageName.isNotEmpty() && this.className.isNotEmpty() -> this.flattenToShortString()
-        this.packageName.isNotEmpty() -> this.packageName
-        this.className.isNotEmpty() -> this.className
-        else -> error("Component name should have an activity of class name")
-    }
-}
-
-/**
- * Obtains the window name from the component name.
- *
- * [ComponentName] builds the string representation as PKG/CLASS, however this doesn't
- * work for system components such as IME, NavBar and StatusBar, Toast.
- *
- * If the component doesn't have a package name, assume it's a system component and return only
- * the class name
- */
-fun ComponentName.toWindowName(): String {
-    return when {
-        this.packageName.isNotEmpty() && this.className.isNotEmpty() -> this.flattenToString()
-        this.packageName.isNotEmpty() -> this.packageName
-        this.className.isNotEmpty() -> this.className
-        else -> error("Component name should have an activity of class name")
-    }
 }
 
 private fun executeCommand(uiAutomation: UiAutomation, cmd: String): ByteArray {
@@ -150,9 +108,15 @@ fun getCurrentState(
 fun getCurrentStateDump(
     uiAutomation: UiAutomation,
     @WmStateDumpFlags dumpFlags: Int = FLAG_STATE_DUMP_FLAG_WM.or(FLAG_STATE_DUMP_FLAG_LAYERS)
-): DeviceStateDump {
+): DeviceStateDump<WindowManagerState?, LayerTraceEntry?> {
     val currentStateDump = getCurrentState(uiAutomation, dumpFlags)
     val wmTraceData = currentStateDump.first
     val layersTraceData = currentStateDump.second
-    return DeviceStateDump.fromDump(wmTraceData, layersTraceData)
+    return DeviceDumpParser.fromDump(wmTraceData, layersTraceData)
 }
+
+/**
+ * Converts an Android [ComponentName] into a flicker [FlickerComponentName]
+ */
+fun ComponentName.toFlickerComponent(): FlickerComponentName =
+    FlickerComponentName(this.packageName, this.className)

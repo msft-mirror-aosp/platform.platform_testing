@@ -79,6 +79,12 @@ open class Task(
 
     fun getTask(taskId: Int) = getTask { t -> t.taskId == taskId }
 
+    fun getActivityWithTask(predicate: (Task, Activity) -> Boolean): Activity? {
+        return activities.firstOrNull { predicate(this, it) }
+            ?: tasks.flatMap { task -> task.activities.filter { predicate(task, it) } }
+                .firstOrNull()
+    }
+
     fun forAllTasks(consumer: (Task) -> Any) {
         tasks.forEach { consumer(it) }
     }

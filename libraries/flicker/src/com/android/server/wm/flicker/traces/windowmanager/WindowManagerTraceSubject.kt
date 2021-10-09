@@ -16,17 +16,15 @@
 
 package com.android.server.wm.flicker.traces.windowmanager
 
-import android.content.ComponentName
 import com.android.server.wm.flicker.assertions.Assertion
 import com.android.server.wm.flicker.assertions.FlickerSubject
 import com.android.server.wm.flicker.traces.FlickerFailureStrategy
 import com.android.server.wm.flicker.traces.FlickerTraceSubject
+import com.android.server.wm.traces.common.FlickerComponentName
 import com.android.server.wm.traces.common.Rect
 import com.android.server.wm.traces.common.Region
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 import com.android.server.wm.traces.common.windowmanager.windows.WindowState
-import com.android.server.wm.traces.parser.toWindowName
-import com.android.server.wm.traces.parser.windowmanager.WindowManagerStateHelper
 import com.google.common.truth.Fact
 import com.google.common.truth.FailureMetadata
 import com.google.common.truth.FailureStrategy
@@ -113,205 +111,204 @@ class WindowManagerTraceSubject private constructor(
             .filter { it.isNotEmpty }
     }
 
-    /**
-     * Checks if a [WindowState] with [WindowState.title] equal to [ComponentName.toWindowName]
-     * doesn't exist in the state
-     *
-     * @param activity Component name to search
-     * @param isOptional If this assertion is optional or must pass
-     */
-    @JvmOverloads
+    /** {@inheritDoc} */
     fun notContains(
-        activity: ComponentName,
+        component: FlickerComponentName,
         isOptional: Boolean = false
     ): WindowManagerTraceSubject = apply {
-        addAssertion("notContains(${activity.toWindowName()})", isOptional) {
-            it.notContains(activity, ignoreActivity = true)
+        addAssertion("notContains(${component.toWindowName()})", isOptional) {
+            it.notContains(component)
         }
     }
 
     /**
-     * Checks if the non-app window with title containing [activity] exists above the app
+     * Checks if the non-app window with title containing [component] exists above the app
      * windows and is visible
      *
-     * @param activity Component to search
+     * @param component Component to search
      * @param isOptional If this assertion is optional or must pass
      */
     @JvmOverloads
     fun isAboveAppWindowVisible(
-        activity: ComponentName,
+        component: FlickerComponentName,
         isOptional: Boolean = false
     ): WindowManagerTraceSubject = apply {
-        addAssertion("isAboveAppWindowVisible(${activity.toWindowName()})", isOptional) {
-            it.isAboveAppWindow(activity)
+        addAssertion("isAboveAppWindowVisible(${component.toWindowName()})", isOptional) {
+            it.containsAboveAppWindow(component)
+                .isNonAppWindowVisible(component)
         }
     }
 
     /**
-     * Checks if the non-app window with title containing [activity] exists above the app
+     * Checks if the non-app window with title containing [component] exists above the app
      * windows and is invisible
      *
-     * @param activity Component to search
+     * @param component Component to search
      * @param isOptional If this assertion is optional or must pass
      */
     @JvmOverloads
     fun isAboveAppWindowInvisible(
-        activity: ComponentName,
+        component: FlickerComponentName,
         isOptional: Boolean = false
     ): WindowManagerTraceSubject = apply {
-        addAssertion("isAboveAppWindowInvisible(${activity.toWindowName()})", isOptional) {
-            it.isAboveAppWindow(activity, isVisible = false)
+        addAssertion("isAboveAppWindowInvisible(${component.toWindowName()})", isOptional) {
+            it.containsAboveAppWindow(component)
+                .isNonAppWindowInvisible(component)
         }
     }
 
     /**
-     * Checks if the non-app window with title containing [activity] exists below the app
+     * Checks if the non-app window with title containing [component] exists below the app
      * windows and is visible
      *
-     * @param activity Component to search
+     * @param component Component to search
      * @param isOptional If this assertion is optional or must pass
      */
     @JvmOverloads
     fun isBelowAppWindowVisible(
-        activity: ComponentName,
+        component: FlickerComponentName,
         isOptional: Boolean = false
     ): WindowManagerTraceSubject = apply {
-        addAssertion("isBelowAppWindowVisible(${activity.toWindowName()})", isOptional) {
-            it.isBelowAppWindow(activity)
+        addAssertion("isBelowAppWindowVisible(${component.toWindowName()})", isOptional) {
+            it.containsBelowAppWindow(component)
+                .isNonAppWindowVisible(component)
         }
     }
 
     /**
-     * Checks if the non-app window with title containing [activity] exists below the app
+     * Checks if the non-app window with title containing [component] exists below the app
      * windows and is invisible
      *
-     * @param activity Component to search
+     * @param component Component to search
      * @param isOptional If this assertion is optional or must pass
      */
     @JvmOverloads
     fun isBelowAppWindowInvisible(
-        activity: ComponentName,
+        component: FlickerComponentName,
         isOptional: Boolean = false
     ): WindowManagerTraceSubject = apply {
-        addAssertion("isBelowAppWindowInvisible(${activity.toWindowName()})", isOptional) {
-            it.isBelowAppWindow(activity, isVisible = false)
+        addAssertion("isBelowAppWindowInvisible(${component.toWindowName()})", isOptional) {
+            it.containsBelowAppWindow(component)
+                .isNonAppWindowInvisible(component)
         }
     }
 
     /**
-     * Checks if non-app window with title containing the [activity] exists above or
+     * Checks if non-app window with title containing the [component] exists above or
      * below the app windows and is visible
      *
-     * @param activity Component to search
+     * @param component Component to search
      * @param isOptional If this assertion is optional or must pass
      */
     @JvmOverloads
     fun isNonAppWindowVisible(
-        activity: ComponentName,
+        component: FlickerComponentName,
         isOptional: Boolean = false
     ): WindowManagerTraceSubject = apply {
-        addAssertion("isNonAppWindowVisible(${activity.toWindowName()})", isOptional) {
-            it.containsNonAppWindow(activity)
+        addAssertion("isNonAppWindowVisible(${component.toWindowName()})", isOptional) {
+            it.isNonAppWindowVisible(component)
         }
     }
 
     /**
-     * Checks if non-app window with title containing the [activity] exists above or
+     * Checks if non-app window with title containing the [component] exists above or
      * below the app windows and is invisible
      *
-     * @param activity Component to search
+     * @param component Component to search
      * @param isOptional If this assertion is optional or must pass
      */
     @JvmOverloads
     fun isNonAppWindowInvisible(
-        activity: ComponentName,
+        component: FlickerComponentName,
         isOptional: Boolean = false
     ): WindowManagerTraceSubject = apply {
-        addAssertion("isNonAppWindowInvisible(${activity.toWindowName()})", isOptional) {
-            it.containsNonAppWindow(activity, isVisible = false)
+        addAssertion("isNonAppWindowInvisible(${component.toWindowName()})", isOptional) {
+            it.isNonAppWindowInvisible(component)
         }
     }
 
     /**
-     * Checks if app window with title containing the [activity] is on top
+     * Checks if app window with title containing the [component] is on top
      *
-     * @param activity Component to search
+     * @param component Component to search
      * @param isOptional If this assertion is optional or must pass
      */
     @JvmOverloads
     fun isAppWindowOnTop(
-        activity: ComponentName,
+        component: FlickerComponentName,
         isOptional: Boolean = false
     ): WindowManagerTraceSubject = apply {
-        addAssertion("isAppWindowOnTop(${activity.toWindowName()})", isOptional) {
-            it.isAppWindowOnTop(activity)
+        addAssertion("isAppWindowOnTop(${component.toWindowName()})", isOptional) {
+            it.isAppWindowOnTop(component)
         }
     }
 
     /**
-     * Checks if app window with title containing the [activity] is not on top
+     * Checks if app window with title containing the [component] is not on top
      *
-     * @param activity Component to search
+     * @param component Component to search
      * @param isOptional If this assertion is optional or must pass
      */
     @JvmOverloads
-    fun appWindowNotOnTop(
-        activity: ComponentName,
+    fun isAppWindowNotOnTop(
+        component: FlickerComponentName,
         isOptional: Boolean = false
     ): WindowManagerTraceSubject = apply {
-        addAssertion("appWindowNotOnTop(${activity.toWindowName()})", isOptional) {
-            it.containsAppWindow(activity, isVisible = false)
+        addAssertion("appWindowNotOnTop(${component.toWindowName()})", isOptional) {
+            it.isAppWindowNotOnTop(component)
         }
     }
 
     /**
-     * Checks if app window with title containing the [activity] is visible
+     * Checks if app window with title containing the [component] is visible
      *
-     * @param activity Component to search
+     * @param component Component to search
      * @param isOptional If this assertion is optional or must pass
-     * @param ignoreActivity If the activity check should be ignored or not
      */
     @JvmOverloads
     fun isAppWindowVisible(
-        activity: ComponentName,
-        isOptional: Boolean = false,
-        ignoreActivity: Boolean = false
+        component: FlickerComponentName,
+        isOptional: Boolean = false
     ): WindowManagerTraceSubject = apply {
-        addAssertion("isAppWindowVisible(${activity.toWindowName()})", isOptional) {
-            it.containsAppWindow(activity, isVisible = true, ignoreActivity = ignoreActivity)
+        addAssertion("isAppWindowVisible(${component.toWindowName()})", isOptional) {
+            it.isAppWindowVisible(component)
         }
     }
 
     /**
-     * Checks if app window with title containing the [activity] is invisible
+     * Checks if app window with title containing the [component] is invisible
      *
-     * @param activity Component to search
+     * Note: This assertion have issues with the launcher window, because it contains 2 windows
+     * with the same name and only 1 is visible at a time. Prefer [isAppWindowOnTop] for launcher
+     * instead
+     *
+     * @param component Component to search
      * @param isOptional If this assertion is optional or must pass
-     * @param ignoreActivity If the activity check should be ignored or not
      */
     @JvmOverloads
     fun isAppWindowInvisible(
-        activity: ComponentName,
-        isOptional: Boolean = false,
-        ignoreActivity: Boolean = false
+        component: FlickerComponentName,
+        isOptional: Boolean = false
     ): WindowManagerTraceSubject = apply {
-        addAssertion("isAppWindowInvisible(${activity.toWindowName()})", isOptional) {
-            it.containsAppWindow(activity, isVisible = false, ignoreActivity = ignoreActivity)
+        addAssertion("isAppWindowInvisible(${component.toWindowName()})", isOptional) {
+            it.isAppWindowInvisible(component)
         }
     }
 
     /**
-     * Checks if no app windows containing the [activity] overlap with each other.
+     * Checks if no app windows containing the [component] overlap with each other.
      *
-     * @param activity Component to search
+     * @param component Component to search
      */
-    fun noWindowsOverlap(vararg activity: ComponentName): WindowManagerTraceSubject = apply {
-        val repr = activity.joinToString(", ") { it.toWindowName() }
+    fun noWindowsOverlap(
+        vararg component: FlickerComponentName
+    ): WindowManagerTraceSubject = apply {
+        val repr = component.joinToString(", ") { it.toWindowName() }
         verify("Must give more than one window to check! (Given $repr)")
-                .that(activity)
+                .that(component)
                 .hasLength(1)
         addAssertion("noWindowsOverlap($repr)") {
-            it.noWindowsOverlap(*activity)
+            it.doNotOverlap(*component)
         }
     }
 
@@ -323,8 +320,8 @@ class WindowManagerTraceSubject private constructor(
      * @param belowWindow Expected bottom window
      */
     fun isAboveWindow(
-        aboveWindow: ComponentName,
-        belowWindow: ComponentName
+        aboveWindow: FlickerComponentName,
+        belowWindow: FlickerComponentName
     ): WindowManagerTraceSubject = apply {
         val aboveWindowTitle = aboveWindow.toWindowName()
         val belowWindowTitle = belowWindow.toWindowName()
@@ -335,182 +332,182 @@ class WindowManagerTraceSubject private constructor(
     }
 
     /**
-     * Asserts the visible area covered by the [WindowState]s matching [activity] covers at least
+     * Asserts the visible area covered by the [WindowState]s matching [component] covers at least
      * [testRegion], that is, if its area of the window's bounds cover each point in the region.
      *
-     * @param activity Component to search
+     * @param component Component to search
      * @param testRegion Expected visible area of the window
      */
     fun coversAtLeast(
         testRegion: Region,
-        activity: ComponentName?
+        component: FlickerComponentName?
     ): WindowManagerTraceSubject = apply {
-        addAssertion("coversAtLeastRegion(${activity?.toWindowName()}, $testRegion)") {
-            it.frameRegion(activity).coversAtLeast(testRegion)
+        addAssertion("coversAtLeastRegion(${component?.toWindowName()}, $testRegion)") {
+            it.frameRegion(component).coversAtLeast(testRegion)
         }
     }
 
     /**
-     * Asserts the visible area covered by the [WindowState]s matching [activity] covers at least
+     * Asserts the visible area covered by the [WindowState]s matching [component] covers at least
      * [testRegion], that is, if its area of the window's bounds cover each point in the region.
      *
-     * @param activity Component to search
+     * @param component Component to search
      * @param testRegion Expected visible area of the window
      */
     fun coversAtLeast(
         testRegion: android.graphics.Region,
-        activity: ComponentName?
+        component: FlickerComponentName?
     ): WindowManagerTraceSubject = apply {
-        addAssertion("coversAtLeastRegion(${activity?.toWindowName()}, $testRegion)") {
-            it.frameRegion(activity).coversAtLeast(testRegion)
+        addAssertion("coversAtLeastRegion(${component?.toWindowName()}, $testRegion)") {
+            it.frameRegion(component).coversAtLeast(testRegion)
         }
     }
 
     /**
-     * Asserts the visible area covered by the [WindowState]s matching [activity] covers at least
+     * Asserts the visible area covered by the [WindowState]s matching [component] covers at least
      * [testRect], that is, if its area of the window's bounds cover each point in the region.
      *
-     * @param activity Component to search
+     * @param component Component to search
      * @param testRect Expected visible area of the window
      */
     fun coversAtLeast(
         testRect: android.graphics.Rect,
-        activity: ComponentName?
+        component: FlickerComponentName?
     ): WindowManagerTraceSubject = apply {
-        addAssertion("coversAtLeastRegion(${activity?.toWindowName()}, $testRect)") {
-            it.frameRegion(activity).coversAtLeast(testRect)
+        addAssertion("coversAtLeastRegion(${component?.toWindowName()}, $testRect)") {
+            it.frameRegion(component).coversAtLeast(testRect)
         }
     }
 
     /**
-     * Asserts the visible area covered by the [WindowState]s matching [activity] covers at least
+     * Asserts the visible area covered by the [WindowState]s matching [component] covers at least
      * [testRect], that is, if its area of the window's bounds cover each point in the region.
      *
-     * @param activity Component to search
+     * @param component Component to search
      * @param testRect Expected visible area of the window
      */
     fun coversAtLeast(
         testRect: Rect,
-        activity: ComponentName?
+        component: FlickerComponentName?
     ): WindowManagerTraceSubject = apply {
-        addAssertion("coversAtLeastRegion(${activity?.toWindowName()}, $testRect)") {
-            it.frameRegion(activity).coversAtLeast(testRect)
+        addAssertion("coversAtLeastRegion(${component?.toWindowName()}, $testRect)") {
+            it.frameRegion(component).coversAtLeast(testRect)
         }
     }
 
     /**
-     * Asserts the visible area covered by the [WindowState]s matching [activity] covers at most
+     * Asserts the visible area covered by the [WindowState]s matching [component] covers at most
      * [testRegion], that is, if the area of the window state bounds don't cover any point outside
      * of [testRegion].
      *
-     * @param activity Component to search
+     * @param component Component to search
      * @param testRegion Expected visible area of the window
      */
     fun coversAtMost(
         testRegion: Region,
-        activity: ComponentName?
+        component: FlickerComponentName?
     ): WindowManagerTraceSubject = apply {
-        addAssertion("coversAtMostRegion(${activity?.toWindowName()}, $testRegion)") {
-            it.frameRegion(activity).coversAtMost(testRegion)
+        addAssertion("coversAtMostRegion(${component?.toWindowName()}, $testRegion)") {
+            it.frameRegion(component).coversAtMost(testRegion)
         }
     }
 
     /**
-     * Asserts the visible area covered by the [WindowState]s matching [activity] covers at most
+     * Asserts the visible area covered by the [WindowState]s matching [component] covers at most
      * [testRegion], that is, if the area of the window state bounds don't cover any point outside
      * of [testRegion].
      *
-     * @param activity Component to search
+     * @param component Component to search
      * @param testRegion Expected visible area of the window
      */
     fun coversAtMost(
         testRegion: android.graphics.Region,
-        activity: ComponentName?
+        component: FlickerComponentName?
     ): WindowManagerTraceSubject = apply {
-        addAssertion("coversAtMostRegion(${activity?.toWindowName()}, $testRegion)") {
-            it.frameRegion(activity).coversAtMost(testRegion)
+        addAssertion("coversAtMostRegion(${component?.toWindowName()}, $testRegion)") {
+            it.frameRegion(component).coversAtMost(testRegion)
         }
     }
 
     /**
-     * Asserts the visible area covered by the [WindowState]s matching [activity] covers at most
+     * Asserts the visible area covered by the [WindowState]s matching [component] covers at most
      * [testRect], that is, if the area of the window state bounds don't cover any point outside
      * of [testRect].
      *
-     * @param activity Component to search
+     * @param component Component to search
      * @param testRect Expected visible area of the window
      */
     fun coversAtMost(
         testRect: Rect,
-        activity: ComponentName?
+        component: FlickerComponentName?
     ): WindowManagerTraceSubject = apply {
-        addAssertion("coversAtMostRegion(${activity?.toWindowName()}, $testRect)") {
-            it.frameRegion(activity).coversAtMost(testRect)
+        addAssertion("coversAtMostRegion(${component?.toWindowName()}, $testRect)") {
+            it.frameRegion(component).coversAtMost(testRect)
         }
     }
 
     /**
-     * Asserts the visible area covered by the [WindowState]s matching [activity] covers at most
+     * Asserts the visible area covered by the [WindowState]s matching [component] covers at most
      * [testRect], that is, if the area of the window state bounds don't cover any point outside
      * of [testRect].
      *
-     * @param activity Component to search
+     * @param component Component to search
      * @param testRect Expected visible area of the window
      */
     fun coversAtMost(
         testRect: android.graphics.Rect,
-        activity: ComponentName?
+        component: FlickerComponentName?
     ): WindowManagerTraceSubject = apply {
-        addAssertion("coversAtMostRegion(${activity?.toWindowName()}, $testRect)") {
-            it.frameRegion(activity).coversAtMost(testRect)
+        addAssertion("coversAtMostRegion(${component?.toWindowName()}, $testRect)") {
+            it.frameRegion(component).coversAtMost(testRect)
         }
     }
 
     /**
-     * Asserts the visible area covered by the [WindowState]s matching [activity] covers exactly
+     * Asserts the visible area covered by the [WindowState]s matching [component] covers exactly
      * [testRegion].
      *
-     * @param activity Component to search
+     * @param component Component to search
      * @param testRegion Expected visible area of the window
      */
     fun coversExactly(
         testRegion: android.graphics.Region,
-        activity: ComponentName?
+        component: FlickerComponentName?
     ): WindowManagerTraceSubject = apply {
-        addAssertion("coversExactly(${activity?.toWindowName()}, $testRegion)") {
-            it.frameRegion(activity).coversExactly(testRegion)
+        addAssertion("coversExactly(${component?.toWindowName()}, $testRegion)") {
+            it.frameRegion(component).coversExactly(testRegion)
         }
     }
 
     /**
-     * Asserts the visible area covered by the [WindowState]s matching [activity] covers exactly
+     * Asserts the visible area covered by the [WindowState]s matching [component] covers exactly
      * [testRegion].
      *
-     * @param activity Component to search
+     * @param component Component to search
      * @param testRect Expected visible area of the window
      */
     fun coversExactly(
         testRect: Rect,
-        activity: ComponentName?
+        component: FlickerComponentName?
     ): WindowManagerTraceSubject = apply {
-        addAssertion("coversExactly(${activity?.toWindowName()}, $testRect)") {
-            it.frameRegion(activity).coversExactly(testRect)
+        addAssertion("coversExactly(${component?.toWindowName()}, $testRect)") {
+            it.frameRegion(component).coversExactly(testRect)
         }
     }
 
     /**
-     * Asserts the visible area covered by the [WindowState]s matching [activity] covers exactly
+     * Asserts the visible area covered by the [WindowState]s matching [component] covers exactly
      * [testRect].
      *
-     * @param activity Component to search
+     * @param component Component to search
      * @param testRect Expected visible area of the window
      */
     fun coversExactly(
         testRect: android.graphics.Rect,
-        activity: ComponentName?
+        component: FlickerComponentName?
     ): WindowManagerTraceSubject = apply {
-        addAssertion("coversExactly(${activity?.toWindowName()}, $testRect)") {
-            it.frameRegion(activity).coversExactly(testRect)
+        addAssertion("coversExactly(${component?.toWindowName()}, $testRect)") {
+            it.frameRegion(component).coversExactly(testRect)
         }
     }
 
@@ -519,9 +516,9 @@ class WindowManagerTraceSubject private constructor(
      */
     @JvmOverloads
     fun visibleWindowsShownMoreThanOneConsecutiveEntry(
-        ignoreWindows: List<ComponentName> = listOf(
-            WindowManagerStateHelper.SPLASH_SCREEN_COMPONENT,
-            WindowManagerStateHelper.SNAPSHOT_COMPONENT)
+        ignoreWindows: List<FlickerComponentName> = listOf(
+            FlickerComponentName.SPLASH_SCREEN,
+            FlickerComponentName.SNAPSHOT)
     ): WindowManagerTraceSubject = apply {
         visibleEntriesShownMoreThanOneConsecutiveTime { subject ->
             subject.wmState.windowStates

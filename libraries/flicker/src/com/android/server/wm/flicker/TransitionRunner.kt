@@ -18,7 +18,7 @@ package com.android.server.wm.flicker
 
 import android.util.Log
 import com.android.server.wm.flicker.monitor.ITransitionMonitor
-import com.android.server.wm.traces.parser.DeviceStateDump
+import com.android.server.wm.traces.parser.DeviceDumpParser
 import com.android.server.wm.traces.parser.getCurrentState
 import java.io.IOException
 import java.nio.file.Files
@@ -160,7 +160,7 @@ open class TransitionRunner {
         tags.add(tag)
 
         val deviceStateBytes = getCurrentState(flicker.instrumentation.uiAutomation)
-        val deviceState = DeviceStateDump.fromDump(deviceStateBytes.first, deviceStateBytes.second)
+        val deviceState = DeviceDumpParser.fromDump(deviceStateBytes.first, deviceStateBytes.second)
         try {
             val wmTraceFile = flicker.outputDir.resolve(
                 getTaggedFilePath(flicker, tag, "wm_trace"))
@@ -176,8 +176,8 @@ open class TransitionRunner {
 
             val result = builder.buildStateResult(
                 tag,
-                deviceState.wmTrace,
-                deviceState.layersTrace
+                deviceState.wmState?.asTrace(),
+                deviceState.layerState?.asTrace()
             )
             tagsResults.add(result)
         } catch (e: IOException) {

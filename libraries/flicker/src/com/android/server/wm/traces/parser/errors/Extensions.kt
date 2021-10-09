@@ -18,21 +18,40 @@
 
 package com.android.server.wm.traces.parser.errors
 
+import android.util.Log
 import com.android.server.wm.flicker.FlickerErrorProto
 import com.android.server.wm.flicker.FlickerErrorStateProto
 import com.android.server.wm.flicker.FlickerErrorTraceProto
 import com.android.server.wm.traces.common.errors.ErrorState
 import com.android.server.wm.traces.common.errors.ErrorTrace
 import com.android.server.wm.traces.common.errors.Error
+import com.android.server.wm.traces.parser.LOG_TAG
+import java.io.IOException
+import java.nio.file.Files
+import java.nio.file.Path
 
-fun ErrorTrace.toProto(): FlickerErrorTraceProto = FlickerErrorTraceProto
-    .newBuilder()
-    .addAllStates(this.entries.map { it.toProto() })
-    .setMagicNumber(
-        FlickerErrorTraceProto.MagicNumber.MAGIC_NUMBER_H.number.toLong() shl 32 or
-            FlickerErrorTraceProto.MagicNumber.MAGIC_NUMBER_L.number.toLong()
-    )
-    .build()
+/**
+ * Stores the error trace in a .winscope file.
+ */
+fun ErrorTrace.writeToFile(outputFile: Path) {
+    val proto = FlickerErrorTraceProto
+        .newBuilder()
+        .addAllStates(this.entries.map { it.toProto() })
+        .setMagicNumber(
+            FlickerErrorTraceProto.MagicNumber.MAGIC_NUMBER_H.number.toLong() shl 32 or
+                FlickerErrorTraceProto.MagicNumber.MAGIC_NUMBER_L.number.toLong()
+        )
+        .build()
+    val errorTraceBytes = proto.toByteArray()
+
+    try {
+        Log.d(LOG_TAG, outputFile.toString())
+        Files.createDirectories(outputFile.parent)
+        Files.write(outputFile, errorTraceBytes)
+    } catch (e: IOException) {
+        throw RuntimeException("Unable to create error trace file: ${e.message}", e)
+    }
+}
 
 fun ErrorState.toProto(): FlickerErrorStateProto = FlickerErrorStateProto
     .newBuilder()

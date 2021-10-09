@@ -23,4 +23,10 @@ data class TransitionTag(
     var tag: Tag,
     var startTimestamp: Long,
     var endTimestamp: Long
-)
+) {
+    fun isEmpty(): Boolean {
+        return this.tag.layerId == 0 &&
+            this.tag.taskId == 0 &&
+            this.tag.windowToken.isEmpty()
+    }
+}

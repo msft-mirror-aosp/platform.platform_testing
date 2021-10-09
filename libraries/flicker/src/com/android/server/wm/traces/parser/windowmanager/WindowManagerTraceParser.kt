@@ -188,7 +188,7 @@ object WindowManagerTraceParser {
             root = newRootWindowContainer(proto.rootWindowContainer),
             keyguardControllerState = newKeyguardControllerState(
                 proto.rootWindowContainer.keyguardController),
-            timestamp = timestamp
+            _timestamp = timestamp.toString()
         )
     }
 
@@ -531,6 +531,7 @@ object WindowManagerTraceParser {
                 _isVisible = proto.visible,
                 configurationContainer = newConfigurationContainer(
                     proto.configurationContainer),
+                layerId = proto.surfaceControl?.layerId ?: 0,
                 children = children.toTypedArray()
             )
         }

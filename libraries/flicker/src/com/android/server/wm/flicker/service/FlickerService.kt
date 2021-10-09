@@ -16,10 +16,15 @@
 
 package com.android.server.wm.flicker.service
 
+import android.util.Log
+import com.android.server.wm.flicker.FLICKER_TAG
 import com.android.server.wm.flicker.monitor.TransitionMonitor.Companion.WINSCOPE_EXT
 import com.android.server.wm.traces.common.errors.ErrorTrace
 import com.android.server.wm.traces.common.layers.LayersTrace
+import com.android.server.wm.traces.common.service.TaggingEngine
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
+import com.android.server.wm.traces.parser.errors.writeToFile
+import com.android.server.wm.traces.parser.tags.writeToFile
 import java.nio.file.Path
 
 /**
@@ -41,11 +46,16 @@ class FlickerService {
         outputDir: Path,
         testTag: String
     ): ErrorTrace {
-        val taggingEngine = TaggingEngine(outputDir, testTag)
-        val tagTrace = taggingEngine.tag(wmTrace, layersTrace)
+        val taggingEngine = TaggingEngine(wmTrace, layersTrace) { Log.v("$FLICKER_TAG-PROC", it) }
+        val tagTrace = taggingEngine.run()
+        val tagTraceFile = getFassFilePath(outputDir, testTag, "tag_trace")
+        tagTrace.writeToFile(tagTraceFile)
 
-        val assertionEngine = AssertionEngine(outputDir, testTag)
-        return assertionEngine.analyze(wmTrace, layersTrace, tagTrace)
+        val assertionEngine = AssertionEngine { Log.v("$FLICKER_TAG-ASSERT", it) }
+        val errorTrace = assertionEngine.analyze(wmTrace, layersTrace, tagTrace)
+        val errorTraceFile = getFassFilePath(outputDir, testTag, "error_trace")
+        errorTrace.writeToFile(errorTraceFile)
+        return errorTrace
     }
 
     companion object {
@@ -57,7 +67,12 @@ class FlickerService {
          * @param file the name of the trace file
          * @return the path to the trace file
          */
-        fun getFassFilePath(outputDir: Path, testTag: String, file: String): Path =
+        internal fun getFassFilePath(outputDir: Path, testTag: String, file: String): Path =
                 outputDir.resolve("${testTag}_$file$WINSCOPE_EXT")
+
+        /**
+         * Returns the name of the assertors configuration file.
+         */
+        internal val configFileName = "config.json"
     }
 }

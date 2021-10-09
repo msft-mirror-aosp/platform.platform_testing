@@ -17,27 +17,27 @@
 @file:JvmName("CommonConstants")
 package com.android.server.wm.flicker
 
-import android.content.ComponentName
+import com.android.server.wm.traces.common.FlickerComponentName
 
-val CHROME_COMPONENT = ComponentName("com.android.chrome",
+val CHROME_COMPONENT = FlickerComponentName("com.android.chrome",
         "org.chromium.chrome.browser.firstrun.FirstRunActivity")
-val CHROME_SPLASH_SCREEN_COMPONENT = ComponentName("", "Splash Screen com.android.chrome")
-val DOCKER_STACK_DIVIDER_COMPONENT = ComponentName("", "DockedStackDivider")
-val IMAGINARY_COMPONENT = ComponentName("", "ImaginaryWindow")
-val IME_ACTIVITY_COMPONENT = ComponentName("com.android.server.wm.flicker.testapp",
+val CHROME_SPLASH_SCREEN_COMPONENT = FlickerComponentName("", "Splash Screen com.android.chrome")
+val DOCKER_STACK_DIVIDER_COMPONENT = FlickerComponentName("", "DockedStackDivider")
+val IMAGINARY_COMPONENT = FlickerComponentName("", "ImaginaryWindow")
+val IME_ACTIVITY_COMPONENT = FlickerComponentName("com.android.server.wm.flicker.testapp",
         "com.android.server.wm.flicker.testapp.ImeActivity")
-val LAUNCHER_COMPONENT = ComponentName("com.google.android.apps.nexuslauncher",
+val LAUNCHER_COMPONENT = FlickerComponentName("com.google.android.apps.nexuslauncher",
         "com.google.android.apps.nexuslauncher.NexusLauncherActivity")
-val PIP_DISMISS_COMPONENT = ComponentName("", "pip-dismiss-overlay")
+val PIP_DISMISS_COMPONENT = FlickerComponentName("", "pip-dismiss-overlay")
 
-val SIMPLE_APP_COMPONENT = ComponentName("com.android.server.wm.flicker.testapp",
+val SIMPLE_APP_COMPONENT = FlickerComponentName("com.android.server.wm.flicker.testapp",
         "com.android.server.wm.flicker.testapp.SimpleActivity")
 private const val SHELL_PKG_NAME = "com.android.wm.shell.flicker.testapp"
-val SHELL_SPLIT_SCREEN_PRIMARY_COMPONENT = ComponentName(SHELL_PKG_NAME,
+val SHELL_SPLIT_SCREEN_PRIMARY_COMPONENT = FlickerComponentName(SHELL_PKG_NAME,
         "$SHELL_PKG_NAME.SplitScreenActivity")
-val SHELL_SPLIT_SCREEN_SECONDARY_COMPONENT = ComponentName(SHELL_PKG_NAME,
+val SHELL_SPLIT_SCREEN_SECONDARY_COMPONENT = FlickerComponentName(SHELL_PKG_NAME,
         "$SHELL_PKG_NAME.SplitScreenSecondaryActivity")
 
-val SCREEN_DECOR_COMPONENT = ComponentName("", "ScreenDecorOverlay")
-val WALLPAPER_COMPONENT = ComponentName(
+val SCREEN_DECOR_COMPONENT = FlickerComponentName("", "ScreenDecorOverlay")
+val WALLPAPER_COMPONENT = FlickerComponentName(
         "", "com.breel.wallpapers18.soundviz.wallpaper.variations.SoundVizWallpaperV2")
