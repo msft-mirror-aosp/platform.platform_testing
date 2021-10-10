@@ -20,7 +20,7 @@ android_test {
     name: "FacebookAppsScenarioTests",
     min_sdk_version: "24",
     static_libs: [
-        "android-support-test",
+        "androidx.test.rules",
         "collector-device-lib-platform",
         "common-profile-text-protos",
         "facebook-scenarios",
@@ -33,6 +33,7 @@ android_test {
         "platform-test-composers",
         "platform-test-options",
         "platform-test-rules",
+        "ub-uiautomator",
     ],
     srcs: ["src/**/*.java"],
     test_suites: ["device-tests"],

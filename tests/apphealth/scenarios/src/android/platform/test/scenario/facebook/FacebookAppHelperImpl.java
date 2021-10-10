@@ -30,6 +30,8 @@ import androidx.test.uiautomator.UiDevice;
 import androidx.test.uiautomator.UiObject2;
 import androidx.test.uiautomator.Until;
 
+import java.util.regex.Pattern;
+
 import junit.framework.Assert;
 
 /** Create a facebook app helper that can be used to open and navigate FB App */
@@ -44,7 +46,11 @@ public class FacebookAppHelperImpl extends AbstractStandardAppHelper implements 
     private static final String LOGIN_BUTTON_DESC = "Login";
     private static final String OK_BUTTON_DESC = "OK";
     private static final String DENY_BUTTON_DESC = "Deny";
-    private static final String NEWSFEED_LIST_ID = "android:id/list";
+    private static final String NEWSFEED_LIST_ID = "android:id/content";
+    private static final String GENERIC_ALLOW_TEXT = "ALLOW";
+    private static final String WHILE_USING_APP_TEXT = "While using the app";
+    private static final String REMIND_ME_LATER_TEXT = "REMIND ME LATER";
+    private static final String FEED_TAB_PATTERN = "News Feed, Tab .*";
 
     private static final String LOGIN_ACTIVITY_NAME =
             "com.facebook.account.login.activity.SimpleLoginActivity";
@@ -71,11 +77,38 @@ public class FacebookAppHelperImpl extends AbstractStandardAppHelper implements 
         Assert.assertNotNull("Login options not found", loginOptions);
         loginOptions.click();
 
+        UiObject2 accessLocation =
+                mDevice.wait(Until.findObject(By.text(GENERIC_ALLOW_TEXT)), LONG_TIMEOUT);
+        if (accessLocation != null) {
+            accessLocation.click();
+            mDevice.waitForIdle();
+
+            UiObject2 locationPermission =
+                    mDevice.wait(Until.findObject(By.text(WHILE_USING_APP_TEXT)), LONG_TIMEOUT);
+            if (locationPermission != null) {
+                locationPermission.click();
+                mDevice.waitForIdle();
+            }
+        }
+
+        UiObject2 outOfDate =
+                mDevice.wait(Until.findObject(By.text(REMIND_ME_LATER_TEXT)), LONG_TIMEOUT);
+        if (outOfDate != null) {
+            outOfDate.click();
+            mDevice.waitForIdle();
+        }
+
         UiObject2 denyCamera =
                 mDevice.wait(Until.findObject(By.desc(DENY_BUTTON_DESC)), LONG_TIMEOUT);
+        if (denyCamera != null) {
+            denyCamera.click();
+            mDevice.waitForIdle();
+        }
 
-        Assert.assertNotNull("Deny Camera button not found", denyCamera);
-        denyCamera.click();
+        Assert.assertTrue(
+                "The phone doesn't appear to be on the news feed tab.",
+                mDevice.wait(
+                        Until.hasObject(By.desc(Pattern.compile(FEED_TAB_PATTERN))), LONG_TIMEOUT));
     }
 
     @Override
@@ -108,13 +141,13 @@ public class FacebookAppHelperImpl extends AbstractStandardAppHelper implements 
     }
 
     public void scrollNewsfeed(Direction direction, int count) {
-        UiObject2 newsfeedList =
-                mDevice.wait(Until.findObject(By.res(NEWSFEED_LIST_ID)), LONG_TIMEOUT);
-        Assert.assertNotNull("Newsfeed List not found", newsfeedList);
-
         for (int i = 0; i < count; i++) {
+            UiObject2 newsfeedList =
+                    mDevice.wait(Until.findObject(By.res(NEWSFEED_LIST_ID)), LONG_TIMEOUT);
+            Assert.assertNotNull("Newsfeed List not found", newsfeedList);
+            newsfeedList.setGestureMargin(mDevice.getDisplayHeight() / 4);
             newsfeedList.fling(direction);
-            SystemClock.sleep(10);
+            SystemClock.sleep(2500);
         }
     }
 

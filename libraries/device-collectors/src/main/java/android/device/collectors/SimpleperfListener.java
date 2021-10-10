@@ -41,6 +41,10 @@ public class SimpleperfListener extends BaseMetricListener {
 
     // Default output folder to store the simpleperf sample files.
     private static final String DEFAULT_OUTPUT_ROOT = "/sdcard/test_results";
+    // Default subcommand passed to simpleperf
+    private static final String DEFAULT_SUBCOMMAND = "record";
+    // Default arguments passed to simpleperf command
+    private static final String DEFAULT_ARGUMENTS = "-g --post-unwind=yes -f 500 -a --exclude-perf";
     // Destination directory to save the trace results.
     private static final String TEST_OUTPUT_ROOT = "test_output_root";
     // Simpleperf file path key.
@@ -50,6 +54,10 @@ public class SimpleperfListener extends BaseMetricListener {
     public static final String SIMPLEPERF_PREFIX = "simpleperf_";
     // Skip failure metrics collection if set to true.
     public static final String SKIP_TEST_FAILURE_METRICS = "skip_test_failure_metrics";
+    // Subcommand to pass to simpleperf on start.
+    public static final String SUBCOMMAND = "subcommand";
+    // Arguments to pass to simpleperf on start.
+    public static final String ARGUMENTS = "arguments";
 
     // Simpleperf samples collected during the test will be saved under this root folder.
     private String mTestOutputRoot;
@@ -59,6 +67,8 @@ public class SimpleperfListener extends BaseMetricListener {
     private boolean mIsCollectPerRun;
     private boolean mIsTestFailed = false;
     private boolean mSkipTestFailureMetrics;
+    private String mSubcommand;
+    private String mArguments;
 
     private SimpleperfHelper mSimpleperfHelper = new SimpleperfHelper();
 
@@ -91,12 +101,18 @@ public class SimpleperfListener extends BaseMetricListener {
         // By default this flag is set to false to collect metrics on test failure.
         mSkipTestFailureMetrics = "true".equals(args.getString(SKIP_TEST_FAILURE_METRICS));
 
+        // Subcommand passed to simpleperf. Defaults to record.
+        mSubcommand = args.getString(SUBCOMMAND, DEFAULT_SUBCOMMAND);
+
+        // Command arguments passed to simpleperf.
+        mArguments = args.getString(ARGUMENTS, DEFAULT_ARGUMENTS);
+
         if (!mIsCollectPerRun) {
             return;
         }
 
         Log.i(getTag(), "Starting simpleperf before test run started.");
-        startSimpleperf();
+        startSimpleperf(mSubcommand, mArguments);
     }
 
     @Override
@@ -109,7 +125,7 @@ public class SimpleperfListener extends BaseMetricListener {
         mTestIdInvocationCount.compute(
                 getTestFileName(description), (key, value) -> (value == null) ? 1 : value + 1);
         Log.i(getTag(), "Starting simpleperf before test started.");
-        startSimpleperf();
+        startSimpleperf(mSubcommand, mArguments);
     }
 
     @Override
@@ -181,8 +197,8 @@ public class SimpleperfListener extends BaseMetricListener {
     }
 
     /** Start simpleperf sampling. */
-    public void startSimpleperf() {
-        mSimpleperfStartSuccess = mSimpleperfHelper.startCollecting();
+    public void startSimpleperf(String subcommand, String arguments) {
+        mSimpleperfStartSuccess = mSimpleperfHelper.startCollecting(subcommand, arguments);
         if (!mSimpleperfStartSuccess) {
             Log.e(getTag(), "Simpleperf did not start successfully.");
         }
