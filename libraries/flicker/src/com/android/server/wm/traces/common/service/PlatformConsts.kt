@@ -25,6 +25,15 @@ object PlatformConsts {
     const val DEFAULT_DISPLAY = 0
 
     /**
+     * Window type: an application window that serves as the "base" window
+     * of the overall application
+     *
+     * Duplicated from [WindowManager.LayoutParams.TYPE_BASE_APPLICATION] because this class
+     * is used by JVM and KotlinJS
+     */
+    const val TYPE_BASE_APPLICATION = 1
+
+    /**
      * Window type: special application window that is displayed while the
      * application is starting
      *

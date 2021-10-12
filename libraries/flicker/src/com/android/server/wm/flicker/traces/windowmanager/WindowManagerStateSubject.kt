@@ -23,6 +23,7 @@ import com.android.server.wm.flicker.assertions.FlickerSubject
 import com.android.server.wm.flicker.traces.FlickerFailureStrategy
 import com.android.server.wm.flicker.traces.RegionSubject
 import com.android.server.wm.traces.common.FlickerComponentName
+import com.android.server.wm.traces.common.Region
 import com.android.server.wm.traces.common.windowmanager.WindowManagerState
 import com.android.server.wm.traces.common.windowmanager.windows.Activity
 import com.android.server.wm.traces.common.windowmanager.windows.WindowState
@@ -149,32 +150,33 @@ class WindowManagerStateSubject private constructor(
     }
 
     /**
-     * Asserts the state contains [WindowState]s with titles matching [aboveWindow] and
-     * [belowWindow], and that [aboveWindow] is above [belowWindow]
+     * Asserts the state contains [WindowState]s with titles matching [aboveWindowComponent] and
+     * [belowWindowComponent], and that [aboveWindowComponent] is above [belowWindowComponent]
      *
      * This assertion can be used, for example, to assert that a PIP window is shown above
      * other apps.
      *
-     * @param aboveWindow name of the window that should be above
-     * @param belowWindow name of the window that should be below
+     * @param aboveWindowComponent name of the window that should be above
+     * @param belowWindowComponent name of the window that should be below
      */
     fun isAboveWindow(
-        aboveWindow: FlickerComponentName,
-        belowWindow: FlickerComponentName
+        aboveWindowComponent: FlickerComponentName,
+        belowWindowComponent: FlickerComponentName
     ): WindowManagerStateSubject = apply {
-        contains(aboveWindow)
-        contains(belowWindow)
+        contains(aboveWindowComponent)
+        contains(belowWindowComponent)
 
         // windows are ordered by z-order, from top to bottom
-        val aboveWindowTitle = aboveWindow.toWindowName()
-        val belowWindowTitle = belowWindow.toWindowName()
+        val aboveWindowTitle = aboveWindowComponent.toWindowName()
+        val belowWindowTitle = belowWindowComponent.toWindowName()
         val aboveZ = wmState.windowStates.indexOfFirst { aboveWindowTitle in it.name }
         val belowZ = wmState.windowStates.indexOfFirst { belowWindowTitle in it.name }
         if (aboveZ >= belowZ) {
-            fail(Fact.fact(ASSERTION_TAG, "isAboveWindow(above=${aboveWindow.toWindowName()}, " +
-                "below=${belowWindow.toWindowName()}"),
-                    Fact.fact("Above", aboveWindowTitle),
-                    Fact.fact("Below", belowWindowTitle))
+            val aboveWindow = subjects.first { aboveWindowTitle in it.name }
+            aboveWindow.fail(Fact.fact(ASSERTION_TAG, "isAboveWindow(above=$aboveWindowTitle, " +
+                "below=$belowWindowTitle"),
+                Fact.fact("Above", aboveWindowTitle),
+                Fact.fact("Below", belowWindowTitle))
         }
     }
 
@@ -195,9 +197,12 @@ class WindowManagerStateSubject private constructor(
     fun isAppWindowOnTop(component: FlickerComponentName): WindowManagerStateSubject = apply {
         val windowName = component.toWindowName()
         if (!wmState.topVisibleAppWindow.contains(windowName)) {
-            fail(Fact.fact(ASSERTION_TAG, "isAppWindowOnTop(${component.toWindowName()})"),
+            val topWindow = subjects.first { it.name == wmState.topVisibleAppWindow }
+            topWindow.fail(
+                Fact.fact(ASSERTION_TAG, "isAppWindowOnTop(${component.toWindowName()})"),
                 Fact.fact("Not on top", component.toWindowName()),
-                Fact.fact("Found", wmState.topVisibleAppWindow))
+                Fact.fact("Found", wmState.topVisibleAppWindow)
+            )
         }
     }
 
@@ -209,8 +214,11 @@ class WindowManagerStateSubject private constructor(
     fun isAppWindowNotOnTop(component: FlickerComponentName): WindowManagerStateSubject = apply {
         val windowName = component.toWindowName()
         if (wmState.topVisibleAppWindow.contains(windowName)) {
-            fail(Fact.fact(ASSERTION_TAG, "isAppWindowNotOnTop(${component.toWindowName()})"),
-                Fact.fact("On top", component.toWindowName()))
+            val topWindow = subjects.first { it.name == wmState.topVisibleAppWindow }
+            topWindow.fail(
+                Fact.fact(ASSERTION_TAG, "isAppWindowNotOnTop(${component.toWindowName()})"),
+                Fact.fact("On top", component.toWindowName())
+            )
         }
     }
 
@@ -225,20 +233,23 @@ class WindowManagerStateSubject private constructor(
         component.forEach { contains(it) }
         val foundWindows = component.toSet()
             .associateWith { act ->
-                wmState.windowStates.find { it.name.contains(act.toWindowName()) }
+                wmState.windowStates.firstOrNull { it.name.contains(act.toWindowName()) }
             }
             // keep entries only for windows that we actually found by removing nulls
             .filterValues { it != null }
-            .mapValues { (_, v) -> v!!.frameRegion }
+        val foundWindowsRegions = foundWindows
+            .mapValues { (_, v) -> v?.frameRegion ?: Region.EMPTY }
 
-        val regions = foundWindows.entries.toList()
+        val regions = foundWindowsRegions.entries.toList()
         for (i in regions.indices) {
             val (ourTitle, ourRegion) = regions[i]
             for (j in i + 1 until regions.size) {
                 val (otherTitle, otherRegion) = regions[j]
                 if (ourRegion.toAndroidRegion().op(otherRegion.toAndroidRegion(),
                         android.graphics.Region.Op.INTERSECT)) {
-                    fail(Fact.fact(ASSERTION_TAG,
+                    val window = foundWindows[ourTitle] ?: error("Window $ourTitle not found")
+                    val windowSubject = subjects.first { it.windowState == window }
+                    windowSubject.fail(Fact.fact(ASSERTION_TAG,
                             "noWindowsOverlap${component.joinToString { it.toWindowName() }}"),
                         Fact.fact("Overlap", ourTitle),
                         Fact.fact("Overlap", otherTitle))

@@ -25,7 +25,8 @@ import org.junit.Test
 import org.junit.runners.MethodSorters
 
 /**
- * Tests for Ime Appear Processor.
+ * Contains [ImeAppearProcessor] tests. To run this test:
+ * `atest FlickerLibTest:ImeAppearProcessorTest`
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class ImeAppearProcessorTest {
@@ -33,40 +34,40 @@ class ImeAppearProcessorTest {
 
     private val tagsImeAppearWithGesture by lazy {
         val wmTrace = readWmTraceFromFile(
-                "tagprocessors/ime/appear/bygesture/WindowManagerTrace.winscope"
+            "tagprocessors/ime/appear/bygesture/WindowManagerTrace.winscope"
         )
         val layersTrace = readLayerTraceFromFile(
-                "tagprocessors/ime/appear/bygesture/SurfaceFlingerTrace.winscope"
+            "tagprocessors/ime/appear/bygesture/SurfaceFlingerTrace.winscope"
         )
         processor.generateTags(wmTrace, layersTrace)
     }
 
     private val tagsImeAppearWithoutGestureOnAppLaunch by lazy {
         val wmTrace = readWmTraceFromFile(
-                "tagprocessors/ime/appear/applaunchnogesture/WindowManagerTrace.winscope"
+            "tagprocessors/ime/appear/applaunchnogesture/WindowManagerTrace.winscope"
         )
         val layersTrace = readLayerTraceFromFile(
-                "tagprocessors/ime/appear/applaunchnogesture/SurfaceFlingerTrace.winscope"
+            "tagprocessors/ime/appear/applaunchnogesture/SurfaceFlingerTrace.winscope"
         )
         processor.generateTags(wmTrace, layersTrace)
     }
 
     private val doesntTagStationaryIme by lazy {
         val wmTrace = readWmTraceFromFile(
-                "tagprocessors/ime/appear/stationary/WindowManagerTrace.winscope"
+            "tagprocessors/ime/appear/stationary/WindowManagerTrace.winscope"
         )
         val layersTrace = readLayerTraceFromFile(
-                "tagprocessors/ime/appear/stationary/SurfaceFlingerTrace.winscope"
+            "tagprocessors/ime/appear/stationary/SurfaceFlingerTrace.winscope"
         )
         processor.generateTags(wmTrace, layersTrace)
     }
 
     private val tagsImeAppearHorizontal by lazy {
         val wmTrace = readWmTraceFromFile(
-                "tagprocessors/ime/appear/horizontal/WindowManagerTrace.winscope"
+            "tagprocessors/ime/appear/horizontal/WindowManagerTrace.winscope"
         )
         val layersTrace = readLayerTraceFromFile(
-                "tagprocessors/ime/appear/horizontal/SurfaceFlingerTrace.winscope"
+            "tagprocessors/ime/appear/horizontal/SurfaceFlingerTrace.winscope"
         )
         processor.generateTags(wmTrace, layersTrace)
     }
@@ -75,8 +76,8 @@ class ImeAppearProcessorTest {
     fun generatesImeTagsOnGesture() {
         val tagTrace = tagsImeAppearWithGesture
         Truth.assertWithMessage("Should have 2 Ime appear tags")
-                .that(tagTrace)
-                .hasSize(2)
+            .that(tagTrace)
+            .hasSize(2)
         val startTagTimestamp = 11120377206699 // 0d3h5m20s377ms
         val endTagTimestamp = 11120645554330 // 0d3h5m20s645ms
         Truth.assertThat(tagTrace.first().timestamp).isEqualTo(startTagTimestamp)
@@ -87,9 +88,8 @@ class ImeAppearProcessorTest {
     fun generatesTagsOnAppLaunchWithNoGesture() {
         val tagTrace = tagsImeAppearWithoutGestureOnAppLaunch
         Truth.assertWithMessage("Should have 2 Ime appear tags")
-                .that(tagTrace)
-                .hasSize(2)
-
+            .that(tagTrace)
+            .hasSize(2)
         val startTagTimestamp = 437392442580 // 0d0h7m17s392ms
         val endTagTimestamp = 437396516487 // 0d0h7m17s396ms
         Truth.assertThat(tagTrace.first().timestamp).isEqualTo(startTagTimestamp)
@@ -100,9 +100,8 @@ class ImeAppearProcessorTest {
     fun generatesTagsOnHorizontalAppLaunchWithGesture() {
         val tagTrace = tagsImeAppearHorizontal
         Truth.assertWithMessage("Should have 2 Ime appear tags")
-                .that(tagTrace)
-                .hasSize(2)
-
+            .that(tagTrace)
+            .hasSize(2)
         val startTagTimestamp = 1015548115255262 // 11d18h5m48s115ms
         val endTagTimestamp = 1015548233177878 // 11d18h5m48s223ms
         Truth.assertThat(tagTrace.first().timestamp).isEqualTo(startTagTimestamp)
@@ -113,7 +112,7 @@ class ImeAppearProcessorTest {
     fun doNotGenerateTagsOnStationaryIme() {
         val tagTrace = doesntTagStationaryIme
         Truth.assertWithMessage("Should have no Ime appear tags")
-                .that(tagTrace)
-                .hasSize(0)
+            .that(tagTrace)
+            .hasSize(0)
     }
 }

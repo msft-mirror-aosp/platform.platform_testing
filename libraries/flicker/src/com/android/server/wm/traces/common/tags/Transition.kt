@@ -25,7 +25,7 @@ enum class Transition(private val transitionName: String) {
     APP_CLOSE("AppClosing"),
     PIP_ENTER("PipEntering"),
     PIP_RESIZE("PipResizing"),
-    PIP_CLOSE("PipClosing"),
+    PIP_EXPAND("PipExpanding"),
     PIP_EXIT("PipExiting"),
     IME_APPEAR("ImeAppearing"),
     IME_DISAPPEAR("ImeDisappearing");

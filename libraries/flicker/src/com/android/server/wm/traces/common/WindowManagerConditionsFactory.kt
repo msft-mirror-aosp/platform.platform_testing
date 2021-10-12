@@ -222,9 +222,7 @@ object WindowManagerConditionsFactory {
 
     fun LayerTraceEntry.getVisibleLayersByName(
         component: FlickerComponentName
-    ): List<Layer> = this.visibleLayers.filter {
-        it.name.contains(component.toLayerName())
-    }
+    ): List<Layer> = visibleLayers.filter { it.name.contains(component.toLayerName()) }
 
     fun isLayerVisible(
         component: FlickerComponentName

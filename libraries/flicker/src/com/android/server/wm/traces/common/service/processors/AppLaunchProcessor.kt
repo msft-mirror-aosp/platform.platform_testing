@@ -17,57 +17,28 @@
 package com.android.server.wm.traces.common.service.processors
 
 import com.android.server.wm.traces.common.DeviceStateDump
-import com.android.server.wm.traces.common.WindowManagerConditionsFactory.hasLayersAnimating
-import com.android.server.wm.traces.common.WindowManagerConditionsFactory.isAppTransitionIdle
-import com.android.server.wm.traces.common.WindowManagerConditionsFactory.isWMStateComplete
 import com.android.server.wm.traces.common.layers.LayerTraceEntry
-import com.android.server.wm.traces.common.service.PlatformConsts.TYPE_APPLICATION_STARTING
 import com.android.server.wm.traces.common.tags.Tag
 import com.android.server.wm.traces.common.tags.Transition
 import com.android.server.wm.traces.common.windowmanager.WindowManagerState
-import com.android.server.wm.traces.common.windowmanager.windows.WindowState
 
+/**
+ * This processor creates tags when an app is launched.
+ * @param logger logs by invoking any event messages
+ */
 class AppLaunchProcessor(logger: (String) -> Unit) : TransitionProcessor(logger) {
-    private val transition = Transition.APP_LAUNCH
+    override val transition = Transition.APP_LAUNCH
+    private val windowsBecomeVisible =
+        HashMap<Int, DeviceStateDump<WindowManagerState, LayerTraceEntry>>()
 
     override fun getInitialState(tags: MutableMap<Long, MutableList<Tag>>) =
-        WaitUntilSnapshotLayersStartAnimating(tags)
+        WaitUntilWindowIsInVisibleActivity(tags)
 
     /**
-     * Base state for the FSM, check if there are more WM and SF states to process
+     * FSM state that stores any newly visible window activities (start tag)
+     * and when their layers stop scaling (end tag).
      */
-    abstract inner class BaseState(tags: MutableMap<Long, MutableList<Tag>>) : FSMState(tags) {
-        protected abstract fun doProcessState(
-            previous: DeviceStateDump<WindowManagerState, LayerTraceEntry>?,
-            current: DeviceStateDump<WindowManagerState, LayerTraceEntry>,
-            next: DeviceStateDump<WindowManagerState, LayerTraceEntry>
-        ): FSMState
-
-        override fun process(
-            previous: DeviceStateDump<WindowManagerState, LayerTraceEntry>?,
-            current: DeviceStateDump<WindowManagerState, LayerTraceEntry>,
-            next: DeviceStateDump<WindowManagerState, LayerTraceEntry>?
-        ): FSMState? {
-            return when (next) {
-                null -> {
-                    // last state
-                    logger.invoke("(${current.layerState.timestamp}) Trace has reached the end")
-                    if (hasOpenTag()) {
-                        logger.invoke("(${current.layerState.timestamp}) Has an open tag, " +
-                            "closing it on the last SF state")
-                        addEndTransitionTag(current, transition)
-                    }
-                    null
-                }
-                else -> doProcessState(previous, current, next)
-            }
-        }
-    }
-
-    /**
-     * Initial FSM state that passes the current app launch activity if any to the next state.
-     */
-    inner class WaitUntilSnapshotLayersStartAnimating(
+    inner class WaitUntilWindowIsInVisibleActivity(
         tags: MutableMap<Long, MutableList<Tag>>
     ) : BaseState(tags) {
         override fun doProcessState(
@@ -76,66 +47,36 @@ class AppLaunchProcessor(logger: (String) -> Unit) : TransitionProcessor(logger)
             next: DeviceStateDump<WindowManagerState, LayerTraceEntry>
         ): FSMState {
             if (previous == null) return this
-
-            val startingWindows = current.wmState.rootTasks.flatMap { task ->
-                task.activities.flatMap { activity ->
-                    activity.children.filterIsInstance<WindowState>().filter { window ->
-                        window.attributes.type == TYPE_APPLICATION_STARTING
-                    }
-                }
+            val prevVisibleWindows = previous.wmState.visibleWindows
+            val newlyVisibleWindows = current.wmState.visibleWindows.filterNot { window ->
+                prevVisibleWindows.any { it.token == window.token }
             }
 
-            val snapshotLayersAreAnimating = startingWindows.toList().filter { window ->
-                val prevLayer = previous.layerState.getLayerById(window.layerId)
-                val currLayer = current.layerState.getLayerById(window.layerId)
-                if (prevLayer != null && currLayer != null) {
-                    !prevLayer.isScaling && currLayer.isScaling
-                } else {
-                    false
-                }
+            // Wait until layer is no longer scaling
+            val appLaunchedLayers = windowsBecomeVisible.filterKeys { layerId ->
+                val currDumpLayer = current.layerState.getLayerById(layerId)
+                (previous.layerState.getLayerById(layerId)?.isScaling == true &&
+                currDumpLayer?.isScaling == false)
             }
+
             // Only want to tag when one app is being launched.
             // Other scenarios like app pairs enter are ignored.
-            return if (snapshotLayersAreAnimating.size == 1) {
-                val layerId = snapshotLayersAreAnimating.first().layerId
-                addStartTransitionTag(previous, transition,
+            if (newlyVisibleWindows.size == 1) {
+                windowsBecomeVisible[newlyVisibleWindows.first().layerId] = previous
+            } else if (appLaunchedLayers.isNotEmpty()) {
+                val firstDump = appLaunchedLayers.entries.first()
+                val layerId = firstDump.key
+                addStartTransitionTag(firstDump.value, transition,
                     layerId = layerId,
-                    timestamp = previous.layerState.timestamp
+                    timestamp = firstDump.value.layerState.timestamp
                 )
-                WaitUntilAppSnapshotLayerIsIdentity(tags, layerId)
-            } else {
-                this
-            }
-        }
-    }
-
-    inner class WaitUntilAppSnapshotLayerIsIdentity(
-        tags: MutableMap<Long, MutableList<Tag>>,
-        private val layerId: Int
-    ) : BaseState(tags) {
-        private val areLayersAnimating = hasLayersAnimating()
-        private val wmStateIdle = isAppTransitionIdle(/* default display */ 0)
-        private val wmStateComplete = isWMStateComplete()
-
-        override fun doProcessState(
-            previous: DeviceStateDump<WindowManagerState, LayerTraceEntry>?,
-            current: DeviceStateDump<WindowManagerState, LayerTraceEntry>,
-            next: DeviceStateDump<WindowManagerState, LayerTraceEntry>
-        ): FSMState {
-            val snapshotLayerGone = current.layerState.getLayerById(layerId) == null
-            val isStableState = wmStateIdle.isSatisfied(current) ||
-                wmStateComplete.isSatisfied(current) ||
-                areLayersAnimating.negate().isSatisfied(current)
-
-            return if (snapshotLayerGone && isStableState) {
                 addEndTransitionTag(current, transition,
                     layerId = layerId,
                     timestamp = current.layerState.timestamp
                 )
-                WaitUntilSnapshotLayersStartAnimating(tags)
-            } else {
-                this
+                windowsBecomeVisible.clear()
             }
+            return this
         }
     }
 }

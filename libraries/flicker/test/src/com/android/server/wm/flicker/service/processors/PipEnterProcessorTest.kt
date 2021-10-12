@@ -25,7 +25,8 @@ import org.junit.Test
 import org.junit.runners.MethodSorters
 
 /**
- * Tests for PIP Enter Processor.
+ * Contains [PipEnterProcessor] tests. To run this test:
+ * `atest FlickerLibTest:PipEnterProcessorTest`
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class PipEnterProcessorTest {
@@ -33,50 +34,50 @@ class PipEnterProcessorTest {
 
     private val tagsPipEnterWithoutRotation by lazy {
         val wmTrace = readWmTraceFromFile(
-        "tagprocessors/pip/enter/norotation/WindowManagerTrace.winscope"
+            "tagprocessors/pip/enter/norotation/WindowManagerTrace.winscope"
         )
         val layersTrace = readLayerTraceFromFile(
-        "tagprocessors/pip/enter/norotation/SurfaceFlingerTrace.winscope"
+            "tagprocessors/pip/enter/norotation/SurfaceFlingerTrace.winscope"
         )
         processor.generateTags(wmTrace, layersTrace)
     }
 
     private val tagsPipEnterWithRotation by lazy {
         val wmTrace = readWmTraceFromFile(
-        "tagprocessors/pip/enter/rotation/WindowManagerTrace.winscope"
+            "tagprocessors/pip/enter/rotation/WindowManagerTrace.winscope"
         )
         val layersTrace = readLayerTraceFromFile(
-        "tagprocessors/pip/enter/rotation/SurfaceFlingerTrace.winscope"
+            "tagprocessors/pip/enter/rotation/SurfaceFlingerTrace.winscope"
         )
         processor.generateTags(wmTrace, layersTrace)
     }
 
     private val tagsPipEnterWithSplitScreen by lazy {
         val wmTrace = readWmTraceFromFile(
-        "tagprocessors/pip/enter/splitscreen/WindowManagerTrace.winscope"
+            "tagprocessors/pip/enter/splitscreen/WindowManagerTrace.winscope"
         )
         val layersTrace = readLayerTraceFromFile(
-        "tagprocessors/pip/enter/splitscreen/SurfaceFlingerTrace.winscope"
+            "tagprocessors/pip/enter/splitscreen/SurfaceFlingerTrace.winscope"
         )
         processor.generateTags(wmTrace, layersTrace)
     }
 
     private val tagsPipEnterTwice by lazy {
         val wmTrace = readWmTraceFromFile(
-                "tagprocessors/pip/enter/twice/WindowManagerTrace.winscope"
+            "tagprocessors/pip/enter/twice/WindowManagerTrace.winscope"
         )
         val layersTrace = readLayerTraceFromFile(
-                "tagprocessors/pip/enter/twice/SurfaceFlingerTrace.winscope"
+            "tagprocessors/pip/enter/twice/SurfaceFlingerTrace.winscope"
         )
         processor.generateTags(wmTrace, layersTrace)
     }
 
     private val tagsStationaryPip by lazy {
         val wmTrace = readWmTraceFromFile(
-                "tagprocessors/pip/enter/stationary/WindowManagerTrace.winscope"
+            "tagprocessors/pip/enter/stationary/WindowManagerTrace.winscope"
         )
         val layersTrace = readLayerTraceFromFile(
-                "tagprocessors/pip/enter/stationary/SurfaceFlingerTrace.winscope"
+            "tagprocessors/pip/enter/stationary/SurfaceFlingerTrace.winscope"
         )
         processor.generateTags(wmTrace, layersTrace)
     }
@@ -121,8 +122,8 @@ class PipEnterProcessorTest {
     fun generatesPipEnterTagsTwice() {
         val tagTrace = tagsPipEnterTwice
         Truth.assertWithMessage("Should have 4 PIP enter tags")
-                .that(tagTrace)
-                .hasSize(4)
+            .that(tagTrace)
+            .hasSize(4)
         val firstPipEnter = arrayOf(126177655536, 126747555592) // 2m6s177ms, 2m6s747ms
         val secondPipEnter = arrayOf(132780039058, 133367243856) // 2m12s780ms, 2m13s367ms
         Truth.assertThat(tagTrace[0].timestamp).isEqualTo(firstPipEnter[0])
@@ -135,7 +136,7 @@ class PipEnterProcessorTest {
     fun doesNotGeneratePipEnterTagsOnStationaryPip() {
         val tagTrace = tagsStationaryPip
         Truth.assertWithMessage("Should have no PIP enter tags")
-                .that(tagTrace)
-                .hasSize(0)
+            .that(tagTrace)
+            .hasSize(0)
     }
 }

@@ -19,11 +19,11 @@ package com.android.server.wm.traces.common.service.processors
 import com.android.server.wm.traces.common.DeviceStateDump
 import com.android.server.wm.traces.common.FlickerComponentName
 import com.android.server.wm.traces.common.RectF
+import com.android.server.wm.traces.common.WindowManagerConditionsFactory
 import com.android.server.wm.traces.common.layers.LayerTraceEntry
 import com.android.server.wm.traces.common.tags.Tag
 import com.android.server.wm.traces.common.tags.Transition
 import com.android.server.wm.traces.common.windowmanager.WindowManagerState
-import com.android.server.wm.traces.common.WindowManagerConditionsFactory
 
 /**
  * Processor to detect rotations.
@@ -32,39 +32,8 @@ import com.android.server.wm.traces.common.WindowManagerConditionsFactory
  * to occur and both nav and status bars to appear
  */
 class RotationProcessor(logger: (String) -> Unit) : TransitionProcessor(logger) {
+    override val transition = Transition.ROTATION
     override fun getInitialState(tags: MutableMap<Long, MutableList<Tag>>) = InitialState(tags)
-
-    /**
-     * Base state for the FSM, check if there are more WM and SF states to process,
-     * if so, process, otherwise closes open tags and returns null
-     */
-    abstract inner class BaseState(tags: MutableMap<Long, MutableList<Tag>>) : FSMState(tags) {
-        abstract fun doProcessState(
-            previous: DeviceStateDump<WindowManagerState, LayerTraceEntry>?,
-            current: DeviceStateDump<WindowManagerState, LayerTraceEntry>,
-            next: DeviceStateDump<WindowManagerState, LayerTraceEntry>
-        ): FSMState
-
-        override fun process(
-            previous: DeviceStateDump<WindowManagerState, LayerTraceEntry>?,
-            current: DeviceStateDump<WindowManagerState, LayerTraceEntry>,
-            next: DeviceStateDump<WindowManagerState, LayerTraceEntry>?
-        ): FSMState? {
-            return when (next) {
-                null -> {
-                    // last state
-                    logger.invoke("(${current.layerState.timestamp}) Trace has reached the end")
-                    if (hasOpenTag()) {
-                        logger.invoke("(${current.layerState.timestamp}) Has an open tag, " +
-                            "closing it on the last SF state")
-                        addEndTransitionTag(current, Transition.ROTATION)
-                    }
-                    null
-                }
-                else -> doProcessState(previous, current, next)
-            }
-        }
-    }
 
     /**
      * Initial FSM state, obtains the current display size and start searching
@@ -127,7 +96,7 @@ class RotationProcessor(logger: (String) -> Unit) : TransitionProcessor(logger) 
                 "to $newDisplayRect")
             // tag on the last complete state at the start
             logger.invoke("(${previous.wmState.timestamp}) Tagging transition start")
-            addStartTransitionTag(previous, Transition.ROTATION)
+            addStartTransitionTag(previous, transition)
             return WaitRotationFinished(tags)
         }
     }
@@ -175,7 +144,7 @@ class RotationProcessor(logger: (String) -> Unit) : TransitionProcessor(logger) 
             } else {
                 // tag on the last complete state at the start
                 logger.invoke("(${current.layerState.timestamp}) Tagging transition end")
-                addEndTransitionTag(current, Transition.ROTATION)
+                addEndTransitionTag(current, transition)
                 // return to start to wait for a second rotation
                 val lastDisplayRect = current.wmState.displaySize()
                 WaitDisplayRectChange(tags, lastDisplayRect)
@@ -184,7 +153,7 @@ class RotationProcessor(logger: (String) -> Unit) : TransitionProcessor(logger) 
     }
 
     companion object {
-        private fun LayerTraceEntry.screenBounds() = this.displays.sortedBy { it.id }.firstOrNull()
+        private fun LayerTraceEntry.screenBounds() = this.displays.minByOrNull { it.id }
             ?.layerStackSpace?.toRectF() ?: this.children
             .sortedBy { it.id }
             .firstOrNull { it.isRootLayer }

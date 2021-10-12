@@ -198,7 +198,7 @@ class LayersTraceParser {
 
         private fun newDisplay(proto: DisplayProto): Display {
             return Display(
-                proto.id,
+                proto.id.toULong(),
                 proto.name,
                 proto.layerStack,
                 proto.size.toSize(),

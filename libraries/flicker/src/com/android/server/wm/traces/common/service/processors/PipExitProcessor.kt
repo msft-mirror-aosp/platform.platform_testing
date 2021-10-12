@@ -29,8 +29,13 @@ import com.android.server.wm.traces.common.tags.Tag
 import com.android.server.wm.traces.common.tags.Transition
 import com.android.server.wm.traces.common.windowmanager.WindowManagerState
 
+/**
+ * This processor creates tags when the pip window is exited directly to home screen or a
+ * different app altogether.
+ * @param logger logs by invoking any event messages
+ */
 class PipExitProcessor(logger: (String) -> Unit) : TransitionProcessor(logger) {
-    private val transition = Transition.PIP_EXIT
+    override val transition = Transition.PIP_EXIT
     private val scalingWindows =
         HashMap<String, DeviceStateDump<WindowManagerState, LayerTraceEntry>>()
     private val areLayersAnimating = hasLayersAnimating()
@@ -39,38 +44,6 @@ class PipExitProcessor(logger: (String) -> Unit) : TransitionProcessor(logger) {
 
     override fun getInitialState(tags: MutableMap<Long, MutableList<Tag>>) =
             WaitPinnedWindowSwipedOrFading(tags)
-
-    /**
-     * Base state for the FSM, check if there are more WM and SF states to process,
-     * if so, process, otherwise closes open tags and returns null
-     */
-    abstract inner class BaseState(tags: MutableMap<Long, MutableList<Tag>>) : FSMState(tags) {
-        abstract fun doProcessState(
-            previous: DeviceStateDump<WindowManagerState, LayerTraceEntry>?,
-            current: DeviceStateDump<WindowManagerState, LayerTraceEntry>,
-            next: DeviceStateDump<WindowManagerState, LayerTraceEntry>
-        ): FSMState
-
-        override fun process(
-            previous: DeviceStateDump<WindowManagerState, LayerTraceEntry>?,
-            current: DeviceStateDump<WindowManagerState, LayerTraceEntry>,
-            next: DeviceStateDump<WindowManagerState, LayerTraceEntry>?
-        ): FSMState? {
-            return when (next) {
-                null -> {
-                    // last state
-                    logger.invoke("(${current.layerState.timestamp}) Trace has reached the end")
-                    if (hasOpenTag()) {
-                        logger.invoke("(${current.layerState.timestamp}) Has an open tag, " +
-                            "closing it on the last SF state")
-                        addEndTransitionTag(current, transition)
-                    }
-                    null
-                }
-                else -> doProcessState(previous, current, next)
-            }
-        }
-    }
 
     /**
      * Initial FSM state which waits until the app window in pip mode starts to change opacity.

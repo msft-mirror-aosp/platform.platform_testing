@@ -23,8 +23,8 @@ import com.google.common.truth.Truth
 import org.junit.Test
 
 /**
- * Contains [AppLaunchProcessor] tests. To run this test: `atest
- * FlickerLibTest:AppLaunchProcessorTest`
+ * Contains [AppLaunchProcessor] tests. To run this test:
+ * `atest FlickerLibTest:AppLaunchProcessorTest`
  */
 class AppLaunchProcessorTest {
     private val processor = AppLaunchProcessor { }
@@ -101,8 +101,8 @@ class AppLaunchProcessorTest {
         Truth.assertWithMessage("Should have 2 app launch tags")
             .that(tagTrace)
             .hasSize(2)
-        val startTagTimestamp = 192568912054261 // Represents 2d5h29m28s912ms
-        val endTagTimestamp = 192569897936182 // Represents 2d5h29m29s897ms
+        val startTagTimestamp = 677617096496959 // Represents 7d20h13m37s96ms
+        val endTagTimestamp = 677617685370716 // Represents 7d20h13m37s685ms
         Truth.assertThat(tagTrace.first().timestamp).isEqualTo(startTagTimestamp)
         Truth.assertThat(tagTrace.last().timestamp).isEqualTo(endTagTimestamp)
     }
@@ -113,8 +113,8 @@ class AppLaunchProcessorTest {
         Truth.assertWithMessage("Should have 2 app launch tags")
             .that(tagTrace)
             .hasSize(2)
-        val startTagTimestamp = 192782254751712 // Represents 2d5h33m2s275ms
-        val endTagTimestamp = 192782828336352 // Represents 2d5h33m2s828ms
+        val startTagTimestamp = 677630638463152 // Represents 7d20h13m50s638ms
+        val endTagTimestamp = 677631170881851 // Represents 7d20h13m51s170ms
         Truth.assertThat(tagTrace.first().timestamp).isEqualTo(startTagTimestamp)
         Truth.assertThat(tagTrace.last().timestamp).isEqualTo(endTagTimestamp)
     }
@@ -125,8 +125,8 @@ class AppLaunchProcessorTest {
         Truth.assertWithMessage("Should have 2 app launch tags")
             .that(tagTrace)
             .hasSize(2)
-        val startTagTimestamp = 192613118153196 // Represents 2d5h30m13s118ms
-        val endTagTimestamp = 192614112528399 // Represents 2d5h30m14s112ms
+        val startTagTimestamp = 678152269074856 // Represents 7d20h22m32s269ms
+        val endTagTimestamp = 678152921944244 // Represents 7d20h22m32s921ms
         Truth.assertThat(tagTrace.first().timestamp).isEqualTo(startTagTimestamp)
         Truth.assertThat(tagTrace.last().timestamp).isEqualTo(endTagTimestamp)
     }
@@ -137,8 +137,8 @@ class AppLaunchProcessorTest {
         Truth.assertWithMessage("Should have 2 app launch tags")
             .that(tagTrace)
             .hasSize(2)
-        val startTagTimestamp = 192631295932194 // Represents 2d5h30m31s295ms
-        val endTagTimestamp = 192632120383579 // Represents 2d5h30m32s120ms
+        val startTagTimestamp = 765902849663314 // Represents 8d20h45m2s849ms
+        val endTagTimestamp = 765903475287491 // Represents 8d20h45m4s139ms
         Truth.assertThat(tagTrace.first().timestamp).isEqualTo(startTagTimestamp)
         Truth.assertThat(tagTrace.last().timestamp).isEqualTo(endTagTimestamp)
     }

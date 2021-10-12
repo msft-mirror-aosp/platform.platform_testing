@@ -18,99 +18,82 @@ package com.android.server.wm.flicker.service.assertors
 
 import android.util.Log
 import com.android.server.wm.flicker.FLICKER_TAG
-import com.android.server.wm.flicker.assertions.FlickerSubject
 import com.android.server.wm.flicker.traces.FlickerSubjectException
-import com.android.server.wm.flicker.traces.FlickerTraceSubject
 import com.android.server.wm.flicker.traces.layers.LayersTraceSubject
 import com.android.server.wm.flicker.traces.windowmanager.WindowManagerTraceSubject
-import com.android.server.wm.traces.common.ITrace
-import com.android.server.wm.traces.common.ITraceEntry
 import com.android.server.wm.traces.common.errors.Error
+import com.android.server.wm.traces.common.errors.ErrorState
 import com.android.server.wm.traces.common.errors.ErrorTrace
 import com.android.server.wm.traces.common.layers.LayersTrace
 import com.android.server.wm.traces.common.service.ITransitionAssertor
+import com.android.server.wm.traces.common.tags.Tag
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 
 /**
  * Class that runs FASS assertions.
  */
 class TransitionAssertor(
-    private val configModel: AssertorConfigModel,
+    private val assertions: List<AssertionData>,
     private val logger: (String) -> Unit
 ) : ITransitionAssertor {
-    override fun analyzeWmTrace(wmTrace: WindowManagerTrace): ErrorTrace {
+    /** {@inheritDoc} */
+    override fun analyze(
+        tag: Tag,
+        wmTrace: WindowManagerTrace,
+        layersTrace: LayersTrace
+    ): ErrorTrace {
         val errorStates = mutableMapOf<Long, MutableList<Error>>()
 
-        errorStates.putAll(runCategoryAssertions(wmTrace, AssertionConfigParser.PRESUBMIT_KEY))
-        errorStates.putAll(runCategoryAssertions(wmTrace, AssertionConfigParser.POSTSUBMIT_KEY))
-        errorStates.putAll(runCategoryAssertions(wmTrace, AssertionConfigParser.FLAKY_KEY))
-
-        return buildErrorTrace(errorStates)
-    }
-
-    override fun analyzeLayersTrace(layersTrace: LayersTrace): ErrorTrace {
-        val errorStates = mutableMapOf<Long, MutableList<Error>>()
-
-        errorStates.putAll(runCategoryAssertions(layersTrace, AssertionConfigParser.PRESUBMIT_KEY))
-        errorStates.putAll(runCategoryAssertions(layersTrace, AssertionConfigParser.POSTSUBMIT_KEY))
-        errorStates.putAll(runCategoryAssertions(layersTrace, AssertionConfigParser.FLAKY_KEY))
+        errorStates.putAll(
+            runCategoryAssertions(tag, wmTrace, layersTrace, AssertionConfigParser.PRESUBMIT_KEY))
+        errorStates.putAll(
+            runCategoryAssertions(tag, wmTrace, layersTrace, AssertionConfigParser.POSTSUBMIT_KEY))
+        errorStates.putAll(
+            runCategoryAssertions(tag, wmTrace, layersTrace, AssertionConfigParser.FLAKY_KEY))
 
         return buildErrorTrace(errorStates)
     }
 
     private fun runCategoryAssertions(
-        trace: ITrace<out ITraceEntry>,
+        tag: Tag,
+        wmTrace: WindowManagerTrace,
+        layersTrace: LayersTrace,
         categoryKey: String
     ): Map<Long, MutableList<Error>> {
-        val errors = mutableMapOf<Long, MutableList<Error>>()
-
-        if (trace is WindowManagerTrace) {
-            val subject = WindowManagerTraceSubject.assertThat(trace)
-            val assertions = configModel.assertions.filter {
-                it.trace == AssertionConfigParser.WM_TRACE_KEY &&
-                    it.category == categoryKey
-            }
-            errors.putAll(runAssertionsOnSubject(subject, assertions))
-        }
-
-        if (trace is LayersTrace) {
-            val subject = LayersTraceSubject.assertThat(trace)
-            val assertions = configModel.assertions.filter {
-                it.trace == AssertionConfigParser.LAYERS_TRACE_KEY &&
-                    it.category == categoryKey
-            }
-            errors.putAll(runAssertionsOnSubject(subject, assertions))
-        }
-
-        return errors
+        logger.invoke("Running assertions for $tag $categoryKey")
+        val wmSubject = WindowManagerTraceSubject.assertThat(wmTrace)
+        val layersSubject = LayersTraceSubject.assertThat(layersTrace)
+        val assertions = assertions.filter { it.category == categoryKey }
+        return runAssertionsOnSubjects(tag, wmSubject, layersSubject, assertions)
     }
 
-    private fun runAssertionsOnSubject(
-        subject: FlickerTraceSubject<out FlickerSubject>,
+    private fun runAssertionsOnSubjects(
+        tag: Tag,
+        wmSubject: WindowManagerTraceSubject,
+        layerSubject: LayersTraceSubject,
         assertions: List<AssertionData>
     ): Map<Long, MutableList<Error>> {
         val errors = mutableMapOf<Long, MutableList<Error>>()
-        val subjectClass = if (subject is WindowManagerTraceSubject)
-            WindowManagerTraceSubject::class.java else LayersTraceSubject::class.java
-
-        val assertionsClass = try {
-            Class.forName(configModel.name)
-        } catch (e: ClassNotFoundException) {
-            Log.e("$FLICKER_TAG-ASSERT", "Assertions class not found", e)
-            return errors
-        }
 
         try {
-            assertions.forEach { assertion ->
-                val assertionMethod = assertionsClass.getDeclaredMethod(
-                    assertion.name, subjectClass
-                )
-                val error = assertionMethod.invoke(
-                        assertionsClass.newInstance(), subject
-                ) as FlickerSubjectException?
-                error?.let { exception ->
+            assertions.forEach {
+                val assertion = it.assertion
+                logger.invoke("Running assertion $assertion")
+                val result = assertion.runCatching { evaluate(tag, wmSubject, layerSubject) }
+                if (result.isFailure) {
+                    val layer = assertion.getFailureLayer(tag, wmSubject, layerSubject)
+                    val window = assertion.getFailureWindow(tag, wmSubject, layerSubject)
+                    val exception = result.exceptionOrNull() as FlickerSubjectException
+
                     errors.putIfAbsent(exception.timestamp, mutableListOf())
-                    errors.getValue(exception.timestamp).add(createError(subject, exception))
+                    val errorEntry = Error(
+                        stacktrace = exception.stackTraceToString(),
+                        message = exception.message,
+                        layerId = layer?.id ?: 0,
+                        windowToken = window?.token ?: "",
+                        assertionName = assertion.name
+                    )
+                    errors.getValue(exception.timestamp).add(errorEntry)
                 }
             }
         } catch (e: NoSuchMethodException) {
@@ -120,5 +103,14 @@ class TransitionAssertor(
         }
 
         return errors
+    }
+
+    private fun buildErrorTrace(errors: MutableMap<Long, MutableList<Error>>): ErrorTrace {
+        val errorStates = errors.map { entry ->
+            val timestamp = entry.key
+            val stateTags = entry.value
+            ErrorState(stateTags.toTypedArray(), timestamp.toString())
+        }
+        return ErrorTrace(errorStates.toTypedArray(), source = "")
     }
 }
