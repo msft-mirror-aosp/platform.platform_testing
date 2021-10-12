@@ -18,6 +18,7 @@ package android.device.collectors;
 
 import android.device.collectors.annotations.OptionClass;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
@@ -32,6 +33,7 @@ import org.junit.runner.notification.Failure;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.concurrent.TimeUnit;
 
 /**
  * A {@link GcaEventLogCollector} that captures Google Camera App (GCA) on-device event log protos
@@ -54,6 +56,7 @@ public class GcaEventLogCollector extends BaseMetricListener {
     static final String COLLECT_CAMERA_LOGS_PER_RUN = "collect_camera_logs_per_run";
 
     private static final String GOOGLE_CAMERA_APP_PACKAGE = "google_camera_app_package";
+    private static final long WAIT_AFTER_APP_FORCE_STOP_MILLIS = TimeUnit.SECONDS.toMillis(2);
 
     enum SeLinuxEnforceProperty {
         ENFORCING("1"),
@@ -196,6 +199,9 @@ public class GcaEventLogCollector extends BaseMetricListener {
 
     private void killGoogleCameraApp() {
         executeCommandBlocking("am force-stop " + mGcaPkg);
+        // Add delay after force stop GCA to avoid new instance start before the app fully die.
+        // (https://b.corp.google.com/issues/181777896#comment27)
+        SystemClock.sleep(WAIT_AFTER_APP_FORCE_STOP_MILLIS);
     }
 
     private SeLinuxEnforceProperty getSeLinuxEnforceProperty() {

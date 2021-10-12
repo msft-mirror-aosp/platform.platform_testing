@@ -36,8 +36,7 @@ public class SimpleperfHelper {
     private static final String LOG_TAG = SimpleperfHelper.class.getSimpleName();
     private static final String SIMPLEPERF_TMP_FILE_PATH = "/data/local/tmp/perf.data";
 
-    private static final String SIMPLEPERF_START_CMD =
-            "simpleperf record -o %s -g --post-unwind=yes -f 500 -a --exclude-perf";
+    private static final String SIMPLEPERF_START_CMD = "simpleperf %s -o %s %s";
     private static final String SIMPLEPERF_STOP_CMD = "pkill -INT simpleperf";
     private static final String SIMPLEPERF_PROC_ID_CMD = "pidof simpleperf";
     private static final String REMOVE_CMD = "rm %s";
@@ -50,7 +49,7 @@ public class SimpleperfHelper {
 
     private UiDevice mUiDevice;
 
-    public boolean startCollecting() {
+    public boolean startCollecting(String subcommand, String arguments) {
         mUiDevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
         try {
             // Cleanup any running simpleperf sessions.
@@ -66,11 +65,20 @@ public class SimpleperfHelper {
             new Thread() {
                 @Override
                 public void run() {
+                    String startCommand =
+                            String.format(
+                                    SIMPLEPERF_START_CMD,
+                                    subcommand,
+                                    SIMPLEPERF_TMP_FILE_PATH,
+                                    arguments);
+                    Log.i(LOG_TAG, String.format("Start command: %s", startCommand));
                     UiDevice uiDevice =
                             UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
                     try {
-                        uiDevice.executeShellCommand(
-                                String.format(SIMPLEPERF_START_CMD, SIMPLEPERF_TMP_FILE_PATH));
+                        String startOutput = uiDevice.executeShellCommand(startCommand);
+                        Log.i(
+                                LOG_TAG,
+                                String.format("Simpleperf start command output - %s", startOutput));
                     } catch (IOException e) {
                         Log.e(LOG_TAG, "Failed to start simpleperf.");
                     }

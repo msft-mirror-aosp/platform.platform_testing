@@ -92,13 +92,4 @@ public interface IAutoAppInfoSettingsHelper extends IAppHelper {
      * @param packageName - package of the application to be checked.
      */
     boolean isApplicationDisabled(String packageName);
-
-    /**
-     * Setup expectation: None
-     *
-     * <p>This method is to check open an application.
-     *
-     * @param appName - Name of the app to be opened.
-     */
-    void openApp(String packageName);
 }

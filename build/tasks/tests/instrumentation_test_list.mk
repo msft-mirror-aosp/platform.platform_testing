@@ -29,6 +29,7 @@ instrumentation_tests := \
     FrameworksServicesTests \
     FrameworksMockingServicesTests \
     WmTests \
+    WmPerfTests \
     JobTestApp \
     SuspendTestApp \
     FrameworksUtilTests \
@@ -39,6 +40,7 @@ instrumentation_tests := \
     SystemUITests \
     TestablesTests \
     FrameworksWifiApiTests \
+    FrameworksWifiNonUpdatableApiTests \
     FrameworksWifiTests \
     FrameworksTelephonyTests \
     ContactsProviderTests \
@@ -67,13 +69,23 @@ instrumentation_tests := \
     PresencePollingTests \
     ImsCommonTests \
     SettingsProviderTest \
-    FrameworksLocationTests \
     FrameworksPrivacyLibraryTests \
     SettingsUITests \
     SettingsPerfTests \
-    ExtServicesUnitTests\
-    FrameworksNetSmokeTests\
+    ExtServicesUnitTests \
+    FrameworksNetSmokeTests \
+    FlickerTests \
+    FlickerTestApp \
+    WMShellFlickerTests \
+    WMShellFlickerTestApp \
+    WMShellUnitTests \
+    trace_config_detailed.textproto \
+    perfetto_trace_processor_shell \
+    CarDeveloperOptionsUnitTests
 
+ifneq ($(strip $(BOARD_PERFSETUP_SCRIPT)),)
+instrumentation_tests += perf-setup
+endif
 
 # Storage Manager may not exist on device
 ifneq ($(filter StorageManager, $(PRODUCT_PACKAGES)),)
