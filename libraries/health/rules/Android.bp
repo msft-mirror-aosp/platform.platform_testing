@@ -28,6 +28,7 @@ java_library {
         "package-helper",
         "launcher-aosp-tapl",
         "flickerlib",
+        "statsd-helper",
     ],
     srcs: ["src/**/*.java"],
 }
@@ -42,6 +43,7 @@ java_library {
         "guava",
         "memory-helper",
         "package-helper",
+        "statsd-helper",
         "launcher-aosp-tapl",
     ],
     srcs: ["src/**/*.java"],
