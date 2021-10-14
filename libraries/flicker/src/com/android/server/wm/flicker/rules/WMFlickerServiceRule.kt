@@ -77,12 +77,15 @@ open class WMFlickerServiceRule @JvmOverloads constructor(
     }
 
     /**
-     * Remove the WM trace and layers trace files collected from previous test runs.
+     * Remove the WM trace and layers trace files collected from previous test runs if the
+     * directory exists.
      */
     private fun cleanupTraceFiles() {
-        Files.list(outputDir).forEach { file ->
-            if (!Files.isDirectory(file)) {
-                Files.delete(file)
+        if (Files.exists(outputDir)) {
+            Files.list(outputDir).forEach { file ->
+                if (!Files.isDirectory(file)) {
+                    Files.delete(file)
+                }
             }
         }
     }
