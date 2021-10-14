@@ -16,8 +16,9 @@
 
 package android.test.example.helloworld;
 
-import androidx.test.filters.SmallTest;
 import android.util.Log;
+
+import androidx.test.filters.SmallTest;
 
 import org.junit.After;
 import org.junit.AfterClass;
