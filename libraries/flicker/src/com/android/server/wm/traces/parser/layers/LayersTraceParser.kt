@@ -17,11 +17,12 @@
 package com.android.server.wm.traces.parser.layers
 
 import android.graphics.Rect
+import android.surfaceflinger.nano.Common.ColorProto
 import android.surfaceflinger.nano.Common.RectProto
+import android.surfaceflinger.nano.Common.RegionProto
 import android.surfaceflinger.nano.Common.SizeProto
 import android.surfaceflinger.nano.Display.DisplayProto
 import android.surfaceflinger.nano.Layers
-import android.surfaceflinger.nano.Layers.RegionProto
 import android.surfaceflinger.nano.Layerstrace
 import android.util.Log
 import com.android.server.wm.traces.common.Buffer
@@ -222,7 +223,7 @@ class LayersTraceParser {
         }
 
         @JvmStatic
-        private fun Layers.ColorProto?.toColor(): Color {
+        private fun ColorProto?.toColor(): Color {
             if (this == null) {
                 return Color.EMPTY
             }
