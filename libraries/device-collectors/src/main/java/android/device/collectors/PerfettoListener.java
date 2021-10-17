@@ -76,6 +76,10 @@ public class PerfettoListener extends BaseMetricListener {
     public static final String PERFETTO_START_WAIT_TIME_ARG = "perfetto_start_wait_time_ms";
     // Default wait time before starting the perfetto trace.
     public static final String DEFAULT_START_WAIT_TIME_MSECS = "3000";
+    // Regular expression pattern to identify multiple spaces.
+    public static final String SPACES_PATTERN = "\\s+";
+    // Space replacement value
+    public static final String REPLACEMENT_CHAR = "#";
 
     private final WakeLockContext mWakeLockContext;
     private final Supplier<WakeLock> mWakelockSupplier;
@@ -401,10 +405,12 @@ public class PerfettoListener extends BaseMetricListener {
     }
 
     /**
-     * Returns the packagename.classname_methodname which has no special characters and used to
-     * create file names.
+     * Returns the packagename.classname_methodname which has no spaces and used to create file
+     * names.
      */
     public static String getTestFileName(Description description) {
-        return String.format("%s_%s", description.getClassName(), description.getMethodName());
+        return String.format("%s_%s",
+                description.getClassName().replaceAll(SPACES_PATTERN, REPLACEMENT_CHAR).trim(),
+                description.getMethodName().replaceAll(SPACES_PATTERN, REPLACEMENT_CHAR).trim());
     }
 }
