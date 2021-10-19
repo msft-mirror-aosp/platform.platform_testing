@@ -47,7 +47,7 @@ public class FailureWatcher extends TestWatcher {
         onError(mDevice, description, e);
     }
 
-    static File diagFile(Description description, String prefix, String ext) {
+    public static File diagFile(Description description, String prefix, String ext) {
         return new File(
                 getInstrumentation().getTargetContext().getFilesDir(),
                 prefix
