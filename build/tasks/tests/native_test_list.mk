@@ -238,8 +238,7 @@ native_tests := \
     NeuralNetworksTest_static \
     NeuralNetworksTest_utils \
     SurfaceFlinger_test \
-    lmkd_unit_test \
-    vrflinger_test
+    lmkd_unit_test
 
 ifeq ($(BOARD_IS_AUTOMOTIVE), true)
 native_tests += libwatchdog_test
