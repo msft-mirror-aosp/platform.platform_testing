@@ -88,9 +88,9 @@ class AssertionEngine(
     }
 
     private fun getEndTagTimestamp(tagTrace: TagTrace, tag: Tag): Long {
-        val finalTag = tag.copy(isStartTag = false)
-        return tagTrace.entries.firstOrNull { state -> state.tags.contains(finalTag) }?.timestamp
-            ?: throw RuntimeException("All open tags should be closed!")
+        return tagTrace.entries.firstOrNull { state ->
+            state.tags.any { it.id == tag.id && !it.isStartTag }
+        }?.timestamp ?: throw RuntimeException("All open tags should be closed!")
     }
 
     /**
