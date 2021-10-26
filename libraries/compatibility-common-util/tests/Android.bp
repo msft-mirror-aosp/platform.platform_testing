@@ -1,4 +1,4 @@
-// Copyright (C) 2020 The Android Open Source Project
+// Copyright (C) 2015 The Android Open Source Project
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,37 +12,28 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Build the common utility library for use device-side
 package {
     default_applicable_licenses: ["Android-Apache-2.0"],
 }
 
-java_library_static {
-    name: "compatibility-common-util-devicesidelib",
-    sdk_version: "current",
+java_test_host {
+    name: "compatibility-common-util-tests",
+    // Restrict visibility to only those targets that need to access it.
+    visibility: ["//visibility:private"],
+    defaults: ["cts_error_prone_rules"],
 
     srcs: ["src/**/*.java"],
+    test_options: {
+        unit_test: true,
+    },
 
     static_libs: [
-        "guava",
+        "compatibility-common-util-lib",
         "junit",
-        "platform-test-annotations",
-    ],
-}
-
-java_library {
-    name: "compatibility-common-util-lib",
-    visibility: [
-        "//test/suite_harness/common/util",
-        "//platform_testing/libraries/compatibility-common-util/tests",
-    ],
-    srcs: ["src/**/*.java"],
-    host_supported: true,
-    libs: [
-        "junit",
-        "guava",
-        "json-prebuilt",
-        "platform-test-annotations",
         "kxml2-2.3.0",
+        "tradefed",
     ],
+
+    // Holds golden sample files in assets for validation
+    java_resource_dirs: ["assets/"],
 }
