@@ -23,10 +23,12 @@ system_app_native_crash ReferenceQueueD*.*com.google.android.apps.safetyhub 1621
 system_app_native_crash Binder*.*com.google.android.apps.safetyhub 162104694
 system_app_native_crash Lite\sThread*.*com.google.android.apps.safetyhub 162379378
 system_app_native_crash BG\sThread*.*com.google.android.apps.safetyhub 162381002
+system_app_native_crash FireflyProcMgr\s+>>>\scom.google.android.GoogleCamera\s<<<[\S\s]+SIGSEGV[\S\s]+null\spointer\sdereference 195519497
 SYSTEM_TOMBSTONE Binder*.*com.google.android.apps.safetyhub 162104694
 SYSTEM_TOMBSTONE ReferenceQueueD*.*com.google.android.apps.safetyhub 162103095
 SYSTEM_TOMBSTONE Lite\sThread*.*com.google.android.apps.safetyhub 162379378
 SYSTEM_TOMBSTONE BG\sThread*.*com.google.android.apps.safetyhub 162381002
+SYSTEM_TOMBSTONE FireflyProcMgr\s+>>>\scom.google.android.GoogleCamera\s<<<[\S\s]+SIGSEGV[\S\s]+null\spointer\sdereference 195519497
 SYSTEM_TOMBSTONE AsyncTask\s+#1\s+>>>\s+com.android.nfc\s+<<<[\S\s]*nfaDeviceManagementCallback[\S\s]*nfc_ncif_cmd_timeout 172057778
 SYSTEM_TOMBSTONE >>>\s+/apex/com.android.os.statsd/bin/statsd\s+<<<[\S\s]*HandleUsingDestroyedMutex 172829930
 SYSTEM_TOMBSTONE audio.service\s+>>>\s+/vendor/bin/hw/android.hardware.audio.service\s+<<<[\S\s]*debuggerd\ssignal[\S\s]*audio_extn_utils_get_snd_card_num 174265816
