@@ -21,37 +21,40 @@ import androidx.test.uiautomator.UiDevice
 import com.android.server.wm.flicker.DUMMY_APP
 import com.android.server.wm.flicker.helpers.StandardAppHelper
 import com.android.server.wm.flicker.helpers.wakeUpAndGoToHomeScreen
-import com.android.server.wm.flicker.rules.WMFlickerServiceRule
 import com.android.server.wm.traces.parser.windowmanager.WindowManagerStateHelper
+import com.google.common.truth.Truth.assertThat
 import org.junit.FixMethodOrder
-import org.junit.Rule
 import org.junit.Test
 import org.junit.runners.MethodSorters
 
 /**
- * Contains a rotation mock test for [WMFlickerServiceRule].
- *
- * To run this test: `atest FlickerLibTest:RotationMockTest`
+ * Contains [FlickerCollectionHelper] tests. To run this test:
+ * `atest FlickerLibTest:FlickerCollectionHelperTest`
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-class RotationMockTest {
+class FlickerCollectionHelperTest {
     private val instrumentation = InstrumentationRegistry.getInstrumentation()
     private val dummyAppHelper = StandardAppHelper(instrumentation, "dummyApp", DUMMY_APP)
-
-    @get:Rule
-    val rule = WMFlickerServiceRuleTest()
+    private val flickerCollectionHelper = FlickerCollectionHelper()
+    private val device = UiDevice.getInstance(instrumentation)
+    private val wmHelper = WindowManagerStateHelper(instrumentation)
 
     @Test
-    fun startRotationServiceTest() {
-        val device = UiDevice.getInstance(instrumentation)
-        val wmHelper = WindowManagerStateHelper(instrumentation)
-
+    fun testNoData() {
         device.wakeUpAndGoToHomeScreen()
         wmHelper.waitForHomeActivityVisible()
+        flickerCollectionHelper.startCollecting()
+        assertThat(flickerCollectionHelper.metrics).isEmpty()
+    }
+
+    @Test
+    fun testValidData() {
+        device.wakeUpAndGoToHomeScreen()
+        wmHelper.waitForHomeActivityVisible()
+        flickerCollectionHelper.startCollecting()
         dummyAppHelper.launchViaIntent(wmHelper)
-        device.setOrientationLeft()
-        instrumentation.uiAutomation.syncInputTransactions()
-        device.setOrientationNatural()
-        instrumentation.uiAutomation.syncInputTransactions()
+        wmHelper.waitForFullScreenApp(DUMMY_APP)
+
+        assertThat(flickerCollectionHelper.metrics.size).isEqualTo(19)
     }
 }
