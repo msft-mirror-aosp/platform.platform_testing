@@ -41,24 +41,25 @@ class FlickerService @JvmOverloads constructor(
      *
      * @param wmTrace Window Manager trace
      * @param layersTrace Surface Flinger trace
-     * @return A list containing all failures
+     * @return A pair with an [ErrorTrace] and a map that associates assertion names with
+     * 0 if it fails and 1 if it passes
      */
     fun process(
         wmTrace: WindowManagerTrace,
         layersTrace: LayersTrace,
         outputDir: Path,
         testTag: String
-    ): ErrorTrace {
+    ): Pair<ErrorTrace, Map<String, Int>> {
         val taggingEngine = TaggingEngine(wmTrace, layersTrace) { Log.v("$FLICKER_TAG-PROC", it) }
         val tagTrace = taggingEngine.run()
         val tagTraceFile = getFassFilePath(outputDir, testTag, "tag_trace")
         tagTrace.writeToFile(tagTraceFile)
 
         val assertionEngine = AssertionEngine(assertions) { Log.v("$FLICKER_TAG-ASSERT", it) }
-        val errorTrace = assertionEngine.analyze(wmTrace, layersTrace, tagTrace)
+        val (errorTrace, assertions) = assertionEngine.analyze(wmTrace, layersTrace, tagTrace)
         val errorTraceFile = getFassFilePath(outputDir, testTag, "error_trace")
         errorTrace.writeToFile(errorTraceFile)
-        return errorTrace
+        return errorTrace to assertions
     }
 
     companion object {

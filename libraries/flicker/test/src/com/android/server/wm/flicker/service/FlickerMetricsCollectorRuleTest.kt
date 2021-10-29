@@ -18,40 +18,38 @@ package com.android.server.wm.flicker.service
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.UiDevice
-import com.android.server.wm.flicker.DUMMY_APP
-import com.android.server.wm.flicker.helpers.StandardAppHelper
 import com.android.server.wm.flicker.helpers.wakeUpAndGoToHomeScreen
-import com.android.server.wm.flicker.rules.WMFlickerServiceRule
+import com.android.server.wm.flicker.rules.FlickerMetricsCollectorRule
 import com.android.server.wm.traces.parser.windowmanager.WindowManagerStateHelper
+import org.junit.Before
 import org.junit.FixMethodOrder
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runners.MethodSorters
 
 /**
- * Contains a rotation mock test for [WMFlickerServiceRule].
- *
- * To run this test: `atest FlickerLibTest:RotationMockTest`
+ * A test for [FlickerMetricsCollectorRule] checking that the traces are collected.
+ * To run this test: `atest FlickerLibTest:FlickerMetricsCollectorRuleTest`
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-class RotationMockTest {
-    private val instrumentation = InstrumentationRegistry.getInstrumentation()
-    private val dummyAppHelper = StandardAppHelper(instrumentation, "dummyApp", DUMMY_APP)
-
+class FlickerMetricsCollectorRuleTest {
     @get:Rule
-    val rule = WMFlickerServiceRuleTest()
+    val flickerRule = FlickerMetricsCollectorRule()
 
-    @Test
-    fun startRotationServiceTest() {
-        val device = UiDevice.getInstance(instrumentation)
-        val wmHelper = WindowManagerStateHelper(instrumentation)
+    private val instrumentation = InstrumentationRegistry.getInstrumentation()
+    private val device = UiDevice.getInstance(instrumentation)
+    private val wmHelper = WindowManagerStateHelper(instrumentation)
 
+    @Before
+    fun setup() {
         device.wakeUpAndGoToHomeScreen()
         wmHelper.waitForHomeActivityVisible()
-        dummyAppHelper.launchViaIntent(wmHelper)
-        device.setOrientationLeft()
-        instrumentation.uiAutomation.syncInputTransactions()
-        device.setOrientationNatural()
-        instrumentation.uiAutomation.syncInputTransactions()
+    }
+
+    @Test
+    fun runAssertion() {
+        device.pressHome()
+        wmHelper.waitForHomeActivityVisible()
+        flickerRule.checkPresubmitAssertions()
     }
 }

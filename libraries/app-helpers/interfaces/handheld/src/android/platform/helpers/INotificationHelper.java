@@ -21,7 +21,10 @@ import android.support.test.uiautomator.BySelector;
 import android.support.test.uiautomator.Direction;
 import android.support.test.uiautomator.UiObject2;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
+import java.util.List;
 
 /** An App Helper interface for the Notification. */
 public interface INotificationHelper extends IAppHelper {
@@ -49,6 +52,15 @@ public interface INotificationHelper extends IAppHelper {
      * @param index The index of the notification to open.
      */
     default void openNotificationbyIndex(int index) {
+        throw new UnsupportedOperationException("Not yet implemented.");
+    }
+
+    /**
+     * Wait until pop-up notification dismissed
+     *
+     * @return true if notification is dismissed before internal timeout
+     */
+    default boolean waitPopUpNotificationAutoDismissed() {
         throw new UnsupportedOperationException("Not yet implemented.");
     }
 
@@ -99,6 +111,21 @@ public interface INotificationHelper extends IAppHelper {
     }
 
     /**
+     * Setup Expectations: None
+     *
+     * <p>Posts a number of notifications to the device with a groupId. Successive calls to this
+     * should post new notifications in addition to those previously posted. Note that this may fail
+     * if the helper has surpassed the system-defined limit for per-package notifications.
+     *
+     * @param count The number of notifications to post.
+     * @param pkg The application that will be launched by notifications.
+     * @param summary Summary text for this group notification
+     */
+    default void postGroupNotifications(int count, @Nullable String pkg, @NonNull String summary) {
+        throw new UnsupportedOperationException("Not yet implemented.");
+    }
+
+    /**
      * Setup Expectations: Shade is open
      *
      * <p>Posts a bubble notification. This notification is associated with a conversation shortcut,
@@ -117,6 +144,15 @@ public interface INotificationHelper extends IAppHelper {
      * @param text Text that notification contains.
      */
     default UiObject2 getNotificationByText(String text) {
+        throw new UnsupportedOperationException("Not yet implemented.");
+    }
+
+    /**
+     * Return expandableNotificationRows if found
+     *
+     * @return List of expandableNotificationRow
+     */
+    default List<UiObject2> getExpandableNotificationRows() {
         throw new UnsupportedOperationException("Not yet implemented.");
     }
 

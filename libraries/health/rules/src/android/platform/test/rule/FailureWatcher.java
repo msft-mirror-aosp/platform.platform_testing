@@ -15,23 +15,25 @@
  */
 package android.platform.test.rule;
 
-import static androidx.test.InstrumentationRegistry.getInstrumentation;
-
 import android.os.FileUtils;
 import android.os.ParcelFileDescriptor.AutoCloseInputStream;
 import android.util.Log;
 
 import androidx.test.InstrumentationRegistry;
+import androidx.test.uiautomator.By;
 import androidx.test.uiautomator.UiDevice;
 
 import org.junit.runner.Description;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+
+import static androidx.test.InstrumentationRegistry.getInstrumentation;
 
 /** A rule that generates debug artifact files for failed tests. */
 public class FailureWatcher extends TestWatcher {
@@ -57,6 +59,11 @@ public class FailureWatcher extends TestWatcher {
                         + description.getMethodName()
                         + "."
                         + ext);
+    }
+
+    private static boolean isSystemAnomalyMessagePresent(UiDevice device) {
+        return device.hasObject(By.res("android", "alertTitle"))
+                || device.hasObject(By.res("android", "message"));
     }
 
     public static void onError(UiDevice device, Description description, Throwable e) {
@@ -95,11 +102,22 @@ public class FailureWatcher extends TestWatcher {
         } catch (IOException ex) {
             Log.e(TAG, "Failed to save accessibility hierarchy", ex);
         }
+
+        // Dump bugreport
+        if (isSystemAnomalyMessagePresent(device))
+            dumpCommand("bugreportz -s", diagFile(description, "Bugreport", "zip"));
     }
 
     private static void dumpStringCommand(String cmd, OutputStream out) throws IOException {
         out.write(("\n\n" + cmd + "\n").getBytes());
         dumpCommand(cmd, out);
+    }
+
+    private static void dumpCommand(String cmd, File out) {
+        try (BufferedOutputStream buffered = new BufferedOutputStream(new FileOutputStream(out))) {
+            dumpCommand(cmd, buffered);
+        } catch (IOException ex) {
+        }
     }
 
     private static void dumpCommand(String cmd, OutputStream out) throws IOException {

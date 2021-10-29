@@ -62,7 +62,7 @@ class WMFlickerServiceRuleForTestSpec(
 
                 val wmTrace = wmSubject.trace
                 val layersTrace = layersSubject.trace
-                errors.add(flickerService.process(wmTrace, layersTrace, outputDir, category))
+                errors.add(flickerService.process(wmTrace, layersTrace, outputDir, category).first)
             }
 
         return errors
