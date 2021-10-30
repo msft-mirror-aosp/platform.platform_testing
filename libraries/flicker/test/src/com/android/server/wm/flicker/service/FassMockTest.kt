@@ -18,8 +18,7 @@ package com.android.server.wm.flicker.service
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.UiDevice
-import com.android.server.wm.flicker.DUMMY_APP
-import com.android.server.wm.flicker.helpers.StandardAppHelper
+import com.android.server.wm.flicker.helpers.SampleAppHelper
 import com.android.server.wm.flicker.rules.WMFlickerServiceRule
 import com.android.server.wm.traces.parser.windowmanager.WindowManagerStateHelper
 import org.junit.FixMethodOrder
@@ -35,7 +34,7 @@ import org.junit.runners.MethodSorters
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class FassMockTest {
     private val instrumentation = InstrumentationRegistry.getInstrumentation()
-    private val dummyAppHelper = StandardAppHelper(instrumentation, "dummyApp", DUMMY_APP)
+    private val dummyAppHelper = SampleAppHelper(instrumentation)
 
     @get:Rule
     val rule = WMFlickerServiceRuleTest()

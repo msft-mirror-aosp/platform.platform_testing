@@ -27,16 +27,22 @@ import org.junit.runner.Description
 /**
  * Launched an app before the test
  *
- * @param component App to launch
  * @param instrumentation Instrumentation mechanism to use
+ * @param wmHelper WM/SF synchronization helper
+ * @param appHelper App to launch
  */
-data class LaunchAppRule @JvmOverloads constructor(
-    private val component: FlickerComponentName,
-    private val appName: String = "",
-    private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
+class LaunchAppRule @JvmOverloads constructor(
+    private val appHelper: StandardAppHelper,
+    private val instrumentation: Instrumentation = appHelper.mInstrumentation,
+    private val wmHelper: WindowManagerStateHelper = WindowManagerStateHelper()
 ) : TestWatcher() {
-    private val appHelper = StandardAppHelper(instrumentation, appName, component)
-    private val wmHelper = WindowManagerStateHelper()
+    @JvmOverloads
+    constructor(
+        component: FlickerComponentName,
+        appName: String = "",
+        instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation(),
+        wmHelper: WindowManagerStateHelper = WindowManagerStateHelper()
+    ): this(StandardAppHelper(instrumentation, appName, component), instrumentation, wmHelper)
 
     override fun starting(description: Description?) {
         appHelper.launchViaIntent()

@@ -45,6 +45,7 @@ java_library {
         "package-helper",
         "statsd-helper",
         "launcher-aosp-tapl",
+        "google-camera-app-helper",
     ],
     srcs: ["src/**/*.java"],
     exclude_srcs: [
