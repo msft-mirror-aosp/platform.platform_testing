@@ -22,8 +22,6 @@ import com.android.server.wm.traces.common.FlickerComponentName
 val CHROME_COMPONENT = FlickerComponentName("com.android.chrome",
         "org.chromium.chrome.browser.firstrun.FirstRunActivity")
 val CHROME_SPLASH_SCREEN_COMPONENT = FlickerComponentName("", "Splash Screen com.android.chrome")
-val DUMMY_APP = FlickerComponentName("com.google.android.apps.messaging",
-        "com.google.android.apps.messaging.ui.ConversationListActivity")
 val DOCKER_STACK_DIVIDER_COMPONENT = FlickerComponentName("", "DockedStackDivider")
 val IMAGINARY_COMPONENT = FlickerComponentName("", "ImaginaryWindow")
 val IME_ACTIVITY_COMPONENT = FlickerComponentName("com.android.server.wm.flicker.testapp",
