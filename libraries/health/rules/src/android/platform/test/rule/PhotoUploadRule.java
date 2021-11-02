@@ -17,7 +17,7 @@
 package android.platform.test.rule;
 
 import android.platform.helpers.HelperAccessor;
-import android.platform.helpers.fixed.IGoogleCameraHelper;
+import android.platform.helpers.IGoogleCameraHelper;
 import android.platform.helpers.IPhotosHelper;
 
 import androidx.annotation.VisibleForTesting;

@@ -253,13 +253,13 @@ public class PerfettoListenerTest {
         doReturn(true).when(mPerfettoHelper).stopCollecting(anyLong(), anyString());
 
         // Test run start behavior
-        mListener.onTestRunStart(mListener.createDataRecord(), FAKE_DESCRIPTION);
+        mListener.testRunStarted(FAKE_DESCRIPTION);
         verify(mPerfettoHelper, times(1)).startCollecting(anyString(), anyBoolean());
         mListener.testStarted(mTest1Desc);
         verify(mPerfettoHelper, times(1)).startCollecting(anyString(), anyBoolean());
-        mListener.onTestEnd(mDataRecord, mTest1Desc);
+        mListener.testFinished(mTest1Desc);
         verify(mPerfettoHelper, times(0)).stopCollecting(anyLong(), anyString());
-        mListener.onTestRunEnd(mListener.createDataRecord(), new Result());
+        mListener.testRunFinished(new Result());
         verify(mPerfettoHelper, times(1)).stopCollecting(anyLong(), anyString());
     }
 
@@ -343,7 +343,7 @@ public class PerfettoListenerTest {
         doReturn(true).when(mPerfettoHelper).stopCollecting(anyLong(), anyString());
 
         // Test run start behavior
-        mListener.onTestRunStart(mListener.createDataRecord(), FAKE_DESCRIPTION);
+        mListener.testRunStarted(FAKE_DESCRIPTION);
         // Verify wakelock was held and released
         verify(mWakeLockContext, times(1)).run(any());
     }
@@ -361,7 +361,7 @@ public class PerfettoListenerTest {
         doReturn(true).when(mPerfettoHelper).stopCollecting(anyLong(), anyString());
 
         // Test run start behavior
-        mListener.onTestRunStart(mListener.createDataRecord(), FAKE_DESCRIPTION);
+        mListener.testRunStarted(FAKE_DESCRIPTION);
         // There shouldn't be a wakelock held/released onTestRunStart
         verify(mWakeLockContext, times(0)).run(any());
         mListener.testStarted(mTest1Desc);
@@ -382,14 +382,14 @@ public class PerfettoListenerTest {
         doReturn(true).when(mPerfettoHelper).stopCollecting(anyLong(), anyString());
 
         // Test run start behavior
-        mListener.onTestRunStart(mListener.createDataRecord(), FAKE_DESCRIPTION);
+        mListener.testRunStarted(FAKE_DESCRIPTION);
         mListener.testStarted(mTest1Desc);
         // There is one wakelock after the test/run starts
         verify(mWakeLockContext, times(1)).run(any());
-        mListener.onTestEnd(mDataRecord, mTest1Desc);
+        mListener.testFinished(mTest1Desc);
         // There should be a wakelock held and released onTestEnd
         verify(mWakeLockContext, times(2)).run(any());
-        mListener.onTestRunEnd(mListener.createDataRecord(), new Result());
+        mListener.testRunFinished(new Result());
         // There shouldn't be more wakelocks are held onTestRunEnd
         verify(mWakeLockContext, times(2)).run(any());
     }
@@ -408,15 +408,15 @@ public class PerfettoListenerTest {
         doReturn(true).when(mPerfettoHelper).stopCollecting(anyLong(), anyString());
 
         // Test run start behavior
-        mListener.onTestRunStart(mListener.createDataRecord(), FAKE_DESCRIPTION);
+        mListener.testRunStarted(FAKE_DESCRIPTION);
         mListener.testStarted(mTest1Desc);
         // There is one wakelock after the test/run start
         verify(mWakeLockContext, times(1)).run(any());
 
-        mListener.onTestEnd(mDataRecord, mTest1Desc);
+        mListener.testFinished(mTest1Desc);
         // There shouldn't be a wakelock held/released onTestEnd.
         verify(mWakeLockContext, times(1)).run(any());
-        mListener.onTestRunEnd(mListener.createDataRecord(), new Result());
+        mListener.testRunFinished(new Result());
         // There should be a new wakelock held/released onTestRunEnd.
         verify(mWakeLockContext, times(2)).run(any());
     }
@@ -432,9 +432,9 @@ public class PerfettoListenerTest {
         doReturn(false).when(mPerfettoHelper).startCollecting(anyString(), anyBoolean());
 
         // Test run start behavior
-        mListener.onTestRunStart(mListener.createDataRecord(), FAKE_DESCRIPTION);
+        mListener.testRunStarted(FAKE_DESCRIPTION);
         verify(mPerfettoHelper, times(1)).startCollecting(anyString(), anyBoolean());
-        mListener.onTestRunEnd(mListener.createDataRecord(), new Result());
+        mListener.testRunFinished(new Result());
         verify(mPerfettoHelper, times(0)).stopCollecting(anyLong(), anyString());
     }
 
