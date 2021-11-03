@@ -16,14 +16,19 @@
 
 package android.system.helpers;
 
+import static android.content.Context.CONTEXT_IGNORE_SECURITY;
+
 import android.app.Instrumentation;
 import android.content.ContentResolver;
+import android.content.Context;
+import android.content.pm.PackageManager;
 import android.graphics.Point;
 import android.provider.Settings;
 import android.support.test.uiautomator.By;
 import android.support.test.uiautomator.UiDevice;
 import android.support.test.uiautomator.UiObject2;
 import android.support.test.uiautomator.Until;
+import android.util.Log;
 
 import org.junit.Assert;
 
@@ -31,23 +36,47 @@ import org.junit.Assert;
  * Implement common helper methods for Quick settings.
  */
 public class QuickSettingsHelper {
-
-    private UiDevice mDevice = null;
-    private ContentResolver mResolver;
-    private Instrumentation mInstrumentation;
+    private static final String LOG_TAG = QuickSettingsHelper.class.getSimpleName();
     private static final int LONG_TIMEOUT = 2000;
     private static final int SHORT_TIMEOUT = 500;
+    private static final String SYSTEMUI_PACKAGE = "com.android.systemui";
+    private static final String QS_DEFAULT_TILES_RES = "quick_settings_tiles_default";
+
+    private UiDevice mDevice = null;
+    private Instrumentation mInstrumentation;
+    private String mDefaultQSTileList = "";
 
     public QuickSettingsHelper(UiDevice device, Instrumentation inst, ContentResolver resolver) {
         this.mDevice = device;
         mInstrumentation = inst;
-        mResolver = resolver;
+        try {
+            obtainDefaultQSTiles();
+        } catch (Exception e) {
+            Log.e(LOG_TAG, "obtainDefaultQSTiles fails!", e);
+        }
+    }
+
+    private void obtainDefaultQSTiles() throws PackageManager.NameNotFoundException {
+        final Context sysUIContext =
+                mInstrumentation
+                        .getContext()
+                        .createPackageContext(SYSTEMUI_PACKAGE, CONTEXT_IGNORE_SECURITY);
+        final int qsTileListResId =
+                sysUIContext
+                        .getResources()
+                        .getIdentifier(QS_DEFAULT_TILES_RES, "string", SYSTEMUI_PACKAGE);
+        mDefaultQSTileList = sysUIContext.getString(qsTileListResId);
     }
 
     public enum QuickSettingDefaultTiles {
-        WIFI("Wi-Fi"), SIM("Mobile data"), DND("Do not disturb"), FLASHLIGHT("Flashlight"), SCREEN(
-                "Auto-rotate screen"), BLUETOOTH("Bluetooth"), AIRPLANE("Airplane mode"),
-                BRIGHTNESS("Display brightness");
+        WIFI("Wi-Fi"),
+        SIM("Mobile data"),
+        DND("Do not disturb"),
+        FLASHLIGHT("Flashlight"),
+        SCREEN("Auto-rotate screen"),
+        BLUETOOTH("Bluetooth"),
+        AIRPLANE("Airplane mode"),
+        BRIGHTNESS("Display brightness");
 
         private final String name;
 
@@ -61,8 +90,12 @@ public class QuickSettingsHelper {
     };
 
     public enum QuickSettingEditMenuTiles {
-        LOCATION("Location"), HOTSPOT("Hotspot"), INVERTCOLORS("Invert colors"),
-                DATASAVER("Data Saver"), CAST("Cast"), NEARBY("Nearby");
+        LOCATION("Location"),
+        HOTSPOT("Hotspot"),
+        INVERTCOLORS("Invert colors"),
+        DATASAVER("Data Saver"),
+        CAST("Cast"),
+        NEARBY("Nearby");
 
         private final String name;
 
@@ -113,11 +146,21 @@ public class QuickSettingsHelper {
                 quickSettingsList.contains(quickSettingTileToCheckForInCSV));
     }
 
+    /**
+     * Sets default quick settings tile list pre-load in SystemUI resource.
+     *
+     * @throws Exception
+     */
     public void setQuickSettingsDefaultTiles() throws Exception {
-        modifyListOfQuickSettingsTiles
-                ("wifi,cell,battery,dnd,flashlight,rotation,bt,airplane,location");
+        modifyListOfQuickSettingsTiles(mDefaultQSTileList);
     }
 
+    /**
+     * Sets customized tile list to secure settings entry 'sysui_qs_tiles' directly.
+     *
+     * @param commaSeparatedList The quick settings tile list to be set
+     * @throws Exception
+     */
     public void modifyListOfQuickSettingsTiles(String commaSeparatedList) throws Exception {
         Settings.Secure.putString(mInstrumentation.getContext().getContentResolver(),
                 "sysui_qs_tiles", commaSeparatedList);

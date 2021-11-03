@@ -17,7 +17,7 @@
 package android.platform.test.rule;
 
 import android.platform.helpers.HelperAccessor;
-import android.platform.helpers.IGoogleCameraHelper;
+import android.platform.helpers.IGoogleCameraHelper2;
 import android.platform.helpers.IPhotosHelper;
 
 import androidx.annotation.VisibleForTesting;
@@ -39,8 +39,8 @@ public class PhotoUploadRule extends TestWatcher {
     private static HelperAccessor<IPhotosHelper> sPhotosHelper =
             new HelperAccessor<>(IPhotosHelper.class);
 
-    private static HelperAccessor<IGoogleCameraHelper> sGoogleCameraHelper =
-            new HelperAccessor<>(IGoogleCameraHelper.class);
+    private static HelperAccessor<IGoogleCameraHelper2> sGoogleCameraHelper =
+            new HelperAccessor<>(IGoogleCameraHelper2.class);
 
     @Override
     protected void starting(Description description) {
