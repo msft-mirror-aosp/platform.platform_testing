@@ -277,10 +277,4 @@ public interface IGoogleCameraHelper extends IAppHelper {
     public default void viewTopShot(long timeout) {
         throw new UnsupportedOperationException("Not yet implemented.");
     }
-
-    /** Setup expectations: Starts taking multiple photos on camera. */
-    public void takeMultiplePhotos(int count, long takePhotoDelay);
-
-    /** Setup expectations: Timeout after taking photo. */
-    public void timeoutAfterTakingPhoto(long timeout);
 }
