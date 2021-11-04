@@ -17,6 +17,7 @@
 package android.system.helpers;
 
 import static android.content.Context.CONTEXT_IGNORE_SECURITY;
+import static android.system.helpers.ActivityHelper.SYSTEMUI_PACKAGE;
 
 import android.app.Instrumentation;
 import android.content.ContentResolver;
@@ -25,6 +26,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Point;
 import android.provider.Settings;
 import android.support.test.uiautomator.By;
+import android.support.test.uiautomator.BySelector;
 import android.support.test.uiautomator.UiDevice;
 import android.support.test.uiautomator.UiObject2;
 import android.support.test.uiautomator.Until;
@@ -32,15 +34,14 @@ import android.util.Log;
 
 import org.junit.Assert;
 
-/**
- * Implement common helper methods for Quick settings.
- */
+/** Implement common helper methods for Quick settings. */
 public class QuickSettingsHelper {
     private static final String LOG_TAG = QuickSettingsHelper.class.getSimpleName();
     private static final int LONG_TIMEOUT = 2000;
     private static final int SHORT_TIMEOUT = 500;
     private static final String SYSTEMUI_PACKAGE = "com.android.systemui";
     private static final String QS_DEFAULT_TILES_RES = "quick_settings_tiles_default";
+    private static final BySelector FOOTER_SELECTOR = By.res(SYSTEMUI_PACKAGE, "qs_footer");
 
     private UiDevice mDevice = null;
     private Instrumentation mInstrumentation;
@@ -142,7 +143,8 @@ public class QuickSettingsHelper {
         String quickSettingsList = Settings.Secure.getString
                 (mInstrumentation.getContext().getContentResolver(),
                 "sysui_qs_tiles");
-        Assert.assertTrue(quickSettingTile + " not present in qs tiles after addition.",
+        Assert.assertTrue(
+                quickSettingTile + " not present in qs tiles after addition.",
                 quickSettingsList.contains(quickSettingTileToCheckForInCSV));
     }
 
@@ -167,11 +169,14 @@ public class QuickSettingsHelper {
         Thread.sleep(LONG_TIMEOUT);
     }
 
-    public void launchQuickSetting() throws Exception {
+    /** Opens quick settings panel through {@link UiDevice#openQuickSettings()} */
+    public void launchQuickSetting() {
         mDevice.pressHome();
-        swipeDown();
-        Thread.sleep(LONG_TIMEOUT);
-        swipeDown();
+        mDevice.openQuickSettings();
+        // Quick Settings isn't always open when this is complete. Explicitly wait for the Quick
+        // Settings footer to make sure that the buttons are accessible when the bar is open and
+        // this call is complete.
+        mDevice.wait(Until.findObject(FOOTER_SELECTOR), SHORT_TIMEOUT);
     }
 
     public void swipeUp() throws Exception {
