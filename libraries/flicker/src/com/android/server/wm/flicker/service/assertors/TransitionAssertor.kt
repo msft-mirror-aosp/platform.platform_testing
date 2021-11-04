@@ -83,8 +83,12 @@ class TransitionAssertor(
                 if (result.isFailure) {
                     val layer = assertion.getFailureLayer(tag, wmSubject, layerSubject)
                     val window = assertion.getFailureWindow(tag, wmSubject, layerSubject)
-                    val exception = result.exceptionOrNull() as FlickerSubjectException
-
+                    val exception = result.exceptionOrNull() ?: error("Exception not found")
+                    // if it's not a flicker exception, we don't know what
+                    // happened, raise the exception back to the test
+                    if (exception !is FlickerSubjectException) {
+                        throw exception
+                    }
                     errors.putIfAbsent(exception.timestamp, mutableListOf())
                     val errorEntry = Error(
                         stacktrace = exception.stackTraceToString(),
