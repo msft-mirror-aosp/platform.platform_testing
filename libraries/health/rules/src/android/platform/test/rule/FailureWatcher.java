@@ -22,8 +22,10 @@ import android.util.Log;
 import androidx.test.InstrumentationRegistry;
 import androidx.test.uiautomator.By;
 import androidx.test.uiautomator.UiDevice;
+import androidx.test.uiautomator.UiObject2;
 
 import org.junit.runner.Description;
+import org.junit.runners.model.Statement;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -45,13 +47,35 @@ public class FailureWatcher extends TestWatcher {
     }
 
     @Override
+    public Statement apply(Statement base, Description description) {
+        return new Statement() {
+            @Override
+            public void evaluate() throws Throwable {
+                try {
+                    FailureWatcher.super.apply(base, description).evaluate();
+                } catch (Throwable t) {
+                    final String systemAnomalyMessage = getSystemAnomalyMessage(mDevice);
+                    if (systemAnomalyMessage != null) {
+                        throw new AssertionError(systemAnomalyMessage, t);
+                    } else {
+                        throw t;
+                    }
+                }
+            }
+        };
+    }
+
+    @Override
     protected void failed(Throwable e, Description description) {
         onError(mDevice, description, e);
     }
 
+    public static File diagFile(String fileName) {
+        return new File(getInstrumentation().getTargetContext().getFilesDir(), fileName);
+    }
+
     public static File diagFile(Description description, String prefix, String ext) {
-        return new File(
-                getInstrumentation().getTargetContext().getFilesDir(),
+        return diagFile(
                 prefix
                         + "-"
                         + description.getTestClass().getSimpleName()
@@ -61,9 +85,27 @@ public class FailureWatcher extends TestWatcher {
                         + ext);
     }
 
-    private static boolean isSystemAnomalyMessagePresent(UiDevice device) {
-        return device.hasObject(By.res("android", "alertTitle"))
-                || device.hasObject(By.res("android", "message"));
+    private static String getSystemAnomalyMessage(UiDevice device) {
+        final StringBuilder sb = new StringBuilder();
+
+        UiObject2 object = device.findObject(By.res("android", "alertTitle"));
+        if (object != null) {
+            sb.append("TITLE: ").append(object.getText());
+        }
+
+        object = device.findObject(By.res("android", "message"));
+        if (object != null) {
+            sb.append(" PACKAGE: ")
+                    .append(object.getApplicationPackage())
+                    .append(" MESSAGE: ")
+                    .append(object.getText());
+        }
+
+        if (sb.length() != 0) {
+            return "System alert popup is visible: " + sb;
+        }
+
+        return null;
     }
 
     public static void onError(UiDevice device, Description description, Throwable e) {
@@ -104,8 +146,9 @@ public class FailureWatcher extends TestWatcher {
         }
 
         // Dump bugreport
-        if (isSystemAnomalyMessagePresent(device))
+        if (getSystemAnomalyMessage(device) != null) {
             dumpCommand("bugreportz -s", diagFile(description, "Bugreport", "zip"));
+        }
     }
 
     private static void dumpStringCommand(String cmd, OutputStream out) throws IOException {
@@ -113,7 +156,7 @@ public class FailureWatcher extends TestWatcher {
         dumpCommand(cmd, out);
     }
 
-    private static void dumpCommand(String cmd, File out) {
+    public static void dumpCommand(String cmd, File out) {
         try (BufferedOutputStream buffered = new BufferedOutputStream(new FileOutputStream(out))) {
             dumpCommand(cmd, buffered);
         } catch (IOException ex) {
