@@ -126,6 +126,16 @@ public interface INotificationHelper extends IAppHelper {
     }
 
     /**
+     * Get the default title text used for notification
+     *
+     * @return the default title text
+     */
+    @NonNull
+    default String getDefaultNotificationTitleText() {
+        throw new UnsupportedOperationException("Not yet implemented.");
+    }
+
+    /**
      * Setup Expectations: Shade is open
      *
      * <p>Posts a bubble notification. This notification is associated with a conversation shortcut,

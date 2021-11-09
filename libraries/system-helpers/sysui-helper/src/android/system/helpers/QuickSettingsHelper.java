@@ -22,6 +22,7 @@ import android.app.Instrumentation;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.graphics.Point;
 import android.provider.Settings;
 import android.util.Log;
@@ -140,21 +141,21 @@ public class QuickSettingsHelper {
         mDevice.wait(Until.findObject(By.descContains("Navigate up")), LONG_TIMEOUT);
         // Retrieve the quick settings CSV string and verify that the newly
         // added item is present.
-        String quickSettingsList = Settings.Secure.getString
-                (mInstrumentation.getContext().getContentResolver(),
-                "sysui_qs_tiles");
+        String quickSettingsList =
+                Settings.Secure.getString(
+                        mInstrumentation.getContext().getContentResolver(), "sysui_qs_tiles");
         Assert.assertTrue(
                 quickSettingTile + " not present in qs tiles after addition.",
                 quickSettingsList.contains(quickSettingTileToCheckForInCSV));
     }
 
-    /**
-     * Sets default quick settings tile list pre-load in SystemUI resource.
-     *
-     * @throws Exception
-     */
-    public void setQuickSettingsDefaultTiles() throws Exception {
+    /** Sets default quick settings tile list pre-load in SystemUI resource. */
+    public void setQuickSettingsDefaultTiles() {
         modifyListOfQuickSettingsTiles(mDefaultQSTileList);
+    }
+
+    public String getQuickSettingsDefaultTileList() {
+        return mDefaultQSTileList;
     }
 
     /**
@@ -163,10 +164,16 @@ public class QuickSettingsHelper {
      * @param commaSeparatedList The quick settings tile list to be set
      * @throws Exception
      */
-    public void modifyListOfQuickSettingsTiles(String commaSeparatedList) throws Exception {
-        Settings.Secure.putString(mInstrumentation.getContext().getContentResolver(),
-                "sysui_qs_tiles", commaSeparatedList);
-        Thread.sleep(LONG_TIMEOUT);
+    public void modifyListOfQuickSettingsTiles(String commaSeparatedList) {
+        try {
+            Settings.Secure.putString(
+                    mInstrumentation.getContext().getContentResolver(),
+                    "sysui_qs_tiles",
+                    commaSeparatedList);
+            Thread.sleep(LONG_TIMEOUT);
+        } catch (Resources.NotFoundException | InterruptedException e) {
+            Log.e(LOG_TAG, "modifyListOfQuickSettingsTiles fails!", e);
+        }
     }
 
     /** Opens quick settings panel through {@link UiDevice#openQuickSettings()} */
