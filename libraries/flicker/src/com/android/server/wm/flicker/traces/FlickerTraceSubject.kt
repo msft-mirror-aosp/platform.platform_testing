@@ -122,6 +122,14 @@ abstract class FlickerTraceSubject<EntrySubject : FlickerSubject>(
      * Checks whether all the trace entries on the list are visible for more than one consecutive
      * entry
      *
+     * Ignore the first and last trace subjects. This is necessary because WM and SF traces
+     * log entries only when a change occurs.
+     *
+     * If the trace starts immediately before an animation or if it stops immediately after one,
+     * the first and last entry may contain elements that are visible only for that entry.
+     * Those elements, however, are not flickers, since they existed on the screen before or after
+     * the test.
+     *
      * @param [visibleEntriesProvider] a list of all the entries with their name and index
      */
     protected fun visibleEntriesShownMoreThanOneConsecutiveTime(
@@ -130,9 +138,18 @@ abstract class FlickerTraceSubject<EntrySubject : FlickerSubject>(
         if (subjects.isEmpty()) {
             return
         }
+        // Duplicate the first and last trace subjects to prevent them from triggering failures
+        // since WM and SF traces log entries only when a change occurs
+        val firstState = subjects.first()
+        val lastState = subjects.last()
+        val subjects = subjects.toMutableList().also {
+            it.add(lastState)
+            it.add(0, firstState)
+        }
         var lastVisible = visibleEntriesProvider(subjects.first())
         val lastNew = lastVisible.toMutableSet()
 
+        // first subject was already taken
         subjects.drop(1).forEachIndexed { index, entrySubject ->
             val currentVisible = visibleEntriesProvider(entrySubject)
             val newVisible = currentVisible.filter { it !in lastVisible }
