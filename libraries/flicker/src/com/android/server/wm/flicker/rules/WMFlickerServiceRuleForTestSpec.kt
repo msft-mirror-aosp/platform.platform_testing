@@ -37,10 +37,10 @@ class WMFlickerServiceRuleForTestSpec(
 ) : TestWatcher() {
     private fun checkFlicker(category: String): List<ErrorTrace> {
         // run flicker if it was not executed before
-        testSpec.flicker.result ?: testSpec.assertWm { isNotEmpty() }
+        testSpec.result ?: testSpec.assertWm { isNotEmpty() }
 
         val errors = mutableListOf<ErrorTrace>()
-        val result = testSpec.flicker.result ?: error("No flicker results for ${testSpec.flicker}")
+        val result = testSpec.result ?: error("No flicker results for $testSpec")
         val assertions = AssertionData.readConfiguration().filter { it.category == category }
         val flickerService = FlickerService(assertions)
 
