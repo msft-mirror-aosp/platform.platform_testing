@@ -41,5 +41,6 @@ class RotationLayerAppearsAndVanishes : BaseAssertion() {
             .then()
             .isVisible(appComponent)
             .isInvisible(FlickerComponentName.ROTATION)
+            .forAllEntries()
     }
 }

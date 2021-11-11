@@ -36,6 +36,6 @@ class EntireScreenCoveredAlways : BaseAssertion() {
             entry.entry.displays.forEach { display ->
                 entry.visibleRegion().coversAtLeast(display.layerStackSpace)
             }
-        }
+        }.forAllEntries()
     }
 }

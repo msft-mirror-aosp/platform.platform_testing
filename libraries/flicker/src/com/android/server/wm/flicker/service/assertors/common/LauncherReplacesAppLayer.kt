@@ -37,5 +37,6 @@ class LauncherReplacesAppLayer : AppComponentBaseTest() {
         layerSubject.isVisible(getComponentName(tag, wmSubject))
             .then()
             .isVisible(Components.LAUNCHER)
+            .forAllEntries()
     }
 }

@@ -5,13 +5,7 @@
       "assertions": {
         "presubmit": [
           {
-            "class": "com.android.server.wm.flicker.service.assertors.common.NonAppWindowIsInvisibleAlways",
-            "args": [
-              "/StatusBar"
-            ]
-          },
-          {
-            "class": "com.android.server.wm.flicker.service.assertors.common.LayerIsInvisibleAlways",
+            "class": "com.android.server.wm.flicker.service.assertors.common.NonAppWindowIsVisibleAlways",
             "args": [
               "/StatusBar"
             ]
@@ -21,9 +15,6 @@
           },
           {
             "class": "com.android.server.wm.flicker.service.assertors.common.EntireScreenCoveredAtEnd"
-          },
-          {
-            "class": "com.android.server.wm.flicker.service.assertors.common.RotationLayerAppearsAndVanishes"
           }
         ],
         "postsubmit": [],
@@ -32,6 +23,12 @@
             "class": "com.android.server.wm.flicker.service.assertors.common.NonAppWindowIsVisibleAlways",
             "args": [
               "/NavigationBar0"
+            ]
+          },
+          {
+            "class": "com.android.server.wm.flicker.service.assertors.common.LayerIsVisibleAlways",
+            "args": [
+              "/StatusBar"
             ]
           },
           {
@@ -60,6 +57,9 @@
           },
           {
             "class": "com.android.server.wm.flicker.service.assertors.common.VisibleLayersShownMoreThanOneConsecutiveEntry"
+          },
+          {
+            "class": "com.android.server.wm.flicker.service.assertors.common.RotationLayerAppearsAndVanishes"
           }
         ]
       }
@@ -126,9 +126,6 @@
             "class": "com.android.server.wm.flicker.service.assertors.common.AppLayerIsVisibleAtEnd"
           },
           {
-            "class": "com.android.server.wm.flicker.service.assertors.common.AppWindowReplacesLauncherAsTopWindow"
-          },
-          {
             "class": "com.android.server.wm.flicker.service.assertors.common.LauncherWindowMovesOutOfTop"
           }
         ],
@@ -154,6 +151,9 @@
           },
           {
             "class": "com.android.server.wm.flicker.service.assertors.common.VisibleLayersShownMoreThanOneConsecutiveEntry"
+          },
+          {
+            "class": "com.android.server.wm.flicker.service.assertors.common.AppWindowReplacesLauncherAsTopWindow"
           }
         ]
       }
