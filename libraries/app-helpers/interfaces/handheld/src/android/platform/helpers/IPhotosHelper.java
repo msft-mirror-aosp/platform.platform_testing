@@ -169,4 +169,13 @@ public interface IPhotosHelper extends IAppHelper {
      * <p>Get the UiObject2 of photo scroll view pattern.
      */
     public UiObject2 getPhotoScrollView();
+
+    /**
+     * Setup expectation: Photos is open.
+     *
+     * <p>Check if device is now in Photos main screen.
+     *
+     * @return Returns true if device is in Photos main screen, false if not.
+     */
+    public boolean isOnMainScreen();
 }
