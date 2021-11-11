@@ -30,5 +30,6 @@ open class NonAppWindowBecomesVisible(windowName: String) : ComponentBaseTest(wi
         wmSubject.isNonAppWindowInvisible(component)
             .then()
             .isAppWindowVisible(component)
+            .forAllEntries()
     }
 }

@@ -58,8 +58,14 @@ class AppCloseAssertionsTest {
             "assertors/appClose/SurfaceFlingerInvalidTrace.winscope")
         val errorTrace = appCloseAssertor.analyze(INVALID_APP_CLOSE_TAG, wmTrace, layersTrace)
 
-        Truth.assertThat(errorTrace).isNotEmpty()
-        Truth.assertThat(errorTrace.entries.size).isEqualTo(2)
+        Truth.assertWithMessage("Number of entries with failures")
+            .that(errorTrace.entries)
+            .asList()
+            .hasSize(5)
+        val numErrors = errorTrace.entries.sumOf { it.errors.size }
+        Truth.assertWithMessage("Numer of errors")
+            .that(numErrors)
+            .isEqualTo(5)
     }
 
     companion object {

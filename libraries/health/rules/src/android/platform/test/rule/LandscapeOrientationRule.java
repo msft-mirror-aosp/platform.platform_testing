@@ -37,6 +37,7 @@ public class LandscapeOrientationRule extends TestWatcher {
             getUiDevice().setOrientationNatural();
             int currentOrientation = getContext().getResources().getConfiguration().orientation;
             if (currentOrientation != ORIENTATION_LANDSCAPE) { // ORIENTATION_PORTRAIT
+                getUiDevice().pressHome();
                 mLauncher.setEnableRotation(true);
                 getUiDevice().setOrientationLeft();
                 int rotatedOrientation = getContext().getResources().getConfiguration().orientation;
