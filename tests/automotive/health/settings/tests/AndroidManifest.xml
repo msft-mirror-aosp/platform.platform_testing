@@ -14,7 +14,7 @@
      limitations under the License.
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="android.platform.scenario.settings" >
+    package="android.platform.test.scenario.settings" >
   <uses-sdk android:minSdkVersion="24" android:targetSdkVersion="24" />
   <uses-permission android:name="android.permission.DUMP" />
   <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS" />
@@ -29,6 +29,6 @@
   </application>
   <instrumentation
       android:name="androidx.test.runner.AndroidJUnitRunner"
-      android:targetPackage="android.platform.scenario.settings"
+      android:targetPackage="android.platform.test.scenario.settings"
       android:label="Android Automotive Settings Scenario-Based Tests" />
 </manifest>
