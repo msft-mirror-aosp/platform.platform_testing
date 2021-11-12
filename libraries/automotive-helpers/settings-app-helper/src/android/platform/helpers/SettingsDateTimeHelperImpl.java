@@ -429,7 +429,7 @@ public class SettingsDateTimeHelperImpl extends AbstractAutoStandardAppHelper
         BySelector selector = By.hasDescendant(bySelector);
         UiObject2 object = scrollAndFindUiObject(selector, getScrollScreenIndex());
         List<UiObject2> list = object.getParent().getChildren();
-        UiObject2 switchWidget = list.get(1).getChildren().get(0);
+        UiObject2 switchWidget = list.get(1).getChildren().get(0).getChildren().get(0);
         return switchWidget;
     }
 
