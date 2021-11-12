@@ -16,11 +16,10 @@
 
 package android.platform.test.rule;
 
-import static androidx.test.InstrumentationRegistry.getInstrumentation;
-
 import android.app.Instrumentation;
 import android.app.UiAutomation;
 import android.os.ParcelFileDescriptor;
+import android.platform.test.rule.FailureWatcher.ThrowingRunnable;
 import android.util.Log;
 
 import androidx.test.uiautomator.UiDevice;
@@ -35,6 +34,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import static androidx.test.InstrumentationRegistry.getInstrumentation;
+
 /**
  * Rule which captures a screen record for a test. After adding this rule to the test class, apply
  * the annotation @ScreenRecord to individual tests
@@ -42,6 +43,28 @@ import java.lang.annotation.Target;
 public class ScreenRecordRule implements TestRule {
 
     private static final String TAG = "ScreenRecordRule";
+
+    public static void runWithRecording(ThrowingRunnable runnable, String testName)
+            throws Throwable {
+        Instrumentation inst = getInstrumentation();
+        UiAutomation automation = inst.getUiAutomation();
+        UiDevice device = UiDevice.getInstance(inst);
+
+        File outputFile =
+                new File(
+                        inst.getTargetContext().getFilesDir(), "ScreenRecord-" + testName + ".mp4");
+        device.executeShellCommand("killall screenrecord");
+        ParcelFileDescriptor output = automation.executeShellCommand("screenrecord " + outputFile);
+        String screenRecordPid = device.executeShellCommand("pidof screenrecord");
+        try {
+            runnable.run();
+        } finally {
+            device.executeShellCommand("kill -INT " + screenRecordPid);
+            Log.e(TAG, "Screenrecord captured at: " + outputFile);
+            output.close();
+        }
+        automation.executeShellCommand("rm " + outputFile);
+    }
 
     @Override
     public Statement apply(Statement base, Description description) {
@@ -52,24 +75,7 @@ public class ScreenRecordRule implements TestRule {
         return new Statement() {
             @Override
             public void evaluate() throws Throwable {
-                Instrumentation inst = getInstrumentation();
-                UiAutomation automation = inst.getUiAutomation();
-                UiDevice device = UiDevice.getInstance(inst);
-
-                File outputFile = FailureWatcher.diagFile(description, "ScreenRecord", "mp4");
-                device.executeShellCommand("killall screenrecord");
-                ParcelFileDescriptor output =
-                        automation.executeShellCommand("screenrecord " + outputFile);
-                String screenRecordPid = device.executeShellCommand("pidof screenrecord");
-                try {
-                    base.evaluate();
-                } finally {
-                    device.executeShellCommand("kill -INT " + screenRecordPid);
-                    Log.e(TAG, "Screenrecord captured at: " + outputFile);
-                    output.close();
-                }
-                // Delete the file if the test was successful.
-                automation.executeShellCommand("rm " + outputFile);
+                runWithRecording(base::evaluate, description.getMethodName());
             }
         };
     }

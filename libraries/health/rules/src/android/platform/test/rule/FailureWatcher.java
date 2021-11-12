@@ -108,7 +108,17 @@ public class FailureWatcher extends TestWatcher {
         return null;
     }
 
-    public static void onError(UiDevice device, Description description, Throwable e) {
+    public static void runWithArtifacts(ThrowingRunnable runnable, Description description)
+            throws Throwable {
+        try {
+            runnable.run();
+        } catch (Throwable t) {
+            onError(UiDevice.getInstance(getInstrumentation()), description, t);
+            throw t;
+        }
+    }
+
+    private static void onError(UiDevice device, Description description, Throwable e) {
         if (device == null) return;
         final File sceenshot = diagFile(description, "TestScreenshot", "png");
         final File hierarchy = diagFile(description, "Hierarchy", "zip");
@@ -169,5 +179,9 @@ public class FailureWatcher extends TestWatcher {
                         getInstrumentation().getUiAutomation().executeShellCommand(cmd))) {
             FileUtils.copy(in, out);
         }
+    }
+
+    public interface ThrowingRunnable {
+        void run() throws Throwable;
     }
 }
