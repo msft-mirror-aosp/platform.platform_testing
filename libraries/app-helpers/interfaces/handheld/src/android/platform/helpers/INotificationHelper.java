@@ -182,6 +182,31 @@ public interface INotificationHelper extends IAppHelper {
     }
 
     /**
+     * Setup Expectations: Notification shade opened.
+     *
+     * <p>Scrolls to the bottom of the notification shade and taps the "clear all" button if
+     * present.
+     */
+    default void clearAllNotifications() {
+        throw new UnsupportedOperationException("Not yet implemented.");
+    }
+
+    /**
+     * Setup Expectations: Notification snoozing is enabled.
+     *
+     * <p>Empty the notification shade by first cancelling all of the test app's notifications, then
+     * snoozing all other notifications temporarily. Fails if any notifications are left in the
+     * shade.
+     *
+     * <p>Because unsnoozing can fail from command line, snoozing is implemented with a fixed time,
+     * so tests will take at least as long as the time limit given, plus some buffer built into this
+     * utility, to ensure that this test's snoozing will not interfere with other tests.
+     */
+    default void runWithEmptyNotificationShade(Runnable task, long taskTimeLimit) {
+        throw new UnsupportedOperationException("Not yet implemented.");
+    }
+
+    /**
      * Setup expectations: Notification shade opened.
      *
      * <p>Opens the first notification by the specified title and checks if the expected application
