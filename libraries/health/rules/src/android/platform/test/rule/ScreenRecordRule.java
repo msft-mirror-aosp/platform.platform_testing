@@ -16,6 +16,8 @@
 
 package android.platform.test.rule;
 
+import static androidx.test.InstrumentationRegistry.getInstrumentation;
+
 import android.app.Instrumentation;
 import android.app.UiAutomation;
 import android.os.ParcelFileDescriptor;
@@ -34,8 +36,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import static androidx.test.InstrumentationRegistry.getInstrumentation;
-
 /**
  * Rule which captures a screen record for a test. After adding this rule to the test class, apply
  * the annotation @ScreenRecord to individual tests
@@ -44,15 +44,13 @@ public class ScreenRecordRule implements TestRule {
 
     private static final String TAG = "ScreenRecordRule";
 
-    public static void runWithRecording(ThrowingRunnable runnable, String testName)
+    public static void runWithRecording(ThrowingRunnable runnable, Description description)
             throws Throwable {
         Instrumentation inst = getInstrumentation();
         UiAutomation automation = inst.getUiAutomation();
         UiDevice device = UiDevice.getInstance(inst);
 
-        File outputFile =
-                new File(
-                        inst.getTargetContext().getFilesDir(), "ScreenRecord-" + testName + ".mp4");
+        File outputFile = FailureWatcher.diagFile(description, "ScreenRecord", "mp4");
         device.executeShellCommand("killall screenrecord");
         ParcelFileDescriptor output = automation.executeShellCommand("screenrecord " + outputFile);
         String screenRecordPid = device.executeShellCommand("pidof screenrecord");
@@ -75,7 +73,7 @@ public class ScreenRecordRule implements TestRule {
         return new Statement() {
             @Override
             public void evaluate() throws Throwable {
-                runWithRecording(base::evaluate, description.getMethodName());
+                runWithRecording(base::evaluate, description);
             }
         };
     }
