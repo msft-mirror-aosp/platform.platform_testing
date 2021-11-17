@@ -193,8 +193,12 @@ public class QuickSettingsHelper {
     }
 
     public void swipeDown() throws Exception {
-        mDevice.swipe(mDevice.getDisplayWidth() / 2, 0, mDevice.getDisplayWidth() / 2,
-                mDevice.getDisplayHeight() / 2 + 50, 20);
+        mDevice.swipe(
+                mDevice.getDisplayWidth() / 2,
+                0,
+                mDevice.getDisplayWidth() / 2,
+                mDevice.getDisplayHeight(),
+                20);
         Thread.sleep(SHORT_TIMEOUT);
     }
 
