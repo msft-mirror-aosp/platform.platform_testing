@@ -22,17 +22,16 @@ from mobly import test_runner
 from mobly.controllers import android_device
 
 
-class HelloWorldTest(base_test.BaseTestClass):
+class MultiDeviceTest(base_test.BaseTestClass):
 
   def setup_class(self):
     # Registering android_device controller module declares the test's
-    # dependency on Android device hardware. By default, we expect at least one
-    # object is created from this.
+    # dependency on Android device hardware.
     self.ads = self.register_controller(android_device)
-    self.dut = self.ads[0]
 
-  def test_hello(self):
-    pass
+  def test_multidevice(self):
+    # Verify 2 devices are allocated.
+    assert len(self.ads) == 2, "Failed to get multiple devices"
 
 
 if __name__ == '__main__':

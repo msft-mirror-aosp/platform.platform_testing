@@ -14,14 +14,13 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-<configuration description="Example Mobly test.">
+<configuration description="Example Mobly multidevice test.">
     <target_preparer class="com.android.tradefed.targetprep.PythonVirtualenvPreparer">
       <option name="dep-module" value="mobly" />
     </target_preparer>
     <test class="com.android.tradefed.testtype.mobly.MoblyBinaryHostTest">
-      <option name="mobly-par-file-name" value="mobly-hello-world-test" />
+      <option name="mobly-par-file-name" value="mobly-multidevice-test" />
       <option name="mobly-config-file-name" value="config.yaml" />
       <option name="mobly-test-timeout" value="1800000" />
     </test>
 </configuration>
-
