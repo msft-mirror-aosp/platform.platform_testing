@@ -119,6 +119,7 @@ public class BaseMetricListener extends InstrumentationRunListener {
     @Override
     public final void testRunStarted(Description description) throws Exception {
         parseArguments();
+        setupAdditionalArgs();
         if (!mLogOnly) {
             try {
                 mRunData = createDataRecord();
@@ -264,6 +265,14 @@ public class BaseMetricListener extends InstrumentationRunListener {
      */
     public void onTestEnd(DataRecord testData, Description description) {
         // Does nothing
+    }
+
+    /**
+     * To add listener-specific extra args, implement this method in the sub class and add the
+     * listener specific args.
+     */
+    public void setupAdditionalArgs() {
+        // NO-OP by default
     }
 
     /**
