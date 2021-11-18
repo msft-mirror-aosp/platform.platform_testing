@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package android.platform.scenario.settings;
+package android.platform.test.scenario.settings;
 
 import android.platform.helpers.HelperAccessor;
 import android.platform.helpers.IAutoSettingHelper;
