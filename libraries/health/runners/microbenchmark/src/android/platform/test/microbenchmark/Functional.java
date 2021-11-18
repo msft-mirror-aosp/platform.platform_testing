@@ -15,8 +15,12 @@
  */
 package android.platform.test.microbenchmark;
 
+import org.junit.internal.AssumptionViolatedException;
 import org.junit.internal.runners.statements.RunAfters;
 import org.junit.internal.runners.statements.RunBefores;
+import org.junit.runner.Description;
+import org.junit.runner.notification.Failure;
+import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
@@ -54,5 +58,40 @@ public class Functional extends BlockJUnit4ClassRunner {
         statement = afters.isEmpty() ? statement : new RunAfters(statement, afters, target);
 
         return super.withAfters(method, target, statement);
+    }
+
+    @Override
+    protected Statement classBlock(RunNotifier notifier) {
+        final Statement statement = super.classBlock(notifier);
+        return new Statement() {
+            @Override
+            public void evaluate() throws Throwable {
+                try {
+                    statement.evaluate();
+                } catch (Throwable e) {
+                    // We get here if class-level (static) @Before/@Afters or rules fail.
+                    // To ensure a test output that looks correctly to TF, we need to properly
+                    // notify 'notifier' about all test methods.
+                    // We'll report that all tests methods failed with the error that comes from
+                    // the class block.
+                    final List<FrameworkMethod> children = getChildren();
+                    if (children.isEmpty()) {
+                        // If there are no test methods, just rethrow.
+                        throw e;
+                    }
+
+                    for (FrameworkMethod testMethod : children) {
+                        final Description description = describeChild(testMethod);
+                        notifier.fireTestStarted(description);
+                        if (e instanceof AssumptionViolatedException) {
+                            notifier.fireTestAssumptionFailed(new Failure(description, e));
+                        } else {
+                            notifier.fireTestFailure(new Failure(description, e));
+                        }
+                        notifier.fireTestFinished(description);
+                    }
+                }
+            }
+        };
     }
 }
