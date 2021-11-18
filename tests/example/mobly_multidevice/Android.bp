@@ -17,9 +17,9 @@ package {
 }
 
 python_test_host {
-    name: "mobly-hello-world-test",
-    main: "hello_world_test.py",
-    srcs: ["hello_world_test.py",],
+    name: "mobly-multidevice-test",
+    main: "multidevice_test.py",
+    srcs: ["multidevice_test.py",],
     test_suites: ["general-tests"],
     test_options: {
         unit_test: false,
