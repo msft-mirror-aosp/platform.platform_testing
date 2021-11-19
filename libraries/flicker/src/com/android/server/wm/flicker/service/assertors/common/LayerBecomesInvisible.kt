@@ -16,30 +16,23 @@
 
 package com.android.server.wm.flicker.service.assertors.common
 
-import com.android.server.wm.flicker.service.assertors.BaseAssertion
 import com.android.server.wm.flicker.traces.layers.LayersTraceSubject
 import com.android.server.wm.flicker.traces.windowmanager.WindowManagerTraceSubject
 import com.android.server.wm.traces.common.tags.Tag
 
 /**
- * Checks if the stack space of all displays is fully covered by any visible layer,
- * during the whole transitions
+ * Checks if the [component] layer is visible at the start of the transition and becomes invisible
  */
-class EntireScreenCoveredAlways : BaseAssertion() {
+class LayerBecomesInvisible(windowName: String) : ComponentBaseTest(windowName) {
     /** {@inheritDoc} */
     override fun doEvaluate(
         tag: Tag,
         wmSubject: WindowManagerTraceSubject,
         layerSubject: LayersTraceSubject
     ) {
-        layerSubject.invoke("entireScreenCovered") { entry ->
-            val displays = entry.entry.displays
-            if (displays.isEmpty()) {
-                entry.fail("No displays found")
-            }
-            displays.forEach { display ->
-                entry.visibleRegion().coversAtLeast(display.layerStackSpace)
-            }
-        }.forAllEntries()
+        layerSubject.isVisible(component)
+            .then()
+            .isInvisible(component)
+            .forAllEntries()
     }
 }
