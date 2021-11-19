@@ -167,6 +167,63 @@
         "postsubmit": [],
         "flaky": []
       }
+    },
+    {
+      "transition": "PIP_ENTER",
+      "assertions": {
+        "presubmit": [
+          {
+            "class": "com.android.server.wm.flicker.service.assertors.common.LayerIsVisibleAlways",
+            "args": [
+              "/NavigationBar0"
+            ]
+          },
+          {
+            "class": "com.android.server.wm.flicker.service.assertors.common.NonAppWindowIsVisibleAlways",
+            "args": [
+              "/NavigationBar0"
+            ]
+          },
+          {
+            "class": "com.android.server.wm.flicker.service.assertors.common.LayerIsVisibleAlways",
+            "args": [
+              "/StatusBar"
+            ]
+          },
+          {
+            "class": "com.android.server.wm.flicker.service.assertors.common.NonAppWindowIsVisibleAlways",
+            "args": [
+              "/StatusBar"
+            ]
+          },
+          {
+            "class": "com.android.server.wm.flicker.service.assertors.common.EntireScreenCoveredAtStart"
+          },
+          {
+            "class": "com.android.server.wm.flicker.service.assertors.common.EntireScreenCoveredAtEnd"
+          },
+          {
+            "class": "com.android.server.wm.flicker.service.assertors.common.AppLayerIsVisibleAlways"
+          },
+          {
+            "class": "com.android.server.wm.flicker.service.assertors.common.AppWindowIsVisibleAlways"
+          },
+          {
+            "class": "com.android.server.wm.flicker.service.assertors.common.AppWindowRemainInsideDisplayBounds"
+          },
+          {
+            "class": "com.android.server.wm.flicker.service.assertors.common.AppLayerRemainInsideDisplayBounds"
+          },
+          {
+            "class": "com.android.server.wm.flicker.service.assertors.common.AppLayerReduces"
+          },
+          {
+            "class": "com.android.server.wm.flicker.service.assertors.common.AppWindowBecomesPinned"
+          }
+        ],
+        "postsubmit": [],
+        "flaky": []
+      }
     }
   ]
 }
