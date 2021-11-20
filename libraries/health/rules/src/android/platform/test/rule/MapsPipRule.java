@@ -51,7 +51,6 @@ public class MapsPipRule extends TestWatcher {
 
     @Override
     protected void finished(Description description) {
-        sMapsHelper.get().backToNavigationFromPip();
-        sMapsHelper.get().exit();
+        executeShellCommand(String.format("am force-stop %s", sMapsHelper.get().getPackage()));
     }
 }
