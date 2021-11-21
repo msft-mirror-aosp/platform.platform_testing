@@ -16,6 +16,7 @@
 
 package android.platform.test.rule;
 
+import android.os.SystemClock;
 import android.platform.helpers.HelperAccessor;
 import android.platform.helpers.IGoogleCameraHelper2;
 import android.platform.helpers.IPhotosHelper;
@@ -36,6 +37,15 @@ public class PhotoUploadRule extends TestWatcher {
     @VisibleForTesting static final String PHOTO_TIMEOUT = "photo-timeout";
     long photoTimeout = 10000;
 
+    @VisibleForTesting static final String UPLOAD_PHOTO = "upload-photo";
+    boolean uploadPhoto = true;
+
+    @VisibleForTesting static final String UPLOAD_VIDEO = "upload-video";
+    boolean uploadVideo = false;
+
+    @VisibleForTesting static final String CAPTURE_VIDEO_DURATION = "capture-video-duration";
+    long captureVideoDuration = 1200000;
+
     private static HelperAccessor<IPhotosHelper> sPhotosHelper =
             new HelperAccessor<>(IPhotosHelper.class);
 
@@ -44,24 +54,40 @@ public class PhotoUploadRule extends TestWatcher {
 
     @Override
     protected void starting(Description description) {
-        photoCount = Integer.valueOf(getArguments().getString(PHOTO_COUNT, "5"));
-        photoTimeout = Long.valueOf(getArguments().getString(PHOTO_TIMEOUT, "10000"));
-        takePhotoDelay = Long.valueOf(getArguments().getString(TAKE_PHOTO_DELAY, "1000"));
+        photoCount = Integer.valueOf(getArguments().getString(PHOTO_COUNT, String.valueOf(5)));
+        photoTimeout = Long.valueOf(getArguments().getString(PHOTO_TIMEOUT, String.valueOf(10000)));
+        takePhotoDelay =
+                Long.valueOf(getArguments().getString(TAKE_PHOTO_DELAY, String.valueOf(1000)));
+        captureVideoDuration =
+                Long.valueOf(
+                        getArguments().getString(CAPTURE_VIDEO_DURATION, String.valueOf(30000)));
+        uploadPhoto = Boolean.valueOf(getArguments().getString(UPLOAD_PHOTO, String.valueOf(true)));
+        uploadVideo =
+                Boolean.valueOf(getArguments().getString(UPLOAD_VIDEO, String.valueOf(false)));
 
         sPhotosHelper.get().open();
         sPhotosHelper.get().disableBackupMode();
         sGoogleCameraHelper.get().open();
-        sGoogleCameraHelper.get().takeMultiplePhotos(photoCount, takePhotoDelay);
-        sGoogleCameraHelper.get().timeoutAfterTakingPhoto(photoTimeout);
+        if (uploadPhoto) {
+            sGoogleCameraHelper.get().takeMultiplePhotos(photoCount, takePhotoDelay);
+            SystemClock.sleep(photoTimeout);
+        }
+        if (uploadVideo) {
+            sGoogleCameraHelper.get().clickVideoTab();
+            sGoogleCameraHelper.get().clickCameraVideoButton();
+            SystemClock.sleep(captureVideoDuration);
+            sGoogleCameraHelper.get().clickCameraVideoButton();
+        }
         sPhotosHelper.get().open();
         sPhotosHelper.get().enableBackupMode();
-        sPhotosHelper.get().verifyPhotosStartedUploading();
+        sPhotosHelper.get().verifyContentStartedUploading();
         sPhotosHelper.get().exit();
     }
 
     @Override
     protected void finished(Description description) {
         sPhotosHelper.get().open();
+        sPhotosHelper.get().removeContent();
         sPhotosHelper.get().disableBackupMode();
         sPhotosHelper.get().exit();
     }

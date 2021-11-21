@@ -21,6 +21,9 @@ public interface IGoogleCameraHelper2 extends IAppHelper {
     /** Setup expectations: Starts taking multiple photos on camera. */
     public void takeMultiplePhotos(int count, long takePhotoDelay);
 
-    /** Setup expectations: Timeout after taking photo. */
-    public void timeoutAfterTakingPhoto(long timeout);
+    /** Setup expectations: Switch to video record mode. */
+    public void clickVideoTab();
+
+    /** Setup expectations: Click camera video button to start recording or stop recording. */
+    public void clickCameraVideoButton();
 }
