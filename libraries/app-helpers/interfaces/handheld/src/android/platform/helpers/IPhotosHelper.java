@@ -186,5 +186,8 @@ public interface IPhotosHelper extends IAppHelper {
     public void enableBackupMode();
 
     /** Setup expectation: Verify backup starts uploading new pictures in settings. */
-    public void verifyPhotosStartedUploading();
+    public void verifyContentStartedUploading();
+
+    /** Setup expectation: Remove photos app content. */
+    public void removeContent();
 }
