@@ -71,7 +71,6 @@ native_tests := \
     keystore2_crypto_test_rust \
     keystore2_selinux_test \
     keystore2_test \
-    lazy_static_device_test_src_lib \
     lazy_static_device_test_tests_test \
     libandroidfw_tests \
     libappfuse_test \
