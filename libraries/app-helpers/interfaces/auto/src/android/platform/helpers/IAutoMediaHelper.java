@@ -163,4 +163,11 @@ public interface IAutoMediaHelper extends IAppHelper {
      * Setup expectations: Media app is open.
      */
     void openMediaAppSettingsPage();
+
+    /**
+     * Setup expectations: Media app is open. Account not logged in.
+     *
+     * @return Error message for no user login
+     */
+    String getMediaAppUserNotLoggedInErrorMessage();
 }
