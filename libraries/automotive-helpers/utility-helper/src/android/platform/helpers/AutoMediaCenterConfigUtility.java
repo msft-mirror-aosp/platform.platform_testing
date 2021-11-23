@@ -289,6 +289,11 @@ public class AutoMediaCenterConfigUtility implements IAutoConfigUtility {
                 new AutoConfigResource(
                         AutoConfigConstants.RESOURCE_ID,
                         "car_ui_toolbar_nav_icon_container", MEDIA_CENTER_PACKAGE));
+        mediaAppConfiguration.addResource(
+                AutoConfigConstants.MEDIA_APP_NO_LOGIN_MSG,
+                new AutoConfigResource(
+                        AutoConfigConstants.RESOURCE_ID,
+                        "error_message", MEDIA_CENTER_PACKAGE));
         mMediaCenterConfigMap.put(
                 AutoConfigConstants.MEDIA_APP, mediaAppConfiguration);
     }
