@@ -255,6 +255,7 @@ public class AutoConfigConstants {
     public static final String MEDIA_APP_TITLE = "MEDIA_APP_TITLE";
     public static final String MEDIA_APP_DROP_DOWN_MENU = "MEDIA_APP_DROP_DOWN_MENU";
     public static final String MEDIA_APP_NAVIGATION_ICON = "MEDIA_APP_NAVIGATION_ICON";
+    public static final String MEDIA_APP_NO_LOGIN_MSG = "MEDIA_APP_NO_LOGIN_MSG";
     // Test Media App
     public static final String TEST_MEDIA_APP = "TEST_MEDIA_APP";
     public static final String TEST_MEDIA_ACCOUNT_TYPE = "TEST_MEDIA_ACCOUNT_TYPE";

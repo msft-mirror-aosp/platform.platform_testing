@@ -472,4 +472,17 @@ public class MediaCenterHelperImpl extends AbstractAutoStandardAppHelper
         int settingsItemPosition = mediaAppMenuItem.size() - 2;
         clickAndWaitForIdleScreen(mediaAppMenuItem.get(settingsItemPosition));
     }
+
+    /** {@inheritDoc} */
+    @Override
+    public String getMediaAppUserNotLoggedInErrorMessage() {
+        UiObject2 noLoginMsg = findUiObject(getResourceFromConfig(
+                AutoConfigConstants.MEDIA_CENTER,
+                AutoConfigConstants.MEDIA_APP,
+                AutoConfigConstants.MEDIA_APP_NO_LOGIN_MSG));
+        if (noLoginMsg == null) {
+            throw new UnknownUiException("Unable to find Media app error text.");
+        }
+        return noLoginMsg.getText();
+    }
 }
