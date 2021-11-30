@@ -27,45 +27,47 @@ import org.junit.Test
 import org.junit.runners.MethodSorters
 
 /**
- * Contains tests for Pip Enter assertions. To run this test:
- * `atest FlickerLibTest:PipEnterAssertionsTest`
+ * Contains tests for Pip Exit assertions. To run this test:
+ * `atest FlickerLibTest:PipExitAssertionsTest`
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-class PipEnterAssertionsTest {
+class PipExitAssertionsTest {
     private val jsonByteArray = readTestFile("assertors/config.json")
     private val assertions =
         AssertionConfigParser.parseConfigFile(String(jsonByteArray))
-            .filter { it.transitionType == Transition.PIP_ENTER }
+            .filter { it.transitionType == Transition.PIP_EXIT }
 
-    private val pipEnterAssertor = TransitionAssertor(assertions) { }
+    private val pipExitAssertor = TransitionAssertor(assertions) { }
 
     @Test
-    fun testValidPipEnterTraces() {
+    fun testValidPipExitTraces() {
         val wmTrace = readWmTraceFromFile(
-            "assertors/pip/enter/WindowManagerTrace.winscope")
+            "assertors/pip/exit/WindowManagerTrace.winscope")
         val layersTrace = readLayerTraceFromFile(
-            "assertors/pip/enter/SurfaceFlingerTrace.winscope")
-        val errorTrace = pipEnterAssertor.analyze(VALID_PIP_ENTER_TAG, wmTrace, layersTrace)
+            "assertors/pip/exit/SurfaceFlingerTrace.winscope")
+        val errorTrace = pipExitAssertor.analyze(VALID_PIP_EXIT_TAG, wmTrace, layersTrace)
 
         Truth.assertThat(errorTrace).isEmpty()
     }
 
     @Test
-    fun testInvalidPipEnterTraces() {
+    fun testInvalidPipExitTraces() {
         val wmTrace = readWmTraceFromFile(
-            "assertors/pip/enter/WindowManagerInvalidTrace.winscope")
+            "assertors/pip/exit/WindowManagerInvalidTrace.winscope")
         val layersTrace = readLayerTraceFromFile(
-            "assertors/pip/enter/SurfaceFlingerInvalidTrace.winscope")
-        val errorTrace = pipEnterAssertor.analyze(INVALID_PIP_ENTER_TAG, wmTrace, layersTrace)
+            "assertors/pip/exit/SurfaceFlingerInvalidTrace.winscope")
+        val errorTrace = pipExitAssertor.analyze(INVALID_PIP_EXIT_TAG, wmTrace, layersTrace)
 
         Truth.assertThat(errorTrace).isNotEmpty()
-        Truth.assertThat(errorTrace.entries).asList().hasSize(3)
+        Truth.assertThat(errorTrace.entries).asList().hasSize(2)
+        val allErrors = errorTrace.entries.flatMap { it.errors.toList() }
+        Truth.assertThat(allErrors).hasSize(2)
     }
 
     companion object {
-        private val VALID_PIP_ENTER_TAG = Tag(1, Transition.PIP_ENTER, true,
-            layerId = 620)
-        private val INVALID_PIP_ENTER_TAG = Tag(2, Transition.PIP_ENTER, true,
+        private val VALID_PIP_EXIT_TAG = Tag(1, Transition.PIP_ENTER, true,
+            layerId = 180)
+        private val INVALID_PIP_EXIT_TAG = Tag(2, Transition.PIP_ENTER, true,
             layerId = 188)
     }
 }
