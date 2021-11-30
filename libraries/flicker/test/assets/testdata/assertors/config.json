@@ -224,6 +224,51 @@
         "postsubmit": [],
         "flaky": []
       }
+    },
+    {
+      "transition": "PIP_EXIT",
+      "assertions": {
+        "presubmit": [
+          {
+            "class": "com.android.server.wm.flicker.service.assertors.common.LayerIsVisibleAlways",
+            "args": [
+              "/NavigationBar0"
+            ]
+          },
+          {
+            "class": "com.android.server.wm.flicker.service.assertors.common.NonAppWindowIsVisibleAlways",
+            "args": [
+              "/NavigationBar0"
+            ]
+          },
+          {
+            "class": "com.android.server.wm.flicker.service.assertors.common.LayerIsVisibleAlways",
+            "args": [
+              "/StatusBar"
+            ]
+          },
+          {
+            "class": "com.android.server.wm.flicker.service.assertors.common.NonAppWindowIsVisibleAlways",
+            "args": [
+              "/StatusBar"
+            ]
+          },
+          {
+            "class": "com.android.server.wm.flicker.service.assertors.common.EntireScreenCoveredAtStart"
+          },
+          {
+            "class": "com.android.server.wm.flicker.service.assertors.common.EntireScreenCoveredAtEnd"
+          },
+          {
+            "class": "com.android.server.wm.flicker.service.assertors.common.AppLayerBecomesInvisible"
+          },
+          {
+            "class": "com.android.server.wm.flicker.service.assertors.common.PipWindowBecomesInvisible"
+          }
+        ],
+        "postsubmit": [],
+        "flaky": []
+      }
     }
   ]
 }
