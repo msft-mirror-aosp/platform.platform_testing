@@ -15,14 +15,18 @@
  */
 package android.platform.test.rule;
 
+import static androidx.test.InstrumentationRegistry.getInstrumentation;
+
 import android.os.FileUtils;
 import android.os.ParcelFileDescriptor.AutoCloseInputStream;
 import android.util.Log;
 
 import androidx.test.InstrumentationRegistry;
 import androidx.test.uiautomator.By;
+import androidx.test.uiautomator.BySelector;
 import androidx.test.uiautomator.UiDevice;
 import androidx.test.uiautomator.UiObject2;
+import androidx.test.uiautomator.Until;
 
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
@@ -34,8 +38,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-
-import static androidx.test.InstrumentationRegistry.getInstrumentation;
 
 /** A rule that generates debug artifact files for failed tests. */
 public class FailureWatcher extends TestWatcher {
@@ -85,7 +87,15 @@ public class FailureWatcher extends TestWatcher {
                         + ext);
     }
 
+    private static BySelector getAnyObjectSelector() {
+        return By.textStartsWith("");
+    }
+
     private static String getSystemAnomalyMessage(UiDevice device) {
+        if (!device.wait(Until.hasObject(getAnyObjectSelector()), 10000)) {
+            return "Screen is empty";
+        }
+
         final StringBuilder sb = new StringBuilder();
 
         UiObject2 object = device.findObject(By.res("android", "alertTitle"));
