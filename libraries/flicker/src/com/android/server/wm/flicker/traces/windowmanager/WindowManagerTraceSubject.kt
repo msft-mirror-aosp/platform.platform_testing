@@ -30,6 +30,7 @@ import com.google.common.truth.FailureMetadata
 import com.google.common.truth.FailureStrategy
 import com.google.common.truth.StandardSubjectBuilder
 import com.google.common.truth.Subject
+import com.google.common.truth.Subject.Factory
 
 /**
  * Truth subject for [WindowManagerTrace] objects, used to make assertions over behaviors that
@@ -272,6 +273,28 @@ class WindowManagerTraceSubject private constructor(
     ): WindowManagerTraceSubject = apply {
         addAssertion("isAppWindowVisible(${component.toWindowName()})", isOptional) {
             it.isAppWindowVisible(component)
+        }
+    }
+
+    /**
+     * Checks if the activity with title containing [component] is visible
+     *
+     * In the case that an app is stopped in the background (e.g. OS stopped it to release memory)
+     * the app window will not be immediately visible when switching back to the app. Checking if a
+     * snapshotStartingWindow is present for that app instead can decrease flakiness levels of the
+     * assertion.
+     *
+     * @param component Component to search
+     * @param isOptional If this assertion is optional or must pass
+     */
+    @JvmOverloads
+    fun isAppSnapshotStartingWindowVisibleFor(
+        component: FlickerComponentName,
+        isOptional: Boolean = false
+    ): WindowManagerTraceSubject = apply {
+        addAssertion(
+            "isAppSnapshotStartingWindowVisibleFor(${component.toWindowName()})", isOptional) {
+            it.isAppSnapshotStartingWindowVisibleFor(component)
         }
     }
 

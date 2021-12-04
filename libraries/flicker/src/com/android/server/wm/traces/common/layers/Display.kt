@@ -28,7 +28,8 @@ data class Display(
     val layerStackId: Int,
     val size: Size,
     val layerStackSpace: Rect,
-    val transform: Transform
+    val transform: Transform,
+    val isVirtual: Boolean
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -40,6 +41,7 @@ data class Display(
         if (size != other.size) return false
         if (layerStackSpace != other.layerStackSpace) return false
         if (transform != other.transform) return false
+        if (isVirtual != other.isVirtual) return false
 
         return true
     }
@@ -51,6 +53,7 @@ data class Display(
         result = 31 * result + size.hashCode()
         result = 31 * result + layerStackSpace.hashCode()
         result = 31 * result + transform.hashCode()
+        result = 31 * result + isVirtual.hashCode()
         return result
     }
 
@@ -61,7 +64,8 @@ data class Display(
             layerStackId = -1,
             size = Size.EMPTY,
             layerStackSpace = Rect.EMPTY,
-            transform = Transform.EMPTY
+            transform = Transform.EMPTY,
+            isVirtual = false
         )
     }
 }

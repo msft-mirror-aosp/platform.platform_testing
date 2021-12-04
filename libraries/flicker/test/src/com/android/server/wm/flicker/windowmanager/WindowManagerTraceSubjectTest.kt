@@ -203,4 +203,34 @@ class WindowManagerTraceSubjectTest {
         Truth.assertThat(error).hasMessageThat().contains("Trace start")
         Truth.assertThat(error).hasMessageThat().contains("Trace file")
     }
+
+    @Test
+    fun testCanDetectSnapshotStartingWindow() {
+        val trace = readWmTraceFromFile("quick_switch_to_app_killed_in_background_trace.pb")
+        val app1 = FlickerComponentName("com.android.server.wm.flicker.testapp",
+            "com.android.server.wm.flicker.testapp.ImeActivity")
+        val app2 = FlickerComponentName("com.android.server.wm.flicker.testapp",
+            "com.android.server.wm.flicker.testapp.SimpleActivity")
+        assertThat(trace).isAppWindowVisible(app1)
+            .then()
+            .isAppSnapshotStartingWindowVisibleFor(app2, isOptional = true)
+            .then()
+            .isAppWindowVisible(app2)
+            .then()
+            .isAppSnapshotStartingWindowVisibleFor(app1, isOptional = true)
+            .then()
+            .isAppWindowVisible(app1)
+            .forAllEntries()
+
+        val failure = assertThrows(FlickerSubjectException::class.java) {
+            assertThat(trace)
+                .isAppWindowVisible(app1)
+                .then()
+                .isAppWindowVisible(app2)
+                .then()
+                .isAppWindowVisible(app1)
+                .forAllEntries()
+        }
+        assertFailure(failure).hasMessageThat().contains("Is Invisible")
+    }
 }

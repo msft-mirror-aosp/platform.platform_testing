@@ -517,6 +517,31 @@ class WindowManagerStateSubject private constructor(
     }
 
     /**
+     * Checks if the activity with title containing [component] is visible
+     *
+     * In the case that an app is stopped in the background (e.g. OS stopped it to release memory)
+     * the app window will not be immediately visible when switching back to the app. Checking if a
+     * snapshotStartingWindow is present for that app instead can decrease flakiness levels of the
+     * assertion.
+     *
+     * @param component Component to search
+     * @param isOptional If this assertion is optional or must pass
+     */
+    @JvmOverloads
+    fun isAppSnapshotStartingWindowVisibleFor(
+        component: FlickerComponentName
+    ) {
+        val windowName = component.toWindowName()
+        val activity = wmState.getActivitiesForWindow(windowName).firstOrNull()
+
+        // Check existence and visibility of SnapshotStartingWindow
+        val snapshotStartingWindow = activity?.children
+            ?.firstOrNull { it.name.startsWith("SnapshotStartingWindow for taskId=") }
+        check("SnapshotStartingWindow for Activity=${activity?.name} must be visible.")
+            .that(snapshotStartingWindow?.isVisible ?: false).isTrue()
+    }
+
+    /**
      * Obtains the first subject with [WindowState.title] containing [name].
      *
      * Always returns a subject, event when the layer doesn't exist. To verify if layer

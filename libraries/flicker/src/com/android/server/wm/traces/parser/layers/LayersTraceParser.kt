@@ -204,7 +204,8 @@ class LayersTraceParser {
                 proto.layerStack,
                 proto.size.toSize(),
                 proto.layerStackSpaceRect.toRect(),
-                Transform(proto.transform, position = null)
+                Transform(proto.transform, position = null),
+                proto.isVirtual
             )
         }
 
