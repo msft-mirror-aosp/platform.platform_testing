@@ -213,6 +213,52 @@ class LayerTraceEntrySubject private constructor(
     }
 
     /**
+     * Asserts that the entry contains a visible splash screen [Layer] for a [layer] with
+     * [Layer.name] containing any of [component].
+     *
+     * @param component Name of the layer to search
+     */
+    fun isSplashScreenVisibleFor(component: FlickerComponentName): LayerTraceEntrySubject = apply {
+        var target: FlickerSubject? = null
+        var reason: Fact? = null
+        val layerActivityRecordFilter = component.toActivityRecordFilter()
+        val filteredLayers = subjects
+                .filter { layerActivityRecordFilter.containsMatchIn(it.name) }
+
+        if (filteredLayers.isEmpty()) {
+            fail(Fact.fact(ASSERTION_TAG, "isSplashScreenVisibleFor(${component.toLayerName()})"),
+                Fact.fact("Could not find Activity Record layer", component.toShortWindowName()))
+            return this
+        }
+
+        // Check the matched activity record layers for containing splash screens
+        for (layer in filteredLayers) {
+            val splashScreenContainers =
+                layer.layer?.children?.filter { it.name.contains("Splash Screen") }
+            val splashScreenLayers = splashScreenContainers?.flatMap {
+                it.children.filter { childLayer ->
+                    childLayer.name.contains("Splash Screen")
+                }
+            }
+
+            if (splashScreenLayers?.all { it.isHiddenByParent || !it.isVisible } ?: true) {
+                reason = Fact.fact("No splash screen visible for", layer.name)
+                target = layer
+                continue
+            }
+            reason = null
+            target = null
+            break
+        }
+
+        reason?.run {
+            target?.fail(
+                Fact.fact(ASSERTION_TAG, "isSplashScreenVisibleFor(${component.toLayerName()})"),
+                reason)
+        }
+    }
+
+    /**
      * Obtains a [LayerSubject] for the first occurrence of a [Layer] with [Layer.name]
      * containing [component].
      * Always returns a subject, event when the layer doesn't exist. To verify if layer

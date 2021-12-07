@@ -16,6 +16,8 @@
 
 package com.android.server.wm.traces.common
 
+import kotlin.text.Regex.Companion.escape
+
 /**
  * Create a new component identifier.
  *
@@ -67,6 +69,16 @@ data class FlickerComponentName(
         }
     }
 
+    fun toShortWindowName(): String {
+        return when {
+            packageName.isNotEmpty() && className.isNotEmpty() ->
+                "$packageName/${className.removePrefix(packageName)}"
+            packageName.isNotEmpty() -> packageName
+            className.isNotEmpty() -> className
+            else -> error("Component name should have an activity of class name")
+        }
+    }
+
     /**
      * Obtains the layer name from the component name.
      *
@@ -79,6 +91,10 @@ data class FlickerComponentName(
         }
 
         return result
+    }
+
+    fun toActivityRecordFilter(): Regex {
+        return Regex("ActivityRecord\\{.*${escape(this.toShortWindowName())}")
     }
 
     private fun appendShortString(sb: StringBuilder, packageName: String, className: String) {

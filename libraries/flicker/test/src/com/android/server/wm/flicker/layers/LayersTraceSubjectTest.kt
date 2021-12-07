@@ -23,6 +23,7 @@ import com.android.server.wm.flicker.SIMPLE_APP_COMPONENT
 import com.android.server.wm.flicker.assertFailure
 import com.android.server.wm.flicker.assertThrows
 import com.android.server.wm.flicker.readLayerTraceFromFile
+import com.android.server.wm.flicker.traces.FlickerSubjectException
 import com.android.server.wm.flicker.traces.layers.LayersTraceSubject
 import com.android.server.wm.flicker.traces.layers.LayersTraceSubject.Companion.assertThat
 import com.android.server.wm.traces.common.FlickerComponentName
@@ -270,6 +271,48 @@ class LayersTraceSubjectTest {
         subject.visibleRegion(FIXED_APP)
                 .plus(pipRegion)
                 .coversExactly(DISPLAY_REGION_ROTATED)
+    }
+
+    @Test
+    fun checkCanDetectSplashScreen() {
+        val trace = readLayerTraceFromFile("layers_trace_splashscreen.pb")
+        val newLayer = FlickerComponentName("com.android.server.wm.flicker.testapp",
+            "com.android.server.wm.flicker.testapp.SimpleActivity")
+        assertThat(trace)
+            .isVisible(LAUNCHER_COMPONENT)
+            .then()
+            .isSplashScreenVisibleFor(newLayer, isOptional = false)
+            .then()
+            .isVisible(newLayer)
+            .forAllEntries()
+
+        val failure = assertThrows(FlickerSubjectException::class.java) {
+            assertThat(trace)
+                .isVisible(LAUNCHER_COMPONENT)
+                .then()
+                .isVisible(newLayer)
+                .forAllEntries()
+        }
+        assertFailure(failure).hasMessageThat().contains("Is Invisible")
+    }
+
+    @Test
+    fun checkCanDetectMissingSplashScreen() {
+        val trace = readLayerTraceFromFile("layers_trace_splashscreen.pb")
+        val newLayer = FlickerComponentName("com.android.server.wm.flicker.testapp",
+            "com.android.server.wm.flicker.testapp.SimpleActivity")
+
+        // No splashscreen because no matching activity record
+        var failure = assertThrows(FlickerSubjectException::class.java) {
+            assertThat(trace).first().isSplashScreenVisibleFor(newLayer)
+        }
+        assertFailure(failure).hasMessageThat().contains("Could not find Activity Record layer")
+
+        // No splashscreen for target activity record
+        failure = assertThrows(FlickerSubjectException::class.java) {
+            assertThat(trace).first().isSplashScreenVisibleFor(LAUNCHER_COMPONENT)
+        }
+        assertFailure(failure).hasMessageThat().contains("No splash screen visible")
     }
 
     companion object {

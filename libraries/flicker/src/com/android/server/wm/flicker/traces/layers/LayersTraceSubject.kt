@@ -345,6 +345,22 @@ class LayersTraceSubject private constructor(
         }
 
     /**
+     * Asserts that each entry in the trace contains a visible splash screen [Layer] for a [layer]
+     * with [Layer.name] containing any of [component].
+     *
+     * @param component Name of the layer to search
+     */
+    @JvmOverloads
+    fun isSplashScreenVisibleFor(
+        component: FlickerComponentName,
+        isOptional: Boolean = false
+    ): LayersTraceSubject = apply {
+        addAssertion("isSplashScreenVisibleFor(${component.toLayerName()})", isOptional) {
+            it.isSplashScreenVisibleFor(component)
+        }
+    }
+
+    /**
      * Executes a custom [assertion] on the current subject
      */
     operator fun invoke(
