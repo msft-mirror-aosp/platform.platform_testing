@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 The Android Open Source Project
+ * Copyright (C) 2021 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,39 +17,47 @@
 package com.android.server.wm.traces.common
 
 /**
- * Wrapper for ColorProto (frameworks/native/services/surfaceflinger/layerproto/common.proto)
+ * Representation of a matrix 3x3 used for layer transforms
  *
- * This class is used by flicker and Winscope
+ *          |dsdx dsdy  tx|
+ * matrix = |dtdx dtdy  ty|
+ *          |0    0     1 |
  */
-class Color(r: Float, g: Float, b: Float, val a: Float) : Color3(r, g, b) {
-    override val isEmpty: Boolean
-        get() = a == 0f || r < 0 || g < 0 || b < 0
+class Matrix33(
+    dsdx: Float,
+    dtdx: Float,
+    val tx: Float,
 
-    override val isNotEmpty: Boolean
-        get() = !isEmpty
-
+    dsdy: Float,
+    dtdy: Float,
+    val ty: Float
+) : Matrix22(dsdx, dtdx, dsdy, dtdy) {
     override fun prettyPrint(): String {
         val parentPrint = super.prettyPrint()
-        return "$parentPrint a:$a"
+        val tx = FloatFormatter.format(dsdx)
+        val ty = FloatFormatter.format(dtdx)
+        return "$parentPrint   tx:$tx   ty:$ty"
     }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (other !is Color) return false
+        if (other !is Matrix33) return false
         if (!super.equals(other)) return false
 
-        if (a != other.a) return false
+        if (tx != other.tx) return false
+        if (ty != other.ty) return false
 
         return true
     }
 
     override fun hashCode(): Int {
         var result = super.hashCode()
-        result = 31 * result + a.hashCode()
+        result = 31 * result + tx.hashCode()
+        result = 31 * result + ty.hashCode()
         return result
     }
 
     companion object {
-        val EMPTY: Color = Color(r = -1f, g = -1f, b = -1f, a = 0f)
+        val EMPTY: Matrix33 = Matrix33(0f, 0f, 0f, 0f, 0f, 0f)
     }
 }

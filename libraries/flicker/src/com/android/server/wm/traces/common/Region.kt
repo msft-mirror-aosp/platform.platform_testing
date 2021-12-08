@@ -16,6 +16,11 @@
 
 package com.android.server.wm.traces.common
 
+/**
+ * Wrapper for RegionProto (frameworks/native/services/surfaceflinger/layerproto/common.proto)
+ *
+ * This class is used by flicker and Winscope
+ */
 class Region(val rects: Array<Rect>) : Rect(
     rects.map { it.left }.minOrNull() ?: 0,
     rects.map { it.top }.minOrNull() ?: 0,

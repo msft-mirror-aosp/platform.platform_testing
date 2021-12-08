@@ -16,7 +16,7 @@
 
 package com.android.server.wm.traces.common.layers
 
-import com.android.server.wm.traces.common.Buffer
+import com.android.server.wm.traces.common.ActiveBuffer
 import com.android.server.wm.traces.common.Color
 import com.android.server.wm.traces.common.Rect
 import com.android.server.wm.traces.common.RectF
@@ -36,7 +36,7 @@ data class Layer(
     val parentId: Int,
     val z: Int,
     val visibleRegion: Region?,
-    val activeBuffer: Buffer,
+    val activeBuffer: ActiveBuffer,
     val flags: Int,
     val bounds: RectF,
     val color: Color,

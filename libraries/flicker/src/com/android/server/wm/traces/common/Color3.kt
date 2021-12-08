@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 The Android Open Source Project
+ * Copyright (C) 2021 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,39 +17,45 @@
 package com.android.server.wm.traces.common
 
 /**
- * Wrapper for ColorProto (frameworks/native/services/surfaceflinger/layerproto/common.proto)
+ * Wrapper for Color3 (frameworks/native/services/surfaceflinger/layerproto/transactions.proto)
  *
  * This class is used by flicker and Winscope
  */
-class Color(r: Float, g: Float, b: Float, val a: Float) : Color3(r, g, b) {
-    override val isEmpty: Boolean
-        get() = a == 0f || r < 0 || g < 0 || b < 0
+open class Color3(val r: Float, val g: Float, val b: Float) {
+    open val isEmpty: Boolean
+        get() = r < 0 || g < 0 || b < 0
 
-    override val isNotEmpty: Boolean
+    open val isNotEmpty: Boolean
         get() = !isEmpty
 
-    override fun prettyPrint(): String {
-        val parentPrint = super.prettyPrint()
-        return "$parentPrint a:$a"
+    open fun prettyPrint(): String {
+        val r = FloatFormatter.format(r)
+        val g = FloatFormatter.format(g)
+        val b = FloatFormatter.format(b)
+        return "r:$r g:$g b:$b"
     }
+
+    override fun toString(): String = if (isEmpty) "[empty]" else prettyPrint()
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is Color) return false
-        if (!super.equals(other)) return false
 
-        if (a != other.a) return false
+        if (r != other.r) return false
+        if (g != other.g) return false
+        if (b != other.b) return false
 
         return true
     }
 
     override fun hashCode(): Int {
-        var result = super.hashCode()
-        result = 31 * result + a.hashCode()
+        var result = r.hashCode()
+        result = 31 * result + g.hashCode()
+        result = 31 * result + b.hashCode()
         return result
     }
 
     companion object {
-        val EMPTY: Color = Color(r = -1f, g = -1f, b = -1f, a = 0f)
+        val EMPTY: Color3 = Color3(r = -1f, g = -1f, b = -1f)
     }
 }

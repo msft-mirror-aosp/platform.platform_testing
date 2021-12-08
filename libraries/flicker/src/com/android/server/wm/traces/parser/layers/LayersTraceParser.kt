@@ -25,7 +25,7 @@ import android.surfaceflinger.nano.Display.DisplayProto
 import android.surfaceflinger.nano.Layers
 import android.surfaceflinger.nano.Layerstrace
 import android.util.Log
-import com.android.server.wm.traces.common.Buffer
+import com.android.server.wm.traces.common.ActiveBuffer
 import com.android.server.wm.traces.common.Color
 import com.android.server.wm.traces.common.RectF
 import com.android.server.wm.traces.common.Region
@@ -232,11 +232,11 @@ class LayersTraceParser {
         }
 
         @JvmStatic
-        private fun Layers.ActiveBufferProto?.toBuffer(): Buffer {
+        private fun Layers.ActiveBufferProto?.toBuffer(): ActiveBuffer {
             if (this == null) {
-                return Buffer.EMPTY
+                return ActiveBuffer.EMPTY
             }
-            return Buffer(width, height, stride, format)
+            return ActiveBuffer(width, height, stride, format)
         }
 
         @JvmStatic

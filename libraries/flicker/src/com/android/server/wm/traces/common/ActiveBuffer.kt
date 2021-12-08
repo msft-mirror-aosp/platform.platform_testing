@@ -16,11 +16,22 @@
 
 package com.android.server.wm.traces.common
 
-class Buffer(width: Int, height: Int, val stride: Int, val format: Int) : Size(width, height) {
-    override fun prettyPrint(): String = prettyPrint(this)
+/**
+ * Wrapper for ActiveBufferProto (frameworks/native/services/surfaceflinger/layerproto/layers.proto)
+ *
+ * This class is used by flicker and Winscope
+ */
+class ActiveBuffer(
+    width: Int,
+    height: Int,
+    val stride: Int,
+    val format: Int
+) : Size(width, height) {
+    override fun prettyPrint(): String =
+        "w:$width, h:$height, stride:$stride, format:$format"
 
     override fun equals(other: Any?): Boolean =
-        other is Buffer &&
+        other is ActiveBuffer &&
         other.height == height &&
         other.width == width &&
         other.stride == stride &&
@@ -37,9 +48,6 @@ class Buffer(width: Int, height: Int, val stride: Int, val format: Int) : Size(w
     override fun toString(): String = prettyPrint()
 
     companion object {
-        val EMPTY: Buffer = Buffer(0, 0, 0, 0)
-
-        fun prettyPrint(buffer: Buffer): String = "w:${buffer.width}, h:${buffer.height}, " +
-            "stride:${buffer.stride}, format:${buffer.format}"
+        val EMPTY: ActiveBuffer = ActiveBuffer(0, 0, 0, 0)
     }
 }
