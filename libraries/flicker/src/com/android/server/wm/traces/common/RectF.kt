@@ -16,6 +16,11 @@
 
 package com.android.server.wm.traces.common
 
+/**
+ * Wrapper for FloatRectProto (frameworks/native/services/surfaceflinger/layerproto/layers.proto)
+ *
+ * This class is used by flicker and Winscope
+ */
 data class RectF(
     val left: Float = 0f,
     val top: Float = 0f,
@@ -29,7 +34,7 @@ data class RectF(
      * Returns true if the rectangle is empty (left >= right or top >= bottom)
      */
     val isEmpty: Boolean
-        get() = width == 0f || height == 0f
+        get() = width <= 0f || height <= 0f
     val isNotEmpty: Boolean
         get() = !isEmpty
 
@@ -107,9 +112,18 @@ data class RectF(
      */
     fun intersection(r: RectF): RectF = intersection(r.left, r.top, r.right, r.bottom)
 
-    fun prettyPrint(): String = prettyPrint(this)
+    fun prettyPrint(): String =
+        if (isEmpty) {
+            "[empty]"
+        } else {
+            val left = FloatFormatter.format(left)
+            val top = FloatFormatter.format(top)
+            val right = FloatFormatter.format(right)
+            val bottom = FloatFormatter.format(bottom)
+            "($left, $top) - ($right, $bottom)"
+        }
 
-    override fun toString(): String = if (isEmpty) "[empty]" else prettyPrint()
+    override fun toString(): String = prettyPrint()
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -132,14 +146,6 @@ data class RectF(
     }
 
     companion object {
-        val EMPTY = RectF()
-
-        fun prettyPrint(rect: RectF): String {
-            val left = FloatFormatter.format(rect.left)
-            val top = FloatFormatter.format(rect.top)
-            val right = FloatFormatter.format(rect.right)
-            val bottom = FloatFormatter.format(rect.bottom)
-            return "($left, $top) - ($right, $bottom)"
-        }
+        val EMPTY: RectF = RectF()
     }
 }

@@ -23,10 +23,11 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.android.server.wm.flicker.readWmTraceFromDumpFile
 import com.android.server.wm.flicker.readWmTraceFromFile
 import com.android.server.wm.flicker.traces.windowmanager.WindowManagerStateSubject
-import com.android.server.wm.traces.common.Buffer
+import com.android.server.wm.traces.common.ActiveBuffer
 import com.android.server.wm.traces.common.Color
 import com.android.server.wm.traces.common.DeviceStateDump
 import com.android.server.wm.traces.common.FlickerComponentName
+import com.android.server.wm.traces.common.Matrix33
 import com.android.server.wm.traces.common.Rect
 import com.android.server.wm.traces.common.RectF
 import com.android.server.wm.traces.common.Region
@@ -73,7 +74,7 @@ class WindowManagerStateHelperTest {
         "com.android.server.wm.flicker.testapp/.SimpleActivity")
 
     private fun createImaginaryLayer(name: String, index: Int, id: Int, parentId: Int): Layer {
-        val transform = Transform(0, Transform.Matrix(0f, 0f, 0f, 0f, 0f, 0f))
+        val transform = Transform(0, Matrix33.EMPTY)
         val rect = RectF(
             left = index.toFloat(),
             top = index.toFloat(),
@@ -86,7 +87,7 @@ class WindowManagerStateHelperTest {
             parentId,
             z = 0,
             visibleRegion = Region(rect.toRect()),
-            activeBuffer = Buffer(1, 1, 1, 1),
+            activeBuffer = ActiveBuffer(1, 1, 1, 1),
             flags = 0,
             bounds = rect,
             color = Color(0f, 0f, 0f, 1f),

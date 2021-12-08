@@ -16,6 +16,13 @@
 
 package com.android.server.wm.traces.common
 
+/**
+ * Wrapper for RectProto
+ *     - frameworks/native/services/surfaceflinger/layerproto/common.proto and
+ *     - frameworks/base/core/proto/android/graphics/rect.proto
+ *
+ * This class is used by flicker and Winscope
+ */
 open class Rect(
     val left: Int = 0,
     val top: Int = 0,
@@ -29,7 +36,7 @@ open class Rect(
     /**
      * Returns true if the rectangle is empty (left >= right or top >= bottom)
      */
-    val isEmpty: Boolean = width == 0 || height == 0
+    val isEmpty: Boolean = width <= 0 || height <= 0
 
     val isNotEmpty: Boolean = !isEmpty
 
@@ -40,7 +47,8 @@ open class Rect(
         return RectF(left.toFloat(), top.toFloat(), right.toFloat(), bottom.toFloat())
     }
 
-    open fun prettyPrint(): String = prettyPrint(this)
+    open fun prettyPrint(): String =
+        if (isEmpty) "[empty]" else "($left, $top) - ($right, $bottom)"
 
     override fun equals(other: Any?): Boolean = other?.toString() == this.toString()
 
@@ -81,12 +89,9 @@ open class Rect(
         return result
     }
 
-    override fun toString(): String = if (isEmpty) "[empty]" else prettyPrint()
+    override fun toString(): String = prettyPrint()
 
     companion object {
-        val EMPTY = Rect()
-
-        fun prettyPrint(rect: Rect): String = "(${rect.left}, ${rect.top}) - " +
-            "(${rect.right}, ${rect.bottom})"
+        val EMPTY: Rect = Rect()
     }
 }

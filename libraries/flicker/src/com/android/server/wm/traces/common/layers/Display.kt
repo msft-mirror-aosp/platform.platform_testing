@@ -20,7 +20,7 @@ import com.android.server.wm.traces.common.Rect
 import com.android.server.wm.traces.common.Size
 
 /**
- * Representation of a Display in the SF trace
+ * Wrapper for DisplayProto (frameworks/native/services/surfaceflinger/layerproto/display.proto)
  */
 data class Display(
     val id: ULong,
