@@ -32,8 +32,11 @@ import java.util.InputMismatchException;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -55,6 +58,10 @@ public class ShowmapSnapshotHelper implements ICollectorHelper<String> {
     public static final String OUTPUT_CHILD_PROCESS_COUNT_KEY = CHILD_PROCESS_COUNT_PREFIX + "_%s";
     public static final String PROCESS_WITH_CHILD_PROCESS_COUNT =
             "process_with_child_process_count";
+    private static final String CHILD_PROCESS_NAME_REGEX = "(\\S+)$";
+    private static final String METRIC_VALUE_SEPARATOR = "_";
+    public static final String PARENT_PROCESS_STRING = "parent_process";
+    public static final String CHILD_PROCESS_STRING = "child_process";
 
     private String[] mProcessNames = null;
     private String mTestOutputDir = null;
@@ -155,7 +162,7 @@ public class ShowmapSnapshotHelper implements ICollectorHelper<String> {
                         // Parse number of child processes for the given pid and update the
                         // total number of child process count for the process name that pid
                         // is associated with.
-                        updateChildProcessesCount(processName, pid);
+                        updateChildProcessesDetails(processName, pid);
                     }
                 } catch (RuntimeException e) {
                     Log.e(TAG, e.getMessage(), e.getCause());
@@ -344,12 +351,16 @@ public class ShowmapSnapshotHelper implements ICollectorHelper<String> {
 
     /**
      * Retrieves the number of child processes for the given process id and updates the total
-     * process count for the process name that pid is associated with.
+     * process count and adds a child process metric for the process name that pid is associated
+     * with.
      *
      * @param processName
      * @param pid
      */
-    private void updateChildProcessesCount(String processName, long pid) {
+    private void updateChildProcessesDetails(String processName, long pid) {
+        String childProcessName;
+        String completeChildProcessMetric;
+        Pattern childProcessPattern = Pattern.compile(CHILD_PROCESS_NAME_REGEX);
         try {
             Log.i(TAG,
                     String.format("Retrieving child processes count for process name: %s with"
@@ -368,8 +379,29 @@ public class ShowmapSnapshotHelper implements ICollectorHelper<String> {
                                 Long.parseLong(mMemoryMap.getOrDefault(childCountMetricKey, "0"))
                                         + childProcessCount));
             }
+            for (String line : childProcessStrSplit) {
+                // To discard the header line in the command output.
+                if (Objects.equals(line, childProcessStrSplit[0])) continue;
+                Matcher childProcessMatcher = childProcessPattern.matcher(line);
+                if (childProcessMatcher.find()) {
+                    /**
+                     * final metric will be of following format
+                     * parent_process_<process>_child_process_<process>
+                     * parent_process_zygote64_child_process_system_server
+                     */
+                    childProcessName = childProcessMatcher.group(1);
+                    completeChildProcessMetric =
+                            String.join(
+                                    METRIC_VALUE_SEPARATOR,
+                                    PARENT_PROCESS_STRING,
+                                    processName,
+                                    CHILD_PROCESS_STRING,
+                                    childProcessName);
+                    mMemoryMap.put(completeChildProcessMetric, "1");
+                }
+            }
         } catch (IOException e) {
-            throw new RuntimeException("Unable to run child process count command.", e);
+            throw new RuntimeException("Unable to run child process command.", e);
         }
     }
 

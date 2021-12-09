@@ -215,6 +215,26 @@ public class ShowmapSnapshotHelperTest {
         assertTrue(metrics.containsKey(ShowmapSnapshotHelper.CHILD_PROCESS_COUNT_PREFIX + "_init"));
     }
 
+    @Test
+    public void testGetMetrics_parent_process_child_processes_metrics() {
+        mShowmapSnapshotHelper.setUp(VALID_OUTPUT_DIR, NO_PROCESS_LIST);
+        mShowmapSnapshotHelper.setMetricNameIndex(METRIC_EMPTY_INDEX_STR);
+
+        mShowmapSnapshotHelper.setAllProcesses();
+        assertTrue(mShowmapSnapshotHelper.startCollecting());
+        Map<String, String> metrics = mShowmapSnapshotHelper.getMetrics();
+
+        assertTrue(metrics.size() != 0);
+
+        Set<String> parentWithChildProcessSet =
+                metrics.keySet().stream()
+                        .filter(s -> s.startsWith(ShowmapSnapshotHelper.PARENT_PROCESS_STRING))
+                        .collect(Collectors.toSet());
+
+        // At least one process (i.e init) will have child process
+        assertTrue(parentWithChildProcessSet.size() > 0);
+    }
+
     private boolean verifyDefaultMetrics(Map<String, String> metrics) {
         if(metrics.size() == 0) {
             return false;
@@ -223,7 +243,8 @@ public class ShowmapSnapshotHelperTest {
             if (!(key.equals(ShowmapSnapshotHelper.PROCESS_COUNT)
                     || key.equals(ShowmapSnapshotHelper.OUTPUT_FILE_PATH_KEY)
                     || key.equals(ShowmapSnapshotHelper.PROCESS_WITH_CHILD_PROCESS_COUNT)
-                    || key.startsWith(ShowmapSnapshotHelper.CHILD_PROCESS_COUNT_PREFIX))) {
+                    || key.startsWith(ShowmapSnapshotHelper.CHILD_PROCESS_COUNT_PREFIX)
+                    || key.startsWith(ShowmapSnapshotHelper.PARENT_PROCESS_STRING))) {
                 return false;
             }
         }
