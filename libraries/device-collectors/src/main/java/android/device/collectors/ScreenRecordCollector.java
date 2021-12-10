@@ -18,6 +18,7 @@ package android.device.collectors;
 import static org.junit.Assert.assertNotNull;
 
 import android.device.collectors.annotations.OptionClass;
+import android.os.Bundle;
 import android.os.SystemClock;
 import android.util.Log;
 import androidx.annotation.VisibleForTesting;
@@ -41,6 +42,12 @@ import org.junit.runner.Description;
  */
 @OptionClass(alias = "screen-record-collector")
 public class ScreenRecordCollector extends BaseMetricListener {
+    // Quality is relative to screen resolution.
+    // *  "medium" is 1/2 the resolution.
+    // *  "low" is 1/8 the resolution.
+    // *  Otherwise, use the resolution.
+    @VisibleForTesting static final String QUALITY_ARG = "video-quality";
+    // Maximum parts per test (each part is <= 3min).
     @VisibleForTesting static final int MAX_RECORDING_PARTS = 5;
     private static final long VIDEO_TAIL_BUFFER = 500;
 
@@ -51,13 +58,59 @@ public class ScreenRecordCollector extends BaseMetricListener {
 
     private RecordingThread mCurrentThread;
 
+    private String mVideoDimensions;
+
     // Tracks the test iterations to ensure that each failure gets unique filenames.
     // Key: test description; value: number of iterations.
     private Map<String, Integer> mTestIterations = new HashMap<String, Integer>();
 
+    public ScreenRecordCollector() {
+        super();
+    }
+
+    /** Constructors for overriding instrumentation arguments only. */
+    @VisibleForTesting
+    ScreenRecordCollector(Bundle args) {
+        super(args);
+    }
+
     @Override
     public void onTestRunStart(DataRecord runData, Description description) {
         mDestDir = createAndEmptyDirectory(OUTPUT_DIR);
+
+        try {
+            long scaleDown = 1;
+            switch (getArgsBundle().getString(QUALITY_ARG, "default")) {
+                case "high":
+                    scaleDown = 1;
+                    break;
+
+                case "medium":
+                    scaleDown = 2;
+                    break;
+
+                case "low":
+                    scaleDown = 8;
+                    break;
+
+                default:
+                    return;
+            }
+
+            // Display metrics isn't the absolute size, so use "wm size".
+            String[] dims =
+                    getDevice()
+                            .executeShellCommand("wm size")
+                            .substring("Physical size: ".length())
+                            .trim()
+                            .split("x");
+            int width = Integer.parseInt(dims[0]);
+            int height = Integer.parseInt(dims[1]);
+            mVideoDimensions = String.format("%dx%d", width / scaleDown, height / scaleDown);
+            Log.v(getTag(), String.format("Using video dimensions: %s", mVideoDimensions));
+        } catch (Exception e) {
+            Log.e(getTag(), "Failed to query the device dimensions. Using default.", e);
+        }
     }
 
     @Override
@@ -167,9 +220,15 @@ public class ScreenRecordCollector extends BaseMetricListener {
                     // Make sure not to block on this background command in the main thread so
                     // that the test continues to run, but block in this thread so it does not
                     // trigger a new screen recording session before the prior one completes.
+                    String dimensionsOpt =
+                            mVideoDimensions == null
+                                    ? ""
+                                    : String.format("--size=%s", mVideoDimensions);
                     getDevice()
                             .executeShellCommand(
-                                    String.format("screenrecord %s", output.getAbsolutePath()));
+                                    String.format(
+                                            "screenrecord %s %s",
+                                            dimensionsOpt, output.getAbsolutePath()));
                 }
             } catch (IOException e) {
                 throw new RuntimeException("Caught exception while screen recording.");
