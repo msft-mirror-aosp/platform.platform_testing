@@ -33,12 +33,16 @@ import com.android.server.wm.flicker.traces.FlickerSubjectException
 import com.android.server.wm.flicker.traces.windowmanager.WindowManagerStateSubject
 import com.android.server.wm.flicker.traces.windowmanager.WindowManagerTraceSubject.Companion.assertThat
 import com.android.server.wm.traces.common.FlickerComponentName
+import com.android.server.wm.traces.common.windowmanager.WindowManagerState
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
+import com.android.server.wm.traces.common.windowmanager.windows.ConfigurationContainer
+import com.android.server.wm.traces.common.windowmanager.windows.KeyguardControllerState
+import com.android.server.wm.traces.common.windowmanager.windows.RootWindowContainer
+import com.android.server.wm.traces.common.windowmanager.windows.WindowContainer
 import com.google.common.truth.Truth
 import org.junit.FixMethodOrder
 import org.junit.Test
 import org.junit.runners.MethodSorters
-import java.lang.AssertionError
 
 /**
  * Contains [WindowManagerStateSubject] tests.
@@ -319,5 +323,45 @@ class WindowManagerStateSubjectTest {
         val lastEntry = assertThat(trace).last()
         lastEntry.isAppWindowVisible(SHELL_SPLIT_SCREEN_PRIMARY_COMPONENT)
         lastEntry.isAppWindowVisible(SHELL_SPLIT_SCREEN_SECONDARY_COMPONENT)
+    }
+
+    @Test
+    fun canDetectNoSubjects() {
+        val emptyRootContainer = RootWindowContainer(
+            WindowContainer(
+                title = "root",
+                token = "",
+                orientation = 0,
+                layerId = 0,
+                _isVisible = true,
+                children = emptyArray(),
+                configurationContainer = ConfigurationContainer(null, null, null)
+            )
+        )
+        val noWindowsState = WindowManagerState(
+            where = "",
+            policy = null,
+            focusedApp = "",
+            focusedDisplayId = 0,
+            focusedWindow = "",
+            inputMethodWindowAppToken = "",
+            isHomeRecentsComponent = false,
+            isDisplayFrozen = false,
+            pendingActivities = emptyArray(),
+            root = emptyRootContainer,
+            keyguardControllerState = KeyguardControllerState(
+                isAodShowing = false,
+                isKeyguardShowing = false,
+                keyguardOccludedStates = mapOf()
+            )
+        )
+
+        val mockComponent = FlickerComponentName("", "Mock")
+
+        val failure = assertThrows(FlickerSubjectException::class.java) {
+            WindowManagerStateSubject
+                .assertThat(noWindowsState).isAppWindowOnTop(mockComponent)
+        }
+        assertFailure(failure).hasMessageThat().contains("State is not empty")
     }
 }

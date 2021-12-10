@@ -197,6 +197,7 @@ class WindowManagerStateSubject private constructor(
     fun isAppWindowOnTop(component: FlickerComponentName): WindowManagerStateSubject = apply {
         val windowName = component.toWindowName()
         if (!wmState.topVisibleAppWindow.contains(windowName)) {
+            isNotEmpty()
             val topWindow = subjects.first { it.name == wmState.topVisibleAppWindow }
             topWindow.fail(
                 Fact.fact(ASSERTION_TAG, "isAppWindowOnTop(${component.toWindowName()})"),
