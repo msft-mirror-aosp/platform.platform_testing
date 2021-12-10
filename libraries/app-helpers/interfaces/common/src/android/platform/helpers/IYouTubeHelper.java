@@ -222,11 +222,4 @@ public interface IYouTubeHelper extends IAppHelper {
      * <p>It presses YouTube PiP view twice to return to the main app.
      */
     public void backFromYouTubeFromPip();
-
-    /**
-     * Setup expectation: YouTube is on the video player page.
-     *
-     * @return YouTube player object.
-     */
-    public UiObject2 getYouTubePlayer();
 }
