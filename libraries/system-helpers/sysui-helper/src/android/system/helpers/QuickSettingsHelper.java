@@ -39,6 +39,7 @@ import org.junit.Assert;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /** Implement common helper methods for Quick settings. */
 public class QuickSettingsHelper {
@@ -50,12 +51,19 @@ public class QuickSettingsHelper {
     private static final BySelector FOOTER_SELECTOR = By.res(SYSTEMUI_PACKAGE, "qs_footer");
     private static final String SYSUI_QS_TILES_SETTING = "sysui_qs_tiles";
 
-    private UiDevice mDevice = null;
-    private Instrumentation mInstrumentation;
-    private String mDefaultQSTileList = "";
-    private String mPreviousQSTileList = "";
+    @NonNull private final UiDevice mDevice;
+    @NonNull private final Instrumentation mInstrumentation;
+    private List<String> mDefaultQSTileList = null;
+    private List<String> mPreviousQSTileList = null;
 
-    public QuickSettingsHelper(UiDevice device, Instrumentation inst, ContentResolver resolver) {
+    /** @deprecated constructor */
+    @Deprecated
+    public QuickSettingsHelper(
+            @NonNull UiDevice device, @NonNull Instrumentation inst, ContentResolver resolver) {
+        this(device, inst);
+    }
+
+    public QuickSettingsHelper(@NonNull UiDevice device, @NonNull Instrumentation inst) {
         this.mDevice = device;
         mInstrumentation = inst;
         try {
@@ -74,7 +82,8 @@ public class QuickSettingsHelper {
                 sysUIContext
                         .getResources()
                         .getIdentifier(QS_DEFAULT_TILES_RES, "string", SYSTEMUI_PACKAGE);
-        mDefaultQSTileList = sysUIContext.getString(qsTileListResId);
+        final String defaultQSTiles = sysUIContext.getString(qsTileListResId);
+        mDefaultQSTileList = Arrays.asList(defaultQSTiles.split(","));
     }
 
     public enum QuickSettingDefaultTiles {
@@ -89,14 +98,14 @@ public class QuickSettingsHelper {
 
         private final String name;
 
-        private QuickSettingDefaultTiles(String name) {
+        QuickSettingDefaultTiles(String name) {
             this.name = name;
         }
 
         public String getName() {
             return this.name;
         }
-    };
+    }
 
     public enum QuickSettingEditMenuTiles {
         LOCATION("Location"),
@@ -108,14 +117,14 @@ public class QuickSettingsHelper {
 
         private final String name;
 
-        private QuickSettingEditMenuTiles(String name) {
+        QuickSettingEditMenuTiles(String name) {
             this.name = name;
         }
 
         public String getName() {
             return this.name;
         }
-    };
+    }
 
     public void addQuickSettingTileFromEditMenu(String quickSettingTile,
             String quickSettingTileToReplace, String quickSettingTileToCheckForInCSV)
@@ -158,10 +167,20 @@ public class QuickSettingsHelper {
 
     /** Sets default quick settings tile list pre-load in SystemUI resource. */
     public void setQuickSettingsDefaultTiles() {
-        modifyListOfQuickSettingsTiles(mDefaultQSTileList);
+        modifyQSTileList(mDefaultQSTileList);
     }
 
+    /** @deprecated Gets the default list of QuickSettings as String format */
+    @Deprecated
     public String getQuickSettingsDefaultTileList() {
+        if (mDefaultQSTileList == null || mDefaultQSTileList.isEmpty()) {
+            return "";
+        }
+        return String.join(",", mDefaultQSTileList);
+    }
+
+    /** Gets the default list of QuickSettings */
+    public List<String> getQSDefaultTileList() {
         return mDefaultQSTileList;
     }
 
@@ -171,11 +190,12 @@ public class QuickSettingsHelper {
      * @param tileName tile name that will been set to the first position.
      */
     public void setFirstQS(@NonNull String tileName) {
-        mPreviousQSTileList =
+        String previousQSTiles =
                 Settings.Secure.getString(
                         mInstrumentation.getContext().getContentResolver(), SYSUI_QS_TILES_SETTING);
+        mPreviousQSTileList = Arrays.asList(previousQSTiles.split(","));
 
-        ArrayList<String> list = new ArrayList<>(Arrays.asList(mPreviousQSTileList.split(",")));
+        ArrayList<String> list = new ArrayList<>(mPreviousQSTileList);
         for (int i = 0; i < list.size(); ++i) {
             if (TextUtils.equals(tileName, list.get(i))) {
                 list.remove(i);
@@ -183,24 +203,22 @@ public class QuickSettingsHelper {
             }
         }
         list.add(0, tileName);
-        final String newTileList = String.join(",", list);
-        modifyListOfQuickSettingsTiles(newTileList);
+        modifyQSTileList(list);
     }
 
     /** Reset to previous QS tile list if exist */
     public void resetToPreviousQSTileList() {
-        if (TextUtils.isEmpty(mPreviousQSTileList)) {
+        if (mPreviousQSTileList == null) {
             return;
         }
-        modifyListOfQuickSettingsTiles(mPreviousQSTileList);
+        modifyQSTileList(mPreviousQSTileList);
     }
 
     /**
-     * Sets customized tile list to secure settings entry 'sysui_qs_tiles' directly.
-     *
+     * @deprecated Sets customized tile list to secure settings entry 'sysui_qs_tiles' directly.
      * @param commaSeparatedList The quick settings tile list to be set
-     * @throws Exception
      */
+    @Deprecated
     public void modifyListOfQuickSettingsTiles(String commaSeparatedList) {
         try {
             Settings.Secure.putString(
@@ -210,6 +228,27 @@ public class QuickSettingsHelper {
             Thread.sleep(LONG_TIMEOUT);
         } catch (Resources.NotFoundException | InterruptedException e) {
             Log.e(LOG_TAG, "modifyListOfQuickSettingsTiles fails!", e);
+        }
+    }
+
+    /**
+     * Sets customized tile list to secure settings entry 'sysui_qs_tiles' directly.
+     *
+     * @param list The quick settings tile list to be set
+     */
+    public void modifyQSTileList(@NonNull List<String> list) {
+        if (list.isEmpty()) {
+            return;
+        }
+
+        try {
+            Settings.Secure.putString(
+                    mInstrumentation.getContext().getContentResolver(),
+                    SYSUI_QS_TILES_SETTING,
+                    String.join(",", list));
+            Thread.sleep(LONG_TIMEOUT);
+        } catch (Resources.NotFoundException | InterruptedException e) {
+            Log.e(LOG_TAG, "modifyQSTileList fails!", e);
         }
     }
 
