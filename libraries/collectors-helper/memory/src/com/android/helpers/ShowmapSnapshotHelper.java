@@ -76,7 +76,7 @@ public class ShowmapSnapshotHelper implements ICollectorHelper<String> {
 
     // Maintain metric name and the index it corresponds to in the showmap output
     // summary
-    private Map<Integer, String> mMetricNameIndexMap = new HashMap<>();
+    private Map<String, List<Integer>> mMetricNameIndexMap = new HashMap<>();
 
     public void setUp(String testOutputDir, String... processNames) {
         mProcessNames = processNames;
@@ -289,19 +289,21 @@ public class ShowmapSnapshotHelper implements ICollectorHelper<String> {
             int pos = showmapOutput.lastIndexOf("----");
             String summarySplit[] = showmapOutput.substring(pos).trim().split("\\s+");
 
-            for (Map.Entry<Integer, String> entry : mMetricNameIndexMap.entrySet()) {
+            for (Map.Entry<String, List<Integer>> entry : mMetricNameIndexMap.entrySet()) {
+                Long metricValue = 0L;
                 String metricKey = constructKey(
-                        String.format(OUTPUT_METRIC_PATTERN, entry.getValue()),
+                        String.format(OUTPUT_METRIC_PATTERN, entry.getKey()),
                         processName);
+                for (int index = 0; index < entry.getValue().size(); index++) {
+                    metricValue += Long.parseLong(summarySplit[entry.getValue().get(index) + 1]);
+                }
                 // If there are multiple pids associated with the process name then update the
                 // existing entry in the map otherwise add new entry in the map.
                 if (mMemoryMap.containsKey(metricKey)) {
                     long currValue = Long.parseLong(mMemoryMap.get(metricKey));
-                    mMemoryMap.put(metricKey, Long.toString(currValue +
-                            (Long.parseLong(summarySplit[entry.getKey() + 1]) * 1024)));
+                    mMemoryMap.put(metricKey, Long.toString(currValue + metricValue * 1024));
                 } else {
-                    mMemoryMap.put(metricKey, Long.toString(Long.parseLong(
-                            summarySplit[entry.getKey() + 1]) * 1024));
+                    mMemoryMap.put(metricKey, Long.toString(metricValue * 1024));
                 }
             }
         } catch (IndexOutOfBoundsException | InputMismatchException e) {
@@ -337,13 +339,20 @@ public class ShowmapSnapshotHelper implements ICollectorHelper<String> {
      *            map and pass the map to this method.
      */
     public void setMetricNameIndex(String metricNameIndexStr) {
+        /**
+         * example: metricNameIndexStr rss:1,pss:2,privatedirty:6:7
+         * converted to Map: {'rss': [1], 'pss': [2], 'privatedirty': [6, 7]}
+         */
         Log.i(TAG, String.format("Metric Name index %s", metricNameIndexStr));
         String metricDetails[] = metricNameIndexStr.split(",");
         for (String metricDetail : metricDetails) {
+            List<Integer> indexList = new ArrayList<>();
             String metricDetailsSplit[] = metricDetail.split(":");
-            if (metricDetailsSplit.length == 2) {
-                mMetricNameIndexMap.put(Integer.parseInt(
-                        metricDetailsSplit[1]), metricDetailsSplit[0]);
+            for (int index = 1; index < metricDetailsSplit.length; index++) {
+                indexList.add(Integer.parseInt(metricDetailsSplit[index]));
+            }
+            if (!indexList.isEmpty()) {
+                mMetricNameIndexMap.put(metricDetailsSplit[0], indexList);
             }
         }
         Log.i(TAG, String.format("Metric Name index map size %s", mMetricNameIndexMap.size()));
