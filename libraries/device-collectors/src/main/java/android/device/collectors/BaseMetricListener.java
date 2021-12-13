@@ -118,7 +118,7 @@ public class BaseMetricListener extends InstrumentationRunListener {
 
     @Override
     public final void testRunStarted(Description description) throws Exception {
-        parseArguments();
+        setUp();
         if (!mLogOnly) {
             try {
                 mRunData = createDataRecord();
@@ -206,6 +206,17 @@ public class BaseMetricListener extends InstrumentationRunListener {
     }
 
     /**
+     * Set up the metric collector.
+     *
+     * <p>If another class is invoking the metric collector's callbacks directly, it should call
+     * this method to make sure that the metric collector is set up properly.
+     */
+    public final void setUp() {
+        parseArguments();
+        setupAdditionalArgs();
+    }
+
+    /**
      * Create a {@link DataRecord}. Exposed for testing.
      */
     @VisibleForTesting
@@ -264,6 +275,14 @@ public class BaseMetricListener extends InstrumentationRunListener {
      */
     public void onTestEnd(DataRecord testData, Description description) {
         // Does nothing
+    }
+
+    /**
+     * To add listener-specific extra args, implement this method in the sub class and add the
+     * listener specific args.
+     */
+    public void setupAdditionalArgs() {
+        // NO-OP by default
     }
 
     /**
