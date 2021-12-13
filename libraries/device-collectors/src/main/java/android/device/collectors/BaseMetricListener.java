@@ -118,8 +118,7 @@ public class BaseMetricListener extends InstrumentationRunListener {
 
     @Override
     public final void testRunStarted(Description description) throws Exception {
-        parseArguments();
-        setupAdditionalArgs();
+        setUp();
         if (!mLogOnly) {
             try {
                 mRunData = createDataRecord();
@@ -204,6 +203,17 @@ public class BaseMetricListener extends InstrumentationRunListener {
         if (mRunData != null) {
             resultBundle.putAll(mRunData.createBundleFromMetrics());
         }
+    }
+
+    /**
+     * Set up the metric collector.
+     *
+     * <p>If another class is invoking the metric collector's callbacks directly, it should call
+     * this method to make sure that the metric collector is set up properly.
+     */
+    public final void setUp() {
+        parseArguments();
+        setupAdditionalArgs();
     }
 
     /**
