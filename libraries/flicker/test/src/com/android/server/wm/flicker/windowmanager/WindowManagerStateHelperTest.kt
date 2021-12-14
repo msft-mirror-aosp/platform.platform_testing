@@ -107,7 +107,8 @@ class WindowManagerStateHelperTest {
             crop = rect.toRect(),
             backgroundBlurRadius = 0,
             isRelativeOf = false,
-            zOrderRelativeOfId = -1
+            zOrderRelativeOfId = -1,
+            stackId = 0
         )
     }
 
