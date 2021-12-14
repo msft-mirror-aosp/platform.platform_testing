@@ -52,8 +52,12 @@ internal fun readLayerTraceFromFile(
     ignoreOrphanLayers: Boolean = true
 ): LayersTrace {
     return try {
-        LayersTraceParser.parseFromTrace(readTestFile(relativePath),
-            source = Paths.get(relativePath)) { ignoreOrphanLayers }
+        LayersTraceParser.parseFromTrace(
+            readTestFile(relativePath),
+            ignoreLayersStackMatchNoDisplay = false,
+            ignoreLayersInVirtualDisplay = false,
+            source = Paths.get(relativePath)
+        ) { ignoreOrphanLayers }
     } catch (e: Exception) {
         throw RuntimeException(e)
     }

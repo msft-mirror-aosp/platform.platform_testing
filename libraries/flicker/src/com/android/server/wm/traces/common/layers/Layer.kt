@@ -56,7 +56,8 @@ data class Layer(
     val backgroundBlurRadius: Int,
     val crop: Rect?,
     val isRelativeOf: Boolean,
-    val zOrderRelativeOfId: Int
+    val zOrderRelativeOfId: Int,
+    val stackId: Int
 ) {
     val stableId: String = "$type $id $name"
     var parent: Layer? = null
