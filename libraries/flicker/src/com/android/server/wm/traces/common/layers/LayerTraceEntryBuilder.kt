@@ -107,20 +107,23 @@ class LayerTraceEntryBuilder(
         updateParents()
         updateRelZParents()
 
+        // Find all root layers (any sibling of the root layer is considered a root layer in the trace)
+        val rootLayers = mutableListOf<Layer>()
+
         // Getting the first orphan works because when dumping the layers, the root layer comes
         // first, and given that orphans are added in the same order as the layers are provided
         // in the first orphan layer should be the root layer.
-        val firstRoot = orphans.firstOrNull() ?: throw IllegalStateException(
-            "Display root layer not found.")
-        orphans.remove(firstRoot)
+        if (orphans.isNotEmpty()) {
+            val firstRoot = orphans.first()
+            orphans.remove(firstRoot)
+            rootLayers.add(firstRoot)
 
-        // Find all root layers (any sibling of the root layer is considered a root layer in the trace)
-        val rootLayers = mutableListOf(firstRoot)
-        val remainingRoots = orphans.filter { it.parentId == firstRoot.parentId }
-        rootLayers.addAll(remainingRoots)
+            val remainingRoots = orphans.filter { it.parentId == firstRoot.parentId }
+            rootLayers.addAll(remainingRoots)
 
-        // Remove RootLayers from orphans
-        orphans.removeAll(rootLayers)
+            // Remove RootLayers from orphans
+            orphans.removeAll(rootLayers)
+        }
 
         return rootLayers
     }

@@ -19,7 +19,6 @@ package android.system.helpers;
 import static android.content.Context.CONTEXT_IGNORE_SECURITY;
 
 import android.app.Instrumentation;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
@@ -55,13 +54,6 @@ public class QuickSettingsHelper {
     @NonNull private final Instrumentation mInstrumentation;
     private List<String> mDefaultQSTileList = null;
     private List<String> mPreviousQSTileList = null;
-
-    /** @deprecated constructor */
-    @Deprecated
-    public QuickSettingsHelper(
-            @NonNull UiDevice device, @NonNull Instrumentation inst, ContentResolver resolver) {
-        this(device, inst);
-    }
 
     public QuickSettingsHelper(@NonNull UiDevice device, @NonNull Instrumentation inst) {
         this.mDevice = device;
@@ -170,15 +162,6 @@ public class QuickSettingsHelper {
         modifyQSTileList(mDefaultQSTileList);
     }
 
-    /** @deprecated Gets the default list of QuickSettings as String format */
-    @Deprecated
-    public String getQuickSettingsDefaultTileList() {
-        if (mDefaultQSTileList == null || mDefaultQSTileList.isEmpty()) {
-            return "";
-        }
-        return String.join(",", mDefaultQSTileList);
-    }
-
     /** Gets the default list of QuickSettings */
     public List<String> getQSDefaultTileList() {
         return mDefaultQSTileList;
@@ -212,23 +195,6 @@ public class QuickSettingsHelper {
             return;
         }
         modifyQSTileList(mPreviousQSTileList);
-    }
-
-    /**
-     * @deprecated Sets customized tile list to secure settings entry 'sysui_qs_tiles' directly.
-     * @param commaSeparatedList The quick settings tile list to be set
-     */
-    @Deprecated
-    public void modifyListOfQuickSettingsTiles(String commaSeparatedList) {
-        try {
-            Settings.Secure.putString(
-                    mInstrumentation.getContext().getContentResolver(),
-                    SYSUI_QS_TILES_SETTING,
-                    commaSeparatedList);
-            Thread.sleep(LONG_TIMEOUT);
-        } catch (Resources.NotFoundException | InterruptedException e) {
-            Log.e(LOG_TAG, "modifyListOfQuickSettingsTiles fails!", e);
-        }
     }
 
     /**

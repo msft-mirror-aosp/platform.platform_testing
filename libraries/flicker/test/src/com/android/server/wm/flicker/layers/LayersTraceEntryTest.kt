@@ -160,4 +160,18 @@ class LayersTraceEntryTest {
             .that(entry.flattenedLayers.map { it.name })
             .doesNotContain(messagesApp)
     }
+
+    @Test
+    fun canParseTraceEmptyState() {
+        val layersTrace = readLayerTraceFromFile("layers_trace_empty_state.winscope")
+        val emptyStates = layersTrace.filter { it.flattenedLayers.isEmpty() }
+
+        Truth.assertWithMessage("Some states in the trace should be empty")
+            .that(emptyStates)
+            .isNotEmpty()
+
+        Truth.assertWithMessage("Expected state 4d4h41m14s193ms to be empty")
+            .that(emptyStates.first().timestamp)
+            .isEqualTo(362474193519965)
+    }
 }
