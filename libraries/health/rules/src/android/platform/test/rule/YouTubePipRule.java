@@ -48,7 +48,6 @@ public class YouTubePipRule extends TestWatcher {
 
     @Override
     protected void finished(Description description) {
-        sYouTubeHelper.get().backFromYouTubeFromPip();
-        sYouTubeHelper.get().exit();
+        executeShellCommand(String.format("am force-stop %s", sYouTubeHelper.get().getPackage()));
     }
 }
