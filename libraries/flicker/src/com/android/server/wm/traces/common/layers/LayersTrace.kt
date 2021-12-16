@@ -34,8 +34,8 @@ data class LayersTrace(
     constructor(entry: LayerTraceEntry): this(arrayOf(entry))
 
     override fun toString(): String {
-        return "LayersTrace(Start: ${entries.first()}, " +
-            "End: ${entries.last()})"
+        return "LayersTrace(Start: ${entries.firstOrNull()}, " +
+            "End: ${entries.lastOrNull()})"
     }
 
     override fun equals(other: Any?): Boolean {

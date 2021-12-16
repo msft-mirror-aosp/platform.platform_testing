@@ -34,8 +34,8 @@ data class WindowManagerTrace(
 ) : ITrace<WindowManagerState>,
     List<WindowManagerState> by entries.toList() {
     override fun toString(): String {
-        return "WindowManagerTrace(Start: ${entries.first()}, " +
-            "End: ${entries.last()})"
+        return "WindowManagerTrace(Start: ${entries.firstOrNull()}, " +
+            "End: ${entries.lastOrNull()})"
     }
 
     override fun equals(other: Any?): Boolean {
