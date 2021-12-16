@@ -31,12 +31,12 @@ data class ErrorTrace(
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is ErrorTrace) return false
-        if (entries != other.entries) return false
+        if (!entries.contentEquals(other.entries)) return false
         return true
     }
 
     override fun hashCode(): Int = entries.contentDeepHashCode()
 
-    override fun toString(): String = "FlickerErrorTrace(First: ${entries.first()}," +
-            "End: ${entries.last()})"
+    override fun toString(): String = "FlickerErrorTrace(First: ${entries.firstOrNull()}," +
+            "End: ${entries.lastOrNull()})"
 }

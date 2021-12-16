@@ -104,7 +104,8 @@ class LayersTraceSubject private constructor(
         return subjects
             .map { it.layer(name, frameNumber) }
             .firstOrNull { it.isNotEmpty }
-            ?: LayerSubject.assertThat(null, this, timestamp = subjects.first().entry.timestamp)
+            ?: LayerSubject.assertThat(null, this,
+                timestamp = subjects.firstOrNull()?.entry?.timestamp ?: 0L)
     }
 
     /**

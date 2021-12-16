@@ -33,7 +33,7 @@ class RotationLayerAppearsAndVanishes : BaseAssertion() {
         wmSubject: WindowManagerTraceSubject,
         layerSubject: LayersTraceSubject
     ) {
-        val window = wmSubject.trace.entries.first().topVisibleAppWindow
+        val window = wmSubject.first().wmState.topVisibleAppWindow
         val appComponent = FlickerComponentName.unflattenFromString(window)
         layerSubject.isVisible(appComponent)
             .then()

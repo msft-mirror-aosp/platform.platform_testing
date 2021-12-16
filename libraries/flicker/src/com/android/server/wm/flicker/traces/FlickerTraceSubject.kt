@@ -30,7 +30,7 @@ abstract class FlickerTraceSubject<EntrySubject : FlickerSubject>(
     fm: FailureMetadata,
     data: Any?
 ) : FlickerSubject(fm, data) {
-    override val timestamp: Long get() = subjects.first().timestamp
+    override val timestamp: Long get() = subjects.firstOrNull()?.timestamp ?: 0L
     override val selfFacts by lazy {
         val firstTimestamp = subjects.firstOrNull()?.timestamp ?: 0L
         val lastTimestamp = subjects.lastOrNull()?.timestamp ?: 0L
@@ -75,12 +75,12 @@ abstract class FlickerTraceSubject<EntrySubject : FlickerSubject>(
     /**
      * User-defined entry point for the first trace entry
      */
-    fun first(): EntrySubject = subjects.first()
+    fun first(): EntrySubject = subjects.firstOrNull() ?: error("Trace is empty")
 
     /**
      * User-defined entry point for the last trace entry
      */
-    fun last(): EntrySubject = subjects.last()
+    fun last(): EntrySubject = subjects.lastOrNull() ?: error("Trace is empty")
 
     /**
      * Signal that the last assertion set is complete. The next assertion added will start a new
