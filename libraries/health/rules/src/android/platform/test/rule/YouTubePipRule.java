@@ -30,17 +30,21 @@ public class YouTubePipRule extends TestWatcher {
     @VisibleForTesting static final String YOUTUBE_PLAYBACK_TIMEOUT = "youtube-playback-time";
     long playbackTimeout = 2000;
 
+    @VisibleForTesting static final String VIDEO_NAME = "video-name";
+    String videoName = "test-one-hour-video";
+
     private static HelperAccessor<IYouTubeHelper> sYouTubeHelper =
             new HelperAccessor<>(IYouTubeHelper.class).withPrefix("YouTubeHelper");
 
     @Override
     protected void starting(Description description) {
         playbackTimeout = Long.valueOf(getArguments().getString(YOUTUBE_PLAYBACK_TIMEOUT, "2000"));
+        videoName = getArguments().getString(VIDEO_NAME, "test-one-hour-video");
 
         sYouTubeHelper.get().open();
         sYouTubeHelper.get().goToYourVideos();
         SystemClock.sleep(playbackTimeout);
-        sYouTubeHelper.get().playYourVideo();
+        sYouTubeHelper.get().playYourVideo(videoName);
         SystemClock.sleep(playbackTimeout);
         sYouTubeHelper.get().goToYouTubePip();
         SystemClock.sleep(playbackTimeout);

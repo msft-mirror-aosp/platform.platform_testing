@@ -235,5 +235,5 @@ public interface IYouTubeHelper extends IAppHelper {
      *
      * <p>presses the video name to play.
      */
-    public void playYourVideo();
+    public void playYourVideo(String videoName);
 }
