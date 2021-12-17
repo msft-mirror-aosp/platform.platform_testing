@@ -18,9 +18,11 @@ package com.android.server.wm.flicker.service
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.UiDevice
+import com.android.server.wm.flicker.helpers.SampleAppHelper
 import com.android.server.wm.flicker.helpers.wakeUpAndGoToHomeScreen
 import com.android.server.wm.flicker.rules.FlickerMetricsCollectorRule
 import com.android.server.wm.traces.parser.windowmanager.WindowManagerStateHelper
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.FixMethodOrder
 import org.junit.Rule
@@ -39,6 +41,7 @@ class FlickerMetricsCollectorRuleTest {
     private val instrumentation = InstrumentationRegistry.getInstrumentation()
     private val device = UiDevice.getInstance(instrumentation)
     private val wmHelper = WindowManagerStateHelper(instrumentation)
+    private val testApp: SampleAppHelper = SampleAppHelper(instrumentation)
 
     @Before
     fun setup() {
@@ -51,5 +54,51 @@ class FlickerMetricsCollectorRuleTest {
         device.pressHome()
         wmHelper.waitForHomeActivityVisible()
         flickerRule.checkPresubmitAssertions()
+    }
+
+    @Test
+    fun hasMetricsToReport() {
+        openAndCloseTestApp()
+        val metrics = flickerRule.getMetrics()
+        assertTrue(metrics.isNotEmpty())
+    }
+
+    @Test
+    fun metricsKeyContainsAllRequiredInformation() {
+        openTestApp()
+        val metrics = flickerRule.getMetrics()
+        val cujSource = this::class.java.simpleName
+        metrics.forEach { (key, _) ->
+            run {
+                assertTrue("Contains CUJ information ($cujSource)",
+                        key.contains(cujSource))
+                assertTrue("Contains Transition information (APP_LAUNCH)",
+                        key.contains("APP_LAUNCH"))
+            }
+        }
+    }
+
+    @Test
+    fun metricsValuesAreValid() {
+        openAndCloseTestApp()
+        val metrics = flickerRule.getMetrics()
+        metrics.forEach { (_, value) ->
+            assertTrue("Value is valid", value == 0 || value == 1)
+        }
+    }
+
+    private fun openTestApp() {
+        testApp.launchViaIntent(wmHelper)
+        wmHelper.waitForFullScreenApp(testApp.component)
+    }
+
+    private fun goHome() {
+        device.pressHome()
+        wmHelper.waitForHomeActivityVisible()
+    }
+
+    private fun openAndCloseTestApp() {
+        openTestApp()
+        goHome()
     }
 }
