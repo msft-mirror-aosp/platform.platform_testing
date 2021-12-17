@@ -19,6 +19,7 @@ package com.android.server.wm.flicker.service
 import android.device.collectors.BaseCollectionListener
 import android.device.collectors.annotations.OptionClass
 import com.android.server.wm.traces.common.errors.ErrorTrace
+import com.google.common.annotations.VisibleForTesting
 
 /**
  * A {@link FlickerCollectionListener} that captures FASS assertions metrics.
@@ -28,12 +29,22 @@ import com.android.server.wm.traces.common.errors.ErrorTrace
  */
 @OptionClass(alias = "fass-collector")
 class FlickerCollectionListener : BaseCollectionListener<Boolean>() {
+    private val collectionHelper: FlickerCollectionHelper = FlickerCollectionHelper()
+
     init {
-        createHelperInstance(FlickerCollectionHelper())
+        createHelperInstance(collectionHelper)
     }
 
     fun getErrorTrace(): ErrorTrace {
-        val flickerCollectionHelper: FlickerCollectionHelper = mHelper as FlickerCollectionHelper
-        return flickerCollectionHelper.errorTrace
+        return collectionHelper.errorTrace
+    }
+
+    @VisibleForTesting
+    fun getMetrics(): Map<String, Int> {
+        return collectionHelper.metrics
+    }
+
+    fun setTransitionClassName(className: String?) {
+        this.collectionHelper.setTransitionClassName(className)
     }
 }
