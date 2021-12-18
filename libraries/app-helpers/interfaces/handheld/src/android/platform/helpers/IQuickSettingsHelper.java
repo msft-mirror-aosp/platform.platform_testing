@@ -49,8 +49,7 @@ public interface IQuickSettingsHelper extends IAppHelper {
         BLUETOOTH("Bluetooth", "bt", 15000),
         DO_NOT_DISTURB("Do Not Disturb", "dnd", 2000),
         FLASHLIGHT("Flashlight", "flashlight", 5000),
-        NIGHT_LIGHT("Night Light", "night", 2000),
-        WIFI("Wi-Fi", "wifi", 10000);
+        NIGHT_LIGHT("Night Light", "night", 2000);
 
         private final String mContentDescSubstring;
         private final String mTileName;
