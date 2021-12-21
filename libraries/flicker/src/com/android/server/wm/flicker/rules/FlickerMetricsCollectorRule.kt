@@ -40,7 +40,11 @@ open class FlickerMetricsCollectorRule(
     }
 
     override fun starting(description: Description?) {
-        collectionListener.setTransitionClassName(description?.className)
+        // The class name we get from the test description object may contain the iteration number
+        // (e.g. #3 for iteration 3) at the end of the class name. We want to remove that as that
+        // isn't actually part of the class name.
+        val className = description?.className?.replace("\\$[0-9]+\$".toRegex(), "")
+        collectionListener.setTransitionClassName(className)
         collectionListener.testStarted(description)
     }
 
