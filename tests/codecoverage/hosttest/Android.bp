@@ -1,0 +1,14 @@
+java_test_host {
+    name: "CoverageSmokeTest",
+
+    srcs: ["src/**/*.java"],
+
+    libs: [
+        "tradefed",
+        "junit",
+    ],
+
+    data: [
+        ":CoverageInstrumentationSampleTest",
+    ],
+}

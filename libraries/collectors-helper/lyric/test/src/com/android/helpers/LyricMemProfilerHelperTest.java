@@ -235,7 +235,7 @@ public class LyricMemProfilerHelperTest {
         helper.setProfilePeriodMs(50);
         helper.startCollecting();
         try {
-            inOrder.verify(mUiDevice).executeShellCommand("pgrep -f camera.provider@");
+            inOrder.verify(mUiDevice).executeShellCommand("pgrep -f -o camera.provider@");
         } catch (IOException e) {
             Log.e(TAG, "Failed to execute Shell command");
         }
@@ -254,6 +254,20 @@ public class LyricMemProfilerHelperTest {
         assertThat(metrics.get("nativeHeap")).isEqualTo(MOCK_NATIVE_HEAP);
         assertThat(metrics.get("totalPss")).isEqualTo(MOCK_TOTAL_PSS);
         assertThat(metrics.get("dmabuf")).isEqualTo(MOCK_DMABUF);
+    }
+
+    @Test
+    public void testSetNewPidName() {
+        LyricMemProfilerHelper helper = new TestableLyricMemProfilerHelper();
+        InOrder inOrder = inOrder(mUiDevice);
+        final String newPidName = "new.camera.name";
+        helper.setProfilePidName(newPidName);
+        helper.startCollecting();
+        try {
+            inOrder.verify(mUiDevice).executeShellCommand("pgrep -f -o " + newPidName);
+        } catch (IOException e) {
+            Log.e(TAG, "Failed to execute Shell command");
+        }
     }
 
     private final class TestableLyricMemProfilerHelper extends LyricMemProfilerHelper {
