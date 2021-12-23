@@ -1,0 +1,12 @@
+android_test {
+    name: "CoverageInstrumentationSampleTest",
+
+    srcs: ["src/**/*.java"],
+    sdk_version: "current",
+    min_sdk_version: "21",
+
+    static_libs: ["androidx.test.runner"],
+    certificate: "platform",
+
+    test_suites: ["device-tests"],
+}
