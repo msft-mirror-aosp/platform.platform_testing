@@ -26,6 +26,7 @@ public class LyricMemProfilerCollector extends BaseCollectionListener<Integer> {
 
     private static final String TAG = LyricMemProfilerCollector.class.getSimpleName();
     private static final String PROFILE_PERIOD_KEY = "profile-period-ms-enable";
+    private static final String PROFILE_PID_NAME = "profile-pid-name";
     private LyricMemProfilerHelper mHelper = new LyricMemProfilerHelper();
 
     public LyricMemProfilerCollector() {
@@ -39,6 +40,10 @@ public class LyricMemProfilerCollector extends BaseCollectionListener<Integer> {
         String argString = args.getString(PROFILE_PERIOD_KEY);
         if (argString != null) {
             mHelper.setProfilePeriodMs(Integer.parseInt(argString));
+        }
+        argString = args.getString(PROFILE_PID_NAME);
+        if (argString != null) {
+            mHelper.setProfilePidName(argString);
         }
     }
 }

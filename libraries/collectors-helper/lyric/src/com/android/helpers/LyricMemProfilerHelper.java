@@ -37,13 +37,15 @@ public class LyricMemProfilerHelper implements ICollectorHelper<Integer> {
 
     private static final String TAG = LyricMemProfilerHelper.class.getSimpleName();
 
-    private static final String PID_CMD = "pgrep -f camera.provider@";
+    private static final String PID_CMD = "pgrep -f -o ";
 
     private static final String DUMPSYS_MEMINFO_CMD = "dumpsys meminfo -s ";
 
     private static final String DMABUF_DUMP_CMD = "dmabuf_dump";
 
     private static final int MIN_PROFILE_PERIOD_MS = 100;
+
+    String mPidName = "camera.provider@";
 
     // Extract value of "Native Heap:" and  "TOTAL PSS:" from command: "dumpsys meminfo -s [pid]"
     // example of "dumpsys meminfo -s [pid]":
@@ -160,6 +162,10 @@ public class LyricMemProfilerHelper implements ICollectorHelper<Integer> {
         mProfilePeriodMs = periodMs;
     }
 
+    public void setProfilePidName(String pidName) {
+        mPidName = pidName;
+    }
+
     @Override
     public Map<String, Integer> getMetrics() {
         String memInfoString = getMemInfoString();
@@ -230,7 +236,7 @@ public class LyricMemProfilerHelper implements ICollectorHelper<Integer> {
     @VisibleForTesting
     public String getCameraProviderPid() {
         try {
-            mCameraProviderPid = mUiDevice.executeShellCommand(PID_CMD).trim();
+            mCameraProviderPid = mUiDevice.executeShellCommand(PID_CMD + mPidName).trim();
         } catch (IOException e) {
             Log.e(TAG, "Failed to get camera provider PID");
             mCameraProviderPid = "";
