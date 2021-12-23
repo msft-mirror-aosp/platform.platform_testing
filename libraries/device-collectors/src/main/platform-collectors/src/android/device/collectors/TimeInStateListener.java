@@ -31,9 +31,9 @@ import com.android.helpers.TimeInStateHelper;
  * <p>Options:
  *
  * <ul>
- *   <li>-e key-source-mapping [mapping] : a comma-separated list of mapping [key]=[source] to
- *       provide the keyword that will be part of the metric key and the source containing the
- *       time_in_state data.
+ *   <li>-e key-source-mapping [mapping] : a comma-separated list of mapping "[key]@[source]" to
+ *       provide [key] as a keyword part of the metric key and [source] as the source location
+ *       containing the time_in_state data.
  * </ul>
  *
  * <p>Do NOT throw exception anywhere in this class. We don't want to halt the test when metrics
