@@ -98,26 +98,27 @@ class LayerTraceEntrySubject private constructor(
     }
 
     /**
-     * Obtains the region occupied by all layers with name containing [component]
+     * Obtains the region occupied by all layers with name containing [components]
      *
-     * @param component Component to search
+     * @param components Component to search
      * @param useCompositionEngineRegionOnly If true, uses only the region calculated from the
      *   Composition Engine (CE) -- visibleRegion in the proto definition. Otherwise calculates
      *   the visible region when the information is not available from the CE
      */
     fun visibleRegion(
-        component: FlickerComponentName? = null,
+        vararg components: FlickerComponentName,
         useCompositionEngineRegionOnly: Boolean = true
     ): RegionSubject {
-        val layerName = component?.toLayerName() ?: ""
+        val layerNames = components.map { it.toLayerName() }
         val selectedLayers = subjects
-            .filter { it.name.contains(layerName) }
+            .filter { s -> components.isEmpty() || layerNames.any { s.name.contains(it) } }
 
         if (selectedLayers.isEmpty()) {
+            val str = if (layerNames.isNotEmpty()) layerNames.joinToString() else "<any>"
             fail(listOf(
-                Fact.fact(ASSERTION_TAG, "visibleRegion(${component?.toLayerName() ?: "<any>"})"),
+                Fact.fact(ASSERTION_TAG, "visibleRegion($str)"),
                 Fact.fact("Use composition engine region", useCompositionEngineRegionOnly),
-                Fact.fact("Could not find", layerName))
+                Fact.fact("Could not find", str))
             )
         }
 

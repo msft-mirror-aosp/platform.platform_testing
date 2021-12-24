@@ -128,123 +128,117 @@ class LayersTraceSubject private constructor(
 
     /**
      * Asserts that the visible area covered by any [Layer] with [Layer.name] containing any of
-     * [component] covers at least [testRegion], that is, if its area of the layer's visible
+     * [components] covers at least [testRegion], that is, if its area of the layer's visible
      * region covers each point in the region.
      *
      * @param testRegion Expected covered area
-     * @param component Name of the layer to search
+     * @param components Name of the layer to search
      */
-    @JvmOverloads
     fun coversAtLeast(
         testRegion: Rect,
-        component: FlickerComponentName? = null
-    ): LayersTraceSubject = this.coversAtLeast(Region(testRegion), component)
+        vararg components: FlickerComponentName
+    ): LayersTraceSubject = this.coversAtLeast(Region(testRegion), *components)
 
     /**
      * Asserts that the visible area covered by any [Layer] with [Layer.name] containing any of
-     * [component] covers at least [testRegion], that is, if its area of the layer's visible
+     * [components] covers at least [testRegion], that is, if its area of the layer's visible
      * region covers each point in the region.
      *
      * @param testRegion Expected covered area
-     * @param component Name of the layer to search
+     * @param components Name of the layer to search
      */
-    @JvmOverloads
     fun coversAtLeast(
         testRegion: com.android.server.wm.traces.common.Rect,
-        component: FlickerComponentName? = null
-    ): LayersTraceSubject = this.coversAtLeast(testRegion.toAndroidRect(), component)
+        vararg components: FlickerComponentName
+    ): LayersTraceSubject = this.coversAtLeast(testRegion.toAndroidRect(), *components)
 
     /**
      * Asserts that the visible area covered by any [Layer] with [Layer.name] containing any of
-     * [component] covers at most [testRegion], that is, if the area of any layer doesn't
+     * [components] covers at most [testRegion], that is, if the area of any layer doesn't
      * cover any point outside of [testRegion].
      *
      * @param testRegion Expected covered area
-     * @param component Name of the layer to search
+     * @param components Name of the layer to search
      */
-    @JvmOverloads
     fun coversAtMost(
         testRegion: Rect,
-        component: FlickerComponentName? = null
-    ): LayersTraceSubject = this.coversAtMost(Region(testRegion), component)
+        vararg components: FlickerComponentName
+    ): LayersTraceSubject = this.coversAtMost(Region(testRegion), *components)
 
     /**
      * Asserts that the visible area covered by any [Layer] with [Layer.name] containing any of
-     * [component] covers at most [testRegion], that is, if the area of any layer doesn't
+     * [components] covers at most [testRegion], that is, if the area of any layer doesn't
      * cover any point outside of [testRegion].
      *
      * @param testRegion Expected covered area
-     * @param component Name of the layer to search
+     * @param components Name of the layer to search
      */
-    @JvmOverloads
     fun coversAtMost(
         testRegion: com.android.server.wm.traces.common.Rect,
-        component: FlickerComponentName? = null
-    ): LayersTraceSubject = this.coversAtMost(testRegion.toAndroidRect(), component)
+        vararg components: FlickerComponentName
+    ): LayersTraceSubject = this.coversAtMost(testRegion.toAndroidRect(), *components)
 
     /**
      * Asserts that the visible area covered by any [Layer] with [Layer.name] containing any of
-     * [component] covers at least [testRegion], that is, if its area of the layer's visible
+     * [components] covers at least [testRegion], that is, if its area of the layer's visible
      * region covers each point in the region.
      *
      * @param testRegion Expected covered area
-     * @param component Name of the layer to search
+     * @param components Name of the layer to search
      */
-    @JvmOverloads
     fun coversAtLeast(
         testRegion: Region,
-        component: FlickerComponentName? = null
+        vararg components: FlickerComponentName
     ): LayersTraceSubject = apply {
-        addAssertion("coversAtLeast($testRegion, ${component?.toLayerName()})") {
-            it.visibleRegion(component).coversAtLeast(testRegion)
+        val componentNames = components.joinToString { it.toLayerName() }
+        addAssertion("coversAtLeast($testRegion, $componentNames)") {
+            it.visibleRegion(*components).coversAtLeast(testRegion)
         }
     }
 
     /**
      * Asserts that the visible area covered by any [Layer] with [Layer.name] containing any of
-     * [component] covers at least [testRegion], that is, if its area of the layer's visible
+     * [components] covers at least [testRegion], that is, if its area of the layer's visible
      * region covers each point in the region.
      *
      * @param testRegion Expected covered area
-     * @param component Name of the layer to search
+     * @param components Name of the layer to search
      */
-    @JvmOverloads
     fun coversAtLeast(
         testRegion: com.android.server.wm.traces.common.Region,
-        component: FlickerComponentName? = null
-    ): LayersTraceSubject = this.coversAtLeast(testRegion.toAndroidRegion(), component)
+        vararg components: FlickerComponentName
+    ): LayersTraceSubject = this.coversAtLeast(testRegion.toAndroidRegion(), *components)
 
     /**
      * Asserts that the visible area covered by any [Layer] with [Layer.name] containing any of
-     * [component] covers at most [testRegion], that is, if the area of any layer doesn't
+     * [components] covers at most [testRegion], that is, if the area of any layer doesn't
      * cover any point outside of [testRegion].
      *
      * @param testRegion Expected covered area
-     * @param component Name of the layer to search
+     * @param components Name of the layer to search
      */
-    @JvmOverloads
     fun coversAtMost(
         testRegion: Region,
-        component: FlickerComponentName? = null
+        vararg components: FlickerComponentName
     ): LayersTraceSubject = apply {
-        addAssertion("coversAtMost($testRegion, ${component?.toLayerName()}") {
-            it.visibleRegion(component).coversAtMost(testRegion)
+        val componentNames = components.joinToString { it.toLayerName() }
+        addAssertion("coversAtMost($testRegion, $componentNames") {
+            it.visibleRegion(*components).coversAtMost(testRegion)
         }
     }
 
     /**
      * Asserts that the visible area covered by any [Layer] with [Layer.name] containing any of
-     * [component] covers at most [testRegion], that is, if the area of any layer doesn't
+     * [components] covers at most [testRegion], that is, if the area of any layer doesn't
      * cover any point outside of [testRegion].
      *
      * @param testRegion Expected covered area
-     * @param component Name of the layer to search
+     * @param components Name of the layer to search
      */
-    @JvmOverloads
     fun coversAtMost(
         testRegion: com.android.server.wm.traces.common.Region,
-        component: FlickerComponentName? = null
-    ): LayersTraceSubject = this.coversAtMost(testRegion.toAndroidRegion(), component)
+        vararg components: FlickerComponentName
+    ): LayersTraceSubject = this.coversAtMost(testRegion.toAndroidRegion(), *components)
 
     /**
      * Checks that all visible layers are shown for more than one consecutive entry
@@ -263,19 +257,19 @@ class LayersTraceSubject private constructor(
     }
 
     /**
-     * Asserts that a [Layer] with [Layer.name] containing any of [component] has a visible region
+     * Asserts that a [Layer] with [Layer.name] containing any of [components] has a visible region
      * of exactly [expectedVisibleRegion] in trace entries.
      *
-     * @param component Name of the layer to search
+     * @param components Name of the layer to search
      * @param expectedVisibleRegion Expected visible region of the layer
      */
-    @JvmOverloads
     fun coversExactly(
         expectedVisibleRegion: Region,
-        component: FlickerComponentName? = null
+        vararg components: FlickerComponentName
     ): LayersTraceSubject = apply {
-        addAssertion("coversExactly($component$expectedVisibleRegion)") {
-            it.visibleRegion(component).coversExactly(expectedVisibleRegion)
+        val componentNames = components.joinToString { it.toLayerName() }
+        addAssertion("coversExactly($componentNames, $expectedVisibleRegion)") {
+            it.visibleRegion(*components).coversExactly(expectedVisibleRegion)
         }
     }
 
