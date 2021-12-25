@@ -38,6 +38,9 @@ public class StatsdStatsHelper implements ICollectorHelper<Long> {
     static final String CONFIG_STATS_PREFIX = "config_stats";
     static final String ANOMALY_ALARM_STATS_PREFIX = "anomaly_alarm_stats";
     static final String PULLED_ATOM_STATS_PREFIX = "pulled_atom_stats";
+    static final String ATOM_METRIC_STATS_PREFIX = "atom_metric_stats";
+    static final String DETECTED_LOG_LOSS_STATS_PREFIX = "detected_log_loss_stats";
+    static final String EVENT_QUEUE_OVERFLOW_STATS_PREFIX = "event_queue_overflow_stats";
 
     interface IStatsdHelper {
         StatsLog.StatsdStatsReport getStatsdStatsReport();
@@ -83,8 +86,16 @@ public class StatsdStatsHelper implements ICollectorHelper<Long> {
         populateConfigStats(report.configStats, resultMap);
         populateAnomalyAlarmStats(report.anomalyAlarmStats, resultMap);
         populatePulledAtomStats(report.pulledAtomStats, resultMap);
+        populateAtomMetricStats(report.atomMetricStats, resultMap);
+        populateDetectedLogLossStats(report.detectedLogLoss, resultMap);
+        populateEventQueueOverflowStats(report.queueOverflow, resultMap);
 
         return resultMap;
+    }
+
+    @Override
+    public boolean stopCollecting() {
+        return true;
     }
 
     private static void populateAtomStats(
@@ -95,6 +106,7 @@ public class StatsdStatsHelper implements ICollectorHelper<Long> {
         for (final StatsLog.StatsdStatsReport.AtomStats dataItem : atomStats) {
             final String metricKeyPrefixWithTag =
                     MetricUtility.constructKey(metricKeyPrefix, String.valueOf(dataItem.tag));
+
             resultMap.put(
                     MetricUtility.constructKey(metricKeyPrefixWithTag, "count"),
                     Long.valueOf(dataItem.count));
@@ -268,9 +280,103 @@ public class StatsdStatsHelper implements ICollectorHelper<Long> {
         }
     }
 
-    /** No op. */
-    @Override
-    public boolean stopCollecting() {
-        return true;
+    private static void populateAtomMetricStats(
+            StatsLog.StatsdStatsReport.AtomMetricStats[] atomMetricStats,
+            Map<String, Long> resultMap) {
+        final String metricKeyPrefix =
+                MetricUtility.constructKey(STATSDSTATS_PREFIX, ATOM_METRIC_STATS_PREFIX);
+
+        for (StatsLog.StatsdStatsReport.AtomMetricStats dataItem : atomMetricStats) {
+            final String metricKeyPrefixWithTag =
+                    MetricUtility.constructKey(metricKeyPrefix, String.valueOf(dataItem.metricId));
+
+            resultMap.put(
+                    MetricUtility.constructKey(
+                            metricKeyPrefixWithTag, "hard_dimension_limit_reached"),
+                    dataItem.hardDimensionLimitReached);
+            resultMap.put(
+                    MetricUtility.constructKey(metricKeyPrefixWithTag, "late_log_event_skipped"),
+                    dataItem.lateLogEventSkipped);
+            resultMap.put(
+                    MetricUtility.constructKey(metricKeyPrefixWithTag, "skipped_forward_buckets"),
+                    dataItem.skippedForwardBuckets);
+            resultMap.put(
+                    MetricUtility.constructKey(metricKeyPrefixWithTag, "bad_value_type"),
+                    dataItem.badValueType);
+            resultMap.put(
+                    MetricUtility.constructKey(
+                            metricKeyPrefixWithTag, "condition_change_in_next_bucket"),
+                    dataItem.conditionChangeInNextBucket);
+            resultMap.put(
+                    MetricUtility.constructKey(metricKeyPrefixWithTag, "invalidated_bucket"),
+                    dataItem.invalidatedBucket);
+            resultMap.put(
+                    MetricUtility.constructKey(metricKeyPrefixWithTag, "bucket_dropped"),
+                    dataItem.bucketDropped);
+            resultMap.put(
+                    MetricUtility.constructKey(
+                            metricKeyPrefixWithTag, "min_bucket_boundary_delay_ns"),
+                    dataItem.minBucketBoundaryDelayNs);
+            resultMap.put(
+                    MetricUtility.constructKey(
+                            metricKeyPrefixWithTag, "max_bucket_boundary_delay_ns"),
+                    dataItem.maxBucketBoundaryDelayNs);
+            resultMap.put(
+                    MetricUtility.constructKey(metricKeyPrefixWithTag, "bucket_unknown_condition"),
+                    dataItem.bucketUnknownCondition);
+            resultMap.put(
+                    MetricUtility.constructKey(metricKeyPrefixWithTag, "bucket_count"),
+                    dataItem.bucketCount);
+        }
     }
+
+    private static void populateDetectedLogLossStats(
+            StatsLog.StatsdStatsReport.LogLossStats[] detectedLogLoss,
+            Map<String, Long> resultMap) {
+        final String metricKeyPrefix =
+                MetricUtility.constructKey(STATSDSTATS_PREFIX, DETECTED_LOG_LOSS_STATS_PREFIX);
+
+        for (final StatsLog.StatsdStatsReport.LogLossStats dataItem : detectedLogLoss) {
+            final String metricKeyPrefixWithTag =
+                    MetricUtility.constructKey(
+                            metricKeyPrefix, String.valueOf(dataItem.detectedTimeSec));
+
+            resultMap.put(
+                    MetricUtility.constructKey(metricKeyPrefixWithTag, "count"),
+                    Long.valueOf(dataItem.count));
+            resultMap.put(
+                    MetricUtility.constructKey(metricKeyPrefixWithTag, "last_error"),
+                    Long.valueOf(dataItem.lastError));
+            resultMap.put(
+                    MetricUtility.constructKey(metricKeyPrefixWithTag, "last_tag"),
+                    Long.valueOf(dataItem.lastTag));
+            resultMap.put(
+                    MetricUtility.constructKey(metricKeyPrefixWithTag, "uid"),
+                    Long.valueOf(dataItem.uid));
+            resultMap.put(
+                    MetricUtility.constructKey(metricKeyPrefixWithTag, "pid"),
+                    Long.valueOf(dataItem.pid));
+        }
+    }
+
+    private static void populateEventQueueOverflowStats(
+            StatsLog.StatsdStatsReport.EventQueueOverflow queueOverflow,
+            Map<String, Long> resultMap) {
+        if (queueOverflow == null) {
+            return;
+        }
+        final String metricKeyPrefix =
+                MetricUtility.constructKey(STATSDSTATS_PREFIX, EVENT_QUEUE_OVERFLOW_STATS_PREFIX);
+
+        resultMap.put(
+                MetricUtility.constructKey(metricKeyPrefix, "count"),
+                Long.valueOf(queueOverflow.count));
+        resultMap.put(
+                MetricUtility.constructKey(metricKeyPrefix, "max_queue_history_nanos"),
+                Long.valueOf(queueOverflow.maxQueueHistoryNs));
+        resultMap.put(
+                MetricUtility.constructKey(metricKeyPrefix, "min_queue_history_nanos"),
+                Long.valueOf(queueOverflow.minQueueHistoryNs));
+    }
+
 }
