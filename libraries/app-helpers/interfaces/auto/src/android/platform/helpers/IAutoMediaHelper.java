@@ -16,6 +16,8 @@
 
 package android.platform.helpers;
 
+import java.util.List;
+
 public interface IAutoMediaHelper extends IAppHelper {
     /**
      * Setup expectations: media app is open
@@ -128,4 +130,25 @@ public interface IAutoMediaHelper extends IAppHelper {
      * else returns false
      */
     boolean isPlaying();
+
+    /**
+     * Setup expectations: Media app is open.
+     *
+     * @return Media App Title
+     */
+    String getMediaAppTitle();
+
+    /**
+     * Setup expectations: Media app is open.
+     * Opens the drop down menu in the Media Apps
+     */
+    void openMediaAppMenuItems();
+
+    /**
+     * Setup expectations: "Media apps" Grid is open.
+     *
+     * @param mediaAppsNames : List of media apps names
+     * @return true if all app names in mediaAppsNames shows up in Media Apps Grid
+     */
+    boolean areMediaAppsPresent(List<String> mediaAppsNames);
 }
