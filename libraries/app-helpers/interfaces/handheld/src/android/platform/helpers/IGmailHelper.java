@@ -277,4 +277,39 @@ public interface IGmailHelper extends IAppHelper {
      * <p>This method will check if the current view is the email contents page.
      */
     public boolean isOnGmailContentsPage();
+
+    /**
+     * Setup expectation: Gmail is open.
+     *
+     * <p>Get the UiObject2 of mail button icon.
+     */
+    public UiObject2 getMailButton();
+
+    /**
+     * Setup expectation: Gmail is open.
+     *
+     * <p>This method will click mail button and go to the top of the mail list.
+     */
+    public void backToTopByMailButton();
+
+    /**
+     * Setup expectation: Gmail is open.
+     *
+     * <p>This method will switch mail label and go to the top of the mail list.
+     */
+    public void backToTopBySwitchLabel();
+
+    /**
+     * Setup expectations: Gmail mailbox is open.
+     *
+     * <p>This method will get a UiObject2 object for Gmail list container.
+     */
+    public UiObject2 getGmailListContainer();
+
+    /**
+     * Setup expectation: Gmail is open and emails are download completed.
+     *
+     * <p>This method will check if the current view is on Gmail list page.
+     */
+    public boolean isOnGmailListPage();
 }
