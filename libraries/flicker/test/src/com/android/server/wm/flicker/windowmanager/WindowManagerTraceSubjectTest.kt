@@ -24,6 +24,7 @@ import com.android.server.wm.flicker.LAUNCHER_COMPONENT
 import com.android.server.wm.flicker.SCREEN_DECOR_COMPONENT
 import com.android.server.wm.flicker.WALLPAPER_COMPONENT
 import com.android.server.wm.flicker.assertFailure
+import com.android.server.wm.flicker.assertThatErrorContainsDebugInfo
 import com.android.server.wm.flicker.assertThrows
 import com.android.server.wm.flicker.readWmTraceFromFile
 import com.android.server.wm.flicker.traces.FlickerSubjectException
@@ -199,9 +200,7 @@ class WindowManagerTraceSubjectTest {
         val error = assertThrows(AssertionError::class.java) {
             assertThat(chromeTrace).isEmpty()
         }
-        Truth.assertThat(error).hasMessageThat().contains("Trace start")
-        Truth.assertThat(error).hasMessageThat().contains("Trace start")
-        Truth.assertThat(error).hasMessageThat().contains("Trace file")
+        assertThatErrorContainsDebugInfo(error, withBlameEntry = false)
     }
 
     @Test

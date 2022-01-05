@@ -21,11 +21,9 @@ import com.android.server.wm.traces.common.ITrace
 /**
  * Represents all the states with errors in an entire trace.
  * @param entries States with errors contained in this trace
- * @param source Source of the trace
  */
 data class ErrorTrace(
-    override val entries: Array<ErrorState>,
-    override val source: String
+    override val entries: Array<ErrorState>
 ) : ITrace<ErrorState>,
     List<ErrorState> by entries.toList() {
     override fun equals(other: Any?): Boolean {

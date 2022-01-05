@@ -86,7 +86,7 @@ abstract class TransitionProcessor(internal val logger: (String) -> Unit) : ITag
             val stateTags = entry.value
             TagState(timestamp.toString(), stateTags.toTypedArray())
         }
-        return TagTrace(tagStates.toTypedArray(), source = "")
+        return TagTrace(tagStates.toTypedArray())
     }
 
     companion object {

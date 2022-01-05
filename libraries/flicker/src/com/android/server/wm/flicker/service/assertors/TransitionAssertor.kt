@@ -115,6 +115,6 @@ class TransitionAssertor(
             val stateTags = entry.value
             ErrorState(stateTags.toTypedArray(), timestamp.toString())
         }
-        return ErrorTrace(errorStates.toTypedArray(), source = "")
+        return ErrorTrace(errorStates.toTypedArray())
     }
 }

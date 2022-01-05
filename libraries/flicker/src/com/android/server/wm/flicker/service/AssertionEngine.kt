@@ -69,7 +69,7 @@ class AssertionEngine(
                     ErrorState(value.flatten().toTypedArray(), key.toString()) }
                 .values.toTypedArray()
 
-        return ErrorTrace(errorStates, source = "") to assertionsResults
+        return ErrorTrace(errorStates) to assertionsResults
     }
 
     /**

@@ -14,30 +14,38 @@
  * limitations under the License.
  */
 
-package com.android.server.wm.traces.common.tags
+package com.android.server.wm.traces.common.region
 
+import com.android.server.wm.traces.common.FlickerComponentName
 import com.android.server.wm.traces.common.ITrace
 
 /**
- * Holds the entire list of [TagState]s representing an entire trace that has been tagged.
- * @param entries Array of tagged states within the trace
+ * Contains a collection of parsed Region trace entries.
+ *
+ * Each entry is parsed into a list of [RegionEntry] objects.
+ *
+ * This is a generic object that is reused by both Flicker and Winscope and cannot
+ * access internal Java/Android functionality
+ *
  */
-data class TagTrace(
-    override val entries: Array<TagState>
-) : ITrace<TagState>,
-    List<TagState> by entries.toList() {
-    override fun toString(): String = "FlickerTagTrace(${entries.firstOrNull()?.timestamp ?: 0}, " +
-            "${entries.lastOrNull()?.timestamp ?: 0})"
-
+data class RegionTrace(
+    val components: Array<out FlickerComponentName>,
+    override val entries: Array<RegionEntry>
+) : ITrace<RegionEntry>,
+        List<RegionEntry> by entries.toList() {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (other !is TagTrace) return false
+        if (other !is RegionTrace) return false
+
+        if (!components.contentEquals(other.components)) return false
         if (!entries.contentEquals(other.entries)) return false
+
         return true
     }
 
     override fun hashCode(): Int {
-        var result = entries.contentDeepHashCode()
+        var result = components.contentHashCode()
+        result = 31 * result + entries.contentHashCode()
         return result
     }
 }

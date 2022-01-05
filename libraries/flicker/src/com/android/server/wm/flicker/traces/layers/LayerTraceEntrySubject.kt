@@ -20,7 +20,7 @@ import com.android.server.wm.flicker.assertions.Assertion
 import com.android.server.wm.flicker.assertions.FlickerSubject
 import com.android.server.wm.flicker.traces.FlickerFailureStrategy
 import com.android.server.wm.flicker.traces.FlickerSubjectException
-import com.android.server.wm.flicker.traces.RegionSubject
+import com.android.server.wm.flicker.traces.region.RegionSubject
 import com.android.server.wm.traces.common.FlickerComponentName
 import com.android.server.wm.traces.common.layers.Layer
 import com.android.server.wm.traces.common.layers.LayerTraceEntry
@@ -100,35 +100,44 @@ class LayerTraceEntrySubject private constructor(
     /**
      * Obtains the region occupied by all layers with name containing [components]
      *
-     * @param components Component to search
+     * @param components Components to search for
      * @param useCompositionEngineRegionOnly If true, uses only the region calculated from the
      *   Composition Engine (CE) -- visibleRegion in the proto definition. Otherwise calculates
      *   the visible region when the information is not available from the CE
      */
+    @JvmOverloads
     fun visibleRegion(
         vararg components: FlickerComponentName,
         useCompositionEngineRegionOnly: Boolean = true
     ): RegionSubject {
         val layerNames = components.map { it.toLayerName() }
-        val selectedLayers = subjects
-            .filter { s -> components.isEmpty() || layerNames.any { s.name.contains(it) } }
+        val selectedLayers = if (components.isEmpty()) {
+            // No filters so use all subjects
+            subjects
+        } else {
+            subjects.filter {
+                subject -> layerNames.any {
+                    layerName -> subject.name.contains(layerName)
+                }
+            }
+        }
 
         if (selectedLayers.isEmpty()) {
             val str = if (layerNames.isNotEmpty()) layerNames.joinToString() else "<any>"
             fail(listOf(
                 Fact.fact(ASSERTION_TAG, "visibleRegion($str)"),
                 Fact.fact("Use composition engine region", useCompositionEngineRegionOnly),
-                Fact.fact("Could not find", str))
+                Fact.fact("Could not find layers", str))
             )
         }
 
         val visibleLayers = selectedLayers.filter { it.isVisible }
         return if (useCompositionEngineRegionOnly) {
             val visibleAreas = visibleLayers.mapNotNull { it.layer?.visibleRegion }.toTypedArray()
-            RegionSubject.assertThat(visibleAreas, this)
+            RegionSubject.assertThat(visibleAreas, this, timestamp)
         } else {
             val visibleAreas = visibleLayers.mapNotNull { it.layer?.screenBounds }.toTypedArray()
-            RegionSubject.assertThat(visibleAreas, this)
+            RegionSubject.assertThat(visibleAreas, this, timestamp)
         }
     }
 

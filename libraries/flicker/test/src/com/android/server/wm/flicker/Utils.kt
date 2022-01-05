@@ -27,13 +27,12 @@ import com.android.server.wm.traces.parser.tags.TagTraceParserUtil
 import com.android.server.wm.traces.parser.windowmanager.WindowManagerTraceParser
 import com.google.common.io.ByteStreams
 import com.google.common.truth.ExpectFailure
+import com.google.common.truth.Truth
 import com.google.common.truth.TruthFailureSubject
-import java.nio.file.Paths
 
 internal fun readWmTraceFromFile(relativePath: String): WindowManagerTrace {
     return try {
-        WindowManagerTraceParser.parseFromTrace(readTestFile(relativePath),
-            source = Paths.get(relativePath))
+        WindowManagerTraceParser.parseFromTrace(readTestFile(relativePath))
     } catch (e: Exception) {
         throw RuntimeException(e)
     }
@@ -55,8 +54,7 @@ internal fun readLayerTraceFromFile(
         LayersTraceParser.parseFromTrace(
             readTestFile(relativePath),
             ignoreLayersStackMatchNoDisplay = false,
-            ignoreLayersInVirtualDisplay = false,
-            source = Paths.get(relativePath)
+            ignoreLayersInVirtualDisplay = false
         ) { ignoreOrphanLayers }
     } catch (e: Exception) {
         throw RuntimeException(e)
@@ -65,8 +63,7 @@ internal fun readLayerTraceFromFile(
 
 internal fun readTagTraceFromFile(relativePath: String): TagTrace {
     return try {
-        TagTraceParserUtil.parseFromTrace(readTestFile(relativePath),
-            source = Paths.get(relativePath))
+        TagTraceParserUtil.parseFromTrace(readTestFile(relativePath))
     } catch (e: Exception) {
         throw RuntimeException(e)
     }
@@ -110,4 +107,16 @@ fun assertFailure(failure: Throwable?): TruthFailureSubject {
     }
     require(target is AssertionError) { "Unknown failure $target" }
     return ExpectFailure.assertThat(target)
+}
+
+fun assertThatErrorContainsDebugInfo(error: Throwable, withBlameEntry: Boolean = true) {
+    Truth.assertThat(error).hasMessageThat().contains("What?")
+    Truth.assertThat(error).hasMessageThat().contains("Where?")
+    Truth.assertThat(error).hasMessageThat().contains("Facts")
+    Truth.assertThat(error).hasMessageThat().contains("Trace start")
+    Truth.assertThat(error).hasMessageThat().contains("Trace end")
+
+    if (withBlameEntry) {
+        Truth.assertThat(error).hasMessageThat().contains("Entry")
+    }
 }

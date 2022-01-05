@@ -27,9 +27,8 @@ import com.android.server.wm.flicker.traces.FlickerSubjectException
 import com.android.server.wm.flicker.traces.layers.LayersTraceSubject
 import com.android.server.wm.flicker.traces.layers.LayersTraceSubject.Companion.assertThat
 import com.android.server.wm.traces.common.FlickerComponentName
-import com.android.server.wm.traces.common.Region
+import com.android.server.wm.traces.common.region.Region
 import com.android.server.wm.traces.common.layers.LayersTrace
-import com.android.server.wm.traces.parser.minus
 import com.google.common.truth.Truth
 import org.junit.FixMethodOrder
 import org.junit.Test
@@ -50,7 +49,6 @@ class LayersTraceSubjectTest {
         }
         Truth.assertThat(error).hasMessageThat().contains("Trace start")
         Truth.assertThat(error).hasMessageThat().contains("Trace end")
-        Truth.assertThat(error).hasMessageThat().contains("Trace file")
     }
 
     @Test
@@ -58,6 +56,7 @@ class LayersTraceSubjectTest {
         val layersTraceEntries = readLayerTraceFromFile("layers_trace_emptyregion.pb")
         try {
             assertThat(layersTraceEntries)
+                .visibleRegion()
                 .coversAtLeast(DISPLAY_REGION)
                 .forAllEntries()
             error("Assertion should not have passed")
@@ -316,7 +315,7 @@ class LayersTraceSubjectTest {
     }
 
     companion object {
-        private val DISPLAY_REGION = android.graphics.Region(0, 0, 1440, 2880)
+        private val DISPLAY_REGION = Region(0, 0, 1440, 2880)
         private val DISPLAY_REGION_ROTATED = Region(0, 0, 2160, 1080)
         private const val SHELL_APP_PACKAGE = "com.android.wm.shell.flicker.testapp"
         private val FIXED_APP = FlickerComponentName(SHELL_APP_PACKAGE,
