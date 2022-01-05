@@ -31,8 +31,8 @@ open class Rect(
 ) {
     val height: Int get() = bottom - top
     val width: Int get() = right - left
-    fun centerX(): Int = left + right / 2
-    fun centerY(): Int = top + bottom / 2
+    fun centerX(): Int = (left + right) / 2
+    fun centerY(): Int = (top + bottom) / 2
     /**
      * Returns true if the rectangle is empty (left >= right or top >= bottom)
      */
@@ -66,6 +66,20 @@ open class Rect(
         return thisRect.contains(otherRect)
     }
 
+    /** Returns true if: fLeft <= x < fRight && fTop <= y < fBottom.
+    Returns false if SkIRect is empty.
+
+    Considers input to describe constructed SkIRect: (x, y, x + 1, y + 1) and
+    returns true if constructed area is completely enclosed by SkIRect area.
+
+    @param x  test SkIPoint x-coordinate
+    @param y  test SkIPoint y-coordinate
+    @return   true if (x, y) is inside SkIRect
+     */
+    fun contains(x: Int, y: Int): Boolean {
+        return x in left until right && y in top until bottom
+    }
+
     /**
      * If the specified rectangle intersects this rectangle, return true and set
      * this rectangle to that intersection, otherwise return false and do not
@@ -90,6 +104,10 @@ open class Rect(
     }
 
     override fun toString(): String = prettyPrint()
+
+    fun clone(): Rect {
+        return Rect(left, top, right, bottom)
+    }
 
     companion object {
         val EMPTY: Rect = Rect()

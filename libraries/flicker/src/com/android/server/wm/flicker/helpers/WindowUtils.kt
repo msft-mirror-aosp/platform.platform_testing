@@ -19,11 +19,11 @@ package com.android.server.wm.flicker.helpers
 import android.content.Context
 import android.graphics.Point
 import android.graphics.Rect
-import android.graphics.Region
 import android.view.Surface
 import android.view.WindowManager
 import androidx.test.platform.app.InstrumentationRegistry
 import com.android.server.wm.traces.common.layers.Display
+import com.android.server.wm.traces.common.region.Region
 
 fun Int.isRotated() = this == Surface.ROTATION_90 || this == Surface.ROTATION_270
 

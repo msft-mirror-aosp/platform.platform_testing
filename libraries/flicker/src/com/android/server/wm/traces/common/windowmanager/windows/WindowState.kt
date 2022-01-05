@@ -18,7 +18,7 @@ package com.android.server.wm.traces.common.windowmanager.windows
 
 import com.android.server.wm.traces.common.Size
 import com.android.server.wm.traces.common.Rect
-import com.android.server.wm.traces.common.Region
+import com.android.server.wm.traces.common.region.Region
 
 /**
  * Represents a window in the window manager hierarchy

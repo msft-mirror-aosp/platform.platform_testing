@@ -17,6 +17,7 @@
 package com.android.server.wm.flicker.layers
 
 import com.android.server.wm.flicker.IMAGINARY_COMPONENT
+import com.android.server.wm.flicker.assertThatErrorContainsDebugInfo
 import com.android.server.wm.flicker.assertThrows
 import com.android.server.wm.flicker.readLayerTraceFromFile
 import com.android.server.wm.flicker.traces.layers.LayersTraceSubject.Companion.assertThat
@@ -40,10 +41,7 @@ class LayersTraceEntryTest {
                 .first()
                 .contains(IMAGINARY_COMPONENT)
         }
-        Truth.assertThat(error).hasMessageThat().contains("Trace start")
-        Truth.assertThat(error).hasMessageThat().contains("Trace end")
-        Truth.assertThat(error).hasMessageThat().contains("Entry")
-        Truth.assertThat(error).hasMessageThat().contains("Trace file")
+        assertThatErrorContainsDebugInfo(error)
     }
 
     @Test

@@ -49,11 +49,11 @@ class FlickerCollectionHelper : ICollectorHelper<Int> {
             LayersTraceMonitor(outputDir)
     )
 
-    internal var errorTrace: ErrorTrace = ErrorTrace(emptyArray(), source = "")
+    internal var errorTrace: ErrorTrace = ErrorTrace(emptyArray())
         private set
 
-    private var wmTrace: WindowManagerTrace = WindowManagerTrace(emptyArray(), source = "")
-    private var layersTrace: LayersTrace = LayersTrace(emptyArray(), source = "")
+    private var wmTrace: WindowManagerTrace = WindowManagerTrace(emptyArray())
+    private var layersTrace: LayersTrace = LayersTrace(emptyArray())
 
     /** Clear existing fass files and start the monitors.  */
     override fun startCollecting(): Boolean {

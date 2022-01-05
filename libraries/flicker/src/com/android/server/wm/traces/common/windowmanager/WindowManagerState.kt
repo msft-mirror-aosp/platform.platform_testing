@@ -301,7 +301,7 @@ open class WindowManagerState(
             !keyguardControllerState.isKeyguardShowing
     }
 
-    fun asTrace(): WindowManagerTrace = WindowManagerTrace(arrayOf(this), source = "")
+    fun asTrace(): WindowManagerTrace = WindowManagerTrace(arrayOf(this))
 
     override fun toString(): String {
         return "${prettyTimestamp(timestamp)} (timestamp=$timestamp)"

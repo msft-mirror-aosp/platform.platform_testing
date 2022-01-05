@@ -28,7 +28,7 @@ import android.util.Log
 import com.android.server.wm.traces.common.ActiveBuffer
 import com.android.server.wm.traces.common.Color
 import com.android.server.wm.traces.common.RectF
-import com.android.server.wm.traces.common.Region
+import com.android.server.wm.traces.common.region.Region
 import com.android.server.wm.traces.common.Size
 import com.android.server.wm.traces.common.layers.Display
 import com.android.server.wm.traces.common.layers.Layer
@@ -37,7 +37,6 @@ import com.android.server.wm.traces.common.layers.LayerTraceEntryBuilder
 import com.android.server.wm.traces.common.layers.LayersTrace
 import com.android.server.wm.traces.parser.LOG_TAG
 import com.google.protobuf.nano.InvalidProtocolBufferNanoException
-import java.nio.file.Path
 import kotlin.math.max
 import kotlin.system.measureTimeMillis
 
@@ -51,7 +50,6 @@ class LayersTraceParser {
          * of trace entries, storing the flattened layers into its hierarchical structure.
          *
          * @param data binary proto data
-         * @param source Path to source of data for additional debug information
          * @param orphanLayerCallback a callback to handle any unexpected orphan layers
          */
         @JvmOverloads
@@ -60,7 +58,6 @@ class LayersTraceParser {
             data: ByteArray,
             ignoreLayersStackMatchNoDisplay: Boolean = true,
             ignoreLayersInVirtualDisplay: Boolean = true,
-            source: Path? = null,
             orphanLayerCallback: ((Layer) -> Boolean)? = null
         ): LayersTrace {
             var fileProto: Layerstrace.LayersTraceFileProto? = null
@@ -77,7 +74,6 @@ class LayersTraceParser {
                 parseFromTrace(it,
                     ignoreLayersStackMatchNoDisplay,
                     ignoreLayersInVirtualDisplay,
-                    source,
                     orphanLayerCallback)
             } ?: error("Unable to read trace file")
         }
@@ -87,7 +83,6 @@ class LayersTraceParser {
          * of trace entries, storing the flattened layers into its hierarchical structure.
          *
          * @param proto Parsed proto data
-         * @param source Path to source of data for additional debug information
          * @param orphanLayerCallback a callback to handle any unexpected orphan layers
          */
         @JvmOverloads
@@ -96,7 +91,6 @@ class LayersTraceParser {
             proto: Layerstrace.LayersTraceFileProto,
             ignoreLayersStackMatchNoDisplay: Boolean = true,
             ignoreLayersInVirtualDisplay: Boolean = true,
-            source: Path? = null,
             orphanLayerCallback: ((Layer) -> Boolean)? = null
         ): LayersTrace {
             val entries: MutableList<LayerTraceEntry> = ArrayList()
@@ -118,7 +112,7 @@ class LayersTraceParser {
             }
             Log.v(LOG_TAG, "Parsing duration (Layers Trace): ${traceParseTime}ms " +
                 "(avg ${traceParseTime / max(entries.size, 1)}ms per entry)")
-            return LayersTrace(entries.toTypedArray(), source?.toString() ?: "")
+            return LayersTrace(entries.toTypedArray())
         }
 
         /**

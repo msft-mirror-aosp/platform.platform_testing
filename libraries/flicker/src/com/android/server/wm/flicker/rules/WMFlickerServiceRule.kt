@@ -41,8 +41,8 @@ open class WMFlickerServiceRule @JvmOverloads constructor(
 ) : TestWatcher() {
     private val traceMonitors = mutableListOf<TraceMonitor>()
 
-    protected var wmTrace: WindowManagerTrace = WindowManagerTrace(emptyArray(), source = "")
-    protected var layersTrace: LayersTrace = LayersTrace(emptyArray(), source = "")
+    protected var wmTrace: WindowManagerTrace = WindowManagerTrace(emptyArray())
+    protected var layersTrace: LayersTrace = LayersTrace(emptyArray())
 
     override fun starting(description: Description?) {
         setupMonitors()
