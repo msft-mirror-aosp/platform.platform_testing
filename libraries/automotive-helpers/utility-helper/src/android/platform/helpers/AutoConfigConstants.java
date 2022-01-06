@@ -245,4 +245,12 @@ public class AutoConfigConstants {
     public static final String BACK_BUTTON = "BACK_BUTTON";
     // Media Center On Home Screen
     public static final String MEDIA_CENTER_ON_HOME_SCREEN = "MEDIA_CENTER_ON_HOME_SCREEN";
+    // Media Apps Grid
+    public static final String MEDIA_APPS_GRID = "MEDIA_APPS_GRID";
+    public static final String MEDIA_APPS_GRID_TITLE = "MEDIA_APPS";
+    public static final String MEDIA_APPS_GRID_APP_NAME = "MEDIA_APP_NAME";
+    // Media App UI View
+    public static final String MEDIA_APP = "MEDIA_APP";
+    public static final String MEDIA_APP_TITLE = "MEDIA_APP_TITLE";
+    public static final String MEDIA_APP_DROP_DOWN_MENU = "MEDIA_APP_DROP_DOWN_MENU";
 }
