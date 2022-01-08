@@ -34,6 +34,7 @@ import com.android.server.wm.traces.parser.windowmanager.WindowManagerTraceParse
 import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.StandardCopyOption
 
 /**
  * Defines the result of a flicker run
@@ -75,25 +76,34 @@ class FlickerRunResult private constructor(
         return result
     }
 
-    private fun Path?.tryDelete() {
+    private fun rename(source: Path, isFailure: Boolean) {
+        if (!Files.exists(source)) {
+            return
+        }
         try {
-            this?.let { Files.deleteIfExists(it) }
+            val prefix = if (isFailure) FAIL_PREFIX else PASS_PREFIX
+            val newFileName = prefix + source.fileName.toString()
+            val target = source.resolveSibling(newFileName)
+            Files.move(source, target, StandardCopyOption.REPLACE_EXISTING)
         } catch (e: IOException) {
             Log.e(FLICKER_TAG, "Unable do delete $this", e)
         }
     }
 
-    fun canDelete(failures: List<FlickerAssertionError>): Boolean {
-        return failures.flatMap { it.traceFiles }.none { failureTrace ->
+    private fun containsFailure(failures: List<FlickerAssertionError>): Boolean {
+        return failures.flatMap { it.traceFiles }.any { failureTrace ->
             this.traceFiles.any { it == failureTrace }
         }
     }
 
     /**
-     * Delete the trace files collected
+     * Rename the trace files according to the run status (pass/fail)
+     *
+     * @param failures List of all failures during the flicker execution
      */
-    fun cleanUp() {
-        this.traceFiles.forEach { it.tryDelete() }
+    fun cleanUp(failures: List<FlickerAssertionError>) {
+        val containsFailure = containsFailure(failures)
+        this.traceFiles.forEach { rename(it, containsFailure) }
     }
 
     class Builder @JvmOverloads constructor(private val iteration: Int = 0) {
@@ -204,5 +214,10 @@ class FlickerRunResult private constructor(
 
             return result
         }
+    }
+
+    companion object {
+        private const val PASS_PREFIX = "PASS_"
+        private const val FAIL_PREFIX = "FAIL_"
     }
 }
