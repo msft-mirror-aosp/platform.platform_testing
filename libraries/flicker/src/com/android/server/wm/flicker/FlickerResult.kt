@@ -76,20 +76,10 @@ data class FlickerResult(
     }
 
     /**
-     * Remove from the device the trace files associated with passed runs.
-     *
-     * If an test fails, or if the transition crashes, retain all traces related to
-     * that run.
+     * Add a prefix to all trace files indicating the test status (pass/fail)
      */
     fun cleanUp() {
-        if (error != null) {
-            return
-        }
-        runs.forEach {
-            if (it.canDelete(failures)) {
-                it.cleanUp()
-            }
-        }
+        runs.forEach { it.cleanUp(failures) }
     }
 
     fun isEmpty(): Boolean = error == null && runs.isEmpty()
