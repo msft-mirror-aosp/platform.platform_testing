@@ -66,6 +66,19 @@ open class Rect(
         return thisRect.contains(otherRect)
     }
 
+    /**
+     * Returns a [Rect] where the dimensions don't exceed those of [crop]
+     *
+     * @param crop The crop that should be applied to this layer
+     */
+    fun crop(crop: Rect): Rect {
+        val newLeft = maxOf(left, crop.left)
+        val newTop = maxOf(top, crop.top)
+        val newRight = minOf(right, crop.right)
+        val newBottom = minOf(bottom, crop.bottom)
+        return Rect(newLeft, newTop, newRight, newBottom)
+    }
+
     /** Returns true if: fLeft <= x < fRight && fTop <= y < fBottom.
     Returns false if SkIRect is empty.
 
