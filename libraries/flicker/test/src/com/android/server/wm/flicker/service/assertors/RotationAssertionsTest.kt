@@ -16,7 +16,6 @@
 
 package com.android.server.wm.flicker.service.assertors
 
-import android.platform.test.annotations.FlakyTest
 import com.android.server.wm.flicker.readLayerTraceFromFile
 import com.android.server.wm.flicker.readTestFile
 import com.android.server.wm.flicker.readWmTraceFromFile
@@ -47,20 +46,6 @@ class RotationAssertionsTest {
         val errorTrace = rotationAssertor.analyze(ROTATION_TAG, wmTrace, layersTrace)
 
         Truth.assertThat(errorTrace).isEmpty()
-    }
-
-    @FlakyTest
-    @Test
-    fun testInvalidRotationLayersTrace() {
-        val wmTrace = readWmTraceFromFile("assertors/rotation/WindowManagerInvalidTrace.winscope")
-        val layersTrace = readLayerTraceFromFile(
-                "assertors/rotation/SurfaceFlingerInvalidTrace.winscope")
-        val errorTrace = rotationAssertor.analyze(ROTATION_TAG, wmTrace, layersTrace)
-
-        Truth.assertThat(errorTrace.entries).asList().hasSize(1)
-
-        val errorTimeStamp = errorTrace.entries.first().timestamp
-        Truth.assertThat(errorTimeStamp).isEqualTo(1088959306030)
     }
 
     companion object {

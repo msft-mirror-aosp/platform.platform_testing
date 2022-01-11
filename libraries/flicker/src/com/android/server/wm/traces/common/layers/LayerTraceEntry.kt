@@ -17,6 +17,8 @@
 package com.android.server.wm.traces.common.layers
 
 import com.android.server.wm.traces.common.ITraceEntry
+import com.android.server.wm.traces.common.Rect
+import com.android.server.wm.traces.common.RectF
 import com.android.server.wm.traces.common.prettyTimestamp
 
 /**
@@ -44,8 +46,10 @@ open class LayerTraceEntry constructor(
         val opaqueLayers = mutableListOf<Layer>()
         val transparentLayers = mutableListOf<Layer>()
         val layers = mutableListOf<Layer>()
+        // some of the flickerlib traces are old and don't have the display data on the trace
+        val mainDisplaySize = displays.firstOrNull { !it.isVirtual }?.layerStackSpace ?: Rect.EMPTY
         val roots = rootLayers.fillOcclusionState(
-            opaqueLayers, transparentLayers).toMutableList()
+            opaqueLayers, transparentLayers, mainDisplaySize.toRectF()).toMutableList()
         while (roots.isNotEmpty()) {
             val layer = roots.removeAt(0)
             layers.add(layer)
@@ -76,7 +80,8 @@ open class LayerTraceEntry constructor(
 
     private fun Array<Layer>.fillOcclusionState(
         opaqueLayers: MutableList<Layer>,
-        transparentLayers: MutableList<Layer>
+        transparentLayers: MutableList<Layer>,
+        displaySize: RectF
     ): Array<Layer> {
         val traversalList = topDownTraversal().reversed()
 
@@ -85,13 +90,16 @@ open class LayerTraceEntry constructor(
 
             if (visible) {
                 val occludedBy = opaqueLayers
-                        .filter { it.contains(layer) && !it.hasRoundedCorners }.toTypedArray()
+                    .filter { it.contains(layer, displaySize) && !it.hasRoundedCorners }
+                    .toTypedArray()
                 layer.addOccludedBy(occludedBy)
                 val partiallyOccludedBy = opaqueLayers
-                        .filter { it.overlaps(layer) && it !in layer.occludedBy }
-                        .toTypedArray()
+                    .filter { it.overlaps(layer, displaySize) && it !in layer.occludedBy }
+                    .toTypedArray()
                 layer.addPartiallyOccludedBy(partiallyOccludedBy)
-                val coveredBy = transparentLayers.filter { it.overlaps(layer) }.toTypedArray()
+                val coveredBy = transparentLayers
+                    .filter { it.overlaps(layer, displaySize) }
+                    .toTypedArray()
                 layer.addCoveredBy(coveredBy)
 
                 if (layer.isOpaque) {

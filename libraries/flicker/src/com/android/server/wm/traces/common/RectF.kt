@@ -62,6 +62,19 @@ data class RectF(
     }
 
     /**
+     * Returns a [RectF] where the dimensions don't exceed those of [crop]
+     *
+     * @param crop The crop that should be applied to this layer
+     */
+    fun crop(crop: RectF): RectF {
+        val newLeft = maxOf(left, crop.left)
+        val newTop = maxOf(top, crop.top)
+        val newRight = minOf(right, crop.right)
+        val newBottom = minOf(bottom, crop.bottom)
+        return RectF(newLeft, newTop, newRight, newBottom)
+    }
+
+    /**
      * If the rectangle specified by left,top,right,bottom intersects this
      * rectangle, return true and set this rectangle to that intersection,
      * otherwise return false and do not change this rectangle. No check is
