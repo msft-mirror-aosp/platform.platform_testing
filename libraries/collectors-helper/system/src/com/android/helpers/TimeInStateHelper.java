@@ -22,6 +22,7 @@ import android.util.Log;
 import androidx.test.InstrumentationRegistry;
 import androidx.test.uiautomator.UiDevice;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -35,9 +36,11 @@ public class TimeInStateHelper implements ICollectorHelper<Long> {
     private static final String METRIC_KEY_PREFIX = "time_in_state";
     private static final String AVG_FREQ_KEY_SUFFIX = "avg_freq";
     private static final Pattern TIME_IN_STATE_PATTERN = Pattern.compile("(\\d+)\\s+(\\d+)");
+    private static final String KEY_SOURCE_SEPARATOR = "@";
 
     private static final String METRICS_LOG_FMT = "metrics key: %s, value: %d";
     private static final String READ_FILE_CMD = "cat %s";
+    private static final String CHECK_FILE_EXIST_CMD = "file -b %s";
 
     private List<String> mMetricKeys = new ArrayList<>();
     private List<String> mSourceLocations = new ArrayList<>();
@@ -50,14 +53,28 @@ public class TimeInStateHelper implements ICollectorHelper<Long> {
             return;
         }
         for (int i = 0; i < freqKeys.length; i++) {
-            String[] keys = freqKeys[i].split("=");
+            String[] keys = freqKeys[i].split(KEY_SOURCE_SEPARATOR);
             if (keys.length != 2) {
                 Log.e(LOG_TAG, "Failed to parse " + freqKeys[i]);
                 throw new RuntimeException("Failed to parse " + freqKeys[i]);
             }
-            mMetricKeys.add(keys[0].trim());
-            mSourceLocations.add(keys[1].trim());
-            Log.i(LOG_TAG, "key: " + keys[0].trim() + ", source: " + keys[1].trim());
+            String key = keys[0].trim();
+            String source = keys[1].trim();
+            Log.i(LOG_TAG, "key: " + key + ", source: " + source);
+
+            String cmd = String.format(CHECK_FILE_EXIST_CMD, source);
+            String result = null;
+            try {
+                result = getDevice().executeShellCommand(cmd);
+            } catch (IOException e) {
+                Log.e(LOG_TAG, "Error when checking source file " + source);
+            }
+            if (result == null || result.contains("No such file or directory")) {
+                Log.e(LOG_TAG, "Source " + source + " does not exist");
+            } else {
+                mMetricKeys.add(key);
+                mSourceLocations.add(source);
+            }
         }
     }
 

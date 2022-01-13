@@ -65,10 +65,10 @@ public class TimeInStateListenerTest {
         Bundle bundle = new Bundle();
         bundle.putString(
                 TimeInStateListener.ARG_KEY,
-                String.join(TimeInStateListener.ARG_SEPARATOR, "key1=temp1", "key2=temp2"));
+                String.join(TimeInStateListener.ARG_SEPARATOR, "key1@temp1", "key2@temp2"));
         TimeInStateListener listener = initListener(bundle, mTimeInStateHelper);
         listener.testRunStarted(mRunDesc);
-        verify(mTimeInStateHelper).setUp("key1=temp1", "key2=temp2");
+        verify(mTimeInStateHelper).setUp("key1@temp1", "key2@temp2");
     }
 
     private TimeInStateListener initListener(Bundle bundle, TimeInStateHelper helper) {
