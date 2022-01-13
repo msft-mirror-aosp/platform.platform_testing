@@ -351,6 +351,101 @@ public class BaseMetricListenerInstrumentedTest {
         assertEquals(0, resultBundle.size());
     }
 
+    @MetricOption(group = "testGroup")
+    @Test
+    public void testSetUpAndCleanUpWithTestCycle() throws Exception {
+        // We use this bundle to mimic device state. We modify it in setUp() and
+        // check that this is maintained throughout the test. We remove the
+        // modification during cleanUp() and check if the bundle has indeed
+        // become empty again.
+        Bundle data = new Bundle();
+        final String arg = "arg";
+        final String value = "value";
+
+        BaseMetricListener listener =
+                new BaseMetricListener() {
+                    public static final String SETUP_ARG = "arg";
+                    private static final String SETUP_VALUE = "value";
+
+                    @Override
+                    protected void onSetUp() {
+                        data.putString(arg, value);
+                    }
+
+                    @Override
+                    protected void onCleanUp() {
+                        data.remove(arg);
+                    }
+
+                    @Override
+                    public void onTestRunStart(DataRecord runData, Description description) {
+                        assertEquals(value, data.getString(arg));
+                    }
+
+                    @Override
+                    public void onTestRunEnd(DataRecord runData, Result result) {
+                        assertEquals(value, data.getString(arg));
+                    }
+
+                    @Override
+                    public void onTestStart(DataRecord testData, Description description) {
+                        assertEquals(value, data.getString(arg));
+                    }
+
+                    @Override
+                    public void onTestEnd(DataRecord testData, Description description) {
+                        assertEquals(value, data.getString(arg));
+                    }
+                };
+
+        Description runDescription = Description.createSuiteDescription("run");
+        Description test1Description = Description.createTestDescription("class", "method1");
+        Description test2Description = Description.createTestDescription("class", "method2");
+        // Simulate a test cycle.
+        listener.testRunStarted(runDescription);
+        listener.testStarted(test1Description);
+        listener.testFinished(test1Description);
+        listener.testStarted(test2Description);
+        listener.testFinished(test2Description);
+        listener.testRunFinished(new Result());
+        listener.instrumentationRunFinished(System.out, new Bundle(), new Result());
+
+        assertFalse(data.containsKey(arg));
+    }
+
+    @MetricOption(group = "testGroup")
+    @Test
+    public void testSetUpAndCleanUpWithCallbacks() throws Exception {
+        // We use this bundle to mimic device state. We modify it in setUp() and
+        // check that this is maintained throughout the test. We remove the
+        // modification during cleanUp() and check if the bundle has indeed
+        // become empty again.
+        Bundle data = new Bundle();
+        final String arg = "arg";
+        final String value = "value";
+
+        BaseMetricListener listener =
+                new BaseMetricListener() {
+                    public static final String SETUP_ARG = "arg";
+                    private static final String SETUP_VALUE = "value";
+
+                    @Override
+                    protected void onSetUp() {
+                        data.putString(arg, value);
+                    }
+
+                    @Override
+                    protected void onCleanUp() {
+                        data.remove(arg);
+                    }
+                };
+
+        listener.setUp();
+        assertEquals(value, data.getString(arg));
+        listener.cleanUp();
+        assertFalse(data.containsKey(arg));
+    }
+
     /**
      * Test annotation that allows to instantiate {@link MetricOption} for testing purpose.
      */
