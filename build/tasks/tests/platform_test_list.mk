@@ -9,7 +9,6 @@ platform_tests += \
     ApiDemos \
     AppCompatibilityTest \
     AppLaunch \
-    AppLaunchWear \
     AppTransitionTests \
     AutoLocTestApp \
     AutoLocVersionedTestApp_v1 \
