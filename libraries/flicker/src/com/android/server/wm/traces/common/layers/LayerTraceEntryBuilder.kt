@@ -31,7 +31,7 @@ class LayerTraceEntryBuilder(
     private var orphanLayerCallback: ((Layer) -> Boolean)? = null
     private val orphans = mutableListOf<Layer>()
     private val layers = setLayers(layers)
-    private var ignoreLayersInVirtualDisplay = false
+    private var ignoreVirtualDisplay = false
     private var ignoreLayersStackMatchNoDisplay = false
 
     private fun setLayers(layers: Array<Layer>): Map<Int, Layer> {
@@ -136,19 +136,27 @@ class LayerTraceEntryBuilder(
         return roots.filter { physicalDisplays.contains(it.stackId) }
     }
 
+    private fun filterOutVirtualDisplays(displays: List<Display>): List<Display> {
+        return displays.filterNot { it.isVirtual }
+    }
+
+    private fun filterOutOffDisplays(displays: List<Display>): List<Display> {
+        return displays.filterNot { it.isOff }
+    }
+
     private fun filterOutLayersStackMatchNoDisplay(roots: List<Layer>): List<Layer> {
         val displayStacks = displays.map { it.layerStackId }
         return roots.filter { displayStacks.contains(it.stackId) }
     }
 
     /**
-     * Defines if the layers belonging to virtual displays (e.g., Screen Recording) should be
+     * Defines if virtual displays and the layers belonging to virtual displays (e.g., Screen Recording) should be
      * ignored while parsing the entry
      *
      * @param ignore If the layers from virtual displays should be ignored or not
      */
-    fun ignoreLayersInVirtualDisplay(ignore: Boolean): LayerTraceEntryBuilder = apply {
-        this.ignoreLayersInVirtualDisplay = ignore
+    fun ignoreVirtualDisplay(ignore: Boolean): LayerTraceEntryBuilder = apply {
+        this.ignoreVirtualDisplay = ignore
     }
 
     /**
@@ -166,18 +174,23 @@ class LayerTraceEntryBuilder(
     fun build(): LayerTraceEntry {
         val allRoots = computeRootLayers()
         var filteredRoots = allRoots
+        var filteredDisplays = displays.toList()
 
         if (ignoreLayersStackMatchNoDisplay) {
             filteredRoots = filterOutLayersStackMatchNoDisplay(filteredRoots)
         }
 
-        if (ignoreLayersInVirtualDisplay) {
+        if (ignoreVirtualDisplay) {
             filteredRoots = filterOutLayersInVirtualDisplays(filteredRoots)
+            filteredDisplays = filterOutVirtualDisplays(filteredDisplays)
         }
+
+        filteredDisplays = filterOutOffDisplays(filteredDisplays)
 
         // Fail if we find orphan layers.
         notifyOrphansLayers()
 
-        return LayerTraceEntry(timestamp, hwcBlob, where, displays, filteredRoots.toTypedArray())
+        return LayerTraceEntry(timestamp, hwcBlob, where, filteredDisplays.toTypedArray(),
+                filteredRoots.toTypedArray())
     }
 }

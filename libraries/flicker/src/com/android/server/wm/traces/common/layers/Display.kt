@@ -31,6 +31,8 @@ data class Display(
     val transform: Transform,
     val isVirtual: Boolean
 ) {
+    val isOff = layerStackId == BLANK_LAYER_STACK
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is Display) return false
@@ -58,10 +60,12 @@ data class Display(
     }
 
     companion object {
+        const val BLANK_LAYER_STACK = - 1
+
         val EMPTY = Display(
             id = 0.toULong(),
             name = "EMPTY",
-            layerStackId = -1,
+            layerStackId = BLANK_LAYER_STACK,
             size = Size.EMPTY,
             layerStackSpace = Rect.EMPTY,
             transform = Transform.EMPTY,

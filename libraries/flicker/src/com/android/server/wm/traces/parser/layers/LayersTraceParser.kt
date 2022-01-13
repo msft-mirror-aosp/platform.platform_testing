@@ -168,7 +168,7 @@ class LayersTraceParser {
             val builder = LayerTraceEntryBuilder(timestamp, layers, displays, hwcBlob, where)
                 .setOrphanLayerCallback(orphanLayerCallback)
                 .ignoreLayersStackMatchNoDisplay(ignoreLayersStackMatchNoDisplay)
-                .ignoreLayersInVirtualDisplay(ignoreLayersInVirtualDisplay)
+                .ignoreVirtualDisplay(ignoreLayersInVirtualDisplay)
             return builder.build()
         }
 
