@@ -6,6 +6,7 @@ java_test_host {
     name: "CoverageSmokeTest",
 
     srcs: ["src/**/*.java"],
+    test_suites: ["general-tests"],
 
     libs: [
         "tradefed",
