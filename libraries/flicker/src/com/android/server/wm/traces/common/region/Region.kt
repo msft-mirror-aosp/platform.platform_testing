@@ -18,7 +18,6 @@ package com.android.server.wm.traces.common.region
 
 import com.android.server.wm.traces.common.Rect
 import com.android.server.wm.traces.common.RectF
-import com.android.server.wm.traces.parser.toAndroidRect
 import kotlin.math.min
 
 /**
@@ -125,7 +124,7 @@ class Region {
         if (this.isRect()) {
             return true
         }
-        assert(this.isComplex())
+        require(this.isComplex())
 
         val runs = fRunHead!!.findScanline(y)
 
@@ -255,17 +254,6 @@ class Region {
     enum class Op(val nativeInt: Int) {
         DIFFERENCE(0), INTERSECT(1), UNION(2), XOR(3),
         REVERSE_DIFFERENCE(4), REPLACE(5);
-
-        fun toNativeOp(): android.graphics.Region.Op {
-            return when (this) {
-                DIFFERENCE -> android.graphics.Region.Op.DIFFERENCE
-                INTERSECT -> android.graphics.Region.Op.INTERSECT
-                UNION -> android.graphics.Region.Op.UNION
-                XOR -> android.graphics.Region.Op.XOR
-                REVERSE_DIFFERENCE -> android.graphics.Region.Op.REVERSE_DIFFERENCE
-                REPLACE -> android.graphics.Region.Op.REPLACE
-            }
-        }
     }
 
     fun union(r: Rect): Boolean {
@@ -359,7 +347,7 @@ class Region {
 
         val array = RunArray()
         val count = operate(rgnA.getRuns(), rgnB.getRuns(), array, op)
-        assert(count <= array.count)
+        require(count <= array.count)
         return this.setRuns(array, count)
     }
 
@@ -463,31 +451,31 @@ class Region {
             do {
                 bot = runs[runsIndex]
                 runsIndex++
-                assert(bot < SkRegion_kRunTypeSentinel)
+                require(bot < SkRegion_kRunTypeSentinel)
                 ySpanCount += 1
 
                 val intervals = runs[runsIndex]
                 runsIndex++
-                assert(intervals >= 0)
-                assert(intervals < SkRegion_kRunTypeSentinel)
+                require(intervals >= 0)
+                require(intervals < SkRegion_kRunTypeSentinel)
 
                 if (intervals > 0) {
                     val L = runs[runsIndex]
-                    assert(L < SkRegion_kRunTypeSentinel)
+                    require(L < SkRegion_kRunTypeSentinel)
                     if (left > L) {
                         left = L
                     }
 
                     runsIndex += intervals * 2
                     val R = runs[runsIndex - 1]
-                    assert(R < SkRegion_kRunTypeSentinel)
+                    require(R < SkRegion_kRunTypeSentinel)
                     if (right < R) {
                         right = R
                     }
 
                     intervalCount += intervals
                 }
-                assert(SkRegion_kRunTypeSentinel == runs[runsIndex])
+                require(SkRegion_kRunTypeSentinel == runs[runsIndex])
                 runsIndex += 1 // skip x-sentinel
 
                 // test Y-sentinel
@@ -519,14 +507,14 @@ class Region {
             val runs = readonlyRuns
 
             // if the top-check fails, we didn't do a quick check on the bounds
-            assert(y >= runs[0])
+            require(y >= runs[0])
 
             var runsIndex = 1 // skip top-Y
             while (true) {
                 val bottom = runs[runsIndex]
                 // If we hit this, we've walked off the region, and our bounds check
                 // failed.
-                assert(bottom < SkRegion_kRunTypeSentinel)
+                require(bottom < SkRegion_kRunTypeSentinel)
                 if (y < bottom) {
                     break
                 }
@@ -542,10 +530,10 @@ class Region {
         fun SkipEntireScanline(_runsIndex: Int): Int {
             var runsIndex = _runsIndex
             // we are not the Y Sentinel
-            assert(runs[runsIndex] < SkRegion_kRunTypeSentinel)
+            require(runs[runsIndex] < SkRegion_kRunTypeSentinel)
 
             val intervals = runs[runsIndex + 1]
-            assert(runs[runsIndex + 2 + intervals * 2] == SkRegion_kRunTypeSentinel)
+            require(runs[runsIndex + 2 + intervals * 2] == SkRegion_kRunTypeSentinel)
 
             // skip the entire line [B N [L R] S]
             runsIndex += 1 + 1 + intervals * 2 + 1
@@ -561,7 +549,7 @@ class Region {
     }
 
     private fun setRuns(runs: RunArray, _count: Int): Boolean {
-        assert(_count > 0)
+        require(_count > 0)
 
         var count = _count
 
@@ -596,12 +584,6 @@ class Region {
             if (runs[stopIndex - 5] == SkRegion_kRunTypeSentinel) {
                 // eek, stop[-4] was a bottom with no x-runs
                 trimRight = true
-                assert_sentinel(runs[stopIndex - 1], true)    // last y-sentinel
-                assert_sentinel(runs[stopIndex - 2], true)    // last x-sentinel
-                assert_sentinel(runs[stopIndex - 3], false)   // last right
-                assert_sentinel(runs[stopIndex - 4], false)   // last left
-                assert_sentinel(runs[stopIndex - 5], false)   // last interval-count
-                assert_sentinel(runs[stopIndex - 6], false)   // last bottom
             }
 
             var startIndex = 0
@@ -614,13 +596,19 @@ class Region {
                 // kill empty last span
                 trimmedRuns[stopIndex - 4] = SkRegion_kRunTypeSentinel
                 stopIndex -= 3
+                assert_sentinel(runs[stopIndex - 1], true)    // last y-sentinel
+                assert_sentinel(runs[stopIndex - 2], true)    // last x-sentinel
+                assert_sentinel(runs[stopIndex - 3], false)   // last right
+                assert_sentinel(runs[stopIndex - 4], false)   // last left
+                assert_sentinel(runs[stopIndex - 5], false)   // last interval-count
+                assert_sentinel(runs[stopIndex - 6], false)   // last bottom
                 trimmedRuns = trimmedRuns.subList(startIndex, stopIndex)
             }
 
             count = stopIndex - startIndex
         }
 
-        assert(count >= kRectRegionRuns)
+        require(count >= kRectRegionRuns)
 
         if (runsAreARect(trimmedRuns, count)) {
             fBounds = Rect(trimmedRuns[3], trimmedRuns[0], trimmedRuns[4], trimmedRuns[1])
@@ -631,7 +619,7 @@ class Region {
         if (!this.isComplex() || fRunHead!!.fRunCount != count) {
             fRunHead = RunHead()
             fRunHead!!.fRunCount = count
-            assert(this.isComplex())
+            require(this.isComplex())
         }
 
         // must call this before we can write directly into runs()
@@ -664,18 +652,18 @@ class Region {
     }
 
     private fun runsAreARect(runs: RunArray, count: Int): Boolean {
-        assert(count >= kRectRegionRuns)
+        require(count >= kRectRegionRuns)
 
         if (count == kRectRegionRuns) {
             assert_sentinel(runs[1], false) // bottom
-            assert(1 == runs[2])
+            require(1 == runs[2])
             assert_sentinel(runs[3], false)    // left
             assert_sentinel(runs[4], false)    // right
             assert_sentinel(runs[5], true)
             assert_sentinel(runs[6], true)
 
-            assert(runs[0] < runs[1])    // valid height
-            assert(runs[3] < runs[4])    // valid width
+            require(runs[0] < runs[1])    // valid height
+            require(runs[3] < runs[4])    // valid width
 
             return true
         }
@@ -703,11 +691,11 @@ class Region {
             val stop =
                 operateOnSpan(aRuns, bRuns, aRunsIndex, bRunsIndex, runArray, start, fMin, fMax)
             val len = stop - start
-            assert(len >= 1 && (len and 1) == 1)
-            assert(SkRegion_kRunTypeSentinel == runArray[stop - 1])
+            require(len >= 1 && (len and 1) == 1)
+            require(SkRegion_kRunTypeSentinel == runArray[stop - 1])
 
             // Assert memcmp won't exceed fArray->count().
-            assert(runArray.count >= start + len - 1)
+            require(runArray.count >= start + len - 1)
             if (fPrevLen == len &&
                 (1 == len || runArray.subList(fPrevDst, fPrevDst + len).runs
                     == runArray.subList(start, start + len).runs)) {
@@ -760,8 +748,8 @@ class Region {
             }
 
             fun done(): Boolean {
-                assert(fALeft <= SkRegion_kRunTypeSentinel)
-                assert(fBLeft <= SkRegion_kRunTypeSentinel)
+                require(fALeft <= SkRegion_kRunTypeSentinel)
+                require(fBLeft <= SkRegion_kRunTypeSentinel)
                 return fALeft == SkRegion_kRunTypeSentinel &&
                     fBLeft == SkRegion_kRunTypeSentinel
             }
@@ -826,7 +814,7 @@ class Region {
                     fBRuns++
                 }
 
-                assert(left <= right)
+                require(left <= right)
 
                 // now update our state
                 fALeft = aLeft
@@ -1096,15 +1084,7 @@ class Region {
         }
 
         private fun assert_sentinel(value: Int, isSentinel: Boolean) {
-            assert(SkRegionValueIsSentinel(value) == isSentinel)
-        }
-
-        private fun createNativeRegionFromRects(rects: Array<Rect>): android.graphics.Region {
-            val nativeRegion = android.graphics.Region()
-            for (rect in rects) {
-                nativeRegion.union(rect.toAndroidRect())
-            }
-            return nativeRegion
+            require(SkRegionValueIsSentinel(value) == isSentinel)
         }
 
         private fun getRectsFromString(regionString: String): Array<Rect> {
