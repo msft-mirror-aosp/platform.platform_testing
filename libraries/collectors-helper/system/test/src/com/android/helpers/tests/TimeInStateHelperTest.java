@@ -84,7 +84,7 @@ public class TimeInStateHelperTest {
     @Test
     public void testCollectTimeInState_oneSource() {
         String key1 = "key1";
-        mTimeInStateHelper.setUp(key1 + "=" + file1.getPath());
+        mTimeInStateHelper.setUp(key1 + "@" + file1.getPath());
 
         String content = "10000   100\n" + "250000  100\n";
 
@@ -106,7 +106,7 @@ public class TimeInStateHelperTest {
     public void testCollectTimeInState_multipleSources() {
         String key1 = "key1";
         String key2 = "key2";
-        mTimeInStateHelper.setUp(key1 + "=" + file1.getPath(), key2 + "=" + file2.getPath());
+        mTimeInStateHelper.setUp(key1 + "@" + file1.getPath(), key2 + "@" + file2.getPath());
 
         String content1 = "10000   200\n";
         writeToFile(file1, content1);
