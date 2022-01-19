@@ -334,6 +334,34 @@ open class WindowManagerStateHelper @JvmOverloads constructor(
             .waitFor()
 
     /**
+     * Waits until a window is in PIP mode. That is:
+     *
+     * - wait until a window is pinned ([WindowManagerState.pinnedWindows])
+     * - no layers animating
+     * - and [FlickerComponentName.PIP_CONTENT_OVERLAY] is no longer visible
+     */
+    fun waitPipShown(): Boolean =
+        createConditionBuilder()
+            .withCondition(WindowManagerConditionsFactory.hasLayersAnimating().negate())
+            .withCondition(WindowManagerConditionsFactory.hasPipWindow())
+            .build()
+            .waitFor()
+
+    /**
+     * Waits until a window is no longer in PIP mode. That is:
+     *
+     * - wait until there are no pinned ([WindowManagerState.pinnedWindows])
+     * - no layers animating
+     * - and [FlickerComponentName.PIP_CONTENT_OVERLAY] is no longer visible
+     */
+    fun waitPipGone(): Boolean =
+        createConditionBuilder()
+            .withCondition(WindowManagerConditionsFactory.hasLayersAnimating().negate())
+            .withCondition(WindowManagerConditionsFactory.hasPipWindow().negate())
+            .build()
+            .waitFor()
+
+    /**
      * Obtains a [WindowContainer] from the current device state, or null if the WindowContainer
      * doesn't exist
      */

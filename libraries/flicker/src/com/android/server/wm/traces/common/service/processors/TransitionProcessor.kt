@@ -64,7 +64,7 @@ abstract class TransitionProcessor(internal val logger: (String) -> Unit) : ITag
         val dumpList = createDumpList(wmTrace, layersTrace)
         val dumpIterator = dumpList.iterator()
 
-        // keep always a reference to previous, current and next states
+        // always keep a reference to previous, current and next states
         var previous: DeviceStateDump<WindowManagerState, LayerTraceEntry>?
         var current: DeviceStateDump<WindowManagerState, LayerTraceEntry>? = null
         var next: DeviceStateDump<WindowManagerState, LayerTraceEntry>? = dumpIterator.next()
