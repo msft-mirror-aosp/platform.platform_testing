@@ -114,7 +114,7 @@ class Flicker(
     }
 
     /**
-     * Asserts if the transition of this flicker test has ben executed
+     * Asserts if the transition of this flicker test has been executed
      */
     private fun checkIsExecuted() {
         if (result == null) {
