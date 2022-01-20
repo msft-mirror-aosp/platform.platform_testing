@@ -21,7 +21,6 @@ import static androidx.test.InstrumentationRegistry.getInstrumentation;
 import android.app.Instrumentation;
 import android.app.UiAutomation;
 import android.os.ParcelFileDescriptor;
-import android.platform.test.rule.FailureWatcher.ThrowingRunnable;
 import android.util.Log;
 
 import androidx.test.uiautomator.UiDevice;
@@ -50,7 +49,7 @@ public class ScreenRecordRule implements TestRule {
         UiAutomation automation = inst.getUiAutomation();
         UiDevice device = UiDevice.getInstance(inst);
 
-        File outputFile = FailureWatcher.diagFile(description, "ScreenRecord", "mp4");
+        File outputFile = ArtifactSaver.artifactFile(description, "ScreenRecord", "mp4");
         device.executeShellCommand("killall screenrecord");
         ParcelFileDescriptor output = automation.executeShellCommand("screenrecord " + outputFile);
         String screenRecordPid = device.executeShellCommand("pidof screenrecord");
@@ -82,4 +81,8 @@ public class ScreenRecordRule implements TestRule {
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.METHOD)
     public @interface ScreenRecord {}
+
+    public interface ThrowingRunnable {
+        void run() throws Throwable;
+    }
 }
