@@ -85,11 +85,11 @@ data class FlickerTestParameter(
      *
      * Defaults to [WindowManagerPolicyConstants.NAV_BAR_MODE_GESTURAL_OVERLAY]
      */
-    private val navBarMode: String
+    val navBarMode: String
         get() = config.getOrDefault(NAV_BAR_MODE,
             WindowManagerPolicyConstants.NAV_BAR_MODE_GESTURAL_OVERLAY) as String
 
-    private val navBarModeName
+    val navBarModeName
         get() = when (this.navBarMode) {
             WindowManagerPolicyConstants.NAV_BAR_MODE_3BUTTON_OVERLAY -> "3_BUTTON_NAV"
             WindowManagerPolicyConstants.NAV_BAR_MODE_2BUTTON_OVERLAY -> "2_BUTTON_NAV"
