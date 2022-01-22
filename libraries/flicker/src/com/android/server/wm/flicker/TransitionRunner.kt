@@ -111,10 +111,10 @@ open class TransitionRunner {
                             "for test ${flicker.testName} due to jank. $flicker.frameStatsMonitor")
                         continue
                     }
+                    val runResults = saveResult(flicker, iteration)
+                    runs.addAll(runResults)
                 }
             } finally {
-                val runResults = saveResult(flicker, iteration)
-                runs.addAll(runResults)
                 flicker.testTeardown.forEach { it.invoke(flicker) }
             }
         } catch (e: Throwable) {
