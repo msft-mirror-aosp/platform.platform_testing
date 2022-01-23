@@ -120,6 +120,7 @@ data class FlickerComponentName(
         val ROTATION = FlickerComponentName("", "RotationLayer")
         val BACK_SURFACE = FlickerComponentName("", "BackColorSurface")
         val IME = FlickerComponentName("", "InputMethod")
+        val IME_SNAPSHOT = FlickerComponentName("", "IME-snapshot-surface")
         val SPLASH_SCREEN = FlickerComponentName("", "Splash Screen")
         val SNAPSHOT = FlickerComponentName("", "SnapshotStartingWindow")
         val LETTERBOX = FlickerComponentName("", "Letterbox")
