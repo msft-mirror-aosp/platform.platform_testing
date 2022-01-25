@@ -55,7 +55,7 @@ open class WindowState(
     val isDebuggerWindow: Boolean = windowType == WINDOW_TYPE_DEBUGGER
     val isValidNavBarType: Boolean = attributes.isValidNavBarType
 
-    val frameRegion: Region = Region(frame)
+    val frameRegion: Region = Region.from(frame)
 
     private fun getWindowTypeSuffix(windowType: Int): String =
         when (windowType) {

@@ -143,20 +143,20 @@ class RegionTest {
 
         // Test Region(Region)
         val oriRegion = Region()
-        Region(oriRegion)
+        Region.from(oriRegion)
 
         // Test Region(Rect)
         val rect = Rect()
-        Region(rect)
+        Region.from(rect)
 
         // Test Region(int, int, int, int)
-        Region(0, 0, 100, 100)
+        Region.from(0, 0, 100, 100)
     }
 
     @Test
     fun testSet1() {
         val rect = Rect(1, 2, 3, 4)
-        val oriRegion = Region(rect)
+        val oriRegion = Region.from(rect)
         assertTrue(mRegion.set(oriRegion))
         assertEquals(1, mRegion.bounds.left)
         assertEquals(2, mRegion.bounds.top)
@@ -186,7 +186,7 @@ class RegionTest {
     @Test
     fun testIsRect() {
         assertFalse(mRegion.isRect())
-        mRegion = Region(1, 2, 3, 4)
+        mRegion = Region.from(1, 2, 3, 4)
         assertTrue(mRegion.isRect())
     }
 
@@ -282,7 +282,7 @@ class RegionTest {
     @Test
     fun testEmpty() {
         assertTrue(mRegion.isEmpty)
-        mRegion = Region(1, 2, 3, 4)
+        mRegion = Region.from(1, 2, 3, 4)
         assertFalse(mRegion.isEmpty)
         mRegion.setEmpty()
         assertTrue(mRegion.isEmpty)
@@ -727,10 +727,10 @@ class RegionTest {
     @Test
     fun testOp3() {
         val region1 = Region()
-        val region2 = Region(0, 0, 20, 20)
-        val region3 = Region(5, 5, 10, 10)
-        val region4 = Region(10, 10, 30, 30)
-        val region5 = Region(40, 40, 60, 60)
+        val region2 = Region.from(0, 0, 20, 20)
+        val region3 = Region.from(5, 5, 10, 10)
+        val region4 = Region.from(10, 10, 30, 30)
+        val region5 = Region.from(40, 40, 60, 60)
         verifyNullRegionOp3(region1)
         verifyDifferenceOp3(region1, region2, region3, region4, region5)
         verifyIntersectOp3(region1, region2, region3, region4, region5)
@@ -976,10 +976,10 @@ class RegionTest {
         val rect1 = Rect()
         val rect2 = Rect(0, 0, 20, 20)
         val region1 = Region()
-        val region2 = Region(0, 0, 20, 20)
-        val region3 = Region(5, 5, 10, 10)
-        val region4 = Region(10, 10, 30, 30)
-        val region5 = Region(40, 40, 60, 60)
+        val region2 = Region.from(0, 0, 20, 20)
+        val region3 = Region.from(5, 5, 10, 10)
+        val region4 = Region.from(10, 10, 30, 30)
+        val region5 = Region.from(40, 40, 60, 60)
         verifyNullRegionOp4(rect1, region1)
         verifyDifferenceOp4(rect1, rect2, region1, region3, region4, region5)
         verifyIntersectOp4(rect1, rect2, region1, region3, region4, region5)
@@ -1203,10 +1203,10 @@ class RegionTest {
     @Test
     fun testOp5() {
         val region1 = Region()
-        val region2 = Region(0, 0, 20, 20)
-        val region3 = Region(5, 5, 10, 10)
-        val region4 = Region(10, 10, 30, 30)
-        val region5 = Region(40, 40, 60, 60)
+        val region2 = Region.from(0, 0, 20, 20)
+        val region3 = Region.from(5, 5, 10, 10)
+        val region4 = Region.from(10, 10, 30, 30)
+        val region5 = Region.from(40, 40, 60, 60)
         verifyNullRegionOp5(region1)
         verifyDifferenceOp5(region1, region2, region3, region4, region5)
         verifyIntersectOp5(region1, region2, region3, region4, region5)
@@ -1547,7 +1547,7 @@ class RegionTest {
                 val top = random.nextInt(0, 5000)
                 val right = random.nextInt(left, 5000)
                 val bottom = random.nextInt(top, 5000)
-                flickerRegion = Region(left, top, right, bottom)
+                flickerRegion = Region.from(left, top, right, bottom)
                 nativeRegion = android.graphics.Region(left, top, right, bottom)
             }
             var history = "$flickerRegion\n"
@@ -1556,7 +1556,7 @@ class RegionTest {
                 val top = random.nextInt(0, 5000)
                 val right = random.nextInt(left, 5000)
                 val bottom = random.nextInt(top, 5000)
-                val otherFlickerRegion = Region(left, top, right, bottom)
+                val otherFlickerRegion = Region.from(left, top, right, bottom)
                 val otherNativeRegion = android.graphics.Region(left, top, right, bottom)
 
                 val operationIndex = random.nextInt(0, flickerRegionOperations.size)

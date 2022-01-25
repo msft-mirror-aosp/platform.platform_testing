@@ -69,9 +69,9 @@ object WindowUtils {
         // if the current orientation changes with the requested rotation,
         // flip height and width of display bounds.
         return if (displayIsRotated != requestedDisplayIsRotated) {
-            Region(0, 0, displayBounds.height(), displayBounds.width())
+            Region.from(0, 0, displayBounds.height(), displayBounds.width())
         } else {
-            Region(0, 0, displayBounds.width(), displayBounds.height())
+            Region.from(0, 0, displayBounds.width(), displayBounds.height())
         }
     }
 
@@ -88,7 +88,7 @@ object WindowUtils {
         }
         val resourceId = resources.getIdentifier(resourceName, "dimen", "android")
         val height = resources.getDimensionPixelSize(resourceId)
-        return Region(0, 0, display.layerStackSpace.width, height)
+        return Region.from(0, 0, display.layerStackSpace.width, height)
     }
 
     /**
@@ -107,13 +107,13 @@ object WindowUtils {
             // nav bar is at the bottom of the screen
             requestedRotation in listOf(Surface.ROTATION_0, Surface.ROTATION_180) ||
                     isGesturalNavigationEnabled ->
-                Region(0, displayHeight - navBarHeight, displayWidth, displayHeight)
+                Region.from(0, displayHeight - navBarHeight, displayWidth, displayHeight)
             // nav bar is at the right side
             requestedRotation == Surface.ROTATION_90 ->
-                Region(displayWidth - navBarWidth, 0, displayWidth, displayHeight)
+                Region.from(displayWidth - navBarWidth, 0, displayWidth, displayHeight)
             // nav bar is at the left side
             requestedRotation == Surface.ROTATION_270 ->
-                Region(0, 0, navBarWidth, displayHeight)
+                Region.from(0, 0, navBarWidth, displayHeight)
             else -> error("Unknown rotation $requestedRotation")
         }
     }
@@ -142,13 +142,13 @@ object WindowUtils {
             // nav bar is at the bottom of the screen
             requestedRotation in listOf(Surface.ROTATION_0, Surface.ROTATION_180) ||
                 isGesturalNavigationEnabled ->
-                Region(0, displayHeight - navBarHeight, displayWidth, displayHeight)
+                Region.from(0, displayHeight - navBarHeight, displayWidth, displayHeight)
             // nav bar is at the right side
             requestedRotation == Surface.ROTATION_90 ->
-                Region(displayWidth - navBarWidth, 0, displayWidth, displayHeight)
+                Region.from(displayWidth - navBarWidth, 0, displayWidth, displayHeight)
             // nav bar is at the left side
             requestedRotation == Surface.ROTATION_270 ->
-                Region(0, 0, navBarWidth, displayHeight)
+                Region.from(0, 0, navBarWidth, displayHeight)
             else -> error("Unknown rotation $requestedRotation")
         }
     }

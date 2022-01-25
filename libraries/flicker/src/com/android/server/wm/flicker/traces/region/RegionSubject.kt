@@ -82,7 +82,7 @@ class RegionSubject(
      * Subtracts [other] from this subject [region]
      */
     fun minus(other: Region): RegionSubject {
-        val remainingRegion = Region(this.region)
+        val remainingRegion = Region.from(this.region)
         remainingRegion.op(other, Region.Op.XOR)
         return assertThat(remainingRegion, this, timestamp)
     }
@@ -91,7 +91,7 @@ class RegionSubject(
      * Adds [other] to this subject [region]
      */
     fun plus(other: Region): RegionSubject {
-        val remainingRegion = Region(this.region)
+        val remainingRegion = Region.from(this.region)
         remainingRegion.op(other, Region.Op.UNION)
         return assertThat(remainingRegion, this, timestamp)
     }
@@ -113,7 +113,7 @@ class RegionSubject(
      * Also checks that the left and right positions, as well as area, don't change
      */
     fun isHigherOrEqual(other: Rect): RegionSubject = apply {
-        isHigherOrEqual(Region(other))
+        isHigherOrEqual(Region.from(other))
     }
 
     /**
@@ -145,7 +145,7 @@ class RegionSubject(
      * Also checks that the left and right positions, as well as area, don't change
      */
     fun isLowerOrEqual(other: Rect): RegionSubject = apply {
-        isLowerOrEqual(Region(other))
+        isLowerOrEqual(Region.from(other))
     }
 
     /**
@@ -176,7 +176,7 @@ class RegionSubject(
      * Also checks that the left and right positions, as well as area, don't change
      */
     fun isHigher(other: Rect): RegionSubject = apply {
-        isHigher(Region(other))
+        isHigher(Region.from(other))
     }
 
     /**
@@ -206,7 +206,7 @@ class RegionSubject(
      * Also checks that the left and right positions, as well as area, don't change
      */
     fun isLower(other: Rect): RegionSubject = apply {
-        isLower(Region(other))
+        isLower(Region.from(other))
     }
 
     /**
@@ -228,7 +228,7 @@ class RegionSubject(
      */
     fun coversAtMost(testRegion: Region): RegionSubject = apply {
         val testRect = testRegion.bounds
-        val intersection = Region(region)
+        val intersection = Region.from(region)
         val covers = intersection.op(testRect, Region.Op.INTERSECT) &&
             !intersection.op(region, Region.Op.XOR)
 
@@ -246,7 +246,7 @@ class RegionSubject(
      * @param testRect Expected covered area
      */
     fun coversAtMost(testRect: Rect): RegionSubject = apply {
-        coversAtMost(Region(testRect))
+        coversAtMost(Region.from(testRect))
     }
 
     /**
@@ -256,7 +256,7 @@ class RegionSubject(
      * @param testRegion Expected covered area
      */
     fun coversAtLeast(testRegion: Region): RegionSubject = apply {
-        val intersection = Region(region)
+        val intersection = Region.from(region)
         val covers = intersection.op(testRegion, Region.Op.INTERSECT) &&
             !intersection.op(testRegion, Region.Op.XOR)
 
@@ -274,7 +274,7 @@ class RegionSubject(
      * @param testRect Expected covered area
      */
     fun coversAtLeast(testRect: Rect): RegionSubject = apply {
-        coversAtLeast(Region(testRect))
+        coversAtLeast(Region.from(testRect))
     }
 
     /**
@@ -283,7 +283,7 @@ class RegionSubject(
      * @param testRegion Expected covered area
      */
     fun coversExactly(testRegion: Region): RegionSubject = apply {
-        val intersection = Region(region)
+        val intersection = Region.from(region)
         val isNotEmpty = intersection.op(testRegion, Region.Op.XOR)
 
         if (isNotEmpty) {
@@ -299,7 +299,7 @@ class RegionSubject(
      * @param testRect Expected covered area
      */
     fun coversExactly(testRect: Rect): RegionSubject = apply {
-        coversExactly(Region(testRect))
+        coversExactly(Region.from(testRect))
     }
 
     /**
@@ -308,7 +308,7 @@ class RegionSubject(
      * @param testRegion Other area
      */
     fun overlaps(testRegion: Region): RegionSubject = apply {
-        val intersection = Region(region)
+        val intersection = Region.from(region)
         val isEmpty = !intersection.op(testRegion, Region.Op.INTERSECT)
 
         if (isEmpty) {
@@ -324,7 +324,7 @@ class RegionSubject(
      * @param testRect Other area
      */
     fun overlaps(testRect: Rect): RegionSubject = apply {
-        overlaps(Region(testRect))
+        overlaps(Region.from(testRect))
     }
 
     /**
@@ -333,7 +333,7 @@ class RegionSubject(
      * @param testRegion Other area
      */
     fun notOverlaps(testRegion: Region): RegionSubject = apply {
-        val intersection = Region(region)
+        val intersection = Region.from(region)
         val isEmpty = !intersection.op(testRegion, Region.Op.INTERSECT)
 
         if (!isEmpty) {
@@ -349,7 +349,7 @@ class RegionSubject(
      * @param testRect Other area
      */
     fun notOverlaps(testRect: Rect): RegionSubject = apply {
-        notOverlaps(Region(testRect))
+        notOverlaps(Region.from(testRect))
     }
 
     companion object {
@@ -421,7 +421,7 @@ class RegionSubject(
         @JvmStatic
         @JvmOverloads
         fun assertThat(rect: Rect?, parent: FlickerSubject? = null, timestamp: Long):
-            RegionSubject = assertThat(Region(rect), parent, timestamp)
+            RegionSubject = assertThat(Region.from(rect), parent, timestamp)
 
         /**
          * User-defined entry point for existing rects
@@ -437,8 +437,8 @@ class RegionSubject(
         @JvmStatic
         @JvmOverloads
         fun assertThat(rect: Array<RectF>, parent: FlickerSubject? = null, timestamp: Long):
-            RegionSubject = assertThat(
-                mergeRegions(rect.map { Region(it.toRect()) }.toTypedArray()), parent, timestamp)
+            RegionSubject = assertThat(mergeRegions(
+                rect.map { Region.from(it.toRect()) }.toTypedArray()), parent, timestamp)
 
         /**
          * User-defined entry point for existing regions

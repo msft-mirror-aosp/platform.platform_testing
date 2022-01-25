@@ -86,7 +86,7 @@ class WindowManagerStateHelperTest {
             id,
             parentId,
             z = 0,
-            visibleRegion = Region(rect.toRect()),
+            visibleRegion = Region.from(rect.toRect()),
             activeBuffer = ActiveBuffer(1, 1, 1, 1),
             flags = 0,
             bounds = rect,

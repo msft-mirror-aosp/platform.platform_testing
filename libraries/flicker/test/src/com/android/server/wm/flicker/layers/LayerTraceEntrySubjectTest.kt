@@ -74,7 +74,7 @@ class LayerTraceEntrySubjectTest {
     @Test
     fun canDetectUncoveredRegion() {
         val trace = readLayerTraceFromFile("layers_trace_emptyregion.pb")
-        val expectedRegion = Region(0, 0, 1440, 2960)
+        val expectedRegion = Region.from(0, 0, 1440, 2960)
         val error = assertThrows(AssertionError::class.java) {
             LayersTraceSubject.assertThat(trace).entry(935346112030)
                 .visibleRegion()
@@ -93,7 +93,7 @@ class LayerTraceEntrySubjectTest {
     @Test
     fun canTestLayerVisibleRegion_layerDoesNotExist() {
         val trace = readLayerTraceFromFile("layers_trace_emptyregion.pb")
-        val expectedVisibleRegion = Region(0, 0, 1, 1)
+        val expectedVisibleRegion = Region.from(0, 0, 1, 1)
         val error = assertThrows(AssertionError::class.java) {
             LayersTraceSubject.assertThat(trace).entry(937229257165)
                 .visibleRegion(IMAGINARY_COMPONENT)
@@ -107,7 +107,7 @@ class LayerTraceEntrySubjectTest {
     @Test
     fun canTestLayerVisibleRegion_layerDoesNotHaveExpectedVisibleRegion() {
         val trace = readLayerTraceFromFile("layers_trace_emptyregion.pb")
-        val expectedVisibleRegion = Region(0, 0, 1, 1)
+        val expectedVisibleRegion = Region.from(0, 0, 1, 1)
         val error = assertThrows(AssertionError::class.java) {
             LayersTraceSubject.assertThat(trace).entry(937126074082)
                 .visibleRegion(DOCKER_STACK_DIVIDER_COMPONENT)
@@ -121,7 +121,7 @@ class LayerTraceEntrySubjectTest {
     @Test
     fun canTestLayerVisibleRegion_layerIsHiddenByParent() {
         val trace = readLayerTraceFromFile("layers_trace_emptyregion.pb")
-        val expectedVisibleRegion = Region(0, 0, 1, 1)
+        val expectedVisibleRegion = Region.from(0, 0, 1, 1)
         val error = assertThrows(AssertionError::class.java) {
             LayersTraceSubject.assertThat(trace).entry(935346112030)
                 .visibleRegion(SIMPLE_APP_COMPONENT)
@@ -135,7 +135,7 @@ class LayerTraceEntrySubjectTest {
     @Test
     fun canTestLayerVisibleRegion_incorrectRegionSize() {
         val trace = readLayerTraceFromFile("layers_trace_emptyregion.pb")
-        val expectedVisibleRegion = Region(0, 0, 1440, 99)
+        val expectedVisibleRegion = Region.from(0, 0, 1440, 99)
         val error = assertThrows(AssertionError::class.java) {
             LayersTraceSubject.assertThat(trace).entry(937126074082)
                 .visibleRegion(FlickerComponentName.STATUS_BAR)
@@ -149,7 +149,7 @@ class LayerTraceEntrySubjectTest {
     @Test
     fun canTestLayerVisibleRegion() {
         val trace = readLayerTraceFromFile("layers_trace_launch_split_screen.pb")
-        val expectedVisibleRegion = Region(0, 0, 1080, 145)
+        val expectedVisibleRegion = Region.from(0, 0, 1080, 145)
         LayersTraceSubject.assertThat(trace).entry(90480846872160)
             .visibleRegion(FlickerComponentName.STATUS_BAR)
             .coversExactly(expectedVisibleRegion)
@@ -174,10 +174,10 @@ class LayerTraceEntrySubjectTest {
             .entry(238517209878020)
 
         entry.visibleRegion(useCompositionEngineRegionOnly = false)
-            .coversExactly(Region(0, 0, 1440, 2960))
+            .coversExactly(Region.from(0, 0, 1440, 2960))
 
         entry.visibleRegion(FlickerComponentName.IME,
             useCompositionEngineRegionOnly = false)
-            .coversExactly(Region(0, 171, 1440, 2960))
+            .coversExactly(Region.from(0, 171, 1440, 2960))
     }
 }

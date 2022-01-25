@@ -296,7 +296,8 @@ open class WindowManagerState(
     fun isComplete(): Boolean = !isIncomplete()
     fun isIncomplete(): Boolean {
         return rootTasks.isEmpty() || focusedStackId == -1 || windowStates.isEmpty() ||
-            (focusedApp.isEmpty() && homeActivity == null) || focusedWindow.isEmpty() ||
+            // overview screen has no focused window
+            ((focusedApp.isEmpty() || focusedWindow.isEmpty()) && homeActivity == null) ||
             (focusedActivity.isEmpty() || resumedActivities.isEmpty()) &&
             !keyguardControllerState.isKeyguardShowing
     }

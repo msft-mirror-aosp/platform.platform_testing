@@ -47,14 +47,11 @@ class RegionTraceSubject(
         }
 
     /**
-     * Asserts that the visible area covered by any [Layer] with [Layer.name] containing any of
-     * [component] covers at most [testRegion], that is, if the area of any layer doesn't
-     * cover any point outside of [testRegion].
+     * Asserts that the visible area covered by any element in the state covers at most
+     * [testRegion], that is, if the area of no elements cover any point outside of [testRegion].
      *
      * @param testRegion Expected covered area
-     * @param component Name of the layer to search
      */
-    @JvmOverloads
     fun coversAtMost(
         testRegion: Region
     ): RegionTraceSubject = apply {
@@ -64,27 +61,22 @@ class RegionTraceSubject(
     }
 
     /**
-     * Asserts that the visible area covered by any [Layer] with [Layer.name] containing any of
-     * [component] covers at most [testRegion], that is, if the area of any layer doesn't
-     * cover any point outside of [testRegion].
+     * Asserts that the visible area covered by any element in the state covers at most
+     * [testRegion], that is, if the area of no elements cover any point outside of [testRegion].
      *
      * @param testRegion Expected covered area
-     * @param component Name of the layer to search
      */
-    @JvmOverloads
     fun coversAtMost(
         testRegion: Rect
     ): RegionTraceSubject = this.coversAtMost(testRegion)
 
     /**
-     * Asserts that the visible area covered by any [Layer] with [Layer.name] containing any of
-     * [component] covers at least [testRegion], that is, if its area of the layer's visible
-     * region covers each point in the region.
+     * Asserts that the visible area covered by any element in the state covers at least
+     * [testRegion], that is, if the area of its elements visible region covers each point in
+     * the region.
      *
      * @param testRegion Expected covered area
-     * @param component Name of the layer to search
      */
-    @JvmOverloads
     fun coversAtLeast(
         testRegion: Region
     ): RegionTraceSubject = apply {
@@ -94,25 +86,21 @@ class RegionTraceSubject(
     }
 
     /**
-     * Asserts that the visible area covered by any [Layer] with [Layer.name] containing any of
-     * [component] covers at least [testRegion], that is, if its area of the layer's visible
-     * region covers each point in the region.
+     * Asserts that the visible area covered by any element in the state covers at least
+     * [testRegion], that is, if the area of its elements visible region covers each point in
+     * the region.
      *
      * @param testRegion Expected covered area
      */
-    @JvmOverloads
     fun coversAtLeast(
         testRegion: Rect
-    ): RegionTraceSubject = this.coversAtLeast(Region(testRegion))
+    ): RegionTraceSubject = this.coversAtLeast(Region.from(testRegion))
 
     /**
-     * Asserts that a [Layer] with [Layer.name] containing any of [component] has a visible region
-     * of exactly [expectedVisibleRegion] in trace entries.
+     * Asserts that the visible region of the trace entries is exactly [expectedVisibleRegion].
      *
-     * @param component Name of the layer to search
      * @param expectedVisibleRegion Expected visible region of the layer
      */
-    @JvmOverloads
     fun coversExactly(
         expectedVisibleRegion: Region
     ): RegionTraceSubject = apply {
@@ -136,8 +124,8 @@ class RegionTraceSubject(
                 Factory { fm, subject -> RegionTraceSubject(fm, subject, parent) }
 
         /**
-         * Creates a [RegionTraceSubject] representing a trace of the visible region of [component],
-         * which can be used to make assertions.
+         * Creates a [RegionTraceSubject] representing a trace of the visible region of a
+         * window or layer which can be used to make assertions.
          *
          * @param trace The region trace to assert on
          */

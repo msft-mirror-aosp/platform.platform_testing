@@ -26,23 +26,21 @@ import kotlin.math.min
  * Implementation based android.graphics.Region's native implementation found in SkRegion.cpp
  *
  * This class is used by flicker and Winscope
+ *
+ * It has a single constructor and different [from] functions on its companion because JS
+ * doesn't support constructor overload
  */
-class Region {
+class Region(rects: Array<Rect> = arrayOf()) {
     private var fBounds = Rect.EMPTY
     private var fRunHead: RunHead? = RunHead(isEmptyHead = true)
 
-    constructor(
-        left: Int,
-        top: Int,
-        right: Int,
-        bottom: Int
-    ) : this(Rect(left, top, right, bottom))
-
-    constructor(rects: Array<Rect>) {
-        this.setEmpty()
-
-        for (rect in rects) {
-            union(rect)
+    init {
+        if (rects.isEmpty()) {
+            setEmpty()
+        } else {
+            for (rect in rects) {
+                union(rect)
+            }
         }
     }
 
@@ -55,24 +53,11 @@ class Region {
     val isNotEmpty: Boolean get() = !isEmpty
     val bounds get() = fBounds
 
-    constructor(region: Region) {
-        this.set(region)
-    }
-
-    constructor(rect: Rect? = null) {
-        fRunHead = null
-        this.setRect(rect ?: Rect.EMPTY)
-    }
-
-    constructor(rect: RectF?): this(rect?.toRect())
-
-    constructor() : this(Rect.EMPTY)
-
     /**
      * Set the region to the empty region
      */
     fun setEmpty(): Boolean {
-        fBounds = Rect()
+        fBounds = Rect.EMPTY
         fRunHead = RunHead(isEmptyHead = true)
 
         return false
@@ -224,7 +209,7 @@ class Region {
         }
     }
 
-    private fun prettyPrint(): String {
+    fun prettyPrint(): String {
         val iter = Iterator(this)
         val result = StringBuilder("SkRegion(")
         while (!iter.done()) {
@@ -1046,7 +1031,7 @@ class Region {
      * true if the result of the op is not empty.
      */
     fun op(r: Rect, op: Op): Boolean {
-        return op(Region(r), op)
+        return op(from(r), op)
     }
 
     /**
@@ -1054,11 +1039,11 @@ class Region {
      * and region. Return true if the result is not empty.
      */
     fun op(rect: Rect, region: Region, op: Op): Boolean {
-        return op(Region(rect), region, op)
+        return op(from(rect), region, op)
     }
 
     fun minus(other: Region): Region {
-        val thisRegion = Region(this)
+        val thisRegion = from(this)
         thisRegion.op(other, Region.Op.XOR)
         return thisRegion
     }
@@ -1078,6 +1063,24 @@ class Region {
             Op.UNION to MinMax(1, 3),
             Op.XOR to MinMax(1, 2)
         )
+
+        fun from(
+            left: Int,
+            top: Int,
+            right: Int,
+            bottom: Int
+        ): Region = from(Rect(left, top, right, bottom))
+
+        fun from(region: Region): Region = Region().also { it.set(region) }
+
+        fun from(rect: Rect? = null): Region = Region().also {
+            it.fRunHead = null
+            it.setRect(rect ?: Rect.EMPTY)
+        }
+
+        fun from(rect: RectF?): Region = from(rect?.toRect())
+
+        fun from(): Region = from(Rect.EMPTY)
 
         private fun SkRegionValueIsSentinel(value: Int): Boolean {
             return value == SkRegion_kRunTypeSentinel
