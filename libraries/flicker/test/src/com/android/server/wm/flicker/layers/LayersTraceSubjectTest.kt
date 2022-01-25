@@ -335,8 +335,8 @@ class LayersTraceSubjectTest {
     }
 
     companion object {
-        private val DISPLAY_REGION = Region(0, 0, 1440, 2880)
-        private val DISPLAY_REGION_ROTATED = Region(0, 0, 2160, 1080)
+        private val DISPLAY_REGION = Region.from(0, 0, 1440, 2880)
+        private val DISPLAY_REGION_ROTATED = Region.from(0, 0, 2160, 1080)
         private const val SHELL_APP_PACKAGE = "com.android.wm.shell.flicker.testapp"
         private val FIXED_APP = FlickerComponentName(SHELL_APP_PACKAGE,
                 "$SHELL_APP_PACKAGE.FixedActivity")

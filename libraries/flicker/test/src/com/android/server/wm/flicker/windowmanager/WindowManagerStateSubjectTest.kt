@@ -57,9 +57,9 @@ class WindowManagerStateSubjectTest {
     // The first frame where the chrome splash screen is shown
     private val traceFirstChromeFlashScreenTimestamp = 9215551505798
     // The bounds of the display used to generate the trace [trace]
-    private val displayBounds = Region(0, 0, 1440, 2960)
+    private val displayBounds = Region.from(0, 0, 1440, 2960)
     // The region covered by the status bar in the trace
-    private val statusBarRegion = Region(0, 0, 1440, 171)
+    private val statusBarRegion = Region.from(0, 0, 1440, 171)
 
     @Test
     fun exceptionContainsDebugInfo() {
@@ -112,9 +112,9 @@ class WindowManagerStateSubjectTest {
         val entry = assertThat(trace)
             .entry(traceFirstFrameTimestamp)
         entry.visibleRegion(FlickerComponentName.STATUS_BAR)
-                .coversAtLeast(Region(0, 0, 100, 100))
+                .coversAtLeast(Region.from(0, 0, 100, 100))
         entry.visibleRegion(LAUNCHER_COMPONENT)
-            .coversAtLeast(Region(0, 0, 100, 100))
+            .coversAtLeast(Region.from(0, 0, 100, 100))
     }
 
     @Test
@@ -122,13 +122,13 @@ class WindowManagerStateSubjectTest {
         val subject = assertThat(trace).entry(traceFirstFrameTimestamp)
         var failure = assertThrows(FlickerSubjectException::class.java) {
             subject.visibleRegion(FlickerComponentName.STATUS_BAR)
-                    .coversAtLeast(Region(0, 0, 1441, 171))
+                    .coversAtLeast(Region.from(0, 0, 1441, 171))
         }
         assertFailure(failure).factValue("Uncovered region").contains("SkRegion((1440,0,1441,171))")
 
         failure = assertThrows(FlickerSubjectException::class.java) {
             subject.visibleRegion(LAUNCHER_COMPONENT)
-                .coversAtLeast(Region(0, 0, 1440, 2961))
+                .coversAtLeast(Region.from(0, 0, 1440, 2961))
         }
         assertFailure(failure).factValue("Uncovered region")
             .contains("SkRegion((0,2960,1440,2961))")
@@ -150,14 +150,14 @@ class WindowManagerStateSubjectTest {
         val subject = assertThat(trace).entry(traceFirstFrameTimestamp)
         var failure = assertThrows(FlickerSubjectException::class.java) {
             subject.visibleRegion(FlickerComponentName.STATUS_BAR)
-                    .coversAtMost(Region(0, 0, 100, 100))
+                    .coversAtMost(Region.from(0, 0, 100, 100))
         }
         assertFailure(failure).factValue("Out-of-bounds region")
                 .contains("SkRegion((100,0,1440,100)(0,100,1440,171))")
 
         failure = assertThrows(FlickerSubjectException::class.java) {
             subject.visibleRegion(LAUNCHER_COMPONENT)
-                    .coversAtMost(Region(0, 0, 100, 100))
+                    .coversAtMost(Region.from(0, 0, 100, 100))
         }
         assertFailure(failure).factValue("Out-of-bounds region")
                 .contains("SkRegion((100,0,1440,100)(0,100,1440,2960))")
@@ -168,13 +168,13 @@ class WindowManagerStateSubjectTest {
         val subject = assertThat(trace).entry(traceFirstFrameTimestamp)
         var failure = assertThrows(FlickerSubjectException::class.java) {
             subject.visibleRegion(FlickerComponentName.STATUS_BAR)
-                    .coversAtLeast(Region(0, 0, 1441, 171))
+                    .coversAtLeast(Region.from(0, 0, 1441, 171))
         }
         assertFailure(failure).factValue("Uncovered region").contains("SkRegion((1440,0,1441,171))")
 
         failure = assertThrows(FlickerSubjectException::class.java) {
             subject.visibleRegion(LAUNCHER_COMPONENT)
-                    .coversAtLeast(Region(0, 0, 1440, 2961))
+                    .coversAtLeast(Region.from(0, 0, 1440, 2961))
         }
         assertFailure(failure).factValue("Uncovered region")
                 .contains("SkRegion((0,2960,1440,2961))")
@@ -195,14 +195,14 @@ class WindowManagerStateSubjectTest {
         val subject = assertThat(trace).entry(traceFirstFrameTimestamp)
         var failure = assertThrows(FlickerSubjectException::class.java) {
             subject.visibleRegion(FlickerComponentName.STATUS_BAR)
-                    .coversAtMost(Region(0, 0, 100, 100))
+                    .coversAtMost(Region.from(0, 0, 100, 100))
         }
         assertFailure(failure).factValue("Out-of-bounds region")
             .contains("SkRegion((100,0,1440,100)(0,100,1440,171))")
 
         failure = assertThrows(FlickerSubjectException::class.java) {
             subject.visibleRegion(LAUNCHER_COMPONENT)
-                .coversAtMost(Region(0, 0, 100, 100))
+                .coversAtMost(Region.from(0, 0, 100, 100))
         }
         assertFailure(failure).factValue("Out-of-bounds region")
             .contains("SkRegion((100,0,1440,100)(0,100,1440,2960))")
@@ -214,9 +214,9 @@ class WindowManagerStateSubjectTest {
             .entry(traceFirstFrameTimestamp)
 
         entry.visibleRegion(FlickerComponentName.STATUS_BAR)
-                .coversAtMost(Region(0, 0, 1441, 171))
+                .coversAtMost(Region.from(0, 0, 1441, 171))
         entry.visibleRegion(LAUNCHER_COMPONENT)
-            .coversAtMost(Region(0, 0, 1440, 2961))
+            .coversAtMost(Region.from(0, 0, 1440, 2961))
     }
 
     @Test
