@@ -98,7 +98,7 @@ native_tests := \
     liblog-unit-tests \
     libminijail_unittest_gtest \
     libnativehelper_tests \
-    libnetdbpf_test \
+    libnetworkstats_test \
     libprocinfo_test \
     libtextclassifier_tests \
     libsurfaceflinger_unittest \
