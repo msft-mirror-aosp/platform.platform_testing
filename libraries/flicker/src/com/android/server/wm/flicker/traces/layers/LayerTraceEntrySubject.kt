@@ -175,28 +175,32 @@ class LayerTraceEntrySubject private constructor(
     fun isVisible(component: FlickerComponentName): LayerTraceEntrySubject = apply {
         contains(component)
         var target: FlickerSubject? = null
-        var reason: Fact? = null
+        var reason = listOf<Fact>()
         val layerName = component.toLayerName()
         val filteredLayers = subjects
             .filter { it.name.contains(layerName) }
         for (layer in filteredLayers) {
             if (layer.layer?.isHiddenByParent == true) {
-                reason = Fact.fact("Hidden by parent", layer.layer.parent?.name)
+                reason = listOf(Fact.fact("Hidden by parent", layer.layer.parent?.name))
                 target = layer
                 continue
             }
             if (layer.isInvisible) {
-                reason = Fact.fact("Is Invisible", layer.layer?.visibilityReason)
+                reason = layer.layer?.visibilityReason
+                    ?.map { Fact.fact("Is Invisible", it) }
+                    ?: emptyList()
                 target = layer
                 continue
             }
-            reason = null
+            reason = emptyList()
             target = null
             break
         }
 
-        reason?.run {
-            target?.fail(Fact.fact(ASSERTION_TAG, "isVisible(${component.toLayerName()})"), reason)
+        if (reason.isNotEmpty()) {
+            target?.fail(
+                Fact.fact(ASSERTION_TAG, "isVisible(${component.toLayerName()})"),
+                *reason.toTypedArray())
         }
     }
 

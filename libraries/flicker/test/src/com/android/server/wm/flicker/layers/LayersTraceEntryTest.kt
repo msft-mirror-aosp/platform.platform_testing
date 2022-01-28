@@ -137,6 +137,7 @@ class LayersTraceEntryTest {
         val layer = entry.flattenedLayers.first { it.name == layerName }
         Truth.assertWithMessage("$layerName should be invisible because of HWC region")
             .that(layer.visibilityReason)
+            .asList()
             .contains("Visible region calculated by Composition Engine is empty")
     }
 
