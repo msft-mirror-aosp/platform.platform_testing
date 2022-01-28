@@ -232,29 +232,35 @@ data class Layer(
      *
      * @return
      */
-    val visibilityReason: String
+    val visibilityReason: Array<String>
         get() {
-            return when {
-                isVisible -> ""
-                isContainerLayer -> "ContainerLayer"
-                isHiddenByPolicy -> "Flag is hidden"
-                isHiddenByParent -> "Hidden by parent ${parent?.name}"
-                isBufferLayer && isActiveBufferEmpty -> "Buffer is empty"
-                color.isEmpty -> "Alpha is 0"
-                crop?.isEmpty ?: false -> "Crop is 0x0"
-                bounds.isEmpty -> "Bounds is 0x0"
-                !transform.isValid -> "Transform is invalid"
-                isRelativeOf && zOrderRelativeOf == null -> "RelativeOf layer has been removed"
-                isEffectLayer && !fillsColor && !drawsShadows && !hasBlur ->
-                    "Effect layer does not have color fill, shadow or blur"
-                _occludedBy.isNotEmpty() -> {
-                    val occludedByIds = _occludedBy.joinToString(", ") { it.id.toString() }
-                    "Layer is occluded by: $occludedByIds"
-                }
-                visibleRegion?.isEmpty ?: false ->
-                    "Visible region calculated by Composition Engine is empty"
-                else -> "Unknown"
+            if (isVisible) {
+                return emptyArray()
             }
+            val reasons = mutableListOf<String>()
+            if (isContainerLayer) reasons.add("ContainerLayer")
+            if (isHiddenByPolicy) reasons.add("Flag is hidden")
+            if (isHiddenByParent) reasons.add("Hidden by parent ${parent?.name}")
+            if (isBufferLayer && isActiveBufferEmpty) reasons.add("Buffer is empty")
+            if (color.isEmpty) reasons.add("Alpha is 0")
+            if (crop?.isEmpty == true) reasons.add("Crop is 0x0")
+            if (bounds.isEmpty) reasons.add("Bounds is 0x0")
+            if (!transform.isValid) reasons.add("Transform is invalid")
+            if (isRelativeOf && zOrderRelativeOf == null) {
+                reasons.add("RelativeOf layer has been removed")
+            }
+            if (isEffectLayer && !fillsColor && !drawsShadows && !hasBlur) {
+                reasons.add("Effect layer does not have color fill, shadow or blur")
+            }
+            if (_occludedBy.isNotEmpty()) {
+                val occludedByIds = _occludedBy.joinToString(", ") { it.id.toString() }
+                reasons.add("Layer is occluded by: $occludedByIds")
+            }
+            if (visibleRegion?.isEmpty == true) {
+                reasons.add("Visible region calculated by Composition Engine is empty")
+            }
+            if (reasons.isEmpty()) reasons.add("Unknown")
+            return reasons.toTypedArray()
         }
 
     val screenBounds: RectF = when {
