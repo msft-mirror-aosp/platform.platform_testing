@@ -285,11 +285,12 @@ public class SettingHelperImpl extends AbstractAutoStandardAppHelper implements 
                                 AutoConfigConstants.SETTINGS,
                                 AutoConfigConstants.FULL_SETTINGS,
                                 AutoConfigConstants.SEARCH_RESULTS));
-        int numberOfResults = searchResults.getChildren().size();
+        int numberOfResults = searchResults.getChildren().get(0).getChildren().size();
         if (numberOfResults == 0) {
             throw new RuntimeException("No results found");
         }
-        clickAndWaitForIdleScreen(searchResults.getChildren().get(selectedIndex));
+        clickAndWaitForIdleScreen(
+                searchResults.getChildren().get(0).getChildren().get(selectedIndex));
         SystemClock.sleep(UI_RESPONSE_WAIT_MS);
 
         UiObject2 object = findUiObject(By.textContains(item));
