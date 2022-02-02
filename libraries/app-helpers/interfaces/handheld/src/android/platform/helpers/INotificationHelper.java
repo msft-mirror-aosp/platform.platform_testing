@@ -230,25 +230,61 @@ public interface INotificationHelper extends IAppHelper {
     /**
      * Setup Expectations: Notification shade opened.
      *
-     * <p>Scrolls to the bottom of the notification shade and taps the "clear all" button if
-     * present.
+     * <p>Determines if the notification shade is showing the "empty shade view"
+     */
+    default boolean isShowingEmptyShade() {
+        throw new UnsupportedOperationException("Not yet implemented.");
+    }
+
+    /**
+     * Setup Expectations: Notification shade opened.
+     *
+     * <p>Determines if the notification shade is showing the "footer view", which indicates that
+     * there are nonzero notifications and that the shade is scrolled to the bottom.
+     */
+    default boolean isShowingFooter() {
+        throw new UnsupportedOperationException("Not yet implemented.");
+    }
+
+    /**
+     * Setup Expectations: Notification shade opened.
+     *
+     * <p>Scrolls to the bottom of the notification shade, as determined by the "manage" button in
+     * the footer being visible.
+     */
+    default void scrollToBottom() {
+        throw new UnsupportedOperationException("Not yet implemented.");
+    }
+
+    /**
+     * Setup Expectations: Notification shade opened, clearable notifications exist.
+     *
+     * <p>Scrolls to the bottom of the notification shade and taps the "clear all" button, which
+     * must be present.
      */
     default void clearAllNotifications() {
         throw new UnsupportedOperationException("Not yet implemented.");
     }
 
     /**
-     * Setup Expectations: Notification snoozing is enabled.
+     * Runs a shell command which causes System UI to hide all notifications EXCEPT from the test
+     * application, when enabled is true. When enabled is false, the default debug filter is reset
+     * and all notifications will be restored.
      *
-     * <p>Empty the notification shade by first cancelling all of the test app's notifications, then
-     * snoozing all other notifications temporarily. Fails if any notifications are left in the
-     * shade.
-     *
-     * <p>Because unsnoozing can fail from command line, snoozing is implemented with a fixed time,
-     * so tests will take at least as long as the time limit given, plus some buffer built into this
-     * utility, to ensure that this test's snoozing will not interfere with other tests.
+     * <p>Fails if any notifications are left in the shade after the filter is applied.
      */
-    default void runWithEmptyNotificationShade(Runnable task, long taskTimeLimit) {
+    default void setDebugNotificationFilter(boolean enabled) {
+        throw new UnsupportedOperationException("Not yet implemented.");
+    }
+
+    /**
+     * Runs a shell command which causes System UI to hide all notifications EXCEPT from all the
+     * provided packages. If no packages are provided, the default debug filter is reset and all
+     * notifications will be restored.
+     *
+     * <p>Fails if any notifications are left in the shade after the filter is applied.
+     */
+    default void setDebugNotificationFilter(@Nullable List<String> allowedPackages) {
         throw new UnsupportedOperationException("Not yet implemented.");
     }
 
