@@ -26,6 +26,17 @@ public final class SplUtils {
     private static final ZoneId UTC_ZONE_ID = ZoneId.of("UTC");
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
+    public enum Type {
+        PARTIAL(1), // platform
+        COMPLETE(5); // device-specific (kernel, soc, etc)
+
+        public final int day;
+
+        Type(int day) {
+            this.day = day;
+        }
+    }
+
     public static LocalDate localDateFromMillis(long millis) {
         return Instant.ofEpochMilli(millis).atZone(UTC_ZONE_ID).toLocalDate();
     }
