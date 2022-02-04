@@ -85,6 +85,7 @@ class FlickerRunResult private constructor(
             val newFileName = prefix + source.fileName.toString()
             val target = source.resolveSibling(newFileName)
             Files.move(source, target, StandardCopyOption.REPLACE_EXISTING)
+            TraceFileReadyListener.notifyFileReady(target)
         } catch (e: IOException) {
             Log.e(FLICKER_TAG, "Unable do delete $this", e)
         }
