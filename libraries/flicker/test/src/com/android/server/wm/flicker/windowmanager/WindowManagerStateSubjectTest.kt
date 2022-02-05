@@ -324,7 +324,7 @@ class WindowManagerStateSubjectTest {
     }
 
     @Test
-    fun canDetectNoSubjects() {
+    fun canHandleNoSubjects() {
         val emptyRootContainer = RootWindowContainer(
             WindowContainer(
                 title = "root",
@@ -360,6 +360,6 @@ class WindowManagerStateSubjectTest {
             WindowManagerStateSubject
                 .assertThat(noWindowsState).isAppWindowOnTop(mockComponent)
         }
-        assertFailure(failure).hasMessageThat().contains("State is not empty")
+        assertFailure(failure).hasMessageThat().contains("No visible app windows found")
     }
 }

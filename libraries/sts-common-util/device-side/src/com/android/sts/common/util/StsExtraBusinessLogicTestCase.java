@@ -16,12 +16,13 @@
 
 package com.android.sts.common.util;
 
-import com.android.compatibility.common.util.ExtraBusinessLogicTestCase;
-
 import android.os.Build;
 import android.util.Log;
 
 import androidx.test.InstrumentationRegistry;
+
+import com.android.compatibility.common.util.ExtraBusinessLogicTestCase;
+import com.android.compatibility.common.util.PropertyUtil;
 
 import org.junit.Rule;
 import org.junit.runner.Description;
@@ -33,6 +34,7 @@ import java.util.List;
 public class StsExtraBusinessLogicTestCase extends ExtraBusinessLogicTestCase implements StsLogic {
 
     private LocalDate deviceSpl = null;
+    private LocalDate kernelSpl = null;
     @Rule public DescriptionProvider descriptionProvider = new DescriptionProvider();
 
     protected StsExtraBusinessLogicTestCase() {
@@ -41,6 +43,7 @@ public class StsExtraBusinessLogicTestCase extends ExtraBusinessLogicTestCase im
 
     @Override
     public List<String> getExtraBusinessLogics() {
+        // set in test/sts/tools/sts-tradefed/res/config/sts-base-dynamic-*.xml
         String stsDynamicPlan =
                 InstrumentationRegistry.getArguments().getString("sts-dynamic-plan");
         switch (stsDynamicPlan) {
@@ -60,11 +63,34 @@ public class StsExtraBusinessLogicTestCase extends ExtraBusinessLogicTestCase im
     }
 
     @Override
-    public LocalDate getDeviceSpl() {
+    public LocalDate getPlatformSpl() {
         if (deviceSpl == null) {
             deviceSpl = SplUtils.localDateFromSplString(Build.VERSION.SECURITY_PATCH);
         }
         return deviceSpl;
+    }
+
+    @Override
+    public LocalDate getKernelSpl() {
+        if (kernelSpl == null) {
+            // set in:
+            // test/sts/tools/sts-tradefed/src/com/android/tradefed/targetprep/multi/KernelSPL.java
+            String kernelSplString =
+                    PropertyUtil.getProperty("persist.sts.build_version_kernel_security_patch");
+            if (kernelSplString == null) {
+                return null;
+            }
+            kernelSpl = SplUtils.localDateFromSplString(kernelSplString);
+        }
+        return kernelSpl;
+    }
+
+    @Override
+    public boolean shouldUseKernelSpl() {
+        // set in test/sts/tools/sts-tradefed/res/config/sts-base-use-kernel-spl.xml
+        String useKernelSplString =
+                InstrumentationRegistry.getArguments().getString("sts-use-kernel-spl");
+        return Boolean.parseBoolean(useKernelSplString);
     }
 
     /**
@@ -74,6 +100,7 @@ public class StsExtraBusinessLogicTestCase extends ExtraBusinessLogicTestCase im
      */
     @Override
     public LocalDate getReleaseBulletinSpl() {
+        // set manually with command-line args at runtime
         String releaseBulletinSpl =
                 InstrumentationRegistry.getArguments().getString("release-bulletin-spl");
         if (releaseBulletinSpl == null) {

@@ -16,8 +16,8 @@
 
 package com.android.sts.common.util;
 
-import static org.junit.Assume.*;
 import static org.junit.Assert.*;
+import static org.junit.Assume.*;
 
 import android.platform.test.annotations.AsbSecurityTest;
 
@@ -29,6 +29,7 @@ import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /** Common STS extra business logic for host-side and device-side to implement. */
 public interface StsLogic {
@@ -37,21 +38,27 @@ public interface StsLogic {
 
     // keep in sync with google3:
     // //wireless/android/partner/apbs/*/config/xtsbgusinesslogic/sts_business_logic.gcl
-    List<String> STS_EXTRA_BUSINESS_LOGIC_FULL = Arrays.asList(new String[]{
-        "uploadSpl",
-        "uploadModificationTime",
-        "declaredSpl",
+    List<String> STS_EXTRA_BUSINESS_LOGIC_FULL = Arrays.asList(new String[] {
+            "uploadSpl",
+            "uploadModificationTime",
+            "uploadKernelBugs",
+            "declaredSpl",
     });
-    List<String> STS_EXTRA_BUSINESS_LOGIC_INCREMENTAL = Arrays.asList(new String[]{
-        "uploadSpl",
-        "uploadModificationTime",
-        "declaredSpl",
-        "incremental",
+    List<String> STS_EXTRA_BUSINESS_LOGIC_INCREMENTAL = Arrays.asList(new String[] {
+            "uploadSpl",
+            "uploadModificationTime",
+            "uploadKernelBugs",
+            "declaredSpl",
+            "incremental",
     });
 
     Description getTestDescription();
 
-    LocalDate getDeviceSpl();
+    LocalDate getPlatformSpl();
+
+    LocalDate getKernelSpl();
+
+    boolean shouldUseKernelSpl();
 
     LocalDate getReleaseBulletinSpl();
 
@@ -71,6 +78,26 @@ public interface StsLogic {
         }
         // true if the bug id is older than ~ June 2020
         return Arrays.stream(bugIds).min().getAsLong() < 157905780;
+    }
+
+    default LocalDate getDeviceSpl() {
+        if (shouldUseKernelSpl()) {
+            Set<String> bugIds = BusinessLogicSetStore.getSet("kernel_bugs");
+            boolean isKernel = false;
+            for (long bugId : getCveBugIds()) {
+                isKernel |= bugIds.contains(Long.toString(bugId));
+            }
+            if (isKernel) {
+                LocalDate kernelSpl = getKernelSpl();
+                if (kernelSpl != null) {
+                    return kernelSpl;
+                }
+                // could not get the kernel SPL even though we should use it
+                // falling back to platform SPL
+                logWarn(LOG_TAG, "could not read kernel SPL, falling back to platform SPL");
+            }
+        }
+        return getPlatformSpl();
     }
 
     default LocalDate getMinTestSpl() {
@@ -109,8 +136,10 @@ public interface StsLogic {
         for (long cveBugId : getCveBugIds()) {
             String modificationMillisString = map.get(Long.toString(cveBugId));
             if (modificationMillisString == null) {
-                logInfo(LOG_TAG,
-                        "Could not find the CVE bug %d in the modification date map", cveBugId);
+                logInfo(
+                        LOG_TAG,
+                        "Could not find the CVE bug %d in the modification date map",
+                        cveBugId);
                 continue;
             }
             LocalDate modificationDate =
