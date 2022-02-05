@@ -95,9 +95,10 @@ open class WindowManagerState(
                 activity?.isVisible ?: true
             }
             .toTypedArray()
+    val visibleAppWindows: Array<WindowState>
+        get() = visibleWindows.filter { it.isAppWindow }.toTypedArray()
     val topVisibleAppWindow: String
-        get() = visibleWindows
-            .filter { it.isAppWindow }
+        get() = visibleAppWindows
             .map { it.title }
             .firstOrNull() ?: ""
     val pinnedWindows: Array<WindowState>
