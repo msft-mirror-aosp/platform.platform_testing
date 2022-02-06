@@ -34,6 +34,7 @@ public class StsExtraBusinessLogicHostTestBase extends ExtraBusinessLogicHostTes
         implements StsLogic {
 
     private LocalDate deviceSpl = null;
+    private LocalDate kernelSpl = null;
     @Rule public DescriptionProvider descriptionProvider = new DescriptionProvider();
 
     public StsExtraBusinessLogicHostTestBase() {
@@ -43,6 +44,7 @@ public class StsExtraBusinessLogicHostTestBase extends ExtraBusinessLogicHostTes
 
     @Override
     public List<String> getExtraBusinessLogics() {
+        // set in test/sts/tools/sts-tradefed/res/config/sts-base-dynamic-*.xml
         String stsDynamicPlan = getBuild().getBuildAttributes().get("sts-dynamic-plan");
         switch (stsDynamicPlan) {
             case "incremental":
@@ -60,7 +62,7 @@ public class StsExtraBusinessLogicHostTestBase extends ExtraBusinessLogicHostTes
     }
 
     @Override
-    public LocalDate getDeviceSpl() {
+    public LocalDate getPlatformSpl() {
         if (deviceSpl == null) {
             try {
                 String splString = getDevice().getProperty("ro.build.version.security_patch");
@@ -72,12 +74,35 @@ public class StsExtraBusinessLogicHostTestBase extends ExtraBusinessLogicHostTes
         return deviceSpl;
     }
 
+    @Override
+    public LocalDate getKernelSpl() {
+        if (kernelSpl == null) {
+            // set in:
+            // test/sts/tools/sts-tradefed/src/com/android/tradefed/targetprep/multi/KernelSPL.java
+            String kernelSplString =
+                    getBuild().getBuildAttributes().get("cts:build_version_kernel_security_patch");
+            if (kernelSplString == null) {
+                return null;
+            }
+            kernelSpl = SplUtils.localDateFromSplString(kernelSplString);
+        }
+        return kernelSpl;
+    }
+
+    @Override
+    public boolean shouldUseKernelSpl() {
+        // set in test/sts/tools/sts-tradefed/res/config/sts-base-use-kernel-spl.xml
+        String useKernelSplString = getBuild().getBuildAttributes().get("sts-use-kernel-spl");
+        return Boolean.parseBoolean(useKernelSplString);
+    }
+
     /**
      * Specify the latest release bulletin. Control this from the command-line with the following
      * command line argument: --build-attribute "release-bulletin-spl=2021-06"
      */
     @Override
     public LocalDate getReleaseBulletinSpl() {
+        // set manually with command-line args at runtime
         String releaseBulletinSpl = getBuild().getBuildAttributes().get("release-bulletin-spl");
         if (releaseBulletinSpl == null) {
             return null;
