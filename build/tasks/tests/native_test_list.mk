@@ -103,7 +103,7 @@ native_tests := \
     libtextclassifier_tests \
     libsurfaceflinger_unittest \
     libunwindstack_unit_test \
-    libuwb_uci_rust \
+    libuwb_uci_rust_tests \
     libuwb_uci_packet_tests \
     libvintf_test \
     linker-unit-tests \
