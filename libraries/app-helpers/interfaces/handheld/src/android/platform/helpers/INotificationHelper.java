@@ -138,13 +138,36 @@ public interface INotificationHelper extends IAppHelper {
     /**
      * Setup Expectations: Shade is open
      *
-     * <p>Posts a bubble notification. This notification is associated with a conversation shortcut,
-     * a BubbleMetadata, and in {@link android.app.Notification.MessagingStyle}.
+     * <p>Posts multiple bubble notification. These notifications are associated with a conversation
+     * shortcut, a BubbleMetadata, and in {@link android.app.Notification.MessagingStyle}.
      *
      * @param senderName Name of notification sender.
      * @param count How many bubble notifications to send.
      */
     default void postBubbleNotification(String senderName, int count) {
+        throw new UnsupportedOperationException("Not yet implemented.");
+    }
+
+    /**
+     * Posts a bubble notification. This notification is associated with a conversation shortcut, a
+     * BubbleMetadata, and in {@link android.app.Notification.MessagingStyle}.
+     *
+     * @param senderName Name of notification sender.
+     * @param id An unique notification identifier.
+     * @param text Notification message content.
+     */
+    default void postBubbleNotification(String senderName, int id, String text) {
+        throw new UnsupportedOperationException("Not yet implemented.");
+    }
+
+    /**
+     * Updates an existing notification
+     *
+     * @param senderName Name of notification sender.
+     * @param id An identifier of the notification to be updated.
+     * @param text Update message content.
+     */
+    default void updateBubbleNotification(String senderName, int id, String text) {
         throw new UnsupportedOperationException("Not yet implemented.");
     }
 
