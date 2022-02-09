@@ -12,37 +12,37 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Build the common utility library for use device-side
 package {
     default_applicable_licenses: ["Android-Apache-2.0"],
 }
 
+// Build the common utility library for use device-side
 java_library_static {
-    name: "compatibility-common-util-devicesidelib",
+    name: "sts-common-util-devicesidelib",
+    visibility: [
+        "//platform_testing/libraries/sts-common-util/device-side",
+    ],
     sdk_version: "current",
-
     srcs: ["src/**/*.java"],
-
     static_libs: [
-        "guava",
         "junit",
+        "platform-test-annotations",
+        "compatibility-common-util-devicesidelib",
     ],
 }
 
 java_library {
-    name: "compatibility-common-util-lib",
+    name: "sts-common-util-lib",
     visibility: [
-        "//test/suite_harness/common/util",
-        "//platform_testing/libraries/compatibility-common-util/tests",
-        "//platform_testing/libraries/sts-common-util/util",
+        "//platform_testing/libraries/sts-common-util/host-side",
     ],
-    srcs: ["src/**/*.java"],
     host_supported: true,
+    srcs: ["src/**/*.java"],
+    static_libs: [
+        "compatibility-common-util-lib",
+    ],
     libs: [
         "junit",
-        "guava",
-        "json-prebuilt",
         "platform-test-annotations",
-        "kxml2-2.3.0",
     ],
 }
