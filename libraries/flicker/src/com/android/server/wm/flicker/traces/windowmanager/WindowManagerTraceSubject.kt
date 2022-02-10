@@ -271,6 +271,18 @@ class WindowManagerTraceSubject private constructor(
     }
 
     /**
+     * Checks if there are no visible app windows.
+     *
+     * @param isOptional If this assertion is optional or must pass
+     */
+    @JvmOverloads
+    fun hasNoVisibleAppWindow(isOptional: Boolean = false): WindowManagerTraceSubject = apply {
+        addAssertion("hasNoVisibleAppWindow()", isOptional) {
+            it.hasNoVisibleAppWindow()
+        }
+    }
+
+    /**
      * Checks if the activity with title containing [component] is visible
      *
      * In the case that an app is stopped in the background (e.g. OS stopped it to release memory)
