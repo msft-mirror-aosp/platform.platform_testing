@@ -362,4 +362,21 @@ class WindowManagerStateSubjectTest {
         }
         assertFailure(failure).hasMessageThat().contains("No visible app windows found")
     }
+
+    @Test
+    fun canDetectNoVisibleAppWindows() {
+        val trace = readWmTraceFromFile("wm_trace_unlock.pb")
+        val firstEntry = assertThat(trace).first()
+        firstEntry.hasNoVisibleAppWindow()
+    }
+
+    @Test
+    fun canDetectHasVisibleAppWindows() {
+        val trace = readWmTraceFromFile("wm_trace_unlock.pb")
+        val lastEntry = assertThat(trace).last()
+        val failure = assertThrows(FlickerSubjectException::class.java) {
+            lastEntry.hasNoVisibleAppWindow()
+        }
+        assertFailure(failure).hasMessageThat().contains("Found visible windows")
+    }
 }
