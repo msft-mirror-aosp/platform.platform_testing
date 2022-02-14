@@ -16,12 +16,12 @@
 
 package com.android.sts.common.util;
 
+import static org.junit.Assert.*;
 import static org.junit.Assume.*;
 
 import android.platform.test.annotations.AsbSecurityTest;
 
 import com.android.compatibility.common.util.BusinessLogicMapStore;
-import com.android.compatibility.common.util.MultiLog;
 
 import org.junit.runner.Description;
 
@@ -29,27 +29,38 @@ import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /** Common STS extra business logic for host-side and device-side to implement. */
-public interface StsLogic extends MultiLog {
+public interface StsLogic {
 
     static final String LOG_TAG = StsLogic.class.getSimpleName();
 
     // keep in sync with google3:
     // //wireless/android/partner/apbs/*/config/xtsbgusinesslogic/sts_business_logic.gcl
-    List<String> STS_EXTRA_BUSINESS_LOGIC_FULL = Arrays.asList(new String[]{
-        "uploadSpl",
-        "uploadModificationTime",
+    List<String> STS_EXTRA_BUSINESS_LOGIC_FULL = Arrays.asList(new String[] {
+            "uploadSpl",
+            "uploadModificationTime",
+            "uploadKernelBugs",
+            "declaredSpl",
     });
-    List<String> STS_EXTRA_BUSINESS_LOGIC_INCREMENTAL = Arrays.asList(new String[]{
-        "uploadSpl",
-        "uploadModificationTime",
-        "incremental",
+    List<String> STS_EXTRA_BUSINESS_LOGIC_INCREMENTAL = Arrays.asList(new String[] {
+            "uploadSpl",
+            "uploadModificationTime",
+            "uploadKernelBugs",
+            "declaredSpl",
+            "incremental",
     });
 
     Description getTestDescription();
 
-    LocalDate getDeviceSpl();
+    LocalDate getPlatformSpl();
+
+    LocalDate getKernelSpl();
+
+    boolean shouldUseKernelSpl();
+
+    LocalDate getReleaseBulletinSpl();
 
     default long[] getCveBugIds() {
         AsbSecurityTest annotation = getTestDescription().getAnnotation(AsbSecurityTest.class);
@@ -57,6 +68,36 @@ public interface StsLogic extends MultiLog {
             return null;
         }
         return annotation.cveBugId();
+    }
+
+    default boolean isBugSplDataKnownMissing() {
+        long[] bugIds = getCveBugIds();
+        if (bugIds == null) {
+            // no spl data, don't complain
+            return true;
+        }
+        // true if the bug id is older than ~ June 2020
+        return Arrays.stream(bugIds).min().getAsLong() < 157905780;
+    }
+
+    default LocalDate getDeviceSpl() {
+        if (shouldUseKernelSpl()) {
+            Set<String> bugIds = BusinessLogicSetStore.getSet("kernel_bugs");
+            boolean isKernel = false;
+            for (long bugId : getCveBugIds()) {
+                isKernel |= bugIds.contains(Long.toString(bugId));
+            }
+            if (isKernel) {
+                LocalDate kernelSpl = getKernelSpl();
+                if (kernelSpl != null) {
+                    return kernelSpl;
+                }
+                // could not get the kernel SPL even though we should use it
+                // falling back to platform SPL
+                logWarn(LOG_TAG, "could not read kernel SPL, falling back to platform SPL");
+            }
+        }
+        return getPlatformSpl();
     }
 
     default LocalDate getMinTestSpl() {
@@ -73,7 +114,7 @@ public interface StsLogic extends MultiLog {
                 // binary. Neither is a critical issue and the test will run in these cases.
                 // New test: developer should be able to write the test without getting blocked.
                 // Removed bug + old binary: test will run.
-                logInfo(LOG_TAG, "could not find the CVE bug %d in the spl map", cveBugId);
+                logWarn(LOG_TAG, "could not find the CVE bug %d in the spl map", cveBugId);
                 continue;
             }
             LocalDate spl = SplUtils.localDateFromSplString(splString);
@@ -95,8 +136,10 @@ public interface StsLogic extends MultiLog {
         for (long cveBugId : getCveBugIds()) {
             String modificationMillisString = map.get(Long.toString(cveBugId));
             if (modificationMillisString == null) {
-                logInfo(LOG_TAG,
-                        "Could not find the CVE bug %d in the modification date map", cveBugId);
+                logInfo(
+                        LOG_TAG,
+                        "Could not find the CVE bug %d in the modification date map",
+                        cveBugId);
                 continue;
             }
             LocalDate modificationDate =
@@ -127,13 +170,11 @@ public interface StsLogic extends MultiLog {
         LocalDate minTestModifiedDate = getMinModificationDate();
         if (minTestModifiedDate == null) {
             // could not get the modification date - run the test
-            if (Arrays.stream(bugIds).min().getAsLong() < 157905780) {
-                // skip if the bug id is older than ~ June 2020
-                // otherwise the test will run due to missing data
+            if (isBugSplDataKnownMissing()) {
                 logDebug(LOG_TAG, "no data for this old test");
                 return true;
             }
-          return false;
+            return false;
         }
         if (minTestModifiedDate.isAfter(incrementalCutoffSpl)) {
             logDebug(LOG_TAG, "the test was recently modified");
@@ -155,11 +196,43 @@ public interface StsLogic extends MultiLog {
         return true;
     }
 
-    default boolean shouldSkipSpl() {
-        return true;
+    default boolean shouldSkipDeclaredSpl() {
+        if (getCveBugIds() == null) {
+            // There were no @AsbSecurityTest annotations
+            logInfo(LOG_TAG, "not an ASB test");
+            return false;
+        }
+
+        LocalDate releaseBulletinSpl = getReleaseBulletinSpl();
+        LocalDate minTestSpl = getMinTestSpl();
+        if (releaseBulletinSpl != null && !isBugSplDataKnownMissing()) {
+            // assert that the test has a known SPL when we expect the data to be fresh
+            assertNotNull("Unknown SPL for new CVE", minTestSpl);
+
+            // set the days to be the same so we only compare year-month
+            releaseBulletinSpl = releaseBulletinSpl.withDayOfMonth(minTestSpl.getDayOfMonth());
+            // the test SPL can't be equal to or after the release bulletin SPL
+            assertFalse("Newer SPL than release bulletin", releaseBulletinSpl.isBefore(minTestSpl));
+        }
+        if (minTestSpl == null) {
+            // no SPL for this test; run normally
+            return false;
+        }
+
+        // skip if the test is newer than the device SPL
+        LocalDate deviceSpl = getDeviceSpl();
+        return minTestSpl.isAfter(deviceSpl);
     }
 
     default void skip(String message) {
         assumeTrue(message, false);
     }
+
+    public void logInfo(String logTag, String format, Object... args);
+
+    public void logDebug(String logTag, String format, Object... args);
+
+    public void logWarn(String logTag, String format, Object... args);
+
+    public void logError(String logTag, String format, Object... args);
 }
