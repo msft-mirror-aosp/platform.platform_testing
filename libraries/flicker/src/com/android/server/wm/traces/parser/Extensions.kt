@@ -22,21 +22,22 @@ import android.app.UiAutomation
 import android.content.ComponentName
 import android.os.ParcelFileDescriptor
 import android.util.Log
-import com.android.server.wm.traces.common.DeviceStateDump
-import com.android.server.wm.traces.common.FlickerComponentName
 import com.android.server.wm.traces.common.Rect
-import com.android.server.wm.traces.common.layers.LayerTraceEntry
-import com.android.server.wm.traces.common.windowmanager.WindowManagerState
+import com.android.server.wm.traces.common.Region
 
 internal const val LOG_TAG = "AMWM_FLICKER"
+
+fun Region.toAndroidRegion(): android.graphics.Region {
+    return android.graphics.Region(left, top, right, bottom)
+}
 
 fun Rect.toAndroidRect(): android.graphics.Rect {
     return android.graphics.Rect(left, top, right, bottom)
 }
 
-fun android.graphics.Rect.toFlickerRect(): Rect {
-    return Rect(left, top, right, bottom)
-}
+fun ComponentName.toActivityName(): String = this.flattenToShortString()
+
+fun ComponentName.toWindowName(): String = this.flattenToString()
 
 private fun executeCommand(uiAutomation: UiAutomation, cmd: String): ByteArray {
     val fileDescriptor = uiAutomation.executeShellCommand(cmd)
@@ -79,15 +80,9 @@ fun getCurrentState(
 fun getCurrentStateDump(
     uiAutomation: UiAutomation,
     @WmStateDumpFlags dumpFlags: Int = FLAG_STATE_DUMP_FLAG_WM.or(FLAG_STATE_DUMP_FLAG_LAYERS)
-): DeviceStateDump<WindowManagerState?, LayerTraceEntry?> {
+): DeviceStateDump {
     val currentStateDump = getCurrentState(uiAutomation, dumpFlags)
     val wmTraceData = currentStateDump.first
     val layersTraceData = currentStateDump.second
-    return DeviceDumpParser.fromDump(wmTraceData, layersTraceData)
+    return DeviceStateDump.fromDump(wmTraceData, layersTraceData)
 }
-
-/**
- * Converts an Android [ComponentName] into a flicker [FlickerComponentName]
- */
-fun ComponentName.toFlickerComponent(): FlickerComponentName =
-    FlickerComponentName(this.packageName, this.className)

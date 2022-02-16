@@ -24,5 +24,4 @@ python_test_host {
     test_options: {
         unit_test: false,
     },
-    data: ["mobly-hello-world-test_config.yaml"],
 }
