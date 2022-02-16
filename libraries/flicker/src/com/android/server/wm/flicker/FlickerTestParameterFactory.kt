@@ -75,10 +75,10 @@ open class FlickerTestParameterFactory {
         endRotation: Int = startRotation
     ) = FlickerTestParameter(
         mutableMapOf(
-            FlickerTestParameter.NAV_BAR_MODE to navBarMode,
-            FlickerTestParameter.START_ROTATION to startRotation,
-            FlickerTestParameter.END_ROTATION to endRotation,
-            FlickerTestParameter.REPETITIONS to repetitions
+            NAV_BAR_MODE to navBarMode,
+            START_ROTATION to startRotation,
+            END_ROTATION to endRotation,
+            REPETITIONS to repetitions
         )
     )
 

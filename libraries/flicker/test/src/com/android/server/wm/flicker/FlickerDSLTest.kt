@@ -228,29 +228,4 @@ class FlickerDSLTest {
                 .contains(exceptionMessage)
         }
     }
-
-    private val failedAssertion = AssertionData(tag = AssertionTag.END,
-            expectedSubjectClass = LayerTraceEntrySubject::class) {
-        this.fail("Expected exception")
-    }
-
-    @Test
-    fun exceptionContainsDebugInfo() {
-        val builder = FlickerBuilder(instrumentation)
-        builder.transitions { device.pressHome() }
-        val flicker = builder.build()
-        flicker.execute()
-
-        val error = assertThrows(AssertionError::class.java) {
-            flicker.checkAssertion(failedAssertion)
-        }
-        // Exception message
-        Truth.assertThat(error).hasMessageThat().contains("Expected exception")
-        // Subject facts
-        assertThatErrorContainsDebugInfo(error)
-        Truth.assertThat(error).hasMessageThat().contains("Trace files")
-        Truth.assertThat(error).hasMessageThat().contains("Location")
-        // Correct stack trace point
-        Truth.assertThat(error).hasMessageThat().contains("failedAssertion")
-    }
 }

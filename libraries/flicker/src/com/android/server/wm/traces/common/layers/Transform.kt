@@ -16,16 +16,9 @@
 
 package com.android.server.wm.traces.common.layers
 
-import com.android.server.wm.traces.common.Matrix33
 import com.android.server.wm.traces.common.RectF
-import com.android.server.wm.traces.common.service.PlatformConsts
 
-/**
- * Wrapper for TransformProto (frameworks/native/services/surfaceflinger/layerproto/common.proto)
- *
- * This class is used by flicker and Winscope
- */
-open class Transform(val type: Int?, val matrix: Matrix33) {
+open class Transform(val type: Int?, val matrix: Matrix) {
 
     /**
      * Returns true if the applying the transform on an an axis aligned rectangle
@@ -52,20 +45,6 @@ open class Transform(val type: Int?, val matrix: Matrix33) {
             // determinant of transform
             return matrix.dsdx * matrix.dtdy != matrix.dtdx * matrix.dsdy
         }
-
-    fun getRotation(): Int {
-        if (type == null) {
-            return PlatformConsts.ROTATION_0
-        }
-
-        return when {
-            type.isFlagClear(SCALE_VAL or ROTATE_VAL or TRANSLATE_VAL) -> PlatformConsts.ROTATION_0
-            type.isFlagSet(ROT_90_VAL) -> PlatformConsts.ROTATION_90
-            type.isFlagSet(FLIP_V_VAL or FLIP_H_VAL) -> PlatformConsts.ROTATION_180
-            type.isFlagSet(ROT_90_VAL or FLIP_V_VAL or FLIP_H_VAL) -> PlatformConsts.ROTATION_270
-            else -> PlatformConsts.ROTATION_0
-        }
-    }
 
     private val typeFlags: Array<String>
         get() {
@@ -121,15 +100,28 @@ open class Transform(val type: Int?, val matrix: Matrix33) {
         return "$transformType ${matrix.prettyPrint()}"
     }
 
-    override fun toString(): String = prettyPrint()
-
     fun apply(bounds: RectF?): RectF {
         return multiplyRect(matrix, bounds ?: RectF.EMPTY)
     }
 
+    //          |dsdx dsdy  tx|
+    // matrix = |dtdx dtdy  ty|
+    //          |0    0     1 |
+    data class Matrix(
+        val dsdx: Float,
+        val dtdx: Float,
+        val tx: Float,
+
+        val dsdy: Float,
+        val dtdy: Float,
+        val ty: Float
+    ) {
+        fun prettyPrint(): String = "dsdx:$dsdx   dtdx:$dtdx   dsdy:$dsdy   dtdy:$dtdy"
+    }
+
     private data class Vec2(val x: Float, val y: Float)
 
-    private fun multiplyRect(matrix: Matrix33, rect: RectF): RectF {
+    private fun multiplyRect(matrix: Matrix, rect: RectF): RectF {
         //          |dsdx dsdy  tx|         | left, top         |
         // matrix = |dtdx dtdy  ty|  rect = |                   |
         //          |0    0     1 |         |     right, bottom |
@@ -147,7 +139,7 @@ open class Transform(val type: Int?, val matrix: Matrix33) {
         )
     }
 
-    private fun multiplyVec2(matrix: Matrix33, x: Float, y: Float): Vec2 {
+    private fun multiplyVec2(matrix: Matrix, x: Float, y: Float): Vec2 {
         // |dsdx dsdy  tx|     | x |
         // |dtdx dtdy  ty|  x  | y |
         // |0    0     1 |     | 1 |
@@ -158,8 +150,6 @@ open class Transform(val type: Int?, val matrix: Matrix33) {
     }
 
     companion object {
-        val EMPTY: Transform = Transform(type = null, matrix = Matrix33.EMPTY)
-
         /* transform type flags */
         const val TRANSLATE_VAL = 0x0001
         const val ROTATE_VAL = 0x0002
@@ -182,23 +172,5 @@ open class Transform(val type: Int?, val matrix: Matrix33) {
         fun Int.isFlagSet(bits: Int): Boolean {
             return this and bits == bits
         }
-    }
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other !is Transform) return false
-
-        if (type != other.type) return false
-        if (matrix != other.matrix) return false
-        if (isSimpleRotation != other.isSimpleRotation) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = type ?: 0
-        result = 31 * result + matrix.hashCode()
-        result = 31 * result + isSimpleRotation.hashCode()
-        return result
     }
 }

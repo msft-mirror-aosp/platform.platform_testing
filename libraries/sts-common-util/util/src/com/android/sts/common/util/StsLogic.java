@@ -52,6 +52,11 @@ public interface StsLogic {
             "incremental",
     });
 
+    // intentionally empty because declaredSpl and incremental skipping is not desired when
+    // developing STS tests.
+    List<String> STS_EXTRA_BUSINESS_LOGIC_DEVELOP = Arrays.asList(new String[] {
+    });
+
     Description getTestDescription();
 
     LocalDate getPlatformSpl();
@@ -61,6 +66,20 @@ public interface StsLogic {
     boolean shouldUseKernelSpl();
 
     LocalDate getReleaseBulletinSpl();
+
+    static List<String> getExtraBusinessLogicForPlan(String stsDynamicPlan) {
+        switch (stsDynamicPlan) {
+            case "incremental":
+                return STS_EXTRA_BUSINESS_LOGIC_INCREMENTAL;
+            case "full":
+                return STS_EXTRA_BUSINESS_LOGIC_FULL;
+            case "develop":
+                return STS_EXTRA_BUSINESS_LOGIC_DEVELOP;
+            default:
+                throw new RuntimeException(
+                        "Could not find Dynamic STS plan in InstrumentationRegistry arguments");
+        }
+    }
 
     default long[] getCveBugIds() {
         AsbSecurityTest annotation = getTestDescription().getAnnotation(AsbSecurityTest.class);
@@ -203,16 +222,27 @@ public interface StsLogic {
             return false;
         }
 
-        LocalDate releaseBulletinSpl = getReleaseBulletinSpl();
         LocalDate minTestSpl = getMinTestSpl();
-        if (releaseBulletinSpl != null && !isBugSplDataKnownMissing()) {
-            // assert that the test has a known SPL when we expect the data to be fresh
-            assertNotNull("Unknown SPL for new CVE", minTestSpl);
+        if (!isBugSplDataKnownMissing()) {
+            LocalDate releaseBulletinSpl = getReleaseBulletinSpl();
+            if (releaseBulletinSpl != null) {
+                // this is a QA environment
 
-            // set the days to be the same so we only compare year-month
-            releaseBulletinSpl = releaseBulletinSpl.withDayOfMonth(minTestSpl.getDayOfMonth());
-            // the test SPL can't be equal to or after the release bulletin SPL
-            assertFalse("Newer SPL than release bulletin", releaseBulletinSpl.isBefore(minTestSpl));
+                // assert that the test has a known SPL when we expect the data to be fresh
+                assertNotNull("Unknown SPL for new CVE", minTestSpl);
+
+                // set the days to be the same so we only compare year-month
+                releaseBulletinSpl = releaseBulletinSpl.withDayOfMonth(minTestSpl.getDayOfMonth());
+                // the test SPL can't be equal to or after the release bulletin SPL
+                assertFalse(
+                        "Newer SPL than release bulletin", releaseBulletinSpl.isBefore(minTestSpl));
+            } else {
+                // we are in a live environment; don't run tests that have their SPL deferred
+                if (minTestSpl == null) {
+                    // can't find the test SPL for this ASB test; skip
+                    return true;
+                }
+            }
         }
         if (minTestSpl == null) {
             // no SPL for this test; run normally
