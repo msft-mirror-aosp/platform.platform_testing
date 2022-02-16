@@ -19,8 +19,6 @@ package com.android.server.wm.flicker.traces
 import com.android.server.wm.flicker.assertions.Assertion
 import com.android.server.wm.flicker.assertions.AssertionsChecker
 import com.android.server.wm.flicker.assertions.FlickerSubject
-import com.android.server.wm.traces.common.prettyTimestamp
-import com.google.common.truth.Fact
 import com.google.common.truth.FailureMetadata
 
 /**
@@ -30,37 +28,16 @@ abstract class FlickerTraceSubject<EntrySubject : FlickerSubject>(
     fm: FailureMetadata,
     data: Any?
 ) : FlickerSubject(fm, data) {
-    override val timestamp: Long get() = subjects.firstOrNull()?.timestamp ?: 0L
-    override val selfFacts by lazy {
-        val firstTimestamp = subjects.firstOrNull()?.timestamp ?: 0L
-        val lastTimestamp = subjects.lastOrNull()?.timestamp ?: 0L
-        val first = "${prettyTimestamp(firstTimestamp)} (timestamp=$firstTimestamp)"
-        val last = "${prettyTimestamp(lastTimestamp)} (timestamp=$lastTimestamp)"
-        listOf(Fact.fact("Trace start", first),
-                Fact.fact("Trace end", last))
-    }
-
     protected val assertionsChecker = AssertionsChecker<EntrySubject>()
     private var newAssertionBlock = true
 
     abstract val subjects: List<EntrySubject>
 
-    /**
-     * Adds a new assertion block (if preceded by [then]) or appends an assertion to the
-     * latest existing assertion block
-     *
-     * @param name Assertion name
-     * @param isOptional If this assertion is optional or must pass
-     */
-    protected fun addAssertion(
-        name: String,
-        isOptional: Boolean = false,
-        assertion: Assertion<EntrySubject>
-    ) {
+    protected fun addAssertion(name: String, assertion: Assertion<EntrySubject>) {
         if (newAssertionBlock) {
-            assertionsChecker.add(name, isOptional, assertion)
+            assertionsChecker.add(name, assertion)
         } else {
-            assertionsChecker.append(name, isOptional, assertion)
+            assertionsChecker.append(name, assertion)
         }
         newAssertionBlock = false
     }
@@ -75,12 +52,12 @@ abstract class FlickerTraceSubject<EntrySubject : FlickerSubject>(
     /**
      * User-defined entry point for the first trace entry
      */
-    fun first(): EntrySubject = subjects.firstOrNull() ?: error("Trace is empty")
+    fun first(): EntrySubject = subjects.first()
 
     /**
      * User-defined entry point for the last trace entry
      */
-    fun last(): EntrySubject = subjects.lastOrNull() ?: error("Trace is empty")
+    fun last(): EntrySubject = subjects.last()
 
     /**
      * Signal that the last assertion set is complete. The next assertion added will start a new
@@ -91,30 +68,7 @@ abstract class FlickerTraceSubject<EntrySubject : FlickerSubject>(
      * Will produce two sets of assertions (checkA) and (checkB) and checkB will only be checked
      * after checkA passes.
      */
-    open fun then(): FlickerTraceSubject<EntrySubject> = apply {
-        startAssertionBlock()
-    }
-
-    /**
-     * Ignores the first entries in the trace, until the first assertion passes. If it reaches the
-     * end of the trace without passing any assertion, return a failure with the name/reason from
-     * the first assertion
-     *
-     * @return
-     */
-    open fun skipUntilFirstAssertion(): FlickerTraceSubject<EntrySubject> =
-        apply { assertionsChecker.skipUntilFirstAssertion() }
-
-    /**
-     * Signal that the last assertion set is complete. The next assertion added will start a new
-     * set of assertions.
-     *
-     * E.g.: checkA().then().checkB()
-     *
-     * Will produce two sets of assertions (checkA) and (checkB) and checkB will only be checked
-     * after checkA passes.
-     */
-    private fun startAssertionBlock() {
+    protected fun startAssertionBlock() {
         newAssertionBlock = true
     }
 
@@ -122,34 +76,14 @@ abstract class FlickerTraceSubject<EntrySubject : FlickerSubject>(
      * Checks whether all the trace entries on the list are visible for more than one consecutive
      * entry
      *
-     * Ignore the first and last trace subjects. This is necessary because WM and SF traces
-     * log entries only when a change occurs.
-     *
-     * If the trace starts immediately before an animation or if it stops immediately after one,
-     * the first and last entry may contain elements that are visible only for that entry.
-     * Those elements, however, are not flickers, since they existed on the screen before or after
-     * the test.
-     *
-     * @param [visibleEntriesProvider] a list of all the entries with their name and index
+     * @param [visibleEntries] a list of all the entries with their name and index
      */
     protected fun visibleEntriesShownMoreThanOneConsecutiveTime(
         visibleEntriesProvider: (EntrySubject) -> Set<String>
     ) {
-        if (subjects.isEmpty()) {
-            return
-        }
-        // Duplicate the first and last trace subjects to prevent them from triggering failures
-        // since WM and SF traces log entries only when a change occurs
-        val firstState = subjects.first()
-        val lastState = subjects.last()
-        val subjects = subjects.toMutableList().also {
-            it.add(lastState)
-            it.add(0, firstState)
-        }
         var lastVisible = visibleEntriesProvider(subjects.first())
         val lastNew = lastVisible.toMutableSet()
 
-        // first subject was already taken
         subjects.drop(1).forEachIndexed { index, entrySubject ->
             val currentVisible = visibleEntriesProvider(entrySubject)
             val newVisible = currentVisible.filter { it !in lastVisible }
@@ -168,7 +102,4 @@ abstract class FlickerTraceSubject<EntrySubject : FlickerSubject>(
             lastEntry.fail("$lastNew is not visible for 2 entries")
         }
     }
-
-    override fun toString(): String = "${this::class.simpleName}" +
-            "(${subjects.firstOrNull()?.timestamp ?: 0},${subjects.lastOrNull()?.timestamp ?: 0})"
 }

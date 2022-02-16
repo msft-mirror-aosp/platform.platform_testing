@@ -19,7 +19,6 @@ package com.android.helpers;
 import static com.android.helpers.MetricUtility.addMetric;
 import static com.android.helpers.MetricUtility.constructKey;
 
-import android.annotation.NonNull;
 import android.util.Log;
 
 import com.android.internal.jank.InteractionJankMonitor;
@@ -29,7 +28,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 
 /**
  * Helper consisting of helper methods to set system interactions configs in statsd and retrieve the
@@ -42,7 +40,6 @@ public class UiInteractionFrameInfoHelper implements ICollectorHelper<StringBuil
     public static final String SUFFIX_MAX_FRAME_MS = "max_frame_time_ms";
 
     private final StatsdHelper mStatsdHelper = new StatsdHelper();
-    private Function<String, Boolean> mFilters;
 
     /** Set up the system interactions jank statsd config. */
     @Override
@@ -52,12 +49,6 @@ public class UiInteractionFrameInfoHelper implements ICollectorHelper<StringBuil
         List<Integer> atomIdList = new ArrayList<>();
         atomIdList.add(AtomsProto.Atom.UI_INTERACTION_FRAME_INFO_REPORTED_FIELD_NUMBER);
         return mStatsdHelper.addEventConfig(atomIdList);
-    }
-
-    @Override
-    public boolean startCollecting(@NonNull Function<String, Boolean> filters) {
-        mFilters = filters;
-        return startCollecting();
     }
 
     // convert 0 to 1e-6 to make logarithmic dashboards look better.
@@ -92,10 +83,6 @@ public class UiInteractionFrameInfoHelper implements ICollectorHelper<StringBuil
                         InteractionJankMonitor.getNameOfInteraction(
                                 uiInteractionFrameInfoReported.interactionType);
 
-                if (mFilters != null && mFilters.apply(interactionType)) {
-                    continue;
-                }
-
                 addMetric(
                         constructKey(KEY_PREFIX_CUJ, interactionType, "total_frames"),
                         makeLogFriendly(uiInteractionFrameInfoReported.totalFrames),
@@ -109,11 +96,6 @@ public class UiInteractionFrameInfoHelper implements ICollectorHelper<StringBuil
                 addMetric(
                         constructKey(KEY_PREFIX_CUJ, interactionType, "sf_missed_frames"),
                         makeLogFriendly(uiInteractionFrameInfoReported.sfMissedFrames),
-                        frameInfoMap);
-
-                addMetric(
-                        constructKey(KEY_PREFIX_CUJ, interactionType, "app_missed_frames"),
-                        makeLogFriendly(uiInteractionFrameInfoReported.appMissedFrames),
                         frameInfoMap);
 
                 addMetric(
@@ -131,7 +113,6 @@ public class UiInteractionFrameInfoHelper implements ICollectorHelper<StringBuil
     @Override
     public boolean stopCollecting() {
         enforceSampling(false);
-        mFilters = null;
         return mStatsdHelper.removeStatsConfig();
     }
 }
