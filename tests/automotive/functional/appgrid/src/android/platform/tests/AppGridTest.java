@@ -46,20 +46,20 @@ public class AppGridTest {
     public void testOpen() {
         // Make sure app grid is not open before testing.
         mAppGridHelper.get().exit();
-        assertFalse("App Grid is open even after exit.", mAppGridHelper.get().isAppInForeground());
+        assertFalse(mAppGridHelper.get().isAppInForeground());
         // Test open.
         mAppGridHelper.get().open();
-        assertTrue("App Grid is not open.", mAppGridHelper.get().isAppInForeground());
+        assertTrue(mAppGridHelper.get().isAppInForeground());
     }
 
     @Test
     public void testExit() {
         // Make sure app grid has been opened before testing.
         mAppGridHelper.get().open();
-        assertTrue("App Grid is not open.", mAppGridHelper.get().isAppInForeground());
+        assertTrue(mAppGridHelper.get().isAppInForeground());
         // Test exit.
         mAppGridHelper.get().exit();
-        assertFalse("App Grid is open even after exit.", mAppGridHelper.get().isAppInForeground());
+        assertFalse(mAppGridHelper.get().isAppInForeground());
     }
 
     @Test
@@ -67,12 +67,13 @@ public class AppGridTest {
         // Re-enter app grid.
         mAppGridHelper.get().exit();
         mAppGridHelper.get().open();
-        assertTrue("Not on top of App Grid.", mAppGridHelper.get().isTop());
+        assertTrue(mAppGridHelper.get().isTop());
         // Test scroll only when there are more than one page in app grid.
         if (!mAppGridHelper.get().isBottom()) {
             mAppGridHelper.get().scrollDownOnePage();
-            assertFalse("Scrolling did not work.", mAppGridHelper.get().isTop());
+            assertFalse(mAppGridHelper.get().isTop());
             mAppGridHelper.get().scrollUpOnePage();
+            assertTrue(mAppGridHelper.get().isTop());
         }
     }
 }

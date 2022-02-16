@@ -16,11 +16,6 @@
 
 package com.android.server.wm.traces.common
 
-/**
- * Wrapper for FloatRectProto (frameworks/native/services/surfaceflinger/layerproto/layers.proto)
- *
- * This class is used by flicker and Winscope
- */
 data class RectF(
     val left: Float = 0f,
     val top: Float = 0f,
@@ -34,7 +29,7 @@ data class RectF(
      * Returns true if the rectangle is empty (left >= right or top >= bottom)
      */
     val isEmpty: Boolean
-        get() = width <= 0f || height <= 0f
+        get() = width == 0f || height == 0f
     val isNotEmpty: Boolean
         get() = !isEmpty
 
@@ -62,19 +57,6 @@ data class RectF(
     }
 
     /**
-     * Returns a [RectF] where the dimensions don't exceed those of [crop]
-     *
-     * @param crop The crop that should be applied to this layer
-     */
-    fun crop(crop: RectF): RectF {
-        val newLeft = maxOf(left, crop.left)
-        val newTop = maxOf(top, crop.top)
-        val newRight = minOf(right, crop.right)
-        val newBottom = minOf(bottom, crop.bottom)
-        return RectF(newLeft, newTop, newRight, newBottom)
-    }
-
-    /**
      * If the rectangle specified by left,top,right,bottom intersects this
      * rectangle, return true and set this rectangle to that intersection,
      * otherwise return false and do not change this rectangle. No check is
@@ -91,11 +73,11 @@ data class RectF(
      * @return A rectangle with the intersection coordinates
      */
     fun intersection(left: Float, top: Float, right: Float, bottom: Float): RectF {
-        if (this.left < right && left < this.right && this.top <= bottom && top <= this.bottom) {
-            var intersectionLeft = this.left
-            var intersectionTop = this.top
-            var intersectionRight = this.right
-            var intersectionBottom = this.bottom
+        if (this.left < right && left < this.right && this.top < bottom && top < this.bottom) {
+            var intersectionLeft = 0f
+            var intersectionTop = 0f
+            var intersectionRight = 0f
+            var intersectionBottom = 0f
 
             if (this.left < left) {
                 intersectionLeft = left
@@ -125,40 +107,19 @@ data class RectF(
      */
     fun intersection(r: RectF): RectF = intersection(r.left, r.top, r.right, r.bottom)
 
-    fun prettyPrint(): String =
-        if (isEmpty) {
-            "[empty]"
-        } else {
-            val left = FloatFormatter.format(left)
-            val top = FloatFormatter.format(top)
-            val right = FloatFormatter.format(right)
-            val bottom = FloatFormatter.format(bottom)
-            "($left, $top) - ($right, $bottom)"
-        }
+    fun prettyPrint(): String = prettyPrint(this)
 
-    override fun toString(): String = prettyPrint()
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other !is RectF) return false
-
-        if (left != other.left) return false
-        if (top != other.top) return false
-        if (right != other.right) return false
-        if (bottom != other.bottom) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = left.hashCode()
-        result = 31 * result + top.hashCode()
-        result = 31 * result + right.hashCode()
-        result = 31 * result + bottom.hashCode()
-        return result
-    }
+    override fun toString(): String = if (isEmpty) "[empty]" else prettyPrint()
 
     companion object {
-        val EMPTY: RectF = RectF()
+        val EMPTY = RectF()
+
+        fun prettyPrint(rect: RectF): String {
+            val left = FloatFormatter.format(rect.left)
+            val top = FloatFormatter.format(rect.top)
+            val right = FloatFormatter.format(rect.right)
+            val bottom = FloatFormatter.format(rect.bottom)
+            return "($left, $top) - ($right, $bottom)"
+        }
     }
 }

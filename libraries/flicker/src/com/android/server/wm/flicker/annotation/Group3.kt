@@ -18,6 +18,7 @@ package com.android.server.wm.flicker.annotation
 
 /**
  * The group annotations enable to run tests in parallel according to the arguments of test runner.
+ * By default, the test without group annotation are considered to be in this group.
  */
 @Retention(AnnotationRetention.RUNTIME)
 @Target(AnnotationTarget.FUNCTION, AnnotationTarget.CLASS)

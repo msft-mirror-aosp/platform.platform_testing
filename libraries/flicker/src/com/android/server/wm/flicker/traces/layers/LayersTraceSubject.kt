@@ -16,15 +16,15 @@
 
 package com.android.server.wm.flicker.traces.layers
 
+import android.graphics.Rect
+import android.graphics.Region
 import com.android.server.wm.flicker.assertions.Assertion
 import com.android.server.wm.flicker.assertions.FlickerSubject
 import com.android.server.wm.flicker.traces.FlickerFailureStrategy
 import com.android.server.wm.flicker.traces.FlickerTraceSubject
-import com.android.server.wm.flicker.traces.region.RegionTraceSubject
-import com.android.server.wm.traces.common.FlickerComponentName
 import com.android.server.wm.traces.common.layers.Layer
 import com.android.server.wm.traces.common.layers.LayersTrace
-import com.android.server.wm.traces.common.region.RegionTrace
+import com.android.server.wm.traces.parser.windowmanager.WindowManagerStateHelper
 import com.google.common.truth.FailureMetadata
 import com.google.common.truth.FailureStrategy
 import com.google.common.truth.StandardSubjectBuilder
@@ -56,13 +56,20 @@ import com.google.common.truth.Subject.Factory
  */
 class LayersTraceSubject private constructor(
     fm: FailureMetadata,
-    val trace: LayersTrace,
-    override val parent: LayersTraceSubject?
+    val trace: LayersTrace
 ) : FlickerTraceSubject<LayerTraceEntrySubject>(fm, trace) {
-    override val selfFacts
-        get() = super.selfFacts.toMutableList()
+    override val defaultFacts: String by lazy {
+        buildString {
+            if (trace.hasSource()) {
+                append("Path: ${trace.source}")
+                append("\n")
+            }
+            append("Trace: $trace")
+        }
+    }
+
     override val subjects by lazy {
-        trace.entries.map { LayerTraceEntrySubject.assertThat(it, trace, this) }
+        trace.entries.map { LayerTraceEntrySubject.assertThat(it, this) }
     }
 
     /**
@@ -74,11 +81,21 @@ class LayersTraceSubject private constructor(
 
     /** {@inheritDoc} */
     override fun clone(): FlickerSubject {
-        return LayersTraceSubject(fm, trace, parent)
+        return LayersTraceSubject(fm, trace)
     }
 
-    /** {@inheritDoc} */
-    override fun then(): LayersTraceSubject = apply { super.then() }
+    /**
+     * Signal that the last assertion set is complete. The next assertion added will start a new
+     * set of assertions.
+     *
+     * E.g.: checkA().then().checkB()
+     *
+     * Will produce two sets of assertions (checkA) and (checkB) and checkB will only be checked
+     * after checkA passes.
+     */
+    fun then(): LayersTraceSubject = apply {
+        startAssertionBlock()
+    }
 
     fun isEmpty(): LayersTraceSubject = apply {
         check("Trace is empty").that(trace).isEmpty()
@@ -96,26 +113,127 @@ class LayersTraceSubject private constructor(
         return subjects
             .map { it.layer(name, frameNumber) }
             .firstOrNull { it.isNotEmpty }
-            ?: LayerSubject.assertThat(null, this,
-                timestamp = subjects.firstOrNull()?.entry?.timestamp ?: 0L)
+            ?: LayerSubject.assertThat(null)
     }
 
     /**
-     * @return List of [LayerSubject]s matching [name] in the order they appear on the trace
+     * Asserts that the visible area covered by any [Layer] with [Layer.name] containing any of
+     * [layerName] covers at least [testRegion], that is, if its area of the layer's visible
+     * region covers each point in the region.
+     *
+     * @param testRegion Expected covered area
+     * @param layerName Name of the layer to search
      */
-    fun layers(name: String): List<LayerSubject> {
-        return subjects
-            .map { it.layer { layer -> layer.name.contains(name) } }
-            .filter { it.isNotEmpty }
+    fun coversAtLeast(
+        testRegion: Rect,
+        vararg layerName: String
+    ): LayersTraceSubject = this.coversAtLeast(testRegion, *layerName)
+
+    /**
+     * Asserts that the visible area covered by any [Layer] with [Layer.name] containing any of
+     * [layerName] covers at least [testRegion], that is, if its area of the layer's visible
+     * region covers each point in the region.
+     *
+     * @param testRegion Expected covered area
+     * @param layerName Name of the layer to search
+     */
+    fun coversAtLeast(
+        testRegion: com.android.server.wm.traces.common.Rect,
+        vararg layerName: String
+    ): LayersTraceSubject = this.coversAtLeast(testRegion, *layerName)
+
+    /**
+     * Asserts that the visible area covered by any [Layer] with [Layer.name] containing any of
+     * [layerName] covers at most [testRegion], that is, if the area of any layer doesn't
+     * cover any point outside of [testRegion].
+     *
+     * @param testRegion Expected covered area
+     * @param layerName Name of the layer to search
+     */
+    fun coversAtMost(
+        testRegion: Rect,
+        vararg layerName: String
+    ): LayersTraceSubject = this.coversAtMost(testRegion, *layerName)
+
+    /**
+     * Asserts that the visible area covered by any [Layer] with [Layer.name] containing any of
+     * [layerName] covers at most [testRegion], that is, if the area of any layer doesn't
+     * cover any point outside of [testRegion].
+     *
+     * @param testRegion Expected covered area
+     * @param layerName Name of the layer to search
+     */
+    fun coversAtMost(
+        testRegion: com.android.server.wm.traces.common.Rect,
+        vararg layerName: String
+    ): LayersTraceSubject = this.coversAtMost(testRegion, *layerName)
+
+    /**
+     * Asserts that the visible area covered by any [Layer] with [Layer.name] containing any of
+     * [layerName] covers at least [testRegion], that is, if its area of the layer's visible
+     * region covers each point in the region.
+     *
+     * @param testRegion Expected covered area
+     * @param layerName Name of the layer to search
+     */
+    fun coversAtLeast(
+        testRegion: Region,
+        vararg layerName: String
+    ): LayersTraceSubject = apply {
+        addAssertion("coversAtLeast($testRegion, ${layerName.joinToString(", ")})") {
+            it.visibleRegion(*layerName).coversAtLeast(testRegion)
+        }
     }
 
     /**
-     * @return List of [LayerSubject]s matching [predicate] in the order they appear on the trace
+     * Asserts that the visible area covered by any [Layer] with [Layer.name] containing any of
+     * [layerName] covers at least [testRegion], that is, if its area of the layer's visible
+     * region covers each point in the region.
+     *
+     * @param testRegion Expected covered area
+     * @param layerName Name of the layer to search
      */
-    fun layers(predicate: (Layer) -> Boolean): List<LayerSubject> {
-        return subjects
-            .map { it.layer { layer -> predicate(layer) } }
-            .filter { it.isNotEmpty }
+    fun coversAtLeast(
+        testRegion: com.android.server.wm.traces.common.Region,
+        vararg layerName: String
+    ): LayersTraceSubject = apply {
+        addAssertion("coversAtLeast($testRegion, ${layerName.joinToString(", ")})") {
+            it.visibleRegion(*layerName).coversAtLeast(testRegion)
+        }
+    }
+
+    /**
+     * Asserts that the visible area covered by any [Layer] with [Layer.name] containing any of
+     * [layerName] covers at most [testRegion], that is, if the area of any layer doesn't
+     * cover any point outside of [testRegion].
+     *
+     * @param testRegion Expected covered area
+     * @param layerName Name of the layer to search
+     */
+    fun coversAtMost(
+        testRegion: Region,
+        vararg layerName: String
+    ): LayersTraceSubject = apply {
+        addAssertion("coversAtMost($testRegion, ${layerName.joinToString(", ")}") {
+            it.visibleRegion(*layerName).coversAtMost(testRegion)
+        }
+    }
+
+    /**
+     * Asserts that the visible area covered by any [Layer] with [Layer.name] containing any of
+     * [layerName] covers at most [testRegion], that is, if the area of any layer doesn't
+     * cover any point outside of [testRegion].
+     *
+     * @param testRegion Expected covered area
+     * @param layerName Name of the layer to search
+     */
+    fun coversAtMost(
+        testRegion: com.android.server.wm.traces.common.Region,
+        vararg layerName: String
+    ): LayersTraceSubject = apply {
+        addAssertion("coversAtMost($testRegion, ${layerName.joinToString(", ")}") {
+            it.visibleRegion(*layerName).coversAtMost(testRegion)
+        }
     }
 
     /**
@@ -123,127 +241,88 @@ class LayersTraceSubject private constructor(
      */
     @JvmOverloads
     fun visibleLayersShownMoreThanOneConsecutiveEntry(
-        ignoreLayers: List<FlickerComponentName> = listOf(FlickerComponentName.SPLASH_SCREEN,
-            FlickerComponentName.SNAPSHOT)
+        ignoreLayers: List<String> = listOf(WindowManagerStateHelper.SPLASH_SCREEN_NAME,
+            WindowManagerStateHelper.SNAPSHOT_WINDOW_NAME)
     ): LayersTraceSubject = apply {
         visibleEntriesShownMoreThanOneConsecutiveTime { subject ->
             subject.entry.visibleLayers
-                .filter { ignoreLayers.none { component -> component.toLayerName() in it.name } }
+                .filter { ignoreLayers.none { layerName -> layerName in it.name } }
                 .map { it.name }
                 .toSet()
         }
     }
 
     /**
-     * Asserts that each entry in the trace doesn't contain a [Layer] with [Layer.name]
-     * containing [component].
+     * Asserts that a [Layer] with [Layer.name] containing any of [layerName] has a visible region
+     * of exactly [expectedVisibleRegion] in trace entries.
      *
-     * @param component Name of the layer to search
-     * @param isOptional If this assertion is optional or must pass
+     * @param layerName Name of the layer to search
+     * @param expectedVisibleRegion Expected visible region of the layer
      */
-    @JvmOverloads
-    fun notContains(
-        component: FlickerComponentName,
-        isOptional: Boolean = false
-    ): LayersTraceSubject =
-        apply {
-            addAssertion("notContains(${component.toLayerName()})", isOptional) {
-                it.notContains(component)
-            }
-        }
-
-    /**
-     * Asserts that each entry in the trace contains a [Layer] with [Layer.name] containing any of
-     * [component].
-     *
-     * @param component Name of the layer to search
-     * @param isOptional If this assertion is optional or must pass
-     */
-    @JvmOverloads
-    fun contains(
-        component: FlickerComponentName,
-        isOptional: Boolean = false
-    ): LayersTraceSubject =
-        apply { addAssertion("contains(${component.toLayerName()})", isOptional) {
-            it.contains(component) }
-        }
-
-    /**
-     * Asserts that each entry in the trace contains a [Layer] with [Layer.name] containing any of
-     * [component] that is visible.
-     *
-     * @param component Name of the layer to search
-     */
-    @JvmOverloads
-    fun isVisible(
-        component: FlickerComponentName,
-        isOptional: Boolean = false
-    ): LayersTraceSubject =
-        apply { addAssertion("isVisible(${component.toLayerName()})", isOptional) {
-            it.isVisible(component) }
-        }
-
-    /**
-     * Asserts that each entry in the trace doesn't contain a [Layer] with [Layer.name]
-     * containing [component] or that the layer is not visible .
-     *
-     * @param component Name of the layer to search
-     */
-    @JvmOverloads
-    fun isInvisible(
-        component: FlickerComponentName,
-        isOptional: Boolean = false
-    ): LayersTraceSubject =
-        apply {
-            addAssertion("isInvisible(${component.toLayerName()})", isOptional) {
-                it.isInvisible(component)
-            }
-        }
-
-    /**
-     * Asserts that each entry in the trace contains a visible splash screen [Layer] for a [layer]
-     * with [Layer.name] containing any of [component].
-     *
-     * @param component Name of the layer to search
-     */
-    @JvmOverloads
-    fun isSplashScreenVisibleFor(
-        component: FlickerComponentName,
-        isOptional: Boolean = false
+    fun coversExactly(
+        expectedVisibleRegion: Region,
+        vararg layerName: String
     ): LayersTraceSubject = apply {
-        addAssertion("isSplashScreenVisibleFor(${component.toLayerName()})", isOptional) {
-            it.isSplashScreenVisibleFor(component)
+        addAssertion("coversExactly(${layerName.joinToString(", ")}$expectedVisibleRegion)") {
+            it.visibleRegion(*layerName).coversExactly(expectedVisibleRegion)
         }
     }
 
     /**
-     * Obtains the trace of regions occupied by all layers with name containing [components]
+     * Asserts that each entry in the trace doesn't contain a [Layer] with [Layer.name]
+     * containing [layerName].
      *
-     * @param components Components to search for
-     * @param useCompositionEngineRegionOnly If true, uses only the region calculated from the
-     *   Composition Engine (CE) -- visibleRegion in the proto definition. Otherwise calculates
-     *   the visible region when the information is not available from the CE
+     * @param layerName Name of the layer to search
      */
-    @JvmOverloads
-    fun visibleRegion(
-        vararg components: FlickerComponentName,
-        useCompositionEngineRegionOnly: Boolean = true
-    ): RegionTraceSubject {
-        val regionTrace = RegionTrace(components, subjects.map {
-            it.visibleRegion(components = components, useCompositionEngineRegionOnly)
-                            .regionEntry
-        }.toTypedArray())
-        return RegionTraceSubject.assertThat(regionTrace, this)
-    }
+    fun notContains(vararg layerName: String): LayersTraceSubject =
+        apply {
+            addAssertion("notContains(${layerName.joinToString(", ")})") {
+                it.notContains(*layerName)
+            }
+        }
+
+    /**
+     * Asserts that each entry in the trace contains a [Layer] with [Layer.name] containing any of
+     * [layerName].
+     *
+     * @param layerName Name of the layer to search
+     */
+    fun contains(vararg layerName: String): LayersTraceSubject =
+        apply { addAssertion("contains(${layerName.joinToString(", ")})") {
+            it.contains(*layerName) }
+        }
+
+    /**
+     * Asserts that each entry in the trace contains a [Layer] with [Layer.name] containing any of
+     * [layerName] that is visible.
+     *
+     * @param layerName Name of the layer to search
+     */
+    fun isVisible(vararg layerName: String): LayersTraceSubject =
+        apply { addAssertion("isVisible(${layerName.joinToString(", ")})") {
+            it.isVisible(*layerName) }
+        }
+
+    /**
+     * Asserts that each entry in the trace doesn't contain a [Layer] with [Layer.name]
+     * containing [layerName] or that the layer is not visible .
+     *
+     * @param layerName Name of the layer to search
+     */
+    fun isInvisible(vararg layerName: String): LayersTraceSubject =
+        apply {
+            addAssertion("hidesLayer(${layerName.joinToString(", ")})") {
+                it.isInvisible(*layerName)
+            }
+        }
 
     /**
      * Executes a custom [assertion] on the current subject
      */
     operator fun invoke(
         name: String,
-        isOptional: Boolean = false,
         assertion: Assertion<LayerTraceEntrySubject>
-    ): LayersTraceSubject = apply { addAssertion(name, isOptional, assertion) }
+    ): LayersTraceSubject = apply { addAssertion(name, assertion) }
 
     fun hasFrameSequence(name: String, frameNumbers: Iterable<Long>): LayersTraceSubject = apply {
         val firstFrame = frameNumbers.first()
@@ -291,8 +370,8 @@ class LayersTraceSubject private constructor(
         /**
          * Boiler-plate Subject.Factory for LayersTraceSubject
          */
-        private fun getFactory(parent: LayersTraceSubject?): Factory<Subject, LayersTrace> =
-            Factory { fm, subject -> LayersTraceSubject(fm, subject, parent) }
+        private val FACTORY: Factory<Subject, LayersTrace> =
+            Factory { fm, subject -> LayersTraceSubject(fm, subject) }
 
         /**
          * Creates a [LayersTraceSubject] to representing a SurfaceFlinger trace,
@@ -301,11 +380,10 @@ class LayersTraceSubject private constructor(
          * @param trace SurfaceFlinger trace
          */
         @JvmStatic
-        @JvmOverloads
-        fun assertThat(trace: LayersTrace, parent: LayersTraceSubject? = null): LayersTraceSubject {
+        fun assertThat(trace: LayersTrace): LayersTraceSubject {
             val strategy = FlickerFailureStrategy()
             val subject = StandardSubjectBuilder.forCustomFailureStrategy(strategy)
-                .about(getFactory(parent))
+                .about(FACTORY)
                 .that(trace) as LayersTraceSubject
             strategy.init(subject)
             return subject
@@ -315,8 +393,8 @@ class LayersTraceSubject private constructor(
          * Static method for getting the subject factory (for use with assertAbout())
          */
         @JvmStatic
-        fun entries(parent: LayersTraceSubject?): Factory<Subject, LayersTrace> {
-            return getFactory(parent)
+        fun entries(): Factory<Subject, LayersTrace> {
+            return FACTORY
         }
     }
 }

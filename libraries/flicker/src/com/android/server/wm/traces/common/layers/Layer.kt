@@ -16,12 +16,11 @@
 
 package com.android.server.wm.traces.common.layers
 
-import com.android.server.wm.traces.common.ActiveBuffer
+import com.android.server.wm.traces.common.Buffer
 import com.android.server.wm.traces.common.Color
 import com.android.server.wm.traces.common.Rect
+import com.android.server.wm.traces.common.Region
 import com.android.server.wm.traces.common.RectF
-import com.android.server.wm.traces.common.region.Region
-import com.android.server.wm.traces.common.layers.Transform.Companion.isFlagSet
 
 /**
  * Represents a single layer with links to its parent and child layers.
@@ -30,23 +29,23 @@ import com.android.server.wm.traces.common.layers.Transform.Companion.isFlagSet
  * access internal Java/Android functionality
  *
  **/
-data class Layer(
+open class Layer(
     val name: String,
     val id: Int,
     val parentId: Int,
     val z: Int,
     val visibleRegion: Region?,
-    val activeBuffer: ActiveBuffer,
+    val activeBuffer: Buffer,
     val flags: Int,
-    val bounds: RectF,
+    _bounds: RectF?,
     val color: Color,
-    private val _isOpaque: Boolean,
+    _isOpaque: Boolean,
     val shadowRadius: Float,
     val cornerRadius: Float,
     val type: String,
-    private val _screenBounds: RectF?,
+    _screenBounds: RectF?,
     val transform: Transform,
-    val sourceBounds: RectF,
+    _sourceBounds: RectF?,
     val currFrame: Long,
     val effectiveScalingMode: Int,
     val bufferTransform: Transform,
@@ -56,11 +55,9 @@ data class Layer(
     val backgroundBlurRadius: Int,
     val crop: Rect?,
     val isRelativeOf: Boolean,
-    val zOrderRelativeOfId: Int,
-    val stackId: Int
+    val zOrderRelativeOfId: Int
 ) {
-    val stableId: String = "$type $id $name"
-    var parent: Layer? = null
+    lateinit var parent: Layer
     var zOrderRelativeOf: Layer? = null
     var zOrderRelativeParentOf: Int = 0
 
@@ -69,32 +66,22 @@ data class Layer(
      *
      * @return
      */
-    val isRootLayer: Boolean get() = parent == null
+    val isRootLayer: Boolean
+        get() {
+            return !::parent.isInitialized
+        }
 
-    private val _children = mutableListOf<Layer>()
-    private val _occludedBy = mutableListOf<Layer>()
-    private val _partiallyOccludedBy = mutableListOf<Layer>()
-    private val _coveredBy = mutableListOf<Layer>()
-    val children: Array<Layer>
-        get() = _children.toTypedArray()
-    val occludedBy: Array<Layer>
-        get() = _occludedBy.toTypedArray()
-    val partiallyOccludedBy: Array<Layer>
-        get() = _partiallyOccludedBy.toTypedArray()
-    val coveredBy: Array<Layer>
-        get() = _coveredBy.toTypedArray()
-    var isMissing: Boolean = false
-        internal set
+    val children = mutableListOf<Layer>()
+    val occludedBy = mutableListOf<Layer>()
+    val partiallyOccludedBy = mutableListOf<Layer>()
+    val coveredBy = mutableListOf<Layer>()
 
-    val isScaling: Boolean
-        get() = isTransformFlagSet(Transform.SCALE_VAL)
-    val isTranslating: Boolean
-        get() = isTransformFlagSet(Transform.TRANSLATE_VAL)
-    val isRotating: Boolean
-        get() = isTransformFlagSet(Transform.ROTATE_VAL)
+    fun addChild(childLayer: Layer) {
+        children.add(childLayer)
+    }
 
-    private fun isTransformFlagSet(transform: Int): Boolean =
-            this.transform.type?.isFlagSet(transform) ?: false
+    val bounds: RectF = _bounds ?: RectF.EMPTY
+    val sourceBounds: RectF = _sourceBounds ?: RectF.EMPTY
 
     /**
      * Checks if the layer's active buffer is empty
@@ -148,7 +135,10 @@ data class Layer(
      *
      * @return
      */
-    val fillsColor: Boolean get() = color.isNotEmpty
+    val fillsColor: Boolean
+        get() {
+            return color.isNotEmpty
+        }
 
     /**
      * Checks if the [Layer] draws a shadow
@@ -219,48 +209,48 @@ data class Layer(
     val isEffectLayer: Boolean get() = type == "EffectLayer"
 
     /**
+     * Checks if the [Layer] is not visible
+     *
+     * @return
+     */
+    val isInvisible: Boolean get() = !isVisible
+
+    /**
      * Checks if the [Layer] is hidden by its parent
      *
      * @return
      */
     val isHiddenByParent: Boolean
-        get() = !isRootLayer &&
-            (parent?.isHiddenByPolicy == true || parent?.isHiddenByParent == true)
+        get() = !isRootLayer && (parent.isHiddenByPolicy || parent.isHiddenByParent)
 
     /**
      * Gets a description of why the layer is (in)visible
      *
      * @return
      */
-    val visibilityReason: Array<String>
+    val visibilityReason: String
         get() {
-            if (isVisible) {
-                return emptyArray()
+            return when {
+                isVisible -> ""
+                isContainerLayer -> "ContainerLayer"
+                isHiddenByPolicy -> "Flag is hidden"
+                isHiddenByParent -> "Hidden by parent ${parent.name}"
+                isBufferLayer && isActiveBufferEmpty -> "Buffer is empty"
+                color.isEmpty -> "Alpha is 0"
+                crop?.isEmpty ?: false -> "Crop is 0x0"
+                bounds.isEmpty -> "Bounds is 0x0"
+                !transform.isValid -> "Transform is invalid"
+                isRelativeOf && zOrderRelativeOf == null -> "RelativeOf layer has been removed"
+                isEffectLayer && !fillsColor && !drawsShadows && !hasBlur ->
+                    "Effect layer does not have color fill, shadow or blur"
+                occludedBy.isNotEmpty() -> {
+                    val occludedByIds = occludedBy.joinToString(", ") { it.id.toString() }
+                    "Layer is occluded by: $occludedByIds"
+                }
+                visibleRegion?.isEmpty ?: false ->
+                    "Visible region calculated by Composition Engine is empty"
+                else -> "Unknown"
             }
-            val reasons = mutableListOf<String>()
-            if (isContainerLayer) reasons.add("ContainerLayer")
-            if (isHiddenByPolicy) reasons.add("Flag is hidden")
-            if (isHiddenByParent) reasons.add("Hidden by parent ${parent?.name}")
-            if (isBufferLayer && isActiveBufferEmpty) reasons.add("Buffer is empty")
-            if (color.isEmpty) reasons.add("Alpha is 0")
-            if (crop?.isEmpty == true) reasons.add("Crop is 0x0")
-            if (bounds.isEmpty) reasons.add("Bounds is 0x0")
-            if (!transform.isValid) reasons.add("Transform is invalid")
-            if (isRelativeOf && zOrderRelativeOf == null) {
-                reasons.add("RelativeOf layer has been removed")
-            }
-            if (isEffectLayer && !fillsColor && !drawsShadows && !hasBlur) {
-                reasons.add("Effect layer does not have color fill, shadow or blur")
-            }
-            if (_occludedBy.isNotEmpty()) {
-                val occludedByIds = _occludedBy.joinToString(", ") { it.id.toString() }
-                reasons.add("Layer is occluded by: $occludedByIds")
-            }
-            if (visibleRegion?.isEmpty == true) {
-                reasons.add("Visible region calculated by Composition Engine is empty")
-            }
-            if (reasons.isEmpty()) reasons.add("Unknown")
-            return reasons.toTypedArray()
         }
 
     val screenBounds: RectF = when {
@@ -269,74 +259,23 @@ data class Layer(
         else -> transform.apply(bounds)
     }
 
-    val absoluteZ: String
-        get() {
-            val zOrderRelativeOf = zOrderRelativeOf
-            return buildString {
-                when {
-                    zOrderRelativeOf != null -> append(zOrderRelativeOf.absoluteZ).append(",")
-                    parent != null -> append(parent?.absoluteZ).append(",")
-                }
-                append(z)
-            }
-        }
-
-    /**
-     * Returns true iff the [innerLayer] screen bounds are inside or equal to this layer's
-     * [screenBounds] and neither layers are rotating.
-     */
-    fun contains(innerLayer: Layer, crop: RectF = RectF.EMPTY): Boolean {
+    fun contains(innerLayer: Layer): Boolean {
         return if (!this.transform.isSimpleRotation || !innerLayer.transform.isSimpleRotation) {
             false
         } else {
-            val thisBounds: RectF
-            val innerLayerBounds: RectF
-            if (crop.isNotEmpty) {
-                thisBounds = this.screenBounds.crop(crop)
-                innerLayerBounds = innerLayer.screenBounds.crop(crop)
-            } else {
-                thisBounds = this.screenBounds
-                innerLayerBounds = innerLayer.screenBounds
-            }
-            thisBounds.contains(innerLayerBounds)
+            this.screenBounds.contains(innerLayer.screenBounds)
         }
     }
 
-    fun addChild(childLayer: Layer) {
-        _children.add(childLayer)
-    }
-
-    fun addOccludedBy(layers: Array<Layer>) {
-        _occludedBy.addAll(layers)
-    }
-
-    fun addPartiallyOccludedBy(layers: Array<Layer>) {
-        _partiallyOccludedBy.addAll(layers)
-    }
-
-    fun addCoveredBy(layers: Array<Layer>) {
-        _coveredBy.addAll(layers)
-    }
-
-    fun overlaps(other: Layer, crop: RectF = RectF.EMPTY): Boolean {
-        val thisBounds: RectF
-        val otherBounds: RectF
-        if (crop.isNotEmpty) {
-            thisBounds = this.screenBounds.crop(crop)
-            otherBounds = other.screenBounds.crop(crop)
-        } else {
-            thisBounds = this.screenBounds
-            otherBounds = other.screenBounds
-        }
-        return !thisBounds.intersection(otherBounds).isEmpty
-    }
+    fun overlaps(other: Layer): Boolean =
+        !this.screenBounds.intersection(other.screenBounds).isEmpty
 
     override fun toString(): String {
         return buildString {
             append(name)
 
             if (activeBuffer.isNotEmpty) {
-                append(" buffer:$activeBuffer")
+                append(" buffer:${activeBuffer.width}x${activeBuffer.height}")
                 append(" frame#$currFrame")
             }
 
@@ -347,42 +286,13 @@ data class Layer(
     }
 
     override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other !is Layer) return false
-
-        if (name != other.name) return false
-        if (id != other.id) return false
-        if (parentId != other.parentId) return false
-        if (z != other.z) return false
-        if (visibleRegion != other.visibleRegion) return false
-        if (activeBuffer != other.activeBuffer) return false
-        if (flags != other.flags) return false
-        if (bounds != other.bounds) return false
-        if (color != other.color) return false
-        if (shadowRadius != other.shadowRadius) return false
-        if (cornerRadius != other.cornerRadius) return false
-        if (type != other.type) return false
-        if (transform != other.transform) return false
-        if (sourceBounds != other.sourceBounds) return false
-        if (currFrame != other.currFrame) return false
-        if (effectiveScalingMode != other.effectiveScalingMode) return false
-        if (bufferTransform != other.bufferTransform) return false
-        if (hwcCompositionType != other.hwcCompositionType) return false
-        if (hwcCrop != other.hwcCrop) return false
-        if (hwcFrame != other.hwcFrame) return false
-        if (backgroundBlurRadius != other.backgroundBlurRadius) return false
-        if (crop != other.crop) return false
-        if (isRelativeOf != other.isRelativeOf) return false
-        if (zOrderRelativeOfId != other.zOrderRelativeOfId) return false
-        if (stableId != other.stableId) return false
-        if (parent != other.parent) return false
-        if (zOrderRelativeOf != other.zOrderRelativeOf) return false
-        if (zOrderRelativeParentOf != other.zOrderRelativeParentOf) return false
-        if (isMissing != other.isMissing) return false
-        if (isOpaque != other.isOpaque) return false
-        if (screenBounds != other.screenBounds) return false
-
-        return true
+        return other is Layer &&
+            other.parentId == this.parentId &&
+            other.name == this.name &&
+            other.flags == this.flags &&
+            other.currFrame == this.currFrame &&
+            other.activeBuffer == this.activeBuffer &&
+            other.screenBounds == this.screenBounds
     }
 
     override fun hashCode(): Int {
@@ -390,33 +300,26 @@ data class Layer(
         result = 31 * result + id
         result = 31 * result + parentId
         result = 31 * result + z
-        result = 31 * result + (visibleRegion?.hashCode() ?: 0)
+        result = 31 * result + visibleRegion.hashCode()
         result = 31 * result + activeBuffer.hashCode()
         result = 31 * result + flags
         result = 31 * result + bounds.hashCode()
         result = 31 * result + color.hashCode()
+        result = 31 * result + isOpaque.hashCode()
         result = 31 * result + shadowRadius.hashCode()
         result = 31 * result + cornerRadius.hashCode()
         result = 31 * result + type.hashCode()
+        result = 31 * result + screenBounds.hashCode()
         result = 31 * result + transform.hashCode()
         result = 31 * result + sourceBounds.hashCode()
         result = 31 * result + currFrame.hashCode()
         result = 31 * result + effectiveScalingMode
         result = 31 * result + bufferTransform.hashCode()
-        result = 31 * result + hwcCompositionType
-        result = 31 * result + hwcCrop.hashCode()
-        result = 31 * result + hwcFrame.hashCode()
-        result = 31 * result + backgroundBlurRadius
-        result = 31 * result + (crop?.hashCode() ?: 0)
-        result = 31 * result + isRelativeOf.hashCode()
-        result = 31 * result + zOrderRelativeOfId
-        result = 31 * result + stableId.hashCode()
-        result = 31 * result + (parent?.hashCode() ?: 0)
-        result = 31 * result + (zOrderRelativeOf?.hashCode() ?: 0)
-        result = 31 * result + zOrderRelativeParentOf
-        result = 31 * result + isMissing.hashCode()
-        result = 31 * result + isOpaque.hashCode()
-        result = 31 * result + screenBounds.hashCode()
+        result = 31 * result + parent.hashCode()
+        result = 31 * result + children.hashCode()
+        result = 31 * result + occludedBy.hashCode()
+        result = 31 * result + partiallyOccludedBy.hashCode()
+        result = 31 * result + coveredBy.hashCode()
         return result
     }
 }

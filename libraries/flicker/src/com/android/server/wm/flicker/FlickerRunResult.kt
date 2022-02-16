@@ -34,7 +34,6 @@ import com.android.server.wm.traces.parser.windowmanager.WindowManagerTraceParse
 import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.StandardCopyOption
 
 /**
  * Defines the result of a flicker run
@@ -55,11 +54,11 @@ class FlickerRunResult private constructor(
     /**
      * Truth subject that corresponds to a [WindowManagerTrace] or [WindowManagerState]
      */
-    internal val wmSubject: FlickerSubject?,
+    private val wmSubject: FlickerSubject?,
     /**
      * Truth subject that corresponds to a [LayersTrace] or [LayerTraceEntry]
      */
-    internal val layersSubject: FlickerSubject?,
+    private val layersSubject: FlickerSubject?,
     /**
      * Truth subject that corresponds to a list of [FocusEvent]
      */
@@ -76,35 +75,25 @@ class FlickerRunResult private constructor(
         return result
     }
 
-    private fun rename(source: Path, isFailure: Boolean) {
-        if (!Files.exists(source)) {
-            return
-        }
+    private fun Path?.tryDelete() {
         try {
-            val prefix = if (isFailure) FAIL_PREFIX else PASS_PREFIX
-            val newFileName = prefix + source.fileName.toString()
-            val target = source.resolveSibling(newFileName)
-            Files.move(source, target, StandardCopyOption.REPLACE_EXISTING)
-            TraceFileReadyListener.notifyFileReady(target)
+            this?.let { Files.deleteIfExists(it) }
         } catch (e: IOException) {
             Log.e(FLICKER_TAG, "Unable do delete $this", e)
         }
     }
 
-    private fun containsFailure(failures: List<FlickerAssertionError>): Boolean {
-        return failures.flatMap { it.traceFiles }.any { failureTrace ->
+    fun canDelete(failures: List<FlickerAssertionError>): Boolean {
+        return failures.flatMap { it.traceFiles }.none { failureTrace ->
             this.traceFiles.any { it == failureTrace }
         }
     }
 
     /**
-     * Rename the trace files according to the run status (pass/fail)
-     *
-     * @param failures List of all failures during the flicker execution
+     * Delete the trace files collected
      */
-    fun cleanUp(failures: List<FlickerAssertionError>) {
-        val containsFailure = containsFailure(failures)
-        this.traceFiles.forEach { rename(it, containsFailure) }
+    fun cleanUp() {
+        this.traceFiles.forEach { it.tryDelete() }
     }
 
     class Builder @JvmOverloads constructor(private val iteration: Int = 0) {
@@ -215,10 +204,5 @@ class FlickerRunResult private constructor(
 
             return result
         }
-    }
-
-    companion object {
-        private const val PASS_PREFIX = "PASS_"
-        private const val FAIL_PREFIX = "FAIL_"
     }
 }

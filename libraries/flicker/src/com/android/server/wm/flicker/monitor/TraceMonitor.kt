@@ -19,8 +19,14 @@ package com.android.server.wm.flicker.monitor
 import androidx.annotation.VisibleForTesting
 import com.android.compatibility.common.util.SystemUtil
 import com.android.server.wm.flicker.FlickerRunResult
+import com.google.common.io.BaseEncoding
+import java.io.FileInputStream
+import java.io.IOException
+import java.nio.ByteBuffer
 import java.nio.file.Files
 import java.nio.file.Path
+import java.security.MessageDigest
+import java.security.NoSuchAlgorithmException
 
 /**
  * Base class for monitors containing common logic to read the trace as a byte array and save the
@@ -30,6 +36,9 @@ abstract class TraceMonitor internal constructor(
     @VisibleForTesting var outputPath: Path,
     protected var sourceTraceFilePath: Path
 ) : ITransitionMonitor {
+    override var checksum: String = ""
+        protected set
+
     abstract val isEnabled: Boolean
 
     abstract fun setResult(flickerRunResultBuilder: FlickerRunResult.Builder, traceFile: Path)
@@ -41,6 +50,8 @@ abstract class TraceMonitor internal constructor(
         require(Files.exists(savedTrace)) { "Unable to save trace file $savedTrace" }
 
         setResult(flickerRunResultBuilder, savedTrace)
+
+        checksum = calculateChecksum(savedTrace)
     }
 
     fun save(testTag: String) {
@@ -48,6 +59,8 @@ abstract class TraceMonitor internal constructor(
         val savedTrace = outputPath.resolve("${testTag}_${sourceTraceFilePath.fileName}")
         moveFile(sourceTraceFilePath, savedTrace)
         require(Files.exists(savedTrace)) { "Unable to save trace file $savedTrace" }
+
+        checksum = calculateChecksum(savedTrace)
     }
 
     private fun moveFile(src: Path, dst: Path) {
@@ -60,5 +73,29 @@ abstract class TraceMonitor internal constructor(
         SystemUtil.runShellCommand("cp $src $dst")
         SystemUtil.runShellCommand("chmod a+r $dst")
         SystemUtil.runShellCommand("rm $src")
+    }
+
+    companion object {
+        @VisibleForTesting
+        @JvmStatic
+        fun calculateChecksum(traceFile: Path): String {
+            return try {
+                val messageDigest = MessageDigest.getInstance("SHA-256")
+                val inputStream = FileInputStream(traceFile.toFile())
+                val channel = inputStream.channel
+                val buffer = ByteBuffer.allocate(2048)
+                while (channel.read(buffer) != -1) {
+                    buffer.flip()
+                    messageDigest.update(buffer)
+                    buffer.clear()
+                }
+                val hash = messageDigest.digest()
+                BaseEncoding.base16().encode(hash).toLowerCase()
+            } catch (e: NoSuchAlgorithmException) {
+                throw IllegalArgumentException("Checksum algorithm SHA-256 not found", e)
+            } catch (e: IOException) {
+                throw IllegalArgumentException("File not found", e)
+            }
+        }
     }
 }
