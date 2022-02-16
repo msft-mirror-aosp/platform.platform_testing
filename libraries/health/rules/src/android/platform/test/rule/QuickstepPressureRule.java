@@ -55,8 +55,7 @@ public class QuickstepPressureRule extends TestWatcher {
         // Open the application and ensure it reaches the foreground.
         getContext().startActivity(getContext().getPackageManager().getLaunchIntentForPackage(pkg));
         if (!getUiDevice().wait(Until.hasObject(By.pkg(pkg).depth(0)), UI_RESPONSE_TIMEOUT_MSECS)) {
-            throw new RuntimeException(
-                    String.format("Application not found in foreground (package = %s).", pkg));
+            throw new RuntimeException("Application not found in foreground.");
         }
         // Ensure the app doesn't immediately crash in the foreground.
         SystemClock.sleep(MIN_CRASH_WAIT_TIMEOUT);
