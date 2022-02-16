@@ -82,7 +82,7 @@ public class UiActionLatencyHelperTest {
         assertTrue(mActionLatencyHelper.startCollecting());
         Log.d(LOG_TAG, "testQuickSwitchMetric: started collecting");
 
-        sLauncher.getBackground().quickSwitchToPreviousApp();
+        sLauncher.getLaunchedAppState().quickSwitchToPreviousApp();
 
         // Checking metrics produced by the CUJ.
         final Map<String, StringBuilder> latencyMetrics = mActionLatencyHelper.getMetrics();
