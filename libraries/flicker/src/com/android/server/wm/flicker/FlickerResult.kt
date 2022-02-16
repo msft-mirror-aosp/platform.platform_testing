@@ -18,7 +18,6 @@ package com.android.server.wm.flicker
 
 import com.android.server.wm.flicker.assertions.AssertionData
 import com.android.server.wm.flicker.assertions.FlickerAssertionError
-import com.android.server.wm.flicker.assertions.FlickerAssertionErrorBuilder
 import com.google.common.truth.Truth
 
 /**
@@ -52,23 +51,22 @@ data class FlickerResult(
     }
 
     /**
-     * Run the assertion on the trace
+     * Run the assertions on the trace
      *
-     * @throws AssertionError If the assertion fail or the transition crashed
+     * @throws AssertionError If the assertions fail or the transition crashed
      */
-    internal fun checkAssertion(assertion: AssertionData): List<FlickerAssertionError> {
+    internal fun checkAssertions(
+        assertions: List<AssertionData>
+    ): List<FlickerAssertionError> {
         checkIsExecuted()
-        val filteredRuns = runs.filter { it.assertionTag == assertion.tag }
-        val currFailures = filteredRuns.mapNotNull { run ->
-            try {
-                assertion.checkAssertion(run)
-                null
-            } catch (error: Throwable) {
-                FlickerAssertionErrorBuilder()
-                    .fromError(error)
-                    .atTag(assertion.tag)
-                    .withTrace(run.traceFiles)
-                    .build()
+        val currFailures: List<FlickerAssertionError> = runs.flatMap { run ->
+            assertions.filter { it.tag == run.assertionTag }.mapNotNull { assertion ->
+                try {
+                    assertion.checkAssertion(run)
+                    null
+                } catch (error: Throwable) {
+                    FlickerAssertionError(error, assertion, run)
+                }
             }
         }
         failures.addAll(currFailures)
@@ -76,10 +74,20 @@ data class FlickerResult(
     }
 
     /**
-     * Add a prefix to all trace files indicating the test status (pass/fail)
+     * Remove from the device the trace files associated with passed runs.
+     *
+     * If an test fails, or if the transition crashes, retain all traces related to
+     * that run.
      */
     fun cleanUp() {
-        runs.forEach { it.cleanUp(failures) }
+        if (error != null) {
+            return
+        }
+        runs.forEach {
+            if (it.canDelete(failures)) {
+                it.cleanUp()
+            }
+        }
     }
 
     fun isEmpty(): Boolean = error == null && runs.isEmpty()

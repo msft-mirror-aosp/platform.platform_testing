@@ -114,7 +114,7 @@ public final class GarbageCollectionPreparer extends BaseMetricListener {
         if (!mSetUp) {
             return;
         }
-        if (mWaitTime == null || mWaitTime < 0L) {
+        if (mWaitTime == null || mWaitTime < 0l) {
             // If no wait time specified or invalid, use default garbage collect call.
             mGcHelper.garbageCollect();
         } else {

@@ -16,14 +16,13 @@
 
 package com.android.server.wm.flicker.assertions
 
-import androidx.annotation.VisibleForTesting
 import com.android.server.wm.flicker.FlickerRunResult
 import kotlin.reflect.KClass
 
 /**
  * Class containing basic data about a trace assertion for Flicker DSL
  */
-data class AssertionData @VisibleForTesting constructor(
+data class AssertionData internal constructor(
     /**
      * Segment of the trace where the assertion will be applied (e.g., start, end).
      */

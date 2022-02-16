@@ -15,26 +15,49 @@
  */
 package android.platform.test.rule;
 
-import android.graphics.Rect;
+import static android.content.res.Configuration.ORIENTATION_LANDSCAPE;
+
+import static org.junit.Assert.assertEquals;
+
 import android.os.RemoteException;
+
+import org.junit.runner.Description;
 
 /**
  * Locks landscape orientation before running a test and goes back to natural orientation
  * afterwards.
  */
-public class LandscapeOrientationRule extends SwitchToOrientationBaseRule {
+public class LandscapeOrientationRule extends TestWatcher {
+
     @Override
-    protected void setOrientation() throws RemoteException {
-        getUiDevice().setOrientationLeft();
+    protected void starting(Description description) {
+        try {
+            getUiDevice().setOrientationNatural();
+            int currentOrientation = getContext().getResources().getConfiguration().orientation;
+            if (currentOrientation != ORIENTATION_LANDSCAPE) { // ORIENTATION_PORTRAIT
+                getUiDevice().setOrientationLeft();
+                int rotatedOrientation = getContext().getResources().getConfiguration().orientation;
+                assertEquals(
+                        "Orientation should be landscape",
+                        ORIENTATION_LANDSCAPE,
+                        rotatedOrientation);
+            }
+        } catch (RemoteException e) {
+            String message = "RemoteException when forcing landscape rotation on the device";
+            throw new RuntimeException(message, e);
+        }
     }
 
     @Override
-    protected String orientationDescription() {
-        return "landscape";
-    }
-
-    @Override
-    protected boolean isOrientationSuccessfullySet(Rect launcherRectangle) {
-        return launcherRectangle.width() > launcherRectangle.height();
+    protected void finished(Description description) {
+        try {
+            if (!getUiDevice().isNaturalOrientation()) {
+                getUiDevice().setOrientationNatural();
+            }
+            getUiDevice().unfreezeRotation();
+        } catch (RemoteException e) {
+            String message = "RemoteException when restoring natural rotation of the device";
+            throw new RuntimeException(message, e);
+        }
     }
 }
