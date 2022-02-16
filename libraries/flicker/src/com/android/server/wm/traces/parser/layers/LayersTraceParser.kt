@@ -17,27 +17,22 @@
 package com.android.server.wm.traces.parser.layers
 
 import android.graphics.Rect
-import android.surfaceflinger.nano.Common.ColorProto
-import android.surfaceflinger.nano.Common.RectProto
-import android.surfaceflinger.nano.Common.RegionProto
-import android.surfaceflinger.nano.Common.SizeProto
-import android.surfaceflinger.nano.Display.DisplayProto
 import android.surfaceflinger.nano.Layers
+import android.surfaceflinger.nano.Layers.RectProto
+import android.surfaceflinger.nano.Layers.RegionProto
 import android.surfaceflinger.nano.Layerstrace
 import android.util.Log
-import com.android.server.wm.traces.common.ActiveBuffer
+import com.android.server.wm.traces.common.Buffer
 import com.android.server.wm.traces.common.Color
 import com.android.server.wm.traces.common.RectF
-import com.android.server.wm.traces.common.region.Region
-import com.android.server.wm.traces.common.Size
-import com.android.server.wm.traces.common.layers.Display
+import com.android.server.wm.traces.common.Region
 import com.android.server.wm.traces.common.layers.Layer
 import com.android.server.wm.traces.common.layers.LayerTraceEntry
 import com.android.server.wm.traces.common.layers.LayerTraceEntryBuilder
 import com.android.server.wm.traces.common.layers.LayersTrace
 import com.android.server.wm.traces.parser.LOG_TAG
 import com.google.protobuf.nano.InvalidProtocolBufferNanoException
-import kotlin.math.max
+import java.nio.file.Path
 import kotlin.system.measureTimeMillis
 
 /**
@@ -50,17 +45,19 @@ class LayersTraceParser {
          * of trace entries, storing the flattened layers into its hierarchical structure.
          *
          * @param data binary proto data
+         * @param source Path to source of data for additional debug information
+         * @param sourceChecksum Checksum of the source file
          * @param orphanLayerCallback a callback to handle any unexpected orphan layers
          */
         @JvmOverloads
         @JvmStatic
         fun parseFromTrace(
             data: ByteArray,
-            ignoreLayersStackMatchNoDisplay: Boolean = true,
-            ignoreLayersInVirtualDisplay: Boolean = true,
+            source: Path? = null,
+            sourceChecksum: String = "",
             orphanLayerCallback: ((Layer) -> Boolean)? = null
         ): LayersTrace {
-            var fileProto: Layerstrace.LayersTraceFileProto? = null
+            val fileProto: Layerstrace.LayersTraceFileProto
             try {
                 measureTimeMillis {
                     fileProto = Layerstrace.LayersTraceFileProto.parseFrom(data)
@@ -70,12 +67,7 @@ class LayersTraceParser {
             } catch (e: Exception) {
                 throw RuntimeException(e)
             }
-            return fileProto?.let {
-                parseFromTrace(it,
-                    ignoreLayersStackMatchNoDisplay,
-                    ignoreLayersInVirtualDisplay,
-                    orphanLayerCallback)
-            } ?: error("Unable to read trace file")
+            return parseFromTrace(fileProto, source, sourceChecksum, orphanLayerCallback)
         }
 
         /**
@@ -83,14 +75,16 @@ class LayersTraceParser {
          * of trace entries, storing the flattened layers into its hierarchical structure.
          *
          * @param proto Parsed proto data
+         * @param source Path to source of data for additional debug information
+         * @param sourceChecksum Checksum of the source file
          * @param orphanLayerCallback a callback to handle any unexpected orphan layers
          */
         @JvmOverloads
         @JvmStatic
         fun parseFromTrace(
             proto: Layerstrace.LayersTraceFileProto,
-            ignoreLayersStackMatchNoDisplay: Boolean = true,
-            ignoreLayersInVirtualDisplay: Boolean = true,
+            source: Path? = null,
+            sourceChecksum: String = "",
             orphanLayerCallback: ((Layer) -> Boolean)? = null
         ): LayersTrace {
             val entries: MutableList<LayerTraceEntry> = ArrayList()
@@ -98,21 +92,15 @@ class LayersTraceParser {
             for (traceProto: Layerstrace.LayersTraceProto in proto.entry) {
                 val entryParseTime = measureTimeMillis {
                     val entry = newEntry(
-                        traceProto.elapsedRealtimeNanos,
-                        traceProto.displays,
-                        traceProto.layers.layers,
-                        ignoreLayersStackMatchNoDisplay,
-                        ignoreLayersInVirtualDisplay,
-                        traceProto.hwcBlob,
-                        traceProto.where,
-                        orphanLayerCallback)
+                        traceProto.elapsedRealtimeNanos, traceProto.layers.layers,
+                        traceProto.hwcBlob, traceProto.where, orphanLayerCallback)
                     entries.add(entry)
                 }
                 traceParseTime += entryParseTime
             }
             Log.v(LOG_TAG, "Parsing duration (Layers Trace): ${traceParseTime}ms " +
-                "(avg ${traceParseTime / max(entries.size, 1)}ms per entry)")
-            return LayersTrace(entries.toTypedArray())
+                "(avg ${traceParseTime / entries.size}ms per entry)")
+            return LayersTrace(entries, source?.toString() ?: "", sourceChecksum)
         }
 
         /**
@@ -122,15 +110,8 @@ class LayersTraceParser {
          * @param proto Parsed proto data
          */
         @JvmStatic
-        @Deprecated("This functions parsers old SF dumps. Now SF dumps create a " +
-            "single entry trace, for new dump use [parseFromTrace]")
-        fun parseFromLegacyDump(proto: Layers.LayersProto): LayersTrace {
-            val entry = newEntry(
-                timestamp = 0,
-                displayProtos = emptyArray(),
-                protos = proto.layers,
-                ignoreLayersStackMatchNoDisplay = false,
-                ignoreLayersInVirtualDisplay = false)
+        fun parseFromDump(proto: Layers.LayersProto): LayersTrace {
+            val entry = newEntry(timestamp = 0, protos = proto.layers)
             return LayersTrace(entry)
         }
 
@@ -141,34 +122,26 @@ class LayersTraceParser {
          * @param data binary proto data
          */
         @JvmStatic
-        @Deprecated("This functions parsers old SF dumps. Now SF dumps create a " +
-            "single entry trace, for new dump use [parseFromTrace]")
-        fun parseFromLegacyDump(data: ByteArray?): LayersTrace {
+        fun parseFromDump(data: ByteArray?): LayersTrace {
             val traceProto = try {
                 Layers.LayersProto.parseFrom(data)
             } catch (e: InvalidProtocolBufferNanoException) {
                 throw RuntimeException(e)
             }
-            return parseFromLegacyDump(traceProto)
+            return parseFromDump(traceProto)
         }
 
         @JvmStatic
         private fun newEntry(
             timestamp: Long,
-            displayProtos: Array<DisplayProto>,
             protos: Array<Layers.LayerProto>,
-            ignoreLayersStackMatchNoDisplay: Boolean,
-            ignoreLayersInVirtualDisplay: Boolean,
             hwcBlob: String = "",
             where: String = "",
             orphanLayerCallback: ((Layer) -> Boolean)? = null
         ): LayerTraceEntry {
-            val layers = protos.map { newLayer(it) }.toTypedArray()
-            val displays = displayProtos.map { newDisplay(it) }.toTypedArray()
-            val builder = LayerTraceEntryBuilder(timestamp, layers, displays, hwcBlob, where)
-                .setOrphanLayerCallback(orphanLayerCallback)
-                .ignoreLayersStackMatchNoDisplay(ignoreLayersStackMatchNoDisplay)
-                .ignoreVirtualDisplay(ignoreLayersInVirtualDisplay)
+            val layers = protos.map { newLayer(it) }
+            val builder = LayerTraceEntryBuilder(timestamp, layers, hwcBlob, where)
+            builder.setOrphanLayerCallback(orphanLayerCallback)
             return builder.build()
         }
 
@@ -198,7 +171,7 @@ class LayersTraceParser {
                     proto.type ?: "",
                     proto.screenBounds?.toRectF(),
                     Transform(proto.transform, proto.position),
-                    proto.sourceBounds?.toRectF() ?: RectF.EMPTY,
+                    proto.sourceBounds?.toRectF(),
                     proto.currFrame,
                     proto.effectiveScalingMode,
                     Transform(proto.bufferTransform, position = null),
@@ -208,20 +181,7 @@ class LayersTraceParser {
                     proto.backgroundBlurRadius,
                     crop,
                     proto.isRelativeOf,
-                    proto.zOrderRelativeOf,
-                    proto.layerStack
-            )
-        }
-
-        private fun newDisplay(proto: DisplayProto): Display {
-            return Display(
-                proto.id.toULong(),
-                proto.name,
-                proto.layerStack,
-                proto.size.toSize(),
-                proto.layerStackSpaceRect.toRect(),
-                Transform(proto.transform, position = null),
-                proto.isVirtual
+                    proto.zOrderRelativeOf
             )
         }
 
@@ -233,14 +193,7 @@ class LayersTraceParser {
         }
 
         @JvmStatic
-        private fun SizeProto?.toSize(): Size {
-            return this?.let {
-                Size(this.w, this.h)
-            } ?: Size.EMPTY
-        }
-
-        @JvmStatic
-        private fun ColorProto?.toColor(): Color {
+        private fun Layers.ColorProto?.toColor(): Color {
             if (this == null) {
                 return Color.EMPTY
             }
@@ -248,11 +201,11 @@ class LayersTraceParser {
         }
 
         @JvmStatic
-        private fun Layers.ActiveBufferProto?.toBuffer(): ActiveBuffer {
+        private fun Layers.ActiveBufferProto?.toBuffer(): Buffer {
             if (this == null) {
-                return ActiveBuffer.EMPTY
+                return Buffer.EMPTY
             }
-            return ActiveBuffer(width, height, stride, format)
+            return Buffer(width, height, stride, format)
         }
 
         @JvmStatic

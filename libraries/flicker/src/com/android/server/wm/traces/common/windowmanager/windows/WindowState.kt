@@ -16,9 +16,9 @@
 
 package com.android.server.wm.traces.common.windowmanager.windows
 
-import com.android.server.wm.traces.common.Size
+import com.android.server.wm.traces.common.Bounds
 import com.android.server.wm.traces.common.Rect
-import com.android.server.wm.traces.common.region.Region
+import com.android.server.wm.traces.common.Region
 
 /**
  * Represents a window in the window manager hierarchy
@@ -34,28 +34,37 @@ open class WindowState(
     val layer: Int,
     val isSurfaceShown: Boolean,
     val windowType: Int,
-    val requestedSize: Size,
+    val requestedSize: Bounds,
     val surfacePosition: Rect?,
-    val frame: Rect,
-    val containingFrame: Rect,
-    val parentFrame: Rect,
-    val contentFrame: Rect,
-    val contentInsets: Rect,
-    val surfaceInsets: Rect,
-    val givenContentInsets: Rect,
-    val crop: Rect,
+    _frame: Rect?,
+    _containingFrame: Rect?,
+    _parentFrame: Rect?,
+    _contentFrame: Rect?,
+    _contentInsets: Rect?,
+    _surfaceInsets: Rect?,
+    _givenContentInsets: Rect?,
+    _crop: Rect?,
     windowContainer: WindowContainer,
     val isAppWindow: Boolean
 ) : WindowContainer(windowContainer, getWindowTitle(windowContainer.title)) {
     override val isVisible: Boolean get() = super.isVisible && attributes.alpha > 0
 
+    val frame: Rect = _frame ?: Rect.EMPTY
+    val containingFrame: Rect = _containingFrame ?: Rect.EMPTY
+    val parentFrame: Rect = _parentFrame ?: Rect.EMPTY
+    val contentFrame: Rect = _contentFrame ?: Rect.EMPTY
+    val contentInsets: Rect = _contentInsets ?: Rect.EMPTY
+    val surfaceInsets: Rect = _surfaceInsets ?: Rect.EMPTY
+    val givenContentInsets: Rect = _givenContentInsets ?: Rect.EMPTY
+    val crop: Rect = _crop ?: Rect.EMPTY
     override val isFullscreen: Boolean get() = this.attributes.flags.and(FLAG_FULLSCREEN) > 0
+
     val isStartingWindow: Boolean = windowType == WINDOW_TYPE_STARTING
     val isExitingWindow: Boolean = windowType == WINDOW_TYPE_EXITING
     val isDebuggerWindow: Boolean = windowType == WINDOW_TYPE_DEBUGGER
     val isValidNavBarType: Boolean = attributes.isValidNavBarType
 
-    val frameRegion: Region = Region.from(frame)
+    val frameRegion: Region = Region(frame)
 
     private fun getWindowTypeSuffix(windowType: Int): String =
         when (windowType) {
@@ -70,29 +79,13 @@ open class WindowState(
         "type=${attributes.type} cf=$containingFrame pf=$parentFrame"
 
     override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other !is WindowState) return false
-
-        if (name != other.name) return false
-        if (attributes != other.attributes) return false
-        if (displayId != other.displayId) return false
-        if (stackId != other.stackId) return false
-        if (layer != other.layer) return false
-        if (isSurfaceShown != other.isSurfaceShown) return false
-        if (windowType != other.windowType) return false
-        if (requestedSize != other.requestedSize) return false
-        if (surfacePosition != other.surfacePosition) return false
-        if (frame != other.frame) return false
-        if (containingFrame != other.containingFrame) return false
-        if (parentFrame != other.parentFrame) return false
-        if (contentFrame != other.contentFrame) return false
-        if (contentInsets != other.contentInsets) return false
-        if (surfaceInsets != other.surfaceInsets) return false
-        if (givenContentInsets != other.givenContentInsets) return false
-        if (crop != other.crop) return false
-        if (isAppWindow != other.isAppWindow) return false
-
-        return true
+        return other is WindowState &&
+            other.stableId == stableId &&
+            other.attributes == attributes &&
+            other.token == token &&
+            other.title == title &&
+            other.containingFrame == containingFrame &&
+            other.parentFrame == parentFrame
     }
 
     override fun hashCode(): Int {
