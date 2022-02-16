@@ -20,6 +20,7 @@ instrumentation_metric_tests := \
     ActivityManagerPerfTestsStubApp3 \
     AutofillPerfTests \
     BlobStorePerfTests \
+    crashcollector \
     CorePerfTests \
     ContentCapturePerfTests \
     DocumentsUIAppPerfTests \

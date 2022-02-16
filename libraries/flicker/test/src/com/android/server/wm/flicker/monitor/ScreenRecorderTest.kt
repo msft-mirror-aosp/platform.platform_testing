@@ -63,7 +63,7 @@ class ScreenRecorderTest {
     @Test
     fun videoCanBeSaved() {
         mScreenRecorder.start()
-        SystemClock.sleep(3000)
+        SystemClock.sleep(100)
         mScreenRecorder.stop()
         val builder = FlickerRunResult.Builder()
         mScreenRecorder.save("test", builder)

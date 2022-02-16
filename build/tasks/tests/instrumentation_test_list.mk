@@ -15,13 +15,13 @@
 instrumentation_tests := \
     HelloWorldTests \
     BluetoothInstrumentationTests \
+    crashcollector \
     LongevityPlatformLibTests \
     ManagedProvisioningTests \
     FrameworksCoreTests \
     FrameworksMockingCoreTests \
     BinderProxyCountingTestApp \
     BinderProxyCountingTestService \
-    FrameworksNetTests \
     FrameworksUiServicesTests \
     BstatsTestApp \
     ConnTestApp \
@@ -43,6 +43,7 @@ instrumentation_tests := \
     FrameworksWifiTests \
     FrameworksTelephonyTests \
     ContactsProviderTests \
+    ContactsProviderTests2 \
     SettingsUnitTests \
     TelecomUnitTests \
     TraceurUiTests \
@@ -72,7 +73,6 @@ instrumentation_tests := \
     SettingsPerfTests \
     ExtServicesUnitTests \
     FrameworksNetSmokeTests \
-    FlickerLibTest \
     FlickerTests \
     FlickerTestApp \
     WMShellFlickerTests \
