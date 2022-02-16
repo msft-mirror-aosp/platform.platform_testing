@@ -18,21 +18,19 @@ package com.android.server.wm.flicker.traces.eventlog
 
 import com.android.server.wm.flicker.assertions.FlickerSubject
 import com.android.server.wm.flicker.traces.FlickerFailureStrategy
-import com.google.common.truth.Fact
 import com.google.common.truth.FailureMetadata
 import com.google.common.truth.StandardSubjectBuilder
 
 class FocusEventSubject(
     fm: FailureMetadata,
     val event: FocusEvent,
-    override val parent: EventLogSubject?
+    val trace: EventLogSubject?
 ) : FlickerSubject(fm, event) {
-    override val timestamp: Long get() = 0
-    override val selfFacts by lazy { listOf(Fact.simpleFact(event.toString())) }
+    override val defaultFacts by lazy { event.toString() }
 
     /** {@inheritDoc} */
     override fun clone(): FlickerSubject {
-        return FocusEventSubject(fm, event, parent)
+        return FocusEventSubject(fm, event, trace)
     }
 
     fun hasFocus() {

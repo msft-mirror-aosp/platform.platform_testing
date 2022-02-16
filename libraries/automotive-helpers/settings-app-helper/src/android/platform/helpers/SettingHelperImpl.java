@@ -84,7 +84,7 @@ public class SettingHelperImpl extends AbstractAutoStandardAppHelper implements 
     @Override
     public void openSetting(String setting) {
         openFullSettings();
-        findSettingMenuAndClick(setting);
+        openMenuWith(getSettingPath(setting));
         verifyAvailableOptions(setting);
     }
 
@@ -117,7 +117,7 @@ public class SettingHelperImpl extends AbstractAutoStandardAppHelper implements 
         if (settingMenu != null) {
             clickAndWaitForIdleScreen(settingMenu);
         } else {
-            throw new RuntimeException("Unable to find setting menu: " + setting);
+            throw new RuntimeException("Unable to find setting menu");
         }
     }
 
@@ -285,12 +285,11 @@ public class SettingHelperImpl extends AbstractAutoStandardAppHelper implements 
                                 AutoConfigConstants.SETTINGS,
                                 AutoConfigConstants.FULL_SETTINGS,
                                 AutoConfigConstants.SEARCH_RESULTS));
-        int numberOfResults = searchResults.getChildren().get(0).getChildren().size();
+        int numberOfResults = searchResults.getChildren().size();
         if (numberOfResults == 0) {
             throw new RuntimeException("No results found");
         }
-        clickAndWaitForIdleScreen(
-                searchResults.getChildren().get(0).getChildren().get(selectedIndex));
+        clickAndWaitForIdleScreen(searchResults.getChildren().get(selectedIndex));
         SystemClock.sleep(UI_RESPONSE_WAIT_MS);
 
         UiObject2 object = findUiObject(By.textContains(item));
@@ -349,13 +348,11 @@ public class SettingHelperImpl extends AbstractAutoStandardAppHelper implements 
     /** {@inheritDoc} */
     @Override
     public void openMenuWith(String... menuOptions) {
-        // Scroll and Find Subsettings
         for (String menu : menuOptions) {
             Pattern menuPattern = Pattern.compile(menu, Pattern.CASE_INSENSITIVE);
-            UiObject2 menuButton =
-                    scrollAndFindUiObject(By.text(menuPattern), getScrollScreenIndex());
+            UiObject2 menuButton = scrollAndFindUiObject(By.text(menuPattern));
             if (menuButton == null) {
-                throw new RuntimeException("Unable to find menu item: " + menu);
+                throw new RuntimeException("Unable to find menu item");
             }
             clickAndWaitForIdleScreen(menuButton);
             waitForIdle();
@@ -395,7 +392,7 @@ public class SettingHelperImpl extends AbstractAutoStandardAppHelper implements 
         Pattern menuPattern = Pattern.compile(menu, Pattern.CASE_INSENSITIVE);
         UiObject2 menuButton = scrollAndFindUiObject(By.text(menuPattern), index);
         if (menuButton == null) {
-            throw new RuntimeException("Unable to find menu item: " + menu);
+            throw new RuntimeException("Unable to find menu item");
         }
         return menuButton;
     }
@@ -475,13 +472,5 @@ public class SettingHelperImpl extends AbstractAutoStandardAppHelper implements 
         return mUiModeManager.getNightMode() == mUiModeManager.MODE_NIGHT_YES
                 ? DayNightMode.NIGHT_MODE
                 : DayNightMode.DAY_MODE;
-    }
-
-    private int getScrollScreenIndex() {
-        int scrollScreenIndex = 0;
-        if (hasSplitScreenSettingsUI()) {
-            scrollScreenIndex = 1;
-        }
-        return scrollScreenIndex;
     }
 }

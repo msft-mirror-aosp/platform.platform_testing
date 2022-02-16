@@ -178,16 +178,4 @@ public interface IPhotosHelper extends IAppHelper {
      * @return Returns true if device is in Photos main screen, false if not.
      */
     public boolean isOnMainScreen();
-
-    /** Setup expectation: Disable backup mode in settings. */
-    public void disableBackupMode();
-
-    /** Setup expectation: Enable backup mode in settings. */
-    public void enableBackupMode();
-
-    /** Setup expectation: Verify backup starts uploading new pictures in settings. */
-    public void verifyContentStartedUploading();
-
-    /** Setup expectation: Remove photos app content. */
-    public void removeContent();
 }

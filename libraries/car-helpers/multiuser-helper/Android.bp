@@ -23,7 +23,7 @@ java_library_static {
         "src/**/*.java",
     ],
     static_libs: [
-        "android.car-test-stubs",
+        "android.car",
         "androidx.test.runner",
         "ub-uiautomator",
     ],
