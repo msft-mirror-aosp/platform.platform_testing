@@ -20,19 +20,18 @@ import android.content.Context
 import androidx.test.platform.app.InstrumentationRegistry
 import com.android.server.wm.flicker.traces.FlickerSubjectException
 import com.android.server.wm.traces.common.layers.LayersTrace
-import com.android.server.wm.traces.common.tags.TagTrace
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 import com.android.server.wm.traces.parser.layers.LayersTraceParser
-import com.android.server.wm.traces.parser.tags.TagTraceParserUtil
 import com.android.server.wm.traces.parser.windowmanager.WindowManagerTraceParser
 import com.google.common.io.ByteStreams
 import com.google.common.truth.ExpectFailure
-import com.google.common.truth.Truth
 import com.google.common.truth.TruthFailureSubject
+import java.nio.file.Paths
 
 internal fun readWmTraceFromFile(relativePath: String): WindowManagerTrace {
     return try {
-        WindowManagerTraceParser.parseFromTrace(readTestFile(relativePath))
+        WindowManagerTraceParser.parseFromTrace(readTestFile(relativePath),
+            source = Paths.get(relativePath))
     } catch (e: Exception) {
         throw RuntimeException(e)
     }
@@ -51,19 +50,8 @@ internal fun readLayerTraceFromFile(
     ignoreOrphanLayers: Boolean = true
 ): LayersTrace {
     return try {
-        LayersTraceParser.parseFromTrace(
-            readTestFile(relativePath),
-            ignoreLayersStackMatchNoDisplay = false,
-            ignoreLayersInVirtualDisplay = false
-        ) { ignoreOrphanLayers }
-    } catch (e: Exception) {
-        throw RuntimeException(e)
-    }
-}
-
-internal fun readTagTraceFromFile(relativePath: String): TagTrace {
-    return try {
-        TagTraceParserUtil.parseFromTrace(readTestFile(relativePath))
+        LayersTraceParser.parseFromTrace(readTestFile(relativePath),
+            source = Paths.get(relativePath)) { ignoreOrphanLayers }
     } catch (e: Exception) {
         throw RuntimeException(e)
     }
@@ -107,16 +95,4 @@ fun assertFailure(failure: Throwable?): TruthFailureSubject {
     }
     require(target is AssertionError) { "Unknown failure $target" }
     return ExpectFailure.assertThat(target)
-}
-
-fun assertThatErrorContainsDebugInfo(error: Throwable, withBlameEntry: Boolean = true) {
-    Truth.assertThat(error).hasMessageThat().contains("What?")
-    Truth.assertThat(error).hasMessageThat().contains("Where?")
-    Truth.assertThat(error).hasMessageThat().contains("Facts")
-    Truth.assertThat(error).hasMessageThat().contains("Trace start")
-    Truth.assertThat(error).hasMessageThat().contains("Trace end")
-
-    if (withBlameEntry) {
-        Truth.assertThat(error).hasMessageThat().contains("Entry")
-    }
 }
