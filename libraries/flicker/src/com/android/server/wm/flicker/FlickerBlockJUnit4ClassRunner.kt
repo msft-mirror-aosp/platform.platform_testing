@@ -16,9 +16,7 @@
 
 package com.android.server.wm.flicker
 
-import android.platform.test.util.TestFilter
 import android.util.Log
-import androidx.test.platform.app.InstrumentationRegistry
 import com.android.server.wm.flicker.dsl.FlickerBuilder
 import org.junit.internal.runners.statements.RunAfters
 import org.junit.runner.notification.RunNotifier
@@ -32,16 +30,6 @@ import java.lang.reflect.Modifier
  * Implements the JUnit 4 standard test case class model, parsing from a flicker DSL.
  *
  * Supports both assertions in {@link org.junit.Test} and assertions defined in the DSL
- *
- * When using this runnr the default `atest class#method` command doesn't work.
- * Instead use: -- --test-arg \
- *     com.android.tradefed.testtype.AndroidJUnitTest:instrumentation-arg:filter-tests:=<TEST_NAME>
- *
- * For example:
- * `atest FlickerTests -- \
- *     --test-arg com.android.tradefed.testtype.AndroidJUnitTest:instrumentation-arg:filter-tests\
- *     :=com.android.server.wm.flicker.close.\
- *     CloseAppBackButtonTest#launcherWindowBecomesVisible[ROTATION_90_GESTURAL_NAV]`
  */
 class FlickerBlockJUnit4ClassRunner @JvmOverloads constructor(
     test: TestWithParameters,
@@ -50,18 +38,6 @@ class FlickerBlockJUnit4ClassRunner @JvmOverloads constructor(
         parameters.filterIsInstance(FlickerTestParameter::class.java).firstOrNull()
 ) : BlockJUnit4ClassRunnerWithParameters(test) {
     private var flickerMethod: FrameworkMethod? = null
-
-    /**
-     * {@inheritDoc}
-     */
-    override fun getChildren(): MutableList<FrameworkMethod> {
-        val arguments = InstrumentationRegistry.getArguments()
-        val validChildren = super.getChildren().filter {
-            val childDescription = describeChild(it)
-            TestFilter.isFilteredOrUnspecified(arguments, childDescription)
-        }
-        return validChildren.toMutableList()
-    }
 
     /**
      * {@inheritDoc}
@@ -111,7 +87,7 @@ class FlickerBlockJUnit4ClassRunner @JvmOverloads constructor(
      */
     override fun createTest(): Any {
         val test = super.createTest()
-        if (flickerTestParameter?.isInitialized != true) {
+        if (flickerTestParameter?.internalFlicker == null) {
             Log.v(FLICKER_TAG, "Flicker object is not yet initialized")
             injectFlickerOnTestParams(test)
         }
@@ -125,14 +101,16 @@ class FlickerBlockJUnit4ClassRunner @JvmOverloads constructor(
         val flickerTestParameter = flickerTestParameter
         val flickerMethod = flickerMethod
         if (flickerTestParameter != null && flickerMethod != null) {
-            val testName = test::class.java.simpleName
-            Log.v(FLICKER_TAG, "Creating flicker object for $testName and adding it into " +
-                "test parameter")
+            Log.v(FLICKER_TAG, "Creating flicker object and adding it to test parameter")
             val builder = flickerMethod.invokeExplosively(test) as FlickerBuilder
-            flickerTestParameter.initialize(builder, testName)
+            val testName = "${test::class.java.simpleName}_${flickerTestParameter.name}"
+            val flicker = builder.apply {
+                withTestName { testName }
+                repeat { flickerTestParameter.config.repetitions }
+            }.build(TransitionRunnerWithRules(flickerTestParameter.config))
+            flickerTestParameter.internalFlicker = flicker
         } else {
-            Log.v(FLICKER_TAG, "Missing flicker builder provider method " +
-                "in ${test::class.java.simpleName}")
+            Log.v(FLICKER_TAG, "Missing flicker builder provider method")
         }
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 The Android Open Source Project
+ * Copyright (C) 2018 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,23 +15,29 @@
  */
 package android.platform.test.rule;
 
-import android.graphics.Rect;
 import android.os.RemoteException;
 
-/** This rule will lock orientation as natural before running a test class and unlock after. */
-public class NaturalOrientationRule extends SwitchToOrientationBaseRule {
+import org.junit.runner.Description;
+
+/**
+ * This rule will lock orientation before running a test class and unlock after.
+ */
+public class NaturalOrientationRule extends TestWatcher {
     @Override
-    protected void setOrientation() throws RemoteException {
-        getUiDevice().setOrientationNatural();
+    protected void starting(Description description) {
+        try {
+            getUiDevice().setOrientationNatural();
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
-    protected String orientationDescription() {
-        return "natural";
-    }
-
-    @Override
-    protected boolean isOrientationSuccessfullySet(Rect launcherRectangle) {
-        return launcherRectangle.width() < launcherRectangle.height();
+    protected void finished(Description description) {
+        try {
+            getUiDevice().unfreezeRotation();
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

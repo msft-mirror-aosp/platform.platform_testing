@@ -34,14 +34,14 @@ class EventLogSubjectTest {
                         FocusEvent(0, "WinB", FocusEvent.Focus.LOST, "test"),
                         FocusEvent(0, "test WinC", FocusEvent.Focus.GAINED, "test"))
         val result = builder.buildEventLogResult().eventLogSubject
-        requireNotNull(result) { "Event log subject was not built" }
-        result.focusChanges("WinA", "WinB", "WinC")
+        require(result != null) { "Event log subject was not built" }
+        result.focusChanges(arrayOf("WinA", "WinB", "WinC"))
                 .forAllEntries()
-        result.focusChanges("WinA", "WinB").forAllEntries()
-        result.focusChanges("WinB", "WinC").forAllEntries()
-        result.focusChanges("WinA").forAllEntries()
-        result.focusChanges("WinB").forAllEntries()
-        result.focusChanges("WinC").forAllEntries()
+        result.focusChanges(arrayOf("WinA", "WinB")).forAllEntries()
+        result.focusChanges(arrayOf("WinB", "WinC")).forAllEntries()
+        result.focusChanges(arrayOf("WinA")).forAllEntries()
+        result.focusChanges(arrayOf("WinB")).forAllEntries()
+        result.focusChanges(arrayOf("WinC")).forAllEntries()
     }
 
     @Test
