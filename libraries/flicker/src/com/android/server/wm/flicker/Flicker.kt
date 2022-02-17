@@ -114,7 +114,7 @@ class Flicker(
     }
 
     /**
-     * Asserts if the transition of this flicker test has ben executed
+     * Asserts if the transition of this flicker test has been executed
      */
     private fun checkIsExecuted() {
         if (result == null) {
@@ -137,11 +137,9 @@ class Flicker(
         val result = result
         requireNotNull(result)
 
-        val failures = result.checkAssertions(listOf(assertion))
-        val failureMessage = failures.joinToString("\n") { it.message }
-
-        if (failureMessage.isNotEmpty()) {
-            throw AssertionError(failureMessage)
+        val failures = result.checkAssertion(assertion)
+        if (failures.isNotEmpty()) {
+            throw failures.first()
         }
     }
 
