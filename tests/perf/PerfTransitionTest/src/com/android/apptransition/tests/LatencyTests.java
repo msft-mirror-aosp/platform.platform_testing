@@ -319,7 +319,7 @@ public class LatencyTests extends Instrumentation {
                         mTraceDumpInterval, mRootTrace,
                         String.format("%s-%d", TEST_APPTORECENTS, i));
             }
-            mLauncher.getBackground().switchToOverview();
+            mLauncher.getLaunchedAppState().switchToOverview();
 
             // Make sure all the animations are really done.
             SystemClock.sleep(200);

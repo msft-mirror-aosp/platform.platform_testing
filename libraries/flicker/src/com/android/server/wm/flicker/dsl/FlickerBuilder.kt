@@ -42,7 +42,7 @@ import java.nio.file.Path
  */
 @FlickerDslMarker
 class FlickerBuilder private constructor(
-    private val instrumentation: Instrumentation,
+    internal val instrumentation: Instrumentation,
     private val launcherStrategy: ILauncherStrategy,
     private val includeJankyRuns: Boolean,
     private val outputDir: Path,
@@ -61,10 +61,10 @@ class FlickerBuilder private constructor(
         WindowAnimationFrameStatsMonitor(instrumentation)
     }
 
-    @JvmOverloads
     /**
      * Default flicker builder constructor
      */
+    @JvmOverloads
     constructor(
         /**
          * Instrumentation to run the tests
@@ -74,7 +74,7 @@ class FlickerBuilder private constructor(
          * Strategy used to interact with the launcher
          */
         launcherStrategy: ILauncherStrategy = LauncherStrategyFactory
-                .getInstance(instrumentation).launcherStrategy,
+            .getInstance(instrumentation).launcherStrategy,
         /**
          * Include or discard janky runs
          */
@@ -111,7 +111,7 @@ class FlickerBuilder private constructor(
     /**
      * Copy constructor
      */
-    constructor(otherBuilder: FlickerBuilder): this(
+    constructor(otherBuilder: FlickerBuilder) : this(
         otherBuilder.instrumentation,
         otherBuilder.launcherStrategy,
         otherBuilder.includeJankyRuns,
@@ -131,7 +131,7 @@ class FlickerBuilder private constructor(
      *
      * If reused throughout the test, only the last value is stored
      */
-    fun withTestName(testName: () -> String) {
+    fun withTestName(testName: () -> String): FlickerBuilder = apply {
         val name = testName()
         require(!name.contains(" ")) {
             "The test tag can not contain spaces since it is a part of the file name"
@@ -142,7 +142,7 @@ class FlickerBuilder private constructor(
     /**
      * Disable [WindowManagerTraceMonitor].
      */
-    fun withoutWindowManagerTracing() {
+    fun withoutWindowManagerTracing(): FlickerBuilder = apply {
         withWindowManagerTracing { null }
     }
 
@@ -154,7 +154,9 @@ class FlickerBuilder private constructor(
      * If this tracing is disabled, the assertions for [WindowManagerTrace] and
      * [WindowManagerState] will not be executed
      */
-    fun withWindowManagerTracing(traceMonitor: (Path) -> WindowManagerTraceMonitor?) {
+    fun withWindowManagerTracing(
+        traceMonitor: (Path) -> WindowManagerTraceMonitor?
+    ): FlickerBuilder = apply {
         traceMonitors.removeIf { it is WindowManagerTraceMonitor }
         val newMonitor = traceMonitor(outputDir)
 
@@ -166,7 +168,7 @@ class FlickerBuilder private constructor(
     /**
      * Disable [LayersTraceMonitor].
      */
-    fun withoutLayerTracing() {
+    fun withoutLayerTracing(): FlickerBuilder = apply {
         withLayerTracing { null }
     }
 
@@ -178,7 +180,9 @@ class FlickerBuilder private constructor(
      * If this tracing is disabled, the assertions for [LayersTrace] and [LayerTraceEntry]
      * will not be executed
      */
-    fun withLayerTracing(traceMonitor: (Path) -> LayersTraceMonitor?) {
+    fun withLayerTracing(
+        traceMonitor: (Path) -> LayersTraceMonitor?
+    ): FlickerBuilder = apply {
         traceMonitors.removeIf { it is LayersTraceMonitor }
         val newMonitor = traceMonitor(outputDir)
 
@@ -192,7 +196,9 @@ class FlickerBuilder private constructor(
      *
      * By default the tracing is always active. To disable tracing return null
      */
-    fun withScreenRecorder(screenRecorder: (Path) -> ScreenRecorder?) {
+    fun withScreenRecorder(
+        screenRecorder: (Path) -> ScreenRecorder?
+    ): FlickerBuilder = apply {
         traceMonitors.removeIf { it is ScreenRecorder }
         val newMonitor = screenRecorder(outputDir)
 
@@ -204,7 +210,7 @@ class FlickerBuilder private constructor(
     /**
      * Defines how many times the test run should be repeated
      */
-    fun repeat(predicate: () -> Int) {
+    fun repeat(predicate: () -> Int): FlickerBuilder = apply {
         val repeat = predicate()
         require(repeat >= 1) { "Number of repetitions should be greater or equal to 1" }
         iterations = repeat
@@ -214,7 +220,7 @@ class FlickerBuilder private constructor(
      * Defines the test ([TestCommandsBuilder.testCommands]) and run ([TestCommandsBuilder.runCommands])
      * commands executed before the [transitions] to test
      */
-    fun setup(commands: TestCommandsBuilder.() -> Unit) {
+    fun setup(commands: TestCommandsBuilder.() -> Unit): FlickerBuilder = apply {
         setupCommands.apply { commands() }
     }
 
@@ -222,14 +228,14 @@ class FlickerBuilder private constructor(
      * Defines the test ([TestCommandsBuilder.testCommands]) and run ([TestCommandsBuilder.runCommands])
      * commands executed after the [transitions] to test
      */
-    fun teardown(commands: TestCommandsBuilder.() -> Unit) {
+    fun teardown(commands: TestCommandsBuilder.() -> Unit): FlickerBuilder = apply {
         teardownCommands.apply { commands() }
     }
 
     /**
      * Defines the commands that trigger the behavior to test
      */
-    fun transitions(command: Flicker.() -> Unit) {
+    fun transitions(command: Flicker.() -> Unit): FlickerBuilder = apply {
         transitionCommands.add(command)
     }
 

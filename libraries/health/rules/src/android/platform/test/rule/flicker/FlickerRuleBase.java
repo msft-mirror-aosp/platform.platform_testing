@@ -43,10 +43,10 @@ public abstract class FlickerRuleBase extends TestWatcher {
     private static final String TAG = FlickerRuleBase.class.getSimpleName();
 
     // Suffix is added by the trace monitor at the time of saving the file.
-    private static final String WM_TRACE_FILE_SUFFIX = "wm_trace.pb";
+    private static final String WM_TRACE_FILE_SUFFIX = "wm_trace.winscope";
 
     // Suffix is added by the trace monitor at the time of saving the file.
-    private static final String LAYERS_TRACE_FILE_SUFFIX = "layers_trace.pb";
+    private static final String LAYERS_TRACE_FILE_SUFFIX = "layers_trace.winscope";
 
     // Option to customize the root directory to save the trace files.
     private static final String TRACE_DIRECTORY_ROOT = "trace-directory-root";
