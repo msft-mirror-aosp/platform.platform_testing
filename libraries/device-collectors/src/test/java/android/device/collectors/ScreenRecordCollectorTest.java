@@ -21,8 +21,10 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.endsWith;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.matches;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -85,8 +87,13 @@ public class ScreenRecordCollectorTest {
         }
     }
 
-    private ScreenRecordCollector initListener() throws IOException {
-        ScreenRecordCollector listener = spy(new ScreenRecordCollector());
+    private ScreenRecordCollector initListener(Bundle b) throws IOException {
+        ScreenRecordCollector listener;
+        if (b != null) {
+            listener = spy(new ScreenRecordCollector(b));
+        } else {
+            listener = spy(new ScreenRecordCollector());
+        }
         listener.setInstrumentation(mInstrumentation);
         doReturn(mLogDir).when(listener).createAndEmptyDirectory(anyString());
         doReturn(0L).when(listener).getTailBuffer();
@@ -102,7 +109,7 @@ public class ScreenRecordCollectorTest {
      */
     @Test
     public void testScreenRecord() throws Exception {
-        mListener = initListener();
+        mListener = initListener(null);
 
         // Verify output directories are created on test run start.
         mListener.testRunStarted(mRunDesc);
@@ -158,7 +165,7 @@ public class ScreenRecordCollectorTest {
     /** Test that screen recording is properly done for multiple tests and labels iterations. */
     @Test
     public void testScreenRecord_multipleTests() throws Exception {
-        mListener = initListener();
+        mListener = initListener(null);
 
         // Run through a sequence of `NUM_TEST_CASE` failing tests.
         mListener.testRunStarted(mRunDesc);
@@ -189,5 +196,88 @@ public class ScreenRecordCollectorTest {
                         .executeShellCommand(endsWith(String.format("%d-video%d.mp4", i + 1, p)));
             }
         }
+    }
+
+    /** Test that quality options (high) are respected by screen recordings. */
+    @Test
+    public void testScreenRecord_qualityHigh() throws Exception {
+        Bundle args = new Bundle();
+        args.putString(ScreenRecordCollector.QUALITY_ARG, "high");
+        mListener = initListener(args);
+        doReturn("Physical size: 1080x720 ").when(mDevice).executeShellCommand("wm size");
+
+        mListener.testRunStarted(mRunDesc);
+        mListener.testStarted(mTestDesc);
+
+        // Delay verification by 100 ms to ensure the thread was started.
+        SystemClock.sleep(100);
+        verify(mDevice).executeShellCommand(matches("screenrecord --size=1080x720 .*video.mp4"));
+    }
+
+    /** Test that quality options (medium) are respected by screen recordings. */
+    @Test
+    public void testScreenRecord_qualityMedium() throws Exception {
+        Bundle args = new Bundle();
+        args.putString(ScreenRecordCollector.QUALITY_ARG, "medium");
+        mListener = initListener(args);
+        doReturn("Physical size: 1080x720 ").when(mDevice).executeShellCommand("wm size");
+
+        mListener.testRunStarted(mRunDesc);
+        mListener.testStarted(mTestDesc);
+
+        // Delay verification by 100 ms to ensure the thread was started.
+        SystemClock.sleep(100);
+        verify(mDevice).executeShellCommand(matches("screenrecord --size=540x360 .*video.mp4"));
+    }
+
+    /** Test that quality options (low) are respected by screen recordings. */
+    @Test
+    public void testScreenRecord_qualityLow() throws Exception {
+        Bundle args = new Bundle();
+        args.putString(ScreenRecordCollector.QUALITY_ARG, "low");
+        mListener = initListener(args);
+        doReturn("Physical size: 1080x720 ").when(mDevice).executeShellCommand("wm size");
+
+        mListener.testRunStarted(mRunDesc);
+        mListener.testStarted(mTestDesc);
+
+        // Delay verification by 100 ms to ensure the thread was started.
+        SystemClock.sleep(100);
+        verify(mDevice).executeShellCommand(matches("screenrecord --size=135x90 .*video.mp4"));
+    }
+
+    /** Test that quality options (invalid) defaults to 1x. */
+    @Test
+    public void testScreenRecord_qualityUnknown() throws Exception {
+        Bundle args = new Bundle();
+        args.putString(ScreenRecordCollector.QUALITY_ARG, "other");
+        mListener = initListener(args);
+
+        mListener.testRunStarted(mRunDesc);
+        mListener.testStarted(mTestDesc);
+
+        // Delay verification by 100 ms to ensure the thread was started.
+        SystemClock.sleep(100);
+        verify(mDevice, never()).executeShellCommand(matches("screenrecord.*size.*video.mp4"));
+        verify(mDevice, atLeastOnce())
+                .executeShellCommand(not(matches("screenrecord .*video.mp4")));
+    }
+
+    /** Test that unexpected wm size contents defaults to unspecified size/quality option. */
+    @Test
+    public void testScreenRecord_dimensionsInvalid() throws Exception {
+        Bundle args = new Bundle();
+        args.putString(ScreenRecordCollector.QUALITY_ARG, "high");
+        mListener = initListener(args);
+        doReturn("Physical size: axb ").when(mDevice).executeShellCommand("wm size");
+
+        mListener.testRunStarted(mRunDesc);
+        mListener.testStarted(mTestDesc);
+
+        // Delay verification by 100 ms to ensure the thread was started.
+        SystemClock.sleep(100);
+        verify(mDevice, never()).executeShellCommand(matches("screenrecord.*size.*video.mp4"));
+        verify(mDevice, atLeastOnce())
+                .executeShellCommand(not(matches("screenrecord .*video.mp4")));
     }
 }
