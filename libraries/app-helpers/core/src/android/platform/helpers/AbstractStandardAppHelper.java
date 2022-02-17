@@ -16,9 +16,15 @@
 
 package android.platform.helpers;
 
+import static android.content.pm.PackageManager.FLAG_PERMISSION_USER_SET;
+import static android.content.pm.PackageManager.PERMISSION_GRANTED;
+
+import android.Manifest;
 import android.accounts.Account;
 import android.accounts.AccountManager;
+import android.app.ActivityManager;
 import android.app.Instrumentation;
+import android.app.UiAutomation;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
@@ -28,6 +34,7 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Environment;
 import android.os.RemoteException;
 import android.os.SystemClock;
+import android.os.UserHandle;
 import android.platform.helpers.exceptions.AccountException;
 import android.platform.helpers.exceptions.TestHelperException;
 import android.platform.helpers.exceptions.UnknownUiException;
@@ -39,10 +46,11 @@ import android.support.test.uiautomator.UiDevice;
 import android.support.test.uiautomator.UiObject2;
 import android.support.test.uiautomator.UiWatcher;
 import android.support.test.uiautomator.Until;
-import androidx.test.InstrumentationRegistry;
 import android.util.Log;
 import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
+
+import androidx.test.InstrumentationRegistry;
 
 import java.io.File;
 import java.io.IOException;
@@ -71,6 +79,11 @@ public abstract class AbstractStandardAppHelper implements IAppHelper {
     private final boolean mPressHomeToExit;
     private final long mAppIdle;
     private final long mLaunchTimeout;
+
+    private final static String NOTIF_PERM = android.Manifest.permission.POST_NOTIFICATIONS;
+    private UiAutomation mAutomation;
+    private int mPreviousFlagValues = 0;
+    private boolean mChangedPermState = false;
 
     public AbstractStandardAppHelper(Instrumentation instr) {
         mInstrumentation = instr;
@@ -101,6 +114,10 @@ public abstract class AbstractStandardAppHelper implements IAppHelper {
      */
     @Override
     public void open() {
+        // Grant notification permission if necessary - otherwise the app may display a permission
+        // prompt that interferes with tests
+        maybeGrantNotificationPermission();
+
         // Turn on the screen if necessary.
         try {
             if (!mDevice.isScreenOn()) {
@@ -123,7 +140,9 @@ public abstract class AbstractStandardAppHelper implements IAppHelper {
             String output = null;
             try {
                 Log.i(LOG_TAG, String.format("Sending command to launch: %s", pkg));
-                mInstrumentation.getContext().startActivity(getOpenAppIntent());
+                mInstrumentation
+                        .getContext()
+                        .startActivity(getOpenAppIntent().addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
             } catch (ActivityNotFoundException e) {
                 removeDialogWatchers();
                 throw new TestHelperException(String.format("Failed to find package: %s", pkg), e);
@@ -201,6 +220,7 @@ public abstract class AbstractStandardAppHelper implements IAppHelper {
                 Until.hasObject(getLauncherStrategy().getWorkspaceSelector()), EXIT_WAIT_TIMEOUT)) {
             throw new IllegalStateException("Failed to exit the app to launcher.");
         }
+        restoreNotificationPermissionState();
     }
 
     /**
@@ -405,5 +425,47 @@ public abstract class AbstractStandardAppHelper implements IAppHelper {
             mLauncherStrategy = LauncherStrategyFactory.getInstance(mDevice).getLauncherStrategy();
         }
         return mLauncherStrategy;
+    }
+
+    private void maybeGrantNotificationPermission() {
+        mAutomation = InstrumentationRegistry.getInstrumentation().getUiAutomation();
+        mAutomation.adoptShellPermissionIdentity(
+                android.Manifest.permission.GRANT_RUNTIME_PERMISSIONS,
+                android.Manifest.permission.INTERACT_ACROSS_USERS);
+        PackageManager pm = InstrumentationRegistry.getContext().getPackageManager();
+        if (pm.checkPermission(NOTIF_PERM, getPackage()) != PERMISSION_GRANTED) {
+            UserHandle user = UserHandle.of(ActivityManager.getCurrentUser());
+            mChangedPermState = true;
+            mAutomation.grantRuntimePermission(getPackage(),
+                    NOTIF_PERM);
+            mPreviousFlagValues = pm.getPermissionFlags(NOTIF_PERM, getPackage(),
+                    user);
+            pm.updatePermissionFlags(NOTIF_PERM,
+                    getPackage(),
+                    FLAG_PERMISSION_USER_SET
+                            | PackageManager.FLAG_PERMISSION_REVIEW_REQUIRED,
+                    FLAG_PERMISSION_USER_SET,
+                    user);
+        }
+        mAutomation.dropShellPermissionIdentity();
+    }
+
+    private void restoreNotificationPermissionState() {
+        if (mChangedPermState) {
+            mAutomation.adoptShellPermissionIdentity(
+                    android.Manifest.permission.GRANT_RUNTIME_PERMISSIONS,
+                    android.Manifest.permission.REVOKE_RUNTIME_PERMISSIONS,
+                    android.Manifest.permission.INTERACT_ACROSS_USERS);
+            PackageManager pm = InstrumentationRegistry.getContext().getPackageManager();
+            mAutomation.revokeRuntimePermission(getPackage(), NOTIF_PERM);
+            UserHandle user = UserHandle.of(ActivityManager.getCurrentUser());
+            pm.updatePermissionFlags(NOTIF_PERM,
+                    getPackage(),
+                    FLAG_PERMISSION_USER_SET
+                            | PackageManager.FLAG_PERMISSION_REVIEW_REQUIRED,
+                    mPreviousFlagValues,
+                    user);
+            mAutomation.dropShellPermissionIdentity();
+        }
     }
 }

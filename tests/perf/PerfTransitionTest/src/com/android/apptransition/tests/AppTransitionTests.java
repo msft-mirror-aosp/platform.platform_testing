@@ -285,7 +285,7 @@ public class AppTransitionTests extends Instrumentation {
                             mTraceDumpInterval, mRootTraceSubDir,
                             String.format("%s-%d", appName, launchCount - 1));
                 }
-                mLauncher.getBackground().switchToOverview();
+                mLauncher.getLaunchedAppState().switchToOverview();
                 sleep(mPostLaunchTimeout);
                 if (null != mAtraceLogger && launchCount > 0) {
                     mAtraceLogger.atraceStop();
