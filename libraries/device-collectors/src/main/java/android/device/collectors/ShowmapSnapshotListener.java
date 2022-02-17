@@ -63,7 +63,8 @@ public class ShowmapSnapshotListener extends BaseCollectionListener<String> {
   // 10810272     5400     1585     3800      168      264     1168        0        0      TOTAL
 
   // Default to collect rss, pss and private dirty.
-  private String mMemoryMetricNameIndex = "rss:1,pss:2,privatedirty:6";
+  // private dirty includes addition of swap by default.
+  private String mMemoryMetricNameIndex = "rss:1,pss:2,privatedirty:6:7";
 
   public ShowmapSnapshotListener() {
     createHelperInstance(mShowmapSnapshotHelper);

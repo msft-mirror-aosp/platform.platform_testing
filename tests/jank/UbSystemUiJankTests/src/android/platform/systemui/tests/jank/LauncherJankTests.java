@@ -107,17 +107,6 @@ public class LauncherJankTests extends JankTestBase {
         super.afterTest(metrics);
     }
 
-    /** Starts from the home screen, and measures jank while opening the all apps container. */
-    @JankTest(expectedFrames=100, beforeTest="prepareOpenAllAppsContainer",
-            beforeLoop="resetAndOpenRecents", afterTest="afterTestOpenAllAppsContainer")
-    @GfxMonitor(processName="#getLauncherPackage")
-    public void testOpenAllAppsContainer() throws UiObjectNotFoundException {
-        Overview overview = mLauncher.getOverview();
-        for (int i = 0; i < INNER_LOOP * 2; i++) {
-            overview = overview.switchToAllApps().switchBackToOverview();
-        }
-    }
-
     public void openAllApps() throws UiObjectNotFoundException, IOException {
         mLauncher.pressHome().switchToAllApps();
         TimeResultLogger.writeTimeStampLogStart(String.format("%s-%s",
