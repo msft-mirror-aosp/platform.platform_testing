@@ -16,7 +16,10 @@
 
 package com.android.server.wm.traces.common.layers
 
+import com.android.server.wm.traces.common.FlickerComponentName
 import com.android.server.wm.traces.common.ITraceEntry
+import com.android.server.wm.traces.common.Rect
+import com.android.server.wm.traces.common.RectF
 import com.android.server.wm.traces.common.prettyTimestamp
 
 /**
@@ -27,20 +30,27 @@ import com.android.server.wm.traces.common.prettyTimestamp
  *
  **/
 open class LayerTraceEntry constructor(
-    override val timestamp: Long, // hierarchical representation of layers
+    override val timestamp: Long,
     val hwcBlob: String,
     val where: String,
+    val displays: Array<Display>,
     _rootLayers: Array<Layer>
 ) : ITraceEntry {
+    val isVisible = true
+    val stableId: String get() = this::class.simpleName ?: error("Unable to determine class")
+    val name: String get() = prettyTimestamp(timestamp)
+
     val flattenedLayers: Array<Layer> = fillFlattenedLayers(_rootLayers)
-    val rootLayers: Array<Layer> get() = flattenedLayers.filter { it.isRootLayer }.toTypedArray()
+    val children: Array<Layer> get() = flattenedLayers.filter { it.isRootLayer }.toTypedArray()
 
     private fun fillFlattenedLayers(rootLayers: Array<Layer>): Array<Layer> {
         val opaqueLayers = mutableListOf<Layer>()
         val transparentLayers = mutableListOf<Layer>()
         val layers = mutableListOf<Layer>()
+        // some of the flickerlib traces are old and don't have the display data on the trace
+        val mainDisplaySize = displays.firstOrNull { !it.isVirtual }?.layerStackSpace ?: Rect.EMPTY
         val roots = rootLayers.fillOcclusionState(
-            opaqueLayers, transparentLayers).toMutableList()
+            opaqueLayers, transparentLayers, mainDisplaySize.toRectF()).toMutableList()
         while (roots.isNotEmpty()) {
             val layer = roots.removeAt(0)
             layers.add(layer)
@@ -71,7 +81,8 @@ open class LayerTraceEntry constructor(
 
     private fun Array<Layer>.fillOcclusionState(
         opaqueLayers: MutableList<Layer>,
-        transparentLayers: MutableList<Layer>
+        transparentLayers: MutableList<Layer>,
+        displaySize: RectF
     ): Array<Layer> {
         val traversalList = topDownTraversal().reversed()
 
@@ -79,11 +90,18 @@ open class LayerTraceEntry constructor(
             val visible = layer.isVisible
 
             if (visible) {
-                layer.occludedBy.addAll(opaqueLayers
-                    .filter { it.contains(layer) && !it.hasRoundedCorners })
-                layer.partiallyOccludedBy.addAll(
-                    opaqueLayers.filter { it.overlaps(layer) && it !in layer.occludedBy })
-                layer.coveredBy.addAll(transparentLayers.filter { it.overlaps(layer) })
+                val occludedBy = opaqueLayers
+                    .filter { it.contains(layer, displaySize) && !it.hasRoundedCorners }
+                    .toTypedArray()
+                layer.addOccludedBy(occludedBy)
+                val partiallyOccludedBy = opaqueLayers
+                    .filter { it.overlaps(layer, displaySize) && it !in layer.occludedBy }
+                    .toTypedArray()
+                layer.addPartiallyOccludedBy(partiallyOccludedBy)
+                val coveredBy = transparentLayers
+                    .filter { it.overlaps(layer, displaySize) }
+                    .toTypedArray()
+                layer.addCoveredBy(coveredBy)
 
                 if (layer.isOpaque) {
                     opaqueLayers.add(layer)
@@ -102,13 +120,44 @@ open class LayerTraceEntry constructor(
         }
     }
 
+    fun getLayerById(layerId: Int): Layer? = this.flattenedLayers.firstOrNull { it.id == layerId }
+
+    /**
+     * Checks if any layer in the screen is animating.
+     *
+     * The screen is animating when a layer is not simple rotation, of when the pip overlay
+     * layer is visible
+     */
+    fun isAnimating(windowName: String = ""): Boolean {
+        val layers = visibleLayers.filter { it.name.contains(windowName) }
+        val layersAnimating = layers.any { layer -> !layer.transform.isSimpleRotation }
+        val pipAnimating = isVisible(FlickerComponentName.PIP_CONTENT_OVERLAY.toWindowName())
+        return layersAnimating || pipAnimating
+    }
+
     /**
      * Check if at least one window which matches provided window name is visible.
      */
     fun isVisible(windowName: String): Boolean =
-        visibleLayers.any { it.name == windowName }
+        visibleLayers.any { it.name.contains(windowName) }
+
+    fun asTrace(): LayersTrace = LayersTrace(arrayOf(this))
 
     override fun toString(): String {
-        return prettyTimestamp(timestamp)
+        return "${prettyTimestamp(timestamp)} (timestamp=$timestamp)"
+    }
+
+    override fun equals(other: Any?): Boolean {
+        return other is LayerTraceEntry && other.timestamp == this.timestamp
+    }
+
+    override fun hashCode(): Int {
+        var result = timestamp.hashCode()
+        result = 31 * result + hwcBlob.hashCode()
+        result = 31 * result + where.hashCode()
+        result = 31 * result + displays.contentHashCode()
+        result = 31 * result + isVisible.hashCode()
+        result = 31 * result + flattenedLayers.contentHashCode()
+        return result
     }
 }
