@@ -67,7 +67,7 @@ data class FlickerResult(
                 FlickerAssertionErrorBuilder()
                     .fromError(error)
                     .atTag(assertion.tag)
-                    .withTrace(run.traceFiles)
+                    .withTrace(run.traceFile)
                     .build()
             }
         }

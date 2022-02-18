@@ -97,19 +97,11 @@ open class TransitionRunner {
                         flicker.runSetup.forEach { it.invoke(flicker) }
                         flicker.wmHelper.waitFor(uiStableCondition)
                         flicker.traceMonitors.forEach { it.start() }
-                        flicker.frameStatsMonitor?.run { start() }
                         flicker.transitions.forEach { it.invoke(flicker) }
                     } finally {
                         flicker.wmHelper.waitFor(uiStableCondition)
                         flicker.traceMonitors.forEach { it.tryStop() }
-                        flicker.frameStatsMonitor?.run { tryStop() }
                         flicker.runTeardown.forEach { it.invoke(flicker) }
-                    }
-                    if (flicker.frameStatsMonitor?.jankyFramesDetected() == true) {
-                        Log.e(FLICKER_TAG, "Skipping iteration " +
-                            "$iteration/${flicker.repetitions - 1} " +
-                            "for test ${flicker.testName} due to jank. $flicker.frameStatsMonitor")
-                        continue
                     }
                     val runResults = saveResult(flicker, iteration)
                     runs.addAll(runResults)
@@ -128,12 +120,12 @@ open class TransitionRunner {
     }
 
     private fun saveResult(flicker: Flicker, iteration: Int): List<FlickerRunResult> {
-        val resultBuilder = FlickerRunResult.Builder(iteration)
+        val resultBuilder = FlickerRunResult.Builder()
         flicker.traceMonitors.forEach {
-            it.save(flicker.testName, iteration, resultBuilder)
+            it.save(resultBuilder)
         }
 
-        return resultBuilder.buildAll()
+        return resultBuilder.buildAll(flicker.testName, iteration)
     }
 
     private fun ITransitionMonitor.tryStop() {
@@ -178,10 +170,7 @@ open class TransitionRunner {
                 getTaggedFilePath(flicker, tag, "layers_trace"))
             Files.write(layersTraceFile, deviceStateBytes.second)
 
-            val builder = FlickerRunResult.Builder(iteration)
-            builder.wmTraceFile = wmTraceFile
-            builder.layersTraceFile = layersTraceFile
-
+            val builder = FlickerRunResult.Builder()
             val result = builder.buildStateResult(
                 tag,
                 deviceState.wmState?.asTrace(),

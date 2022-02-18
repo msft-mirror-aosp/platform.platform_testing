@@ -22,17 +22,9 @@ import java.nio.file.Path
 import java.nio.file.Paths
 
 abstract class TransitionMonitor(
-    outputPath: Path,
-    sourceTraceFilePath: Path
-) : TraceMonitor(outputPath, sourceTraceFilePath) {
-
-    internal constructor(
-        outputDir: Path,
-        traceFileName: String
-    ) : this(outputDir, TRACE_DIR.resolve(traceFileName))
-
-    protected abstract fun getTracePath(builder: FlickerRunResult.Builder): Path?
-
+    outputDir: Path,
+    sourceFile: Path
+) : TraceMonitor(outputDir, sourceFile) {
     /**
      * Acquires the trace generated when executing the commands defined in the [predicate].
      *
@@ -51,8 +43,7 @@ abstract class TransitionMonitor(
         }
 
         val builder = FlickerRunResult.Builder()
-        this.save("withTracing", builder)
-        val path = this.getTracePath(builder)
+        val path = this.save(builder)
 
         return path?.let {
             Files.readAllBytes(it).also { _ -> Files.delete(it) }
@@ -60,7 +51,8 @@ abstract class TransitionMonitor(
     }
 
     companion object {
-        private val TRACE_DIR = Paths.get("/data/misc/wmtrace/")
+        @JvmStatic
+        protected val TRACE_DIR = Paths.get("/data/misc/wmtrace/")
         internal const val WINSCOPE_EXT = ".winscope"
     }
 }

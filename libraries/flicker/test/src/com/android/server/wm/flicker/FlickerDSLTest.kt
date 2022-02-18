@@ -248,7 +248,7 @@ class FlickerDSLTest {
         Truth.assertThat(error).hasMessageThat().contains("Expected exception")
         // Subject facts
         assertThatErrorContainsDebugInfo(error)
-        Truth.assertThat(error).hasMessageThat().contains("Trace files")
+        Truth.assertThat(error).hasMessageThat().contains("Trace file")
         Truth.assertThat(error).hasMessageThat().contains("Location")
         // Correct stack trace point
         Truth.assertThat(error).hasMessageThat().contains("failedAssertion")

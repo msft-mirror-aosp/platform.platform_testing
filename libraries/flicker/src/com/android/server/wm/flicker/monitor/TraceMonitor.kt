@@ -27,27 +27,29 @@ import java.nio.file.Path
  * trace to another location.
  */
 abstract class TraceMonitor internal constructor(
-    @VisibleForTesting var outputPath: Path,
-    protected var sourceTraceFilePath: Path
+    outputDir: Path,
+    val sourceFile: Path
 ) : ITransitionMonitor {
+    @VisibleForTesting
+    val outputFile: Path = outputDir.resolve(sourceFile.fileName)
+
     abstract val isEnabled: Boolean
 
-    abstract fun setResult(flickerRunResultBuilder: FlickerRunResult.Builder, traceFile: Path)
+    abstract fun setResult(
+        flickerRunResultBuilder: FlickerRunResult.Builder,
+        traceFile: Path
+    )
 
-    override fun save(testTag: String, flickerRunResultBuilder: FlickerRunResult.Builder) {
-        outputPath.toFile().mkdirs()
-        val savedTrace = outputPath.resolve("${testTag}_${sourceTraceFilePath.fileName}")
-        moveFile(sourceTraceFilePath, savedTrace)
-        require(Files.exists(savedTrace)) { "Unable to save trace file $savedTrace" }
-
-        setResult(flickerRunResultBuilder, savedTrace)
-    }
-
-    fun save(testTag: String) {
-        outputPath.toFile().mkdirs()
-        val savedTrace = outputPath.resolve("${testTag}_${sourceTraceFilePath.fileName}")
-        moveFile(sourceTraceFilePath, savedTrace)
-        require(Files.exists(savedTrace)) { "Unable to save trace file $savedTrace" }
+    override fun save(flickerRunResultBuilder: FlickerRunResult.Builder?): Path? {
+        Files.createDirectories(outputFile.parent)
+        if (sourceFile != outputFile) {
+            moveFile(sourceFile, outputFile)
+        }
+        require(Files.exists(outputFile)) { "Unable to save trace file $outputFile" }
+        if (flickerRunResultBuilder != null) {
+            setResult(flickerRunResultBuilder, outputFile)
+        }
+        return outputFile
     }
 
     private fun moveFile(src: Path, dst: Path) {

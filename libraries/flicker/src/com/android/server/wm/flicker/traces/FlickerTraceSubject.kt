@@ -46,6 +46,14 @@ abstract class FlickerTraceSubject<EntrySubject : FlickerSubject>(
     abstract val subjects: List<EntrySubject>
 
     /**
+     * Empty the subject's list of assertions.
+     */
+    internal fun clear() {
+        assertionsChecker.clear()
+        newAssertionBlock = true
+    }
+
+    /**
      * Adds a new assertion block (if preceded by [then]) or appends an assertion to the
      * latest existing assertion block
      *

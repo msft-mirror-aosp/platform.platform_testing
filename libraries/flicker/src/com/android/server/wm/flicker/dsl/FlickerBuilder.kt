@@ -28,7 +28,6 @@ import com.android.server.wm.flicker.getDefaultFlickerOutputDir
 import com.android.server.wm.flicker.monitor.ITransitionMonitor
 import com.android.server.wm.flicker.monitor.LayersTraceMonitor
 import com.android.server.wm.flicker.monitor.ScreenRecorder
-import com.android.server.wm.flicker.monitor.WindowAnimationFrameStatsMonitor
 import com.android.server.wm.flicker.monitor.WindowManagerTraceMonitor
 import com.android.server.wm.traces.common.layers.LayersTrace
 import com.android.server.wm.traces.common.layers.LayerTraceEntry
@@ -55,12 +54,6 @@ class FlickerBuilder private constructor(
     val device: UiDevice,
     private val traceMonitors: MutableList<ITransitionMonitor>
 ) {
-    private val frameStatsMonitor: WindowAnimationFrameStatsMonitor? = if (includeJankyRuns) {
-        null
-    } else {
-        WindowAnimationFrameStatsMonitor(instrumentation)
-    }
-
     /**
      * Default flicker builder constructor
      */
@@ -250,7 +243,6 @@ class FlickerBuilder private constructor(
         outputDir,
         testName,
         iterations,
-        frameStatsMonitor,
         traceMonitors,
         setupCommands.buildTestCommands(),
         setupCommands.buildRunCommands(),

@@ -43,7 +43,7 @@ class EventLogMonitorTest {
             "reason=test")
 
         val result = FlickerRunResult.Builder()
-        monitor.save("test", result)
+        monitor.save(result)
 
         assertEquals(2, result.eventLog?.size)
         assertEquals(
@@ -85,7 +85,7 @@ class EventLogMonitorTest {
         monitor.stop()
 
         val result = FlickerRunResult.Builder()
-        monitor.save("test", result)
+        monitor.save(result)
 
         assertEquals(2, result.eventLog?.size)
         assertEquals("479f88 " +
@@ -120,7 +120,7 @@ class EventLogMonitorTest {
         monitor.stop()
 
         val result = FlickerRunResult.Builder()
-        monitor.save("test", result)
+        monitor.save(result)
 
         assertEquals(2, result.eventLog?.size)
         assertEquals(

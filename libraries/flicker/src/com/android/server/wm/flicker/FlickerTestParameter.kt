@@ -287,6 +287,7 @@ data class FlickerTestParameter(
         @JvmStatic
         fun buildWMAssertion(assertion: WindowManagerTraceSubject.() -> Unit): AssertionData {
             val closedAssertion: WindowManagerTraceSubject.() -> Unit = {
+                this.clear()
                 assertion()
                 this.forAllEntries()
             }
@@ -311,6 +312,7 @@ data class FlickerTestParameter(
             assertion: RegionTraceSubject.() -> Unit
         ): AssertionData {
             val closedAssertion: WindowManagerTraceSubject.() -> Unit = {
+                this.clear()
                 // convert WindowManagerTraceSubject to RegionTraceSubject
                 val regionTraceSubject = visibleRegion(*components)
                 // add assertions to the regionTraceSubject's AssertionChecker
@@ -342,6 +344,7 @@ data class FlickerTestParameter(
         @JvmStatic
         fun buildLayersAssertion(assertion: LayersTraceSubject.() -> Unit): AssertionData {
             val closedAssertion: LayersTraceSubject.() -> Unit = {
+                this.clear()
                 assertion()
                 this.forAllEntries()
             }
@@ -369,6 +372,7 @@ data class FlickerTestParameter(
             assertion: RegionTraceSubject.() -> Unit
         ): AssertionData {
             val closedAssertion: LayersTraceSubject.() -> Unit = {
+                this.clear()
                 // convert LayersTraceSubject to RegionTraceSubject
                 val regionTraceSubject =
                         visibleRegion(components = components, useCompositionEngineRegionOnly)
