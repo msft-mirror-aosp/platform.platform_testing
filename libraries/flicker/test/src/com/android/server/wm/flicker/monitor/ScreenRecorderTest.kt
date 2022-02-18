@@ -46,7 +46,7 @@ class ScreenRecorderTest {
     @After
     fun teardown() {
         mScreenRecorder.stop()
-        mScreenRecorder.outputPath.toFile().delete()
+        Files.deleteIfExists(mScreenRecorder.outputFile)
     }
 
     @Test
@@ -54,9 +54,9 @@ class ScreenRecorderTest {
         mScreenRecorder.start()
         SystemClock.sleep(100)
         mScreenRecorder.stop()
-        val file = mScreenRecorder.outputPath.toFile()
+        val file = mScreenRecorder.outputFile
         Truth.assertWithMessage("Screen recording file not found")
-            .that(file.exists())
+            .that(Files.exists(file))
             .isTrue()
     }
 
@@ -66,17 +66,8 @@ class ScreenRecorderTest {
         SystemClock.sleep(3000)
         mScreenRecorder.stop()
         val builder = FlickerRunResult.Builder()
-        mScreenRecorder.save("test", builder)
-        val traces = builder.buildAll().mapNotNull { result ->
-            result.traceFiles.firstOrNull {
-                it.toString().contains("transition")
-            }
-        }
-        traces.forEach {
-            Truth.assertWithMessage("Trace file $it not found").that(Files.exists(it)).isTrue()
-        }
-        traces.forEach {
-            Files.deleteIfExists(it)
-        }
+        val trace = mScreenRecorder.save(builder) ?: error("Screen recording trace not found")
+        Truth.assertWithMessage("Trace file $trace not found").that(Files.exists(trace)).isTrue()
+        Files.deleteIfExists(trace)
     }
 }

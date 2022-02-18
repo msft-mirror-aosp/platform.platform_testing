@@ -22,6 +22,7 @@ import com.android.server.wm.flicker.FlickerRunResult
 import com.android.server.wm.flicker.traces.eventlog.FocusEvent
 import com.android.server.wm.flicker.traces.eventlog.FocusEvent.Focus
 import java.io.IOException
+import java.nio.file.Path
 import java.util.UUID
 
 /**
@@ -71,8 +72,8 @@ open class EventLogMonitor : ITransitionMonitor {
         _logs = getEventLogs(EVENT_LOG_INPUT_FOCUS_TAG)
     }
 
-    override fun save(testTag: String, flickerRunResultBuilder: FlickerRunResult.Builder) {
-        flickerRunResultBuilder.eventLog = _logs.mapNotNull { event ->
+    override fun save(flickerRunResultBuilder: FlickerRunResult.Builder?): Path? {
+        flickerRunResultBuilder?.eventLog = _logs.mapNotNull { event ->
             val timestamp = event.timeNanos
             val log = (event.data as Array<*>).map { it as String }
             if (log.size != 2) {
@@ -93,6 +94,7 @@ open class EventLogMonitor : ITransitionMonitor {
             FocusEvent(timestamp, window, focusState, reason)
                     .takeIf { focusState != Focus.REQUESTED }
         }
+        return null
     }
 
     private companion object {

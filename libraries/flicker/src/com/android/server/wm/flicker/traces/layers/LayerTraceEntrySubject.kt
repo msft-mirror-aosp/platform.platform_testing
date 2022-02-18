@@ -74,11 +74,6 @@ class LayerTraceEntrySubject private constructor(
         assertion(this.entry)
     }
 
-    /** {@inheritDoc} */
-    override fun clone(): FlickerSubject {
-        return LayerTraceEntrySubject(fm, entry, trace, parent)
-    }
-
     /**
      * Asserts that the current SurfaceFlinger state doesn't contain layers
      */

@@ -17,10 +17,15 @@
 package com.android.server.wm.flicker.monitor
 
 import android.os.RemoteException
+import android.util.Log
 import android.view.WindowManagerGlobal
+import com.android.server.wm.flicker.FLICKER_TAG
 import com.android.server.wm.flicker.FlickerRunResult
+import com.android.server.wm.flicker.getDefaultFlickerOutputDir
 import com.android.server.wm.flicker.traces.layers.LayersTraceSubject
 import com.android.server.wm.traces.common.layers.LayersTrace
+import com.android.server.wm.traces.parser.layers.LayersTraceParser
+import java.nio.file.Files
 import java.nio.file.Path
 
 /**
@@ -28,12 +33,11 @@ import java.nio.file.Path
  *
  * Use [LayersTraceSubject.assertThat] to make assertions on the trace
  */
-open class LayersTraceMonitor(
-    outputDir: Path,
-    private val traceFlags: Int
-) : TransitionMonitor(outputDir, "layers_trace$WINSCOPE_EXT") {
-
-    constructor(outputDir: Path) : this(outputDir, TRACE_FLAGS)
+open class LayersTraceMonitor @JvmOverloads constructor(
+    outputDir: Path = getDefaultFlickerOutputDir(),
+    sourceFile: Path = TRACE_DIR.resolve("layers_trace$WINSCOPE_EXT"),
+    private val traceFlags: Int = TRACE_FLAGS
+) : TransitionMonitor(outputDir, sourceFile) {
 
     private val windowManager = WindowManagerGlobal.getWindowManagerService()
 
@@ -58,10 +62,13 @@ open class LayersTraceMonitor(
         get() = windowManager.isLayerTracing
 
     override fun setResult(flickerRunResultBuilder: FlickerRunResult.Builder, traceFile: Path) {
-        flickerRunResultBuilder.layersTraceFile = traceFile
+        flickerRunResultBuilder.setLayersTrace(traceFile) {
+            Log.v(FLICKER_TAG, "Parsing Layers trace")
+            val traceData = Files.readAllBytes(traceFile)
+            val layersTrace = LayersTraceParser.parseFromTrace(traceData)
+            LayersTraceSubject.assertThat(layersTrace)
+        }
     }
-
-    override fun getTracePath(builder: FlickerRunResult.Builder) = builder.layersTraceFile
 
     companion object {
         const val TRACE_FLAGS = 0x47 // TRACE_CRITICAL|TRACE_INPUT|TRACE_COMPOSITION|TRACE_SYNC

@@ -18,6 +18,7 @@ package com.android.server.wm.flicker.service
 
 import android.util.Log
 import com.android.helpers.ICollectorHelper
+import com.android.server.wm.flicker.FlickerRunResult
 import com.android.server.wm.flicker.getDefaultFlickerOutputDir
 import com.android.server.wm.flicker.monitor.LayersTraceMonitor
 import com.android.server.wm.flicker.monitor.TraceMonitor
@@ -68,18 +69,18 @@ class FlickerCollectionHelper : ICollectorHelper<Int> {
     /** Collect the assertions metrics for Flicker as a Service.  */
     override fun getMetrics(): Map<String, Int> {
         Log.i(LOG_TAG, "getMetrics")
-        val testTag = "fass"
+        val builder = FlickerRunResult.Builder()
         traceMonitors.forEach {
             it.stop()
-            it.save(testTag)
+            it.save(builder)
         }
 
         Files.createDirectories(outputDir)
-        wmTrace = getWindowManagerTrace(getFassFilePath(outputDir, testTag, "wm_trace"))
-        layersTrace = getLayersTrace(getFassFilePath(outputDir, testTag, "layers_trace"))
+        wmTrace = getWindowManagerTrace(getFassFilePath(outputDir, "wm_trace"))
+        layersTrace = getLayersTrace(getFassFilePath(outputDir, "layers_trace"))
 
         val flickerService = FlickerService()
-        val (errors, assertions) = flickerService.process(wmTrace, layersTrace, outputDir, testTag)
+        val (errors, assertions) = flickerService.process(wmTrace, layersTrace, outputDir)
         errorTrace = errors
 
         return assertionsToMetrics(assertions)

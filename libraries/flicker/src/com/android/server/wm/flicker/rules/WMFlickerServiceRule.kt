@@ -17,6 +17,7 @@
 package com.android.server.wm.flicker.rules
 
 import androidx.test.platform.app.InstrumentationRegistry
+import com.android.server.wm.flicker.FlickerRunResult
 import com.android.server.wm.flicker.getDefaultFlickerOutputDir
 import com.android.server.wm.flicker.monitor.LayersTraceMonitor
 import com.android.server.wm.flicker.monitor.ScreenRecorder
@@ -53,18 +54,18 @@ open class WMFlickerServiceRule @JvmOverloads constructor(
     }
 
     override fun finished(description: Description?) {
-        val testTag = description?.methodName ?: "fass"
+        val builder = FlickerRunResult.Builder()
         traceMonitors.forEach {
             it.stop()
-            it.save(testTag)
+            it.save(builder)
         }
 
         Files.createDirectories(outputDir)
-        wmTrace = getWindowManagerTrace(getFassFilePath(outputDir, testTag, "wm_trace"))
-        layersTrace = getLayersTrace(getFassFilePath(outputDir, testTag, "layers_trace"))
+        wmTrace = getWindowManagerTrace(getFassFilePath(outputDir, "wm_trace"))
+        layersTrace = getLayersTrace(getFassFilePath(outputDir, "layers_trace"))
 
         val flickerService = FlickerService()
-        flickerService.process(wmTrace, layersTrace, outputDir, testTag)
+        flickerService.process(wmTrace, layersTrace, outputDir)
     }
 
     private fun setupMonitors() {

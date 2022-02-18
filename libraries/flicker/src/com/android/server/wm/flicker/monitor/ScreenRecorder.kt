@@ -29,19 +29,19 @@ import android.view.Surface
 import android.view.WindowManager
 import com.android.server.wm.flicker.FLICKER_TAG
 import com.android.server.wm.flicker.FlickerRunResult
+import com.android.server.wm.flicker.getDefaultFlickerOutputDir
 import java.nio.file.Files
 import java.nio.file.Path
 
 /** Captures screen contents and saves it as a mp4 video file.  */
 open class ScreenRecorder @JvmOverloads constructor(
-    outputPath: Path,
-    context: Context,
+    outputDir: Path = getDefaultFlickerOutputDir(),
+    private val context: Context,
     private val maxDurationMs: Int = MAX_DURATION_MS,
     private val maxFileSizeBytes: Long = MAX_FILESIZE_BYTES,
     private val width: Int = 720,
-    private val height: Int = 1280,
-    traceFile: String = "transition.mp4"
-) : TraceMonitor(outputPath, outputPath.resolve(traceFile)) {
+    private val height: Int = 1280
+) : TraceMonitor(outputDir, getDefaultFlickerOutputDir().resolve("transition.mp4")) {
     private val displayManager = context.getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
     private val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
     private var mediaRecorder: MediaRecorder? = null
@@ -49,7 +49,7 @@ open class ScreenRecorder @JvmOverloads constructor(
     private var virtualDisplay: VirtualDisplay? = null
     private fun prepare() {
         // Set up media recorder
-        val recorder = MediaRecorder()
+        val recorder = MediaRecorder(context)
 
         // Set up audio source
         recorder.setVideoSource(MediaRecorder.VideoSource.SURFACE)
@@ -70,7 +70,7 @@ open class ScreenRecorder @JvmOverloads constructor(
         recorder.setVideoEncodingBitRate(vidBitRate)
         recorder.setMaxDuration(maxDurationMs)
         recorder.setMaxFileSize(maxFileSizeBytes)
-        recorder.setOutputFile(sourceTraceFilePath.toFile())
+        recorder.setOutputFile(sourceFile.toFile())
         recorder.prepare()
 
         // Create surface
@@ -93,21 +93,21 @@ open class ScreenRecorder @JvmOverloads constructor(
             Log.i(FLICKER_TAG, "Screen recorder already running")
             return
         }
-        Files.deleteIfExists(sourceTraceFilePath)
-        require(!Files.exists(sourceTraceFilePath)) { "Could not delete old trace file" }
-        Files.createDirectories(sourceTraceFilePath.parent)
+        Files.deleteIfExists(sourceFile)
+        require(!Files.exists(sourceFile)) { "Could not delete old trace file" }
+        Files.createDirectories(sourceFile.parent)
 
         prepare()
-        Log.d(FLICKER_TAG, "Starting screen recording to file $sourceTraceFilePath")
+        Log.d(FLICKER_TAG, "Starting screen recording to file $sourceFile")
         mediaRecorder?.start()
 
         var remainingTime = WAIT_TIMEOUT_MS
         do {
             SystemClock.sleep(WAIT_INTERVAL_MS)
             remainingTime -= WAIT_INTERVAL_MS
-        } while (!Files.exists(sourceTraceFilePath) && remainingTime > 0)
+        } while (!Files.exists(sourceFile) && remainingTime > 0)
 
-        require(Files.exists(sourceTraceFilePath)) {
+        require(Files.exists(sourceFile)) {
             "Screen recorder didn't start" }
     }
 
@@ -117,7 +117,7 @@ open class ScreenRecorder @JvmOverloads constructor(
             return
         }
 
-        Log.d(FLICKER_TAG, "Stopping screen recording. Storing result in $sourceTraceFilePath")
+        Log.d(FLICKER_TAG, "Stopping screen recording. Storing result in $sourceFile")
         try {
             mediaRecorder?.stop()
             mediaRecorder?.release()
@@ -138,7 +138,7 @@ open class ScreenRecorder @JvmOverloads constructor(
     }
 
     override fun toString(): String {
-        return "ScreenRecorder($sourceTraceFilePath)"
+        return "ScreenRecorder($sourceFile)"
     }
 
     companion object {

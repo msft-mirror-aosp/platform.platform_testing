@@ -28,6 +28,7 @@ import com.android.server.wm.traces.parser.layers.LayersTraceParser;
 import com.android.server.wm.traces.parser.windowmanager.WindowManagerTraceParser;
 
 import com.google.common.io.Files;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.nio.file.Paths;
@@ -62,6 +63,8 @@ public abstract class FlickerRuleBase extends TestWatcher {
     private boolean mIsRuleDisabled= false;
     private WindowManagerTrace mWindowManagerTrace;
     private LayersTrace mLayerTrace;
+    private File mWmTracePath = null;
+    private File mLayersTracePath = null;
 
     public FlickerRuleBase() {
     }
@@ -112,7 +115,7 @@ public abstract class FlickerRuleBase extends TestWatcher {
         }
 
         // Cleanup the trace file from previous test runs.
-        cleanupTraceFiles(description);
+        cleanupTraceFiles();
 
         updateMethodCount = false;
     }
@@ -136,16 +139,15 @@ public abstract class FlickerRuleBase extends TestWatcher {
         if (mIsWmTraceEnabled) {
             // Verify if WM trace file already exist for the current test. It could have been
             // created by another Window manager based rule.
-            if (!new File(getFinalTraceFilePath(description, WM_TRACE_FILE_SUFFIX)).exists()) {
+            if (mWmTracePath == null || !mWmTracePath.exists()) {
                 // Appends the trace file suffix "_wm_trace.pb" and store it under the root
                 // directory.
-                mWmTraceMonitor.save(getFileNamePrefix(description));
+                mWmTracePath = mWmTraceMonitor.save(/* flickerBuilder */ null).toFile();
                 Log.v(TAG, "WM trace successfully saved in the destination folder.");
             } else {
                 Log.v(TAG, "WM trace already saved in the destination folder.");
             }
-            mWindowManagerTrace = getWindowManagerTrace(
-                    getFinalTraceFilePath(description, WM_TRACE_FILE_SUFFIX));
+            mWindowManagerTrace = getWindowManagerTrace(mWmTracePath);
         }
 
         // Verify if layers tracing is already stopped by another layers based
@@ -162,16 +164,15 @@ public abstract class FlickerRuleBase extends TestWatcher {
         if (mIsLayersTraceEnabled) {
             // Verify if layer trace file already exist for the current test. It could have been
             // created by another layers based rule.
-            if (!new File(getFinalTraceFilePath(description, LAYERS_TRACE_FILE_SUFFIX)).exists()) {
+            if (mLayersTracePath == null || !mLayersTracePath.exists()) {
                 // Appends the trace file suffix "_layers_trace.pb" and store it under the root
                 // directory.
-                mLayersTraceMonitor.save(getFileNamePrefix(description));
+                mLayersTracePath = mLayersTraceMonitor.save(/* flickerBuilder */ null).toFile();
                 Log.v(TAG, "Layers trace successfully saved in the destination folder.");
             } else {
                 Log.v(TAG, "Layers trace already saved in the destination folder.");
             }
-            mLayerTrace = getLayersTrace(
-                    getFinalTraceFilePath(description, LAYERS_TRACE_FILE_SUFFIX));
+            mLayerTrace = getLayersTrace(mLayersTracePath);
         }
 
         validateFlickerConditions();
@@ -209,32 +210,17 @@ public abstract class FlickerRuleBase extends TestWatcher {
         }
     }
 
-    /**
-     * Remove the WM trace and layers trace files collected from previous test runs.
-     */
-    private void cleanupTraceFiles(Description description) {
-        if (new File(getFinalTraceFilePath(description, WM_TRACE_FILE_SUFFIX)).exists()) {
-            new File(getFinalTraceFilePath(description, WM_TRACE_FILE_SUFFIX)).delete();
+    /** Remove the WM trace and layers trace files collected from previous test runs. */
+    private void cleanupTraceFiles() {
+        if (mWmTracePath != null && mWmTracePath.exists()) {
+            mWmTracePath.delete();
             Log.v(TAG, "Removed the already existing wm trace file.");
         }
 
-        if (new File(getFinalTraceFilePath(description, LAYERS_TRACE_FILE_SUFFIX)).exists()) {
-            new File(getFinalTraceFilePath(description, LAYERS_TRACE_FILE_SUFFIX)).delete();
+        if (mLayersTracePath != null && mLayersTracePath.exists()) {
+            mLayersTracePath.delete();
             Log.v(TAG, "Removed the already existing layers trace file.");
         }
-    }
-
-    /**
-     * Retrieve the path of the trace file in the device.
-     *
-     * @param description
-     * @param suffix
-     * @return path to the trace file.
-     */
-    private String getFinalTraceFilePath(Description description, String suffix) {
-        return String.format(
-                "%s%s_%s", mTraceDirectoryRoot, getFileNamePrefix(description),
-                suffix);
     }
 
     /**
@@ -252,44 +238,40 @@ public abstract class FlickerRuleBase extends TestWatcher {
     /**
      * Parse the window manager trace file.
      *
-     * @param finalTraceFilePath
+     * @param finalTraceFile
      * @return parsed window manager trace.
      */
-    private WindowManagerTrace getWindowManagerTrace(String finalTraceFilePath) {
+    private WindowManagerTrace getWindowManagerTrace(File finalTraceFile) {
         Log.v(TAG, "Processing window manager trace file.");
         try {
-            byte[] wmTraceByteArray = Files.toByteArray(new File(finalTraceFilePath));
-            if (wmTraceByteArray != null) {
-                WindowManagerTrace wmTrace = WindowManagerTraceParser
-                        .parseFromTrace(wmTraceByteArray);
-                return wmTrace;
+            byte[] wmTraceByteArray = Files.toByteArray(finalTraceFile);
+            if (wmTraceByteArray.length > 0) {
+                return WindowManagerTraceParser.parseFromTrace(wmTraceByteArray);
             } else {
                 throw new RuntimeException("Window manager trace contents are empty.");
             }
         } catch (Exception e) {
-            throw new RuntimeException("Unable to read the proto file." + finalTraceFilePath);
+            throw new RuntimeException("Unable to read the proto file." + finalTraceFile);
         }
     }
 
     /**
      * Parse the layers trace file.
      *
-     * @param finalTraceFilePath
+     * @param finalTraceFile
      * @return parsed layers trace.
      */
-    private LayersTrace getLayersTrace(String finalTraceFilePath) {
+    private LayersTrace getLayersTrace(File finalTraceFile) {
         Log.v(TAG, "Processing layers trace file.");
         try {
-            byte[] layersTraceByteArray = Files.toByteArray(new File(finalTraceFilePath));
-            if (layersTraceByteArray != null) {
-                LayersTrace layersTrace = LayersTraceParser
-                        .parseFromTrace(layersTraceByteArray);
-                return layersTrace;
+            byte[] layersTraceByteArray = Files.toByteArray(finalTraceFile);
+            if (layersTraceByteArray.length > 0) {
+                return LayersTraceParser.parseFromTrace(layersTraceByteArray);
             } else {
                 throw new RuntimeException("layers trace contents are empty.");
             }
         } catch (Exception e) {
-            throw new RuntimeException("Unable to read the proto file." + finalTraceFilePath);
+            throw new RuntimeException("Unable to read the proto file." + finalTraceFile);
         }
     }
 

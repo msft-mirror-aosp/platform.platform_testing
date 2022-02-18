@@ -22,5 +22,5 @@ import kotlin.AssertionError
 class FlickerAssertionError(
     message: String,
     cause: Throwable?,
-    val traceFiles: List<Path>
+    val traceFile: Path?
 ) : AssertionError(message, cause)

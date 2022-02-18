@@ -97,15 +97,12 @@ class WMFlickerServiceRuleForTestSpec(
                 val wmSubject = run.wmSubject as WindowManagerTraceSubject
                 val layersSubject = run.layersSubject as LayersTraceSubject
 
-                val outputDir = run.traceFiles
-                    .firstOrNull()
-                    ?.parent
-                    ?: error("Output dir not detected")
+                val outputDir = run.traceFile?.parent ?: error("Output dir not detected")
 
                 val wmTrace = wmSubject.trace
                 val layersTrace = layersSubject.trace
                 val (errorTrace, assertionsResults) =
-                        flickerService.process(wmTrace, layersTrace, outputDir, category)
+                        flickerService.process(wmTrace, layersTrace, outputDir)
                 errors.add(errorTrace)
                 flickerResultsCollector.postRunResults(assertionsResults)
             }

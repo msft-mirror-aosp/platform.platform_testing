@@ -22,7 +22,6 @@ import android.util.Log
 import androidx.test.uiautomator.UiDevice
 import com.android.server.wm.flicker.assertions.AssertionData
 import com.android.server.wm.flicker.monitor.ITransitionMonitor
-import com.android.server.wm.flicker.monitor.WindowAnimationFrameStatsMonitor
 import com.android.server.wm.traces.common.layers.LayersTrace
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 import com.android.server.wm.traces.parser.windowmanager.WindowManagerStateHelper
@@ -62,10 +61,6 @@ class Flicker(
      * Number of times the test should be executed
      */
     @JvmField var repetitions: Int,
-    /**
-     * Monitor for janky frames, when filtering out janky runs
-     */
-    @JvmField val frameStatsMonitor: WindowAnimationFrameStatsMonitor?,
     /**
      * Enabled tracing monitors
      */
