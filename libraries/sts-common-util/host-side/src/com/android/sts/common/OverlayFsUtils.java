@@ -16,19 +16,16 @@
 
 package com.android.sts.common;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+
+import com.android.tradefed.device.DeviceNotAvailableException;
+import com.android.tradefed.device.ITestDevice;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.regex.Pattern;
 import java.util.regex.Matcher;
-
-import com.android.tradefed.device.ITestDevice;
-import com.android.tradefed.device.DeviceNotAvailableException;
-import com.android.tradefed.util.CommandResult;
-import com.android.tradefed.util.CommandStatus;
+import java.util.regex.Pattern;
 
 public class OverlayFsUtils {
     // output of `stat`, e.g. "root shell 755 u:object_r:vendor_file:s0"
@@ -52,7 +49,8 @@ public class OverlayFsUtils {
         // However, test devices initiation is done in one of the @Before, after a rule's setup.
         assertTrue("Can't acquire root for " + device.getSerialNumber(), device.enableAdbRoot());
 
-        String statOut = runAndCheck(device, "stat -c '%U %G %a %C' '" + dir + "'");
+        String statOut =
+                CommandUtil.runAndCheck(device, "stat -c '%U %G %a %C' '" + dir + "'").getStdout();
         Matcher m = PERM_PATTERN.matcher(statOut);
         assertTrue("Bad stats output: " + statOut, m.find());
         String user = m.group("user");
@@ -64,31 +62,15 @@ public class OverlayFsUtils {
         String upperdir = tempdir.resolve("upper").toString();
         String workdir = tempdir.resolve("workdir").toString();
 
-        runAndCheck(device, String.format("mkdir -p '%s' '%s'", upperdir, workdir));
-        runAndCheck(device, String.format("chown %s:%s '%s'", user, group, upperdir));
-        runAndCheck(device, String.format("chcon '%s' '%s'", seContext, upperdir));
-        runAndCheck(device, String.format("chmod %s '%s'", unixPerm, upperdir));
+        CommandUtil.runAndCheck(device, String.format("mkdir -p '%s' '%s'", upperdir, workdir));
+        CommandUtil.runAndCheck(device, String.format("chown %s:%s '%s'", user, group, upperdir));
+        CommandUtil.runAndCheck(device, String.format("chcon '%s' '%s'", seContext, upperdir));
+        CommandUtil.runAndCheck(device, String.format("chmod %s '%s'", unixPerm, upperdir));
 
         String mountCmd =
                 String.format(
                         "mount -t overlay overlay -o lowerdir='%s',upperdir='%s',workdir='%s' '%s'",
                         dir, upperdir, workdir, dir);
-        runAndCheck(device, mountCmd);
-    }
-
-    /**
-     * Execute shell command on device, throws AssumptionViolatedException upon failure.
-     *
-     * @return stdout.
-     */
-    private static String runAndCheck(ITestDevice device, String cmd)
-            throws DeviceNotAvailableException {
-        CommandResult res = device.executeShellV2Command(cmd);
-        String failMsg =
-                String.format(
-                        "cmd failed: %s\ncode: %s\nstdout:\n%s\nstderr:\n%s",
-                        cmd, res.getExitCode(), res.getStdout(), res.getStderr());
-        assertEquals(failMsg, res.getStatus(), CommandStatus.SUCCESS);
-        return res.getStdout();
+        CommandUtil.runAndCheck(device, mountCmd);
     }
 }
