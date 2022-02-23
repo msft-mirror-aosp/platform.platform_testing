@@ -34,22 +34,16 @@ data class FlickerResult(
      */
     @JvmField val tags: Set<String> = setOf(),
     /**
-     * Error which happened during the transition
+     * Execution errors which happened during the execution of the Flicker test
      */
-    @JvmField val error: Throwable? = null
+    @JvmField val executionErrors: List<Throwable> = listOf()
 ) {
+    val combinedExecutionError = CombinedExecutionError(executionErrors)
+
     /**
      * List of failures during assertion
      */
     private val failures: MutableList<FlickerAssertionError> = mutableListOf()
-
-    /**
-     * Asserts if the transition of this flicker test has ben executed
-     */
-    private fun checkIsExecuted() {
-        Truth.assertWithMessage(error?.message).that(error).isNull()
-        Truth.assertWithMessage("Transition was not executed").that(runs).isNotEmpty()
-    }
 
     /**
      * Run the assertion on the trace
@@ -57,7 +51,7 @@ data class FlickerResult(
      * @throws AssertionError If the assertion fail or the transition crashed
      */
     internal fun checkAssertion(assertion: AssertionData): List<FlickerAssertionError> {
-        checkIsExecuted()
+        Truth.assertWithMessage("No transitions were not executed").that(runs).isNotEmpty()
         val filteredRuns = runs.filter { it.assertionTag == assertion.tag }
         val currFailures = filteredRuns.mapNotNull { run ->
             try {
@@ -76,13 +70,44 @@ data class FlickerResult(
     }
 
     /**
-     * Add a prefix to all trace files indicating the test status (pass/fail)
+     * Asserts if there have been any execution errors while running the transitions
      */
-    fun cleanUp() {
-        runs.forEach { it.cleanUp(failures) }
+    internal fun checkForExecutionErrors() {
+        if (executionErrors.isNotEmpty()) {
+            if (executionErrors.size == 1) {
+                throw executionErrors[0]
+            }
+            throw combinedExecutionError
+        }
     }
 
-    fun isEmpty(): Boolean = error == null && runs.isEmpty()
+    /**
+     * Add a prefix to all trace files indicating the test status (pass/fail)
+     */
+    fun saveTraces() {
+        runs.forEach { it.saveTraces(failures) }
+    }
+
+    fun isEmpty(): Boolean = executionErrors.isEmpty() && runs.isEmpty()
 
     fun isNotEmpty(): Boolean = !isEmpty()
+
+    companion object {
+        class CombinedExecutionError(val errors: List<Throwable>?) : Throwable() {
+            override val message: String? get() {
+                if (errors == null || errors.isEmpty()) {
+                    return null
+                }
+                if (errors.size == 1) {
+                    return errors[0].toString()
+                }
+                return "Combined Errors Of\n\t- " +
+                        errors.joinToString("\n\t\tAND\n\t- ") { it.toString() } +
+                        "\n[NOTE: any details below are only for the first error]"
+            }
+
+            override val cause: Throwable?
+                get() = errors?.get(0)
+        }
+    }
 }

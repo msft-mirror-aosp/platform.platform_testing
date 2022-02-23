@@ -23,8 +23,8 @@ import androidx.test.uiautomator.UiDevice
 import com.android.server.wm.flicker.Flicker
 import com.android.server.wm.flicker.FlickerDslMarker
 import com.android.server.wm.flicker.TransitionRunner
-import com.android.server.wm.flicker.monitor.EventLogMonitor
 import com.android.server.wm.flicker.getDefaultFlickerOutputDir
+import com.android.server.wm.flicker.monitor.EventLogMonitor
 import com.android.server.wm.flicker.monitor.ITransitionMonitor
 import com.android.server.wm.flicker.monitor.LayersTraceMonitor
 import com.android.server.wm.flicker.monitor.ScreenRecorder
@@ -43,7 +43,6 @@ import java.nio.file.Path
 class FlickerBuilder private constructor(
     internal val instrumentation: Instrumentation,
     private val launcherStrategy: ILauncherStrategy,
-    private val includeJankyRuns: Boolean,
     private val outputDir: Path,
     private val wmHelper: WindowManagerStateHelper,
     private var testName: String,
@@ -69,10 +68,6 @@ class FlickerBuilder private constructor(
         launcherStrategy: ILauncherStrategy = LauncherStrategyFactory
             .getInstance(instrumentation).launcherStrategy,
         /**
-         * Include or discard janky runs
-         */
-        includeJankyRuns: Boolean = true,
-        /**
          * Output directory for the test results
          */
         outputDir: Path = getDefaultFlickerOutputDir(),
@@ -83,7 +78,6 @@ class FlickerBuilder private constructor(
     ) : this(
         instrumentation,
         launcherStrategy,
-        includeJankyRuns,
         outputDir,
         wmHelper,
         testName = "",
@@ -107,7 +101,6 @@ class FlickerBuilder private constructor(
     constructor(otherBuilder: FlickerBuilder) : this(
         otherBuilder.instrumentation,
         otherBuilder.launcherStrategy,
-        otherBuilder.includeJankyRuns,
         otherBuilder.outputDir.toAbsolutePath(),
         otherBuilder.wmHelper,
         otherBuilder.testName,

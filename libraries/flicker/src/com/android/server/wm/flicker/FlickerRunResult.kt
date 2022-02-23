@@ -79,7 +79,17 @@ class FlickerRunResult private constructor(
         return result
     }
 
-    private fun rename(isFailure: Boolean) {
+    /**
+     * Rename the trace files according to the run status (pass/fail)
+     *
+     * @param failures List of all failures during the flicker execution
+     */
+    fun saveTraces(failures: List<FlickerAssertionError>) {
+        val containsFailure = containsFailure(failures)
+        saveTraceFile(containsFailure)
+    }
+
+    private fun saveTraceFile(isFailure: Boolean) {
         if (traceFile == null || !Files.exists(traceFile)) {
             return
         }
@@ -97,16 +107,6 @@ class FlickerRunResult private constructor(
         return failures.mapNotNull { it.traceFile }.any { failureTrace ->
             traceFile == failureTrace
         }
-    }
-
-    /**
-     * Rename the trace files according to the run status (pass/fail)
-     *
-     * @param failures List of all failures during the flicker execution
-     */
-    fun cleanUp(failures: List<FlickerAssertionError>) {
-        val containsFailure = containsFailure(failures)
-        rename(containsFailure)
     }
 
     /**
