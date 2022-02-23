@@ -18,6 +18,13 @@ package com.android.server.wm.flicker
 
 import android.app.Instrumentation
 import androidx.test.platform.app.InstrumentationRegistry
+import com.android.compatibility.common.util.SystemUtil
+import com.android.server.wm.flicker.FlickerResult.Companion.CombinedExecutionError
+import com.android.server.wm.flicker.TransitionRunner.Companion.TestSetupFailure
+import com.android.server.wm.flicker.TransitionRunner.Companion.TestTeardownFailure
+import com.android.server.wm.flicker.TransitionRunner.Companion.TransitionExecutionFailure
+import com.android.server.wm.flicker.TransitionRunner.Companion.TransitionSetupFailure
+import com.android.server.wm.flicker.TransitionRunner.Companion.TransitionTeardownFailure
 import com.android.server.wm.flicker.assertions.AssertionData
 import com.android.server.wm.flicker.assertions.FlickerSubject
 import com.android.server.wm.flicker.dsl.AssertionTag
@@ -32,6 +39,9 @@ import org.junit.Assert
 import org.junit.FixMethodOrder
 import org.junit.Test
 import org.junit.runners.MethodSorters
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.Paths
 import kotlin.reflect.KClass
 
 /**
@@ -42,99 +52,69 @@ import kotlin.reflect.KClass
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class FlickerDSLTest {
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
-    private val TAG = "tag"
     private var executed = false
-
-    private fun runFlicker(assertion: AssertionData) {
-        executed = false
-        val builder = FlickerBuilder(instrumentation)
-        builder.transitions {
-            withTag(TAG) {
-                device.pressHome()
-            }
-        }
-        val flicker = builder.build()
-        flicker.execute()
-        flicker.checkAssertion(assertion)
-        Truth.assertWithMessage("Assertion was not executed")
-            .that(executed)
-            .isTrue()
-    }
-
-    private fun validateAssertion(
-        assertion: AssertionData,
-        expectedSubjectClass: KClass<out FlickerSubject>,
-        expectedTag: String
-    ) {
-        Truth.assertWithMessage("Unexpected subject type")
-            .that(assertion.expectedSubjectClass)
-            .isEqualTo(expectedSubjectClass)
-        Truth.assertWithMessage("Unexpected tag")
-            .that(assertion.tag)
-            .isEqualTo(expectedTag)
-    }
 
     @Test
     fun checkBuiltWMStartAssertion() {
         val assertion = FlickerTestParameter.buildWmStartAssertion { executed = true }
         validateAssertion(assertion, WindowManagerStateSubject::class, AssertionTag.START)
-        runFlicker(assertion)
+        runAndAssertExecuted(assertion)
     }
 
     @Test
     fun checkBuiltWMEndAssertion() {
         val assertion = FlickerTestParameter.buildWmEndAssertion { executed = true }
         validateAssertion(assertion, WindowManagerStateSubject::class, AssertionTag.END)
-        runFlicker(assertion)
+        runAndAssertExecuted(assertion)
     }
 
     @Test
     fun checkBuiltWMAssertion() {
         val assertion = FlickerTestParameter.buildWMAssertion { executed = true }
         validateAssertion(assertion, WindowManagerTraceSubject::class, AssertionTag.ALL)
-        runFlicker(assertion)
+        runAndAssertExecuted(assertion)
     }
 
     @Test
     fun checkBuiltWMTagAssertion() {
         val assertion = FlickerTestParameter.buildWMTagAssertion(TAG) { executed = true }
         validateAssertion(assertion, WindowManagerStateSubject::class, TAG)
-        runFlicker(assertion)
+        runAndAssertExecuted(assertion)
     }
 
     @Test
     fun checkBuiltLayersStartAssertion() {
         val assertion = FlickerTestParameter.buildLayersStartAssertion { executed = true }
         validateAssertion(assertion, LayerTraceEntrySubject::class, AssertionTag.START)
-        runFlicker(assertion)
+        runAndAssertExecuted(assertion)
     }
 
     @Test
     fun checkBuiltLayersEndAssertion() {
         val assertion = FlickerTestParameter.buildLayersEndAssertion { executed = true }
         validateAssertion(assertion, LayerTraceEntrySubject::class, AssertionTag.END)
-        runFlicker(assertion)
+        runAndAssertExecuted(assertion)
     }
 
     @Test
     fun checkBuiltLayersAssertion() {
         val assertion = FlickerTestParameter.buildLayersAssertion { executed = true }
         validateAssertion(assertion, LayersTraceSubject::class, AssertionTag.ALL)
-        runFlicker(assertion)
+        runAndAssertExecuted(assertion)
     }
 
     @Test
     fun checkBuiltLayersTagAssertion() {
         val assertion = FlickerTestParameter.buildLayersTagAssertion(TAG) { executed = true }
         validateAssertion(assertion, LayerTraceEntrySubject::class, TAG)
-        runFlicker(assertion)
+        runAndAssertExecuted(assertion)
     }
 
     @Test
     fun checkBuiltEventLogAssertion() {
         val assertion = FlickerTestParameter.buildEventLogAssertion { executed = true }
         validateAssertion(assertion, EventLogSubject::class, AssertionTag.ALL)
-        runFlicker(assertion)
+        runAndAssertExecuted(assertion)
     }
 
     @Test
@@ -171,7 +151,7 @@ class FlickerDSLTest {
             }
             builder.build().execute()
             Assert.fail("Should not have allowed invalid tag name")
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             Truth.assertWithMessage("Did not validate tag name")
                 .that(e.cause?.message)
                 .contains("The test tag inv lid can not contain spaces")
@@ -203,7 +183,7 @@ class FlickerDSLTest {
         try {
             FlickerBuilder(instrumentation).build().execute()
             Assert.fail("Should not have allowed empty transition")
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             Truth.assertWithMessage("Flicker did not warn of empty transitions")
                 .that(e.message)
                 .contains("A flicker test must include transitions to run")
@@ -220,18 +200,13 @@ class FlickerDSLTest {
             flicker.execute()
             Assert.fail("Should have raised an exception with message $exceptionMessage")
         } catch (e: Throwable) {
-            Truth.assertWithMessage("Incorrect exception message")
+            Truth.assertWithMessage("Incorrect exception type")
+                    .that(e)
+                    .isInstanceOf(TransitionExecutionFailure::class.java)
+            Truth.assertWithMessage("Exception does not contain the original crash message")
                 .that(e.message)
-                .contains("Unable to execute transition")
-            Truth.assertWithMessage("Test exception does not contain original crash message")
-                .that(e.cause?.message)
                 .contains(exceptionMessage)
         }
-    }
-
-    private val failedAssertion = AssertionData(tag = AssertionTag.END,
-            expectedSubjectClass = LayerTraceEntrySubject::class) {
-        this.fail("Expected exception")
     }
 
     @Test
@@ -242,7 +217,7 @@ class FlickerDSLTest {
         flicker.execute()
 
         val error = assertThrows(AssertionError::class.java) {
-            flicker.checkAssertion(failedAssertion)
+            flicker.checkAssertion(FAIL_ASSERTION)
         }
         // Exception message
         Truth.assertThat(error).hasMessageThat().contains("Expected exception")
@@ -251,6 +226,224 @@ class FlickerDSLTest {
         Truth.assertThat(error).hasMessageThat().contains("Trace file")
         Truth.assertThat(error).hasMessageThat().contains("Location")
         // Correct stack trace point
-        Truth.assertThat(error).hasMessageThat().contains("failedAssertion")
+        Truth.assertThat(error).hasMessageThat().contains("FAIL_ASSERTION")
+    }
+
+    @Test
+    fun canDetectTestSetupExecutionError() {
+        val builder = FlickerBuilder(instrumentation)
+        builder.transitions(SIMPLE_TRANSITION)
+        builder.setup {
+            test {
+                throw RuntimeException("Failed to execute test setup")
+            }
+        }
+        val flicker = builder.build()
+        runAndAssertFlickerFailsWithException(flicker, TestSetupFailure::class.java)
+    }
+
+    @Test
+    fun canDetectTransitionSetupExecutionError() {
+        val builder = FlickerBuilder(instrumentation)
+        builder.transitions(SIMPLE_TRANSITION)
+        builder.setup {
+            eachRun {
+                throw RuntimeException("Failed to execute transition setup")
+            }
+        }
+        val flicker = builder.build()
+        runAndAssertFlickerFailsWithException(flicker, TransitionSetupFailure::class.java)
+    }
+
+    @Test
+    fun canDetectTransitionExecutionError() {
+        val builder = FlickerBuilder(instrumentation)
+        builder.transitions {
+            throw RuntimeException("Failed to execute transition")
+        }
+        val flicker = builder.build()
+        runAndAssertFlickerFailsWithException(flicker, TransitionExecutionFailure::class.java)
+    }
+
+    @Test
+    fun canDetectSaveResultsExecutionError() {
+        val builder = FlickerBuilder(instrumentation,
+                outputDir = Paths.get("/some/output/dir/that/does/not/exist"))
+        builder.transitions(SIMPLE_TRANSITION)
+        val flicker = builder.build()
+        runAndAssertFlickerFailsWithException(flicker, TransitionExecutionFailure::class.java)
+    }
+
+    @Test
+    fun canDetectTransitionTeardownExecutionError() {
+        val builder = FlickerBuilder(instrumentation)
+        builder.transitions(SIMPLE_TRANSITION)
+        builder.teardown {
+            eachRun {
+                throw RuntimeException("Failed to execute transition teardown")
+            }
+        }
+        val flicker = builder.build()
+        runAndAssertFlickerFailsWithException(flicker, TransitionTeardownFailure::class.java)
+    }
+
+    @Test
+    fun canDetectTestTeardownExecutionError() {
+        val builder = FlickerBuilder(instrumentation)
+        builder.transitions(SIMPLE_TRANSITION)
+        builder.teardown {
+            test {
+                throw RuntimeException("Failed to execute test teardown")
+            }
+        }
+        val flicker = builder.build()
+        runAndAssertFlickerFailsWithException(flicker, TestTeardownFailure::class.java)
+    }
+
+    @Test
+    fun runsAssertionsOnSuccessfulTransitionsEvenIfSomeFailToExecute() {
+        val repetitions = 3
+        val builder = FlickerBuilder(instrumentation)
+        failOnLastTransitionRun(builder, repetitions)
+        var assertionExecutionCounter = 0
+        val assertions = listOf(
+                FlickerTestParameter.buildWmStartAssertion { assertionExecutionCounter++ },
+                FlickerTestParameter.buildWmEndAssertion { assertionExecutionCounter++ },
+                FlickerTestParameter.buildWMAssertion { assertionExecutionCounter++ },
+                FlickerTestParameter.buildWMTagAssertion(TAG) { assertionExecutionCounter++ },
+                FlickerTestParameter.buildLayersStartAssertion { assertionExecutionCounter++ },
+                FlickerTestParameter.buildLayersEndAssertion { assertionExecutionCounter++ },
+                FlickerTestParameter.buildLayersAssertion { assertionExecutionCounter++ },
+                FlickerTestParameter.buildLayersTagAssertion(TAG) { assertionExecutionCounter++ },
+                FlickerTestParameter.buildEventLogAssertion { assertionExecutionCounter++ }
+        )
+        val flicker = builder.build()
+        runAndAssertFlickerFailsWithException(flicker, TransitionExecutionFailure::class.java,
+                assertions = assertions)
+        Truth.assertWithMessage("All assertions ran on all iterations except the last one")
+                .that(assertionExecutionCounter)
+                .isEqualTo(assertions.size * (repetitions - 1))
+    }
+
+    @Test
+    fun canHandleAndTrackMultipleExecutionErrors() {
+        val repetitions = 2
+        val builder = FlickerBuilder(instrumentation)
+        failOnLastTransitionRun(builder, repetitions)
+        builder.teardown {
+            test {
+                throw RuntimeException("Failed to execute test teardown")
+            }
+        }
+        val flicker = builder.build()
+        try {
+            runFlicker(flicker, PASS_ASSERTION)
+            Assert.fail("Should have raised an execution exception")
+        } catch (e: Throwable) {
+            Truth.assertWithMessage("Incorrect exception type")
+                    .that(e)
+                    .isInstanceOf(CombinedExecutionError::class.java)
+
+            val errors = (e as CombinedExecutionError).errors!!
+
+            // All exception are shown in the error message
+            for (error in errors) {
+                Truth.assertThat(e.message).contains("Failed to execute last transition")
+                Truth.assertThat(e.message).contains("Failed to execute test teardown")
+                Truth.assertThat(e.message).contains("TransitionExecutionFailure")
+                Truth.assertThat(e.message).contains("TestTeardownFailure")
+            }
+
+            // First exception is shown as cause
+            Truth.assertWithMessage("Incorrect exception type")
+                    .that(e.cause)
+                    .isInstanceOf(TransitionExecutionFailure::class.java)
+        }
+    }
+
+    private fun runAndAssertExecuted(assertion: AssertionData) {
+        executed = false
+        val builder = FlickerBuilder(instrumentation)
+        builder.transitions(SIMPLE_TRANSITION)
+        val flicker = builder.build()
+        runFlicker(flicker, assertion)
+        assertAssertionExecuted()
+    }
+
+    private fun assertAssertionExecuted() {
+        Truth.assertWithMessage("Assertion was not executed")
+                .that(executed)
+                .isTrue()
+    }
+
+    private fun runFlicker(flicker: Flicker, assertion: AssertionData) {
+        runFlicker(flicker, listOf(assertion))
+    }
+
+    private fun runFlicker(flicker: Flicker, assertions: List<AssertionData>) {
+        // TODO: We should probably test that these methods actually get called like this and in
+        //       this order from the ParameterizedRunner/FlickerBlockJUnit4ClassRunner.
+        flicker.execute()
+        for (assertion in assertions) {
+            flicker.checkAssertion(assertion)
+        }
+        flicker.clear()
+    }
+
+    private fun validateAssertion(
+        assertion: AssertionData,
+        expectedSubjectClass: KClass<out FlickerSubject>,
+        expectedTag: String
+    ) {
+        Truth.assertWithMessage("Unexpected subject type")
+                .that(assertion.expectedSubjectClass)
+                .isEqualTo(expectedSubjectClass)
+        Truth.assertWithMessage("Unexpected tag")
+                .that(assertion.tag)
+                .isEqualTo(expectedTag)
+    }
+
+    private fun runAndAssertFlickerFailsWithException(
+        flicker: Flicker,
+        clazz: Class<*>,
+        assertions: List<AssertionData> = listOf(PASS_ASSERTION)
+    ) {
+        try {
+            runFlicker(flicker, assertions)
+            Assert.fail("Should have raised an execution exception")
+        } catch (e: Throwable) {
+            Truth.assertWithMessage("Incorrect exception type")
+                    .that(e)
+                    .isInstanceOf(clazz)
+        }
+    }
+
+    private fun failOnLastTransitionRun(builder: FlickerBuilder, repetitions: Int) {
+        var repetitionsCounter = 0
+        builder.transitions {
+            repetitionsCounter++
+            if (repetitionsCounter == repetitions) {
+                throw RuntimeException("Failed to execute last transition")
+            }
+            withTag(TAG) {
+                device.pressHome()
+            }
+        }
+        builder.repeat { repetitions }
+    }
+
+    companion object {
+        private val TAG = "tag"
+        private val SIMPLE_TRANSITION: Flicker.() -> Unit = {
+            withTag(TAG) {
+                device.pressHome()
+            }
+        }
+        private val PASS_ASSERTION = AssertionData(tag = AssertionTag.END,
+                expectedSubjectClass = LayerTraceEntrySubject::class) {}
+        private val FAIL_ASSERTION = AssertionData(tag = AssertionTag.END,
+                expectedSubjectClass = LayerTraceEntrySubject::class) {
+            this.fail("Expected exception")
+        }
     }
 }

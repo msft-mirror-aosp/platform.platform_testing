@@ -25,6 +25,7 @@ import com.android.server.wm.traces.parser.DeviceDumpParser
 import com.google.common.io.Files
 import com.google.common.truth.Truth
 import org.junit.After
+import org.junit.Before
 import org.junit.Test
 import java.nio.file.Path
 
@@ -41,6 +42,12 @@ abstract class TraceMonitorTest<T : TransitionMonitor> {
         getMonitor(outputDir)
     }
 
+    @Before
+    fun before() {
+        Truth.assertWithMessage("Trace already enabled before starting test")
+                .that(traceMonitor.isEnabled).isFalse()
+    }
+
     @After
     fun teardown() {
         device.pressHome()
@@ -50,6 +57,8 @@ abstract class TraceMonitorTest<T : TransitionMonitor> {
         if (::savedTrace.isInitialized) {
             savedTrace.toFile().delete()
         }
+        Truth.assertWithMessage("Failed to disable trace at end of test")
+                .that(traceMonitor.isEnabled).isFalse()
     }
 
     @Test

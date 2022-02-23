@@ -33,7 +33,8 @@ abstract class TransitionMonitor(
      */
     fun withTracing(predicate: () -> Unit): ByteArray {
         if (this.isEnabled) {
-            throw UnsupportedOperationException("Chained 'withTracing' calls are not supported")
+            throw UnsupportedOperationException("Trace already running. " +
+                    "This is likely due to chained 'withTracing' calls.")
         }
         try {
             this.start()

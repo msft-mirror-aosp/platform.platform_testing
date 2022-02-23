@@ -83,40 +83,136 @@ open class TransitionRunner {
      * @param flicker test specification
      */
     internal open fun run(flicker: Flicker): FlickerResult {
-        val uiStableCondition = ConditionList(listOf(
-            WindowManagerConditionsFactory.isWMStateComplete(),
-            WindowManagerConditionsFactory.hasLayersAnimating().negate()
-        ))
         val runs = mutableListOf<FlickerRunResult>()
-        var executionError: Throwable? = null
-        try {
-            try {
-                flicker.testSetup.forEach { it.invoke(flicker) }
-                for (iteration in 0 until flicker.repetitions) {
-                    try {
-                        flicker.runSetup.forEach { it.invoke(flicker) }
-                        flicker.wmHelper.waitFor(uiStableCondition)
-                        flicker.traceMonitors.forEach { it.start() }
-                        flicker.transitions.forEach { it.invoke(flicker) }
-                    } finally {
-                        flicker.wmHelper.waitFor(uiStableCondition)
-                        flicker.traceMonitors.forEach { it.tryStop() }
-                        flicker.runTeardown.forEach { it.invoke(flicker) }
-                    }
-                    val runResults = saveResult(flicker, iteration)
-                    runs.addAll(runResults)
-                }
-            } finally {
-                flicker.testTeardown.forEach { it.invoke(flicker) }
+        val executionErrors = mutableListOf<Throwable>()
+        safeExecution(flicker, runs, executionErrors) {
+            runTestSetup(flicker)
+
+            for (iteration in 0 until flicker.repetitions) {
+                runTransitionSetup(flicker)
+                runTransition(flicker)
+                runTransitionTeardown(flicker)
+                saveRunResults(flicker, runs)
             }
-        } catch (e: Throwable) {
-            executionError = e
+
+            runTestTeardown(flicker)
         }
 
         runs.addAll(tagsResults)
-        val result = FlickerResult(runs.toList(), tags.toSet(), executionError)
+        val result = FlickerResult(runs.toList(), tags.toSet(), executionErrors)
         cleanUp()
         return result
+    }
+
+    private fun safeExecution(
+        flicker: Flicker,
+        runs: MutableList<FlickerRunResult>,
+        executionErrors: MutableList<Throwable>,
+        execution: () -> Unit
+    ) {
+        try {
+            execution()
+        } catch (e: TestSetupFailure) {
+            // If we failure on the test setup we can't run any of the transitions
+            executionErrors.add(e)
+        } catch (e: TransitionSetupFailure) {
+            // If we fail on the transition run setup then we don't want to run any further
+            // transitions nor save any results for this run. We simply want to run the test
+            // teardown.
+            executionErrors.add(e)
+            flicker.traceMonitors.forEach { it.tryStop() }
+            safeExecution(flicker, runs, executionErrors) {
+                runTestTeardown(flicker)
+            }
+        } catch (e: TransitionExecutionFailure) {
+            // If a transition fails to run we don't want to run the following iterations as the
+            // device is likely in an unexpected state which would lead to further errors. We simply
+            // want to run the test teardown
+            executionErrors.add(e)
+            flicker.traceMonitors.forEach { it.tryStop() }
+            safeExecution(flicker, runs, executionErrors) {
+                runTestTeardown(flicker)
+            }
+        } catch (e: SaveRunResultsFailure) {
+            // If we fail to save the run results we still want to run the teardowns and report the
+            // execution error.
+            executionErrors.add(e)
+            safeExecution(flicker, runs, executionErrors) {
+                runTransitionTeardown(flicker)
+                runTestTeardown(flicker)
+            }
+        } catch (e: TransitionTeardownFailure) {
+            // If a transition teardown fails to run we don't want to run the following iterations
+            // as the device is likely in an unexpected state which would lead to further errors.
+            // But, we do want to run the test teardown.
+            executionErrors.add(e)
+            safeExecution(flicker, runs, executionErrors) {
+                runTestTeardown(flicker)
+            }
+        } catch (e: TestTeardownFailure) {
+            // If we fail in the execution of the test teardown there is nothing else to do apart
+            // from reporting the execution error.
+            executionErrors.add(e)
+        }
+    }
+
+    @Throws(SaveRunResultsFailure::class)
+    private fun saveRunResults(flicker: Flicker, runs: MutableList<FlickerRunResult>) {
+        try {
+            val runResults = saveResult(flicker, iteration)
+            runs.addAll(runResults)
+        } catch (e: Throwable) {
+            throw SaveRunResultsFailure(e)
+        }
+    }
+
+    @Throws(TestSetupFailure::class)
+    private fun runTestSetup(flicker: Flicker) {
+        try {
+            flicker.testSetup.forEach { it.invoke(flicker) }
+        } catch (e: Throwable) {
+            throw TestSetupFailure(e)
+        }
+    }
+
+    @Throws(TestTeardownFailure::class)
+    private fun runTestTeardown(flicker: Flicker) {
+        try {
+            flicker.testTeardown.forEach { it.invoke(flicker) }
+        } catch (e: Throwable) {
+            throw TestTeardownFailure(e)
+        }
+    }
+
+    @Throws(TransitionSetupFailure::class)
+    private fun runTransitionSetup(flicker: Flicker) {
+        try {
+            flicker.runSetup.forEach { it.invoke(flicker) }
+            flicker.wmHelper.waitFor(UI_STABLE_CONDITIONS)
+        } catch (e: Throwable) {
+            throw TransitionSetupFailure(e)
+        }
+    }
+
+    @Throws(TransitionExecutionFailure::class)
+    private fun runTransition(flicker: Flicker) {
+        try {
+            flicker.traceMonitors.forEach { it.start() }
+            flicker.transitions.forEach { it.invoke(flicker) }
+        } catch (e: Throwable) {
+            throw TransitionExecutionFailure(e)
+        }
+    }
+
+    @Throws(TransitionTeardownFailure::class)
+    private fun runTransitionTeardown(flicker: Flicker) {
+        try {
+            flicker.wmHelper.waitFor(UI_STABLE_CONDITIONS)
+            flicker.traceMonitors.forEach { it.tryStop() }
+            flicker.runTeardown.forEach { it.invoke(flicker) }
+        } catch (e: Throwable) {
+            throw TransitionTeardownFailure(e)
+        }
     }
 
     private fun saveResult(flicker: Flicker, iteration: Int): List<FlickerRunResult> {
@@ -180,5 +276,23 @@ open class TransitionRunner {
         } catch (e: IOException) {
             throw RuntimeException("Unable to create trace file: ${e.message}", e)
         }
+    }
+
+    companion object {
+        /**
+         * Conditions that determine when the UI is in a stable stable and no windows or layers are
+         * animating or changing state.
+         */
+        private val UI_STABLE_CONDITIONS = ConditionList(listOf(
+                WindowManagerConditionsFactory.isWMStateComplete(),
+                WindowManagerConditionsFactory.hasLayersAnimating().negate()
+        ))
+
+        class TestSetupFailure(val e: Throwable) : Throwable(e)
+        class TransitionSetupFailure(val e: Throwable) : Throwable(e)
+        class TransitionExecutionFailure(val e: Throwable) : Throwable(e)
+        class SaveRunResultsFailure(val e: Throwable) : Throwable(e)
+        class TransitionTeardownFailure(val e: Throwable) : Throwable(e)
+        class TestTeardownFailure(val e: Throwable) : Throwable(e)
     }
 }
