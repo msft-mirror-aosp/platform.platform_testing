@@ -19,7 +19,6 @@ package android.platform.helpers;
 import static android.content.pm.PackageManager.FLAG_PERMISSION_USER_SET;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 
-import android.Manifest;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.ActivityManager;
@@ -457,14 +456,17 @@ public abstract class AbstractStandardAppHelper implements IAppHelper {
                     android.Manifest.permission.REVOKE_RUNTIME_PERMISSIONS,
                     android.Manifest.permission.INTERACT_ACROSS_USERS);
             PackageManager pm = InstrumentationRegistry.getContext().getPackageManager();
-            mAutomation.revokeRuntimePermission(getPackage(), NOTIF_PERM);
-            UserHandle user = UserHandle.of(ActivityManager.getCurrentUser());
-            pm.updatePermissionFlags(NOTIF_PERM,
-                    getPackage(),
-                    FLAG_PERMISSION_USER_SET
-                            | PackageManager.FLAG_PERMISSION_REVIEW_REQUIRED,
-                    mPreviousFlagValues,
-                    user);
+            // ensure permission is still granted, in case it was revoked elsewhere
+            if (pm.checkPermission(NOTIF_PERM, getPackage()) == PERMISSION_GRANTED) {
+                mAutomation.revokeRuntimePermission(getPackage(), NOTIF_PERM);
+                UserHandle user = UserHandle.of(ActivityManager.getCurrentUser());
+                pm.updatePermissionFlags(
+                        NOTIF_PERM,
+                        getPackage(),
+                        FLAG_PERMISSION_USER_SET | PackageManager.FLAG_PERMISSION_REVIEW_REQUIRED,
+                        mPreviousFlagValues,
+                        user);
+            }
             mAutomation.dropShellPermissionIdentity();
         }
     }

@@ -16,6 +16,7 @@
 
 package com.android.server.wm.traces.common
 
+import android.view.Display
 import com.android.server.wm.traces.common.layers.Layer
 import com.android.server.wm.traces.common.layers.LayerTraceEntry
 import com.android.server.wm.traces.common.layers.Transform
@@ -158,6 +159,16 @@ object WindowManagerConditionsFactory {
             hasLayersAnimating().negate()
         ))
     }
+
+    fun isWindowVisible(
+        component: FlickerComponentName
+    ): Condition<DeviceStateDump<WindowManagerState, LayerTraceEntry>> =
+        ConditionList(
+            containsActivity(component),
+            containsWindow(component),
+            isActivityVisible(component),
+            isWindowSurfaceShown(component),
+            isAppTransitionIdle(Display.DEFAULT_DISPLAY))
 
     fun isLayerVisible(
         layerName: String
