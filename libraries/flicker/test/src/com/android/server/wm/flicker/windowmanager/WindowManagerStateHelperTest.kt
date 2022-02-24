@@ -16,7 +16,6 @@
 
 package com.android.server.wm.flicker.windowmanager
 
-import android.view.Display
 import android.view.Surface
 import androidx.test.filters.FlakyTest
 import androidx.test.platform.app.InstrumentationRegistry
@@ -159,7 +158,7 @@ class WindowManagerStateHelperTest {
                 .isNonAppWindowVisible(FlickerComponentName.IME)
             error("IME state should not be available")
         } catch (e: AssertionError) {
-            helper.waitImeShown(Display.DEFAULT_DISPLAY)
+            helper.waitImeShown()
             WindowManagerStateSubject
                 .assertThat(helper.wmState)
                 .isNonAppWindowVisible(FlickerComponentName.IME)
@@ -216,7 +215,12 @@ class WindowManagerStateHelperTest {
                 .containsAppWindow(simpleAppComponentName)
             error("SimpleActivity window should not exist in the start of the trace")
         } catch (e: AssertionError) {
+            // nothing to do
+        }
+
+        try {
             helper.waitForVisibleWindow(simpleAppComponentName)
+        } catch (e: IllegalArgumentException) {
             WindowManagerStateSubject
                 .assertThat(helper.wmState)
                 .notContains(simpleAppComponentName)
