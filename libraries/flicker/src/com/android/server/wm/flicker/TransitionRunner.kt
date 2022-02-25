@@ -88,7 +88,8 @@ open class TransitionRunner {
         safeExecution(flicker, runs, executionErrors) {
             runTestSetup(flicker)
 
-            for (iteration in 0 until flicker.repetitions) {
+            for (x in 0 until flicker.repetitions) {
+                iteration = x
                 runTransitionSetup(flicker)
                 runTransition(flicker)
                 runTransitionTeardown(flicker)
