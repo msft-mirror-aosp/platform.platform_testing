@@ -46,14 +46,7 @@ public class StsExtraBusinessLogicHostTestBase extends ExtraBusinessLogicHostTes
     public List<String> getExtraBusinessLogics() {
         // set in test/sts/tools/sts-tradefed/res/config/sts-base-dynamic-*.xml
         String stsDynamicPlan = getBuild().getBuildAttributes().get("sts-dynamic-plan");
-        switch (stsDynamicPlan) {
-            case "incremental":
-                return StsLogic.STS_EXTRA_BUSINESS_LOGIC_INCREMENTAL;
-            case "full":
-                return StsLogic.STS_EXTRA_BUSINESS_LOGIC_FULL;
-            default:
-                throw new RuntimeException("Could not find Dynamic STS plan in build attributes");
-        }
+        return StsLogic.getExtraBusinessLogicForPlan(stsDynamicPlan);
     }
 
     @Override
