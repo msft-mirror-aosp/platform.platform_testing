@@ -32,6 +32,7 @@ import com.android.server.wm.traces.common.ConditionList
 import com.android.server.wm.traces.common.DeviceStateDump
 import com.android.server.wm.traces.common.FlickerComponentName
 import com.android.server.wm.traces.common.FlickerComponentName.Companion.IME
+import com.android.server.wm.traces.common.FlickerComponentName.Companion.SNAPSHOT
 import com.android.server.wm.traces.parser.LOG_TAG
 import com.android.server.wm.traces.common.WaitCondition
 import com.android.server.wm.traces.common.layers.LayerTraceEntry
@@ -209,6 +210,13 @@ open class WindowManagerStateHelper @JvmOverloads constructor(
     fun waitImeGone() = require(waitFor(imeGoneCondition)) { "Expected IME not to be visible" }
 
     /**
+     * Waits until the Snapshot layer is no longer visible.
+     */
+    fun waitSnapshotGone() = require(waitFor(snapshotGoneCondition)) {
+        "Expected Snapshot window gone"
+    }
+
+    /**
      * Waits until a window is in PIP mode. That is:
      *
      * - wait until a window is pinned ([WindowManagerState.pinnedWindows])
@@ -262,6 +270,11 @@ open class WindowManagerStateHelper @JvmOverloads constructor(
             WindowManagerConditionsFactory.isImeShown(Display.DEFAULT_DISPLAY),
             WindowManagerConditionsFactory.isAppTransitionIdle(Display.DEFAULT_DISPLAY)
         )
+
+        @JvmStatic
+        val snapshotGoneCondition = ConditionList(
+                WindowManagerConditionsFactory.isLayerVisible(SNAPSHOT).negate(),
+                WindowManagerConditionsFactory.isAppTransitionIdle(Display.DEFAULT_DISPLAY))
 
         @JvmStatic
         val pipShownCondition = ConditionList(
