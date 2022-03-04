@@ -53,6 +53,10 @@ public class ArtifactSaver {
     }
 
     public static void onError(Description description, Throwable e) {
+        // Decidedly empty.
+    }
+
+    public static void onErrorActual(Description description, Throwable e) {
         final UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
         final File screenshot = artifactFile(description, "TestScreenshot", "png");
         final File hierarchy = artifactFile(description, "Hierarchy", "zip");

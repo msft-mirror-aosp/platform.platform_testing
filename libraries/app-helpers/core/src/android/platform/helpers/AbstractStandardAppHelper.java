@@ -30,6 +30,7 @@ import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.os.Build;
 import android.os.Environment;
 import android.os.RemoteException;
 import android.os.SystemClock;
@@ -426,13 +427,53 @@ public abstract class AbstractStandardAppHelper implements IAppHelper {
         return mLauncherStrategy;
     }
 
+    // Check whether we might need to grant this package notification permission.
+    // This would be for packages that meet either of the following criteria:
+    //   - build sdk <= sc-v2 and does not have notification permission
+    //   - sdk > sc-v2, requests notification permission but does not have notification permission
+    private boolean packageNeedsNotificationPermission(PackageManager pm, String pkg) {
+        PackageInfo pInfo;
+        try {
+            pInfo = pm.getPackageInfo(pkg, PackageManager.PackageInfoFlags.of(0));
+        } catch (NameNotFoundException e) {
+            Log.w(LOG_TAG, "package name not found");
+            return false;
+        }
+
+        if (pInfo.applicationInfo == null) {
+            return false;
+        }
+
+        boolean hasNotifPerm = pm.checkPermission(NOTIF_PERM, pkg) == PERMISSION_GRANTED;
+
+        // for apps sc-v2 and below, we set notification permission only if they don't already have
+        // it
+        if (pInfo.applicationInfo.targetSdkVersion <= Build.VERSION_CODES.S_V2) {
+            return !hasNotifPerm;
+        }
+
+        // check for notification permission in the list of package's requested permissions --
+        // apps T and up must request the permission if they're to be granted it
+        if (pInfo.requestedPermissions == null) {
+            return false;
+        }
+        boolean requestedNotifPerm = false;
+        for (String perm : pInfo.requestedPermissions) {
+            if (NOTIF_PERM.equals(perm)) {
+                requestedNotifPerm = true;
+                break;
+            }
+        }
+        return requestedNotifPerm && !hasNotifPerm;
+    }
+
     private void maybeGrantNotificationPermission() {
         mAutomation = InstrumentationRegistry.getInstrumentation().getUiAutomation();
         mAutomation.adoptShellPermissionIdentity(
                 android.Manifest.permission.GRANT_RUNTIME_PERMISSIONS,
                 android.Manifest.permission.INTERACT_ACROSS_USERS);
         PackageManager pm = InstrumentationRegistry.getContext().getPackageManager();
-        if (pm.checkPermission(NOTIF_PERM, getPackage()) != PERMISSION_GRANTED) {
+        if (packageNeedsNotificationPermission(pm, getPackage())) {
             UserHandle user = UserHandle.of(ActivityManager.getCurrentUser());
             mChangedPermState = true;
             mAutomation.grantRuntimePermission(getPackage(),
