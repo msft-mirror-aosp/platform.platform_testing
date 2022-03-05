@@ -17,22 +17,40 @@
 package com.android.sts.common;
 
 import static org.junit.Assert.assertTrue;
-
-import com.android.tradefed.device.DeviceNotAvailableException;
-import com.android.tradefed.device.ITestDevice;
+import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.junit.rules.TestWatcher;
+import org.junit.runner.Description;
 
-public class OverlayFsUtils {
+import com.android.tradefed.device.DeviceNotAvailableException;
+import com.android.tradefed.device.ITestDevice;
+import com.android.tradefed.testtype.junit4.BaseHostJUnit4Test;
+import com.android.tradefed.util.CommandResult;
+import com.android.tradefed.util.CommandStatus;
+import com.google.common.hash.Hashing;
+
+/** TestWatcher that enables writing to read-only partitions and reboots device when done. */
+public class OverlayFsUtils extends TestWatcher {
+    private static final String OVERLAYFS_PREFIX = "overlay_sts_";
+
+    private final BaseHostJUnit4Test test;
+
     // output of `stat`, e.g. "root shell 755 u:object_r:vendor_file:s0"
     static final Pattern PERM_PATTERN =
             Pattern.compile(
                     "^(?<user>[a-zA-Z0-9_-]+) (?<group>[a-zA-Z0-9_-]+) (?<perm>[0-7]+)"
                             + " (?<secontext>.*)$");
+
+    public OverlayFsUtils(BaseHostJUnit4Test test) {
+        assertNotNull("Need to pass in a valid testcase object.", test);
+        this.test = test;
+    }
 
     /**
      * Mounts an OverlayFS dir over the top most common dir in the list.
@@ -40,15 +58,27 @@ public class OverlayFsUtils {
      * <p>The directory should be writable after this returns successfully. To cleanup, reboot the
      * device as unfortunately unmounting overlayfs is complicated.
      *
-     * @param device The test device to setup overlayfs for.
      * @param dir The directory to make writable. Directories with single quotes are not supported.
      */
-    public static void makeWritable(ITestDevice device, String dir)
-            throws DeviceNotAvailableException, IOException {
-        // TODO(duytruong): This should ideally be made into a TestRule that also handles cleanups
-        // However, test devices initiation is done in one of the @Before, after a rule's setup.
+    public void makeWritable(final String dir)
+            throws DeviceNotAvailableException, IOException, IllegalStateException {
+        ITestDevice device = test.getDevice();
+        assertNotNull("device not set.", device);
+        assertTrue("dir needs to be an absolute path.", dir.startsWith("/"));
+
+        // Check and make sure we have not already mounted over this dir. We do that by hashing
+        // the lower dir path and put that as part of the device ID for `mount`.
+        String dirHash = Hashing.md5().hashString(dir, StandardCharsets.UTF_8).toString();
+        String id = OVERLAYFS_PREFIX + dirHash;
+        CommandResult res = device.executeShellV2Command("mount | grep -q " + id);
+        if (res.getStatus() == CommandStatus.SUCCESS) {
+            // a mount with the same ID already exists
+            throw new IllegalStateException(dir + " has already been made writable.");
+        }
+
         assertTrue("Can't acquire root for " + device.getSerialNumber(), device.enableAdbRoot());
 
+        // Match permissions of upper dir to lower dir
         String statOut =
                 CommandUtil.runAndCheck(device, "stat -c '%U %G %a %C' '" + dir + "'").getStdout();
         Matcher m = PERM_PATTERN.matcher(statOut);
@@ -58,7 +88,7 @@ public class OverlayFsUtils {
         String unixPerm = m.group("perm");
         String seContext = m.group("secontext");
 
-        Path tempdir = Paths.get("/mnt", "stsoverlayfs", dir);
+        Path tempdir = Paths.get("/mnt", "stsoverlayfs", id);
         String upperdir = tempdir.resolve("upper").toString();
         String workdir = tempdir.resolve("workdir").toString();
 
@@ -69,8 +99,29 @@ public class OverlayFsUtils {
 
         String mountCmd =
                 String.format(
-                        "mount -t overlay overlay -o lowerdir='%s',upperdir='%s',workdir='%s' '%s'",
-                        dir, upperdir, workdir, dir);
+                        "mount -t overlay '%s' -o lowerdir='%s',upperdir='%s',workdir='%s' '%s'",
+                        id, dir, upperdir, workdir, dir);
         CommandUtil.runAndCheck(device, mountCmd);
+    }
+
+    public boolean anyOverlayFsMounted() throws DeviceNotAvailableException {
+        ITestDevice device = test.getDevice();
+        assertNotNull("Device not set", device);
+        CommandResult res = device.executeShellV2Command("mount | grep -q " + OVERLAYFS_PREFIX);
+        return res.getStatus() == CommandStatus.SUCCESS;
+    }
+
+    @Override
+    public void finished(Description d) {
+        ITestDevice device = test.getDevice();
+        assertNotNull("Device not set", device);
+        try {
+            if (anyOverlayFsMounted()) {
+                device.rebootUntilOnline();
+                device.waitForDeviceAvailable();
+            }
+        } catch (DeviceNotAvailableException e) {
+            throw new AssertionError("Device unavailable when cleaning up", e);
+        }
     }
 }
