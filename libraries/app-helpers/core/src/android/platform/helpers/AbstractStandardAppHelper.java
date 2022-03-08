@@ -42,6 +42,7 @@ import android.platform.helpers.watchers.AppIsNotRespondingWatcher;
 import android.support.test.launcherhelper.ILauncherStrategy;
 import android.support.test.launcherhelper.LauncherStrategyFactory;
 import android.support.test.uiautomator.By;
+import android.support.test.uiautomator.BySelector;
 import android.support.test.uiautomator.UiDevice;
 import android.support.test.uiautomator.UiObject2;
 import android.support.test.uiautomator.UiWatcher;
@@ -67,6 +68,7 @@ public abstract class AbstractStandardAppHelper implements IAppHelper {
         "Element %s %s is not found in the application %s";
 
     private static final long EXIT_WAIT_TIMEOUT = TimeUnit.SECONDS.toMillis(5);
+    private static final int WAIT_TIME_MS = 10000;
 
     private static File sScreenshotDirectory;
 
@@ -355,8 +357,15 @@ public abstract class AbstractStandardAppHelper implements IAppHelper {
       }
     }
 
+    /** Returns a UI object after waiting for it, and fails if not found. */
+    public static UiObject2 waitForObject(UiDevice device, BySelector selector) {
+        final UiObject2 object = device.wait(Until.findObject(selector), WAIT_TIME_MS);
+        if (object == null) throw new UnknownUiException("Can't find object " + selector);
+        return object;
+    }
+
     protected void waitAndClickById(String packageStr, String id, long timeout) {
-      clickOn(mDevice.wait(Until.findObject(By.res(packageStr, id)), timeout));
+        clickOn(mDevice.wait(Until.findObject(By.res(packageStr, id)), timeout));
     }
 
     protected void waitAndClickByText(String text, long timeout) {

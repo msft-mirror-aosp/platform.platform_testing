@@ -53,10 +53,6 @@ public class ArtifactSaver {
     }
 
     public static void onError(Description description, Throwable e) {
-        // Decidedly empty.
-    }
-
-    public static void onErrorActual(Description description, Throwable e) {
         final UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
         final File screenshot = artifactFile(description, "TestScreenshot", "png");
         final File hierarchy = artifactFile(description, "Hierarchy", "zip");
@@ -92,7 +88,10 @@ public class ArtifactSaver {
         } catch (IOException ex) {
             android.util.Log.e(TAG, "Failed to save accessibility hierarchy", ex);
         }
+    }
 
+    public static void onErrorRemaining(Description description, Throwable e) {
+        final UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
         // Dump bugreport
         if (FailureWatcher.getSystemAnomalyMessage(device) != null) {
             dumpCommandOutput("bugreportz -s", artifactFile(description, "Bugreport", "zip"));
