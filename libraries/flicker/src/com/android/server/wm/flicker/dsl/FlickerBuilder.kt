@@ -30,7 +30,7 @@ import com.android.server.wm.flicker.monitor.LayersTraceMonitor
 import com.android.server.wm.flicker.monitor.ScreenRecorder
 import com.android.server.wm.flicker.monitor.WindowManagerTraceMonitor
 import com.android.server.wm.traces.common.layers.LayersTrace
-import com.android.server.wm.traces.common.layers.LayerTraceEntry
+import com.android.server.wm.traces.common.layers.BaseLayerTraceEntry
 import com.android.server.wm.traces.common.windowmanager.WindowManagerState
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 import com.android.server.wm.traces.parser.windowmanager.WindowManagerStateHelper
@@ -163,7 +163,7 @@ class FlickerBuilder private constructor(
      *
      * By default the tracing is always active. To disable tracing return null
      *
-     * If this tracing is disabled, the assertions for [LayersTrace] and [LayerTraceEntry]
+     * If this tracing is disabled, the assertions for [LayersTrace] and [BaseLayerTraceEntry]
      * will not be executed
      */
     fun withLayerTracing(

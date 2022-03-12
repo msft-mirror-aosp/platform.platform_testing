@@ -28,7 +28,7 @@ import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 import com.android.server.wm.flicker.traces.eventlog.FocusEvent
 import com.android.server.wm.flicker.traces.layers.LayersTraceSubject
 import com.android.server.wm.flicker.traces.windowmanager.WindowManagerTraceSubject
-import com.android.server.wm.traces.common.layers.LayerTraceEntry
+import com.android.server.wm.traces.common.layers.BaseLayerTraceEntry
 import com.android.server.wm.traces.common.layers.LayersTrace
 import com.android.server.wm.traces.common.windowmanager.WindowManagerState
 import java.io.File
@@ -60,7 +60,7 @@ class FlickerRunResult private constructor(
      */
     internal val wmSubject: FlickerSubject?,
     /**
-     * Truth subject that corresponds to a [LayersTrace] or [LayerTraceEntry]
+     * Truth subject that corresponds to a [LayersTrace] or [BaseLayerTraceEntry]
      */
     internal val layersSubject: FlickerSubject?,
     /**
