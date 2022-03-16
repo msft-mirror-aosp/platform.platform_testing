@@ -88,7 +88,10 @@ public class ArtifactSaver {
         } catch (IOException ex) {
             android.util.Log.e(TAG, "Failed to save accessibility hierarchy", ex);
         }
+    }
 
+    public static void onErrorRemaining(Description description, Throwable e) {
+        final UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
         // Dump bugreport
         if (FailureWatcher.getSystemAnomalyMessage(device) != null) {
             dumpCommandOutput("bugreportz -s", artifactFile(description, "Bugreport", "zip"));

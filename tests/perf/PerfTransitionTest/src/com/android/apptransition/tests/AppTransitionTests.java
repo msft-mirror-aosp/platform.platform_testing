@@ -324,7 +324,7 @@ public class AppTransitionTests extends Instrumentation {
                     "\\/")[0]);
             for (int launchCount = 0; launchCount <= mLaunchIterations; launchCount++) {
                 sleep(mPostLaunchTimeout);
-                final Workspace workspace = mLauncher.pressHome();
+                final Workspace workspace = mLauncher.goHome();
                 if (null != mAtraceLogger) {
                     mAtraceLogger.atraceStart(mTraceCategoriesSet, mTraceBufferSize,
                             mTraceDumpInterval, mRootTraceSubDir,

@@ -240,7 +240,7 @@ public class StatsdStatsHelper implements ICollectorHelper<Long> {
 
         final String metricKey =
                 MetricUtility.constructKey(metricKeyPrefix, MATCHER_STATS_PREFIX, "matched_times");
-        resultMap.put(metricKey, Long.valueOf(summaryCount));
+        resultMap.merge(metricKey, Long.valueOf(summaryCount), Long::sum);
     }
 
     private static void populateAlertStats(
@@ -264,7 +264,7 @@ public class StatsdStatsHelper implements ICollectorHelper<Long> {
 
         final String metricKey =
                 MetricUtility.constructKey(metricKeyPrefix, ALERT_STATS_PREFIX, "alerted_times");
-        resultMap.put(metricKey, Long.valueOf(summaryCount));
+        resultMap.merge(metricKey, Long.valueOf(summaryCount), Long::sum);
     }
 
     private static void populateAnomalyAlarmStats(

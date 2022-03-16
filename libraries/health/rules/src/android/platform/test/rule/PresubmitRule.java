@@ -32,38 +32,47 @@ import java.lang.annotation.Target;
 import java.util.Arrays;
 
 /**
- * Rule that skips tests marked with @SkipOnHwasan on Platinum test runs on Hwasan targets. This
- * allows moving to Platinum those tests that fail only on Hwasan Platinum targets.
+ * Rule that runs tests marked with @Presubmit on presubmit test runs, only on devices listed in the
+ * comma-separated string passed as an argument to the @Presubmit annotation. The test will be
+ * skipped, for presubmit runs, on devices not in the list.
  */
-public class SkipHwasanRule implements TestRule {
+public class PresubmitRule implements TestRule {
     @Override
     public Statement apply(Statement base, Description description) {
-        // If the target isn't hwasan, this rule is not applicable.
-        if (!Build.PRODUCT.contains("hwasan")) return base;
-
-        // If the test is not annotated with @SkipOnHwasan, this rule is not applicable.
-        if (!description.getTestClass().isAnnotationPresent(SkipOnHwasan.class)) return base;
+        // If the test is not annotated with @Presubmit, this rule is not applicable.
+        final Presubmit annotation = description.getTestClass().getAnnotation(Presubmit.class);
+        if (annotation == null) return base;
 
         // If the test suite isn't running with
-        // "exclude-annotation": "androidx.test.filters.FlakyTest", then this is not a platinum
-        // test, and the rule is not applicable.
+        // "exclude-annotation": "android.platform.test.annotations.Postsubmit", then this is not
+        // a presubmit test, and the rule is not applicable.
         final String nonAnnotationArgument =
                 InstrumentationRegistry.getArguments().getString("notAnnotation", "");
         if (!Arrays.stream(nonAnnotationArgument.split(","))
-                .anyMatch("androidx.test.filters.FlakyTest"::equals)) {
+                .anyMatch("android.platform.test.annotations.Postsubmit"::equals)) {
             return base;
         }
+
+        // If the target IS listed in the annotation's parameter, this rule is not applicable.
+        final boolean match = Arrays.asList(annotation.value().split(",")).contains(Build.PRODUCT);
+        if (match) return base;
 
         // The test will be skipped upon start.
         return new Statement() {
             @Override
             public void evaluate() throws Throwable {
-                throw new AssumptionViolatedException("Skipping the test on a hwasan target");
+                throw new AssumptionViolatedException(
+                        "Skipping the test on target "
+                                + Build.PRODUCT
+                                + " which in not in "
+                                + annotation.value());
             }
         };
     }
 
     @Retention(RetentionPolicy.RUNTIME)
     @Target({ElementType.TYPE})
-    public @interface SkipOnHwasan {}
+    public @interface Presubmit {
+        String value();
+    }
 }
