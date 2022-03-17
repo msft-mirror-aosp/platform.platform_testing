@@ -78,7 +78,7 @@ public class HeapDumpHelper implements ICollectorHelper<String> {
     /**
      * Create an empty file that will be used for dumping the heap profile.
      *
-     * @param fileName
+     * @param fileName name of the empty file.
      * @return true if the file creation is successful.
      */
     private boolean createHeapDumpEmptyFile(String fileName) {
