@@ -41,8 +41,6 @@ public final class HeapDumpListenerTest {
             Description.createTestDescription("run", "test_one");
     private static final Description TEST_DESCRIPTION_2 =
             Description.createTestDescription("run", "test_two");
-    private static final Description TEST_DESCRIPTION_3 =
-            Description.createTestDescription("run", "test_three");
 
     @Mock private HeapDumpHelper mHelper;
     @Mock private Instrumentation mInstrumentation;

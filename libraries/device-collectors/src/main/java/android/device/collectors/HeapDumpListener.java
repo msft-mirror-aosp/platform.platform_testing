@@ -37,10 +37,11 @@ import java.util.stream.Collectors;
  */
 @OptionClass(alias = "heapdump-listener")
 public class HeapDumpListener extends BaseCollectionListener<String> {
-    private static final String LOG_TAG = HeapDumpListener.class.getSimpleName();
 
     private static final String SPACES_PATTERN = "\\s+";
     private static final String REPLACEMENT_CHAR = "#";
+    private static final String FILE_ID_FORMAT = "%s_%d";
+    private static final String FILE_NAME_PREFIX_FORMAT = "%s_%s";
     @VisibleForTesting static final String ITERATION_SEPARATOR = ",";
     @VisibleForTesting static final String ENABLE_ITERATION_IDS = "enable-iteration-ids";
     @VisibleForTesting static final String ITERATION_ALL_ENABLE = "iteration-all-enable";
@@ -116,7 +117,7 @@ public class HeapDumpListener extends BaseCollectionListener<String> {
      * used to create the heap dump file.
      */
     private String getHeapDumpFileId(Description description) {
-        return String.format("%s_%d", getTestFileName(description),
+        return String.format(FILE_ID_FORMAT, getTestFileName(description),
                 mTestIterationCount.get(getTestFileName(description)));
     }
 
@@ -125,7 +126,7 @@ public class HeapDumpListener extends BaseCollectionListener<String> {
      * names.
      */
     public static String getTestFileName(Description description) {
-        return String.format("%s_%s",
+        return String.format(FILE_NAME_PREFIX_FORMAT,
                 description.getClassName().replaceAll(SPACES_PATTERN, REPLACEMENT_CHAR).trim(),
                 description.getMethodName().replaceAll(SPACES_PATTERN, REPLACEMENT_CHAR).trim());
     }
