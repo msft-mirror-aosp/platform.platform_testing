@@ -19,7 +19,6 @@ package com.android.server.wm.flicker.monitor
 import com.android.server.wm.flicker.FlickerRunResult
 import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.Paths
 
 abstract class TransitionMonitor(
     outputDir: Path,
@@ -44,16 +43,10 @@ abstract class TransitionMonitor(
         }
 
         val builder = FlickerRunResult.Builder()
-        val path = this.save(builder)
+        builder.setResultFrom(this)
 
-        return path?.let {
+        return outputFile.let {
             Files.readAllBytes(it).also { _ -> Files.delete(it) }
         } ?: error("Unable to acquire trace")
-    }
-
-    companion object {
-        @JvmStatic
-        protected val TRACE_DIR = Paths.get("/data/misc/wmtrace/")
-        internal const val WINSCOPE_EXT = ".winscope"
     }
 }

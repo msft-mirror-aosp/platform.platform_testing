@@ -18,7 +18,6 @@ package com.android.server.wm.flicker.service
 
 import android.util.Log
 import com.android.helpers.ICollectorHelper
-import com.android.server.wm.flicker.FlickerRunResult
 import com.android.server.wm.flicker.getDefaultFlickerOutputDir
 import com.android.server.wm.flicker.monitor.LayersTraceMonitor
 import com.android.server.wm.flicker.monitor.TraceMonitor
@@ -69,10 +68,8 @@ class FlickerCollectionHelper : ICollectorHelper<Int> {
     /** Collect the assertions metrics for Flicker as a Service.  */
     override fun getMetrics(): Map<String, Int> {
         Log.i(LOG_TAG, "getMetrics")
-        val builder = FlickerRunResult.Builder()
         traceMonitors.forEach {
             it.stop()
-            it.save(builder)
         }
 
         Files.createDirectories(outputDir)
