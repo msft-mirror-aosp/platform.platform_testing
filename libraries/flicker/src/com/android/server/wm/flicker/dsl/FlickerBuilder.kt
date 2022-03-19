@@ -74,7 +74,14 @@ class FlickerBuilder private constructor(
         /**
          * Helper object for WM Synchronization
          */
-        wmHelper: WindowManagerStateHelper = WindowManagerStateHelper(instrumentation)
+        wmHelper: WindowManagerStateHelper = WindowManagerStateHelper(instrumentation),
+        traceMonitors: MutableList<ITransitionMonitor> = mutableListOf<ITransitionMonitor>()
+                .also {
+                    it.add(WindowManagerTraceMonitor(outputDir))
+                    it.add(LayersTraceMonitor(outputDir))
+                    it.add(ScreenRecorder(instrumentation.targetContext, outputDir))
+                    it.add(EventLogMonitor())
+                }
     ) : this(
         instrumentation,
         launcherStrategy,
@@ -86,13 +93,7 @@ class FlickerBuilder private constructor(
         teardownCommands = TestCommandsBuilder(),
         transitionCommands = mutableListOf(),
         device = UiDevice.getInstance(instrumentation),
-        traceMonitors = mutableListOf<ITransitionMonitor>()
-            .also {
-                it.add(WindowManagerTraceMonitor(outputDir))
-                it.add(LayersTraceMonitor(outputDir))
-                it.add(ScreenRecorder(outputDir, instrumentation.targetContext))
-                it.add(EventLogMonitor())
-            }
+        traceMonitors = traceMonitors
     )
 
     /**

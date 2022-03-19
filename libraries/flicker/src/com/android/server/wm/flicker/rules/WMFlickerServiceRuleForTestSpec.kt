@@ -86,7 +86,7 @@ class WMFlickerServiceRuleForTestSpec(
         val assertions = AssertionData.readConfiguration().filter { it.category == category }
         val flickerService = FlickerService(assertions)
 
-        result.runs
+        result.successfulRuns
             .filter { it.assertionTag == AssertionTag.ALL }
             .filter {
                 val hasWmTrace = it.wmSubject?.let { true } ?: false
