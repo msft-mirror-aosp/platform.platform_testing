@@ -80,11 +80,9 @@ public class TestMetricRuleTest {
                 .containsExactly(
                         "TestableCollector1#setInstrumentation",
                         "TestableCollector1#setupAdditionalArgs",
-                        "TestableCollector1#onSetUp",
                         String.format("Test %s: TestableCollector1#onTestStart", DESCRIPTION),
                         "Test execution",
-                        String.format("Test %s: TestableCollector1#onTestEnd", DESCRIPTION),
-                        "TestableCollector1#onCleanUp")
+                        String.format("Test %s: TestableCollector1#onTestEnd", DESCRIPTION))
                 .inOrder();
     }
 
@@ -100,7 +98,6 @@ public class TestMetricRuleTest {
                 .containsExactly(
                         "TestableCollector1#setInstrumentation",
                         "TestableCollector1#setupAdditionalArgs",
-                        "TestableCollector1#onSetUp",
                         String.format("Test %s: TestableCollector1#onTestStart", DESCRIPTION),
                         "Test execution",
                         String.format(
@@ -108,8 +105,7 @@ public class TestMetricRuleTest {
                                 DESCRIPTION,
                                 new Failure(
                                         DESCRIPTION, new RuntimeException(TEST_FAILURE_MESSAGE))),
-                        String.format("Test %s: TestableCollector1#onTestEnd", DESCRIPTION),
-                        "TestableCollector1#onCleanUp")
+                        String.format("Test %s: TestableCollector1#onTestEnd", DESCRIPTION))
                 .inOrder();
     }
 
@@ -125,11 +121,9 @@ public class TestMetricRuleTest {
         assertThat(sLogs)
                 .containsExactly(
                         "TestableCollector1#setInstrumentation",
-                        "TestableCollector2#setInstrumentation",
                         "TestableCollector1#setupAdditionalArgs",
-                        "TestableCollector1#onSetUp",
+                        "TestableCollector2#setInstrumentation",
                         "TestableCollector2#setupAdditionalArgs",
-                        "TestableCollector2#onSetUp",
                         String.format("Test %s: TestableCollector1#onTestStart", DESCRIPTION),
                         String.format("Test %s: TestableCollector2#onTestStart", DESCRIPTION),
                         "Test execution",
@@ -140,9 +134,7 @@ public class TestMetricRuleTest {
                                 "Test %s: TestableCollector2#onTestFail with failure %s",
                                 DESCRIPTION, failure),
                         String.format("Test %s: TestableCollector1#onTestEnd", DESCRIPTION),
-                        String.format("Test %s: TestableCollector2#onTestEnd", DESCRIPTION),
-                        "TestableCollector1#onCleanUp",
-                        "TestableCollector2#onCleanUp")
+                        String.format("Test %s: TestableCollector2#onTestEnd", DESCRIPTION))
                 .inOrder();
     }
 
@@ -192,16 +184,6 @@ public class TestMetricRuleTest {
         @Override
         public void setupAdditionalArgs() {
             sLogs.add(String.format("%s#%s", mName, "setupAdditionalArgs"));
-        }
-
-        @Override
-        public void onSetUp() {
-            sLogs.add(String.format("%s#%s", mName, "onSetUp"));
-        }
-
-        @Override
-        public void onCleanUp() {
-            sLogs.add(String.format("%s#%s", mName, "onCleanUp"));
         }
 
         @Override

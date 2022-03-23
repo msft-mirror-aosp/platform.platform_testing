@@ -19,13 +19,11 @@ package com.android.server.wm.flicker.traces.windowmanager
 import com.android.server.wm.flicker.assertions.Assertion
 import com.android.server.wm.flicker.assertions.FlickerSubject
 import com.android.server.wm.flicker.traces.FlickerFailureStrategy
-import com.android.server.wm.flicker.traces.region.RegionSubject
+import com.android.server.wm.flicker.traces.RegionSubject
 import com.android.server.wm.traces.common.windowmanager.windows.WindowState
-import com.google.common.truth.Fact
 import com.google.common.truth.FailureMetadata
 import com.google.common.truth.FailureStrategy
 import com.google.common.truth.StandardSubjectBuilder
-import com.google.common.truth.Subject.Factory
 
 /**
  * Truth subject for [WindowState] objects, used to make assertions over behaviors that occur on a
@@ -47,9 +45,8 @@ import com.google.common.truth.Subject.Factory
  */
 class WindowStateSubject private constructor(
     fm: FailureMetadata,
-    override val parent: WindowManagerStateSubject?,
-    override val timestamp: Long,
     val windowState: WindowState?,
+    private val entry: WindowManagerStateSubject?,
     private val windowTitle: String? = null
 ) : FlickerSubject(fm, windowState) {
     val isEmpty: Boolean get() = windowState == null
@@ -57,10 +54,10 @@ class WindowStateSubject private constructor(
     val isVisible: Boolean get() = windowState?.isVisible == true
     val isInvisible: Boolean get() = windowState?.isVisible == false
     val name: String get() = windowState?.name ?: windowTitle ?: ""
-    val frame: RegionSubject get() = RegionSubject.assertThat(windowState?.frame, this, timestamp)
+    val frame: RegionSubject get() = RegionSubject.assertThat(windowState?.frame, listOf(this))
 
-    override val selfFacts = listOf(
-        Fact.fact("Window title", "${windowState?.title ?: windowTitle}"))
+    override val defaultFacts: String =
+        "${entry?.defaultFacts ?: ""}\nWindowTitle: ${windowState?.title}"
 
     /**
      * If the [windowState] exists, executes a custom [assertion] on the current subject
@@ -68,6 +65,11 @@ class WindowStateSubject private constructor(
     operator fun invoke(assertion: Assertion<WindowState>): WindowStateSubject = apply {
         windowState ?: return exists()
         assertion(this.windowState)
+    }
+
+    /** {@inheritDoc} */
+    override fun clone(): FlickerSubject {
+        return WindowStateSubject(fm, windowState, entry, windowTitle)
     }
 
     /**
@@ -93,9 +95,10 @@ class WindowStateSubject private constructor(
          * Boiler-plate Subject.Factory for LayerSubject
          */
         @JvmStatic
-        fun getFactory(parent: WindowManagerStateSubject?, timestamp: Long, name: String?) =
+        @JvmOverloads
+        fun getFactory(entry: WindowManagerStateSubject? = null) =
             Factory { fm: FailureMetadata, subject: WindowState? ->
-                WindowStateSubject(fm, parent, timestamp, subject, name)
+                WindowStateSubject(fm, subject, entry)
             }
 
         /**
@@ -104,14 +107,13 @@ class WindowStateSubject private constructor(
         @JvmStatic
         @JvmOverloads
         fun assertThat(
-            state: WindowState?,
-            parent: WindowManagerStateSubject? = null,
-            timestamp: Long
+            layer: WindowState?,
+            entry: WindowManagerStateSubject? = null
         ): WindowStateSubject {
             val strategy = FlickerFailureStrategy()
             val subject = StandardSubjectBuilder.forCustomFailureStrategy(strategy)
-                .about(getFactory(parent, timestamp, name = null))
-                .that(state) as WindowStateSubject
+                .about(getFactory(entry))
+                .that(layer) as WindowStateSubject
             strategy.init(subject)
             return subject
         }
@@ -122,15 +124,23 @@ class WindowStateSubject private constructor(
         @JvmStatic
         internal fun assertThat(
             name: String,
-            parent: WindowManagerStateSubject?,
-            timestamp: Long
+            entry: WindowManagerStateSubject?
         ): WindowStateSubject {
             val strategy = FlickerFailureStrategy()
             val subject = StandardSubjectBuilder.forCustomFailureStrategy(strategy)
-                .about(getFactory(parent, timestamp, name))
+                .about(getFactory(entry, name))
                 .that(null) as WindowStateSubject
             strategy.init(subject)
             return subject
         }
+
+        /**
+         * Boiler-plate Subject.Factory for LayerSubject
+         */
+        @JvmStatic
+        internal fun getFactory(entry: WindowManagerStateSubject?, name: String) =
+            Factory { fm: FailureMetadata, subject: WindowState? ->
+                WindowStateSubject(fm, subject, entry, name)
+            }
     }
 }

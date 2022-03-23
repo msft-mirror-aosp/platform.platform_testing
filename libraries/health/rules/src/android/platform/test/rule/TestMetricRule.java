@@ -112,14 +112,12 @@ public class TestMetricRule extends TestWatcher {
         // Initialize each listener.
         for (BaseMetricListener listener : mMetricListeners) {
             listener.setInstrumentation(InstrumentationRegistry.getInstrumentation());
+            listener.setupAdditionalArgs();
         }
     }
 
     @Override
     protected void starting(Description description) {
-        for (BaseMetricListener listener : mMetricListeners) {
-            listener.setUp();
-        }
         for (BaseMetricListener listener : mMetricListeners) {
             try {
                 listener.testStarted(description);
@@ -147,9 +145,6 @@ public class TestMetricRule extends TestWatcher {
                                 listener.getClass().getCanonicalName()),
                         e);
             }
-        }
-        for (BaseMetricListener listener : mMetricListeners) {
-            listener.cleanUp();
         }
     }
 
