@@ -18,7 +18,6 @@ package com.android.server.wm.flicker.traces.eventlog
 
 import com.android.server.wm.flicker.assertions.AssertionsChecker
 import com.android.server.wm.flicker.assertions.FlickerSubject
-import com.android.server.wm.traces.common.prettyTimestamp
 import com.google.common.truth.Fact
 import com.google.common.truth.FailureMetadata
 import com.google.common.truth.Subject.Factory
@@ -31,15 +30,15 @@ class EventLogSubject private constructor(
     failureMetadata: FailureMetadata,
     private val trace: List<FocusEvent>
 ) : FlickerSubject(failureMetadata, trace) {
-    override val timestamp: Long get() = 0
-    override val parent: FlickerSubject? get() = null
-    override val selfFacts by lazy {
-        val firstTimestamp = subjects.firstOrNull()?.timestamp ?: 0L
-        val lastTimestamp = subjects.lastOrNull()?.timestamp ?: 0L
-        val first = "${prettyTimestamp(firstTimestamp)} (timestamp=$firstTimestamp)"
-        val last = "${prettyTimestamp(lastTimestamp)} (timestamp=$lastTimestamp)"
-        listOf(Fact.fact("Trace start", first),
-                Fact.fact("Trace end", last))
+    override val defaultFacts: String by lazy {
+        val first = subjects.first().defaultFacts
+        val last = subjects.last().defaultFacts
+        "EventLogSubject($first, $last)"
+    }
+
+    /** {@inheritDoc} */
+    override fun clone(): FlickerSubject {
+        return EventLogSubject(fm, trace)
     }
 
     private val subjects by lazy {
@@ -53,7 +52,7 @@ class EventLogSubject private constructor(
         focusList + trace.filter { it.hasFocus() }.map { it.window }
     }
 
-    fun focusChanges(vararg windows: String) = apply {
+    fun focusChanges(windows: Array<out String>) = apply {
         if (windows.isNotEmpty()) {
             val focusChanges = _focusChanges
                 .dropWhile { !it.contains(windows.first()) }
