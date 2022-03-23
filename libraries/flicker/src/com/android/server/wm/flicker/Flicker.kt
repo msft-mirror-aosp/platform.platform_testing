@@ -22,6 +22,7 @@ import android.util.Log
 import androidx.test.uiautomator.UiDevice
 import com.android.server.wm.flicker.assertions.AssertionData
 import com.android.server.wm.flicker.monitor.ITransitionMonitor
+import com.android.server.wm.flicker.monitor.WindowAnimationFrameStatsMonitor
 import com.android.server.wm.traces.common.layers.LayersTrace
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 import com.android.server.wm.traces.parser.windowmanager.WindowManagerStateHelper
@@ -62,6 +63,10 @@ class Flicker(
      */
     @JvmField var repetitions: Int,
     /**
+     * Monitor for janky frames, when filtering out janky runs
+     */
+    @JvmField val frameStatsMonitor: WindowAnimationFrameStatsMonitor?,
+    /**
      * Enabled tracing monitors
      */
     @JvmField val traceMonitors: List<ITransitionMonitor>,
@@ -98,39 +103,26 @@ class Flicker(
         private set
 
     /**
-     * Executes the test transition.
+     * Executes the test.
      *
      * @throws IllegalStateException If cannot execute the transition
      */
     fun execute(): Flicker = apply {
         val result = runner.execute(this)
         this.result = result
-        checkHasSuccessfullyExecutedATransitionRun()
+        checkIsExecuted()
     }
 
     /**
-     * Asserts if at least a run of the transition of this flicker test has been executed
-     * successfully, indicating that there is something the run the assertions on.
+     * Asserts if the transition of this flicker test has ben executed
      */
-    private fun checkHasSuccessfullyExecutedATransitionRun() {
-        val result = result
+    private fun checkIsExecuted() {
         if (result == null) {
             execute()
-        } else {
-            if (result.successfulRuns.isEmpty()) {
-                // Only throw the execution exception here if there are no successful transition
-                // runs, otherwise we want to execute the assertions on the successful runs and only
-                // throw the exception after we have collected the transition assertion data, in
-                // which case the execution exception will be thrown in the
-                // result.checkForExecutionErrors() call in this.clear().
-                val executionError = if (result.executionErrors.size == 1) {
-                    result.executionErrors[0]
-                } else {
-                    result.combinedExecutionError
-                }
-
-                throw executionError
-            }
+        }
+        val error = result?.error
+        if (error != null) {
+            throw IllegalStateException("Unable to execute transition", error)
         }
     }
 
@@ -141,24 +133,26 @@ class Flicker(
      * @throws AssertionError If the assertions fail or the transition crashed
      */
     fun checkAssertion(assertion: AssertionData) {
-        checkHasSuccessfullyExecutedATransitionRun()
+        checkIsExecuted()
         val result = result
         requireNotNull(result)
 
-        val failures = result.checkAssertion(assertion)
-        if (failures.isNotEmpty()) {
-            throw failures.first()
+        val failures = result.checkAssertions(listOf(assertion))
+        val failureMessage = failures.joinToString("\n") { it.message }
+
+        if (failureMessage.isNotEmpty()) {
+            throw AssertionError(failureMessage)
         }
     }
 
     /**
-     * Saves the traces files assertions were run on, clears the cached runner results, and assert
-     * any error that occurred when executing the transitions.
+     * Deletes the traces files for successful assertions and clears the cached runner results
+     *
      */
     fun clear() {
         Log.v(FLICKER_TAG, "Cleaning up spec $testName")
         runner.cleanUp()
-        result?.checkForExecutionErrors()
+        result?.cleanUp()
         result = null
     }
 

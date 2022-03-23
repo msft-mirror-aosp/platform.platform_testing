@@ -27,7 +27,7 @@ import java.util.UUID
 /**
  * Collects event logs during transitions.
  */
-open class EventLogMonitor : ITransitionMonitor, FlickerRunResult.IResultSetter {
+open class EventLogMonitor : ITransitionMonitor {
     private var _logs = listOf<Event>()
     private lateinit var _logSeparator: String
 
@@ -71,12 +71,8 @@ open class EventLogMonitor : ITransitionMonitor, FlickerRunResult.IResultSetter 
         _logs = getEventLogs(EVENT_LOG_INPUT_FOCUS_TAG)
     }
 
-    override fun setResult(builder: FlickerRunResult.Builder) {
-        builder.eventLog = buildProcessedEventLogs()
-    }
-
-    private fun buildProcessedEventLogs(): List<FocusEvent> {
-        return _logs.mapNotNull { event ->
+    override fun save(testTag: String, flickerRunResultBuilder: FlickerRunResult.Builder) {
+        flickerRunResultBuilder.eventLog = _logs.mapNotNull { event ->
             val timestamp = event.timeNanos
             val log = (event.data as Array<*>).map { it as String }
             if (log.size != 2) {
