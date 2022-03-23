@@ -75,9 +75,12 @@ public class ScreenRecordCollector extends BaseMetricListener {
     }
 
     @Override
-    public void onTestRunStart(DataRecord runData, Description description) {
+    public void onSetUp() {
         mDestDir = createAndEmptyDirectory(OUTPUT_DIR);
+    }
 
+    @Override
+    public void setupAdditionalArgs() {
         try {
             long scaleDown = 1;
             switch (getArgsBundle().getString(QUALITY_ARG, "default")) {
