@@ -28,40 +28,14 @@ import com.android.server.wm.traces.common.ITrace
  * access internal Java/Android functionality
  *
  */
-data class WindowManagerTrace(
-    override val entries: Array<WindowManagerState>
+open class WindowManagerTrace(
+    override val entries: List<WindowManagerState>,
+    override val source: String,
+    override val sourceChecksum: String
 ) : ITrace<WindowManagerState>,
-    List<WindowManagerState> by entries.toList() {
+    List<WindowManagerState> by entries {
     override fun toString(): String {
-        return "WindowManagerTrace(Start: ${entries.firstOrNull()}, " +
-            "End: ${entries.lastOrNull()})"
-    }
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other !is WindowManagerTrace) return false
-
-        if (!entries.contentEquals(other.entries)) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        return entries.contentHashCode()
-    }
-
-    /**
-     * Split the trace by the start and end timestamp.
-     *
-     * @param from the start timestamp
-     * @param to the end timestamp
-     * @return the subtrace trace(from, to)
-     */
-    fun filter(from: Long, to: Long): WindowManagerTrace {
-        return WindowManagerTrace(
-            this.entries
-                .dropWhile { it.timestamp < from }
-                .dropLastWhile { it.timestamp > to }
-                .toTypedArray())
+        return "WindowManagerTrace(Start: ${entries.first()}, " +
+            "End: ${entries.last()})"
     }
 }

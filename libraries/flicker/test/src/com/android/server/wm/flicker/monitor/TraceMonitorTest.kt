@@ -18,13 +18,12 @@ package com.android.server.wm.flicker.monitor
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.UiDevice
+import com.android.server.wm.flicker.FlickerRunResult
 import com.android.server.wm.flicker.getDefaultFlickerOutputDir
-import com.android.server.wm.traces.common.DeviceTraceDump
-import com.android.server.wm.traces.parser.DeviceDumpParser
+import com.android.server.wm.traces.parser.DeviceStateDump
 import com.google.common.io.Files
 import com.google.common.truth.Truth
 import org.junit.After
-import org.junit.Before
 import org.junit.Test
 import java.nio.file.Path
 
@@ -33,18 +32,13 @@ abstract class TraceMonitorTest<T : TransitionMonitor> {
     lateinit var savedTrace: Path
     abstract fun getMonitor(outputDir: Path): T
     abstract fun assertTrace(traceData: ByteArray)
+    abstract fun getTraceFile(result: FlickerRunResult): Path?
 
     protected val instrumentation = InstrumentationRegistry.getInstrumentation()
     protected val device = UiDevice.getInstance(instrumentation)
     private val traceMonitor by lazy {
         val outputDir = getDefaultFlickerOutputDir()
         getMonitor(outputDir)
-    }
-
-    @Before
-    fun before() {
-        Truth.assertWithMessage("Trace already enabled before starting test")
-                .that(traceMonitor.isEnabled).isFalse()
     }
 
     @After
@@ -56,20 +50,18 @@ abstract class TraceMonitorTest<T : TransitionMonitor> {
         if (::savedTrace.isInitialized) {
             savedTrace.toFile().delete()
         }
-        Truth.assertWithMessage("Failed to disable trace at end of test")
-                .that(traceMonitor.isEnabled).isFalse()
     }
 
     @Test
     @Throws(Exception::class)
-    fun canStartTrace() {
+    fun canStartLayersTrace() {
         traceMonitor.start()
         Truth.assertThat(traceMonitor.isEnabled).isTrue()
     }
 
     @Test
     @Throws(Exception::class)
-    fun canStopTrace() {
+    fun canStopLayersTrace() {
         traceMonitor.start()
         Truth.assertThat(traceMonitor.isEnabled).isTrue()
         traceMonitor.stop()
@@ -78,25 +70,30 @@ abstract class TraceMonitorTest<T : TransitionMonitor> {
 
     @Test
     @Throws(Exception::class)
-    fun captureTrace() {
+    fun captureLayersTrace() {
         traceMonitor.start()
         traceMonitor.stop()
-        val savedTrace = traceMonitor.outputFile
+        val builder = FlickerRunResult.Builder()
+        traceMonitor.save("capturedTrace", builder)
+        val results = builder.buildAll()
+        Truth.assertWithMessage("Expected 3 results for the trace").that(results).hasSize(3)
+        val result = results.first()
+        savedTrace = getTraceFile(result) ?: error("Could not find saved trace file")
         val testFile = savedTrace.toFile()
-        Truth.assertWithMessage("File $testFile exists").that(testFile.exists()).isTrue()
+        Truth.assertThat(testFile.exists()).isTrue()
+        val calculatedChecksum = TraceMonitor.calculateChecksum(savedTrace)
+        Truth.assertThat(calculatedChecksum).isEqualTo(traceMonitor.checksum)
         val trace = Files.toByteArray(testFile)
         Truth.assertThat(trace.size).isGreaterThan(0)
         assertTrace(trace)
     }
 
-    private fun validateTrace(dump: DeviceTraceDump) {
+    private fun validateTrace(dump: DeviceStateDump) {
         Truth.assertWithMessage("Could not obtain SF trace")
-            .that(dump.layersTrace?.entries ?: emptyArray())
-            .asList()
+            .that(dump.layersTrace?.entries)
             .isNotEmpty()
         Truth.assertWithMessage("Could not obtain WM trace")
-            .that(dump.wmTrace?.entries ?: emptyArray())
-            .asList()
+            .that(dump.wmTrace?.entries)
             .isNotEmpty()
     }
 
@@ -117,7 +114,7 @@ abstract class TraceMonitorTest<T : TransitionMonitor> {
             device.pressRecentApps()
         }
 
-        val dump = DeviceDumpParser.fromTrace(trace.first, trace.second)
+        val dump = DeviceStateDump.fromTrace(trace.first, trace.second)
         this.validateTrace(dump)
     }
 }

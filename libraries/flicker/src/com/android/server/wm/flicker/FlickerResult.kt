@@ -16,7 +16,6 @@
 
 package com.android.server.wm.flicker
 
-import com.android.server.wm.flicker.FlickerRunResult.Companion.RunStatus
 import com.android.server.wm.flicker.assertions.AssertionData
 import com.android.server.wm.flicker.assertions.FlickerAssertionError
 import com.google.common.truth.Truth
@@ -28,86 +27,70 @@ data class FlickerResult(
     /**
      * Result of each transition run
      */
-    @JvmField val runResults: List<FlickerRunResult> = listOf(),
+    @JvmField val runs: List<FlickerRunResult> = listOf(),
     /**
      * List of test created during the execution
      */
     @JvmField val tags: Set<String> = setOf(),
     /**
-     * Execution errors which happened during the execution of the Flicker test
+     * Error which happened during the transition
      */
-    @JvmField val executionErrors: List<Throwable> = listOf()
+    @JvmField val error: Throwable? = null
 ) {
-    init {
-        for (result in runResults) {
-            require(result.status != RunStatus.UNDEFINED) {
-                "Can't create FlickerResult from RunResult ${result.traceName} " +
-                        "(${result.assertionTag}) with UNDEFINED status."
-            }
-        }
-    }
-
-    /** Successful runs on which we can run assertions */
-    val successfulRuns: List<FlickerRunResult> = runResults.filter { it.isSuccessfulRun }
-    /** Failed runs due to execution errors which we shouldn't run assertions on */
-    private val failedRuns: List<FlickerRunResult> = runResults.filter { it.isFailedRun }
-
-    val combinedExecutionError = CombinedExecutionError(executionErrors)
-
     /**
      * List of failures during assertion
      */
     private val failures: MutableList<FlickerAssertionError> = mutableListOf()
 
     /**
-     * Run the assertion on the trace
-     *
-     * @throws AssertionError If the assertion fail or the transition crashed
+     * Asserts if the transition of this flicker test has ben executed
      */
-    internal fun checkAssertion(assertion: AssertionData): List<FlickerAssertionError> {
-        Truth.assertWithMessage("Expected to have runResults but none were found")
-                .that(runResults).isNotEmpty()
-        Truth.assertWithMessage("No transitions were not executed successful")
-                .that(successfulRuns).isNotEmpty()
+    private fun checkIsExecuted() {
+        Truth.assertWithMessage(error?.message).that(error).isNull()
+        Truth.assertWithMessage("Transition was not executed").that(runs).isNotEmpty()
+    }
 
-        val filteredRuns = successfulRuns.filter { it.assertionTag == assertion.tag }
-        val currFailures = filteredRuns.mapNotNull { run -> run.checkAssertion(assertion) }
+    /**
+     * Run the assertions on the trace
+     *
+     * @throws AssertionError If the assertions fail or the transition crashed
+     */
+    internal fun checkAssertions(
+        assertions: List<AssertionData>
+    ): List<FlickerAssertionError> {
+        checkIsExecuted()
+        val currFailures: List<FlickerAssertionError> = runs.flatMap { run ->
+            assertions.filter { it.tag == run.assertionTag }.mapNotNull { assertion ->
+                try {
+                    assertion.checkAssertion(run)
+                    null
+                } catch (error: Throwable) {
+                    FlickerAssertionError(error, assertion, run)
+                }
+            }
+        }
         failures.addAll(currFailures)
         return currFailures
     }
 
     /**
-     * Asserts if there have been any execution errors while running the transitions
+     * Remove from the device the trace files associated with passed runs.
+     *
+     * If an test fails, or if the transition crashes, retain all traces related to
+     * that run.
      */
-    internal fun checkForExecutionErrors() {
-        if (executionErrors.isNotEmpty()) {
-            if (executionErrors.size == 1) {
-                throw executionErrors[0]
+    fun cleanUp() {
+        if (error != null) {
+            return
+        }
+        runs.forEach {
+            if (it.canDelete(failures)) {
+                it.cleanUp()
             }
-            throw combinedExecutionError
         }
     }
 
-    fun isEmpty(): Boolean = executionErrors.isEmpty() && successfulRuns.isEmpty()
+    fun isEmpty(): Boolean = error == null && runs.isEmpty()
 
     fun isNotEmpty(): Boolean = !isEmpty()
-
-    companion object {
-        class CombinedExecutionError(val errors: List<Throwable>?) : Throwable() {
-            override val message: String? get() {
-                if (errors == null || errors.isEmpty()) {
-                    return null
-                }
-                if (errors.size == 1) {
-                    return errors[0].toString()
-                }
-                return "Combined Errors Of\n\t- " +
-                        errors.joinToString("\n\t\tAND\n\t- ") { it.toString() } +
-                        "\n[NOTE: any details below are only for the first error]"
-            }
-
-            override val cause: Throwable?
-                get() = errors?.get(0)
-        }
-    }
 }
