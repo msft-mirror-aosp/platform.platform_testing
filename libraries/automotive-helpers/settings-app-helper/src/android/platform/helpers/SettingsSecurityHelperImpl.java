@@ -2,6 +2,7 @@ package android.platform.helpers;
 
 import android.app.Instrumentation;
 import android.support.test.uiautomator.By;
+import android.support.test.uiautomator.BySelector;
 import android.support.test.uiautomator.UiObject2;
 
 import java.util.List;
@@ -116,19 +117,9 @@ public class SettingsSecurityHelperImpl extends AbstractAutoStandardAppHelper
         int length = pin.length();
         for (int i = 0; i < length; i++) {
             char c = pin.charAt(i);
-            UiObject2 number =
-                    findUiObject(
-                            getResourceFromConfig(
-                                    AutoConfigConstants.SETTINGS,
-                                    AutoConfigConstants.SECURITY_SETTINGS,
-                                    Character.toString(c)));
-            if (number == null) {
-                number = findUiObject(By.text(Character.toString(c)));
-            }
-            if (number == null) {
-                throw new RuntimeException(
-                        "Unable to find number on pin pad: " + Character.toString(c));
-            }
+            String numberText = "" + c;
+            BySelector number_selector = By.text(numberText);
+            UiObject2 number = findUiObject(number_selector);
             clickAndWaitForWindowUpdate(
                     getApplicationConfig(AutoConfigConstants.SETTINGS_PACKAGE), number);
         }

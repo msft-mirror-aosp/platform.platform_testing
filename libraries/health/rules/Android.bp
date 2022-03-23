@@ -31,7 +31,6 @@ java_library {
         "launcher-aosp-tapl",
         "flickerlib",
         "statsd-helper",
-        "health-testing-utils",
     ],
     srcs: ["src/**/*.java"],
 }
@@ -50,7 +49,6 @@ java_library {
         "package-helper",
         "statsd-helper",
         "launcher-aosp-tapl",
-        "health-testing-utils",
     ],
     srcs: ["src/**/*.java"],
     exclude_srcs: [
