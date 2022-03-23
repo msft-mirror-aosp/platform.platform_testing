@@ -87,7 +87,7 @@ public class SensorsBootCheck {
 
         // TODO: test heart rate and other related sensor types.
 
-        Assert.assertEquals(errorDetails.toString(), 0, numErrors);
+        Assert.assertEquals(errorDetails.toString(), numErrors, 0);
     }
 
     private boolean isSensorMissing(String featureString, int sensorType, StringBuilder errString) {

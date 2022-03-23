@@ -9,6 +9,7 @@ platform_tests += \
     ApiDemos \
     AppCompatibilityTest \
     AppLaunch \
+    AppLaunchWear \
     AppTransitionTests \
     AutoLocTestApp \
     AutoLocVersionedTestApp_v1 \
@@ -31,6 +32,7 @@ platform_tests += \
     DataIdleTest \
     Development \
     DeviceHealthChecks \
+    DeviceHealthTests \
     DynamicCodeLoggerIntegrationTests \
     DialerJankTests \
     DownloadManagerTestApp \
@@ -96,7 +98,6 @@ platform_tests += \
     trace_config.textproto \
     trace_config_detailed.textproto \
     trace_config_experimental.textproto \
-    trace_config_multi_user_cuj_tests.textproto \
     UbSystemUiJankTests \
     UbWebViewJankTests \
     UiBench \

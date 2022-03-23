@@ -171,7 +171,7 @@ public class OverviewHelper {
             scrollToTopOfRecents(recentsView);
             // click clear all
             UiObject2 clearAll = mDevice.wait(Until.findObject(By.text("CLEAR ALL")),TIMEOUT);
-            if (clearAll != null) {
+            if (!clearAll.equals(null)) {
                 clearAll.click();
             }
             Thread.sleep(TIMEOUT);
