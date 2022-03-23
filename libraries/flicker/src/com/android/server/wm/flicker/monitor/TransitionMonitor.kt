@@ -19,11 +19,20 @@ package com.android.server.wm.flicker.monitor
 import com.android.server.wm.flicker.FlickerRunResult
 import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.Paths
 
 abstract class TransitionMonitor(
-    outputDir: Path,
-    sourceFile: Path
-) : TraceMonitor(outputDir, sourceFile) {
+    outputPath: Path,
+    sourceTraceFilePath: Path
+) : TraceMonitor(outputPath, sourceTraceFilePath) {
+
+    internal constructor(
+        outputDir: Path,
+        traceFileName: String
+    ) : this(outputDir, TRACE_DIR.resolve(traceFileName))
+
+    protected abstract fun getTracePath(builder: FlickerRunResult.Builder): Path?
+
     /**
      * Acquires the trace generated when executing the commands defined in the [predicate].
      *
@@ -32,8 +41,7 @@ abstract class TransitionMonitor(
      */
     fun withTracing(predicate: () -> Unit): ByteArray {
         if (this.isEnabled) {
-            throw UnsupportedOperationException("Trace already running. " +
-                    "This is likely due to chained 'withTracing' calls.")
+            throw UnsupportedOperationException("Chained 'withTracing' calls are not supported")
         }
         try {
             this.start()
@@ -43,10 +51,15 @@ abstract class TransitionMonitor(
         }
 
         val builder = FlickerRunResult.Builder()
-        builder.setResultFrom(this)
+        this.save("withTracing", builder)
+        val path = this.getTracePath(builder)
 
-        return outputFile.let {
+        return path?.let {
             Files.readAllBytes(it).also { _ -> Files.delete(it) }
         } ?: error("Unable to acquire trace")
+    }
+
+    companion object {
+        private val TRACE_DIR = Paths.get("/data/misc/wmtrace/")
     }
 }

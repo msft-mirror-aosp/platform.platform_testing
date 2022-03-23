@@ -24,8 +24,8 @@ import android.platform.test.rule.NaturalOrientationRule;
 import android.platform.test.rule.UnlockScreenRule;
 import android.platform.test.scenario.annotation.Scenario;
 
+import com.android.launcher3.tapl.AllApps;
 import com.android.launcher3.tapl.AppIcon;
-import com.android.launcher3.tapl.HomeAllApps;
 import com.android.launcher3.tapl.LauncherInstrumentation;
 
 import org.junit.AfterClass;
@@ -67,14 +67,14 @@ public class OpenAppsFromHome {
     @BeforeClass
     public static void setup() throws IOException {
         sLauncher = new LauncherInstrumentation();
-        final HomeAllApps allApps = sLauncher.goHome().switchToAllApps();
+        final AllApps allApps = sLauncher.pressHome().switchToAllApps();
         allApps.getAppIcon(sNameOption.get()).dragToWorkspace(false, false);
         sAppIcon = sLauncher.getWorkspace().getWorkspaceAppIcon(sNameOption.get());
     }
 
     @NoMetricBefore
     public void openWorkspace() {
-        sLauncher.goHome();
+        sLauncher.pressHome();
     }
 
     @Test
@@ -86,6 +86,6 @@ public class OpenAppsFromHome {
     @AfterClass
     public static void closeAppAndRemoveIcon() throws IOException {
         sLauncher.getDevice().executeShellCommand("pm clear com.google.android.apps.nexuslauncher");
-        sLauncher.goHome();
+        sLauncher.pressHome();
     }
 }

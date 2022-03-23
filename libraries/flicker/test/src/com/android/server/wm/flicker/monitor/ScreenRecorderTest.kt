@@ -19,7 +19,7 @@ package com.android.server.wm.flicker.monitor
 import android.app.Instrumentation
 import android.os.SystemClock
 import androidx.test.platform.app.InstrumentationRegistry
-import com.android.compatibility.common.util.SystemUtil
+import com.android.server.wm.flicker.FlickerRunResult
 import com.android.server.wm.flicker.getDefaultFlickerOutputDir
 import com.google.common.truth.Truth
 import org.junit.After
@@ -40,18 +40,13 @@ class ScreenRecorderTest {
     @Before
     fun setup() {
         val outputDir = getDefaultFlickerOutputDir()
-        mScreenRecorder = ScreenRecorder(instrumentation.targetContext, outputDir)
-    }
-
-    @Before
-    fun clearOutputDir() {
-        SystemUtil.runShellCommand("rm -rf ${getDefaultFlickerOutputDir()}")
+        mScreenRecorder = ScreenRecorder(outputDir, instrumentation.targetContext)
     }
 
     @After
     fun teardown() {
         mScreenRecorder.stop()
-        Files.deleteIfExists(mScreenRecorder.outputFile)
+        mScreenRecorder.outputPath.toFile().delete()
     }
 
     @Test
@@ -59,18 +54,29 @@ class ScreenRecorderTest {
         mScreenRecorder.start()
         SystemClock.sleep(100)
         mScreenRecorder.stop()
-        val file = mScreenRecorder.outputFile
+        val file = mScreenRecorder.outputPath.toFile()
         Truth.assertWithMessage("Screen recording file not found")
-            .that(Files.exists(file))
+            .that(file.exists())
             .isTrue()
     }
 
     @Test
     fun videoCanBeSaved() {
         mScreenRecorder.start()
-        SystemClock.sleep(3000)
+        SystemClock.sleep(100)
         mScreenRecorder.stop()
-        val trace = mScreenRecorder.outputFile
-        Truth.assertWithMessage("Trace file $trace not found").that(Files.exists(trace)).isTrue()
+        val builder = FlickerRunResult.Builder()
+        mScreenRecorder.save("test", builder)
+        val traces = builder.buildAll().mapNotNull { result ->
+            result.traceFiles.firstOrNull {
+                it.toString().contains("transition")
+            }
+        }
+        traces.forEach {
+            Truth.assertWithMessage("Trace file $it not found").that(Files.exists(it)).isTrue()
+        }
+        traces.forEach {
+            Files.deleteIfExists(it)
+        }
     }
 }
