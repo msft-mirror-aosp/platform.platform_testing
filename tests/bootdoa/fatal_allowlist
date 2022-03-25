@@ -1,2 +1,7 @@
+# b/181137192#comment21
 pcie\s*:\s*pcie_init.
+# b/181137192#comment38
 WMA\s-->\swmi_unified_attach\s-\ssuccess
+# b/222596773
+page\slast\spinned[0-9\S\s]+
+PFN\s[0-9]+[A-Za-z0-9\S\s]+swapbacked\S
