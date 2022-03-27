@@ -101,6 +101,10 @@ public class BaseMetricListener extends InstrumentationRunListener {
     private int mCollectIterationInterval = 1;
     private int mSkipMetricUntilIteration = 0;
 
+    // Whether to report the results as instrumentation results. Used by metric collector rules,
+    // which do not have the information to invoke InstrumentationRunFinished() to report metrics.
+    private boolean mReportAsInstrumentationResults = false;
+
     public BaseMetricListener() {
         mIncludeFilters = new ArrayList<>();
         mExcludeFilters = new ArrayList<>();
@@ -190,8 +194,12 @@ public class BaseMetricListener extends InstrumentationRunListener {
             }
             if (mTestData.hasMetrics()) {
                 // Only send the status progress if there are metrics
+                if (mReportAsInstrumentationResults) {
+                    getInstrumentation().addResults(mTestData.createBundleFromMetrics());
+                } else {
                 SendToInstrumentation.sendBundle(getInstrumentation(),
                         mTestData.createBundleFromMetrics());
+            }
             }
         }
         super.testFinished(description);
@@ -366,6 +374,11 @@ public class BaseMetricListener extends InstrumentationRunListener {
             }
             rootDir.delete();
         }
+    }
+
+    /** Sets whether metrics should be reported directly to instrumentation results. */
+    public final void setReportAsInstrumentationResults(boolean enabled) {
+        mReportAsInstrumentationResults = enabled;
     }
 
     /**
