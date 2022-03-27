@@ -34,7 +34,7 @@ import java.util.zip.ZipOutputStream;
 /** Utilities for producing test artifacts. */
 public class ArtifactSaver {
     private static final String TAG = ArtifactSaver.class.getSimpleName();
-    private static boolean sBugreportTaken = false;
+    private static boolean sBugreportTaken = true;  // bugreposrts are temporarily disabled
 
     public static File artifactFile(String fileName) {
         return new File(
