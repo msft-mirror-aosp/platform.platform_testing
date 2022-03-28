@@ -17,6 +17,11 @@ package android.device.collectors;
 
 import android.os.Bundle;
 import android.platform.test.annotations.ForJankMetrics;
+import android.util.Log;
+
+import androidx.test.uiautomator.By;
+import androidx.test.uiautomator.UiDevice;
+import androidx.test.uiautomator.Until;
 
 import com.android.helpers.MetricUtility;
 import com.android.helpers.UiInteractionFrameInfoHelper;
@@ -38,8 +43,10 @@ import java.util.stream.Collectors;
  */
 public class UiInteractionFrameInfoListener extends BaseCollectionListener<StringBuilder> {
     private static final String TAG = UiInteractionFrameInfoListener.class.getSimpleName();
-    private static final long DELAY_TOGGLE_PANEL_MS = 100;
+    private static final long WAIT_FOR_TOGGLE_PANEL_MS = 1000;
     private static final String CMD_TOGGLE_PANEL = "su shell service call statusbar 3";
+    private static final String UI_PACKAGE_NAME = "com.android.systemui";
+    private static final String UI_NOTIFICATION_SCROLLER_ID = "notification_stack_scroller";
 
     public UiInteractionFrameInfoListener() {
         createHelperInstance(new UiInteractionFrameInfoHelper());
@@ -92,16 +99,33 @@ public class UiInteractionFrameInfoListener extends BaseCollectionListener<Strin
     }
 
     private void flushSurfaceFlingerCallback() {
+        final UiDevice device = UiDevice.getInstance(getInstrumentation());
+        final boolean hasShadeInTheEndOfTest =
+                device.hasObject(By.res(UI_PACKAGE_NAME, UI_NOTIFICATION_SCROLLER_ID));
         boolean success = false;
         try {
-            getInstrumentation().getUiAutomation().executeShellCommand(CMD_TOGGLE_PANEL);
-            Thread.sleep(DELAY_TOGGLE_PANEL_MS);
+            waitUntilShadeToggled(device, hasShadeInTheEndOfTest);
             success = true;
         } catch (Exception ex) {
+            Log.d(TAG, "failed at flushSurfaceFlingerCallback!", ex);
         } finally {
             if (success) {
-                getInstrumentation().getUiAutomation().executeShellCommand(CMD_TOGGLE_PANEL);
+                waitUntilShadeToggled(device, !hasShadeInTheEndOfTest);
             }
+        }
+    }
+
+    // TODO: This is a temporary workaround and should be removed once b/225105422 is fixed.
+    private void waitUntilShadeToggled(UiDevice device, boolean hasShade) {
+        getInstrumentation().getUiAutomation().executeShellCommand(CMD_TOGGLE_PANEL);
+        if (hasShade) {
+            device.wait(
+                    Until.gone(By.res(UI_PACKAGE_NAME, UI_NOTIFICATION_SCROLLER_ID)),
+                    WAIT_FOR_TOGGLE_PANEL_MS);
+        } else {
+            device.wait(
+                    Until.hasObject(By.res(UI_PACKAGE_NAME, UI_NOTIFICATION_SCROLLER_ID)),
+                    WAIT_FOR_TOGGLE_PANEL_MS);
         }
     }
 
