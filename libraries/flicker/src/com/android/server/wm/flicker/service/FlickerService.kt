@@ -18,7 +18,7 @@ package com.android.server.wm.flicker.service
 
 import android.util.Log
 import com.android.server.wm.flicker.FLICKER_TAG
-import com.android.server.wm.flicker.monitor.TransitionMonitor.Companion.WINSCOPE_EXT
+import com.android.server.wm.flicker.monitor.TraceMonitor.Companion.WINSCOPE_EXT
 import com.android.server.wm.flicker.service.assertors.AssertionData
 import com.android.server.wm.traces.common.errors.ErrorTrace
 import com.android.server.wm.traces.common.layers.LayersTrace
