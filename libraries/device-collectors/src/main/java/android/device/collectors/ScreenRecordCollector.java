@@ -47,6 +47,10 @@ public class ScreenRecordCollector extends BaseMetricListener {
     // *  "low" is 1/8 the resolution.
     // *  Otherwise, use the resolution.
     @VisibleForTesting static final String QUALITY_ARG = "video-quality";
+    // Option for whether to empty the output directory before collecting. Defaults to true. Setting
+    // to false is useful when multiple test classes need recordings and recordings are pulled at
+    // the end of the test run.
+    @VisibleForTesting static final String EMPTY_OUTPUT_DIR_ARG = "empty-output-dir";
     // Maximum parts per test (each part is <= 3min).
     @VisibleForTesting static final int MAX_RECORDING_PARTS = 5;
     private static final long VIDEO_TAIL_BUFFER = 500;
@@ -59,6 +63,7 @@ public class ScreenRecordCollector extends BaseMetricListener {
     private RecordingThread mCurrentThread;
 
     private String mVideoDimensions;
+    private boolean mEmptyOutputDir;
 
     // Tracks the test iterations to ensure that each failure gets unique filenames.
     // Key: test description; value: number of iterations.
@@ -76,11 +81,15 @@ public class ScreenRecordCollector extends BaseMetricListener {
 
     @Override
     public void onSetUp() {
-        mDestDir = createAndEmptyDirectory(OUTPUT_DIR);
+        mDestDir = createDirectory(OUTPUT_DIR, mEmptyOutputDir);
     }
 
     @Override
     public void setupAdditionalArgs() {
+        mEmptyOutputDir =
+                Boolean.parseBoolean(
+                        getArgsBundle().getString(EMPTY_OUTPUT_DIR_ARG, String.valueOf(true)));
+
         try {
             long scaleDown = 1;
             switch (getArgsBundle().getString(QUALITY_ARG, "default")) {
@@ -166,18 +175,24 @@ public class ScreenRecordCollector extends BaseMetricListener {
 
     /** Returns the recording's name for part {@code part} of test {@code description}. */
     private File getOutputFile(Description description, int part) {
-        final String baseName =
-                String.format("%s.%s", description.getClassName(), description.getMethodName());
-        // Omit the iteration number for the first iteration.
+        StringBuilder builder = new StringBuilder(description.getClassName());
+        if (description.getMethodName() != null) {
+            builder.append(".");
+            builder.append(description.getMethodName());
+        }
         int iteration = mTestIterations.get(description.getDisplayName());
-        final String fileName =
-                String.format(
-                        "%s-video%s.mp4",
-                        iteration == 1
-                                ? baseName
-                                : String.join("-", baseName, String.valueOf(iteration)),
-                        part == 1 ? "" : part);
-        return Paths.get(mDestDir.getAbsolutePath(), fileName).toFile();
+        // Omit the iteration number for the first iteration.
+        if (iteration > 1) {
+            builder.append("-");
+            builder.append(iteration);
+        }
+        builder.append("-video");
+        // Omit the part number for the first part.
+        if (part > 1) {
+            builder.append(part);
+        }
+        builder.append(".mp4");
+        return Paths.get(mDestDir.getAbsolutePath(), builder.toString()).toFile();
     }
 
     /** Returns a buffer duration for the end of the video. */

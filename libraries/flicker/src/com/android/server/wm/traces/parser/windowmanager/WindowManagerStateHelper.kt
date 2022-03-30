@@ -105,7 +105,7 @@ open class WindowManagerStateHelper @JvmOverloads constructor(
 
     fun waitForFullScreenApp(component: FlickerComponentName) =
         require(
-        waitFor(isAppFullScreen(component))) {
+        waitFor(isAppFullScreen(component), snapshotGoneCondition)) {
         "Expected ${component.toWindowName()} to be in full screen"
     }
 
@@ -210,13 +210,6 @@ open class WindowManagerStateHelper @JvmOverloads constructor(
      * the trace
      */
     fun waitImeGone() = require(waitFor(imeGoneCondition)) { "Expected IME not to be visible" }
-
-    /**
-     * Waits until the Snapshot layer is no longer visible.
-     */
-    fun waitSnapshotGone() = require(waitFor(snapshotGoneCondition)) {
-        "Expected Snapshot window gone"
-    }
 
     /**
      * Waits until a window is in PIP mode. That is:
