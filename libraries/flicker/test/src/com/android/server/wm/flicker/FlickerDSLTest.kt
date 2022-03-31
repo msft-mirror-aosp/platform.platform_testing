@@ -36,12 +36,11 @@ import com.android.server.wm.flicker.traces.windowmanager.WindowManagerStateSubj
 import com.android.server.wm.flicker.traces.windowmanager.WindowManagerTraceSubject
 import com.google.common.truth.Truth
 import org.junit.Assert
+import org.junit.Before
 import org.junit.FixMethodOrder
 import org.junit.Test
 import org.junit.runners.MethodSorters
-import java.nio.file.Files
-import java.nio.file.Path
-import java.nio.file.Paths
+import java.lang.RuntimeException
 import kotlin.reflect.KClass
 
 /**
@@ -53,6 +52,12 @@ import kotlin.reflect.KClass
 class FlickerDSLTest {
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
     private var executed = false
+
+    @Before
+    fun before() {
+        // Clear the trace output directory
+        SystemUtil.runShellCommand("rm -rf $OUT_DIR && mkdir $OUT_DIR")
+    }
 
     @Test
     fun checkBuiltWMStartAssertion() {
@@ -266,15 +271,6 @@ class FlickerDSLTest {
     }
 
     @Test
-    fun canDetectSaveResultsExecutionError() {
-        val builder = FlickerBuilder(instrumentation,
-                outputDir = Paths.get("/some/output/dir/that/does/not/exist"))
-        builder.transitions(SIMPLE_TRANSITION)
-        val flicker = builder.build()
-        runAndAssertFlickerFailsWithException(flicker, TransitionExecutionFailure::class.java)
-    }
-
-    @Test
     fun canDetectTransitionTeardownExecutionError() {
         val builder = FlickerBuilder(instrumentation)
         builder.transitions(SIMPLE_TRANSITION)
@@ -358,6 +354,43 @@ class FlickerDSLTest {
             Truth.assertWithMessage("Incorrect exception type")
                     .that(e.cause)
                     .isInstanceOf(TransitionExecutionFailure::class.java)
+        }
+    }
+
+    @Test
+    fun savesTracesOfFailedTransitionExecution() {
+        val builder = FlickerBuilder(instrumentation)
+        builder.transitions {
+            throw RuntimeException("Failed to execute transition")
+        }
+        val flicker = builder.build()
+        val OUT_DIR = getDefaultFlickerOutputDir()
+
+        try {
+            runFlicker(flicker, PASS_ASSERTION)
+        } catch (e: TransitionExecutionFailure) {
+            // A TransitionExecutionFailure is expected
+        }
+        assertArchiveContainsAllTraces(runStatus = FlickerRunResult.Companion.RunStatus.RUN_FAILED)
+    }
+
+    @Test
+    fun savesTracesForAllIterations() {
+        val runner = TransitionRunner()
+        val repetitions = 5
+        val flicker = FlickerBuilder(instrumentation)
+                .apply {
+                    transitions {}
+                }
+                .repeat { repetitions }
+                .build(runner)
+        runner.execute(flicker)
+
+        for (iteration in 0 until repetitions) {
+            assertArchiveContainsAllTraces(
+                runStatus = FlickerRunResult.Companion.RunStatus.ASSERTION_SUCCESS,
+                iteration = iteration
+            )
         }
     }
 
@@ -445,5 +478,6 @@ class FlickerDSLTest {
                 expectedSubjectClass = LayerTraceEntrySubject::class) {
             this.fail("Expected exception")
         }
+        private val OUT_DIR = getDefaultFlickerOutputDir()
     }
 }
