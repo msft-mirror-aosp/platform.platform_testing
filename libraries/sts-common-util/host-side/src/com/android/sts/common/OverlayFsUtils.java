@@ -23,6 +23,10 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.junit.rules.TestWatcher;
@@ -35,9 +39,11 @@ import com.android.tradefed.util.CommandResult;
 import com.android.tradefed.util.CommandStatus;
 import com.google.common.hash.Hashing;
 
+
 /** TestWatcher that enables writing to read-only partitions and reboots device when done. */
 public class OverlayFsUtils extends TestWatcher {
-    private static final String OVERLAYFS_PREFIX = "overlay_sts_";
+    private static final String OVERLAYFS_PREFIX = "sts_overlayfs_";
+    private static final Path WRITABLE_DIR = Paths.get("/data", "local", "tmp");
 
     private final BaseHostJUnit4Test test;
 
@@ -46,6 +52,8 @@ public class OverlayFsUtils extends TestWatcher {
             Pattern.compile(
                     "^(?<user>[a-zA-Z0-9_-]+) (?<group>[a-zA-Z0-9_-]+) (?<perm>[0-7]+)"
                             + " (?<secontext>.*)$");
+
+    private Map<ITestDevice, List<String>> workingDirs = new HashMap<>();
 
     public OverlayFsUtils(BaseHostJUnit4Test test) {
         assertNotNull("Need to pass in a valid testcase object.", test);
@@ -60,16 +68,21 @@ public class OverlayFsUtils extends TestWatcher {
      *
      * @param dir The directory to make writable. Directories with single quotes are not supported.
      */
-    public void makeWritable(final String dir)
+    public void makeWritable(final String dir, int megabytes)
             throws DeviceNotAvailableException, IOException, IllegalStateException {
         ITestDevice device = test.getDevice();
         assertNotNull("device not set.", device);
         assertTrue("dir needs to be an absolute path.", dir.startsWith("/"));
 
+        // losetup doesn't work for image paths 64 bytes or longer, so we have to truncate
+        String dirHash = Hashing.md5().hashString(dir, StandardCharsets.UTF_8).toString();
+        int pathPrefixLength = WRITABLE_DIR.toString().length() + 1 + OVERLAYFS_PREFIX.length();
+        int dirHashLength = Math.min(64 - pathPrefixLength - 5, dirHash.length());
+        assertTrue("Can't fit overlayFS image path in 64 chars.", dirHashLength >= 5);
+        String id = OVERLAYFS_PREFIX + dirHash.substring(0, dirHashLength);
+
         // Check and make sure we have not already mounted over this dir. We do that by hashing
         // the lower dir path and put that as part of the device ID for `mount`.
-        String dirHash = Hashing.md5().hashString(dir, StandardCharsets.UTF_8).toString();
-        String id = OVERLAYFS_PREFIX + dirHash;
         CommandResult res = device.executeShellV2Command("mount | grep -q " + id);
         if (res.getStatus() == CommandStatus.SUCCESS) {
             // a mount with the same ID already exists
@@ -88,7 +101,28 @@ public class OverlayFsUtils extends TestWatcher {
         String unixPerm = m.group("perm");
         String seContext = m.group("secontext");
 
-        Path tempdir = Paths.get("/mnt", "stsoverlayfs", id);
+        // Disable SELinux enforcement and mount a loopback ext4 image
+        CommandUtil.runAndCheck(device, "setenforce 0");
+        Path tempdir = WRITABLE_DIR.resolve(id);
+        Path tempimg = tempdir.getParent().resolve(tempdir.getFileName().toString() + ".img");
+        CommandUtil.runAndCheck(
+                device,
+                String.format("dd if=/dev/zero of='%s' bs=%dM count=1", tempimg, megabytes));
+        CommandUtil.runAndCheck(device, String.format("mkdir '%s'", tempdir));
+        CommandUtil.runAndCheck(device, String.format("mkfs.ext4 '%s'", tempimg));
+        CommandUtil.runAndCheck(
+                device, String.format("mount -o loop '%s' '%s'", tempimg, tempdir), 3);
+
+        List<String> dirs;
+        if (!workingDirs.containsKey(device)) {
+            dirs = new ArrayList<>(2);
+            workingDirs.put(device, dirs);
+        } else {
+            dirs = workingDirs.get(device);
+        }
+        dirs.add(tempdir.toString());
+        dirs.add(tempimg.toString());
+
         String upperdir = tempdir.resolve("upper").toString();
         String workdir = tempdir.resolve("workdir").toString();
 
@@ -116,10 +150,24 @@ public class OverlayFsUtils extends TestWatcher {
         ITestDevice device = test.getDevice();
         assertNotNull("Device not set", device);
         try {
+            // Since we can't umount an overlayfs cleanly, reboot the device to cleanup
             if (anyOverlayFsMounted()) {
                 device.rebootUntilOnline();
                 device.waitForDeviceAvailable();
             }
+
+            // Remove upper and working dirs
+            assertTrue("Can't acquire root: " + device.getSerialNumber(), device.enableAdbRoot());
+            if (workingDirs.containsKey(device)) {
+                for (String dir : workingDirs.get(device)) {
+                    CommandUtil.runAndCheck(device, String.format("rm -rf '%s'", dir));
+                }
+            }
+
+            // Restore SELinux enforcement state
+            CommandUtil.runAndCheck(device, "setenforce 1");
+
+            assertTrue("Can't remove root: " + device.getSerialNumber(), device.disableAdbRoot());
         } catch (DeviceNotAvailableException e) {
             throw new AssertionError("Device unavailable when cleaning up", e);
         }
