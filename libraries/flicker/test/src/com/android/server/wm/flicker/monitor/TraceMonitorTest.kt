@@ -18,7 +18,6 @@ package com.android.server.wm.flicker.monitor
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.UiDevice
-import com.android.server.wm.flicker.FlickerRunResult
 import com.android.server.wm.flicker.getDefaultFlickerOutputDir
 import com.android.server.wm.traces.common.DeviceTraceDump
 import com.android.server.wm.traces.parser.DeviceDumpParser
@@ -82,8 +81,7 @@ abstract class TraceMonitorTest<T : TransitionMonitor> {
     fun captureTrace() {
         traceMonitor.start()
         traceMonitor.stop()
-        val builder = FlickerRunResult.Builder()
-        val savedTrace = traceMonitor.save(builder) ?: error("Could not find saved trace file")
+        val savedTrace = traceMonitor.outputFile
         val testFile = savedTrace.toFile()
         Truth.assertWithMessage("File $testFile exists").that(testFile.exists()).isTrue()
         val trace = Files.toByteArray(testFile)
