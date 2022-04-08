@@ -17,8 +17,8 @@
 package com.android.helpers;
 
 import android.os.Debug;
-import android.os.Environment;
 import android.util.Log;
+import androidx.test.platform.app.InstrumentationRegistry;
 
 import java.io.File;
 import java.io.IOException;
@@ -83,8 +83,13 @@ public class HeapDumpHelper implements ICollectorHelper<String> {
      */
     private boolean createHeapDumpEmptyFile(String fileName) {
         try {
-            mResultsFile = File.createTempFile(fileName, ".hprof",
-                    Environment.getExternalStorageDirectory());
+            mResultsFile =
+                    File.createTempFile(
+                            fileName,
+                            ".hprof",
+                            InstrumentationRegistry.getInstrumentation()
+                                    .getContext()
+                                    .getExternalFilesDir(null));
         } catch (IOException e) {
             e.printStackTrace();
             return false;
