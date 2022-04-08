@@ -54,8 +54,7 @@ public final class HeapDumpListenerTest {
     @Test
     public void testHeapCollectionEnableAllIterations() throws Exception {
         Bundle enableAllBundle = new Bundle();
-        enableAllBundle.putBoolean(
-                HeapDumpListener.ITERATION_ALL_ENABLE, true);
+        enableAllBundle.putString(HeapDumpListener.ITERATION_ALL_ENABLE, String.valueOf(true));
         HeapDumpListener collector = new HeapDumpListener(enableAllBundle, mHelper);
         collector.setInstrumentation(mInstrumentation);
 
@@ -68,8 +67,7 @@ public final class HeapDumpListenerTest {
     @Test
     public void testHeapCollectionEnableAllFlagDisabled() throws Exception {
         Bundle disableAllBundle = new Bundle();
-        disableAllBundle.putBoolean(
-                HeapDumpListener.ITERATION_ALL_ENABLE, false);
+        disableAllBundle.putString(HeapDumpListener.ITERATION_ALL_ENABLE, String.valueOf(false));
         HeapDumpListener collector = new HeapDumpListener(disableAllBundle, mHelper);
         collector.setInstrumentation(mInstrumentation);
 
@@ -134,8 +132,8 @@ public final class HeapDumpListenerTest {
         Bundle enableSpecificIterationsBundle = new Bundle();
         enableSpecificIterationsBundle.putString(
                 HeapDumpListener.ENABLE_ITERATION_IDS, "2");
-        enableSpecificIterationsBundle.putBoolean(
-                HeapDumpListener.ITERATION_ALL_ENABLE, true);
+        enableSpecificIterationsBundle.putString(
+                HeapDumpListener.ITERATION_ALL_ENABLE, String.valueOf(true));
         HeapDumpListener collector = new HeapDumpListener(enableSpecificIterationsBundle, mHelper);
         collector.setInstrumentation(mInstrumentation);
 
