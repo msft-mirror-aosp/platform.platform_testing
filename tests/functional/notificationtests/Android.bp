@@ -20,7 +20,7 @@ android_test {
     name: "NotificationFunctionalTests",
     srcs: ["src/**/*.java"],
     static_libs: [
-        "androidx.test.rules",
+        "android-support-test",
         "launcher-helper-lib",
         "metrics-helper-lib",
         "platform-test-annotations",

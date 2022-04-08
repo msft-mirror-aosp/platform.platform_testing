@@ -15,24 +15,25 @@
  */
 package com.android.helpers;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import android.support.test.uiautomator.UiDevice;
+
+
+import java.io.IOException;
+import java.util.Map;
+
 import static org.mockito.ArgumentMatchers.matches;
 import static org.mockito.Mockito.doReturn;
 
-import androidx.test.uiautomator.UiDevice;
-
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
-
-import java.io.IOException;
-import java.util.Map;
+import org.mockito.MockitoAnnotations;
 
 @RunWith(JUnit4.class)
 public final class PwrStatsUtilHelperTest {

@@ -30,25 +30,4 @@ public interface IAutoAppGridHelper extends IAppHelper, Scrollable {
      * Check if device is currently at the bottom of app grid.
      */
     public boolean isBottom();
-
-    /**
-     * Setup expectations: In App grid.
-     *
-     * <p>Scroll up on page.
-     */
-    boolean scrollUpOnePage();
-
-    /**
-     * Setup expectations: In App grid.
-     *
-     * <p>Scroll down on page.
-     */
-    boolean scrollDownOnePage();
-
-    /**
-     * Setup expectations: In App grid.
-     *
-     * <p>Find and open an application.
-     */
-    void openApp(String appName);
 }

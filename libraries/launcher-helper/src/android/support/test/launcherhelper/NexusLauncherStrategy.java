@@ -16,6 +16,7 @@
 package android.support.test.launcherhelper;
 
 import android.graphics.Point;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.uiautomator.By;
 import android.support.test.uiautomator.BySelector;
 import android.support.test.uiautomator.Direction;
@@ -23,9 +24,6 @@ import android.support.test.uiautomator.UiDevice;
 import android.support.test.uiautomator.UiObject2;
 import android.support.test.uiautomator.Until;
 
-import androidx.test.InstrumentationRegistry;
-
-import com.android.launcher3.tapl.BaseOverview;
 import com.android.launcher3.tapl.LauncherInstrumentation;
 
 import junit.framework.Assert;
@@ -138,27 +136,6 @@ public class NexusLauncherStrategy extends BaseLauncher3Strategy {
         UiObject2 allAppsContainer = mDevice.wait(Until.findObject(getAllAppsSelector()), 2500);
         Assert.assertNotNull("openAllApps: did not find all apps container", allAppsContainer);
         return allAppsContainer;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void openOverview() {
-        mLauncher.pressHome().switchToOverview();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public boolean clearRecentAppsFromOverview() {
-        if (!isInOverview()) {
-            openOverview();
-        }
-
-        BaseOverview overview = mLauncher.getOverview();
-        if (overview.hasTasks()) {
-            overview.dismissAllTasks();
-        }
-
-        return !overview.hasTasks();
     }
 
     /**

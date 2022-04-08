@@ -16,11 +16,13 @@
 
 package com.android.wearable.uibench.janktests;
 
-import static com.android.wearable.uibench.janktests.UiBenchJankTestsHelper.EXPECTED_FRAMES;
-import static com.android.wearable.uibench.janktests.UiBenchJankTestsHelper.PACKAGE_NAME;
-
+import android.content.Intent;
 import android.os.Bundle;
+import android.os.RemoteException;
 import android.os.SystemClock;
+import android.support.test.jank.GfxMonitor;
+import android.support.test.jank.JankTest;
+import android.support.test.jank.JankTestBase;
 import android.support.test.uiautomator.By;
 import android.support.test.uiautomator.Direction;
 import android.support.test.uiautomator.UiDevice;
@@ -29,10 +31,9 @@ import android.support.test.uiautomator.UiObjectNotFoundException;
 import android.support.test.uiautomator.Until;
 import android.widget.ListView;
 
-import androidx.test.jank.GfxMonitor;
-import androidx.test.jank.JankTest;
-import androidx.test.jank.JankTestBase;
-
+import com.android.wearable.uibench.janktests.UiBenchJankTestsHelper;
+import static com.android.wearable.uibench.janktests.UiBenchJankTestsHelper.PACKAGE_NAME;
+import static com.android.wearable.uibench.janktests.UiBenchJankTestsHelper.EXPECTED_FRAMES;
 import junit.framework.Assert;
 
 /**

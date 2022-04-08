@@ -18,8 +18,11 @@ package com.android.helpers;
 
 import android.util.Log;
 
-import com.android.os.nano.AtomsProto;
-import com.android.os.nano.StatsLog;
+import com.android.os.AtomsProto.AppStartFullyDrawn;
+import com.android.os.AtomsProto.AppStartOccurred;
+import com.android.os.AtomsProto.Atom;
+import com.android.os.AtomsProto.ProcessStartTime;
+import com.android.os.StatsLog.EventMetricData;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -52,7 +55,6 @@ public class AppStartupHelper implements ICollectorHelper<StringBuilder> {
     private static final String PROCESS_START = "process_start";
     private static final String PROCESS_START_DELAY = "process_start_delay";
     private static final String TRANSITION_DELAY_MILLIS = "transition_delay_millis";
-    private static final String SOURCE_EVENT_DELAY_MILLIS = "source_event_delay_millis";
     private boolean isProcStartDetailsDisabled;
 
     private StatsdHelper mStatsdHelper = new StatsdHelper();
@@ -64,10 +66,10 @@ public class AppStartupHelper implements ICollectorHelper<StringBuilder> {
     public boolean startCollecting() {
         Log.i(LOG_TAG, "Adding app startup configs to statsd.");
         List<Integer> atomIdList = new ArrayList<>();
-        atomIdList.add(AtomsProto.Atom.APP_START_OCCURRED_FIELD_NUMBER);
-        atomIdList.add(AtomsProto.Atom.APP_START_FULLY_DRAWN_FIELD_NUMBER);
+        atomIdList.add(Atom.APP_START_OCCURRED_FIELD_NUMBER);
+        atomIdList.add(Atom.APP_START_FULLY_DRAWN_FIELD_NUMBER);
         if (!isProcStartDetailsDisabled) {
-            atomIdList.add(AtomsProto.Atom.PROCESS_START_TIME_FIELD_NUMBER);
+            atomIdList.add(Atom.PROCESS_START_TIME_FIELD_NUMBER);
         }
         return mStatsdHelper.addEventConfig(atomIdList);
     }
@@ -77,27 +79,21 @@ public class AppStartupHelper implements ICollectorHelper<StringBuilder> {
      */
     @Override
     public Map<String, StringBuilder> getMetrics() {
-        List<StatsLog.EventMetricData> eventMetricData = mStatsdHelper.getEventMetrics();
+        List<EventMetricData> eventMetricData = mStatsdHelper.getEventMetrics();
         Map<String, StringBuilder> appStartResultMap = new HashMap<>();
         Map<String, Integer> appStartCountMap = new HashMap<>();
         Map<String, Integer> tempResultCountMap = new HashMap<>();
-        for (StatsLog.EventMetricData dataItem : eventMetricData) {
-            AtomsProto.Atom atom = dataItem.atom;
+        for (EventMetricData dataItem : eventMetricData) {
+            Atom atom = dataItem.getAtom();
             if (atom.hasAppStartOccurred()) {
-                AtomsProto.AppStartOccurred appStartAtom = atom.getAppStartOccurred();
-                String pkgName = appStartAtom.pkgName;
-                String transitionType = String.valueOf(appStartAtom.type);
-                int windowsDrawnMillis = appStartAtom.windowsDrawnDelayMillis;
-                int transitionDelayMillis = appStartAtom.transitionDelayMillis;
-                Log.i(
-                        LOG_TAG,
-                        String.format(
-                                "Pkg Name: %s, Transition Type: %s, "
-                                        + "WindowDrawnDelayMillis: %s, TransitionDelayMillis: %s",
-                                pkgName,
-                                transitionType,
-                                windowsDrawnMillis,
-                                transitionDelayMillis));
+                AppStartOccurred appStartAtom = atom.getAppStartOccurred();
+                String pkgName = appStartAtom.getPkgName();
+                String transitionType = appStartAtom.getType().toString();
+                int windowsDrawnMillis = appStartAtom.getWindowsDrawnDelayMillis();
+                int transitionDelayMillis = appStartAtom.getTransitionDelayMillis();
+                Log.i(LOG_TAG, String.format("Pkg Name: %s, Transition Type: %s, "
+                        + "WindowDrawnDelayMillis: %s, TransitionDelayMillis: %s",
+                        pkgName, transitionType, windowsDrawnMillis, transitionDelayMillis));
 
                 String metricTypeKey = "";
                 String metricTransitionKey = "";
@@ -106,17 +102,17 @@ public class AppStartupHelper implements ICollectorHelper<StringBuilder> {
                 // To track total number of startups per type.
                 String totalCountKey = "";
                 String typeKey = "";
-                switch (appStartAtom.type) {
-                    case AtomsProto.AppStartOccurred.COLD:
+                switch (appStartAtom.getType()) {
+                    case COLD:
                         typeKey = COLD_STARTUP;
                         break;
-                    case AtomsProto.AppStartOccurred.WARM:
+                    case WARM:
                         typeKey = WARM_STARTUP;
                         break;
-                    case AtomsProto.AppStartOccurred.HOT:
+                    case HOT:
                         typeKey = HOT_STARTUP;
                         break;
-                    case AtomsProto.AppStartOccurred.UNKNOWN:
+                    case UNKNOWN:
                         break;
                 }
                 if (!typeKey.isEmpty()) {
@@ -135,36 +131,26 @@ public class AppStartupHelper implements ICollectorHelper<StringBuilder> {
                     MetricUtility.addMetric(metricTransitionKey, transitionDelayMillis,
                             appStartResultMap);
                 }
-                if (appStartAtom.sourceEventDelayMillis != 0) {
-                    int sourceEventDelayMillis = appStartAtom.sourceEventDelayMillis;
-                    Log.i(LOG_TAG, String.format("Pkg Name: %s, SourceEventDelayMillis: %d",
-                            pkgName, sourceEventDelayMillis));
-
-                    String metricEventDelayKey = MetricUtility.constructKey(
-                            SOURCE_EVENT_DELAY_MILLIS, pkgName);
-                    MetricUtility.addMetric(metricEventDelayKey, sourceEventDelayMillis,
-                            appStartResultMap);
-                }
             }
             if (atom.hasAppStartFullyDrawn()) {
-                AtomsProto.AppStartFullyDrawn appFullyDrawnAtom = atom.getAppStartFullyDrawn();
-                String pkgName = appFullyDrawnAtom.pkgName;
-                String transitionType = String.valueOf(appFullyDrawnAtom.type);
-                long startupTimeMillis = appFullyDrawnAtom.appStartupTimeMillis;
+                AppStartFullyDrawn appFullyDrawnAtom = atom.getAppStartFullyDrawn();
+                String pkgName = appFullyDrawnAtom.getPkgName();
+                String transitionType = appFullyDrawnAtom.getType().toString();
+                long startupTimeMillis = appFullyDrawnAtom.getAppStartupTimeMillis();
                 Log.i(LOG_TAG, String.format("Pkg Name: %s, Transition Type: %s, "
                         + "AppStartupTimeMillis: %d", pkgName, transitionType, startupTimeMillis));
 
                 String metricKey = "";
-                switch (appFullyDrawnAtom.type) {
-                    case AtomsProto.AppStartFullyDrawn.UNKNOWN:
+                switch (appFullyDrawnAtom.getType()) {
+                    case UNKNOWN:
                         metricKey = MetricUtility.constructKey(
                                 STARTUP_FULLY_DRAWN_UNKNOWN, pkgName);
                         break;
-                    case AtomsProto.AppStartFullyDrawn.WITH_BUNDLE:
+                    case WITH_BUNDLE:
                         metricKey = MetricUtility.constructKey(
                                 STARTUP_FULLY_DRAWN_WITH_BUNDLE, pkgName);
                         break;
-                    case AtomsProto.AppStartFullyDrawn.WITHOUT_BUNDLE:
+                    case WITHOUT_BUNDLE:
                         metricKey = MetricUtility.constructKey(
                                 STARTUP_FULLY_DRAWN_WITHOUT_BUNDLE, pkgName);
                         break;
@@ -175,39 +161,35 @@ public class AppStartupHelper implements ICollectorHelper<StringBuilder> {
             }
             // ProcessStartTime reports startup time for both foreground and background process.
             if (atom.hasProcessStartTime()) {
-                AtomsProto.ProcessStartTime processStartTimeAtom = atom.getProcessStartTime();
-                String processName = processStartTimeAtom.processName;
+                ProcessStartTime processStartTimeAtom = atom.getProcessStartTime();
+                String processName = processStartTimeAtom.getProcessName();
                 // Number of milliseconds it takes to finish start of the process.
-                long processStartDelayMillis = processStartTimeAtom.processStartDelayMillis;
+                long processStartDelayMillis = processStartTimeAtom.getProcessStartDelayMillis();
                 // Treating activity hosting type as foreground and everything else as background.
-                String hostingType =
-                        processStartTimeAtom.hostingType.contains("activity") ? "fg" : "bg";
-                Log.i(
-                        LOG_TAG,
-                        String.format(
-                                "Process Name: %s, Start Type: %s, Hosting Type: %s,"
-                                        + " ProcessStartDelayMillis: %d",
-                                processName,
-                                processStartTimeAtom.type,
-                                hostingType,
-                                processStartDelayMillis));
+                String hostingType = processStartTimeAtom.getHostingType().equals("activity")
+                        ? "fg" : "bg";
+                Log.i(LOG_TAG, String.format("Process Name: %s, Start Type: %s, Hosting Type: %s,"
+                        + " ProcessStartDelayMillis: %d", processName,
+                        processStartTimeAtom.getType().toString(),
+                        hostingType, processStartDelayMillis));
+
                 String metricKey = "";
                 // To track number of startups per type per package.
                 String metricCountKey = "";
                 // To track total number of startups per type.
                 String totalCountKey = "";
                 String typeKey = "";
-                switch (processStartTimeAtom.type) {
-                    case AtomsProto.ProcessStartTime.COLD:
+                switch (processStartTimeAtom.getType()) {
+                    case COLD:
                         typeKey = COLD_STARTUP;
                         break;
-                    case AtomsProto.ProcessStartTime.WARM:
+                    case WARM:
                         typeKey = WARM_STARTUP;
                         break;
-                    case AtomsProto.ProcessStartTime.HOT:
+                    case HOT:
                         typeKey = HOT_STARTUP;
                         break;
-                    case AtomsProto.ProcessStartTime.UNKNOWN:
+                    case UNKNOWN:
                         break;
                 }
                 if (!typeKey.isEmpty()) {

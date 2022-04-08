@@ -19,11 +19,10 @@ package android.system.helpers;
 import android.content.Context;
 import android.os.Build;
 import android.os.RemoteException;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.uiautomator.UiDevice;
-import android.util.DisplayMetrics;
 import android.view.WindowManager;
-
-import androidx.test.InstrumentationRegistry;
+import android.util.DisplayMetrics;
 
 /**
  * Implement common helper methods for device.

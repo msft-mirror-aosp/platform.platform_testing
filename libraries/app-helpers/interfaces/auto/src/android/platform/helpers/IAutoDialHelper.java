@@ -16,7 +16,8 @@
 
 package android.platform.helpers;
 
-public interface IAutoDialHelper extends IAppHelper, Scrollable {
+
+public interface IAutoDialHelper extends IAppHelper {
 
     /** enum class for contact list order type. */
     enum OrderType {
@@ -229,10 +230,4 @@ public interface IAutoDialHelper extends IAppHelper, Scrollable {
      * <p>This method is used to check if phone is paired.
      */
     boolean isPhonePaired();
-    /**
-     * Setup expectations: The app is open.
-     *
-     * <p>This method is used to open contact list
-     */
-    void openContacts();
 }

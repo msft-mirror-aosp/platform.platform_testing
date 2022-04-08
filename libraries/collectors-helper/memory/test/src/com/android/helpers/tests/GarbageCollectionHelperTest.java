@@ -20,7 +20,7 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.verifyZeroInteractions;
 
-import androidx.test.uiautomator.UiDevice;
+import android.support.test.uiautomator.UiDevice;
 
 import com.android.helpers.GarbageCollectionHelper;
 

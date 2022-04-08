@@ -17,42 +17,4 @@
 package android.platform.helpers;
 
 /** An App Helper interface for Calculator. */
-public interface ICalculatorHelper extends IAppHelper {
-    /*
-     * Setup expectations: Calculator is open and visible.
-     */
-    void longPressDelete();
-
-    /*
-     * Setup expectations: Calculator is open and visible.
-     *
-     * @param digits Digits (0-9) in a form of a string.
-     * @param delayBetweenKeyPresses delay between key presses in milliseconds
-     */
-    void typeDigits(String digits, long delayBetweenKeyPresses);
-
-    /*
-     * Setup expectations: Calculator is open and visible.
-     */
-    void selectEqual();
-
-    /*
-     * Setup expectations: Calculator is open and visible.
-     */
-    void selectMultiply();
-
-    /*
-     * Setup expectations: Calculator is open and visible.
-     */
-    void selectSubtract();
-
-    /*
-     * Setup expectations: Calculator is open and visible.
-     */
-    void selectAdd();
-
-    /*
-     * Setup expectations: Calculator is open and visible.
-     */
-    void selectDivide();
-}
+public interface ICalculatorHelper extends IAppHelper {}

@@ -16,8 +16,7 @@
 # based on the configuration.
 #
 
-LOCAL_PATH := $(call my-dir)
-include $(LOCAL_PATH)/tests/platform_test_list.mk
+include $(call my-dir)/tests/platform_test_list.mk
 -include $(wildcard vendor/*/build/tasks/tests/platform_test_list.mk)
 
 my_modules := $(platform_tests)

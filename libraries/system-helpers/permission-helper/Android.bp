@@ -23,7 +23,7 @@ java_library {
     static_libs: [
         "ub-uiautomator",
         "launcher-helper-lib",
-        "androidx.test.rules",
+        "android-support-test",
     ],
     srcs: ["src/**/*.java"],
     sdk_version: "test_current",

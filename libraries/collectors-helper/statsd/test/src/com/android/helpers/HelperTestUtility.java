@@ -17,13 +17,11 @@ package com.android.helpers;
 
 import android.app.KeyguardManager;
 import android.content.Context;
-import android.hardware.display.DisplayManager;
-import android.os.RemoteException;
 import android.os.SystemClock;
+import android.hardware.display.DisplayManager;
+import android.support.test.uiautomator.UiDevice;
 import android.view.Display;
-
 import androidx.test.InstrumentationRegistry;
-import androidx.test.uiautomator.UiDevice;
 
 import java.io.IOException;
 
@@ -41,7 +39,7 @@ public class HelperTestUtility {
     // Keycode(s) for convenience functions.
     private static final String KEYCODE_WAKEUP = "KEYCODE_WAKEUP";
     // Delay between actions happening in the device.
-    public static final int ACTION_DELAY = 4000;
+    public static final int ACTION_DELAY = 2000;
 
     private static UiDevice mDevice;
 
@@ -118,28 +116,6 @@ public class HelperTestUtility {
             sendKeyCode(KEYCODE_WAKEUP);
             executeShellCommand(UNLOCK_CMD);
             SystemClock.sleep(HelperTestUtility.ACTION_DELAY);
-        }
-    }
-
-    /**
-     * This method will lock orientation.
-     */
-    public static void setOrientationNatural() {
-        try {
-            getUiDevice().setOrientationNatural();
-        } catch (RemoteException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    /**
-     * This method will unlock orientation.
-     */
-    public static void unfreezeRotation() {
-        try {
-            mDevice.unfreezeRotation();
-        } catch (RemoteException e) {
-            throw new RuntimeException(e);
         }
     }
 }

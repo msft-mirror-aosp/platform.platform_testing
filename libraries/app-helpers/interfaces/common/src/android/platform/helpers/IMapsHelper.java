@@ -53,36 +53,18 @@ public interface IMapsHelper extends IAppHelper {
     /**
      * Setup expectation: Destination is selected.
      *
-     * <p>Goes to the details screen for the selected destination.
+     * Goes to the details screen for the selected destination.
      */
-    public default void openAddressDetails() {
+    default public void openAddressDetails() {
         throw new UnsupportedOperationException("Not yet implemented.");
     }
 
     /**
      * Setup expectation: On the destination details screen.
      *
-     * <p>Flings the destination details screen (must be UP or DOWN).
+     * Flings down the destination details screen.
      */
-    public default void flingAddressDetails(Direction dir) {
-        throw new UnsupportedOperationException("Not yet implemented.");
-    }
-
-    /**
-     * Setup expectation: On the destination details screen.
-     *
-     * <p>Scrolls the destination details screen (must be UP or DOWN).
-     */
-    public default void scrollAddressDetails(Direction dir) {
-        throw new UnsupportedOperationException("Not yet implemented.");
-    }
-
-    /**
-     * Setup expectation: On the destination details screen.
-     *
-     * <p>Closes the destination details screen.
-     */
-    public default void closeAddressDetails() {
+    default public void flingAddressDetails() {
         throw new UnsupportedOperationException("Not yet implemented.");
     }
 
@@ -117,10 +99,10 @@ public interface IMapsHelper extends IAppHelper {
     /**
      * Setup expectation: On the search screen.
      *
-     * <p>Best effort attempt to go to the query screen (if not currently there), selects the result
-     * that matches the String argument.
+     * <p>Best effort attempt to go to the query screen (if not currently there),
+     * selects the results.
      */
-    public default void startSearch(String query) {
+    public default void startSearch() {
         throw new UnsupportedOperationException("Not yet implemented.");
     }
 

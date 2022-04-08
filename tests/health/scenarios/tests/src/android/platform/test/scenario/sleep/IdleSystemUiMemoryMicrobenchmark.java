@@ -24,7 +24,7 @@ import org.junit.runner.RunWith;
 
 /** Idle memory microbenchmark for SystemUI. */
 @RunWith(Microbenchmark.class)
-public class IdleSystemUiMemoryMicrobenchmark extends IdleMicrobenchmark {
+public class IdleSystemUiMemoryMicrobenchmark extends IdleMemoryMicrobenchmarkBase {
     // Method-level rules
     @Rule public GarbageCollectRule gcRule = new GarbageCollectRule("com.android.systemui");
 }

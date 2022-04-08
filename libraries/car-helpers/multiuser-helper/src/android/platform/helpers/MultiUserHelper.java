@@ -21,7 +21,6 @@ import android.car.Car;
 import android.car.user.CarUserManager;
 import android.car.user.CarUserManager.UserLifecycleListener;
 import android.car.user.UserSwitchResult;
-import android.car.util.concurrent.AsyncFuture;
 import android.content.Context;
 import android.content.pm.UserInfo;
 import android.os.SystemClock;
@@ -29,6 +28,8 @@ import android.os.UserManager;
 import android.support.test.uiautomator.UiDevice;
 
 import androidx.test.InstrumentationRegistry;
+
+import com.android.internal.infra.AndroidFuture;
 
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
@@ -113,7 +114,7 @@ public class MultiUserHelper {
                     }
                 };
         mCarUserManager.addListener(Runnable::run, userSwitchListener);
-        AsyncFuture<UserSwitchResult> future = mCarUserManager.switchUser(id);
+        AndroidFuture<UserSwitchResult> future = mCarUserManager.switchUser(id);
         UserSwitchResult result = null;
         try {
             result = future.get(USER_SWITCH_TIMEOUT_SECOND, TimeUnit.SECONDS);
@@ -173,7 +174,7 @@ public class MultiUserHelper {
     @Nullable
     public UserInfo getUserByName(String name) {
         return mUserManager
-                .getAliveUsers()
+                .getUsers(/* excludeDying= */ true)
                 .stream()
                 .filter(user -> user.name.equals(name))
                 .findFirst()

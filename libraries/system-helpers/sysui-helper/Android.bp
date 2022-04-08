@@ -22,7 +22,7 @@ java_library {
     name: "sysui-helper",
     static_libs: [
         "ub-uiautomator",
-        "androidx.test.rules",
+        "android-support-test",
         "activity-helper",
         "commands-helper",
         "device-helper",

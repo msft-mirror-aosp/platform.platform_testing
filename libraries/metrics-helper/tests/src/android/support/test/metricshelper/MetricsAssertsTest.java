@@ -15,23 +15,24 @@
  */
 package android.support.test.metricshelper;
 
-import static junit.framework.Assert.assertEquals;
-
-import static org.mockito.Mockito.when;
-
 import android.metrics.LogMaker;
 import android.metrics.MetricsReader;
-import android.test.suitebuilder.annotation.SmallTest;
-
-import androidx.test.runner.AndroidJUnit4;
-
 import com.android.internal.logging.nano.MetricsProto.MetricsEvent;
+
+import android.test.suitebuilder.annotation.SmallTest;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+
+import android.support.test.runner.AndroidJUnit4;
+
+import static junit.framework.Assert.assertEquals;
+import static org.mockito.Mockito.when;
+import static org.junit.Assert.fail;
 
 @SmallTest
 @RunWith(AndroidJUnit4.class)

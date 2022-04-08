@@ -106,10 +106,4 @@ public class DataRecord {
     Bundle createBundle() {
         return new Bundle();
     }
-
-    final void clear() {
-        mCurrentStringMetrics.clear();
-        mCurrentFileMetrics.clear();
-        mCurrentBinaryMetrics.clear();
-    }
 }

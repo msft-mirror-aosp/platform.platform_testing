@@ -23,7 +23,7 @@ android_test {
 
     static_libs: [
         "ub-uiautomator",
-        "androidx.test.janktesthelper",
+        "ub-janktesthelper",
     ],
 
     libs: ["android.test.base.stubs"],

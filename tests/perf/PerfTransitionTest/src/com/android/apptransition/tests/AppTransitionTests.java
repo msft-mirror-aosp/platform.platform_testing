@@ -24,13 +24,12 @@ import android.content.pm.ResolveInfo;
 import android.os.Bundle;
 import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.launcherhelper.ILauncherStrategy;
 import android.support.test.launcherhelper.LauncherStrategyFactory;
+import android.support.test.rule.logging.AtraceLogger;
 import android.support.test.uiautomator.UiDevice;
 import android.util.Log;
-
-import androidx.test.InstrumentationRegistry;
-import androidx.test.rule.logging.AtraceLogger;
 
 import com.android.launcher3.tapl.LauncherInstrumentation;
 import com.android.launcher3.tapl.Workspace;
@@ -107,8 +106,9 @@ public class AppTransitionTests extends Instrumentation {
 
     @Before
     public void setUp() throws Exception {
+        androidx.test.InstrumentationRegistry.registerInstance(this, new Bundle());
         mArgs = InstrumentationRegistry.getArguments();
-        mDevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
+        mDevice = UiDevice.getInstance(getInstrumentation());
         LauncherStrategyFactory factory = LauncherStrategyFactory.getInstance(mDevice);
         mLauncherStrategy = factory.getLauncherStrategy();
         mLauncher = new LauncherInstrumentation(getInstrumentation());
@@ -121,18 +121,18 @@ public class AppTransitionTests extends Instrumentation {
         }
 
         createLaunchIntentMappings();
-
-        String appsList = mArgs.getString(LAUNCH_APPS, "");
-        mPreAppsList = mArgs.getString(PRE_LAUNCH_APPS, "");
+        String mAppsList = mArgs.getString(LAUNCH_APPS);
+        mPreAppsList = mArgs.getString(PRE_LAUNCH_APPS);
         mLaunchIterations = Integer.parseInt(mArgs.getString(KEY_LAUNCH_ITERATIONS,
                 DEFAULT_LAUNCH_COUNT));
         mPostLaunchTimeout = Integer.parseInt(mArgs.getString(KEY_POST_LAUNCH_TIMEOUT,
                 DEFAULT_POST_LAUNCH_TIMEOUT));
-        if (null == appsList || appsList.isEmpty()) {
+        if (null == mAppsList && mAppsList.isEmpty()) {
             throw new IllegalArgumentException("Need atleast one app to do the"
                     + " app transition from launcher");
         }
-        mAppListArray = appsList.split(DELIMITER);
+        mAppsList = mAppsList.replaceAll("%"," ");
+        mAppListArray = mAppsList.split(DELIMITER);
 
         // Parse the trace parameters
         mTraceDirectoryStr = mArgs.getString(KEY_TRACE_DIRECTORY);
@@ -266,10 +266,11 @@ public class AppTransitionTests extends Instrumentation {
         if (isTracesEnabled()) {
             createTraceDirectory("testAppToRecents");
         }
-        if (null == mPreAppsList || mPreAppsList.isEmpty()) {
+        if (null == mPreAppsList && mPreAppsList.isEmpty()) {
             throw new IllegalArgumentException("Need atleast few apps in the "
                     + "recents before starting the test");
         }
+        mPreAppsList = mPreAppsList.replaceAll("%"," ");
         mPreAppsListArray = mPreAppsList.split(DELIMITER);
         mPreAppsComponentName.clear();
         populateRecentsList();
@@ -310,10 +311,11 @@ public class AppTransitionTests extends Instrumentation {
         if (isTracesEnabled()) {
             createTraceDirectory("testHotLaunchFromRecents");
         }
-        if (null == mPreAppsList || mPreAppsList.isEmpty()) {
+        if (null == mPreAppsList && mPreAppsList.isEmpty()) {
             throw new IllegalArgumentException("Need atleast few apps in the"
                     + " recents before starting the test");
         }
+        mPreAppsList = mPreAppsList.replaceAll("%", " ");
         mPreAppsListArray = mPreAppsList.split(DELIMITER);
         mPreAppsComponentName.clear();
         populateRecentsList();
@@ -565,8 +567,7 @@ public class AppTransitionTests extends Instrumentation {
      * @param appNames
      */
     private void closeApps(String[] appNames) {
-        int length = appNames == null ? 0 : appNames.length;
-        for (int i = 0; i < length; i++) {
+        for (int i = 0; i < appNames.length; i++) {
             Intent startIntent = mAppLaunchIntentsMapping.get(appNames[i]);
             if (startIntent != null) {
                 String packageName = startIntent.getComponent().getPackageName();

@@ -16,7 +16,7 @@
 
 package android.platform.systemui.tests.jank;
 
-import static androidx.test.InstrumentationRegistry.getInstrumentation;
+import static android.support.test.InstrumentationRegistry.getInstrumentation;
 
 import static org.junit.Assert.assertNotNull;
 
@@ -37,6 +37,10 @@ import android.os.RemoteException;
 import android.os.SystemClock;
 import android.os.UserHandle;
 import android.provider.Settings;
+import android.support.test.InstrumentationRegistry;
+import android.support.test.jank.GfxMonitor;
+import android.support.test.jank.JankTest;
+import android.support.test.jank.JankTestBase;
 import android.support.test.launcherhelper.LauncherStrategyFactory;
 import android.support.test.timeresulthelper.TimeResultLogger;
 import android.support.test.uiautomator.By;
@@ -48,11 +52,6 @@ import android.system.helpers.LockscreenHelper;
 import android.system.helpers.OverviewHelper;
 import android.widget.Button;
 import android.widget.ImageView;
-
-import androidx.test.InstrumentationRegistry;
-import androidx.test.jank.GfxMonitor;
-import androidx.test.jank.JankTest;
-import androidx.test.jank.JankTestBase;
 
 import com.android.launcher3.tapl.LauncherInstrumentation;
 import com.android.launcher3.tapl.Overview;
@@ -237,12 +236,8 @@ public class SystemUiJankTests extends JankTestBase {
             }
             builder.setContentText(Integer.toHexString(icon))
                     .setSmallIcon(icon);
-            builder.setContentIntent(
-                    PendingIntent.getActivity(
-                            context,
-                            0,
-                            new Intent(context, DummyActivity.class),
-                            PendingIntent.FLAG_MUTABLE_UNAUDITED));
+            builder.setContentIntent(PendingIntent.getActivity(
+                    context, 0, new Intent(context, DummyActivity.class), 0));
             mNotificationManager.notify(icon, builder.build());
             SystemClock.sleep(sleepBetweenDuration);
             first = false;
@@ -276,12 +271,8 @@ public class SystemUiJankTests extends JankTestBase {
 
     private Action createSmartAction(String actionTitle) {
         Context context = getInstrumentation().getContext();
-        PendingIntent pendingIntent =
-                PendingIntent.getBroadcast(
-                        context,
-                        0,
-                        new Intent(),
-                        PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE_UNAUDITED);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0 , new Intent(),
+                PendingIntent.FLAG_UPDATE_CURRENT);
         Icon icon = Icon.createWithResource(context, ICONS[0]);
         return new Action.Builder(icon, actionTitle, pendingIntent)
                 .setContextual(true)
@@ -293,12 +284,8 @@ public class SystemUiJankTests extends JankTestBase {
                 .setLabel(NOTIFICATION_TEXT)
                 .build();
         Context context = getInstrumentation().getTargetContext();
-        PendingIntent pendingIntent =
-                PendingIntent.getBroadcast(
-                        context,
-                        0,
-                        new Intent(),
-                        PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE_UNAUDITED);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0 , new Intent(),
+                PendingIntent.FLAG_UPDATE_CURRENT);
         Icon icon = Icon.createWithResource(context, ICONS[0]);
         Action action = new Action.Builder(icon, REPLY_TEXT, pendingIntent)
                 .addRemoteInput(remoteInput)

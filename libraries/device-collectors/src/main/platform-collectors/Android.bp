@@ -49,9 +49,10 @@ java_library {
 
     static_libs: [
         "collector-device-lib",
-        "statsdprotonano",
-        "statsd-helper",
+        "libprotobuf-java-lite",
         "statsd-config-protos",
+        "statsd-helper",
+        "ub-uiautomator",
     ],
     platform_apis: true,
 }

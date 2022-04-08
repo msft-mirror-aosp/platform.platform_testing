@@ -22,7 +22,7 @@ java_library {
     name: "settings-helper",
     libs: [
         "ub-uiautomator",
-        "androidx.test.rules",
+        "android-support-test",
         "activity-helper",
     ],
     srcs: ["src/**/*.java"],

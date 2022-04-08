@@ -23,7 +23,6 @@ import android.os.SystemClock;
 import android.platform.helpers.HelperAccessor;
 import android.platform.test.microbenchmark.Microbenchmark;
 import android.platform.test.rule.NaturalOrientationRule;
-import android.platform.test.rule.Dex2oatPressureRule;
 
 import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.uiautomator.By;
@@ -34,7 +33,6 @@ import androidx.test.uiautomator.Until;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -47,9 +45,6 @@ public class UiBenchWindowInsetsControllerMicrobenchmark {
 
     private static UiObject2 sEditText;
     private static UiDevice sDevice;
-
-    @Rule
-    public Dex2oatPressureRule dex2oatPressureRule = new Dex2oatPressureRule();
 
     @BeforeClass
     public static void openApp() {

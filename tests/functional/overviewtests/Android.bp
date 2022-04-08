@@ -24,7 +24,7 @@ android_test {
         "ub-uiautomator",
         "timeresult-helper-lib",
         "launcher-helper-lib",
-        "androidx.test.rules",
+        "android-support-test",
         "platform-test-annotations",
     ],
 

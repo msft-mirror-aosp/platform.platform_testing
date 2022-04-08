@@ -23,8 +23,8 @@ import androidx.annotation.VisibleForTesting;
 import com.android.helpers.ICollectorHelper;
 
 import org.junit.runner.Description;
-import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
+import org.junit.runner.Result;
 
 import java.util.Map;
 
@@ -79,7 +79,7 @@ public class BaseCollectionListener<T> extends BaseMetricListener {
     @Override
     public final void onTestStart(DataRecord testData, Description description) {
         mIsTestFailed = false;
-        if (!mIsCollectPerRun && !onTestStartAlternative(testData)) {
+        if (!mIsCollectPerRun) {
             mHelper.startCollecting();
         }
     }
@@ -91,15 +91,18 @@ public class BaseCollectionListener<T> extends BaseMetricListener {
 
     @Override
     public final void onTestEnd(DataRecord testData, Description description) {
-        if (!mIsCollectPerRun && !onTestEndAlternative(testData)) {
+        if (!mIsCollectPerRun) {
             // Skip adding the metrics collected during the test failure
             // if the skip metrics on test failure flag is enabled and the
             // current test is failed.
-            if (shouldSkipFailureTestMetrics()) {
+            if (mSkipTestFailureMetrics && mIsTestFailed) {
                 Log.i(getTag(), "Skipping the metric collection.");
             } else {
                 // Collect the metrics.
-                collectMetrics(testData);
+                Map<String, T> metrics = mHelper.getMetrics();
+                for (Map.Entry<String, T> entry : metrics.entrySet()) {
+                    testData.addStringMetric(entry.getKey(), entry.getValue().toString());
+                }
             }
             mHelper.stopCollecting();
         }
@@ -108,7 +111,10 @@ public class BaseCollectionListener<T> extends BaseMetricListener {
     @Override
     public void onTestRunEnd(DataRecord runData, Result result) {
         if (mIsCollectPerRun) {
-            collectMetrics(runData);
+            Map<String, T> metrics = mHelper.getMetrics();
+            for (Map.Entry<String, T> entry : metrics.entrySet()) {
+                runData.addStringMetric(entry.getKey(), entry.getValue().toString());
+            }
             mHelper.stopCollecting();
         }
     }
@@ -123,38 +129,5 @@ public class BaseCollectionListener<T> extends BaseMetricListener {
 
     protected void createHelperInstance(ICollectorHelper helper) {
         mHelper = helper;
-    }
-
-    protected void collectMetrics(DataRecord data) {
-        Map<String, T> metrics = mHelper.getMetrics();
-        for (Map.Entry<String, T> entry : metrics.entrySet()) {
-            data.addStringMetric(entry.getKey(), entry.getValue().toString());
-        }
-    }
-
-    protected boolean shouldSkipFailureTestMetrics() {
-        return mSkipTestFailureMetrics && mIsTestFailed;
-    }
-
-    /**
-     * Offer an alternative of final method onTestStart, override this method when you need to do
-     * your own actions while collecting metrics per test.
-     *
-     * @param data Used to collect metrics
-     * @return true indicates the event has been handled then skips the default implementation.
-     */
-    protected boolean onTestStartAlternative(DataRecord data) {
-        return false;
-    }
-
-    /**
-     * Offer an alternative of final method onTestEnd, override this method when you need to do your
-     * own actions while collecting metrics per test.
-     *
-     * @param data Used to collect metrics
-     * @return true indicates the event has been handled then skips the default implementation.
-     */
-    protected boolean onTestEndAlternative(DataRecord data) {
-        return false;
     }
 }

@@ -24,7 +24,7 @@ import org.junit.runner.RunWith;
 
 /** Idle memory microbenchmark for system server. */
 @RunWith(Microbenchmark.class)
-public class IdleSystemServerMemoryMicrobenchmark extends IdleMicrobenchmark {
+public class IdleSystemServerMemoryMicrobenchmark extends IdleMemoryMicrobenchmarkBase {
     // Method-level rules
     @Rule public GarbageCollectRule gcRule = new GarbageCollectRule("system_server");
 }

@@ -19,13 +19,14 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import androidx.test.uiautomator.UiDevice;
+import android.support.test.uiautomator.UiDevice;
 
 import org.junit.Test;
 import org.junit.runner.Description;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.junit.runners.model.Statement;
+
 import org.mockito.Mockito;
 
 /**

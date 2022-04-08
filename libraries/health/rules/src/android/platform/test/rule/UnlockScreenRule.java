@@ -16,9 +16,8 @@
 package android.platform.test.rule;
 
 import android.os.RemoteException;
-
-import androidx.test.uiautomator.By;
-import androidx.test.uiautomator.BySelector;
+import android.support.test.uiautomator.By;
+import android.support.test.uiautomator.BySelector;
 
 import org.junit.runner.Description;
 

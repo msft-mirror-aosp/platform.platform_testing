@@ -25,7 +25,7 @@ android_test {
     sdk_version: "current",
     libs: ["android.test.runner.stubs"],
     static_libs: [
-        "androidx.test.rules",
+        "android-support-test",
         "ub-uiautomator",
     ],
 
