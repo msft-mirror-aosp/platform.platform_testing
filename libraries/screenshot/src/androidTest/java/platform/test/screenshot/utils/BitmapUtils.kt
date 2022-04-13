@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 The Android Open Source Project
+ * Copyright 2022 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,15 @@
  * limitations under the License.
  */
 
-package com.android.server.wm.flicker.assertions
+package platform.test.screenshot.utils
 
-import com.android.server.wm.flicker.TraceFile
-import kotlin.AssertionError
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import androidx.test.platform.app.InstrumentationRegistry
 
-class FlickerAssertionError(
-    message: String,
-    cause: Throwable?,
-    val traceFile: TraceFile?
-) : AssertionError(message, cause)
+internal fun loadBitmap(imageName: String): Bitmap {
+    val context = InstrumentationRegistry.getInstrumentation().targetContext.applicationContext
+    context.assets.open("$imageName.png").use {
+        return BitmapFactory.decodeStream(it)
+    }
+}
