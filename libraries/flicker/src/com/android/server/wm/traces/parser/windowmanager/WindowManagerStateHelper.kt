@@ -93,7 +93,7 @@ open class WindowManagerStateHelper @JvmOverloads constructor(
         WaitCondition.Builder(deviceDumpSupplier, numRetries)
             .onSuccess { updateCurrState(it) }
             .onFailure { updateCurrState(it) }
-            .onLog { Log.d(LOG_TAG, it) }
+            .onLog { msg, isError -> if (isError) Log.e(LOG_TAG, msg) else Log.d(LOG_TAG, msg) }
             .onRetry { SystemClock.sleep(retryIntervalMs) }
 
     /**
