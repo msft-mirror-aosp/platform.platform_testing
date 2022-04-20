@@ -16,7 +16,6 @@
 
 package platform.test.screenshot
 
-import android.graphics.Bitmap
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.MediumTest
 import platform.test.screenshot.matchers.MSSIMMatcher
@@ -133,10 +132,4 @@ class MSSIMMatcherTest {
         assertThat(result.SSIM / result.numPixelsCompared)
             .isWithin(0.001).of(0.921)
     }
-}
-
-internal fun Bitmap.toIntArray(): IntArray {
-    val bitmapArray = IntArray(width * height)
-    getPixels(bitmapArray, 0, width, 0, 0, width, height)
-    return bitmapArray
 }

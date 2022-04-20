@@ -97,6 +97,9 @@ data class FlickerTestParameter(
             else -> "UNKNOWN_NAV_BAR_MODE(${this.navBarMode}"
         }
 
+    val isGesturalNavigation =
+        navBarMode == WindowManagerPolicyConstants.NAV_BAR_MODE_GESTURAL_OVERLAY
+
     /**
      * Clean the internal flicker reference (cache)
      */
