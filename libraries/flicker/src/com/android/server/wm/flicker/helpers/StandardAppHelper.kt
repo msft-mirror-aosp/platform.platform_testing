@@ -196,7 +196,8 @@ open class StandardAppHelper @JvmOverloads constructor(
             component
         }
         val appShown = wmHelper.waitFor(
-            *DEFAULT_APP_LAUNCHER_CONDITIONS,
+            WindowManagerConditionsFactory.isWMStateComplete(),
+            WindowManagerConditionsFactory.hasLayersAnimating().negate(),
             WindowManagerConditionsFactory.isWindowVisible(expectedWindow),
             *waitConditions
         )
@@ -215,12 +216,5 @@ open class StandardAppHelper @JvmOverloads constructor(
 
     companion object {
         private const val APP_LAUNCH_WAIT_TIME_MS = 10000L
-        private val DEFAULT_APP_LAUNCHER_CONDITIONS = arrayOf(
-            WindowManagerConditionsFactory.isWMStateComplete(),
-            WindowManagerConditionsFactory.hasLayersAnimating().negate(),
-            WindowManagerConditionsFactory
-                .containsWindow(FlickerComponentName.SNAPSHOT).negate(),
-            WindowManagerConditionsFactory
-                .containsWindow(FlickerComponentName.SPLASH_SCREEN).negate())
     }
 }
