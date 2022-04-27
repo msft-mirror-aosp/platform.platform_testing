@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 The Android Open Source Project
+ * Copyright (C) 2022 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,16 @@
  * limitations under the License.
  */
 
-package android.platform.test.scenario.annotation;
+#include <gtest/gtest.h>
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+void not_covered() {
+  return;
+}
 
-/** Identifies scenario that should be run only on foldable devices. */
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE, ElementType.METHOD})
-public @interface FoldableOnly {}
+void covered() {
+  return;
+}
+
+TEST(cpp_smoke, call_covered) {
+  covered();
+}

@@ -23,7 +23,7 @@ import com.android.server.wm.flicker.traces.FlickerSubjectException
 import com.android.server.wm.flicker.traces.region.RegionSubject
 import com.android.server.wm.traces.common.FlickerComponentName
 import com.android.server.wm.traces.common.layers.Layer
-import com.android.server.wm.traces.common.layers.LayerTraceEntry
+import com.android.server.wm.traces.common.layers.BaseLayerTraceEntry
 import com.android.server.wm.traces.common.layers.LayersTrace
 import com.google.common.truth.ExpectFailure
 import com.google.common.truth.Fact
@@ -33,7 +33,7 @@ import com.google.common.truth.StandardSubjectBuilder
 import com.google.common.truth.Subject
 
 /**
- * Truth subject for [LayerTraceEntry] objects, used to make assertions over behaviors that
+ * Truth subject for [BaseLayerTraceEntry] objects, used to make assertions over behaviors that
  * occur on a single SurfaceFlinger state.
  *
  * To make assertions over a specific state from a trace it is recommended to create a subject
@@ -56,7 +56,7 @@ import com.google.common.truth.Subject
  */
 class LayerTraceEntrySubject private constructor(
     fm: FailureMetadata,
-    val entry: LayerTraceEntry,
+    val entry: BaseLayerTraceEntry,
     val trace: LayersTrace?,
     override val parent: FlickerSubject?
 ) : FlickerSubject(fm, entry) {
@@ -70,9 +70,10 @@ class LayerTraceEntrySubject private constructor(
     /**
      * Executes a custom [assertion] on the current subject
      */
-    operator fun invoke(assertion: Assertion<LayerTraceEntry>): LayerTraceEntrySubject = apply {
-        assertion(this.entry)
-    }
+    operator fun invoke(assertion: Assertion<BaseLayerTraceEntry>): LayerTraceEntrySubject =
+        apply {
+            assertion(this.entry)
+        }
 
     /**
      * Asserts that the current SurfaceFlinger state doesn't contain layers
@@ -327,7 +328,7 @@ class LayerTraceEntrySubject private constructor(
         private fun getFactory(
             trace: LayersTrace?,
             parent: FlickerSubject?
-        ): Factory<Subject, LayerTraceEntry> =
+        ): Factory<Subject, BaseLayerTraceEntry> =
             Factory { fm, subject -> LayerTraceEntrySubject(fm, subject, trace, parent) }
 
         /**
@@ -340,7 +341,7 @@ class LayerTraceEntrySubject private constructor(
         @JvmStatic
         @JvmOverloads
         fun assertThat(
-            entry: LayerTraceEntry,
+            entry: BaseLayerTraceEntry,
             trace: LayersTrace? = null,
             parent: FlickerSubject? = null
         ): LayerTraceEntrySubject {
@@ -360,6 +361,6 @@ class LayerTraceEntrySubject private constructor(
         fun entries(
             trace: LayersTrace? = null,
             parent: FlickerSubject? = null
-        ): Factory<Subject, LayerTraceEntry> = getFactory(trace, parent)
+        ): Factory<Subject, BaseLayerTraceEntry> = getFactory(trace, parent)
     }
 }

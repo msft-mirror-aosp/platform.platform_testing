@@ -86,7 +86,7 @@ class WMFlickerServiceRuleForTestSpec(
         val assertions = AssertionData.readConfiguration().filter { it.category == category }
         val flickerService = FlickerService(assertions)
 
-        result.runs
+        result.successfulRuns
             .filter { it.assertionTag == AssertionTag.ALL }
             .filter {
                 val hasWmTrace = it.wmSubject?.let { true } ?: false
@@ -97,7 +97,8 @@ class WMFlickerServiceRuleForTestSpec(
                 val wmSubject = run.wmSubject as WindowManagerTraceSubject
                 val layersSubject = run.layersSubject as LayersTraceSubject
 
-                val outputDir = run.traceFile?.parent ?: error("Output dir not detected")
+                val outputDir = run.mTraceFile?.traceFile?.parent
+                        ?: error("Output dir not detected")
 
                 val wmTrace = wmSubject.trace
                 val layersTrace = layersSubject.trace
