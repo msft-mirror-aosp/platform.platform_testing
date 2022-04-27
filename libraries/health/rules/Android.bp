@@ -18,7 +18,6 @@ package {
 
 java_library {
     name: "platform-test-rules",
-    sdk_version: "test_current",
     static_libs: [
         "androidx.test.runner",
         "androidx.test.uiautomator",
@@ -33,7 +32,10 @@ java_library {
         "statsd-helper",
         "health-testing-utils",
     ],
-    srcs: ["src/**/*.java"],
+    srcs: [
+        "src/**/*.java",
+        "src/**/*.kt",
+    ],
 }
 
 java_library {
