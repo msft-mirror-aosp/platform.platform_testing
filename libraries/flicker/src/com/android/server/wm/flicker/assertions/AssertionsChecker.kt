@@ -33,6 +33,16 @@ class AssertionsChecker<T : FlickerSubject> {
     private val assertions = mutableListOf<CompoundAssertion<T>>()
     private var skipUntilFirstAssertion = false
 
+    /**
+     * Empty the list of assertions.
+     */
+    internal fun clear() {
+        assertions.clear()
+    }
+
+    /**
+     * Add [assertion] to a new [CompoundAssertion] block.
+     */
     fun add(name: String, isOptional: Boolean = false, assertion: Assertion<T>) {
         assertions.add(CompoundAssertion(assertion, name, isOptional))
     }

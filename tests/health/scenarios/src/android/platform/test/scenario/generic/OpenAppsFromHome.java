@@ -67,14 +67,14 @@ public class OpenAppsFromHome {
     @BeforeClass
     public static void setup() throws IOException {
         sLauncher = new LauncherInstrumentation();
-        final HomeAllApps allApps = sLauncher.pressHome().switchToAllApps();
+        final HomeAllApps allApps = sLauncher.goHome().switchToAllApps();
         allApps.getAppIcon(sNameOption.get()).dragToWorkspace(false, false);
         sAppIcon = sLauncher.getWorkspace().getWorkspaceAppIcon(sNameOption.get());
     }
 
     @NoMetricBefore
     public void openWorkspace() {
-        sLauncher.pressHome();
+        sLauncher.goHome();
     }
 
     @Test
@@ -86,6 +86,6 @@ public class OpenAppsFromHome {
     @AfterClass
     public static void closeAppAndRemoveIcon() throws IOException {
         sLauncher.getDevice().executeShellCommand("pm clear com.google.android.apps.nexuslauncher");
-        sLauncher.pressHome();
+        sLauncher.goHome();
     }
 }

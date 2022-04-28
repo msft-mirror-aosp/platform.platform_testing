@@ -42,11 +42,6 @@ class EventLogSubject private constructor(
                 Fact.fact("Trace end", last))
     }
 
-    /** {@inheritDoc} */
-    override fun clone(): FlickerSubject {
-        return EventLogSubject(fm, trace)
-    }
-
     private val subjects by lazy {
         trace.map { FocusEventSubject.assertThat(it, this) }
     }
