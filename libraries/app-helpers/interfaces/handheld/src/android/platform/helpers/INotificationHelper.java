@@ -136,6 +136,15 @@ public interface INotificationHelper extends IAppHelper {
     }
 
     /**
+     * @return the notification shelf, containing overflow notifications that don't fit in the
+     *     screen. If unavailable, returns null.
+     */
+    @Nullable
+    default UiObject2 getNotificationShelf() {
+        throw new UnsupportedOperationException("Not yet implemented.");
+    }
+
+    /**
      * Setup Expectations: Shade is open
      *
      * <p>Posts multiple bubble notification. These notifications are associated with a conversation
@@ -425,6 +434,11 @@ public interface INotificationHelper extends IAppHelper {
      * <p>Open the notification shade by swiping on the home screen.
      */
     default void swipeToOpen() {
+        throw new UnsupportedOperationException("Not yet implemented.");
+    }
+
+    /** Closes the notification shade by swiping up. */
+    default void swipeToClose() {
         throw new UnsupportedOperationException("Not yet implemented.");
     }
 
