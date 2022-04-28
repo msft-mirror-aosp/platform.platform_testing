@@ -20,12 +20,15 @@ import android.app.Instrumentation
 import androidx.test.platform.app.InstrumentationRegistry
 import com.android.compatibility.common.util.SystemUtil
 import com.android.server.wm.flicker.FlickerResult.Companion.CombinedExecutionError
+import com.android.server.wm.flicker.FlickerRunResult.Companion.RunStatus.ASSERTION_FAILED
+import com.android.server.wm.flicker.FlickerRunResult.Companion.RunStatus.ASSERTION_SUCCESS
 import com.android.server.wm.flicker.TransitionRunner.Companion.TestSetupFailure
 import com.android.server.wm.flicker.TransitionRunner.Companion.TestTeardownFailure
 import com.android.server.wm.flicker.TransitionRunner.Companion.TransitionExecutionFailure
 import com.android.server.wm.flicker.TransitionRunner.Companion.TransitionSetupFailure
 import com.android.server.wm.flicker.TransitionRunner.Companion.TransitionTeardownFailure
 import com.android.server.wm.flicker.assertions.AssertionData
+import com.android.server.wm.flicker.assertions.FlickerAssertionError
 import com.android.server.wm.flicker.assertions.FlickerSubject
 import com.android.server.wm.flicker.dsl.AssertionTag
 import com.android.server.wm.flicker.dsl.FlickerBuilder
@@ -388,10 +391,55 @@ class FlickerDSLTest {
 
         for (iteration in 0 until repetitions) {
             assertArchiveContainsAllTraces(
-                runStatus = FlickerRunResult.Companion.RunStatus.ASSERTION_SUCCESS,
+                runStatus = ASSERTION_SUCCESS,
                 iteration = iteration
             )
         }
+    }
+
+    @Test
+    fun savesTracesAsFailureOnLayersStartAssertionFailure() {
+        val assertion = FlickerTestParameter.buildLayersStartAssertion {
+            throw Throwable("Failed layers start assertion")
+        }
+        checkTracesAreSavedWithAssertionFailure(assertion)
+    }
+
+    @Test
+    fun savesTracesAsFailureOnLayersEndAssertionFailure() {
+        val assertion = FlickerTestParameter.buildLayersEndAssertion {
+            throw Throwable("Failed layers end assertion")
+        }
+        checkTracesAreSavedWithAssertionFailure(assertion)
+    }
+
+    @Test
+    fun savesTracesAsFailureOnWindowsStartAssertionFailure() {
+        val assertion = FlickerTestParameter.buildWmStartAssertion {
+            throw Throwable("Failed wm start assertion")
+        }
+        checkTracesAreSavedWithAssertionFailure(assertion)
+    }
+
+    @Test
+    fun savesTracesAsFailureOnWindowsEndAssertionFailure() {
+        val assertion = FlickerTestParameter.buildWmEndAssertion {
+            throw Throwable("Failed wm end assertion")
+        }
+        checkTracesAreSavedWithAssertionFailure(assertion)
+    }
+
+    private fun checkTracesAreSavedWithAssertionFailure(assertion: AssertionData) {
+        val runner = TransitionRunner()
+        val flicker = FlickerBuilder(instrumentation)
+                .apply {
+                    transitions {}
+                }
+                .build(runner)
+        runAndAssertFlickerFailsWithException(flicker, FlickerAssertionError::class.java,
+                listOf(assertion))
+
+        assertArchiveContainsAllTraces(runStatus = ASSERTION_FAILED)
     }
 
     private fun runAndAssertExecuted(assertion: AssertionData) {

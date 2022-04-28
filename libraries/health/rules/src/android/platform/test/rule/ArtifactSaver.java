@@ -34,7 +34,9 @@ import java.util.zip.ZipOutputStream;
 /** Utilities for producing test artifacts. */
 public class ArtifactSaver {
     private static final String TAG = ArtifactSaver.class.getSimpleName();
-    private static boolean sBugreportTaken = true;  // bugreposrts are temporarily disabled
+
+    // Presubmit tests have a time limit. We are not taking expensive bugreports from presubmits.
+    private static boolean sShouldTakeBugreport = !PresubmitRule.runningInPresubmit();
 
     public static File artifactFile(String fileName) {
         return new File(
@@ -91,8 +93,9 @@ public class ArtifactSaver {
         }
 
         // Dump bugreport
-        if (!sBugreportTaken && FailureWatcher.getSystemAnomalyMessage(device) != null) {
-            sBugreportTaken = true;
+        if (sShouldTakeBugreport && FailureWatcher.getSystemAnomalyMessage(device) != null) {
+            // Taking bugreport is expensive, we should do this only once.
+            sShouldTakeBugreport = false;
             dumpCommandOutput("bugreportz -s", artifactFile(description, "Bugreport", "zip"));
         }
     }

@@ -18,6 +18,7 @@ package com.android.sts.common;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertFalse;
+import static com.android.sts.common.CommandUtil.runAndCheck;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -56,13 +57,15 @@ import com.android.tradefed.util.RunUtil;
 
 /** TestWatcher that sets up a virtual bluetooth HAL and reboots the device once done. */
 public class RootcanalUtils extends TestWatcher {
-    private static final String LOCK_FILENAME = "/mnt/sts_rootcanal.lck";
+    private static final String LOCK_FILENAME = "/data/local/tmp/sts_rootcanal.lck";
 
     private BaseHostJUnit4Test test;
+    private OverlayFsUtils overlayFsUtils;
 
     public RootcanalUtils(BaseHostJUnit4Test test) {
         assertNotNull(test);
         this.test = test;
+        this.overlayFsUtils = new OverlayFsUtils(test);
     }
 
     @Override
@@ -70,9 +73,11 @@ public class RootcanalUtils extends TestWatcher {
         ITestDevice device = test.getDevice();
         assertNotNull("Device not set", device);
         try {
-            // No need to call OverlayFsUtils' finished() because we're restarting anyway
-            device.rebootUntilOnline();
-            device.waitForDeviceAvailable();
+            device.enableAdbRoot();
+            runAndCheck(device, String.format("rm -rf '%s'", LOCK_FILENAME));
+            device.disableAdbRoot();
+            // OverlayFsUtils' finished() will restart the device.
+            overlayFsUtils.finished(d);
         } catch (DeviceNotAvailableException e) {
             throw new AssertionError("Device unavailable when cleaning up", e);
         }
@@ -104,16 +109,16 @@ public class RootcanalUtils extends TestWatcher {
 
         // Make sure that /vendor is writable
         try {
-            new OverlayFsUtils(test).makeWritable("/vendor");
+            overlayFsUtils.makeWritable("/vendor", 100);
         } catch (IllegalStateException e) {
             CLog.w(e);
         }
 
         // Remove existing HAL files and push new virtual HAL files.
-        CommandUtil.runAndCheck(device, "svc bluetooth disable");
-        CommandUtil.runAndCheck(
+        runAndCheck(device, "svc bluetooth disable");
+        runAndCheck(
                 device,
-                "rm /vendor/lib64/hw/android.hardware.bluetooth@* "
+                "rm -f /vendor/lib64/hw/android.hardware.bluetooth@* "
                         + "/vendor/lib/hw/android.hardware.bluetooth@* "
                         + "/vendor/bin/hw/android.hardware.bluetooth@* "
                         + "/vendor/etc/init/android.hardware.bluetooth@*");
@@ -138,22 +143,21 @@ public class RootcanalUtils extends TestWatcher {
         tryUpdateVintfManifest(device);
 
         // Fix up permissions and SELinux contexts of files pushed over
-        CommandUtil.runAndCheck(device, "cp /system/lib64/libchrome.so /vendor/lib64/libchrome.so");
-        CommandUtil.runAndCheck(
-                device, "chmod 755 /vendor/bin/hw/android.hardware.bluetooth@1.1-service.sim");
-        CommandUtil.runAndCheck(
+        runAndCheck(device, "cp /system/lib64/libchrome.so /vendor/lib64/libchrome.so");
+        runAndCheck(device, "chmod 755 /vendor/bin/hw/android.hardware.bluetooth@1.1-service.sim");
+        runAndCheck(
                 device,
                 "chcon u:object_r:hal_bluetooth_default_exec:s0 "
                         + "/vendor/bin/hw/android.hardware.bluetooth@1.1-service.sim");
-        CommandUtil.runAndCheck(
+        runAndCheck(
                 device,
                 "chmod 644 "
                         + "/vendor/etc/vintf/manifest.xml "
                         + "/vendor/lib/hw/android.hardware.bluetooth@1.1-impl-sim.so "
                         + "/vendor/lib64/hw/android.hardware.bluetooth@1.1-impl-sim.so");
-        CommandUtil.runAndCheck(
+        runAndCheck(
                 device, "chcon u:object_r:vendor_configs_file:s0 /vendor/etc/vintf/manifest.xml");
-        CommandUtil.runAndCheck(
+        runAndCheck(
                 device,
                 "chcon u:object_r:vendor_file:s0 "
                         + "/vendor/lib/hw/android.hardware.bluetooth@1.1-impl-sim.so "
@@ -190,8 +194,8 @@ public class RootcanalUtils extends TestWatcher {
         // Reenable Bluetooth and enable RootCanal control channel
         String checkCmd = "netstat -l -t -n -W | grep '0\\.0\\.0\\.0:6111'";
         while (true) {
-            CommandUtil.runAndCheck(device, "svc bluetooth enable");
-            CommandUtil.runAndCheck(device, "setprop vendor.bt.rootcanal_test_console true");
+            runAndCheck(device, "svc bluetooth enable");
+            runAndCheck(device, "setprop vendor.bt.rootcanal_test_console true");
             CommandResult res = device.executeShellV2Command(checkCmd);
             if (res.getStatus() == CommandStatus.SUCCESS) {
                 break;
