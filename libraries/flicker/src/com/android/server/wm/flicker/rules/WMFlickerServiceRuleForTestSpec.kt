@@ -97,7 +97,8 @@ class WMFlickerServiceRuleForTestSpec(
                 val wmSubject = run.wmSubject as WindowManagerTraceSubject
                 val layersSubject = run.layersSubject as LayersTraceSubject
 
-                val outputDir = run.traceFile?.parent ?: error("Output dir not detected")
+                val outputDir = run.mTraceFile?.traceFile?.parent
+                        ?: error("Output dir not detected")
 
                 val wmTrace = wmSubject.trace
                 val layersTrace = layersSubject.trace

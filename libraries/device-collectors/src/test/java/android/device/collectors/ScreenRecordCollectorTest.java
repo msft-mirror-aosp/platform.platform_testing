@@ -16,7 +16,10 @@
 package android.device.collectors;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.AdditionalMatchers.not;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.endsWith;
 import static org.mockito.ArgumentMatchers.eq;
@@ -95,7 +98,7 @@ public class ScreenRecordCollectorTest {
             listener = spy(new ScreenRecordCollector());
         }
         listener.setInstrumentation(mInstrumentation);
-        doReturn(mLogDir).when(listener).createAndEmptyDirectory(anyString());
+        doReturn(mLogDir).when(listener).createDirectory(anyString(), anyBoolean());
         doReturn(0L).when(listener).getTailBuffer();
         doReturn(mDevice).when(listener).getDevice();
         doReturn("1234").when(mDevice).executeShellCommand(eq("pidof screenrecord"));
@@ -113,7 +116,7 @@ public class ScreenRecordCollectorTest {
 
         // Verify output directories are created on test run start.
         mListener.testRunStarted(mRunDesc);
-        verify(mListener).createAndEmptyDirectory(ScreenRecordCollector.OUTPUT_DIR);
+        verify(mListener).createDirectory(ScreenRecordCollector.OUTPUT_DIR, true);
 
         // Walk through a number of test cases to simulate behavior.
         for (int i = 1; i <= NUM_TEST_CASE; i++) {
@@ -156,7 +159,14 @@ public class ScreenRecordCollectorTest {
         int videoCount = 0;
         for (Bundle bundle : capturedBundle) {
             for (String key : bundle.keySet()) {
-                if (key.contains("mp4")) videoCount++;
+                if (key.contains("mp4")) {
+                    videoCount++;
+                    assertTrue(key.contains(mTestDesc.getClassName()));
+                    assertTrue(key.contains(mTestDesc.getMethodName()));
+                    String fileName = bundle.getString(key);
+                    assertTrue(fileName.contains(mTestDesc.getClassName()));
+                    assertTrue(fileName.contains(mTestDesc.getMethodName()));
+                }
             }
         }
         assertEquals(NUM_TEST_CASE * ScreenRecordCollector.MAX_RECORDING_PARTS, videoCount);
@@ -279,5 +289,59 @@ public class ScreenRecordCollectorTest {
         verify(mDevice, never()).executeShellCommand(matches("screenrecord.*size.*video.mp4"));
         verify(mDevice, atLeastOnce())
                 .executeShellCommand(not(matches("screenrecord .*video.mp4")));
+    }
+
+    /** Test that the empty-output-dir works. */
+    @Test
+    public void testEmptyrOutputDirOptionSetToFalse() throws Exception {
+        Bundle args = new Bundle();
+        args.putString(ScreenRecordCollector.EMPTY_OUTPUT_DIR_ARG, "false");
+        mListener = initListener(args);
+
+        // Verify output directories are created on test run start.
+        mListener.testRunStarted(mRunDesc);
+        verify(mListener).createDirectory(ScreenRecordCollector.OUTPUT_DIR, false);
+    }
+
+    /**
+     * Test that descriptions with null method names only result in class names in the video file
+     * names.
+     */
+    @Test
+    public void testNullMethodNameDoesNotAppearInVideoName() throws Exception {
+        mListener = initListener(null);
+
+        mListener.testRunStarted(mRunDesc);
+
+        // mRunDesc does not have a method name.
+        mListener.testStarted(mRunDesc);
+        // Delay verification by 100 ms to ensure the thread was started.
+        SystemClock.sleep(100);
+        mListener.testFinished(mRunDesc);
+        mListener.testRunFinished(new Result());
+
+        Bundle resultBundle = new Bundle();
+        mListener.instrumentationRunFinished(System.out, resultBundle, new Result());
+
+        ArgumentCaptor<Bundle> capture = ArgumentCaptor.forClass(Bundle.class);
+        Mockito.verify(mInstrumentation, times(1))
+                .sendStatus(
+                        Mockito.eq(SendToInstrumentation.INST_STATUS_IN_PROGRESS),
+                        capture.capture());
+        Bundle metrics = capture.getValue();
+        // Ensure that we have recordings, and none of them have "null" in their file name or metric
+        // key.
+        boolean hasRecordings = false;
+        for (String key : metrics.keySet()) {
+            if (key.startsWith(mListener.getTag())) {
+                hasRecordings = true;
+                assertTrue(key.contains(mRunDesc.getClassName()));
+                assertFalse(key.contains("null"));
+                String fileName = metrics.getString(key);
+                assertTrue(fileName.contains(mRunDesc.getClassName()));
+                assertFalse(fileName.contains("null"));
+            }
+        }
+        assertTrue(hasRecordings);
     }
 }
