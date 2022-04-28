@@ -135,7 +135,7 @@ object WindowManagerConditionsFactory {
     fun isActivityVisible(
         component: FlickerComponentName
     ): Condition<DUMP> =
-        Condition("isActivityVisible") {
+        Condition("isActivityVisible[${component.toActivityName()}]") {
             it.wmState.isActivityVisible(component.toActivityName())
         }
 
@@ -182,7 +182,7 @@ object WindowManagerConditionsFactory {
     fun isLayerVisible(
         layerId: Int
     ): Condition<DUMP> =
-        Condition("isLayerVisible[$layerId]") {
+        Condition("isLayerVisible[layerId=$layerId]") {
             it.layerState.getLayerById(layerId)?.isVisible ?: false
         }
 
@@ -250,7 +250,7 @@ object WindowManagerConditionsFactory {
     fun isPipWindowLayerSizeMatch(
         layerId: Int
     ): Condition<DUMP> =
-        Condition("isPipWindowLayerSizeMatch") {
+        Condition("isPipWindowLayerSizeMatch[layerId=$layerId]") {
             val pipWindow = it.wmState.pinnedWindows
                 .firstOrNull { pinnedWindow -> pinnedWindow.layerId == layerId }
                 ?: error("Unable to find window with layerId $layerId")
@@ -295,7 +295,7 @@ object WindowManagerConditionsFactory {
 
     fun isAppLaunchEnded(taskId: Int):
         Condition<DUMP> =
-        Condition("containsVisibleAppLaunchWindow[$taskId]") { dump ->
+        Condition("containsVisibleAppLaunchWindow[taskId=$taskId]") { dump ->
             val windowStates = dump.wmState.getRootTask(taskId)?.activities?.flatMap {
                 it.children.filterIsInstance<WindowState>()
             }
