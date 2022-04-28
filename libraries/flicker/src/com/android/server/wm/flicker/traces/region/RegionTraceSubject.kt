@@ -109,11 +109,6 @@ class RegionTraceSubject(
         }
     }
 
-    /** {@inheritDoc} */
-    override fun clone(): FlickerSubject {
-        return RegionTraceSubject(fm, trace, parent)
-    }
-
     companion object {
         /**
          * Boiler-plate Subject.Factory for RegionTraceSubject

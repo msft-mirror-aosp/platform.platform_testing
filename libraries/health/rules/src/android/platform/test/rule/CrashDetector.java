@@ -15,6 +15,8 @@
  */
 package android.platform.test.rule;
 
+import android.util.Log;
+
 import androidx.test.InstrumentationRegistry;
 import androidx.test.uiautomator.UiDevice;
 
@@ -26,6 +28,7 @@ import java.io.IOException;
 
 /** A rule that fails if the specified package crashed during the test. */
 public class CrashDetector implements TestRule {
+    private static final String TAG = CrashDetector.class.getSimpleName();
     private String mExpectedPid;
     private final UiDevice mDevice;
     private final String mPackageName;
@@ -45,6 +48,7 @@ public class CrashDetector implements TestRule {
             @Override
             public void evaluate() throws Throwable {
                 mExpectedPid = getPackagePid();
+                Log.d(TAG, "Enter, PID=" + mExpectedPid);
                 try {
                     base.evaluate();
                 } catch (Throwable t) {
@@ -72,6 +76,7 @@ public class CrashDetector implements TestRule {
     public void onLegitimatePackageRestart() {
         try {
             mExpectedPid = getPackagePid();
+            Log.d(TAG, "onLegitimatePackageRestart, PID=" + mExpectedPid);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

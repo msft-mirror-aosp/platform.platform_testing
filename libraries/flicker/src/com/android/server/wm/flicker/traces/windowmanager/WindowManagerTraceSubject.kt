@@ -17,7 +17,6 @@
 package com.android.server.wm.flicker.traces.windowmanager
 
 import com.android.server.wm.flicker.assertions.Assertion
-import com.android.server.wm.flicker.assertions.FlickerSubject
 import com.android.server.wm.flicker.traces.FlickerFailureStrategy
 import com.android.server.wm.flicker.traces.FlickerTraceSubject
 import com.android.server.wm.flicker.traces.region.RegionTraceSubject
@@ -64,11 +63,6 @@ class WindowManagerTraceSubject private constructor(
 
     override val subjects by lazy {
         trace.entries.map { WindowManagerStateSubject.assertThat(it, this, this) }
-    }
-
-    /** {@inheritDoc} */
-    override fun clone(): FlickerSubject {
-        return WindowManagerTraceSubject(fm, trace, parent)
     }
 
     /** {@inheritDoc} */
