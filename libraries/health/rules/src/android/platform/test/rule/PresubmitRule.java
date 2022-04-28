@@ -37,6 +37,14 @@ import java.util.Arrays;
  * skipped, for presubmit runs, on devices not in the list.
  */
 public class PresubmitRule implements TestRule {
+    public static boolean runningInPresubmit() {
+        // We run in presubmit when there is a parameter to exclude postsubmits.
+        final String nonAnnotationArgument =
+                InstrumentationRegistry.getArguments().getString("notAnnotation", "");
+        return Arrays.stream(nonAnnotationArgument.split(","))
+                .anyMatch("android.platform.test.annotations.Postsubmit"::equals);
+    }
+
     @Override
     public Statement apply(Statement base, Description description) {
         // If the test is not annotated with @Presubmit, this rule is not applicable.
@@ -46,10 +54,7 @@ public class PresubmitRule implements TestRule {
         // If the test suite isn't running with
         // "exclude-annotation": "android.platform.test.annotations.Postsubmit", then this is not
         // a presubmit test, and the rule is not applicable.
-        final String nonAnnotationArgument =
-                InstrumentationRegistry.getArguments().getString("notAnnotation", "");
-        if (!Arrays.stream(nonAnnotationArgument.split(","))
-                .anyMatch("android.platform.test.annotations.Postsubmit"::equals)) {
+        if (!runningInPresubmit()) {
             return base;
         }
 
