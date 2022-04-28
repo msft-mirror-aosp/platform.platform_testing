@@ -16,7 +16,6 @@
 
 package com.android.server.wm.flicker
 
-import android.util.Log
 import androidx.annotation.VisibleForTesting
 import com.android.compatibility.common.util.ZipUtil
 import com.android.server.wm.flicker.assertions.AssertionData
@@ -34,7 +33,6 @@ import com.android.server.wm.traces.common.layers.BaseLayerTraceEntry
 import com.android.server.wm.traces.common.layers.LayersTrace
 import com.android.server.wm.traces.common.windowmanager.WindowManagerState
 import java.io.File
-import java.io.IOException
 import java.nio.file.Path
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
@@ -69,10 +67,17 @@ class FlickerRunResult private constructor(
     @VisibleForTesting
     val eventLogSubject: EventLogSubject?
 ) {
-    var traceFile = _traceFile
-        private set
+    /**
+     * The object responsible for managing the trace file associated with this result.
+     *
+     * By default the file manager is the RunResult itself but in the case the RunResult is
+     * derived or extracted from another RunResult then that other RunResult should be the trace
+     * file manager.
+     */
+    internal var mTraceFile: TraceFile? =
+            if (_traceFile != null) TraceFile(_traceFile) else null
 
-    internal val traceName = traceFile?.fileName ?: "UNNAMED_TRACE"
+    internal val traceName = mTraceFile?.traceFile?.fileName ?: "UNNAMED_TRACE"
 
     var status: RunStatus = RunStatus.UNDEFINED
         internal set(value) {
@@ -85,8 +90,9 @@ class FlickerRunResult private constructor(
                             "and can't be changed to $value."
                 }
                 field = value
-                syncFileWithStatus()
             }
+
+            mTraceFile?.status = status
         }
 
     fun setRunFailed() {
@@ -100,21 +106,6 @@ class FlickerRunResult private constructor(
         }
         // Other types of failures can only happen if the run has succeeded
         return status == RunStatus.RUN_FAILED
-    }
-
-    private fun syncFileWithStatus() {
-        // Since we don't expect this to run in a multi-threaded context this is fine
-        val localTraceFile = traceFile
-        if (localTraceFile != null) {
-            try {
-                val newFileName = "${status.prefix}_$traceName"
-                val dst = localTraceFile.resolveSibling(newFileName)
-                Utils.renameFile(localTraceFile, dst)
-                traceFile = dst
-            } catch (e: IOException) {
-                Log.e(FLICKER_TAG, "Unable to update file status $this", e)
-            }
-        }
     }
 
     fun getSubjects(): List<FlickerSubject> {
@@ -137,7 +128,7 @@ class FlickerRunResult private constructor(
             FlickerAssertionErrorBuilder()
                     .fromError(error)
                     .atTag(assertion.tag)
-                    .withTrace(this.traceFile)
+                    .withTrace(this.mTraceFile)
                     .build()
         }
     }
@@ -256,10 +247,14 @@ class FlickerRunResult private constructor(
             val traceFile = compress(testName, iteration)
             val traceResult = buildResult(
                 AssertionTag.ALL, wmSubject, layersSubject, traceFile = traceFile, status = status)
+
             val initialStateResult = buildResult(
                 AssertionTag.START, wmSubject?.first(), layersSubject?.first(), status = status)
+            initialStateResult.mTraceFile = traceResult.mTraceFile
+
             val finalStateResult = buildResult(
                 AssertionTag.END, wmSubject?.last(), layersSubject?.last(), status = status)
+            finalStateResult.mTraceFile = traceResult.mTraceFile
 
             listOf(initialStateResult, finalStateResult, traceResult)
         }
