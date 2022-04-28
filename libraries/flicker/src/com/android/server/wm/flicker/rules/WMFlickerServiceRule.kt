@@ -53,26 +53,23 @@ open class WMFlickerServiceRule @JvmOverloads constructor(
     }
 
     override fun finished(description: Description?) {
-        val testTag = description?.methodName ?: "fass"
         traceMonitors.forEach {
             it.stop()
-            it.save(testTag)
         }
 
         Files.createDirectories(outputDir)
-        wmTrace = getWindowManagerTrace(getFassFilePath(outputDir, testTag, "wm_trace"))
-        layersTrace = getLayersTrace(getFassFilePath(outputDir, testTag, "layers_trace"))
+        wmTrace = getWindowManagerTrace(getFassFilePath(outputDir, "wm_trace"))
+        layersTrace = getLayersTrace(getFassFilePath(outputDir, "layers_trace"))
 
         val flickerService = FlickerService()
-        flickerService.process(wmTrace, layersTrace, outputDir, testTag)
+        flickerService.process(wmTrace, layersTrace, outputDir)
     }
 
     private fun setupMonitors() {
         traceMonitors.add(WindowManagerTraceMonitor(outputDir))
         traceMonitors.add(LayersTraceMonitor(outputDir))
         traceMonitors.add(ScreenRecorder(
-            outputDir,
-            InstrumentationRegistry.getInstrumentation().targetContext)
+            InstrumentationRegistry.getInstrumentation().targetContext, outputDir)
         )
     }
 

@@ -18,6 +18,7 @@ package com.android.server.wm.flicker
 
 import android.content.Context
 import androidx.test.platform.app.InstrumentationRegistry
+import com.android.server.wm.flicker.FlickerRunResult.Companion.RunStatus.ASSERTION_SUCCESS
 import com.android.server.wm.flicker.traces.FlickerSubjectException
 import com.android.server.wm.traces.common.layers.LayersTrace
 import com.android.server.wm.traces.common.tags.TagTrace
@@ -29,6 +30,9 @@ import com.google.common.io.ByteStreams
 import com.google.common.truth.ExpectFailure
 import com.google.common.truth.Truth
 import com.google.common.truth.TruthFailureSubject
+import java.io.FileInputStream
+import java.nio.file.Files
+import java.util.zip.ZipInputStream
 
 internal fun readWmTraceFromFile(relativePath: String): WindowManagerTrace {
     return try {
@@ -119,4 +123,24 @@ fun assertThatErrorContainsDebugInfo(error: Throwable, withBlameEntry: Boolean =
     if (withBlameEntry) {
         Truth.assertThat(error).hasMessageThat().contains("Entry")
     }
+}
+
+fun assertArchiveContainsAllTraces(
+    runStatus: FlickerRunResult.Companion.RunStatus = ASSERTION_SUCCESS,
+    testName: String = "",
+    iteration: Int = 0
+) {
+    val archiveFileName = "${runStatus.prefix}_${testName}_$iteration.zip"
+    val archivePath = getDefaultFlickerOutputDir().resolve(archiveFileName)
+    Truth.assertWithMessage("Expected trace archive `$archivePath` to exist")
+            .that(Files.exists(archivePath)).isTrue()
+
+    val archiveStream = ZipInputStream(FileInputStream(archivePath.toFile()))
+
+    val expectedFiles = listOf("wm_trace.winscope", "layers_trace.winscope", "transition.mp4")
+    val actualFiles = generateSequence { archiveStream.nextEntry }.map { it.name }.toList()
+
+    Truth.assertThat(actualFiles).hasSize(expectedFiles.size)
+    Truth.assertWithMessage("Trace archive doesn't contain all expected traces")
+            .that(actualFiles.containsAll(expectedFiles)).isTrue()
 }
