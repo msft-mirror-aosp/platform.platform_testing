@@ -341,20 +341,33 @@ public class BaseMetricListener extends InstrumentationRunListener {
     }
 
     /**
+     * Create a directory inside external storage, and optionally empty it.
+     *
+     * @param dir full path to the dir to be created.
+     * @param empty whether to empty the new dirctory.
+     * @return directory file created
+     */
+    public File createDirectory(String dir, boolean empty) {
+        File rootDir = Environment.getExternalStorageDirectory();
+        File destDir = new File(rootDir, dir);
+        if (empty) {
+            executeCommandBlocking("rm -rf " + destDir.getAbsolutePath());
+        }
+        if (!destDir.exists() && !destDir.mkdirs()) {
+            Log.e(getTag(), "Unable to create dir: " + destDir.getAbsolutePath());
+            return null;
+        }
+        return destDir;
+    }
+
+    /**
      * Create a directory inside external storage, and empty it.
      *
      * @param dir full path to the dir to be created.
      * @return directory file created
      */
     public File createAndEmptyDirectory(String dir) {
-        File rootDir = Environment.getExternalStorageDirectory();
-        File destDir = new File(rootDir, dir);
-        executeCommandBlocking("rm -rf " + destDir.getAbsolutePath());
-        if (!destDir.exists() && !destDir.mkdirs()) {
-            Log.e(getTag(), "Unable to create dir: " + destDir.getAbsolutePath());
-            return null;
-        }
-        return destDir;
+        return createDirectory(dir, true);
     }
 
     /**
