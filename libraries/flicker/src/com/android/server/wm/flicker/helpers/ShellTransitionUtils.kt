@@ -21,4 +21,4 @@ package com.android.server.wm.flicker.helpers
 import android.os.SystemProperties
 
 val isShellTransitionsEnabled =
-    SystemProperties.getBoolean("persist.debug.shell_transit", false)
+    SystemProperties.getBoolean("persist.wm.debug.shell_transit", false)

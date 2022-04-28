@@ -119,7 +119,7 @@ open class Rect(
     override fun toString(): String = prettyPrint()
 
     fun clone(): Rect {
-        return Rect(left, top, right, bottom)
+        return if (this == EMPTY) EMPTY else Rect(left, top, right, bottom)
     }
 
     companion object {
