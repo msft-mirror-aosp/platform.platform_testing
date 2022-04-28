@@ -70,11 +70,6 @@ class WindowStateSubject private constructor(
         assertion(this.windowState)
     }
 
-    /** {@inheritDoc} */
-    override fun clone(): FlickerSubject {
-        return WindowStateSubject(fm, parent, timestamp, windowState, windowTitle)
-    }
-
     /**
      * Asserts that current subject doesn't exist in the window hierarchy
      */

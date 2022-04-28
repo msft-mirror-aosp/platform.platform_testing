@@ -17,7 +17,6 @@
 package com.android.server.wm.flicker.traces.layers
 
 import com.android.server.wm.flicker.assertions.Assertion
-import com.android.server.wm.flicker.assertions.FlickerSubject
 import com.android.server.wm.flicker.traces.FlickerFailureStrategy
 import com.android.server.wm.flicker.traces.FlickerTraceSubject
 import com.android.server.wm.flicker.traces.region.RegionTraceSubject
@@ -70,11 +69,6 @@ class LayersTraceSubject private constructor(
      */
     operator fun invoke(assertion: Assertion<LayersTrace>): LayersTraceSubject = apply {
         assertion(this.trace)
-    }
-
-    /** {@inheritDoc} */
-    override fun clone(): FlickerSubject {
-        return LayersTraceSubject(fm, trace, parent)
     }
 
     /** {@inheritDoc} */
