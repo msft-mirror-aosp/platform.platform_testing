@@ -64,7 +64,8 @@ public class HeapDumpListener extends BaseCollectionListener<String> {
     public void setupAdditionalArgs() {
         Bundle args = getArgsBundle();
 
-        mIsEnabledForAll = args.getBoolean(ITERATION_ALL_ENABLE, false);
+        mIsEnabledForAll =
+                Boolean.parseBoolean(args.getString(ITERATION_ALL_ENABLE, String.valueOf(false)));
 
         if (!mIsEnabledForAll) {
             String iterations = args.getString(ENABLE_ITERATION_IDS);
