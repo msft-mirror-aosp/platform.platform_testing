@@ -69,7 +69,8 @@ public class BaseCollectionListener<T> extends BaseMetricListener {
         mSkipTestFailureMetrics = "true".equals(args.getString(SKIP_TEST_FAILURE_METRICS));
 
         if (mIsCollectPerRun) {
-            mHelper.startCollecting();
+            Function<String, Boolean> filter = getFilter(description);
+            testStart(filter, description);
         }
     }
 
@@ -82,11 +83,7 @@ public class BaseCollectionListener<T> extends BaseMetricListener {
         mIsTestFailed = false;
         if (!mIsCollectPerRun) {
             Function<String, Boolean> filter = getFilter(description);
-            if (filter == null) {
-                mHelper.startCollecting();
-            } else {
-                mHelper.startCollecting(filter);
-            }
+            testStart(filter, description);
         }
     }
 
@@ -116,6 +113,14 @@ public class BaseCollectionListener<T> extends BaseMetricListener {
         if (mIsCollectPerRun) {
             collectMetrics(runData);
             mHelper.stopCollecting();
+        }
+    }
+
+    public void testStart(Function<String, Boolean> filter, Description description) {
+        if (filter == null) {
+            mHelper.startCollecting();
+        } else {
+            mHelper.startCollecting(filter);
         }
     }
 

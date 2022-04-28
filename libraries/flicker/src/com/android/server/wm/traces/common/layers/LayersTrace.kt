@@ -28,9 +28,9 @@ import com.android.server.wm.traces.common.ITrace
  *
  */
 data class LayersTrace(
-    override val entries: Array<LayerTraceEntry>
-) : ITrace<LayerTraceEntry>, List<LayerTraceEntry> by entries.toList() {
-    constructor(entry: LayerTraceEntry): this(arrayOf(entry))
+    override val entries: Array<BaseLayerTraceEntry>
+) : ITrace<BaseLayerTraceEntry>, List<BaseLayerTraceEntry> by entries.toList() {
+    constructor(entry: BaseLayerTraceEntry): this(arrayOf(entry))
 
     override fun toString(): String {
         return "LayersTrace(Start: ${entries.firstOrNull()}, " +
