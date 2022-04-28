@@ -28,6 +28,7 @@ import com.android.server.wm.flicker.assertFailure
 import com.android.server.wm.flicker.assertThatErrorContainsDebugInfo
 import com.android.server.wm.flicker.assertThrows
 import com.android.server.wm.flicker.assertions.FlickerSubject
+import com.android.server.wm.flicker.readWmTraceFromDumpFile
 import com.android.server.wm.flicker.readWmTraceFromFile
 import com.android.server.wm.flicker.traces.FlickerSubjectException
 import com.android.server.wm.flicker.traces.windowmanager.WindowManagerStateSubject
@@ -361,5 +362,32 @@ class WindowManagerStateSubjectTest {
                 .assertThat(noWindowsState).isAppWindowOnTop(mockComponent)
         }
         assertFailure(failure).hasMessageThat().contains("No visible app windows found")
+    }
+
+    @Test
+    fun canDetectNoVisibleAppWindows() {
+        val trace = readWmTraceFromFile("wm_trace_unlock.pb")
+        val firstEntry = assertThat(trace).first()
+        firstEntry.hasNoVisibleAppWindow()
+    }
+
+    @Test
+    fun canDetectHasVisibleAppWindows() {
+        val trace = readWmTraceFromFile("wm_trace_unlock.pb")
+        val lastEntry = assertThat(trace).last()
+        val failure = assertThrows(FlickerSubjectException::class.java) {
+            lastEntry.hasNoVisibleAppWindow()
+        }
+        assertFailure(failure).hasMessageThat().contains("Found visible windows")
+    }
+
+    @Test
+    fun canDetectTaskFragment() {
+        // Verify if parser can read a dump file with 2 TaskFragments showed side-by-side.
+        val trace = readWmTraceFromDumpFile("wm_trace_taskfragment.winscope")
+        // There's only one entry in dump file.
+        val entry = assertThat(trace).first()
+        // Verify there's exact 2 TaskFragments in window hierarchy.
+        Truth.assertThat(entry.wmState.taskFragments.size).isEqualTo(2)
     }
 }

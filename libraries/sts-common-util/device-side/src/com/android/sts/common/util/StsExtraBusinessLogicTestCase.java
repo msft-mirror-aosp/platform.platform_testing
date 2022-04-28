@@ -46,15 +46,7 @@ public class StsExtraBusinessLogicTestCase extends ExtraBusinessLogicTestCase im
         // set in test/sts/tools/sts-tradefed/res/config/sts-base-dynamic-*.xml
         String stsDynamicPlan =
                 InstrumentationRegistry.getArguments().getString("sts-dynamic-plan");
-        switch (stsDynamicPlan) {
-            case "incremental":
-                return StsLogic.STS_EXTRA_BUSINESS_LOGIC_INCREMENTAL;
-            case "full":
-                return StsLogic.STS_EXTRA_BUSINESS_LOGIC_FULL;
-            default:
-                throw new RuntimeException(
-                        "Could not find Dynamic STS plan in InstrumentationRegistry arguments");
-        }
+        return StsLogic.getExtraBusinessLogicForPlan(stsDynamicPlan);
     }
 
     @Override

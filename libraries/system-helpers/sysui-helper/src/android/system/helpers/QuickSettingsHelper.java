@@ -226,6 +226,9 @@ public class QuickSettingsHelper {
         // Settings footer to make sure that the buttons are accessible when the bar is open and
         // this call is complete.
         mDevice.wait(Until.findObject(FOOTER_SELECTOR), SHORT_TIMEOUT);
+        // Wait an extra bit for the animation to complete. If we return to early, future callers
+        // that are trying to find the location of the footer will get incorrect coordinates
+        mDevice.waitForIdle(LONG_TIMEOUT);
     }
 
     public void swipeUp() throws Exception {

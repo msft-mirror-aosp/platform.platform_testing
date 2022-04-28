@@ -87,11 +87,6 @@ class LayerSubject private constructor(
         assertion(this.layer)
     }
 
-    /** {@inheritDoc} */
-    override fun clone(): FlickerSubject {
-        return LayerSubject(fm, parent, timestamp, layer, layerName)
-    }
-
     /**
      * Asserts that current subject doesn't exist in the layer hierarchy
      */

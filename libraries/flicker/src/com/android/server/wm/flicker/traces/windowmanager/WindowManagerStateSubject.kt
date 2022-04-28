@@ -84,16 +84,14 @@ class WindowManagerStateSubject private constructor(
     val visibleWindows: List<WindowStateSubject>
         get() = subjects.filter { wmState.visibleWindows.contains(it.windowState) }
 
+    val visibleAppWindows: List<WindowStateSubject>
+        get() = subjects.filter { wmState.visibleAppWindows.contains(it.windowState) }
+
     /**
      * Executes a custom [assertion] on the current subject
      */
     operator fun invoke(assertion: Assertion<WindowManagerState>): WindowManagerStateSubject =
         apply { assertion(this.wmState) }
-
-    /** {@inheritDoc} */
-    override fun clone(): FlickerSubject {
-        return WindowManagerStateSubject(fm, wmState, trace, parent)
-    }
 
     /**
      * Asserts the current WindowManager state doesn't contain [WindowState]s
@@ -219,7 +217,10 @@ class WindowManagerStateSubject private constructor(
     fun isAppWindowOnTop(component: FlickerComponentName): WindowManagerStateSubject = apply {
         val windowName = component.toWindowName()
         if (wmState.visibleAppWindows.isEmpty()) {
-            fail("No visible app windows found")
+            fail(
+                Fact.fact(ASSERTION_TAG, "isAppWindowOnTop(${component.toWindowName()})"),
+                Fact.fact("Not found", "No visible app windows found")
+            )
         }
         if (!wmState.topVisibleAppWindow.contains(windowName)) {
             isNotEmpty()
@@ -435,6 +436,19 @@ class WindowManagerStateSubject private constructor(
         check("Activity=${activity?.name} must be visible.")
             .that(activity?.isVisible ?: false).isTrue()
         checkWindowVisibility("isVisible", appWindows, component, isVisible = true)
+    }
+
+    /**
+     * Asserts the state contains no visible app windows.
+     */
+    fun hasNoVisibleAppWindow() {
+        if (visibleAppWindows.isNotEmpty()) {
+            val visibleAppWindows = visibleAppWindows.joinToString { it.name }
+            fail(
+                Fact.fact(ASSERTION_TAG, "hasNoVisibleAppWindow()"),
+                Fact.fact("Found visible windows", visibleAppWindows)
+            )
+        }
     }
 
     /**

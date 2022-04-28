@@ -17,7 +17,6 @@
 package com.android.server.wm.flicker.traces.windowmanager
 
 import com.android.server.wm.flicker.assertions.Assertion
-import com.android.server.wm.flicker.assertions.FlickerSubject
 import com.android.server.wm.flicker.traces.FlickerFailureStrategy
 import com.android.server.wm.flicker.traces.FlickerTraceSubject
 import com.android.server.wm.flicker.traces.region.RegionTraceSubject
@@ -64,11 +63,6 @@ class WindowManagerTraceSubject private constructor(
 
     override val subjects by lazy {
         trace.entries.map { WindowManagerStateSubject.assertThat(it, this, this) }
-    }
-
-    /** {@inheritDoc} */
-    override fun clone(): FlickerSubject {
-        return WindowManagerTraceSubject(fm, trace, parent)
     }
 
     /** {@inheritDoc} */
@@ -267,6 +261,18 @@ class WindowManagerTraceSubject private constructor(
     ): WindowManagerTraceSubject = apply {
         addAssertion("isAppWindowVisible(${component.toWindowName()})", isOptional) {
             it.isAppWindowVisible(component)
+        }
+    }
+
+    /**
+     * Checks if there are no visible app windows.
+     *
+     * @param isOptional If this assertion is optional or must pass
+     */
+    @JvmOverloads
+    fun hasNoVisibleAppWindow(isOptional: Boolean = false): WindowManagerTraceSubject = apply {
+        addAssertion("hasNoVisibleAppWindow()", isOptional) {
+            it.hasNoVisibleAppWindow()
         }
     }
 

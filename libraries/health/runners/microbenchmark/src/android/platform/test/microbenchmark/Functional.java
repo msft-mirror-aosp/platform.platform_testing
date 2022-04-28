@@ -16,6 +16,7 @@
 package android.platform.test.microbenchmark;
 
 import android.platform.test.rule.ArtifactSaver;
+import android.platform.test.rule.SamplerRule;
 
 import org.junit.internal.AssumptionViolatedException;
 import org.junit.internal.runners.statements.RunAfters;
@@ -117,8 +118,14 @@ public class Functional extends BlockJUnit4ClassRunner {
     protected Statement classBlock(RunNotifier notifier) {
         // Error artifact saver for exceptions thrown outside class befores and afters, i.e. in
         // class rules.
-        final Statement statement =
-                artifactSaver(super.classBlock(notifier), getChildren().stream());
+        final Statement parentStatement;
+        try {
+            SamplerRule.enable(true);
+            parentStatement = super.classBlock(notifier);
+        } finally {
+            SamplerRule.enable(false);
+        }
+        final Statement statement = artifactSaver(parentStatement, getChildren().stream());
         return new Statement() {
             @Override
             public void evaluate() throws Throwable {

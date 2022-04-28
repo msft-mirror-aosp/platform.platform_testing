@@ -23,6 +23,7 @@ import com.android.server.wm.traces.common.windowmanager.windows.DisplayContent
 import com.android.server.wm.traces.common.windowmanager.windows.KeyguardControllerState
 import com.android.server.wm.traces.common.windowmanager.windows.RootWindowContainer
 import com.android.server.wm.traces.common.windowmanager.windows.Task
+import com.android.server.wm.traces.common.windowmanager.windows.TaskFragment
 import com.android.server.wm.traces.common.windowmanager.windows.WindowContainer
 import com.android.server.wm.traces.common.windowmanager.windows.WindowManagerPolicy
 import com.android.server.wm.traces.common.windowmanager.windows.WindowState
@@ -65,9 +66,13 @@ open class WindowManagerState(
     val displays: Array<DisplayContent>
         get() = windowContainers.filterIsInstance<DisplayContent>().toTypedArray()
 
-    // Stacks in z-order with the top most at the front of the list, starting with primary display.
+    // Root tasks in z-order with the top most at the front of the list, starting with primary display.
     val rootTasks: Array<Task>
         get() = displays.flatMap { it.rootTasks.toList() }.toTypedArray()
+
+    // TaskFragments  in z-order with the top most at the front of the list.
+    val taskFragments: Array<TaskFragment>
+        get() = windowContainers.filterIsInstance<TaskFragment>().toTypedArray()
 
     // Windows in z-order with the top most at the front of the list.
     val windowStates: Array<WindowState>

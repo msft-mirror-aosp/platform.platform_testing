@@ -53,6 +53,7 @@ platform_tests += \
     InternalLocTestApp \
     JankMicroBenchmarkTests \
     LauncherIconsApp \
+    long_trace_binder_config.textproto \
     long_trace_config.textproto \
     MemoryUsage \
     MultiDexLegacyTestApp \
