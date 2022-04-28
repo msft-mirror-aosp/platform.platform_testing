@@ -103,7 +103,7 @@ public class UiActionLatencyHelperTest {
     }
 
     private void startApp(LauncherInstrumentation sLauncher, String appName, String appPackage) {
-        final AllApps allApps = sLauncher.pressHome().switchToAllApps();
+        final AllApps allApps = sLauncher.goHome().switchToAllApps();
         allApps.freeze();
         try {
             allApps.getAppIcon(appName).launch(appPackage);
