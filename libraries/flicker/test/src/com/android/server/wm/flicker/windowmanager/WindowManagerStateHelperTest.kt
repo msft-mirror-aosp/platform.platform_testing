@@ -31,7 +31,7 @@ import com.android.server.wm.traces.common.Rect
 import com.android.server.wm.traces.common.RectF
 import com.android.server.wm.traces.common.region.Region
 import com.android.server.wm.traces.common.layers.Layer
-import com.android.server.wm.traces.common.layers.LayerTraceEntry
+import com.android.server.wm.traces.common.layers.BaseLayerTraceEntry
 import com.android.server.wm.traces.common.layers.LayerTraceEntryBuilder
 import com.android.server.wm.traces.common.layers.Transform
 import com.android.server.wm.traces.common.windowmanager.WindowManagerState
@@ -53,7 +53,7 @@ class WindowManagerStateHelperTest {
         /**
          * Predicate to supply a new UI information
          */
-        deviceDumpSupplier: () -> DeviceStateDump<WindowManagerState, LayerTraceEntry>,
+        deviceDumpSupplier: () -> DeviceStateDump<WindowManagerState, BaseLayerTraceEntry>,
         numRetries: Int = 5,
         retryIntervalMs: Long = 500L
     ) : WindowManagerStateHelper(InstrumentationRegistry.getInstrumentation(),
@@ -61,7 +61,9 @@ class WindowManagerStateHelperTest {
         var wmState: WindowManagerState = _wmState
             private set
 
-        override fun updateCurrState(value: DeviceStateDump<WindowManagerState, LayerTraceEntry>) {
+        override fun updateCurrState(
+            value: DeviceStateDump<WindowManagerState, BaseLayerTraceEntry>
+        ) {
             wmState = value.wmState
         }
     }
@@ -125,7 +127,7 @@ class WindowManagerStateHelperTest {
 
     private fun WindowManagerTrace.asSupplier(
         startingTimestamp: Long = 0
-    ): () -> DeviceStateDump<WindowManagerState, LayerTraceEntry> {
+    ): () -> DeviceStateDump<WindowManagerState, BaseLayerTraceEntry> {
         val iterator = this.dropWhile { it.timestamp < startingTimestamp }.iterator()
         return {
             if (iterator.hasNext()) {
@@ -136,10 +138,10 @@ class WindowManagerStateHelperTest {
                 if (wmState.inputMethodWindowState?.isSurfaceShown == true) {
                     layerList.add(FlickerComponentName.IME)
                 }
-                val layerTraceEntry = LayerTraceEntryBuilder(timestamp = 0,
+                val ILayerTraceEntry = LayerTraceEntryBuilder(timestamp = 0,
                     displays = emptyArray(),
                     layers = createImaginaryVisibleLayers(layerList)).build()
-                DeviceStateDump(wmState, layerTraceEntry)
+                DeviceStateDump(wmState, ILayerTraceEntry)
             } else {
                 error("Reached the end of the trace")
             }

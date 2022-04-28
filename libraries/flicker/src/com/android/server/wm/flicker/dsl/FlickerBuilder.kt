@@ -30,7 +30,7 @@ import com.android.server.wm.flicker.monitor.LayersTraceMonitor
 import com.android.server.wm.flicker.monitor.ScreenRecorder
 import com.android.server.wm.flicker.monitor.WindowManagerTraceMonitor
 import com.android.server.wm.traces.common.layers.LayersTrace
-import com.android.server.wm.traces.common.layers.LayerTraceEntry
+import com.android.server.wm.traces.common.layers.BaseLayerTraceEntry
 import com.android.server.wm.traces.common.windowmanager.WindowManagerState
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 import com.android.server.wm.traces.parser.windowmanager.WindowManagerStateHelper
@@ -74,7 +74,14 @@ class FlickerBuilder private constructor(
         /**
          * Helper object for WM Synchronization
          */
-        wmHelper: WindowManagerStateHelper = WindowManagerStateHelper(instrumentation)
+        wmHelper: WindowManagerStateHelper = WindowManagerStateHelper(instrumentation),
+        traceMonitors: MutableList<ITransitionMonitor> = mutableListOf<ITransitionMonitor>()
+                .also {
+                    it.add(WindowManagerTraceMonitor(outputDir))
+                    it.add(LayersTraceMonitor(outputDir))
+                    it.add(ScreenRecorder(instrumentation.targetContext, outputDir))
+                    it.add(EventLogMonitor())
+                }
     ) : this(
         instrumentation,
         launcherStrategy,
@@ -86,13 +93,7 @@ class FlickerBuilder private constructor(
         teardownCommands = TestCommandsBuilder(),
         transitionCommands = mutableListOf(),
         device = UiDevice.getInstance(instrumentation),
-        traceMonitors = mutableListOf<ITransitionMonitor>()
-            .also {
-                it.add(WindowManagerTraceMonitor(outputDir))
-                it.add(LayersTraceMonitor(outputDir))
-                it.add(ScreenRecorder(outputDir, instrumentation.targetContext))
-                it.add(EventLogMonitor())
-            }
+        traceMonitors = traceMonitors
     )
 
     /**
@@ -163,7 +164,7 @@ class FlickerBuilder private constructor(
      *
      * By default the tracing is always active. To disable tracing return null
      *
-     * If this tracing is disabled, the assertions for [LayersTrace] and [LayerTraceEntry]
+     * If this tracing is disabled, the assertions for [LayersTrace] and [BaseLayerTraceEntry]
      * will not be executed
      */
     fun withLayerTracing(

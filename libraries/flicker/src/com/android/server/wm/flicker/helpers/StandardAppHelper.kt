@@ -32,7 +32,7 @@ import com.android.server.wm.traces.common.Condition
 import com.android.server.wm.traces.common.DeviceStateDump
 import com.android.server.wm.traces.common.FlickerComponentName
 import com.android.server.wm.traces.common.WindowManagerConditionsFactory
-import com.android.server.wm.traces.common.layers.LayerTraceEntry
+import com.android.server.wm.traces.common.layers.BaseLayerTraceEntry
 import com.android.server.wm.traces.common.windowmanager.WindowManagerState
 import com.android.server.wm.traces.parser.windowmanager.WindowManagerStateHelper
 
@@ -123,8 +123,9 @@ open class StandardAppHelper @JvmOverloads constructor(
         wmHelper: WindowManagerStateHelper
     ) {
         val activityName = component.toActivityName()
+        val waitMsg = "state of $activityName to be ${WindowManagerState.STATE_DESTROYED}"
         require(
-            wmHelper.waitFor("state of $activityName to be ${WindowManagerState.STATE_DESTROYED}") {
+            wmHelper.waitFor(waitMsg) {
                 !it.wmState.containsActivity(activityName) ||
                     it.wmState.hasActivityState(activityName, WindowManagerState.STATE_DESTROYED)
             }
@@ -183,7 +184,8 @@ open class StandardAppHelper @JvmOverloads constructor(
         expectedWindowName: String = "",
         action: String? = null,
         stringExtras: Map<String, String> = mapOf(),
-        waitConditions: Array<Condition<DeviceStateDump<WindowManagerState, LayerTraceEntry>>> =
+        waitConditions: Array<
+            Condition<DeviceStateDump<WindowManagerState, BaseLayerTraceEntry>>> =
             emptyArray()
     ) {
         launchAppViaIntent(action, stringExtras)
