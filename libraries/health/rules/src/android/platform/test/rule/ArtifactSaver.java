@@ -35,6 +35,9 @@ import java.util.zip.ZipOutputStream;
 public class ArtifactSaver {
     private static final String TAG = ArtifactSaver.class.getSimpleName();
 
+    // Presubmit tests have a time limit. We are not taking expensive bugreports from presubmits.
+    private static boolean sShouldTakeBugreport = !PresubmitRule.runningInPresubmit();
+
     public static File artifactFile(String fileName) {
         return new File(
                 InstrumentationRegistry.getInstrumentation().getTargetContext().getFilesDir(),
@@ -90,7 +93,9 @@ public class ArtifactSaver {
         }
 
         // Dump bugreport
-        if (FailureWatcher.getSystemAnomalyMessage(device) != null) {
+        if (sShouldTakeBugreport && FailureWatcher.getSystemAnomalyMessage(device) != null) {
+            // Taking bugreport is expensive, we should do this only once.
+            sShouldTakeBugreport = false;
             dumpCommandOutput("bugreportz -s", artifactFile(description, "Bugreport", "zip"));
         }
     }
