@@ -24,7 +24,6 @@ instrumentation_tests := \
     FrameworksNetTests \
     FrameworksUiServicesTests \
     BstatsTestApp \
-    ConnTestApp \
     FrameworksServicesTests \
     FrameworksMockingServicesTests \
     WmTests \
