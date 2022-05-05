@@ -15,6 +15,8 @@
  */
 package android.platform.test.rule;
 
+import android.os.SystemClock;
+
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
@@ -28,12 +30,12 @@ import java.util.Date;
 
 /**
  * A rule that generates a file that helps diagnosing cases when the test process was terminated
- * because the test execution took too long. If the process was terminated, the test leaves an
- * artifact with stack traces of all threads, every second. This will help understanding where we
- * stuck.
+ * because the test execution took too long, and tests that ran for too long even without being
+ * terminated. If the process was terminated or the test was long, the test leaves an artifact with
+ * stack traces of all threads, every second. This will help understanding where we stuck.
  */
 public class SamplerRule extends TestWatcher {
-
+    private static final int TOO_LONG_TEST_MS = 60000;
     private static boolean sEnabled;
 
     public static void enable(boolean enabled) {
@@ -51,6 +53,7 @@ public class SamplerRule extends TestWatcher {
                         // terminated due to timeout, the trace file won't be deleted.
                         final File file = getFile();
 
+                        final long startTime = SystemClock.elapsedRealtime();
                         try (final OutputStreamWriter outputStreamWriter =
                                 new OutputStreamWriter(
                                         new BufferedOutputStream(new FileOutputStream(file)))) {
@@ -59,8 +62,11 @@ public class SamplerRule extends TestWatcher {
                             // Simply suppressing the exceptions, nothing to do here.
                         } finally {
                             // If the process is not killed, then there was no test timeout, and
-                            // we are not interested in the trace file.
-                            file.delete();
+                            // we are not interested in the trace file, unless the test ran too
+                            // long.
+                            if (SystemClock.elapsedRealtime() - startTime < TOO_LONG_TEST_MS) {
+                                file.delete();
+                            }
                         }
                     }
 

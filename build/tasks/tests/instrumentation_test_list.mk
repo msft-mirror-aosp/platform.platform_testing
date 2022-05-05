@@ -14,6 +14,7 @@
 
 instrumentation_tests := \
     HelloWorldTests \
+    BluetoothInstrumentationTests \
     LongevityPlatformLibTests \
     ManagedProvisioningTests \
     FrameworksCoreTests \
@@ -23,7 +24,6 @@ instrumentation_tests := \
     FrameworksNetTests \
     FrameworksUiServicesTests \
     BstatsTestApp \
-    ConnTestApp \
     FrameworksServicesTests \
     FrameworksMockingServicesTests \
     WmTests \
