@@ -60,13 +60,6 @@ class RegionSubject(
     /**
      * {@inheritDoc}
      */
-    override fun clone(): FlickerSubject {
-        return RegionSubject(fm, parent, regionEntry, timestamp)
-    }
-
-    /**
-     * {@inheritDoc}
-     */
     override fun fail(reason: List<Fact>): FlickerSubject {
         val newReason = reason.toMutableList()
         return super.fail(newReason)

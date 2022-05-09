@@ -93,11 +93,6 @@ class WindowManagerStateSubject private constructor(
     operator fun invoke(assertion: Assertion<WindowManagerState>): WindowManagerStateSubject =
         apply { assertion(this.wmState) }
 
-    /** {@inheritDoc} */
-    override fun clone(): FlickerSubject {
-        return WindowManagerStateSubject(fm, wmState, trace, parent)
-    }
-
     /**
      * Asserts the current WindowManager state doesn't contain [WindowState]s
      */
