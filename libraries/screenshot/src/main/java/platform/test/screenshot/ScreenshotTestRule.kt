@@ -151,16 +151,19 @@ open class ScreenshotTestRule(
     }
 
     private fun fetchExpectedImage(goldenIdentifier: String): Bitmap? {
-        val context = InstrumentationRegistry.getInstrumentation().targetContext.applicationContext
-
-        try {
-            context.assets.open(goldenIdentifierResolver(goldenIdentifier)).use {
-                return BitmapFactory.decodeStream(it)
+        val instrument = InstrumentationRegistry.getInstrumentation()
+        return listOf(
+                instrument.targetContext.applicationContext,
+                instrument.context
+        ).map {
+            try {
+                it.assets.open(goldenIdentifierResolver(goldenIdentifier)).use {
+                    return@use BitmapFactory.decodeStream(it)
+                }
+            } catch (e: FileNotFoundException) {
+                return@map null
             }
-        } catch (e: FileNotFoundException) {
-            // Golden not present
-            return null
-        }
+        }.filterNotNull().firstOrNull()
     }
 
     /**
