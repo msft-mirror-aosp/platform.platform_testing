@@ -147,4 +147,43 @@ public final class HeapDumpListenerTest {
         verify(mHelper, times(1)).startCollecting(true, "run_test_two_1");
         verify(mHelper, times(1)).startCollecting(true, "run_test_two_2");
     }
+
+    /** Test to verify the iteration separator is handled from the test class name.*/
+    @Test
+    public void testHeapCollectionTestWithIterationSeparator() throws Exception {
+        Bundle enableAllBundle = new Bundle();
+        enableAllBundle.putString(HeapDumpListener.ITERATION_ALL_ENABLE, String.valueOf(true));
+        HeapDumpListener collector = new HeapDumpListener(enableAllBundle, mHelper);
+        collector.setInstrumentation(mInstrumentation);
+
+        collector.testRunStarted(RUN_DESCRIPTION);
+        collector.testStarted(Description.createTestDescription("run$1", "test_two"));
+        verify(mHelper, times(1)).startCollecting(true, "run_test_two_1");
+    }
+
+    /** Test to verify heapdump string is used if the class name is empty*/
+    @Test
+    public void testHeapCollectionForEmptyClassName() throws Exception {
+        Bundle enableAllBundle = new Bundle();
+        enableAllBundle.putString(HeapDumpListener.ITERATION_ALL_ENABLE, String.valueOf(true));
+        HeapDumpListener collector = new HeapDumpListener(enableAllBundle, mHelper);
+        collector.setInstrumentation(mInstrumentation);
+
+        collector.testRunStarted(RUN_DESCRIPTION);
+        collector.testStarted(Description.createTestDescription("", "method_name"));
+        verify(mHelper, times(1)).startCollecting(true, "heapdump_1");
+    }
+
+    /** Test to verify heapdump string is used if the method name is empty*/
+    @Test
+    public void testHeapCollectionForEmptyMethodName() throws Exception {
+        Bundle enableAllBundle = new Bundle();
+        enableAllBundle.putString(HeapDumpListener.ITERATION_ALL_ENABLE, String.valueOf(true));
+        HeapDumpListener collector = new HeapDumpListener(enableAllBundle, mHelper);
+        collector.setInstrumentation(mInstrumentation);
+
+        collector.testRunStarted(RUN_DESCRIPTION);
+        collector.testStarted(Description.createTestDescription("classs_name", ""));
+        verify(mHelper, times(1)).startCollecting(true, "heapdump_1");
+    }
 }
