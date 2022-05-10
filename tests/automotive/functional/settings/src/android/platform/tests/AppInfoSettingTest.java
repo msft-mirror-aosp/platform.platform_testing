@@ -38,7 +38,7 @@ public class AppInfoSettingTest {
 
     @Before
     public void openAppInfoFacet() {
-        mSettingHelper.get().openSetting(AutoConfigConstants.APPS_AND_NOTIFICATIONS_SETTINGS);
+        mSettingHelper.get().openSetting(AutoConfigConstants.APPS_SETTINGS);
         mAppInfoSettingsHelper.get().showAllApps();
     }
 

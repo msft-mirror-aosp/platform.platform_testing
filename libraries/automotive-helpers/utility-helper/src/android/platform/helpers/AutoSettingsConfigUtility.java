@@ -191,16 +191,14 @@ public class AutoSettingsConfigUtility implements IAutoConfigUtility {
                 AutoConfigConstants.SOUND_SETTINGS, new String[] {"Media volume", "Alarm volume"});
         mSettingsOptionsMap.put(AutoConfigConstants.NETWORK_AND_INTERNET_SETTINGS, new String[] {});
         mSettingsOptionsMap.put(AutoConfigConstants.BLUETOOTH_SETTINGS, new String[] {});
-        mSettingsOptionsMap.put(
-                AutoConfigConstants.APPS_AND_NOTIFICATIONS_SETTINGS, new String[] {});
+        mSettingsOptionsMap.put(AutoConfigConstants.APPS_SETTINGS, new String[] {});
         mSettingsOptionsMap.put(
                 AutoConfigConstants.DATE_AND_TIME_SETTINGS,
-                new String[] {"Automatic date & time", "Automatic time zone"});
+                new String[] {"Set time automatically", "Set time zone automatically"});
         mSettingsOptionsMap.put(
-                AutoConfigConstants.PROFILE_ACCOUNT_SETTINGS,
-                new String[] {"Automatically sync data"});
+                AutoConfigConstants.PROFILE_ACCOUNT_SETTINGS, new String[] {"Add a profile"});
         mSettingsOptionsMap.put(
-                AutoConfigConstants.SYSTEM_SETTINGS, new String[] {"About", "Legal information"});
+                AutoConfigConstants.SYSTEM_SETTINGS, new String[] {"System update"});
         mSettingsOptionsMap.put(AutoConfigConstants.SECURITY_SETTINGS, new String[] {});
     }
 
@@ -211,11 +209,9 @@ public class AutoSettingsConfigUtility implements IAutoConfigUtility {
                 AutoConfigConstants.NETWORK_AND_INTERNET_SETTINGS,
                 new String[] {"Network & internet"});
         mSettingsPathMap.put(AutoConfigConstants.BLUETOOTH_SETTINGS, new String[] {"Bluetooth"});
+        mSettingsPathMap.put(AutoConfigConstants.APPS_SETTINGS, new String[] {"Apps"});
         mSettingsPathMap.put(
-                AutoConfigConstants.APPS_AND_NOTIFICATIONS_SETTINGS,
-                new String[] {"Apps & notifications"});
-        mSettingsPathMap.put(
-                AutoConfigConstants.DATE_AND_TIME_SETTINGS, new String[] {"Date & time"});
+                AutoConfigConstants.DATE_AND_TIME_SETTINGS, new String[] {"System", "Date & time"});
         mSettingsPathMap.put(
                 AutoConfigConstants.PROFILE_ACCOUNT_SETTINGS, new String[] {"Profiles & accounts"});
         mSettingsPathMap.put(AutoConfigConstants.SYSTEM_SETTINGS, new String[] {"System"});
@@ -279,8 +275,14 @@ public class AutoSettingsConfigUtility implements IAutoConfigUtility {
                 AutoConfigConstants.SEARCH_RESULTS,
                 new AutoConfigResource(
                         AutoConfigConstants.RESOURCE_ID,
-                        "recycler_view",
+                        "car_ui_recycler_view",
                         SETTING_INTELLIGENCE_PACKAGE));
+        fullSettingsConfiguration.addResource(
+                AutoConfigConstants.UP_BUTTON,
+                new AutoConfigResource(AutoConfigConstants.DESCRIPTION, "Scroll up"));
+        fullSettingsConfiguration.addResource(
+                AutoConfigConstants.DOWN_BUTTON,
+                new AutoConfigResource(AutoConfigConstants.DESCRIPTION, "Scroll down"));
         mSettingsConfigMap.put(AutoConfigConstants.FULL_SETTINGS, fullSettingsConfiguration);
     }
 
@@ -289,9 +291,7 @@ public class AutoSettingsConfigUtility implements IAutoConfigUtility {
         quickSettingsConfiguration.addResource(
                 AutoConfigConstants.OPEN_MORE_SETTINGS,
                 new AutoConfigResource(
-                        AutoConfigConstants.RESOURCE_ID,
-                        "toolbar_menu_item_1",
-                        SETTING_APP_PACKAGE));
+                        AutoConfigConstants.DESCRIPTION, "More", SETTING_APP_PACKAGE));
         quickSettingsConfiguration.addResource(
                 AutoConfigConstants.NIGHT_MODE,
                 new AutoConfigResource(AutoConfigConstants.TEXT, "Night mode"));
@@ -310,6 +310,9 @@ public class AutoSettingsConfigUtility implements IAutoConfigUtility {
 
     private void loadDefaultSoundSettingsConfig(Map<String, AutoConfiguration> mSettingsConfigMap) {
         AutoConfiguration soundSettingsConfiguration = new AutoConfiguration();
+        soundSettingsConfiguration.addResource(
+                AutoConfigConstants.SAVE_BUTTON,
+                new AutoConfigResource(AutoConfigConstants.DESCRIPTION, "Save"));
         mSettingsConfigMap.put(AutoConfigConstants.SOUND_SETTINGS, soundSettingsConfiguration);
     }
 
@@ -349,8 +352,8 @@ public class AutoSettingsConfigUtility implements IAutoConfigUtility {
                         "car_ui_toolbar_title",
                         PERMISSIONS_PACKAGE));
         appsAndNotificationsSettingsConfiguration.addResource(
-                AutoConfigConstants.SHOW_ALL_APPS,
-                new AutoConfigResource(AutoConfigConstants.TEXT, "Show all apps"));
+                AutoConfigConstants.VIEW_ALL,
+                new AutoConfigResource(AutoConfigConstants.TEXT_CONTAINS, "View all"));
         appsAndNotificationsSettingsConfiguration.addResource(
                 AutoConfigConstants.ENABLE_DISABLE_BUTTON,
                 new AutoConfigResource(
@@ -377,25 +380,24 @@ public class AutoSettingsConfigUtility implements IAutoConfigUtility {
                 AutoConfigConstants.ALLOW_BUTTON,
                 new AutoConfigResource(AutoConfigConstants.TEXT, "Allow"));
         appsAndNotificationsSettingsConfiguration.addResource(
-                AutoConfigConstants.DENY_BUTTON,
-                new AutoConfigResource(AutoConfigConstants.TEXT, "Deny"));
+                AutoConfigConstants.DONT_ALLOW_BUTTON,
+                new AutoConfigResource(AutoConfigConstants.TEXT, "Don’t allow"));
         appsAndNotificationsSettingsConfiguration.addResource(
-                AutoConfigConstants.DENY_ANYWAY_BUTTON,
-                new AutoConfigResource(AutoConfigConstants.TEXT, "Deny anyway"));
+                AutoConfigConstants.DONT_ALLOW_ANYWAY_BUTTON,
+                new AutoConfigResource(AutoConfigConstants.TEXT, "Don’t allow anyway"));
         mSettingsConfigMap.put(
-                AutoConfigConstants.APPS_AND_NOTIFICATIONS_SETTINGS,
-                appsAndNotificationsSettingsConfiguration);
+                AutoConfigConstants.APPS_SETTINGS, appsAndNotificationsSettingsConfiguration);
     }
 
     private void loadDefaultDateAndTimeSettingsConfig(
             Map<String, AutoConfiguration> mSettingsConfigMap) {
         AutoConfiguration dateAndTimeSettingsConfiguration = new AutoConfiguration();
         dateAndTimeSettingsConfiguration.addResource(
-                AutoConfigConstants.AUTOMATIC_DATE_AND_TIME,
-                new AutoConfigResource(AutoConfigConstants.TEXT, "Automatic date & time"));
+                AutoConfigConstants.SET_TIME_AUTOMATICALLY,
+                new AutoConfigResource(AutoConfigConstants.TEXT, "Set time automatically"));
         dateAndTimeSettingsConfiguration.addResource(
-                AutoConfigConstants.AUTOMATIC_TIME_ZONE,
-                new AutoConfigResource(AutoConfigConstants.TEXT, "Automatic time zone"));
+                AutoConfigConstants.SET_TIME_ZONE_AUTOMATICALLY,
+                new AutoConfigResource(AutoConfigConstants.TEXT, "Set time zone automatically"));
         dateAndTimeSettingsConfiguration.addResource(
                 AutoConfigConstants.SET_DATE,
                 new AutoConfigResource(AutoConfigConstants.TEXT, "Set date"));
@@ -506,10 +508,37 @@ public class AutoSettingsConfigUtility implements IAutoConfigUtility {
                 new AutoConfigResource(AutoConfigConstants.TEXT, "Done"));
         accountSettingsConfiguration.addResource(
                 AutoConfigConstants.REMOVE_BUTTON,
-                new AutoConfigResource(AutoConfigConstants.TEXT, "Remove"));
+                new AutoConfigResource(
+                        AutoConfigConstants.RESOURCE_ID,
+                        "car_ui_secondary_action",
+                        SETTING_APP_PACKAGE));
         accountSettingsConfiguration.addResource(
                 AutoConfigConstants.REMOVE_ACCOUNT_BUTTON,
                 new AutoConfigResource(AutoConfigConstants.TEXT, "Remove Account"));
+        accountSettingsConfiguration.addResource(
+                AutoConfigConstants.MANAGE_OTHER_PROFILES,
+                new AutoConfigResource(AutoConfigConstants.TEXT, "Manage other profiles"));
+        accountSettingsConfiguration.addResource(
+                AutoConfigConstants.ADD_PROFILE,
+                new AutoConfigResource(AutoConfigConstants.TEXT, "Add.*profile"));
+        accountSettingsConfiguration.addResource(
+                AutoConfigConstants.OK, new AutoConfigResource(AutoConfigConstants.TEXT, "OK"));
+        accountSettingsConfiguration.addResource(
+                AutoConfigConstants.DELETE_SELF,
+                new AutoConfigResource(AutoConfigConstants.TEXT, "Delete this profile"));
+        accountSettingsConfiguration.addResource(
+                AutoConfigConstants.DELETE,
+                new AutoConfigResource(AutoConfigConstants.TEXT, "Delete"));
+        accountSettingsConfiguration.addResource(
+                AutoConfigConstants.MAKE_ADMIN,
+                new AutoConfigResource(AutoConfigConstants.TEXT, "Make Admin"));
+        accountSettingsConfiguration.addResource(
+                AutoConfigConstants.MAKE_ADMIN_CONFIRM,
+                new AutoConfigResource(AutoConfigConstants.TEXT, "Yes, make admin"));
+        accountSettingsConfiguration.addResource(
+                AutoConfigConstants.TIME_PATTERN,
+                new AutoConfigResource(
+                        AutoConfigConstants.TEXT, "(1[012]|[1-9]):[0-5][0-9](\\s)?.*"));
         mSettingsConfigMap.put(
                 AutoConfigConstants.PROFILE_ACCOUNT_SETTINGS, accountSettingsConfiguration);
     }
@@ -526,6 +555,9 @@ public class AutoSettingsConfigUtility implements IAutoConfigUtility {
         securitySettingsConfiguration.addResource(
                 AutoConfigConstants.CHOOSE_LOCK_TYPE,
                 new AutoConfigResource(AutoConfigConstants.TEXT, "Choose a lock type"));
+        securitySettingsConfiguration.addResource(
+                AutoConfigConstants.PROFILE_LOCK,
+                new AutoConfigResource(AutoConfigConstants.TEXT, "Profile lock"));
         securitySettingsConfiguration.addResource(
                 AutoConfigConstants.LOCK_TYPE_PASSWORD,
                 new AutoConfigResource(AutoConfigConstants.TEXT, "Password"));
@@ -548,6 +580,46 @@ public class AutoSettingsConfigUtility implements IAutoConfigUtility {
                 AutoConfigConstants.PIN_PAD,
                 new AutoConfigResource(
                         AutoConfigConstants.RESOURCE_ID, "pin_pad", SETTING_APP_PACKAGE));
+        securitySettingsConfiguration.addResource(
+                AutoConfigConstants.DIGIT_ZERO,
+                new AutoConfigResource(
+                        AutoConfigConstants.RESOURCE_ID, "key0", SETTING_APP_PACKAGE));
+        securitySettingsConfiguration.addResource(
+                AutoConfigConstants.DIGIT_ONE,
+                new AutoConfigResource(
+                        AutoConfigConstants.RESOURCE_ID, "key1", SETTING_APP_PACKAGE));
+        securitySettingsConfiguration.addResource(
+                AutoConfigConstants.DIGIT_TWO,
+                new AutoConfigResource(
+                        AutoConfigConstants.RESOURCE_ID, "key2", SETTING_APP_PACKAGE));
+        securitySettingsConfiguration.addResource(
+                AutoConfigConstants.DIGIT_THREE,
+                new AutoConfigResource(
+                        AutoConfigConstants.RESOURCE_ID, "key3", SETTING_APP_PACKAGE));
+        securitySettingsConfiguration.addResource(
+                AutoConfigConstants.DIGIT_FOUR,
+                new AutoConfigResource(
+                        AutoConfigConstants.RESOURCE_ID, "key4", SETTING_APP_PACKAGE));
+        securitySettingsConfiguration.addResource(
+                AutoConfigConstants.DIGIT_FIVE,
+                new AutoConfigResource(
+                        AutoConfigConstants.RESOURCE_ID, "key5", SETTING_APP_PACKAGE));
+        securitySettingsConfiguration.addResource(
+                AutoConfigConstants.DIGIT_SIX,
+                new AutoConfigResource(
+                        AutoConfigConstants.RESOURCE_ID, "key6", SETTING_APP_PACKAGE));
+        securitySettingsConfiguration.addResource(
+                AutoConfigConstants.DIGIT_SEVEN,
+                new AutoConfigResource(
+                        AutoConfigConstants.RESOURCE_ID, "key7", SETTING_APP_PACKAGE));
+        securitySettingsConfiguration.addResource(
+                AutoConfigConstants.DIGIT_EIGHT,
+                new AutoConfigResource(
+                        AutoConfigConstants.RESOURCE_ID, "key8", SETTING_APP_PACKAGE));
+        securitySettingsConfiguration.addResource(
+                AutoConfigConstants.DIGIT_NINE,
+                new AutoConfigResource(
+                        AutoConfigConstants.RESOURCE_ID, "key9", SETTING_APP_PACKAGE));
         securitySettingsConfiguration.addResource(
                 AutoConfigConstants.ENTER_PIN_BUTTON,
                 new AutoConfigResource(

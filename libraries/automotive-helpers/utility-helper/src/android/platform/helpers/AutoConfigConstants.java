@@ -21,6 +21,7 @@ public class AutoConfigConstants {
     // Resource Types
     public static final String RESOURCE_ID = "RESOURCE_ID";
     public static final String TEXT = "TEXT";
+    public static final String TEXT_CONTAINS = "TEXT_CONTAINS";
     public static final String DESCRIPTION = "DESCRIPTION";
     public static final String CLASS = "CLASS";
 
@@ -61,6 +62,8 @@ public class AutoConfigConstants {
     public static final String SEARCH = "SEARCH";
     public static final String SEARCH_BOX = "SEARCH_BOX";
     public static final String SEARCH_RESULTS = "SEARCH_RESULTS";
+    public static final String UP_BUTTON = "UP_BUTTON";
+    public static final String DOWN_BUTTON = "DOWN_BUTTON";
     // Quick Settings
     public static final String QUICK_SETTINGS = "QUICK_SETTINGS";
     public static final String OPEN_MORE_SETTINGS = "OPEN_MORE_SETTINGS";
@@ -70,6 +73,7 @@ public class AutoConfigConstants {
     public static final String BRIGHTNESS_LEVEL = "BRIGHTNESS_LEVEL";
     // Sound
     public static final String SOUND_SETTINGS = "SOUND";
+    public static final String SAVE_BUTTON = "SAVE";
     // Network and Internet
     public static final String NETWORK_AND_INTERNET_SETTINGS = "NETWORK_AND_INTERNET";
     public static final String TOGGLE_WIFI = "TOGGLE_WIFI";
@@ -77,10 +81,10 @@ public class AutoConfigConstants {
     // Bluetooth
     public static final String BLUETOOTH_SETTINGS = "BLUETOOTH";
     public static final String TOGGLE_BLUETOOTH = "TOGGLE_BLUETOOTH";
-    // Apps and Notification
-    public static final String APPS_AND_NOTIFICATIONS_SETTINGS = "APPS_AND_NOTIFICATIONS";
+    // Apps
+    public static final String APPS_SETTINGS = "APPS";
     public static final String PERMISSIONS_PAGE_TITLE = "PERMISSIONS_PAGE_TITLE";
-    public static final String SHOW_ALL_APPS = "SHOW_ALL_APPS";
+    public static final String VIEW_ALL = "VIEW_ALL";
     public static final String ENABLE_DISABLE_BUTTON = "ENABLE_DISABLE_BUTTON";
     public static final String DISABLE_BUTTON_TEXT = "DISABLE_BUTTON_TEXT";
     public static final String ENABLE_BUTTON_TEXT = "ENABLE_BUTTON_TEXT";
@@ -89,12 +93,12 @@ public class AutoConfigConstants {
     public static final String OK_BUTTON = "OK_BUTTON";
     public static final String PERMISSIONS_MENU = "PERMISSIONS_MENU";
     public static final String ALLOW_BUTTON = "ALLOW_BUTTON";
-    public static final String DENY_BUTTON = "DENY_BUTTON";
-    public static final String DENY_ANYWAY_BUTTON = "DENY_ANYWAY_BUTTON";
+    public static final String DONT_ALLOW_BUTTON = "DONT_ALLOW_BUTTON";
+    public static final String DONT_ALLOW_ANYWAY_BUTTON = "DONT_ALLOW_ANYWAY_BUTTON";
     // Date and Time
     public static final String DATE_AND_TIME_SETTINGS = "DATE_AND_TIME";
-    public static final String AUTOMATIC_DATE_AND_TIME = "AUTOMATIC_DATE_AND_TIME";
-    public static final String AUTOMATIC_TIME_ZONE = "AUTOMATIC_TIME_ZONE";
+    public static final String SET_TIME_AUTOMATICALLY = "SET_TIME_AUTOMATICALLY";
+    public static final String SET_TIME_ZONE_AUTOMATICALLY = "SET_TIME_ZONE_AUTOMATICALLY";
     public static final String SET_DATE = "SET_DATE";
     public static final String SET_TIME = "SET_TIME";
     public static final String SELECT_TIME_ZONE = "SELECT_TIME_ZONE";
@@ -121,6 +125,16 @@ public class AutoConfigConstants {
     public static final String LANGUAGES_MENU_IN_SELECTED_LANGUAGE =
             "LANGUAGES_MENU_IN_SELECTED_LANGUAGE";
 
+    // MU profiles
+    public static final String MANAGE_OTHER_PROFILES = "MANAGE_OTHER_PROFILES";
+    public static final String ADD_PROFILE = "ADD_PROFILE";
+    public static final String OK = "OK";
+    public static final String DELETE_SELF = "DELETE_SELF";
+    public static final String DELETE = "DELETE";
+    public static final String MAKE_ADMIN = "MAKE_ADMIN";
+    public static final String MAKE_ADMIN_CONFIRM = "MAKE_ADMIN_CONFIRM";
+    public static final String TIME_PATTERN = "TIME_PATTERN";
+
     // Accounts
     public static final String PROFILE_ACCOUNT_SETTINGS = "PROFILES_ACCOUNTS";
     public static final String ADD_ACCOUNT = "ADD_ACCOUNT";
@@ -140,6 +154,7 @@ public class AutoConfigConstants {
     public static final String SECURITY_SETTINGS = "SECURITY";
     public static final String TITLE = "TITLE";
     public static final String CHOOSE_LOCK_TYPE = "CHOOSE_LOCK_TYPE";
+    public static final String PROFILE_LOCK = "PROFILE_LOCK";
     public static final String LOCK_TYPE_PASSWORD = "LOCK_TYPE_PASSWORD";
     public static final String LOCK_TYPE_PIN = "LOCK_TYPE_PIN";
     public static final String LOCK_TYPE_NONE = "LOCK_TYPE_NONE";
@@ -159,6 +174,7 @@ public class AutoConfigConstants {
     public static final String IN_CALL_VIEW = "IN_CALL_VIEW";
     public static final String DIALED_CONTACT_TITLE = "DIALED_CONTACT_TITLE";
     public static final String DIALED_CONTACT_NUMBER = "DIALED_CONTACT_NUMBER";
+    public static final String DIALED_CONTACT_TYPE = "DIALED_CONTACT_TYPE";
     public static final String END_CALL = "END_CALL";
     public static final String MUTE_CALL = "MUTE_CALL";
     public static final String SWITCH_TO_DIAL_PAD = "SWITCH_TO_DIAL_PAD";
@@ -172,6 +188,17 @@ public class AutoConfigConstants {
     public static final String DIALED_NUMBER = "DIALED_NUMBER";
     public static final String MAKE_CALL = "MAKE_CALL";
     public static final String DELETE_NUMBER = "DELETE_NUMBER";
+    // Digit Constants Reused for Security PIN
+    public static final String DIGIT_ZERO = "0";
+    public static final String DIGIT_ONE = "1";
+    public static final String DIGIT_TWO = "2";
+    public static final String DIGIT_THREE = "3";
+    public static final String DIGIT_FOUR = "4";
+    public static final String DIGIT_FIVE = "5";
+    public static final String DIGIT_SIX = "6";
+    public static final String DIGIT_SEVEN = "7";
+    public static final String DIGIT_EIGHT = "8";
+    public static final String DIGIT_NINE = "9";
     // Contacts Screen
     public static final String CONTACTS_VIEW = "CONTACTS_VIEW";
     public static final String CONTACTS_MENU = "CONTACTS_MENU";
@@ -220,6 +247,7 @@ public class AutoConfigConstants {
     // Media Center Screen
     public static final String MEDIA_CENTER_SCREEN = "MEDIA_CENTER_SCREEN";
     public static final String PLAY_PAUSE_BUTTON = "PLAY_PAUSE_BUTTON";
+    public static final String MEDIA_SONGS_LIST = "MEDIA_SONGS_LIST";
     // NEXT_BUTTON from Account Settings
     public static final String PREVIOUS_BUTTON = "PREVIOUS_BUTTON";
     public static final String SHUFFLE_BUTTON = "SHUFFLE_BUTTON";
@@ -230,4 +258,22 @@ public class AutoConfigConstants {
     public static final String BACK_BUTTON = "BACK_BUTTON";
     // Media Center On Home Screen
     public static final String MEDIA_CENTER_ON_HOME_SCREEN = "MEDIA_CENTER_ON_HOME_SCREEN";
+    // Media Apps Grid
+    public static final String MEDIA_APPS_GRID = "MEDIA_APPS_GRID";
+    public static final String MEDIA_APPS_GRID_TITLE = "MEDIA_APPS";
+    public static final String MEDIA_APPS_GRID_APP_NAME = "MEDIA_APP_NAME";
+    // Media App UI View
+    public static final String MEDIA_APP = "MEDIA_APP";
+    public static final String MEDIA_APP_TITLE = "MEDIA_APP_TITLE";
+    public static final String MEDIA_APP_DROP_DOWN_MENU = "MEDIA_APP_DROP_DOWN_MENU";
+    public static final String MEDIA_APP_NAVIGATION_ICON = "MEDIA_APP_NAVIGATION_ICON";
+    public static final String MEDIA_APP_NO_LOGIN_MSG = "MEDIA_APP_NO_LOGIN_MSG";
+    // Test Media App
+    public static final String TEST_MEDIA_APP = "TEST_MEDIA_APP";
+    public static final String TEST_MEDIA_ACCOUNT_TYPE = "TEST_MEDIA_ACCOUNT_TYPE";
+    public static final String TEST_MEDIA_ACCOUNT_TYPE_PAID = "TEST_MEDIA_ACCOUNT_TYPE_PAID";
+    public static final String TEST_MEDIA_ROOT_NODE_TYPE = "TEST_MEDIA_ROOT_NODE_TYPE";
+    public static final String TEST_MEDIA_ROOT_NODE_TYPE_BROWSABLE =
+            "TEST_MEDIA_ROOT_NODE_TYPE_BROWSABLE";
+    public static final String TEST_MEDIA_APP_CLOSE_SETTING = "TEST_MEDIA_APP_CLOSE_SETTING";
 }

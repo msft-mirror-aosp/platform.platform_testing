@@ -30,7 +30,6 @@ import android.platform.helpers.HelperAccessor;
 import androidx.test.runner.AndroidJUnit4;
 
 import org.junit.After;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -51,11 +50,6 @@ public class SettingTest {
         AutoUtility.exitSuw();
     }
 
-    @Before
-    public void closeSettingsApplicationIfOpen() {
-        mSettingHelper.get().stopSettingsApplication();
-    }
-
     @After
     public void goBackToSettingsScreen() {
         mSettingHelper.get().goBackToSettingsScreen();
@@ -73,13 +67,8 @@ public class SettingTest {
 
     @Test
     public void testAppinfoSettings() {
-        mSettingHelper.get().openSetting(AutoConfigConstants.APPS_AND_NOTIFICATIONS_SETTINGS);
+        mSettingHelper.get().openSetting(AutoConfigConstants.APPS_SETTINGS);
         mAppInfoSettingsHelper.get().showAllApps();
-    }
-
-    @Test
-    public void testDateTimeSettings() {
-        mSettingHelper.get().openSetting(AutoConfigConstants.DATE_AND_TIME_SETTINGS);
     }
 
     @Test

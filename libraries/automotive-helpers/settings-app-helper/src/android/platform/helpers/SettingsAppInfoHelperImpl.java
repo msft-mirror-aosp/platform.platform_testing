@@ -25,7 +25,6 @@ import android.support.test.uiautomator.By;
 import android.support.test.uiautomator.BySelector;
 import android.support.test.uiautomator.UiObject2;
 
-
 public class SettingsAppInfoHelperImpl extends AbstractAutoStandardAppHelper
         implements IAutoAppInfoSettingsHelper {
     public SettingsAppInfoHelperImpl(Instrumentation instr) {
@@ -58,8 +57,8 @@ public class SettingsAppInfoHelperImpl extends AbstractAutoStandardAppHelper
                         .hasDescendant(
                                 getResourceFromConfig(
                                         AutoConfigConstants.SETTINGS,
-                                        AutoConfigConstants.APPS_AND_NOTIFICATIONS_SETTINGS,
-                                        AutoConfigConstants.SHOW_ALL_APPS));
+                                        AutoConfigConstants.APPS_SETTINGS,
+                                        AutoConfigConstants.VIEW_ALL));
         UiObject2 show_all_apps_menu = scrollAndFindUiObject(selector, getScrollScreenIndex());
         clickAndWaitForWindowUpdate(
                 getApplicationConfig(AutoConfigConstants.SETTINGS_PACKAGE), show_all_apps_menu);
@@ -71,7 +70,7 @@ public class SettingsAppInfoHelperImpl extends AbstractAutoStandardAppHelper
         BySelector enableDisableBtnSelector =
                 getResourceFromConfig(
                         AutoConfigConstants.SETTINGS,
-                        AutoConfigConstants.APPS_AND_NOTIFICATIONS_SETTINGS,
+                        AutoConfigConstants.APPS_SETTINGS,
                         AutoConfigConstants.ENABLE_DISABLE_BUTTON);
         UiObject2 enableDisableBtn =
                 scrollAndFindUiObject(enableDisableBtnSelector, getScrollScreenIndex());
@@ -87,14 +86,13 @@ public class SettingsAppInfoHelperImpl extends AbstractAutoStandardAppHelper
                                     "(?i)"
                                             + getResourceValue(
                                                     AutoConfigConstants.SETTINGS,
-                                                    AutoConfigConstants
-                                                            .APPS_AND_NOTIFICATIONS_SETTINGS,
+                                                    AutoConfigConstants.APPS_SETTINGS,
                                                     AutoConfigConstants.DISABLE_BUTTON_TEXT)));
         } else {
             BySelector disableAppBtnSelector =
                     getResourceFromConfig(
                             AutoConfigConstants.SETTINGS,
-                            AutoConfigConstants.APPS_AND_NOTIFICATIONS_SETTINGS,
+                            AutoConfigConstants.APPS_SETTINGS,
                             AutoConfigConstants.DISABLE_APP_BUTTON);
             UiObject2 disableAppBtn =
                     scrollAndFindUiObject(disableAppBtnSelector, getScrollScreenIndex());
@@ -108,8 +106,7 @@ public class SettingsAppInfoHelperImpl extends AbstractAutoStandardAppHelper
                                     "(?i)"
                                             + getResourceValue(
                                                     AutoConfigConstants.SETTINGS,
-                                                    AutoConfigConstants
-                                                            .APPS_AND_NOTIFICATIONS_SETTINGS,
+                                                    AutoConfigConstants.APPS_SETTINGS,
                                                     AutoConfigConstants.ENABLE_BUTTON_TEXT)));
         }
     }
@@ -136,7 +133,7 @@ public class SettingsAppInfoHelperImpl extends AbstractAutoStandardAppHelper
         BySelector okBtnSelector =
                 getResourceFromConfig(
                         AutoConfigConstants.SETTINGS,
-                        AutoConfigConstants.APPS_AND_NOTIFICATIONS_SETTINGS,
+                        AutoConfigConstants.APPS_SETTINGS,
                         AutoConfigConstants.OK_BUTTON);
         UiObject2 okBtn = findUiObject(okBtnSelector);
         clickAndWaitForWindowUpdate(
@@ -149,7 +146,7 @@ public class SettingsAppInfoHelperImpl extends AbstractAutoStandardAppHelper
         BySelector permissions_selector =
                 getResourceFromConfig(
                         AutoConfigConstants.SETTINGS,
-                        AutoConfigConstants.APPS_AND_NOTIFICATIONS_SETTINGS,
+                        AutoConfigConstants.APPS_SETTINGS,
                         AutoConfigConstants.PERMISSIONS_MENU);
         UiObject2 permissions_menu =
                 scrollAndFindUiObject(permissions_selector, getScrollScreenIndex());
@@ -165,27 +162,28 @@ public class SettingsAppInfoHelperImpl extends AbstractAutoStandardAppHelper
                     scrollAndFindUiObject(
                             getResourceFromConfig(
                                     AutoConfigConstants.SETTINGS,
-                                    AutoConfigConstants.APPS_AND_NOTIFICATIONS_SETTINGS,
+                                    AutoConfigConstants.APPS_SETTINGS,
                                     AutoConfigConstants.ALLOW_BUTTON));
             clickAndWaitForWindowUpdate(
                     getApplicationConfig(AutoConfigConstants.SETTINGS_PACKAGE), allow_btn);
         } else {
-            UiObject2 deny_btn =
+            UiObject2 dont_allow_btn =
                     scrollAndFindUiObject(
                             getResourceFromConfig(
                                     AutoConfigConstants.SETTINGS,
-                                    AutoConfigConstants.APPS_AND_NOTIFICATIONS_SETTINGS,
-                                    AutoConfigConstants.DENY_BUTTON));
+                                    AutoConfigConstants.APPS_SETTINGS,
+                                    AutoConfigConstants.DONT_ALLOW_BUTTON));
             clickAndWaitForWindowUpdate(
-                    getApplicationConfig(AutoConfigConstants.SETTINGS_PACKAGE), deny_btn);
-            UiObject2 deny_anyway_btn =
+                    getApplicationConfig(AutoConfigConstants.SETTINGS_PACKAGE), dont_allow_btn);
+            UiObject2 dont_allow_anyway_btn =
                     scrollAndFindUiObject(
                             getResourceFromConfig(
                                     AutoConfigConstants.SETTINGS,
-                                    AutoConfigConstants.APPS_AND_NOTIFICATIONS_SETTINGS,
-                                    AutoConfigConstants.DENY_ANYWAY_BUTTON));
+                                    AutoConfigConstants.APPS_SETTINGS,
+                                    AutoConfigConstants.DONT_ALLOW_ANYWAY_BUTTON));
             clickAndWaitForWindowUpdate(
-                    getApplicationConfig(AutoConfigConstants.SETTINGS_PACKAGE), deny_anyway_btn);
+                    getApplicationConfig(AutoConfigConstants.SETTINGS_PACKAGE),
+                    dont_allow_anyway_btn);
         }
         pressBack();
         pressBack();
@@ -197,7 +195,7 @@ public class SettingsAppInfoHelperImpl extends AbstractAutoStandardAppHelper
         BySelector permissions_selector =
                 getResourceFromConfig(
                         AutoConfigConstants.SETTINGS,
-                        AutoConfigConstants.APPS_AND_NOTIFICATIONS_SETTINGS,
+                        AutoConfigConstants.APPS_SETTINGS,
                         AutoConfigConstants.PERMISSIONS_MENU);
         UiObject2 permission_menu =
                 scrollAndFindUiObject(permissions_selector, getScrollScreenIndex());
@@ -221,7 +219,7 @@ public class SettingsAppInfoHelperImpl extends AbstractAutoStandardAppHelper
         BySelector forceStopSelector =
                 getResourceFromConfig(
                         AutoConfigConstants.SETTINGS,
-                        AutoConfigConstants.APPS_AND_NOTIFICATIONS_SETTINGS,
+                        AutoConfigConstants.APPS_SETTINGS,
                         AutoConfigConstants.FORCE_STOP_BUTTON);
         UiObject2 forceStopButton =
                 scrollAndFindUiObject(forceStopSelector, getScrollScreenIndex());
