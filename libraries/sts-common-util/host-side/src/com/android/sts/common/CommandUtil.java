@@ -28,7 +28,7 @@ public final class CommandUtil {
     private CommandUtil() {}
 
     /**
-     * Execute shell command on device, throws AssertionError upon failure.
+     * Execute shell command on device, throws AssertionError if command does not return 0.
      *
      * @param device the device to use
      * @param cmd the command to run
@@ -36,7 +36,27 @@ public final class CommandUtil {
      */
     public static CommandResult runAndCheck(ITestDevice device, String cmd)
             throws DeviceNotAvailableException {
-        CommandResult res = device.executeShellV2Command(cmd);
+        return runAndCheck(device, cmd, 0);
+    }
+
+    /**
+     * Execute shell command on device, throws AssertionError if command does not return 0.
+     *
+     * @param device the device to use
+     * @param cmd the command to run
+     * @param retries the number of retries to attempt
+     * @return the result of device.executeShellV2Command
+     */
+    public static CommandResult runAndCheck(ITestDevice device, String cmd, int retries)
+            throws DeviceNotAvailableException {
+        int attempt = 0;
+        CommandResult res;
+
+        do {
+            attempt += 1;
+            res = device.executeShellV2Command(cmd);
+        } while (res.getStatus() != CommandStatus.SUCCESS && attempt <= retries);
+
         String failMsg =
                 String.format(
                         "cmd failed: %s\ncode: %s\nstdout:\n%s\nstderr:\n%s",
