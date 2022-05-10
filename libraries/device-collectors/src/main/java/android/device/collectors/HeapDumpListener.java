@@ -124,11 +124,19 @@ public class HeapDumpListener extends BaseCollectionListener<String> {
 
     /**
      * Returns the packagename.classname_methodname which has no spaces and used to create file
-     * names.
+     * names. If class name or method name is null then return the heapdump.
      */
     public static String getTestFileName(Description description) {
-        return String.format(FILE_NAME_PREFIX_FORMAT,
-                description.getClassName().replaceAll(SPACES_PATTERN, REPLACEMENT_CHAR).trim(),
-                description.getMethodName().replaceAll(SPACES_PATTERN, REPLACEMENT_CHAR).trim());
+        if (description.getClassName() != null && !description.getClassName().isEmpty()
+                && description.getMethodName() != null
+                && !description.getMethodName().isEmpty()) {
+            String[] className = description.getClassName().split("\\$");
+            return String.format(FILE_NAME_PREFIX_FORMAT,
+                    className[0].replaceAll(SPACES_PATTERN, REPLACEMENT_CHAR).trim(),
+                    description.getMethodName().replaceAll(SPACES_PATTERN, REPLACEMENT_CHAR)
+                            .trim());
+        } else {
+            return "heapdump";
+        }
     }
 }
