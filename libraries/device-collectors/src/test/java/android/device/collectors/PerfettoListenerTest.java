@@ -22,6 +22,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
@@ -129,7 +130,9 @@ public class PerfettoListenerTest {
         mListener.testStarted(mTest1Desc);
         verify(mPerfettoHelper, times(1)).startCollecting(anyString(), anyBoolean());
         mListener.onTestEnd(mDataRecord, mTest1Desc);
-        verify(mPerfettoHelper, times(1)).stopCollecting(anyLong(), anyString());
+        verify(mPerfettoHelper, times(1)).stopCollecting(anyLong(), eq(
+                "/sdcard/test_results/run_test1/PerfettoListener_1_Proxy/"
+                + "perfetto_run_test1-1.pb"));
 
     }
 
@@ -512,6 +515,32 @@ public class PerfettoListenerTest {
         verify(mPerfettoHelper, times(1)).startCollecting(anyString(), anyBoolean());
         mListener.onTestEnd(mDataRecord, mTest1Desc);
         verify(mPerfettoHelper, times(1)).stopCollecting(anyLong(), anyString());
+
+    }
+
+    /*
+     * Verify spaces in the test description are replaced with special character. Test description
+     * is used for creating the perfetto file, if the spaces are not replaced then tradefed content
+     * provider will throw an error for the files with spaces.
+     */
+    @Test
+    public void testPerfettoTestNameWithSpaces() throws Exception {
+        Bundle b = new Bundle();
+        mListener = initListener(b);
+        doReturn(true).when(mPerfettoHelper).startCollecting(anyString(), anyBoolean());
+        doReturn(true).when(mPerfettoHelper).stopCollecting(anyLong(), anyString());
+        // Test run start behavior
+        mListener.testRunStarted(mRunDesc);
+
+        Description mTest1DescWithSpaces = Description.createTestDescription("run  123",
+                "test1 456");
+        // Test test start behavior
+        mListener.testStarted(mTest1DescWithSpaces);
+        verify(mPerfettoHelper, times(1)).startCollecting(anyString(), anyBoolean());
+        mListener.onTestEnd(mDataRecord, mTest1DescWithSpaces);
+        verify(mPerfettoHelper, times(1)).stopCollecting(anyLong(), eq(
+                "/sdcard/test_results/run#123_test1#456/PerfettoListener_1_Proxy/"
+                + "perfetto_run#123_test1#456-1.pb"));
 
     }
 
