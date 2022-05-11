@@ -17,6 +17,8 @@
 package com.android.server.wm.traces.parser.layers
 
 import android.surfaceflinger.nano.Layers
+import android.surfaceflinger.nano.Common.TransformProto
+import com.android.server.wm.traces.common.Matrix33
 import com.android.server.wm.traces.common.layers.Transform
 import com.android.server.wm.traces.common.layers.Transform.Companion.FLIP_H_VAL
 import com.android.server.wm.traces.common.layers.Transform.Companion.FLIP_V_VAL
@@ -26,14 +28,14 @@ import com.android.server.wm.traces.common.layers.Transform.Companion.SCALE_VAL
 import com.android.server.wm.traces.common.layers.Transform.Companion.isFlagClear
 import com.android.server.wm.traces.common.layers.Transform.Companion.isFlagSet
 
-class Transform(transform: Layers.TransformProto?, position: Layers.PositionProto?) :
+class Transform(transform: TransformProto?, position: Layers.PositionProto?) :
         Transform(
             transform?.type,
             getMatrix(transform, position)
         )
 
-private fun getMatrix(transform: Layers.TransformProto?, position: Layers.PositionProto?):
-        Transform.Matrix {
+private fun getMatrix(transform: TransformProto?, position: Layers.PositionProto?):
+        Matrix33 {
     val x = position?.x ?: 0f
     val y = position?.y ?: 0f
 
@@ -41,27 +43,27 @@ private fun getMatrix(transform: Layers.TransformProto?, position: Layers.Positi
         transform == null || Transform.isSimpleTransform(transform.type) ->
             transform?.type.getDefaultTransform(x, y)
         else ->
-            Transform.Matrix(transform.dsdx, transform.dtdx, x, transform.dsdy, transform.dtdy, y)
+            Matrix33(transform.dsdx, transform.dtdx, x, transform.dsdy, transform.dtdy, y)
     }
 }
 
-private fun Int?.getDefaultTransform(x: Float, y: Float): Transform.Matrix {
+private fun Int?.getDefaultTransform(x: Float, y: Float): Matrix33 {
     return when {
         // IDENTITY
         this == null ->
-            Transform.Matrix(1f, 0f, x, 0f, 1f, y)
+            Matrix33(1f, 0f, x, 0f, 1f, y)
         // // ROT_270 = ROT_90|FLIP_H|FLIP_V
         isFlagSet(ROT_90_VAL or FLIP_V_VAL or FLIP_H_VAL) ->
-            Transform.Matrix(0f, -1f, x, 1f, 0f, y)
+            Matrix33(0f, -1f, x, 1f, 0f, y)
         // ROT_180 = FLIP_H|FLIP_V
         isFlagSet(FLIP_V_VAL or FLIP_H_VAL) ->
-            Transform.Matrix(-1f, 0f, x, 0f, -1f, y)
+            Matrix33(-1f, 0f, x, 0f, -1f, y)
         // ROT_90
         isFlagSet(ROT_90_VAL) ->
-            Transform.Matrix(0f, 1f, x, -1f, 0f, y)
+            Matrix33(0f, 1f, x, -1f, 0f, y)
         // IDENTITY
         isFlagClear(SCALE_VAL or ROTATE_VAL) ->
-            Transform.Matrix(1f, 0f, x, 0f, 1f, y)
+            Matrix33(1f, 0f, x, 0f, 1f, y)
         else ->
             throw IllegalStateException("Unknown transform type $this")
     }
