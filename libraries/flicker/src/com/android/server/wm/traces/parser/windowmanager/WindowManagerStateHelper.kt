@@ -365,9 +365,6 @@ open class WindowManagerStateHelper @JvmOverloads constructor(
         ): Boolean {
             return when (requestedWindowingMode) {
                 WindowConfiguration.WINDOWING_MODE_UNDEFINED -> true
-                WindowConfiguration.WINDOWING_MODE_SPLIT_SCREEN_SECONDARY ->
-                    (windowingMode == WindowConfiguration.WINDOWING_MODE_FULLSCREEN ||
-                        windowingMode == WindowConfiguration.WINDOWING_MODE_SPLIT_SCREEN_SECONDARY)
                 else -> windowingMode == requestedWindowingMode
             }
         }
