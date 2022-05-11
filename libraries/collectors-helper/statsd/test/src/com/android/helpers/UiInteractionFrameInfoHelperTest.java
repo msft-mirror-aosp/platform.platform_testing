@@ -17,6 +17,7 @@ package com.android.helpers;
 
 import static org.junit.Assert.assertTrue;
 
+import android.app.Application;
 import android.os.SystemClock;
 import android.platform.helpers.HelperAccessor;
 import android.platform.helpers.INotificationHelper;
@@ -73,26 +74,25 @@ public class UiInteractionFrameInfoHelperTest {
         assertTrue(mInteractionFrameHelper.startCollecting());
         final HelperAccessor<INotificationHelper> notificationHelper =
                 new HelperAccessor<>(INotificationHelper.class);
+        notificationHelper.get().setAppName(Application.getProcessName());
 
         // The CUJ
-        UiObject2 notification = notificationHelper.get().postBigTextNotification(null /* pkg */);
         notificationHelper.get().open();
-        notification.click(3000);
-        notificationHelper.get().hideGuts(notification);
+        UiObject2 notification = notificationHelper.get().postBigTextNotification(null /* pkg */);
         notificationHelper.get().cancelNotifications();
         notificationHelper.get().exit();
 
         // Checking metrics produced by the CUJ.
         final Map<String, StringBuilder> frameMetrics = mInteractionFrameHelper.getMetrics();
         assertTrue(
-                "No metric missed_frames_cuj_SHADE_SCROLL_FLING missing",
-                frameMetrics.containsKey("cuj_SHADE_SCROLL_FLING_missed_frames"));
+                "No metric cuj_NOTIFICATION_ADD_missed_frames",
+                frameMetrics.containsKey("cuj_NOTIFICATION_ADD_missed_frames"));
         assertTrue(
-                "No metric total_frames_cuj_SHADE_SCROLL_FLING",
-                frameMetrics.containsKey("cuj_SHADE_SCROLL_FLING_total_frames"));
+                "No metric cuj_NOTIFICATION_ADD_total_frames",
+                frameMetrics.containsKey("cuj_NOTIFICATION_ADD_total_frames"));
         assertTrue(
-                "No metric max_frame_time_nanos_cuj_SHADE_SCROLL_FLING",
-                frameMetrics.containsKey("cuj_SHADE_SCROLL_FLING_max_frame_time_ms"));
+                "No metric cuj_NOTIFICATION_ADD_max_frame_time_ms",
+                frameMetrics.containsKey("cuj_NOTIFICATION_ADD_max_frame_time_ms"));
 
         assertTrue(mInteractionFrameHelper.stopCollecting());
         HelperTestUtility.sendKeyCode(KEYCODE_HOME);

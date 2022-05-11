@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package android.platform.scenario.settings;
+package android.platform.test.scenario.settings;
 
 import android.platform.helpers.HelperAccessor;
 import android.platform.helpers.IAutoSettingHelper;
@@ -33,7 +33,7 @@ public class ScrollInApp {
 
     @Test
     public void testScrollDownAndUp() {
-        sHelper.get().scrollDownOnePage(500);
-        sHelper.get().scrollUpOnePage(500);
+        sHelper.get().scrollDownOnePage();
+        sHelper.get().scrollUpOnePage();
     }
 }

@@ -46,6 +46,8 @@ public class PerfettoListener extends BaseMetricListener {
 
     // Default perfetto config file name.
     private static final String DEFAULT_CONFIG_FILE = "trace_config.pb";
+    // Default perfetto config file name when text proto config is used.
+    private static final String DEFAULT_TEXT_CONFIG_FILE = "trace_config.textproto";
     // Default wait time before stopping the perfetto trace.
     private static final String DEFAULT_WAIT_TIME_MSECS = "3000";
     // Option to pass the folder name which contains the perfetto trace config file.
@@ -76,6 +78,10 @@ public class PerfettoListener extends BaseMetricListener {
     public static final String PERFETTO_START_WAIT_TIME_ARG = "perfetto_start_wait_time_ms";
     // Default wait time before starting the perfetto trace.
     public static final String DEFAULT_START_WAIT_TIME_MSECS = "3000";
+    // Regular expression pattern to identify multiple spaces.
+    public static final String SPACES_PATTERN = "\\s+";
+    // Space replacement value
+    public static final String REPLACEMENT_CHAR = "#";
 
     private final WakeLockContext mWakeLockContext;
     private final Supplier<WakeLock> mWakelockSupplier;
@@ -142,50 +148,6 @@ public class PerfettoListener extends BaseMetricListener {
 
     @Override
     public void onTestRunStart(DataRecord runData, Description description) {
-        Bundle args = getArgsBundle();
-
-        // Whether to collect the for the entire test run or per test.
-        mIsCollectPerRun = Boolean.parseBoolean(args.getString(COLLECT_PER_RUN));
-
-        // Root directory path containing the perfetto config file.
-        mConfigRootDir = args.getString(PERFETTO_CONFIG_ROOT_DIR_ARG,
-                DEFAULT_PERFETTO_CONFIG_ROOT_DIR);
-        if(!mConfigRootDir.endsWith("/")) {
-            mConfigRootDir = mConfigRootDir.concat("/");
-        }
-        mPerfettoHelper.setPerfettoConfigRootDir(mConfigRootDir);
-
-        // Whether the config is text proto or not. By default set to false.
-        mIsConfigTextProto = Boolean.parseBoolean(args.getString(PERFETTO_CONFIG_TEXT_PROTO));
-
-        // Perfetto config file has to be under /data/misc/perfetto-traces/
-        // defaulted to trace_config.pb is perfetto_config_file is not passed.
-        mConfigFileName = args.getString(PERFETTO_CONFIG_FILE_ARG, DEFAULT_CONFIG_FILE);
-
-
-        // Whether to hold wakelocks on all Prefetto tracing functions. You may want to enable
-        // this if your device is not USB connected. This option prevents the device from
-        // going into suspend mode while this listener is running intensive tasks.
-        mHoldWakelockWhileCollecting =
-                Boolean.parseBoolean(args.getString(HOLD_WAKELOCK_WHILE_COLLECTING));
-
-        // Wait time before stopping the perfetto trace collection after the test
-        // is completed. Defaulted to 3000 msecs if perfetto_wait_time_ms is not passed.
-        // TODO: b/118122395 for parsing failures.
-        mWaitTimeInMs =
-                Long.parseLong(args.getString(PERFETTO_WAIT_TIME_ARG, DEFAULT_WAIT_TIME_MSECS));
-
-        // TODO: b/165344369 to avoid wait time before starting the perfetto trace.
-        mWaitStartTimeInMs = Long.parseLong(
-                args.getString(PERFETTO_START_WAIT_TIME_ARG, DEFAULT_START_WAIT_TIME_MSECS));
-
-        // Destination folder in the device to save all the trace files.
-        // Defaulted to /sdcard/test_results if test_output_root is not passed.
-        mTestOutputRoot = args.getString(TEST_OUTPUT_ROOT, DEFAULT_OUTPUT_ROOT);
-
-        // By default this flag is set to false to collect the metrics on test failure.
-        mSkipTestFailureMetrics = "true".equals(args.getString(SKIP_TEST_FAILURE_METRICS));
-
         if (!mIsCollectPerRun) {
             return;
         }
@@ -322,6 +284,58 @@ public class PerfettoListener extends BaseMetricListener {
         }
     }
 
+    @Override
+    public void setupAdditionalArgs() {
+        Bundle args = getArgsBundle();
+
+        // Whether to collect the for the entire test run or per test.
+        mIsCollectPerRun = Boolean.parseBoolean(args.getString(COLLECT_PER_RUN));
+
+        // Root directory path containing the perfetto config file.
+        mConfigRootDir =
+                args.getString(PERFETTO_CONFIG_ROOT_DIR_ARG, DEFAULT_PERFETTO_CONFIG_ROOT_DIR);
+        if (!mConfigRootDir.endsWith("/")) {
+            mConfigRootDir = mConfigRootDir.concat("/");
+        }
+        mPerfettoHelper.setPerfettoConfigRootDir(mConfigRootDir);
+
+        // Whether the config is text proto or not. By default set to false.
+        mIsConfigTextProto = Boolean.parseBoolean(args.getString(PERFETTO_CONFIG_TEXT_PROTO));
+
+        // Perfetto config file has to be under /data/misc/perfetto-traces/
+        // defaulted to DEFAULT_TEXT_CONFIG_FILE or DEFAULT_CONFIG_FILE if perfetto_config_file is
+        // not passed.
+        mConfigFileName =
+                args.getString(
+                        PERFETTO_CONFIG_FILE_ARG,
+                        mIsConfigTextProto ? DEFAULT_TEXT_CONFIG_FILE : DEFAULT_CONFIG_FILE);
+
+        // Whether to hold wakelocks on all Prefetto tracing functions. You may want to enable
+        // this if your device is not USB connected. This option prevents the device from
+        // going into suspend mode while this listener is running intensive tasks.
+        mHoldWakelockWhileCollecting =
+                Boolean.parseBoolean(args.getString(HOLD_WAKELOCK_WHILE_COLLECTING));
+
+        // Wait time before stopping the perfetto trace collection after the test
+        // is completed. Defaulted to 3000 msecs if perfetto_wait_time_ms is not passed.
+        // TODO: b/118122395 for parsing failures.
+        mWaitTimeInMs =
+                Long.parseLong(args.getString(PERFETTO_WAIT_TIME_ARG, DEFAULT_WAIT_TIME_MSECS));
+
+        // TODO: b/165344369 to avoid wait time before starting the perfetto trace.
+        mWaitStartTimeInMs =
+                Long.parseLong(
+                        args.getString(
+                                PERFETTO_START_WAIT_TIME_ARG, DEFAULT_START_WAIT_TIME_MSECS));
+
+        // Destination folder in the device to save all the trace files.
+        // Defaulted to /sdcard/test_results if test_output_root is not passed.
+        mTestOutputRoot = args.getString(TEST_OUTPUT_ROOT, DEFAULT_OUTPUT_ROOT);
+
+        // By default this flag is set to false to collect the metrics on test failure.
+        mSkipTestFailureMetrics = "true".equals(args.getString(SKIP_TEST_FAILURE_METRICS));
+    }
+
     @VisibleForTesting
     void runWithWakeLock(Runnable runnable) {
         WakeLock wakelock = null;
@@ -401,10 +415,12 @@ public class PerfettoListener extends BaseMetricListener {
     }
 
     /**
-     * Returns the packagename.classname_methodname which has no special characters and used to
-     * create file names.
+     * Returns the packagename.classname_methodname which has no spaces and used to create file
+     * names.
      */
     public static String getTestFileName(Description description) {
-        return String.format("%s_%s", description.getClassName(), description.getMethodName());
+        return String.format("%s_%s",
+                description.getClassName().replaceAll(SPACES_PATTERN, REPLACEMENT_CHAR).trim(),
+                description.getMethodName().replaceAll(SPACES_PATTERN, REPLACEMENT_CHAR).trim());
     }
 }

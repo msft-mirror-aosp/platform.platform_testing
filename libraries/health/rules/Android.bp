@@ -18,18 +18,24 @@ package {
 
 java_library {
     name: "platform-test-rules",
-    sdk_version: "test_current",
     static_libs: [
         "androidx.test.runner",
         "androidx.test.uiautomator",
         "app-helpers-handheld-interfaces",
+        "collector-device-lib",
+        "collector-device-lib-platform",
         "guava",
         "memory-helper",
         "package-helper",
         "launcher-aosp-tapl",
         "flickerlib",
+        "statsd-helper",
+        "health-testing-utils",
     ],
-    srcs: ["src/**/*.java"],
+    srcs: [
+        "src/**/*.java",
+        "src/**/*.kt",
+    ],
 }
 
 java_library {
@@ -39,10 +45,14 @@ java_library {
         "androidx.test.runner",
         "androidx.test.uiautomator",
         "app-helpers-handheld-interfaces",
+        "collector-device-lib",
+        "collector-device-lib-platform",
         "guava",
         "memory-helper",
         "package-helper",
+        "statsd-helper",
         "launcher-aosp-tapl",
+        "health-testing-utils",
     ],
     srcs: ["src/**/*.java"],
     exclude_srcs: [
