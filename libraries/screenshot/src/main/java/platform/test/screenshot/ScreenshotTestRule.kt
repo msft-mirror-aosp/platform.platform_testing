@@ -61,7 +61,8 @@ internal enum class OutputFileType {
     IMAGE_ACTUAL,
     IMAGE_EXPECTED,
     IMAGE_DIFF,
-    RESULT_PROTO
+    RESULT_PROTO,
+    RESULT_BIN_PROTO
 }
 
 /**
@@ -72,26 +73,36 @@ internal enum class OutputFileType {
  * into the device to be retrieved later.
  *
  * @param config To configure where this rule should look for goldens.
+ * @param outputRootDir The root directory for output files.
  *
  * @see Bitmap.assertAgainstGolden
  */
 @SuppressLint("SyntheticAccessor")
 open class ScreenshotTestRule(
-    config: ScreenshotTestRuleConfig = ScreenshotTestRuleConfig()
+    val config: ScreenshotTestRuleConfig = ScreenshotTestRuleConfig(),
+    val outputRootDir: String? = null
 ) : TestRule {
+
+    val deviceOutputRootDirectory: File? =
+        if (outputRootDir != null) {
+            File(outputRootDir)
+        } else {
+            InstrumentationRegistry.getInstrumentation().getContext().externalCacheDir
+        }
 
     /**
      * Directory on the device that is used to store the output files.
      */
     val deviceOutputDirectory
         get() = File(
-            InstrumentationRegistry.getInstrumentation().getContext().externalCacheDir,
+            deviceOutputRootDirectory,
             "platform_screenshots"
         )
 
     private val repoRootPathForGoldens = config.repoRootPathForGoldens.trim('/')
     private val pathToGoldensInRepo = config.pathToGoldensInRepo.trim('/')
     private val imageExtension = ".png"
+    private val resultBinaryProtoFileSuffix = ".pb"
     // This is used in CI to identify the files.
     private val resultProtoFileSuffix = "goldResult.textproto"
 
@@ -140,16 +151,19 @@ open class ScreenshotTestRule(
     }
 
     private fun fetchExpectedImage(goldenIdentifier: String): Bitmap? {
-        val context = InstrumentationRegistry.getInstrumentation().targetContext.applicationContext
-
-        try {
-            context.assets.open(goldenIdentifierResolver(goldenIdentifier)).use {
-                return BitmapFactory.decodeStream(it)
+        val instrument = InstrumentationRegistry.getInstrumentation()
+        return listOf(
+                instrument.targetContext.applicationContext,
+                instrument.context
+        ).map {
+            try {
+                it.assets.open(goldenIdentifierResolver(goldenIdentifier)).use {
+                    return@use BitmapFactory.decodeStream(it)
+                }
+            } catch (e: FileNotFoundException) {
+                return@map null
             }
-        } catch (e: FileNotFoundException) {
-            // Golden not present
-            return null
-        }
+        }.filterNotNull().firstOrNull()
     }
 
     /**
@@ -293,6 +307,12 @@ open class ScreenshotTestRule(
             report.putString(bundleKeyPrefix + OutputFileType.RESULT_PROTO, it.absolutePath)
         }
 
+        writeToDevice(OutputFileType.RESULT_BIN_PROTO) {
+            it.write(resultProto.build().toByteArray())
+        }.also {
+            report.putString(bundleKeyPrefix + OutputFileType.RESULT_BIN_PROTO, it.absolutePath)
+        }
+
         InstrumentationRegistry.getInstrumentation().sendStatus(bundleStatusInProgress, report)
     }
 
@@ -302,6 +322,7 @@ open class ScreenshotTestRule(
             OutputFileType.IMAGE_EXPECTED -> "${testIdentifier}_expected$imageExtension"
             OutputFileType.IMAGE_DIFF -> "${testIdentifier}_diff$imageExtension"
             OutputFileType.RESULT_PROTO -> "${testIdentifier}_$resultProtoFileSuffix"
+            OutputFileType.RESULT_BIN_PROTO -> "${testIdentifier}_$resultBinaryProtoFileSuffix"
         }
         return File(deviceOutputDirectory, fileName)
     }
