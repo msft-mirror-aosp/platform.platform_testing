@@ -98,7 +98,7 @@ object WindowUtils {
      */
     fun getNavigationBarPosition(display: Display): Region {
         val navBarWidth = getDimensionPixelSize("navigation_bar_width")
-        val navBarHeight = navigationBarHeight
+        val navBarHeight = navigationBarFrameHeight
         val displayHeight = display.layerStackSpace.height
         val displayWidth = display.layerStackSpace.width
         val requestedRotation = display.transform.getRotation()
@@ -136,7 +136,7 @@ object WindowUtils {
             displayHeight = displayBounds.width()
         }
         val navBarWidth = getDimensionPixelSize("navigation_bar_width")
-        val navBarHeight = navigationBarHeight
+        val navBarHeight = navigationBarFrameHeight
 
         return when {
             // nav bar is at the bottom of the screen
@@ -169,15 +169,11 @@ object WindowUtils {
     }
 
     /**
-     * Gets the navigation bar height
+     * Gets the navigation bar frame height
      */
-    val navigationBarHeight: Int
+    val navigationBarFrameHeight: Int
         get() {
-            var navBarHeight = getDimensionPixelSize("navigation_bar_height")
-            if (isGesturalNavigationEnabled) {
-                navBarHeight += getDimensionPixelSize("navigation_bar_gesture_height")
-            }
-            return navBarHeight
+            return getDimensionPixelSize("navigation_bar_frame_height")
         }
 
     /**
