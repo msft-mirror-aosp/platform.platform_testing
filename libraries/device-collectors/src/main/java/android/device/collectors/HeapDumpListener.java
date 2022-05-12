@@ -67,6 +67,11 @@ public class HeapDumpListener extends BaseCollectionListener<String> {
         mIsEnabledForAll =
                 Boolean.parseBoolean(args.getString(ITERATION_ALL_ENABLE, String.valueOf(false)));
 
+        if (mIsCollectPerRun) {
+            mIsDisabled = false;
+            return;
+        }
+
         if (!mIsEnabledForAll) {
             String iterations = args.getString(ENABLE_ITERATION_IDS);
             if (iterations == null || iterations.isEmpty()) {
@@ -88,15 +93,13 @@ public class HeapDumpListener extends BaseCollectionListener<String> {
         }
 
         updateIterationCount(description);
-
         if (mIsEnabledForAll) {
             mHelper.startCollecting(true, getHeapDumpFileId(description));
+        } else if (mIsCollectPerRun || mValidIterationIds
+                .contains(mTestIterationCount.get(getTestFileName(description)))) {
+            mHelper.startCollecting(true, getHeapDumpFileId(description));
         } else {
-            if (mValidIterationIds.contains(mTestIterationCount.get(getTestFileName(description)))) {
-                mHelper.startCollecting(true, getHeapDumpFileId(description));
-            } else {
-                mHelper.startCollecting(false, null);
-            }
+            mHelper.startCollecting(false, null);
         }
     }
 
