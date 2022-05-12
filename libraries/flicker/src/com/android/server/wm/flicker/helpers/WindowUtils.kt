@@ -173,11 +173,7 @@ object WindowUtils {
      */
     val navigationBarFrameHeight: Int
         get() {
-            var navBarHeight = getDimensionPixelSize("navigation_bar_height")
-            if (isGesturalNavigationEnabled) {
-                navBarHeight = getDimensionPixelSize("navigation_bar_frame_height")
-            }
-            return navBarHeight
+            return getDimensionPixelSize("navigation_bar_frame_height")
         }
 
     /**
