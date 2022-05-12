@@ -67,10 +67,10 @@ class ScreenshotTestRuleTest {
     fun performDiff_sameSizes_default_noMatch() {
         val first = loadBitmap("round_rect_gray")
         val compStatistics = ScreenshotResultProto.DiffResult.ComparisonStatistics.newBuilder()
-            .setNumberPixelsCompared(17)
-            .setNumberPixelsDifferent(1)
-            .setNumberPixelsIgnored(80)
-            .setNumberPixelsSimilar(16)
+            .setNumberPixelsCompared(1504)
+            .setNumberPixelsDifferent(74)
+            .setNumberPixelsIgnored(800)
+            .setNumberPixelsSimilar(1430)
             .build()
 
         expectErrorMessage(
