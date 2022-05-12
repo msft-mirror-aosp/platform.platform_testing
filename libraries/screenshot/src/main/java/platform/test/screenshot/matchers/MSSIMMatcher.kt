@@ -94,7 +94,7 @@ class MSSIMMatcher(
         height: Int
     ): SSIMResult {
         var SSIMTotal = 0.0
-        var windows = 0
+        var numPixelsCompared = 0
         var currentWindowY = 0
         var ignored = 0
 
@@ -109,10 +109,10 @@ class MSSIMMatcher(
                     isWindowWhite(given, start, stride, windowWidth, windowHeight)
                 ) {
                     currentWindowX += WINDOW_SIZE
-                    ignored += WINDOW_SIZE
+                    ignored += windowWidth * windowHeight
                     continue
                 }
-                windows++
+                numPixelsCompared += windowWidth * windowHeight
                 val means =
                     getMeans(ideal, given, start, stride, windowWidth, windowHeight)
                 val meanX = means[0]
@@ -125,16 +125,18 @@ class MSSIMMatcher(
                 val varY = variances[1]
                 val stdBoth = variances[2]
                 val SSIM = SSIM(meanX, meanY, varX, varY, stdBoth)
-                SSIMTotal += SSIM
+                SSIMTotal += SSIM * (windowWidth * windowHeight).toDouble()
                 currentWindowX += WINDOW_SIZE
             }
             currentWindowY += WINDOW_SIZE
         }
+
+        val averageSSIM = SSIMTotal / numPixelsCompared.toDouble()
         return SSIMResult(
-            SSIM = SSIMTotal,
-            numPixelsSimilar = (SSIMTotal + 0.5).toInt(),
+            SSIM = averageSSIM,
+            numPixelsSimilar = (averageSSIM * numPixelsCompared.toDouble() + 0.5).toInt(),
             numPixelsIgnored = ignored,
-            numPixelsCompared = windows
+            numPixelsCompared = numPixelsCompared
         )
     }
 
