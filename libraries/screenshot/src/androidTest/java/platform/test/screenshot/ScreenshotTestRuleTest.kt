@@ -28,6 +28,7 @@ import org.junit.runner.RunWith
 import platform.test.screenshot.OutputFileType.IMAGE_ACTUAL
 import platform.test.screenshot.OutputFileType.IMAGE_DIFF
 import platform.test.screenshot.OutputFileType.IMAGE_EXPECTED
+import platform.test.screenshot.OutputFileType.RESULT_BIN_PROTO
 import platform.test.screenshot.OutputFileType.RESULT_PROTO
 import platform.test.screenshot.matchers.PixelPerfectMatcher
 import platform.test.screenshot.proto.ScreenshotResultProto
@@ -59,16 +60,17 @@ class ScreenshotTestRuleTest {
         assertThat(rule.getPathOnDeviceFor(IMAGE_ACTUAL).exists()).isTrue()
         assertThat(rule.getPathOnDeviceFor(IMAGE_DIFF).exists()).isFalse()
         assertThat(rule.getPathOnDeviceFor(IMAGE_EXPECTED).exists()).isTrue()
+        assertThat(rule.getPathOnDeviceFor(RESULT_BIN_PROTO).exists()).isTrue()
     }
 
     @Test
     fun performDiff_sameSizes_default_noMatch() {
         val first = loadBitmap("round_rect_gray")
         val compStatistics = ScreenshotResultProto.DiffResult.ComparisonStatistics.newBuilder()
-            .setNumberPixelsCompared(17)
-            .setNumberPixelsDifferent(1)
-            .setNumberPixelsIgnored(80)
-            .setNumberPixelsSimilar(16)
+            .setNumberPixelsCompared(1504)
+            .setNumberPixelsDifferent(74)
+            .setNumberPixelsIgnored(800)
+            .setNumberPixelsSimilar(1430)
             .build()
 
         expectErrorMessage(
@@ -82,6 +84,7 @@ class ScreenshotTestRuleTest {
         assertThat(rule.getPathOnDeviceFor(IMAGE_ACTUAL).exists()).isTrue()
         assertThat(rule.getPathOnDeviceFor(IMAGE_DIFF).exists()).isTrue()
         assertThat(rule.getPathOnDeviceFor(IMAGE_EXPECTED).exists()).isTrue()
+        assertThat(rule.getPathOnDeviceFor(RESULT_BIN_PROTO).exists()).isTrue()
     }
 
     @Test
@@ -105,6 +108,7 @@ class ScreenshotTestRuleTest {
         assertThat(rule.getPathOnDeviceFor(IMAGE_ACTUAL).exists()).isTrue()
         assertThat(rule.getPathOnDeviceFor(IMAGE_DIFF).exists()).isTrue()
         assertThat(rule.getPathOnDeviceFor(IMAGE_EXPECTED).exists()).isTrue()
+        assertThat(rule.getPathOnDeviceFor(RESULT_BIN_PROTO).exists()).isTrue()
     }
 
     @Test
@@ -122,6 +126,7 @@ class ScreenshotTestRuleTest {
         assertThat(rule.getPathOnDeviceFor(IMAGE_ACTUAL).exists()).isTrue()
         assertThat(rule.getPathOnDeviceFor(IMAGE_DIFF).exists()).isFalse()
         assertThat(rule.getPathOnDeviceFor(IMAGE_EXPECTED).exists()).isTrue()
+        assertThat(rule.getPathOnDeviceFor(RESULT_BIN_PROTO).exists()).isTrue()
     }
 
     @Test(expected = IllegalArgumentException::class)
@@ -150,6 +155,7 @@ class ScreenshotTestRuleTest {
         assertThat(rule.getPathOnDeviceFor(IMAGE_ACTUAL).exists()).isTrue()
         assertThat(rule.getPathOnDeviceFor(IMAGE_DIFF).exists()).isFalse()
         assertThat(rule.getPathOnDeviceFor(IMAGE_EXPECTED).exists()).isFalse()
+        assertThat(rule.getPathOnDeviceFor(RESULT_BIN_PROTO).exists()).isTrue()
     }
 
     @After
