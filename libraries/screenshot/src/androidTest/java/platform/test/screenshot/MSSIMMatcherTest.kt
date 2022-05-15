@@ -40,7 +40,7 @@ class MSSIMMatcherTest {
         )
 
         // Asserts that all compared pixels are categorized as "similar".
-        assertThat(result.SSIM).isEqualTo(result.numPixelsCompared)
+        assertThat(result.SSIM).isEqualTo(1.0)
     }
 
     @Test
@@ -54,8 +54,7 @@ class MSSIMMatcherTest {
             first.width, first.height
         )
 
-        assertThat(result.SSIM / result.numPixelsCompared)
-            .isWithin(0.001).of(0.516)
+        assertThat(result.SSIM).isWithin(0.001).of(0.490)
     }
 
     @Test
@@ -69,8 +68,7 @@ class MSSIMMatcherTest {
             first.width, first.height
         )
 
-        assertThat(result.SSIM / result.numPixelsCompared)
-            .isWithin(0.001).of(0.951)
+        assertThat(result.SSIM).isWithin(0.001).of(0.951)
     }
 
     @Test
@@ -84,8 +82,7 @@ class MSSIMMatcherTest {
             first.width, first.height
         )
 
-        assertThat(result.SSIM / result.numPixelsCompared)
-            .isWithin(0.001).of(0.990)
+        assertThat(result.SSIM).isWithin(0.001).of(0.990)
     }
 
     @Test
@@ -99,8 +96,7 @@ class MSSIMMatcherTest {
             first.width, first.height
         )
 
-        assertThat(result.SSIM / result.numPixelsCompared)
-            .isWithin(0.001).of(0.960)
+        assertThat(result.SSIM).isWithin(0.001).of(0.960)
     }
 
     @Test
@@ -114,8 +110,7 @@ class MSSIMMatcherTest {
             first.width, first.height
         )
 
-        assertThat(result.SSIM / result.numPixelsCompared)
-            .isWithin(0.001).of(0.695)
+        assertThat(result.SSIM).isWithin(0.001).of(0.695)
     }
 
     @Test
@@ -129,7 +124,6 @@ class MSSIMMatcherTest {
             first.width, first.height
         )
 
-        assertThat(result.SSIM / result.numPixelsCompared)
-            .isWithin(0.001).of(0.921)
+        assertThat(result.SSIM).isWithin(0.001).of(0.921)
     }
 }
