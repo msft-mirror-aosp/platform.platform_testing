@@ -16,6 +16,8 @@
 
 package platform.test.screenshot
 
+import android.content.Context
+
 /**
  * Rule to be used in platform project tests. Set's up the proper repository name and golden
  * directory.
@@ -28,12 +30,9 @@ package platform.test.screenshot
  * @hide
  */
 class PlatformScreenshotTestRule(
+    context: Context,
     moduleDirectory: String,
     outputRootDir: String? = null
 ) : ScreenshotTestRule(
-    ScreenshotTestRuleConfig(
-        "platform/frameworks/support-golden",
-        moduleDirectory.trim('/')
-    ),
-    outputRootDir
+        GoldenImagePathManager(context)
 )
