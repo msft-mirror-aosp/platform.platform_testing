@@ -20,6 +20,7 @@ import android.os.SystemClock;
 
 import org.junit.Assert;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -29,6 +30,7 @@ public class HealthTestingUtils {
     private static final String TAG = "HealthTestingUtils";
     private static final int SLEEP_MS = 100;
     private static final int WAIT_TIME_MS = 10000;
+    private static final int DEFAULT_SETTLE_TIME_MS = 3000;
 
     private HealthTestingUtils() {}
 
@@ -121,5 +123,49 @@ public class HealthTestingUtils {
         }
 
         Assert.fail(message.get());
+    }
+
+    /** @see HealthTestingUtils#waitForValueToSettle */
+    public static <T> T waitForValueToSettle(Supplier<String> errorMessage, Supplier<T> supplier) {
+        return waitForValueToSettle(
+                errorMessage,
+                supplier,
+                /* minimumSettleTime= */ DEFAULT_SETTLE_TIME_MS,
+                /* timeoutMs= */ WAIT_TIME_MS);
+    }
+
+    /**
+     * Waits for the supplier to return the same value for a specified time period. If the value
+     * changes, the timer gets restarted. Fails when reaching the timeout. The minimum running time
+     * of this method is the settle time.
+     *
+     * @return the settled value. Fails if it doesn't settle.
+     */
+    public static <T> T waitForValueToSettle(
+            Supplier<String> errorMessage,
+            Supplier<T> supplier,
+            long minimumSettleTime,
+            long timeoutMs) {
+        final long startTime = SystemClock.uptimeMillis();
+        long settledSince = startTime;
+        T previousValue = null;
+
+        while (SystemClock.uptimeMillis() < startTime + timeoutMs) {
+            T newValue = supplier.get();
+            final long currentTime = SystemClock.uptimeMillis();
+
+            if (!Objects.equals(previousValue, newValue)) {
+                settledSince = currentTime;
+                previousValue = newValue;
+            } else if (currentTime >= settledSince + minimumSettleTime) {
+                return previousValue;
+            }
+
+            SystemClock.sleep(SLEEP_MS);
+        }
+
+        Assert.fail(errorMessage.get());
+
+        return null;
     }
 }
