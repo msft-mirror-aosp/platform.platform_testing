@@ -60,6 +60,15 @@ public class ArtifactSaver {
         final File screenshot = artifactFile(description, "TestScreenshot", "png");
         final File hierarchy = artifactFile(description, "Hierarchy", "zip");
 
+        device.takeScreenshot(screenshot);
+
+        // Dump accessibility hierarchy
+        try {
+            device.dumpWindowHierarchy(artifactFile(description, "AccessibilityHierarchy", "uix"));
+        } catch (Exception ex) {
+            android.util.Log.e(TAG, "Failed to save accessibility hierarchy", ex);
+        }
+
         // Dump window hierarchy
         try (ZipOutputStream out = new ZipOutputStream(new FileOutputStream(hierarchy))) {
             out.putNextEntry(new ZipEntry("bugreport.txt"));
@@ -83,14 +92,6 @@ public class ArtifactSaver {
                         + hierarchy
                         + " (use go/web-hv to open the dump file)",
                 e);
-        device.takeScreenshot(screenshot);
-
-        // Dump accessibility hierarchy
-        try {
-            device.dumpWindowHierarchy(artifactFile(description, "AccessibilityHierarchy", "uix"));
-        } catch (IOException ex) {
-            android.util.Log.e(TAG, "Failed to save accessibility hierarchy", ex);
-        }
 
         // Dump bugreport
         if (sShouldTakeBugreport && FailureWatcher.getSystemAnomalyMessage(device) != null) {
