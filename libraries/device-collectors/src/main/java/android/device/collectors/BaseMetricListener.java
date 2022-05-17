@@ -101,6 +101,10 @@ public class BaseMetricListener extends InstrumentationRunListener {
     private int mCollectIterationInterval = 1;
     private int mSkipMetricUntilIteration = 0;
 
+    // Whether to report the results as instrumentation results. Used by metric collector rules,
+    // which do not have the information to invoke InstrumentationRunFinished() to report metrics.
+    private boolean mReportAsInstrumentationResults = false;
+
     public BaseMetricListener() {
         mIncludeFilters = new ArrayList<>();
         mExcludeFilters = new ArrayList<>();
@@ -118,8 +122,7 @@ public class BaseMetricListener extends InstrumentationRunListener {
 
     @Override
     public final void testRunStarted(Description description) throws Exception {
-        parseArguments();
-        setupAdditionalArgs();
+        setUp();
         if (!mLogOnly) {
             try {
                 mRunData = createDataRecord();
@@ -142,6 +145,7 @@ public class BaseMetricListener extends InstrumentationRunListener {
                 Log.e(getTag(), "Exception during onTestRunEnd.", e);
             }
         }
+        cleanUp();
         super.testRunFinished(result);
     }
 
@@ -190,8 +194,12 @@ public class BaseMetricListener extends InstrumentationRunListener {
             }
             if (mTestData.hasMetrics()) {
                 // Only send the status progress if there are metrics
+                if (mReportAsInstrumentationResults) {
+                    getInstrumentation().addResults(mTestData.createBundleFromMetrics());
+                } else {
                 SendToInstrumentation.sendBundle(getInstrumentation(),
                         mTestData.createBundleFromMetrics());
+            }
             }
         }
         super.testFinished(description);
@@ -207,11 +215,44 @@ public class BaseMetricListener extends InstrumentationRunListener {
     }
 
     /**
+     * Set up the metric collector.
+     *
+     * <p>If another class is invoking the metric collector's callbacks directly, it should call
+     * this method to make sure that the metric collector is set up properly.
+     */
+    public final void setUp() {
+        parseArguments();
+        setupAdditionalArgs();
+        onSetUp();
+    }
+
+    /**
+     * Clean up the metric collector.
+     *
+     * <p>If another class is invoking the metric collector's callbacks directly, it should call
+     * this method to make sure that the metric collector is cleaned up properly after collection.
+     */
+    public final void cleanUp() {
+        onCleanUp();
+    }
+
+    /**
      * Create a {@link DataRecord}. Exposed for testing.
      */
     @VisibleForTesting
     DataRecord createDataRecord() {
         return new DataRecord();
+    }
+
+    // ---------- Interfaces that can be implemented to set up and clean up metric collection.
+
+    /** Called if custom set-up is needed for this metric collector. */
+    protected void onSetUp() {
+        // Does nothing by default.
+    }
+
+    protected void onCleanUp() {
+        // Does nothing by default.
     }
 
     // ---------- Interfaces that can be implemented to take action on each test state.
@@ -300,20 +341,33 @@ public class BaseMetricListener extends InstrumentationRunListener {
     }
 
     /**
+     * Create a directory inside external storage, and optionally empty it.
+     *
+     * @param dir full path to the dir to be created.
+     * @param empty whether to empty the new dirctory.
+     * @return directory file created
+     */
+    public File createDirectory(String dir, boolean empty) {
+        File rootDir = Environment.getExternalStorageDirectory();
+        File destDir = new File(rootDir, dir);
+        if (empty) {
+            executeCommandBlocking("rm -rf " + destDir.getAbsolutePath());
+        }
+        if (!destDir.exists() && !destDir.mkdirs()) {
+            Log.e(getTag(), "Unable to create dir: " + destDir.getAbsolutePath());
+            return null;
+        }
+        return destDir;
+    }
+
+    /**
      * Create a directory inside external storage, and empty it.
      *
      * @param dir full path to the dir to be created.
      * @return directory file created
      */
     public File createAndEmptyDirectory(String dir) {
-        File rootDir = Environment.getExternalStorageDirectory();
-        File destDir = new File(rootDir, dir);
-        executeCommandBlocking("rm -rf " + destDir.getAbsolutePath());
-        if (!destDir.exists() && !destDir.mkdirs()) {
-            Log.e(getTag(), "Unable to create dir: " + destDir.getAbsolutePath());
-            return null;
-        }
-        return destDir;
+        return createDirectory(dir, true);
     }
 
     /**
@@ -333,6 +387,11 @@ public class BaseMetricListener extends InstrumentationRunListener {
             }
             rootDir.delete();
         }
+    }
+
+    /** Sets whether metrics should be reported directly to instrumentation results. */
+    public final void setReportAsInstrumentationResults(boolean enabled) {
+        mReportAsInstrumentationResults = enabled;
     }
 
     /**

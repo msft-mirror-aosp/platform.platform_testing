@@ -351,6 +351,101 @@ public class BaseMetricListenerInstrumentedTest {
         assertEquals(0, resultBundle.size());
     }
 
+    @MetricOption(group = "testGroup")
+    @Test
+    public void testSetUpAndCleanUpWithTestCycle() throws Exception {
+        // We use this bundle to mimic device state. We modify it in setUp() and
+        // check that this is maintained throughout the test. We remove the
+        // modification during cleanUp() and check if the bundle has indeed
+        // become empty again.
+        Bundle data = new Bundle();
+        final String arg = "arg";
+        final String value = "value";
+
+        BaseMetricListener listener =
+                new BaseMetricListener() {
+                    public static final String SETUP_ARG = "arg";
+                    private static final String SETUP_VALUE = "value";
+
+                    @Override
+                    protected void onSetUp() {
+                        data.putString(arg, value);
+                    }
+
+                    @Override
+                    protected void onCleanUp() {
+                        data.remove(arg);
+                    }
+
+                    @Override
+                    public void onTestRunStart(DataRecord runData, Description description) {
+                        assertEquals(value, data.getString(arg));
+                    }
+
+                    @Override
+                    public void onTestRunEnd(DataRecord runData, Result result) {
+                        assertEquals(value, data.getString(arg));
+                    }
+
+                    @Override
+                    public void onTestStart(DataRecord testData, Description description) {
+                        assertEquals(value, data.getString(arg));
+                    }
+
+                    @Override
+                    public void onTestEnd(DataRecord testData, Description description) {
+                        assertEquals(value, data.getString(arg));
+                    }
+                };
+
+        Description runDescription = Description.createSuiteDescription("run");
+        Description test1Description = Description.createTestDescription("class", "method1");
+        Description test2Description = Description.createTestDescription("class", "method2");
+        // Simulate a test cycle.
+        listener.testRunStarted(runDescription);
+        listener.testStarted(test1Description);
+        listener.testFinished(test1Description);
+        listener.testStarted(test2Description);
+        listener.testFinished(test2Description);
+        listener.testRunFinished(new Result());
+        listener.instrumentationRunFinished(System.out, new Bundle(), new Result());
+
+        assertFalse(data.containsKey(arg));
+    }
+
+    @MetricOption(group = "testGroup")
+    @Test
+    public void testSetUpAndCleanUpWithCallbacks() throws Exception {
+        // We use this bundle to mimic device state. We modify it in setUp() and
+        // check that this is maintained throughout the test. We remove the
+        // modification during cleanUp() and check if the bundle has indeed
+        // become empty again.
+        Bundle data = new Bundle();
+        final String arg = "arg";
+        final String value = "value";
+
+        BaseMetricListener listener =
+                new BaseMetricListener() {
+                    public static final String SETUP_ARG = "arg";
+                    private static final String SETUP_VALUE = "value";
+
+                    @Override
+                    protected void onSetUp() {
+                        data.putString(arg, value);
+                    }
+
+                    @Override
+                    protected void onCleanUp() {
+                        data.remove(arg);
+                    }
+                };
+
+        listener.setUp();
+        assertEquals(value, data.getString(arg));
+        listener.cleanUp();
+        assertFalse(data.containsKey(arg));
+    }
+
     /**
      * Test annotation that allows to instantiate {@link MetricOption} for testing purpose.
      */
@@ -629,5 +724,35 @@ public class BaseMetricListenerInstrumentedTest {
         assertEquals(RUN_START_VALUE, resultBundle.getString(RUN_START_KEY));
         assertEquals(RUN_END_VALUE, resultBundle.getString(RUN_END_KEY));
         assertEquals(2, resultBundle.size());
+    }
+
+    /** Test that the report as instrumentation result option works. */
+    @MetricOption(group = "testGroup")
+    @Test
+    public void testReportAsInstrumentationResultsIfEnabled() throws Exception {
+        mListener.setReportAsInstrumentationResults(true);
+
+        Description runDescription = Description.createSuiteDescription("run");
+        mListener.testRunStarted(runDescription);
+        Description testDescription = Description.createTestDescription("class", "method");
+        mListener.testStarted(testDescription);
+        mListener.testFinished(testDescription);
+        mListener.testRunFinished(new Result());
+        // AJUR runner is then gonna call instrumentationRunFinished
+        Bundle resultBundle = new Bundle();
+        mListener.instrumentationRunFinished(System.out, resultBundle, new Result());
+
+        // Check that results are reported via Instrumentation.addResults().
+        ArgumentCaptor<Bundle> capture = ArgumentCaptor.forClass(Bundle.class);
+        Mockito.verify(mMockInstrumentation, Mockito.times(1)).addResults(capture.capture());
+        Bundle addedResult = capture.getValue();
+        assertTrue(addedResult.containsKey(TEST_END_KEY));
+        assertEquals(TEST_END_VALUE + "method", addedResult.getString(TEST_END_KEY));
+
+        // Rather than Instrumentation.sendStatus().
+        Mockito.verify(mMockInstrumentation, Mockito.never())
+                .sendStatus(
+                        Mockito.eq(SendToInstrumentation.INST_STATUS_IN_PROGRESS),
+                        Mockito.any(Bundle.class));
     }
 }
