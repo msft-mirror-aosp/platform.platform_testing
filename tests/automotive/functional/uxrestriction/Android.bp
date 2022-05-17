@@ -32,5 +32,5 @@ android_test {
         "automotive-app-grid-helper",
     ],
     srcs: ["src/**/*.java"],
-    test_suites: ["catbox"],
+    test_suites: ["catbox","ats"],
 }
