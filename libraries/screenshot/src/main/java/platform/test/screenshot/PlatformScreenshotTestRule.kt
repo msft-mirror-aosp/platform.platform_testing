@@ -16,6 +16,8 @@
 
 package platform.test.screenshot
 
+import android.content.Context
+
 /**
  * Rule to be used in platform project tests. Set's up the proper repository name and golden
  * directory.
@@ -23,14 +25,14 @@ package platform.test.screenshot
  * @param moduleDirectory Directory to be used for the module that contains the tests. This is
  * just a helper to avoid mixing goldens between different projects.
  * Example for module directory: "compose/material/material"
+ * @param outputRootDir The root directory for output files.
  *
  * @hide
  */
 class PlatformScreenshotTestRule(
-    moduleDirectory: String
+    context: Context,
+    moduleDirectory: String,
+    outputRootDir: String? = null
 ) : ScreenshotTestRule(
-    ScreenshotTestRuleConfig(
-        "platform/frameworks/support-golden",
-        moduleDirectory.trim('/')
-    )
+        GoldenImagePathManager(context)
 )
