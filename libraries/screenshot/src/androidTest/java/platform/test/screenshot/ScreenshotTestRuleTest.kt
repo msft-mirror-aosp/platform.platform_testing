@@ -16,12 +16,14 @@
 
 package platform.test.screenshot
 
+import android.content.Context
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.MediumTest
+import androidx.test.platform.app.InstrumentationRegistry
 import com.google.common.truth.Truth.assertThat
+import java.io.File
 import java.lang.AssertionError
 import org.junit.After
-import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -34,19 +36,17 @@ import platform.test.screenshot.matchers.PixelPerfectMatcher
 import platform.test.screenshot.proto.ScreenshotResultProto
 import platform.test.screenshot.utils.loadBitmap
 
+class CustomGoldenImagePathManager(appcontext: Context) : GoldenImagePathManager(appcontext) {
+    public override fun goldenIdentifierResolver(testName: String): String = "$testName.png"
+}
+
 @RunWith(AndroidJUnit4::class)
 @MediumTest
 class ScreenshotTestRuleTest {
 
     @get:Rule
-    val rule = ScreenshotTestRule()
-
-    @Before
-    fun setup() {
-        rule.setCustomGoldenIdResolver { goldenId ->
-            "$goldenId.png"
-        }
-    }
+    val rule = ScreenshotTestRule(
+        CustomGoldenImagePathManager(InstrumentationRegistry.getInstrumentation().getContext()))
 
     @Test
     fun performDiff_sameBitmaps() {
@@ -160,9 +160,8 @@ class ScreenshotTestRuleTest {
 
     @After
     fun after() {
-        rule.clearCustomGoldenIdResolver()
         // Clear all files we generated so we don't have dependencies between tests
-        rule.deviceOutputDirectory.deleteRecursively()
+        File(rule.goldenImagePathManager.deviceLocalPath).deleteRecursively()
     }
 
     private fun expectErrorMessage(expectedErrorMessage: String, block: () -> Unit) {
