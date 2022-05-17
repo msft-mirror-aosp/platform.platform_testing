@@ -32,23 +32,12 @@ class GoldenImagePathManagerTest {
     @Test
     fun goldenWithContextTest() {
         val localGoldenRoot = "/localgoldenroot/"
-        val remoteGoldenRoot = "http://remotegoldenroot/"
         val context = InstrumentationRegistry.getInstrumentation().getContext()
-        val gim = GoldenImagePathManager(
-            context,
-            GoldenImageLocationConfig(localGoldenRoot, remoteGoldenRoot))
+        val gim = GoldenImagePathManager(context, localGoldenRoot)
         // Test for resolving device local paths.
-        val localGoldenFullImagePath = gim.goldenIdentifierResolver(
-            testName = "test1", relativePathOnly = false, localPath = true)
-        assertThat(localGoldenFullImagePath).startsWith(localGoldenRoot)
-        assertThat(localGoldenFullImagePath).endsWith("dpi/test1.png")
-        assertThat(localGoldenFullImagePath.split("/").size).isEqualTo(9)
-        // Test for resolving repo paths.
-        val repoGoldenFullImagePath = gim.goldenIdentifierResolver(
-            testName = "test2", relativePathOnly = false, localPath = false)
-        assertThat(repoGoldenFullImagePath).startsWith(remoteGoldenRoot)
-        assertThat(repoGoldenFullImagePath).endsWith("dpi/test2.png")
-        assertThat(repoGoldenFullImagePath.split("/").size).isEqualTo(10)
+        val localGoldenFullImagePath = gim.goldenIdentifierResolver(testName = "test1")
+        assertThat(localGoldenFullImagePath).endsWith("/test1.png")
+        assertThat(localGoldenFullImagePath.split("/").size).isEqualTo(2)
     }
 
     private fun pathContextExtractor(context: Context): String {
@@ -58,18 +47,23 @@ class GoldenImagePathManagerTest {
         }
     }
 
-    private fun pathNoContextExtractor() = "nocontext"
+    private fun pathNoContextExtractor1() = "nocontext1"
+    private fun pathNoContextExtractor2() = "nocontext2"
 
     @Test
     fun pathConfigTest() {
         val pc = PathConfig(
-            PathElementNoContext("nocontext1", true, ::pathNoContextExtractor),
-            PathElementNoContext("nocontext2", true, ::pathNoContextExtractor),
+            PathElementNoContext("nocontext1", true, ::pathNoContextExtractor1),
+            PathElementNoContext("nocontext2", true, ::pathNoContextExtractor2),
             PathElementWithContext("context1", true, ::pathContextExtractor),
             PathElementWithContext("context2", true, ::pathContextExtractor)
         )
         val context = InstrumentationRegistry.getInstrumentation().getContext()
         val pcResolvedRelativePath = pc.resolveRelativePath(context)
-        assertThat(pcResolvedRelativePath).isEqualTo("nocontext/nocontext/context/context/")
+        assertThat(pcResolvedRelativePath).isEqualTo("nocontext1/nocontext2/context/context/")
+
+        val pc2 = getSimplePathConfig()
+        val pcResolvedRelativePath2 = pc2.resolveRelativePath(context)
+        assertThat(pcResolvedRelativePath2).isEqualTo("cuttlefish/")
     }
 }
