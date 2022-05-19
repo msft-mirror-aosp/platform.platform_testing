@@ -33,7 +33,6 @@ public class HeapDumpHelper implements ICollectorHelper<String> {
     private static final String TAG = HeapDumpHelper.class.getSimpleName();
     private static final String HEAPDUMP_OUTPUT_FILE_METRIC_NAME = "heapdump_file";
 
-    boolean mIsEnabled = false;
     String mId = null;
     File mResultsFile = null;
 
@@ -43,8 +42,7 @@ public class HeapDumpHelper implements ICollectorHelper<String> {
     }
 
     @Override
-    public boolean startCollecting(boolean isEnabled, String id) {
-        mIsEnabled = isEnabled;
+    public boolean startCollecting(String id) {
         mId = id;
         if (!collectHeapDump()) {
             return false;
@@ -56,21 +54,17 @@ public class HeapDumpHelper implements ICollectorHelper<String> {
     public Map<String, String> getMetrics() {
 
         HashMap<String, String> heapDumpFinalMap = new HashMap<>();
-        if (mIsEnabled) {
-            Log.i(TAG, "Metric collector enabled. Dumping the hprof.");
-            if (mId != null && !mId.isEmpty()) {
-                try {
-                    Debug.dumpHprofData(mResultsFile.getAbsolutePath());
-                    heapDumpFinalMap.put(HEAPDUMP_OUTPUT_FILE_METRIC_NAME,
-                            mResultsFile.getAbsolutePath());
-                } catch (Throwable e) {
-                    Log.e(TAG, "dumpHprofData failed", e);
-                }
-            } else {
-                Log.e(TAG, "Metric collector is enabled but the heap dump file id is not valid.");
+        Log.i(TAG, "Metric collector enabled. Dumping the hprof.");
+        if (mId != null && !mId.isEmpty()) {
+            try {
+                Debug.dumpHprofData(mResultsFile.getAbsolutePath());
+                heapDumpFinalMap.put(HEAPDUMP_OUTPUT_FILE_METRIC_NAME,
+                        mResultsFile.getAbsolutePath());
+            } catch (Throwable e) {
+                Log.e(TAG, "dumpHprofData failed", e);
             }
         } else {
-            Log.i(TAG, "Metric collector is disabled.");
+            Log.e(TAG, "Metric collector is enabled but the heap dump file id is not valid.");
         }
         return heapDumpFinalMap;
     }
@@ -101,7 +95,7 @@ public class HeapDumpHelper implements ICollectorHelper<String> {
      * Returns true if heap dump collection is enabled and heap dump file name is valid.
      */
     private boolean collectHeapDump() {
-        if (!mIsEnabled || mId == null || mId.isEmpty()) {
+        if (mId == null || mId.isEmpty()) {
             return false;
         }
         return true;
@@ -109,7 +103,6 @@ public class HeapDumpHelper implements ICollectorHelper<String> {
 
     @Override
     public boolean stopCollecting() {
-        mIsEnabled = false;
         mId = null;
         return true;
     }
