@@ -70,6 +70,7 @@ public class ShowmapSnapshotHelper implements ICollectorHelper<String> {
     private int mDropCacheOption;
     private boolean mCollectForAllProcesses = false;
     private UiDevice mUiDevice;
+    private boolean mRunGcPrecollection;
 
     // Map to maintain per-process memory info
     private Map<String, String> mMemoryMap = new HashMap<>();
@@ -79,10 +80,11 @@ public class ShowmapSnapshotHelper implements ICollectorHelper<String> {
     private Map<String, List<Integer>> mMetricNameIndexMap = new HashMap<>();
 
     public void setUp(String testOutputDir, String... processNames) {
-        mProcessNames = processNames;
-        mTestOutputDir = testOutputDir;
-        mDropCacheOption = 0;
-        mUiDevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
+      mProcessNames = processNames;
+      mTestOutputDir = testOutputDir;
+      mDropCacheOption = 0;
+      mRunGcPrecollection = false;
+      mUiDevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
     }
 
     @Override
@@ -146,6 +148,16 @@ public class ShowmapSnapshotHelper implements ICollectorHelper<String> {
                 return mMemoryMap;
             }
 
+            // Force Garbage collect to trim transient objects before taking memory measurements
+            // as memory tests aim to track persistent memory regression instead of transient
+            // memory which also allows for de-noising and reducing likelihood of false alerts.
+            if (mRunGcPrecollection) {
+              Log.i(TAG, "Running GC precollect");
+              android.os.Trace.beginSection("GCPriorToShowmap");
+              Runtime.getRuntime().gc();
+              android.os.Trace.endSection();
+            }
+
             FileWriter writer = new FileWriter(new File(mTestOutputFile), true);
             for (String processName : mProcessNames) {
                 List<Integer> pids = new ArrayList<>();
@@ -195,6 +207,15 @@ public class ShowmapSnapshotHelper implements ICollectorHelper<String> {
     @Override
     public boolean stopCollecting() {
         return true;
+    }
+
+    /**
+     * Sets option for running GC prior to collection.
+     *
+     * @param shouldGcOnPrecollect whether it should run GC prior to showmap collection
+     */
+    public void setGcOnPrecollectOption(boolean shouldGcOnPrecollect) {
+        mRunGcPrecollection = shouldGcOnPrecollect;
     }
 
     /**
