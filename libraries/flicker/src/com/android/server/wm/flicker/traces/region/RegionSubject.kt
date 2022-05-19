@@ -27,6 +27,7 @@ import com.google.common.truth.Fact
 import com.google.common.truth.FailureMetadata
 import com.google.common.truth.StandardSubjectBuilder
 import com.google.common.truth.Subject.Factory
+import kotlin.math.abs
 
 /**
  * Truth subject for [Rect] objects, used to make assertions over behaviors that occur on a
@@ -343,6 +344,20 @@ class RegionSubject(
      */
     fun notOverlaps(testRect: Rect): RegionSubject = apply {
         notOverlaps(Region.from(testRect))
+    }
+
+    /**
+     * Asserts that [region] and [previous] have same aspect ratio, margin of error up to 0.1.
+     *
+     * @param other Other region
+     */
+    fun isSameAspectRatio(other: RegionSubject): RegionSubject = apply {
+        val aspectRatio = this.region.width.toFloat() /
+                this.region.height
+        val otherAspectRatio = other.region.width.toFloat() /
+                other.region.height
+        check("Should have same aspect ratio, old is $aspectRatio and new is $otherAspectRatio")
+                .that(abs(aspectRatio - otherAspectRatio) > 0.1).isFalse()
     }
 
     companion object {
