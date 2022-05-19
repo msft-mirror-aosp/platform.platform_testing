@@ -53,7 +53,7 @@ public class HeapDumpHelperTest {
 
     @Test
     public void testSuccessfulHeapDumpCollection() {
-        assertTrue(mHeapDumpHelper.startCollecting(true, "sample-heapdump-1-"));
+        assertTrue(mHeapDumpHelper.startCollecting("sample-heapdump-1-"));
         Map<String, String> metrics = mHeapDumpHelper.getMetrics();
         assertTrue(metrics.size() == 1);
         assertTrue(
@@ -62,22 +62,8 @@ public class HeapDumpHelperTest {
     }
 
     @Test
-    public void testHeapDumpCollectionDisabled() {
-        assertFalse(mHeapDumpHelper.startCollecting(false, "sample-heapdump-2-"));
-        Map<String, String> metrics = mHeapDumpHelper.getMetrics();
-        assertTrue(metrics.size() == 0);
-    }
-
-    @Test
     public void testHeapDumpNotCollectedWithEmptyId() {
-        assertFalse(mHeapDumpHelper.startCollecting(true, ""));
-        Map<String, String> metrics = mHeapDumpHelper.getMetrics();
-        assertTrue(metrics.size() == 0);
-    }
-
-    @Test
-    public void testHeapDumpNotCollectedWithNullId() {
-        assertFalse(mHeapDumpHelper.startCollecting(true, null));
+        assertFalse(mHeapDumpHelper.startCollecting(""));
         Map<String, String> metrics = mHeapDumpHelper.getMetrics();
         assertTrue(metrics.size() == 0);
     }
