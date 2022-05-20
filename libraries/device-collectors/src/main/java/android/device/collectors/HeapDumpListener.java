@@ -68,7 +68,6 @@ public class HeapDumpListener extends BaseCollectionListener<String> {
                 Boolean.parseBoolean(args.getString(ITERATION_ALL_ENABLE, String.valueOf(false)));
 
         if (mIsCollectPerRun) {
-            mIsDisabled = false;
             return;
         }
 
@@ -87,19 +86,24 @@ public class HeapDumpListener extends BaseCollectionListener<String> {
 
     @Override
     public void testStart(Function<String, Boolean> filter, Description description) {
-        if (mIsDisabled) {
-            mHelper.startCollecting(false, null);
-            return;
-        }
-
         updateIterationCount(description);
         if (mIsEnabledForAll) {
-            mHelper.startCollecting(true, getHeapDumpFileId(description));
+            mHelper.startCollecting(getHeapDumpFileId(description));
         } else if (mIsCollectPerRun || mValidIterationIds
                 .contains(mTestIterationCount.get(getTestFileName(description)))) {
-            mHelper.startCollecting(true, getHeapDumpFileId(description));
-        } else {
-            mHelper.startCollecting(false, null);
+            mHelper.startCollecting(getHeapDumpFileId(description));
+        }
+    }
+
+    @Override
+    public final void onTestEnd(DataRecord testData, Description description) {
+        if (!mIsCollectPerRun) {
+            if (mIsEnabledForAll) {
+                super.onTestEnd(testData, description);
+            } else if (mValidIterationIds
+                    .contains(mTestIterationCount.get(getTestFileName(description)))) {
+                super.onTestEnd(testData, description);
+            }
         }
     }
 
