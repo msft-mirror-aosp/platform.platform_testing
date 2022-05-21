@@ -27,6 +27,7 @@ android_test {
         "src/**/*.kt"
     ],
     static_libs: [
+        "androidx.test.core",
         "androidx.test.ext.junit",
         "androidx.test.runner",
         "androidx.test.rules",
