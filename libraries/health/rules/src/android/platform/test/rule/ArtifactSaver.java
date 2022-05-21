@@ -34,7 +34,9 @@ import java.util.zip.ZipOutputStream;
 /** Utilities for producing test artifacts. */
 public class ArtifactSaver {
     private static final String TAG = ArtifactSaver.class.getSimpleName();
-    private static boolean sBugreportTaken = true;  // bugreposrts are temporarily disabled
+
+    // Presubmit tests have a time limit. We are not taking expensive bugreports from presubmits.
+    private static boolean sShouldTakeBugreport = !PresubmitRule.runningInPresubmit();
 
     public static File artifactFile(String fileName) {
         return new File(
@@ -57,6 +59,15 @@ public class ArtifactSaver {
         final UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
         final File screenshot = artifactFile(description, "TestScreenshot", "png");
         final File hierarchy = artifactFile(description, "Hierarchy", "zip");
+
+        device.takeScreenshot(screenshot);
+
+        // Dump accessibility hierarchy
+        try {
+            device.dumpWindowHierarchy(artifactFile(description, "AccessibilityHierarchy", "uix"));
+        } catch (Exception ex) {
+            android.util.Log.e(TAG, "Failed to save accessibility hierarchy", ex);
+        }
 
         // Dump window hierarchy
         try (ZipOutputStream out = new ZipOutputStream(new FileOutputStream(hierarchy))) {
@@ -81,18 +92,11 @@ public class ArtifactSaver {
                         + hierarchy
                         + " (use go/web-hv to open the dump file)",
                 e);
-        device.takeScreenshot(screenshot);
-
-        // Dump accessibility hierarchy
-        try {
-            device.dumpWindowHierarchy(artifactFile(description, "AccessibilityHierarchy", "uix"));
-        } catch (IOException ex) {
-            android.util.Log.e(TAG, "Failed to save accessibility hierarchy", ex);
-        }
 
         // Dump bugreport
-        if (!sBugreportTaken && FailureWatcher.getSystemAnomalyMessage(device) != null) {
-            sBugreportTaken = true;
+        if (sShouldTakeBugreport && FailureWatcher.getSystemAnomalyMessage(device) != null) {
+            // Taking bugreport is expensive, we should do this only once.
+            sShouldTakeBugreport = false;
             dumpCommandOutput("bugreportz -s", artifactFile(description, "Bugreport", "zip"));
         }
     }
