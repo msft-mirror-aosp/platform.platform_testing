@@ -16,23 +16,23 @@
 
 package com.android.server.wm.flicker.assertions
 
+import com.android.server.wm.flicker.TraceFile
 import com.android.server.wm.flicker.dsl.AssertionTag
 import com.android.server.wm.flicker.traces.FlickerSubjectException
 import com.google.common.truth.Fact
 import java.io.ByteArrayOutputStream
 import java.io.PrintStream
-import java.nio.file.Path
 
 class FlickerAssertionErrorBuilder {
     private var error: Throwable? = null
-    private var traceFile: Path? = null
+    private var traceFile: TraceFile? = null
     private var tag = ""
 
     fun fromError(error: Throwable): FlickerAssertionErrorBuilder = apply {
         this.error = error
     }
 
-    fun withTrace(traceFile: Path?): FlickerAssertionErrorBuilder = apply {
+    fun withTrace(traceFile: TraceFile?): FlickerAssertionErrorBuilder = apply {
         this.traceFile = traceFile
     }
 
@@ -73,7 +73,7 @@ class FlickerAssertionErrorBuilder {
     }
 
     private val traceFileMessage get() = buildString {
-        traceFile?.let {
+        traceFile?.traceFile?.let {
             append("\t")
             append(it)
         }
