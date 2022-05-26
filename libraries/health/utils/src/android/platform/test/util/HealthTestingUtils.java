@@ -17,6 +17,7 @@
 package android.platform.test.util;
 
 import android.os.SystemClock;
+import android.support.test.uiautomator.StaleObjectException;
 
 import org.junit.Assert;
 
@@ -80,6 +81,29 @@ public class HealthTestingUtils {
                 });
 
         return result.value;
+    }
+
+    /**
+     * Waits for a result to be produced without throwing a {@link StaleObjectException}.
+     *
+     * <p>This is useful in case of dealing with containers that change or go out of screen during
+     * the test, to reduce flakiness.
+     *
+     * @param errorMessage message thrown when resultProduces fails after the maximum number of
+     *     retries.
+     * @param resultProducer produces the output. Might throw {@link StaleObjectException}.
+     */
+    public static <T> T waitForValueCatchingStaleObjectExceptions(
+            Supplier<String> errorMessage, Supplier<T> resultProducer) {
+        return waitForValuePresent(
+                errorMessage,
+                () -> {
+                    try {
+                        return Optional.of(resultProducer.get());
+                    } catch (StaleObjectException e) {
+                        return Optional.empty();
+                    }
+                });
     }
 
     /**
