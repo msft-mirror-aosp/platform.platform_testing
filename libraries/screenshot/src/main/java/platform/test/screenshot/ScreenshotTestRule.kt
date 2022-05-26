@@ -51,7 +51,8 @@ open class ScreenshotTestRule(
     val goldenImagePathManager: GoldenImagePathManager
 ) : TestRule {
 
-    private val resultBinaryProtoFileSuffix = ".pb"
+    private val imageExtension = ".png"
+    private val resultBinaryProtoFileSuffix = "goldResult.pb"
     // This is used in CI to identify the files.
     private val resultProtoFileSuffix = "goldResult.textproto"
 
@@ -246,11 +247,11 @@ open class ScreenshotTestRule(
     internal fun getPathOnDeviceFor(fileType: OutputFileType): File {
         val fileName = when (fileType) {
             OutputFileType.IMAGE_ACTUAL ->
-                "${testIdentifier}_actual$goldenImagePathManager.imageExtension"
+                "${testIdentifier}_actual_$goldenImagePathManager.$imageExtension"
             OutputFileType.IMAGE_EXPECTED ->
-                "${testIdentifier}_expected$goldenImagePathManager.imageExtension"
+                "${testIdentifier}_expected_$goldenImagePathManager.$imageExtension"
             OutputFileType.IMAGE_DIFF ->
-                "${testIdentifier}_diff$goldenImagePathManager.imageExtension"
+                "${testIdentifier}_diff_$goldenImagePathManager.$imageExtension"
             OutputFileType.RESULT_PROTO -> "${testIdentifier}_$resultProtoFileSuffix"
             OutputFileType.RESULT_BIN_PROTO -> "${testIdentifier}_$resultBinaryProtoFileSuffix"
         }
