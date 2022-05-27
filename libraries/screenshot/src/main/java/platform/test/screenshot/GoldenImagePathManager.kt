@@ -54,34 +54,20 @@ private const val RESOLUTION_TAG = "resolution"
  * test code will run for. That decision/configuration is part of your test configuration.
  *
  */
-open class GoldenImagePathManager(
-    val appContext: Context,
-    val locationConfig: GoldenImageLocationConfig = GoldenImageLocationConfig(
-        getDeviceOutputDirectory(appContext),
-        getRepoURL()
-    ),
-    val pathConfig: PathConfig = getDefaultPathConfig()
+open class GoldenImagePathManager @JvmOverloads constructor(
+    open val appContext: Context,
+    open val deviceLocalPath: String = getDeviceOutputDirectory(appContext),
+    open val pathConfig: PathConfig = getSimplePathConfig()
 ) {
 
-    public val deviceLocalPath = locationConfig.deviceLocalPath
-    public val repoRemotePath = locationConfig.repoRemotePath
     public val imageExtension = "png"
 
     /*
      * Uses [pathConfig] and [testName] to construct the full path to the golden image.
      */
-    public open fun goldenIdentifierResolver(
-        testName: String,
-        relativePathOnly: Boolean = true,
-        localPath: Boolean = true
-    ): String {
+    public open fun goldenIdentifierResolver(testName: String): String {
         val relativePath = pathConfig.resolveRelativePath(appContext)
-        val imageFullPath = "$relativePath$testName.$imageExtension"
-        return when {
-            relativePathOnly -> imageFullPath
-            localPath -> "$deviceLocalPath/$imageFullPath"
-            else -> "$repoRemotePath/$imageFullPath"
-        }
+        return "$relativePath$testName.$imageExtension"
     }
 }
 
@@ -136,25 +122,11 @@ class PathConfig(vararg elems: PathElementBase) {
 }
 
 /*
-* This configure is used to determine where to retrieve the golden images from.
-* The golden images will be stored in a git repository and will be download to the
-* device as needed. Both repo location and local path are part of this configuration.
-*/
-data class GoldenImageLocationConfig(
-    // Directory on the device that is used to store the output files.
-    val deviceLocalPath: String = "",
-
-    // Repo where all the golden images are checkedin.
-    val repoRemotePath: String = ""
-)
-
-/*
 * This is the PathConfig that will be used by default.
 * An example directory structure using this config would be
 *  /google/pixel6/api32/600_400/
 */
-
-private fun getDefaultPathConfig(): PathConfig {
+public fun getDefaultPathConfig(): PathConfig {
     return PathConfig(
         PathElementNoContext(BRAND_TAG, true, ::getDeviceBrand),
         PathElementNoContext(MODEL_TAG, true, ::getDeviceModel),
@@ -167,16 +139,20 @@ private fun getDefaultPathConfig(): PathConfig {
     )
 }
 
+public fun getSimplePathConfig(): PathConfig {
+    return PathConfig(
+        PathElementNoContext(MODEL_TAG, true, ::getDeviceModel)
+    )
+}
+
 /*
  * Default output directory where all images generated as part of the test are stored.
  */
-fun getDeviceOutputDirectory(context: Context) =
+public fun getDeviceOutputDirectory(context: Context) =
     File(context.externalCacheDir, "androidx_screenshots").toString()
 
-private fun getRepoURL() = "https://"
-
 /* Standard implementations for the usual list of dimensions that affect a golden image. */
-private fun getDeviceModel(): String {
+public fun getDeviceModel(): String {
     var model = Build.MODEL.lowercase()
     arrayOf("phone", "x86_64", "x86", "x64", "gms").forEach {
         model = model.replace(it, "")
@@ -184,7 +160,7 @@ private fun getDeviceModel(): String {
     return model.trim().replace(" ", "_")
 }
 
-private fun getDeviceBrand(): String {
+public fun getDeviceBrand(): String {
     var brand = Build.BRAND.lowercase()
     arrayOf("phone", "x86_64", "x86", "x64", "gms").forEach {
         brand = brand.replace(it, "")
@@ -192,15 +168,15 @@ private fun getDeviceBrand(): String {
     return brand.trim().replace(" ", "_")
 }
 
-private fun getAPIVersion() = "API" + Build.VERSION.SDK_INT.toString()
+public fun getAPIVersion() = "API" + Build.VERSION.SDK_INT.toString()
 
-private fun getScreenResolution(context: Context) =
+public fun getScreenResolution(context: Context) =
     context.resources.displayMetrics.densityDpi.toString() + "dpi"
 
-private fun getScreenOrientation(context: Context) =
+public fun getScreenOrientation(context: Context) =
     context.resources.configuration.orientation.toString()
 
-private fun getScreenSize(context: Context): String {
+public fun getScreenSize(context: Context): String {
     val heightdp = context.resources.configuration.screenHeightDp.toString()
     val widthdp = context.resources.configuration.screenWidthDp.toString()
     return "${heightdp}_$widthdp"
