@@ -105,6 +105,26 @@ public final class HeapDumpListenerTest {
         verify(mHelper, times(1)).startCollecting("run_test_one_3");
     }
 
+    /** Test heapdump collection enabled only for the 2nd and 3rd iterations.*/
+    @Test
+    public void testHeapCollectionWithProcessNames() throws Exception {
+        Bundle enableSpecificIterationsBundle = new Bundle();
+        enableSpecificIterationsBundle.putString(
+                HeapDumpListener.ENABLE_ITERATION_IDS, "2,3");
+        enableSpecificIterationsBundle.putString(
+                HeapDumpListener.PROCESS_NAMES_KEY, "system_server");
+        HeapDumpListener collector = new HeapDumpListener(enableSpecificIterationsBundle, mHelper);
+        collector.setInstrumentation(mInstrumentation);
+
+        collector.testRunStarted(RUN_DESCRIPTION);
+        collector.testStarted(TEST_DESCRIPTION_1);
+        collector.testStarted(TEST_DESCRIPTION_1);
+        collector.testStarted(TEST_DESCRIPTION_1);
+        verify(mHelper, times(1)).setUp(HeapDumpListener.DEFAULT_OUTPUT_DIR,  "system_server");
+        verify(mHelper, times(1)).startCollecting("run_test_one_2");
+        verify(mHelper, times(1)).startCollecting("run_test_one_3");
+    }
+
     /** Test heapdump collection enabled only for the 2nd iterations during multiple tests.*/
     @Test
     public void testHeapCollectionSpecificIterationsMultipleTests() throws Exception {
