@@ -63,15 +63,20 @@ public class BaseCollectionListener<T> extends BaseMetricListener {
 
     @Override
     public void onTestRunStart(DataRecord runData, Description description) {
-        Bundle args = getArgsBundle();
-        mIsCollectPerRun = "true".equals(args.getString(COLLECT_PER_RUN));
-        // By default this flag is set to false to collect the metrics on test failure.
-        mSkipTestFailureMetrics = "true".equals(args.getString(SKIP_TEST_FAILURE_METRICS));
 
         if (mIsCollectPerRun) {
             Function<String, Boolean> filter = getFilter(description);
             testStart(filter, description);
         }
+    }
+
+    @Override
+    protected void parseArguments() {
+        super.parseArguments();
+        Bundle args = getArgsBundle();
+        mIsCollectPerRun = "true".equals(args.getString(COLLECT_PER_RUN));
+        // By default this flag is set to false to collect the metrics on test failure.
+        mSkipTestFailureMetrics = "true".equals(args.getString(SKIP_TEST_FAILURE_METRICS));
     }
 
     protected Function<String, Boolean> getFilter(Description description) {
@@ -93,7 +98,7 @@ public class BaseCollectionListener<T> extends BaseMetricListener {
     }
 
     @Override
-    public final void onTestEnd(DataRecord testData, Description description) {
+    public void onTestEnd(DataRecord testData, Description description) {
         if (!mIsCollectPerRun) {
             // Skip adding the metrics collected during the test failure
             // if the skip metrics on test failure flag is enabled and the
