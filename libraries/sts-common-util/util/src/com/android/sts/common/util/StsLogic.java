@@ -38,24 +38,33 @@ public interface StsLogic {
 
     // keep in sync with google3:
     // //wireless/android/partner/apbs/*/config/xtsbgusinesslogic/sts_business_logic.gcl
-    List<String> STS_EXTRA_BUSINESS_LOGIC_FULL = Arrays.asList(new String[] {
-            "uploadSpl",
-            "uploadModificationTime",
-            "uploadKernelBugs",
-            "declaredSpl",
-    });
-    List<String> STS_EXTRA_BUSINESS_LOGIC_INCREMENTAL = Arrays.asList(new String[] {
-            "uploadSpl",
-            "uploadModificationTime",
-            "uploadKernelBugs",
-            "declaredSpl",
-            "incremental",
-    });
+    List<String> STS_EXTRA_BUSINESS_LOGIC_FULL =
+            Arrays.asList(
+                    new String[] {
+                        "uploadSpl",
+                        "uploadModificationTime",
+                        "uploadKernelBugs",
+                        "declaredSpl",
+                        "fridaAssetTemplate",
+                    });
+    List<String> STS_EXTRA_BUSINESS_LOGIC_INCREMENTAL =
+            Arrays.asList(
+                    new String[] {
+                        "uploadSpl",
+                        "uploadModificationTime",
+                        "uploadKernelBugs",
+                        "declaredSpl",
+                        "incremental",
+                        "fridaAssetTemplate",
+                    });
 
     // intentionally empty because declaredSpl and incremental skipping is not desired when
     // developing STS tests.
-    List<String> STS_EXTRA_BUSINESS_LOGIC_DEVELOP = Arrays.asList(new String[] {
-    });
+    List<String> STS_EXTRA_BUSINESS_LOGIC_DEVELOP =
+            Arrays.asList(
+                    new String[] {
+                        "fridaAssetTemplate",
+                    });
 
     Description getTestDescription();
 
