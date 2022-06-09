@@ -16,6 +16,7 @@
 
 package platform.test.screenshot
 
+import android.graphics.Rect
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.MediumTest
 import com.google.common.truth.Truth.assertThat
@@ -54,5 +55,20 @@ class PixelPerfectMatcherTest {
         )
 
         assertThat(result.matches).isFalse()
+    }
+
+    @Test
+    fun performDiff_sameSize_differentBorders_partialCompare() {
+        val first = loadBitmap("round_rect_gray")
+        val second = loadBitmap("round_rect_green")
+
+        val matcher = PixelPerfectMatcher()
+        val result = matcher.compareBitmaps(
+            first.toIntArray(), second.toIntArray(),
+            first.width, first.height,
+            arrayOf(Rect(/* left= */1, /* top= */1, /* right= */4, /* bottom= */4))
+        )
+
+        assertThat(result.matches).isTrue()
     }
 }
