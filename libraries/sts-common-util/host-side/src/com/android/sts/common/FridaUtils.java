@@ -19,18 +19,23 @@ package com.android.sts.common;
 import static com.android.sts.common.CommandUtil.runAndCheck;
 import static java.util.stream.Collectors.toList;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.InputStreamReader;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.TimeUnit;
@@ -38,12 +43,19 @@ import java.util.stream.Stream;
 import org.tukaani.xz.XZInputStream;
 
 import com.android.compatibility.common.tradefed.build.CompatibilityBuildHelper;
+import com.android.sts.common.util.FridaUtilsBusinessLogicHandler;
 import com.android.tradefed.build.IBuildInfo;
 import com.android.tradefed.device.DeviceNotAvailableException;
 import com.android.tradefed.device.ITestDevice;
 import com.android.tradefed.log.LogUtil.CLog;
 import com.android.tradefed.util.FileUtil;
 import com.android.tradefed.util.RunUtil;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonParser;
+
+// import org.json.JSONException;
 
 public class FridaUtils implements AutoCloseable {
     private static final String PRODUCT_CPU_ABI_KEY = "ro.product.cpu.abi";
@@ -52,19 +64,32 @@ public class FridaUtils implements AutoCloseable {
     private static final String FRIDA_OS = "android";
     private static final String TMP_PATH = "/data/local/tmp/";
 
+    // https://docs.github.com/en/rest/releases/releases
+    private static final String FRIDA_LATEST_GITHUB_API_URL =
+            "https://api.github.com/repos/frida/frida/releases/latest";
+    private static final String FRIDA_ASSETS_GITHUB_API_URL =
+            "https://api.github.com/repos/frida/frida/releases";
+
+    private final String fridaAbi;
+    private final String fridaVersion;
     private final ITestDevice device;
     private final CompatibilityBuildHelper buildHelper;
     private final String remoteFridaExeName;
     private List<Integer> runningPids = new ArrayList<>();
     private List<String> fridaFiles = new ArrayList<>();
 
-    private FridaUtils(ITestDevice device, IBuildInfo buildInfo, String fridaVersion)
+    private FridaUtils(ITestDevice device, IBuildInfo buildInfo)
             throws DeviceNotAvailableException, UnsupportedOperationException, IOException {
         this.device = device;
         this.buildHelper = new CompatibilityBuildHelper(buildInfo);
 
+        // Figure out which version we should be using
+        Optional<String> versionOpt = FridaUtilsBusinessLogicHandler.getFridaVersion();
+        String version = versionOpt.isPresent() ? versionOpt.get() : getLatestFridaVersion();
+
         // Figure out which Frida arch we should be using for our device
-        String fridaAbi = getFridaAbiFor(device);
+        fridaAbi = getFridaAbiFor(device);
+        fridaVersion = version;
         String fridaExeName =
                 String.format("%s-%s-%s-%s", FRIDA_PACKAGE, fridaVersion, FRIDA_OS, fridaAbi);
 
@@ -74,11 +99,9 @@ public class FridaUtils implements AutoCloseable {
             localFridaExe = buildHelper.getTestFile(fridaExeName);
             CLog.d("%s found at %s", fridaExeName, localFridaExe.getAbsolutePath());
         } catch (FileNotFoundException e) {
-            String fridaUrl =
-                    String.format(
-                            "https://github.com/frida/frida/releases/download/%s/%s.xz",
-                            fridaVersion, fridaExeName);
-            CLog.d("%s not found. Downloading from %s", fridaExeName, fridaUrl);
+            CLog.d("%s not found.", fridaExeName);
+            String fridaUrl = getFridaDownloadUrl(fridaVersion);
+            CLog.d("Downloading Frida from %s", fridaUrl);
             try {
                 URL url = new URL(fridaUrl);
                 URLConnection conn = url.openConnection();
@@ -113,10 +136,9 @@ public class FridaUtils implements AutoCloseable {
      * @param buildInfo test device build info (from test.getBuild())
      * @return an AutoCloseable FridaUtils object that can be used to run Frida scripts with
      */
-    public static FridaUtils withFrida(
-            ITestDevice device, IBuildInfo buildInfo, String fridaVersion)
+    public static FridaUtils withFrida(ITestDevice device, IBuildInfo buildInfo)
             throws DeviceNotAvailableException, UnsupportedOperationException, IOException {
-        return new FridaUtils(device, buildInfo, fridaVersion);
+        return new FridaUtils(device, buildInfo);
     }
 
     /**
@@ -211,5 +233,42 @@ public class FridaUtils implements AutoCloseable {
         return Stream.concat(Stream.of(primaryAbi), Arrays.stream(supportedAbis))
                 .distinct()
                 .collect(toList());
+    }
+
+    private static JsonElement getJson(String url) throws IOException, JsonParseException {
+        URLConnection conn = new URL(url).openConnection();
+        InputStreamReader reader = new InputStreamReader(conn.getInputStream());
+        return new JsonParser().parse(reader);
+    }
+
+    private static String getLatestFridaVersion() throws IOException, JsonParseException {
+        return getJson(FRIDA_LATEST_GITHUB_API_URL).getAsJsonObject().get("tag_name").getAsString();
+    }
+
+    private String getFridaDownloadUrl(String version) throws IOException, JsonParseException {
+        assertNotNull(
+                "Did not get frida filename template from BusinessLogic",
+                FridaUtilsBusinessLogicHandler.getFridaFilenameTemplate());
+        String name =
+                MessageFormat.format(
+                        FridaUtilsBusinessLogicHandler.getFridaFilenameTemplate(),
+                        FRIDA_PACKAGE,
+                        fridaVersion,
+                        FRIDA_OS,
+                        fridaAbi);
+
+        JsonArray releases = getJson(FRIDA_ASSETS_GITHUB_API_URL).getAsJsonArray();
+
+        for (JsonElement release : releases) {
+            if (release.getAsJsonObject().get("tag_name").getAsString().equals(version)) {
+                for (JsonElement asset : release.getAsJsonObject().getAsJsonArray("assets")) {
+                    if (asset.getAsJsonObject().get("name").getAsString().equals(name)) {
+                        return asset.getAsJsonObject().get("browser_download_url").getAsString();
+                    }
+                }
+            }
+        }
+        fail("Could not find frida asset '" + name + "' in '" + FRIDA_ASSETS_GITHUB_API_URL + "'");
+        return null;
     }
 }
