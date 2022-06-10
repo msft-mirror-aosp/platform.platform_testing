@@ -17,6 +17,7 @@
 package platform.test.screenshot
 
 import android.content.Context
+import android.graphics.Rect
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.MediumTest
 import androidx.test.platform.app.InstrumentationRegistry
@@ -32,6 +33,7 @@ import platform.test.screenshot.OutputFileType.IMAGE_DIFF
 import platform.test.screenshot.OutputFileType.IMAGE_EXPECTED
 import platform.test.screenshot.OutputFileType.RESULT_BIN_PROTO
 import platform.test.screenshot.OutputFileType.RESULT_PROTO
+import platform.test.screenshot.matchers.MSSIMMatcher
 import platform.test.screenshot.matchers.PixelPerfectMatcher
 import platform.test.screenshot.proto.ScreenshotResultProto
 import platform.test.screenshot.utils.loadBitmap
@@ -54,6 +56,45 @@ class ScreenshotTestRuleTest {
 
         first
             .assertAgainstGolden(rule, "round_rect_gray", matcher = PixelPerfectMatcher())
+
+        val resultProto = rule.getPathOnDeviceFor(RESULT_PROTO)
+        assertThat(resultProto.readText()).contains("PASS")
+        assertThat(rule.getPathOnDeviceFor(IMAGE_ACTUAL).exists()).isTrue()
+        assertThat(rule.getPathOnDeviceFor(IMAGE_DIFF).exists()).isFalse()
+        assertThat(rule.getPathOnDeviceFor(IMAGE_EXPECTED).exists()).isTrue()
+        assertThat(rule.getPathOnDeviceFor(RESULT_BIN_PROTO).exists()).isTrue()
+    }
+
+    @Test
+    fun performDiff_noPixelCompared() {
+        val first = loadBitmap("round_rect_gray")
+
+        first.assertAgainstGolden(
+            rule, "round_rect_green", matcher = MSSIMMatcher(),
+            regions = arrayOf(Rect(/* left= */1, /* top= */1, /* right= */2, /* bottom=*/2))
+        )
+
+        val resultProto = rule.getPathOnDeviceFor(RESULT_PROTO)
+        assertThat(resultProto.readText()).contains("PASS")
+        assertThat(rule.getPathOnDeviceFor(IMAGE_ACTUAL).exists()).isTrue()
+        assertThat(rule.getPathOnDeviceFor(IMAGE_DIFF).exists()).isFalse()
+        assertThat(rule.getPathOnDeviceFor(IMAGE_EXPECTED).exists()).isTrue()
+        assertThat(rule.getPathOnDeviceFor(RESULT_BIN_PROTO).exists()).isTrue()
+    }
+
+    @Test
+    fun performDiff_sameRegion() {
+        val first = loadBitmap("qmc-folder1")
+        val startHeight = 18 * first.height / 20
+        val endHeight = 37 * first.height / 40
+        val startWidth = 10 * first.width / 20
+        val endWidth = 11 * first.width / 20
+        val matcher = MSSIMMatcher()
+
+        first.assertAgainstGolden(
+            rule, "qmc-folder2", matcher,
+            arrayOf(Rect(startWidth, startHeight, endWidth, endHeight))
+        )
 
         val resultProto = rule.getPathOnDeviceFor(RESULT_PROTO)
         assertThat(resultProto.readText()).contains("PASS")
