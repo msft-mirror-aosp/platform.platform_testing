@@ -19,6 +19,7 @@ package platform.test.screenshot
 import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Rect
 import android.os.Bundle
 import androidx.test.platform.app.InstrumentationRegistry
 import org.junit.rules.TestRule
@@ -121,6 +122,39 @@ open class ScreenshotTestRule(
         goldenIdentifier: String,
         matcher: BitmapMatcher
     ) {
+        assertBitmapAgainstGolden(
+            actual = actual,
+            goldenIdentifier = goldenIdentifier,
+            matcher = matcher,
+            regions = null
+        )
+    }
+
+    /**
+     * Asserts the given bitmap against the golden identified by the given name.
+     *
+     * Note: The golden identifier should be unique per your test module (unless you want multiple
+     * tests to match the same golden). The name must not contain extension. You should also avoid
+     * adding strings like "golden", "image" and instead describe what is the golder referring to.
+     *
+     * @param actual The bitmap captured during the test.
+     * @param goldenIdentifier Name of the golden. Allowed characters: 'A-Za-z0-9_-'
+     * @param matcher The algorithm to be used to perform the matching.
+     * @param regions An optional array of interesting regions for partial screenshot diff.
+     *
+     * @see MSSIMMatcher
+     * @see PixelPerfectMatcher
+     * @see Bitmap.assertAgainstGolden
+     *
+     * @throws IllegalArgumentException If the golden identifier contains forbidden characters or
+     * is empty.
+     */
+    fun assertBitmapAgainstGolden(
+        actual: Bitmap,
+        goldenIdentifier: String,
+        matcher: BitmapMatcher,
+        regions: Array<Rect>?
+    ) {
         if (!goldenIdentifier.matches("^[A-Za-z0-9_-]+$".toRegex())) {
             throw IllegalArgumentException(
                 "The given golden identifier '$goldenIdentifier' does not satisfy the naming " +
@@ -132,6 +166,7 @@ open class ScreenshotTestRule(
         if (expected == null) {
             reportResult(
                 status = ScreenshotResultProto.DiffResult.Status.MISSING_REFERENCE,
+                assetsPathRelativeToRepo = goldenImagePathManager.assetsPathRelativeToRepo,
                 goldenIdentifier = goldenIdentifier,
                 actual = actual
             )
@@ -145,6 +180,7 @@ open class ScreenshotTestRule(
         if (actual.width != expected.width || actual.height != expected.height) {
             reportResult(
                 status = ScreenshotResultProto.DiffResult.Status.FAILED,
+                assetsPathRelativeToRepo = goldenImagePathManager.assetsPathRelativeToRepo,
                 goldenIdentifier = goldenIdentifier,
                 actual = actual,
                 expected = expected
@@ -159,7 +195,8 @@ open class ScreenshotTestRule(
             expected = expected.toIntArray(),
             given = actual.toIntArray(),
             width = actual.width,
-            height = actual.height
+            height = actual.height,
+            regions = regions
         )
 
         val status = if (comparisonResult.matches) {
@@ -170,6 +207,7 @@ open class ScreenshotTestRule(
 
         reportResult(
             status = status,
+            assetsPathRelativeToRepo = goldenImagePathManager.assetsPathRelativeToRepo,
             goldenIdentifier = goldenIdentifier,
             actual = actual,
             comparisonStatistics = comparisonResult.comparisonStatistics,
@@ -187,6 +225,7 @@ open class ScreenshotTestRule(
 
     private fun reportResult(
         status: ScreenshotResultProto.DiffResult.Status,
+        assetsPathRelativeToRepo: String,
         goldenIdentifier: String,
         actual: Bitmap,
         comparisonStatistics: ScreenshotResultProto.DiffResult.ComparisonStatistics? = null,
@@ -204,8 +243,10 @@ open class ScreenshotTestRule(
         if (comparisonStatistics != null) {
             resultProto.comparisonStatistics = comparisonStatistics
         }
-        resultProto.imageLocationGolden =
+
+        val pathRelativeToAssets =
             goldenImagePathManager.goldenIdentifierResolver(goldenIdentifier)
+        resultProto.imageLocationGolden = "$assetsPathRelativeToRepo/$pathRelativeToAssets"
 
         val report = Bundle()
 
@@ -312,9 +353,10 @@ internal fun Bitmap.toIntArray(): IntArray {
 fun Bitmap.assertAgainstGolden(
     rule: ScreenshotTestRule,
     goldenIdentifier: String,
-    matcher: BitmapMatcher = MSSIMMatcher()
+    matcher: BitmapMatcher = MSSIMMatcher(),
+    regions: Array<Rect>? = null
 ) {
-    rule.assertBitmapAgainstGolden(this, goldenIdentifier, matcher = matcher)
+    rule.assertBitmapAgainstGolden(this, goldenIdentifier, matcher = matcher, regions = regions)
 }
 
 /**
