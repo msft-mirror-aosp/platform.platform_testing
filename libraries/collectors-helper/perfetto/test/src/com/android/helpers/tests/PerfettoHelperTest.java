@@ -47,19 +47,23 @@ public class PerfettoHelperTest {
     private static final String FILE_SIZE_IN_BYTES = "wc -c %s";
 
     private PerfettoHelper mPerfettoHelper;
+    private boolean isPerfettoStartSuccess = false;
 
     @Before
     public void setUp() {
         mPerfettoHelper = new PerfettoHelper();
         mPerfettoHelper.setPerfettoConfigRootDir("/data/misc/perfetto-traces/");
+        isPerfettoStartSuccess = false;
     }
 
     @After
     public void teardown() throws IOException {
-        mPerfettoHelper.setPerfettoConfigRootDir("/data/misc/perfetto-traces/");
-        UiDevice uiDevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
-        mPerfettoHelper.stopCollecting(1000, "data/local/tmp/out.pb");
-        uiDevice.executeShellCommand(String.format(REMOVE_CMD, "/data/local/tmp/out.pb"));
+        if (isPerfettoStartSuccess) {
+            mPerfettoHelper.setPerfettoConfigRootDir("/data/misc/perfetto-traces/");
+            UiDevice uiDevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
+            mPerfettoHelper.stopCollecting(1000, "data/local/tmp/out.pb");
+            uiDevice.executeShellCommand(String.format(REMOVE_CMD, "/data/local/tmp/out.pb"));
+        }
     }
 
     /**
@@ -107,6 +111,7 @@ public class PerfettoHelperTest {
     @Test
     public void testPerfettoStartSuccess() throws Exception {
         assertTrue(mPerfettoHelper.startCollecting("trace_config.textproto", true));
+        isPerfettoStartSuccess = true;
     }
 
     /**
@@ -115,6 +120,7 @@ public class PerfettoHelperTest {
     @Test
     public void testPerfettoValidOutputPath() throws Exception {
         assertTrue(mPerfettoHelper.startCollecting("trace_config.textproto", true));
+        isPerfettoStartSuccess = true;
         assertTrue(mPerfettoHelper.stopCollecting(1000, "data/local/tmp/out.pb"));
     }
 
@@ -124,6 +130,7 @@ public class PerfettoHelperTest {
     @Test
     public void testPerfettoInvalidOutputPath() throws Exception {
         assertTrue(mPerfettoHelper.startCollecting("trace_config.textproto", true));
+        isPerfettoStartSuccess = true;
         // Don't have permission to create new folder under /data
         assertFalse(mPerfettoHelper.stopCollecting(1000, "/data/xxx/xyz/out.pb"));
     }
@@ -135,6 +142,7 @@ public class PerfettoHelperTest {
     @Test
     public void testPerfettoSuccess() throws Exception {
         assertTrue(mPerfettoHelper.startCollecting("trace_config.textproto", true));
+        isPerfettoStartSuccess = true;
         assertTrue(mPerfettoHelper.stopCollecting(1000, "/data/local/tmp/out.pb"));
         UiDevice uiDevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
         String[] fileStats = uiDevice.executeShellCommand(String.format(

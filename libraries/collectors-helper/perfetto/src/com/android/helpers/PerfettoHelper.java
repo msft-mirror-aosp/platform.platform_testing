@@ -43,9 +43,9 @@ public class PerfettoHelper {
     // Additional arg to indicate that the perfetto config file is text format.
     private static final String PERFETTO_TXT_PROTO_ARG = " --txt";
     // Command to stop (i.e kill) the perfetto tracing.
-    private static final String PERFETTO_STOP_CMD = "pkill -INT perfetto";
-    // Command to check the perfetto process id.
-    private static final String PERFETTO_PROC_ID_CMD = "pidof perfetto";
+    private static final String PERFETTO_STOP_CMD = "kill %d";
+    // Command to return the process details if it is still running otherwise returns empty string.
+    private static final String PERFETTO_PROC_ID_EXIST_CHECK = "ls -l /proc/%d/exe";
     // Remove the trace output file /data/misc/perfetto-traces/trace_output.pb
     private static final String REMOVE_CMD = "rm %s";
     // Command to move the perfetto output trace file to given folder.
@@ -58,6 +58,8 @@ public class PerfettoHelper {
     private UiDevice mUIDevice;
 
     private String mConfigRootDir;
+
+    private int mPerfettoProcId = 0;
 
     /**
      * Start the perfetto tracing in background using the given config file and write the ouput to
@@ -82,15 +84,6 @@ public class PerfettoHelper {
         }
 
         try {
-            // Cleanup already existing perfetto process.
-            Log.i(LOG_TAG, "Cleanup perfetto before starting.");
-            if (isPerfettoRunning()) {
-                Log.i(LOG_TAG, "Perfetto tracing is already running. Stopping perfetto.");
-                if (!stopPerfetto()) {
-                    return false;
-                }
-            }
-
             // Remove already existing temporary output trace file if any.
             String output = mUIDevice.executeShellCommand(String.format(REMOVE_CMD,
                     PERFETTO_TMP_OUTPUT_FILE));
@@ -107,9 +100,11 @@ public class PerfettoHelper {
             Log.i(LOG_TAG, "Starting perfetto tracing.");
             String startOutput = mUIDevice.executeShellCommand(perfettoCmd);
             Log.i(LOG_TAG, String.format("Perfetto start command output - %s", startOutput));
-            // TODO : Once the output status is available use that for additional validation.
-            if (!isPerfettoRunning()) {
-                Log.e(LOG_TAG, "Perfetto tracing failed to start.");
+            if (startOutput != null && !startOutput.isEmpty()) {
+                mPerfettoProcId = Integer.parseInt(startOutput.trim());
+            }
+            SystemClock.sleep(1000);
+            if(!isTestPerfettoRunning()) {
                 return false;
             }
         } catch (IOException ioe) {
@@ -158,10 +153,12 @@ public class PerfettoHelper {
      * @return true if perfetto is stopped successfully.
      */
     public boolean stopPerfetto() throws IOException {
-        String stopOutput = mUIDevice.executeShellCommand(PERFETTO_STOP_CMD);
+        Log.i(LOG_TAG, String.format("Killing the process id - %d", mPerfettoProcId));
+        String stopOutput = mUIDevice.executeShellCommand(String.format(
+                PERFETTO_STOP_CMD, mPerfettoProcId));
         Log.i(LOG_TAG, String.format("Perfetto stop command output - %s", stopOutput));
         int waitCount = 0;
-        while (isPerfettoRunning()) {
+        while (isTestPerfettoRunning()) {
             // 60 secs timeout for perfetto shutdown.
             if (waitCount < PERFETTO_KILL_WAIT_COUNT) {
                 // Check every 5 secs if perfetto stopped successfully.
@@ -180,18 +177,21 @@ public class PerfettoHelper {
      *
      * @return true if perfetto is running otherwise false.
      */
-    private boolean isPerfettoRunning() {
+    private boolean isTestPerfettoRunning() {
         try {
-            String perfettoProcId = mUIDevice.executeShellCommand(PERFETTO_PROC_ID_CMD);
-            Log.i(LOG_TAG, String.format("Perfetto process id - %s", perfettoProcId));
-            if (perfettoProcId.isEmpty()) {
-                return false;
+            String perfettoProcStatus = mUIDevice.executeShellCommand(
+                    String.format(PERFETTO_PROC_ID_EXIST_CHECK, mPerfettoProcId));
+            Log.i(LOG_TAG, String.format("Perfetto process id status check - %s",
+                    perfettoProcStatus));
+            // If proc details not empty then process is still running.
+            if (!perfettoProcStatus.isEmpty()) {
+                return true;
             }
         } catch (IOException ioe) {
             Log.e(LOG_TAG, "Not able to check the perfetto status due to:" + ioe.getMessage());
             return false;
         }
-        return true;
+        return false;
     }
 
     /**
