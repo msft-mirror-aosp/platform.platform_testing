@@ -60,7 +60,7 @@ public final class HeapDumpListenerTest {
 
         collector.testRunStarted(RUN_DESCRIPTION);
         collector.testStarted(TEST_DESCRIPTION_1);
-        verify(mHelper, times(1)).startCollecting(true, "run_test_one_1");
+        verify(mHelper, times(1)).startCollecting("run_test_one_1");
     }
 
     /** Test heapdump collection force disable for all iterations.*/
@@ -73,7 +73,7 @@ public final class HeapDumpListenerTest {
 
         collector.testRunStarted(RUN_DESCRIPTION);
         collector.testStarted(TEST_DESCRIPTION_1);
-        verify(mHelper, times(0)).startCollecting(true, "run_test_one_1");
+        verify(mHelper, times(0)).startCollecting("run_test_one_1");
     }
 
     /** Test heapdump collection disabled for all iterations by default.*/
@@ -85,7 +85,7 @@ public final class HeapDumpListenerTest {
 
         collector.testRunStarted(RUN_DESCRIPTION);
         collector.testStarted(TEST_DESCRIPTION_1);
-        verify(mHelper, times(0)).startCollecting(true, "run_test_one_1");
+        verify(mHelper, times(0)).startCollecting("run_test_one_1");
     }
 
     /** Test heapdump collection enabled only for the 2nd and 3rd iterations.*/
@@ -101,9 +101,28 @@ public final class HeapDumpListenerTest {
         collector.testStarted(TEST_DESCRIPTION_1);
         collector.testStarted(TEST_DESCRIPTION_1);
         collector.testStarted(TEST_DESCRIPTION_1);
-        verify(mHelper, times(1)).startCollecting(false, null);
-        verify(mHelper, times(1)).startCollecting(true, "run_test_one_2");
-        verify(mHelper, times(1)).startCollecting(true, "run_test_one_3");
+        verify(mHelper, times(1)).startCollecting("run_test_one_2");
+        verify(mHelper, times(1)).startCollecting("run_test_one_3");
+    }
+
+    /** Test heapdump collection enabled only for the 2nd and 3rd iterations.*/
+    @Test
+    public void testHeapCollectionWithProcessNames() throws Exception {
+        Bundle enableSpecificIterationsBundle = new Bundle();
+        enableSpecificIterationsBundle.putString(
+                HeapDumpListener.ENABLE_ITERATION_IDS, "2,3");
+        enableSpecificIterationsBundle.putString(
+                HeapDumpListener.PROCESS_NAMES_KEY, "system_server");
+        HeapDumpListener collector = new HeapDumpListener(enableSpecificIterationsBundle, mHelper);
+        collector.setInstrumentation(mInstrumentation);
+
+        collector.testRunStarted(RUN_DESCRIPTION);
+        collector.testStarted(TEST_DESCRIPTION_1);
+        collector.testStarted(TEST_DESCRIPTION_1);
+        collector.testStarted(TEST_DESCRIPTION_1);
+        verify(mHelper, times(1)).setUp(HeapDumpListener.DEFAULT_OUTPUT_DIR,  "system_server");
+        verify(mHelper, times(1)).startCollecting("run_test_one_2");
+        verify(mHelper, times(1)).startCollecting("run_test_one_3");
     }
 
     /** Test heapdump collection enabled only for the 2nd iterations during multiple tests.*/
@@ -120,9 +139,8 @@ public final class HeapDumpListenerTest {
         collector.testStarted(TEST_DESCRIPTION_1);
         collector.testStarted(TEST_DESCRIPTION_2);
         collector.testStarted(TEST_DESCRIPTION_2);
-        verify(mHelper, times(2)).startCollecting(false, null);
-        verify(mHelper, times(1)).startCollecting(true, "run_test_one_2");
-        verify(mHelper, times(1)).startCollecting(true, "run_test_two_2");
+        verify(mHelper, times(1)).startCollecting("run_test_one_2");
+        verify(mHelper, times(1)).startCollecting("run_test_two_2");
     }
 
     /** Test heapdump collection enabled for all the iterations and overrides the
@@ -142,9 +160,62 @@ public final class HeapDumpListenerTest {
         collector.testStarted(TEST_DESCRIPTION_1);
         collector.testStarted(TEST_DESCRIPTION_2);
         collector.testStarted(TEST_DESCRIPTION_2);
-        verify(mHelper, times(1)).startCollecting(true, "run_test_one_1");
-        verify(mHelper, times(1)).startCollecting(true, "run_test_one_2");
-        verify(mHelper, times(1)).startCollecting(true, "run_test_two_1");
-        verify(mHelper, times(1)).startCollecting(true, "run_test_two_2");
+        verify(mHelper, times(1)).startCollecting("run_test_one_1");
+        verify(mHelper, times(1)).startCollecting("run_test_one_2");
+        verify(mHelper, times(1)).startCollecting("run_test_two_1");
+        verify(mHelper, times(1)).startCollecting("run_test_two_2");
+    }
+
+    /** Test to verify the iteration separator is handled from the test class name.*/
+    @Test
+    public void testHeapCollectionTestWithIterationSeparator() throws Exception {
+        Bundle enableAllBundle = new Bundle();
+        enableAllBundle.putString(HeapDumpListener.ITERATION_ALL_ENABLE, String.valueOf(true));
+        HeapDumpListener collector = new HeapDumpListener(enableAllBundle, mHelper);
+        collector.setInstrumentation(mInstrumentation);
+
+        collector.testRunStarted(RUN_DESCRIPTION);
+        collector.testStarted(Description.createTestDescription("run$1", "test_two"));
+        verify(mHelper, times(1)).startCollecting("run_test_two_1");
+    }
+
+    /** Test to verify per test run heapdump collection. */
+    @Test
+    public void testHeapCollectionOnlyForTestRun() throws Exception {
+        Bundle collectPerRunBundle = new Bundle();
+        collectPerRunBundle.putString(HeapDumpListener.COLLECT_PER_RUN, "true");
+        HeapDumpListener collector = new HeapDumpListener(collectPerRunBundle, mHelper);
+        collector.setInstrumentation(mInstrumentation);
+        collector.testRunStarted(RUN_DESCRIPTION);
+        verify(mHelper, times(1)).startCollecting("heapdump_1");
+    }
+
+    /** Test to verify per test run heap dump collection flag overrides the per test method flag.*/
+    @Test
+    public void testHeapCollectionForTestRunOverridesPerTest() throws Exception {
+        Bundle collectPerRunBundle = new Bundle();
+        collectPerRunBundle.putString(HeapDumpListener.COLLECT_PER_RUN, "true");
+        collectPerRunBundle.putString(HeapDumpListener.ITERATION_ALL_ENABLE, String.valueOf(true));
+        HeapDumpListener collector = new HeapDumpListener(collectPerRunBundle, mHelper);
+        collector.setInstrumentation(mInstrumentation);
+        collector.testRunStarted(RUN_DESCRIPTION);
+        collector.testStarted(Description.createTestDescription("run$1", "test_two"));
+        verify(mHelper, times(1)).startCollecting("heapdump_1");
+        verify(mHelper, times(0)).startCollecting("run_test_two_1");
+    }
+
+    /** Test to verify per test run heap dump collection flag overrides heapdump collection on
+     * specific iteration id's.*/
+    @Test
+    public void testHeapCollectionForTestRunOverridesPerTestIterations() throws Exception {
+        Bundle collectPerRunBundle = new Bundle();
+        collectPerRunBundle.putString(HeapDumpListener.COLLECT_PER_RUN, "true");
+        collectPerRunBundle.putString(HeapDumpListener.ENABLE_ITERATION_IDS, "1");
+        HeapDumpListener collector = new HeapDumpListener(collectPerRunBundle, mHelper);
+        collector.setInstrumentation(mInstrumentation);
+        collector.testRunStarted(RUN_DESCRIPTION);
+        collector.testStarted(Description.createTestDescription("run$1", "test_two"));
+        verify(mHelper, times(1)).startCollecting("heapdump_1");
+        verify(mHelper, times(0)).startCollecting("run_test_two_1");
     }
 }
