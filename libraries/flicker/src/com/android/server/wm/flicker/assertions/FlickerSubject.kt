@@ -16,7 +16,6 @@
 
 package com.android.server.wm.flicker.assertions
 
-import androidx.annotation.VisibleForTesting
 import com.android.server.wm.flicker.traces.FlickerSubjectException
 import com.google.common.truth.Fact
 import com.google.common.truth.FailureMetadata
@@ -30,19 +29,8 @@ abstract class FlickerSubject(
     protected val fm: FailureMetadata,
     data: Any?
 ) : Subject(fm, data) {
-    @VisibleForTesting
-    abstract val timestamp: Long
-    protected abstract val parent: FlickerSubject?
-
-    protected abstract val selfFacts: List<Fact>
-    val completeFacts: List<Fact> get() {
-        val facts = selfFacts.toMutableList()
-        parent?.run {
-            val ancestorFacts = this.completeFacts
-            facts.addAll(ancestorFacts)
-        }
-        return facts
-    }
+    abstract val defaultFacts: String
+    abstract fun clone(): FlickerSubject
 
     /**
      * Fails an assertion on a subject
@@ -107,10 +95,4 @@ abstract class FlickerSubject(
      * Necessary because check is protected and final in the Truth library
      */
     fun verify(message: String): StandardSubjectBuilder = check(message)
-
-    companion object {
-        @VisibleForTesting
-        @JvmStatic
-        val ASSERTION_TAG = "Assertion"
-    }
 }

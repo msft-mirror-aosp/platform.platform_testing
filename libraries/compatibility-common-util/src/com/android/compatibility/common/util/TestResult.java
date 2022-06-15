@@ -34,7 +34,6 @@ public class TestResult implements ITestResult {
     private boolean mIsRetry;
     private boolean mSkipped;
     private List<TestResultHistory> mTestResultHistories;
-    private TestScreenshotsMetadata mTestScreenshotsMetadata;
 
     /**
      * Create a {@link TestResult} for the given test name.
@@ -238,7 +237,6 @@ public class TestResult implements ITestResult {
         mIsRetry = false;
         mSkipped = false;
         mTestResultHistories = null;
-        mTestScreenshotsMetadata = null;
     }
 
     /**
@@ -300,15 +298,5 @@ public class TestResult implements ITestResult {
     @Override
     public void setTestResultHistories(List<TestResultHistory> resultHistories) {
         mTestResultHistories = resultHistories;
-    }
-
-    @Override
-    public void setTestScreenshotsMetadata(TestScreenshotsMetadata screenshotsMetadata) {
-        mTestScreenshotsMetadata = screenshotsMetadata;
-    }
-
-    @Override
-    public TestScreenshotsMetadata getTestScreenshotsMetadata() {
-        return mTestScreenshotsMetadata;
     }
 }

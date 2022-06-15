@@ -33,8 +33,7 @@ import java.util.Map;
  * -e drop-cache [pagecache | slab | all] : drop cache flag
  * -e test-output-dir [path] : path to the output directory
  * -e metric-index [rss:2,pss:3,privatedirty:7] : memory metric name corresponding
- * -e gc-precollect [true | false] : whether it needs to run a GC prior to collecting memory
- * metrics. to index in the showmap output.
+ *  to index in the showmap output.
  */
 @OptionClass(alias = "showmapsnapshot-collector")
 public class ShowmapSnapshotListener extends BaseCollectionListener<String> {
@@ -46,7 +45,6 @@ public class ShowmapSnapshotListener extends BaseCollectionListener<String> {
   @VisibleForTesting static final String METRIC_NAME_INDEX = "metric-name-index";
   @VisibleForTesting static final String DROP_CACHE_KEY = "drop-cache";
   @VisibleForTesting static final String OUTPUT_DIR_KEY = "test-output-dir";
-  @VisibleForTesting static final String GC_PRECOLLECT_KEY = "gc-precollect";
 
   private ShowmapSnapshotHelper mShowmapSnapshotHelper = new ShowmapSnapshotHelper();
   private final Map<String, Integer> dropCacheValues = new HashMap<String, Integer>() {
@@ -65,8 +63,7 @@ public class ShowmapSnapshotListener extends BaseCollectionListener<String> {
   // 10810272     5400     1585     3800      168      264     1168        0        0      TOTAL
 
   // Default to collect rss, pss and private dirty.
-  // private dirty includes addition of swap by default.
-  private String mMemoryMetricNameIndex = "rss:1,pss:2,privatedirty:6:7";
+  private String mMemoryMetricNameIndex = "rss:1,pss:2,privatedirty:6";
 
   public ShowmapSnapshotListener() {
     createHelperInstance(mShowmapSnapshotHelper);
@@ -107,6 +104,7 @@ public class ShowmapSnapshotListener extends BaseCollectionListener<String> {
       procs = procsString.split(PROCESS_SEPARATOR);
     }
 
+
     mShowmapSnapshotHelper.setUp(testOutputDir, procs);
 
     String dropCacheValue = args.getString(DROP_CACHE_KEY);
@@ -118,8 +116,5 @@ public class ShowmapSnapshotListener extends BaseCollectionListener<String> {
         return;
       }
     }
-
-    boolean runGcPrecollect = "true".equals(args.getString(GC_PRECOLLECT_KEY, "false"));
-    mShowmapSnapshotHelper.setGcOnPrecollectOption(runGcPrecollect);
   }
 }

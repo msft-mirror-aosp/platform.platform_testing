@@ -16,7 +16,6 @@
 
 package com.android.server.wm.flicker
 
-import com.android.server.wm.flicker.FlickerRunResult.Companion.RunStatus.RUN_SUCCESS
 import com.android.server.wm.flicker.traces.eventlog.EventLogSubject
 import com.android.server.wm.flicker.traces.eventlog.FocusEvent
 import org.junit.Test
@@ -34,21 +33,20 @@ class EventLogSubjectTest {
                         FocusEvent(0, "test WinA window", FocusEvent.Focus.LOST, "test"),
                         FocusEvent(0, "WinB", FocusEvent.Focus.LOST, "test"),
                         FocusEvent(0, "test WinC", FocusEvent.Focus.GAINED, "test"))
-        val result = builder.buildEventLogResult(RUN_SUCCESS).eventLogSubject
-        requireNotNull(result) { "Event log subject was not built" }
-        result.focusChanges("WinA", "WinB", "WinC")
+        val result = builder.buildEventLogResult().eventLogSubject
+        require(result != null) { "Event log subject was not built" }
+        result.focusChanges(arrayOf("WinA", "WinB", "WinC"))
                 .forAllEntries()
-        result.focusChanges("WinA", "WinB").forAllEntries()
-        result.focusChanges("WinB", "WinC").forAllEntries()
-        result.focusChanges("WinA").forAllEntries()
-        result.focusChanges("WinB").forAllEntries()
-        result.focusChanges("WinC").forAllEntries()
+        result.focusChanges(arrayOf("WinA", "WinB")).forAllEntries()
+        result.focusChanges(arrayOf("WinB", "WinC")).forAllEntries()
+        result.focusChanges(arrayOf("WinA")).forAllEntries()
+        result.focusChanges(arrayOf("WinB")).forAllEntries()
+        result.focusChanges(arrayOf("WinC")).forAllEntries()
     }
 
     @Test
     fun canDetectFocusDoesNotChange() {
-        val builder = FlickerRunResult.Builder()
-        val result = builder.buildEventLogResult(RUN_SUCCESS).eventLogSubject
+        val result = FlickerRunResult.Builder().buildEventLogResult().eventLogSubject
         require(result != null) { "Event log subject was not built" }
         result.focusDoesNotChange().forAllEntries()
     }

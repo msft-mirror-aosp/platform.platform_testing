@@ -35,6 +35,7 @@ import androidx.test.jank.JankTestBase;
 
 import com.android.launcher3.tapl.AllApps;
 import com.android.launcher3.tapl.LauncherInstrumentation;
+import com.android.launcher3.tapl.Overview;
 import com.android.launcher3.tapl.Widgets;
 import com.android.launcher3.tapl.Workspace;
 
@@ -89,7 +90,7 @@ public class LauncherJankTests extends JankTestBase {
     }
 
     public void resetAndOpenRecents() throws UiObjectNotFoundException, RemoteException {
-        mLauncher.goHome().switchToOverview();
+        mLauncher.pressHome().switchToOverview();
     }
 
     public void prepareOpenAllAppsContainer() throws IOException {
@@ -106,8 +107,19 @@ public class LauncherJankTests extends JankTestBase {
         super.afterTest(metrics);
     }
 
+    /** Starts from the home screen, and measures jank while opening the all apps container. */
+    @JankTest(expectedFrames=100, beforeTest="prepareOpenAllAppsContainer",
+            beforeLoop="resetAndOpenRecents", afterTest="afterTestOpenAllAppsContainer")
+    @GfxMonitor(processName="#getLauncherPackage")
+    public void testOpenAllAppsContainer() throws UiObjectNotFoundException {
+        Overview overview = mLauncher.getOverview();
+        for (int i = 0; i < INNER_LOOP * 2; i++) {
+            overview = overview.switchToAllApps().switchBackToOverview();
+        }
+    }
+
     public void openAllApps() throws UiObjectNotFoundException, IOException {
-        mLauncher.goHome().switchToAllApps();
+        mLauncher.pressHome().switchToAllApps();
         TimeResultLogger.writeTimeStampLogStart(String.format("%s-%s",
                 getClass().getSimpleName(), getName()), TIMESTAMP_FILE);
     }
@@ -133,7 +145,7 @@ public class LauncherJankTests extends JankTestBase {
     }
 
     public void makeHomeScrollable() throws UiObjectNotFoundException, IOException {
-        mLauncher.goHome().ensureWorkspaceIsScrollable();
+        mLauncher.pressHome().ensureWorkspaceIsScrollable();
         TimeResultLogger.writeTimeStampLogStart(String.format("%s-%s",
                 getClass().getSimpleName(), getName()), TIMESTAMP_FILE);
     }
@@ -159,7 +171,7 @@ public class LauncherJankTests extends JankTestBase {
     }
 
     public void openAllWidgets() throws UiObjectNotFoundException, IOException {
-        mLauncher.goHome().openAllWidgets();
+        mLauncher.pressHome().openAllWidgets();
         TimeResultLogger.writeTimeStampLogStart(String.format("%s-%s",
                 getClass().getSimpleName(), getName()), TIMESTAMP_FILE);
     }
@@ -207,7 +219,7 @@ public class LauncherJankTests extends JankTestBase {
     public void testOpenCloseMessagesApp() throws Exception {
         for (int i = 0; i < INNER_LOOP; i++) {
             mLauncherStrategy.launch("Messages", "com.google.android.apps.messaging");
-            mLauncher.goHome();
+            mLauncher.pressHome();
         }
     }
 
@@ -238,7 +250,7 @@ public class LauncherJankTests extends JankTestBase {
     public void testAppToHome() throws Exception {
         for (int i = 0; i < INNER_LOOP; i++) {
             startAppFast("com.google.android.apps.messaging");
-            mLauncher.goHome();
+            mLauncher.pressHome();
         }
     }
 }

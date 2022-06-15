@@ -411,7 +411,7 @@ public class BaseMetricListener extends InstrumentationRunListener {
         return mArgsBundle;
     }
 
-    protected void parseArguments() {
+    private void parseArguments() {
         Bundle args = getArgsBundle();
         // First filter the arguments with the alias
         filterAlias(args);

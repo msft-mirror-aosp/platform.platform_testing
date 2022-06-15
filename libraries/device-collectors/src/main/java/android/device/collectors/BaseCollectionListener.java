@@ -27,7 +27,6 @@ import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
 
 import java.util.Map;
-import java.util.function.Function;
 
 /**
  * A {@link BaseCollectionListener} that captures metrics collected during the testing.
@@ -63,32 +62,22 @@ public class BaseCollectionListener<T> extends BaseMetricListener {
 
     @Override
     public void onTestRunStart(DataRecord runData, Description description) {
-
-        if (mIsCollectPerRun) {
-            Function<String, Boolean> filter = getFilter(description);
-            testStart(filter, description);
-        }
-    }
-
-    @Override
-    protected void parseArguments() {
-        super.parseArguments();
         Bundle args = getArgsBundle();
         mIsCollectPerRun = "true".equals(args.getString(COLLECT_PER_RUN));
         // By default this flag is set to false to collect the metrics on test failure.
         mSkipTestFailureMetrics = "true".equals(args.getString(SKIP_TEST_FAILURE_METRICS));
-    }
 
-    protected Function<String, Boolean> getFilter(Description description) {
-        return null;
+        if (mIsCollectPerRun) {
+            mHelper.startCollecting();
+        }
+
     }
 
     @Override
     public final void onTestStart(DataRecord testData, Description description) {
         mIsTestFailed = false;
-        if (!mIsCollectPerRun) {
-            Function<String, Boolean> filter = getFilter(description);
-            testStart(filter, description);
+        if (!mIsCollectPerRun && !onTestStartAlternative(testData)) {
+            mHelper.startCollecting();
         }
     }
 
@@ -98,8 +87,8 @@ public class BaseCollectionListener<T> extends BaseMetricListener {
     }
 
     @Override
-    public void onTestEnd(DataRecord testData, Description description) {
-        if (!mIsCollectPerRun) {
+    public final void onTestEnd(DataRecord testData, Description description) {
+        if (!mIsCollectPerRun && !onTestEndAlternative(testData)) {
             // Skip adding the metrics collected during the test failure
             // if the skip metrics on test failure flag is enabled and the
             // current test is failed.
@@ -121,14 +110,6 @@ public class BaseCollectionListener<T> extends BaseMetricListener {
         }
     }
 
-    public void testStart(Function<String, Boolean> filter, Description description) {
-        if (filter == null) {
-            mHelper.startCollecting();
-        } else {
-            mHelper.startCollecting(filter);
-        }
-    }
-
     protected void createHelperInstance(ICollectorHelper helper) {
         mHelper = helper;
     }
@@ -142,5 +123,27 @@ public class BaseCollectionListener<T> extends BaseMetricListener {
 
     protected boolean shouldSkipFailureTestMetrics() {
         return mSkipTestFailureMetrics && mIsTestFailed;
+    }
+
+    /**
+     * Offer an alternative of final method onTestStart, override this method when you need to do
+     * your own actions while collecting metrics per test.
+     *
+     * @param data Used to collect metrics
+     * @return true indicates the event has been handled then skips the default implementation.
+     */
+    protected boolean onTestStartAlternative(DataRecord data) {
+        return false;
+    }
+
+    /**
+     * Offer an alternative of final method onTestEnd, override this method when you need to do your
+     * own actions while collecting metrics per test.
+     *
+     * @param data Used to collect metrics
+     * @return true indicates the event has been handled then skips the default implementation.
+     */
+    protected boolean onTestEndAlternative(DataRecord data) {
+        return false;
     }
 }
