@@ -166,6 +166,7 @@ open class ScreenshotTestRule(
         if (expected == null) {
             reportResult(
                 status = ScreenshotResultProto.DiffResult.Status.MISSING_REFERENCE,
+                assetsPathRelativeToRepo = goldenImagePathManager.assetsPathRelativeToRepo,
                 goldenIdentifier = goldenIdentifier,
                 actual = actual
             )
@@ -179,6 +180,7 @@ open class ScreenshotTestRule(
         if (actual.width != expected.width || actual.height != expected.height) {
             reportResult(
                 status = ScreenshotResultProto.DiffResult.Status.FAILED,
+                assetsPathRelativeToRepo = goldenImagePathManager.assetsPathRelativeToRepo,
                 goldenIdentifier = goldenIdentifier,
                 actual = actual,
                 expected = expected
@@ -205,6 +207,7 @@ open class ScreenshotTestRule(
 
         reportResult(
             status = status,
+            assetsPathRelativeToRepo = goldenImagePathManager.assetsPathRelativeToRepo,
             goldenIdentifier = goldenIdentifier,
             actual = actual,
             comparisonStatistics = comparisonResult.comparisonStatistics,
@@ -222,6 +225,7 @@ open class ScreenshotTestRule(
 
     private fun reportResult(
         status: ScreenshotResultProto.DiffResult.Status,
+        assetsPathRelativeToRepo: String,
         goldenIdentifier: String,
         actual: Bitmap,
         comparisonStatistics: ScreenshotResultProto.DiffResult.ComparisonStatistics? = null,
@@ -239,8 +243,10 @@ open class ScreenshotTestRule(
         if (comparisonStatistics != null) {
             resultProto.comparisonStatistics = comparisonStatistics
         }
-        resultProto.imageLocationGolden =
+
+        val pathRelativeToAssets =
             goldenImagePathManager.goldenIdentifierResolver(goldenIdentifier)
+        resultProto.imageLocationGolden = "$assetsPathRelativeToRepo/$pathRelativeToAssets"
 
         val report = Bundle()
 
