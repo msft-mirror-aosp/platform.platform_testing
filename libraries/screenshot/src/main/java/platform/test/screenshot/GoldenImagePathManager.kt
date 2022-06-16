@@ -56,6 +56,7 @@ private const val RESOLUTION_TAG = "resolution"
  */
 open class GoldenImagePathManager @JvmOverloads constructor(
     open val appContext: Context,
+    open val assetsPathRelativeToRepo: String = "assets",
     open val deviceLocalPath: String = getDeviceOutputDirectory(appContext),
     open val pathConfig: PathConfig = getSimplePathConfig()
 ) {
