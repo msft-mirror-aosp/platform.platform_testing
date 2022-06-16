@@ -19,6 +19,7 @@ package platform.test.screenshot
 import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Color
 import android.graphics.Rect
 import android.os.Bundle
 import androidx.test.platform.app.InstrumentationRegistry
@@ -166,6 +167,7 @@ open class ScreenshotTestRule(
         if (expected == null) {
             reportResult(
                 status = ScreenshotResultProto.DiffResult.Status.MISSING_REFERENCE,
+                assetsPathRelativeToRepo = goldenImagePathManager.assetsPathRelativeToRepo,
                 goldenIdentifier = goldenIdentifier,
                 actual = actual
             )
@@ -179,6 +181,7 @@ open class ScreenshotTestRule(
         if (actual.width != expected.width || actual.height != expected.height) {
             reportResult(
                 status = ScreenshotResultProto.DiffResult.Status.FAILED,
+                assetsPathRelativeToRepo = goldenImagePathManager.assetsPathRelativeToRepo,
                 goldenIdentifier = goldenIdentifier,
                 actual = actual,
                 expected = expected
@@ -205,11 +208,12 @@ open class ScreenshotTestRule(
 
         reportResult(
             status = status,
+            assetsPathRelativeToRepo = goldenImagePathManager.assetsPathRelativeToRepo,
             goldenIdentifier = goldenIdentifier,
             actual = actual,
             comparisonStatistics = comparisonResult.comparisonStatistics,
-            expected = expected,
-            diff = comparisonResult.diff
+            expected = highlightedBitmap(expected, regions),
+            diff = highlightedBitmap(comparisonResult.diff, regions)
         )
 
         if (!comparisonResult.matches) {
@@ -222,6 +226,7 @@ open class ScreenshotTestRule(
 
     private fun reportResult(
         status: ScreenshotResultProto.DiffResult.Status,
+        assetsPathRelativeToRepo: String,
         goldenIdentifier: String,
         actual: Bitmap,
         comparisonStatistics: ScreenshotResultProto.DiffResult.ComparisonStatistics? = null,
@@ -239,8 +244,10 @@ open class ScreenshotTestRule(
         if (comparisonStatistics != null) {
             resultProto.comparisonStatistics = comparisonStatistics
         }
-        resultProto.imageLocationGolden =
+
+        val pathRelativeToAssets =
             goldenImagePathManager.goldenIdentifierResolver(goldenIdentifier)
+        resultProto.imageLocationGolden = "$assetsPathRelativeToRepo/$pathRelativeToAssets"
 
         val report = Bundle()
 
@@ -320,6 +327,79 @@ open class ScreenshotTestRule(
             )
         }
         return file
+    }
+
+    private fun colorPixel(
+        bitmapArray: IntArray,
+        width: Int,
+        height: Int,
+        row: Int,
+        column: Int,
+        extra: Int,
+        colorForHighlight: Int
+    ) {
+        val startRow = if (row - extra < 0) { 0 } else { row - extra }
+        val endRow = if (row + extra >= height) { height - 1 } else { row + extra }
+        val startColumn = if (column - extra < 0) { 0 } else { column - extra }
+        val endColumn = if (column + extra >= width) { width - 1 } else { column + extra }
+        for (i in startRow..endRow) {
+            for (j in startColumn..endColumn) {
+                bitmapArray[j + i * width] = colorForHighlight
+            }
+        }
+    }
+
+    private fun highlightedBitmap(original: Bitmap?, regions: Array<Rect>?): Bitmap? {
+        if (original == null || regions == null) {
+            return original
+        }
+        val bitmapArray = original.toIntArray()
+        val colorForHighlight = Color.argb(255, 255, 0, 0)
+        for (region in regions) {
+            for (i in region.top..region.bottom) {
+                if (i >= original.height) { break }
+                colorPixel(
+                    bitmapArray,
+                    original.width,
+                    original.height,
+                    i,
+                    region.left,
+                    /* extra= */2,
+                    colorForHighlight
+                )
+                colorPixel(
+                    bitmapArray,
+                    original.width,
+                    original.height,
+                    i,
+                    region.right,
+                    /* extra= */2,
+                    colorForHighlight
+                )
+            }
+            for (j in region.left..region.right) {
+                if (j >= original.width) { break }
+                colorPixel(
+                    bitmapArray,
+                    original.width,
+                    original.height,
+                    region.top,
+                    j,
+                    /* extra= */2,
+                    colorForHighlight
+                )
+                colorPixel(
+                    bitmapArray,
+                    original.width,
+                    original.height,
+                    region.bottom,
+                    j,
+                    /* extra= */2,
+                    colorForHighlight
+                )
+            }
+        }
+        return Bitmap.createBitmap(bitmapArray, original.width, original.height, original.config)
     }
 }
 
