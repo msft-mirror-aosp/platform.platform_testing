@@ -23,6 +23,7 @@ import androidx.test.filters.MediumTest
 import androidx.test.platform.app.InstrumentationRegistry
 import com.google.common.truth.Truth.assertThat
 import java.io.File
+import java.io.FileInputStream
 import java.lang.AssertionError
 import org.junit.After
 import org.junit.Rule
@@ -38,7 +39,10 @@ import platform.test.screenshot.matchers.PixelPerfectMatcher
 import platform.test.screenshot.proto.ScreenshotResultProto
 import platform.test.screenshot.utils.loadBitmap
 
-class CustomGoldenImagePathManager(appcontext: Context) : GoldenImagePathManager(appcontext) {
+class CustomGoldenImagePathManager(
+    appcontext: Context,
+    assetsPath: String = "assets"
+) : GoldenImagePathManager(appcontext, assetsPath) {
     public override fun goldenIdentifierResolver(testName: String): String = "$testName.png"
 }
 
@@ -46,9 +50,19 @@ class CustomGoldenImagePathManager(appcontext: Context) : GoldenImagePathManager
 @MediumTest
 class ScreenshotTestRuleTest {
 
+    val customizedAssetsPath = "libraries/screenshot/src/androidTest/assets"
+
     @get:Rule
     val rule = ScreenshotTestRule(
         CustomGoldenImagePathManager(InstrumentationRegistry.getInstrumentation().getContext()))
+
+    @get:Rule
+    val customizedRule = ScreenshotTestRule(
+        CustomGoldenImagePathManager(
+            InstrumentationRegistry.getInstrumentation().getContext(),
+            customizedAssetsPath
+        )
+    )
 
     @Test
     fun performDiff_sameBitmaps() {
@@ -58,11 +72,36 @@ class ScreenshotTestRuleTest {
             .assertAgainstGolden(rule, "round_rect_gray", matcher = PixelPerfectMatcher())
 
         val resultProto = rule.getPathOnDeviceFor(RESULT_PROTO)
+        val fileResultBinProto = rule.getPathOnDeviceFor(RESULT_BIN_PROTO)
+        var diffProto = ScreenshotResultProto.DiffResult.newBuilder()
+        diffProto.mergeFrom(FileInputStream(fileResultBinProto))
+
         assertThat(resultProto.readText()).contains("PASS")
         assertThat(rule.getPathOnDeviceFor(IMAGE_ACTUAL).exists()).isTrue()
         assertThat(rule.getPathOnDeviceFor(IMAGE_DIFF).exists()).isFalse()
         assertThat(rule.getPathOnDeviceFor(IMAGE_EXPECTED).exists()).isTrue()
         assertThat(rule.getPathOnDeviceFor(RESULT_BIN_PROTO).exists()).isTrue()
+        assertThat(diffProto.build().imageLocationGolden.startsWith("assets")).isTrue()
+    }
+
+    @Test
+    fun performDiff_sameBitmaps_customizedAssetsPath() {
+        val first = loadBitmap("round_rect_gray")
+
+        first
+            .assertAgainstGolden(customizedRule, "round_rect_gray", matcher = PixelPerfectMatcher())
+
+        val resultProto = customizedRule.getPathOnDeviceFor(RESULT_PROTO)
+        val fileResultBinProto = customizedRule.getPathOnDeviceFor(RESULT_BIN_PROTO)
+        var diffProto = ScreenshotResultProto.DiffResult.newBuilder()
+        diffProto.mergeFrom(FileInputStream(fileResultBinProto))
+
+        assertThat(resultProto.readText()).contains("PASS")
+        assertThat(customizedRule.getPathOnDeviceFor(IMAGE_ACTUAL).exists()).isTrue()
+        assertThat(customizedRule.getPathOnDeviceFor(IMAGE_DIFF).exists()).isFalse()
+        assertThat(customizedRule.getPathOnDeviceFor(IMAGE_EXPECTED).exists()).isTrue()
+        assertThat(customizedRule.getPathOnDeviceFor(RESULT_BIN_PROTO).exists()).isTrue()
+        assertThat(diffProto.build().imageLocationGolden.startsWith(customizedAssetsPath)).isTrue()
     }
 
     @Test
