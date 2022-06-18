@@ -51,6 +51,7 @@ public class MemLeaksHelperTest {
 
     /**
      * Test the parser works if the dump contains the correct unreachable memory bytes and
+     * allocations. Test good process name with matched process name, unreachable memory and
      * allocations.
      */
     @Test
@@ -150,13 +151,176 @@ public class MemLeaksHelperTest {
 
     /**
      * Test the parser works if the dump does not contain the unreachable memory bytes and
-     * allocations.
+     * allocations. Test good process name with matched process name but missing unreachable memory
+     * and allocations.
      */
     @Test
     public void testNoUnreachableMemory() throws IOException {
         assertTrue(mMemLeaksHelper.startCollecting());
         String memLeaksPidSampleOutput =
-                "root          8616     2       0      0 worker_thread       0 I [kworker/6:0]\n";
+                "root          31966     2       0      0 worker_thread       0 S"
+                        + " com.google.android.ims\n";
+        String memLeaksSampleOutput =
+                "Applications Memory Usage (in Kilobytes):\n"
+                        + "Uptime: 1137766417 Realtime: 1146089528\n"
+                        + "\n"
+                        + "** MEMINFO in pid 31966 [com.google.android.ims] **\n"
+                        + "                   Pss  Private  Private  SwapPss      Rss     Heap   "
+                        + "  Heap     Heap\n"
+                        + "                 Total    Dirty    Clean    Dirty    Total     Size   "
+                        + " Alloc     Free\n"
+                        + "                ------   ------   ------   ------   ------   ------   "
+                        + "------   ------\n"
+                        + "  Native Heap     1221     1176        0     3280     4732    13400   "
+                        + "  5592     2877\n"
+                        + "  Dalvik Heap     2942     2788        0     1072    11960    11244   "
+                        + "  3052     8192\n"
+                        + " Dalvik Other      923      604        0     1336     4068            "
+                        + "               \n"
+                        + "        Stack      364      364        0      428      376            "
+                        + "               \n"
+                        + "       Ashmem       15        0        0        0      892            "
+                        + "               \n"
+                        + "    Other dev       68        0       68        0      364            "
+                        + "               \n"
+                        + "     .so mmap      631      144        0        0    31308            "
+                        + "               \n"
+                        + "    .jar mmap      659        0        0        0    29404            "
+                        + "               \n"
+                        + "    .apk mmap     7026        0     6976        0     8400            "
+                        + "               \n"
+                        + "    .dex mmap      375       12      356        0     1020            "
+                        + "               \n"
+                        + "    .oat mmap      237        0        0        0    11792            "
+                        + "               \n"
+                        + "    .art mmap      720      412        4      224    18772            "
+                        + "               \n"
+                        + "   Other mmap       23        8        0        0     1244            "
+                        + "               \n"
+                        + "      Unknown      103       96        0      240     1012            "
+                        + "               \n"
+                        + "        TOTAL    21887     5604     7404     6580   125344    24644   "
+                        + "  8644    11069\n"
+                        + " \n"
+                        + " App Summary\n"
+                        + "                       Pss(KB)                        Rss(KB)\n"
+                        + "                        ------                         ------\n"
+                        + "           Java Heap:     3204                          30732\n"
+                        + "         Native Heap:     1176                           4732\n"
+                        + "                Code:     7492                          82580\n"
+                        + "               Stack:      364                            376\n"
+                        + "            Graphics:        0                              0\n"
+                        + "       Private Other:      772\n"
+                        + "              System:     8879\n"
+                        + "             Unknown:                                    6924\n"
+                        + " \n"
+                        + "           TOTAL PSS:    21887            TOTAL RSS:   125344       "
+                        + "TOTAL SWAP PSS:     6580\n"
+                        + " \n"
+                        + " Objects\n"
+                        + "               Views:        0         ViewRootImpl:        0\n"
+                        + "         AppContexts:        4           Activities:        0\n"
+                        + "              Assets:       24        AssetManagers:        0\n"
+                        + "       Local Binders:       37        Proxy Binders:       53\n"
+                        + "       Parcel memory:       49         Parcel count:       90\n"
+                        + "    Death Recipients:       10      OpenSSL Sockets:        0\n"
+                        + "            WebViews:        0\n"
+                        + " \n"
+                        + " SQL\n"
+                        + "         MEMORY_USED:      164\n"
+                        + "  PAGECACHE_OVERFLOW:       37          MALLOC_SIZE:       46\n";
+        doReturn(memLeaksPidSampleOutput)
+                .when(mMemLeaksHelper)
+                .executeShellCommand(matches(mMemLeaksHelper.ALL_PROCESS));
+        doReturn(memLeaksSampleOutput)
+                .when(mMemLeaksHelper)
+                .executeShellCommand(
+                        matches(String.format(mMemLeaksHelper.DUMPSYS_MEMIFNO, 31966)));
+        Map<String, Long> metrics = mMemLeaksHelper.getMetrics();
+
+        assertFalse(metrics.isEmpty());
+        assertTrue(metrics.containsKey(mMemLeaksHelper.PROC_MEM_BYTES + "com.google.android.ims"));
+        assertTrue(
+                metrics.get(mMemLeaksHelper.PROC_MEM_BYTES + "com.google.android.ims").equals(0L));
+        assertTrue(
+                metrics.containsKey(mMemLeaksHelper.PROC_ALLOCATIONS + "com.google.android.ims"));
+        assertTrue(
+                metrics.get(mMemLeaksHelper.PROC_ALLOCATIONS + "com.google.android.ims")
+                        .equals(0L));
+    }
+
+    /**
+     * Test the parser works if the dump does not contain the unreachable memory bytes and
+     * allocations. Test good process name with missing process name, unreachable memory and
+     * allocations.
+     */
+    @Test
+    public void testNoProcessName() throws IOException {
+        assertTrue(mMemLeaksHelper.startCollecting());
+        String memLeaksPidSampleOutput =
+                "root          31966     2       0      0 worker_thread       0 S"
+                        + " com.google.android.ims\n";
+        String memLeaksSampleOutput =
+                "Applications Memory Usage (in Kilobytes):\n"
+                        + "Uptime: 433368844 Realtime: 441691956\n"
+                        + "                   Pss  Private  Private     Swap      Rss     Heap   "
+                        + "  Heap     Heap\n"
+                        + "                 Total    Dirty    Clean    Dirty    Total     Size   "
+                        + " Alloc     Free\n"
+                        + "                ------   ------   ------   ------   ------   ------   "
+                        + "------   ------\n"
+                        + "  Native Heap        0        0        0        0        0        0   "
+                        + "     0        0\n"
+                        + "  Dalvik Heap        0        0        0        0        0        0   "
+                        + "     0        0\n"
+                        + "      Unknown        0        0        0        0        0            "
+                        + "               \n"
+                        + "        TOTAL        0        0        0        0        0        0   "
+                        + "     0        0\n"
+                        + " \n"
+                        + " App Summary\n"
+                        + "                       Pss(KB)                        Rss(KB)\n"
+                        + "                        ------                         ------\n"
+                        + "           Java Heap:        0                              0\n"
+                        + "         Native Heap:        0                              0\n"
+                        + "                Code:        0                              0\n"
+                        + "               Stack:        0                              0\n"
+                        + "            Graphics:        0                              0\n"
+                        + "       Private Other:        0\n"
+                        + "              System:        0\n"
+                        + "             Unknown:                                       0\n"
+                        + " \n"
+                        + "           TOTAL PSS:        0            TOTAL RSS:        0      "
+                        + "TOTAL SWAP (KB):        0\n";
+        doReturn(memLeaksPidSampleOutput)
+                .when(mMemLeaksHelper)
+                .executeShellCommand(matches(mMemLeaksHelper.ALL_PROCESS));
+        doReturn(memLeaksSampleOutput)
+                .when(mMemLeaksHelper)
+                .executeShellCommand(
+                        matches(String.format(mMemLeaksHelper.DUMPSYS_MEMIFNO, 31966)));
+        doReturn(memLeaksPidSampleOutput)
+                .when(mMemLeaksHelper)
+                .executeShellCommand(matches(String.format(mMemLeaksHelper.PROCESS_PID, 31966)));
+        Map<String, Long> metrics = mMemLeaksHelper.getMetrics();
+
+        assertFalse(metrics.isEmpty());
+        assertTrue(metrics.containsKey(mMemLeaksHelper.PROC_MEM_BYTES + "com.google.android.ims"));
+        assertTrue(
+                metrics.get(mMemLeaksHelper.PROC_MEM_BYTES + "com.google.android.ims").equals(0L));
+        assertTrue(
+                metrics.containsKey(mMemLeaksHelper.PROC_ALLOCATIONS + "com.google.android.ims"));
+        assertTrue(
+                metrics.get(mMemLeaksHelper.PROC_ALLOCATIONS + "com.google.android.ims")
+                        .equals(0L));
+    }
+
+    /** Test the parser works if the process name enclosed in []. Test enclosed process name. */
+    @Test
+    public void testEnclosedProcessName() throws IOException {
+        assertTrue(mMemLeaksHelper.startCollecting());
+        String memLeaksPidSampleOutput =
+                "root          8616     2       0      0 worker_thread       0 I [dio/dm-46]\n";
         String memLeaksSampleOutput =
                 "Applications Memory Usage (in Kilobytes):\n"
                         + "Uptime: 433368844 Realtime: 441691956\n"
@@ -195,8 +359,12 @@ public class MemLeaksHelperTest {
         doReturn(memLeaksSampleOutput)
                 .when(mMemLeaksHelper)
                 .executeShellCommand(matches(String.format(mMemLeaksHelper.DUMPSYS_MEMIFNO, 8616)));
+        doReturn(memLeaksPidSampleOutput)
+                .when(mMemLeaksHelper)
+                .executeShellCommand(matches(String.format(mMemLeaksHelper.PROCESS_PID, 8616)));
         Map<String, Long> metrics = mMemLeaksHelper.getMetrics();
 
+        // Skip the enclosed process name
         assertTrue(metrics.isEmpty());
     }
 }
