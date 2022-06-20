@@ -33,6 +33,7 @@ import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.TimeUnit;
 import java.util.List;
@@ -326,6 +327,7 @@ public class RootcanalUtils extends TestWatcher {
          * @param packet raw packet data to send to device
          */
         public void sendHciPacket(byte[] packet) throws IOException {
+            CLog.d("sending HCI: %s", Arrays.toString(packet));
             hciSocket.getOutputStream().write(packet);
         }
 
