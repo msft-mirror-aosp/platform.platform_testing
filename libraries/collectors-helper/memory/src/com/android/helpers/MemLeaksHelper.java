@@ -38,6 +38,7 @@ public class MemLeaksHelper implements ICollectorHelper<Long> {
             "(?<bytes>[0-9]+) bytes in (?<allocations>[0-9]+) unreachable allocations";
 
     @VisibleForTesting public static final String ALL_PROCESS = "ps -A";
+    @VisibleForTesting public static final String PROCESS_PID = "ps -p %d";
 
     @VisibleForTesting
     public static final String DUMPSYS_MEMIFNO = "dumpsys meminfo --unreachable %d";
@@ -99,6 +100,17 @@ public class MemLeaksHelper implements ICollectorHelper<Long> {
                 results.put(
                         PROC_ALLOCATIONS + matcherName.group(1),
                         Long.parseLong(matcherLeak.group(2)));
+            } else {
+                if (matcherName.find()) {
+                    results.put(PROC_MEM_BYTES + matcherName.group(1), 0L);
+                    results.put(PROC_ALLOCATIONS + matcherName.group(1), 0L);
+                } else {
+                    // Get process name by pid
+                    String processName = getProcessNameByPID(pid);
+                    if (processName.length() == 0) continue;
+                    results.put(PROC_MEM_BYTES + processName, 0L);
+                    results.put(PROC_ALLOCATIONS + processName, 0L);
+                }
             }
         }
 
@@ -141,5 +153,19 @@ public class MemLeaksHelper implements ICollectorHelper<Long> {
     @VisibleForTesting
     public String executeShellCommand(String command) throws IOException {
         return mUiDevice.executeShellCommand(command);
+    }
+
+    /* Execute a shell command and return its output. */
+    private String getProcessNameByPID(int pid) {
+        try {
+            String processInfoStr = executeShellCommand(String.format(PROCESS_PID, pid));
+            String[] processInfoArr = processInfoStr.split("\\s+");
+            String processName = processInfoArr[processInfoArr.length - 1].replace("\n", "").trim();
+            if (processName.startsWith("[") && processName.endsWith("]")) processName = "";
+            return processName;
+        } catch (IOException ioe) {
+            Log.e(TAG, "Failed to get process name by pid.", ioe);
+            return "";
+        }
     }
 }
