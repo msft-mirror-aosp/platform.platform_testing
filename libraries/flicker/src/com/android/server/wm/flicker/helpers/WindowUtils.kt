@@ -97,6 +97,16 @@ object WindowUtils {
      * @param display the main display
      */
     fun getNavigationBarPosition(display: Display): Region {
+        return getNavigationBarPosition(display, isGesturalNavigationEnabled)
+    }
+
+    /**
+     * Gets the expected navigation bar position for a specific display
+     *
+     * @param display the main display
+     * @param isGesturalNavigation whether gestural navigation is enabled
+     */
+    fun getNavigationBarPosition(display: Display, isGesturalNavigation: Boolean): Region {
         val navBarWidth = getDimensionPixelSize("navigation_bar_width")
         val navBarHeight = navigationBarFrameHeight
         val displayHeight = display.layerStackSpace.height
@@ -106,7 +116,7 @@ object WindowUtils {
         return when {
             // nav bar is at the bottom of the screen
             requestedRotation in listOf(Surface.ROTATION_0, Surface.ROTATION_180) ||
-                    isGesturalNavigationEnabled ->
+                isGesturalNavigation ->
                 Region.from(0, displayHeight - navBarHeight, displayWidth, displayHeight)
             // nav bar is at the right side
             requestedRotation == Surface.ROTATION_90 ->
@@ -159,7 +169,7 @@ object WindowUtils {
     val isGesturalNavigationEnabled: Boolean
         get() {
             val resourceId = resources
-                    .getIdentifier("config_navBarInteractionMode", "integer", "android")
+                .getIdentifier("config_navBarInteractionMode", "integer", "android")
             return resources.getInteger(resourceId) == 2 /* NAV_BAR_MODE_GESTURAL */
         }
 
@@ -182,7 +192,7 @@ object WindowUtils {
     val dockedStackDividerInset: Int
         get() {
             val resourceId = resources
-                    .getIdentifier("docked_stack_divider_insets", "dimen", "android")
+                .getIdentifier("docked_stack_divider_insets", "dimen", "android")
             return resources.getDimensionPixelSize(resourceId)
         }
 }
