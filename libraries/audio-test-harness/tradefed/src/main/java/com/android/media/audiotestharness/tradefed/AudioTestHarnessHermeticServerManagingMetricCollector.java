@@ -31,12 +31,10 @@ public class AudioTestHarnessHermeticServerManagingMetricCollector
 
     @Override
     public void onTestRunStart(DeviceMetricData runData) {
-        super.onTestRunStart(runData);
     }
 
     @Override
     public void onTestRunEnd(
             DeviceMetricData runData, Map<String, MetricMeasurement.Metric> currentRunMetrics) {
-        super.onTestRunEnd(runData, currentRunMetrics);
     }
 }
