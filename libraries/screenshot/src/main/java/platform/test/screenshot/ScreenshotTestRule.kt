@@ -19,7 +19,8 @@ package platform.test.screenshot
 import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.os.Build
+import android.graphics.Color
+import android.graphics.Rect
 import android.os.Bundle
 import androidx.test.platform.app.InstrumentationRegistry
 import org.junit.rules.TestRule
@@ -35,36 +36,6 @@ import java.io.FileNotFoundException
 import java.io.FileOutputStream
 import java.io.IOException
 
-// TODO(b/223901506): Replace this with the more advanced config class after the CL ag/17587688
-// is submitted.
-/**
- * Config for [ScreenshotTestRule].
- *
- * To be used to set up paths to golden images. These paths are not used to retrieve the goldens
- * during the test. They are just directly stored into the result proto file. The proto file can
- * then be used by CI to determined where to put the new approved goldens. Your tests assets
- * directory should be pointing to exactly the same path.
- *
- * @param repoRootPathForGoldens Path to the repo's root that contains the goldens. To be used by
- * CI.
- * @param pathToGoldensInRepo Relative path to goldens inside your [repoRootPathForGoldens].
- */
-class ScreenshotTestRuleConfig(
-    val repoRootPathForGoldens: String = "",
-    val pathToGoldensInRepo: String = ""
-)
-
-/**
- * Type of file that can be produced by the [ScreenshotTestRule].
- */
-internal enum class OutputFileType {
-    IMAGE_ACTUAL,
-    IMAGE_EXPECTED,
-    IMAGE_DIFF,
-    RESULT_PROTO,
-    RESULT_BIN_PROTO
-}
-
 /**
  * Rule to be added to a test to facilitate screenshot testing.
  *
@@ -79,30 +50,11 @@ internal enum class OutputFileType {
  */
 @SuppressLint("SyntheticAccessor")
 open class ScreenshotTestRule(
-    val config: ScreenshotTestRuleConfig = ScreenshotTestRuleConfig(),
-    val outputRootDir: String? = null
+    val goldenImagePathManager: GoldenImagePathManager
 ) : TestRule {
 
-    val deviceOutputRootDirectory: File? =
-        if (outputRootDir != null) {
-            File(outputRootDir)
-        } else {
-            InstrumentationRegistry.getInstrumentation().getContext().externalCacheDir
-        }
-
-    /**
-     * Directory on the device that is used to store the output files.
-     */
-    val deviceOutputDirectory
-        get() = File(
-            deviceOutputRootDirectory,
-            "platform_screenshots"
-        )
-
-    private val repoRootPathForGoldens = config.repoRootPathForGoldens.trim('/')
-    private val pathToGoldensInRepo = config.pathToGoldensInRepo.trim('/')
     private val imageExtension = ".png"
-    private val resultBinaryProtoFileSuffix = ".pb"
+    private val resultBinaryProtoFileSuffix = "goldResult.pb"
     // This is used in CI to identify the files.
     private val resultProtoFileSuffix = "goldResult.textproto"
 
@@ -113,12 +65,9 @@ open class ScreenshotTestRule(
     private lateinit var testIdentifier: String
     private lateinit var deviceId: String
 
-    private var goldenIdentifierResolver: ((String) -> String) = ::resolveGoldenName
-
     private val testWatcher = object : TestWatcher() {
         override fun starting(description: Description?) {
-            deviceId = getDeviceModel()
-            testIdentifier = "${description!!.className}_${description.methodName}_$deviceId"
+            testIdentifier = "${description!!.className}_${description.methodName}"
         }
     }
 
@@ -129,38 +78,26 @@ open class ScreenshotTestRule(
 
     class ScreenshotTestStatement(private val base: Statement) : Statement() {
         override fun evaluate() {
-            // NOTE(ihcinihsdk@): My hunch is that we should not add these assumptions at all.
-            // The reason is that this framework should be served for the general platform.
-            // If a test is supposed to run on a specific type of device, it should be the
-            // test authors' duty. What we need to do is to provide guidance on how to add
-            // assumptions on type device and SDK version.
             base.evaluate()
         }
     }
 
-    internal fun setCustomGoldenIdResolver(resolver: ((String) -> String)) {
-        goldenIdentifierResolver = resolver
-    }
-
-    internal fun clearCustomGoldenIdResolver() {
-        goldenIdentifierResolver = ::resolveGoldenName
-    }
-
-    private fun resolveGoldenName(goldenIdentifier: String): String {
-        return "${goldenIdentifier}_$deviceId$imageExtension"
-    }
-
     private fun fetchExpectedImage(goldenIdentifier: String): Bitmap? {
-        val context = InstrumentationRegistry.getInstrumentation().targetContext.applicationContext
-
-        try {
-            context.assets.open(goldenIdentifierResolver(goldenIdentifier)).use {
-                return BitmapFactory.decodeStream(it)
+        val instrument = InstrumentationRegistry.getInstrumentation()
+        return listOf(
+                instrument.targetContext.applicationContext,
+                instrument.context
+        ).map {
+            try {
+                it.assets.open(
+                    goldenImagePathManager.goldenIdentifierResolver(goldenIdentifier)
+                ).use {
+                    return@use BitmapFactory.decodeStream(it)
+                }
+            } catch (e: FileNotFoundException) {
+                return@map null
             }
-        } catch (e: FileNotFoundException) {
-            // Golden not present
-            return null
-        }
+        }.filterNotNull().firstOrNull()
     }
 
     /**
@@ -186,6 +123,39 @@ open class ScreenshotTestRule(
         goldenIdentifier: String,
         matcher: BitmapMatcher
     ) {
+        assertBitmapAgainstGolden(
+            actual = actual,
+            goldenIdentifier = goldenIdentifier,
+            matcher = matcher,
+            regions = null
+        )
+    }
+
+    /**
+     * Asserts the given bitmap against the golden identified by the given name.
+     *
+     * Note: The golden identifier should be unique per your test module (unless you want multiple
+     * tests to match the same golden). The name must not contain extension. You should also avoid
+     * adding strings like "golden", "image" and instead describe what is the golder referring to.
+     *
+     * @param actual The bitmap captured during the test.
+     * @param goldenIdentifier Name of the golden. Allowed characters: 'A-Za-z0-9_-'
+     * @param matcher The algorithm to be used to perform the matching.
+     * @param regions An optional array of interesting regions for partial screenshot diff.
+     *
+     * @see MSSIMMatcher
+     * @see PixelPerfectMatcher
+     * @see Bitmap.assertAgainstGolden
+     *
+     * @throws IllegalArgumentException If the golden identifier contains forbidden characters or
+     * is empty.
+     */
+    fun assertBitmapAgainstGolden(
+        actual: Bitmap,
+        goldenIdentifier: String,
+        matcher: BitmapMatcher,
+        regions: Array<Rect>?
+    ) {
         if (!goldenIdentifier.matches("^[A-Za-z0-9_-]+$".toRegex())) {
             throw IllegalArgumentException(
                 "The given golden identifier '$goldenIdentifier' does not satisfy the naming " +
@@ -197,12 +167,13 @@ open class ScreenshotTestRule(
         if (expected == null) {
             reportResult(
                 status = ScreenshotResultProto.DiffResult.Status.MISSING_REFERENCE,
+                assetsPathRelativeToRepo = goldenImagePathManager.assetsPathRelativeToRepo,
                 goldenIdentifier = goldenIdentifier,
                 actual = actual
             )
             throw AssertionError(
                 "Missing golden image " +
-                    "'${goldenIdentifierResolver(goldenIdentifier)}'. " +
+                    "'${goldenImagePathManager.goldenIdentifierResolver(goldenIdentifier)}'. " +
                     "Did you mean to check in a new image?"
             )
         }
@@ -210,6 +181,7 @@ open class ScreenshotTestRule(
         if (actual.width != expected.width || actual.height != expected.height) {
             reportResult(
                 status = ScreenshotResultProto.DiffResult.Status.FAILED,
+                assetsPathRelativeToRepo = goldenImagePathManager.assetsPathRelativeToRepo,
                 goldenIdentifier = goldenIdentifier,
                 actual = actual,
                 expected = expected
@@ -224,7 +196,8 @@ open class ScreenshotTestRule(
             expected = expected.toIntArray(),
             given = actual.toIntArray(),
             width = actual.width,
-            height = actual.height
+            height = actual.height,
+            regions = regions
         )
 
         val status = if (comparisonResult.matches) {
@@ -235,11 +208,12 @@ open class ScreenshotTestRule(
 
         reportResult(
             status = status,
+            assetsPathRelativeToRepo = goldenImagePathManager.assetsPathRelativeToRepo,
             goldenIdentifier = goldenIdentifier,
             actual = actual,
             comparisonStatistics = comparisonResult.comparisonStatistics,
-            expected = expected,
-            diff = comparisonResult.diff
+            expected = highlightedBitmap(expected, regions),
+            diff = highlightedBitmap(comparisonResult.diff, regions)
         )
 
         if (!comparisonResult.matches) {
@@ -252,6 +226,7 @@ open class ScreenshotTestRule(
 
     private fun reportResult(
         status: ScreenshotResultProto.DiffResult.Status,
+        assetsPathRelativeToRepo: String,
         goldenIdentifier: String,
         actual: Bitmap,
         comparisonStatistics: ScreenshotResultProto.DiffResult.ComparisonStatistics? = null,
@@ -264,17 +239,15 @@ open class ScreenshotTestRule(
             .addMetadata(
                 ScreenshotResultProto.Metadata.newBuilder()
                     .setKey("repoRootPath")
-                    .setValue(repoRootPathForGoldens))
+                    .setValue(goldenImagePathManager.deviceLocalPath))
 
         if (comparisonStatistics != null) {
             resultProto.comparisonStatistics = comparisonStatistics
         }
-        resultProto.imageLocationGolden =
-            if (pathToGoldensInRepo.isEmpty()) {
-                goldenIdentifierResolver(goldenIdentifier)
-            } else {
-                "$pathToGoldensInRepo/${goldenIdentifierResolver(goldenIdentifier)}"
-            }
+
+        val pathRelativeToAssets =
+            goldenImagePathManager.goldenIdentifierResolver(goldenIdentifier)
+        resultProto.imageLocationGolden = "$assetsPathRelativeToRepo/$pathRelativeToAssets"
 
         val report = Bundle()
 
@@ -315,13 +288,16 @@ open class ScreenshotTestRule(
 
     internal fun getPathOnDeviceFor(fileType: OutputFileType): File {
         val fileName = when (fileType) {
-            OutputFileType.IMAGE_ACTUAL -> "${testIdentifier}_actual$imageExtension"
-            OutputFileType.IMAGE_EXPECTED -> "${testIdentifier}_expected$imageExtension"
-            OutputFileType.IMAGE_DIFF -> "${testIdentifier}_diff$imageExtension"
+            OutputFileType.IMAGE_ACTUAL ->
+                "${testIdentifier}_actual_$goldenImagePathManager.$imageExtension"
+            OutputFileType.IMAGE_EXPECTED ->
+                "${testIdentifier}_expected_$goldenImagePathManager.$imageExtension"
+            OutputFileType.IMAGE_DIFF ->
+                "${testIdentifier}_diff_$goldenImagePathManager.$imageExtension"
             OutputFileType.RESULT_PROTO -> "${testIdentifier}_$resultProtoFileSuffix"
             OutputFileType.RESULT_BIN_PROTO -> "${testIdentifier}_$resultBinaryProtoFileSuffix"
         }
-        return File(deviceOutputDirectory, fileName)
+        return File(goldenImagePathManager.deviceLocalPath, fileName)
     }
 
     private fun Bitmap.writeToDevice(fileType: OutputFileType): File {
@@ -334,8 +310,9 @@ open class ScreenshotTestRule(
         fileType: OutputFileType,
         writeAction: (FileOutputStream) -> Unit
     ): File {
-        if (!deviceOutputDirectory.exists() && !deviceOutputDirectory.mkdir()) {
-            throw IOException("Could not create folder.")
+        val fileGolden = File(goldenImagePathManager.deviceLocalPath)
+        if (!fileGolden.exists() && !fileGolden.mkdir()) {
+            throw IOException("Could not create folder $fileGolden.")
         }
 
         var file = getPathOnDeviceFor(fileType)
@@ -352,12 +329,77 @@ open class ScreenshotTestRule(
         return file
     }
 
-    private fun getDeviceModel(): String {
-        var model = android.os.Build.MODEL.lowercase()
-        arrayOf("phone", "x86", "x64", "gms").forEach {
-            model = model.replace(it, "")
+    private fun colorPixel(
+        bitmapArray: IntArray,
+        width: Int,
+        height: Int,
+        row: Int,
+        column: Int,
+        extra: Int,
+        colorForHighlight: Int
+    ) {
+        val startRow = if (row - extra < 0) { 0 } else { row - extra }
+        val endRow = if (row + extra >= height) { height - 1 } else { row + extra }
+        val startColumn = if (column - extra < 0) { 0 } else { column - extra }
+        val endColumn = if (column + extra >= width) { width - 1 } else { column + extra }
+        for (i in startRow..endRow) {
+            for (j in startColumn..endColumn) {
+                bitmapArray[j + i * width] = colorForHighlight
+            }
         }
-        return model.trim().replace(" ", "_")
+    }
+
+    private fun highlightedBitmap(original: Bitmap?, regions: Array<Rect>?): Bitmap? {
+        if (original == null || regions == null) {
+            return original
+        }
+        val bitmapArray = original.toIntArray()
+        val colorForHighlight = Color.argb(255, 255, 0, 0)
+        for (region in regions) {
+            for (i in region.top..region.bottom) {
+                if (i >= original.height) { break }
+                colorPixel(
+                    bitmapArray,
+                    original.width,
+                    original.height,
+                    i,
+                    region.left,
+                    /* extra= */2,
+                    colorForHighlight
+                )
+                colorPixel(
+                    bitmapArray,
+                    original.width,
+                    original.height,
+                    i,
+                    region.right,
+                    /* extra= */2,
+                    colorForHighlight
+                )
+            }
+            for (j in region.left..region.right) {
+                if (j >= original.width) { break }
+                colorPixel(
+                    bitmapArray,
+                    original.width,
+                    original.height,
+                    region.top,
+                    j,
+                    /* extra= */2,
+                    colorForHighlight
+                )
+                colorPixel(
+                    bitmapArray,
+                    original.width,
+                    original.height,
+                    region.bottom,
+                    j,
+                    /* extra= */2,
+                    colorForHighlight
+                )
+            }
+        }
+        return Bitmap.createBitmap(bitmapArray, original.width, original.height, original.config)
     }
 }
 
@@ -385,7 +427,19 @@ internal fun Bitmap.toIntArray(): IntArray {
 fun Bitmap.assertAgainstGolden(
     rule: ScreenshotTestRule,
     goldenIdentifier: String,
-    matcher: BitmapMatcher = MSSIMMatcher()
+    matcher: BitmapMatcher = MSSIMMatcher(),
+    regions: Array<Rect>? = null
 ) {
-    rule.assertBitmapAgainstGolden(this, goldenIdentifier, matcher = matcher)
+    rule.assertBitmapAgainstGolden(this, goldenIdentifier, matcher = matcher, regions = regions)
+}
+
+/**
+ * Type of file that can be produced by the [ScreenshotTestRule].
+ */
+internal enum class OutputFileType {
+    IMAGE_ACTUAL,
+    IMAGE_EXPECTED,
+    IMAGE_DIFF,
+    RESULT_PROTO,
+    RESULT_BIN_PROTO
 }
