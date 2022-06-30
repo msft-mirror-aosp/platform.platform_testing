@@ -24,10 +24,12 @@ java_library_host {
 
     static_libs: [
         "sts-common-util-lib",
+        "xz-java",
     ],
 
     libs: [
         "compatibility-tradefed",
+        "guava",
         "tradefed",
     ],
 }

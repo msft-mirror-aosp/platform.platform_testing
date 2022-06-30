@@ -17,6 +17,8 @@
 package com.android.server.wm.flicker
 
 import android.util.Log
+import com.android.server.wm.flicker.FlickerRunResult.Companion.RunStatus
+import com.android.server.wm.flicker.monitor.IFileGeneratingMonitor
 import com.android.server.wm.flicker.monitor.ITransitionMonitor
 import com.android.server.wm.traces.common.ConditionList
 import com.android.server.wm.traces.common.WindowManagerConditionsFactory
@@ -93,7 +95,7 @@ open class TransitionRunner {
                 runTransitionSetup(flicker)
                 runTransition(flicker)
                 runTransitionTeardown(flicker)
-                saveRunResults(flicker, runs)
+                processRunTraces(flicker, runs, RunStatus.ASSERTION_SUCCESS)
             }
 
             runTestTeardown(flicker)
@@ -121,7 +123,6 @@ open class TransitionRunner {
             // transitions nor save any results for this run. We simply want to run the test
             // teardown.
             executionErrors.add(e)
-            flicker.traceMonitors.forEach { it.tryStop() }
             safeExecution(flicker, runs, executionErrors) {
                 runTestTeardown(flicker)
             }
@@ -132,14 +133,7 @@ open class TransitionRunner {
             executionErrors.add(e)
             flicker.traceMonitors.forEach { it.tryStop() }
             safeExecution(flicker, runs, executionErrors) {
-                runTestTeardown(flicker)
-            }
-        } catch (e: SaveRunResultsFailure) {
-            // If we fail to save the run results we still want to run the teardowns and report the
-            // execution error.
-            executionErrors.add(e)
-            safeExecution(flicker, runs, executionErrors) {
-                runTransitionTeardown(flicker)
+                processRunTraces(flicker, runs, RunStatus.RUN_FAILED)
                 runTestTeardown(flicker)
             }
         } catch (e: TransitionTeardownFailure) {
@@ -147,24 +141,63 @@ open class TransitionRunner {
             // as the device is likely in an unexpected state which would lead to further errors.
             // But, we do want to run the test teardown.
             executionErrors.add(e)
+            flicker.traceMonitors.forEach { it.tryStop() }
             safeExecution(flicker, runs, executionErrors) {
+                processRunTraces(flicker, runs, RunStatus.RUN_FAILED)
+                runTestTeardown(flicker)
+            }
+        } catch (e: TraceProcessingFailure) {
+            // If we fail to process the run traces we still want to run the teardowns and report
+            // the execution error.
+            executionErrors.add(e)
+            safeExecution(flicker, runs, executionErrors) {
+                runTransitionTeardown(flicker)
                 runTestTeardown(flicker)
             }
         } catch (e: TestTeardownFailure) {
             // If we fail in the execution of the test teardown there is nothing else to do apart
             // from reporting the execution error.
             executionErrors.add(e)
+            for (run in runs) {
+                run.setRunFailed()
+            }
         }
     }
 
-    @Throws(SaveRunResultsFailure::class)
-    private fun saveRunResults(flicker: Flicker, runs: MutableList<FlickerRunResult>) {
+    /**
+     * Parses the traces collected by the monitors to generate FlickerRunResults containing the
+     * parsed trace and information about the status of the run.
+     * The run results are added to the runs list which is then used to run Flicker assertions on.
+     */
+    @Throws(TraceProcessingFailure::class)
+    private fun processRunTraces(
+        flicker: Flicker,
+        runs: MutableList<FlickerRunResult>,
+        status: RunStatus
+    ) {
         try {
-            val runResults = saveResult(flicker, iteration)
+            val runResults = buildRunResults(flicker, iteration, status)
             runs.addAll(runResults)
         } catch (e: Throwable) {
-            throw SaveRunResultsFailure(e)
+            // We have failed to add the results to the runs, so we can effectively consider these
+            // results as "lost" as they won't be used from now forth. So we can safely rename
+            // to file to indicate the failure and make it easier to find in the archives.
+            flicker.traceMonitors.forEach {
+                // All monitors that generate files we want to keep in the archives should implement
+                // IFileGeneratingMonitor
+                if (it is IFileGeneratingMonitor) {
+                    Utils.addStatusToFileName(it.outputFile, RunStatus.PARSING_FAILURE)
+                }
+            }
+            throw TraceProcessingFailure(e)
         }
+
+        // Update the status of all the tags created in this iteration and add them to runs
+        for (result in tagsResults) {
+            result.status = status
+            runs.add(result)
+        }
+        tagsResults.clear()
     }
 
     @Throws(TestSetupFailure::class)
@@ -216,13 +249,17 @@ open class TransitionRunner {
         }
     }
 
-    private fun saveResult(flicker: Flicker, iteration: Int): List<FlickerRunResult> {
+    private fun buildRunResults(
+        flicker: Flicker,
+        iteration: Int,
+        status: RunStatus
+    ): List<FlickerRunResult> {
         val resultBuilder = FlickerRunResult.Builder()
         flicker.traceMonitors.forEach {
-            it.save(resultBuilder)
+            resultBuilder.setResultFrom(it)
         }
 
-        return resultBuilder.buildAll(flicker.testName, iteration)
+        return resultBuilder.buildAll(flicker.testName, iteration, status)
     }
 
     private fun ITransitionMonitor.tryStop() {
@@ -271,7 +308,13 @@ open class TransitionRunner {
             val result = builder.buildStateResult(
                 tag,
                 deviceState.wmState?.asTrace(),
-                deviceState.layerState?.asTrace()
+                deviceState.layerState?.asTrace(),
+                wmTraceFile,
+                layersTraceFile,
+                flicker.testName,
+                iteration,
+                // Undefined until it is updated in processRunTraces
+                RunStatus.UNDEFINED
             )
             tagsResults.add(result)
         } catch (e: IOException) {
@@ -292,7 +335,7 @@ open class TransitionRunner {
         class TestSetupFailure(val e: Throwable) : Throwable(e)
         class TransitionSetupFailure(val e: Throwable) : Throwable(e)
         class TransitionExecutionFailure(val e: Throwable) : Throwable(e)
-        class SaveRunResultsFailure(val e: Throwable) : Throwable(e)
+        class TraceProcessingFailure(val e: Throwable) : Throwable(e)
         class TransitionTeardownFailure(val e: Throwable) : Throwable(e)
         class TestTeardownFailure(val e: Throwable) : Throwable(e)
     }

@@ -35,8 +35,8 @@ import java.nio.file.Path
 
 /** Captures screen contents and saves it as a mp4 video file.  */
 open class ScreenRecorder @JvmOverloads constructor(
-    outputDir: Path = getDefaultFlickerOutputDir(),
     private val context: Context,
+    outputDir: Path = getDefaultFlickerOutputDir(),
     private val maxDurationMs: Int = MAX_DURATION_MS,
     private val maxFileSizeBytes: Long = MAX_FILESIZE_BYTES,
     private val width: Int = 720,
@@ -88,7 +88,7 @@ open class ScreenRecorder @JvmOverloads constructor(
         this.mediaRecorder = recorder
     }
 
-    override fun start() {
+    override fun startTracing() {
         if (mediaRecorder != null) {
             Log.i(FLICKER_TAG, "Screen recorder already running")
             return
@@ -111,7 +111,7 @@ open class ScreenRecorder @JvmOverloads constructor(
             "Screen recorder didn't start" }
     }
 
-    override fun stop() {
+    override fun stopTracing() {
         if (mediaRecorder == null) {
             Log.i(FLICKER_TAG, "Screen recorder was not started")
             return
@@ -133,8 +133,8 @@ open class ScreenRecorder @JvmOverloads constructor(
     override val isEnabled: Boolean
         get() = mediaRecorder != null
 
-    override fun setResult(flickerRunResultBuilder: FlickerRunResult.Builder, traceFile: Path) {
-        flickerRunResultBuilder.screenRecording = traceFile
+    override fun setResult(builder: FlickerRunResult.Builder) {
+        builder.screenRecording = outputFile
     }
 
     override fun toString(): String {

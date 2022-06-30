@@ -118,6 +118,8 @@ class LayersTraceEntryTest {
     fun canDetectOrphanLayers() {
         try {
             readLayerTraceFromFile("layers_trace_orphanlayers.pb", ignoreOrphanLayers = false)
+                .first()
+                .flattenedLayers
             error("Failed to detect orphaned layers.")
         } catch (exception: RuntimeException) {
             Truth.assertThat(exception.message)

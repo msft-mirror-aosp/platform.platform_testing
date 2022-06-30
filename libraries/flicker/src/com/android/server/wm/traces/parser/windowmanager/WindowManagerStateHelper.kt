@@ -32,9 +32,10 @@ import com.android.server.wm.traces.common.ConditionList
 import com.android.server.wm.traces.common.DeviceStateDump
 import com.android.server.wm.traces.common.FlickerComponentName
 import com.android.server.wm.traces.common.FlickerComponentName.Companion.IME
+import com.android.server.wm.traces.common.FlickerComponentName.Companion.SNAPSHOT
 import com.android.server.wm.traces.parser.LOG_TAG
 import com.android.server.wm.traces.common.WaitCondition
-import com.android.server.wm.traces.common.layers.LayerTraceEntry
+import com.android.server.wm.traces.common.layers.BaseLayerTraceEntry
 import com.android.server.wm.traces.common.WindowManagerConditionsFactory
 import com.android.server.wm.traces.common.region.Region
 import com.android.server.wm.traces.common.windowmanager.WindowManagerState
@@ -48,13 +49,15 @@ open class WindowManagerStateHelper @JvmOverloads constructor(
     /**
      * Predicate to supply a new UI information
      */
-    private val deviceDumpSupplier: () -> DeviceStateDump<WindowManagerState, LayerTraceEntry> = {
-        val currState = getCurrentStateDump(instrumentation.uiAutomation)
-        DeviceStateDump(
-            currState.wmState ?: error("Unable to parse WM trace"),
-            currState.layerState ?: error("Unable to parse Layers trace")
-        )
-    },
+    private val deviceDumpSupplier:
+        () -> DeviceStateDump<WindowManagerState, BaseLayerTraceEntry> =
+            {
+            val currState = getCurrentStateDump(instrumentation.uiAutomation)
+            DeviceStateDump(
+                currState.wmState ?: error("Unable to parse WM trace"),
+                currState.layerState ?: error("Unable to parse Layers trace")
+            )
+        },
     /**
      * Number of attempts to satisfy a wait condition
      */
@@ -64,12 +67,12 @@ open class WindowManagerStateHelper @JvmOverloads constructor(
      */
     private val retryIntervalMs: Long = WaitCondition.DEFAULT_RETRY_INTERVAL_MS
 ) {
-    private var internalState: DeviceStateDump<WindowManagerState, LayerTraceEntry>? = null
+    private var internalState: DeviceStateDump<WindowManagerState, BaseLayerTraceEntry>? = null
 
     /**
      * Queries the supplier for a new device state
      */
-    val currentState: DeviceStateDump<WindowManagerState, LayerTraceEntry>
+    val currentState: DeviceStateDump<WindowManagerState, BaseLayerTraceEntry>
         get() {
             if (internalState == null) {
                 internalState = deviceDumpSupplier.invoke()
@@ -80,17 +83,17 @@ open class WindowManagerStateHelper @JvmOverloads constructor(
         }
 
     protected open fun updateCurrState(
-        value: DeviceStateDump<WindowManagerState, LayerTraceEntry>
+        value: DeviceStateDump<WindowManagerState, BaseLayerTraceEntry>
     ) {
         internalState = value
     }
 
     private fun createConditionBuilder():
-        WaitCondition.Builder<DeviceStateDump<WindowManagerState, LayerTraceEntry>> =
+        WaitCondition.Builder<DeviceStateDump<WindowManagerState, BaseLayerTraceEntry>> =
         WaitCondition.Builder(deviceDumpSupplier, numRetries)
             .onSuccess { updateCurrState(it) }
             .onFailure { updateCurrState(it) }
-            .onLog { Log.d(LOG_TAG, it) }
+            .onLog { msg, isError -> if (isError) Log.e(LOG_TAG, msg) else Log.d(LOG_TAG, msg) }
             .onRetry { SystemClock.sleep(retryIntervalMs) }
 
     /**
@@ -102,7 +105,7 @@ open class WindowManagerStateHelper @JvmOverloads constructor(
 
     fun waitForFullScreenApp(component: FlickerComponentName) =
         require(
-        waitFor(isAppFullScreen(component))) {
+        waitFor(isAppFullScreen(component), snapshotGoneCondition)) {
         "Expected ${component.toWindowName()} to be in full screen"
     }
 
@@ -183,7 +186,7 @@ open class WindowManagerStateHelper @JvmOverloads constructor(
     }
 
     fun waitFor(
-        vararg conditions: Condition<DeviceStateDump<WindowManagerState, LayerTraceEntry>>
+        vararg conditions: Condition<DeviceStateDump<WindowManagerState, BaseLayerTraceEntry>>
     ): Boolean {
         val builder = createConditionBuilder()
         conditions.forEach { builder.withCondition(it) }
@@ -193,7 +196,7 @@ open class WindowManagerStateHelper @JvmOverloads constructor(
     @JvmOverloads
     fun waitFor(
         message: String = "",
-        waitCondition: (DeviceStateDump<WindowManagerState, LayerTraceEntry>) -> Boolean
+        waitCondition: (DeviceStateDump<WindowManagerState, BaseLayerTraceEntry>) -> Boolean
     ): Boolean = waitFor(Condition(message, waitCondition))
 
     /**
@@ -264,6 +267,11 @@ open class WindowManagerStateHelper @JvmOverloads constructor(
         )
 
         @JvmStatic
+        val snapshotGoneCondition = ConditionList(
+                WindowManagerConditionsFactory.isLayerVisible(SNAPSHOT).negate(),
+                WindowManagerConditionsFactory.isAppTransitionIdle(Display.DEFAULT_DISPLAY))
+
+        @JvmStatic
         val pipShownCondition = ConditionList(
             WindowManagerConditionsFactory.hasLayersAnimating().negate(),
             WindowManagerConditionsFactory.hasPipWindow(),
@@ -277,7 +285,7 @@ open class WindowManagerStateHelper @JvmOverloads constructor(
 
         fun waitForValidStateCondition(
             vararg waitForActivitiesVisible: WaitForValidActivityState
-        ): Condition<DeviceStateDump<WindowManagerState, LayerTraceEntry>> {
+        ): Condition<DeviceStateDump<WindowManagerState, BaseLayerTraceEntry>> {
             val conditions = mutableListOf(WindowManagerConditionsFactory.isWMStateComplete())
 
             if (waitForActivitiesVisible.isNotEmpty()) {
@@ -301,7 +309,7 @@ open class WindowManagerStateHelper @JvmOverloads constructor(
          * @return true if should wait for some activities to become visible.
          */
         private fun shouldWaitForActivities(
-            state: DeviceStateDump<WindowManagerState, LayerTraceEntry>,
+            state: DeviceStateDump<WindowManagerState, BaseLayerTraceEntry>,
             vararg waitForActivitiesVisible: WaitForValidActivityState
         ): Boolean {
             if (waitForActivitiesVisible.isEmpty()) {

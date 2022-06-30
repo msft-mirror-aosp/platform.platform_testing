@@ -136,6 +136,15 @@ public interface INotificationHelper extends IAppHelper {
     }
 
     /**
+     * @return the notification shelf, containing overflow notifications that don't fit in the
+     *     screen. If unavailable, returns null.
+     */
+    @Nullable
+    default UiObject2 getNotificationShelf() {
+        throw new UnsupportedOperationException("Not yet implemented.");
+    }
+
+    /**
      * Setup Expectations: Shade is open
      *
      * <p>Posts multiple bubble notification. These notifications are associated with a conversation
@@ -290,28 +299,6 @@ public interface INotificationHelper extends IAppHelper {
     }
 
     /**
-     * Runs a shell command which causes System UI to hide all notifications EXCEPT from the test
-     * application, when enabled is true. When enabled is false, the default debug filter is reset
-     * and all notifications will be restored.
-     *
-     * <p>Fails if any notifications are left in the shade after the filter is applied.
-     */
-    default void setDebugNotificationFilter(boolean enabled) {
-        throw new UnsupportedOperationException("Not yet implemented.");
-    }
-
-    /**
-     * Runs a shell command which causes System UI to hide all notifications EXCEPT from all the
-     * provided packages. If no packages are provided, the default debug filter is reset and all
-     * notifications will be restored.
-     *
-     * <p>Fails if any notifications are left in the shade after the filter is applied.
-     */
-    default void setDebugNotificationFilter(@Nullable List<String> allowedPackages) {
-        throw new UnsupportedOperationException("Not yet implemented.");
-    }
-
-    /**
      * Setup expectations: Notification shade opened.
      *
      * <p>Opens the first notification by the specified title and checks if the expected application
@@ -425,6 +412,11 @@ public interface INotificationHelper extends IAppHelper {
      * <p>Open the notification shade by swiping on the home screen.
      */
     default void swipeToOpen() {
+        throw new UnsupportedOperationException("Not yet implemented.");
+    }
+
+    /** Closes the notification shade by swiping up. */
+    default void swipeToClose() {
         throw new UnsupportedOperationException("Not yet implemented.");
     }
 

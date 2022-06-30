@@ -11,6 +11,14 @@ public interface ICollectorHelper<T> {
     boolean startCollecting();
 
     /**
+     * This method will take args which passes an identifier for the helper.
+     * The default implementation is to invoke {@link #startCollecting()} directly.
+     */
+    default boolean startCollecting(String id) {
+        return startCollecting();
+    }
+
+    /**
      * This method will have setup to start collecting the metrics. The default implementation is to
      * invoke {@link #startCollecting()} directly. To apply the filters, must overload this method
      * and use the filters.
