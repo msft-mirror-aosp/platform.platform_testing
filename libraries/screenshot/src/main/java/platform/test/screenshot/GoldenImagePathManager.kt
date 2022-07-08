@@ -18,7 +18,6 @@ package platform.test.screenshot
 
 import android.content.Context
 import android.os.Build
-
 import java.io.File
 
 private const val BRAND_TAG = "brand"
@@ -26,6 +25,9 @@ private const val MODEL_TAG = "model"
 private const val API_TAG = "api"
 private const val SIZE_TAG = "size"
 private const val RESOLUTION_TAG = "resolution"
+private const val DISPLAY_TAG = "display"
+private const val THEME_TAG = "theme"
+private const val ORIENTATION_TAG = "orientation"
 
 /**
  * Class to manage Directory structure of golden images.
@@ -143,6 +145,21 @@ public fun getDefaultPathConfig(): PathConfig {
 public fun getSimplePathConfig(): PathConfig {
     return PathConfig(
         PathElementNoContext(MODEL_TAG, true, ::getDeviceModel)
+    )
+}
+
+/** The [PathConfig] that should be used when emulating a device using the [DeviceEmulationRule]. */
+fun getEmulatedDevicePathConfig(emulationSpec: DeviceEmulationSpec): PathConfig {
+    // Returns a path of the form
+    // "/display_name/(light|dark)_(portrait|landscape)_golden_identifier.png".
+    return PathConfig(
+        PathElementNoContext(DISPLAY_TAG, isDir = true) { emulationSpec.display.name },
+        PathElementNoContext(THEME_TAG, isDir = false) {
+            if (emulationSpec.isDarkTheme) "dark" else "light"
+        },
+        PathElementNoContext(ORIENTATION_TAG, isDir = false) {
+            if (emulationSpec.isLandscape) "landscape" else "portrait"
+        },
     )
 }
 
