@@ -227,9 +227,11 @@ class RegionSubject(
             !intersection.op(region, Region.Op.XOR)
 
         if (!covers) {
-            fail(Fact.fact("Region to test", testRegion),
+            fail(
+                Fact.fact("Region to test", testRegion),
                 Fact.fact("Covered region", region),
-                Fact.fact("Out-of-bounds region", intersection))
+                Fact.fact("Out-of-bounds region", intersection)
+            )
         }
     }
 
@@ -244,6 +246,45 @@ class RegionSubject(
     }
 
     /**
+     * Asserts that [region] is not bigger than [testRegion], even if the regions don't overlap.
+     *
+     * @param testRegion Area to compare to
+     */
+    fun notBiggerThan(testRegion: Region): RegionSubject = apply {
+        val testArea = testRegion.bounds.area
+        val area = region.bounds.area
+
+        if (area > testArea) {
+            fail(
+                Fact.fact("Region to test", testRegion),
+                Fact.fact("Area of test region", testArea),
+                Fact.fact("Covered region", region),
+                Fact.fact("Area of region", area)
+            )
+        }
+    }
+
+    /**
+     * Asserts that [region] is positioned to the right and bottom from [testRegion], but the
+     * regions can overlap and [region] can be smaller than [testRegion]
+     *
+     * @param testRegion Area to compare to
+     * @param threshold Offset threshold by which the position might be off
+     */
+    fun isToTheRightBottom(testRegion: Region, threshold: Int): RegionSubject = apply {
+        val horizontallyPositionedToTheRight =
+            testRegion.bounds.left - threshold <= region.bounds.left
+        val verticallyPositionedToTheBottom = testRegion.bounds.top - threshold <= region.bounds.top
+
+        if (!horizontallyPositionedToTheRight || !verticallyPositionedToTheBottom) {
+            fail(
+                Fact.fact("Region to test", testRegion),
+                Fact.fact("Actual region", region)
+            )
+        }
+    }
+
+    /**
      * Asserts that [region] covers at least [testRegion], that is, its area covers each point
      * in the region
      *
@@ -255,9 +296,11 @@ class RegionSubject(
             !intersection.op(testRegion, Region.Op.XOR)
 
         if (!covers) {
-            fail(Fact.fact("Region to test", testRegion),
+            fail(
+                Fact.fact("Region to test", testRegion),
                 Fact.fact("Covered region", region),
-                Fact.fact("Uncovered region", intersection))
+                Fact.fact("Uncovered region", intersection)
+            )
         }
     }
 
@@ -281,9 +324,11 @@ class RegionSubject(
         val isNotEmpty = intersection.op(testRegion, Region.Op.XOR)
 
         if (isNotEmpty) {
-            fail(Fact.fact("Region to test", testRegion),
+            fail(
+                Fact.fact("Region to test", testRegion),
                 Fact.fact("Covered region", region),
-                Fact.fact("Uncovered region", intersection))
+                Fact.fact("Uncovered region", intersection)
+            )
         }
     }
 
@@ -306,9 +351,11 @@ class RegionSubject(
         val isEmpty = !intersection.op(testRegion, Region.Op.INTERSECT)
 
         if (isEmpty) {
-            fail(Fact.fact("Region to test", testRegion),
+            fail(
+                Fact.fact("Region to test", testRegion),
                 Fact.fact("Covered region", region),
-                Fact.fact("Overlap region", intersection))
+                Fact.fact("Overlap region", intersection)
+            )
         }
     }
 
@@ -331,9 +378,11 @@ class RegionSubject(
         val isEmpty = !intersection.op(testRegion, Region.Op.INTERSECT)
 
         if (!isEmpty) {
-            fail(Fact.fact("Region to test", testRegion),
+            fail(
+                Fact.fact("Region to test", testRegion),
                 Fact.fact("Covered region", region),
-                Fact.fact("Overlap region", intersection))
+                Fact.fact("Overlap region", intersection)
+            )
         }
     }
 
@@ -353,11 +402,11 @@ class RegionSubject(
      */
     fun isSameAspectRatio(other: RegionSubject): RegionSubject = apply {
         val aspectRatio = this.region.width.toFloat() /
-                this.region.height
+            this.region.height
         val otherAspectRatio = other.region.width.toFloat() /
-                other.region.height
+            other.region.height
         check("Should have same aspect ratio, old is $aspectRatio and new is $otherAspectRatio")
-                .that(abs(aspectRatio - otherAspectRatio) > 0.1).isFalse()
+            .that(abs(aspectRatio - otherAspectRatio) > 0.1).isFalse()
     }
 
     companion object {
@@ -445,8 +494,12 @@ class RegionSubject(
         @JvmStatic
         @JvmOverloads
         fun assertThat(rect: Array<RectF>, parent: FlickerSubject? = null, timestamp: Long):
-            RegionSubject = assertThat(mergeRegions(
-                rect.map { Region.from(it.toRect()) }.toTypedArray()), parent, timestamp)
+            RegionSubject = assertThat(
+            mergeRegions(
+                rect.map { Region.from(it.toRect()) }.toTypedArray()
+            ),
+            parent, timestamp
+        )
 
         /**
          * User-defined entry point for existing regions
