@@ -71,4 +71,29 @@ class PixelPerfectMatcherTest {
 
         assertThat(result.matches).isTrue()
     }
+
+    @Test
+    fun performDiff_sameSize_partialCompare_checkDiffImage() {
+        val first = loadBitmap("qmc-folder1")
+        val second = loadBitmap("qmc-folder2")
+        val matcher = PixelPerfectMatcher()
+        val interestingRegion = Rect(/* left= */10, /* top= */15, /* right= */70, /* bottom= */50)
+        val result = matcher.compareBitmaps(
+            first.toIntArray(), second.toIntArray(),
+            first.width, first.height,
+            arrayOf(interestingRegion)
+        )
+        val diffImage = result.diff!!.toIntArray()
+
+        assertThat(result.matches).isFalse()
+        for (i in 0..first.height - 1) {
+            for (j in 0..first.width - 1) {
+                val rowInRange = i >= interestingRegion.top && i <= interestingRegion.bottom
+                val colInRange = j >= interestingRegion.left && j <= interestingRegion.right
+                if (!(rowInRange && colInRange)) {
+                    assertThat(diffImage[i * first.width + j] == 0).isTrue()
+                }
+            }
+        }
+    }
 }
