@@ -213,7 +213,7 @@ open class ScreenshotTestRule(
             actual = actual,
             comparisonStatistics = comparisonResult.comparisonStatistics,
             expected = highlightedBitmap(expected, regions),
-            diff = highlightedBitmap(comparisonResult.diff, regions)
+            diff = comparisonResult.diff
         )
 
         if (!comparisonResult.matches) {
