@@ -34,10 +34,12 @@ import java.nio.file.Paths;
 public class PerfettoHelper {
 
     private static final String LOG_TAG = PerfettoHelper.class.getSimpleName();
-    // Command to start the perfetto tracing in the background.
-    // perfetto -b -c /data/misc/perfetto-traces/trace_config.pb -o
-    // /data/misc/perfetto-traces/trace_output.pb
-    private static final String PERFETTO_START_CMD = "perfetto --background -c %s%s -o %s";
+    // Command to start the perfetto tracing in the background. The "perfetto" process will wait
+    // until tracing is fully started (i.e. all data sources are active) before backgrounding and
+    // returning from the original shell invocation.
+    //   perfetto --background-wait -c /data/misc/perfetto-traces/trace_config.pb -o
+    //   /data/misc/perfetto-traces/trace_output.pb
+    private static final String PERFETTO_START_CMD = "perfetto --background-wait -c %s%s -o %s";
     private static final String PERFETTO_TMP_OUTPUT_FILE =
             "/data/misc/perfetto-traces/trace_output.pb";
     // Additional arg to indicate that the perfetto config file is text format.
@@ -103,6 +105,12 @@ public class PerfettoHelper {
             if (startOutput != null && !startOutput.isEmpty()) {
                 mPerfettoProcId = Integer.parseInt(startOutput.trim());
             }
+            // TODO(b/235066144): evaluate whether this load-bearing(!) sleep is still necessary.
+            // Setting up tracing with kallsyms symbolisation requires traced_probes to do cpu-bound
+            // address table creation for 500+ ms, which was observed to boost cpu frequencies.
+            // This helper does wait until kallsyms setup is done before proceeding
+            // (--background-wait), but this extra sleep aims to let the device quiesce before the
+            // test being measured is started.
             SystemClock.sleep(1000);
             if(!isTestPerfettoRunning()) {
                 return false;

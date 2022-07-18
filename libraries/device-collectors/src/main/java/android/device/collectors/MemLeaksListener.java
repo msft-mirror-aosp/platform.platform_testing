@@ -19,12 +19,18 @@ package android.device.collectors;
 import android.device.collectors.annotations.OptionClass;
 import android.os.Bundle;
 import androidx.annotation.VisibleForTesting;
-
 import com.android.helpers.MemLeaksHelper;
 
 /** A {@link MemLeaksListener} that captures and records the memory leaks in the device. */
 @OptionClass(alias = "memleaks-listener")
 public class MemLeaksListener extends BaseCollectionListener<Long> {
+
+    private static final String TAG = MemLeaksListener.class.getSimpleName();
+    @VisibleForTesting static final String PROCESS_SEPARATOR = ",";
+    @VisibleForTesting static final String PROCESS_NAMES_KEY = "unreachable-mem-process-names";
+
+    @VisibleForTesting
+    static final String COLLECT_ALL_PROCESSES = "collect-all-processes-unreachable-mem";
 
     private MemLeaksHelper mMemLeaksHelper = new MemLeaksHelper();
 
@@ -35,5 +41,17 @@ public class MemLeaksListener extends BaseCollectionListener<Long> {
     @VisibleForTesting
     public MemLeaksListener(Bundle args, MemLeaksHelper helper) {
         super(args, helper);
+    }
+
+    @Override
+    public void setupAdditionalArgs() {
+        Bundle args = getArgsBundle();
+
+        String flagString = args.getString(COLLECT_ALL_PROCESSES, "true");
+        boolean collectAllProcFlag = Boolean.parseBoolean(flagString.replace("\n", "").trim());
+
+        String procsString = args.getString(PROCESS_NAMES_KEY, "");
+        String[] procs = procsString.split(PROCESS_SEPARATOR);
+        mMemLeaksHelper.setUp(procs, collectAllProcFlag);
     }
 }

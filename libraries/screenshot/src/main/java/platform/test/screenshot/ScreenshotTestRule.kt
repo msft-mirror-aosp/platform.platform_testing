@@ -23,6 +23,10 @@ import android.graphics.Color
 import android.graphics.Rect
 import android.os.Bundle
 import androidx.test.platform.app.InstrumentationRegistry
+import java.io.File
+import java.io.FileNotFoundException
+import java.io.FileOutputStream
+import java.io.IOException
 import org.junit.rules.TestRule
 import org.junit.rules.TestWatcher
 import org.junit.runner.Description
@@ -31,10 +35,6 @@ import platform.test.screenshot.matchers.BitmapMatcher
 import platform.test.screenshot.matchers.MSSIMMatcher
 import platform.test.screenshot.matchers.PixelPerfectMatcher
 import platform.test.screenshot.proto.ScreenshotResultProto
-import java.io.File
-import java.io.FileNotFoundException
-import java.io.FileOutputStream
-import java.io.IOException
 
 /**
  * Rule to be added to a test to facilitate screenshot testing.
@@ -213,7 +213,7 @@ open class ScreenshotTestRule(
             actual = actual,
             comparisonStatistics = comparisonResult.comparisonStatistics,
             expected = highlightedBitmap(expected, regions),
-            diff = highlightedBitmap(comparisonResult.diff, regions)
+            diff = comparisonResult.diff
         )
 
         if (!comparisonResult.matches) {
