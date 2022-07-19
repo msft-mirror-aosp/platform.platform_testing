@@ -66,7 +66,7 @@ class PixelPerfectMatcherTest {
         val result = matcher.compareBitmaps(
             first.toIntArray(), second.toIntArray(),
             first.width, first.height,
-            arrayOf(Rect(/* left= */1, /* top= */1, /* right= */4, /* bottom= */4))
+            listOf(Rect(/* left= */1, /* top= */1, /* right= */4, /* bottom= */4))
         )
 
         assertThat(result.matches).isTrue()
@@ -80,8 +80,7 @@ class PixelPerfectMatcherTest {
         val interestingRegion = Rect(/* left= */10, /* top= */15, /* right= */70, /* bottom= */50)
         val result = matcher.compareBitmaps(
             first.toIntArray(), second.toIntArray(),
-            first.width, first.height,
-            arrayOf(interestingRegion)
+            first.width, first.height, listOf(interestingRegion)
         )
         val diffImage = result.diff!!.toIntArray()
 
