@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 /**
@@ -119,7 +120,13 @@ public class UiInteractionFrameInfoHelper implements ICollectorHelper<StringBuil
                 addMetric(
                         constructKey(KEY_PREFIX_CUJ, interactionType, SUFFIX_MAX_FRAME_MS),
                         makeLogFriendly(
-                                uiInteractionFrameInfoReported.maxFrameTimeNanos / 1000000.0),
+                                TimeUnit.NANOSECONDS.toMillis(
+                                        uiInteractionFrameInfoReported.maxFrameTimeNanos)),
+                        frameInfoMap);
+
+                addMetric(
+                        constructKey(KEY_PREFIX_CUJ, interactionType, "max_successive_misses"),
+                        makeLogFriendly(uiInteractionFrameInfoReported.maxSuccessiveMissedFrames),
                         frameInfoMap);
             }
         }
