@@ -25,6 +25,7 @@ import com.google.common.truth.Truth.assertThat
 import java.io.File
 import java.io.FileInputStream
 import java.lang.AssertionError
+import java.util.ArrayList
 import org.junit.After
 import org.junit.Rule
 import org.junit.Test
@@ -107,10 +108,12 @@ class ScreenshotTestRuleTest {
     @Test
     fun performDiff_noPixelCompared() {
         val first = loadBitmap("round_rect_gray")
+        val regions = ArrayList<Rect>()
+        regions.add(Rect(/* left= */1, /* top= */1, /* right= */2, /* bottom=*/2))
 
         first.assertAgainstGolden(
             rule, "round_rect_green", matcher = MSSIMMatcher(),
-            regions = arrayOf(Rect(/* left= */1, /* top= */1, /* right= */2, /* bottom=*/2))
+            regions = regions
         )
 
         val resultProto = rule.getPathOnDeviceFor(RESULT_PROTO)
@@ -129,10 +132,12 @@ class ScreenshotTestRuleTest {
         val startWidth = 10 * first.width / 20
         val endWidth = 11 * first.width / 20
         val matcher = MSSIMMatcher()
+        val regions = ArrayList<Rect>()
+        regions.add(Rect(startWidth, startHeight, endWidth, endHeight))
+        regions.add(Rect())
 
         first.assertAgainstGolden(
-            rule, "qmc-folder2", matcher,
-            arrayOf(Rect(startWidth, startHeight, endWidth, endHeight))
+            rule, "qmc-folder2", matcher, regions
         )
 
         val resultProto = rule.getPathOnDeviceFor(RESULT_PROTO)
