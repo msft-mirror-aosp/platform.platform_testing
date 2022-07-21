@@ -216,6 +216,19 @@ public class SettingHelperImpl extends AbstractAutoStandardAppHelper implements 
 
     /** {@inheritDoc} */
     @Override
+    public void toggleHotspot() {
+        UiObject2 enableOption =
+                findUiObject(
+                        getResourceFromConfig(
+                                AutoConfigConstants.SETTINGS,
+                                AutoConfigConstants.NETWORK_AND_INTERNET_SETTINGS,
+                                AutoConfigConstants.TOGGLE_HOTSPOT));
+        clickAndWaitForWindowUpdate(
+                getApplicationConfig(AutoConfigConstants.SETTINGS_PACKAGE), enableOption);
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public boolean isHotspotOn() {
         UiObject2 enableOption =
                 findUiObject(

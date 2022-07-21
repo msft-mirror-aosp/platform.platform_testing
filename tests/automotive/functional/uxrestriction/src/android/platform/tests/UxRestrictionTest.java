@@ -80,8 +80,11 @@ public class UxRestrictionTest {
     @Test
     public void testRestrictedNetworkSettings() {
         mSettingHelper.get().openSetting(AutoConfigConstants.NETWORK_AND_INTERNET_SETTINGS);
-        mSettingHelper.get().turnOnOffHotspot(true);
-        assertFalse("Hotspot is not disabled", mSettingHelper.get().isHotspotOn());
+        Boolean currentHotspotState = mSettingHelper.get().isHotspotOn();
+        mSettingHelper.get().toggleHotspot();
+        Boolean newHotspotState = mSettingHelper.get().isHotspotOn();
+        assertFalse("Hotspot is not working", currentHotspotState.equals(newHotspotState));
+        mSettingHelper.get().toggleHotspot();
     }
 
     @Test
