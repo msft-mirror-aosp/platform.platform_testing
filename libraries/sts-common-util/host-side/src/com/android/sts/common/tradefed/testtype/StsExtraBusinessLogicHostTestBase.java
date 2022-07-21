@@ -84,6 +84,12 @@ public class StsExtraBusinessLogicHostTestBase extends ExtraBusinessLogicHostTes
         return Boolean.parseBoolean(useKernelSplString);
     }
 
+    @Override
+    public boolean shouldSkipMainlineTests() {
+        return Boolean.parseBoolean(
+                getBuild().getBuildAttributes().get("sts-should-skip-mainline"));
+    }
+
     /**
      * Specify the latest release bulletin. Control this from the command-line with the following
      * command line argument: --build-attribute "release-bulletin-spl=2021-06"
