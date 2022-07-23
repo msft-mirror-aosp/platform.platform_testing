@@ -248,7 +248,8 @@ public class SettingsSystemHelperImpl extends AbstractAutoStandardAppHelper
                                     getResourceValue(
                                             AutoConfigConstants.SETTINGS,
                                             AutoConfigConstants.SYSTEM_SETTINGS,
-                                            AutoConfigConstants.RECYCLER_VIEW_WIDGET));
+                                            AutoConfigConstants.RECYCLER_VIEW_WIDGET))
+                            .instance(getScrollScreenIndex());
             UiScrollable scrollable = new UiScrollable(uiSelector);
             try {
                 scrollable.scrollForward();
