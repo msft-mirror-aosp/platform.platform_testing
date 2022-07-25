@@ -75,6 +75,12 @@ public class StsExtraBusinessLogicTestCase extends ExtraBusinessLogicTestCase im
         return Boolean.parseBoolean(useKernelSplString);
     }
 
+    @Override
+    public boolean shouldSkipMainlineTests() {
+        return Boolean.parseBoolean(
+                InstrumentationRegistry.getArguments().getString("sts-should-skip-mainline"));
+    }
+
     /**
      * Specify the latest release bulletin. Control this from the command-line with the following:
      * --test-arg
