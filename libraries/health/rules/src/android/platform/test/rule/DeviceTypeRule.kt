@@ -17,8 +17,8 @@ package android.platform.test.rule
 
 import android.app.Instrumentation
 import android.os.Build
-import android.support.test.uiautomator.UiDevice
 import androidx.test.InstrumentationRegistry
+import androidx.test.uiautomator.UiDevice
 import com.android.internal.R
 import kotlin.annotation.AnnotationRetention.RUNTIME
 import kotlin.annotation.AnnotationTarget.ANNOTATION_CLASS
