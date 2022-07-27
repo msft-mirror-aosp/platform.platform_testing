@@ -29,20 +29,8 @@ import java.util.List;
 /** An App Helper interface for the Notification. */
 public interface INotificationHelper extends IAppHelper {
 
-    String UI_PACKAGE_NAME_SYSUI = "com.android.systemui";
-    String UI_PACKAGE_NAME_ANDROID = "android";
-    String UI_NOTIFICATION_ID = "status_bar_latest_event_content";
-    String NOTIFICATION_TITLE_TEXT = "TEST NOTIFICATION";
     String NOTIFICATION_CONTENT_TEXT = "Test notification content";
-    String NOTIFICATION_BIG_TEXT =
-            "lorem ipsum dolor sit amet\n"
-                    + "lorem ipsum dolor sit amet\n"
-                    + "lorem ipsum dolor sit amet\n"
-                    + "lorem ipsum dolor sit amet";
-    String NOTIFICATION_CHANNEL_NAME = "Test Channel";
     String EXPAND_BUTTON_ID = "expand_button";
-    String BUBBLE_BUTTON = "bubble_button";
-    String APP_ICON_ID = "icon";
 
     /**
      * Setup expectations: Notification shade opened.
