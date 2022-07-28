@@ -149,8 +149,12 @@ public class RootcanalUtils extends TestWatcher {
         // Download and patch the VINTF manifest if needed.
         tryUpdateVintfManifest(device);
 
+        // Rootcanal expects certain libraries to be in /vendor and not /system so copy them over
+        copySystemLibToVendorIfMissing("libchrome.so");
+        copySystemLibToVendorIfMissing("android.hardware.bluetooth@1.1.so");
+        copySystemLibToVendorIfMissing("android.hardware.bluetooth@1.0.so");
+
         // Fix up permissions and SELinux contexts of files pushed over
-        runAndCheck(device, "cp /system/lib64/libchrome.so /vendor/lib64/libchrome.so");
         runAndCheck(device, "chmod 755 /vendor/bin/hw/android.hardware.bluetooth@1.1-service.sim");
         runAndCheck(
                 device,
@@ -217,6 +221,17 @@ public class RootcanalUtils extends TestWatcher {
         device.executeAdbCommand("forward", String.format("tcp:%d", hciPort), "tcp:6211");
 
         return new RootcanalController(testPort, hciPort);
+    }
+
+    private void copySystemLibToVendorIfMissing(String filename)
+            throws DeviceNotAvailableException {
+        runAndCheck(
+                test.getDevice(),
+                String.format(
+                        "(test -f /vendor/lib64/%1$s || cp /system/lib64/%1$s /vendor/lib64/%1$s)"
+                                + " || (test -f /vendor/lib/%1$s || cp /system/lib/%1$s"
+                                + " /vendor/lib/%1$s)",
+                        filename));
     }
 
     private void tryUpdateVintfManifest(ITestDevice device)
