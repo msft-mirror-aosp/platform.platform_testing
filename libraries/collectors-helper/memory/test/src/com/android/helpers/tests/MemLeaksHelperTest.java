@@ -547,14 +547,15 @@ public class MemLeaksHelperTest {
      * allocations. Collect all processes flag is FALSE and given process names are not empty.
      */
     @Test
-    public void testByGivenNames() throws IOException {
+    public void testByGivenNamesDiffOff() throws IOException {
+        boolean diffOnFlag = false;
+        boolean collectAllflag = false;
         String[] procNames =
                 new String[] {
                     "com.android.systemui",
                     "com.google.android.apps.scone",
                     "com.google.android.googlequicksearchbox:search"
                 };
-        boolean flag = false;
         String memLeaksPidofSampleOutput1 = "2041\n";
         String memLeaksSampleOutput1 =
                 "Applications Memory Usage (in Kilobytes):\n"
@@ -940,7 +941,453 @@ public class MemLeaksHelperTest {
                 .executeShellCommand(
                         matches(String.format(mMemLeaksHelper.DUMPSYS_MEMIFNO_CMD, 8683)));
 
-        mMemLeaksHelper.setUp(procNames, flag);
+        mMemLeaksHelper.setUp(diffOnFlag, collectAllflag, procNames);
+        assertTrue(mMemLeaksHelper.startCollecting());
+        Map<String, Long> metrics = mMemLeaksHelper.getMetrics();
+
+        assertTrue(metrics.size() == 6);
+
+        assertTrue(metrics.containsKey(mMemLeaksHelper.PROC_MEM_BYTES + "com.android.systemui"));
+        assertTrue(
+                metrics.get(mMemLeaksHelper.PROC_MEM_BYTES + "com.android.systemui").equals(752L));
+        assertTrue(metrics.containsKey(mMemLeaksHelper.PROC_ALLOCATIONS + "com.android.systemui"));
+        assertTrue(
+                metrics.get(mMemLeaksHelper.PROC_ALLOCATIONS + "com.android.systemui").equals(5L));
+
+        assertTrue(
+                metrics.containsKey(
+                        mMemLeaksHelper.PROC_MEM_BYTES + "com.google.android.apps.scone"));
+        assertTrue(
+                metrics.get(mMemLeaksHelper.PROC_MEM_BYTES + "com.google.android.apps.scone")
+                        .equals(1016L));
+        assertTrue(
+                metrics.containsKey(
+                        mMemLeaksHelper.PROC_ALLOCATIONS + "com.google.android.apps.scone"));
+        assertTrue(
+                metrics.get(mMemLeaksHelper.PROC_ALLOCATIONS + "com.google.android.apps.scone")
+                        .equals(3L));
+
+        assertTrue(
+                metrics.containsKey(
+                        mMemLeaksHelper.PROC_MEM_BYTES
+                                + "com.google.android.googlequicksearchbox:search"));
+        assertTrue(
+                metrics.get(
+                                mMemLeaksHelper.PROC_MEM_BYTES
+                                        + "com.google.android.googlequicksearchbox:search")
+                        .equals(720L));
+        assertTrue(
+                metrics.containsKey(
+                        mMemLeaksHelper.PROC_ALLOCATIONS
+                                + "com.google.android.googlequicksearchbox:search"));
+        assertTrue(
+                metrics.get(
+                                mMemLeaksHelper.PROC_ALLOCATIONS
+                                        + "com.google.android.googlequicksearchbox:search")
+                        .equals(3L));
+    }
+
+    /**
+     * Test the parser works if the dump contains the correct unreachable memory bytes and
+     * allocations. Test good process name with matched process name, unreachable memory and
+     * allocations. Collect all processes flag is FALSE and given process names are not empty.
+     */
+    @Test
+    public void testByGivenNamesDiffOn() throws IOException {
+        boolean diffOnFlag = true;
+        boolean collectAllflag = false;
+        String[] procNames =
+                new String[] {
+                    "com.android.systemui",
+                    "com.google.android.apps.scone",
+                    "com.google.android.googlequicksearchbox:search"
+                };
+        String memLeaksPidofSampleOutput1 = "2041\n";
+        String memLeaksSampleOutput1 =
+                "Applications Memory Usage (in Kilobytes):\n"
+                    + "Uptime: 3116837476 Realtime: 3125160587\n"
+                    + "\n"
+                    + "** MEMINFO in pid 2041 [com.android.systemui] **\n"
+                    + "                   Pss  Private  Private     Swap      Rss     Heap    "
+                    + " Heap     Heap\n"
+                    + "                 Total    Dirty    Clean    Dirty    Total     Size   "
+                    + " Alloc     Free\n"
+                    + "                ------   ------   ------   ------   ------   ------  "
+                    + " ------   ------\n"
+                    + "  Native Heap   112730   112688        0        0   116024   145792  "
+                    + " 107632    29137\n"
+                    + "  Dalvik Heap    69063    68908        0        0    77540   158551   "
+                    + " 60247    98304\n"
+                    + " Dalvik Other     5773     4980        0        0     8940                 "
+                    + "          \n"
+                    + "        Stack     2404     2404        0        0     2416                 "
+                    + "          \n"
+                    + "       Ashmem      288      148       24        0     7792                 "
+                    + "          \n"
+                    + "    Other dev       29        0       24        0      384                 "
+                    + "          \n"
+                    + "     .so mmap     6503      432       12        0    73060                 "
+                    + "          \n"
+                    + "    .jar mmap     2076        0        0        0    39848                 "
+                    + "          \n"
+                    + "    .apk mmap    25368       48    12620        0    53836                 "
+                    + "          \n"
+                    + "    .ttf mmap      813        0      136        0     1604                 "
+                    + "          \n"
+                    + "    .dex mmap    12541       32        0        0    25696                 "
+                    + "          \n"
+                    + "    .oat mmap      571        0        0        0    14556                 "
+                    + "          \n"
+                    + "    .art mmap     3072     2788        0        0    18980                 "
+                    + "          \n"
+                    + "   Other mmap      279        8      196        0     1936                 "
+                    + "          \n"
+                    + "   EGL mtrack    54924    54924        0        0    54924                 "
+                    + "          \n"
+                    + "    GL mtrack    17052    17052        0        0    17052                 "
+                    + "          \n"
+                    + "      Unknown      937      932        0        0     1588                 "
+                    + "          \n"
+                    + "        TOTAL   314423   265344    13012        0   516176   304343  "
+                    + " 167879   127441\n"
+                    + " \n"
+                    + " App Summary\n"
+                    + "                       Pss(KB)                        Rss(KB)\n"
+                    + "                        ------                         ------\n"
+                    + "           Java Heap:    71696                          96520\n"
+                    + "         Native Heap:   112688                         116024\n"
+                    + "                Code:    13300                         210224\n"
+                    + "               Stack:     2404                           2416\n"
+                    + "            Graphics:    71976                          71976\n"
+                    + "       Private Other:     6292\n"
+                    + "              System:    36067\n"
+                    + "             Unknown:                                   19016\n"
+                    + " \n"
+                    + "           TOTAL PSS:   314423            TOTAL RSS:   516176      TOTAL"
+                    + " SWAP (KB):        0\n"
+                    + " \n"
+                    + " Objects\n"
+                    + "               Views:    21781         ViewRootImpl:        9\n"
+                    + "         AppContexts:      514           Activities:        0\n"
+                    + "              Assets:       43        AssetManagers:        0\n"
+                    + "       Local Binders:      439        Proxy Binders:      151\n"
+                    + "       Parcel memory:      167         Parcel count:      275\n"
+                    + "    Death Recipients:       25      OpenSSL Sockets:        0\n"
+                    + "            WebViews:        0\n"
+                    + " \n"
+                    + " SQL\n"
+                    + "         MEMORY_USED:        0\n"
+                    + "  PAGECACHE_OVERFLOW:        0          MALLOC_SIZE:        0\n"
+                    + " \n"
+                    + " \n"
+                    + " Unreachable memory\n"
+                    + "  752 bytes in 5 unreachable allocations\n"
+                    + "  ABI: 'arm64'\n"
+                    + "\n"
+                    + "  320 bytes unreachable at 7a253d0df0\n"
+                    + "   first 20 bytes of contents:\n"
+                    + "   7a253d0df0: 88 13 e8 07 00 00 00 00 9e 9f 15 08 00 00 00 00"
+                    + " ................\n"
+                    + "   7a253d0e00: 2c bb 17 08 00 00 00 00 23 8a 89 08 00 00 00 00"
+                    + " ,.......#.......\n"
+                    + "\n"
+                    + "  192 bytes unreachable at 7a0540adf0\n"
+                    + "   first 20 bytes of contents:\n"
+                    + "   7a0540adf0: 16 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"
+                    + " ................\n"
+                    + "   7a0540ae00: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"
+                    + " ................\n"
+                    + "\n"
+                    + "  192 bytes unreachable at 7a0540c830\n"
+                    + "   first 20 bytes of contents:\n"
+                    + "   7a0540c830: 17 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"
+                    + " ................\n"
+                    + "   7a0540c840: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"
+                    + " ................\n"
+                    + "\n"
+                    + "  24 bytes unreachable at 7985437010\n"
+                    + "   referencing 24 unreachable bytes in 1 allocation\n"
+                    + "   contents:\n"
+                    + "   7985437010: 00 00 00 00 00 00 00 00 00 9c 45 85 79 00 00 b4"
+                    + " ..........E.y...\n"
+                    + "   7985437020: 83 00 00 00 72 79 5f 66                         ....ry_f\n"
+                    + "\n"
+                    + "  24 bytes unreachable at 7985459c00\n"
+                    + "   referencing 24 unreachable bytes in 1 allocation\n"
+                    + "   contents:\n"
+                    + "   7985459c00: 10 70 43 85 79 00 00 b4 00 00 00 00 00 00 00 00"
+                    + " .pC.y...........\n"
+                    + "   7985459c10: ae 00 00 00 00 00 00 00                         ........\n"
+                    + "\n";
+
+        String memLeaksPidofSampleOutput2 = "4293\n";
+        String memLeaksSampleOutput2 =
+                "Applications Memory Usage (in Kilobytes):\n"
+                    + "Uptime: 3120462758 Realtime: 3128785870\n"
+                    + "\n"
+                    + "** MEMINFO in pid 4293 [com.google.android.apps.scone] **\n"
+                    + "                   Pss  Private  Private     Swap      Rss     Heap    "
+                    + " Heap     Heap\n"
+                    + "                 Total    Dirty    Clean    Dirty    Total     Size   "
+                    + " Alloc     Free\n"
+                    + "                ------   ------   ------   ------   ------   ------  "
+                    + " ------   ------\n"
+                    + "  Native Heap     3283     3216        0        0     6928    12888    "
+                    + " 5254     2274\n"
+                    + "  Dalvik Heap     2591     2404        0        0    11308    11492    "
+                    + " 3300     8192\n"
+                    + " Dalvik Other     2346     1816        0        0     5520                 "
+                    + "          \n"
+                    + "        Stack      824      824        0        0      836                 "
+                    + "          \n"
+                    + "       Ashmem       19        0        0        0      892                 "
+                    + "          \n"
+                    + "    Other dev       20        0       20        0      316                 "
+                    + "          \n"
+                    + "     .so mmap      732      160        0        0    29384                 "
+                    + "          \n"
+                    + "    .jar mmap      999        0        0        0    32052                 "
+                    + "          \n"
+                    + "    .apk mmap     2228        0     2176        0     3432                 "
+                    + "          \n"
+                    + "    .dex mmap       78       12       56        0      720                 "
+                    + "          \n"
+                    + "    .oat mmap      290        0        0        0    11792                 "
+                    + "          \n"
+                    + "    .art mmap     1180      800        0        0    18980                 "
+                    + "          \n"
+                    + "   Other mmap       30        8        4        0     1192                 "
+                    + "          \n"
+                    + "      Unknown      382      372        0        0     1264                 "
+                    + "          \n"
+                    + "        TOTAL    15002     9612     2256        0   124616    24380    "
+                    + " 8554    10466\n"
+                    + " \n"
+                    + " App Summary\n"
+                    + "                       Pss(KB)                        Rss(KB)\n"
+                    + "                        ------                         ------\n"
+                    + "           Java Heap:     3204                          30288\n"
+                    + "         Native Heap:     3216                           6928\n"
+                    + "                Code:     2404                          78440\n"
+                    + "               Stack:      824                            836\n"
+                    + "            Graphics:        0                              0\n"
+                    + "       Private Other:     2220\n"
+                    + "              System:     3134\n"
+                    + "             Unknown:                                    8124\n"
+                    + " \n"
+                    + "           TOTAL PSS:    15002            TOTAL RSS:   124616      TOTAL"
+                    + " SWAP (KB):        0\n"
+                    + " \n"
+                    + " Objects\n"
+                    + "               Views:        0         ViewRootImpl:        0\n"
+                    + "         AppContexts:       11           Activities:        0\n"
+                    + "              Assets:       26        AssetManagers:        0\n"
+                    + "       Local Binders:       65        Proxy Binders:       53\n"
+                    + "       Parcel memory:       15         Parcel count:       61\n"
+                    + "    Death Recipients:       10      OpenSSL Sockets:        0\n"
+                    + "            WebViews:        0\n"
+                    + " \n"
+                    + " SQL\n"
+                    + "         MEMORY_USED:       84\n"
+                    + "  PAGECACHE_OVERFLOW:       25          MALLOC_SIZE:       46\n"
+                    + " \n"
+                    + " DATABASES\n"
+                    + "      pgsz     dbsz   Lookaside(b)          cache  Dbname\n"
+                    + "         4       20             35         6/74/3 "
+                    + " /data/user_de/0/com.google.android.apps.scone/databases/com.google.modemservice\n"
+                    + " \n"
+                    + " Unreachable memory\n"
+                    + "  1016 bytes in 3 unreachable allocations\n"
+                    + "  ABI: 'arm64'\n"
+                    + "\n"
+                    + "  632 bytes unreachable at 7a553d3c90\n"
+                    + "   first 20 bytes of contents:\n"
+                    + "   7a553d3c90: cc ae aa 04 00 00 00 00 88 13 e8 07 00 00 00 00"
+                    + " ................\n"
+                    + "   7a553d3ca0: 9e 9f 15 08 00 00 00 00 2c bb 17 08 00 00 00 00"
+                    + " ........,.......\n"
+                    + "\n"
+                    + "  192 bytes unreachable at 7a0540adf0\n"
+                    + "   first 20 bytes of contents:\n"
+                    + "   7a0540adf0: 16 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"
+                    + " ................\n"
+                    + "   7a0540ae00: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"
+                    + " ................\n"
+                    + "\n"
+                    + "  192 bytes unreachable at 7a0540c830\n"
+                    + "   first 20 bytes of contents:\n"
+                    + "   7a0540c830: 17 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"
+                    + " ................\n"
+                    + "   7a0540c840: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"
+                    + " ................\n"
+                    + "\n";
+
+        String memLeaksPidofSampleOutput3 = "8683\n";
+        String memLeaksSampleOutput3 =
+                "Applications Memory Usage (in Kilobytes):\n"
+                    + "Uptime: 3120310343 Realtime: 3128633455\n"
+                    + "\n"
+                    + "** MEMINFO in pid 8683 [com.google.android.googlequicksearchbox:search]"
+                    + " **\n"
+                    + "                   Pss  Private  Private  SwapPss      Rss     Heap    "
+                    + " Heap     Heap\n"
+                    + "                 Total    Dirty    Clean    Dirty    Total     Size   "
+                    + " Alloc     Free\n"
+                    + "                ------   ------   ------   ------   ------   ------  "
+                    + " ------   ------\n"
+                    + "  Native Heap     1157     1100        0    13156     4492    29452   "
+                    + " 13397    11635\n"
+                    + "  Dalvik Heap      927      728       20    26388     9348    34761   "
+                    + " 17381    17380\n"
+                    + " Dalvik Other      323      232        0     3744     2880                 "
+                    + "          \n"
+                    + "        Stack      168      168        0     1456      180                 "
+                    + "          \n"
+                    + "       Ashmem       19        0        0        0      904                 "
+                    + "          \n"
+                    + "    Other dev      368        0      368        0      692                 "
+                    + "          \n"
+                    + "     .so mmap     1397      176        8        0    35808                 "
+                    + "          \n"
+                    + "    .jar mmap     1310        0        0        0    35444                 "
+                    + "          \n"
+                    + "    .apk mmap    70273      548    31280        0   121536                 "
+                    + "          \n"
+                    + "    .ttf mmap       27        0        0        0      124                 "
+                    + "          \n"
+                    + "    .dex mmap    40634       56    40336        0    41512                 "
+                    + "          \n"
+                    + "    .oat mmap      462        0        0        0    13780                 "
+                    + "          \n"
+                    + "    .art mmap     1751     1224      156    15636    19200                 "
+                    + "          \n"
+                    + "   Other mmap     1683        8     1348        0     3592                 "
+                    + "          \n"
+                    + "      Unknown      202      192        0      968     1048                 "
+                    + "          \n"
+                    + "        TOTAL   182049     4432    73516    61348   290540    64213   "
+                    + " 30778    29015\n"
+                    + " \n"
+                    + " App Summary\n"
+                    + "                       Pss(KB)                        Rss(KB)\n"
+                    + "                        ------                         ------\n"
+                    + "           Java Heap:     2108                          28548\n"
+                    + "         Native Heap:     1100                           4492\n"
+                    + "                Code:    72404                         248392\n"
+                    + "               Stack:      168                            180\n"
+                    + "            Graphics:        0                              0\n"
+                    + "       Private Other:     2168\n"
+                    + "              System:   104101\n"
+                    + "             Unknown:                                    8928\n"
+                    + " \n"
+                    + "           TOTAL PSS:   182049            TOTAL RSS:   290540       TOTAL"
+                    + " SWAP PSS:    61348\n"
+                    + " \n"
+                    + " Objects\n"
+                    + "               Views:        0         ViewRootImpl:        0\n"
+                    + "         AppContexts:      184           Activities:        0\n"
+                    + "              Assets:       31        AssetManagers:        0\n"
+                    + "       Local Binders:      153        Proxy Binders:       94\n"
+                    + "       Parcel memory:      122         Parcel count:      775\n"
+                    + "    Death Recipients:        5      OpenSSL Sockets:        0\n"
+                    + "            WebViews:        0\n"
+                    + " \n"
+                    + " SQL\n"
+                    + "         MEMORY_USED:     1097\n"
+                    + "  PAGECACHE_OVERFLOW:      336          MALLOC_SIZE:      188\n"
+                    + " \n"
+                    + " DATABASES\n"
+                    + "      pgsz     dbsz   Lookaside(b)          cache  Dbname\n"
+                    + "         4       96            105   2697/1253/25 "
+                    + " /data/user/0/com.google.android.googlequicksearchbox/no_backup/androidx.work.workdb\n"
+                    + "         4        8                         0/0/0    (attached) temp\n"
+                    + "         4       96             60       113/29/6 "
+                    + " /data/user/0/com.google.android.googlequicksearchbox/no_backup/androidx.work.workdb"
+                    + " (2)\n"
+                    + "         4       24             36         2/24/4 "
+                    + " /data/user/0/com.google.android.googlequicksearchbox/databases/pseudonymous_room_notifications.db\n"
+                    + "         4        8                         0/0/0    (attached) temp\n"
+                    + "         4      112             82        18/46/5 "
+                    + " /data/user/0/com.google.android.googlequicksearchbox/app_si/opa_content_store/content_store.db\n"
+                    + "         4      112             30        34/44/2 "
+                    + " /data/user/0/com.google.android.googlequicksearchbox/app_si/opa_content_store/content_store.db"
+                    + " (3)\n"
+                    + "         4      112             30        37/43/2 "
+                    + " /data/user/0/com.google.android.googlequicksearchbox/app_si/opa_content_store/content_store.db"
+                    + " (4)\n"
+                    + "         4      112             42        72/31/3 "
+                    + " /data/user/0/com.google.android.googlequicksearchbox/app_si/opa_content_store/content_store.db"
+                    + " (2)\n"
+                    + "         4       36             39       87/102/4 "
+                    + " /data/user/0/com.google.android.googlequicksearchbox/databases/portable_geller_.db\n"
+                    + "         4       36             24        22/38/2 "
+                    + " /data/user/0/com.google.android.googlequicksearchbox/databases/portable_geller_.db"
+                    + " (2)\n"
+                    + "         4       36             36        62/28/3 "
+                    + " /data/user/0/com.google.android.googlequicksearchbox/databases/portable_geller_.db"
+                    + " (1)\n"
+                    + " \n"
+                    + " Unreachable memory\n"
+                    + "  720 bytes in 3 unreachable allocations\n"
+                    + "  ABI: 'arm64'\n"
+                    + "\n"
+                    + "  336 bytes unreachable at 7a25414c30\n"
+                    + "   first 20 bytes of contents:\n"
+                    + "   7a25414c30: 88 13 e8 07 00 00 00 00 9e 9f 15 08 00 00 00 00"
+                    + " ................\n"
+                    + "   7a25414c40: 2c bb 17 08 00 00 00 00 23 8a 89 08 00 00 00 00"
+                    + " ,.......#.......\n"
+                    + "\n"
+                    + "  192 bytes unreachable at 7a0540adf0\n"
+                    + "   first 20 bytes of contents:\n"
+                    + "   7a0540adf0: 16 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"
+                    + " ................\n"
+                    + "   7a0540ae00: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"
+                    + " ................\n"
+                    + "\n"
+                    + "  192 bytes unreachable at 7a0540c830\n"
+                    + "   first 20 bytes of contents:\n"
+                    + "   7a0540c830: 17 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"
+                    + " ................\n"
+                    + "   7a0540c840: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"
+                    + " ................\n"
+                    + "\n"
+                    + "j";
+
+        doReturn(memLeaksPidofSampleOutput1)
+                .when(mMemLeaksHelper)
+                .executeShellCommand(
+                        matches(String.format(mMemLeaksHelper.PIDOF_CMD, "com.android.systemui")));
+        doReturn(memLeaksSampleOutput1)
+                .when(mMemLeaksHelper)
+                .executeShellCommand(
+                        matches(String.format(mMemLeaksHelper.DUMPSYS_MEMIFNO_CMD, 2041)));
+
+        doReturn(memLeaksPidofSampleOutput2)
+                .when(mMemLeaksHelper)
+                .executeShellCommand(
+                        matches(
+                                String.format(
+                                        mMemLeaksHelper.PIDOF_CMD,
+                                        "com.google.android.apps.scone")));
+        doReturn(memLeaksSampleOutput2)
+                .when(mMemLeaksHelper)
+                .executeShellCommand(
+                        matches(String.format(mMemLeaksHelper.DUMPSYS_MEMIFNO_CMD, 4293)));
+
+        doReturn(memLeaksPidofSampleOutput3)
+                .when(mMemLeaksHelper)
+                .executeShellCommand(
+                        matches(
+                                String.format(
+                                        mMemLeaksHelper.PIDOF_CMD,
+                                        "com.google.android.googlequicksearchbox:search")));
+        doReturn(memLeaksSampleOutput3)
+                .when(mMemLeaksHelper)
+                .executeShellCommand(
+                        matches(String.format(mMemLeaksHelper.DUMPSYS_MEMIFNO_CMD, 8683)));
+
+        mMemLeaksHelper.setUp(diffOnFlag, collectAllflag, procNames);
         assertTrue(mMemLeaksHelper.startCollecting());
         Map<String, Long> metrics = mMemLeaksHelper.getMetrics();
 
@@ -992,10 +1439,11 @@ public class MemLeaksHelperTest {
      */
     @Test
     public void testByGivenEmptyNames() throws IOException {
+        boolean diffOnFlag = true;
+        boolean collectAllflag = false;
         String[] procNames = new String[] {};
-        boolean flag = false;
 
-        mMemLeaksHelper.setUp(procNames, flag);
+        mMemLeaksHelper.setUp(diffOnFlag, collectAllflag, procNames);
         assertTrue(mMemLeaksHelper.startCollecting());
         Map<String, Long> metrics = mMemLeaksHelper.getMetrics();
         assertTrue(metrics.isEmpty());

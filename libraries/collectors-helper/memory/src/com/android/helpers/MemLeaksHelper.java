@@ -43,8 +43,9 @@ public class MemLeaksHelper implements ICollectorHelper<Long> {
     @VisibleForTesting
     public static final String PROC_ALLOCATIONS = "proc_unreachable_allocations_";
 
-    private String[] mProcessNames;
+    private boolean mDiffOnFlag = true;
     private boolean mCollectAllProcFlag = true;
+    private String[] mProcessNames;
     private String mPidOutput;
     private UiDevice mUiDevice;
     private Map<String, Long> mPrevious = new HashMap<>();
@@ -54,15 +55,18 @@ public class MemLeaksHelper implements ICollectorHelper<Long> {
      *
      * @param procNames process names to collect
      */
-    public void setUp(String[] procNames, boolean flag) {
+    public void setUp(boolean diffOn, boolean collectAllflag, String[] procNames) {
+        mDiffOnFlag = diffOn;
+        mCollectAllProcFlag = collectAllflag;
         mProcessNames = procNames;
-        mCollectAllProcFlag = flag;
         mUiDevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
     }
 
     @Override
     public boolean startCollecting() {
-        mPrevious = getMeminfo();
+        if (mDiffOnFlag) {
+            mPrevious = getMeminfo();
+        }
         return true;
     }
 
@@ -76,10 +80,13 @@ public class MemLeaksHelper implements ICollectorHelper<Long> {
         Map<String, Long> current = getMeminfo();
         Map<String, Long> results = new HashMap<>();
 
-        for (String processName : current.keySet()) {
-            results.put(processName, current.get(processName) - mPrevious.get(processName));
+        if (mDiffOnFlag) {
+            for (String processName : current.keySet()) {
+                results.put(processName, current.get(processName) - mPrevious.get(processName));
+            }
+        } else {
+            return current;
         }
-
         return results;
     }
 

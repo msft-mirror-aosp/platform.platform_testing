@@ -27,8 +27,8 @@ public class MemLeaksListener extends BaseCollectionListener<Long> {
 
     private static final String TAG = MemLeaksListener.class.getSimpleName();
     @VisibleForTesting static final String PROCESS_SEPARATOR = ",";
+    @VisibleForTesting static final String DIFF_ON = "diff-on";
     @VisibleForTesting static final String PROCESS_NAMES_KEY = "unreachable-mem-process-names";
-
     @VisibleForTesting
     static final String COLLECT_ALL_PROCESSES = "collect-all-processes-unreachable-mem";
 
@@ -47,11 +47,16 @@ public class MemLeaksListener extends BaseCollectionListener<Long> {
     public void setupAdditionalArgs() {
         Bundle args = getArgsBundle();
 
-        String flagString = args.getString(COLLECT_ALL_PROCESSES, "true");
-        boolean collectAllProcFlag = Boolean.parseBoolean(flagString.replace("\n", "").trim());
+        String diffOnFlagString = args.getString(DIFF_ON, "true");
+        boolean diffOnFlag = Boolean.parseBoolean(diffOnFlagString.replace("\n", "").trim());
+
+        String collectAllFlagString = args.getString(COLLECT_ALL_PROCESSES, "true");
+        boolean collectAllProcFlag =
+                Boolean.parseBoolean(collectAllFlagString.replace("\n", "").trim());
 
         String procsString = args.getString(PROCESS_NAMES_KEY, "");
         String[] procs = procsString.split(PROCESS_SEPARATOR);
-        mMemLeaksHelper.setUp(procs, collectAllProcFlag);
+
+        mMemLeaksHelper.setUp(diffOnFlag, collectAllProcFlag, procs);
     }
 }
