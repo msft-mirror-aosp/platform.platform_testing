@@ -1,4 +1,4 @@
-// Copyright (C) 2017 The Android Open Source Project
+// Copyright (C) 2022 The Android Open Source Project
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,27 +17,19 @@ package {
 }
 
 java_library {
-    name: "collector-device-lib",
+    name: "adservices-helper-test",
     defaults: ["tradefed_errorprone_defaults"],
 
-    srcs: ["java/**/*.java"],
+    srcs: ["src/**/*.java"],
 
     static_libs: [
         "adservices-collector-helper",
-        "androidx.annotation_annotation",
         "androidx.test.runner",
-        "androidx.test.uiautomator",
         "app-collector-helper",
-        "jank-helper",
         "junit",
-        "lyric-metric-helper",
-        "memory-helper",
-        "perfetto-helper",
-        "platform-test-annotations",
-        "power-helper",
-        "simpleperf-helper",
-        "system-metric-helper",
+        "mockito-target",
+        "truth-prebuilt",
     ],
 
-    sdk_version: "test_current",
+    sdk_version: "current",
 }
