@@ -146,6 +146,21 @@ public interface INotificationHelper extends IAppHelper {
     }
 
     /**
+     * Setup Expectations: Shade is open
+     *
+     * <p>Posts multiple bubble notification. These notifications are associated with a conversation
+     * shortcut, a BubbleMetadata, and in {@link android.app.Notification.MessagingStyle}.
+     *
+     * @param senderName Name of notification sender.
+     * @param count How many bubble notifications to send.
+     * @param id The starting id for the notifications. If the starting id is 1000 and count is 3
+     *     then three notifications will be posted and the id's will be: 1000, 1001, 1002.
+     */
+    default void postBubbleNotification(String senderName, int count, int id) {
+        throw new UnsupportedOperationException("Not yet implemented.");
+    }
+
+    /**
      * Posts a bubble notification. This notification is associated with a conversation shortcut, a
      * BubbleMetadata, and in {@link android.app.Notification.MessagingStyle}.
      *
