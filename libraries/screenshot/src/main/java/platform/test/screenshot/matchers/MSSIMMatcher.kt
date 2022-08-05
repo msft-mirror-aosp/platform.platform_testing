@@ -19,6 +19,7 @@ package platform.test.screenshot.matchers
 import android.graphics.Color
 import android.graphics.Rect
 import androidx.annotation.FloatRange
+import kotlin.collections.List
 import kotlin.math.pow
 import platform.test.screenshot.proto.ScreenshotResultProto
 
@@ -46,7 +47,7 @@ class MSSIMMatcher(
         given: IntArray,
         width: Int,
         height: Int,
-        regions: Array<Rect>?
+        regions: List<Rect>
     ): MatchResult {
         val filter = getFilter(width, height, regions)
         val calSSIMResult = calculateSSIM(expected, given, width, height, filter)
@@ -71,7 +72,7 @@ class MSSIMMatcher(
 
         // Create diff
         val result = PixelPerfectMatcher()
-            .compareBitmaps(expected, given, width, height, null)
+            .compareBitmaps(expected, given, width, height, regions)
         return MatchResult(
             matches = false,
             diff = result.diff,
