@@ -167,7 +167,7 @@ fun getEmulatedDevicePathConfig(emulationSpec: DeviceEmulationSpec): PathConfig 
  * Default output directory where all images generated as part of the test are stored.
  */
 public fun getDeviceOutputDirectory(context: Context) =
-    File(context.externalCacheDir, "androidx_screenshots").toString()
+    File(context.filesDir, "platform_screenshots").toString()
 
 /* Standard implementations for the usual list of dimensions that affect a golden image. */
 public fun getDeviceModel(): String {

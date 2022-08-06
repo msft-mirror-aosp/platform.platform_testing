@@ -258,8 +258,9 @@ native_tests := \
     lmkd_unit_test
 
 ifeq ($(BOARD_IS_AUTOMOTIVE), true)
-native_tests += libwatchdog_test
-native_tests += EvsEnumeratorTest
+native_tests += \
+    libwatchdog_test \
+    evsmanagerd_test
 endif
 
 ifneq ($(strip $(BOARD_PERFSETUP_SCRIPT)),)
