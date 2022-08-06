@@ -24,8 +24,10 @@ java_library {
     srcs: [
         "src/**/*.java",
     ],
+
     static_libs: [
         "androidx.test.runner",
+        "androidx.test.uiautomator",
         "collector-helper-utilities",
         "guava",
     ],
