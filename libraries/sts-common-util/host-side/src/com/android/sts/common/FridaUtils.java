@@ -187,7 +187,6 @@ public class FridaUtils implements AutoCloseable {
             CLog.e("Frida attach output: %s", output.toString(StandardCharsets.UTF_8));
             throw e;
         }
-        device.disableAdbRoot();
         return output;
     }
 

@@ -1,4 +1,4 @@
-// Copyright (C) 2017 The Android Open Source Project
+// Copyright (C) 2022 The Android Open Source Project
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,33 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Used for collecting Lyric specific metrics..
 package {
     default_applicable_licenses: ["Android-Apache-2.0"],
 }
 
 java_library {
-    name: "collector-device-lib",
+    name: "adservices-collector-helper",
     defaults: ["tradefed_errorprone_defaults"],
 
-    srcs: ["java/**/*.java"],
-
-    static_libs: [
-        "adservices-collector-helper",
-        "androidx.annotation_annotation",
-        "androidx.test.runner",
-        "androidx.test.uiautomator",
-        "app-collector-helper",
-        "jank-helper",
-        "junit",
-        "lyric-metric-helper",
-        "memory-helper",
-        "perfetto-helper",
-        "platform-test-annotations",
-        "power-helper",
-        "simpleperf-helper",
-        "system-metric-helper",
-        "platform-test-annotations",
+    srcs: [
+        "src/**/*.java",
     ],
 
-    sdk_version: "test_current",
+    static_libs: [
+        "androidx.test.runner",
+        "androidx.test.uiautomator",
+        "collector-helper-utilities",
+        "guava",
+    ],
+
+    sdk_version: "current",
 }

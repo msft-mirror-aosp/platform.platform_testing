@@ -71,7 +71,7 @@ public class SamplerRule extends TestWatcher {
                             } else {
                                 Log.d(
                                         TAG,
-                                        "Test execution too too long, generating sample file "
+                                        "Test execution is too long, generating sample file "
                                                 + file);
                             }
                         }
