@@ -23,8 +23,6 @@ import androidx.test.InstrumentationRegistry;
 import androidx.test.uiautomator.UiDevice;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.regex.Matcher;
@@ -37,18 +35,38 @@ public class MemLeaksHelper implements ICollectorHelper<Long> {
     private static final String MEM_LEAKS_PATTERN =
             "(?<bytes>[0-9]+) bytes in (?<allocations>[0-9]+) unreachable allocations";
 
-    @VisibleForTesting public static final String ALL_PROCESS = "ps -A";
+    @VisibleForTesting public static final String ALL_PROCESS_CMD = "ps -A";
     @VisibleForTesting
-    public static final String DUMPSYS_MEMIFNO = "dumpsys meminfo --unreachable %d";
+    public static final String DUMPSYS_MEMIFNO_CMD = "dumpsys meminfo --unreachable %d";
+    @VisibleForTesting public static final String PIDOF_CMD = "pidof %s";
     @VisibleForTesting public static final String PROC_MEM_BYTES = "proc_unreachable_memory_bytes_";
     @VisibleForTesting
     public static final String PROC_ALLOCATIONS = "proc_unreachable_allocations_";
 
+    private boolean mDiffOnFlag = true;
+    private boolean mCollectAllProcFlag = true;
+    private String[] mProcessNames;
+    private String mPidOutput;
     private UiDevice mUiDevice;
+    private Map<String, Long> mPrevious = new HashMap<>();
+
+    /**
+     * Sets up the helper before it starts collecting.
+     *
+     * @param procNames process names to collect
+     */
+    public void setUp(boolean diffOn, boolean collectAllflag, String[] procNames) {
+        mDiffOnFlag = diffOn;
+        mCollectAllProcFlag = collectAllflag;
+        mProcessNames = procNames;
+        mUiDevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
+    }
 
     @Override
     public boolean startCollecting() {
-        mUiDevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
+        if (mDiffOnFlag) {
+            mPrevious = getMeminfo();
+        }
         return true;
     }
 
@@ -59,22 +77,43 @@ public class MemLeaksHelper implements ICollectorHelper<Long> {
 
     @Override
     public Map<String, Long> getMetrics() {
-        // Get all the process PIDs first
-        List<Integer> pids = getPids();
+        Map<String, Long> current = getMeminfo();
         Map<String, Long> results = new HashMap<>();
 
-        if (pids.isEmpty()) {
+        if (mDiffOnFlag) {
+            for (String processName : current.keySet()) {
+                results.put(
+                        processName,
+                        current.get(processName) - mPrevious.getOrDefault(processName, 0L));
+            }
+        } else {
+            return current;
+        }
+        return results;
+    }
+
+    /**
+     * Get unreachable memory information
+     *
+     * @return a Map<String, Long> meminfo - a pair of process name and its values
+     */
+    private Map<String, Long> getMeminfo() {
+        // Get all the process PIDs first
+        Map<Integer, String> pids = getPids();
+        Map<String, Long> results = new HashMap<>();
+
+        if (pids.size() == 0) {
             Log.e(TAG, "Failed to get all the valid process PIDs");
             return results;
         }
 
-        for (Integer pid : pids) {
+        for (Integer pid : pids.keySet()) {
             String dumpOutput;
             try {
-                dumpOutput = executeShellCommand(String.format(DUMPSYS_MEMIFNO, pid));
+                dumpOutput = executeShellCommand(String.format(DUMPSYS_MEMIFNO_CMD, pid));
                 Log.i(TAG, "dumpsys meminfo --unreachable: " + dumpOutput);
             } catch (IOException ioe) {
-                Log.e(TAG, "Failed to run " + String.format(DUMPSYS_MEMIFNO, pid) + ".", ioe);
+                Log.e(TAG, "Failed to run " + String.format(DUMPSYS_MEMIFNO_CMD, pid) + ".", ioe);
                 continue;
             }
 
@@ -97,7 +136,7 @@ public class MemLeaksHelper implements ICollectorHelper<Long> {
                 continue;
             }
 
-            String processName = matcherName.group(1);
+            String processName = pids.get(pid);
             if (byteFound) {
                 results.put(PROC_MEM_BYTES + processName, Long.parseLong(matcherLeak.group(1)));
                 results.put(PROC_ALLOCATIONS + processName, Long.parseLong(matcherLeak.group(2)));
@@ -116,41 +155,52 @@ public class MemLeaksHelper implements ICollectorHelper<Long> {
     /**
      * Get pid of all processes excluding process names enclosed in "[]"
      *
-     * @return pid of all processes excluding process names enclosed in "[]"
+     * @return a Map<Integer, String> pids - a pair of processes PID and its name
      */
-    private List<Integer> getPids() {
-        try {
-            String pidOutput = executeShellCommand(ALL_PROCESS);
-
-            // Sample output for the process info
-            // Sample command : "ps -A"
-            // Sample output :
-            // system   4533   410 13715708 78536 do_freezer_trap 0 S    com.android.keychain
-            // root    32552     2        0     0   worker_thread 0 I [kworker/6:0-memlat_wq]
-
-            String[] lines = pidOutput.split(System.lineSeparator());
-
-            List<Integer> pids = new ArrayList<>();
-            for (String line : lines) {
-                String[] splitLine = line.split("\\s+");
-                // Skip the first (i.e header) line from "ps -A" output.
-                if (splitLine[1].equalsIgnoreCase("PID")) {
-                    continue;
+    private Map<Integer, String> getPids() {
+        // return pids
+        Map<Integer, String> pids = new HashMap<>();
+        if (mCollectAllProcFlag) {
+            try {
+                String pidOutput = executeShellCommand(ALL_PROCESS_CMD);
+                // Sample output for the process info
+                // Sample command : "ps -A"
+                // Sample output :
+                // system   4533   410 13715708 78536 do_freezer_trap 0 S    com.android.keychain
+                // root    32552     2        0     0   worker_thread 0 I [kworker/6:0-memlat_wq]
+                String[] lines = pidOutput.split(System.lineSeparator());
+                for (String line : lines) {
+                    String[] splitLine = line.split("\\s+");
+                    // Skip the first (i.e header) line from "ps -A" output.
+                    if (splitLine[1].equalsIgnoreCase("PID")) {
+                        continue;
+                    }
+                    String processName = splitLine[splitLine.length - 1].replace("\n", "").trim();
+                    // Skip the process names enclosed in "[]"
+                    if (processName.startsWith("[") && processName.endsWith("]")) {
+                        continue;
+                    }
+                    pids.put(Integer.parseInt(splitLine[1]), processName);
                 }
-
-                String processName = splitLine[splitLine.length - 1].replace("\n", "").trim();
-                // Skip the process names enclosed in "[]"
-                if (processName.startsWith("[") && processName.endsWith("]")) {
-                    continue;
-                }
-
-                pids.add(Integer.parseInt(splitLine[1]));
+            } catch (IOException ioe) {
+                Log.e(TAG, "Failed to get pid of all processes.", ioe);
+                return new HashMap<>();
             }
-            return pids;
-        } catch (IOException ioe) {
-            Log.e(TAG, "Failed to get pid of all processes.", ioe);
-            return new ArrayList<>();
+        } else if (mProcessNames.length > 0) {
+            for (int i = 0; i < mProcessNames.length; i++) {
+                try {
+                    mPidOutput = executeShellCommand(String.format(PIDOF_CMD, mProcessNames[i]));
+                } catch (IOException ioe) {
+                    Log.e(TAG, "Failed to run " + String.format(PIDOF_CMD, mProcessNames[i]), ioe);
+                    continue;
+                }
+                pids.put(Integer.parseInt(mPidOutput.replace("\n", "").trim()), mProcessNames[i]);
+            }
+        } else {
+            Log.w(TAG, "No process names were provided.");
+            return new HashMap<>();
         }
+        return pids;
     }
 
     /* Execute a shell command and return its output. */
