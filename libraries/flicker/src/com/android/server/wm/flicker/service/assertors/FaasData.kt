@@ -16,14 +16,14 @@
 
 package com.android.server.wm.flicker.service.assertors
 
+import com.android.server.wm.flicker.service.config.common.ScenarioInstance
 import com.android.server.wm.traces.common.layers.LayersTrace
 import com.android.server.wm.traces.common.prettyTimestamp
-import com.android.server.wm.traces.common.transition.Transition
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 import com.google.common.truth.Fact
 
 data class FaasData(
-    val transition: Transition,
+    val scenarioInstance: ScenarioInstance,
     val entireWmTrace: WindowManagerTrace,
     val entireLayersTrace: LayersTrace
 ) {
@@ -36,25 +36,27 @@ data class FaasData(
             "(timestamp=$unclippedLastTimestamp)"
 
         return listOf(
-            Fact.fact("Transition type", transition.type),
+            Fact.fact("Extracted from trace start", unclippedTraceFirst),
+            Fact.fact("Extracted from trace end", unclippedTraceLast),
+            Fact.fact("Scenario type", scenarioInstance.scenario),
             Fact.fact(
-                "Transition start",
-                "${prettyTimestamp(transition.start)} (timestamp=${transition.start})"
+                "Scenario start",
+                "${prettyTimestamp(scenarioInstance.startTimestamp)} " +
+                    "(timestamp=${scenarioInstance.startTimestamp})"
             ),
             Fact.fact(
-                "Transition end",
-                "${prettyTimestamp(transition.end)} (timestamp=${transition.end})"
+                "Scenario end",
+                "${prettyTimestamp(scenarioInstance.endTimestamp)} " +
+                    "(timestamp=${scenarioInstance.endTimestamp})"
             ),
-            Fact.fact("Transition type", transition.type),
+            Fact.fact("Associated transition type", scenarioInstance.associatedTransition.type),
             Fact.fact(
-                "Transition changes",
-                transition.changes
+                "Associated transition changes",
+                scenarioInstance.associatedTransition.changes
                     .joinToString("\n  -", "\n  -") {
                         "${it.transitMode} ${it.windowName}"
                     }
-            ),
-            Fact.fact("Extracted from trace start", unclippedTraceFirst),
-            Fact.fact("Extracted from trace end", unclippedTraceLast)
+            )
         )
     }
 }

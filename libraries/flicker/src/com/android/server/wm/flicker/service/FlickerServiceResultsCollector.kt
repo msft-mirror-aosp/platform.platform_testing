@@ -23,7 +23,7 @@ import android.util.Log
 import androidx.test.platform.app.InstrumentationRegistry
 import com.android.server.wm.flicker.TransitionRunner.Companion.ExecutionError
 import com.android.server.wm.flicker.service.assertors.AssertionResult
-import com.android.server.wm.flicker.service.config.AssertionInvocationGroup
+import com.android.server.wm.flicker.service.config.common.AssertionInvocationGroup
 import java.nio.file.Path
 import org.junit.runner.Description
 import org.junit.runner.Result

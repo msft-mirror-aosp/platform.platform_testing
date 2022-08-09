@@ -20,7 +20,6 @@ import android.util.Log
 import com.android.server.wm.flicker.FLICKER_TAG
 import com.android.server.wm.flicker.monitor.TraceMonitor.Companion.WINSCOPE_EXT
 import com.android.server.wm.flicker.service.assertors.AssertionResult
-import com.android.server.wm.flicker.service.config.FlickerServiceConfig
 import com.android.server.wm.traces.common.errors.ErrorTrace
 import com.android.server.wm.traces.common.layers.LayersTrace
 import com.android.server.wm.traces.common.transition.TransitionsTrace
@@ -30,9 +29,7 @@ import java.nio.file.Path
 /**
  * Contains the logic for Flicker as a Service.
  */
-class FlickerService @JvmOverloads constructor(
-    private val config: FlickerServiceConfig = FlickerServiceConfig()
-) {
+class FlickerService {
     /**
      * The entry point for WM Flicker Service.
      *
@@ -49,7 +46,7 @@ class FlickerService @JvmOverloads constructor(
         transitionTrace: TransitionsTrace
     ): List<AssertionResult> {
         try {
-            val assertionEngine = AssertionEngine(config) { Log.v("$FLICKER_TAG-ASSERT", it) }
+            val assertionEngine = AssertionEngine { Log.v("$FLICKER_TAG-ASSERT", it) }
             return assertionEngine.analyze(wmTrace, layersTrace, transitionTrace)
         } catch (exception: Throwable) {
             Log.e("$FLICKER_TAG-ASSERT", "FAILED PROCESSING", exception)

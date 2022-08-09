@@ -18,6 +18,7 @@ package com.android.server.wm.flicker.service.assertors
 
 import android.util.Log
 import com.android.server.wm.flicker.FLICKER_TAG
+import com.android.server.wm.flicker.service.config.common.ScenarioInstance
 import com.android.server.wm.flicker.traces.layers.LayersTraceSubject
 import com.android.server.wm.flicker.traces.windowmanager.WindowManagerTraceSubject
 import com.android.server.wm.traces.common.layers.LayersTrace
@@ -33,34 +34,34 @@ class TransitionAsserter(
 ) {
     /** {@inheritDoc} */
     fun analyze(
-        transition: Transition,
+        scenarioInstance: ScenarioInstance,
         wmTrace: WindowManagerTrace,
         layersTrace: LayersTrace
     ): List<AssertionResult> {
         val (wmTraceForTransition, layersTraceForTransition) =
-            splitTraces(transition, wmTrace, layersTrace)
+            splitTraces(scenarioInstance, wmTrace, layersTrace)
 
         if (wmTraceForTransition == null) {
-            Log.w(FLICKER_TAG, "wmTraceForTransition was null for $transition")
+            Log.w(FLICKER_TAG, "wmTraceForTransition was null for $scenarioInstance")
         }
 
         if (layersTraceForTransition == null) {
-            Log.w(FLICKER_TAG, "layersTraceForTransition was null for $transition")
+            Log.w(FLICKER_TAG, "layersTraceForTransition was null for $scenarioInstance")
         }
 
         require(wmTraceForTransition != null || layersTraceForTransition != null) {
-            "At least one of wm or layers trace must not be null for $transition"
+            "At least one of wm or layers trace must not be null for $scenarioInstance"
         }
 
         logger.invoke("Running assertions...")
         return runAssertionsOnSubjects(
-            transition, wmTraceForTransition, layersTraceForTransition,
+            scenarioInstance, wmTraceForTransition, layersTraceForTransition,
             wmTrace, layersTrace, assertions
         )
     }
 
     private fun runAssertionsOnSubjects(
-        transition: Transition,
+        scenarioInstance: ScenarioInstance,
         wmTraceToAssert: WindowManagerTrace?,
         layersTraceToAssert: LayersTrace?,
         entireWmTrace: WindowManagerTrace,
@@ -72,7 +73,7 @@ class TransitionAsserter(
         assertions.forEach {
             val assertion = it.assertionBuilder
             logger.invoke("Running assertion $assertion for ${it.scenario}")
-            val faasFacts = FaasData(transition, entireWmTrace, entireLayersTrace).toFacts()
+            val faasFacts = FaasData(scenarioInstance, entireWmTrace, entireLayersTrace).toFacts()
             val wmSubject = if (wmTraceToAssert != null) {
                 WindowManagerTraceSubject.assertThat(wmTraceToAssert, facts = faasFacts)
             } else {
@@ -83,7 +84,7 @@ class TransitionAsserter(
             } else {
                 null
             }
-            val result = assertion.evaluate(transition, wmSubject, layersSubject, it.scenario)
+            val result = assertion.evaluate(scenarioInstance, wmSubject, layersSubject, it.scenario)
             results.add(result)
         }
 
@@ -99,22 +100,22 @@ class TransitionAsserter(
      * @return a list with [WindowManagerTrace] blocks
      */
     private fun splitTraces(
-        transition: Transition,
+        scenarioInstance: ScenarioInstance,
         wmTrace: WindowManagerTrace,
         layersTrace: LayersTrace
     ): FilteredTraces {
-        var filteredWmTrace: WindowManagerTrace? = wmTrace.transitionSlice(transition)
-        var filteredLayersTrace: LayersTrace? = layersTrace.transitionSlice(transition)
+        var filteredWmTrace: WindowManagerTrace? = wmTrace.scenarioInstanceSlice(scenarioInstance)
+        var filteredLayersTrace: LayersTrace? = layersTrace.scenarioInstanceSlice(scenarioInstance)
 
         if (filteredWmTrace?.entries?.isEmpty() == true) {
             // Empty trace, nothing to assert on the wmTrace
-            logger("Got an empty wmTrace for transition $transition")
+            logger("Got an empty wmTrace for $scenarioInstance")
             filteredWmTrace = null
         }
 
         if (filteredLayersTrace?.entries?.isEmpty() == true) {
             // Empty trace, nothing to assert on the layers trace
-            logger("Got an empty surface trace for transition $transition")
+            logger("Got an empty surface trace for $scenarioInstance")
             filteredLayersTrace = null
         }
 
@@ -130,22 +131,24 @@ class TransitionAsserter(
 /**
  * Return a new trace contains only the entries that were applied during the transition's execution.
  */
-private fun WindowManagerTrace.transitionSlice(transition: Transition): WindowManagerTrace {
-    return slice(transition.collectingStart, transition.end)
+private fun WindowManagerTrace.scenarioInstanceSlice(
+    scenarioInstance: ScenarioInstance
+): WindowManagerTrace {
+    return slice(scenarioInstance.startTimestamp, scenarioInstance.endTimestamp)
 }
 
 /**
  * Return a new trace contains only the entries that were applied during the transition's execution.
  */
-private fun LayersTrace.transitionSlice(
-    transition: Transition
+private fun LayersTrace.scenarioInstanceSlice(
+    scenarioInstance: ScenarioInstance
 ): LayersTrace? {
     var startIndex = -1
     var prevVsyncId = -1L
     for (i in entries.indices) {
         val currentVsyncId = entries[i].vSyncId
 
-        if (transition.startTransaction.vSyncId in (prevVsyncId + 1)..currentVsyncId) {
+        if (scenarioInstance.startTransaction.vSyncId in (prevVsyncId + 1)..currentVsyncId) {
             startIndex = i
         }
 
@@ -153,7 +156,7 @@ private fun LayersTrace.transitionSlice(
     }
 
     if (startIndex == -1) {
-        Log.w(FLICKER_TAG, "Skipping... Didn't find start layers entry for $transition.")
+        Log.w(FLICKER_TAG, "Skipping... Didn't find start layers entry for $scenarioInstance.")
         return null
     }
 
@@ -166,7 +169,7 @@ private fun LayersTrace.transitionSlice(
     for (i in startIndex until entries.size) {
         val currentVsyncId = entries[i].vSyncId
 
-        if (transition.finishTransaction.vSyncId in (prevVsyncId + 1)..currentVsyncId) {
+        if (scenarioInstance.finishTransaction.vSyncId in (prevVsyncId + 1)..currentVsyncId) {
             endIndex = i
         }
 
@@ -174,12 +177,12 @@ private fun LayersTrace.transitionSlice(
     }
 
     if (endIndex == -1) {
-        Log.w(FLICKER_TAG, "Skipping... Didn't find start layers entry for $transition.")
+        Log.w(FLICKER_TAG, "Skipping... Didn't find start layers entry for $scenarioInstance.")
         return null
     }
 
     if (startIndex == endIndex) {
-        Log.w(FLICKER_TAG, "Start and end of $transition happen in same entry.")
+        Log.w(FLICKER_TAG, "Start and end of $scenarioInstance happen in same entry.")
     }
 
     return LayersTrace(this.entries.slice(startIndex..endIndex).toTypedArray())

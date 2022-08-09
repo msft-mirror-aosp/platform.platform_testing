@@ -18,7 +18,9 @@ package com.android.server.wm.flicker.service
 
 import com.android.server.wm.flicker.service.assertors.AssertionResult
 import com.android.server.wm.flicker.service.assertors.TransitionAsserter
-import com.android.server.wm.flicker.service.config.FlickerServiceConfig
+import com.android.server.wm.flicker.service.config.Assertions.assertionsForScenarioInstance
+import com.android.server.wm.flicker.service.config.common.Scenario
+import com.android.server.wm.flicker.service.config.common.ScenarioInstance
 import com.android.server.wm.traces.common.layers.LayersTrace
 import com.android.server.wm.traces.common.transition.TransitionsTrace
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
@@ -27,7 +29,6 @@ import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
  * Invokes the configured assertors and summarizes the results.
  */
 class AssertionEngine(
-    private val config: FlickerServiceConfig,
     private val logger: (String) -> Unit
 ) {
     fun analyze(
@@ -38,18 +39,19 @@ class AssertionEngine(
         logger.invoke("AssertionEngine#analyze")
 
         val assertionResults = mutableListOf<AssertionResult>()
-        for (transition in transitionsTrace.entries) {
-            if (transition.isIncomplete) {
-                // We don't want to run assertions on incomplete transitions
-                logger.invoke("Skipping running assertions on incomplete transition $transition")
-                continue
-            }
 
-            val assertionsToCheck = config.assertionsForTransition(transition)
-            logger.invoke("${assertionsToCheck.size} assertions to check for $transition")
+        val scenarioInstances = mutableListOf<ScenarioInstance>()
+        for (scenario in Scenario.values()) {
+            scenarioInstances.addAll(
+                scenario.getInstances(transitionsTrace, logger))
+        }
+
+        for (scenarioInstance in scenarioInstances) {
+            val assertionsToCheck = assertionsForScenarioInstance(scenarioInstance)
+            logger.invoke("${assertionsToCheck.size} assertions to check for $scenarioInstance")
 
             val result = TransitionAsserter(assertionsToCheck, logger)
-                .analyze(transition, wmTrace, layersTrace)
+                .analyze(scenarioInstance, wmTrace, layersTrace)
             assertionResults.addAll(result)
         }
 

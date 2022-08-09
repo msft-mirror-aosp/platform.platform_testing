@@ -58,7 +58,7 @@ java_library {
         "androidx.test.ext.junit",
         "truth-prebuilt",
         "launcher-helper-lib",
-        "wm-proto-parsers",
+        "flicker-common-lib",
         "platform-test-annotations",
         "platform-test-core-rules",
         "health-testing-utils",
@@ -81,12 +81,12 @@ java_library {
         "compatibility-device-util-axt",
         "app-helpers-core",
         "launcher-helper-lib",
-        "wm-proto-parsers",
+        "flicker-common-lib",
     ],
 }
 
 java_library {
-    name: "wm-proto-parsers",
+    name: "flicker-common-lib",
     sdk_version: "test_current",
     optimize: {
         enabled: false
@@ -94,6 +94,7 @@ java_library {
     srcs: [
         "src/com/android/server/wm/traces/**/*.java",
         "src/com/android/server/wm/traces/**/*.kt",
+        "src/com/android/server/wm/flicker/service/config/common/**/*.kt",
     ],
     static_libs: [
         "android-support-annotations",

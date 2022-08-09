@@ -16,8 +16,8 @@
 
 package com.android.server.wm.flicker.service.assertors
 
-import com.android.server.wm.flicker.service.config.AssertionInvocationGroup
-import com.android.server.wm.flicker.service.config.FlickerServiceConfig.Companion.Scenario
+import com.android.server.wm.flicker.service.config.common.AssertionInvocationGroup
+import com.android.server.wm.flicker.service.config.common.Scenario
 import com.android.server.wm.flicker.traces.FlickerSubjectException
 import com.android.server.wm.flicker.traces.layers.LayerSubject
 import com.android.server.wm.flicker.traces.layers.LayersTraceSubject

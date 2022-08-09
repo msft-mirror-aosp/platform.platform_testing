@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 The Android Open Source Project
+ * Copyright (C) 2022 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,17 @@
  * limitations under the License.
  */
 
-package com.android.server.wm.flicker.service.assertors
+package com.android.server.wm.traces.common.service
 
-import com.android.server.wm.flicker.service.config.common.AssertionInvocationGroup
-import com.android.server.wm.flicker.service.config.common.Scenario
+import com.android.server.wm.traces.common.layers.LayersTrace
+import com.android.server.wm.traces.common.tags.TagTrace
+import com.android.server.wm.traces.common.transition.TransitionsTrace
+import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 
-/**
- * Stores data for FASS assertions.
- */
-data class AssertionData(
-    val scenario: Scenario,
-    val assertionBuilder: BaseAssertionBuilder,
-    val category: AssertionInvocationGroup
-)
+interface ITagGenerator {
+    fun generateTags(
+        wmTrace: WindowManagerTrace,
+        layersTrace: LayersTrace,
+        transitionsTrace: TransitionsTrace
+    ): TagTrace
+}

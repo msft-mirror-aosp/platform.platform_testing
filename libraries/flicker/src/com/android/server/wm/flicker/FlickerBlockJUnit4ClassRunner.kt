@@ -25,7 +25,6 @@ import com.android.server.wm.flicker.helpers.isShellTransitionsEnabled
 import com.android.server.wm.flicker.service.FlickerFrameworkMethod
 import com.android.server.wm.flicker.service.FlickerTestCase
 import com.android.server.wm.flicker.service.assertors.AssertionResult
-import com.android.server.wm.flicker.service.config.AssertionInvocationGroup
 import java.lang.reflect.Modifier
 import java.util.Collections
 import java.util.concurrent.locks.Lock

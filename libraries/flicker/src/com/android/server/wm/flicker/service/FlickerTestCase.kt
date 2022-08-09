@@ -17,7 +17,7 @@
 package com.android.server.wm.flicker.service
 
 import com.android.server.wm.flicker.service.assertors.AssertionResult
-import com.android.server.wm.flicker.service.config.AssertionInvocationGroup
+import com.android.server.wm.flicker.service.config.common.AssertionInvocationGroup
 import junit.framework.Assert
 
 class FlickerTestCase(val results: List<AssertionResult>, isBlockingTest: Boolean) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 The Android Open Source Project
+ * Copyright (C) 2022 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,11 @@
  * limitations under the License.
  */
 
-package com.android.server.wm.flicker.service.assertors
+package com.android.server.wm.flicker.service.config.common
 
-import com.android.server.wm.flicker.service.config.common.AssertionInvocationGroup
-import com.android.server.wm.flicker.service.config.common.Scenario
-
-/**
- * Stores data for FASS assertions.
- */
-data class AssertionData(
-    val scenario: Scenario,
-    val assertionBuilder: BaseAssertionBuilder,
-    val category: AssertionInvocationGroup
-)
+class TagIdGenerator {
+    companion object {
+        fun getNext() = ++latestId
+        private var latestId = 0
+    }
+}
