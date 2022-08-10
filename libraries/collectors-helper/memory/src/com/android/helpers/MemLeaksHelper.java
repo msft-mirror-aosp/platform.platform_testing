@@ -82,9 +82,11 @@ public class MemLeaksHelper implements ICollectorHelper<Long> {
 
         if (mDiffOnFlag) {
             for (String processName : current.keySet()) {
-                results.put(
-                        processName,
-                        current.get(processName) - mPrevious.getOrDefault(processName, 0L));
+                if (mPrevious.containsKey(processName)) {
+                    results.put(processName, current.get(processName) - mPrevious.get(processName));
+                } else {
+                    results.put(processName, current.get(processName));
+                }
             }
         } else {
             return current;
