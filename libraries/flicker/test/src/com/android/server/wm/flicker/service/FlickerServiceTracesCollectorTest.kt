@@ -21,6 +21,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.android.server.wm.flicker.getDefaultFlickerOutputDir
 import com.android.server.wm.flicker.helpers.SampleAppHelper
 import com.android.server.wm.flicker.helpers.isShellTransitionsEnabled
+import com.android.server.wm.traces.parser.windowmanager.WindowManagerStateHelper
 import com.google.common.truth.Truth
 import org.junit.Assume
 import org.junit.Before
@@ -44,10 +45,11 @@ class FlickerServiceTracesCollectorTest {
 
     @Test
     fun canCollectTraces() {
+        val wmHelper = WindowManagerStateHelper(instrumentation)
         val collector = FlickerServiceTracesCollector(getDefaultFlickerOutputDir())
         collector.start()
-        testApp.launchViaIntent()
-        testApp.exit()
+        testApp.launchViaIntent(wmHelper)
+        testApp.exit(wmHelper)
         collector.stop()
         val traces = collector.getCollectedTraces()
 

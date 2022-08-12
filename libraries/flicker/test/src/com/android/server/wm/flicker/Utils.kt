@@ -21,6 +21,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.android.server.wm.flicker.FlickerRunResult.Companion.RunStatus.ASSERTION_SUCCESS
 import com.android.server.wm.flicker.helpers.isShellTransitionsEnabled
 import com.android.server.wm.flicker.traces.FlickerSubjectException
+import com.android.server.wm.traces.common.DeviceTraceDump
 import com.android.server.wm.traces.common.layers.LayersTrace
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 import com.android.server.wm.traces.parser.layers.LayersTraceParser
@@ -144,4 +145,14 @@ fun assertArchiveContainsAllTraces(
     Truth.assertThat(actualFiles).hasSize(expectedFiles.size)
     Truth.assertWithMessage("Trace archive doesn't contain all expected traces")
         .that(actualFiles.containsAll(expectedFiles)).isTrue()
+}
+
+fun getTestTraceDump(
+    traceFilesLocation: String,
+    wmTraceFilename: String = "wm_trace.winscope",
+    layersTraceFilename: String = "layers_trace.winscope"
+): DeviceTraceDump {
+    val wmTraceByteArray = readTestFile(traceFilesLocation + wmTraceFilename)
+    val layersTraceByteArray = readTestFile(traceFilesLocation + layersTraceFilename)
+    return TraceFileReader.fromTraceByteArray(wmTraceByteArray, layersTraceByteArray)
 }

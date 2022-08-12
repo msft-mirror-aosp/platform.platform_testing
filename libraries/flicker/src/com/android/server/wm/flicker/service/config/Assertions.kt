@@ -19,22 +19,26 @@ package com.android.server.wm.flicker.service.config
 import com.android.server.wm.flicker.service.assertors.AssertionData
 import com.android.server.wm.flicker.service.assertors.BaseAssertionBuilder
 import com.android.server.wm.flicker.service.assertors.Components
-import com.android.server.wm.flicker.service.assertors.common.AppLayerIsInvisibleAtEnd
-import com.android.server.wm.flicker.service.assertors.common.AppLayerIsInvisibleAtStart
-import com.android.server.wm.flicker.service.assertors.common.AppLayerIsVisibleAtEnd
-import com.android.server.wm.flicker.service.assertors.common.AppLayerIsVisibleAtStart
-import com.android.server.wm.flicker.service.assertors.common.EntireScreenCoveredAlways
-import com.android.server.wm.flicker.service.assertors.common.EntireScreenCoveredAtEnd
-import com.android.server.wm.flicker.service.assertors.common.EntireScreenCoveredAtStart
-import com.android.server.wm.flicker.service.assertors.common.LayerIsVisibleAlways
-import com.android.server.wm.flicker.service.assertors.common.LayerIsVisibleAtEnd
-import com.android.server.wm.flicker.service.assertors.common.LayerIsVisibleAtStart
-import com.android.server.wm.flicker.service.assertors.common.NonAppWindowIsVisibleAlways
-import com.android.server.wm.flicker.service.assertors.common.StatusBarLayerPositionAtEnd
-import com.android.server.wm.flicker.service.assertors.common.StatusBarLayerPositionAtStart
-import com.android.server.wm.flicker.service.assertors.common.VisibleLayersShownMoreThanOneConsecutiveEntry
-import com.android.server.wm.flicker.service.assertors.common.VisibleWindowsShownMoreThanOneConsecutiveEntry
-import com.android.server.wm.flicker.service.config.common.AssertionInvocationGroup
+import com.android.server.wm.flicker.service.assertors.assertions.AppLayerIsInvisibleAtEnd
+import com.android.server.wm.flicker.service.assertors.assertions.AppLayerIsInvisibleAtStart
+import com.android.server.wm.flicker.service.assertors.assertions.AppLayerIsVisibleAtEnd
+import com.android.server.wm.flicker.service.assertors.assertions.AppLayerIsVisibleAtStart
+import com.android.server.wm.flicker.service.assertors.assertions.EntireScreenCoveredAlways
+import com.android.server.wm.flicker.service.assertors.assertions.EntireScreenCoveredAtEnd
+import com.android.server.wm.flicker.service.assertors.assertions.EntireScreenCoveredAtStart
+import com.android.server.wm.flicker.service.assertors.assertions.LayerIsVisibleAlways
+import com.android.server.wm.flicker.service.assertors.assertions.LayerIsVisibleAtEnd
+import com.android.server.wm.flicker.service.assertors.assertions.LayerIsVisibleAtStart
+import com.android.server.wm.flicker.service.assertors.assertions.NonAppWindowIsVisibleAlways
+import com.android.server.wm.flicker.service.assertors.assertions.StatusBarLayerPositionAtEnd
+import com.android.server.wm.flicker.service.assertors.assertions.StatusBarLayerPositionAtStart
+import com.android.server.wm.flicker.service.assertors.assertions.VisibleLayersShownMoreThanOneConsecutiveEntry
+import com.android.server.wm.flicker.service.assertors.assertions.VisibleWindowsShownMoreThanOneConsecutiveEntry
+import com.android.server.wm.flicker.service.assertors.common.AppLayerBecomesVisible
+import com.android.server.wm.flicker.service.assertors.common.AppWindowBecomesTopWindow
+import com.android.server.wm.flicker.service.assertors.common.AppWindowBecomesVisible
+import com.android.server.wm.flicker.service.config.common.AssertionInvocationGroup.BLOCKING
+import com.android.server.wm.flicker.service.config.common.AssertionInvocationGroup.NON_BLOCKING
 import com.android.server.wm.flicker.service.config.common.Scenario
 import com.android.server.wm.flicker.service.config.common.ScenarioInstance
 import com.android.server.wm.traces.common.transition.Transition
@@ -63,39 +67,37 @@ object Assertions {
     }
 
     private val COMMON_ASSERTIONS = listOf(
-        LayerIsVisibleAtStart(Components.NAV_BAR) runAs AssertionInvocationGroup.NON_BLOCKING,
-        LayerIsVisibleAtEnd(Components.NAV_BAR) runAs AssertionInvocationGroup.NON_BLOCKING,
-        NonAppWindowIsVisibleAlways(Components.NAV_BAR) runAs AssertionInvocationGroup.NON_BLOCKING,
-        NonAppWindowIsVisibleAlways(Components.STATUS_BAR)
-                runAs AssertionInvocationGroup.NON_BLOCKING,
-        LayerIsVisibleAlways(Components.STATUS_BAR) runAs AssertionInvocationGroup.NON_BLOCKING,
-        EntireScreenCoveredAtStart() runAs AssertionInvocationGroup.NON_BLOCKING,
-        EntireScreenCoveredAtEnd() runAs AssertionInvocationGroup.NON_BLOCKING,
-        EntireScreenCoveredAlways() runAs AssertionInvocationGroup.NON_BLOCKING,
-        VisibleWindowsShownMoreThanOneConsecutiveEntry()
-                runAs AssertionInvocationGroup.NON_BLOCKING,
-        VisibleLayersShownMoreThanOneConsecutiveEntry() runAs AssertionInvocationGroup.NON_BLOCKING,
-        StatusBarLayerPositionAtStart() runAs AssertionInvocationGroup.NON_BLOCKING,
-        StatusBarLayerPositionAtEnd() runAs AssertionInvocationGroup.NON_BLOCKING
+        LayerIsVisibleAtStart(Components.NAV_BAR) runAs BLOCKING,
+        LayerIsVisibleAtEnd(Components.NAV_BAR) runAs BLOCKING,
+        NonAppWindowIsVisibleAlways(Components.NAV_BAR) runAs NON_BLOCKING,
+        NonAppWindowIsVisibleAlways(Components.STATUS_BAR) runAs NON_BLOCKING,
+        LayerIsVisibleAlways(Components.STATUS_BAR) runAs BLOCKING,
+        EntireScreenCoveredAtStart() runAs BLOCKING,
+        EntireScreenCoveredAtEnd() runAs BLOCKING,
+        EntireScreenCoveredAlways() runAs BLOCKING,
+        VisibleWindowsShownMoreThanOneConsecutiveEntry() runAs BLOCKING,
+        VisibleLayersShownMoreThanOneConsecutiveEntry() runAs BLOCKING,
+        StatusBarLayerPositionAtStart() runAs BLOCKING,
+        StatusBarLayerPositionAtEnd() runAs BLOCKING,
     )
 
     private val APP_LAUNCH_ASSERTIONS = COMMON_ASSERTIONS + listOf(
-        AppLayerIsVisibleAtStart(Components.LAUNCHER) runAs AssertionInvocationGroup.NON_BLOCKING,
-        AppLayerIsInvisibleAtStart(Components.OPENING_APP)
-                runAs AssertionInvocationGroup.NON_BLOCKING,
+        AppLayerIsVisibleAtStart(Components.LAUNCHER) runAs NON_BLOCKING,
+        AppLayerIsInvisibleAtStart(Components.OPENING_APP) runAs BLOCKING,
 
-        AppLayerIsInvisibleAtEnd(Components.LAUNCHER) runAs AssertionInvocationGroup.NON_BLOCKING,
-        AppLayerIsVisibleAtEnd(Components.OPENING_APP) runAs AssertionInvocationGroup.NON_BLOCKING
+        AppLayerIsInvisibleAtEnd(Components.LAUNCHER) runAs NON_BLOCKING,
+        AppLayerIsVisibleAtEnd(Components.OPENING_APP) runAs NON_BLOCKING,
+        AppLayerBecomesVisible(Components.OPENING_APP) runAs NON_BLOCKING,
+        AppWindowBecomesVisible(Components.OPENING_APP) runAs NON_BLOCKING,
+        AppWindowBecomesTopWindow(Components.OPENING_APP) runAs NON_BLOCKING,
     )
 
     private val APP_CLOSE_ASSERTIONS = COMMON_ASSERTIONS + listOf(
-        AppLayerIsVisibleAtStart(Components.CLOSING_APP)
-                runAs AssertionInvocationGroup.NON_BLOCKING,
-        AppLayerIsInvisibleAtStart(Components.LAUNCHER) runAs AssertionInvocationGroup.NON_BLOCKING,
+        AppLayerIsVisibleAtStart(Components.CLOSING_APP) runAs BLOCKING,
+        AppLayerIsInvisibleAtStart(Components.LAUNCHER) runAs NON_BLOCKING,
 
-        AppLayerIsInvisibleAtEnd(Components.CLOSING_APP)
-                runAs AssertionInvocationGroup.NON_BLOCKING,
-        AppLayerIsVisibleAtEnd(Components.LAUNCHER) runAs AssertionInvocationGroup.NON_BLOCKING
+        AppLayerIsInvisibleAtEnd(Components.CLOSING_APP) runAs BLOCKING,
+        AppLayerIsVisibleAtEnd(Components.LAUNCHER) runAs NON_BLOCKING,
     )
 
     private fun assertionsForScenario(scenario: Scenario): List<BaseAssertionBuilder> {
