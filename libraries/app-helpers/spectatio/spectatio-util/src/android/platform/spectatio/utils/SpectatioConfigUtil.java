@@ -46,7 +46,7 @@ public class SpectatioConfigUtil {
     private static SpectatioConfigUtil sSpectatioConfigUtil = null;
 
     // Path for default configuration ( Loaded from Resources )
-    private static final String DEFAULT_CONFIG_PATH = "/config/defaultSpectatioConfig.json";
+    private static final String DEFAULT_CONFIG_PATH = "/assets/defaultSpectatioConfig.json";
 
     // Path for runtime configuration ( Loaded from device Path )
     private static final String RUNTIME_CONFIG_PATH = "/data/local/tmp/runtimeSpectatioConfig.json";
