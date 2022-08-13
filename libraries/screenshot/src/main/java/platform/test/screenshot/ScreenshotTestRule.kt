@@ -127,7 +127,7 @@ open class ScreenshotTestRule(
             actual = actual,
             goldenIdentifier = goldenIdentifier,
             matcher = matcher,
-            regions = null
+            regions = emptyList<Rect>()
         )
     }
 
@@ -154,7 +154,7 @@ open class ScreenshotTestRule(
         actual: Bitmap,
         goldenIdentifier: String,
         matcher: BitmapMatcher,
-        regions: Array<Rect>?
+        regions: List<Rect>
     ) {
         if (!goldenIdentifier.matches("^[A-Za-z0-9_-]+$".toRegex())) {
             throw IllegalArgumentException(
@@ -213,7 +213,7 @@ open class ScreenshotTestRule(
             actual = actual,
             comparisonStatistics = comparisonResult.comparisonStatistics,
             expected = highlightedBitmap(expected, regions),
-            diff = highlightedBitmap(comparisonResult.diff, regions)
+            diff = comparisonResult.diff
         )
 
         if (!comparisonResult.matches) {
@@ -349,8 +349,8 @@ open class ScreenshotTestRule(
         }
     }
 
-    private fun highlightedBitmap(original: Bitmap?, regions: Array<Rect>?): Bitmap? {
-        if (original == null || regions == null) {
+    private fun highlightedBitmap(original: Bitmap?, regions: List<Rect>): Bitmap? {
+        if (original == null || regions.isEmpty()) {
             return original
         }
         val bitmapArray = original.toIntArray()
@@ -428,7 +428,7 @@ fun Bitmap.assertAgainstGolden(
     rule: ScreenshotTestRule,
     goldenIdentifier: String,
     matcher: BitmapMatcher = MSSIMMatcher(),
-    regions: Array<Rect>? = null
+    regions: List<Rect> = emptyList<Rect>()
 ) {
     rule.assertBitmapAgainstGolden(this, goldenIdentifier, matcher = matcher, regions = regions)
 }
