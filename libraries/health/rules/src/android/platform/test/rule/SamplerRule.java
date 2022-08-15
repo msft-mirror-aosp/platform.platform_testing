@@ -16,6 +16,7 @@
 package android.platform.test.rule;
 
 import android.os.SystemClock;
+import android.util.Log;
 
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
@@ -35,6 +36,7 @@ import java.util.Date;
  * stack traces of all threads, every second. This will help understanding where we stuck.
  */
 public class SamplerRule extends TestWatcher {
+    private static final String TAG = SamplerRule.class.getSimpleName();
     private static final int TOO_LONG_TEST_MS = 60000;
     private static boolean sEnabled;
 
@@ -66,6 +68,11 @@ public class SamplerRule extends TestWatcher {
                             // long.
                             if (SystemClock.elapsedRealtime() - startTime < TOO_LONG_TEST_MS) {
                                 file.delete();
+                            } else {
+                                Log.d(
+                                        TAG,
+                                        "Test execution is too long, generating sample file "
+                                                + file);
                             }
                         }
                     }
