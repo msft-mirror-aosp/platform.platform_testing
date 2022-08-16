@@ -27,10 +27,14 @@ import org.junit.runner.Description;
 public class AddAppToHomescreenRule extends TestWatcher {
     private static final String LOG_TAG = AddAppToHomescreenRule.class.getSimpleName();
     private static final String ADD_APP_TO_HOMESCREEN = "add-app-to-homescreen";
+    private static final String HOME_SCREEN_APP_NAME = "homescreen-app-name";
 
     private final LauncherInstrumentation mLauncher = new LauncherInstrumentation();
 
-    private final String mAppName;
+    private String mAppName;
+
+    public AddAppToHomescreenRule() {
+    }
 
     public AddAppToHomescreenRule(String appName) {
         mAppName = appName;
@@ -41,6 +45,11 @@ public class AddAppToHomescreenRule extends TestWatcher {
         if (!Boolean.parseBoolean(getArguments().getString(ADD_APP_TO_HOMESCREEN, "false"))) {
             Log.d(LOG_TAG, "Adding the app icon to the homescreen is disabled.");
             return;
+        }
+
+        String appName = getArguments().getString(HOME_SCREEN_APP_NAME, "");
+        if(appName != null && !appName.isEmpty()) {
+           mAppName = appName;
         }
 
         // TODO(b/241957916): Use the #goHome method when it's synced to AOSP.
