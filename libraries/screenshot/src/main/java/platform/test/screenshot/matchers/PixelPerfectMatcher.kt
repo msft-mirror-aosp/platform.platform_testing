@@ -18,29 +18,38 @@ package platform.test.screenshot.matchers
 
 import android.graphics.Bitmap
 import android.graphics.Color
+import android.graphics.Rect
+import kotlin.collections.List
 import platform.test.screenshot.proto.ScreenshotResultProto
 
 /**
  * Bitmap matching that does an exact comparison of pixels between bitmaps.
  */
-class PixelPerfectMatcher : BitmapMatcher {
+class PixelPerfectMatcher : BitmapMatcher() {
 
     override fun compareBitmaps(
         expected: IntArray,
         given: IntArray,
         width: Int,
-        height: Int
+        height: Int,
+        regions: List<Rect>
     ): MatchResult {
         check(expected.size == given.size)
 
+        val filter = getFilter(width, height, regions)
         var different = 0
         var same = 0
+        var ignored = 0
 
         val diffArray = IntArray(width * height)
 
         for (x in 0 until width) {
             for (y in 0 until height) {
                 val index = x + y * width
+                if (filter[index] == 0) {
+                    ignored++
+                    continue
+                }
                 val referenceColor = expected[index]
                 val testColor = given[index]
                 if (referenceColor == testColor) {
@@ -61,6 +70,7 @@ class PixelPerfectMatcher : BitmapMatcher {
             .setNumberPixelsCompared(width * height)
             .setNumberPixelsIdentical(same)
             .setNumberPixelsDifferent(different)
+            .setNumberPixelsIgnored(ignored)
             .build()
 
         if (different > 0) {

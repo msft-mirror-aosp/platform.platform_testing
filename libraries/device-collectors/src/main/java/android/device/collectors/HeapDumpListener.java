@@ -42,21 +42,27 @@ public class HeapDumpListener extends BaseCollectionListener<String> {
     private static final String REPLACEMENT_CHAR = "#";
     private static final String FILE_ID_FORMAT = "%s_%d";
     private static final String FILE_NAME_PREFIX_FORMAT = "%s_%s";
+    @VisibleForTesting static final String DEFAULT_OUTPUT_DIR = "/data/local/tmp/";
+    @VisibleForTesting static final String OUTPUT_DIR_KEY = "heapdump-test-output-dir";
     @VisibleForTesting static final String ITERATION_SEPARATOR = ",";
     @VisibleForTesting static final String ENABLE_ITERATION_IDS = "enable-iteration-ids";
     @VisibleForTesting static final String ITERATION_ALL_ENABLE = "iteration-all-enable";
+    @VisibleForTesting static final String PROCESS_NAMES_KEY = "heapdump-process-names";
+    @VisibleForTesting static final String PROCESS_SEPARATOR = ",";
     Map<String, Integer> mTestIterationCount = new HashMap<String, Integer>();
     Set<Integer> mValidIterationIds;
     boolean mIsDisabled = false;
     boolean mIsEnabledForAll = false;
+    private HeapDumpHelper mHeapHelper = new HeapDumpHelper();
 
     public HeapDumpListener() {
-        createHelperInstance(new HeapDumpHelper());
+        createHelperInstance(mHeapHelper);
     }
 
     @VisibleForTesting
     public HeapDumpListener(Bundle args, HeapDumpHelper helper) {
         super(args, helper);
+        mHeapHelper = helper;
     }
 
     /** Process the test arguments */
@@ -66,6 +72,22 @@ public class HeapDumpListener extends BaseCollectionListener<String> {
 
         mIsEnabledForAll =
                 Boolean.parseBoolean(args.getString(ITERATION_ALL_ENABLE, String.valueOf(false)));
+
+        String testOutputDir = args.getString(OUTPUT_DIR_KEY, DEFAULT_OUTPUT_DIR);
+
+        // Collect for all processes if process list is empty or null.
+        String procsString = args.getString(PROCESS_NAMES_KEY);
+
+        String[] procs = null;
+        if (procsString != null && !procsString.isEmpty()) {
+          procs = procsString.split(PROCESS_SEPARATOR);
+        }
+
+        mHeapHelper.setUp(testOutputDir, procs);
+
+        if (mIsCollectPerRun) {
+            return;
+        }
 
         if (!mIsEnabledForAll) {
             String iterations = args.getString(ENABLE_ITERATION_IDS);
@@ -82,20 +104,23 @@ public class HeapDumpListener extends BaseCollectionListener<String> {
 
     @Override
     public void testStart(Function<String, Boolean> filter, Description description) {
-        if (mIsDisabled) {
-            mHelper.startCollecting(false, null);
-            return;
-        }
-
         updateIterationCount(description);
-
         if (mIsEnabledForAll) {
-            mHelper.startCollecting(true, getHeapDumpFileId(description));
-        } else {
-            if (mValidIterationIds.contains(mTestIterationCount.get(getTestFileName(description)))) {
-                mHelper.startCollecting(true, getHeapDumpFileId(description));
-            } else {
-                mHelper.startCollecting(false, null);
+            mHeapHelper.startCollecting(getHeapDumpFileId(description));
+        } else if (mIsCollectPerRun || mValidIterationIds
+                .contains(mTestIterationCount.get(getTestFileName(description)))) {
+            mHeapHelper.startCollecting(getHeapDumpFileId(description));
+        }
+    }
+
+    @Override
+    public final void onTestEnd(DataRecord testData, Description description) {
+        if (!mIsCollectPerRun) {
+            if (mIsEnabledForAll) {
+                super.onTestEnd(testData, description);
+            } else if (mValidIterationIds
+                    .contains(mTestIterationCount.get(getTestFileName(description)))) {
+                super.onTestEnd(testData, description);
             }
         }
     }
@@ -124,11 +149,19 @@ public class HeapDumpListener extends BaseCollectionListener<String> {
 
     /**
      * Returns the packagename.classname_methodname which has no spaces and used to create file
-     * names.
+     * names. If class name or method name is null then return the heapdump.
      */
     public static String getTestFileName(Description description) {
-        return String.format(FILE_NAME_PREFIX_FORMAT,
-                description.getClassName().replaceAll(SPACES_PATTERN, REPLACEMENT_CHAR).trim(),
-                description.getMethodName().replaceAll(SPACES_PATTERN, REPLACEMENT_CHAR).trim());
+        if (description.getClassName() != null && !description.getClassName().isEmpty()
+                && description.getMethodName() != null
+                && !description.getMethodName().isEmpty()) {
+            String[] className = description.getClassName().split("\\$");
+            return String.format(FILE_NAME_PREFIX_FORMAT,
+                    className[0].replaceAll(SPACES_PATTERN, REPLACEMENT_CHAR).trim(),
+                    description.getMethodName().replaceAll(SPACES_PATTERN, REPLACEMENT_CHAR)
+                            .trim());
+        } else {
+            return "heapdump";
+        }
     }
 }

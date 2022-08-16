@@ -17,7 +17,9 @@
 package platform.test.screenshot.matchers
 
 import android.graphics.Color
+import android.graphics.Rect
 import androidx.annotation.FloatRange
+import kotlin.collections.List
 import kotlin.math.pow
 import platform.test.screenshot.proto.ScreenshotResultProto
 
@@ -28,7 +30,7 @@ import platform.test.screenshot.proto.ScreenshotResultProto
  */
 class MSSIMMatcher(
     @FloatRange(from = 0.0, to = 1.0) private val threshold: Double = 0.98
-) : BitmapMatcher {
+) : BitmapMatcher() {
 
     companion object {
         // These values were taken from the publication
@@ -44,9 +46,11 @@ class MSSIMMatcher(
         expected: IntArray,
         given: IntArray,
         width: Int,
-        height: Int
+        height: Int,
+        regions: List<Rect>
     ): MatchResult {
-        val calSSIMResult = calculateSSIM(expected, given, width, height)
+        val filter = getFilter(width, height, regions)
+        val calSSIMResult = calculateSSIM(expected, given, width, height, filter)
 
         val stats = ScreenshotResultProto.DiffResult.ComparisonStatistics
             .newBuilder()
@@ -68,7 +72,7 @@ class MSSIMMatcher(
 
         // Create diff
         val result = PixelPerfectMatcher()
-            .compareBitmaps(expected, given, width, height)
+            .compareBitmaps(expected, given, width, height, regions)
         return MatchResult(
             matches = false,
             diff = result.diff,
@@ -80,9 +84,10 @@ class MSSIMMatcher(
         ideal: IntArray,
         given: IntArray,
         width: Int,
-        height: Int
+        height: Int,
+        filter: IntArray
     ): SSIMResult {
-        return calculateSSIM(ideal, given, 0, width, width, height)
+        return calculateSSIM(ideal, given, 0, width, width, height, filter)
     }
 
     private fun calculateSSIM(
@@ -91,10 +96,11 @@ class MSSIMMatcher(
         offset: Int,
         stride: Int,
         width: Int,
-        height: Int
+        height: Int,
+        filter: IntArray
     ): SSIMResult {
         var SSIMTotal = 0.0
-        var numPixelsCompared = 0
+        var totalNumPixelsCompared = 0.0
         var currentWindowY = 0
         var ignored = 0
 
@@ -105,38 +111,39 @@ class MSSIMMatcher(
                 val windowWidth = computeWindowSize(currentWindowX, width)
                 val start: Int =
                     indexFromXAndY(currentWindowX, currentWindowY, stride, offset)
-                if (isWindowWhite(ideal, start, stride, windowWidth, windowHeight) &&
-                    isWindowWhite(given, start, stride, windowWidth, windowHeight)
+                if (shouldIgnoreWindow(ideal, start, stride, windowWidth, windowHeight, filter) &&
+                    shouldIgnoreWindow(given, start, stride, windowWidth, windowHeight, filter)
                 ) {
                     currentWindowX += WINDOW_SIZE
                     ignored += windowWidth * windowHeight
                     continue
                 }
-                numPixelsCompared += windowWidth * windowHeight
-                val means =
-                    getMeans(ideal, given, start, stride, windowWidth, windowHeight)
+                val means = getMeans(ideal, given, filter, start, stride, windowWidth, windowHeight)
                 val meanX = means[0]
                 val meanY = means[1]
                 val variances = getVariances(
-                    ideal, given, meanX, meanY, start, stride,
-                    windowWidth, windowHeight
+                    ideal, given, filter, meanX, meanY, start, stride, windowWidth, windowHeight
                 )
                 val varX = variances[0]
                 val varY = variances[1]
                 val stdBoth = variances[2]
                 val SSIM = SSIM(meanX, meanY, varX, varY, stdBoth)
-                SSIMTotal += SSIM * (windowWidth * windowHeight).toDouble()
+                val numPixelsCompared = numPixelsToCompareInWindow(
+                    start, stride, windowWidth, windowHeight, filter
+                )
+                SSIMTotal += SSIM * numPixelsCompared
+                totalNumPixelsCompared += numPixelsCompared.toDouble()
                 currentWindowX += WINDOW_SIZE
             }
             currentWindowY += WINDOW_SIZE
         }
 
-        val averageSSIM = SSIMTotal / numPixelsCompared.toDouble()
+        val averageSSIM = SSIMTotal / totalNumPixelsCompared
         return SSIMResult(
             SSIM = averageSSIM,
-            numPixelsSimilar = (averageSSIM * numPixelsCompared.toDouble() + 0.5).toInt(),
+            numPixelsSimilar = (averageSSIM * totalNumPixelsCompared + 0.5).toInt(),
             numPixelsIgnored = ignored,
-            numPixelsCompared = numPixelsCompared
+            numPixelsCompared = (totalNumPixelsCompared + 0.5).toInt()
         )
     }
 
@@ -152,21 +159,61 @@ class MSSIMMatcher(
         }
     }
 
-    private fun isWindowWhite(
+    /**
+     * Checks whether a pixel should be ignored. A pixel should be ignored if the corresponding
+     * filter entry is zero.
+     */
+    private fun shouldIgnorePixel(
+        x: Int,
+        y: Int,
+        start: Int,
+        stride: Int,
+        filter: IntArray
+    ): Boolean {
+        return filter[indexFromXAndY(x, y, stride, start)] == 0
+    }
+
+    /**
+     * Checks whether a whole window should be ignored. A window should be ignored if all pixels
+     * are either white or should be ignored.
+     */
+    private fun shouldIgnoreWindow(
         colors: IntArray,
         start: Int,
         stride: Int,
         windowWidth: Int,
-        windowHeight: Int
+        windowHeight: Int,
+        filter: IntArray
     ): Boolean {
         for (y in 0 until windowHeight) {
             for (x in 0 until windowWidth) {
+                if (shouldIgnorePixel(x, y, start, stride, filter)) {
+                    continue
+                }
                 if (colors[indexFromXAndY(x, y, stride, start)] != Color.WHITE) {
                     return false
                 }
             }
         }
         return true
+    }
+
+    private fun numPixelsToCompareInWindow(
+        start: Int,
+        stride: Int,
+        windowWidth: Int,
+        windowHeight: Int,
+        filter: IntArray
+    ): Int {
+        var numPixelsToCompare = 0
+        for (y in 0 until windowHeight) {
+            for (x in 0 until windowWidth) {
+                if (!shouldIgnorePixel(x, y, start, stride, filter)) {
+                    numPixelsToCompare++
+                }
+            }
+        }
+        return numPixelsToCompare
     }
 
     /**
@@ -191,6 +238,7 @@ class MSSIMMatcher(
     private fun getMeans(
         pixels0: IntArray,
         pixels1: IntArray,
+        filter: IntArray,
         start: Int,
         stride: Int,
         windowWidth: Int,
@@ -198,15 +246,20 @@ class MSSIMMatcher(
     ): DoubleArray {
         var avg0 = 0.0
         var avg1 = 0.0
+        var numPixelsCounted = 0.0
         for (y in 0 until windowHeight) {
             for (x in 0 until windowWidth) {
+                if (shouldIgnorePixel(x, y, start, stride, filter)) {
+                    continue
+                }
                 val index: Int = indexFromXAndY(x, y, stride, start)
                 avg0 += getIntensity(pixels0[index])
                 avg1 += getIntensity(pixels1[index])
+                numPixelsCounted += 1.0
             }
         }
-        avg0 /= windowWidth * windowHeight.toDouble()
-        avg1 /= windowWidth * windowHeight.toDouble()
+        avg0 /= numPixelsCounted
+        avg1 /= numPixelsCounted
         return doubleArrayOf(avg0, avg1)
     }
 
@@ -218,6 +271,7 @@ class MSSIMMatcher(
     private fun getVariances(
         pixels0: IntArray,
         pixels1: IntArray,
+        filter: IntArray,
         mean0: Double,
         mean1: Double,
         start: Int,
@@ -228,19 +282,30 @@ class MSSIMMatcher(
         var var0 = 0.0
         var var1 = 0.0
         var varBoth = 0.0
+        var numPixelsCounted = 0
         for (y in 0 until windowHeight) {
             for (x in 0 until windowWidth) {
+                if (shouldIgnorePixel(x, y, start, stride, filter)) {
+                    continue
+                }
                 val index: Int = indexFromXAndY(x, y, stride, start)
                 val v0 = getIntensity(pixels0[index]) - mean0
                 val v1 = getIntensity(pixels1[index]) - mean1
                 var0 += v0 * v0
                 var1 += v1 * v1
                 varBoth += v0 * v1
+                numPixelsCounted += 1
             }
         }
-        var0 /= windowWidth * windowHeight - 1.toDouble()
-        var1 /= windowWidth * windowHeight - 1.toDouble()
-        varBoth /= windowWidth * windowHeight - 1.toDouble()
+        if (numPixelsCounted <= 1) {
+            var0 = 0.0
+            var1 = 0.0
+            varBoth = 0.0
+        } else {
+            var0 /= (numPixelsCounted - 1).toDouble()
+            var1 /= (numPixelsCounted - 1).toDouble()
+            varBoth /= (numPixelsCounted - 1).toDouble()
+        }
         return doubleArrayOf(var0, var1, varBoth)
     }
 

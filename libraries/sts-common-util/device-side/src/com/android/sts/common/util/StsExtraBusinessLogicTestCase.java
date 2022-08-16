@@ -17,24 +17,24 @@
 package com.android.sts.common.util;
 
 import android.os.Build;
+import android.system.Os;
 import android.util.Log;
 
 import androidx.test.InstrumentationRegistry;
 
 import com.android.compatibility.common.util.ExtraBusinessLogicTestCase;
-import com.android.compatibility.common.util.PropertyUtil;
 
 import org.junit.Rule;
 import org.junit.runner.Description;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 /** The device-side implementation of StsLogic. */
 public class StsExtraBusinessLogicTestCase extends ExtraBusinessLogicTestCase implements StsLogic {
 
     private LocalDate deviceSpl = null;
-    private LocalDate kernelSpl = null;
     @Rule public DescriptionProvider descriptionProvider = new DescriptionProvider();
 
     protected StsExtraBusinessLogicTestCase() {
@@ -63,18 +63,8 @@ public class StsExtraBusinessLogicTestCase extends ExtraBusinessLogicTestCase im
     }
 
     @Override
-    public LocalDate getKernelSpl() {
-        if (kernelSpl == null) {
-            // set in:
-            // test/sts/tools/sts-tradefed/src/com/android/tradefed/targetprep/multi/KernelSPL.java
-            String kernelSplString =
-                    PropertyUtil.getProperty("persist.sts.build_version_kernel_security_patch");
-            if (kernelSplString == null) {
-                return null;
-            }
-            kernelSpl = SplUtils.localDateFromSplString(kernelSplString);
-        }
-        return kernelSpl;
+    public Optional<LocalDate> getKernelBuildDate() {
+        return UnameVersion.parseBuildTimestamp(Os.uname().version);
     }
 
     @Override
@@ -83,6 +73,12 @@ public class StsExtraBusinessLogicTestCase extends ExtraBusinessLogicTestCase im
         String useKernelSplString =
                 InstrumentationRegistry.getArguments().getString("sts-use-kernel-spl");
         return Boolean.parseBoolean(useKernelSplString);
+    }
+
+    @Override
+    public boolean shouldSkipMainlineTests() {
+        return Boolean.parseBoolean(
+                InstrumentationRegistry.getArguments().getString("sts-should-skip-mainline"));
     }
 
     /**

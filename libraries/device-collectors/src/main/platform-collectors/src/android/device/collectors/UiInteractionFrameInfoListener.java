@@ -38,8 +38,6 @@ import java.util.stream.Collectors;
  */
 public class UiInteractionFrameInfoListener extends BaseCollectionListener<StringBuilder> {
     private static final String TAG = UiInteractionFrameInfoListener.class.getSimpleName();
-    private static final long DELAY_TOGGLE_PANEL_MS = 100;
-    private static final String CMD_TOGGLE_PANEL = "su shell service call statusbar 3";
 
     public UiInteractionFrameInfoListener() {
         createHelperInstance(new UiInteractionFrameInfoHelper());
@@ -80,27 +78,12 @@ public class UiInteractionFrameInfoListener extends BaseCollectionListener<Strin
 
     @Override
     protected void collectMetrics(DataRecord data) {
-        flushSurfaceFlingerCallback();
         DataRecord tmpData = new DataRecord();
         super.collectMetrics(tmpData);
         if (tmpData.hasMetrics()) {
             Bundle bundle = tmpData.createBundleFromMetrics();
             for (String key : bundle.keySet()) {
                 reduceMetrics(data, key, bundle.getString(key));
-            }
-        }
-    }
-
-    private void flushSurfaceFlingerCallback() {
-        boolean success = false;
-        try {
-            getInstrumentation().getUiAutomation().executeShellCommand(CMD_TOGGLE_PANEL);
-            Thread.sleep(DELAY_TOGGLE_PANEL_MS);
-            success = true;
-        } catch (Exception ex) {
-        } finally {
-            if (success) {
-                getInstrumentation().getUiAutomation().executeShellCommand(CMD_TOGGLE_PANEL);
             }
         }
     }
