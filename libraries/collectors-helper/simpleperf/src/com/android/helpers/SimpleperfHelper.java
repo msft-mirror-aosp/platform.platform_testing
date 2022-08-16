@@ -19,13 +19,19 @@ package com.android.helpers;
 import android.os.SystemClock;
 import android.util.Log;
 
+import androidx.annotation.VisibleForTesting;
 import androidx.test.InstrumentationRegistry;
 import androidx.test.uiautomator.UiDevice;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * SimpleperfHelper is used to start and stop simpleperf sample collection and move the output
@@ -49,8 +55,17 @@ public class SimpleperfHelper {
 
     private UiDevice mUiDevice;
 
-    public boolean startCollecting(String subcommand, String arguments) {
+    /** Constructor to receive visible UiDevice. Should not be used except for testing. */
+    @VisibleForTesting
+    public SimpleperfHelper(UiDevice uidevice) {
+        mUiDevice = uidevice;
+    }
+
+    public SimpleperfHelper() {
         mUiDevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
+    }
+
+    public boolean startCollecting(String subcommand, String arguments) {
         try {
             // Cleanup any running simpleperf sessions.
             Log.i(LOG_TAG, "Cleanup simpleperf before starting.");
@@ -72,10 +87,8 @@ public class SimpleperfHelper {
                                     SIMPLEPERF_TMP_FILE_PATH,
                                     arguments);
                     Log.i(LOG_TAG, String.format("Start command: %s", startCommand));
-                    UiDevice uiDevice =
-                            UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
                     try {
-                        String startOutput = uiDevice.executeShellCommand(startCommand);
+                        String startOutput = mUiDevice.executeShellCommand(startCommand);
                         Log.i(
                                 LOG_TAG,
                                 String.format("Simpleperf start command output - %s", startOutput));
@@ -153,6 +166,105 @@ public class SimpleperfHelper {
         }
         Log.i(LOG_TAG, "Simpleperf stopped successfully.");
         return true;
+    }
+
+    /**
+     * Method for generating simpleperf report and getting report metrics.
+     *
+     * @param path Path to read binary record from.
+     * @param processToPid Map with process names and PIDs to look for in record file.
+     * @param symbols Symbols to report events from the processes recorded
+     * @return Map containing recorded processes and nested map of symbols and event count for each
+     *     symbol.
+     */
+    public Map<String /*event-process-symbol*/, String /*eventCount*/> getSimpleperfReport(
+            String path, Map.Entry<String, String> processToPid, Set<String> symbols) {
+        Map<String, String> results = new HashMap<>();
+        String reportPath = path + ".txt";
+        try {
+            mUiDevice.executeShellCommand(
+                    String.format(
+                            "simpleperf report -i %s --pids %s --sort pid,symbol -o %s",
+                            path, processToPid.getValue(), reportPath));
+            results = getMetrics(reportPath, processToPid.getKey(), symbols);
+            Log.i(LOG_TAG, "Simpleperf Metrics report collected.");
+        } catch (IOException e) {
+            Log.e(LOG_TAG, "Could not generate report: " + e.getMessage());
+        }
+        return results;
+    }
+
+    /**
+     * Utility method for extracting metrics from given simpleperf report.
+     *
+     * @param path File path to new decoded binary report to extract information from.
+     * @param process Individually extracted processes recorded in binary record file.
+     * @param symbols Symbols to report events from the processes recorded.
+     * @return Map containing recorded event counts from symbols within process
+     */
+    private Map<String, String> getMetrics(String path, String process, Set<String> symbols) {
+        Map<String, String> results = new HashMap<>();
+        String eventName = "";
+        long totalEventCount = 0;
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(path));
+            for (String line; (line = reader.readLine()) != null; ) {
+                // Checking for top of the report to find event name and event count.
+                // Ex:
+                // Cmdline: /system/bin/simpleperf record -e instructions,cpu-cycles -o
+                // multiTest.data -p 680,1696 --duration 10
+                // Arch: arm64
+                // Event: instructions (type 0, config 1)
+                // Samples: 29542
+                // Event count: 3498520605
+                if (line.contains(": ")) {
+                    String[] splitLine = line.split(": ");
+                    if (splitLine[0].equals("Event")) {
+                        eventName = splitLine[1].split(" ")[0];
+                    } else if (splitLine[0].equals("Event count")) {
+                        String totalEventCountString = splitLine[1];
+                        results.put(eventName + "-" + process, totalEventCountString);
+                        totalEventCount = Long.parseLong(totalEventCountString);
+                    }
+                }
+                // Parsing lines for specific symbols in report to store with event count to results
+                // metric by converting percentage to event count.
+                // Ex:
+                // 0.02%     680   android::SurfaceFlinger::commit(long, long, long)
+                else if (line.contains("%")) {
+                    String[] splitLine = line.split("\\s+", 3);
+                    String parsedSymbol = splitLine[2];
+                    if (!symbols.contains(parsedSymbol)) {
+                        continue;
+                    }
+                    // Remove trailing %
+                    splitLine[0] = splitLine[0].substring(0, splitLine[0].length() - 1);
+                    double percentage = Float.parseFloat(splitLine[0]);
+                    long eventCount = Math.round(percentage * totalEventCount);
+                    String eventCountString = String.valueOf(eventCount);
+                    String key = String.join("-", eventName, process, parsedSymbol);
+                    results.put(key, eventCountString);
+                }
+            }
+        } catch (Exception e) {
+            Log.e(LOG_TAG, "Could not open report file: " + e.getMessage());
+        }
+        return results;
+    }
+
+    /**
+     * Convert process name into process ID usable for simpleperf commands
+     *
+     * @param process the name of a running process
+     * @return String containing the process ID
+     */
+    public String getPID(String process) {
+        try {
+            return mUiDevice.executeShellCommand("pidof " + process).trim();
+        } catch (Exception e) {
+            Log.e(LOG_TAG, "Could not resolve PID for " + process, e);
+            return "";
+        }
     }
 
     /**
