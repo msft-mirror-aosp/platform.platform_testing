@@ -18,6 +18,7 @@ package com.android.server.wm.flicker.windowmanager
 
 import com.android.server.wm.flicker.readTestFile
 import com.android.server.wm.flicker.readWmTraceFromFile
+import com.android.server.wm.traces.common.Cache
 import com.android.server.wm.traces.common.windowmanager.WindowManagerState
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 import com.android.server.wm.traces.common.windowmanager.windows.WindowContainer
@@ -25,6 +26,7 @@ import com.android.server.wm.traces.parser.windowmanager.WindowManagerTraceParse
 import com.google.common.truth.Truth.assertThat
 import com.google.common.truth.Truth.assertWithMessage
 import java.lang.reflect.Modifier
+import org.junit.Before
 import org.junit.FixMethodOrder
 import org.junit.Test
 import org.junit.runners.MethodSorters
@@ -35,8 +37,11 @@ import org.junit.runners.MethodSorters
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class WindowManagerTraceTest {
-    private val trace: WindowManagerTrace by lazy {
-        readWmTraceFromFile("wm_trace_openchrome.pb")
+    private val trace get() = readWmTraceFromFile("wm_trace_openchrome.pb")
+
+    @Before
+    fun before() {
+        Cache.clear()
     }
 
     @Test

@@ -115,7 +115,10 @@ class FlickerServiceTracesCollector(val outputDir: Path) : ITracesCollector {
      */
     private fun getWindowManagerTraceFromFile(traceFilePath: Path): WindowManagerTrace {
         val wmTraceByteArray: ByteArray = Files.readAllBytes(traceFilePath)
-        return WindowManagerTraceParser.parseFromTrace(wmTraceByteArray)
+        return WindowManagerTraceParser.parseFromTrace(
+            wmTraceByteArray,
+            clearCacheAfterParsing = false
+        )
     }
 
     /**
@@ -126,7 +129,10 @@ class FlickerServiceTracesCollector(val outputDir: Path) : ITracesCollector {
      */
     private fun getLayersTraceFromFile(traceFilePath: Path): LayersTrace {
         val layersTraceByteArray: ByteArray = Files.readAllBytes(traceFilePath)
-        return LayersTraceParser.parseFromTrace(layersTraceByteArray)
+        return LayersTraceParser.parseFromTrace(
+            layersTraceByteArray,
+            clearCacheAfterParsing = false
+        )
     }
 
     /**

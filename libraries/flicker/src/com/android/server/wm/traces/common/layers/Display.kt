@@ -18,11 +18,14 @@ package com.android.server.wm.traces.common.layers
 
 import com.android.server.wm.traces.common.Rect
 import com.android.server.wm.traces.common.Size
+import com.android.server.wm.traces.common.withCache
+
+const val BLANK_LAYER_STACK = - 1
 
 /**
  * Wrapper for DisplayProto (frameworks/native/services/surfaceflinger/layerproto/display.proto)
  */
-data class Display(
+class Display private constructor(
     val id: ULong,
     val name: String,
     val layerStackId: Int,
@@ -60,16 +63,28 @@ data class Display(
     }
 
     companion object {
-        const val BLANK_LAYER_STACK = - 1
+        val EMPTY: Display get() = withCache {
+            Display(
+                id = 0.toULong(),
+                name = "EMPTY",
+                layerStackId = BLANK_LAYER_STACK,
+                size = Size.EMPTY,
+                layerStackSpace = Rect.EMPTY,
+                transform = Transform.EMPTY,
+                isVirtual = false
+            )
+        }
 
-        val EMPTY = Display(
-            id = 0.toULong(),
-            name = "EMPTY",
-            layerStackId = BLANK_LAYER_STACK,
-            size = Size.EMPTY,
-            layerStackSpace = Rect.EMPTY,
-            transform = Transform.EMPTY,
-            isVirtual = false
-        )
+        fun from(
+            id: ULong,
+            name: String,
+            layerStackId: Int,
+            size: Size,
+            layerStackSpace: Rect,
+            transform: Transform,
+            isVirtual: Boolean
+        ): Display = withCache {
+            Display(id, name, layerStackId, size, layerStackSpace, transform, isVirtual)
+        }
     }
 }

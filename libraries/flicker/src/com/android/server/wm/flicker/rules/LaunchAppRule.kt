@@ -27,26 +27,33 @@ import org.junit.rules.TestWatcher
 import org.junit.runner.Description
 
 /**
- * Launched an app before the test
+ * Launches an app before the test
  *
  * @param instrumentation Instrumentation mechanism to use
  * @param wmHelper WM/SF synchronization helper
  * @param appHelper App to launch
+ * @param clearCacheAfterParsing If the caching used while parsing the proto should be
+ *                               cleared or remain in memory
  */
 class LaunchAppRule @JvmOverloads constructor(
     private val appHelper: StandardAppHelper,
     private val instrumentation: Instrumentation = appHelper.mInstrumentation,
-    private val wmHelper: WindowManagerStateHelper = WindowManagerStateHelper()
+    private val clearCacheAfterParsing: Boolean = true,
+    private val wmHelper: WindowManagerStateHelper =
+        WindowManagerStateHelper(clearCacheAfterParsing = clearCacheAfterParsing)
 ) : TestWatcher() {
     @JvmOverloads
     constructor(
         componentMatcher: IComponentMatcher,
         appName: String = "",
         instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation(),
-        wmHelper: WindowManagerStateHelper = WindowManagerStateHelper()
+        clearCache: Boolean = true,
+        wmHelper: WindowManagerStateHelper =
+            WindowManagerStateHelper(clearCacheAfterParsing = clearCache)
     ) : this(
         StandardAppHelper(instrumentation, appName, componentMatcher),
         instrumentation,
+        clearCache,
         wmHelper
     )
 

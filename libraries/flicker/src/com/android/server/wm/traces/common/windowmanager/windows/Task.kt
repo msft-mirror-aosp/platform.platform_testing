@@ -26,7 +26,7 @@ import com.android.server.wm.traces.common.Rect
  * access internal Java/Android functionality
  *
  */
-open class Task(
+class Task(
     override val activityType: Int,
     override val isFullscreen: Boolean,
     override val bounds: Rect,

@@ -33,7 +33,6 @@ import com.android.server.wm.traces.common.Condition
 import com.android.server.wm.traces.common.DeviceStateDump
 import com.android.server.wm.traces.common.IComponentMatcher
 import com.android.server.wm.traces.common.WindowManagerConditionsFactory
-import com.android.server.wm.traces.common.layers.BaseLayerTraceEntry
 import com.android.server.wm.traces.common.windowmanager.WindowManagerState
 import com.android.server.wm.traces.parser.windowmanager.WindowManagerStateHelper
 
@@ -191,8 +190,7 @@ open class StandardAppHelper @JvmOverloads constructor(
         action: String? = null,
         stringExtras: Map<String, String> = mapOf(),
         waitConditions: Array<
-            Condition<DeviceStateDump<WindowManagerState, BaseLayerTraceEntry>>> =
-            emptyArray()
+            Condition<DeviceStateDump>> = emptyArray()
     ) {
         launchAppViaIntent(action, stringExtras)
 

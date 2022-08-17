@@ -21,7 +21,6 @@ import com.android.server.wm.traces.common.Color
 import com.android.server.wm.traces.common.Rect
 import com.android.server.wm.traces.common.RectF
 import com.android.server.wm.traces.common.region.Region
-import com.android.server.wm.traces.common.layers.Transform.Companion.isFlagSet
 
 /**
  * Represents a single layer with links to its parent and child layers.
@@ -30,40 +29,14 @@ import com.android.server.wm.traces.common.layers.Transform.Companion.isFlagSet
  * access internal Java/Android functionality
  *
  **/
-data class Layer(
+class Layer private constructor(
     val name: String,
     val id: Int,
     val parentId: Int,
     val z: Int,
-    val visibleRegion: Region?,
-    val activeBuffer: ActiveBuffer,
-    val flags: Int,
-    val bounds: RectF,
-    val color: Color,
-    private val _isOpaque: Boolean,
-    val shadowRadius: Float,
-    val cornerRadius: Float,
-    val type: String,
-    private val _screenBounds: RectF?,
-    val transform: Transform,
-    val sourceBounds: RectF,
     val currFrame: Long,
-    val effectiveScalingMode: Int,
-    val bufferTransform: Transform,
-    val hwcCompositionType: Int,
-    val hwcCrop: RectF,
-    val hwcFrame: Rect,
-    val backgroundBlurRadius: Int,
-    val crop: Rect?,
-    val isRelativeOf: Boolean,
-    val zOrderRelativeOfId: Int,
-    val stackId: Int,
-    val requestedTransform: Transform,
-    val requestedColor: Color,
-    val cornerRadiusCrop: RectF,
-    val inputTransform: Transform,
-    val inputRegion: Region?
-) {
+    properties: ILayerProperties
+) : ILayerProperties by properties {
     val stableId: String = "$type $id $name"
     var parent: Layer? = null
     var zOrderRelativeOf: Layer? = null
@@ -91,38 +64,6 @@ data class Layer(
     var isMissing: Boolean = false
         internal set
 
-    val isScaling: Boolean
-        get() = isTransformFlagSet(Transform.SCALE_VAL)
-    val isTranslating: Boolean
-        get() = isTransformFlagSet(Transform.TRANSLATE_VAL)
-    val isRotating: Boolean
-        get() = isTransformFlagSet(Transform.ROTATE_VAL)
-
-    private fun isTransformFlagSet(transform: Int): Boolean =
-            this.transform.type?.isFlagSet(transform) ?: false
-
-    /**
-     * Checks if the layer's active buffer is empty
-     *
-     * An active buffer is empty if it is not in the proto or if its height or width are 0
-     *
-     * @return
-     */
-    val isActiveBufferEmpty: Boolean get() = activeBuffer.isEmpty
-
-    /**
-     * Layer state flags as defined in LayerState.h
-     */
-    enum class Flag(val value: Int) {
-        HIDDEN(0x01),
-        OPAQUE(0x02),
-        SKIP_SCREENSHOT(0x40),
-        SECURE(0x80),
-        ENABLE_BACKPRESSURE(0x100),
-        DISPLAY_DECORATION(0x200),
-        IGNORE_DESTINATION_FRAME(0x400)
-    }
-
     /**
      * Checks if the layer is hidden, that is, if its flags contain Flag.HIDDEN
      *
@@ -130,25 +71,9 @@ data class Layer(
      */
     val isHiddenByPolicy: Boolean
         get() {
-            return (flags and Flag.HIDDEN.value) != 0x0 ||
+            return (flags and ILayerProperties.Flag.HIDDEN.value) != 0x0 ||
                 // offscreen layer root has a unique layer id
                 id == 0x7FFFFFFD
-        }
-
-    /**
-     * Converts flags to human readable tokens.
-     *
-     * @return
-     */
-    val verboseFlags: String
-        get() {
-            val tokens = Flag.values().filter { (it.value and flags) != 0 }.map { it.name }
-
-            return if (tokens.isEmpty()) {
-                ""
-            } else {
-                "${tokens.joinToString("|")} (0x${flags.toString(16)})"
-            }
         }
 
     /**
@@ -174,83 +99,6 @@ data class Layer(
                 else -> !bounds.isEmpty
             }
         }
-
-    val isOpaque: Boolean = if (color.a != 1.0f) false else _isOpaque
-
-    /**
-     * Checks if the [Layer] has a color
-     *
-     * @return
-     */
-    val fillsColor: Boolean get() = color.isNotEmpty
-
-    /**
-     * Checks if the [Layer] draws a shadow
-     *
-     * @return
-     */
-    val drawsShadows: Boolean get() = shadowRadius > 0
-
-    /**
-     * Checks if the [Layer] has blur
-     *
-     * @return
-     */
-    val hasBlur: Boolean get() = backgroundBlurRadius > 0
-
-    /**
-     * Checks if the [Layer] has rounded corners
-     *
-     * @return
-     */
-    val hasRoundedCorners: Boolean get() = cornerRadius > 0
-
-    /**
-     * Checks if the [Layer] draws has effects, which include:
-     * - is a color layer
-     * - is an effects layers which [fillsColor] or [drawsShadows]
-     *
-     * @return
-     */
-    val hasEffects: Boolean
-        get() {
-            // Support previous color layer
-            if (isColorLayer) {
-                return true
-            }
-
-            // Support newer effect layer
-            return isEffectLayer && (fillsColor || drawsShadows)
-        }
-
-    /**
-     * Checks if the [Layer] type is BufferStateLayer or BufferQueueLayer
-     *
-     * @return
-     */
-    val isBufferLayer: Boolean
-        get() = type == "BufferStateLayer" || type == "BufferQueueLayer"
-
-    /**
-     * Checks if the [Layer] type is ColorLayer
-     *
-     * @return
-     */
-    val isColorLayer: Boolean get() = type == "ColorLayer"
-
-    /**
-     * Checks if the [Layer] type is ContainerLayer
-     *
-     * @return
-     */
-    val isContainerLayer: Boolean get() = type == "ContainerLayer"
-
-    /**
-     * Checks if the [Layer] type is EffectLayer
-     *
-     * @return
-     */
-    val isEffectLayer: Boolean get() = type == "EffectLayer"
 
     /**
      * Checks if the [Layer] is hidden by its parent
@@ -296,12 +144,6 @@ data class Layer(
             if (reasons.isEmpty()) reasons.add("Unknown")
             return reasons.toTypedArray()
         }
-
-    val screenBounds: RectF = when {
-        visibleRegion?.isNotEmpty == true -> visibleRegion.toRectF()
-        _screenBounds != null -> _screenBounds
-        else -> transform.apply(bounds)
-    }
 
     val absoluteZ: String
         get() {
@@ -388,48 +230,22 @@ data class Layer(
         if (id != other.id) return false
         if (parentId != other.parentId) return false
         if (z != other.z) return false
-        if (visibleRegion != other.visibleRegion) return false
-        if (activeBuffer != other.activeBuffer) return false
-        if (flags != other.flags) return false
-        if (bounds != other.bounds) return false
-        if (color != other.color) return false
-        if (shadowRadius != other.shadowRadius) return false
-        if (cornerRadius != other.cornerRadius) return false
-        if (type != other.type) return false
-        if (transform != other.transform) return false
-        if (sourceBounds != other.sourceBounds) return false
         if (currFrame != other.currFrame) return false
-        if (effectiveScalingMode != other.effectiveScalingMode) return false
-        if (bufferTransform != other.bufferTransform) return false
-        if (hwcCompositionType != other.hwcCompositionType) return false
-        if (hwcCrop != other.hwcCrop) return false
-        if (hwcFrame != other.hwcFrame) return false
-        if (backgroundBlurRadius != other.backgroundBlurRadius) return false
-        if (crop != other.crop) return false
-        if (isRelativeOf != other.isRelativeOf) return false
-        if (zOrderRelativeOfId != other.zOrderRelativeOfId) return false
         if (stableId != other.stableId) return false
         if (parent != other.parent) return false
         if (zOrderRelativeOf != other.zOrderRelativeOf) return false
         if (zOrderRelativeParentOf != other.zOrderRelativeParentOf) return false
+        if (_children != other._children) return false
+        if (_occludedBy != other._occludedBy) return false
+        if (_partiallyOccludedBy != other._partiallyOccludedBy) return false
+        if (_coveredBy != other._coveredBy) return false
         if (isMissing != other.isMissing) return false
-        if (isOpaque != other.isOpaque) return false
-        if (screenBounds != other.screenBounds) return false
-        if (requestedTransform != other.requestedTransform) return false
-        if (requestedColor != other.requestedColor) return false
-        if (cornerRadiusCrop != other.cornerRadiusCrop) return false
-        if (inputTransform != other.inputTransform) return false
-        if (inputRegion != other.inputRegion) return false
 
         return true
     }
 
     override fun hashCode(): Int {
-        var result = name.hashCode()
-        result = 31 * result + id
-        result = 31 * result + parentId
-        result = 31 * result + z
-        result = 31 * result + (visibleRegion?.hashCode() ?: 0)
+        var result = visibleRegion?.hashCode() ?: 0
         result = 31 * result + activeBuffer.hashCode()
         result = 31 * result + flags
         result = 31 * result + bounds.hashCode()
@@ -439,7 +255,6 @@ data class Layer(
         result = 31 * result + type.hashCode()
         result = 31 * result + transform.hashCode()
         result = 31 * result + sourceBounds.hashCode()
-        result = 31 * result + currFrame.hashCode()
         result = 31 * result + effectiveScalingMode
         result = 31 * result + bufferTransform.hashCode()
         result = 31 * result + hwcCompositionType
@@ -449,18 +264,73 @@ data class Layer(
         result = 31 * result + (crop?.hashCode() ?: 0)
         result = 31 * result + isRelativeOf.hashCode()
         result = 31 * result + zOrderRelativeOfId
-        result = 31 * result + stableId.hashCode()
-        result = 31 * result + (parent?.hashCode() ?: 0)
-        result = 31 * result + (zOrderRelativeOf?.hashCode() ?: 0)
-        result = 31 * result + zOrderRelativeParentOf
-        result = 31 * result + isMissing.hashCode()
-        result = 31 * result + isOpaque.hashCode()
-        result = 31 * result + screenBounds.hashCode()
+        result = 31 * result + stackId
         result = 31 * result + requestedTransform.hashCode()
         result = 31 * result + requestedColor.hashCode()
         result = 31 * result + cornerRadiusCrop.hashCode()
         result = 31 * result + inputTransform.hashCode()
         result = 31 * result + (inputRegion?.hashCode() ?: 0)
+        result = 31 * result + screenBounds.hashCode()
+        result = 31 * result + isOpaque.hashCode()
+        result = 31 * result + name.hashCode()
+        result = 31 * result + id
+        result = 31 * result + parentId
+        result = 31 * result + z
+        result = 31 * result + currFrame.hashCode()
+        result = 31 * result + stableId.hashCode()
+        result = 31 * result + (parent?.hashCode() ?: 0)
+        result = 31 * result + (zOrderRelativeOf?.hashCode() ?: 0)
+        result = 31 * result + zOrderRelativeParentOf
+        result = 31 * result + _children.hashCode()
+        result = 31 * result + _occludedBy.hashCode()
+        result = 31 * result + _partiallyOccludedBy.hashCode()
+        result = 31 * result + _coveredBy.hashCode()
+        result = 31 * result + isMissing.hashCode()
         return result
+    }
+
+    companion object {
+        fun from(
+            name: String,
+            id: Int,
+            parentId: Int,
+            z: Int,
+            visibleRegion: Region?,
+            activeBuffer: ActiveBuffer,
+            flags: Int,
+            bounds: RectF,
+            color: Color,
+            isOpaque: Boolean,
+            shadowRadius: Float,
+            cornerRadius: Float,
+            type: String,
+            screenBounds: RectF?,
+            transform: Transform,
+            sourceBounds: RectF,
+            currFrame: Long,
+            effectiveScalingMode: Int,
+            bufferTransform: Transform,
+            hwcCompositionType: Int,
+            hwcCrop: RectF,
+            hwcFrame: Rect,
+            backgroundBlurRadius: Int,
+            crop: Rect?,
+            isRelativeOf: Boolean,
+            zOrderRelativeOfId: Int,
+            stackId: Int,
+            requestedTransform: Transform,
+            requestedColor: Color,
+            cornerRadiusCrop: RectF,
+            inputTransform: Transform,
+            inputRegion: Region?
+        ): Layer {
+            val properties = LayerProperties.from(visibleRegion,
+                activeBuffer, flags, bounds, color, isOpaque, shadowRadius, cornerRadius, type,
+                screenBounds, transform, sourceBounds, effectiveScalingMode,
+                bufferTransform, hwcCompositionType, hwcCrop, hwcFrame, backgroundBlurRadius, crop,
+                isRelativeOf, zOrderRelativeOfId, stackId, requestedTransform, requestedColor,
+                cornerRadiusCrop, inputTransform, inputRegion)
+            return Layer(name, id, parentId, z, currFrame, properties)
+        }
     }
 }

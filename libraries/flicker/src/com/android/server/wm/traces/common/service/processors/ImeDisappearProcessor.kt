@@ -23,11 +23,9 @@ import com.android.server.wm.traces.common.DeviceStateDump
 import com.android.server.wm.traces.common.WindowManagerConditionsFactory.isImeShown
 import com.android.server.wm.traces.common.WindowManagerConditionsFactory.isLayerColorAlphaOne
 import com.android.server.wm.traces.common.WindowManagerConditionsFactory.isLayerTransformFlagSet
-import com.android.server.wm.traces.common.layers.BaseLayerTraceEntry
 import com.android.server.wm.traces.common.layers.Transform
 import com.android.server.wm.traces.common.service.PlatformConsts
 import com.android.server.wm.traces.common.tags.Tag
-import com.android.server.wm.traces.common.windowmanager.WindowManagerState
 
 /**
  * This processor creates tags when the keyboard starts and finishes disappearing.
@@ -66,9 +64,9 @@ class ImeDisappearProcessor(logger: (String) -> Unit) : TransitionProcessor(logg
                 ))
 
         override fun doProcessState(
-                previous: DeviceStateDump<WindowManagerState, BaseLayerTraceEntry>?,
-                current: DeviceStateDump<WindowManagerState, BaseLayerTraceEntry>,
-                next: DeviceStateDump<WindowManagerState, BaseLayerTraceEntry>
+                previous: DeviceStateDump?,
+                current: DeviceStateDump,
+                next: DeviceStateDump
         ): FSMState {
             if (previous == null) return this
 
@@ -83,7 +81,7 @@ class ImeDisappearProcessor(logger: (String) -> Unit) : TransitionProcessor(logg
         }
 
         private fun processImeDisappearing(
-                current: DeviceStateDump<WindowManagerState, BaseLayerTraceEntry>
+                current: DeviceStateDump
         ): FSMState {
             logger.invoke("(${current.layerState.timestamp}) IME disappear started.")
             val inputMethodLayer = current.layerState.visibleLayers.first {
@@ -104,9 +102,9 @@ class ImeDisappearProcessor(logger: (String) -> Unit) : TransitionProcessor(logg
     ) : BaseState(tags) {
         private val imeNotShown = isImeShown(PlatformConsts.DEFAULT_DISPLAY).negate()
         override fun doProcessState(
-                previous: DeviceStateDump<WindowManagerState, BaseLayerTraceEntry>?,
-                current: DeviceStateDump<WindowManagerState, BaseLayerTraceEntry>,
-                next: DeviceStateDump<WindowManagerState, BaseLayerTraceEntry>
+                previous: DeviceStateDump?,
+                current: DeviceStateDump,
+                next: DeviceStateDump
         ): FSMState {
             return if (imeNotShown.isSatisfied(current)) {
                 // tag on the last complete state at the start

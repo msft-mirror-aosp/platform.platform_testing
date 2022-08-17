@@ -18,9 +18,7 @@ package com.android.server.wm.traces.common.service.processors
 
 import com.android.server.wm.flicker.service.config.common.Scenario
 import com.android.server.wm.traces.common.DeviceStateDump
-import com.android.server.wm.traces.common.layers.BaseLayerTraceEntry
 import com.android.server.wm.traces.common.tags.Tag
-import com.android.server.wm.traces.common.windowmanager.WindowManagerState
 
 /**
  * Base state for the FSM, check if there are more WM and SF states to process
@@ -33,15 +31,15 @@ abstract class BaseFsmState(
     internal val scenario: Scenario
 ) : FSMState(tags) {
     protected abstract fun doProcessState(
-        previous: DeviceStateDump<WindowManagerState, BaseLayerTraceEntry>?,
-        current: DeviceStateDump<WindowManagerState, BaseLayerTraceEntry>,
-        next: DeviceStateDump<WindowManagerState, BaseLayerTraceEntry>
+        previous: DeviceStateDump?,
+        current: DeviceStateDump,
+        next: DeviceStateDump
     ): FSMState
 
     override fun process(
-        previous: DeviceStateDump<WindowManagerState, BaseLayerTraceEntry>?,
-        current: DeviceStateDump<WindowManagerState, BaseLayerTraceEntry>,
-        next: DeviceStateDump<WindowManagerState, BaseLayerTraceEntry>?
+        previous: DeviceStateDump?,
+        current: DeviceStateDump,
+        next: DeviceStateDump?
     ): FSMState? {
         return if (next == null) {
             // last state

@@ -16,6 +16,8 @@
 
 package com.android.server.wm.traces.common.windowmanager.windows
 
+import com.android.server.wm.traces.common.withCache
+
 /**
  * Represents the requested policy of a WM container
  *
@@ -23,20 +25,20 @@ package com.android.server.wm.traces.common.windowmanager.windows
  * access internal Java/Android functionality
  *
  */
-data class WindowManagerPolicy(
-    val focusedAppToken: String,
-    val forceStatusBar: Boolean,
-    val forceStatusBarFromKeyguard: Boolean,
-    val keyguardDrawComplete: Boolean,
-    val keyguardOccluded: Boolean,
-    val keyguardOccludedChanged: Boolean,
-    val keyguardOccludedPending: Boolean,
-    val lastSystemUiFlags: Int,
-    val orientation: Int,
-    val rotation: Int,
-    val rotationMode: Int,
-    val screenOnFully: Boolean,
-    val windowManagerDrawComplete: Boolean
+class WindowManagerPolicy private constructor(
+    val focusedAppToken: String = "",
+    val forceStatusBar: Boolean = false,
+    val forceStatusBarFromKeyguard: Boolean = false,
+    val keyguardDrawComplete: Boolean = false,
+    val keyguardOccluded: Boolean = false,
+    val keyguardOccludedChanged: Boolean = false,
+    val keyguardOccludedPending: Boolean = false,
+    val lastSystemUiFlags: Int = 0,
+    val orientation: Int = 0,
+    val rotation: Int = 0,
+    val rotationMode: Int = 0,
+    val screenOnFully: Boolean = false,
+    val windowManagerDrawComplete: Boolean = false
 ) {
     val isOrientationNoSensor: Boolean
         get() = orientation == SCREEN_ORIENTATION_NOSENSOR
@@ -57,22 +59,6 @@ data class WindowManagerPolicy(
             orientation == SCREEN_ORIENTATION_SENSOR_PORTRAIT ||
             orientation == SCREEN_ORIENTATION_REVERSE_PORTRAIT ||
             orientation == SCREEN_ORIENTATION_USER_PORTRAIT
-
-    companion object {
-        /**
-         * From [android.content.pm.ActivityInfo]
-         */
-        private const val SCREEN_ORIENTATION_LANDSCAPE = 0
-        private const val SCREEN_ORIENTATION_PORTRAIT = 1
-        private const val SCREEN_ORIENTATION_NOSENSOR = 5
-        private const val SCREEN_ORIENTATION_SENSOR_LANDSCAPE = 6
-        private const val SCREEN_ORIENTATION_SENSOR_PORTRAIT = 7
-        private const val SCREEN_ORIENTATION_REVERSE_LANDSCAPE = 8
-        private const val SCREEN_ORIENTATION_REVERSE_PORTRAIT = 9
-        private const val SCREEN_ORIENTATION_USER_LANDSCAPE = 11
-        private const val SCREEN_ORIENTATION_USER_PORTRAIT = 12
-        private const val SCREEN_ORIENTATION_LOCKED = 14
-    }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -110,5 +96,68 @@ data class WindowManagerPolicy(
         result = 31 * result + screenOnFully.hashCode()
         result = 31 * result + windowManagerDrawComplete.hashCode()
         return result
+    }
+
+    override fun toString(): String {
+        return "${this::class.simpleName} (focusedAppToken='$focusedAppToken', " +
+            "forceStatusBar=$forceStatusBar, " +
+            "forceStatusBarFromKeyguard=$forceStatusBarFromKeyguard, " +
+            "keyguardDrawComplete=$keyguardDrawComplete, keyguardOccluded=$keyguardOccluded, " +
+            "keyguardOccludedChanged=$keyguardOccludedChanged, " +
+            "keyguardOccludedPending=$keyguardOccludedPending, " +
+            "lastSystemUiFlags=$lastSystemUiFlags, orientation=$orientation, " +
+            "rotation=$rotation, rotationMode=$rotationMode, " +
+            "screenOnFully=$screenOnFully, " +
+            "windowManagerDrawComplete=$windowManagerDrawComplete)"
+    }
+
+    companion object {
+        val EMPTY: WindowManagerPolicy get() = withCache { WindowManagerPolicy() }
+
+        /**
+         * From [android.content.pm.ActivityInfo]
+         */
+        private const val SCREEN_ORIENTATION_LANDSCAPE = 0
+        private const val SCREEN_ORIENTATION_PORTRAIT = 1
+        private const val SCREEN_ORIENTATION_NOSENSOR = 5
+        private const val SCREEN_ORIENTATION_SENSOR_LANDSCAPE = 6
+        private const val SCREEN_ORIENTATION_SENSOR_PORTRAIT = 7
+        private const val SCREEN_ORIENTATION_REVERSE_LANDSCAPE = 8
+        private const val SCREEN_ORIENTATION_REVERSE_PORTRAIT = 9
+        private const val SCREEN_ORIENTATION_USER_LANDSCAPE = 11
+        private const val SCREEN_ORIENTATION_USER_PORTRAIT = 12
+        private const val SCREEN_ORIENTATION_LOCKED = 14
+
+        fun from(
+            focusedAppToken: String,
+            forceStatusBar: Boolean,
+            forceStatusBarFromKeyguard: Boolean,
+            keyguardDrawComplete: Boolean,
+            keyguardOccluded: Boolean,
+            keyguardOccludedChanged: Boolean,
+            keyguardOccludedPending: Boolean,
+            lastSystemUiFlags: Int,
+            orientation: Int,
+            rotation: Int,
+            rotationMode: Int,
+            screenOnFully: Boolean,
+            windowManagerDrawComplete: Boolean
+        ): WindowManagerPolicy = withCache {
+            WindowManagerPolicy(
+                focusedAppToken,
+                forceStatusBar,
+                forceStatusBarFromKeyguard,
+                keyguardDrawComplete,
+                keyguardOccluded,
+                keyguardOccludedChanged,
+                keyguardOccludedPending,
+                lastSystemUiFlags,
+                orientation,
+                rotation,
+                rotationMode,
+                screenOnFully,
+                windowManagerDrawComplete
+            )
+        }
     }
 }

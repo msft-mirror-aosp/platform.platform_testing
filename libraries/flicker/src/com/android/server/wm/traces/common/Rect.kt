@@ -23,7 +23,7 @@ package com.android.server.wm.traces.common
  *
  * This class is used by flicker and Winscope
  */
-open class Rect internal constructor(
+class Rect internal constructor(
     val left: Int = 0,
     val top: Int = 0,
     val right: Int = 0,
@@ -36,9 +36,9 @@ open class Rect internal constructor(
     /**
      * Returns true if the rectangle is empty (left >= right or top >= bottom)
      */
-    val isEmpty: Boolean = width <= 0 || height <= 0
+    val isEmpty: Boolean get() = width <= 0 || height <= 0
 
-    val isNotEmpty: Boolean = !isEmpty
+    val isNotEmpty: Boolean get() = !isEmpty
 
     /**
      * Returns a [RectF] version fo this rectangle.
@@ -47,10 +47,8 @@ open class Rect internal constructor(
         return RectF.from(left.toFloat(), top.toFloat(), right.toFloat(), bottom.toFloat())
     }
 
-    open fun prettyPrint(): String =
+    fun prettyPrint(): String =
         if (isEmpty) "[empty]" else "($left, $top) - ($right, $bottom)"
-
-    override fun equals(other: Any?): Boolean = other?.toString() == this.toString()
 
     /**
      * Returns true iff the specified rectangle r is inside or equal to this
@@ -122,16 +120,22 @@ open class Rect internal constructor(
         return from(left, top, right, bottom)
     }
 
-    companion object {
-        val EMPTY: Rect = Rect()
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is Rect) return false
 
-        fun from(left: Int, top: Int, right: Int, bottom: Int): Rect {
-            val newRect = Rect(left, top, right, bottom)
-            return if (newRect.isEmpty) {
-                EMPTY
-            } else {
-                newRect
-            }
-        }
+        if (left != other.left) return false
+        if (top != other.top) return false
+        if (right != other.right) return false
+        if (bottom != other.bottom) return false
+
+        return true
+    }
+
+    companion object {
+        val EMPTY: Rect get() = withCache { Rect() }
+
+        fun from(left: Int, top: Int, right: Int, bottom: Int): Rect =
+            withCache { Rect(left, top, right, bottom) }
     }
 }

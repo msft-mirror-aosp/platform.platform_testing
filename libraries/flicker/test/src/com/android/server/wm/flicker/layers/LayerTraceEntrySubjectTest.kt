@@ -24,9 +24,11 @@ import com.android.server.wm.flicker.assertions.FlickerSubject
 import com.android.server.wm.flicker.readLayerTraceFromFile
 import com.android.server.wm.flicker.traces.layers.LayerTraceEntrySubject
 import com.android.server.wm.flicker.traces.layers.LayersTraceSubject
+import com.android.server.wm.traces.common.Cache
 import com.android.server.wm.traces.common.ComponentMatcher
 import com.android.server.wm.traces.common.region.Region
 import com.google.common.truth.Truth
+import org.junit.Before
 import org.junit.FixMethodOrder
 import org.junit.Test
 import org.junit.runners.MethodSorters
@@ -37,6 +39,11 @@ import org.junit.runners.MethodSorters
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class LayerTraceEntrySubjectTest {
+    @Before
+    fun before() {
+        Cache.clear()
+    }
+
     @Test
     fun exceptionContainsDebugInfo() {
         val layersTraceEntries = readLayerTraceFromFile("layers_trace_emptyregion.pb")

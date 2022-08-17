@@ -19,9 +19,7 @@ package com.android.server.wm.traces.common.service.processors
 import com.android.server.wm.flicker.service.config.common.Scenario
 import com.android.server.wm.flicker.service.config.common.TagIdGenerator
 import com.android.server.wm.traces.common.DeviceStateDump
-import com.android.server.wm.traces.common.layers.BaseLayerTraceEntry
 import com.android.server.wm.traces.common.tags.Tag
-import com.android.server.wm.traces.common.windowmanager.WindowManagerState
 import kotlin.math.max
 import kotlin.math.min
 
@@ -32,13 +30,13 @@ import kotlin.math.min
  */
 abstract class FSMState(protected val tags: MutableMap<Long, MutableList<Tag>>) {
     abstract fun process(
-        previous: DeviceStateDump<WindowManagerState, BaseLayerTraceEntry>?,
-        current: DeviceStateDump<WindowManagerState, BaseLayerTraceEntry>,
-        next: DeviceStateDump<WindowManagerState, BaseLayerTraceEntry>?
+        previous: DeviceStateDump?,
+        current: DeviceStateDump,
+        next: DeviceStateDump?
     ): FSMState?
 
     protected fun addStartTransitionTag(
-        state: DeviceStateDump<WindowManagerState, BaseLayerTraceEntry>,
+        state: DeviceStateDump,
         scenario: Scenario,
         layerId: Int = 0,
         windowToken: String = "",
@@ -55,7 +53,7 @@ abstract class FSMState(protected val tags: MutableMap<Long, MutableList<Tag>>) 
     }
 
     protected fun addEndTransitionTag(
-        state: DeviceStateDump<WindowManagerState, BaseLayerTraceEntry>,
+        state: DeviceStateDump,
         transition: Scenario,
         layerId: Int = 0,
         windowToken: String = "",

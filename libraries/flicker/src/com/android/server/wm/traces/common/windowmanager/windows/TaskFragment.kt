@@ -23,7 +23,7 @@ package com.android.server.wm.traces.common.windowmanager.windows
  * access internal Java/Android functionality
  *
  */
-open class TaskFragment(
+class TaskFragment(
     override val activityType: Int,
     val displayId: Int,
     val minWidth: Int,

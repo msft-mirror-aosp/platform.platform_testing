@@ -21,12 +21,18 @@ import com.android.server.wm.flicker.assertThatErrorContainsDebugInfo
 import com.android.server.wm.flicker.assertThrows
 import com.android.server.wm.flicker.readWmTraceFromFile
 import com.android.server.wm.flicker.traces.windowmanager.WindowManagerTraceSubject
-import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
+import com.android.server.wm.traces.common.Cache
 import com.google.common.truth.Truth
+import org.junit.Before
 import org.junit.Test
 
 class WindowStateSubjectTest {
-    private val trace: WindowManagerTrace by lazy { readWmTraceFromFile("wm_trace_openchrome.pb") }
+    private val trace get() = readWmTraceFromFile("wm_trace_openchrome.pb")
+
+    @Before
+    fun before() {
+        Cache.clear()
+    }
 
     @Test
     fun exceptionContainsDebugInfoImaginary() {

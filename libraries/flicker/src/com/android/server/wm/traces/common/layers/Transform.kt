@@ -19,13 +19,14 @@ package com.android.server.wm.traces.common.layers
 import com.android.server.wm.traces.common.Matrix33
 import com.android.server.wm.traces.common.RectF
 import com.android.server.wm.traces.common.service.PlatformConsts
+import com.android.server.wm.traces.common.withCache
 
 /**
  * Wrapper for TransformProto (frameworks/native/services/surfaceflinger/layerproto/common.proto)
  *
  * This class is used by flicker and Winscope
  */
-open class Transform(val type: Int?, val matrix: Matrix33) {
+class Transform private constructor(val type: Int?, val matrix: Matrix33) {
 
     /**
      * Returns true if the applying the transform on an an axis aligned rectangle
@@ -161,33 +162,6 @@ open class Transform(val type: Int?, val matrix: Matrix33) {
         )
     }
 
-    companion object {
-        val EMPTY: Transform = Transform(type = null, matrix = Matrix33.EMPTY)
-
-        /* transform type flags */
-        const val TRANSLATE_VAL = 0x0001
-        const val ROTATE_VAL = 0x0002
-        const val SCALE_VAL = 0x0004
-
-        /* orientation flags */
-        const val FLIP_H_VAL = 0x0100 // (1 << 0 << 8)
-        const val FLIP_V_VAL = 0x0200 // (1 << 1 << 8)
-        const val ROT_90_VAL = 0x0400 // (1 << 2 << 8)
-        const val ROT_INVALID_VAL = 0x8000 // (0x80 << 8)
-
-        fun isSimpleTransform(type: Int?): Boolean {
-                return type?.isFlagClear(ROT_INVALID_VAL or SCALE_VAL) ?: false
-        }
-
-        fun Int.isFlagClear(bits: Int): Boolean {
-            return this and bits == 0
-        }
-
-        fun Int.isFlagSet(bits: Int): Boolean {
-            return this and bits == bits
-        }
-    }
-
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is Transform) return false
@@ -204,5 +178,34 @@ open class Transform(val type: Int?, val matrix: Matrix33) {
         result = 31 * result + matrix.hashCode()
         result = 31 * result + isSimpleRotation.hashCode()
         return result
+    }
+
+    companion object {
+        val EMPTY: Transform get() = withCache{ Transform(type = null, matrix = Matrix33.EMPTY) }
+        /* transform type flags */
+        const val TRANSLATE_VAL = 0x0001
+        const val ROTATE_VAL = 0x0002
+        const val SCALE_VAL = 0x0004
+
+        /* orientation flags */
+        const val FLIP_H_VAL = 0x0100 // (1 << 0 << 8)
+        const val FLIP_V_VAL = 0x0200 // (1 << 1 << 8)
+        const val ROT_90_VAL = 0x0400 // (1 << 2 << 8)
+        const val ROT_INVALID_VAL = 0x8000 // (0x80 << 8)
+
+        fun isSimpleTransform(type: Int?): Boolean {
+            return type?.isFlagClear(ROT_INVALID_VAL or SCALE_VAL) ?: false
+        }
+
+        fun Int.isFlagClear(bits: Int): Boolean {
+            return this and bits == 0
+        }
+
+        fun Int.isFlagSet(bits: Int): Boolean {
+            return this and bits == bits
+        }
+
+        fun from(type: Int?, matrix: Matrix33): Transform =
+            withCache { Transform(type, matrix) }
     }
 }

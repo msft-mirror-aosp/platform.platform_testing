@@ -28,8 +28,8 @@ import com.android.server.wm.traces.common.layers.Transform.Companion.SCALE_VAL
 import com.android.server.wm.traces.common.layers.Transform.Companion.isFlagClear
 import com.android.server.wm.traces.common.layers.Transform.Companion.isFlagSet
 
-class Transform(transform: TransformProto?, position: Layers.PositionProto?) :
-        Transform(
+fun Transform(transform: TransformProto?, position: Layers.PositionProto?) =
+        Transform.from(
             transform?.type,
             getMatrix(transform, position)
         )

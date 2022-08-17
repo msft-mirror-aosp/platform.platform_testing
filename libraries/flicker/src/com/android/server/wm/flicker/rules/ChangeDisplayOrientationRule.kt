@@ -29,9 +29,18 @@ import com.android.server.wm.traces.parser.windowmanager.WindowManagerStateHelpe
 import org.junit.rules.TestWatcher
 import org.junit.runner.Description
 
+/**
+ * Changes display orientation before a test
+ *
+ * @param targetOrientation Target orientation
+ * @param instrumentation Instrumentation mechanism to use
+ * @param clearCacheAfterParsing If the caching used while parsing the proto should be
+ *                               cleared or remain in memory
+ */
 data class ChangeDisplayOrientationRule @JvmOverloads constructor(
     private val targetOrientation: Int,
-    private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
+    private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation(),
+    private val clearCacheAfterParsing: Boolean = true
 ) : TestWatcher() {
     private var initialOrientation = -1
 
@@ -40,11 +49,11 @@ data class ChangeDisplayOrientationRule @JvmOverloads constructor(
             "$targetOrientation ${Surface.rotationToString(targetOrientation)}")
         val wm = instrumentation.context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
         initialOrientation = wm.defaultDisplay.rotation
-        setRotation(targetOrientation, instrumentation)
+        setRotation(targetOrientation, instrumentation, clearCacheAfterParsing)
     }
 
     override fun finished(description: Description?) {
-        setRotation(initialOrientation, instrumentation)
+        setRotation(initialOrientation, instrumentation, clearCacheAfterParsing)
     }
 
     companion object {
@@ -52,7 +61,12 @@ data class ChangeDisplayOrientationRule @JvmOverloads constructor(
         fun setRotation(
             rotation: Int,
             instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation(),
-            wmHelper: WindowManagerStateHelper = WindowManagerStateHelper(instrumentation)
+            clearCacheAfterParsing: Boolean = true,
+            wmHelper: WindowManagerStateHelper =
+                WindowManagerStateHelper(
+                    instrumentation,
+                    clearCacheAfterParsing = clearCacheAfterParsing
+                )
         ) {
             val device: UiDevice = UiDevice.getInstance(instrumentation)
 
@@ -76,9 +90,9 @@ data class ChangeDisplayOrientationRule @JvmOverloads constructor(
                 val currWmState = wmHelper.currentState.wmState
                 if (currWmState.visibleWindows.none { it.isFullscreen }) {
                     wmHelper.StateSyncBuilder()
-                    .withNavOrTaskBarVisible()
-                    .withStatusBarVisible()
-                    .waitForAndVerify()
+                        .withNavOrTaskBarVisible()
+                        .withStatusBarVisible()
+                        .waitForAndVerify()
                 }
             } catch (e: RemoteException) {
                 throw RuntimeException(e)

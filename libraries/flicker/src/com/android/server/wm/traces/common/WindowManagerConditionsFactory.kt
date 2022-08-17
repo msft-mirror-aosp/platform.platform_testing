@@ -16,15 +16,12 @@
 
 package com.android.server.wm.traces.common
 
-import com.android.server.wm.traces.common.layers.BaseLayerTraceEntry
 import com.android.server.wm.traces.common.layers.Layer
 import com.android.server.wm.traces.common.layers.Transform
 import com.android.server.wm.traces.common.layers.Transform.Companion.isFlagSet
 import com.android.server.wm.traces.common.service.PlatformConsts
 import com.android.server.wm.traces.common.windowmanager.WindowManagerState
 import com.android.server.wm.traces.common.windowmanager.windows.WindowState
-
-typealias DUMP = DeviceStateDump<WindowManagerState, BaseLayerTraceEntry>
 
 object WindowManagerConditionsFactory {
     private fun getNavBarComponent(wmState: WindowManagerState) =
@@ -34,7 +31,7 @@ object WindowManagerConditionsFactory {
      * Condition to check if the [ComponentMatcher.NAV_BAR] or [ComponentMatcher.TASK_BAR]
      * windows are visible
      */
-    fun isNavOrTaskBarVisible(): Condition<DUMP> = ConditionList(
+    fun isNavOrTaskBarVisible(): Condition<DeviceStateDump> = ConditionList(
         listOf(
             isNavOrTaskBarWindowVisible(),
             isNavOrTaskBarLayerVisible(),
@@ -46,7 +43,7 @@ object WindowManagerConditionsFactory {
      * Condition to check if the [ComponentMatcher.NAV_BAR] or [ComponentMatcher.TASK_BAR]
      * windows are visible
      */
-    fun isNavOrTaskBarWindowVisible(): Condition<DUMP> =
+    fun isNavOrTaskBarWindowVisible(): Condition<DeviceStateDump> =
         Condition("isNavBarOrTaskBarWindowVisible") {
             val component = getNavBarComponent(it.wmState)
             it.wmState.isWindowSurfaceShown(component)
@@ -56,7 +53,7 @@ object WindowManagerConditionsFactory {
      * Condition to check if the [ComponentMatcher.NAV_BAR] or [ComponentMatcher.TASK_BAR]
      * layers are visible
      */
-    fun isNavOrTaskBarLayerVisible(): Condition<DUMP> =
+    fun isNavOrTaskBarLayerVisible(): Condition<DeviceStateDump> =
         Condition("isNavBarOrTaskBarLayerVisible") {
             val component = getNavBarComponent(it.wmState)
             it.layerState.isVisible(component)
@@ -65,7 +62,7 @@ object WindowManagerConditionsFactory {
     /**
      * Condition to check if the [ComponentMatcher.NAV_BAR] layer is opaque
      */
-    fun isNavOrTaskBarLayerOpaque(): Condition<DUMP> =
+    fun isNavOrTaskBarLayerOpaque(): Condition<DeviceStateDump> =
         Condition("isNavOrTaskBarLayerOpaque") {
             val component = getNavBarComponent(it.wmState)
             it.layerState.getLayerWithBuffer(component)?.color?.isOpaque ?: false
@@ -74,7 +71,7 @@ object WindowManagerConditionsFactory {
     /**
      * Condition to check if the [ComponentMatcher.NAV_BAR] window is visible
      */
-    fun isNavBarVisible(): Condition<DUMP> = ConditionList(
+    fun isNavBarVisible(): Condition<DeviceStateDump> = ConditionList(
         listOf(
             isNavBarWindowVisible(),
             isNavBarLayerVisible(),
@@ -85,26 +82,29 @@ object WindowManagerConditionsFactory {
     /**
      * Condition to check if the [ComponentMatcher.NAV_BAR] window is visible
      */
-    fun isNavBarWindowVisible(): Condition<DUMP> = Condition("isNavBarWindowVisible") {
-        it.wmState.isWindowSurfaceShown(ComponentMatcher.NAV_BAR)
-    }
+    fun isNavBarWindowVisible(): Condition<DeviceStateDump> =
+        Condition("isNavBarWindowVisible") {
+            it.wmState.isWindowSurfaceShown(ComponentMatcher.NAV_BAR)
+        }
 
     /**
      * Condition to check if the [ComponentMatcher.NAV_BAR] layer is visible
      */
-    fun isNavBarLayerVisible(): Condition<DUMP> = isLayerVisible(ComponentMatcher.NAV_BAR)
+    fun isNavBarLayerVisible(): Condition<DeviceStateDump> =
+        isLayerVisible(ComponentMatcher.NAV_BAR)
 
     /**
      * Condition to check if the [ComponentMatcher.NAV_BAR] layer is opaque
      */
-    fun isNavBarLayerOpaque(): Condition<DUMP> = Condition("isNavBarLayerOpaque") {
-        it.layerState.getLayerWithBuffer(ComponentMatcher.NAV_BAR)?.color?.isOpaque ?: false
-    }
+    fun isNavBarLayerOpaque(): Condition<DeviceStateDump> =
+        Condition("isNavBarLayerOpaque") {
+            it.layerState.getLayerWithBuffer(ComponentMatcher.NAV_BAR)?.color?.isOpaque ?: false
+        }
 
     /**
      * Condition to check if the [ComponentMatcher.TASK_BAR] window is visible
      */
-    fun isTaskBarVisible(): Condition<DUMP> = ConditionList(
+    fun isTaskBarVisible(): Condition<DeviceStateDump> = ConditionList(
         listOf(
             isTaskBarWindowVisible(), isTaskBarLayerVisible(), isTaskBarLayerOpaque()
         )
@@ -113,26 +113,29 @@ object WindowManagerConditionsFactory {
     /**
      * Condition to check if the [ComponentMatcher.TASK_BAR] window is visible
      */
-    fun isTaskBarWindowVisible(): Condition<DUMP> = Condition("isTaskBarWindowVisible") {
-        it.wmState.isWindowSurfaceShown(ComponentMatcher.TASK_BAR)
-    }
+    fun isTaskBarWindowVisible(): Condition<DeviceStateDump> =
+        Condition("isTaskBarWindowVisible") {
+            it.wmState.isWindowSurfaceShown(ComponentMatcher.TASK_BAR)
+        }
 
     /**
      * Condition to check if the [ComponentMatcher.TASK_BAR] layer is visible
      */
-    fun isTaskBarLayerVisible(): Condition<DUMP> = isLayerVisible(ComponentMatcher.TASK_BAR)
+    fun isTaskBarLayerVisible(): Condition<DeviceStateDump> =
+        isLayerVisible(ComponentMatcher.TASK_BAR)
 
     /**
      * Condition to check if the [ComponentMatcher.TASK_BAR] layer is opaque
      */
-    fun isTaskBarLayerOpaque(): Condition<DUMP> = Condition("isTaskBarLayerOpaque") {
-        it.layerState.getLayerWithBuffer(ComponentMatcher.TASK_BAR)?.color?.isOpaque ?: false
-    }
+    fun isTaskBarLayerOpaque(): Condition<DeviceStateDump> =
+        Condition("isTaskBarLayerOpaque") {
+            it.layerState.getLayerWithBuffer(ComponentMatcher.TASK_BAR)?.color?.isOpaque ?: false
+        }
 
     /**
      * Condition to check if the [ComponentMatcher.STATUS_BAR] window is visible
      */
-    fun isStatusBarVisible(): Condition<DUMP> = ConditionList(
+    fun isStatusBarVisible(): Condition<DeviceStateDump> = ConditionList(
         listOf(
             isStatusBarWindowVisible(), isStatusBarLayerVisible(), isStatusBarLayerOpaque()
         )
@@ -141,29 +144,32 @@ object WindowManagerConditionsFactory {
     /**
      * Condition to check if the [ComponentMatcher.STATUS_BAR] window is visible
      */
-    fun isStatusBarWindowVisible(): Condition<DUMP> = Condition("isStatusBarWindowVisible") {
-        it.wmState.isWindowSurfaceShown(ComponentMatcher.STATUS_BAR)
-    }
+    fun isStatusBarWindowVisible(): Condition<DeviceStateDump> =
+        Condition("isStatusBarWindowVisible") {
+            it.wmState.isWindowSurfaceShown(ComponentMatcher.STATUS_BAR)
+        }
 
     /**
      * Condition to check if the [ComponentMatcher.STATUS_BAR] layer is visible
      */
-    fun isStatusBarLayerVisible(): Condition<DUMP> =
+    fun isStatusBarLayerVisible(): Condition<DeviceStateDump> =
         isLayerVisible(ComponentMatcher.STATUS_BAR)
 
     /**
      * Condition to check if the [ComponentMatcher.STATUS_BAR] layer is opaque
      */
-    fun isStatusBarLayerOpaque(): Condition<DUMP> = Condition("isStatusBarLayerOpaque") {
-        it.layerState.getLayerWithBuffer(ComponentMatcher.STATUS_BAR)?.color?.isOpaque ?: false
-    }
+    fun isStatusBarLayerOpaque(): Condition<DeviceStateDump> =
+        Condition("isStatusBarLayerOpaque") {
+            it.layerState.getLayerWithBuffer(ComponentMatcher.STATUS_BAR)?.color?.isOpaque ?: false
+        }
 
-    fun isHomeActivityVisible(): Condition<DUMP> =
+    fun isHomeActivityVisible(): Condition<DeviceStateDump> =
         Condition("isHomeActivityVisible") { it.wmState.isHomeActivityVisible }
 
-    fun isRecentsActivityVisible(): Condition<DUMP> = Condition("isRecentsActivityVisible") {
-        it.wmState.isHomeActivityVisible || it.wmState.isRecentsActivityVisible
-    }
+    fun isRecentsActivityVisible(): Condition<DeviceStateDump> =
+        Condition("isRecentsActivityVisible") {
+            it.wmState.isHomeActivityVisible || it.wmState.isRecentsActivityVisible
+        }
 
     /**
      * Condition to check if WM app transition is idle
@@ -173,7 +179,7 @@ object WindowManagerConditionsFactory {
      */
     fun isAppTransitionIdle(
         displayId: Int
-    ): Condition<DUMP> = Condition("isAppTransitionIdle[$displayId]") {
+    ): Condition<DeviceStateDump> = Condition("isAppTransitionIdle[$displayId]") {
         (it.wmState.isHomeRecentsComponent && it.wmState.isHomeActivityVisible) ||
             it.wmState.isRecentsActivityVisible ||
             it.wmState.getDisplay(displayId)
@@ -182,37 +188,35 @@ object WindowManagerConditionsFactory {
 
     fun containsActivity(
         componentMatcher: IComponentMatcher
-    ): Condition<DUMP> = Condition("containsActivity[${componentMatcher.toActivityName()}]") {
-        it.wmState.containsActivity(componentMatcher)
-    }
+    ): Condition<DeviceStateDump> =
+        Condition("containsActivity[${componentMatcher.toActivityName()}]") {
+            it.wmState.containsActivity(componentMatcher)
+        }
 
-    fun containsWindow(
-        componentMatcher: IComponentMatcher
-    ): Condition<DUMP> = Condition("containsWindow[${componentMatcher.toWindowName()}]") {
-        it.wmState.containsWindow(componentMatcher)
-    }
+    fun containsWindow(componentMatcher: IComponentMatcher): Condition<DeviceStateDump> =
+        Condition("containsWindow[${componentMatcher.toWindowName()}]") {
+            it.wmState.containsWindow(componentMatcher)
+        }
 
-    fun isWindowSurfaceShown(
-        componentMatcher: IComponentMatcher
-    ): Condition<DUMP> = Condition("isWindowSurfaceShown[${componentMatcher.toWindowName()}]") {
-        it.wmState.isWindowSurfaceShown(componentMatcher)
-    }
+    fun isWindowSurfaceShown(componentMatcher: IComponentMatcher): Condition<DeviceStateDump> =
+        Condition("isWindowSurfaceShown[${componentMatcher.toWindowName()}]") {
+            it.wmState.isWindowSurfaceShown(componentMatcher)
+        }
 
-    fun isActivityVisible(
-        componentMatcher: IComponentMatcher
-    ): Condition<DUMP> = Condition("isActivityVisible[${componentMatcher.toActivityName()}]") {
-        it.wmState.isActivityVisible(componentMatcher)
-    }
+    fun isActivityVisible(componentMatcher: IComponentMatcher): Condition<DeviceStateDump> =
+        Condition("isActivityVisible[${componentMatcher.toActivityName()}]") {
+            it.wmState.isActivityVisible(componentMatcher)
+        }
 
-    fun isWMStateComplete(): Condition<DUMP> = Condition("isWMStateComplete") {
+    fun isWMStateComplete(): Condition<DeviceStateDump> = Condition("isWMStateComplete") {
         it.wmState.isComplete()
     }
 
     fun hasRotation(
         expectedRotation: Int,
         displayId: Int
-    ): Condition<DUMP> {
-        val hasRotationCondition = Condition<DUMP>(
+    ): Condition<DeviceStateDump> {
+        val hasRotationCondition = Condition<DeviceStateDump>(
             "hasRotation[$expectedRotation, display=$displayId]"
         ) {
             val currRotation = it.wmState.getRotation(displayId)
@@ -231,7 +235,7 @@ object WindowManagerConditionsFactory {
     fun isWindowVisible(
         componentMatcher: IComponentMatcher,
         displayId: Int = 0
-    ): Condition<DUMP> = ConditionList(
+    ): Condition<DeviceStateDump> = ConditionList(
         containsActivity(componentMatcher),
         containsWindow(componentMatcher),
         isActivityVisible(componentMatcher),
@@ -239,24 +243,24 @@ object WindowManagerConditionsFactory {
         isAppTransitionIdle(displayId)
     )
 
-    fun isLayerVisible(componentMatcher: IComponentMatcher): Condition<DUMP> =
+    fun isLayerVisible(componentMatcher: IComponentMatcher): Condition<DeviceStateDump> =
         Condition("isLayerVisible[${componentMatcher.toLayerName()}]") {
             it.layerState.isVisible(componentMatcher)
         }
 
-    fun isLayerVisible(layerId: Int): Condition<DUMP> =
+    fun isLayerVisible(layerId: Int): Condition<DeviceStateDump> =
         Condition("isLayerVisible[layerId=$layerId]") {
             it.layerState.getLayerById(layerId)?.isVisible ?: false
         }
 
-    fun isLayerColorAlphaOne(componentMatcher: IComponentMatcher): Condition<DUMP> =
+    fun isLayerColorAlphaOne(componentMatcher: IComponentMatcher): Condition<DeviceStateDump> =
         Condition("isLayerColorAlphaOne[${componentMatcher.toLayerName()}]") {
             it.layerState.visibleLayers
                 .filter { layer -> componentMatcher.layerMatchesAnyOf(layer) }
                 .any { layer -> layer.color.isOpaque }
         }
 
-    fun isLayerColorAlphaOne(layerId: Int): Condition<DUMP> =
+    fun isLayerColorAlphaOne(layerId: Int): Condition<DeviceStateDump> =
         Condition("isLayerColorAlphaOne[$layerId]") {
             val layer = it.layerState.getLayerById(layerId)
             layer?.color?.a == 1.0f
@@ -265,7 +269,7 @@ object WindowManagerConditionsFactory {
     fun isLayerTransformFlagSet(
         componentMatcher: IComponentMatcher,
         transform: Int
-    ): Condition<DUMP> =
+    ): Condition<DeviceStateDump> =
         Condition(
             "isLayerTransformFlagSet[" + "${componentMatcher.toLayerName()},transform=$transform]"
         ) {
@@ -274,13 +278,13 @@ object WindowManagerConditionsFactory {
                 .any { layer -> isTransformFlagSet(layer, transform) }
         }
 
-    fun isLayerTransformFlagSet(layerId: Int, transform: Int): Condition<DUMP> =
+    fun isLayerTransformFlagSet(layerId: Int, transform: Int): Condition<DeviceStateDump> =
         Condition("isLayerTransformFlagSet[$layerId, $transform]") {
             val layer = it.layerState.getLayerById(layerId)
             layer?.transform?.type?.isFlagSet(transform) ?: false
         }
 
-    fun isLayerTransformIdentity(layerId: Int): Condition<DUMP> = ConditionList(
+    fun isLayerTransformIdentity(layerId: Int): Condition<DeviceStateDump> = ConditionList(
         listOf(
             isLayerTransformFlagSet(layerId, Transform.SCALE_VAL).negate(),
             isLayerTransformFlagSet(layerId, Transform.TRANSLATE_VAL).negate(),
@@ -291,7 +295,7 @@ object WindowManagerConditionsFactory {
     private fun isTransformFlagSet(layer: Layer, transform: Int): Boolean =
         layer.transform.type?.isFlagSet(transform) ?: false
 
-    fun hasLayersAnimating(): Condition<DUMP> = ConditionList(
+    fun hasLayersAnimating(): Condition<DeviceStateDump> = ConditionList(
         Condition("hasLayersAnimating") {
             it.layerState.isAnimating()
         },
@@ -299,7 +303,7 @@ object WindowManagerConditionsFactory {
         isLayerVisible(ComponentMatcher.SPLASH_SCREEN).negate()
     )
 
-    fun isPipWindowLayerSizeMatch(layerId: Int): Condition<DUMP> =
+    fun isPipWindowLayerSizeMatch(layerId: Int): Condition<DeviceStateDump> =
         Condition("isPipWindowLayerSizeMatch[layerId=$layerId]") {
             val pipWindow =
                 it.wmState.pinnedWindows
@@ -316,13 +320,13 @@ object WindowManagerConditionsFactory {
             windowHeight == layerHeight && windowWidth == layerWidth
         }
 
-    fun hasPipWindow(): Condition<DUMP> = Condition("hasPipWindow") {
+    fun hasPipWindow(): Condition<DeviceStateDump> = Condition("hasPipWindow") {
         it.wmState.hasPipWindow()
     }
 
     fun isImeShown(
         displayId: Int
-    ): Condition<DUMP> = ConditionList(
+    ): Condition<DeviceStateDump> = ConditionList(
         listOf(
             isImeOnDisplay(displayId),
             isLayerVisible(ComponentMatcher.IME),
@@ -333,15 +337,16 @@ object WindowManagerConditionsFactory {
 
     private fun isImeOnDisplay(
         displayId: Int
-    ): Condition<DUMP> = Condition("isImeOnDisplay[$displayId]") {
+    ): Condition<DeviceStateDump> = Condition("isImeOnDisplay[$displayId]") {
         it.wmState.inputMethodWindowState?.displayId == displayId
     }
 
-    private fun isImeSurfaceShown(): Condition<DUMP> = Condition("isImeSurfaceShown") {
-        it.wmState.inputMethodWindowState?.isSurfaceShown == true
-    }
+    private fun isImeSurfaceShown(): Condition<DeviceStateDump> =
+        Condition("isImeSurfaceShown") {
+            it.wmState.inputMethodWindowState?.isSurfaceShown == true
+        }
 
-    fun isAppLaunchEnded(taskId: Int): Condition<DUMP> =
+    fun isAppLaunchEnded(taskId: Int): Condition<DeviceStateDump> =
         Condition("containsVisibleAppLaunchWindow[taskId=$taskId]") { dump ->
             val windowStates = dump.wmState.getRootTask(taskId)?.activities?.flatMap {
                 it.children.filterIsInstance<WindowState>()

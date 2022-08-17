@@ -25,6 +25,7 @@ import com.android.server.wm.flicker.helpers.isShellTransitionsEnabled
 import com.android.server.wm.flicker.service.FlickerFrameworkMethod
 import com.android.server.wm.flicker.service.FlickerTestCase
 import com.android.server.wm.flicker.service.assertors.AssertionResult
+import com.android.server.wm.traces.common.Cache
 import java.lang.reflect.Modifier
 import java.util.Collections
 import java.util.concurrent.locks.Lock
@@ -299,7 +300,13 @@ class FlickerBlockJUnit4ClassRunner @JvmOverloads constructor(
         val statement = childrenInvoker(notifier)
         val cleanUpMethod = getFlickerCleanUpMethod()
         val frameworkMethod = FrameworkMethod(cleanUpMethod)
-        return RunAfters(statement, listOf(frameworkMethod), flickerTestParameter)
+        val cacheCleanUp =
+            FrameworkMethod(Cache::class.java.getMethod("clear"))
+        return RunAfters(
+            RunAfters(statement, listOf(frameworkMethod), flickerTestParameter),
+            listOf(cacheCleanUp),
+            Cache
+        )
     }
 
     /**

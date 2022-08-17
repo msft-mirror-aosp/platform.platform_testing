@@ -19,8 +19,10 @@ package com.android.server.wm.traces.parser.layers
 import android.surfaceflinger.nano.Layers
 import android.surfaceflinger.nano.Layerstrace
 import android.util.Log
+import com.android.server.wm.traces.common.Cache
 import com.android.server.wm.traces.common.layers.BaseLayerTraceEntry
 import com.android.server.wm.traces.common.layers.Layer
+import com.android.server.wm.traces.common.layers.LayerTraceEntryBuilder
 import com.android.server.wm.traces.common.layers.LayersTrace
 import com.android.server.wm.traces.parser.LOG_TAG
 import com.google.protobuf.nano.InvalidProtocolBufferNanoException
@@ -38,6 +40,8 @@ class LayersTraceParser {
          *
          * @param data binary proto data
          * @param orphanLayerCallback a callback to handle any unexpected orphan layers
+         * @param clearCacheAfterParsing If the caching used while parsing the proto should be
+         *                               cleared or remain in memory
          */
         @JvmOverloads
         @JvmStatic
@@ -45,6 +49,7 @@ class LayersTraceParser {
             data: ByteArray,
             ignoreLayersStackMatchNoDisplay: Boolean = true,
             ignoreLayersInVirtualDisplay: Boolean = true,
+            clearCacheAfterParsing: Boolean = true,
             orphanLayerCallback: ((Layer) -> Boolean)? = null
         ): LayersTrace {
             var fileProto: Layerstrace.LayersTraceFileProto?
@@ -62,6 +67,7 @@ class LayersTraceParser {
                     it,
                     ignoreLayersStackMatchNoDisplay,
                     ignoreLayersInVirtualDisplay,
+                    clearCacheAfterParsing,
                     orphanLayerCallback
                 )
             } ?: error("Unable to read trace file")
@@ -73,6 +79,8 @@ class LayersTraceParser {
          *
          * @param proto Parsed proto data
          * @param orphanLayerCallback a callback to handle any unexpected orphan layers
+         * @param clearCacheAfterParsing If the caching used while parsing the proto should be
+         *                               cleared or remain in memory
          */
         @JvmOverloads
         @JvmStatic
@@ -80,33 +88,47 @@ class LayersTraceParser {
             proto: Layerstrace.LayersTraceFileProto,
             ignoreLayersStackMatchNoDisplay: Boolean = true,
             ignoreLayersInVirtualDisplay: Boolean = true,
+            clearCacheAfterParsing: Boolean = true,
             orphanLayerCallback: ((Layer) -> Boolean)? = null
         ): LayersTrace {
-            val entries: MutableList<BaseLayerTraceEntry> = ArrayList()
-            var traceParseTime = 0L
-            for (traceProto: Layerstrace.LayersTraceProto in proto.entry) {
-                val entryParseTime = measureTimeMillis {
-                    val entry = LayerTraceEntryLazy(
-                        traceProto.elapsedRealtimeNanos,
-                        traceProto.hwcBlob,
-                        traceProto.where,
-                        traceProto.vsyncId,
-                        ignoreLayersStackMatchNoDisplay,
-                        ignoreLayersInVirtualDisplay,
-                        traceProto.displays,
-                        traceProto.layers.layers,
-                        orphanLayerCallback
-                    )
-                    entries.add(entry)
+            try {
+                val entries: MutableList<BaseLayerTraceEntry> = ArrayList()
+                var traceParseTime = 0L
+                for (traceProto: Layerstrace.LayersTraceProto in proto.entry) {
+                    val entryParseTime = measureTimeMillis {
+                        val layers = traceProto.layers.layers.map {
+                            LayerTraceEntryLazy.newLayer(it)
+                        }.toTypedArray()
+                        val displays = traceProto.displays.map {
+                            LayerTraceEntryLazy.newDisplay(it)
+                        }.toTypedArray()
+                        val builder = LayerTraceEntryBuilder(
+                            traceProto.elapsedRealtimeNanos,
+                            layers,
+                            displays,
+                            traceProto.vsyncId,
+                            traceProto.hwcBlob,
+                            traceProto.where
+                        )
+                            .setOrphanLayerCallback(orphanLayerCallback)
+                            .ignoreLayersStackMatchNoDisplay(ignoreLayersStackMatchNoDisplay)
+                            .ignoreVirtualDisplay(ignoreLayersInVirtualDisplay)
+                        val entry = builder.build()
+                        entries.add(entry)
+                    }
+                    traceParseTime += entryParseTime
                 }
-                traceParseTime += entryParseTime
+                Log.v(
+                    LOG_TAG,
+                    "Parsing duration (Layers Trace): ${traceParseTime}ms " +
+                        "(avg ${traceParseTime / max(entries.size, 1)}ms per entry)"
+                )
+                return LayersTrace(entries.toTypedArray())
+            } finally {
+                if (clearCacheAfterParsing) {
+                    Cache.clear()
+                }
             }
-            Log.v(
-                LOG_TAG,
-                "Parsing duration (Layers Trace): ${traceParseTime}ms " +
-                    "(avg ${traceParseTime / max(entries.size, 1)}ms per entry)"
-            )
-            return LayersTrace(entries.toTypedArray())
         }
 
         /**
@@ -114,22 +136,34 @@ class LayersTraceParser {
          * a list of trace entries.
          *
          * @param proto Parsed proto data
+         * @param clearCacheAfterParsing If the caching used while parsing the proto should be
+         *                               cleared or remain in memory
          */
         @JvmStatic
+        @JvmOverloads
         @Deprecated(
             "This functions parsers old SF dumps. Now SF dumps create a " +
                 "single entry trace, for new dump use [parseFromTrace]"
         )
-        fun parseFromLegacyDump(proto: Layers.LayersProto): LayersTrace {
-            val entry = LayerTraceEntryLazy(
-                timestamp = 0,
-                displayProtos = emptyArray(),
-                layerProtos = proto.layers,
-                ignoreLayersStackMatchNoDisplay = false,
-                ignoreLayersInVirtualDisplay = false,
-                vSyncId = -1L,
-            )
-            return LayersTrace(entry)
+        fun parseFromLegacyDump(
+            proto: Layers.LayersProto,
+            clearCacheAfterParsing: Boolean = true
+        ): LayersTrace {
+            try {
+                val entry = LayerTraceEntryLazy(
+                    timestamp = 0,
+                    displayProtos = emptyArray(),
+                    layerProtos = proto.layers,
+                    ignoreLayersStackMatchNoDisplay = false,
+                    ignoreLayersInVirtualDisplay = false,
+                    vSyncId = -1L,
+                )
+                return LayersTrace(entry)
+            } finally {
+                if (clearCacheAfterParsing) {
+                    Cache.clear()
+                }
+            }
         }
 
         /**
@@ -137,19 +171,25 @@ class LayersTraceParser {
          * a list of trace entries.
          *
          * @param data binary proto data
+         * @param clearCacheAfterParsing If the caching used while parsing the proto should be
+         *                               cleared or remain in memory
          */
         @JvmStatic
+        @JvmOverloads
         @Deprecated(
             "This functions parsers old SF dumps. Now SF dumps create a " +
                 "single entry trace, for new dump use [parseFromTrace]"
         )
-        fun parseFromLegacyDump(data: ByteArray?): LayersTrace {
+        fun parseFromLegacyDump(
+            data: ByteArray?,
+            clearCacheAfterParsing: Boolean = true
+        ): LayersTrace {
             val traceProto = try {
                 Layers.LayersProto.parseFrom(data)
             } catch (e: InvalidProtocolBufferNanoException) {
                 throw RuntimeException(e)
             }
-            return parseFromLegacyDump(traceProto)
+            return parseFromLegacyDump(traceProto, clearCacheAfterParsing)
         }
     }
 }

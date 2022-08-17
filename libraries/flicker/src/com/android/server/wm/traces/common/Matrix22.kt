@@ -60,6 +60,6 @@ open class Matrix22(
     override fun toString(): String = prettyPrint()
 
     companion object {
-        val EMPTY: Matrix22 = Matrix22(0f, 0f, 0f, 0f)
+        val EMPTY: Matrix22 get() = withCache { Matrix22(0f, 0f, 0f, 0f) }
     }
 }

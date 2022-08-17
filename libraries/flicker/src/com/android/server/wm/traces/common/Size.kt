@@ -21,7 +21,7 @@ package com.android.server.wm.traces.common
  *
  * This class is used by flicker and Winscope
  */
-open class Size(val width: Int, val height: Int) {
+open class Size protected constructor(val width: Int = 0, val height: Int = 0) {
     open val isEmpty: Boolean
         get() = height == 0 || width == 0
 
@@ -44,6 +44,8 @@ open class Size(val width: Int, val height: Int) {
     }
 
     companion object {
-        val EMPTY: Size = Size(0, 0)
+        val EMPTY: Size get() = withCache { Size() }
+        fun from(width: Int, height: Int): Size =
+            withCache { Size(width, height) }
     }
 }

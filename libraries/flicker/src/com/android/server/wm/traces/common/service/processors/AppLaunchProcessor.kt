@@ -18,9 +18,7 @@ package com.android.server.wm.traces.common.service.processors
 
 import com.android.server.wm.flicker.service.config.common.Scenario
 import com.android.server.wm.traces.common.DeviceStateDump
-import com.android.server.wm.traces.common.layers.BaseLayerTraceEntry
 import com.android.server.wm.traces.common.tags.Tag
-import com.android.server.wm.traces.common.windowmanager.WindowManagerState
 
 /**
  * This processor creates tags when an app is launched.
@@ -29,7 +27,7 @@ import com.android.server.wm.traces.common.windowmanager.WindowManagerState
 class AppLaunchProcessor(logger: (String) -> Unit) : TransitionProcessor(logger) {
     override val scenario = Scenario.APP_LAUNCH
     private val windowsBecomeVisible =
-            HashMap<Int, DeviceStateDump<WindowManagerState, BaseLayerTraceEntry>>()
+            HashMap<Int, DeviceStateDump>()
 
     override fun getInitialState(tags: MutableMap<Long, MutableList<Tag>>) =
             WaitUntilWindowIsInVisibleActivity(tags)
@@ -42,9 +40,9 @@ class AppLaunchProcessor(logger: (String) -> Unit) : TransitionProcessor(logger)
             tags: MutableMap<Long, MutableList<Tag>>
     ) : BaseState(tags) {
         override fun doProcessState(
-                previous: DeviceStateDump<WindowManagerState, BaseLayerTraceEntry>?,
-                current: DeviceStateDump<WindowManagerState, BaseLayerTraceEntry>,
-                next: DeviceStateDump<WindowManagerState, BaseLayerTraceEntry>
+                previous: DeviceStateDump?,
+                current: DeviceStateDump,
+                next: DeviceStateDump
         ): FSMState {
             if (previous == null) return this
             val prevVisibleWindows = previous.wmState.visibleWindows

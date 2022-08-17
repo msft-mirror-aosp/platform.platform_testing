@@ -159,15 +159,9 @@ class RectF private constructor(
     }
 
     companion object {
-        val EMPTY: RectF = RectF()
+        val EMPTY: RectF get() = withCache { RectF() }
 
-        fun from(left: Float, top: Float, right: Float, bottom: Float): RectF {
-            val newRect = RectF(left, top, right, bottom)
-            return if (newRect.isEmpty) {
-                EMPTY
-            } else {
-                newRect
-            }
-        }
+        fun from(left: Float, top: Float, right: Float, bottom: Float): RectF =
+            withCache { RectF(left, top, right, bottom) }
     }
 }

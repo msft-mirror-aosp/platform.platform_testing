@@ -25,7 +25,7 @@ import com.android.server.wm.traces.common.IComponentMatcher
  * access internal Java/Android functionality
  *
  **/
-open class Activity(
+class Activity(
     name: String,
     val state: String,
     visible: Boolean,

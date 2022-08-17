@@ -82,7 +82,10 @@ class FlickerBuilder private constructor(
         /**
          * Helper object for WM Synchronization
          */
-        wmHelper: WindowManagerStateHelper = WindowManagerStateHelper(instrumentation),
+        wmHelper: WindowManagerStateHelper = WindowManagerStateHelper(
+            instrumentation,
+            clearCacheAfterParsing = false
+        ),
         traceMonitors: MutableList<ITransitionMonitor> = mutableListOf<ITransitionMonitor>()
             .also {
                 it.add(WindowManagerTraceMonitor(outputDir))

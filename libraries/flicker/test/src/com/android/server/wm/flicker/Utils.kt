@@ -36,7 +36,10 @@ import java.util.zip.ZipInputStream
 
 internal fun readWmTraceFromFile(relativePath: String): WindowManagerTrace {
     return try {
-        WindowManagerTraceParser.parseFromTrace(readTestFile(relativePath))
+        WindowManagerTraceParser.parseFromTrace(
+            readTestFile(relativePath),
+            clearCacheAfterParsing = false
+        )
     } catch (e: Exception) {
         throw RuntimeException(e)
     }
@@ -44,7 +47,10 @@ internal fun readWmTraceFromFile(relativePath: String): WindowManagerTrace {
 
 internal fun readWmTraceFromDumpFile(relativePath: String): WindowManagerTrace {
     return try {
-        WindowManagerTraceParser.parseFromDump(readTestFile(relativePath))
+        WindowManagerTraceParser.parseFromDump(
+            readTestFile(relativePath),
+            clearCacheAfterParsing = false
+        )
     } catch (e: Exception) {
         throw RuntimeException(e)
     }

@@ -18,9 +18,9 @@
 package com.android.server.wm.flicker.monitor
 
 import com.android.server.wm.flicker.getDefaultFlickerOutputDir
-import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 import com.android.server.wm.traces.common.DeviceTraceDump
 import com.android.server.wm.traces.common.layers.LayersTrace
+import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 import com.android.server.wm.traces.parser.DeviceDumpParser
 import com.android.server.wm.traces.parser.layers.LayersTraceParser
 import com.android.server.wm.traces.parser.windowmanager.WindowManagerTraceParser
@@ -78,7 +78,7 @@ fun withTracing(
     val traces = recordTraces(outputDir, predicate)
     val wmTraceData = traces.first
     val layersTraceData = traces.second
-    return DeviceDumpParser.fromTrace(wmTraceData, layersTraceData)
+    return DeviceDumpParser.fromTrace(wmTraceData, layersTraceData, clearCacheAfterParsing = true)
 }
 
 /**

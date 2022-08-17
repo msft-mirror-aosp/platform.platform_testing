@@ -16,6 +16,8 @@
 
 package com.android.server.wm.traces.common.windowmanager.windows
 
+import com.android.server.wm.traces.common.withCache
+
 /**
  * Represents the attributes of a WindowState in the window manager hierarchy
  *
@@ -23,46 +25,39 @@ package com.android.server.wm.traces.common.windowmanager.windows
  * access internal Java/Android functionality
  *
  */
-data class WindowLayoutParams(
-    val type: Int,
-    val x: Int,
-    val y: Int,
-    val width: Int,
-    val height: Int,
-    val horizontalMargin: Float,
-    val verticalMargin: Float,
-    val gravity: Int,
-    val softInputMode: Int,
-    val format: Int,
-    val windowAnimations: Int,
-    val alpha: Float,
-    val screenBrightness: Float,
-    val buttonBrightness: Float,
-    val rotationAnimation: Int,
-    val preferredRefreshRate: Float,
-    val preferredDisplayModeId: Int,
-    val hasSystemUiListeners: Boolean,
-    val inputFeatureFlags: Int,
-    val userActivityTimeout: Long,
-    val colorMode: Int,
-    val flags: Int,
-    val privateFlags: Int,
-    val systemUiVisibilityFlags: Int,
-    val subtreeSystemUiVisibilityFlags: Int,
-    val appearance: Int,
-    val behavior: Int,
-    val fitInsetsTypes: Int,
-    val fitInsetsSides: Int,
-    val fitIgnoreVisibility: Boolean
+class WindowLayoutParams private constructor(
+    val type: Int = 0,
+    val x: Int = 0,
+    val y: Int = 0,
+    val width: Int = 0,
+    val height: Int = 0,
+    val horizontalMargin: Float = 0f,
+    val verticalMargin: Float = 0f,
+    val gravity: Int = 0,
+    val softInputMode: Int = 0,
+    val format: Int = 0,
+    val windowAnimations: Int = 0,
+    val alpha: Float = 0f,
+    val screenBrightness: Float = 0f,
+    val buttonBrightness: Float = 0f,
+    val rotationAnimation: Int = 0,
+    val preferredRefreshRate: Float = 0f,
+    val preferredDisplayModeId: Int = 0,
+    val hasSystemUiListeners: Boolean = false,
+    val inputFeatureFlags: Int = 0,
+    val userActivityTimeout: Long = 0L,
+    val colorMode: Int = 0,
+    val flags: Int = 0,
+    val privateFlags: Int = 0,
+    val systemUiVisibilityFlags: Int = 0,
+    val subtreeSystemUiVisibilityFlags: Int = 0,
+    val appearance: Int = 0,
+    val behavior: Int = 0,
+    val fitInsetsTypes: Int = 0,
+    val fitInsetsSides: Int = 0,
+    val fitIgnoreVisibility: Boolean = false
 ) {
     val isValidNavBarType: Boolean = this.type == TYPE_NAVIGATION_BAR
-
-    companion object {
-        /**
-         * @see WindowManager.LayoutParams
-         */
-        private const val TYPE_NAVIGATION_BAR = 2019
-    }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -136,5 +131,96 @@ data class WindowLayoutParams(
         result = 31 * result + fitIgnoreVisibility.hashCode()
         result = 31 * result + isValidNavBarType.hashCode()
         return result
+    }
+
+    override fun toString(): String {
+        return "WindowLayoutParams(type=$type, x=$x, y=$y, width=$width, height=$height, " +
+            "horizontalMargin=$horizontalMargin, verticalMargin=$verticalMargin, " +
+            "gravity=$gravity, softInputMode=$softInputMode, format=$format, " +
+            "windowAnimations=$windowAnimations, alpha=$alpha, " +
+            "screenBrightness=$screenBrightness, buttonBrightness=$buttonBrightness, " +
+            "rotationAnimation=$rotationAnimation, preferredRefreshRate=$preferredRefreshRate, " +
+            "preferredDisplayModeId=$preferredDisplayModeId, " +
+            "hasSystemUiListeners=$hasSystemUiListeners, inputFeatureFlags=$inputFeatureFlags, " +
+            "userActivityTimeout=$userActivityTimeout, colorMode=$colorMode, flags=$flags, " +
+            "privateFlags=$privateFlags, systemUiVisibilityFlags=$systemUiVisibilityFlags, " +
+            "subtreeSystemUiVisibilityFlags=$subtreeSystemUiVisibilityFlags, " +
+            "appearance=$appearance, behavior=$behavior, fitInsetsTypes=$fitInsetsTypes, " +
+            "fitInsetsSides=$fitInsetsSides, fitIgnoreVisibility=$fitIgnoreVisibility, " +
+            "isValidNavBarType=$isValidNavBarType)"
+    }
+
+    companion object {
+        val EMPTY: WindowLayoutParams get() = withCache { WindowLayoutParams() }
+        /**
+         * @see WindowManager.LayoutParams
+         */
+        private const val TYPE_NAVIGATION_BAR = 2019
+
+        fun from(
+            type: Int,
+            x: Int,
+            y: Int,
+            width: Int,
+            height: Int,
+            horizontalMargin: Float,
+            verticalMargin: Float,
+            gravity: Int,
+            softInputMode: Int,
+            format: Int,
+            windowAnimations: Int,
+            alpha: Float,
+            screenBrightness: Float,
+            buttonBrightness: Float,
+            rotationAnimation: Int,
+            preferredRefreshRate: Float,
+            preferredDisplayModeId: Int,
+            hasSystemUiListeners: Boolean,
+            inputFeatureFlags: Int,
+            userActivityTimeout: Long,
+            colorMode: Int,
+            flags: Int,
+            privateFlags: Int,
+            systemUiVisibilityFlags: Int,
+            subtreeSystemUiVisibilityFlags: Int,
+            appearance: Int,
+            behavior: Int,
+            fitInsetsTypes: Int,
+            fitInsetsSides: Int,
+            fitIgnoreVisibility: Boolean
+        ): WindowLayoutParams = withCache {
+            WindowLayoutParams(
+                type,
+                x,
+                y,
+                width,
+                height,
+                horizontalMargin,
+                verticalMargin,
+                gravity,
+                softInputMode,
+                format,
+                windowAnimations,
+                alpha,
+                screenBrightness,
+                buttonBrightness,
+                rotationAnimation,
+                preferredRefreshRate,
+                preferredDisplayModeId,
+                hasSystemUiListeners,
+                inputFeatureFlags,
+                userActivityTimeout,
+                colorMode,
+                flags,
+                privateFlags,
+                systemUiVisibilityFlags,
+                subtreeSystemUiVisibilityFlags,
+                appearance,
+                behavior,
+                fitInsetsTypes,
+                fitInsetsSides,
+                fitIgnoreVisibility
+            )
+        }
     }
 }

@@ -21,8 +21,10 @@ import com.android.server.wm.flicker.assertThrows
 import com.android.server.wm.flicker.readLayerTraceFromFile
 import com.android.server.wm.flicker.traces.layers.LayerSubject
 import com.android.server.wm.flicker.traces.layers.LayersTraceSubject.Companion.assertThat
+import com.android.server.wm.traces.common.Cache
 import com.android.server.wm.traces.common.Size
 import com.google.common.truth.Truth
+import org.junit.Before
 import org.junit.FixMethodOrder
 import org.junit.Test
 import org.junit.runners.MethodSorters
@@ -33,6 +35,11 @@ import org.junit.runners.MethodSorters
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class LayerSubjectTest {
+    @Before
+    fun before() {
+        Cache.clear()
+    }
+
     @Test
     fun exceptionContainsDebugInfoImaginary() {
         val layersTraceEntries = readLayerTraceFromFile("layers_trace_emptyregion.pb")
@@ -65,7 +72,7 @@ class LayerSubjectTest {
         val layersTraceEntries = readLayerTraceFromFile("layers_trace_emptyregion.pb")
         assertThat(layersTraceEntries)
             .layer("SoundVizWallpaperV2", 26033)
-            .hasBufferSize(Size(1440, 2960))
+            .hasBufferSize(Size.from(1440, 2960))
             .hasScalingMode(0)
 
         assertThat(layersTraceEntries)

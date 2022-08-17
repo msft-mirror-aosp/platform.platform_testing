@@ -18,14 +18,12 @@ package com.android.server.wm.traces.common.service.processors
 
 import com.android.server.wm.flicker.service.config.common.Scenario
 import com.android.server.wm.traces.common.DeviceStateDump
-import com.android.server.wm.traces.common.layers.BaseLayerTraceEntry
 import com.android.server.wm.traces.common.layers.LayersTrace
 import com.android.server.wm.traces.common.service.ITagGenerator
 import com.android.server.wm.traces.common.tags.Tag
 import com.android.server.wm.traces.common.tags.TagState
 import com.android.server.wm.traces.common.tags.TagTrace
 import com.android.server.wm.traces.common.transition.TransitionsTrace
-import com.android.server.wm.traces.common.windowmanager.WindowManagerState
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 
 /**
@@ -41,9 +39,9 @@ abstract class TransitionProcessor(internal val logger: (String) -> Unit) : ITag
         tags: MutableMap<Long, MutableList<Tag>>
     ) : BaseFsmState(tags, logger, scenario) {
         abstract override fun doProcessState(
-                previous: DeviceStateDump<WindowManagerState, BaseLayerTraceEntry>?,
-                current: DeviceStateDump<WindowManagerState, BaseLayerTraceEntry>,
-                next: DeviceStateDump<WindowManagerState, BaseLayerTraceEntry>
+                previous: DeviceStateDump?,
+                current: DeviceStateDump,
+                next: DeviceStateDump
         ): FSMState
     }
 
@@ -67,9 +65,9 @@ abstract class TransitionProcessor(internal val logger: (String) -> Unit) : ITag
         val dumpIterator = dumpList.iterator()
 
         // always keep a reference to previous, current and next states
-        var previous: DeviceStateDump<WindowManagerState, BaseLayerTraceEntry>?
-        var current: DeviceStateDump<WindowManagerState, BaseLayerTraceEntry>? = null
-        var next: DeviceStateDump<WindowManagerState, BaseLayerTraceEntry>? =
+        var previous: DeviceStateDump?
+        var current: DeviceStateDump? = null
+        var next: DeviceStateDump? =
                 dumpIterator.next()
         while (currPosition != null) {
             previous = current
@@ -96,7 +94,7 @@ abstract class TransitionProcessor(internal val logger: (String) -> Unit) : ITag
         internal fun createDumpList(
                 wmTrace: WindowManagerTrace,
                 layersTrace: LayersTrace
-        ): List<DeviceStateDump<WindowManagerState, BaseLayerTraceEntry>> {
+        ): List<DeviceStateDump> {
             val wmTimestamps = wmTrace.map { it.timestamp }.toTypedArray()
             val layersTimestamps = layersTrace.map { it.timestamp }.toTypedArray()
             val fullTimestamps = setOf(*wmTimestamps, *layersTimestamps).sorted()

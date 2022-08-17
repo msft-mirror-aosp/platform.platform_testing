@@ -227,15 +227,12 @@ class Region(rects: Array<Rect> = arrayOf()) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is Region) return false
-        if (!super.equals(other)) return false
         if (!rects.contentEquals(other.rects)) return false
         return true
     }
 
     override fun hashCode(): Int {
-        var result = super.hashCode()
-        result = 31 * result + rects.contentHashCode()
-        return result
+        return rects.contentHashCode()
     }
 
     // the native values for these must match up with the enum in SkRegion.h
@@ -1066,7 +1063,7 @@ class Region(rects: Array<Rect> = arrayOf()) {
     }
 
     companion object {
-        val EMPTY get() = Region()
+        val EMPTY: Region get() = Region()
 
         const val SkRegion_kRunTypeSentinel = 0x7FFFFFFF
 

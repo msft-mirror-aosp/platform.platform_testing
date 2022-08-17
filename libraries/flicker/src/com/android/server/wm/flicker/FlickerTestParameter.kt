@@ -280,9 +280,10 @@ data class FlickerTestParameter(
     fun getTestSetupRules(instrumentation: Instrumentation): TestRule =
         RuleChain.outerRule(UnlockScreenRule())
             .around(NavigationModeRule(navBarMode))
-            .around(LaunchAppRule(SampleAppHelper(instrumentation)))
+            .around(
+                LaunchAppRule(SampleAppHelper(instrumentation), clearCacheAfterParsing = false))
             .around(RemoveAllTasksButHomeRule())
-            .around(ChangeDisplayOrientationRule(startRotation))
+            .around(ChangeDisplayOrientationRule(startRotation, clearCacheAfterParsing = false))
             .around(PressHomeRule())
 
     override fun toString(): String = name

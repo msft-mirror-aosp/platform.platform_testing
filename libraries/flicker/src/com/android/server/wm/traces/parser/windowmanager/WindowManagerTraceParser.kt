@@ -38,6 +38,7 @@ import com.android.server.wm.nano.WindowManagerServiceDumpProto
 import com.android.server.wm.nano.WindowManagerTraceFileProto
 import com.android.server.wm.nano.WindowStateProto
 import com.android.server.wm.nano.WindowTokenProto
+import com.android.server.wm.traces.common.Cache
 import com.android.server.wm.traces.common.Rect
 import com.android.server.wm.traces.common.Size
 import com.android.server.wm.traces.common.windowmanager.WindowManagerState
@@ -84,10 +85,13 @@ object WindowManagerTraceParser {
      * a list of trace entries.
      *
      * @param data binary proto data
+     * @param clearCacheAfterParsing If the caching used while parsing the proto should be cleared
+     *                               or remain in memory
      */
     @JvmStatic
     fun parseFromTrace(
-        data: ByteArray?
+        data: ByteArray?,
+        clearCacheAfterParsing: Boolean = true
     ): WindowManagerTrace {
         var fileProto: WindowManagerTraceFileProto?
         try {
@@ -100,8 +104,8 @@ object WindowManagerTraceParser {
             throw RuntimeException(e)
         }
 
-        return fileProto?.let { parseFromTrace(it) }
-                ?: error("Unable to read trace file")
+        return fileProto?.let { parseFromTrace(it, clearCacheAfterParsing) }
+            ?: error("Unable to read trace file")
     }
 
     /**
@@ -111,22 +115,33 @@ object WindowManagerTraceParser {
      */
     @JvmStatic
     fun parseFromTrace(
-        proto: WindowManagerTraceFileProto
+        proto: WindowManagerTraceFileProto,
+        clearCache: Boolean = true
     ): WindowManagerTrace {
-        val entries = mutableListOf<WindowManagerState>()
-        var traceParseTime = 0L
-        for (entryProto in proto.entry) {
-            val entryParseTime = measureTimeMillis {
-                val entry = newTraceEntry(entryProto.windowManagerService,
-                    entryProto.elapsedRealtimeNanos, entryProto.where)
-                entries.add(entry)
+        try {
+            val entries = mutableListOf<WindowManagerState>()
+            var traceParseTime = 0L
+            for (entryProto in proto.entry) {
+                val entryParseTime = measureTimeMillis {
+                    val entry = newTraceEntry(
+                        entryProto.windowManagerService,
+                        entryProto.elapsedRealtimeNanos, entryProto.where
+                    )
+                    entries.add(entry)
+                }
+                traceParseTime += entryParseTime
             }
-            traceParseTime += entryParseTime
-        }
 
-        Log.v(LOG_TAG, "Parsing duration (WM Trace): ${traceParseTime}ms " +
-            "(avg ${traceParseTime / max(entries.size, 1)}ms per entry)")
-        return WindowManagerTrace(entries.toTypedArray())
+            Log.v(
+                LOG_TAG, "Parsing duration (WM Trace): ${traceParseTime}ms " +
+                    "(avg ${traceParseTime / max(entries.size, 1)}ms per entry)"
+            )
+            return WindowManagerTrace(entries.toTypedArray())
+        } finally {
+            if (clearCache) {
+                Cache.clear()
+            }
+        }
     }
 
     /**
@@ -134,11 +149,23 @@ object WindowManagerTraceParser {
      * a list of trace entries.
      *
      * @param proto Parsed proto data
+     * @param clearCacheAfterParsing If the caching used while parsing the proto should be cleared
+     *                               or remain in memory
      */
     @JvmStatic
-    fun parseFromDump(proto: WindowManagerServiceDumpProto): WindowManagerTrace {
-        return WindowManagerTrace(
-                arrayOf(newTraceEntry(proto, timestamp = 0, where = "")))
+    fun parseFromDump(
+        proto: WindowManagerServiceDumpProto,
+        clearCacheAfterParsing: Boolean = true
+    ): WindowManagerTrace {
+        try {
+            return WindowManagerTrace(
+                arrayOf(newTraceEntry(proto, timestamp = 0, where = ""))
+            )
+        } finally {
+            if (clearCacheAfterParsing) {
+                Cache.clear()
+            }
+        }
     }
 
     /**
@@ -146,15 +173,20 @@ object WindowManagerTraceParser {
      * a list of trace entries.
      *
      * @param data binary proto data
+     * @param clearCacheAfterParsing If the caching used while parsing the proto should be cleared
+     *                               or remain in memory
      */
     @JvmStatic
-    fun parseFromDump(data: ByteArray?): WindowManagerTrace {
+    fun parseFromDump(
+        data: ByteArray?,
+        clearCacheAfterParsing: Boolean = true
+    ): WindowManagerTrace {
         val fileProto = try {
             WindowManagerServiceDumpProto.parseFrom(data)
         } catch (e: InvalidProtocolBufferNanoException) {
             throw RuntimeException(e)
         }
-        return parseFromDump(fileProto)
+        return parseFromDump(fileProto, clearCacheAfterParsing)
     }
 
     private fun newTraceEntry(
@@ -179,13 +211,14 @@ object WindowManagerTraceParser {
                 .map { it.title }.toTypedArray(),
             root = newRootWindowContainer(proto.rootWindowContainer),
             keyguardControllerState = newKeyguardControllerState(
-                proto.rootWindowContainer.keyguardController),
+                proto.rootWindowContainer.keyguardController
+            ),
             _timestamp = timestamp.toString()
         )
     }
 
     private fun newWindowManagerPolicy(proto: WindowManagerPolicyProto): WindowManagerPolicy {
-        return WindowManagerPolicy(
+        return WindowManagerPolicy.from(
             focusedAppToken = proto.focusedAppToken ?: "",
             forceStatusBar = proto.forceStatusBar,
             forceStatusBarFromKeyguard = proto.forceStatusBarFromKeyguard,
@@ -215,12 +248,11 @@ object WindowManagerTraceParser {
     private fun newKeyguardControllerState(
         proto: KeyguardControllerProto?
     ): KeyguardControllerState {
-        return KeyguardControllerState(
+        return KeyguardControllerState.from(
             isAodShowing = proto?.aodShowing ?: false,
             isKeyguardShowing = proto?.keyguardShowing ?: false,
             keyguardOccludedStates = proto?.keyguardOccludedStates
-                ?.map { it.displayId to it.keyguardOccluded }
-                ?.toMap()
+                ?.associate { it.displayId to it.keyguardOccluded }
                 ?: emptyMap()
         )
     }
@@ -255,20 +287,26 @@ object WindowManagerTraceParser {
                     ?: Rect.EMPTY,
                 pinnedStackMovementBounds = proto.pinnedTaskController?.movementBounds?.toRect()
                     ?: Rect.EMPTY,
-                displayRect = Rect.from(0, 0, proto.displayInfo?.logicalWidth
-                    ?: 0, proto.displayInfo?.logicalHeight ?: 0),
-                appRect = Rect.from(0, 0, proto.displayInfo?.appWidth ?: 0,
+                displayRect = Rect.from(
+                    0, 0, proto.displayInfo?.logicalWidth
+                        ?: 0, proto.displayInfo?.logicalHeight ?: 0
+                ),
+                appRect = Rect.from(
+                    0, 0, proto.displayInfo?.appWidth ?: 0,
                     proto.displayInfo?.appHeight
-                        ?: 0),
+                        ?: 0
+                ),
                 dpi = proto.dpi,
                 flags = proto.displayInfo?.flags ?: 0,
                 stableBounds = proto.displayFrames?.stableBounds?.toRect() ?: Rect.EMPTY,
                 surfaceSize = proto.surfaceSize,
                 focusedApp = proto.focusedApp,
                 lastTransition = appTransitionToString(
-                    proto.appTransition?.lastUsedAppTransition ?: 0),
+                    proto.appTransition?.lastUsedAppTransition ?: 0
+                ),
                 appTransitionState = appStateToString(
-                    proto.appTransition?.appTransitionState ?: 0),
+                    proto.appTransition?.appTransitionState ?: 0
+                ),
                 rotation = proto.displayRotation?.rotation ?: 0,
                 lastOrientation = proto.displayRotation?.lastOrientation ?: 0,
                 windowContainer = newWindowContainer(
@@ -322,10 +360,10 @@ object WindowManagerTraceParser {
                     proto.taskFragment?.windowContainer ?: proto.windowContainer,
                     if (proto.taskFragment != null) {
                         proto.taskFragment.windowContainer.children
-                                .mapNotNull { p -> newWindowContainerChild(p, isActivityInTree) }
+                            .mapNotNull { p -> newWindowContainerChild(p, isActivityInTree) }
                     } else {
                         proto.windowContainer.children
-                                .mapNotNull { p -> newWindowContainerChild(p, isActivityInTree) }
+                            .mapNotNull { p -> newWindowContainerChild(p, isActivityInTree) }
                     }
                 ) ?: error("Window container should not be null")
             )
@@ -333,7 +371,7 @@ object WindowManagerTraceParser {
     }
 
     private fun newTaskFragment(proto: TaskFragmentProto?, isActivityInTree: Boolean):
-            TaskFragment? {
+        TaskFragment? {
         return if (proto == null) {
             null
         } else {
@@ -404,7 +442,7 @@ object WindowManagerTraceParser {
                         WindowState.WINDOW_TYPE_STARTING
                     else -> 0
                 },
-                requestedSize = Size(proto.requestedWidth, proto.requestedHeight),
+                requestedSize = Size.from(proto.requestedWidth, proto.requestedHeight),
                 surfacePosition = proto.surfacePosition?.toRect(),
                 frame = proto.windowFrames?.frame?.toRect() ?: Rect.EMPTY,
                 containingFrame = proto.windowFrames?.containingFrame?.toRect() ?: Rect.EMPTY,
@@ -433,7 +471,7 @@ object WindowManagerTraceParser {
     }
 
     private fun newWindowLayerParams(proto: WindowLayoutParamsProto?): WindowLayoutParams {
-        return WindowLayoutParams(
+        return WindowLayoutParams.from(
             type = proto?.type ?: 0,
             x = proto?.x ?: 0,
             y = proto?.y ?: 0,
@@ -481,7 +519,7 @@ object WindowManagerTraceParser {
         return if (proto == null) {
             null
         } else {
-            Configuration(
+            Configuration.from(
                 windowConfiguration = if (proto.windowConfiguration != null) {
                     newWindowConfiguration(proto.windowConfiguration)
                 } else {
@@ -499,10 +537,10 @@ object WindowManagerTraceParser {
     }
 
     private fun newWindowConfiguration(proto: WindowConfigurationProto): WindowConfiguration {
-        return WindowConfiguration(
-            _appBounds = proto.appBounds?.toRect(),
-            _bounds = proto.bounds?.toRect(),
-            _maxBounds = proto.maxBounds?.toRect(),
+        return WindowConfiguration.from(
+            appBounds = proto.appBounds?.toRect(),
+            bounds = proto.bounds?.toRect(),
+            maxBounds = proto.maxBounds?.toRect(),
             windowingMode = proto.windowingMode,
             activityType = proto.activityType
         )
@@ -522,7 +560,8 @@ object WindowManagerTraceParser {
                 orientation = proto.orientation,
                 _isVisible = proto.visible,
                 configurationContainer = newConfigurationContainer(
-                    proto.configurationContainer),
+                    proto.configurationContainer
+                ),
                 layerId = proto.surfaceControl?.layerId ?: 0,
                 children = children.toTypedArray()
             )

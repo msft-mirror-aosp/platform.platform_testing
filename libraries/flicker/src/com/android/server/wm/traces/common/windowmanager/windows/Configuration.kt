@@ -16,6 +16,8 @@
 
 package com.android.server.wm.traces.common.windowmanager.windows
 
+import com.android.server.wm.traces.common.withCache
+
 /**
  * Represents the configuration of a WM container
  *
@@ -23,15 +25,15 @@ package com.android.server.wm.traces.common.windowmanager.windows
  * access internal Java/Android functionality
  *
  */
-data class Configuration(
-    val windowConfiguration: WindowConfiguration?,
-    val densityDpi: Int,
-    val orientation: Int,
-    val screenHeightDp: Int,
-    val screenWidthDp: Int,
-    val smallestScreenWidthDp: Int,
-    val screenLayout: Int,
-    val uiMode: Int
+class Configuration private constructor(
+    val windowConfiguration: WindowConfiguration? = null,
+    val densityDpi: Int = 0,
+    val orientation: Int = 0,
+    val screenHeightDp: Int = 0,
+    val screenWidthDp: Int = 0,
+    val smallestScreenWidthDp: Int = 0,
+    val screenLayout: Int = 0,
+    val uiMode: Int = 0
 ) {
     val isEmpty: Boolean
         get() = (windowConfiguration == null) &&
@@ -69,5 +71,31 @@ data class Configuration(
         result = 31 * result + screenLayout
         result = 31 * result + uiMode
         return result
+    }
+
+    companion object {
+        val EMPTY: Configuration get() = withCache { Configuration() }
+
+        fun from(
+            windowConfiguration: WindowConfiguration?,
+            densityDpi: Int,
+            orientation: Int,
+            screenHeightDp: Int,
+            screenWidthDp: Int,
+            smallestScreenWidthDp: Int,
+            screenLayout: Int,
+            uiMode: Int
+        ): Configuration = withCache {
+            Configuration(
+                windowConfiguration,
+                densityDpi,
+                orientation,
+                screenHeightDp,
+                screenWidthDp,
+                smallestScreenWidthDp,
+                screenLayout,
+                uiMode
+            )
+        }
     }
 }

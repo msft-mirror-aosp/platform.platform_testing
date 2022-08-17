@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 The Android Open Source Project
+ * Copyright (C) 2022 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,10 +20,17 @@ import com.android.server.wm.traces.common.layers.BaseLayerTraceEntry
 import com.android.server.wm.traces.common.windowmanager.WindowManagerState
 
 /**
- * Represents a state dump containing the [WindowManagerState] and the [BaseLayerTraceEntry] both
- * parsed.
+ * Represents a state dump optionally containing the [WindowManagerState] and
+ * the [BaseLayerTraceEntry] parsed.
  */
-class DeviceStateDump(
-    override val wmState: WindowManagerState,
-    override val layerState: BaseLayerTraceEntry
-) : NullableDeviceStateDump(wmState, layerState)
+open class NullableDeviceStateDump(
+    /**
+     * Parsed [WindowManagerState]
+     */
+    open val wmState: WindowManagerState?,
+
+    /**
+     * Parsed [BaseLayerTraceEntry]
+     */
+    open val layerState: BaseLayerTraceEntry?
+)

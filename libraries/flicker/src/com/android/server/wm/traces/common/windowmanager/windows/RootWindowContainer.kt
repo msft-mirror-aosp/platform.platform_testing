@@ -23,7 +23,7 @@ package com.android.server.wm.traces.common.windowmanager.windows
  * access internal Java/Android functionality
  *
  */
-open class RootWindowContainer(
+class RootWindowContainer(
     windowContainer: WindowContainer
 ) : WindowContainer(windowContainer) {
     override fun toString(): String {

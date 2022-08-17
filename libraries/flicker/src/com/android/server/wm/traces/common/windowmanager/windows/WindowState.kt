@@ -16,8 +16,8 @@
 
 package com.android.server.wm.traces.common.windowmanager.windows
 
-import com.android.server.wm.traces.common.Size
 import com.android.server.wm.traces.common.Rect
+import com.android.server.wm.traces.common.Size
 import com.android.server.wm.traces.common.region.Region
 
 /**
@@ -27,7 +27,7 @@ import com.android.server.wm.traces.common.region.Region
  * access internal Java/Android functionality
  *
  */
-open class WindowState(
+class WindowState(
     val attributes: WindowLayoutParams,
     val displayId: Int,
     val stackId: Int,

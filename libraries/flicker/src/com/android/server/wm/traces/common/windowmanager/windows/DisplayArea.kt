@@ -25,7 +25,7 @@ import com.android.server.wm.traces.common.IComponentMatcher
  * access internal Java/Android functionality
  *
  */
-open class DisplayArea(
+class DisplayArea(
     val isTaskDisplayArea: Boolean,
     windowContainer: WindowContainer
 ) : WindowContainer(windowContainer) {

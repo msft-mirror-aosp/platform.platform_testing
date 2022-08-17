@@ -16,8 +16,8 @@
 
 package com.android.server.wm.traces.common
 
-data class Point(val x: Int, val y: Int) {
-    fun prettyPrint(): String = prettyPrint(this)
+class Point private constructor(val x: Int = 0, val y: Int = 0) {
+    fun prettyPrint(): String = "($x, $y)"
 
     override fun toString(): String = prettyPrint()
 
@@ -38,6 +38,8 @@ data class Point(val x: Int, val y: Int) {
     }
 
     companion object {
-        fun prettyPrint(point: Point): String = "(${point.x}, ${point.y})"
+        val EMPTY: Point get() = withCache { Point() }
+
+        fun from(x: Int, y: Int): Point = withCache { Point(x, y) }
     }
 }

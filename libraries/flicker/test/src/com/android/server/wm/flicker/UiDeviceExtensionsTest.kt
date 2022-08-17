@@ -17,14 +17,12 @@
 package com.android.server.wm.flicker
 
 import androidx.test.platform.app.InstrumentationRegistry
-import com.android.server.wm.traces.common.DeviceStateDump
-import com.android.server.wm.traces.common.layers.BaseLayerTraceEntry
-import com.android.server.wm.traces.common.windowmanager.WindowManagerState
+import com.android.server.wm.traces.common.NullableDeviceStateDump
 import com.android.server.wm.traces.parser.FLAG_STATE_DUMP_FLAG_LAYERS
 import com.android.server.wm.traces.parser.FLAG_STATE_DUMP_FLAG_WM
 import com.android.server.wm.traces.parser.WmStateDumpFlags
 import com.android.server.wm.traces.parser.getCurrentState
-import com.android.server.wm.traces.parser.getCurrentStateDump
+import com.android.server.wm.traces.parser.getCurrentStateDumpNullable
 import com.google.common.truth.Truth
 import org.junit.FixMethodOrder
 import org.junit.Test
@@ -46,9 +44,13 @@ class UiDeviceExtensionsTest {
 
     private fun getCurrStateDump(
         @WmStateDumpFlags dumpFlags: Int = FLAG_STATE_DUMP_FLAG_WM.or(FLAG_STATE_DUMP_FLAG_LAYERS)
-    ): DeviceStateDump<WindowManagerState?, BaseLayerTraceEntry?> {
+    ): NullableDeviceStateDump {
         val instrumentation = InstrumentationRegistry.getInstrumentation()
-        return getCurrentStateDump(instrumentation.uiAutomation, dumpFlags)
+        return getCurrentStateDumpNullable(
+            instrumentation.uiAutomation,
+            dumpFlags,
+            clearCacheAfterParsing = false
+        )
     }
 
     @Test

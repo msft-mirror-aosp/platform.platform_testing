@@ -21,11 +21,11 @@ package com.android.server.wm.traces.common
  *
  * This class is used by flicker and Winscope
  */
-class ActiveBuffer(
-    width: Int,
-    height: Int,
-    val stride: Int,
-    val format: Int
+class ActiveBuffer private constructor(
+    width: Int = 0,
+    height: Int = 0,
+    val stride: Int = 0,
+    val format: Int = 0
 ) : Size(width, height) {
     override fun prettyPrint(): String =
         "w:$width, h:$height, stride:$stride, format:$format"
@@ -48,6 +48,9 @@ class ActiveBuffer(
     override fun toString(): String = prettyPrint()
 
     companion object {
-        val EMPTY: ActiveBuffer = ActiveBuffer(0, 0, 0, 0)
+        val EMPTY: ActiveBuffer get() = withCache { ActiveBuffer() }
+        fun from(width: Int, height: Int, stride: Int, format: Int): ActiveBuffer = withCache {
+            ActiveBuffer(width, height, stride, format)
+        }
     }
 }

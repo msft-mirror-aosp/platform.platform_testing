@@ -26,15 +26,16 @@ import com.android.server.wm.flicker.readWmTraceFromFile
 import com.android.server.wm.flicker.traces.FlickerSubjectException
 import com.android.server.wm.flicker.traces.windowmanager.WindowManagerStateSubject
 import com.android.server.wm.flicker.traces.windowmanager.WindowManagerTraceSubject.Companion.assertThat
+import com.android.server.wm.traces.common.Cache
 import com.android.server.wm.traces.common.ComponentMatcher
 import com.android.server.wm.traces.common.region.Region
 import com.android.server.wm.traces.common.windowmanager.WindowManagerState
-import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 import com.android.server.wm.traces.common.windowmanager.windows.ConfigurationContainer
 import com.android.server.wm.traces.common.windowmanager.windows.KeyguardControllerState
 import com.android.server.wm.traces.common.windowmanager.windows.RootWindowContainer
 import com.android.server.wm.traces.common.windowmanager.windows.WindowContainer
 import com.google.common.truth.Truth
+import org.junit.Before
 import org.junit.FixMethodOrder
 import org.junit.Test
 import org.junit.runners.MethodSorters
@@ -45,7 +46,7 @@ import org.junit.runners.MethodSorters
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class WindowManagerStateSubjectTest {
-    private val trace: WindowManagerTrace by lazy { readWmTraceFromFile("wm_trace_openchrome.pb") }
+    private val trace get() = readWmTraceFromFile("wm_trace_openchrome.pb")
     // Launcher is visible in fullscreen in the first frame of the trace
     private val traceFirstFrameTimestamp = 9213763541297
     // The first frame where the chrome splash screen is shown
@@ -54,6 +55,11 @@ class WindowManagerStateSubjectTest {
     private val displayBounds = Region.from(0, 0, 1440, 2960)
     // The region covered by the status bar in the trace
     private val statusBarRegion = Region.from(0, 0, 1440, 171)
+
+    @Before
+    fun before() {
+        Cache.clear()
+    }
 
     @Test
     fun exceptionContainsDebugInfo() {
@@ -344,7 +350,7 @@ class WindowManagerStateSubjectTest {
             isDisplayFrozen = false,
             _pendingActivities = emptyArray(),
             root = emptyRootContainer,
-            keyguardControllerState = KeyguardControllerState(
+            keyguardControllerState = KeyguardControllerState.from(
                 isAodShowing = false,
                 isKeyguardShowing = false,
                 keyguardOccludedStates = mapOf()

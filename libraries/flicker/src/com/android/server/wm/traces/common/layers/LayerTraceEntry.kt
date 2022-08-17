@@ -26,7 +26,7 @@ import com.android.server.wm.traces.common.RectF
  * access internal Java/Android functionality
  *
  **/
-open class LayerTraceEntry constructor(
+class LayerTraceEntry(
     override val timestamp: Long,
     override val hwcBlob: String,
     override val where: String,

@@ -27,7 +27,7 @@ import kotlin.math.min
  * access internal Java/Android functionality
  *
  */
-open class DisplayContent(
+class DisplayContent(
     val id: Int,
     val focusedRootTaskId: Int,
     val resumedActivity: String,

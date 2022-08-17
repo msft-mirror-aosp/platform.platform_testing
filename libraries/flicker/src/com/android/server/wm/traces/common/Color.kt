@@ -52,15 +52,11 @@ class Color private constructor(r: Float, g: Float, b: Float, val a: Float) : Co
     }
 
     companion object {
-        val EMPTY: Color = Color(r = -1f, g = -1f, b = -1f, a = 0f)
-        val DEFAULT: Color = Color(r = 0f, g = 0f, b = 0f, a = 1f)
+        val EMPTY: Color get() = withCache { Color(r = -1f, g = -1f, b = -1f, a = 0f) }
+        val DEFAULT: Color get() = withCache { Color(r = 0f, g = 0f, b = 0f, a = 1f) }
 
-        fun from(r: Float, g: Float, b: Float, a: Float): Color {
-            return when (val newColor = Color(r, g, b, a)) {
-                EMPTY -> EMPTY
-                DEFAULT -> DEFAULT
-                else -> newColor
-            }
+        fun from(r: Float, g: Float, b: Float, a: Float): Color = withCache {
+            Color(r, g, b, a)
         }
     }
 }

@@ -16,6 +16,8 @@
 
 package com.android.server.wm.traces.common.windowmanager.windows
 
+import com.android.server.wm.traces.common.withCache
+
 /**
  * Represents the keyguard controller in the window manager hierarchy
  *
@@ -23,7 +25,7 @@ package com.android.server.wm.traces.common.windowmanager.windows
  * access internal Java/Android functionality
  *
  */
-data class KeyguardControllerState(
+class KeyguardControllerState private constructor(
     val isAodShowing: Boolean,
     val isKeyguardShowing: Boolean,
     val keyguardOccludedStates: Map<Int, Boolean>
@@ -33,5 +35,33 @@ data class KeyguardControllerState(
 
     override fun toString(): String {
         return "KeyguardControllerState: {aod=$isAodShowing keyguard=$isKeyguardShowing}"
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is KeyguardControllerState) return false
+
+        if (isAodShowing != other.isAodShowing) return false
+        if (isKeyguardShowing != other.isKeyguardShowing) return false
+        if (keyguardOccludedStates != other.keyguardOccludedStates) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = isAodShowing.hashCode()
+        result = 31 * result + isKeyguardShowing.hashCode()
+        result = 31 * result + keyguardOccludedStates.hashCode()
+        return result
+    }
+
+    companion object {
+        fun from(
+            isAodShowing: Boolean,
+            isKeyguardShowing: Boolean,
+            keyguardOccludedStates: Map<Int, Boolean>
+        ): KeyguardControllerState = withCache {
+            KeyguardControllerState(isAodShowing, isKeyguardShowing, keyguardOccludedStates)
+        }
     }
 }

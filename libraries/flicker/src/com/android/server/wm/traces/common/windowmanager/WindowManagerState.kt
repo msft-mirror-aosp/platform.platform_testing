@@ -38,7 +38,7 @@ import com.android.server.wm.traces.common.windowmanager.windows.WindowState
  * The timestamp constructor must be a string due to lack of Kotlin/KotlinJS Long compatibility
  *
  **/
-open class WindowManagerState(
+class WindowManagerState(
     val where: String,
     val policy: WindowManagerPolicy?,
     val focusedApp: String,

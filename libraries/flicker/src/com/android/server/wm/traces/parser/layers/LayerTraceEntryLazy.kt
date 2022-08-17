@@ -74,7 +74,7 @@ class LayerTraceEntryLazy(
                 visibleRegion = Region.EMPTY
             }
             val crop = getCrop(proto.crop)
-            return Layer(
+            return Layer.from(
                 proto.name ?: "",
                 proto.id,
                 proto.parent,
@@ -113,7 +113,7 @@ class LayerTraceEntryLazy(
         fun newDisplay(
             proto: Display.DisplayProto
         ): com.android.server.wm.traces.common.layers.Display {
-            return com.android.server.wm.traces.common.layers.Display(
+            return com.android.server.wm.traces.common.layers.Display.from(
                 proto.id.toULong(),
                 proto.name,
                 proto.layerStack,
@@ -134,7 +134,7 @@ class LayerTraceEntryLazy(
         @JvmStatic
         fun Common.SizeProto?.toSize(): Size {
             return this?.let {
-                Size(this.w, this.h)
+                Size.from(this.w, this.h)
             } ?: Size.EMPTY
         }
 
@@ -151,7 +151,7 @@ class LayerTraceEntryLazy(
             if (this == null) {
                 return ActiveBuffer.EMPTY
             }
-            return ActiveBuffer(width, height, stride, format)
+            return ActiveBuffer.from(width, height, stride, format)
         }
 
         @JvmStatic

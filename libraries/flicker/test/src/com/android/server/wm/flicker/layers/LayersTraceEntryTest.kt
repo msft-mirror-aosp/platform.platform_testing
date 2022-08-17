@@ -21,8 +21,10 @@ import com.android.server.wm.flicker.assertThatErrorContainsDebugInfo
 import com.android.server.wm.flicker.assertThrows
 import com.android.server.wm.flicker.readLayerTraceFromFile
 import com.android.server.wm.flicker.traces.layers.LayersTraceSubject.Companion.assertThat
+import com.android.server.wm.traces.common.Cache
 import com.android.server.wm.traces.common.layers.LayerTraceEntry
 import com.google.common.truth.Truth
+import org.junit.Before
 import org.junit.FixMethodOrder
 import org.junit.Test
 import org.junit.runners.MethodSorters
@@ -33,6 +35,11 @@ import org.junit.runners.MethodSorters
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class LayersTraceEntryTest {
+    @Before
+    fun before() {
+        Cache.clear()
+    }
+
     @Test
     fun exceptionContainsDebugInfo() {
         val layersTraceEntries = readLayerTraceFromFile("layers_trace_emptyregion.pb")

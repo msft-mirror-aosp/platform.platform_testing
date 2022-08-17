@@ -206,13 +206,13 @@ class FlickerRunResult(testName: String, iteration: Int) {
     internal fun buildWmTrace(): WindowManagerTrace? {
         val wmTraceFileName = this.wmTraceFileName ?: return null
         val traceData = this.artifacts.getFileBytes(wmTraceFileName)
-        return WindowManagerTraceParser.parseFromTrace(traceData)
+        return WindowManagerTraceParser.parseFromTrace(traceData, clearCacheAfterParsing = false)
     }
 
     internal fun buildLayersTrace(): LayersTrace? {
         val wmTraceFileName = this.layersTraceFileName ?: return null
         val traceData = this.artifacts.getFileBytes(wmTraceFileName)
-        return LayersTraceParser.parseFromTrace(traceData)
+        return LayersTraceParser.parseFromTrace(traceData, clearCacheAfterParsing = false)
     }
 
     private fun buildTransactionsTrace(): TransactionsTrace? {
@@ -236,12 +236,16 @@ class FlickerRunResult(testName: String, iteration: Int) {
             for (state in states) {
                 val wmDumpData = this.artifacts.getFileBytes(state.wmDumpFileName)
                 val layersDumpData = this.artifacts.getFileBytes(state.layersDumpFileName)
-                val deviceState = DeviceDumpParser.fromDump(wmDumpData, layersDumpData)
+                val deviceState = DeviceDumpParser.fromDump(
+                    wmDumpData,
+                    layersDumpData,
+                    clearCacheAfterParsing = false
+                )
 
                 val wmStateSubject = deviceState.wmState
-                        ?.asTrace()?.let { WindowManagerTraceSubject.assertThat(it).first() }
+                    ?.asTrace()?.let { WindowManagerTraceSubject.assertThat(it).first() }
                 val layersStateSubject = deviceState.layerState
-                        ?.asTrace()?.let { LayersTraceSubject.assertThat(it).first() }
+                    ?.asTrace()?.let { LayersTraceSubject.assertThat(it).first() }
                 taggedStatesList.add(StateDump(wmStateSubject, layersStateSubject))
             }
         }

@@ -23,7 +23,7 @@ package com.android.server.wm.traces.common.windowmanager.windows
  * access internal Java/Android functionality
  *
  */
-open class WindowToken(windowContainer: WindowContainer) : WindowContainer(windowContainer) {
+class WindowToken(windowContainer: WindowContainer) : WindowContainer(windowContainer) {
     override val isVisible: Boolean get() = false
     override fun toString(): String {
         return "${this::class.simpleName}: {$token $title}"

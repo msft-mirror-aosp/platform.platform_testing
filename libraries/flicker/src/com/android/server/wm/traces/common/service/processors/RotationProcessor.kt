@@ -43,9 +43,9 @@ class RotationProcessor(logger: (String) -> Unit) : TransitionProcessor(logger) 
         tags: MutableMap<Long, MutableList<Tag>>
     ) : BaseState(tags) {
         override fun doProcessState(
-            previous: DeviceStateDump<WindowManagerState, BaseLayerTraceEntry>?,
-            current: DeviceStateDump<WindowManagerState, BaseLayerTraceEntry>,
-            next: DeviceStateDump<WindowManagerState, BaseLayerTraceEntry>
+            previous: DeviceStateDump?,
+            current: DeviceStateDump,
+            next: DeviceStateDump
         ): FSMState {
             val currDisplayRect = current.wmState.displaySize()
             logger.invoke("(${current.wmState.timestamp}) Initial state. " +
@@ -62,9 +62,9 @@ class RotationProcessor(logger: (String) -> Unit) : TransitionProcessor(logger) 
         private val currDisplayRect: RectF
     ) : BaseState(tags) {
         override fun doProcessState(
-                previous: DeviceStateDump<WindowManagerState, BaseLayerTraceEntry>?,
-                current: DeviceStateDump<WindowManagerState, BaseLayerTraceEntry>,
-                next: DeviceStateDump<WindowManagerState, BaseLayerTraceEntry>
+                previous: DeviceStateDump?,
+                current: DeviceStateDump,
+                next: DeviceStateDump
         ): FSMState {
             val newWmDisplayRect = current.wmState.displaySize()
             val newLayersDisplayRect = current.layerState.screenBounds()
@@ -89,7 +89,7 @@ class RotationProcessor(logger: (String) -> Unit) : TransitionProcessor(logger) 
         }
 
         private fun processDisplaySizeChange(
-                previous: DeviceStateDump<WindowManagerState, BaseLayerTraceEntry>,
+                previous: DeviceStateDump,
                 newDisplayRect: RectF
         ): FSMState {
             logger.invoke("(${previous.wmState.timestamp}) Display size changed " +
@@ -115,9 +115,9 @@ class RotationProcessor(logger: (String) -> Unit) : TransitionProcessor(logger) 
         private val wmStateComplete = WindowManagerConditionsFactory.isWMStateComplete()
 
         override fun doProcessState(
-                previous: DeviceStateDump<WindowManagerState, BaseLayerTraceEntry>?,
-                current: DeviceStateDump<WindowManagerState, BaseLayerTraceEntry>,
-                next: DeviceStateDump<WindowManagerState, BaseLayerTraceEntry>
+                previous: DeviceStateDump?,
+                current: DeviceStateDump,
+                next: DeviceStateDump
         ): FSMState {
             val anyLayerAnimating = areLayersAnimating.isSatisfied(current)
             val rotationLayerExists = rotationLayerExists.isSatisfied(current)

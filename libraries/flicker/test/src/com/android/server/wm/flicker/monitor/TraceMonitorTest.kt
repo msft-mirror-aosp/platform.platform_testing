@@ -23,10 +23,10 @@ import com.android.server.wm.traces.common.DeviceTraceDump
 import com.android.server.wm.traces.parser.DeviceDumpParser
 import com.google.common.io.Files
 import com.google.common.truth.Truth
+import java.nio.file.Path
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
-import java.nio.file.Path
 
 abstract class TraceMonitorTest<T : TransitionMonitor> {
 
@@ -117,7 +117,8 @@ abstract class TraceMonitorTest<T : TransitionMonitor> {
             device.pressRecentApps()
         }
 
-        val dump = DeviceDumpParser.fromTrace(trace.first, trace.second)
+        val dump =
+            DeviceDumpParser.fromTrace(trace.first, trace.second, clearCacheAfterParsing = true)
         this.validateTrace(dump)
     }
 }

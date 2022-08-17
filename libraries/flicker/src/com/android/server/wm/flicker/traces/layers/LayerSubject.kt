@@ -103,7 +103,7 @@ class LayerSubject private constructor(
 
     @Deprecated("Prefer hasBufferSize(bounds)")
     fun hasBufferSize(size: Point): LayerSubject = apply {
-        val bounds = Size(size.x, size.y)
+        val bounds = Size.from(size.x, size.y)
         hasBufferSize(bounds)
     }
 
@@ -115,7 +115,7 @@ class LayerSubject private constructor(
      */
     fun hasBufferSize(size: Size): LayerSubject = apply {
         layer ?: return exists()
-        val bufferSize = Size(layer.activeBuffer.width, layer.activeBuffer.height)
+        val bufferSize = Size.from(layer.activeBuffer.width, layer.activeBuffer.height)
         check("Buffer size").that(bufferSize).isEqualTo(size)
     }
 
