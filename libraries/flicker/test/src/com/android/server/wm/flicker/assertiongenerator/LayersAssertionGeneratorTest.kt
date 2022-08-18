@@ -19,9 +19,9 @@ package com.android.server.wm.flicker.assertiongenerator
 import com.android.server.wm.flicker.assertiongenerator.common.AssertionObject
 import com.android.server.wm.flicker.assertiongenerator.layers.LayersAssertionGenerator
 import com.android.server.wm.flicker.getTestTraceDump
-import com.android.server.wm.flicker.service.config.common.Scenario
 import com.android.server.wm.traces.common.DeviceTraceDump
 import com.android.server.wm.traces.common.layers.LayersTrace
+import com.android.server.wm.traces.common.service.Scenario
 import org.junit.Test
 
 /**

@@ -16,7 +16,6 @@
 
 package com.android.server.wm.traces.common.service.processors
 
-import com.android.server.wm.flicker.service.config.common.Scenario
 import com.android.server.wm.traces.common.ConditionList
 import com.android.server.wm.traces.common.DeviceStateDump
 import com.android.server.wm.traces.common.WindowManagerConditionsFactory
@@ -26,6 +25,7 @@ import com.android.server.wm.traces.common.WindowManagerConditionsFactory.isPipW
 import com.android.server.wm.traces.common.layers.Layer
 import com.android.server.wm.traces.common.layers.Transform
 import com.android.server.wm.traces.common.service.PlatformConsts
+import com.android.server.wm.traces.common.service.Scenario
 import com.android.server.wm.traces.common.tags.Tag
 
 /**

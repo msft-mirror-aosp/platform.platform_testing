@@ -14,16 +14,21 @@
  * limitations under the License.
  */
 
-package com.android.server.wm.flicker.service.config.common
+package com.android.server.wm.traces.common.service
 
-import com.android.server.wm.traces.common.transactions.Transaction
 import com.android.server.wm.traces.common.transition.Transition
 
-data class ScenarioInstance(
-    val scenario: Scenario,
-    val startTimestamp: Long,
-    val endTimestamp: Long,
-    val startTransaction: Transaction,
-    val finishTransaction: Transaction,
-    val associatedTransition: Transition
-)
+enum class AssertionExecutionCondition(
+    val shouldExecute: (transition: Transition) -> Boolean
+) {
+    ALWAYS({ true }),
+    NEVER({ false }),
+    APP_LAUNCH({ t ->
+        t.type == Transition.Companion.Type.OPEN &&
+                t.changes.any { it.transitMode == Transition.Companion.Type.OPEN }
+    }),
+    APP_CLOSE({ t ->
+        t.type == Transition.Companion.Type.CLOSE &&
+                t.changes.any { it.transitMode == Transition.Companion.Type.CLOSE }
+    })
+}

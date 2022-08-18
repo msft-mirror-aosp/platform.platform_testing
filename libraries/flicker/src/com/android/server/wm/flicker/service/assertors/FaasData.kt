@@ -16,9 +16,9 @@
 
 package com.android.server.wm.flicker.service.assertors
 
-import com.android.server.wm.flicker.service.config.common.ScenarioInstance
 import com.android.server.wm.traces.common.layers.LayersTrace
 import com.android.server.wm.traces.common.prettyTimestamp
+import com.android.server.wm.traces.common.service.ScenarioInstance
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 import com.google.common.truth.Fact
 

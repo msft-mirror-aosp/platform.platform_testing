@@ -16,12 +16,12 @@
 
 package com.android.server.wm.traces.common.service.processors
 
-import com.android.server.wm.flicker.service.config.common.Scenario
 import com.android.server.wm.traces.common.ComponentMatcher
 import com.android.server.wm.traces.common.DeviceStateDump
 import com.android.server.wm.traces.common.RectF
 import com.android.server.wm.traces.common.WindowManagerConditionsFactory
 import com.android.server.wm.traces.common.layers.BaseLayerTraceEntry
+import com.android.server.wm.traces.common.service.Scenario
 import com.android.server.wm.traces.common.tags.Tag
 import com.android.server.wm.traces.common.windowmanager.WindowManagerState
 

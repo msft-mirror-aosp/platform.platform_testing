@@ -242,10 +242,10 @@ class FlickerRunResult(testName: String, iteration: Int) {
                     clearCacheAfterParsing = false
                 )
 
-                val wmStateSubject = deviceState.wmState
-                    ?.asTrace()?.let { WindowManagerTraceSubject.assertThat(it).first() }
-                val layersStateSubject = deviceState.layerState
-                    ?.asTrace()?.let { LayersTraceSubject.assertThat(it).first() }
+                val wmStateSubject =
+                    WindowManagerTraceSubject.assertThat(deviceState.wmState.asTrace()).first()
+                val layersStateSubject =
+                    LayersTraceSubject.assertThat(deviceState.layerState.asTrace()).first()
                 taggedStatesList.add(StateDump(wmStateSubject, layersStateSubject))
             }
         }

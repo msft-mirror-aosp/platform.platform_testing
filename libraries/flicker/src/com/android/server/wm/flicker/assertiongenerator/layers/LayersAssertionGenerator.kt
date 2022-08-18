@@ -17,8 +17,8 @@
 package com.android.server.wm.flicker.assertiongenerator.layers
 
 import com.android.server.wm.flicker.assertiongenerator.common.IAssertionGenerator
-import com.android.server.wm.flicker.service.config.common.Scenario
 import com.android.server.wm.traces.common.layers.LayersTrace
+import com.android.server.wm.traces.common.service.Scenario
 
 class LayersAssertionGenerator (
     override val config: Map<Scenario, Array<out LayersTrace>>

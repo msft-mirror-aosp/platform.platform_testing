@@ -16,7 +16,6 @@
 
 package com.android.server.wm.traces.common.service
 
-import com.android.server.wm.flicker.service.config.common.Scenario
 import com.android.server.wm.traces.common.layers.LayersTrace
 import com.android.server.wm.traces.common.service.processors.AppCloseProcessor
 import com.android.server.wm.traces.common.service.processors.AppLaunchProcessor

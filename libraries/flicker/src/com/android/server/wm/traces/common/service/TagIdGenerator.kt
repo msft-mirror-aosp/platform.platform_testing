@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.server.wm.flicker.service.config.common
+package com.android.server.wm.traces.common.service
 
 class TagIdGenerator {
     companion object {

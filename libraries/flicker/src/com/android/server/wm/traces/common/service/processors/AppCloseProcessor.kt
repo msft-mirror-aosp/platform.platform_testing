@@ -16,7 +16,6 @@
 
 package com.android.server.wm.traces.common.service.processors
 
-import com.android.server.wm.flicker.service.config.common.Scenario
 import com.android.server.wm.traces.common.DeviceStateDump
 import com.android.server.wm.traces.common.WindowManagerConditionsFactory
 import com.android.server.wm.traces.common.WindowManagerConditionsFactory.isLayerTransformFlagSet
@@ -24,6 +23,7 @@ import com.android.server.wm.traces.common.WindowManagerConditionsFactory.isLaye
 import com.android.server.wm.traces.common.layers.Transform
 import com.android.server.wm.traces.common.service.PlatformConsts.TYPE_APPLICATION_STARTING
 import com.android.server.wm.traces.common.service.PlatformConsts.TYPE_BASE_APPLICATION
+import com.android.server.wm.traces.common.service.Scenario
 import com.android.server.wm.traces.common.tags.Tag
 import com.android.server.wm.traces.common.windowmanager.windows.WindowState
 

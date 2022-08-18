@@ -41,7 +41,11 @@ class EntireScreenCoveredAlways : BaseAssertionBuilder() {
         }.forAllEntries()
     }
 
-    override fun equals(assertion: Any?): Boolean {
-        return assertion is EntireScreenCoveredAlways
+    override fun equals(other: Any?): Boolean {
+        return other is EntireScreenCoveredAlways
+    }
+
+    override fun hashCode(): Int {
+        return javaClass.hashCode()
     }
 }

@@ -17,7 +17,7 @@
 package com.android.server.wm.flicker.assertiongenerator.windowmanager
 
 import com.android.server.wm.flicker.assertiongenerator.common.IAssertionGenerator
-import com.android.server.wm.flicker.service.config.common.Scenario
+import com.android.server.wm.traces.common.service.Scenario
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 
 class WindowManagerAssertionGenerator(

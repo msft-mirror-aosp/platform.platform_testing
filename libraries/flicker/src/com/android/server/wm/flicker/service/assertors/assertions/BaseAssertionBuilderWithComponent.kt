@@ -27,8 +27,8 @@ abstract class BaseAssertionBuilderWithComponent(val component: ComponentBuilder
 
     override val name: String = "${this::class.java.simpleName}(${component.name})"
 
-    override fun equals(assertion: Any?): Boolean {
-        if (assertion !is BaseAssertionBuilderWithComponent) {
+    override fun equals(other: Any?): Boolean {
+        if (other !is BaseAssertionBuilderWithComponent) {
             return false
         }
 
@@ -38,6 +38,6 @@ abstract class BaseAssertionBuilderWithComponent(val component: ComponentBuilder
         }
 
         // TODO: Make sure equality is properly defined on the component
-        return assertion.component == component
+        return other.component == component
     }
 }

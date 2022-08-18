@@ -16,8 +16,8 @@
 
 package com.android.server.wm.flicker.service.assertors
 
-import com.android.server.wm.flicker.service.config.common.AssertionInvocationGroup
-import com.android.server.wm.flicker.service.config.common.Scenario
+import com.android.server.wm.traces.common.service.AssertionInvocationGroup
+import com.android.server.wm.traces.common.service.Scenario
 
 /**
  * Stores data for FASS assertions.

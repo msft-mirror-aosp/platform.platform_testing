@@ -16,14 +16,14 @@
 
 package com.android.server.wm.flicker.service.assertors
 
-import com.android.server.wm.flicker.service.config.common.AssertionInvocationGroup
-import com.android.server.wm.flicker.service.config.common.Scenario
 import com.android.server.wm.flicker.traces.FlickerSubjectException
 import com.android.server.wm.flicker.traces.layers.LayerSubject
 import com.android.server.wm.flicker.traces.layers.LayersTraceSubject
 import com.android.server.wm.flicker.traces.windowmanager.WindowManagerTraceSubject
 import com.android.server.wm.flicker.traces.windowmanager.WindowStateSubject
 import com.android.server.wm.traces.common.layers.Layer
+import com.android.server.wm.traces.common.service.AssertionInvocationGroup
+import com.android.server.wm.traces.common.service.Scenario
 import com.android.server.wm.traces.common.windowmanager.windows.WindowState
 
 typealias AssertionEvaluator =

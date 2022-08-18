@@ -19,10 +19,13 @@ package com.android.server.wm.flicker.service.config
 import com.android.server.wm.flicker.service.assertors.AssertionData
 import com.android.server.wm.flicker.service.assertors.BaseAssertionBuilder
 import com.android.server.wm.flicker.service.assertors.Components
+import com.android.server.wm.flicker.service.assertors.assertions.AppLayerBecomesVisible
 import com.android.server.wm.flicker.service.assertors.assertions.AppLayerIsInvisibleAtEnd
 import com.android.server.wm.flicker.service.assertors.assertions.AppLayerIsInvisibleAtStart
 import com.android.server.wm.flicker.service.assertors.assertions.AppLayerIsVisibleAtEnd
 import com.android.server.wm.flicker.service.assertors.assertions.AppLayerIsVisibleAtStart
+import com.android.server.wm.flicker.service.assertors.assertions.AppWindowBecomesTopWindow
+import com.android.server.wm.flicker.service.assertors.assertions.AppWindowBecomesVisible
 import com.android.server.wm.flicker.service.assertors.assertions.EntireScreenCoveredAlways
 import com.android.server.wm.flicker.service.assertors.assertions.EntireScreenCoveredAtEnd
 import com.android.server.wm.flicker.service.assertors.assertions.EntireScreenCoveredAtStart
@@ -34,13 +37,10 @@ import com.android.server.wm.flicker.service.assertors.assertions.StatusBarLayer
 import com.android.server.wm.flicker.service.assertors.assertions.StatusBarLayerPositionAtStart
 import com.android.server.wm.flicker.service.assertors.assertions.VisibleLayersShownMoreThanOneConsecutiveEntry
 import com.android.server.wm.flicker.service.assertors.assertions.VisibleWindowsShownMoreThanOneConsecutiveEntry
-import com.android.server.wm.flicker.service.assertors.common.AppLayerBecomesVisible
-import com.android.server.wm.flicker.service.assertors.common.AppWindowBecomesTopWindow
-import com.android.server.wm.flicker.service.assertors.common.AppWindowBecomesVisible
-import com.android.server.wm.flicker.service.config.common.AssertionInvocationGroup.BLOCKING
-import com.android.server.wm.flicker.service.config.common.AssertionInvocationGroup.NON_BLOCKING
-import com.android.server.wm.flicker.service.config.common.Scenario
-import com.android.server.wm.flicker.service.config.common.ScenarioInstance
+import com.android.server.wm.traces.common.service.AssertionInvocationGroup.BLOCKING
+import com.android.server.wm.traces.common.service.AssertionInvocationGroup.NON_BLOCKING
+import com.android.server.wm.traces.common.service.Scenario
+import com.android.server.wm.traces.common.service.ScenarioInstance
 import com.android.server.wm.traces.common.transition.Transition
 
 object Assertions {

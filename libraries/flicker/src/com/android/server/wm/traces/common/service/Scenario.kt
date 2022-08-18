@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-package com.android.server.wm.flicker.service.config.common
+package com.android.server.wm.traces.common.service
 
 import com.android.server.wm.traces.common.layers.LayersTrace
-import com.android.server.wm.traces.common.service.ITagGenerator
 import com.android.server.wm.traces.common.tags.Tag
 import com.android.server.wm.traces.common.tags.TagState
 import com.android.server.wm.traces.common.tags.TagTrace

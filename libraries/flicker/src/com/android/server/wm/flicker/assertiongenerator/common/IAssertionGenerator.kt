@@ -17,7 +17,7 @@
 package com.android.server.wm.flicker.assertiongenerator.common
 
 import com.android.server.wm.flicker.assertiongenerator.common.AssertionObject.Companion.AssertionFunction
-import com.android.server.wm.flicker.service.config.common.Scenario
+import com.android.server.wm.traces.common.service.Scenario
 
 interface IAssertionGenerator<Trace> {
     val config: Map<Scenario, Array<out Trace>>

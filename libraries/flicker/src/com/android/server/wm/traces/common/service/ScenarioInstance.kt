@@ -14,9 +14,16 @@
  * limitations under the License.
  */
 
-package com.android.server.wm.flicker.service.config.common
+package com.android.server.wm.traces.common.service
 
-enum class AssertionInvocationGroup {
-    BLOCKING,
-    NON_BLOCKING
-}
+import com.android.server.wm.traces.common.transactions.Transaction
+import com.android.server.wm.traces.common.transition.Transition
+
+data class ScenarioInstance(
+    val scenario: Scenario,
+    val startTimestamp: Long,
+    val endTimestamp: Long,
+    val startTransaction: Transaction,
+    val finishTransaction: Transaction,
+    val associatedTransition: Transition
+)

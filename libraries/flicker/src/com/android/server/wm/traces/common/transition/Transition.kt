@@ -34,7 +34,7 @@ class Transition(
     override val timestamp = start
 
     val isIncomplete: Boolean get() = collectingStart == -1L || start == -1L || end == -1L ||
-            aborted
+            aborted || startTransaction.vSyncId == -1L || finishTransaction.vSyncId == -1L
 
     override fun toString(): String =
         "Transition#${hashCode()}" +

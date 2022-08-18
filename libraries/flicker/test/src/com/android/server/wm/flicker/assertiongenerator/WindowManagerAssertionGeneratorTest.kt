@@ -20,8 +20,8 @@ import com.android.server.wm.flicker.assertiongenerator.AssertionGeneratorTestCo
 import com.android.server.wm.flicker.assertiongenerator.common.AssertionObject
 import com.android.server.wm.flicker.assertiongenerator.windowmanager.WindowManagerAssertionGenerator
 import com.android.server.wm.flicker.getTestTraceDump
-import com.android.server.wm.flicker.service.config.common.Scenario
 import com.android.server.wm.traces.common.DeviceTraceDump
+import com.android.server.wm.traces.common.service.Scenario
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 import org.junit.Test
 

@@ -16,7 +16,7 @@
 
 package com.android.server.wm.traces.common.tags
 
-import com.android.server.wm.flicker.service.config.common.Scenario
+import com.android.server.wm.traces.common.service.Scenario
 
 /**
  * Tag Class relating to a particular transition event in a WindowManager

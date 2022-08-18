@@ -18,10 +18,10 @@ package com.android.server.wm.flicker.service.assertors
 
 import android.util.Log
 import com.android.server.wm.flicker.FLICKER_TAG
-import com.android.server.wm.flicker.service.config.common.ScenarioInstance
 import com.android.server.wm.flicker.traces.layers.LayersTraceSubject
 import com.android.server.wm.flicker.traces.windowmanager.WindowManagerTraceSubject
 import com.android.server.wm.traces.common.layers.LayersTrace
+import com.android.server.wm.traces.common.service.ScenarioInstance
 import com.android.server.wm.traces.common.transition.Transition
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 
@@ -177,7 +177,7 @@ private fun LayersTrace.scenarioInstanceSlice(
     }
 
     if (endIndex == -1) {
-        Log.w(FLICKER_TAG, "Skipping... Didn't find start layers entry for $scenarioInstance.")
+        Log.w(FLICKER_TAG, "Skipping... Didn't find end layers entry for $scenarioInstance.")
         return null
     }
 

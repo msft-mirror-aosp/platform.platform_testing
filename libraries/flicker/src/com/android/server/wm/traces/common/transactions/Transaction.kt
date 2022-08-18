@@ -24,7 +24,7 @@ data class Transaction(
     val id: Long,
 ) {
     override fun toString(): String {
-        return "Transaction#${hashCode()}" +
+        return "Transaction#${hashCode().toString(16)}" +
                 "(pid=$pid, uid=$uid, vSyncId=$vSyncId, postTime=$postTime, id=$id)"
     }
 }

@@ -16,7 +16,6 @@
 
 package com.android.server.wm.traces.common.service.processors
 
-import com.android.server.wm.flicker.service.config.common.Scenario
 import com.android.server.wm.traces.common.DeviceStateDump
 import com.android.server.wm.traces.common.WindowManagerConditionsFactory.hasLayersAnimating
 import com.android.server.wm.traces.common.WindowManagerConditionsFactory.isAppTransitionIdle
@@ -25,6 +24,7 @@ import com.android.server.wm.traces.common.WindowManagerConditionsFactory.isLaye
 import com.android.server.wm.traces.common.WindowManagerConditionsFactory.isLayerVisible
 import com.android.server.wm.traces.common.WindowManagerConditionsFactory.isWMStateComplete
 import com.android.server.wm.traces.common.layers.Transform
+import com.android.server.wm.traces.common.service.Scenario
 import com.android.server.wm.traces.common.tags.Tag
 
 /**
