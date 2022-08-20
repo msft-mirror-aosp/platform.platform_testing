@@ -18,6 +18,7 @@ package com.android.server.wm.traces.common
 
 import com.android.server.wm.traces.common.layers.LayersTrace
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
+import kotlin.js.JsName
 
 /**
  * Represents a state dump containing the [WindowManagerTrace] and the [LayersTrace] both parsed
@@ -27,9 +28,11 @@ class DeviceTraceDump(
     /**
      * Parsed [WindowManagerTrace]
      */
+    @JsName("wmTrace")
     val wmTrace: WindowManagerTrace?,
     /**
      * Parsed [LayersTrace]
      */
+    @JsName("layersTrace")
     val layersTrace: LayersTrace?
 )

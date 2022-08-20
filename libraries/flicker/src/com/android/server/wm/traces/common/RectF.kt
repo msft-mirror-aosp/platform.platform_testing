@@ -16,25 +16,35 @@
 
 package com.android.server.wm.traces.common
 
+import kotlin.js.JsName
+
 /**
  * Wrapper for FloatRectProto (frameworks/native/services/surfaceflinger/layerproto/layers.proto)
  *
  * This class is used by flicker and Winscope
  */
 class RectF private constructor(
+    @JsName("left")
     val left: Float = 0f,
+    @JsName("top")
     val top: Float = 0f,
+    @JsName("right")
     val right: Float = 0f,
+    @JsName("bottom")
     val bottom: Float = 0f
 ) {
+    @JsName("height")
     val height: Float get() = bottom - top
+    @JsName("width")
     val width: Float get() = right - left
 
     /**
      * Returns true if the rectangle is empty (left >= right or top >= bottom)
      */
+    @JsName("isEmpty")
     val isEmpty: Boolean
         get() = width <= 0f || height <= 0f
+    @JsName("isNotEmpty")
     val isNotEmpty: Boolean
         get() = !isEmpty
 
@@ -43,6 +53,7 @@ class RectF private constructor(
      *
      * All fractional parts are rounded to 0
      */
+    @JsName("toRect")
     fun toRect(): Rect {
         return Rect.from(left.toInt(), top.toInt(), right.toInt(), bottom.toInt())
     }
@@ -66,6 +77,7 @@ class RectF private constructor(
      *
      * @param crop The crop that should be applied to this layer
      */
+    @JsName("crop")
     fun crop(crop: RectF): RectF {
         val newLeft = maxOf(left, crop.left)
         val newTop = maxOf(top, crop.top)
@@ -90,6 +102,7 @@ class RectF private constructor(
      * rectangle.
      * @return A rectangle with the intersection coordinates
      */
+    @JsName("intersection")
     fun intersection(left: Float, top: Float, right: Float, bottom: Float): RectF {
         if (this.left < right && left < this.right && this.top <= bottom && top <= this.bottom) {
             var intersectionLeft = this.left
@@ -123,8 +136,10 @@ class RectF private constructor(
      * @param r The rectangle being intersected with this rectangle.
      * @return A rectangle with the intersection coordinates
      */
+    @JsName("intersectionWithRect")
     fun intersection(r: RectF): RectF = intersection(r.left, r.top, r.right, r.bottom)
 
+    @JsName("prettyPrint")
     fun prettyPrint(): String =
         if (isEmpty) {
             "[empty]"
@@ -159,8 +174,10 @@ class RectF private constructor(
     }
 
     companion object {
+        @JsName("EMPTY")
         val EMPTY: RectF get() = withCache { RectF() }
 
+        @JsName("from")
         fun from(left: Float, top: Float, right: Float, bottom: Float): RectF =
             withCache { RectF(left, top, right, bottom) }
     }

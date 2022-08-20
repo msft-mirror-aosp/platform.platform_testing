@@ -16,6 +16,8 @@
 
 package com.android.server.wm.traces.common
 
+import kotlin.js.JsName
+
 /**
  * Representation of a matrix 3x3 used for layer transforms
  *
@@ -26,10 +28,12 @@ package com.android.server.wm.traces.common
 class Matrix33(
     dsdx: Float = 0F,
     dtdx: Float = 0F,
+    @JsName("tx")
     val tx: Float = 0F,
 
     dsdy: Float = 0F,
     dtdy: Float = 0F,
+    @JsName("ty")
     val ty: Float = 0F
 ) : Matrix22(dsdx, dtdx, dsdy, dtdy) {
     override fun prettyPrint(): String {
@@ -70,15 +74,19 @@ class Matrix33(
                 )
             }
 
+        @JsName("identity")
         internal fun identity(x: Float, y: Float): Matrix33 =
             withCache { Matrix33(dsdx = 1f, dtdx = 0f, x, dsdy = 0f, dtdy = 1f, y) }
 
+        @JsName("rot270")
         internal fun rot270(x: Float, y: Float): Matrix33 =
             withCache { Matrix33(dsdx = 0f, dtdx = -1f, x, dsdy = 1f, dtdy = 0f, y) }
 
+        @JsName("rot180")
         internal fun rot180(x: Float, y: Float): Matrix33 =
             withCache { Matrix33(dsdx = -1f, dtdx = 0f, x, dsdy = 0f, dtdy = -1f, y) }
 
+        @JsName("rot90")
         internal fun rot90(x: Float, y: Float): Matrix33 =
             withCache { Matrix33(dsdx = 0f, dtdx = 1f, x, dsdy = -1f, dtdy = 0f, y) }
     }

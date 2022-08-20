@@ -16,17 +16,23 @@
 
 package com.android.server.wm.traces.common
 
+import kotlin.js.JsName
+
 object Cache {
+    @JsName("cache")
     private val cache = mutableMapOf<Any, Any>()
 
+    @JsName("get")
     fun <T : Any> get(element: T): T {
         return cache.getOrPut(element) { element } as T
     }
 
+    @JsName("clear")
     fun clear() {
         cache.clear()
     }
 }
 
+@JsName("withCache")
 inline fun <reified T : Any> withCache(newInstancePredicate: () -> T): T =
     Cache.get(newInstancePredicate())

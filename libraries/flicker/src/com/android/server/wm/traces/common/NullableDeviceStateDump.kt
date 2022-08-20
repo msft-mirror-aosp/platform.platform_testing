@@ -18,6 +18,7 @@ package com.android.server.wm.traces.common
 
 import com.android.server.wm.traces.common.layers.BaseLayerTraceEntry
 import com.android.server.wm.traces.common.windowmanager.WindowManagerState
+import kotlin.js.JsName
 
 /**
  * Represents a state dump optionally containing the [WindowManagerState] and
@@ -27,10 +28,12 @@ open class NullableDeviceStateDump(
     /**
      * Parsed [WindowManagerState]
      */
+    @JsName("wmState")
     open val wmState: WindowManagerState?,
 
     /**
      * Parsed [BaseLayerTraceEntry]
      */
+    @JsName("layerState")
     open val layerState: BaseLayerTraceEntry?
 )

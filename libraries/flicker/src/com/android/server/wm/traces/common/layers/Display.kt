@@ -19,6 +19,7 @@ package com.android.server.wm.traces.common.layers
 import com.android.server.wm.traces.common.Rect
 import com.android.server.wm.traces.common.Size
 import com.android.server.wm.traces.common.withCache
+import kotlin.js.JsName
 
 const val BLANK_LAYER_STACK = - 1
 
@@ -26,14 +27,22 @@ const val BLANK_LAYER_STACK = - 1
  * Wrapper for DisplayProto (frameworks/native/services/surfaceflinger/layerproto/display.proto)
  */
 class Display private constructor(
+    @JsName("id")
     val id: ULong,
+    @JsName("name")
     val name: String,
+    @JsName("layerStackId")
     val layerStackId: Int,
+    @JsName("size")
     val size: Size,
+    @JsName("layerStackSpace")
     val layerStackSpace: Rect,
+    @JsName("transform")
     val transform: Transform,
+    @JsName("isVirtual")
     val isVirtual: Boolean
 ) {
+    @JsName("isOff")
     val isOff = layerStackId == BLANK_LAYER_STACK
 
     override fun equals(other: Any?): Boolean {
@@ -63,6 +72,7 @@ class Display private constructor(
     }
 
     companion object {
+        @JsName("EMPTY")
         val EMPTY: Display get() = withCache {
             Display(
                 id = 0.toULong(),
@@ -75,6 +85,7 @@ class Display private constructor(
             )
         }
 
+        @JsName("from")
         fun from(
             id: ULong,
             name: String,

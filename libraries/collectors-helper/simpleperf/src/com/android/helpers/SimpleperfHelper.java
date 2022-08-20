@@ -41,6 +41,7 @@ public class SimpleperfHelper {
 
     private static final String LOG_TAG = SimpleperfHelper.class.getSimpleName();
     private static final String SIMPLEPERF_TMP_FILE_PATH = "/data/local/tmp/perf.data";
+    private static final String SIMPLEPERF_REPORT_TMP_FILE_PATH = "/data/local/tmp/perf_report.txt";
 
     private static final String SIMPLEPERF_START_CMD = "simpleperf %s -o %s %s";
     private static final String SIMPLEPERF_STOP_CMD = "pkill -INT simpleperf";
@@ -180,14 +181,14 @@ public class SimpleperfHelper {
     public Map<String /*event-process-symbol*/, String /*eventCount*/> getSimpleperfReport(
             String path, Map.Entry<String, String> processToPid, Set<String> symbols) {
         Map<String, String> results = new HashMap<>();
-        String reportPath = path + ".txt";
         try {
             mUiDevice.executeShellCommand(
                     String.format(
                             "simpleperf report -i %s --pids %s --sort pid,symbol -o %s",
-                            path, processToPid.getValue(), reportPath));
-            results = getMetrics(reportPath, processToPid.getKey(), symbols);
-            Log.i(LOG_TAG, "Simpleperf Metrics report collected.");
+                            path, processToPid.getValue(), SIMPLEPERF_REPORT_TMP_FILE_PATH));
+            results.putAll(
+                    getMetrics(SIMPLEPERF_REPORT_TMP_FILE_PATH, processToPid.getKey(), symbols));
+            Log.i(LOG_TAG, "Simpleperf Metrics report collected. " + results);
         } catch (IOException e) {
             Log.e(LOG_TAG, "Could not generate report: " + e.getMessage());
         }
@@ -233,7 +234,7 @@ public class SimpleperfHelper {
                 // 0.02%     680   android::SurfaceFlinger::commit(long, long, long)
                 else if (line.contains("%")) {
                     String[] splitLine = line.split("\\s+", 3);
-                    String parsedSymbol = splitLine[2];
+                    String parsedSymbol = splitLine[2].trim();
                     if (!symbols.contains(parsedSymbol)) {
                         continue;
                     }

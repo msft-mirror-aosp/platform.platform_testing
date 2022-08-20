@@ -17,6 +17,7 @@
 package com.android.server.wm.traces.common.layers
 
 import com.android.server.wm.traces.common.ITrace
+import kotlin.js.JsName
 
 /**
  * Contains a collection of parsed Layers trace entries and assertions to apply over a single entry.
@@ -57,6 +58,7 @@ data class LayersTrace(
      * @param to the end timestamp
      * @return the subtrace trace(from, to)
      */
+    @JsName("slice")
     fun slice(from: Long, to: Long): LayersTrace {
         return LayersTrace(
             this.entries

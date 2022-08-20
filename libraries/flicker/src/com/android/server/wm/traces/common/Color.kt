@@ -16,6 +16,8 @@
 
 package com.android.server.wm.traces.common
 
+import kotlin.js.JsName
+
 /**
  * Wrapper for ColorProto (frameworks/native/services/surfaceflinger/layerproto/common.proto)
  *
@@ -28,6 +30,7 @@ class Color private constructor(r: Float, g: Float, b: Float, val a: Float) : Co
     override val isNotEmpty: Boolean
         get() = !isEmpty
 
+    @JsName("isOpaque")
     val isOpaque: Boolean = a == 1.0f
 
     override fun prettyPrint(): String {

@@ -17,9 +17,11 @@
 package com.android.server.wm.traces.common.transactions
 
 import com.android.server.wm.traces.common.ITrace
+import kotlin.js.JsName
 
 class TransactionsTrace(
     override val entries: Array<TransactionsTraceEntry>
 ) : ITrace<TransactionsTraceEntry>, List<TransactionsTraceEntry> by entries.toList() {
+    @JsName("allTransactions")
     val allTransactions: List<Transaction> = entries.toList().flatMap { it.transactions.toList() }
 }

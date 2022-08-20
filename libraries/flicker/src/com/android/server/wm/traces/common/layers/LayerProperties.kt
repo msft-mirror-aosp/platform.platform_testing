@@ -22,6 +22,7 @@ import com.android.server.wm.traces.common.Rect
 import com.android.server.wm.traces.common.RectF
 import com.android.server.wm.traces.common.region.Region
 import com.android.server.wm.traces.common.withCache
+import kotlin.js.JsName
 
 /**
  * {@inheritDoc}
@@ -148,8 +149,10 @@ class LayerProperties private constructor(
     }
 
     companion object {
+        @JsName("EMPTY")
         val EMPTY: LayerProperties get() = withCache { LayerProperties() }
 
+        @JsName("from")
         fun from(
             visibleRegion: Region?,
             activeBuffer: ActiveBuffer,

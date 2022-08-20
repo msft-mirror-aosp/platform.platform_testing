@@ -17,6 +17,7 @@
 package com.android.server.wm.traces.common.windowmanager.windows
 
 import com.android.server.wm.traces.common.withCache
+import kotlin.js.JsName
 
 /**
  * Represents the keyguard controller in the window manager hierarchy
@@ -26,10 +27,14 @@ import com.android.server.wm.traces.common.withCache
  *
  */
 class KeyguardControllerState private constructor(
+    @JsName("isAodShowing")
     val isAodShowing: Boolean,
+    @JsName("isKeyguardShowing")
     val isKeyguardShowing: Boolean,
+    @JsName("keyguardOccludedStates")
     val keyguardOccludedStates: Map<Int, Boolean>
 ) {
+    @JsName("isKeyguardOccluded")
     fun isKeyguardOccluded(displayId: Int): Boolean =
         keyguardOccludedStates[displayId] ?: false
 
@@ -56,6 +61,7 @@ class KeyguardControllerState private constructor(
     }
 
     companion object {
+        @JsName("from")
         fun from(
             isAodShowing: Boolean,
             isKeyguardShowing: Boolean,

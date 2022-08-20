@@ -16,6 +16,8 @@
 
 package com.android.server.wm.traces.common
 
+import kotlin.js.JsName
+
 /**
  * Wrapper for ActiveBufferProto (frameworks/native/services/surfaceflinger/layerproto/layers.proto)
  *
@@ -48,7 +50,9 @@ class ActiveBuffer private constructor(
     override fun toString(): String = prettyPrint()
 
     companion object {
+        @JsName("EMPTY")
         val EMPTY: ActiveBuffer get() = withCache { ActiveBuffer() }
+        @JsName("from")
         fun from(width: Int, height: Int, stride: Int, format: Int): ActiveBuffer = withCache {
             ActiveBuffer(width, height, stride, format)
         }

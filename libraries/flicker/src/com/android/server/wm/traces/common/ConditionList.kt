@@ -16,6 +16,8 @@
 
 package com.android.server.wm.traces.common
 
+import kotlin.js.JsName
+
 /**
  * The utility class to validate a set of conditions
  *
@@ -26,9 +28,10 @@ package com.android.server.wm.traces.common
  * @param conditions conditions to be checked
  */
 class ConditionList<T>(
+    @JsName("conditions")
     val conditions: List<Condition<T>>
 ) : Condition<T>("", { false }) {
-    constructor(vararg conditions: Condition<T>): this(listOf(*conditions))
+    constructor(vararg conditions: Condition<T>) : this(listOf(*conditions))
 
     override val message: String
         get() = conditions.joinToString(" and ") { it.toString() }

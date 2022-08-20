@@ -16,6 +16,8 @@
 
 package com.android.server.wm.traces.common
 
+import kotlin.js.JsName
+
 /**
  * Representation of a matrix 3x3 used for layer transforms
  *
@@ -24,11 +26,16 @@ package com.android.server.wm.traces.common
  *          |0    0     1 |
  */
 open class Matrix22(
+    @JsName("dsdx")
     val dsdx: Float,
+    @JsName("dtdx")
     val dtdx: Float,
+    @JsName("dsdy")
     val dsdy: Float,
+    @JsName("dtdy")
     val dtdy: Float
 ) {
+    @JsName("prettyPrint")
     open fun prettyPrint(): String {
         val dsdx = FloatFormatter.format(dsdx)
         val dtdx = FloatFormatter.format(dtdx)
@@ -60,6 +67,7 @@ open class Matrix22(
     override fun toString(): String = prettyPrint()
 
     companion object {
+        @JsName("EMPTY")
         val EMPTY: Matrix22 get() = withCache { Matrix22(0f, 0f, 0f, 0f) }
     }
 }

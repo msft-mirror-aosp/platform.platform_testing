@@ -177,7 +177,7 @@ private fun LayersTrace.scenarioInstanceSlice(
     }
 
     if (endIndex == -1) {
-        Log.w(FLICKER_TAG, "Skipping... Didn't find end layers entry for $scenarioInstance.")
+        Log.w(FLICKER_TAG, "Skipping... Didn't find start layers entry for $scenarioInstance.")
         return null
     }
 

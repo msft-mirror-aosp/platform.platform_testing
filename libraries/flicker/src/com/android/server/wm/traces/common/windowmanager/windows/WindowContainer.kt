@@ -17,6 +17,7 @@
 package com.android.server.wm.traces.common.windowmanager.windows
 
 import com.android.server.wm.traces.common.Rect
+import kotlin.js.JsName
 
 /**
  * Represents WindowContainer classes such as DisplayContent.WindowContainers and
@@ -28,12 +29,17 @@ import com.android.server.wm.traces.common.Rect
  *
  */
 open class WindowContainer constructor(
+    @JsName("title")
     val title: String,
+    @JsName("token")
     val token: String,
+    @JsName("orientation")
     val orientation: Int,
+    @JsName("layerId")
     val layerId: Int,
     _isVisible: Boolean,
     configurationContainer: ConfigurationContainer,
+    @JsName("children")
     val children: Array<WindowContainer>
 ) : ConfigurationContainer(configurationContainer) {
     protected constructor(
@@ -50,12 +56,18 @@ open class WindowContainer constructor(
         windowContainer.children
     )
 
+    @JsName("isVisible")
     open val isVisible: Boolean = _isVisible
+    @JsName("name")
     open val name: String = title
+    @JsName("stableId")
     open val stableId: String get() = "${this::class.simpleName} $token $title"
+    @JsName("isFullscreen")
     open val isFullscreen: Boolean = false
+    @JsName("bounds")
     open val bounds: Rect = Rect.EMPTY
 
+    @JsName("traverseTopDown")
     fun traverseTopDown(): List<WindowContainer> {
         val traverseList = mutableListOf(this)
 

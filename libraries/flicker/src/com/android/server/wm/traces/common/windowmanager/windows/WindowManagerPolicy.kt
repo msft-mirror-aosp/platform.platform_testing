@@ -17,6 +17,7 @@
 package com.android.server.wm.traces.common.windowmanager.windows
 
 import com.android.server.wm.traces.common.withCache
+import kotlin.js.JsName
 
 /**
  * Represents the requested policy of a WM container
@@ -26,34 +27,51 @@ import com.android.server.wm.traces.common.withCache
  *
  */
 class WindowManagerPolicy private constructor(
+    @JsName("focusedAppToken")
     val focusedAppToken: String = "",
+    @JsName("forceStatusBar")
     val forceStatusBar: Boolean = false,
+    @JsName("forceStatusBarFromKeyguard")
     val forceStatusBarFromKeyguard: Boolean = false,
+    @JsName("keyguardDrawComplete")
     val keyguardDrawComplete: Boolean = false,
+    @JsName("keyguardOccluded")
     val keyguardOccluded: Boolean = false,
+    @JsName("keyguardOccludedChanged")
     val keyguardOccludedChanged: Boolean = false,
+    @JsName("keyguardOccludedPending")
     val keyguardOccludedPending: Boolean = false,
+    @JsName("lastSystemUiFlags")
     val lastSystemUiFlags: Int = 0,
+    @JsName("orientation")
     val orientation: Int = 0,
+    @JsName("rotation")
     val rotation: Int = 0,
+    @JsName("rotationMode")
     val rotationMode: Int = 0,
+    @JsName("screenOnFully")
     val screenOnFully: Boolean = false,
+    @JsName("windowManagerDrawComplete")
     val windowManagerDrawComplete: Boolean = false
 ) {
+    @JsName("isOrientationNoSensor")
     val isOrientationNoSensor: Boolean
         get() = orientation == SCREEN_ORIENTATION_NOSENSOR
 
+    @JsName("isFixedOrientation")
     val isFixedOrientation: Boolean
         get() = isFixedOrientationLandscape ||
             isFixedOrientationPortrait ||
             orientation == SCREEN_ORIENTATION_LOCKED
 
+    @JsName("isFixedOrientationLandscape")
     private val isFixedOrientationLandscape
         get() = orientation == SCREEN_ORIENTATION_LANDSCAPE ||
             orientation == SCREEN_ORIENTATION_SENSOR_LANDSCAPE ||
             orientation == SCREEN_ORIENTATION_REVERSE_LANDSCAPE ||
             orientation == SCREEN_ORIENTATION_USER_LANDSCAPE
 
+    @JsName("isFixedOrientationPortrait")
     private val isFixedOrientationPortrait
         get() = orientation == SCREEN_ORIENTATION_PORTRAIT ||
             orientation == SCREEN_ORIENTATION_SENSOR_PORTRAIT ||
@@ -112,6 +130,7 @@ class WindowManagerPolicy private constructor(
     }
 
     companion object {
+        @JsName("EMPTY")
         val EMPTY: WindowManagerPolicy get() = withCache { WindowManagerPolicy() }
 
         /**
@@ -128,6 +147,7 @@ class WindowManagerPolicy private constructor(
         private const val SCREEN_ORIENTATION_USER_PORTRAIT = 12
         private const val SCREEN_ORIENTATION_LOCKED = 14
 
+        @JsName("from")
         fun from(
             focusedAppToken: String,
             forceStatusBar: Boolean,

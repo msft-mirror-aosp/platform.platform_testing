@@ -16,6 +16,8 @@
 
 package com.android.server.wm.traces.common
 
+import kotlin.js.JsName
+
 /**
  * A formatter to print floats with up to 3 decimal digits.
  *
@@ -23,6 +25,7 @@ package com.android.server.wm.traces.common
  * yet (issue KT-21644)
  */
 object FloatFormatter {
+    @JsName("format")
     fun format(value: Float): String {
         return ((value * 1000).toInt() / 1000.0).toString()
     }

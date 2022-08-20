@@ -82,6 +82,8 @@ public class AutoNotificationHelperImpl extends AbstractAutoStandardAppHelper
     @Override
     public boolean checkNotificationExists(String title) {
         executeShellCommand(getApplicationConfig(AutoConfigConstants.OPEN_NOTIFICATIONS_COMMAND));
+        SystemClock.sleep(UI_RESPONSE_WAIT_MS);
+
         UiObject2 notification_list =
                 findUiObject(
                         getResourceFromConfig(

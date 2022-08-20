@@ -17,6 +17,7 @@
 package com.android.server.wm.traces.common.windowmanager.windows
 
 import com.android.server.wm.traces.common.IComponentMatcher
+import kotlin.js.JsName
 
 /**
  * Represents an activity in the window manager hierarchy
@@ -27,10 +28,14 @@ import com.android.server.wm.traces.common.IComponentMatcher
  **/
 class Activity(
     name: String,
+    @JsName("state")
     val state: String,
     visible: Boolean,
+    @JsName("frontOfTask")
     val frontOfTask: Boolean,
+    @JsName("procId")
     val procId: Int,
+    @JsName("isTranslucent")
     val isTranslucent: Boolean,
     windowContainer: WindowContainer
 ) : WindowContainer(windowContainer, name, visible) {
@@ -39,6 +44,7 @@ class Activity(
      *
      * @param componentMatcher Components to search
      */
+    @JsName("getWindows")
     fun getWindows(componentMatcher: IComponentMatcher): Array<WindowState> =
         getWindows { componentMatcher.windowMatchesAnyOf(it) }
 
@@ -47,12 +53,15 @@ class Activity(
      *
      * @param componentMatcher Components to search
      */
+    @JsName("hasWindow")
     fun hasWindow(componentMatcher: IComponentMatcher): Boolean =
         getWindows(componentMatcher).isNotEmpty()
 
-    internal fun hasWindow(windowState: WindowState): Boolean =
+    @JsName("hasWindowState")
+    internal fun hasWindowState(windowState: WindowState): Boolean =
         getWindows { windowState == it }.isNotEmpty()
 
+    @JsName("isTablet")
     private fun getWindows(predicate: (WindowState) -> Boolean) =
         collectDescendants<WindowState> { predicate(it) }
 

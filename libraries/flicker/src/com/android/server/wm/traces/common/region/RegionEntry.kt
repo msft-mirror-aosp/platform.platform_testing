@@ -17,6 +17,7 @@
 package com.android.server.wm.traces.common.region
 
 import com.android.server.wm.traces.common.ITraceEntry
+import kotlin.js.JsName
 
 /**
  * Represents a single Region trace entry.
@@ -27,6 +28,10 @@ import com.android.server.wm.traces.common.ITraceEntry
  * The timestamp constructor must be a string due to lack of Kotlin/KotlinJS Long compatibility
  *
  **/
-class RegionEntry(val region: Region, _timestamp: String = "0") : ITraceEntry {
+class RegionEntry(
+    @JsName("region")
+    val region: Region,
+    _timestamp: String = "0"
+) : ITraceEntry {
     override val timestamp: Long = _timestamp.toLong()
 }

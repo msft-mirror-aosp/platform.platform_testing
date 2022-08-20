@@ -18,6 +18,7 @@ package com.android.server.wm.traces.common.region
 
 import com.android.server.wm.traces.common.IComponentMatcher
 import com.android.server.wm.traces.common.ITrace
+import kotlin.js.JsName
 
 /**
  * Contains a collection of parsed Region trace entries.
@@ -29,6 +30,7 @@ import com.android.server.wm.traces.common.ITrace
  *
  */
 data class RegionTrace(
+    @JsName("components")
     val components: IComponentMatcher?,
     override val entries: Array<RegionEntry>
 ) : ITrace<RegionEntry>,

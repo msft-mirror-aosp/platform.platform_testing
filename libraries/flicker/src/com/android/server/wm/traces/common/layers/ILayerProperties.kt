@@ -22,6 +22,7 @@ import com.android.server.wm.traces.common.Rect
 import com.android.server.wm.traces.common.RectF
 import com.android.server.wm.traces.common.layers.Transform.Companion.isFlagSet
 import com.android.server.wm.traces.common.region.Region
+import kotlin.js.JsName
 
 /**
  * Common properties of a layer that are not related to their position in the hierarchy
@@ -31,35 +32,64 @@ import com.android.server.wm.traces.common.region.Region
  */
 interface ILayerProperties {
     val visibleRegion: Region?
+    @JsName("activeBuffer")
     val activeBuffer: ActiveBuffer
+    @JsName("flags")
     val flags: Int
+    @JsName("bounds")
     val bounds: RectF
+    @JsName("color")
     val color: Color
+    @JsName("isOpaque")
     val isOpaque: Boolean
+    @JsName("shadowRadius")
     val shadowRadius: Float
+    @JsName("cornerRadius")
     val cornerRadius: Float
+    @JsName("type")
     val type: String
+    @JsName("screenBounds")
     val screenBounds: RectF
+    @JsName("transform")
     val transform: Transform
+    @JsName("sourceBounds")
     val sourceBounds: RectF
+    @JsName("effectiveScalingMode")
     val effectiveScalingMode: Int
+    @JsName("bufferTransform")
     val bufferTransform: Transform
+    @JsName("hwcCompositionType")
     val hwcCompositionType: Int
+    @JsName("hwcCrop")
     val hwcCrop: RectF
+    @JsName("hwcFrame")
     val hwcFrame: Rect
+    @JsName("backgroundBlurRadius")
     val backgroundBlurRadius: Int
+    @JsName("crop")
     val crop: Rect?
+    @JsName("isRelativeOf")
     val isRelativeOf: Boolean
+    @JsName("zOrderRelativeOfId")
     val zOrderRelativeOfId: Int
+    @JsName("stackId")
     val stackId: Int
+    @JsName("requestedTransform")
     val requestedTransform: Transform
+    @JsName("requestedColor")
     val requestedColor: Color
+    @JsName("cornerRadiusCrop")
     val cornerRadiusCrop: RectF
+    @JsName("inputTransform")
     val inputTransform: Transform
+    @JsName("inputRegion")
     val inputRegion: Region?
 
+    @JsName("isScaling")
     val isScaling: Boolean get() = isTransformFlagSet(Transform.SCALE_VAL)
+    @JsName("isTranslating")
     val isTranslating: Boolean get() = isTransformFlagSet(Transform.TRANSLATE_VAL)
+    @JsName("isRotating")
     val isRotating: Boolean get() = isTransformFlagSet(Transform.ROTATE_VAL)
 
     /**
@@ -69,6 +99,7 @@ interface ILayerProperties {
      *
      * @return
      */
+    @JsName("isActiveBufferEmpty")
     val isActiveBufferEmpty: Boolean get() = activeBuffer.isEmpty
 
     /**
@@ -89,6 +120,7 @@ interface ILayerProperties {
      *
      * @return
      */
+    @JsName("verboseFlags")
     val verboseFlags: String
         get() {
             val tokens = Flag.values().filter { (it.value and flags) != 0 }.map { it.name }
@@ -105,6 +137,7 @@ interface ILayerProperties {
      *
      * @return
      */
+    @JsName("fillsColor")
     val fillsColor: Boolean get() = color.isNotEmpty
 
     /**
@@ -112,6 +145,7 @@ interface ILayerProperties {
      *
      * @return
      */
+    @JsName("drawsShadows")
     val drawsShadows: Boolean get() = shadowRadius > 0
 
     /**
@@ -119,6 +153,7 @@ interface ILayerProperties {
      *
      * @return
      */
+    @JsName("hasBlur")
     val hasBlur: Boolean get() = backgroundBlurRadius > 0
 
     /**
@@ -126,6 +161,7 @@ interface ILayerProperties {
      *
      * @return
      */
+    @JsName("hasRoundedCorners")
     val hasRoundedCorners: Boolean get() = cornerRadius > 0
 
     /**
@@ -135,6 +171,7 @@ interface ILayerProperties {
      *
      * @return
      */
+    @JsName("hasEffects")
     val hasEffects: Boolean
         get() {
             // Support previous color layer
@@ -151,6 +188,7 @@ interface ILayerProperties {
      *
      * @return
      */
+    @JsName("isBufferLayer")
     val isBufferLayer: Boolean
         get() = type == "BufferStateLayer" || type == "BufferQueueLayer"
 
@@ -159,6 +197,7 @@ interface ILayerProperties {
      *
      * @return
      */
+    @JsName("isColorLayer")
     val isColorLayer: Boolean get() = type == "ColorLayer"
 
     /**
@@ -166,6 +205,7 @@ interface ILayerProperties {
      *
      * @return
      */
+    @JsName("isContainerLayer")
     val isContainerLayer: Boolean get() = type == "ContainerLayer"
 
     /**
@@ -173,8 +213,10 @@ interface ILayerProperties {
      *
      * @return
      */
+    @JsName("isEffectLayer")
     val isEffectLayer: Boolean get() = type == "EffectLayer"
 
+    @JsName("isTransformFlagSet")
     private fun isTransformFlagSet(transform: Int): Boolean =
         this.transform.type?.isFlagSet(transform) ?: false
 }

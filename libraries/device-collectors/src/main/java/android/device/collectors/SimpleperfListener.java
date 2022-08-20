@@ -70,7 +70,7 @@ public class SimpleperfListener extends BaseMetricListener {
     public static final String REPORT = "report";
     // Arguments to report event count for specific symbols separated by semicolons and spaces are
     // ignored.
-    // Ex. "android::Parcel::writeInt32(int) ; android::SurfaceFlinger::commit(long, long, long)"
+    // Ex. "android::Parcel::writeInt32(int);android::SurfaceFlinger::commit(long, long, long)"
     public static final String REPORT_SYMBOLS = "symbols_to_report";
 
     // Simpleperf samples collected during the test will be saved under this root folder.
@@ -125,10 +125,12 @@ public class SimpleperfListener extends BaseMetricListener {
         mArguments = args.getString(ARGUMENTS, DEFAULT_ARGUMENTS);
 
         // Processes passed into recording arguments for simpleperf.
-        String[] processes = args.getString(PROCESSES, "").trim().split("\\s*,\\s*");
+        String processes = args.getString(PROCESSES, "");
+        String[] individualProcesses = processes.trim().split("\\s*,\\s*");
 
         // Events passed into recording arguments for simpleperf.
-        String[] events = args.getString(EVENTS, "").trim().split("\\s*,\\s*");
+        String events = args.getString(EVENTS, "");
+        String[] individualEvents = events.trim().split("\\s*,\\s*");
 
         // Whether to generate report after recording or not, by default set to false.
         mReport = "true".equals(args.getString(REPORT));
@@ -137,13 +139,13 @@ public class SimpleperfListener extends BaseMetricListener {
         mReportSymbols = Set.of(args.getString(REPORT_SYMBOLS, "").trim().split("\\s*;\\s*"));
 
         // Appending recording argument for recording specified events if given.
-        if (events.length > 1) {
+        if (!events.isEmpty()) {
             mArguments += " -e ";
-            mArguments += String.join(",", events);
+            mArguments += String.join(",", individualEvents);
         }
         // Appending recording argument for recording specified processes if given.
-        if (processes.length > 1) {
-            for (String process : processes) {
+        if (!processes.isEmpty()) {
+            for (String process : individualProcesses) {
                 mProcessToPid.put(process, mSimpleperfHelper.getPID(process));
             }
             mArguments += " -p " + String.join(",", mProcessToPid.values());

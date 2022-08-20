@@ -16,6 +16,8 @@
 
 package com.android.server.wm.traces.common
 
+import kotlin.js.JsName
+
 /**
  * Wrapper for RectProto
  *     - frameworks/native/services/surfaceflinger/layerproto/common.proto and
@@ -24,29 +26,41 @@ package com.android.server.wm.traces.common
  * This class is used by flicker and Winscope
  */
 class Rect internal constructor(
+    @JsName("left")
     val left: Int = 0,
+    @JsName("top")
     val top: Int = 0,
+    @JsName("right")
     val right: Int = 0,
+    @JsName("bottom")
     val bottom: Int = 0
 ) {
+    @JsName("height")
     val height: Int get() = bottom - top
+    @JsName("width")
     val width: Int get() = right - left
+    @JsName("centerX")
     fun centerX(): Int = (left + right) / 2
+    @JsName("centerY")
     fun centerY(): Int = (top + bottom) / 2
     /**
      * Returns true if the rectangle is empty (left >= right or top >= bottom)
      */
+    @JsName("isEmpty")
     val isEmpty: Boolean get() = width <= 0 || height <= 0
 
+    @JsName("isNotEmpty")
     val isNotEmpty: Boolean get() = !isEmpty
 
     /**
      * Returns a [RectF] version fo this rectangle.
      */
+    @JsName("toRectF")
     fun toRectF(): RectF {
         return RectF.from(left.toFloat(), top.toFloat(), right.toFloat(), bottom.toFloat())
     }
 
+    @JsName("prettyPrint")
     fun prettyPrint(): String =
         if (isEmpty) "[empty]" else "($left, $top) - ($right, $bottom)"
 
@@ -69,6 +83,7 @@ class Rect internal constructor(
      *
      * @param crop The crop that should be applied to this layer
      */
+    @JsName("crop")
     fun crop(crop: Rect): Rect {
         val newLeft = maxOf(left, crop.left)
         val newTop = maxOf(top, crop.top)
@@ -100,6 +115,7 @@ class Rect internal constructor(
      * @param rect The rectangle being intersected with this rectangle.
      * @return A rectangle with the intersection coordinates
      */
+    @JsName("intersection")
     fun intersection(rect: Rect): Rect {
         val thisRect = toRectF()
         val otherRect = rect.toRectF()
@@ -116,6 +132,7 @@ class Rect internal constructor(
 
     override fun toString(): String = prettyPrint()
 
+    @JsName("clone")
     fun clone(): Rect {
         return from(left, top, right, bottom)
     }
@@ -133,8 +150,10 @@ class Rect internal constructor(
     }
 
     companion object {
+        @JsName("EMPTY")
         val EMPTY: Rect get() = withCache { Rect() }
 
+        @JsName("from")
         fun from(left: Int, top: Int, right: Int, bottom: Int): Rect =
             withCache { Rect(left, top, right, bottom) }
     }

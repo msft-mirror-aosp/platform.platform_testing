@@ -17,6 +17,7 @@
 package com.android.server.wm.traces.common.windowmanager.windows
 
 import com.android.server.wm.traces.common.withCache
+import kotlin.js.JsName
 
 /**
  * Represents the configuration of a WM container
@@ -26,15 +27,24 @@ import com.android.server.wm.traces.common.withCache
  *
  */
 class Configuration private constructor(
+    @JsName("windowConfiguration")
     val windowConfiguration: WindowConfiguration? = null,
+    @JsName("densityDpi")
     val densityDpi: Int = 0,
+    @JsName("orientation")
     val orientation: Int = 0,
+    @JsName("screenHeightDp")
     val screenHeightDp: Int = 0,
+    @JsName("screenWidthDp")
     val screenWidthDp: Int = 0,
+    @JsName("smallestScreenWidthDp")
     val smallestScreenWidthDp: Int = 0,
+    @JsName("screenLayout")
     val screenLayout: Int = 0,
+    @JsName("uiMode")
     val uiMode: Int = 0
 ) {
+    @JsName("isEmpty")
     val isEmpty: Boolean
         get() = (windowConfiguration == null) &&
             densityDpi == 0 &&
@@ -74,8 +84,10 @@ class Configuration private constructor(
     }
 
     companion object {
+        @JsName("EMPTY")
         val EMPTY: Configuration get() = withCache { Configuration() }
 
+        @JsName("from")
         fun from(
             windowConfiguration: WindowConfiguration?,
             densityDpi: Int,

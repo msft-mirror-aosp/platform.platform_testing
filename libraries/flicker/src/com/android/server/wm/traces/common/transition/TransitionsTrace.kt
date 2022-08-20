@@ -17,6 +17,7 @@
 package com.android.server.wm.traces.common.transition
 
 import com.android.server.wm.traces.common.ITrace
+import kotlin.js.JsName
 import kotlin.text.StringBuilder
 
 data class TransitionsTrace(
@@ -37,6 +38,7 @@ data class TransitionsTrace(
         return entries.contentHashCode()
     }
 
+    @JsName("prettyPrint")
     fun prettyPrint(): String {
         val sb = StringBuilder("TransitionTrace(")
 

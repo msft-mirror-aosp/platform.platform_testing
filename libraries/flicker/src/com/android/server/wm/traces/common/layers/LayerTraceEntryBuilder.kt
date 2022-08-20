@@ -16,25 +16,38 @@
 
 package com.android.server.wm.traces.common.layers
 
+import kotlin.js.JsName
+
 /**
  * Builder for LayerTraceEntries
  */
 class LayerTraceEntryBuilder(
     timestamp: Any,
     layers: Array<Layer>,
+    @JsName("displays")
     private val displays: Array<Display>,
+    @JsName("vSyncId")
     private val vSyncId: Long,
+    @JsName("hwcBlob")
     private val hwcBlob: String = "",
+    @JsName("where")
     private val where: String = ""
 ) {
     // Necessary for compatibility with JS number type
+    @JsName("timestamp")
     private val timestamp: Long = "$timestamp".toLong()
+    @JsName("_orphanLayerCallback")
     private var orphanLayerCallback: ((Layer) -> Boolean)? = null
+    @JsName("orphans")
     private val orphans = mutableListOf<Layer>()
+    @JsName("layers")
     private val layers = setLayers(layers)
+    @JsName("_ignoreVirtualDisplay")
     private var ignoreVirtualDisplay = false
+    @JsName("_ignoreLayersStackMatchNoDisplay")
     private var ignoreLayersStackMatchNoDisplay = false
 
+    @JsName("setLayers")
     private fun setLayers(layers: Array<Layer>): Map<Int, Layer> {
         val result = mutableMapOf<Int, Layer>()
         layers.forEach { layer ->
@@ -48,10 +61,12 @@ class LayerTraceEntryBuilder(
         return result
     }
 
+    @JsName("setOrphanLayerCallback")
     fun setOrphanLayerCallback(value: ((Layer) -> Boolean)?): LayerTraceEntryBuilder = apply {
         this.orphanLayerCallback = value
     }
 
+    @JsName("notifyOrphansLayers")
     private fun notifyOrphansLayers() {
         val callback = this.orphanLayerCallback ?: return
 
@@ -75,6 +90,7 @@ class LayerTraceEntryBuilder(
      *
      * @return root layer
      */
+    @JsName("updateParents")
     private fun updateParents() {
         for (layer in layers.values) {
             val parentId = layer.parentId
@@ -94,6 +110,7 @@ class LayerTraceEntryBuilder(
      *
      * @return root layer
      */
+    @JsName("updateRelZParents")
     private fun updateRelZParents() {
         for (layer in layers.values) {
             val parentId = layer.zOrderRelativeOfId
@@ -107,6 +124,7 @@ class LayerTraceEntryBuilder(
         }
     }
 
+    @JsName("computeRootLayers")
     private fun computeRootLayers(): List<Layer> {
         updateParents()
         updateRelZParents()
@@ -132,6 +150,7 @@ class LayerTraceEntryBuilder(
         return rootLayers
     }
 
+    @JsName("filterOutLayersInVirtualDisplays")
     private fun filterOutLayersInVirtualDisplays(roots: List<Layer>): List<Layer> {
         val physicalDisplays = displays
             .filterNot { it.isVirtual }
@@ -140,14 +159,17 @@ class LayerTraceEntryBuilder(
         return roots.filter { physicalDisplays.contains(it.stackId) }
     }
 
+    @JsName("filterOutVirtualDisplays")
     private fun filterOutVirtualDisplays(displays: List<Display>): List<Display> {
         return displays.filterNot { it.isVirtual }
     }
 
+    @JsName("filterOutOffDisplays")
     private fun filterOutOffDisplays(displays: List<Display>): List<Display> {
         return displays.filterNot { it.isOff }
     }
 
+    @JsName("filterOutLayersStackMatchNoDisplay")
     private fun filterOutLayersStackMatchNoDisplay(roots: List<Layer>): List<Layer> {
         val displayStacks = displays.map { it.layerStackId }
         return roots.filter { displayStacks.contains(it.stackId) }
@@ -159,6 +181,7 @@ class LayerTraceEntryBuilder(
      *
      * @param ignore If the layers from virtual displays should be ignored or not
      */
+    @JsName("ignoreVirtualDisplay")
     fun ignoreVirtualDisplay(ignore: Boolean): LayerTraceEntryBuilder = apply {
         this.ignoreVirtualDisplay = ignore
     }
@@ -170,11 +193,13 @@ class LayerTraceEntryBuilder(
      *
      * @param ignore If the layers not matching any stack id should be removed or not
      */
+    @JsName("ignoreLayersStackMatchNoDisplay")
     fun ignoreLayersStackMatchNoDisplay(ignore: Boolean): LayerTraceEntryBuilder = apply {
         this.ignoreLayersStackMatchNoDisplay = ignore
     }
 
     /** Constructs the layer hierarchy from a flattened list of layers.  */
+    @JsName("build")
     fun build(): LayerTraceEntry {
         val allRoots = computeRootLayers()
         var filteredRoots = allRoots

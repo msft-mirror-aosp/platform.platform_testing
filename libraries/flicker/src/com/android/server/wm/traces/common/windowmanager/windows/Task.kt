@@ -18,6 +18,7 @@ package com.android.server.wm.traces.common.windowmanager.windows
 
 import com.android.server.wm.traces.common.IComponentMatcher
 import com.android.server.wm.traces.common.Rect
+import kotlin.js.JsName
 
 /**
  * Represents a task in the window manager hierarchy
@@ -30,19 +31,33 @@ class Task(
     override val activityType: Int,
     override val isFullscreen: Boolean,
     override val bounds: Rect,
+    @JsName("taskId")
     val taskId: Int,
+    @JsName("rootTaskId")
     val rootTaskId: Int,
+    @JsName("displayId")
     val displayId: Int,
+    @JsName("lastNonFullscreenBounds")
     val lastNonFullscreenBounds: Rect,
+    @JsName("realActivity")
     val realActivity: String,
+    @JsName("origActivity")
     val origActivity: String,
+    @JsName("resizeMode")
     val resizeMode: Int,
+    @JsName("_resumedActivity")
     private val _resumedActivity: String,
+    @JsName("animatingBounds")
     var animatingBounds: Boolean,
+    @JsName("surfaceWidth")
     val surfaceWidth: Int,
+    @JsName("surfaceHeight")
     val surfaceHeight: Int,
+    @JsName("createdByOrganizer")
     val createdByOrganizer: Boolean,
+    @JsName("minWidth")
     val minWidth: Int,
+    @JsName("minHeight")
     val minHeight: Int,
     windowContainer: WindowContainer
 ) : WindowContainer(windowContainer) {
@@ -51,18 +66,24 @@ class Task(
     override val isEmpty: Boolean get() = tasks.isEmpty() && activities.isEmpty()
     override val stableId: String get() = "${super.stableId} $taskId"
 
+    @JsName("isRootTask")
     val isRootTask: Boolean get() = taskId == rootTaskId
+    @JsName("tasks")
     val tasks: Array<Task>
         get() = this.children.reversed().filterIsInstance<Task>().toTypedArray()
+    @JsName("taskFragments")
     val taskFragments: Array<TaskFragment>
         get() = this.children.reversed().filterIsInstance<TaskFragment>().toTypedArray()
+    @JsName("activities")
     val activities: Array<Activity>
         get() = this.children.reversed().filterIsInstance<Activity>().toTypedArray()
     /** The top task in the stack.
      */
     // NOTE: Unlike the WindowManager internals, we dump the state from top to bottom,
     //       so the indices are inverted
+    @JsName("topTask")
     val topTask: Task? get() = tasks.firstOrNull()
+    @JsName("resumedActivities")
     val resumedActivities: Array<String> get() {
         val result = mutableSetOf<String>()
         if (this._resumedActivity.isNotEmpty()) {
@@ -78,13 +99,15 @@ class Task(
     /**
      * @return The first [Task] matching [predicate], or null otherwise
      */
+    @JsName("getTask")
     fun getTask(predicate: (Task) -> Boolean) =
         tasks.firstOrNull { predicate(it) } ?: if (predicate(this)) this else null
 
     /**
      * @return the first [Activity] matching [predicate], or null otherwise
      */
-    fun getActivity(predicate: (Activity) -> Boolean): Activity? {
+    @JsName("getActivityByPredicate")
+    internal fun getActivity(predicate: (Activity) -> Boolean): Activity? {
         var activity: Activity? = activities.firstOrNull { predicate(it) }
         if (activity != null) {
             return activity
@@ -109,6 +132,7 @@ class Task(
      *
      * @param componentMatcher Components to search
      */
+    @JsName("getActivity")
     fun getActivity(componentMatcher: IComponentMatcher): Activity? =
         getActivity { activity -> componentMatcher.activityMatchesAnyOf(activity) }
 
@@ -117,6 +141,7 @@ class Task(
      *
      * @param componentMatcher Components to search
      */
+    @JsName("containsActivity")
     fun containsActivity(componentMatcher: IComponentMatcher) =
         getActivity(componentMatcher) != null
 

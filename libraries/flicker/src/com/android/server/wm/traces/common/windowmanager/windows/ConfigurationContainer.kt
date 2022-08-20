@@ -16,6 +16,8 @@
 
 package com.android.server.wm.traces.common.windowmanager.windows
 
+import kotlin.js.JsName
+
 /**
  * Represents the configuration of an element in the window manager hierarchy
  *
@@ -24,8 +26,11 @@ package com.android.server.wm.traces.common.windowmanager.windows
  *
  */
 open class ConfigurationContainer(
+    @JsName("overrideConfiguration")
     val overrideConfiguration: Configuration?,
+    @JsName("fullConfiguration")
     val fullConfiguration: Configuration?,
+    @JsName("mergedOverrideConfiguration")
     val mergedOverrideConfiguration: Configuration?
 ) {
     constructor(configurationContainer: ConfigurationContainer) : this(
@@ -34,10 +39,13 @@ open class ConfigurationContainer(
         configurationContainer.mergedOverrideConfiguration
     )
 
+    @JsName("windowingMode")
     val windowingMode: Int get() = fullConfiguration?.windowConfiguration?.windowingMode ?: 0
 
+    @JsName("activityType")
     open val activityType: Int get() = fullConfiguration?.windowConfiguration?.activityType ?: 0
 
+    @JsName("isEmpty")
     open val isEmpty: Boolean
         get() = (overrideConfiguration?.isEmpty ?: true) &&
             (fullConfiguration?.isEmpty ?: true) &&

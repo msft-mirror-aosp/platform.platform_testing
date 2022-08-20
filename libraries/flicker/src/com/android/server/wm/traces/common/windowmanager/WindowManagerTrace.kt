@@ -17,6 +17,7 @@
 package com.android.server.wm.traces.common.windowmanager
 
 import com.android.server.wm.traces.common.ITrace
+import kotlin.js.JsName
 
 /**
  * Contains a collection of parsed WindowManager trace entries and assertions to apply over a single
@@ -33,6 +34,7 @@ data class WindowManagerTrace(
 ) : ITrace<WindowManagerState>,
     List<WindowManagerState> by entries.toList() {
 
+    @JsName("isTablet")
     val isTablet: Boolean get() = entries.any { it.isTablet }
 
     override fun toString(): String {
@@ -60,6 +62,7 @@ data class WindowManagerTrace(
      * @param to the end timestamp
      * @return the subtrace trace(from, to)
      */
+    @JsName("slice")
     fun slice(from: Long, to: Long): WindowManagerTrace {
         return WindowManagerTrace(
             this.entries

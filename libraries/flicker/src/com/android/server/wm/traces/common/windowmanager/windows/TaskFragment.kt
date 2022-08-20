@@ -16,6 +16,8 @@
 
 package com.android.server.wm.traces.common.windowmanager.windows
 
+import kotlin.js.JsName
+
 /**
  * Represents a task fragment in the window manager hierarchy
  *
@@ -25,18 +27,25 @@ package com.android.server.wm.traces.common.windowmanager.windows
  */
 class TaskFragment(
     override val activityType: Int,
+    @JsName("displayId")
     val displayId: Int,
+    @JsName("minWidth")
     val minWidth: Int,
+    @JsName("minHeight")
     val minHeight: Int,
     windowContainer: WindowContainer
 ) : WindowContainer(windowContainer) {
+    @JsName("tasks")
     val tasks: Array<Task>
         get() = this.children.reversed().filterIsInstance<Task>().toTypedArray()
+    @JsName("taskFragments")
     val taskFragments: Array<TaskFragment>
         get() = this.children.reversed().filterIsInstance<TaskFragment>().toTypedArray()
+    @JsName("activities")
     val activities: Array<Activity>
         get() = this.children.reversed().filterIsInstance<Activity>().toTypedArray()
 
+    @JsName("getActivity")
     fun getActivity(predicate: (Activity) -> Boolean): Activity? {
         var activity: Activity? = activities.firstOrNull { predicate(it) }
         if (activity != null) {

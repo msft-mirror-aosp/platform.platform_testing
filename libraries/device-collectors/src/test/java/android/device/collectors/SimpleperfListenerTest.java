@@ -104,6 +104,16 @@ public class SimpleperfListenerTest {
         return listener;
     }
 
+    private void testSingleRecordCallsWithUiDevice() throws Exception {
+        verify(mSimpleperfHelperVisibleUidevice, times(1)).getPID("surfaceflinger");
+        verify(mSimpleperfHelperVisibleUidevice, times(1))
+                .startCollecting(eq("record"), eq(" -e instructions -p 680"));
+        verify(mUiDevice, times(1))
+                .executeShellCommand(
+                        "simpleperf record -o /data/local/tmp/perf.data  -e"
+                                + " instructions -p 680");
+    }
+
     private void testRecordCallsWithUiDevice() throws Exception {
         verify(mSimpleperfHelperVisibleUidevice, times(1)).getPID("surfaceflinger");
         verify(mSimpleperfHelperVisibleUidevice, times(1)).getPID("system_server");
@@ -141,16 +151,16 @@ public class SimpleperfListenerTest {
                     + " long)=287851607,"
                     + " cpu-cycles-surfaceflinger-android::Parcel::writeInt32(int)=1339066343,"
                     + " cpu-cycles-surfaceflinger-android::SurfaceFlinger::composite(long,"
-                    + " long)=2040482064,"
-                    + " instructions-surfaceflinger-android::Parcel::writeInt32(int)=819270000,"
+                    + " long)=2040482064, "
+                    + "instructions-surfaceflinger-android::Parcel::writeInt32(int)=819270000,"
                     + " cpu-cycles-surfaceflinger-android::SurfaceFlinger::commit(long, long,"
                     + " long)=1657891653,"
                     + " instructions-surfaceflinger-android::SurfaceFlinger::commit(long, long,"
                     + " long)=88569727,"
-                    + " cpu-cycles-surfaceflinger=6376506592}{instructions-system_server-android::Parcel::writeInt32(int)=1554409292,"
-                    + " cpu-cycles-system_server-android::Parcel::writeInt32(int)=2905903027,"
-                    + " instructions-system_server=2391398998,"
-                    + " cpu-cycles-system_server=9080947163}",
+                    + " cpu-cycles-surfaceflinger=6376506592}{instructions-system_server=2391398998,"
+                    + " cpu-cycles-system_server=9080947163,"
+                    + " instructions-system_server-android::Parcel::writeInt32(int)=1554409292,"
+                    + " cpu-cycles-system_server-android::Parcel::writeInt32(int)=2905903027}",
                 output.toString());
     }
 
@@ -246,6 +256,26 @@ public class SimpleperfListenerTest {
         verify(mSimpleperfHelper, times(0)).stopCollecting(anyString());
         mListener.onTestRunEnd(mListener.createDataRecord(), new Result());
         verify(mSimpleperfHelper, times(1)).stopCollecting(anyString());
+    }
+
+    /*
+     * Verify simpleperf starts and records only one process and event correctly.
+     */
+    @Test
+    public void testSimpleperfRecordSingleProcessEvent() throws Exception {
+        Bundle b = new Bundle();
+        b.putString(SimpleperfListener.PROCESSES, "surfaceflinger");
+        b.putString(SimpleperfListener.ARGUMENTS, "");
+        b.putString(SimpleperfListener.COLLECT_PER_RUN, "true");
+        b.putString(
+                SimpleperfListener.REPORT_SYMBOLS, "android::SurfaceFlinger::commit(long, long,");
+        b.putString(SimpleperfListener.EVENTS, "instructions");
+        doReturn("680").when(mUiDevice).executeShellCommand(eq("pidof surfaceflinger"));
+        doReturn("").when(mUiDevice).executeShellCommand(eq("pidof simpleperf"));
+
+        mListener = initListener(b, mSimpleperfHelperVisibleUidevice);
+        mListener.testRunStarted(mRunDesc);
+        testSingleRecordCallsWithUiDevice();
     }
 
     /*

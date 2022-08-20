@@ -18,6 +18,7 @@ package com.android.server.wm.traces.common.windowmanager.windows
 
 import com.android.server.wm.traces.common.IComponentMatcher
 import com.android.server.wm.traces.common.Rect
+import kotlin.js.JsName
 import kotlin.math.min
 
 /**
@@ -28,28 +29,46 @@ import kotlin.math.min
  *
  */
 class DisplayContent(
+    @JsName("id")
     val id: Int,
+    @JsName("focusedRootTaskId")
     val focusedRootTaskId: Int,
+    @JsName("resumedActivity")
     val resumedActivity: String,
+    @JsName("singleTaskInstance")
     val singleTaskInstance: Boolean,
+    @JsName("defaultPinnedStackBounds")
     val defaultPinnedStackBounds: Rect,
+    @JsName("pinnedStackMovementBounds")
     val pinnedStackMovementBounds: Rect,
+    @JsName("displayRect")
     val displayRect: Rect,
+    @JsName("appRect")
     val appRect: Rect,
+    @JsName("dpi")
     val dpi: Int,
+    @JsName("flags")
     val flags: Int,
+    @JsName("stableBounds")
     val stableBounds: Rect,
+    @JsName("surfaceSize")
     val surfaceSize: Int,
+    @JsName("focusedApp")
     val focusedApp: String,
+    @JsName("lastTransition")
     val lastTransition: String,
+    @JsName("appTransitionState")
     val appTransitionState: String,
+    @JsName("rotation")
     val rotation: Int,
+    @JsName("lastOrientation")
     val lastOrientation: Int,
     windowContainer: WindowContainer
 ) : WindowContainer(windowContainer) {
     override val name: String = id.toString()
     override val isVisible: Boolean = false
 
+    @JsName("isTablet")
     val isTablet: Boolean get() {
         val smallestWidth = dpiFromPx(
             min(displayRect.width.toFloat(), displayRect.height.toFloat()),
@@ -58,6 +77,7 @@ class DisplayContent(
         return smallestWidth >= TABLET_MIN_DPS
     }
 
+    @JsName("rootTasks")
     val rootTasks: Array<Task>
         get() {
             val tasks = this.collectDescendants<Task> { it.isRootTask }.toMutableList()
@@ -85,6 +105,7 @@ class DisplayContent(
      *
      * @param componentMatcher Components to search
      */
+    @JsName("containsActivity")
     fun containsActivity(componentMatcher: IComponentMatcher): Boolean =
         rootTasks.any { it.containsActivity(componentMatcher) }
 
@@ -93,6 +114,7 @@ class DisplayContent(
      *
      * @param componentMatcher Components to search
      */
+    @JsName("getTaskDisplayArea")
     fun getTaskDisplayArea(componentMatcher: IComponentMatcher): DisplayArea? {
         val taskDisplayAreas = this.collectDescendants<DisplayArea> { it.isTaskDisplayArea }
             .filter { it.containsActivity(componentMatcher) }
@@ -163,10 +185,13 @@ class DisplayContent(
 
     companion object {
         /** From [android.util.DisplayMetrics] */
+        @JsName("DENSITY_DEFAULT")
         private const val DENSITY_DEFAULT = 160f
         /** From [com.android.systemui.shared.recents.utilities.Utilities] */
+        @JsName("TABLET_MIN_DPS")
         private const val TABLET_MIN_DPS = 600f
 
+        @JsName("dpiFromPx")
         private fun dpiFromPx(size: Float, densityDpi: Int): Float {
             val densityRatio: Float = densityDpi.toFloat() / DENSITY_DEFAULT
             return size / densityRatio

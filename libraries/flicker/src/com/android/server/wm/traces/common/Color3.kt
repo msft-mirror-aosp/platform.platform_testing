@@ -16,18 +16,23 @@
 
 package com.android.server.wm.traces.common
 
+import kotlin.js.JsName
+
 /**
  * Wrapper for Color3 (frameworks/native/services/surfaceflinger/layerproto/transactions.proto)
  *
  * This class is used by flicker and Winscope
  */
 open class Color3(val r: Float, val g: Float, val b: Float) {
+    @JsName("isEmpty")
     open val isEmpty: Boolean
         get() = r < 0 || g < 0 || b < 0
 
+    @JsName("isNotEmpty")
     open val isNotEmpty: Boolean
         get() = !isEmpty
 
+    @JsName("prettyPrint")
     open fun prettyPrint(): String {
         val r = FloatFormatter.format(r)
         val g = FloatFormatter.format(g)
@@ -56,6 +61,7 @@ open class Color3(val r: Float, val g: Float, val b: Float) {
     }
 
     companion object {
+        @JsName("EMPTY")
         val EMPTY: Color3 get() = withCache { Color3(r = -1f, g = -1f, b = -1f) }
     }
 }

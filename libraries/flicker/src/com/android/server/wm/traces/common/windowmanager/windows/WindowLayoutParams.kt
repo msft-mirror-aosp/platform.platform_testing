@@ -17,6 +17,7 @@
 package com.android.server.wm.traces.common.windowmanager.windows
 
 import com.android.server.wm.traces.common.withCache
+import kotlin.js.JsName
 
 /**
  * Represents the attributes of a WindowState in the window manager hierarchy
@@ -26,37 +27,68 @@ import com.android.server.wm.traces.common.withCache
  *
  */
 class WindowLayoutParams private constructor(
+    @JsName("type")
     val type: Int = 0,
+    @JsName("x")
     val x: Int = 0,
+    @JsName("y")
     val y: Int = 0,
+    @JsName("width")
     val width: Int = 0,
+    @JsName("height")
     val height: Int = 0,
+    @JsName("horizontalMargin")
     val horizontalMargin: Float = 0f,
+    @JsName("verticalMargin")
     val verticalMargin: Float = 0f,
+    @JsName("gravity")
     val gravity: Int = 0,
+    @JsName("softInputMode")
     val softInputMode: Int = 0,
+    @JsName("format")
     val format: Int = 0,
+    @JsName("windowAnimations")
     val windowAnimations: Int = 0,
+    @JsName("alpha")
     val alpha: Float = 0f,
+    @JsName("screenBrightness")
     val screenBrightness: Float = 0f,
+    @JsName("buttonBrightness")
     val buttonBrightness: Float = 0f,
+    @JsName("rotationAnimation")
     val rotationAnimation: Int = 0,
+    @JsName("preferredRefreshRate")
     val preferredRefreshRate: Float = 0f,
+    @JsName("preferredDisplayModeId")
     val preferredDisplayModeId: Int = 0,
+    @JsName("hasSystemUiListeners")
     val hasSystemUiListeners: Boolean = false,
+    @JsName("inputFeatureFlags")
     val inputFeatureFlags: Int = 0,
+    @JsName("userActivityTimeout")
     val userActivityTimeout: Long = 0L,
+    @JsName("colorMode")
     val colorMode: Int = 0,
+    @JsName("flags")
     val flags: Int = 0,
+    @JsName("privateFlags")
     val privateFlags: Int = 0,
+    @JsName("systemUiVisibilityFlags")
     val systemUiVisibilityFlags: Int = 0,
+    @JsName("subtreeSystemUiVisibilityFlags")
     val subtreeSystemUiVisibilityFlags: Int = 0,
+    @JsName("appearance")
     val appearance: Int = 0,
+    @JsName("behavior")
     val behavior: Int = 0,
+    @JsName("fitInsetsTypes")
     val fitInsetsTypes: Int = 0,
+    @JsName("fitInsetsSides")
     val fitInsetsSides: Int = 0,
+    @JsName("fitIgnoreVisibility")
     val fitIgnoreVisibility: Boolean = false
 ) {
+    @JsName("isValidNavBarType")
     val isValidNavBarType: Boolean = this.type == TYPE_NAVIGATION_BAR
 
     override fun equals(other: Any?): Boolean {
@@ -157,6 +189,7 @@ class WindowLayoutParams private constructor(
          */
         private const val TYPE_NAVIGATION_BAR = 2019
 
+        @JsName("from")
         fun from(
             type: Int,
             x: Int,
