@@ -18,6 +18,14 @@ package android.platform.helpers;
 
 public interface ISettingsIntelligenceHelper extends IAppHelper {
 
+    /**
+     * DATA_URI_STRING* can be appended after PAGE_ACTION_*. It can be opened by "adb shell am start
+     * -a <PAGE_ACTION_*> -d <DATA_URI_STRING_*>". For example, the following command can open "App
+     * info" page: adb shell am start -a android.settings.APPLICATION_DETAILS_SETTINGS -d
+     * package:com.android.settings
+     */
+    public static final String DATA_URI_STRING_APP_INFO = "package:com.android.settings";
+
     public static final String PAGE_ACTION_HOME = "";
     public static final String PAGE_ACTION_ABOUT_PHONE = "android.settings.DEVICE_INFO_SETTINGS";
     public static final String PAGE_ACTION_ACCESSIBILITY =
@@ -25,7 +33,7 @@ public interface ISettingsIntelligenceHelper extends IAppHelper {
     public static final String PAGE_ACTION_ACCOUNT = "android.settings.SYNC_SETTINGS";
     public static final String PAGE_ACTION_APPLICATION = "android.settings.APPLICATION_SETTINGS";
     public static final String PAGE_ACTION_APP_INFO =
-            "android.settings.APPLICATION_DETAILS_SETTINGS -d package:com.android.settings";
+            "android.settings.APPLICATION_DETAILS_SETTINGS";
     public static final String PAGE_ACTION_APP_NOTIFICATIONS =
             "android.settings.NOTIFICATION_SETTINGS";
     public static final String PAGE_ACTION_AUTO_ROTATE_SCREEN =
@@ -58,6 +66,13 @@ public interface ISettingsIntelligenceHelper extends IAppHelper {
     public static final String PAGE_ACTION_WIFI = "android.settings.WIFI_SETTINGS";
     public static final String PAGE_ACTION_WIFI_TETHERING_HOTSPOT =
             "com.android.settings.WIFI_TETHER_SETTINGS";
+
+    /**
+     * Sets the intent data uri representing the Settings page to open when open() is called.
+     *
+     * @param dataUriString One of the DATA_URI_STRING* constants.
+     */
+    void setDataUri(String dataUriString);
 
     /**
      * Sets the action representing the Settings page to open when open() is called.
