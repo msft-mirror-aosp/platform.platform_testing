@@ -28,6 +28,7 @@ java_library_host {
     ],
 
     libs: [
+        "compatibility-host-util",
         "compatibility-tradefed",
         "guava",
         "tradefed",
