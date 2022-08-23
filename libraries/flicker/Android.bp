@@ -70,8 +70,8 @@ java_library {
     name: "wm-proto-parsers",
     sdk_version: "test_current",
     kotlincflags: [
-        "-Xmulti-platform=enable",
-        "-Xuse-experimental=kotlin.ExperimentalMultiplatform",
+        "-Xmulti-platform",
+        "-opt-in=kotlin.ExperimentalMultiplatform",
     ],
     optimize: {
         enabled: false
