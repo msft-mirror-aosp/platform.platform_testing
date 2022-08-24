@@ -28,10 +28,10 @@ import androidx.test.uiautomator.By
 import androidx.test.uiautomator.BySelector
 import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.Until
-import com.android.server.wm.traces.common.ComponentMatcher
+import com.android.server.wm.traces.common.ComponentNameMatcher
 import com.android.server.wm.traces.common.Condition
 import com.android.server.wm.traces.common.DeviceStateDump
-import com.android.server.wm.traces.common.IComponentMatcher
+import com.android.server.wm.traces.common.IComponentNameMatcher
 import com.android.server.wm.traces.common.WindowManagerConditionsFactory
 import com.android.server.wm.traces.common.windowmanager.WindowManagerState
 import com.android.server.wm.traces.parser.windowmanager.WindowManagerStateHelper
@@ -43,10 +43,10 @@ import com.android.server.wm.traces.parser.windowmanager.WindowManagerStateHelpe
 open class StandardAppHelper @JvmOverloads constructor(
     instr: Instrumentation,
     @JvmField val appName: String,
-    @JvmField val componentMatcher: IComponentMatcher,
+    @JvmField val componentMatcher: IComponentNameMatcher,
     protected val launcherStrategy: ILauncherStrategy =
-        LauncherStrategyFactory.getInstance(instr).launcherStrategy
-) : AbstractStandardAppHelper(instr), IComponentMatcher by componentMatcher {
+    LauncherStrategyFactory.getInstance(instr).launcherStrategy
+) : AbstractStandardAppHelper(instr), IComponentNameMatcher by componentMatcher {
     constructor(
         instr: Instrumentation,
         appName: String,
@@ -55,7 +55,7 @@ open class StandardAppHelper @JvmOverloads constructor(
         launcherStrategy: ILauncherStrategy =
             LauncherStrategyFactory.getInstance(instr).launcherStrategy
     ) : this(instr, appName,
-        ComponentMatcher(packageName, ".$activity"), launcherStrategy)
+        ComponentNameMatcher(packageName, ".$activity"), launcherStrategy)
 
     private val activityManager: ActivityManager?
         get() = mInstrumentation.context.getSystemService(ActivityManager::class.java)
@@ -63,11 +63,9 @@ open class StandardAppHelper @JvmOverloads constructor(
     protected val context: Context
         get() = mInstrumentation.context
 
-    protected val packageName: String = componentMatcher.packageNames.firstOrNull()
-        ?: error("No package name specified")
+    override val packageName: String = componentMatcher.packageName
 
-    protected val className: String = componentMatcher.classNames.firstOrNull()
-        ?: error("No package name specified")
+    override val className: String = componentMatcher.className
 
     protected val uiDevice: UiDevice = UiDevice.getInstance(mInstrumentation)
 
@@ -128,7 +126,7 @@ open class StandardAppHelper @JvmOverloads constructor(
     private fun waitForActivityDestroyed(
         wmHelper: WindowManagerStateHelper
     ) {
-        val waitMsg = "state of ${componentMatcher.toActivityName()} to be " +
+        val waitMsg = "state of ${componentMatcher.toActivityIdentifier()} to be " +
             WindowManagerState.STATE_DESTROYED
         wmHelper.StateSyncBuilder()
             .add(waitMsg) {
@@ -195,7 +193,7 @@ open class StandardAppHelper @JvmOverloads constructor(
         launchAppViaIntent(action, stringExtras)
 
         val expectedWindow = if (expectedWindowName.isNotEmpty()) {
-            ComponentMatcher("", expectedWindowName)
+            ComponentNameMatcher("", expectedWindowName)
         } else {
             componentMatcher
         }

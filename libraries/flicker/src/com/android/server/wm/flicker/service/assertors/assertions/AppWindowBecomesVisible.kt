@@ -18,7 +18,7 @@ package com.android.server.wm.flicker.service.assertors.assertions
 
 import com.android.server.wm.flicker.service.assertors.ComponentBuilder
 import com.android.server.wm.flicker.traces.windowmanager.WindowManagerTraceSubject
-import com.android.server.wm.traces.common.ComponentMatcher
+import com.android.server.wm.traces.common.ComponentNameMatcher
 import com.android.server.wm.traces.common.transition.Transition
 
 /**
@@ -34,9 +34,9 @@ class AppWindowBecomesVisible(component: ComponentBuilder) :
     ) {
         wmSubject.isAppWindowInvisible(component.build(transition))
             .then()
-            .isAppWindowVisible(ComponentMatcher.SNAPSHOT, isOptional = true)
+            .isAppWindowVisible(ComponentNameMatcher.SNAPSHOT, isOptional = true)
             .then()
-            .isAppWindowVisible(ComponentMatcher.SPLASH_SCREEN, isOptional = true)
+            .isAppWindowVisible(ComponentNameMatcher.SPLASH_SCREEN, isOptional = true)
             .then()
             .isAppWindowVisible(component.build(transition))
     }

@@ -22,30 +22,92 @@ import com.android.server.wm.traces.common.windowmanager.windows.WindowState
 import kotlin.js.JsName
 
 interface IComponentMatcher {
-    @JsName("packageNames")
-    val packageNames: Array<String>
-    @JsName("classNames")
-    val classNames: Array<String>
-    @JsName("components")
-    val components: List<ComponentName>
-
     @JsName("or")
-    fun or(other: IComponentMatcher): IComponentMatcher
-    @JsName("toActivityRecordFilter")
-    fun toActivityRecordFilter(): Regex
-    fun windowMatchesAnyOf(window: WindowState): Boolean
-    fun windowMatchesAnyOf(windows: Collection<WindowState>): Boolean
+    fun or(other: IComponentMatcher): IComponentMatcher {
+        return OrComponentMatcher(arrayOf(this, other))
+    }
+
+    /**
+     * @return if any of the [components] matches [window]
+     *
+     * @param window to search
+     */
+    fun windowMatchesAnyOf(window: WindowState): Boolean =
+            windowMatchesAnyOf(arrayOf(window))
+
+    /**
+     * @return if any of the [components] matches any of [windows]
+     *
+     * @param windows to search
+     */
+    fun windowMatchesAnyOf(windows: Collection<WindowState>): Boolean =
+            windowMatchesAnyOf(windows.toTypedArray())
+
+    /**
+     * @return if any of the [windows] fit the matching conditions of the matcher
+     *
+     * @param windows to search
+     */
     fun windowMatchesAnyOf(windows: Array<WindowState>): Boolean
-    fun activityMatchesAnyOf(activity: Activity): Boolean
-    fun activityMatchesAnyOf(activities: Collection<Activity>): Boolean
+
+    /**
+     * @return if any of the [components] matches [activity]
+     *
+     * @param activity to search
+     */
+    fun activityMatchesAnyOf(activity: Activity): Boolean =
+            activityMatchesAnyOf(arrayOf(activity))
+
+    /**
+     * @return if any of the [components] matches any of [activities]
+     *
+     * @param activities to search
+     */
+    fun activityMatchesAnyOf(activities: Collection<Activity>): Boolean =
+            activityMatchesAnyOf(activities.toTypedArray())
+
+    /**
+     * @return if any of the [components] matches any of [activities]
+     *
+     * @param activities to search
+     */
     fun activityMatchesAnyOf(activities: Array<Activity>): Boolean
-    fun layerMatchesAnyOf(layer: Layer): Boolean
-    fun layerMatchesAnyOf(layers: Collection<Layer>): Boolean
+
+    /**
+     * @return if any of the [components] matches [layer]
+     *
+     * @param layer to search
+     */
+    fun layerMatchesAnyOf(layer: Layer): Boolean =
+            layerMatchesAnyOf(arrayOf(layer))
+
+    /**
+     * @return if any of the [components] matches any of [layers]
+     *
+     * @param layers to search
+     */
+    fun layerMatchesAnyOf(layers: Collection<Layer>): Boolean =
+            layerMatchesAnyOf(layers.toTypedArray())
+
     fun layerMatchesAnyOf(layers: Array<Layer>): Boolean
-    @JsName("toActivityName")
-    fun toActivityName(): String
-    @JsName("toWindowName")
-    fun toWindowName(): String
-    @JsName("toLayerName")
-    fun toLayerName(): String
+
+    /**
+     * @return an identifier string that provides enough information to determine which activities
+     *         the matcher is looking to match. Mostly used for debugging purposes in error messages
+     */
+    fun toActivityIdentifier(): String
+
+    /**
+     * @return an identifier string that provides enough information to determine which windows the
+     *         matcher is looking to match. Mostly used for debugging purposes in error messages.
+     */
+    @JsName("toWindowIdentifier")
+    fun toWindowIdentifier(): String
+
+    /**
+     * @return an identifier string that provides enough information to determine which layers the
+     *         matcher is looking to match. Mostly used for debugging purposes in error messages.
+     */
+    @JsName("toLayerIdentifier")
+    fun toLayerIdentifier(): String
 }

@@ -49,7 +49,7 @@ import com.google.common.truth.Subject.Factory
  */
 class LayerSubject private constructor(
     fm: FailureMetadata,
-    override val parent: FlickerSubject,
+    public override val parent: FlickerSubject,
     override val timestamp: Long,
     val layer: Layer?,
     private val layerName: String? = null

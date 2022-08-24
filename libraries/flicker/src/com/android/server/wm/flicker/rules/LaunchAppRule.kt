@@ -21,7 +21,7 @@ import android.util.Log
 import androidx.test.platform.app.InstrumentationRegistry
 import com.android.server.wm.flicker.FLICKER_TAG
 import com.android.server.wm.flicker.helpers.StandardAppHelper
-import com.android.server.wm.traces.common.IComponentMatcher
+import com.android.server.wm.traces.common.ComponentNameMatcher
 import com.android.server.wm.traces.parser.windowmanager.WindowManagerStateHelper
 import org.junit.rules.TestWatcher
 import org.junit.runner.Description
@@ -44,7 +44,7 @@ class LaunchAppRule @JvmOverloads constructor(
 ) : TestWatcher() {
     @JvmOverloads
     constructor(
-        componentMatcher: IComponentMatcher,
+        componentMatcher: ComponentNameMatcher,
         appName: String = "",
         instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation(),
         clearCache: Boolean = true,

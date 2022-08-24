@@ -21,7 +21,7 @@ import com.android.server.wm.flicker.assertThrows
 import com.android.server.wm.flicker.readLayerTraceFromFile
 import com.android.server.wm.flicker.traces.layers.LayersTraceSubject
 import com.android.server.wm.traces.common.Cache
-import com.android.server.wm.traces.common.ComponentMatcher
+import com.android.server.wm.traces.common.ComponentNameMatcher
 import com.android.server.wm.traces.common.layers.LayersTrace
 import com.google.common.truth.Truth
 import org.junit.Before
@@ -90,7 +90,7 @@ class LayersTraceTest {
     fun canTestLayerOccludedByAppLayerHasVisibleRegion() {
         val trace = readLayerTraceFromFile("layers_trace_occluded.pb")
         val entry = trace.getEntry(1700382131522L)
-        val component = ComponentMatcher("",
+        val component = ComponentNameMatcher("",
             "com.android.server.wm.flicker.testapp.SimpleActivity#0")
         val layer = entry.getLayerWithBuffer(component)
         Truth.assertWithMessage("App should be visible")
@@ -99,7 +99,7 @@ class LayersTraceTest {
                 .that(layer?.visibleRegion?.toString())
                 .contains("SkRegion((346,1583,1094,2839))")
 
-        val splashScreenComponent = ComponentMatcher("",
+        val splashScreenComponent = ComponentNameMatcher("",
             "Splash Screen com.android.server.wm.flicker.testapp#0")
         val splashScreenLayer = entry.getLayerWithBuffer(splashScreenComponent)
         Truth.assertWithMessage("Splash screen should be visible")
@@ -112,7 +112,7 @@ class LayersTraceTest {
     @Test
     fun canTestLayerOccludedByAppLayerIsOccludedBySplashScreen() {
         val layerName = "com.android.server.wm.flicker.testapp.SimpleActivity#0"
-        val component = ComponentMatcher("", layerName)
+        val component = ComponentNameMatcher("", layerName)
         val trace = readLayerTraceFromFile("layers_trace_occluded.pb")
         val entry = trace.getEntry(1700382131522L)
         val layer = entry.getLayerWithBuffer(component)

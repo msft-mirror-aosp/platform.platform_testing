@@ -16,7 +16,7 @@
 
 package com.android.server.wm.traces.common.service.processors
 
-import com.android.server.wm.traces.common.ComponentMatcher
+import com.android.server.wm.traces.common.ComponentNameMatcher
 import com.android.server.wm.traces.common.ConditionList
 import com.android.server.wm.traces.common.DeviceStateDump
 import com.android.server.wm.traces.common.WindowManagerConditionsFactory.isImeShown
@@ -67,7 +67,7 @@ class ImeAppearProcessor(logger: (String) -> Unit) : TransitionProcessor(logger)
             logger.invoke("(${current.layerState.timestamp}) IME appear started.")
             // add factory method as well
             val inputMethodLayer = current.layerState.visibleLayers.first {
-                it.name.contains(ComponentMatcher.IME.toLayerName())
+                ComponentNameMatcher.IME.layerMatchesAnyOf(it)
             }
             addStartTransitionTag(current, scenario, layerId = inputMethodLayer.id)
             return WaitImeAppearFinished(tags, inputMethodLayer.id)
@@ -102,10 +102,10 @@ class ImeAppearProcessor(logger: (String) -> Unit) : TransitionProcessor(logger)
         }
 
         private val isImeAppearFinished = ConditionList(listOf(
-                isLayerVisible(ComponentMatcher.IME),
-                isLayerColorAlphaOne(ComponentMatcher.IME),
-                isLayerTransformFlagSet(ComponentMatcher.IME, Transform.TRANSLATE_VAL),
-                isLayerTransformFlagSet(ComponentMatcher.IME, Transform.SCALE_VAL).negate()
+                isLayerVisible(ComponentNameMatcher.IME),
+                isLayerColorAlphaOne(ComponentNameMatcher.IME),
+                isLayerTransformFlagSet(ComponentNameMatcher.IME, Transform.TRANSLATE_VAL),
+                isLayerTransformFlagSet(ComponentNameMatcher.IME, Transform.SCALE_VAL).negate()
         ))
     }
 }

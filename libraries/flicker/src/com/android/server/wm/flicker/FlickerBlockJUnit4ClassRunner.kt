@@ -21,6 +21,7 @@ import android.util.Log
 import androidx.test.platform.app.InstrumentationRegistry
 import com.android.server.wm.flicker.annotation.FlickerServiceCompatible
 import com.android.server.wm.flicker.dsl.FlickerBuilder
+import com.android.server.wm.flicker.helpers.IS_FAAS_ENABLED
 import com.android.server.wm.flicker.helpers.isShellTransitionsEnabled
 import com.android.server.wm.flicker.service.FlickerFrameworkMethod
 import com.android.server.wm.flicker.service.FlickerTestCase
@@ -233,7 +234,8 @@ class FlickerBlockJUnit4ClassRunner @JvmOverloads constructor(
             val hasFlickerServiceCompatibleAnnotation = TestClass(super.createTest()::class.java)
                 .annotations.filterIsInstance<FlickerServiceCompatible>().firstOrNull() != null
 
-            if (hasFlickerServiceCompatibleAnnotation && isShellTransitionsEnabled) {
+            if (IS_FAAS_ENABLED &&
+                    hasFlickerServiceCompatibleAnnotation && isShellTransitionsEnabled) {
                 if (!flickerTestParameter.isInitialized) {
                     Log.v(FLICKER_TAG, "Flicker object is not yet initialized")
                     val test = super.createTest()

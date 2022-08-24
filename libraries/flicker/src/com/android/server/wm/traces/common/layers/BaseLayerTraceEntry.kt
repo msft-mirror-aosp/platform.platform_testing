@@ -16,7 +16,7 @@
 
 package com.android.server.wm.traces.common.layers
 
-import com.android.server.wm.traces.common.ComponentMatcher
+import com.android.server.wm.traces.common.ComponentNameMatcher
 import com.android.server.wm.traces.common.IComponentMatcher
 import com.android.server.wm.traces.common.ITraceEntry
 import com.android.server.wm.traces.common.Rect
@@ -90,7 +90,7 @@ abstract class BaseLayerTraceEntry : ITraceEntry {
         val layers = visibleLayers
             .filter { componentMatcher == null || componentMatcher.layerMatchesAnyOf(it) }
         val layersAnimating = layers.any { layer -> !layer.transform.isSimpleRotation }
-        val pipAnimating = isVisible(ComponentMatcher.PIP_CONTENT_OVERLAY)
+        val pipAnimating = isVisible(ComponentNameMatcher.PIP_CONTENT_OVERLAY)
         return layersAnimating || pipAnimating
     }
 

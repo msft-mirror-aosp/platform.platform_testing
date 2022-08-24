@@ -20,7 +20,8 @@ import com.android.server.wm.flicker.assertions.Assertion
 import com.android.server.wm.flicker.traces.FlickerFailureStrategy
 import com.android.server.wm.flicker.traces.FlickerTraceSubject
 import com.android.server.wm.flicker.traces.region.RegionTraceSubject
-import com.android.server.wm.traces.common.ComponentMatcher
+import com.android.server.wm.traces.common.ComponentNameMatcher
+import com.android.server.wm.traces.common.EdgeExtensionComponentMatcher
 import com.android.server.wm.traces.common.IComponentMatcher
 import com.android.server.wm.traces.common.layers.Layer
 import com.android.server.wm.traces.common.layers.LayersTrace
@@ -118,16 +119,17 @@ class LayersTraceSubject private constructor(
      */
     @JvmOverloads
     fun visibleLayersShownMoreThanOneConsecutiveEntry(
-        ignoreLayers: List<ComponentMatcher> = listOf(
-            ComponentMatcher.SPLASH_SCREEN,
-            ComponentMatcher.SNAPSHOT
+        ignoreLayers: List<IComponentMatcher> = listOf(
+            ComponentNameMatcher.SPLASH_SCREEN,
+            ComponentNameMatcher.SNAPSHOT,
+            EdgeExtensionComponentMatcher()
         )
     ): LayersTraceSubject = apply {
         visibleEntriesShownMoreThanOneConsecutiveTime { subject ->
             subject.entry.visibleLayers
                 .filter {
                     ignoreLayers.none { componentMatcher ->
-                        componentMatcher.toLayerName() in it.name
+                        componentMatcher.layerMatchesAnyOf(it)
                     }
                 }
                 .map { it.name }
@@ -147,7 +149,7 @@ class LayersTraceSubject private constructor(
         isOptional: Boolean
     ): LayersTraceSubject =
         apply {
-            addAssertion("notContains(${componentMatcher.toLayerName()})", isOptional) {
+            addAssertion("notContains(${componentMatcher.toLayerIdentifier()})", isOptional) {
                 it.notContains(componentMatcher)
             }
         }
@@ -164,7 +166,7 @@ class LayersTraceSubject private constructor(
         isOptional: Boolean
     ): LayersTraceSubject =
         apply {
-            addAssertion("contains(${componentMatcher.toLayerName()})", isOptional) {
+            addAssertion("contains(${componentMatcher.toLayerIdentifier()})", isOptional) {
                 it.contains(componentMatcher)
             }
         }
@@ -181,7 +183,7 @@ class LayersTraceSubject private constructor(
         isOptional: Boolean
     ): LayersTraceSubject =
         apply {
-            addAssertion("isVisible(${componentMatcher.toLayerName()})", isOptional) {
+            addAssertion("isVisible(${componentMatcher.toLayerIdentifier()})", isOptional) {
                 it.isVisible(componentMatcher)
             }
         }
@@ -198,7 +200,7 @@ class LayersTraceSubject private constructor(
         isOptional: Boolean
     ): LayersTraceSubject =
         apply {
-            addAssertion("isInvisible(${componentMatcher.toLayerName()})", isOptional) {
+            addAssertion("isInvisible(${componentMatcher.toLayerIdentifier()})", isOptional) {
                 it.isInvisible(componentMatcher)
             }
         }
@@ -218,7 +220,7 @@ class LayersTraceSubject private constructor(
     ): LayersTraceSubject =
         apply {
             addAssertion(
-                "isSplashScreenVisibleFor(${componentMatcher.toLayerName()})",
+                "isSplashScreenVisibleFor(${componentMatcher.toLayerIdentifier()})",
                 isOptional
             ) {
                 it.isSplashScreenVisibleFor(componentMatcher)
@@ -264,7 +266,7 @@ class LayersTraceSubject private constructor(
     fun hasFrameSequence(
         name: String,
         frameNumbers: Iterable<Long>
-    ): LayersTraceSubject = hasFrameSequence(ComponentMatcher("", name), frameNumbers)
+    ): LayersTraceSubject = hasFrameSequence(ComponentNameMatcher("", name), frameNumbers)
 
     fun hasFrameSequence(
         componentMatcher: IComponentMatcher,
@@ -288,7 +290,7 @@ class LayersTraceSubject private constructor(
         }.all { it }
         val allFramesFound = frameNumbers.count() == numFound
         if (!allFramesFound || !frameNumbersMatch) {
-            val message = "Could not find Layer:" + componentMatcher.toLayerName() +
+            val message = "Could not find Layer:" + componentMatcher.toLayerIdentifier() +
                 " with frame sequence:" + frameNumbers.joinToString(",") +
                 " Found:\n" + entries.joinToString("\n")
             fail(message)

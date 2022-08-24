@@ -18,7 +18,7 @@ package com.android.server.wm.flicker.service.assertors.assertions
 
 import com.android.server.wm.flicker.service.assertors.ComponentBuilder
 import com.android.server.wm.flicker.traces.layers.LayersTraceSubject
-import com.android.server.wm.traces.common.ComponentMatcher
+import com.android.server.wm.traces.common.ComponentNameMatcher
 import com.android.server.wm.traces.common.transition.Transition
 
 /**
@@ -34,9 +34,9 @@ class AppLayerBecomesVisible(component: ComponentBuilder) :
     ) {
         layerSubject.isInvisible(component.build(transition))
             .then()
-            .isVisible(ComponentMatcher.SNAPSHOT, isOptional = true)
+            .isVisible(ComponentNameMatcher.SNAPSHOT, isOptional = true)
             .then()
-            .isVisible(ComponentMatcher.SPLASH_SCREEN, isOptional = true)
+            .isVisible(ComponentNameMatcher.SPLASH_SCREEN, isOptional = true)
             .then()
             .isVisible(component.build(transition))
     }

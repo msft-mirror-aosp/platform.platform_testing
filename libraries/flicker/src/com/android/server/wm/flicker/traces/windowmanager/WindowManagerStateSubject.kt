@@ -21,7 +21,7 @@ import com.android.server.wm.flicker.assertions.Assertion
 import com.android.server.wm.flicker.assertions.FlickerSubject
 import com.android.server.wm.flicker.traces.FlickerFailureStrategy
 import com.android.server.wm.flicker.traces.region.RegionSubject
-import com.android.server.wm.traces.common.ComponentMatcher
+import com.android.server.wm.traces.common.ComponentNameMatcher
 import com.android.server.wm.traces.common.IComponentMatcher
 import com.android.server.wm.traces.common.region.Region
 import com.android.server.wm.traces.common.windowmanager.WindowManagerState
@@ -115,7 +115,7 @@ class WindowManagerStateSubject private constructor(
         }
 
         if (selectedWindows.isEmpty()) {
-            val str = componentMatcher?.toWindowName() ?: "<any>"
+            val str = componentMatcher?.toWindowIdentifier() ?: "<any>"
             fail(Fact.fact(ASSERTION_TAG, "visibleRegion($str)"),
                     Fact.fact("Could not find windows", str))
         }
@@ -145,19 +145,25 @@ class WindowManagerStateSubject private constructor(
         aboveWindowComponentMatcher: IComponentMatcher,
         belowWindowComponentMatcher: IComponentMatcher
     ): WindowManagerStateSubject = apply {
-        val aboveWindowTitle = aboveWindowComponentMatcher.toWindowName()
-        val belowWindowTitle = belowWindowComponentMatcher.toWindowName()
-        if (aboveWindowTitle == belowWindowTitle) {
+        contains(aboveWindowComponentMatcher)
+        contains(belowWindowComponentMatcher)
+
+        val aboveWindow = wmState.windowStates.first {
+            aboveWindowComponentMatcher.windowMatchesAnyOf(it)
+        }
+        val belowWindow = wmState.windowStates.first {
+            belowWindowComponentMatcher.windowMatchesAnyOf(it)
+        }
+        if (aboveWindow == belowWindow) {
             fail(
                 Fact.fact(
-                    ASSERTION_TAG, "Above and below windows should be different. " +
-                        "Instead they were $aboveWindowComponentMatcher"
+                        ASSERTION_TAG, "Above and below windows should be different. " +
+                        "Instead they were ${aboveWindow.title} " +
+                        "(matched with ${aboveWindowComponentMatcher.toWindowIdentifier()} and " +
+                        "${belowWindowComponentMatcher.toWindowIdentifier()})"
                 )
             )
         }
-
-        contains(aboveWindowComponentMatcher)
-        contains(belowWindowComponentMatcher)
 
         // windows are ordered by z-order, from top to bottom
         val aboveZ = wmState.windowStates
@@ -169,8 +175,8 @@ class WindowManagerStateSubject private constructor(
                 it.windowState != null &&
                     aboveWindowComponentMatcher.windowMatchesAnyOf(it.windowState)
             }
-            val aboveWindowTitleStr = aboveWindowComponentMatcher.toWindowName()
-            val belowWindowTitleStr = belowWindowComponentMatcher.toWindowName()
+            val aboveWindowTitleStr = aboveWindowComponentMatcher.toWindowIdentifier()
+            val belowWindowTitleStr = belowWindowComponentMatcher.toWindowIdentifier()
             aboveWindow.fail(
                 Fact.fact(ASSERTION_TAG, "isAboveWindow(" +
                     "above=$aboveWindowTitleStr, " +
@@ -193,7 +199,8 @@ class WindowManagerStateSubject private constructor(
     ): WindowManagerStateSubject = apply {
         if (wmState.visibleAppWindows.isEmpty()) {
             fail(
-                Fact.fact(ASSERTION_TAG, "isAppWindowOnTop(${componentMatcher.toWindowName()})"),
+                Fact.fact(ASSERTION_TAG,
+                        "isAppWindowOnTop(${componentMatcher.toWindowIdentifier()})"),
                 Fact.fact("Not found", "No visible app windows found")
             )
         }
@@ -204,8 +211,9 @@ class WindowManagerStateSubject private constructor(
             isNotEmpty()
             val topWindow = subjects.first { it.windowState == topVisibleAppWindow }
             topWindow.fail(
-                Fact.fact(ASSERTION_TAG, "isAppWindowOnTop(${componentMatcher.toWindowName()})"),
-                Fact.fact("Not on top", componentMatcher.toWindowName()),
+                Fact.fact(ASSERTION_TAG,
+                        "isAppWindowOnTop(${componentMatcher.toWindowIdentifier()})"),
+                Fact.fact("Not on top", componentMatcher.toWindowIdentifier()),
                 Fact.fact("Found", wmState.topVisibleAppWindow)
             )
         }
@@ -221,8 +229,9 @@ class WindowManagerStateSubject private constructor(
         ) {
             val topWindow = subjects.first { it.windowState == topVisibleAppWindow }
             topWindow.fail(
-                Fact.fact(ASSERTION_TAG, "isAppWindowNotOnTop(${componentMatcher.toWindowName()})"),
-                Fact.fact("On top", componentMatcher.toWindowName())
+                Fact.fact(ASSERTION_TAG,
+                        "isAppWindowNotOnTop(${componentMatcher.toWindowIdentifier()})"),
+                Fact.fact("On top", componentMatcher.toWindowIdentifier())
             )
         }
     }
@@ -231,7 +240,7 @@ class WindowManagerStateSubject private constructor(
     override fun doNotOverlap(
         vararg componentMatcher: IComponentMatcher
     ): WindowManagerStateSubject = apply {
-        val repr = componentMatcher.joinToString(", ") { it.toWindowName() }
+        val repr = componentMatcher.joinToString(", ") { it.toWindowIdentifier() }
         verify("Must give more than one window to check! (Given $repr)")
             .that(componentMatcher)
             .hasLength(1)
@@ -257,7 +266,7 @@ class WindowManagerStateSubject private constructor(
                     val windowSubject = subjects.first { it.windowState == window }
                     windowSubject.fail(Fact.fact(ASSERTION_TAG,
                             "noWindowsOverlap" +
-                                componentMatcher.joinToString { it.toWindowName() }),
+                                componentMatcher.joinToString { it.toWindowIdentifier() }),
                         Fact.fact("Overlap", ourTitle),
                         Fact.fact("Overlap", otherTitle))
                 }
@@ -271,7 +280,7 @@ class WindowManagerStateSubject private constructor(
     ): WindowManagerStateSubject = apply {
         // Check existence of activity
         val activity = wmState.getActivitiesForWindow(componentMatcher).firstOrNull()
-        check("Activity exists for window ${componentMatcher.toWindowName()} ")
+        check("Activity exists for window ${componentMatcher.toWindowIdentifier()} ")
             .that(activity != null)
             .isTrue()
         // Check existence of window.
@@ -301,7 +310,7 @@ class WindowManagerStateSubject private constructor(
     ): WindowManagerStateSubject = apply {
         // system components (e.g., NavBar, StatusBar, PipOverlay) don't have a package name
         // nor an activity, ignore them
-        check("Activity exists ${componentMatcher.toActivityName()}")
+        check("Activity exists ${componentMatcher.toActivityIdentifier()}")
             .that(wmState.containsActivity(componentMatcher))
             .isFalse()
         notContains(componentMatcher)
@@ -311,7 +320,7 @@ class WindowManagerStateSubject private constructor(
     override fun notContains(
         componentMatcher: IComponentMatcher
     ): WindowManagerStateSubject = apply {
-        check("Window exists ${componentMatcher.toWindowName()}")
+        check("Window exists ${componentMatcher.toWindowIdentifier()}")
             .that(wmState.containsWindow(componentMatcher))
             .isFalse()
     }
@@ -439,8 +448,9 @@ class WindowManagerStateSubject private constructor(
         if (windowsWithVisibility.isEmpty()) {
             val errorTag = if (isVisible) "Is Invisible" else "Is Visible"
             val facts = listOf<Fact>(
-                Fact.fact(ASSERTION_TAG, "$assertionName(${componentMatcher.toWindowName()})"),
-                Fact.fact(errorTag, componentMatcher.toWindowName())
+                Fact.fact(ASSERTION_TAG,
+                        "$assertionName(${componentMatcher.toWindowIdentifier()})"),
+                Fact.fact(errorTag, componentMatcher.toWindowIdentifier())
             )
             foundWindows.first().fail(facts)
         }
@@ -451,7 +461,7 @@ class WindowManagerStateSubject private constructor(
         componentMatcher: IComponentMatcher
     ) {
         val windowStates = subjectList.mapNotNull { it.windowState }
-        check("Window exists ${componentMatcher.toWindowName()}")
+        check("Window exists ${componentMatcher.toWindowIdentifier()}")
             .that(componentMatcher.windowMatchesAnyOf(windowStates))
             .isTrue()
     }
@@ -472,7 +482,7 @@ class WindowManagerStateSubject private constructor(
     /** {@inheritDoc} */
     override fun isPinned(componentMatcher: IComponentMatcher): WindowManagerStateSubject = apply {
         contains(componentMatcher)
-        check("Window is pinned ${componentMatcher.toWindowName()}")
+        check("Window is pinned ${componentMatcher.toWindowIdentifier()}")
             .that(wmState.isInPipMode(componentMatcher))
             .isTrue()
     }
@@ -482,7 +492,7 @@ class WindowManagerStateSubject private constructor(
         componentMatcher: IComponentMatcher
     ): WindowManagerStateSubject = apply {
         contains(componentMatcher)
-        check("Window is pinned ${componentMatcher.toWindowName()}")
+        check("Window is pinned ${componentMatcher.toWindowIdentifier()}")
             .that(wmState.isInPipMode(componentMatcher))
             .isFalse()
     }
@@ -495,7 +505,8 @@ class WindowManagerStateSubject private constructor(
         requireNotNull(activity) { "Activity for $componentMatcher not found" }
 
         // Check existence and visibility of SnapshotStartingWindow
-        val snapshotStartingWindow = activity.getWindows(ComponentMatcher.SNAPSHOT).firstOrNull()
+        val snapshotStartingWindow = activity.getWindows(ComponentNameMatcher.SNAPSHOT)
+                .firstOrNull()
         check("SnapshotStartingWindow exists for activity ${activity.name}")
             .that(snapshotStartingWindow != null)
             .isTrue()

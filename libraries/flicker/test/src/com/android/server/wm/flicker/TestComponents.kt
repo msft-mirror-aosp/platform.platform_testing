@@ -17,56 +17,56 @@
 @file:JvmName("CommonConstants")
 package com.android.server.wm.flicker
 
-import com.android.server.wm.traces.common.ComponentMatcher
+import com.android.server.wm.traces.common.ComponentNameMatcher
 
 internal object TestComponents {
     @JvmStatic
-    val CHROME = ComponentMatcher("com.android.chrome", "com.google.android.apps.chrome.Main")
+    val CHROME = ComponentNameMatcher("com.android.chrome", "com.google.android.apps.chrome.Main")
     @JvmStatic
-    val CHROME_FIRST_RUN = ComponentMatcher(
+    val CHROME_FIRST_RUN = ComponentNameMatcher(
         "com.android.chrome",
         "org.chromium.chrome.browser.firstrun.FirstRunActivity"
     )
     @JvmStatic
-    val CHROME_SPLASH_SCREEN = ComponentMatcher("", "Splash Screen com.android.chrome")
+    val CHROME_SPLASH_SCREEN = ComponentNameMatcher("", "Splash Screen com.android.chrome")
     @JvmStatic
-    val DOCKER_STACK_DIVIDER = ComponentMatcher("", "DockedStackDivider")
+    val DOCKER_STACK_DIVIDER = ComponentNameMatcher("", "DockedStackDivider")
     @JvmStatic
-    val IMAGINARY = ComponentMatcher("", "ImaginaryWindow")
+    val IMAGINARY = ComponentNameMatcher("", "ImaginaryWindow")
     @JvmStatic
-    val IME_ACTIVITY = ComponentMatcher(
+    val IME_ACTIVITY = ComponentNameMatcher(
         "com.android.server.wm.flicker.testapp",
         "com.android.server.wm.flicker.testapp.ImeActivity"
     )
     @JvmStatic
-    val LAUNCHER = ComponentMatcher(
+    val LAUNCHER = ComponentNameMatcher(
         "com.google.android.apps.nexuslauncher",
         "com.google.android.apps.nexuslauncher.NexusLauncherActivity"
     )
     @JvmStatic
-    val PIP_OVERLAY = ComponentMatcher("", "pip-dismiss-overlay")
+    val PIP_OVERLAY = ComponentNameMatcher("", "pip-dismiss-overlay")
 
     @JvmStatic
-    val SIMPLE_APP = ComponentMatcher(
+    val SIMPLE_APP = ComponentNameMatcher(
         "com.android.server.wm.flicker.testapp",
         "com.android.server.wm.flicker.testapp.SimpleActivity"
     )
     private const val SHELL_PKG_NAME = "com.android.wm.shell.flicker.testapp"
     @JvmStatic
-    val SHELL_SPLIT_SCREEN_PRIMARY = ComponentMatcher(
+    val SHELL_SPLIT_SCREEN_PRIMARY = ComponentNameMatcher(
         SHELL_PKG_NAME,
         "$SHELL_PKG_NAME.SplitScreenActivity"
     )
     @JvmStatic
-    val SHELL_SPLIT_SCREEN_SECONDARY = ComponentMatcher(
+    val SHELL_SPLIT_SCREEN_SECONDARY = ComponentNameMatcher(
         SHELL_PKG_NAME,
         "$SHELL_PKG_NAME.SplitScreenSecondaryActivity"
     )
 
     @JvmStatic
-    val SCREEN_DECOR_OVERLAY = ComponentMatcher("", "ScreenDecorOverlay")
+    val SCREEN_DECOR_OVERLAY = ComponentNameMatcher("", "ScreenDecorOverlay")
     @JvmStatic
-    val WALLPAPER = ComponentMatcher(
+    val WALLPAPER = ComponentNameMatcher(
         "", "com.breel.wallpapers18.soundviz.wallpaper.variations.SoundVizWallpaperV2"
     )
 }

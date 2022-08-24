@@ -22,9 +22,9 @@ import com.android.server.wm.traces.common.IComponentMatcher
 
 data class WaitForValidActivityState(
     @JvmField
-    val activityName: IComponentMatcher?,
+    val activityMatcher: IComponentMatcher?,
     @JvmField
-    val windowName: String?,
+    val windowIdentifier: String?,
     @JvmField
     val stackId: Int,
     @JvmField
@@ -34,15 +34,15 @@ data class WaitForValidActivityState(
 ) {
     constructor(activityName: IComponentMatcher) : this(
         activityName,
-        windowName = activityName.toWindowName(),
+        windowIdentifier = activityName.toWindowIdentifier(),
         stackId = ActivityTaskManager.INVALID_STACK_ID,
         windowingMode = WindowConfiguration.WINDOWING_MODE_UNDEFINED,
         activityType = WindowConfiguration.ACTIVITY_TYPE_UNDEFINED
     )
 
     private constructor(builder: Builder) : this(
-        activityName = builder.activityName,
-        windowName = builder.windowName,
+        activityMatcher = builder.activityName,
+        windowIdentifier = builder.windowIdentifier,
         stackId = builder.stackId,
         windowingMode = builder.windowingMode,
         activityType = builder.activityType
@@ -50,14 +50,14 @@ data class WaitForValidActivityState(
 
     override fun toString(): String {
         val sb = StringBuilder("wait:")
-        if (activityName != null) {
-            sb.append(" activity=").append(activityName.toActivityName())
+        if (activityMatcher != null) {
+            sb.append(" activity=").append(activityMatcher.toActivityIdentifier())
         }
         if (activityType != WindowConfiguration.ACTIVITY_TYPE_UNDEFINED) {
             sb.append(" type=").append(activityTypeName(activityType))
         }
-        if (windowName != null) {
-            sb.append(" window=").append(windowName)
+        if (windowIdentifier != null) {
+            sb.append(" window=").append(windowIdentifier)
         }
         if (windowingMode != WindowConfiguration.WINDOWING_MODE_UNDEFINED) {
             sb.append(" mode=").append(windowingModeName(windowingMode))
@@ -69,13 +69,13 @@ data class WaitForValidActivityState(
     }
 
     class Builder constructor(internal var activityName: IComponentMatcher? = null) {
-        internal var windowName: String? = activityName?.toWindowName()
+        internal var windowIdentifier: String? = activityName?.toWindowIdentifier()
         internal var stackId = ActivityTaskManager.INVALID_STACK_ID
         internal var windowingMode = WindowConfiguration.WINDOWING_MODE_UNDEFINED
         internal var activityType = WindowConfiguration.ACTIVITY_TYPE_UNDEFINED
 
-        fun setWindowName(windowName: String): Builder {
-            this.windowName = windowName
+        fun setWindowIdentifier(windowIdentifier: String): Builder {
+             this.windowIdentifier = windowIdentifier
             return this
         }
 
@@ -102,7 +102,7 @@ data class WaitForValidActivityState(
     companion object {
         @JvmStatic
         fun forWindow(windowName: String): WaitForValidActivityState {
-            return Builder().setWindowName(windowName).build()
+            return Builder().setWindowIdentifier(windowName).build()
         }
 
         private fun windowingModeName(windowingMode: Int): String {

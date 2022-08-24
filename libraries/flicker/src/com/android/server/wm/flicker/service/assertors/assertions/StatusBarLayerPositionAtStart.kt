@@ -19,11 +19,11 @@ package com.android.server.wm.flicker.service.assertors.assertions
 import com.android.server.wm.flicker.helpers.WindowUtils
 import com.android.server.wm.flicker.service.assertors.BaseAssertionBuilder
 import com.android.server.wm.flicker.traces.layers.LayersTraceSubject
-import com.android.server.wm.traces.common.ComponentMatcher
+import com.android.server.wm.traces.common.ComponentNameMatcher
 import com.android.server.wm.traces.common.transition.Transition
 
 /**
- * Checks if the [ComponentMatcher.STATUS_BAR] layer is placed at the correct position at the
+ * Checks if the [ComponentNameMatcher.STATUS_BAR] layer is placed at the correct position at the
  * start of the transition
  */
 class StatusBarLayerPositionAtStart : BaseAssertionBuilder() {
@@ -36,7 +36,7 @@ class StatusBarLayerPositionAtStart : BaseAssertionBuilder() {
         val startDisplay = targetSubject.entry.displays.firstOrNull { !it.isVirtual }
             ?: error("Display not found")
 
-        targetSubject.visibleRegion(ComponentMatcher.STATUS_BAR)
+        targetSubject.visibleRegion(ComponentNameMatcher.STATUS_BAR)
             .coversExactly(WindowUtils.getStatusBarPosition(startDisplay))
     }
 }

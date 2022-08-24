@@ -16,7 +16,7 @@
 
 package com.android.server.wm.traces.common.service.processors
 
-import com.android.server.wm.traces.common.ComponentMatcher
+import com.android.server.wm.traces.common.ComponentNameMatcher
 import com.android.server.wm.traces.common.ConditionList
 import com.android.server.wm.traces.common.DeviceStateDump
 import com.android.server.wm.traces.common.WindowManagerConditionsFactory.isImeShown
@@ -48,19 +48,20 @@ class ImeDisappearProcessor(logger: (String) -> Unit) : TransitionProcessor(logg
         private val isImeAppeared =
                 ConditionList(listOf(
                         isImeShown,
-                        isLayerColorAlphaOne(ComponentMatcher.IME),
-                        isLayerTransformFlagSet(ComponentMatcher.IME, Transform.TRANSLATE_VAL),
-                        isLayerTransformFlagSet(ComponentMatcher.IME, Transform.SCALE_VAL).negate()
+                        isLayerColorAlphaOne(ComponentNameMatcher.IME),
+                        isLayerTransformFlagSet(ComponentNameMatcher.IME, Transform.TRANSLATE_VAL),
+                        isLayerTransformFlagSet(ComponentNameMatcher.IME, Transform.SCALE_VAL)
+                                .negate()
                 ))
         private val isImeDisappearByGesture =
                 ConditionList(listOf(
                         isImeShown,
-                        isLayerColorAlphaOne(ComponentMatcher.IME).negate()
+                        isLayerColorAlphaOne(ComponentNameMatcher.IME).negate()
                 ))
         private val isImeDisappearByAppClose =
                 ConditionList(listOf(
                         isImeShown,
-                        isLayerTransformFlagSet(ComponentMatcher.IME, Transform.SCALE_VAL)
+                        isLayerTransformFlagSet(ComponentNameMatcher.IME, Transform.SCALE_VAL)
                 ))
 
         override fun doProcessState(
@@ -85,7 +86,7 @@ class ImeDisappearProcessor(logger: (String) -> Unit) : TransitionProcessor(logg
         ): FSMState {
             logger.invoke("(${current.layerState.timestamp}) IME disappear started.")
             val inputMethodLayer = current.layerState.visibleLayers.first {
-                it.name.contains(ComponentMatcher.IME.toLayerName())
+                ComponentNameMatcher.IME.layerMatchesAnyOf(it)
             }
             addStartTransitionTag(current, scenario, layerId = inputMethodLayer.id)
             return WaitImeDisappearFinished(tags, inputMethodLayer.id)

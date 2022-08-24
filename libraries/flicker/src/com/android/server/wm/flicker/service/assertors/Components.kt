@@ -17,7 +17,7 @@
 package com.android.server.wm.flicker.service.assertors
 
 import android.content.ComponentName
-import com.android.server.wm.traces.common.ComponentMatcher
+import com.android.server.wm.traces.common.ComponentNameMatcher
 import com.android.server.wm.traces.common.IComponentMatcher
 import com.android.server.wm.traces.common.transition.Transition
 import com.android.server.wm.traces.common.transition.Transition.Companion.Type.CLOSE
@@ -30,9 +30,9 @@ data class ComponentBuilder(
 
 object Components {
 
-    val NAV_BAR = ComponentBuilder("Navbar") { ComponentMatcher.NAV_BAR }
-    val STATUS_BAR = ComponentBuilder("StatusBar") { ComponentMatcher.STATUS_BAR }
-    val LAUNCHER = ComponentBuilder("Launcher") { ComponentMatcher.LAUNCHER }
+    val NAV_BAR = ComponentBuilder("Navbar") { ComponentNameMatcher.NAV_BAR }
+    val STATUS_BAR = ComponentBuilder("StatusBar") { ComponentNameMatcher.STATUS_BAR }
+    val LAUNCHER = ComponentBuilder("Launcher") { ComponentNameMatcher.LAUNCHER }
 
     val OPENING_APP = ComponentBuilder("OPENING_APP") { t: Transition -> openingAppFrom(t) }
     val CLOSING_APP = ComponentBuilder("CLOSING_APP") { t: Transition -> closingAppFrom(t) }
@@ -56,7 +56,7 @@ object Components {
         val openWindowName = openingWindows.first().windowName
         val component = ComponentName.unflattenFromString(openWindowName)
 
-        return ComponentMatcher(component!!.packageName, component.className)
+        return ComponentNameMatcher(component!!.packageName, component.className)
     }
 
     private fun closingAppFrom(transition: Transition): IComponentMatcher {
@@ -78,6 +78,6 @@ object Components {
         val closeWindowPackage = closeWindowName?.split('/')?.get(0) ?: ""
         val closeWindowClass = closeWindowName?.split('/')?.get(0) ?: ""
 
-        return ComponentMatcher(closeWindowPackage, closeWindowClass)
+        return ComponentNameMatcher(closeWindowPackage, closeWindowClass)
     }
 }

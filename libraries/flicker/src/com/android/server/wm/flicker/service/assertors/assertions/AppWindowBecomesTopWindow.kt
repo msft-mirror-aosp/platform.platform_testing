@@ -18,7 +18,7 @@ package com.android.server.wm.flicker.service.assertors.assertions
 
 import com.android.server.wm.flicker.service.assertors.ComponentBuilder
 import com.android.server.wm.flicker.traces.windowmanager.WindowManagerTraceSubject
-import com.android.server.wm.traces.common.ComponentMatcher
+import com.android.server.wm.traces.common.ComponentNameMatcher
 import com.android.server.wm.traces.common.transition.Transition
 
 /**
@@ -37,8 +37,8 @@ class AppWindowBecomesTopWindow(component: ComponentBuilder) :
             .then()
             .isAppWindowOnTop(
                 testApp
-                    .or(ComponentMatcher.SNAPSHOT)
-                    .or(ComponentMatcher.SPLASH_SCREEN)
+                    .or(ComponentNameMatcher.SNAPSHOT)
+                    .or(ComponentNameMatcher.SPLASH_SCREEN)
             )
     }
 }

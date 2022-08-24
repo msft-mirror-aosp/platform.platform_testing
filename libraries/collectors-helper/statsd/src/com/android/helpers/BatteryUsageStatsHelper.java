@@ -304,10 +304,13 @@ public class BatteryUsageStatsHelper implements ICollectorHelper<Long> {
         List<StatsLog.GaugeBucketInfo> beforeBuckets = new ArrayList<>();
         List<StatsLog.GaugeBucketInfo> afterBuckets = new ArrayList<>();
         for (StatsLog.GaugeMetricData gaugeMetricData : gaugeMetricList) {
-            if (gaugeMetricData.bucketInfo.length != 2) {
+            // It's possible for multiple statsd-based listeners to run at the same time, which
+            // causes there to be more than 2 buckets. To most safely collect the beginning and
+            // end of collection, we take the first and last buckets.
+            if (gaugeMetricData.bucketInfo.length < 2) {
                 throw new IllegalStateException(
                         String.format(
-                                "Expected exactly 2 buckets in data, but has %d.",
+                                "Expected at least 2 buckets in data, but has %d.",
                                 gaugeMetricData.bucketInfo.length));
             }
             beforeBuckets.add(gaugeMetricData.bucketInfo[0]);

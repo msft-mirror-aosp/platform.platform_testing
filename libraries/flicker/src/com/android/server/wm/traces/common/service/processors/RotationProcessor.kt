@@ -16,7 +16,7 @@
 
 package com.android.server.wm.traces.common.service.processors
 
-import com.android.server.wm.traces.common.ComponentMatcher
+import com.android.server.wm.traces.common.ComponentNameMatcher
 import com.android.server.wm.traces.common.DeviceStateDump
 import com.android.server.wm.traces.common.RectF
 import com.android.server.wm.traces.common.WindowManagerConditionsFactory
@@ -106,9 +106,9 @@ class RotationProcessor(logger: (String) -> Unit) : TransitionProcessor(logger) 
      */
     inner class WaitRotationFinished(tags: MutableMap<Long, MutableList<Tag>>) : BaseState(tags) {
         private val rotationLayerExists = WindowManagerConditionsFactory
-            .isLayerVisible(ComponentMatcher.ROTATION)
+            .isLayerVisible(ComponentNameMatcher.ROTATION)
         private val backSurfaceLayerExists = WindowManagerConditionsFactory
-            .isLayerVisible(ComponentMatcher.BACK_SURFACE)
+            .isLayerVisible(ComponentNameMatcher.BACK_SURFACE)
         private val areLayersAnimating = WindowManagerConditionsFactory.hasLayersAnimating()
         private val wmStateIdle = WindowManagerConditionsFactory
             .isAppTransitionIdle(/* default display */ 0)

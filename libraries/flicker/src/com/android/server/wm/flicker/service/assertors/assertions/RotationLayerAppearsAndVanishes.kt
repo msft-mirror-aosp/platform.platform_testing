@@ -18,11 +18,11 @@ package com.android.server.wm.flicker.service.assertors.assertions
 
 import com.android.server.wm.flicker.service.assertors.ComponentBuilder
 import com.android.server.wm.flicker.traces.layers.LayersTraceSubject
-import com.android.server.wm.traces.common.ComponentMatcher
+import com.android.server.wm.traces.common.ComponentNameMatcher
 import com.android.server.wm.traces.common.transition.Transition
 
 /**
- * Checks that the [ComponentMatcher.ROTATION] layer appears during the transition,
+ * Checks that the [ComponentNameMatcher.ROTATION] layer appears during the transition,
  * doesn't flicker, and disappears before the transition is complete.
  */
 class RotationLayerAppearsAndVanishes(component: ComponentBuilder) :
@@ -34,10 +34,10 @@ class RotationLayerAppearsAndVanishes(component: ComponentBuilder) :
     ) {
         layerSubject.isVisible(component.build(transition))
             .then()
-            .isVisible(ComponentMatcher.ROTATION)
+            .isVisible(ComponentNameMatcher.ROTATION)
             .then()
             .isVisible(component.build(transition))
-            .isInvisible(ComponentMatcher.ROTATION)
+            .isInvisible(ComponentNameMatcher.ROTATION)
             .forAllEntries()
     }
 }

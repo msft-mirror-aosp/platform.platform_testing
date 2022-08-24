@@ -25,7 +25,7 @@ import com.android.server.wm.flicker.readLayerTraceFromFile
 import com.android.server.wm.flicker.traces.layers.LayerTraceEntrySubject
 import com.android.server.wm.flicker.traces.layers.LayersTraceSubject
 import com.android.server.wm.traces.common.Cache
-import com.android.server.wm.traces.common.ComponentMatcher
+import com.android.server.wm.traces.common.ComponentNameMatcher
 import com.android.server.wm.traces.common.region.Region
 import com.google.common.truth.Truth
 import org.junit.Before
@@ -55,7 +55,7 @@ class LayerTraceEntrySubjectTest {
         assertThatErrorContainsDebugInfo(error)
         Truth.assertThat(error)
             .hasMessageThat()
-            .contains(TestComponents.IMAGINARY.classNames.first())
+            .contains(TestComponents.IMAGINARY.className)
         Truth.assertThat(error).hasMessageThat().contains(FlickerSubject.ASSERTION_TAG)
     }
 
@@ -63,7 +63,7 @@ class LayerTraceEntrySubjectTest {
     fun testCanInspectBeginning() {
         val layersTraceEntries = readLayerTraceFromFile("layers_trace_launch_split_screen.pb")
         LayerTraceEntrySubject.assertThat(layersTraceEntries.entries.first())
-            .isVisible(ComponentMatcher.NAV_BAR)
+            .isVisible(ComponentNameMatcher.NAV_BAR)
             .notContains(TestComponents.DOCKER_STACK_DIVIDER)
             .isVisible(TestComponents.LAUNCHER)
     }
@@ -72,7 +72,7 @@ class LayerTraceEntrySubjectTest {
     fun testCanInspectEnd() {
         val layersTraceEntries = readLayerTraceFromFile("layers_trace_launch_split_screen.pb")
         LayerTraceEntrySubject.assertThat(layersTraceEntries.entries.last())
-            .isVisible(ComponentMatcher.NAV_BAR)
+            .isVisible(ComponentNameMatcher.NAV_BAR)
             .isVisible(TestComponents.DOCKER_STACK_DIVIDER)
     }
 
@@ -107,7 +107,7 @@ class LayerTraceEntrySubjectTest {
         }
         assertFailure(error)
             .factValue("Could not find layers")
-                .contains(TestComponents.IMAGINARY.toWindowName())
+                .contains(TestComponents.IMAGINARY.toWindowIdentifier())
     }
 
     @Test
@@ -144,7 +144,7 @@ class LayerTraceEntrySubjectTest {
         val expectedVisibleRegion = Region.from(0, 0, 1440, 99)
         val error = assertThrows(AssertionError::class.java) {
             LayersTraceSubject.assertThat(trace).entry(937126074082)
-                .visibleRegion(ComponentMatcher.STATUS_BAR)
+                .visibleRegion(ComponentNameMatcher.STATUS_BAR)
                 .coversExactly(expectedVisibleRegion)
         }
         assertFailure(error)
@@ -157,7 +157,7 @@ class LayerTraceEntrySubjectTest {
         val trace = readLayerTraceFromFile("layers_trace_launch_split_screen.pb")
         val expectedVisibleRegion = Region.from(0, 0, 1080, 145)
         LayersTraceSubject.assertThat(trace).entry(90480846872160)
-            .visibleRegion(ComponentMatcher.STATUS_BAR)
+            .visibleRegion(ComponentNameMatcher.STATUS_BAR)
             .coversExactly(expectedVisibleRegion)
     }
 
@@ -182,7 +182,7 @@ class LayerTraceEntrySubjectTest {
         entry.visibleRegion(useCompositionEngineRegionOnly = false)
             .coversExactly(Region.from(0, 0, 1440, 2960))
 
-        entry.visibleRegion(ComponentMatcher.IME,
+        entry.visibleRegion(ComponentNameMatcher.IME,
             useCompositionEngineRegionOnly = false)
             .coversExactly(Region.from(0, 171, 1440, 2960))
     }

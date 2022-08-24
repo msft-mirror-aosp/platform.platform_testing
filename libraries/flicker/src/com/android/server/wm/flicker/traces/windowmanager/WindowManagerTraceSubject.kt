@@ -21,7 +21,7 @@ import com.android.server.wm.flicker.assertions.Assertion
 import com.android.server.wm.flicker.traces.FlickerFailureStrategy
 import com.android.server.wm.flicker.traces.FlickerTraceSubject
 import com.android.server.wm.flicker.traces.region.RegionTraceSubject
-import com.android.server.wm.traces.common.ComponentMatcher
+import com.android.server.wm.traces.common.ComponentNameMatcher
 import com.android.server.wm.traces.common.IComponentMatcher
 import com.android.server.wm.traces.common.region.RegionTrace
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
@@ -124,7 +124,7 @@ class WindowManagerTraceSubject private constructor(
         componentMatcher: IComponentMatcher,
         isOptional: Boolean
     ): WindowManagerTraceSubject = apply {
-        addAssertion("notContains(${componentMatcher.toWindowName()})", isOptional) {
+        addAssertion("notContains(${componentMatcher.toWindowIdentifier()})", isOptional) {
             it.notContains(componentMatcher)
         }
     }
@@ -141,7 +141,8 @@ class WindowManagerTraceSubject private constructor(
         componentMatcher: IComponentMatcher,
         isOptional: Boolean
     ): WindowManagerTraceSubject = apply {
-        addAssertion("isAboveAppWindowVisible(${componentMatcher.toWindowName()})", isOptional) {
+        addAssertion(
+                "isAboveAppWindowVisible(${componentMatcher.toWindowIdentifier()})", isOptional) {
             it.isAboveAppWindowVisible(componentMatcher)
         }
     }
@@ -158,7 +159,8 @@ class WindowManagerTraceSubject private constructor(
         componentMatcher: IComponentMatcher,
         isOptional: Boolean
     ): WindowManagerTraceSubject = apply {
-        addAssertion("isAboveAppWindowInvisible(${componentMatcher.toWindowName()})", isOptional) {
+        addAssertion(
+                "isAboveAppWindowInvisible(${componentMatcher.toWindowIdentifier()})", isOptional) {
             it.isAboveAppWindowInvisible(componentMatcher)
         }
     }
@@ -175,7 +177,8 @@ class WindowManagerTraceSubject private constructor(
         componentMatcher: IComponentMatcher,
         isOptional: Boolean
     ): WindowManagerTraceSubject = apply {
-        addAssertion("isBelowAppWindowVisible(${componentMatcher.toWindowName()})", isOptional) {
+        addAssertion(
+                "isBelowAppWindowVisible(${componentMatcher.toWindowIdentifier()})", isOptional) {
             it.isBelowAppWindowVisible(componentMatcher)
         }
     }
@@ -192,7 +195,8 @@ class WindowManagerTraceSubject private constructor(
         componentMatcher: IComponentMatcher,
         isOptional: Boolean
     ): WindowManagerTraceSubject = apply {
-        addAssertion("isBelowAppWindowInvisible(${componentMatcher.toWindowName()})", isOptional) {
+        addAssertion(
+                "isBelowAppWindowInvisible(${componentMatcher.toWindowIdentifier()})", isOptional) {
             it.isBelowAppWindowInvisible(componentMatcher)
         }
     }
@@ -209,7 +213,8 @@ class WindowManagerTraceSubject private constructor(
         componentMatcher: IComponentMatcher,
         isOptional: Boolean
     ): WindowManagerTraceSubject = apply {
-        addAssertion("isNonAppWindowVisible(${componentMatcher.toWindowName()})", isOptional) {
+        addAssertion(
+                "isNonAppWindowVisible(${componentMatcher.toWindowIdentifier()})", isOptional) {
             it.isNonAppWindowVisible(componentMatcher)
         }
     }
@@ -226,7 +231,8 @@ class WindowManagerTraceSubject private constructor(
         componentMatcher: IComponentMatcher,
         isOptional: Boolean
     ): WindowManagerTraceSubject = apply {
-        addAssertion("isNonAppWindowInvisible(${componentMatcher.toWindowName()})", isOptional) {
+        addAssertion(
+                "isNonAppWindowInvisible(${componentMatcher.toWindowIdentifier()})", isOptional) {
             it.isNonAppWindowInvisible(componentMatcher)
         }
     }
@@ -243,7 +249,8 @@ class WindowManagerTraceSubject private constructor(
         componentMatcher: IComponentMatcher,
         isOptional: Boolean
     ): WindowManagerTraceSubject = apply {
-        addAssertion("isAppWindowOnTop(${componentMatcher.toWindowName()})", isOptional) {
+        addAssertion(
+                "isAppWindowOnTop(${componentMatcher.toWindowIdentifier()})", isOptional) {
             it.isAppWindowOnTop(componentMatcher)
         }
     }
@@ -260,7 +267,8 @@ class WindowManagerTraceSubject private constructor(
         componentMatcher: IComponentMatcher,
         isOptional: Boolean
     ): WindowManagerTraceSubject = apply {
-        addAssertion("appWindowNotOnTop(${componentMatcher.toWindowName()})", isOptional) {
+        addAssertion(
+                "appWindowNotOnTop(${componentMatcher.toWindowIdentifier()})", isOptional) {
             it.isAppWindowNotOnTop(componentMatcher)
         }
     }
@@ -277,7 +285,8 @@ class WindowManagerTraceSubject private constructor(
         componentMatcher: IComponentMatcher,
         isOptional: Boolean
     ): WindowManagerTraceSubject = apply {
-        addAssertion("isAppWindowVisible(${componentMatcher.toWindowName()})", isOptional) {
+        addAssertion(
+                "isAppWindowVisible(${componentMatcher.toWindowIdentifier()})", isOptional) {
             it.isAppWindowVisible(componentMatcher)
         }
     }
@@ -311,7 +320,8 @@ class WindowManagerTraceSubject private constructor(
         isOptional: Boolean
     ): WindowManagerTraceSubject = apply {
         addAssertion(
-            "isAppSnapshotStartingWindowVisibleFor(${componentMatcher.toWindowName()})", isOptional
+            "isAppSnapshotStartingWindowVisibleFor(${componentMatcher.toWindowIdentifier()})",
+            isOptional
         ) {
             it.isAppSnapshotStartingWindowVisibleFor(componentMatcher)
         }
@@ -329,7 +339,7 @@ class WindowManagerTraceSubject private constructor(
         componentMatcher: IComponentMatcher,
         isOptional: Boolean
     ): WindowManagerTraceSubject = apply {
-        addAssertion("isAppWindowInvisible(${componentMatcher.toWindowName()})", isOptional) {
+        addAssertion("isAppWindowInvisible(${componentMatcher.toWindowIdentifier()})", isOptional) {
             it.isAppWindowInvisible(componentMatcher)
         }
     }
@@ -338,7 +348,7 @@ class WindowManagerTraceSubject private constructor(
     override fun doNotOverlap(
         vararg componentMatcher: IComponentMatcher
     ): WindowManagerTraceSubject = apply {
-        val repr = componentMatcher.joinToString(", ") { it.toWindowName() }
+        val repr = componentMatcher.joinToString(", ") { it.toWindowIdentifier() }
         addAssertion("noWindowsOverlap($repr)") {
             it.doNotOverlap(*componentMatcher)
         }
@@ -349,8 +359,8 @@ class WindowManagerTraceSubject private constructor(
         aboveWindowComponentMatcher: IComponentMatcher,
         belowWindowComponentMatcher: IComponentMatcher
     ): WindowManagerTraceSubject = apply {
-        val aboveWindowTitle = aboveWindowComponentMatcher.toWindowName()
-        val belowWindowTitle = belowWindowComponentMatcher.toWindowName()
+        val aboveWindowTitle = aboveWindowComponentMatcher.toWindowIdentifier()
+        val belowWindowTitle = belowWindowComponentMatcher.toWindowIdentifier()
         addAssertion("$aboveWindowTitle is above $belowWindowTitle") {
             it.isAboveWindow(aboveWindowComponentMatcher, belowWindowComponentMatcher)
         }
@@ -379,7 +389,7 @@ class WindowManagerTraceSubject private constructor(
         componentMatcher: IComponentMatcher,
         isOptional: Boolean
     ): WindowManagerTraceSubject = apply {
-        addAssertion("contains(${componentMatcher.toWindowName()})", isOptional) {
+        addAssertion("contains(${componentMatcher.toWindowIdentifier()})", isOptional) {
             it.contains(componentMatcher)
         }
     }
@@ -396,7 +406,8 @@ class WindowManagerTraceSubject private constructor(
         componentMatcher: IComponentMatcher,
         isOptional: Boolean
     ): WindowManagerTraceSubject = apply {
-        addAssertion("containsAboveAppWindow(${componentMatcher.toWindowName()})", isOptional) {
+        addAssertion(
+                "containsAboveAppWindow(${componentMatcher.toWindowIdentifier()})", isOptional) {
             it.containsAboveAppWindow(componentMatcher)
         }
     }
@@ -413,7 +424,8 @@ class WindowManagerTraceSubject private constructor(
         componentMatcher: IComponentMatcher,
         isOptional: Boolean
     ): WindowManagerTraceSubject = apply {
-        addAssertion("containsAppWindow(${componentMatcher.toWindowName()})", isOptional) {
+        addAssertion(
+                "containsAppWindow(${componentMatcher.toWindowIdentifier()})", isOptional) {
             it.containsAboveAppWindow(componentMatcher)
         }
     }
@@ -430,7 +442,8 @@ class WindowManagerTraceSubject private constructor(
         componentMatcher: IComponentMatcher,
         isOptional: Boolean
     ): WindowManagerTraceSubject = apply {
-        addAssertion("containsBelowAppWindows(${componentMatcher.toWindowName()})", isOptional) {
+        addAssertion(
+                "containsBelowAppWindows(${componentMatcher.toWindowIdentifier()})", isOptional) {
             it.containsBelowAppWindow(componentMatcher)
         }
     }
@@ -447,7 +460,8 @@ class WindowManagerTraceSubject private constructor(
         componentMatcher: IComponentMatcher,
         isOptional: Boolean
     ): WindowManagerTraceSubject = apply {
-        addAssertion("containsNonAppWindow(${componentMatcher.toWindowName()})", isOptional) {
+        addAssertion(
+                "containsNonAppWindow(${componentMatcher.toWindowIdentifier()})", isOptional) {
             it.containsNonAppWindow(componentMatcher)
         }
     }
@@ -508,7 +522,7 @@ class WindowManagerTraceSubject private constructor(
         componentMatcher: IComponentMatcher,
         isOptional: Boolean
     ): WindowManagerTraceSubject = apply {
-        addAssertion("isNotPinned(${componentMatcher.toWindowName()})", isOptional) {
+        addAssertion("isNotPinned(${componentMatcher.toWindowIdentifier()})", isOptional) {
             it.isNotPinned(componentMatcher)
         }
     }
@@ -526,7 +540,7 @@ class WindowManagerTraceSubject private constructor(
         componentMatcher: IComponentMatcher,
         isOptional: Boolean
     ): WindowManagerTraceSubject = apply {
-        addAssertion("isPinned(${componentMatcher.toWindowName()})", isOptional) {
+        addAssertion("isPinned(${componentMatcher.toWindowIdentifier()})", isOptional) {
             it.isPinned(componentMatcher)
         }
     }
@@ -576,7 +590,8 @@ class WindowManagerTraceSubject private constructor(
         componentMatcher: IComponentMatcher,
         isOptional: Boolean
     ): WindowManagerTraceSubject = apply {
-        addAssertion("notContainsAppWindow(${componentMatcher.toWindowName()})", isOptional) {
+        addAssertion(
+                "notContainsAppWindow(${componentMatcher.toWindowIdentifier()})", isOptional) {
             it.notContainsAppWindow(componentMatcher)
         }
     }
@@ -585,16 +600,16 @@ class WindowManagerTraceSubject private constructor(
      * Checks that all visible layers are shown for more than one consecutive entry
      */
     fun visibleWindowsShownMoreThanOneConsecutiveEntry(
-        ignoreWindows: List<ComponentMatcher> = listOf(
-            ComponentMatcher.SPLASH_SCREEN,
-            ComponentMatcher.SNAPSHOT
+        ignoreWindows: List<ComponentNameMatcher> = listOf(
+            ComponentNameMatcher.SPLASH_SCREEN,
+            ComponentNameMatcher.SNAPSHOT
         )
     ): WindowManagerTraceSubject = apply {
         visibleEntriesShownMoreThanOneConsecutiveTime { subject ->
             subject.wmState.windowStates
                 .filter { it.isVisible }
                 .filter {
-                    ignoreWindows.none { windowName -> windowName.toWindowName() in it.title }
+                    ignoreWindows.none { windowName -> windowName.windowMatchesAnyOf(it) }
                 }
                 .map { it.name }
                 .toSet()

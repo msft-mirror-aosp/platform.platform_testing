@@ -116,7 +116,7 @@ class LayerTraceEntrySubject private constructor(
         }
 
         if (selectedLayers.isEmpty()) {
-            val str = componentMatcher?.toLayerName() ?: "<any>"
+            val str = componentMatcher?.toLayerIdentifier() ?: "<any>"
             fail(
                 listOf(
                     Fact.fact(ASSERTION_TAG, "visibleRegion($str)"),
@@ -141,8 +141,8 @@ class LayerTraceEntrySubject private constructor(
         val found = componentMatcher.layerMatchesAnyOf(entry.flattenedLayers)
         if (!found) {
             fail(
-                Fact.fact(ASSERTION_TAG, "contains(${componentMatcher.toLayerName()})"),
-                Fact.fact("Could not find", componentMatcher.toLayerName())
+                Fact.fact(ASSERTION_TAG, "contains(${componentMatcher.toLayerIdentifier()})"),
+                Fact.fact("Could not find", componentMatcher.toLayerIdentifier())
             )
         }
     }
@@ -152,7 +152,7 @@ class LayerTraceEntrySubject private constructor(
         val foundEntry = subjects
             .firstOrNull { it.layer != null && componentMatcher.layerMatchesAnyOf(it.layer) }
         foundEntry?.fail(
-            Fact.fact(ASSERTION_TAG, "notContains(${componentMatcher.toLayerName()})"),
+            Fact.fact(ASSERTION_TAG, "notContains(${componentMatcher.toLayerIdentifier()})"),
             Fact.fact("Could find", foundEntry)
         )
     }
@@ -184,7 +184,7 @@ class LayerTraceEntrySubject private constructor(
 
         if (reason.isNotEmpty()) {
             target?.fail(
-                Fact.fact(ASSERTION_TAG, "isVisible(${componentMatcher.toLayerName()})"),
+                Fact.fact(ASSERTION_TAG, "isVisible(${componentMatcher.toLayerIdentifier()})"),
                 *reason.toTypedArray()
             )
         }
@@ -207,7 +207,7 @@ class LayerTraceEntrySubject private constructor(
                 it.isVisible
             }
         foundEntry?.fail(
-            Fact.fact(ASSERTION_TAG, "isInvisible(${componentMatcher.toLayerName()})"),
+            Fact.fact(ASSERTION_TAG, "isInvisible(${componentMatcher.toLayerIdentifier()})"),
             Fact.fact("Is visible", foundEntry)
         )
     }
@@ -218,32 +218,37 @@ class LayerTraceEntrySubject private constructor(
     ): LayerTraceEntrySubject = apply {
         var target: FlickerSubject? = null
         var reason: Fact? = null
-        val layerActivityRecordFilter = componentMatcher.toActivityRecordFilter()
-        val filteredLayers = subjects
-            .filter { layerActivityRecordFilter.containsMatchIn(it.name) }
 
-        if (filteredLayers.isEmpty()) {
+        val matchingLayer = subjects.mapNotNull { it.layer }.filter {
+            componentMatcher.layerMatchesAnyOf(it)
+        }
+        val matchingActivityRecords = matchingLayer.mapNotNull {
+            getActivityRecordFor(it)
+        }
+
+        if (matchingActivityRecords.isEmpty()) {
             fail(
                 Fact.fact(ASSERTION_TAG,
-                    "isSplashScreenVisibleFor(${componentMatcher.toLayerName()})"),
-                Fact.fact("Could not find Activity Record layer", componentMatcher.toWindowName())
+                    "isSplashScreenVisibleFor(${componentMatcher.toLayerIdentifier()})"),
+                Fact.fact("Could not find Activity Record layer",
+                        componentMatcher.toLayerIdentifier())
             )
             return this
         }
 
         // Check the matched activity record layers for containing splash screens
-        for (layer in filteredLayers) {
+        for (layer in matchingActivityRecords) {
             val splashScreenContainers =
-                layer.layer?.children?.filter { it.name.contains("Splash Screen") }
-            val splashScreenLayers = splashScreenContainers?.flatMap {
+                layer.children.filter { it.name.contains("Splash Screen") }
+            val splashScreenLayers = splashScreenContainers.flatMap {
                 it.children.filter { childLayer ->
                     childLayer.name.contains("Splash Screen")
                 }
             }
 
-            if (splashScreenLayers?.all { it.isHiddenByParent || !it.isVisible } != false) {
+            if (splashScreenLayers.all { it.isHiddenByParent || !it.isVisible }) {
                 reason = Fact.fact("No splash screen visible for", layer.name)
-                target = layer
+                target = subjects.first { it.layer == layer }
                 continue
             }
             reason = null
@@ -254,7 +259,7 @@ class LayerTraceEntrySubject private constructor(
         reason?.run {
             target?.fail(
                 Fact.fact(ASSERTION_TAG,
-                    "isSplashScreenVisibleFor(${componentMatcher.toLayerName()})"),
+                    "isSplashScreenVisibleFor(${componentMatcher.toLayerIdentifier()})"),
                 reason
             )
         }
@@ -292,6 +297,14 @@ class LayerTraceEntrySubject private constructor(
         return subjects.firstOrNull {
             it.layer?.run { predicate(this) } ?: false
         } ?: LayerSubject.assertThat(name, this, timestamp)
+    }
+
+    private fun getActivityRecordFor(layer: Layer): Layer? {
+        if (layer.name.startsWith("ActivityRecord{")) {
+            return layer
+        }
+        val parent = layer.parent ?: return null
+        return getActivityRecordFor(parent)
     }
 
     override fun toString(): String {
