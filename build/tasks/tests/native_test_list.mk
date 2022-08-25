@@ -38,12 +38,23 @@ native_tests := \
     bootstat_tests \
     boringssl_crypto_test \
     boringssl_ssl_test \
+    bsdiff_unittest \
     buffer_hub-test \
     buffer_hub_queue-test \
     buffer_hub_queue_producer-test \
     bugreportz_test \
-    bsdiff_unittest \
+    bytes_test_tests_test_buf \
+    bytes_test_tests_test_buf_mut \
+    bytes_test_tests_test_bytes \
+    bytes_test_tests_test_bytes_odd_alloc \
+    bytes_test_tests_test_bytes_vec_alloc \
+    bytes_test_tests_test_chain \
+    bytes_test_tests_test_debug \
+    bytes_test_tests_test_iter \
+    bytes_test_tests_test_reader \
+    bytes_test_tests_test_take \
     camera_client_test \
+    cesu8_test_src_lib \
     clatd_test \
     confirmationui_invocation_test \
     debuggerd_test \
@@ -68,6 +79,7 @@ native_tests := \
     installd_otapreopt_test \
     installd_service_test \
     installd_utils_test \
+    jni_test_src_lib \
     keystore2_crypto_test_rust \
     keystore2_selinux_test \
     keystore2_test \
@@ -75,6 +87,7 @@ native_tests := \
     libandroidfw_tests \
     libappfuse_test \
     libbase_test \
+    libbinder_rs-internal_test \
     libbpf_android_test \
     libcutils_test \
     libcutils_test_static \
@@ -90,10 +103,15 @@ native_tests := \
     libtextclassifier_tests \
     libsurfaceflinger_unittest \
     libunwindstack_unit_test \
+    libuwb_core_tests \
+    libuwb_uci_jni_rust_tests \
+    libuwb_uci_rust_tests \
+    libuwb_uci_packet_tests \
     libvintf_test \
     linker-unit-tests \
     logcat-unit-tests \
     logd-unit-tests \
+    logger_device_unit_tests \
     kernel-config-unit-tests \
     malloc_debug_unit_tests \
     memory_replay_tests \
@@ -125,6 +143,8 @@ native_tests := \
     netd_unit_test \
     netdutils_test \
     nfc_test_utils \
+    num-traits_test_src_lib \
+    num-traits_test_tests_cast \
     perfetto_integrationtests \
     posix_async_io_test \
     prioritydumper_test \
@@ -235,9 +255,12 @@ native_tests := \
     NeuralNetworksTest_static \
     NeuralNetworksTest_utils \
     SurfaceFlinger_test \
-    lmkd_unit_test \
-    vrflinger_test
+    lmkd_unit_test
 
 ifeq ($(BOARD_IS_AUTOMOTIVE), true)
 native_tests += libwatchdog_test
+endif
+
+ifneq ($(strip $(BOARD_PERFSETUP_SCRIPT)),)
+native_tests += perf-setup
 endif
