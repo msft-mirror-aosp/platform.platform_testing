@@ -380,7 +380,7 @@ class FlickerBlockJUnit4ClassRunner @JvmOverloads constructor(
 
             val isFlickerServiceCompatible = TestClass(testClass).annotations
                 .filterIsInstance<FlickerServiceCompatible>().firstOrNull() != null
-            if (isFlickerServiceCompatible) {
+            if (IS_FAAS_ENABLED && isFlickerServiceCompatible) {
                 flickerTestParameter.enableFaas()
             }
 

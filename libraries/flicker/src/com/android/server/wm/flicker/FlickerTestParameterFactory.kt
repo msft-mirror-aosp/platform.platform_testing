@@ -18,6 +18,7 @@ package com.android.server.wm.flicker
 
 import android.view.Surface
 import android.view.WindowManagerPolicyConstants
+import com.android.server.wm.flicker.helpers.IS_FAAS_ENABLED
 
 /**
  * Factory for creating JUnit4 compatible tests based on the flicker DSL
@@ -84,7 +85,7 @@ open class FlickerTestParameterFactory {
             FlickerTestParameter.START_ROTATION to startRotation,
             FlickerTestParameter.END_ROTATION to endRotation,
             FlickerTestParameter.REPETITIONS to repetitions,
-            FlickerTestParameter.FAAS_ENABLED to faasEnabled
+            FlickerTestParameter.FAAS_ENABLED to (faasEnabled && IS_FAAS_ENABLED)
         )
     )
 

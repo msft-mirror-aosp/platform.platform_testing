@@ -158,6 +158,8 @@ class WindowManagerState(
     val focusedWindow: WindowState? get() =
         visibleWindows.firstOrNull { it.name == _focusedWindow }
 
+    val isKeyguardShowing: Boolean get() = keyguardControllerState.isKeyguardShowing
+    val isAodShowing: Boolean get() = keyguardControllerState.isAodShowing
     /**
      * Checks if the device state supports rotation, i.e., if the rotation sensor is
      * enabled (e.g., launcher) and if the rotation not fixed

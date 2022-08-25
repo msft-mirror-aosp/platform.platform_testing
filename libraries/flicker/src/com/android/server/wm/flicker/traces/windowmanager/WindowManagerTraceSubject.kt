@@ -305,6 +305,19 @@ class WindowManagerTraceSubject private constructor(
     }
 
     /** {@inheritDoc} */
+    override fun isKeyguardShowing(): WindowManagerTraceSubject =
+        isKeyguardShowing(isOptional = false)
+
+    /**
+     * See [isKeyguardShowing]
+     */
+    fun isKeyguardShowing(isOptional: Boolean): WindowManagerTraceSubject = apply {
+        addAssertion("isKeyguardShowing()", isOptional) {
+            it.isKeyguardShowing()
+        }
+    }
+
+    /** {@inheritDoc} */
     override fun isAppSnapshotStartingWindowVisibleFor(
         componentMatcher: IComponentMatcher
     ): WindowManagerTraceSubject = isAppSnapshotStartingWindowVisibleFor(

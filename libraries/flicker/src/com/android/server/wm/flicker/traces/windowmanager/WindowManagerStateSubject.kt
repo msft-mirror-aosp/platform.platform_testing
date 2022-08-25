@@ -413,6 +413,16 @@ class WindowManagerStateSubject private constructor(
     }
 
     /** {@inheritDoc} */
+    override fun isKeyguardShowing(): WindowManagerStateSubject = apply {
+        if (!wmState.isKeyguardShowing) {
+            fail(
+                Fact.fact(ASSERTION_TAG, "isKeyguardShowing()"),
+                Fact.fact("Keyguard showing", wmState.isKeyguardShowing)
+            )
+        }
+    }
+
+    /** {@inheritDoc} */
     override fun isAppWindowInvisible(
         componentMatcher: IComponentMatcher
     ): WindowManagerStateSubject = apply {

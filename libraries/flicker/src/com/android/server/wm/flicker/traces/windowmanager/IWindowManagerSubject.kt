@@ -181,6 +181,11 @@ interface IWindowManagerSubject<WMSubjectType, RegionSubjectType> {
     fun hasNoVisibleAppWindow(): WMSubjectType
 
     /**
+     * Asserts the state contains no visible app windows.
+     */
+    fun isKeyguardShowing(): WMSubjectType
+
+    /**
      * Asserts the state contains an invisible window [WindowState] matching [componentMatcher].
      *
      * Also, if [componentMatcher] has a package name (i.e., is not a system component), also

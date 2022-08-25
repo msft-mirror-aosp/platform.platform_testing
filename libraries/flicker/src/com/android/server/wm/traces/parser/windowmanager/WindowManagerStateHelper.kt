@@ -385,6 +385,13 @@ open class WindowManagerStateHelper @JvmOverloads constructor(
         }
 
         /**
+         * Waits until the keyguard is showing
+         */
+        fun withKeyguardShowing() = add("withKeyguardShowing") {
+            it.wmState.isKeyguardShowing
+        }
+
+        /**
          * Wait for the activities to appear in proper stacks and for valid state in AM and WM.
          *
          * @param waitForActivityState array of activity states to wait for.
