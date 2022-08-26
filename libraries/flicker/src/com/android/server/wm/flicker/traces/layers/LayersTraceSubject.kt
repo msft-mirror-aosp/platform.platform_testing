@@ -122,6 +122,7 @@ class LayersTraceSubject private constructor(
         ignoreLayers: List<IComponentMatcher> = listOf(
             ComponentNameMatcher.SPLASH_SCREEN,
             ComponentNameMatcher.SNAPSHOT,
+            ComponentNameMatcher.IME_SNAPSHOT,
             EdgeExtensionComponentMatcher()
         )
     ): LayersTraceSubject = apply {

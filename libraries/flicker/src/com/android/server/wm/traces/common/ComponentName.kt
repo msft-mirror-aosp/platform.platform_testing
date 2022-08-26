@@ -30,9 +30,7 @@ import kotlin.js.JsName
  * implements the component.
  */
 data class ComponentName(
-    @JsName("packageName")
     override val packageName: String,
-    @JsName("className")
     override val className: String
 ) : IComponentName {
     /**
@@ -40,7 +38,6 @@ data class ComponentName(
      *
      * See [ComponentName.toWindowName] for additional information
      */
-    @JsName("toActivityName")
     override fun toActivityName(): String {
         return when {
             packageName.isNotEmpty() && className.isNotEmpty() -> {
@@ -63,7 +60,6 @@ data class ComponentName(
      * If the component doesn't have a package name, assume it's a system component and return only
      * the class name
      */
-    @JsName("toWindowName")
     override fun toWindowName(): String {
         return when {
             packageName.isNotEmpty() && className.isNotEmpty() -> "$packageName/$className"
@@ -89,7 +85,6 @@ data class ComponentName(
      *
      * See [toWindowName] for additional information
      */
-    @JsName("toLayerName")
     override fun toLayerName(): String {
         var result = this.toWindowName()
         if (result.contains("/") && !result.contains("#")) {
