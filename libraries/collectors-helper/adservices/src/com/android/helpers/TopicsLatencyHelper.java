@@ -53,7 +53,7 @@ public class TopicsLatencyHelper implements ICollectorHelper<Long> {
             DateTimeFormatter.ofPattern("MM-dd HH:mm:ss.SSS").withZone(ZoneId.systemDefault());
 
     private static final Pattern sLatencyMetricPattern =
-            Pattern.compile("TopicsCrystalBallTest: \\((.*): (\\d+)\\)");
+            Pattern.compile("GetTopicsApiCall: \\((.*): (\\d+)\\)");
 
     private Instant mInstant;
     private final Clock mClock;
@@ -99,7 +99,7 @@ public class TopicsLatencyHelper implements ICollectorHelper<Long> {
             while (matcher.find()) {
                 /**
                  * The lines from Logcat will look like: 06-13 18:09:24.058 20765 20781 D
-                 * TopicsCrystalBallTest: (TOPICS_HOT_START_LATENCY_METRIC: 14)
+                 * GetTopicsApiCall: (TOPICS_HOT_START_LATENCY_METRIC: 14)
                  */
                 String metric = matcher.group(1);
                 long latency = Long.parseLong(matcher.group(2));
@@ -110,7 +110,6 @@ public class TopicsLatencyHelper implements ICollectorHelper<Long> {
                 }
             }
         }
-
         return output;
     }
 
@@ -121,14 +120,14 @@ public class TopicsLatencyHelper implements ICollectorHelper<Long> {
 
     @VisibleForTesting
     public static class MetricsEventStreamReader {
-        /** Return TopicsCrystalBallTest logs that will be used to build the test metrics. */
+        /** Return GetTopicsApiCall logs that will be used to build the test metrics. */
         public InputStream getMetricsEvents(Instant startTime) throws IOException {
             ProcessBuilder pb =
                     new ProcessBuilder(
                             Arrays.asList(
                                     "logcat",
                                     "-s",
-                                    "TopicsCrystalBallTest:D",
+                                    "GetTopicsApiCall:D",
                                     "-t",
                                     LOG_TIME_FORMATTER.format(startTime)));
             return pb.start().getInputStream();
