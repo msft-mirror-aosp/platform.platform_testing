@@ -26,7 +26,12 @@ import androidx.annotation.Nullable;
 
 import java.util.List;
 
-/** An App Helper interface for the Notification. */
+/**
+ * An App Helper interface for the Notification.
+ *
+ * @deprecated use classes from the "systemui-tapl" library instead
+ */
+@Deprecated
 public interface INotificationHelper extends IAppHelper {
 
     String NOTIFICATION_CONTENT_TEXT = "Test notification content";
