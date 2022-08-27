@@ -172,18 +172,4 @@ class LayerTraceEntrySubjectTest {
             .factValue("Is Invisible", 0)
             .contains("Bounds is 0x0")
     }
-
-    @Test
-    fun testCanParseWithoutHWC_visibleRegion() {
-        val layersTrace = readLayerTraceFromFile("layers_trace_no_hwc_composition.pb")
-        val entry = LayersTraceSubject.assertThat(layersTrace)
-            .entry(238517209878020)
-
-        entry.visibleRegion(useCompositionEngineRegionOnly = false)
-            .coversExactly(Region.from(0, 0, 1440, 2960))
-
-        entry.visibleRegion(ComponentNameMatcher.IME,
-            useCompositionEngineRegionOnly = false)
-            .coversExactly(Region.from(0, 171, 1440, 2960))
-    }
 }

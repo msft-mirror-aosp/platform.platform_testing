@@ -28,7 +28,7 @@ import kotlin.js.JsName
  * {@inheritDoc}
  */
 class LayerProperties private constructor(
-    override val visibleRegion: Region? = null,
+    override val visibleRegion: Region = Region.EMPTY,
     override val activeBuffer: ActiveBuffer = ActiveBuffer.EMPTY,
     override val flags: Int = 0,
     override val bounds: RectF = RectF.EMPTY,
@@ -37,7 +37,7 @@ class LayerProperties private constructor(
     override val shadowRadius: Float = 0f,
     override val cornerRadius: Float = 0f,
     override val type: String = "",
-    private val _screenBounds: RectF? = null,
+    override val screenBounds: RectF = RectF.EMPTY,
     override val transform: Transform = Transform.EMPTY,
     override val sourceBounds: RectF = RectF.EMPTY,
     override val effectiveScalingMode: Int = 0,
@@ -56,16 +56,10 @@ class LayerProperties private constructor(
     override val inputTransform: Transform = Transform.EMPTY,
     override val inputRegion: Region? = null
 ) : ILayerProperties {
-    override val screenBounds: RectF = when {
-        visibleRegion?.isNotEmpty == true -> visibleRegion.toRectF()
-        _screenBounds != null -> _screenBounds
-        else -> transform.apply(bounds)
-    }
-
     override val isOpaque: Boolean = if (color.a != 1.0f) false else _isOpaque
 
     override fun hashCode(): Int {
-        var result = visibleRegion?.hashCode() ?: 0
+        var result = visibleRegion.hashCode()
         result = 31 * result + activeBuffer.hashCode()
         result = 31 * result + flags
         result = 31 * result + bounds.hashCode()
@@ -74,7 +68,7 @@ class LayerProperties private constructor(
         result = 31 * result + shadowRadius.hashCode()
         result = 31 * result + cornerRadius.hashCode()
         result = 31 * result + type.hashCode()
-        result = 31 * result + (_screenBounds?.hashCode() ?: 0)
+        result = 31 * result + screenBounds.hashCode()
         result = 31 * result + transform.hashCode()
         result = 31 * result + sourceBounds.hashCode()
         result = 31 * result + effectiveScalingMode
@@ -101,7 +95,7 @@ class LayerProperties private constructor(
         return "LayerProperties(visibleRegion=$visibleRegion, activeBuffer=$activeBuffer, " +
             "flags=$flags, bounds=$bounds, color=$color, _isOpaque=$_isOpaque, " +
             "shadowRadius=$shadowRadius, cornerRadius=$cornerRadius, type='$type', " +
-            "_screenBounds=$_screenBounds, transform=$transform, sourceBounds=$sourceBounds, " +
+            "screenBounds=$screenBounds, transform=$transform, sourceBounds=$sourceBounds, " +
             "effectiveScalingMode=$effectiveScalingMode, bufferTransform=$bufferTransform, " +
             "hwcCompositionType=$hwcCompositionType, hwcCrop=$hwcCrop, hwcFrame=$hwcFrame, " +
             "backgroundBlurRadius=$backgroundBlurRadius, crop=$crop, isRelativeOf=$isRelativeOf, " +
@@ -124,7 +118,7 @@ class LayerProperties private constructor(
         if (shadowRadius != other.shadowRadius) return false
         if (cornerRadius != other.cornerRadius) return false
         if (type != other.type) return false
-        if (_screenBounds != other._screenBounds) return false
+        if (screenBounds != other.screenBounds) return false
         if (transform != other.transform) return false
         if (sourceBounds != other.sourceBounds) return false
         if (effectiveScalingMode != other.effectiveScalingMode) return false
@@ -154,7 +148,7 @@ class LayerProperties private constructor(
 
         @JsName("from")
         fun from(
-            visibleRegion: Region?,
+            visibleRegion: Region,
             activeBuffer: ActiveBuffer,
             flags: Int,
             bounds: RectF,
@@ -163,7 +157,7 @@ class LayerProperties private constructor(
             shadowRadius: Float,
             cornerRadius: Float,
             type: String,
-            screenBounds: RectF?,
+            screenBounds: RectF,
             transform: Transform,
             sourceBounds: RectF,
             effectiveScalingMode: Int,

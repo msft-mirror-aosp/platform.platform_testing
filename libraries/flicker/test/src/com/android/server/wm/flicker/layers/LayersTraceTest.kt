@@ -65,16 +65,6 @@ class LayersTraceTest {
     }
 
     @Test
-    fun testCanParseTraceWithoutHWC() {
-        val layersTrace = readLayerTraceFromFile("layers_trace_no_hwc_composition.pb")
-        layersTrace.forEach { entry ->
-            Truth.assertWithMessage("Should have visible layers in all trace entries")
-                .that(entry.visibleLayers).asList()
-                .isNotEmpty()
-        }
-    }
-
-    @Test
     fun canParseFromDumpWithDisplay() {
         val trace = readLayerTraceFromFile("layers_dump_with_display.pb")
         Truth.assertWithMessage("Dump is not empty")

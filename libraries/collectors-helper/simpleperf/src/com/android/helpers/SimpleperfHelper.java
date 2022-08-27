@@ -31,7 +31,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * SimpleperfHelper is used to start and stop simpleperf sample collection and move the output
@@ -54,7 +53,7 @@ public class SimpleperfHelper {
     private static final int SIMPLEPERF_STOP_WAIT_COUNT = 60;
     private static final long SIMPLEPERF_STOP_WAIT_TIME = 15000;
 
-    private UiDevice mUiDevice;
+    private final UiDevice mUiDevice;
 
     /** Constructor to receive visible UiDevice. Should not be used except for testing. */
     @VisibleForTesting
@@ -154,7 +153,7 @@ public class SimpleperfHelper {
         }
 
         String stopOutput = mUiDevice.executeShellCommand(SIMPLEPERF_STOP_CMD);
-        Log.i(LOG_TAG, String.format("Simpleperf stop command ran"));
+        Log.i(LOG_TAG, String.format("Simpleperf stop command ran: %s", SIMPLEPERF_STOP_CMD));
         int waitCount = 0;
         while (isSimpleperfRunning()) {
             if (waitCount < SIMPLEPERF_STOP_WAIT_COUNT) {
@@ -179,78 +178,89 @@ public class SimpleperfHelper {
      *     symbol.
      */
     public Map<String /*event-process-symbol*/, String /*eventCount*/> getSimpleperfReport(
-            String path, Map.Entry<String, String> processToPid, Set<String> symbols) {
-        Map<String, String> results = new HashMap<>();
+            String path,
+            Map.Entry<String, String> processToPid,
+            String[] symbols,
+            String metricsPrefix) {
         try {
-            mUiDevice.executeShellCommand(
+            String reportCommand =
                     String.format(
-                            "simpleperf report -i %s --pids %s --sort pid,symbol -o %s",
-                            path, processToPid.getValue(), SIMPLEPERF_REPORT_TMP_FILE_PATH));
-            results.putAll(
-                    getMetrics(SIMPLEPERF_REPORT_TMP_FILE_PATH, processToPid.getKey(), symbols));
-            Log.i(LOG_TAG, "Simpleperf Metrics report collected. " + results);
+                            "simpleperf report -i %s --pids %s --sort pid,symbol -o %s"
+                                    + " --print-event-count --children",
+                            path, processToPid.getValue(), SIMPLEPERF_REPORT_TMP_FILE_PATH);
+            Log.i(LOG_TAG, String.format("Report command: %s", reportCommand));
+            mUiDevice.executeShellCommand(reportCommand);
+            return getMetrics(processToPid.getKey(), symbols, metricsPrefix);
         } catch (IOException e) {
             Log.e(LOG_TAG, "Could not generate report: " + e.getMessage());
         }
-        return results;
+        return new HashMap<>();
     }
 
     /**
      * Utility method for extracting metrics from given simpleperf report.
      *
-     * @param path File path to new decoded binary report to extract information from.
      * @param process Individually extracted processes recorded in binary record file.
      * @param symbols Symbols to report events from the processes recorded.
+     * @param metricsPrefix
      * @return Map containing recorded event counts from symbols within process
      */
-    private Map<String, String> getMetrics(String path, String process, Set<String> symbols) {
+    private Map<String, String> getMetrics(String process, String[] symbols, String metricsPrefix) {
         Map<String, String> results = new HashMap<>();
-        String eventName = "";
-        long totalEventCount = 0;
         try {
-            BufferedReader reader = new BufferedReader(new FileReader(path));
+            String eventName = "";
+            BufferedReader reader =
+                    new BufferedReader(
+                            new FileReader(SimpleperfHelper.SIMPLEPERF_REPORT_TMP_FILE_PATH));
             for (String line; (line = reader.readLine()) != null; ) {
                 // Checking for top of the report to find event name and event count.
-                // Ex:
-                // Cmdline: /system/bin/simpleperf record -e instructions,cpu-cycles -o
-                // multiTest.data -p 680,1696 --duration 10
-                // Arch: arm64
-                // Event: instructions (type 0, config 1)
-                // Samples: 29542
                 // Event count: 3498520605
                 if (line.contains(": ")) {
                     String[] splitLine = line.split(": ");
                     if (splitLine[0].equals("Event")) {
                         eventName = splitLine[1].split(" ")[0];
                     } else if (splitLine[0].equals("Event count")) {
-                        String totalEventCountString = splitLine[1];
-                        results.put(eventName + "-" + process, totalEventCountString);
-                        totalEventCount = Long.parseLong(totalEventCountString);
+                        String key = String.join("-", metricsPrefix, process, eventName);
+                        results.put(key, splitLine[1]);
                     }
                 }
                 // Parsing lines for specific symbols in report to store with event count to results
-                // metric by converting percentage to event count.
-                // Ex:
-                // 0.02%     680   android::SurfaceFlinger::commit(long, long, long)
+                // Children  Self    AccEventCount  SelfEventCount  Pid   Symbol
+                // 54.20%    0.00%   122803507      0               2510  __start_thread
                 else if (line.contains("%")) {
-                    String[] splitLine = line.split("\\s+", 3);
-                    String parsedSymbol = splitLine[2].trim();
-                    if (!symbols.contains(parsedSymbol)) {
+                    final String[] splitLine = line.split("\\s+", 6);
+                    final String parsedSymbol = splitLine[5].trim();
+                    final String matchedSymbol = getMatchingSymbol(symbols, parsedSymbol);
+                    if (matchedSymbol == null) {
                         continue;
                     }
+                    String key = String.join("-", metricsPrefix, process, matchedSymbol, eventName);
+                    if (results.containsKey(key + "-percentage")) {
+                        // We are searching for symbols with partial matches so only include the
+                        // first hit if we get multiple matches.
+                        continue;
+                    }
+
                     // Remove trailing %
-                    splitLine[0] = splitLine[0].substring(0, splitLine[0].length() - 1);
-                    double percentage = Float.parseFloat(splitLine[0]);
-                    long eventCount = Math.round(percentage * totalEventCount);
-                    String eventCountString = String.valueOf(eventCount);
-                    String key = String.join("-", eventName, process, parsedSymbol);
-                    results.put(key, eventCountString);
+                    String percentage = splitLine[0].substring(0, splitLine[0].length() - 1);
+                    results.put(key + "-percentage", percentage);
+                    String eventCount = splitLine[2].trim();
+                    results.put(key + "-eventCount", eventCount);
                 }
             }
         } catch (Exception e) {
             Log.e(LOG_TAG, "Could not open report file: " + e.getMessage());
         }
         return results;
+    }
+
+    private static String getMatchingSymbol(String[] symbols, String parsedSymbol) {
+        for (String candidate : symbols) {
+            if (parsedSymbol.contains(candidate)) {
+                return candidate;
+            }
+        }
+        return null;
     }
 
     /**

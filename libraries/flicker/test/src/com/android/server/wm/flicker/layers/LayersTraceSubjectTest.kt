@@ -319,26 +319,6 @@ class LayersTraceSubjectTest {
         assertFailure(failure).hasMessageThat().contains("No splash screen visible")
     }
 
-    @Test
-    fun checkCanDetectOccludedLayerWithDisplaySizeCrop() {
-        val trace = readLayerTraceFromFile("layers_trace_display_size_crop.winscope")
-        val subject = assertThat(trace)
-        subject.visibleLayersShownMoreThanOneConsecutiveEntry()
-
-        val entrySubject = subject.entry(262022343289032)
-            .layer("SimpleActivity#30168", frameNumber = 1)
-        Truth.assertWithMessage("Layer visibility")
-            .that(entrySubject.isVisible)
-            .isFalse()
-        Truth.assertWithMessage("Layer occluded")
-            .that(entrySubject.layer?.occludedBy)
-            .asList()
-            .isNotEmpty()
-        Truth.assertWithMessage("Layer occluded")
-            .that(entrySubject.layer?.occludedBy?.first()?.name)
-            .contains("RotationLayer")
-    }
-
     companion object {
         private val DISPLAY_REGION = Region.from(0, 0, 1440, 2880)
         private val DISPLAY_REGION_ROTATED = Region.from(0, 0, 2160, 1080)

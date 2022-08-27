@@ -30,6 +30,10 @@ import com.android.server.wm.traces.common.layers.Layer
 import com.android.server.wm.traces.common.layers.LayerTraceEntryBuilder
 import com.android.server.wm.traces.common.region.Region
 
+/**
+ * Lazy loading of a trace entry used by legacy Winscope
+ */
+@Deprecated("To be removed when legacy Winscope is discontinued. Use [LayerTraceEntry] instead")
 class LayerTraceEntryLazy(
     override val timestamp: Long,
     override val hwcBlob: String = "",
@@ -69,7 +73,7 @@ class LayerTraceEntryLazy(
             // Differentiate between the cases when there's no HWC data on
             // the trace, and when the visible region is actually empty
             val activeBuffer = proto.activeBuffer.toBuffer()
-            var visibleRegion = proto.visibleRegion.toRegion()
+            var visibleRegion = proto.visibleRegion.toRegion() ?: Region.EMPTY
             if (visibleRegion == null && activeBuffer.isEmpty) {
                 visibleRegion = Region.EMPTY
             }
@@ -88,7 +92,7 @@ class LayerTraceEntryLazy(
                 proto.shadowRadius,
                 proto.cornerRadius,
                 proto.type ?: "",
-                proto.screenBounds?.toRectF(),
+                proto.screenBounds?.toRectF() ?: RectF.EMPTY,
                 Transform(proto.transform, proto.position),
                 proto.sourceBounds?.toRectF() ?: RectF.EMPTY,
                 proto.currFrame,

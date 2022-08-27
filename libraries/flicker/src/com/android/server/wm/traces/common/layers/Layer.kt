@@ -90,14 +90,14 @@ class Layer private constructor(
      */
     val isVisible: Boolean
         get() {
+            val visibleRegion = visibleRegion ?: Region.EMPTY
             return when {
                 isHiddenByParent -> false
                 isHiddenByPolicy -> false
                 isActiveBufferEmpty && !hasEffects -> false
                 !fillsColor -> false
                 occludedBy.isNotEmpty() -> false
-                visibleRegion?.isEmpty ?: false -> false
-                else -> !bounds.isEmpty
+                else -> visibleRegion.isNotEmpty
             }
         }
 
@@ -323,7 +323,7 @@ class Layer private constructor(
             id: Int,
             parentId: Int,
             z: Int,
-            visibleRegion: Region?,
+            visibleRegion: Region,
             activeBuffer: ActiveBuffer,
             flags: Int,
             bounds: RectF,
@@ -332,7 +332,7 @@ class Layer private constructor(
             shadowRadius: Float,
             cornerRadius: Float,
             type: String,
-            screenBounds: RectF?,
+            screenBounds: RectF,
             transform: Transform,
             sourceBounds: RectF,
             currFrame: Long,

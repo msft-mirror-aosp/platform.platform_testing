@@ -66,6 +66,20 @@ class RegionSubject(
         return super.fail(newReason)
     }
 
+    /**
+     * Asserts that the current [Region] doesn't contain layers
+     */
+    fun isEmpty(): RegionSubject = apply {
+        check("Region").that(regionEntry.region.isEmpty).isTrue()
+    }
+
+    /**
+     * Asserts that the current [Region] doesn't contain layers
+     */
+    fun isNotEmpty(): RegionSubject = apply {
+        check("Region").that(regionEntry.region.isEmpty).isFalse()
+    }
+
     private fun assertLeftRightAndAreaEquals(other: Region) {
         leftPositionSubject.isEqualTo(other.bounds.left)
         rightPositionSubject.isEqualTo(other.bounds.right)
