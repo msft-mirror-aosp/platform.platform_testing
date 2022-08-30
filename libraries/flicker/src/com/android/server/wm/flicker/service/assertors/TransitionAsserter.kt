@@ -148,7 +148,7 @@ private fun LayersTrace.scenarioInstanceSlice(
     for (i in entries.indices) {
         val currentVsyncId = entries[i].vSyncId
 
-        if (scenarioInstance.startTransaction.vSyncId in (prevVsyncId + 1)..currentVsyncId) {
+        if (scenarioInstance.startTransaction.appliedVSyncId in (prevVsyncId + 1)..currentVsyncId) {
             startIndex = i
         }
 
@@ -169,7 +169,8 @@ private fun LayersTrace.scenarioInstanceSlice(
     for (i in startIndex until entries.size) {
         val currentVsyncId = entries[i].vSyncId
 
-        if (scenarioInstance.finishTransaction.vSyncId in (prevVsyncId + 1)..currentVsyncId) {
+        if (scenarioInstance.finishTransaction.appliedVSyncId
+                in (prevVsyncId + 1)..currentVsyncId) {
             endIndex = i
         }
 

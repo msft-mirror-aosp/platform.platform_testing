@@ -66,11 +66,13 @@ class TransactionsTraceParser {
             var traceParseTime = 0L
             for (entry in proto.entry) {
                 val entryParseTime = measureTimeMillis {
+                    val transactions = parseTransactionsProto(entry.transactions)
                     val transactionsTraceEntry = TransactionsTraceEntry(
                         entry.elapsedRealtimeNanos,
                         entry.vsyncId,
-                        parseTransactionsProto(entry.transactions)
+                        transactions
                     )
+                    transactions.forEach { it.appliedInEntry = transactionsTraceEntry }
                     transactionsTraceEntries.add(transactionsTraceEntry)
                 }
                 traceParseTime += entryParseTime

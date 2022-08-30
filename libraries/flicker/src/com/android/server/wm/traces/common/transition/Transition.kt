@@ -127,6 +127,22 @@ class Transition(
                 finishTransaction = transactionsTrace.allTransactions.firstOrNull {
                     transaction -> transaction.id == finishTransactionId
                 }
+
+                val startTransaction = startTransaction
+                requireNotNull(startTransaction) {
+                    "Failed to find a matching start transition on linking."
+                }
+                val finishTransaction = finishTransaction
+                requireNotNull(finishTransaction) {
+                    "Failed to find a matching finish transition on linking."
+                }
+
+                require(startTransaction.appliedVSyncId != -1L ) {
+                    "Matched start transaction had a vSyncId of -1..."
+                }
+                require(finishTransaction.appliedVSyncId != -1L ) {
+                    "Matched start transaction had a vSyncId of -1..."
+                }
             }
 
             @JsName("build")

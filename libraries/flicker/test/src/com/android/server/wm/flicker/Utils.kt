@@ -23,8 +23,12 @@ import com.android.server.wm.flicker.helpers.isShellTransitionsEnabled
 import com.android.server.wm.flicker.traces.FlickerSubjectException
 import com.android.server.wm.traces.common.DeviceTraceDump
 import com.android.server.wm.traces.common.layers.LayersTrace
+import com.android.server.wm.traces.common.transactions.TransactionsTrace
+import com.android.server.wm.traces.common.transition.TransitionsTrace
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 import com.android.server.wm.traces.parser.layers.LayersTraceParser
+import com.android.server.wm.traces.parser.transaction.TransactionsTraceParser
+import com.android.server.wm.traces.parser.transition.TransitionsTraceParser
 import com.android.server.wm.traces.parser.windowmanager.WindowManagerTraceParser
 import com.google.common.io.ByteStreams
 import com.google.common.truth.ExpectFailure
@@ -66,6 +70,25 @@ internal fun readLayerTraceFromFile(
             ignoreLayersStackMatchNoDisplay = false,
             ignoreLayersInVirtualDisplay = false
         ) { ignoreOrphanLayers }
+    } catch (e: Exception) {
+        throw RuntimeException(e)
+    }
+}
+
+internal fun readTransactionsTraceFromFile(relativePath: String): TransactionsTrace {
+    return try {
+        TransactionsTraceParser.parseFromTrace(readTestFile(relativePath))
+    } catch (e: Exception) {
+        throw RuntimeException(e)
+    }
+}
+
+internal fun readTransitionsTraceFromFile(
+    relativePath: String,
+    transactionsTrace: TransactionsTrace
+): TransitionsTrace {
+    return try {
+        TransitionsTraceParser.parseFromTrace(readTestFile(relativePath), transactionsTrace)
     } catch (e: Exception) {
         throw RuntimeException(e)
     }

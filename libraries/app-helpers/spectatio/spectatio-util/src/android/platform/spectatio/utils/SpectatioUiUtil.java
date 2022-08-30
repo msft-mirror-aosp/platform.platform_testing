@@ -588,7 +588,7 @@ public class SpectatioUiUtil {
         return uiObject;
     }
 
-    private void scrollToBeginning(BySelector backward) throws MissingUiElementException {
+    public void scrollToBeginning(BySelector backward) throws MissingUiElementException {
         int scrollCount = 0;
         boolean canScroll = true;
         while (canScroll && scrollCount < MAX_SCROLL_COUNT) {
@@ -719,7 +719,7 @@ public class SpectatioUiUtil {
         return uiObject;
     }
 
-    private void scrollToBeginning(BySelector scrollableSelector, boolean isVertical)
+    public void scrollToBeginning(BySelector scrollableSelector, boolean isVertical)
             throws MissingUiElementException {
         int scrollCount = 0;
         boolean canScroll = true;

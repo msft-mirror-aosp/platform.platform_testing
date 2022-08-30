@@ -1,0 +1,253 @@
+{
+  "PACKAGES": {
+    "DIAL_PACKAGE": "com.android.car.dialer",
+    "PHONE_ACTIVITY": "com.android.car.dialer/.ui.TelecomActivity"
+  },
+  "ACTIONS": {
+    "CONTACT_LIST_SCROLL_ACTION" : "USE_BUTTON",
+    "CONTACT_LIST_SCROLL_DIRECTION" : "VERTICAL",
+    "CONTACT_SETTING_SCROLL_ACTION" : "USE_BUTTON",
+    "CONTACT_SETTING_SCROLL_DIRECTION" : "VERTICAL",
+    "CONTACT_DETAILS_SCROLL_ACTION" : "USE_BUTTON",
+    "CONTACT_DETAILS_SCROLL_DIRECTION" : "VERTICAL"
+  },
+  "COMMANDS": {
+    "OPEN_DIAL_PAD_COMMAND": "am start -a android.intent.action.DIAL",
+    "OPEN_PHONE_ACTIVITY_COMMAND": "am start -n com.android.car.dialer/.ui.TelecomActivity"
+  },
+  "UI_ELEMENTS": {
+    "MAKE_CALL": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "call_button",
+      "PACKAGE": "com.android.car.dialer"
+    },
+    "END_CALL": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "end_call_button",
+      "PACKAGE": "com.android.car.dialer"
+    },
+    "CALL_HISTORY_MENU": {
+      "TYPE": "TEXT",
+      "VALUE": "Recents"
+    },
+    "DELETE_NUMBER": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "delete_button",
+      "PACKAGE": "com.android.car.dialer"
+    },
+    "DIAL_IN_NUMBER": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "title",
+      "PACKAGE": "com.android.car.dialer"
+    },
+    "DIALED_CONTACT_TITLE": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "user_profile_title",
+      "PACKAGE": "com.android.car.dialer"
+    },
+    "SWITCH_TO_DIAL_PAD": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "toggle_dialpad_button",
+      "PACKAGE": "com.android.car.dialer"
+    },
+    "MUTE_CALL": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "mute_button",
+      "PACKAGE": "com.android.car.dialer"
+    },
+    "CONTACT_LIST_SCROLL_FORWARD": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "car_ui_scrollbar_page_down",
+      "PACKAGE": "com.android.car.dialer"
+    },
+    "CONTACT_LIST_SCROLL_BACKWARD": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "car_ui_scrollbar_page_up",
+      "PACKAGE": "com.android.car.dialer"
+    },
+    "CONTACT_LIST_SCROLL_ELEMENT": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "car_ui_internal_recycler_view",
+      "PACKAGE": "com.android.car.dialer"
+    },
+    "CHANGE_VOICE_CHANNEL": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "voice_channel_view",
+      "PACKAGE": "com.android.car.dialer"
+    },
+    "VOICE_CHANNEL_PHONE": {
+      "TYPE": "TEXT",
+      "VALUE": "Phone"
+    },
+    "VOICE_CHANNEL_CAR": {
+      "TYPE": "TEXT",
+      "VALUE": "Car speakers"
+    },
+    "DIALED_CONTACT_TYPE": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "user_profile_phone_label",
+      "PACKAGE": "com.android.car.dialer"
+    },
+    "CONTACT_SEARCH_BAR": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "car_ui_toolbar_search_bar",
+      "PACKAGE": "com.android.car.dialer"
+    },
+    "SEARCH_RESULT": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "contact_name",
+      "PACKAGE": "com.android.car.dialer"
+    },
+    "CONTACT_SETTING_SCROLL_FORWARD": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "car_ui_scrollbar_page_down",
+      "PACKAGE": "com.android.car.dialer"
+    },
+    "CONTACT_SETTING_SCROLL_BACKWARD": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "car_ui_scrollbar_page_up",
+      "PACKAGE": "com.android.car.dialer"
+    },
+    "CONTACT_SETTING_SCROLL_ELEMENT": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "car_ui_internal_recycler_view",
+      "PACKAGE": "com.android.car.dialer"
+    },
+    "CONTACT_ORDER": {
+      "TYPE": "TEXT",
+      "VALUE": "Contact order"
+    },
+    "SORT_BY_FIRST_NAME": {
+      "TYPE": "TEXT",
+      "VALUE": "First name"
+    },
+    "SORT_BY_LAST_NAME": {
+      "TYPE": "TEXT",
+      "VALUE": "Last name"
+    },
+    "CONTACTS_MENU": {
+      "TYPE": "TEXT",
+      "VALUE": "Contacts"
+    },
+    "CONTACT_NAME": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "title",
+      "PACKAGE": "com.android.car.dialer"
+    },
+    "CONTACT_DETAIL": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "show_contact_detail_id",
+      "PACKAGE": "com.android.car.dialer"
+    },
+    "CALL_HISTORY_INFO": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "call_action_id",
+      "PACKAGE": "com.android.car.dialer"
+    },
+    "SEARCH_CONTACT": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "menu_item_search",
+      "PACKAGE": "com.android.car.dialer"
+    },
+    "CONTACT_SETTINGS": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "menu_item_setting",
+      "PACKAGE": "com.android.car.dialer"
+    },
+    "DIAL_PAD_FRAGMENT": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "dialpad_fragment",
+      "PACKAGE": "com.android.car.dialer"
+    },
+    "0": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "zero",
+      "PACKAGE": "com.android.car.dialer"
+    },
+    "1": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "one",
+      "PACKAGE": "com.android.car.dialer"
+    },
+    "2": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "two",
+      "PACKAGE": "com.android.car.dialer"
+    },
+    "3": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "three",
+      "PACKAGE": "com.android.car.dialer"
+    },
+    "4": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "four",
+      "PACKAGE": "com.android.car.dialer"
+    },
+    "5": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "five",
+      "PACKAGE": "com.android.car.dialer"
+    },
+    "6": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "six",
+      "PACKAGE": "com.android.car.dialer"
+    },
+    "7": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "seven",
+      "PACKAGE": "com.android.car.dialer"
+    },
+    "8": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "eight",
+      "PACKAGE": "com.android.car.dialer"
+    },
+    "9": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "nine",
+      "PACKAGE": "com.android.car.dialer"
+    },
+    "ADD_CONTACT_TO_FAVORITE": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "contact_details_favorite_button",
+      "PACKAGE": "com.android.car.dialer"
+    },
+    "CONTACT_TYPE_HOME": {
+      "TYPE": "TEXT",
+      "VALUE": "Home"
+    },
+    "CONTACT_TYPE_WORK": {
+      "TYPE": "TEXT",
+      "VALUE": "Work"
+    },
+    "CONTACT_TYPE_MOBILE": {
+      "TYPE": "TEXT",
+      "VALUE": "Mobile"
+    },
+    "CONTACT_DETAILS_SCROLL_FORWARD": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "car_ui_scrollbar_page_down",
+      "PACKAGE": "com.android.car.dialer"
+    },
+    "CONTACT_DETAILS_SCROLL_BACKWARD": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "car_ui_scrollbar_page_up",
+      "PACKAGE": "com.android.car.dialer"
+    },
+    "CONTACT_DETAILS_SCROLL_ELEMENT": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "car_ui_internal_recycler_view",
+      "PACKAGE": "com.android.car.dialer"
+    },
+    "DIAL_PAD_MENU": {
+      "TYPE": "TEXT",
+      "VALUE": "Dial.?pad"
+    },
+    "FAVORITES_MENU": {
+      "TYPE": "TEXT",
+      "VALUE": "Favo.?rite.?"
+    }
+  }
+}
