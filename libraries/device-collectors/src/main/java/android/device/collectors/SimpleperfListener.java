@@ -25,9 +25,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import org.junit.runner.Description;
 import org.junit.runner.Result;
@@ -85,7 +83,7 @@ public class SimpleperfListener extends BaseMetricListener {
     private String mArguments;
     private Map<String, String> mProcessToPid = new HashMap<>();
     private boolean mReport;
-    private Set<String> mReportSymbols = new HashSet<>();
+    private String[] mReportSymbols;
 
     private SimpleperfHelper mSimpleperfHelper = new SimpleperfHelper();
 
@@ -136,7 +134,7 @@ public class SimpleperfListener extends BaseMetricListener {
         mReport = "true".equals(args.getString(REPORT));
 
         // Symbols to look for when reporting events for processes.
-        mReportSymbols = Set.of(args.getString(REPORT_SYMBOLS, "").trim().split("\\s*;\\s*"));
+        mReportSymbols = args.getString(REPORT_SYMBOLS, "").trim().split("\\s*;\\s*");
 
         // Appending recording argument for recording specified events if given.
         if (!events.isEmpty()) {
@@ -217,7 +215,7 @@ public class SimpleperfListener extends BaseMetricListener {
                                     mTestIdInvocationCount.get(getTestFileName(description))));
             stopSimpleperf(path, testData);
             if (mReport) {
-                getSimpleperfReport(path, testData);
+                getSimpleperfReport(path, testData, description.getMethodName());
             }
         }
     }
@@ -234,15 +232,15 @@ public class SimpleperfListener extends BaseMetricListener {
         }
 
         Log.i(getTag(), "Stopping simpleperf after test run ended");
+        String uniqueId = Integer.toString(UUID.randomUUID().hashCode());
         Path path =
                 Paths.get(
                         mTestOutputRoot,
                         this.getClass().getSimpleName(),
-                        String.format(
-                                "%s%d.data", SIMPLEPERF_PREFIX, UUID.randomUUID().hashCode()));
+                        String.format("%s%s.data", SIMPLEPERF_PREFIX, uniqueId));
         stopSimpleperf(path, runData);
         if (mReport) {
-            getSimpleperfReport(path, runData);
+            getSimpleperfReport(path, runData, uniqueId);
         }
     }
 
@@ -270,10 +268,12 @@ public class SimpleperfListener extends BaseMetricListener {
      * @param path Path to read binary record from.
      * @param data DataRecord to store metrics parsed from report
      */
-    private void getSimpleperfReport(Path path, DataRecord data) {
+    private void getSimpleperfReport(Path path, DataRecord data, String metricsPrefix) {
         for (Map.Entry<String, String> entry : mProcessToPid.entrySet()) {
             Map<String, String> metricPerProcess =
-                    mSimpleperfHelper.getSimpleperfReport(path.toString(), entry, mReportSymbols);
+                    mSimpleperfHelper.getSimpleperfReport(
+                            path.toString(), entry, mReportSymbols, metricsPrefix);
+            Log.i(getTag(), "Simpleperf Metrics report collected. " + metricPerProcess);
             for (Map.Entry<String /*event-process-symbol*/, String /*eventCount*/> metric :
                     metricPerProcess.entrySet()) {
                 data.addStringMetric(metric.getKey(), metric.getValue());
