@@ -50,7 +50,6 @@ public class ShowmapSnapshotHelper implements ICollectorHelper<String> {
     public static final String ALL_PROCESSES_CMD = "ps -A";
     private static final String SHOWMAP_CMD = "showmap -v %d";
     private static final String CHILD_PROCESSES_CMD = "ps -A --ppid %d";
-    private static final String GC_CMD = "kill -10 %s";
 
     public static final String OUTPUT_METRIC_PATTERN = "showmap_%s_bytes";
     public static final String OUTPUT_FILE_PATH_KEY = "showmap_output_file";
@@ -149,45 +148,33 @@ public class ShowmapSnapshotHelper implements ICollectorHelper<String> {
                 return mMemoryMap;
             }
 
+            // Force Garbage collect to trim transient objects before taking memory measurements
+            // as memory tests aim to track persistent memory regression instead of transient
+            // memory which also allows for de-noising and reducing likelihood of false alerts.
+            if (mRunGcPrecollection) {
+              Log.i(TAG, "Running GC precollect");
+              android.os.Trace.beginSection("GCPriorToShowmap");
+              Runtime.getRuntime().gc();
+              android.os.Trace.endSection();
+            }
+
             FileWriter writer = new FileWriter(new File(mTestOutputFile), true);
             for (String processName : mProcessNames) {
                 List<Integer> pids = new ArrayList<>();
+
                 // Collect required data
                 try {
                     pids = getPids(processName);
                     for (Integer pid : pids) {
-                      // Force Garbage collect to trim transient objects before taking memory
-                      // measurements as memory tests aim to track persistent memory regression
-                      // instead of transient memory which also allows for de-noising and reducing
-                      // likelihood of false alerts.
-                      if (mRunGcPrecollection) {
-                        android.os.Trace.beginSection("IssueGCForPid: " + pid);
-                        // Send a signal to perform GC
-                        mUiDevice.executeShellCommand(String.format(GC_CMD, pid));
-                        android.os.Trace.endSection();
-                        // Because the signal for garbage collection does not wait
-                        // for the actual garbage collection to happen and we have
-                        // no way to communicate to check status, we wait for enough
-                        // time for GC to happen.
-                        try {
-                          android.os.Trace.beginSection("WaitForGC");
-                          Thread.sleep(200);
-                          android.os.Trace.endSection();
-                        } catch (InterruptedException e) {
-                        }
-                      }
-
-                      android.os.Trace.beginSection("ExecuteShowmap");
-                      String showmapOutput = execShowMap(processName, pid);
-                      android.os.Trace.endSection();
-                      parseAndUpdateMemoryInfo(processName, showmapOutput);
-                      // Store showmap output into file. If there are more than one process
-                      // with same name write the individual showmap associated with pid.
-                      storeToFile(mTestOutputFile, processName, pid, showmapOutput, writer);
-                      // Parse number of child processes for the given pid and update the
-                      // total number of child process count for the process name that pid
-                      // is associated with.
-                      updateChildProcessesDetails(processName, pid);
+                        String showmapOutput = execShowMap(processName, pid);
+                        parseAndUpdateMemoryInfo(processName, showmapOutput);
+                        // Store showmap output into file. If there are more than one process
+                        // with same name write the individual showmap associated with pid.
+                        storeToFile(mTestOutputFile, processName, pid, showmapOutput, writer);
+                        // Parse number of child processes for the given pid and update the
+                        // total number of child process count for the process name that pid
+                        // is associated with.
+                        updateChildProcessesDetails(processName, pid);
                     }
                 } catch (RuntimeException e) {
                     Log.e(TAG, e.getMessage(), e.getCause());
