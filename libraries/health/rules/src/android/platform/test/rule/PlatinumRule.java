@@ -16,15 +16,15 @@
 
 package android.platform.test.rule;
 
-import android.os.Build;
-
 import androidx.test.InstrumentationRegistry;
+import androidx.test.uiautomator.UiDevice;
 
 import org.junit.AssumptionViolatedException;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
+import java.io.IOException;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -53,8 +53,18 @@ public class PlatinumRule implements TestRule {
             return base;
         }
 
+        final String flavor;
+        try {
+            flavor =
+                    UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
+                            .executeShellCommand("getprop ro.build.flavor")
+                            .replaceAll("\\s", "");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
         // If the target IS listed in the annotation's parameter, this rule is not applicable.
-        final boolean match = Arrays.asList(annotation.value().split(",")).contains(Build.PRODUCT);
+        final boolean match = Arrays.asList(annotation.value().split(",")).contains(flavor);
         if (match) return base;
 
         // The test will be skipped upon start.
@@ -63,7 +73,7 @@ public class PlatinumRule implements TestRule {
             public void evaluate() throws Throwable {
                 throw new AssumptionViolatedException(
                         "Skipping the test on target "
-                                + Build.PRODUCT
+                                + flavor
                                 + " which in not in "
                                 + annotation.value());
             }
