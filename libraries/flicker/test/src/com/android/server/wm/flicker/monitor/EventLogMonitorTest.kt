@@ -42,7 +42,7 @@ class EventLogMonitorTest {
                 "com.android.phone.settings.fdn.FdnSetting (server)",
             "reason=test")
 
-        val result = FlickerRunResult("testName", 0 /*iteration*/)
+        val result = FlickerRunResult("testName")
         result.setResultsFromMonitor(monitor)
 
         assertEquals(2, result.eventLog?.size)
@@ -84,7 +84,7 @@ class EventLogMonitorTest {
             "reason=test")
         monitor.stop()
 
-        val result = FlickerRunResult("testName", 0 /*iteration*/)
+        val result = FlickerRunResult("testName")
         result.setResultsFromMonitor(monitor)
 
         assertEquals(2, result.eventLog?.size)
@@ -119,7 +119,7 @@ class EventLogMonitorTest {
                 "reason=test")
         monitor.stop()
 
-        val result = FlickerRunResult("testName", 0 /*iteration*/)
+        val result = FlickerRunResult("testName")
         result.setResultsFromMonitor(monitor)
 
         assertEquals(2, result.eventLog?.size)

@@ -95,7 +95,6 @@ class Layer private constructor(
                 isHiddenByParent -> false
                 isHiddenByPolicy -> false
                 isActiveBufferEmpty && !hasEffects -> false
-                !fillsColor -> false
                 occludedBy.isNotEmpty() -> false
                 else -> visibleRegion.isNotEmpty
             }

@@ -61,10 +61,8 @@ class TransitionRunnerTest {
     fun canRunTransition() {
         val runner = TransitionRunner()
         var executed = false
-        val iterations = 1
         val flicker = FlickerBuilder(instrumentation)
             .withTestName { TEST_NAME }
-            .repeat { iterations }
             .apply {
                 transitions {
                     executed = true
@@ -74,8 +72,8 @@ class TransitionRunnerTest {
         val result = runner.execute(flicker)
         runner.cleanUp()
         Truth.assertThat(executed).isTrue()
-        Truth.assertThat(result.executionErrors).isEmpty()
-        Truth.assertThat(result.successfulRuns).hasSize(iterations)
+        Truth.assertThat(result.executionError).isNull()
+        Truth.assertThat(result.ranSuccessfully).isTrue()
     }
 
     @Test
@@ -90,33 +88,7 @@ class TransitionRunnerTest {
             }.build(runner)
         val result = runner.execute(flicker)
         runner.cleanUp()
-        Truth.assertThat(result.executionErrors).isNotEmpty()
-    }
-
-    @Test
-    fun keepsSuccessfulTransitionExecutions() {
-        val repetitions = 3
-        var transitionRunCounter = 0
-
-        val runner = TransitionRunner()
-        val flicker = FlickerBuilder(instrumentation)
-                .withTestName { TEST_NAME }
-                .apply {
-                    transitions {
-                        transitionRunCounter++
-                        if (transitionRunCounter == repetitions) {
-                            // fail on last transition repetition
-                            throw RuntimeException("Failed to execute transition")
-                        }
-                    }
-                }.repeat { repetitions }.build(runner)
-        val result = runner.execute(flicker)
-        runner.cleanUp()
-        Truth.assertThat(result.executionErrors).isNotEmpty()
-        // One for each monitor for each repetition expect the last one
-        // for which the transition failed to execute
-        val expectedResultCount = repetitions - 1
-        Truth.assertThat(result.successfulRuns.size).isEqualTo(expectedResultCount)
+        Truth.assertThat(result.executionError).isNotNull()
     }
 
     @Test
@@ -126,11 +98,9 @@ class TransitionRunnerTest {
                 .withTestName { TEST_NAME }
                 .apply {
                     transitions {}
-                }.repeat { 3 }.build(runner)
-        val results = runner.execute(flicker).runResults
-        for (result in results) {
-            Truth.assertThat(result.status).isEqualTo(RunStatus.ASSERTION_SUCCESS)
-        }
+                }.build(runner)
+        val result = runner.execute(flicker)
+        Truth.assertThat(result.status).isEqualTo(RunStatus.ASSERTION_SUCCESS)
     }
 
     @Test
@@ -142,11 +112,9 @@ class TransitionRunnerTest {
                     transitions {
                         throw RuntimeException("Failed to execute transition")
                     }
-                }.repeat { 3 }.build(runner)
-        val results = runner.execute(flicker).runResults
-        for (result in results) {
-            Truth.assertThat(result.status).isEqualTo(RunStatus.RUN_FAILED)
-        }
+                }.build(runner)
+        val result = runner.execute(flicker)
+        Truth.assertThat(result.status).isEqualTo(RunStatus.RUN_FAILED)
     }
 
     @Test

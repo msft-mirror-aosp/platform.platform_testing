@@ -27,7 +27,7 @@ import org.junit.Test
 class EventLogSubjectTest {
     @Test
     fun canDetectFocusChanges() {
-        val runResult = FlickerRunResult("testName", 0 /*iteration*/)
+        val runResult = FlickerRunResult("testName")
         runResult.eventLog =
                 listOf(FocusEvent(0, "WinB", FocusEvent.Focus.GAINED, "test"),
                         FocusEvent(0, "test WinA window", FocusEvent.Focus.LOST, "test"),
@@ -46,7 +46,7 @@ class EventLogSubjectTest {
 
     @Test
     fun canDetectFocusDoesNotChange() {
-        val runResult = FlickerRunResult("testName", 0 /*iteration*/)
+        val runResult = FlickerRunResult("testName")
         runResult.eventLog = emptyList()
         val result = runResult.eventLogSubject
         requireNotNull(result) { "Event log subject was not built" }

@@ -178,24 +178,22 @@ class FlickerBlockJUnit4ClassRunnerTest {
     fun transitionNotRerunWithFaasEnabled() {
         Assume.assumeTrue(isShellTransitionsEnabled)
 
-        val repetitions = 3
         transitionRunCount = 0
         val testClass = TestClass(TransitionRunCounterWithFaasTest::class.java)
         val parameters = FlickerTestParameterFactory.getInstance()
-            .getConfigNonRotationTests(repetitions = repetitions)
+            .getConfigNonRotationTests()
         val test = TestWithParameters("[PARAMS]", testClass, listOf(parameters[0]))
 
         val runner = FlickerBlockJUnit4ClassRunner(test)
         runner.run(RunNotifier())
         Truth.assertThat(parameters[0].flicker.faasEnabled).isTrue()
-        val executionErrors = parameters[0].flicker.result!!.executionErrors
+        val executionError = parameters[0].flicker.result!!.executionError
         Truth.assertWithMessage(
             "No flicker execution errors were expected but got some ::" +
-                executionErrors.joinToString()
-        )
-            .that(executionErrors).isEmpty()
+                executionError
+        ).that(executionError).isNull()
 
-        Assert.assertEquals(repetitions, transitionRunCount)
+        Assert.assertEquals(1, transitionRunCount)
         transitionRunCount = 0
     }
 
@@ -204,15 +202,10 @@ class FlickerBlockJUnit4ClassRunnerTest {
         checkTestRunReportsExecutionErrors(AlwaysFailExecutionTestClass::class.java)
     }
 
-    @Test
-    fun reportsExecutionErrorsWithSomeSuccessfulRuns() {
-        checkTestRunReportsExecutionErrors(OneOfThreeFailExecutionTestClass::class.java)
-    }
-
     private fun checkTestRunReportsExecutionErrors(klass: Class<*>) {
         val testClass = TestClass(klass)
         val parameters = FlickerTestParameterFactory.getInstance()
-            .getConfigNonRotationTests(repetitions = 3)
+            .getConfigNonRotationTests()
         val test = TestWithParameters("[PARAMS]", testClass, listOf(parameters[0]))
 
         val runner = FlickerBlockJUnit4ClassRunner(test)
@@ -267,31 +260,6 @@ class FlickerBlockJUnit4ClassRunnerTest {
             return FlickerBuilder(instrumentation).apply {
                 transitions {
                     throw Exception(TRANSITION_FAILURE_MESSAGE)
-                }
-            }
-        }
-
-        @Test
-        fun test() {
-            testSpec.assertWm {
-                // Random test to make sure flicker transition is executed
-                this.visibleWindowsShownMoreThanOneConsecutiveEntry()
-            }
-        }
-    }
-
-    @RunWith(Parameterized::class)
-    @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
-    class OneOfThreeFailExecutionTestClass(private val testSpec: FlickerTestParameter) {
-        val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
-
-        @FlickerBuilderProvider
-        fun buildFlicker(): FlickerBuilder {
-            return FlickerBuilder(instrumentation).apply {
-                transitions {
-                    if ((testSpec.currentIteration + 1) % 3 == 0) {
-                        throw Exception(TRANSITION_FAILURE_MESSAGE)
-                    }
                 }
             }
         }

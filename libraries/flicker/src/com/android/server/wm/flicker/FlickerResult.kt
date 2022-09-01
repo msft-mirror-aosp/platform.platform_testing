@@ -16,6 +16,7 @@
 
 package com.android.server.wm.flicker
 
+import com.android.server.wm.flicker.FlickerRunResult.Companion.RunStatus
 import com.android.server.wm.flicker.TransitionRunner.Companion.ExecutionError
 import com.android.server.wm.flicker.assertions.AssertionData
 import com.android.server.wm.flicker.assertions.FlickerAssertionError
@@ -26,22 +27,13 @@ import com.google.common.truth.Truth
  */
 data class FlickerResult(
     /**
-     * Result of each transition run
+     * Result of a transition run
      */
-    @JvmField val runResults: Collection<FlickerRunResult>,
-    /**
-     * List of test created during the execution
-     */
-    @JvmField val tags: Set<String> = setOf(),
-    /**
-     * Execution errors which happened during the execution of the Flicker test
-     */
-    @JvmField val executionErrors: List<ExecutionError> = listOf()
+    private val runResult: FlickerRunResult,
 ) {
-    /** Successful runs on which we can run assertions */
-    val successfulRuns: List<FlickerRunResult> = runResults.filter { it.isSuccessfulRun }
-    /** Failed runs due to execution errors which we shouldn't run assertions on */
-    private val failedRuns: List<FlickerRunResult> = runResults.filter { it.isFailedRun }
+    val status: RunStatus get() = runResult.status
+    val executionError: ExecutionError? get() = runResult.executionError
+    val ranSuccessfully: Boolean get() = runResult.isSuccessfulRun
 
     /**
      * List of failures during assertion
@@ -53,26 +45,17 @@ data class FlickerResult(
      *
      * @throws AssertionError If the assertion fail or the transition crashed
      */
-    internal fun checkAssertion(assertion: AssertionData): List<FlickerAssertionError> {
-        Truth.assertWithMessage("Expected to have runResults but none were found")
-                .that(runResults).isNotEmpty()
-        Truth.assertWithMessage("No transitions were not executed successful")
-                .that(successfulRuns).isNotEmpty()
+    internal fun checkAssertion(assertion: AssertionData): FlickerAssertionError? {
+        Truth.assertWithMessage("Transition was not executed successful. Can't check assertions")
+                .that(runResult.isSuccessfulRun).isTrue()
 
-        val currFailures = successfulRuns.mapNotNull { run -> run.checkAssertion(assertion) }
-        failures.addAll(currFailures)
-        return currFailures
+        val assertionFailure = runResult.checkAssertion(assertion)?.also {
+            failures.add(it)
+        }
+        return assertionFailure
     }
-
-    fun isEmpty(): Boolean = executionErrors.isEmpty() && successfulRuns.isEmpty()
-
-    fun isNotEmpty(): Boolean = !isEmpty()
 
     fun clearFromMemory() {
-        runResults.forEach { it.clearFromMemory() }
-    }
-
-    fun lock() {
-        runResults.forEach { it.lock() }
+        runResult.clearFromMemory()
     }
 }

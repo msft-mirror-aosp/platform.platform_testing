@@ -178,25 +178,10 @@ class FlickerBlockJUnit4ClassRunner @JvmOverloads constructor(
                     }
                     // Report all the execution errors collected during the Flicker setup and
                     // transition execution
-                    val executionErrors = results.executionErrors
-                    if (executionErrors.isNotEmpty()) {
-                        // Log all the execution error
-                        for (executionError in executionErrors) {
-                            Log.e(FLICKER_TAG, "Flicker Execution Error", executionError)
-                        }
-                        val messageLengthLimit = 300
-                        val errorMessage = executionErrors.joinToString("\n", "- ") {
-                            it.message?.take(messageLengthLimit) +
-                                    (if ((it.message?.length ?: 0) > messageLengthLimit)
-                                        "..." else "")
-                        }
-                        val simpleException = Throwable("Flicker Execution Failed:\n" +
-                                "${errorMessage.prependIndent()}\n\n" +
-                                "Check log for more information.")
-                        // avoid printing any of the stack trace to send less data in the bundle
-                        // (b/238894657)
-                        simpleException.stackTrace = emptyArray()
-                        throw simpleException
+                    val executionError = results.executionError
+                    if (executionError != null) {
+                        Log.e(FLICKER_TAG, "Flicker Execution Error", executionError)
+                        throw executionError
                     }
                 }
             }

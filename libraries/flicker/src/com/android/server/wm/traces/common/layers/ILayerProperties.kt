@@ -180,7 +180,7 @@ interface ILayerProperties {
             }
 
             // Support newer effect layer
-            return isEffectLayer && (fillsColor || drawsShadows)
+            return fillsColor || drawsShadows
         }
 
     /**

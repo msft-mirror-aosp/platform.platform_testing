@@ -148,10 +148,9 @@ fun assertThatErrorContainsDebugInfo(error: Throwable, withBlameEntry: Boolean =
 
 fun assertArchiveContainsAllTraces(
     runStatus: FlickerRunResult.Companion.RunStatus = ASSERTION_SUCCESS,
-    testName: String,
-    iteration: Int = 0
+    testName: String
 ) {
-    val archiveFileName = "${runStatus.prefix}_${testName}_$iteration.zip"
+    val archiveFileName = "${runStatus.prefix}_$testName.zip"
     val archivePath = getDefaultFlickerOutputDir().resolve(archiveFileName)
     Truth.assertWithMessage("Expected trace archive `$archivePath` to exist")
         .that(Files.exists(archivePath)).isTrue()

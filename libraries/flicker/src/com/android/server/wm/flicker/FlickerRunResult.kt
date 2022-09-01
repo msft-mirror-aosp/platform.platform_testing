@@ -17,6 +17,7 @@
 package com.android.server.wm.flicker
 
 import androidx.annotation.VisibleForTesting
+import com.android.server.wm.flicker.TransitionRunner.Companion.ExecutionError
 import com.android.server.wm.flicker.assertions.AssertionData
 import com.android.server.wm.flicker.assertions.FlickerAssertionError
 import com.android.server.wm.flicker.assertions.FlickerAssertionErrorBuilder
@@ -48,7 +49,7 @@ val CHAR_POOL: List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9')
 /**
  * Defines the result of a flicker run
  */
-class FlickerRunResult(testName: String, iteration: Int) {
+class FlickerRunResult(testName: String) {
     /**
      * The object responsible for managing the trace file associated with this result.
      *
@@ -57,7 +58,7 @@ class FlickerRunResult(testName: String, iteration: Int) {
      * file manager.
      */
     private val artifacts: RunResultArtifacts = RunResultArtifacts(getDefaultFlickerOutputDir()
-            .resolve("${testName}_$iteration.zip"))
+            .resolve("${testName}.zip"))
     /**
      * Truth subject that corresponds to a [WindowManagerTrace]
      */
@@ -103,6 +104,14 @@ class FlickerRunResult(testName: String, iteration: Int) {
         }
         // Other types of failures can only happen if the run has succeeded
         return status == RunStatus.RUN_FAILED
+    }
+
+    var executionError: ExecutionError? = null
+        private set
+
+    fun setExecutionError(executionError: ExecutionError) {
+        require(this.executionError == null) { "Execution error already set" }
+        this.executionError = executionError
     }
 
     fun getSubjects(tag: String): List<FlickerSubject> {

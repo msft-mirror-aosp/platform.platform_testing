@@ -51,7 +51,6 @@ class FlickerBuilder private constructor(
     private val outputDir: Path,
     private val wmHelper: WindowManagerStateHelper,
     private var testName: String,
-    private var iterations: Int,
     private val setupCommands: TestCommandsBuilder,
     private val teardownCommands: TestCommandsBuilder,
     private val transitionCommands: MutableList<Flicker.() -> Any>,
@@ -104,7 +103,6 @@ class FlickerBuilder private constructor(
         outputDir,
         wmHelper,
         testName = "",
-        iterations = 1,
         setupCommands = TestCommandsBuilder(),
         teardownCommands = TestCommandsBuilder(),
         transitionCommands = mutableListOf(),
@@ -121,7 +119,6 @@ class FlickerBuilder private constructor(
         otherBuilder.outputDir.toAbsolutePath(),
         otherBuilder.wmHelper,
         otherBuilder.testName,
-        otherBuilder.iterations,
         TestCommandsBuilder(otherBuilder.setupCommands),
         TestCommandsBuilder(otherBuilder.teardownCommands),
         otherBuilder.transitionCommands.toMutableList(),
@@ -237,20 +234,6 @@ class FlickerBuilder private constructor(
         addMonitor(screenRecorder(outputDir))
     }
 
-    /**
-     * Defines how many times the test run should be repeated
-     */
-    fun repeat(predicate: () -> Int): FlickerBuilder = apply {
-        val repeat = predicate()
-
-        require(!usingExistingTraces || repeat == 1) {
-            "Repetitions are not supported with usingExistingTraces"
-        }
-
-        require(repeat >= 1) { "Number of repetitions should be greater or equal to 1" }
-        iterations = repeat
-    }
-
     fun withFlickerAsAService(predicate: () -> Boolean): FlickerBuilder = apply {
         faasEnabled = predicate()
     }
@@ -303,11 +286,6 @@ class FlickerBuilder private constructor(
         // Remove all transitions execution
         this.transitionCommands.clear()
 
-        // Set to one iteration since we are only providing one iteration
-        // We don't support more than 1 iteration for this. We will be deprecating iterations so
-        // we don't plan to support it in the future either.
-        this.iterations = 1
-
         this.usingExistingTraces = true
     }
 
@@ -326,7 +304,6 @@ class FlickerBuilder private constructor(
             launcherStrategy,
             outputDir,
             testName,
-            iterations,
             traceMonitors,
             setupCommands.buildTestCommands(),
             setupCommands.buildRunCommands(),

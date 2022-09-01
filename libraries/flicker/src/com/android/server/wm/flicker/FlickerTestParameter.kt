@@ -58,9 +58,6 @@ data class FlickerTestParameter(
     internal val isInitialized: Boolean get() = internalFlicker != null
     internal val result: FlickerResult? get() = internalFlicker?.result
 
-    @VisibleForTesting
-    val currentIteration: Int get() = flicker.runner.iteration
-
     /**
      * If the initial screen rotation is 90 (landscape) or 180 (seascape) degrees
      */
@@ -134,7 +131,6 @@ data class FlickerTestParameter(
     fun initialize(builder: FlickerBuilder, testName: String) {
         internalFlicker = builder
             .withTestName { "${testName}_$name" }
-            .repeat { config.getOrDefault(REPETITIONS, 1) as Int }
             .withFlickerAsAService { isFaasEnabled }
             .build(TransitionRunnerWithRules(getTestSetupRules(builder.instrumentation)))
     }
@@ -290,7 +286,6 @@ data class FlickerTestParameter(
 
     companion object {
         internal const val IS_TABLET = "isTablet"
-        internal const val REPETITIONS = "repetitions"
         internal const val START_ROTATION = "startRotation"
         internal const val END_ROTATION = "endRotation"
         internal const val NAV_BAR_MODE = "navBarMode"
