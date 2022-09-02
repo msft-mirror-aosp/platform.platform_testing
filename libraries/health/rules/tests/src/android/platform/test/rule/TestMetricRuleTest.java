@@ -171,6 +171,29 @@ public class TestMetricRuleTest {
         TestMetricRule rule = createWithMetricCollectorNames(simpleName);
     }
 
+    @Test
+    public void testInitWithDifferentOptionName() throws Throwable {
+        String optionName = "another-" + TestMetricRule.METRIC_COLLECTORS_OPTION;
+
+        Bundle args = new Bundle();
+        args.putString(
+                optionName, "android.platform.test.rule.TestMetricRuleTest$TestableCollector1");
+        TestMetricRule rule =
+                new TestMetricRule(args, new Instrumentation(), optionName, "log tag");
+
+        rule.apply(PASSING_STATEMENT, DESCRIPTION).evaluate();
+        assertThat(sLogs)
+                .containsExactly(
+                        "TestableCollector1#setInstrumentation",
+                        "TestableCollector1#setupAdditionalArgs",
+                        "TestableCollector1#onSetUp",
+                        String.format("Test %s: TestableCollector1#onTestStart", DESCRIPTION),
+                        "Test execution",
+                        String.format("Test %s: TestableCollector1#onTestEnd", DESCRIPTION),
+                        "TestableCollector1#onCleanUp")
+                .inOrder();
+    }
+
     private TestMetricRule createWithMetricCollectorNames(String... names) {
         Bundle args = new Bundle();
         args.putString(TestMetricRule.METRIC_COLLECTORS_OPTION, String.join(",", names));
