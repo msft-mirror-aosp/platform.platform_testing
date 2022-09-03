@@ -49,7 +49,6 @@ public class ShowmapSnapshotHelper implements ICollectorHelper<String> {
     public static final String ALL_PROCESSES_CMD = "ps -A";
     private static final String SHOWMAP_CMD = "showmap -v %d";
     private static final String CHILD_PROCESSES_CMD = "ps -A --ppid %d";
-    private static final String GC_CMD = "kill -10 %s";
 
     public static final String OUTPUT_METRIC_PATTERN = "showmap_%s_bytes";
     public static final String OUTPUT_FILE_PATH_KEY = "showmap_output_file";
@@ -163,19 +162,11 @@ public class ShowmapSnapshotHelper implements ICollectorHelper<String> {
                       if (mRunGcPrecollection && zygoteChildrenPids.contains(pid)) {
                         // Skip native processes from sending GC signal.
                         android.os.Trace.beginSection("IssueGCForPid: " + pid);
-                        // Send a signal to perform GC
-                        mUiDevice.executeShellCommand(String.format(GC_CMD, pid));
+                        // Perform a synchronous GC which happens when we request meminfo
+                        // This save us the need of setting up timeouts that may or may not
+                        // match with the end time of GC.
+                        mUiDevice.executeShellCommand("dumpsys meminfo -a " + pid);
                         android.os.Trace.endSection();
-                        // Because the signal for garbage collection does not wait
-                        // for the actual garbage collection to happen and we have
-                        // no way to communicate to check status, we wait for enough
-                        // time for GC to happen.
-                        try {
-                          android.os.Trace.beginSection("WaitForGC");
-                          Thread.sleep(200);
-                          android.os.Trace.endSection();
-                        } catch (InterruptedException e) {
-                        }
                       }
 
                       android.os.Trace.beginSection("ExecuteShowmap");
