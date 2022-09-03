@@ -43,21 +43,25 @@ public class TombstoneUtils {
         assertThat(securityCrashes).isEqualTo(List.of());
     }
 
+    /**
+     * @param tombstones a list of tombstones to check
+     * @param config crash detection configuration object
+     * @return a list of tombstones that are security-related
+     */
     public static List<Tombstone> getSecurityCrashes(List<Tombstone> tombstones, Config config) {
         return tombstones.stream()
-                .filter(tombstone -> filterSecurityCrash(tombstone, config))
+                .filter(tombstone -> isSecurityCrash(tombstone, config))
                 .collect(Collectors.toList());
     }
 
     /**
-     * Determines which given inputs have a {@link com.android.compatibility.common.util.Crash} that
-     * should fail an sts test
+     * Determines if a tombstone is likely to be security-related against the given configuration.
      *
-     * @param crashes list of crashes to check
+     * @param tombstone the tombstone to check
      * @param config crash detection configuration object
-     * @return the list of crashes serious enough to fail an sts test
+     * @return if the tombstone is security-related
      */
-    public static boolean filterSecurityCrash(Tombstone tombstone, Config config) {
+    public static boolean isSecurityCrash(Tombstone tombstone, Config config) {
 
         // match process patterns
         Optional<String> processFilename = getProcessFilename(tombstone);
@@ -74,8 +78,8 @@ public class TombstoneUtils {
             //
             // HWASAN abort message example:
             // ==13248==ERROR: HWAddressSanitizer: tag-mismatch on address 0x004d84460302...
-            String abortMessage = tombstone.getAbortMessage();
-            if (abortMessage != null && abortMessage.contains("AddressSanitizer")) {
+            String abortMessage = tombstone.getAbortMessage(); // empty proto field returns ""
+            if (abortMessage.contains("AddressSanitizer")) {
                 return true;
             }
         }
@@ -367,15 +371,13 @@ public class TombstoneUtils {
             public boolean match(BacktraceFrame frame) {
                 if (frame == null) return false;
 
-                String filename = frame.getFileName();
-                String method = frame.getFunctionName();
+                String filename = frame.getFileName(); // empty proto field returns ""
+                String method = frame.getFunctionName(); // empty proto field returns ""
 
                 boolean filenameMatches =
-                        (filenamePattern == null
-                                || (filename != null && filenamePattern.matcher(filename).find()));
+                        filenamePattern == null || filenamePattern.matcher(filename).find();
                 boolean methodMatches =
-                        (methodPattern == null
-                                || (method != null && methodPattern.matcher(method).find()));
+                        methodPattern == null || methodPattern.matcher(method).find();
                 return filenameMatches && methodMatches;
             }
         }

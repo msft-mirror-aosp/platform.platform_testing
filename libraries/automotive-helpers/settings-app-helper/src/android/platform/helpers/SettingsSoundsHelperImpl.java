@@ -170,6 +170,7 @@ public class SettingsSoundsHelperImpl extends AbstractAutoStandardAppHelper
                 type = "Phone ringtone";
                 break;
         }
+        SystemClock.sleep(SHORT_UI_RESPONSE_TIME);
         UiObject2 object = scrollAndFindUiObject(By.text(type), getScrollScreenIndex());
         List<UiObject2> list = object.getParent().getChildren();
         if (list.size() < 2) {
