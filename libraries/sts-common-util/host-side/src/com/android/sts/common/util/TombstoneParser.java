@@ -45,7 +45,6 @@ public class TombstoneParser {
             Pattern.compile("failed to find entry for main thread in tombstone");
     private static final Pattern THREAD_SEPARATOR_PATTERN =
             Pattern.compile("--- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---");
-    private static final Pattern OPEN_FILES_PATTERN = Pattern.compile("open files:");
     // "    fd %d: %s (%s)"
     private static final Pattern OPEN_FILE_ROW_PATTERN =
             Pattern.compile(
@@ -66,10 +65,6 @@ public class TombstoneParser {
     private static final Pattern ABORT_PATTERN =
             Pattern.compile(
                     "^Abort message: '(?<message>.*)'$", Pattern.MULTILINE | Pattern.DOTALL);
-    private static final Pattern MULTIPLE_CAUSES_PATTERN =
-            Pattern.compile(
-                    "Note: multiple potential causes for this crash were detected, listing them in"
-                            + " decreasing order of likelihood.");
     private static final Pattern DEALLOC_PATTERN =
             Pattern.compile("deallocated by thread (?<tid>\\d+):");
     private static final Pattern ALLOC_PATTERN =
@@ -106,10 +101,6 @@ public class TombstoneParser {
                     "pid: (?<pid>\\d+), tid: (?<tid>\\d+), name: (?<threadname>.+?)  >>>"
                             + " (?<processname>.+?) <<<");
     private static final Pattern THREAD_HEADER_2_PATTERN = Pattern.compile("uid: (?<uid>\\d+)");
-    // TODO: finish description
-    // private static final Pattern TAGGED_ADDR_CTRL_PATTERN = Pattern.compile("tagged_addr_ctrl:
-    // (?<taggedaddrctrl>\\p{XDigit}{16})(?:\\((mask 0x(?<mtemask>\\p{XDigit}{4}))?(?:, )?, unknown
-    // 0x(?<unknownvalue>)\\p{XDigit}{8,16}\\))?");
     private static final Pattern TAGGED_ADDR_CTRL_PATTERN =
             Pattern.compile(
                     "tagged_addr_ctrl: (?<taggedaddrctrl>\\p{XDigit}{16})(?<description>.+)?");
@@ -154,8 +145,10 @@ public class TombstoneParser {
     private static final Pattern CURRENT_BACKTRACE_BLOB_PATTERN =
             Pattern.compile(
                     String.format(
-                            "^backtrace:\n(?:%s\n)*(?:%s\n)*",
-                            BACKTRACE_NOTE_PATTERN.pattern(), BACKTRACE_PATTERN.pattern()),
+                            "^%s\n(?:%s\n)*(?:%s\n)*",
+                            BACKTRACE_HEADER_PATTERN.pattern(),
+                            BACKTRACE_NOTE_PATTERN.pattern(),
+                            BACKTRACE_PATTERN.pattern()),
                     Pattern.MULTILINE);
     private static final Pattern ALLOC_BACKTRACE_BLOB_PATTERN =
             Pattern.compile(
@@ -172,8 +165,6 @@ public class TombstoneParser {
     /** Parse a logcat snippet and build a list of tombstones */
     public static final List<Tombstone> parseLogcat(String logcat) {
         String[] potentialTombstones = splitPattern(TOMBSTONE_HEADER_PATTERN).split(logcat);
-
-        String filename = "/tmp/tombstone-" + System.currentTimeMillis();
 
         List<Tombstone> tombstones = new ArrayList<>();
         for (String potentialTombstone : potentialTombstones) {
