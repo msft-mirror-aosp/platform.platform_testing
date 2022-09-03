@@ -32,6 +32,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -40,6 +41,7 @@ import java.util.regex.Pattern;
 public class TombstoneUtilsTest {
 
     private static List<Tombstone> sTombstones;
+    private static final List<Tombstone> EMPTY_TOMBSTONE_LIST = Collections.emptyList();
 
     @BeforeClass
     public static void setUp() throws IOException {
@@ -104,7 +106,7 @@ public class TombstoneUtilsTest {
                                                 .setProcessPatterns(
                                                         Pattern.compile("synthetic_process_0")))
                                 .size())
-                .isNotEqualTo(List.of());
+                .isNotEqualTo(EMPTY_TOMBSTONE_LIST);
     }
 
     @Test
@@ -141,7 +143,7 @@ public class TombstoneUtilsTest {
                                                 .setProcessPatterns(
                                                         Pattern.compile("synthetic_process_1")))
                                 .size())
-                .isNotEqualTo(List.of());
+                .isNotEqualTo(EMPTY_TOMBSTONE_LIST);
     }
 
     @Test
@@ -164,7 +166,7 @@ public class TombstoneUtilsTest {
                                                         Pattern.compile("synthetic_process_0"),
                                                         Pattern.compile("generic")))
                                 .size())
-                .isNotEqualTo(List.of());
+                .isNotEqualTo(EMPTY_TOMBSTONE_LIST);
     }
 
     @Test
@@ -184,7 +186,7 @@ public class TombstoneUtilsTest {
                                                         Pattern.compile(
                                                                 "com\\.android\\.bluetooth")))
                                 .size())
-                .isNotEqualTo(List.of());
+                .isNotEqualTo(EMPTY_TOMBSTONE_LIST);
     }
 
     @Test
@@ -209,7 +211,7 @@ public class TombstoneUtilsTest {
                                                         Pattern.compile(
                                                                 "com\\.android\\.bluetooth")))
                                 .size())
-                .isNotEqualTo(List.of());
+                .isNotEqualTo(EMPTY_TOMBSTONE_LIST);
 
         TombstoneUtils.assertNoSecurityCrashes(
                 crashes,
@@ -248,7 +250,7 @@ public class TombstoneUtilsTest {
                                                         Pattern.compile(
                                                                 "com\\.android\\.bluetooth")))
                                 .size())
-                .isNotEqualTo(List.of());
+                .isNotEqualTo(EMPTY_TOMBSTONE_LIST);
     }
 
     @Test
@@ -300,7 +302,7 @@ public class TombstoneUtilsTest {
                                                         new BacktraceFilterPattern(
                                                                 "libaudioutils", null)))
                                 .size())
-                .isNotEqualTo(List.of());
+                .isNotEqualTo(EMPTY_TOMBSTONE_LIST);
 
         assertThat(
                         TombstoneUtils.getSecurityCrashes(
@@ -314,7 +316,7 @@ public class TombstoneUtilsTest {
                                                         new BacktraceFilterPattern(
                                                                 "libaudioflinger\\.so", null)))
                                 .size())
-                .isNotEqualTo(List.of());
+                .isNotEqualTo(EMPTY_TOMBSTONE_LIST);
 
         TombstoneUtils.assertNoSecurityCrashes(
                 sTombstones,
@@ -351,7 +353,7 @@ public class TombstoneUtilsTest {
                                                         new BacktraceFilterPattern(
                                                                 "libstagefright", null)))
                                 .size())
-                .isNotEqualTo(List.of());
+                .isNotEqualTo(EMPTY_TOMBSTONE_LIST);
     }
 
     @Test
@@ -367,7 +369,7 @@ public class TombstoneUtilsTest {
                                                         new BacktraceFilterPattern(
                                                                 null, "memcpy_to_float")))
                                 .size())
-                .isNotEqualTo(List.of());
+                .isNotEqualTo(EMPTY_TOMBSTONE_LIST);
         assertThat(
                         TombstoneUtils.getSecurityCrashes(
                                         sTombstones,
@@ -380,7 +382,7 @@ public class TombstoneUtilsTest {
                                                         new BacktraceFilterPattern(
                                                                 null, "memcpy_[^_]+_float")))
                                 .size())
-                .isNotEqualTo(List.of());
+                .isNotEqualTo(EMPTY_TOMBSTONE_LIST);
 
         TombstoneUtils.assertNoSecurityCrashes(
                 sTombstones,
@@ -416,7 +418,7 @@ public class TombstoneUtilsTest {
                                                 .setBacktraceExcludes(
                                                         new BacktraceFilterPattern(null, "strlen")))
                                 .size())
-                .isNotEqualTo(List.of());
+                .isNotEqualTo(EMPTY_TOMBSTONE_LIST);
     }
 
     @Test
@@ -431,7 +433,7 @@ public class TombstoneUtilsTest {
                                                 .setBacktraceIncludes(
                                                         new BacktraceFilterPattern(null, null)))
                                 .size())
-                .isNotEqualTo(List.of());
+                .isNotEqualTo(EMPTY_TOMBSTONE_LIST);
         assertThat(
                         TombstoneUtils.getSecurityCrashes(
                                         sTombstones,
@@ -443,7 +445,7 @@ public class TombstoneUtilsTest {
                                                         new BacktraceFilterPattern(
                                                                 "libaudioutils", "memcpy")))
                                 .size())
-                .isNotEqualTo(List.of());
+                .isNotEqualTo(EMPTY_TOMBSTONE_LIST);
         TombstoneUtils.assertNoSecurityCrashes(
                 sTombstones,
                 new TombstoneUtils.Config()
@@ -462,7 +464,7 @@ public class TombstoneUtilsTest {
                                                 .setProcessPatterns(
                                                         Pattern.compile("com.redacted.mte-fail")))
                                 .size())
-                .isNotEqualTo(List.of());
+                .isNotEqualTo(EMPTY_TOMBSTONE_LIST);
     }
 
     @Test
@@ -474,6 +476,6 @@ public class TombstoneUtilsTest {
                                                 .setProcessPatterns(
                                                         Pattern.compile("/data/data/avrc_poc")))
                                 .size())
-                .isNotEqualTo(List.of());
+                .isNotEqualTo(EMPTY_TOMBSTONE_LIST);
     }
 }
