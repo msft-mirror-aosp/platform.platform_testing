@@ -58,6 +58,18 @@ public class SimpleperfListener extends BaseMetricListener {
     public static final String SUBCOMMAND = "subcommand";
     // Arguments to pass to simpleperf on start.
     public static final String ARGUMENTS = "arguments";
+    // Arguments to record specific processes separated by commas and spaces are ignored.
+    // Ex. "surfaceflinger,system_server"
+    public static final String PROCESSES = "processes_to_record";
+    // Arguments to record specific events separated by commas and spaces are ignored.
+    // Ex. "instructions,cpu-cycles"
+    public static final String EVENTS = "events_to_record";
+    // Argument to determine if report is generated after recording.
+    public static final String REPORT = "report";
+    // Arguments to report event count for specific symbols separated by semicolons and spaces are
+    // ignored.
+    // Ex. "android::Parcel::writeInt32(int);android::SurfaceFlinger::commit(long, long, long)"
+    public static final String REPORT_SYMBOLS = "symbols_to_report";
 
     // Simpleperf samples collected during the test will be saved under this root folder.
     private String mTestOutputRoot;
@@ -69,6 +81,9 @@ public class SimpleperfListener extends BaseMetricListener {
     private boolean mSkipTestFailureMetrics;
     private String mSubcommand;
     private String mArguments;
+    private Map<String, String> mProcessToPid = new HashMap<>();
+    private boolean mReport;
+    private String[] mReportSymbols;
 
     private SimpleperfHelper mSimpleperfHelper = new SimpleperfHelper();
 
@@ -77,8 +92,8 @@ public class SimpleperfListener extends BaseMetricListener {
     }
 
     /**
-     * Constructor to simulate receiving the instrumentation arguments. Shoud not be used except for
-     * testing.
+     * Constructor to simulate receiving the instrumentation arguments. Should not be used except
+     * for testing.
      */
     @VisibleForTesting
     SimpleperfListener(Bundle args, SimpleperfHelper helper, Map invocationMap) {
@@ -106,6 +121,33 @@ public class SimpleperfListener extends BaseMetricListener {
 
         // Command arguments passed to simpleperf.
         mArguments = args.getString(ARGUMENTS, DEFAULT_ARGUMENTS);
+
+        // Processes passed into recording arguments for simpleperf.
+        String processes = args.getString(PROCESSES, "");
+        String[] individualProcesses = processes.trim().split("\\s*,\\s*");
+
+        // Events passed into recording arguments for simpleperf.
+        String events = args.getString(EVENTS, "");
+        String[] individualEvents = events.trim().split("\\s*,\\s*");
+
+        // Whether to generate report after recording or not, by default set to false.
+        mReport = "true".equals(args.getString(REPORT));
+
+        // Symbols to look for when reporting events for processes.
+        mReportSymbols = args.getString(REPORT_SYMBOLS, "").trim().split("\\s*;\\s*");
+
+        // Appending recording argument for recording specified events if given.
+        if (!events.isEmpty()) {
+            mArguments += " -e ";
+            mArguments += String.join(",", individualEvents);
+        }
+        // Appending recording argument for recording specified processes if given.
+        if (!processes.isEmpty()) {
+            for (String process : individualProcesses) {
+                mProcessToPid.put(process, mSimpleperfHelper.getPID(process));
+            }
+            mArguments += " -p " + String.join(",", mProcessToPid.values());
+        }
 
         if (!mIsCollectPerRun) {
             return;
@@ -143,7 +185,7 @@ public class SimpleperfListener extends BaseMetricListener {
             Log.i(
                     getTag(),
                     "Skipping simpleperf stop attempt onTestEnd because simpleperf did not start"
-                            + "successfully");
+                            + " successfully");
             return;
         }
 
@@ -172,6 +214,9 @@ public class SimpleperfListener extends BaseMetricListener {
                                     getTestFileName(description),
                                     mTestIdInvocationCount.get(getTestFileName(description))));
             stopSimpleperf(path, testData);
+            if (mReport) {
+                getSimpleperfReport(path, testData, description.getMethodName());
+            }
         }
     }
 
@@ -187,13 +232,16 @@ public class SimpleperfListener extends BaseMetricListener {
         }
 
         Log.i(getTag(), "Stopping simpleperf after test run ended");
+        String uniqueId = Integer.toString(UUID.randomUUID().hashCode());
         Path path =
                 Paths.get(
                         mTestOutputRoot,
                         this.getClass().getSimpleName(),
-                        String.format(
-                                "%s%d.data", SIMPLEPERF_PREFIX, UUID.randomUUID().hashCode()));
+                        String.format("%s%s.data", SIMPLEPERF_PREFIX, uniqueId));
         stopSimpleperf(path, runData);
+        if (mReport) {
+            getSimpleperfReport(path, runData, uniqueId);
+        }
     }
 
     /** Start simpleperf sampling. */
@@ -210,6 +258,26 @@ public class SimpleperfListener extends BaseMetricListener {
             Log.e(getTag(), "Failed to collect the simpleperf output.");
         } else {
             record.addStringMetric(SIMPLEPERF_FILE_PATH, path.toString());
+        }
+    }
+
+    /**
+     * Generate simpleperf report from an existing record file then add parsed metrics to
+     * DataRecord.
+     *
+     * @param path Path to read binary record from.
+     * @param data DataRecord to store metrics parsed from report
+     */
+    private void getSimpleperfReport(Path path, DataRecord data, String metricsPrefix) {
+        for (Map.Entry<String, String> entry : mProcessToPid.entrySet()) {
+            Map<String, String> metricPerProcess =
+                    mSimpleperfHelper.getSimpleperfReport(
+                            path.toString(), entry, mReportSymbols, metricsPrefix);
+            Log.i(getTag(), "Simpleperf Metrics report collected. " + metricPerProcess);
+            for (Map.Entry<String /*event-process-symbol*/, String /*eventCount*/> metric :
+                    metricPerProcess.entrySet()) {
+                data.addStringMetric(metric.getKey(), metric.getValue());
+            }
         }
     }
 

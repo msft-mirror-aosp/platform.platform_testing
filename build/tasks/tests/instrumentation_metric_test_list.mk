@@ -84,6 +84,7 @@ instrumentation_metric_tests := \
     TextClassifierPerfTests \
     WmPerfTests \
     ImePerfTests \
+    SurfaceFlingerPerfTests \
     trace_config_detailed.textproto \
     trace_config_multi_user.textproto \
     perfetto_trace_processor_shell
