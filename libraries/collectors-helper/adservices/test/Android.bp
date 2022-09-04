@@ -23,12 +23,15 @@ java_library {
     srcs: ["src/**/*.java"],
 
     static_libs: [
-        "adservices-collector-helper",
         "androidx.test.runner",
-        "app-collector-helper",
         "junit",
         "mockito-target",
+        "adservices-collector-helper",
+        "app-collector-helper",
         "truth-prebuilt",
+        "androidx.test.ext.junit",
+        "androidx.test.uiautomator",
+        "mockito-target-minus-junit4",
     ],
 
     sdk_version: "current",
