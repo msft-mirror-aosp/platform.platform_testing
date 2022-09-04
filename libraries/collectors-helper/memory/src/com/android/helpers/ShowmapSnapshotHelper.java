@@ -19,15 +19,14 @@ package com.android.helpers;
 import static com.android.helpers.MetricUtility.constructKey;
 
 import android.util.Log;
-
 import androidx.test.InstrumentationRegistry;
 import androidx.test.uiautomator.UiDevice;
-
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.InputMismatchException;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -50,7 +49,6 @@ public class ShowmapSnapshotHelper implements ICollectorHelper<String> {
     public static final String ALL_PROCESSES_CMD = "ps -A";
     private static final String SHOWMAP_CMD = "showmap -v %d";
     private static final String CHILD_PROCESSES_CMD = "ps -A --ppid %d";
-    private static final String GC_CMD = "kill -10 %s";
 
     public static final String OUTPUT_METRIC_PATTERN = "showmap_%s_bytes";
     public static final String OUTPUT_FILE_PATH_KEY = "showmap_output_file";
@@ -148,6 +146,7 @@ public class ShowmapSnapshotHelper implements ICollectorHelper<String> {
                 // No processes specified, just return empty map
                 return mMemoryMap;
             }
+            HashSet<Integer> zygoteChildrenPids = getZygoteChildrenPids();
 
             FileWriter writer = new FileWriter(new File(mTestOutputFile), true);
             for (String processName : mProcessNames) {
@@ -160,21 +159,14 @@ public class ShowmapSnapshotHelper implements ICollectorHelper<String> {
                       // measurements as memory tests aim to track persistent memory regression
                       // instead of transient memory which also allows for de-noising and reducing
                       // likelihood of false alerts.
-                      if (mRunGcPrecollection) {
+                      if (mRunGcPrecollection && zygoteChildrenPids.contains(pid)) {
+                        // Skip native processes from sending GC signal.
                         android.os.Trace.beginSection("IssueGCForPid: " + pid);
-                        // Send a signal to perform GC
-                        mUiDevice.executeShellCommand(String.format(GC_CMD, pid));
+                        // Perform a synchronous GC which happens when we request meminfo
+                        // This save us the need of setting up timeouts that may or may not
+                        // match with the end time of GC.
+                        mUiDevice.executeShellCommand("dumpsys meminfo -a " + pid);
                         android.os.Trace.endSection();
-                        // Because the signal for garbage collection does not wait
-                        // for the actual garbage collection to happen and we have
-                        // no way to communicate to check status, we wait for enough
-                        // time for GC to happen.
-                        try {
-                          android.os.Trace.beginSection("WaitForGC");
-                          Thread.sleep(200);
-                          android.os.Trace.endSection();
-                        } catch (InterruptedException e) {
-                        }
                       }
 
                       android.os.Trace.beginSection("ExecuteShowmap");
@@ -215,6 +207,31 @@ public class ShowmapSnapshotHelper implements ICollectorHelper<String> {
         }
 
         return mMemoryMap;
+    }
+
+    public HashSet<Integer> getZygoteChildrenPids() {
+        HashSet<Integer> allZygoteChildren;
+        allZygoteChildren = getChildrenPids("zygote");
+        HashSet<Integer> zyg64children = getChildrenPids("zygote64");
+        allZygoteChildren.addAll(zyg64children);
+        return allZygoteChildren;
+    }
+
+    public HashSet<Integer> getChildrenPids(String processName) {
+        HashSet<Integer> childrenPids = new HashSet<>();
+        String childrenCmdOutput = null;
+        try {
+            // Execute shell does not support shell substitution so it has to be executed twice.
+            childrenCmdOutput = mUiDevice.executeShellCommand(
+                "pgrep -P " + mUiDevice.executeShellCommand("pidof " + processName));
+        } catch (IOException e) {
+            Log.e(TAG, "Exception occurred reading children for process " + processName);
+        }
+        String[] lines = childrenCmdOutput.split("\\R");
+        for (String line : lines) {
+            childrenPids.add(Integer.parseInt(line));
+        }
+        return childrenPids;
     }
 
     @Override
