@@ -16,9 +16,7 @@
 
 package android.platform.helpers;
 
-import android.support.test.uiautomator.Direction;
-
-/** Extends for Settings homepage */
+/** Extends for Settings Intelligence */
 public interface ISettingsIntelligenceHelper extends IAppHelper {
 
     /**
@@ -100,11 +98,4 @@ public interface ISettingsIntelligenceHelper extends IAppHelper {
 
     /** This method opens Settings homepage */
     void goToHome();
-
-    /**
-     * Setup expectations: Settings homepage is open
-     *
-     * <p>This method flings Settings homepage.
-     */
-    void flingHome(Direction direction);
 }
