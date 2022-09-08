@@ -20,8 +20,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.matches;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
 
 import androidx.test.runner.AndroidJUnit4;
 
@@ -160,7 +158,8 @@ public class MemLeaksHelperTest {
     public void testNoUnreachableMemory() throws IOException {
         assertTrue(mMemLeaksHelper.startCollecting());
         String memLeaksPidSampleOutput =
-                "root 31966   2  0  0 worker_thread   0  S  com.google.android.ims\n";
+                "root          31966     2       0      0 worker_thread       0 S"
+                        + " com.google.android.ims\n";
         String memLeaksSampleOutput =
                 "Applications Memory Usage (in Kilobytes):\n"
                         + "Uptime: 1137766417 Realtime: 1146089528\n"
@@ -252,8 +251,8 @@ public class MemLeaksHelperTest {
 
     /**
      * Test the parser works if the dump does not contain the unreachable memory bytes and
-     * allocations. Test good process name but missing in output, which is identified as non-java
-     * process. We skip non-java process
+     * allocations. Test good process name with missing process name, unreachable memory and
+     * allocations.
      */
     @Test
     public void testNoProcessName() throws IOException {
@@ -300,9 +299,20 @@ public class MemLeaksHelperTest {
                 .when(mMemLeaksHelper)
                 .executeShellCommand(
                         matches(String.format(mMemLeaksHelper.DUMPSYS_MEMIFNO, 31966)));
+        doReturn(memLeaksPidSampleOutput)
+                .when(mMemLeaksHelper)
+                .executeShellCommand(matches(String.format(mMemLeaksHelper.PROCESS_PID, 31966)));
         Map<String, Long> metrics = mMemLeaksHelper.getMetrics();
 
-        assertTrue(metrics.isEmpty());
+        assertFalse(metrics.isEmpty());
+        assertTrue(metrics.containsKey(mMemLeaksHelper.PROC_MEM_BYTES + "com.google.android.ims"));
+        assertTrue(
+                metrics.get(mMemLeaksHelper.PROC_MEM_BYTES + "com.google.android.ims").equals(0L));
+        assertTrue(
+                metrics.containsKey(mMemLeaksHelper.PROC_ALLOCATIONS + "com.google.android.ims"));
+        assertTrue(
+                metrics.get(mMemLeaksHelper.PROC_ALLOCATIONS + "com.google.android.ims")
+                        .equals(0L));
     }
 
     /** Test the parser works if the process name enclosed in []. Test enclosed process name. */
@@ -346,11 +356,15 @@ public class MemLeaksHelperTest {
         doReturn(memLeaksPidSampleOutput)
                 .when(mMemLeaksHelper)
                 .executeShellCommand(matches(mMemLeaksHelper.ALL_PROCESS));
+        doReturn(memLeaksSampleOutput)
+                .when(mMemLeaksHelper)
+                .executeShellCommand(matches(String.format(mMemLeaksHelper.DUMPSYS_MEMIFNO, 8616)));
+        doReturn(memLeaksPidSampleOutput)
+                .when(mMemLeaksHelper)
+                .executeShellCommand(matches(String.format(mMemLeaksHelper.PROCESS_PID, 8616)));
         Map<String, Long> metrics = mMemLeaksHelper.getMetrics();
 
-        // Skip process names enclosed in "[]"
+        // Skip the enclosed process name
         assertTrue(metrics.isEmpty());
-        verify(mMemLeaksHelper, never())
-                .executeShellCommand(matches(String.format(mMemLeaksHelper.DUMPSYS_MEMIFNO, 8616)));
     }
 }

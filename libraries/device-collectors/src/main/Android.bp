@@ -23,7 +23,6 @@ java_library {
     srcs: ["java/**/*.java"],
 
     static_libs: [
-        "adservices-collector-helper",
         "androidx.annotation_annotation",
         "androidx.test.runner",
         "androidx.test.uiautomator",
@@ -33,10 +32,10 @@ java_library {
         "lyric-metric-helper",
         "memory-helper",
         "perfetto-helper",
-        "platform-test-annotations",
         "power-helper",
         "simpleperf-helper",
         "system-metric-helper",
+        "platform-test-annotations",
     ],
 
     sdk_version: "test_current",

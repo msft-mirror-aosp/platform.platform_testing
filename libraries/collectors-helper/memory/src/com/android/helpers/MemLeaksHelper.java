@@ -38,9 +38,13 @@ public class MemLeaksHelper implements ICollectorHelper<Long> {
             "(?<bytes>[0-9]+) bytes in (?<allocations>[0-9]+) unreachable allocations";
 
     @VisibleForTesting public static final String ALL_PROCESS = "ps -A";
+    @VisibleForTesting public static final String PROCESS_PID = "ps -p %d";
+
     @VisibleForTesting
     public static final String DUMPSYS_MEMIFNO = "dumpsys meminfo --unreachable %d";
+
     @VisibleForTesting public static final String PROC_MEM_BYTES = "proc_unreachable_memory_bytes_";
+
     @VisibleForTesting
     public static final String PROC_ALLOCATIONS = "proc_unreachable_allocations_";
 
@@ -64,7 +68,7 @@ public class MemLeaksHelper implements ICollectorHelper<Long> {
         Map<String, Long> results = new HashMap<>();
 
         if (pids.isEmpty()) {
-            Log.e(TAG, "Failed to get all the valid process PIDs");
+            Log.e(TAG, "Failed to get all the process PIDs");
             return results;
         }
 
@@ -88,35 +92,35 @@ public class MemLeaksHelper implements ICollectorHelper<Long> {
 
             Matcher matcherName = patternName.matcher(dumpOutput);
             Matcher matcherLeak = patternLeak.matcher(dumpOutput);
-            boolean nameFound = matcherName.find();
-            boolean byteFound = matcherLeak.find();
 
-            // If process name does not show in the output, which is identified as an
-            // non-java process. We can simply skip it.
-            if (!nameFound) {
-                continue;
-            }
-
-            String processName = matcherName.group(1);
-            if (byteFound) {
-                results.put(PROC_MEM_BYTES + processName, Long.parseLong(matcherLeak.group(1)));
-                results.put(PROC_ALLOCATIONS + processName, Long.parseLong(matcherLeak.group(2)));
+            if (matcherName.find() && matcherLeak.find()) {
+                results.put(
+                        PROC_MEM_BYTES + matcherName.group(1),
+                        Long.parseLong(matcherLeak.group(1)));
+                results.put(
+                        PROC_ALLOCATIONS + matcherName.group(1),
+                        Long.parseLong(matcherLeak.group(2)));
             } else {
-                // If we don't find unreachable memory and allocations, report 0
-                // If the process name shows in the output, we should also see its unreachable
-                // memory info even unreachable memory or allocations is in zero.
-                Log.w(TAG, "Unreachable memory info is missing when querying the " + processName);
-                results.put(PROC_MEM_BYTES + processName, 0L);
-                results.put(PROC_ALLOCATIONS + processName, 0L);
+                if (matcherName.find()) {
+                    results.put(PROC_MEM_BYTES + matcherName.group(1), 0L);
+                    results.put(PROC_ALLOCATIONS + matcherName.group(1), 0L);
+                } else {
+                    // Get process name by pid
+                    String processName = getProcessNameByPID(pid);
+                    if (processName.length() == 0) continue;
+                    results.put(PROC_MEM_BYTES + processName, 0L);
+                    results.put(PROC_ALLOCATIONS + processName, 0L);
+                }
             }
         }
+
         return results;
     }
 
     /**
-     * Get pid of all processes excluding process names enclosed in "[]"
+     * Get pid of all processes.
      *
-     * @return pid of all processes excluding process names enclosed in "[]"
+     * @return pid of all processes
      */
     private List<Integer> getPids() {
         try {
@@ -125,26 +129,18 @@ public class MemLeaksHelper implements ICollectorHelper<Long> {
             // Sample output for the process info
             // Sample command : "ps -A"
             // Sample output :
-            // system   4533   410 13715708 78536 do_freezer_trap 0 S    com.android.keychain
-            // root    32552     2        0     0   worker_thread 0 I [kworker/6:0-memlat_wq]
+            // system  4533 410 13715708 78536 do_freezer_trap 0 S com.android.keychain
 
             String[] lines = pidOutput.split(System.lineSeparator());
 
             List<Integer> pids = new ArrayList<>();
-            for (String line : lines) {
-                String[] splitLine = line.split("\\s+");
+            for (String pid : lines) {
+                String pidSplit = pid.split("\\s+")[1];
                 // Skip the first (i.e header) line from "ps -A" output.
-                if (splitLine[1].equalsIgnoreCase("PID")) {
+                if (pidSplit.equalsIgnoreCase("PID")) {
                     continue;
                 }
-
-                String processName = splitLine[splitLine.length - 1].replace("\n", "").trim();
-                // Skip the process names enclosed in "[]"
-                if (processName.startsWith("[") && processName.endsWith("]")) {
-                    continue;
-                }
-
-                pids.add(Integer.parseInt(splitLine[1]));
+                pids.add(Integer.parseInt(pidSplit));
             }
             return pids;
         } catch (IOException ioe) {
@@ -157,5 +153,19 @@ public class MemLeaksHelper implements ICollectorHelper<Long> {
     @VisibleForTesting
     public String executeShellCommand(String command) throws IOException {
         return mUiDevice.executeShellCommand(command);
+    }
+
+    /* Execute a shell command and return its output. */
+    private String getProcessNameByPID(int pid) {
+        try {
+            String processInfoStr = executeShellCommand(String.format(PROCESS_PID, pid));
+            String[] processInfoArr = processInfoStr.split("\\s+");
+            String processName = processInfoArr[processInfoArr.length - 1].replace("\n", "").trim();
+            if (processName.startsWith("[") && processName.endsWith("]")) processName = "";
+            return processName;
+        } catch (IOException ioe) {
+            Log.e(TAG, "Failed to get process name by pid.", ioe);
+            return "";
+        }
     }
 }

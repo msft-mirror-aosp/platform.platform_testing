@@ -45,10 +45,8 @@ public interface StsLogic {
                         "uploadSpl",
                         "uploadModificationTime",
                         "uploadKernelBugs",
-                        "uploadMainlineModules",
                         "declaredSpl",
                         "fridaAssetTemplate",
-                        "mainline",
                     });
     List<String> STS_EXTRA_BUSINESS_LOGIC_INCREMENTAL =
             Arrays.asList(
@@ -56,25 +54,17 @@ public interface StsLogic {
                         "uploadSpl",
                         "uploadModificationTime",
                         "uploadKernelBugs",
-                        "uploadMainlineModules",
                         "declaredSpl",
                         "incremental",
                         "fridaAssetTemplate",
-                        "mainline",
                     });
 
     // intentionally empty because declaredSpl and incremental skipping is not desired when
     // developing STS tests.
-    // Exceptions:
-    // * uploads
-    // * mainline skipping (this is behind an additional flag)
-    // * frida (necessary for frida tests)
     List<String> STS_EXTRA_BUSINESS_LOGIC_DEVELOP =
             Arrays.asList(
                     new String[] {
                         "fridaAssetTemplate",
-                        "uploadMainlineModules",
-                        "mainline",
                     });
 
     Description getTestDescription();
@@ -84,8 +74,6 @@ public interface StsLogic {
     Optional<LocalDate> getKernelBuildDate();
 
     boolean shouldUseKernelSpl();
-
-    boolean shouldSkipMainlineTests();
 
     LocalDate getReleaseBulletinSpl();
 
@@ -283,28 +271,6 @@ public interface StsLogic {
         // skip if the test is newer than the device SPL
         LocalDate deviceSpl = getDeviceSpl();
         return minTestSpl.isAfter(deviceSpl);
-    }
-
-    default boolean shouldSkipMainline() {
-        // check if the flag to skip mainline tests has been set to true
-        if (!shouldSkipMainlineTests()) {
-            return false;
-        }
-
-        long[] bugIds = getCveBugIds();
-        if (bugIds == null) {
-            // There were no @AsbSecurityTest annotations
-            logInfo(LOG_TAG, "not an ASB test");
-            return false;
-        }
-
-        Map<String, String> bugModulesMap = BusinessLogicMapStore.getMap("bugid_mainline_modules");
-        for (long bugId : bugIds) {
-            if (bugModulesMap.containsKey(Long.toString(bugId))) {
-                return true;
-            }
-        }
-        return false;
     }
 
     default void skip(String message) {

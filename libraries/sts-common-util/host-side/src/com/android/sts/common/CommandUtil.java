@@ -61,7 +61,7 @@ public final class CommandUtil {
                 String.format(
                         "cmd failed: %s\ncode: %s\nstdout:\n%s\nstderr:\n%s",
                         cmd, res.getExitCode(), res.getStdout(), res.getStderr());
-        assertEquals(failMsg, CommandStatus.SUCCESS, res.getStatus());
+        assertEquals(failMsg, res.getStatus(), CommandStatus.SUCCESS);
         return res;
     }
 }
