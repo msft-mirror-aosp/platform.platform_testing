@@ -26,9 +26,9 @@ java_library_static {
     sdk_version: "current",
     srcs: ["src/**/*.java"],
     static_libs: [
+        "compatibility-common-util-devicesidelib",
         "junit",
         "platform-test-annotations",
-        "compatibility-common-util-devicesidelib",
     ],
 }
 
@@ -41,18 +41,12 @@ java_library {
     host_supported: true,
     srcs: [
         "src/**/*.java",
-        ":libtombstone_proto-src",
     ],
-    proto: {
-        type: "lite",
-    },
     static_libs: [
         "compatibility-common-util-lib",
-        "libprotobuf-java-lite",
     ],
     libs: [
         "junit",
-        "json-prebuilt",
         "platform-test-annotations",
     ],
 }
