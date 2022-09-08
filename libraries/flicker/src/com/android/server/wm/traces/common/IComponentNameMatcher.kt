@@ -16,4 +16,6 @@
 
 package com.android.server.wm.traces.common
 
-interface IComponentNameMatcher : IComponentMatcher, IComponentName
+interface IComponentNameMatcher : IComponentMatcher, IComponentName {
+    fun componentNameMatcherToString(): String
+}

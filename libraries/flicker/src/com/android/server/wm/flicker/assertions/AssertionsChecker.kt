@@ -76,7 +76,7 @@ class AssertionsChecker<T : FlickerSubject> {
      * passes, this allows the trace to be recorded for longer periods, and the checks to happen
      * only after some time.
      */
-    private fun assertChanges(entries: List<T>) {
+    fun assertChanges(entries: List<T>) {
         if (assertions.isEmpty() || entries.isEmpty()) {
             return
         }
@@ -149,5 +149,18 @@ class AssertionsChecker<T : FlickerSubject> {
      */
     fun skipUntilFirstAssertion() {
         skipUntilFirstAssertion = true
+    }
+
+    fun isEqual(other: Any?): Boolean {
+        if (other !is AssertionsChecker<*> ||
+            skipUntilFirstAssertion != other.skipUntilFirstAssertion) {
+            return false
+        }
+        assertions.forEachIndexed { index, assertion ->
+            if (!assertion.isEqual(other.assertions[index])) {
+                return false
+            }
+        }
+        return true
     }
 }

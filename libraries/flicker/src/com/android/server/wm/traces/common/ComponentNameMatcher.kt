@@ -47,6 +47,11 @@ class ComponentNameMatcher(
         }
     }
 
+    override fun componentNameMatcherToString(): String {
+        return "ComponentNameMatcher(\"${this.packageName}\", " +
+            "\"${this.className}\")"
+    }
+
     /** {@inheritDoc} */
     override fun windowMatchesAnyOf(windows: Array<WindowState>): Boolean =
         matchesAnyOf(windows,

@@ -13,7 +13,7 @@ import org.junit.Test
  */
 class LayersLifecycleExtractorTest {
     @Test
-    fun extract(){
+    fun extract() {
         val layersTrace = ElementLifecycleExtractorTestConst.createTrace()
         val traceDump = DeviceTraceDump(null, layersTrace)
         val layersLifecycleExtractor = LayersLifecycleExtractor()

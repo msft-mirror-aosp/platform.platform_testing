@@ -2,17 +2,20 @@ package com.android.server.wm.flicker.assertiongenerator.common
 
 import com.android.server.wm.flicker.assertions.AssertionsChecker
 import com.android.server.wm.flicker.assertions.FlickerSubject
+import com.android.server.wm.flicker.traces.FlickerTraceSubject
 import com.android.server.wm.traces.common.ITrace
 import com.android.server.wm.traces.common.ITraceEntry
 
-abstract class Assertion {
-    abstract val assertionsChecker: AssertionsChecker<out FlickerSubject>
+interface Assertion {
+    val assertionsChecker: AssertionsChecker<out FlickerSubject>
+    val name: String
+    var assertionString: String
 
-    open fun execute(newTrace: ITrace<ITraceEntry>) {
-        TODO()
-    }
+    fun execute(newTrace: ITrace<out ITraceEntry>)
 
-    override fun toString(): String {
-        TODO()
-    }
+    fun execute(traceSubject: FlickerTraceSubject<out FlickerSubject>)
+
+    fun toString(newTrace: String): String
+
+    fun isEqual(other: Any?): Boolean
 }

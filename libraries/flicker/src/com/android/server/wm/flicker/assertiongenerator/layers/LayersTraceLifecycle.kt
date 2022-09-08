@@ -22,17 +22,24 @@ import com.android.server.wm.flicker.assertiongenerator.common.ITraceLifecycle
 class LayersTraceLifecycle(
     val lifecycleMap: MutableMap<Int, LayersElementLifecycle> = mutableMapOf()
 ) : ITraceLifecycle {
-    override operator fun get(index: Any): LayersElementLifecycle? {
-        return lifecycleMap[index as Int]
+    override val size: Int
+        get() = lifecycleMap.size
+
+    override val elementIds: Set<Int>
+        get() = lifecycleMap.keys
+
+    override operator fun get(elementId: Any): LayersElementLifecycle? {
+        return lifecycleMap[elementId as Int]
     }
 
     // can't have LayersElementLifecycle because
     // compiler won't allow different types in the function signature
-    override operator fun set(index: Any, elementLifecycle: IElementLifecycle) {
-        lifecycleMap[index as Int] = elementLifecycle as LayersElementLifecycle
+    override operator fun set(elementId: Any, elementLifecycle: IElementLifecycle) {
+        lifecycleMap[elementId as Int] = elementLifecycle as LayersElementLifecycle
     }
 
-    override fun getOrPut(index: Any, elementLifecycle: IElementLifecycle): LayersElementLifecycle {
-        return lifecycleMap.getOrPut(index as Int){elementLifecycle as LayersElementLifecycle}
+    override fun getOrPut(elementId: Any, elementLifecycle: IElementLifecycle):
+        LayersElementLifecycle {
+        return lifecycleMap.getOrPut(elementId as Int){elementLifecycle as LayersElementLifecycle}
     }
 }

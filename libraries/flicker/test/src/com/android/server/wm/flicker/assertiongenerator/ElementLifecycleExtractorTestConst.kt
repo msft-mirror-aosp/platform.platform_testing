@@ -15,23 +15,54 @@ import com.android.server.wm.traces.common.region.Region
 
 class ElementLifecycleExtractorTestConst {
     companion object{
-        val layer_id1_t1 = createTestLayer("navBar", 5, 1, 0)
-        val layer_id1_t2 = createTestLayer("navBar", 6, 1, 0)
-        // val layer_id1_t3 = createTestLayer("navBar", 7, 1, 0)
+        val layer_id1_t1 = createTestLayer("NavigationBar0", 5, 1, 0)
+        val layer_id1_t2 = createTestLayer("NavigationBar0", 6, 1, 0)
 
-        val layer_id2_t1 = createTestLayer("statusBar", 7, 2, 0)
-        val layer_id2_t2 = createTestLayer("statusBar", 5, 2, 0)
-        val layer_id2_t3 = createTestLayer("statusBar", 6, 2, 0)
+        val layer_id2_t1 = createTestLayer("StatusBar", 7, 2, 0)
+        val layer_id2_t2 = createTestLayerWithEmptyRegion(
+            "StatusBar",
+            0,
+            2,
+            0)
+        val layer_id2_t3 = createTestLayer("StatusBar", 6, 2, 0)
 
-        // val layer_id3_t1 = createTestLayer("navBarChild", 6, 3, 1)
         val layer_id3_t2 = createTestLayer("navBarChild", 7, 3, 1)
-        // val layer_id3_t3 = createTestLayer("navBarChild", 8, 3, 1)
-        // this is removed by the builder because it's orphan
 
-        val mapOfFlattenedLayers: Map<Int, Array<Layer>> = mapOf<Int, Array<Layer>>(
+        val layer_id4_t1 = createTestLayerWithEmptyRegion(
+            "com.google.android.apps.nexuslauncher/" +
+                "com.google.android.apps.nexuslauncher.NexusLauncherActivity#1039",
+            4,
+            4,
+            0)
+        val layer_id4_t2 = createTestLayer(
+            "com.google.android.apps.nexuslauncher/" +
+                "com.google.android.apps.nexuslauncher.NexusLauncherActivity#1039",
+            5,
+            4,
+            0)
+        val layer_id4_t3 = createTestLayer(
+            "com.google.android.apps.nexuslauncher/" +
+                "com.google.android.apps.nexuslauncher.NexusLauncherActivity#1039",
+            7,
+            4,
+            0)
+
+        val mapOfFlattenedLayers: Map<Int, Array<Layer>> = mapOf(
                 1 to arrayOf(layer_id1_t1, layer_id2_t1),
                 2 to arrayOf(layer_id1_t2, layer_id2_t2, layer_id3_t2),
                 3 to arrayOf(layer_id2_t3)
+        )
+
+        val mapOfFlattenedLayersAssertionProducer: Map<Int, Array<Layer>> = mapOf(
+            1 to arrayOf(layer_id1_t1, layer_id2_t1, layer_id4_t1),
+            2 to arrayOf(layer_id1_t2, layer_id2_t2, layer_id3_t2, layer_id4_t2),
+            3 to arrayOf(layer_id2_t3, layer_id4_t3),
+        )
+
+        val mapOfFlattenedLayersAllVisibilityAssertions: Map<Int, Array<Layer>> = mapOf(
+            1 to arrayOf(),
+            2 to arrayOf(layer_id2_t1),
+            3 to arrayOf(layer_id2_t2),
         )
 
         val expectedElementLifecycle_id1 = LayersElementLifecycle(
@@ -46,26 +77,89 @@ class ElementLifecycleExtractorTestConst {
             mutableListOf(null, layer_id3_t2, null)
         )
 
+        val expectedElementLifecycle_id4 = LayersElementLifecycle(
+            mutableListOf(layer_id4_t1, layer_id4_t2, layer_id4_t3)
+        )
+
+        val expectedElementLifecycle_AllVisibilityAssertions_id2 = LayersElementLifecycle(
+            mutableListOf(null, layer_id2_t1, layer_id2_t2)
+        )
+
+        val expectedFailElementLifecycle1_AllVisibilityAssertions_id2 = LayersElementLifecycle(
+            mutableListOf(layer_id2_t1, layer_id2_t2)
+        )
+
+        val mapOfFlattenedLayersAllVisibilityAssertions_fail1: Map<Int, Array<Layer>> = mapOf(
+            1 to arrayOf(layer_id2_t1),
+            2 to arrayOf(layer_id2_t2),
+        )
+
+        val expectedFailElementLifecycle2_AllVisibilityAssertions_id2 = LayersElementLifecycle(
+            mutableListOf(null, layer_id2_t1)
+        )
+
+        // Passed                : notContains(StatusBar)
+        // Assertion never failed: isVisible(StatusBar)
+        // Untested              : isInvisible(StatusBar)
+        // Trace                 : 1/3:[notContains(StatusBar)]	Entry: 1/3 LayerTraceEntrySubject(0d0h0m0s0ms (timestamp=1))
+        // Trace                 : 1/3:[notContains(StatusBar)]	Entry: 2/3 LayerTraceEntrySubject(0d0h0m0s0ms (timestamp=2))
+        // Trace                 : 2/3:[isVisible(StatusBar)]	Entry: 2/3 LayerTraceEntrySubject(0d0h0m0s0ms (timestamp=2))
+        // Trace                 : 2/3:[isVisible(StatusBar)]	Entry: 3/3 LayerTraceEntrySubject(0d0h0m0s0ms (timestamp=3))
+        val mapOfFlattenedLayersAllVisibilityAssertions_fail2: Map<Int, Array<Layer>> = mapOf(
+            1 to arrayOf(),
+            2 to arrayOf(layer_id2_t1),
+            3 to arrayOf(layer_id2_t1)
+        )
+
+        val expectedFailElementLifecycle3_AllVisibilityAssertions_id2 = LayersElementLifecycle(
+            mutableListOf(null)
+        )
+
+        // Assertion never failed: notContains(StatusBar)
+        // Untested              : isVisible(StatusBar)
+        // Untested              : isInvisible(StatusBar)
+        // Trace                 : 1/3:[notContains(StatusBar)]	Entry: 1/3 LayerTraceEntrySubject(0d0h0m0s0ms (timestamp=1))
+        // Trace                 : 1/3:[notContains(StatusBar)]	Entry: 2/3 LayerTraceEntrySubject(0d0h0m0s0ms (timestamp=2))
+        // Trace                 : 1/3:[notContains(StatusBar)]	Entry: 3/3 LayerTraceEntrySubject(0d0h0m0s0ms (timestamp=3))
+        val mapOfFlattenedLayersAllVisibilityAssertions_fail3: Map<Int, Array<Layer>> = mapOf(
+            1 to arrayOf(),
+            2 to arrayOf(),
+            3 to arrayOf()
+        )
+
+        val expectedFailElementLifecycle4_AllVisibilityAssertions_id2 = LayersElementLifecycle(
+            mutableListOf(layer_id2_t1)
+        )
+
+        // Assertion   : isVisible(StatusBar)
+        // Is Invisible: Crop is 0x0
+        // Is Invisible: Bounds is 0x0
+        // Is Invisible: Transform is invalid
+        // Is Invisible: Visible region calculated by Composition Engine is empty
+        val mapOfFlattenedLayersAllVisibilityAssertions_fail4: Map<Int, Array<Layer>> = mapOf(
+            1 to arrayOf(),
+            2 to arrayOf(layer_id2_t2),
+            3 to arrayOf()
+        )
+
         val expectedElementLifecycles = mapOf(
             1 to expectedElementLifecycle_id1,
             2 to expectedElementLifecycle_id2,
             3 to expectedElementLifecycle_id3
         )
 
-        val expectedElementLifecycleAfterMapInit_id1 = LayersElementLifecycle(
-            mutableListOf(layer_id1_t1)
+        val expectedElementLifecyclesVisibilityAssertionProducer = mapOf(
+            1 to expectedElementLifecycle_id1,
+            2 to expectedElementLifecycle_id2,
+            3 to expectedElementLifecycle_id3,
+            4 to expectedElementLifecycle_id4
         )
 
-        val expectedElementLifecycleAfterMapInit_id2 = LayersElementLifecycle(
-            mutableListOf(layer_id2_t1)
+        val expectedElementLifecyclesAllVisibilityAssertions = mapOf(
+            2 to expectedElementLifecycle_AllVisibilityAssertions_id2,
         )
 
-        val expectedLifecyclesAfterInitializeElementLifecyclesMap = mapOf(
-            1 to expectedElementLifecycleAfterMapInit_id1,
-            2 to expectedElementLifecycleAfterMapInit_id2
-        )
-
-        fun createTraceEntries(): Array<BaseLayerTraceEntry> {
+        private fun createTraceEntries(): Array<BaseLayerTraceEntry> {
             var traceEntries = arrayOf<BaseLayerTraceEntry>()
             for ((timestamp, flattenedLayers) in mapOfFlattenedLayers) {
                 val layerTraceEntryBuilder = LayerTraceEntryBuilder(
@@ -85,16 +179,60 @@ class ElementLifecycleExtractorTestConst {
             return LayersTrace(traceEntries)
         }
 
+        private fun createTraceEntries_arg(
+            mapOfFlattenedLayers: Map<Int, Array<Layer>>
+        ): Array<BaseLayerTraceEntry> {
+            var traceEntries = arrayOf<BaseLayerTraceEntry>()
+            for ((timestamp, flattenedLayers) in mapOfFlattenedLayers) {
+                val layerTraceEntryBuilder = LayerTraceEntryBuilder(
+                    timestamp,
+                    flattenedLayers,
+                    arrayOf(),
+                    1
+                )
+                val layerTraceEntry = layerTraceEntryBuilder.build()
+                traceEntries += layerTraceEntry
+            }
+            return traceEntries
+        }
+
+        fun createTrace_arg(mapOfFlattenedLayers: Map<Int, Array<Layer>>): LayersTrace {
+            val traceEntries: Array<BaseLayerTraceEntry> = createTraceEntries_arg(
+                mapOfFlattenedLayers
+            )
+            return LayersTrace(traceEntries)
+        }
+
+        private fun createTestLayerWithEmptyRegion(
+            name: String,
+            index: Int,
+            id: Int,
+            parentId: Int
+        ): Layer {
+            val rect: RectF = RectF.from(
+                left = 0.toFloat(),
+                top = 0.toFloat(),
+                right = 0.toFloat(),
+                bottom = 0.toFloat()
+            )
+            return createTestLayer(name, index, id, parentId, rect)
+        }
+
         // copy of WindowManagerStateHelperTest::createImaginaryLayer,
         // but it is private, so couldn't use it
-        private fun createTestLayer(name: String, index: Int, id: Int, parentId: Int): Layer {
-            val transform = Transform.from(0, Matrix33.EMPTY)
-            val rect = RectF.from(
-                    left = index.toFloat(),
-                    top = index.toFloat(),
-                    right = index.toFloat() + 1,
-                    bottom = index.toFloat() + 1
+        private fun createTestLayer(
+            name: String,
+            index: Int,
+            id: Int,
+            parentId: Int,
+            rect: RectF = RectF.from(
+                left = index.toFloat(),
+                top = index.toFloat(),
+                right = index.toFloat() + 1,
+                bottom = index.toFloat() + 1
             )
+        ): Layer {
+            val transform = Transform.from(0, Matrix33.EMPTY)
             return Layer.from(
                     name,
                     id,

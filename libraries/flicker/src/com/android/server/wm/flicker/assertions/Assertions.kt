@@ -39,6 +39,25 @@ open class NamedAssertion<T> (
     override fun invoke(target: T): Unit = assertion.invoke(target)
 
     override fun toString(): String = "Assertion($name)${if (isOptional) "[optional]" else ""}"
+
+    /**
+    * We can't check the actual assertion is the same.
+    * We are checking for the name, which should have a 1:1 correspondence with the assertion,
+    * but there is no actual guarantee of the same execution of the assertion even if isEqual()
+    * is true.
+    */
+    open fun isEqual(other: Any?): Boolean {
+        if (other !is NamedAssertion<*>) {
+            return false
+        }
+        if (name != other.name) {
+            return false
+        }
+        if (isOptional != other.isOptional) {
+            return false
+        }
+        return true
+    }
 }
 
 /**
@@ -85,6 +104,21 @@ class CompoundAssertion<T>(assertion: Assertion<T>, name: String, optional: Bool
     }
 
     override fun toString(): String = name
+
+    override fun isEqual(other: Any?): Boolean {
+        if (other !is CompoundAssertion<*>) {
+            return false
+        }
+        if (!super.isEqual(other)) {
+            return false
+        }
+        assertions.forEachIndexed { index, assertion ->
+            if (!assertion.isEqual(other.assertions[index])) {
+                return false
+            }
+        }
+        return true
+    }
 
     /**
      * Adds a new assertion to the list

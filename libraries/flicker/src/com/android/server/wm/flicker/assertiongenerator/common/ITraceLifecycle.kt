@@ -17,9 +17,15 @@
 package com.android.server.wm.flicker.assertiongenerator.common
 
 interface ITraceLifecycle {
-    operator fun get(index: Any): IElementLifecycle?
+    // TO-DO: iterator
 
-    operator fun set(index: Any, elementLifecycle: IElementLifecycle)
+    val size: Int
 
-    fun getOrPut(index: Any, elementLifecycle: IElementLifecycle): IElementLifecycle
+    val elementIds: Set<Any> // needs to be string for wm
+
+    operator fun get(elementId: Any): IElementLifecycle?
+
+    operator fun set(elementId: Any, elementLifecycle: IElementLifecycle)
+
+    fun getOrPut(elementId: Any, elementLifecycle: IElementLifecycle): IElementLifecycle
 }
