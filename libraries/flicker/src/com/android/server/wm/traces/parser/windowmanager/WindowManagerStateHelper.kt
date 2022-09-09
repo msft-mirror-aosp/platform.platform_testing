@@ -198,7 +198,7 @@ open class WindowManagerStateHelper @JvmOverloads constructor(
                 .withNavOrTaskBarVisible()
                 .withStatusBarVisible()
                 .add(WindowManagerConditionsFactory.isHomeActivityVisible())
-                .add(WindowManagerConditionsFactory.isLayerVisible(LAUNCHER))
+                .add(WindowManagerConditionsFactory.isLauncherLayerVisible())
 
         /**
          * Waits until the split-screen divider is visible and nothing to be animating

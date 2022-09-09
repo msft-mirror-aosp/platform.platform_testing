@@ -191,6 +191,12 @@ object WindowManagerConditionsFactory {
         Condition("isRecentsActivityVisible") {
             it.wmState.isHomeActivityVisible || it.wmState.isRecentsActivityVisible
         }
+    @JsName("isLauncherLayerVisible")
+    fun isLauncherLayerVisible(): Condition<DeviceStateDump> =
+        Condition("isLauncherLayerVisible") {
+            it.layerState.isVisible(ComponentNameMatcher.LAUNCHER) ||
+                    it.layerState.isVisible(ComponentNameMatcher.AOSP_LAUNCHER)
+        }
 
     /**
      * Condition to check if WM app transition is idle
