@@ -219,7 +219,7 @@ public class ShowmapSnapshotHelper implements ICollectorHelper<String> {
 
     public HashSet<Integer> getChildrenPids(String processName) {
         HashSet<Integer> childrenPids = new HashSet<>();
-        String childrenCmdOutput = null;
+        String childrenCmdOutput = "";
         try {
             // Execute shell does not support shell substitution so it has to be executed twice.
             childrenCmdOutput = mUiDevice.executeShellCommand(
@@ -229,7 +229,14 @@ public class ShowmapSnapshotHelper implements ICollectorHelper<String> {
         }
         String[] lines = childrenCmdOutput.split("\\R");
         for (String line : lines) {
-            childrenPids.add(Integer.parseInt(line));
+            try {
+                int pid = Integer.parseInt(line);
+                childrenPids.add(pid);
+            } catch (NumberFormatException e) {
+                // If the process does not exist or the shell command fails
+                // just skip the pid, this is because there could be some
+                // devices that contain a process while others do not.
+            }
         }
         return childrenPids;
     }
