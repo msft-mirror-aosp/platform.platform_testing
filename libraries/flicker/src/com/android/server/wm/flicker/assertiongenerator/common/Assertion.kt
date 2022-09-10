@@ -7,6 +7,7 @@ import com.android.server.wm.traces.common.ITrace
 import com.android.server.wm.traces.common.ITraceEntry
 
 interface Assertion {
+    // Visible for testing
     val assertionsChecker: AssertionsChecker<out FlickerSubject>
     val name: String
     var assertionString: String

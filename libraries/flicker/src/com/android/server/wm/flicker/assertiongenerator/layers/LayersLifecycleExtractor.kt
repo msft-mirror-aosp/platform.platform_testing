@@ -10,17 +10,19 @@ class LayersLifecycleExtractor(
      * @{inheritDoc}
      */
     override fun extract(traceDump: DeviceTraceDump): LayersTraceLifecycle? {
-        var elementLifecycles: LayersTraceLifecycle = LayersTraceLifecycle()
+        val elementLifecycles = LayersTraceLifecycle()
         val trace = traceDump.layersTrace ?: return null
         for ((index, entry) in trace.entries.withIndex()) {
             for (layer in entry.flattenedLayers){
-                elementLifecycles[layer.id]?.states?.add(layer)
-                ?: run {
-                    var statesArray: Array<Layer?> = arrayOfNulls(index)
-                    statesArray += layer
-                    val layersElementLifecycle = LayersElementLifecycle(statesArray.toMutableList())
-                    elementLifecycles[layer.id] = layersElementLifecycle
-                }
+                elementLifecycles[layer.id]?.let {it.states[index] = layer }
+                    ?: run {
+                        val statesArray: Array<Layer?> = arrayOfNulls(trace.entries.size)
+                        statesArray[index] = layer
+                        val layersElementLifecycle = LayersElementLifecycle(
+                            statesArray.toMutableList()
+                        )
+                        elementLifecycles[layer.id] = layersElementLifecycle
+                    }
             }
         }
         return elementLifecycles

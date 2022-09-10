@@ -3,6 +3,7 @@ package com.android.server.wm.flicker.assertiongenerator.layers
 import com.android.server.wm.flicker.Utils
 import com.android.server.wm.flicker.assertiongenerator.common.Assertion
 import com.android.server.wm.flicker.assertiongenerator.common.ITraceLifecycle
+import com.android.server.wm.flicker.traces.layers.LayerTraceEntrySubject
 import com.android.server.wm.traces.common.layers.Layer
 
 class LayersVisibilityAssertionProducer(
@@ -10,6 +11,11 @@ class LayersVisibilityAssertionProducer(
     var previousIsVisible: Boolean? = null
     var initializedAssertion: Boolean = false
     var assertion = LayersAssertion()
+    val visibilityAssertions: Map<Boolean?, LayersAssertionData> = mapOf(
+        true to LayersAssertionData("isVisible", LayerTraceEntrySubject::isVisible),
+        false to LayersAssertionData("isInvisible", LayerTraceEntrySubject::isInvisible),
+        null to LayersAssertionData("notContains", LayerTraceEntrySubject::notContains)
+    )
 
     /**
      * Return a list with a single assertion corresponding to the chain of visible/invisible asserts
@@ -35,10 +41,29 @@ class LayersVisibilityAssertionProducer(
         return assertions.filter { it.assertionString != ""}
     }
 
-    private fun addThenToAssertionString() {
+    private fun addToAssertionString(assertionStrToAdd: String, componentMatcherStr: String) {
         if (initializedAssertion) {
             assertion.assertionString += ".then()"
         }
+        assertion.assertionString += ".$assertionStrToAdd($componentMatcherStr)"
+    }
+
+    private fun addAssertionFor(state: Layer?, name: String) {
+        val componentMatcher = Utils.componentNameMatcherFromName(name) ?: return
+        val componentMatcherStr = Utils.componentNameMatcherToString(componentMatcher)
+        val visibility = state?.isVisible
+        val assertionPair = visibilityAssertions[visibility]
+        val assertionStrToAdd = assertionPair!!.assertionStrToAdd
+        val assertionFunction = assertionPair.assertionFunction
+        assertion.assertionsChecker.add("$assertionStrToAdd($name)", isOptional = false) {
+            assertionFunction(it, componentMatcher)
+        }
+        addToAssertionString(assertionStrToAdd, componentMatcherStr)
+    }
+
+    private fun setPrevious(visibility: Boolean?) {
+        this.previousIsVisible = visibility
+        initializedAssertion = true
     }
 
     private fun produceAssertionForState(
@@ -47,43 +72,10 @@ class LayersVisibilityAssertionProducer(
     ) {
         val previousIsVisible = previousIsVisible
         val componentMatcher = Utils.componentNameMatcherFromName(name) ?: return
-        val componentMatcherStr = Utils.componentNameMatcherToString(componentMatcher)
-        if (state == null) {
-            if (!initializedAssertion || (initializedAssertion && previousIsVisible != null)) {
-                assertion.assertionsChecker
-                    .add("notContains($name)",
-                    isOptional = false) {
-                    it.notContains(componentMatcher)
-                }
-                addThenToAssertionString()
-                assertion.assertionString += ".notContains($componentMatcherStr)"
-            }
-            this.previousIsVisible = null
-            initializedAssertion = true
-        } else if (state.isVisible) {
-            if (!initializedAssertion || (initializedAssertion && previousIsVisible != true)) {
-                assertion.assertionsChecker
-                    .add("isVisible($name)",
-                        isOptional = false) {
-                        it.isVisible(componentMatcher)
-                    }
-                addThenToAssertionString()
-                assertion.assertionString += ".isVisible($componentMatcherStr)"
-            }
-            this.previousIsVisible = true
-            initializedAssertion = true
-        } else if (!state.isVisible) {
-            if (!initializedAssertion || (initializedAssertion && previousIsVisible != false)) {
-                assertion.assertionsChecker
-                    .add("isInvisible($name)",
-                        isOptional = false) {
-                        it.isInvisible(componentMatcher)
-                    }
-                addThenToAssertionString()
-                assertion.assertionString += ".isInvisible($componentMatcherStr)"
-            }
-            this.previousIsVisible = false
-            initializedAssertion = true
+        val visibility = state?.isVisible
+        if (!initializedAssertion || previousIsVisible != visibility) {
+            addAssertionFor(state, name)
         }
+        setPrevious(visibility)
     }
 }

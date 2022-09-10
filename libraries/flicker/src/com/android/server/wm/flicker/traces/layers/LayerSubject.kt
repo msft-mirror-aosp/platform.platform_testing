@@ -66,6 +66,9 @@ class LayerSubject private constructor(
     val visibleRegion: RegionSubject get() =
         RegionSubject.assertThat(layer?.visibleRegion, this, timestamp)
 
+    val visibilityReason: Array<String> get() =
+        layer?.visibilityReason ?: emptyArray()
+
     /**
      * Visible region calculated by the Composition Engine (when available) or calculated
      * based on the layer bounds and transform

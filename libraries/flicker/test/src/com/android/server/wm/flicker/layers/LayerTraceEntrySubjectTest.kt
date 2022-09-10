@@ -169,7 +169,7 @@ class LayerTraceEntrySubjectTest {
                 .isVisible(TestComponents.SIMPLE_APP)
         }
         assertFailure(error)
-            .factValue("Is Invisible", 0)
+            .factValue("Invisibility reason", 0)
             .contains("Bounds is 0x0")
     }
 }

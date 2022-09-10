@@ -128,6 +128,7 @@ class FlickerBlockJUnit4ClassRunnerTest {
     @Test
     fun injectsFlickerServiceTests() {
         Assume.assumeTrue(isShellTransitionsEnabled)
+        Assume.assumeTrue(IS_FAAS_ENABLED)
 
         val testClass = TestClass(SimpleFaasTest::class.java)
         val parameters = FlickerTestParameterFactory.getInstance()
@@ -177,6 +178,7 @@ class FlickerBlockJUnit4ClassRunnerTest {
     @Test
     fun transitionNotRerunWithFaasEnabled() {
         Assume.assumeTrue(isShellTransitionsEnabled)
+        Assume.assumeTrue(IS_FAAS_ENABLED)
 
         transitionRunCount = 0
         val testClass = TestClass(TransitionRunCounterWithFaasTest::class.java)

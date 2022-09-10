@@ -139,7 +139,7 @@ class AssertionProducerTestConst {
                 it.isVisible(componentMatcher_id2)
             }
             assertion.assertionsChecker.add(
-                "isInvisible(StatusBar)",
+                ".isInvisible(StatusBar)",
                 isOptional = false) {
                 it.isInvisible(componentMatcher_id2)
             }

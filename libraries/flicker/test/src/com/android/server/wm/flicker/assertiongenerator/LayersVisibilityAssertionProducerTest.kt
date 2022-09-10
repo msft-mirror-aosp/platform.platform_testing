@@ -105,7 +105,7 @@ class LayersVisibilityAssertionProducerTest {
             .factValue("Assertion")
             .contains("notContains(StatusBar)")
         assertFailure(error)
-            .factValue("Could find")
+            .factValue("Found")
             .contains("Layer:StatusBar")
     }
 
@@ -154,6 +154,7 @@ class LayersVisibilityAssertionProducerTest {
         assertFailure(error)
             .factValue("Assertion")
             .contains("isVisible(StatusBar)")
-        Truth.assertThat(error).hasMessageThat().contains("Is Invisible: Crop is 0x0")
+        Truth.assertThat(error).hasMessageThat().contains("Is Invisible")
+        Truth.assertThat(error).hasMessageThat().contains("Crop is 0x0")
     }
 }

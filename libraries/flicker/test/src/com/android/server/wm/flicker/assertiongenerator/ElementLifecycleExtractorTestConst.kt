@@ -188,7 +188,7 @@ class ElementLifecycleExtractorTestConst {
                     timestamp,
                     flattenedLayers,
                     arrayOf(),
-                    1
+                    timestamp.toLong()
                 )
                 val layerTraceEntry = layerTraceEntryBuilder.build()
                 traceEntries += layerTraceEntry

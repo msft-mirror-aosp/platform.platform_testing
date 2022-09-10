@@ -20,9 +20,7 @@ class LayersAssertion(
         require(newTrace is LayersTrace) {
             "Requires a trace of type 'LayersTrace' to execute LayersAssertion."
         }
-        assertionsChecker.assertChanges(newTrace.entries.toList().map { entry ->
-            LayerTraceEntrySubject.assertThat(entry)
-        }) // layersTraceSubject.subjects
+        execute(LayersTraceSubject.assertThat(newTrace))
     }
 
     override fun execute(traceSubject: FlickerTraceSubject<out FlickerSubject>) {

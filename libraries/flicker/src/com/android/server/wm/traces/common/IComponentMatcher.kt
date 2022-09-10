@@ -110,4 +110,14 @@ interface IComponentMatcher {
      */
     @JsName("toLayerIdentifier")
     fun toLayerIdentifier(): String
+
+    /**
+     * @param layers Collection of layers check for matches
+     * @param condition A function taking the matched layers of a base level component and returning
+     *              true or false base on if the check succeeded.
+     * @return true iff all the check condition is satisfied according to the ComponentMatcher's
+     *         defined execution of it.
+     */
+    @JsName("check")
+    fun check(layers: Collection<Layer>, condition: (Collection<Layer>) -> Boolean): Boolean
 }

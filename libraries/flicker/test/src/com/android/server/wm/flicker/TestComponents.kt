@@ -22,27 +22,34 @@ import com.android.server.wm.traces.common.ComponentNameMatcher
 internal object TestComponents {
     @JvmStatic
     val CHROME = ComponentNameMatcher("com.android.chrome", "com.google.android.apps.chrome.Main")
+
     @JvmStatic
     val CHROME_FIRST_RUN = ComponentNameMatcher(
         "com.android.chrome",
         "org.chromium.chrome.browser.firstrun.FirstRunActivity"
     )
+
     @JvmStatic
     val CHROME_SPLASH_SCREEN = ComponentNameMatcher("", "Splash Screen com.android.chrome")
+
     @JvmStatic
     val DOCKER_STACK_DIVIDER = ComponentNameMatcher("", "DockedStackDivider")
+
     @JvmStatic
     val IMAGINARY = ComponentNameMatcher("", "ImaginaryWindow")
+
     @JvmStatic
     val IME_ACTIVITY = ComponentNameMatcher(
         "com.android.server.wm.flicker.testapp",
         "com.android.server.wm.flicker.testapp.ImeActivity"
     )
+
     @JvmStatic
     val LAUNCHER = ComponentNameMatcher(
         "com.google.android.apps.nexuslauncher",
         "com.google.android.apps.nexuslauncher.NexusLauncherActivity"
     )
+
     @JvmStatic
     val PIP_OVERLAY = ComponentNameMatcher("", "pip-dismiss-overlay")
 
@@ -51,12 +58,21 @@ internal object TestComponents {
         "com.android.server.wm.flicker.testapp",
         "com.android.server.wm.flicker.testapp.SimpleActivity"
     )
+
+    @JvmStatic
+    val NON_RESIZEABLE_APP = ComponentNameMatcher(
+        "com.android.server.wm.flicker.testapp",
+        "com.android.server.wm.flicker.testapp.NonResizeableActivity"
+    )
+
     private const val SHELL_PKG_NAME = "com.android.wm.shell.flicker.testapp"
+
     @JvmStatic
     val SHELL_SPLIT_SCREEN_PRIMARY = ComponentNameMatcher(
         SHELL_PKG_NAME,
         "$SHELL_PKG_NAME.SplitScreenActivity"
     )
+
     @JvmStatic
     val SHELL_SPLIT_SCREEN_SECONDARY = ComponentNameMatcher(
         SHELL_PKG_NAME,
@@ -64,7 +80,20 @@ internal object TestComponents {
     )
 
     @JvmStatic
+    val FIXED_APP = ComponentNameMatcher(
+        SHELL_PKG_NAME,
+        "$SHELL_PKG_NAME.FixedActivity"
+    )
+
+    @JvmStatic
+    val PIP_APP = ComponentNameMatcher(
+        SHELL_PKG_NAME,
+        "$SHELL_PKG_NAME.PipActivity"
+    )
+
+    @JvmStatic
     val SCREEN_DECOR_OVERLAY = ComponentNameMatcher("", "ScreenDecorOverlay")
+
     @JvmStatic
     val WALLPAPER = ComponentNameMatcher(
         "", "com.breel.wallpapers18.soundviz.wallpaper.variations.SoundVizWallpaperV2"

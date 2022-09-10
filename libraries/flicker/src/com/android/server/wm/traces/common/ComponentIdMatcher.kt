@@ -49,12 +49,20 @@ class ComponentIdMatcher(
      *
      * @param layers to search
      */
-    override fun layerMatchesAnyOf(layers: Array<Layer>) =
-            layers.any { it.id == layerId }
+    override fun layerMatchesAnyOf(layers: Array<Layer>) = layers.any { it.id == layerId }
 
+    /** {@inheritDoc} */
+    override fun check(
+        layers: Collection<Layer>,
+        condition: (Collection<Layer>) -> Boolean
+    ): Boolean = condition(layers.filter { it.id == layerId })
+
+    /** {@inheritDoc} */
     override fun toActivityIdentifier() = toWindowIdentifier()
 
+    /** {@inheritDoc} */
     override fun toWindowIdentifier() = "Window#${windowId.toString(16)}"
 
+    /** {@inheritDoc} */
     override fun toLayerIdentifier(): String = "Layer#$layerId"
 }

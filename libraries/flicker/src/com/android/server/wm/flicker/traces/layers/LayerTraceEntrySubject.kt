@@ -19,13 +19,11 @@ package com.android.server.wm.flicker.traces.layers
 import com.android.server.wm.flicker.assertions.Assertion
 import com.android.server.wm.flicker.assertions.FlickerSubject
 import com.android.server.wm.flicker.traces.FlickerFailureStrategy
-import com.android.server.wm.flicker.traces.FlickerSubjectException
 import com.android.server.wm.flicker.traces.region.RegionSubject
 import com.android.server.wm.traces.common.IComponentMatcher
 import com.android.server.wm.traces.common.layers.BaseLayerTraceEntry
 import com.android.server.wm.traces.common.layers.Layer
 import com.android.server.wm.traces.common.layers.LayersTrace
-import com.google.common.truth.ExpectFailure
 import com.google.common.truth.Fact
 import com.google.common.truth.FailureMetadata
 import com.google.common.truth.FailureStrategy
@@ -149,67 +147,77 @@ class LayerTraceEntrySubject private constructor(
 
     /** {@inheritDoc} */
     override fun notContains(componentMatcher: IComponentMatcher): LayerTraceEntrySubject = apply {
-        val foundEntry = subjects
-            .firstOrNull { it.layer != null && componentMatcher.layerMatchesAnyOf(it.layer) }
-        foundEntry?.fail(
-            Fact.fact(ASSERTION_TAG, "notContains(${componentMatcher.toLayerIdentifier()})"),
-            Fact.fact("Could find", foundEntry)
+        val layers = subjects.mapNotNull { it.layer }
+        val notContainsComponent = componentMatcher.check(layers) { matchedLayers ->
+            matchedLayers.isEmpty()
+        }
+
+        if (notContainsComponent) {
+            return@apply
+        }
+
+        val failedEntries = subjects
+            .filter { it.layer != null && componentMatcher.layerMatchesAnyOf(it.layer) }
+        val failureFacts = mutableListOf(
+            Fact.fact(ASSERTION_TAG, "notContains(${componentMatcher.toLayerIdentifier()})")
         )
+        failedEntries.forEach { entry -> failureFacts.add(Fact.fact("Found", entry)) }
+        failedEntries.firstOrNull()?.fail(failureFacts)
     }
 
     /** {@inheritDoc} */
     override fun isVisible(componentMatcher: IComponentMatcher): LayerTraceEntrySubject = apply {
         contains(componentMatcher)
-        var target: FlickerSubject? = null
-        var reason = listOf<Fact>()
-        val filteredLayers = subjects
-            .filter { it.layer != null && componentMatcher.layerMatchesAnyOf(it.layer) }
-        for (layer in filteredLayers) {
-            if (layer.layer?.isHiddenByParent == true) {
-                reason = listOf(Fact.fact("Hidden by parent", layer.layer.parent?.name))
-                target = layer
-                continue
-            }
-            if (layer.isInvisible) {
-                reason = layer.layer?.visibilityReason
-                    ?.map { Fact.fact("Is Invisible", it) }
-                    ?: emptyList()
-                target = layer
-                continue
-            }
-            reason = emptyList()
-            target = null
-            break
+        val layers = subjects.mapNotNull { it.layer }
+        val hasVisibleSubject = componentMatcher.check(layers) { matchedLayers ->
+            matchedLayers.any { layer -> layer.isVisible }
         }
 
-        if (reason.isNotEmpty()) {
-            target?.fail(
-                Fact.fact(ASSERTION_TAG, "isVisible(${componentMatcher.toLayerIdentifier()})"),
-                *reason.toTypedArray()
+        if (hasVisibleSubject) {
+            return@apply
+        }
+
+        val matchingSubjects = subjects.filter {
+            it.layer != null && componentMatcher.layerMatchesAnyOf(it.layer)
+        }
+        val failedEntries = matchingSubjects.filter { it.isInvisible }
+        val failureFacts = mutableListOf(
+            Fact.fact(ASSERTION_TAG, "isVisible(${componentMatcher.toLayerIdentifier()})")
+        )
+
+        failedEntries.forEach { entry ->
+            failureFacts.add(Fact.fact("Is Invisible", entry))
+            failureFacts.addAll(
+                entry.visibilityReason.map { Fact.fact("Invisibility reason", it) }
             )
         }
+        failedEntries.firstOrNull()?.fail(failureFacts)
     }
 
     /** {@inheritDoc} */
     override fun isInvisible(componentMatcher: IComponentMatcher): LayerTraceEntrySubject = apply {
-        try {
-            isVisible(componentMatcher)
-        } catch (e: FlickerSubjectException) {
-            val cause = e.cause
-            require(cause is AssertionError)
-            ExpectFailure.assertThat(cause).factKeys().isNotEmpty()
+        val layers = subjects.mapNotNull { it.layer }
+        val hasInvisibleComponent = componentMatcher.check(layers) { componentLayers ->
+            componentLayers.all {
+                layer -> subjects.first { subject -> subject.layer == layer }.isInvisible
+            }
+        }
+
+        if (hasInvisibleComponent) {
             return@apply
         }
-        val foundEntry = subjects
-            .firstOrNull {
-                it.layer != null &&
-                componentMatcher.layerMatchesAnyOf(it.layer) &&
-                it.isVisible
-            }
-        foundEntry?.fail(
-            Fact.fact(ASSERTION_TAG, "isInvisible(${componentMatcher.toLayerIdentifier()})"),
-            Fact.fact("Is visible", foundEntry)
+
+        val matchingSubjects = subjects.filter {
+            it.layer != null && componentMatcher.layerMatchesAnyOf(it.layer)
+        }
+        val failedEntries = matchingSubjects.filter { it.isVisible }
+        val failureFacts = mutableListOf(
+            Fact.fact(ASSERTION_TAG, "isInvisible(${componentMatcher.toLayerIdentifier()})")
         )
+        failureFacts.addAll(
+            failedEntries.map { Fact.fact("Is Visible", it) }
+        )
+        failedEntries.firstOrNull()?.fail(failureFacts)
     }
 
     /** {@inheritDoc} */

@@ -175,7 +175,8 @@ class LayersTraceSubjectTest {
     @Test
     fun testCanDetectVisibleLayersMoreThanOneConsecutiveEntry() {
         testCanDetectVisibleLayersMoreThanOneConsecutiveEntry(
-            readLayerTraceFromFile("layers_trace_snapshot_visible.pb"))
+            readLayerTraceFromFile("layers_trace_snapshot_visible.pb")
+        )
     }
 
     @Test
@@ -256,14 +257,15 @@ class LayersTraceSubjectTest {
         val subject = assertThat(layersTraceEntries).last()
 
         try {
-            subject.visibleRegion(FIXED_APP).coversExactly(DISPLAY_REGION_ROTATED)
-            error("Layer is partially covered by a Pip layer and should " +
-                "not cover the device screen")
+            subject.visibleRegion(TestComponents.FIXED_APP).coversExactly(DISPLAY_REGION_ROTATED)
+            error(
+                "Layer is partially covered by a Pip layer and should not cover the device screen"
+            )
         } catch (e: AssertionError) {
-            val pipRegion = subject.visibleRegion(PIP_APP).region
+            val pipRegion = subject.visibleRegion(TestComponents.PIP_APP).region
             val expectedWithoutPip = DISPLAY_REGION_ROTATED.minus(pipRegion)
-            subject.visibleRegion(FIXED_APP)
-                    .coversExactly(expectedWithoutPip)
+            subject.visibleRegion(TestComponents.FIXED_APP)
+                .coversExactly(expectedWithoutPip)
         }
     }
 
@@ -271,10 +273,10 @@ class LayersTraceSubjectTest {
     fun checkVisibleRegionAppPlusPipLayer() {
         val layersTraceEntries = readLayerTraceFromFile("layers_trace_pip_wmshell.pb")
         val subject = assertThat(layersTraceEntries).last()
-        val pipRegion = subject.visibleRegion(PIP_APP).region
-        subject.visibleRegion(FIXED_APP)
-                .plus(pipRegion)
-                .coversExactly(DISPLAY_REGION_ROTATED)
+        val pipRegion = subject.visibleRegion(TestComponents.PIP_APP).region
+        subject.visibleRegion(TestComponents.FIXED_APP)
+            .plus(pipRegion)
+            .coversExactly(DISPLAY_REGION_ROTATED)
     }
 
     @Test
@@ -285,16 +287,16 @@ class LayersTraceSubjectTest {
         assertThat(trace)
             .isVisible(TestComponents.LAUNCHER)
             .then()
-            .isSplashScreenVisibleFor(newLayer, isOptional = false)
+            .isSplashScreenVisibleFor(TestComponents.SIMPLE_APP, isOptional = false)
             .then()
-            .isVisible(newLayer)
+            .isVisible(TestComponents.SIMPLE_APP)
             .forAllEntries()
 
         val failure = assertThrows(FlickerSubjectException::class.java) {
             assertThat(trace)
                 .isVisible(TestComponents.LAUNCHER)
                 .then()
-                .isVisible(newLayer)
+                .isVisible(TestComponents.SIMPLE_APP)
                 .forAllEntries()
         }
         assertFailure(failure).hasMessageThat().contains("Is Invisible")
@@ -308,7 +310,7 @@ class LayersTraceSubjectTest {
 
         // No splashscreen because no matching activity record
         var failure = assertThrows(FlickerSubjectException::class.java) {
-            assertThat(trace).first().isSplashScreenVisibleFor(newLayer)
+            assertThat(trace).first().isSplashScreenVisibleFor(TestComponents.SIMPLE_APP)
         }
         assertFailure(failure).hasMessageThat().contains("Could not find Activity Record layer")
 

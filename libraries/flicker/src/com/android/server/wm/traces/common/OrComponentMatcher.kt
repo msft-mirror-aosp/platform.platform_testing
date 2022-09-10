@@ -70,6 +70,16 @@ class OrComponentMatcher(
     }
 
     /** {@inheritDoc} */
+    override fun check(
+        layers: Collection<Layer>,
+        condition: (Collection<Layer>) -> Boolean
+    ): Boolean {
+        return componentMatchers.any { oredComponent ->
+            oredComponent.check(layers) { condition(it) }
+        }
+    }
+
+    /** {@inheritDoc} */
     override fun toActivityIdentifier(): String =
         componentMatchers.joinToString(" or ") { it.toActivityIdentifier() }
 
