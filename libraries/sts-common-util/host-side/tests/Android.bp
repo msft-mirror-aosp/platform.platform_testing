@@ -26,4 +26,6 @@ java_test_host {
 
     // tag this module as a test artifact
     test_suites: ["general-tests"],
+
+    java_resource_dirs: ["res/"],
 }

@@ -49,7 +49,7 @@ public class PerfettoListener extends BaseMetricListener {
     // Default perfetto config file name when text proto config is used.
     private static final String DEFAULT_TEXT_CONFIG_FILE = "trace_config.textproto";
     // Default wait time before stopping the perfetto trace.
-    private static final String DEFAULT_WAIT_TIME_MSECS = "3000";
+    private static final String DEFAULT_WAIT_TIME_MSECS = "0";
     // Option to pass the folder name which contains the perfetto trace config file.
     private static final String PERFETTO_CONFIG_ROOT_DIR_ARG = "perfetto_config_root_dir";
     // Default folder name to look for the perfetto config file.
@@ -77,7 +77,7 @@ public class PerfettoListener extends BaseMetricListener {
     // perfetto trace.
     public static final String PERFETTO_START_WAIT_TIME_ARG = "perfetto_start_wait_time_ms";
     // Default wait time before starting the perfetto trace.
-    public static final String DEFAULT_START_WAIT_TIME_MSECS = "3000";
+    public static final String DEFAULT_START_WAIT_TIME_MSECS = "0";
     // Regular expression pattern to identify multiple spaces.
     public static final String SPACES_PATTERN = "\\s+";
     // Space replacement value
@@ -317,12 +317,11 @@ public class PerfettoListener extends BaseMetricListener {
                 Boolean.parseBoolean(args.getString(HOLD_WAKELOCK_WHILE_COLLECTING));
 
         // Wait time before stopping the perfetto trace collection after the test
-        // is completed. Defaulted to 3000 msecs if perfetto_wait_time_ms is not passed.
-        // TODO: b/118122395 for parsing failures.
+        // is completed. Defaulted to 0 msecs.
         mWaitTimeInMs =
                 Long.parseLong(args.getString(PERFETTO_WAIT_TIME_ARG, DEFAULT_WAIT_TIME_MSECS));
 
-        // TODO: b/165344369 to avoid wait time before starting the perfetto trace.
+        // Wait time before the perfetto trace is started.
         mWaitStartTimeInMs =
                 Long.parseLong(
                         args.getString(
