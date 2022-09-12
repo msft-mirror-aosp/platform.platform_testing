@@ -51,10 +51,10 @@ public class TopicsLatencyHelperTest {
 
     private static final String SAMPLE_TOPICS_HOT_START_LATENCY_OUTPUT =
             "06-13 18:09:24.058 20765 20781 D\n"
-                    + " TopicsCrystalBallTest: (TOPICS_HOT_START_LATENCY_METRIC: 14)";
+                    + " GetTopicsApiCall: (TOPICS_HOT_START_LATENCY_METRIC: 14)";
     private static final String SAMPLE_TOPICS_COLD_START_LATENCY_OUTPUT =
             "06-13 18:09:24.058 20765 20781 D\n"
-                    + " TopicsCrystalBallTest: (TOPICS_COLD_START_LATENCY_METRIC: 200)";
+                    + " GetTopicsApiCall: (TOPICS_COLD_START_LATENCY_METRIC: 200)";
 
     private TopicsLatencyHelper mTopicsLatencyHelper;
 
