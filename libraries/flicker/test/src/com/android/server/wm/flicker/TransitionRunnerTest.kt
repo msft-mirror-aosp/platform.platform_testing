@@ -141,9 +141,7 @@ class TransitionRunnerTest {
                 .apply {
                     transitions {}
                     teardown {
-                        eachRun {
-                            throw RuntimeException("Fail on run teardown")
-                        }
+                        throw RuntimeException("Fail on run teardown")
                     }
                 }
                 .build(runner)
@@ -160,9 +158,7 @@ class TransitionRunnerTest {
                 .apply {
                     transitions {}
                     teardown {
-                        test {
-                            throw RuntimeException("Fail on test teardown")
-                        }
+                        throw RuntimeException("Fail on test teardown")
                     }
                 }
                 .build(runner)

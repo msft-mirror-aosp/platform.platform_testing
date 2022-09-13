@@ -21,8 +21,6 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.android.compatibility.common.util.SystemUtil
 import com.android.server.wm.flicker.FlickerRunResult.Companion.RunStatus.ASSERTION_FAILED
 import com.android.server.wm.flicker.FlickerRunResult.Companion.RunStatus.ASSERTION_SUCCESS
-import com.android.server.wm.flicker.TransitionRunner.Companion.TestSetupFailure
-import com.android.server.wm.flicker.TransitionRunner.Companion.TestTeardownFailure
 import com.android.server.wm.flicker.TransitionRunner.Companion.TransitionExecutionFailure
 import com.android.server.wm.flicker.TransitionRunner.Companion.TransitionSetupFailure
 import com.android.server.wm.flicker.TransitionRunner.Companion.TransitionTeardownFailure
@@ -246,12 +244,10 @@ class FlickerDSLTest {
         val builder = FlickerBuilder(instrumentation).withTestName { TEST_NAME }
         builder.transitions(SIMPLE_TRANSITION)
         builder.setup {
-            test {
-                throw RuntimeException("Failed to execute test setup")
-            }
+            throw RuntimeException("Failed to execute test setup")
         }
         val flicker = builder.build()
-        runAndAssertFlickerFailsWithExecutionError(flicker, TestSetupFailure::class.java)
+        runAndAssertFlickerFailsWithExecutionError(flicker, TransitionSetupFailure::class.java)
     }
 
     @Test
@@ -259,9 +255,7 @@ class FlickerDSLTest {
         val builder = FlickerBuilder(instrumentation).withTestName { TEST_NAME }
         builder.transitions(SIMPLE_TRANSITION)
         builder.setup {
-            eachRun {
-                throw RuntimeException("Failed to execute transition setup")
-            }
+            throw RuntimeException("Failed to execute transition setup")
         }
         val flicker = builder.build()
         runAndAssertFlickerFailsWithExecutionError(flicker, TransitionSetupFailure::class.java)
@@ -282,25 +276,10 @@ class FlickerDSLTest {
         val builder = FlickerBuilder(instrumentation).withTestName { TEST_NAME }
         builder.transitions(SIMPLE_TRANSITION)
         builder.teardown {
-            eachRun {
-                throw RuntimeException("Failed to execute transition teardown")
-            }
+            throw RuntimeException("Failed to execute transition teardown")
         }
         val flicker = builder.build()
         runAndAssertFlickerFailsWithExecutionError(flicker, TransitionTeardownFailure::class.java)
-    }
-
-    @Test
-    fun canDetectTestTeardownExecutionError() {
-        val builder = FlickerBuilder(instrumentation).withTestName { TEST_NAME }
-        builder.transitions(SIMPLE_TRANSITION)
-        builder.teardown {
-            test {
-                throw RuntimeException("Failed to execute test teardown")
-            }
-        }
-        val flicker = builder.build()
-        runAndAssertFlickerFailsWithExecutionError(flicker, TestTeardownFailure::class.java)
     }
 
     @Test

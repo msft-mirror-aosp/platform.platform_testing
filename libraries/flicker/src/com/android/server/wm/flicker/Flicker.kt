@@ -62,26 +62,18 @@ class Flicker(
      * Enabled tracing monitors
      */
     @JvmField val traceMonitors: List<ITransitionMonitor>,
-    /**
-     * Commands to be executed before each run
+        /**
+     * Commands to be executed before the transition
      */
-    @JvmField val testSetup: List<Flicker.() -> Any>,
-    /**
-     * Commands to be executed before the test
-     */
-    @JvmField val runSetup: List<Flicker.() -> Any>,
-    /**
-     * Commands to be executed after the test
-     */
-    @JvmField val testTeardown: List<Flicker.() -> Any>,
-    /**
-     * Commands to be executed after the run
-     */
-    @JvmField val runTeardown: List<Flicker.() -> Any>,
+    @JvmField val transitionSetup: List<Flicker.() -> Any>,
     /**
      * Test commands
      */
     @JvmField val transitions: List<Flicker.() -> Any>,
+    /**
+     * Commands to be executed after the transition
+     */
+    @JvmField val transitionTeardown: List<Flicker.() -> Any>,
     /**
      * Runner to execute the test transitions
      */

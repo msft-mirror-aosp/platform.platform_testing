@@ -24,7 +24,7 @@ java_library {
         "ub-uiautomator",
     ],
     static_libs: [
-        "gson-prebuilt-jar",
+        "gson",
         "guava",
     ],
     srcs: ["src/**/*.java"],

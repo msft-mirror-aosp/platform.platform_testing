@@ -51,9 +51,9 @@ class FlickerBuilder private constructor(
     private val outputDir: Path,
     private val wmHelper: WindowManagerStateHelper,
     private var testName: String,
-    private val setupCommands: TestCommandsBuilder,
-    private val teardownCommands: TestCommandsBuilder,
+    private val setupCommands: MutableList<Flicker.() -> Any>,
     private val transitionCommands: MutableList<Flicker.() -> Any>,
+    private val teardownCommands: MutableList<Flicker.() -> Any>,
     val device: UiDevice,
     private val traceMonitors: MutableList<ITransitionMonitor>,
     private var faasEnabled: Boolean = false
@@ -103,9 +103,9 @@ class FlickerBuilder private constructor(
         outputDir,
         wmHelper,
         testName = "",
-        setupCommands = TestCommandsBuilder(),
-        teardownCommands = TestCommandsBuilder(),
+        setupCommands = mutableListOf(),
         transitionCommands = mutableListOf(),
+        teardownCommands = mutableListOf(),
         device = UiDevice.getInstance(instrumentation),
         traceMonitors = traceMonitors
     )
@@ -119,9 +119,9 @@ class FlickerBuilder private constructor(
         otherBuilder.outputDir.toAbsolutePath(),
         otherBuilder.wmHelper,
         otherBuilder.testName,
-        TestCommandsBuilder(otherBuilder.setupCommands),
-        TestCommandsBuilder(otherBuilder.teardownCommands),
+        otherBuilder.setupCommands.toMutableList(),
         otherBuilder.transitionCommands.toMutableList(),
+        otherBuilder.teardownCommands.toMutableList(),
         UiDevice.getInstance(otherBuilder.instrumentation),
         otherBuilder.traceMonitors.toMutableList(),
         faasEnabled = otherBuilder.faasEnabled
@@ -242,16 +242,16 @@ class FlickerBuilder private constructor(
      * Defines the test ([TestCommandsBuilder.testCommands]) and run ([TestCommandsBuilder.runCommands])
      * commands executed before the [transitions] to test
      */
-    fun setup(commands: TestCommandsBuilder.() -> Unit): FlickerBuilder = apply {
-        setupCommands.apply { commands() }
+    fun setup(commands: Flicker.() -> Unit): FlickerBuilder = apply {
+        setupCommands.add(commands)
     }
 
     /**
      * Defines the test ([TestCommandsBuilder.testCommands]) and run ([TestCommandsBuilder.runCommands])
      * commands executed after the [transitions] to test
      */
-    fun teardown(commands: TestCommandsBuilder.() -> Unit): FlickerBuilder = apply {
-        teardownCommands.apply { commands() }
+    fun teardown(commands: Flicker.() -> Unit): FlickerBuilder = apply {
+        teardownCommands.add(commands)
     }
 
     /**
@@ -305,11 +305,9 @@ class FlickerBuilder private constructor(
             outputDir,
             testName,
             traceMonitors,
-            setupCommands.buildTestCommands(),
-            setupCommands.buildRunCommands(),
-            teardownCommands.buildTestCommands(),
-            teardownCommands.buildRunCommands(),
+            setupCommands,
             transitionCommands,
+            teardownCommands,
             runner,
             wmHelper,
             faasEnabled = faasEnabled

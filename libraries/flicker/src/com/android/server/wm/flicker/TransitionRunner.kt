@@ -32,13 +32,11 @@ import org.junit.runner.Description
  * Runner to execute the transitions of a flicker test
  *
  * The commands are executed in the following order:
- * 1) [Flicker.testSetup]
- * 2) [Flicker.runSetup
- * 3) Start monitors
- * 4) [Flicker.transitions]
- * 5) Stop monitors
- * 6) [Flicker.runTeardown]
- * 7) [Flicker.testTeardown]
+ * 1) [Flicker.transitionSetup]
+ * 2) Start monitors
+ * 3) [Flicker.transitions]
+ * 4) Stop monitors
+ * 5) [Flicker.transitionTeardown]
  *
  * If the tests were already executed, reuse the previous results
  *
@@ -91,8 +89,6 @@ open class TransitionRunner {
         val runResult = FlickerRunResult(flicker.testName)
         _result = runResult
         safeExecution(flicker) {
-            Log.d(FLICKER_TAG, "${flicker.testName} - Running test setup")
-            runTestSetup(flicker)
             val description = Description.createSuiteDescription(flicker.testName)
             if (flicker.faasEnabled) {
                 Log.d(FLICKER_TAG, "${flicker.testName} - Setting up FaaS")
@@ -117,8 +113,6 @@ open class TransitionRunner {
                     }
                 }
             }
-            Log.d(FLICKER_TAG, "${flicker.testName} - Running test teardown")
-            runTestTeardown(flicker)
         }
 
         val result = FlickerResult(runResult)
@@ -137,7 +131,7 @@ open class TransitionRunner {
             Log.e(FLICKER_TAG, "A Flicker Execution Error occurred!", e)
             if (alreadyFailed) {
                 // If we already failed don't try and handle failures since we are most likely
-                // failing because of the previous execution error
+                // failing because of the previous execution error.
                 return
             }
 
@@ -145,22 +139,28 @@ open class TransitionRunner {
             result.setStatus(RunStatus.RUN_FAILED)
 
             when (e) {
-                is TestSetupFailure, is TransitionSetupFailure -> {
-                    // If we fail on the setup we simply want to run the test teardown.
+                is TransitionSetupFailure -> {
+                    // If we fail on the setup we simply want to run the teardown.
                     safeExecution(flicker, true) {
-                        runTestTeardown(flicker)
+                        runTransitionTeardown(flicker)
                     }
                 }
-                is TransitionExecutionFailure, is TransitionTeardownFailure -> {
-                    // If a transition fails to run we want to store the traces for the transition up to the
-                    // point the failure occurred and then try and run the test teardown.
+                is TransitionExecutionFailure -> {
+                    // If a transition fails to run we want to store the traces for the transition
+                    // up to the point the failure occurred and then try and run the teardown.
                     flicker.traceMonitors.forEach { it.tryStop() }
                     safeExecution(flicker, true) {
+                        runTransitionTeardown(flicker)
                         processRunTraces(flicker, RunStatus.RUN_FAILED)
-                        runTestTeardown(flicker)
                     }
                 }
-                is TraceProcessingFailure, is TestTeardownFailure -> {
+                is TransitionTeardownFailure -> {
+                    // If the teardown failure we still want to try and process the traces
+                    safeExecution(flicker, true) {
+                        processRunTraces(flicker, RunStatus.RUN_FAILED)
+                    }
+                }
+                is TraceProcessingFailure -> {
                     // Nothing to do & considered handled
                 }
                 else -> {
@@ -211,28 +211,10 @@ open class TransitionRunner {
         }
     }
 
-    @Throws(TestSetupFailure::class)
-    private fun runTestSetup(flicker: Flicker) {
-        try {
-            flicker.testSetup.forEach { it.invoke(flicker) }
-        } catch (e: Throwable) {
-            throw TestSetupFailure(e)
-        }
-    }
-
-    @Throws(TestTeardownFailure::class)
-    private fun runTestTeardown(flicker: Flicker) {
-        try {
-            flicker.testTeardown.forEach { it.invoke(flicker) }
-        } catch (e: Throwable) {
-            throw TestTeardownFailure(e)
-        }
-    }
-
     @Throws(TransitionSetupFailure::class)
     private fun runTransitionSetup(flicker: Flicker) {
         try {
-            flicker.runSetup.forEach { it.invoke(flicker) }
+            flicker.transitionSetup.forEach { it.invoke(flicker) }
             flicker.wmHelper.StateSyncBuilder()
                 .add(UI_STABLE_CONDITIONS)
                 .waitFor()
@@ -246,6 +228,10 @@ open class TransitionRunner {
         try {
             flicker.traceMonitors.forEach { it.start() }
             flicker.transitions.forEach { it.invoke(flicker) }
+            flicker.wmHelper.StateSyncBuilder()
+                    .add(UI_STABLE_CONDITIONS)
+                    .waitFor()
+            flicker.traceMonitors.forEach { it.tryStop() }
         } catch (e: Throwable) {
             throw TransitionExecutionFailure(e)
         }
@@ -254,11 +240,7 @@ open class TransitionRunner {
     @Throws(TransitionTeardownFailure::class)
     private fun runTransitionTeardown(flicker: Flicker) {
         try {
-            flicker.wmHelper.StateSyncBuilder()
-                .add(UI_STABLE_CONDITIONS)
-                .waitFor()
-            flicker.traceMonitors.forEach { it.tryStop() }
-            flicker.runTeardown.forEach { it.invoke(flicker) }
+            flicker.transitionTeardown.forEach { it.invoke(flicker) }
         } catch (e: Throwable) {
             throw TransitionTeardownFailure(e)
         }
@@ -350,11 +332,9 @@ open class TransitionRunner {
                 get() = inner.toString()
         }
 
-        class TestSetupFailure(val e: Throwable) : ExecutionError(e)
         class TransitionSetupFailure(val e: Throwable) : ExecutionError(e)
         class TransitionExecutionFailure(val e: Throwable) : ExecutionError(e)
         class TraceProcessingFailure(val e: Throwable) : ExecutionError(e)
         class TransitionTeardownFailure(val e: Throwable) : ExecutionError(e)
-        class TestTeardownFailure(val e: Throwable) : ExecutionError(e)
     }
 }
