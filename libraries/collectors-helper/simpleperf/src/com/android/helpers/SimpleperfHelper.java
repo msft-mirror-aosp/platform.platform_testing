@@ -180,8 +180,8 @@ public class SimpleperfHelper {
     public Map<String /*event-process-symbol*/, String /*eventCount*/> getSimpleperfReport(
             String path,
             Map.Entry<String, String> processToPid,
-            String[] symbols,
-            String metricsPrefix) {
+            Map<String, String> symbols,
+            int testIterations) {
         try {
             String reportCommand =
                     String.format(
@@ -190,7 +190,7 @@ public class SimpleperfHelper {
                             path, processToPid.getValue(), SIMPLEPERF_REPORT_TMP_FILE_PATH);
             Log.i(LOG_TAG, String.format("Report command: %s", reportCommand));
             mUiDevice.executeShellCommand(reportCommand);
-            return getMetrics(processToPid.getKey(), symbols, metricsPrefix);
+            return getMetrics(processToPid.getKey(), symbols, testIterations);
         } catch (IOException e) {
             Log.e(LOG_TAG, "Could not generate report: " + e.getMessage());
         }
@@ -202,10 +202,10 @@ public class SimpleperfHelper {
      *
      * @param process Individually extracted processes recorded in binary record file.
      * @param symbols Symbols to report events from the processes recorded.
-     * @param metricsPrefix
      * @return Map containing recorded event counts from symbols within process
      */
-    private Map<String, String> getMetrics(String process, String[] symbols, String metricsPrefix) {
+    private Map<String, String> getMetrics(
+            String process, Map<String, String> symbols, int testIterations) {
         Map<String, String> results = new HashMap<>();
         try {
             String eventName = "";
@@ -220,8 +220,9 @@ public class SimpleperfHelper {
                     if (splitLine[0].equals("Event")) {
                         eventName = splitLine[1].split(" ")[0];
                     } else if (splitLine[0].equals("Event count")) {
-                        String key = String.join("-", metricsPrefix, process, eventName);
-                        results.put(key, splitLine[1]);
+                        String key = String.join("-", process, eventName);
+                        long count = Long.parseLong(splitLine[1]) / testIterations;
+                        results.put(key, String.valueOf(count));
                     }
                 }
                 // Parsing lines for specific symbols in report to store with event count to results
@@ -234,7 +235,7 @@ public class SimpleperfHelper {
                     if (matchedSymbol == null) {
                         continue;
                     }
-                    String key = String.join("-", metricsPrefix, process, matchedSymbol, eventName);
+                    String key = String.join("-", process, matchedSymbol, eventName);
                     if (results.containsKey(key + "-percentage")) {
                         // We are searching for symbols with partial matches so only include the
                         // first hit if we get multiple matches.
@@ -245,7 +246,8 @@ public class SimpleperfHelper {
                     String percentage = splitLine[0].substring(0, splitLine[0].length() - 1);
                     results.put(key + "-percentage", percentage);
                     String eventCount = splitLine[2].trim();
-                    results.put(key + "-eventCount", eventCount);
+                    long count = Long.parseLong(eventCount) / testIterations;
+                    results.put(key + "-count", String.valueOf(count));
                 }
             }
         } catch (Exception e) {
@@ -254,10 +256,10 @@ public class SimpleperfHelper {
         return results;
     }
 
-    private static String getMatchingSymbol(String[] symbols, String parsedSymbol) {
-        for (String candidate : symbols) {
+    private static String getMatchingSymbol(Map<String, String> symbols, String parsedSymbol) {
+        for (String candidate : symbols.keySet()) {
             if (parsedSymbol.contains(candidate)) {
-                return candidate;
+                return symbols.get(candidate);
             }
         }
         return null;
