@@ -24,8 +24,12 @@ import com.android.server.wm.flicker.assertions.FlickerSubject
 import com.android.server.wm.flicker.readLayerTraceFromFile
 import com.android.server.wm.flicker.traces.layers.LayerTraceEntrySubject
 import com.android.server.wm.flicker.traces.layers.LayersTraceSubject
+import com.android.server.wm.flicker.utils.MockLayerBuilder
+import com.android.server.wm.flicker.utils.MockLayerTraceEntryBuilder
 import com.android.server.wm.traces.common.Cache
 import com.android.server.wm.traces.common.ComponentNameMatcher
+import com.android.server.wm.traces.common.OrComponentMatcher
+import com.android.server.wm.traces.common.Rect
 import com.android.server.wm.traces.common.region.Region
 import com.google.common.truth.Truth
 import org.junit.Before
@@ -34,8 +38,8 @@ import org.junit.Test
 import org.junit.runners.MethodSorters
 
 /**
- * Contains [LayerTraceEntrySubject] tests. To run this test: `atest
- * FlickerLibTest:LayersTraceTest`
+ * Contains [LayerTraceEntrySubject] tests. To run this test:
+ * `atest FlickerLibTest:LayerTraceEntrySubjectTest`
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class LayerTraceEntrySubjectTest {
@@ -171,5 +175,188 @@ class LayerTraceEntrySubjectTest {
         assertFailure(error)
             .factValue("Invisibility reason", 0)
             .contains("Bounds is 0x0")
+    }
+
+    @Test
+    fun orComponentMatcher_visibility_oneVisibleOtherInvisible() {
+        val app1Name = "com.simple.test.app1"
+        val app2Name = "com.simple.test.app2"
+
+        val layerTraceEntry = MockLayerTraceEntryBuilder()
+            .addDisplay(rootLayers = listOf(
+                MockLayerBuilder(app1Name)
+                    .setContainerLayer()
+                    .addChild(
+                        MockLayerBuilder(app1Name)
+                            .setVisible()
+                    ),
+                MockLayerBuilder(app2Name)
+                    .setContainerLayer()
+                    .addChild(
+                        MockLayerBuilder(app2Name)
+                            .setInvisible()
+                    ),
+            )).build()
+
+        val subject = LayerTraceEntrySubject.assertThat(layerTraceEntry)
+        val component = OrComponentMatcher(arrayOf(
+            ComponentNameMatcher(app1Name),
+            ComponentNameMatcher(app2Name)
+        ))
+
+        subject.isVisible(ComponentNameMatcher(app1Name))
+        subject.isInvisible(ComponentNameMatcher(app2Name))
+
+        subject.isInvisible(component)
+        subject.isVisible(component)
+    }
+
+    @Test
+    fun orComponentMatcher_visibility_oneVisibleOtherMissing() {
+        val app1Name = "com.simple.test.app1"
+        val app2Name = "com.simple.test.app2"
+
+        val layerTraceEntry = MockLayerTraceEntryBuilder()
+            .addDisplay(rootLayers = listOf(
+                MockLayerBuilder(app1Name)
+                    .setContainerLayer()
+                    .addChild(
+                        MockLayerBuilder(app1Name)
+                            .setVisible()
+                    )
+            )).build()
+
+        val subject = LayerTraceEntrySubject.assertThat(layerTraceEntry)
+        val component = OrComponentMatcher(arrayOf(
+            ComponentNameMatcher(app1Name),
+            ComponentNameMatcher(app2Name)
+        ))
+
+        subject.isVisible(ComponentNameMatcher(app1Name))
+        subject.notContains(ComponentNameMatcher(app2Name))
+
+        subject.isInvisible(component)
+        subject.isVisible(component)
+    }
+
+    @Test fun canUseOrComponentMatcher_visibility_allVisible() {
+        val app1Name = "com.simple.test.app1"
+        val app2Name = "com.simple.test.app2"
+
+        val layerTraceEntry = MockLayerTraceEntryBuilder()
+            .addDisplay(rootLayers = listOf(
+                MockLayerBuilder(app1Name)
+                    .setContainerLayer()
+                    .setAbsoluteBounds(Rect.from(0, 0, 200, 200))
+                    .addChild(
+                        MockLayerBuilder("$app1Name child")
+                            .setVisible()
+                    ),
+                MockLayerBuilder(app2Name)
+                    .setContainerLayer()
+                    .setAbsoluteBounds(Rect.from(200, 200, 400, 400))
+                    .addChild(
+                        MockLayerBuilder("$app2Name child")
+                            .setVisible()
+                    ),
+            )).build()
+
+        val subject = LayerTraceEntrySubject.assertThat(layerTraceEntry)
+        val component = OrComponentMatcher(arrayOf(
+            ComponentNameMatcher(app1Name),
+            ComponentNameMatcher(app2Name)
+        ))
+
+        subject.isVisible(ComponentNameMatcher(app1Name))
+        subject.isVisible(ComponentNameMatcher(app2Name))
+
+        assertThrows(AssertionError::class.java) {
+            subject.isInvisible(component)
+        }
+        subject.isVisible(component)
+    }
+
+    @Test
+    fun canUseOrComponentMatcher_contains_withOneExists() {
+        val app1Name = "com.simple.test.app1"
+        val app2Name = "com.simple.test.app2"
+
+        val layerTraceEntry = MockLayerTraceEntryBuilder()
+            .addDisplay(rootLayers = listOf(
+                MockLayerBuilder(app1Name)
+                    .setContainerLayer()
+                    .addChild(
+                        MockLayerBuilder(app1Name)
+                    )
+            )).build()
+
+        val subject = LayerTraceEntrySubject.assertThat(layerTraceEntry)
+        val component = OrComponentMatcher(arrayOf(
+            ComponentNameMatcher(app1Name),
+            ComponentNameMatcher(app2Name)
+        ))
+
+        subject.contains(ComponentNameMatcher(app1Name))
+        subject.notContains(ComponentNameMatcher(app2Name))
+
+        subject.notContains(component)
+        subject.contains(component)
+    }
+
+    @Test
+    fun canUseOrComponentMatcher_contains_withNoneExists() {
+        val app1Name = "com.simple.test.app1"
+        val app2Name = "com.simple.test.app2"
+
+        val layerTraceEntry = MockLayerTraceEntryBuilder()
+                .addDisplay(rootLayers = listOf()).build()
+
+        val subject = LayerTraceEntrySubject.assertThat(layerTraceEntry)
+        val component = OrComponentMatcher(arrayOf(
+            ComponentNameMatcher(app1Name),
+            ComponentNameMatcher(app2Name)
+        ))
+
+        subject.notContains(ComponentNameMatcher(app1Name))
+        subject.notContains(ComponentNameMatcher(app2Name))
+
+        subject.notContains(component)
+        assertThrows(AssertionError::class.java) {
+            subject.contains(component)
+        }
+    }
+
+    @Test
+    fun canUseOrComponentMatcher_contains_withBothExists() {
+        val app1Name = "com.simple.test.app1"
+        val app2Name = "com.simple.test.app2"
+
+        val layerTraceEntry = MockLayerTraceEntryBuilder()
+            .addDisplay(rootLayers = listOf(
+                MockLayerBuilder(app1Name)
+                    .setContainerLayer()
+                    .addChild(
+                        MockLayerBuilder(app1Name)
+                    ),
+                MockLayerBuilder(app2Name)
+                    .setContainerLayer()
+                    .addChild(
+                        MockLayerBuilder(app2Name)
+                    ),
+            )).build()
+
+        val subject = LayerTraceEntrySubject.assertThat(layerTraceEntry)
+        val component = OrComponentMatcher(arrayOf(
+            ComponentNameMatcher(app1Name),
+            ComponentNameMatcher(app2Name)
+        ))
+
+        subject.contains(ComponentNameMatcher(app1Name))
+        subject.contains(ComponentNameMatcher(app2Name))
+
+        assertThrows(AssertionError::class.java) {
+            subject.notContains(component)
+        }
+        subject.contains(component)
     }
 }

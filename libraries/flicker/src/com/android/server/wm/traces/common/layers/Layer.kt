@@ -135,8 +135,10 @@ class Layer private constructor(
                 reasons.add("Effect layer does not have color fill, shadow or blur")
             }
             if (_occludedBy.isNotEmpty()) {
-                val occludedByIds = _occludedBy.joinToString(", ") { it.id.toString() }
-                reasons.add("Layer is occluded by: $occludedByIds")
+                val occludedByLayers = _occludedBy.joinToString(", ") {
+                    "${it.name} (${it.id})"
+                }
+                reasons.add("Layer is occluded by: $occludedByLayers")
             }
             if (visibleRegion?.isEmpty == true) {
                 reasons.add("Visible region calculated by Composition Engine is empty")

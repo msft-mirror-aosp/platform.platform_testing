@@ -34,6 +34,8 @@ class ComponentNameMatcher(
     constructor(packageName: String, className: String) :
         this(ComponentName(packageName, className))
 
+    constructor(className: String) : this("", className)
+
     @JsName("matchesAnyOf")
     private fun <T> matchesAnyOf(
         values: Array<T>,
