@@ -39,6 +39,9 @@ import org.junit.runners.model.Statement
  * @see DeviceEmulationSpec
  */
 class DeviceEmulationRule(private val spec: DeviceEmulationSpec) : TestRule {
+
+    private val instrumentation = InstrumentationRegistry.getInstrumentation()
+
     override fun apply(base: Statement, description: Description): Statement {
         // The statement which calls beforeTest() before running the test and afterTest()
         // afterwards.
@@ -75,6 +78,10 @@ class DeviceEmulationRule(private val spec: DeviceEmulationSpec) : TestRule {
                 UiModeManager.MODE_NIGHT_NO
             }
         )
+
+        // Make sure that all devices are in touch mode to avoid screenshot differences
+        // in focused elements when in keyboard mode
+        instrumentation.setInTouchMode(true)
     }
 
     /** Get the emulated display size for [spec]. */
@@ -100,6 +107,8 @@ class DeviceEmulationRule(private val spec: DeviceEmulationSpec) : TestRule {
                 .targetContext
                 .getSystemService(Context.UI_MODE_SERVICE) as UiModeManager
         uiModeManager.setApplicationNightMode(UiModeManager.MODE_NIGHT_AUTO)
+
+        instrumentation.resetInTouchMode()
     }
 }
 
