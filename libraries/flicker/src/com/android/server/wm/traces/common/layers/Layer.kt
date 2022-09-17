@@ -306,7 +306,6 @@ class Layer private constructor(
         result = 31 * result + z
         result = 31 * result + currFrame.hashCode()
         result = 31 * result + stableId.hashCode()
-        result = 31 * result + (parent?.hashCode() ?: 0)
         result = 31 * result + (zOrderRelativeOf?.hashCode() ?: 0)
         result = 31 * result + zOrderRelativeParentOf
         result = 31 * result + _children.hashCode()
