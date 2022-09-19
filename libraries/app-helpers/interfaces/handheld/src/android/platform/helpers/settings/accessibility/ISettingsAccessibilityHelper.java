@@ -11,28 +11,25 @@
  * express or implied. See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package android.platform.helpers.settings;
+package android.platform.helpers.settings.accessibility;
 
-import android.platform.helpers.ISettingsIntelligenceHelper;
+import android.platform.helpers.settings.ISettingsHomeHelper;
 import android.support.test.uiautomator.Direction;
 
-/** Extends for Settings homepage */
-public interface ISettingsHomeHelper extends ISettingsIntelligenceHelper {
+/** Extends for Settings > Accessibility */
+public interface ISettingsAccessibilityHelper extends ISettingsHomeHelper {
 
     /**
-     * Setup expectations: Settings homepage is open
+     * Setup expectations: Settings Accessibility page is open
      *
-     * <p>This method flings Settings homepage.
+     * <p>This method flings Settings Accessibility page.
      */
-    void flingHome(Direction direction);
-
-    /** This method opens Settings > Accessibility page */
-    void goToAccessibility();
+    void flingAccessibility(Direction direction);
 
     /**
-     * Setup expectations: Settings homepage is open
+     * Setup expectations: Settings Accessibility page is open
      *
-     * <p>This method validates Settings homepage.
+     * <p>This method validates Settings Accessibility page.
      */
-    void isHomePage();
+    void isAccessibilityPage();
 }
