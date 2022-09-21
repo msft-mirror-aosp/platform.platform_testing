@@ -24,6 +24,7 @@ import android.graphics.Rect
 import android.os.Bundle
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.runner.screenshot.Screenshot
+import com.android.internal.app.SimpleIconFactory
 import org.junit.rules.TestRule
 import org.junit.rules.TestWatcher
 import org.junit.runner.Description
@@ -79,7 +80,12 @@ open class ScreenshotTestRule(
 
     class ScreenshotTestStatement(private val base: Statement) : Statement() {
         override fun evaluate() {
-            base.evaluate()
+            try {
+                SimpleIconFactory.setPoolEnabled(false)
+                base.evaluate()
+            } finally {
+                SimpleIconFactory.setPoolEnabled(true)
+            }
         }
     }
 
