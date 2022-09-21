@@ -236,7 +236,6 @@ class Layer private constructor(
         if (stableId != other.stableId) return false
         if (zOrderRelativeOf != other.zOrderRelativeOf) return false
         if (zOrderRelativeParentOf != other.zOrderRelativeParentOf) return false
-        if (_children != other._children) return false
         if (_occludedBy != other._occludedBy) return false
         if (_partiallyOccludedBy != other._partiallyOccludedBy) return false
         if (_coveredBy != other._coveredBy) return false
