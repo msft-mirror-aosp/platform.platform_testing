@@ -178,10 +178,20 @@ class FlickerBlockJUnit4ClassRunner @JvmOverloads constructor(
                     }
                     // Report all the execution errors collected during the Flicker setup and
                     // transition execution
-                    val executionError = results.executionError
+                    val executionError = results.transitionExecutionError
                     if (executionError != null) {
                         Log.e(FLICKER_TAG, "Flicker Execution Error", executionError)
                         throw executionError
+                    }
+
+                    // Only report FaaS execution errors on FaaS tests to avoid FaaS errors
+                    // causing legacy tests to fail.
+                    if (isInjectedFaasTest(method)) {
+                        val faasExecutionError = results.faasExecutionError
+                        if (faasExecutionError != null) {
+                            Log.e(FLICKER_TAG, "FaaS Execution Error", faasExecutionError)
+                            throw faasExecutionError
+                        }
                     }
                 }
             }

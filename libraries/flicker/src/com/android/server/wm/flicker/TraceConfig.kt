@@ -14,6 +14,19 @@
  * limitations under the License.
  */
 
-package com.android.server.wm.flicker.helpers
+package com.android.server.wm.flicker
 
-const val IS_FAAS_ENABLED = true
+data class TraceConfigs(
+    val wmTrace: TraceConfig,
+    val layersTrace: TraceConfig
+)
+
+data class TraceConfig (
+    var required: Boolean,
+    var allowNoChange: Boolean
+)
+
+val DEFAULT_TRACE_CONFIG = TraceConfigs(
+    wmTrace = TraceConfig(required = true, allowNoChange = false),
+    layersTrace = TraceConfig(required = true, allowNoChange = false)
+)

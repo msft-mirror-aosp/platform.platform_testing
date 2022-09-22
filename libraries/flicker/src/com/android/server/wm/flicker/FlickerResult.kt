@@ -16,6 +16,7 @@
 
 package com.android.server.wm.flicker
 
+import com.android.internal.annotations.VisibleForTesting
 import com.android.server.wm.flicker.FlickerRunResult.Companion.RunStatus
 import com.android.server.wm.flicker.TransitionRunner.Companion.ExecutionError
 import com.android.server.wm.flicker.assertions.AssertionData
@@ -32,7 +33,8 @@ data class FlickerResult(
     private val runResult: FlickerRunResult,
 ) {
     val status: RunStatus get() = runResult.status
-    val executionError: ExecutionError? get() = runResult.executionError
+    val transitionExecutionError: ExecutionError? get() = runResult.transitionExecutionError
+    val faasExecutionError: ExecutionError? get() = runResult.faasExecutionError
     val ranSuccessfully: Boolean get() = runResult.isSuccessfulRun
 
     /**
@@ -45,7 +47,8 @@ data class FlickerResult(
      *
      * @throws AssertionError If the assertion fail or the transition crashed
      */
-    internal fun checkAssertion(assertion: AssertionData): FlickerAssertionError? {
+    @VisibleForTesting
+    fun checkAssertion(assertion: AssertionData): FlickerAssertionError? {
         Truth.assertWithMessage("Transition was not executed successful. Can't check assertions")
                 .that(runResult.isSuccessfulRun).isTrue()
 

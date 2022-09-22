@@ -27,7 +27,7 @@ import com.android.server.wm.flicker.assertions.AssertionData
 import com.android.server.wm.flicker.assertions.FlickerSubject
 import com.android.server.wm.flicker.dsl.AssertionTag
 import com.android.server.wm.flicker.dsl.FlickerBuilder
-import com.android.server.wm.flicker.helpers.SampleAppHelper
+import com.android.server.wm.flicker.helpers.BrowserAppHelper
 import com.android.server.wm.flicker.helpers.isShellTransitionsEnabled
 import com.android.server.wm.flicker.rules.ChangeDisplayOrientationRule
 import com.android.server.wm.flicker.rules.LaunchAppRule
@@ -277,7 +277,7 @@ data class FlickerTestParameter(
         RuleChain.outerRule(UnlockScreenRule())
             .around(NavigationModeRule(navBarMode))
             .around(
-                LaunchAppRule(SampleAppHelper(instrumentation), clearCacheAfterParsing = false))
+                LaunchAppRule(BrowserAppHelper(instrumentation), clearCacheAfterParsing = false))
             .around(RemoveAllTasksButHomeRule())
             .around(ChangeDisplayOrientationRule(startRotation, clearCacheAfterParsing = false))
             .around(PressHomeRule())

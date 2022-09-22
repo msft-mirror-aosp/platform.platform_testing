@@ -20,6 +20,8 @@ import com.android.server.wm.flicker.assertThatErrorContainsDebugInfo
 import com.android.server.wm.flicker.assertThrows
 import com.android.server.wm.flicker.readLayerTraceFromFile
 import com.android.server.wm.flicker.traces.layers.LayersTraceSubject
+import com.android.server.wm.flicker.utils.MockLayerTraceEntryBuilder
+import com.android.server.wm.flicker.utils.MockLayersTraceBuilder
 import com.android.server.wm.traces.common.Cache
 import com.android.server.wm.traces.common.ComponentNameMatcher
 import com.android.server.wm.traces.common.layers.LayersTrace
@@ -30,8 +32,8 @@ import org.junit.Test
 import org.junit.runners.MethodSorters
 
 /**
- * Contains [LayersTrace] tests. To run this test: `atest
- * FlickerLibTest:LayersTraceTest`
+ * Contains [LayersTrace] tests. To run this test:
+ * `atest FlickerLibTest:LayersTraceTest`
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class LayersTraceTest {
@@ -130,7 +132,7 @@ class LayersTraceTest {
     }
 
     @Test
-    fun canFilter() {
+    fun canSlice() {
         val trace = readLayerTraceFromFile("layers_trace_openchrome.pb")
         val splitlayersTrace = trace.slice(71607477186189, 71607812120180)
 
@@ -141,10 +143,169 @@ class LayersTraceTest {
     }
 
     @Test
-    fun canFilter_wrongTimestamps() {
+    fun canSlice_wrongTimestamps() {
         val trace = readLayerTraceFromFile("layers_trace_openchrome.pb")
         val splitLayersTrace = trace.slice(9213763541297, 9215895891561)
 
         Truth.assertThat(splitLayersTrace).isEmpty()
+    }
+
+    @Test
+    fun canSlice_allBefore() {
+        testSlice(0L, mockTraceForSliceTests.first().timestamp - 1, listOf())
+    }
+
+    @Test
+    fun canSlice_allAfter() {
+        val from = mockTraceForSliceTests.last().timestamp + 5
+        val to = mockTraceForSliceTests.last().timestamp + 20
+        val splitLayersTrace = mockTraceForSliceTests.slice(from, to)
+        Truth.assertThat(splitLayersTrace).isEmpty()
+
+        val splitLayersTraceWithInitialEntry = mockTraceForSliceTests
+            .slice(from, to, addInitialEntry = true)
+        Truth.assertThat(splitLayersTraceWithInitialEntry).hasSize(1)
+        Truth.assertThat(splitLayersTraceWithInitialEntry.first().timestamp)
+            .isEqualTo(mockTraceForSliceTests.last().timestamp)
+    }
+
+    @Test
+    fun canSlice_inMiddle() {
+        testSlice(15L, 25L, listOf(15L, 18L, 25L))
+    }
+
+    @Test
+    fun canSlice_fromBeforeFirstEntryToMiddle() {
+        testSlice(
+            mockTraceForSliceTests.first().timestamp - 1, 27L,
+            listOf(5L, 8L, 15L, 18L, 25L, 27L)
+        )
+    }
+
+    @Test
+    fun canSlice_fromMiddleToAfterLastEntry() {
+        testSlice(18L, mockTraceForSliceTests.last().timestamp + 5,
+            listOf(18L, 25L, 27L, 30L)
+        )
+    }
+
+    @Test
+    fun canSlice_fromBeforeToAfterLastEntry() {
+        testSlice(
+            mockTraceForSliceTests.first().timestamp - 1,
+            mockTraceForSliceTests.last().timestamp + 1,
+            mockTraceForSliceTests.map { it.timestamp }
+        )
+    }
+
+    @Test
+    fun canSlice_fromExactStartToAfterLastEntry() {
+        testSlice(
+            mockTraceForSliceTests.first().timestamp,
+            mockTraceForSliceTests.last().timestamp + 1,
+            mockTraceForSliceTests.map { it.timestamp }
+        )
+    }
+
+    @Test
+    fun canSlice_fromExactStartToExactEnd() {
+        testSlice(
+            mockTraceForSliceTests.first().timestamp,
+            mockTraceForSliceTests.last().timestamp,
+            mockTraceForSliceTests.map { it.timestamp }
+        )
+    }
+
+    @Test
+    fun canSlice_fromExactStartToMiddle() {
+        testSlice(
+            mockTraceForSliceTests.first().timestamp,
+            18L,
+            listOf(5L, 8L, 15L, 18L)
+        )
+    }
+
+    @Test
+    fun canSlice_fromMiddleToExactEnd() {
+        testSlice(
+            18L,
+            mockTraceForSliceTests.last().timestamp,
+            listOf(18L, 25L, 27L, 30L)
+        )
+    }
+
+    @Test
+    fun canSlice_fromBeforeToExactEnd() {
+        testSlice(
+            mockTraceForSliceTests.first().timestamp - 1,
+            mockTraceForSliceTests.last().timestamp,
+            mockTraceForSliceTests.map { it.timestamp }
+        )
+    }
+
+    @Test
+    fun canSlice_sameStartAndEnd() {
+        testSlice(15L, 15L, listOf(15L))
+    }
+
+    private fun testSlice(from: Long, to: Long, expected: List<Long>) {
+        require(from <= to) { "`from` not before `to`" }
+        val fromBefore = from < mockTraceForSliceTests.first().timestamp
+        val fromAfter = from < mockTraceForSliceTests.first().timestamp
+
+        val toBefore = to < mockTraceForSliceTests.first().timestamp
+        val toAfter = mockTraceForSliceTests.last().timestamp < to
+
+        require(fromBefore || fromAfter ||
+            mockTraceForSliceTests.map { it.timestamp }.contains(from)) {
+            "`from` need to be in the trace or before or after all entries"
+        }
+        require(toBefore || toAfter ||
+            mockTraceForSliceTests.map { it.timestamp }.contains(to)) {
+            "`to` need to be in the trace or before or after all entries"
+        }
+
+        testSliceWithOutInitialEntry(from, to, expected)
+        if (!fromAfter) {
+            testSliceWithOutInitialEntry(from - 1, to, expected)
+            testSliceWithOutInitialEntry(from - 1, to + 1, expected)
+        }
+        if (!toBefore) {
+            testSliceWithOutInitialEntry(from, to + 1, expected)
+        }
+
+        testSliceWithInitialEntry(from, to, expected)
+        if (!fromBefore) {
+            if (from < to) {
+                testSliceWithInitialEntry(from + 1, to, expected)
+            }
+            testSliceWithInitialEntry(from + 1, to + 1, expected)
+        }
+        if (!toBefore) {
+            testSliceWithInitialEntry(from, to + 1, expected)
+        }
+    }
+
+    private fun testSliceWithOutInitialEntry(from: Long, to: Long, expected: List<Long>) {
+        val splitLayersTrace = mockTraceForSliceTests.slice(from, to)
+        Truth.assertThat(splitLayersTrace.map { it.timestamp }).isEqualTo(expected)
+    }
+
+    private fun testSliceWithInitialEntry(from: Long, to: Long, expected: List<Long>) {
+        val splitLayersTraceWithStartEntry = mockTraceForSliceTests
+            .slice(from, to, addInitialEntry = true)
+        Truth.assertThat(splitLayersTraceWithStartEntry.map { it.timestamp }).isEqualTo(expected)
+    }
+
+    companion object {
+        val mockTraceForSliceTests = MockLayersTraceBuilder(entries = mutableListOf(
+            MockLayerTraceEntryBuilder(timestamp = 5),
+            MockLayerTraceEntryBuilder(timestamp = 8),
+            MockLayerTraceEntryBuilder(timestamp = 15),
+            MockLayerTraceEntryBuilder(timestamp = 18),
+            MockLayerTraceEntryBuilder(timestamp = 25),
+            MockLayerTraceEntryBuilder(timestamp = 27),
+            MockLayerTraceEntryBuilder(timestamp = 30),
+        )).build()
     }
 }

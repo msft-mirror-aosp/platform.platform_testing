@@ -47,6 +47,7 @@ android_library {
     name: "platform-screenshot-diff-core",
     manifest: "AndroidManifest.xml",
     platform_apis: true,
+    lint: { test: true },
     optimize: {
         enabled: false
     },

@@ -29,7 +29,7 @@ import com.google.common.truth.Truth
  */
 class EventLogSubject private constructor(
     failureMetadata: FailureMetadata,
-    private val trace: List<FocusEvent>
+    val trace: List<FocusEvent>
 ) : FlickerSubject(failureMetadata, trace) {
     override val timestamp: Long get() = 0
     override val parent: FlickerSubject? get() = null
@@ -100,4 +100,14 @@ class EventLogSubject private constructor(
      * Run the assertions.
      */
     fun forAllEntries(): Unit = assertionsChecker.test(subjects)
+
+    fun split(from: Long, to: Long): EventLogSubject {
+        val trace = this.trace
+                .dropWhile { it.timestamp < from }
+                .dropLastWhile { it.timestamp > to }
+        return EventLogSubject(
+            this.fm,
+            trace
+        )
+    }
 }

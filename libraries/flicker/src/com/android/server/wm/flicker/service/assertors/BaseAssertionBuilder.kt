@@ -16,7 +16,6 @@
 
 package com.android.server.wm.flicker.service.assertors
 
-import com.android.server.wm.flicker.traces.FlickerSubjectException
 import com.android.server.wm.flicker.traces.layers.LayersTraceSubject
 import com.android.server.wm.flicker.traces.windowmanager.WindowManagerTraceSubject
 import com.android.server.wm.traces.common.service.AssertionInvocationGroup
@@ -70,7 +69,7 @@ abstract class BaseAssertionBuilder {
         layerSubject: LayersTraceSubject?,
         scenario: Scenario
     ): AssertionResult {
-        var assertionError: FlickerSubjectException? = null
+        var assertionError: Throwable? = null
         try {
             if (wmSubject !== null) {
                 doEvaluate(scenarioInstance.associatedTransition, wmSubject)
@@ -78,7 +77,7 @@ abstract class BaseAssertionBuilder {
             if (layerSubject !== null) {
                 doEvaluate(scenarioInstance.associatedTransition, layerSubject)
             }
-        } catch (e: FlickerSubjectException) {
+        } catch (e: Throwable) {
             assertionError = e
         }
         return AssertionResult(name, scenario, invocationGroup, assertionError)

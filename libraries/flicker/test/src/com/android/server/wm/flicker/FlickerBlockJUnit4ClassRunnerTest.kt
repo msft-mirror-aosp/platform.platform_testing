@@ -22,7 +22,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.android.server.wm.flicker.annotation.FlickerServiceCompatible
 import com.android.server.wm.flicker.dsl.FlickerBuilder
 import com.android.server.wm.flicker.helpers.IS_FAAS_ENABLED
-import com.android.server.wm.flicker.helpers.SampleAppHelper
+import com.android.server.wm.flicker.helpers.BrowserAppHelper
 import com.android.server.wm.flicker.helpers.isShellTransitionsEnabled
 import com.android.server.wm.flicker.monitor.TraceMonitor.Companion.WINSCOPE_EXT
 import com.google.common.truth.Truth
@@ -189,7 +189,7 @@ class FlickerBlockJUnit4ClassRunnerTest {
         val runner = FlickerBlockJUnit4ClassRunner(test)
         runner.run(RunNotifier())
         Truth.assertThat(parameters[0].flicker.faasEnabled).isTrue()
-        val executionError = parameters[0].flicker.result!!.executionError
+        val executionError = parameters[0].flicker.result!!.transitionExecutionError
         Truth.assertWithMessage(
             "No flicker execution errors were expected but got some ::" +
                 executionError
@@ -229,7 +229,7 @@ class FlickerBlockJUnit4ClassRunnerTest {
     @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
     open class SimpleTest(protected val testSpec: FlickerTestParameter) {
         val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
-        private val testApp: SampleAppHelper = SampleAppHelper(instrumentation)
+        private val testApp: BrowserAppHelper = BrowserAppHelper(instrumentation)
 
         @FlickerBuilderProvider
         open fun buildFlicker(): FlickerBuilder {

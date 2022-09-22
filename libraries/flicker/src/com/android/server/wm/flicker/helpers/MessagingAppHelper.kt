@@ -23,33 +23,30 @@ import android.net.Uri
 import com.android.server.wm.traces.common.ComponentNameMatcher
 
 /**
- * Helper to launch the default browser app (compatible with AOSP)
+ * Helper to launch the default messaging app (compatible with AOSP)
  *
  * This helper has no other functionality but the app launch.
- *
- * This helper is used to launch an app after some operations (e.g., navigation mode change),
- * so that the device is stable before executing flicker tests
  */
-class SampleAppHelper(
+class MessagingAppHelper(
     instrumentation: Instrumentation,
     private val pkgManager: PackageManager = instrumentation.context.packageManager
 ) : StandardAppHelper(
-    instrumentation, "SampleApp", getBrowserComponent(pkgManager)
+        instrumentation, "SampleApp", getMessagesComponent(pkgManager)
 ) {
     override fun getOpenAppIntent(): Intent = pkgManager.getLaunchIntentForPackage(packageName)
-        ?: error("Unable to find intent for browser")
+            ?: error("Unable to find intent for browser")
 
     companion object {
-        private fun getBrowserIntent(): Intent {
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("http://"))
+        private fun getMessagesIntent(): Intent {
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("sms:"))
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             return intent
         }
 
-        private fun getBrowserComponent(pkgManager: PackageManager): ComponentNameMatcher {
-            val intent = getBrowserIntent()
+        private fun getMessagesComponent(pkgManager: PackageManager): ComponentNameMatcher {
+            val intent = getMessagesIntent()
             val resolveInfo = pkgManager.resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY)
-                ?: error("Unable to resolve browser activity")
+                    ?: error("Unable to resolve browser activity")
             return ComponentNameMatcher(resolveInfo.activityInfo.packageName, className = "")
         }
     }

@@ -159,7 +159,7 @@ class FlickerDSLTest {
         }.withTestName { TEST_NAME }
         val flicker = builder.build()
         flicker.execute()
-        val executionError = flicker.result!!.executionError
+        val executionError = flicker.result!!.transitionExecutionError
         Truth.assertWithMessage("Expected an execution error")
                 .that( executionError)
                 .isNotNull()
@@ -170,14 +170,21 @@ class FlickerDSLTest {
 
     @Test
     fun assertCreatedTags() {
-        val builder = FlickerBuilder(instrumentation).apply {
-            transitions {
-                this.createTag(TAG)
-                device.pressHome()
+        val builder = FlickerBuilder(instrumentation)
+            .withTestName { TEST_NAME }
+            .allowNoWmChange()
+            .allowNoLayersChange()
+            .apply {
+                transitions {
+                    this.createTag(TAG)
+                    device.pressHome()
+                }
             }
-        }.withTestName { TEST_NAME }
+
         val flicker = builder.build()
+        var assertionRan = false
         val passAssertion = FlickerTestParameter.buildWMTagAssertion(TAG) {
+            assertionRan = true
             this.isNotEmpty()
         }
         val ignoredAssertion = FlickerTestParameter.buildWMTagAssertion("invalid") {
@@ -185,6 +192,7 @@ class FlickerDSLTest {
                 "have been asserted")
         }
         flicker.checkAssertion(passAssertion)
+        Truth.assertThat(assertionRan).isTrue()
         flicker.checkAssertion(ignoredAssertion)
     }
 
@@ -207,7 +215,7 @@ class FlickerDSLTest {
         builder.transitions { error("Crashed transition") }
         val flicker = builder.build()
         flicker.execute()
-        val executionError = flicker.result!!.executionError
+        val executionError = flicker.result!!.transitionExecutionError
         Truth.assertWithMessage("Expected an execution error")
                 .that( executionError)
                 .isNotNull()
@@ -221,7 +229,10 @@ class FlickerDSLTest {
 
     @Test
     fun exceptionContainsDebugInfo() {
-        val builder = FlickerBuilder(instrumentation).withTestName { TEST_NAME }
+        val builder = FlickerBuilder(instrumentation)
+            .withTestName { TEST_NAME }
+            .allowNoLayersChange()
+            .allowNoWmChange()
         builder.transitions { device.pressHome() }
         val flicker = builder.build()
         flicker.execute()
@@ -359,7 +370,10 @@ class FlickerDSLTest {
 
     private fun runAndAssertExecuted(assertion: AssertionData) {
         executed = false
-        val builder = FlickerBuilder(instrumentation).withTestName { TEST_NAME }
+        val builder = FlickerBuilder(instrumentation)
+            .withTestName { TEST_NAME }
+            .allowNoWmChange()
+            .allowNoLayersChange()
         builder.transitions(SIMPLE_TRANSITION)
         val flicker = builder.build()
         runFlicker(flicker, assertion)
@@ -394,7 +408,7 @@ class FlickerDSLTest {
         // Execution errors are reported in the FlickerBlockJUnit4ClassRunner after each test
         if (!expectExceptions) {
             Truth.assertWithMessage("Expected no execution errors")
-                .that(flicker.result!!.executionError)
+                .that(flicker.result!!.transitionExecutionError)
                 .isNull()
         }
         flicker.clear()
@@ -433,7 +447,7 @@ class FlickerDSLTest {
             assertions: List<AssertionData> = listOf(PASS_ASSERTION)
     ) {
         runFlicker(flicker, assertions, expectExceptions = true)
-        val executionError = flicker.result!!.executionError
+        val executionError = flicker.result!!.transitionExecutionError
         Truth.assertWithMessage("Expected an execution error")
                 .that( executionError)
                 .isNotNull()

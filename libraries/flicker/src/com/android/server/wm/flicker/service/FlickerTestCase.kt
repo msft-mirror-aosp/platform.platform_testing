@@ -48,14 +48,15 @@ class FlickerTestCase(val results: List<AssertionResult>, isBlockingTest: Boolea
         }
 
         if (resultsToReport.size == 1) {
-            return resultsToReport[0].assertionError!!.message
+            return resultsToReport[0].assertionError!!.message ?: "FAILURE WITH NO ERROR MESSAGE"
         }
 
         return buildString {
             append("$failedCount/${resultsToReport.size} FAILED\n")
             for (result in resultsToReport) {
                 if (result.failed) {
-                    append("\n${result.assertionError!!.message.prependIndent("  ")}")
+                    append("\n${(result.assertionError!!.message ?: "FAILURE WITH NO ERROR MESSAGE")
+                            .prependIndent("  ")}")
                 }
             }
         }

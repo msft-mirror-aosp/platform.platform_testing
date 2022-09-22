@@ -20,8 +20,10 @@ import android.app.Instrumentation
 import android.support.test.launcherhelper.ILauncherStrategy
 import android.support.test.launcherhelper.LauncherStrategyFactory
 import androidx.test.uiautomator.UiDevice
+import com.android.server.wm.flicker.DEFAULT_TRACE_CONFIG
 import com.android.server.wm.flicker.Flicker
 import com.android.server.wm.flicker.FlickerDslMarker
+import com.android.server.wm.flicker.TraceConfigs
 import com.android.server.wm.flicker.TransitionRunner
 import com.android.server.wm.flicker.getDefaultFlickerOutputDir
 import com.android.server.wm.flicker.helpers.isShellTransitionsEnabled
@@ -56,7 +58,8 @@ class FlickerBuilder private constructor(
     private val teardownCommands: MutableList<Flicker.() -> Any>,
     val device: UiDevice,
     private val traceMonitors: MutableList<ITransitionMonitor>,
-    private var faasEnabled: Boolean = false
+    private var faasEnabled: Boolean = false,
+    private var traceConfigs: TraceConfigs = DEFAULT_TRACE_CONFIG
 ) {
     private var usingExistingTraces = false
 
@@ -289,6 +292,14 @@ class FlickerBuilder private constructor(
         this.usingExistingTraces = true
     }
 
+    fun allowNoWmChange(): FlickerBuilder = apply {
+        this.traceConfigs.wmTrace.allowNoChange = true
+    }
+
+    fun allowNoLayersChange(): FlickerBuilder = apply {
+        this.traceConfigs.layersTrace.allowNoChange = true
+    }
+
     /**
      * Creates a new Flicker runner based on the current builder configuration
      */
@@ -310,7 +321,8 @@ class FlickerBuilder private constructor(
             teardownCommands,
             runner,
             wmHelper,
-            faasEnabled = faasEnabled
+            faasEnabled = faasEnabled,
+            traceConfigs = traceConfigs
         )
     }
 

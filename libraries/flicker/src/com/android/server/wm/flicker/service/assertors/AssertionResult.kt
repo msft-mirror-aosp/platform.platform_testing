@@ -16,6 +16,7 @@
 
 package com.android.server.wm.flicker.service.assertors
 
+import com.android.server.wm.flicker.assertions.FlickerSubject
 import com.android.server.wm.flicker.traces.FlickerSubjectException
 import com.android.server.wm.flicker.traces.layers.LayerSubject
 import com.android.server.wm.flicker.traces.layers.LayersTraceSubject
@@ -36,9 +37,12 @@ data class AssertionResult(
     val assertionName: String,
     val scenario: Scenario,
     val invocationGroup: AssertionInvocationGroup,
-    val assertionError: FlickerSubjectException?
+    val assertionError: Throwable?
 ) {
     val failed: Boolean get() = (assertionError !== null)
+
+    val failureSubject: FlickerSubject? get() =
+        if (assertionError is FlickerSubjectException) assertionError.subject else null
 
     /**
      * Returns the layer responsible for the failure, if any
@@ -51,7 +55,7 @@ data class AssertionResult(
         wmSubject: WindowManagerTraceSubject,
         layerSubject: LayersTraceSubject
     ): Layer? {
-        val failureSubject = assertionError?.subject
+        val failureSubject = failureSubject
         return if (failureSubject is LayerSubject) {
             failureSubject.layer
         } else {
@@ -70,7 +74,7 @@ data class AssertionResult(
         wmSubject: WindowManagerTraceSubject,
         layerSubject: LayersTraceSubject
     ): WindowState? {
-        val failureSubject = assertionError?.subject
+        val failureSubject = failureSubject
         return if (failureSubject is WindowStateSubject) {
             failureSubject.windowState
         } else {

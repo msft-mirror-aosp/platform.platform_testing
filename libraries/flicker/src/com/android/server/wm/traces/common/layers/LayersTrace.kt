@@ -17,6 +17,7 @@
 package com.android.server.wm.traces.common.layers
 
 import com.android.server.wm.traces.common.ITrace
+import com.android.server.wm.traces.common.Utils.Companion.sliceEntriesByTimestamp
 import kotlin.js.JsName
 
 /**
@@ -59,11 +60,17 @@ data class LayersTrace(
      * @return the subtrace trace(from, to)
      */
     @JsName("slice")
-    fun slice(from: Long, to: Long): LayersTrace {
+    fun slice(from: Long, to: Long, addInitialEntry: Boolean = false): LayersTrace {
+        return LayersTrace(
+            sliceEntriesByTimestamp(this.entries, from, to, addInitialEntry))
+    }
+
+    @JsName("vSyncSlice")
+    fun vSyncSlice(from: Int, to: Int): LayersTrace {
         return LayersTrace(
             this.entries
-                .dropWhile { it.timestamp < from }
-                .dropLastWhile { it.timestamp > to }
+                .dropWhile { it.vSyncId < from }
+                .dropLastWhile { it.vSyncId > to }
                 .toTypedArray()
         )
     }

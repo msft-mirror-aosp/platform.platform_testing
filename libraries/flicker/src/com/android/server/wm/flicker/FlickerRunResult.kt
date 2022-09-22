@@ -49,7 +49,29 @@ val CHAR_POOL: List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9')
 /**
  * Defines the result of a flicker run
  */
-class FlickerRunResult(testName: String) {
+class FlickerRunResult(
+    testName: String,
+    private val traceConfig: TraceConfigs = DEFAULT_TRACE_CONFIG
+) {
+
+    data class TraceTime(
+        val elapsedRealtimeNanos: Long,
+        val systemTime: Long,
+        val unixTimeNanos: Long
+    ) {
+        companion object {
+            val MIN = TraceTime(0, 0, 0)
+            val MAX = TraceTime(Long.MAX_VALUE, Long.MAX_VALUE, Long.MAX_VALUE)
+        }
+    }
+
+    /**
+     * Logs the start and end times of the transition, so we can crop the traces to exclude the
+     * setups and teardowns to only run the assertion on the transition.
+     */
+    lateinit var transitionStartTime: TraceTime
+    lateinit var transitionEndTime: TraceTime
+
     /**
      * The object responsible for managing the trace file associated with this result.
      *
@@ -58,7 +80,7 @@ class FlickerRunResult(testName: String) {
      * file manager.
      */
     private val artifacts: RunResultArtifacts = RunResultArtifacts(getDefaultFlickerOutputDir()
-            .resolve("${testName}.zip"))
+            .resolve("$testName.zip"))
     /**
      * Truth subject that corresponds to a [WindowManagerTrace]
      */
@@ -106,12 +128,20 @@ class FlickerRunResult(testName: String) {
         return status == RunStatus.RUN_FAILED
     }
 
-    var executionError: ExecutionError? = null
+    var transitionExecutionError: ExecutionError? = null
         private set
 
-    fun setExecutionError(executionError: ExecutionError) {
-        require(this.executionError == null) { "Execution error already set" }
-        this.executionError = executionError
+    var faasExecutionError: ExecutionError? = null
+        private set
+
+    fun setTransitionExecutionError(executionError: ExecutionError) {
+        require(this.transitionExecutionError == null) { "Execution error already set" }
+        this.transitionExecutionError = executionError
+    }
+
+    fun setFaasExecutionError(executionError: ExecutionError) {
+        require(this.faasExecutionError == null) { "Execution error already set" }
+        this.faasExecutionError = executionError
     }
 
     fun getSubjects(tag: String): List<FlickerSubject> {
@@ -212,29 +242,81 @@ class FlickerRunResult(testName: String) {
         resultSetter.setResult(this)
     }
 
+    /**
+     * @return a Window Manager trace for the part of the trace we want to run the assertions on.
+     */
     internal fun buildWmTrace(): WindowManagerTrace? {
         val wmTraceFileName = this.wmTraceFileName ?: return null
         val traceData = this.artifacts.getFileBytes(wmTraceFileName)
-        return WindowManagerTraceParser.parseFromTrace(traceData, clearCacheAfterParsing = false)
+        val fullTrace = WindowManagerTraceParser
+            .parseFromTrace(traceData, clearCacheAfterParsing = false)
+        require(!traceConfig.wmTrace.required || fullTrace.entries.isNotEmpty()) {
+            "Full WM trace is empty..."
+        }
+        val trace = fullTrace
+            .slice(
+                transitionStartTime.elapsedRealtimeNanos,
+                transitionEndTime.elapsedRealtimeNanos,
+                addInitialEntry = true
+            )
+        val minimumEntries = minimumTraceEntriesForConfig(traceConfig.wmTrace)
+        require(trace.entries.size >= minimumEntries) {
+            "WM trace contained ${trace.entries.size} entries, " +
+                    "expected at least $minimumEntries... :: " +
+                    "transition starts at ${transitionStartTime.elapsedRealtimeNanos} and " +
+                    "ends at ${transitionEndTime.elapsedRealtimeNanos}."
+        }
+        return trace
     }
 
+    /**
+     * @return a layers trace for the part of the trace we want to run the assertions on.
+     */
     internal fun buildLayersTrace(): LayersTrace? {
         val wmTraceFileName = this.layersTraceFileName ?: return null
         val traceData = this.artifacts.getFileBytes(wmTraceFileName)
-        return LayersTraceParser.parseFromTrace(traceData, clearCacheAfterParsing = false)
+        val fullTrace = LayersTraceParser.parseFromTrace(traceData, clearCacheAfterParsing = false)
+        require(!traceConfig.layersTrace.required || fullTrace.entries.isNotEmpty()) {
+            "Full layers trace is empty..."
+        }
+        val trace = fullTrace.slice(
+                transitionStartTime.systemTime,
+                transitionEndTime.systemTime,
+                addInitialEntry = true
+            )
+        val minimumEntries = minimumTraceEntriesForConfig(traceConfig.layersTrace)
+        require(trace.entries.size >= minimumEntries) {
+            "Layers trace contained ${trace.entries.size} entries, " +
+                    "expected at least $minimumEntries... :: " +
+                    "transition starts at ${transitionStartTime.systemTime} and " +
+                    "ends at ${transitionEndTime.systemTime}."
+        }
+        return trace
     }
 
+    /**
+     * @return a transactions trace for the part of the trace we want to run the assertions on.
+     */
     private fun buildTransactionsTrace(): TransactionsTrace? {
         val transactionsTrace = this.transactionsTraceFileName ?: return null
         val traceData = this.artifacts.getFileBytes(transactionsTrace)
-        return TransactionsTraceParser.parseFromTrace(traceData)
+        val trace = TransactionsTraceParser.parseFromTrace(traceData)
+            .slice(transitionStartTime.systemTime, transitionEndTime.systemTime)
+        require(trace.entries.isNotEmpty()) { "Transactions trace was empty..." }
+        return trace
     }
 
+    /**
+     * @return a transitions trace for the part of the trace we want to run the assertions on.
+     */
     internal fun buildTransitionsTrace(): TransitionsTrace? {
         val transactionsTrace = buildTransactionsTrace()
         val transitionsTrace = this.transitionsTraceFileName ?: return null
         val traceData = this.artifacts.getFileBytes(transitionsTrace)
-        return TransitionsTraceParser.parseFromTrace(traceData, transactionsTrace!!)
+        val trace = TransitionsTraceParser.parseFromTrace(traceData, transactionsTrace!!)
+            .slice(transitionStartTime.elapsedRealtimeNanos, transitionEndTime.elapsedRealtimeNanos)
+        require(trace.entries.isNotEmpty()) { "Transitions trace was empty..." }
+        return trace
     }
 
     private fun buildTaggedStates(): Map<String, List<StateDump>> {
@@ -275,9 +357,13 @@ class FlickerRunResult(testName: String) {
         return StateDump(buildWmTraceSubject()?.last(), buildLayersTraceSubject()?.last())
     }
 
+    /**
+     * @return a transitions trace for the part of the trace we want to run the assertions on.
+     */
     private fun buildEventLog(): EventLogSubject? {
         val eventLog = eventLog ?: return null
         return EventLogSubject.assertThat(eventLog)
+            .split(transitionStartTime.unixTimeNanos, transitionEndTime.unixTimeNanos)
     }
 
     private fun buildWmTraceSubject(): WindowManagerTraceSubject? {
@@ -302,6 +388,10 @@ class FlickerRunResult(testName: String) {
         eventLogSubject = null
         transitionsTrace = null
         taggedStates = null
+    }
+
+    private fun minimumTraceEntriesForConfig(config: TraceConfig): Int {
+        return if (config.allowNoChange) 1 else 2
     }
 
     interface IResultSetter {

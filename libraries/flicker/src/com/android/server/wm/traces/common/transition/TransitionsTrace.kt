@@ -34,6 +34,13 @@ data class TransitionsTrace(
         return true
     }
 
+    fun slice(from: Long, to: Long): TransitionsTrace {
+        return TransitionsTrace(this.entries
+            .dropWhile { it.timestamp < from }
+            .dropLastWhile { it.timestamp > to }
+            .toTypedArray())
+    }
+
     override fun hashCode(): Int {
         return entries.contentHashCode()
     }

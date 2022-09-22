@@ -24,4 +24,11 @@ class TransactionsTrace(
 ) : ITrace<TransactionsTraceEntry>, List<TransactionsTraceEntry> by entries.toList() {
     @JsName("allTransactions")
     val allTransactions: List<Transaction> = entries.toList().flatMap { it.transactions.toList() }
+
+    fun slice(from: Long, to: Long): TransactionsTrace {
+        return TransactionsTrace(this.entries
+            .dropWhile { it.timestamp < from }
+            .dropLastWhile { it.timestamp > to }
+            .toTypedArray())
+    }
 }

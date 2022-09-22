@@ -77,6 +77,7 @@ abstract class FlickerTraceSubject<EntrySubject : FlickerSubject>(
      * Run the assertions for all trace entries
      */
     fun forAllEntries() {
+        require(subjects.isNotEmpty()) { "Trace is empty" }
         assertionsChecker.test(subjects)
     }
 

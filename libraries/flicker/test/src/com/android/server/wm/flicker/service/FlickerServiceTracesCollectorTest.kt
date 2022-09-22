@@ -19,7 +19,7 @@ package com.android.server.wm.flicker.service
 import android.app.Instrumentation
 import androidx.test.platform.app.InstrumentationRegistry
 import com.android.server.wm.flicker.getDefaultFlickerOutputDir
-import com.android.server.wm.flicker.helpers.SampleAppHelper
+import com.android.server.wm.flicker.helpers.BrowserAppHelper
 import com.android.server.wm.flicker.helpers.isShellTransitionsEnabled
 import com.android.server.wm.traces.parser.windowmanager.WindowManagerStateHelper
 import com.google.common.truth.Truth
@@ -36,7 +36,7 @@ import org.junit.runners.MethodSorters
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class FlickerServiceTracesCollectorTest {
     val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
-    private val testApp: SampleAppHelper = SampleAppHelper(instrumentation)
+    private val testApp: BrowserAppHelper = BrowserAppHelper(instrumentation)
 
     @Before
     fun before() {

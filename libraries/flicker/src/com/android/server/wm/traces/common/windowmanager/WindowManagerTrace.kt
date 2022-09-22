@@ -17,6 +17,7 @@
 package com.android.server.wm.traces.common.windowmanager
 
 import com.android.server.wm.traces.common.ITrace
+import com.android.server.wm.traces.common.Utils.Companion.sliceEntriesByTimestamp
 import kotlin.js.JsName
 
 /**
@@ -63,12 +64,8 @@ data class WindowManagerTrace(
      * @return the subtrace trace(from, to)
      */
     @JsName("slice")
-    fun slice(from: Long, to: Long): WindowManagerTrace {
+    fun slice(from: Long, to: Long, addInitialEntry: Boolean = false): WindowManagerTrace {
         return WindowManagerTrace(
-            this.entries
-                .dropWhile { it.timestamp < from }
-                .dropLastWhile { it.timestamp > to }
-                .toTypedArray()
-        )
+            sliceEntriesByTimestamp(this.entries, from, to, addInitialEntry))
     }
 }

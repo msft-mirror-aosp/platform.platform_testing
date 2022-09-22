@@ -23,10 +23,22 @@ import com.android.server.wm.traces.common.layers.Layer
 import com.android.server.wm.traces.common.layers.LayerTraceEntry
 import com.android.server.wm.traces.common.layers.Transform
 
-class MockLayerTraceEntryBuilder {
+class MockLayerTraceEntryBuilder() {
     private val displays = mutableListOf<Display>()
     private val layers = mutableListOf<Layer>()
     private val bounds = Rect.from(0, 0, 1080, 1920)
+    var timestamp = -1L
+        private set
+
+    constructor(timestamp: Long) : this() {
+        setTimestamp(timestamp)
+    }
+
+    init {
+        if (timestamp <= 0L) {
+            timestamp = ++lastTimestamp
+        }
+    }
 
     fun addDisplay(rootLayers: List<MockLayerBuilder>): MockLayerTraceEntryBuilder = apply {
         val displayLayer = MockLayerBuilder("Display")
@@ -47,14 +59,24 @@ class MockLayerTraceEntryBuilder {
         this.layers.add(displayLayer)
     }
 
+    fun setTimestamp(timestamp: Long): MockLayerTraceEntryBuilder = apply {
+        require(timestamp > 0) { "Timestamp must be a positive value." }
+        this.timestamp = timestamp
+        lastTimestamp = timestamp
+    }
+
     fun build(): LayerTraceEntry {
         return LayerTraceEntry(
-            timestamp = 0,
+            timestamp = timestamp,
             hwcBlob = "",
             where = "",
             displays = displays.toTypedArray(),
             vSyncId = 100,
             _rootLayers = layers.toTypedArray()
         )
+    }
+
+    companion object {
+        private var lastTimestamp = 1L
     }
 }
