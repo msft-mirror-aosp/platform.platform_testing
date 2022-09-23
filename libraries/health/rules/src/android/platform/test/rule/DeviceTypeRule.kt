@@ -29,7 +29,8 @@ import org.junit.runner.Description
 import org.junit.runners.model.Statement
 
 /**
- * Rule that allow some tests to be executed only on [FoldableOnly] or [LargeScreenOnly] devices.
+ * Rule that allow some tests to be executed only on [FoldableOnly], [LargeScreenOnly] or
+ * [SmallScreenOnly] devices.
  */
 class DeviceTypeRule : TestRule {
 
@@ -37,6 +38,14 @@ class DeviceTypeRule : TestRule {
     private val isLargeScreen = isLargeScreen()
 
     override fun apply(base: Statement, description: Description): Statement {
+        val smallScreenAnnotation = description.getAnnotation(SmallScreenOnly::class.java)
+        if (smallScreenAnnotation != null && isLargeScreen) {
+            return createAssumptionViolatedStatement(
+                    "Skipping test on ${Build.PRODUCT} as it doesn't have a small screen. " +
+                            "Reason why this should only run on small screens: " +
+                            "$smallScreenAnnotation.reason.")
+        }
+
         if (description.getAnnotation(LargeScreenOnly::class.java) != null && !isLargeScreen) {
             return createAssumptionViolatedStatement(
                 "Skipping test on ${Build.PRODUCT} as it doesn't have a large screen.")
@@ -59,6 +68,7 @@ private fun isFoldable(): Boolean {
         .isNotEmpty()
 }
 
+/** See [isLargeScreen] */
 private fun isLargeScreen(): Boolean {
     val sizeDp = getUiDevice().displaySizeDp
     return sizeDp.x >= LARGE_SCREEN_DP_THRESHOLD && sizeDp.y >= LARGE_SCREEN_DP_THRESHOLD
@@ -77,6 +87,20 @@ private fun getUiDevice(): UiDevice = UiDevice.getInstance(getInstrumentation())
 
 private const val LARGE_SCREEN_DP_THRESHOLD = 600
 
+/**
+ * The test will be skipped on large screens.
+ * Don't use this annotation instead of fixing a test on a large-screen device.
+ */
+@Retention(RUNTIME)
+@Target(ANNOTATION_CLASS, CLASS)
+annotation class SmallScreenOnly(val reason: String)
+
+/**
+ * The test will run only on large screens.
+ */
 @Retention(RUNTIME) @Target(ANNOTATION_CLASS, CLASS) annotation class LargeScreenOnly
 
+/**
+ * The test will run only on foldables.
+ */
 @Retention(RUNTIME) @Target(ANNOTATION_CLASS, CLASS) annotation class FoldableOnly

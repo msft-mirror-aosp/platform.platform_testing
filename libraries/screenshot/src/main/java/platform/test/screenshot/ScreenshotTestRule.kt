@@ -28,6 +28,7 @@ import java.io.FileNotFoundException
 import java.io.FileOutputStream
 import java.io.IOException
 import androidx.test.runner.screenshot.Screenshot
+import com.android.internal.app.SimpleIconFactory
 import org.junit.rules.TestRule
 import org.junit.rules.TestWatcher
 import org.junit.runner.Description
@@ -79,7 +80,12 @@ open class ScreenshotTestRule(
 
     class ScreenshotTestStatement(private val base: Statement) : Statement() {
         override fun evaluate() {
-            base.evaluate()
+            try {
+                SimpleIconFactory.setPoolEnabled(false)
+                base.evaluate()
+            } finally {
+                SimpleIconFactory.setPoolEnabled(true)
+            }
         }
     }
 

@@ -14,6 +14,16 @@
  * limitations under the License.
  */
 
-package com.android.server.wm.flicker.helpers
+package android.security.sts.CVE_2020_0215;
 
-const val IS_FAAS_ENABLED = false
+import android.app.Activity;
+import android.os.Bundle;
+
+public class PocActivity extends Activity {
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+    }
+}
