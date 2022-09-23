@@ -100,8 +100,6 @@ public class AudioTestHarnessHermeticServerManagingMetricCollector
 
     @Override
     public void onTestRunStart(DeviceMetricData runData) {
-        super.onTestRunStart(runData);
-
         LogUtil.CLog.i("Starting Audio Test Harness...");
 
         // Use the default configuration if no devices are specified, otherwise, create a
@@ -147,8 +145,6 @@ public class AudioTestHarnessHermeticServerManagingMetricCollector
     @Override
     public void onTestRunEnd(
             DeviceMetricData runData, Map<String, MetricMeasurement.Metric> currentRunMetrics) {
-        super.onTestRunEnd(runData, currentRunMetrics);
-
         LogUtil.CLog.i("Stopping Audio Test Harness...");
 
         mAudioTestHarnessGrpcServer.close();

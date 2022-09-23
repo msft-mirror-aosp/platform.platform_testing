@@ -86,7 +86,8 @@ instrumentation_metric_tests := \
     ImePerfTests \
     trace_config_detailed.textproto \
     trace_config_multi_user.textproto \
-    perfetto_trace_processor_shell
+    perfetto_trace_processor_shell \
+    RubidiumPerfTests
 
     # TODO(b/72332760): Uncomment when fixed
     #DocumentsUIPerfTests

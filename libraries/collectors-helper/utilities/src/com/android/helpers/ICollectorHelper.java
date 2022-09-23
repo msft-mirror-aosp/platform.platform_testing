@@ -11,10 +11,10 @@ public interface ICollectorHelper<T> {
     boolean startCollecting();
 
     /**
-     * This method will take args which includes a flag and an identifier for the helper.
+     * This method will take args which passes an identifier for the helper.
      * The default implementation is to invoke {@link #startCollecting()} directly.
      */
-    default boolean startCollecting(boolean isEnabled, String id) {
+    default boolean startCollecting(String id) {
         return startCollecting();
     }
 

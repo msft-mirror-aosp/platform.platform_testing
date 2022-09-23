@@ -17,12 +17,14 @@
 package platform.test.screenshot.matchers
 
 import android.graphics.Bitmap
+import android.graphics.Rect
+import kotlin.collections.List
 import platform.test.screenshot.proto.ScreenshotResultProto.DiffResult.ComparisonStatistics
 
 /**
- * Interface to implement to provide custom bitmap matchers.
+ * The abstract class to implement to provide custom bitmap matchers.
  */
-interface BitmapMatcher {
+abstract class BitmapMatcher {
     /**
      * Compares the given bitmaps and returns result of the operation.
      *
@@ -32,8 +34,30 @@ interface BitmapMatcher {
      * @param given The image taken during the test.
      * @param width Width of both of the images.
      * @param height Height of both of the images.
+     * @param regions An optional array of interesting regions for screenshot diff.
      */
-    fun compareBitmaps(expected: IntArray, given: IntArray, width: Int, height: Int): MatchResult
+    abstract fun compareBitmaps(
+        expected: IntArray,
+        given: IntArray,
+        width: Int,
+        height: Int,
+        regions: List<Rect> = emptyList<Rect>()
+    ): MatchResult
+
+    protected fun getFilter(width: Int, height: Int, regions: List<Rect>): IntArray {
+        if (regions.isEmpty()) { return IntArray(width * height) { 1 } }
+        val bitmapArray = IntArray(width * height) { 0 }
+        for (region in regions) {
+            for (i in region.top..region.bottom) {
+                if (i >= height) { break }
+                for (j in region.left..region.right) {
+                    if (j >= width) { break }
+                    bitmapArray[j + i * width] = 1
+                }
+            }
+        }
+        return bitmapArray
+    }
 }
 
 /**
