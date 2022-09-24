@@ -261,18 +261,18 @@ open class ScreenshotTestRule(
 
         val report = Bundle()
 
-        actual.writeToDevice(OutputFileType.IMAGE_ACTUAL).also {
+        actual.writeToDevice(OutputFileType.IMAGE_ACTUAL, goldenIdentifier).also {
             resultProto.imageLocationTest = it.name
             report.putString(bundleKeyPrefix + OutputFileType.IMAGE_ACTUAL, it.absolutePath)
         }
         diff?.run {
-            writeToDevice(OutputFileType.IMAGE_DIFF).also {
+            writeToDevice(OutputFileType.IMAGE_DIFF, goldenIdentifier).also {
                 resultProto.imageLocationDiff = it.name
                 report.putString(bundleKeyPrefix + OutputFileType.IMAGE_DIFF, it.absolutePath)
             }
         }
         expected?.run {
-            writeToDevice(OutputFileType.IMAGE_EXPECTED).also {
+            writeToDevice(OutputFileType.IMAGE_EXPECTED, goldenIdentifier).also {
                 resultProto.imageLocationReference = it.name
                 report.putString(
                     bundleKeyPrefix + OutputFileType.IMAGE_EXPECTED,
@@ -281,13 +281,13 @@ open class ScreenshotTestRule(
             }
         }
 
-        writeToDevice(OutputFileType.RESULT_PROTO) {
+        writeToDevice(OutputFileType.RESULT_PROTO, goldenIdentifier) {
             it.write(resultProto.build().toString().toByteArray())
         }.also {
             report.putString(bundleKeyPrefix + OutputFileType.RESULT_PROTO, it.absolutePath)
         }
 
-        writeToDevice(OutputFileType.RESULT_BIN_PROTO) {
+        writeToDevice(OutputFileType.RESULT_BIN_PROTO, goldenIdentifier) {
             it.write(resultProto.build().toByteArray())
         }.also {
             report.putString(bundleKeyPrefix + OutputFileType.RESULT_BIN_PROTO, it.absolutePath)
@@ -296,28 +296,30 @@ open class ScreenshotTestRule(
         InstrumentationRegistry.getInstrumentation().sendStatus(bundleStatusInProgress, report)
     }
 
-    internal fun getPathOnDeviceFor(fileType: OutputFileType): File {
+    internal fun getPathOnDeviceFor(fileType: OutputFileType, goldenIdentifier: String): File {
+        val imageSuffix = "${goldenImagePathManager}_$goldenIdentifier$imageExtension"
         val fileName = when (fileType) {
             OutputFileType.IMAGE_ACTUAL ->
-                "${testIdentifier}_actual_$goldenImagePathManager.$imageExtension"
+                "${testIdentifier}_actual_$imageSuffix"
             OutputFileType.IMAGE_EXPECTED ->
-                "${testIdentifier}_expected_$goldenImagePathManager.$imageExtension"
+                "${testIdentifier}_expected_$imageSuffix"
             OutputFileType.IMAGE_DIFF ->
-                "${testIdentifier}_diff_$goldenImagePathManager.$imageExtension"
+                "${testIdentifier}_diff_$imageSuffix"
             OutputFileType.RESULT_PROTO -> "${testIdentifier}_$resultProtoFileSuffix"
             OutputFileType.RESULT_BIN_PROTO -> "${testIdentifier}_$resultBinaryProtoFileSuffix"
         }
         return File(goldenImagePathManager.deviceLocalPath, fileName)
     }
 
-    private fun Bitmap.writeToDevice(fileType: OutputFileType): File {
-        return writeToDevice(fileType) {
+    private fun Bitmap.writeToDevice(fileType: OutputFileType, goldenIdentifier: String): File {
+        return writeToDevice(fileType, goldenIdentifier) {
             compress(Bitmap.CompressFormat.PNG, 0 /*ignored for png*/, it)
         }
     }
 
     private fun writeToDevice(
         fileType: OutputFileType,
+        goldenIdentifier: String,
         writeAction: (FileOutputStream) -> Unit
     ): File {
         val fileGolden = File(goldenImagePathManager.deviceLocalPath)
@@ -325,7 +327,7 @@ open class ScreenshotTestRule(
             throw IOException("Could not create folder $fileGolden.")
         }
 
-        var file = getPathOnDeviceFor(fileType)
+        var file = getPathOnDeviceFor(fileType, goldenIdentifier)
         try {
             FileOutputStream(file).use {
                 writeAction(it)

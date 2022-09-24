@@ -7,6 +7,8 @@ LOCAL_MODULE_TAGS := optional
 
 sts_sdk_sample_files := \
 	$(sort $(patsubst ./%,%,$(shell find -L $(LOCAL_PATH)/package -type f -and -not -name ".*")))
+LOCAL_LICENSE_KINDS := SPDX-license-identifier-Apache-2.0
+LOCAL_LICENSE_CONDITIONS := notice
 include $(BUILD_SYSTEM)/base_rules.mk
 $(LOCAL_BUILT_MODULE): STS_SDK_SAMPLE_FILES := $(sts_sdk_sample_files)
 $(LOCAL_BUILT_MODULE): STS_SDK_SAMPLE_ROOT := $(LOCAL_PATH)/package
@@ -23,4 +25,3 @@ $(LOCAL_BUILT_MODULE): $(sts_sdk_sample_files) $(SOONG_ZIP)
 	$(SOONG_ZIP) -o $@ -C $(STS_SDK_TMP_DIR) -D $(STS_SDK_TMP_DIR)
 
 sts_sdk_sample_files :=
-

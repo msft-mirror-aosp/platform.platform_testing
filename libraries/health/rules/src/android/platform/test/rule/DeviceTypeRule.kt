@@ -68,7 +68,6 @@ private fun isFoldable(): Boolean {
         .isNotEmpty()
 }
 
-/** See [isLargeScreen] */
 private fun isLargeScreen(): Boolean {
     val sizeDp = getUiDevice().displaySizeDp
     return sizeDp.x >= LARGE_SCREEN_DP_THRESHOLD && sizeDp.y >= LARGE_SCREEN_DP_THRESHOLD
@@ -90,6 +89,7 @@ private const val LARGE_SCREEN_DP_THRESHOLD = 600
 /**
  * The test will be skipped on large screens.
  * Don't use this annotation instead of fixing a test on a large-screen device.
+ * See [isLargeScreen].
  */
 @Retention(RUNTIME)
 @Target(ANNOTATION_CLASS, CLASS)
@@ -97,6 +97,7 @@ annotation class SmallScreenOnly(val reason: String)
 
 /**
  * The test will run only on large screens.
+ * See [isLargeScreen].
  */
 @Retention(RUNTIME) @Target(ANNOTATION_CLASS, CLASS) annotation class LargeScreenOnly
 
