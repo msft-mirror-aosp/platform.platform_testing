@@ -1,6 +1,5 @@
 package com.android.myroboapplication;
 
-import static com.android.myroboapplication.R.*;
 import android.content.Intent;
 import android.view.View;
 import android.app.Activity;
@@ -11,6 +10,7 @@ public class WelcomeActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // Added some comments
         setContentView(R.layout.welcome_activity);
 
         final View button = findViewById(R.id.login);
