@@ -235,15 +235,10 @@ class RegionSubject(
      * @param testRegion Expected covered area
      */
     fun coversAtMost(testRegion: Region): RegionSubject = apply {
-        val testRect = testRegion.bounds
-        val intersection = Region.from(region)
-        val covers = intersection.op(testRect, Region.Op.INTERSECT) &&
-            !intersection.op(region, Region.Op.XOR)
-
-        if (!covers) {
+        if (!region.coversAtMost(testRegion)) {
             fail(Fact.fact("Region to test", testRegion),
                 Fact.fact("Covered region", region),
-                Fact.fact("Out-of-bounds region", intersection))
+                Fact.fact("Out-of-bounds region", region.outOfBoundsRegion(testRegion)))
         }
     }
 
@@ -303,14 +298,10 @@ class RegionSubject(
      * @param testRegion Expected covered area
      */
     fun coversAtLeast(testRegion: Region): RegionSubject = apply {
-        val intersection = Region.from(region)
-        val covers = intersection.op(testRegion, Region.Op.INTERSECT) &&
-            !intersection.op(testRegion, Region.Op.XOR)
-
-        if (!covers) {
+        if (!region.coversAtLeast(testRegion)) {
             fail(Fact.fact("Region to test", testRegion),
                 Fact.fact("Covered region", region),
-                Fact.fact("Uncovered region", intersection))
+                Fact.fact("Uncovered region", region.uncoveredRegion(testRegion)))
         }
     }
 

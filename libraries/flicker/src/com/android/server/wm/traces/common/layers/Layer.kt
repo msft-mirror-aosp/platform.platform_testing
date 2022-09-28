@@ -284,7 +284,7 @@ class Layer private constructor(
         result = 31 * result + sourceBounds.hashCode()
         result = 31 * result + effectiveScalingMode
         result = 31 * result + bufferTransform.hashCode()
-        result = 31 * result + hwcCompositionType
+        result = 31 * result + hwcCompositionType.hashCode()
         result = 31 * result + hwcCrop.hashCode()
         result = 31 * result + hwcFrame.hashCode()
         result = 31 * result + backgroundBlurRadius
@@ -337,7 +337,7 @@ class Layer private constructor(
             currFrame: Long,
             effectiveScalingMode: Int,
             bufferTransform: Transform,
-            hwcCompositionType: Int,
+            hwcCompositionType: HwcCompositionType,
             hwcCrop: RectF,
             hwcFrame: Rect,
             backgroundBlurRadius: Int,

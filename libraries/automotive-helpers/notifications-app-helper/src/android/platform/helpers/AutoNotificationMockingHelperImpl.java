@@ -155,7 +155,8 @@ public class AutoNotificationMockingHelperImpl extends AbstractAutoStandardAppHe
                             context,
                             0,
                             context.getPackageManager().getLaunchIntentForPackage(pkg),
-                            android.content.Intent.FLAG_ACTIVITY_NEW_TASK));
+                            android.content.Intent.FLAG_ACTIVITY_NEW_TASK
+                                    | PendingIntent.FLAG_IMMUTABLE));
         }
         return builder;
     }

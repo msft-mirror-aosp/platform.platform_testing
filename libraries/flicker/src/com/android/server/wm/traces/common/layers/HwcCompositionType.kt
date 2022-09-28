@@ -14,17 +14,14 @@
  * limitations under the License.
  */
 
-package com.android.server.wm.flicker.assertiongenerator.common
+package com.android.server.wm.traces.common.layers
 
-import com.android.server.wm.traces.common.DeviceTraceDump
-
-interface ILifecycleExtractor
-{
-    /**
-     * Extracts the map of lifecycles corresponding to each single element
-     * key: element id, value: element lifecycle
-     */
-    fun extract(
-        traceDump: DeviceTraceDump
-    ): ITraceLifecycle?
+enum class HwcCompositionType(val value: Int) {
+    INVALID(0),
+    CLIENT(1),
+    DEVICE(2),
+    SOLID_COLOR(3),
+    CURSOR(4),
+    SIDEBAND(5),
+    UNRECOGNIZED(-1)
 }

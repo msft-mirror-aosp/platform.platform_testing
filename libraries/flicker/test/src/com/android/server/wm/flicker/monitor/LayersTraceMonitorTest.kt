@@ -16,13 +16,13 @@
 
 package com.android.server.wm.flicker.monitor
 
-import android.surfaceflinger.nano.Layerstrace
+import android.surfaceflinger.Layerstrace
 import androidx.test.uiautomator.UiDevice
 import com.google.common.truth.Truth
+import java.nio.file.Path
 import org.junit.FixMethodOrder
 import org.junit.Test
 import org.junit.runners.MethodSorters
-import java.nio.file.Path
 
 /**
  * Contains [LayersTraceMonitor] tests. To run this test: `atest
@@ -36,8 +36,10 @@ class LayersTraceMonitorTest : TraceMonitorTest<LayersTraceMonitor>() {
         val trace = Layerstrace.LayersTraceFileProto.parseFrom(traceData)
 
         Truth.assertThat(trace.magicNumber)
-                .isEqualTo(Layerstrace.LayersTraceFileProto.MAGIC_NUMBER_H.toLong() shl 32
-                        or Layerstrace.LayersTraceFileProto.MAGIC_NUMBER_L.toLong())
+            .isEqualTo(
+                Layerstrace.LayersTraceFileProto.MagicNumber.MAGIC_NUMBER_H.number.toLong() shl 32
+                    or Layerstrace.LayersTraceFileProto.MagicNumber.MAGIC_NUMBER_L.number.toLong()
+            )
     }
 
     @Test

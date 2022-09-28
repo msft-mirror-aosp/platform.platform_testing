@@ -59,7 +59,7 @@ interface ILayerProperties {
     @JsName("bufferTransform")
     val bufferTransform: Transform
     @JsName("hwcCompositionType")
-    val hwcCompositionType: Int
+    val hwcCompositionType: HwcCompositionType
     @JsName("hwcCrop")
     val hwcCrop: RectF
     @JsName("hwcFrame")

@@ -1,14 +1,17 @@
 package com.android.server.wm.flicker.assertiongenerator.layers
 
+import com.android.server.wm.flicker.Utils
 import com.android.server.wm.flicker.assertiongenerator.common.Assertion
 import com.android.server.wm.flicker.assertions.AssertionsChecker
 import com.android.server.wm.flicker.assertions.FlickerSubject
+import com.android.server.wm.flicker.service.assertors.ComponentTypeMatcher
 import com.android.server.wm.flicker.traces.FlickerTraceSubject
 import com.android.server.wm.flicker.traces.layers.LayerTraceEntrySubject
 import com.android.server.wm.flicker.traces.layers.LayersTraceSubject
 import com.android.server.wm.traces.common.ITrace
 import com.android.server.wm.traces.common.ITraceEntry
 import com.android.server.wm.traces.common.layers.LayersTrace
+import com.android.server.wm.traces.common.transition.Transition
 
 class LayersAssertion(
 ) : Assertion {
@@ -16,28 +19,85 @@ class LayersAssertion(
     override var name: String = ""
     override var assertionString: String = ""
 
-    override fun execute(newTrace: ITrace<out ITraceEntry>) {
+    var needsInitialization = false
+    var executed = false
+    val componentMatchers: MutableList<ComponentTypeMatcher> = mutableListOf()
+    val assertionStringsToAdd: MutableList<String> = mutableListOf()
+
+    private fun initializeComponentMatchers(transition: Transition) {
+        componentMatchers.forEach { componentMatcher ->
+            if (!componentMatcher.initialized) {
+                componentMatcher.initialize(transition)
+            }
+        }
+    }
+
+    private fun addToAssertionString(
+        assertionStrToAdd: String,
+        index: Int
+    ) {
+        if (index != 0) {
+            assertionString += ".then()"
+        }
+        val componentMatcherStr = Utils.componentNameMatcherToString(componentMatchers[index])
+        assertionString += ".$assertionStrToAdd($componentMatcherStr)"
+    }
+
+    private fun buildAssertionString() {
+        if (assertionString == "") {
+            assertionStringsToAdd.forEachIndexed { index, assertionStrToAdd ->
+                addToAssertionString(assertionStrToAdd, index)
+            }
+        }
+    }
+
+    override fun execute(newTrace: ITrace<out ITraceEntry>, transition: Transition?) {
         require(newTrace is LayersTrace) {
             "Requires a trace of type 'LayersTrace' to execute LayersAssertion."
         }
-        execute(LayersTraceSubject.assertThat(newTrace))
+        execute(LayersTraceSubject.assertThat(newTrace), transition)
     }
 
-    override fun execute(traceSubject: FlickerTraceSubject<out FlickerSubject>) {
+    override fun execute(
+        traceSubject: FlickerTraceSubject<out FlickerSubject>,
+        transition: Transition?
+    ) {
         require(traceSubject is LayersTraceSubject) {
             "Requires a traceSubject of type 'LayersTraceSubject' to execute LayersAssertion."
         }
+        transition?.run{
+            initializeComponentMatchers(transition)
+        } ?: run{
+            if (needsInitialization) {
+                throw RuntimeException("At least one assertion component matcher needs " +
+                    "initialization, but no transition was passed")
+            }
+        }
         assertionsChecker.assertChanges(traceSubject.subjects)
+        executed = true
+        buildAssertionString()
+    }
+
+    override fun toString(): String {
+        return assertionString
     }
 
     override fun toString(newTrace: String): String {
+        buildAssertionString()
         return "assertThat($newTrace)$assertionString"
     }
 
     override fun isEqual(other: Any?): Boolean {
-        return other is LayersAssertion &&
-            assertionsChecker.isEqual(other.assertionsChecker) &&
-            name == other.name &&
-            assertionString == other.assertionString
+        if (other !is LayersAssertion) {
+            return false
+        }
+        if (executed || !needsInitialization && !other.needsInitialization) {
+            buildAssertionString()
+            return needsInitialization == other.needsInitialization &&
+                assertionsChecker.isEqual(other.assertionsChecker) &&
+                name == other.name &&
+                assertionString == other.assertionString
+        }
+        throw RuntimeException("Assertion was not yet executed, so it cannot be compared")
     }
 }

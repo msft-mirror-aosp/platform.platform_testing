@@ -16,30 +16,69 @@
 
 package com.android.server.wm.flicker.assertiongenerator.layers
 
+import com.android.server.wm.flicker.assertiongenerator.common.IComponentLifecycle
 import com.android.server.wm.flicker.assertiongenerator.common.IElementLifecycle
 import com.android.server.wm.flicker.assertiongenerator.common.ITraceLifecycle
+import com.android.server.wm.traces.common.ComponentNameMatcher
 
 class LayersTraceLifecycle(
-    val lifecycleMap: MutableMap<Int, LayersElementLifecycle> = mutableMapOf()
+    val lifecycleMap: MutableMap<ComponentNameMatcher, LayersComponentLifecycle> =
+        mutableMapOf()
 ) : ITraceLifecycle {
     override val size: Int
         get() = lifecycleMap.size
 
-    override val elementIds: Set<Int>
+    override val elementIds: MutableSet<ComponentNameMatcher>
         get() = lifecycleMap.keys
 
-    override operator fun get(elementId: Any): LayersElementLifecycle? {
-        return lifecycleMap[elementId as Int]
+    override operator fun get(elementId: Any): LayersComponentLifecycle? {
+        return lifecycleMap[elementId as ComponentNameMatcher]
+    }
+
+    fun add(
+        elementComponentNameMatcher: ComponentNameMatcher,
+        elementId: Int,
+        elementLifecycle: IElementLifecycle
+    ) {
+        lifecycleMap[elementComponentNameMatcher]
+            ?: run {
+                lifecycleMap[elementComponentNameMatcher] =
+                    LayersComponentLifecycle()
+            }
+        lifecycleMap[elementComponentNameMatcher]!![elementId] =
+            elementLifecycle as LayersElementLifecycle
     }
 
     // can't have LayersElementLifecycle because
     // compiler won't allow different types in the function signature
-    override operator fun set(elementId: Any, elementLifecycle: IElementLifecycle) {
-        lifecycleMap[elementId as Int] = elementLifecycle as LayersElementLifecycle
+    override operator fun set(
+        elementId: Any,
+        elementLifecycles: IComponentLifecycle
+    ) {
+        lifecycleMap[elementId as ComponentNameMatcher] =
+            elementLifecycles as LayersComponentLifecycle
     }
 
-    override fun getOrPut(elementId: Any, elementLifecycle: IElementLifecycle):
-        LayersElementLifecycle {
-        return lifecycleMap.getOrPut(elementId as Int){elementLifecycle as LayersElementLifecycle}
+    override fun getOrPut(elementId: Any, elementLifecycles: IComponentLifecycle):
+            LayersComponentLifecycle {
+        return lifecycleMap.getOrPut(elementId as ComponentNameMatcher){
+            elementLifecycles as LayersComponentLifecycle
+        }
+    }
+
+    override fun equals(other: Any?): Boolean {
+        return other is LayersTraceLifecycle &&
+            this.lifecycleMap == other.lifecycleMap
+    }
+
+    override fun hashCode(): Int {
+        var result = lifecycleMap.hashCode()
+        result = 31 * result + size
+        result = 31 * result + elementIds.hashCode()
+        return result
+    }
+
+    override fun toString(): String {
+        return "LayersTraceLifecycle:\n$lifecycleMap\n\n"
     }
 }

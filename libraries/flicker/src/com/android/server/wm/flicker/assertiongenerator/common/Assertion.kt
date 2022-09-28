@@ -5,6 +5,7 @@ import com.android.server.wm.flicker.assertions.FlickerSubject
 import com.android.server.wm.flicker.traces.FlickerTraceSubject
 import com.android.server.wm.traces.common.ITrace
 import com.android.server.wm.traces.common.ITraceEntry
+import com.android.server.wm.traces.common.transition.Transition
 
 interface Assertion {
     // Visible for testing
@@ -12,9 +13,13 @@ interface Assertion {
     val name: String
     var assertionString: String
 
-    fun execute(newTrace: ITrace<out ITraceEntry>)
+    // transition can be null only for testing purposes
+    fun execute(newTrace: ITrace<out ITraceEntry>, transition: Transition? = null)
 
-    fun execute(traceSubject: FlickerTraceSubject<out FlickerSubject>)
+    fun execute(
+        traceSubject: FlickerTraceSubject<out FlickerSubject>,
+        transition: Transition? = null
+    )
 
     fun toString(newTrace: String): String
 

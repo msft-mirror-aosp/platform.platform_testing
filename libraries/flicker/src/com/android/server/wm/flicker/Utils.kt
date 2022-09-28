@@ -65,6 +65,27 @@ object Utils {
         return Pair(packageName, className)
     }
 
+    fun componentNameMatcherHardcoded(str: String): ComponentNameMatcher? {
+        return when (true) {
+            str.contains("NavigationBar0") -> ComponentNameMatcher.NAV_BAR
+            str.contains("Taskbar") -> ComponentNameMatcher.TASK_BAR
+            str.contains("StatusBar") -> ComponentNameMatcher.STATUS_BAR
+            str.contains("RotationLayer") -> ComponentNameMatcher.ROTATION
+            str.contains("BackColorSurface") -> ComponentNameMatcher.BACK_SURFACE
+            str.contains("InputMethod") -> ComponentNameMatcher.IME
+            str.contains("IME-snapshot-surface") -> ComponentNameMatcher.IME_SNAPSHOT
+            str.contains("Splash Screen") -> ComponentNameMatcher.SPLASH_SCREEN
+            str.contains("SnapshotStartingWindow") -> ComponentNameMatcher.SNAPSHOT
+            str.contains("Letterbox") -> ComponentNameMatcher.LETTERBOX
+            str.contains("Wallpaper BBQ wrapper") -> ComponentNameMatcher.WALLPAPER_BBQ_WRAPPER
+            str.contains("PipContentOverlay") -> ComponentNameMatcher.PIP_CONTENT_OVERLAY
+            str.contains("com.google.android.apps.nexuslauncher.NexusLauncherActivity") ->
+                ComponentNameMatcher.LAUNCHER
+            str.contains("StageCoordinatorSplitDivider") -> ComponentNameMatcher.SPLIT_DIVIDER
+            else -> null
+        }
+    }
+
     /**
      * Obtains the component name matcher corresponding to a name (str)
      * Returns null if the name is not found in the hardcoded list,
@@ -72,27 +93,14 @@ object Utils {
      */
     fun componentNameMatcherFromName(str: String): ComponentNameMatcher? {
         val condition = true
-        try {
-            return when (condition) {
-                str.contains("NavigationBar0") -> ComponentNameMatcher.NAV_BAR
-                str.contains("Taskbar") -> ComponentNameMatcher.TASK_BAR
-                str.contains("StatusBar") -> ComponentNameMatcher.STATUS_BAR
-                str.contains("RotationLayer") -> ComponentNameMatcher.ROTATION
-                str.contains("BackColorSurface") -> ComponentNameMatcher.BACK_SURFACE
-                str.contains("InputMethod") -> ComponentNameMatcher.IME
-                str.contains("IME-snapshot-surface") -> ComponentNameMatcher.IME_SNAPSHOT
-                str.contains("Splash Screen") -> ComponentNameMatcher.SPLASH_SCREEN
-                str.contains("SnapshotStartingWindow") -> ComponentNameMatcher.SNAPSHOT
-                str.contains("Letterbox") -> ComponentNameMatcher.LETTERBOX
-                str.contains("Wallpaper BBQ wrapper") -> ComponentNameMatcher.WALLPAPER_BBQ_WRAPPER
-                str.contains("PipContentOverlay") -> ComponentNameMatcher.PIP_CONTENT_OVERLAY
-                str.contains("com.google.android.apps.nexuslauncher.NexusLauncherActivity") ->
-                    ComponentNameMatcher.LAUNCHER
-                str.contains("StageCoordinatorSplitDivider") -> ComponentNameMatcher.SPLIT_DIVIDER
+        val componentMatcher = componentNameMatcherHardcoded(str)
+        return try {
+            when (condition) {
+                (componentMatcher != null) -> componentMatcher
                 else -> ComponentNameMatcher.unflattenFromString(str)
             }
         } catch (err: IllegalStateException) {
-            return null
+            null
         }
     }
 

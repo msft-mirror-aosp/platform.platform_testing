@@ -17,15 +17,15 @@
 package com.android.server.wm.traces.parser.layers
 
 import android.graphics.Rect
-import android.surfaceflinger.nano.Common
-import android.surfaceflinger.nano.Common.RegionProto
-import android.surfaceflinger.nano.Display
-import android.surfaceflinger.nano.Layers
+import android.surfaceflinger.Common
+import android.surfaceflinger.Display
+import android.surfaceflinger.Layers
 import com.android.server.wm.traces.common.ActiveBuffer
 import com.android.server.wm.traces.common.Color
 import com.android.server.wm.traces.common.RectF
 import com.android.server.wm.traces.common.Size
 import com.android.server.wm.traces.common.layers.BaseLayerTraceEntry
+import com.android.server.wm.traces.common.layers.HwcCompositionType
 import com.android.server.wm.traces.common.layers.Layer
 import com.android.server.wm.traces.common.layers.LayerTraceEntryBuilder
 import com.android.server.wm.traces.common.region.Region
@@ -73,10 +73,7 @@ class LayerTraceEntryLazy(
             // Differentiate between the cases when there's no HWC data on
             // the trace, and when the visible region is actually empty
             val activeBuffer = proto.activeBuffer.toBuffer()
-            var visibleRegion = proto.visibleRegion.toRegion() ?: Region.EMPTY
-            if (visibleRegion == null && activeBuffer.isEmpty) {
-                visibleRegion = Region.EMPTY
-            }
+            val visibleRegion = proto.visibleRegion.toRegion() ?: Region.EMPTY
             val crop = getCrop(proto.crop)
             return Layer.from(
                 proto.name ?: "",
@@ -98,7 +95,7 @@ class LayerTraceEntryLazy(
                 proto.currFrame,
                 proto.effectiveScalingMode,
                 Transform(proto.bufferTransform, position = null),
-                proto.hwcCompositionType,
+                toHwcCompositionType(proto.hwcCompositionType),
                 proto.hwcCrop.toRectF() ?: RectF.EMPTY,
                 proto.hwcFrame.toRect(),
                 proto.backgroundBlurRadius,
@@ -159,6 +156,19 @@ class LayerTraceEntryLazy(
         }
 
         @JvmStatic
+        fun toHwcCompositionType(value: Layers.HwcCompositionType): HwcCompositionType {
+            return when (value) {
+                Layers.HwcCompositionType.INVALID -> HwcCompositionType.INVALID
+                Layers.HwcCompositionType.CLIENT -> HwcCompositionType.CLIENT
+                Layers.HwcCompositionType.DEVICE -> HwcCompositionType.DEVICE
+                Layers.HwcCompositionType.SOLID_COLOR -> HwcCompositionType.SOLID_COLOR
+                Layers.HwcCompositionType.CURSOR -> HwcCompositionType.CURSOR
+                Layers.HwcCompositionType.SIDEBAND -> HwcCompositionType.SIDEBAND
+                else -> HwcCompositionType.UNRECOGNIZED
+            }
+        }
+
+        @JvmStatic
         fun getCrop(crop: Common.RectProto?): com.android.server.wm.traces.common.Rect? {
             return when {
                 crop == null -> com.android.server.wm.traces.common.Rect.EMPTY
@@ -175,15 +185,15 @@ class LayerTraceEntryLazy(
         }
 
         /**
-         * Extracts [Rect] from [RegionProto] by returning a rect that encompasses all
+         * Extracts [Rect] from [Common.RegionProto] by returning a rect that encompasses all
          * the rectangles making up the region.
          */
         @JvmStatic
-        fun RegionProto?.toRegion(): Region? {
+        fun Common.RegionProto?.toRegion(): Region? {
             return if (this == null) {
                 null
             } else {
-                val rects = this.rect.map { it.toRect() }.toTypedArray()
+                val rects = this.rectList.map { it.toRect() }.toTypedArray()
                 return Region(rects)
             }
         }

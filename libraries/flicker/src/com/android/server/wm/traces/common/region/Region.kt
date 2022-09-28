@@ -1144,8 +1144,43 @@ class Region(rects: Array<Rect> = arrayOf()) {
     @JsName("minus")
     fun minus(other: Region): Region {
         val thisRegion = from(this)
-        thisRegion.op(other, Region.Op.XOR)
+        thisRegion.op(other, Op.XOR)
         return thisRegion
+    }
+
+    @JsName("coversAtMost")
+    fun coversAtMost(testRegion: Region): Boolean {
+        val testRect = testRegion.bounds
+        val intersection = from(this)
+        return intersection.op(testRect, Op.INTERSECT) &&
+            !intersection.op(this, Op.XOR)
+    }
+
+    @JsName("coversAtLeast")
+    fun coversAtLeast(testRegion: Region): Boolean {
+        val intersection = from(this)
+        return intersection.op(testRegion, Op.INTERSECT) &&
+            !intersection.op(testRegion, Op.XOR)
+    }
+
+    @JsName("coversMoreThan")
+    fun coversMoreThan(testRegion: Region): Boolean {
+        return coversAtLeast(testRegion) && from(this).minus(testRegion).isNotEmpty
+    }
+
+    @JsName("outOfBoundsRegion")
+    fun outOfBoundsRegion(testRegion: Region): Region {
+        val testRect = testRegion.bounds
+        val outOfBoundsRegion = from(this)
+        outOfBoundsRegion.op(testRect, Op.INTERSECT) && outOfBoundsRegion.op(this, Op.XOR)
+        return outOfBoundsRegion
+    }
+
+    @JsName("uncoveredRegion")
+    fun uncoveredRegion(testRegion: Region): Region {
+        val uncoveredRegion = from(this)
+        uncoveredRegion.op(testRegion, Op.INTERSECT) && uncoveredRegion.op(testRegion, Op.XOR)
+        return uncoveredRegion
     }
 
     companion object {

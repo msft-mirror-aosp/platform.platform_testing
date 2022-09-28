@@ -1,12 +1,15 @@
 package com.android.server.wm.flicker.assertiongenerator
 
+import com.android.server.wm.flicker.assertiongenerator.layers.LayersComponentLifecycle
 import com.android.server.wm.flicker.assertiongenerator.layers.LayersElementLifecycle
 import com.android.server.wm.traces.common.ActiveBuffer
 import com.android.server.wm.traces.common.Color
+import com.android.server.wm.traces.common.ComponentNameMatcher
 import com.android.server.wm.traces.common.Matrix33
 import com.android.server.wm.traces.common.Rect
 import com.android.server.wm.traces.common.RectF
 import com.android.server.wm.traces.common.layers.BaseLayerTraceEntry
+import com.android.server.wm.traces.common.layers.HwcCompositionType
 import com.android.server.wm.traces.common.layers.Layer
 import com.android.server.wm.traces.common.layers.LayerTraceEntryBuilder
 import com.android.server.wm.traces.common.layers.LayersTrace
@@ -47,6 +50,12 @@ class ElementLifecycleExtractorTestConst {
             4,
             0)
 
+        val layer_id5_sameComponentMatcher = createTestLayerWithEmptyRegion(
+            "StatusBar",
+            1,
+            5,
+            0)
+
         val mapOfFlattenedLayers: Map<Int, Array<Layer>> = mapOf(
                 1 to arrayOf(layer_id1_t1, layer_id2_t1),
                 2 to arrayOf(layer_id1_t2, layer_id2_t2, layer_id3_t2),
@@ -65,6 +74,12 @@ class ElementLifecycleExtractorTestConst {
             3 to arrayOf(layer_id2_t2),
         )
 
+        val mapOfFlattenedLayers_SameComponentMatcher: Map<Int, Array<Layer>> = mapOf(
+            1 to arrayOf(layer_id2_t1, layer_id5_sameComponentMatcher),
+            2 to arrayOf(layer_id2_t2, layer_id5_sameComponentMatcher),
+            3 to arrayOf(layer_id2_t3, layer_id5_sameComponentMatcher),
+        )
+
         val expectedElementLifecycle_id1 = LayersElementLifecycle(
             mutableListOf(layer_id1_t1, layer_id1_t2, null)
         )
@@ -79,6 +94,45 @@ class ElementLifecycleExtractorTestConst {
 
         val expectedElementLifecycle_id4 = LayersElementLifecycle(
             mutableListOf(layer_id4_t1, layer_id4_t2, layer_id4_t3)
+        )
+
+        val expectedElementLifecycle_id5_sameComponentMatcher = LayersElementLifecycle(
+            mutableListOf(
+                layer_id5_sameComponentMatcher,
+                layer_id5_sameComponentMatcher,
+                layer_id5_sameComponentMatcher
+            )
+        )
+
+        val expectedComponentMatcherLifecycle_Navbar = LayersComponentLifecycle(
+            mutableMapOf(1 to expectedElementLifecycle_id1)
+        )
+
+        val expectedComponentMatcherLifecycle_Statusbar = LayersComponentLifecycle(
+            mutableMapOf(2 to expectedElementLifecycle_id2)
+        )
+
+        val expectedComponentMatcherLifecycle_Launcher = LayersComponentLifecycle(
+            mutableMapOf(4 to expectedElementLifecycle_id4)
+        )
+
+        val expectedComponentMatcherLifecycle_Statusbar_sameComponentMatcher =
+            LayersComponentLifecycle(
+                mutableMapOf(
+                    2 to expectedElementLifecycle_id2,
+                    5 to expectedElementLifecycle_id5_sameComponentMatcher
+                )
+            )
+
+        val expectedElementLifecycles = mapOf(
+            ComponentNameMatcher.NAV_BAR to expectedComponentMatcherLifecycle_Navbar,
+            ComponentNameMatcher.STATUS_BAR to expectedComponentMatcherLifecycle_Statusbar,
+            // ComponentNameMatcher.LAUNCHER to expectedComponentMatcherLifecycle_Launcher
+        )
+
+        val expectedElementLifecycles_SameComponentMatcher = mapOf(
+            ComponentNameMatcher.STATUS_BAR to
+                expectedComponentMatcherLifecycle_Statusbar_sameComponentMatcher
         )
 
         val expectedElementLifecycle_AllVisibilityAssertions_id2 = LayersElementLifecycle(
@@ -142,21 +196,33 @@ class ElementLifecycleExtractorTestConst {
             3 to arrayOf()
         )
 
-        val expectedElementLifecycles = mapOf(
+        val expectedElementLifecycles_deprecated = mapOf(
             1 to expectedElementLifecycle_id1,
             2 to expectedElementLifecycle_id2,
             3 to expectedElementLifecycle_id3
         )
 
-        val expectedElementLifecyclesVisibilityAssertionProducer = mapOf(
+        val expectedElementLifecyclesVisibilityAssertionProducer_deprecated = mapOf(
             1 to expectedElementLifecycle_id1,
             2 to expectedElementLifecycle_id2,
             3 to expectedElementLifecycle_id3,
             4 to expectedElementLifecycle_id4
         )
 
+        val expectedElementLifecyclesVisibilityAssertionProducer = mapOf(
+            ComponentNameMatcher.NAV_BAR to expectedComponentMatcherLifecycle_Navbar,
+            ComponentNameMatcher.STATUS_BAR to expectedComponentMatcherLifecycle_Statusbar,
+            ComponentNameMatcher.LAUNCHER to expectedComponentMatcherLifecycle_Launcher
+        )
+
+        val expectedComponentMatcherLifecycle_AllVisibilityAssertions =
+            LayersComponentLifecycle(
+                mutableMapOf(2 to expectedElementLifecycle_AllVisibilityAssertions_id2)
+            )
+
         val expectedElementLifecyclesAllVisibilityAssertions = mapOf(
-            2 to expectedElementLifecycle_AllVisibilityAssertions_id2,
+            ComponentNameMatcher.STATUS_BAR to
+                expectedComponentMatcherLifecycle_AllVisibilityAssertions,
         )
 
         private fun createTraceEntries(): Array<BaseLayerTraceEntry> {
@@ -253,7 +319,7 @@ class ElementLifecycleExtractorTestConst {
                     currFrame = 0,
                     effectiveScalingMode = 0,
                     bufferTransform = transform,
-                    hwcCompositionType = 0,
+                    hwcCompositionType = HwcCompositionType.INVALID,
                     hwcCrop = RectF.EMPTY,
                     hwcFrame = Rect.EMPTY,
                     crop = rect.toRect(),

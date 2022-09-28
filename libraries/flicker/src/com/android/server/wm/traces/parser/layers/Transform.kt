@@ -16,8 +16,8 @@
 
 package com.android.server.wm.traces.parser.layers
 
-import android.surfaceflinger.nano.Common.TransformProto
-import android.surfaceflinger.nano.Layers
+import android.surfaceflinger.Common.TransformProto
+import android.surfaceflinger.Layers
 import com.android.server.wm.traces.common.Matrix33
 import com.android.server.wm.traces.common.layers.Transform
 import com.android.server.wm.traces.common.layers.Transform.Companion.FLIP_H_VAL

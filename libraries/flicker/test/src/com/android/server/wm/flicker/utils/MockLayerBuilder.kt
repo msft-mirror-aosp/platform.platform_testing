@@ -21,6 +21,7 @@ import com.android.server.wm.traces.common.Color
 import com.android.server.wm.traces.common.Matrix33
 import com.android.server.wm.traces.common.Rect
 import com.android.server.wm.traces.common.RectF
+import com.android.server.wm.traces.common.layers.HwcCompositionType
 import com.android.server.wm.traces.common.layers.ILayerProperties
 import com.android.server.wm.traces.common.layers.Layer
 import com.android.server.wm.traces.common.layers.Transform
@@ -92,7 +93,7 @@ class MockLayerBuilder(private val name: String) {
             currFrame = 0,
             effectiveScalingMode = 0,
             bufferTransform = transform,
-            hwcCompositionType = 0,
+            hwcCompositionType = HwcCompositionType.INVALID,
             hwcCrop = RectF.EMPTY,
             hwcFrame = Rect.EMPTY,
             crop = absoluteBounds,

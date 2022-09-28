@@ -21,6 +21,7 @@ import com.android.server.wm.traces.common.Cache
 import com.android.server.wm.traces.common.Color
 import com.android.server.wm.traces.common.Rect
 import com.android.server.wm.traces.common.RectF
+import com.android.server.wm.traces.common.layers.HwcCompositionType
 import com.android.server.wm.traces.common.layers.Layer
 import com.android.server.wm.traces.common.layers.Transform
 import com.android.server.wm.traces.common.region.Region
@@ -75,7 +76,7 @@ class LayerTest {
             "", 0, 0, 0, Region.EMPTY, ActiveBuffer.EMPTY, flags,
             RectF.EMPTY, Color.EMPTY, false, -1f, -1f,
             "", RectF.EMPTY, Transform.EMPTY, RectF.EMPTY, -1,
-            -1, Transform.EMPTY, -1, RectF.EMPTY, Rect.EMPTY,
+            -1, Transform.EMPTY, HwcCompositionType.INVALID, RectF.EMPTY, Rect.EMPTY,
             -1, null, false, -1, -1,
             Transform.EMPTY, Color.EMPTY, RectF.EMPTY, Transform.EMPTY, null
         )

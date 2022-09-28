@@ -87,7 +87,7 @@ java_library {
         "android-support-annotations",
         "androidx.test.ext.junit",
         "platformprotosnano",
-        "layersprotosnano",
+        "layersprotoslite",
         "flicker-tags-proto",
     ],
 }

@@ -42,7 +42,7 @@ class LayerProperties private constructor(
     override val sourceBounds: RectF = RectF.EMPTY,
     override val effectiveScalingMode: Int = 0,
     override val bufferTransform: Transform = Transform.EMPTY,
-    override val hwcCompositionType: Int = 0,
+    override val hwcCompositionType: HwcCompositionType = HwcCompositionType.INVALID,
     override val hwcCrop: RectF = RectF.EMPTY,
     override val hwcFrame: Rect = Rect.EMPTY,
     override val backgroundBlurRadius: Int = 0,
@@ -73,7 +73,7 @@ class LayerProperties private constructor(
         result = 31 * result + sourceBounds.hashCode()
         result = 31 * result + effectiveScalingMode
         result = 31 * result + bufferTransform.hashCode()
-        result = 31 * result + hwcCompositionType
+        result = 31 * result + hwcCompositionType.hashCode()
         result = 31 * result + hwcCrop.hashCode()
         result = 31 * result + hwcFrame.hashCode()
         result = 31 * result + backgroundBlurRadius
@@ -162,7 +162,7 @@ class LayerProperties private constructor(
             sourceBounds: RectF,
             effectiveScalingMode: Int,
             bufferTransform: Transform,
-            hwcCompositionType: Int,
+            hwcCompositionType: HwcCompositionType,
             hwcCrop: RectF,
             hwcFrame: Rect,
             backgroundBlurRadius: Int,

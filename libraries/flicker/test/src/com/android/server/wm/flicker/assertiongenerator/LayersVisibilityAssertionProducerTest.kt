@@ -19,10 +19,12 @@ package com.android.server.wm.flicker.assertiongenerator
 import com.android.server.wm.flicker.assertFailure
 import com.android.server.wm.flicker.assertThrows
 import com.android.server.wm.flicker.assertiongenerator.common.Assertion
-import com.android.server.wm.flicker.assertiongenerator.layers.LayersElementLifecycle
+import com.android.server.wm.flicker.assertiongenerator.layers.LayersComponentLifecycle
 import com.android.server.wm.flicker.assertiongenerator.layers.LayersTraceLifecycle
 import com.android.server.wm.flicker.assertiongenerator.layers.LayersVisibilityAssertionProducer
+import com.android.server.wm.traces.common.ComponentNameMatcher
 import com.android.server.wm.traces.common.layers.LayersTrace
+import com.android.server.wm.traces.common.transition.Transition
 import com.google.common.truth.Truth
 import org.junit.Before
 import org.junit.Test
@@ -35,13 +37,18 @@ import org.junit.Test
 class LayersVisibilityAssertionProducerTest {
     lateinit var assertions: List<Assertion>
     private lateinit var executeLayersTrace: LayersTrace
+    private var transition: Transition? = null
+
+    lateinit var assertionsSameComponentMatcher: List<Assertion>
+    private lateinit var executeSameComponentMatcherLayersTrace: LayersTrace
+    private var sameComponentMatcherTransition: Transition? = null
 
     lateinit var assertionFail: Assertion
 
     private fun produceAssertionsFromTestTrace() {
         val elementLifecycles = listOf(LayersTraceLifecycle(
             ElementLifecycleExtractorTestConst.expectedElementLifecyclesVisibilityAssertionProducer
-                as MutableMap<Int, LayersElementLifecycle>))
+                as MutableMap<ComponentNameMatcher, LayersComponentLifecycle>))
         val layersVisibilityAssertionProducer = LayersVisibilityAssertionProducer()
         assertions = layersVisibilityAssertionProducer.produce(elementLifecycles)
     }
@@ -52,10 +59,25 @@ class LayersVisibilityAssertionProducerTest {
         )
     }
 
+    private fun produceAssertionsSameComponentMatcherFromTestTrace() {
+        val elementLifecycles = listOf(LayersTraceLifecycle(
+            ElementLifecycleExtractorTestConst.expectedElementLifecycles_SameComponentMatcher
+                as MutableMap<ComponentNameMatcher, LayersComponentLifecycle>))
+        val layersVisibilityAssertionProducer = LayersVisibilityAssertionProducer()
+        assertionsSameComponentMatcher =
+            layersVisibilityAssertionProducer.produce(elementLifecycles)
+    }
+
+    private fun createExecuteSameComponentMatcherLayersTrace() {
+        executeSameComponentMatcherLayersTrace = ElementLifecycleExtractorTestConst.createTrace_arg(
+            ElementLifecycleExtractorTestConst.mapOfFlattenedLayersAssertionProducer
+        )
+    }
+
     private fun produceAssertionFailFromTestTrace() {
         val elementLifecycles = listOf(LayersTraceLifecycle(
             ElementLifecycleExtractorTestConst.expectedElementLifecyclesAllVisibilityAssertions
-                as MutableMap<Int, LayersElementLifecycle>))
+                as MutableMap<ComponentNameMatcher, LayersComponentLifecycle>))
         val layersVisibilityAssertionProducer = LayersVisibilityAssertionProducer()
         val assertions = layersVisibilityAssertionProducer.produce(elementLifecycles)
         assertionFail = assertions[0]
@@ -63,26 +85,31 @@ class LayersVisibilityAssertionProducerTest {
 
     @Before
     fun setup() {
+
         createExecuteLayersTrace()
+        createExecuteSameComponentMatcherLayersTrace()
         produceAssertionsFromTestTrace()
+        produceAssertionsSameComponentMatcherFromTestTrace()
+
         produceAssertionFailFromTestTrace()
     }
 
-    @Test
     fun produceFromTestTrace_assertions_expected() {
+        Truth.assertThat(assertions.size)
+            .isEqualTo(AssertionProducerTestConst.expected_layer_visibility_assertions.size)
         assertions.forEachIndexed { index, assertion ->
-            Truth.assertThat(
-                AssertionProducerTestConst.expected_layer_visibility_assertions[index]
-                .isEqual(assertion)).isTrue()
-        }
-    }
-
-    @Test
-    fun produceFromTestTrace_assertionToString_expected() {
-        assertions.forEachIndexed { index, assertion ->
-            Truth.assertThat(assertion.toString("newTrace")).isEqualTo(
-            "assertThat(newTrace)" +
-            AssertionProducerTestConst.expected_layer_visibility_assertions[index].assertionString)
+            try {
+                Truth.assertThat(
+                    AssertionProducerTestConst.expected_layer_visibility_assertions[index]
+                        .isEqual(assertion)).isTrue()
+            } catch (err: AssertionError) {
+                throw RuntimeException(
+                    "$err\nExpected:\n" +
+                        "${AssertionProducerTestConst
+                            .expected_layer_visibility_assertions[index]}" +
+                        "\n\nActual:\n$assertion"
+                )
+            }
         }
     }
 
@@ -91,6 +118,35 @@ class LayersVisibilityAssertionProducerTest {
         assertions.forEachIndexed { index, assertion ->
             assertion.execute(executeLayersTrace)
         }
+        produceFromTestTrace_assertions_expected()
+    }
+
+    fun produceFromTestTrace_assertions_sameComponentMatcher_expected() {
+        Truth.assertThat(assertionsSameComponentMatcher.size)
+            .isEqualTo(AssertionProducerTestConst
+                .expected_layer_visibility_assertions_sameComponentMatcher.size)
+        assertionsSameComponentMatcher.forEachIndexed { index, assertion ->
+            try {
+                Truth.assertThat(assertion.isEqual(AssertionProducerTestConst
+                    .expected_layer_visibility_assertions_sameComponentMatcher[index])
+                ).isTrue()
+            } catch (err: AssertionError) {
+                throw RuntimeException(
+                    "$err\nExpected:\n" +
+                        "${AssertionProducerTestConst
+                            .expected_layer_visibility_assertions_sameComponentMatcher[index]}" +
+                        "\n\nActual:\n$assertion"
+                )
+            }
+        }
+    }
+
+    @Test
+    fun produceFromTestTrace_assertionSameComponent_execute() {
+        assertionsSameComponentMatcher.forEachIndexed { index, assertion ->
+            assertion.execute(executeSameComponentMatcherLayersTrace)
+        }
+        produceFromTestTrace_assertions_sameComponentMatcher_expected()
     }
 
     @Test

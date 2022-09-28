@@ -16,15 +16,14 @@
 
 package com.android.server.wm.flicker.assertiongenerator.common
 
-import com.android.server.wm.traces.common.DeviceTraceDump
+interface IComponentLifecycle {
+    val size: Int
 
-interface ILifecycleExtractor
-{
-    /**
-     * Extracts the map of lifecycles corresponding to each single element
-     * key: element id, value: element lifecycle
-     */
-    fun extract(
-        traceDump: DeviceTraceDump
-    ): ITraceLifecycle?
+    val elementIds: Set<Any> // needs to be int for sf, string for wm
+
+    operator fun get(elementId: Any): IElementLifecycle?
+
+    operator fun set(elementId: Any, elementLifecycles: IElementLifecycle)
+
+    fun getOrPut(elementId: Any, elementLifecycles: IElementLifecycle): IElementLifecycle
 }

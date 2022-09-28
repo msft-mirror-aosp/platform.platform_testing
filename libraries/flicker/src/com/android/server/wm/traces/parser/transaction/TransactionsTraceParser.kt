@@ -16,8 +16,8 @@
 
 package com.android.server.wm.traces.parser.transaction
 
-import android.surfaceflinger.proto.nano.Transactions.TransactionState
-import android.surfaceflinger.proto.nano.Transactions.TransactionTraceFile
+import android.surfaceflinger.proto.Transactions.TransactionState
+import android.surfaceflinger.proto.Transactions.TransactionTraceFile
 import android.util.Log
 import com.android.server.wm.traces.common.transactions.Transaction
 import com.android.server.wm.traces.common.transactions.TransactionsTrace
@@ -64,9 +64,9 @@ class TransactionsTraceParser {
         fun parseFromTrace(proto: TransactionTraceFile): TransactionsTrace {
             val transactionsTraceEntries = mutableListOf<TransactionsTraceEntry>()
             var traceParseTime = 0L
-            for (entry in proto.entry) {
+            for (entry in proto.entryList) {
                 val entryParseTime = measureTimeMillis {
-                    val transactions = parseTransactionsProto(entry.transactions)
+                    val transactions = parseTransactionsProto(entry.transactionsList)
                     val transactionsTraceEntry = TransactionsTraceEntry(
                         entry.elapsedRealtimeNanos,
                         entry.vsyncId,
@@ -87,7 +87,7 @@ class TransactionsTraceParser {
         }
 
         private fun parseTransactionsProto(
-            transactionStates: Array<TransactionState>
+            transactionStates: List<TransactionState>
         ): Array<Transaction> {
             val transactions = mutableListOf<Transaction>()
             for (state in transactionStates) {

@@ -16,8 +16,8 @@
 
 package com.android.server.wm.traces.parser.layers
 
-import android.surfaceflinger.nano.Layers
-import android.surfaceflinger.nano.Layerstrace
+import android.surfaceflinger.Layers
+import android.surfaceflinger.Layerstrace
 import android.util.Log
 import com.android.server.wm.traces.common.Cache
 import com.android.server.wm.traces.common.layers.BaseLayerTraceEntry
@@ -25,7 +25,7 @@ import com.android.server.wm.traces.common.layers.Layer
 import com.android.server.wm.traces.common.layers.LayerTraceEntryBuilder
 import com.android.server.wm.traces.common.layers.LayersTrace
 import com.android.server.wm.traces.parser.LOG_TAG
-import com.google.protobuf.nano.InvalidProtocolBufferNanoException
+import com.google.protobuf.InvalidProtocolBufferException
 import kotlin.math.max
 import kotlin.system.measureTimeMillis
 
@@ -94,12 +94,12 @@ class LayersTraceParser {
             try {
                 val entries: MutableList<BaseLayerTraceEntry> = ArrayList()
                 var traceParseTime = 0L
-                for (traceProto: Layerstrace.LayersTraceProto in proto.entry) {
+                for (traceProto: Layerstrace.LayersTraceProto in proto.entryList) {
                     val entryParseTime = measureTimeMillis {
-                        val layers = traceProto.layers.layers.map {
+                        val layers = traceProto.layers.layersList.map {
                             LayerTraceEntryLazy.newLayer(it)
                         }.toTypedArray()
-                        val displays = traceProto.displays.map {
+                        val displays = traceProto.displaysList.map {
                             LayerTraceEntryLazy.newDisplay(it)
                         }.toTypedArray()
                         val builder = LayerTraceEntryBuilder(
@@ -153,7 +153,7 @@ class LayersTraceParser {
                 val entry = LayerTraceEntryLazy(
                     timestamp = 0,
                     displayProtos = emptyArray(),
-                    layerProtos = proto.layers,
+                    layerProtos = proto.layersList.toTypedArray(),
                     ignoreLayersStackMatchNoDisplay = false,
                     ignoreLayersInVirtualDisplay = false,
                     vSyncId = -1L,
@@ -186,7 +186,7 @@ class LayersTraceParser {
         ): LayersTrace {
             val traceProto = try {
                 Layers.LayersProto.parseFrom(data)
-            } catch (e: InvalidProtocolBufferNanoException) {
+            } catch (e: InvalidProtocolBufferException) {
                 throw RuntimeException(e)
             }
             return parseFromLegacyDump(traceProto, clearCacheAfterParsing)

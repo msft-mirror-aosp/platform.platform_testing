@@ -80,4 +80,12 @@ object Components {
 
         return ComponentNameMatcher(closeWindowPackage, closeWindowClass)
     }
+
+    val byName: Map<String, ComponentBuilder> = mapOf(
+        "Navbar" to NAV_BAR,
+        "StatusBar" to STATUS_BAR,
+        "Launcher" to LAUNCHER,
+        "OPENING_APP" to OPENING_APP,
+        "CLOSING_APP" to CLOSING_APP
+    )
 }

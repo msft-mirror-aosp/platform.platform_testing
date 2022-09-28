@@ -31,6 +31,7 @@ import com.android.server.wm.traces.common.IComponentName
 import com.android.server.wm.traces.common.Matrix33
 import com.android.server.wm.traces.common.Rect
 import com.android.server.wm.traces.common.RectF
+import com.android.server.wm.traces.common.layers.HwcCompositionType
 import com.android.server.wm.traces.common.layers.Layer
 import com.android.server.wm.traces.common.layers.LayerTraceEntryBuilder
 import com.android.server.wm.traces.common.layers.Transform
@@ -114,7 +115,7 @@ class WindowManagerStateHelperTest {
             currFrame = 0,
             effectiveScalingMode = 0,
             bufferTransform = transform,
-            hwcCompositionType = 0,
+            hwcCompositionType = HwcCompositionType.INVALID,
             hwcCrop = RectF.EMPTY,
             hwcFrame = Rect.EMPTY,
             crop = rect.toRect(),

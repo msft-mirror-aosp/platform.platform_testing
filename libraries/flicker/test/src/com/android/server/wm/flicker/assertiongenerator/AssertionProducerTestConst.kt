@@ -70,6 +70,18 @@ class AssertionProducerTestConst {
             return assertion
         }
 
+        private fun createExpectedAssertion_sameComponentMatcher(): LayersAssertion {
+            val assertion = LayersAssertion()
+            assertion.assertionsChecker.add(
+                "isVisible(StatusBar)",
+                isOptional = false) {
+                it.isVisible(componentMatcher_id2)
+            }
+            assertion.assertionString =
+                ".isVisible(ComponentNameMatcher(\"\", \"StatusBar\"))"
+            return assertion
+        }
+
         private fun createExpectedAssertion_id4(): LayersAssertion {
             val assertion = LayersAssertion()
             assertion.assertionsChecker.add(
@@ -96,11 +108,17 @@ class AssertionProducerTestConst {
         private val expected_layer_id1_assertion = createExpectedAssertion_id1()
         private val expected_layer_id2_assertion = createExpectedAssertion_id2()
         private val expected_layer_id4_assertion = createExpectedAssertion_id4()
+        private val expected_layer_sameComponentMatcher_assertion =
+            createExpectedAssertion_sameComponentMatcher()
 
         val expected_layer_visibility_assertions = listOf(
             expected_layer_id1_assertion,
             expected_layer_id2_assertion,
             expected_layer_id4_assertion
+        )
+
+        val expected_layer_visibility_assertions_sameComponentMatcher = listOf(
+            expected_layer_id2_assertion
         )
 
         val expected_layer_visibility_assertions_id1 = listOf(
