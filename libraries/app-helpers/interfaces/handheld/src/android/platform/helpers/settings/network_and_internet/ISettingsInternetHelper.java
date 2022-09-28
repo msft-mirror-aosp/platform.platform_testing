@@ -13,26 +13,22 @@
  */
 package android.platform.helpers.settings.network_and_internet;
 
-import android.platform.helpers.settings.ISettingsHomeHelper;
 import android.support.test.uiautomator.Direction;
 
-/** Extends for Settings > Network & internet */
-public interface ISettingsNetworkAndInternetHelper extends ISettingsHomeHelper {
+/** Extends for Settings > Network & internet > Internet */
+public interface ISettingsInternetHelper extends ISettingsNetworkAndInternetHelper {
 
     /**
-     * Setup expectations: Settings Network & internet page is open
+     * Setup expectations: Settings Internet page is open
      *
-     * <p>This method flings Settings Network & internet page.
+     * <p>This method flings Settings Internet page.
      */
-    void flingNetworkAndInternet(Direction direction);
-
-    /** This method opens Settings > Network & internet > Internet page */
-    void goToInternet();
+    void flingInternet(Direction direction);
 
     /**
-     * Setup expectations: Settings Network & internet page is open
+     * Setup expectations: Settings Internet page is open
      *
-     * <p>This method validates Settings Network & internet page.
+     * <p>This method validates Settings Internet page.
      */
-    void isNetworkAndInternetPage();
+    void isInternetPage();
 }
