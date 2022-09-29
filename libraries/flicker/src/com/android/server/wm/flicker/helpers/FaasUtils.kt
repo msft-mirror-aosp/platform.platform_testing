@@ -16,4 +16,4 @@
 
 package com.android.server.wm.flicker.helpers
 
-const val IS_FAAS_ENABLED = true
+const val IS_FAAS_ENABLED = false

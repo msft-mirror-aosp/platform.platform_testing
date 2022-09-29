@@ -41,19 +41,22 @@ class DeviceTypeRule : TestRule {
         val smallScreenAnnotation = description.getAnnotation(SmallScreenOnly::class.java)
         if (smallScreenAnnotation != null && isLargeScreen) {
             return createAssumptionViolatedStatement(
-                    "Skipping test on ${Build.PRODUCT} as it doesn't have a small screen. " +
-                            "Reason why this should only run on small screens: " +
-                            "$smallScreenAnnotation.reason.")
+                "Skipping test on ${Build.PRODUCT} as it doesn't have a small screen. " +
+                    "Reason why this should only run on small screens: " +
+                    "$smallScreenAnnotation.reason."
+            )
         }
 
         if (description.getAnnotation(LargeScreenOnly::class.java) != null && !isLargeScreen) {
             return createAssumptionViolatedStatement(
-                "Skipping test on ${Build.PRODUCT} as it doesn't have a large screen.")
+                "Skipping test on ${Build.PRODUCT} as it doesn't have a large screen."
+            )
         }
 
         if (description.getAnnotation(FoldableOnly::class.java) != null && !isFoldable) {
             return createAssumptionViolatedStatement(
-                "Skipping test on ${Build.PRODUCT} as it is not a foldable.")
+                "Skipping test on ${Build.PRODUCT} as it is not a foldable."
+            )
         }
 
         return base
@@ -87,21 +90,15 @@ private fun getUiDevice(): UiDevice = UiDevice.getInstance(getInstrumentation())
 private const val LARGE_SCREEN_DP_THRESHOLD = 600
 
 /**
- * The test will be skipped on large screens.
- * Don't use this annotation instead of fixing a test on a large-screen device.
- * See [isLargeScreen].
+ * The test will be skipped on large screens. Don't use this annotation instead of fixing a test on
+ * a large-screen device. See [isLargeScreen].
  */
 @Retention(RUNTIME)
 @Target(ANNOTATION_CLASS, CLASS)
 annotation class SmallScreenOnly(val reason: String)
 
-/**
- * The test will run only on large screens.
- * See [isLargeScreen].
- */
+/** The test will run only on large screens. See [isLargeScreen]. */
 @Retention(RUNTIME) @Target(ANNOTATION_CLASS, CLASS) annotation class LargeScreenOnly
 
-/**
- * The test will run only on foldables.
- */
+/** The test will run only on foldables. */
 @Retention(RUNTIME) @Target(ANNOTATION_CLASS, CLASS) annotation class FoldableOnly
