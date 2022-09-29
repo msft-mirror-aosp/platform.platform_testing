@@ -35,7 +35,8 @@ class OrientationRule : TestRule {
         val hasPortraitAnnotation = testClass.hasAnnotation(Portrait::class.java)
         if (hasLandscapeAnnotation && hasPortraitAnnotation) {
             throw IllegalStateException(
-                "Both @Portrait and @Landscape annotations at the same time are not yet supported.")
+                "Both @Portrait and @Landscape annotations at the same time are not yet supported."
+            )
         }
 
         val orientationRule =

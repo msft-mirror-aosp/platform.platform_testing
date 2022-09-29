@@ -71,6 +71,7 @@ object RotationUtils {
 
     private val launcher: LauncherInstrumentation
         get() = LauncherInstrumentation()
+
     /**
      * Sets device orientation to [expectedOrientation], according to [Rect.orientation] definition.
      *
@@ -83,7 +84,6 @@ object RotationUtils {
         device.pressHome()
         launcher.setEnableRotation(true)
         if (launcherVisibleBounds?.orientation == expectedOrientation) {
-            // In the case of tablets, the default orientation might be landscape already.
             return
         }
         changeOrientation()
