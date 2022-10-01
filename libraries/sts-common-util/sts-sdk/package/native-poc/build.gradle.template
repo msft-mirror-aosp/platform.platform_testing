@@ -1,0 +1,31 @@
+plugins {
+    id 'com.android.library'
+}
+
+android {
+    compileSdk {{PLATFORM_SDK_VERSION}}
+    externalNativeBuild {
+        cmake {
+            path file('src/CMakeLists.txt')
+            version '3.18.1'
+        }
+    }
+    defaultConfig {
+        targetSdk {{PLATFORM_SDK_VERSION}}
+        minSdk 29
+    }
+}
+
+task copyArm32(type: Copy) {
+    dependsOn 'externalNativeBuildDebug'
+    from layout.buildDirectory.file('intermediates/cmake/debug/obj/armeabi-v7a/nativepoc')
+    rename ('nativepoc', "${project.name.replaceFirst(/-native/, '')}_sts32")
+    into layout.buildDirectory.dir('testcases')
+}
+
+task copyArm64(type: Copy) {
+    dependsOn 'externalNativeBuildDebug'
+    from layout.buildDirectory.file('intermediates/cmake/debug/obj/arm64-v8a/nativepoc')
+    rename ('nativepoc', "${project.name.replaceFirst(/-native/, '')}_sts64")
+    into layout.buildDirectory.dir('testcases')
+}
