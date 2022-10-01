@@ -128,6 +128,11 @@ class TransitionAsserter(
     )
 }
 
+data class TraceIndices(
+    val startIndex: Int,
+    val endIndex: Int
+)
+
 /**
  * Return a new trace contains only the entries that were applied during the transition's execution.
  */
@@ -138,11 +143,12 @@ private fun WindowManagerTrace.scenarioInstanceSlice(
 }
 
 /**
- * Return a new trace contains only the entries that were applied during the transition's execution.
+ * Return the start and end indices where the layersTrace needs to be trimmed
+ * to match only the entries that were applied during the transition's execution.
  */
-private fun LayersTrace.scenarioInstanceSlice(
+fun LayersTrace.scenarioInstanceSliceIndices(
     scenarioInstance: ScenarioInstance
-): LayersTrace? {
+): TraceIndices? {
     var startIndex = -1
     var prevVsyncId = -1L
     for (i in entries.indices) {
@@ -170,7 +176,7 @@ private fun LayersTrace.scenarioInstanceSlice(
         val currentVsyncId = entries[i].vSyncId
 
         if (scenarioInstance.finishTransaction.appliedVSyncId
-                in (prevVsyncId + 1)..currentVsyncId) {
+            in (prevVsyncId + 1)..currentVsyncId) {
             endIndex = i
         }
 
@@ -186,5 +192,16 @@ private fun LayersTrace.scenarioInstanceSlice(
         Log.w(FLICKER_TAG, "Start and end of $scenarioInstance happen in same entry.")
     }
 
-    return LayersTrace(this.entries.slice(startIndex..endIndex).toTypedArray())
+    return TraceIndices(startIndex, endIndex)
+}
+
+/**
+ * Return a new trace contains only the entries that were applied during the transition's execution.
+ */
+private fun LayersTrace.scenarioInstanceSlice(
+    scenarioInstance: ScenarioInstance
+): LayersTrace? {
+    return scenarioInstanceSliceIndices(scenarioInstance)?.let {
+        LayersTrace(entries.slice(it.startIndex..it.endIndex).toTypedArray())
+    }
 }

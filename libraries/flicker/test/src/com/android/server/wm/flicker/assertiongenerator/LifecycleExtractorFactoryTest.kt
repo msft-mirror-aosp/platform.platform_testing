@@ -1,6 +1,7 @@
 package com.android.server.wm.flicker.assertiongenerator
 
 import com.android.server.wm.flicker.assertiongenerator.common.LifecycleExtractorFactory
+import com.android.server.wm.flicker.assertiongenerator.common.TraceContent
 import com.android.server.wm.flicker.assertiongenerator.layers.LayersComponentLifecycle
 import com.android.server.wm.flicker.assertiongenerator.layers.LayersLifecycleExtractor
 import com.android.server.wm.flicker.assertiongenerator.layers.LayersTraceLifecycle
@@ -23,15 +24,21 @@ class LifecycleExtractorFactoryTest {
         val layersTraceDump = DeviceTraceDump(null, layersTrace)
         val nullTraceDump = DeviceTraceDump(null, null)
         val traceDumps = arrayOf(layersTraceDump, nullTraceDump)
-        val elementLifecycles = LifecycleExtractorFactory.extract(traceDumps)
-        val expectedElementLifecycles = listOf(LayersTraceLifecycle(
-            ElementLifecycleExtractorTestConst.expectedElementLifecycles
-                as MutableMap<ComponentNameMatcher, LayersComponentLifecycle>))
+        val elementLifecycles = LifecycleExtractorFactory.extract(
+            traceDumps,
+            Array(traceDumps.size) { DeviceTraceConfiguration(null, null) }
+        )
+        val expectedTraceLifecycle =
+            LayersTraceLifecycle(
+                ElementLifecycleExtractorTestConst.expectedElementLifecycles
+                    as MutableMap<ComponentNameMatcher, LayersComponentLifecycle>)
+        val expectedTraceContent = TraceContent.byTraceType(expectedTraceLifecycle, null)!!
+        val expectedTraceLifecycles = listOf(expectedTraceContent)
         try {
-            Truth.assertThat(elementLifecycles == expectedElementLifecycles).isTrue()
+            Truth.assertThat(elementLifecycles == expectedTraceLifecycles).isTrue()
         } catch (err: AssertionError) {
             throw RuntimeException(
-                "Expected:\n$expectedElementLifecycles\nActual:\n$elementLifecycles"
+                "Expected:\n$expectedTraceLifecycles\nActual:\n$elementLifecycles"
             )
         }
     }
@@ -44,15 +51,21 @@ class LifecycleExtractorFactoryTest {
         val layersTraceDump = DeviceTraceDump(null, layersTrace)
         val nullTraceDump = DeviceTraceDump(null, null)
         val traceDumps = arrayOf(layersTraceDump, nullTraceDump)
-        val elementLifecycles = LifecycleExtractorFactory.extract(traceDumps)
-        val expectedElementLifecycles = listOf(LayersTraceLifecycle(
+        val elementLifecycles = LifecycleExtractorFactory.extract(
+            traceDumps,
+            Array(traceDumps.size) { DeviceTraceConfiguration(null, null) }
+        )
+        val expectedTraceLifecycle =
+            LayersTraceLifecycle(
             ElementLifecycleExtractorTestConst.expectedElementLifecycles_SameComponentMatcher
-                as MutableMap<ComponentNameMatcher, LayersComponentLifecycle>))
+                as MutableMap<ComponentNameMatcher, LayersComponentLifecycle>)
+        val expectedTraceContent = TraceContent.byTraceType(expectedTraceLifecycle, null)!!
+        val expectedTraceLifecycles = listOf(expectedTraceContent)
         try {
-            Truth.assertThat(elementLifecycles == expectedElementLifecycles).isTrue()
+            Truth.assertThat(elementLifecycles == expectedTraceLifecycles).isTrue()
         } catch (err: AssertionError) {
             throw RuntimeException(
-                "Expected:\n$expectedElementLifecycles\nActual:\n$elementLifecycles"
+                "Expected:\n$expectedTraceLifecycles\nActual:\n$elementLifecycles"
             )
         }
     }

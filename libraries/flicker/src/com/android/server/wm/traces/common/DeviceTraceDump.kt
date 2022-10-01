@@ -17,6 +17,8 @@
 package com.android.server.wm.traces.common
 
 import com.android.server.wm.traces.common.layers.LayersTrace
+import com.android.server.wm.traces.common.transactions.TransactionsTrace
+import com.android.server.wm.traces.common.transition.TransitionsTrace
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 import kotlin.js.JsName
 
@@ -34,5 +36,26 @@ class DeviceTraceDump(
      * Parsed [LayersTrace]
      */
     @JsName("layersTrace")
-    val layersTrace: LayersTrace?
-)
+    val layersTrace: LayersTrace?,
+    /**
+     * Parsed [TransactionsTrace]
+     */
+    @JsName("transactionsTrace")
+    val transactionsTrace: TransactionsTrace? = null,
+    /**
+     * Parsed [TransitionsTrace]
+     */
+    @JsName("transitionsTrace")
+    val transitionsTrace: TransitionsTrace? = null
+) {
+    /**
+     * A deviceTraceDump is considered valid if at least one of the layers/wm traces is non-null
+     */
+    val isValid: Boolean
+    get() {
+        if (wmTrace == null && layersTrace == null) {
+            return false
+        }
+        return true
+    }
+}

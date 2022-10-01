@@ -111,4 +111,17 @@ enum class Scenario(
 
         return TagTrace(tagStates.sortedBy { it.timestamp }.toTypedArray())
     }
+
+    companion object {
+        val scenariosByDescription: Map<String, Scenario> = mapOf(
+            "Common" to COMMON,
+            "AppLaunch" to APP_LAUNCH,
+            "AppClose" to APP_CLOSE,
+            "Rotation" to ROTATION,
+            "ImeAppear" to IME_APPEAR,
+            "ImeDisappear" to IME_DISAPPEAR,
+            "PipEnter" to PIP_ENTER,
+            "PipExit" to PIP_EXIT
+        )
+    }
 }

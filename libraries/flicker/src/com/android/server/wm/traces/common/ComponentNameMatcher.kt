@@ -21,8 +21,12 @@ import com.android.server.wm.traces.common.windowmanager.windows.Activity
 import com.android.server.wm.traces.common.windowmanager.windows.WindowState
 import kotlin.js.JsName
 
+/**
+ * ComponentMatcher based on name
+ * It is open so that it can be extended by [ComponentTypeMatcher]
+ */
 open class ComponentNameMatcher(
-    var component: ComponentName // var to be changed by late-init ComponentTypeMatcher
+    open var component: ComponentName
 ) : IComponentNameMatcher {
 
     override val packageName: String get() = component.packageName

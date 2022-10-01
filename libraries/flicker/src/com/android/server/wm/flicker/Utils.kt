@@ -19,6 +19,7 @@ package com.android.server.wm.flicker
 import com.android.compatibility.common.util.SystemUtil
 import com.android.server.wm.flicker.FlickerRunResult.Companion.RunStatus
 import com.android.server.wm.flicker.assertiongenerator.layers.LayersElementLifecycle
+import com.android.server.wm.flicker.service.assertors.ComponentTypeMatcher
 import com.android.server.wm.traces.common.ComponentNameMatcher
 import java.nio.file.Path
 
@@ -79,7 +80,7 @@ object Utils {
             str.contains("Letterbox") -> ComponentNameMatcher.LETTERBOX
             str.contains("Wallpaper BBQ wrapper") -> ComponentNameMatcher.WALLPAPER_BBQ_WRAPPER
             str.contains("PipContentOverlay") -> ComponentNameMatcher.PIP_CONTENT_OVERLAY
-            str.contains("com.google.android.apps.nexuslauncher.NexusLauncherActivity") ->
+            str.contains("com.google.android.apps.nexuslauncher") ->
                 ComponentNameMatcher.LAUNCHER
             str.contains("StageCoordinatorSplitDivider") -> ComponentNameMatcher.SPLIT_DIVIDER
             else -> null
@@ -105,8 +106,18 @@ object Utils {
     }
 
     fun componentNameMatcherToString(componentNameMatcher: ComponentNameMatcher): String {
+        if (componentNameMatcher is ComponentTypeMatcher) {
+            return "Components.${componentNameMatcher.componentBuilder.name}"
+        }
         return "ComponentNameMatcher(\"${componentNameMatcher.packageName}\", " +
             "\"${componentNameMatcher.className}\")"
+    }
+
+    fun componentNameMatcherToStringSimplified(componentNameMatcher: ComponentNameMatcher): String {
+        if (componentNameMatcher is ComponentTypeMatcher) {
+            return "${componentNameMatcher.componentBuilder.name}"
+        }
+        return "${componentNameMatcher.className}"
     }
 
     fun componentNameMatcherAsStringFromName(str: String): String? {

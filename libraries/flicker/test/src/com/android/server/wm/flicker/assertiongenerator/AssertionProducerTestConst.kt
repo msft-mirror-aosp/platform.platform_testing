@@ -17,6 +17,9 @@
 package com.android.server.wm.flicker.assertiongenerator
 
 import com.android.server.wm.flicker.assertiongenerator.layers.LayersAssertion
+import com.android.server.wm.flicker.assertiongenerator.layers.LayersTraceConfiguration
+import com.android.server.wm.flicker.service.assertors.ComponentTypeMatcher
+import com.android.server.wm.flicker.service.assertors.Components
 import com.android.server.wm.traces.common.ComponentNameMatcher
 
 class AssertionProducerTestConst {
@@ -27,6 +30,7 @@ class AssertionProducerTestConst {
             "com.google.android.apps.nexuslauncher",
             "com.google.android.apps.nexuslauncher.NexusLauncherActivity"
         )
+        var componentMatcher_openApp = ComponentTypeMatcher("openPackage/openApp")
 
         private fun createExpectedAssertion_id1(): LayersAssertion {
             val assertion = LayersAssertion()
@@ -85,14 +89,12 @@ class AssertionProducerTestConst {
         private fun createExpectedAssertion_id4(): LayersAssertion {
             val assertion = LayersAssertion()
             assertion.assertionsChecker.add(
-                "isInvisible(com.google.android.apps.nexuslauncher/" +
-                    "com.google.android.apps.nexuslauncher.NexusLauncherActivity#1039)",
+                "isInvisible(com.google.android.apps.nexuslauncher.NexusLauncherActivity)",
                 isOptional = false) {
                 it.isVisible(componentMatcher_id4)
             }
             assertion.assertionsChecker.add(
-                "isVisible(com.google.android.apps.nexuslauncher/" +
-                    "com.google.android.apps.nexuslauncher.NexusLauncherActivity#1039)",
+                "isVisible(com.google.android.apps.nexuslauncher.NexusLauncherActivity)",
                 isOptional = false) {
                 it.isInvisible(componentMatcher_id4)
             }
@@ -105,11 +107,37 @@ class AssertionProducerTestConst {
             return assertion
         }
 
+        private fun createExpectedAssertion_OpenApp(): LayersAssertion {
+            componentMatcher_openApp.componentBuilder = Components.OPENING_APP
+            val assertion = LayersAssertion()
+            assertion.assertionsChecker.add(
+                "notContains(OPENING_APP)",
+                isOptional = false) {
+                it.isVisible(componentMatcher_id4)
+            }
+            assertion.assertionsChecker.add(
+                "isInvisible(OPENING_APP)",
+                isOptional = false) {
+                it.isInvisible(componentMatcher_id4)
+            }
+            assertion.assertionsChecker.add(
+                "isVisible(OPENING_APP)",
+                isOptional = false) {
+                it.isInvisible(componentMatcher_id4)
+            }
+            assertion.assertionString =
+                ".notContains(Components.OPENING_APP)" +
+                    ".then().isInvisible(Components.OPENING_APP)" +
+                    ".then().isVisible(Components.OPENING_APP)"
+            return assertion
+        }
+
         private val expected_layer_id1_assertion = createExpectedAssertion_id1()
         private val expected_layer_id2_assertion = createExpectedAssertion_id2()
         private val expected_layer_id4_assertion = createExpectedAssertion_id4()
         private val expected_layer_sameComponentMatcher_assertion =
             createExpectedAssertion_sameComponentMatcher()
+        private val expected_layer_openApp_assertion = createExpectedAssertion_OpenApp()
 
         val expected_layer_visibility_assertions = listOf(
             expected_layer_id1_assertion,
@@ -119,6 +147,11 @@ class AssertionProducerTestConst {
 
         val expected_layer_visibility_assertions_sameComponentMatcher = listOf(
             expected_layer_id2_assertion
+        )
+
+        val expected_layer_visibility_assertions_openApp = listOf(expected_layer_openApp_assertion)
+        val openAppConfig = LayersTraceConfiguration(
+            mapOf("openPackage/openApp" to Components.OPENING_APP)
         )
 
         val expected_layer_visibility_assertions_id1 = listOf(

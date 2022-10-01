@@ -25,7 +25,6 @@ android_test {
         "automotive-home-helper",
         "automotive-utility-helper",
         "app-helpers-auto-interfaces",
-        "ub-uiautomator",
         "hamcrest-library",
         "platform-test-options",
     ],

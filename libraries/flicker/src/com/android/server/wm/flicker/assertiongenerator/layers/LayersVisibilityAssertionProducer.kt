@@ -2,9 +2,11 @@ package com.android.server.wm.flicker.assertiongenerator.layers
 
 import com.android.server.wm.flicker.Utils
 import com.android.server.wm.flicker.assertiongenerator.common.Assertion
-import com.android.server.wm.flicker.assertiongenerator.common.ITraceLifecycle
+import com.android.server.wm.flicker.assertiongenerator.common.TraceContent
 import com.android.server.wm.flicker.service.assertors.ComponentTypeMatcher
+import com.android.server.wm.flicker.service.assertors.ConfigException
 import com.android.server.wm.flicker.traces.layers.LayerTraceEntrySubject
+import com.android.server.wm.traces.common.ComponentNameMatcher
 
 class LayersVisibilityAssertionProducer(
 ) : LayersAssertionProducer {
@@ -24,23 +26,28 @@ class LayersVisibilityAssertionProducer(
      * but we only get the first trace of the type we are interested in (layers),
      * because all traces are supposed to depict the exact same scenario
      */
-    override fun produce(lifecycles: List<ITraceLifecycle>): List<Assertion> {
-        val traceLifecycle = lifecycles.filterIsInstance<LayersTraceLifecycle>()[0]
+    override fun produce(traceContents: List<TraceContent>): List<Assertion> {
+        val traceContent = traceContents.filterIsInstance<LayersTraceContent>()[0]
+        val traceLifecycle = traceContent.traceLifecycle
+        val traceConfiguration = traceContent.traceConfiguration
         val assertions = traceLifecycle.elementIds.map { elementComponentMatcher ->
             assertion = LayersAssertion()
-            val componentLifecycle = traceLifecycle[elementComponentMatcher]
+            val componentLifecycle = traceLifecycle[elementComponentMatcher]!!
             previousIsVisible = null
             initializedAssertion = false
-            val name = componentLifecycle!!.getName()
-            val traceLength = componentLifecycle.traceLength
-            for (timeIndex in 0 until traceLength) {
-                produceAssertionForComponentMatcherAtTimeIndex(
-                    timeIndex,
-                    componentLifecycle,
-                    name
-                )
-            }
-            if (initializedAssertion) {
+            val assertionComponentMatcher = getAssertionComponentMatcher(
+                elementComponentMatcher,
+                traceConfiguration
+            )
+            if (assertionComponentMatcher != null) {
+                val traceLength = componentLifecycle.traceLength
+                for (timeIndex in 0 until traceLength) {
+                    produceAssertionForComponentMatcherAtTimeIndex(
+                        timeIndex,
+                        componentLifecycle,
+                        assertionComponentMatcher
+                    )
+                }
                 assertion
             } else {
                 null
@@ -49,22 +56,67 @@ class LayersVisibilityAssertionProducer(
         return assertions.filterNotNull()
     }
 
-    private fun addAssertionFor(visibility: Boolean?, name: String) {
-        Utils.componentNameMatcherFromName(name) ?: return
-        val componentMatcher = ComponentTypeMatcher(name)
+    /**
+     * Extracts the actual component matcher from the given elementComponentMatcher if possible.
+     * The componentMatcher is going to differ from the elementComponentMatcher
+     * if it doesn't have a constant hardcoded name and corresponds to a type found in config
+     * (e.g. OPENING_APP, CLOSING_APP)
+     *
+     * There are two cases when an element is not assertable (and null is returned):
+     * 1. The elementComponentMatcher does not correspond to a hardcoded one
+     *    and traceConfiguration is missing.
+     * 2. The elementComponentMatcher corresponds to a ¨junk¨ element
+     * (neither hardcoded, nor of special type in the configuration).
+     *
+     */
+    private fun getAssertionComponentMatcher(
+        elementComponentMatcher: ComponentNameMatcher,
+        traceConfiguration: LayersTraceConfiguration?
+    ): ComponentNameMatcher? {
+        val componentMatcher: ComponentNameMatcher?
         try {
-            componentMatcher.earlyInitialize()
-        } catch (err: RuntimeException) {
-            assertion.needsInitialization = true
+            componentMatcher = ComponentTypeMatcher.componentMatcherFromName(
+                elementComponentMatcher.toString(),
+                traceConfiguration
+            )
+        } catch (err: ConfigException) {
+            // TODO: when integrating with FaaS,
+            // we can pass the logger here and log which traces miss a configuration
+            return null
         }
-        assertion.componentMatchers.add(componentMatcher)
+        return componentMatcher
+    }
+
+    private fun addToAssertionString(
+        assertionStrToAdd: String,
+        componentMatcher: ComponentNameMatcher
+    ) {
+        if (initializedAssertion) {
+            assertion.assertionString += ".then()"
+        }
+        val componentMatcherStr = Utils.componentNameMatcherToString(componentMatcher)
+        assertion.assertionString += ".$assertionStrToAdd($componentMatcherStr)"
+    }
+
+    /**
+     * Add assertion for pre-computed visibility
+     */
+    private fun addAssertionFor(
+        visibility: Boolean?,
+        componentMatcher: ComponentNameMatcher,
+    ) {
+        if (componentMatcher is ComponentTypeMatcher) {
+            assertion.lateinitComponentMatchers.add(componentMatcher)
+        }
         val assertionPair = visibilityAssertions[visibility]
         val assertionStrToAdd = assertionPair!!.assertionStrToAdd
         val assertionFunction = assertionPair.assertionFunction
-        assertion.assertionsChecker.add("$assertionStrToAdd($name)", isOptional = false) {
-            assertionFunction(it, componentMatcher)
-        }
-        assertion.assertionStringsToAdd.add(assertionStrToAdd)
+        val assertionName = Utils.componentNameMatcherToStringSimplified(componentMatcher)
+        assertion.assertionsChecker.add(
+            "$assertionStrToAdd($assertionName)",
+            isOptional = false
+        ) { assertionFunction(it, componentMatcher) }
+        addToAssertionString(assertionStrToAdd, componentMatcher)
     }
 
     private fun setPrevious(visibility: Boolean?) {
@@ -89,19 +141,21 @@ class LayersVisibilityAssertionProducer(
         return visibility
     }
 
+    /**
+     * Produce assertion for a given assertionComponentMatcher at a given timeIndex
+     */
     private fun produceAssertionForComponentMatcherAtTimeIndex(
         timeIndex: Int,
         componentLifecycle: LayersComponentLifecycle,
-        name: String
+        componentMatcher: ComponentNameMatcher,
     ) {
         val previousIsVisible = previousIsVisible
-        val componentMatcher = Utils.componentNameMatcherFromName(name) ?: return
         val visibility: Boolean? = visibilityAtTimeIndex(
             timeIndex,
             componentLifecycle
         )
         if (!initializedAssertion || previousIsVisible != visibility) {
-            addAssertionFor(visibility, name)
+            addAssertionFor(visibility, componentMatcher)
         }
         setPrevious(visibility)
     }

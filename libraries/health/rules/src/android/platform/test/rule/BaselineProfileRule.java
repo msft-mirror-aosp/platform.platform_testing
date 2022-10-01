@@ -15,17 +15,11 @@
  */
 package android.platform.test.rule;
 
-import android.device.collectors.util.SendToInstrumentation;
 import android.util.Log;
-import androidx.test.platform.app.InstrumentationRegistry;
-
-import com.google.common.base.Strings;
 
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
-import java.io.File;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 
 import kotlin.Unit;

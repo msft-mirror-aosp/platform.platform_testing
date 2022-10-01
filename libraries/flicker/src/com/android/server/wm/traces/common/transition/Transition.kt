@@ -167,5 +167,13 @@ class Transition(
                 )
             }
         }
+
+        @JsName("emptyTransition")
+        fun emptyTransition(stateId: Int = 0): Transition {
+            val transitionBuilder = Builder(stateId)
+            transitionBuilder.startTransaction = Transaction.emptyTransaction()
+            transitionBuilder.finishTransaction = Transaction.emptyTransaction()
+            return transitionBuilder.build()
+        }
     }
 }

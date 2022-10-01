@@ -30,6 +30,17 @@ data class Transaction(
     @JsName("id")
     val id: Long,
 ) {
+    constructor(
+        pid: Int,
+        uid: Int,
+        requestedVSyncId: Long,
+        appliedInEntry: TransactionsTraceEntry,
+        postTime: Long,
+        id: Long
+    ) : this(pid, uid, requestedVSyncId, postTime, id) {
+        this.appliedInEntry = appliedInEntry
+    }
+
     lateinit var appliedInEntry: TransactionsTraceEntry
         internal set
 
@@ -37,7 +48,14 @@ data class Transaction(
 
     override fun toString(): String {
         return "Transaction#${hashCode().toString(16)}" +
-                "(pid=$pid, uid=$uid, requestedVSyncId=$requestedVSyncId, postTime=$postTime, " +
-                "id=$id)"
+            "(pid=$pid, uid=$uid, requestedVSyncId=$requestedVSyncId, postTime=$postTime, " +
+            "id=$id)"
+    }
+
+    companion object {
+        @JsName("emptyTransaction")
+        fun emptyTransaction(): Transaction {
+            return Transaction(0, 0, 0, 0, 0)
+        }
     }
 }

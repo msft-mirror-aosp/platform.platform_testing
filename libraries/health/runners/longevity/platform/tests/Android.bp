@@ -58,7 +58,6 @@ android_test {
         "mockito-target",
         "platform-test-composers",
         "truth-prebuilt",
-        "ub-uiautomator",
     ],
     srcs: ["src/**/*.java"],
     test_suites: ["device-tests"],
