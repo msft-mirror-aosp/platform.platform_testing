@@ -385,6 +385,9 @@ public class AutoSettingsConfigUtility implements IAutoConfigUtility {
         appsAndNotificationsSettingsConfiguration.addResource(
                 AutoConfigConstants.DONT_ALLOW_ANYWAY_BUTTON,
                 new AutoConfigResource(AutoConfigConstants.TEXT, "Don’t allow anyway"));
+        appsAndNotificationsSettingsConfiguration.addResource(
+                AutoConfigConstants.ALLOWED_TEXT,
+                new AutoConfigResource(AutoConfigConstants.TEXT, "Allowed"));
         mSettingsConfigMap.put(
                 AutoConfigConstants.APPS_SETTINGS, appsAndNotificationsSettingsConfiguration);
     }
