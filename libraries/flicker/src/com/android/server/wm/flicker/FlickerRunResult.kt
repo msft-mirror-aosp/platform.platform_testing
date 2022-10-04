@@ -40,15 +40,10 @@ import com.android.server.wm.traces.parser.transaction.TransactionsTraceParser
 import com.android.server.wm.traces.parser.transition.TransitionsTraceParser
 import com.android.server.wm.traces.parser.windowmanager.WindowManagerTraceParser
 import java.io.File
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 
 val CHAR_POOL: List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9')
 
-/**
- * Defines the result of a flicker run
- */
+/** Defines the result of a flicker run */
 class FlickerRunResult(
     testName: String,
     private val traceConfig: TraceConfigs = DEFAULT_TRACE_CONFIG
@@ -75,27 +70,23 @@ class FlickerRunResult(
     /**
      * The object responsible for managing the trace file associated with this result.
      *
-     * By default the file manager is the RunResult itself but in the case the RunResult is
-     * derived or extracted from another RunResult then that other RunResult should be the trace
-     * file manager.
+     * By default the file manager is the RunResult itself but in the case the RunResult is derived
+     * or extracted from another RunResult then that other RunResult should be the trace file
+     * manager.
      */
-    private val artifacts: RunResultArtifacts = RunResultArtifacts(getDefaultFlickerOutputDir()
-            .resolve("$testName.zip"))
-    /**
-     * Truth subject that corresponds to a [WindowManagerTrace]
-     */
-    internal var wmTraceSubject: WindowManagerTraceSubject?
-        by clearableLazy { buildWmTraceSubject() }
+    private val artifacts: RunResultArtifacts =
+        RunResultArtifacts(getDefaultFlickerOutputDir().resolve("$testName.zip"))
+    /** Truth subject that corresponds to a [WindowManagerTrace] */
+    internal var wmTraceSubject: WindowManagerTraceSubject? by clearableLazy {
+        buildWmTraceSubject()
+    }
         private set
-    /**
-     * Truth subject that corresponds to a [LayersTrace]
-     */
-    internal var layersTraceSubject: LayersTraceSubject?
-        by clearableLazy { buildLayersTraceSubject() }
+    /** Truth subject that corresponds to a [LayersTrace] */
+    internal var layersTraceSubject: LayersTraceSubject? by clearableLazy {
+        buildLayersTraceSubject()
+    }
         private set
-    /**
-     * Truth subject that corresponds to a list of [FocusEvent]
-     */
+    /** Truth subject that corresponds to a list of [FocusEvent] */
     @VisibleForTesting
     var eventLogSubject: EventLogSubject? by clearableLazy { buildEventLog() }
         private set
@@ -119,14 +110,16 @@ class FlickerRunResult(
             return this.artifacts.status
         }
 
-    val isSuccessfulRun: Boolean get() = !isFailedRun
-    val isFailedRun: Boolean get() {
-        require(status != RunStatus.UNDEFINED) {
-            "RunStatus cannot be UNDEFINED for $traceName"
+    val isSuccessfulRun: Boolean
+        get() = !isFailedRun
+    val isFailedRun: Boolean
+        get() {
+            require(status != RunStatus.UNDEFINED) {
+                "RunStatus cannot be UNDEFINED for $traceName"
+            }
+            // Other types of failures can only happen if the run has succeeded
+            return status == RunStatus.RUN_FAILED
         }
-        // Other types of failures can only happen if the run has succeeded
-        return status == RunStatus.RUN_FAILED
-    }
 
     var transitionExecutionError: ExecutionError? = null
         private set
@@ -186,8 +179,7 @@ class FlickerRunResult(
         val layersDumpFileName: String,
     )
 
-    @VisibleForTesting
-    var eventLog: List<FocusEvent>? = null
+    @VisibleForTesting var eventLog: List<FocusEvent>? = null
 
     fun setStatus(status: RunStatus) {
         this.artifacts.status = status
@@ -217,23 +209,19 @@ class FlickerRunResult(
         this.artifacts.addFile(traceFile)
     }
 
-    fun addTaggedState(
-        tag: String,
-        wmDumpFile: File,
-        layersDumpFile: File
-    ) {
+    fun addTaggedState(tag: String, wmDumpFile: File, layersDumpFile: File) {
         if (taggedStateBuilders[tag] == null) {
             taggedStateBuilders[tag] = mutableListOf()
         }
         // Append random string to support multiple dumps with the same tag
-        val randomString = (1..10)
+        val randomString =
+            (1..10)
                 .map { i -> kotlin.random.Random.nextInt(0, CHAR_POOL.size) }
                 .map(CHAR_POOL::get)
                 .joinToString("")
         val wmDumpArchiveName = wmDumpFile.name + randomString
         val layersDumpArchiveName = layersDumpFile.name + randomString
-        taggedStateBuilders[tag]!!
-                .add(StateDumpFileNames(wmDumpArchiveName, layersDumpArchiveName))
+        taggedStateBuilders[tag]!!.add(StateDumpFileNames(wmDumpArchiveName, layersDumpArchiveName))
         this.artifacts.addFile(wmDumpFile, wmDumpArchiveName)
         this.artifacts.addFile(layersDumpFile, layersDumpArchiveName)
     }
@@ -248,13 +236,13 @@ class FlickerRunResult(
     internal fun buildWmTrace(): WindowManagerTrace? {
         val wmTraceFileName = this.wmTraceFileName ?: return null
         val traceData = this.artifacts.getFileBytes(wmTraceFileName)
-        val fullTrace = WindowManagerTraceParser
-            .parseFromTrace(traceData, clearCacheAfterParsing = false)
+        val fullTrace =
+            WindowManagerTraceParser.parseFromTrace(traceData, clearCacheAfterParsing = false)
         require(!traceConfig.wmTrace.required || fullTrace.entries.isNotEmpty()) {
             "Full WM trace is empty..."
         }
-        val trace = fullTrace
-            .slice(
+        val trace =
+            fullTrace.slice(
                 transitionStartTime.elapsedRealtimeNanos,
                 transitionEndTime.elapsedRealtimeNanos,
                 addInitialEntry = true
@@ -262,16 +250,14 @@ class FlickerRunResult(
         val minimumEntries = minimumTraceEntriesForConfig(traceConfig.wmTrace)
         require(trace.entries.size >= minimumEntries) {
             "WM trace contained ${trace.entries.size} entries, " +
-                    "expected at least $minimumEntries... :: " +
-                    "transition starts at ${transitionStartTime.elapsedRealtimeNanos} and " +
-                    "ends at ${transitionEndTime.elapsedRealtimeNanos}."
+                "expected at least $minimumEntries... :: " +
+                "transition starts at ${transitionStartTime.elapsedRealtimeNanos} and " +
+                "ends at ${transitionEndTime.elapsedRealtimeNanos}."
         }
         return trace
     }
 
-    /**
-     * @return a layers trace for the part of the trace we want to run the assertions on.
-     */
+    /** @return a layers trace for the part of the trace we want to run the assertions on. */
     internal fun buildLayersTrace(): LayersTrace? {
         val wmTraceFileName = this.layersTraceFileName ?: return null
         val traceData = this.artifacts.getFileBytes(wmTraceFileName)
@@ -279,7 +265,8 @@ class FlickerRunResult(
         require(!traceConfig.layersTrace.required || fullTrace.entries.isNotEmpty()) {
             "Full layers trace is empty..."
         }
-        val trace = fullTrace.slice(
+        val trace =
+            fullTrace.slice(
                 transitionStartTime.systemTime,
                 transitionEndTime.systemTime,
                 addInitialEntry = true
@@ -287,34 +274,35 @@ class FlickerRunResult(
         val minimumEntries = minimumTraceEntriesForConfig(traceConfig.layersTrace)
         require(trace.entries.size >= minimumEntries) {
             "Layers trace contained ${trace.entries.size} entries, " +
-                    "expected at least $minimumEntries... :: " +
-                    "transition starts at ${transitionStartTime.systemTime} and " +
-                    "ends at ${transitionEndTime.systemTime}."
+                "expected at least $minimumEntries... :: " +
+                "transition starts at ${transitionStartTime.systemTime} and " +
+                "ends at ${transitionEndTime.systemTime}."
         }
         return trace
     }
 
-    /**
-     * @return a transactions trace for the part of the trace we want to run the assertions on.
-     */
+    /** @return a transactions trace for the part of the trace we want to run the assertions on. */
     private fun buildTransactionsTrace(): TransactionsTrace? {
         val transactionsTrace = this.transactionsTraceFileName ?: return null
         val traceData = this.artifacts.getFileBytes(transactionsTrace)
-        val trace = TransactionsTraceParser.parseFromTrace(traceData)
-            .slice(transitionStartTime.systemTime, transitionEndTime.systemTime)
+        val trace =
+            TransactionsTraceParser.parseFromTrace(traceData)
+                .slice(transitionStartTime.systemTime, transitionEndTime.systemTime)
         require(trace.entries.isNotEmpty()) { "Transactions trace was empty..." }
         return trace
     }
 
-    /**
-     * @return a transitions trace for the part of the trace we want to run the assertions on.
-     */
+    /** @return a transitions trace for the part of the trace we want to run the assertions on. */
     internal fun buildTransitionsTrace(): TransitionsTrace? {
         val transactionsTrace = buildTransactionsTrace()
         val transitionsTrace = this.transitionsTraceFileName ?: return null
         val traceData = this.artifacts.getFileBytes(transitionsTrace)
-        val trace = TransitionsTraceParser.parseFromTrace(traceData, transactionsTrace!!)
-            .slice(transitionStartTime.elapsedRealtimeNanos, transitionEndTime.elapsedRealtimeNanos)
+        val trace =
+            TransitionsTraceParser.parseFromTrace(traceData, transactionsTrace!!)
+                .slice(
+                    transitionStartTime.elapsedRealtimeNanos,
+                    transitionEndTime.elapsedRealtimeNanos
+                )
         require(trace.entries.isNotEmpty()) { "Transitions trace was empty..." }
         return trace
     }
@@ -327,11 +315,12 @@ class FlickerRunResult(
             for (state in states) {
                 val wmDumpData = this.artifacts.getFileBytes(state.wmDumpFileName)
                 val layersDumpData = this.artifacts.getFileBytes(state.layersDumpFileName)
-                val deviceState = DeviceDumpParser.fromDump(
-                    wmDumpData,
-                    layersDumpData,
-                    clearCacheAfterParsing = false
-                )
+                val deviceState =
+                    DeviceDumpParser.fromDump(
+                        wmDumpData,
+                        layersDumpData,
+                        clearCacheAfterParsing = false
+                    )
 
                 val wmStateSubject =
                     WindowManagerTraceSubject.assertThat(deviceState.wmState.asTrace()).first()
@@ -357,9 +346,7 @@ class FlickerRunResult(
         return StateDump(buildWmTraceSubject()?.last(), buildLayersTraceSubject()?.last())
     }
 
-    /**
-     * @return a transitions trace for the part of the trace we want to run the assertions on.
-     */
+    /** @return a transitions trace for the part of the trace we want to run the assertions on. */
     private fun buildEventLog(): EventLogSubject? {
         val eventLog = eventLog ?: return null
         return EventLogSubject.assertThat(eventLog)
@@ -368,14 +355,12 @@ class FlickerRunResult(
 
     private fun buildWmTraceSubject(): WindowManagerTraceSubject? {
         val wmTrace = buildWmTrace()
-        return if (wmTrace != null)
-            WindowManagerTraceSubject.assertThat(wmTrace) else null
+        return if (wmTrace != null) WindowManagerTraceSubject.assertThat(wmTrace) else null
     }
 
     private fun buildLayersTraceSubject(): LayersTraceSubject? {
         val layersTrace = buildLayersTrace()
-        return if (layersTrace != null)
-            LayersTraceSubject.assertThat(layersTrace) else null
+        return if (layersTrace != null) LayersTraceSubject.assertThat(layersTrace) else null
     }
 
     internal fun lock() {
@@ -399,30 +384,9 @@ class FlickerRunResult(
     }
 
     companion object {
-        private val SCOPE = CoroutineScope(Dispatchers.IO + SupervisorJob())
-
-        data class RunResults(
-            val initialStateResult: FlickerRunResult,
-            val finalStateResult: FlickerRunResult,
-            val traceResult: FlickerRunResult,
-            var eventLogResult: FlickerRunResult? = null
-        ) {
-            fun toList(): Collection<FlickerRunResult> {
-                val runResults = mutableListOf(initialStateResult, finalStateResult, traceResult)
-                val eventLogResult = eventLogResult
-                if (eventLogResult != null) {
-                    runResults.add(eventLogResult)
-                }
-                return runResults
-            }
-        }
-
         enum class RunStatus(val prefix: String = "", val isFailure: Boolean) {
             UNDEFINED("???", false),
-
-            RUN_SUCCESS("UNCHECKED", false),
             ASSERTION_SUCCESS("PASS", false),
-
             RUN_FAILED("FAILED_RUN", true),
             PARSING_FAILURE("FAILED_PARSING", true),
             ASSERTION_FAILED("FAIL", true);

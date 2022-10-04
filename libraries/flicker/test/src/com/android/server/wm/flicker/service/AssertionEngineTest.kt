@@ -31,7 +31,8 @@ import org.junit.runners.MethodSorters
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class AssertionEngineTest {
-    private val assertionEngine = AssertionEngine { m -> Log.d("AssertionEngineTest", m)}
+    private val assertionEngine = AssertionEngine(AssertionGeneratorConfigProducer())
+        { m -> Log.d("AssertionEngineTest", m)}
 
     @Test
     fun canHandleTransactionsWithNoVSync() {
@@ -43,11 +44,6 @@ class AssertionEngineTest {
                 "$path/transactions_trace.winscope")
         val transitionsTrace = readTransitionsTraceFromFile(
                 "$path/transition_trace.winscope", transactionsTrace)
-
-        val transitionsHaveNoVSyncIdTransactions = transitionsTrace.entries.toList().any {
-            it.startTransaction.requestedVSyncId == -1L ||
-                it.finishTransaction.requestedVSyncId == -1L
-        }
 
         assertionEngine.analyze(wmTrace, layersTrace, transitionsTrace)
     }

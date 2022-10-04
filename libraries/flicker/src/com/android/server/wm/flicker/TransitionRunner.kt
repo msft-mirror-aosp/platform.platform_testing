@@ -16,8 +16,11 @@
 
 package com.android.server.wm.flicker
 
+import android.app.Instrumentation
+import android.os.Bundle
 import android.os.SystemClock
 import android.util.Log
+import androidx.test.platform.app.InstrumentationRegistry
 import com.android.server.wm.flicker.FlickerRunResult.Companion.RunStatus
 import com.android.server.wm.flicker.monitor.IFileGeneratingMonitor
 import com.android.server.wm.flicker.monitor.ITransitionMonitor
@@ -28,6 +31,7 @@ import com.android.server.wm.traces.parser.getCurrentState
 import java.io.IOException
 import java.nio.file.Files
 import java.util.concurrent.TimeUnit
+import kotlin.system.measureTimeMillis
 import org.junit.runner.Description
 
 /**
@@ -97,23 +101,51 @@ open class TransitionRunner {
                 flicker.faas.testStarted(description)
             }
 
-            Log.d(FLICKER_TAG, "${flicker.testName} - Starting traces")
-            flicker.traceMonitors.forEach { it.start() }
+            progressUpdate("${flicker.testName} - Starting traces")
+            measureTimeMillis {
+                flicker.traceMonitors.forEach { it.start() }
+            }.also {
+                progressUpdate("\tTook ${it}ms to start traces")
+            }
 
-            Log.d(FLICKER_TAG, "${flicker.testName} - Running transition setup")
-            runTransitionSetup(flicker)
-            Log.d(FLICKER_TAG, "${flicker.testName} - Running transition")
-            runTransition(flicker)
-            Log.d(FLICKER_TAG, "${flicker.testName} - Running transition teardown")
-            runTransitionTeardown(flicker)
 
-            Log.d(FLICKER_TAG, "${flicker.testName} - Stopping traces")
-            flicker.traceMonitors.forEach { it.tryStop() }
+            progressUpdate("${flicker.testName} - Running transition setup")
+            measureTimeMillis {
+                runTransitionSetup(flicker)
+            }.also {
+                progressUpdate("\tTook ${it}ms to run transition setup")
+            }
 
-            Log.d(FLICKER_TAG, "${flicker.testName} - Processing transition traces")
-            processRunTraces(flicker, RunStatus.ASSERTION_SUCCESS)
+            progressUpdate("${flicker.testName} - Running transition")
+            measureTimeMillis {
+                runTransition(flicker)
+            }.also {
+                progressUpdate( "\tTook ${it}ms to run transition")
+            }
+
+            progressUpdate("${flicker.testName} - Running transition teardown")
+            measureTimeMillis {
+                runTransitionTeardown(flicker)
+            }.also {
+                progressUpdate("\tTook ${it}ms to run transition teardown")
+            }
+
+            progressUpdate("${flicker.testName} - Stopping traces")
+            measureTimeMillis {
+                flicker.traceMonitors.forEach { it.tryStop() }
+            }.also {
+                progressUpdate("\tTook ${it}ms to stop traces")
+            }
+
+            progressUpdate("${flicker.testName} - Processing transition traces")
+            measureTimeMillis {
+                processRunTraces(flicker, RunStatus.ASSERTION_SUCCESS)
+            }.also {
+                progressUpdate("\tTook ${it}ms to process traces")
+            }
+
             if (flicker.faasEnabled) {
-                Log.d(FLICKER_TAG, "${flicker.testName} - " +
+                progressUpdate("${flicker.testName} - " +
                         "Notifying FaaS of finished transition")
                 flicker.faas.testFinished(description)
                 if (flicker.faas.executionErrors.isNotEmpty()) {
@@ -247,12 +279,10 @@ open class TransitionRunner {
                     System.currentTimeMillis(), TimeUnit.MILLISECONDS),
             )
 
-
             flicker.transitions.forEach { it.invoke(flicker) }
             flicker.wmHelper.StateSyncBuilder()
                     .add(UI_STABLE_CONDITIONS)
                     .waitFor()
-
 
             result.transitionEndTime = FlickerRunResult.TraceTime(
                 elapsedRealtimeNanos = SystemClock.elapsedRealtimeNanos(),
@@ -340,6 +370,15 @@ open class TransitionRunner {
     }
 
     companion object {
+        private fun progressUpdate(msg: String) {
+            Log.d(FLICKER_TAG, msg)
+
+            val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
+            val results = Bundle()
+            results.putString(Instrumentation.REPORT_KEY_STREAMRESULT, "$msg\n")
+            instrumentation.sendStatus(1, results)
+        }
+
         /**
          * Conditions that determine when the UI is in a stable stable and no windows or layers are
          * animating or changing state.

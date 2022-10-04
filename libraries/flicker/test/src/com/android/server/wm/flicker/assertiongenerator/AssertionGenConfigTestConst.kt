@@ -16,19 +16,19 @@
 
 package com.android.server.wm.flicker.assertiongenerator
 
-import com.android.server.wm.flicker.assertiongenerator.layers.LayersTraceConfiguration
 import com.android.server.wm.flicker.service.assertors.Components
 
 class AssertionGenConfigTestConst {
     companion object {
-        val layersTraceConfiguration = LayersTraceConfiguration(mapOf(
+        val deviceTraceConfiguration = DeviceTraceConfiguration(mapOf(
             "openingLayerName_toBeCompleted" to Components.OPENING_APP,
             "closingLayerName_toBeCompleted" to Components.CLOSING_APP
         ))
 
-        val deviceTraceConfiguration = DeviceTraceConfiguration(
-            layersTraceConfiguration = layersTraceConfiguration,
-            wmTraceConfiguration = null
-        )
+        val emptyDeviceTraceConfiguration = DeviceTraceConfiguration(mapOf())
+
+        val deviceTraceConfigurationTestFile = DeviceTraceConfiguration(mapOf(
+            "com.android.server.wm.flicker.testapp/.SimpleActivity" to Components.OPENING_APP
+        ))
     }
 }

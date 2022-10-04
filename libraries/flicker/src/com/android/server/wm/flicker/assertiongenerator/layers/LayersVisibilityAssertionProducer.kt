@@ -1,10 +1,10 @@
 package com.android.server.wm.flicker.assertiongenerator.layers
 
 import com.android.server.wm.flicker.Utils
+import com.android.server.wm.flicker.assertiongenerator.DeviceTraceConfiguration
 import com.android.server.wm.flicker.assertiongenerator.common.Assertion
 import com.android.server.wm.flicker.assertiongenerator.common.TraceContent
 import com.android.server.wm.flicker.service.assertors.ComponentTypeMatcher
-import com.android.server.wm.flicker.service.assertors.ConfigException
 import com.android.server.wm.flicker.traces.layers.LayerTraceEntrySubject
 import com.android.server.wm.traces.common.ComponentNameMatcher
 
@@ -27,7 +27,11 @@ class LayersVisibilityAssertionProducer(
      * because all traces are supposed to depict the exact same scenario
      */
     override fun produce(traceContents: List<TraceContent>): List<Assertion> {
-        val traceContent = traceContents.filterIsInstance<LayersTraceContent>()[0]
+        val layersTraceContents = traceContents.filterIsInstance<LayersTraceContent>()
+        if (layersTraceContents.isEmpty()) {
+            return listOf()
+        }
+        val traceContent = layersTraceContents[0]
         val traceLifecycle = traceContent.traceLifecycle
         val traceConfiguration = traceContent.traceConfiguration
         val assertions = traceLifecycle.elementIds.map { elementComponentMatcher ->
@@ -71,20 +75,12 @@ class LayersVisibilityAssertionProducer(
      */
     private fun getAssertionComponentMatcher(
         elementComponentMatcher: ComponentNameMatcher,
-        traceConfiguration: LayersTraceConfiguration?
+        traceConfiguration: DeviceTraceConfiguration
     ): ComponentNameMatcher? {
-        val componentMatcher: ComponentNameMatcher?
-        try {
-            componentMatcher = ComponentTypeMatcher.componentMatcherFromName(
-                elementComponentMatcher.toString(),
-                traceConfiguration
-            )
-        } catch (err: ConfigException) {
-            // TODO: when integrating with FaaS,
-            // we can pass the logger here and log which traces miss a configuration
-            return null
-        }
-        return componentMatcher
+        return ComponentTypeMatcher.componentMatcherFromName(
+            elementComponentMatcher.toString(),
+            traceConfiguration
+        )
     }
 
     private fun addToAssertionString(

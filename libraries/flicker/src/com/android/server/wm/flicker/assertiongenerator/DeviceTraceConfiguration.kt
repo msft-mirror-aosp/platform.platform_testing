@@ -16,25 +16,57 @@
 
 package com.android.server.wm.flicker.assertiongenerator
 
-import com.android.server.wm.flicker.assertiongenerator.common.ITraceConfiguration
-import com.android.server.wm.flicker.assertiongenerator.common.ITraceLifecycle
-import com.android.server.wm.flicker.assertiongenerator.layers.LayersTraceConfiguration
-import com.android.server.wm.flicker.assertiongenerator.layers.LayersTraceLifecycle
-import com.android.server.wm.flicker.assertiongenerator.windowmanager.WmTraceConfiguration
-import com.android.server.wm.flicker.assertiongenerator.windowmanager.WmTraceLifecycle
+import com.android.server.wm.flicker.service.assertors.ComponentBuilder
+import com.android.server.wm.flicker.service.assertors.Components
 
 /**
- * Contains traces configurations
+ * Contains the configuration of a [DeviceTraceDump]
+ *
+ * In the future, more values can be added if necessary,
+ * requiring minimum modifications in the assertion production pipeline
  */
 data class DeviceTraceConfiguration(
-    val wmTraceConfiguration: WmTraceConfiguration?,
-    val layersTraceConfiguration: LayersTraceConfiguration?
+    /**
+     * Map from component name -> component type
+     * e.g. "openingName" -> "OPENING_APP"
+     *      "closingName" -> "CLOSING_APP"
+     */
+    val componentToTypeMap: Map<String, ComponentBuilder>
 ) {
-    fun getTraceConfigurationByLifecycleType(lifecycle: ITraceLifecycle): ITraceConfiguration? {
-        return when (lifecycle) {
-            is WmTraceLifecycle -> wmTraceConfiguration
-            is LayersTraceLifecycle -> layersTraceConfiguration
-            else -> error("Unhandled lifecycle type")
+    override fun equals(other: Any?): Boolean {
+        return other is DeviceTraceConfiguration &&
+            componentToTypeMap == other.componentToTypeMap
+    }
+
+    override fun hashCode(): Int {
+        return componentToTypeMap.hashCode()
+    }
+
+    companion object{
+        /**
+         * Converts a simplified trace config to the real trace config
+         */
+        fun fromSimplifiedTrace(
+            traceConfigurationFromFile: DeviceTraceConfigurationSimplified
+        ): DeviceTraceConfiguration {
+            val actualComponentToType = traceConfigurationFromFile.componentToTypeMap.map{
+                (component, componentType) ->
+                val componentBuilder = Components.byType[componentType]
+                if (componentBuilder != null) {
+                    component to componentBuilder
+                } else throw RuntimeException("Component builder is null")
+            }.toMap()
+            return DeviceTraceConfiguration(actualComponentToType)
         }
     }
 }
+
+/**
+ * A format of [DeviceTraceConfiguration] that can be easily read from a JSON file.
+ * Example of a difference:
+ * componentToTypeMap is Map<String, String> instead of Map<String, ComponentBuilder>,
+ * because ComponentBuilder is too complicated to encode in JSON format.
+ */
+class DeviceTraceConfigurationSimplified(
+    val componentToTypeMap: Map<String, String>
+)

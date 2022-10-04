@@ -16,9 +16,10 @@
 
 package com.android.server.wm.flicker.assertiongenerator.windowmanager
 
+import com.android.server.wm.flicker.assertiongenerator.DeviceTraceConfiguration
 import com.android.server.wm.flicker.assertiongenerator.common.TraceContent
 
 class WmTraceContent (
     override val traceLifecycle: WmTraceLifecycle,
-    override val traceConfiguration: WmTraceConfiguration?
+    override val traceConfiguration: DeviceTraceConfiguration
 ) : TraceContent(traceLifecycle, traceConfiguration)

@@ -17,7 +17,7 @@
 package com.android.server.wm.flicker.service.assertors
 
 import com.android.server.wm.flicker.Utils
-import com.android.server.wm.flicker.assertiongenerator.common.ITraceConfiguration
+import com.android.server.wm.flicker.assertiongenerator.DeviceTraceConfiguration
 import com.android.server.wm.traces.common.ComponentName
 import com.android.server.wm.traces.common.ComponentNameMatcher
 import com.android.server.wm.traces.common.transition.Transition
@@ -62,7 +62,7 @@ class ComponentTypeMatcher(
     companion object {
         fun componentMatcherFromName(
             name: String,
-            traceConfiguration: ITraceConfiguration?
+            traceConfiguration: DeviceTraceConfiguration
         ): ComponentNameMatcher? {
             Utils.componentNameMatcherHardcoded(name)
                 ?.run {
@@ -70,15 +70,13 @@ class ComponentTypeMatcher(
                 }
                 ?: run {
                     val componentMatcher = ComponentTypeMatcher(name)
-                    traceConfiguration?.run {
+                    traceConfiguration.run {
                         if (this.componentToTypeMap[name] != null) {
                             componentMatcher.componentBuilder = this.componentToTypeMap[name]!!
                             return componentMatcher
                         } else {
                             return null
                         }
-                    } ?: run {
-                        throw ConfigException("Missing trace configuration - component $name")
                     }
                 }
         }

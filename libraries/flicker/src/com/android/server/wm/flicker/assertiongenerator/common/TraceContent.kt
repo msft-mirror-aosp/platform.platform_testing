@@ -16,10 +16,9 @@
 
 package com.android.server.wm.flicker.assertiongenerator.common
 
-import com.android.server.wm.flicker.assertiongenerator.layers.LayersTraceConfiguration
+import com.android.server.wm.flicker.assertiongenerator.DeviceTraceConfiguration
 import com.android.server.wm.flicker.assertiongenerator.layers.LayersTraceContent
 import com.android.server.wm.flicker.assertiongenerator.layers.LayersTraceLifecycle
-import com.android.server.wm.flicker.assertiongenerator.windowmanager.WmTraceConfiguration
 import com.android.server.wm.flicker.assertiongenerator.windowmanager.WmTraceContent
 import com.android.server.wm.flicker.assertiongenerator.windowmanager.WmTraceLifecycle
 
@@ -28,22 +27,18 @@ import com.android.server.wm.flicker.assertiongenerator.windowmanager.WmTraceLif
  */
 open class TraceContent(
     open val traceLifecycle: ITraceLifecycle,
-    open val traceConfiguration: ITraceConfiguration?
+    open val traceConfiguration: DeviceTraceConfiguration?
 ) {
 
     companion object {
         fun byTraceType(
             traceLifecycle: ITraceLifecycle,
-            traceConfiguration: ITraceConfiguration?
+            traceConfiguration: DeviceTraceConfiguration
         ): TraceContent? {
-            if (traceLifecycle is LayersTraceLifecycle &&
-                (traceConfiguration is LayersTraceConfiguration?)
-            ) {
+            if (traceLifecycle is LayersTraceLifecycle) {
                 return LayersTraceContent(traceLifecycle, traceConfiguration)
             }
-            if (traceLifecycle is WmTraceLifecycle &&
-                traceConfiguration is WmTraceConfiguration?
-            ) {
+            if (traceLifecycle is WmTraceLifecycle) {
                 return WmTraceContent(traceLifecycle, traceConfiguration)
             }
             return null

@@ -19,9 +19,7 @@ class LifecycleExtractorFactory {
                     val traceLifecycle = extractor.extract(traceDump)
                     val deviceTraceConfiguration = traceConfigurations[index]
                     val traceContent = traceLifecycle?.let {
-                            val traceConfiguration = deviceTraceConfiguration
-                                .getTraceConfigurationByLifecycleType(traceLifecycle)
-                            TraceContent.byTraceType(traceLifecycle, traceConfiguration)
+                            TraceContent.byTraceType(traceLifecycle, deviceTraceConfiguration)
                         }
                     traceContent
                 }

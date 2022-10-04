@@ -54,6 +54,12 @@ enum class Scenario(
                 continue
             }
             if (this.executionCondition.shouldExecute(transition)) {
+                requireNotNull(transition.startTransaction) {
+                    "Completed transition shouldn't have a null startTransaction"
+                }
+                requireNotNull(transition.finishTransaction) {
+                    "Completed transition shouldn't have a null finishTransaction"
+                }
                 scenarioInstances.add(
                     ScenarioInstance(this, transition.collectingStart, transition.end,
                         transition.startTransaction, transition.finishTransaction, transition)

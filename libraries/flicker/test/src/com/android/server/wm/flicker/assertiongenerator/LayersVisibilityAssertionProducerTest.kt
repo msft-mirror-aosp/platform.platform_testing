@@ -19,6 +19,7 @@ package com.android.server.wm.flicker.assertiongenerator
 import android.util.Log
 import com.android.server.wm.flicker.assertFailure
 import com.android.server.wm.flicker.assertThrows
+import com.android.server.wm.flicker.assertiongenerator.AssertionGenConfigTestConst.Companion.emptyDeviceTraceConfiguration
 import com.android.server.wm.flicker.assertiongenerator.common.Assertion
 import com.android.server.wm.flicker.assertiongenerator.common.TraceContent
 import com.android.server.wm.flicker.assertiongenerator.layers.LayersComponentLifecycle
@@ -66,7 +67,7 @@ class LayersVisibilityAssertionProducerTest {
         val layersVisibilityAssertionProducer = LayersVisibilityAssertionProducer()
         return lifecycleExtractor.extract(traceDump)?.let{
             layersVisibilityAssertionProducer.produce(
-                listOf(TraceContent.byTraceType(it, null)!!)
+                listOf(TraceContent.byTraceType(it, emptyDeviceTraceConfiguration)!!)
             )
         } ?: throw RuntimeException("Layers lifecycle was expected, but is actually null")
     }
@@ -78,7 +79,7 @@ class LayersVisibilityAssertionProducerTest {
         val layersVisibilityAssertionProducer = LayersVisibilityAssertionProducer()
         assertions = layersVisibilityAssertionProducer.produce(
             elementLifecycles.map{ lifecycle ->
-                TraceContent.byTraceType(lifecycle, null)!!
+                TraceContent.byTraceType(lifecycle, emptyDeviceTraceConfiguration)!!
             }
         )
     }
@@ -97,7 +98,7 @@ class LayersVisibilityAssertionProducerTest {
         assertionsSameComponentMatcher =
             layersVisibilityAssertionProducer.produce(
                 elementLifecycles.map{ lifecycle ->
-                    TraceContent.byTraceType(lifecycle, null)!!
+                    TraceContent.byTraceType(lifecycle, emptyDeviceTraceConfiguration)!!
                 }
             )
     }
@@ -128,7 +129,7 @@ class LayersVisibilityAssertionProducerTest {
         val layersVisibilityAssertionProducer = LayersVisibilityAssertionProducer()
         val assertions = layersVisibilityAssertionProducer.produce(
             elementLifecycles.map{ lifecycle ->
-                TraceContent.byTraceType(lifecycle, null)!!
+                TraceContent.byTraceType(lifecycle, emptyDeviceTraceConfiguration)!!
             }
         )
         assertionFail = assertions[0]
@@ -309,6 +310,9 @@ class LayersVisibilityAssertionProducerTest {
 
         layersTrace?.run {
             val assertions = produceAssertionsFromTraceDump(traceDump)
+            // assert for expected nr of assertions too ->
+            // hard because not all element component matchers in traceLifecycle actually produce an assertion
+            Truth.assertThat(assertions.isNotEmpty()).isTrue()
             for (scenarioInstance in scenarioInstances) {
                 assertions.forEachIndexed { index, assertion ->
                     assertion.execute(layersTrace, scenarioInstance.associatedTransition)

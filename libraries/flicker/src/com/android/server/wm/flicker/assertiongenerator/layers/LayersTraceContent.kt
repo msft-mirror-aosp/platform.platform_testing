@@ -16,9 +16,10 @@
 
 package com.android.server.wm.flicker.assertiongenerator.layers
 
+import com.android.server.wm.flicker.assertiongenerator.DeviceTraceConfiguration
 import com.android.server.wm.flicker.assertiongenerator.common.TraceContent
 
 data class LayersTraceContent(
     override val traceLifecycle: LayersTraceLifecycle,
-    override val traceConfiguration: LayersTraceConfiguration?
+    override val traceConfiguration: DeviceTraceConfiguration
 ) : TraceContent(traceLifecycle, traceConfiguration)

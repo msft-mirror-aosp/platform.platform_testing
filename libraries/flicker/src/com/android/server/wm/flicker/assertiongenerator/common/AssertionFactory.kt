@@ -2,6 +2,7 @@ package com.android.server.wm.flicker.assertiongenerator.common
 
 import com.android.server.wm.flicker.assertiongenerator.ScenarioConfig
 import com.android.server.wm.flicker.assertiongenerator.layers.LayersVisibilityAssertionProducer
+import com.android.server.wm.flicker.service.assertors.ConfigException
 import com.android.server.wm.traces.common.service.Scenario
 
 class AssertionFactory(
@@ -33,7 +34,8 @@ class AssertionFactory(
     }
 
     private fun getScenarioConfig(scenario: Scenario): ScenarioConfig {
-        return config[scenario] ?: error("Missing configuration for scenario $scenario")
+        return config[scenario]
+            ?: throw ConfigException("Missing configuration for scenario $scenario")
     }
 
     fun getAssertionsForScenario(scenario: Scenario): Array<Assertion> {

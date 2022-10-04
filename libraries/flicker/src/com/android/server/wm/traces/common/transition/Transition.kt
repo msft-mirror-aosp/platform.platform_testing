@@ -32,19 +32,20 @@ class Transition(
     @JsName("collectingStart")
     val collectingStart: Long,
     @JsName("startTransaction")
-    val startTransaction: Transaction,
+    val startTransaction: Transaction?,
     @JsName("finishTransaction")
-    val finishTransaction: Transaction,
+    val finishTransaction: Transaction?,
     @JsName("changes")
     val changes: List<TransitionChange>,
+    @JsName("played")
+    val played: Boolean,
     @JsName("aborted")
     val aborted: Boolean
 ) : ITraceEntry {
     override val timestamp = start
 
     @JsName("isIncomplete")
-    val isIncomplete: Boolean get() = collectingStart == -1L || start == -1L || end == -1L ||
-            aborted
+    val isIncomplete: Boolean get() = !played || aborted
 
     override fun toString(): String =
         "Transition#${hashCode()}" +
@@ -86,6 +87,8 @@ class Transition(
             var collectingStart: Long = -1
             @JsName("changes")
             var changes: List<TransitionChange> = emptyList()
+            @JsName("played")
+            var played = false
             @JsName("aborted")
             var aborted = false
             @JsName("startTransactionId")
@@ -100,27 +103,44 @@ class Transition(
             // Assumes each state is reported once
             @JsName("addState")
             fun addState(state: TransitionState) {
-                if (state.state == State.COLLECTING) {
-                    this.collectingStart = state.timestamp
-                }
-                if (state.state == State.PLAYING) {
-                    this.start = state.timestamp
-                    this.changes = state.changes
-                    this.type = state.type
-                    this.startTransactionId = state.startTransactionId
-                    this.finishTransactionId = state.finishTransactionId
-                }
-                if (state.state == State.ABORT) {
-                    this.end = state.timestamp
-                    this.aborted = true
-                }
-                if (state.state == State.FINISHED) {
-                    this.end = state.timestamp
+                when (state.state) {
+                    State.PENDING -> {
+                        // Nothing to do
+                    }
+                    State.COLLECTING -> {
+                        this.collectingStart = state.timestamp
+                    }
+                    State.STARTED -> {
+                        // Nothing to do
+                    }
+                    State.PLAYING -> {
+                        this.start = state.timestamp
+                        this.changes = state.changes
+                        this.type = state.type
+                        this.startTransactionId = state.startTransactionId
+                        this.finishTransactionId = state.finishTransactionId
+                        this.played = true
+                    }
+                    State.ABORT -> {
+                        this.end = state.timestamp
+                        this.aborted = true
+                    }
+                    State.FINISHED -> {
+                        this.end = state.timestamp
+                    }
                 }
             }
 
             @JsName("linkTransactions")
             fun linkTransactions(transactionsTrace: TransactionsTrace) {
+                if (this.startTransactionId == -1L || this.finishTransactionId == -1L) {
+                    // Transition not played
+                    require(this.aborted) {
+                        "$this has no start or finish transaction but is not aborted"
+                    }
+                    return
+                }
+
                 startTransaction = transactionsTrace.allTransactions.firstOrNull {
                     transaction -> transaction.id == startTransactionId
                 }
@@ -130,11 +150,13 @@ class Transition(
 
                 val startTransaction = startTransaction
                 requireNotNull(startTransaction) {
-                    "Failed to find a matching start transition on linking."
+                    "Failed to find a matching start transaction for $this on linking. " +
+                        "Transaction with id $startTransactionId not found in transactions trace."
                 }
                 val finishTransaction = finishTransaction
                 requireNotNull(finishTransaction) {
-                    "Failed to find a matching finish transition on linking."
+                    "Failed to find a matching finish transaction for $this on linking. " +
+                        "Transaction with id $finishTransactionId not found in transactions trace."
                 }
 
                 require(startTransaction.appliedVSyncId != -1L ) {
@@ -148,12 +170,12 @@ class Transition(
             @JsName("build")
             fun build(): Transition {
                 val startTransaction = startTransaction
-                requireNotNull(startTransaction) {
-                    "Can't build transition without matched start transaction"
+                require(startTransaction != null || !played) {
+                    "Can't build played transition without matched start transaction"
                 }
                 val finishTransaction = finishTransaction
-                requireNotNull(finishTransaction) {
-                    "Can't build transition without matched finish transaction"
+                require(finishTransaction != null || aborted) {
+                    "Can't build non-aborted transition without matched finish transaction"
                 }
                 return Transition(
                     type,
@@ -163,8 +185,27 @@ class Transition(
                     startTransaction,
                     finishTransaction,
                     changes,
+                    played,
                     aborted
                 )
+            }
+
+            override fun toString(): String {
+                return buildString {
+                    appendLine("Transition.Builder(")
+                    appendLine("  id=$id")
+                    appendLine("  type=$type")
+                    appendLine("  start=$start")
+                    appendLine("  end=$end")
+                    appendLine("  collectingStart=$collectingStart")
+                    appendLine("  changes=$changes")
+                    appendLine("  aborted=$aborted")
+                    appendLine("  startTransactionId=$startTransactionId")
+                    appendLine("  finishTransactionId=$finishTransactionId")
+                    appendLine("  startTransaction=$startTransaction")
+                    appendLine("  finishTransaction=$finishTransaction")
+                    append(")")
+                }
             }
         }
 

@@ -26,13 +26,16 @@ class LifecycleExtractorFactoryTest {
         val traceDumps = arrayOf(layersTraceDump, nullTraceDump)
         val elementLifecycles = LifecycleExtractorFactory.extract(
             traceDumps,
-            Array(traceDumps.size) { DeviceTraceConfiguration(null, null) }
+            Array(traceDumps.size) { AssertionGenConfigTestConst.emptyDeviceTraceConfiguration }
         )
         val expectedTraceLifecycle =
             LayersTraceLifecycle(
                 ElementLifecycleExtractorTestConst.expectedElementLifecycles
                     as MutableMap<ComponentNameMatcher, LayersComponentLifecycle>)
-        val expectedTraceContent = TraceContent.byTraceType(expectedTraceLifecycle, null)!!
+        val expectedTraceContent = TraceContent.byTraceType(
+            expectedTraceLifecycle,
+            AssertionGenConfigTestConst.emptyDeviceTraceConfiguration
+        )
         val expectedTraceLifecycles = listOf(expectedTraceContent)
         try {
             Truth.assertThat(elementLifecycles == expectedTraceLifecycles).isTrue()
@@ -53,13 +56,17 @@ class LifecycleExtractorFactoryTest {
         val traceDumps = arrayOf(layersTraceDump, nullTraceDump)
         val elementLifecycles = LifecycleExtractorFactory.extract(
             traceDumps,
-            Array(traceDumps.size) { DeviceTraceConfiguration(null, null) }
+            Array(traceDumps.size) { AssertionGenConfigTestConst.emptyDeviceTraceConfiguration }
         )
         val expectedTraceLifecycle =
             LayersTraceLifecycle(
             ElementLifecycleExtractorTestConst.expectedElementLifecycles_SameComponentMatcher
                 as MutableMap<ComponentNameMatcher, LayersComponentLifecycle>)
-        val expectedTraceContent = TraceContent.byTraceType(expectedTraceLifecycle, null)!!
+        val expectedTraceContent = TraceContent
+            .byTraceType(
+                expectedTraceLifecycle,
+                AssertionGenConfigTestConst.emptyDeviceTraceConfiguration
+            )!!
         val expectedTraceLifecycles = listOf(expectedTraceContent)
         try {
             Truth.assertThat(elementLifecycles == expectedTraceLifecycles).isTrue()

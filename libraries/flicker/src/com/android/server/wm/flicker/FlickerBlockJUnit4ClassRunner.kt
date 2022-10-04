@@ -31,6 +31,7 @@ import java.lang.reflect.Modifier
 import java.util.Collections
 import java.util.concurrent.locks.Lock
 import java.util.concurrent.locks.ReentrantLock
+import kotlin.system.measureTimeMillis
 import org.junit.FixMethodOrder
 import org.junit.Ignore
 import org.junit.internal.AssumptionViolatedException
@@ -237,7 +238,13 @@ class FlickerBlockJUnit4ClassRunner @JvmOverloads constructor(
                     injectFlickerOnTestParams(test)
                 }
 
-                tests.addAll(computeFlickerServiceTests(isBlockingTest))
+                val faasTests: List<FrameworkMethod>
+                measureTimeMillis {
+                    faasTests = computeFlickerServiceTests(isBlockingTest)
+                }.also {
+                    Log.d(FLICKER_TAG, "Took ${it}ms to computed ${faasTests.size} faas tests")
+                }
+                tests.addAll(faasTests)
             }
         }
 

@@ -136,7 +136,7 @@ data class TraceIndices(
 /**
  * Return a new trace contains only the entries that were applied during the transition's execution.
  */
-private fun WindowManagerTrace.scenarioInstanceSlice(
+public fun WindowManagerTrace.scenarioInstanceSlice(
     scenarioInstance: ScenarioInstance
 ): WindowManagerTrace {
     return slice(scenarioInstance.startTimestamp, scenarioInstance.endTimestamp)
@@ -198,7 +198,7 @@ fun LayersTrace.scenarioInstanceSliceIndices(
 /**
  * Return a new trace contains only the entries that were applied during the transition's execution.
  */
-private fun LayersTrace.scenarioInstanceSlice(
+fun LayersTrace.scenarioInstanceSlice(
     scenarioInstance: ScenarioInstance
 ): LayersTrace? {
     return scenarioInstanceSliceIndices(scenarioInstance)?.let {

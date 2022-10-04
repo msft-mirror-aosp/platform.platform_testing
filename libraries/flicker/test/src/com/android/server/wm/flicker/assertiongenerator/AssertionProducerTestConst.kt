@@ -17,7 +17,6 @@
 package com.android.server.wm.flicker.assertiongenerator
 
 import com.android.server.wm.flicker.assertiongenerator.layers.LayersAssertion
-import com.android.server.wm.flicker.assertiongenerator.layers.LayersTraceConfiguration
 import com.android.server.wm.flicker.service.assertors.ComponentTypeMatcher
 import com.android.server.wm.flicker.service.assertors.Components
 import com.android.server.wm.traces.common.ComponentNameMatcher
@@ -150,7 +149,7 @@ class AssertionProducerTestConst {
         )
 
         val expected_layer_visibility_assertions_openApp = listOf(expected_layer_openApp_assertion)
-        val openAppConfig = LayersTraceConfiguration(
+        val openAppConfig = DeviceTraceConfiguration(
             mapOf("openPackage/openApp" to Components.OPENING_APP)
         )
 

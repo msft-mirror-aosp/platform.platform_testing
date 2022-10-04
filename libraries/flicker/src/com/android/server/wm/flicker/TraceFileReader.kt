@@ -16,15 +16,18 @@
 
 package com.android.server.wm.flicker
 
+import android.util.Log
 import com.android.server.wm.flicker.assertiongenerator.DeviceTraceConfiguration
 import com.android.server.wm.flicker.assertiongenerator.ScenarioConfig
-import com.android.server.wm.flicker.assertiongenerator.layers.LayersTraceConfiguration
-import com.android.server.wm.flicker.assertiongenerator.layers.LayersTraceConfigurationSimplified
-import com.android.server.wm.flicker.assertiongenerator.windowmanager.WmTraceConfiguration
-import com.android.server.wm.flicker.assertiongenerator.windowmanager.WmTraceConfigurationSimplified
+import com.android.server.wm.flicker.service.assertors.ComponentBuilder
+import com.android.server.wm.flicker.service.assertors.Components
+import com.android.server.wm.flicker.service.assertors.ConfigException
+import com.android.server.wm.flicker.service.assertors.scenarioInstanceSlice
+import com.android.server.wm.traces.common.ComponentNameMatcher
 import com.android.server.wm.traces.common.DeviceTraceDump
 import com.android.server.wm.traces.common.layers.LayersTrace
 import com.android.server.wm.traces.common.service.Scenario
+import com.android.server.wm.traces.common.service.ScenarioInstance
 import com.android.server.wm.traces.common.windowmanager.WindowManagerState
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 import com.android.server.wm.traces.parser.layers.LayersTraceParser
@@ -33,12 +36,7 @@ import com.android.server.wm.traces.parser.transition.TransitionsTraceParser
 import com.android.server.wm.traces.parser.windowmanager.WindowManagerTraceParser
 import com.google.common.io.ByteStreams
 import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import java.lang.reflect.Type
-import java.nio.file.Files
-import java.nio.file.Path
-import java.nio.file.Paths
-import java.util.stream.Stream
 
 class TraceFileReader {
     companion object {
@@ -83,13 +81,6 @@ class TraceFileReader {
          */
         fun readTextFromResource(filename: String): String? {
             return object {}.javaClass.getResource(filename)?.readText()
-        }
-
-        fun <ObjectType> readJsonFromStringBad(jsonString: String): ObjectType {
-            val gson = Gson()
-            val objType = object : TypeToken<ObjectType>() {}.type
-            var obj: ObjectType = gson.fromJson(jsonString, objType)
-            return obj
         }
 
         /**
@@ -176,31 +167,6 @@ class TraceFileReader {
             }
         }
 
-        data class TraceConfigurationPaths(
-            val wmConfigPath: String?,
-            val layersConfigPath: String?,
-        ) {
-            fun getDeviceTraceConfiguration(): DeviceTraceConfiguration {
-                val wmTraceConfiguration = wmConfigPath?.let{
-                    val wmType = object : TypeToken<List<WmTraceConfigurationSimplified>>() {}.type
-                    val simplifiedConfig = readObjectFromResource<WmTraceConfigurationSimplified>(
-                        wmConfigPath, wmType)?.let{ it[0] }
-                    simplifiedConfig?.let{ WmTraceConfiguration.fromSimplifiedTrace(it) }
-                }
-
-                val layersTraceConfiguration = layersConfigPath?.let{
-                    val layersType =
-                        object : TypeToken<List<LayersTraceConfigurationSimplified>>() {}.type
-                    val simplifiedConfig =
-                        readObjectFromResource<LayersTraceConfigurationSimplified>(
-                            layersConfigPath, layersType)?.let{ it[0] }
-                    simplifiedConfig?.let{ LayersTraceConfiguration.fromSimplifiedTrace(it) }
-                }
-
-                return DeviceTraceConfiguration(wmTraceConfiguration, layersTraceConfiguration)
-            }
-        }
-
         /**
          * Gets the paths of golden traces for a specified scenario
          */
@@ -209,21 +175,75 @@ class TraceFileReader {
                 "$dir/wm_trace.winscope",
                 "$dir/layers_trace.winscope",
                 "$dir/transactions_trace.winscope",
-                "$dir/transitions_trace.winscope"
+                "$dir/transition_trace.winscope"
             )
         }
 
+        fun getScenarioInstanceFromScenarioFromGoldenTrace(
+            scenario: Scenario,
+            deviceTraceDump: DeviceTraceDump
+        ): ScenarioInstance {
+            val transitionsTrace = deviceTraceDump.transitionsTrace ?: run{
+                throw ConfigException("Transition trace is missing for scenario $scenario, " +
+                    "so we can't extract scenario instance")
+            }
+            val scenarioInstances = scenario.getInstances(transitionsTrace)
+            {m -> Log.d("TraceFileReader", m)}
+            assert(scenarioInstances.size == 1)
+            val scenarioInstance: ScenarioInstance
+            try {
+                scenarioInstance = (scenarioInstances as MutableList)[0]
+            } catch (err: IndexOutOfBoundsException) {
+                throw ConfigException("No scenario instance for scenario $scenario")
+            }
+            return scenarioInstance
+        }
+
         /**
-         * Gets the paths of golden trace configs for a specified scenario
-         *
-         * We should handle if these files don't exist and just return null when reading,
-         * because assertions for hardcoded components can be generated even without configuration
+         * Pre-processing step to trim golden traces for scenario
          */
-        fun getGoldenTraceConfigPathsForDirectory(dir: String): TraceConfigurationPaths {
-            return TraceConfigurationPaths(
-                "$dir/wm_trace_configuration.json",
-                "$dir/layers_trace_configuration.json",
+        fun trimGoldenTracesForScenario(scenario: Scenario, deviceTraceDump: DeviceTraceDump):
+            DeviceTraceDump {
+            val scenarioInstance =
+                getScenarioInstanceFromScenarioFromGoldenTrace(scenario, deviceTraceDump)
+            val newLayersTrace =
+                deviceTraceDump.layersTrace?.scenarioInstanceSlice(scenarioInstance)
+            val newWmTrace = deviceTraceDump.wmTrace?.scenarioInstanceSlice(scenarioInstance)
+            return DeviceTraceDump(
+                newWmTrace,
+                newLayersTrace,
+                deviceTraceDump.transactionsTrace,
+                deviceTraceDump.transitionsTrace
             )
+        }
+
+        fun getDeviceTraceConfiguration(
+            scenarioInstance: ScenarioInstance
+        ): DeviceTraceConfiguration {
+            val componentToTypeMap: MutableMap<String, ComponentBuilder> = mutableMapOf()
+            try {
+                val openCompMatcher =
+                    getComponentMatcherWithType(scenarioInstance, Components.OPENING_APP)
+                componentToTypeMap[openCompMatcher.toString()] = Components.OPENING_APP
+            } catch (_: Exception) {}
+            try {
+                val closeCompMatcher =
+                    getComponentMatcherWithType(scenarioInstance, Components.CLOSING_APP)
+                componentToTypeMap[closeCompMatcher.toString()] = Components.CLOSING_APP
+            } catch (_: Exception) {}
+            return DeviceTraceConfiguration(componentToTypeMap)
+        }
+
+        /**
+         * Get the component matcher with a given type (component builder)
+         * e.g. OPENING_APP, CLOSING_APP
+         */
+        fun getComponentMatcherWithType(
+            scenarioInstance: ScenarioInstance,
+            componentBuilder: ComponentBuilder
+        ): ComponentNameMatcher {
+            return componentBuilder.build(scenarioInstance.associatedTransition)
+                as ComponentNameMatcher
         }
 
         /**
@@ -248,13 +268,14 @@ class TraceFileReader {
                 while (true) {
                     val traceDir = "$scenarioDir/trace$traceCount"
                     val tracePaths = getGoldenTracePathsForDirectory(traceDir)
-                    val deviceTraceDump = tracePaths.getDeviceTraceDump()
+                    var deviceTraceDump = tracePaths.getDeviceTraceDump()
                     if (!deviceTraceDump.isValid) {
                         break
                     }
-                    val traceConfigPaths = getGoldenTraceConfigPathsForDirectory(traceDir)
-                    val deviceTraceConfiguration =
-                        traceConfigPaths.getDeviceTraceConfiguration()
+                    val scenarioInstance =
+                        getScenarioInstanceFromScenarioFromGoldenTrace(scenario, deviceTraceDump)
+                    deviceTraceDump = trimGoldenTracesForScenario(scenario, deviceTraceDump)
+                    val deviceTraceConfiguration = getDeviceTraceConfiguration(scenarioInstance)
                     scenarioDeviceTraceDumpArray.add(deviceTraceDump)
                     scenarioTraceConfigurationArray.add(deviceTraceConfiguration)
                     traceCount++
@@ -264,16 +285,6 @@ class TraceFileReader {
                     scenarioTraceConfigurationArray.toTypedArray()
                 )
             }.toMap()
-        }
-
-        fun getAllFilesInDirectory(directoryPath: String): Stream<Path>? {
-            val projectDirAbsolutePath = Paths.get("").toAbsolutePath().toString()
-            val resourcesPath = Paths.get(
-                projectDirAbsolutePath,
-                "src/com/android/server/wm/flicker/service/resources/",
-                directoryPath
-            )
-            return Files.walk(resourcesPath, 1)
         }
     }
 }

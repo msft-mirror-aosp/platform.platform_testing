@@ -17,8 +17,8 @@
 package com.android.server.wm.flicker
 
 import com.android.server.wm.flicker.assertiongenerator.AssertionGenConfigTestConst
-import com.android.server.wm.flicker.assertiongenerator.layers.LayersTraceConfiguration
-import com.android.server.wm.flicker.assertiongenerator.layers.LayersTraceConfigurationSimplified
+import com.android.server.wm.flicker.assertiongenerator.DeviceTraceConfiguration
+import com.android.server.wm.flicker.assertiongenerator.DeviceTraceConfigurationSimplified
 import com.android.server.wm.traces.common.service.Scenario
 import com.google.common.truth.Truth
 import com.google.gson.reflect.TypeToken
@@ -34,7 +34,7 @@ class TraceFileReaderTest {
     fun getGoldenTracesConfig() {
         val config = TraceFileReader.getGoldenTracesConfig("/assertiongenerator_config_test")
         val expectedAppLaunchConfig_traceConfigurations =
-            arrayOf(AssertionGenConfigTestConst.deviceTraceConfiguration)
+            arrayOf(AssertionGenConfigTestConst.deviceTraceConfigurationTestFile)
         Truth.assertThat(config[Scenario.APP_LAUNCH]?.traceConfigurations)
             .isEqualTo(expectedAppLaunchConfig_traceConfigurations)
         Truth.assertThat(config[Scenario.APP_LAUNCH]?.deviceTraceDumps?.get(0)?.isValid)
@@ -50,12 +50,12 @@ class TraceFileReaderTest {
             "    }\n" +
             "  }\n" +
             "]"
-        val typeToken = object : TypeToken<List<LayersTraceConfigurationSimplified>>() {}.type
+        val typeToken = object : TypeToken<List<DeviceTraceConfigurationSimplified>>() {}.type
         val jsonAsObject = TraceFileReader
-            .readJsonFromString<LayersTraceConfigurationSimplified>(jsonAsString, typeToken)
-        val actualTraceConfig = LayersTraceConfiguration.fromSimplifiedTrace(jsonAsObject[0])
+            .readJsonFromString<DeviceTraceConfigurationSimplified>(jsonAsString, typeToken)
+        val actualTraceConfig = DeviceTraceConfiguration.fromSimplifiedTrace(jsonAsObject[0])
         Truth.assertThat(actualTraceConfig)
-            .isEqualTo(AssertionGenConfigTestConst.layersTraceConfiguration)
+            .isEqualTo(AssertionGenConfigTestConst.deviceTraceConfiguration)
     }
 
     @Test
@@ -63,12 +63,12 @@ class TraceFileReaderTest {
         val layersConfigPath =
             "/assertiongenerator_config_test/AppLaunch/trace1/layers_trace_configuration.json"
         val layersTraceConfiguration = layersConfigPath.let {
-            val layersType = object : TypeToken<List<LayersTraceConfigurationSimplified>>() {}.type
-            TraceFileReader.readObjectFromResource<LayersTraceConfigurationSimplified>(
+            val layersType = object : TypeToken<List<DeviceTraceConfigurationSimplified>>() {}.type
+            TraceFileReader.readObjectFromResource<DeviceTraceConfigurationSimplified>(
                 layersConfigPath, layersType
-            )?.let { LayersTraceConfiguration.fromSimplifiedTrace(it[0]) }
+            )?.let { DeviceTraceConfiguration.fromSimplifiedTrace(it[0]) }
         }
         Truth.assertThat(layersTraceConfiguration)
-            .isEqualTo(AssertionGenConfigTestConst.layersTraceConfiguration)
+            .isEqualTo(AssertionGenConfigTestConst.deviceTraceConfiguration)
     }
 }

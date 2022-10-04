@@ -46,7 +46,8 @@ class FlickerService {
         transitionTrace: TransitionsTrace
     ): List<AssertionResult> {
         try {
-            val assertionEngine = AssertionEngine { Log.v("$FLICKER_TAG-ASSERT", it) }
+            val assertionEngine = AssertionEngine(AssertionGeneratorConfigProducer())
+                { Log.v("$FLICKER_TAG-ASSERT", it) }
             return assertionEngine.analyze(wmTrace, layersTrace, transitionTrace)
         } catch (exception: Throwable) {
             Log.e("$FLICKER_TAG-ASSERT", "FAILED PROCESSING", exception)
