@@ -22,11 +22,10 @@ import com.android.server.wm.traces.common.ITrace
  * Holds the entire list of [TagState]s representing an entire trace that has been tagged.
  * @param entries Array of tagged states within the trace
  */
-data class TagTrace(
-    override val entries: Array<TagState>
-) : ITrace<TagState>,
-        List<TagState> by entries.toList() {
-    override fun toString(): String = "FlickerTagTrace(${entries.firstOrNull()?.timestamp ?: 0}, " +
+data class TagTrace(override val entries: Array<TagState>) :
+    ITrace<TagState>, List<TagState> by entries.toList() {
+    override fun toString(): String =
+        "FlickerTagTrace(${entries.firstOrNull()?.timestamp ?: 0}, " +
             "${entries.lastOrNull()?.timestamp ?: 0})"
 
     override fun equals(other: Any?): Boolean {

@@ -22,16 +22,11 @@ import kotlin.js.JsName
 /**
  * Represents a single Region trace entry.
  *
- * This is a generic object that is reused by both Flicker and Winscope and cannot
- * access internal Java/Android functionality
+ * This is a generic object that is reused by both Flicker and Winscope and cannot access internal
+ * Java/Android functionality
  *
  * The timestamp constructor must be a string due to lack of Kotlin/KotlinJS Long compatibility
- *
- **/
-class RegionEntry(
-    @JsName("region")
-    val region: Region,
-    _timestamp: String = "0"
-) : ITraceEntry {
+ */
+class RegionEntry(@JsName("region") val region: Region, _timestamp: String = "0") : ITraceEntry {
     override val timestamp: Long = _timestamp.toLong()
 }

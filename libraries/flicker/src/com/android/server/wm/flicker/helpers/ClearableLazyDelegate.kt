@@ -20,9 +20,7 @@ import kotlin.reflect.KProperty
 
 fun <T> clearableLazy(initializer: () -> T) = ClearableLazyDelegate(initializer)
 
-/**
- * NOTE: This implementation is not thread safe
- */
+/** NOTE: This implementation is not thread safe */
 class ClearableLazyDelegate<T>(private val initializer: () -> T) {
     private var uninitialized = true
     private var value: T? = null

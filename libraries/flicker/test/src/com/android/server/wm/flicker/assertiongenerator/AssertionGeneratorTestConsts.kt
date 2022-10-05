@@ -18,22 +18,21 @@ package com.android.server.wm.flicker.assertiongenerator
 
 import com.android.server.wm.flicker.assertiongenerator.common.AssertionObject
 
-/**
- * Common class for [WindowManagerAssertionGeneratorTest] and [LayersAssertionGeneratorTest]
- */
+/** Common class for [WindowManagerAssertionGeneratorTest] and [LayersAssertionGeneratorTest] */
 class AssertionGeneratorTestConsts {
-    companion object{
+    companion object {
         // stub values for testing purposes
         // will be updated later to more meaningful values
-        val expectedAppLaunchAssertions = arrayOf(
-            AssertionObject(
-                listOf(1, 2, 3),
-                AssertionObject.Companion.AssertionFunction.IS_VISIBLE
-            ),
-            AssertionObject(
-                listOf(4, 5, 6),
-                AssertionObject.Companion.AssertionFunction.MOVES_RIGHT
+        val expectedAppLaunchAssertions =
+            arrayOf(
+                AssertionObject(
+                    listOf(1, 2, 3),
+                    AssertionObject.Companion.AssertionFunction.IS_VISIBLE
+                ),
+                AssertionObject(
+                    listOf(4, 5, 6),
+                    AssertionObject.Companion.AssertionFunction.MOVES_RIGHT
+                )
             )
-        )
     }
 }

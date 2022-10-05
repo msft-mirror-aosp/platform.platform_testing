@@ -24,27 +24,23 @@ import com.google.common.truth.FailureMetadata
 import com.google.common.truth.Subject.Factory
 import com.google.common.truth.Truth
 
-/**
- * Truth subject for [FocusEvent] objects.
- */
-class EventLogSubject private constructor(
-    failureMetadata: FailureMetadata,
-    val trace: List<FocusEvent>
-) : FlickerSubject(failureMetadata, trace) {
-    override val timestamp: Long get() = 0
-    override val parent: FlickerSubject? get() = null
+/** Truth subject for [FocusEvent] objects. */
+class EventLogSubject
+private constructor(failureMetadata: FailureMetadata, val trace: List<FocusEvent>) :
+    FlickerSubject(failureMetadata, trace) {
+    override val timestamp: Long
+        get() = 0
+    override val parent: FlickerSubject?
+        get() = null
     override val selfFacts by lazy {
         val firstTimestamp = subjects.firstOrNull()?.timestamp ?: 0L
         val lastTimestamp = subjects.lastOrNull()?.timestamp ?: 0L
         val first = "${prettyTimestamp(firstTimestamp)} (timestamp=$firstTimestamp)"
         val last = "${prettyTimestamp(lastTimestamp)} (timestamp=$lastTimestamp)"
-        listOf(Fact.fact("Trace start", first),
-                Fact.fact("Trace end", last))
+        listOf(Fact.fact("Trace start", first), Fact.fact("Trace end", last))
     }
 
-    private val subjects by lazy {
-        trace.map { FocusEventSubject.assertThat(it, this) }
-    }
+    private val subjects by lazy { trace.map { FocusEventSubject.assertThat(it, this) } }
 
     private val assertionsChecker = AssertionsChecker<FocusEventSubject>()
     private val _focusChanges by lazy {
@@ -55,59 +51,44 @@ class EventLogSubject private constructor(
 
     fun focusChanges(vararg windows: String) = apply {
         if (windows.isNotEmpty()) {
-            val focusChanges = _focusChanges
-                .dropWhile { !it.contains(windows.first()) }
-                .take(windows.size)
-            val success = windows.size <= focusChanges.size &&
-                focusChanges.zip(windows).all { (focus, search) -> focus.contains(search) }
+            val focusChanges =
+                _focusChanges.dropWhile { !it.contains(windows.first()) }.take(windows.size)
+            val success =
+                windows.size <= focusChanges.size &&
+                    focusChanges.zip(windows).all { (focus, search) -> focus.contains(search) }
 
             if (!success) {
-                fail(Fact.fact("Expected", windows.joinToString(",")),
-                    Fact.fact("Found", focusChanges.joinToString(",")))
+                fail(
+                    Fact.fact("Expected", windows.joinToString(",")),
+                    Fact.fact("Found", focusChanges.joinToString(","))
+                )
             }
         }
     }
 
-    fun focusDoesNotChange() = apply {
-        check("Focus changes")
-            .that(_focusChanges)
-            .isEmpty()
-    }
+    fun focusDoesNotChange() = apply { check("Focus changes").that(_focusChanges).isEmpty() }
 
     companion object {
-        /**
-         * Boiler-plate Subject.Factory for EventLogSubject
-         */
+        /** Boiler-plate Subject.Factory for EventLogSubject */
         private val FACTORY = Factory { fm: FailureMetadata, subject: List<FocusEvent> ->
             EventLogSubject(fm, subject)
         }
 
-        /**
-         * User-defined entry point
-         */
+        /** User-defined entry point */
         fun assertThat(entry: List<FocusEvent>) =
-                Truth.assertAbout(FACTORY).that(entry) as EventLogSubject
+            Truth.assertAbout(FACTORY).that(entry) as EventLogSubject
 
-        /**
-         * Static method for getting the subject factory (for use with assertAbout())
-         */
+        /** Static method for getting the subject factory (for use with assertAbout()) */
         fun entries(): Factory<EventLogSubject, List<FocusEvent>> {
             return FACTORY
         }
     }
 
-    /**
-     * Run the assertions.
-     */
+    /** Run the assertions. */
     fun forAllEntries(): Unit = assertionsChecker.test(subjects)
 
     fun split(from: Long, to: Long): EventLogSubject {
-        val trace = this.trace
-                .dropWhile { it.timestamp < from }
-                .dropLastWhile { it.timestamp > to }
-        return EventLogSubject(
-            this.fm,
-            trace
-        )
+        val trace = this.trace.dropWhile { it.timestamp < from }.dropLastWhile { it.timestamp > to }
+        return EventLogSubject(this.fm, trace)
     }
 }

@@ -30,10 +30,7 @@ import org.junit.FixMethodOrder
 import org.junit.Test
 import org.junit.runners.MethodSorters
 
-/**
- * Contains [LayerTraceEntry] tests. To run this test: `atest
- * FlickerLibTest:LayersTraceTest`
- */
+/** Contains [LayerTraceEntry] tests. To run this test: `atest FlickerLibTest:LayersTraceTest` */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class LayersTraceEntryTest {
     @Before
@@ -44,11 +41,10 @@ class LayersTraceEntryTest {
     @Test
     fun exceptionContainsDebugInfo() {
         val layersTraceEntries = readLayerTraceFromFile("layers_trace_emptyregion.pb")
-        val error = assertThrows(AssertionError::class.java) {
-            assertThat(layersTraceEntries)
-                .first()
-                .contains(TestComponents.IMAGINARY)
-        }
+        val error =
+            assertThrows(AssertionError::class.java) {
+                assertThat(layersTraceEntries).first().contains(TestComponents.IMAGINARY)
+            }
         assertThatErrorContainsDebugInfo(error)
     }
 
@@ -101,8 +97,8 @@ class LayersTraceEntryTest {
         Truth.assertThat(msg).contains("NavigationBar0#0")
         Truth.assertThat(msg).contains("StatusBar#0")
         Truth.assertThat(msg).contains("DockedStackDivider#0")
-        Truth.assertThat(msg).contains("SnapshotStartingWindow for taskId=21 - " +
-            "task-snapshot-surface#0")
+        Truth.assertThat(msg)
+            .contains("SnapshotStartingWindow for taskId=21 - " + "task-snapshot-surface#0")
         Truth.assertThat(msg).contains("SnapshotStartingWindow for taskId=21")
         Truth.assertThat(msg).contains("NexusLauncherActivity#0")
         Truth.assertThat(msg).contains("ImageWallpaper#0")
@@ -131,8 +127,10 @@ class LayersTraceEntryTest {
             error("Failed to detect orphaned layers.")
         } catch (exception: RuntimeException) {
             Truth.assertThat(exception.message)
-                .contains("Failed to parse layers trace. Found orphan layer with id = 49 with" +
-                    " parentId = 1006")
+                .contains(
+                    "Failed to parse layers trace. Found orphan layer with id = 49 with" +
+                        " parentId = 1006"
+                )
         }
     }
 

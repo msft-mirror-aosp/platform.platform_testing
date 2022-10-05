@@ -22,11 +22,12 @@ import junit.framework.Assert
 
 class FlickerTestCase(val results: List<AssertionResult>, isBlockingTest: Boolean) {
 
-    private val resultsToReport = if (isBlockingTest) {
-        results.filter { it.invocationGroup == AssertionInvocationGroup.BLOCKING }
-    } else {
-        results
-    }
+    private val resultsToReport =
+        if (isBlockingTest) {
+            results.filter { it.invocationGroup == AssertionInvocationGroup.BLOCKING }
+        } else {
+            results
+        }
 
     val shouldSkip = resultsToReport.isEmpty()
 
@@ -40,27 +41,33 @@ class FlickerTestCase(val results: List<AssertionResult>, isBlockingTest: Boolea
         }
     }
 
-    private val containsFailuresToReport: Boolean get() = resultsToReport.any { it.failed }
+    private val containsFailuresToReport: Boolean
+        get() = resultsToReport.any { it.failed }
 
-    private val assertionMessage: String get() {
-        if (!containsFailuresToReport) {
-            return "${resultsToReport.size}/${resultsToReport.size} PASSED"
-        }
+    private val assertionMessage: String
+        get() {
+            if (!containsFailuresToReport) {
+                return "${resultsToReport.size}/${resultsToReport.size} PASSED"
+            }
 
-        if (resultsToReport.size == 1) {
-            return resultsToReport[0].assertionError!!.message ?: "FAILURE WITH NO ERROR MESSAGE"
-        }
+            if (resultsToReport.size == 1) {
+                return resultsToReport[0].assertionError!!.message
+                    ?: "FAILURE WITH NO ERROR MESSAGE"
+            }
 
-        return buildString {
-            append("$failedCount/${resultsToReport.size} FAILED\n")
-            for (result in resultsToReport) {
-                if (result.failed) {
-                    append("\n${(result.assertionError!!.message ?: "FAILURE WITH NO ERROR MESSAGE")
-                            .prependIndent("  ")}")
+            return buildString {
+                append("$failedCount/${resultsToReport.size} FAILED\n")
+                for (result in resultsToReport) {
+                    result.assertionError?.let {
+                        append(
+                            "\n${(it.message ?: "FAILURE WITH NO ERROR MESSAGE")
+                                .prependIndent("  ")}"
+                        )
+                    }
                 }
             }
         }
-    }
 
-    private val failedCount: Int get() = results.filter { it.failed }.size
+    private val failedCount: Int
+        get() = results.filter { it.failed }.size
 }

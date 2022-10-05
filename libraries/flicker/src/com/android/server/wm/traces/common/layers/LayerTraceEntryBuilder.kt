@@ -18,34 +18,22 @@ package com.android.server.wm.traces.common.layers
 
 import kotlin.js.JsName
 
-/**
- * Builder for LayerTraceEntries
- */
+/** Builder for LayerTraceEntries */
 class LayerTraceEntryBuilder(
     timestamp: Any,
     layers: Array<Layer>,
-    @JsName("displays")
-    private val displays: Array<Display>,
-    @JsName("vSyncId")
-    private val vSyncId: Long,
-    @JsName("hwcBlob")
-    private val hwcBlob: String = "",
-    @JsName("where")
-    private val where: String = ""
+    @JsName("displays") private val displays: Array<Display>,
+    @JsName("vSyncId") private val vSyncId: Long,
+    @JsName("hwcBlob") private val hwcBlob: String = "",
+    @JsName("where") private val where: String = ""
 ) {
     // Necessary for compatibility with JS number type
-    @JsName("timestamp")
-    private val timestamp: Long = "$timestamp".toLong()
-    @JsName("_orphanLayerCallback")
-    private var orphanLayerCallback: ((Layer) -> Boolean)? = null
-    @JsName("orphans")
-    private val orphans = mutableListOf<Layer>()
-    @JsName("layers")
-    private val layers = setLayers(layers)
-    @JsName("_ignoreVirtualDisplay")
-    private var ignoreVirtualDisplay = false
-    @JsName("_ignoreLayersStackMatchNoDisplay")
-    private var ignoreLayersStackMatchNoDisplay = false
+    @JsName("timestamp") private val timestamp: Long = "$timestamp".toLong()
+    @JsName("_orphanLayerCallback") private var orphanLayerCallback: ((Layer) -> Boolean)? = null
+    @JsName("orphans") private val orphans = mutableListOf<Layer>()
+    @JsName("layers") private val layers = setLayers(layers)
+    @JsName("_ignoreVirtualDisplay") private var ignoreVirtualDisplay = false
+    @JsName("_ignoreLayersStackMatchNoDisplay") private var ignoreLayersStackMatchNoDisplay = false
 
     @JsName("setLayers")
     private fun setLayers(layers: Array<Layer>): Map<Int, Layer> {
@@ -77,10 +65,8 @@ class LayerTraceEntryBuilder(
                 return@forEach
             }
             throw RuntimeException(
-                (
-                    "Failed to parse layers trace. Found orphan layer with id = ${orphan.id}" +
-                        " with parentId = ${orphan.parentId}"
-                    )
+                ("Failed to parse layers trace. Found orphan layer with id = ${orphan.id}" +
+                    " with parentId = ${orphan.parentId}")
             )
         }
     }
@@ -129,7 +115,8 @@ class LayerTraceEntryBuilder(
         updateParents()
         updateRelZParents()
 
-        // Find all root layers (any sibling of the root layer is considered a root layer in the trace)
+        // Find all root layers (any sibling of the root layer is considered a root layer in the
+        // trace)
         val rootLayers = mutableListOf<Layer>()
 
         // Getting the first orphan works because when dumping the layers, the root layer comes
@@ -152,9 +139,7 @@ class LayerTraceEntryBuilder(
 
     @JsName("filterOutLayersInVirtualDisplays")
     private fun filterOutLayersInVirtualDisplays(roots: List<Layer>): List<Layer> {
-        val physicalDisplays = displays
-            .filterNot { it.isVirtual }
-            .map { it.layerStackId }
+        val physicalDisplays = displays.filterNot { it.isVirtual }.map { it.layerStackId }
 
         return roots.filter { physicalDisplays.contains(it.stackId) }
     }
@@ -176,8 +161,8 @@ class LayerTraceEntryBuilder(
     }
 
     /**
-     * Defines if virtual displays and the layers belonging to virtual displays (e.g., Screen Recording) should be
-     * ignored while parsing the entry
+     * Defines if virtual displays and the layers belonging to virtual displays (e.g., Screen
+     * Recording) should be ignored while parsing the entry
      *
      * @param ignore If the layers from virtual displays should be ignored or not
      */
@@ -187,9 +172,9 @@ class LayerTraceEntryBuilder(
     }
 
     /**
-     * Ignore layers whose stack ID doesn't match any display. This is the case, for example,
-     * when the device screen is off, or for layers that have not yet been removed after a
-     * display change (e.g., virtual screen recording display removed)
+     * Ignore layers whose stack ID doesn't match any display. This is the case, for example, when
+     * the device screen is off, or for layers that have not yet been removed after a display change
+     * (e.g., virtual screen recording display removed)
      *
      * @param ignore If the layers not matching any stack id should be removed or not
      */
@@ -198,7 +183,7 @@ class LayerTraceEntryBuilder(
         this.ignoreLayersStackMatchNoDisplay = ignore
     }
 
-    /** Constructs the layer hierarchy from a flattened list of layers.  */
+    /** Constructs the layer hierarchy from a flattened list of layers. */
     @JsName("build")
     fun build(): LayerTraceEntry {
         val allRoots = computeRootLayers()
@@ -220,7 +205,11 @@ class LayerTraceEntryBuilder(
         notifyOrphansLayers()
 
         return LayerTraceEntry(
-            timestamp, hwcBlob, where, filteredDisplays.toTypedArray(), vSyncId,
+            timestamp,
+            hwcBlob,
+            where,
+            filteredDisplays.toTypedArray(),
+            vSyncId,
             filteredRoots.toTypedArray()
         )
     }

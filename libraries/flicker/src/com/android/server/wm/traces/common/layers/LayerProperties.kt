@@ -24,10 +24,9 @@ import com.android.server.wm.traces.common.region.Region
 import com.android.server.wm.traces.common.withCache
 import kotlin.js.JsName
 
-/**
- * {@inheritDoc}
- */
-class LayerProperties private constructor(
+/** {@inheritDoc} */
+class LayerProperties
+private constructor(
     override val visibleRegion: Region = Region.EMPTY,
     override val activeBuffer: ActiveBuffer = ActiveBuffer.EMPTY,
     override val flags: Int = 0,
@@ -144,7 +143,8 @@ class LayerProperties private constructor(
 
     companion object {
         @JsName("EMPTY")
-        val EMPTY: LayerProperties get() = withCache { LayerProperties() }
+        val EMPTY: LayerProperties
+            get() = withCache { LayerProperties() }
 
         @JsName("from")
         fun from(

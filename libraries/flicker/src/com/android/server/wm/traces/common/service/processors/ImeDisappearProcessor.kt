@@ -34,46 +34,48 @@ import com.android.server.wm.traces.common.tags.Tag
 class ImeDisappearProcessor(logger: (String) -> Unit) : TransitionProcessor(logger) {
     override val scenario = Scenario.IME_DISAPPEAR
     override fun getInitialState(tags: MutableMap<Long, MutableList<Tag>>) =
-            WaitImeDisappearStart(tags)
+        WaitImeDisappearStart(tags)
 
     /**
-     * FSM state that waits until the IME begins to disappear
-     * Different conditions required for IME closing by gesture (layer color alpha < 1), compared
-     * to IME closing via app close (layer translate SCALE_VAL bit set)
+     * FSM state that waits until the IME begins to disappear Different conditions required for IME
+     * closing by gesture (layer color alpha < 1), compared to IME closing via app close (layer
+     * translate SCALE_VAL bit set)
      */
-    inner class WaitImeDisappearStart(
-            tags: MutableMap<Long, MutableList<Tag>>
-    ) : BaseState(tags) {
+    inner class WaitImeDisappearStart(tags: MutableMap<Long, MutableList<Tag>>) : BaseState(tags) {
         private val isImeShown = isImeShown(PlatformConsts.DEFAULT_DISPLAY)
         private val isImeAppeared =
-                ConditionList(listOf(
-                        isImeShown,
-                        isLayerColorAlphaOne(ComponentNameMatcher.IME),
-                        isLayerTransformFlagSet(ComponentNameMatcher.IME, Transform.TRANSLATE_VAL),
-                        isLayerTransformFlagSet(ComponentNameMatcher.IME, Transform.SCALE_VAL)
-                                .negate()
-                ))
+            ConditionList(
+                listOf(
+                    isImeShown,
+                    isLayerColorAlphaOne(ComponentNameMatcher.IME),
+                    isLayerTransformFlagSet(ComponentNameMatcher.IME, Transform.TRANSLATE_VAL),
+                    isLayerTransformFlagSet(ComponentNameMatcher.IME, Transform.SCALE_VAL).negate()
+                )
+            )
         private val isImeDisappearByGesture =
-                ConditionList(listOf(
-                        isImeShown,
-                        isLayerColorAlphaOne(ComponentNameMatcher.IME).negate()
-                ))
+            ConditionList(
+                listOf(isImeShown, isLayerColorAlphaOne(ComponentNameMatcher.IME).negate())
+            )
         private val isImeDisappearByAppClose =
-                ConditionList(listOf(
-                        isImeShown,
-                        isLayerTransformFlagSet(ComponentNameMatcher.IME, Transform.SCALE_VAL)
-                ))
+            ConditionList(
+                listOf(
+                    isImeShown,
+                    isLayerTransformFlagSet(ComponentNameMatcher.IME, Transform.SCALE_VAL)
+                )
+            )
 
         override fun doProcessState(
-                previous: DeviceStateDump?,
-                current: DeviceStateDump,
-                next: DeviceStateDump
+            previous: DeviceStateDump?,
+            current: DeviceStateDump,
+            next: DeviceStateDump
         ): FSMState {
             if (previous == null) return this
 
-            return if (isImeAppeared.isSatisfied(previous) &&
+            return if (
+                isImeAppeared.isSatisfied(previous) &&
                     (isImeDisappearByGesture.isSatisfied(current) ||
-                            isImeDisappearByAppClose.isSatisfied(current))) {
+                        isImeDisappearByAppClose.isSatisfied(current))
+            ) {
                 processImeDisappearing(current)
             } else {
                 logger.invoke("(${current.layerState.timestamp}) IME disappear not started.")
@@ -81,31 +83,30 @@ class ImeDisappearProcessor(logger: (String) -> Unit) : TransitionProcessor(logg
             }
         }
 
-        private fun processImeDisappearing(
-                current: DeviceStateDump
-        ): FSMState {
+        private fun processImeDisappearing(current: DeviceStateDump): FSMState {
             logger.invoke("(${current.layerState.timestamp}) IME disappear started.")
-            val inputMethodLayer = current.layerState.visibleLayers.first {
-                ComponentNameMatcher.IME.layerMatchesAnyOf(it)
-            }
+            val inputMethodLayer =
+                current.layerState.visibleLayers.first {
+                    ComponentNameMatcher.IME.layerMatchesAnyOf(it)
+                }
             addStartTransitionTag(current, scenario, layerId = inputMethodLayer.id)
             return WaitImeDisappearFinished(tags, inputMethodLayer.id)
         }
     }
 
     /**
-     * FSM state to check when the IME disappear has finished i.e. when the input method layer is
-     * no longer visible.
+     * FSM state to check when the IME disappear has finished i.e. when the input method layer is no
+     * longer visible.
      */
     inner class WaitImeDisappearFinished(
-            tags: MutableMap<Long, MutableList<Tag>>,
-            private val layerId: Int
+        tags: MutableMap<Long, MutableList<Tag>>,
+        private val layerId: Int
     ) : BaseState(tags) {
         private val imeNotShown = isImeShown(PlatformConsts.DEFAULT_DISPLAY).negate()
         override fun doProcessState(
-                previous: DeviceStateDump?,
-                current: DeviceStateDump,
-                next: DeviceStateDump
+            previous: DeviceStateDump?,
+            current: DeviceStateDump,
+            next: DeviceStateDump
         ): FSMState {
             return if (imeNotShown.isSatisfied(current)) {
                 // tag on the last complete state at the start

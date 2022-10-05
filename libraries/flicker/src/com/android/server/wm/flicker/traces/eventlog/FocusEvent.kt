@@ -24,7 +24,11 @@ class FocusEvent(
     val focus: Focus,
     val reason: String
 ) : ITraceEntry {
-    enum class Focus { GAINED, LOST, REQUESTED }
+    enum class Focus {
+        GAINED,
+        LOST,
+        REQUESTED
+    }
 
     override fun toString(): String {
         return "$timestamp: Focus ${focus.name} $window Reason=$reason"

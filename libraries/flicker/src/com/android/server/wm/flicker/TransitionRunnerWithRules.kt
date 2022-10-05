@@ -30,10 +30,10 @@ class TransitionRunnerWithRules(private val setupRules: TestRule) : TransitionRu
 
     private fun buildTransitionRule(flicker: Flicker): Statement {
         return object : Statement() {
-                override fun evaluate() {
-                    result = runTransition(flicker)
-                }
+            override fun evaluate() {
+                result = runTransition(flicker)
             }
+        }
     }
 
     private fun runTransition(flicker: Flicker): FlickerResult {

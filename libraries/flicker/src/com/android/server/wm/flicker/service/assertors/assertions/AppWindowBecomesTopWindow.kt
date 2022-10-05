@@ -22,23 +22,19 @@ import com.android.server.wm.traces.common.ComponentNameMatcher
 import com.android.server.wm.traces.common.transition.Transition
 
 /**
- * Checks that the app layer doesn't exist or is invisible at the start of the transition, but
- * is created and/or becomes visible during the transition.
+ * Checks that the app layer doesn't exist or is invisible at the start of the transition, but is
+ * created and/or becomes visible during the transition.
  */
 class AppWindowBecomesTopWindow(component: ComponentBuilder) :
     BaseAssertionBuilderWithComponent(component) {
     /** {@inheritDoc} */
-    override fun doEvaluate(
-        transition: Transition,
-        wmSubject: WindowManagerTraceSubject
-    ) {
+    override fun doEvaluate(transition: Transition, wmSubject: WindowManagerTraceSubject) {
         val testApp = component.build(transition)
-        wmSubject.isAppWindowNotOnTop(testApp)
+        wmSubject
+            .isAppWindowNotOnTop(testApp)
             .then()
             .isAppWindowOnTop(
-                testApp
-                    .or(ComponentNameMatcher.SNAPSHOT)
-                    .or(ComponentNameMatcher.SPLASH_SCREEN)
+                testApp.or(ComponentNameMatcher.SNAPSHOT).or(ComponentNameMatcher.SPLASH_SCREEN)
             )
     }
 }

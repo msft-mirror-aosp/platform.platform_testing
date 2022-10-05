@@ -59,22 +59,26 @@ import org.junit.runners.parameterized.TestWithParameters
  *
  * Supports both assertions in {@link org.junit.Test} and assertions defined in the DSL
  *
- * When using this runner the default `atest class#method` command doesn't work.
- * Instead use: -- --test-arg \
+ * When using this runner the default `atest class#method` command doesn't work. Instead use: --
+ * --test-arg \
+ * ```
  *     com.android.tradefed.testtype.AndroidJUnitTest:instrumentation-arg:filter-tests:=<TEST_NAME>
- *
- * For example:
- * `atest FlickerTests -- \
+ * ```
+ * For example: `atest FlickerTests -- \
+ * ```
  *     --test-arg com.android.tradefed.testtype.AndroidJUnitTest:instrumentation-arg:filter-tests\
  *     :=com.android.server.wm.flicker.close.\
  *     CloseAppBackButtonTest#launcherWindowBecomesVisible[ROTATION_90_GESTURAL_NAV]`
+ * ```
  */
-class FlickerBlockJUnit4ClassRunner @JvmOverloads constructor(
+class FlickerBlockJUnit4ClassRunner
+@JvmOverloads
+constructor(
     test: TestWithParameters,
     private val parameters: Array<Any> = test.parameters.toTypedArray(),
     private val flickerTestParameter: FlickerTestParameter =
         parameters.filterIsInstance<FlickerTestParameter>().firstOrNull()
-                ?: error("No FlickerTestParameter provided for FlickerRunner")
+            ?: error("No FlickerTestParameter provided for FlickerRunner")
 ) : BlockJUnit4ClassRunnerWithParameters(test) {
     private var flickerBuilderProviderMethod: FrameworkMethod? = null
 
@@ -100,9 +104,8 @@ class FlickerBlockJUnit4ClassRunner @JvmOverloads constructor(
     }
 
     /**
-     * Implementation of Filterable and Sortable
-     * Based on JUnit's ParentRunner implementation but with a minor modification to ensure injected
-     * FaaS tests are not filtered out.
+     * Implementation of Filterable and Sortable Based on JUnit's ParentRunner implementation but
+     * with a minor modification to ensure injected FaaS tests are not filtered out.
      */
     @Throws(NoTestsRemainException::class)
     override fun filter(filter: Filter) {
@@ -148,61 +151,60 @@ class FlickerBlockJUnit4ClassRunner @JvmOverloads constructor(
     }
 
     /**
-     * Implementation of ParentRunner based on BlockJUnit4ClassRunner.
-     * Modified to report Flicker execution errors in the test results.
+     * Implementation of ParentRunner based on BlockJUnit4ClassRunner. Modified to report Flicker
+     * execution errors in the test results.
      */
     override fun runChild(method: FrameworkMethod, notifier: RunNotifier) {
         val description = describeChild(method)
         if (isIgnored(method)) {
             notifier.fireTestIgnored(description)
         } else {
-            val statement: Statement = object : Statement() {
-                @Throws(Throwable::class)
-                override fun evaluate() {
-                    if (!flickerTestParameter.isInitialized) {
-                        Log.v(FLICKER_TAG, "Flicker object is not yet initialized")
-                        injectFlickerOnTestParams()
-                    }
-                    require(flickerTestParameter.isInitialized) {
-                        "flickerTestParameter not initialized"
-                    }
-                    val flicker = flickerTestParameter.flicker
-                    var ranChecks = false
-                    flicker.setAssertionsCheckedCallback { ranChecks = true }
-                    methodBlock(method).evaluate()
-                    require(isInjectedFaasTest(method) || ranChecks) {
-                        "No Flicker assertions ran on test..."
-                    }
-                    val results = flickerTestParameter.result
-                    requireNotNull(results) {
-                        "Flicker results are null after test evaluation... "
-                    }
-                    // Report all the execution errors collected during the Flicker setup and
-                    // transition execution
-                    val executionError = results.transitionExecutionError
-                    if (executionError != null) {
-                        Log.e(FLICKER_TAG, "Flicker Execution Error", executionError)
-                        throw executionError
-                    }
+            val statement: Statement =
+                object : Statement() {
+                    @Throws(Throwable::class)
+                    override fun evaluate() {
+                        if (!flickerTestParameter.isInitialized) {
+                            Log.v(FLICKER_TAG, "Flicker object is not yet initialized")
+                            injectFlickerOnTestParams()
+                        }
+                        require(flickerTestParameter.isInitialized) {
+                            "flickerTestParameter not initialized"
+                        }
+                        val flicker = flickerTestParameter.flicker
+                        var ranChecks = false
+                        flicker.setAssertionsCheckedCallback { ranChecks = true }
+                        methodBlock(method).evaluate()
+                        require(isInjectedFaasTest(method) || ranChecks) {
+                            "No Flicker assertions ran on test..."
+                        }
+                        val results = flickerTestParameter.result
+                        requireNotNull(results) {
+                            "Flicker results are null after test evaluation... "
+                        }
+                        // Report all the execution errors collected during the Flicker setup and
+                        // transition execution
+                        val executionError = results.transitionExecutionError
+                        if (executionError != null) {
+                            Log.e(FLICKER_TAG, "Flicker Execution Error", executionError)
+                            throw executionError
+                        }
 
-                    // Only report FaaS execution errors on FaaS tests to avoid FaaS errors
-                    // causing legacy tests to fail.
-                    if (isInjectedFaasTest(method)) {
-                        val faasExecutionError = results.faasExecutionError
-                        if (faasExecutionError != null) {
-                            Log.e(FLICKER_TAG, "FaaS Execution Error", faasExecutionError)
-                            throw faasExecutionError
+                        // Only report FaaS execution errors on FaaS tests to avoid FaaS errors
+                        // causing legacy tests to fail.
+                        if (isInjectedFaasTest(method)) {
+                            val faasExecutionError = results.faasExecutionError
+                            if (faasExecutionError != null) {
+                                Log.e(FLICKER_TAG, "FaaS Execution Error", faasExecutionError)
+                                throw faasExecutionError
+                            }
                         }
                     }
                 }
-            }
             runLeaf(statement, description, notifier)
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Deprecated("Deprecated in Java")
     override fun validateInstanceMethods(errors: MutableList<Throwable>) {
         validateFlickerObject(errors)
@@ -210,8 +212,8 @@ class FlickerBlockJUnit4ClassRunner @JvmOverloads constructor(
     }
 
     /**
-     * Returns the methods that run tests.
-     * Is ran after validateInstanceMethods, so flickerBuilderProviderMethod should be set.
+     * Returns the methods that run tests. Is ran after validateInstanceMethods, so
+     * flickerBuilderProviderMethod should be set.
      */
     override fun computeTestMethods(): List<FrameworkMethod> {
         val tests = mutableListOf<FrameworkMethod>()
@@ -222,16 +224,23 @@ class FlickerBlockJUnit4ClassRunner @JvmOverloads constructor(
         // used to run tests in dry-run mode, so we don't want to execute in flicker transition in
         // that case either.
         val stackTrace = Thread.currentThread().stackTrace
-        if (stackTrace.none { it.methodName == "validateInstanceMethods" } &&
-            stackTrace.none {
-                it.className == "androidx.test.internal.runner.AndroidLogOnlyBuilder"
-            }
+        if (
+            stackTrace.none { it.methodName == "validateInstanceMethods" } &&
+                stackTrace.none {
+                    it.className == "androidx.test.internal.runner.AndroidLogOnlyBuilder"
+                }
         ) {
-            val hasFlickerServiceCompatibleAnnotation = TestClass(super.createTest()::class.java)
-                .annotations.filterIsInstance<FlickerServiceCompatible>().firstOrNull() != null
+            val hasFlickerServiceCompatibleAnnotation =
+                TestClass(super.createTest()::class.java)
+                    .annotations
+                    .filterIsInstance<FlickerServiceCompatible>()
+                    .firstOrNull() != null
 
-            if (IS_FAAS_ENABLED &&
-                    hasFlickerServiceCompatibleAnnotation && isShellTransitionsEnabled) {
+            if (
+                IS_FAAS_ENABLED &&
+                    hasFlickerServiceCompatibleAnnotation &&
+                    isShellTransitionsEnabled
+            ) {
                 if (!flickerTestParameter.isInitialized) {
                     Log.v(FLICKER_TAG, "Flicker object is not yet initialized")
                     val test = super.createTest()
@@ -239,11 +248,10 @@ class FlickerBlockJUnit4ClassRunner @JvmOverloads constructor(
                 }
 
                 val faasTests: List<FrameworkMethod>
-                measureTimeMillis {
-                    faasTests = computeFlickerServiceTests(isBlockingTest)
-                }.also {
-                    Log.d(FLICKER_TAG, "Took ${it}ms to computed ${faasTests.size} faas tests")
-                }
+                measureTimeMillis { faasTests = computeFlickerServiceTests(isBlockingTest) }
+                    .also {
+                        Log.d(FLICKER_TAG, "Took ${it}ms to computed ${faasTests.size} faas tests")
+                    }
                 tests.addAll(faasTests)
             }
         }
@@ -265,17 +273,18 @@ class FlickerBlockJUnit4ClassRunner @JvmOverloads constructor(
 
         // TODO: Figure out how we can report this without aggregation to have more precise and
         //       granular data on the actual failure rate.
-        for (aggregatedResult in aggregateFaasResults(flicker.faas.assertionResults)
-            .entries.iterator()) {
+        for (aggregatedResult in
+            aggregateFaasResults(flicker.faas.assertionResults).entries.iterator()) {
             val testName = aggregatedResult.key
             val results = aggregatedResult.value
 
             val injectedTestCase = FlickerTestCase(results, onlyBlockingAssertions)
-            val mockedTestMethod = TestClass(injectedTestCase.javaClass)
-                .getAnnotatedMethods(FlickerTestCase.InjectedTest::class.java).first()
-            val mockedFrameworkMethod = FlickerFrameworkMethod(
-                mockedTestMethod.method, injectedTestCase, testName
-            )
+            val mockedTestMethod =
+                TestClass(injectedTestCase.javaClass)
+                    .getAnnotatedMethods(FlickerTestCase.InjectedTest::class.java)
+                    .first()
+            val mockedFrameworkMethod =
+                FlickerFrameworkMethod(mockedTestMethod.method, injectedTestCase, testName)
             flickerTestMethods.add(mockedFrameworkMethod)
         }
 
@@ -285,27 +294,23 @@ class FlickerBlockJUnit4ClassRunner @JvmOverloads constructor(
         return flickerTestMethods
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     override fun getChildren(): MutableList<FrameworkMethod> {
         val arguments = InstrumentationRegistry.getArguments()
-        val validChildren = super.getChildren().filter {
-            val childDescription = describeChild(it)
-            TestFilter.isFilteredOrUnspecified(arguments, childDescription)
-        }
+        val validChildren =
+            super.getChildren().filter {
+                val childDescription = describeChild(it)
+                TestFilter.isFilteredOrUnspecified(arguments, childDescription)
+            }
         return validChildren.toMutableList()
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     override fun classBlock(notifier: RunNotifier): Statement {
         val statement = childrenInvoker(notifier)
         val cleanUpMethod = getFlickerCleanUpMethod()
         val frameworkMethod = FrameworkMethod(cleanUpMethod)
-        val cacheCleanUp =
-            FrameworkMethod(Cache::class.java.getMethod("clear"))
+        val cacheCleanUp = FrameworkMethod(Cache::class.java.getMethod("clear"))
         return RunAfters(
             RunAfters(statement, listOf(frameworkMethod), flickerTestParameter),
             listOf(cacheCleanUp),
@@ -314,8 +319,8 @@ class FlickerBlockJUnit4ClassRunner @JvmOverloads constructor(
     }
 
     /**
-     * Adds to `errors` for each method annotated with `@Test`that
-     * is not a public, void instance method with no arguments.
+     * Adds to `errors` for each method annotated with `@Test`that is not a public, void instance
+     * method with no arguments.
      */
     private fun validateFlickerObject(errors: MutableList<Throwable>) {
         val methods = testClass.getAnnotatedMethods(FlickerBuilderProvider::class.java)
@@ -350,9 +355,7 @@ class FlickerBlockJUnit4ClassRunner @JvmOverloads constructor(
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     override fun createTest(): Any {
         val test = super.createTest()
         if (!flickerTestParameter.isInitialized) {
@@ -366,9 +369,7 @@ class FlickerBlockJUnit4ClassRunner @JvmOverloads constructor(
         return test
     }
 
-    /**
-     * Builds a flicker object and assigns it to the test parameters
-     */
+    /** Builds a flicker object and assigns it to the test parameters */
     private fun injectFlickerOnTestParams(test: Any = super.createTest()) {
         val flickerBuilderProviderMethod = flickerBuilderProviderMethod
         if (flickerBuilderProviderMethod != null) {
@@ -376,12 +377,14 @@ class FlickerBlockJUnit4ClassRunner @JvmOverloads constructor(
             val testName = testClass.simpleName
             Log.v(
                 FLICKER_TAG,
-                "Creating flicker object for $testName and adding it into " +
-                    "test parameter"
+                "Creating flicker object for $testName and adding it into " + "test parameter"
             )
 
-            val isFlickerServiceCompatible = TestClass(testClass).annotations
-                .filterIsInstance<FlickerServiceCompatible>().firstOrNull() != null
+            val isFlickerServiceCompatible =
+                TestClass(testClass)
+                    .annotations
+                    .filterIsInstance<FlickerServiceCompatible>()
+                    .firstOrNull() != null
             if (IS_FAAS_ENABLED && isFlickerServiceCompatible) {
                 flickerTestParameter.enableFaas()
             }
@@ -391,15 +394,12 @@ class FlickerBlockJUnit4ClassRunner @JvmOverloads constructor(
         } else {
             Log.v(
                 FLICKER_TAG,
-                "Missing flicker builder provider method " +
-                    "in ${test::class.java.simpleName}"
+                "Missing flicker builder provider method " + "in ${test::class.java.simpleName}"
             )
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     override fun validateConstructor(errors: MutableList<Throwable>) {
         super.validateConstructor(errors)
 
@@ -419,8 +419,8 @@ class FlickerBlockJUnit4ClassRunner @JvmOverloads constructor(
     }
 
     /**
-     * Obtains the method to clean up a flicker object cache,
-     * necessary to release memory after a configuration is executed
+     * Obtains the method to clean up a flicker object cache, necessary to release memory after a
+     * configuration is executed
      */
     private fun getFlickerCleanUpMethod() = FlickerTestParameter::class.java.getMethod("clear")
 
@@ -446,31 +446,31 @@ class FlickerBlockJUnit4ClassRunner @JvmOverloads constructor(
         return aggregatedResults
     }
 
-/**********************************************************************************************
- * START
- * of code copied from ParentRunner to have local access to filteredChildren to ensure
- * FaaS injected tests are not filtered out.
- */
+    /**
+     * ********************************************************************************************
+     * START of code copied from ParentRunner to have local access to filteredChildren to ensure
+     * FaaS injected tests are not filtered out.
+     */
 
     // Guarded by childrenLock
-    @Volatile
-    private var filteredChildren: List<FrameworkMethod>? = null
+    @Volatile private var filteredChildren: List<FrameworkMethod>? = null
     private val childrenLock: Lock = ReentrantLock()
 
     @Volatile
-    private var scheduler: RunnerScheduler = object : RunnerScheduler {
-        override fun schedule(childStatement: Runnable) {
-            childStatement.run()
-        }
+    private var scheduler: RunnerScheduler =
+        object : RunnerScheduler {
+            override fun schedule(childStatement: Runnable) {
+                childStatement.run()
+            }
 
-        override fun finished() {
-            // do nothing
+            override fun finished() {
+                // do nothing
+            }
         }
-    }
 
     /**
-     * Sets a scheduler that determines the order and parallelization
-     * of children.  Highly experimental feature that may change.
+     * Sets a scheduler that determines the order and parallelization of children. Highly
+     * experimental feature that may change.
      */
     override fun setScheduler(scheduler: RunnerScheduler) {
         this.scheduler = scheduler
@@ -485,17 +485,18 @@ class FlickerBlockJUnit4ClassRunner @JvmOverloads constructor(
             return
         }
         childrenLock.lock()
-        filteredChildren = try {
-            for (each in getFilteredChildren()) {
-                sorter.apply(each)
-            }
-            val sortedChildren: List<FrameworkMethod> =
+        filteredChildren =
+            try {
+                for (each in getFilteredChildren()) {
+                    sorter.apply(each)
+                }
+                val sortedChildren: List<FrameworkMethod> =
                     ArrayList<FrameworkMethod>(getFilteredChildren())
-            Collections.sort(sortedChildren, comparator(sorter))
-            Collections.unmodifiableList(sortedChildren)
-        } finally {
-            childrenLock.unlock()
-        }
+                Collections.sort(sortedChildren, comparator(sorter))
+                Collections.unmodifiableList(sortedChildren)
+            } finally {
+                childrenLock.unlock()
+            }
     }
 
     /**
@@ -513,8 +514,8 @@ class FlickerBlockJUnit4ClassRunner @JvmOverloads constructor(
             var children: List<FrameworkMethod> = getFilteredChildren()
             // In theory, we could have duplicate Descriptions. De-dup them before ordering,
             // and add them back at the end.
-            val childMap: MutableMap<Description, MutableList<FrameworkMethod>> = LinkedHashMap(
-                    children.size)
+            val childMap: MutableMap<Description, MutableList<FrameworkMethod>> =
+                LinkedHashMap(children.size)
             for (child in children) {
                 val description = describeChild(child)
                 var childrenWithDescription: MutableList<FrameworkMethod>? = childMap[description]
@@ -543,15 +544,16 @@ class FlickerBlockJUnit4ClassRunner @JvmOverloads constructor(
 
     private fun getFilteredChildren(): List<FrameworkMethod> {
         childrenLock.lock()
-        val filteredChildren = try {
-            if (filteredChildren != null) {
-                filteredChildren!!
-            } else {
-                Collections.unmodifiableList(ArrayList<FrameworkMethod>(children))
+        val filteredChildren =
+            try {
+                if (filteredChildren != null) {
+                    filteredChildren!!
+                } else {
+                    Collections.unmodifiableList(ArrayList<FrameworkMethod>(children))
+                }
+            } finally {
+                childrenLock.unlock()
             }
-        } finally {
-            childrenLock.unlock()
-        }
         return filteredChildren
     }
 
@@ -563,11 +565,12 @@ class FlickerBlockJUnit4ClassRunner @JvmOverloads constructor(
         val clazz = testClass.javaClass
         // if subclass overrides `getName()` then we should use it
         // to maintain backwards compatibility with JUnit 4.12
-        val description: Description = if (clazz == null || clazz.name != name) {
-            Description.createSuiteDescription(name, *runnerAnnotations)
-        } else {
-            Description.createSuiteDescription(clazz, *runnerAnnotations)
-        }
+        val description: Description =
+            if (clazz == null || clazz.name != name) {
+                Description.createSuiteDescription(name, *runnerAnnotations)
+            } else {
+                Description.createSuiteDescription(clazz, *runnerAnnotations)
+            }
         for (child in getFilteredChildren()) {
             description.addChild(describeChild(child))
         }
@@ -575,9 +578,8 @@ class FlickerBlockJUnit4ClassRunner @JvmOverloads constructor(
     }
 
     /**
-     * Returns a [Statement]: Call [.runChild]
-     * on each object returned by [.getChildren] (subject to any imposed
-     * filter and sort)
+     * Returns a [Statement]: Call [.runChild] on each object returned by [.getChildren] (subject to
+     * any imposed filter and sort)
      */
     override fun childrenInvoker(notifier: RunNotifier): Statement {
         return object : Statement() {
@@ -602,9 +604,8 @@ class FlickerBlockJUnit4ClassRunner @JvmOverloads constructor(
         return Comparator { o1, o2 -> sorter.compare(describeChild(o1), describeChild(o2)) }
     }
 
-/**
- * END
- * of code copied from ParentRunner to have local access to filteredChildren to ensure
- * FaaS injected tests are not filtered out.
- *********************************************************************************************/
+    /**
+     * END of code copied from ParentRunner to have local access to filteredChildren to ensure FaaS
+     * injected tests are not filtered out.
+     */
 }

@@ -20,16 +20,11 @@ import com.android.server.wm.flicker.service.assertors.ComponentBuilder
 import com.android.server.wm.flicker.traces.layers.LayersTraceSubject
 import com.android.server.wm.traces.common.transition.Transition
 
-/**
- * Checks if the [getWindowState] layer is visible at the end of the transition
- */
+/** Checks if the [getWindowState] layer is visible at the end of the transition */
 class AppLayerIsVisibleAtEnd(component: ComponentBuilder) :
     BaseAssertionBuilderWithComponent(component) {
     /** {@inheritDoc} */
-    override fun doEvaluate(
-        transition: Transition,
-        layerSubject: LayersTraceSubject
-    ) {
+    override fun doEvaluate(transition: Transition, layerSubject: LayersTraceSubject) {
         layerSubject.last().isVisible(component.build(transition))
     }
 }

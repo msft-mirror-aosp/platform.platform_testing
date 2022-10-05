@@ -23,44 +23,40 @@ import com.android.server.wm.traces.common.Rect
 import com.android.server.wm.traces.common.prettyTimestamp
 import kotlin.js.JsName
 
-/**
- * Base class for SF trace entries
- */
+/** Base class for SF trace entries */
 abstract class BaseLayerTraceEntry : ITraceEntry {
-    @JsName("hwcBlob")
-    abstract val hwcBlob: String
-    @JsName("where")
-    abstract val where: String
-    @JsName("displays")
-    abstract val displays: Array<Display>
-    @JsName("vSyncId")
-    abstract val vSyncId: Long
+    @JsName("hwcBlob") abstract val hwcBlob: String
+    @JsName("where") abstract val where: String
+    @JsName("displays") abstract val displays: Array<Display>
+    @JsName("vSyncId") abstract val vSyncId: Long
     @JsName("stableId")
-    val stableId: String get() = this::class.simpleName ?: error("Unable to determine class")
+    val stableId: String
+        get() = this::class.simpleName ?: error("Unable to determine class")
     @JsName("name")
-    val name: String get() = prettyTimestamp(timestamp)
+    val name: String
+        get() = prettyTimestamp(timestamp)
 
-    @JsName("flattenedLayers")
-    abstract val flattenedLayers: Array<Layer>
+    @JsName("flattenedLayers") abstract val flattenedLayers: Array<Layer>
     @JsName("visibleLayers")
     val visibleLayers: Array<Layer>
         get() = flattenedLayers.filter { it.isVisible }.toTypedArray()
 
     // for winscope
-    @JsName("isVisible")
-    val isVisible: Boolean = true
+    @JsName("isVisible") val isVisible: Boolean = true
     @JsName("children")
     val children: Array<Layer>
         get() = flattenedLayers.filter { it.isRootLayer }.toTypedArray()
 
     @JsName("physicalDisplay")
-    val physicalDisplay: Display? get() = displays.firstOrNull { !it.isVirtual }
+    val physicalDisplay: Display?
+        get() = displays.firstOrNull { !it.isVirtual }
     @JsName("physicalDisplayBounds")
-    val physicalDisplayBounds: Rect? get() = physicalDisplay?.layerStackSpace
+    val physicalDisplayBounds: Rect?
+        get() = physicalDisplay?.layerStackSpace
 
     /**
-     * @return A [Layer] matching [componentMatcher] with a non-empty active buffer, or null if
-     * no layer matches [componentMatcher] or if the matching layer's buffer is empty
+     * @return A [Layer] matching [componentMatcher] with a non-empty active buffer, or null if no
+     * layer matches [componentMatcher] or if the matching layer's buffer is empty
      *
      * @param componentMatcher Components to search
      */
@@ -71,24 +67,24 @@ abstract class BaseLayerTraceEntry : ITraceEntry {
         }
     }
 
-    /**
-     * @return The [Layer] with [layerId], or null if the layer is not found
-     */
+    /** @return The [Layer] with [layerId], or null if the layer is not found */
     @JsName("getLayerById")
     fun getLayerById(layerId: Int): Layer? = this.flattenedLayers.firstOrNull { it.id == layerId }
 
     /**
      * Checks if any layer matching [componentMatcher] in the screen is animating.
      *
-     * The screen is animating when a layer is not simple rotation, of when the pip overlay
-     * layer is visible
+     * The screen is animating when a layer is not simple rotation, of when the pip overlay layer is
+     * visible
      *
      * @param componentMatcher Components to search
      */
     @JsName("isAnimating")
     fun isAnimating(componentMatcher: IComponentMatcher? = null): Boolean {
-        val layers = visibleLayers
-            .filter { componentMatcher == null || componentMatcher.layerMatchesAnyOf(it) }
+        val layers =
+            visibleLayers.filter {
+                componentMatcher == null || componentMatcher.layerMatchesAnyOf(it)
+            }
         val layersAnimating = layers.any { layer -> !layer.transform.isSimpleRotation }
         val pipAnimating = isVisible(ComponentNameMatcher.PIP_CONTENT_OVERLAY)
         return layersAnimating || pipAnimating
@@ -103,11 +99,8 @@ abstract class BaseLayerTraceEntry : ITraceEntry {
     fun isVisible(componentMatcher: IComponentMatcher): Boolean =
         componentMatcher.layerMatchesAnyOf(visibleLayers)
 
-    /**
-     * @return A [LayersTrace] object containing this state as its only entry
-     */
-    @JsName("asTrace")
-    fun asTrace(): LayersTrace = LayersTrace(arrayOf(this))
+    /** @return A [LayersTrace] object containing this state as its only entry */
+    @JsName("asTrace") fun asTrace(): LayersTrace = LayersTrace(arrayOf(this))
 
     override fun toString(): String {
         return "${prettyTimestamp(timestamp)} (timestamp=$timestamp)"

@@ -30,10 +30,10 @@ data class FaasData(
     fun toFacts(): Collection<Fact> {
         val unclippedFirstTimestamp = entireWmTrace.firstOrNull()?.timestamp ?: 0L
         val unclippedLastTimestamp = entireWmTrace.lastOrNull()?.timestamp ?: 0L
-        val unclippedTraceFirst = "${prettyTimestamp(unclippedFirstTimestamp)} " +
-            "(timestamp=$unclippedFirstTimestamp)"
-        val unclippedTraceLast = "${prettyTimestamp(unclippedLastTimestamp)} " +
-            "(timestamp=$unclippedLastTimestamp)"
+        val unclippedTraceFirst =
+            "${prettyTimestamp(unclippedFirstTimestamp)} " + "(timestamp=$unclippedFirstTimestamp)"
+        val unclippedTraceLast =
+            "${prettyTimestamp(unclippedLastTimestamp)} " + "(timestamp=$unclippedLastTimestamp)"
 
         return listOf(
             Fact.fact("Extracted from trace start", unclippedTraceFirst),
@@ -52,10 +52,9 @@ data class FaasData(
             Fact.fact("Associated transition type", scenarioInstance.associatedTransition.type),
             Fact.fact(
                 "Associated transition changes",
-                scenarioInstance.associatedTransition.changes
-                    .joinToString("\n  -", "\n  -") {
-                        "${it.transitMode} ${it.windowName}"
-                    }
+                scenarioInstance.associatedTransition.changes.joinToString("\n  -", "\n  -") {
+                    "${it.transitMode} ${it.windowName}"
+                }
             )
         )
     }

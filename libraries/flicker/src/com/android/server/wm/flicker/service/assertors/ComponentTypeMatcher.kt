@@ -23,15 +23,10 @@ import com.android.server.wm.traces.common.ComponentNameMatcher
 import com.android.server.wm.traces.common.transition.Transition
 
 /**
- * ComponentMatcher based on type (e.g. open/close app)
- * It is initialized late based on the transition passed through the
- * execute function of the assertion
+ * ComponentMatcher based on type (e.g. open/close app) It is initialized late based on the
+ * transition passed through the execute function of the assertion
  */
-class ComponentTypeMatcher(
-    val name: String
-) : ComponentNameMatcher(
-    ComponentName("", "")
-) {
+class ComponentTypeMatcher(val name: String) : ComponentNameMatcher(ComponentName("", "")) {
     var initialized = false
     override var component: ComponentName = super.component
         get() {
@@ -44,8 +39,9 @@ class ComponentTypeMatcher(
     var componentBuilder: ComponentBuilder = Components.EMPTY
 
     fun initialize(transition: Transition) {
-        Utils.componentNameMatcherHardcoded(name)
-            ?. run { this@ComponentTypeMatcher.component = this.component }
+        Utils.componentNameMatcherHardcoded(name)?.run {
+            this@ComponentTypeMatcher.component = this.component
+        }
             ?: run {
                 // safe cast because both openingAppFrom and closingAppFrom
                 // in Components return ComponentNameMatcher
@@ -64,10 +60,9 @@ class ComponentTypeMatcher(
             name: String,
             traceConfiguration: DeviceTraceConfiguration
         ): ComponentNameMatcher? {
-            Utils.componentNameMatcherHardcoded(name)
-                ?.run {
-                    return ComponentNameMatcher(this.component)
-                }
+            Utils.componentNameMatcherHardcoded(name)?.run {
+                return ComponentNameMatcher(this.component)
+            }
                 ?: run {
                     val componentMatcher = ComponentTypeMatcher(name)
                     traceConfiguration.run {
@@ -78,6 +73,9 @@ class ComponentTypeMatcher(
                             return null
                         }
                     }
+                        ?: run {
+                            throw ConfigException("Missing trace configuration - component $name")
+                        }
                 }
         }
     }

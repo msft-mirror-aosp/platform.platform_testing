@@ -22,21 +22,17 @@ import kotlin.js.JsName
 /**
  * Represents the keyguard controller in the window manager hierarchy
  *
- * This is a generic object that is reused by both Flicker and Winscope and cannot
- * access internal Java/Android functionality
- *
+ * This is a generic object that is reused by both Flicker and Winscope and cannot access internal
+ * Java/Android functionality
  */
-class KeyguardControllerState private constructor(
-    @JsName("isAodShowing")
-    val isAodShowing: Boolean,
-    @JsName("isKeyguardShowing")
-    val isKeyguardShowing: Boolean,
-    @JsName("keyguardOccludedStates")
-    val keyguardOccludedStates: Map<Int, Boolean>
+class KeyguardControllerState
+private constructor(
+    @JsName("isAodShowing") val isAodShowing: Boolean,
+    @JsName("isKeyguardShowing") val isKeyguardShowing: Boolean,
+    @JsName("keyguardOccludedStates") val keyguardOccludedStates: Map<Int, Boolean>
 ) {
     @JsName("isKeyguardOccluded")
-    fun isKeyguardOccluded(displayId: Int): Boolean =
-        keyguardOccludedStates[displayId] ?: false
+    fun isKeyguardOccluded(displayId: Int): Boolean = keyguardOccludedStates[displayId] ?: false
 
     override fun toString(): String {
         return "KeyguardControllerState: {aod=$isAodShowing keyguard=$isKeyguardShowing}"

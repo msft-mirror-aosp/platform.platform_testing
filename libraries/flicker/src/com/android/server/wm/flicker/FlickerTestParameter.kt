@@ -42,9 +42,7 @@ import com.android.server.wm.traces.common.IComponentMatcher
 import org.junit.rules.RuleChain
 import org.junit.rules.TestRule
 
-/**
- * Specification of a flicker test for JUnit ParameterizedRunner class
- */
+/** Specification of a flicker test for JUnit ParameterizedRunner class */
 data class FlickerTestParameter(
     @JvmField val config: MutableMap<String, Any?>,
     private val nameOverride: String? = null
@@ -52,15 +50,17 @@ data class FlickerTestParameter(
     private var internalFlicker: Flicker? = null
 
     @VisibleForTesting
-    val flicker: Flicker get() = internalFlicker ?: error("Flicker not initialized")
-    private val name: String get() = nameOverride ?: defaultName(this)
+    val flicker: Flicker
+        get() = internalFlicker ?: error("Flicker not initialized")
+    private val name: String
+        get() = nameOverride ?: defaultName(this)
 
-    internal val isInitialized: Boolean get() = internalFlicker != null
-    internal val result: FlickerResult? get() = internalFlicker?.result
+    internal val isInitialized: Boolean
+        get() = internalFlicker != null
+    internal val result: FlickerResult?
+        get() = internalFlicker?.result
 
-    /**
-     * If the initial screen rotation is 90 (landscape) or 180 (seascape) degrees
-     */
+    /** If the initial screen rotation is 90 (landscape) or 180 (seascape) degrees */
     val isLandscapeOrSeascapeAtStart: Boolean
         get() = startRotation == Surface.ROTATION_90 || startRotation == Surface.ROTATION_270
 
@@ -88,51 +88,52 @@ data class FlickerTestParameter(
      * Defaults to [WindowManagerPolicyConstants.NAV_BAR_MODE_GESTURAL_OVERLAY]
      */
     val navBarMode: String
-        get() = config.getOrDefault(
-            NAV_BAR_MODE,
-            WindowManagerPolicyConstants.NAV_BAR_MODE_GESTURAL_OVERLAY
-        ) as String
+        get() =
+            config.getOrDefault(
+                NAV_BAR_MODE,
+                WindowManagerPolicyConstants.NAV_BAR_MODE_GESTURAL_OVERLAY
+            ) as String
 
     val navBarModeName
-        get() = when (this.navBarMode) {
-            WindowManagerPolicyConstants.NAV_BAR_MODE_3BUTTON_OVERLAY -> "3_BUTTON_NAV"
-            WindowManagerPolicyConstants.NAV_BAR_MODE_2BUTTON_OVERLAY -> "2_BUTTON_NAV"
-            WindowManagerPolicyConstants.NAV_BAR_MODE_GESTURAL_OVERLAY -> "GESTURAL_NAV"
-            else -> "UNKNOWN_NAV_BAR_MODE(${this.navBarMode}"
-        }
+        get() =
+            when (this.navBarMode) {
+                WindowManagerPolicyConstants.NAV_BAR_MODE_3BUTTON_OVERLAY -> "3_BUTTON_NAV"
+                WindowManagerPolicyConstants.NAV_BAR_MODE_2BUTTON_OVERLAY -> "2_BUTTON_NAV"
+                WindowManagerPolicyConstants.NAV_BAR_MODE_GESTURAL_OVERLAY -> "GESTURAL_NAV"
+                else -> "UNKNOWN_NAV_BAR_MODE(${this.navBarMode}"
+            }
 
     val isGesturalNavigation =
         navBarMode == WindowManagerPolicyConstants.NAV_BAR_MODE_GESTURAL_OVERLAY
 
-    val isTablet: Boolean get() = config[IS_TABLET] as Boolean?
-        ?: error("$IS_TABLET property not initialized. Use [setIsTablet] to initialize ")
+    val isTablet: Boolean
+        get() =
+            config[IS_TABLET] as Boolean?
+                ?: error("$IS_TABLET property not initialized. Use [setIsTablet] to initialize ")
 
     fun setIsTablet(isTablet: Boolean) {
         config[IS_TABLET] = isTablet
     }
 
-    val isFaasEnabled get() = config.getOrDefault(FAAS_ENABLED, false) as Boolean &&
-        isShellTransitionsEnabled
+    val isFaasEnabled
+        get() = config.getOrDefault(FAAS_ENABLED, false) as Boolean && isShellTransitionsEnabled
 
     fun enableFaas() {
         config[FAAS_ENABLED] = true
     }
 
-    /**
-     * Clean the internal flicker reference (cache)
-     */
+    /** Clean the internal flicker reference (cache) */
     fun clear() {
         internalFlicker?.clear()
     }
 
-    /**
-     * Builds a flicker object and assigns it to the test parameters
-     */
+    /** Builds a flicker object and assigns it to the test parameters */
     fun initialize(builder: FlickerBuilder, testName: String) {
-        internalFlicker = builder
-            .withTestName { "${testName}_$name" }
-            .withFlickerAsAService { isFaasEnabled }
-            .build(TransitionRunnerWithRules(getTestSetupRules(builder.instrumentation)))
+        internalFlicker =
+            builder
+                .withTestName { "${testName}_$name" }
+                .withFlickerAsAService { isFaasEnabled }
+                .build(TransitionRunnerWithRules(getTestSetupRules(builder.instrumentation)))
     }
 
     /**
@@ -235,8 +236,8 @@ data class FlickerTestParameter(
      *
      * @param componentMatcher Components to search
      * @param useCompositionEngineRegionOnly If true, uses only the region calculated from the
-     *   Composition Engine (CE) -- visibleRegion in the proto definition. Otherwise, calculates
-     *   the visible region when the information is not available from the CE
+     * Composition Engine (CE) -- visibleRegion in the proto definition. Otherwise, calculates the
+     * visible region when the information is not available from the CE
      * @param assertion Assertion predicate
      */
     @JvmOverloads
@@ -245,8 +246,12 @@ data class FlickerTestParameter(
         useCompositionEngineRegionOnly: Boolean = true,
         assertion: RegionTraceSubject.() -> Unit
     ) {
-        val assertionData = buildLayersVisibleRegionAssertion(
-                componentMatcher, useCompositionEngineRegionOnly, assertion)
+        val assertionData =
+            buildLayersVisibleRegionAssertion(
+                componentMatcher,
+                useCompositionEngineRegionOnly,
+                assertion
+            )
         this.flicker.checkAssertion(assertionData)
     }
 
@@ -262,22 +267,23 @@ data class FlickerTestParameter(
 
     /**
      * Create the default flicker test setup rules. In order:
-     *   - unlock device
-     *   - change orientation
-     *   - change navigation mode
-     *   - launch an app
-     *   - remove all apps
-     *   - go to home screen
+     * - unlock device
+     * - change orientation
+     * - change navigation mode
+     * - launch an app
+     * - remove all apps
+     * - go to home screen
      *
-     * (b/186740751) An app should be launched because, after changing the navigation mode,
-     * the first app launch is handled as a screen size change (similar to a rotation), this
-     * causes different problems during testing (e.g. IME now shown on app launch)
+     * (b/186740751) An app should be launched because, after changing the navigation mode, the
+     * first app launch is handled as a screen size change (similar to a rotation), this causes
+     * different problems during testing (e.g. IME now shown on app launch)
      */
     fun getTestSetupRules(instrumentation: Instrumentation): TestRule =
         RuleChain.outerRule(UnlockScreenRule())
             .around(NavigationModeRule(navBarMode))
             .around(
-                LaunchAppRule(BrowserAppHelper(instrumentation), clearCacheAfterParsing = false))
+                LaunchAppRule(BrowserAppHelper(instrumentation), clearCacheAfterParsing = false)
+            )
             .around(RemoveAllTasksButHomeRule())
             .around(ChangeDisplayOrientationRule(startRotation, clearCacheAfterParsing = false))
             .around(PressHomeRule())
@@ -329,11 +335,12 @@ data class FlickerTestParameter(
         fun buildWMTagAssertion(
             tag: String,
             assertion: WindowManagerStateSubject.() -> Unit
-        ): AssertionData = AssertionData(
-            tag = tag,
-            expectedSubjectClass = WindowManagerStateSubject::class,
-            assertion = assertion as FlickerSubject.() -> Unit
-        )
+        ): AssertionData =
+            AssertionData(
+                tag = tag,
+                expectedSubjectClass = WindowManagerStateSubject::class,
+                assertion = assertion as FlickerSubject.() -> Unit
+            )
 
         @VisibleForTesting
         @JvmStatic
@@ -354,7 +361,8 @@ data class FlickerTestParameter(
             return AssertionData(
                 tag = AssertionTag.ALL,
                 expectedSubjectClass = WindowManagerTraceSubject::class,
-                assertion = closedAssertion as FlickerSubject.() -> Unit)
+                assertion = closedAssertion as FlickerSubject.() -> Unit
+            )
         }
 
         @VisibleForTesting
@@ -396,11 +404,12 @@ data class FlickerTestParameter(
         fun buildLayersTagAssertion(
             tag: String,
             assertion: LayerTraceEntrySubject.() -> Unit
-        ): AssertionData = AssertionData(
-            tag = tag,
-            expectedSubjectClass = LayerTraceEntrySubject::class,
-            assertion = assertion as FlickerSubject.() -> Unit
-        )
+        ): AssertionData =
+            AssertionData(
+                tag = tag,
+                expectedSubjectClass = LayerTraceEntrySubject::class,
+                assertion = assertion as FlickerSubject.() -> Unit
+            )
 
         @VisibleForTesting
         @JvmOverloads
@@ -414,7 +423,7 @@ data class FlickerTestParameter(
                 this.clear()
                 // convert LayersTraceSubject to RegionTraceSubject
                 val regionTraceSubject =
-                        visibleRegion(componentMatcher, useCompositionEngineRegionOnly)
+                    visibleRegion(componentMatcher, useCompositionEngineRegionOnly)
 
                 // add assertions to the regionTraceSubject's AssertionChecker
                 assertion(regionTraceSubject)

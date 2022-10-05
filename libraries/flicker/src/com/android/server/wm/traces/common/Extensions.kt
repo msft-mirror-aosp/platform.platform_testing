@@ -27,13 +27,14 @@ fun prettyTimestamp(timestampNs: Long): String {
     var remainingNs = "$timestampNs".toLong()
     val prettyTimestamp = StringBuilder()
 
-    val timeUnitToNanoSeconds = mapOf(
-        "d" to DAY_AS_NANOSECONDS,
-        "h" to HOUR_AS_NANOSECONDS,
-        "m" to MINUTE_AS_NANOSECONDS,
-        "s" to SECOND_AS_NANOSECONDS,
-        "ms" to MILLISECOND_AS_NANOSECONDS
-    )
+    val timeUnitToNanoSeconds =
+        mapOf(
+            "d" to DAY_AS_NANOSECONDS,
+            "h" to HOUR_AS_NANOSECONDS,
+            "m" to MINUTE_AS_NANOSECONDS,
+            "s" to SECOND_AS_NANOSECONDS,
+            "ms" to MILLISECOND_AS_NANOSECONDS
+        )
 
     for ((timeUnit, ns) in timeUnitToNanoSeconds) {
         val convertedTime = remainingNs / ns

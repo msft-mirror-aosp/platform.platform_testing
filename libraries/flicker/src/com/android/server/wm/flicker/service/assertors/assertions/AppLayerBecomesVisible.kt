@@ -22,17 +22,15 @@ import com.android.server.wm.traces.common.ComponentNameMatcher
 import com.android.server.wm.traces.common.transition.Transition
 
 /**
- * Checks that the app layer doesn't exist or is invisible at the start of the transition, but
- * is created and/or becomes visible during the transition.
+ * Checks that the app layer doesn't exist or is invisible at the start of the transition, but is
+ * created and/or becomes visible during the transition.
  */
 class AppLayerBecomesVisible(component: ComponentBuilder) :
     BaseAssertionBuilderWithComponent(component) {
     /** {@inheritDoc} */
-    override fun doEvaluate(
-        transition: Transition,
-        layerSubject: LayersTraceSubject
-    ) {
-        layerSubject.isInvisible(component.build(transition))
+    override fun doEvaluate(transition: Transition, layerSubject: LayersTraceSubject) {
+        layerSubject
+            .isInvisible(component.build(transition))
             .then()
             .isVisible(ComponentNameMatcher.SNAPSHOT, isOptional = true)
             .then()

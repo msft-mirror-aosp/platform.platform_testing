@@ -21,18 +21,15 @@ import android.app.WindowConfiguration
 import com.android.server.wm.traces.common.IComponentMatcher
 
 data class WaitForValidActivityState(
-    @JvmField
-    val activityMatcher: IComponentMatcher?,
-    @JvmField
-    val windowIdentifier: String?,
-    @JvmField
-    val stackId: Int,
-    @JvmField
-    val windowingMode: Int,
-    @JvmField
-    val activityType: Int
+    @JvmField val activityMatcher: IComponentMatcher?,
+    @JvmField val windowIdentifier: String?,
+    @JvmField val stackId: Int,
+    @JvmField val windowingMode: Int,
+    @JvmField val activityType: Int
 ) {
-    constructor(activityName: IComponentMatcher) : this(
+    constructor(
+        activityName: IComponentMatcher
+    ) : this(
         activityName,
         windowIdentifier = activityName.toWindowIdentifier(),
         stackId = ActivityTaskManager.INVALID_STACK_ID,
@@ -40,7 +37,9 @@ data class WaitForValidActivityState(
         activityType = WindowConfiguration.ACTIVITY_TYPE_UNDEFINED
     )
 
-    private constructor(builder: Builder) : this(
+    private constructor(
+        builder: Builder
+    ) : this(
         activityMatcher = builder.activityName,
         windowIdentifier = builder.windowIdentifier,
         stackId = builder.stackId,
@@ -75,7 +74,7 @@ data class WaitForValidActivityState(
         internal var activityType = WindowConfiguration.ACTIVITY_TYPE_UNDEFINED
 
         fun setWindowIdentifier(windowIdentifier: String): Builder {
-             this.windowIdentifier = windowIdentifier
+            this.windowIdentifier = windowIdentifier
             return this
         }
 

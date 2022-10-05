@@ -83,11 +83,8 @@ class UiDeviceExtensionsTest {
     @Test
     fun canParseCurrentDeviceState() {
         val currState = this.getCurrStateDump()
-        Truth.assertThat(currState.wmState?.asTrace()?.entries ?: emptyArray())
-            .asList()
-            .hasSize(1)
-        Truth.assertThat(currState.wmState?.asTrace()?.entries?.first()?.windowStates)
-            .isNotEmpty()
+        Truth.assertThat(currState.wmState?.asTrace()?.entries ?: emptyArray()).asList().hasSize(1)
+        Truth.assertThat(currState.wmState?.asTrace()?.entries?.first()?.windowStates).isNotEmpty()
         Truth.assertThat(currState.layerState?.asTrace()?.entries ?: emptyArray())
             .asList()
             .hasSize(1)

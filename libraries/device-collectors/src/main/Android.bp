@@ -26,7 +26,7 @@ java_library {
         "adservices-collector-helper",
         "androidx.annotation_annotation",
         "androidx.test.runner",
-        "androidx.test.uiautomator_uiautomator",
+        "androidx.test.uiautomator",
         "app-collector-helper",
         "jank-helper",
         "junit",

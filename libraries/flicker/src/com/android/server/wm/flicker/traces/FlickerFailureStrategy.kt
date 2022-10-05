@@ -22,9 +22,7 @@ import com.google.common.truth.FailureStrategy
 class FlickerFailureStrategy : FailureStrategy {
     private lateinit var subject: FlickerSubject
 
-    fun init(subject: FlickerSubject) = apply {
-        this.subject = subject
-    }
+    fun init(subject: FlickerSubject) = apply { this.subject = subject }
 
     override fun fail(error: AssertionError) {
         require(::subject.isInitialized) { "Failure strategy is not initialized" }

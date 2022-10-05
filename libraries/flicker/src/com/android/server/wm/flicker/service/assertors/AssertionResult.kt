@@ -30,19 +30,18 @@ import com.android.server.wm.traces.common.windowmanager.windows.WindowState
 typealias AssertionEvaluator =
     (wmSubject: WindowManagerTraceSubject, layerSubject: LayersTraceSubject) -> Unit
 
-/**
- * Base class for a FASS assertion
- */
+/** Base class for a FASS assertion */
 data class AssertionResult(
     val assertionName: String,
     val scenario: Scenario,
     val invocationGroup: AssertionInvocationGroup,
     val assertionError: Throwable?
 ) {
-    val failed: Boolean get() = (assertionError !== null)
+    val failed: Boolean
+        get() = (assertionError !== null)
 
-    val failureSubject: FlickerSubject? get() =
-        if (assertionError is FlickerSubjectException) assertionError.subject else null
+    val failureSubject: FlickerSubject?
+        get() = if (assertionError is FlickerSubjectException) assertionError.subject else null
 
     /**
      * Returns the layer responsible for the failure, if any

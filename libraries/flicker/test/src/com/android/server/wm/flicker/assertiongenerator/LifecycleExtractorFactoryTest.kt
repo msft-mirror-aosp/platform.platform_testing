@@ -17,25 +17,29 @@ import org.junit.Test
  */
 class LifecycleExtractorFactoryTest {
     @Test
-    fun extract(){
-        val layersTrace = ElementLifecycleExtractorTestConst.createTrace_arg(
-            ElementLifecycleExtractorTestConst.mapOfFlattenedLayers
-        )
+    fun extract() {
+        val layersTrace =
+            ElementLifecycleExtractorTestConst.createTrace_arg(
+                ElementLifecycleExtractorTestConst.mapOfFlattenedLayers
+            )
         val layersTraceDump = DeviceTraceDump(null, layersTrace)
         val nullTraceDump = DeviceTraceDump(null, null)
         val traceDumps = arrayOf(layersTraceDump, nullTraceDump)
-        val elementLifecycles = LifecycleExtractorFactory.extract(
-            traceDumps,
-            Array(traceDumps.size) { AssertionGenConfigTestConst.emptyDeviceTraceConfiguration }
-        )
+        val elementLifecycles =
+            LifecycleExtractorFactory.extract(
+                traceDumps,
+                Array(traceDumps.size) { AssertionGenConfigTestConst.emptyDeviceTraceConfiguration }
+            )
         val expectedTraceLifecycle =
             LayersTraceLifecycle(
                 ElementLifecycleExtractorTestConst.expectedElementLifecycles
-                    as MutableMap<ComponentNameMatcher, LayersComponentLifecycle>)
-        val expectedTraceContent = TraceContent.byTraceType(
-            expectedTraceLifecycle,
-            AssertionGenConfigTestConst.emptyDeviceTraceConfiguration
-        )
+                    as MutableMap<ComponentNameMatcher, LayersComponentLifecycle>
+            )
+        val expectedTraceContent =
+            TraceContent.byTraceType(
+                expectedTraceLifecycle,
+                AssertionGenConfigTestConst.emptyDeviceTraceConfiguration
+            )
         val expectedTraceLifecycles = listOf(expectedTraceContent)
         try {
             Truth.assertThat(elementLifecycles == expectedTraceLifecycles).isTrue()
@@ -47,23 +51,26 @@ class LifecycleExtractorFactoryTest {
     }
 
     @Test
-    fun extract_sameComponentMatcher(){
-        val layersTrace = ElementLifecycleExtractorTestConst.createTrace_arg(
-            ElementLifecycleExtractorTestConst.mapOfFlattenedLayers_SameComponentMatcher
-        )
+    fun extract_sameComponentMatcher() {
+        val layersTrace =
+            ElementLifecycleExtractorTestConst.createTrace_arg(
+                ElementLifecycleExtractorTestConst.mapOfFlattenedLayers_SameComponentMatcher
+            )
         val layersTraceDump = DeviceTraceDump(null, layersTrace)
         val nullTraceDump = DeviceTraceDump(null, null)
         val traceDumps = arrayOf(layersTraceDump, nullTraceDump)
-        val elementLifecycles = LifecycleExtractorFactory.extract(
-            traceDumps,
-            Array(traceDumps.size) { AssertionGenConfigTestConst.emptyDeviceTraceConfiguration }
-        )
+        val elementLifecycles =
+            LifecycleExtractorFactory.extract(
+                traceDumps,
+                Array(traceDumps.size) { AssertionGenConfigTestConst.emptyDeviceTraceConfiguration }
+            )
         val expectedTraceLifecycle =
             LayersTraceLifecycle(
-            ElementLifecycleExtractorTestConst.expectedElementLifecycles_SameComponentMatcher
-                as MutableMap<ComponentNameMatcher, LayersComponentLifecycle>)
-        val expectedTraceContent = TraceContent
-            .byTraceType(
+                ElementLifecycleExtractorTestConst.expectedElementLifecycles_SameComponentMatcher
+                    as MutableMap<ComponentNameMatcher, LayersComponentLifecycle>
+            )
+        val expectedTraceContent =
+            TraceContent.byTraceType(
                 expectedTraceLifecycle,
                 AssertionGenConfigTestConst.emptyDeviceTraceConfiguration
             )!!

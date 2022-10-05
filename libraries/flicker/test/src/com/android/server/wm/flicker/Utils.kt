@@ -105,8 +105,8 @@ internal fun readTestFile(relativePath: String): ByteArray {
  * Runs `r` and asserts that an exception of type `expectedThrowable` is thrown.
  * @param expectedThrowable the type of throwable that is expected to be thrown
  * @param r the [Runnable] which is run and expected to throw.
- * @throws AssertionError if `r` does not throw, or throws a runnable that is not an
- * instance of `expectedThrowable`.
+ * @throws AssertionError if `r` does not throw, or throws a runnable that is not an instance of
+ * `expectedThrowable`.
  */
 // TODO: remove once Android migrates to JUnit 4.13, which provides assertThrows
 fun assertThrows(expectedThrowable: Class<out Throwable>, r: () -> Any): Throwable {
@@ -125,11 +125,12 @@ fun assertThrows(expectedThrowable: Class<out Throwable>, r: () -> Any): Throwab
 }
 
 fun assertFailure(failure: Throwable?): TruthFailureSubject {
-    val target = when (failure) {
-        is FlickerSubjectException -> failure.cause
-        is AssertionError -> failure
-        else -> error("Expected assertion error, received $failure")
-    }
+    val target =
+        when (failure) {
+            is FlickerSubjectException -> failure.cause
+            is AssertionError -> failure
+            else -> error("Expected assertion error, received $failure")
+        }
     require(target is AssertionError) { "Unknown failure $target" }
     return ExpectFailure.assertThat(target)
 }
@@ -153,16 +154,18 @@ fun assertArchiveContainsAllTraces(
     val archiveFileName = "${runStatus.prefix}_$testName.zip"
     val archivePath = getDefaultFlickerOutputDir().resolve(archiveFileName)
     Truth.assertWithMessage("Expected trace archive `$archivePath` to exist")
-        .that(Files.exists(archivePath)).isTrue()
+        .that(Files.exists(archivePath))
+        .isTrue()
 
     val archiveStream = ZipInputStream(FileInputStream(archivePath.toFile()))
 
-    val expectedFiles = mutableListOf(
-        "wm_trace.winscope",
-        "layers_trace.winscope",
-        "transition.mp4",
-        "transactions_trace.winscope"
-    )
+    val expectedFiles =
+        mutableListOf(
+            "wm_trace.winscope",
+            "layers_trace.winscope",
+            "transition.mp4",
+            "transactions_trace.winscope"
+        )
 
     if (isShellTransitionsEnabled) {
         expectedFiles.add("transition_trace.winscope")
@@ -172,7 +175,8 @@ fun assertArchiveContainsAllTraces(
 
     Truth.assertThat(actualFiles).hasSize(expectedFiles.size)
     Truth.assertWithMessage("Trace archive doesn't contain all expected traces")
-        .that(actualFiles.containsAll(expectedFiles)).isTrue()
+        .that(actualFiles.containsAll(expectedFiles))
+        .isTrue()
 }
 
 fun getTestTraceDump(

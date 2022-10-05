@@ -3,9 +3,7 @@ package com.android.server.wm.flicker.assertiongenerator.layers
 import com.android.server.wm.flicker.assertiongenerator.common.IElementLifecycle
 import com.android.server.wm.traces.common.layers.Layer
 
-class LayersElementLifecycle(
-    override val states: MutableList<Layer?>
-) : IElementLifecycle {
+class LayersElementLifecycle(override val states: MutableList<Layer?>) : IElementLifecycle {
 
     override fun hashCode(): Int {
         return states.hashCode()

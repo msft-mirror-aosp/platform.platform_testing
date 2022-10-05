@@ -19,13 +19,9 @@ package com.android.server.wm.flicker.traces
 import com.android.server.wm.flicker.assertions.FlickerSubject
 import com.android.server.wm.traces.common.prettyTimestamp
 
-/**
- * Exception thrown by [FlickerSubject]s
- */
-class FlickerSubjectException(
-    internal val subject: FlickerSubject,
-    cause: Throwable
-) : AssertionError(cause.message, if (cause is FlickerSubjectException) null else cause) {
+/** Exception thrown by [FlickerSubject]s */
+class FlickerSubjectException(internal val subject: FlickerSubject, cause: Throwable) :
+    AssertionError(cause.message, if (cause is FlickerSubjectException) null else cause) {
     internal val timestamp = subject.timestamp
     private val prettyTimestamp =
         if (timestamp > 0) "${prettyTimestamp(timestamp)} (timestamp=$timestamp)" else ""

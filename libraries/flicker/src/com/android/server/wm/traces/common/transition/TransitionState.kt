@@ -19,22 +19,14 @@ package com.android.server.wm.traces.common.transition
 import kotlin.js.JsName
 
 data class TransitionState(
-    @JsName("id")
-    val id: Int,
-    @JsName("type")
-    val type: Transition.Companion.Type,
-    @JsName("timestamp")
-    val timestamp: Long,
-    @JsName("state")
-    val state: State,
-    @JsName("flags")
-    val flags: Int,
-    @JsName("changes")
-    val changes: List<TransitionChange>,
-    @JsName("startTransactionId")
-    val startTransactionId: Long,
-    @JsName("finishTransactionId")
-    val finishTransactionId: Long
+    @JsName("id") val id: Int,
+    @JsName("type") val type: Transition.Companion.Type,
+    @JsName("timestamp") val timestamp: Long,
+    @JsName("state") val state: State,
+    @JsName("flags") val flags: Int,
+    @JsName("changes") val changes: List<TransitionChange>,
+    @JsName("startTransactionId") val startTransactionId: Long,
+    @JsName("finishTransactionId") val finishTransactionId: Long
 ) {
     companion object {
         enum class State(val value: Int) {
@@ -46,8 +38,7 @@ data class TransitionState(
             FINISHED(4);
 
             companion object {
-                @JsName("fromInt")
-                fun fromInt(value: Int) = values().first { it.value == value }
+                @JsName("fromInt") fun fromInt(value: Int) = values().first { it.value == value }
             }
         }
     }

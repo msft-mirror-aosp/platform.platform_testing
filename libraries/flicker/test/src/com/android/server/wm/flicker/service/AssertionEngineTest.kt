@@ -26,13 +26,12 @@ import org.junit.Test
 import org.junit.runners.MethodSorters
 
 /**
- * Contains [AssertionEngine] tests.
- * To run this test: `atest FlickerLibTest:AssertionEngineTest`
+ * Contains [AssertionEngine] tests. To run this test: `atest FlickerLibTest:AssertionEngineTest`
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class AssertionEngineTest {
-    private val assertionEngine = AssertionEngine(AssertionGeneratorConfigProducer())
-        { m -> Log.d("AssertionEngineTest", m)}
+    private val assertionEngine =
+        AssertionEngine(AssertionGeneratorConfigProducer()) { m -> Log.d("AssertionEngineTest", m) }
 
     @Test
     fun canHandleTransactionsWithNoVSync() {
@@ -40,10 +39,9 @@ class AssertionEngineTest {
         val path = "service/CloseAppBackButtonTest_ROTATION_90_GESTURAL_NAV_with_no_vsyncids"
         val wmTrace = readWmTraceFromFile("$path/wm_trace.winscope")
         val layersTrace = readLayerTraceFromFile("$path/layers_trace.winscope")
-        val transactionsTrace = readTransactionsTraceFromFile(
-                "$path/transactions_trace.winscope")
-        val transitionsTrace = readTransitionsTraceFromFile(
-                "$path/transition_trace.winscope", transactionsTrace)
+        val transactionsTrace = readTransactionsTraceFromFile("$path/transactions_trace.winscope")
+        val transitionsTrace =
+            readTransitionsTraceFromFile("$path/transition_trace.winscope", transactionsTrace)
 
         assertionEngine.analyze(wmTrace, layersTrace, transitionsTrace)
     }

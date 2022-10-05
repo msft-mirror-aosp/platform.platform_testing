@@ -23,23 +23,21 @@ import com.android.server.wm.flicker.assertions.AssertionData
 import com.android.server.wm.flicker.assertions.FlickerAssertionError
 import com.google.common.truth.Truth
 
-/**
- * Result of a flicker run, including transitions, errors and create tags
- */
+/** Result of a flicker run, including transitions, errors and create tags */
 data class FlickerResult(
-    /**
-     * Result of a transition run
-     */
+    /** Result of a transition run */
     private val runResult: FlickerRunResult,
 ) {
-    val status: RunStatus get() = runResult.status
-    val transitionExecutionError: ExecutionError? get() = runResult.transitionExecutionError
-    val faasExecutionError: ExecutionError? get() = runResult.faasExecutionError
-    val ranSuccessfully: Boolean get() = runResult.isSuccessfulRun
+    val status: RunStatus
+        get() = runResult.status
+    val transitionExecutionError: ExecutionError?
+        get() = runResult.transitionExecutionError
+    val faasExecutionError: ExecutionError?
+        get() = runResult.faasExecutionError
+    val ranSuccessfully: Boolean
+        get() = runResult.isSuccessfulRun
 
-    /**
-     * List of failures during assertion
-     */
+    /** List of failures during assertion */
     private val failures: MutableList<FlickerAssertionError> = mutableListOf()
 
     /**
@@ -50,11 +48,10 @@ data class FlickerResult(
     @VisibleForTesting
     fun checkAssertion(assertion: AssertionData): FlickerAssertionError? {
         Truth.assertWithMessage("Transition was not executed successful. Can't check assertions")
-                .that(runResult.isSuccessfulRun).isTrue()
+            .that(runResult.isSuccessfulRun)
+            .isTrue()
 
-        val assertionFailure = runResult.checkAssertion(assertion)?.also {
-            failures.add(it)
-        }
+        val assertionFailure = runResult.checkAssertion(assertion)?.also { failures.add(it) }
         return assertionFailure
     }
 

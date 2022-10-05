@@ -40,12 +40,14 @@ import com.android.server.wm.traces.parser.windowmanager.WindowManagerStateHelpe
  * Class to take advantage of {@code IAppHelper} interface so the same test can be run against first
  * party and third party apps.
  */
-open class StandardAppHelper @JvmOverloads constructor(
+open class StandardAppHelper
+@JvmOverloads
+constructor(
     instr: Instrumentation,
     @JvmField val appName: String,
     @JvmField val componentMatcher: IComponentNameMatcher,
     protected val launcherStrategy: ILauncherStrategy =
-    LauncherStrategyFactory.getInstance(instr).launcherStrategy
+        LauncherStrategyFactory.getInstance(instr).launcherStrategy
 ) : AbstractStandardAppHelper(instr), IComponentNameMatcher by componentMatcher {
     constructor(
         instr: Instrumentation,
@@ -54,8 +56,7 @@ open class StandardAppHelper @JvmOverloads constructor(
         activity: String,
         launcherStrategy: ILauncherStrategy =
             LauncherStrategyFactory.getInstance(instr).launcherStrategy
-    ) : this(instr, appName,
-        ComponentNameMatcher(packageName, ".$activity"), launcherStrategy)
+    ) : this(instr, appName, ComponentNameMatcher(packageName, ".$activity"), launcherStrategy)
 
     private val activityManager: ActivityManager?
         get() = mInstrumentation.context.getSystemService(ActivityManager::class.java)
@@ -70,11 +71,12 @@ open class StandardAppHelper @JvmOverloads constructor(
     protected val uiDevice: UiDevice = UiDevice.getInstance(mInstrumentation)
 
     private fun getAppSelector(expectedPackageName: String): BySelector {
-        val expected = if (expectedPackageName.isNotEmpty()) {
-            expectedPackageName
-        } else {
-            packageName
-        }
+        val expected =
+            if (expectedPackageName.isNotEmpty()) {
+                expectedPackageName
+            } else {
+                packageName
+            }
         return By.pkg(expected).depth(0)
     }
 
@@ -82,12 +84,12 @@ open class StandardAppHelper @JvmOverloads constructor(
         launcherStrategy.launch(appName, packageName)
     }
 
-    /** {@inheritDoc}  */
+    /** {@inheritDoc} */
     override fun getPackage(): String {
         return packageName
     }
 
-    /** {@inheritDoc}  */
+    /** {@inheritDoc} */
     override fun getOpenAppIntent(): Intent {
         val intent = Intent()
         intent.addCategory(Intent.CATEGORY_LAUNCHER)
@@ -96,43 +98,39 @@ open class StandardAppHelper @JvmOverloads constructor(
         return intent
     }
 
-    /** {@inheritDoc}  */
+    /** {@inheritDoc} */
     override fun getLauncherName(): String {
         return appName
     }
 
-    /** {@inheritDoc}  */
+    /** {@inheritDoc} */
     override fun dismissInitialDialogs() {}
 
-    /** {@inheritDoc}  */
+    /** {@inheritDoc} */
     override fun exit() {
         // Ensure all testing components end up being closed.
         activityManager?.forceStopPackage(packageName)
     }
 
-    /**
-     * Exits the activity and wait for activity destroyed
-     */
-    fun exit(
-        wmHelper: WindowManagerStateHelper
-    ) {
+    /** Exits the activity and wait for activity destroyed */
+    fun exit(wmHelper: WindowManagerStateHelper) {
         exit()
         waitForActivityDestroyed(wmHelper)
     }
 
-    /**
-     * Waits the activity until state change to {link WindowManagerState.STATE_DESTROYED}
-     */
-    private fun waitForActivityDestroyed(
-        wmHelper: WindowManagerStateHelper
-    ) {
-        val waitMsg = "state of ${componentMatcher.toActivityIdentifier()} to be " +
-            WindowManagerState.STATE_DESTROYED
-        wmHelper.StateSyncBuilder()
+    /** Waits the activity until state change to {link WindowManagerState.STATE_DESTROYED} */
+    private fun waitForActivityDestroyed(wmHelper: WindowManagerStateHelper) {
+        val waitMsg =
+            "state of ${componentMatcher.toActivityIdentifier()} to be " +
+                WindowManagerState.STATE_DESTROYED
+        wmHelper
+            .StateSyncBuilder()
             .add(waitMsg) {
                 !it.wmState.containsActivity(componentMatcher) ||
-                    it.wmState.hasActivityState(componentMatcher,
-                        WindowManagerState.STATE_DESTROYED)
+                    it.wmState.hasActivityState(
+                        componentMatcher,
+                        WindowManagerState.STATE_DESTROYED
+                    )
             }
             .withAppTransitionIdle()
             .waitForAndVerify()
@@ -144,9 +142,7 @@ open class StandardAppHelper @JvmOverloads constructor(
     ) {
         val intent = openAppIntent
         intent.action = action
-        stringExtras.forEach {
-            intent.putExtra(it.key, it.value)
-        }
+        stringExtras.forEach { intent.putExtra(it.key, it.value) }
         context.startActivity(intent)
     }
 
@@ -167,8 +163,8 @@ open class StandardAppHelper @JvmOverloads constructor(
     }
 
     /**
-     * Launches the app through an intent instead of interacting with the launcher and waits
-     * until the app window is visible
+     * Launches the app through an intent instead of interacting with the launcher and waits until
+     * the app window is visible
      */
     @JvmOverloads
     open fun launchViaIntent(
@@ -179,28 +175,30 @@ open class StandardAppHelper @JvmOverloads constructor(
     ) = launchViaIntentAndWaitShown(wmHelper, expectedWindowName, action, stringExtras)
 
     /**
-     * Launches the app through an intent instead of interacting with the launcher and waits
-     * until the app window is visible
+     * Launches the app through an intent instead of interacting with the launcher and waits until
+     * the app window is visible
      */
     protected fun launchViaIntentAndWaitShown(
         wmHelper: WindowManagerStateHelper,
         expectedWindowName: String = "",
         action: String? = null,
         stringExtras: Map<String, String> = mapOf(),
-        waitConditions: Array<
-            Condition<DeviceStateDump>> = emptyArray()
+        waitConditions: Array<Condition<DeviceStateDump>> = emptyArray()
     ) {
         launchAppViaIntent(action, stringExtras)
 
-        val expectedWindow = if (expectedWindowName.isNotEmpty()) {
-            ComponentNameMatcher("", expectedWindowName)
-        } else {
-            componentMatcher
-        }
-        val builder = wmHelper.StateSyncBuilder()
-            .add(WindowManagerConditionsFactory.isWMStateComplete())
-            .withAppTransitionIdle()
-            .withWindowSurfaceAppeared(expectedWindow)
+        val expectedWindow =
+            if (expectedWindowName.isNotEmpty()) {
+                ComponentNameMatcher("", expectedWindowName)
+            } else {
+                componentMatcher
+            }
+        val builder =
+            wmHelper
+                .StateSyncBuilder()
+                .add(WindowManagerConditionsFactory.isWMStateComplete())
+                .withAppTransitionIdle()
+                .withWindowSurfaceAppeared(expectedWindow)
 
         waitConditions.forEach { builder.add(it) }
         builder.waitForAndVerify()
@@ -208,7 +206,8 @@ open class StandardAppHelper @JvmOverloads constructor(
         // During seamless rotation the app window is shown
         val currWmState = wmHelper.currentState.wmState
         if (currWmState.visibleWindows.none { it.isFullscreen }) {
-            wmHelper.StateSyncBuilder()
+            wmHelper
+                .StateSyncBuilder()
                 .withNavOrTaskBarVisible()
                 .withStatusBarVisible()
                 .waitForAndVerify()

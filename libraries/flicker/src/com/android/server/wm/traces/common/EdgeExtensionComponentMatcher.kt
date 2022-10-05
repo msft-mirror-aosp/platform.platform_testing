@@ -42,7 +42,7 @@ class EdgeExtensionComponentMatcher : IComponentMatcher {
             }
 
             return it.name.contains("Left Edge Extension") ||
-                    it.name.contains("Right Edge Extension")
+                it.name.contains("Right Edge Extension")
         }
     }
 
@@ -55,13 +55,15 @@ class EdgeExtensionComponentMatcher : IComponentMatcher {
     /** {@inheritDoc} */
     override fun toActivityIdentifier(): String {
         throw NotImplementedError(
-                "toActivityIdentifier() is not implemented on EdgeExtensionComponentMatcher")
+            "toActivityIdentifier() is not implemented on EdgeExtensionComponentMatcher"
+        )
     }
 
     /** {@inheritDoc} */
     override fun toWindowIdentifier(): String {
         throw NotImplementedError(
-                "toWindowName() is not implemented on EdgeExtensionComponentMatcher")
+            "toWindowName() is not implemented on EdgeExtensionComponentMatcher"
+        )
     }
 
     /** {@inheritDoc} */

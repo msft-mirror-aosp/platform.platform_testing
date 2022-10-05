@@ -44,8 +44,7 @@ class RunResultArtifacts(_filePath: Path) {
 
     private val zipOutputStream by lazy { openZipOutputStream() }
     private fun openZipOutputStream(): ZipOutputStream {
-        return ZipOutputStream(BufferedOutputStream(
-                FileOutputStream(path.toFile()), BUFFER_SIZE))
+        return ZipOutputStream(BufferedOutputStream(FileOutputStream(path.toFile()), BUFFER_SIZE))
     }
 
     internal val traceName = path.fileName ?: "UNNAMED_TRACE"
@@ -58,7 +57,7 @@ class RunResultArtifacts(_filePath: Path) {
                 }
                 require(!field.isFailure) {
                     "Status of run already set to a failed status $field " +
-                            "and can't be changed to $value."
+                        "and can't be changed to $value."
                 }
                 field = value
                 syncFileWithStatus()
@@ -104,14 +103,13 @@ class RunResultArtifacts(_filePath: Path) {
     }
 
     internal fun getFileBytes(fileName: String): ByteArray {
-        require (archiveLocked) { "Can't get files from archive before it is closed" }
+        require(archiveLocked) { "Can't get files from archive before it is closed" }
 
         val tmpBuffer = ByteArray(BUFFER_SIZE)
         val zipInputStream: ZipInputStream
         try {
             zipInputStream =
-                    ZipInputStream(
-                            BufferedInputStream(FileInputStream(path.toFile()), BUFFER_SIZE))
+                ZipInputStream(BufferedInputStream(FileInputStream(path.toFile()), BUFFER_SIZE))
         } catch (e: Throwable) {
             return ByteArray(0)
         }

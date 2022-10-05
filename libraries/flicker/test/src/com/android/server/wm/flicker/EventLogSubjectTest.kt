@@ -22,8 +22,7 @@ import com.google.common.truth.Truth
 import org.junit.Test
 
 /**
- * Contains [EventLogSubject] tests. To run this test: `atest
- * FlickerLibTest:EventLogSubjectTest`
+ * Contains [EventLogSubject] tests. To run this test: `atest FlickerLibTest:EventLogSubjectTest`
  */
 class EventLogSubjectTest {
     @Test
@@ -32,14 +31,15 @@ class EventLogSubjectTest {
         runResult.transitionStartTime = FlickerRunResult.TraceTime.MIN
         runResult.transitionEndTime = FlickerRunResult.TraceTime.MAX
         runResult.eventLog =
-                listOf(FocusEvent(0, "WinB", FocusEvent.Focus.GAINED, "test"),
-                        FocusEvent(0, "test WinA window", FocusEvent.Focus.LOST, "test"),
-                        FocusEvent(0, "WinB", FocusEvent.Focus.LOST, "test"),
-                        FocusEvent(0, "test WinC", FocusEvent.Focus.GAINED, "test"))
+            listOf(
+                FocusEvent(0, "WinB", FocusEvent.Focus.GAINED, "test"),
+                FocusEvent(0, "test WinA window", FocusEvent.Focus.LOST, "test"),
+                FocusEvent(0, "WinB", FocusEvent.Focus.LOST, "test"),
+                FocusEvent(0, "test WinC", FocusEvent.Focus.GAINED, "test")
+            )
         val result = runResult.eventLogSubject
         requireNotNull(result) { "Event log subject was not built" }
-        result.focusChanges("WinA", "WinB", "WinC")
-                .forAllEntries()
+        result.focusChanges("WinA", "WinB", "WinC").forAllEntries()
         result.focusChanges("WinA", "WinB").forAllEntries()
         result.focusChanges("WinB", "WinC").forAllEntries()
         result.focusChanges("WinA").forAllEntries()
@@ -64,11 +64,13 @@ class EventLogSubjectTest {
         runResult.transitionStartTime = FlickerRunResult.TraceTime(5, 5, 5)
         runResult.transitionEndTime = FlickerRunResult.TraceTime(10, 10, 10)
         runResult.eventLog =
-                listOf(FocusEvent(0, "WinB", FocusEvent.Focus.GAINED, "test"),
-                        FocusEvent(5, "test WinA window", FocusEvent.Focus.LOST, "test"),
-                        FocusEvent(6, "WinB", FocusEvent.Focus.LOST, "test"),
-                        FocusEvent(10, "test WinC", FocusEvent.Focus.GAINED, "test"),
-                        FocusEvent(12, "test WinD", FocusEvent.Focus.GAINED, "test"))
+            listOf(
+                FocusEvent(0, "WinB", FocusEvent.Focus.GAINED, "test"),
+                FocusEvent(5, "test WinA window", FocusEvent.Focus.LOST, "test"),
+                FocusEvent(6, "WinB", FocusEvent.Focus.LOST, "test"),
+                FocusEvent(10, "test WinC", FocusEvent.Focus.GAINED, "test"),
+                FocusEvent(12, "test WinD", FocusEvent.Focus.GAINED, "test")
+            )
         val result = runResult.eventLogSubject
         requireNotNull(result) { "Event log subject was not built" }
         Truth.assertThat(result.trace).hasSize(3)

@@ -20,17 +20,13 @@ import com.android.server.wm.flicker.service.assertors.ComponentBuilder
 import com.android.server.wm.flicker.traces.windowmanager.WindowManagerTraceSubject
 import com.android.server.wm.traces.common.transition.Transition
 
-/**
- * Checks that [getWindowState] window becomes pinned
- */
+/** Checks that [getWindowState] window becomes pinned */
 class AppWindowBecomesPinned(component: ComponentBuilder) :
     BaseAssertionBuilderWithComponent(component) {
     /** {@inheritDoc} */
-    override fun doEvaluate(
-        transition: Transition,
-        wmSubject: WindowManagerTraceSubject
-    ) {
-        wmSubject.invoke("appWindowIsNotPinned") { it.isNotPinned(component.build(transition)) }
+    override fun doEvaluate(transition: Transition, wmSubject: WindowManagerTraceSubject) {
+        wmSubject
+            .invoke("appWindowIsNotPinned") { it.isNotPinned(component.build(transition)) }
             .then()
             .invoke("appWindowIsPinned") { it.isPinned(component.build(transition)) }
             .forAllEntries()

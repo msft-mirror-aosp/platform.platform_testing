@@ -21,15 +21,12 @@ import com.android.server.wm.flicker.traces.layers.LayersTraceSubject
 import com.android.server.wm.traces.common.transition.Transition
 
 /**
- * Checks if the stack space of all displays is fully covered by any visible layer,
- * at the end of the transition
+ * Checks if the stack space of all displays is fully covered by any visible layer, at the end of
+ * the transition
  */
 class EntireScreenCoveredAtEnd : BaseAssertionBuilder() {
     /** {@inheritDoc} */
-    override fun doEvaluate(
-        transition: Transition,
-        layerSubject: LayersTraceSubject
-    ) {
+    override fun doEvaluate(transition: Transition, layerSubject: LayersTraceSubject) {
         val subject = layerSubject.last()
         val displays = subject.entry.displays
         if (displays.isEmpty()) {

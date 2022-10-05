@@ -28,18 +28,14 @@ import com.android.server.wm.traces.common.region.Region
 fun Int.isRotated() = this == Surface.ROTATION_90 || this == Surface.ROTATION_270
 
 object WindowUtils {
-    /**
-     * Helper functions to retrieve system window sizes and positions.
-     */
+    /** Helper functions to retrieve system window sizes and positions. */
     private val context
         get() = InstrumentationRegistry.getInstrumentation().context
 
     private val resources
         get() = context.getResources()
 
-    /**
-     * Get the display bounds
-     */
+    /** Get the display bounds */
     val displayBounds: Rect
         get() {
             val display = Point()
@@ -48,9 +44,7 @@ object WindowUtils {
             return Rect(0, 0, display.x, display.y)
         }
 
-    /**
-     * Gets the current display rotation
-     */
+    /** Gets the current display rotation */
     val displayRotation: Int
         get() {
             val wm = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
@@ -81,11 +75,12 @@ object WindowUtils {
      * @param display the main display
      */
     fun getStatusBarPosition(display: Display): Region {
-        val resourceName = if (!display.transform.getRotation().isRotated()) {
-            "status_bar_height_portrait"
-        } else {
-            "status_bar_height_landscape"
-        }
+        val resourceName =
+            if (!display.transform.getRotation().isRotated()) {
+                "status_bar_height_portrait"
+            } else {
+                "status_bar_height_landscape"
+            }
         val resourceId = resources.getIdentifier(resourceName, "dimen", "android")
         val height = resources.getDimensionPixelSize(resourceId)
         return Region.from(0, 0, display.layerStackSpace.width, height)
@@ -163,13 +158,11 @@ object WindowUtils {
         }
     }
 
-    /**
-     * Checks if the device uses gestural navigation
-     */
+    /** Checks if the device uses gestural navigation */
     val isGesturalNavigationEnabled: Boolean
         get() {
-            val resourceId = resources
-                .getIdentifier("config_navBarInteractionMode", "integer", "android")
+            val resourceId =
+                resources.getIdentifier("config_navBarInteractionMode", "integer", "android")
             return resources.getInteger(resourceId) == 2 /* NAV_BAR_MODE_GESTURAL */
         }
 
@@ -178,21 +171,17 @@ object WindowUtils {
         return resources.getDimensionPixelSize(resourceId)
     }
 
-    /**
-     * Gets the navigation bar frame height
-     */
+    /** Gets the navigation bar frame height */
     val navigationBarFrameHeight: Int
         get() {
             return getDimensionPixelSize("navigation_bar_frame_height")
         }
 
-    /**
-     * Split screen divider inset height
-     */
+    /** Split screen divider inset height */
     val dockedStackDividerInset: Int
         get() {
-            val resourceId = resources
-                .getIdentifier("docked_stack_divider_insets", "dimen", "android")
+            val resourceId =
+                resources.getIdentifier("docked_stack_divider_insets", "dimen", "android")
             return resources.getDimensionPixelSize(resourceId)
         }
 }

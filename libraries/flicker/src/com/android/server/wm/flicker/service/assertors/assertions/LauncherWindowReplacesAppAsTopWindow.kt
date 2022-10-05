@@ -28,11 +28,9 @@ import com.android.server.wm.traces.common.transition.Transition
  */
 class LauncherWindowReplacesAppAsTopWindow(component: ComponentBuilder) :
     BaseAssertionBuilderWithComponent(component) {
-    override fun doEvaluate(
-        transition: Transition,
-        wmSubject: WindowManagerTraceSubject
-    ) {
-        wmSubject.isAppWindowOnTop(component.build(transition))
+    override fun doEvaluate(transition: Transition, wmSubject: WindowManagerTraceSubject) {
+        wmSubject
+            .isAppWindowOnTop(component.build(transition))
             .then()
             .isAppWindowOnTop(ComponentNameMatcher.LAUNCHER)
             .forAllEntries()

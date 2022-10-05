@@ -29,10 +29,7 @@ import org.junit.FixMethodOrder
 import org.junit.Test
 import org.junit.runners.MethodSorters
 
-/**
- * Contains [LayerSubject] tests. To run this test:
- * `atest FlickerLibTest:LayerSubjectTest`
- */
+/** Contains [LayerSubject] tests. To run this test: `atest FlickerLibTest:LayerSubjectTest` */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class LayerSubjectTest {
     @Before
@@ -43,12 +40,10 @@ class LayerSubjectTest {
     @Test
     fun exceptionContainsDebugInfoImaginary() {
         val layersTraceEntries = readLayerTraceFromFile("layers_trace_emptyregion.pb")
-        val error = assertThrows(AssertionError::class.java) {
-            assertThat(layersTraceEntries)
-                .first()
-                .layer("ImaginaryLayer", 0)
-                .exists()
-        }
+        val error =
+            assertThrows(AssertionError::class.java) {
+                assertThat(layersTraceEntries).first().layer("ImaginaryLayer", 0).exists()
+            }
         assertThatErrorContainsDebugInfo(error)
         Truth.assertThat(error).hasMessageThat().contains("ImaginaryLayer")
         Truth.assertThat(error).hasMessageThat().contains("Layer name")
@@ -57,13 +52,10 @@ class LayerSubjectTest {
     @Test
     fun exceptionContainsDebugInfoConcrete() {
         val layersTraceEntries = readLayerTraceFromFile("layers_trace_emptyregion.pb")
-        val error = assertThrows(AssertionError::class.java) {
-            assertThat(layersTraceEntries)
-                    .first()
-                    .subjects
-                    .first()
-                    .doesNotExist()
-        }
+        val error =
+            assertThrows(AssertionError::class.java) {
+                assertThat(layersTraceEntries).first().subjects.first().doesNotExist()
+            }
         assertThatErrorContainsDebugInfo(error)
     }
 
@@ -75,8 +67,6 @@ class LayerSubjectTest {
             .hasBufferSize(Size.from(1440, 2960))
             .hasScalingMode(0)
 
-        assertThat(layersTraceEntries)
-            .layer("DoesntExist", 1)
-            .doesNotExist()
+        assertThat(layersTraceEntries).layer("DoesntExist", 1).doesNotExist()
     }
 }

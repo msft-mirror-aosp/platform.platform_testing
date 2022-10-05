@@ -21,18 +21,14 @@ import kotlin.js.JsName
 /**
  * Represents a task fragment in the window manager hierarchy
  *
- * This is a generic object that is reused by both Flicker and Winscope and cannot
- * access internal Java/Android functionality
- *
+ * This is a generic object that is reused by both Flicker and Winscope and cannot access internal
+ * Java/Android functionality
  */
 class TaskFragment(
     override val activityType: Int,
-    @JsName("displayId")
-    val displayId: Int,
-    @JsName("minWidth")
-    val minWidth: Int,
-    @JsName("minHeight")
-    val minHeight: Int,
+    @JsName("displayId") val displayId: Int,
+    @JsName("minWidth") val minWidth: Int,
+    @JsName("minHeight") val minHeight: Int,
     windowContainer: WindowContainer
 ) : WindowContainer(windowContainer) {
     @JsName("tasks")

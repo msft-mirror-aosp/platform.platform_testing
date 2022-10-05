@@ -23,24 +23,21 @@ import kotlin.js.JsName
  *
  * This class is used by flicker and Winscope
  */
-class RectF private constructor(
-    @JsName("left")
-    val left: Float = 0f,
-    @JsName("top")
-    val top: Float = 0f,
-    @JsName("right")
-    val right: Float = 0f,
-    @JsName("bottom")
-    val bottom: Float = 0f
+class RectF
+private constructor(
+    @JsName("left") val left: Float = 0f,
+    @JsName("top") val top: Float = 0f,
+    @JsName("right") val right: Float = 0f,
+    @JsName("bottom") val bottom: Float = 0f
 ) {
     @JsName("height")
-    val height: Float get() = bottom - top
+    val height: Float
+        get() = bottom - top
     @JsName("width")
-    val width: Float get() = right - left
+    val width: Float
+        get() = right - left
 
-    /**
-     * Returns true if the rectangle is empty (left >= right or top >= bottom)
-     */
+    /** Returns true if the rectangle is empty (left >= right or top >= bottom) */
     @JsName("isEmpty")
     val isEmpty: Boolean
         get() = width <= 0f || height <= 0f
@@ -59,17 +56,23 @@ class RectF private constructor(
     }
 
     /**
-     * Returns true iff the specified rectangle r is inside or equal to this
-     * rectangle. An empty rectangle never contains another rectangle.
+     * Returns true iff the specified rectangle r is inside or equal to this rectangle. An empty
+     * rectangle never contains another rectangle.
      *
      * @param r The rectangle being tested for containment.
      * @return true iff the specified rectangle r is inside or equal to this
+     * ```
      *              rectangle
+     * ```
      */
     operator fun contains(r: RectF): Boolean {
         // check for empty first
-        return this.left < this.right && this.top < this.bottom && // now check for containment
-                left <= r.left && top <= r.top && right >= r.right && bottom >= r.bottom
+        return this.left < this.right &&
+            this.top < this.bottom && // now check for containment
+            left <= r.left &&
+            top <= r.top &&
+            right >= r.right &&
+            bottom >= r.bottom
     }
 
     /**
@@ -87,19 +90,15 @@ class RectF private constructor(
     }
 
     /**
-     * If the rectangle specified by left,top,right,bottom intersects this
-     * rectangle, return true and set this rectangle to that intersection,
-     * otherwise return false and do not change this rectangle. No check is
-     * performed to see if either rectangle is empty. Note: To just test for
+     * If the rectangle specified by left,top,right,bottom intersects this rectangle, return true
+     * and set this rectangle to that intersection, otherwise return false and do not change this
+     * rectangle. No check is performed to see if either rectangle is empty. Note: To just test for
      * intersection, use intersects()
      *
-     * @param left The left side of the rectangle being intersected with this
-     * rectangle
+     * @param left The left side of the rectangle being intersected with this rectangle
      * @param top The top of the rectangle being intersected with this rectangle
-     * @param right The right side of the rectangle being intersected with this
-     * rectangle.
-     * @param bottom The bottom of the rectangle being intersected with this
-     * rectangle.
+     * @param right The right side of the rectangle being intersected with this rectangle.
+     * @param bottom The bottom of the rectangle being intersected with this rectangle.
      * @return A rectangle with the intersection coordinates
      */
     @JsName("intersection")
@@ -128,10 +127,10 @@ class RectF private constructor(
     }
 
     /**
-     * If the specified rectangle intersects this rectangle, return true and set
-     * this rectangle to that intersection, otherwise return false and do not
-     * change this rectangle. No check is performed to see if either rectangle
-     * is empty. To just test for intersection, use intersects()
+     * If the specified rectangle intersects this rectangle, return true and set this rectangle to
+     * that intersection, otherwise return false and do not change this rectangle. No check is
+     * performed to see if either rectangle is empty. To just test for intersection, use
+     * intersects()
      *
      * @param r The rectangle being intersected with this rectangle.
      * @return A rectangle with the intersection coordinates
@@ -175,10 +174,12 @@ class RectF private constructor(
 
     companion object {
         @JsName("EMPTY")
-        val EMPTY: RectF get() = withCache { RectF() }
+        val EMPTY: RectF
+            get() = withCache { RectF() }
 
         @JsName("from")
-        fun from(left: Float, top: Float, right: Float, bottom: Float): RectF =
-            withCache { RectF(left, top, right, bottom) }
+        fun from(left: Float, top: Float, right: Float, bottom: Float): RectF = withCache {
+            RectF(left, top, right, bottom)
+        }
     }
 }

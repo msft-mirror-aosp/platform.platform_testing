@@ -22,10 +22,9 @@ import kotlin.js.JsName
 /**
  * Represents a single Layer trace entry.
  *
- * This is a generic object that is reused by both Flicker and Winscope and cannot
- * access internal Java/Android functionality
- *
- **/
+ * This is a generic object that is reused by both Flicker and Winscope and cannot access internal
+ * Java/Android functionality
+ */
 class LayerTraceEntry(
     override val timestamp: Long,
     override val hwcBlob: String,
@@ -49,18 +48,15 @@ class LayerTraceEntry(
     }
 
     private fun Array<Layer>.topDownTraversal(): List<Layer> {
-        return this
-            .sortedBy { it.z }
-            .flatMap { it.topDownTraversal() }
+        return this.sortedBy { it.z }.flatMap { it.topDownTraversal() }
     }
 
     private fun Layer.topDownTraversal(): List<Layer> {
         val traverseList = mutableListOf(this)
 
-        this.children.sortedBy { it.z }
-            .forEach { childLayer ->
-                traverseList.addAll(childLayer.topDownTraversal())
-            }
+        this.children
+            .sortedBy { it.z }
+            .forEach { childLayer -> traverseList.addAll(childLayer.topDownTraversal()) }
 
         return traverseList
     }
@@ -74,32 +70,36 @@ class LayerTraceEntry(
 
         traversalList.forEach { layer ->
             val visible = layer.isVisible
-            val displaySize = displays
-                .firstOrNull { it.layerStackId == layer.stackId }
-                ?.layerStackSpace
-                ?.toRectF()
-                ?: RectF.EMPTY
+            val displaySize =
+                displays
+                    .firstOrNull { it.layerStackId == layer.stackId }
+                    ?.layerStackSpace
+                    ?.toRectF()
+                    ?: RectF.EMPTY
 
             if (visible) {
-                val occludedBy = opaqueLayers
-                    .filter {
-                        it.stackId == layer.stackId &&
-                            it.contains(layer, displaySize) &&
-                            !it.hasRoundedCorners
-                    }
-                    .toTypedArray()
+                val occludedBy =
+                    opaqueLayers
+                        .filter {
+                            it.stackId == layer.stackId &&
+                                it.contains(layer, displaySize) &&
+                                !it.hasRoundedCorners
+                        }
+                        .toTypedArray()
                 layer.addOccludedBy(occludedBy)
-                val partiallyOccludedBy = opaqueLayers
-                    .filter {
-                        it.stackId == layer.stackId &&
-                            it.overlaps(layer, displaySize) &&
-                            it !in layer.occludedBy
-                    }
-                    .toTypedArray()
+                val partiallyOccludedBy =
+                    opaqueLayers
+                        .filter {
+                            it.stackId == layer.stackId &&
+                                it.overlaps(layer, displaySize) &&
+                                it !in layer.occludedBy
+                        }
+                        .toTypedArray()
                 layer.addPartiallyOccludedBy(partiallyOccludedBy)
-                val coveredBy = transparentLayers
-                    .filter { it.stackId == layer.stackId && it.overlaps(layer, displaySize) }
-                    .toTypedArray()
+                val coveredBy =
+                    transparentLayers
+                        .filter { it.stackId == layer.stackId && it.overlaps(layer, displaySize) }
+                        .toTypedArray()
                 layer.addCoveredBy(coveredBy)
 
                 if (layer.isOpaque) {

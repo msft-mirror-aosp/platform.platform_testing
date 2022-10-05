@@ -20,6 +20,5 @@ import com.android.server.wm.flicker.assertiongenerator.common.IAssertionGenerat
 import com.android.server.wm.traces.common.layers.LayersTrace
 import com.android.server.wm.traces.common.service.Scenario
 
-class LayersAssertionGenerator (
-    override val config: Map<Scenario, Array<out LayersTrace>>
-) : IAssertionGenerator<LayersTrace>
+class LayersAssertionGenerator(override val config: Map<Scenario, Array<out LayersTrace>>) :
+    IAssertionGenerator<LayersTrace>

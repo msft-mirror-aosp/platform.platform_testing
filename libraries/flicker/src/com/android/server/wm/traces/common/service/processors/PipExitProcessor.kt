@@ -28,14 +28,13 @@ import com.android.server.wm.traces.common.service.Scenario
 import com.android.server.wm.traces.common.tags.Tag
 
 /**
- * This processor creates tags when the pip window is exited directly to home screen or a
- * different app altogether.
+ * This processor creates tags when the pip window is exited directly to home screen or a different
+ * app altogether.
  * @param logger logs by invoking any event messages
  */
 class PipExitProcessor(logger: (String) -> Unit) : TransitionProcessor(logger) {
     override val scenario = Scenario.PIP_EXIT
-    private val scalingWindows =
-        HashMap<String, DeviceStateDump>()
+    private val scalingWindows = HashMap<String, DeviceStateDump>()
     private val areLayersAnimating = hasLayersAnimating()
     private val wmStateIdle = isAppTransitionIdle(/* default display */ 0)
     private val wmStateComplete = isWMStateComplete()
@@ -43,12 +42,9 @@ class PipExitProcessor(logger: (String) -> Unit) : TransitionProcessor(logger) {
     override fun getInitialState(tags: MutableMap<Long, MutableList<Tag>>) =
         WaitPinnedWindowSwipedOrFading(tags)
 
-    /**
-     * Initial FSM state which waits until the app window in pip mode starts to change opacity.
-     */
-    inner class WaitPinnedWindowSwipedOrFading(
-        tags: MutableMap<Long, MutableList<Tag>>
-    ) : BaseState(tags) {
+    /** Initial FSM state which waits until the app window in pip mode starts to change opacity. */
+    inner class WaitPinnedWindowSwipedOrFading(tags: MutableMap<Long, MutableList<Tag>>) :
+        BaseState(tags) {
         override fun doProcessState(
             previous: DeviceStateDump?,
             current: DeviceStateDump,
@@ -63,11 +59,15 @@ class PipExitProcessor(logger: (String) -> Unit) : TransitionProcessor(logger) {
                 val dump = scalingWindows[currPinnedWindow.token]
                 if (dump != null) {
                     // Pip app unpinned so let's tag.
-                    addStartTransitionTag(dump, scenario,
+                    addStartTransitionTag(
+                        dump,
+                        scenario,
                         layerId = currPinnedWindow.layerId,
                         windowToken = currPinnedWindow.token
                     )
-                    addEndTransitionTag(previous, scenario,
+                    addEndTransitionTag(
+                        previous,
+                        scenario,
                         layerId = currPinnedWindow.layerId,
                         windowToken = currPinnedWindow.token
                     )
@@ -82,9 +82,10 @@ class PipExitProcessor(logger: (String) -> Unit) : TransitionProcessor(logger) {
 
             // close pip by pressing dismiss button
             val colorAlphaIsOne = isLayerColorAlphaOne(currPinnedWindow.layerId)
-            val pinnedWindowFading = colorAlphaIsOne.negate().isSatisfied(current) &&
-                colorAlphaIsOne.isSatisfied(previous) &&
-                isScaling.negate().isSatisfied(current)
+            val pinnedWindowFading =
+                colorAlphaIsOne.negate().isSatisfied(current) &&
+                    colorAlphaIsOne.isSatisfied(previous) &&
+                    isScaling.negate().isSatisfied(current)
 
             return when {
                 movingPinnedWindow -> {
@@ -93,7 +94,9 @@ class PipExitProcessor(logger: (String) -> Unit) : TransitionProcessor(logger) {
                     this
                 }
                 pinnedWindowFading -> {
-                    addStartTransitionTag(previous, scenario,
+                    addStartTransitionTag(
+                        previous,
+                        scenario,
                         layerId = currPinnedWindow.layerId,
                         windowToken = currPinnedWindow.token
                     )
@@ -117,9 +120,10 @@ class PipExitProcessor(logger: (String) -> Unit) : TransitionProcessor(logger) {
         ): FSMState {
             val layerInvisible = isLayerVisible(layerId).negate().isSatisfied(current)
             val layerColorAlphaOne = isLayerColorAlphaOne(layerId).isSatisfied(current)
-            val isStableState = wmStateIdle.isSatisfied(current) ||
-                wmStateComplete.isSatisfied(current) ||
-                areLayersAnimating.negate().isSatisfied(current)
+            val isStableState =
+                wmStateIdle.isSatisfied(current) ||
+                    wmStateComplete.isSatisfied(current) ||
+                    areLayersAnimating.negate().isSatisfied(current)
 
             return if (layerInvisible && layerColorAlphaOne && isStableState) {
                 addEndTransitionTag(current, scenario, layerId = layerId)

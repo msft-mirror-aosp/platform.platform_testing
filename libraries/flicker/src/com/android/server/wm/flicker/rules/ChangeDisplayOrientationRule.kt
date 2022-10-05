@@ -35,9 +35,13 @@ import org.junit.runner.Description
  * @param targetOrientation Target orientation
  * @param instrumentation Instrumentation mechanism to use
  * @param clearCacheAfterParsing If the caching used while parsing the proto should be
+ * ```
  *                               cleared or remain in memory
+ * ```
  */
-data class ChangeDisplayOrientationRule @JvmOverloads constructor(
+data class ChangeDisplayOrientationRule
+@JvmOverloads
+constructor(
     private val targetOrientation: Int,
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation(),
     private val clearCacheAfterParsing: Boolean = true
@@ -45,8 +49,11 @@ data class ChangeDisplayOrientationRule @JvmOverloads constructor(
     private var initialOrientation = -1
 
     override fun starting(description: Description?) {
-        Log.v(FLICKER_TAG, "Changing display orientation to " +
-            "$targetOrientation ${Surface.rotationToString(targetOrientation)}")
+        Log.v(
+            FLICKER_TAG,
+            "Changing display orientation to " +
+                "$targetOrientation ${Surface.rotationToString(targetOrientation)}"
+        )
         val wm = instrumentation.context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
         initialOrientation = wm.defaultDisplay.rotation
         setRotation(targetOrientation, instrumentation, clearCacheAfterParsing)
@@ -89,7 +96,8 @@ data class ChangeDisplayOrientationRule @JvmOverloads constructor(
                 // During seamless rotation the app window is shown
                 val currWmState = wmHelper.currentState.wmState
                 if (currWmState.visibleWindows.none { it.isFullscreen }) {
-                    wmHelper.StateSyncBuilder()
+                    wmHelper
+                        .StateSyncBuilder()
                         .withNavOrTaskBarVisible()
                         .withStatusBarVisible()
                         .waitForAndVerify()

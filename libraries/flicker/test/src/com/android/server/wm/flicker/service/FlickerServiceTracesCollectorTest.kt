@@ -30,8 +30,8 @@ import org.junit.Test
 import org.junit.runners.MethodSorters
 
 /**
- * Contains [FlickerServiceTracesCollector] tests.
- * To run this test: `atest FlickerLibTest:FlickerServiceTracesCollectorTest`
+ * Contains [FlickerServiceTracesCollector] tests. To run this test: `atest
+ * FlickerLibTest:FlickerServiceTracesCollectorTest`
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class FlickerServiceTracesCollectorTest {

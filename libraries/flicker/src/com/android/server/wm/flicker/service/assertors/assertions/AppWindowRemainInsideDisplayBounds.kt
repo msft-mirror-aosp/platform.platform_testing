@@ -27,18 +27,16 @@ import com.android.server.wm.traces.common.transition.Transition
 class AppWindowRemainInsideDisplayBounds(component: ComponentBuilder) :
     BaseAssertionBuilderWithComponent(component) {
     /** {@inheritDoc} */
-    override fun doEvaluate(
-        transition: Transition,
-        wmSubject: WindowManagerTraceSubject
-    ) {
-        wmSubject.invoke("appWindowRemainInsideDisplayBounds") { entry ->
-            val displays = entry.wmState.displays
-            if (displays.isEmpty()) {
-                entry.fail("No displays found")
+    override fun doEvaluate(transition: Transition, wmSubject: WindowManagerTraceSubject) {
+        wmSubject
+            .invoke("appWindowRemainInsideDisplayBounds") { entry ->
+                val displays = entry.wmState.displays
+                if (displays.isEmpty()) {
+                    entry.fail("No displays found")
+                }
+                val display = entry.wmState.displays.sortedBy { it.id }.first()
+                entry.visibleRegion(component.build(transition)).coversAtMost(display.displayRect)
             }
-            val display = entry.wmState.displays.sortedBy { it.id }.first()
-            entry.visibleRegion(component.build(transition))
-                .coversAtMost(display.displayRect)
-        }.forAllEntries()
+            .forAllEntries()
     }
 }

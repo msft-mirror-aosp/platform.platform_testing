@@ -42,17 +42,21 @@ class TraceFileReaderTest {
 
     @Test
     fun readJsonFromString() {
-        val jsonAsString = "[\n" +
-            "  {\n" +
-            "    \"componentToTypeMap\": {\n" +
-            "      \"openingLayerName_toBeCompleted\": \"OPENING_APP\",\n" +
-            "      \"closingLayerName_toBeCompleted\": \"CLOSING_APP\"\n" +
-            "    }\n" +
-            "  }\n" +
-            "]"
+        val jsonAsString =
+            "[\n" +
+                "  {\n" +
+                "    \"componentToTypeMap\": {\n" +
+                "      \"openingLayerName_toBeCompleted\": \"OPENING_APP\",\n" +
+                "      \"closingLayerName_toBeCompleted\": \"CLOSING_APP\"\n" +
+                "    }\n" +
+                "  }\n" +
+                "]"
         val typeToken = object : TypeToken<List<DeviceTraceConfigurationSimplified>>() {}.type
-        val jsonAsObject = TraceFileReader
-            .readJsonFromString<DeviceTraceConfigurationSimplified>(jsonAsString, typeToken)
+        val jsonAsObject =
+            TraceFileReader.readJsonFromString<DeviceTraceConfigurationSimplified>(
+                jsonAsString,
+                typeToken
+            )
         val actualTraceConfig = DeviceTraceConfiguration.fromSimplifiedTrace(jsonAsObject[0])
         Truth.assertThat(actualTraceConfig)
             .isEqualTo(AssertionGenConfigTestConst.deviceTraceConfiguration)
@@ -62,12 +66,16 @@ class TraceFileReaderTest {
     fun readObjectFromResource() {
         val layersConfigPath =
             "/assertiongenerator_config_test/AppLaunch/trace1/layers_trace_configuration.json"
-        val layersTraceConfiguration = layersConfigPath.let {
-            val layersType = object : TypeToken<List<DeviceTraceConfigurationSimplified>>() {}.type
-            TraceFileReader.readObjectFromResource<DeviceTraceConfigurationSimplified>(
-                layersConfigPath, layersType
-            )?.let { DeviceTraceConfiguration.fromSimplifiedTrace(it[0]) }
-        }
+        val layersTraceConfiguration =
+            layersConfigPath.let {
+                val layersType =
+                    object : TypeToken<List<DeviceTraceConfigurationSimplified>>() {}.type
+                TraceFileReader.readObjectFromResource<DeviceTraceConfigurationSimplified>(
+                        layersConfigPath,
+                        layersType
+                    )
+                    ?.let { DeviceTraceConfiguration.fromSimplifiedTrace(it[0]) }
+            }
         Truth.assertThat(layersTraceConfiguration)
             .isEqualTo(AssertionGenConfigTestConst.deviceTraceConfiguration)
     }

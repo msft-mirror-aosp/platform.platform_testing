@@ -31,9 +31,7 @@ import org.junit.FixMethodOrder
 import org.junit.Test
 import org.junit.runners.MethodSorters
 
-/**
- * Contains [Layer] tests. To run this test: `atest FlickerLibTest:LayerTest`
- */
+/** Contains [Layer] tests. To run this test: `atest FlickerLibTest:LayerTest` */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class LayerTest {
     @Before
@@ -43,26 +41,19 @@ class LayerTest {
 
     @Test
     fun hasVerboseFlagsProperty() {
-        assertThat(makeLayerWithFlags(0x0).verboseFlags)
-            .isEqualTo("")
+        assertThat(makeLayerWithFlags(0x0).verboseFlags).isEqualTo("")
 
-        assertThat(makeLayerWithFlags(0x1).verboseFlags)
-            .isEqualTo("HIDDEN (0x1)")
+        assertThat(makeLayerWithFlags(0x1).verboseFlags).isEqualTo("HIDDEN (0x1)")
 
-        assertThat(makeLayerWithFlags(0x2).verboseFlags)
-            .isEqualTo("OPAQUE (0x2)")
+        assertThat(makeLayerWithFlags(0x2).verboseFlags).isEqualTo("OPAQUE (0x2)")
 
-        assertThat(makeLayerWithFlags(0x40).verboseFlags)
-            .isEqualTo("SKIP_SCREENSHOT (0x40)")
+        assertThat(makeLayerWithFlags(0x40).verboseFlags).isEqualTo("SKIP_SCREENSHOT (0x40)")
 
-        assertThat(makeLayerWithFlags(0x80).verboseFlags)
-            .isEqualTo("SECURE (0x80)")
+        assertThat(makeLayerWithFlags(0x80).verboseFlags).isEqualTo("SECURE (0x80)")
 
-        assertThat(makeLayerWithFlags(0x100).verboseFlags)
-            .isEqualTo("ENABLE_BACKPRESSURE (0x100)")
+        assertThat(makeLayerWithFlags(0x100).verboseFlags).isEqualTo("ENABLE_BACKPRESSURE (0x100)")
 
-        assertThat(makeLayerWithFlags(0x200).verboseFlags)
-            .isEqualTo("DISPLAY_DECORATION (0x200)")
+        assertThat(makeLayerWithFlags(0x200).verboseFlags).isEqualTo("DISPLAY_DECORATION (0x200)")
 
         assertThat(makeLayerWithFlags(0x400).verboseFlags)
             .isEqualTo("IGNORE_DESTINATION_FRAME (0x400)")
@@ -73,12 +64,38 @@ class LayerTest {
 
     private fun makeLayerWithFlags(flags: Int): Layer {
         return Layer.from(
-            "", 0, 0, 0, Region.EMPTY, ActiveBuffer.EMPTY, flags,
-            RectF.EMPTY, Color.EMPTY, false, -1f, -1f,
-            "", RectF.EMPTY, Transform.EMPTY, RectF.EMPTY, -1,
-            -1, Transform.EMPTY, HwcCompositionType.INVALID, RectF.EMPTY, Rect.EMPTY,
-            -1, null, false, -1, -1,
-            Transform.EMPTY, Color.EMPTY, RectF.EMPTY, Transform.EMPTY, null
+            "",
+            0,
+            0,
+            0,
+            Region.EMPTY,
+            ActiveBuffer.EMPTY,
+            flags,
+            RectF.EMPTY,
+            Color.EMPTY,
+            false,
+            -1f,
+            -1f,
+            "",
+            RectF.EMPTY,
+            Transform.EMPTY,
+            RectF.EMPTY,
+            -1,
+            -1,
+            Transform.EMPTY,
+            HwcCompositionType.INVALID,
+            RectF.EMPTY,
+            Rect.EMPTY,
+            -1,
+            null,
+            false,
+            -1,
+            -1,
+            Transform.EMPTY,
+            Color.EMPTY,
+            RectF.EMPTY,
+            Transform.EMPTY,
+            null
         )
     }
 }

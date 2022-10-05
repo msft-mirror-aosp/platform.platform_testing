@@ -8,10 +8,7 @@ import com.android.server.wm.traces.common.prettyTimestamp
  * @param errors Errors contained in the state
  * @param _timestamp Timestamp of this state
  */
-class ErrorState(
-    val errors: Array<Error>,
-    _timestamp: String
-) : ITraceEntry {
+class ErrorState(val errors: Array<Error>, _timestamp: String) : ITraceEntry {
     override val timestamp: Long = _timestamp.toLong()
 
     override fun equals(other: Any?): Boolean {
@@ -28,7 +25,8 @@ class ErrorState(
         return result
     }
 
-    override fun toString(): String = "FlickerErrorState(" +
+    override fun toString(): String =
+        "FlickerErrorState(" +
             "timestamp=${prettyTimestamp(timestamp)}, numberOfErrors=${errors.size} " +
             "${errors.joinToString("\n") { it.assertionName }})"
 }

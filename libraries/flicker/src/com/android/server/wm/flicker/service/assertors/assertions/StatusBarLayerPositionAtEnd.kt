@@ -28,15 +28,13 @@ import com.android.server.wm.traces.common.transition.Transition
  */
 class StatusBarLayerPositionAtEnd : BaseAssertionBuilder() {
     /** {@inheritDoc} */
-    override fun doEvaluate(
-        transition: Transition,
-        layerSubject: LayersTraceSubject
-    ) {
+    override fun doEvaluate(transition: Transition, layerSubject: LayersTraceSubject) {
         val targetSubject = layerSubject.last()
-        val endDisplay = targetSubject.entry.displays.firstOrNull { !it.isVirtual }
-            ?: error("Display not found")
+        val endDisplay =
+            targetSubject.entry.displays.firstOrNull { !it.isVirtual } ?: error("Display not found")
 
-        targetSubject.visibleRegion(ComponentNameMatcher.STATUS_BAR)
+        targetSubject
+            .visibleRegion(ComponentNameMatcher.STATUS_BAR)
             .coversExactly(WindowUtils.getStatusBarPosition(endDisplay))
     }
 }

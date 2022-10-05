@@ -24,16 +24,11 @@ import org.junit.FixMethodOrder
 import org.junit.Test
 import org.junit.runners.MethodSorters
 
-/**
- * Contains [RegionSubject] tests. To run this test:
- * `atest FlickerLibTest:RegionSubjectTest`
- */
+/** Contains [RegionSubject] tests. To run this test: `atest FlickerLibTest:RegionSubjectTest` */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class RegionSubjectTest {
     private fun assertFail(expectedMessage: String, predicate: () -> Any) {
-        val error = assertThrows(AssertionError::class.java) {
-            predicate()
-        }
+        val error = assertThrows(AssertionError::class.java) { predicate() }
         Truth.assertThat(error).hasCauseThat().hasMessageThat().contains(expectedMessage)
     }
 

@@ -30,6 +30,7 @@ java_library_static {
         "common-platform-scenarios",
         "platform-test-options",
         "platform-test-rules",
+        "ub-uiautomator",
         "multi-user-helper",
     ],
 }

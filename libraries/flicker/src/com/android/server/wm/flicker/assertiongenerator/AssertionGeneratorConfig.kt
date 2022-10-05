@@ -24,6 +24,4 @@ data class ScenarioConfig(
     val traceConfigurations: Array<DeviceTraceConfiguration>
 )
 
-data class AssertionGeneratorConfig(
-    val er: Map<Scenario, Array<DeviceTraceDump>?>?
-)
+data class AssertionGeneratorConfig(val er: Map<Scenario, Array<DeviceTraceDump>?>?)

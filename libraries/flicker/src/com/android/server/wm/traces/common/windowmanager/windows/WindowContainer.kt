@@ -21,26 +21,21 @@ import kotlin.js.JsName
 
 /**
  * Represents WindowContainer classes such as DisplayContent.WindowContainers and
- * DisplayContent.NonAppWindowContainers. This can be expanded into a specific class
- * if we need track and assert some state in the future.
+ * DisplayContent.NonAppWindowContainers. This can be expanded into a specific class if we need
+ * track and assert some state in the future.
  *
- * This is a generic object that is reused by both Flicker and Winscope and cannot
- * access internal Java/Android functionality
- *
+ * This is a generic object that is reused by both Flicker and Winscope and cannot access internal
+ * Java/Android functionality
  */
-open class WindowContainer constructor(
-    @JsName("title")
-    val title: String,
-    @JsName("token")
-    val token: String,
-    @JsName("orientation")
-    val orientation: Int,
-    @JsName("layerId")
-    val layerId: Int,
+open class WindowContainer
+constructor(
+    @JsName("title") val title: String,
+    @JsName("token") val token: String,
+    @JsName("orientation") val orientation: Int,
+    @JsName("layerId") val layerId: Int,
     _isVisible: Boolean,
     configurationContainer: ConfigurationContainer,
-    @JsName("children")
-    val children: Array<WindowContainer>
+    @JsName("children") val children: Array<WindowContainer>
 ) : ConfigurationContainer(configurationContainer) {
     protected constructor(
         windowContainer: WindowContainer,
@@ -56,32 +51,28 @@ open class WindowContainer constructor(
         windowContainer.children
     )
 
-    @JsName("isVisible")
-    open val isVisible: Boolean = _isVisible
-    @JsName("name")
-    open val name: String = title
+    @JsName("isVisible") open val isVisible: Boolean = _isVisible
+    @JsName("name") open val name: String = title
     @JsName("stableId")
-    open val stableId: String get() = "${this::class.simpleName} $token $title"
-    @JsName("isFullscreen")
-    open val isFullscreen: Boolean = false
-    @JsName("bounds")
-    open val bounds: Rect = Rect.EMPTY
+    open val stableId: String
+        get() = "${this::class.simpleName} $token $title"
+    @JsName("isFullscreen") open val isFullscreen: Boolean = false
+    @JsName("bounds") open val bounds: Rect = Rect.EMPTY
 
     @JsName("traverseTopDown")
     fun traverseTopDown(): List<WindowContainer> {
         val traverseList = mutableListOf(this)
 
-        this.children.reversed()
-            .forEach { childLayer ->
-                traverseList.addAll(childLayer.traverseTopDown())
-            }
+        this.children.reversed().forEach { childLayer ->
+            traverseList.addAll(childLayer.traverseTopDown())
+        }
 
         return traverseList
     }
 
     /**
-     * For a given WindowContainer, traverse down the hierarchy and collect all children of type
-     * [T] if the child passes the test [predicate].
+     * For a given WindowContainer, traverse down the hierarchy and collect all children of type [T]
+     * if the child passes the test [predicate].
      *
      * @param predicate Filter function
      */
@@ -90,14 +81,14 @@ open class WindowContainer constructor(
     ): Array<T> {
         val traverseList = traverseTopDown()
 
-        return traverseList.filterIsInstance<T>()
-            .filter { predicate(it) }
-            .toTypedArray()
+        return traverseList.filterIsInstance<T>().filter { predicate(it) }.toTypedArray()
     }
 
     override fun toString(): String {
-        if (this.title.isEmpty() || listOf("WindowContainer", "Task")
-                .any { it.contains(this.title) }) {
+        if (
+            this.title.isEmpty() ||
+                listOf("WindowContainer", "Task").any { it.contains(this.title) }
+        ) {
             return ""
         }
 
@@ -150,7 +141,5 @@ open class WindowContainer constructor(
     }
 
     override val isEmpty: Boolean
-        get() = super.isEmpty &&
-            title.isEmpty() &&
-            token.isEmpty()
+        get() = super.isEmpty && title.isEmpty() && token.isEmpty()
 }

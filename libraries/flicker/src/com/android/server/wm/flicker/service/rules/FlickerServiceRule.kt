@@ -36,49 +36,42 @@ import org.junit.runner.Description
  *
  * @see TODO for examples on how to use this test rule in your own tests
  */
-class FlickerServiceRule @JvmOverloads constructor(
+class FlickerServiceRule
+@JvmOverloads
+constructor(
     outputDir: Path = getDefaultFlickerOutputDir(),
     tracesCollector: ITracesCollector = FlickerServiceTracesCollector(outputDir)
 ) : TestWatcher() {
-    private val metricsCollector = FlickerServiceResultsCollector(
-        outputDir,
-        tracesCollector = tracesCollector,
-        instrumentation = InstrumentationRegistry.getInstrumentation()
-    )
+    private val metricsCollector =
+        FlickerServiceResultsCollector(
+            outputDir,
+            tracesCollector = tracesCollector,
+            instrumentation = InstrumentationRegistry.getInstrumentation()
+        )
 
-    /**
-     * Invoked when a test is about to start
-     */
+    /** Invoked when a test is about to start */
     override fun starting(description: Description) {
         Log.i(LOG_TAG, "Test starting $description")
         metricsCollector.testStarted(description)
     }
 
-    /**
-     * Invoked when a test method finishes (whether passing or failing)
-     */
+    /** Invoked when a test method finishes (whether passing or failing) */
     override fun finished(description: Description) {
         Log.i(LOG_TAG, "Test finished $description")
         metricsCollector.testFinished(description)
     }
 
-    /**
-     * Invoked when a test succeeds
-     */
+    /** Invoked when a test succeeds */
     override fun succeeded(description: Description) {
         Log.i(LOG_TAG, "Test succeeded $description")
     }
 
-    /**
-     * Invoked when a test fails
-     */
+    /** Invoked when a test fails */
     override fun failed(e: Throwable?, description: Description) {
         Log.e(LOG_TAG, "$description test failed  with $e")
     }
 
-    /**
-     * Invoked when a test is skipped due to a failed assumption.
-     */
+    /** Invoked when a test is skipped due to a failed assumption. */
     override fun skipped(e: AssumptionViolatedException, description: Description) {
         Log.i(LOG_TAG, "Test skipped $description with $e")
     }

@@ -37,8 +37,9 @@ class LayersTraceMonitorTest : TraceMonitorTest<LayersTraceMonitor>() {
 
         Truth.assertThat(trace.magicNumber)
             .isEqualTo(
-                Layerstrace.LayersTraceFileProto.MagicNumber.MAGIC_NUMBER_H.number.toLong() shl 32
-                    or Layerstrace.LayersTraceFileProto.MagicNumber.MAGIC_NUMBER_L.number.toLong()
+                Layerstrace.LayersTraceFileProto.MagicNumber.MAGIC_NUMBER_H.number.toLong() shl
+                    32 or
+                    Layerstrace.LayersTraceFileProto.MagicNumber.MAGIC_NUMBER_L.number.toLong()
             )
     }
 
@@ -50,8 +51,6 @@ class LayersTraceMonitorTest : TraceMonitorTest<LayersTraceMonitor>() {
             device.pressRecentApps()
         }
 
-        Truth.assertWithMessage("Could not obtain SF trace")
-            .that(trace.entries)
-            .isNotEmpty()
+        Truth.assertWithMessage("Could not obtain SF trace").that(trace.entries).isNotEmpty()
     }
 }

@@ -33,46 +33,36 @@ import kotlin.js.JsName
 /**
  * Represents a single WindowManager trace entry.
  *
- * This is a generic object that is reused by both Flicker and Winscope and cannot
- * access internal Java/Android functionality
+ * This is a generic object that is reused by both Flicker and Winscope and cannot access internal
+ * Java/Android functionality
  *
  * The timestamp constructor must be a string due to lack of Kotlin/KotlinJS Long compatibility
- *
- **/
+ */
 class WindowManagerState(
-    @JsName("where")
-    val where: String,
-    @JsName("policy")
-    val policy: WindowManagerPolicy?,
-    @JsName("focusedApp")
-    val focusedApp: String,
-    @JsName("focusedDisplayId")
-    val focusedDisplayId: Int,
-    @JsName("_focusedWindow")
-    private val _focusedWindow: String,
-    @JsName("inputMethodWindowAppToken")
-    val inputMethodWindowAppToken: String,
-    @JsName("isHomeRecentsComponent")
-    val isHomeRecentsComponent: Boolean,
-    @JsName("isDisplayFrozen")
-    val isDisplayFrozen: Boolean,
-    @JsName("_pendingActivities")
-    private val _pendingActivities: Array<String>,
-    @JsName("root")
-    val root: RootWindowContainer,
-    @JsName("keyguardControllerState")
-    val keyguardControllerState: KeyguardControllerState,
+    @JsName("where") val where: String,
+    @JsName("policy") val policy: WindowManagerPolicy?,
+    @JsName("focusedApp") val focusedApp: String,
+    @JsName("focusedDisplayId") val focusedDisplayId: Int,
+    @JsName("_focusedWindow") private val _focusedWindow: String,
+    @JsName("inputMethodWindowAppToken") val inputMethodWindowAppToken: String,
+    @JsName("isHomeRecentsComponent") val isHomeRecentsComponent: Boolean,
+    @JsName("isDisplayFrozen") val isDisplayFrozen: Boolean,
+    @JsName("_pendingActivities") private val _pendingActivities: Array<String>,
+    @JsName("root") val root: RootWindowContainer,
+    @JsName("keyguardControllerState") val keyguardControllerState: KeyguardControllerState,
     _timestamp: String = "0"
 ) : ITraceEntry {
     override val timestamp: Long = _timestamp.toLong()
-    @JsName("isVisible")
-    val isVisible: Boolean = true
+    @JsName("isVisible") val isVisible: Boolean = true
     @JsName("stableId")
-    val stableId: String get() = this::class.simpleName ?: error("Unable to determine class")
+    val stableId: String
+        get() = this::class.simpleName ?: error("Unable to determine class")
     @JsName("name")
-    val name: String get() = prettyTimestamp(timestamp)
+    val name: String
+        get() = prettyTimestamp(timestamp)
     @JsName("isTablet")
-    val isTablet: Boolean get() = displays.any { it.isTablet }
+    val isTablet: Boolean
+        get() = displays.any { it.isTablet }
 
     @JsName("windowContainers")
     val windowContainers: Array<WindowContainer>
@@ -82,30 +72,25 @@ class WindowManagerState(
     val children: Array<WindowContainer>
         get() = root.children.reversedArray()
 
-    /**
-     * Displays in z-order with the top most at the front of the list, starting with primary.
-     */
+    /** Displays in z-order with the top most at the front of the list, starting with primary. */
     @JsName("displays")
     val displays: Array<DisplayContent>
         get() = windowContainers.filterIsInstance<DisplayContent>().toTypedArray()
 
     /**
-     * Root tasks in z-order with the top most at the front of the list, starting with primary display.
+     * Root tasks in z-order with the top most at the front of the list, starting with primary
+     * display.
      */
     @JsName("rootTasks")
     val rootTasks: Array<Task>
         get() = displays.flatMap { it.rootTasks.toList() }.toTypedArray()
 
-    /**
-     * TaskFragments in z-order with the top most at the front of the list.
-      */
+    /** TaskFragments in z-order with the top most at the front of the list. */
     @JsName("taskFragments")
     val taskFragments: Array<TaskFragment>
         get() = windowContainers.filterIsInstance<TaskFragment>().toTypedArray()
 
-    /**
-     *Windows in z-order with the top most at the front of the list.
-      */
+    /** Windows in z-order with the top most at the front of the list. */
     @JsName("windowStates")
     val windowStates: Array<WindowState>
         get() = windowContainers.filterIsInstance<WindowState>().toTypedArray()
@@ -126,18 +111,19 @@ class WindowManagerState(
         get() = windowStates.takeWhile { !appWindows.contains(it) }.toTypedArray()
     @JsName("belowAppWindows")
     val belowAppWindows: Array<WindowState>
-        get() = windowStates
-            .dropWhile { !appWindows.contains(it) }.drop(appWindows.size).toTypedArray()
+        get() =
+            windowStates.dropWhile { !appWindows.contains(it) }.drop(appWindows.size).toTypedArray()
     @JsName("visibleWindows")
     val visibleWindows: Array<WindowState>
-        get() = windowStates
-            .filter { it.isVisible }
-            .filter { window ->
-                val activities = getActivitiesForWindowState(window)
-                val activity = activities.firstOrNull { it.children.contains(window) }
-                activity?.isVisible ?: true
-            }
-            .toTypedArray()
+        get() =
+            windowStates
+                .filter { it.isVisible }
+                .filter { window ->
+                    val activities = getActivitiesForWindowState(window)
+                    val activity = activities.firstOrNull { it.children.contains(window) }
+                    activity?.isVisible ?: true
+                }
+                .toTypedArray()
     @JsName("visibleAppWindows")
     val visibleAppWindows: Array<WindowState>
         get() = visibleWindows.filter { it.isAppWindow }.toTypedArray()
@@ -146,83 +132,93 @@ class WindowManagerState(
         get() = visibleAppWindows.firstOrNull()
     @JsName("pinnedWindows")
     val pinnedWindows: Array<WindowState>
-        get() = visibleWindows
-            .filter { it.windowingMode == WINDOWING_MODE_PINNED }
-            .toTypedArray()
+        get() = visibleWindows.filter { it.windowingMode == WINDOWING_MODE_PINNED }.toTypedArray()
     @JsName("pendingActivities")
-    val pendingActivities: Array<Activity> get() =
-        _pendingActivities
-            .mapNotNull { getActivityByName(it) }
-            .toTypedArray()
+    val pendingActivities: Array<Activity>
+        get() = _pendingActivities.mapNotNull { getActivityByName(it) }.toTypedArray()
     @JsName("focusedWindow")
-    val focusedWindow: WindowState? get() =
-        visibleWindows.firstOrNull { it.name == _focusedWindow }
+    val focusedWindow: WindowState?
+        get() = visibleWindows.firstOrNull { it.name == _focusedWindow }
 
-    val isKeyguardShowing: Boolean get() = keyguardControllerState.isKeyguardShowing
-    val isAodShowing: Boolean get() = keyguardControllerState.isAodShowing
+    val isKeyguardShowing: Boolean
+        get() = keyguardControllerState.isKeyguardShowing
+    val isAodShowing: Boolean
+        get() = keyguardControllerState.isAodShowing
     /**
-     * Checks if the device state supports rotation, i.e., if the rotation sensor is
-     * enabled (e.g., launcher) and if the rotation not fixed
+     * Checks if the device state supports rotation, i.e., if the rotation sensor is enabled (e.g.,
+     * launcher) and if the rotation not fixed
      */
     @JsName("canRotate")
     val canRotate: Boolean
         get() = policy?.isFixedOrientation != true && policy?.isOrientationNoSensor != true
     @JsName("focusedDisplay")
-    val focusedDisplay: DisplayContent? get() = getDisplay(focusedDisplayId)
+    val focusedDisplay: DisplayContent?
+        get() = getDisplay(focusedDisplayId)
     @JsName("focusedStackId")
-    val focusedStackId: Int get() = focusedDisplay?.focusedRootTaskId ?: -1
+    val focusedStackId: Int
+        get() = focusedDisplay?.focusedRootTaskId ?: -1
     @JsName("focusedActivity")
-    val focusedActivity: Activity? get() {
-        val focusedDisplay = focusedDisplay
-        val focusedWindow = focusedWindow
-        return when {
-            focusedDisplay != null && focusedDisplay.resumedActivity.isNotEmpty() ->
-                getActivityByName(focusedDisplay.resumedActivity)
-            focusedWindow != null ->
-                getActivitiesForWindowState(focusedWindow, focusedDisplayId).firstOrNull()
-            else -> null
+    val focusedActivity: Activity?
+        get() {
+            val focusedDisplay = focusedDisplay
+            val focusedWindow = focusedWindow
+            return when {
+                focusedDisplay != null && focusedDisplay.resumedActivity.isNotEmpty() ->
+                    getActivityByName(focusedDisplay.resumedActivity)
+                focusedWindow != null ->
+                    getActivitiesForWindowState(focusedWindow, focusedDisplayId).firstOrNull()
+                else -> null
+            }
         }
-    }
     @JsName("resumedActivities")
     val resumedActivities: Array<Activity>
-        get() = rootTasks.flatMap { it.resumedActivities.toList() }
-            .mapNotNull { getActivityByName(it) }
-            .toTypedArray()
+        get() =
+            rootTasks
+                .flatMap { it.resumedActivities.toList() }
+                .mapNotNull { getActivityByName(it) }
+                .toTypedArray()
     @JsName("resumedActivitiesCount")
-    val resumedActivitiesCount: Int get() = resumedActivities.size
+    val resumedActivitiesCount: Int
+        get() = resumedActivities.size
     @JsName("stackCount")
-    val stackCount: Int get() = rootTasks.size
+    val stackCount: Int
+        get() = rootTasks.size
     @JsName("homeTask")
-    val homeTask: Task? get() = getStackByActivityType(ACTIVITY_TYPE_HOME)?.topTask
+    val homeTask: Task?
+        get() = getStackByActivityType(ACTIVITY_TYPE_HOME)?.topTask
     @JsName("recentsTask")
-    val recentsTask: Task? get() = getStackByActivityType(ACTIVITY_TYPE_RECENTS)?.topTask
+    val recentsTask: Task?
+        get() = getStackByActivityType(ACTIVITY_TYPE_RECENTS)?.topTask
     @JsName("homeActivity")
-    val homeActivity: Activity? get() = homeTask?.activities?.lastOrNull()
+    val homeActivity: Activity?
+        get() = homeTask?.activities?.lastOrNull()
     @JsName("isHomeActivityVisible")
-    val isHomeActivityVisible: Boolean get() {
-        val activity = homeActivity
-        return activity != null && activity.isVisible
-    }
+    val isHomeActivityVisible: Boolean
+        get() {
+            val activity = homeActivity
+            return activity != null && activity.isVisible
+        }
     @JsName("recentsActivity")
-    val recentsActivity: Activity? get() = recentsTask?.activities?.lastOrNull()
+    val recentsActivity: Activity?
+        get() = recentsTask?.activities?.lastOrNull()
     @JsName("isRecentsActivityVisible")
-    val isRecentsActivityVisible: Boolean get() {
-        val activity = recentsActivity
-        return activity != null && activity.isVisible
-    }
+    val isRecentsActivityVisible: Boolean
+        get() {
+            val activity = recentsActivity
+            return activity != null && activity.isVisible
+        }
     @JsName("frontWindow")
-    val frontWindow: WindowState? get() = windowStates.firstOrNull()
+    val frontWindow: WindowState?
+        get() = windowStates.firstOrNull()
     @JsName("inputMethodWindowState")
     val inputMethodWindowState: WindowState?
         get() = getWindowStateForAppToken(inputMethodWindowAppToken)
 
     @JsName("getDefaultDisplay")
-    fun getDefaultDisplay(): DisplayContent? =
-        displays.firstOrNull { it.id == DEFAULT_DISPLAY }
+    fun getDefaultDisplay(): DisplayContent? = displays.firstOrNull { it.id == DEFAULT_DISPLAY }
 
     @JsName("getDisplay")
-    fun getDisplay(displayId: Int): DisplayContent? =
-        displays.firstOrNull { it.id == displayId }
+    fun getDisplay(displayId: Int): DisplayContent? = displays.firstOrNull { it.id == displayId }
 
     @JsName("countStacks")
     fun countStacks(windowingMode: Int, activityType: Int): Int {
@@ -240,16 +236,15 @@ class WindowManagerState(
     }
 
     @JsName("getRootTask")
-    fun getRootTask(taskId: Int): Task? =
-        rootTasks.firstOrNull { it.rootTaskId == taskId }
+    fun getRootTask(taskId: Int): Task? = rootTasks.firstOrNull { it.rootTaskId == taskId }
 
     @JsName("getRotation")
     fun getRotation(displayId: Int): Int =
-            getDisplay(displayId)?.rotation ?: error("Default display not found")
+        getDisplay(displayId)?.rotation ?: error("Default display not found")
 
     @JsName("getOrientation")
     fun getOrientation(displayId: Int): Int =
-            getDisplay(displayId)?.lastOrientation ?: error("Default display not found")
+        getDisplay(displayId)?.lastOrientation ?: error("Default display not found")
 
     @JsName("getStackByActivityType")
     fun getStackByActivityType(activityType: Int): Task? =
@@ -258,8 +253,7 @@ class WindowManagerState(
     @JsName("getStandardStackByWindowingMode")
     fun getStandardStackByWindowingMode(windowingMode: Int): Task? =
         rootTasks.firstOrNull {
-            it.activityType == ACTIVITY_TYPE_STANDARD &&
-                it.windowingMode == windowingMode
+            it.activityType == ACTIVITY_TYPE_STANDARD && it.windowingMode == windowingMode
         }
 
     @JsName("getActivitiesForWindowState")
@@ -271,10 +265,9 @@ class WindowManagerState(
             .firstOrNull { it.id == displayId }
             ?.rootTasks
             ?.mapNotNull { stack ->
-                stack.getActivity { activity ->
-                    activity.hasWindowState(windowState)
-                }
-            } ?: emptyList()
+                stack.getActivity { activity -> activity.hasWindowState(windowState) }
+            }
+            ?: emptyList()
     }
 
     /**
@@ -293,10 +286,9 @@ class WindowManagerState(
             .firstOrNull { it.id == displayId }
             ?.rootTasks
             ?.mapNotNull { stack ->
-            stack.getActivity { activity ->
-                activity.hasWindow(componentMatcher)
+                stack.getActivity { activity -> activity.hasWindow(componentMatcher) }
             }
-        } ?: emptyList()
+            ?: emptyList()
     }
 
     /**
@@ -320,9 +312,7 @@ class WindowManagerState(
     @JsName("getActivityByName")
     private fun getActivityByName(activityName: String): Activity? =
         rootTasks.firstNotNullOfOrNull { task ->
-            task.getActivity { activity ->
-                activity.title.contains(activityName)
-            }
+            task.getActivity { activity -> activity.title.contains(activityName) }
         }
 
     /**
@@ -362,12 +352,10 @@ class WindowManagerState(
     fun getMatchingVisibleWindowState(componentMatcher: IComponentMatcher): Array<WindowState> {
         return windowStates
             .filter { it.isSurfaceShown && componentMatcher.windowMatchesAnyOf(it) }
-                .toTypedArray()
+            .toTypedArray()
     }
 
-    /**
-     * @return the [WindowState] for the nav bar in the display with id [displayId]
-     */
+    /** @return the [WindowState] for the nav bar in the display with id [displayId] */
     @JsName("getNavBarWindow")
     fun getNavBarWindow(displayId: Int): WindowState? {
         val navWindow = windowStates.filter { it.isValidNavBarType && it.displayId == displayId }
@@ -402,11 +390,8 @@ class WindowManagerState(
     fun isWindowSurfaceShown(componentMatcher: IComponentMatcher): Boolean =
         getMatchingVisibleWindowState(componentMatcher).isNotEmpty()
 
-    /**
-     * Checks if the state has any window in PIP mode
-     */
-    @JsName("hasPipWindow")
-    fun hasPipWindow(): Boolean = pinnedWindows.isNotEmpty()
+    /** Checks if the state has any window in PIP mode */
+    @JsName("hasPipWindow") fun hasPipWindow(): Boolean = pinnedWindows.isNotEmpty()
 
     /**
      * Checks that a [WindowState] matching [componentMatcher] is in PIP mode
@@ -426,8 +411,10 @@ class WindowManagerState(
 
     @JsName("defaultMinimalDisplaySizeForSplitScreen")
     fun defaultMinimalDisplaySizeForSplitScreen(displayId: Int): Int {
-        return dpToPx(DEFAULT_MINIMAL_SPLIT_SCREEN_DISPLAY_SIZE_DP.toFloat(),
-            getDisplay(displayId)!!.dpi)
+        return dpToPx(
+            DEFAULT_MINIMAL_SPLIT_SCREEN_DISPLAY_SIZE_DP.toFloat(),
+            getDisplay(displayId)!!.dpi
+        )
     }
 
     @JsName("getIsIncompleteReason")
@@ -460,64 +447,45 @@ class WindowManagerState(
         }
     }
 
-    @JsName("isComplete")
-    fun isComplete(): Boolean = !isIncomplete()
+    @JsName("isComplete") fun isComplete(): Boolean = !isIncomplete()
     @JsName("isIncomplete")
     fun isIncomplete(): Boolean {
-        return rootTasks.isEmpty() || focusedStackId == -1 || windowStates.isEmpty() ||
+        return rootTasks.isEmpty() ||
+            focusedStackId == -1 ||
+            windowStates.isEmpty() ||
             // overview screen has no focused window
             ((focusedApp.isEmpty() || focusedWindow == null) && homeActivity == null) ||
             (focusedActivity == null || resumedActivities.isEmpty()) &&
-            !keyguardControllerState.isKeyguardShowing
+                !keyguardControllerState.isKeyguardShowing
     }
 
-    @JsName("asTrace")
-    fun asTrace(): WindowManagerTrace = WindowManagerTrace(arrayOf(this))
+    @JsName("asTrace") fun asTrace(): WindowManagerTrace = WindowManagerTrace(arrayOf(this))
 
     override fun toString(): String {
         return "${prettyTimestamp(timestamp)} (timestamp=$timestamp)"
     }
 
     companion object {
-        @JsName("STATE_INITIALIZING")
-        const val STATE_INITIALIZING = "INITIALIZING"
-        @JsName("STATE_RESUMED")
-        const val STATE_RESUMED = "RESUMED"
-        @JsName("STATE_PAUSED")
-        const val STATE_PAUSED = "PAUSED"
-        @JsName("STATE_STOPPED")
-        const val STATE_STOPPED = "STOPPED"
-        @JsName("STATE_DESTROYED")
-        const val STATE_DESTROYED = "DESTROYED"
-        @JsName("APP_STATE_IDLE")
-        const val APP_STATE_IDLE = "APP_STATE_IDLE"
-        @JsName("ACTIVITY_TYPE_UNDEFINED")
-        internal const val ACTIVITY_TYPE_UNDEFINED = 0
-        @JsName("ACTIVITY_TYPE_STANDARD")
-        internal const val ACTIVITY_TYPE_STANDARD = 1
-        @JsName("DEFAULT_DISPLAY")
-        internal const val DEFAULT_DISPLAY = 0
+        @JsName("STATE_INITIALIZING") const val STATE_INITIALIZING = "INITIALIZING"
+        @JsName("STATE_RESUMED") const val STATE_RESUMED = "RESUMED"
+        @JsName("STATE_PAUSED") const val STATE_PAUSED = "PAUSED"
+        @JsName("STATE_STOPPED") const val STATE_STOPPED = "STOPPED"
+        @JsName("STATE_DESTROYED") const val STATE_DESTROYED = "DESTROYED"
+        @JsName("APP_STATE_IDLE") const val APP_STATE_IDLE = "APP_STATE_IDLE"
+        @JsName("ACTIVITY_TYPE_UNDEFINED") internal const val ACTIVITY_TYPE_UNDEFINED = 0
+        @JsName("ACTIVITY_TYPE_STANDARD") internal const val ACTIVITY_TYPE_STANDARD = 1
+        @JsName("DEFAULT_DISPLAY") internal const val DEFAULT_DISPLAY = 0
         @JsName("DEFAULT_MINIMAL_SPLIT_SCREEN_DISPLAY_SIZE_DP")
         internal const val DEFAULT_MINIMAL_SPLIT_SCREEN_DISPLAY_SIZE_DP = 440
-        @JsName("ACTIVITY_TYPE_HOME")
-        internal const val ACTIVITY_TYPE_HOME = 2
-        @JsName("ACTIVITY_TYPE_RECENTS")
-        internal const val ACTIVITY_TYPE_RECENTS = 3
-        @JsName("WINDOWING_MODE_UNDEFINED")
-        internal const val WINDOWING_MODE_UNDEFINED = 0
-        @JsName("DENSITY_DEFAULT")
-        private const val DENSITY_DEFAULT = 160
-        /**
-         * @see android.app.WindowConfiguration.WINDOWING_MODE_PINNED
-         */
-        @JsName("WINDOWING_MODE_PINNED")
-        private const val WINDOWING_MODE_PINNED = 2
+        @JsName("ACTIVITY_TYPE_HOME") internal const val ACTIVITY_TYPE_HOME = 2
+        @JsName("ACTIVITY_TYPE_RECENTS") internal const val ACTIVITY_TYPE_RECENTS = 3
+        @JsName("WINDOWING_MODE_UNDEFINED") internal const val WINDOWING_MODE_UNDEFINED = 0
+        @JsName("DENSITY_DEFAULT") private const val DENSITY_DEFAULT = 160
+        /** @see android.app.WindowConfiguration.WINDOWING_MODE_PINNED */
+        @JsName("WINDOWING_MODE_PINNED") private const val WINDOWING_MODE_PINNED = 2
 
-        /**
-         * @see android.view.WindowManager.LayoutParams
-         */
-        @JsName("TYPE_NAVIGATION_BAR_PANEL")
-        internal const val TYPE_NAVIGATION_BAR_PANEL = 2024
+        /** @see android.view.WindowManager.LayoutParams */
+        @JsName("TYPE_NAVIGATION_BAR_PANEL") internal const val TYPE_NAVIGATION_BAR_PANEL = 2024
 
         // Default minimal size of resizable task, used if none is set explicitly.
         // Must be kept in sync with 'default_minimal_size_resizable_task'

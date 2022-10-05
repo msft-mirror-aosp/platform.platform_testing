@@ -23,18 +23,16 @@ class LayersLifecycleExtractorTest(
 ) {
     @Test
     fun extract() {
-        val layersTrace = ElementLifecycleExtractorTestConst.createTrace_arg(
-            layersTraceFlattenedLayers
-        )
+        val layersTrace =
+            ElementLifecycleExtractorTestConst.createTrace_arg(layersTraceFlattenedLayers)
         val traceDump = DeviceTraceDump(null, layersTrace)
         val layersLifecycleExtractor = LayersLifecycleExtractor()
-        val elementLifecycles = layersLifecycleExtractor.extract(
-            traceDump
-        )
+        val elementLifecycles = layersLifecycleExtractor.extract(traceDump)
         val expectedElementLifecycles = LayersTraceLifecycle(expectedElementLifecyclesMap)
         elementLifecycles?.run {
             Truth.assertThat(elementLifecycles).isEqualTo(expectedElementLifecycles)
-        } ?: throw RuntimeException("Element lifecycles unexpectedly null")
+        }
+            ?: throw RuntimeException("Element lifecycles unexpectedly null")
     }
 
     companion object {

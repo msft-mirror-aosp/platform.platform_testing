@@ -20,16 +20,11 @@ import com.android.server.wm.flicker.service.assertors.ComponentBuilder
 import com.android.server.wm.flicker.traces.windowmanager.WindowManagerTraceSubject
 import com.android.server.wm.traces.common.transition.Transition
 
-/**
- * Checks that [getWindowState] window remains visible throughout the transition
- */
+/** Checks that [getWindowState] window remains visible throughout the transition */
 class AppWindowIsVisibleAlways(component: ComponentBuilder) :
     BaseAssertionBuilderWithComponent(component) {
     /** {@inheritDoc} */
-    override fun doEvaluate(
-        transition: Transition,
-        wmSubject: WindowManagerTraceSubject
-    ) {
+    override fun doEvaluate(transition: Transition, wmSubject: WindowManagerTraceSubject) {
         wmSubject.isAppWindowVisible(component.build(transition)).forAllEntries()
     }
 }

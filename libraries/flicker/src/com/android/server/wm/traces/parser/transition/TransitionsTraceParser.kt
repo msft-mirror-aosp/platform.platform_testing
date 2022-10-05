@@ -30,14 +30,12 @@ import com.android.server.wm.traces.parser.LOG_TAG
 import kotlin.math.max
 import kotlin.system.measureTimeMillis
 
-/**
- * Parser for [TransitionsTrace] objects
- **/
+/** Parser for [TransitionsTrace] objects */
 class TransitionsTraceParser {
     companion object {
         /**
-         * Parses [TransitionsTrace] from [data] and uses the proto to generates a list
-         * of trace entries.
+         * Parses [TransitionsTrace] from [data] and uses the proto to generates a list of trace
+         * entries.
          *
          * @param data binary proto data
          */
@@ -45,17 +43,13 @@ class TransitionsTraceParser {
         fun parseFromTrace(data: ByteArray, transactions: TransactionsTrace): TransitionsTrace {
             var fileProto: TransitionTraceProto?
             try {
-                measureTimeMillis {
-                    fileProto = TransitionTraceProto.parseFrom(data)
-                }.also {
-                    Log.v(LOG_TAG, "Parsing proto (Transition Trace): ${it}ms")
-                }
+                measureTimeMillis { fileProto = TransitionTraceProto.parseFrom(data) }
+                    .also { Log.v(LOG_TAG, "Parsing proto (Transition Trace): ${it}ms") }
             } catch (e: Throwable) {
                 throw RuntimeException(e)
             }
-            return fileProto?.let {
-                parseFromTrace(it, transactions)
-            } ?: error("Unable to read trace file")
+            return fileProto?.let { parseFromTrace(it, transactions) }
+                ?: error("Unable to read trace file")
         }
 
         /**
@@ -78,12 +72,17 @@ class TransitionsTraceParser {
                 }
                 val entryParseTime = measureTimeMillis {
                     val changes = transitionProto.change.map { parseTransitionChangeFromProto(it) }
-                    val state = TransitionState(
-                        transitionProto.id,
-                        Type.fromInt(transitionProto.transitionType), transitionProto.timestamp,
-                        State.fromInt(transitionProto.state), transitionProto.flags, changes,
-                        transitionProto.startTransactionId, transitionProto.finishTransactionId
-                    )
+                    val state =
+                        TransitionState(
+                            transitionProto.id,
+                            Type.fromInt(transitionProto.transitionType),
+                            transitionProto.timestamp,
+                            State.fromInt(transitionProto.state),
+                            transitionProto.flags,
+                            changes,
+                            transitionProto.startTransactionId,
+                            transitionProto.finishTransactionId
+                        )
                     transitionStates.add(state)
                 }
                 traceParseTime += entryParseTime

@@ -22,51 +22,48 @@ import com.android.server.wm.flicker.service.assertors.Components
 /**
  * Contains the configuration of a [DeviceTraceDump]
  *
- * In the future, more values can be added if necessary,
- * requiring minimum modifications in the assertion production pipeline
+ * In the future, more values can be added if necessary, requiring minimum modifications in the
+ * assertion production pipeline
  */
 data class DeviceTraceConfiguration(
     /**
-     * Map from component name -> component type
-     * e.g. "openingName" -> "OPENING_APP"
+     * Map from component name -> component type e.g. "openingName" -> "OPENING_APP"
+     * ```
      *      "closingName" -> "CLOSING_APP"
+     * ```
      */
     val componentToTypeMap: Map<String, ComponentBuilder>
 ) {
     override fun equals(other: Any?): Boolean {
-        return other is DeviceTraceConfiguration &&
-            componentToTypeMap == other.componentToTypeMap
+        return other is DeviceTraceConfiguration && componentToTypeMap == other.componentToTypeMap
     }
 
     override fun hashCode(): Int {
         return componentToTypeMap.hashCode()
     }
 
-    companion object{
-        /**
-         * Converts a simplified trace config to the real trace config
-         */
+    companion object {
+        /** Converts a simplified trace config to the real trace config */
         fun fromSimplifiedTrace(
             traceConfigurationFromFile: DeviceTraceConfigurationSimplified
         ): DeviceTraceConfiguration {
-            val actualComponentToType = traceConfigurationFromFile.componentToTypeMap.map{
-                (component, componentType) ->
-                val componentBuilder = Components.byType[componentType]
-                if (componentBuilder != null) {
-                    component to componentBuilder
-                } else throw RuntimeException("Component builder is null")
-            }.toMap()
+            val actualComponentToType =
+                traceConfigurationFromFile.componentToTypeMap
+                    .map { (component, componentType) ->
+                        val componentBuilder = Components.byType[componentType]
+                        if (componentBuilder != null) {
+                            component to componentBuilder
+                        } else throw RuntimeException("Component builder is null")
+                    }
+                    .toMap()
             return DeviceTraceConfiguration(actualComponentToType)
         }
     }
 }
 
 /**
- * A format of [DeviceTraceConfiguration] that can be easily read from a JSON file.
- * Example of a difference:
- * componentToTypeMap is Map<String, String> instead of Map<String, ComponentBuilder>,
+ * A format of [DeviceTraceConfiguration] that can be easily read from a JSON file. Example of a
+ * difference: componentToTypeMap is Map<String, String> instead of Map<String, ComponentBuilder>,
  * because ComponentBuilder is too complicated to encode in JSON format.
  */
-class DeviceTraceConfigurationSimplified(
-    val componentToTypeMap: Map<String, String>
-)
+class DeviceTraceConfigurationSimplified(val componentToTypeMap: Map<String, String>)

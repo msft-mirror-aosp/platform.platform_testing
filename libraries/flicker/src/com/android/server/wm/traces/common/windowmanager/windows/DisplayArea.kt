@@ -22,22 +22,21 @@ import kotlin.js.JsName
 /**
  * Represents a display area in the window manager hierarchy
  *
- * This is a generic object that is reused by both Flicker and Winscope and cannot
- * access internal Java/Android functionality
- *
+ * This is a generic object that is reused by both Flicker and Winscope and cannot access internal
+ * Java/Android functionality
  */
 class DisplayArea(
-    @JsName("isTaskDisplayArea")
-    val isTaskDisplayArea: Boolean,
+    @JsName("isTaskDisplayArea") val isTaskDisplayArea: Boolean,
     windowContainer: WindowContainer
 ) : WindowContainer(windowContainer) {
     @JsName("activities")
     val activities: Array<Activity>
-        get() = if (isTaskDisplayArea) {
-            this.collectDescendants()
-        } else {
-            emptyArray()
-        }
+        get() =
+            if (isTaskDisplayArea) {
+                this.collectDescendants()
+            } else {
+                emptyArray()
+            }
 
     /**
      * @return if [componentMatcher] matches any activity

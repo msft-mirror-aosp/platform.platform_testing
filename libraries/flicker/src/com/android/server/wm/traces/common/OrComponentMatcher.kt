@@ -20,16 +20,15 @@ import com.android.server.wm.traces.common.layers.Layer
 import com.android.server.wm.traces.common.windowmanager.windows.Activity
 import com.android.server.wm.traces.common.windowmanager.windows.WindowState
 
-class OrComponentMatcher(
-    private val componentMatchers: Array<out IComponentMatcher>
-) : IComponentMatcher {
+class OrComponentMatcher(private val componentMatchers: Array<out IComponentMatcher>) :
+    IComponentMatcher {
 
-    /** {@inheritDoc}  */
+    /** {@inheritDoc} */
     override fun windowMatchesAnyOf(window: WindowState): Boolean {
         return componentMatchers.any { it.windowMatchesAnyOf(window) }
     }
 
-    /** {@inheritDoc}  */
+    /** {@inheritDoc} */
     override fun windowMatchesAnyOf(windows: Collection<WindowState>): Boolean {
         return componentMatchers.any { it.windowMatchesAnyOf(windows) }
     }

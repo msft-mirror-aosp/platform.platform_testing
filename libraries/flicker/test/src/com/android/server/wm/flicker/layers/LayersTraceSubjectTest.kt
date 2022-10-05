@@ -48,10 +48,8 @@ class LayersTraceSubjectTest {
     @Test
     fun exceptionContainsDebugInfo() {
         val layersTraceEntries = readLayerTraceFromFile("layers_trace_launch_split_screen.pb")
-        val error = assertThrows(AssertionError::class.java) {
-            assertThat(layersTraceEntries)
-                .isEmpty()
-        }
+        val error =
+            assertThrows(AssertionError::class.java) { assertThat(layersTraceEntries).isEmpty() }
         Truth.assertThat(error).hasMessageThat().contains("Trace start")
         Truth.assertThat(error).hasMessageThat().contains("Trace end")
     }
@@ -124,52 +122,44 @@ class LayersTraceSubjectTest {
     @Test
     fun testCanDetectIncorrectVisibilityFromLayerTrace() {
         val layersTraceEntries = readLayerTraceFromFile("layers_trace_invalid_layer_visibility.pb")
-        val error = assertThrows(AssertionError::class.java) {
-            assertThat(layersTraceEntries)
-                .isVisible(TestComponents.SIMPLE_APP)
-                .then()
-                .isInvisible(TestComponents.SIMPLE_APP)
-                .forAllEntries()
-        }
+        val error =
+            assertThrows(AssertionError::class.java) {
+                assertThat(layersTraceEntries)
+                    .isVisible(TestComponents.SIMPLE_APP)
+                    .then()
+                    .isInvisible(TestComponents.SIMPLE_APP)
+                    .forAllEntries()
+            }
 
+        assertFailure(error).hasMessageThat().contains("layers_trace_invalid_layer_visibility.pb")
+        assertFailure(error).hasMessageThat().contains("2d22h13m14s303ms")
+        assertFailure(error).hasMessageThat().contains("!isVisible")
         assertFailure(error)
             .hasMessageThat()
-            .contains("layers_trace_invalid_layer_visibility.pb")
-        assertFailure(error)
-            .hasMessageThat()
-            .contains("2d22h13m14s303ms")
-        assertFailure(error)
-            .hasMessageThat()
-            .contains("!isVisible")
-        assertFailure(error)
-            .hasMessageThat()
-            .contains("com.android.server.wm.flicker.testapp/" +
-                "com.android.server.wm.flicker.testapp.SimpleActivity#0 is visible")
+            .contains(
+                "com.android.server.wm.flicker.testapp/" +
+                    "com.android.server.wm.flicker.testapp.SimpleActivity#0 is visible"
+            )
     }
 
     @Test
     fun testCanDetectInvalidVisibleLayerForMoreThanOneConsecutiveEntry() {
         val layersTraceEntries = readLayerTraceFromFile("layers_trace_invalid_visible_layers.pb")
-        val error = assertThrows(AssertionError::class.java) {
-            assertThat(layersTraceEntries)
-                .visibleLayersShownMoreThanOneConsecutiveEntry()
-                .forAllEntries()
-            error("Assertion should not have passed")
-        }
+        val error =
+            assertThrows(AssertionError::class.java) {
+                assertThat(layersTraceEntries)
+                    .visibleLayersShownMoreThanOneConsecutiveEntry()
+                    .forAllEntries()
+                error("Assertion should not have passed")
+            }
 
         Truth.assertThat(error).hasMessageThat().contains("2d18h35m56s397ms")
-        assertFailure(error)
-            .hasMessageThat()
-            .contains("StatusBar#0")
-        assertFailure(error)
-            .hasMessageThat()
-            .contains("is not visible for 2 entries")
+        assertFailure(error).hasMessageThat().contains("StatusBar#0")
+        assertFailure(error).hasMessageThat().contains("is not visible for 2 entries")
     }
 
     private fun testCanDetectVisibleLayersMoreThanOneConsecutiveEntry(trace: LayersTrace) {
-        assertThat(trace)
-            .visibleLayersShownMoreThanOneConsecutiveEntry()
-            .forAllEntries()
+        assertThat(trace).visibleLayersShownMoreThanOneConsecutiveEntry().forAllEntries()
     }
 
     @Test
@@ -181,23 +171,23 @@ class LayersTraceSubjectTest {
 
     @Test
     fun testCanIgnoreLayerEqualNameInVisibleLayersMoreThanOneConsecutiveEntry() {
-        val layersTraceEntries = readLayerTraceFromFile(
-                "layers_trace_invalid_visible_layers.pb")
+        val layersTraceEntries = readLayerTraceFromFile("layers_trace_invalid_visible_layers.pb")
         assertThat(layersTraceEntries)
-                .visibleLayersShownMoreThanOneConsecutiveEntry(
-                    listOf(ComponentNameMatcher.STATUS_BAR))
-                .forAllEntries()
+            .visibleLayersShownMoreThanOneConsecutiveEntry(listOf(ComponentNameMatcher.STATUS_BAR))
+            .forAllEntries()
     }
 
     @Test
     fun testCanIgnoreLayerShorterNameInVisibleLayersMoreThanOneConsecutiveEntry() {
-        val layersTraceEntries = readLayerTraceFromFile(
-                "one_visible_layer_launcher_trace.pb")
-        val launcherComponent = ComponentNameMatcher("com.google.android.apps.nexuslauncher",
-                "com.google.android.apps.nexuslauncher.NexusLauncherActivity#1")
+        val layersTraceEntries = readLayerTraceFromFile("one_visible_layer_launcher_trace.pb")
+        val launcherComponent =
+            ComponentNameMatcher(
+                "com.google.android.apps.nexuslauncher",
+                "com.google.android.apps.nexuslauncher.NexusLauncherActivity#1"
+            )
         assertThat(layersTraceEntries)
-                .visibleLayersShownMoreThanOneConsecutiveEntry(listOf(launcherComponent))
-                .forAllEntries()
+            .visibleLayersShownMoreThanOneConsecutiveEntry(listOf(launcherComponent))
+            .forAllEntries()
     }
 
     private fun detectRootLayer(fileName: String) {
@@ -205,12 +195,12 @@ class LayersTraceSubjectTest {
         for (entry in layersTrace.entries) {
             val rootLayers = entry.children
             Truth.assertWithMessage("Does not have any root layer")
-                    .that(rootLayers.size)
-                    .isGreaterThan(0)
+                .that(rootLayers.size)
+                .isGreaterThan(0)
             val firstParentId = rootLayers.first().parentId
             Truth.assertWithMessage("Has multiple root layers")
-                    .that(rootLayers.all { it.parentId == firstParentId })
-                    .isTrue()
+                .that(rootLayers.all { it.parentId == firstParentId })
+                .isTrue()
         }
     }
 
@@ -237,14 +227,13 @@ class LayersTraceSubjectTest {
         val animation = assertThat(layersTraceEntries).layers("animation-leash of app_transition#0")
         // Obtain the area of each layer and checks if the next area is
         // greater or equal to the previous one
-        val areas = animation.map {
-            val region = it.layer?.visibleRegion ?: Region()
-            val area = region.width * region.height
-            area
-        }
-        val expanding = areas.zipWithNext { currentArea, nextArea ->
-            nextArea >= currentArea
-        }
+        val areas =
+            animation.map {
+                val region = it.layer?.visibleRegion ?: Region()
+                val area = region.width * region.height
+                area
+            }
+        val expanding = areas.zipWithNext { currentArea, nextArea -> nextArea >= currentArea }
 
         Truth.assertWithMessage("Animation leash should be expanding")
             .that(expanding.all { it })
@@ -264,8 +253,7 @@ class LayersTraceSubjectTest {
         } catch (e: AssertionError) {
             val pipRegion = subject.visibleRegion(TestComponents.PIP_APP).region
             val expectedWithoutPip = DISPLAY_REGION_ROTATED.minus(pipRegion)
-            subject.visibleRegion(TestComponents.FIXED_APP)
-                .coversExactly(expectedWithoutPip)
+            subject.visibleRegion(TestComponents.FIXED_APP).coversExactly(expectedWithoutPip)
         }
     }
 
@@ -274,7 +262,8 @@ class LayersTraceSubjectTest {
         val layersTraceEntries = readLayerTraceFromFile("layers_trace_pip_wmshell.pb")
         val subject = assertThat(layersTraceEntries).last()
         val pipRegion = subject.visibleRegion(TestComponents.PIP_APP).region
-        subject.visibleRegion(TestComponents.FIXED_APP)
+        subject
+            .visibleRegion(TestComponents.FIXED_APP)
             .plus(pipRegion)
             .coversExactly(DISPLAY_REGION_ROTATED)
     }
@@ -282,8 +271,11 @@ class LayersTraceSubjectTest {
     @Test
     fun checkCanDetectSplashScreen() {
         val trace = readLayerTraceFromFile("layers_trace_splashscreen.pb")
-        val newLayer = ComponentNameMatcher("com.android.server.wm.flicker.testapp",
-            "com.android.server.wm.flicker.testapp.SimpleActivity")
+        val newLayer =
+            ComponentNameMatcher(
+                "com.android.server.wm.flicker.testapp",
+                "com.android.server.wm.flicker.testapp.SimpleActivity"
+            )
         assertThat(trace)
             .isVisible(TestComponents.LAUNCHER)
             .then()
@@ -292,32 +284,38 @@ class LayersTraceSubjectTest {
             .isVisible(TestComponents.SIMPLE_APP)
             .forAllEntries()
 
-        val failure = assertThrows(FlickerSubjectException::class.java) {
-            assertThat(trace)
-                .isVisible(TestComponents.LAUNCHER)
-                .then()
-                .isVisible(TestComponents.SIMPLE_APP)
-                .forAllEntries()
-        }
+        val failure =
+            assertThrows(FlickerSubjectException::class.java) {
+                assertThat(trace)
+                    .isVisible(TestComponents.LAUNCHER)
+                    .then()
+                    .isVisible(TestComponents.SIMPLE_APP)
+                    .forAllEntries()
+            }
         assertFailure(failure).hasMessageThat().contains("Is Invisible")
     }
 
     @Test
     fun checkCanDetectMissingSplashScreen() {
         val trace = readLayerTraceFromFile("layers_trace_splashscreen.pb")
-        val newLayer = ComponentNameMatcher("com.android.server.wm.flicker.testapp",
-            "com.android.server.wm.flicker.testapp.SimpleActivity")
+        val newLayer =
+            ComponentNameMatcher(
+                "com.android.server.wm.flicker.testapp",
+                "com.android.server.wm.flicker.testapp.SimpleActivity"
+            )
 
         // No splashscreen because no matching activity record
-        var failure = assertThrows(FlickerSubjectException::class.java) {
-            assertThat(trace).first().isSplashScreenVisibleFor(TestComponents.SIMPLE_APP)
-        }
+        var failure =
+            assertThrows(FlickerSubjectException::class.java) {
+                assertThat(trace).first().isSplashScreenVisibleFor(TestComponents.SIMPLE_APP)
+            }
         assertFailure(failure).hasMessageThat().contains("Could not find Activity Record layer")
 
         // No splashscreen for target activity record
-        failure = assertThrows(FlickerSubjectException::class.java) {
-            assertThat(trace).first().isSplashScreenVisibleFor(TestComponents.LAUNCHER)
-        }
+        failure =
+            assertThrows(FlickerSubjectException::class.java) {
+                assertThat(trace).first().isSplashScreenVisibleFor(TestComponents.LAUNCHER)
+            }
         assertFailure(failure).hasMessageThat().contains("No splash screen visible")
     }
 
@@ -325,9 +323,9 @@ class LayersTraceSubjectTest {
         private val DISPLAY_REGION = Region.from(0, 0, 1440, 2880)
         private val DISPLAY_REGION_ROTATED = Region.from(0, 0, 2160, 1080)
         private const val SHELL_APP_PACKAGE = "com.android.wm.shell.flicker.testapp"
-        private val FIXED_APP = ComponentNameMatcher(SHELL_APP_PACKAGE,
-                "$SHELL_APP_PACKAGE.FixedActivity")
-        private val PIP_APP = ComponentNameMatcher(SHELL_APP_PACKAGE,
-            "$SHELL_APP_PACKAGE.PipActivity")
+        private val FIXED_APP =
+            ComponentNameMatcher(SHELL_APP_PACKAGE, "$SHELL_APP_PACKAGE.FixedActivity")
+        private val PIP_APP =
+            ComponentNameMatcher(SHELL_APP_PACKAGE, "$SHELL_APP_PACKAGE.PipActivity")
     }
 }

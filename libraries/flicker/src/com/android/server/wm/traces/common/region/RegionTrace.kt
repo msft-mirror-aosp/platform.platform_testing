@@ -25,16 +25,13 @@ import kotlin.js.JsName
  *
  * Each entry is parsed into a list of [RegionEntry] objects.
  *
- * This is a generic object that is reused by both Flicker and Winscope and cannot
- * access internal Java/Android functionality
- *
+ * This is a generic object that is reused by both Flicker and Winscope and cannot access internal
+ * Java/Android functionality
  */
 data class RegionTrace(
-    @JsName("components")
-    val components: IComponentMatcher?,
+    @JsName("components") val components: IComponentMatcher?,
     override val entries: Array<RegionEntry>
-) : ITrace<RegionEntry>,
-        List<RegionEntry> by entries.toList() {
+) : ITrace<RegionEntry>, List<RegionEntry> by entries.toList() {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is RegionTrace) return false

@@ -24,9 +24,7 @@ import com.android.server.wm.flicker.traces.eventlog.FocusEvent.Focus
 import java.io.IOException
 import java.util.UUID
 
-/**
- * Collects event logs during transitions.
- */
+/** Collects event logs during transitions. */
 open class EventLogMonitor : ITransitionMonitor, FlickerRunResult.IResultSetter {
     private var _logs = listOf<Event>()
     private lateinit var _logSeparator: String
@@ -52,9 +50,10 @@ open class EventLogMonitor : ITransitionMonitor, FlickerRunResult.IResultSetter 
         } catch (e: IOException) {
             throw RuntimeException(e)
         }
-        return events.filter { it.data != null }.dropWhile {
-            it.tag != EVENT_LOG_SEPARATOR_TAG || it.data.toString() != _logSeparator
-        }.drop(1)
+        return events
+            .filter { it.data != null }
+            .dropWhile { it.tag != EVENT_LOG_SEPARATOR_TAG || it.data.toString() != _logSeparator }
+            .drop(1)
     }
 
     override fun start() {
@@ -83,19 +82,19 @@ open class EventLogMonitor : ITransitionMonitor, FlickerRunResult.IResultSetter 
                 throw RuntimeException("Error reading from eventlog $log")
             }
             val focusState =
-                    when {
-                        log[0].contains(" entering ") -> Focus.GAINED
-                        log[0].contains(" leaving ") -> Focus.LOST
-                        else -> Focus.REQUESTED
-                    }
+                when {
+                    log[0].contains(" entering ") -> Focus.GAINED
+                    log[0].contains(" leaving ") -> Focus.LOST
+                    else -> Focus.REQUESTED
+                }
             // parse window from 'Focus [entering|leaving] [window name]'
             // by dropping the first two words
             var expectedWhiteSpace = 2
-            val window = log[0].dropWhile { !it.isWhitespace() || --expectedWhiteSpace > 0 }
-                    .drop(1)
+            val window = log[0].dropWhile { !it.isWhitespace() || --expectedWhiteSpace > 0 }.drop(1)
             val reason = log[1].removePrefix("reason=")
-            FocusEvent(timestamp, window, focusState, reason)
-                    .takeIf { focusState != Focus.REQUESTED }
+            FocusEvent(timestamp, window, focusState, reason).takeIf {
+                focusState != Focus.REQUESTED
+            }
         }
     }
 

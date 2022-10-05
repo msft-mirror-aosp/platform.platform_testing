@@ -21,20 +21,15 @@ import com.android.server.wm.flicker.assertiongenerator.ScenarioConfig
 import com.android.server.wm.traces.common.service.Scenario
 
 /**
- * Produces configuration for assertion generation
- * If config is not null (specified by user), it returns it.
- * If config is null, it gets the goldenTracesConfig from the specified directory
- * or from the default location if directory not specified
+ * Produces configuration for assertion generation If config is not null (specified by user), it
+ * returns it. If config is null, it gets the goldenTracesConfig from the specified directory or
+ * from the default location if directory not specified
  */
 class AssertionGeneratorConfigProducer(
     val config: Map<Scenario, ScenarioConfig>? = null,
     val configDir: String? = null
 ) {
     fun produce(): Map<Scenario, ScenarioConfig> {
-        return config?.let {
-            config
-        } ?: let {
-            TraceFileReader.getGoldenTracesConfig(configDir)
-        }
+        return config?.let { config } ?: let { TraceFileReader.getGoldenTracesConfig(configDir) }
     }
 }

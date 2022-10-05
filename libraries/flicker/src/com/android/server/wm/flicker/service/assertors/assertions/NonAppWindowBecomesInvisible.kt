@@ -21,17 +21,15 @@ import com.android.server.wm.flicker.traces.windowmanager.WindowManagerTraceSubj
 import com.android.server.wm.traces.common.transition.Transition
 
 /**
- * Checks that non-app window [component] is visible at the start of the transition and
- * becomes invisible
+ * Checks that non-app window [component] is visible at the start of the transition and becomes
+ * invisible
  */
 open class NonAppWindowBecomesInvisible(component: ComponentBuilder) :
     BaseAssertionBuilderWithComponent(component) {
     /** {@inheritDoc} */
-    override fun doEvaluate(
-        transition: Transition,
-        wmSubject: WindowManagerTraceSubject
-    ) {
-        wmSubject.isNonAppWindowVisible(component.build(transition))
+    override fun doEvaluate(transition: Transition, wmSubject: WindowManagerTraceSubject) {
+        wmSubject
+            .isNonAppWindowVisible(component.build(transition))
             .then()
             .isNonAppWindowInvisible(component.build(transition))
             .forAllEntries()

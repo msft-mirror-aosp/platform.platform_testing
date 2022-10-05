@@ -22,12 +22,8 @@ import android.support.annotation.IntDef
 @Retention(AnnotationRetention.SOURCE)
 annotation class WmStateDumpFlags
 
-/**
- * Include WM trace in the dump
- */
+/** Include WM trace in the dump */
 const val FLAG_STATE_DUMP_FLAG_WM = 1
 
-/**
- * Include the layers trace ni the dump
- */
+/** Include the layers trace ni the dump */
 const val FLAG_STATE_DUMP_FLAG_LAYERS = 2

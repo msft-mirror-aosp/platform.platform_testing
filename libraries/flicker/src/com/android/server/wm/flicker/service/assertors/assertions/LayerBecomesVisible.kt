@@ -21,17 +21,15 @@ import com.android.server.wm.flicker.traces.layers.LayersTraceSubject
 import com.android.server.wm.traces.common.transition.Transition
 
 /**
- * Checks if the [componentMatcher] layer is invisible at the start of the transition and
- * becomes visible
+ * Checks if the [componentMatcher] layer is invisible at the start of the transition and becomes
+ * visible
  */
 class LayerBecomesVisible(component: ComponentBuilder) :
     BaseAssertionBuilderWithComponent(component) {
     /** {@inheritDoc} */
-    override fun doEvaluate(
-        transition: Transition,
-        layerSubject: LayersTraceSubject
-    ) {
-        layerSubject.isInvisible(component.build(transition))
+    override fun doEvaluate(transition: Transition, layerSubject: LayersTraceSubject) {
+        layerSubject
+            .isInvisible(component.build(transition))
             .then()
             .isVisible(component.build(transition))
             .forAllEntries()

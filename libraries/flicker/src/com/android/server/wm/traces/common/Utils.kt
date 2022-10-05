@@ -24,9 +24,7 @@ class Utils {
             to: Long,
             addInitialEntry: Boolean = false
         ): Array<Entry> {
-            require(from <= to) {
-                "`from` must be smaller or equal to `to` but was $from and $to"
-            }
+            require(from <= to) { "`from` must be smaller or equal to `to` but was $from and $to" }
 
             return when {
                 entries.isEmpty() -> {
@@ -54,8 +52,8 @@ class Utils {
 
                     var first = entries.indexOfFirst { it.timestamp >= from }
                     require(first >= 0) { "No match found for first index" }
-                    val last = entries.lastIndex - entries.reversed()
-                            .indexOfFirst { it.timestamp <= to }
+                    val last =
+                        entries.lastIndex - entries.reversed().indexOfFirst { it.timestamp <= to }
                     require(last >= 0) { "No match found for last index" }
 
                     if (addInitialEntry && first > 0 && entries[first].timestamp > from) {

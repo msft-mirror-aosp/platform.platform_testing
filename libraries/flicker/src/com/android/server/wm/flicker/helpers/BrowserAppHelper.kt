@@ -27,17 +27,16 @@ import com.android.server.wm.traces.common.ComponentNameMatcher
  *
  * This helper has no other functionality but the app launch.
  *
- * This helper is used to launch an app after some operations (e.g., navigation mode change),
- * so that the device is stable before executing flicker tests
+ * This helper is used to launch an app after some operations (e.g., navigation mode change), so
+ * that the device is stable before executing flicker tests
  */
 class BrowserAppHelper(
     instrumentation: Instrumentation,
     private val pkgManager: PackageManager = instrumentation.context.packageManager
-) : StandardAppHelper(
-    instrumentation, "SampleApp", getBrowserComponent(pkgManager)
-) {
-    override fun getOpenAppIntent(): Intent = pkgManager.getLaunchIntentForPackage(packageName)
-        ?: error("Unable to find intent for browser")
+) : StandardAppHelper(instrumentation, "SampleApp", getBrowserComponent(pkgManager)) {
+    override fun getOpenAppIntent(): Intent =
+        pkgManager.getLaunchIntentForPackage(packageName)
+            ?: error("Unable to find intent for browser")
 
     companion object {
         private fun getBrowserIntent(): Intent {
@@ -48,8 +47,9 @@ class BrowserAppHelper(
 
         private fun getBrowserComponent(pkgManager: PackageManager): ComponentNameMatcher {
             val intent = getBrowserIntent()
-            val resolveInfo = pkgManager.resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY)
-                ?: error("Unable to resolve browser activity")
+            val resolveInfo =
+                pkgManager.resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY)
+                    ?: error("Unable to resolve browser activity")
             return ComponentNameMatcher(resolveInfo.activityInfo.packageName, className = "")
         }
     }

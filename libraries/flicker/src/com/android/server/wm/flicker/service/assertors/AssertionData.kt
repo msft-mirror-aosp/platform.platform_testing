@@ -19,9 +19,7 @@ package com.android.server.wm.flicker.service.assertors
 import com.android.server.wm.traces.common.service.AssertionInvocationGroup
 import com.android.server.wm.traces.common.service.Scenario
 
-/**
- * Stores data for FASS assertions.
- */
+/** Stores data for FASS assertions. */
 data class AssertionData(
     val scenario: Scenario,
     val assertionBuilder: BaseAssertionBuilder,

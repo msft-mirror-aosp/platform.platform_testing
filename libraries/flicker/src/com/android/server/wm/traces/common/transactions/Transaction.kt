@@ -19,16 +19,11 @@ package com.android.server.wm.traces.common.transactions
 import kotlin.js.JsName
 
 data class Transaction(
-    @JsName("pid")
-    val pid: Int,
-    @JsName("uid")
-    val uid: Int,
-    @JsName("requestedVSyncId")
-    val requestedVSyncId: Long,
-    @JsName("postTime")
-    val postTime: Long,
-    @JsName("id")
-    val id: Long,
+    @JsName("pid") val pid: Int,
+    @JsName("uid") val uid: Int,
+    @JsName("requestedVSyncId") val requestedVSyncId: Long,
+    @JsName("postTime") val postTime: Long,
+    @JsName("id") val id: Long,
 ) {
     constructor(
         pid: Int,
@@ -44,7 +39,8 @@ data class Transaction(
     lateinit var appliedInEntry: TransactionsTraceEntry
         internal set
 
-    val appliedVSyncId: Long get() = appliedInEntry.vSyncId
+    val appliedVSyncId: Long
+        get() = appliedInEntry.vSyncId
 
     override fun toString(): String {
         return "Transaction#${hashCode().toString(16)}" +

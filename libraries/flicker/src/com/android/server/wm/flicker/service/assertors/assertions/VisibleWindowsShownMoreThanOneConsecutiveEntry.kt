@@ -21,15 +21,12 @@ import com.android.server.wm.flicker.traces.windowmanager.WindowManagerTraceSubj
 import com.android.server.wm.traces.common.transition.Transition
 
 /**
- * Checks that all windows that are visible on the trace, are visible for at least 2
- * consecutive entries.
+ * Checks that all windows that are visible on the trace, are visible for at least 2 consecutive
+ * entries.
  */
 class VisibleWindowsShownMoreThanOneConsecutiveEntry : BaseAssertionBuilder() {
     /** {@inheritDoc} */
-    override fun doEvaluate(
-        transition: Transition,
-        wmSubject: WindowManagerTraceSubject
-    ) {
+    override fun doEvaluate(transition: Transition, wmSubject: WindowManagerTraceSubject) {
         wmSubject.visibleWindowsShownMoreThanOneConsecutiveEntry().forAllEntries()
     }
 }

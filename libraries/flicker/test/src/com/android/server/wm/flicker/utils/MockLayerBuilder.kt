@@ -41,9 +41,7 @@ class MockLayerBuilder(private val name: String) {
     private var zIndex = 0
     private var isOpaque = true
 
-    fun addChild(layer: MockLayerBuilder): MockLayerBuilder = apply {
-        this.children.add(layer)
-    }
+    fun addChild(layer: MockLayerBuilder): MockLayerBuilder = apply { this.children.add(layer) }
 
     fun setContainerLayer(): MockLayerBuilder = apply {
         this.type = "ContainerLayer"
@@ -51,21 +49,15 @@ class MockLayerBuilder(private val name: String) {
         this.isVisible = false
     }
 
-    fun setVisible(): MockLayerBuilder = apply {
-        this.isVisible = true
-    }
+    fun setVisible(): MockLayerBuilder = apply { this.isVisible = true }
 
-    fun setInvisible(): MockLayerBuilder = apply {
-        this.isVisible = false
-    }
+    fun setInvisible(): MockLayerBuilder = apply { this.isVisible = false }
 
     fun addChildren(rootLayers: Collection<MockLayerBuilder>): MockLayerBuilder = apply {
         rootLayers.forEach { addChild(it) }
     }
 
-    fun setAbsoluteBounds(bounds: Rect): MockLayerBuilder = apply {
-        this.absoluteBounds = bounds
-    }
+    fun setAbsoluteBounds(bounds: Rect): MockLayerBuilder = apply { this.absoluteBounds = bounds }
 
     fun build(): Layer {
         val absoluteBounds = this.absoluteBounds
@@ -73,40 +65,41 @@ class MockLayerBuilder(private val name: String) {
 
         val transform = Transform.from(0, Matrix33.identity(0f, 0f))
 
-        val thisLayer = Layer.from(
-            name,
-            id,
-            parentId,
-            z = zIndex,
-            visibleRegion = if (isVisible) Region.from(absoluteBounds) else Region.EMPTY,
-            activeBuffer = ActiveBuffer.from(absoluteBounds.width, absoluteBounds.height, 1, 1),
-            flags = if (isVisible) 0 else ILayerProperties.Flag.HIDDEN.value,
-            bounds = absoluteBounds.toRectF(),
-            color = Color.DEFAULT,
-            isOpaque = isVisible && isOpaque,
-            shadowRadius = 0f,
-            cornerRadius = 0f,
-            type = type,
-            screenBounds = absoluteBounds.toRectF(),
-            transform = transform,
-            sourceBounds = absoluteBounds.toRectF(),
-            currFrame = 0,
-            effectiveScalingMode = 0,
-            bufferTransform = transform,
-            hwcCompositionType = HwcCompositionType.INVALID,
-            hwcCrop = RectF.EMPTY,
-            hwcFrame = Rect.EMPTY,
-            crop = absoluteBounds,
-            backgroundBlurRadius = 0,
-            isRelativeOf = false,
-            zOrderRelativeOfId = -1,
-            stackId = 0,
-            requestedTransform = transform,
-            requestedColor = Color.DEFAULT,
-            cornerRadiusCrop = RectF.EMPTY,
-            inputTransform = transform,
-            inputRegion = Region.from(absoluteBounds)
-        )
+        val thisLayer =
+            Layer.from(
+                name,
+                id,
+                parentId,
+                z = zIndex,
+                visibleRegion = if (isVisible) Region.from(absoluteBounds) else Region.EMPTY,
+                activeBuffer = ActiveBuffer.from(absoluteBounds.width, absoluteBounds.height, 1, 1),
+                flags = if (isVisible) 0 else ILayerProperties.Flag.HIDDEN.value,
+                bounds = absoluteBounds.toRectF(),
+                color = Color.DEFAULT,
+                isOpaque = isVisible && isOpaque,
+                shadowRadius = 0f,
+                cornerRadius = 0f,
+                type = type,
+                screenBounds = absoluteBounds.toRectF(),
+                transform = transform,
+                sourceBounds = absoluteBounds.toRectF(),
+                currFrame = 0,
+                effectiveScalingMode = 0,
+                bufferTransform = transform,
+                hwcCompositionType = HwcCompositionType.INVALID,
+                hwcCrop = RectF.EMPTY,
+                hwcFrame = Rect.EMPTY,
+                crop = absoluteBounds,
+                backgroundBlurRadius = 0,
+                isRelativeOf = false,
+                zOrderRelativeOfId = -1,
+                stackId = 0,
+                requestedTransform = transform,
+                requestedColor = Color.DEFAULT,
+                cornerRadiusCrop = RectF.EMPTY,
+                inputTransform = transform,
+                inputRegion = Region.from(absoluteBounds)
+            )
 
         val layers = mutableListOf<Layer>()
         layers.add(thisLayer)

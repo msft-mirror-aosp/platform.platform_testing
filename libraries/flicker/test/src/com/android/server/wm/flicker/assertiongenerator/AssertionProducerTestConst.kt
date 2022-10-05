@@ -25,45 +25,36 @@ class AssertionProducerTestConst {
     companion object {
         val componentMatcher_id1 = ComponentNameMatcher.NAV_BAR
         val componentMatcher_id2 = ComponentNameMatcher.STATUS_BAR
-        val componentMatcher_id4 = ComponentNameMatcher(
-            "com.google.android.apps.nexuslauncher",
-            "com.google.android.apps.nexuslauncher.NexusLauncherActivity"
-        )
+        val componentMatcher_id4 =
+            ComponentNameMatcher(
+                "com.google.android.apps.nexuslauncher",
+                "com.google.android.apps.nexuslauncher.NexusLauncherActivity"
+            )
         var componentMatcher_openApp = ComponentTypeMatcher("openPackage/openApp")
 
         private fun createExpectedAssertion_id1(): LayersAssertion {
             val assertion = LayersAssertion()
-            assertion.assertionsChecker.add(
-                "isVisible(NavigationBar0)",
-                isOptional = false) {
+            assertion.assertionsChecker.add("isVisible(NavigationBar0)", isOptional = false) {
                 it.isVisible(componentMatcher_id1)
             }
-            assertion.assertionsChecker.add(
-                "notContains(NavigationBar0)",
-                isOptional = false) {
+            assertion.assertionsChecker.add("notContains(NavigationBar0)", isOptional = false) {
                 it.notContains(componentMatcher_id1)
             }
             assertion.assertionString =
                 ".isVisible(ComponentNameMatcher(\"\", \"NavigationBar0\"))" +
-                ".then().notContains(ComponentNameMatcher(\"\", \"NavigationBar0\"))"
+                    ".then().notContains(ComponentNameMatcher(\"\", \"NavigationBar0\"))"
             return assertion
         }
 
         private fun createExpectedAssertion_id2(): LayersAssertion {
             val assertion = LayersAssertion()
-            assertion.assertionsChecker.add(
-                "isVisible(StatusBar)",
-                isOptional = false) {
+            assertion.assertionsChecker.add("isVisible(StatusBar)", isOptional = false) {
                 it.isVisible(componentMatcher_id2)
             }
-            assertion.assertionsChecker.add(
-                "isInvisible(StatusBar)",
-                isOptional = false) {
+            assertion.assertionsChecker.add("isInvisible(StatusBar)", isOptional = false) {
                 it.isInvisible(componentMatcher_id2)
             }
-            assertion.assertionsChecker.add(
-                "isVisible(StatusBar)",
-                isOptional = false) {
+            assertion.assertionsChecker.add("isVisible(StatusBar)", isOptional = false) {
                 it.isVisible(componentMatcher_id2)
             }
             assertion.assertionString =
@@ -75,13 +66,10 @@ class AssertionProducerTestConst {
 
         private fun createExpectedAssertion_sameComponentMatcher(): LayersAssertion {
             val assertion = LayersAssertion()
-            assertion.assertionsChecker.add(
-                "isVisible(StatusBar)",
-                isOptional = false) {
+            assertion.assertionsChecker.add("isVisible(StatusBar)", isOptional = false) {
                 it.isVisible(componentMatcher_id2)
             }
-            assertion.assertionString =
-                ".isVisible(ComponentNameMatcher(\"\", \"StatusBar\"))"
+            assertion.assertionString = ".isVisible(ComponentNameMatcher(\"\", \"StatusBar\"))"
             return assertion
         }
 
@@ -89,39 +77,31 @@ class AssertionProducerTestConst {
             val assertion = LayersAssertion()
             assertion.assertionsChecker.add(
                 "isInvisible(com.google.android.apps.nexuslauncher.NexusLauncherActivity)",
-                isOptional = false) {
-                it.isVisible(componentMatcher_id4)
-            }
+                isOptional = false
+            ) { it.isVisible(componentMatcher_id4) }
             assertion.assertionsChecker.add(
                 "isVisible(com.google.android.apps.nexuslauncher.NexusLauncherActivity)",
-                isOptional = false) {
-                it.isInvisible(componentMatcher_id4)
-            }
+                isOptional = false
+            ) { it.isInvisible(componentMatcher_id4) }
             assertion.assertionString =
                 ".isInvisible(ComponentNameMatcher(\"com.google.android.apps.nexuslauncher\"," +
-                " \"com.google.android.apps.nexuslauncher.NexusLauncherActivity\"))" +
-                ".then().isVisible(ComponentNameMatcher(" +
-                "\"com.google.android.apps.nexuslauncher\"," +
-                " \"com.google.android.apps.nexuslauncher.NexusLauncherActivity\"))"
+                    " \"com.google.android.apps.nexuslauncher.NexusLauncherActivity\"))" +
+                    ".then().isVisible(ComponentNameMatcher(" +
+                    "\"com.google.android.apps.nexuslauncher\"," +
+                    " \"com.google.android.apps.nexuslauncher.NexusLauncherActivity\"))"
             return assertion
         }
 
         private fun createExpectedAssertion_OpenApp(): LayersAssertion {
             componentMatcher_openApp.componentBuilder = Components.OPENING_APP
             val assertion = LayersAssertion()
-            assertion.assertionsChecker.add(
-                "notContains(OPENING_APP)",
-                isOptional = false) {
+            assertion.assertionsChecker.add("notContains(OPENING_APP)", isOptional = false) {
                 it.isVisible(componentMatcher_id4)
             }
-            assertion.assertionsChecker.add(
-                "isInvisible(OPENING_APP)",
-                isOptional = false) {
+            assertion.assertionsChecker.add("isInvisible(OPENING_APP)", isOptional = false) {
                 it.isInvisible(componentMatcher_id4)
             }
-            assertion.assertionsChecker.add(
-                "isVisible(OPENING_APP)",
-                isOptional = false) {
+            assertion.assertionsChecker.add("isVisible(OPENING_APP)", isOptional = false) {
                 it.isInvisible(componentMatcher_id4)
             }
             assertion.assertionString =
@@ -138,59 +118,46 @@ class AssertionProducerTestConst {
             createExpectedAssertion_sameComponentMatcher()
         private val expected_layer_openApp_assertion = createExpectedAssertion_OpenApp()
 
-        val expected_layer_visibility_assertions = listOf(
-            expected_layer_id1_assertion,
-            expected_layer_id2_assertion,
-            expected_layer_id4_assertion
-        )
+        val expected_layer_visibility_assertions =
+            listOf(
+                expected_layer_id1_assertion,
+                expected_layer_id2_assertion,
+                expected_layer_id4_assertion
+            )
 
-        val expected_layer_visibility_assertions_sameComponentMatcher = listOf(
-            expected_layer_id2_assertion
-        )
+        val expected_layer_visibility_assertions_sameComponentMatcher =
+            listOf(expected_layer_id2_assertion)
 
         val expected_layer_visibility_assertions_openApp = listOf(expected_layer_openApp_assertion)
-        val openAppConfig = DeviceTraceConfiguration(
-            mapOf("openPackage/openApp" to Components.OPENING_APP)
-        )
+        val openAppConfig =
+            DeviceTraceConfiguration(mapOf("openPackage/openApp" to Components.OPENING_APP))
 
-        val expected_layer_visibility_assertions_id1 = listOf(
-            expected_layer_id1_assertion
-        )
+        val expected_layer_visibility_assertions_id1 = listOf(expected_layer_id1_assertion)
 
         private fun createExpectedAllVisibilityAssertions_id2(): LayersAssertion {
             val assertion = LayersAssertion()
-            assertion.assertionsChecker.add(
-                "notContains(StatusBar)",
-                isOptional = false) {
+            assertion.assertionsChecker.add("notContains(StatusBar)", isOptional = false) {
                 it.notContains(componentMatcher_id2)
             }
-            assertion.assertionsChecker.add(
-                "isVisible(StatusBar)",
-                isOptional = false) {
+            assertion.assertionsChecker.add("isVisible(StatusBar)", isOptional = false) {
                 it.isVisible(componentMatcher_id2)
             }
-            assertion.assertionsChecker.add(
-                "isInvisible(StatusBar)",
-                isOptional = false) {
+            assertion.assertionsChecker.add("isInvisible(StatusBar)", isOptional = false) {
                 it.isInvisible(componentMatcher_id2)
             }
             assertion.assertionString =
                 ".notContains(ComponentNameMatcher(\"\", \"StatusBar\"))" +
-                ".then().isVisible(ComponentNameMatcher(\"\", \"StatusBar\"))" +
-                ".then().isInvisible(ComponentNameMatcher(\"\", \"StatusBar\"))"
+                    ".then().isVisible(ComponentNameMatcher(\"\", \"StatusBar\"))" +
+                    ".then().isInvisible(ComponentNameMatcher(\"\", \"StatusBar\"))"
             return assertion
         }
 
         private fun createExpectedFailAssertion1_id2(): LayersAssertion {
             val assertion = LayersAssertion()
-            assertion.assertionsChecker.add(
-                "isVisible(StatusBar)",
-                isOptional = false) {
+            assertion.assertionsChecker.add("isVisible(StatusBar)", isOptional = false) {
                 it.isVisible(componentMatcher_id2)
             }
-            assertion.assertionsChecker.add(
-                ".isInvisible(StatusBar)",
-                isOptional = false) {
+            assertion.assertionsChecker.add(".isInvisible(StatusBar)", isOptional = false) {
                 it.isInvisible(componentMatcher_id2)
             }
             assertion.assertionString =
@@ -201,26 +168,19 @@ class AssertionProducerTestConst {
 
         private fun createExpectedFailAssertion2_id2(): LayersAssertion {
             val assertion = LayersAssertion()
-            assertion.assertionsChecker.add(
-                "isVisible(StatusBar)",
-                isOptional = false) {
+            assertion.assertionsChecker.add("isVisible(StatusBar)", isOptional = false) {
                 it.isVisible(componentMatcher_id2)
             }
-            assertion.assertionString =
-                ".isVisible(ComponentNameMatcher(\"\", \"StatusBar\"))"
+            assertion.assertionString = ".isVisible(ComponentNameMatcher(\"\", \"StatusBar\"))"
             return assertion
         }
 
         private fun createExpectedFailAssertion3_id2(): LayersAssertion {
             val assertion = LayersAssertion()
-            assertion.assertionsChecker.add(
-                "notContains(StatusBar)",
-                isOptional = false) {
+            assertion.assertionsChecker.add("notContains(StatusBar)", isOptional = false) {
                 it.notContains(componentMatcher_id2)
             }
-            assertion.assertionsChecker.add(
-                "isVisible(StatusBar)",
-                isOptional = false) {
+            assertion.assertionsChecker.add("isVisible(StatusBar)", isOptional = false) {
                 it.isVisible(componentMatcher_id2)
             }
             assertion.assertionString =

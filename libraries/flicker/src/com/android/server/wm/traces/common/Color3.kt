@@ -62,6 +62,7 @@ open class Color3(val r: Float, val g: Float, val b: Float) {
 
     companion object {
         @JsName("EMPTY")
-        val EMPTY: Color3 get() = withCache { Color3(r = -1f, g = -1f, b = -1f) }
+        val EMPTY: Color3
+            get() = withCache { Color3(r = -1f, g = -1f, b = -1f) }
     }
 }

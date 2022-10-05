@@ -20,15 +20,22 @@ import com.android.server.wm.flicker.service.assertors.Components
 
 class AssertionGenConfigTestConst {
     companion object {
-        val deviceTraceConfiguration = DeviceTraceConfiguration(mapOf(
-            "openingLayerName_toBeCompleted" to Components.OPENING_APP,
-            "closingLayerName_toBeCompleted" to Components.CLOSING_APP
-        ))
+        val deviceTraceConfiguration =
+            DeviceTraceConfiguration(
+                mapOf(
+                    "openingLayerName_toBeCompleted" to Components.OPENING_APP,
+                    "closingLayerName_toBeCompleted" to Components.CLOSING_APP
+                )
+            )
 
         val emptyDeviceTraceConfiguration = DeviceTraceConfiguration(mapOf())
 
-        val deviceTraceConfigurationTestFile = DeviceTraceConfiguration(mapOf(
-            "com.android.server.wm.flicker.testapp/.SimpleActivity" to Components.OPENING_APP
-        ))
+        val deviceTraceConfigurationTestFile =
+            DeviceTraceConfiguration(
+                mapOf(
+                    "com.android.server.wm.flicker.testapp/.SimpleActivity" to
+                        Components.OPENING_APP
+                )
+            )
     }
 }

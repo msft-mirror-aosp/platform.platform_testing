@@ -18,17 +18,15 @@ package com.android.server.wm.traces.common.service
 
 import com.android.server.wm.traces.common.transition.Transition
 
-enum class AssertionExecutionCondition(
-    val shouldExecute: (transition: Transition) -> Boolean
-) {
+enum class AssertionExecutionCondition(val shouldExecute: (transition: Transition) -> Boolean) {
     ALWAYS({ true }),
     NEVER({ false }),
     APP_LAUNCH({ t ->
         t.type == Transition.Companion.Type.OPEN &&
-                t.changes.any { it.transitMode == Transition.Companion.Type.OPEN }
+            t.changes.any { it.transitMode == Transition.Companion.Type.OPEN }
     }),
     APP_CLOSE({ t ->
         t.type == Transition.Companion.Type.CLOSE &&
-                t.changes.any { it.transitMode == Transition.Companion.Type.CLOSE }
+            t.changes.any { it.transitMode == Transition.Companion.Type.CLOSE }
     })
 }

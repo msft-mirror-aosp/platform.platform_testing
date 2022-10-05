@@ -33,8 +33,8 @@ import com.google.common.truth.Subject
 import com.google.common.truth.Subject.Factory
 
 /**
- * Truth subject for [WindowManagerTrace] objects, used to make assertions over behaviors that
- * occur throughout a whole trace.
+ * Truth subject for [WindowManagerTrace] objects, used to make assertions over behaviors that occur
+ * throughout a whole trace.
  *
  * To make assertions over a trace it is recommended to create a subject using
  * [WindowManagerTraceSubject.assertThat](myTrace). Alternatively, it is also possible to use
@@ -42,25 +42,30 @@ import com.google.common.truth.Subject.Factory
  * information because it uses Truth's default [FailureStrategy].
  *
  * Example:
+ * ```
  *    val trace = WindowManagerTraceParser.parseFromTrace(myTraceFile)
  *    val subject = WindowManagerTraceSubject.assertThat(trace)
  *        .contains("ValidWindow")
  *        .notContains("ImaginaryWindow")
  *        .showsAboveAppWindow("NavigationBar")
  *        .forAllEntries()
- *
+ * ```
  * Example2:
+ * ```
  *    val trace = WindowManagerTraceParser.parseFromTrace(myTraceFile)
  *    val subject = WindowManagerTraceSubject.assertThat(trace) {
  *        check("Custom check") { myCustomAssertion(this) }
  *    }
+ * ```
  */
-class WindowManagerTraceSubject private constructor(
+class WindowManagerTraceSubject
+private constructor(
     fm: FailureMetadata,
     val trace: WindowManagerTrace,
     override val parent: WindowManagerTraceSubject?,
     private val facts: Collection<Fact>
-) : FlickerTraceSubject<WindowManagerStateSubject>(fm, trace),
+) :
+    FlickerTraceSubject<WindowManagerStateSubject>(fm, trace),
     IWindowManagerSubject<WindowManagerTraceSubject, RegionTraceSubject> {
 
     override val selfFacts by lazy {
@@ -77,8 +82,9 @@ class WindowManagerTraceSubject private constructor(
     override fun then(): WindowManagerTraceSubject = apply { super.then() }
 
     /** {@inheritDoc} */
-    override fun skipUntilFirstAssertion(): WindowManagerTraceSubject =
-        apply { super.skipUntilFirstAssertion() }
+    override fun skipUntilFirstAssertion(): WindowManagerTraceSubject = apply {
+        super.skipUntilFirstAssertion()
+    }
 
     /** {@inheritDoc} */
     override fun isEmpty(): WindowManagerTraceSubject = apply {
@@ -92,9 +98,12 @@ class WindowManagerTraceSubject private constructor(
 
     /**
      * @return List of [WindowStateSubject]s matching [componentMatcher] in the order they
+     * ```
      *      appear on the trace
      *
-     * @param componentMatcher Components to search
+     * @param componentMatcher
+     * ```
+     * Components to search
      */
     fun windowStates(componentMatcher: IComponentMatcher): List<WindowStateSubject> =
         subjects
@@ -103,9 +112,12 @@ class WindowManagerTraceSubject private constructor(
 
     /**
      * @return List of [WindowStateSubject]s matching [predicate] in the order they
+     * ```
      *      appear on the trace
      *
-     * @param predicate To search
+     * @param predicate
+     * ```
+     * To search
      */
     fun windowStates(predicate: (WindowState) -> Boolean): List<WindowStateSubject> {
         return subjects
@@ -117,9 +129,7 @@ class WindowManagerTraceSubject private constructor(
     override fun notContains(componentMatcher: IComponentMatcher): WindowManagerTraceSubject =
         notContains(componentMatcher, isOptional = false)
 
-    /**
-     * See [notContains]
-     */
+    /** See [notContains] */
     fun notContains(
         componentMatcher: IComponentMatcher,
         isOptional: Boolean
@@ -134,17 +144,15 @@ class WindowManagerTraceSubject private constructor(
         componentMatcher: IComponentMatcher
     ): WindowManagerTraceSubject = isAboveAppWindowVisible(componentMatcher, isOptional = false)
 
-    /**
-     * See [isAboveAppWindowVisible]
-     */
+    /** See [isAboveAppWindowVisible] */
     fun isAboveAppWindowVisible(
         componentMatcher: IComponentMatcher,
         isOptional: Boolean
     ): WindowManagerTraceSubject = apply {
         addAssertion(
-                "isAboveAppWindowVisible(${componentMatcher.toWindowIdentifier()})", isOptional) {
-            it.isAboveAppWindowVisible(componentMatcher)
-        }
+            "isAboveAppWindowVisible(${componentMatcher.toWindowIdentifier()})",
+            isOptional
+        ) { it.isAboveAppWindowVisible(componentMatcher) }
     }
 
     /** {@inheritDoc} */
@@ -152,17 +160,15 @@ class WindowManagerTraceSubject private constructor(
         componentMatcher: IComponentMatcher
     ): WindowManagerTraceSubject = isAboveAppWindowInvisible(componentMatcher, isOptional = false)
 
-    /**
-     * See [isAboveAppWindowInvisible]
-     */
+    /** See [isAboveAppWindowInvisible] */
     fun isAboveAppWindowInvisible(
         componentMatcher: IComponentMatcher,
         isOptional: Boolean
     ): WindowManagerTraceSubject = apply {
         addAssertion(
-                "isAboveAppWindowInvisible(${componentMatcher.toWindowIdentifier()})", isOptional) {
-            it.isAboveAppWindowInvisible(componentMatcher)
-        }
+            "isAboveAppWindowInvisible(${componentMatcher.toWindowIdentifier()})",
+            isOptional
+        ) { it.isAboveAppWindowInvisible(componentMatcher) }
     }
 
     /** {@inheritDoc} */
@@ -170,17 +176,15 @@ class WindowManagerTraceSubject private constructor(
         componentMatcher: IComponentMatcher
     ): WindowManagerTraceSubject = isBelowAppWindowVisible(componentMatcher, isOptional = false)
 
-    /**
-     * See [isBelowAppWindowVisible]
-     */
+    /** See [isBelowAppWindowVisible] */
     fun isBelowAppWindowVisible(
         componentMatcher: IComponentMatcher,
         isOptional: Boolean
     ): WindowManagerTraceSubject = apply {
         addAssertion(
-                "isBelowAppWindowVisible(${componentMatcher.toWindowIdentifier()})", isOptional) {
-            it.isBelowAppWindowVisible(componentMatcher)
-        }
+            "isBelowAppWindowVisible(${componentMatcher.toWindowIdentifier()})",
+            isOptional
+        ) { it.isBelowAppWindowVisible(componentMatcher) }
     }
 
     /** {@inheritDoc} */
@@ -188,17 +192,15 @@ class WindowManagerTraceSubject private constructor(
         componentMatcher: IComponentMatcher
     ): WindowManagerTraceSubject = isBelowAppWindowInvisible(componentMatcher, isOptional = false)
 
-    /**
-     * See [isBelowAppWindowInvisible]
-     */
+    /** See [isBelowAppWindowInvisible] */
     fun isBelowAppWindowInvisible(
         componentMatcher: IComponentMatcher,
         isOptional: Boolean
     ): WindowManagerTraceSubject = apply {
         addAssertion(
-                "isBelowAppWindowInvisible(${componentMatcher.toWindowIdentifier()})", isOptional) {
-            it.isBelowAppWindowInvisible(componentMatcher)
-        }
+            "isBelowAppWindowInvisible(${componentMatcher.toWindowIdentifier()})",
+            isOptional
+        ) { it.isBelowAppWindowInvisible(componentMatcher) }
     }
 
     /** {@inheritDoc} */
@@ -206,17 +208,15 @@ class WindowManagerTraceSubject private constructor(
         componentMatcher: IComponentMatcher
     ): WindowManagerTraceSubject = isNonAppWindowVisible(componentMatcher, isOptional = false)
 
-    /**
-     * See [isNonAppWindowVisible]
-     */
+    /** See [isNonAppWindowVisible] */
     fun isNonAppWindowVisible(
         componentMatcher: IComponentMatcher,
         isOptional: Boolean
     ): WindowManagerTraceSubject = apply {
         addAssertion(
-                "isNonAppWindowVisible(${componentMatcher.toWindowIdentifier()})", isOptional) {
-            it.isNonAppWindowVisible(componentMatcher)
-        }
+            "isNonAppWindowVisible(${componentMatcher.toWindowIdentifier()})",
+            isOptional
+        ) { it.isNonAppWindowVisible(componentMatcher) }
     }
 
     /** {@inheritDoc} */
@@ -224,33 +224,27 @@ class WindowManagerTraceSubject private constructor(
         componentMatcher: IComponentMatcher
     ): WindowManagerTraceSubject = isNonAppWindowInvisible(componentMatcher, isOptional = false)
 
-    /**
-     * See [isNonAppWindowInvisible]
-     */
+    /** See [isNonAppWindowInvisible] */
     fun isNonAppWindowInvisible(
         componentMatcher: IComponentMatcher,
         isOptional: Boolean
     ): WindowManagerTraceSubject = apply {
         addAssertion(
-                "isNonAppWindowInvisible(${componentMatcher.toWindowIdentifier()})", isOptional) {
-            it.isNonAppWindowInvisible(componentMatcher)
-        }
+            "isNonAppWindowInvisible(${componentMatcher.toWindowIdentifier()})",
+            isOptional
+        ) { it.isNonAppWindowInvisible(componentMatcher) }
     }
 
     /** {@inheritDoc} */
-    override fun isAppWindowOnTop(
-        componentMatcher: IComponentMatcher
-    ): WindowManagerTraceSubject = isAppWindowOnTop(componentMatcher, isOptional = false)
+    override fun isAppWindowOnTop(componentMatcher: IComponentMatcher): WindowManagerTraceSubject =
+        isAppWindowOnTop(componentMatcher, isOptional = false)
 
-    /**
-     * See [isAppWindowOnTop]
-     */
+    /** See [isAppWindowOnTop] */
     fun isAppWindowOnTop(
         componentMatcher: IComponentMatcher,
         isOptional: Boolean
     ): WindowManagerTraceSubject = apply {
-        addAssertion(
-                "isAppWindowOnTop(${componentMatcher.toWindowIdentifier()})", isOptional) {
+        addAssertion("isAppWindowOnTop(${componentMatcher.toWindowIdentifier()})", isOptional) {
             it.isAppWindowOnTop(componentMatcher)
         }
     }
@@ -260,15 +254,12 @@ class WindowManagerTraceSubject private constructor(
         componentMatcher: IComponentMatcher
     ): WindowManagerTraceSubject = isAppWindowNotOnTop(componentMatcher, isOptional = false)
 
-    /**
-     * See [isAppWindowNotOnTop]
-     */
+    /** See [isAppWindowNotOnTop] */
     fun isAppWindowNotOnTop(
         componentMatcher: IComponentMatcher,
         isOptional: Boolean
     ): WindowManagerTraceSubject = apply {
-        addAssertion(
-                "appWindowNotOnTop(${componentMatcher.toWindowIdentifier()})", isOptional) {
+        addAssertion("appWindowNotOnTop(${componentMatcher.toWindowIdentifier()})", isOptional) {
             it.isAppWindowNotOnTop(componentMatcher)
         }
     }
@@ -278,15 +269,12 @@ class WindowManagerTraceSubject private constructor(
         componentMatcher: IComponentMatcher
     ): WindowManagerTraceSubject = isAppWindowVisible(componentMatcher, isOptional = false)
 
-    /**
-     * See [isAppWindowVisible]
-     */
+    /** See [isAppWindowVisible] */
     fun isAppWindowVisible(
         componentMatcher: IComponentMatcher,
         isOptional: Boolean
     ): WindowManagerTraceSubject = apply {
-        addAssertion(
-                "isAppWindowVisible(${componentMatcher.toWindowIdentifier()})", isOptional) {
+        addAssertion("isAppWindowVisible(${componentMatcher.toWindowIdentifier()})", isOptional) {
             it.isAppWindowVisible(componentMatcher)
         }
     }
@@ -295,39 +283,27 @@ class WindowManagerTraceSubject private constructor(
     override fun hasNoVisibleAppWindow(): WindowManagerTraceSubject =
         hasNoVisibleAppWindow(isOptional = false)
 
-    /**
-     * See [hasNoVisibleAppWindow]
-     */
+    /** See [hasNoVisibleAppWindow] */
     fun hasNoVisibleAppWindow(isOptional: Boolean): WindowManagerTraceSubject = apply {
-        addAssertion("hasNoVisibleAppWindow()", isOptional) {
-            it.hasNoVisibleAppWindow()
-        }
+        addAssertion("hasNoVisibleAppWindow()", isOptional) { it.hasNoVisibleAppWindow() }
     }
 
     /** {@inheritDoc} */
     override fun isKeyguardShowing(): WindowManagerTraceSubject =
         isKeyguardShowing(isOptional = false)
 
-    /**
-     * See [isKeyguardShowing]
-     */
+    /** See [isKeyguardShowing] */
     fun isKeyguardShowing(isOptional: Boolean): WindowManagerTraceSubject = apply {
-        addAssertion("isKeyguardShowing()", isOptional) {
-            it.isKeyguardShowing()
-        }
+        addAssertion("isKeyguardShowing()", isOptional) { it.isKeyguardShowing() }
     }
 
     /** {@inheritDoc} */
     override fun isAppSnapshotStartingWindowVisibleFor(
         componentMatcher: IComponentMatcher
-    ): WindowManagerTraceSubject = isAppSnapshotStartingWindowVisibleFor(
-        componentMatcher,
-        isOptional = false
-    )
+    ): WindowManagerTraceSubject =
+        isAppSnapshotStartingWindowVisibleFor(componentMatcher, isOptional = false)
 
-    /**
-     * See [isAppSnapshotStartingWindowVisibleFor]
-     */
+    /** See [isAppSnapshotStartingWindowVisibleFor] */
     fun isAppSnapshotStartingWindowVisibleFor(
         componentMatcher: IComponentMatcher,
         isOptional: Boolean
@@ -335,9 +311,7 @@ class WindowManagerTraceSubject private constructor(
         addAssertion(
             "isAppSnapshotStartingWindowVisibleFor(${componentMatcher.toWindowIdentifier()})",
             isOptional
-        ) {
-            it.isAppSnapshotStartingWindowVisibleFor(componentMatcher)
-        }
+        ) { it.isAppSnapshotStartingWindowVisibleFor(componentMatcher) }
     }
 
     /** {@inheritDoc} */
@@ -345,9 +319,7 @@ class WindowManagerTraceSubject private constructor(
         componentMatcher: IComponentMatcher
     ): WindowManagerTraceSubject = isAppWindowInvisible(componentMatcher, isOptional = false)
 
-    /**
-     * See [isAppWindowInvisible]
-     */
+    /** See [isAppWindowInvisible] */
     fun isAppWindowInvisible(
         componentMatcher: IComponentMatcher,
         isOptional: Boolean
@@ -362,9 +334,7 @@ class WindowManagerTraceSubject private constructor(
         vararg componentMatcher: IComponentMatcher
     ): WindowManagerTraceSubject = apply {
         val repr = componentMatcher.joinToString(", ") { it.toWindowIdentifier() }
-        addAssertion("noWindowsOverlap($repr)") {
-            it.doNotOverlap(*componentMatcher)
-        }
+        addAssertion("noWindowsOverlap($repr)") { it.doNotOverlap(*componentMatcher) }
     }
 
     /** {@inheritDoc} */
@@ -379,25 +349,22 @@ class WindowManagerTraceSubject private constructor(
         }
     }
 
-    /**
-     * See [isAppWindowInvisible]
-     */
+    /** See [isAppWindowInvisible] */
     override fun visibleRegion(componentMatcher: IComponentMatcher?): RegionTraceSubject {
-        val regionTrace = RegionTrace(componentMatcher, subjects.map {
-            it.visibleRegion(componentMatcher).regionEntry
-        }.toTypedArray())
+        val regionTrace =
+            RegionTrace(
+                componentMatcher,
+                subjects.map { it.visibleRegion(componentMatcher).regionEntry }.toTypedArray()
+            )
 
         return RegionTraceSubject.assertThat(regionTrace, this)
     }
 
     /** {@inheritDoc} */
-    override fun contains(
-        componentMatcher: IComponentMatcher
-    ): WindowManagerTraceSubject = contains(componentMatcher, isOptional = false)
+    override fun contains(componentMatcher: IComponentMatcher): WindowManagerTraceSubject =
+        contains(componentMatcher, isOptional = false)
 
-    /**
-     * See [contains]
-     */
+    /** See [contains] */
     fun contains(
         componentMatcher: IComponentMatcher,
         isOptional: Boolean
@@ -412,33 +379,27 @@ class WindowManagerTraceSubject private constructor(
         componentMatcher: IComponentMatcher
     ): WindowManagerTraceSubject = containsAboveAppWindow(componentMatcher, isOptional = false)
 
-    /**
-     * See [containsAboveAppWindow]
-     */
+    /** See [containsAboveAppWindow] */
     fun containsAboveAppWindow(
         componentMatcher: IComponentMatcher,
         isOptional: Boolean
     ): WindowManagerTraceSubject = apply {
         addAssertion(
-                "containsAboveAppWindow(${componentMatcher.toWindowIdentifier()})", isOptional) {
-            it.containsAboveAppWindow(componentMatcher)
-        }
+            "containsAboveAppWindow(${componentMatcher.toWindowIdentifier()})",
+            isOptional
+        ) { it.containsAboveAppWindow(componentMatcher) }
     }
 
     /** {@inheritDoc} */
-    override fun containsAppWindow(
-        componentMatcher: IComponentMatcher
-    ): WindowManagerTraceSubject = containsAppWindow(componentMatcher, isOptional = false)
+    override fun containsAppWindow(componentMatcher: IComponentMatcher): WindowManagerTraceSubject =
+        containsAppWindow(componentMatcher, isOptional = false)
 
-    /**
-     * See [containsAppWindow]
-     */
+    /** See [containsAppWindow] */
     fun containsAppWindow(
         componentMatcher: IComponentMatcher,
         isOptional: Boolean
     ): WindowManagerTraceSubject = apply {
-        addAssertion(
-                "containsAppWindow(${componentMatcher.toWindowIdentifier()})", isOptional) {
+        addAssertion("containsAppWindow(${componentMatcher.toWindowIdentifier()})", isOptional) {
             it.containsAboveAppWindow(componentMatcher)
         }
     }
@@ -448,17 +409,15 @@ class WindowManagerTraceSubject private constructor(
         componentMatcher: IComponentMatcher
     ): WindowManagerTraceSubject = containsBelowAppWindow(componentMatcher, isOptional = false)
 
-    /**
-     * See [containsBelowAppWindow]
-     */
+    /** See [containsBelowAppWindow] */
     fun containsBelowAppWindow(
         componentMatcher: IComponentMatcher,
         isOptional: Boolean
     ): WindowManagerTraceSubject = apply {
         addAssertion(
-                "containsBelowAppWindows(${componentMatcher.toWindowIdentifier()})", isOptional) {
-            it.containsBelowAppWindow(componentMatcher)
-        }
+            "containsBelowAppWindows(${componentMatcher.toWindowIdentifier()})",
+            isOptional
+        ) { it.containsBelowAppWindow(componentMatcher) }
     }
 
     /** {@inheritDoc} */
@@ -466,15 +425,12 @@ class WindowManagerTraceSubject private constructor(
         componentMatcher: IComponentMatcher
     ): WindowManagerTraceSubject = containsNonAppWindow(componentMatcher, isOptional = false)
 
-    /**
-     * See [containsNonAppWindow]
-     */
+    /** See [containsNonAppWindow] */
     fun containsNonAppWindow(
         componentMatcher: IComponentMatcher,
         isOptional: Boolean
     ): WindowManagerTraceSubject = apply {
-        addAssertion(
-                "containsNonAppWindow(${componentMatcher.toWindowIdentifier()})", isOptional) {
+        addAssertion("containsNonAppWindow(${componentMatcher.toWindowIdentifier()})", isOptional) {
             it.containsNonAppWindow(componentMatcher)
         }
     }
@@ -483,54 +439,37 @@ class WindowManagerTraceSubject private constructor(
     override fun isHomeActivityInvisible(): WindowManagerTraceSubject =
         isHomeActivityInvisible(isOptional = false)
 
-    /**
-     * See [isHomeActivityInvisible]
-     */
+    /** See [isHomeActivityInvisible] */
     fun isHomeActivityInvisible(isOptional: Boolean): WindowManagerTraceSubject = apply {
-        addAssertion("isHomeActivityInvisible", isOptional) {
-            it.isHomeActivityInvisible()
-        }
+        addAssertion("isHomeActivityInvisible", isOptional) { it.isHomeActivityInvisible() }
     }
 
     /** {@inheritDoc} */
     override fun isHomeActivityVisible(): WindowManagerTraceSubject =
         isHomeActivityVisible(isOptional = false)
 
-    /**
-     * See [isHomeActivityVisible]
-     */
+    /** See [isHomeActivityVisible] */
     fun isHomeActivityVisible(isOptional: Boolean): WindowManagerTraceSubject = apply {
-        addAssertion("isHomeActivityVisible", isOptional) {
-            it.isHomeActivityVisible()
-        }
+        addAssertion("isHomeActivityVisible", isOptional) { it.isHomeActivityVisible() }
     }
 
     /** {@inheritDoc} */
     override fun hasRotation(rotation: Int, displayId: Int): WindowManagerTraceSubject =
         hasRotation(rotation, displayId, isOptional = false)
 
-    /**
-     * See [hasRotation]
-     */
-    fun hasRotation(
-        rotation: Int,
-        displayId: Int,
-        isOptional: Boolean
-    ): WindowManagerTraceSubject = apply {
-        addAssertion("hasRotation($rotation, display=$displayId)", isOptional) {
-            it.hasRotation(rotation, displayId)
+    /** See [hasRotation] */
+    fun hasRotation(rotation: Int, displayId: Int, isOptional: Boolean): WindowManagerTraceSubject =
+        apply {
+            addAssertion("hasRotation($rotation, display=$displayId)", isOptional) {
+                it.hasRotation(rotation, displayId)
+            }
         }
-    }
 
     /** {@inheritDoc} */
-    override fun isNotPinned(
-        componentMatcher: IComponentMatcher
-    ): WindowManagerTraceSubject =
+    override fun isNotPinned(componentMatcher: IComponentMatcher): WindowManagerTraceSubject =
         isNotPinned(componentMatcher, isOptional = false)
 
-    /**
-     * See [isNotPinned]
-     */
+    /** See [isNotPinned] */
     fun isNotPinned(
         componentMatcher: IComponentMatcher,
         isOptional: Boolean
@@ -541,14 +480,10 @@ class WindowManagerTraceSubject private constructor(
     }
 
     /** {@inheritDoc} */
-    override fun isPinned(
-        componentMatcher: IComponentMatcher
-    ): WindowManagerTraceSubject =
+    override fun isPinned(componentMatcher: IComponentMatcher): WindowManagerTraceSubject =
         isPinned(componentMatcher, isOptional = false)
 
-    /**
-     * See [isPinned]
-     */
+    /** See [isPinned] */
     fun isPinned(
         componentMatcher: IComponentMatcher,
         isOptional: Boolean
@@ -562,33 +497,23 @@ class WindowManagerTraceSubject private constructor(
     override fun isRecentsActivityInvisible(): WindowManagerTraceSubject =
         isRecentsActivityInvisible(isOptional = false)
 
-    /**
-     * See [isRecentsActivityInvisible]
-     */
+    /** See [isRecentsActivityInvisible] */
     fun isRecentsActivityInvisible(isOptional: Boolean): WindowManagerTraceSubject = apply {
-        addAssertion("isRecentsActivityInvisible", isOptional) {
-            it.isRecentsActivityInvisible()
-        }
+        addAssertion("isRecentsActivityInvisible", isOptional) { it.isRecentsActivityInvisible() }
     }
 
     /** {@inheritDoc} */
     override fun isRecentsActivityVisible(): WindowManagerTraceSubject =
         isRecentsActivityVisible(isOptional = false)
 
-    /**
-     * See [isRecentsActivityVisible]
-     */
+    /** See [isRecentsActivityVisible] */
     fun isRecentsActivityVisible(isOptional: Boolean): WindowManagerTraceSubject = apply {
-        addAssertion("isRecentsActivityVisible", isOptional) {
-            it.isRecentsActivityVisible()
-        }
+        addAssertion("isRecentsActivityVisible", isOptional) { it.isRecentsActivityVisible() }
     }
 
     @VisibleForTesting
     override fun isValid(): WindowManagerTraceSubject = apply {
-        addAssertion("isValid") {
-            it.isValid()
-        }
+        addAssertion("isValid") { it.isValid() }
     }
 
     /** {@inheritDoc} */
@@ -596,42 +521,31 @@ class WindowManagerTraceSubject private constructor(
         componentMatcher: IComponentMatcher
     ): WindowManagerTraceSubject = notContainsAppWindow(componentMatcher, isOptional = false)
 
-    /**
-     * See [notContainsAppWindow]
-     */
+    /** See [notContainsAppWindow] */
     fun notContainsAppWindow(
         componentMatcher: IComponentMatcher,
         isOptional: Boolean
     ): WindowManagerTraceSubject = apply {
-        addAssertion(
-                "notContainsAppWindow(${componentMatcher.toWindowIdentifier()})", isOptional) {
+        addAssertion("notContainsAppWindow(${componentMatcher.toWindowIdentifier()})", isOptional) {
             it.notContainsAppWindow(componentMatcher)
         }
     }
 
-    /**
-     * Checks that all visible layers are shown for more than one consecutive entry
-     */
+    /** Checks that all visible layers are shown for more than one consecutive entry */
     fun visibleWindowsShownMoreThanOneConsecutiveEntry(
-        ignoreWindows: List<ComponentNameMatcher> = listOf(
-            ComponentNameMatcher.SPLASH_SCREEN,
-            ComponentNameMatcher.SNAPSHOT
-        )
+        ignoreWindows: List<ComponentNameMatcher> =
+            listOf(ComponentNameMatcher.SPLASH_SCREEN, ComponentNameMatcher.SNAPSHOT)
     ): WindowManagerTraceSubject = apply {
         visibleEntriesShownMoreThanOneConsecutiveTime { subject ->
             subject.wmState.windowStates
                 .filter { it.isVisible }
-                .filter {
-                    ignoreWindows.none { windowName -> windowName.windowMatchesAnyOf(it) }
-                }
+                .filter { ignoreWindows.none { windowName -> windowName.windowMatchesAnyOf(it) } }
                 .map { it.name }
                 .toSet()
         }
     }
 
-    /**
-     * Executes a custom [assertion] on the current subject
-     */
+    /** Executes a custom [assertion] on the current subject */
     @JvmOverloads
     operator fun invoke(
         name: String,
@@ -639,9 +553,7 @@ class WindowManagerTraceSubject private constructor(
         assertion: Assertion<WindowManagerStateSubject>
     ): WindowManagerTraceSubject = apply { addAssertion(name, isOptional, assertion) }
 
-    /**
-     * Run the assertions for all trace entries within the specified time range
-     */
+    /** Run the assertions for all trace entries within the specified time range */
     fun forRange(startTime: Long, endTime: Long) {
         val subjectsInRange = subjects.filter { it.wmState.timestamp in startTime..endTime }
         assertionsChecker.test(subjectsInRange)
@@ -656,18 +568,17 @@ class WindowManagerTraceSubject private constructor(
         subjects.first { it.wmState.timestamp == timestamp }
 
     companion object {
-        /**
-         * Boilerplate Subject.Factory for WmTraceSubject
-         */
+        /** Boilerplate Subject.Factory for WmTraceSubject */
         private fun getFactory(
             parent: WindowManagerTraceSubject?,
             facts: Collection<Fact> = emptyList()
-        ): Factory<Subject, WindowManagerTrace> =
-            Factory { fm, subject -> WindowManagerTraceSubject(fm, subject, parent, facts) }
+        ): Factory<Subject, WindowManagerTrace> = Factory { fm, subject ->
+            WindowManagerTraceSubject(fm, subject, parent, facts)
+        }
 
         /**
-         * Creates a [WindowManagerTraceSubject] representing a WindowManager trace,
-         * which can be used to make assertions.
+         * Creates a [WindowManagerTraceSubject] representing a WindowManager trace, which can be
+         * used to make assertions.
          *
          * @param trace WindowManager trace
          */
@@ -679,16 +590,15 @@ class WindowManagerTraceSubject private constructor(
             facts: Collection<Fact> = emptyList()
         ): WindowManagerTraceSubject {
             val strategy = FlickerFailureStrategy()
-            val subject = StandardSubjectBuilder.forCustomFailureStrategy(strategy)
-                .about(getFactory(parent, facts))
-                .that(trace) as WindowManagerTraceSubject
+            val subject =
+                StandardSubjectBuilder.forCustomFailureStrategy(strategy)
+                    .about(getFactory(parent, facts))
+                    .that(trace) as WindowManagerTraceSubject
             strategy.init(subject)
             return subject
         }
 
-        /**
-         * Static method for getting the subject factory (for use with assertAbout())
-         */
+        /** Static method for getting the subject factory (for use with assertAbout()) */
         @JvmStatic
         fun entries(
             parent: WindowManagerTraceSubject?,

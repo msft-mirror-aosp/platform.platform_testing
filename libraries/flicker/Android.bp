@@ -34,6 +34,8 @@ java_test {
     static_libs: [
         "flickerlib-helpers",
         "compatibility-device-util-axt",
+        "ub-uiautomator",
+        "androidx.test.uiautomator_uiautomator",
         "androidx.test.ext.junit",
         "truth-prebuilt",
         "launcher-helper-lib",

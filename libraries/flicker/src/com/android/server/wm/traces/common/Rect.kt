@@ -20,57 +20,54 @@ import kotlin.js.JsName
 
 /**
  * Wrapper for RectProto
+ * ```
  *     - frameworks/native/services/surfaceflinger/layerproto/common.proto and
  *     - frameworks/base/core/proto/android/graphics/rect.proto
- *
+ * ```
  * This class is used by flicker and Winscope
  */
-class Rect internal constructor(
-    @JsName("left")
-    val left: Int = 0,
-    @JsName("top")
-    val top: Int = 0,
-    @JsName("right")
-    val right: Int = 0,
-    @JsName("bottom")
-    val bottom: Int = 0
+class Rect
+internal constructor(
+    @JsName("left") val left: Int = 0,
+    @JsName("top") val top: Int = 0,
+    @JsName("right") val right: Int = 0,
+    @JsName("bottom") val bottom: Int = 0
 ) {
     @JsName("height")
-    val height: Int get() = bottom - top
+    val height: Int
+        get() = bottom - top
     @JsName("width")
-    val width: Int get() = right - left
-    @JsName("centerX")
-    fun centerX(): Int = (left + right) / 2
-    @JsName("centerY")
-    fun centerY(): Int = (top + bottom) / 2
-    /**
-     * Returns true if the rectangle is empty (left >= right or top >= bottom)
-     */
+    val width: Int
+        get() = right - left
+    @JsName("centerX") fun centerX(): Int = (left + right) / 2
+    @JsName("centerY") fun centerY(): Int = (top + bottom) / 2
+    /** Returns true if the rectangle is empty (left >= right or top >= bottom) */
     @JsName("isEmpty")
-    val isEmpty: Boolean get() = width <= 0 || height <= 0
+    val isEmpty: Boolean
+        get() = width <= 0 || height <= 0
 
     @JsName("isNotEmpty")
-    val isNotEmpty: Boolean get() = !isEmpty
+    val isNotEmpty: Boolean
+        get() = !isEmpty
 
-    /**
-     * Returns a [RectF] version fo this rectangle.
-     */
+    /** Returns a [RectF] version fo this rectangle. */
     @JsName("toRectF")
     fun toRectF(): RectF {
         return RectF.from(left.toFloat(), top.toFloat(), right.toFloat(), bottom.toFloat())
     }
 
     @JsName("prettyPrint")
-    fun prettyPrint(): String =
-        if (isEmpty) "[empty]" else "($left, $top) - ($right, $bottom)"
+    fun prettyPrint(): String = if (isEmpty) "[empty]" else "($left, $top) - ($right, $bottom)"
 
     /**
-     * Returns true iff the specified rectangle r is inside or equal to this
-     * rectangle. An empty rectangle never contains another rectangle.
+     * Returns true iff the specified rectangle r is inside or equal to this rectangle. An empty
+     * rectangle never contains another rectangle.
      *
      * @param rect The rectangle being tested for containment.
      * @return true iff the specified rectangle r is inside or equal to this
+     * ```
      *              rectangle
+     * ```
      */
     operator fun contains(rect: Rect): Boolean {
         val thisRect = toRectF()
@@ -92,25 +89,25 @@ class Rect internal constructor(
         return from(newLeft, newTop, newRight, newBottom)
     }
 
-    /** Returns true if: fLeft <= x < fRight && fTop <= y < fBottom.
-    Returns false if SkIRect is empty.
-
-    Considers input to describe constructed SkIRect: (x, y, x + 1, y + 1) and
-    returns true if constructed area is completely enclosed by SkIRect area.
-
-    @param x  test SkIPoint x-coordinate
-    @param y  test SkIPoint y-coordinate
-    @return   true if (x, y) is inside SkIRect
+    /**
+     * Returns true if: fLeft <= x < fRight && fTop <= y < fBottom. Returns false if SkIRect is
+     * empty.
+     *
+     * Considers input to describe constructed SkIRect: (x, y, x + 1, y + 1) and returns true if
+     * constructed area is completely enclosed by SkIRect area.
+     *
+     * @param x test SkIPoint x-coordinate @param y test SkIPoint y-coordinate @return true if (x,
+     * y) is inside SkIRect
      */
     fun contains(x: Int, y: Int): Boolean {
         return x in left until right && y in top until bottom
     }
 
     /**
-     * If the specified rectangle intersects this rectangle, return true and set
-     * this rectangle to that intersection, otherwise return false and do not
-     * change this rectangle. No check is performed to see if either rectangle
-     * is empty. To just test for intersection, use intersects()
+     * If the specified rectangle intersects this rectangle, return true and set this rectangle to
+     * that intersection, otherwise return false and do not change this rectangle. No check is
+     * performed to see if either rectangle is empty. To just test for intersection, use
+     * intersects()
      *
      * @param rect The rectangle being intersected with this rectangle.
      * @return A rectangle with the intersection coordinates
@@ -151,10 +148,12 @@ class Rect internal constructor(
 
     companion object {
         @JsName("EMPTY")
-        val EMPTY: Rect get() = withCache { Rect() }
+        val EMPTY: Rect
+            get() = withCache { Rect() }
 
         @JsName("from")
-        fun from(left: Int, top: Int, right: Int, bottom: Int): Rect =
-            withCache { Rect(left, top, right, bottom) }
+        fun from(left: Int, top: Int, right: Int, bottom: Int): Rect = withCache {
+            Rect(left, top, right, bottom)
+        }
     }
 }

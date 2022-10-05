@@ -29,77 +29,78 @@ import com.google.common.truth.StandardSubjectBuilder
 import com.google.common.truth.Subject.Factory
 
 /**
- * Truth subject for [Layer] objects, used to make assertions over behaviors that occur on a
- * single layer of a SurfaceFlinger state.
+ * Truth subject for [Layer] objects, used to make assertions over behaviors that occur on a single
+ * layer of a SurfaceFlinger state.
  *
- * To make assertions over a layer from a state it is recommended to create a subject
- * using [LayerTraceEntrySubject.layer](layerName)
+ * To make assertions over a layer from a state it is recommended to create a subject using
+ * [LayerTraceEntrySubject.layer](layerName)
  *
  * Alternatively, it is also possible to use [LayerSubject.assertThat](myLayer) or
- * Truth.assertAbout([LayerSubject.getFactory]), however they will provide less debug
- * information because it uses Truth's default [FailureStrategy].
+ * Truth.assertAbout([LayerSubject.getFactory]), however they will provide less debug information
+ * because it uses Truth's default [FailureStrategy].
  *
  * Example:
+ * ```
  *    val trace = LayersTraceParser.parseFromTrace(myTraceFile)
  *    val subject = LayersTraceSubject.assertThat(trace).first()
  *        .layer("ValidLayer")
  *        .exists()
  *        .hasBufferSize(BUFFER_SIZE)
  *        .invoke { myCustomAssertion(this) }
+ * ```
  */
-class LayerSubject private constructor(
+class LayerSubject
+private constructor(
     fm: FailureMetadata,
     public override val parent: FlickerSubject,
     override val timestamp: Long,
     val layer: Layer?,
     private val layerName: String? = null
 ) : FlickerSubject(fm, layer) {
-    val isEmpty: Boolean get() = layer == null
-    val isNotEmpty: Boolean get() = !isEmpty
-    val isVisible: Boolean get() = layer?.isVisible == true
-    val isInvisible: Boolean get() = layer?.isVisible == false
-    val name: String get() = layer?.name ?: ""
+    val isEmpty: Boolean
+        get() = layer == null
+    val isNotEmpty: Boolean
+        get() = !isEmpty
+    val isVisible: Boolean
+        get() = layer?.isVisible == true
+    val isInvisible: Boolean
+        get() = layer?.isVisible == false
+    val name: String
+        get() = layer?.name ?: ""
+
+    /** Visible region calculated by the Composition Engine */
+    val visibleRegion: RegionSubject
+        get() = RegionSubject.assertThat(layer?.visibleRegion, this, timestamp)
+
+    val visibilityReason: Array<String>
+        get() = layer?.visibilityReason ?: emptyArray()
 
     /**
-     * Visible region calculated by the Composition Engine
+     * Visible region calculated by the Composition Engine (when available) or calculated based on
+     * the layer bounds and transform
      */
-    val visibleRegion: RegionSubject get() =
-        RegionSubject.assertThat(layer?.visibleRegion, this, timestamp)
+    val screenBounds: RegionSubject
+        get() = RegionSubject.assertThat(layer?.screenBounds, this, timestamp)
 
-    val visibilityReason: Array<String> get() =
-        layer?.visibilityReason ?: emptyArray()
+    override val selfFacts =
+        if (layer != null) {
+            listOf(Fact.fact("Frame", layer.currFrame), Fact.fact("Layer", layer.name))
+        } else {
+            listOf(Fact.fact("Layer name", layerName))
+        }
 
-    /**
-     * Visible region calculated by the Composition Engine (when available) or calculated
-     * based on the layer bounds and transform
-     */
-    val screenBounds: RegionSubject get() =
-        RegionSubject.assertThat(layer?.screenBounds, this, timestamp)
-
-    override val selfFacts = if (layer != null) {
-        listOf(Fact.fact("Frame", layer.currFrame), Fact.fact("Layer", layer.name))
-    } else {
-        listOf(Fact.fact("Layer name", layerName))
-    }
-
-    /**
-     * If the [layer] exists, executes a custom [assertion] on the current subject
-     */
+    /** If the [layer] exists, executes a custom [assertion] on the current subject */
     operator fun invoke(assertion: Assertion<Layer>): LayerSubject = apply {
         layer ?: return exists()
         assertion(this.layer)
     }
 
-    /**
-     * Asserts that current subject doesn't exist in the layer hierarchy
-     */
+    /** Asserts that current subject doesn't exist in the layer hierarchy */
     fun doesNotExist(): LayerSubject = apply {
         check("Layer exists ${layer?.name}").that(layer == null).isTrue()
     }
 
-    /**
-     * Asserts that current subject exists in the layer hierarchy
-     */
+    /** Asserts that current subject exists in the layer hierarchy */
     fun exists(): LayerSubject = apply {
         check("Layer exists $layerName").that(layer == null).isFalse()
     }
@@ -111,8 +112,8 @@ class LayerSubject private constructor(
     }
 
     /**
-     * Asserts that current subject has an [Layer.activeBuffer] with width equals to [Point.x]
-     * and height equals to [Point.y]
+     * Asserts that current subject has an [Layer.activeBuffer] with width equals to [Point.x] and
+     * height equals to [Point.y]
      *
      * @param size expected buffer size
      */
@@ -123,8 +124,8 @@ class LayerSubject private constructor(
     }
 
     /**
-     * Asserts that current subject has an [Layer.screenBounds] with width equals to [Point.x]
-     * and height equals to [Point.y]
+     * Asserts that current subject has an [Layer.screenBounds] with width equals to [Point.x] and
+     * height equals to [Point.y]
      *
      * @param size expected layer bounds size
      */
@@ -153,8 +154,7 @@ class LayerSubject private constructor(
         // see Transform::getOrientation
         val bufferTransformType = layer.bufferTransform.type ?: 0
         val actualOrientation = (bufferTransformType shr 8) and 0xFF
-        check("BufferTransformOrientation")
-                .that(actualOrientation).isEqualTo(expectedOrientation)
+        check("BufferTransformOrientation").that(actualOrientation).isEqualTo(expectedOrientation)
     }
 
     override fun toString(): String {
@@ -162,35 +162,26 @@ class LayerSubject private constructor(
     }
 
     companion object {
-        /**
-         * Boiler-plate Subject.Factory for LayerSubject
-         */
+        /** Boiler-plate Subject.Factory for LayerSubject */
         @JvmStatic
         fun getFactory(parent: FlickerSubject, timestamp: Long, name: String?) =
             Factory { fm: FailureMetadata, subject: Layer? ->
                 LayerSubject(fm, parent, timestamp, subject, name)
             }
 
-        /**
-         * User-defined parent point for existing layers
-         */
+        /** User-defined parent point for existing layers */
         @JvmStatic
-        fun assertThat(
-            layer: Layer?,
-            parent: FlickerSubject,
-            timestamp: Long
-        ): LayerSubject {
+        fun assertThat(layer: Layer?, parent: FlickerSubject, timestamp: Long): LayerSubject {
             val strategy = FlickerFailureStrategy()
-            val subject = StandardSubjectBuilder.forCustomFailureStrategy(strategy)
-                .about(getFactory(parent, timestamp, name = null))
-                .that(layer) as LayerSubject
+            val subject =
+                StandardSubjectBuilder.forCustomFailureStrategy(strategy)
+                    .about(getFactory(parent, timestamp, name = null))
+                    .that(layer) as LayerSubject
             strategy.init(subject)
             return subject
         }
 
-        /**
-         * User-defined parent point for non existing layers
-         */
+        /** User-defined parent point for non existing layers */
         @JvmStatic
         internal fun assertThat(
             name: String,
@@ -198,9 +189,10 @@ class LayerSubject private constructor(
             timestamp: Long
         ): LayerSubject {
             val strategy = FlickerFailureStrategy()
-            val subject = StandardSubjectBuilder.forCustomFailureStrategy(strategy)
-                .about(getFactory(parent, timestamp, name))
-                .that(null) as LayerSubject
+            val subject =
+                StandardSubjectBuilder.forCustomFailureStrategy(strategy)
+                    .about(getFactory(parent, timestamp, name))
+                    .that(null) as LayerSubject
             strategy.init(subject)
             return subject
         }

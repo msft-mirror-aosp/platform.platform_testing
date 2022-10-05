@@ -18,7 +18,5 @@ package com.android.server.wm.flicker.service.assertors.assertions
 
 import com.android.server.wm.flicker.service.assertors.Components
 
-/**
- * Checks that [Components.LAUNCHER] starts not on top and moves to top during the transition
- */
+/** Checks that [Components.LAUNCHER] starts not on top and moves to top during the transition */
 class LauncherWindowMovesToTop : WindowMovesToTop(Components.LAUNCHER)

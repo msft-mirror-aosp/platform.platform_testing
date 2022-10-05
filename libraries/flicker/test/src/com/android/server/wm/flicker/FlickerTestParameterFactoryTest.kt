@@ -35,24 +35,31 @@ class FlickerTestParameterFactoryTest {
     fun checkBuildTest() {
         val actual = testFactory.getConfigNonRotationTests()
         assertWithMessage("Flicker should create tests for 0 and 90 degrees")
-            .that(actual).hasSize(4)
+            .that(actual)
+            .hasSize(4)
     }
 
     @Test
     fun checkBuildRotationTest() {
         val actual = testFactory.getConfigRotationTests()
         assertWithMessage("Flicker should create tests for 0 and 90 degrees")
-            .that(actual).hasSize(4)
+            .that(actual)
+            .hasSize(4)
     }
 
     @Test
     fun checkBuildCustomRotationsTest() {
-        val rotations = listOf(Surface.ROTATION_0, Surface.ROTATION_90, Surface.ROTATION_180,
-                Surface.ROTATION_270)
-        val actual = testFactory.getConfigRotationTests(
-            supportedRotations = rotations)
+        val rotations =
+            listOf(
+                Surface.ROTATION_0,
+                Surface.ROTATION_90,
+                Surface.ROTATION_180,
+                Surface.ROTATION_270
+            )
+        val actual = testFactory.getConfigRotationTests(supportedRotations = rotations)
         // Should have config for each rotation pair
         assertWithMessage("Flicker should create tests for 0/90/180/270 degrees")
-            .that(actual).hasSize(24)
+            .that(actual)
+            .hasSize(24)
     }
 }

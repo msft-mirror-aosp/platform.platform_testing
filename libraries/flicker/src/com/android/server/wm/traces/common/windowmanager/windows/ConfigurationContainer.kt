@@ -21,35 +21,37 @@ import kotlin.js.JsName
 /**
  * Represents the configuration of an element in the window manager hierarchy
  *
- * This is a generic object that is reused by both Flicker and Winscope and cannot
- * access internal Java/Android functionality
- *
+ * This is a generic object that is reused by both Flicker and Winscope and cannot access internal
+ * Java/Android functionality
  */
 open class ConfigurationContainer(
-    @JsName("overrideConfiguration")
-    val overrideConfiguration: Configuration?,
-    @JsName("fullConfiguration")
-    val fullConfiguration: Configuration?,
-    @JsName("mergedOverrideConfiguration")
-    val mergedOverrideConfiguration: Configuration?
+    @JsName("overrideConfiguration") val overrideConfiguration: Configuration?,
+    @JsName("fullConfiguration") val fullConfiguration: Configuration?,
+    @JsName("mergedOverrideConfiguration") val mergedOverrideConfiguration: Configuration?
 ) {
-    constructor(configurationContainer: ConfigurationContainer) : this(
+    constructor(
+        configurationContainer: ConfigurationContainer
+    ) : this(
         configurationContainer.overrideConfiguration,
         configurationContainer.fullConfiguration,
         configurationContainer.mergedOverrideConfiguration
     )
 
     @JsName("windowingMode")
-    val windowingMode: Int get() = fullConfiguration?.windowConfiguration?.windowingMode ?: 0
+    val windowingMode: Int
+        get() = fullConfiguration?.windowConfiguration?.windowingMode ?: 0
 
     @JsName("activityType")
-    open val activityType: Int get() = fullConfiguration?.windowConfiguration?.activityType ?: 0
+    open val activityType: Int
+        get() = fullConfiguration?.windowConfiguration?.activityType ?: 0
 
     @JsName("isEmpty")
     open val isEmpty: Boolean
-        get() = (overrideConfiguration?.isEmpty ?: true) &&
-            (fullConfiguration?.isEmpty ?: true) &&
-            (mergedOverrideConfiguration?.isEmpty ?: true)
+        get() =
+            (overrideConfiguration?.isEmpty
+                ?: true) &&
+                (fullConfiguration?.isEmpty ?: true) &&
+                (mergedOverrideConfiguration?.isEmpty ?: true)
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

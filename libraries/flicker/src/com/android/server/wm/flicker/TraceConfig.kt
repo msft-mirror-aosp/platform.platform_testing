@@ -16,17 +16,12 @@
 
 package com.android.server.wm.flicker
 
-data class TraceConfigs(
-    val wmTrace: TraceConfig,
-    val layersTrace: TraceConfig
-)
+data class TraceConfigs(val wmTrace: TraceConfig, val layersTrace: TraceConfig)
 
-data class TraceConfig (
-    var required: Boolean,
-    var allowNoChange: Boolean
-)
+data class TraceConfig(var required: Boolean, var allowNoChange: Boolean)
 
-val DEFAULT_TRACE_CONFIG = TraceConfigs(
-    wmTrace = TraceConfig(required = true, allowNoChange = false),
-    layersTrace = TraceConfig(required = true, allowNoChange = false)
-)
+val DEFAULT_TRACE_CONFIG =
+    TraceConfigs(
+        wmTrace = TraceConfig(required = true, allowNoChange = false),
+        layersTrace = TraceConfig(required = true, allowNoChange = false)
+    )

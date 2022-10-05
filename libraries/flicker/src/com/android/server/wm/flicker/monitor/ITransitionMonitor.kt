@@ -18,11 +18,11 @@ package com.android.server.wm.flicker.monitor
 
 import com.android.server.wm.flicker.FlickerRunResult
 
-/** Collects test artifacts during a UI transition.  */
+/** Collects test artifacts during a UI transition. */
 interface ITransitionMonitor : FlickerRunResult.IResultSetter {
-    /** Starts monitor.  */
+    /** Starts monitor. */
     fun start()
 
-    /** Stops monitor.  */
+    /** Stops monitor. */
     fun stop()
 }

@@ -26,9 +26,7 @@ import com.android.server.wm.traces.common.transition.TransitionsTrace
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 import java.nio.file.Path
 
-/**
- * Contains the logic for Flicker as a Service.
- */
+/** Contains the logic for Flicker as a Service. */
 class FlickerService {
     /**
      * The entry point for WM Flicker Service.
@@ -37,8 +35,8 @@ class FlickerService {
      *
      * @param wmTrace Window Manager trace
      * @param layersTrace Surface Flinger trace
-     * @return A pair with an [ErrorTrace] and a map that associates assertion names with
-     * 0 if it fails and 1 if it passes
+     * @return A pair with an [ErrorTrace] and a map that associates assertion names with 0 if it
+     * fails and 1 if it passes
      */
     fun process(
         wmTrace: WindowManagerTrace,
@@ -46,8 +44,10 @@ class FlickerService {
         transitionTrace: TransitionsTrace
     ): List<AssertionResult> {
         try {
-            val assertionEngine = AssertionEngine(AssertionGeneratorConfigProducer())
-                { Log.v("$FLICKER_TAG-ASSERT", it) }
+            val assertionEngine =
+                AssertionEngine(AssertionGeneratorConfigProducer()) {
+                    Log.v("$FLICKER_TAG-ASSERT", it)
+                }
             return assertionEngine.analyze(wmTrace, layersTrace, transitionTrace)
         } catch (exception: Throwable) {
             Log.e("$FLICKER_TAG-ASSERT", "FAILED PROCESSING", exception)

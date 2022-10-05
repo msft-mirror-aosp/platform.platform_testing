@@ -32,8 +32,7 @@ interface IComponentMatcher {
      *
      * @param window to search
      */
-    fun windowMatchesAnyOf(window: WindowState): Boolean =
-            windowMatchesAnyOf(arrayOf(window))
+    fun windowMatchesAnyOf(window: WindowState): Boolean = windowMatchesAnyOf(arrayOf(window))
 
     /**
      * @return if any of the [components] matches any of [windows]
@@ -41,7 +40,7 @@ interface IComponentMatcher {
      * @param windows to search
      */
     fun windowMatchesAnyOf(windows: Collection<WindowState>): Boolean =
-            windowMatchesAnyOf(windows.toTypedArray())
+        windowMatchesAnyOf(windows.toTypedArray())
 
     /**
      * @return if any of the [windows] fit the matching conditions of the matcher
@@ -55,8 +54,7 @@ interface IComponentMatcher {
      *
      * @param activity to search
      */
-    fun activityMatchesAnyOf(activity: Activity): Boolean =
-            activityMatchesAnyOf(arrayOf(activity))
+    fun activityMatchesAnyOf(activity: Activity): Boolean = activityMatchesAnyOf(arrayOf(activity))
 
     /**
      * @return if any of the [components] matches any of [activities]
@@ -64,7 +62,7 @@ interface IComponentMatcher {
      * @param activities to search
      */
     fun activityMatchesAnyOf(activities: Collection<Activity>): Boolean =
-            activityMatchesAnyOf(activities.toTypedArray())
+        activityMatchesAnyOf(activities.toTypedArray())
 
     /**
      * @return if any of the [components] matches any of [activities]
@@ -78,8 +76,7 @@ interface IComponentMatcher {
      *
      * @param layer to search
      */
-    fun layerMatchesAnyOf(layer: Layer): Boolean =
-            layerMatchesAnyOf(arrayOf(layer))
+    fun layerMatchesAnyOf(layer: Layer): Boolean = layerMatchesAnyOf(arrayOf(layer))
 
     /**
      * @return if any of the [components] matches any of [layers]
@@ -87,36 +84,45 @@ interface IComponentMatcher {
      * @param layers to search
      */
     fun layerMatchesAnyOf(layers: Collection<Layer>): Boolean =
-            layerMatchesAnyOf(layers.toTypedArray())
+        layerMatchesAnyOf(layers.toTypedArray())
 
     fun layerMatchesAnyOf(layers: Array<Layer>): Boolean
 
     /**
      * @return an identifier string that provides enough information to determine which activities
+     * ```
      *         the matcher is looking to match. Mostly used for debugging purposes in error messages
+     * ```
      */
     fun toActivityIdentifier(): String
 
     /**
      * @return an identifier string that provides enough information to determine which windows the
+     * ```
      *         matcher is looking to match. Mostly used for debugging purposes in error messages.
+     * ```
      */
-    @JsName("toWindowIdentifier")
-    fun toWindowIdentifier(): String
+    @JsName("toWindowIdentifier") fun toWindowIdentifier(): String
 
     /**
      * @return an identifier string that provides enough information to determine which layers the
+     * ```
      *         matcher is looking to match. Mostly used for debugging purposes in error messages.
+     * ```
      */
-    @JsName("toLayerIdentifier")
-    fun toLayerIdentifier(): String
+    @JsName("toLayerIdentifier") fun toLayerIdentifier(): String
 
     /**
      * @param layers Collection of layers check for matches
      * @param condition A function taking the matched layers of a base level component and returning
+     * ```
      *              true or false base on if the check succeeded.
-     * @return true iff all the check condition is satisfied according to the ComponentMatcher's
+     * @return
+     * ```
+     * true iff all the check condition is satisfied according to the ComponentMatcher's
+     * ```
      *         defined execution of it.
+     * ```
      */
     @JsName("check")
     fun check(layers: Collection<Layer>, condition: (Collection<Layer>) -> Boolean): Boolean

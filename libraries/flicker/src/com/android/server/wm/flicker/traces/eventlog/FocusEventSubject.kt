@@ -28,19 +28,16 @@ class FocusEventSubject(
     val event: FocusEvent,
     override val parent: EventLogSubject?
 ) : FlickerSubject(fm, event) {
-    override val timestamp: Long get() = 0
+    override val timestamp: Long
+        get() = 0
     override val selfFacts by lazy { listOf(Fact.simpleFact(event.toString())) }
 
     fun hasFocus() {
-        check("Has focus")
-            .that(event.hasFocus())
-            .isTrue()
+        check("Has focus").that(event.hasFocus()).isTrue()
     }
 
     fun hasNotFocus() {
-        check("Has focus")
-            .that(event.hasFocus())
-            .isFalse()
+        check("Has focus").that(event.hasFocus()).isFalse()
     }
 
     companion object {
@@ -51,8 +48,9 @@ class FocusEventSubject(
          */
         private fun getFactory(
             trace: EventLogSubject? = null
-        ): Factory<FocusEventSubject, FocusEvent> =
-            Factory { fm, subject -> FocusEventSubject(fm, subject, trace) }
+        ): Factory<FocusEventSubject, FocusEvent> = Factory { fm, subject ->
+            FocusEventSubject(fm, subject, trace)
+        }
 
         /**
          * User-defined entry point
@@ -64,9 +62,10 @@ class FocusEventSubject(
         @JvmOverloads
         fun assertThat(event: FocusEvent, trace: EventLogSubject? = null): FocusEventSubject {
             val strategy = FlickerFailureStrategy()
-            val subject = StandardSubjectBuilder.forCustomFailureStrategy(strategy)
-                .about(getFactory(trace))
-                .that(event) as FocusEventSubject
+            val subject =
+                StandardSubjectBuilder.forCustomFailureStrategy(strategy)
+                    .about(getFactory(trace))
+                    .that(event) as FocusEventSubject
             strategy.init(subject)
             return subject
         }

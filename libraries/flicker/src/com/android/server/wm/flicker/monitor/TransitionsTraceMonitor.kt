@@ -28,7 +28,9 @@ import java.nio.file.Path
  *
  * Use [LayersTraceSubject.assertThat] to make assertions on the trace
  */
-open class TransitionsTraceMonitor @JvmOverloads constructor(
+open class TransitionsTraceMonitor
+@JvmOverloads
+constructor(
     outputDir: Path = getDefaultFlickerOutputDir(),
     sourceFile: Path = TRACE_DIR.resolve("transition_trace$WINSCOPE_EXT")
 ) : TransitionMonitor(outputDir, sourceFile) {

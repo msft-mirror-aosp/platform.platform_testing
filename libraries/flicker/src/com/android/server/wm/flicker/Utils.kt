@@ -80,17 +80,16 @@ object Utils {
             str.contains("Letterbox") -> ComponentNameMatcher.LETTERBOX
             str.contains("Wallpaper BBQ wrapper") -> ComponentNameMatcher.WALLPAPER_BBQ_WRAPPER
             str.contains("PipContentOverlay") -> ComponentNameMatcher.PIP_CONTENT_OVERLAY
-            str.contains("com.google.android.apps.nexuslauncher") ->
-                ComponentNameMatcher.LAUNCHER
+            str.contains("com.google.android.apps.nexuslauncher") -> ComponentNameMatcher.LAUNCHER
             str.contains("StageCoordinatorSplitDivider") -> ComponentNameMatcher.SPLIT_DIVIDER
             else -> null
         }
     }
 
     /**
-     * Obtains the component name matcher corresponding to a name (str)
-     * Returns null if the name is not found in the hardcoded list,
-     * and it does not contain both the package and class name (with a / separator)
+     * Obtains the component name matcher corresponding to a name (str) Returns null if the name is
+     * not found in the hardcoded list, and it does not contain both the package and class name
+     * (with a / separator)
      */
     fun componentNameMatcherFromName(str: String): ComponentNameMatcher? {
         val condition = true
@@ -125,9 +124,7 @@ object Utils {
         return componentMatcher?.componentNameMatcherToString()
     }
 
-    /**
-     * Gets the name of the states in a layers lifecycle
-     */
+    /** Gets the name of the states in a layers lifecycle */
     fun getLayersElementLifecycleName(elementLifecycle: LayersElementLifecycle): String {
         for (state in elementLifecycle.states) {
             if (state != null) {

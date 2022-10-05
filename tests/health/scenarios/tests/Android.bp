@@ -75,6 +75,7 @@ android_test {
         "platform-test-composers",
         "platform-test-options",
         "platform-test-rules",
+        "ub-uiautomator",
     ],
     srcs: ["src/**/*.java"],
     test_suites: ["device-tests"],

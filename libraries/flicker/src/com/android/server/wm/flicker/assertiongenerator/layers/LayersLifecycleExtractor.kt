@@ -6,14 +6,9 @@ import com.android.server.wm.flicker.assertiongenerator.common.ITraceLifecycle
 import com.android.server.wm.traces.common.DeviceTraceDump
 import com.android.server.wm.traces.common.layers.Layer
 
-class LayersLifecycleExtractor(
-) : ILifecycleExtractor {
-    /**
-     * @{inheritDoc}
-     */
-    override fun extract(
-        traceDump: DeviceTraceDump
-    ): ITraceLifecycle? {
+class LayersLifecycleExtractor() : ILifecycleExtractor {
+    /** @{inheritDoc} */
+    override fun extract(traceDump: DeviceTraceDump): ITraceLifecycle? {
         val elementLifecycles = LayersTraceLifecycle()
         val trace = traceDump.layersTrace ?: return null
         val traceLength = trace.entries.size
@@ -31,9 +26,8 @@ class LayersLifecycleExtractor(
                     if (!layersElementLifecycleWasInitialized) {
                         val statesArray: Array<Layer?> = arrayOfNulls(traceLength)
                         statesArray[index] = layer
-                        val layersElementLifecycle = LayersElementLifecycle(
-                            statesArray.toMutableList()
-                        )
+                        val layersElementLifecycle =
+                            LayersElementLifecycle(statesArray.toMutableList())
                         elementLifecycles.add(componentMatcher, layer.id, layersElementLifecycle)
                     }
                 }

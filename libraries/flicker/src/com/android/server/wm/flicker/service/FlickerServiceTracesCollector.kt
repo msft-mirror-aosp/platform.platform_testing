@@ -36,12 +36,13 @@ import java.nio.file.Path
 
 class FlickerServiceTracesCollector(val outputDir: Path) : ITracesCollector {
 
-    private val traceMonitors = listOf<TraceMonitor>(
-        WindowManagerTraceMonitor(outputDir),
-        LayersTraceMonitor(outputDir),
-        TransitionsTraceMonitor(outputDir),
-        TransactionsTraceMonitor(outputDir)
-    )
+    private val traceMonitors =
+        listOf<TraceMonitor>(
+            WindowManagerTraceMonitor(outputDir),
+            LayersTraceMonitor(outputDir),
+            TransitionsTraceMonitor(outputDir),
+            TransactionsTraceMonitor(outputDir)
+        )
 
     private var wmTrace: WindowManagerTrace? = null
     private var layersTrace: LayersTrace? = null
@@ -49,9 +50,7 @@ class FlickerServiceTracesCollector(val outputDir: Path) : ITracesCollector {
 
     override fun start() {
         reset()
-        traceMonitors.forEach {
-            it.start()
-        }
+        traceMonitors.forEach { it.start() }
     }
 
     override fun stop() {
@@ -59,30 +58,27 @@ class FlickerServiceTracesCollector(val outputDir: Path) : ITracesCollector {
         Files.createDirectories(outputDir)
 
         Log.v(LOG_TAG, "Stopping trace monitors")
-        traceMonitors.forEach {
-            it.stop()
-        }
+        traceMonitors.forEach { it.stop() }
 
         Log.v(LOG_TAG, "Processing wmTrace from file")
-        wmTrace = getWindowManagerTraceFromFile(
-            FlickerService.getFassFilePath(outputDir, "wm_trace")
-        )
+        wmTrace =
+            getWindowManagerTraceFromFile(FlickerService.getFassFilePath(outputDir, "wm_trace"))
         Log.v(LOG_TAG, "Processing layers trace from file")
-        layersTrace = getLayersTraceFromFile(
-            FlickerService.getFassFilePath(outputDir, "layers_trace")
-        )
+        layersTrace =
+            getLayersTraceFromFile(FlickerService.getFassFilePath(outputDir, "layers_trace"))
         Log.v(LOG_TAG, "Processing transitions trace from file")
-        transitionsTrace = getTransitionsTraceFromFile(
-            FlickerService.getFassFilePath(outputDir, "transition_trace"),
-            FlickerService.getFassFilePath(outputDir, "transactions_trace")
-        )
+        transitionsTrace =
+            getTransitionsTraceFromFile(
+                FlickerService.getFassFilePath(outputDir, "transition_trace"),
+                FlickerService.getFassFilePath(outputDir, "transactions_trace")
+            )
     }
 
     override fun getCollectedTraces(): Traces {
         val wmTrace = wmTrace ?: error("Make sure tracing was stopped before calling this")
         val layersTrace = layersTrace ?: error("Make sure tracing was stopped before calling this")
-        val transitionsTrace = transitionsTrace
-            ?: error("Make sure tracing was stopped before calling this")
+        val transitionsTrace =
+            transitionsTrace ?: error("Make sure tracing was stopped before calling this")
         return Traces(wmTrace, layersTrace, transitionsTrace)
     }
 
@@ -94,8 +90,8 @@ class FlickerServiceTracesCollector(val outputDir: Path) : ITracesCollector {
     }
 
     /**
-     * Remove the WM trace and layers trace files collected from previous test runs if the
-     * directory exists.
+     * Remove the WM trace and layers trace files collected from previous test runs if the directory
+     * exists.
      */
     private fun cleanupTraceFiles() {
         if (Files.exists(outputDir)) {

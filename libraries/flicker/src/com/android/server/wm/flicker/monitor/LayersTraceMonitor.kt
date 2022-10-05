@@ -28,7 +28,9 @@ import java.nio.file.Path
  *
  * Use [LayersTraceSubject.assertThat] to make assertions on the trace
  */
-open class LayersTraceMonitor @JvmOverloads constructor(
+open class LayersTraceMonitor
+@JvmOverloads
+constructor(
     outputDir: Path = getDefaultFlickerOutputDir(),
     sourceFile: Path = TRACE_DIR.resolve("layers_trace$WINSCOPE_EXT"),
     private val traceFlags: Int = TRACE_FLAGS

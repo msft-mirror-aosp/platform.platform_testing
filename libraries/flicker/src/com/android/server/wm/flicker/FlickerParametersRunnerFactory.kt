@@ -21,8 +21,8 @@ import org.junit.runners.parameterized.ParametersRunnerFactory
 import org.junit.runners.parameterized.TestWithParameters
 
 /**
- * A {@code FlickerRunnerFactory} creates a runner for a single
- * {@link TestWithParameters}. Parses and executes assertions from a flicker DSL
+ * A {@code FlickerRunnerFactory} creates a runner for a single {@link TestWithParameters}. Parses
+ * and executes assertions from a flicker DSL
  */
 class FlickerParametersRunnerFactory : ParametersRunnerFactory {
     override fun createRunnerForTestWithParameters(test: TestWithParameters): Runner {

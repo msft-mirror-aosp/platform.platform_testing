@@ -19,12 +19,11 @@ package com.android.server.wm.traces.common
 import kotlin.js.JsName
 
 interface ITrace<Entry : ITraceEntry> {
-    @JsName("entries")
-    val entries: Array<Entry>
+    @JsName("entries") val entries: Array<Entry>
 
     @JsName("getEntry")
     fun getEntry(timestamp: Long): Entry {
         return entries.firstOrNull { it.timestamp == timestamp }
-                ?: throw RuntimeException("Entry does not exist for timestamp $timestamp")
+            ?: throw RuntimeException("Entry does not exist for timestamp $timestamp")
     }
 }

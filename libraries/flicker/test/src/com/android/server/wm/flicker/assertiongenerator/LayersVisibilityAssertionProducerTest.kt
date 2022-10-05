@@ -65,73 +65,97 @@ class LayersVisibilityAssertionProducerTest {
     private fun produceAssertionsFromTraceDump(traceDump: DeviceTraceDump): List<Assertion> {
         val lifecycleExtractor = LayersLifecycleExtractor()
         val layersVisibilityAssertionProducer = LayersVisibilityAssertionProducer()
-        return lifecycleExtractor.extract(traceDump)?.let{
+        return lifecycleExtractor.extract(traceDump)?.let {
             layersVisibilityAssertionProducer.produce(
                 listOf(TraceContent.byTraceType(it, emptyDeviceTraceConfiguration)!!)
             )
-        } ?: throw RuntimeException("Layers lifecycle was expected, but is actually null")
+        }
+            ?: throw RuntimeException("Layers lifecycle was expected, but is actually null")
     }
 
     private fun produceAssertionsFromTestTrace() {
-        val elementLifecycles = listOf(LayersTraceLifecycle(
-            ElementLifecycleExtractorTestConst.expectedElementLifecyclesVisibilityAssertionProducer
-                as MutableMap<ComponentNameMatcher, LayersComponentLifecycle>))
+        val elementLifecycles =
+            listOf(
+                LayersTraceLifecycle(
+                    ElementLifecycleExtractorTestConst
+                        .expectedElementLifecyclesVisibilityAssertionProducer
+                        as MutableMap<ComponentNameMatcher, LayersComponentLifecycle>
+                )
+            )
         val layersVisibilityAssertionProducer = LayersVisibilityAssertionProducer()
-        assertions = layersVisibilityAssertionProducer.produce(
-            elementLifecycles.map{ lifecycle ->
-                TraceContent.byTraceType(lifecycle, emptyDeviceTraceConfiguration)!!
-            }
-        )
+        assertions =
+            layersVisibilityAssertionProducer.produce(
+                elementLifecycles.map { lifecycle ->
+                    TraceContent.byTraceType(lifecycle, emptyDeviceTraceConfiguration)!!
+                }
+            )
     }
 
     private fun createExecuteLayersTrace() {
-        executeLayersTrace = ElementLifecycleExtractorTestConst.createTrace_arg(
-            ElementLifecycleExtractorTestConst.mapOfFlattenedLayersAssertionProducer
-        )
+        executeLayersTrace =
+            ElementLifecycleExtractorTestConst.createTrace_arg(
+                ElementLifecycleExtractorTestConst.mapOfFlattenedLayersAssertionProducer
+            )
     }
 
     private fun produceAssertionsSameComponentMatcherFromTestTrace() {
-        val elementLifecycles = listOf(LayersTraceLifecycle(
-            ElementLifecycleExtractorTestConst.expectedElementLifecycles_SameComponentMatcher
-                as MutableMap<ComponentNameMatcher, LayersComponentLifecycle>))
+        val elementLifecycles =
+            listOf(
+                LayersTraceLifecycle(
+                    ElementLifecycleExtractorTestConst
+                        .expectedElementLifecycles_SameComponentMatcher
+                        as MutableMap<ComponentNameMatcher, LayersComponentLifecycle>
+                )
+            )
         val layersVisibilityAssertionProducer = LayersVisibilityAssertionProducer()
         assertionsSameComponentMatcher =
             layersVisibilityAssertionProducer.produce(
-                elementLifecycles.map{ lifecycle ->
+                elementLifecycles.map { lifecycle ->
                     TraceContent.byTraceType(lifecycle, emptyDeviceTraceConfiguration)!!
                 }
             )
     }
 
     private fun produceAssertionsConfigFromTestTrace() {
-        val elementLifecycles = listOf(LayersTraceLifecycle(
-            ElementLifecycleExtractorTestConst.expectedElementLifecycles_OpenApp
-                as MutableMap<ComponentNameMatcher, LayersComponentLifecycle>))
+        val elementLifecycles =
+            listOf(
+                LayersTraceLifecycle(
+                    ElementLifecycleExtractorTestConst.expectedElementLifecycles_OpenApp
+                        as MutableMap<ComponentNameMatcher, LayersComponentLifecycle>
+                )
+            )
         val layersVisibilityAssertionProducer = LayersVisibilityAssertionProducer()
         assertionsConfig =
             layersVisibilityAssertionProducer.produce(
-                elementLifecycles.map{ lifecycle ->
+                elementLifecycles.map { lifecycle ->
                     TraceContent.byTraceType(lifecycle, AssertionProducerTestConst.openAppConfig)!!
                 }
             )
     }
 
     private fun createExecuteSameComponentMatcherLayersTrace() {
-        executeSameComponentMatcherLayersTrace = ElementLifecycleExtractorTestConst.createTrace_arg(
-            ElementLifecycleExtractorTestConst.mapOfFlattenedLayersAssertionProducer
-        )
+        executeSameComponentMatcherLayersTrace =
+            ElementLifecycleExtractorTestConst.createTrace_arg(
+                ElementLifecycleExtractorTestConst.mapOfFlattenedLayersAssertionProducer
+            )
     }
 
     private fun produceAssertionFailFromTestTrace() {
-        val elementLifecycles = listOf(LayersTraceLifecycle(
-            ElementLifecycleExtractorTestConst.expectedElementLifecyclesAllVisibilityAssertions
-                as MutableMap<ComponentNameMatcher, LayersComponentLifecycle>))
+        val elementLifecycles =
+            listOf(
+                LayersTraceLifecycle(
+                    ElementLifecycleExtractorTestConst
+                        .expectedElementLifecyclesAllVisibilityAssertions
+                        as MutableMap<ComponentNameMatcher, LayersComponentLifecycle>
+                )
+            )
         val layersVisibilityAssertionProducer = LayersVisibilityAssertionProducer()
-        val assertions = layersVisibilityAssertionProducer.produce(
-            elementLifecycles.map{ lifecycle ->
-                TraceContent.byTraceType(lifecycle, emptyDeviceTraceConfiguration)!!
-            }
-        )
+        val assertions =
+            layersVisibilityAssertionProducer.produce(
+                elementLifecycles.map { lifecycle ->
+                    TraceContent.byTraceType(lifecycle, emptyDeviceTraceConfiguration)!!
+                }
+            )
         assertionFail = assertions[0]
     }
 
@@ -151,8 +175,10 @@ class LayersVisibilityAssertionProducerTest {
         assertions.forEachIndexed { index, assertion ->
             try {
                 Truth.assertThat(
-                    AssertionProducerTestConst.expected_layer_visibility_assertions[index]
-                        .isEqual(assertion)).isTrue()
+                        AssertionProducerTestConst.expected_layer_visibility_assertions[index]
+                            .isEqual(assertion)
+                    )
+                    .isTrue()
             } catch (err: AssertionError) {
                 throw RuntimeException(
                     "$err\nExpected:\n" +
@@ -174,13 +200,19 @@ class LayersVisibilityAssertionProducerTest {
 
     fun produceFromTestTrace_assertions_sameComponentMatcher_expected() {
         Truth.assertThat(assertionsSameComponentMatcher.size)
-            .isEqualTo(AssertionProducerTestConst
-                .expected_layer_visibility_assertions_sameComponentMatcher.size)
+            .isEqualTo(
+                AssertionProducerTestConst.expected_layer_visibility_assertions_sameComponentMatcher
+                    .size
+            )
         assertionsSameComponentMatcher.forEachIndexed { index, assertion ->
             try {
-                Truth.assertThat(assertion.isEqual(AssertionProducerTestConst
-                    .expected_layer_visibility_assertions_sameComponentMatcher[index])
-                ).isTrue()
+                Truth.assertThat(
+                        assertion.isEqual(
+                            AssertionProducerTestConst
+                                .expected_layer_visibility_assertions_sameComponentMatcher[index]
+                        )
+                    )
+                    .isTrue()
             } catch (err: AssertionError) {
                 throw RuntimeException(
                     "$err\nExpected:\n" +
@@ -195,8 +227,10 @@ class LayersVisibilityAssertionProducerTest {
     @Test
     fun produceFromTestTrace_assertionSameComponent_execute() {
         assertionsSameComponentMatcher.forEachIndexed { index, assertion ->
-            assertion
-                .execute(executeSameComponentMatcherLayersTrace, sameComponentMatcherTransition)
+            assertion.execute(
+                executeSameComponentMatcherLayersTrace,
+                sameComponentMatcherTransition
+            )
         }
         produceFromTestTrace_assertions_sameComponentMatcher_expected()
     }
@@ -204,13 +238,19 @@ class LayersVisibilityAssertionProducerTest {
     @Test
     fun produceFromTestTrace_assertionConfig_expected() {
         Truth.assertThat(assertionsConfig.size)
-            .isEqualTo(AssertionProducerTestConst
-                .expected_layer_visibility_assertions_sameComponentMatcher.size)
+            .isEqualTo(
+                AssertionProducerTestConst.expected_layer_visibility_assertions_sameComponentMatcher
+                    .size
+            )
         assertionsConfig.forEachIndexed { index, assertion ->
             try {
-                Truth.assertThat(assertion.isEqual(AssertionProducerTestConst
-                    .expected_layer_visibility_assertions_openApp[index])
-                ).isTrue()
+                Truth.assertThat(
+                        assertion.isEqual(
+                            AssertionProducerTestConst.expected_layer_visibility_assertions_openApp[
+                                    index]
+                        )
+                    )
+                    .isTrue()
             } catch (err: AssertionError) {
                 throw RuntimeException(
                     "$err\nExpected:\n" +
@@ -224,65 +264,60 @@ class LayersVisibilityAssertionProducerTest {
 
     @Test
     fun produceFromTestTrace_assertions_fail1() {
-        val layersTrace = ElementLifecycleExtractorTestConst.createTrace_arg(
-            ElementLifecycleExtractorTestConst.mapOfFlattenedLayersAllVisibilityAssertions_fail1
-        )
-        val error = assertThrows(AssertionError::class.java) {
-            assertionFail.execute(layersTrace, failTransition)
-        }
-        assertFailure(error)
-            .factValue("Assertion")
-            .contains("notContains(StatusBar)")
-        assertFailure(error)
-            .factValue("Found")
-            .contains("Layer:StatusBar")
+        val layersTrace =
+            ElementLifecycleExtractorTestConst.createTrace_arg(
+                ElementLifecycleExtractorTestConst.mapOfFlattenedLayersAllVisibilityAssertions_fail1
+            )
+        val error =
+            assertThrows(AssertionError::class.java) {
+                assertionFail.execute(layersTrace, failTransition)
+            }
+        assertFailure(error).factValue("Assertion").contains("notContains(StatusBar)")
+        assertFailure(error).factValue("Found").contains("Layer:StatusBar")
     }
 
     @Test
     fun produceFromTestTrace_assertions_fail2() {
-        val layersTrace = ElementLifecycleExtractorTestConst.createTrace_arg(
-            ElementLifecycleExtractorTestConst.mapOfFlattenedLayersAllVisibilityAssertions_fail2
-        )
-        val error = assertThrows(AssertionError::class.java) {
-            assertionFail.execute(layersTrace, failTransition)
-        }
-        assertFailure(error)
-            .factValue("Passed")
-            .contains("notContains(StatusBar)")
-        assertFailure(error)
-            .factValue("Assertion never failed")
-            .contains("isVisible(StatusBar)")
-        assertFailure(error)
-            .factValue("Untested")
-            .contains("isInvisible(StatusBar)")
+        val layersTrace =
+            ElementLifecycleExtractorTestConst.createTrace_arg(
+                ElementLifecycleExtractorTestConst.mapOfFlattenedLayersAllVisibilityAssertions_fail2
+            )
+        val error =
+            assertThrows(AssertionError::class.java) {
+                assertionFail.execute(layersTrace, failTransition)
+            }
+        assertFailure(error).factValue("Passed").contains("notContains(StatusBar)")
+        assertFailure(error).factValue("Assertion never failed").contains("isVisible(StatusBar)")
+        assertFailure(error).factValue("Untested").contains("isInvisible(StatusBar)")
     }
 
     @Test
     fun produceFromTestTrace_assertions_fail3() {
-        val layersTrace = ElementLifecycleExtractorTestConst.createTrace_arg(
-            ElementLifecycleExtractorTestConst.mapOfFlattenedLayersAllVisibilityAssertions_fail3
-        )
-        val error = assertThrows(AssertionError::class.java) {
-            assertionFail.execute(layersTrace, failTransition)
-        }
-        assertFailure(error)
-            .factValue("Assertion never failed")
-            .contains("notContains(StatusBar)")
-        Truth.assertThat(error).hasMessageThat()
+        val layersTrace =
+            ElementLifecycleExtractorTestConst.createTrace_arg(
+                ElementLifecycleExtractorTestConst.mapOfFlattenedLayersAllVisibilityAssertions_fail3
+            )
+        val error =
+            assertThrows(AssertionError::class.java) {
+                assertionFail.execute(layersTrace, failTransition)
+            }
+        assertFailure(error).factValue("Assertion never failed").contains("notContains(StatusBar)")
+        Truth.assertThat(error)
+            .hasMessageThat()
             .contains("Untested              : isVisible(StatusBar)")
     }
 
     @Test
     fun produceFromTestTrace_assertions_fail4() {
-        val layersTrace = ElementLifecycleExtractorTestConst.createTrace_arg(
-            ElementLifecycleExtractorTestConst.mapOfFlattenedLayersAllVisibilityAssertions_fail4
-        )
-        val error = assertThrows(AssertionError::class.java) {
-            assertionFail.execute(layersTrace, failTransition)
-        }
-        assertFailure(error)
-            .factValue("Assertion")
-            .contains("isVisible(StatusBar)")
+        val layersTrace =
+            ElementLifecycleExtractorTestConst.createTrace_arg(
+                ElementLifecycleExtractorTestConst.mapOfFlattenedLayersAllVisibilityAssertions_fail4
+            )
+        val error =
+            assertThrows(AssertionError::class.java) {
+                assertionFail.execute(layersTrace, failTransition)
+            }
+        assertFailure(error).factValue("Assertion").contains("isVisible(StatusBar)")
         Truth.assertThat(error).hasMessageThat().contains("Is Invisible")
         Truth.assertThat(error).hasMessageThat().contains("Crop is 0x0")
     }
@@ -290,34 +325,32 @@ class LayersVisibilityAssertionProducerTest {
     @Test
     fun produceFromTraceFile_assertion_execute() {
         val path = "assertiongenerator/PASS_OpenAppColdTest_ROTATION_0_GESTURAL_NAV"
-        val transactionsTrace = readTransactionsTraceFromFile(
-            "$path/transactions_trace.winscope")
-        val transitionsTrace = readTransitionsTraceFromFile(
-            "$path/transition_trace.winscope", transactionsTrace)
-        val traceDump = getTestTraceDump(
-            "$path/",
-            "wm_trace.winscope",
-            "layers_trace.winscope"
-        )
+        val transactionsTrace = readTransactionsTraceFromFile("$path/transactions_trace.winscope")
+        val transitionsTrace =
+            readTransitionsTraceFromFile("$path/transition_trace.winscope", transactionsTrace)
+        val traceDump = getTestTraceDump("$path/", "wm_trace.winscope", "layers_trace.winscope")
         // val transition
         val layersTrace = traceDump.layersTrace
 
         val scenarioInstances = mutableListOf<ScenarioInstance>()
         for (scenario in Scenario.values()) {
             scenarioInstances.addAll(
-                scenario.getInstances(transitionsTrace) { m -> Log.d("AssertionEngineTest", m)})
+                scenario.getInstances(transitionsTrace) { m -> Log.d("AssertionEngineTest", m) }
+            )
         }
 
         layersTrace?.run {
             val assertions = produceAssertionsFromTraceDump(traceDump)
             // assert for expected nr of assertions too ->
-            // hard because not all element component matchers in traceLifecycle actually produce an assertion
+            // hard because not all element component matchers in traceLifecycle actually produce an
+            // assertion
             Truth.assertThat(assertions.isNotEmpty()).isTrue()
             for (scenarioInstance in scenarioInstances) {
                 assertions.forEachIndexed { index, assertion ->
                     assertion.execute(layersTrace, scenarioInstance.associatedTransition)
                 }
             }
-        } ?: throw RuntimeException("LayersTrace is null")
+        }
+            ?: throw RuntimeException("LayersTrace is null")
     }
 }

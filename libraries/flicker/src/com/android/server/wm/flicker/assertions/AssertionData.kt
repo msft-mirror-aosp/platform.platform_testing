@@ -20,21 +20,15 @@ import androidx.annotation.VisibleForTesting
 import com.android.server.wm.flicker.FlickerRunResult
 import kotlin.reflect.KClass
 
-/**
- * Class containing basic data about a trace assertion for Flicker DSL
- */
-data class AssertionData @VisibleForTesting constructor(
-    /**
-     * Segment of the trace where the assertion will be applied (e.g., start, end).
-     */
+/** Class containing basic data about a trace assertion for Flicker DSL */
+data class AssertionData
+@VisibleForTesting
+constructor(
+    /** Segment of the trace where the assertion will be applied (e.g., start, end). */
     @JvmField val tag: String,
-    /**
-     * Expected run result type
-     */
+    /** Expected run result type */
     @JvmField val expectedSubjectClass: KClass<out FlickerSubject>,
-    /**
-     * Assertion command
-     */
+    /** Assertion command */
     @JvmField val assertion: FlickerSubject.() -> Unit
 ) {
     /**

@@ -18,13 +18,10 @@ package com.android.server.wm.flicker.assertiongenerator.common
 
 import com.android.server.wm.traces.common.DeviceTraceDump
 
-interface ILifecycleExtractor
-{
+interface ILifecycleExtractor {
     /**
-     * Extracts the map of lifecycles corresponding to each single element
-     * key: element id, value: element lifecycle
+     * Extracts the map of lifecycles corresponding to each single element key: element id, value:
+     * element lifecycle
      */
-    fun extract(
-        traceDump: DeviceTraceDump
-    ): ITraceLifecycle?
+    fun extract(traceDump: DeviceTraceDump): ITraceLifecycle?
 }

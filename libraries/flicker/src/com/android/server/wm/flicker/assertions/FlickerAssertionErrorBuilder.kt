@@ -28,79 +28,80 @@ class FlickerAssertionErrorBuilder {
     private var traceFile: RunResultArtifacts? = null
     private var tag = ""
 
-    fun fromError(error: Throwable): FlickerAssertionErrorBuilder = apply {
-        this.error = error
-    }
+    fun fromError(error: Throwable): FlickerAssertionErrorBuilder = apply { this.error = error }
 
     fun withTrace(traceFile: RunResultArtifacts?): FlickerAssertionErrorBuilder = apply {
         this.traceFile = traceFile
     }
 
     fun atTag(tag: String): FlickerAssertionErrorBuilder = apply {
-        this.tag = when (tag) {
-            AssertionTag.START -> "before transition (initial state)"
-            AssertionTag.END -> "after transition (final state)"
-            AssertionTag.ALL -> "during transition"
-            else -> "at user-defined location ($tag)"
-        }
+        this.tag =
+            when (tag) {
+                AssertionTag.START -> "before transition (initial state)"
+                AssertionTag.END -> "after transition (final state)"
+                AssertionTag.ALL -> "during transition"
+                else -> "at user-defined location ($tag)"
+            }
     }
 
     fun build(): FlickerAssertionError {
         return FlickerAssertionError(errorMessage, rootCause, traceFile)
     }
 
-    private val errorMessage get() = buildString {
-        val error = error
-        requireNotNull(error)
-        if (error is FlickerSubjectException) {
-            appendLine(error.errorType)
+    private val errorMessage
+        get() = buildString {
+            val error = error
+            requireNotNull(error)
+            if (error is FlickerSubjectException) {
+                appendLine(error.errorType)
+                appendLine()
+                append(error.errorDescription)
+                appendLine()
+                append(error.subjectInformation)
+                append("\t").appendLine(Fact.fact("Location", tag))
+                appendLine()
+            } else {
+                appendLine(error.message)
+            }
+            append("Trace file:").append(traceFileMessage)
             appendLine()
-            append(error.errorDescription)
+            appendLine("Cause:")
+            append(rootCauseStackTrace)
             appendLine()
-            append(error.subjectInformation)
-            append("\t").appendLine(Fact.fact("Location", tag))
+            appendLine("Full stacktrace:")
             appendLine()
-        } else {
-            appendLine(error.message)
         }
-        append("Trace file:").append(traceFileMessage)
-        appendLine()
-        appendLine("Cause:")
-        append(rootCauseStackTrace)
-        appendLine()
-        appendLine("Full stacktrace:")
-        appendLine()
-    }
 
-    private val traceFileMessage get() = buildString {
-        traceFile?.path?.let {
-            append("\t")
-            append(it)
+    private val traceFileMessage
+        get() = buildString {
+            traceFile?.path?.let {
+                append("\t")
+                append(it)
+            }
         }
-    }
 
-    private val rootCauseStackTrace: String get() {
-        val rootCause = rootCause
-        return if (rootCause != null) {
-            val baos = ByteArrayOutputStream()
-            PrintStream(baos, true)
-                    .use { ps -> rootCause.printStackTrace(ps) }
-            "\t$baos"
-        } else {
-            ""
+    private val rootCauseStackTrace: String
+        get() {
+            val rootCause = rootCause
+            return if (rootCause != null) {
+                val baos = ByteArrayOutputStream()
+                PrintStream(baos, true).use { ps -> rootCause.printStackTrace(ps) }
+                "\t$baos"
+            } else {
+                ""
+            }
         }
-    }
 
     /**
-     * In some paths the exceptions are encapsulated by the Truth subjects
-     * To make sure the correct error is printed, located the first non-subject
-     * related exception and use that as cause.
+     * In some paths the exceptions are encapsulated by the Truth subjects To make sure the correct
+     * error is printed, located the first non-subject related exception and use that as cause.
      */
-    private val rootCause: Throwable? get() {
-        var childCause: Throwable? = this.error?.cause
-        if (childCause != null && childCause is FlickerSubjectException) {
-            childCause = childCause.cause
+    private val rootCause: Throwable?
+        get() {
+            var childCause: Throwable? = this.error?.cause
+            if (childCause != null && childCause is FlickerSubjectException) {
+                childCause = childCause.cause
+            }
+            return childCause
         }
-        return childCause
-    }
 }

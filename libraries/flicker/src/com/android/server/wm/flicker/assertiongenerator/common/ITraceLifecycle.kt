@@ -29,6 +29,5 @@ interface ITraceLifecycle {
 
     operator fun set(elementId: Any, elementLifecycles: IComponentLifecycle)
 
-    fun getOrPut(elementId: Any, elementLifecycles: IComponentLifecycle):
-            IComponentLifecycle
+    fun getOrPut(elementId: Any, elementLifecycles: IComponentLifecycle): IComponentLifecycle
 }

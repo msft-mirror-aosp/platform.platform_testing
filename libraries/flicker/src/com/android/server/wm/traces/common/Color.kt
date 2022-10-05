@@ -30,8 +30,7 @@ class Color private constructor(r: Float, g: Float, b: Float, val a: Float) : Co
     override val isNotEmpty: Boolean
         get() = !isEmpty
 
-    @JsName("isOpaque")
-    val isOpaque: Boolean = a == 1.0f
+    @JsName("isOpaque") val isOpaque: Boolean = a == 1.0f
 
     override fun prettyPrint(): String {
         val parentPrint = super.prettyPrint()
@@ -55,11 +54,11 @@ class Color private constructor(r: Float, g: Float, b: Float, val a: Float) : Co
     }
 
     companion object {
-        val EMPTY: Color get() = withCache { Color(r = -1f, g = -1f, b = -1f, a = 0f) }
-        val DEFAULT: Color get() = withCache { Color(r = 0f, g = 0f, b = 0f, a = 1f) }
+        val EMPTY: Color
+            get() = withCache { Color(r = -1f, g = -1f, b = -1f, a = 0f) }
+        val DEFAULT: Color
+            get() = withCache { Color(r = 0f, g = 0f, b = 0f, a = 1f) }
 
-        fun from(r: Float, g: Float, b: Float, a: Float): Color = withCache {
-            Color(r, g, b, a)
-        }
+        fun from(r: Float, g: Float, b: Float, a: Float): Color = withCache { Color(r, g, b, a) }
     }
 }

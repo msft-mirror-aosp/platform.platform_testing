@@ -31,10 +31,7 @@ import org.junit.FixMethodOrder
 import org.junit.Test
 import org.junit.runners.MethodSorters
 
-/**
- * Contains [LayersTrace] tests. To run this test:
- * `atest FlickerLibTest:LayersTraceTest`
- */
+/** Contains [LayersTrace] tests. To run this test: `atest FlickerLibTest:LayersTraceTest` */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class LayersTraceTest {
     private fun detectRootLayer(fileName: String) {
@@ -69,9 +66,7 @@ class LayersTraceTest {
     @Test
     fun canParseFromDumpWithDisplay() {
         val trace = readLayerTraceFromFile("layers_dump_with_display.pb")
-        Truth.assertWithMessage("Dump is not empty")
-            .that(trace)
-            .isNotEmpty()
+        Truth.assertWithMessage("Dump is not empty").that(trace).isNotEmpty()
         Truth.assertWithMessage("Dump contains display is not empty")
             .that(trace.first().displays)
             .asList()
@@ -82,23 +77,25 @@ class LayersTraceTest {
     fun canTestLayerOccludedByAppLayerHasVisibleRegion() {
         val trace = readLayerTraceFromFile("layers_trace_occluded.pb")
         val entry = trace.getEntry(1700382131522L)
-        val component = ComponentNameMatcher("",
-            "com.android.server.wm.flicker.testapp.SimpleActivity#0")
+        val component =
+            ComponentNameMatcher("", "com.android.server.wm.flicker.testapp.SimpleActivity#0")
         val layer = entry.getLayerWithBuffer(component)
         Truth.assertWithMessage("App should be visible")
-                .that(layer?.visibleRegion?.isEmpty).isFalse()
+            .that(layer?.visibleRegion?.isEmpty)
+            .isFalse()
         Truth.assertWithMessage("App should visible region")
-                .that(layer?.visibleRegion?.toString())
-                .contains("SkRegion((346,1583,1094,2839))")
+            .that(layer?.visibleRegion?.toString())
+            .contains("SkRegion((346,1583,1094,2839))")
 
-        val splashScreenComponent = ComponentNameMatcher("",
-            "Splash Screen com.android.server.wm.flicker.testapp#0")
+        val splashScreenComponent =
+            ComponentNameMatcher("", "Splash Screen com.android.server.wm.flicker.testapp#0")
         val splashScreenLayer = entry.getLayerWithBuffer(splashScreenComponent)
         Truth.assertWithMessage("Splash screen should be visible")
-                .that(splashScreenLayer?.visibleRegion?.isEmpty).isFalse()
+            .that(splashScreenLayer?.visibleRegion?.isEmpty)
+            .isFalse()
         Truth.assertWithMessage("Splash screen visible region")
-                .that(splashScreenLayer?.visibleRegion?.toString())
-                .contains("SkRegion((346,1583,1094,2839))")
+            .that(splashScreenLayer?.visibleRegion?.toString())
+            .contains("SkRegion((346,1583,1094,2839))")
     }
 
     @Test
@@ -111,23 +108,27 @@ class LayersTraceTest {
         val occludedBy = layer?.occludedBy ?: emptyArray()
         val partiallyOccludedBy = layer?.partiallyOccludedBy ?: emptyArray()
         Truth.assertWithMessage("Layer $layerName should not be occluded")
-                .that(occludedBy).isEmpty()
+            .that(occludedBy)
+            .isEmpty()
         Truth.assertWithMessage("Layer $layerName should be partially occluded")
-                .that(partiallyOccludedBy).isNotEmpty()
+            .that(partiallyOccludedBy)
+            .isNotEmpty()
         Truth.assertWithMessage("Layer $layerName should be partially occluded")
-                .that(partiallyOccludedBy.joinToString())
-                .contains("Splash Screen com.android.server.wm.flicker.testapp#0 buffer:w:1440, " +
-                        "h:3040, stride:1472, format:1 frame#1 visible:" +
-                        "SkRegion((346,1583,1094,2839))")
+            .that(partiallyOccludedBy.joinToString())
+            .contains(
+                "Splash Screen com.android.server.wm.flicker.testapp#0 buffer:w:1440, " +
+                    "h:3040, stride:1472, format:1 frame#1 visible:" +
+                    "SkRegion((346,1583,1094,2839))"
+            )
     }
 
     @Test
     fun exceptionContainsDebugInfo() {
         val layersTraceEntries = readLayerTraceFromFile("layers_trace_emptyregion.pb")
-        val error = assertThrows(AssertionError::class.java) {
-            LayersTraceSubject.assertThat(layersTraceEntries)
-                    .isEmpty()
-        }
+        val error =
+            assertThrows(AssertionError::class.java) {
+                LayersTraceSubject.assertThat(layersTraceEntries).isEmpty()
+            }
         assertThatErrorContainsDebugInfo(error, withBlameEntry = false)
     }
 
@@ -162,8 +163,8 @@ class LayersTraceTest {
         val splitLayersTrace = mockTraceForSliceTests.slice(from, to)
         Truth.assertThat(splitLayersTrace).isEmpty()
 
-        val splitLayersTraceWithInitialEntry = mockTraceForSliceTests
-            .slice(from, to, addInitialEntry = true)
+        val splitLayersTraceWithInitialEntry =
+            mockTraceForSliceTests.slice(from, to, addInitialEntry = true)
         Truth.assertThat(splitLayersTraceWithInitialEntry).hasSize(1)
         Truth.assertThat(splitLayersTraceWithInitialEntry.first().timestamp)
             .isEqualTo(mockTraceForSliceTests.last().timestamp)
@@ -177,16 +178,15 @@ class LayersTraceTest {
     @Test
     fun canSlice_fromBeforeFirstEntryToMiddle() {
         testSlice(
-            mockTraceForSliceTests.first().timestamp - 1, 27L,
+            mockTraceForSliceTests.first().timestamp - 1,
+            27L,
             listOf(5L, 8L, 15L, 18L, 25L, 27L)
         )
     }
 
     @Test
     fun canSlice_fromMiddleToAfterLastEntry() {
-        testSlice(18L, mockTraceForSliceTests.last().timestamp + 5,
-            listOf(18L, 25L, 27L, 30L)
-        )
+        testSlice(18L, mockTraceForSliceTests.last().timestamp + 5, listOf(18L, 25L, 27L, 30L))
     }
 
     @Test
@@ -218,20 +218,12 @@ class LayersTraceTest {
 
     @Test
     fun canSlice_fromExactStartToMiddle() {
-        testSlice(
-            mockTraceForSliceTests.first().timestamp,
-            18L,
-            listOf(5L, 8L, 15L, 18L)
-        )
+        testSlice(mockTraceForSliceTests.first().timestamp, 18L, listOf(5L, 8L, 15L, 18L))
     }
 
     @Test
     fun canSlice_fromMiddleToExactEnd() {
-        testSlice(
-            18L,
-            mockTraceForSliceTests.last().timestamp,
-            listOf(18L, 25L, 27L, 30L)
-        )
+        testSlice(18L, mockTraceForSliceTests.last().timestamp, listOf(18L, 25L, 27L, 30L))
     }
 
     @Test
@@ -256,12 +248,10 @@ class LayersTraceTest {
         val toBefore = to < mockTraceForSliceTests.first().timestamp
         val toAfter = mockTraceForSliceTests.last().timestamp < to
 
-        require(fromBefore || fromAfter ||
-            mockTraceForSliceTests.map { it.timestamp }.contains(from)) {
-            "`from` need to be in the trace or before or after all entries"
-        }
-        require(toBefore || toAfter ||
-            mockTraceForSliceTests.map { it.timestamp }.contains(to)) {
+        require(
+            fromBefore || fromAfter || mockTraceForSliceTests.map { it.timestamp }.contains(from)
+        ) { "`from` need to be in the trace or before or after all entries" }
+        require(toBefore || toAfter || mockTraceForSliceTests.map { it.timestamp }.contains(to)) {
             "`to` need to be in the trace or before or after all entries"
         }
 
@@ -292,20 +282,25 @@ class LayersTraceTest {
     }
 
     private fun testSliceWithInitialEntry(from: Long, to: Long, expected: List<Long>) {
-        val splitLayersTraceWithStartEntry = mockTraceForSliceTests
-            .slice(from, to, addInitialEntry = true)
+        val splitLayersTraceWithStartEntry =
+            mockTraceForSliceTests.slice(from, to, addInitialEntry = true)
         Truth.assertThat(splitLayersTraceWithStartEntry.map { it.timestamp }).isEqualTo(expected)
     }
 
     companion object {
-        val mockTraceForSliceTests = MockLayersTraceBuilder(entries = mutableListOf(
-            MockLayerTraceEntryBuilder(timestamp = 5),
-            MockLayerTraceEntryBuilder(timestamp = 8),
-            MockLayerTraceEntryBuilder(timestamp = 15),
-            MockLayerTraceEntryBuilder(timestamp = 18),
-            MockLayerTraceEntryBuilder(timestamp = 25),
-            MockLayerTraceEntryBuilder(timestamp = 27),
-            MockLayerTraceEntryBuilder(timestamp = 30),
-        )).build()
+        val mockTraceForSliceTests =
+            MockLayersTraceBuilder(
+                    entries =
+                        mutableListOf(
+                            MockLayerTraceEntryBuilder(timestamp = 5),
+                            MockLayerTraceEntryBuilder(timestamp = 8),
+                            MockLayerTraceEntryBuilder(timestamp = 15),
+                            MockLayerTraceEntryBuilder(timestamp = 18),
+                            MockLayerTraceEntryBuilder(timestamp = 25),
+                            MockLayerTraceEntryBuilder(timestamp = 27),
+                            MockLayerTraceEntryBuilder(timestamp = 30),
+                        )
+                )
+                .build()
     }
 }

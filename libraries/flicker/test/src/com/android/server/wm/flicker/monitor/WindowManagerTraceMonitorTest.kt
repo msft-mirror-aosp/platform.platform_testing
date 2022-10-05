@@ -32,8 +32,11 @@ class WindowManagerTraceMonitorTest : TraceMonitorTest<WindowManagerTraceMonitor
     override fun assertTrace(traceData: ByteArray) {
         val trace = WindowManagerTraceFileProto.parseFrom(traceData)
         Truth.assertThat(trace.magicNumber)
-                .isEqualTo(WindowManagerTraceFileProto.MAGIC_NUMBER_H.toLong() shl 32
-                        or WindowManagerTraceFileProto.MAGIC_NUMBER_L.toLong())
+            .isEqualTo(
+                WindowManagerTraceFileProto.MAGIC_NUMBER_H.toLong() shl
+                    32 or
+                    WindowManagerTraceFileProto.MAGIC_NUMBER_L.toLong()
+            )
     }
 
     @Test
@@ -44,8 +47,6 @@ class WindowManagerTraceMonitorTest : TraceMonitorTest<WindowManagerTraceMonitor
             device.pressRecentApps()
         }
 
-        Truth.assertWithMessage("Could not obtain WM trace")
-            .that(trace.entries)
-            .isNotEmpty()
+        Truth.assertWithMessage("Could not obtain WM trace").that(trace.entries).isNotEmpty()
     }
 }

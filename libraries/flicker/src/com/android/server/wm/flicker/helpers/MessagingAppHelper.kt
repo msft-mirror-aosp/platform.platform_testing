@@ -30,10 +30,9 @@ import com.android.server.wm.traces.common.ComponentNameMatcher
 class MessagingAppHelper(
     instrumentation: Instrumentation,
     private val pkgManager: PackageManager = instrumentation.context.packageManager
-) : StandardAppHelper(
-        instrumentation, "SampleApp", getMessagesComponent(pkgManager)
-) {
-    override fun getOpenAppIntent(): Intent = pkgManager.getLaunchIntentForPackage(packageName)
+) : StandardAppHelper(instrumentation, "SampleApp", getMessagesComponent(pkgManager)) {
+    override fun getOpenAppIntent(): Intent =
+        pkgManager.getLaunchIntentForPackage(packageName)
             ?: error("Unable to find intent for browser")
 
     companion object {
@@ -45,7 +44,8 @@ class MessagingAppHelper(
 
         private fun getMessagesComponent(pkgManager: PackageManager): ComponentNameMatcher {
             val intent = getMessagesIntent()
-            val resolveInfo = pkgManager.resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY)
+            val resolveInfo =
+                pkgManager.resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY)
                     ?: error("Unable to resolve browser activity")
             return ComponentNameMatcher(resolveInfo.activityInfo.packageName, className = "")
         }

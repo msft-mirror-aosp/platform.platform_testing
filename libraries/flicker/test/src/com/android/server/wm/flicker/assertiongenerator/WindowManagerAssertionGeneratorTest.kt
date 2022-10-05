@@ -39,12 +39,11 @@ class WindowManagerAssertionGeneratorTest {
     private lateinit var assertionGen: WindowManagerAssertionGenerator
     lateinit var assertions: Array<AssertionObject>
 
-    fun setup(traceDump: DeviceTraceDump, scenario: Scenario){
+    fun setup(traceDump: DeviceTraceDump, scenario: Scenario) {
         this.traceDump = traceDump
         wmTrace = traceDump.wmTrace
         this.scenario = scenario
-        val config = mutableMapOf<Scenario,
-                Array<WindowManagerTrace>>()
+        val config = mutableMapOf<Scenario, Array<WindowManagerTrace>>()
         configTraceArray = (wmTrace?.let { arrayOf(wmTrace!!) } ?: run { emptyArray() })
         config[scenario] = configTraceArray
         this.config = config
@@ -53,32 +52,34 @@ class WindowManagerAssertionGeneratorTest {
     }
 
     @Test
-    fun getTracesForScenario_valid(){
+    fun getTracesForScenario_valid() {
         setup(
             getTestTraceDump(
-            "tracefile_reader_data/",
-            "wm_trace.winscope",
-            "layers_trace.winscope"),
-            Scenario.APP_LAUNCH)
+                "tracefile_reader_data/",
+                "wm_trace.winscope",
+                "layers_trace.winscope"
+            ),
+            Scenario.APP_LAUNCH
+        )
         assert(config[scenario].contentEquals(arrayOf(wmTrace)))
     }
 
     @Test
     fun getAssertionsForScenario_valid_APP_LAUNCH() {
-        setup(getTestTraceDump(
-            "tracefile_reader_data/",
-            "wm_trace.winscope",
-            "layers_trace.winscope"),
-            Scenario.APP_LAUNCH)
+        setup(
+            getTestTraceDump(
+                "tracefile_reader_data/",
+                "wm_trace.winscope",
+                "layers_trace.winscope"
+            ),
+            Scenario.APP_LAUNCH
+        )
         assert(assertions.contentEquals(expectedAppLaunchAssertions))
     }
 
     @Test
-    fun getAssertionsForScenario_nullTrace(){
-        setup(
-            DeviceTraceDump(null, null),
-            Scenario.APP_LAUNCH
-        )
+    fun getAssertionsForScenario_nullTrace() {
+        setup(DeviceTraceDump(null, null), Scenario.APP_LAUNCH)
         assert(assertions.isEmpty())
     }
 }

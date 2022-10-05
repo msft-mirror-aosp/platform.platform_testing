@@ -15,6 +15,7 @@
  */
 
 @file:JvmName("Extensions")
+
 package com.android.server.wm.flicker.monitor
 
 import com.android.server.wm.flicker.getDefaultFlickerOutputDir
@@ -27,8 +28,8 @@ import com.android.server.wm.traces.parser.windowmanager.WindowManagerTraceParse
 import java.nio.file.Path
 
 /**
- * Acquire the [WindowManagerTrace] with the device state changes that happen when executing
- * the commands defined in the [predicate].
+ * Acquire the [WindowManagerTrace] with the device state changes that happen when executing the
+ * commands defined in the [predicate].
  *
  * @param outputDir Directory where to store the traces
  * @param predicate Commands to execute
@@ -40,12 +41,13 @@ fun withWMTracing(
     predicate: () -> Unit
 ): WindowManagerTrace {
     return WindowManagerTraceParser.parseFromTrace(
-        WindowManagerTraceMonitor(outputDir).withTracing(predicate))
+        WindowManagerTraceMonitor(outputDir).withTracing(predicate)
+    )
 }
 
 /**
- * Acquire the [LayersTrace] with the device state changes that happen when executing
- * the commands defined in the [predicate].
+ * Acquire the [LayersTrace] with the device state changes that happen when executing the commands
+ * defined in the [predicate].
  *
  * @param traceFlags Flags to indicate tracing level
  * @param outputDir Directory where to store the traces
@@ -59,12 +61,13 @@ fun withSFTracing(
     predicate: () -> Unit
 ): LayersTrace {
     return LayersTraceParser.parseFromTrace(
-        LayersTraceMonitor(outputDir, traceFlags = traceFlags).withTracing(predicate))
+        LayersTraceMonitor(outputDir, traceFlags = traceFlags).withTracing(predicate)
+    )
 }
 
 /**
- * Acquire the [WindowManagerTrace] and [LayersTrace] with the device state changes that happen
- * when executing the commands defined in the [predicate].
+ * Acquire the [WindowManagerTrace] and [LayersTrace] with the device state changes that happen when
+ * executing the commands defined in the [predicate].
  *
  * @param outputDir Directory where to store the traces
  * @param predicate Commands to execute
@@ -82,8 +85,8 @@ fun withTracing(
 }
 
 /**
- * Acquire the [WindowManagerTrace] and [LayersTrace] with the device state changes that happen
- * when executing the commands defined in the [predicate].
+ * Acquire the [WindowManagerTrace] and [LayersTrace] with the device state changes that happen when
+ * executing the commands defined in the [predicate].
  *
  * @param outputDir Directory where to store the traces
  * @param predicate Commands to execute
@@ -97,10 +100,11 @@ fun recordTraces(
 ): Pair<ByteArray, ByteArray> {
     var wmTraceData = ByteArray(0)
     val layersOutputDir = outputDir.resolve("withSFTracing")
-    val layersTraceData = LayersTraceMonitor(layersOutputDir).withTracing {
-        val wmOutputDir = outputDir.resolve("withWMTracing")
-        wmTraceData = WindowManagerTraceMonitor(wmOutputDir).withTracing(predicate)
-    }
+    val layersTraceData =
+        LayersTraceMonitor(layersOutputDir).withTracing {
+            val wmOutputDir = outputDir.resolve("withWMTracing")
+            wmTraceData = WindowManagerTraceMonitor(wmOutputDir).withTracing(predicate)
+        }
 
     return Pair(wmTraceData, layersTraceData)
 }

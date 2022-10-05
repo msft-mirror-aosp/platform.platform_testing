@@ -15,6 +15,7 @@
  */
 
 @file:JvmName("Extensions")
+
 package com.android.server.wm.flicker
 
 import java.nio.file.Paths
@@ -22,13 +23,10 @@ import java.nio.file.Paths
 internal const val FLICKER_TAG = "FLICKER"
 
 /**
- * Gets the default flicker output dir.
- * By default the data is stored in /sdcard/flicker instead of
- * using the app's internal data directory to be accessible by
- * other components (i.e. FilePuller)
+ * Gets the default flicker output dir. By default the data is stored in /sdcard/flicker instead of
+ * using the app's internal data directory to be accessible by other components (i.e. FilePuller)
  */
-fun getDefaultFlickerOutputDir() =
-        Paths.get("/sdcard/flicker")
+fun getDefaultFlickerOutputDir() = Paths.get("/sdcard/flicker")
 
 internal fun String.containsAny(vararg values: String): Boolean {
     return values.isEmpty() || values.any { search -> this.contains(search) }

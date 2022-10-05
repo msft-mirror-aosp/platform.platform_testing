@@ -24,14 +24,14 @@ package com.android.server.wm.flicker.assertions
 typealias Assertion<T> = (T) -> Unit
 
 /**
- * Utility class to store assertions with an identifier to help generate more useful debug data
- * when dealing with multiple assertions.
+ * Utility class to store assertions with an identifier to help generate more useful debug data when
+ * dealing with multiple assertions.
  *
  * @param assertion Assertion to execute
  * @param name Assertion name
  * @param isOptional If the assertion is optional (can fail) or not (must pass)
  */
-open class NamedAssertion<T> (
+open class NamedAssertion<T>(
     private val assertion: Assertion<T>,
     open val name: String,
     open val isOptional: Boolean = false
@@ -41,11 +41,10 @@ open class NamedAssertion<T> (
     override fun toString(): String = "Assertion($name)${if (isOptional) "[optional]" else ""}"
 
     /**
-    * We can't check the actual assertion is the same.
-    * We are checking for the name, which should have a 1:1 correspondence with the assertion,
-    * but there is no actual guarantee of the same execution of the assertion even if isEqual()
-    * is true.
-    */
+     * We can't check the actual assertion is the same. We are checking for the name, which should
+     * have a 1:1 correspondence with the assertion, but there is no actual guarantee of the same
+     * execution of the assertion even if isEqual() is true.
+     */
     open fun isEqual(other: Any?): Boolean {
         if (other !is NamedAssertion<*>) {
             return false
@@ -60,9 +59,7 @@ open class NamedAssertion<T> (
     }
 }
 
-/**
- * Utility class to store assertions composed of multiple individual assertions
- */
+/** Utility class to store assertions composed of multiple individual assertions */
 class CompoundAssertion<T>(assertion: Assertion<T>, name: String, optional: Boolean) :
     NamedAssertion<T>(assertion, name) {
     private val assertions = mutableListOf<NamedAssertion<T>>()
@@ -80,12 +77,12 @@ class CompoundAssertion<T>(assertion: Assertion<T>, name: String, optional: Bool
     /**
      * Executes all [assertions] on [target]
      *
-     * In case of failure, returns the first non-optional failure (if available)
-     * or the first failed assertion
+     * In case of failure, returns the first non-optional failure (if available) or the first failed
+     * assertion
      */
     override fun invoke(target: T) {
-        val failures = assertions
-            .mapNotNull { assertion ->
+        val failures =
+            assertions.mapNotNull { assertion ->
                 val error = kotlin.runCatching { assertion.invoke(target) }.exceptionOrNull()
                 if (error != null) {
                     Pair(assertion, error)
@@ -120,9 +117,7 @@ class CompoundAssertion<T>(assertion: Assertion<T>, name: String, optional: Bool
         return true
     }
 
-    /**
-     * Adds a new assertion to the list
-     */
+    /** Adds a new assertion to the list */
     fun add(assertion: Assertion<T>, name: String, optional: Boolean) {
         assertions.add(NamedAssertion(assertion, name, optional))
     }

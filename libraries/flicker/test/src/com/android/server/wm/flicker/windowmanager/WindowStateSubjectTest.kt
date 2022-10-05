@@ -27,7 +27,8 @@ import org.junit.Before
 import org.junit.Test
 
 class WindowStateSubjectTest {
-    private val trace get() = readWmTraceFromFile("wm_trace_openchrome.pb")
+    private val trace
+        get() = readWmTraceFromFile("wm_trace_openchrome.pb")
 
     @Before
     fun before() {
@@ -36,22 +37,24 @@ class WindowStateSubjectTest {
 
     @Test
     fun exceptionContainsDebugInfoImaginary() {
-        val error = assertThrows(AssertionError::class.java) {
-            WindowManagerTraceSubject.assertThat(trace).first()
-                .windowState(TestComponents.IMAGINARY.className).exists()
-        }
+        val error =
+            assertThrows(AssertionError::class.java) {
+                WindowManagerTraceSubject.assertThat(trace)
+                    .first()
+                    .windowState(TestComponents.IMAGINARY.className)
+                    .exists()
+            }
         assertThatErrorContainsDebugInfo(error)
-        Truth.assertThat(error)
-            .hasMessageThat()
-            .contains(TestComponents.IMAGINARY.className)
+        Truth.assertThat(error).hasMessageThat().contains(TestComponents.IMAGINARY.className)
         Truth.assertThat(error).hasMessageThat().contains("Window title")
     }
 
     @Test
     fun exceptionContainsDebugInfoConcrete() {
-        val error = assertThrows(AssertionError::class.java) {
-            WindowManagerTraceSubject.assertThat(trace).first().subjects.first().doesNotExist()
-        }
+        val error =
+            assertThrows(AssertionError::class.java) {
+                WindowManagerTraceSubject.assertThat(trace).first().subjects.first().doesNotExist()
+            }
         assertThatErrorContainsDebugInfo(error)
     }
 }

@@ -26,11 +26,11 @@ import kotlin.js.JsName
 /**
  * Represents a single layer with links to its parent and child layers.
  *
- * This is a generic object that is reused by both Flicker and Winscope and cannot
- * access internal Java/Android functionality
- *
- **/
-class Layer private constructor(
+ * This is a generic object that is reused by both Flicker and Winscope and cannot access internal
+ * Java/Android functionality
+ */
+class Layer
+private constructor(
     val name: String,
     val id: Int,
     val parentId: Int,
@@ -48,7 +48,8 @@ class Layer private constructor(
      *
      * @return
      */
-    val isRootLayer: Boolean get() = parent == null
+    val isRootLayer: Boolean
+        get() = parent == null
 
     private val _children = mutableListOf<Layer>()
     private val _occludedBy = mutableListOf<Layer>()
@@ -106,8 +107,8 @@ class Layer private constructor(
      * @return
      */
     val isHiddenByParent: Boolean
-        get() = !isRootLayer &&
-            (parent?.isHiddenByPolicy == true || parent?.isHiddenByParent == true)
+        get() =
+            !isRootLayer && (parent?.isHiddenByPolicy == true || parent?.isHiddenByParent == true)
 
     /**
      * Gets a description of why the layer is (in)visible
@@ -135,9 +136,7 @@ class Layer private constructor(
                 reasons.add("Effect layer does not have color fill, shadow or blur")
             }
             if (_occludedBy.isNotEmpty()) {
-                val occludedByLayers = _occludedBy.joinToString(", ") {
-                    "${it.name} (${it.id})"
-                }
+                val occludedByLayers = _occludedBy.joinToString(", ") { "${it.name} (${it.id})" }
                 reasons.add("Layer is occluded by: $occludedByLayers")
             }
             if (visibleRegion?.isEmpty == true) {
@@ -351,12 +350,36 @@ class Layer private constructor(
             inputTransform: Transform,
             inputRegion: Region?
         ): Layer {
-            val properties = LayerProperties.from(visibleRegion,
-                activeBuffer, flags, bounds, color, isOpaque, shadowRadius, cornerRadius, type,
-                screenBounds, transform, sourceBounds, effectiveScalingMode,
-                bufferTransform, hwcCompositionType, hwcCrop, hwcFrame, backgroundBlurRadius, crop,
-                isRelativeOf, zOrderRelativeOfId, stackId, requestedTransform, requestedColor,
-                cornerRadiusCrop, inputTransform, inputRegion)
+            val properties =
+                LayerProperties.from(
+                    visibleRegion,
+                    activeBuffer,
+                    flags,
+                    bounds,
+                    color,
+                    isOpaque,
+                    shadowRadius,
+                    cornerRadius,
+                    type,
+                    screenBounds,
+                    transform,
+                    sourceBounds,
+                    effectiveScalingMode,
+                    bufferTransform,
+                    hwcCompositionType,
+                    hwcCrop,
+                    hwcFrame,
+                    backgroundBlurRadius,
+                    crop,
+                    isRelativeOf,
+                    zOrderRelativeOfId,
+                    stackId,
+                    requestedTransform,
+                    requestedColor,
+                    cornerRadiusCrop,
+                    inputTransform,
+                    inputRegion
+                )
             return Layer(name, id, parentId, z, currFrame, properties)
         }
     }

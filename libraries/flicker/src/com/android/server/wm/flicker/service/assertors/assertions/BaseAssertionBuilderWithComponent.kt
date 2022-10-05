@@ -19,9 +19,7 @@ package com.android.server.wm.flicker.service.assertors.assertions
 import com.android.server.wm.flicker.service.assertors.BaseAssertionBuilder
 import com.android.server.wm.flicker.service.assertors.ComponentBuilder
 
-/**
- * Base class for tests that require a [component] named window name
- */
+/** Base class for tests that require a [component] named window name */
 abstract class BaseAssertionBuilderWithComponent(val component: ComponentBuilder) :
     BaseAssertionBuilder() {
 

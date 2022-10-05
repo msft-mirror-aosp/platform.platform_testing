@@ -20,20 +20,19 @@ import kotlin.js.JsName
 
 /**
  * Representation of a matrix 3x3 used for layer transforms
- *
+ * ```
  *          |dsdx dsdy  tx|
- * matrix = |dtdx dtdy  ty|
+ * ```
+ * matrix = |dtdx dtdy ty|
+ * ```
  *          |0    0     1 |
+ * ```
  */
 open class Matrix22(
-    @JsName("dsdx")
-    val dsdx: Float,
-    @JsName("dtdx")
-    val dtdx: Float,
-    @JsName("dsdy")
-    val dsdy: Float,
-    @JsName("dtdy")
-    val dtdy: Float
+    @JsName("dsdx") val dsdx: Float,
+    @JsName("dtdx") val dtdx: Float,
+    @JsName("dsdy") val dsdy: Float,
+    @JsName("dtdy") val dtdy: Float
 ) {
     @JsName("prettyPrint")
     open fun prettyPrint(): String {
@@ -68,6 +67,7 @@ open class Matrix22(
 
     companion object {
         @JsName("EMPTY")
-        val EMPTY: Matrix22 get() = withCache { Matrix22(0f, 0f, 0f, 0f) }
+        val EMPTY: Matrix22
+            get() = withCache { Matrix22(0f, 0f, 0f, 0f) }
     }
 }

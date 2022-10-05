@@ -22,9 +22,7 @@ import com.android.server.wm.flicker.assertiongenerator.layers.LayersTraceLifecy
 import com.android.server.wm.flicker.assertiongenerator.windowmanager.WmTraceContent
 import com.android.server.wm.flicker.assertiongenerator.windowmanager.WmTraceLifecycle
 
-/**
- * Contains the trace information needed to produce an assertion.
- */
+/** Contains the trace information needed to produce an assertion. */
 open class TraceContent(
     open val traceLifecycle: ITraceLifecycle,
     open val traceConfiguration: DeviceTraceConfiguration?

@@ -8,39 +8,51 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /**
- * Contains [EventLogMonitor] tests. To run this test: {@code
- * atest FlickerLibTest:EventLogMonitorTest}
+ * Contains [EventLogMonitor] tests. To run this test: {@code atest
+ * FlickerLibTest:EventLogMonitorTest}
  */
 class EventLogMonitorTest {
     @Test
     fun canCaptureFocusEventLogs() {
         val monitor = EventLogMonitor()
-        EventLog.writeEvent(INPUT_FOCUS_TAG /* input_focus */,
+        EventLog.writeEvent(
+            INPUT_FOCUS_TAG /* input_focus */,
             "Focus entering 111 com.android.phone/" +
                 "com.android.phone.settings.fdn.FdnSetting (server)",
-            "reason=test")
-        EventLog.writeEvent(INPUT_FOCUS_TAG /* input_focus */,
+            "reason=test"
+        )
+        EventLog.writeEvent(
+            INPUT_FOCUS_TAG /* input_focus */,
             "Focus leaving 222 com.google.android.apps.nexuslauncher/" +
                 "com.google.android.apps.nexuslauncher.NexusLauncherActivity (server)",
-            "reason=test")
-        EventLog.writeEvent(INPUT_FOCUS_TAG /* input_focus */,
+            "reason=test"
+        )
+        EventLog.writeEvent(
+            INPUT_FOCUS_TAG /* input_focus */,
             "Focus entering 333 com.android.phone/" +
                 "com.android.phone.settings.fdn.FdnSetting (server)",
-            "reason=test")
+            "reason=test"
+        )
         monitor.start()
-        EventLog.writeEvent(INPUT_FOCUS_TAG /* input_focus */,
+        EventLog.writeEvent(
+            INPUT_FOCUS_TAG /* input_focus */,
             "Focus leaving 4749f88 com.android.phone/" +
                 "com.android.phone.settings.fdn.FdnSetting (server)",
-            "reason=test")
-        EventLog.writeEvent(INPUT_FOCUS_TAG /* input_focus */,
+            "reason=test"
+        )
+        EventLog.writeEvent(
+            INPUT_FOCUS_TAG /* input_focus */,
             "Focus entering 7c01447 com.android.phone/" +
                 "com.android.phone.settings.fdn.FdnSetting (server)",
-            "reason=test")
+            "reason=test"
+        )
         monitor.stop()
-        EventLog.writeEvent(INPUT_FOCUS_TAG /* input_focus */,
+        EventLog.writeEvent(
+            INPUT_FOCUS_TAG /* input_focus */,
             "Focus entering 2aa30cd com.android.phone/" +
                 "com.android.phone.settings.fdn.FdnSetting (server)",
-            "reason=test")
+            "reason=test"
+        )
 
         val result = FlickerRunResult("testName")
         result.setResultsFromMonitor(monitor)
@@ -48,14 +60,17 @@ class EventLogMonitorTest {
         assertEquals(2, result.eventLog?.size)
         assertEquals(
             "4749f88 com.android.phone/com.android.phone.settings.fdn.FdnSetting (server)",
-                result.eventLog?.get(0)?.window)
+            result.eventLog?.get(0)?.window
+        )
         assertEquals(FocusEvent.Focus.LOST, result.eventLog?.get(0)?.focus)
         assertEquals(
             "7c01447 com.android.phone/com.android.phone.settings.fdn.FdnSetting (server)",
-                result.eventLog?.get(1)?.window)
+            result.eventLog?.get(1)?.window
+        )
         assertEquals(FocusEvent.Focus.GAINED, result.eventLog?.get(1)?.focus)
-        assertTrue(result.eventLog?.get(0)?.timestamp ?: 0
-            <= result.eventLog?.get(1)?.timestamp ?: 0)
+        assertTrue(
+            result.eventLog?.get(0)?.timestamp ?: 0 <= result.eventLog?.get(1)?.timestamp ?: 0
+        )
         assertEquals(result.eventLog?.get(0)?.reason, "test")
     }
 
@@ -63,60 +78,76 @@ class EventLogMonitorTest {
     fun onlyCapturesLastTransition() {
         val monitor = EventLogMonitor()
         monitor.start()
-        EventLog.writeEvent(INPUT_FOCUS_TAG /* input_focus */,
+        EventLog.writeEvent(
+            INPUT_FOCUS_TAG /* input_focus */,
             "Focus leaving 11111 com.android.phone/" +
                 "com.android.phone.settings.fdn.FdnSetting (server)",
-            "reason=test")
-        EventLog.writeEvent(INPUT_FOCUS_TAG /* input_focus */,
+            "reason=test"
+        )
+        EventLog.writeEvent(
+            INPUT_FOCUS_TAG /* input_focus */,
             "Focus entering 22222 com.android.phone/" +
                 "com.android.phone.settings.fdn.FdnSetting (server)",
-            "reason=test")
+            "reason=test"
+        )
         monitor.stop()
 
         monitor.start()
-        EventLog.writeEvent(INPUT_FOCUS_TAG /* input_focus */,
+        EventLog.writeEvent(
+            INPUT_FOCUS_TAG /* input_focus */,
             "Focus leaving 479f88 com.android.phone/" +
                 "com.android.phone.settings.fdn.FdnSetting (server)",
-            "reason=test")
-        EventLog.writeEvent(INPUT_FOCUS_TAG /* input_focus */,
+            "reason=test"
+        )
+        EventLog.writeEvent(
+            INPUT_FOCUS_TAG /* input_focus */,
             "Focus entering 7c01447 com.android.phone/" +
                 "com.android.phone.settings.fdn.FdnSetting (server)",
-            "reason=test")
+            "reason=test"
+        )
         monitor.stop()
 
         val result = FlickerRunResult("testName")
         result.setResultsFromMonitor(monitor)
 
         assertEquals(2, result.eventLog?.size)
-        assertEquals("479f88 " +
-            "com.android.phone/" +
-            "com.android.phone.settings.fdn.FdnSetting (server)",
-                result.eventLog?.get(0)?.window)
+        assertEquals(
+            "479f88 " + "com.android.phone/" + "com.android.phone.settings.fdn.FdnSetting (server)",
+            result.eventLog?.get(0)?.window
+        )
         assertEquals(FocusEvent.Focus.LOST, result.eventLog?.get(0)?.focus)
-        assertEquals("7c01447 com.android.phone/" +
-            "com.android.phone.settings.fdn.FdnSetting (server)",
-                result.eventLog?.get(1)?.window)
+        assertEquals(
+            "7c01447 com.android.phone/" + "com.android.phone.settings.fdn.FdnSetting (server)",
+            result.eventLog?.get(1)?.window
+        )
         assertEquals(FocusEvent.Focus.GAINED, result.eventLog?.get(1)?.focus)
-        assertTrue(result.eventLog?.get(0)?.timestamp ?: 0
-            <= result.eventLog?.get(1)?.timestamp ?: 0)
+        assertTrue(
+            result.eventLog?.get(0)?.timestamp ?: 0 <= result.eventLog?.get(1)?.timestamp ?: 0
+        )
     }
 
     @Test
     fun ignoreFocusRequestLogs() {
         val monitor = EventLogMonitor()
         monitor.start()
-        EventLog.writeEvent(INPUT_FOCUS_TAG /* input_focus */,
-                "Focus leaving 4749f88 com.android.phone/" +
-                        "com.android.phone.settings.fdn.FdnSetting (server)",
-                "reason=test")
-        EventLog.writeEvent(INPUT_FOCUS_TAG /* input_focus */,
-                "Focus request 111 com.android.phone/" +
-                        "com.android.phone.settings.fdn.FdnSetting (server)",
-                "reason=test")
-        EventLog.writeEvent(INPUT_FOCUS_TAG /* input_focus */,
-                "Focus entering 7c01447 com.android.phone/" +
-                        "com.android.phone.settings.fdn.FdnSetting (server)",
-                "reason=test")
+        EventLog.writeEvent(
+            INPUT_FOCUS_TAG /* input_focus */,
+            "Focus leaving 4749f88 com.android.phone/" +
+                "com.android.phone.settings.fdn.FdnSetting (server)",
+            "reason=test"
+        )
+        EventLog.writeEvent(
+            INPUT_FOCUS_TAG /* input_focus */,
+            "Focus request 111 com.android.phone/" +
+                "com.android.phone.settings.fdn.FdnSetting (server)",
+            "reason=test"
+        )
+        EventLog.writeEvent(
+            INPUT_FOCUS_TAG /* input_focus */,
+            "Focus entering 7c01447 com.android.phone/" +
+                "com.android.phone.settings.fdn.FdnSetting (server)",
+            "reason=test"
+        )
         monitor.stop()
 
         val result = FlickerRunResult("testName")
@@ -124,15 +155,18 @@ class EventLogMonitorTest {
 
         assertEquals(2, result.eventLog?.size)
         assertEquals(
-                "4749f88 com.android.phone/com.android.phone.settings.fdn.FdnSetting (server)",
-                result.eventLog?.get(0)?.window)
+            "4749f88 com.android.phone/com.android.phone.settings.fdn.FdnSetting (server)",
+            result.eventLog?.get(0)?.window
+        )
         assertEquals(FocusEvent.Focus.LOST, result.eventLog?.get(0)?.focus)
         assertEquals(
-                "7c01447 com.android.phone/com.android.phone.settings.fdn.FdnSetting (server)",
-                result.eventLog?.get(1)?.window)
+            "7c01447 com.android.phone/com.android.phone.settings.fdn.FdnSetting (server)",
+            result.eventLog?.get(1)?.window
+        )
         assertEquals(FocusEvent.Focus.GAINED, result.eventLog?.get(1)?.focus)
-        assertTrue(result.eventLog?.get(0)?.timestamp ?: 0
-            <= result.eventLog?.get(1)?.timestamp ?: 0)
+        assertTrue(
+            result.eventLog?.get(0)?.timestamp ?: 0 <= result.eventLog?.get(1)?.timestamp ?: 0
+        )
         assertEquals(result.eventLog?.get(0)?.reason, "test")
     }
 

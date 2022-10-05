@@ -22,17 +22,14 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.android.compatibility.common.util.SystemUtil
 import com.android.server.wm.flicker.getDefaultFlickerOutputDir
 import com.google.common.truth.Truth
+import java.nio.file.Files
 import org.junit.After
 import org.junit.Before
 import org.junit.FixMethodOrder
 import org.junit.Test
 import org.junit.runners.MethodSorters
-import java.nio.file.Files
 
-/**
- * Contains [ScreenRecorder] tests. To run this test: `atest
- * FlickerLibTest:ScreenRecorderTest`
- */
+/** Contains [ScreenRecorder] tests. To run this test: `atest FlickerLibTest:ScreenRecorderTest` */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class ScreenRecorderTest {
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
@@ -60,9 +57,7 @@ class ScreenRecorderTest {
         SystemClock.sleep(100)
         mScreenRecorder.stop()
         val file = mScreenRecorder.outputFile
-        Truth.assertWithMessage("Screen recording file not found")
-            .that(Files.exists(file))
-            .isTrue()
+        Truth.assertWithMessage("Screen recording file not found").that(Files.exists(file)).isTrue()
     }
 
     @Test

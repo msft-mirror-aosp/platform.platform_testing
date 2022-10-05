@@ -22,18 +22,12 @@ import com.android.server.wm.traces.common.IComponentMatcher
 import com.android.server.wm.traces.common.windowmanager.windows.Activity
 import com.android.server.wm.traces.common.windowmanager.windows.WindowState
 
-/**
- * Base interface for WM trace and state assertions
- */
+/** Base interface for WM trace and state assertions */
 interface IWindowManagerSubject<WMSubjectType, RegionSubjectType> {
-    /**
-     * Asserts the current WindowManager state doesn't contain [WindowState]s
-     */
+    /** Asserts the current WindowManager state doesn't contain [WindowState]s */
     fun isEmpty(): WMSubjectType
 
-    /**
-     * Asserts the current WindowManager state contains [WindowState]s
-     */
+    /** Asserts the current WindowManager state contains [WindowState]s */
     fun isNotEmpty(): WMSubjectType
 
     /**
@@ -44,16 +38,14 @@ interface IWindowManagerSubject<WMSubjectType, RegionSubjectType> {
     fun visibleRegion(componentMatcher: IComponentMatcher? = null): RegionSubjectType
 
     /**
-     * Asserts the state contains a [WindowState] matching [componentMatcher] above the
-     * app windows
+     * Asserts the state contains a [WindowState] matching [componentMatcher] above the app windows
      *
      * @param componentMatcher Component to search
      */
     fun containsAboveAppWindow(componentMatcher: IComponentMatcher): WMSubjectType
 
     /**
-     * Asserts the state contains a [WindowState] matching [componentMatcher] below the
-     * app windows
+     * Asserts the state contains a [WindowState] matching [componentMatcher] below the app windows
      *
      * @param componentMatcher Component to search
      */
@@ -64,8 +56,8 @@ interface IWindowManagerSubject<WMSubjectType, RegionSubjectType> {
      * [belowWindowComponentMatcher], and that [aboveWindowComponentMatcher] is above
      * [belowWindowComponentMatcher]
      *
-     * This assertion can be used, for example, to assert that a PIP window is shown above
-     * other apps.
+     * This assertion can be used, for example, to assert that a PIP window is shown above other
+     * apps.
      *
      * @param aboveWindowComponentMatcher name of the window that should be above
      * @param belowWindowComponentMatcher name of the window that should be below
@@ -146,20 +138,19 @@ interface IWindowManagerSubject<WMSubjectType, RegionSubjectType> {
 
     /**
      * Asserts the state is valid, that is, if it has:
-     *   - a resumed activity
-     *   - a focused activity
-     *   - a focused window
-     *   - a front window
-     *   - a focused app
+     * - a resumed activity
+     * - a focused activity
+     * - a focused window
+     * - a front window
+     * - a focused app
      */
-    @VisibleForTesting
-    fun isValid(): WMSubjectType
+    @VisibleForTesting fun isValid(): WMSubjectType
 
     /**
      * Asserts the state contains a visible [WindowState] matching [componentMatcher].
      *
-     * Also, if [componentMatcher] has a package name (i.e., is not a system component), also
-     * checks that it contains a visible [Activity] matching [componentMatcher].
+     * Also, if [componentMatcher] has a package name (i.e., is not a system component), also checks
+     * that it contains a visible [Activity] matching [componentMatcher].
      *
      * @param componentMatcher Components to search
      */
@@ -168,28 +159,24 @@ interface IWindowManagerSubject<WMSubjectType, RegionSubjectType> {
     /**
      * Asserts the state contains a visible [WindowState] matching [componentMatcher].
      *
-     * Also, if [componentMatcher] has a package name (i.e., is not a system component), also
-     * checks that it contains a visible [Activity] matching [componentMatcher].
+     * Also, if [componentMatcher] has a package name (i.e., is not a system component), also checks
+     * that it contains a visible [Activity] matching [componentMatcher].
      *
      * @param componentMatcher Components to search
      */
     fun isAppWindowVisible(componentMatcher: IComponentMatcher): WMSubjectType
 
-    /**
-     * Asserts the state contains no visible app windows.
-     */
+    /** Asserts the state contains no visible app windows. */
     fun hasNoVisibleAppWindow(): WMSubjectType
 
-    /**
-     * Asserts the state contains no visible app windows.
-     */
+    /** Asserts the state contains no visible app windows. */
     fun isKeyguardShowing(): WMSubjectType
 
     /**
      * Asserts the state contains an invisible window [WindowState] matching [componentMatcher].
      *
-     * Also, if [componentMatcher] has a package name (i.e., is not a system component), also
-     * checks that it contains an invisible [Activity] matching [componentMatcher].
+     * Also, if [componentMatcher] has a package name (i.e., is not a system component), also checks
+     * that it contains an invisible [Activity] matching [componentMatcher].
      *
      * @param componentMatcher Components to search
      */
@@ -198,21 +185,17 @@ interface IWindowManagerSubject<WMSubjectType, RegionSubjectType> {
     /**
      * Asserts the state contains an invisible window matching [componentMatcher].
      *
-     * Also, if [componentMatcher] has a package name (i.e., is not a system component), also checks that
-     * it contains an invisible [Activity] matching [componentMatcher].
+     * Also, if [componentMatcher] has a package name (i.e., is not a system component), also checks
+     * that it contains an invisible [Activity] matching [componentMatcher].
      *
      * @param componentMatcher Components to search
      */
     fun isNonAppWindowInvisible(componentMatcher: IComponentMatcher): WMSubjectType
 
-    /**
-     * Asserts the state home activity is visible
-     */
+    /** Asserts the state home activity is visible */
     fun isHomeActivityVisible(): WMSubjectType
 
-    /**
-     * Asserts the state home activity is invisible
-     */
+    /** Asserts the state home activity is invisible */
     fun isHomeActivityInvisible(): WMSubjectType
 
     /**
@@ -242,32 +225,32 @@ interface IWindowManagerSubject<WMSubjectType, RegionSubjectType> {
     fun isAppSnapshotStartingWindowVisibleFor(componentMatcher: IComponentMatcher): WMSubjectType
 
     /**
-     * Checks if the non-app window matching [componentMatcher] exists above the app
-     * windows and is visible
+     * Checks if the non-app window matching [componentMatcher] exists above the app windows and is
+     * visible
      *
      * @param componentMatcher Components to search
      */
     fun isAboveAppWindowVisible(componentMatcher: IComponentMatcher): WMSubjectType
 
     /**
-     * Checks if the non-app window matching [componentMatcher] exists above the app
-     * windows and is invisible
+     * Checks if the non-app window matching [componentMatcher] exists above the app windows and is
+     * invisible
      *
      * @param componentMatcher Components to search
      */
     fun isAboveAppWindowInvisible(componentMatcher: IComponentMatcher): WMSubjectType
 
     /**
-     * Checks if the non-app window matching [componentMatcher] exists below the app
-     * windows and is visible
+     * Checks if the non-app window matching [componentMatcher] exists below the app windows and is
+     * visible
      *
      * @param componentMatcher Components to search
      */
     fun isBelowAppWindowVisible(componentMatcher: IComponentMatcher): WMSubjectType
 
     /**
-     * Checks if the non-app window matching [componentMatcher] exists below the app
-     * windows and is invisible
+     * Checks if the non-app window matching [componentMatcher] exists below the app windows and is
+     * invisible
      *
      * @param componentMatcher Components to search
      */

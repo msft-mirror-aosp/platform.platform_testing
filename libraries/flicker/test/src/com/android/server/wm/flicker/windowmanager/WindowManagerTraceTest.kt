@@ -36,12 +36,13 @@ import org.junit.Test
 import org.junit.runners.MethodSorters
 
 /**
- * Contains [WindowManagerTrace] tests. To run this test:
- * `atest FlickerLibTest:WindowManagerTraceTest`
+ * Contains [WindowManagerTrace] tests. To run this test: `atest
+ * FlickerLibTest:WindowManagerTraceTest`
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class WindowManagerTraceTest {
-    private val trace get() = readWmTraceFromFile("wm_trace_openchrome.pb")
+    private val trace
+        get() = readWmTraceFromFile("wm_trace_openchrome.pb")
 
     @Before
     fun before() {
@@ -54,8 +55,7 @@ class WindowManagerTraceTest {
         assertThat(firstEntry.timestamp).isEqualTo(9213763541297L)
         assertThat(firstEntry.windowStates.size).isEqualTo(10)
         assertThat(firstEntry.visibleWindows.size).isEqualTo(5)
-        assertThat(trace.entries[trace.entries.size - 1].timestamp)
-            .isEqualTo(9216093628925L)
+        assertThat(trace.entries[trace.entries.size - 1].timestamp).isEqualTo(9216093628925L)
     }
 
     @Test
@@ -66,46 +66,45 @@ class WindowManagerTraceTest {
 
     @Test
     fun canParseFromDump() {
-        val trace = try {
-            WindowManagerTraceParser.parseFromDump(
-                readTestFile("wm_trace_dump.pb")
-            )
-        } catch (e: Exception) {
-            throw RuntimeException(e)
-        }
+        val trace =
+            try {
+                WindowManagerTraceParser.parseFromDump(readTestFile("wm_trace_dump.pb"))
+            } catch (e: Exception) {
+                throw RuntimeException(e)
+            }
         assertWithMessage("Unable to parse dump").that(trace).hasSize(1)
     }
 
     /**
-     * Access all public methods and invokes all public getters from the object
-     * to check that all lazy properties contain valid values
+     * Access all public methods and invokes all public getters from the object to check that all
+     * lazy properties contain valid values
      */
     private fun <T> Class<T>.accessProperties(obj: Any) {
-        val propertyValues = this.declaredFields
-            .filter { Modifier.isPublic(it.modifiers) }
-            .map { kotlin.runCatching { Pair(it.name, it.get(obj)) } }
-            .filter { it.isFailure }
+        val propertyValues =
+            this.declaredFields
+                .filter { Modifier.isPublic(it.modifiers) }
+                .map { kotlin.runCatching { Pair(it.name, it.get(obj)) } }
+                .filter { it.isFailure }
 
         assertWithMessage(
-            "The following properties could not be read: " +
-                propertyValues.joinToString("\n")
-        )
+                "The following properties could not be read: " + propertyValues.joinToString("\n")
+            )
             .that(propertyValues)
             .isEmpty()
 
-        val getterValues = this.declaredMethods
-            .filter {
-                Modifier.isPublic(it.modifiers) &&
-                    it.name.startsWith("get") &&
-                    it.parameterCount == 0
-            }
-            .map { kotlin.runCatching { Pair(it.name, it.invoke(obj)) } }
-            .filter { it.isFailure }
+        val getterValues =
+            this.declaredMethods
+                .filter {
+                    Modifier.isPublic(it.modifiers) &&
+                        it.name.startsWith("get") &&
+                        it.parameterCount == 0
+                }
+                .map { kotlin.runCatching { Pair(it.name, it.invoke(obj)) } }
+                .filter { it.isFailure }
 
         assertWithMessage(
-            "The following methods could not be invoked: " +
-                getterValues.joinToString("\n")
-        )
+                "The following methods could not be invoked: " + getterValues.joinToString("\n")
+            )
             .that(getterValues)
             .isEmpty()
 
@@ -116,17 +115,14 @@ class WindowManagerTraceTest {
     }
 
     /**
-     * Tests if all properties of the flicker objects are accessible. This is necessary because
-     * most values are lazy initialized and only trigger errors when being accessed for the
-     * first time.
+     * Tests if all properties of the flicker objects are accessible. This is necessary because most
+     * values are lazy initialized and only trigger errors when being accessed for the first time.
      */
     @Test
     fun canAccessAllProperties() {
         arrayOf("wm_trace_activity_transition.pb", "wm_trace_openchrome2.pb").forEach { traceName ->
             val trace = readWmTraceFromFile(traceName)
-            assertWithMessage("Unable to parse dump")
-                .that(trace.entries.size)
-                .isGreaterThan(1)
+            assertWithMessage("Unable to parse dump").that(trace.entries.size).isGreaterThan(1)
 
             trace.entries.forEach { entry: WindowManagerState ->
                 entry::class.java.accessProperties(entry)
@@ -150,8 +146,7 @@ class WindowManagerTraceTest {
             .that(entry.isIncomplete())
             .isTrue()
 
-        assertThat(entry.getIsIncompleteReason())
-            .contains("No resumed activities found")
+        assertThat(entry.getIsIncompleteReason()).contains("No resumed activities found")
     }
 
     @Test
@@ -185,8 +180,8 @@ class WindowManagerTraceTest {
         val splitLayersTrace = mockTraceForSliceTests.slice(from, to)
         Truth.assertThat(splitLayersTrace).isEmpty()
 
-        val splitLayersTraceWithInitialEntry = mockTraceForSliceTests
-            .slice(from, to, addInitialEntry = true)
+        val splitLayersTraceWithInitialEntry =
+            mockTraceForSliceTests.slice(from, to, addInitialEntry = true)
         Truth.assertThat(splitLayersTraceWithInitialEntry).hasSize(1)
         Truth.assertThat(splitLayersTraceWithInitialEntry.first().timestamp)
             .isEqualTo(mockTraceForSliceTests.last().timestamp)
@@ -200,16 +195,15 @@ class WindowManagerTraceTest {
     @Test
     fun canSlice_fromBeforeFirstEntryToMiddle() {
         testSlice(
-            mockTraceForSliceTests.first().timestamp - 1, 27L,
+            mockTraceForSliceTests.first().timestamp - 1,
+            27L,
             listOf(5L, 8L, 15L, 18L, 25L, 27L)
         )
     }
 
     @Test
     fun canSlice_fromMiddleToAfterLastEntry() {
-        testSlice(18L, mockTraceForSliceTests.last().timestamp + 5,
-            listOf(18L, 25L, 27L, 30L)
-        )
+        testSlice(18L, mockTraceForSliceTests.last().timestamp + 5, listOf(18L, 25L, 27L, 30L))
     }
 
     @Test
@@ -241,20 +235,12 @@ class WindowManagerTraceTest {
 
     @Test
     fun canSlice_fromExactStartToMiddle() {
-        testSlice(
-            mockTraceForSliceTests.first().timestamp,
-            18L,
-            listOf(5L, 8L, 15L, 18L)
-        )
+        testSlice(mockTraceForSliceTests.first().timestamp, 18L, listOf(5L, 8L, 15L, 18L))
     }
 
     @Test
     fun canSlice_fromMiddleToExactEnd() {
-        testSlice(
-            18L,
-            mockTraceForSliceTests.last().timestamp,
-            listOf(18L, 25L, 27L, 30L)
-        )
+        testSlice(18L, mockTraceForSliceTests.last().timestamp, listOf(18L, 25L, 27L, 30L))
     }
 
     @Test
@@ -279,12 +265,10 @@ class WindowManagerTraceTest {
         val toBefore = to < mockTraceForSliceTests.first().timestamp
         val toAfter = mockTraceForSliceTests.last().timestamp < to
 
-        require(fromBefore || fromAfter ||
-            mockTraceForSliceTests.map { it.timestamp }.contains(from)) {
-            "`from` need to be in the trace or before or after all entries"
-        }
-        require(toBefore || toAfter ||
-            mockTraceForSliceTests.map { it.timestamp }.contains(to)) {
+        require(
+            fromBefore || fromAfter || mockTraceForSliceTests.map { it.timestamp }.contains(from)
+        ) { "`from` need to be in the trace or before or after all entries" }
+        require(toBefore || toAfter || mockTraceForSliceTests.map { it.timestamp }.contains(to)) {
             "`to` need to be in the trace or before or after all entries"
         }
 
@@ -315,20 +299,25 @@ class WindowManagerTraceTest {
     }
 
     private fun testSliceWithInitialEntry(from: Long, to: Long, expected: List<Long>) {
-        val splitLayersTraceWithStartEntry = mockTraceForSliceTests
-                .slice(from, to, addInitialEntry = true)
+        val splitLayersTraceWithStartEntry =
+            mockTraceForSliceTests.slice(from, to, addInitialEntry = true)
         assertThat(splitLayersTraceWithStartEntry.map { it.timestamp }).isEqualTo(expected)
     }
 
     companion object {
-        val mockTraceForSliceTests = MockWindowManagerTraceBuilder(entries = mutableListOf(
-            MockWindowStateBuilder(timestamp = 5),
-            MockWindowStateBuilder(timestamp = 8),
-            MockWindowStateBuilder(timestamp = 15),
-            MockWindowStateBuilder(timestamp = 18),
-            MockWindowStateBuilder(timestamp = 25),
-            MockWindowStateBuilder(timestamp = 27),
-            MockWindowStateBuilder(timestamp = 30),
-        )).build()
+        val mockTraceForSliceTests =
+            MockWindowManagerTraceBuilder(
+                    entries =
+                        mutableListOf(
+                            MockWindowStateBuilder(timestamp = 5),
+                            MockWindowStateBuilder(timestamp = 8),
+                            MockWindowStateBuilder(timestamp = 15),
+                            MockWindowStateBuilder(timestamp = 18),
+                            MockWindowStateBuilder(timestamp = 25),
+                            MockWindowStateBuilder(timestamp = 27),
+                            MockWindowStateBuilder(timestamp = 30),
+                        )
+                )
+                .build()
     }
 }

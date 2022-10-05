@@ -21,18 +21,14 @@ import kotlin.js.JsName
 /**
  * Create a new component identifier.
  *
- * This is a version of Android's ComponentName class for flicker. This is necessary because
- * flicker codebase it also compiled into KotlinJS for use into Winscope
+ * This is a version of Android's ComponentName class for flicker. This is necessary because flicker
+ * codebase it also compiled into KotlinJS for use into Winscope
  *
- * @param packageName The name of the package that the component exists in.  Can
- * not be null.
- * @param className The name of the class inside <var>pkg</var> that
- * implements the component.
+ * @param packageName The name of the package that the component exists in. Can not be null.
+ * @param className The name of the class inside <var>pkg</var> that implements the component.
  */
-data class ComponentName(
-    override val packageName: String,
-    override val className: String
-) : IComponentName {
+data class ComponentName(override val packageName: String, override val className: String) :
+    IComponentName {
     /**
      * Obtains the activity name from the component name.
      *
@@ -54,8 +50,8 @@ data class ComponentName(
     /**
      * Obtains the window name from the component name.
      *
-     * [ComponentName] builds the string representation as PKG/CLASS, however this doesn't
-     * work for system components such as IME, NavBar and StatusBar, Toast.
+     * [ComponentName] builds the string representation as PKG/CLASS, however this doesn't work for
+     * system components such as IME, NavBar and StatusBar, Toast.
      *
      * If the component doesn't have a package name, assume it's a system component and return only
      * the class name
@@ -118,16 +114,13 @@ data class ComponentName(
         Regex("ActivityRecord\\{.*${Regex.escape(this.toShortWindowName())}")
 
     @JsName("toActivityNameRegex")
-    fun toActivityNameRegex(): Regex =
-        Regex(".*${Regex.escape(this.toActivityName())}.*")
+    fun toActivityNameRegex(): Regex = Regex(".*${Regex.escape(this.toActivityName())}.*")
 
     @JsName("toWindowNameRegex")
-    fun toWindowNameRegex(): Regex =
-        Regex(".*${Regex.escape(this.toWindowName())}.*")
+    fun toWindowNameRegex(): Regex = Regex(".*${Regex.escape(this.toWindowName())}.*")
 
     @JsName("toLayerNameRegex")
-    fun toLayerNameRegex(): Regex =
-        Regex(".*${Regex.escape(this.toLayerName())}.*")
+    fun toLayerNameRegex(): Regex = Regex(".*${Regex.escape(this.toLayerName())}.*")
 
     override fun toString(): String = toShortWindowName()
 }

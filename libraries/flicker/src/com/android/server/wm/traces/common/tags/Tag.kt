@@ -19,14 +19,14 @@ package com.android.server.wm.traces.common.tags
 import com.android.server.wm.traces.common.service.Scenario
 
 /**
- * Tag Class relating to a particular transition event in a WindowManager
- * or SurfaceFlinger trace state.
+ * Tag Class relating to a particular transition event in a WindowManager or SurfaceFlinger trace
+ * state.
  * @param id The id to match the end and start tags
  * @param scenario The scenario this tag represents
  * @param isStartTag Tag represents the start or end moment in transition
  * @param layerId The Layer the tag is associated with (or 0 if no taskId associated with it)
- * @param windowToken The Window the tag is associated
- * with (or empty string if no taskId associated with it)
+ * @param windowToken The Window the tag is associated with (or empty string if no taskId associated
+ * with it)
  * @param taskId The Task the tag is associated with (or 0 if no taskId associated with it)
  */
 data class Tag(

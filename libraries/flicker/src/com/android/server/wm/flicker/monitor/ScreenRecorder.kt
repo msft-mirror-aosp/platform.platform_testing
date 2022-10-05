@@ -33,8 +33,10 @@ import com.android.server.wm.flicker.getDefaultFlickerOutputDir
 import java.nio.file.Files
 import java.nio.file.Path
 
-/** Captures screen contents and saves it as a mp4 video file.  */
-open class ScreenRecorder @JvmOverloads constructor(
+/** Captures screen contents and saves it as a mp4 video file. */
+open class ScreenRecorder
+@JvmOverloads
+constructor(
     private val context: Context,
     outputDir: Path = getDefaultFlickerOutputDir(),
     private val maxDurationMs: Int = MAX_DURATION_MS,
@@ -59,12 +61,13 @@ open class ScreenRecorder @JvmOverloads constructor(
         val metrics = DisplayMetrics()
         windowManager.defaultDisplay.getRealMetrics(metrics)
         val refreshRate = windowManager.defaultDisplay.refreshRate.toInt()
-        val vidBitRate = (width * height * refreshRate / VIDEO_FRAME_RATE
-            * VIDEO_FRAME_RATE_TO_RESOLUTION_RATIO)
+        val vidBitRate =
+            (width * height * refreshRate / VIDEO_FRAME_RATE * VIDEO_FRAME_RATE_TO_RESOLUTION_RATIO)
         recorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264)
         recorder.setVideoEncodingProfileLevel(
             MediaCodecInfo.CodecProfileLevel.AVCProfileHigh,
-            MediaCodecInfo.CodecProfileLevel.AVCLevel3)
+            MediaCodecInfo.CodecProfileLevel.AVCLevel3
+        )
         recorder.setVideoSize(width, height)
         recorder.setVideoFrameRate(refreshRate)
         recorder.setVideoEncodingBitRate(vidBitRate)
@@ -75,15 +78,17 @@ open class ScreenRecorder @JvmOverloads constructor(
 
         // Create surface
         inputSurface = recorder.surface
-        virtualDisplay = displayManager.createVirtualDisplay(
-            "Recording Display",
-            width,
-            height,
-            metrics.densityDpi,
-            inputSurface,
-            DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
-            null,
-            null)
+        virtualDisplay =
+            displayManager.createVirtualDisplay(
+                "Recording Display",
+                width,
+                height,
+                metrics.densityDpi,
+                inputSurface,
+                DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
+                null,
+                null
+            )
 
         this.mediaRecorder = recorder
     }
@@ -107,8 +112,7 @@ open class ScreenRecorder @JvmOverloads constructor(
             remainingTime -= WAIT_INTERVAL_MS
         } while (!Files.exists(sourceFile) && remainingTime > 0)
 
-        require(Files.exists(sourceFile)) {
-            "Screen recorder didn't start" }
+        require(Files.exists(sourceFile)) { "Screen recorder didn't start" }
     }
 
     override fun stopTracing() {
@@ -146,9 +150,7 @@ open class ScreenRecorder @JvmOverloads constructor(
         private const val WAIT_INTERVAL_MS = 500L
         private const val MAX_DURATION_MS = 60 * 60 * 1000
         private const val MAX_FILESIZE_BYTES = 100000000L
-        /**
-         * From [ScreenMediaRecorder#VIDEO_FRAME_RATE_TO_RESOLUTION_RATIO]
-         */
+        /** From [ScreenMediaRecorder#VIDEO_FRAME_RATE_TO_RESOLUTION_RATIO] */
         private const val VIDEO_FRAME_RATE_TO_RESOLUTION_RATIO = 6
     }
 }

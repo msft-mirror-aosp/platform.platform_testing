@@ -25,18 +25,15 @@ import kotlin.js.JsName
  *
  * Each entry is parsed into a list of [LayerTraceEntry] objects.
  *
- * This is a generic object that is reused by both Flicker and Winscope and cannot
- * access internal Java/Android functionality
- *
+ * This is a generic object that is reused by both Flicker and Winscope and cannot access internal
+ * Java/Android functionality
  */
-data class LayersTrace(
-    override val entries: Array<BaseLayerTraceEntry>
-) : ITrace<BaseLayerTraceEntry>, List<BaseLayerTraceEntry> by entries.toList() {
+data class LayersTrace(override val entries: Array<BaseLayerTraceEntry>) :
+    ITrace<BaseLayerTraceEntry>, List<BaseLayerTraceEntry> by entries.toList() {
     constructor(entry: BaseLayerTraceEntry) : this(arrayOf(entry))
 
     override fun toString(): String {
-        return "LayersTrace(Start: ${entries.firstOrNull()}, " +
-            "End: ${entries.lastOrNull()})"
+        return "LayersTrace(Start: ${entries.firstOrNull()}, " + "End: ${entries.lastOrNull()})"
     }
 
     override fun equals(other: Any?): Boolean {
@@ -61,8 +58,7 @@ data class LayersTrace(
      */
     @JsName("slice")
     fun slice(from: Long, to: Long, addInitialEntry: Boolean = false): LayersTrace {
-        return LayersTrace(
-            sliceEntriesByTimestamp(this.entries, from, to, addInitialEntry))
+        return LayersTrace(sliceEntriesByTimestamp(this.entries, from, to, addInitialEntry))
     }
 
     @JsName("vSyncSlice")

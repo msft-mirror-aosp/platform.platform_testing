@@ -21,8 +21,8 @@ import kotlin.js.JsName
 /**
  * A formatter to print floats with up to 3 decimal digits.
  *
- * This is necessary because multiplatform kotlin projects don't support String.format
- * yet (issue KT-21644)
+ * This is necessary because multiplatform kotlin projects don't support String.format yet (issue
+ * KT-21644)
  */
 object FloatFormatter {
     @JsName("format")

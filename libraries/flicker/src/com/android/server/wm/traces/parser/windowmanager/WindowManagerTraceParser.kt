@@ -81,12 +81,14 @@ object WindowManagerTraceParser {
     private const val TRANSIT_TRANSLUCENT_ACTIVITY_CLOSE = "TRANSIT_TRANSLUCENT_ACTIVITY_CLOSE"
 
     /**
-     * Parses [WindowManagerTraceFileProto] from [data] and uses the proto to generates
-     * a list of trace entries.
+     * Parses [WindowManagerTraceFileProto] from [data] and uses the proto to generates a list of
+     * trace entries.
      *
      * @param data binary proto data
      * @param clearCacheAfterParsing If the caching used while parsing the proto should be cleared
+     * ```
      *                               or remain in memory
+     * ```
      */
     @JvmStatic
     fun parseFromTrace(
@@ -95,11 +97,8 @@ object WindowManagerTraceParser {
     ): WindowManagerTrace {
         var fileProto: WindowManagerTraceFileProto?
         try {
-            measureTimeMillis {
-                fileProto = WindowManagerTraceFileProto.parseFrom(data)
-            }.also {
-                Log.v(LOG_TAG, "Parsing proto (WM Trace): ${it}ms")
-            }
+            measureTimeMillis { fileProto = WindowManagerTraceFileProto.parseFrom(data) }
+                .also { Log.v(LOG_TAG, "Parsing proto (WM Trace): ${it}ms") }
         } catch (e: InvalidProtocolBufferNanoException) {
             throw RuntimeException(e)
         }
@@ -123,17 +122,20 @@ object WindowManagerTraceParser {
             var traceParseTime = 0L
             for (entryProto in proto.entry) {
                 val entryParseTime = measureTimeMillis {
-                    val entry = newTraceEntry(
-                        entryProto.windowManagerService,
-                        entryProto.elapsedRealtimeNanos, entryProto.where
-                    )
+                    val entry =
+                        newTraceEntry(
+                            entryProto.windowManagerService,
+                            entryProto.elapsedRealtimeNanos,
+                            entryProto.where
+                        )
                     entries.add(entry)
                 }
                 traceParseTime += entryParseTime
             }
 
             Log.v(
-                LOG_TAG, "Parsing duration (WM Trace): ${traceParseTime}ms " +
+                LOG_TAG,
+                "Parsing duration (WM Trace): ${traceParseTime}ms " +
                     "(avg ${traceParseTime / max(entries.size, 1)}ms per entry)"
             )
             return WindowManagerTrace(entries.toTypedArray())
@@ -145,12 +147,14 @@ object WindowManagerTraceParser {
     }
 
     /**
-     * Parses [WindowManagerServiceDumpProto] from [proto] dump and uses the proto to generates
-     * a list of trace entries.
+     * Parses [WindowManagerServiceDumpProto] from [proto] dump and uses the proto to generates a
+     * list of trace entries.
      *
      * @param proto Parsed proto data
      * @param clearCacheAfterParsing If the caching used while parsing the proto should be cleared
+     * ```
      *                               or remain in memory
+     * ```
      */
     @JvmStatic
     fun parseFromDump(
@@ -158,9 +162,7 @@ object WindowManagerTraceParser {
         clearCacheAfterParsing: Boolean = true
     ): WindowManagerTrace {
         try {
-            return WindowManagerTrace(
-                arrayOf(newTraceEntry(proto, timestamp = 0, where = ""))
-            )
+            return WindowManagerTrace(arrayOf(newTraceEntry(proto, timestamp = 0, where = "")))
         } finally {
             if (clearCacheAfterParsing) {
                 Cache.clear()
@@ -169,23 +171,26 @@ object WindowManagerTraceParser {
     }
 
     /**
-     * Parses [WindowManagerServiceDumpProto] from [data] and uses the proto to generates
-     * a list of trace entries.
+     * Parses [WindowManagerServiceDumpProto] from [data] and uses the proto to generates a list of
+     * trace entries.
      *
      * @param data binary proto data
      * @param clearCacheAfterParsing If the caching used while parsing the proto should be cleared
+     * ```
      *                               or remain in memory
+     * ```
      */
     @JvmStatic
     fun parseFromDump(
         data: ByteArray?,
         clearCacheAfterParsing: Boolean = true
     ): WindowManagerTrace {
-        val fileProto = try {
-            WindowManagerServiceDumpProto.parseFrom(data)
-        } catch (e: InvalidProtocolBufferNanoException) {
-            throw RuntimeException(e)
-        }
+        val fileProto =
+            try {
+                WindowManagerServiceDumpProto.parseFrom(data)
+            } catch (e: InvalidProtocolBufferNanoException) {
+                throw RuntimeException(e)
+            }
         return parseFromDump(fileProto, clearCacheAfterParsing)
     }
 
@@ -200,19 +205,19 @@ object WindowManagerTraceParser {
             focusedApp = proto.focusedApp,
             focusedDisplayId = proto.focusedDisplayId,
             _focusedWindow = proto.focusedWindow?.title ?: "",
-            inputMethodWindowAppToken = if (proto.inputMethodWindow != null) {
-                Integer.toHexString(proto.inputMethodWindow.hashCode)
-            } else {
-                ""
-            },
+            inputMethodWindowAppToken =
+                if (proto.inputMethodWindow != null) {
+                    Integer.toHexString(proto.inputMethodWindow.hashCode)
+                } else {
+                    ""
+                },
             isHomeRecentsComponent = proto.rootWindowContainer.isHomeRecentsComponent,
             isDisplayFrozen = proto.displayFrozen,
-            _pendingActivities = proto.rootWindowContainer.pendingActivities
-                .map { it.title }.toTypedArray(),
+            _pendingActivities =
+                proto.rootWindowContainer.pendingActivities.map { it.title }.toTypedArray(),
             root = newRootWindowContainer(proto.rootWindowContainer),
-            keyguardControllerState = newKeyguardControllerState(
-                proto.rootWindowContainer.keyguardController
-            ),
+            keyguardControllerState =
+                newKeyguardControllerState(proto.rootWindowContainer.keyguardController),
             _timestamp = timestamp.toString()
         )
     }
@@ -239,9 +244,11 @@ object WindowManagerTraceParser {
         return RootWindowContainer(
             newWindowContainer(
                 proto.windowContainer,
-                proto.windowContainer.children
-                    .mapNotNull { p -> newWindowContainerChild(p, isActivityInTree = false) }
-            ) ?: error("Window container should not be null")
+                proto.windowContainer.children.mapNotNull { p ->
+                    newWindowContainerChild(p, isActivityInTree = false)
+                }
+            )
+                ?: error("Window container should not be null")
         )
     }
 
@@ -251,9 +258,9 @@ object WindowManagerTraceParser {
         return KeyguardControllerState.from(
             isAodShowing = proto?.aodShowing ?: false,
             isKeyguardShowing = proto?.keyguardShowing ?: false,
-            keyguardOccludedStates = proto?.keyguardOccludedStates
-                ?.associate { it.displayId to it.keyguardOccluded }
-                ?: emptyMap()
+            keyguardOccludedStates =
+                proto?.keyguardOccludedStates?.associate { it.displayId to it.keyguardOccluded }
+                    ?: emptyMap()
         )
     }
 
@@ -263,12 +270,12 @@ object WindowManagerTraceParser {
     ): WindowContainer? {
         return newDisplayContent(proto.displayContent, isActivityInTree)
             ?: newDisplayArea(proto.displayArea, isActivityInTree)
-            ?: newTask(proto.task, isActivityInTree)
-            ?: newTaskFragment(proto.taskFragment, isActivityInTree)
-            ?: newActivity(proto.activity)
-            ?: newWindowToken(proto.windowToken, isActivityInTree)
-            ?: newWindowState(proto.window, isActivityInTree)
-            ?: newWindowContainer(proto.windowContainer, children = emptyList())
+                ?: newTask(proto.task, isActivityInTree)
+                ?: newTaskFragment(proto.taskFragment, isActivityInTree)
+                ?: newActivity(proto.activity)
+                ?: newWindowToken(proto.windowToken, isActivityInTree)
+                ?: newWindowState(proto.window, isActivityInTree)
+                ?: newWindowContainer(proto.windowContainer, children = emptyList())
     }
 
     private fun newDisplayContent(
@@ -284,37 +291,42 @@ object WindowManagerTraceParser {
                 resumedActivity = proto.resumedActivity?.title ?: "",
                 singleTaskInstance = proto.singleTaskInstance,
                 defaultPinnedStackBounds = proto.pinnedTaskController?.defaultBounds?.toRect()
-                    ?: Rect.EMPTY,
+                        ?: Rect.EMPTY,
                 pinnedStackMovementBounds = proto.pinnedTaskController?.movementBounds?.toRect()
-                    ?: Rect.EMPTY,
-                displayRect = Rect.from(
-                    0, 0, proto.displayInfo?.logicalWidth
-                        ?: 0, proto.displayInfo?.logicalHeight ?: 0
-                ),
-                appRect = Rect.from(
-                    0, 0, proto.displayInfo?.appWidth ?: 0,
-                    proto.displayInfo?.appHeight
-                        ?: 0
-                ),
+                        ?: Rect.EMPTY,
+                displayRect =
+                    Rect.from(
+                        0,
+                        0,
+                        proto.displayInfo?.logicalWidth ?: 0,
+                        proto.displayInfo?.logicalHeight ?: 0
+                    ),
+                appRect =
+                    Rect.from(
+                        0,
+                        0,
+                        proto.displayInfo?.appWidth ?: 0,
+                        proto.displayInfo?.appHeight ?: 0
+                    ),
                 dpi = proto.dpi,
                 flags = proto.displayInfo?.flags ?: 0,
                 stableBounds = proto.displayFrames?.stableBounds?.toRect() ?: Rect.EMPTY,
                 surfaceSize = proto.surfaceSize,
                 focusedApp = proto.focusedApp,
-                lastTransition = appTransitionToString(
-                    proto.appTransition?.lastUsedAppTransition ?: 0
-                ),
-                appTransitionState = appStateToString(
-                    proto.appTransition?.appTransitionState ?: 0
-                ),
+                lastTransition =
+                    appTransitionToString(proto.appTransition?.lastUsedAppTransition ?: 0),
+                appTransitionState = appStateToString(proto.appTransition?.appTransitionState ?: 0),
                 rotation = proto.displayRotation?.rotation ?: 0,
                 lastOrientation = proto.displayRotation?.lastOrientation ?: 0,
-                windowContainer = newWindowContainer(
-                    proto.rootDisplayArea.windowContainer,
-                    proto.rootDisplayArea.windowContainer.children
-                        .mapNotNull { p -> newWindowContainerChild(p, isActivityInTree) },
-                    nameOverride = proto.displayInfo?.name ?: ""
-                ) ?: error("Window container should not be null")
+                windowContainer =
+                    newWindowContainer(
+                        proto.rootDisplayArea.windowContainer,
+                        proto.rootDisplayArea.windowContainer.children.mapNotNull { p ->
+                            newWindowContainerChild(p, isActivityInTree)
+                        },
+                        nameOverride = proto.displayInfo?.name ?: ""
+                    )
+                        ?: error("Window container should not be null")
             )
         }
     }
@@ -325,11 +337,14 @@ object WindowManagerTraceParser {
         } else {
             DisplayArea(
                 isTaskDisplayArea = proto.isTaskDisplayArea,
-                windowContainer = newWindowContainer(
-                    proto.windowContainer,
-                    proto.windowContainer.children
-                        .mapNotNull { p -> newWindowContainerChild(p, isActivityInTree) }
-                ) ?: error("Window container should not be null")
+                windowContainer =
+                    newWindowContainer(
+                        proto.windowContainer,
+                        proto.windowContainer.children.mapNotNull { p ->
+                            newWindowContainerChild(p, isActivityInTree)
+                        }
+                    )
+                        ?: error("Window container should not be null")
             )
         }
     }
@@ -356,22 +371,28 @@ object WindowManagerTraceParser {
                 createdByOrganizer = proto.createdByOrganizer,
                 minWidth = proto.taskFragment?.minWidth ?: proto.minWidth,
                 minHeight = proto.taskFragment?.minHeight ?: proto.minHeight,
-                windowContainer = newWindowContainer(
-                    proto.taskFragment?.windowContainer ?: proto.windowContainer,
-                    if (proto.taskFragment != null) {
-                        proto.taskFragment.windowContainer.children
-                            .mapNotNull { p -> newWindowContainerChild(p, isActivityInTree) }
-                    } else {
-                        proto.windowContainer.children
-                            .mapNotNull { p -> newWindowContainerChild(p, isActivityInTree) }
-                    }
-                ) ?: error("Window container should not be null")
+                windowContainer =
+                    newWindowContainer(
+                        proto.taskFragment?.windowContainer ?: proto.windowContainer,
+                        if (proto.taskFragment != null) {
+                            proto.taskFragment.windowContainer.children.mapNotNull { p ->
+                                newWindowContainerChild(p, isActivityInTree)
+                            }
+                        } else {
+                            proto.windowContainer.children.mapNotNull { p ->
+                                newWindowContainerChild(p, isActivityInTree)
+                            }
+                        }
+                    )
+                        ?: error("Window container should not be null")
             )
         }
     }
 
-    private fun newTaskFragment(proto: TaskFragmentProto?, isActivityInTree: Boolean):
-        TaskFragment? {
+    private fun newTaskFragment(
+        proto: TaskFragmentProto?,
+        isActivityInTree: Boolean
+    ): TaskFragment? {
         return if (proto == null) {
             null
         } else {
@@ -380,11 +401,14 @@ object WindowManagerTraceParser {
                 displayId = proto.displayId,
                 minWidth = proto.minWidth,
                 minHeight = proto.minHeight,
-                windowContainer = newWindowContainer(
-                    proto.windowContainer,
-                    proto.windowContainer.children
-                        .mapNotNull { p -> newWindowContainerChild(p, isActivityInTree) }
-                ) ?: error("Window container should not be null")
+                windowContainer =
+                    newWindowContainer(
+                        proto.windowContainer,
+                        proto.windowContainer.children.mapNotNull { p ->
+                            newWindowContainerChild(p, isActivityInTree)
+                        }
+                    )
+                        ?: error("Window container should not be null")
             )
         }
     }
@@ -400,11 +424,14 @@ object WindowManagerTraceParser {
                 frontOfTask = proto.frontOfTask,
                 procId = proto.procId,
                 isTranslucent = proto.translucent,
-                windowContainer = newWindowContainer(
-                    proto.windowToken.windowContainer,
-                    proto.windowToken.windowContainer.children
-                        .mapNotNull { p -> newWindowContainerChild(p, isActivityInTree = true) }
-                ) ?: error("Window container should not be null")
+                windowContainer =
+                    newWindowContainer(
+                        proto.windowToken.windowContainer,
+                        proto.windowToken.windowContainer.children.mapNotNull { p ->
+                            newWindowContainerChild(p, isActivityInTree = true)
+                        }
+                    )
+                        ?: error("Window container should not be null")
             )
         }
     }
@@ -416,9 +443,11 @@ object WindowManagerTraceParser {
             WindowToken(
                 newWindowContainer(
                     proto.windowContainer,
-                    proto.windowContainer.children
-                        .mapNotNull { p -> newWindowContainerChild(p, isActivityInTree) }
-                ) ?: error("Window container should not be null")
+                    proto.windowContainer.children.mapNotNull { p ->
+                        newWindowContainerChild(p, isActivityInTree)
+                    }
+                )
+                    ?: error("Window container should not be null")
             )
         }
     }
@@ -434,14 +463,15 @@ object WindowManagerTraceParser {
                 stackId = proto.stackId,
                 layer = proto.animator?.surface?.layer ?: 0,
                 isSurfaceShown = proto.animator?.surface?.shown ?: false,
-                windowType = when {
-                    identifierName.startsWith(WindowState.STARTING_WINDOW_PREFIX) ->
-                        WindowState.WINDOW_TYPE_STARTING
-                    proto.animatingExit -> WindowState.WINDOW_TYPE_EXITING
-                    identifierName.startsWith(WindowState.DEBUGGER_WINDOW_PREFIX) ->
-                        WindowState.WINDOW_TYPE_STARTING
-                    else -> 0
-                },
+                windowType =
+                    when {
+                        identifierName.startsWith(WindowState.STARTING_WINDOW_PREFIX) ->
+                            WindowState.WINDOW_TYPE_STARTING
+                        proto.animatingExit -> WindowState.WINDOW_TYPE_EXITING
+                        identifierName.startsWith(WindowState.DEBUGGER_WINDOW_PREFIX) ->
+                            WindowState.WINDOW_TYPE_STARTING
+                        else -> 0
+                    },
                 requestedSize = Size.from(proto.requestedWidth, proto.requestedHeight),
                 surfacePosition = proto.surfacePosition?.toRect(),
                 frame = proto.windowFrames?.frame?.toRect() ?: Rect.EMPTY,
@@ -452,19 +482,27 @@ object WindowManagerTraceParser {
                 surfaceInsets = proto.surfaceInsets?.toRect() ?: Rect.EMPTY,
                 givenContentInsets = proto.givenContentInsets?.toRect() ?: Rect.EMPTY,
                 crop = proto.animator?.lastClipRect?.toRect() ?: Rect.EMPTY,
-                windowContainer = newWindowContainer(
-                    proto.windowContainer,
-                    proto.windowContainer.children
-                        .mapNotNull { p -> newWindowContainerChild(p, isActivityInTree) },
-                    nameOverride = when {
-                        // Existing code depends on the prefix being removed
-                        identifierName.startsWith(WindowState.STARTING_WINDOW_PREFIX) ->
-                            identifierName.substring(WindowState.STARTING_WINDOW_PREFIX.length)
-                        identifierName.startsWith(WindowState.DEBUGGER_WINDOW_PREFIX) ->
-                            identifierName.substring(WindowState.DEBUGGER_WINDOW_PREFIX.length)
-                        else -> identifierName
-                    }
-                ) ?: error("Window container should not be null"),
+                windowContainer =
+                    newWindowContainer(
+                        proto.windowContainer,
+                        proto.windowContainer.children.mapNotNull { p ->
+                            newWindowContainerChild(p, isActivityInTree)
+                        },
+                        nameOverride =
+                            when {
+                                // Existing code depends on the prefix being removed
+                                identifierName.startsWith(WindowState.STARTING_WINDOW_PREFIX) ->
+                                    identifierName.substring(
+                                        WindowState.STARTING_WINDOW_PREFIX.length
+                                    )
+                                identifierName.startsWith(WindowState.DEBUGGER_WINDOW_PREFIX) ->
+                                    identifierName.substring(
+                                        WindowState.DEBUGGER_WINDOW_PREFIX.length
+                                    )
+                                else -> identifierName
+                            }
+                    )
+                        ?: error("Window container should not be null"),
                 isAppWindow = isActivityInTree
             )
         }
@@ -520,11 +558,12 @@ object WindowManagerTraceParser {
             null
         } else {
             Configuration.from(
-                windowConfiguration = if (proto.windowConfiguration != null) {
-                    newWindowConfiguration(proto.windowConfiguration)
-                } else {
-                    null
-                },
+                windowConfiguration =
+                    if (proto.windowConfiguration != null) {
+                        newWindowConfiguration(proto.windowConfiguration)
+                    } else {
+                        null
+                    },
                 densityDpi = proto.densityDpi,
                 orientation = proto.orientation,
                 screenHeightDp = proto.screenHeightDp,
@@ -559,9 +598,7 @@ object WindowManagerTraceParser {
                 token = proto.identifier?.hashCode?.toString(16) ?: "",
                 orientation = proto.orientation,
                 _isVisible = proto.visible,
-                configurationContainer = newConfigurationContainer(
-                    proto.configurationContainer
-                ),
+                configurationContainer = newConfigurationContainer(proto.configurationContainer),
                 layerId = proto.surfaceControl?.layerId ?: 0,
                 children = children.toTypedArray()
             )
@@ -590,10 +627,8 @@ object WindowManagerTraceParser {
                 TRANSIT_KEYGUARD_GOING_AWAY_ON_WALLPAPER
             ViewProtoEnums.TRANSIT_KEYGUARD_OCCLUDE -> TRANSIT_KEYGUARD_OCCLUDE
             ViewProtoEnums.TRANSIT_KEYGUARD_UNOCCLUDE -> TRANSIT_KEYGUARD_UNOCCLUDE
-            ViewProtoEnums.TRANSIT_TRANSLUCENT_ACTIVITY_OPEN ->
-                TRANSIT_TRANSLUCENT_ACTIVITY_OPEN
-            ViewProtoEnums.TRANSIT_TRANSLUCENT_ACTIVITY_CLOSE ->
-                TRANSIT_TRANSLUCENT_ACTIVITY_CLOSE
+            ViewProtoEnums.TRANSIT_TRANSLUCENT_ACTIVITY_OPEN -> TRANSIT_TRANSLUCENT_ACTIVITY_OPEN
+            ViewProtoEnums.TRANSIT_TRANSLUCENT_ACTIVITY_CLOSE -> TRANSIT_TRANSLUCENT_ACTIVITY_CLOSE
             ViewProtoEnums.TRANSIT_CRASHING_ACTIVITY_CLOSE -> "TRANSIT_CRASHING_ACTIVITY_CLOSE"
             else -> error("Invalid lastUsedAppTransition")
         }

@@ -23,35 +23,27 @@ import com.android.server.wm.traces.common.transition.TransitionState.Companion.
 import kotlin.js.JsName
 
 class Transition(
-    @JsName("type")
-    val type: Type,
-    @JsName("start")
-    val start: Long,
-    @JsName("end")
-    val end: Long,
-    @JsName("collectingStart")
-    val collectingStart: Long,
-    @JsName("startTransaction")
-    val startTransaction: Transaction?,
-    @JsName("finishTransaction")
-    val finishTransaction: Transaction?,
-    @JsName("changes")
-    val changes: List<TransitionChange>,
-    @JsName("played")
-    val played: Boolean,
-    @JsName("aborted")
-    val aborted: Boolean
+    @JsName("type") val type: Type,
+    @JsName("start") val start: Long,
+    @JsName("end") val end: Long,
+    @JsName("collectingStart") val collectingStart: Long,
+    @JsName("startTransaction") val startTransaction: Transaction?,
+    @JsName("finishTransaction") val finishTransaction: Transaction?,
+    @JsName("changes") val changes: List<TransitionChange>,
+    @JsName("played") val played: Boolean,
+    @JsName("aborted") val aborted: Boolean
 ) : ITraceEntry {
     override val timestamp = start
 
     @JsName("isIncomplete")
-    val isIncomplete: Boolean get() = !played || aborted
+    val isIncomplete: Boolean
+        get() = !played || aborted
 
     override fun toString(): String =
         "Transition#${hashCode()}" +
-                "($type, aborted=$aborted, start=$start, end=$end," +
-                "startTransaction=$startTransaction, finishTransaction=$finishTransaction, " +
-                "changes=[${changes.joinToString()}])"
+            "($type, aborted=$aborted, start=$start, end=$end," +
+            "startTransaction=$startTransaction, finishTransaction=$finishTransaction, " +
+            "changes=[${changes.joinToString()}])"
 
     companion object {
         enum class Type(val value: Int) {
@@ -77,28 +69,17 @@ class Transition(
         }
 
         class Builder(val id: Int) {
-            @JsName("type")
-            var type: Type = Type.UNDEFINED
-            @JsName("start")
-            var start: Long = -1
-            @JsName("end")
-            var end: Long = -1
-            @JsName("collectingStart")
-            var collectingStart: Long = -1
-            @JsName("changes")
-            var changes: List<TransitionChange> = emptyList()
-            @JsName("played")
-            var played = false
-            @JsName("aborted")
-            var aborted = false
-            @JsName("startTransactionId")
-            var startTransactionId = -1L
-            @JsName("finishTransactionId")
-            var finishTransactionId = -1L
-            @JsName("startTransaction")
-            var startTransaction: Transaction? = null
-            @JsName("finishTransaction")
-            var finishTransaction: Transaction? = null
+            @JsName("type") var type: Type = Type.UNDEFINED
+            @JsName("start") var start: Long = -1
+            @JsName("end") var end: Long = -1
+            @JsName("collectingStart") var collectingStart: Long = -1
+            @JsName("changes") var changes: List<TransitionChange> = emptyList()
+            @JsName("played") var played = false
+            @JsName("aborted") var aborted = false
+            @JsName("startTransactionId") var startTransactionId = -1L
+            @JsName("finishTransactionId") var finishTransactionId = -1L
+            @JsName("startTransaction") var startTransaction: Transaction? = null
+            @JsName("finishTransaction") var finishTransaction: Transaction? = null
 
             // Assumes each state is reported once
             @JsName("addState")
@@ -141,12 +122,14 @@ class Transition(
                     return
                 }
 
-                startTransaction = transactionsTrace.allTransactions.firstOrNull {
-                    transaction -> transaction.id == startTransactionId
-                }
-                finishTransaction = transactionsTrace.allTransactions.firstOrNull {
-                    transaction -> transaction.id == finishTransactionId
-                }
+                startTransaction =
+                    transactionsTrace.allTransactions.firstOrNull { transaction ->
+                        transaction.id == startTransactionId
+                    }
+                finishTransaction =
+                    transactionsTrace.allTransactions.firstOrNull { transaction ->
+                        transaction.id == finishTransactionId
+                    }
 
                 val startTransaction = startTransaction
                 requireNotNull(startTransaction) {
@@ -159,10 +142,10 @@ class Transition(
                         "Transaction with id $finishTransactionId not found in transactions trace."
                 }
 
-                require(startTransaction.appliedVSyncId != -1L ) {
+                require(startTransaction.appliedVSyncId != -1L) {
                     "Matched start transaction had a vSyncId of -1..."
                 }
-                require(finishTransaction.appliedVSyncId != -1L ) {
+                require(finishTransaction.appliedVSyncId != -1L) {
                     "Matched start transaction had a vSyncId of -1..."
                 }
             }

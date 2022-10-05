@@ -30,8 +30,8 @@ import org.junit.runner.Result
 import org.junit.runner.notification.Failure
 
 /**
- * Collects all the Flicker Service's metrics which are then uploaded for analysis and monitoring
- * to the CrystalBall database.
+ * Collects all the Flicker Service's metrics which are then uploaded for analysis and monitoring to
+ * the CrystalBall database.
  */
 class FlickerServiceResultsCollector(
     val outputDir: Path,
@@ -41,7 +41,8 @@ class FlickerServiceResultsCollector(
     private var collectMetricsPerTest = true
 
     private val _executionErrors = mutableListOf<ExecutionError>()
-    val executionErrors: List<ExecutionError> get() = _executionErrors
+    val executionErrors: List<ExecutionError>
+        get() = _executionErrors
 
     internal val assertionResults = mutableListOf<AssertionResult>()
 
@@ -76,9 +77,7 @@ class FlickerServiceResultsCollector(
     }
 
     override fun onTestFail(testData: DataRecord, description: Description, failure: Failure) {
-        errorReportingBlock {
-            Log.i(LOG_TAG, "onTestFail")
-        }
+        errorReportingBlock { Log.i(LOG_TAG, "onTestFail") }
     }
 
     override fun onTestEnd(testData: DataRecord, description: Description) {
@@ -106,11 +105,12 @@ class FlickerServiceResultsCollector(
         val collectedTraces = tracesCollector.getCollectedTraces()
         val flickerService = FlickerService()
         Log.i(LOG_TAG, "Processing traces")
-        val results = flickerService.process(
-            collectedTraces.wmTrace,
-            collectedTraces.layersTrace,
-            collectedTraces.transitionsTrace
-        )
+        val results =
+            flickerService.process(
+                collectedTraces.wmTrace,
+                collectedTraces.layersTrace,
+                collectedTraces.transitionsTrace
+            )
         Log.i(LOG_TAG, "Got ${results.size} results")
         assertionResults.addAll(results)
         val aggregatedResults = processFlickerResults(results)

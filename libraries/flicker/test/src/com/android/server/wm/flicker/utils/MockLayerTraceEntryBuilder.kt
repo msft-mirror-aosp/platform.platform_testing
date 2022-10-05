@@ -41,21 +41,21 @@ class MockLayerTraceEntryBuilder() {
     }
 
     fun addDisplay(rootLayers: List<MockLayerBuilder>): MockLayerTraceEntryBuilder = apply {
-        val displayLayer = MockLayerBuilder("Display")
-            .setAbsoluteBounds(bounds)
-            .addChildren(rootLayers)
-            .build()
+        val displayLayer =
+            MockLayerBuilder("Display").setAbsoluteBounds(bounds).addChildren(rootLayers).build()
         val displayId = 1UL
         val stackId = 1
-        this.displays.add(Display.from(
-            id = displayId,
-            name = "Display",
-            layerStackId = stackId,
-            size = Size.from(bounds.width, bounds.height),
-            layerStackSpace = bounds,
-            transform = Transform.EMPTY,
-            isVirtual = false
-        ))
+        this.displays.add(
+            Display.from(
+                id = displayId,
+                name = "Display",
+                layerStackId = stackId,
+                size = Size.from(bounds.width, bounds.height),
+                layerStackSpace = bounds,
+                transform = Transform.EMPTY,
+                isVirtual = false
+            )
+        )
         this.layers.add(displayLayer)
     }
 

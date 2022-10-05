@@ -19,55 +19,44 @@ package com.android.server.wm.traces.common
 import kotlin.js.JsName
 
 /**
- * The utility class to wait a condition with customized options.
- * The default retry policy is 5 times with interval 1 second.
+ * The utility class to wait a condition with customized options. The default retry policy is 5
+ * times with interval 1 second.
  *
  * @param <T> The type of the object to validate.
  *
- * <p>Sample:</p>
- * <pre>
- * // Simple case.
- * if (Condition.waitFor("true value", () -> true)) {
+ * <p>Sample:</p> <pre> // Simple case. if (Condition.waitFor("true value", () -> true)) {
+ * ```
  *     println("Success");
- * }
- * // Wait for customized result with customized validation.
- * String result = Condition.waitForResult(new Condition<String>("string comparison")
+ * ```
+ * } // Wait for customized result with customized validation. String result =
+ * Condition.waitForResult(new Condition<String>("string comparison")
+ * ```
  *         .setResultSupplier(() -> "Result string")
  *         .setResultValidator(str -> str.equals("Expected string"))
  *         .setRetryIntervalMs(500)
  *         .setRetryLimit(3)
  *         .setOnFailure(str -> println("Failed on " + str)));
+ * ```
  * </pre>
-
+ *
  * @param message The message to show what is waiting for.
  * @param condition If it returns true, that means the condition is satisfied.
  */
 open class Condition<T>(
-    @JsName("message")
-    protected open val message: String = "",
-    @JsName("condition")
-    protected open val condition: (T) -> Boolean
+    @JsName("message") protected open val message: String = "",
+    @JsName("condition") protected open val condition: (T) -> Boolean
 ) {
-    /**
-     * @return if [value] satisfies the condition
-     */
+    /** @return if [value] satisfies the condition */
     @JsName("isSatisfied")
     fun isSatisfied(value: T): Boolean {
         return condition.invoke(value)
     }
 
-    /**
-     * @return the negation of the current assertion
-     */
+    /** @return the negation of the current assertion */
     @JsName("negate")
-    fun negate(): Condition<T> = Condition(
-        message = "!$message") {
-        !this.condition.invoke(it)
-    }
+    fun negate(): Condition<T> = Condition(message = "!$message") { !this.condition.invoke(it) }
 
-    /**
-     * @return a formatted message for the passing or failing condition on a state
-     */
+    /** @return a formatted message for the passing or failing condition on a state */
     @JsName("getMessage")
     open fun getMessage(value: T): String = "$message(passed=${isSatisfied(value)})"
 

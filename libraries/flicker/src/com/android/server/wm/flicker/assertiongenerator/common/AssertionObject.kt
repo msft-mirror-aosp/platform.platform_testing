@@ -16,10 +16,7 @@
 
 package com.android.server.wm.flicker.assertiongenerator.common
 
-class AssertionObject(
-    val assertionFunctionParameters: List<Any>,
-    val function: AssertionFunction
-) {
+class AssertionObject(val assertionFunctionParameters: List<Any>, val function: AssertionFunction) {
     companion object {
         enum class AssertionFunction(val functionName: String) {
             // For now, strings are used as placeholders to test

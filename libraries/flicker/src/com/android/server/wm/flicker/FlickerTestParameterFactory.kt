@@ -34,10 +34,11 @@ open class FlickerTestParameterFactory {
     @JvmOverloads
     open fun getConfigNonRotationTests(
         supportedRotations: List<Int> = listOf(Surface.ROTATION_0, Surface.ROTATION_90),
-        supportedNavigationModes: List<String> = listOf(
-            WindowManagerPolicyConstants.NAV_BAR_MODE_3BUTTON_OVERLAY,
-            WindowManagerPolicyConstants.NAV_BAR_MODE_GESTURAL_OVERLAY
-        ),
+        supportedNavigationModes: List<String> =
+            listOf(
+                WindowManagerPolicyConstants.NAV_BAR_MODE_3BUTTON_OVERLAY,
+                WindowManagerPolicyConstants.NAV_BAR_MODE_GESTURAL_OVERLAY
+            ),
         faasEnabled: Boolean = false
     ): List<FlickerTestParameter> {
         return supportedNavigationModes.flatMap { navBarMode ->
@@ -55,19 +56,18 @@ open class FlickerTestParameterFactory {
     @JvmOverloads
     open fun getConfigRotationTests(
         supportedRotations: List<Int> = listOf(Surface.ROTATION_0, Surface.ROTATION_90),
-        supportedNavigationModes: List<String> = listOf(
-            WindowManagerPolicyConstants.NAV_BAR_MODE_3BUTTON_OVERLAY,
-            WindowManagerPolicyConstants.NAV_BAR_MODE_GESTURAL_OVERLAY
-        ),
+        supportedNavigationModes: List<String> =
+            listOf(
+                WindowManagerPolicyConstants.NAV_BAR_MODE_3BUTTON_OVERLAY,
+                WindowManagerPolicyConstants.NAV_BAR_MODE_GESTURAL_OVERLAY
+            ),
         faasEnabled: Boolean = false
     ): List<FlickerTestParameter> {
         return supportedNavigationModes.flatMap { navBarMode ->
             supportedRotations
                 .flatMap { start -> supportedRotations.map { end -> start to end } }
                 .filter { (start, end) -> start != end }
-                .map { (start, end) ->
-                    createParam(navBarMode, start, end, faasEnabled)
-                }
+                .map { (start, end) -> createParam(navBarMode, start, end, faasEnabled) }
         }
     }
 
@@ -76,14 +76,15 @@ open class FlickerTestParameterFactory {
         startRotation: Int,
         endRotation: Int = startRotation,
         faasEnabled: Boolean = false
-    ) = FlickerTestParameter(
-        mutableMapOf(
-            FlickerTestParameter.NAV_BAR_MODE to navBarMode,
-            FlickerTestParameter.START_ROTATION to startRotation,
-            FlickerTestParameter.END_ROTATION to endRotation,
-            FlickerTestParameter.FAAS_ENABLED to (faasEnabled && IS_FAAS_ENABLED)
+    ) =
+        FlickerTestParameter(
+            mutableMapOf(
+                FlickerTestParameter.NAV_BAR_MODE to navBarMode,
+                FlickerTestParameter.START_ROTATION to startRotation,
+                FlickerTestParameter.END_ROTATION to endRotation,
+                FlickerTestParameter.FAAS_ENABLED to (faasEnabled && IS_FAAS_ENABLED)
+            )
         )
-    )
 
     companion object {
         private lateinit var instance: FlickerTestParameterFactory

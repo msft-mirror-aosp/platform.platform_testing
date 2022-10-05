@@ -27,7 +27,7 @@ java_library {
 
     static_libs: [
         "androidx.test.runner",
-        "androidx.test.uiautomator_uiautomator",
+        "androidx.test.uiautomator",
         "collector-helper-utilities",
         "guava",
         "platformprotosnano",

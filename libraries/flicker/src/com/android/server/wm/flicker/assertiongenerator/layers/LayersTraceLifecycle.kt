@@ -22,8 +22,7 @@ import com.android.server.wm.flicker.assertiongenerator.common.ITraceLifecycle
 import com.android.server.wm.traces.common.ComponentNameMatcher
 
 class LayersTraceLifecycle(
-    val lifecycleMap: MutableMap<ComponentNameMatcher, LayersComponentLifecycle> =
-        mutableMapOf()
+    val lifecycleMap: MutableMap<ComponentNameMatcher, LayersComponentLifecycle> = mutableMapOf()
 ) : ITraceLifecycle {
     override val size: Int
         get() = lifecycleMap.size
@@ -41,34 +40,29 @@ class LayersTraceLifecycle(
         elementLifecycle: IElementLifecycle
     ) {
         lifecycleMap[elementComponentNameMatcher]
-            ?: run {
-                lifecycleMap[elementComponentNameMatcher] =
-                    LayersComponentLifecycle()
-            }
+            ?: run { lifecycleMap[elementComponentNameMatcher] = LayersComponentLifecycle() }
         lifecycleMap[elementComponentNameMatcher]!![elementId] =
             elementLifecycle as LayersElementLifecycle
     }
 
     // can't have LayersElementLifecycle because
     // compiler won't allow different types in the function signature
-    override operator fun set(
-        elementId: Any,
-        elementLifecycles: IComponentLifecycle
-    ) {
+    override operator fun set(elementId: Any, elementLifecycles: IComponentLifecycle) {
         lifecycleMap[elementId as ComponentNameMatcher] =
             elementLifecycles as LayersComponentLifecycle
     }
 
-    override fun getOrPut(elementId: Any, elementLifecycles: IComponentLifecycle):
-            LayersComponentLifecycle {
-        return lifecycleMap.getOrPut(elementId as ComponentNameMatcher){
+    override fun getOrPut(
+        elementId: Any,
+        elementLifecycles: IComponentLifecycle
+    ): LayersComponentLifecycle {
+        return lifecycleMap.getOrPut(elementId as ComponentNameMatcher) {
             elementLifecycles as LayersComponentLifecycle
         }
     }
 
     override fun equals(other: Any?): Boolean {
-        return other is LayersTraceLifecycle &&
-            this.lifecycleMap == other.lifecycleMap
+        return other is LayersTraceLifecycle && this.lifecycleMap == other.lifecycleMap
     }
 
     override fun hashCode(): Int {

@@ -23,39 +23,25 @@ import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 import kotlin.js.JsName
 
 /**
- * Represents a state dump containing the [WindowManagerTrace] and the [LayersTrace] both parsed
- * and in raw (byte) data.
+ * Represents a state dump containing the [WindowManagerTrace] and the [LayersTrace] both parsed and
+ * in raw (byte) data.
  */
 class DeviceTraceDump(
-    /**
-     * Parsed [WindowManagerTrace]
-     */
-    @JsName("wmTrace")
-    val wmTrace: WindowManagerTrace?,
-    /**
-     * Parsed [LayersTrace]
-     */
-    @JsName("layersTrace")
-    val layersTrace: LayersTrace?,
-    /**
-     * Parsed [TransactionsTrace]
-     */
-    @JsName("transactionsTrace")
-    val transactionsTrace: TransactionsTrace? = null,
-    /**
-     * Parsed [TransitionsTrace]
-     */
-    @JsName("transitionsTrace")
-    val transitionsTrace: TransitionsTrace? = null
+    /** Parsed [WindowManagerTrace] */
+    @JsName("wmTrace") val wmTrace: WindowManagerTrace?,
+    /** Parsed [LayersTrace] */
+    @JsName("layersTrace") val layersTrace: LayersTrace?,
+    /** Parsed [TransactionsTrace] */
+    @JsName("transactionsTrace") val transactionsTrace: TransactionsTrace? = null,
+    /** Parsed [TransitionsTrace] */
+    @JsName("transitionsTrace") val transitionsTrace: TransitionsTrace? = null
 ) {
-    /**
-     * A deviceTraceDump is considered valid if at least one of the layers/wm traces is non-null
-     */
+    /** A deviceTraceDump is considered valid if at least one of the layers/wm traces is non-null */
     val isValid: Boolean
-    get() {
-        if (wmTrace == null && layersTrace == null) {
-            return false
+        get() {
+            if (wmTrace == null && layersTrace == null) {
+                return false
+            }
+            return true
         }
-        return true
-    }
 }

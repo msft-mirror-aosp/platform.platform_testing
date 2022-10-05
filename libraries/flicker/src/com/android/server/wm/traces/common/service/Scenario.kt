@@ -23,10 +23,8 @@ import com.android.server.wm.traces.common.tags.TagTrace
 import com.android.server.wm.traces.common.transition.TransitionsTrace
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 
-enum class Scenario(
-    val description: String,
-    val executionCondition: AssertionExecutionCondition
-) : ITagGenerator {
+enum class Scenario(val description: String, val executionCondition: AssertionExecutionCondition) :
+    ITagGenerator {
     COMMON("Common", AssertionExecutionCondition.ALWAYS),
     APP_LAUNCH("AppLaunch", AssertionExecutionCondition.APP_LAUNCH),
     APP_CLOSE("AppClose", AssertionExecutionCondition.APP_CLOSE),
@@ -38,9 +36,9 @@ enum class Scenario(
     PIP_EXIT("PipExit", AssertionExecutionCondition.NEVER);
 
     /**
-     * Gets the concrete instances of a Scenario that appear in the provided traces.
-     * An instance (which includes start and end marks) is returned for each point in the traces a
-     * scenario is detected to have occurred.
+     * Gets the concrete instances of a Scenario that appear in the provided traces. An instance
+     * (which includes start and end marks) is returned for each point in the traces a scenario is
+     * detected to have occurred.
      */
     fun getInstances(
         transitionsTrace: TransitionsTrace,
@@ -61,8 +59,14 @@ enum class Scenario(
                     "Completed transition shouldn't have a null finishTransaction"
                 }
                 scenarioInstances.add(
-                    ScenarioInstance(this, transition.collectingStart, transition.end,
-                        transition.startTransaction, transition.finishTransaction, transition)
+                    ScenarioInstance(
+                        this,
+                        transition.collectingStart,
+                        transition.end,
+                        transition.startTransaction,
+                        transition.finishTransaction,
+                        transition
+                    )
                 )
             }
         }
@@ -87,47 +91,48 @@ enum class Scenario(
 
             val tagId = TagIdGenerator.getNext()
 
-            val startTag = Tag(
-                id = tagId,
-                scenario = this,
-                isStartTag = true,
-                layerId = -1,
-                windowToken = "",
-                taskId = 0
-            )
+            val startTag =
+                Tag(
+                    id = tagId,
+                    scenario = this,
+                    isStartTag = true,
+                    layerId = -1,
+                    windowToken = "",
+                    taskId = 0
+                )
             tagsByTs[scenarioInstance.startTimestamp]!!.add(startTag)
 
-            val endTag = Tag(
-                id = tagId,
-                scenario = this,
-                isStartTag = false,
-                layerId = -1,
-                windowToken = "",
-                taskId = 0
-            )
+            val endTag =
+                Tag(
+                    id = tagId,
+                    scenario = this,
+                    isStartTag = false,
+                    layerId = -1,
+                    windowToken = "",
+                    taskId = 0
+                )
             tagsByTs[scenarioInstance.endTimestamp]!!.add(endTag)
         }
 
         val tagStates = mutableListOf<TagState>()
         for ((timestamp, tags) in tagsByTs) {
-            tagStates.add(
-                TagState(timestamp.toString(), tags.toTypedArray())
-            )
+            tagStates.add(TagState(timestamp.toString(), tags.toTypedArray()))
         }
 
         return TagTrace(tagStates.sortedBy { it.timestamp }.toTypedArray())
     }
 
     companion object {
-        val scenariosByDescription: Map<String, Scenario> = mapOf(
-            "Common" to COMMON,
-            "AppLaunch" to APP_LAUNCH,
-            "AppClose" to APP_CLOSE,
-            "Rotation" to ROTATION,
-            "ImeAppear" to IME_APPEAR,
-            "ImeDisappear" to IME_DISAPPEAR,
-            "PipEnter" to PIP_ENTER,
-            "PipExit" to PIP_EXIT
-        )
+        val scenariosByDescription: Map<String, Scenario> =
+            mapOf(
+                "Common" to COMMON,
+                "AppLaunch" to APP_LAUNCH,
+                "AppClose" to APP_CLOSE,
+                "Rotation" to ROTATION,
+                "ImeAppear" to IME_APPEAR,
+                "ImeDisappear" to IME_DISAPPEAR,
+                "PipEnter" to PIP_ENTER,
+                "PipExit" to PIP_EXIT
+            )
     }
 }

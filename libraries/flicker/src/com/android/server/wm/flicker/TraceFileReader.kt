@@ -41,66 +41,63 @@ import java.lang.reflect.Type
 class TraceFileReader {
     companion object {
         /**
-         * Creates a device trace dump containing the WindowManager and Layers trace
-         * obtained from the contents in a regular trace file, already read and passed as bytearray
-         * The parsed traces may contain a multiple
-         * [WindowManagerState] or [LayerTraceEntry].
+         * Creates a device trace dump containing the WindowManager and Layers trace obtained from
+         * the contents in a regular trace file, already read and passed as bytearray The parsed
+         * traces may contain a multiple [WindowManagerState] or [LayerTraceEntry].
          *
          * @param wmTraceByteArray [WindowManagerTrace] content
          * @param layersTraceByteArray [LayersTrace] content
          */
         @JvmStatic
-        fun fromTraceByteArray(wmTraceByteArray: ByteArray?, layersTraceByteArray: ByteArray?):
-        DeviceTraceDump {
-            val wmTrace = wmTraceByteArray?.let {
-                WindowManagerTraceParser.parseFromTrace(wmTraceByteArray)
-            }
-            val layersTrace = layersTraceByteArray?.let {
-                LayersTraceParser.parseFromTrace(data = layersTraceByteArray)
-            }
+        fun fromTraceByteArray(
+            wmTraceByteArray: ByteArray?,
+            layersTraceByteArray: ByteArray?
+        ): DeviceTraceDump {
+            val wmTrace =
+                wmTraceByteArray?.let { WindowManagerTraceParser.parseFromTrace(wmTraceByteArray) }
+            val layersTrace =
+                layersTraceByteArray?.let {
+                    LayersTraceParser.parseFromTrace(data = layersTraceByteArray)
+                }
             return DeviceTraceDump(wmTrace, layersTrace)
         }
 
-        /**
-         * Gets the config directory of golden traces used for automatic test generation
-         */
+        /** Gets the config directory of golden traces used for automatic test generation */
         fun getGoldenTracesConfigDir() = "/assertiongenerator_config"
 
-        /**
-         * Read a resource file in bytearray format
-         * Return null if the filename doesn't exist
-         */
+        /** Read a resource file in bytearray format Return null if the filename doesn't exist */
         fun readBytesFromResource(filename: String): ByteArray? {
             val inputStream = object {}.javaClass.getResourceAsStream(filename) ?: return null
             return ByteStreams.toByteArray(inputStream)
         }
 
-        /**
-         * Read a resource file in String format
-         * Return null if the filename doesn't exist
-         */
+        /** Read a resource file in String format Return null if the filename doesn't exist */
         fun readTextFromResource(filename: String): String? {
             return object {}.javaClass.getResource(filename)?.readText()
         }
 
         /**
-         * Read a list of objects of type ObjectType from a json String
-         * For typeToken, create it beforehand with the actual ObjectType as follows:
-         * val typeToken = object : TypeToken<List<ObjectType>>() {}.type
+         * Read a list of objects of type ObjectType from a json String For typeToken, create it
+         * beforehand with the actual ObjectType as follows: val typeToken = object :
+         * TypeToken<List<ObjectType>>() {}.type
          */
-        inline fun <reified ObjectType> readJsonFromString(jsonString: String, typeToken: Type):
-            List<ObjectType> {
+        inline fun <reified ObjectType> readJsonFromString(
+            jsonString: String,
+            typeToken: Type
+        ): List<ObjectType> {
             val gson = Gson()
             val jsonFromStr: List<ObjectType> = gson.fromJson(jsonString, typeToken)
             return jsonFromStr
         }
 
         /**
-         * Read a list of objects of type ObjectType from a json file
-         * Return null if the filename doesn't exist
+         * Read a list of objects of type ObjectType from a json file Return null if the filename
+         * doesn't exist
          */
-        inline fun <reified ObjectType> readObjectFromResource(filename: String, typeToken: Type):
-            List<ObjectType>? {
+        inline fun <reified ObjectType> readObjectFromResource(
+            filename: String,
+            typeToken: Type
+        ): List<ObjectType>? {
             val str = readTextFromResource(filename)
             str?.run {
                 return@readObjectFromResource readJsonFromString(this, typeToken)
@@ -115,61 +112,60 @@ class TraceFileReader {
             val transitionsTracePath: String?,
         ) {
             fun getDeviceTraceDump(): DeviceTraceDump {
-                val wmTrace = wmTracePath?.let{
-                    readBytesFromResource(wmTracePath)?.let {
-                        try {
-                            WindowManagerTraceParser.parseFromTrace(it)
-                        } catch (err: Exception) {
-                            // invalid file
-                            null
+                val wmTrace =
+                    wmTracePath?.let {
+                        readBytesFromResource(wmTracePath)?.let {
+                            try {
+                                WindowManagerTraceParser.parseFromTrace(it)
+                            } catch (err: Exception) {
+                                // invalid file
+                                null
+                            }
                         }
                     }
-                }
 
-                val layersTrace = layersTracePath?.let {
-                    readBytesFromResource(layersTracePath)?.let {
-                        try {
-                            LayersTraceParser.parseFromTrace(it)
-                        } catch (err: Exception) {
-                            // invalid file
-                            null
+                val layersTrace =
+                    layersTracePath?.let {
+                        readBytesFromResource(layersTracePath)?.let {
+                            try {
+                                LayersTraceParser.parseFromTrace(it)
+                            } catch (err: Exception) {
+                                // invalid file
+                                null
+                            }
                         }
                     }
-                }
 
-                val transactionsTrace = transactionsTracePath?.let {
-                    readBytesFromResource(transactionsTracePath)?.let {
-                        try {
-                            TransactionsTraceParser.parseFromTrace(it)
-                        } catch (err: Exception) {
-                            // invalid file
-                            null
+                val transactionsTrace =
+                    transactionsTracePath?.let {
+                        readBytesFromResource(transactionsTracePath)?.let {
+                            try {
+                                TransactionsTraceParser.parseFromTrace(it)
+                            } catch (err: Exception) {
+                                // invalid file
+                                null
+                            }
                         }
                     }
-                }
 
-                val transitionsTrace = if (
-                    transitionsTracePath != null &&
-                    transactionsTrace != null
-                ) {
-                    readBytesFromResource(transitionsTracePath)?.let {
-                        try {
-                            TransitionsTraceParser.parseFromTrace(it, transactionsTrace)
-                        } catch (err: Exception) {
-                            // invalid file
-                            null
+                val transitionsTrace =
+                    if (transitionsTracePath != null && transactionsTrace != null) {
+                        readBytesFromResource(transitionsTracePath)?.let {
+                            try {
+                                TransitionsTraceParser.parseFromTrace(it, transactionsTrace)
+                            } catch (err: Exception) {
+                                // invalid file
+                                null
+                            }
                         }
+                    } else {
+                        null
                     }
-                } else {
-                    null
-                }
                 return DeviceTraceDump(wmTrace, layersTrace, transactionsTrace, transitionsTrace)
             }
         }
 
-        /**
-         * Gets the paths of golden traces for a specified scenario
-         */
+        /** Gets the paths of golden traces for a specified scenario */
         fun getGoldenTracePathsForDirectory(dir: String): TracePaths {
             return TracePaths(
                 "$dir/wm_trace.winscope",
@@ -183,12 +179,16 @@ class TraceFileReader {
             scenario: Scenario,
             deviceTraceDump: DeviceTraceDump
         ): ScenarioInstance {
-            val transitionsTrace = deviceTraceDump.transitionsTrace ?: run{
-                throw ConfigException("Transition trace is missing for scenario $scenario, " +
-                    "so we can't extract scenario instance")
-            }
-            val scenarioInstances = scenario.getInstances(transitionsTrace)
-            {m -> Log.d("TraceFileReader", m)}
+            val transitionsTrace =
+                deviceTraceDump.transitionsTrace
+                    ?: run {
+                        throw ConfigException(
+                            "Transition trace is missing for scenario $scenario, " +
+                                "so we can't extract scenario instance"
+                        )
+                    }
+            val scenarioInstances =
+                scenario.getInstances(transitionsTrace) { m -> Log.d("TraceFileReader", m) }
             assert(scenarioInstances.size == 1)
             val scenarioInstance: ScenarioInstance
             try {
@@ -199,11 +199,11 @@ class TraceFileReader {
             return scenarioInstance
         }
 
-        /**
-         * Pre-processing step to trim golden traces for scenario
-         */
-        fun trimGoldenTracesForScenario(scenario: Scenario, deviceTraceDump: DeviceTraceDump):
-            DeviceTraceDump {
+        /** Pre-processing step to trim golden traces for scenario */
+        fun trimGoldenTracesForScenario(
+            scenario: Scenario,
+            deviceTraceDump: DeviceTraceDump
+        ): DeviceTraceDump {
             val scenarioInstance =
                 getScenarioInstanceFromScenarioFromGoldenTrace(scenario, deviceTraceDump)
             val newLayersTrace =
@@ -235,8 +235,8 @@ class TraceFileReader {
         }
 
         /**
-         * Get the component matcher with a given type (component builder)
-         * e.g. OPENING_APP, CLOSING_APP
+         * Get the component matcher with a given type (component builder) e.g. OPENING_APP,
+         * CLOSING_APP
          */
         fun getComponentMatcherWithType(
             scenarioInstance: ScenarioInstance,
@@ -247,44 +247,49 @@ class TraceFileReader {
         }
 
         /**
-         * Gets the config of golden traces used for automatic test generation
-         * Key -> Scenario
-         * Value -> Path where the directory of traces for this specific scenario is located
+         * Gets the config of golden traces used for automatic test generation Key -> Scenario Value
+         * -> Path where the directory of traces for this specific scenario is located
          *
          * @param configDir the config directory -> if null, the default one is retrieved
          *
          * If a custom config directory is specified, it must be placed under
-         * src/com/android/server/wm/flicker/service/resources/ and follow a strict structure
-         * TODO: detail the structure
+         * src/com/android/server/wm/flicker/service/resources/ and follow a strict structure TODO:
+         * detail the structure
          */
         fun getGoldenTracesConfig(configDir: String? = null): Map<Scenario, ScenarioConfig> {
             val configDir = configDir ?: getGoldenTracesConfigDir()
-            return Scenario.scenariosByDescription.map { (scenarioDescription, scenario) ->
-                val scenarioDir = "$configDir/$scenarioDescription"
-                var traceCount = 1
-                val scenarioDeviceTraceDumpArray: MutableList<DeviceTraceDump> = mutableListOf()
-                val scenarioTraceConfigurationArray: MutableList<DeviceTraceConfiguration> =
-                    mutableListOf()
-                while (true) {
-                    val traceDir = "$scenarioDir/trace$traceCount"
-                    val tracePaths = getGoldenTracePathsForDirectory(traceDir)
-                    var deviceTraceDump = tracePaths.getDeviceTraceDump()
-                    if (!deviceTraceDump.isValid) {
-                        break
+            return Scenario.scenariosByDescription
+                .map { (scenarioDescription, scenario) ->
+                    val scenarioDir = "$configDir/$scenarioDescription"
+                    var traceCount = 1
+                    val scenarioDeviceTraceDumpArray: MutableList<DeviceTraceDump> = mutableListOf()
+                    val scenarioTraceConfigurationArray: MutableList<DeviceTraceConfiguration> =
+                        mutableListOf()
+                    while (true) {
+                        val traceDir = "$scenarioDir/trace$traceCount"
+                        val tracePaths = getGoldenTracePathsForDirectory(traceDir)
+                        var deviceTraceDump = tracePaths.getDeviceTraceDump()
+                        if (!deviceTraceDump.isValid) {
+                            break
+                        }
+                        val scenarioInstance =
+                            getScenarioInstanceFromScenarioFromGoldenTrace(
+                                scenario,
+                                deviceTraceDump
+                            )
+                        deviceTraceDump = trimGoldenTracesForScenario(scenario, deviceTraceDump)
+                        val deviceTraceConfiguration = getDeviceTraceConfiguration(scenarioInstance)
+                        scenarioDeviceTraceDumpArray.add(deviceTraceDump)
+                        scenarioTraceConfigurationArray.add(deviceTraceConfiguration)
+                        traceCount++
                     }
-                    val scenarioInstance =
-                        getScenarioInstanceFromScenarioFromGoldenTrace(scenario, deviceTraceDump)
-                    deviceTraceDump = trimGoldenTracesForScenario(scenario, deviceTraceDump)
-                    val deviceTraceConfiguration = getDeviceTraceConfiguration(scenarioInstance)
-                    scenarioDeviceTraceDumpArray.add(deviceTraceDump)
-                    scenarioTraceConfigurationArray.add(deviceTraceConfiguration)
-                    traceCount++
+                    scenario to
+                        ScenarioConfig(
+                            scenarioDeviceTraceDumpArray.toTypedArray(),
+                            scenarioTraceConfigurationArray.toTypedArray()
+                        )
                 }
-                scenario to ScenarioConfig(
-                    scenarioDeviceTraceDumpArray.toTypedArray(),
-                    scenarioTraceConfigurationArray.toTypedArray()
-                )
-            }.toMap()
+                .toMap()
         }
     }
 }

@@ -28,7 +28,9 @@ import java.nio.file.Path
  *
  * Use [WindowManagerTraceSubject.assertThat] to make assertions on the trace
  */
-open class WindowManagerTraceMonitor @JvmOverloads constructor(
+open class WindowManagerTraceMonitor
+@JvmOverloads
+constructor(
     outputDir: Path = getDefaultFlickerOutputDir(),
     sourceFile: Path = TRACE_DIR.resolve("wm_trace$WINSCOPE_EXT")
 ) : TransitionMonitor(outputDir, sourceFile) {

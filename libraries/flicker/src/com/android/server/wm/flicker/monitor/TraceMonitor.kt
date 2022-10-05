@@ -27,12 +27,9 @@ import java.nio.file.Paths
  * Base class for monitors containing common logic to read the trace as a byte array and save the
  * trace to another location.
  */
-abstract class TraceMonitor internal constructor(
-    outputDir: Path,
-    val sourceFile: Path
-) : ITransitionMonitor, FlickerRunResult.IResultSetter, IFileGeneratingMonitor {
-    @VisibleForTesting
-    override val outputFile: Path = outputDir.resolve(sourceFile.fileName)
+abstract class TraceMonitor internal constructor(outputDir: Path, val sourceFile: Path) :
+    ITransitionMonitor, FlickerRunResult.IResultSetter, IFileGeneratingMonitor {
+    @VisibleForTesting override val outputFile: Path = outputDir.resolve(sourceFile.fileName)
     abstract val isEnabled: Boolean
 
     /** Starts monitor. */
@@ -67,8 +64,7 @@ abstract class TraceMonitor internal constructor(
     }
 
     companion object {
-        @JvmStatic
-        protected val TRACE_DIR = Paths.get("/data/misc/wmtrace/")
+        @JvmStatic protected val TRACE_DIR = Paths.get("/data/misc/wmtrace/")
         const val WINSCOPE_EXT = ".winscope"
     }
 }

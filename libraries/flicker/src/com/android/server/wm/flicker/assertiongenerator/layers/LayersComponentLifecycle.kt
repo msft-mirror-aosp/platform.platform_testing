@@ -36,8 +36,7 @@ class LayersComponentLifecycle(
     }
 
     override fun set(elementId: Any, elementLifecycles: IElementLifecycle) {
-        lifecyclesMap[elementId as Int] =
-            elementLifecycles as LayersElementLifecycle
+        lifecyclesMap[elementId as Int] = elementLifecycles as LayersElementLifecycle
     }
 
     override fun getOrPut(elementId: Any, elementLifecycles: IElementLifecycle): IElementLifecycle {
@@ -56,16 +55,13 @@ class LayersComponentLifecycle(
         return ""
     }
 
-    /**
-     * Get "first" entry in the map
-     */
+    /** Get "first" entry in the map */
     fun getOneEntry(): LayersElementLifecycle {
         return lifecyclesMap.values.first()
     }
 
     override fun equals(other: Any?): Boolean {
-        return other is LayersComponentLifecycle &&
-            this.lifecyclesMap == other.lifecyclesMap
+        return other is LayersComponentLifecycle && this.lifecyclesMap == other.lifecyclesMap
     }
 
     override fun hashCode(): Int {

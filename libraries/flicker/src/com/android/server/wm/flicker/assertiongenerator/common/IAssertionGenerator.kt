@@ -30,10 +30,8 @@ interface IAssertionGenerator<Trace> {
         // TO-DO - connect to the whole pipeline of determining assertions b/241905004
         // currently a stub for testing
         val assertionVisible = AssertionObject(mutableListOf(1, 2, 3), AssertionFunction.IS_VISIBLE)
-        val assertionMovesRight = AssertionObject(
-            mutableListOf(4, 5, 6),
-            AssertionFunction.MOVES_RIGHT
-        )
+        val assertionMovesRight =
+            AssertionObject(mutableListOf(4, 5, 6), AssertionFunction.MOVES_RIGHT)
         return arrayOf(assertionVisible, assertionMovesRight)
     }
 

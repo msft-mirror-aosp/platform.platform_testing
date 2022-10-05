@@ -27,32 +27,28 @@ import kotlin.js.JsName
  *
  * This class is used by flicker and Winscope
  */
-class Transform private constructor(
-    @JsName("type")
-    val type: Int?,
-    @JsName("matrix")
-    val matrix: Matrix33
-) {
+class Transform
+private constructor(@JsName("type") val type: Int?, @JsName("matrix") val matrix: Matrix33) {
 
     /**
-     * Returns true if the applying the transform on an an axis aligned rectangle
-     * results in another axis aligned rectangle.
+     * Returns true if the applying the transform on an an axis aligned rectangle results in another
+     * axis aligned rectangle.
      */
     @JsName("isSimpleRotation")
     val isSimpleRotation: Boolean = !(type?.isFlagSet(ROT_INVALID_VAL) ?: true)
 
     /**
-     * The transformation matrix is defined as the product of:
-     * | cos(a) -sin(a) |  \/  | X 0 |
-     * | sin(a)  cos(a) |  /\  | 0 Y |
+     * The transformation matrix is defined as the product of: | cos(a) -sin(a) | \/ | X 0 | |
+     * sin(a) cos(a) | /\ | 0 Y |
      *
-     * where a is a rotation angle, and X and Y are scaling factors.
-     * A transformation matrix is invalid when either X or Y is zero,
-     * as a rotation matrix is valid for any angle. When either X or Y
-     * is 0, then the scaling matrix is not invertible, which makes the
-     * transformation matrix not invertible as well. A 2D matrix with
-     * components | A B | is not invertible if and only if AD - BC = 0.
+     * where a is a rotation angle, and X and Y are scaling factors. A transformation matrix is
+     * invalid when either X or Y is zero, as a rotation matrix is valid for any angle. When either
+     * X or Y is 0, then the scaling matrix is not invertible, which makes the transformation matrix
+     * not invertible as well. A 2D matrix with components | A B | is not invertible if and only if
+     * AD - BC = 0.
+     * ```
      *            | C D |
+     * ```
      * This check is included above.
      */
     @JsName("isValid")
@@ -197,24 +193,18 @@ class Transform private constructor(
 
     companion object {
         @JsName("EMPTY")
-        val EMPTY: Transform get() = withCache{ Transform(type = null, matrix = Matrix33.EMPTY) }
+        val EMPTY: Transform
+            get() = withCache { Transform(type = null, matrix = Matrix33.EMPTY) }
         /* transform type flags */
-        @JsName("TRANSLATE_VAL")
-        const val TRANSLATE_VAL = 0x0001
-        @JsName("ROTATE_VAL")
-        const val ROTATE_VAL = 0x0002
-        @JsName("SCALE_VAL")
-        const val SCALE_VAL = 0x0004
+        @JsName("TRANSLATE_VAL") const val TRANSLATE_VAL = 0x0001
+        @JsName("ROTATE_VAL") const val ROTATE_VAL = 0x0002
+        @JsName("SCALE_VAL") const val SCALE_VAL = 0x0004
 
         /* orientation flags */
-        @JsName("FLIP_H_VAL")
-        const val FLIP_H_VAL = 0x0100 // (1 << 0 << 8)
-        @JsName("FLIP_V_VAL")
-        const val FLIP_V_VAL = 0x0200 // (1 << 1 << 8)
-        @JsName("ROT_90_VAL")
-        const val ROT_90_VAL = 0x0400 // (1 << 2 << 8)
-        @JsName("ROT_INVALID_VAL")
-        const val ROT_INVALID_VAL = 0x8000 // (0x80 << 8)
+        @JsName("FLIP_H_VAL") const val FLIP_H_VAL = 0x0100 // (1 << 0 << 8)
+        @JsName("FLIP_V_VAL") const val FLIP_V_VAL = 0x0200 // (1 << 1 << 8)
+        @JsName("ROT_90_VAL") const val ROT_90_VAL = 0x0400 // (1 << 2 << 8)
+        @JsName("ROT_INVALID_VAL") const val ROT_INVALID_VAL = 0x8000 // (0x80 << 8)
 
         @JsName("isSimpleTransform")
         fun isSimpleTransform(type: Int?): Boolean {
@@ -232,7 +222,6 @@ class Transform private constructor(
         }
 
         @JsName("from")
-        fun from(type: Int?, matrix: Matrix33): Transform =
-            withCache { Transform(type, matrix) }
+        fun from(type: Int?, matrix: Matrix33): Transform = withCache { Transform(type, matrix) }
     }
 }

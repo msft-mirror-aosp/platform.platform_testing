@@ -24,46 +24,36 @@ import com.android.server.wm.traces.common.errors.ErrorTrace
 import com.android.server.wm.traces.parser.LOG_TAG
 import kotlin.system.measureTimeMillis
 
-/**
- * Class that holds the methods to parse error proto files into error classes.
- */
+/** Class that holds the methods to parse error proto files into error classes. */
 class ErrorTraceParserUtil {
     companion object {
         /**
-         * Parses [FlickerErrorTraceProto] from [data] and uses the proto to generates a list
-         * of trace entries, storing the flattened layers into its hierarchical structure.
+         * Parses [FlickerErrorTraceProto] from [data] and uses the proto to generates a list of
+         * trace entries, storing the flattened layers into its hierarchical structure.
          *
          * @param data binary proto data
          */
         @JvmStatic
-        fun parseFromTrace(
-            data: ByteArray
-        ): ErrorTrace {
+        fun parseFromTrace(data: ByteArray): ErrorTrace {
             var fileProto: FlickerErrorTraceProto?
             try {
-                measureTimeMillis {
-                    fileProto = FlickerErrorTraceProto.parseFrom(data)
-                }.also {
-                    Log.v(LOG_TAG, "Parsing proto (Flicker Errors Trace): ${it}ms")
-                }
+                measureTimeMillis { fileProto = FlickerErrorTraceProto.parseFrom(data) }
+                    .also { Log.v(LOG_TAG, "Parsing proto (Flicker Errors Trace): ${it}ms") }
             } catch (e: Exception) {
                 throw RuntimeException(e)
             }
-            return fileProto?.let {
-                parseFromTrace(it)
-            } ?: error("Unable to read flicker errors trace file")
+            return fileProto?.let { parseFromTrace(it) }
+                ?: error("Unable to read flicker errors trace file")
         }
 
         /**
-         * Parses [FlickerErrorTraceProto] from [proto] and uses the proto to generates a list
-         * of trace entries, storing the flattened layers into its hierarchical structure.
+         * Parses [FlickerErrorTraceProto] from [proto] and uses the proto to generates a list of
+         * trace entries, storing the flattened layers into its hierarchical structure.
          *
          * @param proto Parsed proto data
          */
         @JvmStatic
-        fun parseFromTrace(
-            proto: FlickerErrorTraceProto
-        ): ErrorTrace {
+        fun parseFromTrace(proto: FlickerErrorTraceProto): ErrorTrace {
             val states = mutableListOf<ErrorState>()
             var traceParseTime = 0L
             for (stateProto in proto.statesList) {
@@ -71,25 +61,26 @@ class ErrorTraceParserUtil {
                     val errors = mutableListOf<Error>()
                     for (errorProto in stateProto.errorsList) {
                         errors.add(
-                                Error(
-                                    stacktrace = errorProto.stacktrace,
-                                    message = errorProto.message,
-                                    layerId = errorProto.layerId,
-                                    windowToken = errorProto.windowToken,
-                                    taskId = errorProto.taskId,
-                                    assertionName = errorProto.assertionName
-                                ))
+                            Error(
+                                stacktrace = errorProto.stacktrace,
+                                message = errorProto.message,
+                                layerId = errorProto.layerId,
+                                windowToken = errorProto.windowToken,
+                                taskId = errorProto.taskId,
+                                assertionName = errorProto.assertionName
+                            )
+                        )
                     }
                     states.add(
-                            ErrorState(
-                                _timestamp = stateProto.timestamp.toString(),
-                                errors = errors.toTypedArray()))
+                        ErrorState(
+                            _timestamp = stateProto.timestamp.toString(),
+                            errors = errors.toTypedArray()
+                        )
+                    )
                 }
                 traceParseTime += errorParseTime
             }
-            return ErrorTrace(
-                    entries = states.toTypedArray()
-            )
+            return ErrorTrace(entries = states.toTypedArray())
         }
     }
 }

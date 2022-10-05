@@ -20,9 +20,8 @@ import com.android.server.wm.traces.common.ITrace
 import kotlin.js.JsName
 import kotlin.text.StringBuilder
 
-data class TransitionsTrace(
-    override val entries: Array<Transition>
-) : ITrace<Transition>, List<Transition> by entries.toList() {
+data class TransitionsTrace(override val entries: Array<Transition>) :
+    ITrace<Transition>, List<Transition> by entries.toList() {
     constructor(entry: Transition) : this(arrayOf(entry))
 
     override fun equals(other: Any?): Boolean {
@@ -35,10 +34,12 @@ data class TransitionsTrace(
     }
 
     fun slice(from: Long, to: Long): TransitionsTrace {
-        return TransitionsTrace(this.entries
-            .dropWhile { it.timestamp < from }
-            .dropLastWhile { it.timestamp > to }
-            .toTypedArray())
+        return TransitionsTrace(
+            this.entries
+                .dropWhile { it.timestamp < from }
+                .dropLastWhile { it.timestamp > to }
+                .toTypedArray()
+        )
     }
 
     override fun hashCode(): Int {

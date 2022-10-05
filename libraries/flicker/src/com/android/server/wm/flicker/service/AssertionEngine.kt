@@ -34,9 +34,7 @@ import com.android.server.wm.traces.common.transition.TransitionsTrace
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 import java.io.FileNotFoundException
 
-/**
- * Invokes the configured assertors and summarizes the results.
- */
+/** Invokes the configured assertors and summarizes the results. */
 class AssertionEngine(
     private val configProducer: AssertionGeneratorConfigProducer,
     private val logger: (String) -> Unit
@@ -52,35 +50,30 @@ class AssertionEngine(
     }
 
     private fun initializeAssertionFactory(): AssertionFactory {
-        val config: Map<Scenario, ScenarioConfig> = try {
-            configProducer.produce()
-        } catch (err: FileNotFoundException) {
-            logger.invoke("$err, so config was set to empty")
-            mapOf()
-        }
+        val config: Map<Scenario, ScenarioConfig> =
+            try {
+                configProducer.produce()
+            } catch (err: FileNotFoundException) {
+                logger.invoke("$err, so config was set to empty")
+                mapOf()
+            }
         return AssertionFactory(config)
     }
 
-    private fun getAssertions(assertionsToUse: AssertionsToUse, scenarioInstance: ScenarioInstance):
-        List<AssertionData> {
+    private fun getAssertions(
+        assertionsToUse: AssertionsToUse,
+        scenarioInstance: ScenarioInstance
+    ): List<AssertionData> {
         return try {
             when (assertionsToUse) {
                 AssertionsToUse.HARDCODED -> {
-                    assertionsForScenarioInstance(
-                        scenarioInstance
-                    )
+                    assertionsForScenarioInstance(scenarioInstance)
                 }
-                    AssertionsToUse.GENERATED -> {
-                    generatedAssertionsForScenarioInstance(
-                        scenarioInstance,
-                        assertionFactory
-                    )
+                AssertionsToUse.GENERATED -> {
+                    generatedAssertionsForScenarioInstance(scenarioInstance, assertionFactory)
                 }
                 AssertionsToUse.ALL -> {
-                    allAssertionsForScenarioInstance(
-                        scenarioInstance,
-                        assertionFactory
-                    )
+                    allAssertionsForScenarioInstance(scenarioInstance, assertionFactory)
                 }
             }
         } catch (err: ConfigException) {
@@ -105,16 +98,16 @@ class AssertionEngine(
 
         val scenarioInstances = mutableListOf<ScenarioInstance>()
         for (scenario in Scenario.values()) {
-            scenarioInstances.addAll(
-                scenario.getInstances(transitionsTrace, logger))
+            scenarioInstances.addAll(scenario.getInstances(transitionsTrace, logger))
         }
 
         for (scenarioInstance in scenarioInstances) {
             val assertionsToCheck = getAssertions(assertionsToUse, scenarioInstance)
             logger.invoke("${assertionsToCheck.size} assertions to check for $scenarioInstance")
 
-            val result = TransitionAsserter(assertionsToCheck, logger)
-                .analyze(scenarioInstance, wmTrace, layersTrace)
+            val result =
+                TransitionAsserter(assertionsToCheck, logger)
+                    .analyze(scenarioInstance, wmTrace, layersTrace)
             assertionResults.addAll(result)
         }
         return assertionResults

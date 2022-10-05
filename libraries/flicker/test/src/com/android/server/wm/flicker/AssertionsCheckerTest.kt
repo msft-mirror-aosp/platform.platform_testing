@@ -113,10 +113,8 @@ class AssertionsCheckerTest {
             checker.test(getTestEntries(0, 0, 0, 0, 0))
         } catch (failure: Throwable) {
             require(failure is FlickerSubjectException) { "Unknown failure $failure" }
-            assertFailure(failure.cause)
-                .factValue("expected").isEqualTo("42")
-            assertFailure(failure.cause)
-                .factValue("but was").isEqualTo("0")
+            assertFailure(failure.cause).factValue("expected").isEqualTo("42")
+            assertFailure(failure.cause).factValue("but was").isEqualTo("0")
         }
     }
 
@@ -152,10 +150,8 @@ class AssertionsCheckerTest {
             checker.test(getTestEntries(0, 0, 0, 0, 0))
         } catch (failure: Throwable) {
             require(failure is FlickerSubjectException) { "Unknown failure $failure" }
-            assertFailure(failure.cause)
-                .factValue("expected").isEqualTo("42")
-            assertFailure(failure.cause)
-                .factValue("but was").isEqualTo("0")
+            assertFailure(failure.cause).factValue("expected").isEqualTo("42")
+            assertFailure(failure.cause).factValue("but was").isEqualTo("0")
         }
     }
 
@@ -163,38 +159,32 @@ class AssertionsCheckerTest {
         failureMetadata: FailureMetadata,
         private val entry: SimpleEntry
     ) : FlickerSubject(failureMetadata, entry) {
-        override val timestamp: Long get() = 0
-        override val parent: FlickerSubject? get() = null
+        override val timestamp: Long
+            get() = 0
+        override val parent: FlickerSubject?
+            get() = null
         override val selfFacts = listOf(Fact.fact("SimpleEntry", entry.mData.toString()))
 
-        fun isData42() = apply {
-            check("is42").that(entry.mData).isEqualTo(42)
-        }
+        fun isData42() = apply { check("is42").that(entry.mData).isEqualTo(42) }
 
-        fun isData0() = apply {
-            check("is0").that(entry.mData).isEqualTo(0)
-        }
+        fun isData0() = apply { check("is0").that(entry.mData).isEqualTo(0) }
 
-        fun isData1() = apply {
-            check("is1").that(entry.mData).isEqualTo(1)
-        }
+        fun isData1() = apply { check("is1").that(entry.mData).isEqualTo(1) }
 
         companion object {
-            /**
-             * Boiler-plate Subject.Factory for LayersTraceSubject
-             */
-            private val FACTORY: Factory<Subject, SimpleEntry> =
-                Factory { fm, subject -> SimpleEntrySubject(fm, subject) }
+            /** Boiler-plate Subject.Factory for LayersTraceSubject */
+            private val FACTORY: Factory<Subject, SimpleEntry> = Factory { fm, subject ->
+                SimpleEntrySubject(fm, subject)
+            }
 
-            /**
-             * User-defined entry point
-             */
+            /** User-defined entry point */
             @JvmStatic
             fun assertThat(entry: SimpleEntry): SimpleEntrySubject {
                 val strategy = FlickerFailureStrategy()
-                val subject = StandardSubjectBuilder.forCustomFailureStrategy(strategy)
-                    .about(FACTORY)
-                    .that(entry) as SimpleEntrySubject
+                val subject =
+                    StandardSubjectBuilder.forCustomFailureStrategy(strategy)
+                        .about(FACTORY)
+                        .that(entry) as SimpleEntrySubject
                 strategy.init(subject)
                 return subject
             }
@@ -205,11 +195,10 @@ class AssertionsCheckerTest {
 
     companion object {
         /**
-         * Returns a list of SimpleEntry objects with `data` and incremental timestamps starting
-         * at 0.
+         * Returns a list of SimpleEntry objects with `data` and incremental timestamps starting at
+         * 0.
          */
         private fun getTestEntries(vararg data: Int): List<SimpleEntrySubject> =
-                data.indices.map { SimpleEntrySubject
-                    .assertThat(SimpleEntry(it.toLong(), data[it])) }
+            data.indices.map { SimpleEntrySubject.assertThat(SimpleEntry(it.toLong(), data[it])) }
     }
 }

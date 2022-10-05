@@ -66,16 +66,18 @@ fun getCurrentState(
     }
 
     Log.d(LOG_TAG, "Requesting new device state dump")
-    val wmTraceData = if (dumpFlags.and(FLAG_STATE_DUMP_FLAG_WM) > 0) {
-        getCurrentWindowManagerState(uiAutomation)
-    } else {
-        ByteArray(0)
-    }
-    val layersTraceData = if (dumpFlags.and(FLAG_STATE_DUMP_FLAG_LAYERS) > 0) {
-        getCurrentLayersState(uiAutomation)
-    } else {
-        ByteArray(0)
-    }
+    val wmTraceData =
+        if (dumpFlags.and(FLAG_STATE_DUMP_FLAG_WM) > 0) {
+            getCurrentWindowManagerState(uiAutomation)
+        } else {
+            ByteArray(0)
+        }
+    val layersTraceData =
+        if (dumpFlags.and(FLAG_STATE_DUMP_FLAG_LAYERS) > 0) {
+            getCurrentLayersState(uiAutomation)
+        } else {
+            ByteArray(0)
+        }
 
     return Pair(wmTraceData, layersTraceData)
 }
@@ -86,7 +88,9 @@ fun getCurrentState(
  *
  * @param dumpFlags Flags determining which types of traces should be included in the dump
  * @param clearCacheAfterParsing If the caching used while parsing the proto should be
+ * ```
  *                               cleared or remain in memory
+ * ```
  */
 @JvmOverloads
 fun getCurrentStateDumpNullable(
@@ -114,8 +118,6 @@ fun getCurrentStateDump(
     )
 }
 
-/**
- * Converts an Android [ComponentName] into a flicker [ComponentNameMatcher]
- */
+/** Converts an Android [ComponentName] into a flicker [ComponentNameMatcher] */
 fun ComponentName.toFlickerComponent(): ComponentNameMatcher =
     ComponentNameMatcher(this.packageName, this.className)

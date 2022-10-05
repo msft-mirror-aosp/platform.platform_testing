@@ -20,15 +20,10 @@ import com.android.server.wm.flicker.service.assertors.ComponentBuilder
 import com.android.server.wm.flicker.traces.layers.LayersTraceSubject
 import com.android.server.wm.traces.common.transition.Transition
 
-/**
- * Checks that the visible region of [getWindowState] always reduces during the animation
- */
+/** Checks that the visible region of [getWindowState] always reduces during the animation */
 class AppLayerReduces(component: ComponentBuilder) : BaseAssertionBuilderWithComponent(component) {
     /** {@inheritDoc} */
-    override fun doEvaluate(
-        transition: Transition,
-        layerSubject: LayersTraceSubject
-    ) {
+    override fun doEvaluate(transition: Transition, layerSubject: LayersTraceSubject) {
         val layerMatcher = component.build(transition)
         val layerList = layerSubject.layers { layerMatcher.layerMatchesAnyOf(it) && it.isVisible }
         layerList.zipWithNext { previous, current ->

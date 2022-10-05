@@ -23,29 +23,24 @@ import kotlin.js.JsName
 /**
  * Represents the configuration of a WM window
  *
- * This is a generic object that is reused by both Flicker and Winscope and cannot
- * access internal Java/Android functionality
- *
+ * This is a generic object that is reused by both Flicker and Winscope and cannot access internal
+ * Java/Android functionality
  */
 open class WindowConfiguration(
-    @JsName("appBounds")
-    val appBounds: Rect = Rect.EMPTY,
-    @JsName("bounds")
-    val bounds: Rect = Rect.EMPTY,
-    @JsName("maxBounds")
-    val maxBounds: Rect = Rect.EMPTY,
-    @JsName("windowingMode")
-    val windowingMode: Int = 0,
-    @JsName("activityType")
-    val activityType: Int = 0
+    @JsName("appBounds") val appBounds: Rect = Rect.EMPTY,
+    @JsName("bounds") val bounds: Rect = Rect.EMPTY,
+    @JsName("maxBounds") val maxBounds: Rect = Rect.EMPTY,
+    @JsName("windowingMode") val windowingMode: Int = 0,
+    @JsName("activityType") val activityType: Int = 0
 ) {
     @JsName("isEmpty")
     val isEmpty: Boolean
-        get() = appBounds.isEmpty &&
-            bounds.isEmpty &&
-            maxBounds.isEmpty &&
-            windowingMode == 0 &&
-            activityType == 0
+        get() =
+            appBounds.isEmpty &&
+                bounds.isEmpty &&
+                maxBounds.isEmpty &&
+                windowingMode == 0 &&
+                activityType == 0
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -71,7 +66,8 @@ open class WindowConfiguration(
 
     companion object {
         @JsName("EMPTY")
-        val EMPTY: WindowConfiguration get() = withCache { WindowConfiguration() }
+        val EMPTY: WindowConfiguration
+            get() = withCache { WindowConfiguration() }
         @JsName("from")
         fun from(
             appBounds: Rect?,

@@ -19,12 +19,12 @@ package com.android.server.wm.traces.common.windowmanager.windows
 /**
  * Represents a window token in the window manager hierarchy
  *
- * This is a generic object that is reused by both Flicker and Winscope and cannot
- * access internal Java/Android functionality
- *
+ * This is a generic object that is reused by both Flicker and Winscope and cannot access internal
+ * Java/Android functionality
  */
 class WindowToken(windowContainer: WindowContainer) : WindowContainer(windowContainer) {
-    override val isVisible: Boolean get() = false
+    override val isVisible: Boolean
+        get() = false
     override fun toString(): String {
         return "${this::class.simpleName}: {$token $title}"
     }

@@ -35,57 +35,53 @@ import com.android.server.wm.traces.common.tags.Tag
 class ImeAppearProcessor(logger: (String) -> Unit) : TransitionProcessor(logger) {
     override val scenario = Scenario.IME_APPEAR
     override fun getInitialState(tags: MutableMap<Long, MutableList<Tag>>) =
-            WaitInputMethodVisible(tags)
+        WaitInputMethodVisible(tags)
 
-    /**
-     * FSM state that waits until the InputMethod is visible in both WM and SF.
-     */
-    inner class WaitInputMethodVisible(
-            tags: MutableMap<Long, MutableList<Tag>>
-    ) : BaseState(tags) {
+    /** FSM state that waits until the InputMethod is visible in both WM and SF. */
+    inner class WaitInputMethodVisible(tags: MutableMap<Long, MutableList<Tag>>) : BaseState(tags) {
         private val newImeVisible = isImeShown(PlatformConsts.DEFAULT_DISPLAY)
         private val prevImeInvisible = newImeVisible.negate()
 
         override fun doProcessState(
-                previous: DeviceStateDump?,
-                current: DeviceStateDump,
-                next: DeviceStateDump
+            previous: DeviceStateDump?,
+            current: DeviceStateDump,
+            next: DeviceStateDump
         ): FSMState {
             if (previous == null) return this
 
-            return if (newImeVisible.isSatisfied(current) &&
-                    prevImeInvisible.isSatisfied(previous)) {
+            return if (
+                newImeVisible.isSatisfied(current) && prevImeInvisible.isSatisfied(previous)
+            ) {
                 processInputMethodVisible(current)
             } else {
                 this
             }
         }
 
-        private fun processInputMethodVisible(
-                current: DeviceStateDump
-        ): FSMState {
+        private fun processInputMethodVisible(current: DeviceStateDump): FSMState {
             logger.invoke("(${current.layerState.timestamp}) IME appear started.")
             // add factory method as well
-            val inputMethodLayer = current.layerState.visibleLayers.first {
-                ComponentNameMatcher.IME.layerMatchesAnyOf(it)
-            }
+            val inputMethodLayer =
+                current.layerState.visibleLayers.first {
+                    ComponentNameMatcher.IME.layerMatchesAnyOf(it)
+                }
             addStartTransitionTag(current, scenario, layerId = inputMethodLayer.id)
             return WaitImeAppearFinished(tags, inputMethodLayer.id)
         }
     }
 
     /**
-     * FSM state to check when the Ime Appear has finished by opaque color alpha of input method
-     * and it has finished transforming and scaling.
+     * FSM state to check when the Ime Appear has finished by opaque color alpha of input method and
+     * it has finished transforming and scaling.
      */
     inner class WaitImeAppearFinished(
-            tags: MutableMap<Long, MutableList<Tag>>,
-            private val layerId: Int
+        tags: MutableMap<Long, MutableList<Tag>>,
+        private val layerId: Int
     ) : BaseState(tags) {
         override fun doProcessState(
-                previous: DeviceStateDump?,
-                current: DeviceStateDump,
-                next: DeviceStateDump
+            previous: DeviceStateDump?,
+            current: DeviceStateDump,
+            next: DeviceStateDump
         ): FSMState {
             val isImeAppearFinished = isImeAppearFinished.isSatisfied(current)
 
@@ -101,11 +97,14 @@ class ImeAppearProcessor(logger: (String) -> Unit) : TransitionProcessor(logger)
             }
         }
 
-        private val isImeAppearFinished = ConditionList(listOf(
-                isLayerVisible(ComponentNameMatcher.IME),
-                isLayerColorAlphaOne(ComponentNameMatcher.IME),
-                isLayerTransformFlagSet(ComponentNameMatcher.IME, Transform.TRANSLATE_VAL),
-                isLayerTransformFlagSet(ComponentNameMatcher.IME, Transform.SCALE_VAL).negate()
-        ))
+        private val isImeAppearFinished =
+            ConditionList(
+                listOf(
+                    isLayerVisible(ComponentNameMatcher.IME),
+                    isLayerColorAlphaOne(ComponentNameMatcher.IME),
+                    isLayerTransformFlagSet(ComponentNameMatcher.IME, Transform.TRANSLATE_VAL),
+                    isLayerTransformFlagSet(ComponentNameMatcher.IME, Transform.SCALE_VAL).negate()
+                )
+            )
     }
 }

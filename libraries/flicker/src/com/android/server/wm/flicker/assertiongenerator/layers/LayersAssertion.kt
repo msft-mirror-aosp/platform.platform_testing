@@ -12,19 +12,18 @@ import com.android.server.wm.traces.common.ITraceEntry
 import com.android.server.wm.traces.common.layers.LayersTrace
 import com.android.server.wm.traces.common.transition.Transition
 
-class LayersAssertion(
-) : Assertion {
+class LayersAssertion() : Assertion {
     override val assertionsChecker: AssertionsChecker<LayerTraceEntrySubject> = AssertionsChecker()
     override var name: String = ""
     override var assertionString: String = ""
 
     val needsInitialization: Boolean
-    get() {
-        if (lateinitComponentMatchers.size == 0) {
-            return false
+        get() {
+            if (lateinitComponentMatchers.size == 0) {
+                return false
+            }
+            return true
         }
-        return true
-    }
 
     val lateinitComponentMatchers: MutableList<ComponentTypeMatcher> = mutableListOf()
 
@@ -49,12 +48,12 @@ class LayersAssertion(
             "Requires a traceSubject of type 'LayersTraceSubject' to execute LayersAssertion."
         }
         if (needsInitialization && transition == Transition.emptyTransition()) {
-            throw RuntimeException("At least one assertion component matcher needs " +
-                "initialization, but the passed transition is empty")
+            throw RuntimeException(
+                "At least one assertion component matcher needs " +
+                    "initialization, but the passed transition is empty"
+            )
         }
-        transition.run{
-            initializeComponentMatchers(transition)
-        }
+        transition.run { initializeComponentMatchers(transition) }
         assertionsChecker.assertChanges(traceSubject.subjects)
     }
 

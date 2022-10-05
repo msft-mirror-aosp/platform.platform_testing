@@ -22,37 +22,24 @@ import kotlin.js.JsName
 /**
  * Represents the requested policy of a WM container
  *
- * This is a generic object that is reused by both Flicker and Winscope and cannot
- * access internal Java/Android functionality
- *
+ * This is a generic object that is reused by both Flicker and Winscope and cannot access internal
+ * Java/Android functionality
  */
-class WindowManagerPolicy private constructor(
-    @JsName("focusedAppToken")
-    val focusedAppToken: String = "",
-    @JsName("forceStatusBar")
-    val forceStatusBar: Boolean = false,
-    @JsName("forceStatusBarFromKeyguard")
-    val forceStatusBarFromKeyguard: Boolean = false,
-    @JsName("keyguardDrawComplete")
-    val keyguardDrawComplete: Boolean = false,
-    @JsName("keyguardOccluded")
-    val keyguardOccluded: Boolean = false,
-    @JsName("keyguardOccludedChanged")
-    val keyguardOccludedChanged: Boolean = false,
-    @JsName("keyguardOccludedPending")
-    val keyguardOccludedPending: Boolean = false,
-    @JsName("lastSystemUiFlags")
-    val lastSystemUiFlags: Int = 0,
-    @JsName("orientation")
-    val orientation: Int = 0,
-    @JsName("rotation")
-    val rotation: Int = 0,
-    @JsName("rotationMode")
-    val rotationMode: Int = 0,
-    @JsName("screenOnFully")
-    val screenOnFully: Boolean = false,
-    @JsName("windowManagerDrawComplete")
-    val windowManagerDrawComplete: Boolean = false
+class WindowManagerPolicy
+private constructor(
+    @JsName("focusedAppToken") val focusedAppToken: String = "",
+    @JsName("forceStatusBar") val forceStatusBar: Boolean = false,
+    @JsName("forceStatusBarFromKeyguard") val forceStatusBarFromKeyguard: Boolean = false,
+    @JsName("keyguardDrawComplete") val keyguardDrawComplete: Boolean = false,
+    @JsName("keyguardOccluded") val keyguardOccluded: Boolean = false,
+    @JsName("keyguardOccludedChanged") val keyguardOccludedChanged: Boolean = false,
+    @JsName("keyguardOccludedPending") val keyguardOccludedPending: Boolean = false,
+    @JsName("lastSystemUiFlags") val lastSystemUiFlags: Int = 0,
+    @JsName("orientation") val orientation: Int = 0,
+    @JsName("rotation") val rotation: Int = 0,
+    @JsName("rotationMode") val rotationMode: Int = 0,
+    @JsName("screenOnFully") val screenOnFully: Boolean = false,
+    @JsName("windowManagerDrawComplete") val windowManagerDrawComplete: Boolean = false
 ) {
     @JsName("isOrientationNoSensor")
     val isOrientationNoSensor: Boolean
@@ -60,23 +47,26 @@ class WindowManagerPolicy private constructor(
 
     @JsName("isFixedOrientation")
     val isFixedOrientation: Boolean
-        get() = isFixedOrientationLandscape ||
-            isFixedOrientationPortrait ||
-            orientation == SCREEN_ORIENTATION_LOCKED
+        get() =
+            isFixedOrientationLandscape ||
+                isFixedOrientationPortrait ||
+                orientation == SCREEN_ORIENTATION_LOCKED
 
     @JsName("isFixedOrientationLandscape")
     private val isFixedOrientationLandscape
-        get() = orientation == SCREEN_ORIENTATION_LANDSCAPE ||
-            orientation == SCREEN_ORIENTATION_SENSOR_LANDSCAPE ||
-            orientation == SCREEN_ORIENTATION_REVERSE_LANDSCAPE ||
-            orientation == SCREEN_ORIENTATION_USER_LANDSCAPE
+        get() =
+            orientation == SCREEN_ORIENTATION_LANDSCAPE ||
+                orientation == SCREEN_ORIENTATION_SENSOR_LANDSCAPE ||
+                orientation == SCREEN_ORIENTATION_REVERSE_LANDSCAPE ||
+                orientation == SCREEN_ORIENTATION_USER_LANDSCAPE
 
     @JsName("isFixedOrientationPortrait")
     private val isFixedOrientationPortrait
-        get() = orientation == SCREEN_ORIENTATION_PORTRAIT ||
-            orientation == SCREEN_ORIENTATION_SENSOR_PORTRAIT ||
-            orientation == SCREEN_ORIENTATION_REVERSE_PORTRAIT ||
-            orientation == SCREEN_ORIENTATION_USER_PORTRAIT
+        get() =
+            orientation == SCREEN_ORIENTATION_PORTRAIT ||
+                orientation == SCREEN_ORIENTATION_SENSOR_PORTRAIT ||
+                orientation == SCREEN_ORIENTATION_REVERSE_PORTRAIT ||
+                orientation == SCREEN_ORIENTATION_USER_PORTRAIT
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -131,11 +121,10 @@ class WindowManagerPolicy private constructor(
 
     companion object {
         @JsName("EMPTY")
-        val EMPTY: WindowManagerPolicy get() = withCache { WindowManagerPolicy() }
+        val EMPTY: WindowManagerPolicy
+            get() = withCache { WindowManagerPolicy() }
 
-        /**
-         * From [android.content.pm.ActivityInfo]
-         */
+        /** From [android.content.pm.ActivityInfo] */
         private const val SCREEN_ORIENTATION_LANDSCAPE = 0
         private const val SCREEN_ORIENTATION_PORTRAIT = 1
         private const val SCREEN_ORIENTATION_NOSENSOR = 5

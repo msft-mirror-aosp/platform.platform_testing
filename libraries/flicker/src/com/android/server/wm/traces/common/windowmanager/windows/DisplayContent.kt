@@ -24,58 +24,39 @@ import kotlin.math.min
 /**
  * Represents a display content in the window manager hierarchy
  *
- * This is a generic object that is reused by both Flicker and Winscope and cannot
- * access internal Java/Android functionality
- *
+ * This is a generic object that is reused by both Flicker and Winscope and cannot access internal
+ * Java/Android functionality
  */
 class DisplayContent(
-    @JsName("id")
-    val id: Int,
-    @JsName("focusedRootTaskId")
-    val focusedRootTaskId: Int,
-    @JsName("resumedActivity")
-    val resumedActivity: String,
-    @JsName("singleTaskInstance")
-    val singleTaskInstance: Boolean,
-    @JsName("defaultPinnedStackBounds")
-    val defaultPinnedStackBounds: Rect,
-    @JsName("pinnedStackMovementBounds")
-    val pinnedStackMovementBounds: Rect,
-    @JsName("displayRect")
-    val displayRect: Rect,
-    @JsName("appRect")
-    val appRect: Rect,
-    @JsName("dpi")
-    val dpi: Int,
-    @JsName("flags")
-    val flags: Int,
-    @JsName("stableBounds")
-    val stableBounds: Rect,
-    @JsName("surfaceSize")
-    val surfaceSize: Int,
-    @JsName("focusedApp")
-    val focusedApp: String,
-    @JsName("lastTransition")
-    val lastTransition: String,
-    @JsName("appTransitionState")
-    val appTransitionState: String,
-    @JsName("rotation")
-    val rotation: Int,
-    @JsName("lastOrientation")
-    val lastOrientation: Int,
+    @JsName("id") val id: Int,
+    @JsName("focusedRootTaskId") val focusedRootTaskId: Int,
+    @JsName("resumedActivity") val resumedActivity: String,
+    @JsName("singleTaskInstance") val singleTaskInstance: Boolean,
+    @JsName("defaultPinnedStackBounds") val defaultPinnedStackBounds: Rect,
+    @JsName("pinnedStackMovementBounds") val pinnedStackMovementBounds: Rect,
+    @JsName("displayRect") val displayRect: Rect,
+    @JsName("appRect") val appRect: Rect,
+    @JsName("dpi") val dpi: Int,
+    @JsName("flags") val flags: Int,
+    @JsName("stableBounds") val stableBounds: Rect,
+    @JsName("surfaceSize") val surfaceSize: Int,
+    @JsName("focusedApp") val focusedApp: String,
+    @JsName("lastTransition") val lastTransition: String,
+    @JsName("appTransitionState") val appTransitionState: String,
+    @JsName("rotation") val rotation: Int,
+    @JsName("lastOrientation") val lastOrientation: Int,
     windowContainer: WindowContainer
 ) : WindowContainer(windowContainer) {
     override val name: String = id.toString()
     override val isVisible: Boolean = false
 
     @JsName("isTablet")
-    val isTablet: Boolean get() {
-        val smallestWidth = dpiFromPx(
-            min(displayRect.width.toFloat(), displayRect.height.toFloat()),
-            dpi
-        )
-        return smallestWidth >= TABLET_MIN_DPS
-    }
+    val isTablet: Boolean
+        get() {
+            val smallestWidth =
+                dpiFromPx(min(displayRect.width.toFloat(), displayRect.height.toFloat()), dpi)
+            return smallestWidth >= TABLET_MIN_DPS
+        }
 
     @JsName("rootTasks")
     val rootTasks: Array<Task>
@@ -116,12 +97,14 @@ class DisplayContent(
      */
     @JsName("getTaskDisplayArea")
     fun getTaskDisplayArea(componentMatcher: IComponentMatcher): DisplayArea? {
-        val taskDisplayAreas = this.collectDescendants<DisplayArea> { it.isTaskDisplayArea }
-            .filter { it.containsActivity(componentMatcher) }
+        val taskDisplayAreas =
+            this.collectDescendants<DisplayArea> { it.isTaskDisplayArea }
+                .filter { it.containsActivity(componentMatcher) }
 
         if (taskDisplayAreas.size > 1) {
             throw IllegalArgumentException(
-                "There must be exactly one activity among all TaskDisplayAreas.")
+                "There must be exactly one activity among all TaskDisplayAreas."
+            )
         }
 
         return taskDisplayAreas.firstOrNull()
@@ -185,11 +168,9 @@ class DisplayContent(
 
     companion object {
         /** From [android.util.DisplayMetrics] */
-        @JsName("DENSITY_DEFAULT")
-        private const val DENSITY_DEFAULT = 160f
+        @JsName("DENSITY_DEFAULT") private const val DENSITY_DEFAULT = 160f
         /** From [com.android.systemui.shared.recents.utilities.Utilities] */
-        @JsName("TABLET_MIN_DPS")
-        private const val TABLET_MIN_DPS = 600f
+        @JsName("TABLET_MIN_DPS") private const val TABLET_MIN_DPS = 600f
 
         @JsName("dpiFromPx")
         private fun dpiFromPx(size: Float, densityDpi: Int): Float {

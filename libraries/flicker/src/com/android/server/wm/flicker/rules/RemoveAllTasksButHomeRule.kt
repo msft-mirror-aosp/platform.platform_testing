@@ -23,10 +23,8 @@ import com.android.server.wm.flicker.FLICKER_TAG
 import org.junit.rules.TestWatcher
 import org.junit.runner.Description
 
-/**
- * Test rule to ensure no tasks as running before executing the test
- */
-class RemoveAllTasksButHomeRule : TestWatcher() {
+/** Test rule to ensure no tasks as running before executing the test */
+class RemoveAllTasksButHomeRule() : TestWatcher() {
     override fun starting(description: Description?) {
         Log.v(FLICKER_TAG, "Removing all tasks (except home)")
         removeAllTasksButHome()
@@ -39,10 +37,12 @@ class RemoveAllTasksButHomeRule : TestWatcher() {
             atm.removeRootTasksWithActivityTypes(ALL_ACTIVITY_TYPE_BUT_HOME)
         }
 
-        private val ALL_ACTIVITY_TYPE_BUT_HOME = intArrayOf(
-            WindowConfiguration.ACTIVITY_TYPE_STANDARD,
-            WindowConfiguration.ACTIVITY_TYPE_ASSISTANT,
-            WindowConfiguration.ACTIVITY_TYPE_RECENTS,
-            WindowConfiguration.ACTIVITY_TYPE_UNDEFINED)
+        private val ALL_ACTIVITY_TYPE_BUT_HOME =
+            intArrayOf(
+                WindowConfiguration.ACTIVITY_TYPE_STANDARD,
+                WindowConfiguration.ACTIVITY_TYPE_ASSISTANT,
+                WindowConfiguration.ACTIVITY_TYPE_RECENTS,
+                WindowConfiguration.ACTIVITY_TYPE_UNDEFINED
+            )
     }
 }

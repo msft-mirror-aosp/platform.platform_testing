@@ -19,6 +19,5 @@ package com.android.server.wm.traces.common
 import kotlin.js.JsName
 
 interface BaseElement<ChildType> {
-    @JsName("children")
-    val children: Array<ChildType>
+    @JsName("children") val children: Array<ChildType>
 }

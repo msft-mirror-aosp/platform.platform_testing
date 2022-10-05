@@ -44,7 +44,8 @@ abstract class TraceMonitorTest<T : TransitionMonitor> {
     @Before
     fun before() {
         Truth.assertWithMessage("Trace already enabled before starting test")
-                .that(traceMonitor.isEnabled).isFalse()
+            .that(traceMonitor.isEnabled)
+            .isFalse()
     }
 
     @After
@@ -57,7 +58,8 @@ abstract class TraceMonitorTest<T : TransitionMonitor> {
             savedTrace.toFile().delete()
         }
         Truth.assertWithMessage("Failed to disable trace at end of test")
-                .that(traceMonitor.isEnabled).isFalse()
+            .that(traceMonitor.isEnabled)
+            .isFalse()
     }
 
     @Test

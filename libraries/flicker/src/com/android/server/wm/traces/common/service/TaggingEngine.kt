@@ -46,33 +46,37 @@ class TaggingEngine(
     private val transitionsTrace: TransitionsTrace,
     private val logger: (String) -> Unit
 ) {
-    private val tagGenerators = mutableListOf<ITagGenerator>(
-        // TODO: Keep adding new transition processors to invoke
-        RotationProcessor(logger),
-        AppLaunchProcessor(logger),
-        AppCloseProcessor(logger),
-        ImeAppearProcessor(logger),
-        ImeDisappearProcessor(logger),
-        PipEnterProcessor(logger),
-        PipExitProcessor(logger)
-    ).also { it.addAll(Scenario.values()) }
+    private val tagGenerators =
+        mutableListOf<ITagGenerator>(
+                // TODO: Keep adding new transition processors to invoke
+                RotationProcessor(logger),
+                AppLaunchProcessor(logger),
+                AppCloseProcessor(logger),
+                ImeAppearProcessor(logger),
+                ImeDisappearProcessor(logger),
+                PipEnterProcessor(logger),
+                PipExitProcessor(logger)
+            )
+            .also { it.addAll(Scenario.values()) }
 
-    /**
-     * Generate tags denoting start and end points for all [transitions] within traces
-     */
+    /** Generate tags denoting start and end points for all [transitions] within traces */
     fun run(): TagTrace {
-        val allStates = tagGenerators.flatMap {
-            logger.invoke("Generating tags for ${it::class.simpleName}")
-            it.generateTags(wmTrace, layersTrace, transitionsTrace).entries.asList()
-        }
+        val allStates =
+            tagGenerators.flatMap {
+                logger.invoke("Generating tags for ${it::class.simpleName}")
+                it.generateTags(wmTrace, layersTrace, transitionsTrace).entries.asList()
+            }
 
-        /**
-         * Ensure all tag states with the same timestamp are merged
-         */
-        val tagStates = allStates.distinct()
-            .groupBy({ it.timestamp }, { it.tags.asList() })
-            .mapValues { (key, value) -> TagState(key.toString(), value.flatten().toTypedArray()) }
-            .values.toTypedArray()
+        /** Ensure all tag states with the same timestamp are merged */
+        val tagStates =
+            allStates
+                .distinct()
+                .groupBy({ it.timestamp }, { it.tags.asList() })
+                .mapValues { (key, value) ->
+                    TagState(key.toString(), value.flatten().toTypedArray())
+                }
+                .values
+                .toTypedArray()
 
         return TagTrace(tagStates)
     }

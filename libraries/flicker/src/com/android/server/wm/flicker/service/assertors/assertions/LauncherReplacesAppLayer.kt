@@ -23,18 +23,18 @@ import com.android.server.wm.traces.common.transition.Transition
 
 /**
  * Asserts that:
+ * ```
  *     [getWindowState] is visible at the start of the trace
  *     [getWindowState] becomes invisible during the trace and (in the same entry)
  *     [Components.LAUNCHER] becomes visible
+ * ```
  */
 class LauncherReplacesAppLayer(component: ComponentBuilder) :
     BaseAssertionBuilderWithComponent(component) {
     /** {@inheritDoc} */
-    override fun doEvaluate(
-        transition: Transition,
-        layerSubject: LayersTraceSubject
-    ) {
-        layerSubject.isVisible(component.build(transition))
+    override fun doEvaluate(transition: Transition, layerSubject: LayersTraceSubject) {
+        layerSubject
+            .isVisible(component.build(transition))
             .then()
             .isVisible(ComponentNameMatcher.LAUNCHER)
             .forAllEntries()

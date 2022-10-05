@@ -22,17 +22,15 @@ import com.android.server.wm.traces.common.ComponentNameMatcher
 import com.android.server.wm.traces.common.transition.Transition
 
 /**
- * Checks that the [ComponentNameMatcher.ROTATION] layer appears during the transition,
- * doesn't flicker, and disappears before the transition is complete.
+ * Checks that the [ComponentNameMatcher.ROTATION] layer appears during the transition, doesn't
+ * flicker, and disappears before the transition is complete.
  */
 class RotationLayerAppearsAndVanishes(component: ComponentBuilder) :
     BaseAssertionBuilderWithComponent(component) {
     /** {@inheritDoc} */
-    override fun doEvaluate(
-        transition: Transition,
-        layerSubject: LayersTraceSubject
-    ) {
-        layerSubject.isVisible(component.build(transition))
+    override fun doEvaluate(transition: Transition, layerSubject: LayersTraceSubject) {
+        layerSubject
+            .isVisible(component.build(transition))
             .then()
             .isVisible(ComponentNameMatcher.ROTATION)
             .then()

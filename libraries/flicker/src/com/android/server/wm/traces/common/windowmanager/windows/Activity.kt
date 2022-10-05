@@ -22,21 +22,16 @@ import kotlin.js.JsName
 /**
  * Represents an activity in the window manager hierarchy
  *
- * This is a generic object that is reused by both Flicker and Winscope and cannot
- * access internal Java/Android functionality
- *
- **/
+ * This is a generic object that is reused by both Flicker and Winscope and cannot access internal
+ * Java/Android functionality
+ */
 class Activity(
     name: String,
-    @JsName("state")
-    val state: String,
+    @JsName("state") val state: String,
     visible: Boolean,
-    @JsName("frontOfTask")
-    val frontOfTask: Boolean,
-    @JsName("procId")
-    val procId: Int,
-    @JsName("isTranslucent")
-    val isTranslucent: Boolean,
+    @JsName("frontOfTask") val frontOfTask: Boolean,
+    @JsName("procId") val procId: Int,
+    @JsName("isTranslucent") val isTranslucent: Boolean,
     windowContainer: WindowContainer
 ) : WindowContainer(windowContainer, name, visible) {
     /**
@@ -45,8 +40,9 @@ class Activity(
      * @param componentMatcher Components to search
      */
     @JsName("getWindows")
-    fun getWindows(componentMatcher: IComponentMatcher): Array<WindowState> =
-        getWindows { componentMatcher.windowMatchesAnyOf(it) }
+    fun getWindows(componentMatcher: IComponentMatcher): Array<WindowState> = getWindows {
+        componentMatcher.windowMatchesAnyOf(it)
+    }
 
     /**
      * Checks if the activity contains a [WindowState] matching [componentMatcher]

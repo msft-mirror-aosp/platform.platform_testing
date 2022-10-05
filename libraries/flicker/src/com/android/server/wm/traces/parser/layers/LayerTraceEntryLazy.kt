@@ -30,9 +30,7 @@ import com.android.server.wm.traces.common.layers.Layer
 import com.android.server.wm.traces.common.layers.LayerTraceEntryBuilder
 import com.android.server.wm.traces.common.region.Region
 
-/**
- * Lazy loading of a trace entry used by legacy Winscope
- */
+/** Lazy loading of a trace entry used by legacy Winscope */
 @Deprecated("To be removed when legacy Winscope is discontinued. Use [LayerTraceEntry] instead")
 class LayerTraceEntryLazy(
     override val timestamp: Long,
@@ -49,12 +47,11 @@ class LayerTraceEntryLazy(
     private val parsedEntry by lazy {
         val layers = layerProtos.map { newLayer(it) }.toTypedArray()
         val displays = displayProtos.map { newDisplay(it) }.toTypedArray()
-        val builder = LayerTraceEntryBuilder(
-            timestamp, layers, displays, vSyncId, hwcBlob, where
-        )
-            .setOrphanLayerCallback(orphanLayerCallback)
-            .ignoreLayersStackMatchNoDisplay(ignoreLayersStackMatchNoDisplay)
-            .ignoreVirtualDisplay(ignoreLayersInVirtualDisplay)
+        val builder =
+            LayerTraceEntryBuilder(timestamp, layers, displays, vSyncId, hwcBlob, where)
+                .setOrphanLayerCallback(orphanLayerCallback)
+                .ignoreLayersStackMatchNoDisplay(ignoreLayersStackMatchNoDisplay)
+                .ignoreVirtualDisplay(ignoreLayersInVirtualDisplay)
         displayProtos = emptyArray()
         layerProtos = emptyArray()
         builder.build()
@@ -127,16 +124,12 @@ class LayerTraceEntryLazy(
 
         @JvmStatic
         fun Layers.FloatRectProto?.toRectF(): RectF? {
-            return this?.let {
-                RectF.from(left = left, top = top, right = right, bottom = bottom)
-            }
+            return this?.let { RectF.from(left = left, top = top, right = right, bottom = bottom) }
         }
 
         @JvmStatic
         fun Common.SizeProto?.toSize(): Size {
-            return this?.let {
-                Size.from(this.w, this.h)
-            } ?: Size.EMPTY
+            return this?.let { Size.from(this.w, this.h) } ?: Size.EMPTY
         }
 
         @JvmStatic
@@ -173,20 +166,22 @@ class LayerTraceEntryLazy(
             return when {
                 crop == null -> com.android.server.wm.traces.common.Rect.EMPTY
                 // crop (0,0) (-1,-1) means no crop
-                crop.right == -1 && crop.left == 0 && crop.bottom == -1 && crop.top == 0 ->
-                    null
+                crop.right == -1 && crop.left == 0 && crop.bottom == -1 && crop.top == 0 -> null
                 (crop.right - crop.left) <= 0 || (crop.bottom - crop.top) <= 0 ->
                     com.android.server.wm.traces.common.Rect.EMPTY
                 else ->
                     com.android.server.wm.traces.common.Rect.from(
-                        crop.left, crop.top, crop.right, crop.bottom
+                        crop.left,
+                        crop.top,
+                        crop.right,
+                        crop.bottom
                     )
             }
         }
 
         /**
-         * Extracts [Rect] from [Common.RegionProto] by returning a rect that encompasses all
-         * the rectangles making up the region.
+         * Extracts [Rect] from [Common.RegionProto] by returning a rect that encompasses all the
+         * rectangles making up the region.
          */
         @JvmStatic
         fun Common.RegionProto?.toRegion(): Region? {
@@ -201,7 +196,10 @@ class LayerTraceEntryLazy(
         @JvmStatic
         fun Common.RectProto?.toRect(): com.android.server.wm.traces.common.Rect =
             com.android.server.wm.traces.common.Rect.from(
-                    this?.left ?: 0, this?.top ?: 0, this?.right ?: 0, this?.bottom ?: 0
-                )
+                this?.left ?: 0,
+                this?.top ?: 0,
+                this?.right ?: 0,
+                this?.bottom ?: 0
+            )
     }
 }

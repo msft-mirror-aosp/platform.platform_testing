@@ -28,6 +28,7 @@ java_library {
     static_libs: [
         "androidx.test.core",
         "androidx.test.runner",
+        "androidx.test.uiautomator",
         "collector-helper-utilities",
     ],
 

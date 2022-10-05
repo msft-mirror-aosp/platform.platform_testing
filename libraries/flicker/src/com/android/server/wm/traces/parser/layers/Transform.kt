@@ -29,21 +29,16 @@ import com.android.server.wm.traces.common.layers.Transform.Companion.isFlagClea
 import com.android.server.wm.traces.common.layers.Transform.Companion.isFlagSet
 
 fun Transform(transform: TransformProto?, position: Layers.PositionProto?) =
-        Transform.from(
-            transform?.type,
-            getMatrix(transform, position)
-        )
+    Transform.from(transform?.type, getMatrix(transform, position))
 
-private fun getMatrix(transform: TransformProto?, position: Layers.PositionProto?):
-        Matrix33 {
+private fun getMatrix(transform: TransformProto?, position: Layers.PositionProto?): Matrix33 {
     val x = position?.x ?: 0f
     val y = position?.y ?: 0f
 
     return when {
         transform == null || Transform.isSimpleTransform(transform.type) ->
             transform?.type.getDefaultTransform(x, y)
-        else ->
-            Matrix33(transform.dsdx, transform.dtdx, x, transform.dsdy, transform.dtdy, y)
+        else -> Matrix33(transform.dsdx, transform.dtdx, x, transform.dsdy, transform.dtdy, y)
     }
 }
 
@@ -59,7 +54,6 @@ private fun Int?.getDefaultTransform(x: Float, y: Float): Matrix33 {
         isFlagSet(ROT_90_VAL) -> Matrix33.rot90(x, y)
         // IDENTITY
         isFlagClear(SCALE_VAL or ROTATE_VAL) -> Matrix33.identity(x, y)
-        else ->
-            throw IllegalStateException("Unknown transform type $this")
+        else -> throw IllegalStateException("Unknown transform type $this")
     }
 }

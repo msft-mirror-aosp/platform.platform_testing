@@ -27,19 +27,19 @@ import com.android.server.wm.traces.common.transition.Transition
 class AppLayerRemainInsideDisplayBounds(component: ComponentBuilder) :
     BaseAssertionBuilderWithComponent(component) {
     /** {@inheritDoc} */
-    override fun doEvaluate(
-        transition: Transition,
-        layerSubject: LayersTraceSubject
-    ) {
-        layerSubject.invoke("appLayerRemainInsideDisplayBounds") { entry ->
-            val displays = entry.entry.displays
-            if (displays.isEmpty()) {
-                entry.fail("No displays found")
+    override fun doEvaluate(transition: Transition, layerSubject: LayersTraceSubject) {
+        layerSubject
+            .invoke("appLayerRemainInsideDisplayBounds") { entry ->
+                val displays = entry.entry.displays
+                if (displays.isEmpty()) {
+                    entry.fail("No displays found")
+                }
+                displays.forEach { display ->
+                    entry
+                        .visibleRegion(component.build(transition))
+                        .coversAtMost(display.layerStackSpace)
+                }
             }
-            displays.forEach { display ->
-                entry.visibleRegion(component.build(transition))
-                    .coversAtMost(display.layerStackSpace)
-            }
-        }.forAllEntries()
+            .forAllEntries()
     }
 }

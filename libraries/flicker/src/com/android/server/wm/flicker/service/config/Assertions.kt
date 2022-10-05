@@ -56,21 +56,15 @@ object Assertions {
             generatedAssertionsForScenarioInstance(scenarioInstance, assertionFactory)
     }
 
-    /**
-     * Runs hardcoded assertions for a scenario instance
-     */
-    fun assertionsForScenarioInstance(
-        scenarioInstance: ScenarioInstance
-    ): List<AssertionData> {
+    /** Runs hardcoded assertions for a scenario instance */
+    fun assertionsForScenarioInstance(scenarioInstance: ScenarioInstance): List<AssertionData> {
         val hardcodedAssertions = assertionsForScenario(scenarioInstance.scenario)
         return hardcodedAssertions.map {
             AssertionData(scenarioInstance.scenario, it, it.invocationGroup)
         }
     }
 
-    /**
-     * Runs generated assertions for a scenario instance, using the given assertionFactory
-     */
+    /** Runs generated assertions for a scenario instance, using the given assertionFactory */
     fun generatedAssertionsForScenarioInstance(
         scenarioInstance: ScenarioInstance,
         assertionFactory: AssertionFactory,
@@ -89,9 +83,7 @@ object Assertions {
             scenario.description
             if (scenario.executionCondition.shouldExecute(transition)) {
                 for (assertion in assertionsForScenario(scenario)) {
-                    assertions.add(
-                        AssertionData(scenario, assertion, assertion.invocationGroup)
-                    )
+                    assertions.add(AssertionData(scenario, assertion, assertion.invocationGroup))
                 }
             }
         }
@@ -99,50 +91,51 @@ object Assertions {
         return assertions
     }
 
-    private val COMMON_ASSERTIONS = listOf(
-        LayerIsVisibleAtStart(Components.NAV_BAR) runAs NON_BLOCKING,
-        LayerIsVisibleAtEnd(Components.NAV_BAR) runAs NON_BLOCKING,
-        NonAppWindowIsVisibleAlways(Components.NAV_BAR) runAs NON_BLOCKING,
-        NonAppWindowIsVisibleAlways(Components.STATUS_BAR) runAs NON_BLOCKING,
-        LayerIsVisibleAlways(Components.STATUS_BAR) runAs NON_BLOCKING,
-        EntireScreenCoveredAtStart() runAs NON_BLOCKING,
-        EntireScreenCoveredAtEnd() runAs NON_BLOCKING,
-        EntireScreenCoveredAlways() runAs NON_BLOCKING,
-        VisibleWindowsShownMoreThanOneConsecutiveEntry() runAs NON_BLOCKING,
-        VisibleLayersShownMoreThanOneConsecutiveEntry() runAs NON_BLOCKING,
-        StatusBarLayerPositionAtStart() runAs NON_BLOCKING,
-        StatusBarLayerPositionAtEnd() runAs NON_BLOCKING,
-    )
+    private val COMMON_ASSERTIONS =
+        listOf(
+            LayerIsVisibleAtStart(Components.NAV_BAR) runAs NON_BLOCKING,
+            LayerIsVisibleAtEnd(Components.NAV_BAR) runAs NON_BLOCKING,
+            NonAppWindowIsVisibleAlways(Components.NAV_BAR) runAs NON_BLOCKING,
+            NonAppWindowIsVisibleAlways(Components.STATUS_BAR) runAs NON_BLOCKING,
+            LayerIsVisibleAlways(Components.STATUS_BAR) runAs NON_BLOCKING,
+            EntireScreenCoveredAtStart() runAs NON_BLOCKING,
+            EntireScreenCoveredAtEnd() runAs NON_BLOCKING,
+            EntireScreenCoveredAlways() runAs NON_BLOCKING,
+            VisibleWindowsShownMoreThanOneConsecutiveEntry() runAs NON_BLOCKING,
+            VisibleLayersShownMoreThanOneConsecutiveEntry() runAs NON_BLOCKING,
+            StatusBarLayerPositionAtStart() runAs NON_BLOCKING,
+            StatusBarLayerPositionAtEnd() runAs NON_BLOCKING,
+        )
 
-    private val APP_LAUNCH_ASSERTIONS = COMMON_ASSERTIONS + listOf(
-        AppLayerIsVisibleAtStart(Components.LAUNCHER) runAs NON_BLOCKING,
-        AppLayerIsInvisibleAtStart(Components.OPENING_APP) runAs NON_BLOCKING,
+    private val APP_LAUNCH_ASSERTIONS =
+        COMMON_ASSERTIONS +
+            listOf(
+                AppLayerIsVisibleAtStart(Components.LAUNCHER) runAs NON_BLOCKING,
+                AppLayerIsInvisibleAtStart(Components.OPENING_APP) runAs NON_BLOCKING,
+                AppLayerIsInvisibleAtEnd(Components.LAUNCHER) runAs NON_BLOCKING,
+                AppLayerIsVisibleAtEnd(Components.OPENING_APP) runAs NON_BLOCKING,
+                AppLayerBecomesVisible(Components.OPENING_APP) runAs NON_BLOCKING,
+                AppWindowBecomesVisible(Components.OPENING_APP) runAs NON_BLOCKING,
+                AppWindowBecomesTopWindow(Components.OPENING_APP) runAs NON_BLOCKING,
+            )
 
-        AppLayerIsInvisibleAtEnd(Components.LAUNCHER) runAs NON_BLOCKING,
-        AppLayerIsVisibleAtEnd(Components.OPENING_APP) runAs NON_BLOCKING,
-        AppLayerBecomesVisible(Components.OPENING_APP) runAs NON_BLOCKING,
-        AppWindowBecomesVisible(Components.OPENING_APP) runAs NON_BLOCKING,
-        AppWindowBecomesTopWindow(Components.OPENING_APP) runAs NON_BLOCKING,
-    )
-
-    private val APP_CLOSE_ASSERTIONS = COMMON_ASSERTIONS + listOf(
-        AppLayerIsVisibleAtStart(Components.CLOSING_APP) runAs NON_BLOCKING,
-        AppLayerIsInvisibleAtStart(Components.LAUNCHER) runAs NON_BLOCKING,
-
-        AppLayerIsInvisibleAtEnd(Components.CLOSING_APP) runAs NON_BLOCKING,
-        AppLayerIsVisibleAtEnd(Components.LAUNCHER) runAs NON_BLOCKING,
-    )
+    private val APP_CLOSE_ASSERTIONS =
+        COMMON_ASSERTIONS +
+            listOf(
+                AppLayerIsVisibleAtStart(Components.CLOSING_APP) runAs NON_BLOCKING,
+                AppLayerIsInvisibleAtStart(Components.LAUNCHER) runAs NON_BLOCKING,
+                AppLayerIsInvisibleAtEnd(Components.CLOSING_APP) runAs NON_BLOCKING,
+                AppLayerIsVisibleAtEnd(Components.LAUNCHER) runAs NON_BLOCKING,
+            )
 
     private fun getLayersGeneratedAssertionsForScenario(
         scenarioInstance: ScenarioInstance,
         assertionFactory: AssertionFactory,
         logger: ((String) -> Unit)? = null
     ): List<BaseAssertionBuilder> {
-        val assertions = assertionFactory.getAssertionsForScenario(
-            scenarioInstance.scenario
-        )
+        val assertions = assertionFactory.getAssertionsForScenario(scenarioInstance.scenario)
         logger?.invoke("Generated layers assertions for scenario ${scenarioInstance.scenario}")
-        return assertions.map{ assertion ->
+        return assertions.map { assertion ->
             logger?.invoke(assertion.toString())
             AutomaticallyGeneratedLayersAssertions(assertion) runAs NON_BLOCKING
         }

@@ -19,18 +19,12 @@ package com.android.server.wm.flicker.traces.layers
 import com.android.server.wm.traces.common.IComponentMatcher
 import com.android.server.wm.traces.common.layers.Layer
 
-/**
- * Base interface for Layer trace and state assertions
- */
+/** Base interface for Layer trace and state assertions */
 interface ILayerSubject<LayerSubjectType, RegionSubjectType> {
-    /**
-     * Asserts that the current SurfaceFlinger state doesn't contain layers
-     */
+    /** Asserts that the current SurfaceFlinger state doesn't contain layers */
     fun isEmpty(): LayerSubjectType
 
-    /**
-     * Asserts that the current SurfaceFlinger state contains layers
-     */
+    /** Asserts that the current SurfaceFlinger state contains layers */
     fun isNotEmpty(): LayerSubjectType
 
     /**
@@ -38,8 +32,8 @@ interface ILayerSubject<LayerSubjectType, RegionSubjectType> {
      *
      * @param componentMatcher Components to search
      * @param useCompositionEngineRegionOnly If true, uses only the region calculated from the
-     *   Composition Engine (CE) -- visibleRegion in the proto definition. Otherwise, calculates
-     *   the visible region when the information is not available from the CE
+     * Composition Engine (CE) -- visibleRegion in the proto definition. Otherwise, calculates the
+     * visible region when the information is not available from the CE
      */
     fun visibleRegion(
         componentMatcher: IComponentMatcher? = null,
@@ -75,22 +69,22 @@ interface ILayerSubject<LayerSubjectType, RegionSubjectType> {
     fun isInvisible(componentMatcher: IComponentMatcher): LayerSubjectType
 
     /**
-     * Asserts that the entry contains a visible splash screen [Layer] for a [layer]
-     * matching [componentMatcher]
+     * Asserts that the entry contains a visible splash screen [Layer] for a [layer] matching
+     * [componentMatcher]
      *
      * @param componentMatcher Components to search
      */
     fun isSplashScreenVisibleFor(componentMatcher: IComponentMatcher): LayerSubjectType
 
     /**
-     * Obtains a [LayerSubject] for the first occurrence of a [Layer] with [Layer.name]
-     * containing [name] in [frameNumber].
+     * Obtains a [LayerSubject] for the first occurrence of a [Layer] with [Layer.name] containing
+     * [name] in [frameNumber].
      *
-     * Always returns a subject, event when the layer doesn't exist. To verify if layer
-     * actually exists in the hierarchy use [LayerSubject.exists] or [LayerSubject.doesNotExist]
+     * Always returns a subject, event when the layer doesn't exist. To verify if layer actually
+     * exists in the hierarchy use [LayerSubject.exists] or [LayerSubject.doesNotExist]
      *
-     * @return LayerSubject that can be used to make assertions on a single layer matching
-     * [name] and [frameNumber].
+     * @return LayerSubject that can be used to make assertions on a single layer matching [name]
+     * and [frameNumber].
      */
     fun layer(name: String, frameNumber: Long): LayerSubject
 }

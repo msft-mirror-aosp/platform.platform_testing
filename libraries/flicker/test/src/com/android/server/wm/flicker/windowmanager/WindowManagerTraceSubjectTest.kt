@@ -38,8 +38,10 @@ import org.junit.runners.MethodSorters
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class WindowManagerTraceSubjectTest {
-    private val chromeTrace get() = readWmTraceFromFile("wm_trace_openchrome.pb")
-    private val imeTrace get() = readWmTraceFromFile("wm_trace_ime.pb")
+    private val chromeTrace
+        get() = readWmTraceFromFile("wm_trace_openchrome.pb")
+    private val imeTrace
+        get() = readWmTraceFromFile("wm_trace_ime.pb")
 
     @Before
     fun before() {
@@ -86,25 +88,26 @@ class WindowManagerTraceSubjectTest {
     fun testCanDetectTransitionWithOptionalValue() {
         val trace = readWmTraceFromFile("wm_trace_open_from_overview.pb")
         val subject = assertThat(trace)
-        subject.isAppWindowOnTop(TestComponents.LAUNCHER)
-                .then()
-                .isAppWindowOnTop(ComponentNameMatcher.SNAPSHOT)
-                .then()
-                .isAppWindowOnTop(TestComponents.CHROME_FIRST_RUN)
+        subject
+            .isAppWindowOnTop(TestComponents.LAUNCHER)
+            .then()
+            .isAppWindowOnTop(ComponentNameMatcher.SNAPSHOT)
+            .then()
+            .isAppWindowOnTop(TestComponents.CHROME_FIRST_RUN)
     }
 
     @Test
     fun testCanTransitionInAppWindow_withOptional() {
         assertThat(chromeTrace)
-                .isAppWindowOnTop(TestComponents.LAUNCHER)
-                .isAboveAppWindowVisible(TestComponents.SCREEN_DECOR_OVERLAY)
-                .then()
-                .isAppWindowOnTop(TestComponents.CHROME_SPLASH_SCREEN)
-                .isAboveAppWindowVisible(TestComponents.SCREEN_DECOR_OVERLAY)
-                .then()
-                .isAppWindowOnTop(TestComponents.CHROME_FIRST_RUN)
-                .isAboveAppWindowVisible(TestComponents.SCREEN_DECOR_OVERLAY)
-                .forAllEntries()
+            .isAppWindowOnTop(TestComponents.LAUNCHER)
+            .isAboveAppWindowVisible(TestComponents.SCREEN_DECOR_OVERLAY)
+            .then()
+            .isAppWindowOnTop(TestComponents.CHROME_SPLASH_SCREEN)
+            .isAboveAppWindowVisible(TestComponents.SCREEN_DECOR_OVERLAY)
+            .then()
+            .isAppWindowOnTop(TestComponents.CHROME_FIRST_RUN)
+            .isAboveAppWindowVisible(TestComponents.SCREEN_DECOR_OVERLAY)
+            .forAllEntries()
     }
 
     @Test
@@ -117,16 +120,15 @@ class WindowManagerTraceSubjectTest {
 
     @Test
     fun testCanInspectAppWindowOnTop() {
-        assertThat(chromeTrace)
-            .first()
-            .isAppWindowOnTop(TestComponents.LAUNCHER)
+        assertThat(chromeTrace).first().isAppWindowOnTop(TestComponents.LAUNCHER)
 
-        val failure = assertThrows(FlickerSubjectException::class.java) {
-            assertThat(chromeTrace)
-                .first()
-                .isAppWindowOnTop(TestComponents.IMAGINARY)
-                .fail("Could not detect the top app window")
-        }
+        val failure =
+            assertThrows(FlickerSubjectException::class.java) {
+                assertThat(chromeTrace)
+                    .first()
+                    .isAppWindowOnTop(TestComponents.IMAGINARY)
+                    .fail("Could not detect the top app window")
+            }
         assertFailure(failure).hasMessageThat().contains("ImaginaryWindow")
     }
 
@@ -151,9 +153,11 @@ class WindowManagerTraceSubjectTest {
     @Test(expected = AssertionError::class)
     fun testCanDetectOverlappingWindows() {
         assertThat(imeTrace)
-            .doNotOverlap(ComponentNameMatcher.IME,
+            .doNotOverlap(
+                ComponentNameMatcher.IME,
                 ComponentNameMatcher.NAV_BAR,
-                TestComponents.IME_ACTIVITY)
+                TestComponents.IME_ACTIVITY
+            )
             .forAllEntries()
     }
 
@@ -186,14 +190,16 @@ class WindowManagerTraceSubjectTest {
 
     @Test
     fun testCanAssertWindowStateSequence() {
-        val componentMatcher = ComponentNameMatcher.unflattenFromString(
-            "com.android.chrome/org.chromium.chrome.browser.firstrun.FirstRunActivity"
-        )
+        val componentMatcher =
+            ComponentNameMatcher.unflattenFromString(
+                "com.android.chrome/org.chromium.chrome.browser.firstrun.FirstRunActivity"
+            )
         val windowStates = assertThat(chromeTrace).windowStates(componentMatcher)
 
-        val visibilityChange = windowStates.zipWithNext { current, next ->
-            current.windowState?.isVisible != next.windowState?.isVisible
-        }
+        val visibilityChange =
+            windowStates.zipWithNext { current, next ->
+                current.windowState?.isVisible != next.windowState?.isVisible
+            }
 
         Truth.assertWithMessage("Visibility should have changed only 1x in the trace")
             .that(visibilityChange.count { it })
@@ -202,20 +208,25 @@ class WindowManagerTraceSubjectTest {
 
     @Test
     fun exceptionContainsDebugInfo() {
-        val error = assertThrows(AssertionError::class.java) {
-            assertThat(chromeTrace).isEmpty()
-        }
+        val error = assertThrows(AssertionError::class.java) { assertThat(chromeTrace).isEmpty() }
         assertThatErrorContainsDebugInfo(error, withBlameEntry = false)
     }
 
     @Test
     fun testCanDetectSnapshotStartingWindow() {
         val trace = readWmTraceFromFile("quick_switch_to_app_killed_in_background_trace.pb")
-        val app1 = ComponentNameMatcher("com.android.server.wm.flicker.testapp",
-            "com.android.server.wm.flicker.testapp.ImeActivity")
-        val app2 = ComponentNameMatcher("com.android.server.wm.flicker.testapp",
-            "com.android.server.wm.flicker.testapp.SimpleActivity")
-        assertThat(trace).isAppWindowVisible(app1)
+        val app1 =
+            ComponentNameMatcher(
+                "com.android.server.wm.flicker.testapp",
+                "com.android.server.wm.flicker.testapp.ImeActivity"
+            )
+        val app2 =
+            ComponentNameMatcher(
+                "com.android.server.wm.flicker.testapp",
+                "com.android.server.wm.flicker.testapp.SimpleActivity"
+            )
+        assertThat(trace)
+            .isAppWindowVisible(app1)
             .then()
             .isAppSnapshotStartingWindowVisibleFor(app2, isOptional = true)
             .then()
@@ -226,31 +237,28 @@ class WindowManagerTraceSubjectTest {
             .isAppWindowVisible(app1)
             .forAllEntries()
 
-        val failure = assertThrows(FlickerSubjectException::class.java) {
-            assertThat(trace)
-                .isAppWindowVisible(app1)
-                .then()
-                .isAppWindowVisible(app2)
-                .then()
-                .isAppWindowVisible(app1)
-                .forAllEntries()
-        }
+        val failure =
+            assertThrows(FlickerSubjectException::class.java) {
+                assertThat(trace)
+                    .isAppWindowVisible(app1)
+                    .then()
+                    .isAppWindowVisible(app2)
+                    .then()
+                    .isAppWindowVisible(app1)
+                    .forAllEntries()
+            }
         assertFailure(failure).hasMessageThat().contains("Is Invisible")
     }
 
     @Test
     fun canDetectAppVisibleTablet() {
         val trace = readWmTraceFromFile("tablet/wm_trace_open_chrome.winscope")
-        assertThat(trace)
-            .isAppWindowVisible(TestComponents.CHROME)
-            .forAllEntries()
+        assertThat(trace).isAppWindowVisible(TestComponents.CHROME).forAllEntries()
     }
 
     @Test
     fun canDetectAppOpenRecentsTablet() {
         val trace = readWmTraceFromFile("tablet/wm_trace_open_recents.winscope")
-        assertThat(trace)
-            .isRecentsActivityVisible()
-            .forAllEntries()
+        assertThat(trace).isRecentsActivityVisible().forAllEntries()
     }
 }

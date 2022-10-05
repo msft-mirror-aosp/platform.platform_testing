@@ -53,22 +53,24 @@ class MockWindowStateBuilder() {
             isHomeRecentsComponent = false,
             isDisplayFrozen = false,
             _pendingActivities = emptyArray(),
-            root = RootWindowContainer(
-                WindowContainer(
-                    title = "root container",
-                    token = "",
-                    orientation = 1,
-                    layerId = 1,
-                    _isVisible = true,
-                    configurationContainer = ConfigurationContainer(null, null, null),
-                    children = emptyArray()
-                )
-            ),
-            keyguardControllerState = KeyguardControllerState.from(
-                isAodShowing = false,
-                isKeyguardShowing = false,
-                keyguardOccludedStates = emptyMap()
-            ),
+            root =
+                RootWindowContainer(
+                    WindowContainer(
+                        title = "root container",
+                        token = "",
+                        orientation = 1,
+                        layerId = 1,
+                        _isVisible = true,
+                        configurationContainer = ConfigurationContainer(null, null, null),
+                        children = emptyArray()
+                    )
+                ),
+            keyguardControllerState =
+                KeyguardControllerState.from(
+                    isAodShowing = false,
+                    isKeyguardShowing = false,
+                    keyguardOccludedStates = emptyMap()
+                ),
             _timestamp = timestamp.toString()
         )
     }

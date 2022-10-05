@@ -21,62 +21,63 @@ import com.google.common.truth.Truth
 import org.junit.Test
 
 /**
- * Test for the MockLayerTraceBuilder utilities. To run this test:
- * `atest FlickerLibTest:MockLayerTraceBuilderTest`
+ * Test for the MockLayerTraceBuilder utilities. To run this test: `atest
+ * FlickerLibTest:MockLayerTraceBuilderTest`
  */
 class MockLayerTraceBuilderTest {
     @Test
     fun containerLayerIsInvisible() {
-        val mockLayer = MockLayerBuilder("Mock Layer")
-            .setAbsoluteBounds(Rect.from(0, 0, 200, 200))
-            .setContainerLayer()
-            .build()
+        val mockLayer =
+            MockLayerBuilder("Mock Layer")
+                .setAbsoluteBounds(Rect.from(0, 0, 200, 200))
+                .setContainerLayer()
+                .build()
 
         Truth.assertThat(mockLayer.isVisible).isFalse()
     }
 
     @Test
     fun childrenLayerInheritsParentBounds() {
-        val mockLayer = MockLayerBuilder("Parent Mock Layer")
-            .setContainerLayer()
-            .setAbsoluteBounds(Rect.from(0, 0, 200, 200))
-            .addChild(
-                MockLayerBuilder("Child Mock Layer")
-            ).build()
+        val mockLayer =
+            MockLayerBuilder("Parent Mock Layer")
+                .setContainerLayer()
+                .setAbsoluteBounds(Rect.from(0, 0, 200, 200))
+                .addChild(MockLayerBuilder("Child Mock Layer"))
+                .build()
 
-        Truth.assertThat(mockLayer.children[0].screenBounds)
-            .isEqualTo(mockLayer.screenBounds)
-        Truth.assertThat(mockLayer.children[0].bounds)
-            .isEqualTo(mockLayer.bounds)
+        Truth.assertThat(mockLayer.children[0].screenBounds).isEqualTo(mockLayer.screenBounds)
+        Truth.assertThat(mockLayer.children[0].bounds).isEqualTo(mockLayer.bounds)
     }
 
     @Test
     fun canAddChildLayer() {
-        val mockLayer = MockLayerBuilder("Parent Mock Layer")
-            .setAbsoluteBounds(Rect.from(0, 0, 200, 200))
-            .addChild(
-                MockLayerBuilder("Child Mock Layer")
-            ).build()
+        val mockLayer =
+            MockLayerBuilder("Parent Mock Layer")
+                .setAbsoluteBounds(Rect.from(0, 0, 200, 200))
+                .addChild(MockLayerBuilder("Child Mock Layer"))
+                .build()
 
         Truth.assertThat(mockLayer.children).isNotEmpty()
     }
 
     @Test
     fun canSetLayerVisibility() {
-        val mockLayer = MockLayerBuilder("Mock Layer")
-            .setAbsoluteBounds(Rect.from(0, 0, 200, 200))
-            .setInvisible()
-            .build()
+        val mockLayer =
+            MockLayerBuilder("Mock Layer")
+                .setAbsoluteBounds(Rect.from(0, 0, 200, 200))
+                .setInvisible()
+                .build()
 
         Truth.assertThat(mockLayer.isVisible).isFalse()
     }
 
     @Test
     fun invisibleLayerHasNoVisibleBounds() {
-        val mockLayer = MockLayerBuilder("Mock Layer")
-            .setAbsoluteBounds(Rect.from(0, 0, 200, 200))
-            .setInvisible()
-            .build()
+        val mockLayer =
+            MockLayerBuilder("Mock Layer")
+                .setAbsoluteBounds(Rect.from(0, 0, 200, 200))
+                .setInvisible()
+                .build()
 
         Truth.assertThat(mockLayer.visibleRegion?.isEmpty ?: true).isTrue()
     }
