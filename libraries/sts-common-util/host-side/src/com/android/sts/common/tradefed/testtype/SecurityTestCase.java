@@ -17,7 +17,6 @@
 package com.android.sts.common.tradefed.testtype;
 
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeFalse;
 import static org.junit.Assume.assumeTrue;
 
@@ -41,6 +40,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TestName;
 
+import java.lang.AssertionError;
 import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -140,8 +140,11 @@ public class SecurityTestCase extends StsExtraBusinessLogicHostTestBase {
             // only fail when the kernel start time is valid
             long deviceTime = getDeviceUptime() + kernelStartTime;
             long hostTime = System.currentTimeMillis() / 1000;
-            assertTrue("Phone has had a hard reset", (hostTime - deviceTime) < 2);
             kernelStartTime = -1;
+            if ((hostTime - deviceTime) >= 2) {
+                getDevice().postBootSetup();
+                throw new AssertionError("Phone has had a hard reset");
+            }
         }
 
         logAndTerminateTestProcesses();
