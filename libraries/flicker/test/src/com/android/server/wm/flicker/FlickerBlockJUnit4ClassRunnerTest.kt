@@ -24,12 +24,7 @@ import com.android.server.wm.flicker.dsl.FlickerBuilder
 import com.android.server.wm.flicker.helpers.BrowserAppHelper
 import com.android.server.wm.flicker.helpers.IS_FAAS_ENABLED
 import com.android.server.wm.flicker.helpers.isShellTransitionsEnabled
-import com.android.server.wm.flicker.monitor.TraceMonitor.Companion.WINSCOPE_EXT
 import com.google.common.truth.Truth
-import java.io.File
-import kotlin.io.path.createDirectories
-import kotlin.io.path.createFile
-import kotlin.io.path.writeBytes
 import org.junit.Assert
 import org.junit.Assume
 import org.junit.FixMethodOrder
@@ -224,7 +219,7 @@ class FlickerBlockJUnit4ClassRunnerTest {
         @FlickerBuilderProvider
         open fun buildFlicker(): FlickerBuilder {
             return FlickerBuilder(instrumentation).usingExistingTraces {
-                generateTraceFilesFromScenarioTraces("AppLaunch")
+                getScenarioTraces("AppLaunch")
             }
         }
 
@@ -315,39 +310,5 @@ class FlickerBlockJUnit4ClassRunnerTest {
 
         var transitionRunCount = 0
         var flakyTestRuns = 0
-
-        private fun generateTraceFilesFromScenarioTraces(
-            scenario: String
-        ): FlickerBuilder.TraceFiles {
-            val randomString = (1..10).map { (('A'..'Z') + ('a'..'z')).random() }.joinToString("")
-
-            var wmTrace: File? = null
-            var layersTrace: File? = null
-            var transactionsTrace: File? = null
-            var transitionsTrace: File? = null
-            val traces =
-                mapOf<String, (File) -> Unit>(
-                    "wm_trace" to { wmTrace = it },
-                    "layers_trace" to { layersTrace = it },
-                    "transactions_trace" to { transactionsTrace = it },
-                    "transition_trace" to { transitionsTrace = it }
-                )
-            for ((traceName, resultSetter) in traces.entries) {
-                val traceBytes = readTestFile("scenarios/$scenario/$traceName$WINSCOPE_EXT")
-                val traceFile =
-                    getDefaultFlickerOutputDir().resolve("${traceName}_$randomString$WINSCOPE_EXT")
-                traceFile.parent.createDirectories()
-                traceFile.createFile()
-                traceFile.writeBytes(traceBytes)
-                resultSetter.invoke(traceFile.toFile())
-            }
-
-            return FlickerBuilder.TraceFiles(
-                wmTrace!!,
-                layersTrace!!,
-                transactionsTrace!!,
-                transitionsTrace!!
-            )
-        }
     }
 }

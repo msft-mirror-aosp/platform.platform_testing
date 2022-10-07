@@ -26,4 +26,7 @@ interface IComponentLifecycle {
     operator fun set(elementId: Any, elementLifecycles: IElementLifecycle)
 
     fun getOrPut(elementId: Any, elementLifecycles: IElementLifecycle): IElementLifecycle
+
+    /** Get "first" entry in the map */
+    fun getOneEntry(): IElementLifecycle
 }

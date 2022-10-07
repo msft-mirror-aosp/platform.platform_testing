@@ -19,7 +19,9 @@ package com.android.server.wm.flicker
 import android.content.Context
 import androidx.test.platform.app.InstrumentationRegistry
 import com.android.server.wm.flicker.FlickerRunResult.Companion.RunStatus.ASSERTION_SUCCESS
+import com.android.server.wm.flicker.dsl.FlickerBuilder
 import com.android.server.wm.flicker.helpers.isShellTransitionsEnabled
+import com.android.server.wm.flicker.monitor.TraceMonitor
 import com.android.server.wm.flicker.traces.FlickerSubjectException
 import com.android.server.wm.traces.common.DeviceTraceDump
 import com.android.server.wm.traces.common.layers.LayersTrace
@@ -34,9 +36,13 @@ import com.google.common.io.ByteStreams
 import com.google.common.truth.ExpectFailure
 import com.google.common.truth.Truth
 import com.google.common.truth.TruthFailureSubject
+import java.io.File
 import java.io.FileInputStream
 import java.nio.file.Files
 import java.util.zip.ZipInputStream
+import kotlin.io.path.createDirectories
+import kotlin.io.path.createFile
+import kotlin.io.path.writeBytes
 
 internal fun readWmTraceFromFile(relativePath: String): WindowManagerTrace {
     return try {
@@ -187,4 +193,37 @@ fun getTestTraceDump(
     val wmTraceByteArray = readTestFile(traceFilesLocation + wmTraceFilename)
     val layersTraceByteArray = readTestFile(traceFilesLocation + layersTraceFilename)
     return TraceFileReader.fromTraceByteArray(wmTraceByteArray, layersTraceByteArray)
+}
+
+fun getScenarioTraces(scenario: String): FlickerBuilder.TraceFiles {
+    val randomString = (1..10).map { (('A'..'Z') + ('a'..'z')).random() }.joinToString("")
+
+    var wmTrace: File? = null
+    var layersTrace: File? = null
+    var transactionsTrace: File? = null
+    var transitionsTrace: File? = null
+    val traces =
+        mapOf<String, (File) -> Unit>(
+            "wm_trace" to { wmTrace = it },
+            "layers_trace" to { layersTrace = it },
+            "transactions_trace" to { transactionsTrace = it },
+            "transition_trace" to { transitionsTrace = it }
+        )
+    for ((traceName, resultSetter) in traces.entries) {
+        val traceBytes = readTestFile("scenarios/$scenario/$traceName${TraceMonitor.WINSCOPE_EXT}")
+        val traceFile =
+            getDefaultFlickerOutputDir()
+                .resolve("${traceName}_$randomString${TraceMonitor.WINSCOPE_EXT}")
+        traceFile.parent.createDirectories()
+        traceFile.createFile()
+        traceFile.writeBytes(traceBytes)
+        resultSetter.invoke(traceFile.toFile())
+    }
+
+    return FlickerBuilder.TraceFiles(
+        wmTrace!!,
+        layersTrace!!,
+        transactionsTrace!!,
+        transitionsTrace!!
+    )
 }

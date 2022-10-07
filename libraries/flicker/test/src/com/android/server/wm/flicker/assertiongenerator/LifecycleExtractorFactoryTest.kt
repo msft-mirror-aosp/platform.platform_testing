@@ -73,7 +73,7 @@ class LifecycleExtractorFactoryTest {
             TraceContent.byTraceType(
                 expectedTraceLifecycle,
                 AssertionGenConfigTestConst.emptyDeviceTraceConfiguration
-            )!!
+            )
         val expectedTraceLifecycles = listOf(expectedTraceContent)
         try {
             Truth.assertThat(elementLifecycles == expectedTraceLifecycles).isTrue()

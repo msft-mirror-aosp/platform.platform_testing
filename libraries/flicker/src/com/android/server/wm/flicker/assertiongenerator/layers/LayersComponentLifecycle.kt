@@ -55,8 +55,8 @@ class LayersComponentLifecycle(
         return ""
     }
 
-    /** Get "first" entry in the map */
-    fun getOneEntry(): LayersElementLifecycle {
+    /** @inheritDoc */
+    override fun getOneEntry(): LayersElementLifecycle {
         return lifecyclesMap.values.first()
     }
 
@@ -69,6 +69,6 @@ class LayersComponentLifecycle(
     }
 
     override fun toString(): String {
-        return "ComponentMatcherLifecycle:\n$lifecyclesMap\n\n"
+        return "LayersComponentMatcherLifecycle:\n$lifecyclesMap\n\n"
     }
 }

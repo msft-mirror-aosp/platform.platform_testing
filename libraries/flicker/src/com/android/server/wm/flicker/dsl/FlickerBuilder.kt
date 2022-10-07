@@ -125,7 +125,7 @@ private constructor(
     fun withTestName(testName: () -> String): FlickerBuilder = apply {
         val name = testName()
         require(!name.contains(" ")) {
-            "The test tag can not contain spaces since it is a part of the file name"
+            "The test name can not contain spaces since it is a part of the file name"
         }
         this.testName = name
     }

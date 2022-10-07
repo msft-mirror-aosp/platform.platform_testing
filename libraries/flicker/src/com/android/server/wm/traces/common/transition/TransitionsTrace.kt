@@ -35,10 +35,7 @@ data class TransitionsTrace(override val entries: Array<Transition>) :
 
     fun slice(from: Long, to: Long): TransitionsTrace {
         return TransitionsTrace(
-            this.entries
-                .dropWhile { it.timestamp < from }
-                .dropLastWhile { it.timestamp > to }
-                .toTypedArray()
+            this.entries.dropWhile { it.start < from }.dropLastWhile { it.end > to }.toTypedArray()
         )
     }
 

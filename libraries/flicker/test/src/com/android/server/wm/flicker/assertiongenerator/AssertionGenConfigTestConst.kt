@@ -16,7 +16,10 @@
 
 package com.android.server.wm.flicker.assertiongenerator
 
+import com.android.server.wm.flicker.service.assertors.ComponentTypeMatcher
 import com.android.server.wm.flicker.service.assertors.Components
+import com.android.server.wm.traces.common.ComponentName
+import com.android.server.wm.traces.common.ComponentNameMatcher
 
 class AssertionGenConfigTestConst {
     companion object {
@@ -37,5 +40,15 @@ class AssertionGenConfigTestConst {
                         Components.OPENING_APP
                 )
             )
+
+        val expectedComponentName =
+            ComponentName(
+                "com.android.server.wm.flicker.testapp",
+                "com.android.server.wm.flicker.testapp.SimpleActivity"
+            )
+
+        val expectedOpenComponentNameMatcher = ComponentNameMatcher(expectedComponentName)
+        val expectedOpenComponentTypeMatcher =
+            ComponentTypeMatcher(expectedComponentName.toString(), Components.OPENING_APP)
     }
 }

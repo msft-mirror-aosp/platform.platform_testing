@@ -27,19 +27,25 @@ open class TraceContent(
     open val traceLifecycle: ITraceLifecycle,
     open val traceConfiguration: DeviceTraceConfiguration?
 ) {
-
     companion object {
         fun byTraceType(
             traceLifecycle: ITraceLifecycle,
             traceConfiguration: DeviceTraceConfiguration
-        ): TraceContent? {
-            if (traceLifecycle is LayersTraceLifecycle) {
-                return LayersTraceContent(traceLifecycle, traceConfiguration)
+        ): TraceContent {
+            return when (traceLifecycle) {
+                is LayersTraceLifecycle -> {
+                    LayersTraceContent(traceLifecycle, traceConfiguration)
+                }
+                is WmTraceLifecycle -> {
+                    WmTraceContent(traceLifecycle, traceConfiguration)
+                }
+                else ->
+                    throw RuntimeException(
+                        "Lifecycle $traceLifecycle has type " +
+                            "${traceLifecycle::class.java.typeName}, " +
+                            "which is not supported by TraceContent"
+                    )
             }
-            if (traceLifecycle is WmTraceLifecycle) {
-                return WmTraceContent(traceLifecycle, traceConfiguration)
-            }
-            return null
         }
     }
 }

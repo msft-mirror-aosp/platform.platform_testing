@@ -1,5 +1,6 @@
 package com.android.server.wm.flicker.assertiongenerator
 
+import com.android.server.wm.flicker.assertiongenerator.AssertionProducerTestConst.Companion.openAppComponentTypeMatcher
 import com.android.server.wm.flicker.assertiongenerator.layers.LayersComponentLifecycle
 import com.android.server.wm.flicker.assertiongenerator.layers.LayersElementLifecycle
 import com.android.server.wm.traces.common.ActiveBuffer
@@ -144,10 +145,7 @@ class ElementLifecycleExtractorTestConst {
             )
 
         val expectedElementLifecycles_OpenApp =
-            mapOf(
-                ComponentNameMatcher("openPackage", "openApp") to
-                    expectedComponentMatcherLifecycle_OpenApp
-            )
+            mapOf(openAppComponentTypeMatcher to expectedComponentMatcherLifecycle_OpenApp)
 
         val expectedElementLifecycle_AllVisibilityAssertions_id2 =
             LayersElementLifecycle(mutableListOf(null, layer_id2_t1, layer_id2_t2))

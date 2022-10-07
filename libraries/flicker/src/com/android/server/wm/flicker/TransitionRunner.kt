@@ -18,7 +18,6 @@ package com.android.server.wm.flicker
 
 import android.app.Instrumentation
 import android.os.Bundle
-import android.os.SystemClock
 import android.util.Log
 import androidx.test.platform.app.InstrumentationRegistry
 import com.android.server.wm.flicker.FlickerRunResult.Companion.RunStatus
@@ -30,15 +29,18 @@ import com.android.server.wm.traces.common.WindowManagerConditionsFactory
 import com.android.server.wm.traces.parser.getCurrentState
 import java.io.IOException
 import java.nio.file.Files
-import java.util.concurrent.TimeUnit
 import kotlin.system.measureTimeMillis
 import org.junit.runner.Description
 
 /**
  * Runner to execute the transitions of a flicker test
  *
- * The commands are executed in the following order: 1) [Flicker.transitionSetup] 2) Start monitors
- * 3) [Flicker.transitions] 4) Stop monitors 5) [Flicker.transitionTeardown]
+ * The commands are executed in the following order:
+ * 1) [Flicker.transitionSetup]
+ * 2) Start monitors
+ * 3) [Flicker.transitions]
+ * 4) Stop monitors
+ * 5) [Flicker.transitionTeardown]
  *
  * If the tests were already executed, reuse the previous results
  */
@@ -242,30 +244,12 @@ open class TransitionRunner {
     @Throws(TransitionExecutionFailure::class)
     private fun runTransition(flicker: Flicker) {
         try {
-            result.transitionStartTime =
-                FlickerRunResult.TraceTime(
-                    elapsedRealtimeNanos = SystemClock.elapsedRealtimeNanos(),
-                    systemTime = SystemClock.uptimeNanos(),
-                    unixTimeNanos =
-                        TimeUnit.NANOSECONDS.convert(
-                            System.currentTimeMillis(),
-                            TimeUnit.MILLISECONDS
-                        ),
-                )
+            result.notifyTransitionStarting()
 
             flicker.transitions.forEach { it.invoke(flicker) }
             flicker.wmHelper.StateSyncBuilder().add(UI_STABLE_CONDITIONS).waitFor()
 
-            result.transitionEndTime =
-                FlickerRunResult.TraceTime(
-                    elapsedRealtimeNanos = SystemClock.elapsedRealtimeNanos(),
-                    systemTime = SystemClock.uptimeNanos(),
-                    unixTimeNanos =
-                        TimeUnit.NANOSECONDS.convert(
-                            System.currentTimeMillis(),
-                            TimeUnit.MILLISECONDS
-                        ),
-                )
+            result.notifyTransitionEnded()
         } catch (e: Throwable) {
             throw TransitionExecutionFailure(e)
         }
@@ -275,6 +259,9 @@ open class TransitionRunner {
     private fun runTransitionTeardown(flicker: Flicker) {
         try {
             flicker.transitionTeardown.forEach { it.invoke(flicker) }
+            flicker.wmHelper.StateSyncBuilder()
+                .add(UI_STABLE_CONDITIONS)
+                .waitFor()
         } catch (e: Throwable) {
             throw TransitionTeardownFailure(e)
         }
@@ -353,7 +340,7 @@ open class TransitionRunner {
          * Conditions that determine when the UI is in a stable stable and no windows or layers are
          * animating or changing state.
          */
-        private val UI_STABLE_CONDITIONS =
+        val UI_STABLE_CONDITIONS =
             ConditionList(
                 listOf(
                     WindowManagerConditionsFactory.isWMStateComplete(),

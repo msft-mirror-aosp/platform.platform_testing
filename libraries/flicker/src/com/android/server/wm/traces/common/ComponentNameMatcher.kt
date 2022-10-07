@@ -145,5 +145,55 @@ open class ComponentNameMatcher(open var component: ComponentName) : IComponentN
             }
             return ComponentNameMatcher(pkg, cls)
         }
+
+        /**
+         * Creates a component matcher from a window or layer name. The name might contain junk,
+         * which will be removed to only extract package and class name (e.g. other words before
+         * package name, separated by spaces, #id in the end after the class name)
+         *
+         * Requires the [str] to contain both the package and class name (with a / separator)
+         *
+         * @param str Value to parse
+         */
+        @JsName("unflattenFromStringWithJunk")
+        fun unflattenFromStringWithJunk(str: String): ComponentNameMatcher {
+            val sep = str.indexOf('/')
+            if (sep < 0 || sep + 1 >= str.length) {
+                error("Missing package/class separator")
+            }
+
+            var pkg = str.substring(0, sep)
+            var pkgSep: Int = -1
+            val pkgCharArr = pkg.toCharArray()
+            for (index in (0..pkgCharArr.lastIndex).reversed()) {
+                val currentChar = pkgCharArr[index]
+                if (currentChar !in 'A'..'Z' && currentChar !in 'a'..'z' && currentChar != '.') {
+                    pkgSep = index
+                    break
+                }
+            }
+            if (!(pkgSep < 0 || pkgSep + 1 >= pkg.length)) {
+                pkg = pkg.substring(pkgSep, pkg.length)
+            }
+
+            var cls = str.substring(sep + 1)
+            var clsSep = -1 // cls.indexOf('#')
+            val clsCharArr = cls.toCharArray()
+            for (index in (0..pkgCharArr.lastIndex)) {
+                val currentChar = clsCharArr[index]
+                if (currentChar !in 'A'..'Z' && currentChar !in 'a'..'z' && currentChar != '.') {
+                    clsSep = index
+                    break
+                }
+            }
+            if (!(clsSep < 0 || clsSep + 1 >= cls.length)) {
+                cls = cls.substring(0, clsSep)
+            }
+
+            if (cls.isNotEmpty() && cls[0] == '.') {
+                cls = pkg + cls
+            }
+            return ComponentNameMatcher(pkg, cls)
+        }
     }
 }

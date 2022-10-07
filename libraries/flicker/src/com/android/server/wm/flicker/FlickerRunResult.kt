@@ -16,6 +16,7 @@
 
 package com.android.server.wm.flicker
 
+import android.os.SystemClock
 import androidx.annotation.VisibleForTesting
 import com.android.server.wm.flicker.TransitionRunner.Companion.ExecutionError
 import com.android.server.wm.flicker.assertions.AssertionData
@@ -40,6 +41,7 @@ import com.android.server.wm.traces.parser.transaction.TransactionsTraceParser
 import com.android.server.wm.traces.parser.transition.TransitionsTraceParser
 import com.android.server.wm.traces.parser.windowmanager.WindowManagerTraceParser
 import java.io.File
+import java.util.concurrent.TimeUnit
 
 val CHAR_POOL: List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9')
 
@@ -281,28 +283,32 @@ class FlickerRunResult(
         return trace
     }
 
-    /** @return a transactions trace for the part of the trace we want to run the assertions on. */
-    private fun buildTransactionsTrace(): TransactionsTrace? {
+    private fun buildFullTransactionsTrace(): TransactionsTrace? {
         val transactionsTrace = this.transactionsTraceFileName ?: return null
         val traceData = this.artifacts.getFileBytes(transactionsTrace)
-        val trace =
-            TransactionsTraceParser.parseFromTrace(traceData)
-                .slice(transitionStartTime.systemTime, transitionEndTime.systemTime)
-        require(trace.entries.isNotEmpty()) { "Transactions trace was empty..." }
+        val fullTrace = TransactionsTraceParser.parseFromTrace(traceData)
+        require(fullTrace.entries.isNotEmpty()) { "Transactions trace was empty..." }
+        return fullTrace
+    }
+
+    /**
+     * @return a transactions trace for the part of the trace we want to run the assertions on.
+     */
+    private fun buildTransactionsTrace(): TransactionsTrace? {
+        val fullTrace = buildFullTransactionsTrace() ?: return null
+        val trace = fullTrace.slice(transitionStartTime.systemTime, transitionEndTime.systemTime)
+        require(trace.entries.isNotEmpty()) { "Trimmed transactions trace was empty..." }
         return trace
     }
 
     /** @return a transitions trace for the part of the trace we want to run the assertions on. */
     internal fun buildTransitionsTrace(): TransitionsTrace? {
-        val transactionsTrace = buildTransactionsTrace()
+        val transactionsTrace = buildFullTransactionsTrace()
         val transitionsTrace = this.transitionsTraceFileName ?: return null
         val traceData = this.artifacts.getFileBytes(transitionsTrace)
-        val trace =
-            TransitionsTraceParser.parseFromTrace(traceData, transactionsTrace!!)
-                .slice(
-                    transitionStartTime.elapsedRealtimeNanos,
-                    transitionEndTime.elapsedRealtimeNanos
-                )
+        val fullTrace = TransitionsTraceParser.parseFromTrace(traceData, transactionsTrace!!)
+        val trace = fullTrace.slice(transitionStartTime.elapsedRealtimeNanos,
+            transitionEndTime.elapsedRealtimeNanos)
         require(trace.entries.isNotEmpty()) { "Transitions trace was empty..." }
         return trace
     }
@@ -363,7 +369,7 @@ class FlickerRunResult(
         return if (layersTrace != null) LayersTraceSubject.assertThat(layersTrace) else null
     }
 
-    internal fun lock() {
+    fun lock() {
         this.artifacts.lock()
     }
 
@@ -377,6 +383,24 @@ class FlickerRunResult(
 
     private fun minimumTraceEntriesForConfig(config: TraceConfig): Int {
         return if (config.allowNoChange) 1 else 2
+    }
+
+    fun notifyTransitionStarting() {
+        this.transitionStartTime = FlickerRunResult.TraceTime(
+            elapsedRealtimeNanos = SystemClock.elapsedRealtimeNanos(),
+            systemTime = SystemClock.uptimeNanos(),
+            unixTimeNanos = TimeUnit.NANOSECONDS.convert(
+                    System.currentTimeMillis(), TimeUnit.MILLISECONDS),
+        )
+    }
+
+    fun notifyTransitionEnded() {
+        this.transitionEndTime = FlickerRunResult.TraceTime(
+            elapsedRealtimeNanos = SystemClock.elapsedRealtimeNanos(),
+            systemTime = SystemClock.uptimeNanos(),
+            unixTimeNanos = TimeUnit.NANOSECONDS.convert(
+                    System.currentTimeMillis(), TimeUnit.MILLISECONDS),
+        )
     }
 
     interface IResultSetter {

@@ -103,7 +103,10 @@ class RunResultArtifacts(_filePath: Path) {
     }
 
     internal fun getFileBytes(fileName: String): ByteArray {
-        require(archiveLocked) { "Can't get files from archive before it is closed" }
+        require(archiveLocked) {
+            "Can't get files from archive before it is closed, " +
+                "maybe you forgot to run `.lock()` on the run result."
+        }
 
         val tmpBuffer = ByteArray(BUFFER_SIZE)
         val zipInputStream: ZipInputStream

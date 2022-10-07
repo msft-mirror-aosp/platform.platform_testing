@@ -27,6 +27,10 @@ import com.android.server.wm.traces.common.transition.Transition
  * transition passed through the execute function of the assertion
  */
 class ComponentTypeMatcher(val name: String) : ComponentNameMatcher(ComponentName("", "")) {
+    constructor(name: String, componentBuilder: ComponentBuilder) : this(name) {
+        this.componentBuilder = componentBuilder
+    }
+
     var initialized = false
     override var component: ComponentName = super.component
         get() {
@@ -55,6 +59,18 @@ class ComponentTypeMatcher(val name: String) : ComponentNameMatcher(ComponentNam
         return "Components.$componentBuilder"
     }
 
+    override fun equals(other: Any?): Boolean {
+        return other is ComponentTypeMatcher &&
+            name == other.name &&
+            componentBuilder == other.componentBuilder
+    }
+
+    override fun hashCode(): Int {
+        var result = name.hashCode()
+        result = 31 * result + componentBuilder.hashCode()
+        return result
+    }
+
     companion object {
         fun componentMatcherFromName(
             name: String,
@@ -65,17 +81,13 @@ class ComponentTypeMatcher(val name: String) : ComponentNameMatcher(ComponentNam
             }
                 ?: run {
                     val componentMatcher = ComponentTypeMatcher(name)
-                    traceConfiguration.run {
-                        if (this.componentToTypeMap[name] != null) {
-                            componentMatcher.componentBuilder = this.componentToTypeMap[name]!!
-                            return componentMatcher
-                        } else {
-                            return null
-                        }
+                    if (traceConfiguration.componentToTypeMap[name] != null) {
+                        componentMatcher.componentBuilder =
+                            traceConfiguration.componentToTypeMap[name]!!
+                        return componentMatcher
+                    } else {
+                        return null
                     }
-                        ?: run {
-                            throw ConfigException("Missing trace configuration - component $name")
-                        }
                 }
         }
     }

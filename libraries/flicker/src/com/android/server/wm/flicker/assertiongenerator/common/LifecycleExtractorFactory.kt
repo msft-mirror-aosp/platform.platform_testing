@@ -15,8 +15,8 @@ class LifecycleExtractorFactory {
             return traceDumps
                 .flatMapIndexed { index, traceDump ->
                     extractors.map { extractor ->
-                        val traceLifecycle = extractor.extract(traceDump)
                         val deviceTraceConfiguration = traceConfigurations[index]
+                        val traceLifecycle = extractor.extract(traceDump, deviceTraceConfiguration)
                         val traceContent =
                             traceLifecycle?.let {
                                 TraceContent.byTraceType(traceLifecycle, deviceTraceConfiguration)

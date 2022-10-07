@@ -13,26 +13,22 @@
  */
 package android.platform.helpers.settings.display;
 
-import android.platform.helpers.settings.ISettingsHomeHelper;
 import android.support.test.uiautomator.Direction;
 
-/** Extends for Settings > Display */
-public interface ISettingsDisplayHelper extends ISettingsHomeHelper {
+/** Extends for Settings > Display > Display size and text */
+public interface ISettingsDisplaySizeAndTextHelper extends ISettingsDisplayHelper {
 
     /**
-     * Setup expectations: Settings Display page is open
+     * Setup expectations: Settings Display size and text page is open
      *
-     * <p>This method flings Settings Display page.
+     * <p>This method flings Settings Display size and text page.
      */
-    void flingDisplay(Direction direction);
-
-    /** This method opens Settings > Display > Display size and text page */
-    void goToDisplaySizeAndText();
+    void flingDisplaySizeAndText(Direction direction);
 
     /**
-     * Setup expectations: Settings Display page is open
+     * Setup expectations: Settings Display size and text page is open
      *
-     * <p>This method validates Settings Display page.
+     * <p>This method validates Settings Display size and text page.
      */
-    void isDisplayPage();
+    void isDisplaySizeAndTextPage();
 }

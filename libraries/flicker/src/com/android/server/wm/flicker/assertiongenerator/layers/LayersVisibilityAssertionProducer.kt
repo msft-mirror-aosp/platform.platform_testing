@@ -40,23 +40,17 @@ class LayersVisibilityAssertionProducer() : LayersAssertionProducer {
                 val componentLifecycle = traceLifecycle[elementComponentMatcher]!!
                 previousIsVisible = null
                 initializedAssertion = false
-                val assertionComponentMatcher =
-                    getAssertionComponentMatcher(elementComponentMatcher, traceConfiguration)
-                if (assertionComponentMatcher != null) {
-                    val traceLength = componentLifecycle.traceLength
-                    for (timeIndex in 0 until traceLength) {
-                        produceAssertionForComponentMatcherAtTimeIndex(
-                            timeIndex,
-                            componentLifecycle,
-                            assertionComponentMatcher
-                        )
-                    }
-                    assertion
-                } else {
-                    null
+                val traceLength = componentLifecycle.traceLength
+                for (timeIndex in 0 until traceLength) {
+                    produceAssertionForComponentMatcherAtTimeIndex(
+                        timeIndex,
+                        componentLifecycle,
+                        elementComponentMatcher
+                    )
                 }
+                assertion
             }
-        return assertions.filterNotNull()
+        return assertions
     }
 
     /**

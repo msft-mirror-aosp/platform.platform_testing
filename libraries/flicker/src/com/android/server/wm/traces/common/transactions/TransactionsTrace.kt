@@ -21,6 +21,16 @@ import kotlin.js.JsName
 
 class TransactionsTrace(override val entries: Array<TransactionsTraceEntry>) :
     ITrace<TransactionsTraceEntry>, List<TransactionsTraceEntry> by entries.toList() {
+
+    init {
+        val alwaysIncreasing =
+            entries
+                .toList()
+                .zipWithNext { prev, next -> prev.timestamp < next.timestamp }
+                .all { it }
+        require(alwaysIncreasing) { "Transaction timestamp not always increasing..." }
+    }
+
     @JsName("allTransactions")
     val allTransactions: List<Transaction> = entries.toList().flatMap { it.transactions.toList() }
 

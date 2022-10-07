@@ -17,18 +17,17 @@
 package com.android.server.wm.flicker.assertiongenerator
 
 import android.util.Log
+import com.android.server.wm.flicker.TraceFileReader
 import com.android.server.wm.flicker.assertFailure
 import com.android.server.wm.flicker.assertThrows
 import com.android.server.wm.flicker.assertiongenerator.AssertionGenConfigTestConst.Companion.emptyDeviceTraceConfiguration
+import com.android.server.wm.flicker.assertiongenerator.AssertionProducerTestConst.Companion.expectedAssertionStringsFileTrace
 import com.android.server.wm.flicker.assertiongenerator.common.Assertion
 import com.android.server.wm.flicker.assertiongenerator.common.TraceContent
 import com.android.server.wm.flicker.assertiongenerator.layers.LayersComponentLifecycle
 import com.android.server.wm.flicker.assertiongenerator.layers.LayersLifecycleExtractor
 import com.android.server.wm.flicker.assertiongenerator.layers.LayersTraceLifecycle
 import com.android.server.wm.flicker.assertiongenerator.layers.LayersVisibilityAssertionProducer
-import com.android.server.wm.flicker.getTestTraceDump
-import com.android.server.wm.flicker.readTransactionsTraceFromFile
-import com.android.server.wm.flicker.readTransitionsTraceFromFile
 import com.android.server.wm.traces.common.ComponentNameMatcher
 import com.android.server.wm.traces.common.DeviceTraceDump
 import com.android.server.wm.traces.common.layers.LayersTrace
@@ -62,12 +61,15 @@ class LayersVisibilityAssertionProducerTest {
     lateinit var assertionFail: Assertion
     private var failTransition: Transition = emptyTransition
 
-    private fun produceAssertionsFromTraceDump(traceDump: DeviceTraceDump): List<Assertion> {
+    private fun produceAssertionsFromTraceDump(
+        traceDump: DeviceTraceDump,
+        traceConfig: DeviceTraceConfiguration
+    ): List<Assertion> {
         val lifecycleExtractor = LayersLifecycleExtractor()
         val layersVisibilityAssertionProducer = LayersVisibilityAssertionProducer()
-        return lifecycleExtractor.extract(traceDump)?.let {
+        return lifecycleExtractor.extract(traceDump, traceConfig)?.let {
             layersVisibilityAssertionProducer.produce(
-                listOf(TraceContent.byTraceType(it, emptyDeviceTraceConfiguration)!!)
+                listOf(TraceContent.byTraceType(it, traceConfig))
             )
         }
             ?: throw RuntimeException("Layers lifecycle was expected, but is actually null")
@@ -86,7 +88,7 @@ class LayersVisibilityAssertionProducerTest {
         assertions =
             layersVisibilityAssertionProducer.produce(
                 elementLifecycles.map { lifecycle ->
-                    TraceContent.byTraceType(lifecycle, emptyDeviceTraceConfiguration)!!
+                    TraceContent.byTraceType(lifecycle, emptyDeviceTraceConfiguration)
                 }
             )
     }
@@ -111,7 +113,7 @@ class LayersVisibilityAssertionProducerTest {
         assertionsSameComponentMatcher =
             layersVisibilityAssertionProducer.produce(
                 elementLifecycles.map { lifecycle ->
-                    TraceContent.byTraceType(lifecycle, emptyDeviceTraceConfiguration)!!
+                    TraceContent.byTraceType(lifecycle, emptyDeviceTraceConfiguration)
                 }
             )
     }
@@ -128,7 +130,7 @@ class LayersVisibilityAssertionProducerTest {
         assertionsConfig =
             layersVisibilityAssertionProducer.produce(
                 elementLifecycles.map { lifecycle ->
-                    TraceContent.byTraceType(lifecycle, AssertionProducerTestConst.openAppConfig)!!
+                    TraceContent.byTraceType(lifecycle, AssertionProducerTestConst.openAppConfig)
                 }
             )
     }
@@ -153,7 +155,7 @@ class LayersVisibilityAssertionProducerTest {
         val assertions =
             layersVisibilityAssertionProducer.produce(
                 elementLifecycles.map { lifecycle ->
-                    TraceContent.byTraceType(lifecycle, emptyDeviceTraceConfiguration)!!
+                    TraceContent.byTraceType(lifecycle, emptyDeviceTraceConfiguration)
                 }
             )
         assertionFail = assertions[0]
@@ -324,13 +326,12 @@ class LayersVisibilityAssertionProducerTest {
 
     @Test
     fun produceFromTraceFile_assertion_execute() {
-        val path = "assertiongenerator/PASS_OpenAppColdTest_ROTATION_0_GESTURAL_NAV"
-        val transactionsTrace = readTransactionsTraceFromFile("$path/transactions_trace.winscope")
-        val transitionsTrace =
-            readTransitionsTraceFromFile("$path/transition_trace.winscope", transactionsTrace)
-        val traceDump = getTestTraceDump("$path/", "wm_trace.winscope", "layers_trace.winscope")
-        // val transition
+        val configDir = "/assertiongenerator_config_test"
+        val goldenTracesConfig = TraceFileReader.getGoldenTracesConfig(configDir)
+        val traceDump = goldenTracesConfig[Scenario.APP_LAUNCH]!!.deviceTraceDumps[0]
+        val traceConfiguration = goldenTracesConfig[Scenario.APP_LAUNCH]!!.traceConfigurations[0]
         val layersTrace = traceDump.layersTrace
+        val transitionsTrace = traceDump.transitionsTrace!!
 
         val scenarioInstances = mutableListOf<ScenarioInstance>()
         for (scenario in Scenario.values()) {
@@ -340,7 +341,7 @@ class LayersVisibilityAssertionProducerTest {
         }
 
         layersTrace?.run {
-            val assertions = produceAssertionsFromTraceDump(traceDump)
+            val assertions = produceAssertionsFromTraceDump(traceDump, traceConfiguration)
             // assert for expected nr of assertions too ->
             // hard because not all element component matchers in traceLifecycle actually produce an
             // assertion
@@ -348,6 +349,11 @@ class LayersVisibilityAssertionProducerTest {
             for (scenarioInstance in scenarioInstances) {
                 assertions.forEachIndexed { index, assertion ->
                     assertion.execute(layersTrace, scenarioInstance.associatedTransition)
+                }
+                if (scenarioInstance.scenario == Scenario.APP_LAUNCH) {
+                    val assertionsStrings =
+                        assertions.map { assertion -> assertion.assertionString }
+                    Truth.assertThat(assertionsStrings).isEqualTo(expectedAssertionStringsFileTrace)
                 }
             }
         }

@@ -32,6 +32,24 @@ class AssertionProducerTestConst {
             )
         var componentMatcher_openApp = ComponentTypeMatcher("openPackage/openApp")
 
+        val expectedAssertionStringsFileTrace =
+            listOf(
+                ".isVisible(ComponentNameMatcher(\"\", \"NavigationBar0\"))",
+                ".isVisible(ComponentNameMatcher(\"\", \"StatusBar\"))",
+                ".isInvisible(Components.OPENING_APP).then()" +
+                    ".isVisible(Components.OPENING_APP)",
+                ".isVisible(ComponentNameMatcher(\"\", \"Wallpaper BBQ wrapper\")).then()" +
+                    ".isInvisible(ComponentNameMatcher(\"\", \"Wallpaper BBQ wrapper\"))",
+                ".isVisible(ComponentNameMatcher(\"com.google.android.apps.nexuslauncher\"," +
+                    " \"com.google.android.apps.nexuslauncher.NexusLauncherActivity\"))" +
+                    ".then().isInvisible(ComponentNameMatcher(" +
+                    "\"com.google.android.apps.nexuslauncher\", " +
+                    "\"com.google.android.apps.nexuslauncher.NexusLauncherActivity\"))",
+                ".isInvisible(ComponentNameMatcher(\"\", \"Splash Screen\")).then()" +
+                    ".isVisible(ComponentNameMatcher(\"\", \"Splash Screen\"))",
+                ".isInvisible(ComponentNameMatcher(\"\", \"InputMethod\"))"
+            )
+
         private fun createExpectedAssertion_id1(): LayersAssertion {
             val assertion = LayersAssertion()
             assertion.assertionsChecker.add("isVisible(NavigationBar0)", isOptional = false) {
@@ -129,6 +147,8 @@ class AssertionProducerTestConst {
             listOf(expected_layer_id2_assertion)
 
         val expected_layer_visibility_assertions_openApp = listOf(expected_layer_openApp_assertion)
+        val openAppComponentTypeMatcher =
+            ComponentTypeMatcher("openPackage/openApp", Components.OPENING_APP)
         val openAppConfig =
             DeviceTraceConfiguration(mapOf("openPackage/openApp" to Components.OPENING_APP))
 
