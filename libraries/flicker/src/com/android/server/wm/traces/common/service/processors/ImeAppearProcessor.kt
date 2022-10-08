@@ -25,7 +25,7 @@ import com.android.server.wm.traces.common.WindowManagerConditionsFactory.isLaye
 import com.android.server.wm.traces.common.WindowManagerConditionsFactory.isLayerVisible
 import com.android.server.wm.traces.common.layers.Transform
 import com.android.server.wm.traces.common.service.PlatformConsts
-import com.android.server.wm.traces.common.service.Scenario
+import com.android.server.wm.traces.common.service.ScenarioType
 import com.android.server.wm.traces.common.tags.Tag
 
 /**
@@ -33,7 +33,7 @@ import com.android.server.wm.traces.common.tags.Tag
  * @param logger logs by invoking any event messages
  */
 class ImeAppearProcessor(logger: (String) -> Unit) : TransitionProcessor(logger) {
-    override val scenario = Scenario.IME_APPEAR
+    override val scenarioType = ScenarioType.IME_APPEAR
     override fun getInitialState(tags: MutableMap<Long, MutableList<Tag>>) =
         WaitInputMethodVisible(tags)
 
@@ -65,7 +65,7 @@ class ImeAppearProcessor(logger: (String) -> Unit) : TransitionProcessor(logger)
                 current.layerState.visibleLayers.first {
                     ComponentNameMatcher.IME.layerMatchesAnyOf(it)
                 }
-            addStartTransitionTag(current, scenario, layerId = inputMethodLayer.id)
+            addStartTransitionTag(current, scenarioType, layerId = inputMethodLayer.id)
             return WaitImeAppearFinished(tags, inputMethodLayer.id)
         }
     }
@@ -88,7 +88,7 @@ class ImeAppearProcessor(logger: (String) -> Unit) : TransitionProcessor(logger)
             return if (isImeAppearFinished) {
                 // tag on the last complete state at the start
                 logger.invoke("(${current.layerState.timestamp}) Ime appear end detected.")
-                addEndTransitionTag(current, scenario, layerId = layerId)
+                addEndTransitionTag(current, scenarioType, layerId = layerId)
                 // return to start to wait for a second IME appear
                 WaitInputMethodVisible(tags)
             } else {

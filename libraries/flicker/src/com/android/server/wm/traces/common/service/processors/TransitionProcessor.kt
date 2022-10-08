@@ -19,7 +19,7 @@ package com.android.server.wm.traces.common.service.processors
 import com.android.server.wm.traces.common.DeviceStateDump
 import com.android.server.wm.traces.common.layers.LayersTrace
 import com.android.server.wm.traces.common.service.ITagGenerator
-import com.android.server.wm.traces.common.service.Scenario
+import com.android.server.wm.traces.common.service.ScenarioType
 import com.android.server.wm.traces.common.tags.Tag
 import com.android.server.wm.traces.common.tags.TagState
 import com.android.server.wm.traces.common.tags.TagTrace
@@ -32,11 +32,11 @@ import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
  * and end tags invariant is maintained by [BaseFsmState].
  */
 abstract class TransitionProcessor(internal val logger: (String) -> Unit) : ITagGenerator {
-    abstract val scenario: Scenario
+    abstract val scenarioType: ScenarioType
     abstract fun getInitialState(tags: MutableMap<Long, MutableList<Tag>>): BaseState
 
     abstract inner class BaseState(tags: MutableMap<Long, MutableList<Tag>>) :
-        BaseFsmState(tags, logger, scenario) {
+        BaseFsmState(tags, logger, scenarioType) {
         abstract override fun doProcessState(
             previous: DeviceStateDump?,
             current: DeviceStateDump,

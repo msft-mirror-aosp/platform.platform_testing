@@ -19,6 +19,10 @@ package com.android.server.wm.flicker.assertiongenerator
 import com.android.server.wm.flicker.Utils
 import com.android.server.wm.flicker.assertiongenerator.AssertionGenConfigTestConst.Companion.deviceTraceConfigurationTestFile
 import com.android.server.wm.flicker.assertiongenerator.AssertionGenConfigTestConst.Companion.expectedOpenComponentTypeMatcher
+import com.android.server.wm.flicker.service.AssertionGeneratorConfigProducer
+import com.android.server.wm.traces.common.service.PlatformConsts
+import com.android.server.wm.traces.common.service.Scenario
+import com.android.server.wm.traces.common.service.ScenarioType
 import com.google.common.truth.Truth
 import org.junit.Test
 
@@ -36,5 +40,22 @@ class AssertionGeneratorMiscTest {
                 deviceTraceConfigurationTestFile
             )
         Truth.assertThat(openCompMatcher).isEqualTo(expectedOpenComponentTypeMatcher)
+    }
+
+    /** It always fails, was made to easily extract layer names as an "error" message */
+    // @Test
+    fun getLayerNames() {
+        val defaultConfigProducer = AssertionGeneratorConfigProducer()
+        val config = defaultConfigProducer.produce()
+        val scenario = Scenario(ScenarioType.APP_LAUNCH, PlatformConsts.Rotation.ROTATION_0)
+        val traceDump = config[scenario]?.deviceTraceDumps?.get(0)
+        traceDump ?: run { throw RuntimeException("No deviceTraceDump for scenario APP_LAUNCH") }
+        val layersTrace = traceDump.layersTrace
+        val layersEntry = layersTrace!!.entries[0]
+        var layerStr = ""
+        for (layer in layersEntry.flattenedLayers) {
+            layerStr += layer.name + "\n"
+        }
+        throw RuntimeException(layerStr)
     }
 }

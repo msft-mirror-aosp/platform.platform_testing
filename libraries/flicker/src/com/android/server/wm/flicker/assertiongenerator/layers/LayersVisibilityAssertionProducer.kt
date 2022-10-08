@@ -48,6 +48,9 @@ class LayersVisibilityAssertionProducer() : LayersAssertionProducer {
                         elementComponentMatcher
                     )
                 }
+                assertion.name =
+                    "LayersVisibility_" +
+                        "${Utils.componentNameMatcherToStringSimplified(elementComponentMatcher)}"
                 assertion
             }
         return assertions

@@ -16,10 +16,21 @@
 
 package com.android.server.wm.flicker.assertiongenerator.windowmanager
 
-import com.android.server.wm.flicker.assertiongenerator.common.IAssertionGenerator
-import com.android.server.wm.traces.common.service.Scenario
-import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
+import com.android.server.wm.flicker.assertiongenerator.common.IElementLifecycle
+import com.android.server.wm.traces.common.windowmanager.windows.WindowContainer
 
-class WindowManagerAssertionGenerator(
-    override val config: Map<Scenario, Array<out WindowManagerTrace>>
-) : IAssertionGenerator<WindowManagerTrace>
+class WmElementLifecycle(override val states: MutableList<WindowContainer?>) : IElementLifecycle {
+    override fun hashCode(): Int {
+        return states.hashCode()
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (other !is WmElementLifecycle) return false
+        if (states != other.states) return false
+        return true
+    }
+
+    override fun toString(): String {
+        return states.toString()
+    }
+}

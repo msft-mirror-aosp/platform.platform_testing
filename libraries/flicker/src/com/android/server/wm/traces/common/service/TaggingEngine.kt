@@ -57,7 +57,7 @@ class TaggingEngine(
                 PipEnterProcessor(logger),
                 PipExitProcessor(logger)
             )
-            .also { it.addAll(Scenario.values()) }
+            .also { it.addAll(ScenarioType.values()) }
 
     /** Generate tags denoting start and end points for all [transitions] within traces */
     fun run(): TagTrace {

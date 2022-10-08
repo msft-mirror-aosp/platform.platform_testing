@@ -38,7 +38,8 @@ data class FaasData(
         return listOf(
             Fact.fact("Extracted from trace start", unclippedTraceFirst),
             Fact.fact("Extracted from trace end", unclippedTraceLast),
-            Fact.fact("Scenario type", scenarioInstance.scenario),
+            Fact.fact("Scenario type", scenarioInstance.scenario.scenarioType),
+            Fact.fact("Scenario rotation", scenarioInstance.scenario.rotation),
             Fact.fact(
                 "Scenario start",
                 "${prettyTimestamp(scenarioInstance.startTimestamp)} " +

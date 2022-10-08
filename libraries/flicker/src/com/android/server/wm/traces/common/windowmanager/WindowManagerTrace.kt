@@ -18,6 +18,7 @@ package com.android.server.wm.traces.common.windowmanager
 
 import com.android.server.wm.traces.common.ITrace
 import com.android.server.wm.traces.common.Utils.Companion.sliceEntriesByTimestamp
+import com.android.server.wm.traces.common.service.PlatformConsts
 import kotlin.js.JsName
 
 /**
@@ -64,5 +65,15 @@ data class WindowManagerTrace(override val entries: Array<WindowManagerState>) :
     @JsName("slice")
     fun slice(from: Long, to: Long, addInitialEntry: Boolean = false): WindowManagerTrace {
         return WindowManagerTrace(sliceEntriesByTimestamp(this.entries, from, to, addInitialEntry))
+    }
+
+    /** Get the initial rotation */
+    fun getInitialRotation(): PlatformConsts.Rotation {
+        if (entries.isEmpty()) {
+            throw RuntimeException("WindowManager Trace has no entries")
+        }
+        val firstWmState = entries[0]
+        return firstWmState.policy?.rotation?.let { PlatformConsts.Rotation.getByValue(it) }
+            ?: run { throw RuntimeException("Wm state has no policy") }
     }
 }

@@ -26,8 +26,10 @@ import com.android.server.wm.flicker.service.assertors.scenarioInstanceSlice
 import com.android.server.wm.traces.common.ComponentNameMatcher
 import com.android.server.wm.traces.common.DeviceTraceDump
 import com.android.server.wm.traces.common.layers.LayersTrace
+import com.android.server.wm.traces.common.service.PlatformConsts
 import com.android.server.wm.traces.common.service.Scenario
 import com.android.server.wm.traces.common.service.ScenarioInstance
+import com.android.server.wm.traces.common.service.ScenarioType
 import com.android.server.wm.traces.common.windowmanager.WindowManagerState
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 import com.android.server.wm.traces.parser.layers.LayersTraceParser
@@ -128,7 +130,7 @@ class TraceFileReader {
                     layersTracePath?.let {
                         readBytesFromResource(layersTracePath)?.let {
                             try {
-                                LayersTraceParser.parseFromTrace(it)
+                                LayersTraceParser.parseFromTrace(data = it)
                             } catch (err: Exception) {
                                 // invalid file
                                 null
@@ -140,7 +142,7 @@ class TraceFileReader {
                     transactionsTracePath?.let {
                         readBytesFromResource(transactionsTracePath)?.let {
                             try {
-                                TransactionsTraceParser.parseFromTrace(it)
+                                TransactionsTraceParser.parseFromTrace(data = it)
                             } catch (err: Exception) {
                                 // invalid file
                                 null
@@ -176,36 +178,44 @@ class TraceFileReader {
         }
 
         fun getScenarioInstanceFromScenarioFromGoldenTrace(
-            scenario: Scenario,
+            scenarioType: ScenarioType,
             deviceTraceDump: DeviceTraceDump
         ): ScenarioInstance {
-            val transitionsTrace =
-                deviceTraceDump.transitionsTrace
-                    ?: run {
-                        throw ConfigException(
-                            "Transition trace is missing for scenario $scenario, " +
-                                "so we can't extract scenario instance"
-                        )
-                    }
+            val transitionsTrace = deviceTraceDump.transitionsTrace
+            val wmTrace = deviceTraceDump.wmTrace
+            if (transitionsTrace == null) {
+                throw ConfigException(
+                    "Transition trace is missing for scenario $scenarioType, " +
+                        "so we can't extract scenario instance"
+                )
+            }
+            if (wmTrace == null) {
+                throw ConfigException(
+                    "WindowManager trace is missing for scenario $scenarioType, " +
+                        "so we can't extract scenario instance"
+                )
+            }
             val scenarioInstances =
-                scenario.getInstances(transitionsTrace) { m -> Log.d("TraceFileReader", m) }
+                scenarioType.getInstances(transitionsTrace, wmTrace) { m ->
+                    Log.d("TraceFileReader", m)
+                }
             assert(scenarioInstances.size == 1)
             val scenarioInstance: ScenarioInstance
             try {
                 scenarioInstance = (scenarioInstances as MutableList)[0]
             } catch (err: IndexOutOfBoundsException) {
-                throw ConfigException("No scenario instance for scenario $scenario")
+                throw ConfigException("No scenario instance for scenario $scenarioType")
             }
             return scenarioInstance
         }
 
         /** Pre-processing step to trim golden traces for scenario */
         fun trimGoldenTracesForScenario(
-            scenario: Scenario,
+            scenarioType: ScenarioType,
             deviceTraceDump: DeviceTraceDump
         ): DeviceTraceDump {
             val scenarioInstance =
-                getScenarioInstanceFromScenarioFromGoldenTrace(scenario, deviceTraceDump)
+                getScenarioInstanceFromScenarioFromGoldenTrace(scenarioType, deviceTraceDump)
             val newLayersTrace =
                 deviceTraceDump.layersTrace?.scenarioInstanceSlice(scenarioInstance)
             val newWmTrace = deviceTraceDump.wmTrace?.scenarioInstanceSlice(scenarioInstance)
@@ -258,36 +268,43 @@ class TraceFileReader {
          */
         fun getGoldenTracesConfig(configDir: String? = null): Map<Scenario, ScenarioConfig> {
             val configDir = configDir ?: getGoldenTracesConfigDir()
-            return Scenario.scenariosByDescription
-                .map { (scenarioDescription, scenario) ->
-                    val scenarioDir = "$configDir/$scenarioDescription"
-                    var traceCount = 1
-                    val scenarioDeviceTraceDumpArray: MutableList<DeviceTraceDump> = mutableListOf()
-                    val scenarioTraceConfigurationArray: MutableList<DeviceTraceConfiguration> =
-                        mutableListOf()
-                    while (true) {
-                        val traceDir = "$scenarioDir/trace$traceCount"
-                        val tracePaths = getGoldenTracePathsForDirectory(traceDir)
-                        var deviceTraceDump = tracePaths.getDeviceTraceDump()
-                        if (!deviceTraceDump.isValid) {
-                            break
+            return ScenarioType.scenariosByDescription
+                .flatMap { (scenarioDescription, scenarioType) ->
+                    PlatformConsts.Rotation.values().map { rotation ->
+                        // for (rotation in PlatformConsts.Rotation.values()) {
+                        val scenarioDir = "$configDir/$scenarioDescription/${rotation.description}"
+                        var traceCount = 1
+                        val scenarioDeviceTraceDumpArray: MutableList<DeviceTraceDump> =
+                            mutableListOf()
+                        val scenarioTraceConfigurationArray: MutableList<DeviceTraceConfiguration> =
+                            mutableListOf()
+                        while (true) {
+                            val traceDir = "$scenarioDir/trace$traceCount"
+                            val tracePaths = getGoldenTracePathsForDirectory(traceDir)
+                            var deviceTraceDump = tracePaths.getDeviceTraceDump()
+                            if (!deviceTraceDump.isValid) {
+                                break
+                            }
+                            val scenarioInstance =
+                                getScenarioInstanceFromScenarioFromGoldenTrace(
+                                    scenarioType,
+                                    deviceTraceDump
+                                )
+                            deviceTraceDump =
+                                trimGoldenTracesForScenario(scenarioType, deviceTraceDump)
+                            val deviceTraceConfiguration =
+                                getDeviceTraceConfiguration(scenarioInstance)
+                            scenarioDeviceTraceDumpArray.add(deviceTraceDump)
+                            scenarioTraceConfigurationArray.add(deviceTraceConfiguration)
+                            traceCount++
                         }
-                        val scenarioInstance =
-                            getScenarioInstanceFromScenarioFromGoldenTrace(
-                                scenario,
-                                deviceTraceDump
+                        val scenario = Scenario(scenarioType, rotation)
+                        scenario to
+                            ScenarioConfig(
+                                scenarioDeviceTraceDumpArray.toTypedArray(),
+                                scenarioTraceConfigurationArray.toTypedArray()
                             )
-                        deviceTraceDump = trimGoldenTracesForScenario(scenario, deviceTraceDump)
-                        val deviceTraceConfiguration = getDeviceTraceConfiguration(scenarioInstance)
-                        scenarioDeviceTraceDumpArray.add(deviceTraceDump)
-                        scenarioTraceConfigurationArray.add(deviceTraceConfiguration)
-                        traceCount++
                     }
-                    scenario to
-                        ScenarioConfig(
-                            scenarioDeviceTraceDumpArray.toTypedArray(),
-                            scenarioTraceConfigurationArray.toTypedArray()
-                        )
                 }
                 .toMap()
         }

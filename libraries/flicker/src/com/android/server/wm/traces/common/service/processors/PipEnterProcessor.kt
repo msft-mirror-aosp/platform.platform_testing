@@ -25,7 +25,7 @@ import com.android.server.wm.traces.common.WindowManagerConditionsFactory.isPipW
 import com.android.server.wm.traces.common.layers.Layer
 import com.android.server.wm.traces.common.layers.Transform
 import com.android.server.wm.traces.common.service.PlatformConsts
-import com.android.server.wm.traces.common.service.Scenario
+import com.android.server.wm.traces.common.service.ScenarioType
 import com.android.server.wm.traces.common.tags.Tag
 
 /**
@@ -34,7 +34,7 @@ import com.android.server.wm.traces.common.tags.Tag
  * window and layer stop animating and their sizes match.
  */
 class PipEnterProcessor(logger: (String) -> Unit) : TransitionProcessor(logger) {
-    override val scenario = Scenario.PIP_ENTER
+    override val scenarioType = ScenarioType.PIP_ENTER
     private val allScalingLayers = mutableMapOf<Int, Long>()
 
     override fun getInitialState(tags: MutableMap<Long, MutableList<Tag>>) = WaitPipEnterStart(tags)
@@ -88,12 +88,12 @@ class PipEnterProcessor(logger: (String) -> Unit) : TransitionProcessor(logger) 
             if (startTimestamp != null) {
                 addStartTransitionTag(
                     current,
-                    scenario,
+                    scenarioType,
                     layerId = pipWindow.layerId,
                     timestamp = startTimestamp
                 )
             } else {
-                addStartTransitionTag(current, scenario, layerId = pipWindow.layerId)
+                addStartTransitionTag(current, scenarioType, layerId = pipWindow.layerId)
             }
             // reset all scaling layers
             allScalingLayers.clear()
@@ -119,7 +119,7 @@ class PipEnterProcessor(logger: (String) -> Unit) : TransitionProcessor(logger) 
             return if (isPipEnterFinished.isSatisfied(current)) {
                 // tag on the last complete state at the start
                 logger.invoke("(${current.wmState.timestamp}) PIP enter finished.")
-                addEndTransitionTag(current, scenario, layerId = layerId)
+                addEndTransitionTag(current, scenarioType, layerId = layerId)
 
                 // return to start to wait for a second PIP enter
                 WaitPipEnterStart(tags)

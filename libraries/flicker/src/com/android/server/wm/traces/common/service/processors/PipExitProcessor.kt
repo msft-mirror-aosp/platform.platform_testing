@@ -24,7 +24,7 @@ import com.android.server.wm.traces.common.WindowManagerConditionsFactory.isLaye
 import com.android.server.wm.traces.common.WindowManagerConditionsFactory.isLayerVisible
 import com.android.server.wm.traces.common.WindowManagerConditionsFactory.isWMStateComplete
 import com.android.server.wm.traces.common.layers.Transform
-import com.android.server.wm.traces.common.service.Scenario
+import com.android.server.wm.traces.common.service.ScenarioType
 import com.android.server.wm.traces.common.tags.Tag
 
 /**
@@ -33,7 +33,7 @@ import com.android.server.wm.traces.common.tags.Tag
  * @param logger logs by invoking any event messages
  */
 class PipExitProcessor(logger: (String) -> Unit) : TransitionProcessor(logger) {
-    override val scenario = Scenario.PIP_EXIT
+    override val scenarioType = ScenarioType.PIP_EXIT
     private val scalingWindows = HashMap<String, DeviceStateDump>()
     private val areLayersAnimating = hasLayersAnimating()
     private val wmStateIdle = isAppTransitionIdle(/* default display */ 0)
@@ -61,13 +61,13 @@ class PipExitProcessor(logger: (String) -> Unit) : TransitionProcessor(logger) {
                     // Pip app unpinned so let's tag.
                     addStartTransitionTag(
                         dump,
-                        scenario,
+                        scenarioType,
                         layerId = currPinnedWindow.layerId,
                         windowToken = currPinnedWindow.token
                     )
                     addEndTransitionTag(
                         previous,
-                        scenario,
+                        scenarioType,
                         layerId = currPinnedWindow.layerId,
                         windowToken = currPinnedWindow.token
                     )
@@ -96,7 +96,7 @@ class PipExitProcessor(logger: (String) -> Unit) : TransitionProcessor(logger) {
                 pinnedWindowFading -> {
                     addStartTransitionTag(
                         previous,
-                        scenario,
+                        scenarioType,
                         layerId = currPinnedWindow.layerId,
                         windowToken = currPinnedWindow.token
                     )
@@ -126,7 +126,7 @@ class PipExitProcessor(logger: (String) -> Unit) : TransitionProcessor(logger) {
                     areLayersAnimating.negate().isSatisfied(current)
 
             return if (layerInvisible && layerColorAlphaOne && isStableState) {
-                addEndTransitionTag(current, scenario, layerId = layerId)
+                addEndTransitionTag(current, scenarioType, layerId = layerId)
                 WaitPinnedWindowSwipedOrFading(tags)
             } else {
                 this

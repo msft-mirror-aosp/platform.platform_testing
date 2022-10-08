@@ -32,6 +32,15 @@ class AssertionProducerTestConst {
             )
         var componentMatcher_openApp = ComponentTypeMatcher("openPackage/openApp")
 
+        val expectedAssertionNamesFileTrace =
+            "AutomaticallyGenerated_LayersVisibility_NavigationBar0\n" +
+                "AutomaticallyGenerated_LayersVisibility_StatusBar\n" +
+                "AutomaticallyGenerated_LayersVisibility_OPENING_APP\n" +
+                "AutomaticallyGenerated_LayersVisibility_Wallpaper_BBQ_wrapper\n" +
+                "AutomaticallyGenerated_LayersVisibility_NexusLauncherActivity\n" +
+                "AutomaticallyGenerated_LayersVisibility_Splash_Screen\n" +
+                "AutomaticallyGenerated_LayersVisibility_InputMethod\n"
+
         val expectedAssertionStringsFileTrace =
             listOf(
                 ".isVisible(ComponentNameMatcher(\"\", \"NavigationBar0\"))",
@@ -58,6 +67,7 @@ class AssertionProducerTestConst {
             assertion.assertionsChecker.add("notContains(NavigationBar0)", isOptional = false) {
                 it.notContains(componentMatcher_id1)
             }
+            assertion.name = "LayersVisibility_NavigationBar0"
             assertion.assertionString =
                 ".isVisible(ComponentNameMatcher(\"\", \"NavigationBar0\"))" +
                     ".then().notContains(ComponentNameMatcher(\"\", \"NavigationBar0\"))"
@@ -75,6 +85,7 @@ class AssertionProducerTestConst {
             assertion.assertionsChecker.add("isVisible(StatusBar)", isOptional = false) {
                 it.isVisible(componentMatcher_id2)
             }
+            assertion.name = "LayersVisibility_StatusBar"
             assertion.assertionString =
                 ".isVisible(ComponentNameMatcher(\"\", \"StatusBar\"))" +
                     ".then().isInvisible(ComponentNameMatcher(\"\", \"StatusBar\"))" +
@@ -87,6 +98,7 @@ class AssertionProducerTestConst {
             assertion.assertionsChecker.add("isVisible(StatusBar)", isOptional = false) {
                 it.isVisible(componentMatcher_id2)
             }
+            assertion.name = "LayersVisibility_StatusBar"
             assertion.assertionString = ".isVisible(ComponentNameMatcher(\"\", \"StatusBar\"))"
             return assertion
         }
@@ -94,13 +106,14 @@ class AssertionProducerTestConst {
         private fun createExpectedAssertion_id4(): LayersAssertion {
             val assertion = LayersAssertion()
             assertion.assertionsChecker.add(
-                "isInvisible(com.google.android.apps.nexuslauncher.NexusLauncherActivity)",
+                "isInvisible(NexusLauncherActivity)",
                 isOptional = false
             ) { it.isVisible(componentMatcher_id4) }
             assertion.assertionsChecker.add(
-                "isVisible(com.google.android.apps.nexuslauncher.NexusLauncherActivity)",
+                "isVisible(NexusLauncherActivity)",
                 isOptional = false
             ) { it.isInvisible(componentMatcher_id4) }
+            assertion.name = "LayersVisibility_NexusLauncherActivity"
             assertion.assertionString =
                 ".isInvisible(ComponentNameMatcher(\"com.google.android.apps.nexuslauncher\"," +
                     " \"com.google.android.apps.nexuslauncher.NexusLauncherActivity\"))" +
@@ -122,6 +135,7 @@ class AssertionProducerTestConst {
             assertion.assertionsChecker.add("isVisible(OPENING_APP)", isOptional = false) {
                 it.isInvisible(componentMatcher_id4)
             }
+            assertion.name = "LayersVisibility_OPENING_APP"
             assertion.assertionString =
                 ".notContains(Components.OPENING_APP)" +
                     ".then().isInvisible(Components.OPENING_APP)" +
@@ -165,6 +179,7 @@ class AssertionProducerTestConst {
             assertion.assertionsChecker.add("isInvisible(StatusBar)", isOptional = false) {
                 it.isInvisible(componentMatcher_id2)
             }
+            assertion.name = "LayersVisibility_StatusBar"
             assertion.assertionString =
                 ".notContains(ComponentNameMatcher(\"\", \"StatusBar\"))" +
                     ".then().isVisible(ComponentNameMatcher(\"\", \"StatusBar\"))" +
@@ -180,6 +195,7 @@ class AssertionProducerTestConst {
             assertion.assertionsChecker.add(".isInvisible(StatusBar)", isOptional = false) {
                 it.isInvisible(componentMatcher_id2)
             }
+            assertion.name = "LayersVisibility_StatusBar"
             assertion.assertionString =
                 ".isVisible(ComponentNameMatcher(\"\", \"StatusBar\"))" +
                     ".then().isInvisible(ComponentNameMatcher(\"\", \"StatusBar\"))"
@@ -191,6 +207,7 @@ class AssertionProducerTestConst {
             assertion.assertionsChecker.add("isVisible(StatusBar)", isOptional = false) {
                 it.isVisible(componentMatcher_id2)
             }
+            assertion.name = "LayersVisibility_StatusBar"
             assertion.assertionString = ".isVisible(ComponentNameMatcher(\"\", \"StatusBar\"))"
             return assertion
         }
@@ -203,6 +220,7 @@ class AssertionProducerTestConst {
             assertion.assertionsChecker.add("isVisible(StatusBar)", isOptional = false) {
                 it.isVisible(componentMatcher_id2)
             }
+            assertion.name = "LayersVisibility_StatusBar"
             assertion.assertionString =
                 ".notContains(ComponentNameMatcher(\"\", \"StatusBar\"))" +
                     ".then().isVisible(ComponentNameMatcher(\"\", \"StatusBar\"))"

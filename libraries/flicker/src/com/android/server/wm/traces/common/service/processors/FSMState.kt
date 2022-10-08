@@ -17,7 +17,7 @@
 package com.android.server.wm.traces.common.service.processors
 
 import com.android.server.wm.traces.common.DeviceStateDump
-import com.android.server.wm.traces.common.service.Scenario
+import com.android.server.wm.traces.common.service.ScenarioType
 import com.android.server.wm.traces.common.service.TagIdGenerator
 import com.android.server.wm.traces.common.tags.Tag
 import kotlin.math.max
@@ -37,7 +37,7 @@ abstract class FSMState(protected val tags: MutableMap<Long, MutableList<Tag>>) 
 
     protected fun addStartTransitionTag(
         state: DeviceStateDump,
-        scenario: Scenario,
+        scenarioType: ScenarioType,
         layerId: Int = 0,
         windowToken: String = "",
         taskId: Int = 0,
@@ -47,7 +47,7 @@ abstract class FSMState(protected val tags: MutableMap<Long, MutableList<Tag>>) 
         val startTag =
             Tag(
                 id = lastTagId,
-                scenario,
+                scenarioType,
                 isStartTag = true,
                 layerId = layerId,
                 windowToken = windowToken,
@@ -61,7 +61,7 @@ abstract class FSMState(protected val tags: MutableMap<Long, MutableList<Tag>>) 
 
     protected fun addEndTransitionTag(
         state: DeviceStateDump,
-        transition: Scenario,
+        transition: ScenarioType,
         layerId: Int = 0,
         windowToken: String = "",
         taskId: Int = 0,

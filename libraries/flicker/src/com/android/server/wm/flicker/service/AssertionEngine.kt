@@ -30,6 +30,7 @@ import com.android.server.wm.flicker.service.config.Assertions.generatedAssertio
 import com.android.server.wm.traces.common.layers.LayersTrace
 import com.android.server.wm.traces.common.service.Scenario
 import com.android.server.wm.traces.common.service.ScenarioInstance
+import com.android.server.wm.traces.common.service.ScenarioType
 import com.android.server.wm.traces.common.transition.TransitionsTrace
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 import java.io.FileNotFoundException
@@ -97,8 +98,8 @@ class AssertionEngine(
         val assertionResults = mutableListOf<AssertionResult>()
 
         val scenarioInstances = mutableListOf<ScenarioInstance>()
-        for (scenario in Scenario.values()) {
-            scenarioInstances.addAll(scenario.getInstances(transitionsTrace, logger))
+        for (scenarioType in ScenarioType.values()) {
+            scenarioInstances.addAll(scenarioType.getInstances(transitionsTrace, wmTrace, logger))
         }
 
         for (scenarioInstance in scenarioInstances) {

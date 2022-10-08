@@ -17,11 +17,11 @@
 package com.android.server.wm.flicker.assertiongenerator
 
 import com.android.server.wm.traces.common.DeviceTraceDump
-import com.android.server.wm.traces.common.service.Scenario
+import com.android.server.wm.traces.common.service.ScenarioType
 
 data class ScenarioConfig(
     val deviceTraceDumps: Array<DeviceTraceDump>,
     val traceConfigurations: Array<DeviceTraceConfiguration>
 )
 
-data class AssertionGeneratorConfig(val er: Map<Scenario, Array<DeviceTraceDump>?>?)
+data class AssertionGeneratorConfig(val er: Map<ScenarioType, Array<DeviceTraceDump>?>?)

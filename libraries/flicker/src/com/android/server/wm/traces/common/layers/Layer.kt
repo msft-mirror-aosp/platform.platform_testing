@@ -121,19 +121,18 @@ private constructor(
                 return emptyArray()
             }
             val reasons = mutableListOf<String>()
-            if (isContainerLayer) reasons.add("ContainerLayer")
             if (isHiddenByPolicy) reasons.add("Flag is hidden")
             if (isHiddenByParent) reasons.add("Hidden by parent ${parent?.name}")
-            if (isBufferLayer && isActiveBufferEmpty) reasons.add("Buffer is empty")
-            if (color.isEmpty) reasons.add("Alpha is 0")
-            if (crop?.isEmpty == true) reasons.add("Crop is 0x0")
+            if (isActiveBufferEmpty) reasons.add("Buffer is empty")
+            if (color.a == 0.0f) reasons.add("Alpha is 0")
             if (bounds.isEmpty) reasons.add("Bounds is 0x0")
+            if (bounds.isEmpty && crop?.isEmpty == true) reasons.add("Crop is 0x0")
             if (!transform.isValid) reasons.add("Transform is invalid")
             if (isRelativeOf && zOrderRelativeOf == null) {
                 reasons.add("RelativeOf layer has been removed")
             }
-            if (isEffectLayer && !fillsColor && !drawsShadows && !hasBlur) {
-                reasons.add("Effect layer does not have color fill, shadow or blur")
+            if (isActiveBufferEmpty && !fillsColor && !drawsShadows && !hasBlur) {
+                reasons.add("does not have color fill, shadow or blur")
             }
             if (_occludedBy.isNotEmpty()) {
                 val occludedByLayers = _occludedBy.joinToString(", ") { "${it.name} (${it.id})" }

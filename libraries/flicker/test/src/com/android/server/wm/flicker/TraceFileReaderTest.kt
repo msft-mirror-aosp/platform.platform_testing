@@ -19,7 +19,9 @@ package com.android.server.wm.flicker
 import com.android.server.wm.flicker.assertiongenerator.AssertionGenConfigTestConst
 import com.android.server.wm.flicker.assertiongenerator.DeviceTraceConfiguration
 import com.android.server.wm.flicker.assertiongenerator.DeviceTraceConfigurationSimplified
+import com.android.server.wm.traces.common.service.PlatformConsts
 import com.android.server.wm.traces.common.service.Scenario
+import com.android.server.wm.traces.common.service.ScenarioType
 import com.google.common.truth.Truth
 import com.google.gson.reflect.TypeToken
 import org.junit.Test
@@ -33,11 +35,12 @@ class TraceFileReaderTest {
     @Test
     fun getGoldenTracesConfig() {
         val config = TraceFileReader.getGoldenTracesConfig("/assertiongenerator_config_test")
+        val scenario = Scenario(ScenarioType.APP_LAUNCH, PlatformConsts.Rotation.ROTATION_0)
         val expectedAppLaunchConfig_traceConfigurations =
             arrayOf(AssertionGenConfigTestConst.deviceTraceConfigurationTestFile)
-        Truth.assertThat(config[Scenario.APP_LAUNCH]?.traceConfigurations)
+        Truth.assertThat(config[scenario]?.traceConfigurations)
             .isEqualTo(expectedAppLaunchConfig_traceConfigurations)
-        Truth.assertThat(config[Scenario.APP_LAUNCH]?.deviceTraceDumps?.get(0)?.isValid)
+        Truth.assertThat(config[scenario]?.deviceTraceDumps?.get(0)?.isValid).isTrue()
     }
 
     @Test
@@ -65,7 +68,8 @@ class TraceFileReaderTest {
     @Test
     fun readObjectFromResource() {
         val layersConfigPath =
-            "/assertiongenerator_config_test/AppLaunch/trace1/layers_trace_configuration.json"
+            "/assertiongenerator_config_test/AppLaunch/ROTATION_0/trace1/" +
+                "layers_trace_configuration.json"
         val layersTraceConfiguration =
             layersConfigPath.let {
                 val layersType =

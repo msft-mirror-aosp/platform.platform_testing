@@ -16,13 +16,13 @@
 
 package com.android.server.wm.traces.common.tags
 
-import com.android.server.wm.traces.common.service.Scenario
+import com.android.server.wm.traces.common.service.ScenarioType
 
 /**
  * Tag Class relating to a particular transition event in a WindowManager or SurfaceFlinger trace
  * state.
  * @param id The id to match the end and start tags
- * @param scenario The scenario this tag represents
+ * @param scenarioType The scenario this tag represents
  * @param isStartTag Tag represents the start or end moment in transition
  * @param layerId The Layer the tag is associated with (or 0 if no taskId associated with it)
  * @param windowToken The Window the tag is associated with (or empty string if no taskId associated
@@ -31,11 +31,11 @@ import com.android.server.wm.traces.common.service.Scenario
  */
 data class Tag(
     val id: Int,
-    val scenario: Scenario,
+    val scenarioType: ScenarioType,
     val isStartTag: Boolean,
     val layerId: Int = 0,
     val windowToken: String = "",
     val taskId: Int = 0
 ) {
-    override fun toString() = if (isStartTag) "Start of $scenario" else "End of $scenario"
+    override fun toString() = if (isStartTag) "Start of $scenarioType" else "End of $scenarioType"
 }

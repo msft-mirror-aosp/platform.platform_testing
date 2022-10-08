@@ -21,7 +21,7 @@ import com.android.server.wm.traces.common.DeviceStateDump
 import com.android.server.wm.traces.common.RectF
 import com.android.server.wm.traces.common.WindowManagerConditionsFactory
 import com.android.server.wm.traces.common.layers.BaseLayerTraceEntry
-import com.android.server.wm.traces.common.service.Scenario
+import com.android.server.wm.traces.common.service.ScenarioType
 import com.android.server.wm.traces.common.tags.Tag
 import com.android.server.wm.traces.common.windowmanager.WindowManagerState
 
@@ -32,7 +32,7 @@ import com.android.server.wm.traces.common.windowmanager.WindowManagerState
  * and status bars to appear
  */
 class RotationProcessor(logger: (String) -> Unit) : TransitionProcessor(logger) {
-    override val scenario = Scenario.ROTATION
+    override val scenarioType = ScenarioType.ROTATION
     override fun getInitialState(tags: MutableMap<Long, MutableList<Tag>>) = InitialState(tags)
 
     /**
@@ -95,7 +95,7 @@ class RotationProcessor(logger: (String) -> Unit) : TransitionProcessor(logger) 
             )
             // tag on the last complete state at the start
             logger.invoke("(${previous.wmState.timestamp}) Tagging transition start")
-            addStartTransitionTag(previous, scenario)
+            addStartTransitionTag(previous, scenarioType)
             return WaitRotationFinished(tags)
         }
     }
@@ -148,7 +148,7 @@ class RotationProcessor(logger: (String) -> Unit) : TransitionProcessor(logger) 
             } else {
                 // tag on the last complete state at the start
                 logger.invoke("(${current.layerState.timestamp}) Tagging transition end")
-                addEndTransitionTag(current, scenario)
+                addEndTransitionTag(current, scenarioType)
                 // return to start to wait for a second rotation
                 val lastDisplayRect = current.wmState.displaySize()
                 WaitDisplayRectChange(tags, lastDisplayRect)

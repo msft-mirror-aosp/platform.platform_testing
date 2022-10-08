@@ -16,123 +16,18 @@
 
 package com.android.server.wm.traces.common.service
 
-import com.android.server.wm.traces.common.layers.LayersTrace
-import com.android.server.wm.traces.common.tags.Tag
-import com.android.server.wm.traces.common.tags.TagState
-import com.android.server.wm.traces.common.tags.TagTrace
-import com.android.server.wm.traces.common.transition.TransitionsTrace
-import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
-
-enum class Scenario(val description: String, val executionCondition: AssertionExecutionCondition) :
-    ITagGenerator {
-    COMMON("Common", AssertionExecutionCondition.ALWAYS),
-    APP_LAUNCH("AppLaunch", AssertionExecutionCondition.APP_LAUNCH),
-    APP_CLOSE("AppClose", AssertionExecutionCondition.APP_CLOSE),
-    // NOT YET IMPLEMENTED SCENARIOS - set to never run
-    ROTATION("Rotation", AssertionExecutionCondition.NEVER),
-    IME_APPEAR("ImeAppear", AssertionExecutionCondition.NEVER),
-    IME_DISAPPEAR("ImeDisappear", AssertionExecutionCondition.NEVER),
-    PIP_ENTER("PipEnter", AssertionExecutionCondition.NEVER),
-    PIP_EXIT("PipExit", AssertionExecutionCondition.NEVER);
-
-    /**
-     * Gets the concrete instances of a Scenario that appear in the provided traces. An instance
-     * (which includes start and end marks) is returned for each point in the traces a scenario is
-     * detected to have occurred.
-     */
-    fun getInstances(
-        transitionsTrace: TransitionsTrace,
-        logger: ((String) -> Unit)? = null
-    ): Collection<ScenarioInstance> {
-        val scenarioInstances = mutableListOf<ScenarioInstance>()
-        for (transition in transitionsTrace.entries) {
-            if (transition.isIncomplete) {
-                // We don't want to run assertions on incomplete transitions
-                logger?.invoke("Skipping running assertions on incomplete transition $transition")
-                continue
-            }
-            if (this.executionCondition.shouldExecute(transition)) {
-                requireNotNull(transition.startTransaction) {
-                    "Completed transition shouldn't have a null startTransaction"
-                }
-                requireNotNull(transition.finishTransaction) {
-                    "Completed transition shouldn't have a null finishTransaction"
-                }
-                scenarioInstances.add(
-                    ScenarioInstance(
-                        this,
-                        transition.collectingStart,
-                        transition.end,
-                        transition.startTransaction,
-                        transition.finishTransaction,
-                        transition
-                    )
-                )
-            }
-        }
-
-        return scenarioInstances
+class Scenario(val scenarioType: ScenarioType, var rotation: PlatformConsts.Rotation) {
+    override fun toString(): String {
+        return "${scenarioType.description}_$rotation"
     }
 
-    override fun generateTags(
-        wmTrace: WindowManagerTrace,
-        layersTrace: LayersTrace,
-        transitionsTrace: TransitionsTrace
-    ): TagTrace {
-        val scenarioInstances = this.getInstances(transitionsTrace)
-        val tagsByTs = mutableMapOf<Long, MutableList<Tag>>()
-        for (scenarioInstance in scenarioInstances) {
-            if (tagsByTs[scenarioInstance.startTimestamp] == null) {
-                tagsByTs[scenarioInstance.startTimestamp] = mutableListOf()
-            }
-            if (tagsByTs[scenarioInstance.endTimestamp] == null) {
-                tagsByTs[scenarioInstance.endTimestamp] = mutableListOf()
-            }
-
-            val tagId = TagIdGenerator.getNext()
-
-            val startTag =
-                Tag(
-                    id = tagId,
-                    scenario = this,
-                    isStartTag = true,
-                    layerId = -1,
-                    windowToken = "",
-                    taskId = 0
-                )
-            tagsByTs[scenarioInstance.startTimestamp]!!.add(startTag)
-
-            val endTag =
-                Tag(
-                    id = tagId,
-                    scenario = this,
-                    isStartTag = false,
-                    layerId = -1,
-                    windowToken = "",
-                    taskId = 0
-                )
-            tagsByTs[scenarioInstance.endTimestamp]!!.add(endTag)
-        }
-
-        val tagStates = mutableListOf<TagState>()
-        for ((timestamp, tags) in tagsByTs) {
-            tagStates.add(TagState(timestamp.toString(), tags.toTypedArray()))
-        }
-
-        return TagTrace(tagStates.sortedBy { it.timestamp }.toTypedArray())
+    override fun equals(other: Any?): Boolean {
+        return other is Scenario && scenarioType == other.scenarioType && rotation == other.rotation
     }
 
-    companion object {
-        val scenariosByDescription: Map<String, Scenario> =
-            mapOf(
-                "Common" to COMMON,
-                "AppLaunch" to APP_LAUNCH,
-                "AppClose" to APP_CLOSE,
-                "Rotation" to ROTATION,
-                "ImeAppear" to IME_APPEAR,
-                "ImeDisappear" to IME_DISAPPEAR,
-                "PipEnter" to PIP_ENTER,
-                "PipExit" to PIP_EXIT
-            )
+    override fun hashCode(): Int {
+        var result = scenarioType.hashCode()
+        result = 31 * result + rotation.hashCode()
+        return result
     }
 }

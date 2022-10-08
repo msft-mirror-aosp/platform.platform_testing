@@ -24,7 +24,7 @@ import com.android.server.wm.traces.common.WindowManagerConditionsFactory.isLaye
 import com.android.server.wm.traces.common.WindowManagerConditionsFactory.isLayerTransformFlagSet
 import com.android.server.wm.traces.common.layers.Transform
 import com.android.server.wm.traces.common.service.PlatformConsts
-import com.android.server.wm.traces.common.service.Scenario
+import com.android.server.wm.traces.common.service.ScenarioType
 import com.android.server.wm.traces.common.tags.Tag
 
 /**
@@ -32,7 +32,7 @@ import com.android.server.wm.traces.common.tags.Tag
  * @param logger logs by invoking any event messages
  */
 class ImeDisappearProcessor(logger: (String) -> Unit) : TransitionProcessor(logger) {
-    override val scenario = Scenario.IME_DISAPPEAR
+    override val scenarioType = ScenarioType.IME_DISAPPEAR
     override fun getInitialState(tags: MutableMap<Long, MutableList<Tag>>) =
         WaitImeDisappearStart(tags)
 
@@ -89,7 +89,7 @@ class ImeDisappearProcessor(logger: (String) -> Unit) : TransitionProcessor(logg
                 current.layerState.visibleLayers.first {
                     ComponentNameMatcher.IME.layerMatchesAnyOf(it)
                 }
-            addStartTransitionTag(current, scenario, layerId = inputMethodLayer.id)
+            addStartTransitionTag(current, scenarioType, layerId = inputMethodLayer.id)
             return WaitImeDisappearFinished(tags, inputMethodLayer.id)
         }
     }
@@ -111,7 +111,7 @@ class ImeDisappearProcessor(logger: (String) -> Unit) : TransitionProcessor(logg
             return if (imeNotShown.isSatisfied(current)) {
                 // tag on the last complete state at the start
                 logger.invoke("(${current.layerState.timestamp}) IME disappear end detected.")
-                addEndTransitionTag(current, scenario, layerId = layerId)
+                addEndTransitionTag(current, scenarioType, layerId = layerId)
                 // return to start to wait for a second IME disappear
                 WaitImeDisappearStart(tags)
             } else {

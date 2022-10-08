@@ -70,4 +70,16 @@ object PlatformConsts {
      * Duplicated from [Surface.ROTATION_270] because this class is used by JVM and KotlinJS
      */
     @JsName("ROTATION_270") const val ROTATION_270 = 3
+
+    enum class Rotation(val description: String) {
+        ROTATION_0("ROTATION_0"),
+        ROTATION_90("ROTATION_90"),
+        ROTATION_180("ROTATION_180"),
+        ROTATION_270("ROTATION_270");
+
+        companion object {
+            private val VALUES = values()
+            fun getByValue(value: Int) = VALUES[value]
+        }
+    }
 }

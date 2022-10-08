@@ -154,50 +154,8 @@ interface ILayerProperties {
     @JsName("hasEffects")
     val hasEffects: Boolean
         get() {
-            // Support previous color layer
-            if (isColorLayer) {
-                return true
-            }
-
-            // Support newer effect layer
             return fillsColor || drawsShadows
         }
-
-    /**
-     * Checks if the [Layer] type is BufferStateLayer or BufferQueueLayer
-     *
-     * @return
-     */
-    @JsName("isBufferLayer")
-    val isBufferLayer: Boolean
-        get() = type == "BufferStateLayer" || type == "BufferQueueLayer"
-
-    /**
-     * Checks if the [Layer] type is ColorLayer
-     *
-     * @return
-     */
-    @JsName("isColorLayer")
-    val isColorLayer: Boolean
-        get() = type == "ColorLayer"
-
-    /**
-     * Checks if the [Layer] type is ContainerLayer
-     *
-     * @return
-     */
-    @JsName("isContainerLayer")
-    val isContainerLayer: Boolean
-        get() = type == "ContainerLayer"
-
-    /**
-     * Checks if the [Layer] type is EffectLayer
-     *
-     * @return
-     */
-    @JsName("isEffectLayer")
-    val isEffectLayer: Boolean
-        get() = type == "EffectLayer"
 
     @JsName("isTransformFlagSet")
     private fun isTransformFlagSet(transform: Int): Boolean =

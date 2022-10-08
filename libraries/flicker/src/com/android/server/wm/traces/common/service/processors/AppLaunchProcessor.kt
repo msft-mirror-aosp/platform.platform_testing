@@ -17,7 +17,7 @@
 package com.android.server.wm.traces.common.service.processors
 
 import com.android.server.wm.traces.common.DeviceStateDump
-import com.android.server.wm.traces.common.service.Scenario
+import com.android.server.wm.traces.common.service.ScenarioType
 import com.android.server.wm.traces.common.tags.Tag
 
 /**
@@ -25,7 +25,7 @@ import com.android.server.wm.traces.common.tags.Tag
  * @param logger logs by invoking any event messages
  */
 class AppLaunchProcessor(logger: (String) -> Unit) : TransitionProcessor(logger) {
-    override val scenario = Scenario.APP_LAUNCH
+    override val scenarioType = ScenarioType.APP_LAUNCH
     private val windowsBecomeVisible = HashMap<Int, DeviceStateDump>()
 
     override fun getInitialState(tags: MutableMap<Long, MutableList<Tag>>) =
@@ -66,13 +66,13 @@ class AppLaunchProcessor(logger: (String) -> Unit) : TransitionProcessor(logger)
                 val layerId = firstDump.key
                 addStartTransitionTag(
                     firstDump.value,
-                    scenario,
+                    scenarioType,
                     layerId = layerId,
                     timestamp = firstDump.value.layerState.timestamp
                 )
                 addEndTransitionTag(
                     current,
-                    scenario,
+                    scenarioType,
                     layerId = layerId,
                     timestamp = current.layerState.timestamp
                 )

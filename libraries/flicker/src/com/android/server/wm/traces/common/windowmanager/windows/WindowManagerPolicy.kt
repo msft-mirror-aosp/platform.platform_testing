@@ -138,19 +138,19 @@ private constructor(
 
         @JsName("from")
         fun from(
-            focusedAppToken: String,
-            forceStatusBar: Boolean,
-            forceStatusBarFromKeyguard: Boolean,
-            keyguardDrawComplete: Boolean,
-            keyguardOccluded: Boolean,
-            keyguardOccludedChanged: Boolean,
-            keyguardOccludedPending: Boolean,
-            lastSystemUiFlags: Int,
-            orientation: Int,
-            rotation: Int,
-            rotationMode: Int,
-            screenOnFully: Boolean,
-            windowManagerDrawComplete: Boolean
+            focusedAppToken: String = "",
+            forceStatusBar: Boolean = false,
+            forceStatusBarFromKeyguard: Boolean = false,
+            keyguardDrawComplete: Boolean = false,
+            keyguardOccluded: Boolean = false,
+            keyguardOccludedChanged: Boolean = false,
+            keyguardOccludedPending: Boolean = false,
+            lastSystemUiFlags: Int = 0,
+            orientation: Int = 0,
+            rotation: Int = 0,
+            rotationMode: Int = 0,
+            screenOnFully: Boolean = false,
+            windowManagerDrawComplete: Boolean = false
         ): WindowManagerPolicy = withCache {
             WindowManagerPolicy(
                 focusedAppToken,

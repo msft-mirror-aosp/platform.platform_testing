@@ -13,6 +13,7 @@
 # limitations under the License.
 
 native_tests := \
+    aaudio_test_mmap_path \
     adbd_test \
     android_logger_test_src_lib \
     android_logger_test_tests_config_log_level \

@@ -17,28 +17,59 @@
 package com.android.server.wm.flicker.assertiongenerator.windowmanager
 
 import com.android.server.wm.flicker.assertiongenerator.common.IComponentLifecycle
+import com.android.server.wm.flicker.assertiongenerator.common.IElementLifecycle
 import com.android.server.wm.flicker.assertiongenerator.common.ITraceLifecycle
 import com.android.server.wm.traces.common.ComponentNameMatcher
 
-class WmTraceLifecycle : ITraceLifecycle {
+class WmTraceLifecycle(
+    val lifecycleMap: MutableMap<ComponentNameMatcher, WmComponentLifecycle> = mutableMapOf()
+) : ITraceLifecycle {
     override val size: Int
-        get() = TODO("Not yet implemented")
+        get() = lifecycleMap.size
 
     override val elementIds: MutableSet<ComponentNameMatcher>
-        get() = TODO("Not yet implemented")
+        get() = lifecycleMap.keys
 
-    override fun get(elementId: Any): IComponentLifecycle? {
-        TODO("Not yet implemented")
+    override fun get(elementId: Any): WmComponentLifecycle? {
+        return lifecycleMap[elementId as ComponentNameMatcher]
     }
 
     override fun set(elementId: Any, elementLifecycles: IComponentLifecycle) {
-        TODO("Not yet implemented")
+        lifecycleMap[elementId as ComponentNameMatcher] = elementLifecycles as WmComponentLifecycle
     }
 
     override fun getOrPut(
         elementId: Any,
         elementLifecycles: IComponentLifecycle
     ): IComponentLifecycle {
-        TODO("Not yet implemented")
+        return lifecycleMap.getOrPut(elementId as ComponentNameMatcher) {
+            elementLifecycles as WmComponentLifecycle
+        }
+    }
+
+    fun add(
+        elementComponentNameMatcher: ComponentNameMatcher,
+        elementId: String,
+        elementLifecycle: IElementLifecycle
+    ) {
+        lifecycleMap[elementComponentNameMatcher]
+            ?: run { lifecycleMap[elementComponentNameMatcher] = WmComponentLifecycle() }
+        lifecycleMap[elementComponentNameMatcher]!![elementId] =
+            elementLifecycle as WmElementLifecycle
+    }
+
+    override fun equals(other: Any?): Boolean {
+        return other is WmTraceLifecycle && this.lifecycleMap == other.lifecycleMap
+    }
+
+    override fun hashCode(): Int {
+        var result = lifecycleMap.hashCode()
+        result = 31 * result + size
+        result = 31 * result + elementIds.hashCode()
+        return result
+    }
+
+    override fun toString(): String {
+        return "WmTraceLifecycle:\n$lifecycleMap\n\n"
     }
 }

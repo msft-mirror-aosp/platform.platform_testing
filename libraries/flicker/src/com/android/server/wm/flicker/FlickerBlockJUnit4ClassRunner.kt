@@ -437,7 +437,7 @@ constructor(
     ): Map<String, List<AssertionResult>> {
         val aggregatedResults = mutableMapOf<String, MutableList<AssertionResult>>()
         for (result in assertionResults) {
-            val testName = "FaaS_${result.scenario.description}_${result.assertionName}"
+            val testName = "FaaS_${result.scenario}_${result.assertionName}"
             if (!aggregatedResults.containsKey(testName)) {
                 aggregatedResults[testName] = mutableListOf()
             }

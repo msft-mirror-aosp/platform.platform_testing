@@ -17,21 +17,26 @@
 package com.android.server.wm.flicker.service.config
 
 import android.util.Log
+import com.android.server.wm.flicker.TraceFileReader
 import com.android.server.wm.flicker.assertiongenerator.AssertionGenConfigTestConst.Companion.emptyDeviceTraceConfiguration
+import com.android.server.wm.flicker.assertiongenerator.AssertionProducerTestConst.Companion.expectedAssertionNamesFileTrace
 import com.android.server.wm.flicker.assertiongenerator.ElementLifecycleExtractorTestConst
 import com.android.server.wm.flicker.assertiongenerator.ScenarioConfig
+import com.android.server.wm.flicker.assertiongenerator.WindowManagerTestConst.Companion.wmTrace_ROTATION_0
+import com.android.server.wm.flicker.assertiongenerator.common.AssertionFactory
 import com.android.server.wm.flicker.service.AssertionEngine
 import com.android.server.wm.flicker.service.AssertionGeneratorConfigProducer
 import com.android.server.wm.flicker.service.assertors.AssertionResult
 import com.android.server.wm.traces.common.DeviceTraceDump
+import com.android.server.wm.traces.common.service.PlatformConsts
 import com.android.server.wm.traces.common.service.Scenario
 import com.android.server.wm.traces.common.service.ScenarioInstance
+import com.android.server.wm.traces.common.service.ScenarioType
 import com.android.server.wm.traces.common.transactions.Transaction
 import com.android.server.wm.traces.common.transactions.TransactionsTraceEntry
 import com.android.server.wm.traces.common.transition.Transition
 import com.android.server.wm.traces.common.transition.TransitionChange
 import com.android.server.wm.traces.common.transition.TransitionsTrace
-import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 import com.google.common.truth.Truth
 import kotlin.Long.Companion.MAX_VALUE
 import org.junit.Test
@@ -146,9 +151,10 @@ class AssertionsTest {
             ElementLifecycleExtractorTestConst.createTrace_arg(
                 ElementLifecycleExtractorTestConst.mapOfFlattenedLayersAssertionProducer
             )
-        val wmTrace = WindowManagerTrace(arrayOf())
+        val wmTrace = wmTrace_ROTATION_0
         val traceDump = DeviceTraceDump(null, layersTrace)
-        val scenario = Scenario.APP_LAUNCH
+        val scenarioType = ScenarioType.APP_LAUNCH
+        val scenario = Scenario(scenarioType, PlatformConsts.Rotation.ROTATION_0)
         val testSetup = Setup(3)
         testSetup.setup(traceDump, scenario)
         var assertionEngine =
@@ -171,9 +177,10 @@ class AssertionsTest {
             ElementLifecycleExtractorTestConst.createTrace_arg(
                 ElementLifecycleExtractorTestConst.mapOfFlattenedLayersAllVisibilityAssertions
             )
-        val wmTrace = WindowManagerTrace(arrayOf())
+        val wmTrace = wmTrace_ROTATION_0
         val traceDump = DeviceTraceDump(null, layersTraceForGeneration)
-        val scenario = Scenario.APP_LAUNCH
+        val scenarioType = ScenarioType.APP_LAUNCH
+        val scenario = Scenario(scenarioType, PlatformConsts.Rotation.ROTATION_0)
         val testSetup = Setup(3)
         testSetup.setup(traceDump, scenario)
         var assertionEngine =
@@ -206,22 +213,65 @@ class AssertionsTest {
         val defaultConfigProducer = AssertionGeneratorConfigProducer()
         val assertionEngine = AssertionEngine(defaultConfigProducer) { Log.v("FLICKER-ASSERT", it) }
         val config = defaultConfigProducer.produce()
-        val traceDump = config[Scenario.APP_LAUNCH]?.deviceTraceDumps?.get(0)
+        val scenario = Scenario(ScenarioType.APP_LAUNCH, PlatformConsts.Rotation.ROTATION_0)
+        val traceDump = config[scenario]?.deviceTraceDumps?.get(0)
         traceDump ?: run { throw RuntimeException("No deviceTraceDump for scenario APP_LAUNCH") }
         val layersTrace = traceDump.layersTrace
         val transitionsTrace = traceDump.transitionsTrace
+        val wmTrace = traceDump.wmTrace
 
         transitionsTrace ?: run { throw RuntimeException("Null transitionsTrace") }
+        wmTrace ?: run { throw RuntimeException("Null wmTrace") }
 
         layersTrace?.run {
             val assertionResults =
                 assertionEngine.analyze(
-                    WindowManagerTrace(arrayOf()),
+                    wmTrace,
                     layersTrace,
                     transitionsTrace,
                     AssertionEngine.AssertionsToUse.GENERATED
                 )
             assertResultsPass(assertionResults)
+        }
+            ?: throw RuntimeException("LayersTrace is null")
+    }
+
+    @Test
+    fun AssertionEngine_analyze_assertionNames_traceFile() {
+        val configDir = "/assertiongenerator_config_test"
+        val goldenTracesConfig = TraceFileReader.getGoldenTracesConfig(configDir)
+        val scenario = Scenario(ScenarioType.APP_LAUNCH, PlatformConsts.Rotation.ROTATION_0)
+        val traceDump = goldenTracesConfig[scenario]!!.deviceTraceDumps[0]
+        val traceConfiguration = goldenTracesConfig[scenario]!!.traceConfigurations[0]
+
+        val config: Map<Scenario, ScenarioConfig> =
+            mapOf(scenario to ScenarioConfig(arrayOf(traceDump), arrayOf(traceConfiguration)))
+
+        val assertionFactory = AssertionFactory(goldenTracesConfig)
+        val layersTrace = traceDump.layersTrace
+        val wmTrace = traceDump.wmTrace!!
+        val transitionsTrace = traceDump.transitionsTrace!!
+
+        val scenarioInstances = mutableListOf<ScenarioInstance>()
+        val scenarioType = ScenarioType.APP_LAUNCH
+        scenarioInstances.addAll(
+            scenarioType.getInstances(transitionsTrace, wmTrace) { m ->
+                Log.d("AssertionEngineTest", m)
+            }
+        )
+
+        var assertionsStr = ""
+
+        layersTrace?.run {
+            for (scenarioInstance in scenarioInstances) {
+                val assertions =
+                    Assertions.getLayersGeneratedAssertionsForScenario(
+                        scenarioInstance,
+                        assertionFactory
+                    ) { Log.v("FLICKER-ASSERT", it) }
+                assertions.forEach { assertion -> assertionsStr += assertion.name + "\n" }
+            }
+            Truth.assertThat(assertionsStr).isEqualTo(expectedAssertionNamesFileTrace)
         }
             ?: throw RuntimeException("LayersTrace is null")
     }

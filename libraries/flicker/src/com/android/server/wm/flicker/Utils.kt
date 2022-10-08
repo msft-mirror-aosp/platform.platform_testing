@@ -111,15 +111,10 @@ object Utils {
         str: String,
         deviceTraceConfiguration: DeviceTraceConfiguration
     ): ComponentNameMatcher? {
-        val condition = true
-        val componentMatcher =
+        return try {
             componentNameMatcherHardcoded(str)
                 ?: componentNameMatcherConfig(str, deviceTraceConfiguration)
-        return try {
-            when (condition) {
-                (componentMatcher != null) -> componentMatcher
-                else -> ComponentNameMatcher.unflattenFromStringWithJunk(str)
-            }
+                    ?: ComponentNameMatcher.unflattenFromStringWithJunk(str)
         } catch (err: IllegalStateException) {
             null
         }
@@ -133,13 +128,9 @@ object Utils {
     fun componentNameMatcherFromName(
         str: String,
     ): ComponentNameMatcher? {
-        val condition = true
-        val componentMatcher = componentNameMatcherHardcoded(str)
         return try {
-            when (condition) {
-                (componentMatcher != null) -> componentMatcher
-                else -> ComponentNameMatcher.unflattenFromStringWithJunk(str)
-            }
+            componentNameMatcherHardcoded(str)
+                ?: ComponentNameMatcher.unflattenFromStringWithJunk(str)
         } catch (err: IllegalStateException) {
             null
         }
@@ -155,9 +146,15 @@ object Utils {
 
     fun componentNameMatcherToStringSimplified(componentNameMatcher: ComponentNameMatcher): String {
         if (componentNameMatcher is ComponentTypeMatcher) {
-            return "${componentNameMatcher.componentBuilder.name}"
+            return componentNameMatcher.componentBuilder.name
         }
-        return "${componentNameMatcher.className}"
+        var className = componentNameMatcher.className
+        val separatedByDots = className.split('.')
+        if (separatedByDots.isNotEmpty()) {
+            className = separatedByDots[separatedByDots.size - 1]
+        }
+        className = className.replace(' ', '_')
+        return className
     }
 
     fun componentNameMatcherAsStringFromName(str: String): String? {

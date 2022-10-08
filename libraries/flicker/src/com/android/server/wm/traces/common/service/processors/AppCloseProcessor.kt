@@ -23,7 +23,7 @@ import com.android.server.wm.traces.common.WindowManagerConditionsFactory.isLaye
 import com.android.server.wm.traces.common.layers.Transform
 import com.android.server.wm.traces.common.service.PlatformConsts.TYPE_APPLICATION_STARTING
 import com.android.server.wm.traces.common.service.PlatformConsts.TYPE_BASE_APPLICATION
-import com.android.server.wm.traces.common.service.Scenario
+import com.android.server.wm.traces.common.service.ScenarioType
 import com.android.server.wm.traces.common.tags.Tag
 import com.android.server.wm.traces.common.windowmanager.windows.WindowState
 
@@ -32,7 +32,7 @@ import com.android.server.wm.traces.common.windowmanager.windows.WindowState
  * @param logger logs by invoking any event messages
  */
 class AppCloseProcessor(logger: (String) -> Unit) : TransitionProcessor(logger) {
-    override val scenario = Scenario.APP_CLOSE
+    override val scenarioType = ScenarioType.APP_CLOSE
     private val areLayersAnimating = WindowManagerConditionsFactory.hasLayersAnimating()
     private val wmStateIdle =
         WindowManagerConditionsFactory.isAppTransitionIdle(/* default display */ 0)
@@ -119,13 +119,13 @@ class AppCloseProcessor(logger: (String) -> Unit) : TransitionProcessor(logger) 
                 if (deviceStateDump != null) {
                     addStartTransitionTag(
                         deviceStateDump,
-                        scenario,
+                        scenarioType,
                         layerId = layerId,
                         windowToken = appWindow.token
                     )
                     addEndTransitionTag(
                         current,
-                        scenario,
+                        scenarioType,
                         layerId = layerId,
                         windowToken = appWindow.token
                     )
