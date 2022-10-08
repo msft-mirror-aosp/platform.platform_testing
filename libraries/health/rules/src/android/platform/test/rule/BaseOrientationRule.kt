@@ -21,10 +21,13 @@ import android.platform.test.rule.Orientation.PORTRAIT
 import android.platform.test.rule.RotationUtils.clearOrientationOverride
 import android.platform.test.rule.RotationUtils.setOrientationOverride
 import android.platform.test.util.HealthTestingUtils.waitForNullDiag
+import android.util.Log
 import androidx.test.InstrumentationRegistry
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.UiDevice
+import androidx.test.uiautomator.Until
 import com.android.launcher3.tapl.LauncherInstrumentation
+import java.time.Duration
 import org.junit.runner.Description
 
 /** Locks the orientation in Landscape before starting the test, and goes back to natural after. */
@@ -72,6 +75,8 @@ object RotationUtils {
     private val launcher: LauncherInstrumentation
         get() = LauncherInstrumentation()
 
+    private val SHORT_DURATION = Duration.ofMillis(1500)
+
     /**
      * Sets device orientation to [expectedOrientation], according to [Rect.orientation] definition.
      *
@@ -94,6 +99,7 @@ object RotationUtils {
                 else -> "Visible orientation is not ${expectedOrientation.name}"
             }
         }
+        log("Rotation override set to ${expectedOrientation.name}")
     }
 
     private fun changeOrientation() {
@@ -108,12 +114,18 @@ object RotationUtils {
         device.setOrientationNatural()
         launcher.setEnableRotation(false)
         device.unfreezeRotation()
+        log("Rotation override cleared.")
     }
 
     private val launcherVisibleBounds: Rect?
         get() {
             val launcher =
-                device.findObject(By.res("android", "content").pkg(device.launcherPackageName))
+                device.wait(
+                    Until.findObject(By.res("android", "content").pkg(device.launcherPackageName)),
+                    SHORT_DURATION.toMillis()
+                )
             return launcher?.visibleBounds
         }
+
+    private fun log(message: String) = Log.d("RotationUtils", message)
 }
