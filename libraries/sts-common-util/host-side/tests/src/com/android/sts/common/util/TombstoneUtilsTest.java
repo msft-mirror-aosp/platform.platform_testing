@@ -22,6 +22,7 @@ import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
 import com.android.server.os.TombstoneProtos.*;
+import com.android.sts.common.CommandUtil;
 import com.android.sts.common.ProcessUtil;
 import com.android.sts.common.util.TombstoneUtils.Config.BacktraceFilterPattern;
 import com.android.tradefed.testtype.DeviceJUnit4ClassRunner;
@@ -507,6 +508,7 @@ public class TombstoneUtilsTest extends BaseHostJUnit4Test {
         try {
             testWithAssertNoCrashesCatchesCrash();
         } finally {
+            CommandUtil.runAndCheck(getDevice(), "rm -f /data/tombstones/*");
             getDevice().disableAdbRoot();
         }
     }
@@ -544,5 +546,40 @@ public class TombstoneUtilsTest extends BaseHostJUnit4Test {
             return;
         }
         fail("should have thrown an exception and detected the security crash");
+    }
+
+    @Test
+    public void testWithAssertNoCrashesForNoCrashPriorCrashes() throws Exception {
+        assumeTrue(getDevice().enableAdbRoot());
+        try {
+            String pgrepRegex = "media\\.codec";
+            ProcessUtil.waitProcessRunning(getDevice(), pgrepRegex);
+            Optional<Map<Integer, String>> pidsMap = ProcessUtil.pidsOf(getDevice(), pgrepRegex);
+            assertThat(pidsMap.isPresent()).isTrue();
+            Optional<Integer> pid = pidsMap.get().keySet().stream().findAny();
+            assertThat(pid.isPresent()).isTrue();
+
+            ProcessUtil.killPid(
+                    getDevice(), pid.get(), /* SIGSEGV */ 11, ProcessUtil.PROCESS_WAIT_TIMEOUT_MS);
+
+            try (AutoCloseable a =
+                    TombstoneUtils.withAssertNoSecurityCrashes(
+                            getDevice(), new TombstoneUtils.Config())) {}
+        } finally {
+            CommandUtil.runAndCheck(getDevice(), "rm -f /data/tombstones/*");
+            getDevice().disableAdbRoot();
+        }
+    }
+
+    @Test
+    public void testWithAssertNoCrashesForNoCrashNoPriorCrashes() throws Exception {
+        assumeTrue(getDevice().enableAdbRoot());
+        CommandUtil.runAndCheck(getDevice(), "rm -f /data/tombstones/*");
+        try (AutoCloseable a =
+                TombstoneUtils.withAssertNoSecurityCrashes(
+                        getDevice(), new TombstoneUtils.Config())) {
+        } finally {
+            getDevice().disableAdbRoot();
+        }
     }
 }
