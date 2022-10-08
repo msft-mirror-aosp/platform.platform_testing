@@ -22,9 +22,16 @@ import org.junit.runner.Description
 import org.junit.runners.model.Statement
 
 /**
- * This rule will lock orientation before running a test class and unlock after. The orientation is
- * natural by default, and landscape or portrait if the test or one of its superclasses is marked
- * with the [Landscape] or [Portrait] annotation, .
+ * Locks orientation before running a test class and unlock after.
+ *
+ * The orientation is natural by default, and landscape or portrait if the test or one of its
+ * superclasses is marked with the [Landscape] or [Portrait] annotation.
+ *
+ * Important: if screen dimensions change in between the test, it is not guaranteed the orientation
+ * will match the one set. For example, if a two screens foldable device uses the [Portrait]
+ * annotation while folded, and then the screen is changed to a bigger one, it might result in the
+ * new orientation to be landscape instead (as the portrait orientation was leaving the device with
+ * the natural orientation, but with the big screen natural orientation is landscape).
  */
 class OrientationRule : TestRule {
 
