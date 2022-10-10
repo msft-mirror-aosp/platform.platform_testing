@@ -16,7 +16,6 @@
 
 package com.android.sts.common.tradefed.testtype;
 
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assume.assumeFalse;
 import static org.junit.Assume.assumeTrue;
@@ -32,6 +31,7 @@ import com.android.tradefed.build.IBuildInfo;
 import com.android.tradefed.config.Option;
 import com.android.tradefed.device.DeviceNotAvailableException;
 import com.android.tradefed.device.ITestDevice;
+import com.android.tradefed.device.WifiHelper;
 import com.android.tradefed.log.LogUtil.CLog;
 import com.android.tradefed.testtype.IAbi;
 
@@ -40,6 +40,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TestName;
 
+import java.lang.AssertionError;
 import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -75,6 +76,18 @@ public class SecurityTestCase extends StsExtraBusinessLogicHostTestBase {
             name = "set-kptr_restrict",
             description = "If kptr_restrict should be set to 2 after every reboot")
     private boolean setKptr_restrict = false;
+
+    @Option(
+            name = "wifi-connect-timeout",
+            description = "time in milliseconds to timeout while enabling wifi")
+    private long wifiConnectTimeout = 15_000;
+
+    @Option(
+            name = "skip-wifi-failure",
+            description =
+                    "Whether to throw an assumption failure instead of an assertion failure when"
+                            + " wifi cannot be enabled")
+    private boolean skipWifiFailure = false;
 
     private boolean ignoreKernelAddress = false;
 
@@ -127,8 +140,11 @@ public class SecurityTestCase extends StsExtraBusinessLogicHostTestBase {
             // only fail when the kernel start time is valid
             long deviceTime = getDeviceUptime() + kernelStartTime;
             long hostTime = System.currentTimeMillis() / 1000;
-            assertTrue("Phone has had a hard reset", (hostTime - deviceTime) < 2);
             kernelStartTime = -1;
+            if ((hostTime - deviceTime) >= 2) {
+                getDevice().postBootSetup();
+                throw new AssertionError("Phone has had a hard reset");
+            }
         }
 
         logAndTerminateTestProcesses();
@@ -470,5 +486,42 @@ public class SecurityTestCase extends StsExtraBusinessLogicHostTestBase {
         assumeTrue(
                 "NFC device " + nfcDevice + " is not supported. Hence skipping the test",
                 isDriverFound);
+    }
+
+    public WifiHelper createWifiHelper() throws DeviceNotAvailableException {
+        ITestDevice device = getDevice();
+        return new WifiHelper(device, device.getOptions().getWifiUtilAPKPath(), /* doSetup */ true);
+    }
+
+    /**
+     * Asserts the wifi connection status is connected. Because STS can reboot a device immediately
+     * before running a test, wifi might not be connected before the test runs. We poll wifi until
+     * we hit a timeout or wifi is connected.
+     *
+     * @param device device to be ran on
+     */
+    public void assertWifiConnected(ITestDevice device) throws Exception {
+        assumeTrue("Wi-Fi hardware not detected", device.hasFeature("android.hardware.wifi"));
+
+        WifiHelper wifiHelper = createWifiHelper();
+        wifiHelper.enableWifi();
+
+        long endTime = System.currentTimeMillis() + wifiConnectTimeout;
+        do {
+            // tests require that device are connected to a wifi network, but not requiring
+            // internet connectivity
+            if (!"null".equals(wifiHelper.getBSSID())) {
+                return;
+            }
+            Thread.sleep(1000);
+        } while (System.currentTimeMillis() < endTime);
+
+        assumeFalse("Wi-Fi could not be enabled on the device; skipping", skipWifiFailure);
+        throw new AssertionError(
+                "This test requires a Wi-Fi connection on-device. "
+                        + "Please consult the CTS setup guide: "
+                        + "https://source.android.com/compatibility/cts/setup#wifi\n"
+                        + "Also ensure \"Stay Awake\" is enabled in developer options: "
+                        + "https://source.android.com/compatibility/cts/setup#config_device");
     }
 }
