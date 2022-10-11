@@ -18,6 +18,7 @@ package com.android.sts.common;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeNoException;
 
 import com.android.tradefed.device.DeviceNotAvailableException;
@@ -70,9 +71,21 @@ public class MallocDebug implements AutoCloseable {
             try {
                 this.killProcess = ProcessUtil.withProcessKill(device, processName, null);
                 ProcessUtil.waitProcessRunning(device, processName);
-            } catch (TimeoutException e) {
+            } catch (TimeoutException e1) {
+                try {
+                    setMallocDebugOptionsProperty.close();
+                    setAttachedProgramProperty.close();
+                } catch (Exception e2) {
+                    fail(
+                            "Could not restart '"
+                                    + processName
+                                    + "' before enabling malloc debug. Additionally, there was an"
+                                    + " exception while trying to reset device state. Tests after"
+                                    + " this may not work as expected!\n"
+                                    + e2);
+                }
                 assumeNoException(
-                        "Could not restart '" + processName + "' before enabling malloc debug", e);
+                        "Could not restart '" + processName + "' before enabling malloc debug", e1);
             }
         }
     }
