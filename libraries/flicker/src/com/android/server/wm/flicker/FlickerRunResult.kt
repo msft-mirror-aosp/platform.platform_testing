@@ -78,26 +78,31 @@ class FlickerRunResult(
      */
     private val artifacts: RunResultArtifacts =
         RunResultArtifacts(getDefaultFlickerOutputDir().resolve("$testName.zip"))
+
     /** Truth subject that corresponds to a [WindowManagerTrace] */
     internal var wmTraceSubject: WindowManagerTraceSubject? by clearableLazy {
         buildWmTraceSubject()
     }
         private set
+
     /** Truth subject that corresponds to a [LayersTrace] */
     internal var layersTraceSubject: LayersTraceSubject? by clearableLazy {
         buildLayersTraceSubject()
     }
         private set
+
     /** Truth subject that corresponds to a list of [FocusEvent] */
     @VisibleForTesting
     var eventLogSubject: EventLogSubject? by clearableLazy { buildEventLog() }
         private set
+
     /**
      * A trace of all transitions that ran during the run that can be used by FaaS to determine
      * which assertion to run and on which parts of the run.
      */
     var transitionsTrace: TransitionsTrace? by clearableLazy { buildTransitionsTrace() }
         private set
+
     /**
      * A collection of tagged states collected during the run. Stored as a mapping from tag to state
      * entry subjects representing the dump.
@@ -261,8 +266,8 @@ class FlickerRunResult(
 
     /** @return a layers trace for the part of the trace we want to run the assertions on. */
     internal fun buildLayersTrace(): LayersTrace? {
-        val wmTraceFileName = this.layersTraceFileName ?: return null
-        val traceData = this.artifacts.getFileBytes(wmTraceFileName)
+        val layersTraceFileName = this.layersTraceFileName ?: return null
+        val traceData = this.artifacts.getFileBytes(layersTraceFileName)
         val fullTrace = LayersTraceParser.parseFromTrace(traceData, clearCacheAfterParsing = false)
         require(!traceConfig.layersTrace.required || fullTrace.entries.isNotEmpty()) {
             "Full layers trace is empty..."
@@ -291,9 +296,7 @@ class FlickerRunResult(
         return fullTrace
     }
 
-    /**
-     * @return a transactions trace for the part of the trace we want to run the assertions on.
-     */
+    /** @return a transactions trace for the part of the trace we want to run the assertions on. */
     private fun buildTransactionsTrace(): TransactionsTrace? {
         val fullTrace = buildFullTransactionsTrace() ?: return null
         val trace = fullTrace.slice(transitionStartTime.systemTime, transitionEndTime.systemTime)
@@ -307,9 +310,14 @@ class FlickerRunResult(
         val transitionsTrace = this.transitionsTraceFileName ?: return null
         val traceData = this.artifacts.getFileBytes(transitionsTrace)
         val fullTrace = TransitionsTraceParser.parseFromTrace(traceData, transactionsTrace!!)
-        val trace = fullTrace.slice(transitionStartTime.elapsedRealtimeNanos,
-            transitionEndTime.elapsedRealtimeNanos)
-        require(trace.entries.isNotEmpty()) { "Transitions trace was empty..." }
+        val trace =
+            fullTrace.slice(
+                transitionStartTime.elapsedRealtimeNanos,
+                transitionEndTime.elapsedRealtimeNanos
+            )
+        if (!traceConfig.transitionsTrace.allowNoChange) {
+            require(trace.entries.isNotEmpty()) { "Transitions trace was empty..." }
+        }
         return trace
     }
 
@@ -360,13 +368,13 @@ class FlickerRunResult(
     }
 
     private fun buildWmTraceSubject(): WindowManagerTraceSubject? {
-        val wmTrace = buildWmTrace()
-        return if (wmTrace != null) WindowManagerTraceSubject.assertThat(wmTrace) else null
+        val wmTrace = buildWmTrace() ?: return null
+        return WindowManagerTraceSubject.assertThat(wmTrace)
     }
 
     private fun buildLayersTraceSubject(): LayersTraceSubject? {
-        val layersTrace = buildLayersTrace()
-        return if (layersTrace != null) LayersTraceSubject.assertThat(layersTrace) else null
+        val layersTrace = buildLayersTrace() ?: return null
+        return LayersTraceSubject.assertThat(layersTrace)
     }
 
     fun lock() {
@@ -386,21 +394,23 @@ class FlickerRunResult(
     }
 
     fun notifyTransitionStarting() {
-        this.transitionStartTime = FlickerRunResult.TraceTime(
-            elapsedRealtimeNanos = SystemClock.elapsedRealtimeNanos(),
-            systemTime = SystemClock.uptimeNanos(),
-            unixTimeNanos = TimeUnit.NANOSECONDS.convert(
-                    System.currentTimeMillis(), TimeUnit.MILLISECONDS),
-        )
+        this.transitionStartTime =
+            FlickerRunResult.TraceTime(
+                elapsedRealtimeNanos = SystemClock.elapsedRealtimeNanos(),
+                systemTime = SystemClock.uptimeNanos(),
+                unixTimeNanos =
+                    TimeUnit.NANOSECONDS.convert(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
+            )
     }
 
     fun notifyTransitionEnded() {
-        this.transitionEndTime = FlickerRunResult.TraceTime(
-            elapsedRealtimeNanos = SystemClock.elapsedRealtimeNanos(),
-            systemTime = SystemClock.uptimeNanos(),
-            unixTimeNanos = TimeUnit.NANOSECONDS.convert(
-                    System.currentTimeMillis(), TimeUnit.MILLISECONDS),
-        )
+        this.transitionEndTime =
+            FlickerRunResult.TraceTime(
+                elapsedRealtimeNanos = SystemClock.elapsedRealtimeNanos(),
+                systemTime = SystemClock.uptimeNanos(),
+                unixTimeNanos =
+                    TimeUnit.NANOSECONDS.convert(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
+            )
     }
 
     interface IResultSetter {

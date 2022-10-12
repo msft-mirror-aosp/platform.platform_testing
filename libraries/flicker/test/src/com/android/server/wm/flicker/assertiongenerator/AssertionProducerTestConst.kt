@@ -39,9 +39,10 @@ class AssertionProducerTestConst {
                 "AutomaticallyGenerated_LayersVisibility_Wallpaper_BBQ_wrapper\n" +
                 "AutomaticallyGenerated_LayersVisibility_NexusLauncherActivity\n" +
                 "AutomaticallyGenerated_LayersVisibility_Splash_Screen\n" +
-                "AutomaticallyGenerated_LayersVisibility_InputMethod\n"
+                "AutomaticallyGenerated_LayersVisibility_InputMethod\n" +
+                "AutomaticallyGenerated_WmFocusedApp\n"
 
-        val expectedAssertionStringsFileTrace =
+        val expectedLayersAssertionStringsFileTrace =
             listOf(
                 ".isVisible(ComponentNameMatcher(\"\", \"NavigationBar0\"))",
                 ".isVisible(ComponentNameMatcher(\"\", \"StatusBar\"))",
@@ -58,6 +59,14 @@ class AssertionProducerTestConst {
                     ".isVisible(ComponentNameMatcher(\"\", \"Splash Screen\"))",
                 ".isInvisible(ComponentNameMatcher(\"\", \"InputMethod\"))"
             )
+
+        val expectedAssertionStringsFileTrace =
+            expectedLayersAssertionStringsFileTrace +
+                listOf(
+                    ".isFocusedApp(\"com.google.android.apps.nexuslauncher/" +
+                        ".NexusLauncherActivity\").then()" +
+                        ".isFocusedApp(\"com.android.server.wm.flicker.testapp/.SimpleActivity\")"
+                )
 
         private fun createExpectedAssertion_id1(): LayersAssertion {
             val assertion = LayersAssertion()

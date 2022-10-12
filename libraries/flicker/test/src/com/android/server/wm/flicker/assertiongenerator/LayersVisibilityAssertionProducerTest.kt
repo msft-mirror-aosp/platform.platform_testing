@@ -21,7 +21,7 @@ import com.android.server.wm.flicker.TraceFileReader
 import com.android.server.wm.flicker.assertFailure
 import com.android.server.wm.flicker.assertThrows
 import com.android.server.wm.flicker.assertiongenerator.AssertionGenConfigTestConst.Companion.emptyDeviceTraceConfiguration
-import com.android.server.wm.flicker.assertiongenerator.AssertionProducerTestConst.Companion.expectedAssertionStringsFileTrace
+import com.android.server.wm.flicker.assertiongenerator.AssertionProducerTestConst.Companion.expectedLayersAssertionStringsFileTrace
 import com.android.server.wm.flicker.assertiongenerator.common.Assertion
 import com.android.server.wm.flicker.assertiongenerator.common.TraceContent
 import com.android.server.wm.flicker.assertiongenerator.layers.LayersComponentLifecycle
@@ -356,7 +356,8 @@ class LayersVisibilityAssertionProducerTest {
                 if (scenarioInstance.scenario.scenarioType == ScenarioType.APP_LAUNCH) {
                     val assertionsStrings =
                         assertions.map { assertion -> assertion.assertionString }
-                    Truth.assertThat(assertionsStrings).isEqualTo(expectedAssertionStringsFileTrace)
+                    Truth.assertThat(assertionsStrings)
+                        .isEqualTo(expectedLayersAssertionStringsFileTrace)
                 }
             }
         }

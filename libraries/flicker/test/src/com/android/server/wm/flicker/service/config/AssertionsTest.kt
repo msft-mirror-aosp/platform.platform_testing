@@ -16,6 +16,7 @@
 
 package com.android.server.wm.flicker.service.config
 
+import android.annotation.SuppressLint
 import android.util.Log
 import com.android.server.wm.flicker.TraceFileReader
 import com.android.server.wm.flicker.assertiongenerator.AssertionGenConfigTestConst.Companion.emptyDeviceTraceConfiguration
@@ -210,7 +211,8 @@ class AssertionsTest {
 
     @Test
     fun AssertionEngine_analyze_pass_traceFile() {
-        val defaultConfigProducer = AssertionGeneratorConfigProducer()
+        val defaultConfigProducer =
+            AssertionGeneratorConfigProducer(configDir = "/assertiongenerator_config_test")
         val assertionEngine = AssertionEngine(defaultConfigProducer) { Log.v("FLICKER-ASSERT", it) }
         val config = defaultConfigProducer.produce()
         val scenario = Scenario(ScenarioType.APP_LAUNCH, PlatformConsts.Rotation.ROTATION_0)
@@ -222,20 +224,19 @@ class AssertionsTest {
 
         transitionsTrace ?: run { throw RuntimeException("Null transitionsTrace") }
         wmTrace ?: run { throw RuntimeException("Null wmTrace") }
+        layersTrace ?: run { throw RuntimeException("Null layersTrace") }
 
-        layersTrace?.run {
-            val assertionResults =
-                assertionEngine.analyze(
-                    wmTrace,
-                    layersTrace,
-                    transitionsTrace,
-                    AssertionEngine.AssertionsToUse.GENERATED
-                )
-            assertResultsPass(assertionResults)
-        }
-            ?: throw RuntimeException("LayersTrace is null")
+        val assertionResults =
+            assertionEngine.analyze(
+                wmTrace,
+                layersTrace,
+                transitionsTrace,
+                AssertionEngine.AssertionsToUse.GENERATED
+            )
+        assertResultsPass(assertionResults)
     }
 
+    @SuppressLint("VisibleForTests")
     @Test
     fun AssertionEngine_analyze_assertionNames_traceFile() {
         val configDir = "/assertiongenerator_config_test"
@@ -243,9 +244,6 @@ class AssertionsTest {
         val scenario = Scenario(ScenarioType.APP_LAUNCH, PlatformConsts.Rotation.ROTATION_0)
         val traceDump = goldenTracesConfig[scenario]!!.deviceTraceDumps[0]
         val traceConfiguration = goldenTracesConfig[scenario]!!.traceConfigurations[0]
-
-        val config: Map<Scenario, ScenarioConfig> =
-            mapOf(scenario to ScenarioConfig(arrayOf(traceDump), arrayOf(traceConfiguration)))
 
         val assertionFactory = AssertionFactory(goldenTracesConfig)
         val layersTrace = traceDump.layersTrace
@@ -265,7 +263,7 @@ class AssertionsTest {
         layersTrace?.run {
             for (scenarioInstance in scenarioInstances) {
                 val assertions =
-                    Assertions.getLayersGeneratedAssertionsForScenario(
+                    Assertions.getGeneratedAssertionsForScenario(
                         scenarioInstance,
                         assertionFactory
                     ) { Log.v("FLICKER-ASSERT", it) }

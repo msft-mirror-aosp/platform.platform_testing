@@ -16,12 +16,33 @@
 
 package com.android.server.wm.flicker
 
-data class TraceConfigs(val wmTrace: TraceConfig, val layersTrace: TraceConfig)
+data class TraceConfigs(
+    val wmTrace: TraceConfig,
+    val layersTrace: TraceConfig,
+    val transitionsTrace: TraceConfig,
+    val transactionsTrace: TraceConfig
+) {
+    fun applyToAll(function: (TraceConfig) -> Unit) {
+        function(wmTrace)
+        function(layersTrace)
+        function(transitionsTrace)
+        function(transactionsTrace)
+    }
+}
 
-data class TraceConfig(var required: Boolean, var allowNoChange: Boolean)
+data class TraceConfig(
+    var required: Boolean,
+    var allowNoChange: Boolean,
+    var usingExistingTraces: Boolean
+)
 
 val DEFAULT_TRACE_CONFIG =
     TraceConfigs(
-        wmTrace = TraceConfig(required = true, allowNoChange = false),
-        layersTrace = TraceConfig(required = true, allowNoChange = false)
+        wmTrace = TraceConfig(required = true, allowNoChange = false, usingExistingTraces = false),
+        layersTrace =
+            TraceConfig(required = true, allowNoChange = false, usingExistingTraces = false),
+        transitionsTrace =
+            TraceConfig(required = false, allowNoChange = false, usingExistingTraces = false),
+        transactionsTrace =
+            TraceConfig(required = false, allowNoChange = false, usingExistingTraces = false)
     )

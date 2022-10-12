@@ -35,12 +35,8 @@ import org.junit.runner.Description
 /**
  * Runner to execute the transitions of a flicker test
  *
- * The commands are executed in the following order:
- * 1) [Flicker.transitionSetup]
- * 2) Start monitors
- * 3) [Flicker.transitions]
- * 4) Stop monitors
- * 5) [Flicker.transitionTeardown]
+ * The commands are executed in the following order: 1) [Flicker.transitionSetup] 2) Start monitors
+ * 3) [Flicker.transitions] 4) Stop monitors 5) [Flicker.transitionTeardown]
  *
  * If the tests were already executed, reuse the previous results
  */
@@ -103,21 +99,29 @@ open class TransitionRunner {
             measureTimeMillis { flicker.traceMonitors.forEach { it.start() } }
                 .also { progressUpdate("\tTook ${it}ms to start traces") }
 
-            progressUpdate("${flicker.testName} - Running transition setup")
-            measureTimeMillis { runTransitionSetup(flicker) }
-                .also { progressUpdate("\tTook ${it}ms to run transition setup") }
+            if (flicker.usingExistingTraces) {
+                // No need to run anything the trace monitor will return the trace data
+                // Set the start and finish times to min and max respectively to avoid any cropping
+                // TODO: We might want to refactor this to use the start and end tags in the future
+                runResult.transitionStartTime = FlickerRunResult.TraceTime.MIN
+                runResult.transitionEndTime = FlickerRunResult.TraceTime.MAX
+            } else {
+                progressUpdate("${flicker.testName} - Running transition setup")
+                measureTimeMillis { runTransitionSetup(flicker) }
+                    .also { progressUpdate("\tTook ${it}ms to run transition setup") }
 
-            progressUpdate("${flicker.testName} - Running transition")
-            measureTimeMillis { runTransition(flicker) }
-                .also { progressUpdate("\tTook ${it}ms to run transition") }
+                progressUpdate("${flicker.testName} - Running transition")
+                measureTimeMillis { runTransition(flicker) }
+                    .also { progressUpdate("\tTook ${it}ms to run transition") }
 
-            progressUpdate("${flicker.testName} - Running transition teardown")
-            measureTimeMillis { runTransitionTeardown(flicker) }
-                .also { progressUpdate("\tTook ${it}ms to run transition teardown") }
+                progressUpdate("${flicker.testName} - Running transition teardown")
+                measureTimeMillis { runTransitionTeardown(flicker) }
+                    .also { progressUpdate("\tTook ${it}ms to run transition teardown") }
 
-            progressUpdate("${flicker.testName} - Stopping traces")
-            measureTimeMillis { flicker.traceMonitors.forEach { it.tryStop() } }
-                .also { progressUpdate("\tTook ${it}ms to stop traces") }
+                progressUpdate("${flicker.testName} - Stopping traces")
+                measureTimeMillis { flicker.traceMonitors.forEach { it.tryStop() } }
+                    .also { progressUpdate("\tTook ${it}ms to stop traces") }
+            }
 
             progressUpdate("${flicker.testName} - Processing transition traces")
             measureTimeMillis { processRunTraces(flicker, RunStatus.ASSERTION_SUCCESS) }
@@ -259,9 +263,7 @@ open class TransitionRunner {
     private fun runTransitionTeardown(flicker: Flicker) {
         try {
             flicker.transitionTeardown.forEach { it.invoke(flicker) }
-            flicker.wmHelper.StateSyncBuilder()
-                .add(UI_STABLE_CONDITIONS)
-                .waitFor()
+            flicker.wmHelper.StateSyncBuilder().add(UI_STABLE_CONDITIONS).waitFor()
         } catch (e: Throwable) {
             throw TransitionTeardownFailure(e)
         }

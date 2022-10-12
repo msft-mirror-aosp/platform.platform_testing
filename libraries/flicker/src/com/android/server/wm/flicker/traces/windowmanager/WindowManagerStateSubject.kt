@@ -481,6 +481,16 @@ private constructor(
     }
 
     /** {@inheritDoc} */
+    override fun isFocusedApp(app: String): WindowManagerStateSubject = apply {
+        check("Window is focused app $app").that(wmState.focusedApp == app).isTrue()
+    }
+
+    /** {@inheritDoc} */
+    override fun isNotFocusedApp(app: String): WindowManagerStateSubject = apply {
+        check("Window is focused app $app").that(wmState.focusedApp == app).isFalse()
+    }
+
+    /** {@inheritDoc} */
     override fun isPinned(componentMatcher: IComponentMatcher): WindowManagerStateSubject = apply {
         contains(componentMatcher)
         check("Window is pinned ${componentMatcher.toWindowIdentifier()}")

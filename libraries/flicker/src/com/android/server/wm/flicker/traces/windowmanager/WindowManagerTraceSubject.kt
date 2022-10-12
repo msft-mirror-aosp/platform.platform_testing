@@ -480,6 +480,24 @@ private constructor(
     }
 
     /** {@inheritDoc} */
+    override fun isFocusedApp(app: String): WindowManagerTraceSubject =
+        isFocusedApp(app, isOptional = false)
+
+    /** See [isFocusedApp] */
+    fun isFocusedApp(app: String, isOptional: Boolean): WindowManagerTraceSubject = apply {
+        addAssertion("isFocusedApp($app)", isOptional) { it.isFocusedApp(app) }
+    }
+
+    /** {@inheritDoc} */
+    override fun isNotFocusedApp(app: String): WindowManagerTraceSubject =
+        isNotFocusedApp(app, isOptional = false)
+
+    /** See [isNotFocusedApp] */
+    fun isNotFocusedApp(app: String, isOptional: Boolean): WindowManagerTraceSubject = apply {
+        addAssertion("isNotFocusedApp($app)", isOptional) { it.isNotFocusedApp(app) }
+    }
+
+    /** {@inheritDoc} */
     override fun isPinned(componentMatcher: IComponentMatcher): WindowManagerTraceSubject =
         isPinned(componentMatcher, isOptional = false)
 

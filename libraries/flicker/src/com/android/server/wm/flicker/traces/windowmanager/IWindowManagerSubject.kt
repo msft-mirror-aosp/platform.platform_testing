@@ -199,6 +199,20 @@ interface IWindowManagerSubject<WMSubjectType, RegionSubjectType> {
     fun isHomeActivityInvisible(): WMSubjectType
 
     /**
+     * Asserts that [app] is the focused app
+     *
+     * @param app App to check
+     */
+    fun isFocusedApp(app: String): WMSubjectType
+
+    /**
+     * Asserts that [app] is not the focused app
+     *
+     * @param app App to check
+     */
+    fun isNotFocusedApp(app: String): WMSubjectType
+
+    /**
      * Asserts that [componentMatcher] exists and is pinned (in PIP mode)
      *
      * @param componentMatcher Components to search

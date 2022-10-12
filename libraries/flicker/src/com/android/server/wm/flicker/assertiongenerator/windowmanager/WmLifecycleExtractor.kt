@@ -32,8 +32,13 @@ class WmLifecycleExtractor : ILifecycleExtractor {
         val trace = traceDump.wmTrace ?: return null
         val traceLength = trace.entries.size
         for ((index, entry) in trace.entries.withIndex()) {
+            elementLifecycles.focusedApps.add(entry.focusedApp)
             for (windowContainer in entry.windowContainers) {
-                val componentMatcher = Utils.componentNameMatcherFromName(windowContainer.title)
+                val componentMatcher =
+                    Utils.componentNameMatcherFromNameWithConfig(
+                        windowContainer.title,
+                        deviceTraceConfiguration
+                    )
                 var wmElementLifecycleWasInitialized = false
                 componentMatcher?.run {
                     elementLifecycles[componentMatcher]?.let { it ->

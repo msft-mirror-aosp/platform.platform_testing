@@ -150,6 +150,10 @@ class FlickerBlockJUnit4ClassRunnerTest {
         runner.filter(FLAKY_TEST_FILTER)
         val notifier = mock(RunNotifier::class.java)
         runner.run(notifier)
+        val executionErrors = runner.executionErrors()
+        if (executionErrors.isNotEmpty()) {
+            throw executionErrors.first()
+        }
         Truth.assertThat(runner.testCount()).isAtLeast(2)
         verify(notifier).fireTestStarted(argThat { it.methodName.contains("test") })
         verify(notifier).fireTestFinished(argThat { it.methodName.contains("test") })
@@ -285,7 +289,9 @@ class FlickerBlockJUnit4ClassRunnerTest {
         SimpleFaasTest(testSpec) {
         @FlickerBuilderProvider
         override fun buildFlicker(): FlickerBuilder {
-            return FlickerBuilder(instrumentation).apply { transitions { transitionRunCount++ } }
+            return FlickerBuilder(instrumentation)
+                .apply { transitions { transitionRunCount++ } }
+                .allowNoopTransition()
         }
     }
 

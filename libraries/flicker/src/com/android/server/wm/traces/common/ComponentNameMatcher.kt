@@ -179,7 +179,7 @@ open class ComponentNameMatcher(open var component: ComponentName) : IComponentN
             var cls = str.substring(sep + 1)
             var clsSep = -1 // cls.indexOf('#')
             val clsCharArr = cls.toCharArray()
-            for (index in (0..pkgCharArr.lastIndex)) {
+            for (index in (0..clsCharArr.lastIndex)) {
                 val currentChar = clsCharArr[index]
                 if (currentChar !in 'A'..'Z' && currentChar !in 'a'..'z' && currentChar != '.') {
                     clsSep = index

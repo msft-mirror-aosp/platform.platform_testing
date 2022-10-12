@@ -2,11 +2,13 @@ package com.android.server.wm.flicker.assertiongenerator.common
 
 import com.android.server.wm.flicker.assertiongenerator.DeviceTraceConfiguration
 import com.android.server.wm.flicker.assertiongenerator.layers.LayersLifecycleExtractor
+import com.android.server.wm.flicker.assertiongenerator.windowmanager.WmLifecycleExtractor
 import com.android.server.wm.traces.common.DeviceTraceDump
 
 class LifecycleExtractorFactory {
     companion object {
-        private val extractors: Set<ILifecycleExtractor> = setOf(LayersLifecycleExtractor())
+        private val extractors: Set<ILifecycleExtractor> =
+            setOf(LayersLifecycleExtractor(), WmLifecycleExtractor())
 
         fun extract(
             traceDumps: Array<DeviceTraceDump>,

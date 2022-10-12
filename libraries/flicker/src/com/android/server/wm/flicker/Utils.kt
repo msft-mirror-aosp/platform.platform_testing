@@ -107,7 +107,7 @@ object Utils {
      * not found in the hardcoded list or in the config, and it does not contain both the package
      * and class name (with a / separator)
      */
-    fun componentNameMatcherFromNameWithConfig(
+    fun componentNameMatcherFromNameWithConfigExtended(
         str: String,
         deviceTraceConfiguration: DeviceTraceConfiguration
     ): ComponentNameMatcher? {
@@ -115,6 +115,22 @@ object Utils {
             componentNameMatcherHardcoded(str)
                 ?: componentNameMatcherConfig(str, deviceTraceConfiguration)
                     ?: ComponentNameMatcher.unflattenFromStringWithJunk(str)
+        } catch (err: IllegalStateException) {
+            null
+        }
+    }
+
+    /**
+     * Obtains the component name matcher corresponding to a name (str) Returns null if the name is
+     * not found in the hardcoded list or in the config
+     */
+    fun componentNameMatcherFromNameWithConfig(
+        str: String,
+        deviceTraceConfiguration: DeviceTraceConfiguration
+    ): ComponentNameMatcher? {
+        return try {
+            componentNameMatcherHardcoded(str)
+                ?: componentNameMatcherConfig(str, deviceTraceConfiguration)
         } catch (err: IllegalStateException) {
             null
         }

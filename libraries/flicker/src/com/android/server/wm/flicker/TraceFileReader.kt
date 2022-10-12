@@ -204,7 +204,10 @@ class TraceFileReader {
             try {
                 scenarioInstance = (scenarioInstances as MutableList)[0]
             } catch (err: IndexOutOfBoundsException) {
-                throw ConfigException("No scenario instance for scenario $scenarioType")
+                throw ConfigException(
+                    "No scenario instance for scenario $scenarioType, " +
+                        "rotation ${wmTrace.getInitialRotation()}"
+                )
             }
             return scenarioInstance
         }

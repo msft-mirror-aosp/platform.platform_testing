@@ -20,7 +20,7 @@ class LayersVisibilityAssertionProducer() : LayersAssertionProducer {
         )
 
     /**
-     * Return a list with a single assertion corresponding to the chain of visible/invisible asserts
+     * Return a list with assertions corresponding to the chains of visible/invisible asserts
      *
      * We receive all lifecycles from the assertion producer, but we only get the first trace of the
      * type we are interested in (layers), because all traces are supposed to depict the exact same

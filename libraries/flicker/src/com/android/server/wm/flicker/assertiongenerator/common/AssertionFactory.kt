@@ -2,11 +2,13 @@ package com.android.server.wm.flicker.assertiongenerator.common
 
 import com.android.server.wm.flicker.assertiongenerator.ScenarioConfig
 import com.android.server.wm.flicker.assertiongenerator.layers.LayersVisibilityAssertionProducer
+import com.android.server.wm.flicker.assertiongenerator.windowmanager.WmFocusedAppAssertionProducer
 import com.android.server.wm.flicker.service.assertors.ConfigException
 import com.android.server.wm.traces.common.service.Scenario
 
 class AssertionFactory(val config: Map<Scenario, ScenarioConfig>) {
-    private val producers: Set<IAssertionProducer> = setOf(LayersVisibilityAssertionProducer())
+    private val producers: Set<IAssertionProducer> =
+        setOf(LayersVisibilityAssertionProducer(), WmFocusedAppAssertionProducer())
 
     /**
      * Produce assertions based on the given traces and their configurations. traceDumps and

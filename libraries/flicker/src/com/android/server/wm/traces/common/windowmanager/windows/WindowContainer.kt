@@ -142,4 +142,11 @@ constructor(
 
     override val isEmpty: Boolean
         get() = super.isEmpty && title.isEmpty() && token.isEmpty()
+
+    companion object {
+        fun withTitle(title: String): WindowContainer {
+            val emptyConfigurationContainer = ConfigurationContainer(null, null, null)
+            return WindowContainer(title, "", 0, 0, false, emptyConfigurationContainer, arrayOf())
+        }
+    }
 }

@@ -24,6 +24,8 @@ import com.android.server.wm.traces.common.ComponentNameMatcher
 class WmTraceLifecycle(
     val lifecycleMap: MutableMap<ComponentNameMatcher, WmComponentLifecycle> = mutableMapOf()
 ) : ITraceLifecycle {
+    val focusedApps: MutableList<String> = mutableListOf()
+
     override val size: Int
         get() = lifecycleMap.size
 

@@ -18,6 +18,7 @@ package com.android.server.wm.flicker.service.config
 
 import androidx.annotation.VisibleForTesting
 import com.android.server.wm.flicker.assertiongenerator.common.AssertionFactory
+import com.android.server.wm.flicker.assertiongenerator.layers.LayersAssertion
 import com.android.server.wm.flicker.service.assertors.AssertionData
 import com.android.server.wm.flicker.service.assertors.BaseAssertionBuilder
 import com.android.server.wm.flicker.service.assertors.Components
@@ -29,6 +30,7 @@ import com.android.server.wm.flicker.service.assertors.assertions.AppLayerIsVisi
 import com.android.server.wm.flicker.service.assertors.assertions.AppWindowBecomesTopWindow
 import com.android.server.wm.flicker.service.assertors.assertions.AppWindowBecomesVisible
 import com.android.server.wm.flicker.service.assertors.assertions.AutomaticallyGeneratedLayersAssertions
+import com.android.server.wm.flicker.service.assertors.assertions.AutomaticallyGeneratedWindowManagerAssertions
 import com.android.server.wm.flicker.service.assertors.assertions.EntireScreenCoveredAlways
 import com.android.server.wm.flicker.service.assertors.assertions.EntireScreenCoveredAtEnd
 import com.android.server.wm.flicker.service.assertors.assertions.EntireScreenCoveredAtStart
@@ -74,7 +76,7 @@ object Assertions {
         logger: ((String) -> Unit)? = null
     ): List<AssertionData> {
         val generatedAssertions =
-            getAllAssertionsGeneratedForScenario(scenarioInstance, assertionFactory, logger)
+            getGeneratedAssertionsForScenario(scenarioInstance, assertionFactory, logger)
         return generatedAssertions.map {
             AssertionData(scenarioInstance.scenario, it, it.invocationGroup)
         }
@@ -135,36 +137,21 @@ object Assertions {
             )
 
     @VisibleForTesting
-    fun getLayersGeneratedAssertionsForScenario(
+    fun getGeneratedAssertionsForScenario(
         scenarioInstance: ScenarioInstance,
         assertionFactory: AssertionFactory,
         logger: ((String) -> Unit)? = null
     ): List<BaseAssertionBuilder> {
         val assertions = assertionFactory.getAssertionsForScenario(scenarioInstance.scenario)
-        logger?.invoke("Generated layers assertions for scenario ${scenarioInstance.scenario}")
+        logger?.invoke("Generated assertions for scenario ${scenarioInstance.scenario}")
         return assertions.map { assertion ->
             logger?.invoke(assertion.toString())
-            AutomaticallyGeneratedLayersAssertions(assertion) runAs NON_BLOCKING
+            if (assertion is LayersAssertion) {
+                AutomaticallyGeneratedLayersAssertions(assertion) runAs NON_BLOCKING
+            } else {
+                AutomaticallyGeneratedWindowManagerAssertions(assertion) runAs NON_BLOCKING
+            }
         }
-    }
-
-    private fun getWMGeneratedAssertionsForScenario(
-        scenarioInstance: ScenarioInstance,
-        assertionFactory: AssertionFactory,
-        logger: ((String) -> Unit)? = null
-    ): List<BaseAssertionBuilder> {
-        // TODO: generate WM assertions
-        // currently use stub value so flicker doesn't crash
-        return listOf()
-    }
-
-    private fun getAllAssertionsGeneratedForScenario(
-        scenarioInstance: ScenarioInstance,
-        assertionFactory: AssertionFactory,
-        logger: ((String) -> Unit)? = null
-    ): List<BaseAssertionBuilder> {
-        return getLayersGeneratedAssertionsForScenario(scenarioInstance, assertionFactory, logger) +
-            getWMGeneratedAssertionsForScenario(scenarioInstance, assertionFactory, logger)
     }
 
     private fun assertionsForScenario(scenario: Scenario): List<BaseAssertionBuilder> {

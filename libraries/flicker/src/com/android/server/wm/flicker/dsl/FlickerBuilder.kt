@@ -19,6 +19,7 @@ package com.android.server.wm.flicker.dsl
 import android.app.Instrumentation
 import android.support.test.launcherhelper.ILauncherStrategy
 import android.support.test.launcherhelper.LauncherStrategyFactory
+import androidx.annotation.VisibleForTesting
 import androidx.test.uiautomator.UiDevice
 import com.android.server.wm.flicker.DEFAULT_TRACE_CONFIG
 import com.android.server.wm.flicker.Flicker
@@ -249,12 +250,24 @@ private constructor(
         this.transitionCommands.clear()
 
         this.usingExistingTraces = true
+        this.traceConfigs.applyToAll { it.usingExistingTraces = true }
+    }
+
+    @VisibleForTesting
+    fun allowNoopTransition(): FlickerBuilder = apply {
+        allowNoWmChange()
+        allowNoLayersChange()
+        allowNoTransitions()
     }
 
     fun allowNoWmChange(): FlickerBuilder = apply { this.traceConfigs.wmTrace.allowNoChange = true }
 
     fun allowNoLayersChange(): FlickerBuilder = apply {
         this.traceConfigs.layersTrace.allowNoChange = true
+    }
+
+    fun allowNoTransitions(): FlickerBuilder = apply {
+        this.traceConfigs.transitionsTrace.allowNoChange = true
     }
 
     /** Creates a new Flicker runner based on the current builder configuration */
@@ -277,7 +290,8 @@ private constructor(
             runner,
             wmHelper,
             faasEnabled = faasEnabled,
-            traceConfigs = traceConfigs
+            traceConfigs = traceConfigs,
+            usingExistingTraces = usingExistingTraces
         )
     }
 

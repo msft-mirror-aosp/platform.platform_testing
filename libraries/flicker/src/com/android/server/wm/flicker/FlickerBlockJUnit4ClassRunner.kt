@@ -175,7 +175,7 @@ constructor(
                         flicker.setAssertionsCheckedCallback { ranChecks = true }
                         methodBlock(method).evaluate()
                         require(isInjectedFaasTest(method) || ranChecks) {
-                            "No Flicker assertions ran on test..."
+                            "No Flicker assertions ran no test..."
                         }
                         val results = flickerTestParameter.result
                         requireNotNull(results) {
@@ -444,6 +444,25 @@ constructor(
             aggregatedResults[testName]!!.add(result)
         }
         return aggregatedResults
+    }
+
+    fun executedWithNoErrors(): Boolean {
+        val results = flickerTestParameter.result ?: return false
+        return results.transitionExecutionError == null && results.faasExecutionError == null
+    }
+
+    fun executionErrors(): List<TransitionRunner.Companion.ExecutionError> {
+        val errors = mutableListOf<TransitionRunner.Companion.ExecutionError>()
+        val results = flickerTestParameter.result ?: return emptyList()
+        val transitionExecutionError = results.transitionExecutionError
+        if (transitionExecutionError != null) {
+            errors.add(transitionExecutionError)
+        }
+        val faasExecutionError = results.faasExecutionError
+        if (faasExecutionError != null) {
+            errors.add(faasExecutionError)
+        }
+        return errors
     }
 
     /**

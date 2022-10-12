@@ -59,13 +59,18 @@ class Flicker(
     @JvmField val runner: TransitionRunner,
     /** Helper object for WM Synchronization */
     val wmHelper: WindowManagerStateHelper,
-    /** Whether or not to run Flicker as a Service on the collected transition traces */
+    /** Whether to run Flicker as a Service on the collected transition traces */
     @JvmField val faasEnabled: Boolean = false,
     /**
      * Defines properties we allow on traces (e.g. is it valid for a transition to not have any
      * changed in the WM and Layers states)
      */
-    @JvmField val traceConfigs: TraceConfigs = DEFAULT_TRACE_CONFIG
+    @JvmField val traceConfigs: TraceConfigs = DEFAULT_TRACE_CONFIG,
+    /**
+     * Whether the transition needs to be executed or if the trace monitors will just return the
+     * traces without needing to run anything on device.
+     */
+    @JvmField val usingExistingTraces: Boolean = false
 ) {
     internal val faasTracesCollector = LegacyFlickerTraceCollector()
     internal val faas =

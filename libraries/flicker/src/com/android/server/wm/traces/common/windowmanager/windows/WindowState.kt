@@ -149,5 +149,29 @@ class WindowState(
                 else -> title
             }
         }
+
+        fun withTitle(title: String): WindowState {
+            val windowContainer = WindowContainer.withTitle(title)
+            return WindowState(
+                WindowLayoutParams.EMPTY,
+                0,
+                0,
+                0,
+                false,
+                0,
+                Size.EMPTY,
+                Rect.EMPTY,
+                Rect.EMPTY,
+                Rect.EMPTY,
+                Rect.EMPTY,
+                Rect.EMPTY,
+                Rect.EMPTY,
+                Rect.EMPTY,
+                Rect.EMPTY,
+                Rect.EMPTY,
+                windowContainer,
+                false
+            )
+        }
     }
 }

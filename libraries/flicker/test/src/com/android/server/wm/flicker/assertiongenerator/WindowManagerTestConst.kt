@@ -50,5 +50,9 @@ class WindowManagerTestConst {
             )
 
         val wmTrace_ROTATION_0 = WindowManagerTrace(arrayOf(wmTraceState_ROTATION_0))
+
+        fun createWindowContainer(title: String): WindowContainer {
+            return WindowContainer(title, "", 0, 0, false, emptyConfigurationContainer, arrayOf())
+        }
     }
 }
