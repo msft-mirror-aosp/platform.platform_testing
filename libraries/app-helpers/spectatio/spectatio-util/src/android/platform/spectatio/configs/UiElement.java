@@ -16,7 +16,13 @@
 
 package android.platform.spectatio.configs;
 
+import android.platform.spectatio.constants.JsonConfigConstants;
+import android.support.test.uiautomator.By;
+import android.support.test.uiautomator.BySelector;
+
 import com.google.gson.annotations.SerializedName;
+
+import java.util.regex.Pattern;
 
 /**
  * UI Resource For Spectatio Config JSON Config { "UI_ELEMENTS": { "CONFIG_NAME": { "TYPE":
@@ -59,5 +65,26 @@ public class UiElement {
 
     public String getPackage() {
         return mPackage;
+    }
+
+    public BySelector getBySelectorForUiElement() {
+        switch (mType) {
+            case JsonConfigConstants.RESOURCE_ID:
+                return By.res(mPackage, mValue);
+            case JsonConfigConstants.TEXT:
+                return By.text(Pattern.compile(mValue, Pattern.CASE_INSENSITIVE));
+            case JsonConfigConstants.TEXT_CONTAINS:
+                return By.textContains(mValue);
+            case JsonConfigConstants.DESCRIPTION:
+                return By.desc(Pattern.compile(mValue, Pattern.CASE_INSENSITIVE));
+            case JsonConfigConstants.CLASS:
+                if (mPackage != null && !mPackage.isEmpty()) {
+                    return By.clazz(mPackage, mValue);
+                }
+                return By.clazz(mValue);
+            default:
+                // Unknown UI Resource Type
+                return null;
+        }
     }
 }

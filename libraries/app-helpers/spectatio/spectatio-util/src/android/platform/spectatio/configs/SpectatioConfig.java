@@ -22,6 +22,7 @@ import com.google.common.collect.Sets;
 import com.google.gson.annotations.SerializedName;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -37,6 +38,9 @@ public class SpectatioConfig {
 
     @SerializedName("UI_ELEMENTS")
     private Map<String, UiElement> mUiElements = new HashMap<String, UiElement>();
+
+    @SerializedName("WORKFLOWS")
+    private Map<String, List<WorkflowTask>> mWorkflows = new HashMap<String, List<WorkflowTask>>();
 
     public Map<String, String> getCommands() {
         return mCommands;
@@ -54,6 +58,10 @@ public class SpectatioConfig {
         return mUiElements;
     }
 
+    public Map<String, List<WorkflowTask>> getWorkflows() {
+        return mWorkflows;
+    }
+
     public void updateConfig(SpectatioConfig newSpectatioConfig) {
         // Override Commands with values from Runtime Json Config
         overrideConfigValues(mCommands, newSpectatioConfig.getCommands());
@@ -66,6 +74,9 @@ public class SpectatioConfig {
 
         // Override Ui Elements with values from Runtime Json Config
         overrideConfigValues(mUiElements, newSpectatioConfig.getUiElements());
+
+        // Override Workflows with values from Runtime Json Config
+        overrideConfigValues(mWorkflows, newSpectatioConfig.getWorkflows());
     }
 
     private <T> void overrideConfigValues(
@@ -109,5 +120,9 @@ public class SpectatioConfig {
 
     public UiElement getUiElementFromConfig(String uiElementName) {
         return getValueFromConfig(mUiElements, uiElementName, JsonConfigConstants.UI_ELEMENTS);
+    }
+
+    public List<WorkflowTask> getWorkflowFromConfig(String workflowName) {
+        return getValueFromConfig(mWorkflows, workflowName, JsonConfigConstants.WORKFLOWS);
     }
 }

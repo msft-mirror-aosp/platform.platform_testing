@@ -28,7 +28,8 @@ import kotlin.js.JsName
  *          |0    0     1 |
  * ```
  */
-class Matrix33(
+class Matrix33
+private constructor(
     dsdx: Float = 0F,
     dtdx: Float = 0F,
     @JsName("tx") val tx: Float = 0F,
@@ -63,28 +64,36 @@ class Matrix33(
 
     companion object {
         val EMPTY: Matrix33
-            get() = withCache {
-                Matrix33(dsdx = 0f, dtdx = 0f, tx = 0f, dsdy = 0f, dtdy = 0f, ty = 0f)
-            }
+            get() = withCache { from(dsdx = 0f, dtdx = 0f, tx = 0f, dsdy = 0f, dtdy = 0f, ty = 0f) }
 
         @JsName("identity")
         fun identity(x: Float, y: Float): Matrix33 = withCache {
-            Matrix33(dsdx = 1f, dtdx = 0f, x, dsdy = 0f, dtdy = 1f, y)
+            from(dsdx = 1f, dtdx = 0f, x, dsdy = 0f, dtdy = 1f, y)
         }
 
         @JsName("rot270")
         fun rot270(x: Float, y: Float): Matrix33 = withCache {
-            Matrix33(dsdx = 0f, dtdx = -1f, x, dsdy = 1f, dtdy = 0f, y)
+            from(dsdx = 0f, dtdx = -1f, x, dsdy = 1f, dtdy = 0f, y)
         }
 
         @JsName("rot180")
         fun rot180(x: Float, y: Float): Matrix33 = withCache {
-            Matrix33(dsdx = -1f, dtdx = 0f, x, dsdy = 0f, dtdy = -1f, y)
+            from(dsdx = -1f, dtdx = 0f, x, dsdy = 0f, dtdy = -1f, y)
         }
 
         @JsName("rot90")
         fun rot90(x: Float, y: Float): Matrix33 = withCache {
-            Matrix33(dsdx = 0f, dtdx = 1f, x, dsdy = -1f, dtdy = 0f, y)
+            from(dsdx = 0f, dtdx = 1f, x, dsdy = -1f, dtdy = 0f, y)
         }
+
+        @JsName("from")
+        fun from(
+            dsdx: Float,
+            dtdx: Float,
+            tx: Float,
+            dsdy: Float,
+            dtdy: Float,
+            ty: Float
+        ): Matrix33 = withCache { Matrix33(dsdx, dtdx, tx, dsdy, dtdy, ty) }
     }
 }

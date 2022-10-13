@@ -49,7 +49,7 @@ interface ILayerProperties {
     @JsName("hwcCrop") val hwcCrop: RectF
     @JsName("hwcFrame") val hwcFrame: Rect
     @JsName("backgroundBlurRadius") val backgroundBlurRadius: Int
-    @JsName("crop") val crop: Rect?
+    @JsName("crop") val crop: Rect
     @JsName("isRelativeOf") val isRelativeOf: Boolean
     @JsName("zOrderRelativeOfId") val zOrderRelativeOfId: Int
     @JsName("stackId") val stackId: Int

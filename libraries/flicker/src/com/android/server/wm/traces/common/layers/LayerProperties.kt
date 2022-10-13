@@ -45,7 +45,7 @@ private constructor(
     override val hwcCrop: RectF = RectF.EMPTY,
     override val hwcFrame: Rect = Rect.EMPTY,
     override val backgroundBlurRadius: Int = 0,
-    override val crop: Rect? = null,
+    override val crop: Rect = Rect.EMPTY,
     override val isRelativeOf: Boolean = false,
     override val zOrderRelativeOfId: Int = 0,
     override val stackId: Int = 0,
@@ -76,7 +76,7 @@ private constructor(
         result = 31 * result + hwcCrop.hashCode()
         result = 31 * result + hwcFrame.hashCode()
         result = 31 * result + backgroundBlurRadius
-        result = 31 * result + (crop?.hashCode() ?: 0)
+        result = 31 * result + crop.hashCode()
         result = 31 * result + isRelativeOf.hashCode()
         result = 31 * result + zOrderRelativeOfId
         result = 31 * result + stackId
@@ -196,7 +196,7 @@ private constructor(
                     hwcCrop,
                     hwcFrame,
                     backgroundBlurRadius,
-                    crop,
+                    crop ?: Rect.EMPTY,
                     isRelativeOf,
                     zOrderRelativeOfId,
                     stackId,

@@ -186,6 +186,10 @@ public abstract class AbstractStandardAppHelper implements IAppHelper {
         return mSpectatioConfigUtil.getUiElementFromConfig(uiElementName);
     }
 
+    protected void executeWorkflow(String workflowName) {
+        mSpectatioConfigUtil.executeWorkflow(workflowName, mSpectatioUiUtil);
+    }
+
     // End Spectatio Util Helper Methods
 
     /** {@inheritDoc} */

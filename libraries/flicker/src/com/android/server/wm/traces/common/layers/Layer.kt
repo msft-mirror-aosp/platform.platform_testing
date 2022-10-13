@@ -126,7 +126,7 @@ private constructor(
             if (isActiveBufferEmpty) reasons.add("Buffer is empty")
             if (color.a == 0.0f) reasons.add("Alpha is 0")
             if (bounds.isEmpty) reasons.add("Bounds is 0x0")
-            if (bounds.isEmpty && crop?.isEmpty == true) reasons.add("Crop is 0x0")
+            if (bounds.isEmpty && crop.isEmpty) reasons.add("Crop is 0x0")
             if (!transform.isValid) reasons.add("Transform is invalid")
             if (isRelativeOf && zOrderRelativeOf == null) {
                 reasons.add("RelativeOf layer has been removed")
@@ -286,7 +286,7 @@ private constructor(
         result = 31 * result + hwcCrop.hashCode()
         result = 31 * result + hwcFrame.hashCode()
         result = 31 * result + backgroundBlurRadius
-        result = 31 * result + (crop?.hashCode() ?: 0)
+        result = 31 * result + crop.hashCode()
         result = 31 * result + isRelativeOf.hashCode()
         result = 31 * result + zOrderRelativeOfId
         result = 31 * result + stackId

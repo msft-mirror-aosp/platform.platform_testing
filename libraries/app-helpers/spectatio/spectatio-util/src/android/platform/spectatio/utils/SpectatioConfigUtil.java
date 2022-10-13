@@ -16,13 +16,17 @@
 
 package android.platform.spectatio.utils;
 
+import android.platform.spectatio.configs.ScrollConfig;
 import android.platform.spectatio.configs.SpectatioConfig;
 import android.platform.spectatio.configs.UiElement;
+import android.platform.spectatio.configs.WorkflowTask;
+import android.platform.spectatio.configs.WorkflowTaskConfig;
 import android.platform.spectatio.configs.validators.ValidateMapEntries;
 import android.platform.spectatio.configs.validators.ValidateSpectatioConfigForUnknownProperties;
+import android.platform.spectatio.configs.validators.ValidateScrollConfig;
+import android.platform.spectatio.configs.validators.ValidateWorkflowTask;
+import android.platform.spectatio.configs.validators.ValidateWorkflowTaskConfig;
 import android.platform.spectatio.configs.validators.ValidateUiElement;
-import android.platform.spectatio.constants.JsonConfigConstants;
-import android.support.test.uiautomator.By;
 import android.support.test.uiautomator.BySelector;
 import android.util.Log;
 
@@ -37,8 +41,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 public class SpectatioConfigUtil {
     private static final String LOG_TAG = SpectatioConfigUtil.class.getSimpleName();
@@ -61,6 +65,10 @@ public class SpectatioConfigUtil {
                         .registerTypeAdapterFactory(
                                 new ValidateSpectatioConfigForUnknownProperties())
                         .registerTypeAdapter(UiElement.class, new ValidateUiElement())
+                        .registerTypeAdapter(
+                                WorkflowTaskConfig.class, new ValidateWorkflowTaskConfig())
+                        .registerTypeAdapter(ScrollConfig.class, new ValidateScrollConfig())
+                        .registerTypeAdapter(WorkflowTask.class, new ValidateWorkflowTask())
                         .registerTypeAdapter(
                                 new TypeToken<Map<String, String>>() {}.getType(),
                                 new ValidateMapEntries())
@@ -231,24 +239,16 @@ public class SpectatioConfigUtil {
     public BySelector getUiElementFromConfig(String uiElementName) {
         validateSpectatioConfig();
         UiElement uiElement = mSpectatioConfig.getUiElementFromConfig(uiElementName);
+        return uiElement.getBySelectorForUiElement();
+    }
 
-        switch (uiElement.getType()) {
-            case JsonConfigConstants.RESOURCE_ID:
-                return By.res(uiElement.getPackage(), uiElement.getValue());
-            case JsonConfigConstants.TEXT:
-                return By.text(Pattern.compile(uiElement.getValue(), Pattern.CASE_INSENSITIVE));
-            case JsonConfigConstants.TEXT_CONTAINS:
-                return By.textContains(uiElement.getValue());
-            case JsonConfigConstants.DESCRIPTION:
-                return By.desc(Pattern.compile(uiElement.getValue(), Pattern.CASE_INSENSITIVE));
-            case JsonConfigConstants.CLASS:
-                if (uiElement.getPackage() != null && !uiElement.getPackage().isEmpty()) {
-                    return By.clazz(uiElement.getPackage(), uiElement.getValue());
-                }
-                return By.clazz(uiElement.getValue());
-            default:
-                // Unknown UI Resource Type
-                return null;
+    public void executeWorkflow(String workflowName, SpectatioUiUtil spectatioUiUtil) {
+        validateSpectatioConfig();
+        Log.i(LOG_TAG, String.format("Executing Workflow %s", workflowName));
+        List<WorkflowTask> tasks = mSpectatioConfig.getWorkflowFromConfig(workflowName);
+        for (WorkflowTask task : tasks) {
+            task.executeTask(workflowName, spectatioUiUtil);
         }
+        Log.i(LOG_TAG, String.format("Done Executing Workflow %s", workflowName));
     }
 }

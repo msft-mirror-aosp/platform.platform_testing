@@ -38,7 +38,7 @@ private fun getMatrix(transform: TransformProto?, position: Layers.PositionProto
     return when {
         transform == null || Transform.isSimpleTransform(transform.type) ->
             transform?.type.getDefaultTransform(x, y)
-        else -> Matrix33(transform.dsdx, transform.dtdx, x, transform.dsdy, transform.dtdy, y)
+        else -> Matrix33.from(transform.dsdx, transform.dtdx, x, transform.dsdy, transform.dtdy, y)
     }
 }
 
