@@ -16,6 +16,7 @@
 
 package com.android.sts.common;
 
+
 import com.android.ddmlib.Log;
 import com.android.tradefed.device.DeviceNotAvailableException;
 import com.android.tradefed.device.ITestDevice;
@@ -37,6 +38,15 @@ public final class ProcessUtil {
 
     public static final long PROCESS_WAIT_TIMEOUT_MS = 10_000;
     public static final long PROCESS_POLL_PERIOD_MS = 250;
+
+    static final Pattern[] mallocDebugErrorPatterns = {
+        Pattern.compile("^.*HAS A CORRUPTED FRONT GUARD.*$", Pattern.MULTILINE),
+        Pattern.compile("^.*HAS A CORRUPTED REAR GUARD.*$", Pattern.MULTILINE),
+        Pattern.compile("^.*USED AFTER FREE.*$", Pattern.MULTILINE),
+        Pattern.compile("^.*leaked block of size.*$", Pattern.MULTILINE),
+        Pattern.compile("^.*UNKNOWN POINTER \\(free\\).*$", Pattern.MULTILINE),
+        Pattern.compile("^.*HAS INVALID TAG.*$", Pattern.MULTILINE),
+    };
 
     private ProcessUtil() {}
 
@@ -66,6 +76,26 @@ public final class ProcessUtil {
             pidToCommand.put(pid, comm);
         }
         return Optional.of(pidToCommand);
+    }
+
+    /**
+     * Get a single pid matching a pattern passed to `pgrep`. Throw an {@link
+     * IllegalArgumentException} when there are more than one PID matching the pattern.
+     *
+     * @param device the device to use
+     * @param pgrepRegex a String representing the regex for pgrep
+     * @return an Optional Integer of the pid; empty if pgrep did not return EXIT_SUCCESS
+     */
+    public static Optional<Integer> pidOf(ITestDevice device, String pgrepRegex)
+            throws DeviceNotAvailableException, IllegalArgumentException {
+        Optional<Map<Integer, String>> pids = pidsOf(device, pgrepRegex);
+        if (!pids.isPresent()) {
+            return Optional.empty();
+        } else if (pids.get().size() == 1) {
+            return Optional.of(pids.get().keySet().iterator().next());
+        } else {
+            throw new IllegalArgumentException("More than one process found for: " + pgrepRegex);
+        }
     }
 
     /**
