@@ -18,6 +18,11 @@ package com.android.server.wm.traces.common
 
 import kotlin.js.JsName
 
+/**
+ * Wrapper for PointProto (frameworks/base/core/proto/android/graphics/point.proto)
+ *
+ * This class is used by flicker and Winscope
+ */
 class Point private constructor(val x: Int = 0, val y: Int = 0) {
     @JsName("prettyPrint") fun prettyPrint(): String = "($x, $y)"
 
