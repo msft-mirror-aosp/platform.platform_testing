@@ -69,6 +69,7 @@ public class BaselineProfileRule extends TestWatcher {
                     public void evaluate() throws Throwable {
                         innerRule.collectBaselineProfile(
                                 mBaselineProfilePackage,
+                                1, // Iterations are supported by most Runners already.
                                 new ArrayList<>(),
                                 (scope) -> {
                                     // Evaluating the base Statement may throw a Throwable, which

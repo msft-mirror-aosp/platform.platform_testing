@@ -13,26 +13,25 @@
  */
 package android.platform.helpers.settings.sound_and_vibration;
 
-import android.platform.helpers.settings.ISettingsHomeHelper;
 import android.support.test.uiautomator.Direction;
 
-/** Extends for Settings > Sound & vibration */
-public interface ISettingsSoundAndVibrationHelper extends ISettingsHomeHelper {
+/** Extends for Settings > Sound & vibration > Phone ringtone */
+public interface ISettingsPhoneRingtoneHelper extends ISettingsSoundAndVibrationHelper {
 
     /**
-     * Setup expectations: Settings Sound & vibration page is open
+     * Setup expectations: Settings Phone ringtone page is open
      *
-     * <p>This method flings Settings Sound & vibration page.
+     * <p>This method flings Settings Phone ringtone page.
      */
-    void flingSoundAndVibration(Direction direction);
+    void flingPhoneRingtone(Direction direction);
 
     /** This method opens Settings > Sound & vibration > Phone ringtone page */
     void goToPhoneRingtone();
 
     /**
-     * Setup expectations: Settings Sound & vibration page is open
+     * Setup expectations: Settings Phone ringtone page is open
      *
-     * <p>This method validates Settings Sound & vibration page.
+     * <p>This method validates Settings Phone ringtone page.
      */
-    void isSoundAndVibrationPage();
+    void isPhoneRingtonePage();
 }
