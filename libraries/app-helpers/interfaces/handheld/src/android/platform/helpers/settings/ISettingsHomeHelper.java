@@ -35,6 +35,9 @@ public interface ISettingsHomeHelper extends ISettingsIntelligenceHelper {
     /** This method opens Settings > Network & internet page */
     void goToNetworkAndInternet();
 
+    /** This method opens Settings > Notifications page */
+    void goToNotifications();
+
     /** This method opens Settings > Sound & vibration page */
     void goToSoundAndVibration();
 
