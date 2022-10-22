@@ -26,7 +26,8 @@ import org.junit.runner.Description;
 
 /** This rule opens apps then goes to home before a test class. */
 public class QuickstepPressureRule extends TestWatcher {
-    private static final long MIN_CRASH_WAIT_TIMEOUT = 2500;
+    // TODO: b/243991517 Replace static sleep with process not crashing verification.
+    private static final long MIN_CRASH_WAIT_TIMEOUT = 500;
     private static final long UI_RESPONSE_TIMEOUT_MSECS = 10000;
 
     private final String[] mPackages;
