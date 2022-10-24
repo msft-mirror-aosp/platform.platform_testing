@@ -30,7 +30,6 @@ native_tests := \
     anyhow_test_tests_test_repr \
     anyhow_test_tests_test_source \
     audio_health_tests \
-    backtrace_test \
     bionic-unit-tests \
     bionic-unit-tests-static \
     bluetoothtbd_test \
