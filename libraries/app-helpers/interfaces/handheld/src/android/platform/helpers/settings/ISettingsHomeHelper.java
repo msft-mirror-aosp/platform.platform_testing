@@ -29,6 +29,9 @@ public interface ISettingsHomeHelper extends ISettingsIntelligenceHelper {
     /** This method opens Settings > Accessibility page */
     void goToAccessibility();
 
+    /** This method opens Settings > Connected devices page */
+    void goToConnectedDevices();
+
     /** This method opens Settings > Display page */
     void goToDisplay();
 
