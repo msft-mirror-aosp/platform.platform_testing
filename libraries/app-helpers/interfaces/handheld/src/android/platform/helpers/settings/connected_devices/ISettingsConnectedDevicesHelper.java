@@ -11,24 +11,20 @@
  * express or implied. See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package android.platform.helpers.settings.sound_and_vibration;
+package android.platform.helpers.settings.connected_devices;
 
-import android.support.test.uiautomator.Direction;
+import android.platform.helpers.settings.ISettingsHomeHelper;
 
-/** Extends for Settings > Sound & vibration > Phone ringtone */
-public interface ISettingsPhoneRingtoneHelper extends ISettingsSoundAndVibrationHelper {
+/** Extends for Settings > Connected devices */
+public interface ISettingsConnectedDevicesHelper extends ISettingsHomeHelper {
 
-    /**
-     * Setup expectations: Settings Phone ringtone page is open
-     *
-     * <p>This method flings Settings Phone ringtone page.
-     */
-    void flingPhoneRingtone(Direction direction);
+    /** This method opens Settings > Connected devices > USB (Preferences) page */
+    void goToUsb();
 
     /**
-     * Setup expectations: Settings Phone ringtone page is open
+     * Setup expectations: Settings Connected devices page is open
      *
-     * <p>This method validates Settings Phone ringtone page.
+     * <p>This method validates Settings Connected devices page.
      */
-    void isPhoneRingtonePage();
+    void isConnectedDevicesPage();
 }
