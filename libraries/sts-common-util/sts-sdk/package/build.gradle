@@ -1,0 +1,40 @@
+plugins {
+    id 'com.android.application' version '7.2.1' apply false
+    id 'com.android.library' version '7.2.1' apply false
+}
+
+task clean(type: Delete) {
+    delete layout.buildDirectory
+}
+
+ext {
+    testAppApkName = 'CVE_2020_0215.apk'
+}
+
+task assembleStsARM {
+    dependsOn ':sts-test:copyHostSideTest'
+    dependsOn ':native-poc:copyArm32'
+    dependsOn ':native-poc:copyArm64'
+    dependsOn ':test-app:assemble'
+
+    doLast {
+        copy {
+            from project('sts-test').layout.buildDirectory.file('testcases')
+            from project('native-poc').layout.buildDirectory.file('testcases')
+            from project('test-app').layout.buildDirectory.file('testcases')
+            into layout.buildDirectory.dir('android-sts/testcases')
+        }
+
+        copy {
+            from project('test-app').layout.buildDirectory.file('outputs/apk/debug')
+            rename '(.*).apk', "${testAppApkName}"
+            include '**/*.apk'
+            into layout.buildDirectory.dir('android-sts/testcases')
+        }
+
+        copy {
+            from project('sts-test').layout.projectDirectory.file('libs')
+            into layout.buildDirectory.dir('android-sts/tools')
+        }
+    }
+}
