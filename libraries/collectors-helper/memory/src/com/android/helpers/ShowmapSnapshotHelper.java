@@ -92,6 +92,7 @@ public class ShowmapSnapshotHelper implements ICollectorHelper<String> {
             Log.e(TAG, String.format("Invalid test setup"));
             return false;
         }
+        mMemoryMap.clear();
 
         File directory = new File(mTestOutputDir);
         String filePath = String.format("%s/showmap_snapshot%d.txt", mTestOutputDir,

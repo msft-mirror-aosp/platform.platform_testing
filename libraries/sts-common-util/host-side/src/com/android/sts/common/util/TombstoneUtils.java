@@ -19,8 +19,19 @@ package com.android.sts.common.util;
 import static com.google.common.truth.Truth.*;
 
 import com.android.server.os.TombstoneProtos.*;
+import com.android.sts.common.CommandUtil;
+import com.android.sts.common.ProcessUtil;
+import com.android.tradefed.device.DeviceNotAvailableException;
+import com.android.tradefed.device.IFileEntry;
+import com.android.tradefed.device.ITestDevice;
+import com.android.tradefed.log.LogUtil.CLog;
+
+import com.google.protobuf.InvalidProtocolBufferException;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -28,19 +39,174 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.TimeoutException;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /** Contains helper functions and shared constants for crash parsing. */
 public class TombstoneUtils {
-    public static final String SIGSEGV = "SIGSEGV";
-    public static final String SIGBUS = "SIGBUS";
-    public static final String SIGABRT = "SIGABRT";
+    private static final String TOMBSTONES_PATH = "/data/tombstones";
+    private static final List<Tombstone> EMPTY_TOMBSTONE_LIST = Collections.emptyList();
+
+    public static class Signals {
+        public static final String SIGSEGV = "SIGSEGV";
+        public static final String SIGBUS = "SIGBUS";
+        public static final String SIGABRT = "SIGABRT";
+    }
+
+    /*
+     * Prepare environment and assert no security crashes happened. Side effects include clearing
+     * logcat or removing prior tombstones. Before this is closed, the user is responsible for
+     * handling race conditions. For example, if a poc causes a crash in another process, the user must
+     * wait for the target process to finish handling the vulnerable input otherwise the crash
+     * check may happen before the tombstone is generated. This method will make a best attempt to
+     * avoid race conditions by waiting for tombstoned to complete if there is a dump in progress.
+     *
+     * @param device The device under test
+     * @param config The rule configuration for asserting that the crash is the expected security
+     * crash
+     */
+    public static AutoCloseable withAssertNoSecurityCrashes(ITestDevice device, final Config config)
+            throws DeviceNotAvailableException {
+        final IFileEntry tombstonesPath = device.getFileEntry(TOMBSTONES_PATH);
+        final boolean useTombstoneFiles = tombstonesPath != null; // can't read
+        Collection<IFileEntry> existingDeviceTombstoneFiles = Collections.emptyList();
+        if (useTombstoneFiles) {
+            existingDeviceTombstoneFiles = tombstonesPath.getChildren(/* useCache */ false);
+        }
+        final Collection<IFileEntry> excludeTombstoneFiles = existingDeviceTombstoneFiles;
+
+        if (!useTombstoneFiles) {
+            // clear existing tombstones so we only check new ones
+            CLog.d("Using logcat");
+            CommandUtil.runAndCheck(device, "logcat -c");
+        }
+
+        return new AutoCloseable() {
+            @Override
+            public void close()
+                    throws DeviceNotAvailableException, FileNotFoundException, IOException,
+                            InvalidProtocolBufferException, TimeoutException, InterruptedException {
+                CLog.d("checking for tombstones");
+                // wait for crash_dump process to finish dumping the process to tombstoned
+                ProcessUtil.pidsOf(device, "^crash_dump.*$")
+                        .ifPresent(
+                                pidCommandMap -> {
+                                    pidCommandMap.keySet().stream()
+                                            .forEach(
+                                                    pid -> {
+                                                        try {
+                                                            ProcessUtil.waitPidExited(device, pid);
+                                                        } catch (TimeoutException
+                                                                | DeviceNotAvailableException e) {
+                                                            CLog.w(e);
+                                                        }
+                                                    });
+                                });
+
+                // wait for temporary tombstone file to move
+                long endTime = System.currentTimeMillis() + 10_000; // 10 seconds from now
+                if (useTombstoneFiles) {
+                    while (true) {
+                        if (tombstonesPath.getChildren(/* useCache */ false).stream()
+                                .map(IFileEntry::getName)
+                                .noneMatch(name -> name.startsWith(".temporary"))) {
+                            break;
+                        }
+                        if (System.currentTimeMillis() > endTime) {
+                            throw new TimeoutException();
+                        }
+                        java.lang.Thread.sleep(50);
+                    }
+                }
+
+                // collect tombstones
+                List<Tombstone> tombstones = null;
+                if (useTombstoneFiles) {
+                    tombstones =
+                            getTombstonesFromDeviceFiles(
+                                    device, tombstonesPath, excludeTombstoneFiles);
+                    CLog.d(String.format("got %d tombstones from files", tombstones.size()));
+                } else {
+                    // fallback to logcat
+                    String logcat = CommandUtil.runAndCheck(device, "logcat -d").getStdout();
+                    tombstones = TombstoneParser.parseLogcat(logcat);
+                    CLog.d(String.format("got %d tombstones from logcat", tombstones.size()));
+                }
+                assertNoSecurityCrashes(tombstones, config);
+            }
+        };
+    }
+
+    private static List<Tombstone> getTombstonesFromDeviceFiles(
+            ITestDevice device, IFileEntry tombstoneDirectory, Collection<IFileEntry> excludeFiles)
+            throws DeviceNotAvailableException, IOException, FileNotFoundException {
+        Map<String, IFileEntry> excludeMap =
+                excludeFiles.stream().collect(Collectors.toMap(IFileEntry::getName, f -> f));
+        Collection<IFileEntry> deviceTombstoneFiles =
+                tombstoneDirectory.getChildren(/* useCache */ false).stream()
+                        .filter(
+                                f -> {
+                                    // if the file has the same creation time as the exclude, filter
+                                    // it out
+                                    IFileEntry excludeFile = excludeMap.get(f.getName());
+                                    if (excludeFile != null) {
+                                        return !f.getTime().equals(excludeFile.getTime());
+                                    }
+                                    return true;
+                                })
+                        .collect(Collectors.toList());
+        Collection<IFileEntry> deviceProtoTombstoneFiles =
+                deviceTombstoneFiles.stream()
+                        .filter(f -> f.getName().endsWith(".pb"))
+                        .collect(Collectors.toList());
+        if (!deviceProtoTombstoneFiles.isEmpty()) {
+            // if protos exist, we only want to use protos
+            CLog.d("using tombstones that are filtered to protos only");
+            deviceTombstoneFiles = deviceProtoTombstoneFiles;
+        }
+
+        List<Tombstone> tombstones = new ArrayList<>();
+        for (IFileEntry tombstoneFile : deviceTombstoneFiles) {
+            File localFile = File.createTempFile("tradefed-tombstone-", tombstoneFile.getName());
+            if (!device.pullFile(tombstoneFile.getFullPath(), localFile)) {
+                CLog.d("failed to pull file from device");
+                continue;
+            }
+            tombstones.add(readTombstone(localFile));
+            localFile.delete();
+        }
+        return tombstones;
+    }
+
+    private static Tombstone readTombstone(File tombstoneFile)
+            throws FileNotFoundException, IOException, InvalidProtocolBufferException {
+        if (tombstoneFile.getName().endsWith(".pb")) {
+            CLog.d("reading tombstone file as proto");
+            return readTombstoneProto(tombstoneFile);
+        } else {
+            CLog.d("reading tombstone file as text");
+            return readTombstoneText(tombstoneFile);
+        }
+    }
+
+    private static Tombstone readTombstoneText(File tombstoneFile)
+            throws FileNotFoundException, IOException {
+        String tombstoneText = new String(new FileInputStream(tombstoneFile).readAllBytes());
+        Tombstone.Builder builder = Tombstone.newBuilder();
+        TombstoneParser.parseTombstone(tombstoneText, builder); // silently ignore parse failures
+        return builder.build();
+    }
+
+    private static Tombstone readTombstoneProto(File tombstoneFile)
+            throws FileNotFoundException, IOException, InvalidProtocolBufferException {
+        return Tombstone.parseFrom(new FileInputStream(tombstoneFile).readAllBytes());
+    }
 
     public static void assertNoSecurityCrashes(List<Tombstone> tombstones, Config config) {
         List<Tombstone> securityCrashes = getSecurityCrashes(tombstones, config);
-        assertThat(securityCrashes).isEqualTo(List.of());
+        assertThat(securityCrashes).isEqualTo(EMPTY_TOMBSTONE_LIST);
     }
 
     /**
@@ -207,7 +373,7 @@ public class TombstoneUtils {
         public Config() {
             ignoreLowFaultAddress = true;
             maxLowFaultAddress = 0x8000L;
-            setSignals(SIGSEGV, SIGBUS);
+            setSignals(Signals.SIGSEGV, Signals.SIGBUS);
             abortMessageIncludes = new ArrayList<>();
             setAbortMessageExcludes("CHECK_", "CANNOT LINK EXECUTABLE");
             processPatterns = new ArrayList<>();
