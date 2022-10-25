@@ -16,10 +16,13 @@
 
 package com.android.sts.common;
 
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assume.assumeTrue;
 
 import com.android.tradefed.device.DeviceNotAvailableException;
 import com.android.tradefed.device.ITestDevice;
+import com.android.tradefed.util.CommandResult;
+import com.android.tradefed.util.CommandStatus;
 
 /** Various system-related helper functions */
 public class SystemUtil {
@@ -38,14 +41,26 @@ public class SystemUtil {
             final String name, final String value, final ITestDevice device)
             throws DeviceNotAvailableException {
         final String oldValue = device.getProperty(name);
-        assumeTrue("Could not set property: " + name, device.setProperty(name, value));
+        assumeTrue(
+                "Could not set property: '" + name + "' to '" + value + "'",
+                setProperty(device, name, value));
         return new AutoCloseable() {
             @Override
             public void close() throws Exception {
                 assumeTrue(
-                        "Could not reset property: " + name,
-                        device.setProperty(name, oldValue == null ? "" : oldValue));
+                        "Could not reset property: '" + name + "' to '" + oldValue + "'",
+                        setProperty(device, name, oldValue));
             }
         };
+    }
+
+    /** Reimplement setProperty because property values are not properly escaped in Q and R */
+    private static boolean setProperty(ITestDevice device, String name, String value)
+            throws DeviceNotAvailableException {
+        assertNotNull("Property name cannot be null", name);
+        String setValue = (value == null) ? "" : value;
+        CommandResult res =
+                device.executeShellV2Command(String.format("setprop '%s' '%s'", name, setValue));
+        return res.getStatus() == CommandStatus.SUCCESS;
     }
 }
