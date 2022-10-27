@@ -4,6 +4,7 @@ platform_tests += \
     ActivityManagerPerfTestsStubApp2 \
     ActivityManagerPerfTestsStubApp3 \
     ActivityManagerPerfTestsTestApp \
+    AdServicesScenarioTests \
     AndroidTVJankTests \
     AndroidXComposeStartupApp \
     ApiDemos \
