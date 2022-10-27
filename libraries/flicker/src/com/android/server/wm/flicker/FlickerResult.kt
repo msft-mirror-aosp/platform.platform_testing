@@ -26,7 +26,7 @@ import com.google.common.truth.Truth
 /** Result of a flicker run, including transitions, errors and create tags */
 data class FlickerResult(
     /** Result of a transition run */
-    private val runResult: FlickerRunResult,
+    private val runResult: FlickerRunResult
 ) {
     val status: RunStatus
         get() = runResult.status

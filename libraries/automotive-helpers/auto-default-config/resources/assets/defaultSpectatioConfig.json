@@ -1,15 +1,16 @@
 {
   "PACKAGES": {
     "DIAL_PACKAGE": "com.android.car.dialer",
-    "PHONE_ACTIVITY": "com.android.car.dialer/.ui.TelecomActivity"
+    "PHONE_ACTIVITY": "com.android.car.dialer/.ui.TelecomActivity",
+    "HOME_PACKAGE": "com.android.car.carlauncher"
   },
   "ACTIONS": {
-    "CONTACT_LIST_SCROLL_ACTION" : "USE_BUTTON",
-    "CONTACT_LIST_SCROLL_DIRECTION" : "VERTICAL",
-    "CONTACT_SETTING_SCROLL_ACTION" : "USE_BUTTON",
-    "CONTACT_SETTING_SCROLL_DIRECTION" : "VERTICAL",
-    "CONTACT_DETAILS_SCROLL_ACTION" : "USE_BUTTON",
-    "CONTACT_DETAILS_SCROLL_DIRECTION" : "VERTICAL"
+    "CONTACT_LIST_SCROLL_ACTION": "USE_BUTTON",
+    "CONTACT_LIST_SCROLL_DIRECTION": "VERTICAL",
+    "CONTACT_SETTING_SCROLL_ACTION": "USE_BUTTON",
+    "CONTACT_SETTING_SCROLL_DIRECTION": "VERTICAL",
+    "CONTACT_DETAILS_SCROLL_ACTION": "USE_BUTTON",
+    "CONTACT_DETAILS_SCROLL_DIRECTION": "VERTICAL"
   },
   "COMMANDS": {
     "OPEN_DIAL_PAD_COMMAND": "am start -a android.intent.action.DIAL",
@@ -248,6 +249,21 @@
     "FAVORITES_MENU": {
       "TYPE": "TEXT",
       "VALUE": "Favo.?rite.?"
+    },
+    "HOME_TOP_CARD": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "top_card",
+      "PACKAGE": "com.android.car.carlauncher"
+    },
+    "HOME_BOTTOM_CARD": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "bottom_card",
+      "PACKAGE": "com.android.car.carlauncher"
+    },
+    "HOME_MAP_CARD": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "scene_card",
+      "PACKAGE": "com.android.car.carlauncher"
     }
   }
 }

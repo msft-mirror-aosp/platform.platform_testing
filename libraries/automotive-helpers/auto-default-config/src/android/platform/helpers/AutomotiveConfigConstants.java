@@ -79,4 +79,8 @@ public class AutomotiveConfigConstants {
             "CONTACT_DETAILS_SCROLL_DIRECTION";
     public static final String DIAL_PAD_MENU = "DIAL_PAD_MENU";
     public static final String FAVORITES_MENU = "FAVORITES_MENU";
+    public static final String HOME_PACKAGE = "HOME_PACKAGE";
+    public static final String HOME_BOTTOM_CARD = "HOME_BOTTOM_CARD";
+    public static final String HOME_TOP_CARD = "HOME_TOP_CARD";
+    public static final String HOME_MAP_CARD = "HOME_MAP_CARD";
 }
