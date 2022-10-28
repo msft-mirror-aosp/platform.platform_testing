@@ -58,6 +58,16 @@ private constructor(@JsName("type") val type: Int?, @JsName("matrix") val matrix
             return matrix.dsdx * matrix.dtdy != matrix.dtdx * matrix.dsdy
         }
 
+    @JsName("isScaling")
+    val isScaling: Boolean
+        get() = type?.isFlagSet(SCALE_VAL) ?: false
+    @JsName("isTranslating")
+    val isTranslating: Boolean
+        get() = type?.isFlagSet(TRANSLATE_VAL) ?: false
+    @JsName("isRotating")
+    val isRotating: Boolean
+        get() = type?.isFlagSet(ROTATE_VAL) ?: false
+
     @JsName("getRotation")
     fun getRotation(): Int {
         if (type == null) {

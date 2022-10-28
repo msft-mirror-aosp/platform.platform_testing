@@ -305,12 +305,18 @@ object WindowManagerConditionsFactory {
         layer.transform.type?.isFlagSet(transform) ?: false
 
     @JsName("hasLayersAnimating")
-    fun hasLayersAnimating(): Condition<DeviceStateDump> =
-        ConditionList(
-            Condition("hasLayersAnimating") { it.layerState.isAnimating() },
+    fun hasLayersAnimating(): Condition<DeviceStateDump> {
+        var prevState: DeviceStateDump? = null
+        return ConditionList(
+            Condition("hasLayersAnimating") {
+                val result = it.layerState.isAnimating(prevState?.layerState)
+                prevState = it
+                result
+            },
             isLayerVisible(ComponentNameMatcher.SNAPSHOT).negate(),
             isLayerVisible(ComponentNameMatcher.SPLASH_SCREEN).negate()
         )
+    }
 
     @JsName("isPipWindowLayerSizeMatch")
     fun isPipWindowLayerSizeMatch(layerId: Int): Condition<DeviceStateDump> =

@@ -71,12 +71,7 @@ constructor(
     protected val uiDevice: UiDevice = UiDevice.getInstance(mInstrumentation)
 
     private fun getAppSelector(expectedPackageName: String): BySelector {
-        val expected =
-            if (expectedPackageName.isNotEmpty()) {
-                expectedPackageName
-            } else {
-                packageName
-            }
+        val expected = expectedPackageName.ifEmpty { packageName }
         return By.pkg(expected).depth(0)
     }
 
@@ -171,8 +166,16 @@ constructor(
         wmHelper: WindowManagerStateHelper,
         expectedWindowName: String = "",
         action: String? = null,
-        stringExtras: Map<String, String> = mapOf()
-    ) = launchViaIntentAndWaitShown(wmHelper, expectedWindowName, action, stringExtras)
+        stringExtras: Map<String, String> = mapOf(),
+        waitConditions: Array<Condition<DeviceStateDump>> = emptyArray()
+    ) =
+        launchViaIntentAndWaitShown(
+            wmHelper,
+            expectedWindowName,
+            action,
+            stringExtras,
+            waitConditions
+        )
 
     /**
      * Launches the app through an intent instead of interacting with the launcher and waits until

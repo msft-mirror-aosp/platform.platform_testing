@@ -80,12 +80,22 @@ abstract class BaseLayerTraceEntry : ITraceEntry {
      * @param componentMatcher Components to search
      */
     @JsName("isAnimating")
-    fun isAnimating(componentMatcher: IComponentMatcher? = null): Boolean {
-        val layers =
+    fun isAnimating(
+        prevState: BaseLayerTraceEntry?,
+        componentMatcher: IComponentMatcher? = null
+    ): Boolean {
+        val curLayers =
             visibleLayers.filter {
                 componentMatcher == null || componentMatcher.layerMatchesAnyOf(it)
             }
-        val layersAnimating = layers.any { layer -> !layer.transform.isSimpleRotation }
+        val currIds = visibleLayers.map { it.id }
+        val prevStateLayers =
+            prevState?.visibleLayers?.filter { currIds.contains(it.id) } ?: emptyList()
+        val layersAnimating =
+            curLayers.any { currLayer ->
+                val prevLayer = prevStateLayers.firstOrNull { it.id == currLayer.id }
+                currLayer.isAnimating(prevLayer)
+            }
         val pipAnimating = isVisible(ComponentNameMatcher.PIP_CONTENT_OVERLAY)
         return layersAnimating || pipAnimating
     }
