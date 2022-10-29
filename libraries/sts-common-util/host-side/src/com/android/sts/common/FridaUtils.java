@@ -195,7 +195,13 @@ public class FridaUtils implements AutoCloseable {
     public void close() throws DeviceNotAvailableException, TimeoutException {
         device.enableAdbRoot();
         for (Integer pid : runningPids) {
-            ProcessUtil.killPid(device, pid.intValue(), 10_000L);
+            try {
+                ProcessUtil.killPid(device, pid.intValue(), 10_000L);
+            } catch (ProcessUtil.KillException e) {
+                if (e.getReason() != ProcessUtil.KillException.Reason.NO_SUCH_PROCESS) {
+                    CLog.e(e);
+                }
+            }
         }
         for (String file : fridaFiles) {
             device.deleteFile(file);
