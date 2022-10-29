@@ -83,6 +83,7 @@ platform_tests += \
     PermissionUtils \
     PlatformCommonScenarioTests \
     PowerPerfTest \
+    SdkSandboxPerfScenarioTests \
     SettingsUITests \
     SimpleServiceTestApp1 \
     SimpleServiceTestApp2 \
