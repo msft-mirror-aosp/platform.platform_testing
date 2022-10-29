@@ -122,10 +122,7 @@ public class SecurityTestCase extends StsExtraBusinessLogicHostTestBase {
         }
     }
 
-    /**
-     * Makes sure the phone is online, and the ensure the current boottime is within 2 seconds (due
-     * to rounding) of the previous boottime to check if The phone has crashed.
-     */
+    /** Makes sure the phone is online and checks if the device crashed */
     @After
     public void tearDown() throws Exception {
         try {
@@ -153,7 +150,7 @@ public class SecurityTestCase extends StsExtraBusinessLogicHostTestBase {
                             "The device has unexpectedly rebooted (%s seconds after last recorded boot time, bootreason: %s)",
                             currentKernelStartTime - lastKernelStartTime, bootReason)
                     .that(currentKernelStartTime)
-                    .isLessThan(lastKernelStartTime + 2);
+                    .isLessThan(lastKernelStartTime + 10);
         }
     }
 
