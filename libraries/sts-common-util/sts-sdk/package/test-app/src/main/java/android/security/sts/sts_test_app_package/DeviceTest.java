@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package android.security.sts.CVE_2020_0215;
+package android.security.sts.sts_test_app_package;
 
 import static androidx.test.core.app.ApplicationProvider.getApplicationContext;
 import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentation;
@@ -46,7 +46,7 @@ public class DeviceTest {
     }
 
     @Test
-    public void testCVE_2020_0215() {
+    public void testDeviceSideMethod() {
         try {
             mAppContext = getApplicationContext();
             UiDevice device = UiDevice.getInstance(getInstrumentation());
