@@ -87,7 +87,7 @@ public class MallocDebug implements AutoCloseable {
                                 + " this may not work as expected!\n"
                                 + e2);
             }
-            throw e1;
+            assumeNoException("Could not enable malloc debug", e1);
         }
     }
 
