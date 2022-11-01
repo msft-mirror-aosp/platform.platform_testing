@@ -357,4 +357,32 @@ class LayerTraceEntrySubjectTest {
         assertThrows(AssertionError::class.java) { subject.notContains(component) }
         subject.contains(component)
     }
+
+    @Test
+    fun detectPartiallyCoveredLayerBecauseOfRoundedCorners() {
+        val trace = readLayerTraceFromFile("layers_trace_rounded_corners.winscope")
+        val entry = LayersTraceSubject.assertThat(trace).entry(6216612368228)
+        val defaultPkg = "com.android.server.wm.flicker.testapp"
+        val simpleActivityMatcher =
+            ComponentNameMatcher(defaultPkg, "$defaultPkg.SimpleActivity#66086")
+        val imeActivityMatcher = ComponentNameMatcher(defaultPkg, "$defaultPkg.ImeActivity#66060")
+        val simpleActivitySubject = entry.layer(simpleActivityMatcher)
+        val imeActivitySubject = entry.layer(imeActivityMatcher)
+        val simpleActivityLayer = simpleActivitySubject.layer ?: error("Layer should be available")
+        val imeActivityLayer = imeActivitySubject.layer ?: error("Layer should be available")
+        // both layers have the same region
+        imeActivitySubject.visibleRegion.coversExactly(simpleActivitySubject.visibleRegion.region)
+        // both are visible
+        entry.isVisible(simpleActivityMatcher)
+        entry.isVisible(imeActivityMatcher)
+        // and simple activity is partially covered by IME activity
+        Truth.assertWithMessage("IME activity has rounded corners")
+            .that(simpleActivityLayer.partiallyOccludedBy)
+            .asList()
+            .contains(imeActivityLayer)
+        // because IME activity has rounded corners
+        Truth.assertWithMessage("IME activity has rounded corners")
+            .that(imeActivityLayer.cornerRadius)
+            .isGreaterThan(0)
+    }
 }
