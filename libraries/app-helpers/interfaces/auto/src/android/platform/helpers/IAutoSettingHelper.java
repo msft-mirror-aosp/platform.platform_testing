@@ -102,6 +102,13 @@ public interface IAutoSettingHelper extends IAppHelper, Scrollable {
     /**
      * Setup expectations: The app is open.
      *
+     * <p>Toggle on/off hotspot.
+     */
+    void toggleHotspot();
+
+    /**
+     * Setup expectations: The app is open.
+     *
      * Checks if the wifi is enabled.
      */
     boolean isWifiOn();

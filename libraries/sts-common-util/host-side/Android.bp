@@ -1,4 +1,4 @@
-// Copyright (C) 2021 The Android Open Source Project
+// Copyright (C) 2022 The Android Open Source Project
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,16 +20,35 @@ java_library_host {
     name: "sts-host-util",
     defaults: ["cts_error_prone_rules"],
 
-    srcs: ["src/**/*.java"],
-
+    srcs: [
+        "src/**/*.java",
+    ],
     static_libs: [
         "sts-common-util-lib",
+        "sts-libtombstone_proto-java",
+        "truth-prebuilt",
         "xz-java",
     ],
-
     libs: [
+        "compatibility-host-util",
         "compatibility-tradefed",
         "guava",
         "tradefed",
+    ],
+}
+
+java_library_host {
+    name: "sts-libtombstone_proto-java",
+    visibility: [
+        "//platform_testing/libraries/sts-common-util/host-side",
+    ],
+    srcs: [
+        ":libtombstone_proto-src",
+    ],
+    proto: {
+        type: "lite",
+    },
+    static_libs: [
+        "libprotobuf-java-lite",
     ],
 }
