@@ -418,7 +418,7 @@ public class LockscreenHelper {
     }
 
     public void waitLockscreenVisible() {
-        Assert.assertTrue(mDevice.wait(Until.hasObject(SCREEN_LOCK), MAX_SCREEN_LOCK_WAIT_TIME_MS));
+        mDevice.wait(Until.hasObject(SCREEN_LOCK), MAX_SCREEN_LOCK_WAIT_TIME_MS);
     }
 
     /* Returns screen coordinates for each pattern dot
