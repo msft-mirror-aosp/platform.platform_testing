@@ -173,17 +173,17 @@ private constructor(
         val belowZ =
             wmState.windowStates.indexOfFirst { belowWindowComponentMatcher.windowMatchesAnyOf(it) }
         if (aboveZ >= belowZ) {
-            val aboveWindow =
+            val matchedAboveWindow =
                 subjects.first {
                     it.windowState != null &&
                         aboveWindowComponentMatcher.windowMatchesAnyOf(it.windowState)
                 }
             val aboveWindowTitleStr = aboveWindowComponentMatcher.toWindowIdentifier()
             val belowWindowTitleStr = belowWindowComponentMatcher.toWindowIdentifier()
-            aboveWindow.fail(
+            matchedAboveWindow.fail(
                 Fact.fact(
                     ASSERTION_TAG,
-                    "isAboveWindow(" + "above=$aboveWindowTitleStr, " + "below=$belowWindowTitleStr"
+                    "isAboveWindow(above=$aboveWindowTitleStr, below=$belowWindowTitleStr"
                 ),
                 Fact.fact("Above", aboveWindowTitleStr),
                 Fact.fact("Below", belowWindowTitleStr)
@@ -371,21 +371,14 @@ private constructor(
     /** {@inheritDoc} */
     override fun isNonAppWindowVisible(
         componentMatcher: IComponentMatcher
-    ): WindowManagerStateSubject = apply {
-        checkWindowVisibility("isVisible", nonAppWindows, componentMatcher, isVisible = true)
-    }
+    ): WindowManagerStateSubject = apply { checkWindowIsVisible(nonAppWindows, componentMatcher) }
 
     /** {@inheritDoc} */
     override fun isAppWindowVisible(
         componentMatcher: IComponentMatcher
     ): WindowManagerStateSubject = apply {
         containsAppWindow(componentMatcher)
-
-        // Check existence of activity
-        val activity = wmState.getActivitiesForWindow(componentMatcher).firstOrNull()
-        // Check visibility of activity and window.
-        check("Activity is visible ${activity?.name}").that(activity?.isVisible ?: false).isTrue()
-        checkWindowVisibility("isVisible", appWindows, componentMatcher, isVisible = true)
+        checkWindowIsVisible(appWindows, componentMatcher)
     }
 
     /** {@inheritDoc} */
@@ -412,27 +405,16 @@ private constructor(
     /** {@inheritDoc} */
     override fun isAppWindowInvisible(
         componentMatcher: IComponentMatcher
-    ): WindowManagerStateSubject = apply {
-        // system components (e.g., NavBar, StatusBar, PipOverlay) don't have a package name
-        // nor an activity, ignore them
-        // activity is visible, check window
-        if (wmState.isActivityVisible(componentMatcher)) {
-            checkWindowVisibility("isInvisible", appWindows, componentMatcher, isVisible = false)
-        }
-    }
+    ): WindowManagerStateSubject = apply { checkWindowIsInvisible(appWindows, componentMatcher) }
 
     /** {@inheritDoc} */
     override fun isNonAppWindowInvisible(
         componentMatcher: IComponentMatcher
-    ): WindowManagerStateSubject = apply {
-        checkWindowVisibility("isInvisible", nonAppWindows, componentMatcher, isVisible = false)
-    }
+    ): WindowManagerStateSubject = apply { checkWindowIsInvisible(nonAppWindows, componentMatcher) }
 
-    private fun checkWindowVisibility(
-        assertionName: String,
+    private fun checkWindowIsVisible(
         subjectList: List<WindowStateSubject>,
-        componentMatcher: IComponentMatcher,
-        isVisible: Boolean
+        componentMatcher: IComponentMatcher
     ) {
         // Check existence of window.
         contains(subjectList, componentMatcher)
@@ -441,19 +423,48 @@ private constructor(
             subjectList.filter {
                 it.windowState != null && componentMatcher.windowMatchesAnyOf(it.windowState)
             }
-        val windowsWithVisibility = foundWindows.filter { it.isVisible == isVisible }
 
-        if (windowsWithVisibility.isEmpty()) {
-            val errorTag = if (isVisible) "Is Invisible" else "Is Visible"
+        val visibleWindows =
+            wmState.visibleWindows.filter { visibleWindow ->
+                foundWindows.any { it.windowState == visibleWindow }
+            }
+
+        if (visibleWindows.isEmpty()) {
+            val windowId = componentMatcher.toWindowIdentifier()
             val facts =
-                listOf<Fact>(
-                    Fact.fact(
-                        ASSERTION_TAG,
-                        "$assertionName(${componentMatcher.toWindowIdentifier()})"
-                    ),
-                    Fact.fact(errorTag, componentMatcher.toWindowIdentifier())
+                listOf(
+                    Fact.fact(ASSERTION_TAG, "isVisible($windowId)"),
+                    Fact.fact("Is Invisible", windowId)
                 )
             foundWindows.first().fail(facts)
+        }
+    }
+
+    private fun checkWindowIsInvisible(
+        subjectList: List<WindowStateSubject>,
+        componentMatcher: IComponentMatcher
+    ) {
+        // Check existence of window.
+        contains(subjectList, componentMatcher)
+
+        val foundWindows =
+            subjectList.filter {
+                it.windowState != null && componentMatcher.windowMatchesAnyOf(it.windowState)
+            }
+
+        val visibleWindows =
+            wmState.visibleWindows.filter { visibleWindow ->
+                foundWindows.any { it.windowState == visibleWindow }
+            }
+
+        if (visibleWindows.isNotEmpty()) {
+            val windowId = componentMatcher.toWindowIdentifier()
+            val facts =
+                listOf(
+                    Fact.fact(ASSERTION_TAG, "isInvisible($windowId)"),
+                    Fact.fact("Is Visible", windowId)
+                )
+            foundWindows.first { it.windowState == visibleWindows.first() }.fail(facts)
         }
     }
 
@@ -517,9 +528,11 @@ private constructor(
         // Check existence and visibility of SnapshotStartingWindow
         val snapshotStartingWindow =
             activity.getWindows(ComponentNameMatcher.SNAPSHOT).firstOrNull()
+
         check("SnapshotStartingWindow exists for activity ${activity.name}")
             .that(snapshotStartingWindow != null)
             .isTrue()
+        check("Activity is visible").that(activity.isVisible).isTrue()
         check("SnapshotStartingWindow is visible")
             .that(snapshotStartingWindow?.isVisible ?: false)
             .isTrue()

@@ -117,11 +117,13 @@ class WindowManagerState(
     val visibleWindows: Array<WindowState>
         get() =
             windowStates
-                .filter { it.isVisible }
-                .filter { window ->
-                    val activities = getActivitiesForWindowState(window)
-                    val activity = activities.firstOrNull { it.children.contains(window) }
-                    activity?.isVisible ?: true
+                .filter {
+                    val activities = getActivitiesForWindowState(it)
+                    val windowIsVisible = it.isVisible
+                    val activityIsVisible = activities.any { activity -> activity.isVisible }
+
+                    // for invisible checks it suffices if activity or window is invisible
+                    windowIsVisible && (activityIsVisible || activities.isEmpty())
                 }
                 .toTypedArray()
     @JsName("visibleAppWindows")
@@ -257,7 +259,7 @@ class WindowManagerState(
         }
 
     @JsName("getActivitiesForWindowState")
-    private fun getActivitiesForWindowState(
+    fun getActivitiesForWindowState(
         windowState: WindowState,
         displayId: Int = DEFAULT_DISPLAY
     ): List<Activity> {

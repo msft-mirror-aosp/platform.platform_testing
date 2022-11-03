@@ -274,10 +274,10 @@ class WindowManagerStateSubjectTest {
         val firstTrace = subject.first()
         firstTrace.isAppWindowInvisible(TestComponents.LAUNCHER)
 
-        // launcher is at the same time visible an invisible because it
-        // contains 2 windows with the exact same name
-        val lastTrace = subject.last()
-        lastTrace.isAppWindowInvisible(TestComponents.LAUNCHER)
+        // in the trace there are 2 launcher windows, a visible (usually the main launcher) and
+        // an invisible one (the -1 window, for the swipe back on home screen action.
+        // in flicker, the launcher is considered visible is any of them is visible
+        subject.last().isAppWindowVisible(TestComponents.LAUNCHER)
 
         subject
             .isAppWindowNotOnTop(TestComponents.LAUNCHER)
@@ -285,8 +285,6 @@ class WindowManagerStateSubjectTest {
             .then()
             .isAppWindowOnTop(TestComponents.LAUNCHER)
             .forAllEntries()
-
-        subject.isAppWindowInvisible(TestComponents.LAUNCHER).forAllEntries()
     }
 
     @Test
@@ -430,5 +428,30 @@ class WindowManagerStateSubjectTest {
         val entry = assertThat(trace).first()
         // Verify that the taskbar is visible
         entry.isNonAppWindowVisible(ComponentNameMatcher.TASK_BAR)
+    }
+
+    @Test
+    fun canDetectWindowVisibilityWhen2WindowsHaveSameName() {
+        val trace = readWmTraceFromFile("wm_trace_2activities_same_name.winscope")
+        val componentMatcher =
+            ComponentNameMatcher(
+                "com.android.server.wm.flicker.testapp",
+                "com.android.server.wm.flicker.testapp.NotificationActivity"
+            )
+        assertThat(trace)
+            .isAppWindowInvisible(componentMatcher)
+            .then()
+            .isAppWindowVisible(ComponentNameMatcher.SNAPSHOT, isOptional = true)
+            .then()
+            .isAppWindowVisible(ComponentNameMatcher.SPLASH_SCREEN, isOptional = true)
+            .then()
+            .isAppWindowVisible(componentMatcher)
+            .forRange(394872035003110L, 394874232110818L)
+    }
+
+    @Test
+    fun canDetectInvisibleWindowBecauseActivityIsInvisible() {
+        val entry = assertThat(trace).entry(9215551505798L)
+        entry.isAppWindowInvisible(TestComponents.CHROME_SPLASH_SCREEN)
     }
 }
