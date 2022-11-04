@@ -16,7 +16,8 @@
 
 package com.android.sts.common;
 
-import static org.junit.Assert.assertEquals;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assume.assumeThat;
 
 import com.android.tradefed.device.DeviceNotAvailableException;
 import com.android.tradefed.device.ITestDevice;
@@ -61,7 +62,7 @@ public final class CommandUtil {
                 String.format(
                         "cmd failed: %s\ncode: %s\nstdout:\n%s\nstderr:\n%s",
                         cmd, res.getExitCode(), res.getStdout(), res.getStderr());
-        assertEquals(failMsg, CommandStatus.SUCCESS, res.getStatus());
+        assumeThat(failMsg, res.getStatus(), equalTo(CommandStatus.SUCCESS));
         return res;
     }
 }
