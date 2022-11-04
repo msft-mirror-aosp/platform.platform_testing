@@ -17,9 +17,9 @@
 package com.android.sts.common.tradefed.testtype;
 
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeFalse;
 import static org.junit.Assume.assumeTrue;
+import static com.google.common.truth.Truth.assertWithMessage;
 
 import com.android.compatibility.common.util.MetricsReportLog;
 import com.android.compatibility.common.util.ResultType;
@@ -122,10 +122,7 @@ public class SecurityTestCase extends StsExtraBusinessLogicHostTestBase {
         }
     }
 
-    /**
-     * Makes sure the phone is online, and the ensure the current boottime is within 2 seconds (due
-     * to rounding) of the previous boottime to check if The phone has crashed.
-     */
+    /** Makes sure the phone is online and checks if the device crashed */
     @After
     public void tearDown() throws Exception {
         try {
@@ -136,17 +133,25 @@ public class SecurityTestCase extends StsExtraBusinessLogicHostTestBase {
             getDevice().waitForDeviceAvailable(30 * 1000);
         }
 
-        if (kernelStartTime != -1) {
-            // only fail when the kernel start time is valid
-            long deviceTime = getDeviceUptime() + kernelStartTime;
-            long hostTime = System.currentTimeMillis() / 1000;
-            assertTrue("Phone has had a hard reset", (hostTime - deviceTime) < 2);
-            kernelStartTime = -1;
-        }
-
         logAndTerminateTestProcesses();
 
-        // TODO(badash@): add ability to catch runtime restart
+        long lastKernelStartTime = kernelStartTime;
+        kernelStartTime = -1;
+        // only test when the kernel start time is valid
+        if (lastKernelStartTime != -1) {
+            long currentKernelStartTime = getKernelStartTime();
+            String bootReason = "(could not get bootreason)";
+            try {
+                bootReason = getDevice().getProperty("ro.boot.bootreason");
+            } catch (DeviceNotAvailableException e) {
+                CLog.e("Could not get ro.boot.bootreason", e);
+            }
+            assertWithMessage(
+                            "The device has unexpectedly rebooted (%s seconds after last recorded boot time, bootreason: %s)",
+                            currentKernelStartTime - lastKernelStartTime, bootReason)
+                    .that(currentKernelStartTime)
+                    .isLessThan(lastKernelStartTime + 10);
+        }
     }
 
     public static IBuildInfo getBuildInfo(ITestDevice device) {
@@ -366,10 +371,14 @@ public class SecurityTestCase extends StsExtraBusinessLogicHostTestBase {
         updateKernelStartTime();
     }
 
+    private long getKernelStartTime() throws DeviceNotAvailableException {
+        long uptime = getDeviceUptime();
+        return (System.currentTimeMillis() / 1000) - uptime;
+    }
+
     /** Allows a test to pass if called after a planned reboot. */
     public void updateKernelStartTime() throws DeviceNotAvailableException {
-        long uptime = getDeviceUptime();
-        kernelStartTime = (System.currentTimeMillis() / 1000) - uptime;
+        kernelStartTime = getKernelStartTime();
     }
 
     /**
