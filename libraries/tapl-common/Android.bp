@@ -22,6 +22,7 @@ java_library {
     name: "tapl-common",
     libs: [
         "androidx.test.uiautomator_uiautomator",
+        "androidx.test.runner",
         "junit",
     ],
     srcs: [
