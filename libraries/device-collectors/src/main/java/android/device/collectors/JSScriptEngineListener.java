@@ -23,6 +23,6 @@ import com.android.helpers.JSScriptEngineLatencyHelper;
 @OptionClass(alias = "jsscriptengine-latency-listener")
 public class JSScriptEngineListener extends BaseCollectionListener<Integer> {
     public JSScriptEngineListener() {
-        createHelperInstance(new JSScriptEngineLatencyHelper());
+        createHelperInstance(JSScriptEngineLatencyHelper.getLogcatCollector());
     }
 }
