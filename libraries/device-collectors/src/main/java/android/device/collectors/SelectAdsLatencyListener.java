@@ -17,13 +17,11 @@
 package android.device.collectors;
 
 import android.device.collectors.annotations.OptionClass;
+import com.android.helpers.SelectAdsLatencyHelper;
 
-import com.android.helpers.TopicsLatencyHelper;
-
-@OptionClass(alias = "topics-latency-collector")
-public class TopicsLatencyCollector extends BaseCollectionListener<Long> {
-
-    public TopicsLatencyCollector() {
-        createHelperInstance(TopicsLatencyHelper.getLogcatCollector());
+@OptionClass(alias = "selectads-latency-listener")
+public class SelectAdsLatencyListener extends BaseCollectionListener<Long> {
+    public SelectAdsLatencyListener() {
+        createHelperInstance(SelectAdsLatencyHelper.getLogcatCollector());
     }
 }
