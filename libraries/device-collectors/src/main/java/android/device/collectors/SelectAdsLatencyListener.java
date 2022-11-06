@@ -14,22 +14,14 @@
  * limitations under the License.
  */
 
-package com.android.server.wm.flicker.service
+package android.device.collectors;
 
-import com.android.server.wm.traces.common.layers.LayersTrace
-import com.android.server.wm.traces.common.transition.TransitionsTrace
-import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
+import android.device.collectors.annotations.OptionClass;
+import com.android.helpers.SelectAdsLatencyHelper;
 
-interface ITracesCollector {
-    fun start()
-    fun stop()
-    fun getCollectedTraces(): Traces
-
-    companion object {
-        data class Traces(
-            val wmTrace: WindowManagerTrace,
-            val layersTrace: LayersTrace,
-            val transitionsTrace: TransitionsTrace
-        )
+@OptionClass(alias = "selectads-latency-listener")
+public class SelectAdsLatencyListener extends BaseCollectionListener<Long> {
+    public SelectAdsLatencyListener() {
+        createHelperInstance(SelectAdsLatencyHelper.getLogcatCollector());
     }
 }

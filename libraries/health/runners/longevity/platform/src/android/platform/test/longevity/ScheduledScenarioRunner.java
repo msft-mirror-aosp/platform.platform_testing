@@ -223,7 +223,8 @@ public class ScheduledScenarioRunner extends LongevityClassRunner {
                         countDownLatch.countDown();
                     }
                 };
-        context.registerReceiver(receiver, wakeUpActionFilter);
+        context.registerReceiver(
+                receiver, wakeUpActionFilter, Context.RECEIVER_EXPORTED /*UNAUDITED*/);
         PendingIntent pendingIntent =
                 PendingIntent.getBroadcast(
                         context,
