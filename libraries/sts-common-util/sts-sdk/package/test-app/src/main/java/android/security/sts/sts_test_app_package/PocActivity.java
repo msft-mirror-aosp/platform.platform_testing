@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-package android.device.collectors;
+package android.security.sts.sts_test_app_package;
 
-import android.device.collectors.annotations.OptionClass;
+import android.app.Activity;
+import android.os.Bundle;
 
-import com.android.helpers.TopicsLatencyHelper;
+public class PocActivity extends Activity {
 
-@OptionClass(alias = "topics-latency-collector")
-public class TopicsLatencyCollector extends BaseCollectionListener<Long> {
-
-    public TopicsLatencyCollector() {
-        createHelperInstance(TopicsLatencyHelper.getLogcatCollector());
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
     }
 }

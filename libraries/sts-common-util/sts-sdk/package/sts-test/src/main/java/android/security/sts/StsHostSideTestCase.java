@@ -18,7 +18,6 @@ package android.security.sts;
 
 import static com.android.sts.common.CommandUtil.runAndCheck;
 
-import android.platform.test.annotations.AsbSecurityTest;
 
 import com.android.sts.common.tradefed.testtype.StsExtraBusinessLogicHostTestBase;
 import com.android.tradefed.device.ITestDevice;
@@ -28,16 +27,15 @@ import org.junit.runner.RunWith;
 import org.junit.Test;
 
 @RunWith(DeviceJUnit4ClassRunner.class)
-public class CVE_2020_0215 extends StsExtraBusinessLogicHostTestBase {
+public class StsHostSideTestCase extends StsExtraBusinessLogicHostTestBase {
 
-    static final String TEST_APP = "CVE_2020_0215.apk";
-    static final String TEST_PKG = "android.security.sts.CVE_2020_0215";
+    static final String TEST_APP = "sts_test_app_package.apk";
+    static final String TEST_PKG = "android.security.sts.sts_test_app_package";
     static final String TEST_CLASS = TEST_PKG + "." + "DeviceTest";
 
-    /** b/140417248 */
-    @AsbSecurityTest(cveBugId = 140417248)
     @Test
-    public void testPocCVE_2020_0215() throws Exception {
+    public void testPoc() throws Exception {
+        // Note: this test is for CVE-2020-0215
         ITestDevice device = getDevice();
         device.enableAdbRoot();
         uninstallPackage(device, TEST_PKG);
@@ -47,6 +45,7 @@ public class CVE_2020_0215 extends StsExtraBusinessLogicHostTestBase {
         runAndCheck(device, "input keyevent KEYCODE_HOME");
 
         installPackage(TEST_APP);
-        runDeviceTests(TEST_PKG, TEST_CLASS, "testCVE_2020_0215");
+        runDeviceTests(TEST_PKG, TEST_CLASS, "testDeviceSideMethod");
     }
 }
+

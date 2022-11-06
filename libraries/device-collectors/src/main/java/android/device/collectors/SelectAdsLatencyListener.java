@@ -14,16 +14,14 @@
  * limitations under the License.
  */
 
-package android.security.sts.CVE_2020_0215;
+package android.device.collectors;
 
-import android.app.Activity;
-import android.os.Bundle;
+import android.device.collectors.annotations.OptionClass;
+import com.android.helpers.SelectAdsLatencyHelper;
 
-public class PocActivity extends Activity {
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+@OptionClass(alias = "selectads-latency-listener")
+public class SelectAdsLatencyListener extends BaseCollectionListener<Long> {
+    public SelectAdsLatencyListener() {
+        createHelperInstance(SelectAdsLatencyHelper.getLogcatCollector());
     }
 }
