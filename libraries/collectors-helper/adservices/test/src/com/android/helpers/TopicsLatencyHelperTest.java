@@ -17,21 +17,25 @@
 package com.android.helpers;
 
 import static com.google.common.truth.Truth.assertThat;
-
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.ArgumentMatchers.any;
 
 import androidx.test.runner.AndroidJUnit4;
+
+import static com.android.helpers.TopicsLatencyHelper.MetricsEventStreamReader;
+
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.time.Clock;
+import java.util.Map;
+import java.util.function.Supplier;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.util.Map;
 
 /**
  * Android Unit tests for {@link TopicsLatencyHelper}.
@@ -40,6 +44,7 @@ import java.util.Map;
  */
 @RunWith(AndroidJUnit4.class)
 public class TopicsLatencyHelperTest {
+    private static final String TAG = TopicsLatencyHelper.class.getSimpleName();
     private static final String TOPICS_HOT_START_LATENCY_METRIC = "TOPICS_HOT_START_LATENCY_METRIC";
     private static final String TOPICS_COLD_START_LATENCY_METRIC =
             "TOPICS_COLD_START_LATENCY_METRIC";
@@ -51,14 +56,17 @@ public class TopicsLatencyHelperTest {
             "06-13 18:09:24.058 20765 20781 D\n"
                     + " GetTopicsApiCall: (TOPICS_COLD_START_LATENCY_METRIC: 200)";
 
-    private LatencyHelper mTopicsLatencyHelper;
+    private TopicsLatencyHelper mTopicsLatencyHelper;
 
-    @Mock private LatencyHelper.InputStreamFilter mInputStreamFilter;
+    private @Mock MetricsEventStreamReader mMetricsEventStreamReader;
+    private @Mock Supplier<MetricsEventStreamReader> mMetricsEventStreamReaderSupplier;
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        mTopicsLatencyHelper = TopicsLatencyHelper.getCollector(mInputStreamFilter);
+        mTopicsLatencyHelper =
+                new TopicsLatencyHelper(mMetricsEventStreamReaderSupplier, Clock.systemUTC());
+        when(mMetricsEventStreamReaderSupplier.get()).thenReturn(mMetricsEventStreamReader);
     }
 
     /** Test getting metrics for single package. */
@@ -69,7 +77,7 @@ public class TopicsLatencyHelperTest {
                         + "\n"
                         + SAMPLE_TOPICS_COLD_START_LATENCY_OUTPUT;
         InputStream targetStream = new ByteArrayInputStream(outputString.getBytes());
-        doReturn(targetStream).when(mInputStreamFilter).getStream(any(), any());
+        doReturn(targetStream).when(mMetricsEventStreamReader).getMetricsEvents(any());
         Map<String, Long> topicsLatencyMetrics = mTopicsLatencyHelper.getMetrics();
         assertThat(topicsLatencyMetrics.get(TOPICS_HOT_START_LATENCY_METRIC)).isEqualTo(14);
         assertThat(topicsLatencyMetrics.get(TOPICS_COLD_START_LATENCY_METRIC)).isEqualTo(200);
@@ -80,7 +88,7 @@ public class TopicsLatencyHelperTest {
     public void testEmptyLogcat_noMetrics() throws Exception {
         String outputString = "";
         InputStream targetStream = new ByteArrayInputStream(outputString.getBytes());
-        doReturn(targetStream).when(mInputStreamFilter).getStream(any(), any());
+        doReturn(targetStream).when(mMetricsEventStreamReader).getMetricsEvents(any());
         Map<String, Long> topicsLatencyMetrics = mTopicsLatencyHelper.getMetrics();
         assertThat(topicsLatencyMetrics.containsKey(TOPICS_COLD_START_LATENCY_METRIC)).isFalse();
         assertThat(topicsLatencyMetrics.containsKey(TOPICS_HOT_START_LATENCY_METRIC)).isFalse();

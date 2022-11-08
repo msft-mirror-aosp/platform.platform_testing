@@ -19,11 +19,13 @@ package com.android.server.wm.flicker.service
 import com.android.server.wm.traces.common.layers.LayersTrace
 import com.android.server.wm.traces.common.transition.TransitionsTrace
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
+import java.nio.file.Path
 
 interface ITracesCollector {
     fun start()
     fun stop()
     fun getCollectedTraces(): Traces
+    fun getCollectedTracesPath(): Path
 
     companion object {
         data class Traces(

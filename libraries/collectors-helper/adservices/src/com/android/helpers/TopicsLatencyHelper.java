@@ -16,70 +16,121 @@
 
 package com.android.helpers;
 
-import com.google.common.annotations.VisibleForTesting;
+import android.util.Log;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.HashMap;
+import java.time.Clock;
+import java.time.Instant;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Map;
+import java.util.HashMap;
+import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.time.format.DateTimeFormatter;
+import java.time.ZoneId;
+
+import com.google.common.annotations.VisibleForTesting;
 
 /**
  * TopicsLatencyHelper consist of helper methods to collect Topics API call latencies
  *
  * <p>TODO(b/234452723): Change metric collector to use either statsd or perfetto instead of logcat
  */
-public class TopicsLatencyHelper {
+public class TopicsLatencyHelper implements ICollectorHelper<Long> {
 
-    public static LatencyHelper getLogcatCollector() {
-        return LatencyHelper.getLogcatLatencyHelper(new TopicsProcessInputForLatencyMetrics());
+    private static final String TAG = "TopicsLatencyHelper";
+
+    private static final String TOPICS_HOT_START_LATENCY_METRIC = "TOPICS_HOT_START_LATENCY_METRIC";
+    private static final String TOPICS_COLD_START_LATENCY_METRIC =
+            "TOPICS_COLD_START_LATENCY_METRIC";
+
+    private static final DateTimeFormatter LOG_TIME_FORMATTER =
+            DateTimeFormatter.ofPattern("MM-dd HH:mm:ss.SSS").withZone(ZoneId.systemDefault());
+
+    private static final Pattern sLatencyMetricPattern =
+            Pattern.compile("GetTopicsApiCall: \\((.*): (\\d+)\\)");
+
+    private Instant mInstant;
+    private final Clock mClock;
+    private final Supplier<MetricsEventStreamReader> mMetricsEventStreamReaderSupplier;
+
+    public TopicsLatencyHelper() {
+        mClock = Clock.systemUTC();
+        mMetricsEventStreamReaderSupplier = () -> new MetricsEventStreamReader();
     }
 
     @VisibleForTesting
-    public static LatencyHelper getCollector(LatencyHelper.InputStreamFilter inputStreamFilter) {
-        return new LatencyHelper(new TopicsProcessInputForLatencyMetrics(), inputStreamFilter);
+    public TopicsLatencyHelper(
+            Supplier<MetricsEventStreamReader> metricsEventStreamSupplier, Clock clock) {
+        this.mMetricsEventStreamReaderSupplier = metricsEventStreamSupplier;
+        mClock = clock;
     }
 
-    private static class TopicsProcessInputForLatencyMetrics
-            implements LatencyHelper.ProcessInputForLatencyMetrics {
-
-        private static final String TOPICS_HOT_START_LATENCY_METRIC =
-                "TOPICS_HOT_START_LATENCY_METRIC";
-        private static final String TOPICS_COLD_START_LATENCY_METRIC =
-                "TOPICS_COLD_START_LATENCY_METRIC";
-
-        @Override
-        public String getTestLabel() {
-            return "GetTopicsApiCall";
+    @Override
+    public boolean startCollecting() {
+        mInstant = mClock.instant();
+        return true;
     }
 
-        @Override
-        public Map<String, Long> processInput(InputStream inputStream) throws IOException {
-            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
-            Pattern latencyMetricPattern = Pattern.compile(getTestLabel() + ": \\((.*): (\\d+)\\)");
-
-            String line = "";
-            Map<String, Long> output = new HashMap<String, Long>();
-            while ((line = bufferedReader.readLine()) != null) {
-                Matcher matcher = latencyMetricPattern.matcher(line);
-                while (matcher.find()) {
-                    /**
-                     * The lines from Logcat will look like: 06-13 18:09:24.058 20765 20781 D
-                     * GetTopicsApiCall: (TOPICS_HOT_START_LATENCY_METRIC: 14)
-                     */
-                    String metric = matcher.group(1);
-                    long latency = Long.parseLong(matcher.group(2));
-                    if (TOPICS_HOT_START_LATENCY_METRIC.equals(metric)) {
-                        output.put(TOPICS_HOT_START_LATENCY_METRIC, latency);
-                    } else if (TOPICS_COLD_START_LATENCY_METRIC.equals(metric)) {
-                        output.put(TOPICS_COLD_START_LATENCY_METRIC, latency);
-                    }
+    @Override
+    public Map<String, Long> getMetrics() {
+        try {
+            return processOutput(
+                    mMetricsEventStreamReaderSupplier.get().getMetricsEvents(mInstant));
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to collect TopicsManager metrics.", e);
         }
-            }
-            return output;
+
+        return Collections.emptyMap();
     }
+
+    private Map<String, Long> processOutput(InputStream inputStream) throws IOException {
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+
+        String line = "";
+        Map<String, Long> output = new HashMap<String, Long>();
+        while ((line = bufferedReader.readLine()) != null) {
+            Matcher matcher = sLatencyMetricPattern.matcher(line);
+            while (matcher.find()) {
+                /**
+                 * The lines from Logcat will look like: 06-13 18:09:24.058 20765 20781 D
+                 * GetTopicsApiCall: (TOPICS_HOT_START_LATENCY_METRIC: 14)
+                 */
+                String metric = matcher.group(1);
+                long latency = Long.parseLong(matcher.group(2));
+                if (TOPICS_HOT_START_LATENCY_METRIC.equals(metric)) {
+                    output.put(TOPICS_HOT_START_LATENCY_METRIC, latency);
+                } else if (TOPICS_COLD_START_LATENCY_METRIC.equals(metric)) {
+                    output.put(TOPICS_COLD_START_LATENCY_METRIC, latency);
+                }
+            }
+        }
+        return output;
+    }
+
+    @Override
+    public boolean stopCollecting() {
+        return true;
+    }
+
+    @VisibleForTesting
+    public static class MetricsEventStreamReader {
+        /** Return GetTopicsApiCall logs that will be used to build the test metrics. */
+        public InputStream getMetricsEvents(Instant startTime) throws IOException {
+            ProcessBuilder pb =
+                    new ProcessBuilder(
+                            Arrays.asList(
+                                    "logcat",
+                                    "-s",
+                                    "GetTopicsApiCall:D",
+                                    "-t",
+                                    LOG_TIME_FORMATTER.format(startTime)));
+            return pb.start().getInputStream();
+        }
     }
 }
