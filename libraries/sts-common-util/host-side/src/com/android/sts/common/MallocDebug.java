@@ -22,6 +22,7 @@ import static org.junit.Assume.assumeNoException;
 
 import com.android.tradefed.device.DeviceNotAvailableException;
 import com.android.tradefed.device.ITestDevice;
+import com.android.tradefed.log.LogUtil.CLog;
 import com.google.common.collect.ImmutableList;
 import java.util.concurrent.TimeoutException;
 import java.util.regex.Matcher;
@@ -48,7 +49,7 @@ public class MallocDebug implements AutoCloseable {
 
     private MallocDebug(
             ITestDevice device, String mallocDebugOption, String processName, boolean isService)
-            throws DeviceNotAvailableException, TimeoutException {
+            throws DeviceNotAvailableException, TimeoutException, ProcessUtil.KillException {
         this.device = device;
         this.processName = processName;
 
@@ -82,13 +83,14 @@ public class MallocDebug implements AutoCloseable {
                     setAttachedProgramProperty.close();
                 }
             } catch (Exception e2) {
+                CLog.e(e2);
                 fail(
                         "Could not enable malloc debug. Additionally, there was an"
                                 + " exception while trying to reset device state. Tests after"
                                 + " this may not work as expected!\n"
                                 + e2);
             }
-            throw e1;
+            assumeNoException("Could not enable malloc debug", e1);
         }
     }
 
@@ -122,7 +124,8 @@ public class MallocDebug implements AutoCloseable {
      */
     public static AutoCloseable withLibcMallocDebugOnService(
             ITestDevice device, String mallocDebugOptions, String processName)
-            throws DeviceNotAvailableException, IllegalArgumentException, TimeoutException {
+            throws DeviceNotAvailableException, IllegalArgumentException, TimeoutException,
+                ProcessUtil.KillException {
         if (processName == null || processName.isEmpty()) {
             throw new IllegalArgumentException("Service processName can't be empty");
         }
@@ -141,7 +144,8 @@ public class MallocDebug implements AutoCloseable {
      */
     public static AutoCloseable withLibcMallocDebugOnNewProcess(
             ITestDevice device, String mallocDebugOptions, String processName)
-            throws DeviceNotAvailableException, IllegalArgumentException, TimeoutException {
+            throws DeviceNotAvailableException, IllegalArgumentException, TimeoutException,
+                ProcessUtil.KillException {
         if (processName == null || processName.isEmpty()) {
             throw new IllegalArgumentException("processName can't be empty");
         }
@@ -162,7 +166,7 @@ public class MallocDebug implements AutoCloseable {
      */
     public static AutoCloseable withLibcMallocDebugOnAllNewProcesses(
             ITestDevice device, String mallocDebugOptions)
-            throws DeviceNotAvailableException, TimeoutException {
+            throws DeviceNotAvailableException, TimeoutException, ProcessUtil.KillException {
         return new MallocDebug(device, mallocDebugOptions, null, false);
     }
 

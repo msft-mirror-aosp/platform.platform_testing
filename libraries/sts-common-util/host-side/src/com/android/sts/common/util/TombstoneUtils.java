@@ -102,7 +102,8 @@ public class TombstoneUtils {
                                                         try {
                                                             ProcessUtil.waitPidExited(device, pid);
                                                         } catch (TimeoutException
-                                                                | DeviceNotAvailableException e) {
+                                                                | DeviceNotAvailableException
+                                                                | ProcessUtil.KillException e) {
                                                             CLog.w(e);
                                                         }
                                                     });
