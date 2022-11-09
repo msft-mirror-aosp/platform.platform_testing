@@ -39,8 +39,6 @@ class FlickerServiceResultsCollector(
     private val tracesCollector: ITracesCollector = FlickerServiceTracesCollector(outputDir),
     instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
 ) : BaseMetricListener() {
-    private val WINSCOPE_FILE_PATH_KEY = "winscope_file_path"
-
     private var collectMetricsPerTest = true
 
     private val _executionErrors = mutableListOf<ExecutionError>()
@@ -98,8 +96,6 @@ class FlickerServiceResultsCollector(
         tracesCollector.stop()
         Log.i(LOG_TAG, "Stopped trace collection")
         val collectedTraces = tracesCollector.getCollectedTraces()
-        val traceArchivePath = tracesCollector.getCollectedTracesPath()
-        dataRecord.addStringMetric(WINSCOPE_FILE_PATH_KEY, traceArchivePath.toString())
         val flickerService = FlickerService()
         Log.i(LOG_TAG, "Processing traces")
         val results =

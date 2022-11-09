@@ -22,7 +22,6 @@ import com.android.server.wm.flicker.service.ITracesCollector.Companion.Traces
 import com.android.server.wm.traces.common.layers.LayersTrace
 import com.android.server.wm.traces.common.transition.TransitionsTrace
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
-import java.nio.file.Path
 
 class LegacyFlickerTraceCollector : ITracesCollector {
     private var stopped: Boolean = true
@@ -45,18 +44,11 @@ class LegacyFlickerTraceCollector : ITracesCollector {
             field = value
         }
 
-    internal var tracePath: Path? = null
-        internal set(value) {
-            require(stopped || field == null) { "tracePath already set" }
-            field = value
-        }
-
     override fun start() {
         stopped = false
         require(wmTrace == null) { "wmTrace should not already be set" }
         require(layersTrace == null) { "layersTrace should not already be set" }
         require(transitionsTrace == null) { "transitionsTrace should not already be set" }
-        require(tracePath == null) { "tracePath should not already be set" }
     }
 
     override fun stop() {
@@ -76,12 +68,6 @@ class LegacyFlickerTraceCollector : ITracesCollector {
         clear()
 
         return Traces(wmTrace, layersTrace, transitionsTrace)
-    }
-
-    override fun getCollectedTracesPath(): Path {
-        val tracePath = tracePath
-        require(tracePath != null) { "tracePath not set" }
-        return tracePath
     }
 
     internal fun clear() {
