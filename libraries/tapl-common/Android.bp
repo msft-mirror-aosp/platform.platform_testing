@@ -26,7 +26,6 @@ java_library {
         "junit",
     ],
     srcs: [
-        "src/**/*.java",
         "src/**/*.kt",
     ],
 }
