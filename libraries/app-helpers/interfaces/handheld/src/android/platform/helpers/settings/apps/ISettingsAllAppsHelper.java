@@ -13,18 +13,13 @@
  */
 package android.platform.helpers.settings.apps;
 
-import android.platform.helpers.settings.ISettingsHomeHelper;
-
-/** Extends for Settings > Apps */
-public interface ISettingsAppsHelper extends ISettingsHomeHelper {
-
-    /** This method opens Settings > Apps > All apps page */
-    void goToAllApps();
+/** Extends for Settings > Apps > All apps */
+public interface ISettingsAllAppsHelper extends ISettingsAppsHelper {
 
     /**
-     * Setup expectations: Settings Apps page is open
+     * Setup expectations: Settings All apps page is open
      *
-     * <p>This method validates Settings Apps page.
+     * <p>This method validates Settings All apps page.
      */
-    void isAppsPage();
+    void isAllAppsPage();
 }
