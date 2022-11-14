@@ -29,7 +29,9 @@ java_library_host {
         "truth-prebuilt",
         "xz-java",
     ],
+    plugins: ["auto_value_plugin"],
     libs: [
+        "auto_value_annotations",
         "compatibility-host-util",
         "compatibility-tradefed",
         "guava",
