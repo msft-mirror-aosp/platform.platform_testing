@@ -19,6 +19,7 @@ package com.android.sts.common;
 
 import com.android.ddmlib.Log;
 import com.android.tradefed.device.DeviceNotAvailableException;
+import com.android.tradefed.device.IFileEntry;
 import com.android.tradefed.device.ITestDevice;
 import com.android.tradefed.util.CommandResult;
 import com.android.tradefed.util.CommandStatus;
@@ -421,5 +422,29 @@ public final class ProcessUtil {
                 openFiles.stream()
                         .filter((f) -> filePattern.matcher(f).matches())
                         .collect(Collectors.toList()));
+    }
+
+    /**
+     * Returns file entry of the first file loaded by the specified process with specified name
+     *
+     * @param device device to be run on
+     * @param process pgrep pattern of process to look for
+     * @param filenameSubstr part of file name/path loaded by the process
+     * @return an Opotional of IFileEntry of the path of the file on the device if exists.
+     */
+    public static Optional<IFileEntry> findFileLoadedByProcess(
+            ITestDevice device, String process, String filenameSubstr)
+            throws DeviceNotAvailableException {
+        Optional<Integer> pid = ProcessUtil.pidOf(device, process);
+        if (pid.isPresent()) {
+            String cmd = "lsof -p " + pid.get().toString() + " | awk '{print $NF}'";
+            String[] openFiles = CommandUtil.runAndCheck(device, cmd).getStdout().split("\n");
+            for (String f : openFiles) {
+                if (f.contains(filenameSubstr)) {
+                    return Optional.of(device.getFileEntry(f.trim()));
+                }
+            }
+        }
+        return Optional.empty();
     }
 }
