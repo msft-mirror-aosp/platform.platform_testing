@@ -35,7 +35,8 @@ constructor(
     @JsName("layerId") val layerId: Int,
     _isVisible: Boolean,
     configurationContainer: ConfigurationContainer,
-    @JsName("children") val children: Array<WindowContainer>
+    @JsName("children") val children: Array<WindowContainer>,
+    @JsName("computedZ") val computedZ: Int
 ) : ConfigurationContainer(configurationContainer) {
     protected constructor(
         windowContainer: WindowContainer,
@@ -48,7 +49,8 @@ constructor(
         windowContainer.layerId,
         isVisibleOverride ?: windowContainer.isVisible,
         windowContainer,
-        windowContainer.children
+        windowContainer.children,
+        windowContainer.computedZ
     )
 
     @JsName("isVisible") open val isVisible: Boolean = _isVisible
@@ -146,7 +148,16 @@ constructor(
     companion object {
         fun withTitle(title: String): WindowContainer {
             val emptyConfigurationContainer = ConfigurationContainer(null, null, null)
-            return WindowContainer(title, "", 0, 0, false, emptyConfigurationContainer, arrayOf())
+            return WindowContainer(
+                title,
+                "",
+                0,
+                0,
+                false,
+                emptyConfigurationContainer,
+                arrayOf(),
+                computedZ = -1
+            )
         }
     }
 }

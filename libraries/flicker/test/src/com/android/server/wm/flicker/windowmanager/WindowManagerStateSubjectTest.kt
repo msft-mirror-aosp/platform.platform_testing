@@ -352,7 +352,8 @@ class WindowManagerStateSubjectTest {
                     layerId = 0,
                     _isVisible = true,
                     children = emptyArray(),
-                    configurationContainer = ConfigurationContainer(null, null, null)
+                    configurationContainer = ConfigurationContainer(null, null, null),
+                    computedZ = 0
                 )
             )
         val noWindowsState =

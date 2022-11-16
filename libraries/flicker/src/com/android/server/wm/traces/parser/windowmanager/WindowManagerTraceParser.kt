@@ -80,6 +80,8 @@ object WindowManagerTraceParser {
     private const val TRANSIT_TRANSLUCENT_ACTIVITY_OPEN = "TRANSIT_TRANSLUCENT_ACTIVITY_OPEN"
     private const val TRANSIT_TRANSLUCENT_ACTIVITY_CLOSE = "TRANSIT_TRANSLUCENT_ACTIVITY_CLOSE"
 
+    private var computedZCounter = 0
+
     /**
      * Parses [WindowManagerTraceFileProto] from [data] and uses the proto to generates a list of
      * trace entries.
@@ -199,6 +201,7 @@ object WindowManagerTraceParser {
         timestamp: Long,
         where: String
     ): WindowManagerState {
+        computedZCounter = 0
         return WindowManagerState(
             where = where,
             policy = newWindowManagerPolicy(proto.policy),
@@ -600,7 +603,8 @@ object WindowManagerTraceParser {
                 _isVisible = proto.visible,
                 configurationContainer = newConfigurationContainer(proto.configurationContainer),
                 layerId = proto.surfaceControl?.layerId ?: 0,
-                children = children.toTypedArray()
+                children = children.toTypedArray(),
+                computedZ = computedZCounter++
             )
         }
     }

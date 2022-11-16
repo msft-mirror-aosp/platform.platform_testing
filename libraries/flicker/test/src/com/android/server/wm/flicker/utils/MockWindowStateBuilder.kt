@@ -62,7 +62,8 @@ class MockWindowStateBuilder() {
                         layerId = 1,
                         _isVisible = true,
                         configurationContainer = ConfigurationContainer(null, null, null),
-                        children = emptyArray()
+                        children = emptyArray(),
+                        computedZ = 0
                     )
                 ),
             keyguardControllerState =

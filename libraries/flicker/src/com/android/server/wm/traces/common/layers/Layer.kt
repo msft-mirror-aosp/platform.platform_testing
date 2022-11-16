@@ -145,16 +145,17 @@ private constructor(
             return reasons.toTypedArray()
         }
 
-    val absoluteZ: String
+    val zOrderPath: Array<Int>
         get() {
             val zOrderRelativeOf = zOrderRelativeOf
-            return buildString {
+            val zOrderPath =
                 when {
-                    zOrderRelativeOf != null -> append(zOrderRelativeOf.absoluteZ).append(",")
-                    parent != null -> append(parent?.absoluteZ).append(",")
+                    zOrderRelativeOf != null -> zOrderRelativeOf.zOrderPath.toMutableList()
+                    parent != null -> parent?.zOrderPath?.toMutableList() ?: mutableListOf()
+                    else -> mutableListOf()
                 }
-                append(z)
-            }
+            zOrderPath.add(z)
+            return zOrderPath.toTypedArray()
         }
 
     /**

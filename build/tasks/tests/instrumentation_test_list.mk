@@ -78,7 +78,8 @@ instrumentation_tests := \
     WMShellUnitTests \
     trace_config_detailed.textproto \
     perfetto_trace_processor_shell \
-    CarDeveloperOptionsUnitTests
+    CarDeveloperOptionsUnitTests \
+    SpaPrivilegedLibTests
 
 ifneq ($(strip $(BOARD_PERFSETUP_SCRIPT)),)
 instrumentation_tests += perf-setup

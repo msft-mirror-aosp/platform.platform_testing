@@ -30,7 +30,16 @@ class WindowManagerTestConst {
 
         val emptyConfigurationContainer = ConfigurationContainer(null, null, null)
         val emptyWindowContainer =
-            WindowContainer("", "", 0, 0, false, emptyConfigurationContainer, arrayOf())
+            WindowContainer(
+                "",
+                "",
+                0,
+                0,
+                false,
+                emptyConfigurationContainer,
+                arrayOf(),
+                computedZ = 0
+            )
         val emptyRootWindowContainer = RootWindowContainer(emptyWindowContainer)
         val emptyKeyguardControllerState = KeyguardControllerState.from(false, false, mapOf())
 
@@ -52,7 +61,10 @@ class WindowManagerTestConst {
         val wmTrace_ROTATION_0 = WindowManagerTrace(arrayOf(wmTraceState_ROTATION_0))
 
         fun createWindowContainer(title: String): WindowContainer {
-            return WindowContainer(title, "", 0, 0, false, emptyConfigurationContainer, arrayOf())
+            return WindowContainer(
+                title, "", 0, 0, false, emptyConfigurationContainer, arrayOf(),
+                computedZ = 0
+            )
         }
     }
 }
