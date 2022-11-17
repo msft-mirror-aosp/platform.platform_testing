@@ -232,12 +232,16 @@ public abstract class NativePoc {
             throws DeviceNotAvailableException, IOException {
         for (String resource : resources()) {
             File resTmpFile = File.createTempFile("STSNativePoc", "");
-            try (InputStream in = NativePoc.class.getResourceAsStream(RESOURCE_ROOT + resource);
-                    OutputStream out = new BufferedOutputStream(new FileOutputStream(resTmpFile))) {
-                byte[] buf = new byte[BUF_SIZE];
-                int chunkSize;
-                while ((chunkSize = in.read(buf)) != -1) {
-                    out.write(buf, 0, chunkSize);
+            try {
+                try (InputStream in =
+                                NativePoc.class.getResourceAsStream(RESOURCE_ROOT + resource);
+                        OutputStream out =
+                                new BufferedOutputStream(new FileOutputStream(resTmpFile))) {
+                    byte[] buf = new byte[BUF_SIZE];
+                    int chunkSize;
+                    while ((chunkSize = in.read(buf)) != -1) {
+                        out.write(buf, 0, chunkSize);
+                    }
                 }
 
                 device.pushFile(resTmpFile, resourcePushLocation() + resource);

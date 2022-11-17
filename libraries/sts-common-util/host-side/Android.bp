@@ -24,6 +24,7 @@ java_library_host {
         "src/**/*.java",
     ],
     static_libs: [
+        "auto_value_annotations",
         "sts-common-util-lib",
         "sts-libtombstone_proto-java",
         "truth-prebuilt",
@@ -31,7 +32,6 @@ java_library_host {
     ],
     plugins: ["auto_value_plugin"],
     libs: [
-        "auto_value_annotations",
         "compatibility-host-util",
         "compatibility-tradefed",
         "guava",
