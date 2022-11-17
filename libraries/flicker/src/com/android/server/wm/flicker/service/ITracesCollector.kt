@@ -19,11 +19,18 @@ package com.android.server.wm.flicker.service
 import com.android.server.wm.traces.common.layers.LayersTrace
 import com.android.server.wm.traces.common.transition.TransitionsTrace
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
+import java.nio.file.Path
 
 interface ITracesCollector {
     fun start()
     fun stop()
     fun getCollectedTraces(): Traces
+
+    // TODO: (b/259382394)
+    // update API to return non-nullable path once legacy trace collector supports it
+    fun getCollectedTracesPath(): Path? {
+        return null
+    }
 
     companion object {
         data class Traces(

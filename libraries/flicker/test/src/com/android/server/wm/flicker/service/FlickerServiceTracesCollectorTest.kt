@@ -57,4 +57,17 @@ class FlickerServiceTracesCollectorTest {
         Truth.assertThat(traces.layersTrace.entries).isNotEmpty()
         Truth.assertThat(traces.transitionsTrace.entries).isNotEmpty()
     }
+
+    @Test
+    fun reportsTraceFile() {
+        val wmHelper = WindowManagerStateHelper(instrumentation)
+        val collector = FlickerServiceTracesCollector(getDefaultFlickerOutputDir())
+        collector.start()
+        testApp.launchViaIntent(wmHelper)
+        testApp.exit(wmHelper)
+        collector.stop()
+        val traceFile = collector.getCollectedTracesPath()
+
+        Truth.assertThat(traceFile).isNotNull()
+    }
 }
