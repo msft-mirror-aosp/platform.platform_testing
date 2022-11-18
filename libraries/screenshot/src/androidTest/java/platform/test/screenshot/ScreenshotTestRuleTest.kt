@@ -273,6 +273,41 @@ class ScreenshotTestRuleTest {
         assertThat(rule.getPathOnDeviceFor(RESULT_BIN_PROTO, goldenIdentifier).exists()).isTrue()
     }
 
+    @Test
+    fun screenshotAsserterHooks_successfulRun() {
+        var preRan = false
+        var postRan = false
+        val bitmap = loadBitmap("round_rect_green")
+        val asserter = ScreenshotRuleAsserter.Builder(rule)
+            .setOnBeforeScreenshot {preRan = true}
+            .setOnAfterScreenshot {postRan = true}
+            .setScreenshotProvider {bitmap}
+            .build()
+        asserter.assertGoldenImage("round_rect_green")
+        assertThat(preRan).isTrue()
+        assertThat(postRan).isTrue()
+    }
+
+    @Test
+    fun screenshotAsserterHooks_assertionException() {
+        var preRan = false
+        var postRan = false
+        val bitmap = loadBitmap("round_rect_green")
+        val asserter = ScreenshotRuleAsserter.Builder(rule)
+            .setOnBeforeScreenshot {preRan = true}
+            .setOnAfterScreenshot {postRan = true}
+            .setScreenshotProvider {
+                throw RuntimeException()
+                bitmap
+            }
+            .build()
+        try {
+            asserter.assertGoldenImage("round_rect_green")
+        } catch (e: RuntimeException) {}
+        assertThat(preRan).isTrue()
+        assertThat(postRan).isTrue()
+    }
+
     @After
     fun after() {
         // Clear all files we generated so we don't have dependencies between tests
