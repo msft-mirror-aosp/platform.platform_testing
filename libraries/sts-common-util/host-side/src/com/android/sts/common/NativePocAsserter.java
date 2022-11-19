@@ -19,6 +19,7 @@ package com.android.sts.common;
 import com.android.tradefed.device.ITestDevice;
 import com.android.tradefed.util.CommandResult;
 
+/** Interface for an asserter to use with {@link NativePoc#asserter}. */
 public interface NativePocAsserter {
     /** Called before a PoC runs, returns an AutoCloseable that closes after the PoC finishes */
     public default AutoCloseable withAutoCloseable(NativePoc nativePoc, ITestDevice device)

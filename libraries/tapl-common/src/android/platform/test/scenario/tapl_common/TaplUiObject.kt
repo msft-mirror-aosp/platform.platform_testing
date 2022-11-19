@@ -15,11 +15,11 @@
  */
 package android.platform.test.scenario.tapl_common
 
+import androidx.test.uiautomator.By
 import androidx.test.uiautomator.StaleObjectException
 import androidx.test.uiautomator.UiObject2
 import androidx.test.uiautomator.UiObject2Condition
 import androidx.test.uiautomator.Until
-import java.time.Duration
 import org.junit.Assert.assertTrue
 
 /**
@@ -27,14 +27,14 @@ import org.junit.Assert.assertTrue
  * @param [uiObject] UI Automator object
  * @param [name] Name of the object for diags
  */
-class TaplUiObject internal constructor(private val uiObject: UiObject2, private val name: String) {
+class TaplUiObject constructor(val uiObject: UiObject2, private val name: String) {
     private fun waitForObjectCondition(
         condition: UiObject2Condition<Boolean>,
         conditionName: String
     ) {
         assertTrue(
             "UI object '$name' is not $conditionName.",
-            uiObject.wait(condition, WAIT_TIME.toMillis())
+            uiObject.wait(condition, ObjectFactory.WAIT_TIME.toMillis())
         )
     }
 
@@ -60,7 +60,20 @@ class TaplUiObject internal constructor(private val uiObject: UiObject2, private
         }
     }
 
-    companion object {
-        private val WAIT_TIME = Duration.ofSeconds(10)
+    /**
+     * Waits for a child UI object with a given resource id. Fails if the object is not visible.
+     *
+     * @param [resourceId] Resource id.
+     * @param [childObjectName] Name of the object for diags.
+     * @return The found UI object.
+     */
+    fun waitForChildObject(childResourceId: String, childObjectName: String): TaplUiObject {
+        val selector = By.res(uiObject.applicationPackage, childResourceId)
+        val childObject =
+            uiObject.wait(Until.findObject(selector), ObjectFactory.WAIT_TIME.toMillis())
+                ?: throw AssertionError(
+                    "UI object '$childObjectName' is not found in '$name'; selector: $selector."
+                )
+        return TaplUiObject(childObject, childObjectName)
     }
 }
