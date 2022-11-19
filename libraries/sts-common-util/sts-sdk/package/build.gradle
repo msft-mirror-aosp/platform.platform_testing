@@ -32,8 +32,8 @@ ext.copyArtifacts = { nativeDir ->
 
 task assembleStsARM {
     dependsOn ':sts-test:copyHostSideTest'
-    dependsOn ':native-poc:copyArm32'
-    dependsOn ':native-poc:copyArm64'
+    dependsOn ':native-poc:copyarmeabi-v7a'
+    dependsOn ':native-poc:copyarm64-v8a'
     dependsOn ':test-app:assemble'
 
     doLast {
