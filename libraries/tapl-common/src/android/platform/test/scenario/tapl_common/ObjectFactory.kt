@@ -44,7 +44,7 @@ class ObjectFactory(private val packageName: String) {
     }
 
     companion object {
-        private val WAIT_TIME = Duration.ofSeconds(10)
+        internal val WAIT_TIME = Duration.ofSeconds(10)
         private val device: UiDevice
             get() = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
     }
