@@ -68,6 +68,8 @@ public abstract class NativePoc {
     abstract NativePocAsserter asserter();
     abstract boolean assumePocExitSuccess();
 
+    NativePoc() {}
+
     public static Builder builder() {
         return new AutoValue_NativePoc.Builder()
                 .args(ImmutableList.of())
@@ -85,36 +87,83 @@ public abstract class NativePoc {
 
     @AutoValue.Builder
     public abstract static class Builder {
+        /** Name of executable to be uploaded and run. Do not include "_sts??" suffix. */
         public abstract Builder pocName(String value);
+
         abstract String pocName();
+
+        /** List of arguments to be passed to the executable PoC */
         public abstract Builder args(List<String> value);
+        /** List of arguments to be passed to the executable PoC */
         public abstract Builder args(String... value);
+
+        /** Map of environment variables to be set before running the PoC */
         public abstract Builder envVars(Map<String, String> value);
+
         abstract ImmutableMap<String, String> envVars();
+
+        /** Whether to include /system/lib64 and /system/lib in LD_LIBRARY_PATH */
         public abstract Builder useDefaultLdLibraryPath(boolean value);
+
         abstract boolean useDefaultLdLibraryPath();
-        abstract Builder timeoutSeconds(long value);
+
+        /**
+         * How long to let the PoC run before terminating
+         *
+         * @param value how many seconds to let the native PoC run before it's terminated
+         * @param reason explain why a different timeout amount is needed instead of the default
+         *     {@link #DEFAULT_POC_TIMEOUT_SECONDS}. Generally used for PoCs that tries to exploit
+         *     race conditions.
+         * @return this Builder instance
+         */
         public Builder timeoutSeconds(long value, String reason) {
             return timeoutSeconds(value);
         }
+
+        abstract Builder timeoutSeconds(long value);
+
+        /** List of java resources to extract and upload to the device */
         public abstract Builder resources(List<String> value);
+        /** List of java resources to extract and upload to the device */
         public abstract Builder resources(String... value);
+
+        /** Where to upload extracted Java resources to. Defaults to where the PoC is uploaded */
         public abstract Builder resourcePushLocation(String value);
+
         abstract String resourcePushLocation();
-        abstract Builder only32(boolean value);
+
+        /** Force using 32-bit version of the PoC executable */
         public Builder only32() {
             return only32(true);
         }
-        abstract Builder only64(boolean value);
+
+        abstract Builder only32(boolean value);
+
+        /** Force using 64-bit version of the PoC executable */
         public Builder only64() {
             return only64(true);
         }
+
+        abstract Builder only64(boolean value);
+
+        /**
+         * Function to run after the PoC finishes executing but before assertion or cleanups.
+         *
+         * <p>This is typically used to wait for side effects of the PoC that may happen after the
+         * PoC process itself finished, e.g. waiting for a crashdump to be written to file or for a
+         * service to crash.
+         */
         public abstract Builder after(AfterFunction value);
+
+        /** A {@link NativePocAsserter} to check PoC execution results or side-effect */
         public abstract Builder asserter(NativePocAsserter value);
+
+        /** Whether to throw an assumption failure when PoC does not return 0. Defaults true */
         public abstract Builder assumePocExitSuccess(boolean value);
 
         abstract NativePoc autoBuild();
 
+        /** Build an immutable NativePoc object */
         public NativePoc build() {
             if (useDefaultLdLibraryPath()) {
                 updateLdLibraryPath();
@@ -150,7 +199,8 @@ public abstract class NativePoc {
     /**
      * Execute the PoC with the given parameters and assertions.
      *
-     * @param test the instance of BaseHostJUnit4Test this is running in
+     * @param test the instance of BaseHostJUnit4Test this is running in. Usually called with "this"
+     *     if called from an STS test.
      */
     public void run(final BaseHostJUnit4Test test) throws Exception {
         CLog.d("Trying to start NativePoc: %s", this.toString());
@@ -264,6 +314,7 @@ public abstract class NativePoc {
         }
     }
 
+    /** Lambda construct to run after PoC finished executing but before assertion and cleanup. */
     public static interface AfterFunction {
         void run(CommandResult res) throws Exception;
     }
