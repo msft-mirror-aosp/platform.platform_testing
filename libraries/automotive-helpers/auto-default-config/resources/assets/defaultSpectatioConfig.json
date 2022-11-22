@@ -5,16 +5,19 @@
     "HOME_PACKAGE": "com.android.car.carlauncher"
   },
   "ACTIONS": {
-    "CONTACT_LIST_SCROLL_ACTION": "USE_BUTTON",
-    "CONTACT_LIST_SCROLL_DIRECTION": "VERTICAL",
-    "CONTACT_SETTING_SCROLL_ACTION": "USE_BUTTON",
-    "CONTACT_SETTING_SCROLL_DIRECTION": "VERTICAL",
-    "CONTACT_DETAILS_SCROLL_ACTION": "USE_BUTTON",
-    "CONTACT_DETAILS_SCROLL_DIRECTION": "VERTICAL"
+    "CONTACT_LIST_SCROLL_ACTION" : "USE_BUTTON",
+    "CONTACT_LIST_SCROLL_DIRECTION" : "VERTICAL",
+    "CONTACT_SETTING_SCROLL_ACTION" : "USE_BUTTON",
+    "CONTACT_SETTING_SCROLL_DIRECTION" : "VERTICAL",
+    "CONTACT_DETAILS_SCROLL_ACTION" : "USE_BUTTON",
+    "CONTACT_DETAILS_SCROLL_DIRECTION" : "VERTICAL",
+    "APP_LIST_SCROLL_ACTION" : "USE_BUTTON",
+    "APP_LIST_SCROLL_DIRECTION" : "VERTICAL"
   },
   "COMMANDS": {
     "OPEN_DIAL_PAD_COMMAND": "am start -a android.intent.action.DIAL",
-    "OPEN_PHONE_ACTIVITY_COMMAND": "am start -n com.android.car.dialer/.ui.TelecomActivity"
+    "OPEN_PHONE_ACTIVITY_COMMAND": "am start -n com.android.car.dialer/.ui.TelecomActivity",
+    "OPEN_APP_GRID_COMMAND": "am start -n com.android.car.carlauncher/.GASAppGridActivity"
   },
   "UI_ELEMENTS": {
     "MAKE_CALL": {
@@ -263,6 +266,29 @@
     "HOME_MAP_CARD": {
       "TYPE": "RESOURCE_ID",
       "VALUE": "scene_card",
+      "PACKAGE": "com.android.car.carlauncher"
+    },
+    "APP_GRID_VIEW_ID": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE":"apps_grid",
+      "PACKAGE": "com.android.car.carlauncher"
+    },
+    "APPLICATION_NAME" : {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "app_name",
+      "PACKAGE": "com.android.car.carlauncher"
+    },
+    "APP_GRID_SCROLL_BACKWARD_BUTTON": {
+      "TYPE": "DESCRIPTION",
+      "VALUE": "Scroll up"
+    },
+    "APP_GRID_SCROLL_FORWARD_BUTTON": {
+      "TYPE": "DESCRIPTION",
+      "VALUE": "Scroll down"
+    },
+    "APP_LIST_SCROLL_ELEMENT": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "car_ui_internal_recycler_view",
       "PACKAGE": "com.android.car.carlauncher"
     }
   }

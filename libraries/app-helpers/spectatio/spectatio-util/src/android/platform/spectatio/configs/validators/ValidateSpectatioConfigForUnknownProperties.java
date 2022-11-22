@@ -16,10 +16,10 @@
 
 package android.platform.spectatio.configs.validators;
 
-import com.google.gson.internal.bind.ReflectiveTypeAdapterFactory;
 import com.google.gson.Gson;
 import com.google.gson.TypeAdapter;
 import com.google.gson.TypeAdapterFactory;
+import com.google.gson.internal.bind.ReflectiveTypeAdapterFactory;
 import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Field;
@@ -44,7 +44,11 @@ public class ValidateSpectatioConfigForUnknownProperties implements TypeAdapterF
         }
 
         try {
-            Field f = delegate.getClass().getDeclaredField("boundFields");
+            // Patch the reflection to be compatible with the changes in
+            // ReflectiveTypeAdapterFactory
+            // introduced by
+            // https://android-review.git.corp.google.com/c/platform/external/gson/+/2298458
+            Field f = ReflectiveTypeAdapterFactory.Adapter.class.getDeclaredField("boundFields");
             f.setAccessible(true);
 
             Map boundFieldsMap =

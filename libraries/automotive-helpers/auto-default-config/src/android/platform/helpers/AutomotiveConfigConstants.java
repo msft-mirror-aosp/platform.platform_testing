@@ -83,4 +83,13 @@ public class AutomotiveConfigConstants {
     public static final String HOME_BOTTOM_CARD = "HOME_BOTTOM_CARD";
     public static final String HOME_TOP_CARD = "HOME_TOP_CARD";
     public static final String HOME_MAP_CARD = "HOME_MAP_CARD";
+    public static final String OPEN_APP_GRID_COMMAND = "OPEN_APP_GRID_COMMAND";
+    public static final String APP_GRID_SCROLL_BACKWARD_BUTTON = "APP_GRID_SCROLL_BACKWARD_BUTTON";
+    public static final String APP_GRID_SCROLL_FORWARD_BUTTON = "APP_GRID_SCROLL_FORWARD_BUTTON";
+    public static final String APP_GRID_VIEW_ID = "APP_GRID_VIEW_ID";
+    public static final String APP_GRID_PACKAGE = "APP_GRID_PACKAGE";
+    public static final String APPLICATION_NAME = "APPLICATION_NAME";
+    public static final String APP_LIST_SCROLL_ELEMENT = "APP_LIST_SCROLL_ELEMENT";
+    public static final String APP_LIST_SCROLL_ACTION = "APP_LIST_SCROLL_ACTION";
+    public static final String APP_LIST_SCROLL_DIRECTION = "APP_LIST_SCROLL_DIRECTION";
 }
