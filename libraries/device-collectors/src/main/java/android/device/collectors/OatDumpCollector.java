@@ -21,19 +21,22 @@ import android.device.collectors.annotations.OptionClass;
 import android.os.Bundle;
 import android.os.ParcelFileDescriptor;
 import android.util.Log;
+
 import androidx.annotation.VisibleForTesting;
 import androidx.test.uiautomator.UiDevice;
 
+import org.junit.runner.Description;
+import org.junit.runner.Result;
+
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.stream.Collectors;
-
-import org.junit.runner.Description;
-import org.junit.runner.Result;
 
 /** Collects an oat dump to help debugging performance issues with ART profiles. */
 @OptionClass(alias = "oat-dump-collector")
@@ -45,10 +48,8 @@ public class OatDumpCollector extends BaseMetricListener {
     @VisibleForTesting static final String OAT_DUMP_PROCESS = "oat-dump-process";
     @VisibleForTesting static final String ADDITIONAL_TEST_OUTPUT_DIR = "additionalTestOutputDir";
 
-    @VisibleForTesting static final String TEST_RUN_START_FILENAME = "oat-dump-run-start.txt";
-    @VisibleForTesting static final String TEST_RUN_END_FILENAME = "oat-dump-run-end.txt";
-    @VisibleForTesting static final String TEST_RUN_START_METRIC_KEY = "oat-dump-run-start";
-    @VisibleForTesting static final String TEST_RUN_END_METRIC_KEY = "oat-dump-run-end";
+    @VisibleForTesting static final String TEST_RUN_START_SUFFIX = "run-start";
+    @VisibleForTesting static final String TEST_RUN_END_SUFFIX = "run-end";
 
     private String mAdditionalTestOutputDir;
     private String mOatDumpProcess;
@@ -65,14 +66,12 @@ public class OatDumpCollector extends BaseMetricListener {
 
     @Override
     public void onTestRunStart(DataRecord runData, Description description) {
-        String oatDump = collectOatDump(TEST_RUN_START_FILENAME);
-        runData.addStringMetric(TEST_RUN_START_METRIC_KEY, oatDump);
+        collectOatDumpAndMetrics(runData, TEST_RUN_START_SUFFIX);
     }
 
     @Override
     public void onTestRunEnd(DataRecord runData, Result result) {
-        String oatDump = collectOatDump(TEST_RUN_END_FILENAME);
-        runData.addStringMetric(TEST_RUN_END_METRIC_KEY, oatDump);
+        collectOatDumpAndMetrics(runData, TEST_RUN_END_SUFFIX);
     }
 
     /**
@@ -80,7 +79,7 @@ public class OatDumpCollector extends BaseMetricListener {
      * command against it. The contents are piped into a file that can be searched for optimized or
      * unoptimized code.
      */
-    private String collectOatDump(String filename) {
+    private void collectOatDumpAndMetrics(DataRecord record, String phaseSuffix) {
         String apkPath = null;
         try {
             Log.v(LOG_TAG, String.format("Running command: pm path %s", mOatDumpProcess));
@@ -132,7 +131,7 @@ public class OatDumpCollector extends BaseMetricListener {
         Log.i(LOG_TAG, String.format("Running oatdump with \"%s\"", oatDumpCommand));
 
         // The oatdump is very large, so it needs to be written to a file with buffering.
-        File oatDumpFile = new File(mAdditionalTestOutputDir, filename);
+        File oatDumpFile = new File(mAdditionalTestOutputDir, getOatDumpFilePath(phaseSuffix));
 
         Log.i(
                 LOG_TAG,
@@ -152,7 +151,31 @@ public class OatDumpCollector extends BaseMetricListener {
             throw new RuntimeException("Failed to write the oatdump to the output file.", e);
         }
 
-        return oatDumpFile.getAbsolutePath();
+        String fileKey = getOatDumpFileKey(phaseSuffix);
+        record.addStringMetric(fileKey, oatDumpFile.getAbsolutePath());
+
+        String odexFileSizeKey = getOdexFileSizeKey(phaseSuffix);
+        record.addStringMetric(odexFileSizeKey, String.valueOf(odexFiles[0].length()));
+
+        String reportedSizeKey = getReportedSizeKey(phaseSuffix);
+        record.addStringMetric(reportedSizeKey, readSizeMetricFromOatDump(oatDumpFile));
+    }
+
+    private String readSizeMetricFromOatDump(File oatDumpFile) {
+        try (FileInputStream oatDumpInputStream = new FileInputStream(oatDumpFile);
+                InputStreamReader oatDumpStreamReader = new InputStreamReader(oatDumpInputStream);
+                BufferedReader oatDumpBufferedReader = new BufferedReader(oatDumpStreamReader)) {
+            String line;
+
+            while ((line = oatDumpBufferedReader.readLine()) != null) {
+                if (line.startsWith("SIZE:")) {
+                    return oatDumpBufferedReader.readLine();
+                }
+            }
+        } catch (IOException e) {
+            Log.w(LOG_TAG, "Failed to read oatdump to find reported size.", e);
+        }
+        throw new RuntimeException("Failed to find oatdump's reported size.");
     }
 
     @Override
@@ -169,6 +192,26 @@ public class OatDumpCollector extends BaseMetricListener {
                         + " details.",
                 args.containsKey(ADDITIONAL_TEST_OUTPUT_DIR));
         mAdditionalTestOutputDir = args.getString(ADDITIONAL_TEST_OUTPUT_DIR);
+    }
+
+    @VisibleForTesting
+    String getOatDumpFilePath(String suffix) {
+        return String.format("oat-dump-file-%s.txt", suffix);
+    }
+
+    @VisibleForTesting
+    String getOatDumpFileKey(String suffix) {
+        return String.format("oat-dump-file-%s", suffix);
+    }
+
+    @VisibleForTesting
+    String getOdexFileSizeKey(String suffix) {
+        return String.format("oat-dump-odex-file-size-%s", suffix);
+    }
+
+    @VisibleForTesting
+    String getReportedSizeKey(String suffix) {
+        return String.format("oat-dump-reported-size-%s", suffix);
     }
 
     /** Returns the currently active {@link UiDevice}. */
