@@ -13,8 +13,17 @@
  */
 package android.platform.helpers.settings.apps;
 
+import android.support.test.uiautomator.Direction;
+
 /** Extends for Settings > Apps > All apps */
 public interface ISettingsAllAppsHelper extends ISettingsAppsHelper {
+
+    /**
+     * Setup expectations: Settings All apps page is open
+     *
+     * <p>This method flings Settings All apps page.
+     */
+    void flingAllApps(Direction direction);
 
     /**
      * Setup expectations: Settings All apps page is open
