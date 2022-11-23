@@ -1,3 +1,4 @@
+//
 // Copyright (C) 2022 The Android Open Source Project
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,21 +13,29 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-java_test_host {
-    name: "StsCommonUtilHostTests",
+package {
+    default_applicable_licenses: ["Android-Apache-2.0"],
+}
 
-    defaults: ["tradefed_errorprone_defaults"],
-    srcs: ["src/**/*.java"],
+android_robolectric_test {
+    enabled: true,
 
-    libs: ["tradefed"],
+    name: "MyRoboTests",
 
-    static_libs: [
-        "sts-host-util",
-        "mockito-host",
+    srcs: [
+        "src/**/*.java",
     ],
 
-    // tag this module as a test artifact
-    test_suites: ["general-tests"],
+    java_resource_dirs: ["config"],
 
-    java_resource_dirs: ["res/"],
+    libs: [
+        "Robolectric_all-target",
+        "robolectric_android-all-stub",
+        "androidx.test.core",
+        "androidx.test.runner",
+    ],
+
+    instrumentation_for: "MyRoboApplication",
+
+    test_suites: ["general-tests"],
 }
