@@ -79,7 +79,9 @@ instrumentation_tests := \
     trace_config_detailed.textproto \
     perfetto_trace_processor_shell \
     CarDeveloperOptionsUnitTests \
-    SpaPrivilegedLibTests
+    SpaPrivilegedLibTests \
+    SettingsSpaUnitTests \
+    SpaLibTests
 
 ifneq ($(strip $(BOARD_PERFSETUP_SCRIPT)),)
 instrumentation_tests += perf-setup

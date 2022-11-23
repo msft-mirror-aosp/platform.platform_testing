@@ -16,10 +16,12 @@
 package android.device.collectors;
 
 import static com.google.common.truth.Truth.assertThat;
+
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 import android.os.Bundle;
+
 import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.runner.AndroidJUnit4;
 
@@ -65,17 +67,41 @@ public final class OatDumpCollectorTest {
         DataRecord record = new DataRecord();
         collector.onTestRunStart(
                 record, Description.createTestDescription("fakeClass", "fakeTest"));
-        assertTrue(new File(outputDir, OatDumpCollector.TEST_RUN_START_FILENAME).exists());
-        assertThat(
-                        record.createBundleFromMetrics()
-                                .getString(OatDumpCollector.TEST_RUN_START_METRIC_KEY))
-                .isNotNull();
+
+        String filenameStartKey =
+                collector.getOatDumpFileKey(OatDumpCollector.TEST_RUN_START_SUFFIX);
+        String filenameStartValue =
+                collector.getOatDumpFilePath(OatDumpCollector.TEST_RUN_START_SUFFIX);
+        String odexFileSizeStartKey =
+                collector.getOdexFileSizeKey(OatDumpCollector.TEST_RUN_START_SUFFIX);
+        String reportedSizeStartKey =
+                collector.getReportedSizeKey(OatDumpCollector.TEST_RUN_START_SUFFIX);
+
+        // Check that the file actually exists first.
+        assertTrue(new File(outputDir, filenameStartValue).exists());
+
+        Bundle startMetrics = record.createBundleFromMetrics();
+        assertThat(startMetrics.getString(filenameStartKey)).contains(filenameStartValue);
+        assertThat(startMetrics.getString(odexFileSizeStartKey)).isNotNull();
+        assertThat(startMetrics.getString(reportedSizeStartKey)).isNotNull();
+
         collector.onTestRunEnd(record, new Result());
-        assertTrue(new File(outputDir, OatDumpCollector.TEST_RUN_END_FILENAME).exists());
-        assertThat(
-                        record.createBundleFromMetrics()
-                                .getString(OatDumpCollector.TEST_RUN_END_METRIC_KEY))
-                .isNotNull();
+
+        String filenameEndKey = collector.getOatDumpFileKey(OatDumpCollector.TEST_RUN_END_SUFFIX);
+        String filenameEndValue =
+                collector.getOatDumpFilePath(OatDumpCollector.TEST_RUN_END_SUFFIX);
+        String odexFileSizeEndKey =
+                collector.getOdexFileSizeKey(OatDumpCollector.TEST_RUN_END_SUFFIX);
+        String reportedSizeEndKey =
+                collector.getReportedSizeKey(OatDumpCollector.TEST_RUN_END_SUFFIX);
+
+        // Check that the file actually exists first.
+        assertTrue(new File(outputDir, filenameEndValue).exists());
+
+        Bundle endMetrics = record.createBundleFromMetrics();
+        assertThat(endMetrics.getString(filenameEndKey)).contains(filenameEndValue);
+        assertThat(endMetrics.getString(odexFileSizeEndKey)).isNotNull();
+        assertThat(endMetrics.getString(reportedSizeEndKey)).isNotNull();
     }
 
     /** Test that the collector will throw early if a process to track isn't specified. */
