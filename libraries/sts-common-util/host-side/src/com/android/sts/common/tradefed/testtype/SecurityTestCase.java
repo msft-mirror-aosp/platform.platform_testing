@@ -16,10 +16,11 @@
 
 package com.android.sts.common.tradefed.testtype;
 
+import static com.google.common.truth.Truth.assertWithMessage;
+
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assume.assumeFalse;
 import static org.junit.Assume.assumeTrue;
-import static com.google.common.truth.Truth.assertWithMessage;
 
 import com.android.compatibility.common.util.MetricsReportLog;
 import com.android.compatibility.common.util.ResultType;
@@ -50,6 +51,11 @@ import java.util.concurrent.Callable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Base test class for all STS tests.
+ *
+ * <p>Use {@link RootSecurityTestCase} or {@link NonRootSecurityTestCase} instead.
+ */
 public class SecurityTestCase extends StsExtraBusinessLogicHostTestBase {
 
     private static final String LOG_TAG = "SecurityTestCase";
@@ -147,7 +153,8 @@ public class SecurityTestCase extends StsExtraBusinessLogicHostTestBase {
                 CLog.e("Could not get ro.boot.bootreason", e);
             }
             assertWithMessage(
-                            "The device has unexpectedly rebooted (%s seconds after last recorded boot time, bootreason: %s)",
+                            "The device has unexpectedly rebooted (%s seconds after last recorded"
+                                    + " boot time, bootreason: %s)",
                             currentKernelStartTime - lastKernelStartTime, bootReason)
                     .that(currentKernelStartTime)
                     .isLessThan(lastKernelStartTime + 10);
@@ -455,13 +462,13 @@ public class SecurityTestCase extends StsExtraBusinessLogicHostTestBase {
      * <p>Example of skipping a test based on mainline modules:
      *
      * <pre>
-     *  @Test
+     *  {@literal @}Test
      *  public void testPocCVE_1234_5678() throws Exception {
      *      // This will skip the test if MODULE_METADATA mainline module is play managed.
      *      assumeFalse(moduleIsPlayManaged("com.google.android.captiveportallogin"));
      *      // Do testing...
      *  }
-     *  * </pre>
+     * </pre>
      */
     public boolean moduleIsPlayManaged(String modulePackageName) throws Exception {
         return mainlineModuleDetector.getPlayManagedModules().contains(modulePackageName);
