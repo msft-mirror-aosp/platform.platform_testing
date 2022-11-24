@@ -24,12 +24,13 @@ import com.android.tradefed.device.ITestDevice;
 import com.android.tradefed.util.CommandResult;
 import com.android.tradefed.util.CommandStatus;
 
+/** Collection of utilities to help run commands on device via adb */
 public final class CommandUtil {
 
     private CommandUtil() {}
 
     /**
-     * Execute shell command on device, throws AssertionError if command does not return 0.
+     * Execute shell command on device, throws AssumptionError if command does not return 0.
      *
      * @param device the device to use
      * @param cmd the command to run
@@ -41,7 +42,7 @@ public final class CommandUtil {
     }
 
     /**
-     * Execute shell command on device, throws AssertionError if command does not return 0.
+     * Execute shell command on device, throws AssumptionError if command does not return 0.
      *
      * @param device the device to use
      * @param cmd the command to run
