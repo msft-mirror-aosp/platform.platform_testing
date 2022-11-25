@@ -73,8 +73,7 @@ class Flicker(
     @JvmField val usingExistingTraces: Boolean = false
 ) {
     internal val faasTracesCollector = LegacyFlickerTraceCollector()
-    internal val faas =
-        FlickerServiceResultsCollector(outputDir, tracesCollector = faasTracesCollector)
+    internal val faas = FlickerServiceResultsCollector(tracesCollector = faasTracesCollector)
 
     var result: FlickerResult? = null
 

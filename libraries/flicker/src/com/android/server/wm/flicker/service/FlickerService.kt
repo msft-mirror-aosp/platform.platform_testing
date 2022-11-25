@@ -27,7 +27,7 @@ import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 import java.nio.file.Path
 
 /** Contains the logic for Flicker as a Service. */
-class FlickerService {
+class FlickerService : IFlickerService {
     /**
      * The entry point for WM Flicker Service.
      *
@@ -38,7 +38,7 @@ class FlickerService {
      * @return A pair with an [ErrorTrace] and a map that associates assertion names with 0 if it
      * fails and 1 if it passes
      */
-    fun process(
+    override fun process(
         wmTrace: WindowManagerTrace,
         layersTrace: LayersTrace,
         transitionTrace: TransitionsTrace

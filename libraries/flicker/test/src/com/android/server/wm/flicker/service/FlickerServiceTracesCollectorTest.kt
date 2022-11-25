@@ -18,6 +18,7 @@ package com.android.server.wm.flicker.service
 
 import android.app.Instrumentation
 import androidx.test.platform.app.InstrumentationRegistry
+import com.android.server.wm.flicker.assertArchiveContainsFiles
 import com.android.server.wm.flicker.getDefaultFlickerOutputDir
 import com.android.server.wm.flicker.helpers.BrowserAppHelper
 import com.android.server.wm.flicker.helpers.isShellTransitionsEnabled
@@ -69,5 +70,29 @@ class FlickerServiceTracesCollectorTest {
         val traceFile = collector.getCollectedTracesPath()
 
         Truth.assertThat(traceFile).isNotNull()
+    }
+
+    @Test
+    fun reportedTraceFileContainsAllTraces() {
+        val wmHelper = WindowManagerStateHelper(instrumentation)
+        val collector = FlickerServiceTracesCollector(getDefaultFlickerOutputDir())
+        collector.start()
+        testApp.launchViaIntent(wmHelper)
+        testApp.exit(wmHelper)
+        collector.stop()
+        val traceFile = collector.getCollectedTracesPath()
+
+        assertArchiveContainsFiles(traceFile, expectedTraces)
+    }
+
+    companion object {
+        val expectedTraces =
+            listOf(
+                "wm_trace.winscope",
+                "layers_trace.winscope",
+                "transition.mp4",
+                "transactions_trace.winscope",
+                "transition_trace.winscope"
+            )
     }
 }

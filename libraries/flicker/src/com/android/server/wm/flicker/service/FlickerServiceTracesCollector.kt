@@ -17,8 +17,9 @@
 package com.android.server.wm.flicker.service
 
 import android.util.Log
+import androidx.test.platform.app.InstrumentationRegistry
 import com.android.server.wm.flicker.monitor.LayersTraceMonitor
-import com.android.server.wm.flicker.monitor.TraceMonitor
+import com.android.server.wm.flicker.monitor.ScreenRecorder
 import com.android.server.wm.flicker.monitor.TransactionsTraceMonitor
 import com.android.server.wm.flicker.monitor.TransitionsTraceMonitor
 import com.android.server.wm.flicker.monitor.WindowManagerTraceMonitor
@@ -44,16 +45,18 @@ import kotlin.io.path.deleteIfExists
 class FlickerServiceTracesCollector(val outputDir: Path) : ITracesCollector {
 
     private val traceMonitors =
-        listOf<TraceMonitor>(
+        listOf(
+            ScreenRecorder(InstrumentationRegistry.getInstrumentation().targetContext, outputDir),
             WindowManagerTraceMonitor(outputDir),
+            TransactionsTraceMonitor(outputDir),
             LayersTraceMonitor(outputDir),
             TransitionsTraceMonitor(outputDir),
-            TransactionsTraceMonitor(outputDir)
         )
 
     private var wmTrace: WindowManagerTrace? = null
     private var layersTrace: LayersTrace? = null
     private var transitionsTrace: TransitionsTrace? = null
+    private var screenRecording: Path? = null
     private var tracePath: Path? = null
 
     override fun start() {
@@ -69,13 +72,14 @@ class FlickerServiceTracesCollector(val outputDir: Path) : ITracesCollector {
             Files.createDirectories(outputDir)
 
             Log.v(LOG_TAG, "Stopping trace monitors")
-            traceMonitors.forEach { it.stop() }
+            traceMonitors.asReversed().forEach { it.stop() }
 
             val wmTraceFilePath = FlickerService.getFassFilePath(outputDir, "wm_trace")
             val layersTraceFilePath = FlickerService.getFassFilePath(outputDir, "layers_trace")
             val transitionsTracePath = FlickerService.getFassFilePath(outputDir, "transition_trace")
             val transactionsTracePath =
                 FlickerService.getFassFilePath(outputDir, "transactions_trace")
+            val screenRecordingPath = outputDir.resolve("transition.mp4")
 
             Log.v(LOG_TAG, "Processing wmTrace from file")
             wmTrace = getWindowManagerTraceFromFile(wmTraceFilePath)
@@ -90,7 +94,8 @@ class FlickerServiceTracesCollector(val outputDir: Path) : ITracesCollector {
                     wmTraceFilePath,
                     layersTraceFilePath,
                     transitionsTracePath,
-                    transactionsTracePath
+                    transactionsTracePath,
+                    screenRecordingPath
                 )
         }
     }
@@ -114,6 +119,7 @@ class FlickerServiceTracesCollector(val outputDir: Path) : ITracesCollector {
         wmTrace = null
         layersTrace = null
         transitionsTrace = null
+        screenRecording = null
         cleanupTraceFiles()
     }
 

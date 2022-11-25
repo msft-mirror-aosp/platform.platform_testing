@@ -39,6 +39,7 @@ import com.google.common.truth.TruthFailureSubject
 import java.io.File
 import java.io.FileInputStream
 import java.nio.file.Files
+import java.nio.file.Path
 import java.util.zip.ZipInputStream
 import kotlin.io.path.createDirectories
 import kotlin.io.path.createFile
@@ -153,29 +154,12 @@ fun assertThatErrorContainsDebugInfo(error: Throwable, withBlameEntry: Boolean =
     }
 }
 
-fun assertArchiveContainsAllTraces(
-    runStatus: FlickerRunResult.Companion.RunStatus = ASSERTION_SUCCESS,
-    testName: String
-) {
-    val archiveFileName = "${runStatus.prefix}_$testName.zip"
-    val archivePath = getDefaultFlickerOutputDir().resolve(archiveFileName)
+fun assertArchiveContainsFiles(archivePath: Path, expectedFiles: List<String>) {
     Truth.assertWithMessage("Expected trace archive `$archivePath` to exist")
         .that(Files.exists(archivePath))
         .isTrue()
 
     val archiveStream = ZipInputStream(FileInputStream(archivePath.toFile()))
-
-    val expectedFiles =
-        mutableListOf(
-            "wm_trace.winscope",
-            "layers_trace.winscope",
-            "transition.mp4",
-            "transactions_trace.winscope"
-        )
-
-    if (isShellTransitionsEnabled) {
-        expectedFiles.add("transition_trace.winscope")
-    }
 
     val actualFiles = generateSequence { archiveStream.nextEntry }.map { it.name }.toList()
 
@@ -183,6 +167,26 @@ fun assertArchiveContainsAllTraces(
     Truth.assertWithMessage("Trace archive doesn't contain all expected traces")
         .that(actualFiles.containsAll(expectedFiles))
         .isTrue()
+}
+
+fun assertArchiveContainsAllTraces(
+    runStatus: FlickerRunResult.Companion.RunStatus = ASSERTION_SUCCESS,
+    testName: String
+) {
+    val archiveFileName = "${runStatus.prefix}_$testName.zip"
+    val archivePath = getDefaultFlickerOutputDir().resolve(archiveFileName)
+    val expectedFiles =
+        mutableListOf(
+            "wm_trace.winscope",
+            "layers_trace.winscope",
+            "transition.mp4",
+            "transactions_trace.winscope"
+        )
+    if (isShellTransitionsEnabled) {
+        expectedFiles.add("transition_trace.winscope")
+    }
+
+    assertArchiveContainsFiles(archivePath, expectedFiles)
 }
 
 fun getTestTraceDump(

@@ -21,11 +21,12 @@ import android.device.collectors.BaseMetricListener
 import android.device.collectors.DataRecord
 import android.util.Log
 import androidx.test.platform.app.InstrumentationRegistry
+import com.android.internal.annotations.VisibleForTesting
 import com.android.server.wm.flicker.FLICKER_TAG
 import com.android.server.wm.flicker.TransitionRunner.Companion.ExecutionError
+import com.android.server.wm.flicker.getDefaultFlickerOutputDir
 import com.android.server.wm.flicker.service.assertors.AssertionResult
 import com.android.server.wm.traces.common.service.AssertionInvocationGroup
-import java.nio.file.Path
 import org.junit.runner.Description
 import org.junit.runner.Result
 import org.junit.runner.notification.Failure
@@ -35,18 +36,24 @@ import org.junit.runner.notification.Failure
  * the CrystalBall database.
  */
 class FlickerServiceResultsCollector(
-    val outputDir: Path,
-    private val tracesCollector: ITracesCollector = FlickerServiceTracesCollector(outputDir),
-    instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
-) : BaseMetricListener() {
+    private val tracesCollector: ITracesCollector =
+        FlickerServiceTracesCollector(getDefaultFlickerOutputDir()),
+    private val flickerService: IFlickerService = FlickerService(),
+    instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation(),
+    private val collectMetricsPerTest: Boolean = true,
+    private val reportOnlyForPassingTests: Boolean = true,
+) : BaseMetricListener(), IFlickerServiceResultsCollector {
     private val WINSCOPE_FILE_PATH_KEY = "winscope_file_path"
-    private var collectMetricsPerTest = true
+    private var hasFailedTest = false
+    private var testSkipped = false
 
     private val _executionErrors = mutableListOf<ExecutionError>()
-    val executionErrors: List<ExecutionError>
+    override val executionErrors: List<ExecutionError>
         get() = _executionErrors
 
-    internal val assertionResults = mutableListOf<AssertionResult>()
+    @VisibleForTesting val assertionResults = mutableListOf<AssertionResult>()
+    @VisibleForTesting
+    val assertionResultsByTest = mutableMapOf<Description, List<AssertionResult>>()
 
     init {
         setInstrumentation(instrumentation)
@@ -56,6 +63,7 @@ class FlickerServiceResultsCollector(
         errorReportingBlock {
             Log.i(LOG_TAG, "onTestRunStart :: collectMetricsPerTest = $collectMetricsPerTest")
             if (!collectMetricsPerTest) {
+                hasFailedTest = false
                 tracesCollector.start()
             }
         }
@@ -65,20 +73,32 @@ class FlickerServiceResultsCollector(
         errorReportingBlock {
             Log.i(LOG_TAG, "onTestStart :: collectMetricsPerTest = $collectMetricsPerTest")
             if (collectMetricsPerTest) {
+                hasFailedTest = false
                 tracesCollector.start()
             }
+            testSkipped = false
         }
     }
 
     override fun onTestFail(testData: DataRecord, description: Description, failure: Failure) {
-        errorReportingBlock { Log.i(LOG_TAG, "onTestFail") }
+        errorReportingBlock {
+            Log.i(LOG_TAG, "onTestFail")
+            hasFailedTest = true
+        }
+    }
+
+    override fun testSkipped(description: Description) {
+        errorReportingBlock {
+            Log.i(LOG_TAG, "testSkipped")
+            testSkipped = true
+        }
     }
 
     override fun onTestEnd(testData: DataRecord, description: Description) {
         errorReportingBlock {
             Log.i(LOG_TAG, "onTestEnd :: collectMetricsPerTest = $collectMetricsPerTest")
-            if (collectMetricsPerTest) {
-                stopTracingAndCollectFlickerMetrics(testData)
+            if (collectMetricsPerTest && !testSkipped) {
+                stopTracingAndCollectFlickerMetrics(testData, description)
             }
         }
     }
@@ -92,16 +112,23 @@ class FlickerServiceResultsCollector(
         }
     }
 
-    private fun stopTracingAndCollectFlickerMetrics(dataRecord: DataRecord) {
+    private fun stopTracingAndCollectFlickerMetrics(
+        dataRecord: DataRecord,
+        description: Description? = null
+    ) {
         Log.i(LOG_TAG, "Stopping trace collection")
         tracesCollector.stop()
         Log.i(LOG_TAG, "Stopped trace collection")
+
+        if (reportOnlyForPassingTests && hasFailedTest) {
+            return
+        }
+
         val collectedTraces = tracesCollector.getCollectedTraces()
         val traceArchivePath = tracesCollector.getCollectedTracesPath()
         if (traceArchivePath != null) {
             dataRecord.addStringMetric(WINSCOPE_FILE_PATH_KEY, traceArchivePath.toString())
         }
-        val flickerService = FlickerService()
         Log.i(LOG_TAG, "Processing traces")
         val results =
             flickerService.process(
@@ -111,6 +138,12 @@ class FlickerServiceResultsCollector(
             )
         Log.i(LOG_TAG, "Got ${results.size} results")
         assertionResults.addAll(results)
+        if (description != null) {
+            require(assertionResultsByTest[description] == null) {
+                "Test description already contains flicker assertion results."
+            }
+            assertionResultsByTest[description] = results
+        }
         val aggregatedResults = processFlickerResults(results)
         collectMetrics(dataRecord, aggregatedResults)
     }
@@ -154,6 +187,17 @@ class FlickerServiceResultsCollector(
             Log.e(FLICKER_TAG, "Error executing in FlickerServiceResultsCollector", e)
             _executionErrors.add(ExecutionError(e))
         }
+    }
+
+    override fun testContainsFlicker(description: Description): Boolean {
+        val resultsForTest = resultsForTest(description)
+        return resultsForTest.any { it.failed }
+    }
+
+    override fun resultsForTest(description: Description): List<AssertionResult> {
+        val resultsForTest = assertionResultsByTest[description]
+        requireNotNull(resultsForTest) { "No results set for test $description" }
+        return resultsForTest
     }
 
     companion object {

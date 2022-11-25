@@ -22,10 +22,10 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.android.server.wm.flicker.getDefaultFlickerOutputDir
 import com.android.server.wm.flicker.service.FlickerServiceResultsCollector
 import com.android.server.wm.flicker.service.FlickerServiceTracesCollector
-import com.android.server.wm.flicker.service.ITracesCollector
-import java.nio.file.Path
+import com.android.server.wm.flicker.service.IFlickerServiceResultsCollector
 import org.junit.AssumptionViolatedException
 import org.junit.runner.Description
+import org.junit.runner.notification.Failure
 
 /**
  * A test rule that runs Flicker as a Service on the tests this rule is applied to.
@@ -36,44 +36,56 @@ import org.junit.runner.Description
  *
  * @see TODO for examples on how to use this test rule in your own tests
  */
-class FlickerServiceRule
+open class FlickerServiceRule
 @JvmOverloads
 constructor(
-    outputDir: Path = getDefaultFlickerOutputDir(),
-    tracesCollector: ITracesCollector = FlickerServiceTracesCollector(outputDir)
-) : TestWatcher() {
-    private val metricsCollector =
+    private val metricsCollector: IFlickerServiceResultsCollector =
         FlickerServiceResultsCollector(
-            outputDir,
-            tracesCollector = tracesCollector,
+            tracesCollector = FlickerServiceTracesCollector(getDefaultFlickerOutputDir()),
             instrumentation = InstrumentationRegistry.getInstrumentation()
-        )
+        ),
+    // null parses to false (so defaults to not failing tests)
+    private val failTestOnFaasFailure: Boolean =
+        InstrumentationRegistry.getArguments().getString("faas:blocking").toBoolean()
+) : TestWatcher() {
 
     /** Invoked when a test is about to start */
-    override fun starting(description: Description) {
+    public override fun starting(description: Description) {
         Log.i(LOG_TAG, "Test starting $description")
         metricsCollector.testStarted(description)
     }
 
-    /** Invoked when a test method finishes (whether passing or failing) */
-    override fun finished(description: Description) {
-        Log.i(LOG_TAG, "Test finished $description")
-        metricsCollector.testFinished(description)
-    }
-
     /** Invoked when a test succeeds */
-    override fun succeeded(description: Description) {
+    public override fun succeeded(description: Description) {
         Log.i(LOG_TAG, "Test succeeded $description")
     }
 
     /** Invoked when a test fails */
-    override fun failed(e: Throwable?, description: Description) {
+    public override fun failed(e: Throwable?, description: Description) {
         Log.e(LOG_TAG, "$description test failed  with $e")
+        metricsCollector.testFailure(Failure(description, e))
     }
 
     /** Invoked when a test is skipped due to a failed assumption. */
-    override fun skipped(e: AssumptionViolatedException, description: Description) {
+    public override fun skipped(e: AssumptionViolatedException, description: Description) {
         Log.i(LOG_TAG, "Test skipped $description with $e")
+        metricsCollector.testSkipped(description)
+    }
+
+    /** Invoked when a test method finishes (whether passing or failing) */
+    public override fun finished(description: Description) {
+        Log.i(LOG_TAG, "Test finished $description")
+        metricsCollector.testFinished(description)
+        if (metricsCollector.executionErrors.isNotEmpty()) {
+            for (executionError in metricsCollector.executionErrors) {
+                Log.e(LOG_TAG, "FaaS reported execution errors", executionError)
+            }
+            throw metricsCollector.executionErrors[0]
+        }
+        if (failTestOnFaasFailure && metricsCollector.testContainsFlicker(description)) {
+            throw metricsCollector.resultsForTest(description).first { it.failed }.assertionError
+                ?: error("Unexpectedly missing assertion error")
+        }
     }
 
     companion object {
