@@ -24,6 +24,6 @@ import com.android.helpers.TopicsLatencyHelper;
 public class TopicsLatencyCollector extends BaseCollectionListener<Long> {
 
     public TopicsLatencyCollector() {
-        createHelperInstance(new TopicsLatencyHelper());
+        createHelperInstance(TopicsLatencyHelper.getLogcatCollector());
     }
 }
