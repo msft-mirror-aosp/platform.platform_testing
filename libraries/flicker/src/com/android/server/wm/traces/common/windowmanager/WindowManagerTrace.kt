@@ -58,13 +58,19 @@ data class WindowManagerTrace(override val entries: Array<WindowManagerState>) :
     /**
      * Split the trace by the start and end timestamp.
      *
-     * @param from the start timestamp
-     * @param to the end timestamp
+     * @param from the start elapsed timestamp
+     * @param to the end elapsed timestamp
      * @return the subtrace trace(from, to)
      */
-    @JsName("slice")
-    fun slice(from: Long, to: Long, addInitialEntry: Boolean = false): WindowManagerTrace {
-        return WindowManagerTrace(sliceEntriesByTimestamp(this.entries, from, to, addInitialEntry))
+    @JsName("sliceUsingElapsedTimestamp")
+    fun sliceUsingElapsedTimestamp(
+        from: Long,
+        to: Long,
+        addInitialEntry: Boolean = false
+    ): WindowManagerTrace {
+        return WindowManagerTrace(
+            sliceEntriesByTimestamp(this.entries, from, to, addInitialEntry) { it.elapsedTimestamp }
+        )
     }
 
     /** Get the initial rotation */

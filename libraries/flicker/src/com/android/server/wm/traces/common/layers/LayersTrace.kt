@@ -57,8 +57,14 @@ data class LayersTrace(override val entries: Array<BaseLayerTraceEntry>) :
      * @return the subtrace trace(from, to)
      */
     @JsName("slice")
-    fun slice(from: Long, to: Long, addInitialEntry: Boolean = false): LayersTrace {
-        return LayersTrace(sliceEntriesByTimestamp(this.entries, from, to, addInitialEntry))
+    fun sliceUsingElapsedTimestamp(
+        from: Long,
+        to: Long,
+        addInitialEntry: Boolean = false
+    ): LayersTrace {
+        return LayersTrace(
+            sliceEntriesByTimestamp(this.entries, from, to, addInitialEntry) { it.elapsedTimestamp }
+        )
     }
 
     @JsName("vSyncSlice")

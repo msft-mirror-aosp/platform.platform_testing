@@ -48,12 +48,16 @@ import org.junit.runners.MethodSorters
 class WindowManagerStateSubjectTest {
     private val trace
         get() = readWmTraceFromFile("wm_trace_openchrome.pb")
+
     // Launcher is visible in fullscreen in the first frame of the trace
     private val traceFirstFrameTimestamp = 9213763541297
+
     // The first frame where the chrome splash screen is shown
     private val traceFirstChromeFlashScreenTimestamp = 9215551505798
+
     // The bounds of the display used to generate the trace [trace]
     private val displayBounds = Region.from(0, 0, 1440, 2960)
+
     // The region covered by the status bar in the trace
     private val statusBarRegion = Region.from(0, 0, 1440, 171)
 
@@ -76,7 +80,7 @@ class WindowManagerStateSubjectTest {
     @Test
     fun canDetectAboveAppWindowVisibility_isVisible() {
         assertThat(trace)
-            .entry(traceFirstFrameTimestamp)
+            .getEntryByElapsedTimestamp(traceFirstFrameTimestamp)
             .containsAboveAppWindow(ComponentNameMatcher.NAV_BAR)
             .containsAboveAppWindow(TestComponents.SCREEN_DECOR_OVERLAY)
             .containsAboveAppWindow(ComponentNameMatcher.STATUS_BAR)
@@ -84,7 +88,7 @@ class WindowManagerStateSubjectTest {
 
     @Test
     fun canDetectAboveAppWindowVisibility_isInvisible() {
-        val subject = assertThat(trace).entry(traceFirstFrameTimestamp)
+        val subject = assertThat(trace).getEntryByElapsedTimestamp(traceFirstFrameTimestamp)
         var failure =
             assertThrows(AssertionError::class.java) {
                 subject
@@ -104,7 +108,7 @@ class WindowManagerStateSubjectTest {
 
     @Test
     fun canDetectWindowCoversAtLeastRegion_exactSize() {
-        val entry = assertThat(trace).entry(traceFirstFrameTimestamp)
+        val entry = assertThat(trace).getEntryByElapsedTimestamp(traceFirstFrameTimestamp)
 
         entry.visibleRegion(ComponentNameMatcher.STATUS_BAR).coversAtLeast(statusBarRegion)
         entry.visibleRegion(TestComponents.LAUNCHER).coversAtLeast(displayBounds)
@@ -112,7 +116,7 @@ class WindowManagerStateSubjectTest {
 
     @Test
     fun canDetectWindowCoversAtLeastRegion_smallerRegion() {
-        val entry = assertThat(trace).entry(traceFirstFrameTimestamp)
+        val entry = assertThat(trace).getEntryByElapsedTimestamp(traceFirstFrameTimestamp)
         entry
             .visibleRegion(ComponentNameMatcher.STATUS_BAR)
             .coversAtLeast(Region.from(0, 0, 100, 100))
@@ -121,7 +125,7 @@ class WindowManagerStateSubjectTest {
 
     @Test
     fun canDetectWindowCoversAtLeastRegion_largerRegion() {
-        val subject = assertThat(trace).entry(traceFirstFrameTimestamp)
+        val subject = assertThat(trace).getEntryByElapsedTimestamp(traceFirstFrameTimestamp)
         var failure =
             assertThrows(FlickerSubjectException::class.java) {
                 subject
@@ -143,7 +147,7 @@ class WindowManagerStateSubjectTest {
 
     @Test
     fun canDetectWindowCoversExactlyRegion_exactSize() {
-        val entry = assertThat(trace).entry(traceFirstFrameTimestamp)
+        val entry = assertThat(trace).getEntryByElapsedTimestamp(traceFirstFrameTimestamp)
 
         entry.visibleRegion(ComponentNameMatcher.STATUS_BAR).coversExactly(statusBarRegion)
         entry.visibleRegion(TestComponents.LAUNCHER).coversExactly(displayBounds)
@@ -151,7 +155,7 @@ class WindowManagerStateSubjectTest {
 
     @Test
     fun canDetectWindowCoversExactlyRegion_smallerRegion() {
-        val subject = assertThat(trace).entry(traceFirstFrameTimestamp)
+        val subject = assertThat(trace).getEntryByElapsedTimestamp(traceFirstFrameTimestamp)
         var failure =
             assertThrows(FlickerSubjectException::class.java) {
                 subject
@@ -175,7 +179,7 @@ class WindowManagerStateSubjectTest {
 
     @Test
     fun canDetectWindowCoversExactlyRegion_largerRegion() {
-        val subject = assertThat(trace).entry(traceFirstFrameTimestamp)
+        val subject = assertThat(trace).getEntryByElapsedTimestamp(traceFirstFrameTimestamp)
         var failure =
             assertThrows(FlickerSubjectException::class.java) {
                 subject
@@ -197,14 +201,14 @@ class WindowManagerStateSubjectTest {
 
     @Test
     fun canDetectWindowCoversAtMostRegion_extactSize() {
-        val entry = assertThat(trace).entry(traceFirstFrameTimestamp)
+        val entry = assertThat(trace).getEntryByElapsedTimestamp(traceFirstFrameTimestamp)
         entry.visibleRegion(ComponentNameMatcher.STATUS_BAR).coversAtMost(statusBarRegion)
         entry.visibleRegion(TestComponents.LAUNCHER).coversAtMost(displayBounds)
     }
 
     @Test
     fun canDetectWindowCoversAtMostRegion_smallerRegion() {
-        val subject = assertThat(trace).entry(traceFirstFrameTimestamp)
+        val subject = assertThat(trace).getEntryByElapsedTimestamp(traceFirstFrameTimestamp)
         var failure =
             assertThrows(FlickerSubjectException::class.java) {
                 subject
@@ -228,7 +232,7 @@ class WindowManagerStateSubjectTest {
 
     @Test
     fun canDetectWindowCoversAtMostRegion_largerRegion() {
-        val entry = assertThat(trace).entry(traceFirstFrameTimestamp)
+        val entry = assertThat(trace).getEntryByElapsedTimestamp(traceFirstFrameTimestamp)
 
         entry
             .visibleRegion(ComponentNameMatcher.STATUS_BAR)
@@ -239,16 +243,18 @@ class WindowManagerStateSubjectTest {
     @Test
     fun canDetectBelowAppWindowVisibility() {
         assertThat(trace)
-            .entry(traceFirstFrameTimestamp)
+            .getEntryByElapsedTimestamp(traceFirstFrameTimestamp)
             .containsNonAppWindow(TestComponents.WALLPAPER)
     }
 
     @Test
     fun canDetectAppWindowVisibility() {
-        assertThat(trace).entry(traceFirstFrameTimestamp).containsAppWindow(TestComponents.LAUNCHER)
+        assertThat(trace)
+            .getEntryByElapsedTimestamp(traceFirstFrameTimestamp)
+            .containsAppWindow(TestComponents.LAUNCHER)
 
         assertThat(trace)
-            .entry(traceFirstChromeFlashScreenTimestamp)
+            .getEntryByElapsedTimestamp(traceFirstChromeFlashScreenTimestamp)
             .containsAppWindow(TestComponents.CHROME_SPLASH_SCREEN)
     }
 
@@ -292,7 +298,7 @@ class WindowManagerStateSubjectTest {
         val failure =
             assertThrows(FlickerSubjectException::class.java) {
                 assertThat(trace)
-                    .entry(traceFirstFrameTimestamp)
+                    .getEntryByElapsedTimestamp(traceFirstFrameTimestamp)
                     .containsNonAppWindow(TestComponents.IMAGINARY)
             }
         assertFailure(failure).hasMessageThat().contains(TestComponents.IMAGINARY.packageName)
@@ -303,7 +309,7 @@ class WindowManagerStateSubjectTest {
         val failure =
             assertThrows(FlickerSubjectException::class.java) {
                 assertThat(trace)
-                    .entry(traceFirstFrameTimestamp)
+                    .getEntryByElapsedTimestamp(traceFirstFrameTimestamp)
                     .containsNonAppWindow(ComponentNameMatcher.IME)
                     .isNonAppWindowVisible(ComponentNameMatcher.IME)
             }
@@ -315,7 +321,7 @@ class WindowManagerStateSubjectTest {
     @Test
     fun canDetectAppZOrder() {
         assertThat(trace)
-            .entry(traceFirstChromeFlashScreenTimestamp)
+            .getEntryByElapsedTimestamp(traceFirstChromeFlashScreenTimestamp)
             .containsAppWindow(TestComponents.LAUNCHER)
             .isAppWindowVisible(TestComponents.LAUNCHER)
             .isAboveWindow(TestComponents.CHROME_SPLASH_SCREEN, TestComponents.LAUNCHER)
@@ -327,7 +333,7 @@ class WindowManagerStateSubjectTest {
         val failure =
             assertThrows(FlickerSubjectException::class.java) {
                 assertThat(trace)
-                    .entry(traceFirstChromeFlashScreenTimestamp)
+                    .getEntryByElapsedTimestamp(traceFirstChromeFlashScreenTimestamp)
                     .isAppWindowOnTop(TestComponents.CHROME_SPLASH_SCREEN)
             }
         assertFailure(failure).factValue("Found").contains(TestComponents.LAUNCHER.packageName)
@@ -358,6 +364,8 @@ class WindowManagerStateSubjectTest {
             )
         val noWindowsState =
             WindowManagerState(
+                elapsedTimestamp = 0,
+                clockTimestamp = null,
                 where = "",
                 policy = null,
                 focusedApp = "",
@@ -447,12 +455,12 @@ class WindowManagerStateSubjectTest {
             .isAppWindowVisible(ComponentNameMatcher.SPLASH_SCREEN, isOptional = true)
             .then()
             .isAppWindowVisible(componentMatcher)
-            .forRange(394872035003110L, 394874232110818L)
+            .forElapsedTimeRange(394872035003110L, 394874232110818L)
     }
 
     @Test
     fun canDetectInvisibleWindowBecauseActivityIsInvisible() {
-        val entry = assertThat(trace).entry(9215551505798L)
+        val entry = assertThat(trace).getEntryByElapsedTimestamp(9215551505798L)
         entry.isAppWindowInvisible(TestComponents.CHROME_SPLASH_SCREEN)
     }
 }

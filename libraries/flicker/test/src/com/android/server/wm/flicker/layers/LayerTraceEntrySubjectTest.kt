@@ -87,7 +87,7 @@ class LayerTraceEntrySubjectTest {
         val error =
             assertThrows(AssertionError::class.java) {
                 LayersTraceSubject.assertThat(trace)
-                    .entry(935346112030)
+                    .getEntryBySystemUpTime(935346112030, byElapsedTimestamp = true)
                     .visibleRegion()
                     .coversAtLeast(expectedRegion)
             }
@@ -104,7 +104,7 @@ class LayerTraceEntrySubjectTest {
         val error =
             assertThrows(AssertionError::class.java) {
                 LayersTraceSubject.assertThat(trace)
-                    .entry(937229257165)
+                    .getEntryBySystemUpTime(937229257165, byElapsedTimestamp = true)
                     .visibleRegion(TestComponents.IMAGINARY)
                     .coversExactly(expectedVisibleRegion)
             }
@@ -120,7 +120,7 @@ class LayerTraceEntrySubjectTest {
         val error =
             assertThrows(AssertionError::class.java) {
                 LayersTraceSubject.assertThat(trace)
-                    .entry(937126074082)
+                    .getEntryBySystemUpTime(937126074082, byElapsedTimestamp = true)
                     .visibleRegion(TestComponents.DOCKER_STACK_DIVIDER)
                     .coversExactly(expectedVisibleRegion)
             }
@@ -134,7 +134,7 @@ class LayerTraceEntrySubjectTest {
         val error =
             assertThrows(AssertionError::class.java) {
                 LayersTraceSubject.assertThat(trace)
-                    .entry(935346112030)
+                    .getEntryBySystemUpTime(935346112030, byElapsedTimestamp = true)
                     .visibleRegion(TestComponents.SIMPLE_APP)
                     .coversExactly(expectedVisibleRegion)
             }
@@ -148,7 +148,7 @@ class LayerTraceEntrySubjectTest {
         val error =
             assertThrows(AssertionError::class.java) {
                 LayersTraceSubject.assertThat(trace)
-                    .entry(937126074082)
+                    .getEntryBySystemUpTime(937126074082, byElapsedTimestamp = true)
                     .visibleRegion(ComponentNameMatcher.STATUS_BAR)
                     .coversExactly(expectedVisibleRegion)
             }
@@ -160,7 +160,7 @@ class LayerTraceEntrySubjectTest {
         val trace = readLayerTraceFromFile("layers_trace_launch_split_screen.pb")
         val expectedVisibleRegion = Region.from(0, 0, 1080, 145)
         LayersTraceSubject.assertThat(trace)
-            .entry(90480846872160)
+            .getEntryBySystemUpTime(90480846872160, byElapsedTimestamp = true)
             .visibleRegion(ComponentNameMatcher.STATUS_BAR)
             .coversExactly(expectedVisibleRegion)
     }
@@ -171,7 +171,7 @@ class LayerTraceEntrySubjectTest {
         val error =
             assertThrows(AssertionError::class.java) {
                 LayersTraceSubject.assertThat(trace)
-                    .entry(252794268378458)
+                    .getEntryBySystemUpTime(252794268378458, byElapsedTimestamp = true)
                     .isVisible(TestComponents.SIMPLE_APP)
             }
         assertFailure(error).factValue("Invisibility reason", 1).contains("Bounds is 0x0")
@@ -361,7 +361,9 @@ class LayerTraceEntrySubjectTest {
     @Test
     fun detectPartiallyCoveredLayerBecauseOfRoundedCorners() {
         val trace = readLayerTraceFromFile("layers_trace_rounded_corners.winscope")
-        val entry = LayersTraceSubject.assertThat(trace).entry(6216612368228)
+        val entry =
+            LayersTraceSubject.assertThat(trace)
+                .getEntryBySystemUpTime(6216612368228, byElapsedTimestamp = true)
         val defaultPkg = "com.android.server.wm.flicker.testapp"
         val simpleActivityMatcher =
             ComponentNameMatcher(defaultPkg, "$defaultPkg.SimpleActivity#66086")

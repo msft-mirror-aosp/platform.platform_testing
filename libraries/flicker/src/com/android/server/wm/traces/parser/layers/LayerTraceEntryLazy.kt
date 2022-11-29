@@ -24,6 +24,8 @@ import com.android.server.wm.traces.common.ActiveBuffer
 import com.android.server.wm.traces.common.Color
 import com.android.server.wm.traces.common.RectF
 import com.android.server.wm.traces.common.Size
+import com.android.server.wm.traces.common.Timestamp
+import com.android.server.wm.traces.common.Timestamp.Companion.NULL_TIMESTAMP
 import com.android.server.wm.traces.common.layers.BaseLayerTraceEntry
 import com.android.server.wm.traces.common.layers.HwcCompositionType
 import com.android.server.wm.traces.common.layers.Layer
@@ -33,7 +35,8 @@ import com.android.server.wm.traces.common.region.Region
 /** Lazy loading of a trace entry used by legacy Winscope */
 @Deprecated("To be removed when legacy Winscope is discontinued. Use [LayerTraceEntry] instead")
 class LayerTraceEntryLazy(
-    override val timestamp: Long,
+    override val elapsedTimestamp: Long,
+    override val clockTimestamp: Long?,
     override val hwcBlob: String = "",
     override val where: String = "",
     override val vSyncId: Long = -1L,
@@ -43,12 +46,14 @@ class LayerTraceEntryLazy(
     private var layerProtos: Array<Layers.LayerProto> = emptyArray(),
     private val orphanLayerCallback: ((Layer) -> Boolean)? = null
 ) : BaseLayerTraceEntry() {
+    override val timestamp =
+        Timestamp(elapsedNanos = elapsedTimestamp, unixNanos = clockTimestamp ?: NULL_TIMESTAMP)
 
     private val parsedEntry by lazy {
         val layers = layerProtos.map { newLayer(it) }.toTypedArray()
         val displays = displayProtos.map { newDisplay(it) }.toTypedArray()
         val builder =
-            LayerTraceEntryBuilder(timestamp, layers, displays, vSyncId, hwcBlob, where)
+            LayerTraceEntryBuilder(timestamp.toString(), layers, displays, vSyncId, hwcBlob, where)
                 .setOrphanLayerCallback(orphanLayerCallback)
                 .ignoreLayersStackMatchNoDisplay(ignoreLayersStackMatchNoDisplay)
                 .ignoreVirtualDisplay(ignoreLayersInVirtualDisplay)

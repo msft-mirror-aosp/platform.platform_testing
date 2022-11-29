@@ -16,17 +16,13 @@
 
 package com.android.server.wm.traces.common.service
 
-import com.android.server.wm.traces.common.layers.LayersTrace
-import com.android.server.wm.traces.common.tags.Tag
-import com.android.server.wm.traces.common.tags.TagState
-import com.android.server.wm.traces.common.tags.TagTrace
 import com.android.server.wm.traces.common.transition.TransitionsTrace
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 
 enum class ScenarioType(
     val description: String,
     val executionCondition: AssertionExecutionCondition
-) : ITagGenerator {
+) {
     COMMON("Common", AssertionExecutionCondition.ALWAYS),
     APP_LAUNCH("AppLaunch", AssertionExecutionCondition.APP_LAUNCH),
     APP_CLOSE("AppClose", AssertionExecutionCondition.APP_CLOSE),
@@ -93,54 +89,6 @@ enum class ScenarioType(
         }
 
         return scenarioInstances
-    }
-
-    override fun generateTags(
-        wmTrace: WindowManagerTrace,
-        layersTrace: LayersTrace,
-        transitionsTrace: TransitionsTrace
-    ): TagTrace {
-        val scenarioInstances = this.getInstances(transitionsTrace, wmTrace)
-        val tagsByTs = mutableMapOf<Long, MutableList<Tag>>()
-        for (scenarioInstance in scenarioInstances) {
-            if (tagsByTs[scenarioInstance.startTimestamp] == null) {
-                tagsByTs[scenarioInstance.startTimestamp] = mutableListOf()
-            }
-            if (tagsByTs[scenarioInstance.endTimestamp] == null) {
-                tagsByTs[scenarioInstance.endTimestamp] = mutableListOf()
-            }
-
-            val tagId = TagIdGenerator.getNext()
-
-            val startTag =
-                Tag(
-                    id = tagId,
-                    scenarioType = this,
-                    isStartTag = true,
-                    layerId = -1,
-                    windowToken = "",
-                    taskId = 0
-                )
-            tagsByTs[scenarioInstance.startTimestamp]!!.add(startTag)
-
-            val endTag =
-                Tag(
-                    id = tagId,
-                    scenarioType = this,
-                    isStartTag = false,
-                    layerId = -1,
-                    windowToken = "",
-                    taskId = 0
-                )
-            tagsByTs[scenarioInstance.endTimestamp]!!.add(endTag)
-        }
-
-        val tagStates = mutableListOf<TagState>()
-        for ((timestamp, tags) in tagsByTs) {
-            tagStates.add(TagState(timestamp.toString(), tags.toTypedArray()))
-        }
-
-        return TagTrace(tagStates.sortedBy { it.timestamp }.toTypedArray())
     }
 
     companion object {

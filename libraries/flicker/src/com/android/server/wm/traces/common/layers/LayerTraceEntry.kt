@@ -17,6 +17,8 @@
 package com.android.server.wm.traces.common.layers
 
 import com.android.server.wm.traces.common.RectF
+import com.android.server.wm.traces.common.Timestamp
+import com.android.server.wm.traces.common.Timestamp.Companion.NULL_TIMESTAMP
 import kotlin.js.JsName
 
 /**
@@ -26,13 +28,19 @@ import kotlin.js.JsName
  * Java/Android functionality
  */
 class LayerTraceEntry(
-    override val timestamp: Long,
+    override val elapsedTimestamp: Long,
+    override val clockTimestamp: Long?,
     override val hwcBlob: String,
     override val where: String,
     override val displays: Array<Display>,
     override val vSyncId: Long,
-    _rootLayers: Array<Layer>
+    _rootLayers: Array<Layer>,
 ) : BaseLayerTraceEntry() {
+    override val timestamp =
+        Timestamp(
+            systemUptimeNanos = elapsedTimestamp,
+            unixNanos = clockTimestamp ?: NULL_TIMESTAMP
+        )
     override val flattenedLayers: Array<Layer> = fillFlattenedLayers(_rootLayers)
 
     @JsName("fillFlattenedLayers")

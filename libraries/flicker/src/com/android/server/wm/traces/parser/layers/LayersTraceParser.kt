@@ -94,6 +94,7 @@ class LayersTraceParser {
             try {
                 val entries: MutableList<BaseLayerTraceEntry> = ArrayList()
                 var traceParseTime = 0L
+                val realToElapsedTimeOffsetNanos = proto.realToElapsedTimeOffsetNanos
                 for (traceProto: Layerstrace.LayersTraceProto in proto.entryList) {
                     val entryParseTime = measureTimeMillis {
                         val layers =
@@ -106,12 +107,13 @@ class LayersTraceParser {
                                 .toTypedArray()
                         val builder =
                             LayerTraceEntryBuilder(
-                                    traceProto.elapsedRealtimeNanos,
+                                    traceProto.elapsedRealtimeNanos.toString(),
                                     layers,
                                     displays,
                                     traceProto.vsyncId,
                                     traceProto.hwcBlob,
-                                    traceProto.where
+                                    traceProto.where,
+                                    realToElapsedTimeOffsetNanos.toString()
                                 )
                                 .setOrphanLayerCallback(orphanLayerCallback)
                                 .ignoreLayersStackMatchNoDisplay(ignoreLayersStackMatchNoDisplay)
@@ -157,12 +159,13 @@ class LayersTraceParser {
             try {
                 val entry =
                     LayerTraceEntryLazy(
-                        timestamp = 0,
+                        elapsedTimestamp = 0,
+                        clockTimestamp = 0,
                         displayProtos = emptyArray(),
                         layerProtos = proto.layersList.toTypedArray(),
                         ignoreLayersStackMatchNoDisplay = false,
                         ignoreLayersInVirtualDisplay = false,
-                        vSyncId = -1L,
+                        vSyncId = -1L
                     )
                 return LayersTrace(entry)
             } finally {

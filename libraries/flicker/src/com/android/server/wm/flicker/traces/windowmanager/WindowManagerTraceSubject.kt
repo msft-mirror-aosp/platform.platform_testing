@@ -572,8 +572,9 @@ private constructor(
     ): WindowManagerTraceSubject = apply { addAssertion(name, isOptional, assertion) }
 
     /** Run the assertions for all trace entries within the specified time range */
-    fun forRange(startTime: Long, endTime: Long) {
-        val subjectsInRange = subjects.filter { it.wmState.timestamp in startTime..endTime }
+    fun forElapsedTimeRange(startTime: Long, endTime: Long) {
+        val subjectsInRange =
+            subjects.filter { it.wmState.timestamp.elapsedNanos in startTime..endTime }
         assertionsChecker.test(subjectsInRange)
     }
 
@@ -582,8 +583,8 @@ private constructor(
      *
      * @param timestamp of the entry
      */
-    fun entry(timestamp: Long): WindowManagerStateSubject =
-        subjects.first { it.wmState.timestamp == timestamp }
+    fun getEntryByElapsedTimestamp(timestamp: Long): WindowManagerStateSubject =
+        subjects.first { it.wmState.timestamp.elapsedNanos == timestamp }
 
     companion object {
         /** Boilerplate Subject.Factory for WmTraceSubject */

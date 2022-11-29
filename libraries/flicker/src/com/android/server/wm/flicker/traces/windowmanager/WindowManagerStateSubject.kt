@@ -23,6 +23,7 @@ import com.android.server.wm.flicker.traces.FlickerFailureStrategy
 import com.android.server.wm.flicker.traces.region.RegionSubject
 import com.android.server.wm.traces.common.ComponentNameMatcher
 import com.android.server.wm.traces.common.IComponentMatcher
+import com.android.server.wm.traces.common.Timestamp
 import com.android.server.wm.traces.common.region.Region
 import com.android.server.wm.traces.common.windowmanager.WindowManagerState
 import com.android.server.wm.traces.common.windowmanager.windows.WindowState
@@ -65,7 +66,7 @@ private constructor(
     val trace: WindowManagerTraceSubject?,
     override val parent: FlickerSubject?
 ) : FlickerSubject(fm, wmState), IWindowManagerSubject<WindowManagerStateSubject, RegionSubject> {
-    override val timestamp: Long
+    override val timestamp: Timestamp
         get() = wmState.timestamp
     override val selfFacts = listOf(Fact.fact("WM State", wmState))
 

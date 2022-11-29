@@ -20,6 +20,7 @@ import com.android.server.wm.flicker.assertions.Assertion
 import com.android.server.wm.flicker.assertions.FlickerSubject
 import com.android.server.wm.flicker.traces.FlickerFailureStrategy
 import com.android.server.wm.flicker.traces.region.RegionSubject
+import com.android.server.wm.traces.common.Timestamp
 import com.android.server.wm.traces.common.windowmanager.windows.WindowState
 import com.google.common.truth.Fact
 import com.google.common.truth.FailureMetadata
@@ -51,7 +52,7 @@ class WindowStateSubject
 private constructor(
     fm: FailureMetadata,
     override val parent: WindowManagerStateSubject?,
-    override val timestamp: Long,
+    override val timestamp: Timestamp,
     val windowState: WindowState?,
     private val windowTitle: String? = null
 ) : FlickerSubject(fm, windowState) {
@@ -94,7 +95,7 @@ private constructor(
     companion object {
         /** Boiler-plate Subject.Factory for LayerSubject */
         @JvmStatic
-        fun getFactory(parent: WindowManagerStateSubject?, timestamp: Long, name: String?) =
+        fun getFactory(parent: WindowManagerStateSubject?, timestamp: Timestamp, name: String?) =
             Factory { fm: FailureMetadata, subject: WindowState? ->
                 WindowStateSubject(fm, parent, timestamp, subject, name)
             }
@@ -105,7 +106,7 @@ private constructor(
         fun assertThat(
             state: WindowState?,
             parent: WindowManagerStateSubject? = null,
-            timestamp: Long
+            timestamp: Timestamp
         ): WindowStateSubject {
             val strategy = FlickerFailureStrategy()
             val subject =
@@ -121,7 +122,7 @@ private constructor(
         internal fun assertThat(
             name: String,
             parent: WindowManagerStateSubject?,
-            timestamp: Long
+            timestamp: Timestamp
         ): WindowStateSubject {
             val strategy = FlickerFailureStrategy()
             val subject =

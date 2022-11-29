@@ -25,6 +25,7 @@ import com.android.server.wm.flicker.monitor.IFileGeneratingMonitor
 import com.android.server.wm.flicker.monitor.ITransitionMonitor
 import com.android.server.wm.flicker.monitor.NoTraceMonitor
 import com.android.server.wm.traces.common.ConditionList
+import com.android.server.wm.traces.common.Timestamp
 import com.android.server.wm.traces.common.WindowManagerConditionsFactory
 import com.android.server.wm.traces.parser.getCurrentState
 import java.io.IOException
@@ -103,8 +104,8 @@ open class TransitionRunner {
                 // No need to run anything the trace monitor will return the trace data
                 // Set the start and finish times to min and max respectively to avoid any cropping
                 // TODO: We might want to refactor this to use the start and end tags in the future
-                runResult.transitionStartTime = FlickerRunResult.TraceTime.MIN
-                runResult.transitionEndTime = FlickerRunResult.TraceTime.MAX
+                runResult.transitionStartTime = Timestamp.MIN
+                runResult.transitionEndTime = Timestamp.MAX
             } else {
                 progressUpdate("${flicker.testName} - Running transition setup")
                 measureTimeMillis { runTransitionSetup(flicker) }

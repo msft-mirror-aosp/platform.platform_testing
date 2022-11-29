@@ -43,6 +43,7 @@ import com.android.server.wm.traces.common.Rect
 import com.android.server.wm.traces.common.Size
 import com.android.server.wm.traces.common.windowmanager.WindowManagerState
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
+import com.android.server.wm.traces.common.windowmanager.WindowManagerTraceEntryBuilder
 import com.android.server.wm.traces.common.windowmanager.windows.Activity
 import com.android.server.wm.traces.common.windowmanager.windows.Configuration
 import com.android.server.wm.traces.common.windowmanager.windows.ConfigurationContainer
@@ -122,12 +123,14 @@ object WindowManagerTraceParser {
         try {
             val entries = mutableListOf<WindowManagerState>()
             var traceParseTime = 0L
+            val realToElapsedTimeOffsetNanos = proto.realToElapsedTimeOffsetNanos
             for (entryProto in proto.entry) {
                 val entryParseTime = measureTimeMillis {
                     val entry =
                         newTraceEntry(
                             entryProto.windowManagerService,
                             entryProto.elapsedRealtimeNanos,
+                            realToElapsedTimeOffsetNanos,
                             entryProto.where
                         )
                     entries.add(entry)
@@ -164,7 +167,16 @@ object WindowManagerTraceParser {
         clearCacheAfterParsing: Boolean = true
     ): WindowManagerTrace {
         try {
-            return WindowManagerTrace(arrayOf(newTraceEntry(proto, timestamp = 0, where = "")))
+            return WindowManagerTrace(
+                arrayOf(
+                    newTraceEntry(
+                        proto,
+                        timestamp = 0,
+                        realToElapsedTimeOffsetNanos = 0,
+                        where = ""
+                    )
+                )
+            )
         } finally {
             if (clearCacheAfterParsing) {
                 Cache.clear()
@@ -199,30 +211,33 @@ object WindowManagerTraceParser {
     private fun newTraceEntry(
         proto: WindowManagerServiceDumpProto,
         timestamp: Long,
+        realToElapsedTimeOffsetNanos: Long,
         where: String
     ): WindowManagerState {
         computedZCounter = 0
-        return WindowManagerState(
-            where = where,
-            policy = newWindowManagerPolicy(proto.policy),
-            focusedApp = proto.focusedApp,
-            focusedDisplayId = proto.focusedDisplayId,
-            _focusedWindow = proto.focusedWindow?.title ?: "",
-            inputMethodWindowAppToken =
-                if (proto.inputMethodWindow != null) {
-                    Integer.toHexString(proto.inputMethodWindow.hashCode)
-                } else {
-                    ""
-                },
-            isHomeRecentsComponent = proto.rootWindowContainer.isHomeRecentsComponent,
-            isDisplayFrozen = proto.displayFrozen,
-            _pendingActivities =
-                proto.rootWindowContainer.pendingActivities.map { it.title }.toTypedArray(),
-            root = newRootWindowContainer(proto.rootWindowContainer),
-            keyguardControllerState =
-                newKeyguardControllerState(proto.rootWindowContainer.keyguardController),
-            _timestamp = timestamp.toString()
-        )
+        return WindowManagerTraceEntryBuilder(
+                _elapsedTimestamp = timestamp.toString(),
+                policy = newWindowManagerPolicy(proto.policy),
+                focusedApp = proto.focusedApp,
+                focusedDisplayId = proto.focusedDisplayId,
+                focusedWindow = proto.focusedWindow?.title ?: "",
+                inputMethodWindowAppToken =
+                    if (proto.inputMethodWindow != null) {
+                        Integer.toHexString(proto.inputMethodWindow.hashCode)
+                    } else {
+                        ""
+                    },
+                isHomeRecentsComponent = proto.rootWindowContainer.isHomeRecentsComponent,
+                isDisplayFrozen = proto.displayFrozen,
+                pendingActivities =
+                    proto.rootWindowContainer.pendingActivities.map { it.title }.toTypedArray(),
+                root = newRootWindowContainer(proto.rootWindowContainer),
+                keyguardControllerState =
+                    newKeyguardControllerState(proto.rootWindowContainer.keyguardController),
+                where = where,
+                realToElapsedTimeOffsetNs = realToElapsedTimeOffsetNanos.toString()
+            )
+            .build()
     }
 
     private fun newWindowManagerPolicy(proto: WindowManagerPolicyProto): WindowManagerPolicy {

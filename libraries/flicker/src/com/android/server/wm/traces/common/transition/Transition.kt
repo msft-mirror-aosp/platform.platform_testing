@@ -17,6 +17,7 @@
 package com.android.server.wm.traces.common.transition
 
 import com.android.server.wm.traces.common.ITraceEntry
+import com.android.server.wm.traces.common.Timestamp
 import com.android.server.wm.traces.common.transactions.Transaction
 import com.android.server.wm.traces.common.transactions.TransactionsTrace
 import com.android.server.wm.traces.common.transition.TransitionState.Companion.State
@@ -33,7 +34,8 @@ class Transition(
     @JsName("played") val played: Boolean,
     @JsName("aborted") val aborted: Boolean
 ) : ITraceEntry {
-    override val timestamp = start
+    // TODO: Dump other timestamps for this trace
+    override val timestamp = Timestamp(elapsedNanos = start)
 
     @JsName("isIncomplete")
     val isIncomplete: Boolean

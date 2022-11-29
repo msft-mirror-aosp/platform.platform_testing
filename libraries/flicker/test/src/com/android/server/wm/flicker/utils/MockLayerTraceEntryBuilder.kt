@@ -67,7 +67,8 @@ class MockLayerTraceEntryBuilder() {
 
     fun build(): LayerTraceEntry {
         return LayerTraceEntry(
-            timestamp = timestamp,
+            elapsedTimestamp = timestamp,
+            clockTimestamp = null,
             hwcBlob = "",
             where = "",
             displays = displays.toTypedArray(),

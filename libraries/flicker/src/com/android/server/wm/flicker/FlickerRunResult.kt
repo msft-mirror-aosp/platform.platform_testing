@@ -31,6 +31,7 @@ import com.android.server.wm.flicker.traces.layers.LayerTraceEntrySubject
 import com.android.server.wm.flicker.traces.layers.LayersTraceSubject
 import com.android.server.wm.flicker.traces.windowmanager.WindowManagerStateSubject
 import com.android.server.wm.flicker.traces.windowmanager.WindowManagerTraceSubject
+import com.android.server.wm.traces.common.Timestamp
 import com.android.server.wm.traces.common.layers.LayersTrace
 import com.android.server.wm.traces.common.transactions.TransactionsTrace
 import com.android.server.wm.traces.common.transition.TransitionsTrace
@@ -51,23 +52,12 @@ class FlickerRunResult(
     private val traceConfig: TraceConfigs = DEFAULT_TRACE_CONFIG
 ) {
 
-    data class TraceTime(
-        val elapsedRealtimeNanos: Long,
-        val systemTime: Long,
-        val unixTimeNanos: Long
-    ) {
-        companion object {
-            val MIN = TraceTime(0, 0, 0)
-            val MAX = TraceTime(Long.MAX_VALUE, Long.MAX_VALUE, Long.MAX_VALUE)
-        }
-    }
-
     /**
      * Logs the start and end times of the transition, so we can crop the traces to exclude the
      * setups and teardowns to only run the assertion on the transition.
      */
-    lateinit var transitionStartTime: TraceTime
-    lateinit var transitionEndTime: TraceTime
+    lateinit var transitionStartTime: Timestamp
+    lateinit var transitionEndTime: Timestamp
 
     /**
      * The object responsible for managing the trace file associated with this result.
@@ -249,17 +239,17 @@ class FlickerRunResult(
             "Full WM trace is empty..."
         }
         val trace =
-            fullTrace.slice(
-                transitionStartTime.elapsedRealtimeNanos,
-                transitionEndTime.elapsedRealtimeNanos,
+            fullTrace.sliceUsingElapsedTimestamp(
+                transitionStartTime.elapsedNanos,
+                transitionEndTime.elapsedNanos,
                 addInitialEntry = true
             )
         val minimumEntries = minimumTraceEntriesForConfig(traceConfig.wmTrace)
         require(trace.entries.size >= minimumEntries) {
             "WM trace contained ${trace.entries.size} entries, " +
                 "expected at least $minimumEntries... :: " +
-                "transition starts at ${transitionStartTime.elapsedRealtimeNanos} and " +
-                "ends at ${transitionEndTime.elapsedRealtimeNanos}."
+                "transition starts at ${transitionStartTime.elapsedNanos} and " +
+                "ends at ${transitionEndTime.elapsedNanos}."
         }
         return trace
     }
@@ -273,17 +263,17 @@ class FlickerRunResult(
             "Full layers trace is empty..."
         }
         val trace =
-            fullTrace.slice(
-                transitionStartTime.systemTime,
-                transitionEndTime.systemTime,
+            fullTrace.sliceUsingElapsedTimestamp(
+                transitionStartTime.systemUptimeNanos,
+                transitionEndTime.systemUptimeNanos,
                 addInitialEntry = true
             )
         val minimumEntries = minimumTraceEntriesForConfig(traceConfig.layersTrace)
         require(trace.entries.size >= minimumEntries) {
             "Layers trace contained ${trace.entries.size} entries, " +
                 "expected at least $minimumEntries... :: " +
-                "transition starts at ${transitionStartTime.systemTime} and " +
-                "ends at ${transitionEndTime.systemTime}."
+                "transition starts at ${transitionStartTime.systemUptimeNanos} and " +
+                "ends at ${transitionEndTime.systemUptimeNanos}."
         }
         return trace
     }
@@ -299,7 +289,11 @@ class FlickerRunResult(
     /** @return a transactions trace for the part of the trace we want to run the assertions on. */
     private fun buildTransactionsTrace(): TransactionsTrace? {
         val fullTrace = buildFullTransactionsTrace() ?: return null
-        val trace = fullTrace.slice(transitionStartTime.systemTime, transitionEndTime.systemTime)
+        val trace =
+            fullTrace.slice(
+                transitionStartTime.systemUptimeNanos,
+                transitionEndTime.systemUptimeNanos
+            )
         require(trace.entries.isNotEmpty()) { "Trimmed transactions trace was empty..." }
         return trace
     }
@@ -311,10 +305,7 @@ class FlickerRunResult(
         val traceData = this.artifacts.getFileBytes(transitionsTrace)
         val fullTrace = TransitionsTraceParser.parseFromTrace(traceData, transactionsTrace!!)
         val trace =
-            fullTrace.slice(
-                transitionStartTime.elapsedRealtimeNanos,
-                transitionEndTime.elapsedRealtimeNanos
-            )
+            fullTrace.slice(transitionStartTime.elapsedNanos, transitionEndTime.elapsedNanos)
         if (!traceConfig.transitionsTrace.allowNoChange) {
             require(trace.entries.isNotEmpty()) { "Transitions trace was empty..." }
         }
@@ -364,7 +355,7 @@ class FlickerRunResult(
     private fun buildEventLog(): EventLogSubject? {
         val eventLog = eventLog ?: return null
         return EventLogSubject.assertThat(eventLog)
-            .split(transitionStartTime.unixTimeNanos, transitionEndTime.unixTimeNanos)
+            .splitByUnixTimestamp(transitionStartTime.unixNanos, transitionEndTime.unixNanos)
     }
 
     private fun buildWmTraceSubject(): WindowManagerTraceSubject? {
@@ -395,20 +386,20 @@ class FlickerRunResult(
 
     fun notifyTransitionStarting() {
         this.transitionStartTime =
-            FlickerRunResult.TraceTime(
-                elapsedRealtimeNanos = SystemClock.elapsedRealtimeNanos(),
-                systemTime = SystemClock.uptimeNanos(),
-                unixTimeNanos =
+            Timestamp(
+                elapsedNanos = SystemClock.elapsedRealtimeNanos(),
+                systemUptimeNanos = SystemClock.uptimeNanos(),
+                unixNanos =
                     TimeUnit.NANOSECONDS.convert(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
             )
     }
 
     fun notifyTransitionEnded() {
         this.transitionEndTime =
-            FlickerRunResult.TraceTime(
-                elapsedRealtimeNanos = SystemClock.elapsedRealtimeNanos(),
-                systemTime = SystemClock.uptimeNanos(),
-                unixTimeNanos =
+            Timestamp(
+                elapsedNanos = SystemClock.elapsedRealtimeNanos(),
+                systemUptimeNanos = SystemClock.uptimeNanos(),
+                unixNanos =
                     TimeUnit.NANOSECONDS.convert(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
             )
     }

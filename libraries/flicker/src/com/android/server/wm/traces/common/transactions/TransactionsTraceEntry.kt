@@ -17,10 +17,11 @@
 package com.android.server.wm.traces.common.transactions
 
 import com.android.server.wm.traces.common.ITraceEntry
+import com.android.server.wm.traces.common.Timestamp
 import kotlin.js.JsName
 
 class TransactionsTraceEntry(
-    override val timestamp: Long,
+    override val timestamp: Timestamp,
     @JsName("vSyncId") val vSyncId: Long,
     @JsName("transactions") val transactions: Array<Transaction>
 ) : ITraceEntry

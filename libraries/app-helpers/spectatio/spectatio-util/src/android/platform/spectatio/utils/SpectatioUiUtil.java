@@ -219,6 +219,14 @@ public class SpectatioUiUtil {
         return uiObject;
     }
 
+    /** Find and return the UI Objects that matches the given selector */
+    public List<UiObject2> findUiObjects(BySelector selector) {
+        validateSelector(selector, /* action= */ "Find UI Object");
+        List<UiObject2> uiObjects =
+                mDevice.wait(Until.findObjects(selector), LONG_UI_RESPONSE_WAIT_MS);
+        return uiObjects;
+    }
+
     /**
      * Find the UI Object that matches the given text string.
      *

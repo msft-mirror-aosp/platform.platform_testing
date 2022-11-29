@@ -23,6 +23,7 @@ import com.android.server.wm.flicker.traces.region.RegionTraceSubject
 import com.android.server.wm.traces.common.ComponentNameMatcher
 import com.android.server.wm.traces.common.EdgeExtensionComponentMatcher
 import com.android.server.wm.traces.common.IComponentMatcher
+import com.android.server.wm.traces.common.Timestamp
 import com.android.server.wm.traces.common.layers.Layer
 import com.android.server.wm.traces.common.layers.LayersTrace
 import com.android.server.wm.traces.common.region.RegionTrace
@@ -96,7 +97,7 @@ private constructor(
             ?: LayerSubject.assertThat(
                 null,
                 this,
-                timestamp = subjects.firstOrNull()?.entry?.timestamp ?: 0L
+                timestamp = subjects.firstOrNull()?.entry?.timestamp ?: Timestamp.EMPTY
             )
     }
 
@@ -270,8 +271,9 @@ private constructor(
     }
 
     /** Run the assertions for all trace entries within the specified time range */
-    fun forRange(startTime: Long, endTime: Long) {
-        val subjectsInRange = subjects.filter { it.entry.timestamp in startTime..endTime }
+    fun forSystemUpTimeRange(startTime: Long, endTime: Long) {
+        val subjectsInRange =
+            subjects.filter { it.entry.timestamp.systemUptimeNanos in startTime..endTime }
         assertionsChecker.test(subjectsInRange)
     }
 
@@ -280,8 +282,16 @@ private constructor(
      *
      * @param timestamp of the entry
      */
-    fun entry(timestamp: Long): LayerTraceEntrySubject =
-        subjects.first { it.entry.timestamp == timestamp }
+    fun getEntryBySystemUpTime(
+        timestamp: Long,
+        byElapsedTimestamp: Boolean = false
+    ): LayerTraceEntrySubject {
+        return if (byElapsedTimestamp) {
+            subjects.first { it.entry.elapsedTimestamp == timestamp }
+        } else {
+            subjects.first { it.entry.timestamp.systemUptimeNanos == timestamp }
+        }
+    }
 
     companion object {
         /** Boilerplate Subject.Factory for LayersTraceSubject */

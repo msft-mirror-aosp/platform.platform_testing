@@ -155,7 +155,7 @@ class WindowManagerStateHelperTest {
      * NavBar, as well as all visible non-system windows (those with name containing /)
      */
     private fun WindowManagerTrace.asSupplier(startingTimestamp: Long = 0): () -> DeviceStateDump {
-        val iterator = this.dropWhile { it.timestamp < startingTimestamp }.iterator()
+        val iterator = this.dropWhile { it.timestamp.elapsedNanos < startingTimestamp }.iterator()
         return {
             if (iterator.hasNext()) {
                 val wmState = iterator.next()
@@ -177,7 +177,7 @@ class WindowManagerStateHelperTest {
                 }
                 val layerTraceEntry =
                     LayerTraceEntryBuilder(
-                            timestamp = 0,
+                            _elapsedTimestamp = "0",
                             displays = emptyArray(),
                             layers = createImaginaryVisibleLayers(layerList),
                             vSyncId = -1
@@ -327,7 +327,7 @@ class WindowManagerStateHelperTest {
         val trace = readWmTraceFromFile("wm_trace_open_and_close_chrome.pb")
         val initialTimestamp = 69443918698679
         val supplier = trace.asSupplier(startingTimestamp = initialTimestamp)
-        val initialEntry = trace.getEntry(initialTimestamp)
+        val initialEntry = trace.getEntryByElapsedTimestamp(initialTimestamp)
         val helper =
             TestWindowManagerStateHelper(
                 initialEntry,

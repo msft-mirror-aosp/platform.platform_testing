@@ -95,12 +95,12 @@ class LayersTraceSubjectTest {
         assertThat(layersTraceEntries)
             .isVisible(ComponentNameMatcher.NAV_BAR)
             .isInvisible(TestComponents.DOCKER_STACK_DIVIDER)
-            .forRange(90480846872160L, 90480994138424L)
+            .forSystemUpTimeRange(90480846872160L, 90480994138424L)
 
         assertThat(layersTraceEntries)
             .isVisible(ComponentNameMatcher.NAV_BAR)
             .isVisible(TestComponents.DOCKER_STACK_DIVIDER)
-            .forRange(90491795074136L, 90493757372977L)
+            .forSystemUpTimeRange(90491795074136L, 90493757372977L)
     }
 
     @Test
@@ -217,7 +217,8 @@ class LayersTraceSubjectTest {
     @Test
     fun canTestLayerOccludedByAppLayerIsNotVisible() {
         val trace = readLayerTraceFromFile("layers_trace_occluded.pb")
-        val entry = assertThat(trace).entry(1700382131522L)
+        val entry =
+            assertThat(trace).getEntryBySystemUpTime(1700382131522L, byElapsedTimestamp = true)
         entry.isVisible(TestComponents.SIMPLE_APP)
     }
 

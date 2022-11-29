@@ -18,7 +18,8 @@ package com.android.server.wm.flicker.traces.eventlog
 
 import com.android.server.wm.flicker.assertions.AssertionsChecker
 import com.android.server.wm.flicker.assertions.FlickerSubject
-import com.android.server.wm.traces.common.prettyTimestamp
+import com.android.server.wm.flicker.helpers.format
+import com.android.server.wm.traces.common.Timestamp
 import com.google.common.truth.Fact
 import com.google.common.truth.FailureMetadata
 import com.google.common.truth.Subject.Factory
@@ -28,16 +29,17 @@ import com.google.common.truth.Truth
 class EventLogSubject
 private constructor(failureMetadata: FailureMetadata, val trace: List<FocusEvent>) :
     FlickerSubject(failureMetadata, trace) {
-    override val timestamp: Long
-        get() = 0
+    override val timestamp: Timestamp
+        get() = Timestamp.EMPTY
     override val parent: FlickerSubject?
         get() = null
     override val selfFacts by lazy {
-        val firstTimestamp = subjects.firstOrNull()?.timestamp ?: 0L
-        val lastTimestamp = subjects.lastOrNull()?.timestamp ?: 0L
-        val first = "${prettyTimestamp(firstTimestamp)} (timestamp=$firstTimestamp)"
-        val last = "${prettyTimestamp(lastTimestamp)} (timestamp=$lastTimestamp)"
-        listOf(Fact.fact("Trace start", first), Fact.fact("Trace end", last))
+        val firstTimestamp = subjects.firstOrNull()?.timestamp ?: Timestamp.EMPTY
+        val lastTimestamp = subjects.lastOrNull()?.timestamp ?: Timestamp.EMPTY
+        listOf(
+            Fact.fact("Trace start", firstTimestamp.format()),
+            Fact.fact("Trace end", lastTimestamp.format())
+        )
     }
 
     private val subjects by lazy { trace.map { FocusEventSubject.assertThat(it, this) } }
@@ -87,8 +89,11 @@ private constructor(failureMetadata: FailureMetadata, val trace: List<FocusEvent
     /** Run the assertions. */
     fun forAllEntries(): Unit = assertionsChecker.test(subjects)
 
-    fun split(from: Long, to: Long): EventLogSubject {
-        val trace = this.trace.dropWhile { it.timestamp < from }.dropLastWhile { it.timestamp > to }
+    fun splitByUnixTimestamp(from: Long, to: Long): EventLogSubject {
+        val trace =
+            this.trace
+                .dropWhile { (it.timestamp.unixNanos ?: error("Missing unix timestamp")) < from }
+                .dropLastWhile { (it.timestamp.unixNanos ?: error("Missing unix timestamp")) > to }
         return EventLogSubject(this.fm, trace)
     }
 }

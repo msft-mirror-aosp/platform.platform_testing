@@ -21,6 +21,7 @@ import com.android.server.wm.flicker.assertions.FlickerSubject
 import com.android.server.wm.flicker.traces.FlickerFailureStrategy
 import com.android.server.wm.flicker.traces.region.RegionSubject
 import com.android.server.wm.traces.common.IComponentMatcher
+import com.android.server.wm.traces.common.Timestamp
 import com.android.server.wm.traces.common.layers.BaseLayerTraceEntry
 import com.android.server.wm.traces.common.layers.Layer
 import com.android.server.wm.traces.common.layers.LayersTrace
@@ -63,7 +64,7 @@ private constructor(
     val trace: LayersTrace?,
     override val parent: FlickerSubject?
 ) : FlickerSubject(fm, entry), ILayerSubject<LayerTraceEntrySubject, RegionSubject> {
-    override val timestamp: Long
+    override val timestamp: Timestamp
         get() = entry.timestamp
     override val selfFacts = listOf(Fact.fact("SF State", entry))
 

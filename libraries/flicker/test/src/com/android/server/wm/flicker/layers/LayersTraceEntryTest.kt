@@ -23,6 +23,7 @@ import com.android.server.wm.flicker.readLayerTraceFromFile
 import com.android.server.wm.flicker.traces.layers.LayersTraceSubject.Companion.assertThat
 import com.android.server.wm.traces.common.Cache
 import com.android.server.wm.traces.common.ComponentNameMatcher
+import com.android.server.wm.traces.common.Timestamp
 import com.android.server.wm.traces.common.layers.LayerTraceEntry
 import com.google.common.truth.Truth
 import org.junit.Before
@@ -52,15 +53,15 @@ class LayersTraceEntryTest {
     fun canParseAllLayers() {
         val trace = readLayerTraceFromFile("layers_trace_emptyregion.pb")
         Truth.assertThat(trace.entries).isNotEmpty()
-        Truth.assertThat(trace.first().timestamp).isEqualTo(922839428857)
-        Truth.assertThat(trace.last().timestamp).isEqualTo(941432656959)
+        Truth.assertThat(trace.first().timestamp.systemUptimeNanos).isEqualTo(922839428857)
+        Truth.assertThat(trace.last().timestamp.systemUptimeNanos).isEqualTo(941432656959)
         Truth.assertThat(trace.last().flattenedLayers).asList().hasSize(57)
     }
 
     @Test
     fun canParseVisibleLayersLauncher() {
         val trace = readLayerTraceFromFile("layers_trace_launch_split_screen.pb")
-        val visibleLayers = trace.getEntry(90480846872160).visibleLayers
+        val visibleLayers = trace.getEntryBySystemUptime(90480846872160).visibleLayers
         val msg = "Visible Layers:\n" + visibleLayers.joinToString("\n") { "\t" + it.name }
         Truth.assertWithMessage(msg).that(visibleLayers).asList().hasSize(6)
         Truth.assertThat(msg).contains("ScreenDecorOverlay#0")
@@ -74,7 +75,7 @@ class LayersTraceEntryTest {
     @Test
     fun canParseVisibleLayersSplitScreen() {
         val trace = readLayerTraceFromFile("layers_trace_launch_split_screen.pb")
-        val visibleLayers = trace.getEntry(90493757372977).visibleLayers
+        val visibleLayers = trace.getEntryBySystemUptime(90493757372977).visibleLayers
         val msg = "Visible Layers:\n" + visibleLayers.joinToString("\n") { "\t" + it.name }
         Truth.assertWithMessage(msg).that(visibleLayers).asList().hasSize(7)
         Truth.assertThat(msg).contains("ScreenDecorOverlayBottom#0")
@@ -89,7 +90,7 @@ class LayersTraceEntryTest {
     @Test
     fun canParseVisibleLayersInTransition() {
         val trace = readLayerTraceFromFile("layers_trace_launch_split_screen.pb")
-        val visibleLayers = trace.getEntry(90488463619533).visibleLayers
+        val visibleLayers = trace.getEntryBySystemUptime(90488463619533).visibleLayers
         val msg = "Visible Layers:\n" + visibleLayers.joinToString("\n") { "\t" + it.name }
         Truth.assertWithMessage(msg).that(visibleLayers).asList().hasSize(10)
         Truth.assertThat(msg).contains("ScreenDecorOverlayBottom#0")
@@ -109,8 +110,8 @@ class LayersTraceEntryTest {
     fun canParseLayerHierarchy() {
         val trace = readLayerTraceFromFile("layers_trace_emptyregion.pb")
         Truth.assertThat(trace.entries).isNotEmpty()
-        Truth.assertThat(trace.entries.first().timestamp).isEqualTo(922839428857)
-        Truth.assertThat(trace.entries.last().timestamp).isEqualTo(941432656959)
+        Truth.assertThat(trace.entries.first().timestamp.systemUptimeNanos).isEqualTo(922839428857)
+        Truth.assertThat(trace.entries.last().timestamp.systemUptimeNanos).isEqualTo(941432656959)
         Truth.assertThat(trace.entries.first().flattenedLayers).asList().hasSize(57)
         val layers = trace.entries.first().children
         Truth.assertThat(layers[0].children).asList().hasSize(3)
@@ -138,7 +139,7 @@ class LayersTraceEntryTest {
     fun testCanParseNonCroppedLayerWithHWC() {
         val layerName = "BackColorSurface#0"
         val layersTrace = readLayerTraceFromFile("layers_trace_backcolorsurface.pb")
-        val entry = layersTrace.getEntry(131954021476)
+        val entry = layersTrace.getEntryBySystemUptime(131954021476)
         Truth.assertWithMessage("$layerName should not be visible")
             .that(entry.visibleLayers.map { it.name })
             .doesNotContain(layerName)
@@ -159,14 +160,15 @@ class LayersTraceEntryTest {
             .isNotEmpty()
 
         Truth.assertWithMessage("Expected state 4d4h41m14s193ms to be empty")
-            .that(emptyStates.first().timestamp)
+            .that(emptyStates.first().timestamp.systemUptimeNanos)
             .isEqualTo(362474193519965)
     }
 
     @Test
     fun canDetectInvisibleLayerOutOfScreen() {
         val layersTrace = readLayerTraceFromFile("layers_trace_visible_outside_bounds.winscope")
-        val subject = assertThat(layersTrace).entry(1253267561044)
+        val subject =
+            assertThat(layersTrace).getEntryBySystemUpTime(1253267561044, byElapsedTimestamp = true)
         val region = subject.visibleRegion(ComponentNameMatcher.IME_SNAPSHOT)
         region.isEmpty()
         subject.isInvisible(ComponentNameMatcher.IME_SNAPSHOT)
@@ -177,5 +179,36 @@ class LayersTraceEntryTest {
         val layersTrace = readLayerTraceFromFile("layers_trace_visible_outside_bounds.winscope")
         val subject = assertThat(layersTrace)
         subject.visibleLayersShownMoreThanOneConsecutiveEntry()
+    }
+
+    @Test
+    fun usesRealTimestampWhenAvailableAndFallsbackOnElapsedTimestamp() {
+        var entry =
+            LayerTraceEntry(
+                elapsedTimestamp = 100,
+                clockTimestamp = 600,
+                hwcBlob = "",
+                where = "",
+                displays = emptyArray(),
+                vSyncId = 123,
+                _rootLayers = emptyArray()
+            )
+        Truth.assertThat(entry.timestamp.elapsedNanos).isEqualTo(Timestamp.EMPTY.elapsedNanos)
+        Truth.assertThat(entry.timestamp.systemUptimeNanos).isEqualTo(100)
+        Truth.assertThat(entry.timestamp.unixNanos).isEqualTo(600)
+
+        entry =
+            LayerTraceEntry(
+                elapsedTimestamp = 100,
+                clockTimestamp = null,
+                hwcBlob = "",
+                where = "",
+                displays = emptyArray(),
+                vSyncId = 123,
+                _rootLayers = emptyArray()
+            )
+        Truth.assertThat(entry.timestamp.elapsedNanos).isEqualTo(Timestamp.EMPTY.elapsedNanos)
+        Truth.assertThat(entry.timestamp.systemUptimeNanos).isEqualTo(100)
+        Truth.assertThat(entry.timestamp.unixNanos).isEqualTo(Timestamp.EMPTY.unixNanos)
     }
 }

@@ -18,6 +18,7 @@ package com.android.server.wm.flicker.assertions
 
 import androidx.annotation.VisibleForTesting
 import com.android.server.wm.flicker.traces.FlickerSubjectException
+import com.android.server.wm.traces.common.Timestamp
 import com.google.common.truth.Fact
 import com.google.common.truth.FailureMetadata
 import com.google.common.truth.StandardSubjectBuilder
@@ -25,7 +26,7 @@ import com.google.common.truth.Subject
 
 /** Base subject for flicker assertions */
 abstract class FlickerSubject(protected val fm: FailureMetadata, data: Any?) : Subject(fm, data) {
-    @VisibleForTesting abstract val timestamp: Long
+    @VisibleForTesting abstract val timestamp: Timestamp
     protected abstract val parent: FlickerSubject?
 
     protected abstract val selfFacts: List<Fact>

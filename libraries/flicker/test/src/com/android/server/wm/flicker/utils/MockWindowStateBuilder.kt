@@ -44,6 +44,8 @@ class MockWindowStateBuilder() {
 
     fun build(): WindowManagerState {
         return WindowManagerState(
+            elapsedTimestamp = timestamp,
+            clockTimestamp = null,
             where = "where",
             policy = null,
             focusedApp = "focusedApp",
@@ -71,8 +73,7 @@ class MockWindowStateBuilder() {
                     isAodShowing = false,
                     isKeyguardShowing = false,
                     keyguardOccludedStates = emptyMap()
-                ),
-            _timestamp = timestamp.toString()
+                )
         )
     }
 

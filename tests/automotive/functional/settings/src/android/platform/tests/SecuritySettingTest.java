@@ -19,19 +19,19 @@ package android.platform.tests;
 import static junit.framework.Assert.assertTrue;
 
 import android.platform.helpers.AutoConfigConstants;
-import android.platform.helpers.AutoUtility;
+import android.platform.helpers.HelperAccessor;
 import android.platform.helpers.IAutoSecuritySettingsHelper;
 import android.platform.helpers.IAutoSettingHelper;
-import android.platform.helpers.HelperAccessor;
+
 import androidx.test.runner.AndroidJUnit4;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(AndroidJUnit4.class)
+
 public class SecuritySettingTest {
     private static final String PASSWORD = "test4fun";
     private static final String PIN = "1013";
@@ -42,11 +42,6 @@ public class SecuritySettingTest {
     public SecuritySettingTest() throws Exception {
         mSecuritySettingsHelper = new HelperAccessor<>(IAutoSecuritySettingsHelper.class);
         mSettingHelper = new HelperAccessor<>(IAutoSettingHelper.class);
-    }
-
-    @BeforeClass
-    public static void exitSuw() {
-        AutoUtility.exitSuw();
     }
 
     @Before

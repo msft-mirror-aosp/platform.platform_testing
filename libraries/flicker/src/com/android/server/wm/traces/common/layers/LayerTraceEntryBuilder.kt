@@ -20,15 +20,24 @@ import kotlin.js.JsName
 
 /** Builder for LayerTraceEntries */
 class LayerTraceEntryBuilder(
-    timestamp: Any,
+    _elapsedTimestamp: String,
     layers: Array<Layer>,
     @JsName("displays") private val displays: Array<Display>,
     @JsName("vSyncId") private val vSyncId: Long,
     @JsName("hwcBlob") private val hwcBlob: String = "",
-    @JsName("where") private val where: String = ""
+    @JsName("where") private val where: String = "",
+    realToElapsedTimeOffsetNs: String? = null,
 ) {
     // Necessary for compatibility with JS number type
-    @JsName("timestamp") private val timestamp: Long = "$timestamp".toLong()
+    @JsName("elapsedTimestamp") private val elapsedTimestamp: Long = _elapsedTimestamp.toLong()
+    @JsName("realTimestamp")
+    private val realTimestamp: Long? =
+        if (realToElapsedTimeOffsetNs != null && realToElapsedTimeOffsetNs.toLong() != 0L) {
+            realToElapsedTimeOffsetNs.toLong() + _elapsedTimestamp.toLong()
+        } else {
+            null
+        }
+
     @JsName("_orphanLayerCallback") private var orphanLayerCallback: ((Layer) -> Boolean)? = null
     @JsName("orphans") private val orphans = mutableListOf<Layer>()
     @JsName("layers") private val layers = setLayers(layers)
@@ -205,12 +214,13 @@ class LayerTraceEntryBuilder(
         notifyOrphansLayers()
 
         return LayerTraceEntry(
-            timestamp,
+            elapsedTimestamp,
+            realTimestamp,
             hwcBlob,
             where,
             filteredDisplays.toTypedArray(),
             vSyncId,
-            filteredRoots.toTypedArray()
+            filteredRoots.toTypedArray(),
         )
     }
 }

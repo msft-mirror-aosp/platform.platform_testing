@@ -239,7 +239,7 @@ class ElementLifecycleExtractorTestConst {
             var traceEntries = arrayOf<BaseLayerTraceEntry>()
             for ((timestamp, flattenedLayers) in mapOfFlattenedLayers) {
                 val layerTraceEntryBuilder =
-                    LayerTraceEntryBuilder(timestamp, flattenedLayers, arrayOf(), 1)
+                    LayerTraceEntryBuilder(timestamp.toString(), flattenedLayers, arrayOf(), 1)
                 val layerTraceEntry = layerTraceEntryBuilder.build()
                 traceEntries += layerTraceEntry
             }
@@ -258,7 +258,7 @@ class ElementLifecycleExtractorTestConst {
             for ((timestamp, flattenedLayers) in mapOfFlattenedLayers) {
                 val layerTraceEntryBuilder =
                     LayerTraceEntryBuilder(
-                        timestamp,
+                        timestamp.toString(),
                         flattenedLayers,
                         arrayOf(),
                         timestamp.toLong()

@@ -21,9 +21,21 @@ import kotlin.js.JsName
 interface ITrace<Entry : ITraceEntry> {
     @JsName("entries") val entries: Array<Entry>
 
-    @JsName("getEntry")
-    fun getEntry(timestamp: Long): Entry {
-        return entries.firstOrNull { it.timestamp == timestamp }
+    @JsName("getEntryByElapsedTimestamp")
+    fun getEntryByElapsedTimestamp(timestamp: Long): Entry {
+        return entries.firstOrNull { it.timestamp.elapsedNanos == timestamp }
+            ?: throw RuntimeException("Entry does not exist for timestamp $timestamp")
+    }
+
+    @JsName("getEntryBySystemUptime")
+    fun getEntryBySystemUptime(timestamp: Long): Entry {
+        return entries.firstOrNull { it.timestamp.systemUptimeNanos == timestamp }
+            ?: throw RuntimeException("Entry does not exist for timestamp $timestamp")
+    }
+
+    @JsName("getEntryByUnixTimestamp")
+    fun getEntryByUnixTimestamp(timestamp: Long): Entry {
+        return entries.firstOrNull { it.timestamp.unixNanos == timestamp }
             ?: throw RuntimeException("Entry does not exist for timestamp $timestamp")
     }
 }

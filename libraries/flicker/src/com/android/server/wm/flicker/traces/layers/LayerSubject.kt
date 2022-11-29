@@ -21,6 +21,7 @@ import com.android.server.wm.flicker.assertions.FlickerSubject
 import com.android.server.wm.flicker.traces.FlickerFailureStrategy
 import com.android.server.wm.flicker.traces.region.RegionSubject
 import com.android.server.wm.traces.common.Size
+import com.android.server.wm.traces.common.Timestamp
 import com.android.server.wm.traces.common.layers.Layer
 import com.google.common.truth.Fact
 import com.google.common.truth.FailureMetadata
@@ -53,7 +54,7 @@ class LayerSubject
 private constructor(
     fm: FailureMetadata,
     public override val parent: FlickerSubject,
-    override val timestamp: Long,
+    override val timestamp: Timestamp,
     val layer: Layer?,
     private val layerName: String? = null
 ) : FlickerSubject(fm, layer) {
@@ -164,14 +165,14 @@ private constructor(
     companion object {
         /** Boiler-plate Subject.Factory for LayerSubject */
         @JvmStatic
-        fun getFactory(parent: FlickerSubject, timestamp: Long, name: String?) =
+        fun getFactory(parent: FlickerSubject, timestamp: Timestamp, name: String?) =
             Factory { fm: FailureMetadata, subject: Layer? ->
                 LayerSubject(fm, parent, timestamp, subject, name)
             }
 
         /** User-defined parent point for existing layers */
         @JvmStatic
-        fun assertThat(layer: Layer?, parent: FlickerSubject, timestamp: Long): LayerSubject {
+        fun assertThat(layer: Layer?, parent: FlickerSubject, timestamp: Timestamp): LayerSubject {
             val strategy = FlickerFailureStrategy()
             val subject =
                 StandardSubjectBuilder.forCustomFailureStrategy(strategy)
@@ -186,7 +187,7 @@ private constructor(
         internal fun assertThat(
             name: String,
             parent: FlickerSubject,
-            timestamp: Long
+            timestamp: Timestamp
         ): LayerSubject {
             val strategy = FlickerFailureStrategy()
             val subject =

@@ -137,7 +137,10 @@ data class TraceIndices(val startIndex: Int, val endIndex: Int)
 public fun WindowManagerTrace.scenarioInstanceSlice(
     scenarioInstance: ScenarioInstance
 ): WindowManagerTrace {
-    return slice(scenarioInstance.startTimestamp, scenarioInstance.endTimestamp)
+    return sliceUsingElapsedTimestamp(
+        scenarioInstance.startTimestamp,
+        scenarioInstance.endTimestamp
+    )
 }
 
 /**

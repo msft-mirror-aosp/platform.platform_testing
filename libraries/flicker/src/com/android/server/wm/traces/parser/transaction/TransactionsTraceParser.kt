@@ -19,6 +19,7 @@ package com.android.server.wm.traces.parser.transaction
 import android.surfaceflinger.proto.Transactions.TransactionState
 import android.surfaceflinger.proto.Transactions.TransactionTraceFile
 import android.util.Log
+import com.android.server.wm.traces.common.Timestamp
 import com.android.server.wm.traces.common.transactions.Transaction
 import com.android.server.wm.traces.common.transactions.TransactionsTrace
 import com.android.server.wm.traces.common.transactions.TransactionsTraceEntry
@@ -57,12 +58,16 @@ class TransactionsTraceParser {
         fun parseFromTrace(proto: TransactionTraceFile): TransactionsTrace {
             val transactionsTraceEntries = mutableListOf<TransactionsTraceEntry>()
             var traceParseTime = 0L
+            val timestampOffset = proto.realToElapsedTimeOffsetNanos
             for (entry in proto.entryList) {
                 val entryParseTime = measureTimeMillis {
                     val transactions = parseTransactionsProto(entry.transactionsList)
                     val transactionsTraceEntry =
                         TransactionsTraceEntry(
-                            entry.elapsedRealtimeNanos,
+                            Timestamp.from(
+                                elapsedNanos = entry.elapsedRealtimeNanos,
+                                elapsedOffsetNanos = timestampOffset
+                            ),
                             entry.vsyncId,
                             transactions
                         )

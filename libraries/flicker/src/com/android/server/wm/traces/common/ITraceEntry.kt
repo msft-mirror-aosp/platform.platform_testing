@@ -21,5 +21,5 @@ import kotlin.js.JsName
 /** Common interface for Layer and WindowManager trace entries. */
 interface ITraceEntry {
     /** @return timestamp of current entry */
-    @JsName("timestamp") val timestamp: Long
+    @JsName("timestamp") val timestamp: Timestamp
 }

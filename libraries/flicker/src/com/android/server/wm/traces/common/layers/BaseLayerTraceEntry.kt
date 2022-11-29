@@ -20,11 +20,13 @@ import com.android.server.wm.traces.common.ComponentNameMatcher
 import com.android.server.wm.traces.common.IComponentMatcher
 import com.android.server.wm.traces.common.ITraceEntry
 import com.android.server.wm.traces.common.Rect
-import com.android.server.wm.traces.common.prettyTimestamp
 import kotlin.js.JsName
 
 /** Base class for SF trace entries */
 abstract class BaseLayerTraceEntry : ITraceEntry {
+    @JsName("elapsedTimestamp") abstract val elapsedTimestamp: Long
+    @JsName("clockTimestamp") abstract val clockTimestamp: Long?
+
     @JsName("hwcBlob") abstract val hwcBlob: String
     @JsName("where") abstract val where: String
     @JsName("displays") abstract val displays: Array<Display>
@@ -32,9 +34,6 @@ abstract class BaseLayerTraceEntry : ITraceEntry {
     @JsName("stableId")
     val stableId: String
         get() = this::class.simpleName ?: error("Unable to determine class")
-    @JsName("name")
-    val name: String
-        get() = prettyTimestamp(timestamp)
 
     @JsName("flattenedLayers") abstract val flattenedLayers: Array<Layer>
     @JsName("visibleLayers")
@@ -113,7 +112,7 @@ abstract class BaseLayerTraceEntry : ITraceEntry {
     @JsName("asTrace") fun asTrace(): LayersTrace = LayersTrace(arrayOf(this))
 
     override fun toString(): String {
-        return "${prettyTimestamp(timestamp)} (timestamp=$timestamp)"
+        return "${timestamp}ns"
     }
 
     override fun equals(other: Any?): Boolean {

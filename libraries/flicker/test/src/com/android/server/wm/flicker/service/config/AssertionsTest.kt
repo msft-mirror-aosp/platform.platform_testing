@@ -29,6 +29,7 @@ import com.android.server.wm.flicker.service.AssertionEngine
 import com.android.server.wm.flicker.service.AssertionGeneratorConfigProducer
 import com.android.server.wm.flicker.service.assertors.AssertionResult
 import com.android.server.wm.traces.common.DeviceTraceDump
+import com.android.server.wm.traces.common.Timestamp
 import com.android.server.wm.traces.common.service.PlatformConsts
 import com.android.server.wm.traces.common.service.Scenario
 import com.android.server.wm.traces.common.service.ScenarioInstance
@@ -89,7 +90,7 @@ class AssertionsTest {
 
         fun createAppliedInEntryForTransaction(transaction: Transaction): TransactionsTraceEntry {
             return TransactionsTraceEntry(
-                transaction.requestedVSyncId,
+                Timestamp(elapsedNanos = 10),
                 transaction.requestedVSyncId,
                 arrayOf(transaction)
             )
@@ -158,7 +159,7 @@ class AssertionsTest {
         val scenario = Scenario(scenarioType, PlatformConsts.Rotation.ROTATION_0)
         val testSetup = Setup(3)
         testSetup.setup(traceDump, scenario)
-        var assertionEngine =
+        val assertionEngine =
             AssertionEngine(AssertionGeneratorConfigProducer(testSetup.config)) {
                 Log.v("FLICKER-ASSERT", it)
             }
@@ -184,7 +185,7 @@ class AssertionsTest {
         val scenario = Scenario(scenarioType, PlatformConsts.Rotation.ROTATION_0)
         val testSetup = Setup(3)
         testSetup.setup(traceDump, scenario)
-        var assertionEngine =
+        val assertionEngine =
             AssertionEngine(AssertionGeneratorConfigProducer(testSetup.config)) {
                 Log.v("FLICKER-ASSERT", it)
             }

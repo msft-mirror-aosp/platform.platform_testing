@@ -69,7 +69,9 @@ class EventLogMonitorTest {
         )
         assertEquals(FocusEvent.Focus.GAINED, result.eventLog?.get(1)?.focus)
         assertTrue(
-            result.eventLog?.get(0)?.timestamp ?: 0 <= result.eventLog?.get(1)?.timestamp ?: 0
+            (result.eventLog?.get(0)?.timestamp
+                ?: error("missing timestamp")) <=
+                (result.eventLog?.get(1)?.timestamp ?: error("missing timestamp"))
         )
         assertEquals(result.eventLog?.get(0)?.reason, "test")
     }
@@ -122,7 +124,9 @@ class EventLogMonitorTest {
         )
         assertEquals(FocusEvent.Focus.GAINED, result.eventLog?.get(1)?.focus)
         assertTrue(
-            result.eventLog?.get(0)?.timestamp ?: 0 <= result.eventLog?.get(1)?.timestamp ?: 0
+            (result.eventLog?.get(0)?.timestamp
+                ?: error("missing timestamp")) <=
+                (result.eventLog?.get(1)?.timestamp ?: error("missing timestamp"))
         )
     }
 
@@ -165,7 +169,9 @@ class EventLogMonitorTest {
         )
         assertEquals(FocusEvent.Focus.GAINED, result.eventLog?.get(1)?.focus)
         assertTrue(
-            result.eventLog?.get(0)?.timestamp ?: 0 <= result.eventLog?.get(1)?.timestamp ?: 0
+            (result.eventLog?.get(0)?.timestamp
+                ?: error("missing timestamp")) <=
+                (result.eventLog?.get(1)?.timestamp ?: error("missing timestamp"))
         )
         assertEquals(result.eventLog?.get(0)?.reason, "test")
     }

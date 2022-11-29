@@ -21,6 +21,7 @@ import com.android.server.wm.flicker.assertions.FlickerSubject
 import com.android.server.wm.flicker.traces.FlickerFailureStrategy
 import com.android.server.wm.traces.common.Rect
 import com.android.server.wm.traces.common.RectF
+import com.android.server.wm.traces.common.Timestamp
 import com.android.server.wm.traces.common.region.Region
 import com.android.server.wm.traces.common.region.RegionEntry
 import com.google.common.truth.Fact
@@ -37,7 +38,7 @@ class RegionSubject(
     fm: FailureMetadata,
     override val parent: FlickerSubject?,
     val regionEntry: RegionEntry,
-    override val timestamp: Long
+    override val timestamp: Timestamp
 ) : FlickerSubject(fm, regionEntry) {
 
     val region = regionEntry.region
@@ -405,9 +406,9 @@ class RegionSubject(
 
         /** Boiler-plate Subject.Factory for RectSubject */
         @JvmStatic
-        fun getFactory(parent: FlickerSubject?, timestamp: Long) =
+        fun getFactory(parent: FlickerSubject?, timestamp: Timestamp) =
             Factory { fm: FailureMetadata, region: Region? ->
-                val regionEntry = RegionEntry(region ?: Region.EMPTY, timestamp.toString())
+                val regionEntry = RegionEntry(region ?: Region.EMPTY, timestamp)
                 RegionSubject(fm, parent, regionEntry, timestamp)
             }
 
@@ -416,7 +417,7 @@ class RegionSubject(
         fun assertThat(
             region: Region?,
             parent: FlickerSubject? = null,
-            timestamp: Long
+            timestamp: Timestamp
         ): RegionSubject {
             val strategy = FlickerFailureStrategy()
             val subject =
@@ -433,7 +434,7 @@ class RegionSubject(
         fun assertThat(
             rect: Array<Rect>,
             parent: FlickerSubject? = null,
-            timestamp: Long
+            timestamp: Timestamp
         ): RegionSubject = assertThat(Region(rect), parent, timestamp)
 
         /** User-defined entry point for existing rects */
@@ -442,7 +443,7 @@ class RegionSubject(
         fun assertThat(
             rect: Rect?,
             parent: FlickerSubject? = null,
-            timestamp: Long
+            timestamp: Timestamp
         ): RegionSubject = assertThat(Region.from(rect), parent, timestamp)
 
         /** User-defined entry point for existing rects */
@@ -451,7 +452,7 @@ class RegionSubject(
         fun assertThat(
             rect: RectF?,
             parent: FlickerSubject? = null,
-            timestamp: Long
+            timestamp: Timestamp
         ): RegionSubject = assertThat(rect?.toRect(), parent, timestamp)
 
         /** User-defined entry point for existing rects */
@@ -460,7 +461,7 @@ class RegionSubject(
         fun assertThat(
             rect: Array<RectF>,
             parent: FlickerSubject? = null,
-            timestamp: Long
+            timestamp: Timestamp
         ): RegionSubject =
             assertThat(
                 mergeRegions(rect.map { Region.from(it.toRect()) }.toTypedArray()),
@@ -474,7 +475,7 @@ class RegionSubject(
         fun assertThat(
             regions: Array<Region>,
             parent: FlickerSubject? = null,
-            timestamp: Long
+            timestamp: Timestamp
         ): RegionSubject = assertThat(mergeRegions(regions), parent, timestamp)
 
         /**
@@ -488,7 +489,7 @@ class RegionSubject(
         fun assertThat(
             regionEntry: RegionEntry?,
             parent: FlickerSubject? = null,
-            timestamp: Long
+            timestamp: Timestamp
         ): RegionSubject = assertThat(regionEntry?.region, parent, timestamp)
     }
 }

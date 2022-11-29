@@ -21,6 +21,7 @@ import com.android.server.wm.flicker.assertions.FlickerSubject
 import com.android.server.wm.flicker.traces.FlickerFailureStrategy
 import com.android.server.wm.flicker.traces.FlickerSubjectException
 import com.android.server.wm.traces.common.ITraceEntry
+import com.android.server.wm.traces.common.Timestamp
 import com.google.common.truth.Fact
 import com.google.common.truth.FailureMetadata
 import com.google.common.truth.StandardSubjectBuilder
@@ -159,8 +160,8 @@ class AssertionsCheckerTest {
         failureMetadata: FailureMetadata,
         private val entry: SimpleEntry
     ) : FlickerSubject(failureMetadata, entry) {
-        override val timestamp: Long
-            get() = 0
+        override val timestamp: Timestamp
+            get() = Timestamp.EMPTY
         override val parent: FlickerSubject?
             get() = null
         override val selfFacts = listOf(Fact.fact("SimpleEntry", entry.mData.toString()))
@@ -191,7 +192,7 @@ class AssertionsCheckerTest {
         }
     }
 
-    data class SimpleEntry(override val timestamp: Long, val mData: Int) : ITraceEntry
+    data class SimpleEntry(override val timestamp: Timestamp, val mData: Int) : ITraceEntry
 
     companion object {
         /**
@@ -199,6 +200,10 @@ class AssertionsCheckerTest {
          * 0.
          */
         private fun getTestEntries(vararg data: Int): List<SimpleEntrySubject> =
-            data.indices.map { SimpleEntrySubject.assertThat(SimpleEntry(it.toLong(), data[it])) }
+            data.indices.map {
+                SimpleEntrySubject.assertThat(
+                    SimpleEntry(Timestamp(elapsedNanos = it.toLong()), data[it])
+                )
+            }
     }
 }

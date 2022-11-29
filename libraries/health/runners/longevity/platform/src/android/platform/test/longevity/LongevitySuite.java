@@ -27,15 +27,9 @@ import android.platform.test.longevity.listener.BatteryTerminator;
 import android.platform.test.longevity.listener.ErrorTerminator;
 import android.platform.test.longevity.listener.TimeoutTerminator;
 import android.util.Log;
+
 import androidx.annotation.VisibleForTesting;
 import androidx.test.InstrumentationRegistry;
-
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.function.BiFunction;
 
 import org.junit.internal.runners.ErrorReportingRunner;
 import org.junit.runner.Description;
@@ -44,6 +38,13 @@ import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
+
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.BiFunction;
 
 /**
  * {@inheritDoc}
@@ -137,7 +138,7 @@ public class LongevitySuite extends android.host.test.longevity.LongevitySuite {
     }
 
     /** Constructs the sequence of {@link Runner}s using platform composers. */
-    private static List<Runner> constructClassRunners(
+    protected static List<Runner> constructClassRunners(
             Class<?> suite, List<Runner> additional, RunnerBuilder builder, Bundle args)
             throws InitializationError {
         // TODO(b/118340229): Refactor to share logic with base class. In the meanwhile, keep the

@@ -21,6 +21,7 @@ import android.util.EventLog.Event
 import com.android.server.wm.flicker.FlickerRunResult
 import com.android.server.wm.flicker.traces.eventlog.FocusEvent
 import com.android.server.wm.flicker.traces.eventlog.FocusEvent.Focus
+import com.android.server.wm.traces.common.Timestamp
 import java.io.IOException
 import java.util.UUID
 
@@ -92,7 +93,7 @@ open class EventLogMonitor : ITransitionMonitor, FlickerRunResult.IResultSetter 
             var expectedWhiteSpace = 2
             val window = log[0].dropWhile { !it.isWhitespace() || --expectedWhiteSpace > 0 }.drop(1)
             val reason = log[1].removePrefix("reason=")
-            FocusEvent(timestamp, window, focusState, reason).takeIf {
+            FocusEvent(Timestamp(unixNanos = timestamp), window, focusState, reason).takeIf {
                 focusState != Focus.REQUESTED
             }
         }

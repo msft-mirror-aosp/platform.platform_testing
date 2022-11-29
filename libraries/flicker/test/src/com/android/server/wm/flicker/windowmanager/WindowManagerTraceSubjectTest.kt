@@ -53,7 +53,7 @@ class WindowManagerTraceSubjectTest {
         assertThat(chromeTrace)
             .isAppWindowOnTop(TestComponents.LAUNCHER)
             .isAboveAppWindowVisible(TestComponents.SCREEN_DECOR_OVERLAY)
-            .forRange(9213763541297L, 9215536878453L)
+            .forElapsedTimeRange(9213763541297L, 9215536878453L)
 
         assertThat(chromeTrace)
             .isAppWindowOnTop(TestComponents.LAUNCHER)
@@ -67,7 +67,7 @@ class WindowManagerTraceSubjectTest {
             .isAppWindowOnTop(TestComponents.CHROME_FIRST_RUN)
             .isAppWindowInvisible(TestComponents.LAUNCHER)
             .isAboveAppWindowVisible(TestComponents.SCREEN_DECOR_OVERLAY)
-            .forRange(9215551505798L, 9216093628925L)
+            .forElapsedTimeRange(9215551505798L, 9216093628925L)
     }
 
     @Test
@@ -241,7 +241,7 @@ class WindowManagerTraceSubjectTest {
     @Test
     fun canDetectAppInvisibleSnapshotStartingWindowVisible() {
         val trace = readWmTraceFromFile("quick_switch_to_app_killed_in_background_trace.pb")
-        val subject = assertThat(trace).entry(694827105830L)
+        val subject = assertThat(trace).getEntryByElapsedTimestamp(694827105830L)
         val app =
             ComponentNameMatcher(
                 "com.android.server.wm.flicker.testapp",
