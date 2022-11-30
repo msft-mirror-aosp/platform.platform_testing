@@ -304,8 +304,10 @@ open class ScreenshotTestRule(
                 "${testIdentifier}_expected_$imageSuffix"
             OutputFileType.IMAGE_DIFF ->
                 "${testIdentifier}_diff_$imageSuffix"
-            OutputFileType.RESULT_PROTO -> "${testIdentifier}_$resultProtoFileSuffix"
-            OutputFileType.RESULT_BIN_PROTO -> "${testIdentifier}_$resultBinaryProtoFileSuffix"
+            OutputFileType.RESULT_PROTO ->
+                "${testIdentifier}_${goldenIdentifier}_$resultProtoFileSuffix"
+            OutputFileType.RESULT_BIN_PROTO ->
+                "${testIdentifier}_${goldenIdentifier}_$resultBinaryProtoFileSuffix"
         }
         return File(goldenImagePathManager.deviceLocalPath, fileName)
     }
