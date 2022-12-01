@@ -51,7 +51,7 @@ class CustomGoldenImagePathManager(
 @MediumTest
 class ScreenshotTestRuleTest {
 
-    val customizedAssetsPath = "libraries/screenshot/src/androidTest/assets"
+    val customizedAssetsPath = "platform_testing/libraries/screenshot/src/androidTest/assets"
 
     @get:Rule
     val rule = ScreenshotTestRule(

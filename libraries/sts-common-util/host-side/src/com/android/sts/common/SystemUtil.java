@@ -16,10 +16,15 @@
 
 package com.android.sts.common;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assume.assumeThat;
 import static org.junit.Assume.assumeTrue;
 
 import com.android.tradefed.device.DeviceNotAvailableException;
 import com.android.tradefed.device.ITestDevice;
+import com.android.tradefed.util.CommandResult;
+
+import java.util.Optional;
 
 /** Various system-related helper functions */
 public class SystemUtil {
@@ -45,6 +50,44 @@ public class SystemUtil {
                 assumeTrue(
                         "Could not reset property: " + name,
                         device.setProperty(name, oldValue == null ? "" : oldValue));
+            }
+        };
+    }
+
+    /**
+     * Set the value of a device setting and set it back to old value upon closing.
+     *
+     * @param device the device to use
+     * @param namespace "system", "secure", or "global"
+     * @param key setting key to set
+     * @param value setting value to set to
+     * @return AutoCloseable that resets the setting back to existing value upon closing.
+     */
+    public static AutoCloseable withSetting(
+            final ITestDevice device, final String namespace, final String key, String value)
+            throws DeviceNotAvailableException {
+        String getSettingRes = device.getSetting(namespace, key);
+        final Optional<String> oldSetting = Optional.ofNullable(getSettingRes);
+
+        device.setSetting(namespace, key, value);
+        assumeThat(
+                String.format("Could not set %s:%s to %s", namespace, key, value),
+                device.getSetting(namespace, key),
+                equalTo(value));
+
+        return new AutoCloseable() {
+            @Override
+            public void close() throws Exception {
+                if (!oldSetting.isPresent()) {
+                    String cmd = String.format("settings delete %s %s", namespace, key);
+                    CommandResult res = CommandUtil.runAndCheck(device, cmd);
+                } else {
+                    String oldValue = oldSetting.get();
+                    device.setSetting(namespace, key, oldValue);
+                    String failMsg =
+                            String.format("could not reset '%s' back to '%s'", key, oldValue);
+                    assumeThat(failMsg, device.getSetting(namespace, key), equalTo(oldValue));
+                }
             }
         };
     }
