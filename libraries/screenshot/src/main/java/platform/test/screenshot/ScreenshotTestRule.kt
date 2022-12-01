@@ -176,7 +176,7 @@ open class ScreenshotTestRule(
         if (expected == null) {
             reportResult(
                 status = ScreenshotResultProto.DiffResult.Status.MISSING_REFERENCE,
-                assetsPathRelativeToRepo = goldenImagePathManager.assetsPathRelativeToRepo,
+                assetsPathRelativeToRepo = goldenImagePathManager.assetsPathRelativeToBuildRoot,
                 goldenIdentifier = goldenIdentifier,
                 actual = actual
             )
@@ -190,7 +190,7 @@ open class ScreenshotTestRule(
         if (actual.width != expected.width || actual.height != expected.height) {
             reportResult(
                 status = ScreenshotResultProto.DiffResult.Status.FAILED,
-                assetsPathRelativeToRepo = goldenImagePathManager.assetsPathRelativeToRepo,
+                assetsPathRelativeToRepo = goldenImagePathManager.assetsPathRelativeToBuildRoot,
                 goldenIdentifier = goldenIdentifier,
                 actual = actual,
                 expected = expected
@@ -217,7 +217,7 @@ open class ScreenshotTestRule(
 
         reportResult(
             status = status,
-            assetsPathRelativeToRepo = goldenImagePathManager.assetsPathRelativeToRepo,
+            assetsPathRelativeToRepo = goldenImagePathManager.assetsPathRelativeToBuildRoot,
             goldenIdentifier = goldenIdentifier,
             actual = actual,
             comparisonStatistics = comparisonResult.comparisonStatistics,

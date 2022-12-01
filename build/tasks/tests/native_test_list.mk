@@ -40,7 +40,6 @@ native_tests := \
     boringssl_ssl_test \
     bsdiff_unittest \
     buffer_hub-test \
-    buffer_hub_queue-test \
     bugreportz_test \
     bytes_test_tests_test_buf \
     bytes_test_tests_test_buf_mut \

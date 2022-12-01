@@ -61,11 +61,6 @@ public class UiInteractionFrameInfoHelper implements ICollectorHelper<StringBuil
         return startCollecting();
     }
 
-    // convert 0 to 1e-6 to make logarithmic dashboards look better.
-    public static double makeLogFriendly(double metric) {
-        return Math.max(0.01, metric);
-    }
-
     /**
      * Enabling metric collection and disabling sampling.
      *
@@ -99,34 +94,33 @@ public class UiInteractionFrameInfoHelper implements ICollectorHelper<StringBuil
 
                 addMetric(
                         constructKey(KEY_PREFIX_CUJ, interactionType, "total_frames"),
-                        makeLogFriendly(uiInteractionFrameInfoReported.totalFrames),
+                        uiInteractionFrameInfoReported.totalFrames,
                         frameInfoMap);
 
                 addMetric(
                         constructKey(KEY_PREFIX_CUJ, interactionType, "missed_frames"),
-                        makeLogFriendly(uiInteractionFrameInfoReported.missedFrames),
+                        uiInteractionFrameInfoReported.missedFrames,
                         frameInfoMap);
 
                 addMetric(
                         constructKey(KEY_PREFIX_CUJ, interactionType, "sf_missed_frames"),
-                        makeLogFriendly(uiInteractionFrameInfoReported.sfMissedFrames),
+                        uiInteractionFrameInfoReported.sfMissedFrames,
                         frameInfoMap);
 
                 addMetric(
                         constructKey(KEY_PREFIX_CUJ, interactionType, "app_missed_frames"),
-                        makeLogFriendly(uiInteractionFrameInfoReported.appMissedFrames),
+                        uiInteractionFrameInfoReported.appMissedFrames,
                         frameInfoMap);
 
                 addMetric(
                         constructKey(KEY_PREFIX_CUJ, interactionType, SUFFIX_MAX_FRAME_MS),
-                        makeLogFriendly(
-                                TimeUnit.NANOSECONDS.toMillis(
-                                        uiInteractionFrameInfoReported.maxFrameTimeNanos)),
+                        TimeUnit.NANOSECONDS.toMillis(
+                                uiInteractionFrameInfoReported.maxFrameTimeNanos),
                         frameInfoMap);
 
                 addMetric(
                         constructKey(KEY_PREFIX_CUJ, interactionType, "max_successive_misses"),
-                        makeLogFriendly(uiInteractionFrameInfoReported.maxSuccessiveMissedFrames),
+                        uiInteractionFrameInfoReported.maxSuccessiveMissedFrames,
                         frameInfoMap);
             }
         }
