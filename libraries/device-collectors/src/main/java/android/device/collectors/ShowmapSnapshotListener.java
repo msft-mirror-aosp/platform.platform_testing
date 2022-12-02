@@ -21,7 +21,6 @@ import android.os.Bundle;
 import android.util.Log;
 import androidx.annotation.VisibleForTesting;
 import com.android.helpers.ShowmapSnapshotHelper;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -49,13 +48,10 @@ public class ShowmapSnapshotListener extends BaseCollectionListener<String> {
   @VisibleForTesting static final String GC_PRECOLLECT_KEY = "gc-precollect";
 
   private ShowmapSnapshotHelper mShowmapSnapshotHelper = new ShowmapSnapshotHelper();
-  private final Map<String, Integer> dropCacheValues = new HashMap<String, Integer>() {
-    {
-      put("pagecache", 1);
-      put("slab", 2);
-      put("all", 3);
-    }
-  };
+  private final Map<String, Integer> dropCacheValues = Map.of(
+      "pagecache", 1,
+      "slab", 2,
+      "all", 3);
 
   // Sample output
   // -------- -------- -------- -------- -------- -------- -------- -------- -------- ------ --

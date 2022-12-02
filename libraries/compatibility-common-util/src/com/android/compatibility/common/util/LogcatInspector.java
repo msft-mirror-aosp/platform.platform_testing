@@ -97,6 +97,7 @@ public abstract class LogcatInspector {
         long timeout = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(timeInSeconds);
         int stringIndex = 0;
         while (timeout >= System.currentTimeMillis()) {
+            stringIndex = 0;
             InputStream logcatStream = executeShellCommand("logcat -v brief -d " + filterSpec);
             BufferedReader logcat = new BufferedReader(new InputStreamReader(logcatStream));
             String line;

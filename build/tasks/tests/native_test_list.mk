@@ -30,7 +30,6 @@ native_tests := \
     anyhow_test_tests_test_repr \
     anyhow_test_tests_test_source \
     audio_health_tests \
-    backtrace_test \
     bionic-unit-tests \
     bionic-unit-tests-static \
     bluetoothtbd_test \
@@ -41,7 +40,6 @@ native_tests := \
     bsdiff_unittest \
     buffer_hub-test \
     buffer_hub_queue-test \
-    buffer_hub_queue_producer-test \
     bugreportz_test \
     bytes_test_tests_test_buf \
     bytes_test_tests_test_buf_mut \
@@ -63,9 +61,6 @@ native_tests := \
     dumpstate_test \
     dumpstate_test_fixture \
     dumpsys_test \
-    dvr_api-test \
-    dvr_buffer_queue-test \
-    dvr_display-test \
     gpuservice_unittest \
     gwp_asan_unittest \
     hello_world_test \
@@ -105,7 +100,6 @@ native_tests := \
     libunwindstack_unit_test \
     libuwb_core_tests \
     libuwb_uci_jni_rust_tests \
-    libuwb_uci_rust_tests \
     libuwb_uci_packet_tests \
     libvintf_test \
     linker-unit-tests \
