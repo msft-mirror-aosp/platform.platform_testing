@@ -31,16 +31,15 @@ public class SystemUtil {
     private SystemUtil() {}
 
     /**
-     * Set the value of a property until return is closed
+     * Set the value of a property and set it back to old value upon closing.
      *
+     * @param device the device to use
      * @param name the name of the property to set
      * @param value the value that the property should be set to
-     * @param device the device to use
-     * @return If enabling malloc debug succeeded: an object that will disable malloc debug when
-     *     closed. If enabling malloc debug did not succeed: null.
+     * @return AutoCloseable that resets the property back to old value upon closing
      */
     public static AutoCloseable withProperty(
-            final String name, final String value, final ITestDevice device)
+            final ITestDevice device, final String name, final String value)
             throws DeviceNotAvailableException {
         final String oldValue = device.getProperty(name);
         assumeTrue("Could not set property: " + name, device.setProperty(name, value));
