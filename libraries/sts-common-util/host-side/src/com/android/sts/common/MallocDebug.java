@@ -68,9 +68,9 @@ public class MallocDebug implements AutoCloseable {
 
         try {
             this.setMallocDebugOptionsProperty =
-                    SystemUtil.withProperty(MALLOC_DEBUG_OPTIONS_PROP, mallocDebugOption, device);
+                    SystemUtil.withProperty(device, MALLOC_DEBUG_OPTIONS_PROP, mallocDebugOption);
             this.setAttachedProgramProperty =
-                    SystemUtil.withProperty(MALLOC_DEBUG_PROGRAM_PROP, processName, device);
+                    SystemUtil.withProperty(device, MALLOC_DEBUG_PROGRAM_PROP, processName);
 
             // Kill and wait for the process to come back if we're attaching to a service
             this.killProcess = null;
