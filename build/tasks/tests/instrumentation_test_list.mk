@@ -82,7 +82,8 @@ instrumentation_tests := \
     CarDeveloperOptionsUnitTests \
     SpaPrivilegedLibTests \
     SettingsSpaUnitTests \
-    SpaLibTests
+    SpaLibTests \
+    GenericBootstrappingArchitectureTests
 
 ifneq ($(strip $(BOARD_PERFSETUP_SCRIPT)),)
 instrumentation_tests += perf-setup
