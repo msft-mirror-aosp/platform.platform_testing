@@ -43,12 +43,6 @@ public final class SelectAdsLatencyHelper {
 
     private static class SelectAdsProcessInputForLatencyMetrics
             implements LatencyHelper.ProcessInputForLatencyMetrics {
-        private static final String LOG_LABEL_P50_5G = "SELECT_ADS_LATENCY_P50_5G";
-        private static final String LOG_LABEL_P50_4GPLUS = "SELECT_ADS_LATENCY_P50_4GPLUS";
-        private static final String LOG_LABEL_P50_4G = "SELECT_ADS_LATENCY_P50_4G";
-        private static final String LOG_LABEL_P90_5G = "SELECT_ADS_LATENCY_P90_5G";
-        private static final String LOG_LABEL_P90_4GPLUS = "SELECT_ADS_LATENCY_P90_4GPLUS";
-        private static final String LOG_LABEL_P90_4G = "SELECT_ADS_LATENCY_P90_4G";
 
         @Override
         public String getTestLabel() {
@@ -58,8 +52,10 @@ public final class SelectAdsLatencyHelper {
         @Override
         public Map<String, Long> processInput(InputStream inputStream) throws IOException {
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+            // TODO(b/260319962): Update log lines of latency benchmark tests to reflect the
+            // format SELECT_ADS_LATENCY_testClass#testName
             Pattern latencyMetricPattern =
-                    Pattern.compile(getTestLabel() + ": \\((.*): (\\d+) ms\\)");
+                    Pattern.compile(getTestLabel() + ": \\((SELECT_ADS_LATENCY_.*): (\\d+) ms\\)");
 
             String line = "";
             Map<String, Long> output = new HashMap<String, Long>();
@@ -68,30 +64,13 @@ public final class SelectAdsLatencyHelper {
                 while (matcher.find()) {
                     /**
                      * The lines from Logcat will look like: 06-13 18:09:24.058 20765 20781 D
-                     * SelectAds: (SELECT_ADS_LATENCY_P50_5G: 1900 ms)
+                     * SelectAds: (SELECT_ADS_LATENCY_SelectAdsLatency#selectAds_p50_5G: 1900 ms)
+                     *
+                     * <p>Where the format is SELECT_ADS_LATENCY_className#testName
                      */
                     String metric = matcher.group(1);
                     long latency = Long.parseLong(matcher.group(2));
-                    switch (metric) {
-                        case LOG_LABEL_P50_5G:
-                            output.put(LOG_LABEL_P50_5G, latency);
-                            break;
-                        case LOG_LABEL_P50_4GPLUS:
-                            output.put(LOG_LABEL_P50_4GPLUS, latency);
-                            break;
-                        case LOG_LABEL_P50_4G:
-                            output.put(LOG_LABEL_P50_4G, latency);
-                            break;
-                        case LOG_LABEL_P90_5G:
-                            output.put(LOG_LABEL_P90_5G, latency);
-                            break;
-                        case LOG_LABEL_P90_4GPLUS:
-                            output.put(LOG_LABEL_P90_4GPLUS, latency);
-                            break;
-                        case LOG_LABEL_P90_4G:
-                            output.put(LOG_LABEL_P90_4G, latency);
-                            break;
-                    }
+                    output.put(metric, latency);
                 }
             }
             return output;
