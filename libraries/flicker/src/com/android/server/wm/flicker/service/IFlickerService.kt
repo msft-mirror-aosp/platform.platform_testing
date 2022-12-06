@@ -16,15 +16,9 @@
 
 package com.android.server.wm.flicker.service
 
+import com.android.server.wm.flicker.io.IReader
 import com.android.server.wm.flicker.service.assertors.AssertionResult
-import com.android.server.wm.traces.common.layers.LayersTrace
-import com.android.server.wm.traces.common.transition.TransitionsTrace
-import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 
 interface IFlickerService {
-    fun process(
-        wmTrace: WindowManagerTrace,
-        layersTrace: LayersTrace,
-        transitionTrace: TransitionsTrace
-    ): List<AssertionResult>
+    fun process(reader: IReader): List<AssertionResult>
 }

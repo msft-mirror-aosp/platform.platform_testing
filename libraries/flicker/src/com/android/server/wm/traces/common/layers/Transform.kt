@@ -69,17 +69,19 @@ private constructor(@JsName("type") val type: Int?, @JsName("matrix") val matrix
         get() = type?.isFlagSet(ROTATE_VAL) ?: false
 
     @JsName("getRotation")
-    fun getRotation(): Int {
+    fun getRotation(): PlatformConsts.Rotation {
         if (type == null) {
-            return PlatformConsts.ROTATION_0
+            return PlatformConsts.Rotation.ROTATION_0
         }
 
         return when {
-            type.isFlagClear(SCALE_VAL or ROTATE_VAL or TRANSLATE_VAL) -> PlatformConsts.ROTATION_0
-            type.isFlagSet(ROT_90_VAL) -> PlatformConsts.ROTATION_90
-            type.isFlagSet(FLIP_V_VAL or FLIP_H_VAL) -> PlatformConsts.ROTATION_180
-            type.isFlagSet(ROT_90_VAL or FLIP_V_VAL or FLIP_H_VAL) -> PlatformConsts.ROTATION_270
-            else -> PlatformConsts.ROTATION_0
+            type.isFlagClear(SCALE_VAL or ROTATE_VAL or TRANSLATE_VAL) ->
+                PlatformConsts.Rotation.ROTATION_0
+            type.isFlagSet(ROT_90_VAL) -> PlatformConsts.Rotation.ROTATION_90
+            type.isFlagSet(FLIP_V_VAL or FLIP_H_VAL) -> PlatformConsts.Rotation.ROTATION_180
+            type.isFlagSet(ROT_90_VAL or FLIP_V_VAL or FLIP_H_VAL) ->
+                PlatformConsts.Rotation.ROTATION_270
+            else -> PlatformConsts.Rotation.ROTATION_0
         }
     }
 

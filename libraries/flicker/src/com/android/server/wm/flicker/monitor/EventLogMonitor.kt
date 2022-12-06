@@ -18,7 +18,9 @@ package com.android.server.wm.flicker.monitor
 
 import android.util.EventLog
 import android.util.EventLog.Event
-import com.android.server.wm.flicker.FlickerRunResult
+import com.android.server.wm.flicker.IResultSetter
+import com.android.server.wm.flicker.ITransitionMonitor
+import com.android.server.wm.flicker.io.ResultWriter
 import com.android.server.wm.flicker.traces.eventlog.FocusEvent
 import com.android.server.wm.flicker.traces.eventlog.FocusEvent.Focus
 import com.android.server.wm.traces.common.Timestamp
@@ -26,7 +28,7 @@ import java.io.IOException
 import java.util.UUID
 
 /** Collects event logs during transitions. */
-open class EventLogMonitor : ITransitionMonitor, FlickerRunResult.IResultSetter {
+open class EventLogMonitor : ITransitionMonitor, IResultSetter {
     private var _logs = listOf<Event>()
     private lateinit var _logSeparator: String
 
@@ -71,8 +73,8 @@ open class EventLogMonitor : ITransitionMonitor, FlickerRunResult.IResultSetter 
         _logs = getEventLogs(EVENT_LOG_INPUT_FOCUS_TAG)
     }
 
-    override fun setResult(result: FlickerRunResult) {
-        result.eventLog = buildProcessedEventLogs()
+    override fun setResult(result: ResultWriter) {
+        result.addEventLogResult(buildProcessedEventLogs())
     }
 
     private fun buildProcessedEventLogs(): List<FocusEvent> {

@@ -40,9 +40,8 @@ fun withWMTracing(
     outputDir: Path = getDefaultFlickerOutputDir().resolve("withWMTracing"),
     predicate: () -> Unit
 ): WindowManagerTrace {
-    return WindowManagerTraceParser.parseFromTrace(
-        WindowManagerTraceMonitor(outputDir).withTracing(predicate)
-    )
+    return WindowManagerTraceParser()
+        .parse(WindowManagerTraceMonitor(outputDir).withTracing(predicate))
 }
 
 /**
@@ -60,9 +59,8 @@ fun withSFTracing(
     outputDir: Path = getDefaultFlickerOutputDir().resolve("withSFTracing"),
     predicate: () -> Unit
 ): LayersTrace {
-    return LayersTraceParser.parseFromTrace(
-        LayersTraceMonitor(outputDir, traceFlags = traceFlags).withTracing(predicate)
-    )
+    return LayersTraceParser()
+        .parse(LayersTraceMonitor(outputDir, traceFlags = traceFlags).withTracing(predicate))
 }
 
 /**
@@ -81,7 +79,7 @@ fun withTracing(
     val traces = recordTraces(outputDir, predicate)
     val wmTraceData = traces.first
     val layersTraceData = traces.second
-    return DeviceDumpParser.fromTrace(wmTraceData, layersTraceData, clearCacheAfterParsing = true)
+    return DeviceDumpParser.fromTrace(wmTraceData, layersTraceData, clearCache = true)
 }
 
 /**

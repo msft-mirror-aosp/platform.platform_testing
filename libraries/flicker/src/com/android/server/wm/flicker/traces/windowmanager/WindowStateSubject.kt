@@ -41,7 +41,7 @@ import com.google.common.truth.Subject.Factory
  *
  * Example:
  * ```
- *    val trace = WindowManagerTraceParser.parseFromTrace(myTraceFile)
+ *    val trace = WindowManagerTraceParser().parse(myTraceFile)
  *    val subject = WindowManagerTraceSubject.assertThat(trace).first()
  *        .windowState("ValidWindow")
  *        .exists()

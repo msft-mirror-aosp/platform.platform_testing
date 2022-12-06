@@ -19,6 +19,7 @@ package com.android.server.wm.flicker.traces.windowmanager
 import android.view.Display
 import androidx.annotation.VisibleForTesting
 import com.android.server.wm.traces.common.IComponentMatcher
+import com.android.server.wm.traces.common.service.PlatformConsts
 import com.android.server.wm.traces.common.windowmanager.windows.Activity
 import com.android.server.wm.traces.common.windowmanager.windows.WindowState
 
@@ -108,7 +109,10 @@ interface IWindowManagerSubject<WMSubjectType, RegionSubjectType> {
      * @param rotation to assert
      * @param displayId of the target display
      */
-    fun hasRotation(rotation: Int, displayId: Int = Display.DEFAULT_DISPLAY): WMSubjectType
+    fun hasRotation(
+        rotation: PlatformConsts.Rotation,
+        displayId: Int = Display.DEFAULT_DISPLAY
+    ): WMSubjectType
 
     /**
      * Asserts the state contains a [WindowState] matching [componentMatcher].

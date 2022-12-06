@@ -16,36 +16,37 @@
 
 package com.android.server.wm.flicker.assertions
 
-import com.android.server.wm.flicker.RunResultArtifacts
-import com.android.server.wm.flicker.dsl.AssertionTag
+import com.android.server.wm.flicker.AssertionTag
+import com.android.server.wm.flicker.io.IReader
 import com.android.server.wm.flicker.traces.FlickerSubjectException
 import com.google.common.truth.Fact
 import java.io.ByteArrayOutputStream
 import java.io.PrintStream
+import java.nio.file.Path
 
 class FlickerAssertionErrorBuilder {
     private var error: Throwable? = null
-    private var traceFile: RunResultArtifacts? = null
+    private var artifactPath: Path? = null
     private var tag = ""
 
     fun fromError(error: Throwable): FlickerAssertionErrorBuilder = apply { this.error = error }
 
-    fun withTrace(traceFile: RunResultArtifacts?): FlickerAssertionErrorBuilder = apply {
-        this.traceFile = traceFile
+    fun withReader(reader: IReader): FlickerAssertionErrorBuilder = apply {
+        artifactPath = reader.artifactPath
     }
 
-    fun atTag(tag: String): FlickerAssertionErrorBuilder = apply {
-        this.tag =
-            when (tag) {
+    fun atTag(_tag: String): FlickerAssertionErrorBuilder = apply {
+        tag =
+            when (_tag) {
                 AssertionTag.START -> "before transition (initial state)"
                 AssertionTag.END -> "after transition (final state)"
                 AssertionTag.ALL -> "during transition"
-                else -> "at user-defined location ($tag)"
+                else -> "at user-defined location ($_tag)"
             }
     }
 
     fun build(): FlickerAssertionError {
-        return FlickerAssertionError(errorMessage, rootCause, traceFile)
+        return FlickerAssertionError(errorMessage, rootCause)
     }
 
     private val errorMessage
@@ -74,7 +75,7 @@ class FlickerAssertionErrorBuilder {
 
     private val traceFileMessage
         get() = buildString {
-            traceFile?.path?.let {
+            artifactPath?.let {
                 append("\t")
                 append(it)
             }

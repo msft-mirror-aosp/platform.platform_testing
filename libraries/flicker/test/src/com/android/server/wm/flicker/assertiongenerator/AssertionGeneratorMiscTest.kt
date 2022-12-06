@@ -20,8 +20,8 @@ import com.android.server.wm.flicker.Utils
 import com.android.server.wm.flicker.assertiongenerator.AssertionGenConfigTestConst.Companion.deviceTraceConfigurationTestFile
 import com.android.server.wm.flicker.assertiongenerator.AssertionGenConfigTestConst.Companion.expectedOpenComponentTypeMatcher
 import com.android.server.wm.flicker.service.AssertionGeneratorConfigProducer
+import com.android.server.wm.traces.common.service.FlickerServiceScenario
 import com.android.server.wm.traces.common.service.PlatformConsts
-import com.android.server.wm.traces.common.service.Scenario
 import com.android.server.wm.traces.common.service.ScenarioType
 import com.google.common.truth.Truth
 import org.junit.Test
@@ -47,7 +47,8 @@ class AssertionGeneratorMiscTest {
     fun getLayerNames() {
         val defaultConfigProducer = AssertionGeneratorConfigProducer()
         val config = defaultConfigProducer.produce()
-        val scenario = Scenario(ScenarioType.APP_LAUNCH, PlatformConsts.Rotation.ROTATION_0)
+        val scenario =
+            FlickerServiceScenario(ScenarioType.APP_LAUNCH, PlatformConsts.Rotation.ROTATION_0)
         val traceDump = config[scenario]?.deviceTraceDumps?.get(0)
         traceDump ?: run { throw RuntimeException("No deviceTraceDump for scenario APP_LAUNCH") }
         val layersTrace = traceDump.layersTrace

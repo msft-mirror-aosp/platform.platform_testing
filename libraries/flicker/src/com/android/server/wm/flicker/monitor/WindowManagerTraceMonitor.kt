@@ -17,8 +17,9 @@
 package com.android.server.wm.flicker.monitor
 
 import android.view.WindowManagerGlobal
-import com.android.server.wm.flicker.FlickerRunResult
 import com.android.server.wm.flicker.getDefaultFlickerOutputDir
+import com.android.server.wm.flicker.io.TraceType
+import com.android.server.wm.flicker.io.WINSCOPE_EXT
 import com.android.server.wm.flicker.traces.windowmanager.WindowManagerTraceSubject
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 import java.nio.file.Path
@@ -46,7 +47,6 @@ constructor(
     override val isEnabled: Boolean
         get() = windowManager.isWindowTraceEnabled
 
-    override fun setResult(result: FlickerRunResult) {
-        result.setWmTrace(outputFile.toFile())
-    }
+    override val traceType: TraceType
+        get() = TraceType.WM
 }

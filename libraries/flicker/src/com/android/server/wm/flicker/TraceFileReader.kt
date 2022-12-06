@@ -26,8 +26,8 @@ import com.android.server.wm.flicker.service.assertors.scenarioInstanceSlice
 import com.android.server.wm.traces.common.ComponentNameMatcher
 import com.android.server.wm.traces.common.DeviceTraceDump
 import com.android.server.wm.traces.common.layers.LayersTrace
+import com.android.server.wm.traces.common.service.FlickerServiceScenario
 import com.android.server.wm.traces.common.service.PlatformConsts
-import com.android.server.wm.traces.common.service.Scenario
 import com.android.server.wm.traces.common.service.ScenarioInstance
 import com.android.server.wm.traces.common.service.ScenarioType
 import com.android.server.wm.traces.common.windowmanager.WindowManagerState
@@ -56,11 +56,9 @@ class TraceFileReader {
             layersTraceByteArray: ByteArray?
         ): DeviceTraceDump {
             val wmTrace =
-                wmTraceByteArray?.let { WindowManagerTraceParser.parseFromTrace(wmTraceByteArray) }
+                wmTraceByteArray?.let { WindowManagerTraceParser().parse(wmTraceByteArray) }
             val layersTrace =
-                layersTraceByteArray?.let {
-                    LayersTraceParser.parseFromTrace(data = layersTraceByteArray)
-                }
+                layersTraceByteArray?.let { LayersTraceParser().parse(layersTraceByteArray) }
             return DeviceTraceDump(wmTrace, layersTrace)
         }
 
@@ -118,7 +116,7 @@ class TraceFileReader {
                     wmTracePath?.let {
                         readBytesFromResource(wmTracePath)?.let {
                             try {
-                                WindowManagerTraceParser.parseFromTrace(it)
+                                WindowManagerTraceParser().parse(it)
                             } catch (err: Exception) {
                                 // invalid file
                                 null
@@ -130,7 +128,7 @@ class TraceFileReader {
                     layersTracePath?.let {
                         readBytesFromResource(layersTracePath)?.let {
                             try {
-                                LayersTraceParser.parseFromTrace(data = it)
+                                LayersTraceParser().parse(it)
                             } catch (err: Exception) {
                                 // invalid file
                                 null
@@ -142,7 +140,7 @@ class TraceFileReader {
                     transactionsTracePath?.let {
                         readBytesFromResource(transactionsTracePath)?.let {
                             try {
-                                TransactionsTraceParser.parseFromTrace(data = it)
+                                TransactionsTraceParser().parse(it)
                             } catch (err: Exception) {
                                 // invalid file
                                 null
@@ -154,7 +152,7 @@ class TraceFileReader {
                     if (transitionsTracePath != null && transactionsTrace != null) {
                         readBytesFromResource(transitionsTracePath)?.let {
                             try {
-                                TransitionsTraceParser.parseFromTrace(it, transactionsTrace)
+                                TransitionsTraceParser(transactionsTrace).parse(it)
                             } catch (err: Exception) {
                                 // invalid file
                                 null
@@ -269,7 +267,9 @@ class TraceFileReader {
          * src/com/android/server/wm/flicker/service/resources/ and follow a strict structure TODO:
          * detail the structure
          */
-        fun getGoldenTracesConfig(configDir: String? = null): Map<Scenario, ScenarioConfig> {
+        fun getGoldenTracesConfig(
+            configDir: String? = null
+        ): Map<FlickerServiceScenario, ScenarioConfig> {
             val configDir = configDir ?: getGoldenTracesConfigDir()
             return ScenarioType.scenariosByDescription
                 .flatMap { (scenarioDescription, scenarioType) ->
@@ -301,7 +301,7 @@ class TraceFileReader {
                             scenarioTraceConfigurationArray.add(deviceTraceConfiguration)
                             traceCount++
                         }
-                        val scenario = Scenario(scenarioType, rotation)
+                        val scenario = FlickerServiceScenario(scenarioType, rotation)
                         scenario to
                             ScenarioConfig(
                                 scenarioDeviceTraceDumpArray.toTypedArray(),

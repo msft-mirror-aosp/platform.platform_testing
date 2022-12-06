@@ -17,7 +17,6 @@
 package com.android.server.wm.flicker
 
 import com.android.compatibility.common.util.SystemUtil
-import com.android.server.wm.flicker.FlickerRunResult.Companion.RunStatus
 import com.android.server.wm.flicker.assertiongenerator.DeviceTraceConfiguration
 import com.android.server.wm.flicker.assertiongenerator.layers.LayersElementLifecycle
 import com.android.server.wm.flicker.service.assertors.ComponentTypeMatcher

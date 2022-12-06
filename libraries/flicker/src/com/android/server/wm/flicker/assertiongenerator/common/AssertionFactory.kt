@@ -4,9 +4,9 @@ import com.android.server.wm.flicker.assertiongenerator.ScenarioConfig
 import com.android.server.wm.flicker.assertiongenerator.layers.LayersVisibilityAssertionProducer
 import com.android.server.wm.flicker.assertiongenerator.windowmanager.WmFocusedAppAssertionProducer
 import com.android.server.wm.flicker.service.assertors.ConfigException
-import com.android.server.wm.traces.common.service.Scenario
+import com.android.server.wm.traces.common.service.FlickerServiceScenario
 
-class AssertionFactory(val config: Map<Scenario, ScenarioConfig>) {
+class AssertionFactory(val config: Map<FlickerServiceScenario, ScenarioConfig>) {
     private val producers: Set<IAssertionProducer> =
         setOf(LayersVisibilityAssertionProducer(), WmFocusedAppAssertionProducer())
 
@@ -29,12 +29,12 @@ class AssertionFactory(val config: Map<Scenario, ScenarioConfig>) {
         return producers.flatMap { producer -> producer.produce(traceContents) }.toTypedArray()
     }
 
-    private fun getScenarioConfig(scenario: Scenario): ScenarioConfig {
+    private fun getScenarioConfig(scenario: FlickerServiceScenario): ScenarioConfig {
         return config[scenario]
             ?: throw ConfigException("Missing configuration for scenario $scenario")
     }
 
-    fun getAssertionsForScenario(scenario: Scenario): Array<Assertion> {
+    fun getAssertionsForScenario(scenario: FlickerServiceScenario): Array<Assertion> {
         val scenarioConfig = getScenarioConfig(scenario)
         return produce(scenarioConfig)
     }

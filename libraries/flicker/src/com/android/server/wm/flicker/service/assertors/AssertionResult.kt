@@ -18,22 +18,13 @@ package com.android.server.wm.flicker.service.assertors
 
 import com.android.server.wm.flicker.assertions.FlickerSubject
 import com.android.server.wm.flicker.traces.FlickerSubjectException
-import com.android.server.wm.flicker.traces.layers.LayerSubject
-import com.android.server.wm.flicker.traces.layers.LayersTraceSubject
-import com.android.server.wm.flicker.traces.windowmanager.WindowManagerTraceSubject
-import com.android.server.wm.flicker.traces.windowmanager.WindowStateSubject
-import com.android.server.wm.traces.common.layers.Layer
 import com.android.server.wm.traces.common.service.AssertionInvocationGroup
-import com.android.server.wm.traces.common.service.Scenario
-import com.android.server.wm.traces.common.windowmanager.windows.WindowState
+import com.android.server.wm.traces.common.service.FlickerServiceScenario
 
-typealias AssertionEvaluator =
-    (wmSubject: WindowManagerTraceSubject, layerSubject: LayersTraceSubject) -> Unit
-
-/** Base class for a FASS assertion */
+/** Base class for a FaaS assertion */
 data class AssertionResult(
     val assertionName: String,
-    val scenario: Scenario,
+    val scenario: FlickerServiceScenario,
     val invocationGroup: AssertionInvocationGroup,
     val assertionError: Throwable?
 ) {
@@ -42,42 +33,4 @@ data class AssertionResult(
 
     val failureSubject: FlickerSubject?
         get() = if (assertionError is FlickerSubjectException) assertionError.subject else null
-
-    /**
-     * Returns the layer responsible for the failure, if any
-     *
-     * @param tag a list with all [TransitionTag]s
-     * @param wmSubject Window Manager trace subject
-     * @param layerSubject Surface Flinger trace subject
-     */
-    fun getFailureLayer(
-        wmSubject: WindowManagerTraceSubject,
-        layerSubject: LayersTraceSubject
-    ): Layer? {
-        val failureSubject = failureSubject
-        return if (failureSubject is LayerSubject) {
-            failureSubject.layer
-        } else {
-            null
-        }
-    }
-
-    /**
-     * Returns the window responsible for the last failure, if any
-     *
-     * @param tag a list with all [TransitionTag]s
-     * @param wmSubject Window Manager trace subject
-     * @param layerSubject Surface Flinger trace subject
-     */
-    fun getFailureWindow(
-        wmSubject: WindowManagerTraceSubject,
-        layerSubject: LayersTraceSubject
-    ): WindowState? {
-        val failureSubject = failureSubject
-        return if (failureSubject is WindowStateSubject) {
-            failureSubject.windowState
-        } else {
-            null
-        }
-    }
 }

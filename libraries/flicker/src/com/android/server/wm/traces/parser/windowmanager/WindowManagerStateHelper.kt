@@ -37,6 +37,7 @@ import com.android.server.wm.traces.common.WindowManagerConditionsFactory
 import com.android.server.wm.traces.common.layers.LayerTraceEntry
 import com.android.server.wm.traces.common.layers.LayersTrace
 import com.android.server.wm.traces.common.region.Region
+import com.android.server.wm.traces.common.service.PlatformConsts
 import com.android.server.wm.traces.common.windowmanager.WindowManagerState
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 import com.android.server.wm.traces.common.windowmanager.windows.Activity
@@ -223,7 +224,10 @@ constructor(
          * @param displayId of the target display
          */
         @JvmOverloads
-        fun withRotation(rotation: Int, displayId: Int = Display.DEFAULT_DISPLAY) =
+        fun withRotation(
+            rotation: PlatformConsts.Rotation,
+            displayId: Int = Display.DEFAULT_DISPLAY
+        ) =
             withAppTransitionIdle(displayId)
                 .add(WindowManagerConditionsFactory.hasRotation(rotation, displayId))
 

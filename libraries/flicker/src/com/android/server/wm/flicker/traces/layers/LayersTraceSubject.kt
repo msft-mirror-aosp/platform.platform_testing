@@ -45,7 +45,7 @@ import com.google.common.truth.Subject.Factory
  *
  * Example:
  * ```
- *    val trace = LayersTraceParser.parseFromTrace(myTraceFile)
+ *    val trace = LayersTraceParser().parse(myTraceFile)
  *    val subject = LayersTraceSubject.assertThat(trace)
  *        .contains("ValidLayer")
  *        .notContains("ImaginaryLayer")
@@ -54,7 +54,7 @@ import com.google.common.truth.Subject.Factory
  * ```
  * Example2:
  * ```
- *    val trace = LayersTraceParser.parseFromTrace(myTraceFile)
+ *    val trace = LayersTraceParser().parse(myTraceFile)
  *    val subject = LayersTraceSubject.assertThat(trace) {
  *        check("Custom check") { myCustomAssertion(this) }
  *    }

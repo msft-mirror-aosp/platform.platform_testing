@@ -37,7 +37,7 @@ java_test {
         "ub-uiautomator",
         "androidx.test.uiautomator_uiautomator",
         "androidx.test.ext.junit",
-        "truth-prebuilt",
+        "truth",
         "launcher-helper-lib",
         "wm-proto-parsers",
         "platform-test-annotations",
@@ -63,6 +63,7 @@ java_library {
         "app-helpers-core",
         "launcher-helper-lib",
         "wm-proto-parsers",
+        "launcher-aosp-tapl",
     ],
 }
 

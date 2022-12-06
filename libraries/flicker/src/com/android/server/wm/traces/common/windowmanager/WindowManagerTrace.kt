@@ -17,7 +17,6 @@
 package com.android.server.wm.traces.common.windowmanager
 
 import com.android.server.wm.traces.common.ITrace
-import com.android.server.wm.traces.common.Utils.Companion.sliceEntriesByTimestamp
 import com.android.server.wm.traces.common.service.PlatformConsts
 import kotlin.js.JsName
 
@@ -53,24 +52,6 @@ data class WindowManagerTrace(override val entries: Array<WindowManagerState>) :
 
     override fun hashCode(): Int {
         return entries.contentHashCode()
-    }
-
-    /**
-     * Split the trace by the start and end timestamp.
-     *
-     * @param from the start elapsed timestamp
-     * @param to the end elapsed timestamp
-     * @return the subtrace trace(from, to)
-     */
-    @JsName("sliceUsingElapsedTimestamp")
-    fun sliceUsingElapsedTimestamp(
-        from: Long,
-        to: Long,
-        addInitialEntry: Boolean = false
-    ): WindowManagerTrace {
-        return WindowManagerTrace(
-            sliceEntriesByTimestamp(this.entries, from, to, addInitialEntry) { it.elapsedTimestamp }
-        )
     }
 
     /** Get the initial rotation */

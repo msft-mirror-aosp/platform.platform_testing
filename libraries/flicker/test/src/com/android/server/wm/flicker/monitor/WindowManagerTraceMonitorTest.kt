@@ -16,7 +16,6 @@
 
 package com.android.server.wm.flicker.monitor
 
-import androidx.test.uiautomator.UiDevice
 import com.android.server.wm.nano.WindowManagerTraceFileProto
 import com.google.common.truth.Truth
 import java.nio.file.Path
@@ -24,9 +23,12 @@ import org.junit.FixMethodOrder
 import org.junit.Test
 import org.junit.runners.MethodSorters
 
+/**
+ * Contains [WindowManagerTraceMonitor] tests. To run this test: `atest
+ * FlickerLibTest:LayersTraceMonitorTest`
+ */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class WindowManagerTraceMonitorTest : TraceMonitorTest<WindowManagerTraceMonitor>() {
-
     override fun getMonitor(outputDir: Path) = WindowManagerTraceMonitor(outputDir)
 
     override fun assertTrace(traceData: ByteArray) {
@@ -42,7 +44,6 @@ class WindowManagerTraceMonitorTest : TraceMonitorTest<WindowManagerTraceMonitor
     @Test
     fun withWMTracing() {
         val trace = withWMTracing {
-            val device = UiDevice.getInstance(instrumentation)
             device.pressHome()
             device.pressRecentApps()
         }

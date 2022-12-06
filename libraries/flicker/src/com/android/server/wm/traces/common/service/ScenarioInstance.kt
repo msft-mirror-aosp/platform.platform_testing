@@ -20,7 +20,7 @@ import com.android.server.wm.traces.common.transactions.Transaction
 import com.android.server.wm.traces.common.transition.Transition
 
 data class ScenarioInstance(
-    val scenario: Scenario,
+    val scenario: FlickerServiceScenario,
     val startTimestamp: Long,
     val endTimestamp: Long,
     val startTransaction: Transaction,

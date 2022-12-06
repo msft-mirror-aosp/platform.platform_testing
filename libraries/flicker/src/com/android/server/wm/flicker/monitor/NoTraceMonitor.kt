@@ -16,13 +16,15 @@
 
 package com.android.server.wm.flicker.monitor
 
-import com.android.server.wm.flicker.FlickerRunResult
+import com.android.server.wm.flicker.ITransitionMonitor
+import com.android.server.wm.flicker.io.ResultWriter
+import com.android.server.wm.traces.common.Timestamp
 
 /**
  * A monitor that doesn't actually collect any traces and instead get the resultSetter sets the
  * trace file directly when called.
  */
-class NoTraceMonitor(private val resultSetter: (FlickerRunResult) -> Unit) : ITransitionMonitor {
+class NoTraceMonitor(private val resultSetter: (ResultWriter) -> Unit) : ITransitionMonitor {
     override fun start() {
         // Does nothing
     }
@@ -31,7 +33,9 @@ class NoTraceMonitor(private val resultSetter: (FlickerRunResult) -> Unit) : ITr
         // Does nothing
     }
 
-    override fun setResult(result: FlickerRunResult) {
+    override fun setResult(result: ResultWriter) {
+        result.setTransitionStartTime(Timestamp.MIN)
+        result.setTransitionEndTime(Timestamp.MAX)
         this.resultSetter.invoke(result)
     }
 }

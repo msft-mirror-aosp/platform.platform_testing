@@ -24,6 +24,7 @@ import com.android.server.wm.flicker.helpers.BrowserAppHelper
 import com.android.server.wm.flicker.helpers.isShellTransitionsEnabled
 import com.android.server.wm.traces.parser.windowmanager.WindowManagerStateHelper
 import com.google.common.truth.Truth
+import java.nio.file.Files
 import org.junit.Assume
 import org.junit.Before
 import org.junit.FixMethodOrder
@@ -52,11 +53,11 @@ class FlickerServiceTracesCollectorTest {
         testApp.launchViaIntent(wmHelper)
         testApp.exit(wmHelper)
         collector.stop()
-        val traces = collector.getCollectedTraces()
+        val reader = collector.getResultReader()
 
-        Truth.assertThat(traces.wmTrace.entries).isNotEmpty()
-        Truth.assertThat(traces.layersTrace.entries).isNotEmpty()
-        Truth.assertThat(traces.transitionsTrace.entries).isNotEmpty()
+        Truth.assertThat(reader.readWmTrace()?.entries ?: emptyArray()).isNotEmpty()
+        Truth.assertThat(reader.readLayersTrace()?.entries ?: emptyArray()).isNotEmpty()
+        Truth.assertThat(reader.readTransitionsTrace()?.entries ?: emptyArray()).isNotEmpty()
     }
 
     @Test
@@ -67,9 +68,11 @@ class FlickerServiceTracesCollectorTest {
         testApp.launchViaIntent(wmHelper)
         testApp.exit(wmHelper)
         collector.stop()
-        val traceFile = collector.getCollectedTracesPath()
+        val reader = collector.getResultReader()
 
-        Truth.assertThat(traceFile).isNotNull()
+        val path = reader.artifactPath
+        requireNotNull(path) { "Missing artifact path " }
+        Truth.assertThat(Files.exists(path)).isTrue()
     }
 
     @Test
@@ -80,8 +83,9 @@ class FlickerServiceTracesCollectorTest {
         testApp.launchViaIntent(wmHelper)
         testApp.exit(wmHelper)
         collector.stop()
-        val traceFile = collector.getCollectedTracesPath()
+        val traceFile = collector.getResultReader().artifactPath
 
+        requireNotNull(traceFile) { "Artifact path missing in result" }
         assertArchiveContainsFiles(traceFile, expectedTraces)
     }
 

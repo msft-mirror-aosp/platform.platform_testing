@@ -19,13 +19,11 @@ package com.android.server.wm.flicker.helpers
 import android.content.Context
 import android.graphics.Point
 import android.graphics.Rect
-import android.view.Surface
 import android.view.WindowManager
 import androidx.test.platform.app.InstrumentationRegistry
 import com.android.server.wm.traces.common.layers.Display
 import com.android.server.wm.traces.common.region.Region
-
-fun Int.isRotated() = this == Surface.ROTATION_90 || this == Surface.ROTATION_270
+import com.android.server.wm.traces.common.service.PlatformConsts
 
 object WindowUtils {
     /** Helper functions to retrieve system window sizes and positions. */
@@ -45,10 +43,10 @@ object WindowUtils {
         }
 
     /** Gets the current display rotation */
-    val displayRotation: Int
+    val displayRotation: PlatformConsts.Rotation
         get() {
             val wm = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
-            return wm.defaultDisplay.rotation
+            return PlatformConsts.Rotation.getByValue(wm.defaultDisplay.rotation)
         }
 
     /**
@@ -56,7 +54,7 @@ object WindowUtils {
      *
      * @param requestedRotation Device rotation
      */
-    fun getDisplayBounds(requestedRotation: Int): Region {
+    fun getDisplayBounds(requestedRotation: PlatformConsts.Rotation): Region {
         val displayIsRotated = displayRotation.isRotated()
         val requestedDisplayIsRotated = requestedRotation.isRotated()
 
@@ -110,14 +108,13 @@ object WindowUtils {
 
         return when {
             // nav bar is at the bottom of the screen
-            requestedRotation in listOf(Surface.ROTATION_0, Surface.ROTATION_180) ||
-                isGesturalNavigation ->
+            !requestedRotation.isRotated() || isGesturalNavigation ->
                 Region.from(0, displayHeight - navBarHeight, displayWidth, displayHeight)
-            // nav bar is at the right side
-            requestedRotation == Surface.ROTATION_90 ->
+            // nav bar is on the right side
+            requestedRotation == PlatformConsts.Rotation.ROTATION_90 ->
                 Region.from(displayWidth - navBarWidth, 0, displayWidth, displayHeight)
-            // nav bar is at the left side
-            requestedRotation == Surface.ROTATION_270 ->
+            // nav bar is on the left side
+            requestedRotation == PlatformConsts.Rotation.ROTATION_270 ->
                 Region.from(0, 0, navBarWidth, displayHeight)
             else -> error("Unknown rotation $requestedRotation")
         }
@@ -128,7 +125,7 @@ object WindowUtils {
      *
      * @param requestedRotation Device rotation
      */
-    fun estimateNavigationBarPosition(requestedRotation: Int): Region {
+    fun estimateNavigationBarPosition(requestedRotation: PlatformConsts.Rotation): Region {
         val displayBounds = displayBounds
         val displayWidth: Int
         val displayHeight: Int
@@ -145,14 +142,13 @@ object WindowUtils {
 
         return when {
             // nav bar is at the bottom of the screen
-            requestedRotation in listOf(Surface.ROTATION_0, Surface.ROTATION_180) ||
-                isGesturalNavigationEnabled ->
+            !requestedRotation.isRotated() || isGesturalNavigationEnabled ->
                 Region.from(0, displayHeight - navBarHeight, displayWidth, displayHeight)
-            // nav bar is at the right side
-            requestedRotation == Surface.ROTATION_90 ->
+            // nav bar is on the right side
+            requestedRotation == PlatformConsts.Rotation.ROTATION_90 ->
                 Region.from(displayWidth - navBarWidth, 0, displayWidth, displayHeight)
-            // nav bar is at the left side
-            requestedRotation == Surface.ROTATION_270 ->
+            // nav bar is on the left side
+            requestedRotation == PlatformConsts.Rotation.ROTATION_270 ->
                 Region.from(0, 0, navBarWidth, displayHeight)
             else -> error("Unknown rotation $requestedRotation")
         }

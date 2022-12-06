@@ -28,8 +28,8 @@ import android.util.Log
 import android.view.Surface
 import android.view.WindowManager
 import com.android.server.wm.flicker.FLICKER_TAG
-import com.android.server.wm.flicker.FlickerRunResult
 import com.android.server.wm.flicker.getDefaultFlickerOutputDir
+import com.android.server.wm.flicker.io.TraceType
 import java.nio.file.Files
 import java.nio.file.Path
 
@@ -44,6 +44,9 @@ constructor(
     private val width: Int = 720,
     private val height: Int = 1280
 ) : TraceMonitor(outputDir, getDefaultFlickerOutputDir().resolve("transition.mp4")) {
+    override val traceType: TraceType
+        get() = TraceType.SCREEN_RECORDING
+
     private val displayManager = context.getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
     private val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
     private var mediaRecorder: MediaRecorder? = null
@@ -136,10 +139,6 @@ constructor(
 
     override val isEnabled: Boolean
         get() = mediaRecorder != null
-
-    override fun setResult(result: FlickerRunResult) {
-        result.setScreenRecording(outputFile.toFile())
-    }
 
     override fun toString(): String {
         return "ScreenRecorder($sourceFile)"

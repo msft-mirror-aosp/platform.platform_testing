@@ -19,8 +19,8 @@ package com.android.server.wm.flicker
 import com.android.server.wm.flicker.assertiongenerator.AssertionGenConfigTestConst
 import com.android.server.wm.flicker.assertiongenerator.DeviceTraceConfiguration
 import com.android.server.wm.flicker.assertiongenerator.DeviceTraceConfigurationSimplified
+import com.android.server.wm.traces.common.service.FlickerServiceScenario
 import com.android.server.wm.traces.common.service.PlatformConsts
-import com.android.server.wm.traces.common.service.Scenario
 import com.android.server.wm.traces.common.service.ScenarioType
 import com.google.common.truth.Truth
 import com.google.gson.reflect.TypeToken
@@ -35,7 +35,8 @@ class TraceFileReaderTest {
     @Test
     fun getGoldenTracesConfig() {
         val config = TraceFileReader.getGoldenTracesConfig("/assertiongenerator_config_test")
-        val scenario = Scenario(ScenarioType.APP_LAUNCH, PlatformConsts.Rotation.ROTATION_0)
+        val scenario =
+            FlickerServiceScenario(ScenarioType.APP_LAUNCH, PlatformConsts.Rotation.ROTATION_0)
         val expectedAppLaunchConfig_traceConfigurations =
             arrayOf(AssertionGenConfigTestConst.deviceTraceConfigurationTestFile)
         Truth.assertThat(config[scenario]?.traceConfigurations)

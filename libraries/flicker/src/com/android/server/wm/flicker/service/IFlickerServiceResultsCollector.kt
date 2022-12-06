@@ -16,13 +16,13 @@
 
 package com.android.server.wm.flicker.service
 
-import com.android.server.wm.flicker.TransitionRunner
+import com.android.server.wm.flicker.runner.ExecutionError
 import com.android.server.wm.flicker.service.assertors.AssertionResult
 import org.junit.runner.Description
 import org.junit.runner.notification.Failure
 
 interface IFlickerServiceResultsCollector {
-    val executionErrors: List<TransitionRunner.Companion.ExecutionError>
+    val executionErrors: List<ExecutionError>
     fun testStarted(description: Description)
     fun testFailure(failure: Failure)
     fun testSkipped(description: Description)

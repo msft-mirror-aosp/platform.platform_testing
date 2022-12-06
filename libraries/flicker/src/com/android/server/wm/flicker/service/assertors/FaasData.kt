@@ -38,7 +38,7 @@ data class FaasData(
             ),
             Fact.fact("Extracted from SF trace end", entireLayersTrace.first().timestamp.format()),
             Fact.fact("Scenario type", scenarioInstance.scenario.scenarioType),
-            Fact.fact("Scenario rotation", scenarioInstance.scenario.rotation),
+            Fact.fact("Scenario rotation", scenarioInstance.scenario.startRotation),
             Fact.fact(
                 "Scenario start",
                 "${TimeFormatter.format(scenarioInstance.startTimestamp)} " +

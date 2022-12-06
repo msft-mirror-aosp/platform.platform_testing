@@ -16,10 +16,13 @@
 
 package com.android.server.wm.flicker
 
+import com.android.server.wm.flicker.assertions.SubjectsParser
+import com.android.server.wm.flicker.datastore.CachedResultReader
+import com.android.server.wm.flicker.io.ResultReader
 import com.android.server.wm.flicker.traces.eventlog.EventLogSubject
 import com.android.server.wm.flicker.traces.eventlog.FocusEvent
 import com.android.server.wm.traces.common.Timestamp
-import com.google.common.truth.Truth
+import java.nio.file.Files
 import org.junit.Test
 
 /**
@@ -28,62 +31,53 @@ import org.junit.Test
 class EventLogSubjectTest {
     @Test
     fun canDetectFocusChanges() {
-        val runResult = FlickerRunResult("testName")
-        runResult.transitionStartTime = Timestamp.MIN
-        runResult.transitionEndTime = Timestamp.MAX
-        runResult.eventLog =
-            listOf(
-                FocusEvent(Timestamp(unixNanos = 0), "WinB", FocusEvent.Focus.GAINED, "test"),
-                FocusEvent(
-                    Timestamp(unixNanos = 0),
-                    "test WinA window",
-                    FocusEvent.Focus.LOST,
-                    "test"
-                ),
-                FocusEvent(Timestamp(unixNanos = 0), "WinB", FocusEvent.Focus.LOST, "test"),
-                FocusEvent(Timestamp(unixNanos = 0), "test WinC", FocusEvent.Focus.GAINED, "test")
-            )
-        val result = runResult.eventLogSubject
-        requireNotNull(result) { "Event log subject was not built" }
-        result.focusChanges("WinA", "WinB", "WinC").forAllEntries()
-        result.focusChanges("WinA", "WinB").forAllEntries()
-        result.focusChanges("WinB", "WinC").forAllEntries()
-        result.focusChanges("WinA").forAllEntries()
-        result.focusChanges("WinB").forAllEntries()
-        result.focusChanges("WinC").forAllEntries()
+        Files.deleteIfExists(outputFileName(RunStatus.RUN_EXECUTED))
+        val writer =
+            newTestCachedResultWriter()
+                .addEventLogResult(
+                    listOf(
+                        FocusEvent(
+                            Timestamp(unixNanos = 0),
+                            "WinB",
+                            FocusEvent.Focus.GAINED,
+                            "test"
+                        ),
+                        FocusEvent(
+                            Timestamp(unixNanos = 0),
+                            "test WinA window",
+                            FocusEvent.Focus.LOST,
+                            "test"
+                        ),
+                        FocusEvent(Timestamp(unixNanos = 0), "WinB", FocusEvent.Focus.LOST, "test"),
+                        FocusEvent(
+                            Timestamp(unixNanos = 0),
+                            "test WinC",
+                            FocusEvent.Focus.GAINED,
+                            "test"
+                        )
+                    )
+                )
+        writer.write()
+        val subjectsParser = SubjectsParser(CachedResultReader(TEST_SCENARIO, DEFAULT_TRACE_CONFIG))
+
+        val subject = subjectsParser.eventLogSubject ?: error("Event log subject not built")
+        subject.focusChanges("WinA", "WinB", "WinC").forAllEntries()
+        subject.focusChanges("WinA", "WinB").forAllEntries()
+        subject.focusChanges("WinB", "WinC").forAllEntries()
+        subject.focusChanges("WinA").forAllEntries()
+        subject.focusChanges("WinB").forAllEntries()
+        subject.focusChanges("WinC").forAllEntries()
     }
 
     @Test
     fun canDetectFocusDoesNotChange() {
-        val runResult = FlickerRunResult("testName")
-        runResult.transitionStartTime = Timestamp.MIN
-        runResult.transitionEndTime = Timestamp.MAX
-        runResult.eventLog = emptyList()
-        val result = runResult.eventLogSubject
-        requireNotNull(result) { "Event log subject was not built" }
-        result.focusDoesNotChange().forAllEntries()
-    }
+        Files.deleteIfExists(outputFileName(RunStatus.RUN_EXECUTED))
+        val writer = newTestResultWriter().addEventLogResult(emptyList())
+        val result = writer.write()
 
-    @Test
-    fun canExcludeSetupAndTeardownChanges() {
-        val runResult = FlickerRunResult("testName")
-        runResult.transitionStartTime = Timestamp(5, 5, 5)
-        runResult.transitionEndTime = Timestamp(10, 10, 10)
-        runResult.eventLog =
-            listOf(
-                FocusEvent(Timestamp(unixNanos = 0), "WinB", FocusEvent.Focus.GAINED, "test"),
-                FocusEvent(
-                    Timestamp(unixNanos = 5),
-                    "test WinA window",
-                    FocusEvent.Focus.LOST,
-                    "test"
-                ),
-                FocusEvent(Timestamp(unixNanos = 6), "WinB", FocusEvent.Focus.LOST, "test"),
-                FocusEvent(Timestamp(unixNanos = 10), "test WinC", FocusEvent.Focus.GAINED, "test"),
-                FocusEvent(Timestamp(unixNanos = 12), "test WinD", FocusEvent.Focus.GAINED, "test")
-            )
-        val result = runResult.eventLogSubject
-        requireNotNull(result) { "Event log subject was not built" }
-        Truth.assertThat(result.trace).hasSize(3)
+        val subjectsParser = SubjectsParser(ResultReader(result, DEFAULT_TRACE_CONFIG))
+
+        val subject = subjectsParser.eventLogSubject ?: error("Event log subject not built")
+        subject.focusDoesNotChange().forAllEntries()
     }
 }

@@ -17,8 +17,11 @@
 package com.android.server.wm.flicker.monitor
 
 import androidx.annotation.VisibleForTesting
-import com.android.server.wm.flicker.FlickerRunResult
+import com.android.server.wm.flicker.IResultSetter
+import com.android.server.wm.flicker.ITransitionMonitor
 import com.android.server.wm.flicker.Utils
+import com.android.server.wm.flicker.io.ResultWriter
+import com.android.server.wm.flicker.io.TraceType
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -28,9 +31,10 @@ import java.nio.file.Paths
  * trace to another location.
  */
 abstract class TraceMonitor internal constructor(outputDir: Path, val sourceFile: Path) :
-    ITransitionMonitor, FlickerRunResult.IResultSetter, IFileGeneratingMonitor {
+    ITransitionMonitor, IResultSetter, IFileGeneratingMonitor {
     @VisibleForTesting override val outputFile: Path = outputDir.resolve(sourceFile.fileName)
     abstract val isEnabled: Boolean
+    abstract val traceType: TraceType
 
     /** Starts monitor. */
     final override fun start() {
@@ -47,14 +51,18 @@ abstract class TraceMonitor internal constructor(outputDir: Path, val sourceFile
             stopTracing()
             moveTraceFileToOutputDir()
         } catch (e: Throwable) {
-            throw RuntimeException("Could not start trace", e)
+            throw RuntimeException("Could not stop trace", e)
         }
+    }
+
+    final override fun setResult(result: ResultWriter) {
+        result.addTraceResult(traceType, outputFile.toFile())
     }
 
     abstract fun startTracing()
     abstract fun stopTracing()
 
-    internal fun moveTraceFileToOutputDir(): Path {
+    private fun moveTraceFileToOutputDir(): Path {
         Files.createDirectories(outputFile.parent)
         if (sourceFile != outputFile) {
             Utils.moveFile(sourceFile, outputFile)
@@ -64,7 +72,6 @@ abstract class TraceMonitor internal constructor(outputDir: Path, val sourceFile
     }
 
     companion object {
-        @JvmStatic protected val TRACE_DIR = Paths.get("/data/misc/wmtrace/")
-        const val WINSCOPE_EXT = ".winscope"
+        @JvmStatic protected val TRACE_DIR: Path = Paths.get("/data/misc/wmtrace/")
     }
 }

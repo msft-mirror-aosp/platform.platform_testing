@@ -20,6 +20,7 @@ import com.android.server.wm.traces.common.IComponentMatcher
 import com.android.server.wm.traces.common.ITraceEntry
 import com.android.server.wm.traces.common.Timestamp
 import com.android.server.wm.traces.common.Timestamp.Companion.NULL_TIMESTAMP
+import com.android.server.wm.traces.common.service.PlatformConsts
 import com.android.server.wm.traces.common.windowmanager.windows.Activity
 import com.android.server.wm.traces.common.windowmanager.windows.DisplayContent
 import com.android.server.wm.traces.common.windowmanager.windows.KeyguardControllerState
@@ -241,8 +242,10 @@ class WindowManagerState(
     fun getRootTask(taskId: Int): Task? = rootTasks.firstOrNull { it.rootTaskId == taskId }
 
     @JsName("getRotation")
-    fun getRotation(displayId: Int): Int =
-        getDisplay(displayId)?.rotation ?: error("Default display not found")
+    fun getRotation(displayId: Int): PlatformConsts.Rotation =
+        PlatformConsts.Rotation.getByValue(
+            getDisplay(displayId)?.rotation ?: error("Default display not found")
+        )
 
     @JsName("getOrientation")
     fun getOrientation(displayId: Int): Int =

@@ -17,7 +17,6 @@
 package com.android.server.wm.flicker.monitor
 
 import android.surfaceflinger.Layerstrace
-import androidx.test.uiautomator.UiDevice
 import com.google.common.truth.Truth
 import java.nio.file.Path
 import org.junit.FixMethodOrder
@@ -34,7 +33,6 @@ class LayersTraceMonitorTest : TraceMonitorTest<LayersTraceMonitor>() {
 
     override fun assertTrace(traceData: ByteArray) {
         val trace = Layerstrace.LayersTraceFileProto.parseFrom(traceData)
-
         Truth.assertThat(trace.magicNumber)
             .isEqualTo(
                 Layerstrace.LayersTraceFileProto.MagicNumber.MAGIC_NUMBER_H.number.toLong() shl
@@ -46,7 +44,6 @@ class LayersTraceMonitorTest : TraceMonitorTest<LayersTraceMonitor>() {
     @Test
     fun withSFTracing() {
         val trace = withSFTracing {
-            val device = UiDevice.getInstance(instrumentation)
             device.pressHome()
             device.pressRecentApps()
         }

@@ -17,7 +17,6 @@
 package com.android.server.wm.traces.common.layers
 
 import com.android.server.wm.traces.common.ITrace
-import com.android.server.wm.traces.common.Utils.Companion.sliceEntriesByTimestamp
 import kotlin.js.JsName
 
 /**
@@ -47,24 +46,6 @@ data class LayersTrace(override val entries: Array<BaseLayerTraceEntry>) :
 
     override fun hashCode(): Int {
         return entries.contentHashCode()
-    }
-
-    /**
-     * Split the trace by the start and end timestamp.
-     *
-     * @param from the start timestamp
-     * @param to the end timestamp
-     * @return the subtrace trace(from, to)
-     */
-    @JsName("slice")
-    fun sliceUsingElapsedTimestamp(
-        from: Long,
-        to: Long,
-        addInitialEntry: Boolean = false
-    ): LayersTrace {
-        return LayersTrace(
-            sliceEntriesByTimestamp(this.entries, from, to, addInitialEntry) { it.elapsedTimestamp }
-        )
     }
 
     @JsName("vSyncSlice")

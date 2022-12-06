@@ -17,6 +17,7 @@
 package com.android.server.wm.flicker.service
 
 import android.util.Log
+import com.android.server.wm.flicker.io.ParsedTracesReader
 import com.android.server.wm.flicker.readLayerTraceFromFile
 import com.android.server.wm.flicker.readTransactionsTraceFromFile
 import com.android.server.wm.flicker.readTransitionsTraceFromFile
@@ -43,6 +44,7 @@ class AssertionEngineTest {
         val transitionsTrace =
             readTransitionsTraceFromFile("$path/transition_trace.winscope", transactionsTrace)
 
-        assertionEngine.analyze(wmTrace, layersTrace, transitionsTrace)
+        val reader = ParsedTracesReader(wmTrace, layersTrace, transitionsTrace, transactionsTrace)
+        assertionEngine.analyze(reader)
     }
 }

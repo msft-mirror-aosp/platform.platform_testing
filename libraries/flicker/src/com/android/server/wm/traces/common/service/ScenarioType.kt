@@ -60,7 +60,7 @@ enum class ScenarioType(
         rotation: PlatformConsts.Rotation,
         logger: ((String) -> Unit)? = null
     ): Collection<ScenarioInstance> {
-        val scenario = Scenario(this, rotation)
+        val scenario = FlickerServiceScenario(this, rotation)
         val scenarioInstances = mutableListOf<ScenarioInstance>()
         for (transition in transitionsTrace.entries) {
             if (transition.isIncomplete) {

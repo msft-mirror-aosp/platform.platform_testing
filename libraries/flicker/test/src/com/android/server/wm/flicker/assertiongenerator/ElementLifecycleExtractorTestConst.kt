@@ -269,7 +269,7 @@ class ElementLifecycleExtractorTestConst {
             return traceEntries
         }
 
-        fun createTrace_arg(mapOfFlattenedLayers: Map<Int, Array<Layer>>): LayersTrace {
+        fun createTraceArg(mapOfFlattenedLayers: Map<Int, Array<Layer>>): LayersTrace {
             val traceEntries: Array<BaseLayerTraceEntry> =
                 createTraceEntries_arg(mapOfFlattenedLayers)
             return LayersTrace(traceEntries)

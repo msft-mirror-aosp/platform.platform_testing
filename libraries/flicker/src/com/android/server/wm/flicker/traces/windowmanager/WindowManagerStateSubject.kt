@@ -25,6 +25,7 @@ import com.android.server.wm.traces.common.ComponentNameMatcher
 import com.android.server.wm.traces.common.IComponentMatcher
 import com.android.server.wm.traces.common.Timestamp
 import com.android.server.wm.traces.common.region.Region
+import com.android.server.wm.traces.common.service.PlatformConsts
 import com.android.server.wm.traces.common.windowmanager.WindowManagerState
 import com.android.server.wm.traces.common.windowmanager.windows.WindowState
 import com.google.common.truth.Fact
@@ -51,7 +52,7 @@ import com.google.common.truth.Subject.Factory
  *
  * Example:
  * ```
- *    val trace = WindowManagerTraceParser.parseFromTrace(myTraceFile)
+ *    val trace = WindowManagerTraceParser().parse(myTraceFile)
  *    val subject = WindowManagerTraceSubject.assertThat(trace).first()
  *        .contains("ValidWindow")
  *        .notContains("ImaginaryWindow")
@@ -302,7 +303,10 @@ private constructor(
         }
 
     /** {@inheritDoc} */
-    override fun hasRotation(rotation: Int, displayId: Int): WindowManagerStateSubject = apply {
+    override fun hasRotation(
+        rotation: PlatformConsts.Rotation,
+        displayId: Int
+    ): WindowManagerStateSubject = apply {
         check("Rotation").that(rotation).isEqualTo(wmState.getRotation(displayId))
     }
 

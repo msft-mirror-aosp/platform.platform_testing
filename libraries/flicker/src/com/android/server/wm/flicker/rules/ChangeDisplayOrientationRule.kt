@@ -20,11 +20,11 @@ import android.app.Instrumentation
 import android.content.Context
 import android.os.RemoteException
 import android.util.Log
-import android.view.Surface
 import android.view.WindowManager
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.UiDevice
 import com.android.server.wm.flicker.FLICKER_TAG
+import com.android.server.wm.traces.common.service.PlatformConsts
 import com.android.server.wm.traces.parser.windowmanager.WindowManagerStateHelper
 import org.junit.rules.TestWatcher
 import org.junit.runner.Description
@@ -42,20 +42,20 @@ import org.junit.runner.Description
 data class ChangeDisplayOrientationRule
 @JvmOverloads
 constructor(
-    private val targetOrientation: Int,
+    private val targetOrientation: PlatformConsts.Rotation,
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation(),
     private val clearCacheAfterParsing: Boolean = true
 ) : TestWatcher() {
-    private var initialOrientation = -1
+    private var initialOrientation = PlatformConsts.Rotation.ROTATION_0
 
     override fun starting(description: Description?) {
         Log.v(
             FLICKER_TAG,
             "Changing display orientation to " +
-                "$targetOrientation ${Surface.rotationToString(targetOrientation)}"
+                "$targetOrientation ${targetOrientation.description}"
         )
         val wm = instrumentation.context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
-        initialOrientation = wm.defaultDisplay.rotation
+        initialOrientation = PlatformConsts.Rotation.getByValue(wm.defaultDisplay.rotation)
         setRotation(targetOrientation, instrumentation, clearCacheAfterParsing)
     }
 
@@ -66,7 +66,7 @@ constructor(
     companion object {
         @JvmOverloads
         fun setRotation(
-            rotation: Int,
+            rotation: PlatformConsts.Rotation,
             instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation(),
             clearCacheAfterParsing: Boolean = true,
             wmHelper: WindowManagerStateHelper =
@@ -79,9 +79,9 @@ constructor(
 
             try {
                 when (rotation) {
-                    Surface.ROTATION_270 -> device.setOrientationRight()
-                    Surface.ROTATION_90 -> device.setOrientationLeft()
-                    Surface.ROTATION_0 -> device.setOrientationNatural()
+                    PlatformConsts.Rotation.ROTATION_270 -> device.setOrientationRight()
+                    PlatformConsts.Rotation.ROTATION_90 -> device.setOrientationLeft()
+                    PlatformConsts.Rotation.ROTATION_0 -> device.setOrientationNatural()
                     else -> device.setOrientationNatural()
                 }
 

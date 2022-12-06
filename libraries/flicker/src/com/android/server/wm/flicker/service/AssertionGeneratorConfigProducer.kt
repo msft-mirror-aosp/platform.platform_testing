@@ -18,7 +18,7 @@ package com.android.server.wm.flicker.service
 
 import com.android.server.wm.flicker.TraceFileReader
 import com.android.server.wm.flicker.assertiongenerator.ScenarioConfig
-import com.android.server.wm.traces.common.service.Scenario
+import com.android.server.wm.traces.common.service.FlickerServiceScenario
 
 /**
  * Produces configuration for assertion generation If config is not null (specified by user), it
@@ -26,10 +26,10 @@ import com.android.server.wm.traces.common.service.Scenario
  * from the default location if directory not specified
  */
 class AssertionGeneratorConfigProducer(
-    val config: Map<Scenario, ScenarioConfig>? = null,
+    val config: Map<FlickerServiceScenario, ScenarioConfig>? = null,
     val configDir: String? = null
 ) {
-    fun produce(): Map<Scenario, ScenarioConfig> {
+    fun produce(): Map<FlickerServiceScenario, ScenarioConfig> {
         return config?.let { config } ?: let { TraceFileReader.getGoldenTracesConfig(configDir) }
     }
 }

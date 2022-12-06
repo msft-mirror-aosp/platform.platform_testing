@@ -20,11 +20,11 @@ import com.android.server.wm.flicker.traces.layers.LayersTraceSubject
 import com.android.server.wm.flicker.traces.windowmanager.WindowManagerTraceSubject
 import com.android.server.wm.traces.common.service.AssertionInvocationGroup
 import com.android.server.wm.traces.common.service.AssertionInvocationGroup.NON_BLOCKING
-import com.android.server.wm.traces.common.service.Scenario
+import com.android.server.wm.traces.common.service.FlickerServiceScenario
 import com.android.server.wm.traces.common.service.ScenarioInstance
 import com.android.server.wm.traces.common.transition.Transition
 
-/** Base class for a FASS assertion */
+/** Base class for a FaaS assertion */
 abstract class BaseAssertionBuilder {
     internal var invocationGroup: AssertionInvocationGroup = NON_BLOCKING
 
@@ -59,7 +59,7 @@ abstract class BaseAssertionBuilder {
         scenarioInstance: ScenarioInstance,
         wmSubject: WindowManagerTraceSubject?,
         layerSubject: LayersTraceSubject?,
-        scenario: Scenario
+        scenario: FlickerServiceScenario
     ): AssertionResult {
         var assertionError: Throwable? = null
         try {

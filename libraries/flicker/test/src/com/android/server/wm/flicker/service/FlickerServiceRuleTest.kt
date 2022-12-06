@@ -16,15 +16,15 @@
 
 package com.android.server.wm.flicker.service
 
-import com.android.server.wm.flicker.TransitionRunner
 import com.android.server.wm.flicker.helpers.isShellTransitionsEnabled
+import com.android.server.wm.flicker.runner.Consts
+import com.android.server.wm.flicker.runner.ExecutionError
 import com.android.server.wm.flicker.service.assertors.AssertionResult
 import com.android.server.wm.flicker.service.rules.FlickerServiceRule
 import com.android.server.wm.flicker.utils.KotlinMockito
-import com.android.server.wm.flicker.utils.KotlinMockito.Companion.argThat
 import com.android.server.wm.traces.common.service.AssertionInvocationGroup
+import com.android.server.wm.traces.common.service.FlickerServiceScenario
 import com.android.server.wm.traces.common.service.PlatformConsts
-import com.android.server.wm.traces.common.service.Scenario
 import com.android.server.wm.traces.common.service.ScenarioType
 import com.google.common.truth.Truth
 import org.junit.Assume
@@ -113,7 +113,10 @@ class FlickerServiceRuleTest {
                 listOf(
                     AssertionResult(
                         "assertionName",
-                        Scenario(ScenarioType.APP_LAUNCH, PlatformConsts.Rotation.ROTATION_0),
+                        FlickerServiceScenario(
+                            ScenarioType.APP_LAUNCH,
+                            PlatformConsts.Rotation.ROTATION_0
+                        ),
                         AssertionInvocationGroup.BLOCKING,
                         assertionError
                     )
@@ -141,7 +144,10 @@ class FlickerServiceRuleTest {
                 listOf(
                     AssertionResult(
                         "assertionName",
-                        Scenario(ScenarioType.APP_LAUNCH, PlatformConsts.Rotation.ROTATION_0),
+                        FlickerServiceScenario(
+                            ScenarioType.APP_LAUNCH,
+                            PlatformConsts.Rotation.ROTATION_0
+                        ),
                         AssertionInvocationGroup.BLOCKING,
                         assertionError
                     )
@@ -168,7 +174,7 @@ class FlickerServiceRuleTest {
             FlickerServiceRule(mockFlickerServiceResultsCollector, failTestOnFaasFailure = true)
         val mockDescription = Description.createTestDescription("MockClass", "mockTest")
 
-        val executionError = TransitionRunner.Companion.ExecutionError(Throwable("some error"))
+        val executionError = ExecutionError(Throwable(Consts.FAILURE))
         `when`(mockFlickerServiceResultsCollector.executionErrors)
             .thenReturn(listOf(executionError))
 

@@ -25,7 +25,7 @@ class LayersLifecycleExtractorTest(
     @Test
     fun extract() {
         val layersTrace =
-            ElementLifecycleExtractorTestConst.createTrace_arg(layersTraceFlattenedLayers)
+            ElementLifecycleExtractorTestConst.createTraceArg(layersTraceFlattenedLayers)
         val traceDump = DeviceTraceDump(null, layersTrace)
         val layersLifecycleExtractor = LayersLifecycleExtractor()
         val elementLifecycles =

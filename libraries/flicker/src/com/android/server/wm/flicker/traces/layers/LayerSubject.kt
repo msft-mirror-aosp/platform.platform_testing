@@ -42,7 +42,7 @@ import com.google.common.truth.Subject.Factory
  *
  * Example:
  * ```
- *    val trace = LayersTraceParser.parseFromTrace(myTraceFile)
+ *    val trace = LayersTraceParser().parse(myTraceFile)
  *    val subject = LayersTraceSubject.assertThat(trace).first()
  *        .layer("ValidLayer")
  *        .exists()

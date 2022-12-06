@@ -19,6 +19,7 @@ package com.android.server.wm.flicker.monitor
 import android.app.Instrumentation
 import android.os.SystemClock
 import androidx.test.platform.app.InstrumentationRegistry
+import androidx.test.uiautomator.UiDevice
 import com.android.compatibility.common.util.SystemUtil
 import com.android.server.wm.flicker.getDefaultFlickerOutputDir
 import com.google.common.truth.Truth
@@ -33,12 +34,8 @@ import org.junit.runners.MethodSorters
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class ScreenRecorderTest {
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
-    private lateinit var mScreenRecorder: ScreenRecorder
-    @Before
-    fun setup() {
-        val outputDir = getDefaultFlickerOutputDir()
-        mScreenRecorder = ScreenRecorder(instrumentation.targetContext, outputDir)
-    }
+    private val mScreenRecorder =
+        ScreenRecorder(instrumentation.targetContext, getDefaultFlickerOutputDir())
 
     @Before
     fun clearOutputDir() {
@@ -54,18 +51,14 @@ class ScreenRecorderTest {
     @Test
     fun videoIsRecorded() {
         mScreenRecorder.start()
-        SystemClock.sleep(100)
+        val device = UiDevice.getInstance(instrumentation)
+        device.wakeUp()
+        SystemClock.sleep(500)
+        device.pressHome()
+        SystemClock.sleep(500)
         mScreenRecorder.stop()
-        val file = mScreenRecorder.outputFile
-        Truth.assertWithMessage("Screen recording file not found").that(Files.exists(file)).isTrue()
-    }
-
-    @Test
-    fun videoCanBeSaved() {
-        mScreenRecorder.start()
-        SystemClock.sleep(3000)
-        mScreenRecorder.stop()
-        val trace = mScreenRecorder.outputFile
-        Truth.assertWithMessage("Trace file $trace not found").that(Files.exists(trace)).isTrue()
+        Truth.assertWithMessage("Screen recording file exists")
+            .that(Files.exists(mScreenRecorder.outputFile))
+            .isTrue()
     }
 }

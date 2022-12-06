@@ -24,10 +24,12 @@ import com.android.server.wm.flicker.traces.region.RegionTraceSubject
 import com.android.server.wm.traces.common.ComponentNameMatcher
 import com.android.server.wm.traces.common.IComponentMatcher
 import com.android.server.wm.traces.common.region.RegionTrace
+import com.android.server.wm.traces.common.service.PlatformConsts
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 import com.android.server.wm.traces.common.windowmanager.windows.WindowState
 import com.google.common.truth.Fact
 import com.google.common.truth.FailureMetadata
+import com.google.common.truth.FailureStrategy
 import com.google.common.truth.StandardSubjectBuilder
 import com.google.common.truth.Subject
 import com.google.common.truth.Subject.Factory
@@ -43,7 +45,7 @@ import com.google.common.truth.Subject.Factory
  *
  * Example:
  * ```
- *    val trace = WindowManagerTraceParser.parseFromTrace(myTraceFile)
+ *    val trace = WindowManagerTraceParser().parse(myTraceFile)
  *    val subject = WindowManagerTraceSubject.assertThat(trace)
  *        .contains("ValidWindow")
  *        .notContains("ImaginaryWindow")
@@ -52,7 +54,7 @@ import com.google.common.truth.Subject.Factory
  * ```
  * Example2:
  * ```
- *    val trace = WindowManagerTraceParser.parseFromTrace(myTraceFile)
+ *    val trace = WindowManagerTraceParser().parse(myTraceFile)
  *    val subject = WindowManagerTraceSubject.assertThat(trace) {
  *        check("Custom check") { myCustomAssertion(this) }
  *    }
@@ -454,16 +456,21 @@ private constructor(
     }
 
     /** {@inheritDoc} */
-    override fun hasRotation(rotation: Int, displayId: Int): WindowManagerTraceSubject =
-        hasRotation(rotation, displayId, isOptional = false)
+    override fun hasRotation(
+        rotation: PlatformConsts.Rotation,
+        displayId: Int
+    ): WindowManagerTraceSubject = hasRotation(rotation, displayId, isOptional = false)
 
     /** See [hasRotation] */
-    fun hasRotation(rotation: Int, displayId: Int, isOptional: Boolean): WindowManagerTraceSubject =
-        apply {
-            addAssertion("hasRotation($rotation, display=$displayId)", isOptional) {
-                it.hasRotation(rotation, displayId)
-            }
+    fun hasRotation(
+        rotation: PlatformConsts.Rotation,
+        displayId: Int,
+        isOptional: Boolean
+    ): WindowManagerTraceSubject = apply {
+        addAssertion("hasRotation($rotation, display=$displayId)", isOptional) {
+            it.hasRotation(rotation, displayId)
         }
+    }
 
     /** {@inheritDoc} */
     override fun isNotPinned(componentMatcher: IComponentMatcher): WindowManagerTraceSubject =

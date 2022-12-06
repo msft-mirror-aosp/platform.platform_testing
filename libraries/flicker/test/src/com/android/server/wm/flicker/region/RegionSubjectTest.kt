@@ -16,11 +16,11 @@
 
 package com.android.server.wm.flicker.region
 
+import com.android.server.wm.flicker.assertExceptionMessageCause
 import com.android.server.wm.flicker.assertThrows
 import com.android.server.wm.flicker.traces.region.RegionSubject
 import com.android.server.wm.traces.common.Rect
 import com.android.server.wm.traces.common.Timestamp
-import com.google.common.truth.Truth
 import org.junit.FixMethodOrder
 import org.junit.Test
 import org.junit.runners.MethodSorters
@@ -30,7 +30,7 @@ import org.junit.runners.MethodSorters
 class RegionSubjectTest {
     private fun assertFail(expectedMessage: String, predicate: () -> Any) {
         val error = assertThrows(AssertionError::class.java) { predicate() }
-        Truth.assertThat(error).hasCauseThat().hasMessageThat().contains(expectedMessage)
+        assertExceptionMessageCause(error, expectedMessage)
     }
 
     private fun expectAllFailPositionChange(expectedMessage: String, rectA: Rect, rectB: Rect) {

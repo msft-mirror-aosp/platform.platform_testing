@@ -18,7 +18,10 @@
 
 package com.android.server.wm.flicker
 
+import android.os.SystemClock
+import com.android.server.wm.traces.common.Timestamp
 import java.nio.file.Paths
+import java.util.concurrent.TimeUnit
 
 internal const val FLICKER_TAG = "FLICKER"
 
@@ -31,3 +34,11 @@ fun getDefaultFlickerOutputDir() = Paths.get("/sdcard/flicker")
 internal fun String.containsAny(vararg values: String): Boolean {
     return values.isEmpty() || values.any { search -> this.contains(search) }
 }
+
+/** @return the current timestamp as [Timestamp] */
+fun now() =
+    Timestamp(
+        elapsedNanos = SystemClock.elapsedRealtimeNanos(),
+        systemUptimeNanos = SystemClock.uptimeNanos(),
+        unixNanos = TimeUnit.NANOSECONDS.convert(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
+    )

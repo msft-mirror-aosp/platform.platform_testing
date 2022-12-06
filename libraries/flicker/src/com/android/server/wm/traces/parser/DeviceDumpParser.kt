@@ -24,6 +24,7 @@ import com.android.server.wm.traces.common.layers.LayersTrace
 import com.android.server.wm.traces.common.windowmanager.WindowManagerState
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 import com.android.server.wm.traces.parser.layers.LayersTraceParser
+import com.android.server.wm.traces.parser.windowmanager.WindowManagerDumpParser
 import com.android.server.wm.traces.parser.windowmanager.WindowManagerTraceParser
 
 /**
@@ -53,20 +54,16 @@ class DeviceDumpParser {
             return NullableDeviceStateDump(
                 wmState =
                     if (wmTraceData.isNotEmpty()) {
-                        WindowManagerTraceParser.parseFromDump(
-                                wmTraceData,
-                                clearCacheAfterParsing = clearCacheAfterParsing
-                            )
+                        WindowManagerDumpParser()
+                            .parse(wmTraceData, clearCache = clearCacheAfterParsing)
                             .first()
                     } else {
                         null
                     },
                 layerState =
                     if (layersTraceData.isNotEmpty()) {
-                        LayersTraceParser.parseFromTrace(
-                                layersTraceData,
-                                clearCacheAfterParsing = clearCacheAfterParsing
-                            )
+                        LayersTraceParser()
+                            .parse(layersTraceData, clearCache = clearCacheAfterParsing)
                             .first()
                     } else {
                         null
@@ -96,7 +93,7 @@ class DeviceDumpParser {
          *
          * @param wmTraceData [WindowManagerTrace] content
          * @param layersTraceData [LayersTrace] content
-         * @param clearCacheAfterParsing If the caching used while parsing the proto should be
+         * @param clearCache If the caching used while parsing the proto should be
          * ```
          *                               cleared or remain in memory
          * ```
@@ -105,24 +102,18 @@ class DeviceDumpParser {
         fun fromTrace(
             wmTraceData: ByteArray,
             layersTraceData: ByteArray,
-            clearCacheAfterParsing: Boolean
+            clearCache: Boolean
         ): DeviceTraceDump {
             return DeviceTraceDump(
                 wmTrace =
                     if (wmTraceData.isNotEmpty()) {
-                        WindowManagerTraceParser.parseFromTrace(
-                            wmTraceData,
-                            clearCacheAfterParsing = clearCacheAfterParsing
-                        )
+                        WindowManagerTraceParser().parse(wmTraceData, clearCache = clearCache)
                     } else {
                         null
                     },
                 layersTrace =
                     if (layersTraceData.isNotEmpty()) {
-                        LayersTraceParser.parseFromTrace(
-                            layersTraceData,
-                            clearCacheAfterParsing = clearCacheAfterParsing
-                        )
+                        LayersTraceParser().parse(layersTraceData, clearCache = clearCache)
                     } else {
                         null
                     }

@@ -16,92 +16,74 @@
 
 package com.android.server.wm.traces.parser.transaction
 
+import android.surfaceflinger.proto.Transactions
 import android.surfaceflinger.proto.Transactions.TransactionState
 import android.surfaceflinger.proto.Transactions.TransactionTraceFile
-import android.util.Log
 import com.android.server.wm.traces.common.Timestamp
 import com.android.server.wm.traces.common.transactions.Transaction
 import com.android.server.wm.traces.common.transactions.TransactionsTrace
 import com.android.server.wm.traces.common.transactions.TransactionsTraceEntry
 import com.android.server.wm.traces.common.transition.TransitionsTrace
-import com.android.server.wm.traces.parser.LOG_TAG
-import kotlin.math.max
-import kotlin.system.measureTimeMillis
+import com.android.server.wm.traces.parser.AbstractTraceParser
 
 /** Parser for [TransitionsTrace] objects */
-class TransactionsTraceParser {
-    companion object {
-        /**
-         * Parses [TransitionsTrace] from [data] and uses the proto to generates a list of trace
-         * entries.
-         *
-         * @param data binary proto data
-         */
-        @JvmStatic
-        fun parseFromTrace(data: ByteArray): TransactionsTrace {
-            var fileProto: TransactionTraceFile?
-            try {
-                measureTimeMillis { fileProto = TransactionTraceFile.parseFrom(data) }
-                    .also { Log.v(LOG_TAG, "Parsing proto (Transactions Trace): ${it}ms") }
-            } catch (e: Throwable) {
-                throw RuntimeException(e)
-            }
-            return fileProto?.let { parseFromTrace(it) } ?: error("Unable to read trace file")
-        }
+class TransactionsTraceParser :
+    AbstractTraceParser<
+        TransactionTraceFile,
+        Transactions.TransactionTraceEntry,
+        TransactionsTraceEntry,
+        TransactionsTrace
+    >() {
+    private var timestampOffset = 0L
+    override val traceName: String = "Transactions trace"
 
-        /**
-         * Uses the proto to generates a list of trace entries.
-         *
-         * @param proto Parsed proto data
-         */
-        @JvmStatic
-        fun parseFromTrace(proto: TransactionTraceFile): TransactionsTrace {
-            val transactionsTraceEntries = mutableListOf<TransactionsTraceEntry>()
-            var traceParseTime = 0L
-            val timestampOffset = proto.realToElapsedTimeOffsetNanos
-            for (entry in proto.entryList) {
-                val entryParseTime = measureTimeMillis {
-                    val transactions = parseTransactionsProto(entry.transactionsList)
-                    val transactionsTraceEntry =
-                        TransactionsTraceEntry(
-                            Timestamp.from(
-                                elapsedNanos = entry.elapsedRealtimeNanos,
-                                elapsedOffsetNanos = timestampOffset
-                            ),
-                            entry.vsyncId,
-                            transactions
-                        )
-                    transactions.forEach { it.appliedInEntry = transactionsTraceEntry }
-                    transactionsTraceEntries.add(transactionsTraceEntry)
-                }
-                traceParseTime += entryParseTime
-            }
+    override fun onBeforeParse(input: TransactionTraceFile) {
+        timestampOffset = input.realToElapsedTimeOffsetNanos
+    }
 
-            Log.v(
-                LOG_TAG,
-                "Parsing duration (Transactions Trace): ${traceParseTime}ms " +
-                    "(avg ${traceParseTime / max(transactionsTraceEntries.size, 1)}ms per entry)"
+    override fun getTimestamp(entry: Transactions.TransactionTraceEntry): Long =
+        entry.elapsedRealtimeNanos
+
+    override fun createTrace(entries: List<TransactionsTraceEntry>): TransactionsTrace =
+        TransactionsTrace(entries.toTypedArray())
+
+    override fun getEntries(input: TransactionTraceFile): List<Transactions.TransactionTraceEntry> =
+        input.entryList
+
+    override fun doDecodeByteArray(bytes: ByteArray): TransactionTraceFile =
+        TransactionTraceFile.parseFrom(bytes)
+
+    override fun doParseEntry(entry: Transactions.TransactionTraceEntry): TransactionsTraceEntry {
+        val transactions = parseTransactionsProto(entry.transactionsList)
+        val transactionsTraceEntry =
+            TransactionsTraceEntry(
+                Timestamp.from(
+                    elapsedNanos = entry.elapsedRealtimeNanos,
+                    elapsedOffsetNanos = timestampOffset
+                ),
+                entry.vsyncId,
+                transactions
             )
-            return TransactionsTrace(transactionsTraceEntries.toTypedArray())
+        transactions.forEach { it.appliedInEntry = transactionsTraceEntry }
+        return transactionsTraceEntry
+    }
+
+    private fun parseTransactionsProto(
+        transactionStates: List<TransactionState>
+    ): Array<Transaction> {
+        val transactions = mutableListOf<Transaction>()
+        for (state in transactionStates) {
+            val transaction =
+                Transaction(
+                    state.pid,
+                    state.uid,
+                    state.vsyncId,
+                    state.postTime,
+                    state.transactionId
+                )
+            transactions.add(transaction)
         }
 
-        private fun parseTransactionsProto(
-            transactionStates: List<TransactionState>
-        ): Array<Transaction> {
-            val transactions = mutableListOf<Transaction>()
-            for (state in transactionStates) {
-                val transaction =
-                    Transaction(
-                        state.pid,
-                        state.uid,
-                        state.vsyncId,
-                        state.postTime,
-                        state.transactionId
-                    )
-                transactions.add(transaction)
-            }
-
-            return transactions.toTypedArray()
-        }
+        return transactions.toTypedArray()
     }
 }

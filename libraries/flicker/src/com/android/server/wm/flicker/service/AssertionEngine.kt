@@ -20,6 +20,7 @@ import android.app.Instrumentation
 import androidx.test.platform.app.InstrumentationRegistry
 import com.android.server.wm.flicker.assertiongenerator.ScenarioConfig
 import com.android.server.wm.flicker.assertiongenerator.common.AssertionFactory
+import com.android.server.wm.flicker.io.IReader
 import com.android.server.wm.flicker.service.assertors.AssertionData
 import com.android.server.wm.flicker.service.assertors.AssertionResult
 import com.android.server.wm.flicker.service.assertors.ConfigException
@@ -27,12 +28,9 @@ import com.android.server.wm.flicker.service.assertors.TransitionAsserter
 import com.android.server.wm.flicker.service.config.Assertions.allAssertionsForScenarioInstance
 import com.android.server.wm.flicker.service.config.Assertions.assertionsForScenarioInstance
 import com.android.server.wm.flicker.service.config.Assertions.generatedAssertionsForScenarioInstance
-import com.android.server.wm.traces.common.layers.LayersTrace
-import com.android.server.wm.traces.common.service.Scenario
+import com.android.server.wm.traces.common.service.FlickerServiceScenario
 import com.android.server.wm.traces.common.service.ScenarioInstance
 import com.android.server.wm.traces.common.service.ScenarioType
-import com.android.server.wm.traces.common.transition.TransitionsTrace
-import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 import java.io.FileNotFoundException
 
 /** Invokes the configured assertors and summarizes the results. */
@@ -44,14 +42,14 @@ class AssertionEngine(
 
     lateinit var assertionFactory: AssertionFactory
 
-    enum class AssertionsToUse() {
+    enum class AssertionsToUse {
         HARDCODED,
         GENERATED,
         ALL
     }
 
     private fun initializeAssertionFactory(): AssertionFactory {
-        val config: Map<Scenario, ScenarioConfig> =
+        val config: Map<FlickerServiceScenario, ScenarioConfig> =
             try {
                 configProducer.produce()
             } catch (err: FileNotFoundException) {
@@ -79,16 +77,18 @@ class AssertionEngine(
             }
         } catch (err: ConfigException) {
             logger.invoke(err.toString())
-            listOf()
+            emptyList()
         }
     }
 
     fun analyze(
-        wmTrace: WindowManagerTrace,
-        layersTrace: LayersTrace,
-        transitionsTrace: TransitionsTrace,
+        reader: IReader,
         assertionsToUse: AssertionsToUse = AssertionsToUse.HARDCODED
     ): List<AssertionResult> {
+        val wmTrace = reader.readWmTrace() ?: error("WM trace not found")
+        val layersTrace = reader.readLayersTrace() ?: error("Layers trace not found")
+        val transitionsTrace = reader.readTransitionsTrace() ?: error("Transitions trace not found")
+
         logger.invoke("AssertionEngine#analyze")
 
         if (assertionsToUse != AssertionsToUse.HARDCODED) {

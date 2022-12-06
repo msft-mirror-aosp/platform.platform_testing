@@ -31,8 +31,8 @@ import com.android.server.wm.flicker.assertiongenerator.layers.LayersVisibilityA
 import com.android.server.wm.traces.common.ComponentNameMatcher
 import com.android.server.wm.traces.common.DeviceTraceDump
 import com.android.server.wm.traces.common.layers.LayersTrace
+import com.android.server.wm.traces.common.service.FlickerServiceScenario
 import com.android.server.wm.traces.common.service.PlatformConsts
-import com.android.server.wm.traces.common.service.Scenario
 import com.android.server.wm.traces.common.service.ScenarioInstance
 import com.android.server.wm.traces.common.service.ScenarioType
 import com.android.server.wm.traces.common.transition.Transition
@@ -97,7 +97,7 @@ class LayersVisibilityAssertionProducerTest {
 
     private fun createExecuteLayersTrace() {
         executeLayersTrace =
-            ElementLifecycleExtractorTestConst.createTrace_arg(
+            ElementLifecycleExtractorTestConst.createTraceArg(
                 ElementLifecycleExtractorTestConst.mapOfFlattenedLayersAssertionProducer
             )
     }
@@ -139,7 +139,7 @@ class LayersVisibilityAssertionProducerTest {
 
     private fun createExecuteSameComponentMatcherLayersTrace() {
         executeSameComponentMatcherLayersTrace =
-            ElementLifecycleExtractorTestConst.createTrace_arg(
+            ElementLifecycleExtractorTestConst.createTraceArg(
                 ElementLifecycleExtractorTestConst.mapOfFlattenedLayersAssertionProducer
             )
     }
@@ -269,7 +269,7 @@ class LayersVisibilityAssertionProducerTest {
     @Test
     fun produceFromTestTrace_assertions_fail1() {
         val layersTrace =
-            ElementLifecycleExtractorTestConst.createTrace_arg(
+            ElementLifecycleExtractorTestConst.createTraceArg(
                 ElementLifecycleExtractorTestConst.mapOfFlattenedLayersAllVisibilityAssertions_fail1
             )
         val error =
@@ -283,7 +283,7 @@ class LayersVisibilityAssertionProducerTest {
     @Test
     fun produceFromTestTrace_assertions_fail2() {
         val layersTrace =
-            ElementLifecycleExtractorTestConst.createTrace_arg(
+            ElementLifecycleExtractorTestConst.createTraceArg(
                 ElementLifecycleExtractorTestConst.mapOfFlattenedLayersAllVisibilityAssertions_fail2
             )
         val error =
@@ -298,7 +298,7 @@ class LayersVisibilityAssertionProducerTest {
     @Test
     fun produceFromTestTrace_assertions_fail3() {
         val layersTrace =
-            ElementLifecycleExtractorTestConst.createTrace_arg(
+            ElementLifecycleExtractorTestConst.createTraceArg(
                 ElementLifecycleExtractorTestConst.mapOfFlattenedLayersAllVisibilityAssertions_fail3
             )
         val error =
@@ -314,7 +314,7 @@ class LayersVisibilityAssertionProducerTest {
     @Test
     fun produceFromTestTrace_assertions_fail4() {
         val layersTrace =
-            ElementLifecycleExtractorTestConst.createTrace_arg(
+            ElementLifecycleExtractorTestConst.createTraceArg(
                 ElementLifecycleExtractorTestConst.mapOfFlattenedLayersAllVisibilityAssertions_fail4
             )
         val error =
@@ -330,7 +330,8 @@ class LayersVisibilityAssertionProducerTest {
     fun produceFromTraceFile_assertion_execute() {
         val configDir = "/assertiongenerator_config_test"
         val goldenTracesConfig = TraceFileReader.getGoldenTracesConfig(configDir)
-        val scenario = Scenario(ScenarioType.APP_LAUNCH, PlatformConsts.Rotation.ROTATION_0)
+        val scenario =
+            FlickerServiceScenario(ScenarioType.APP_LAUNCH, PlatformConsts.Rotation.ROTATION_0)
         val traceDump = goldenTracesConfig[scenario]!!.deviceTraceDumps[0]
         val traceConfiguration = goldenTracesConfig[scenario]!!.traceConfigurations[0]
         val layersTrace = traceDump.layersTrace
@@ -350,7 +351,7 @@ class LayersVisibilityAssertionProducerTest {
             val assertions = produceAssertionsFromTraceDump(traceDump, traceConfiguration)
             Truth.assertThat(assertions.isNotEmpty()).isTrue()
             for (scenarioInstance in scenarioInstances) {
-                assertions.forEachIndexed { index, assertion ->
+                assertions.forEach { assertion ->
                     assertion.execute(layersTrace, scenarioInstance.associatedTransition)
                 }
                 if (scenarioInstance.scenario.scenarioType == ScenarioType.APP_LAUNCH) {

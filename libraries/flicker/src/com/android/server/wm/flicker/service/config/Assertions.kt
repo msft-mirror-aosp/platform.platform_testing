@@ -43,8 +43,8 @@ import com.android.server.wm.flicker.service.assertors.assertions.StatusBarLayer
 import com.android.server.wm.flicker.service.assertors.assertions.VisibleLayersShownMoreThanOneConsecutiveEntry
 import com.android.server.wm.flicker.service.assertors.assertions.VisibleWindowsShownMoreThanOneConsecutiveEntry
 import com.android.server.wm.traces.common.service.AssertionInvocationGroup.NON_BLOCKING
+import com.android.server.wm.traces.common.service.FlickerServiceScenario
 import com.android.server.wm.traces.common.service.PlatformConsts
-import com.android.server.wm.traces.common.service.Scenario
 import com.android.server.wm.traces.common.service.ScenarioInstance
 import com.android.server.wm.traces.common.service.ScenarioType
 import com.android.server.wm.traces.common.transition.Transition
@@ -88,7 +88,7 @@ object Assertions {
     ): List<AssertionData> {
         val assertions: MutableList<AssertionData> = mutableListOf()
         for (scenarioType in ScenarioType.values()) {
-            val scenario = Scenario(scenarioType, rotation)
+            val scenario = FlickerServiceScenario(scenarioType, rotation)
             if (scenarioType.executionCondition.shouldExecute(transition)) {
                 for (assertion in assertionsForScenario(scenario)) {
                     assertions.add(AssertionData(scenario, assertion, assertion.invocationGroup))
@@ -154,7 +154,9 @@ object Assertions {
         }
     }
 
-    private fun assertionsForScenario(scenario: Scenario): List<BaseAssertionBuilder> {
+    private fun assertionsForScenario(
+        scenario: FlickerServiceScenario
+    ): List<BaseAssertionBuilder> {
         return when (scenario.scenarioType) {
             ScenarioType.COMMON -> COMMON_ASSERTIONS
             ScenarioType.APP_LAUNCH -> APP_LAUNCH_ASSERTIONS

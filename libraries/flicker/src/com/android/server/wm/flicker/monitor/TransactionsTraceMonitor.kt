@@ -17,8 +17,9 @@
 package com.android.server.wm.flicker.monitor
 
 import android.view.WindowManagerGlobal
-import com.android.server.wm.flicker.FlickerRunResult
 import com.android.server.wm.flicker.getDefaultFlickerOutputDir
+import com.android.server.wm.flicker.io.TraceType
+import com.android.server.wm.flicker.io.WINSCOPE_EXT
 import com.android.server.wm.flicker.traces.layers.LayersTraceSubject
 import com.android.server.wm.traces.common.layers.LayersTrace
 import java.nio.file.Path
@@ -48,7 +49,6 @@ constructor(
     override val isEnabled: Boolean
         get() = true
 
-    override fun setResult(result: FlickerRunResult) {
-        result.setTransactionsTrace(outputFile.toFile())
-    }
+    override val traceType: TraceType
+        get() = TraceType.TRANSACTION
 }

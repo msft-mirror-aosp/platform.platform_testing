@@ -16,6 +16,7 @@
 
 package com.android.server.wm.flicker.monitor
 
+import android.app.Instrumentation
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.UiDevice
 import com.android.server.wm.flicker.getDefaultFlickerOutputDir
@@ -29,13 +30,12 @@ import org.junit.Before
 import org.junit.Test
 
 abstract class TraceMonitorTest<T : TransitionMonitor> {
-
     lateinit var savedTrace: Path
     abstract fun getMonitor(outputDir: Path): T
     abstract fun assertTrace(traceData: ByteArray)
 
-    protected val instrumentation = InstrumentationRegistry.getInstrumentation()
-    protected val device = UiDevice.getInstance(instrumentation)
+    protected val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
+    protected val device: UiDevice = UiDevice.getInstance(instrumentation)
     private val traceMonitor by lazy {
         val outputDir = getDefaultFlickerOutputDir()
         getMonitor(outputDir)
@@ -119,8 +119,7 @@ abstract class TraceMonitorTest<T : TransitionMonitor> {
             device.pressRecentApps()
         }
 
-        val dump =
-            DeviceDumpParser.fromTrace(trace.first, trace.second, clearCacheAfterParsing = true)
+        val dump = DeviceDumpParser.fromTrace(trace.first, trace.second, clearCache = true)
         this.validateTrace(dump)
     }
 }

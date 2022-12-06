@@ -19,7 +19,7 @@ class LifecycleExtractorFactoryTest {
     @Test
     fun extract() {
         val layersTrace =
-            ElementLifecycleExtractorTestConst.createTrace_arg(
+            ElementLifecycleExtractorTestConst.createTraceArg(
                 ElementLifecycleExtractorTestConst.mapOfFlattenedLayers
             )
         val layersTraceDump = DeviceTraceDump(null, layersTrace)
@@ -53,7 +53,7 @@ class LifecycleExtractorFactoryTest {
     @Test
     fun extract_sameComponentMatcher() {
         val layersTrace =
-            ElementLifecycleExtractorTestConst.createTrace_arg(
+            ElementLifecycleExtractorTestConst.createTraceArg(
                 ElementLifecycleExtractorTestConst.mapOfFlattenedLayers_SameComponentMatcher
             )
         val layersTraceDump = DeviceTraceDump(null, layersTrace)

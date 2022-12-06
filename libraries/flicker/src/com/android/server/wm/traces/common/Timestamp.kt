@@ -16,14 +16,19 @@
 
 package com.android.server.wm.traces.common
 
-class Timestamp(
-    // TODO: We should probably update all traces that make use of this timestamp to just use
-    //       elapsedNanos or unixNanos
-    /* Nanoseconds since boot, including time spent in sleep. */
+/**
+ * Time class with all available timestamp types
+ *
+ * TODO: We should probably update all traces that make use of this timestamp to just use
+ * elapsedNanos or unixNanos
+ *
+ * @param elapsedNanos Nanoseconds since boot, including time spent in sleep.
+ * @param systemUptimeNanos Nanoseconds since boot, not counting time spent in deep sleep
+ * @param unixNanos Nanoseconds since Unix epoch
+ */
+data class Timestamp(
     val elapsedNanos: Long = 0,
-    /* Nanoseconds since boot, not counting time spent in deep sleep */
     val systemUptimeNanos: Long = 0,
-    /* Nanoseconds since Unix epoch */
     val unixNanos: Long = 0
 ) : Comparable<Timestamp> {
 
@@ -55,20 +60,6 @@ class Timestamp(
         }
 
         throw Throwable("Timestamps are not comparable no common timestamp types to compare.")
-    }
-
-    override fun equals(other: Any?): Boolean {
-        return other is Timestamp &&
-            this.elapsedNanos == other.elapsedNanos &&
-            this.systemUptimeNanos == other.systemUptimeNanos &&
-            this.unixNanos == other.unixNanos
-    }
-
-    override fun hashCode(): Int {
-        var result = elapsedNanos.hashCode()
-        result = 31 * result + systemUptimeNanos.hashCode()
-        result = 31 * result + unixNanos.hashCode()
-        return result
     }
 
     companion object {

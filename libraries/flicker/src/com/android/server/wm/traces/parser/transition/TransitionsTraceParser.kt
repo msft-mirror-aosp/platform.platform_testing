@@ -26,102 +26,80 @@ import com.android.server.wm.traces.common.transition.TransitionChange
 import com.android.server.wm.traces.common.transition.TransitionState
 import com.android.server.wm.traces.common.transition.TransitionState.Companion.State
 import com.android.server.wm.traces.common.transition.TransitionsTrace
+import com.android.server.wm.traces.parser.AbstractTraceParser
 import com.android.server.wm.traces.parser.LOG_TAG
-import kotlin.math.max
-import kotlin.system.measureTimeMillis
 
 /** Parser for [TransitionsTrace] objects */
-class TransitionsTraceParser {
-    companion object {
-        /**
-         * Parses [TransitionsTrace] from [data] and uses the proto to generates a list of trace
-         * entries.
-         *
-         * @param data binary proto data
-         */
-        @JvmStatic
-        fun parseFromTrace(data: ByteArray, transactions: TransactionsTrace): TransitionsTrace {
-            var fileProto: TransitionTraceProto?
-            try {
-                measureTimeMillis { fileProto = TransitionTraceProto.parseFrom(data) }
-                    .also { Log.v(LOG_TAG, "Parsing proto (Transition Trace): ${it}ms") }
-            } catch (e: Throwable) {
-                throw RuntimeException(e)
+class TransitionsTraceParser(private val transactions: TransactionsTrace) :
+    AbstractTraceParser<
+        TransitionTraceProto,
+        com.android.server.wm.shell.nano.Transition,
+        TransitionState,
+        TransitionsTrace
+    >() {
+    override val traceName: String = "Transition trace"
+
+    override fun createTrace(entries: List<TransitionState>): TransitionsTrace {
+        val transitions = transitionStatesToTransitions(entries, transactions)
+        return TransitionsTrace(transitions.toTypedArray())
+    }
+
+    override fun doDecodeByteArray(bytes: ByteArray): TransitionTraceProto =
+        TransitionTraceProto.parseFrom(bytes)
+
+    override fun shouldParseEntry(entry: com.android.server.wm.shell.nano.Transition): Boolean {
+        return (entry.id != -1).also {
+            // Invalid transition state
+            Log.w(LOG_TAG, "Got transition state with invalid id :: $entry")
+        }
+    }
+
+    override fun getEntries(
+        input: TransitionTraceProto
+    ): List<com.android.server.wm.shell.nano.Transition> = input.transition.toList()
+
+    override fun getTimestamp(entry: com.android.server.wm.shell.nano.Transition): Long =
+        entry.timestamp
+
+    override fun onBeforeParse(input: TransitionTraceProto) {}
+
+    override fun doParseEntry(entry: com.android.server.wm.shell.nano.Transition): TransitionState {
+        val changes = entry.change.map { parseTransitionChangeFromProto(it) }
+        return TransitionState(
+            entry.id,
+            Type.fromInt(entry.transitionType),
+            entry.timestamp,
+            State.fromInt(entry.state),
+            entry.flags,
+            changes,
+            entry.startTransactionId,
+            entry.finishTransactionId
+        )
+    }
+
+    private fun transitionStatesToTransitions(
+        transitionStates: List<TransitionState>,
+        transactions: TransactionsTrace
+    ): List<Transition> {
+        val transitionBuilders: MutableMap<Int, Transition.Companion.Builder> = mutableMapOf()
+
+        for (state in transitionStates) {
+            if (!transitionBuilders.containsKey(state.id)) {
+                transitionBuilders[state.id] = Transition.Companion.Builder(state.id)
             }
-            return fileProto?.let { parseFromTrace(it, transactions) }
-                ?: error("Unable to read trace file")
+            val builder = transitionBuilders[state.id]!!
+            builder.addState(state)
         }
 
-        /**
-         * Uses the proto to generates a list of trace entries.
-         *
-         * @param proto Parsed proto data
-         */
-        @JvmStatic
-        fun parseFromTrace(
-            proto: TransitionTraceProto,
-            transactions: TransactionsTrace
-        ): TransitionsTrace {
-            val transitionStates = mutableListOf<TransitionState>()
-            var traceParseTime = 0L
-            for (transitionProto in proto.transition) {
-                if (transitionProto.id == -1) {
-                    // Invalid transition state
-                    Log.w(LOG_TAG, "Got transition state with invalid id :: $transitionProto")
-                    continue
-                }
-                val entryParseTime = measureTimeMillis {
-                    val changes = transitionProto.change.map { parseTransitionChangeFromProto(it) }
-                    val state =
-                        TransitionState(
-                            transitionProto.id,
-                            Type.fromInt(transitionProto.transitionType),
-                            transitionProto.timestamp,
-                            State.fromInt(transitionProto.state),
-                            transitionProto.flags,
-                            changes,
-                            transitionProto.startTransactionId,
-                            transitionProto.finishTransactionId
-                        )
-                    transitionStates.add(state)
-                }
-                traceParseTime += entryParseTime
-            }
+        transitionBuilders.values.forEach { it.linkTransactions(transactions) }
+        val transitions = transitionBuilders.values.map { it.build() }
+        return transitions.sortedBy { it.start }
+    }
 
-            val transitions = transitionStatesToTransitions(transitionStates, transactions)
+    private fun parseTransitionChangeFromProto(proto: ChangeInfo): TransitionChange {
+        val windowName = proto.windowIdentifier.title
+        val windowId = proto.windowIdentifier.hashCode.toString(16)
 
-            Log.v(
-                LOG_TAG,
-                "Parsing duration (Transition Trace): ${traceParseTime}ms " +
-                    "(avg ${traceParseTime / max(transitions.size, 1)}ms per entry)"
-            )
-            return TransitionsTrace(transitions.toTypedArray())
-        }
-
-        private fun transitionStatesToTransitions(
-            transitionStates: List<TransitionState>,
-            transactions: TransactionsTrace
-        ): List<Transition> {
-            val transitionBuilders: MutableMap<Int, Transition.Companion.Builder> = mutableMapOf()
-
-            for (state in transitionStates) {
-                if (!transitionBuilders.containsKey(state.id)) {
-                    transitionBuilders[state.id] = Transition.Companion.Builder(state.id)
-                }
-                val builder = transitionBuilders[state.id]!!
-                builder.addState(state)
-            }
-
-            transitionBuilders.values.forEach { it.linkTransactions(transactions) }
-            val transitions = transitionBuilders.values.map { it.build() }
-            return transitions.sortedBy { it.start }
-        }
-
-        private fun parseTransitionChangeFromProto(proto: ChangeInfo): TransitionChange {
-            val windowName = proto.windowIdentifier.title
-            val windowId = proto.windowIdentifier.hashCode.toString(16)
-
-            return TransitionChange(windowName, Type.fromInt(proto.transitMode))
-        }
+        return TransitionChange(windowName, Type.fromInt(proto.transitMode))
     }
 }

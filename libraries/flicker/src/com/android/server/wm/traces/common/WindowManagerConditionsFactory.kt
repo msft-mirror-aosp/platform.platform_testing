@@ -161,6 +161,7 @@ object WindowManagerConditionsFactory {
         Condition("isRecentsActivityVisible") {
             it.wmState.isHomeActivityVisible || it.wmState.isRecentsActivityVisible
         }
+
     @JsName("isLauncherLayerVisible")
     fun isLauncherLayerVisible(): Condition<DeviceStateDump> =
         Condition("isLauncherLayerVisible") {
@@ -212,7 +213,10 @@ object WindowManagerConditionsFactory {
         Condition("isWMStateComplete") { it.wmState.isComplete() }
 
     @JsName("hasRotation")
-    fun hasRotation(expectedRotation: Int, displayId: Int): Condition<DeviceStateDump> {
+    fun hasRotation(
+        expectedRotation: PlatformConsts.Rotation,
+        displayId: Int
+    ): Condition<DeviceStateDump> {
         val hasRotationCondition =
             Condition<DeviceStateDump>("hasRotation[$expectedRotation, display=$displayId]") {
                 val currRotation = it.wmState.getRotation(displayId)

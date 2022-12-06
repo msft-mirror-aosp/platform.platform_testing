@@ -24,7 +24,6 @@ import android.os.RemoteException
 import android.os.SystemClock
 import android.util.Log
 import android.util.Rational
-import android.view.Surface
 import android.view.View
 import android.view.ViewConfiguration
 import androidx.annotation.VisibleForTesting
@@ -38,6 +37,7 @@ import com.android.server.wm.flicker.helpers.WindowUtils.displayBounds
 import com.android.server.wm.flicker.helpers.WindowUtils.estimateNavigationBarPosition
 import com.android.server.wm.traces.common.ComponentNameMatcher
 import com.android.server.wm.traces.common.WindowManagerConditionsFactory
+import com.android.server.wm.traces.common.service.PlatformConsts
 import com.android.server.wm.traces.parser.toAndroidRect
 import com.android.server.wm.traces.parser.windowmanager.WindowManagerStateHelper
 import org.junit.Assert
@@ -74,7 +74,7 @@ fun UiDevice.isQuickstepEnabled(): Boolean {
 
 /** Checks if the display is rotated or not */
 fun UiDevice.isRotated(): Boolean {
-    return this.displayRotation.isRotated()
+    return PlatformConsts.Rotation.getByValue(this.displayRotation).isRotated()
 }
 
 /** Reopens the first device window from the list of recent apps (overview) */
@@ -94,15 +94,16 @@ fun UiDevice.reopenAppFromOverview(wmHelper: WindowManagerStateHelper) {
 fun UiDevice.openQuickstep(wmHelper: WindowManagerStateHelper) {
     if (this.isQuickstepEnabled()) {
         val navBar = this.findObject(By.res(SYSTEMUI_PACKAGE, "navigation_bar_frame"))
-        val navBarVisibleBounds: Rect
 
         // TODO(vishnun) investigate why this object cannot be found.
-        navBarVisibleBounds =
+        val navBarVisibleBounds: Rect =
             if (navBar != null) {
                 navBar.visibleBounds
             } else {
                 Log.e(TAG, "Could not find nav bar, infer location")
-                estimateNavigationBarPosition(Surface.ROTATION_0).bounds.toAndroidRect()
+                estimateNavigationBarPosition(PlatformConsts.Rotation.ROTATION_0)
+                    .bounds
+                    .toAndroidRect()
             }
 
         val startX = navBarVisibleBounds.centerX()
@@ -344,7 +345,7 @@ fun stopPackage(context: Context, packageName: String) {
     SystemUtil.runShellCommand("am force-stop $packageName")
     val packageUid =
         try {
-            context.packageManager.getPackageUid(packageName, /* flags= */ 0)
+            context.packageManager.getPackageUid(packageName, /* flags */ 0)
         } catch (e: PackageManager.NameNotFoundException) {
             return
         }

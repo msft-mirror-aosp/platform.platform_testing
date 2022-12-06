@@ -1,7 +1,7 @@
 package com.android.server.wm.flicker.monitor
 
 import android.util.EventLog
-import com.android.server.wm.flicker.FlickerRunResult
+import com.android.server.wm.flicker.newTestResultWriter
 import com.android.server.wm.flicker.traces.eventlog.FocusEvent
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -54,8 +54,9 @@ class EventLogMonitorTest {
             "reason=test"
         )
 
-        val result = FlickerRunResult("testName")
-        result.setResultsFromMonitor(monitor)
+        val writer = newTestResultWriter()
+        monitor.setResult(writer)
+        val result = writer.write()
 
         assertEquals(2, result.eventLog?.size)
         assertEquals(
@@ -109,17 +110,18 @@ class EventLogMonitorTest {
         )
         monitor.stop()
 
-        val result = FlickerRunResult("testName")
-        result.setResultsFromMonitor(monitor)
+        val writer = newTestResultWriter()
+        monitor.setResult(writer)
+        val result = writer.write()
 
         assertEquals(2, result.eventLog?.size)
         assertEquals(
-            "479f88 " + "com.android.phone/" + "com.android.phone.settings.fdn.FdnSetting (server)",
+            "479f88 com.android.phone/com.android.phone.settings.fdn.FdnSetting (server)",
             result.eventLog?.get(0)?.window
         )
         assertEquals(FocusEvent.Focus.LOST, result.eventLog?.get(0)?.focus)
         assertEquals(
-            "7c01447 com.android.phone/" + "com.android.phone.settings.fdn.FdnSetting (server)",
+            "7c01447 com.android.phone/com.android.phone.settings.fdn.FdnSetting (server)",
             result.eventLog?.get(1)?.window
         )
         assertEquals(FocusEvent.Focus.GAINED, result.eventLog?.get(1)?.focus)
@@ -154,8 +156,9 @@ class EventLogMonitorTest {
         )
         monitor.stop()
 
-        val result = FlickerRunResult("testName")
-        result.setResultsFromMonitor(monitor)
+        val writer = newTestResultWriter()
+        monitor.setResult(writer)
+        val result = writer.write()
 
         assertEquals(2, result.eventLog?.size)
         assertEquals(

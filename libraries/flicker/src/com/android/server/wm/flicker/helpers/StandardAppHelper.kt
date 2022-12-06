@@ -22,12 +22,11 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.platform.helpers.AbstractStandardAppHelper
-import android.support.test.launcherhelper.ILauncherStrategy
-import android.support.test.launcherhelper.LauncherStrategyFactory
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.BySelector
 import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.Until
+import com.android.launcher3.tapl.LauncherInstrumentation
 import com.android.server.wm.traces.common.ComponentNameMatcher
 import com.android.server.wm.traces.common.Condition
 import com.android.server.wm.traces.common.DeviceStateDump
@@ -40,23 +39,19 @@ import com.android.server.wm.traces.parser.windowmanager.WindowManagerStateHelpe
  * Class to take advantage of {@code IAppHelper} interface so the same test can be run against first
  * party and third party apps.
  */
-open class StandardAppHelper
-@JvmOverloads
-constructor(
+open class StandardAppHelper(
     instr: Instrumentation,
-    @JvmField val appName: String,
-    @JvmField val componentMatcher: IComponentNameMatcher,
-    protected val launcherStrategy: ILauncherStrategy =
-        LauncherStrategyFactory.getInstance(instr).launcherStrategy
+    val appName: String,
+    val componentMatcher: IComponentNameMatcher
 ) : AbstractStandardAppHelper(instr), IComponentNameMatcher by componentMatcher {
     constructor(
         instr: Instrumentation,
         appName: String,
         packageName: String,
-        activity: String,
-        launcherStrategy: ILauncherStrategy =
-            LauncherStrategyFactory.getInstance(instr).launcherStrategy
-    ) : this(instr, appName, ComponentNameMatcher(packageName, ".$activity"), launcherStrategy)
+        activity: String
+    ) : this(instr, appName, ComponentNameMatcher(packageName, ".$activity"))
+
+    protected val tapl: LauncherInstrumentation = LauncherInstrumentation()
 
     private val activityManager: ActivityManager?
         get() = mInstrumentation.context.getSystemService(ActivityManager::class.java)
@@ -76,7 +71,11 @@ constructor(
     }
 
     override fun open() {
-        launcherStrategy.launch(appName, packageName)
+        open(`package`)
+    }
+
+    protected fun open(expectedPackageName: String) {
+        tapl.goHome().switchToAllApps().getAppIcon(launcherName).launch(expectedPackageName)
     }
 
     /** {@inheritDoc} */

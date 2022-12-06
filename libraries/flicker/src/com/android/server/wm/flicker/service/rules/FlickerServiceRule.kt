@@ -19,6 +19,7 @@ package com.android.server.wm.flicker.service.rules
 import android.platform.test.rule.TestWatcher
 import android.util.Log
 import androidx.test.platform.app.InstrumentationRegistry
+import com.android.server.wm.flicker.FLICKER_TAG
 import com.android.server.wm.flicker.getDefaultFlickerOutputDir
 import com.android.server.wm.flicker.service.FlickerServiceResultsCollector
 import com.android.server.wm.flicker.service.FlickerServiceTracesCollector
@@ -89,6 +90,6 @@ constructor(
     }
 
     companion object {
-        val LOG_TAG = "FlickerServiceRule"
+        const val LOG_TAG = "$FLICKER_TAG-ServiceRule"
     }
 }
