@@ -89,8 +89,9 @@ class FlickerServiceDecorator(
                 if (method is FlickerServiceCachedTestCase) {
                     val description = getChildDescription(method) ?: error("Missing description")
                     method.execute(description)
+                } else {
+                    inner?.getMethodInvoker(method, test)?.evaluate()
                 }
-                inner?.getMethodInvoker(method, test)?.evaluate()
             }
         }
     }
