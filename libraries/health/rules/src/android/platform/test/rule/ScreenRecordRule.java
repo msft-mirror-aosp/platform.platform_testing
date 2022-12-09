@@ -20,9 +20,11 @@ import static androidx.test.InstrumentationRegistry.getInstrumentation;
 
 import android.app.Instrumentation;
 import android.app.UiAutomation;
+import android.os.Bundle;
 import android.os.ParcelFileDescriptor;
 import android.util.Log;
 
+import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.uiautomator.UiDevice;
 
 import org.junit.rules.TestRule;
@@ -42,6 +44,9 @@ import java.lang.annotation.Target;
 public class ScreenRecordRule implements TestRule {
 
     private static final String TAG = "ScreenRecordRule";
+
+    private static final String SCREEN_RECORDING_ALWAYS_ENABLED_KEY =
+            "screen-recording-always-enabled";
 
     public static void runWithRecording(ThrowingRunnable runnable, Description description)
             throws Throwable {
@@ -65,7 +70,7 @@ public class ScreenRecordRule implements TestRule {
 
     @Override
     public Statement apply(Statement base, Description description) {
-        if (description.getAnnotation(ScreenRecord.class) == null) {
+        if (!shouldRecordScreen(description)) {
             return base;
         }
 
@@ -75,6 +80,28 @@ public class ScreenRecordRule implements TestRule {
                 runWithRecording(base::evaluate, description);
             }
         };
+    }
+
+    private boolean shouldRecordScreen(Description description) {
+        return description.getAnnotation(ScreenRecord.class) != null
+                || screenRecordOverrideEnabled();
+    }
+
+    /**
+     * This is needed to enable screen recording when a parameter is passed to the instrumentation,
+     * avoid having to recompile the test.
+     */
+    private boolean screenRecordOverrideEnabled() {
+        Bundle args = InstrumentationRegistry.getArguments();
+        boolean overrideEnabled = args.getBoolean(SCREEN_RECORDING_ALWAYS_ENABLED_KEY, false);
+        if (overrideEnabled) {
+            Log.d(
+                    TAG,
+                    "Screen recording has been enabled due to "
+                            + SCREEN_RECORDING_ALWAYS_ENABLED_KEY
+                            + " parameter.");
+        }
+        return overrideEnabled;
     }
 
     /** Interface to indicate that the test should capture screenrecord */

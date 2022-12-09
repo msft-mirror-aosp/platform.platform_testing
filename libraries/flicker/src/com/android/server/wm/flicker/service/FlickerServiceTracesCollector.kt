@@ -17,7 +17,6 @@
 package com.android.server.wm.flicker.service
 
 import android.util.Log
-import androidx.test.platform.app.InstrumentationRegistry
 import com.android.server.wm.flicker.DEFAULT_TRACE_CONFIG
 import com.android.server.wm.flicker.FLICKER_TAG
 import com.android.server.wm.flicker.ScenarioBuilder
@@ -26,7 +25,6 @@ import com.android.server.wm.flicker.io.ResultData
 import com.android.server.wm.flicker.io.ResultReader
 import com.android.server.wm.flicker.io.ResultWriter
 import com.android.server.wm.flicker.monitor.LayersTraceMonitor
-import com.android.server.wm.flicker.monitor.ScreenRecorder
 import com.android.server.wm.flicker.monitor.TransactionsTraceMonitor
 import com.android.server.wm.flicker.monitor.TransitionsTraceMonitor
 import com.android.server.wm.flicker.monitor.WindowManagerTraceMonitor
@@ -39,11 +37,10 @@ class FlickerServiceTracesCollector(val outputDir: Path) : ITracesCollector {
 
     private val traceMonitors =
         listOf(
-            ScreenRecorder(InstrumentationRegistry.getInstrumentation().targetContext, outputDir),
             WindowManagerTraceMonitor(outputDir),
-            TransactionsTraceMonitor(outputDir),
             LayersTraceMonitor(outputDir),
             TransitionsTraceMonitor(outputDir),
+            TransactionsTraceMonitor(outputDir)
         )
 
     override fun start() {
