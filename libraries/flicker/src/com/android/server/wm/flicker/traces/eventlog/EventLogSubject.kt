@@ -92,8 +92,8 @@ private constructor(failureMetadata: FailureMetadata, val trace: List<FocusEvent
     fun splitByUnixTimestamp(from: Long, to: Long): EventLogSubject {
         val trace =
             this.trace
-                .dropWhile { (it.timestamp.unixNanos ?: error("Missing unix timestamp")) < from }
-                .dropLastWhile { (it.timestamp.unixNanos ?: error("Missing unix timestamp")) > to }
+                .dropWhile { it.timestamp.unixNanos < from }
+                .dropLastWhile { it.timestamp.unixNanos > to }
         return EventLogSubject(this.fm, trace)
     }
 }

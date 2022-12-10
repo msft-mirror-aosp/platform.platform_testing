@@ -27,9 +27,7 @@ class TransactionsTrace(override val entries: Array<TransactionsTraceEntry>) :
             entries
                 .toList()
                 .zipWithNext { prev, next ->
-                    (prev.timestamp.elapsedNanos
-                        ?: error("missing elapsedNanos")) <
-                        (next.timestamp.elapsedNanos ?: error("missing elapsedNanos"))
+                    prev.timestamp.elapsedNanos < next.timestamp.elapsedNanos
                 }
                 .all { it }
         require(alwaysIncreasing) { "Transaction timestamp not always increasing..." }
