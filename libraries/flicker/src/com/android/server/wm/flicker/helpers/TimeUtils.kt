@@ -84,12 +84,12 @@ fun formatElapsedTimestamp(timestampNs: Long): String {
 fun formatRealTimestamp(timestampNs: Long): String {
     val timestampMs = timestampNs / MILLISECOND_AS_NANOSECONDS
     val remainderNs = timestampNs % MILLISECOND_AS_NANOSECONDS
-    val timeFormatter = SimpleDateFormat("HH'h'mm'm'ss's'SSS'ms'", Locale.ENGLISH)
-    timeFormatter.timeZone = TimeZone.getTimeZone("UTC")
-    val dateFormatter = SimpleDateFormat("d MMM yyyy zz", Locale.ENGLISH)
-    dateFormatter.timeZone = TimeZone.getTimeZone("UTC")
     val date = Date(timestampMs)
-    return "${timeFormatter.format(date)}${remainderNs}ns, ${dateFormatter.format(date)}"
+
+    val timeFormatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS", Locale.ENGLISH)
+    timeFormatter.timeZone = TimeZone.getTimeZone("UTC")
+
+    return "${timeFormatter.format(date)}${remainderNs.toString().padStart(6, '0')}"
 }
 
 class TimeFormatter {

@@ -64,23 +64,29 @@ class TimeUtilsTest {
     fun canFormatRealTime() {
         val NOV_10_2022 = 1668038400000 * MILLISECOND
 
-        Truth.assertThat(formatRealTimestamp(0)).isEqualTo("00h00m00s000ms0ns, 1 Jan 1970 UTC")
+        Truth.assertThat(formatRealTimestamp(0)).isEqualTo("1970-01-01T00:00:00.000000000")
         Truth.assertThat(
                 formatRealTimestamp(
                     NOV_10_2022 + 22 * HOUR + 4 * MINUTE + 54 * SECOND + 186 * MILLISECOND + 123212
                 )
             )
-            .isEqualTo("22h04m54s186ms123212ns, 10 Nov 2022 UTC")
+            .isEqualTo("2022-11-10T22:04:54.186123212")
+        Truth.assertThat(
+                formatRealTimestamp(
+                    NOV_10_2022 + 22 * HOUR + 4 * MINUTE + 54 * SECOND + 186 * MILLISECOND + 2
+                )
+            )
+            .isEqualTo("2022-11-10T22:04:54.186000002")
         Truth.assertThat(formatRealTimestamp(NOV_10_2022))
-            .isEqualTo("00h00m00s000ms0ns, 10 Nov 2022 UTC")
+            .isEqualTo("2022-11-10T00:00:00.000000000")
         Truth.assertThat(formatRealTimestamp(NOV_10_2022 + 1))
-            .isEqualTo("00h00m00s000ms1ns, 10 Nov 2022 UTC")
+            .isEqualTo("2022-11-10T00:00:00.000000001")
     }
 
     @Test
     fun formatToRightType() {
         Truth.assertThat(TimeFormatter.format(1668117894186123212L))
-            .isEqualTo("22h04m54s186ms123212ns, 10 Nov 2022 UTC")
+            .isEqualTo("2022-11-10T22:04:54.186123212")
         Truth.assertThat(TimeFormatter.format(10 * DAY + 12 * HOUR)).isEqualTo("10d12h0m0s0ms0ns")
     }
 }
