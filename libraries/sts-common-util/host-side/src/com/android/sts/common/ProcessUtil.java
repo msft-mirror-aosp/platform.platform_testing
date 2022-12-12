@@ -33,6 +33,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+/** Various helpers to find, wait, and kill processes on the device */
 public final class ProcessUtil {
     public static class KillException extends Exception {
         public enum Reason {
@@ -318,7 +319,7 @@ public final class ProcessUtil {
      * Kill a process at the beginning and end of a test.
      *
      * @param device the device to use
-     * @param pid the id of the process to kill
+     * @param pgrepRegex the name pattern of the process to kill to give to pgrep
      * @param beforeCloseKill a runnable for any actions that need to cleanup before killing the
      *     process in a normal environment at the end of the test. Can be null.
      * @return An object that will kill the process again when it is closed
@@ -333,10 +334,10 @@ public final class ProcessUtil {
      * Kill a process at the beginning and end of a test.
      *
      * @param device the device to use
-     * @param pid the id of the process to kill
-     * @param timeoutMs how long in milliseconds to wait for the process to kill
+     * @param pgrepRegex the name pattern of the process to kill to give to pgrep
      * @param beforeCloseKill a runnable for any actions that need to cleanup before killing the
      *     process in a normal environment at the end of the test. Can be null.
+     * @param timeoutMs how long in milliseconds to wait for the process to kill
      * @return An object that will kill the process again when it is closed
      */
     public static AutoCloseable withProcessKill(
@@ -344,8 +345,7 @@ public final class ProcessUtil {
             final String pgrepRegex,
             final Runnable beforeCloseKill,
             final long timeoutMs)
-            throws DeviceNotAvailableException, TimeoutException,
-                KillException {
+            throws DeviceNotAvailableException, TimeoutException, KillException {
         return new AutoCloseable() {
             {
                 try {
