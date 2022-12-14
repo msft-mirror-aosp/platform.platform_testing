@@ -20,14 +20,12 @@ import android.platform.test.rule.Orientation.LANDSCAPE
 import android.platform.test.rule.Orientation.PORTRAIT
 import android.platform.test.rule.RotationUtils.clearOrientationOverride
 import android.platform.test.rule.RotationUtils.setOrientationOverride
-import android.platform.test.util.HealthTestingUtils.waitForNullDiag
+import android.platform.test.util.HealthTestingUtils.waitForCondition
+import android.platform.test.util.HealthTestingUtils.waitForValueToSettle
 import android.util.Log
 import androidx.test.InstrumentationRegistry
-import androidx.test.uiautomator.By
 import androidx.test.uiautomator.UiDevice
-import androidx.test.uiautomator.Until
 import com.android.launcher3.tapl.LauncherInstrumentation
-import java.time.Duration
 import org.junit.runner.Description
 
 /** Locks the orientation in Landscape before starting the test, and goes back to natural after. */
@@ -39,20 +37,31 @@ internal class PortraitOrientationRule : BaseOrientationRule(PORTRAIT)
 /**
  * Possible device orientations.
  *
- * See [Rect.orientation] for their definitions.
+ * See [UiDevice.orientation] for their definitions.
  */
 enum class Orientation {
     LANDSCAPE,
     PORTRAIT,
 }
 
-private val Rect.orientation: Orientation
+/** Returns whether the device is landscape or portrait , based on display dimensions. */
+val UiDevice.orientation: Orientation
     get() =
-        if (width() > height()) {
+        if (displayWidth > displayHeight) {
             LANDSCAPE
         } else {
             PORTRAIT
         }
+
+// This makes sure that the orientation stabilised before returning it.
+private val UiDevice.stableOrientation: Orientation
+    get() =
+        waitForValueToSettle(
+            /* errorMessage= */ { "Device orientation didn't settle" },
+            /* supplier */ { orientation },
+            /* minimumSettleTime= */ 1_000,
+            /* timeoutMs= */ 5_000
+        )
 
 /** Uses launcher rect to decide which rotation to apply to match [expectedOrientation]. */
 sealed class BaseOrientationRule private constructor(private val expectedOrientation: Orientation) :
@@ -75,8 +84,6 @@ object RotationUtils {
     private val launcher: LauncherInstrumentation
         get() = LauncherInstrumentation()
 
-    private val SHORT_DURATION = Duration.ofMillis(1500)
-
     /**
      * Sets device orientation to [expectedOrientation], according to [Rect.orientation] definition.
      *
@@ -86,18 +93,13 @@ object RotationUtils {
      * change orientation in the middle.
      */
     fun setOrientationOverride(expectedOrientation: Orientation) {
-        device.pressHome()
         launcher.setEnableRotation(true)
-        if (launcherVisibleBounds?.orientation == expectedOrientation) {
+        if (device.stableOrientation == expectedOrientation) {
             return
         }
         changeOrientation()
-        waitForNullDiag {
-            when (launcherVisibleBounds?.orientation) {
-                expectedOrientation -> null // No error == success.
-                null -> "Launcher is not found"
-                else -> "Visible orientation is not ${expectedOrientation.name}"
-            }
+        waitForCondition({ "Visible orientation did not become  ${expectedOrientation.name}" }) {
+            device.stableOrientation == expectedOrientation
         }
         log("Rotation override set to ${expectedOrientation.name}")
     }
@@ -116,16 +118,6 @@ object RotationUtils {
         device.unfreezeRotation()
         log("Rotation override cleared.")
     }
-
-    private val launcherVisibleBounds: Rect?
-        get() {
-            val launcher =
-                device.wait(
-                    Until.findObject(By.res("android", "content").pkg(device.launcherPackageName)),
-                    SHORT_DURATION.toMillis()
-                )
-            return launcher?.visibleBounds
-        }
 
     private fun log(message: String) = Log.d("RotationUtils", message)
 }

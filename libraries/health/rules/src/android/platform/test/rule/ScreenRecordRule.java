@@ -93,7 +93,8 @@ public class ScreenRecordRule implements TestRule {
      */
     private boolean screenRecordOverrideEnabled() {
         Bundle args = InstrumentationRegistry.getArguments();
-        boolean overrideEnabled = args.getBoolean(SCREEN_RECORDING_ALWAYS_ENABLED_KEY, false);
+        boolean overrideEnabled = Boolean.parseBoolean(
+                args.getString(SCREEN_RECORDING_ALWAYS_ENABLED_KEY, "false"));
         if (overrideEnabled) {
             Log.d(
                     TAG,
