@@ -26,6 +26,9 @@ public interface ISettingsNotificationsHelper extends ISettingsHomeHelper {
      */
     void flingNotifications(Direction direction);
 
+    /** This method opens Settings > Notifications > App settings (notifications) page */
+    void goToAppSettings();
+
     /**
      * Setup expectations: Settings Notifications page is open
      *
