@@ -94,7 +94,6 @@ class FlickerServiceTracesCollectorTest {
             listOf(
                 "wm_trace.winscope",
                 "layers_trace.winscope",
-                "transition.mp4",
                 "transactions_trace.winscope",
                 "transition_trace.winscope"
             )
