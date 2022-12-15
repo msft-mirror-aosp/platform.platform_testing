@@ -20,7 +20,6 @@ import android.graphics.PointF
 import android.graphics.Rect
 import android.platform.test.util.HealthTestingUtils
 import android.platform.uiautomator_helpers.DeviceHelpers.uiDevice
-import android.view.animation.LinearInterpolator
 import androidx.test.uiautomator.BySelector
 import androidx.test.uiautomator.Direction
 import androidx.test.uiautomator.UiObject2
@@ -71,9 +70,7 @@ fun UiObject2.scrollUntilFound(
     (0 until MAX_FIND_ELEMENT_ATTEMPT).forEach {
         val f = findObject(selector)
         if (f != null) return f
-        BetterSwipe.from(from)
-            .to(to, interpolator = LinearInterpolator() /* Fling-like gesture */)
-            .release()
+        BetterSwipe.from(from).to(to, interpolator = FLING_GESTURE_INTERPOLATOR).release()
     }
     return null
 }
