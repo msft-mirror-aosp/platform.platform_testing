@@ -42,7 +42,7 @@ import com.android.server.wm.traces.parser.windowmanager.WindowManagerStateHelpe
 open class StandardAppHelper(
     instr: Instrumentation,
     val appName: String,
-    val componentMatcher: IComponentNameMatcher
+    val componentMatcher: ComponentNameMatcher
 ) : AbstractStandardAppHelper(instr), IComponentNameMatcher by componentMatcher {
     constructor(
         instr: Instrumentation,

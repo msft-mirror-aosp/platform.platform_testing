@@ -184,6 +184,20 @@ private constructor(
     override fun isSplashScreenVisibleFor(componentMatcher: IComponentMatcher): LayersTraceSubject =
         isSplashScreenVisibleFor(componentMatcher, isOptional = false)
 
+    /** {@inheritDoc} */
+    override fun hasColor(componentMatcher: IComponentMatcher): LayersTraceSubject = apply {
+        addAssertion("hasColor(${componentMatcher.toLayerIdentifier()})") {
+            it.hasColor(componentMatcher)
+        }
+    }
+
+    /** {@inheritDoc} */
+    override fun hasNoColor(componentMatcher: IComponentMatcher): LayersTraceSubject = apply {
+        addAssertion("hasNoColor(${componentMatcher.toLayerIdentifier()})") {
+            it.hasNoColor(componentMatcher)
+        }
+    }
+
     /** See [isSplashScreenVisibleFor] */
     fun isSplashScreenVisibleFor(
         componentMatcher: IComponentMatcher,

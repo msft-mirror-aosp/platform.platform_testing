@@ -95,7 +95,13 @@ class CompoundAssertion<T>(assertion: Assertion<T>, name: String, optional: Bool
             throw nonOptionalFailure.second
         }
         val firstFailure = failures.firstOrNull()
-        if (firstFailure != null) {
+        // Only throw first failure if all siblings are also optional otherwise don't throw anything
+        // If the CompoundAssertion is fully optional (i.e. all assertions in the compound assertion
+        // are optional), then we want to make sure the AssertionsChecker knows about the failure to
+        // not advance to the next state. Otherwise, the AssertionChecker doesn't need to know about
+        // the failure and can just consider the assertion as passed and advance to the next state
+        // since there were non-optional assertions which passed.
+        if (firstFailure != null && isOptional) {
             throw firstFailure.second
         }
     }

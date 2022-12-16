@@ -267,6 +267,32 @@ private constructor(
         }
     }
 
+    /** {@inheritDoc} */
+    override fun hasColor(componentMatcher: IComponentMatcher): LayerTraceEntrySubject = apply {
+        contains(componentMatcher)
+
+        val hasColorLayer =
+            componentMatcher.check(subjects.mapNotNull { it.layer }) {
+                it.any { layer -> layer.color.isNotEmpty }
+            }
+
+        if (!hasColorLayer) {
+            fail(Fact.fact(ASSERTION_TAG, "hasColor(${componentMatcher.toLayerIdentifier()})"))
+        }
+    }
+
+    /** {@inheritDoc} */
+    override fun hasNoColor(componentMatcher: IComponentMatcher): LayerTraceEntrySubject = apply {
+        val hasNoColorLayer =
+            componentMatcher.check(subjects.mapNotNull { it.layer }) {
+                it.all { layer -> layer.color.isEmpty }
+            }
+
+        if (!hasNoColorLayer) {
+            fail(Fact.fact(ASSERTION_TAG, "hasNoColor(${componentMatcher.toLayerIdentifier()})"))
+        }
+    }
+
     /** See [layer] */
     fun layer(componentMatcher: IComponentMatcher): LayerSubject {
         return layer { componentMatcher.layerMatchesAnyOf(it) }
