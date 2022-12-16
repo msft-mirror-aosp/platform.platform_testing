@@ -5,7 +5,7 @@ import android.app.Instrumentation
 import android.content.Context
 import android.graphics.PointF
 import android.os.Bundle
-import android.platform.test.util.HealthTestingUtils.waitForValueToSettle
+import android.platform.uiautomator_helpers.WaitUtils.waitForValueToSettle
 import android.util.Log
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.BySelector
@@ -55,9 +55,9 @@ object DeviceHelpers {
      * Throws an error with message provided by [errorProvider] if the object is not found.
      */
     fun UiDevice.waitForObj(
-            selector: BySelector,
-            timeout: Duration = SHORT_WAIT,
-            errorProvider: () -> String = { "Object $selector not found" },
+        selector: BySelector,
+        timeout: Duration = SHORT_WAIT,
+        errorProvider: () -> String = { "Object $selector not found" },
     ): UiObject2 = waitForNullableObj(selector, timeout) ?: error(errorProvider())
 
     /**
@@ -66,17 +66,17 @@ object DeviceHelpers {
      * Throws an error with message provided by [errorProvider] if the object is not found.
      */
     fun UiObject2.waitForObj(
-            selector: BySelector,
-            timeout: Duration = LONG_WAIT,
-            errorProvider: () -> String = { "Object $selector not found" },
+        selector: BySelector,
+        timeout: Duration = LONG_WAIT,
+        errorProvider: () -> String = { "Object $selector not found" },
     ): UiObject2 = wait(Until.findObject(selector), timeout.toMillis()) ?: error(errorProvider())
 
     /**
      * Waits for an object to be visible and returns it. Returns `null` if the object is not found.
      */
     fun UiDevice.waitForNullableObj(
-            selector: BySelector,
-            timeout: Duration = SHORT_WAIT,
+        selector: BySelector,
+        timeout: Duration = SHORT_WAIT,
     ): UiObject2? = wait(Until.findObject(selector), timeout.toMillis())
 
     /**
@@ -84,8 +84,8 @@ object DeviceHelpers {
      * objects are found
      */
     fun UiDevice.waitForNullableObjects(
-            selector: BySelector,
-            timeout: Duration = SHORT_WAIT,
+        selector: BySelector,
+        timeout: Duration = SHORT_WAIT,
     ): List<UiObject2>? = wait(Until.findObjects(selector), timeout.toMillis())
 
     /**
@@ -97,33 +97,33 @@ object DeviceHelpers {
     @JvmOverloads
     @JvmStatic
     fun UiDevice.assertVisibility(
-            selector: BySelector,
-            visible: Boolean = true,
-            timeout: Duration = LONG_WAIT,
-            container: UiObject2? = null,
-            customMessageProvider: (() -> String)? = null,
+        selector: BySelector,
+        visible: Boolean = true,
+        timeout: Duration = LONG_WAIT,
+        container: UiObject2? = null,
+        customMessageProvider: (() -> String)? = null,
     ) {
         val expectedVisibilityCondition =
-                if (visible) {
-                    Until.hasObject(selector)
-                } else {
-                    Until.gone(selector)
-                }
+            if (visible) {
+                Until.hasObject(selector)
+            } else {
+                Until.gone(selector)
+            }
         val assertWithMessage =
-                if (customMessageProvider != null) {
-                    assertWithMessage(customMessageProvider())
-                } else {
-                    assertWithMessage(
-                            "Visibility of %s didn't become %s within %s",
-                            selector,
-                            visible,
-                            timeout.toMillis()
-                    )
-                }
+            if (customMessageProvider != null) {
+                assertWithMessage(customMessageProvider())
+            } else {
+                assertWithMessage(
+                    "Visibility of %s didn't become %s within %s",
+                    selector,
+                    visible,
+                    timeout.toMillis()
+                )
+            }
         if (container != null) {
             assertWithMessage
-                    .that(container.wait(expectedVisibilityCondition, timeout.toMillis()))
-                    .isTrue()
+                .that(container.wait(expectedVisibilityCondition, timeout.toMillis()))
+                .isTrue()
         } else {
             assertWithMessage.that(wait(expectedVisibilityCondition, timeout.toMillis())).isTrue()
         }
@@ -134,26 +134,26 @@ object DeviceHelpers {
      * visibility matches the expected.
      */
     fun UiObject2.assertVisibility(
-            selector: BySelector,
-            visible: Boolean,
-            timeout: Duration = LONG_WAIT,
-            customMessageProvider: (() -> String)? = null,
+        selector: BySelector,
+        visible: Boolean,
+        timeout: Duration = LONG_WAIT,
+        customMessageProvider: (() -> String)? = null,
     ) =
-            uiDevice.assertVisibility(
-                    selector,
-                    visible,
-                    timeout,
-                    container = this,
-                    customMessageProvider
-            )
+        uiDevice.assertVisibility(
+            selector,
+            visible,
+            timeout,
+            container = this,
+            customMessageProvider
+        )
 
     /** Asserts that a this selector is visible. Throws otherwise. */
     fun BySelector.assertVisible(timeout: Duration = LONG_WAIT): Unit =
-            uiDevice.assertVisibility(selector = this, visible = true, timeout = timeout)
+        uiDevice.assertVisibility(selector = this, visible = true, timeout = timeout)
 
     /** Asserts that a this selector is invisible. Throws otherwise. */
     fun BySelector.assertInvisible(timeout: Duration = LONG_WAIT): Unit =
-            uiDevice.assertVisibility(selector = this, visible = false, timeout = timeout)
+        uiDevice.assertVisibility(selector = this, visible = false, timeout = timeout)
 
     /**
      * Executes a shell command on the device.
@@ -162,7 +162,7 @@ object DeviceHelpers {
      */
     @JvmStatic
     fun UiDevice.shell(command: String): String {
-        Log.d(TAG, "Executing Shell Command: ${command}")
+        Log.d(TAG, "Executing Shell Command: $command")
         return try {
             executeShellCommand(command)
         } catch (e: IOException) {
@@ -187,22 +187,22 @@ object DeviceHelpers {
      */
     @JvmStatic
     fun UiDevice.betterSwipe(
-            startX: Int,
-            startY: Int,
-            endX: Int,
-            endY: Int,
-            interpolator: TimeInterpolator = FLING_GESTURE_INTERPOLATOR
+        startX: Int,
+        startY: Int,
+        endX: Int,
+        endY: Int,
+        interpolator: TimeInterpolator = FLING_GESTURE_INTERPOLATOR
     ): Unit =
-            BetterSwipe.from(PointF(startX.toFloat(), startY.toFloat()))
-                    .to(PointF(endX.toFloat(), endY.toFloat()), interpolator = interpolator)
-                    .release()
+        BetterSwipe.from(PointF(startX.toFloat(), startY.toFloat()))
+            .to(PointF(endX.toFloat(), endY.toFloat()), interpolator = interpolator)
+            .release()
 
     /** [message] will be visible to the terminal when using `am instrument`. */
     fun printInstrumentationStatus(tag: String, message: String) {
         val result =
-                Bundle().apply {
-                    putString(Instrumentation.REPORT_KEY_STREAMRESULT, "[$tag]: $message")
-                }
+            Bundle().apply {
+                putString(Instrumentation.REPORT_KEY_STREAMRESULT, "[$tag]: $message")
+            }
         instrumentationRegistry.sendStatus(/* resultCode= */ 0, result)
     }
 
@@ -212,5 +212,5 @@ object DeviceHelpers {
      * As this uses [waitForValueToSettle], it is resilient to fast screen on/off happening.
      */
     val UiDevice.isScreenOnSettled: Boolean
-        get() = waitForValueToSettle({ "Screen on didn't settle" }, { isScreenOn })
+        get() = waitForValueToSettle("Screen on") { isScreenOn }
 }

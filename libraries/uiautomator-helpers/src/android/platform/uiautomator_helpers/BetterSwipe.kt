@@ -88,13 +88,14 @@ object BetterSwipe {
          */
         @JvmOverloads
         fun to(
-                end: PointF,
-                duration: Duration = DEFAULT_DURATION,
-                interpolator: TimeInterpolator = FLING_GESTURE_INTERPOLATOR
+            end: PointF,
+            duration: Duration = DEFAULT_DURATION,
+            interpolator: TimeInterpolator = FLING_GESTURE_INTERPOLATOR
         ): Swipe {
             throwIfReleased()
             log(
-                    "Swiping from $lastPoint to $end in $duration using ${interpolator.javaClass.simpleName}"
+                "Swiping from $lastPoint to $end in $duration " +
+                    "using ${interpolator.javaClass.simpleName}"
             )
             lastTime = movePointer(duration = duration, from = lastPoint, to = end, interpolator)
             lastPoint = end
@@ -107,10 +108,10 @@ object BetterSwipe {
             throwIfReleased()
             log("Touch $pointerId released at $lastPoint")
             sendPointer(
-                    currentTime = lastTime,
-                    action = MotionEvent.ACTION_UP,
-                    point = lastPoint,
-                    sync = sync
+                currentTime = lastTime,
+                action = MotionEvent.ACTION_UP,
+                point = lastPoint,
+                sync = sync
             )
             lastPointerId.decrementAndGet()
             released = true
@@ -129,26 +130,26 @@ object BetterSwipe {
         }
 
         private fun sendPointer(
-                currentTime: Long,
-                action: Int,
-                point: PointF,
-                sync: Boolean = true
+            currentTime: Long,
+            action: Int,
+            point: PointF,
+            sync: Boolean = true
         ) {
             val event = getMotionEvent(downTime, currentTime, action, point, pointerId)
             check(
-                    getInstrumentation()
-                            .uiAutomation
-                            .injectInputEvent(event, sync, /* waitForAnimations= */ false)
+                getInstrumentation()
+                    .uiAutomation
+                    .injectInputEvent(event, sync, /* waitForAnimations= */ false)
             ) { "Touch injection failed" }
             event.recycle()
         }
 
         /** Returns the time when movement finished. */
         private fun movePointer(
-                duration: Duration,
-                from: PointF,
-                to: PointF,
-                interpolator: TimeInterpolator
+            duration: Duration,
+            from: PointF,
+            to: PointF,
+            interpolator: TimeInterpolator
         ): Long {
             val stepTimeMs = GESTURE_STEP.toMillis()
             val durationMs = duration.toMillis()
@@ -209,44 +210,44 @@ object BetterSwipe {
 }
 
 private fun getMotionEvent(
-        downTime: Long,
-        eventTime: Long,
-        action: Int,
-        p: PointF,
-        pointerId: Int,
+    downTime: Long,
+    eventTime: Long,
+    action: Int,
+    p: PointF,
+    pointerId: Int,
 ): MotionEvent {
     val properties =
-            MotionEvent.PointerProperties().apply {
-                id = pointerId
-                toolType = TOOL_TYPE_FINGER
-            }
+        MotionEvent.PointerProperties().apply {
+            id = pointerId
+            toolType = TOOL_TYPE_FINGER
+        }
     val coordinates =
-            MotionEvent.PointerCoords().apply {
-                pressure = 1f
-                size = 1f
-                x = p.x
-                y = p.y
-            }
+        MotionEvent.PointerCoords().apply {
+            pressure = 1f
+            size = 1f
+            x = p.x
+            y = p.y
+        }
     return MotionEvent.obtain(
-            /* downTime= */ downTime,
-            /* eventTime= */ eventTime,
-            /* action= */ action,
-            /* pointerCount= */ 1,
-            /* pointerProperties= */ arrayOf(properties),
-            /* pointerCoords= */ arrayOf(coordinates),
-            /* metaState= */ 0,
-            /* buttonState= */ 0,
-            /* xPrecision= */ 1.0f,
-            /* yPrecision= */ 1.0f,
-            /* deviceId= */ 0,
-            /* edgeFlags= */ 0,
-            /* source= */ InputDevice.SOURCE_TOUCHSCREEN,
-            /* flags= */ 0
+        /* downTime= */ downTime,
+        /* eventTime= */ eventTime,
+        /* action= */ action,
+        /* pointerCount= */ 1,
+        /* pointerProperties= */ arrayOf(properties),
+        /* pointerCoords= */ arrayOf(coordinates),
+        /* metaState= */ 0,
+        /* buttonState= */ 0,
+        /* xPrecision= */ 1.0f,
+        /* yPrecision= */ 1.0f,
+        /* deviceId= */ 0,
+        /* edgeFlags= */ 0,
+        /* source= */ InputDevice.SOURCE_TOUCHSCREEN,
+        /* flags= */ 0
     )
 }
 
 private fun PointF.lerp(amount: Float, b: PointF) =
-        PointF(lerp(x, b.x, amount), lerp(y, b.y, amount))
+    PointF(lerp(x, b.x, amount), lerp(y, b.y, amount))
 
 private fun lerp(start: Float, stop: Float, amount: Float): Float = start + (stop - start) * amount
 
