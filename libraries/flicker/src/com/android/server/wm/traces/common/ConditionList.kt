@@ -32,11 +32,22 @@ class ConditionList<T>(@JsName("conditions") val conditions: List<Condition<T>>)
     constructor(vararg conditions: Condition<T>) : this(listOf(*conditions))
 
     override val message: String
-        get() = conditions.joinToString(" and ") { it.toString() }
+        get() {
+            return "(\n${
+                conditions
+                    .joinToString(" and \n") { it.toString() }
+                    .prependIndent("    ")
+            }\n)"
+        }
 
     override val condition: (T) -> Boolean
         get() = { conditions.all { condition -> condition.isSatisfied(it) } }
 
-    override fun getMessage(value: T): String =
-        conditions.joinToString(" and ") { it.getMessage(value) }
+    override fun getMessage(value: T): String {
+        return "(\n${
+            conditions
+                .joinToString(" and \n") { it.getMessage(value) }
+                .prependIndent("    ")
+        }\n)"
+    }
 }

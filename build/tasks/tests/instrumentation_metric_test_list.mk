@@ -81,6 +81,7 @@ instrumentation_metric_tests := \
     QueriesAll47 \
     QueriesAll48 \
     QueriesAll49 \
+    SettingsProviderPerfTests \
     TextClassifierPerfTests \
     WmPerfTests \
     ImePerfTests \
