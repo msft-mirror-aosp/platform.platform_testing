@@ -18,8 +18,8 @@ package android.platform.uiautomator_helpers
 
 import android.graphics.PointF
 import android.graphics.Rect
-import android.platform.test.util.HealthTestingUtils
 import android.platform.uiautomator_helpers.DeviceHelpers.uiDevice
+import android.platform.uiautomator_helpers.WaitUtils.waitForValueToSettle
 import androidx.test.uiautomator.BySelector
 import androidx.test.uiautomator.Direction
 import androidx.test.uiautomator.UiObject2
@@ -46,11 +46,7 @@ fun UiObject2.assertOnTheLeftSide() {
 }
 
 private val UiObject2.stableBounds: Rect
-    get() =
-        HealthTestingUtils.waitForValueToSettle(
-            { "${this.resourceName} bounds didn't settle" },
-            this::getVisibleBounds
-        )
+    get() = waitForValueToSettle("${this.resourceName} bounds") { visibleBounds }
 
 private const val MAX_FIND_ELEMENT_ATTEMPT = 15
 
@@ -67,7 +63,7 @@ fun UiObject2.scrollUntilFound(
     direction: Direction = Direction.DOWN
 ): UiObject2? {
     val (from, to) = getPointsToScroll(direction)
-    (0 until MAX_FIND_ELEMENT_ATTEMPT).forEach {
+    (0 until MAX_FIND_ELEMENT_ATTEMPT).forEach { _ ->
         val f = findObject(selector)
         if (f != null) return f
         BetterSwipe.from(from).to(to, interpolator = FLING_GESTURE_INTERPOLATOR).release()

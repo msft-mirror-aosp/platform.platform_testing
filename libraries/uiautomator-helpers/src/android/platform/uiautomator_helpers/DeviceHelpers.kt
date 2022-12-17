@@ -5,6 +5,7 @@ import android.app.Instrumentation
 import android.content.Context
 import android.graphics.PointF
 import android.os.Bundle
+import android.platform.uiautomator_helpers.TracingUtils.trace
 import android.platform.uiautomator_helpers.WaitUtils.waitForValueToSettle
 import android.util.Log
 import androidx.test.platform.app.InstrumentationRegistry
@@ -47,7 +48,7 @@ object DeviceHelpers {
 
     @JvmStatic
     val context: Context
-        get() = instrumentationRegistry.getTargetContext()
+        get() = instrumentationRegistry.targetContext
 
     /**
      * Waits for an object to be visible and returns it.
@@ -69,7 +70,10 @@ object DeviceHelpers {
         selector: BySelector,
         timeout: Duration = LONG_WAIT,
         errorProvider: () -> String = { "Object $selector not found" },
-    ): UiObject2 = wait(Until.findObject(selector), timeout.toMillis()) ?: error(errorProvider())
+    ): UiObject2 =
+        trace("Waiting for $this.$selector") {
+            wait(Until.findObject(selector), timeout.toMillis()) ?: error(errorProvider())
+        }
 
     /**
      * Waits for an object to be visible and returns it. Returns `null` if the object is not found.
@@ -77,7 +81,8 @@ object DeviceHelpers {
     fun UiDevice.waitForNullableObj(
         selector: BySelector,
         timeout: Duration = SHORT_WAIT,
-    ): UiObject2? = wait(Until.findObject(selector), timeout.toMillis())
+    ): UiObject2? =
+        trace("Waiting for $selector") { wait(Until.findObject(selector), timeout.toMillis()) }
 
     /**
      * Waits for objects matched by [selector] to be visible and returns them. Returns `null` if no
@@ -86,7 +91,10 @@ object DeviceHelpers {
     fun UiDevice.waitForNullableObjects(
         selector: BySelector,
         timeout: Duration = SHORT_WAIT,
-    ): List<UiObject2>? = wait(Until.findObjects(selector), timeout.toMillis())
+    ): List<UiObject2>? =
+        trace("Waiting for $selector objects") {
+            wait(Until.findObjects(selector), timeout.toMillis())
+        }
 
     /**
      * Asserts visibility of a [selector], waiting for [timeout] until visibility matches the
@@ -103,31 +111,41 @@ object DeviceHelpers {
         container: UiObject2? = null,
         customMessageProvider: (() -> String)? = null,
     ) {
-        val expectedVisibilityCondition =
-            if (visible) {
-                Until.hasObject(selector)
+        trace("Asserting $selector is ${visible.asVisibilityBoolean()}") {
+            val expectedVisibilityCondition =
+                if (visible) {
+                    Until.hasObject(selector)
+                } else {
+                    Until.gone(selector)
+                }
+            val assertWithMessage =
+                if (customMessageProvider != null) {
+                    assertWithMessage(customMessageProvider())
+                } else {
+                    assertWithMessage(
+                        "Visibility of %s didn't become %s within %s",
+                        selector,
+                        visible,
+                        timeout.toMillis()
+                    )
+                }
+            if (container != null) {
+                assertWithMessage
+                    .that(container.wait(expectedVisibilityCondition, timeout.toMillis()))
+                    .isTrue()
             } else {
-                Until.gone(selector)
+                assertWithMessage
+                    .that(wait(expectedVisibilityCondition, timeout.toMillis()))
+                    .isTrue()
             }
-        val assertWithMessage =
-            if (customMessageProvider != null) {
-                assertWithMessage(customMessageProvider())
-            } else {
-                assertWithMessage(
-                    "Visibility of %s didn't become %s within %s",
-                    selector,
-                    visible,
-                    timeout.toMillis()
-                )
-            }
-        if (container != null) {
-            assertWithMessage
-                .that(container.wait(expectedVisibilityCondition, timeout.toMillis()))
-                .isTrue()
-        } else {
-            assertWithMessage.that(wait(expectedVisibilityCondition, timeout.toMillis())).isTrue()
         }
     }
+
+    private fun Boolean.asVisibilityBoolean(): String =
+        when (this) {
+            true -> "visible"
+            false -> "invisible"
+        }
 
     /**
      * Asserts visibility of a [selector] inside this [UiObject2], waiting for [timeout] until
@@ -161,15 +179,16 @@ object DeviceHelpers {
      * Adds some logging. Throws [RuntimeException] In case of failures.
      */
     @JvmStatic
-    fun UiDevice.shell(command: String): String {
-        Log.d(TAG, "Executing Shell Command: $command")
-        return try {
-            executeShellCommand(command)
-        } catch (e: IOException) {
-            Log.e(TAG, "IOException Occurred.", e)
-            throw RuntimeException(e)
+    fun UiDevice.shell(command: String): String =
+        trace("Executing shell command: $command") {
+            Log.d(TAG, "Executing Shell Command: $command")
+            return try {
+                executeShellCommand(command)
+            } catch (e: IOException) {
+                Log.e(TAG, "IOException Occurred.", e)
+                throw RuntimeException(e)
+            }
         }
-    }
 
     /** Perform double tap at specified x and y position */
     @JvmStatic
@@ -193,9 +212,11 @@ object DeviceHelpers {
         endY: Int,
         interpolator: TimeInterpolator = FLING_GESTURE_INTERPOLATOR
     ): Unit =
-        BetterSwipe.from(PointF(startX.toFloat(), startY.toFloat()))
-            .to(PointF(endX.toFloat(), endY.toFloat()), interpolator = interpolator)
-            .release()
+        trace("Swiping ($startX,$startY) -> ($endX,$endY)") {
+            BetterSwipe.from(PointF(startX.toFloat(), startY.toFloat()))
+                .to(PointF(endX.toFloat(), endY.toFloat()), interpolator = interpolator)
+                .release()
+        }
 
     /** [message] will be visible to the terminal when using `am instrument`. */
     fun printInstrumentationStatus(tag: String, message: String) {
@@ -211,6 +232,7 @@ object DeviceHelpers {
      *
      * As this uses [waitForValueToSettle], it is resilient to fast screen on/off happening.
      */
+    @JvmStatic
     val UiDevice.isScreenOnSettled: Boolean
         get() = waitForValueToSettle("Screen on") { isScreenOn }
 }
