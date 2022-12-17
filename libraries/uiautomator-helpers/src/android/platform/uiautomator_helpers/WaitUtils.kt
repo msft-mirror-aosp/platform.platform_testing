@@ -1,8 +1,23 @@
+/*
+ * Copyright (C) 2022 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the
+ * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied. See the License for the specific language governing
+ * permissions and limitations under the License.
+ */
 package android.platform.uiautomator_helpers
 
 import android.os.SystemClock.sleep
 import android.os.SystemClock.uptimeMillis
 import android.os.Trace
+import android.platform.uiautomator_helpers.TracingUtils.trace
 import android.platform.uiautomator_helpers.WaitUtils.LoggerImpl.Companion.withEventualLogging
 import android.util.Log
 import java.io.Closeable
@@ -28,11 +43,12 @@ object WaitUtils {
      * together.
      *
      * Example of usage:
-     *
      * ```
      * ensureThat("screen is on") { uiDevice.isScreenOn }
      * ```
      */
+    @JvmStatic
+    @JvmOverloads
     fun ensureThat(
         description: String? = null,
         timeout: Duration = DEFAULT_DEADLINE,
@@ -95,6 +111,8 @@ object WaitUtils {
      *
      * @return the settled value. Throws if it doesn't settle.
      */
+    @JvmStatic
+    @JvmOverloads
     fun <T> waitForValueToSettle(
         description: String? = null,
         minimumSettleTime: Duration = DEFAULT_SETTLE_TIME,
@@ -191,15 +209,6 @@ object WaitUtils {
             if (VERBOSE) {
                 Log.d(TAG, logs.joinToString("\n"))
             }
-        }
-    }
-
-    private inline fun <T> trace(sectionName: String, block: () -> T): T {
-        Trace.beginSection(sectionName)
-        try {
-            return block()
-        } finally {
-            Trace.endSection()
         }
     }
 }
