@@ -41,7 +41,7 @@ class TaplUiObject constructor(val uiObject: UiObject2, private val name: String
     fun waitForChildObject(childResourceId: String, childObjectName: String): TaplUiObject {
         val selector = By.res(uiObject.applicationPackage, childResourceId)
         val childObject =
-            uiObject.wait(Until.findObject(selector), ObjectFactory.WAIT_TIME.toMillis())
+            uiObject.wait(Until.findObject(selector), TaplUiDevice.WAIT_TIME.toMillis())
                 ?: throw AssertionError(
                     "UI object '$childObjectName' is not found in '$name'; selector: $selector."
                 )

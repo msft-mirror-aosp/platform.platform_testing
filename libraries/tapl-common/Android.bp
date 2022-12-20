@@ -24,6 +24,7 @@ java_library {
         "androidx.test.uiautomator_uiautomator",
         "androidx.test.runner",
         "junit",
+        "uiautomator-helpers",
     ],
     srcs: [
         "src/**/*.kt",
