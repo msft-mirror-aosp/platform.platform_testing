@@ -170,15 +170,12 @@ class FlickerTestTest {
     @Test
     fun executesEventLog() {
         val predicate: (FlickerTest) -> Unit = { it.assertEventLog { executionCount++ } }
-        newTestCachedResultWriter().addEventLogResult(emptyList()).write()
-        val flickerWrapper = FlickerTest()
-        flickerWrapper.initialize(TEST_SCENARIO.testClass)
-        // Each assertion is executed independently and not cached, only Flicker as a Service
-        // assertions are cached
-        predicate.invoke(flickerWrapper)
-        predicate.invoke(flickerWrapper)
-
-        Truth.assertWithMessage("Executed").that(executionCount).isEqualTo(2)
+        doWriteTraceExecuteAssertionAndVerify(
+            TraceType.EVENT_LOG,
+            predicate,
+            TestTraces.EventLog.FILE,
+            expectedExecutionCount = 2
+        )
     }
 
     @Test

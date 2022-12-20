@@ -35,6 +35,7 @@ java_library {
         "statsd-helper",
         "health-testing-utils",
         "ub-uiautomator",
+        "uiautomator-helpers",
     ],
     srcs: [
         "src/**/*.java",

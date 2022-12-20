@@ -23,6 +23,7 @@ import com.android.server.wm.flicker.TEST_SCENARIO
 import com.android.server.wm.flicker.assertExceptionMessage
 import com.android.server.wm.flicker.assertions.AssertionData
 import com.android.server.wm.flicker.assertions.FlickerSubject
+import com.android.server.wm.flicker.monitor.EventLogMonitor
 import com.android.server.wm.flicker.newTestResultWriter
 import com.android.server.wm.flicker.traces.eventlog.EventLogSubject
 import com.google.common.truth.Truth
@@ -44,7 +45,12 @@ class CachedAssertionRunnerTest {
     fun setup() {
         executionCount = 0
         DataStore.clear()
-        val result = newTestResultWriter().addEventLogResult(emptyList()).write()
+        val writer = newTestResultWriter()
+        val monitor = EventLogMonitor()
+        monitor.start()
+        monitor.stop()
+        monitor.setResult(writer)
+        val result = writer.write()
         DataStore.addResult(TEST_SCENARIO, result)
     }
 

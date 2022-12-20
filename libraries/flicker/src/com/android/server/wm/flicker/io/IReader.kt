@@ -17,7 +17,7 @@
 package com.android.server.wm.flicker.io
 
 import com.android.server.wm.flicker.RunStatus
-import com.android.server.wm.flicker.traces.eventlog.FocusEvent
+import com.android.server.wm.traces.common.events.EventLog
 import com.android.server.wm.traces.common.layers.LayersTrace
 import com.android.server.wm.traces.common.transactions.TransactionsTrace
 import com.android.server.wm.traces.common.transition.TransitionsTrace
@@ -69,8 +69,8 @@ interface IReader {
     @Throws(IOException::class) fun readTransitionsTrace(): TransitionsTrace?
 
     /**
-     * @return a List<[FocusEvent]> for the part of the trace we want to run the assertions on
+     * @return an [EventLog] for the part of the trace we want to run the assertions on
      * @throws IOException if the artifact file doesn't exist or can't be read
      */
-    fun readEventLogTrace(): List<FocusEvent>?
+    @Throws(IOException::class) fun readEventLogTrace(): EventLog?
 }

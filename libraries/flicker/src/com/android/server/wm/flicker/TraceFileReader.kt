@@ -19,6 +19,7 @@ package com.android.server.wm.flicker
 import android.util.Log
 import com.android.server.wm.flicker.assertiongenerator.DeviceTraceConfiguration
 import com.android.server.wm.flicker.assertiongenerator.ScenarioConfig
+import com.android.server.wm.flicker.io.TraceType
 import com.android.server.wm.flicker.service.assertors.ComponentBuilder
 import com.android.server.wm.flicker.service.assertors.Components
 import com.android.server.wm.flicker.service.assertors.ConfigException
@@ -32,6 +33,7 @@ import com.android.server.wm.traces.common.service.ScenarioInstance
 import com.android.server.wm.traces.common.service.ScenarioType
 import com.android.server.wm.traces.common.windowmanager.WindowManagerState
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
+import com.android.server.wm.traces.parser.events.EventLogParser
 import com.android.server.wm.traces.parser.layers.LayersTraceParser
 import com.android.server.wm.traces.parser.transaction.TransactionsTraceParser
 import com.android.server.wm.traces.parser.transition.TransitionsTraceParser
@@ -110,6 +112,7 @@ class TraceFileReader {
             val layersTracePath: String?,
             val transactionsTracePath: String?,
             val transitionsTracePath: String?,
+            val eventLogPath: String?
         ) {
             fun getDeviceTraceDump(): DeviceTraceDump {
                 val wmTrace =
@@ -161,17 +164,35 @@ class TraceFileReader {
                     } else {
                         null
                     }
-                return DeviceTraceDump(wmTrace, layersTrace, transactionsTrace, transitionsTrace)
+                val eventsTrace =
+                    eventLogPath?.let {
+                        readBytesFromResource(eventLogPath)?.let {
+                            try {
+                                EventLogParser().parse(it)
+                            } catch (err: Exception) {
+                                // invalid file
+                                null
+                            }
+                        }
+                    }
+                return DeviceTraceDump(
+                    wmTrace,
+                    layersTrace,
+                    transactionsTrace,
+                    transitionsTrace,
+                    eventsTrace
+                )
             }
         }
 
         /** Gets the paths of golden traces for a specified scenario */
         fun getGoldenTracePathsForDirectory(dir: String): TracePaths {
             return TracePaths(
-                "$dir/wm_trace.winscope",
-                "$dir/layers_trace.winscope",
-                "$dir/transactions_trace.winscope",
-                "$dir/transition_trace.winscope"
+                "$dir/${TraceType.WM.fileName}",
+                "$dir/${TraceType.SF.fileName}",
+                "$dir/${TraceType.TRANSACTION.fileName}",
+                "$dir/${TraceType.TRANSITION.fileName}",
+                "$dir/${TraceType.EVENT_LOG.fileName}"
             )
         }
 

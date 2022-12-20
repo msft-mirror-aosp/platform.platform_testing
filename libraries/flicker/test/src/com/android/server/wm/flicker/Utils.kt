@@ -21,13 +21,11 @@ import android.content.Context
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.UiDevice
 import com.android.server.wm.flicker.datastore.CachedResultWriter
-import com.android.server.wm.flicker.helpers.isShellTransitionsEnabled
 import com.android.server.wm.flicker.io.ResultWriter
 import com.android.server.wm.flicker.io.WINSCOPE_EXT
 import com.android.server.wm.flicker.monitor.LayersTraceMonitor
 import com.android.server.wm.flicker.monitor.WindowManagerTraceMonitor
 import com.android.server.wm.flicker.traces.FlickerSubjectException
-import com.android.server.wm.traces.common.DeviceTraceDump
 import com.android.server.wm.traces.common.layers.LayersTrace
 import com.android.server.wm.traces.common.transactions.TransactionsTrace
 import com.android.server.wm.traces.common.transition.TransitionsTrace
@@ -202,40 +200,9 @@ fun assertArchiveContainsFiles(archivePath: Path, expectedFiles: List<String>) {
 
     val actualFiles = generateSequence { archiveStream.nextEntry }.map { it.name }.toList()
 
-    Truth.assertThat(actualFiles).hasSize(expectedFiles.size)
     Truth.assertWithMessage("Trace archive doesn't contain all expected traces")
-        .that(actualFiles.containsAll(expectedFiles))
-        .isTrue()
-}
-
-fun assertArchiveContainsAllTraces(
-    runStatus: RunStatus = RunStatus.ASSERTION_SUCCESS,
-    testName: String
-) {
-    val archiveFileName = "${runStatus.prefix}_$testName.zip"
-    val archivePath = getDefaultFlickerOutputDir().resolve(archiveFileName)
-    val expectedFiles =
-        mutableListOf(
-            "wm_trace.winscope",
-            "layers_trace.winscope",
-            "transition.mp4",
-            "transactions_trace.winscope"
-        )
-    if (isShellTransitionsEnabled) {
-        expectedFiles.add("transition_trace.winscope")
-    }
-
-    assertArchiveContainsFiles(archivePath, expectedFiles)
-}
-
-fun getTestTraceDump(
-    traceFilesLocation: String,
-    wmTraceFilename: String = "wm_trace.winscope",
-    layersTraceFilename: String = "layers_trace.winscope"
-): DeviceTraceDump {
-    val wmTraceByteArray = readAsset(traceFilesLocation + wmTraceFilename)
-    val layersTraceByteArray = readAsset(traceFilesLocation + layersTraceFilename)
-    return TraceFileReader.fromTraceByteArray(wmTraceByteArray, layersTraceByteArray)
+        .that(actualFiles)
+        .containsExactlyElementsIn(expectedFiles)
 }
 
 fun getScenarioTraces(scenario: String): FlickerBuilder.TraceFiles {

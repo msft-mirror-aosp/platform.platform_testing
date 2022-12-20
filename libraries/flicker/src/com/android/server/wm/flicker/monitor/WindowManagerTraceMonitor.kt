@@ -19,7 +19,6 @@ package com.android.server.wm.flicker.monitor
 import android.view.WindowManagerGlobal
 import com.android.server.wm.flicker.getDefaultFlickerOutputDir
 import com.android.server.wm.flicker.io.TraceType
-import com.android.server.wm.flicker.io.WINSCOPE_EXT
 import com.android.server.wm.flicker.traces.windowmanager.WindowManagerTraceSubject
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 import java.nio.file.Path
@@ -33,7 +32,7 @@ open class WindowManagerTraceMonitor
 @JvmOverloads
 constructor(
     outputDir: Path = getDefaultFlickerOutputDir(),
-    sourceFile: Path = TRACE_DIR.resolve("wm_trace$WINSCOPE_EXT")
+    sourceFile: Path = TRACE_DIR.resolve(TraceType.WM.fileName)
 ) : TransitionMonitor(outputDir, sourceFile) {
     private val windowManager = WindowManagerGlobal.getWindowManagerService()
     override fun startTracing() {

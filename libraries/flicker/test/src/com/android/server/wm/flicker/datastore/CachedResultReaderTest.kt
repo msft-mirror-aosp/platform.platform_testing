@@ -18,6 +18,9 @@ package com.android.server.wm.flicker.datastore
 
 import com.android.server.wm.flicker.DEFAULT_TRACE_CONFIG
 import com.android.server.wm.flicker.TEST_SCENARIO
+import com.android.server.wm.flicker.TestTraces
+import com.android.server.wm.flicker.io.TraceType
+import com.android.server.wm.flicker.newTestResultWriter
 import com.google.common.truth.Truth
 import org.junit.Before
 import org.junit.Test
@@ -31,7 +34,10 @@ class CachedResultReaderTest {
 
     @Test
     fun readFromStore() {
-        DataStore.addResult(TEST_SCENARIO, Consts.TEST_RESULT)
+        val writer = newTestResultWriter()
+        writer.addTraceResult(TraceType.EVENT_LOG, TestTraces.EventLog.FILE)
+        val result = writer.write()
+        DataStore.addResult(TEST_SCENARIO, result)
         val reader = CachedResultReader(TEST_SCENARIO, DEFAULT_TRACE_CONFIG)
         val actual = reader.readEventLogTrace()
         Truth.assertWithMessage("Event log size").that(actual).isNotNull()

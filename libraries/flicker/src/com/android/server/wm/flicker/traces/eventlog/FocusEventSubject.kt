@@ -19,6 +19,7 @@ package com.android.server.wm.flicker.traces.eventlog
 import com.android.server.wm.flicker.assertions.FlickerSubject
 import com.android.server.wm.flicker.traces.FlickerFailureStrategy
 import com.android.server.wm.traces.common.Timestamp
+import com.android.server.wm.traces.common.events.FocusEvent
 import com.google.common.truth.Fact
 import com.google.common.truth.FailureMetadata
 import com.google.common.truth.StandardSubjectBuilder

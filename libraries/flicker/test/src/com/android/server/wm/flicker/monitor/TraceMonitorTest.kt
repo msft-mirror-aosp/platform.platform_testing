@@ -17,8 +17,8 @@
 package com.android.server.wm.flicker.monitor
 
 import android.app.Instrumentation
+import android.support.test.uiautomator.UiDevice
 import androidx.test.platform.app.InstrumentationRegistry
-import androidx.test.uiautomator.UiDevice
 import com.android.server.wm.flicker.getDefaultFlickerOutputDir
 import com.android.server.wm.traces.common.DeviceTraceDump
 import com.android.server.wm.traces.parser.DeviceDumpParser
@@ -87,7 +87,7 @@ abstract class TraceMonitorTest<T : TransitionMonitor> {
         val testFile = savedTrace.toFile()
         Truth.assertWithMessage("File $testFile exists").that(testFile.exists()).isTrue()
         val trace = Files.toByteArray(testFile)
-        Truth.assertThat(trace.size).isGreaterThan(0)
+        Truth.assertWithMessage("File $testFile has data").that(trace.size).isGreaterThan(0)
         assertTrace(trace)
     }
 

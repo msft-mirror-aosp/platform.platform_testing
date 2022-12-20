@@ -19,9 +19,10 @@
 package com.android.server.wm.flicker
 
 import android.os.SystemClock
+import com.android.server.wm.flicker.helpers.SECOND_AS_NANOSECONDS
 import com.android.server.wm.traces.common.Timestamp
 import java.nio.file.Paths
-import java.util.concurrent.TimeUnit
+import java.time.Instant
 
 internal const val FLICKER_TAG = "FLICKER"
 
@@ -36,9 +37,11 @@ internal fun String.containsAny(vararg values: String): Boolean {
 }
 
 /** @return the current timestamp as [Timestamp] */
-fun now() =
-    Timestamp(
+fun now(): Timestamp {
+    val now = Instant.now()
+    return Timestamp(
         elapsedNanos = SystemClock.elapsedRealtimeNanos(),
         systemUptimeNanos = SystemClock.uptimeNanos(),
-        unixNanos = TimeUnit.NANOSECONDS.convert(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
+        unixNanos = now.epochSecond * SECOND_AS_NANOSECONDS + now.nano
     )
+}

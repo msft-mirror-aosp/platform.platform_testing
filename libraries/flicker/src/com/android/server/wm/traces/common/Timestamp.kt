@@ -19,9 +19,6 @@ package com.android.server.wm.traces.common
 /**
  * Time class with all available timestamp types
  *
- * TODO: We should probably update all traces that make use of this timestamp to just use
- * elapsedNanos or unixNanos
- *
  * @param elapsedNanos Nanoseconds since boot, including time spent in sleep.
  * @param systemUptimeNanos Nanoseconds since boot, not counting time spent in deep sleep
  * @param unixNanos Nanoseconds since Unix epoch

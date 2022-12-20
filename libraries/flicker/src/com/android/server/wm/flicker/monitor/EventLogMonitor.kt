@@ -16,93 +16,64 @@
 
 package com.android.server.wm.flicker.monitor
 
-import android.util.EventLog
-import android.util.EventLog.Event
+import android.util.Log
+import com.android.compatibility.common.util.SystemUtil
+import com.android.server.wm.flicker.FLICKER_TAG
 import com.android.server.wm.flicker.IResultSetter
-import com.android.server.wm.flicker.ITransitionMonitor
-import com.android.server.wm.flicker.io.ResultWriter
-import com.android.server.wm.flicker.traces.eventlog.FocusEvent
-import com.android.server.wm.flicker.traces.eventlog.FocusEvent.Focus
+import com.android.server.wm.flicker.getDefaultFlickerOutputDir
+import com.android.server.wm.flicker.helpers.SECOND_AS_NANOSECONDS
+import com.android.server.wm.flicker.io.TraceType
+import com.android.server.wm.flicker.now
 import com.android.server.wm.traces.common.Timestamp
-import java.io.IOException
-import java.util.UUID
+import com.android.server.wm.traces.common.events.EventLog
+import java.io.FileOutputStream
+import java.nio.file.Files
+import java.nio.file.Path
 
 /** Collects event logs during transitions. */
-open class EventLogMonitor : ITransitionMonitor, IResultSetter {
-    private var _logs = listOf<Event>()
-    private lateinit var _logSeparator: String
+open class EventLogMonitor(
+    outputDir: Path = getDefaultFlickerOutputDir(),
+    sourceFile: Path = getDefaultFlickerOutputDir().resolve(TraceType.EVENT_LOG.fileName)
+) : TransitionMonitor(outputDir, sourceFile), IResultSetter {
+    override val traceType: TraceType
+        get() = TraceType.EVENT_LOG
 
-    /**
-     * Inserts a log separator so we can always find the starting point from where to evaluate
-     * following logs.
-     *
-     * @return Unique log separator.
-     */
-    private fun separateLogs(): String {
-        val logSeparator = UUID.randomUUID().toString()
-        EventLog.writeEvent(EVENT_LOG_SEPARATOR_TAG, logSeparator)
-        return logSeparator
+    override var isEnabled: Boolean = false
+
+    private var traceStartTime: Timestamp? = null
+
+    override fun startTracing() {
+        require(!isEnabled) { "Trace already running" }
+        isEnabled = true
+        traceStartTime = now()
     }
 
-    private fun getEventLogs(vararg tags: Int): List<Event> {
-        val events = mutableListOf<Event>()
-        val searchTags = tags.copyOf(tags.size + 1)
-        searchTags[searchTags.size - 1] = EVENT_LOG_SEPARATOR_TAG
-        try {
-            EventLog.readEvents(searchTags, events)
-        } catch (e: IOException) {
-            throw RuntimeException(e)
-        }
-        return events
-            .filter { it.data != null }
-            .dropWhile { it.tag != EVENT_LOG_SEPARATOR_TAG || it.data.toString() != _logSeparator }
-            .drop(1)
-    }
+    override fun stopTracing() {
+        require(isEnabled) { "Trace not running" }
+        isEnabled = false
+        val sinceTime =
+            nanosToLogFormat(traceStartTime?.unixNanos ?: error("Missing start timestamp"))
 
-    override fun start() {
-        // Insert event log marker
-        _logSeparator = separateLogs()
-    }
+        traceStartTime = null
 
-    override fun stop() {
-        if (!::_logSeparator.isInitialized) {
-            _logs = emptyList()
-            return
-        }
-        // Read event log from log marker till end
-        _logs = getEventLogs(EVENT_LOG_INPUT_FOCUS_TAG)
-    }
+        Files.deleteIfExists(sourceFile)
+        sourceFile.toFile().parentFile.mkdirs()
+        sourceFile.toFile().createNewFile()
 
-    override fun setResult(result: ResultWriter) {
-        result.addEventLogResult(buildProcessedEventLogs())
-    }
-
-    private fun buildProcessedEventLogs(): List<FocusEvent> {
-        return _logs.mapNotNull { event ->
-            val timestamp = event.timeNanos
-            val log = (event.data as Array<*>).map { it as String }
-            if (log.size != 2) {
-                throw RuntimeException("Error reading from eventlog $log")
-            }
-            val focusState =
-                when {
-                    log[0].contains(" entering ") -> Focus.GAINED
-                    log[0].contains(" leaving ") -> Focus.LOST
-                    else -> Focus.REQUESTED
-                }
-            // parse window from 'Focus [entering|leaving] [window name]'
-            // by dropping the first two words
-            var expectedWhiteSpace = 2
-            val window = log[0].dropWhile { !it.isWhitespace() || --expectedWhiteSpace > 0 }.drop(1)
-            val reason = log[1].removePrefix("reason=")
-            FocusEvent(Timestamp(unixNanos = timestamp), window, focusState, reason).takeIf {
-                focusState != Focus.REQUESTED
-            }
+        FileOutputStream(sourceFile.toFile()).use {
+            it.write("${EventLog.MAGIC_NUMBER}\n".toByteArray())
+            val command =
+                "logcat -b events -v threadtime -v printable -v uid -v nsec " +
+                    "-v epoch -t $sinceTime >> $sourceFile"
+            Log.d(FLICKER_TAG, "Running '$command'")
+            val eventLogString = SystemUtil.runShellCommandOrThrow(command)
+            it.write(eventLogString.toByteArray())
         }
     }
 
-    private companion object {
-        const val EVENT_LOG_SEPARATOR_TAG = 42
-        const val EVENT_LOG_INPUT_FOCUS_TAG = 62001
+    private fun nanosToLogFormat(timestampNanos: Long): String {
+        val seconds = timestampNanos / SECOND_AS_NANOSECONDS
+        val nanos = timestampNanos % SECOND_AS_NANOSECONDS
+        return "$seconds.${nanos.toString().padStart(9, '0')}"
     }
 }

@@ -16,6 +16,7 @@
 
 package com.android.server.wm.traces.common
 
+import com.android.server.wm.traces.common.events.EventLog
 import com.android.server.wm.traces.common.layers.LayersTrace
 import com.android.server.wm.traces.common.transactions.TransactionsTrace
 import com.android.server.wm.traces.common.transition.TransitionsTrace
@@ -25,16 +26,19 @@ import kotlin.js.JsName
 /**
  * Represents a state dump containing the [WindowManagerTrace] and the [LayersTrace] both parsed and
  * in raw (byte) data.
+ *
+ * @param wmTrace Parsed [WindowManagerTrace]
+ * @param layersTrace Parsed [LayersTrace]
+ * @param transactionsTrace Parse [TransactionsTrace]
+ * @param transitionsTrace Parsed [TransitionsTrace]
+ * @param eventLog Parsed [EventLog]
  */
 class DeviceTraceDump(
-    /** Parsed [WindowManagerTrace] */
     @JsName("wmTrace") val wmTrace: WindowManagerTrace?,
-    /** Parsed [LayersTrace] */
     @JsName("layersTrace") val layersTrace: LayersTrace?,
-    /** Parsed [TransactionsTrace] */
     @JsName("transactionsTrace") val transactionsTrace: TransactionsTrace? = null,
-    /** Parsed [TransitionsTrace] */
-    @JsName("transitionsTrace") val transitionsTrace: TransitionsTrace? = null
+    @JsName("transitionsTrace") val transitionsTrace: TransitionsTrace? = null,
+    @JsName("eventLog") val eventLog: EventLog? = null,
 ) {
     /** A deviceTraceDump is considered valid if at least one of the layers/wm traces is non-null */
     val isValid: Boolean

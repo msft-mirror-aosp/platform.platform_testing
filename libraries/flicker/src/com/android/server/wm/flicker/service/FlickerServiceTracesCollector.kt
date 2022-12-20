@@ -24,6 +24,7 @@ import com.android.server.wm.flicker.io.IReader
 import com.android.server.wm.flicker.io.ResultData
 import com.android.server.wm.flicker.io.ResultReader
 import com.android.server.wm.flicker.io.ResultWriter
+import com.android.server.wm.flicker.monitor.EventLogMonitor
 import com.android.server.wm.flicker.monitor.LayersTraceMonitor
 import com.android.server.wm.flicker.monitor.TransactionsTraceMonitor
 import com.android.server.wm.flicker.monitor.TransitionsTraceMonitor
@@ -40,7 +41,8 @@ class FlickerServiceTracesCollector(val outputDir: Path) : ITracesCollector {
             WindowManagerTraceMonitor(outputDir),
             LayersTraceMonitor(outputDir),
             TransitionsTraceMonitor(outputDir),
-            TransactionsTraceMonitor(outputDir)
+            TransactionsTraceMonitor(outputDir),
+            EventLogMonitor(outputDir)
         )
 
     override fun start() {

@@ -17,7 +17,7 @@
 package com.android.server.wm.flicker.io
 
 import com.android.server.wm.flicker.RunStatus
-import com.android.server.wm.flicker.traces.eventlog.FocusEvent
+import com.android.server.wm.traces.common.events.EventLog
 import com.android.server.wm.traces.common.layers.LayersTrace
 import com.android.server.wm.traces.common.transactions.TransactionsTrace
 import com.android.server.wm.traces.common.transition.TransitionsTrace
@@ -26,10 +26,11 @@ import java.nio.file.Path
 
 /** Reads parsed traces from in memory objects */
 class ParsedTracesReader(
-    private val wmTrace: WindowManagerTrace?,
-    private val layersTrace: LayersTrace?,
-    private val transitionsTrace: TransitionsTrace?,
-    private val transactionsTrace: TransactionsTrace?
+    private val wmTrace: WindowManagerTrace? = null,
+    private val layersTrace: LayersTrace? = null,
+    private val transitionsTrace: TransitionsTrace? = null,
+    private val transactionsTrace: TransactionsTrace? = null,
+    private val eventLog: EventLog? = null
 ) : IReader {
     override val artifactPath: Path? = null
     override val runStatus: RunStatus = RunStatus.UNDEFINED
@@ -43,9 +44,8 @@ class ParsedTracesReader(
 
     override fun readWmTrace(): WindowManagerTrace? = wmTrace
 
-    override fun readEventLogTrace(): List<FocusEvent>? {
-        error("Trace type not available")
-    }
+    override fun readEventLogTrace(): EventLog? = eventLog
+
     override fun readLayersDump(tag: String): LayersTrace? {
         error("Trace type not available")
     }

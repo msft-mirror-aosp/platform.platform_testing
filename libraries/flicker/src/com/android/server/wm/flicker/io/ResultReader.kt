@@ -21,12 +21,12 @@ import androidx.annotation.VisibleForTesting
 import com.android.server.wm.flicker.AssertionTag
 import com.android.server.wm.flicker.TraceConfig
 import com.android.server.wm.flicker.TraceConfigs
-import com.android.server.wm.flicker.traces.eventlog.FocusEvent
-import com.android.server.wm.traces.common.Timestamp
+import com.android.server.wm.traces.common.events.EventLog
 import com.android.server.wm.traces.common.layers.LayersTrace
 import com.android.server.wm.traces.common.transactions.TransactionsTrace
 import com.android.server.wm.traces.common.transition.TransitionsTrace
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
+import com.android.server.wm.traces.parser.events.EventLogParser
 import com.android.server.wm.traces.parser.layers.LayersTraceParser
 import com.android.server.wm.traces.parser.transaction.TransactionsTraceParser
 import com.android.server.wm.traces.parser.transition.TransitionsTraceParser
@@ -248,13 +248,16 @@ open class ResultReader(protected var result: ResultData, private val traceConfi
      * @return a List<[FocusEvent]> for the part of the trace we want to run the assertions on
      * @throws IOException if the artifact file doesn't exist or can't be read
      */
-    override fun readEventLogTrace(): List<FocusEvent>? {
-        return result.eventLog?.slice(transitionTimeRange.start, transitionTimeRange.end)
-    }
+    @Throws(IOException::class)
+    override fun readEventLogTrace(): EventLog? =
+        doReadEventLog(
+            from = transitionTimeRange.start.unixNanos,
+            to = transitionTimeRange.end.unixNanos
+        )
 
-    private fun List<FocusEvent>.slice(from: Timestamp, to: Timestamp): List<FocusEvent> {
-        return dropWhile { it.timestamp.unixNanos < from.unixNanos }
-            .dropLastWhile { it.timestamp.unixNanos > to.unixNanos }
+    private fun doReadEventLog(from: Long, to: Long): EventLog? {
+        val traceData = readFromZip(ResultArtifactDescriptor(TraceType.EVENT_LOG))
+        return traceData?.let { EventLogParser().parse(it, from, to) }
     }
 
     override fun toString(): String = "$result"

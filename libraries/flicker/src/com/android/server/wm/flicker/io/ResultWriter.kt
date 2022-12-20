@@ -21,7 +21,6 @@ import com.android.server.wm.flicker.AssertionTag
 import com.android.server.wm.flicker.RunStatus
 import com.android.server.wm.flicker.ScenarioBuilder
 import com.android.server.wm.flicker.now
-import com.android.server.wm.flicker.traces.eventlog.FocusEvent
 import com.android.server.wm.traces.common.IScenario
 import com.android.server.wm.traces.common.Timestamp
 import java.io.BufferedInputStream
@@ -38,7 +37,6 @@ open class ResultWriter {
     protected var scenario: IScenario = ScenarioBuilder().createEmptyScenario()
     private var runStatus: RunStatus = RunStatus.UNDEFINED
     private val files = mutableMapOf<ResultArtifactDescriptor, File>()
-    private var eventLog: List<FocusEvent>? = null
     private var transitionStartTime = Timestamp.MIN
     private var transitionEndTime = Timestamp.MAX
     private var executionError: Throwable? = null
@@ -67,12 +65,6 @@ open class ResultWriter {
     fun setRunFailed(error: Throwable) = apply {
         runStatus = RunStatus.RUN_FAILED
         executionError = error
-    }
-
-    /** Adds [_eventLog] to the result artifact */
-    fun addEventLogResult(_eventLog: List<FocusEvent>) = apply {
-        Log.d(FLICKER_IO_TAG, "Adding event log to $scenario")
-        eventLog = _eventLog
     }
 
     /**
@@ -136,7 +128,6 @@ open class ResultWriter {
 
         return ResultData(
             dstFile,
-            eventLog,
             TransitionTimeRange(transitionStartTime, transitionEndTime),
             executionError,
             runStatus

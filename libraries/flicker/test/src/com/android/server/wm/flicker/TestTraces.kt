@@ -16,7 +16,6 @@
 
 package com.android.server.wm.flicker
 
-import com.android.server.wm.flicker.traces.eventlog.FocusEvent
 import com.android.server.wm.traces.common.Timestamp
 
 object TestTraces {
@@ -34,6 +33,15 @@ object TestTraces {
         val START_TIME = Timestamp(elapsedNanos = 1618650751245)
         val SLICE_TIME = Timestamp(elapsedNanos = 1618730362295)
         val END_TIME = Timestamp(elapsedNanos = 1620756218174)
+        val FILE
+            get() = readAssetAsFile(ASSET)
+    }
+
+    object EventLog {
+        private const val ASSET = "eventlog.winscope"
+        val START_TIME = Timestamp(unixNanos = 1670594369069951546)
+        val SLICE_TIME = Timestamp(unixNanos = 1670594384516466159)
+        val END_TIME = Timestamp(unixNanos = 1670594389958451901)
         val FILE
             get() = readAssetAsFile(ASSET)
     }
@@ -77,15 +85,6 @@ object TestTraces {
 
     val TIME_5 = Timestamp(5, 5, 5)
     val TIME_10 = Timestamp(10, 10, 10)
-
-    val TEST_EVENT_LOG =
-        listOf(
-            FocusEvent(Timestamp(unixNanos = 0), "WinB", FocusEvent.Focus.GAINED, "test"),
-            FocusEvent(Timestamp(unixNanos = 5), "test WinA window", FocusEvent.Focus.LOST, "test"),
-            FocusEvent(Timestamp(unixNanos = 6), "WinB", FocusEvent.Focus.LOST, "test"),
-            FocusEvent(Timestamp(unixNanos = 10), "test WinC", FocusEvent.Focus.GAINED, "test"),
-            FocusEvent(Timestamp(unixNanos = 12), "test WinD", FocusEvent.Focus.GAINED, "test")
-        )
 
     val TEST_TRACE_CONFIG =
         TraceConfigs(

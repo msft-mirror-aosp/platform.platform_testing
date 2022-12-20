@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 The Android Open Source Project
+ * Copyright (C) 2022 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,28 +14,25 @@
  * limitations under the License.
  */
 
-package com.android.server.wm.flicker.traces.eventlog
+package com.android.server.wm.traces.common.events
 
 import com.android.server.wm.traces.common.ITraceEntry
 import com.android.server.wm.traces.common.Timestamp
 
-class FocusEvent(
+/**
+ * Represents an Event from the [EventLog]
+ *
+ * @param timestamp The wall clock time in nanoseconds when the entry was written.
+ * @param processId The process ID which wrote the log entry
+ * @param uid The UID which wrote the log entry, special UIDs are strings instead of numbers (e.g.
+ * root)
+ * @param threadId The thread which wrote the log entry
+ * @param tag The type tag code of the entry
+ */
+open class Event(
     override val timestamp: Timestamp,
-    val window: String,
-    val focus: Focus,
-    val reason: String
-) : ITraceEntry {
-    enum class Focus {
-        GAINED,
-        LOST,
-        REQUESTED
-    }
-
-    override fun toString(): String {
-        return "$timestamp: Focus ${focus.name} $window Reason=$reason"
-    }
-
-    fun hasFocus(): Boolean {
-        return this.focus == Focus.GAINED
-    }
-}
+    val processId: Int,
+    val uid: String,
+    val threadId: Int,
+    val tag: String
+) : ITraceEntry

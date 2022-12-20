@@ -18,7 +18,6 @@ package com.android.server.wm.flicker.io
 
 import com.android.server.wm.flicker.RunStatus
 import com.android.server.wm.flicker.Utils
-import com.android.server.wm.flicker.traces.eventlog.FocusEvent
 import java.nio.file.Path
 
 /**
@@ -32,14 +31,11 @@ import java.nio.file.Path
  */
 class ResultData(
     _artifactPath: Path,
-    _eventLog: List<FocusEvent>?,
     _transitionTimeRange: TransitionTimeRange,
     _executionError: Throwable?,
     _runStatus: RunStatus
 ) {
     var artifactPath: Path = _artifactPath
-        private set
-    var eventLog: List<FocusEvent>? = _eventLog
         private set
     var transitionTimeRange: TransitionTimeRange = _transitionTimeRange
         private set

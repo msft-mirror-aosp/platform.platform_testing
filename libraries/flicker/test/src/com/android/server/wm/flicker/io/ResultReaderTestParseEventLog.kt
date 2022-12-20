@@ -16,50 +16,24 @@
 
 package com.android.server.wm.flicker.io
 
-import com.android.server.wm.flicker.DEFAULT_TRACE_CONFIG
-import com.android.server.wm.flicker.RunStatus
 import com.android.server.wm.flicker.TestTraces
-import com.android.server.wm.flicker.newTestResultWriter
-import com.android.server.wm.flicker.outputFileName
-import com.google.common.truth.Truth
-import java.nio.file.Files
-import org.junit.Before
+import com.android.server.wm.traces.common.Timestamp
 import org.junit.FixMethodOrder
-import org.junit.Test
 import org.junit.runners.MethodSorters
 
 /** Tests for [ResultReader] parsing event log */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-class ResultReaderTestParseEventLog {
-    @Before
-    fun setup() {
-        Files.deleteIfExists(outputFileName(RunStatus.RUN_EXECUTED))
-    }
+class ResultReaderTestParseEventLog : BaseResultReaderTestParseTrace() {
+    override val assetFile = TestTraces.EventLog.FILE
+    override val traceName = "Event Log"
+    override val startTimeTrace = TestTraces.EventLog.START_TIME
+    override val endTimeTrace = TestTraces.EventLog.END_TIME
+    override val validSliceTime = TestTraces.EventLog.SLICE_TIME
+    override val invalidSliceTime = startTimeTrace
+    override val traceType = TraceType.EVENT_LOG
+    override val expectedSlicedTraceSize = 125
+    override val invalidSizeMessage: String = "'to' needs to be greater than 'from'"
 
-    @Test
-    fun readEventLog() {
-        val writer = newTestResultWriter().addEventLogResult(TestTraces.TEST_EVENT_LOG)
-        val result = writer.write()
-        val reader = ResultReader(result, DEFAULT_TRACE_CONFIG)
-        val actual = reader.readEventLogTrace()
-        Truth.assertWithMessage("Event log size").that(actual).hasSize(5)
-        Truth.assertWithMessage("Event log")
-            .that(actual)
-            .containsExactlyElementsIn(TestTraces.TEST_EVENT_LOG)
-    }
-
-    @Test
-    fun readEventLogAndSliceTraceByTimestamp() {
-        val writer =
-            newTestResultWriter()
-                .setTransitionStartTime(TestTraces.TIME_5)
-                .setTransitionEndTime(TestTraces.TIME_10)
-                .addEventLogResult(TestTraces.TEST_EVENT_LOG)
-        val result = writer.write()
-        val reader = ResultReader(result, DEFAULT_TRACE_CONFIG)
-        val expected = TestTraces.TEST_EVENT_LOG.drop(1).dropLast(1)
-        val actual = reader.readEventLogTrace()
-        Truth.assertWithMessage("Event log size").that(actual).hasSize(3)
-        Truth.assertWithMessage("Event log").that(actual).containsExactlyElementsIn(expected)
-    }
+    override fun doParse(reader: ResultReader) = reader.readEventLogTrace()
+    override fun getTime(traceTime: Timestamp) = traceTime.unixNanos
 }

@@ -20,6 +20,8 @@ import android.annotation.SuppressLint
 import com.android.server.wm.flicker.AssertionTag
 import com.android.server.wm.flicker.RunStatus
 import com.android.server.wm.flicker.assertExceptionMessage
+import com.android.server.wm.flicker.io.ResultData
+import com.android.server.wm.flicker.monitor.EventLogMonitor
 import com.android.server.wm.flicker.newTestResultWriter
 import com.android.server.wm.flicker.outputFileName
 import com.android.server.wm.flicker.traces.eventlog.EventLogSubject
@@ -122,7 +124,13 @@ class ArtifactAssertionRunnerTest {
         private fun newAssertionData(assertion: (FlickerSubject) -> Unit) =
             AssertionData.newTestInstance(AssertionTag.ALL, EventLogSubject::class, assertion)
 
-        private fun newResultReaderWithEmptySubject() =
-            newTestResultWriter().addEventLogResult(emptyList()).write()
+        private fun newResultReaderWithEmptySubject(): ResultData {
+            val writer = newTestResultWriter()
+            val monitor = EventLogMonitor()
+            monitor.start()
+            monitor.stop()
+            monitor.setResult(writer)
+            return writer.write()
+        }
     }
 }

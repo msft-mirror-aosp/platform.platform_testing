@@ -22,6 +22,7 @@ enum class TraceType(val fileName: String) {
     WM("wm_trace$WINSCOPE_EXT"),
     TRANSACTION("transactions_trace$WINSCOPE_EXT"),
     TRANSITION("transition_trace$WINSCOPE_EXT"),
+    EVENT_LOG("eventlog$WINSCOPE_EXT"),
     SCREEN_RECORDING("transition.mp4"),
     SF_DUMP("sf_dump$WINSCOPE_EXT"),
     WM_DUMP("wm_dump$WINSCOPE_EXT");

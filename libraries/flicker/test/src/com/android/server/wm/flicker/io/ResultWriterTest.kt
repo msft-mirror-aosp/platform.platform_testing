@@ -64,7 +64,6 @@ class ResultWriterTest {
         Truth.assertWithMessage("Transition end time")
             .that(result.transitionTimeRange.end)
             .isEqualTo(Timestamp.MAX)
-        Truth.assertWithMessage("Event log").that(result.eventLog).isNull()
         val reader = ResultReader(result, DEFAULT_TRACE_CONFIG)
         Truth.assertWithMessage("File count").that(reader.countFiles()).isEqualTo(0)
     }
@@ -72,9 +71,8 @@ class ResultWriterTest {
     @Test
     fun writesUndefinedFile() {
         Files.deleteIfExists(outputFileName(RunStatus.RUN_EXECUTED))
-        val writer = ResultWriter()
-            .forScenario(TEST_SCENARIO)
-            .withOutputDir(getDefaultFlickerOutputDir())
+        val writer =
+            ResultWriter().forScenario(TEST_SCENARIO).withOutputDir(getDefaultFlickerOutputDir())
         val result = writer.write()
         val path = result.artifactPath
         validateFileName(path, RunStatus.UNDEFINED)
@@ -99,30 +97,6 @@ class ResultWriterTest {
         Truth.assertWithMessage("Expected assertion")
             .that(result.executionError)
             .isEqualTo(EXPECTED_FAILURE)
-    }
-
-    @Test
-    fun writesEventLog() {
-        val writer = newTestResultWriter().addEventLogResult(TestTraces.TEST_EVENT_LOG)
-        val result = writer.write()
-        Truth.assertWithMessage("Event log size").that(result.eventLog).hasSize(5)
-        Truth.assertWithMessage("Event log")
-            .that(result.eventLog)
-            .containsExactlyElementsIn(TestTraces.TEST_EVENT_LOG)
-    }
-
-    @Test
-    fun writesEventLogOutsideTransitionInterval() {
-        val writer =
-            newTestResultWriter()
-                .setTransitionStartTime(TestTraces.TIME_5)
-                .setTransitionEndTime(TestTraces.TIME_10)
-                .addEventLogResult(TestTraces.TEST_EVENT_LOG)
-        val result = writer.write()
-        Truth.assertWithMessage("Event log size").that(result.eventLog).hasSize(5)
-        Truth.assertWithMessage("Event log")
-            .that(result.eventLog)
-            .containsExactlyElementsIn(TestTraces.TEST_EVENT_LOG)
     }
 
     @Test
