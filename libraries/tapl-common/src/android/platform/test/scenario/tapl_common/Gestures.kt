@@ -15,8 +15,7 @@
  */
 package android.platform.test.scenario.tapl_common
 
-import android.os.SystemClock
-import android.view.MotionEvent
+import android.platform.uiautomator_helpers.BetterSwipe
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.StaleObjectException
 import androidx.test.uiautomator.UiObject2
@@ -82,33 +81,6 @@ object Gestures {
      * attempted.
      */
     private fun clickNow(uiObject: UiObject2) {
-        val bound = uiObject.visibleBounds
-        val downTime = SystemClock.uptimeMillis()
-        val downEvent =
-            MotionEvent.obtain(
-                downTime,
-                downTime,
-                MotionEvent.ACTION_DOWN,
-                bound.centerX().toFloat(),
-                bound.centerY().toFloat(),
-                0 /* No other key is pressed */
-            )
-        UI_AUTOMATION.injectInputEvent(
-            downEvent,
-            /* sync = */ true,
-            /* waitForAnimations = */ false
-        )
-        downEvent.recycle()
-        val upEvent =
-            MotionEvent.obtain(
-                downTime,
-                downTime,
-                MotionEvent.ACTION_UP,
-                bound.centerX().toFloat(),
-                bound.centerY().toFloat(),
-                0 /* No other key is pressed */
-            )
-        UI_AUTOMATION.injectInputEvent(upEvent, /* sync = */ true, /* waitForAnimations = */ false)
-        upEvent.recycle()
+        BetterSwipe.from(uiObject.visibleCenter).release()
     }
 }
