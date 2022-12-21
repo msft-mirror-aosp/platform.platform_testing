@@ -80,8 +80,7 @@ abstract class AbstractTraceParser<
             if (!selectedInputTimestamps.contains(currTimestamp) || !shouldParseEntry(rawEntry)) {
                 continue
             }
-            val parsedEntry =
-                logTime("Creating entry for time $currTimestamp") { doParseEntry(rawEntry) }
+            val parsedEntry = withPerfettoTrace("doParseEntry") { doParseEntry(rawEntry) }
             parsedEntries.add(parsedEntry)
         }
         return createTrace(parsedEntries)
@@ -103,11 +102,13 @@ abstract class AbstractTraceParser<
         addInitialEntry: Boolean = true,
         clearCache: Boolean = true
     ): OutputTypeTrace {
-        return try {
-            logTime("Parsing objects") { doParse(input, from, to, addInitialEntry) }
-        } finally {
-            if (clearCache) {
-                Cache.clear()
+        return withPerfettoTrace("${this::class.simpleName}#parse") {
+            try {
+                doParse(input, from, to, addInitialEntry)
+            } finally {
+                if (clearCache) {
+                    Cache.clear()
+                }
             }
         }
     }

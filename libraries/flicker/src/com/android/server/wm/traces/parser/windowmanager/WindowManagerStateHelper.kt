@@ -20,6 +20,7 @@ import android.app.ActivityTaskManager
 import android.app.Instrumentation
 import android.app.WindowConfiguration
 import android.os.SystemClock
+import android.os.Trace
 import android.util.Log
 import android.view.Display
 import androidx.test.platform.app.InstrumentationRegistry
@@ -112,6 +113,8 @@ constructor(
 
         private fun createConditionBuilder(): WaitCondition.Builder<DeviceStateDump> =
             WaitCondition.Builder(deviceDumpSupplier, numRetries)
+                .onStart { Trace.beginSection(it) }
+                .onEnd { Trace.endSection() }
                 .onSuccess { updateCurrState(it) }
                 .onFailure { updateCurrState(it) }
                 .onLog { msg, isError ->

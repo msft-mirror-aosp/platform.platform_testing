@@ -29,6 +29,7 @@ import com.android.server.wm.flicker.rules.ChangeDisplayOrientationRule
 import com.android.server.wm.flicker.rules.LaunchAppRule
 import com.android.server.wm.flicker.rules.RemoveAllTasksButHomeRule
 import com.android.server.wm.traces.common.IScenario
+import com.android.server.wm.traces.parser.withPerfettoTrace
 import org.junit.rules.RuleChain
 import org.junit.runner.Description
 
@@ -43,16 +44,18 @@ class TransitionRunner(
 ) {
     /** Executes [flicker] transition and returns the result */
     fun execute(flicker: IFlickerTestData, description: Description?): ResultData {
-        resultWriter.forScenario(scenario).withOutputDir(flicker.outputDir)
+        return withPerfettoTrace("TransitionRunner:execute") {
+            resultWriter.forScenario(scenario).withOutputDir(flicker.outputDir)
 
-        val ruleChain = buildTestRuleChain(flicker)
-        try {
-            ruleChain.apply(/* statement */ null, description).evaluate()
-            resultWriter.setRunComplete()
-        } catch (e: Throwable) {
-            resultWriter.setRunFailed(e)
+            val ruleChain = buildTestRuleChain(flicker)
+            try {
+                ruleChain.apply(/* statement */ null, description).evaluate()
+                resultWriter.setRunComplete()
+            } catch (e: Throwable) {
+                resultWriter.setRunFailed(e)
+            }
+            resultWriter.write()
         }
-        return resultWriter.write()
     }
 
     /**

@@ -71,7 +71,7 @@ class LayerTraceEntryLazy(
     companion object {
 
         @JvmStatic
-        fun newLayer(proto: Layers.LayerProto): Layer {
+        fun newLayer(proto: Layers.LayerProto, excludeCompositionState: Boolean = false): Layer {
             // Differentiate between the cases when there's no HWC data on
             // the trace, and when the visible region is actually empty
             val activeBuffer = proto.activeBuffer.toBuffer()
@@ -109,7 +109,8 @@ class LayerTraceEntryLazy(
                 proto.requestedColor.toColor(),
                 proto.cornerRadiusCrop?.toRectF() ?: RectF.EMPTY,
                 Transform(proto.inputWindowInfo?.transform, position = null),
-                proto.inputWindowInfo?.touchableRegion?.toRegion()
+                proto.inputWindowInfo?.touchableRegion?.toRegion(),
+                excludeCompositionState
             )
         }
 

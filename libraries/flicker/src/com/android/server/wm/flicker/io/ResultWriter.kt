@@ -23,6 +23,7 @@ import com.android.server.wm.flicker.ScenarioBuilder
 import com.android.server.wm.flicker.now
 import com.android.server.wm.traces.common.IScenario
 import com.android.server.wm.traces.common.Timestamp
+import com.android.server.wm.traces.parser.withPerfettoTrace
 import java.io.BufferedInputStream
 import java.io.BufferedOutputStream
 import java.io.File
@@ -106,31 +107,32 @@ open class ResultWriter {
 
     /** @return writes the result artifact to disk and returns it */
     open fun write(): ResultData {
-        val outputDir = outputDir
-        requireNotNull(outputDir) { "Output dir not configured" }
-        require(!scenario.isEmpty) { "Scenario shouldn't be empty" }
+        return withPerfettoTrace("write") {
+            val outputDir = outputDir
+            requireNotNull(outputDir) { "Output dir not configured" }
+            require(!scenario.isEmpty) { "Scenario shouldn't be empty" }
+            // Ensure output directory exists
+            outputDir.toFile().mkdirs()
 
-        // Ensure output directory exists
-        outputDir.toFile().mkdirs()
-
-        if (runStatus == RunStatus.UNDEFINED) {
-            Log.w(FLICKER_IO_TAG, "Writing result with $runStatus run status")
-        }
-
-        val newFileName = "${runStatus.prefix}_$scenario.zip"
-        val dstFile = outputDir.resolve(newFileName)
-        Log.d(FLICKER_IO_TAG, "Writing artifact file $dstFile")
-        createZipFile(dstFile.toFile()).use { zipOutputStream ->
-            files.forEach { (descriptor, file) ->
-                addFile(zipOutputStream, file, nameInArchive = descriptor.fileNameInArtifact)
+            if (runStatus == RunStatus.UNDEFINED) {
+                Log.w(FLICKER_IO_TAG, "Writing result with $runStatus run status")
             }
-        }
 
-        return ResultData(
-            dstFile,
-            TransitionTimeRange(transitionStartTime, transitionEndTime),
-            executionError,
-            runStatus
-        )
+            val newFileName = "${runStatus.prefix}_$scenario.zip"
+            val dstFile = outputDir.resolve(newFileName)
+            Log.d(FLICKER_IO_TAG, "Writing artifact file $dstFile")
+            createZipFile(dstFile.toFile()).use { zipOutputStream ->
+                files.forEach { (descriptor, file) ->
+                    addFile(zipOutputStream, file, nameInArchive = descriptor.fileNameInArtifact)
+                }
+            }
+
+            ResultData(
+                dstFile,
+                TransitionTimeRange(transitionStartTime, transitionEndTime),
+                executionError,
+                runStatus
+            )
+        }
     }
 }

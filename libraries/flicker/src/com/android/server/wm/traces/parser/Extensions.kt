@@ -21,6 +21,7 @@ package com.android.server.wm.traces.parser
 import android.app.UiAutomation
 import android.content.ComponentName
 import android.os.ParcelFileDescriptor
+import android.os.Trace
 import android.util.Log
 import com.android.server.wm.traces.common.ComponentNameMatcher
 import com.android.server.wm.traces.common.DeviceStateDump
@@ -118,6 +119,15 @@ fun getCurrentStateDump(
         currentStateDump.second,
         clearCacheAfterParsing = clearCacheAfterParsing
     )
+}
+
+fun <T> withPerfettoTrace(logMsg: String, predicate: () -> T): T {
+    return try {
+        Trace.beginSection(logMsg)
+        predicate()
+    } finally {
+        Trace.endSection()
+    }
 }
 
 /** Converts an Android [ComponentName] into a flicker [ComponentNameMatcher] */

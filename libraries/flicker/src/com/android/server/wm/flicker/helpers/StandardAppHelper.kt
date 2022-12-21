@@ -34,6 +34,7 @@ import com.android.server.wm.traces.common.IComponentNameMatcher
 import com.android.server.wm.traces.common.WindowManagerConditionsFactory
 import com.android.server.wm.traces.common.windowmanager.WindowManagerState
 import com.android.server.wm.traces.parser.windowmanager.WindowManagerStateHelper
+import com.android.server.wm.traces.parser.withPerfettoTrace
 
 /**
  * Class to take advantage of {@code IAppHelper} interface so the same test can be run against first
@@ -102,14 +103,18 @@ open class StandardAppHelper(
 
     /** {@inheritDoc} */
     override fun exit() {
-        // Ensure all testing components end up being closed.
-        activityManager?.forceStopPackage(packageName)
+        withPerfettoTrace("exit") {
+            // Ensure all testing components end up being closed.
+            activityManager?.forceStopPackage(packageName)
+        }
     }
 
     /** Exits the activity and wait for activity destroyed */
     fun exit(wmHelper: WindowManagerStateHelper) {
-        exit()
-        waitForActivityDestroyed(wmHelper)
+        withPerfettoTrace("${this::class.simpleName}#exitAndWait") {
+            exit()
+            waitForActivityDestroyed(wmHelper)
+        }
     }
 
     /** Waits the activity until state change to {link WindowManagerState.STATE_DESTROYED} */
@@ -134,10 +139,12 @@ open class StandardAppHelper(
         action: String? = null,
         stringExtras: Map<String, String> = mapOf()
     ) {
-        val intent = openAppIntent
-        intent.action = action
-        stringExtras.forEach { intent.putExtra(it.key, it.value) }
-        context.startActivity(intent)
+        withPerfettoTrace("${this::class.simpleName}#launchAppViaIntent") {
+            val intent = openAppIntent
+            intent.action = action
+            stringExtras.forEach { intent.putExtra(it.key, it.value) }
+            context.startActivity(intent)
+        }
     }
 
     /**
@@ -188,31 +195,40 @@ open class StandardAppHelper(
         waitConditions: Array<Condition<DeviceStateDump>> = emptyArray()
     ) {
         launchAppViaIntent(action, stringExtras)
+        doWaitShown(wmHelper, expectedWindowName, waitConditions)
+    }
 
-        val expectedWindow =
-            if (expectedWindowName.isNotEmpty()) {
-                ComponentNameMatcher("", expectedWindowName)
-            } else {
-                componentMatcher
+    private fun doWaitShown(
+        wmHelper: WindowManagerStateHelper,
+        expectedWindowName: String = "",
+        waitConditions: Array<Condition<DeviceStateDump>> = emptyArray()
+    ) {
+        withPerfettoTrace("${this::class.simpleName}#doWaitShown") {
+            val expectedWindow =
+                if (expectedWindowName.isNotEmpty()) {
+                    ComponentNameMatcher("", expectedWindowName)
+                } else {
+                    componentMatcher
+                }
+            val builder =
+                wmHelper
+                    .StateSyncBuilder()
+                    .add(WindowManagerConditionsFactory.isWMStateComplete())
+                    .withAppTransitionIdle()
+                    .withWindowSurfaceAppeared(expectedWindow)
+
+            waitConditions.forEach { builder.add(it) }
+            builder.waitForAndVerify()
+
+            // During seamless rotation the app window is shown
+            val currWmState = wmHelper.currentState.wmState
+            if (currWmState.visibleWindows.none { it.isFullscreen }) {
+                wmHelper
+                    .StateSyncBuilder()
+                    .withNavOrTaskBarVisible()
+                    .withStatusBarVisible()
+                    .waitForAndVerify()
             }
-        val builder =
-            wmHelper
-                .StateSyncBuilder()
-                .add(WindowManagerConditionsFactory.isWMStateComplete())
-                .withAppTransitionIdle()
-                .withWindowSurfaceAppeared(expectedWindow)
-
-        waitConditions.forEach { builder.add(it) }
-        builder.waitForAndVerify()
-
-        // During seamless rotation the app window is shown
-        val currWmState = wmHelper.currentState.wmState
-        if (currWmState.visibleWindows.none { it.isFullscreen }) {
-            wmHelper
-                .StateSyncBuilder()
-                .withNavOrTaskBarVisible()
-                .withStatusBarVisible()
-                .waitForAndVerify()
         }
     }
 

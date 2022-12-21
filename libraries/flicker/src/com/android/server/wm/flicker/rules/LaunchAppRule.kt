@@ -23,6 +23,7 @@ import com.android.server.wm.flicker.FLICKER_TAG
 import com.android.server.wm.flicker.helpers.StandardAppHelper
 import com.android.server.wm.traces.common.ComponentNameMatcher
 import com.android.server.wm.traces.parser.windowmanager.WindowManagerStateHelper
+import com.android.server.wm.traces.parser.withPerfettoTrace
 import org.junit.rules.TestWatcher
 import org.junit.runner.Description
 
@@ -62,8 +63,10 @@ constructor(
     )
 
     override fun starting(description: Description?) {
-        Log.v(FLICKER_TAG, "Launching app $appHelper")
-        appHelper.launchViaIntent()
-        appHelper.exit(wmHelper)
+        withPerfettoTrace("LaunchAppRule:finished") {
+            Log.v(FLICKER_TAG, "Launching app $appHelper")
+            appHelper.launchViaIntent()
+            appHelper.exit(wmHelper)
+        }
     }
 }

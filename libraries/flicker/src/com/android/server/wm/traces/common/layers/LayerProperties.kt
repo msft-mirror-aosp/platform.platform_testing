@@ -53,7 +53,8 @@ private constructor(
     override val requestedColor: Color = Color.EMPTY,
     override val cornerRadiusCrop: RectF = RectF.EMPTY,
     override val inputTransform: Transform = Transform.EMPTY,
-    override val inputRegion: Region? = null
+    override val inputRegion: Region? = null,
+    override val excludesCompositionState: Boolean = false
 ) : ILayerProperties {
     override val isOpaque: Boolean = if (color.a != 1.0f) false else _isOpaque
 
@@ -87,6 +88,7 @@ private constructor(
         result = 31 * result + (inputRegion?.hashCode() ?: 0)
         result = 31 * result + screenBounds.hashCode()
         result = 31 * result + isOpaque.hashCode()
+        result = 31 * result + excludesCompositionState.hashCode()
         return result
     }
 
@@ -101,7 +103,8 @@ private constructor(
             "zOrderRelativeOfId=$zOrderRelativeOfId, stackId=$stackId, " +
             "requestedTransform=$requestedTransform, requestedColor=$requestedColor, " +
             "cornerRadiusCrop=$cornerRadiusCrop, inputTransform=$inputTransform, " +
-            "inputRegion=$inputRegion, screenBounds=$screenBounds, isOpaque=$isOpaque)"
+            "inputRegion=$inputRegion, screenBounds=$screenBounds, isOpaque=$isOpaque, " +
+            "excludesCompositionState=$excludesCompositionState)"
     }
 
     override fun equals(other: Any?): Boolean {
@@ -137,6 +140,7 @@ private constructor(
         if (inputRegion != other.inputRegion) return false
         if (screenBounds != other.screenBounds) return false
         if (isOpaque != other.isOpaque) return false
+        if (excludesCompositionState != other.excludesCompositionState) return false
 
         return true
     }
@@ -174,7 +178,8 @@ private constructor(
             requestedColor: Color,
             cornerRadiusCrop: RectF,
             inputTransform: Transform,
-            inputRegion: Region?
+            inputRegion: Region?,
+            excludesCompositionState: Boolean
         ): ILayerProperties {
             return withCache {
                 LayerProperties(
@@ -204,7 +209,8 @@ private constructor(
                     requestedColor,
                     cornerRadiusCrop,
                     inputTransform,
-                    inputRegion
+                    inputRegion,
+                    excludesCompositionState
                 )
             }
         }

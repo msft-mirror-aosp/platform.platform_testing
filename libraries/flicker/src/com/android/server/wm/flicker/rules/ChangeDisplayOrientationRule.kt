@@ -26,6 +26,7 @@ import androidx.test.uiautomator.UiDevice
 import com.android.server.wm.flicker.FLICKER_TAG
 import com.android.server.wm.traces.common.service.PlatformConsts
 import com.android.server.wm.traces.parser.windowmanager.WindowManagerStateHelper
+import com.android.server.wm.traces.parser.withPerfettoTrace
 import org.junit.rules.TestWatcher
 import org.junit.runner.Description
 
@@ -49,18 +50,23 @@ constructor(
     private var initialOrientation = PlatformConsts.Rotation.ROTATION_0
 
     override fun starting(description: Description?) {
-        Log.v(
-            FLICKER_TAG,
-            "Changing display orientation to " +
-                "$targetOrientation ${targetOrientation.description}"
-        )
-        val wm = instrumentation.context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
-        initialOrientation = PlatformConsts.Rotation.getByValue(wm.defaultDisplay.rotation)
-        setRotation(targetOrientation, instrumentation, clearCacheAfterParsing)
+        withPerfettoTrace("ChangeDisplayOrientationRule:starting") {
+            Log.v(
+                FLICKER_TAG,
+                "Changing display orientation to " +
+                    "$targetOrientation ${targetOrientation.description}"
+            )
+            val wm =
+                instrumentation.context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+            initialOrientation = PlatformConsts.Rotation.getByValue(wm.defaultDisplay.rotation)
+            setRotation(targetOrientation, instrumentation, clearCacheAfterParsing)
+        }
     }
 
     override fun finished(description: Description?) {
-        setRotation(initialOrientation, instrumentation, clearCacheAfterParsing)
+        withPerfettoTrace("ChangeDisplayOrientationRule:finished") {
+            setRotation(initialOrientation, instrumentation, clearCacheAfterParsing)
+        }
     }
 
     companion object {

@@ -51,24 +51,26 @@ class DeviceDumpParser {
             layersTraceData: ByteArray,
             clearCacheAfterParsing: Boolean
         ): NullableDeviceStateDump {
-            return NullableDeviceStateDump(
-                wmState =
-                    if (wmTraceData.isNotEmpty()) {
-                        WindowManagerDumpParser()
-                            .parse(wmTraceData, clearCache = clearCacheAfterParsing)
-                            .first()
-                    } else {
-                        null
-                    },
-                layerState =
-                    if (layersTraceData.isNotEmpty()) {
-                        LayersTraceParser()
-                            .parse(layersTraceData, clearCache = clearCacheAfterParsing)
-                            .first()
-                    } else {
-                        null
-                    }
-            )
+            return withPerfettoTrace("fromNullableDump") {
+                NullableDeviceStateDump(
+                    wmState =
+                        if (wmTraceData.isNotEmpty()) {
+                            WindowManagerDumpParser()
+                                .parse(wmTraceData, clearCache = clearCacheAfterParsing)
+                                .first()
+                        } else {
+                            null
+                        },
+                    layerState =
+                        if (layersTraceData.isNotEmpty()) {
+                            LayersTraceParser()
+                                .parse(layersTraceData, clearCache = clearCacheAfterParsing)
+                                .first()
+                        } else {
+                            null
+                        }
+                )
+            }
         }
 
         /** See [fromNullableDump] */
@@ -78,12 +80,14 @@ class DeviceDumpParser {
             layersTraceData: ByteArray,
             clearCacheAfterParsing: Boolean
         ): DeviceStateDump {
-            val nullableDump =
-                fromNullableDump(wmTraceData, layersTraceData, clearCacheAfterParsing)
-            return DeviceStateDump(
-                nullableDump.wmState ?: error("WMState dump missing"),
-                nullableDump.layerState ?: error("Layer State dump missing")
-            )
+            return withPerfettoTrace("fromDump") {
+                val nullableDump =
+                    fromNullableDump(wmTraceData, layersTraceData, clearCacheAfterParsing)
+                DeviceStateDump(
+                    nullableDump.wmState ?: error("WMState dump missing"),
+                    nullableDump.layerState ?: error("Layer State dump missing")
+                )
+            }
         }
 
         /**
@@ -104,20 +108,22 @@ class DeviceDumpParser {
             layersTraceData: ByteArray,
             clearCache: Boolean
         ): DeviceTraceDump {
-            return DeviceTraceDump(
-                wmTrace =
-                    if (wmTraceData.isNotEmpty()) {
-                        WindowManagerTraceParser().parse(wmTraceData, clearCache = clearCache)
-                    } else {
-                        null
-                    },
-                layersTrace =
-                    if (layersTraceData.isNotEmpty()) {
-                        LayersTraceParser().parse(layersTraceData, clearCache = clearCache)
-                    } else {
-                        null
-                    }
-            )
+            return withPerfettoTrace("fromTrace") {
+                DeviceTraceDump(
+                    wmTrace =
+                        if (wmTraceData.isNotEmpty()) {
+                            WindowManagerTraceParser().parse(wmTraceData, clearCache = clearCache)
+                        } else {
+                            null
+                        },
+                    layersTrace =
+                        if (layersTraceData.isNotEmpty()) {
+                            LayersTraceParser().parse(layersTraceData, clearCache = clearCache)
+                        } else {
+                            null
+                        }
+                )
+            }
         }
     }
 }

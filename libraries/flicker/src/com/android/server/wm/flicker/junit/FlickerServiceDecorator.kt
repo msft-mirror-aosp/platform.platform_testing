@@ -30,7 +30,7 @@ import com.android.server.wm.flicker.helpers.isShellTransitionsEnabled
 import com.android.server.wm.flicker.service.FlickerService
 import com.android.server.wm.flicker.service.FlickerServiceResultsCollector
 import com.android.server.wm.flicker.service.assertors.AssertionResult
-import kotlin.system.measureTimeMillis
+import com.android.server.wm.traces.parser.withPerfettoTrace
 import org.junit.runner.Description
 import org.junit.runners.model.FrameworkMethod
 import org.junit.runners.model.Statement
@@ -76,8 +76,10 @@ class FlickerServiceDecorator(
     override fun getTestMethods(test: Any): List<FrameworkMethod> {
         val result = inner?.getTestMethods(test)?.toMutableList() ?: mutableListOf()
         if (shouldComputeTestMethods()) {
-            measureTimeMillis { result.addAll(computeFlickerServiceTests(test)) }
-                .also { Log.d(FLICKER_TAG, "Took ${it}ms to compute ${result.size} flicker tests") }
+            withPerfettoTrace("getTestMethods") {
+                result.addAll(computeFlickerServiceTests(test))
+                Log.d(FLICKER_TAG, "Computed ${result.size} flicker tests")
+            }
         }
         return result
     }

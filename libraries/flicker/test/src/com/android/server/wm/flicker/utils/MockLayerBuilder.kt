@@ -98,7 +98,8 @@ class MockLayerBuilder(private val name: String) {
                 requestedColor = Color.DEFAULT,
                 cornerRadiusCrop = RectF.EMPTY,
                 inputTransform = transform,
-                inputRegion = Region.from(absoluteBounds)
+                inputRegion = Region.from(absoluteBounds),
+                excludesCompositionState = false
             )
 
         val layers = mutableListOf<Layer>()

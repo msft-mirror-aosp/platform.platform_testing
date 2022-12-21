@@ -57,6 +57,7 @@ interface ILayerProperties {
     @JsName("cornerRadiusCrop") val cornerRadiusCrop: RectF
     @JsName("inputTransform") val inputTransform: Transform
     @JsName("inputRegion") val inputRegion: Region?
+    @JsName("excludesCompositionState") val excludesCompositionState: Boolean
 
     @JsName("isScaling")
     val isScaling: Boolean

@@ -16,9 +16,7 @@
 
 package com.android.server.wm.traces.parser
 
-import android.util.Log
 import com.android.server.wm.traces.common.Cache
-import kotlin.system.measureTimeMillis
 
 /** Base parser class */
 abstract class AbstractParser<InputTypeTrace, OutputTypeTrace> {
@@ -44,26 +42,20 @@ abstract class AbstractParser<InputTypeTrace, OutputTypeTrace> {
      * @param clearCache If the caching used while parsing the object should be cleared
      */
     open fun parse(input: InputTypeTrace, clearCache: Boolean): OutputTypeTrace {
-        return try {
-            logTime("Parsing objects") { doParse(input) }
-        } finally {
-            if (clearCache) {
-                Cache.clear()
+        return withPerfettoTrace("${this::class.simpleName}#parse") {
+            try {
+                doParse(input)
+            } finally {
+                if (clearCache) {
+                    Cache.clear()
+                }
             }
         }
     }
 
     protected fun decodeByteArray(input: ByteArray): InputTypeTrace {
-        return logTime("Decoding $traceName proto file") { doDecodeByteArray(input) }
-    }
-
-    protected fun <T> logTime(msg: String, predicate: () -> T): T {
-        var data: T?
-        measureTimeMillis { data = predicate() }.also { Log.v(LOG_TAG_TIME, "$msg: ${it}ms") }
-        return data ?: error("Unable to process")
-    }
-
-    companion object {
-        private const val LOG_TAG_TIME = "$LOG_TAG-Duration"
+        return withPerfettoTrace("${this::class.simpleName}#decodeByteArray") {
+            doDecodeByteArray(input)
+        }
     }
 }

@@ -36,7 +36,7 @@ private constructor(
     val parentId: Int,
     val z: Int,
     val currFrame: Long,
-    properties: ILayerProperties
+    properties: ILayerProperties,
 ) : ILayerProperties by properties {
     val stableId: String = "$type $id $name"
     var parent: Layer? = null
@@ -91,7 +91,14 @@ private constructor(
      */
     val isVisible: Boolean
         get() {
-            val visibleRegion = visibleRegion ?: Region.EMPTY
+            val visibleRegion =
+                if (excludesCompositionState) {
+                    // Doesn't include state sent during composition like visible region and
+                    // composition type, so we fallback on the bounds as the visible region
+                    Region.from(this.bounds)
+                } else {
+                    this.visibleRegion ?: Region.EMPTY
+                }
             return when {
                 isHiddenByParent -> false
                 isHiddenByPolicy -> false
@@ -266,6 +273,7 @@ private constructor(
         if (inputRegion != other.inputRegion) return false
         if (screenBounds != other.screenBounds) return false
         if (isOpaque != other.isOpaque) return false
+        if (excludesCompositionState != other.excludesCompositionState) return false
 
         return true
     }
@@ -311,6 +319,7 @@ private constructor(
         result = 31 * result + _partiallyOccludedBy.hashCode()
         result = 31 * result + _coveredBy.hashCode()
         result = 31 * result + isMissing.hashCode()
+        result = 31 * result + excludesCompositionState.hashCode()
         return result
     }
 
@@ -348,7 +357,8 @@ private constructor(
             requestedColor: Color,
             cornerRadiusCrop: RectF,
             inputTransform: Transform,
-            inputRegion: Region?
+            inputRegion: Region?,
+            excludesCompositionState: Boolean
         ): Layer {
             val properties =
                 LayerProperties.from(
@@ -378,7 +388,8 @@ private constructor(
                     requestedColor,
                     cornerRadiusCrop,
                     inputTransform,
-                    inputRegion
+                    inputRegion,
+                    excludesCompositionState
                 )
             return Layer(name, id, parentId, z, currFrame, properties)
         }

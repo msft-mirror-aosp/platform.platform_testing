@@ -130,7 +130,8 @@ class WindowManagerStateHelperTest {
             requestedColor = Color.DEFAULT,
             cornerRadiusCrop = RectF.EMPTY,
             inputTransform = transform,
-            inputRegion = Region.from(rect.toRect())
+            inputRegion = Region.from(rect.toRect()),
+            excludesCompositionState = false
         )
     }
 

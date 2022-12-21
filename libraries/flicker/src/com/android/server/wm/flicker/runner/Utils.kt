@@ -24,7 +24,6 @@ import com.android.server.wm.traces.common.ConditionList
 import com.android.server.wm.traces.common.IScenario
 import com.android.server.wm.traces.common.WindowManagerConditionsFactory
 import com.android.server.wm.traces.parser.windowmanager.WindowManagerStateHelper
-import kotlin.system.measureTimeMillis
 
 /** Helper class for flicker transition rules */
 object Utils {
@@ -41,22 +40,11 @@ object Utils {
         )
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
 
-    /** Execute [predicate] and log [logMessage] in logcat and notify the host side runner */
-    internal fun executeAndNotifyRunner(
-        scenario: IScenario,
-        logMessage: String,
-        predicate: () -> Unit
-    ) {
-        notifyRunnerProgress(scenario, logMessage)
-        measureTimeMillis { predicate() }
-            .also { notifyRunnerProgress(scenario, "\tDuration ${it}ms") }
-    }
-
     internal fun doWaitForUiStabilize(wmHelper: WindowManagerStateHelper) {
         wmHelper.StateSyncBuilder().add(UI_STABLE_CONDITIONS).waitFor()
     }
 
-    private fun notifyRunnerProgress(scenario: IScenario, msg: String) {
+    internal fun notifyRunnerProgress(scenario: IScenario, msg: String) {
         Log.d(FLICKER_RUNNER_TAG, "${scenario.key} - $msg")
         val results = Bundle()
         results.putString(Instrumentation.REPORT_KEY_STREAMRESULT, "$msg\n")

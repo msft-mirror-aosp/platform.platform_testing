@@ -41,37 +41,99 @@ class LayerTest {
 
     @Test
     fun hasVerboseFlagsProperty() {
-        assertThat(makeLayerWithFlags(0x0).verboseFlags).isEqualTo("")
+        assertThat(makeLayerWithDefaults(0x0).verboseFlags).isEqualTo("")
 
-        assertThat(makeLayerWithFlags(0x1).verboseFlags).isEqualTo("HIDDEN (0x1)")
+        assertThat(makeLayerWithDefaults(0x1).verboseFlags).isEqualTo("HIDDEN (0x1)")
 
-        assertThat(makeLayerWithFlags(0x2).verboseFlags).isEqualTo("OPAQUE (0x2)")
+        assertThat(makeLayerWithDefaults(0x2).verboseFlags).isEqualTo("OPAQUE (0x2)")
 
-        assertThat(makeLayerWithFlags(0x40).verboseFlags).isEqualTo("SKIP_SCREENSHOT (0x40)")
+        assertThat(makeLayerWithDefaults(0x40).verboseFlags).isEqualTo("SKIP_SCREENSHOT (0x40)")
 
-        assertThat(makeLayerWithFlags(0x80).verboseFlags).isEqualTo("SECURE (0x80)")
+        assertThat(makeLayerWithDefaults(0x80).verboseFlags).isEqualTo("SECURE (0x80)")
 
-        assertThat(makeLayerWithFlags(0x100).verboseFlags).isEqualTo("ENABLE_BACKPRESSURE (0x100)")
+        assertThat(makeLayerWithDefaults(0x100).verboseFlags)
+            .isEqualTo("ENABLE_BACKPRESSURE (0x100)")
 
-        assertThat(makeLayerWithFlags(0x200).verboseFlags).isEqualTo("DISPLAY_DECORATION (0x200)")
+        assertThat(makeLayerWithDefaults(0x200).verboseFlags)
+            .isEqualTo("DISPLAY_DECORATION (0x200)")
 
-        assertThat(makeLayerWithFlags(0x400).verboseFlags)
+        assertThat(makeLayerWithDefaults(0x400).verboseFlags)
             .isEqualTo("IGNORE_DESTINATION_FRAME (0x400)")
 
-        assertThat(makeLayerWithFlags(0xc3).verboseFlags)
+        assertThat(makeLayerWithDefaults(0xc3).verboseFlags)
             .isEqualTo("HIDDEN|OPAQUE|SKIP_SCREENSHOT|SECURE (0xc3)")
     }
 
-    private fun makeLayerWithFlags(flags: Int): Layer {
+    @Test
+    fun useVisibleRegionIfCompositionStateIsAvailableForVisibility() {
+        assertThat(
+                makeLayerWithDefaults(
+                        excludeCompositionState = false,
+                        visibleRegion = Region.EMPTY,
+                        activeBuffer = ActiveBuffer.from(100, 100, 1, 0)
+                    )
+                    .isVisible
+            )
+            .isFalse()
+        assertThat(
+                makeLayerWithDefaults(
+                        excludeCompositionState = false,
+                        visibleRegion = Region.from(0, 0, 100, 100),
+                        activeBuffer = ActiveBuffer.from(100, 100, 1, 0)
+                    )
+                    .isVisible
+            )
+            .isTrue()
+    }
+
+    @Test
+    fun fallbackOnLayerBoundsIfCompositionStateIsNotAvailableForVisibility() {
+        assertThat(
+                makeLayerWithDefaults(
+                        excludeCompositionState = true,
+                        bounds = RectF.EMPTY,
+                        activeBuffer = ActiveBuffer.from(100, 100, 1, 0)
+                    )
+                    .isVisible
+            )
+            .isFalse()
+        assertThat(
+                makeLayerWithDefaults(
+                        excludeCompositionState = true,
+                        bounds = RectF.from(0f, 0f, 100f, 100f),
+                        activeBuffer = ActiveBuffer.from(100, 100, 1, 0)
+                    )
+                    .isVisible
+            )
+            .isTrue()
+        assertThat(
+                makeLayerWithDefaults(
+                        excludeCompositionState = true,
+                        visibleRegion = Region.from(0, 0, 100, 100),
+                        bounds = RectF.EMPTY,
+                        activeBuffer = ActiveBuffer.from(100, 100, 1, 0)
+                    )
+                    .isVisible
+            )
+            .isFalse()
+    }
+
+    private fun makeLayerWithDefaults(
+        flags: Int = 0x0,
+        excludeCompositionState: Boolean = false,
+        visibleRegion: Region = Region.EMPTY,
+        bounds: RectF = RectF.EMPTY,
+        activeBuffer: ActiveBuffer = ActiveBuffer.EMPTY
+    ): Layer {
         return Layer.from(
             "",
             0,
             0,
             0,
-            Region.EMPTY,
-            ActiveBuffer.EMPTY,
+            visibleRegion,
+            activeBuffer,
             flags,
-            RectF.EMPTY,
+            bounds,
             Color.EMPTY,
             false,
             -1f,
@@ -95,7 +157,8 @@ class LayerTest {
             Color.EMPTY,
             RectF.EMPTY,
             Transform.EMPTY,
-            null
+            null,
+            excludeCompositionState
         )
     }
 }
