@@ -16,18 +16,16 @@
 
 package android.platform.helpers;
 
-import static android.platform.helpers.Constants.MAX_VERIFICATION_TIME_IN_SECONDS;
 import static android.platform.helpers.ui.UiAutomatorUtils.getContext;
 import static android.platform.helpers.ui.UiAutomatorUtils.getInstrumentation;
 import static android.platform.helpers.ui.UiAutomatorUtils.getUiDevice;
 import static android.platform.helpers.ui.UiSearch.search;
+import static android.platform.uiautomator_helpers.WaitUtils.ensureThat;
 
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
 
 import static java.lang.String.format;
-import static java.lang.System.currentTimeMillis;
-import static java.util.concurrent.TimeUnit.SECONDS;
 
 import android.app.Instrumentation;
 import android.content.ComponentName;
@@ -45,7 +43,6 @@ import android.platform.helpers.features.common.HomeLockscreenPage;
 import android.platform.helpers.ui.UiSearch2;
 import android.platform.test.util.HealthTestingUtils;
 import android.support.test.uiautomator.BySelector;
-import android.support.test.uiautomator.UiDevice;
 import android.support.test.uiautomator.UiObject;
 import android.support.test.uiautomator.UiObjectNotFoundException;
 import android.support.test.uiautomator.Until;
@@ -169,15 +166,18 @@ public class CommonUtils {
         }
 
         HomeLockscreenPage page = new HomeLockscreenPage();
-        UiDevice device = getUiDevice();
-        HealthTestingUtils.waitForCondition(() -> "Lock screen didn't appear", () -> {
-            try {
-                return device.wait(Until.hasObject(page.getPageTitleSelector()),
-                        REBOOT_WAIT_MILLIS);
-            } catch (Throwable t) {
-                return false;
-            }
-        });
+        ensureThat(
+                "Screen lock appears",
+                () -> {
+                    try {
+                        return getUiDevice()
+                                .wait(
+                                        Until.hasObject(page.getPageTitleSelector()),
+                                        REBOOT_WAIT_MILLIS);
+                    } catch (Throwable t) {
+                        return false;
+                    }
+                });
         if (swipeUp) {
             page.swipeUp();
         }

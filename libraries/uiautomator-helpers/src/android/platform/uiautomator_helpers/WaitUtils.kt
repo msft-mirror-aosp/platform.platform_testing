@@ -129,12 +129,13 @@ object WaitUtils {
             } + " (settleTime=${minimumSettleTime.toMillis()}ms, deadline=${timeout.toMillis()}ms)"
         trace(traceName) {
             withEventualLogging(logTimeDelta = true) {
+                log(traceName)
+
                 val startTime = uptimeMillis()
                 val timeoutMs = timeout.toMillis()
                 val minimumSettleTimeMs = minimumSettleTime.toMillis()
                 var settledSince = startTime
                 var previousValue: T? = null
-
                 while (uptimeMillis() < startTime + timeoutMs) {
                     val newValue =
                         try {
