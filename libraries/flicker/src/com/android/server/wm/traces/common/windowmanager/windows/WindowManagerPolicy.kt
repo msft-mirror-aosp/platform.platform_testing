@@ -16,6 +16,7 @@
 
 package com.android.server.wm.traces.common.windowmanager.windows
 
+import com.android.server.wm.traces.common.service.PlatformConsts
 import com.android.server.wm.traces.common.withCache
 import kotlin.js.JsName
 
@@ -36,7 +37,7 @@ private constructor(
     @JsName("keyguardOccludedPending") val keyguardOccludedPending: Boolean = false,
     @JsName("lastSystemUiFlags") val lastSystemUiFlags: Int = 0,
     @JsName("orientation") val orientation: Int = 0,
-    @JsName("rotation") val rotation: Int = 0,
+    @JsName("rotation") val rotation: PlatformConsts.Rotation = PlatformConsts.Rotation.ROTATION_0,
     @JsName("rotationMode") val rotationMode: Int = 0,
     @JsName("screenOnFully") val screenOnFully: Boolean = false,
     @JsName("windowManagerDrawComplete") val windowManagerDrawComplete: Boolean = false
@@ -99,7 +100,7 @@ private constructor(
         result = 31 * result + keyguardOccludedPending.hashCode()
         result = 31 * result + lastSystemUiFlags
         result = 31 * result + orientation
-        result = 31 * result + rotation
+        result = 31 * result + rotation.hashCode()
         result = 31 * result + rotationMode
         result = 31 * result + screenOnFully.hashCode()
         result = 31 * result + windowManagerDrawComplete.hashCode()
@@ -147,7 +148,7 @@ private constructor(
             keyguardOccludedPending: Boolean = false,
             lastSystemUiFlags: Int = 0,
             orientation: Int = 0,
-            rotation: Int = 0,
+            rotation: PlatformConsts.Rotation = PlatformConsts.Rotation.ROTATION_0,
             rotationMode: Int = 0,
             screenOnFully: Boolean = false,
             windowManagerDrawComplete: Boolean = false

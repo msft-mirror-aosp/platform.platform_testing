@@ -19,7 +19,10 @@ package com.android.server.wm.flicker.service.assertors.assertions
 import com.android.server.wm.flicker.helpers.WindowUtils
 import com.android.server.wm.flicker.service.assertors.BaseAssertionBuilder
 import com.android.server.wm.flicker.traces.layers.LayersTraceSubject
+import com.android.server.wm.flicker.traces.windowmanager.WindowManagerTraceSubject
 import com.android.server.wm.traces.common.ComponentNameMatcher
+import com.android.server.wm.traces.common.region.Region
+import com.android.server.wm.traces.common.service.PlatformConsts
 import com.android.server.wm.traces.common.transition.Transition
 
 /**
@@ -27,14 +30,23 @@ import com.android.server.wm.traces.common.transition.Transition
  * end of the transition
  */
 class StatusBarLayerPositionAtEnd : BaseAssertionBuilder() {
+    private var navBarPosition = Region.EMPTY
+
+    override fun doSetup(
+        transition: Transition,
+        wmSubject: WindowManagerTraceSubject?,
+        layerSubject: LayersTraceSubject?
+    ) {
+        val traceSubject = wmSubject ?: return
+        val subject = traceSubject.last()
+        val display =
+            subject.wmState.getDisplay(PlatformConsts.DEFAULT_DISPLAY) ?: error("Display not found")
+        navBarPosition = WindowUtils.getExpectedStatusBarPosition(display)
+    }
+
     /** {@inheritDoc} */
     override fun doEvaluate(transition: Transition, layerSubject: LayersTraceSubject) {
-        val targetSubject = layerSubject.last()
-        val endDisplay =
-            targetSubject.entry.displays.firstOrNull { !it.isVirtual } ?: error("Display not found")
-
-        targetSubject
-            .visibleRegion(ComponentNameMatcher.STATUS_BAR)
-            .coversExactly(WindowUtils.getStatusBarPosition(endDisplay))
+        val subject = layerSubject.last()
+        subject.visibleRegion(ComponentNameMatcher.STATUS_BAR).coversExactly(navBarPosition)
     }
 }

@@ -243,9 +243,7 @@ class WindowManagerState(
 
     @JsName("getRotation")
     fun getRotation(displayId: Int): PlatformConsts.Rotation =
-        PlatformConsts.Rotation.getByValue(
-            getDisplay(displayId)?.rotation ?: error("Default display not found")
-        )
+        getDisplay(displayId)?.rotation ?: error("Default display not found")
 
     @JsName("getOrientation")
     fun getOrientation(displayId: Int): Int =

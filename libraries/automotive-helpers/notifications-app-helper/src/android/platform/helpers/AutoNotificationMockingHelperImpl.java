@@ -130,7 +130,7 @@ public class AutoNotificationMockingHelperImpl extends AbstractAutoStandardAppHe
         for (BySelector selector : NOTIFICATION_REQUIRED_FIELDS) {
             UiObject2 obj = findUiObject(selector);
             if (obj == null) {
-                throw new RuntimeException("Unable to find required notification field");
+                throw new RuntimeException(String.format("Unable to find required notification field %s",selector.toString()));
             }
         }
         return true;

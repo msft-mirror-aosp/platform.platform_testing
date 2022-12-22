@@ -31,6 +31,15 @@ abstract class BaseAssertionBuilder {
     // Assertion name
     open val name: String = this::class.java.simpleName
 
+    /** Notifies the assertion of both trace contents */
+    protected open fun doSetup(
+        transition: Transition,
+        wmSubject: WindowManagerTraceSubject?,
+        layerSubject: LayersTraceSubject?
+    ) {
+        // Does nothing, unless overridden
+    }
+
     /**
      * Evaluates assertions that require only WM traces. NOTE: Will not run if WM trace is not
      * available.
@@ -63,6 +72,7 @@ abstract class BaseAssertionBuilder {
     ): AssertionResult {
         var assertionError: Throwable? = null
         try {
+            doSetup(scenarioInstance.associatedTransition, wmSubject, layerSubject)
             if (wmSubject !== null) {
                 doEvaluate(scenarioInstance.associatedTransition, wmSubject)
             }

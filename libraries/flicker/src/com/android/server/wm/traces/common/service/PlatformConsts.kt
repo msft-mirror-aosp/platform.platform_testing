@@ -99,7 +99,8 @@ object PlatformConsts {
 
         companion object {
             private val VALUES = values()
-            fun getByValue(value: Int) = VALUES[value]
+            @JsName("getByValue")
+            fun getByValue(value: Int) = if (value == -1) ROTATION_0 else VALUES[value]
         }
     }
 
@@ -108,6 +109,7 @@ object PlatformConsts {
         MODE_GESTURAL("GESTURAL_NAV", PlatformConsts.MODE_GESTURAL);
 
         companion object {
+            @JsName("getByValue")
             fun getByValue(value: String) {
                 when (value) {
                     PlatformConsts.MODE_3BUTTON -> MODE_3BUTTON
