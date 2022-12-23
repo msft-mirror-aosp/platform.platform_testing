@@ -80,17 +80,3 @@ task assembleStsx86 {
         copyArtifacts('testcases_x86')
     }
 }
-
-task zipForSubmission(type: Zip) {
-    from('.') {
-        exclude "**/build"
-        exclude '.gradle'
-        exclude 'test-app/libs'
-        exclude 'sts-test/libs'
-        exclude 'sts-test/utils'
-        exclude "**/.cxx"
-    }
-    from project('sts-test').layout.projectDirectory.file('libs/version.txt')
-    archiveFileName.set("codesubmission.zip")
-    destinationDirectory.set(layout.buildDirectory)
-}

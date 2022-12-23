@@ -16,20 +16,19 @@
 
 package com.android.server.wm.flicker.helpers
 
+import android.content.Context
+import android.graphics.Point
 import android.graphics.Rect
+import android.view.WindowManager
 import androidx.test.platform.app.InstrumentationRegistry
 import com.android.server.wm.traces.common.layers.Display
 import com.android.server.wm.traces.common.region.Region
 import com.android.server.wm.traces.common.service.PlatformConsts
-import com.android.server.wm.traces.common.windowmanager.windows.DisplayContent
-import com.android.server.wm.traces.parser.getCurrentStateDump
-import com.android.server.wm.traces.parser.toAndroidRect
 
 object WindowUtils {
-    private val instrumentation = InstrumentationRegistry.getInstrumentation()
-
     /** Helper functions to retrieve system window sizes and positions. */
-    private val context = instrumentation.context
+    private val context
+        get() = InstrumentationRegistry.getInstrumentation().context
 
     private val resources
         get() = context.getResources()
@@ -37,18 +36,17 @@ object WindowUtils {
     /** Get the display bounds */
     val displayBounds: Rect
         get() {
-            val currState =
-                getCurrentStateDump(instrumentation.uiAutomation, clearCacheAfterParsing = false)
-            return currState.layerState.physicalDisplay?.layerStackSpace?.toAndroidRect() ?: Rect()
+            val display = Point()
+            val wm = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+            wm.defaultDisplay.getRealSize(display)
+            return Rect(0, 0, display.x, display.y)
         }
 
     /** Gets the current display rotation */
     val displayRotation: PlatformConsts.Rotation
         get() {
-            val currState =
-                getCurrentStateDump(instrumentation.uiAutomation, clearCacheAfterParsing = false)
-
-            return currState.wmState.getRotation(PlatformConsts.DEFAULT_DISPLAY)
+            val wm = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+            return PlatformConsts.Rotation.getByValue(wm.defaultDisplay.rotation)
         }
 
     /**
@@ -62,7 +60,6 @@ object WindowUtils {
 
         // if the current orientation changes with the requested rotation,
         // flip height and width of display bounds.
-        val displayBounds = displayBounds
         return if (displayIsRotated != requestedDisplayIsRotated) {
             Region.from(0, 0, displayBounds.height(), displayBounds.width())
         } else {
@@ -70,25 +67,21 @@ object WindowUtils {
         }
     }
 
-    /** Gets the status bar height with a specific display cutout. */
-    private fun getExpectedStatusBarHeight(displayContent: DisplayContent): Int {
-        val cutout = displayContent.cutout
-        val defaultSize = status_bar_height_default
-        val safeInsetTop = cutout?.insets?.top ?: 0
-        val waterfallInsetTop = cutout?.waterfallInsets?.top ?: 0
-        // The status bar height should be:
-        // Max(top cutout size, (status bar default height + waterfall top size))
-        return safeInsetTop.coerceAtLeast(defaultSize + waterfallInsetTop)
-    }
-
     /**
      * Gets the expected status bar position for a specific display
      *
      * @param display the main display
      */
-    fun getExpectedStatusBarPosition(display: DisplayContent): Region {
-        val height = getExpectedStatusBarHeight(display)
-        return Region.from(0, 0, display.displayRect.width, height)
+    fun getStatusBarPosition(display: Display): Region {
+        val resourceName =
+            if (!display.transform.getRotation().isRotated()) {
+                "status_bar_height_portrait"
+            } else {
+                "status_bar_height_landscape"
+            }
+        val resourceId = resources.getIdentifier(resourceName, "dimen", "android")
+        val height = resources.getDimensionPixelSize(resourceId)
+        return Region.from(0, 0, display.layerStackSpace.width, height)
     }
 
     /**
@@ -108,10 +101,10 @@ object WindowUtils {
      */
     fun getNavigationBarPosition(display: Display, isGesturalNavigation: Boolean): Region {
         val navBarWidth = getDimensionPixelSize("navigation_bar_width")
+        val navBarHeight = navigationBarFrameHeight
         val displayHeight = display.layerStackSpace.height
         val displayWidth = display.layerStackSpace.width
         val requestedRotation = display.transform.getRotation()
-        val navBarHeight = getNavigationBarFrameHeight(requestedRotation, isGesturalNavigation)
 
         return when {
             // nav bar is at the bottom of the screen
@@ -145,8 +138,7 @@ object WindowUtils {
             displayHeight = displayBounds.width()
         }
         val navBarWidth = getDimensionPixelSize("navigation_bar_width")
-        val navBarHeight =
-            getNavigationBarFrameHeight(requestedRotation, isGesturalNavigation = false)
+        val navBarHeight = navigationBarFrameHeight
 
         return when {
             // nav bar is at the bottom of the screen
@@ -176,32 +168,9 @@ object WindowUtils {
     }
 
     /** Gets the navigation bar frame height */
-    fun getNavigationBarFrameHeight(
-        rotation: PlatformConsts.Rotation,
-        isGesturalNavigation: Boolean
-    ): Int {
-        return if (rotation.isRotated()) {
-            if (isGesturalNavigation) {
-                getDimensionPixelSize("navigation_bar_frame_height")
-            } else {
-                getDimensionPixelSize("navigation_bar_height_landscape")
-            }
-        } else {
-            getDimensionPixelSize("navigation_bar_frame_height")
-        }
-    }
-
-    private val status_bar_height_default: Int
+    val navigationBarFrameHeight: Int
         get() {
-            val resourceId =
-                resources.getIdentifier("status_bar_height_default", "dimen", "android")
-            return resources.getDimensionPixelSize(resourceId)
-        }
-
-    val quick_qs_offset_height: Int
-        get() {
-            val resourceId = resources.getIdentifier("quick_qs_offset_height", "dimen", "android")
-            return resources.getDimensionPixelSize(resourceId)
+            return getDimensionPixelSize("navigation_bar_frame_height")
         }
 
     /** Split screen divider inset height */

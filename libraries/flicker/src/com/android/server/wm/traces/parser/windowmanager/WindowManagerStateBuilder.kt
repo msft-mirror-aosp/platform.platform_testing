@@ -19,8 +19,6 @@ package com.android.server.wm.traces.parser.windowmanager
 import android.app.nano.WindowConfigurationProto
 import android.content.nano.ConfigurationProto
 import android.graphics.nano.RectProto
-import android.view.Surface
-import android.view.nano.DisplayCutoutProto
 import android.view.nano.ViewProtoEnums
 import android.view.nano.WindowLayoutParamsProto
 import com.android.server.wm.nano.ActivityRecordProto
@@ -38,10 +36,8 @@ import com.android.server.wm.nano.WindowManagerPolicyProto
 import com.android.server.wm.nano.WindowManagerServiceDumpProto
 import com.android.server.wm.nano.WindowStateProto
 import com.android.server.wm.nano.WindowTokenProto
-import com.android.server.wm.traces.common.Insets
 import com.android.server.wm.traces.common.Rect
 import com.android.server.wm.traces.common.Size
-import com.android.server.wm.traces.common.service.PlatformConsts
 import com.android.server.wm.traces.common.windowmanager.WindowManagerState
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTraceEntryBuilder
 import com.android.server.wm.traces.common.windowmanager.windows.Activity
@@ -49,7 +45,6 @@ import com.android.server.wm.traces.common.windowmanager.windows.Configuration
 import com.android.server.wm.traces.common.windowmanager.windows.ConfigurationContainer
 import com.android.server.wm.traces.common.windowmanager.windows.DisplayArea
 import com.android.server.wm.traces.common.windowmanager.windows.DisplayContent
-import com.android.server.wm.traces.common.windowmanager.windows.DisplayCutout
 import com.android.server.wm.traces.common.windowmanager.windows.KeyguardControllerState
 import com.android.server.wm.traces.common.windowmanager.windows.RootWindowContainer
 import com.android.server.wm.traces.common.windowmanager.windows.Task
@@ -118,7 +113,7 @@ class WindowManagerStateBuilder {
             keyguardOccludedPending = proto.keyguardOccludedPending,
             lastSystemUiFlags = proto.lastSystemUiFlags,
             orientation = proto.orientation,
-            rotation = PlatformConsts.Rotation.getByValue(proto.rotation),
+            rotation = proto.rotation,
             rotationMode = proto.rotationMode,
             screenOnFully = proto.screenOnFully,
             windowManagerDrawComplete = proto.windowManagerDrawComplete
@@ -201,12 +196,8 @@ class WindowManagerStateBuilder {
                 lastTransition =
                     appTransitionToString(proto.appTransition?.lastUsedAppTransition ?: 0),
                 appTransitionState = appStateToString(proto.appTransition?.appTransitionState ?: 0),
-                rotation =
-                    PlatformConsts.Rotation.getByValue(
-                        proto.displayRotation?.rotation ?: Surface.ROTATION_0
-                    ),
+                rotation = proto.displayRotation?.rotation ?: 0,
                 lastOrientation = proto.displayRotation?.lastOrientation ?: 0,
-                cutout = createDisplayCutout(proto.displayInfo?.cutout),
                 windowContainer =
                     createWindowContainer(
                         proto.rootDisplayArea.windowContainer,
@@ -504,21 +495,6 @@ class WindowManagerStateBuilder {
         }
     }
 
-    private fun createDisplayCutout(proto: DisplayCutoutProto?): DisplayCutout? {
-        return if (proto == null) {
-            null
-        } else {
-            DisplayCutout(
-                proto.insets?.toInsets() ?: Insets.EMPTY,
-                proto.boundLeft?.toRect() ?: Rect.EMPTY,
-                proto.boundTop?.toRect() ?: Rect.EMPTY,
-                proto.boundRight?.toRect() ?: Rect.EMPTY,
-                proto.boundBottom?.toRect() ?: Rect.EMPTY,
-                proto.waterfallInsets?.toInsets() ?: Insets.EMPTY
-            )
-        }
-    }
-
     private fun appTransitionToString(transition: Int): String {
         return when (transition) {
             ViewProtoEnums.TRANSIT_UNSET -> "TRANSIT_UNSET"
@@ -559,8 +535,6 @@ class WindowManagerStateBuilder {
     }
 
     private fun RectProto.toRect() = Rect.from(this.left, this.top, this.right, this.bottom)
-
-    private fun RectProto.toInsets() = Insets.from(this.left, this.top, this.right, this.bottom)
 
     companion object {
         private const val TRANSIT_ACTIVITY_OPEN = "TRANSIT_ACTIVITY_OPEN"

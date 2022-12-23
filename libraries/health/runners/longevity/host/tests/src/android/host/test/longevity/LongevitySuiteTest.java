@@ -20,6 +20,9 @@ import static org.junit.Assert.fail;
 
 import android.host.test.longevity.listener.TimeoutTerminator;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.junit.Test;
 import org.junit.internal.builders.AllDefaultPossibilitiesBuilder;
 import org.junit.runner.RunWith;
@@ -28,9 +31,6 @@ import org.junit.runner.notification.StoppedByUserException;
 import org.junit.runners.JUnit4;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.Suite.SuiteClasses;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Unit tests for the {@link LongevitySuite} runner.

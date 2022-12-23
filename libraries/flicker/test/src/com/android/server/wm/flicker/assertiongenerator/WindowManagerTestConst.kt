@@ -16,7 +16,6 @@
 
 package com.android.server.wm.flicker.assertiongenerator
 
-import com.android.server.wm.traces.common.service.PlatformConsts
 import com.android.server.wm.traces.common.windowmanager.WindowManagerState
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 import com.android.server.wm.traces.common.windowmanager.windows.ConfigurationContainer
@@ -27,8 +26,7 @@ import com.android.server.wm.traces.common.windowmanager.windows.WindowManagerPo
 
 class WindowManagerTestConst {
     companion object {
-        val wmPolicy_ROTATION_0 =
-            WindowManagerPolicy.from(rotation = PlatformConsts.Rotation.ROTATION_0)
+        val wmPolicy_ROTATION_0 = WindowManagerPolicy.from(rotation = 0)
 
         val emptyConfigurationContainer = ConfigurationContainer(null, null, null)
         val emptyWindowContainer =

@@ -24,7 +24,6 @@ import com.android.tradefed.util.CommandResult;
 public class NativePocStatusAsserter {
     private static final int VULNERABLE_EXIT_CODE = 113;
 
-    /** Return a {@link NativePocAsserter} that makes sure PoC did not exit with given code. */
     public static NativePocAsserter assertNotExitCode(final int badExitCode) {
         return new NativePocAsserter() {
             @Override
@@ -37,12 +36,10 @@ public class NativePocStatusAsserter {
         };
     }
 
-    /** Return a {@link NativePocAsserter} that makes sure PoC did not exit with code 113. */
     public static NativePocAsserter assertNotVulnerableExitCode() {
         return assertNotExitCode(VULNERABLE_EXIT_CODE);
     }
 
-    /** Return a {@link NativePocAsserter} that makes sure PoC exited with given code. */
     public static NativePocAsserter assertExitCode(final int exitCode) {
         return new NativePocAsserter() {
             @Override

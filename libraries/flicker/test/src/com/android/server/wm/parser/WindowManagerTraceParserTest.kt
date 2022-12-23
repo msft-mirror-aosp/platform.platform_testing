@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.server.wm.parser.windowmanager
+package com.android.server.wm.parser
 
 import com.android.server.wm.flicker.readAsset
 import com.android.server.wm.traces.common.Cache

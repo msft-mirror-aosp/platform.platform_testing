@@ -26,7 +26,7 @@ import kotlin.js.JsName
  * ```
  * This class is used by flicker and Winscope
  */
-open class Rect
+class Rect
 internal constructor(
     @JsName("left") val left: Int = 0,
     @JsName("top") val top: Int = 0,
@@ -43,7 +43,7 @@ internal constructor(
     @JsName("centerY") fun centerY(): Int = (top + bottom) / 2
     /** Returns true if the rectangle is empty (left >= right or top >= bottom) */
     @JsName("isEmpty")
-    open val isEmpty: Boolean
+    val isEmpty: Boolean
         get() = width <= 0 || height <= 0
 
     @JsName("isNotEmpty")

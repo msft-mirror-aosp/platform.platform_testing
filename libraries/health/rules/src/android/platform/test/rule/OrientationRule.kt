@@ -56,6 +56,15 @@ class OrientationRule : TestRule {
         return orientationRule.apply(base, description)
     }
 
+    private fun <T> Class<T>?.hasAnnotation(annotation: Class<out Annotation>): Boolean =
+        if (this == null) {
+            false
+        } else if (isAnnotationPresent(annotation)) {
+            true
+        } else {
+            superclass.hasAnnotation(annotation)
+        }
+
     @Retention(AnnotationRetention.RUNTIME)
     @Target(AnnotationTarget.ANNOTATION_CLASS, AnnotationTarget.CLASS)
     annotation class Landscape
