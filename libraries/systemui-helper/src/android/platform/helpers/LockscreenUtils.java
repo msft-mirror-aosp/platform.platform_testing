@@ -20,8 +20,8 @@ import static android.content.Context.KEYGUARD_SERVICE;
 import static android.os.SystemClock.sleep;
 import static android.platform.helpers.CommonUtils.executeShellCommand;
 import static android.platform.helpers.Constants.SHORT_WAIT_TIME_IN_SECONDS;
-import static android.platform.helpers.ui.UiAutomatorUtils.getContext;
 import static android.platform.helpers.ui.UiAutomatorUtils.getUiDevice;
+import static android.platform.uiautomator_helpers.DeviceHelpers.getContext;
 import static android.view.KeyEvent.KEYCODE_ENTER;
 
 import static com.google.common.truth.Truth.assertThat;
