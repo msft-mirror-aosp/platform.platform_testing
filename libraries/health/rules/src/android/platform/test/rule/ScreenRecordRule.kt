@@ -21,10 +21,12 @@ import android.os.ParcelFileDescriptor.AutoCloseInputStream
 import android.platform.test.rule.ScreenRecordRule.Companion.SCREEN_RECORDING_TEST_LEVEL_OVERRIDE_KEY
 import android.platform.uiautomator_helpers.DeviceHelpers.shell
 import android.platform.uiautomator_helpers.DeviceHelpers.uiDevice
+import android.platform.uiautomator_helpers.FailedEnsureException
 import android.platform.uiautomator_helpers.WaitUtils.ensureThat
 import android.util.Log
 import androidx.test.InstrumentationRegistry.getInstrumentation
 import androidx.test.platform.app.InstrumentationRegistry
+import java.io.File
 import java.lang.annotation.Retention
 import java.lang.annotation.RetentionPolicy
 import java.nio.file.Files
@@ -95,8 +97,8 @@ class ScreenRecordRule : TestRule {
         if (screenRecordingInProgress()) {
             Log.w(
                 TAG,
-                "Multiple screen recording in progress (pids=\"$screenrecordPids\". " +
-                    "This might cause performance issues"
+                "Multiple screen recording in progress (pids=\"$screenrecordPids\"). " +
+                    "This might cause performance issues."
             )
         }
         // --bugreport adds the timestamp as overlay
@@ -107,8 +109,11 @@ class ScreenRecordRule : TestRule {
         try {
             runnable()
         } finally {
-            ensureThat("Recording output created") { outputFile.exists() }
+            // Doesn't crash if the file doesn't exist, as we want the command output to be logged.
+            outputFile.tryWaitingForFileToExists()
+
             val killOutput = uiDevice.shell("kill -INT $screenRecordPid")
+
             val screenRecordOutput = screenRecordingFileDescriptor.readAllAndClose()
             log(
                 """
@@ -121,7 +126,22 @@ class ScreenRecordRule : TestRule {
                     screenRecordOutput.prependIndent("   ")
             )
         }
-        uiDevice.shell("rm $outputFile")
+
+        if (screenRecordingInProgress()) {
+            Log.w(
+                TAG,
+                "Other screen recordings are in progress after this is done. " +
+                    "(pids=\"$screenrecordPids\")."
+            )
+        }
+    }
+
+    private fun File.tryWaitingForFileToExists() {
+        try {
+            ensureThat("Recording output created") { exists() }
+        } catch (e: FailedEnsureException) {
+            Log.e(TAG, "Recording not created successfully.", e)
+        }
     }
 
     private fun screenRecordingInProgress() = screenrecordPids.isNotEmpty()

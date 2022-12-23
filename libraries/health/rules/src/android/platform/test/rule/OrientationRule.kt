@@ -40,27 +40,51 @@ class OrientationRule : TestRule {
 
         val hasLandscapeAnnotation = testClass.hasAnnotation(Landscape::class.java)
         val hasPortraitAnnotation = testClass.hasAnnotation(Portrait::class.java)
-        if (hasLandscapeAnnotation && hasPortraitAnnotation) {
-            throw IllegalStateException(
-                "Both @Portrait and @Landscape annotations at the same time are not yet supported."
-            )
-        }
 
         val orientationRule =
-            if (hasLandscapeAnnotation) {
-                LandscapeOrientationRule()
-            } else if (hasPortraitAnnotation) {
-                PortraitOrientationRule()
-            } else NaturalOrientationRule()
+            when {
+                hasLandscapeAnnotation && hasPortraitAnnotation ->
+                    error("Both @Portrait and @Landscape annotations are not yet supported.")
+                hasLandscapeAnnotation -> LandscapeOrientationRule()
+                hasPortraitAnnotation -> PortraitOrientationRule()
+                else -> NaturalOrientationRule()
+            }
 
-        return orientationRule.apply(base, description)
+        // If the filter is not provided, we apply the orientation rule to everything.
+        val deviceTypeFilter = testClass.getDeviceTypeFilter()
+
+        return if (
+            deviceTypeFilter.isNullOrEmpty() || deviceTypeFilter.any { matcher -> matcher.match() }
+        ) {
+            orientationRule.apply(base, description)
+        } else {
+            // By default, natural orientation.
+            NaturalOrientationRule().apply(base, description)
+        }
     }
 
-    @Retention(AnnotationRetention.RUNTIME)
-    @Target(AnnotationTarget.ANNOTATION_CLASS, AnnotationTarget.CLASS)
-    annotation class Landscape
+    private fun <T> Class<T>?.getDeviceTypeFilter(): Array<DeviceTypeFilter>? =
+        this?.getAnnotation(Landscape::class.java)?.deviceType
+            ?: this?.getAnnotation(Portrait::class.java)?.deviceType
 
+    /**
+     * The orientation is applied only if the device type is within one of those in [deviceType].
+     */
     @Retention(AnnotationRetention.RUNTIME)
     @Target(AnnotationTarget.ANNOTATION_CLASS, AnnotationTarget.CLASS)
-    annotation class Portrait
+    annotation class Landscape(val deviceType: Array<DeviceTypeFilter> = [])
+
+    /**
+     * The orientation is applied only if the device type is within one of those in [deviceType].
+     */
+    @Retention(AnnotationRetention.RUNTIME)
+    @Target(AnnotationTarget.ANNOTATION_CLASS, AnnotationTarget.CLASS)
+    annotation class Portrait(val deviceType: Array<DeviceTypeFilter> = [])
+}
+
+enum class DeviceTypeFilter(val match: () -> Boolean) {
+    TABLET({ isTablet() }),
+    FOLDABLE({ isFoldable() }),
+    LARGE_SCREEN({ isLargeScreen() }),
+    SMALL_SCREEN({ !isLargeScreen() })
 }

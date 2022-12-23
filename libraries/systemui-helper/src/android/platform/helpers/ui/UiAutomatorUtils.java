@@ -17,7 +17,6 @@
 package android.platform.helpers.ui;
 
 import android.app.Instrumentation;
-import android.content.Context;
 import android.support.test.uiautomator.UiDevice;
 import android.util.Log;
 
@@ -43,15 +42,6 @@ public class UiAutomatorUtils {
      */
     public static UiDevice getUiDevice() {
         return UiDevice.getInstance(getInstrumentation());
-    }
-
-    /**
-     * Gets application context.
-     *
-     * @return an instance of Context
-     */
-    public static Context getContext() {
-        return getInstrumentation().getTargetContext();
     }
 
     /**
