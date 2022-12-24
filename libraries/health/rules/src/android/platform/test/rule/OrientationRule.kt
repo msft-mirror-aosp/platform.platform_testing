@@ -15,8 +15,12 @@
  */
 package android.platform.test.rule
 
+import android.platform.test.rule.DeviceTypeFilter.ANY
 import android.platform.test.rule.OrientationRule.Landscape
 import android.platform.test.rule.OrientationRule.Portrait
+import kotlin.annotation.AnnotationRetention.RUNTIME
+import kotlin.annotation.AnnotationTarget.ANNOTATION_CLASS
+import kotlin.annotation.AnnotationTarget.CLASS
 import org.junit.rules.TestRule
 import org.junit.runner.Description
 import org.junit.runners.model.Statement
@@ -36,55 +40,46 @@ import org.junit.runners.model.Statement
 class OrientationRule : TestRule {
 
     override fun apply(base: Statement, description: Description): Statement {
-        val testClass = description.testClass
-
-        val hasLandscapeAnnotation = testClass.hasAnnotation(Landscape::class.java)
-        val hasPortraitAnnotation = testClass.hasAnnotation(Portrait::class.java)
+        val shouldSetLandscape = description.shouldSetLandscape()
+        val shouldSetPortrait = description.shouldSetPortrait()
 
         val orientationRule =
             when {
-                hasLandscapeAnnotation && hasPortraitAnnotation ->
-                    error("Both @Portrait and @Landscape annotations are not yet supported.")
-                hasLandscapeAnnotation -> LandscapeOrientationRule()
-                hasPortraitAnnotation -> PortraitOrientationRule()
+                shouldSetPortrait && shouldSetLandscape ->
+                    error("Can't set to both portrait and landscape. Double check test annotation.")
+                shouldSetLandscape -> LandscapeOrientationRule()
+                shouldSetPortrait -> PortraitOrientationRule()
                 else -> NaturalOrientationRule()
             }
 
-        // If the filter is not provided, we apply the orientation rule to everything.
-        val deviceTypeFilter = testClass.getDeviceTypeFilter()
-
-        return if (
-            deviceTypeFilter.isNullOrEmpty() || deviceTypeFilter.any { matcher -> matcher.match() }
-        ) {
-            orientationRule.apply(base, description)
-        } else {
-            // By default, natural orientation.
-            NaturalOrientationRule().apply(base, description)
-        }
+        return orientationRule.apply(base, description)
     }
 
-    private fun <T> Class<T>?.getDeviceTypeFilter(): Array<DeviceTypeFilter>? =
-        this?.getAnnotation(Landscape::class.java)?.deviceType
-            ?: this?.getAnnotation(Portrait::class.java)?.deviceType
+    private fun Description.shouldSetLandscape(): Boolean =
+        getAnnotation(Landscape::class.java)?.deviceType?.any { it.match() } ?: false
+
+    private fun Description.shouldSetPortrait(): Boolean =
+        getAnnotation(Portrait::class.java)?.deviceType?.any { it.match() } ?: false
 
     /**
      * The orientation is applied only if the device type is within one of those in [deviceType].
      */
-    @Retention(AnnotationRetention.RUNTIME)
-    @Target(AnnotationTarget.ANNOTATION_CLASS, AnnotationTarget.CLASS)
-    annotation class Landscape(val deviceType: Array<DeviceTypeFilter> = [])
+    @Retention(RUNTIME)
+    @Target(ANNOTATION_CLASS, CLASS)
+    annotation class Landscape(val deviceType: Array<DeviceTypeFilter> = [ANY])
 
     /**
      * The orientation is applied only if the device type is within one of those in [deviceType].
      */
-    @Retention(AnnotationRetention.RUNTIME)
-    @Target(AnnotationTarget.ANNOTATION_CLASS, AnnotationTarget.CLASS)
-    annotation class Portrait(val deviceType: Array<DeviceTypeFilter> = [])
+    @Retention(RUNTIME)
+    @Target(ANNOTATION_CLASS, CLASS)
+    annotation class Portrait(val deviceType: Array<DeviceTypeFilter> = [ANY])
 }
 
 enum class DeviceTypeFilter(val match: () -> Boolean) {
     TABLET({ isTablet() }),
     FOLDABLE({ isFoldable() }),
     LARGE_SCREEN({ isLargeScreen() }),
-    SMALL_SCREEN({ !isLargeScreen() })
+    SMALL_SCREEN({ !isLargeScreen() }),
+    ANY({ true })
 }
