@@ -14,24 +14,17 @@
  * limitations under the License.
  */
 
-package com.android.server.wm.parser
+package com.android.server.wm.traces.common.windowmanager.windows
 
-import com.android.server.wm.flicker.readAsset
-import com.android.server.wm.traces.common.Cache
-import com.android.server.wm.traces.parser.windowmanager.WindowManagerDumpParser
-import com.google.common.truth.Truth
-import org.junit.Before
-import org.junit.Test
+import com.android.server.wm.traces.common.Insets
+import com.android.server.wm.traces.common.Rect
 
-class WindowManagerDumpParser {
-    @Before
-    fun before() {
-        Cache.clear()
-    }
-
-    @Test
-    fun canParseFromDump() {
-        val trace = WindowManagerDumpParser().parse(readAsset("wm_trace_dump.pb"))
-        Truth.assertWithMessage("Unable to parse dump").that(trace).hasSize(1)
-    }
-}
+/** Representation of a display cutout from a WM trace */
+data class DisplayCutout(
+    val insets: Insets,
+    val boundLeft: Rect,
+    val boundTop: Rect,
+    val boundRight: Rect,
+    val boundBottom: Rect,
+    val waterfallInsets: Insets
+)

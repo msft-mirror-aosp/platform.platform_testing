@@ -21,7 +21,10 @@ import com.android.server.wm.flicker.assertions.AssertionDataFactory
 import com.android.server.wm.flicker.assertions.AssertionStateDataFactory
 import com.android.server.wm.flicker.assertions.BaseAssertionRunner
 import com.android.server.wm.flicker.assertions.FlickerSubject
+import com.android.server.wm.flicker.assertions.SubjectsParser
 import com.android.server.wm.flicker.datastore.CachedAssertionRunner
+import com.android.server.wm.flicker.datastore.CachedResultReader
+import com.android.server.wm.flicker.io.IReader
 import com.android.server.wm.flicker.traces.FlickerTraceSubject
 import com.android.server.wm.flicker.traces.eventlog.EventLogSubject
 import com.android.server.wm.flicker.traces.layers.LayerTraceEntrySubject
@@ -30,12 +33,21 @@ import com.android.server.wm.flicker.traces.region.RegionTraceSubject
 import com.android.server.wm.flicker.traces.windowmanager.WindowManagerStateSubject
 import com.android.server.wm.flicker.traces.windowmanager.WindowManagerTraceSubject
 import com.android.server.wm.traces.common.IComponentMatcher
+import com.android.server.wm.traces.common.IScenario
 import com.android.server.wm.traces.parser.withPerfettoTrace
 
 /** Specification of a flicker test for JUnit ParameterizedRunner class */
 data class FlickerTest(
     private val scenarioBuilder: ScenarioBuilder = ScenarioBuilder(),
-    private val runnerProvider: (Scenario) -> BaseAssertionRunner = { CachedAssertionRunner(it) }
+    private val resultReaderProvider: (IScenario) -> CachedResultReader = {
+        CachedResultReader(it, DEFAULT_TRACE_CONFIG)
+    },
+    private val subjectsParserProvider: (IReader) -> SubjectsParser = { SubjectsParser(it) },
+    private val runnerProvider: (Scenario) -> BaseAssertionRunner = {
+        val reader = resultReaderProvider(it)
+        val subjectsParser = subjectsParserProvider(reader)
+        CachedAssertionRunner(it, reader, subjectsParser)
+    }
 ) {
     private val wmAssertionFactory =
         AssertionDataFactory(WindowManagerStateSubject::class, WindowManagerTraceSubject::class)
@@ -54,6 +66,10 @@ data class FlickerTest(
     }
 
     fun <T> getConfigValue(key: String) = scenario.getConfigValue<T>(key)
+
+    /** Obtains a reader for the flicker result artifact */
+    val reader: IReader
+        get() = resultReaderProvider(scenario)
 
     /**
      * Execute [assertion] on the initial state of a WM trace (before transition)

@@ -18,6 +18,7 @@ package com.android.server.wm.traces.common.windowmanager.windows
 
 import com.android.server.wm.traces.common.IComponentMatcher
 import com.android.server.wm.traces.common.Rect
+import com.android.server.wm.traces.common.service.PlatformConsts
 import kotlin.js.JsName
 import kotlin.math.min
 
@@ -43,8 +44,9 @@ class DisplayContent(
     @JsName("focusedApp") val focusedApp: String,
     @JsName("lastTransition") val lastTransition: String,
     @JsName("appTransitionState") val appTransitionState: String,
-    @JsName("rotation") val rotation: Int,
+    @JsName("rotation") val rotation: PlatformConsts.Rotation,
     @JsName("lastOrientation") val lastOrientation: Int,
+    @JsName("cutout") val cutout: DisplayCutout?,
     windowContainer: WindowContainer
 ) : WindowContainer(windowContainer) {
     override val name: String = id.toString()
@@ -135,6 +137,7 @@ class DisplayContent(
         if (appTransitionState != other.appTransitionState) return false
         if (rotation != other.rotation) return false
         if (lastOrientation != other.lastOrientation) return false
+        if (cutout != other.cutout) return false
         if (name != other.name) return false
         if (singleTaskInstance != other.singleTaskInstance) return false
         if (surfaceSize != other.surfaceSize) return false
@@ -159,8 +162,9 @@ class DisplayContent(
         result = 31 * result + focusedApp.hashCode()
         result = 31 * result + lastTransition.hashCode()
         result = 31 * result + appTransitionState.hashCode()
-        result = 31 * result + rotation
+        result = 31 * result + rotation.value
         result = 31 * result + lastOrientation
+        result = 31 * result + cutout.hashCode()
         result = 31 * result + name.hashCode()
         result = 31 * result + isVisible.hashCode()
         return result

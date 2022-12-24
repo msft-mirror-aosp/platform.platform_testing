@@ -16,8 +16,11 @@
 
 package com.android.server.wm.parser.windowmanager
 
+import androidx.test.platform.app.InstrumentationRegistry
 import com.android.server.wm.flicker.readAsset
 import com.android.server.wm.traces.common.Cache
+import com.android.server.wm.traces.parser.FLAG_STATE_DUMP_FLAG_WM
+import com.android.server.wm.traces.parser.getCurrentState
 import com.android.server.wm.traces.parser.windowmanager.WindowManagerDumpParser
 import com.google.common.truth.Truth
 import org.junit.Before
@@ -31,8 +34,19 @@ class WindowManagerDumpParserTest {
     }
 
     @Test
-    fun canParseFromDump() {
+    fun canParseFromStoredDump() {
         val trace = WindowManagerDumpParser().parse(readAsset("wm_trace_dump.pb"))
+        Truth.assertWithMessage("Unable to parse dump").that(trace).hasSize(1)
+    }
+
+    @Test
+    fun canParseFromNewDump() {
+        val data =
+            getCurrentState(
+                InstrumentationRegistry.getInstrumentation().uiAutomation,
+                FLAG_STATE_DUMP_FLAG_WM
+            )
+        val trace = WindowManagerDumpParser().parse(data.first)
         Truth.assertWithMessage("Unable to parse dump").that(trace).hasSize(1)
     }
 }

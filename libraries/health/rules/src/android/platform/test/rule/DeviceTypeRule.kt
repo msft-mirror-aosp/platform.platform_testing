@@ -70,7 +70,7 @@ class DeviceTypeRule : TestRule {
     }
 }
 
-private fun isFoldable(): Boolean {
+internal fun isFoldable(): Boolean {
     return getInstrumentation()
         .targetContext
         .resources
@@ -78,12 +78,12 @@ private fun isFoldable(): Boolean {
         .isNotEmpty()
 }
 
-private fun isLargeScreen(): Boolean {
+internal fun isLargeScreen(): Boolean {
     val sizeDp = getUiDevice().displaySizeDp
     return sizeDp.x >= LARGE_SCREEN_DP_THRESHOLD && sizeDp.y >= LARGE_SCREEN_DP_THRESHOLD
 }
 
-private fun isTablet(): Boolean {
+internal fun isTablet(): Boolean {
     return (isLargeScreen() && !isFoldable())
 }
 

@@ -16,6 +16,9 @@
 
 package com.android.server.wm.parser.windowmanager
 
+import androidx.test.platform.app.InstrumentationRegistry
+import androidx.test.uiautomator.UiDevice
+import com.android.server.wm.flicker.monitor.WindowManagerTraceMonitor
 import com.android.server.wm.flicker.readAsset
 import com.android.server.wm.traces.common.Cache
 import com.android.server.wm.traces.parser.windowmanager.WindowManagerTraceParser
@@ -31,7 +34,7 @@ class WindowManagerTraceParserTest {
     }
 
     @Test
-    fun canParseAllEntries() {
+    fun canParseAllEntriesFromStoredTrace() {
         val trace =
             WindowManagerTraceParser()
                 .parse(readAsset("wm_trace_openchrome.pb"), clearCache = false)
@@ -41,5 +44,17 @@ class WindowManagerTraceParserTest {
         Truth.assertThat(firstEntry.visibleWindows.size).isEqualTo(5)
         Truth.assertThat(trace.entries[trace.entries.size - 1].timestamp.elapsedNanos)
             .isEqualTo(9216093628925L)
+    }
+
+    @Test
+    fun canParseAllEntriesFromNewTrace() {
+        val device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
+        val data =
+            WindowManagerTraceMonitor().withTracing {
+                device.pressHome()
+                device.pressRecentApps()
+            }
+        val trace = WindowManagerTraceParser().parse(data, clearCache = false)
+        Truth.assertThat(trace.entries).asList().isNotEmpty()
     }
 }

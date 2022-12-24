@@ -88,7 +88,7 @@ object WaitUtils {
                     }
                 }
                 log("[#$i] Condition has always been false. Failing.")
-                error(errorProvider())
+                throw FailedEnsureException(errorProvider())
             }
         }
     }
@@ -213,3 +213,6 @@ object WaitUtils {
         }
     }
 }
+
+/** Exception thrown when [WaitUtils.ensureThat] fails. */
+class FailedEnsureException(message: String? = null) : IllegalStateException(message)

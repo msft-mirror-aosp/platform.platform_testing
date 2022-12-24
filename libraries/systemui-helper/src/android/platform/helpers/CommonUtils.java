@@ -16,11 +16,10 @@
 
 package android.platform.helpers;
 
-import static android.platform.helpers.ui.UiAutomatorUtils.getContext;
 import static android.platform.helpers.ui.UiAutomatorUtils.getInstrumentation;
 import static android.platform.helpers.ui.UiAutomatorUtils.getUiDevice;
 import static android.platform.helpers.ui.UiSearch.search;
-import static android.platform.uiautomator_helpers.WaitUtils.ensureThat;
+import static android.platform.uiautomator_helpers.DeviceHelpers.getContext;
 
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
@@ -37,15 +36,12 @@ import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
-import android.os.SystemClock;
-import android.platform.helpers.LockscreenUtils.LockscreenType;
 import android.platform.helpers.features.common.HomeLockscreenPage;
 import android.platform.helpers.ui.UiSearch2;
 import android.platform.test.util.HealthTestingUtils;
 import android.support.test.uiautomator.BySelector;
 import android.support.test.uiautomator.UiObject;
 import android.support.test.uiautomator.UiObjectNotFoundException;
-import android.support.test.uiautomator.Until;
 import android.util.Log;
 
 import androidx.test.platform.app.InstrumentationRegistry;
@@ -69,7 +65,6 @@ public class CommonUtils {
     private static final int SWIPE_STEPS = 100;
     private static final int DEFAULT_MARGIN = 5;
     private static final String LIST_ALL_USERS_COMMAND = "cmd user list -v --all";
-    private static final int REBOOT_WAIT_MILLIS = 5000;
 
     private CommonUtils() {
     }
@@ -134,53 +129,19 @@ public class CommonUtils {
     /**
      * Restart System UI by running {@code am crash com.android.systemui}.
      *
-     * This is sometimes necessary after changing flags, configs, or settings ensure that
-     * systemui is properly initialized with the new changes. This method will wait until the
-     * home screen is visible, then it will optionally dismiss the home screen via swipe.
+     * <p>This is sometimes necessary after changing flags, configs, or settings ensure that
+     * systemui is properly initialized with the new changes. This method will wait until the home
+     * screen is visible, then it will optionally dismiss the home screen via swipe.
      *
-     * @param swipeUp whether to call {@link HomeLockscreenPage#swipeUp()} after restarting
-     *                System UI
+     * @param swipeUp whether to call {@link HomeLockscreenPage#swipeUp()} after restarting System
+     *     UI
+     * @deprecated Use {@link SysuiRestarter} instead. It has been moved out from here to use
+     *     androidx uiautomator version (this class depends on the old version, and there are many
+     *     deps that don't allow to easily switch to the new androidx one)
      */
+    @Deprecated
     public static void restartSystemUI(boolean swipeUp) {
-        final String[] initialPids = getSystemUiPids();
-        // This method assumes the screen is on.
-        assertScreenOn("restartSystemUI needs the screen to be on.");
-        // make sure the lock screen is enable.
-        LockscreenUtils.setLockscreen(LockscreenType.SWIPE, /* lockscreenCode= */
-                null, /* expectedResult= */false);
-        Log.d(TAG, "restartSystemUI: Old PIDs=" + Arrays.toString(initialPids));
-        for (String pid : initialPids) {
-            final String command = "kill " + pid;
-            String crashResult = executeShellCommand(command);
-            Log.d(TAG, "restartSystemUI: result of \"" + command + "\": " + "\""
-                    + crashResult + "\"");
-        }
-        final List<String> initialPidsList = Arrays.asList(initialPids);
-        // Wait for SysUI restart after requesting a crash.
-        for (int i = 0; i < 100; ++i) {
-            if (allSysUiProcessesRestarted(initialPidsList)) break;
-            if (i == 99) {
-                throw new AssertionError("Not all SysUI processes restarted.");
-            }
-            SystemClock.sleep(100);
-        }
-
-        HomeLockscreenPage page = new HomeLockscreenPage();
-        ensureThat(
-                "Screen lock appears",
-                () -> {
-                    try {
-                        return getUiDevice()
-                                .wait(
-                                        Until.hasObject(page.getPageTitleSelector()),
-                                        REBOOT_WAIT_MILLIS);
-                    } catch (Throwable t) {
-                        return false;
-                    }
-                });
-        if (swipeUp) {
-            page.swipeUp();
-        }
+        SysuiRestarter.restartSystemUI(swipeUp);
     }
 
     /** Asserts that the screen is on. */
