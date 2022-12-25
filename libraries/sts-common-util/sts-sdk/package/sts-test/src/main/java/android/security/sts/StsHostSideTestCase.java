@@ -20,7 +20,7 @@ import static com.android.sts.common.CommandUtil.runAndCheck;
 
 import com.android.sts.common.NativePoc;
 import com.android.sts.common.NativePocStatusAsserter;
-import com.android.sts.common.tradefed.testtype.StsExtraBusinessLogicHostTestBase;
+import com.android.sts.common.tradefed.testtype.NonRootSecurityTestCase;
 import com.android.tradefed.device.ITestDevice;
 import com.android.tradefed.testtype.DeviceJUnit4ClassRunner;
 
@@ -28,7 +28,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(DeviceJUnit4ClassRunner.class)
-public class StsHostSideTestCase extends StsExtraBusinessLogicHostTestBase {
+public class StsHostSideTestCase extends NonRootSecurityTestCase {
 
     static final String TEST_APP = "sts_test_app_package.apk";
     static final String TEST_PKG = "android.security.sts.sts_test_app_package";
