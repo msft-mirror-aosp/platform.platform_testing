@@ -6,14 +6,15 @@ import android.content.Context
 import android.graphics.PointF
 import android.os.Bundle
 import android.platform.uiautomator_helpers.TracingUtils.trace
+import android.platform.uiautomator_helpers.WaitUtils.ensureThat
+import android.platform.uiautomator_helpers.WaitUtils.waitFor
+import android.platform.uiautomator_helpers.WaitUtils.waitForNullable
 import android.platform.uiautomator_helpers.WaitUtils.waitForValueToSettle
 import android.util.Log
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.BySelector
 import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.UiObject2
-import androidx.test.uiautomator.Until
-import com.google.common.truth.Truth.assertWithMessage
 import java.io.IOException
 import java.time.Duration
 
@@ -59,7 +60,7 @@ object DeviceHelpers {
         selector: BySelector,
         timeout: Duration = SHORT_WAIT,
         errorProvider: () -> String = { "Object $selector not found" },
-    ): UiObject2 = waitForNullableObj(selector, timeout) ?: error(errorProvider())
+    ): UiObject2 = waitFor("$selector object", timeout, errorProvider) { findObject(selector) }
 
     /**
      * Waits for an object to be visible and returns it.
@@ -70,10 +71,7 @@ object DeviceHelpers {
         selector: BySelector,
         timeout: Duration = LONG_WAIT,
         errorProvider: () -> String = { "Object $selector not found" },
-    ): UiObject2 =
-        trace("Waiting for $this.$selector") {
-            wait(Until.findObject(selector), timeout.toMillis()) ?: error(errorProvider())
-        }
+    ): UiObject2 = waitFor("$selector object", timeout, errorProvider) { findObject(selector) }
 
     /**
      * Waits for an object to be visible and returns it. Returns `null` if the object is not found.
@@ -81,8 +79,7 @@ object DeviceHelpers {
     fun UiDevice.waitForNullableObj(
         selector: BySelector,
         timeout: Duration = SHORT_WAIT,
-    ): UiObject2? =
-        trace("Waiting for $selector") { wait(Until.findObject(selector), timeout.toMillis()) }
+    ): UiObject2? = waitForNullable("nullable $selector objects", timeout) { findObject(selector) }
 
     /**
      * Waits for objects matched by [selector] to be visible and returns them. Returns `null` if no
@@ -91,10 +88,7 @@ object DeviceHelpers {
     fun UiDevice.waitForNullableObjects(
         selector: BySelector,
         timeout: Duration = SHORT_WAIT,
-    ): List<UiObject2>? =
-        trace("Waiting for $selector objects") {
-            wait(Until.findObjects(selector), timeout.toMillis())
-        }
+    ): List<UiObject2>? = waitForNullable("$selector objects", timeout) { findObjects(selector) }
 
     /**
      * Asserts visibility of a [selector], waiting for [timeout] until visibility matches the
@@ -108,37 +102,13 @@ object DeviceHelpers {
         selector: BySelector,
         visible: Boolean = true,
         timeout: Duration = LONG_WAIT,
-        container: UiObject2? = null,
         customMessageProvider: (() -> String)? = null,
     ) {
-        trace("Asserting $selector is ${visible.asVisibilityBoolean()}") {
-            val expectedVisibilityCondition =
-                if (visible) {
-                    Until.hasObject(selector)
-                } else {
-                    Until.gone(selector)
-                }
-            val assertWithMessage =
-                if (customMessageProvider != null) {
-                    assertWithMessage(customMessageProvider())
-                } else {
-                    assertWithMessage(
-                        "Visibility of %s didn't become %s within %s",
-                        selector,
-                        visible,
-                        timeout.toMillis()
-                    )
-                }
-            if (container != null) {
-                assertWithMessage
-                    .that(container.wait(expectedVisibilityCondition, timeout.toMillis()))
-                    .isTrue()
-            } else {
-                assertWithMessage
-                    .that(wait(expectedVisibilityCondition, timeout.toMillis()))
-                    .isTrue()
-            }
-        }
+        ensureThat(
+            "$selector is ${visible.asVisibilityBoolean()}",
+            timeout,
+            customMessageProvider
+        ) { hasObject(selector) == visible }
     }
 
     private fun Boolean.asVisibilityBoolean(): String =
@@ -156,14 +126,13 @@ object DeviceHelpers {
         visible: Boolean,
         timeout: Duration = LONG_WAIT,
         customMessageProvider: (() -> String)? = null,
-    ) =
-        uiDevice.assertVisibility(
-            selector,
-            visible,
+    ) {
+        ensureThat(
+            "$selector is ${visible.asVisibilityBoolean()} inside $this",
             timeout,
-            container = this,
             customMessageProvider
-        )
+        ) { hasObject(selector) == visible }
+    }
 
     /** Asserts that a this selector is visible. Throws otherwise. */
     fun BySelector.assertVisible(timeout: Duration = LONG_WAIT): Unit =
