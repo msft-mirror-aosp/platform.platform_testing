@@ -99,7 +99,7 @@ public class HealthTestingUtils {
                 errorMessage,
                 () -> {
                     try {
-                        return Optional.of(resultProducer.get());
+                        return Optional.ofNullable(resultProducer.get());
                     } catch (StaleObjectException e) {
                         return Optional.empty();
                     }

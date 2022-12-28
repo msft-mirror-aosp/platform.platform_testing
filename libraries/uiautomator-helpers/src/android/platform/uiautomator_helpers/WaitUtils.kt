@@ -52,9 +52,8 @@ object WaitUtils {
     fun ensureThat(
         description: String? = null,
         timeout: Duration = DEFAULT_DEADLINE,
-        errorProvider: () -> String = {
-            "Error ensuring that \"$description\" within ${timeout.toMillis()}ms"
-        },
+        errorProvider: (() -> String)? = null,
+        ignoreFailure: Boolean = false,
         condition: () -> Boolean,
     ) {
         val traceName =
@@ -63,7 +62,9 @@ object WaitUtils {
             } else {
                 "ensure"
             }
-
+        val errorProvider =
+            errorProvider
+                ?: { "Error ensuring that \"$description\" within ${timeout.toMillis()}ms" }
         trace(traceName) {
             val startTime = uptimeMillis()
             val timeoutMs = timeout.toMillis()
@@ -88,7 +89,11 @@ object WaitUtils {
                     }
                 }
                 log("[#$i] Condition has always been false. Failing.")
-                throw FailedEnsureException(errorProvider())
+                if (ignoreFailure) {
+                    Log.w(TAG, "Ignoring ensureThat failure: ${errorProvider()}")
+                } else {
+                    throw FailedEnsureException(errorProvider())
+                }
             }
         }
     }
@@ -182,6 +187,40 @@ object WaitUtils {
                 "value for \"$description\" within ${timeout.toMillis()}."
         }
     }
+
+    /**
+     * Waits for [supplier] to return a non-null value within [timeout].
+     *
+     * Returns null after the timeout finished.
+     */
+    fun <T> waitForNullable(
+        description: String,
+        timeout: Duration = DEFAULT_DEADLINE,
+        supplier: () -> T?
+    ): T? {
+        var result: T? = null
+
+        ensureThat("Waiting for \"$description\"", timeout, ignoreFailure = true) {
+            result = supplier()
+            result != null
+        }
+        return result
+    }
+
+    /**
+     * Waits for [supplier] to return a non-null value within [timeout].
+     *
+     * Throws an exception with [errorProvider] provided message if [supplier] failed to produce a
+     * non-null value within [timeout].
+     */
+    fun <T> waitFor(
+        description: String,
+        timeout: Duration = DEFAULT_DEADLINE,
+        errorProvider: () -> String = {
+            "Didn't get a non-null value for \"$description\" within ${timeout.toMillis()}ms"
+        },
+        supplier: () -> T?
+    ): T = waitForNullable(description, timeout, supplier) ?: error(errorProvider())
 
     /** Generic logging interface. */
     private interface Logger {

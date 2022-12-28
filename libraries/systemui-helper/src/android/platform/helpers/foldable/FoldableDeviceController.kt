@@ -18,6 +18,7 @@ package android.platform.helpers.foldable
 import android.hardware.Sensor
 import android.hardware.devicestate.DeviceStateManager
 import android.hardware.devicestate.DeviceStateRequest
+import android.platform.test.rule.isLargeScreen
 import android.platform.uiautomator_helpers.DeviceHelpers.isScreenOnSettled
 import android.platform.uiautomator_helpers.DeviceHelpers.printInstrumentationStatus
 import android.platform.uiautomator_helpers.DeviceHelpers.uiDevice
@@ -68,15 +69,15 @@ internal class FoldableDeviceController {
         // This might cause the screen to turn off if the default state is folded.
         if (!uiDevice.isScreenOnSettled) {
             uiDevice.wakeUp()
-            ensureThat("screen is on") { uiDevice.isScreenOn }
+            ensureThat("screen is on after cancelling base state override.") { uiDevice.isScreenOn }
         }
     }
 
     /** Fetches folded and unfolded state identifier from the device. */
     fun init() {
         findFoldedUnfoldedStates()
-        /* There is no way to know the initial device state, so it is set to unfolded. */
-        setDeviceState(unfoldedState)
+        currentState = if (isLargeScreen()) unfoldedState else foldedState
+        Log.d(TAG, "Initial state. Folded=$isFolded")
         hingeAngleSensor.init()
     }
 
@@ -114,13 +115,23 @@ internal class FoldableDeviceController {
         deviceStateLatch = CountDownLatch(1)
         val request = DeviceStateRequest.newBuilder(state).build()
         pendingRequest = request
+        Log.d(TAG, "Requesting base state override to ${state.desc()}")
         deviceStateManager.requestBaseStateOverride(
             request,
             context.mainExecutor,
             deviceStateRequestCallback
         )
         deviceStateLatch.await { "Device state didn't change within the timeout" }
+        ensureStateSet(state)
         Log.d(TAG, "Device state set to ${state.desc()}")
+    }
+
+    private fun ensureStateSet(state: Int) {
+        when (state) {
+            foldedState -> ensureThat("Device folded") { !isLargeScreen() }
+            unfoldedState -> ensureThat("Device unfolded") { isLargeScreen() }
+            else -> TODO("Implement a way to know if states other than un/folded are set.")
+        }
     }
 
     private fun Int.desc() =
@@ -137,6 +148,7 @@ internal class FoldableDeviceController {
     private val deviceStateRequestCallback =
         object : DeviceStateRequest.Callback {
             override fun onRequestActivated(request: DeviceStateRequest) {
+                Log.d(TAG, "Request activated: ${request.state.desc()}")
                 if (request == pendingRequest) {
                     deviceStateLatch.countDown()
                 }
@@ -144,12 +156,14 @@ internal class FoldableDeviceController {
             }
 
             override fun onRequestCanceled(request: DeviceStateRequest) {
+                Log.d(TAG, "Request cancelled: ${request.state.desc()}")
                 if (currentState == request.state) {
                     currentState = null
                 }
             }
 
             override fun onRequestSuspended(request: DeviceStateRequest) {
+                Log.d(TAG, "Request suspended: ${request.state.desc()}")
                 if (currentState == request.state) {
                     currentState = null
                 }
