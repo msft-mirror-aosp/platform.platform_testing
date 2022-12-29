@@ -22,6 +22,7 @@ import android.platform.uiautomator_helpers.WaitUtils.LoggerImpl.Companion.withE
 import android.util.Log
 import java.io.Closeable
 import java.time.Duration
+import java.time.Instant.now
 
 /**
  * Collection of utilities to ensure a certain conditions is met.
@@ -52,9 +53,8 @@ object WaitUtils {
     fun ensureThat(
         description: String? = null,
         timeout: Duration = DEFAULT_DEADLINE,
-        errorProvider: () -> String = {
-            "Error ensuring that \"$description\" within ${timeout.toMillis()}ms"
-        },
+        errorProvider: (() -> String)? = null,
+        ignoreFailure: Boolean = false,
         condition: () -> Boolean,
     ) {
         val traceName =
@@ -63,7 +63,9 @@ object WaitUtils {
             } else {
                 "ensure"
             }
-
+        val errorProvider =
+            errorProvider
+                ?: { "Error ensuring that \"$description\" within ${timeout.toMillis()}ms" }
         trace(traceName) {
             val startTime = uptimeMillis()
             val timeoutMs = timeout.toMillis()
@@ -88,13 +90,40 @@ object WaitUtils {
                     }
                 }
                 log("[#$i] Condition has always been false. Failing.")
-                throw FailedEnsureException(errorProvider())
+                if (ignoreFailure) {
+                    Log.w(TAG, "Ignoring ensureThat failure: ${errorProvider()}")
+                } else {
+                    throw FailedEnsureException(errorProvider())
+                }
             }
         }
     }
 
     /**
-     * Waits for [supplier] to return the same (not-null) value for at least [minimumSettleTime].
+     * Same as [waitForNullableValueToSettle], but assumes that [supplier] return value is non-null.
+     */
+    @JvmStatic
+    @JvmOverloads
+    fun <T> waitForValueToSettle(
+        description: String? = null,
+        minimumSettleTime: Duration = DEFAULT_SETTLE_TIME,
+        timeout: Duration = DEFAULT_DEADLINE,
+        errorProvider: () -> String =
+            defaultWaitForSettleError(minimumSettleTime, description, timeout),
+        supplier: () -> T,
+    ): T {
+        return waitForNullableValueToSettle(
+            description,
+            minimumSettleTime,
+            timeout,
+            errorProvider,
+            supplier
+        )
+            ?: error(errorProvider())
+    }
+
+    /**
+     * Waits for [supplier] to return the same value for at least [minimumSettleTime].
      *
      * If the value changes, the timer gets restarted. Fails when reaching [timeoutMs]. The minimum
      * running time of this method is [minimumSettleTime], in case the value is stable since the
@@ -109,62 +138,66 @@ object WaitUtils {
      * val screenOn = waitForValueToSettle("Screen on") { uiDevice.isScreenOn }
      * ```
      *
+     * Note: Prefer using [waitForValueToSettle] when [supplier] doesn't return a null value.
+     *
      * @return the settled value. Throws if it doesn't settle.
      */
     @JvmStatic
     @JvmOverloads
-    fun <T> waitForValueToSettle(
+    fun <T> waitForNullableValueToSettle(
         description: String? = null,
         minimumSettleTime: Duration = DEFAULT_SETTLE_TIME,
         timeout: Duration = DEFAULT_DEADLINE,
         errorProvider: () -> String =
             defaultWaitForSettleError(minimumSettleTime, description, timeout),
-        supplier: () -> T,
-    ): T {
-        val traceName: String =
+        supplier: () -> T?,
+    ): T? {
+        val prefix =
             if (description != null) {
                 "Waiting for \"$description\" to settle"
             } else {
                 "waitForValueToSettle"
-            } + " (settleTime=${minimumSettleTime.toMillis()}ms, deadline=${timeout.toMillis()}ms)"
+            }
+        val traceName =
+            prefix +
+                " (settleTime=${minimumSettleTime.toMillis()}ms, deadline=${timeout.toMillis()}ms)"
         trace(traceName) {
             withEventualLogging(logTimeDelta = true) {
                 log(traceName)
 
-                val startTime = uptimeMillis()
-                val timeoutMs = timeout.toMillis()
-                val minimumSettleTimeMs = minimumSettleTime.toMillis()
+                val startTime = now()
                 var settledSince = startTime
                 var previousValue: T? = null
-                while (uptimeMillis() < startTime + timeoutMs) {
+                var previousValueSet = false
+                while (now().isBefore(startTime + timeout)) {
                     val newValue =
                         try {
                             supplier()
                         } catch (t: Throwable) {
-                            if (previousValue != null) {
+                            if (previousValueSet) {
                                 Trace.endSection()
                             }
                             log("Supplier has thrown an exception")
                             throw RuntimeException(t)
                         }
-                    checkNotNull(newValue)
-                    val currentTime = uptimeMillis()
-                    if (previousValue != newValue) {
+                    val currentTime = now()
+                    if (previousValue != newValue || !previousValueSet) {
                         log("value changed to $newValue")
                         settledSince = currentTime
-                        if (previousValue != null) {
+                        if (previousValueSet) {
                             Trace.endSection()
                         }
                         Trace.beginSection("New value: $newValue")
                         previousValue = newValue
-                    } else if (currentTime >= settledSince + minimumSettleTimeMs) {
+                        previousValueSet = true
+                    } else if (now().isAfter(settledSince + minimumSettleTime)) {
                         log("Got settled value. Returning \"$previousValue\"")
                         Trace.endSection() // previousValue is guaranteed to be non-null.
                         return previousValue
                     }
                     sleep(POLLING_WAIT.toMillis())
                 }
-                if (previousValue != null) {
+                if (previousValueSet) {
                     Trace.endSection()
                 }
                 error(errorProvider())
@@ -182,6 +215,40 @@ object WaitUtils {
                 "value for \"$description\" within ${timeout.toMillis()}."
         }
     }
+
+    /**
+     * Waits for [supplier] to return a non-null value within [timeout].
+     *
+     * Returns null after the timeout finished.
+     */
+    fun <T> waitForNullable(
+        description: String,
+        timeout: Duration = DEFAULT_DEADLINE,
+        supplier: () -> T?
+    ): T? {
+        var result: T? = null
+
+        ensureThat("Waiting for \"$description\"", timeout, ignoreFailure = true) {
+            result = supplier()
+            result != null
+        }
+        return result
+    }
+
+    /**
+     * Waits for [supplier] to return a non-null value within [timeout].
+     *
+     * Throws an exception with [errorProvider] provided message if [supplier] failed to produce a
+     * non-null value within [timeout].
+     */
+    fun <T> waitFor(
+        description: String,
+        timeout: Duration = DEFAULT_DEADLINE,
+        errorProvider: () -> String = {
+            "Didn't get a non-null value for \"$description\" within ${timeout.toMillis()}ms"
+        },
+        supplier: () -> T?
+    ): T = waitForNullable(description, timeout, supplier) ?: error(errorProvider())
 
     /** Generic logging interface. */
     private interface Logger {

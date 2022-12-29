@@ -67,7 +67,6 @@ class FoldableRule(private val ensureScreenOn: Boolean = false) : TestWatcher() 
         SystemClock.sleep(ANIMATION_TIMEOUT) // Let's wait for the unfold animation to finish.
 
         ensureThat("screen is off after folding") { !screenOn }
-        ensureThat("is folded") { controller.isFolded }
         ensureThat("screen surface decreases after folding") {
             displaySurface < initialScreenSurface
         }
@@ -84,7 +83,6 @@ class FoldableRule(private val ensureScreenOn: Boolean = false) : TestWatcher() 
         SystemClock.sleep(ANIMATION_TIMEOUT) // Let's wait for the unfold animation to finish.
 
         ensureThat("screen is on after unfolding") { screenOn }
-        ensureThat("is unfolded") { !controller.isFolded }
         ensureThat("screen surface increases after unfolding") {
             displaySurface > initialScreenSurface
         }

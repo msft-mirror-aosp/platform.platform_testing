@@ -78,7 +78,8 @@ internal fun isFoldable(): Boolean {
         .isNotEmpty()
 }
 
-internal fun isLargeScreen(): Boolean {
+/** Returns whether the device default display is currently considered large screen. */
+fun isLargeScreen(): Boolean {
     val sizeDp = getUiDevice().displaySizeDp
     return sizeDp.x >= LARGE_SCREEN_DP_THRESHOLD && sizeDp.y >= LARGE_SCREEN_DP_THRESHOLD
 }

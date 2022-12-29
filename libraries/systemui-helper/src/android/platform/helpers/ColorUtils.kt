@@ -47,3 +47,19 @@ infix fun List<Color>.darkerThan(other: List<Color>): Boolean =
 
 /** Returns whether this color is darker than [other] based on [Color.luminance]. */
 infix fun Color.darkerThan(other: Color): Boolean = luminance() < other.luminance()
+
+/** Returns [true] if the entire device screen is completely black. */
+// TODO(b/262588714): Add tracing once this is moved to uiautomator_utils.
+//  (androidx.tracing is not available here.)
+fun UiDevice.hasBlackScreen(): Boolean = Screenshot.capture().bitmap.isBlack()
+
+private fun Bitmap.isBlack(): Boolean {
+    for (i in 0 until width) {
+        for (j in 0 until height) {
+            if (getColor(i, j).toArgb() != Color.BLACK) {
+                return false
+            }
+        }
+    }
+    return true
+}
