@@ -1,3 +1,19 @@
+/*
+ * Copyright (C) 2022 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package android.platform.uiautomator_helpers
 
 import android.animation.TimeInterpolator
@@ -17,22 +33,6 @@ import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.UiObject2
 import java.io.IOException
 import java.time.Duration
-
-/*
- * Copyright (C) 2022 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 
 private const val TAG = "DeviceHelpers"
 
@@ -135,12 +135,29 @@ object DeviceHelpers {
     }
 
     /** Asserts that a this selector is visible. Throws otherwise. */
-    fun BySelector.assertVisible(timeout: Duration = LONG_WAIT): Unit =
-        uiDevice.assertVisibility(selector = this, visible = true, timeout = timeout)
-
+    fun BySelector.assertVisible(
+        timeout: Duration = LONG_WAIT,
+        customMessageProvider: (() -> String)? = null
+    ) {
+        uiDevice.assertVisibility(
+            selector = this,
+            visible = true,
+            timeout = timeout,
+            customMessageProvider = customMessageProvider
+        )
+    }
     /** Asserts that a this selector is invisible. Throws otherwise. */
-    fun BySelector.assertInvisible(timeout: Duration = LONG_WAIT): Unit =
-        uiDevice.assertVisibility(selector = this, visible = false, timeout = timeout)
+    fun BySelector.assertInvisible(
+        timeout: Duration = LONG_WAIT,
+        customMessageProvider: (() -> String)? = null
+    ) {
+        uiDevice.assertVisibility(
+            selector = this,
+            visible = false,
+            timeout = timeout,
+            customMessageProvider = customMessageProvider
+        )
+    }
 
     /**
      * Executes a shell command on the device.
@@ -180,12 +197,13 @@ object DeviceHelpers {
         endX: Int,
         endY: Int,
         interpolator: TimeInterpolator = FLING_GESTURE_INTERPOLATOR
-    ): Unit =
+    ) {
         trace("Swiping ($startX,$startY) -> ($endX,$endY)") {
             BetterSwipe.from(PointF(startX.toFloat(), startY.toFloat()))
                 .to(PointF(endX.toFloat(), endY.toFloat()), interpolator = interpolator)
                 .release()
         }
+    }
 
     /** [message] will be visible to the terminal when using `am instrument`. */
     fun printInstrumentationStatus(tag: String, message: String) {

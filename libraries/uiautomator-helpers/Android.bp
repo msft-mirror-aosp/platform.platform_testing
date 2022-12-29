@@ -27,7 +27,6 @@ java_library {
         "androidx.test.rules",
         "truth-prebuilt",
         "junit",
-        "health-testing-utils",
     ],
     srcs: [
         // Note: this library should be kotlin first.
