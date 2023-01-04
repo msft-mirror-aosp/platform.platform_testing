@@ -530,6 +530,15 @@ public class SecurityTestCase extends StsExtraBusinessLogicHostTestBase {
         } while (System.currentTimeMillis() < endTime);
 
         assumeFalse("Wi-Fi could not be enabled on the device; skipping", skipWifiFailure);
+        // enable with one of the following:
+        // '<option name="compatibility-build-provider:build-attribute" key="sts-skip-wifi-failures"
+        // value="true" />'
+        // '--compatibility-build-provider:build-attribute sts-skip-wifi-failures=true'
+        boolean buildAttributeSkipWifiFailure =
+                Boolean.parseBoolean(getBuild().getBuildAttributes().get("sts-skip-wifi-failures"));
+        assumeFalse(
+                "Wi-Fi could not be enabled on the device; skipping",
+                buildAttributeSkipWifiFailure);
         throw new AssertionError(
                 "This test requires a Wi-Fi connection on-device. "
                         + "Please consult the CTS setup guide: "
