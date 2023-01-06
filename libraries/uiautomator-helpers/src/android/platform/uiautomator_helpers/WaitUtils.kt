@@ -69,6 +69,7 @@ object WaitUtils {
         trace(traceName) {
             val startTime = uptimeMillis()
             val timeoutMs = timeout.toMillis()
+            Log.d(TAG, "Starting $traceName")
             withEventualLogging(logTimeDelta = true) {
                 log(traceName)
                 var i = 1
@@ -162,6 +163,7 @@ object WaitUtils {
             prefix +
                 " (settleTime=${minimumSettleTime.toMillis()}ms, deadline=${timeout.toMillis()}ms)"
         trace(traceName) {
+            Log.d(TAG, "Starting $traceName")
             withEventualLogging(logTimeDelta = true) {
                 log(traceName)
 
