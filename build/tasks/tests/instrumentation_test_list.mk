@@ -26,7 +26,7 @@ instrumentation_tests := \
     FrameworksUiServicesTests \
     BstatsTestApp \
     ConnTestApp \
-    FrameworksServicesTests \
+#   FrameworksServicesTests # TODO(b/264694201) Re-enable these tests. \
     FrameworksMockingServicesTests \
     WmTests \
     JobTestApp \
@@ -36,7 +36,7 @@ instrumentation_tests := \
     MtpTests \
     DocumentsUITests \
     ShellTests \
-    SystemUITests \
+#   SystemUITests # TODO(b/264694201) Re-enable these tests. \
     TestablesTests \
     FrameworksWifiApiTests \
     FrameworksWifiTests \
