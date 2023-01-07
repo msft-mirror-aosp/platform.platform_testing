@@ -102,6 +102,22 @@ object BetterSwipe {
             return this
         }
 
+        /**
+         * Swipes from the current point to [end] in [duration] using [interpolator] for the gesture
+         * speed. Pass [FLING_GESTURE_INTERPOLATOR] for a fling-like gesture that may leave the
+         * surface moving by inertia. Don't use it to drag objects to a precisely specified
+         * position. [PRECISE_GESTURE_INTERPOLATOR] will result in a precise drag-like gesture not
+         * triggering inertia.
+         */
+        @JvmOverloads
+        fun to(
+            end: Point,
+            duration: Duration = DEFAULT_DURATION,
+            interpolator: TimeInterpolator = FLING_GESTURE_INTERPOLATOR
+        ): Swipe {
+            return to(PointF(end.x.toFloat(), end.y.toFloat()), duration, interpolator)
+        }
+
         /** Moves the pointer up, finishing the swipe. Further calls will result in an exception. */
         @JvmOverloads
         fun release(sync: Boolean = true) {
