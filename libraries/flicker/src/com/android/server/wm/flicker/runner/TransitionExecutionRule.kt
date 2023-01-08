@@ -17,6 +17,7 @@
 package com.android.server.wm.flicker.runner
 
 import android.app.Instrumentation
+import android.platform.test.rule.ArtifactSaver
 import android.util.Log
 import com.android.server.wm.flicker.IFlickerTestData
 import com.android.server.wm.flicker.io.ResultWriter
@@ -60,6 +61,7 @@ class TransitionExecutionRule(
                         commands.forEach { it.invoke(flicker) }
                         base?.evaluate()
                     } catch (e: Throwable) {
+                        ArtifactSaver.onError(Utils.expandDescription(description, "transition"), e)
                         throw if (e is AssertionError) {
                             e
                         } else {

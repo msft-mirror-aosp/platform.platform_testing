@@ -28,4 +28,7 @@ open class ExecutionError(private val inner: Throwable) : Throwable(inner) {
 
     override val message: String?
         get() = inner.toString()
+
+    override val cause: Throwable?
+        get() = inner.cause ?: super.cause
 }

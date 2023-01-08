@@ -24,6 +24,7 @@ import com.android.server.wm.traces.common.ConditionList
 import com.android.server.wm.traces.common.IScenario
 import com.android.server.wm.traces.common.WindowManagerConditionsFactory
 import com.android.server.wm.traces.parser.windowmanager.WindowManagerStateHelper
+import org.junit.runner.Description
 
 /** Helper class for flicker transition rules */
 object Utils {
@@ -50,4 +51,11 @@ object Utils {
         results.putString(Instrumentation.REPORT_KEY_STREAMRESULT, "$msg\n")
         instrumentation.sendStatus(1, results)
     }
+
+    internal fun expandDescription(description: Description?, suffix: String): Description? =
+        Description.createTestDescription(
+            description?.className,
+            "${description?.displayName}-$suffix",
+            description?.annotations?.toTypedArray()
+        )
 }

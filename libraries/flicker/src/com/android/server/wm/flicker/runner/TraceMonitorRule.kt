@@ -17,6 +17,7 @@
 package com.android.server.wm.flicker.runner
 
 import android.app.Instrumentation
+import android.platform.test.rule.ArtifactSaver
 import android.util.Log
 import com.android.server.wm.flicker.FLICKER_TAG
 import com.android.server.wm.flicker.ITransitionMonitor
@@ -64,6 +65,7 @@ class TraceMonitorRule(
                 try {
                     it.start()
                 } catch (e: Throwable) {
+                    ArtifactSaver.onError(Utils.expandDescription(description, "startTrace"), e)
                     throw TransitionTracingFailure(e)
                 }
             }
@@ -80,6 +82,10 @@ class TraceMonitorRule(
                             it.stop()
                             it.setResult(resultWriter)
                         } catch (e: Throwable) {
+                            ArtifactSaver.onError(
+                                Utils.expandDescription(description, "stopTrace"),
+                                e
+                            )
                             Log.e(FLICKER_TAG, "Unable to stop $it", e)
                             throw TransitionTracingFailure(e)
                         }

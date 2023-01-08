@@ -17,6 +17,7 @@
 package com.android.server.wm.flicker.runner
 
 import android.app.Instrumentation
+import android.platform.test.rule.ArtifactSaver
 import com.android.server.wm.flicker.IFlickerTestData
 import com.android.server.wm.flicker.io.ResultWriter
 import com.android.server.wm.traces.common.IScenario
@@ -67,6 +68,7 @@ class SetupTeardownRule(
                 setupCommands.forEach { it.invoke(flicker) }
                 Utils.doWaitForUiStabilize(wmHelper)
             } catch (e: Throwable) {
+                ArtifactSaver.onError(Utils.expandDescription(description, "setup"), e)
                 throw TransitionSetupFailure(e)
             }
         }
@@ -80,6 +82,7 @@ class SetupTeardownRule(
                 teardownCommands.forEach { it.invoke(flicker) }
                 Utils.doWaitForUiStabilize(wmHelper)
             } catch (e: Throwable) {
+                ArtifactSaver.onError(Utils.expandDescription(description, "teardown"), e)
                 throw TransitionTeardownFailure(e)
             }
         }
