@@ -82,6 +82,8 @@ public class AutoNotificationHelperImpl extends AbstractAutoStandardAppHelper
     @Override
     public boolean checkNotificationExists(String title) {
         executeShellCommand(getApplicationConfig(AutoConfigConstants.OPEN_NOTIFICATIONS_COMMAND));
+        SystemClock.sleep(UI_RESPONSE_WAIT_MS);
+
         UiObject2 notification_list =
                 findUiObject(
                         getResourceFromConfig(
@@ -116,13 +118,8 @@ public class AutoNotificationHelperImpl extends AbstractAutoStandardAppHelper
     /** {@inheritDoc} */
     @Override
     public void openNotification() {
-        UiObject2 statusBar =
-                findUiObject(
-                        getResourceFromConfig(
-                                AutoConfigConstants.NOTIFICATIONS,
-                                AutoConfigConstants.EXPANDED_NOTIFICATIONS_SCREEN,
-                                AutoConfigConstants.STATUS_BAR));
-        statusBar.swipe(Direction.DOWN, 1.0f, 500);
+        // Swipe Down From top of screen to the bottom in one step
+        swipeDownFromTop();
     }
 
     private void scrollThroughNotifications() {

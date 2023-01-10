@@ -16,6 +16,7 @@
 
 package platform.test.screenshot
 
+import android.app.UiAutomation
 import android.app.UiModeManager
 import android.content.Context
 import android.os.UserHandle
@@ -39,6 +40,10 @@ import org.junit.runners.model.Statement
  * @see DeviceEmulationSpec
  */
 class DeviceEmulationRule(private val spec: DeviceEmulationSpec) : TestRule {
+
+    private val instrumentation = InstrumentationRegistry.getInstrumentation()
+    private val uiAutomation = instrumentation.uiAutomation
+
     override fun apply(base: Statement, description: Description): Statement {
         // The statement which calls beforeTest() before running the test and afterTest()
         // afterwards.
@@ -55,6 +60,9 @@ class DeviceEmulationRule(private val spec: DeviceEmulationSpec) : TestRule {
     }
 
     private fun beforeTest() {
+        // Make sure that we are in natural orientation (rotation 0) before we set the screen size
+        uiAutomation.setRotation(UiAutomation.ROTATION_FREEZE_0)
+
         // Emulate the display size and density.
         val display = spec.display
         val density = display.densityDpi
@@ -75,6 +83,10 @@ class DeviceEmulationRule(private val spec: DeviceEmulationSpec) : TestRule {
                 UiModeManager.MODE_NIGHT_NO
             }
         )
+
+        // Make sure that all devices are in touch mode to avoid screenshot differences
+        // in focused elements when in keyboard mode
+        instrumentation.setInTouchMode(true)
     }
 
     /** Get the emulated display size for [spec]. */
@@ -100,6 +112,11 @@ class DeviceEmulationRule(private val spec: DeviceEmulationSpec) : TestRule {
                 .targetContext
                 .getSystemService(Context.UI_MODE_SERVICE) as UiModeManager
         uiModeManager.setApplicationNightMode(UiModeManager.MODE_NIGHT_AUTO)
+
+        instrumentation.resetInTouchMode()
+
+        // Unfreeze locked rotation
+        uiAutomation.setRotation(UiAutomation.ROTATION_UNFREEZE);
     }
 }
 

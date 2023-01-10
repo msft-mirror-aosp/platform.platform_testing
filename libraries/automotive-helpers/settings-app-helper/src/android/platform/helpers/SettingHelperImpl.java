@@ -113,6 +113,7 @@ public class SettingHelperImpl extends AbstractAutoStandardAppHelper implements 
 
     @Override
     public void findSettingMenuAndClick(String setting) {
+        SystemClock.sleep(UI_RESPONSE_WAIT_MS);
         UiObject2 settingMenu = findSettingMenu(setting);
         if (settingMenu != null) {
             clickAndWaitForIdleScreen(settingMenu);

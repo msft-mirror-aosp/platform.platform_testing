@@ -37,4 +37,6 @@ android_test {
     sdk_version: "current",
 
     test_suites: ["general-tests"],
+
+    data: ["testdata/*"],
 }

@@ -24,6 +24,7 @@ import android.graphics.Rect
 import android.os.Bundle
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.runner.screenshot.Screenshot
+import com.android.internal.app.SimpleIconFactory
 import org.junit.rules.TestRule
 import org.junit.rules.TestWatcher
 import org.junit.runner.Description
@@ -79,7 +80,12 @@ open class ScreenshotTestRule(
 
     class ScreenshotTestStatement(private val base: Statement) : Statement() {
         override fun evaluate() {
-            base.evaluate()
+            try {
+                SimpleIconFactory.setPoolEnabled(false)
+                base.evaluate()
+            } finally {
+                SimpleIconFactory.setPoolEnabled(true)
+            }
         }
     }
 
@@ -170,7 +176,7 @@ open class ScreenshotTestRule(
         if (expected == null) {
             reportResult(
                 status = ScreenshotResultProto.DiffResult.Status.MISSING_REFERENCE,
-                assetsPathRelativeToRepo = goldenImagePathManager.assetsPathRelativeToRepo,
+                assetsPathRelativeToRepo = goldenImagePathManager.assetsPathRelativeToBuildRoot,
                 goldenIdentifier = goldenIdentifier,
                 actual = actual
             )
@@ -184,7 +190,7 @@ open class ScreenshotTestRule(
         if (actual.width != expected.width || actual.height != expected.height) {
             reportResult(
                 status = ScreenshotResultProto.DiffResult.Status.FAILED,
-                assetsPathRelativeToRepo = goldenImagePathManager.assetsPathRelativeToRepo,
+                assetsPathRelativeToRepo = goldenImagePathManager.assetsPathRelativeToBuildRoot,
                 goldenIdentifier = goldenIdentifier,
                 actual = actual,
                 expected = expected
@@ -211,7 +217,7 @@ open class ScreenshotTestRule(
 
         reportResult(
             status = status,
-            assetsPathRelativeToRepo = goldenImagePathManager.assetsPathRelativeToRepo,
+            assetsPathRelativeToRepo = goldenImagePathManager.assetsPathRelativeToBuildRoot,
             goldenIdentifier = goldenIdentifier,
             actual = actual,
             comparisonStatistics = comparisonResult.comparisonStatistics,
@@ -254,18 +260,18 @@ open class ScreenshotTestRule(
 
         val report = Bundle()
 
-        actual.writeToDevice(OutputFileType.IMAGE_ACTUAL).also {
+        actual.writeToDevice(OutputFileType.IMAGE_ACTUAL, goldenIdentifier).also {
             resultProto.imageLocationTest = it.name
             report.putString(bundleKeyPrefix + OutputFileType.IMAGE_ACTUAL, it.absolutePath)
         }
         diff?.run {
-            writeToDevice(OutputFileType.IMAGE_DIFF).also {
+            writeToDevice(OutputFileType.IMAGE_DIFF, goldenIdentifier).also {
                 resultProto.imageLocationDiff = it.name
                 report.putString(bundleKeyPrefix + OutputFileType.IMAGE_DIFF, it.absolutePath)
             }
         }
         expected?.run {
-            writeToDevice(OutputFileType.IMAGE_EXPECTED).also {
+            writeToDevice(OutputFileType.IMAGE_EXPECTED, goldenIdentifier).also {
                 resultProto.imageLocationReference = it.name
                 report.putString(
                     bundleKeyPrefix + OutputFileType.IMAGE_EXPECTED,
@@ -274,13 +280,13 @@ open class ScreenshotTestRule(
             }
         }
 
-        writeToDevice(OutputFileType.RESULT_PROTO) {
+        writeToDevice(OutputFileType.RESULT_PROTO, goldenIdentifier) {
             it.write(resultProto.build().toString().toByteArray())
         }.also {
             report.putString(bundleKeyPrefix + OutputFileType.RESULT_PROTO, it.absolutePath)
         }
 
-        writeToDevice(OutputFileType.RESULT_BIN_PROTO) {
+        writeToDevice(OutputFileType.RESULT_BIN_PROTO, goldenIdentifier) {
             it.write(resultProto.build().toByteArray())
         }.also {
             report.putString(bundleKeyPrefix + OutputFileType.RESULT_BIN_PROTO, it.absolutePath)
@@ -289,28 +295,32 @@ open class ScreenshotTestRule(
         InstrumentationRegistry.getInstrumentation().sendStatus(bundleStatusInProgress, report)
     }
 
-    internal fun getPathOnDeviceFor(fileType: OutputFileType): File {
+    internal fun getPathOnDeviceFor(fileType: OutputFileType, goldenIdentifier: String): File {
+        val imageSuffix = "${goldenImagePathManager}_$goldenIdentifier$imageExtension"
         val fileName = when (fileType) {
             OutputFileType.IMAGE_ACTUAL ->
-                "${testIdentifier}_actual_$goldenImagePathManager.$imageExtension"
+                "${testIdentifier}_actual_$imageSuffix"
             OutputFileType.IMAGE_EXPECTED ->
-                "${testIdentifier}_expected_$goldenImagePathManager.$imageExtension"
+                "${testIdentifier}_expected_$imageSuffix"
             OutputFileType.IMAGE_DIFF ->
-                "${testIdentifier}_diff_$goldenImagePathManager.$imageExtension"
-            OutputFileType.RESULT_PROTO -> "${testIdentifier}_$resultProtoFileSuffix"
-            OutputFileType.RESULT_BIN_PROTO -> "${testIdentifier}_$resultBinaryProtoFileSuffix"
+                "${testIdentifier}_diff_$imageSuffix"
+            OutputFileType.RESULT_PROTO ->
+                "${testIdentifier}_${goldenIdentifier}_$resultProtoFileSuffix"
+            OutputFileType.RESULT_BIN_PROTO ->
+                "${testIdentifier}_${goldenIdentifier}_$resultBinaryProtoFileSuffix"
         }
         return File(goldenImagePathManager.deviceLocalPath, fileName)
     }
 
-    private fun Bitmap.writeToDevice(fileType: OutputFileType): File {
-        return writeToDevice(fileType) {
+    private fun Bitmap.writeToDevice(fileType: OutputFileType, goldenIdentifier: String): File {
+        return writeToDevice(fileType, goldenIdentifier) {
             compress(Bitmap.CompressFormat.PNG, 0 /*ignored for png*/, it)
         }
     }
 
     private fun writeToDevice(
         fileType: OutputFileType,
+        goldenIdentifier: String,
         writeAction: (FileOutputStream) -> Unit
     ): File {
         val fileGolden = File(goldenImagePathManager.deviceLocalPath)
@@ -318,7 +328,7 @@ open class ScreenshotTestRule(
             throw IOException("Could not create folder $fileGolden.")
         }
 
-        var file = getPathOnDeviceFor(fileType)
+        var file = getPathOnDeviceFor(fileType, goldenIdentifier)
         try {
             FileOutputStream(file).use {
                 writeAction(it)
@@ -414,14 +424,28 @@ typealias BitmapSupplier = () -> Bitmap
 class ScreenshotRuleAsserter private constructor(private val rule: ScreenshotTestRule) : ScreenshotAsserter {
     // use the most constraining matcher as default
     private var matcher: BitmapMatcher = PixelPerfectMatcher()
+    private var beforeScreenshot: Runnable? = null
+    private var afterScreenshot: Runnable? = null
     // use the instrumentation screenshot as default
     private var screenShotter: BitmapSupplier = { Screenshot.capture().bitmap }
     override fun assertGoldenImage(goldenId: String) {
-        rule.assertBitmapAgainstGolden(screenShotter(), goldenId, matcher)
+        beforeScreenshot?.run();
+        try {
+            rule.assertBitmapAgainstGolden(screenShotter(), goldenId, matcher)
+        }
+        finally {
+            afterScreenshot?.run();
+        }
     }
 
     override fun assertGoldenImage(goldenId: String, areas: List<Rect>) {
-        rule.assertBitmapAgainstGolden(screenShotter(), goldenId, matcher, areas)
+        beforeScreenshot?.run();
+        try {
+            rule.assertBitmapAgainstGolden(screenShotter(), goldenId, matcher, areas)
+        }
+        finally {
+            afterScreenshot?.run();
+        }
     }
 
     class Builder(private val rule: ScreenshotTestRule) {
@@ -433,6 +457,16 @@ class ScreenshotRuleAsserter private constructor(private val rule: ScreenshotTes
 
         fun setScreenshotProvider(screenshotProvider: BitmapSupplier): Builder {
             asserter.screenShotter = screenshotProvider
+            return this
+        }
+
+        fun setOnBeforeScreenshot(run: Runnable): Builder {
+            asserter.beforeScreenshot = run
+            return this
+        }
+
+        fun setOnAfterScreenshot(run: Runnable): Builder {
+            asserter.afterScreenshot = run
             return this
         }
 
