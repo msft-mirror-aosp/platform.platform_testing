@@ -55,10 +55,19 @@ class ScreenRecorderTest {
         device.wakeUp()
         SystemClock.sleep(500)
         device.pressHome()
-        SystemClock.sleep(500)
+        var remainingTime = TIMEOUT
+        do {
+            remainingTime -= 100
+            SystemClock.sleep(STEP)
+        } while (!mScreenRecorder.isFrameRecorded && remainingTime > 0)
         mScreenRecorder.stop()
         Truth.assertWithMessage("Screen recording file exists")
             .that(Files.exists(mScreenRecorder.outputFile))
             .isTrue()
+    }
+
+    companion object {
+        private const val TIMEOUT = 3000L
+        private const val STEP = 100L
     }
 }

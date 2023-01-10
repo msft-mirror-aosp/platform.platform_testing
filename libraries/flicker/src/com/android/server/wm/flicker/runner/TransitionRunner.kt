@@ -73,13 +73,22 @@ class TransitionRunner(
      */
     private fun buildTestRuleChain(flicker: IFlickerTestData): RuleChain {
         return RuleChain.outerRule(UnlockScreenRule())
-            .around(NavigationModeRule(scenario.navBarMode.value))
+            .around(
+                NavigationModeRule(
+                    scenario.navBarMode.value,
+                    /* changeNavigationModeAfterTest */ false
+                )
+            )
             .around(
                 LaunchAppRule(MessagingAppHelper(instrumentation), clearCacheAfterParsing = false)
             )
             .around(RemoveAllTasksButHomeRule())
             .around(
-                ChangeDisplayOrientationRule(scenario.startRotation, clearCacheAfterParsing = false)
+                ChangeDisplayOrientationRule(
+                    scenario.startRotation,
+                    resetOrientationAfterTest = false,
+                    clearCacheAfterParsing = false
+                )
             )
             .around(PressHomeRule())
             .around(

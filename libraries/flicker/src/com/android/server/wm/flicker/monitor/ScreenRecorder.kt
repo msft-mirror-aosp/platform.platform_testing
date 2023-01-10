@@ -17,16 +17,9 @@
 package com.android.server.wm.flicker.monitor
 
 import android.content.Context
-import android.hardware.display.DisplayManager
-import android.hardware.display.VirtualDisplay
-import android.media.MediaCodecInfo
-import android.media.MediaRecorder
-import android.media.Metadata.VIDEO_FRAME_RATE
 import android.os.SystemClock
-import android.util.DisplayMetrics
 import android.util.Log
-import android.view.Surface
-import android.view.WindowManager
+import androidx.annotation.VisibleForTesting
 import com.android.server.wm.flicker.FLICKER_TAG
 import com.android.server.wm.flicker.getDefaultFlickerOutputDir
 import com.android.server.wm.flicker.io.TraceType
@@ -39,65 +32,32 @@ open class ScreenRecorder
 constructor(
     private val context: Context,
     outputDir: Path = getDefaultFlickerOutputDir(),
-    private val maxDurationMs: Int = MAX_DURATION_MS,
-    private val maxFileSizeBytes: Long = MAX_FILESIZE_BYTES,
     private val width: Int = 720,
     private val height: Int = 1280
 ) : TraceMonitor(outputDir, getDefaultFlickerOutputDir().resolve("transition.mp4")) {
     override val traceType: TraceType
         get() = TraceType.SCREEN_RECORDING
 
-    private val displayManager = context.getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
-    private val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
-    private var mediaRecorder: MediaRecorder? = null
-    private var inputSurface: Surface? = null
-    private var virtualDisplay: VirtualDisplay? = null
-    private fun prepare() {
-        // Set up media recorder
-        val recorder = MediaRecorder(context)
+    private var recordingThread: Thread? = null
+    private var recordingRunnable: ScreenRecordingRunnable? = null
 
-        // Set up audio source
-        recorder.setVideoSource(MediaRecorder.VideoSource.SURFACE)
-        recorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
-
-        // Set up video
-        val metrics = DisplayMetrics()
-        windowManager.defaultDisplay.getRealMetrics(metrics)
-        val refreshRate = windowManager.defaultDisplay.refreshRate.toInt()
-        val vidBitRate =
-            (width * height * refreshRate / VIDEO_FRAME_RATE * VIDEO_FRAME_RATE_TO_RESOLUTION_RATIO)
-        recorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264)
-        recorder.setVideoEncodingProfileLevel(
-            MediaCodecInfo.CodecProfileLevel.AVCProfileHigh,
-            MediaCodecInfo.CodecProfileLevel.AVCLevel3
-        )
-        recorder.setVideoSize(width, height)
-        recorder.setVideoFrameRate(refreshRate)
-        recorder.setVideoEncodingBitRate(vidBitRate)
-        recorder.setMaxDuration(maxDurationMs)
-        recorder.setMaxFileSize(maxFileSizeBytes)
-        recorder.setOutputFile(sourceFile.toFile())
-        recorder.prepare()
-
-        // Create surface
-        inputSurface = recorder.surface
-        virtualDisplay =
-            displayManager.createVirtualDisplay(
-                "Recording Display",
-                width,
-                height,
-                metrics.densityDpi,
-                inputSurface,
-                DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
-                null,
-                null
-            )
-
-        this.mediaRecorder = recorder
+    private fun newRecordingThread(): Thread {
+        val runnable = ScreenRecordingRunnable(sourceFile, context, width, height)
+        recordingRunnable = runnable
+        return Thread(runnable)
     }
 
+    /** Indicates if any frame has been recorded. */
+    @VisibleForTesting
+    val isFrameRecorded: Boolean
+        get() =
+            when {
+                !isEnabled -> false
+                else -> recordingRunnable?.isFrameRecorded ?: false
+            }
+
     override fun startTracing() {
-        if (mediaRecorder != null) {
+        if (recordingThread != null) {
             Log.i(FLICKER_TAG, "Screen recorder already running")
             return
         }
@@ -105,40 +65,40 @@ constructor(
         require(!Files.exists(sourceFile)) { "Could not delete old trace file" }
         Files.createDirectories(sourceFile.parent)
 
-        prepare()
-        Log.d(FLICKER_TAG, "Starting screen recording to file $sourceFile")
-        mediaRecorder?.start()
+        val recordingThread = newRecordingThread()
+        this.recordingThread = recordingThread
+        Log.d(FLICKER_TAG, "Starting screen recording thread")
+        recordingThread.start()
 
         var remainingTime = WAIT_TIMEOUT_MS
         do {
             SystemClock.sleep(WAIT_INTERVAL_MS)
             remainingTime -= WAIT_INTERVAL_MS
-        } while (!Files.exists(sourceFile) && remainingTime > 0)
+        } while (recordingRunnable?.isFrameRecorded != true)
 
         require(Files.exists(sourceFile)) { "Screen recorder didn't start" }
     }
 
     override fun stopTracing() {
-        if (mediaRecorder == null) {
+        if (recordingThread == null) {
             Log.i(FLICKER_TAG, "Screen recorder was not started")
             return
         }
 
         Log.d(FLICKER_TAG, "Stopping screen recording. Storing result in $sourceFile")
         try {
-            mediaRecorder?.stop()
-            mediaRecorder?.release()
-            inputSurface?.release()
-            virtualDisplay?.release()
+            recordingRunnable?.stop()
+            recordingThread?.join()
         } catch (e: Exception) {
             throw IllegalStateException("Unable to stop screen recording", e)
         } finally {
-            mediaRecorder = null
+            recordingRunnable = null
+            recordingThread = null
         }
     }
 
     override val isEnabled: Boolean
-        get() = mediaRecorder != null
+        get() = recordingThread != null
 
     override fun toString(): String {
         return "ScreenRecorder($sourceFile)"
@@ -147,9 +107,5 @@ constructor(
     companion object {
         private const val WAIT_TIMEOUT_MS = 5000L
         private const val WAIT_INTERVAL_MS = 500L
-        private const val MAX_DURATION_MS = 60 * 60 * 1000
-        private const val MAX_FILESIZE_BYTES = 100000000L
-        /** From [ScreenMediaRecorder#VIDEO_FRAME_RATE_TO_RESOLUTION_RATIO] */
-        private const val VIDEO_FRAME_RATE_TO_RESOLUTION_RATIO = 6
     }
 }

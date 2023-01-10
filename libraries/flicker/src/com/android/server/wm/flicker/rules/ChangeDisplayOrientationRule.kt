@@ -44,6 +44,7 @@ data class ChangeDisplayOrientationRule
 @JvmOverloads
 constructor(
     private val targetOrientation: PlatformConsts.Rotation,
+    private val resetOrientationAfterTest: Boolean = true,
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation(),
     private val clearCacheAfterParsing: Boolean = true
 ) : TestWatcher() {
@@ -65,7 +66,9 @@ constructor(
 
     override fun finished(description: Description?) {
         withPerfettoTrace("ChangeDisplayOrientationRule:finished") {
-            setRotation(initialOrientation, instrumentation, clearCacheAfterParsing)
+            if (resetOrientationAfterTest) {
+                setRotation(initialOrientation, instrumentation, clearCacheAfterParsing)
+            }
         }
     }
 

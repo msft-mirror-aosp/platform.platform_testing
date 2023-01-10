@@ -40,8 +40,15 @@ public class NavigationModeRule extends TestWatcher {
 
     private final String mRequestedOverlayPackage;
     private final String mOriginalOverlayPackage;
+    private final boolean mChangeNavigationModeAfterTest;
 
     public NavigationModeRule(String requestedOverlayPackage) {
+        this(requestedOverlayPackage, /* changeNavigationModeAfterTest */ true);
+    }
+
+    public NavigationModeRule(
+            String requestedOverlayPackage, boolean changeNavigationModeAfterTest) {
+        mChangeNavigationModeAfterTest = changeNavigationModeAfterTest;
         mRequestedOverlayPackage = requestedOverlayPackage;
         mOriginalOverlayPackage =
                 getCurrentOverlayPackage(
@@ -102,7 +109,8 @@ public class NavigationModeRule extends TestWatcher {
     protected void finished(Description description) {
         super.finished(description);
 
-        if (!mOriginalOverlayPackage.equals(mRequestedOverlayPackage)) {
+        if (mChangeNavigationModeAfterTest
+                && !mOriginalOverlayPackage.equals(mRequestedOverlayPackage)) {
             if (!setActiveOverlay(mOriginalOverlayPackage)) {
                 throw new RuntimeException(
                         "Couldn't set the original overlay package " + mOriginalOverlayPackage);

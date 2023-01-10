@@ -33,7 +33,12 @@ import com.android.server.wm.traces.common.ComponentNameMatcher
 class BrowserAppHelper(
     instrumentation: Instrumentation,
     private val pkgManager: PackageManager = instrumentation.context.packageManager
-) : StandardAppHelper(instrumentation, "SampleApp", getBrowserComponent(pkgManager)) {
+) :
+    StandardAppHelper(
+        instrumentation,
+        getBrowserName(pkgManager),
+        getBrowserComponent(pkgManager)
+    ) {
     override fun getOpenAppIntent(): Intent =
         pkgManager.getLaunchIntentForPackage(packageName)
             ?: error("Unable to find intent for browser")
@@ -43,6 +48,15 @@ class BrowserAppHelper(
             val intent = Intent(Intent.ACTION_VIEW, Uri.parse("http://"))
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             return intent
+        }
+
+        private fun getBrowserName(pkgManager: PackageManager): String {
+            val intent = getBrowserIntent()
+            val resolveInfo =
+                pkgManager.resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY)
+                    ?: error("Unable to resolve browser activity")
+
+            return resolveInfo.loadLabel(pkgManager).toString()
         }
 
         private fun getBrowserComponent(pkgManager: PackageManager): ComponentNameMatcher {

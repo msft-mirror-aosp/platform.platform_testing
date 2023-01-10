@@ -17,12 +17,12 @@ package android.platform.test.rule;
 
 import android.util.Log;
 
+import kotlin.Unit;
+
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
 import java.util.ArrayList;
-
-import kotlin.Unit;
 
 /**
  * Generates a "Baseline Profile" for the provided package using the wrapped test statements.
@@ -40,6 +40,8 @@ public class BaselineProfileRule extends TestWatcher {
     private static final String LOG_TAG = BaselineProfileRule.class.getSimpleName();
     // If true, generates a Baseline Profile. If not, or unspecified, doesn't generate one.
     private static final String GEN_BASELINE_PROFILE_OPTION = "generate-baseline-profile";
+    // If true, checks for profile prior to performance test.
+    private static final String TEST_WITH_PROFILE_OPTION = "test-performance-with-profile";
 
     private final String mBaselineProfilePackage;
 
@@ -49,42 +51,65 @@ public class BaselineProfileRule extends TestWatcher {
 
     @Override
     public Statement apply(final Statement base, final Description description) {
-        if (!"true".equals(getArguments().getString(GEN_BASELINE_PROFILE_OPTION))) {
+        boolean isGenProfile = "true".equals(getArguments().getString(GEN_BASELINE_PROFILE_OPTION));
+        boolean isTestProfile = "true".equals(getArguments().getString(TEST_WITH_PROFILE_OPTION));
+        if (isGenProfile && isTestProfile) {
+            throw new IllegalArgumentException(
+                    String.format(
+                            "Conflicting options have been turned on. Only one of %s or %s may be"
+                                    + " set to 'true' at a time.",
+                            GEN_BASELINE_PROFILE_OPTION, TEST_WITH_PROFILE_OPTION));
+        } else if (isGenProfile) {
+            // This class can't extend androidx.benchmark.macro.junit4.BaselineProfileRule, because
+            // it's final; however that would be a preferable way to more cleanly interact with it.
+            androidx.benchmark.macro.junit4.BaselineProfileRule innerRule =
+                    new androidx.benchmark.macro.junit4.BaselineProfileRule();
+            return innerRule.apply(
+                    new Statement() {
+                        @Override
+                        public void evaluate() throws Throwable {
+                            innerRule.collectBaselineProfile(
+                                    mBaselineProfilePackage,
+                                    1, // Iterations are supported by most Runners already.
+                                    new ArrayList<>(),
+                                    (scope) -> {
+                                        // Evaluating the base Statement may throw a Throwable,
+                                        // which is checked and not compatible with the lambda
+                                        // without a try-catch statement.
+                                        try {
+                                            base.evaluate();
+                                            return Unit.INSTANCE;
+                                        } catch (Throwable e) {
+                                            throw new RuntimeException(
+                                                    "Caught checked exception in parent statement.",
+                                                    e);
+                                        }
+                                    });
+                        }
+                    },
+                    description);
+        } else if (isTestProfile) {
+            // check for profile
+            String compileStatus =
+                    executeShellCommand(
+                            String.format(
+                                    "dumpsys package %s | grep \"status=\"",
+                                    mBaselineProfilePackage));
+            if (!compileStatus.contains("profile")) {
+                throw new IllegalStateException(
+                        String.format(
+                                "The package, %s, was not found to be compiled with"
+                                        + " speed-profile.\n"
+                                        + "The compilation status returned this line: %s",
+                                mBaselineProfilePackage, compileStatus));
+            }
+        } else {
             Log.d(
                     LOG_TAG,
                     String.format(
-                            "Baseline Profile generation is currently disabled. Provide the '%s'"
-                                    + "option to enable it.",
-                            GEN_BASELINE_PROFILE_OPTION));
-            return base;
+                            "Options %s and %s have been disabled.",
+                            GEN_BASELINE_PROFILE_OPTION, TEST_WITH_PROFILE_OPTION));
         }
-
-        // This class can't extend androidx.benchmark.macro.junit4.BaselineProfileRule, because it's
-        // final; however that would be a preferable way to more cleanly interact with it.
-        androidx.benchmark.macro.junit4.BaselineProfileRule innerRule =
-                new androidx.benchmark.macro.junit4.BaselineProfileRule();
-        return innerRule.apply(
-                new Statement() {
-                    @Override
-                    public void evaluate() throws Throwable {
-                        innerRule.collectBaselineProfile(
-                                mBaselineProfilePackage,
-                                1, // Iterations are supported by most Runners already.
-                                new ArrayList<>(),
-                                (scope) -> {
-                                    // Evaluating the base Statement may throw a Throwable, which
-                                    // is checked and not compatible with the lambda without a
-                                    // try-catch statement.
-                                    try {
-                                        base.evaluate();
-                                        return Unit.INSTANCE;
-                                    } catch (Throwable e) {
-                                        throw new RuntimeException(
-                                                "Caught checked exception in parent statement.", e);
-                                    }
-                                });
-                    }
-                },
-                description);
+        return base;
     }
 }
