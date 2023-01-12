@@ -19,6 +19,11 @@ internal object TracingUtils {
         }
     }
 
+    /** Shortens the section name if it's too long. */
+    fun beginSectionSafe(sectionName: String) {
+        Trace.beginSection(sectionName.shortenedIfNeeded())
+    }
+
     private fun String.shortenedIfNeeded(): String =
         if (length > MAX_TRACE_NAME_LEN) {
             Log.w(TAG, "Section name too long: \"$this\" (len=$length, max=$MAX_TRACE_NAME_LEN)")
