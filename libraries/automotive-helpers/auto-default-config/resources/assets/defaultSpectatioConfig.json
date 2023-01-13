@@ -3,8 +3,8 @@
     "DIAL_PACKAGE": "com.android.car.dialer",
     "PHONE_ACTIVITY": "com.android.car.dialer/.ui.TelecomActivity",
     "HOME_PACKAGE": "com.android.car.carlauncher",
-    "SECURITY_SETTINGS_PACKAGE": "com.android.car.settings"
-
+    "SECURITY_SETTINGS_PACKAGE": "com.android.car.settings",
+    "LOCK_SCREEN_PACKAGE": "com.android.systemui"
   },
   "ACTIONS": {
     "CONTACT_LIST_SCROLL_ACTION" : "USE_BUTTON",
@@ -360,6 +360,32 @@
       "TYPE": "RESOURCE_ID",
       "VALUE": "car_ui_scrollbar_page_up",
       "PACKAGE": "com.android.car.settings"
+    },
+    "LOCK_SCREEN_PIN_PAD": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "keyguard_pin_view",
+      "PACKAGE": "com.android.systemui"
+    },
+    "LOCK_SCREEN_ENTER_KEY": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "key_enter",
+      "PACKAGE": "com.android.systemui"
+    },
+    "LOCK_TYPE_PASSWORD": {
+      "TYPE": "TEXT",
+      "VALUE": "Password"
+    },
+    "LOCK_TYPE_PIN": {
+      "TYPE": "TEXT",
+      "VALUE": "PIN"
+    },
+    "LOCK_SCREEN_CONTINUE_BUTTON": {
+      "TYPE": "TEXT",
+      "VALUE": "Continue"
+    },
+    "LOCK_SCREEN_CONFIRM_BUTTON": {
+      "TYPE": "TEXT",
+      "VALUE": "Confirm"
     }
   }
 }

@@ -118,4 +118,12 @@ public class AutomotiveConfigConstants {
     public static final String SECURITY_SCROLL_BACKWARD_BUTTON = "SECURITY_SCROLL_BACKWARD_BUTTON";
     public static final String SECURITY_SCROLL_ACTION = "SECURITY_SCROLL_ACTION";
     public static final String SECURITY_SCROLL_DIRECTION = "SECURITY_SCROLL_DIRECTION";
+    // Lockscreen
+    public static final String LOCK_SCREEN_PIN_PAD = "LOCK_SCREEN_PIN_PAD";
+    public static final String LOCK_SCREEN_ENTER_KEY = "LOCK_SCREEN_ENTER_KEY";
+    public static final String LOCK_SCREEN_PACKAGE = "LOCK_SCREEN_PACKAGE";
+    public static final String LOCK_TYPE_PASSWORD = "LOCK_TYPE_PASSWORD";
+    public static final String LOCK_TYPE_PIN = "LOCK_TYPE_PIN";
+    public static final String LOCK_SCREEN_CONTINUE_BUTTON = "LOCK_SCREEN_CONTINUE_BUTTON";
+    public static final String LOCK_SCREEN_SETTINGS_TEXT = "SECURITY";
 }
