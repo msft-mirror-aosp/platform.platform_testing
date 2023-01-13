@@ -12,7 +12,7 @@ import org.junit.runner.Description
  * is device-dependent but non-zero value means the settings is on.
  * See [Settings.Global.STAY_ON_WHILE_PLUGGED_IN] for more information.
  */
-class KeepScreenAwakeRule : TestWatcher() {
+class EnsureKeepScreenAwakeSetRule : TestWatcher() {
 
     override fun starting(description: Description?) {
 
