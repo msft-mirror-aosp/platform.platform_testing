@@ -22,8 +22,6 @@ import kotlin.Unit;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
-import java.util.ArrayList;
-
 /**
  * Generates a "Baseline Profile" for the provided package using the wrapped test statements.
  *
@@ -71,7 +69,8 @@ public class BaselineProfileRule extends TestWatcher {
                             innerRule.collectBaselineProfile(
                                     mBaselineProfilePackage,
                                     1, // Iterations are supported by most Runners already.
-                                    new ArrayList<>(),
+                                    null, // No special prefixing necessary.
+                                    null, // Don't apply any profile filters.
                                     (scope) -> {
                                         // Evaluating the base Statement may throw a Throwable,
                                         // which is checked and not compatible with the lambda

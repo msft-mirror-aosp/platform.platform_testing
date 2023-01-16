@@ -198,7 +198,7 @@ private constructor(
         // TODO(b/112837428): Implement a incremental retry policy to reduce the unnecessary
         // constant time, currently keep the default as 5*1s because most of the original code
         // uses it, and some tests might be sensitive to the waiting interval.
-        @JsName("DEFAULT_RETRY_LIMIT") const val DEFAULT_RETRY_LIMIT = 10
-        @JsName("DEFAULT_RETRY_INTERVAL_MS") const val DEFAULT_RETRY_INTERVAL_MS = 500L
+        @JsName("DEFAULT_RETRY_LIMIT") const val DEFAULT_RETRY_LIMIT = 50
+        @JsName("DEFAULT_RETRY_INTERVAL_MS") const val DEFAULT_RETRY_INTERVAL_MS = 100L
     }
 }
