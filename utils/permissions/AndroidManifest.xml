@@ -20,7 +20,7 @@
     package="com.android.permissionutils">
 
     <uses-sdk android:minSdkVersion="23"
-              android:targetSdkVersion="23" />
+              android:targetSdkVersion="31" />
 
     <uses-permission android:name="android.permission.GRANT_REVOKE_PERMISSIONS" />
     <uses-permission android:name="android.permission.GRANT_RUNTIME_PERMISSIONS" />
