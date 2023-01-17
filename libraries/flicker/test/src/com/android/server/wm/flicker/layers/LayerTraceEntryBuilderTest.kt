@@ -33,13 +33,12 @@ class LayerTraceEntryBuilderTest {
     @Test
     fun createsEntryWithCorrectClockTime() {
         val builder =
-            LayerTraceEntryBuilder(
-                _elapsedTimestamp = "100",
-                layers = emptyArray(),
-                displays = emptyArray(),
-                vSyncId = 123,
-                realToElapsedTimeOffsetNs = "500"
-            )
+            LayerTraceEntryBuilder()
+                .setElapsedTimestamp("100")
+                .setLayers(emptyArray())
+                .setDisplays(emptyArray())
+                .setVSyncId("123")
+                .setRealToElapsedTimeOffsetNs("500")
         val entry = builder.build()
         Truth.assertThat(entry.elapsedTimestamp).isEqualTo(100)
         Truth.assertThat(entry.clockTimestamp).isEqualTo(600)
@@ -52,12 +51,11 @@ class LayerTraceEntryBuilderTest {
     @Test
     fun supportsMissingRealToElapsedTimeOffsetNs() {
         val builder =
-            LayerTraceEntryBuilder(
-                _elapsedTimestamp = "100",
-                layers = emptyArray(),
-                displays = emptyArray(),
-                vSyncId = 123,
-            )
+            LayerTraceEntryBuilder()
+                .setElapsedTimestamp("100")
+                .setLayers(emptyArray())
+                .setDisplays(emptyArray())
+                .setVSyncId("123")
         val entry = builder.build()
         Truth.assertThat(entry.elapsedTimestamp).isEqualTo(100)
         Truth.assertThat(entry.clockTimestamp).isEqualTo(null)

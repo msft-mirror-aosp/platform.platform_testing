@@ -179,12 +179,11 @@ class WindowManagerStateHelperTest {
                     layerList.add(ComponentNameMatcher.IME)
                 }
                 val layerTraceEntry =
-                    LayerTraceEntryBuilder(
-                            _elapsedTimestamp = "0",
-                            displays = emptyArray(),
-                            layers = createImaginaryVisibleLayers(layerList),
-                            vSyncId = -1
-                        )
+                    LayerTraceEntryBuilder()
+                        .setElapsedTimestamp("0")
+                        .setDisplays(emptyArray())
+                        .setLayers(createImaginaryVisibleLayers(layerList))
+                        .setVSyncId("-1")
                         .build()
                 DeviceStateDump(wmState, layerTraceEntry)
             } else {

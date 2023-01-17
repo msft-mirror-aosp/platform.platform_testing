@@ -57,15 +57,14 @@ class LayersTraceParser(
         val layers = entry.layers.layersList.map { LayerTraceEntryLazy.newLayer(it) }.toTypedArray()
         val displays = entry.displaysList.map { LayerTraceEntryLazy.newDisplay(it) }.toTypedArray()
         val builder =
-            LayerTraceEntryBuilder(
-                    entry.elapsedRealtimeNanos.toString(),
-                    layers,
-                    displays,
-                    entry.vsyncId,
-                    entry.hwcBlob,
-                    entry.where,
-                    realToElapsedTimeOffsetNanos.toString()
-                )
+            LayerTraceEntryBuilder()
+                .setElapsedTimestamp(entry.elapsedRealtimeNanos.toString())
+                .setLayers(layers)
+                .setDisplays(displays)
+                .setVSyncId(entry.vsyncId.toString())
+                .setHwcBlob(entry.hwcBlob)
+                .setWhere(entry.where)
+                .setRealToElapsedTimeOffsetNs(realToElapsedTimeOffsetNanos.toString())
                 .setOrphanLayerCallback(orphanLayerCallback)
                 .ignoreLayersStackMatchNoDisplay(ignoreLayersStackMatchNoDisplay)
                 .ignoreVirtualDisplay(ignoreLayersInVirtualDisplay)

@@ -19,48 +19,92 @@ package com.android.server.wm.traces.common.layers
 import kotlin.js.JsName
 
 /** Builder for LayerTraceEntries */
-class LayerTraceEntryBuilder(
-    _elapsedTimestamp: String,
-    layers: Array<Layer>,
-    @JsName("displays") private val displays: Array<Display>,
-    @JsName("vSyncId") private val vSyncId: Long,
-    @JsName("hwcBlob") private val hwcBlob: String = "",
-    @JsName("where") private val where: String = "",
-    realToElapsedTimeOffsetNs: String? = null,
-) {
-    // Necessary for compatibility with JS number type
-    @JsName("elapsedTimestamp") private val elapsedTimestamp: Long = _elapsedTimestamp.toLong()
-    @JsName("realTimestamp")
-    private val realTimestamp: Long? =
-        if (realToElapsedTimeOffsetNs != null && realToElapsedTimeOffsetNs.toLong() != 0L) {
-            realToElapsedTimeOffsetNs.toLong() + _elapsedTimestamp.toLong()
-        } else {
-            null
-        }
+class LayerTraceEntryBuilder {
+    @JsName("elapsedTimestamp") private var elapsedTimestamp: Long = 0L
+
+    @JsName("realTimestamp") private var realTimestamp: Long? = null
 
     @JsName("_orphanLayerCallback") private var orphanLayerCallback: ((Layer) -> Boolean)? = null
+
     @JsName("orphans") private val orphans = mutableListOf<Layer>()
-    @JsName("layers") private val layers = setLayers(layers)
+
+    @JsName("layers") private var layers: MutableMap<Int, Layer> = mutableMapOf()
+
     @JsName("_ignoreVirtualDisplay") private var ignoreVirtualDisplay = false
+
     @JsName("_ignoreLayersStackMatchNoDisplay") private var ignoreLayersStackMatchNoDisplay = false
 
+    @JsName("_duplicateLayerCallback")
+    private var duplicateLayerCallback: ((Layer) -> Boolean) = {
+        error("Duplicate layer id found: ${it.id}")
+    }
+
+    @JsName("displays") private var displays: Array<Display> = emptyArray()
+
+    @JsName("vSyncId") private var vSyncId: Long = 0L
+
+    @JsName("hwcBlob") private var hwcBlob: String = ""
+
+    @JsName("where") private var where: String = ""
+
+    @JsName("setVSyncId")
+    fun setVSyncId(vSyncId: String): LayerTraceEntryBuilder =
+    // Necessary for compatibility with JS number type
+    apply {
+        this.vSyncId = vSyncId.toLong()
+    }
+
+    @JsName("setHwcBlob")
+    fun setHwcBlob(hwcBlob: String): LayerTraceEntryBuilder = apply { this.hwcBlob = hwcBlob }
+
+    @JsName("setWhere")
+    fun setWhere(where: String): LayerTraceEntryBuilder = apply { this.where = where }
+
+    @JsName("setDisplays")
+    fun setDisplays(displays: Array<Display>): LayerTraceEntryBuilder = apply {
+        this.displays = displays
+    }
+
+    @JsName("setElapsedTimestamp")
+    fun setElapsedTimestamp(timestamp: String): LayerTraceEntryBuilder =
+    // Necessary for compatibility with JS number type
+    apply {
+        this.elapsedTimestamp = timestamp.toLong()
+    }
+
+    @JsName("setRealToElapsedTimeOffsetNs")
+    fun setRealToElapsedTimeOffsetNs(realToElapsedTimeOffsetNs: String?): LayerTraceEntryBuilder =
+        apply {
+            this.realTimestamp =
+                if (realToElapsedTimeOffsetNs != null && realToElapsedTimeOffsetNs.toLong() != 0L) {
+                    realToElapsedTimeOffsetNs.toLong() + elapsedTimestamp
+                } else {
+                    null
+                }
+        }
+
     @JsName("setLayers")
-    private fun setLayers(layers: Array<Layer>): Map<Int, Layer> {
+    fun setLayers(layers: Array<Layer>): LayerTraceEntryBuilder = apply {
         val result = mutableMapOf<Int, Layer>()
         layers.forEach { layer ->
             val id = layer.id
             if (result.containsKey(id)) {
-                throw RuntimeException("Duplicate layer id found: $id")
+                duplicateLayerCallback(layer)
             }
             result[id] = layer
         }
 
-        return result
+        this.layers = result
     }
 
     @JsName("setOrphanLayerCallback")
     fun setOrphanLayerCallback(value: ((Layer) -> Boolean)?): LayerTraceEntryBuilder = apply {
         this.orphanLayerCallback = value
+    }
+
+    @JsName("setDuplicateLayerCallback")
+    fun setDuplicateLayerCallback(value: ((Layer) -> Boolean)): LayerTraceEntryBuilder = apply {
+        this.duplicateLayerCallback = value
     }
 
     @JsName("notifyOrphansLayers")
