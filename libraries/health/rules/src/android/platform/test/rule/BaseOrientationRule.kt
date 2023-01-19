@@ -134,6 +134,7 @@ object RotationUtils {
         device.setOrientationNatural()
         launcher.setEnableRotation(false)
         device.unfreezeRotation()
+        device.stableOrientation // wait for orientation to settle
         log("Rotation override cleared.")
     }
 
