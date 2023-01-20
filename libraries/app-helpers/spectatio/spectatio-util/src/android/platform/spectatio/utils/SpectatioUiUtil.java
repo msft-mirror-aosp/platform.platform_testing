@@ -47,6 +47,7 @@ public class SpectatioUiUtil {
     private static final int LONG_UI_RESPONSE_WAIT_MS = 5000;
     private static final int LONG_PRESS_DURATION_MS = 5000;
     private static final int MAX_SCROLL_COUNT = 100;
+    private static final int MAX_SWIPE_STEPS = 10;
     private static final float SCROLL_PERCENT = 1.0f;
     private static final float SWIPE_PERCENT = 1.0f;
 
@@ -386,22 +387,22 @@ public class SpectatioUiUtil {
 
     public void swipeUp() {
         // Swipe Up From bottom of screen to the top in one step
-        swipe(SwipeDirection.BOTTOM_TO_TOP, /*numOfSteps*/ 1);
+        swipe(SwipeDirection.BOTTOM_TO_TOP, /*numOfSteps*/ MAX_SWIPE_STEPS);
     }
 
     public void swipeDown() {
         // Swipe Down From top of screen to the bottom in one step
-        swipe(SwipeDirection.TOP_TO_BOTTOM, /*numOfSteps*/ 1);
+        swipe(SwipeDirection.TOP_TO_BOTTOM, /*numOfSteps*/ MAX_SWIPE_STEPS);
     }
 
     public void swipeRight() {
         // Swipe Right From left of screen to the right in one step
-        swipe(SwipeDirection.LEFT_TO_RIGHT, /*numOfSteps*/ 1);
+        swipe(SwipeDirection.LEFT_TO_RIGHT, /*numOfSteps*/ MAX_SWIPE_STEPS);
     }
 
     public void swipeLeft() {
         // Swipe Left From right of screen to the left in one step
-        swipe(SwipeDirection.RIGHT_TO_LEFT, /*numOfSteps*/ 1);
+        swipe(SwipeDirection.RIGHT_TO_LEFT, /*numOfSteps*/ MAX_SWIPE_STEPS);
     }
 
     public void swipe(SwipeDirection swipeDirection, int numOfSteps) {
@@ -858,7 +859,7 @@ public class SpectatioUiUtil {
         String previousView = getViewHierarchy();
 
         scrollableObject.scroll(direction, SCROLL_PERCENT);
-        wait1Second();
+        wait5Seconds();
 
         String currentView = getViewHierarchy();
 

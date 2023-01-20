@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 The Android Open Source Project
+ * Copyright (C) 2023 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,16 +17,21 @@
 package android.platform.helpers;
 
 import android.app.Instrumentation;
+import android.platform.helpers.ScrollUtility.ScrollActions;
+import android.platform.helpers.ScrollUtility.ScrollDirection;
 import android.platform.helpers.exceptions.UnknownUiException;
 import android.platform.spectatio.exceptions.MissingUiElementException;
+import android.support.test.uiautomator.By;
 import android.support.test.uiautomator.BySelector;
 import android.support.test.uiautomator.UiObject2;
 
 /** Helper class for functional test for App Grid test */
 public class AppGridHelperImpl extends AbstractStandardAppHelper implements IAutoAppGridHelper {
+    private ScrollUtility mScrollUtility;
 
     public AppGridHelperImpl(Instrumentation instr) {
         super(instr);
+        mScrollUtility = ScrollUtility.getInstance(getSpectatioUiUtil());
     }
 
     /** {@inheritDoc} */
@@ -88,50 +93,31 @@ public class AppGridHelperImpl extends AbstractStandardAppHelper implements IAut
 
     @Override
     public void openApp(String appName) {
-        try {
-            ScrollActions scrollAction =
-                    ScrollActions.valueOf(
-                            getActionFromConfig(AutomotiveConfigConstants.APP_LIST_SCROLL_ACTION));
-            UiObject2 app = null;
-            switch (scrollAction) {
-                case USE_BUTTON:
-                    BySelector backwardButtonSelector =
-                            getUiElementFromConfig(
-                                    AutomotiveConfigConstants.APP_GRID_SCROLL_BACKWARD_BUTTON);
-                    BySelector forwardButtonSelector =
-                            getUiElementFromConfig(
-                                    AutomotiveConfigConstants.APP_GRID_SCROLL_FORWARD_BUTTON);
-                    app =
-                            getSpectatioUiUtil()
-                                    .scrollAndFindUiObject(
-                                            forwardButtonSelector, backwardButtonSelector, appName);
-                    break;
-                case USE_GESTURE:
-                    BySelector scrollElementSelector =
-                            getUiElementFromConfig(
-                                    AutomotiveConfigConstants.APP_LIST_SCROLL_ELEMENT);
-                    ScrollDirection scrollDirection =
-                            ScrollDirection.valueOf(
-                                    getActionFromConfig(
-                                            AutomotiveConfigConstants.APP_LIST_SCROLL_DIRECTION));
-                    app =
-                            getSpectatioUiUtil()
-                                    .scrollAndFindUiObject(
-                                            scrollElementSelector,
-                                            appName,
-                                            (scrollDirection == ScrollDirection.VERTICAL));
-                    break;
-                default:
-                    throw new IllegalStateException(
-                            String.format(
-                                    "Cannot scroll through App Grid. Unknown Scroll Action %s.",
-                                    scrollAction));
-            }
-            validateUiObject(app, String.format("Given app %s", appName));
-            getSpectatioUiUtil().clickAndWait(app);
-        } catch (MissingUiElementException ex) {
-            throw new IllegalStateException(String.format("App %s cannot be found", appName));
-        }
+        BySelector appNameSelector = By.text(appName);
+        ScrollActions scrollAction =
+                ScrollActions.valueOf(
+                        getActionFromConfig(AutomotiveConfigConstants.APP_LIST_SCROLL_ACTION));
+        BySelector backwardButtonSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.APP_GRID_SCROLL_BACKWARD_BUTTON);
+        BySelector forwardButtonSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.APP_GRID_SCROLL_FORWARD_BUTTON);
+        BySelector scrollableElementSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.APP_LIST_SCROLL_ELEMENT);
+        ScrollDirection scrollDirection =
+                ScrollDirection.valueOf(
+                        getActionFromConfig(AutomotiveConfigConstants.APP_LIST_SCROLL_DIRECTION));
+        UiObject2 app =
+                mScrollUtility.scrollAndFindUiObject(
+                        scrollAction,
+                        scrollDirection,
+                        forwardButtonSelector,
+                        backwardButtonSelector,
+                        scrollableElementSelector,
+                        appNameSelector,
+                        String.format("Scroll on app grid to find %s", appName));
+
+        validateUiObject(app, String.format("Given app %s", appName));
+        getSpectatioUiUtil().clickAndWait(app);
     }
 
     /** {@inherticDoc} */
@@ -234,82 +220,44 @@ public class AppGridHelperImpl extends AbstractStandardAppHelper implements IAut
 
     @Override
     public boolean scrollUpOnePage() {
-        boolean scrollUp = false;
-        try {
             ScrollActions scrollAction =
                     ScrollActions.valueOf(
                             getActionFromConfig(AutomotiveConfigConstants.APP_LIST_SCROLL_ACTION));
-            switch (scrollAction) {
-                case USE_BUTTON:
                     BySelector backwardButtonSelector =
                             getUiElementFromConfig(
                                     AutomotiveConfigConstants.APP_GRID_SCROLL_BACKWARD_BUTTON);
-                    scrollUp = getSpectatioUiUtil().scrollUsingButton(backwardButtonSelector);
-                    break;
-                case USE_GESTURE:
                     ScrollDirection scrollDirection =
                             ScrollDirection.valueOf(
                                     getActionFromConfig(
                                             AutomotiveConfigConstants.APP_LIST_SCROLL_DIRECTION));
-                    BySelector scrollableElementSelector =
-                            getUiElementFromConfig(
-                                    AutomotiveConfigConstants.APP_LIST_SCROLL_ELEMENT);
-                    scrollUp =
-                            getSpectatioUiUtil()
-                                    .scrollBackward(
-                                            scrollableElementSelector,
-                                            (scrollDirection == ScrollDirection.VERTICAL));
-                    break;
-                default:
-                    throw new IllegalStateException(
-                            String.format(
-                                    "Cannot scroll through App Grid. Unknown Scroll Action %s.",
-                                    scrollAction));
-            }
-            return scrollUp;
-        } catch (MissingUiElementException ex) {
-            throw new IllegalStateException(String.format("Scrolling did not work."));
-        }
+        BySelector scrollableElementSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.APP_LIST_SCROLL_ELEMENT);
+        return mScrollUtility.scrollBackward(
+                scrollAction,
+                scrollDirection,
+                backwardButtonSelector,
+                scrollableElementSelector,
+                String.format("Scroll up one page on app grid"));
     }
 
     @Override
     public boolean scrollDownOnePage() {
-        boolean scrollDown = false;
-        try {
-            ScrollActions scrollAction =
-                    ScrollActions.valueOf(
-                            getActionFromConfig(AutomotiveConfigConstants.APP_LIST_SCROLL_ACTION));
-            switch (scrollAction) {
-                case USE_BUTTON:
-                    BySelector forwardButtonSelector =
-                            getUiElementFromConfig(
-                                    AutomotiveConfigConstants.APP_GRID_SCROLL_FORWARD_BUTTON);
-                    scrollDown = getSpectatioUiUtil().scrollUsingButton(forwardButtonSelector);
-                    break;
-                case USE_GESTURE:
-                    ScrollDirection scrollDirection =
-                            ScrollDirection.valueOf(
-                                    getActionFromConfig(
-                                            AutomotiveConfigConstants.APP_LIST_SCROLL_DIRECTION));
-                    BySelector scrollableElementSelector =
-                            getUiElementFromConfig(
-                                    AutomotiveConfigConstants.APP_LIST_SCROLL_ELEMENT);
-                    scrollDown =
-                            getSpectatioUiUtil()
-                                    .scrollForward(
-                                            scrollableElementSelector,
-                                            (scrollDirection == ScrollDirection.VERTICAL));
-                    break;
-                default:
-                    throw new IllegalStateException(
-                            String.format(
-                                    "Cannot scroll through App Grid. Unknown Scroll Action %s.",
-                                    scrollAction));
-            }
-            return scrollDown;
-        } catch (MissingUiElementException ex) {
-            throw new IllegalStateException(String.format("Scrolling did not work."));
-        }
+        ScrollActions scrollAction =
+                ScrollActions.valueOf(
+                        getActionFromConfig(AutomotiveConfigConstants.APP_LIST_SCROLL_ACTION));
+        BySelector forwardButtonSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.APP_GRID_SCROLL_FORWARD_BUTTON);
+        ScrollDirection scrollDirection =
+                ScrollDirection.valueOf(
+                        getActionFromConfig(AutomotiveConfigConstants.APP_LIST_SCROLL_DIRECTION));
+        BySelector scrollableElementSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.APP_LIST_SCROLL_ELEMENT);
+        return mScrollUtility.scrollForward(
+                scrollAction,
+                scrollDirection,
+                forwardButtonSelector,
+                scrollableElementSelector,
+                String.format("Scroll down one page on app grid"));
     }
 
     private void validateUiObject(UiObject2 uiObject, String action) {
@@ -317,15 +265,5 @@ public class AppGridHelperImpl extends AbstractStandardAppHelper implements IAut
             throw new UnknownUiException(
                     String.format("Unable to find UI Element for %s.", action));
         }
-    }
-
-    private enum ScrollActions {
-        USE_BUTTON,
-        USE_GESTURE;
-    }
-
-    private enum ScrollDirection {
-        VERTICAL,
-        HORIZONTAL;
     }
 }

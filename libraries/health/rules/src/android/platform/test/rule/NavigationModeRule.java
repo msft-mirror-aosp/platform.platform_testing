@@ -22,7 +22,6 @@ import static com.android.systemui.shared.system.QuickStepContract.NAV_BAR_MODE_
 import static com.android.systemui.shared.system.QuickStepContract.NAV_BAR_MODE_GESTURAL_OVERLAY;
 
 import android.content.pm.PackageManager;
-import android.os.SystemClock;
 import android.util.Log;
 
 import androidx.test.uiautomator.UiDevice;
@@ -78,12 +77,13 @@ public class NavigationModeRule extends TestWatcher {
         try {
             UiDevice.getInstance(getInstrumentation()).executeShellCommand(
                     "cmd overlay enable-exclusive --category " + overlayPackage);
+            UiDevice.getInstance(getInstrumentation())
+                    .executeShellCommand("am wait-for-broadcast-barrier");
         } catch (IOException e) {
             e.printStackTrace();
             return false;
         }
 
-        SystemClock.sleep(2000);
         return true;
     }
 

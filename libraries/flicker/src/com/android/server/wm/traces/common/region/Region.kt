@@ -154,7 +154,7 @@ class Region(rects: Array<Rect> = arrayOf()) {
     class Iterator(@JsName("rgn") private val rgn: Region) {
         @JsName("_done") private var done: Boolean
         @JsName("_rect") private var rect: Rect
-        @JsName("fRuns") private var fRuns: List<Int>? = null
+        @JsName("fRuns") private var fRuns: Array<Int>? = null
         @JsName("fRunsIndex") private var fRunsIndex = 0
 
         init {
@@ -246,7 +246,13 @@ class Region(rects: Array<Rect> = arrayOf()) {
     }
 
     override fun hashCode(): Int {
-        return rects.contentHashCode()
+        var result = 1
+        val iter = Iterator(this)
+        while (!iter.done()) {
+            result = 31 * result + iter.rect().hashCode()
+            iter.next()
+        }
+        return result
     }
 
     // the native values for these must match up with the enum in SkRegion.h
@@ -360,7 +366,7 @@ class Region(rects: Array<Rect> = arrayOf()) {
 
     class RunArray {
         @JsName("kRunArrayStackCount") private val kRunArrayStackCount = 256
-        @JsName("runs") var runs: MutableList<Int> = MutableList(kRunArrayStackCount) { 0 }
+        @JsName("runs") var runs: Array<Int> = Array(kRunArrayStackCount) { 0 }
         @JsName("fCount") private var fCount: Int = kRunArrayStackCount
 
         @JsName("count")
@@ -377,7 +383,7 @@ class Region(rects: Array<Rect> = arrayOf()) {
             if (count > fCount) {
                 // leave at least 50% extra space for future growth.
                 count += count shr 1
-                val newRuns = MutableList(count) { 0 }
+                val newRuns = Array(count) { 0 }
                 runs.forEachIndexed { index, value -> newRuns[index] = value }
                 runs = newRuns
                 fCount = count
@@ -401,7 +407,7 @@ class Region(rects: Array<Rect> = arrayOf()) {
         @JsName("clone")
         fun clone(): RunArray {
             val clone = RunArray()
-            clone.runs = runs.toMutableList()
+            clone.runs = runs.copyOf()
             clone.fCount = fCount
             return clone
         }
@@ -417,10 +423,10 @@ class Region(rects: Array<Rect> = arrayOf()) {
     }
 
     @JsName("getRuns")
-    private fun getRuns(): List<Int> {
-        val runs: List<Int>
+    private fun getRuns(): Array<Int> {
+        val runs: Array<Int>
         if (this.isEmpty) {
-            runs = MutableList(kRectRegionRuns) { 0 }
+            runs = Array(kRectRegionRuns) { 0 }
             runs[0] = SkRegion_kRunTypeSentinel
         } else if (this.isRect()) {
             runs = buildRectRuns(fBounds)
@@ -432,8 +438,8 @@ class Region(rects: Array<Rect> = arrayOf()) {
     }
 
     @JsName("buildRectRuns")
-    private fun buildRectRuns(bounds: Rect): List<Int> {
-        val runs = MutableList(kRectRegionRuns) { 0 }
+    private fun buildRectRuns(bounds: Rect): Array<Int> {
+        val runs = Array(kRectRegionRuns) { 0 }
         runs[0] = bounds.top
         runs[1] = bounds.bottom
         runs[2] = 1 // 1 interval for this scanline
@@ -520,7 +526,7 @@ class Region(rects: Array<Rect> = arrayOf()) {
          * It returns the beginning of the scanline, starting with its Bottom value.
          */
         @JsName("findScanline")
-        fun findScanline(y: Int): List<Int> {
+        fun findScanline(y: Int): Array<Int> {
             val runs = readonlyRuns
 
             // if the top-check fails, we didn't do a quick check on the bounds
@@ -537,7 +543,15 @@ class Region(rects: Array<Rect> = arrayOf()) {
                 }
                 runsIndex = skipEntireScanline(runsIndex)
             }
-            return runs.subList(runsIndex, runs.size - runsIndex)
+
+            val newArray = Array(runs.size - runsIndex) { 0 }
+            runs.copyInto(
+                newArray,
+                destinationOffset = 0,
+                startIndex = runsIndex,
+                endIndex = runs.size - runsIndex
+            )
+            return newArray
         }
 
         /**
@@ -563,7 +577,7 @@ class Region(rects: Array<Rect> = arrayOf()) {
         var runs = RunArray()
         var fRunCount: Int = 0
 
-        val readonlyRuns: List<Int>
+        val readonlyRuns: Array<Int>
             get() = runs.runs
     }
 
@@ -711,8 +725,8 @@ class Region(rects: Array<Rect> = arrayOf()) {
         @JsName("addSpan")
         fun addSpan(
             bottom: Int,
-            aRuns: List<Int>,
-            bRuns: List<Int>,
+            aRuns: Array<Int>,
+            bRuns: Array<Int>,
             aRunsIndex: Int,
             bRunsIndex: Int
         ) {
@@ -757,8 +771,8 @@ class Region(rects: Array<Rect> = arrayOf()) {
         }
 
         class SpanRect(
-            @JsName("aRuns") private val aRuns: List<Int>,
-            @JsName("bRuns") private val bRuns: List<Int>,
+            @JsName("aRuns") private val aRuns: Array<Int>,
+            @JsName("bRuns") private val bRuns: Array<Int>,
             aIndex: Int,
             bIndex: Int
         ) {
@@ -866,8 +880,8 @@ class Region(rects: Array<Rect> = arrayOf()) {
 
         @JsName("operateOnSpan")
         private fun operateOnSpan(
-            a_runs: List<Int>,
-            b_runs: List<Int>,
+            a_runs: Array<Int>,
+            b_runs: Array<Int>,
             a_run_index: Int,
             b_run_index: Int,
             array: RunArray,
@@ -916,7 +930,7 @@ class Region(rects: Array<Rect> = arrayOf()) {
         }
 
         @JsName("distance_to_sentinel")
-        private fun distance_to_sentinel(runs: List<Int>, startIndex: Int): Int {
+        private fun distance_to_sentinel(runs: Array<Int>, startIndex: Int): Int {
             var index = startIndex
             if (runs.size <= index) {
                 println("We fucked up...")
@@ -934,8 +948,8 @@ class Region(rects: Array<Rect> = arrayOf()) {
 
     @JsName("operate")
     private fun operate(
-        aRuns: List<Int>,
-        bRuns: List<Int>,
+        aRuns: Array<Int>,
+        bRuns: Array<Int>,
         dst: RunArray,
         op: Op,
         _aRunsIndex: Int = 0,
@@ -956,8 +970,8 @@ class Region(rects: Array<Rect> = arrayOf()) {
         aRunsIndex++ // skip the intervalCount
         bRunsIndex++ // skip the intervalCount
 
-        val gEmptyScanline: List<Int> =
-            listOf(
+        val gEmptyScanline: Array<Int> =
+            arrayOf(
                 0, // fake bottom value
                 0, // zero intervals
                 SkRegion_kRunTypeSentinel,
@@ -1065,7 +1079,7 @@ class Region(rects: Array<Rect> = arrayOf()) {
     }
 
     @JsName("skipIntervals")
-    private fun skipIntervals(runs: List<Int>, index: Int): Int {
+    private fun skipIntervals(runs: Array<Int>, index: Int): Int {
         val intervals = runs[index - 1]
         return index + intervals * 2 + 1
     }
@@ -1195,7 +1209,7 @@ class Region(rects: Array<Rect> = arrayOf()) {
 
         @JsName("getRectsFromString")
         private fun getRectsFromString(regionString: String): Array<Rect> {
-            val rects: ArrayList<Rect> = ArrayList()
+            val rects = mutableListOf<Rect>()
 
             if (regionString == "SkRegion()") {
                 return rects.toTypedArray()

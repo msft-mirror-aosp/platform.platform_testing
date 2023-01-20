@@ -16,12 +16,15 @@
     "APP_LIST_SCROLL_ACTION" : "USE_BUTTON",
     "APP_LIST_SCROLL_DIRECTION" : "VERTICAL",
     "SECURITY_SCROLL_ACTION": "USE_BUTTON",
-    "SECURITY_SCROLL_DIRECTION": "VERTICAL"
+    "SECURITY_SCROLL_DIRECTION": "VERTICAL",
+    "NOTIFICATION_LIST_SCROLL_ACTION": "USE_GESTURE",
+    "NOTIFICATION_LIST_SCROLL_DIRECTION": "VERTICAL"
   },
   "COMMANDS": {
     "OPEN_DIAL_PAD_COMMAND": "am start -a android.intent.action.DIAL",
     "OPEN_PHONE_ACTIVITY_COMMAND": "am start -n com.android.car.dialer/.ui.TelecomActivity",
-    "OPEN_APP_GRID_COMMAND": "am start -n com.android.car.carlauncher/.GASAppGridActivity"
+    "OPEN_APP_GRID_COMMAND": "am start -n com.android.car.carlauncher/.GASAppGridActivity",
+    "OPEN_NOTIFICATIONS_COMMAND": "service call statusbar 1"
   },
   "UI_ELEMENTS": {
     "MAKE_CALL": {
@@ -386,6 +389,49 @@
     "LOCK_SCREEN_CONFIRM_BUTTON": {
       "TYPE": "TEXT",
       "VALUE": "Confirm"
+    },
+    "NOTIFICATION_VIEW": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "notification_view",
+      "PACKAGE": "com.android.systemui"
+    },
+    "CLEAR_ALL_BUTTON": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "clear_all_button",
+      "PACKAGE": "com.android.systemui"
+    },
+    "NOTIFICATION_LIST": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "notifications",
+      "PACKAGE": "com.android.systemui"
+    },
+    "APP_ICON": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "notification_body_icon",
+      "PACKAGE": "com.android.systemui"
+    },
+    "NOTIFICATION_TITLE": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "notification_body_title",
+      "PACKAGE": "com.android.systemui"
+    },
+    "NOTIFICATION_BODY": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "notification_body_content",
+      "PACKAGE": "com.android.systemui"
+    },
+    "NOTIFICATION_LIST_EMPTY": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "empty_notification_text",
+      "PACKAGE": "com.android.systemui"
+    },
+    "NOTIFICATION_LIST_SCROLL_FORWARD": {
+      "TYPE": "DESCRIPTION",
+      "VALUE": "Scroll Down"
+    },
+    "NOTIFICATION_LIST_SCROLL_BACKWARD": {
+      "TYPE": "DESCRIPTION",
+      "VALUE": "Scroll Up"
     }
   }
 }

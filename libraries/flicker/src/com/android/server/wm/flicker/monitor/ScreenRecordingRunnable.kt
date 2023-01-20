@@ -22,6 +22,7 @@ import android.media.MediaCodec
 import android.media.MediaCodecInfo
 import android.media.MediaFormat
 import android.media.MediaMuxer
+import android.os.SystemClock
 import android.util.DisplayMetrics
 import android.util.Log
 import android.view.WindowManager
@@ -31,6 +32,7 @@ import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.file.Files
 import java.nio.file.Path
+import java.util.concurrent.TimeUnit
 
 /** Runnable to record the screen contents and winscope metadata */
 class ScreenRecordingRunnable(
@@ -76,7 +78,7 @@ class ScreenRecordingRunnable(
     override fun run() {
         Log.d(FLICKER_TAG, "Starting screen recording to file $outputFile")
 
-        val timestamps = mutableListOf<Long>()
+        val timestampsUs = mutableListOf<Long>()
         try {
             // Start encoder and muxer
             encoder.start()
@@ -87,19 +89,18 @@ class ScreenRecordingRunnable(
                 if (bufferIndex == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
                     prepareMuxer()
                 } else if (bufferIndex >= 0) {
-                    val elapsedRealTimeMicros = writeSample(bufferIndex, bufferInfo)
+                    val elapsedTimeUs = writeSample(bufferIndex, bufferInfo)
                     val endOfStream = bufferInfo.flags and MediaCodec.BUFFER_FLAG_END_OF_STREAM
                     // end of the stream samples have 0 timestamp
                     if (endOfStream > 0) {
                         break
                     } else {
-                        timestamps.add(elapsedRealTimeMicros)
+                        timestampsUs.add(elapsedTimeUs)
                     }
                 }
             }
         } finally {
-            // metadata writing ont working yet
-            // writeMetadata(timestamps)
+            writeMetadata(timestampsUs)
             encoder.stop()
             muxer.stop()
             muxer.release()
@@ -142,32 +143,54 @@ class ScreenRecordingRunnable(
     }
 
     /**
-     * Saves frames presentation time relative to the elapsed realtime clock in microseconds
-     * preceded by a Winscope magic string and frame count to a metadata track. This metadata is
-     * used by the Winscope tool to sync video with SurfaceFlinger and WindowManager traces.
+     * Saves metadata needed by Winscope to synchronize the screen recording playback with other
+     * traces.
      *
-     * The metadata is written as a binary array as follows:
-     * - winscope magic string (kWinscopeMagicString constant), without trailing null char,
-     * - the number of recorded frames (as little endian uint32),
-     * - for every frame its presentation time relative to the elapsed realtime clock in
-     * microseconds (as little endian uint64).
+     * The metadata (version 2) is written as a binary array with the following format:
+     * - winscope magic string (#VV1NSC0PET1ME2#, 16B).
+     * - the metadata version number (4B little endian).
+     * - Realtime-to-elapsed time offset in nanoseconds (8B little endian).
+     * - the recorded frames count (4B little endian)
+     * - for each recorded frame:
+     * ```
+     *     - System time in elapsed clock timebase in nanoseconds (8B little endian).
+     * ```
      */
-    private fun writeMetadata(timestamps: List<Long>) {
+    private fun writeMetadata(timestampsUs: List<Long>) {
+        if (timestampsUs.isEmpty()) {
+            Log.v(FLICKER_TAG, "Not writing winscope metadata (no frames/timestamps)")
+            return
+        }
+
         Log.v(
             FLICKER_TAG,
-            "Writing metadata (size=${timestamps.size} " +
-                "(timestamps=${timestamps.first()}-${timestamps.last()})"
+            "Writing winscope metadata (size=${timestampsUs.size} " +
+                "(timestamps [us] = ${timestampsUs.first()}-${timestampsUs.last()})"
         )
-        val magicStringBytes = WINSCOPE_MAGIC_STRING.toByteArray()
-        val size = magicStringBytes.size + Int.SIZE_BYTES + (timestamps.size * Long.SIZE_BYTES)
+
+        val timeOffsetNs =
+            TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis()) -
+                SystemClock.elapsedRealtimeNanos()
+
+        val bufferSize =
+            WINSCOPE_MAGIC_STRING.toByteArray().size +
+                Int.SIZE_BYTES +
+                Long.SIZE_BYTES +
+                Int.SIZE_BYTES +
+                (timestampsUs.size * Long.SIZE_BYTES)
+
         val buffer =
-            ByteBuffer.allocate(size)
+            ByteBuffer.allocate(bufferSize)
                 .order(ByteOrder.LITTLE_ENDIAN)
-                .put(magicStringBytes)
-                .putInt(timestamps.size)
-        timestamps.forEach { buffer.putLong(it) }
+                .put(WINSCOPE_MAGIC_STRING.toByteArray())
+                .putInt(WINSCOPE_METADATA_VERSION)
+                .putLong(timeOffsetNs)
+                .putInt(timestampsUs.size)
+                .apply { timestampsUs.forEach { putLong(TimeUnit.MICROSECONDS.toNanos(it)) } }
+
         val bufferInfo = MediaCodec.BufferInfo()
-        bufferInfo.size = size
+        bufferInfo.size = bufferSize
+        bufferInfo.presentationTimeUs = timestampsUs[0]
         muxer.writeSampleData(metadataTrackIndex, buffer, bufferInfo)
     }
 
@@ -204,7 +227,8 @@ class ScreenRecordingRunnable(
     }
 
     companion object {
-        private const val WINSCOPE_MAGIC_STRING = "#VV1NSC0PET1ME!#"
+        private const val WINSCOPE_MAGIC_STRING = "#VV1NSC0PET1ME2#"
+        private const val WINSCOPE_METADATA_VERSION = 2
         private const val MIME_TYPE_VIDEO = MediaFormat.MIMETYPE_VIDEO_AVC
         private const val MIME_TYPE_METADATA = "application/octet-stream"
         private const val BIT_RATE = 2000000 // 2Mbps

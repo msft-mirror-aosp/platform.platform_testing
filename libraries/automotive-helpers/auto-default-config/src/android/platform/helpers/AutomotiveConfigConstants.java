@@ -79,6 +79,8 @@ public class AutomotiveConfigConstants {
             "CONTACT_DETAILS_SCROLL_DIRECTION";
     public static final String DIAL_PAD_MENU = "DIAL_PAD_MENU";
     public static final String FAVORITES_MENU = "FAVORITES_MENU";
+
+    // Home App Constants
     public static final String HOME_PACKAGE = "HOME_PACKAGE";
     public static final String HOME_BOTTOM_CARD = "HOME_BOTTOM_CARD";
     public static final String HOME_TOP_CARD = "HOME_TOP_CARD";
@@ -118,6 +120,7 @@ public class AutomotiveConfigConstants {
     public static final String SECURITY_SCROLL_BACKWARD_BUTTON = "SECURITY_SCROLL_BACKWARD_BUTTON";
     public static final String SECURITY_SCROLL_ACTION = "SECURITY_SCROLL_ACTION";
     public static final String SECURITY_SCROLL_DIRECTION = "SECURITY_SCROLL_DIRECTION";
+
     // Lockscreen
     public static final String LOCK_SCREEN_PIN_PAD = "LOCK_SCREEN_PIN_PAD";
     public static final String LOCK_SCREEN_ENTER_KEY = "LOCK_SCREEN_ENTER_KEY";
@@ -126,4 +129,22 @@ public class AutomotiveConfigConstants {
     public static final String LOCK_TYPE_PIN = "LOCK_TYPE_PIN";
     public static final String LOCK_SCREEN_CONTINUE_BUTTON = "LOCK_SCREEN_CONTINUE_BUTTON";
     public static final String LOCK_SCREEN_SETTINGS_TEXT = "SECURITY";
+
+    // Notification App Constants
+    public static final String OPEN_NOTIFICATIONS_COMMAND = "OPEN_NOTIFICATIONS_COMMAND";
+    public static final String NOTIFICATION_LIST = "NOTIFICATION_LIST";
+    public static final String NOTIFICATION_VIEW = "NOTIFICATION_VIEW";
+    public static final String CLEAR_ALL_BUTTON = "CLEAR_ALL_BUTTON";
+    public static final String APP_ICON = "APP_ICON";
+    public static final String NOTIFICATION_TITLE = "NOTIFICATION_TITLE";
+    public static final String NOTIFICATION_BODY = "NOTIFICATION_BODY";
+    public static final String NOTIFICATION_LIST_EMPTY = "NOTIFICATION_LIST_EMPTY";
+    public static final String NOTIFICATION_LIST_SCROLL_FORWARD =
+            "NOTIFICATION_LIST_SCROLL_FORWARD";
+    public static final String NOTIFICATION_LIST_SCROLL_BACKWARD =
+            "NOTIFICATION_LIST_SCROLL_BACKWARD";
+    public static final String NOTIFICATION_LIST_SCROLL_ACTION = "NOTIFICATION_LIST_SCROLL_ACTION";
+    public static final String NOTIFICATION_LIST_SCROLL_DIRECTION =
+            "NOTIFICATION_LIST_SCROLL_DIRECTION";
 }
+
