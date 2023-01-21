@@ -17,6 +17,7 @@
 package com.android.server.wm.flicker.helpers
 
 import android.graphics.Rect
+import androidx.collection.LruCache
 import androidx.test.platform.app.InstrumentationRegistry
 import com.android.server.wm.traces.common.layers.Display
 import com.android.server.wm.traces.common.region.Region
@@ -26,6 +27,8 @@ import com.android.server.wm.traces.parser.getCurrentStateDump
 import com.android.server.wm.traces.parser.toAndroidRect
 
 object WindowUtils {
+
+    private val displayBoundsCache = LruCache<PlatformConsts.Rotation, Region>(1)
     private val instrumentation = InstrumentationRegistry.getInstrumentation()
 
     /** Helper functions to retrieve system window sizes and positions. */
@@ -57,19 +60,24 @@ object WindowUtils {
      * @param requestedRotation Device rotation
      */
     fun getDisplayBounds(requestedRotation: PlatformConsts.Rotation): Region {
-        val displayIsRotated = displayRotation.isRotated()
-        val requestedDisplayIsRotated = requestedRotation.isRotated()
+        return displayBoundsCache[requestedRotation]
+            ?: let {
+                val displayIsRotated = displayRotation.isRotated()
+                val requestedDisplayIsRotated = requestedRotation.isRotated()
 
-        // if the current orientation changes with the requested rotation,
-        // flip height and width of display bounds.
-        val displayBounds = displayBounds
-        return if (displayIsRotated != requestedDisplayIsRotated) {
-            Region.from(0, 0, displayBounds.height(), displayBounds.width())
-        } else {
-            Region.from(0, 0, displayBounds.width(), displayBounds.height())
-        }
+                // if the current orientation changes with the requested rotation,
+                // flip height and width of display bounds.
+                val displayBounds = displayBounds
+                val retval: Region
+                if (displayIsRotated != requestedDisplayIsRotated) {
+                    retval = Region.from(0, 0, displayBounds.height(), displayBounds.width())
+                } else {
+                    retval = Region.from(0, 0, displayBounds.width(), displayBounds.height())
+                }
+                displayBoundsCache.put(requestedRotation, retval)
+                return retval
+            }
     }
-
     /** Gets the status bar height with a specific display cutout. */
     private fun getExpectedStatusBarHeight(displayContent: DisplayContent): Int {
         val cutout = displayContent.cutout

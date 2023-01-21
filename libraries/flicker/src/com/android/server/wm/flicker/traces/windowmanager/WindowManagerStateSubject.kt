@@ -399,7 +399,7 @@ private constructor(
 
     /** {@inheritDoc} */
     override fun isKeyguardShowing(): WindowManagerStateSubject = apply {
-        if (!wmState.isKeyguardShowing) {
+        if (!wmState.isKeyguardShowing && !wmState.isAodShowing) {
             fail(
                 Fact.fact(ASSERTION_TAG, "isKeyguardShowing()"),
                 Fact.fact("Keyguard showing", wmState.isKeyguardShowing)

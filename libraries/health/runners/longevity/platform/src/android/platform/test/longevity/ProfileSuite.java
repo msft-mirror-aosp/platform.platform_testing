@@ -95,11 +95,12 @@ public class ProfileSuite extends LongevitySuite {
                                 "%s is not annotated with @Scenario.",
                                 runner.getDescription().getDisplayName()));
             }
-            // All scenarios must extend BlockJUnit4ClassRunner.
-            if (!(runner instanceof BlockJUnit4ClassRunner)) {
+            // All scenarios must extend BlockJUnit4ClassRunner or be ignored.
+            if (!(runner instanceof BlockJUnit4ClassRunner) && !isIgnoredRunner(runner)) {
                 throw new InitializationError(
                         String.format(
-                                "All runners must extend BlockJUnit4ClassRunner. %s:%s doesn't.",
+                                "All runners must extend BlockJUnit4ClassRunner or be ignored."
+                                        + " %s:%s doesn't.",
                                 runner.getClass(), runner.getDescription().getDisplayName()));
             }
         }

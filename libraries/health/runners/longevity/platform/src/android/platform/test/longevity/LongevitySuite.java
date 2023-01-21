@@ -31,6 +31,7 @@ import android.util.Log;
 import androidx.annotation.VisibleForTesting;
 import androidx.test.InstrumentationRegistry;
 
+import org.junit.internal.builders.IgnoredClassRunner;
 import org.junit.internal.runners.ErrorReportingRunner;
 import org.junit.runner.Description;
 import org.junit.runner.Runner;
@@ -162,8 +163,8 @@ public class LongevitySuite extends android.host.test.longevity.LongevitySuite {
             if (runner instanceof ErrorReportingRunner) {
                 throw new InitializationError(getCauses((ErrorReportingRunner) runner));
             }
-            // All scenarios must extend BlockJUnit4ClassRunner.
-            if (!(runner instanceof BlockJUnit4ClassRunner)) {
+            // All scenarios must extend BlockJUnit4ClassRunner or be ignored.
+            if (!(runner instanceof BlockJUnit4ClassRunner) && !isIgnoredRunner(runner)) {
                 throw new InitializationError(
                         String.format(
                                 "All runners must extend BlockJUnit4ClassRunner. %s:%s doesn't.",
@@ -194,6 +195,11 @@ public class LongevitySuite extends android.host.test.longevity.LongevitySuite {
         // Update iterations.
         mIterations.computeIfPresent(runner.getDescription(), (k, v) -> v + 1);
         mIterations.computeIfAbsent(runner.getDescription(), k -> 1);
+
+        if (isIgnoredRunner(runner)) {
+            runner.run(notifier);
+            return;
+        }
 
         LongevityClassRunner suiteRunner = getSuiteRunner(runner);
         if (mRenameIterations) {
@@ -256,6 +262,10 @@ public class LongevitySuite extends android.host.test.longevity.LongevitySuite {
         final Intent batteryInfo =
                 mContext.registerReceiver(null, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
         return batteryInfo.getBooleanExtra(BatteryManager.EXTRA_PRESENT, true);
+    }
+
+    protected static boolean isIgnoredRunner(Runner runner) {
+        return runner instanceof IgnoredClassRunner;
     }
 
     /** Gets the first cause out of a {@link ErrorReportingRunner}. Also logs the rest. */

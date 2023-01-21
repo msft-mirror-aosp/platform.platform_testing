@@ -44,6 +44,10 @@ class CujEvent(
         data: String
     ) : this(timestamp, getCujMarkerFromData(data), processId, uid, threadId, tag)
 
+    override fun toString(): String {
+        return "CujEvent(timestamp=$timestamp, cuj=$cuj, processId=$processId, uid=$uid, threadId=$threadId, tag=$tag)"
+    }
+
     companion object {
         private fun getCujMarkerFromData(data: String): CujType {
             val eventId = data.toIntOrNull()
