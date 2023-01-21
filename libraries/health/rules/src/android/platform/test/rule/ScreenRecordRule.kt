@@ -18,11 +18,14 @@ package android.platform.test.rule
 import android.app.UiAutomation
 import android.os.ParcelFileDescriptor
 import android.os.ParcelFileDescriptor.AutoCloseInputStream
+import android.platform.test.rule.ScreenRecordRule.Companion.SCREEN_RECORDING_CLASS_LEVEL_OVERRIDE_KEY
 import android.platform.test.rule.ScreenRecordRule.Companion.SCREEN_RECORDING_TEST_LEVEL_OVERRIDE_KEY
+import android.platform.test.rule.ScreenRecordRule.ScreenRecord
 import android.platform.uiautomator_helpers.DeviceHelpers.shell
 import android.platform.uiautomator_helpers.DeviceHelpers.uiDevice
 import android.platform.uiautomator_helpers.FailedEnsureException
 import android.platform.uiautomator_helpers.WaitUtils.ensureThat
+import android.platform.uiautomator_helpers.WaitUtils.waitForValueToSettle
 import android.util.Log
 import androidx.test.InstrumentationRegistry.getInstrumentation
 import androidx.test.platform.app.InstrumentationRegistry
@@ -30,6 +33,7 @@ import java.io.File
 import java.lang.annotation.Retention
 import java.lang.annotation.RetentionPolicy
 import java.nio.file.Files
+import java.time.Duration
 import kotlin.annotation.AnnotationTarget.CLASS
 import kotlin.annotation.AnnotationTarget.FUNCTION
 import kotlin.annotation.AnnotationTarget.PROPERTY_GETTER
@@ -114,6 +118,8 @@ class ScreenRecordRule : TestRule {
 
             val killOutput = uiDevice.shell("kill -INT $screenRecordPid")
 
+            outputFile.tryWaitingForFileSizeToSettle()
+
             val screenRecordOutput = screenRecordingFileDescriptor.readAllAndClose()
             log(
                 """
@@ -141,6 +147,17 @@ class ScreenRecordRule : TestRule {
             ensureThat("Recording output created") { exists() }
         } catch (e: FailedEnsureException) {
             Log.e(TAG, "Recording not created successfully.", e)
+        }
+    }
+
+    private fun File.tryWaitingForFileSizeToSettle() {
+        try {
+            waitForValueToSettle(
+                "Screen recording output size",
+                minimumSettleTime = Duration.ofSeconds(5)
+            ) { length() }
+        } catch (e: FailedEnsureException) {
+            Log.e(TAG, "Recording size didn't settle.", e)
         }
     }
 
