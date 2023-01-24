@@ -16,4 +16,22 @@
 
 package com.android.myroboapplication;
 
-public class LoginActivity {}
+import static org.junit.Assert.assertFalse;
+
+import androidx.test.runner.AndroidJUnit4;
+
+import com.android.robotestutil.RobolectricTestUtil;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+@RunWith(AndroidJUnit4.class)
+public class WelcomeActivityDeviceTest {
+
+    /** Running test type check in a device test should return false */
+    @Test
+    public void testTypeCheck() {
+        boolean isRoboTest = RobolectricTestUtil.isRobolectricTest();
+        assertFalse(isRoboTest);
+    }
+}

@@ -14,6 +14,17 @@
  * limitations under the License.
  */
 
-package com.android.myroboapplication;
+package com.android.robotestutil;
 
-public class LoginActivity {}
+public class RobolectricTestUtil {
+
+    /** Determine whether the running test is a Robolectric test */
+    public static boolean isRobolectricTest() {
+        try {
+            Class.forName("org.robolectric.Robolectric");
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
+        return true;
+    }
+}
