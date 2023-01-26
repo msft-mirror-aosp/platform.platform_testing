@@ -17,12 +17,15 @@
 package com.android.server.wm.flicker.datastore
 
 import com.android.server.wm.flicker.TraceConfigs
-import com.android.server.wm.flicker.io.ResultReader
+import com.android.server.wm.flicker.io.IReader
+import com.android.server.wm.flicker.io.ResultReaderWithLru
 import com.android.server.wm.traces.common.IScenario
 
 /** Helper class to read results of a [scenario] from the [DataStore] */
-class CachedResultReader(private val scenario: IScenario, traceConfig: TraceConfigs) :
-    ResultReader(DataStore.getResult(scenario), traceConfig) {
-
-    override fun toString(): String = "$scenario ($result)"
+class CachedResultReader(
+    private val scenario: IScenario,
+    traceConfig: TraceConfigs,
+    private val reader: IReader = ResultReaderWithLru(DataStore.getResult(scenario), traceConfig)
+) : IReader by reader {
+    override fun toString(): String = "$scenario ($reader)"
 }

@@ -16,7 +16,6 @@
 
 package com.android.server.wm.flicker.io
 
-import androidx.collection.LruCache
 import com.android.server.wm.flicker.RunStatus
 import com.android.server.wm.flicker.Utils
 import java.nio.file.Files
@@ -26,12 +25,11 @@ import java.nio.file.Path
  * Contents of a flicker run (e.g. files, status, event log)
  *
  * @param _artifactPath Path to the artifact file
- * @param _eventLog Event log contents // TODO: Move to a file in the future
  * @param _transitionTimeRange Transition start and end time
  * @param _executionError Transition execution error (if any)
  * @param _runStatus Status of the run
  */
-class ResultData(
+open class ResultData(
     _artifactPath: Path,
     _transitionTimeRange: TransitionTimeRange,
     _executionError: Throwable?,
@@ -46,24 +44,22 @@ class ResultData(
     var runStatus: RunStatus = _runStatus
         private set
 
-    fun getArtifactBytes(): ByteArray {
-        val data = cache[artifactPath] ?: Files.readAllBytes(artifactPath)
-        cache.put(artifactPath, data)
-        return data
+    open fun getArtifactBytes(): ByteArray = Files.readAllBytes(artifactPath)
+
+    protected fun getNewFilePath(newStatus: RunStatus): Path {
+        val currTestName = artifactPath.fileName.toString().dropWhile { it != '_' }
+        return artifactPath.resolveSibling("${newStatus.prefix}_$currTestName")
     }
 
     /** updates the artifact status to [newStatus] */
-    internal fun updateStatus(newStatus: RunStatus) = apply {
+    internal open fun updateStatus(newStatus: RunStatus) = apply {
         val currFile = artifactPath
         require(RunStatus.fromFile(currFile) != RunStatus.UNDEFINED) {
             "File name should start with a value from `RunStatus`, instead it was $currFile"
         }
-        val currTestName = currFile.fileName.toString().dropWhile { it != '_' }
-        val newFile = currFile.resolveSibling("${newStatus.prefix}_$currTestName")
+        val newFile = getNewFilePath(newStatus)
         if (currFile != newFile) {
             Utils.moveFile(currFile, newFile)
-            // update LRU cache
-            cache.put(newFile, getArtifactBytes())
             artifactPath = newFile
             runStatus = newStatus
         }
@@ -78,9 +74,5 @@ class ResultData(
             append(it.message)
         }
         append(") ")
-    }
-
-    companion object {
-        private val cache = LruCache<Path, ByteArray>(1)
     }
 }

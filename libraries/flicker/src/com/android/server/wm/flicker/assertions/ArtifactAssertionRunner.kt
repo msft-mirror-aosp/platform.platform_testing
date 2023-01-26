@@ -18,8 +18,9 @@ package com.android.server.wm.flicker.assertions
 
 import com.android.server.wm.flicker.DEFAULT_TRACE_CONFIG
 import com.android.server.wm.flicker.RunStatus
+import com.android.server.wm.flicker.io.IReader
 import com.android.server.wm.flicker.io.ResultData
-import com.android.server.wm.flicker.io.ResultReader
+import com.android.server.wm.flicker.io.ResultReaderWithLru
 
 /**
  * Helper class to run an assertion on a flicker artifact
@@ -30,7 +31,7 @@ import com.android.server.wm.flicker.io.ResultReader
  */
 class ArtifactAssertionRunner(
     private val result: ResultData,
-    resultReader: ResultReader = ResultReader(result, DEFAULT_TRACE_CONFIG),
+    resultReader: IReader = ResultReaderWithLru(result, DEFAULT_TRACE_CONFIG),
     subjectsParser: SubjectsParser = SubjectsParser(resultReader)
 ) : BaseAssertionRunner(resultReader, subjectsParser) {
     override fun doUpdateStatus(newStatus: RunStatus) {

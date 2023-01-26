@@ -19,13 +19,12 @@ package com.android.server.wm.flicker.assertions
 import android.annotation.SuppressLint
 import com.android.server.wm.flicker.DEFAULT_TRACE_CONFIG
 import com.android.server.wm.flicker.RunStatus
-import com.android.server.wm.flicker.assertExceptionMessage
-import com.android.server.wm.flicker.assertThrows
 import com.android.server.wm.flicker.io.ResultReader
 import com.android.server.wm.flicker.newTestResultWriter
 import com.android.server.wm.flicker.outputFileName
-import java.io.IOException
 import java.nio.file.Files
+import java.nio.file.NoSuchFileException
+import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 
@@ -42,11 +41,8 @@ class SubjectsParserTest {
         val data = newTestResultWriter().write()
         Files.deleteIfExists(outputFileName(RunStatus.RUN_EXECUTED))
         val parser = SubjectsParser(ResultReader(data, DEFAULT_TRACE_CONFIG))
-        val exception =
-            assertThrows(IOException::class.java) {
-                parser.readTransitionsTraceForTesting() ?: error("Should have failed")
-            }
-
-        assertExceptionMessage(exception, "No such file or directory")
+        Assert.assertThrows(NoSuchFileException::class.java) {
+            parser.readTransitionsTraceForTesting() ?: error("Should have failed")
+        }
     }
 }

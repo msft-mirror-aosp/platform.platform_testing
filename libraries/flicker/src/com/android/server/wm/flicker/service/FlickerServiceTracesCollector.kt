@@ -22,7 +22,7 @@ import com.android.server.wm.flicker.FLICKER_TAG
 import com.android.server.wm.flicker.ScenarioBuilder
 import com.android.server.wm.flicker.io.IReader
 import com.android.server.wm.flicker.io.ResultData
-import com.android.server.wm.flicker.io.ResultReader
+import com.android.server.wm.flicker.io.ResultReaderWithLru
 import com.android.server.wm.flicker.io.ResultWriter
 import com.android.server.wm.flicker.monitor.EventLogMonitor
 import com.android.server.wm.flicker.monitor.LayersTraceMonitor
@@ -75,7 +75,7 @@ class FlickerServiceTracesCollector(val outputDir: Path) : ITracesCollector {
         return reportErrorsBlock("Failed to get collected traces") {
             val result = result
             requireNotNull(result) { "Result not set" }
-            ResultReader(result, DEFAULT_TRACE_CONFIG)
+            ResultReaderWithLru(result, DEFAULT_TRACE_CONFIG)
         }
     }
 
