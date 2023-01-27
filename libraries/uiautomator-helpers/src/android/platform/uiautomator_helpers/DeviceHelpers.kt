@@ -102,13 +102,11 @@ object DeviceHelpers {
         selector: BySelector,
         visible: Boolean = true,
         timeout: Duration = LONG_WAIT,
-        customMessageProvider: (() -> String)? = null,
+        errorProvider: (() -> String)? = null,
     ) {
-        ensureThat(
-            "$selector is ${visible.asVisibilityBoolean()}",
-            timeout,
-            customMessageProvider
-        ) { hasObject(selector) == visible }
+        ensureThat("$selector is ${visible.asVisibilityBoolean()}", timeout, errorProvider) {
+            hasObject(selector) == visible
+        }
     }
 
     private fun Boolean.asVisibilityBoolean(): String =
@@ -125,37 +123,37 @@ object DeviceHelpers {
         selector: BySelector,
         visible: Boolean,
         timeout: Duration = LONG_WAIT,
-        customMessageProvider: (() -> String)? = null,
+        errorProvider: (() -> String)? = null,
     ) {
         ensureThat(
             "$selector is ${visible.asVisibilityBoolean()} inside $this",
             timeout,
-            customMessageProvider
+            errorProvider
         ) { hasObject(selector) == visible }
     }
 
     /** Asserts that a this selector is visible. Throws otherwise. */
     fun BySelector.assertVisible(
         timeout: Duration = LONG_WAIT,
-        customMessageProvider: (() -> String)? = null
+        errorProvider: (() -> String)? = null
     ) {
         uiDevice.assertVisibility(
             selector = this,
             visible = true,
             timeout = timeout,
-            customMessageProvider = customMessageProvider
+            errorProvider = errorProvider
         )
     }
     /** Asserts that a this selector is invisible. Throws otherwise. */
     fun BySelector.assertInvisible(
         timeout: Duration = LONG_WAIT,
-        customMessageProvider: (() -> String)? = null
+        errorProvider: (() -> String)? = null
     ) {
         uiDevice.assertVisibility(
             selector = this,
             visible = false,
             timeout = timeout,
-            customMessageProvider = customMessageProvider
+            errorProvider = errorProvider
         )
     }
 
