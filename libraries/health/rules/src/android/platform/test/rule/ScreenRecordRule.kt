@@ -116,6 +116,8 @@ class ScreenRecordRule : TestRule {
             // Doesn't crash if the file doesn't exist, as we want the command output to be logged.
             outputFile.tryWaitingForFileToExists()
 
+            // temporary measure to see if b/266186795 is fixed
+            Thread.sleep(3000)
             val killOutput = uiDevice.shell("kill -INT $screenRecordPid")
 
             outputFile.tryWaitingForFileSizeToSettle()
