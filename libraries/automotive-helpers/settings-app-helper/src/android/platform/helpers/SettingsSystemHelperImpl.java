@@ -18,26 +18,50 @@ package android.platform.helpers;
 
 import android.app.Instrumentation;
 import android.content.res.Resources;
+import android.platform.helpers.ScrollUtility.ScrollActions;
+import android.platform.helpers.ScrollUtility.ScrollDirection;
+import android.platform.helpers.exceptions.UnknownUiException;
 import android.support.test.uiautomator.By;
 import android.support.test.uiautomator.BySelector;
 import android.support.test.uiautomator.UiObject2;
-import android.support.test.uiautomator.UiScrollable;
-import android.support.test.uiautomator.UiSelector;
 
 import java.text.SimpleDateFormat;
-
 import java.time.Month;
 import java.util.Date;
 
-public class SettingsSystemHelperImpl extends AbstractAutoStandardAppHelper
+/** Helper class for functional tests of System settings */
+public class SettingsSystemHelperImpl extends AbstractStandardAppHelper
         implements IAutoSystemSettingsHelper {
+
+    private ScrollUtility mScrollUtility;
+
     public SettingsSystemHelperImpl(Instrumentation instr) {
         super(instr);
+        mScrollUtility = ScrollUtility.getInstance(getSpectatioUiUtil());
+        mScrollUtility.setScrollValues(
+                Integer.valueOf(
+                        getActionFromConfig(
+                                AutomotiveConfigConstants.SYSTEM_SETTINGS_SCROLL_MARGIN)),
+                Integer.valueOf(
+                        getActionFromConfig(
+                                AutomotiveConfigConstants.SYSTEM_SETTINGS_SCROLL_WAIT_TIME)));
     }
+
     /** {@inheritDoc} */
     @Override
     public String getPackage() {
-        return getApplicationConfig(AutoConfigConstants.SETTINGS_PACKAGE);
+        return getPackageFromConfig(AutomotiveConfigConstants.SETTINGS_PACKAGE);
+    }
+
+    @Override
+    public void dismissInitialDialogs() {
+        // Nothing to dismiss
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String getLauncherName() {
+        throw new UnsupportedOperationException("Operation not supported.");
     }
 
     /** {@inheritDoc} */
@@ -46,8 +70,9 @@ public class SettingsSystemHelperImpl extends AbstractAutoStandardAppHelper
         openLanguageMenu();
         BySelector languageSelector = By.clickable(true).hasDescendant(By.textStartsWith(language));
         UiObject2 languageObject = getMenu(languageSelector);
-        clickAndWaitForWindowUpdate(
-                getApplicationConfig(AutoConfigConstants.SETTINGS_PACKAGE), languageObject);
+        validateUiObject(
+                languageObject, String.format("Unable to find UI Element for language selector"));
+        getSpectatioUiUtil().clickAndWait(languageObject);
         String systemLanguage =
                 Resources.getSystem().getConfiguration().getLocales().get(0).getDisplayLanguage();
         if (!language.toLowerCase().contains(systemLanguage.toLowerCase())) {
@@ -60,14 +85,9 @@ public class SettingsSystemHelperImpl extends AbstractAutoStandardAppHelper
     public String getCurrentLanguage() {
         UiObject2 object =
                 getBtnByText(
-                        getResourceValue(
-                                AutoConfigConstants.SETTINGS,
-                                AutoConfigConstants.SYSTEM_SETTINGS,
-                                AutoConfigConstants.LANGUAGES_MENU),
-                        getResourceValue(
-                                AutoConfigConstants.SETTINGS,
-                                AutoConfigConstants.SYSTEM_SETTINGS,
-                                AutoConfigConstants.LANGUAGES_MENU_IN_SELECTED_LANGUAGE));
+                        AutomotiveConfigConstants.LANGUAGES_MENU,
+                        AutomotiveConfigConstants.LANGUAGES_MENU_IN_SELECTED_LANGUAGE);
+        validateUiObject(object, String.format("Unable to find UI Element for current language"));
         String currentLanguage = getSummeryText(object);
         return currentLanguage;
     }
@@ -76,12 +96,8 @@ public class SettingsSystemHelperImpl extends AbstractAutoStandardAppHelper
     @Override
     public String getDeviceModel() {
         openAboutMenu();
-        UiObject2 object =
-                getMenu(
-                        getResourceFromConfig(
-                                AutoConfigConstants.SETTINGS,
-                                AutoConfigConstants.SYSTEM_SETTINGS,
-                                AutoConfigConstants.DEVICE_MODEL));
+        UiObject2 object = getMenu(getUiElementFromConfig(AutomotiveConfigConstants.DEVICE_MODEL));
+        validateUiObject(object, String.format("Unable to find UI Element for device model"));
         String modelName = getSummeryText(object);
         return modelName;
     }
@@ -91,11 +107,8 @@ public class SettingsSystemHelperImpl extends AbstractAutoStandardAppHelper
     public String getAndroidVersion() {
         openAboutMenu();
         UiObject2 object =
-                getMenu(
-                        getResourceFromConfig(
-                                AutoConfigConstants.SETTINGS,
-                                AutoConfigConstants.SYSTEM_SETTINGS,
-                                AutoConfigConstants.ANDROID_VERSION));
+                getMenu(getUiElementFromConfig(AutomotiveConfigConstants.ANDROID_VERSION));
+        validateUiObject(object, String.format("Unable to find UI Element for current language"));
         String androidVersion = getSummeryText(object);
         return androidVersion;
     }
@@ -106,10 +119,11 @@ public class SettingsSystemHelperImpl extends AbstractAutoStandardAppHelper
         openAboutMenu();
         UiObject2 object =
                 getMenu(
-                        getResourceFromConfig(
-                                AutoConfigConstants.SETTINGS,
-                                AutoConfigConstants.SYSTEM_SETTINGS,
-                                AutoConfigConstants.ANDROID_SECURITY_PATCH_LEVEL));
+                        getUiElementFromConfig(
+                                AutomotiveConfigConstants.ANDROID_SECURITY_PATCH_LEVEL));
+        validateUiObject(
+                object,
+                String.format("Unable to find UI Element for android security patch level"));
         String androidSecurityPatchLevel = getSummeryText(object);
         Date patchDate = parseDate(androidSecurityPatchLevel, "MMMM dd, yyyy");
         if (patchDate == null) {
@@ -147,11 +161,8 @@ public class SettingsSystemHelperImpl extends AbstractAutoStandardAppHelper
     public String getKernelVersion() {
         openAboutMenu();
         UiObject2 object =
-                getMenu(
-                        getResourceFromConfig(
-                                AutoConfigConstants.SETTINGS,
-                                AutoConfigConstants.SYSTEM_SETTINGS,
-                                AutoConfigConstants.KERNEL_VERSION));
+                getMenu(getUiElementFromConfig(AutomotiveConfigConstants.KERNEL_VERSION));
+        validateUiObject(object, String.format("Unable to find UI Element for kernel version"));
         String kernelVersion = getSummeryText(object);
         return kernelVersion;
     }
@@ -160,12 +171,8 @@ public class SettingsSystemHelperImpl extends AbstractAutoStandardAppHelper
     @Override
     public String getBuildNumber() {
         openAboutMenu();
-        UiObject2 object =
-                getMenu(
-                        getResourceFromConfig(
-                                AutoConfigConstants.SETTINGS,
-                                AutoConfigConstants.SYSTEM_SETTINGS,
-                                AutoConfigConstants.BUILD_NUMBER));
+        UiObject2 object = getMenu(getUiElementFromConfig(AutomotiveConfigConstants.BUILD_NUMBER));
+        validateUiObject(object, String.format("Unable to find UI Element for build number"));
         String buildNumber = getSummeryText(object);
         return buildNumber;
     }
@@ -177,29 +184,21 @@ public class SettingsSystemHelperImpl extends AbstractAutoStandardAppHelper
         BySelector resetNetworkSelector =
                 By.clickable(true)
                         .hasDescendant(
-                                getResourceFromConfig(
-                                        AutoConfigConstants.SETTINGS,
-                                        AutoConfigConstants.SYSTEM_SETTINGS,
-                                        AutoConfigConstants.RESET_NETWORK));
+                                getUiElementFromConfig(AutomotiveConfigConstants.RESET_NETWORK));
         UiObject2 resetNetworkMenu = getMenu(resetNetworkSelector);
-        clickAndWaitForWindowUpdate(
-                getApplicationConfig(AutoConfigConstants.SETTINGS_PACKAGE), resetNetworkMenu);
+        validateUiObject(resetNetworkMenu, AutomotiveConfigConstants.RESET_NETWORK);
+        getSpectatioUiUtil().clickAndWait(resetNetworkMenu);
         BySelector resetSettingsSelector =
-                getResourceFromConfig(
-                        AutoConfigConstants.SETTINGS,
-                        AutoConfigConstants.SYSTEM_SETTINGS,
-                        AutoConfigConstants.RESET_SETTINGS);
+                getUiElementFromConfig(AutomotiveConfigConstants.RESET_SETTINGS);
+
         UiObject2 resetSettingsButton1 = getMenu(resetSettingsSelector);
-        clickAndWaitForWindowUpdate(
-                getApplicationConfig(AutoConfigConstants.SETTINGS_PACKAGE), resetSettingsButton1);
+        validateUiObject(resetSettingsButton1, AutomotiveConfigConstants.RESET_SETTINGS);
+        getSpectatioUiUtil().clickAndWait(resetSettingsButton1);
+
         UiObject2 resetSettingsButton2 =
-                getMenu(
-                        getResourceFromConfig(
-                                AutoConfigConstants.SETTINGS,
-                                AutoConfigConstants.SYSTEM_SETTINGS,
-                                AutoConfigConstants.RESET_SETTINGS));
-        clickAndWaitForWindowUpdate(
-                getApplicationConfig(AutoConfigConstants.SETTINGS_PACKAGE), resetSettingsButton2);
+                getMenu(getUiElementFromConfig(AutomotiveConfigConstants.RESET_SETTINGS));
+        validateUiObject(resetSettingsButton2, AutomotiveConfigConstants.RESET_SETTINGS);
+        getSpectatioUiUtil().clickAndWait(resetSettingsButton2);
     }
 
     /** {@inheritDoc} */
@@ -209,98 +208,72 @@ public class SettingsSystemHelperImpl extends AbstractAutoStandardAppHelper
         BySelector selector =
                 By.clickable(true)
                         .hasDescendant(
-                                getResourceFromConfig(
-                                        AutoConfigConstants.SETTINGS,
-                                        AutoConfigConstants.SYSTEM_SETTINGS,
-                                        AutoConfigConstants.RESET_APP_PREFERENCES));
+                                getUiElementFromConfig(
+                                        AutomotiveConfigConstants.RESET_APP_PREFERENCES));
         UiObject2 object = getMenu(selector);
-        clickAndWaitForWindowUpdate(
-                getApplicationConfig(AutoConfigConstants.SETTINGS_PACKAGE), object);
+        validateUiObject(object, AutomotiveConfigConstants.RESET_APP_PREFERENCES);
+        getSpectatioUiUtil().clickAndWait(object);
         BySelector reset_apps_selector =
-                getResourceFromConfig(
-                        AutoConfigConstants.SETTINGS,
-                        AutoConfigConstants.SYSTEM_SETTINGS,
-                        AutoConfigConstants.RESET_APPS);
+                getUiElementFromConfig(AutomotiveConfigConstants.RESET_APPS);
+
         UiObject2 reset_apps_button = getMenu(reset_apps_selector);
-        clickAndWaitForWindowUpdate(
-                getApplicationConfig(AutoConfigConstants.SETTINGS_PACKAGE), reset_apps_button);
+        validateUiObject(reset_apps_button, AutomotiveConfigConstants.RESET_APPS);
+        getSpectatioUiUtil().clickAndWait(reset_apps_button);
     }
 
     /** {@inheritDoc} */
     @Override
     public void openLanguagesInputMenu() {
         UiObject2 languagesInputMenu =
-                getMenu(
-                        getResourceFromConfig(
-                                AutoConfigConstants.SETTINGS,
-                                AutoConfigConstants.SYSTEM_SETTINGS,
-                                AutoConfigConstants.LANGUAGES_AND_INPUT_MENU));
-        clickAndWaitForWindowUpdate(
-                getApplicationConfig(AutoConfigConstants.SETTINGS_PACKAGE), languagesInputMenu);
+                getMenu(getUiElementFromConfig(AutomotiveConfigConstants.LANGUAGES_AND_INPUT_MENU));
+        validateUiObject(
+                languagesInputMenu,
+                String.format("Unable to find UI Element for language input menu"));
+        getSpectatioUiUtil().clickAndWait(languagesInputMenu);
     }
 
     private String getSummeryText(UiObject2 object) {
         UiObject2 parent = object.getParent();
         if (parent.getChildren().size() < 2) {
-            UiSelector uiSelector =
-                    new UiSelector()
-                            .className(
-                                    getResourceValue(
-                                            AutoConfigConstants.SETTINGS,
-                                            AutoConfigConstants.SYSTEM_SETTINGS,
-                                            AutoConfigConstants.RECYCLER_VIEW_WIDGET))
-                            .instance(getScrollScreenIndex());
-            UiScrollable scrollable = new UiScrollable(uiSelector);
-            try {
-                scrollable.scrollForward();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
+            BySelector swipeSelector =
+                    getUiElementFromConfig(
+                            AutomotiveConfigConstants.SYSTEM_SETTINGS_SCROLL_ELEMENT);
+            UiObject2 swipeObject = getSpectatioUiUtil().findUiObject(swipeSelector);
+            validateUiObject(swipeObject, AutomotiveConfigConstants.SYSTEM_SETTINGS_SCROLL_ELEMENT);
+            getSpectatioUiUtil().swipeUp(swipeObject);
         }
         return object.getParent().getChildren().get(1).getText();
     }
 
     private void openResetOptionsMenu() {
         UiObject2 resetOptionMenu =
-                getMenu(
-                        getResourceFromConfig(
-                                AutoConfigConstants.SETTINGS,
-                                AutoConfigConstants.SYSTEM_SETTINGS,
-                                AutoConfigConstants.RESET_OPTIONS_MENU));
-        clickAndWaitForWindowUpdate(
-                getApplicationConfig(AutoConfigConstants.SETTINGS_PACKAGE), resetOptionMenu);
+                getMenu(getUiElementFromConfig(AutomotiveConfigConstants.RESET_OPTIONS_MENU));
+        validateUiObject(
+                resetOptionMenu, String.format("Unable to find UI Element for reset menu"));
+        getSpectatioUiUtil().clickAndWait(resetOptionMenu);
     }
 
     private void openAboutMenu() {
-        UiObject2 aboutMenu =
-                getMenu(
-                        getResourceFromConfig(
-                                AutoConfigConstants.SETTINGS,
-                                AutoConfigConstants.SYSTEM_SETTINGS,
-                                AutoConfigConstants.ABOUT_MENU));
-        clickAndWaitForWindowUpdate(
-                getApplicationConfig(AutoConfigConstants.SETTINGS_PACKAGE), aboutMenu);
+        getSpectatioUiUtil().wait1Second();
+        UiObject2 aboutMenu = getMenu(getUiElementFromConfig(AutomotiveConfigConstants.ABOUT_MENU));
+        validateUiObject(aboutMenu, String.format("Unable to find UI Element for about menu"));
+        getSpectatioUiUtil().clickAndWait(aboutMenu);
     }
 
     private void openLanguageMenu() {
         UiObject2 languageMenu =
                 getBtnByText(
-                        getResourceValue(
-                                AutoConfigConstants.SETTINGS,
-                                AutoConfigConstants.SYSTEM_SETTINGS,
-                                AutoConfigConstants.LANGUAGES_MENU),
-                        getResourceValue(
-                                AutoConfigConstants.SETTINGS,
-                                AutoConfigConstants.SYSTEM_SETTINGS,
-                                AutoConfigConstants.LANGUAGES_MENU_IN_SELECTED_LANGUAGE));
-        clickAndWaitForWindowUpdate(
-                getApplicationConfig(AutoConfigConstants.SETTINGS_PACKAGE), languageMenu);
+                        AutomotiveConfigConstants.LANGUAGES_MENU,
+                        AutomotiveConfigConstants.LANGUAGES_MENU_IN_SELECTED_LANGUAGE);
+        validateUiObject(
+                languageMenu, String.format("Unable to find UI Element for language menu"));
+        getSpectatioUiUtil().clickAndWait(languageMenu);
     }
 
     private UiObject2 getBtnByText(String... texts) {
         for (String text : texts) {
             BySelector btnSelector = By.text(text);
-            UiObject2 btn = findUiObject(btnSelector);
+            UiObject2 btn = getSpectatioUiUtil().findUiObject(btnSelector);
             if (btn != null) {
                 return btn;
             }
@@ -309,19 +282,44 @@ public class SettingsSystemHelperImpl extends AbstractAutoStandardAppHelper
     }
 
     private UiObject2 getMenu(BySelector selector) {
-        UiObject2 object = scrollAndFindUiObject(selector, getScrollScreenIndex());
-        if (object == null) {
-            throw new RuntimeException(
-                    String.format("Unable to find UI Elemenet %s.", selector.toString()));
-        }
+        ScrollActions scrollAction =
+                ScrollActions.valueOf(
+                        getActionFromConfig(
+                                AutomotiveConfigConstants.SYSTEM_SETTINGS_SCROLL_ACTION));
+
+        BySelector forwardButtonSelector =
+                getUiElementFromConfig(
+                        AutomotiveConfigConstants.SYSTEM_SETTINGS_SCROLL_BACKWARD_BUTTON);
+        BySelector backwardButtonSelector =
+                getUiElementFromConfig(
+                        AutomotiveConfigConstants.SYSTEM_SETTINGS_SCROLL_BACKWARD_BUTTON);
+
+        BySelector scrollableElementSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.SYSTEM_SETTINGS_SCROLL_ELEMENT);
+        ScrollDirection scrollDirection =
+                ScrollDirection.valueOf(
+                        getActionFromConfig(
+                                AutomotiveConfigConstants.SYSTEM_SETTINGS_SCROLL_DIRECTION));
+
+        UiObject2 object =
+                mScrollUtility.scrollAndFindUiObject(
+                        scrollAction,
+                        scrollDirection,
+                        forwardButtonSelector,
+                        backwardButtonSelector,
+                        scrollableElementSelector,
+                        selector,
+                        String.format("Scroll on system setting to find %s", selector));
+
+        validateUiObject(
+                object, String.format("Unable to find UI Element %s.", selector.toString()));
         return object;
     }
 
-    private int getScrollScreenIndex() {
-        int scrollScreenIndex = 0;
-        if (hasSplitScreenSettingsUI()) {
-            scrollScreenIndex = 1;
+    private void validateUiObject(UiObject2 uiObject, String action) {
+        if (uiObject == null) {
+            throw new UnknownUiException(
+                    String.format("Unable to find UI Element for %s.", action));
         }
-        return scrollScreenIndex;
     }
 }

@@ -49,6 +49,11 @@ public class ScrollUtility {
         return sScrollUtilityInstance;
     }
 
+    /** Sets the scrolls margins and wait time after the scroll */
+    public void setScrollValues(Integer scrollMargin, Integer waitTimeAfterSCroll) {
+        mSpectatioUiUtil.addScrollValues(scrollMargin, waitTimeAfterSCroll);
+    }
+
     /** Scroll using backward buttons or guesture on device screen */
     public boolean scrollBackward(
             ScrollActions scrollAction,

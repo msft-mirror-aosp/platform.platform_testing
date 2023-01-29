@@ -51,6 +51,9 @@ public class SpectatioUiUtil {
     private static final float SCROLL_PERCENT = 1.0f;
     private static final float SWIPE_PERCENT = 1.0f;
 
+    private int mWaitTimeAfterScroll = 5; // seconds
+    private int mScrollMargin = 4;
+
     private UiDevice mDevice;
 
     public enum SwipeDirection {
@@ -69,6 +72,12 @@ public class SpectatioUiUtil {
             sSpectatioUiUtil = new SpectatioUiUtil(mDevice);
         }
         return sSpectatioUiUtil;
+    }
+
+    /** Sets the scroll margin and wait time after the scroll */
+    public void addScrollValues(Integer scrollMargin, Integer waitTime) {
+        this.mScrollMargin = scrollMargin;
+        this.mWaitTimeAfterScroll = waitTime;
     }
 
     public boolean pressBack() {
@@ -847,8 +856,8 @@ public class SpectatioUiUtil {
         UiObject2 scrollableObject = validateAndGetScrollableObject(scrollableSelector);
 
         Rect bounds = scrollableObject.getVisibleBounds();
-        int horizontalMargin = (int) (Math.abs(bounds.width()) / 4);
-        int verticalMargin = (int) (Math.abs(bounds.height()) / 4);
+        int horizontalMargin = (int) (Math.abs(bounds.width()) / mScrollMargin);
+        int verticalMargin = (int) (Math.abs(bounds.height()) / mScrollMargin);
 
         scrollableObject.setGestureMargins(
                 horizontalMargin, // left
@@ -859,7 +868,7 @@ public class SpectatioUiUtil {
         String previousView = getViewHierarchy();
 
         scrollableObject.scroll(direction, SCROLL_PERCENT);
-        wait5Seconds();
+        waitNSeconds(mWaitTimeAfterScroll);
 
         String currentView = getViewHierarchy();
 

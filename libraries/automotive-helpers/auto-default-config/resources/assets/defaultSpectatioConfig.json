@@ -4,7 +4,9 @@
     "PHONE_ACTIVITY": "com.android.car.dialer/.ui.TelecomActivity",
     "HOME_PACKAGE": "com.android.car.carlauncher",
     "SECURITY_SETTINGS_PACKAGE": "com.android.car.settings",
-    "LOCK_SCREEN_PACKAGE": "com.android.systemui"
+    "LOCK_SCREEN_PACKAGE": "com.android.systemui",
+    "SETTINGS_PACKAGE": "com.android.car.settings"
+
   },
   "ACTIONS": {
     "CONTACT_LIST_SCROLL_ACTION" : "USE_BUTTON",
@@ -18,7 +20,11 @@
     "SECURITY_SCROLL_ACTION": "USE_BUTTON",
     "SECURITY_SCROLL_DIRECTION": "VERTICAL",
     "NOTIFICATION_LIST_SCROLL_ACTION": "USE_GESTURE",
-    "NOTIFICATION_LIST_SCROLL_DIRECTION": "VERTICAL"
+    "NOTIFICATION_LIST_SCROLL_DIRECTION": "VERTICAL",
+    "SYSTEM_SETTINGS_SCROLL_ACTION": "USE_GESTURE",
+    "SYSTEM_SETTINGS_SCROLL_DIRECTION": "VERTICAL",
+    "SYSTEM_SETTINGS_SCROLL_MARGIN": "6",
+    "SYSTEM_SETTINGS_SCROLL_WAIT_TIME": "2"
   },
   "COMMANDS": {
     "OPEN_DIAL_PAD_COMMAND": "am start -a android.intent.action.DIAL",
@@ -432,6 +438,91 @@
     "NOTIFICATION_LIST_SCROLL_BACKWARD": {
       "TYPE": "DESCRIPTION",
       "VALUE": "Scroll Up"
+    },
+    "ABOUT_MENU": {
+      "TYPE": "TEXT",
+      "VALUE": "About",
+      "PACKAGE": "com.android.car.settings"
+    },
+    "RESET_OPTIONS_MENU": {
+      "TYPE": "TEXT",
+      "VALUE": "Reset options",
+      "PACKAGE": "com.android.car.settings"
+    },
+    "LANGUAGES_AND_INPUT_MENU": {
+      "TYPE": "TEXT",
+      "VALUE": "Languages & input",
+      "PACKAGE": "com.android.car.settings"
+    },
+    "DEVICE_MODEL": {
+      "TYPE": "TEXT",
+      "VALUE": "Model & hardware",
+      "PACKAGE": "com.android.car.settings"
+    },
+    "ANDROID_VERSION": {
+      "TYPE": "TEXT",
+      "VALUE": "Android version",
+      "PACKAGE": "com.android.car.settings"
+    },
+    "ANDROID_SECURITY_PATCH_LEVEL": {
+      "TYPE": "TEXT",
+      "VALUE": "Android security patch level",
+      "PACKAGE": "com.android.car.settings"
+    },
+    "KERNEL_VERSION": {
+      "TYPE": "TEXT",
+      "VALUE": "Kernel Version",
+      "PACKAGE": "com.android.car.settings"
+    },
+    "BUILD_NUMBER": {
+      "TYPE": "TEXT",
+      "VALUE": "Build number",
+      "PACKAGE": "com.android.car.settings"
+    },
+    "RESET_NETWORK": {
+      "TYPE": "TEXT",
+      "VALUE": "Reset network",
+      "PACKAGE": "com.android.car.settings"
+    },
+    "RESET_SETTINGS": {
+      "TYPE": "TEXT",
+      "VALUE": "RESET SETTINGS",
+      "PACKAGE": "com.android.car.settings"
+    },
+    "RESET_APP_PREFERENCES": {
+      "TYPE": "TEXT",
+      "VALUE": "Reset app preferences",
+      "PACKAGE": "com.android.car.settings"
+    },
+    "RESET_APPS": {
+      "TYPE": "TEXT",
+      "VALUE": "RESET APPS",
+      "PACKAGE": "com.android.car.settings"
+    },
+    "LANGUAGES_MENU": {
+      "TYPE": "TEXT",
+      "VALUE": "Languages",
+      "PACKAGE": "com.android.car.settings"
+    },
+    "LANGUAGES_MENU_IN_SELECTED_LANGUAGE": {
+      "TYPE": "TEXT",
+      "VALUE": "Idiomas",
+      "PACKAGE": "com.android.car.settings"
+    },
+    "SYSTEM_SETTINGS_SCROLL_ELEMENT": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "car_ui_internal_recycler_view",
+      "PACKAGE": "com.android.car.ui.sharedlibrary"
+   },
+    "SYSTEM_SETTINGS_SCROLL_FORWARD_BUTTON": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "car_ui_scrollbar_page_down",
+     "PACKAGE": "com.android.car.ui.sharedlibrary"
+    },
+   "SYSTEM_SETTINGS_SCROLL_BACKWARD_BUTTON": {
+     "TYPE": "RESOURCE_ID",
+     "VALUE": "car_ui_scrollbar_page_up",
+      "PACKAGE": "com.android.car.ui.sharedlibrary"
     }
   }
 }

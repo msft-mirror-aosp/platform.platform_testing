@@ -146,5 +146,35 @@ public class AutomotiveConfigConstants {
     public static final String NOTIFICATION_LIST_SCROLL_ACTION = "NOTIFICATION_LIST_SCROLL_ACTION";
     public static final String NOTIFICATION_LIST_SCROLL_DIRECTION =
             "NOTIFICATION_LIST_SCROLL_DIRECTION";
+
+    // System Settings Constants
+    public static final String SETTINGS_PACKAGE = "SETTINGS_PACKAGE";
+    public static final String SYSTEM_SETTINGS_SCROLL_ACTION = "SYSTEM_SETTINGS_SCROLL_ACTION";
+    public static final String SYSTEM_SETTINGS_SCROLL_DIRECTION =
+            "SYSTEM_SETTINGS_SCROLL_DIRECTION";
+    public static final String SYSTEM_SETTINGS_SCROLL_FORWARD_BUTTON =
+            "SYSTEM_SETTINGS_SCROLL_FORWARD_BUTTON";
+    public static final String SYSTEM_SETTINGS_SCROLL_BACKWARD_BUTTON =
+            "SYSTEM_SETTINGS_SCROLL_BACKWARD_BUTTON";
+    public static final String SYSTEM_SETTINGS_SCROLL_ELEMENT = "SYSTEM_SETTINGS_SCROLL_ELEMENT";
+    public static final String SYSTEM_SETTINGS = "SYSTEM";
+    public static final String ABOUT_MENU = "ABOUT_MENU";
+    public static final String RESET_OPTIONS_MENU = "RESET_OPTIONS_MENU";
+    public static final String LANGUAGES_AND_INPUT_MENU = "LANGUAGES_AND_INPUT_MENU";
+    public static final String DEVICE_MODEL = "DEVICE_MODEL";
+    public static final String ANDROID_VERSION = "ANDROID_VERSION";
+    public static final String ANDROID_SECURITY_PATCH_LEVEL = "ANDROID_SECURITY_PATCH_LEVEL";
+    public static final String KERNEL_VERSION = "KERNEL_VERSION";
+    public static final String BUILD_NUMBER = "BUILD_NUMBER";
+    public static final String RESET_NETWORK = "RESET_NETWORK";
+    public static final String RESET_SETTINGS = "RESET_SETTINGS";
+    public static final String RESET_APP_PREFERENCES = "RESET_APP_PREFERENCES";
+    public static final String RESET_APPS = "RESET_APPS";
+    public static final String LANGUAGES_MENU = "LANGUAGES_MENU";
+    public static final String LANGUAGES_MENU_IN_SELECTED_LANGUAGE =
+            "LANGUAGES_MENU_IN_SELECTED_LANGUAGE";
+    public static final String SYSTEM_SETTINGS_SCROLL_MARGIN = "SYSTEM_SETTINGS_SCROLL_MARGIN";
+    public static final String SYSTEM_SETTINGS_SCROLL_WAIT_TIME =
+            "SYSTEM_SETTINGS_SCROLL_WAIT_TIME";
 }
 

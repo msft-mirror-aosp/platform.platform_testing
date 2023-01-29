@@ -43,7 +43,7 @@ object Gestures {
         )
     }
 
-    private fun waitForObjectEnabled(uiObject: UiObject2, objectName: String) {
+    internal fun waitForObjectEnabled(uiObject: UiObject2, objectName: String) {
         waitForObjectCondition(uiObject, objectName, Until.enabled(true), "enabled")
     }
 
@@ -53,6 +53,10 @@ object Gestures {
 
     private fun waitForObjectLongClickable(uiObject: UiObject2, waitReason: String) {
         waitForObjectCondition(uiObject, waitReason, Until.longClickable(true), "long-clickable")
+    }
+
+    internal fun waitForObjectScrollable(uiObject: UiObject2, waitReason: String) {
+        waitForObjectCondition(uiObject, waitReason, Until.scrollable(true), "scrollable")
     }
 
     /**

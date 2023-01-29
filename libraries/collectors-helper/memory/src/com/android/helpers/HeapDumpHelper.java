@@ -17,6 +17,7 @@
 package com.android.helpers;
 
 import android.util.Log;
+
 import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.uiautomator.UiDevice;
 
@@ -31,13 +32,16 @@ import java.util.Map;
  */
 public class HeapDumpHelper implements ICollectorHelper<String> {
     private static final String TAG = HeapDumpHelper.class.getSimpleName();
-    private static final String HEAPDUMP_OUTPUT_FILE_METRIC_NAME = "heapdump_file_";
+    private static final String HEAPDUMP_MANAGED_OUTPUT_FILE_METRIC_NAME = "managed_heapdump_file_";
+    private static final String HEAPDUMP_NATIVE_OUTPUT_FILE_METRIC_NAME = "native_heapdump_file_";
     private static final String HEAPDUMP_CMD = "am dumpheap %s %s";
+    private static final String NATIVE_HEAPDUMP_CMD = "am dumpheap -n %s %s";
 
     String mId = null;
     File mResultsFile = null;
     private String[] mProcessNames = null;
     private String mTestOutputDir = null;
+    private boolean mNativeHeapDumpEnabled = false;
     private UiDevice mUiDevice;
     HashMap<String, String> mHeapDumpFinalMap;
 
@@ -71,11 +75,31 @@ public class HeapDumpHelper implements ICollectorHelper<String> {
             if (mId != null && !mId.isEmpty()) {
                 try {
                     processCount++;
-                    String finalHeapDumpPath = String.format("%s%s_%s.hprof", mTestOutputDir,
-                            processName.replace("/", "#"), mId);
-                    execHeapDump(processName, finalHeapDumpPath);
-                    mHeapDumpFinalMap.put(HEAPDUMP_OUTPUT_FILE_METRIC_NAME + processCount,
+                    String finalHeapDumpPath =
+                            String.format(
+                                    "%s%s%s_%s.hprof",
+                                    mTestOutputDir,
+                                    HEAPDUMP_MANAGED_OUTPUT_FILE_METRIC_NAME,
+                                    processName.replace("/", "#"),
+                                    mId);
+                    execHeapDump(processName, finalHeapDumpPath, false);
+                    mHeapDumpFinalMap.put(
+                            HEAPDUMP_MANAGED_OUTPUT_FILE_METRIC_NAME + processCount,
                             finalHeapDumpPath);
+                    if (mNativeHeapDumpEnabled) {
+                        String finalNativeHeapDumpPath =
+                                String.format(
+                                        "%s%s%s_%s.txt",
+                                        mTestOutputDir,
+                                        HEAPDUMP_NATIVE_OUTPUT_FILE_METRIC_NAME,
+                                        processName.replace("/", "#"),
+                                        mId);
+                        execHeapDump(processName, finalNativeHeapDumpPath, true);
+                        mHeapDumpFinalMap.put(
+                                HEAPDUMP_NATIVE_OUTPUT_FILE_METRIC_NAME + processCount,
+                                finalNativeHeapDumpPath);
+                    }
+
                 } catch (Throwable e) {
                     Log.e(TAG, "dumpheap command failed", e);
                 }
@@ -86,12 +110,16 @@ public class HeapDumpHelper implements ICollectorHelper<String> {
         return mHeapDumpFinalMap;
     }
 
-    private String execHeapDump(String processName, String filePath) throws IOException {
+    private String execHeapDump(String processName, String filePath, boolean isNativeHeapDump)
+            throws IOException {
         try {
-            Log.i(TAG, "Running heapdump command :" + String.format(HEAPDUMP_CMD,
-                    processName, filePath));
-            return mUiDevice.executeShellCommand(String.format(HEAPDUMP_CMD,
-                    processName, filePath));
+            String heapdumpCommand = isNativeHeapDump ? NATIVE_HEAPDUMP_CMD : HEAPDUMP_CMD;
+            Log.i(
+                    TAG,
+                    "Running heapdump command :"
+                            + String.format(heapdumpCommand, processName, filePath));
+            return mUiDevice.executeShellCommand(
+                    String.format(heapdumpCommand, processName, filePath));
         } catch (IOException e) {
             throw new RuntimeException(
                     String.format("Unable to execute heapdump command for %s ", processName), e);
@@ -112,6 +140,10 @@ public class HeapDumpHelper implements ICollectorHelper<String> {
     public boolean stopCollecting() {
         mId = null;
         return true;
+    }
+
+    public void enableNativeHeapDump() {
+        mNativeHeapDumpEnabled = true;
     }
 
     public Map<String,String> getFinalResultsMap() {

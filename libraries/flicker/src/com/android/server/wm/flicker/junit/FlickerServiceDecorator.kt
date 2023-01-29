@@ -76,7 +76,9 @@ class FlickerServiceDecorator(
     override fun getTestMethods(test: Any): List<FrameworkMethod> {
         val result = inner?.getTestMethods(test)?.toMutableList() ?: mutableListOf()
         if (shouldComputeTestMethods()) {
-            withPerfettoTrace("getTestMethods") {
+            withPerfettoTrace(
+                "$FAAS_METRICS_PREFIX getTestMethods ${testClass.javaClass.simpleName}"
+            ) {
                 result.addAll(computeFlickerServiceTests(test))
                 Log.d(FLICKER_TAG, "Computed ${result.size} flicker tests")
             }
@@ -113,10 +115,39 @@ class FlickerServiceDecorator(
                     it.className == "androidx.test.internal.runner.NonExecutingRunner"
                 }
 
+        val filters = getFiltersFromArguments()
+        // a method is filtered out if there's a filter and the filter doesn't include it's class
+        // or if the filter includes its class, but it's not flicker as a service
+        val isFilteredOut =
+            filters.isNotEmpty() && !(filters[testClass.javaClass.simpleName] ?: false)
+
         return IS_FAAS_ENABLED &&
             isShellTransitionsEnabled &&
             isClassFlickerServiceCompatible &&
+            !isFilteredOut &&
             !isDryRun
+    }
+
+    private fun getFiltersFromArguments(): Map<String, Boolean> {
+        val testFilters = arguments.getString(OPTION_NAME) ?: return emptyMap()
+        val result = mutableMapOf<String, Boolean>()
+
+        // Test the display name against all filter arguments.
+        for (testFilter in testFilters.split(",")) {
+            val filterComponents = testFilter.split("#")
+            if (filterComponents.size != 2) {
+                Log.e(
+                    LOG_TAG,
+                    "Invalid filter-tests instrumentation argument supplied, $testFilter."
+                )
+                continue
+            }
+            val methodName = filterComponents[1]
+            val className = filterComponents[0]
+            result[className] = methodName.startsWith(FAAS_METRICS_PREFIX)
+        }
+
+        return result
     }
 
     /**
@@ -159,5 +190,11 @@ class FlickerServiceDecorator(
 
         DataStore.addFlickerServiceResults(scenario, results)
         return results
+    }
+
+    companion object {
+        private const val FAAS_METRICS_PREFIX = "FAAS"
+        private const val OPTION_NAME = "filter-tests"
+        private val LOG_TAG = FlickerServiceDecorator::class.java.simpleName
     }
 }
