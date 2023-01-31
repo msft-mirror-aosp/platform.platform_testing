@@ -95,14 +95,24 @@ public class AutoNotificationHelperImpl extends AbstractStandardAppHelper
     /** {@inheritDoc} */
     @Override
     public void tapClearAllBtn() {
-        BySelector clearButtonSelector =
-                getUiElementFromConfig(AutomotiveConfigConstants.CLEAR_ALL_BUTTON);
-        if (checkIfClearAllButtonExist(clearButtonSelector)) {
-            UiObject2 clear_all_btn = getSpectatioUiUtil().findUiObject(clearButtonSelector);
-            getSpectatioUiUtil().clickAndWait(clear_all_btn);
-        } else {
-            throw new RuntimeException("Cannot find Clear All button");
+        open();
+        getSpectatioUiUtil().wait5Seconds();
+        UiObject2 empty_notification =
+                getSpectatioUiUtil()
+                        .findUiObject(
+                                getUiElementFromConfig(
+                                        AutomotiveConfigConstants.NOTIFICATION_LIST_EMPTY));
+        if (empty_notification == null) {
+            BySelector clearButtonSelector =
+                    getUiElementFromConfig(AutomotiveConfigConstants.CLEAR_ALL_BUTTON);
+            if (checkIfClearAllButtonExist(clearButtonSelector)) {
+                UiObject2 clear_all_btn = getSpectatioUiUtil().findUiObject(clearButtonSelector);
+                getSpectatioUiUtil().clickAndWait(clear_all_btn);
+            } else {
+                throw new RuntimeException("Cannot find Clear All button");
+            }
         }
+
     }
 
     /** {@inheritDoc} */
@@ -134,6 +144,7 @@ public class AutoNotificationHelperImpl extends AbstractStandardAppHelper
         validateUiObject(
                 postedNotification, String.format("Unable to get the posted notification."));
         getSpectatioUiUtil().swipeLeft(postedNotification);
+        getSpectatioUiUtil().wait5Seconds();
     }
 
     /** {@inheritDoc} */

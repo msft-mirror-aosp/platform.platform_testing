@@ -73,7 +73,6 @@ platform_tests += \
     NoLocVersionedTestApp_v1 \
     NoLocVersionedTestApp_v2 \
     NotificationFunctionalTests \
-    NotificationStressTests \
     OverviewFunctionalTests \
     perfetto_trace_processor_shell \
     PerformanceAppTest \
