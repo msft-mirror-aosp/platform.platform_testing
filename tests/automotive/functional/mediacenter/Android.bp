@@ -22,6 +22,7 @@ android_test {
     static_libs: [
         "androidx.test.runner",
         "androidx.test.rules",
+        "automotive-app-grid-helper",
         "automotive-home-helper",
         "automotive-media-center-app-helper",
         "automotive-utility-helper",
@@ -31,5 +32,5 @@ android_test {
         "platform-test-options",
     ],
     srcs: ["src/**/*.java"],
-    test_suites: ["catbox","ats"],
+    test_suites: ["catbox"],
 }

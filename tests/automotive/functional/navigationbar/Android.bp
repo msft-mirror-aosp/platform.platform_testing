@@ -33,5 +33,5 @@ android_test {
         "hamcrest-library",
     ],
     srcs: ["src/**/*.java"],
-    test_suites: ["catbox","ats"],
+    test_suites: ["catbox"],
 }

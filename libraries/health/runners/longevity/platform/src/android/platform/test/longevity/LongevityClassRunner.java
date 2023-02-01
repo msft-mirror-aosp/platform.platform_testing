@@ -17,14 +17,11 @@
 package android.platform.test.longevity;
 
 import android.os.Bundle;
+import android.platform.test.microbenchmark.Microbenchmark;
+import android.platform.test.rule.DynamicRuleChain;
+
 import androidx.annotation.VisibleForTesting;
 import androidx.test.InstrumentationRegistry;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -32,13 +29,20 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.internal.runners.statements.RunAfters;
 import org.junit.internal.runners.statements.RunBefores;
+import org.junit.rules.TestRule;
 import org.junit.runner.Description;
+import org.junit.runner.notification.StoppedByUserException;
 import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.MultipleFailureException;
 import org.junit.runners.model.Statement;
-import org.junit.runner.notification.StoppedByUserException;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * A {@link BlockJUnit4ClassRunner} that runs the test class's {@link BeforeClass} methods as {@link
@@ -46,12 +50,20 @@ import org.junit.runner.notification.StoppedByUserException;
  * longevity tests.
  */
 public class LongevityClassRunner extends BlockJUnit4ClassRunner {
+    // Use these options to inject rules at runtime via the command line. For details, please see
+    // documentation for DynamicRuleChain.
+    @VisibleForTesting static final String DYNAMIC_OUTER_CLASS_RULES_OPTION = "outer-class-rules";
+    @VisibleForTesting static final String DYNAMIC_INNER_CLASS_RULES_OPTION = "inner-class-rules";
+    @VisibleForTesting static final String DYNAMIC_OUTER_TEST_RULES_OPTION = "outer-test-rules";
+    @VisibleForTesting static final String DYNAMIC_INNER_TEST_RULES_OPTION = "inner-test-rules";
+
     @VisibleForTesting static final String FILTER_OPTION = "exclude-class";
     @VisibleForTesting static final String ITERATION_SEP_OPTION = "iteration-separator";
     @VisibleForTesting static final String ITERATION_SEP_DEFAULT = "@";
     // A constant to indicate that the iteration number is not set.
     @VisibleForTesting static final int ITERATION_NOT_SET = -1;
 
+    private final Bundle mArguments;
     private final String[] mExcludedClasses;
     private String mIterationSep = ITERATION_SEP_DEFAULT;
 
@@ -67,6 +79,7 @@ public class LongevityClassRunner extends BlockJUnit4ClassRunner {
     @VisibleForTesting
     LongevityClassRunner(Class<?> klass, Bundle args) throws InitializationError {
         super(klass);
+        mArguments = args;
         mExcludedClasses =
                 args.containsKey(FILTER_OPTION)
                         ? args.getString(FILTER_OPTION).split(",")
@@ -88,6 +101,28 @@ public class LongevityClassRunner extends BlockJUnit4ClassRunner {
     @VisibleForTesting
     int getIteration() {
         return mIteration;
+    }
+
+    /** Add {@link DynamicRuleChain} to the existing class rules. */
+    @Override
+    protected List<TestRule> classRules() {
+        List<TestRule> classRules = new ArrayList<>();
+        // Inner dynamic class rules should be included first because RunRules applies rules inside
+        // -out.
+        classRules.add(new DynamicRuleChain(DYNAMIC_INNER_CLASS_RULES_OPTION, mArguments));
+        classRules.addAll(super.classRules());
+        classRules.add(new DynamicRuleChain(DYNAMIC_OUTER_CLASS_RULES_OPTION, mArguments));
+        return classRules;
+    }
+
+    /** Add {@link DynamicRuleChain} to the existing test rules. */
+    protected List<TestRule> getTestRules(Object target) {
+        List<TestRule> testRules = new ArrayList<>();
+        // Inner dynamic rules should be included first because RunRules applies rules inside-out.
+        testRules.add(new DynamicRuleChain(DYNAMIC_INNER_TEST_RULES_OPTION, mArguments));
+        testRules.addAll(super.getTestRules(target));
+        testRules.add(new DynamicRuleChain(DYNAMIC_OUTER_TEST_RULES_OPTION, mArguments));
+        return testRules;
     }
 
     /**
@@ -119,6 +154,11 @@ public class LongevityClassRunner extends BlockJUnit4ClassRunner {
     protected Statement withBefores(FrameworkMethod method, Object target, Statement statement) {
         List<FrameworkMethod> allBeforeMethods = new ArrayList<>();
         allBeforeMethods.addAll(getTestClass().getAnnotatedMethods(BeforeClass.class));
+        // Workaround to support @NoMetricBefore/@NoMetricAfter methods used in microbenchmark
+        // runner.
+        // TODO(b/205019000) TODO(b/148104702): these annotations seen as a temporary solutions
+        // and supposed to be eventually removed
+        allBeforeMethods.addAll(getTestClass().getAnnotatedMethods(Microbenchmark.NoMetricBefore.class));
         allBeforeMethods.addAll(getTestClass().getAnnotatedMethods(Before.class));
         return allBeforeMethods.isEmpty()
                 ? statement
@@ -131,9 +171,17 @@ public class LongevityClassRunner extends BlockJUnit4ClassRunner {
      */
     @Override
     protected Statement withAfters(FrameworkMethod method, Object target, Statement statement) {
+        final List<FrameworkMethod> afterMethods = new ArrayList<>();
+        afterMethods.addAll(getTestClass().getAnnotatedMethods(After.class));
+        // Workaround to support @NoMetricBefore/@NoMetricAfter methods used in microbenchmark
+        // runner.
+        // TODO(b/205019000) TODO(b/148104702): these annotations seen as a temporary solutions
+        // and supposed to be eventually removed
+        afterMethods.addAll(getTestClass().getAnnotatedMethods(Microbenchmark.NoMetricAfter.class));
+
         return addRunAfters(
                 statement,
-                getTestClass().getAnnotatedMethods(After.class),
+                afterMethods,
                 getTestClass().getAnnotatedMethods(AfterClass.class),
                 target);
     }

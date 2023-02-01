@@ -16,7 +16,6 @@ native_metric_tests := \
     binderAddInts \
     binderRpcBenchmark \
     bionic-benchmarks \
-    buffer_transport_benchmark \
     hwuimacro \
     hwuimicro \
     inputflinger_benchmarks \
@@ -29,7 +28,8 @@ native_metric_tests := \
     mmapPerf \
     netd_benchmark \
     skia_nanobench \
-    VibratorHalIntegrationBenchmark
+    VibratorHalIntegrationBenchmark \
+    librenderengine_bench
 
 ifneq ($(strip $(BOARD_PERFSETUP_SCRIPT)),)
 native_metric_tests += perf-setup

@@ -130,7 +130,7 @@ public class AutoNotificationMockingHelperImpl extends AbstractAutoStandardAppHe
         for (BySelector selector : NOTIFICATION_REQUIRED_FIELDS) {
             UiObject2 obj = findUiObject(selector);
             if (obj == null) {
-                throw new RuntimeException("Unable to find required notification field");
+                throw new RuntimeException(String.format("Unable to find required notification field %s",selector.toString()));
             }
         }
         return true;
@@ -155,7 +155,8 @@ public class AutoNotificationMockingHelperImpl extends AbstractAutoStandardAppHe
                             context,
                             0,
                             context.getPackageManager().getLaunchIntentForPackage(pkg),
-                            android.content.Intent.FLAG_ACTIVITY_NEW_TASK));
+                            android.content.Intent.FLAG_ACTIVITY_NEW_TASK
+                                    | PendingIntent.FLAG_IMMUTABLE));
         }
         return builder;
     }

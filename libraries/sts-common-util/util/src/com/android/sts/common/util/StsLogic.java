@@ -29,6 +29,7 @@ import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 /** Common STS extra business logic for host-side and device-side to implement. */
@@ -38,32 +39,53 @@ public interface StsLogic {
 
     // keep in sync with google3:
     // //wireless/android/partner/apbs/*/config/xtsbgusinesslogic/sts_business_logic.gcl
-    List<String> STS_EXTRA_BUSINESS_LOGIC_FULL = Arrays.asList(new String[] {
-            "uploadSpl",
-            "uploadModificationTime",
-            "uploadKernelBugs",
-            "declaredSpl",
-    });
-    List<String> STS_EXTRA_BUSINESS_LOGIC_INCREMENTAL = Arrays.asList(new String[] {
-            "uploadSpl",
-            "uploadModificationTime",
-            "uploadKernelBugs",
-            "declaredSpl",
-            "incremental",
-    });
+    List<String> STS_EXTRA_BUSINESS_LOGIC_FULL =
+            Arrays.asList(
+                    new String[] {
+                        "uploadSpl",
+                        "uploadModificationTime",
+                        "uploadKernelBugs",
+                        "uploadMainlineModules",
+                        "declaredSpl",
+                        "fridaAssetTemplate",
+                        "mainline",
+                    });
+    List<String> STS_EXTRA_BUSINESS_LOGIC_INCREMENTAL =
+            Arrays.asList(
+                    new String[] {
+                        "uploadSpl",
+                        "uploadModificationTime",
+                        "uploadKernelBugs",
+                        "uploadMainlineModules",
+                        "declaredSpl",
+                        "incremental",
+                        "fridaAssetTemplate",
+                        "mainline",
+                    });
 
     // intentionally empty because declaredSpl and incremental skipping is not desired when
     // developing STS tests.
-    List<String> STS_EXTRA_BUSINESS_LOGIC_DEVELOP = Arrays.asList(new String[] {
-    });
+    // Exceptions:
+    // * uploads
+    // * mainline skipping (this is behind an additional flag)
+    // * frida (necessary for frida tests)
+    List<String> STS_EXTRA_BUSINESS_LOGIC_DEVELOP =
+            Arrays.asList(
+                    new String[] {
+                        "fridaAssetTemplate",
+                        "uploadMainlineModules",
+                        "mainline",
+                    });
 
     Description getTestDescription();
 
     LocalDate getPlatformSpl();
 
-    LocalDate getKernelSpl();
+    Optional<LocalDate> getKernelBuildDate();
 
     boolean shouldUseKernelSpl();
+
+    boolean shouldSkipMainlineTests();
 
     LocalDate getReleaseBulletinSpl();
 
@@ -100,6 +122,7 @@ public interface StsLogic {
     }
 
     default LocalDate getDeviceSpl() {
+        LocalDate platformSpl = getPlatformSpl();
         if (shouldUseKernelSpl()) {
             Set<String> bugIds = BusinessLogicSetStore.getSet("kernel_bugs");
             boolean isKernel = false;
@@ -107,16 +130,24 @@ public interface StsLogic {
                 isKernel |= bugIds.contains(Long.toString(bugId));
             }
             if (isKernel) {
-                LocalDate kernelSpl = getKernelSpl();
-                if (kernelSpl != null) {
-                    return kernelSpl;
+                Optional<LocalDate> kernelBuildDate = getKernelBuildDate();
+                if (!kernelBuildDate.isPresent()) {
+                    logWarn(LOG_TAG, "could not read kernel SPL, falling back to platform SPL");
+                    return platformSpl;
                 }
-                // could not get the kernel SPL even though we should use it
-                // falling back to platform SPL
-                logWarn(LOG_TAG, "could not read kernel SPL, falling back to platform SPL");
+                if (kernelBuildDate.get().plusMonths(2).isAfter(platformSpl)) {
+                    // if the kernel was built within the past 2 months, it's likely still in
+                    // support and the platform SPL is still canonical.
+                    // 2 months because the future ASB is at most (partner + public) months ahead
+                    logInfo(LOG_TAG, "kernel SPL is too recent, using platform SPL");
+                    return platformSpl;
+                }
+                // the kernel build date can be used to approximate the SPL of the device/build
+                // when it stopped getting kernel updates
+                return kernelBuildDate.get();
             }
         }
-        return getPlatformSpl();
+        return platformSpl;
     }
 
     default LocalDate getMinTestSpl() {
@@ -252,6 +283,28 @@ public interface StsLogic {
         // skip if the test is newer than the device SPL
         LocalDate deviceSpl = getDeviceSpl();
         return minTestSpl.isAfter(deviceSpl);
+    }
+
+    default boolean shouldSkipMainline() {
+        // check if the flag to skip mainline tests has been set to true
+        if (!shouldSkipMainlineTests()) {
+            return false;
+        }
+
+        long[] bugIds = getCveBugIds();
+        if (bugIds == null) {
+            // There were no @AsbSecurityTest annotations
+            logInfo(LOG_TAG, "not an ASB test");
+            return false;
+        }
+
+        Map<String, String> bugModulesMap = BusinessLogicMapStore.getMap("bugid_mainline_modules");
+        for (long bugId : bugIds) {
+            if (bugModulesMap.containsKey(Long.toString(bugId))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     default void skip(String message) {

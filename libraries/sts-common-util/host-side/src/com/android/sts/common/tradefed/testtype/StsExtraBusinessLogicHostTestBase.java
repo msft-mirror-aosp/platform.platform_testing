@@ -21,6 +21,7 @@ import com.android.ddmlib.Log;
 import com.android.sts.common.util.DescriptionProvider;
 import com.android.sts.common.util.SplUtils;
 import com.android.sts.common.util.StsLogic;
+import com.android.sts.common.util.UnameVersionHost;
 import com.android.tradefed.device.DeviceNotAvailableException;
 
 import org.junit.Rule;
@@ -28,13 +29,13 @@ import org.junit.runner.Description;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 /** The host-side implementation of StsLogic. */
 public class StsExtraBusinessLogicHostTestBase extends ExtraBusinessLogicHostTestBase
         implements StsLogic {
 
     private LocalDate deviceSpl = null;
-    private LocalDate kernelSpl = null;
     @Rule public DescriptionProvider descriptionProvider = new DescriptionProvider();
 
     public StsExtraBusinessLogicHostTestBase() {
@@ -68,18 +69,12 @@ public class StsExtraBusinessLogicHostTestBase extends ExtraBusinessLogicHostTes
     }
 
     @Override
-    public LocalDate getKernelSpl() {
-        if (kernelSpl == null) {
-            // set in:
-            // test/sts/tools/sts-tradefed/src/com/android/tradefed/targetprep/multi/KernelSPL.java
-            String kernelSplString =
-                    getBuild().getBuildAttributes().get("cts:build_version_kernel_security_patch");
-            if (kernelSplString == null) {
-                return null;
-            }
-            kernelSpl = SplUtils.localDateFromSplString(kernelSplString);
+    public Optional<LocalDate> getKernelBuildDate() {
+        try {
+            return new UnameVersionHost(getDevice()).parseBuildTimestamp();
+        } catch (DeviceNotAvailableException e) {
+            throw new RuntimeException("Couldn't get the kernel build timestamp", e);
         }
-        return kernelSpl;
     }
 
     @Override
@@ -87,6 +82,12 @@ public class StsExtraBusinessLogicHostTestBase extends ExtraBusinessLogicHostTes
         // set in test/sts/tools/sts-tradefed/res/config/sts-base-use-kernel-spl.xml
         String useKernelSplString = getBuild().getBuildAttributes().get("sts-use-kernel-spl");
         return Boolean.parseBoolean(useKernelSplString);
+    }
+
+    @Override
+    public boolean shouldSkipMainlineTests() {
+        return Boolean.parseBoolean(
+                getBuild().getBuildAttributes().get("sts-should-skip-mainline"));
     }
 
     /**

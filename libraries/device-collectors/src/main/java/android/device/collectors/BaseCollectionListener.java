@@ -63,14 +63,20 @@ public class BaseCollectionListener<T> extends BaseMetricListener {
 
     @Override
     public void onTestRunStart(DataRecord runData, Description description) {
+
+        if (mIsCollectPerRun) {
+            Function<String, Boolean> filter = getFilter(description);
+            testStart(filter, description);
+        }
+    }
+
+    @Override
+    protected void parseArguments() {
+        super.parseArguments();
         Bundle args = getArgsBundle();
         mIsCollectPerRun = "true".equals(args.getString(COLLECT_PER_RUN));
         // By default this flag is set to false to collect the metrics on test failure.
         mSkipTestFailureMetrics = "true".equals(args.getString(SKIP_TEST_FAILURE_METRICS));
-
-        if (mIsCollectPerRun) {
-            mHelper.startCollecting();
-        }
     }
 
     protected Function<String, Boolean> getFilter(Description description) {
@@ -82,11 +88,7 @@ public class BaseCollectionListener<T> extends BaseMetricListener {
         mIsTestFailed = false;
         if (!mIsCollectPerRun) {
             Function<String, Boolean> filter = getFilter(description);
-            if (filter == null) {
-                mHelper.startCollecting();
-            } else {
-                mHelper.startCollecting(filter);
-            }
+            testStart(filter, description);
         }
     }
 
@@ -96,26 +98,40 @@ public class BaseCollectionListener<T> extends BaseMetricListener {
     }
 
     @Override
-    public final void onTestEnd(DataRecord testData, Description description) {
+    public void onTestEnd(DataRecord testData, Description description) {
         if (!mIsCollectPerRun) {
-            // Skip adding the metrics collected during the test failure
-            // if the skip metrics on test failure flag is enabled and the
-            // current test is failed.
-            if (shouldSkipFailureTestMetrics()) {
-                Log.i(getTag(), "Skipping the metric collection.");
-            } else {
-                // Collect the metrics.
-                collectMetrics(testData);
+            try {
+                // Skip adding the metrics collected during the test failure
+                // if the skip metrics on test failure flag is enabled and the
+                // current test is failed.
+                if (shouldSkipFailureTestMetrics()) {
+                    Log.i(getTag(), "Skipping the metric collection.");
+                } else {
+                    // Collect the metrics.
+                    collectMetrics(testData);
+                }
+            } finally {
+                mHelper.stopCollecting();
             }
-            mHelper.stopCollecting();
         }
     }
 
     @Override
     public void onTestRunEnd(DataRecord runData, Result result) {
         if (mIsCollectPerRun) {
-            collectMetrics(runData);
-            mHelper.stopCollecting();
+            try {
+                collectMetrics(runData);
+            } finally {
+                mHelper.stopCollecting();
+            }
+        }
+    }
+
+    public void testStart(Function<String, Boolean> filter, Description description) {
+        if (filter == null) {
+            mHelper.startCollecting();
+        } else {
+            mHelper.startCollecting(filter);
         }
     }
 

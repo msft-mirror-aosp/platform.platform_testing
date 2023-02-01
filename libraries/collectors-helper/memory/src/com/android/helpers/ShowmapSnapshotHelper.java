@@ -19,15 +19,14 @@ package com.android.helpers;
 import static com.android.helpers.MetricUtility.constructKey;
 
 import android.util.Log;
-
 import androidx.test.InstrumentationRegistry;
 import androidx.test.uiautomator.UiDevice;
-
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.InputMismatchException;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -70,6 +69,7 @@ public class ShowmapSnapshotHelper implements ICollectorHelper<String> {
     private int mDropCacheOption;
     private boolean mCollectForAllProcesses = false;
     private UiDevice mUiDevice;
+    private boolean mRunGcPrecollection;
 
     // Map to maintain per-process memory info
     private Map<String, String> mMemoryMap = new HashMap<>();
@@ -79,10 +79,11 @@ public class ShowmapSnapshotHelper implements ICollectorHelper<String> {
     private Map<String, List<Integer>> mMetricNameIndexMap = new HashMap<>();
 
     public void setUp(String testOutputDir, String... processNames) {
-        mProcessNames = processNames;
-        mTestOutputDir = testOutputDir;
-        mDropCacheOption = 0;
-        mUiDevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
+      mProcessNames = processNames;
+      mTestOutputDir = testOutputDir;
+      mDropCacheOption = 0;
+      mRunGcPrecollection = false;
+      mUiDevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
     }
 
     @Override
@@ -91,6 +92,7 @@ public class ShowmapSnapshotHelper implements ICollectorHelper<String> {
             Log.e(TAG, String.format("Invalid test setup"));
             return false;
         }
+        mMemoryMap.clear();
 
         File directory = new File(mTestOutputDir);
         String filePath = String.format("%s/showmap_snapshot%d.txt", mTestOutputDir,
@@ -145,24 +147,40 @@ public class ShowmapSnapshotHelper implements ICollectorHelper<String> {
                 // No processes specified, just return empty map
                 return mMemoryMap;
             }
+            HashSet<Integer> zygoteChildrenPids = getZygoteChildrenPids();
 
             FileWriter writer = new FileWriter(new File(mTestOutputFile), true);
             for (String processName : mProcessNames) {
                 List<Integer> pids = new ArrayList<>();
-
                 // Collect required data
                 try {
                     pids = getPids(processName);
                     for (Integer pid : pids) {
-                        String showmapOutput = execShowMap(processName, pid);
-                        parseAndUpdateMemoryInfo(processName, showmapOutput);
-                        // Store showmap output into file. If there are more than one process
-                        // with same name write the individual showmap associated with pid.
-                        storeToFile(mTestOutputFile, processName, pid, showmapOutput, writer);
-                        // Parse number of child processes for the given pid and update the
-                        // total number of child process count for the process name that pid
-                        // is associated with.
-                        updateChildProcessesDetails(processName, pid);
+                      // Force Garbage collect to trim transient objects before taking memory
+                      // measurements as memory tests aim to track persistent memory regression
+                      // instead of transient memory which also allows for de-noising and reducing
+                      // likelihood of false alerts.
+                      if (mRunGcPrecollection && zygoteChildrenPids.contains(pid)) {
+                        // Skip native processes from sending GC signal.
+                        android.os.Trace.beginSection("IssueGCForPid: " + pid);
+                        // Perform a synchronous GC which happens when we request meminfo
+                        // This save us the need of setting up timeouts that may or may not
+                        // match with the end time of GC.
+                        mUiDevice.executeShellCommand("dumpsys meminfo -a " + pid);
+                        android.os.Trace.endSection();
+                      }
+
+                      android.os.Trace.beginSection("ExecuteShowmap");
+                      String showmapOutput = execShowMap(processName, pid);
+                      android.os.Trace.endSection();
+                      parseAndUpdateMemoryInfo(processName, showmapOutput);
+                      // Store showmap output into file. If there are more than one process
+                      // with same name write the individual showmap associated with pid.
+                      storeToFile(mTestOutputFile, processName, pid, showmapOutput, writer);
+                      // Parse number of child processes for the given pid and update the
+                      // total number of child process count for the process name that pid
+                      // is associated with.
+                      updateChildProcessesDetails(processName, pid);
                     }
                 } catch (RuntimeException e) {
                     Log.e(TAG, e.getMessage(), e.getCause());
@@ -192,9 +210,50 @@ public class ShowmapSnapshotHelper implements ICollectorHelper<String> {
         return mMemoryMap;
     }
 
+    public HashSet<Integer> getZygoteChildrenPids() {
+        HashSet<Integer> allZygoteChildren;
+        allZygoteChildren = getChildrenPids("zygote");
+        HashSet<Integer> zyg64children = getChildrenPids("zygote64");
+        allZygoteChildren.addAll(zyg64children);
+        return allZygoteChildren;
+    }
+
+    public HashSet<Integer> getChildrenPids(String processName) {
+        HashSet<Integer> childrenPids = new HashSet<>();
+        String childrenCmdOutput = "";
+        try {
+            // Execute shell does not support shell substitution so it has to be executed twice.
+            childrenCmdOutput = mUiDevice.executeShellCommand(
+                "pgrep -P " + mUiDevice.executeShellCommand("pidof " + processName));
+        } catch (IOException e) {
+            Log.e(TAG, "Exception occurred reading children for process " + processName);
+        }
+        String[] lines = childrenCmdOutput.split("\\R");
+        for (String line : lines) {
+            try {
+                int pid = Integer.parseInt(line);
+                childrenPids.add(pid);
+            } catch (NumberFormatException e) {
+                // If the process does not exist or the shell command fails
+                // just skip the pid, this is because there could be some
+                // devices that contain a process while others do not.
+            }
+        }
+        return childrenPids;
+    }
+
     @Override
     public boolean stopCollecting() {
         return true;
+    }
+
+    /**
+     * Sets option for running GC prior to collection.
+     *
+     * @param shouldGcOnPrecollect whether it should run GC prior to showmap collection
+     */
+    public void setGcOnPrecollectOption(boolean shouldGcOnPrecollect) {
+        mRunGcPrecollection = shouldGcOnPrecollect;
     }
 
     /**
