@@ -103,6 +103,8 @@ open class ComponentNameMatcher(open var component: ComponentName) : IComponentN
         @JsName("IME_SNAPSHOT") val IME_SNAPSHOT = ComponentNameMatcher("", "IME-snapshot-surface")
         @JsName("SPLASH_SCREEN") val SPLASH_SCREEN = ComponentNameMatcher("", "Splash Screen")
         @JsName("SNAPSHOT") val SNAPSHOT = ComponentNameMatcher("", "SnapshotStartingWindow")
+        @JsName("TRANSITION_SNAPSHOT")
+        val TRANSITION_SNAPSHOT = ComponentNameMatcher("", "transition snapshot")
         @JsName("LETTERBOX") val LETTERBOX = ComponentNameMatcher("", "Letterbox")
         @JsName("WALLPAPER_BBQ_WRAPPER")
         val WALLPAPER_BBQ_WRAPPER = ComponentNameMatcher("", "Wallpaper BBQ wrapper")

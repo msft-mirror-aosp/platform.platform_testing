@@ -95,14 +95,12 @@ class LayersTraceTest {
         val layer = entry.getLayerWithBuffer(component)
         val occludedBy = layer?.occludedBy ?: emptyArray()
         val partiallyOccludedBy = layer?.partiallyOccludedBy ?: emptyArray()
-        Truth.assertWithMessage("Layer $layerName should not be occluded")
-            .that(occludedBy)
-            .isEmpty()
-        Truth.assertWithMessage("Layer $layerName should be partially occluded")
+        Truth.assertWithMessage("Layer $layerName should be occluded").that(occludedBy).isNotEmpty()
+        Truth.assertWithMessage("Layer $layerName should not be partially occluded")
             .that(partiallyOccludedBy)
-            .isNotEmpty()
-        Truth.assertWithMessage("Layer $layerName should be partially occluded")
-            .that(partiallyOccludedBy.joinToString())
+            .isEmpty()
+        Truth.assertWithMessage("Layer $layerName should be occluded")
+            .that(occludedBy.joinToString())
             .contains(
                 "Splash Screen com.android.server.wm.flicker.testapp#0 buffer:w:1440, " +
                     "h:3040, stride:1472, format:1 frame#1 visible:" +

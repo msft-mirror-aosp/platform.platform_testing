@@ -91,7 +91,7 @@ class LayerTraceEntry(
                         .filter {
                             it.stackId == layer.stackId &&
                                 it.contains(layer, displaySize) &&
-                                !it.hasRoundedCorners
+                                (!it.hasRoundedCorners || (layer.cornerRadius == it.cornerRadius))
                         }
                         .toTypedArray()
                 layer.addOccludedBy(occludedBy)

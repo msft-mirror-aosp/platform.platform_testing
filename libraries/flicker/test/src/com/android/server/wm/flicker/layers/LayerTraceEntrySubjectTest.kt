@@ -359,7 +359,7 @@ class LayerTraceEntrySubjectTest {
     }
 
     @Test
-    fun detectPartiallyCoveredLayerBecauseOfRoundedCorners() {
+    fun detectOccludedLayerBecauseOfRoundedCorners() {
         val trace = readLayerTraceFromFile("layers_trace_rounded_corners.winscope")
         val entry =
             LayersTraceSubject.assertThat(trace)
@@ -375,11 +375,11 @@ class LayerTraceEntrySubjectTest {
         // both layers have the same region
         imeActivitySubject.visibleRegion.coversExactly(simpleActivitySubject.visibleRegion.region)
         // both are visible
-        entry.isVisible(simpleActivityMatcher)
+        entry.isInvisible(simpleActivityMatcher)
         entry.isVisible(imeActivityMatcher)
         // and simple activity is partially covered by IME activity
         Truth.assertWithMessage("IME activity has rounded corners")
-            .that(simpleActivityLayer.partiallyOccludedBy)
+            .that(simpleActivityLayer.occludedBy)
             .asList()
             .contains(imeActivityLayer)
         // because IME activity has rounded corners
