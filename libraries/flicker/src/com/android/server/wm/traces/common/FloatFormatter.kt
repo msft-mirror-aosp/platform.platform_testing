@@ -16,22 +16,17 @@
 
 package com.android.server.wm.traces.common
 
-import kotlin.math.min
+import kotlin.js.JsName
 
 /**
- * A formatter to print floats with 3 decimal digits.
+ * A formatter to print floats with up to 3 decimal digits.
  *
- * This is necessary because multiplatform kotlin projects don't support String.format
- * yet (issue KT-21644)
+ * This is necessary because multiplatform kotlin projects don't support String.format yet (issue
+ * KT-21644)
  */
 object FloatFormatter {
+    @JsName("format")
     fun format(value: Float): String {
-        val strValue = value.toString()
-        val dotIndex = strValue.indexOf(".")
-        return if (dotIndex > -1) {
-            strValue.substring(0, min(strValue.length, dotIndex + 4))
-        } else {
-            "$strValue.000"
-        }
+        return ((value * 1000).toInt() / 1000.0).toString()
     }
 }

@@ -16,90 +16,119 @@
 
 package com.android.server.wm.traces.common.windowmanager.windows
 
+import com.android.server.wm.traces.common.IComponentMatcher
 import com.android.server.wm.traces.common.Rect
+import kotlin.js.JsName
 
 /**
  * Represents a task in the window manager hierarchy
  *
- * This is a generic object that is reused by both Flicker and Winscope and cannot
- * access internal Java/Android functionality
- *
+ * This is a generic object that is reused by both Flicker and Winscope and cannot access internal
+ * Java/Android functionality
  */
-open class Task(
+class Task(
     override val activityType: Int,
     override val isFullscreen: Boolean,
     override val bounds: Rect,
-    val taskId: Int,
-    val rootTaskId: Int,
-    val displayId: Int,
-    val lastNonFullscreenBounds: Rect,
-    val realActivity: String,
-    val origActivity: String,
-    val resizeMode: Int,
-    private val _resumedActivity: String,
-    var animatingBounds: Boolean,
-    val surfaceWidth: Int,
-    val surfaceHeight: Int,
-    val createdByOrganizer: Boolean,
-    val minWidth: Int,
-    val minHeight: Int,
+    @JsName("taskId") val taskId: Int,
+    @JsName("rootTaskId") val rootTaskId: Int,
+    @JsName("displayId") val displayId: Int,
+    @JsName("lastNonFullscreenBounds") val lastNonFullscreenBounds: Rect,
+    @JsName("realActivity") val realActivity: String,
+    @JsName("origActivity") val origActivity: String,
+    @JsName("resizeMode") val resizeMode: Int,
+    @JsName("_resumedActivity") private val _resumedActivity: String,
+    @JsName("animatingBounds") var animatingBounds: Boolean,
+    @JsName("surfaceWidth") val surfaceWidth: Int,
+    @JsName("surfaceHeight") val surfaceHeight: Int,
+    @JsName("createdByOrganizer") val createdByOrganizer: Boolean,
+    @JsName("minWidth") val minWidth: Int,
+    @JsName("minHeight") val minHeight: Int,
     windowContainer: WindowContainer
 ) : WindowContainer(windowContainer) {
     override val isVisible: Boolean = false
     override val name: String = taskId.toString()
-    override val isEmpty: Boolean get() = tasks.isEmpty() && activities.isEmpty()
-    override val stableId: String get() = "${super.stableId} $taskId"
+    override val isEmpty: Boolean
+        get() = tasks.isEmpty() && activities.isEmpty()
+    override val stableId: String
+        get() = "${super.stableId} $taskId"
 
-    val isRootTask: Boolean get() = taskId == rootTaskId
+    @JsName("isRootTask")
+    val isRootTask: Boolean
+        get() = taskId == rootTaskId
+    @JsName("tasks")
     val tasks: Array<Task>
         get() = this.children.reversed().filterIsInstance<Task>().toTypedArray()
+    @JsName("taskFragments")
     val taskFragments: Array<TaskFragment>
         get() = this.children.reversed().filterIsInstance<TaskFragment>().toTypedArray()
+    @JsName("activities")
     val activities: Array<Activity>
         get() = this.children.reversed().filterIsInstance<Activity>().toTypedArray()
-    /** The top task in the stack.
-     */
+    /** The top task in the stack. */
     // NOTE: Unlike the WindowManager internals, we dump the state from top to bottom,
     //       so the indices are inverted
-    val topTask: Task? get() = tasks.firstOrNull()
-    val resumedActivities: Array<String> get() {
-        val result = mutableSetOf<String>()
-        if (this._resumedActivity.isNotEmpty()) {
-            result.add(this._resumedActivity)
+    @JsName("topTask")
+    val topTask: Task?
+        get() = tasks.firstOrNull()
+    @JsName("resumedActivities")
+    val resumedActivities: Array<String>
+        get() {
+            val result = mutableSetOf<String>()
+            if (this._resumedActivity.isNotEmpty()) {
+                result.add(this._resumedActivity)
+            }
+            val activitiesInChildren =
+                this.tasks.flatMap { it.resumedActivities.toList() }.filter { it.isNotEmpty() }
+            result.addAll(activitiesInChildren)
+            return result.toTypedArray()
         }
-        val activitiesInChildren = this.tasks
-            .flatMap { it.resumedActivities.toList() }
-            .filter { it.isNotEmpty() }
-        result.addAll(activitiesInChildren)
-        return result.toTypedArray()
-    }
 
+    /** @return The first [Task] matching [predicate], or null otherwise */
+    @JsName("getTask")
     fun getTask(predicate: (Task) -> Boolean) =
         tasks.firstOrNull { predicate(it) } ?: if (predicate(this)) this else null
 
-    fun getTask(taskId: Int) = getTask { t -> t.taskId == taskId }
-
-    fun getActivityWithTask(predicate: (Task, Activity) -> Boolean): Activity? {
-        return activities.firstOrNull { predicate(this, it) }
-            ?: tasks.flatMap { task -> task.activities.filter { predicate(task, it) } }
-                .firstOrNull()
+    /** @return the first [Activity] matching [predicate], or null otherwise */
+    @JsName("getActivityByPredicate")
+    internal fun getActivity(predicate: (Activity) -> Boolean): Activity? {
+        var activity: Activity? = activities.firstOrNull { predicate(it) }
+        if (activity != null) {
+            return activity
+        }
+        for (task in tasks) {
+            activity = task.getActivity(predicate)
+            if (activity != null) {
+                return activity
+            }
+        }
+        for (taskFragment in taskFragments) {
+            activity = taskFragment.getActivity(predicate)
+            if (activity != null) {
+                return activity
+            }
+        }
+        return null
     }
 
-    fun forAllTasks(consumer: (Task) -> Any) {
-        tasks.forEach { consumer(it) }
+    /**
+     * @return the first [Activity] matching [componentMatcher], or null otherwise
+     *
+     * @param componentMatcher Components to search
+     */
+    @JsName("getActivity")
+    fun getActivity(componentMatcher: IComponentMatcher): Activity? = getActivity { activity ->
+        componentMatcher.activityMatchesAnyOf(activity)
     }
 
-    fun getActivity(predicate: (Activity) -> Boolean): Activity? {
-        return activities.firstOrNull { predicate(it) }
-            ?: tasks.flatMap { it.activities.toList() }
-                .firstOrNull { predicate(it) }
-    }
-
-    fun getActivity(activityName: String): Activity? {
-        return getActivity { activity -> activity.title.contains(activityName) }
-    }
-
-    fun containsActivity(activityName: String) = getActivity(activityName) != null
+    /**
+     * @return if any activity matches [componentMatcher]
+     *
+     * @param componentMatcher Components to search
+     */
+    @JsName("containsActivity")
+    fun containsActivity(componentMatcher: IComponentMatcher) =
+        getActivity(componentMatcher) != null
 
     override fun toString(): String {
         return "${this::class.simpleName}: {$token $title} id=$taskId bounds=$bounds"

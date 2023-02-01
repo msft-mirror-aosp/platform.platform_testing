@@ -19,54 +19,73 @@ package com.android.server.wm.traces.common.layers
 import com.android.server.wm.traces.common.Matrix33
 import com.android.server.wm.traces.common.RectF
 import com.android.server.wm.traces.common.service.PlatformConsts
+import com.android.server.wm.traces.common.withCache
+import kotlin.js.JsName
 
 /**
  * Wrapper for TransformProto (frameworks/native/services/surfaceflinger/layerproto/common.proto)
  *
  * This class is used by flicker and Winscope
  */
-open class Transform(val type: Int?, val matrix: Matrix33) {
+class Transform
+private constructor(@JsName("type") val type: Int?, @JsName("matrix") val matrix: Matrix33) {
 
     /**
-     * Returns true if the applying the transform on an an axis aligned rectangle
-     * results in another axis aligned rectangle.
+     * Returns true if the applying the transform on an an axis aligned rectangle results in another
+     * axis aligned rectangle.
      */
+    @JsName("isSimpleRotation")
     val isSimpleRotation: Boolean = !(type?.isFlagSet(ROT_INVALID_VAL) ?: true)
 
     /**
-     * The transformation matrix is defined as the product of:
-     * | cos(a) -sin(a) |  \/  | X 0 |
-     * | sin(a)  cos(a) |  /\  | 0 Y |
+     * The transformation matrix is defined as the product of: | cos(a) -sin(a) | \/ | X 0 | |
+     * sin(a) cos(a) | /\ | 0 Y |
      *
-     * where a is a rotation angle, and X and Y are scaling factors.
-     * A transformation matrix is invalid when either X or Y is zero,
-     * as a rotation matrix is valid for any angle. When either X or Y
-     * is 0, then the scaling matrix is not invertible, which makes the
-     * transformation matrix not invertible as well. A 2D matrix with
-     * components | A B | is not invertible if and only if AD - BC = 0.
+     * where a is a rotation angle, and X and Y are scaling factors. A transformation matrix is
+     * invalid when either X or Y is zero, as a rotation matrix is valid for any angle. When either
+     * X or Y is 0, then the scaling matrix is not invertible, which makes the transformation matrix
+     * not invertible as well. A 2D matrix with components | A B | is not invertible if and only if
+     * AD - BC = 0.
+     * ```
      *            | C D |
+     * ```
      * This check is included above.
      */
+    @JsName("isValid")
     val isValid: Boolean
         get() {
             // determinant of transform
             return matrix.dsdx * matrix.dtdy != matrix.dtdx * matrix.dsdy
         }
 
-    fun getRotation(): Int {
+    @JsName("isScaling")
+    val isScaling: Boolean
+        get() = type?.isFlagSet(SCALE_VAL) ?: false
+    @JsName("isTranslating")
+    val isTranslating: Boolean
+        get() = type?.isFlagSet(TRANSLATE_VAL) ?: false
+    @JsName("isRotating")
+    val isRotating: Boolean
+        get() = type?.isFlagSet(ROTATE_VAL) ?: false
+
+    @JsName("getRotation")
+    fun getRotation(): PlatformConsts.Rotation {
         if (type == null) {
-            return PlatformConsts.ROTATION_0
+            return PlatformConsts.Rotation.ROTATION_0
         }
 
         return when {
-            type.isFlagClear(SCALE_VAL or ROTATE_VAL or TRANSLATE_VAL) -> PlatformConsts.ROTATION_0
-            type.isFlagSet(ROT_90_VAL) -> PlatformConsts.ROTATION_90
-            type.isFlagSet(FLIP_V_VAL or FLIP_H_VAL) -> PlatformConsts.ROTATION_180
-            type.isFlagSet(ROT_90_VAL or FLIP_V_VAL or FLIP_H_VAL) -> PlatformConsts.ROTATION_270
-            else -> PlatformConsts.ROTATION_0
+            type.isFlagClear(SCALE_VAL or ROTATE_VAL or TRANSLATE_VAL) ->
+                PlatformConsts.Rotation.ROTATION_0
+            type.isFlagSet(ROT_90_VAL) -> PlatformConsts.Rotation.ROTATION_90
+            type.isFlagSet(FLIP_V_VAL or FLIP_H_VAL) -> PlatformConsts.Rotation.ROTATION_180
+            type.isFlagSet(ROT_90_VAL or FLIP_V_VAL or FLIP_H_VAL) ->
+                PlatformConsts.Rotation.ROTATION_270
+            else -> PlatformConsts.Rotation.ROTATION_0
         }
     }
 
+    @JsName("typeFlags")
     private val typeFlags: Array<String>
         get() {
             if (type == null) {
@@ -111,6 +130,7 @@ open class Transform(val type: Int?, val matrix: Matrix33) {
             return result.toTypedArray()
         }
 
+    @JsName("prettyPrint")
     fun prettyPrint(): String {
         val transformType = typeFlags.joinToString("|")
 
@@ -121,14 +141,21 @@ open class Transform(val type: Int?, val matrix: Matrix33) {
         return "$transformType ${matrix.prettyPrint()}"
     }
 
+    @JsName("getTypeAsString")
+    fun getTypeAsString(): String {
+        return typeFlags.joinToString("|")
+    }
+
     override fun toString(): String = prettyPrint()
 
+    @JsName("apply")
     fun apply(bounds: RectF?): RectF {
         return multiplyRect(matrix, bounds ?: RectF.EMPTY)
     }
 
     private data class Vec2(val x: Float, val y: Float)
 
+    @JsName("multiplyRect")
     private fun multiplyRect(matrix: Matrix33, rect: RectF): RectF {
         //          |dsdx dsdy  tx|         | left, top         |
         // matrix = |dtdx dtdy  ty|  rect = |                   |
@@ -139,7 +166,7 @@ open class Transform(val type: Int?, val matrix: Matrix33) {
         val leftBottom = multiplyVec2(matrix, rect.left, rect.bottom)
         val rightBottom = multiplyVec2(matrix, rect.right, rect.bottom)
 
-        return RectF(
+        return RectF.from(
             left = arrayOf(leftTop.x, rightTop.x, leftBottom.x, rightBottom.x).minOrNull() ?: 0f,
             top = arrayOf(leftTop.y, rightTop.y, leftBottom.y, rightBottom.y).minOrNull() ?: 0f,
             right = arrayOf(leftTop.x, rightTop.x, leftBottom.x, rightBottom.x).minOrNull() ?: 0f,
@@ -147,6 +174,7 @@ open class Transform(val type: Int?, val matrix: Matrix33) {
         )
     }
 
+    @JsName("multiplyVec2")
     private fun multiplyVec2(matrix: Matrix33, x: Float, y: Float): Vec2 {
         // |dsdx dsdy  tx|     | x |
         // |dtdx dtdy  ty|  x  | y |
@@ -155,33 +183,6 @@ open class Transform(val type: Int?, val matrix: Matrix33) {
             matrix.dsdx * x + matrix.dsdy * y + matrix.tx,
             matrix.dtdx * x + matrix.dtdy * y + matrix.ty
         )
-    }
-
-    companion object {
-        val EMPTY: Transform = Transform(type = null, matrix = Matrix33.EMPTY)
-
-        /* transform type flags */
-        const val TRANSLATE_VAL = 0x0001
-        const val ROTATE_VAL = 0x0002
-        const val SCALE_VAL = 0x0004
-
-        /* orientation flags */
-        const val FLIP_H_VAL = 0x0100 // (1 << 0 << 8)
-        const val FLIP_V_VAL = 0x0200 // (1 << 1 << 8)
-        const val ROT_90_VAL = 0x0400 // (1 << 2 << 8)
-        const val ROT_INVALID_VAL = 0x8000 // (0x80 << 8)
-
-        fun isSimpleTransform(type: Int?): Boolean {
-                return type?.isFlagClear(ROT_INVALID_VAL or SCALE_VAL) ?: false
-        }
-
-        fun Int.isFlagClear(bits: Int): Boolean {
-            return this and bits == 0
-        }
-
-        fun Int.isFlagSet(bits: Int): Boolean {
-            return this and bits == bits
-        }
     }
 
     override fun equals(other: Any?): Boolean {
@@ -200,5 +201,39 @@ open class Transform(val type: Int?, val matrix: Matrix33) {
         result = 31 * result + matrix.hashCode()
         result = 31 * result + isSimpleRotation.hashCode()
         return result
+    }
+
+    companion object {
+        @JsName("EMPTY")
+        val EMPTY: Transform
+            get() = withCache { Transform(type = null, matrix = Matrix33.EMPTY) }
+        /* transform type flags */
+        @JsName("TRANSLATE_VAL") const val TRANSLATE_VAL = 0x0001
+        @JsName("ROTATE_VAL") const val ROTATE_VAL = 0x0002
+        @JsName("SCALE_VAL") const val SCALE_VAL = 0x0004
+
+        /* orientation flags */
+        @JsName("FLIP_H_VAL") const val FLIP_H_VAL = 0x0100 // (1 << 0 << 8)
+        @JsName("FLIP_V_VAL") const val FLIP_V_VAL = 0x0200 // (1 << 1 << 8)
+        @JsName("ROT_90_VAL") const val ROT_90_VAL = 0x0400 // (1 << 2 << 8)
+        @JsName("ROT_INVALID_VAL") const val ROT_INVALID_VAL = 0x8000 // (0x80 << 8)
+
+        @JsName("isSimpleTransform")
+        fun isSimpleTransform(type: Int?): Boolean {
+            return type?.isFlagClear(ROT_INVALID_VAL or SCALE_VAL) ?: false
+        }
+
+        @JsName("isFlagClear")
+        fun Int.isFlagClear(bits: Int): Boolean {
+            return this and bits == 0
+        }
+
+        @JsName("isFlagSet")
+        fun Int.isFlagSet(bits: Int): Boolean {
+            return this and bits == bits
+        }
+
+        @JsName("from")
+        fun from(type: Int?, matrix: Matrix33): Transform = withCache { Transform(type, matrix) }
     }
 }

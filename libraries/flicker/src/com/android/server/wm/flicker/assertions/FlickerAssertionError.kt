@@ -16,11 +16,7 @@
 
 package com.android.server.wm.flicker.assertions
 
-import com.android.server.wm.flicker.TraceFile
 import kotlin.AssertionError
 
-class FlickerAssertionError(
-    message: String,
-    cause: Throwable?,
-    val traceFile: TraceFile?
-) : AssertionError(message, cause)
+/** Exception type for assertion errors caused by flicker subjects */
+class FlickerAssertionError(message: String, cause: Throwable?) : AssertionError(message, cause)

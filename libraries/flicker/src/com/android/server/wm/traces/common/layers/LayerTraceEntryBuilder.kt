@@ -16,41 +16,98 @@
 
 package com.android.server.wm.traces.common.layers
 
-/**
- * Builder for LayerTraceEntries
- */
-class LayerTraceEntryBuilder(
-    timestamp: Any,
-    layers: Array<Layer>,
-    private val displays: Array<Display>,
-    private val hwcBlob: String = "",
-    private val where: String = ""
-) {
-    // Necessary for compatibility with JS number type
-    private val timestamp: Long = "$timestamp".toLong()
-    private var orphanLayerCallback: ((Layer) -> Boolean)? = null
-    private val orphans = mutableListOf<Layer>()
-    private val layers = setLayers(layers)
-    private var ignoreVirtualDisplay = false
-    private var ignoreLayersStackMatchNoDisplay = false
+import kotlin.js.JsName
 
-    private fun setLayers(layers: Array<Layer>): Map<Int, Layer> {
+/** Builder for LayerTraceEntries */
+class LayerTraceEntryBuilder {
+    @JsName("elapsedTimestamp") private var elapsedTimestamp: Long = 0L
+
+    @JsName("realTimestamp") private var realTimestamp: Long? = null
+
+    @JsName("_orphanLayerCallback") private var orphanLayerCallback: ((Layer) -> Boolean)? = null
+
+    @JsName("orphans") private val orphans = mutableListOf<Layer>()
+
+    @JsName("layers") private var layers: MutableMap<Int, Layer> = mutableMapOf()
+
+    @JsName("_ignoreVirtualDisplay") private var ignoreVirtualDisplay = false
+
+    @JsName("_ignoreLayersStackMatchNoDisplay") private var ignoreLayersStackMatchNoDisplay = false
+
+    @JsName("_duplicateLayerCallback")
+    private var duplicateLayerCallback: ((Layer) -> Boolean) = {
+        error("Duplicate layer id found: ${it.id}")
+    }
+
+    @JsName("displays") private var displays: Array<Display> = emptyArray()
+
+    @JsName("vSyncId") private var vSyncId: Long = 0L
+
+    @JsName("hwcBlob") private var hwcBlob: String = ""
+
+    @JsName("where") private var where: String = ""
+
+    @JsName("setVSyncId")
+    fun setVSyncId(vSyncId: String): LayerTraceEntryBuilder =
+    // Necessary for compatibility with JS number type
+    apply {
+        this.vSyncId = vSyncId.toLong()
+    }
+
+    @JsName("setHwcBlob")
+    fun setHwcBlob(hwcBlob: String): LayerTraceEntryBuilder = apply { this.hwcBlob = hwcBlob }
+
+    @JsName("setWhere")
+    fun setWhere(where: String): LayerTraceEntryBuilder = apply { this.where = where }
+
+    @JsName("setDisplays")
+    fun setDisplays(displays: Array<Display>): LayerTraceEntryBuilder = apply {
+        this.displays = displays
+    }
+
+    @JsName("setElapsedTimestamp")
+    fun setElapsedTimestamp(timestamp: String): LayerTraceEntryBuilder =
+    // Necessary for compatibility with JS number type
+    apply {
+        this.elapsedTimestamp = timestamp.toLong()
+    }
+
+    @JsName("setRealToElapsedTimeOffsetNs")
+    fun setRealToElapsedTimeOffsetNs(realToElapsedTimeOffsetNs: String?): LayerTraceEntryBuilder =
+        apply {
+            this.realTimestamp =
+                if (realToElapsedTimeOffsetNs != null && realToElapsedTimeOffsetNs.toLong() != 0L) {
+                    realToElapsedTimeOffsetNs.toLong() + elapsedTimestamp
+                } else {
+                    null
+                }
+        }
+
+    @JsName("setLayers")
+    fun setLayers(layers: Array<Layer>): LayerTraceEntryBuilder = apply {
         val result = mutableMapOf<Int, Layer>()
         layers.forEach { layer ->
             val id = layer.id
             if (result.containsKey(id)) {
-                throw RuntimeException("Duplicate layer id found: $id")
+                duplicateLayerCallback(layer)
             }
             result[id] = layer
         }
 
-        return result
+        this.layers = result
     }
 
+    @JsName("setOrphanLayerCallback")
     fun setOrphanLayerCallback(value: ((Layer) -> Boolean)?): LayerTraceEntryBuilder = apply {
         this.orphanLayerCallback = value
     }
 
+    @JsName("setDuplicateLayerCallback")
+    fun setDuplicateLayerCallback(value: ((Layer) -> Boolean)): LayerTraceEntryBuilder = apply {
+        this.duplicateLayerCallback = value
+    }
+
+    @JsName("notifyOrphansLayers")
     private fun notifyOrphansLayers() {
         val callback = this.orphanLayerCallback ?: return
 
@@ -62,7 +119,8 @@ class LayerTraceEntryBuilder(
             }
             throw RuntimeException(
                 ("Failed to parse layers trace. Found orphan layer with id = ${orphan.id}" +
-                    " with parentId = ${orphan.parentId}"))
+                    " with parentId = ${orphan.parentId}")
+            )
         }
     }
 
@@ -71,6 +129,7 @@ class LayerTraceEntryBuilder(
      *
      * @return root layer
      */
+    @JsName("updateParents")
     private fun updateParents() {
         for (layer in layers.values) {
             val parentId = layer.parentId
@@ -90,6 +149,7 @@ class LayerTraceEntryBuilder(
      *
      * @return root layer
      */
+    @JsName("updateRelZParents")
     private fun updateRelZParents() {
         for (layer in layers.values) {
             val parentId = layer.zOrderRelativeOfId
@@ -103,11 +163,13 @@ class LayerTraceEntryBuilder(
         }
     }
 
+    @JsName("computeRootLayers")
     private fun computeRootLayers(): List<Layer> {
         updateParents()
         updateRelZParents()
 
-        // Find all root layers (any sibling of the root layer is considered a root layer in the trace)
+        // Find all root layers (any sibling of the root layer is considered a root layer in the
+        // trace)
         val rootLayers = mutableListOf<Layer>()
 
         // Getting the first orphan works because when dumping the layers, the root layer comes
@@ -128,49 +190,54 @@ class LayerTraceEntryBuilder(
         return rootLayers
     }
 
+    @JsName("filterOutLayersInVirtualDisplays")
     private fun filterOutLayersInVirtualDisplays(roots: List<Layer>): List<Layer> {
-        val physicalDisplays = displays
-            .filterNot { it.isVirtual }
-            .map { it.layerStackId }
+        val physicalDisplays = displays.filterNot { it.isVirtual }.map { it.layerStackId }
 
         return roots.filter { physicalDisplays.contains(it.stackId) }
     }
 
+    @JsName("filterOutVirtualDisplays")
     private fun filterOutVirtualDisplays(displays: List<Display>): List<Display> {
         return displays.filterNot { it.isVirtual }
     }
 
+    @JsName("filterOutOffDisplays")
     private fun filterOutOffDisplays(displays: List<Display>): List<Display> {
         return displays.filterNot { it.isOff }
     }
 
+    @JsName("filterOutLayersStackMatchNoDisplay")
     private fun filterOutLayersStackMatchNoDisplay(roots: List<Layer>): List<Layer> {
         val displayStacks = displays.map { it.layerStackId }
         return roots.filter { displayStacks.contains(it.stackId) }
     }
 
     /**
-     * Defines if virtual displays and the layers belonging to virtual displays (e.g., Screen Recording) should be
-     * ignored while parsing the entry
+     * Defines if virtual displays and the layers belonging to virtual displays (e.g., Screen
+     * Recording) should be ignored while parsing the entry
      *
      * @param ignore If the layers from virtual displays should be ignored or not
      */
+    @JsName("ignoreVirtualDisplay")
     fun ignoreVirtualDisplay(ignore: Boolean): LayerTraceEntryBuilder = apply {
         this.ignoreVirtualDisplay = ignore
     }
 
     /**
-     * Ignore layers whose stack ID doesn't match any display. This is the case, for example,
-     * when the device screen is off, or for layers that have not yet been removed after a
-     * display change (e.g., virtual screen recording display removed)
+     * Ignore layers whose stack ID doesn't match any display. This is the case, for example, when
+     * the device screen is off, or for layers that have not yet been removed after a display change
+     * (e.g., virtual screen recording display removed)
      *
      * @param ignore If the layers not matching any stack id should be removed or not
      */
+    @JsName("ignoreLayersStackMatchNoDisplay")
     fun ignoreLayersStackMatchNoDisplay(ignore: Boolean): LayerTraceEntryBuilder = apply {
         this.ignoreLayersStackMatchNoDisplay = ignore
     }
 
-    /** Constructs the layer hierarchy from a flattened list of layers.  */
+    /** Constructs the layer hierarchy from a flattened list of layers. */
+    @JsName("build")
     fun build(): LayerTraceEntry {
         val allRoots = computeRootLayers()
         var filteredRoots = allRoots
@@ -190,7 +257,14 @@ class LayerTraceEntryBuilder(
         // Fail if we find orphan layers.
         notifyOrphansLayers()
 
-        return LayerTraceEntry(timestamp, hwcBlob, where, filteredDisplays.toTypedArray(),
-                filteredRoots.toTypedArray())
+        return LayerTraceEntry(
+            elapsedTimestamp,
+            realTimestamp,
+            hwcBlob,
+            where,
+            filteredDisplays.toTypedArray(),
+            vSyncId,
+            filteredRoots.toTypedArray(),
+        )
     }
 }

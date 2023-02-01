@@ -20,16 +20,10 @@ import com.android.server.wm.traces.common.layers.BaseLayerTraceEntry
 import com.android.server.wm.traces.common.windowmanager.WindowManagerState
 
 /**
- * Represents a state dump containing the [WindowManagerState] and the [LayerTraceEntry] both
- * parsed and in raw (byte) data.
+ * Represents a state dump containing the [WindowManagerState] and the [BaseLayerTraceEntry] both
+ * parsed.
  */
-class DeviceStateDump<WMType : WindowManagerState?, LayerType : BaseLayerTraceEntry?>(
-    /**
-     * Parsed [WindowManagerState]
-     */
-    val wmState: WMType,
-    /**
-     * Parsed [LayerTraceEntry]
-     */
-    val layerState: LayerType
-)
+class DeviceStateDump(
+    override val wmState: WindowManagerState,
+    override val layerState: BaseLayerTraceEntry
+) : NullableDeviceStateDump(wmState, layerState)

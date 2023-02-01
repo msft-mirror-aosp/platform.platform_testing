@@ -85,3 +85,18 @@ java_library {
     srcs: ["tv/**/*.java"],
     sdk_version: "test_current",
 }
+
+//#####################################
+
+// Spectatio Interfaces Library
+java_library {
+    name: "spectatio-interfaces-lib",
+    libs: [
+        "ub-uiautomator",
+        "app-helpers-core",
+    ],
+    srcs: ["spectatio/**/*.java"],
+    sdk_version: "test_current",
+}
+
+//#####################################

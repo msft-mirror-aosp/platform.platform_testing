@@ -15,20 +15,21 @@
  */
 
 @file:JvmName("Extensions")
+
 package com.android.server.wm.flicker.monitor
 
 import com.android.server.wm.flicker.getDefaultFlickerOutputDir
-import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 import com.android.server.wm.traces.common.DeviceTraceDump
 import com.android.server.wm.traces.common.layers.LayersTrace
+import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 import com.android.server.wm.traces.parser.DeviceDumpParser
 import com.android.server.wm.traces.parser.layers.LayersTraceParser
 import com.android.server.wm.traces.parser.windowmanager.WindowManagerTraceParser
 import java.nio.file.Path
 
 /**
- * Acquire the [WindowManagerTrace] with the device state changes that happen when executing
- * the commands defined in the [predicate].
+ * Acquire the [WindowManagerTrace] with the device state changes that happen when executing the
+ * commands defined in the [predicate].
  *
  * @param outputDir Directory where to store the traces
  * @param predicate Commands to execute
@@ -39,13 +40,13 @@ fun withWMTracing(
     outputDir: Path = getDefaultFlickerOutputDir().resolve("withWMTracing"),
     predicate: () -> Unit
 ): WindowManagerTrace {
-    return WindowManagerTraceParser.parseFromTrace(
-        WindowManagerTraceMonitor(outputDir).withTracing(predicate))
+    return WindowManagerTraceParser()
+        .parse(WindowManagerTraceMonitor(outputDir).withTracing(predicate))
 }
 
 /**
- * Acquire the [LayersTrace] with the device state changes that happen when executing
- * the commands defined in the [predicate].
+ * Acquire the [LayersTrace] with the device state changes that happen when executing the commands
+ * defined in the [predicate].
  *
  * @param traceFlags Flags to indicate tracing level
  * @param outputDir Directory where to store the traces
@@ -58,13 +59,13 @@ fun withSFTracing(
     outputDir: Path = getDefaultFlickerOutputDir().resolve("withSFTracing"),
     predicate: () -> Unit
 ): LayersTrace {
-    return LayersTraceParser.parseFromTrace(
-        LayersTraceMonitor(outputDir, traceFlags = traceFlags).withTracing(predicate))
+    return LayersTraceParser()
+        .parse(LayersTraceMonitor(outputDir, traceFlags = traceFlags).withTracing(predicate))
 }
 
 /**
- * Acquire the [WindowManagerTrace] and [LayersTrace] with the device state changes that happen
- * when executing the commands defined in the [predicate].
+ * Acquire the [WindowManagerTrace] and [LayersTrace] with the device state changes that happen when
+ * executing the commands defined in the [predicate].
  *
  * @param outputDir Directory where to store the traces
  * @param predicate Commands to execute
@@ -78,12 +79,12 @@ fun withTracing(
     val traces = recordTraces(outputDir, predicate)
     val wmTraceData = traces.first
     val layersTraceData = traces.second
-    return DeviceDumpParser.fromTrace(wmTraceData, layersTraceData)
+    return DeviceDumpParser.fromTrace(wmTraceData, layersTraceData, clearCache = true)
 }
 
 /**
- * Acquire the [WindowManagerTrace] and [LayersTrace] with the device state changes that happen
- * when executing the commands defined in the [predicate].
+ * Acquire the [WindowManagerTrace] and [LayersTrace] with the device state changes that happen when
+ * executing the commands defined in the [predicate].
  *
  * @param outputDir Directory where to store the traces
  * @param predicate Commands to execute
@@ -97,10 +98,11 @@ fun recordTraces(
 ): Pair<ByteArray, ByteArray> {
     var wmTraceData = ByteArray(0)
     val layersOutputDir = outputDir.resolve("withSFTracing")
-    val layersTraceData = LayersTraceMonitor(layersOutputDir).withTracing {
-        val wmOutputDir = outputDir.resolve("withWMTracing")
-        wmTraceData = WindowManagerTraceMonitor(wmOutputDir).withTracing(predicate)
-    }
+    val layersTraceData =
+        LayersTraceMonitor(layersOutputDir).withTracing {
+            val wmOutputDir = outputDir.resolve("withWMTracing")
+            wmTraceData = WindowManagerTraceMonitor(wmOutputDir).withTracing(predicate)
+        }
 
     return Pair(wmTraceData, layersTraceData)
 }

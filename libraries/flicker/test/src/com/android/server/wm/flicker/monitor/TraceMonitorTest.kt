@@ -16,26 +16,26 @@
 
 package com.android.server.wm.flicker.monitor
 
+import android.app.Instrumentation
+import android.support.test.uiautomator.UiDevice
 import androidx.test.platform.app.InstrumentationRegistry
-import androidx.test.uiautomator.UiDevice
 import com.android.server.wm.flicker.getDefaultFlickerOutputDir
 import com.android.server.wm.traces.common.DeviceTraceDump
 import com.android.server.wm.traces.parser.DeviceDumpParser
 import com.google.common.io.Files
 import com.google.common.truth.Truth
+import java.nio.file.Path
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
-import java.nio.file.Path
 
 abstract class TraceMonitorTest<T : TransitionMonitor> {
-
     lateinit var savedTrace: Path
     abstract fun getMonitor(outputDir: Path): T
     abstract fun assertTrace(traceData: ByteArray)
 
-    protected val instrumentation = InstrumentationRegistry.getInstrumentation()
-    protected val device = UiDevice.getInstance(instrumentation)
+    protected val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
+    protected val device: UiDevice = UiDevice.getInstance(instrumentation)
     private val traceMonitor by lazy {
         val outputDir = getDefaultFlickerOutputDir()
         getMonitor(outputDir)
@@ -44,7 +44,8 @@ abstract class TraceMonitorTest<T : TransitionMonitor> {
     @Before
     fun before() {
         Truth.assertWithMessage("Trace already enabled before starting test")
-                .that(traceMonitor.isEnabled).isFalse()
+            .that(traceMonitor.isEnabled)
+            .isFalse()
     }
 
     @After
@@ -57,7 +58,8 @@ abstract class TraceMonitorTest<T : TransitionMonitor> {
             savedTrace.toFile().delete()
         }
         Truth.assertWithMessage("Failed to disable trace at end of test")
-                .that(traceMonitor.isEnabled).isFalse()
+            .that(traceMonitor.isEnabled)
+            .isFalse()
     }
 
     @Test
@@ -85,7 +87,7 @@ abstract class TraceMonitorTest<T : TransitionMonitor> {
         val testFile = savedTrace.toFile()
         Truth.assertWithMessage("File $testFile exists").that(testFile.exists()).isTrue()
         val trace = Files.toByteArray(testFile)
-        Truth.assertThat(trace.size).isGreaterThan(0)
+        Truth.assertWithMessage("File $testFile has data").that(trace.size).isGreaterThan(0)
         assertTrace(trace)
     }
 
@@ -117,7 +119,7 @@ abstract class TraceMonitorTest<T : TransitionMonitor> {
             device.pressRecentApps()
         }
 
-        val dump = DeviceDumpParser.fromTrace(trace.first, trace.second)
+        val dump = DeviceDumpParser.fromTrace(trace.first, trace.second, clearCache = true)
         this.validateTrace(dump)
     }
 }

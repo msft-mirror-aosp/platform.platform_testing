@@ -16,31 +16,50 @@
 
 package com.android.server.wm.traces.common.windowmanager.windows
 
+import com.android.server.wm.traces.common.IComponentMatcher
+import kotlin.js.JsName
+
 /**
  * Represents an activity in the window manager hierarchy
  *
- * This is a generic object that is reused by both Flicker and Winscope and cannot
- * access internal Java/Android functionality
- *
- **/
-open class Activity(
+ * This is a generic object that is reused by both Flicker and Winscope and cannot access internal
+ * Java/Android functionality
+ */
+class Activity(
     name: String,
-    val state: String,
+    @JsName("state") val state: String,
     visible: Boolean,
-    val frontOfTask: Boolean,
-    val procId: Int,
-    val isTranslucent: Boolean,
+    @JsName("frontOfTask") val frontOfTask: Boolean,
+    @JsName("procId") val procId: Int,
+    @JsName("isTranslucent") val isTranslucent: Boolean,
     windowContainer: WindowContainer
 ) : WindowContainer(windowContainer, name, visible) {
     /**
-     * Checks if the activity contains a window with title containing [partialWindowTitle]
+     * Checks if the activity contains a [WindowState] matching [componentMatcher]
      *
-     * @param partialWindowTitle window title to search
+     * @param componentMatcher Components to search
      */
-    fun hasWindow(partialWindowTitle: String): Boolean {
-        return collectDescendants<WindowState> { it.title.contains(partialWindowTitle) }
-                .isNotEmpty()
+    @JsName("getWindows")
+    fun getWindows(componentMatcher: IComponentMatcher): Array<WindowState> = getWindows {
+        componentMatcher.windowMatchesAnyOf(it)
     }
+
+    /**
+     * Checks if the activity contains a [WindowState] matching [componentMatcher]
+     *
+     * @param componentMatcher Components to search
+     */
+    @JsName("hasWindow")
+    fun hasWindow(componentMatcher: IComponentMatcher): Boolean =
+        getWindows(componentMatcher).isNotEmpty()
+
+    @JsName("hasWindowState")
+    internal fun hasWindowState(windowState: WindowState): Boolean =
+        getWindows { windowState == it }.isNotEmpty()
+
+    @JsName("isTablet")
+    private fun getWindows(predicate: (WindowState) -> Boolean) =
+        collectDescendants<WindowState> { predicate(it) }
 
     override fun toString(): String {
         return "${this::class.simpleName}: {$token $title} state=$state visible=$isVisible"

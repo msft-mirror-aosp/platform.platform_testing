@@ -88,20 +88,4 @@ public class SettingTest {
         assertFalse(mSettingHelper.get().isBluetoothOn());
         mSettingHelper.get().turnOnOffBluetooth(true);
     }
-
-    @Test
-    public void testDayMode() {
-        mSettingHelper.get().openQuickSettings();
-        mSettingHelper.get().setDayNightMode(DayNightMode.DAY_MODE);
-        assertThat(mSettingHelper.get().getDayNightModeStatus().getValue(), is(DAY_MODE_VALUE));
-    }
-
-    @Test
-    public void testNightMode() {
-        mSettingHelper.get().openQuickSettings();
-        mSettingHelper.get().setDayNightMode(DayNightMode.NIGHT_MODE);
-        assertThat(
-                mSettingHelper.get().getDayNightModeStatus().getValue(),
-                is(UiModeManager.MODE_NIGHT_YES));
-    }
 }

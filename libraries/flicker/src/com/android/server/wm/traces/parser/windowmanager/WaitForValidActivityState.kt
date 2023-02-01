@@ -18,31 +18,30 @@ package com.android.server.wm.traces.parser.windowmanager
 
 import android.app.ActivityTaskManager
 import android.app.WindowConfiguration
-import com.android.server.wm.traces.common.FlickerComponentName
+import com.android.server.wm.traces.common.IComponentMatcher
 
 data class WaitForValidActivityState(
-    @JvmField
-    val activityName: FlickerComponentName?,
-    @JvmField
-    val windowName: String?,
-    @JvmField
-    val stackId: Int,
-    @JvmField
-    val windowingMode: Int,
-    @JvmField
-    val activityType: Int
+    @JvmField val activityMatcher: IComponentMatcher?,
+    @JvmField val windowIdentifier: String?,
+    @JvmField val stackId: Int,
+    @JvmField val windowingMode: Int,
+    @JvmField val activityType: Int
 ) {
-    constructor(activityName: FlickerComponentName) : this(
+    constructor(
+        activityName: IComponentMatcher
+    ) : this(
         activityName,
-        windowName = activityName.toWindowName(),
+        windowIdentifier = activityName.toWindowIdentifier(),
         stackId = ActivityTaskManager.INVALID_STACK_ID,
         windowingMode = WindowConfiguration.WINDOWING_MODE_UNDEFINED,
         activityType = WindowConfiguration.ACTIVITY_TYPE_UNDEFINED
     )
 
-    private constructor(builder: Builder) : this(
-        activityName = builder.activityName,
-        windowName = builder.windowName,
+    private constructor(
+        builder: Builder
+    ) : this(
+        activityMatcher = builder.activityName,
+        windowIdentifier = builder.windowIdentifier,
         stackId = builder.stackId,
         windowingMode = builder.windowingMode,
         activityType = builder.activityType
@@ -50,14 +49,14 @@ data class WaitForValidActivityState(
 
     override fun toString(): String {
         val sb = StringBuilder("wait:")
-        if (activityName != null) {
-            sb.append(" activity=").append(activityName.toActivityName())
+        if (activityMatcher != null) {
+            sb.append(" activity=").append(activityMatcher.toActivityIdentifier())
         }
         if (activityType != WindowConfiguration.ACTIVITY_TYPE_UNDEFINED) {
             sb.append(" type=").append(activityTypeName(activityType))
         }
-        if (windowName != null) {
-            sb.append(" window=").append(windowName)
+        if (windowIdentifier != null) {
+            sb.append(" window=").append(windowIdentifier)
         }
         if (windowingMode != WindowConfiguration.WINDOWING_MODE_UNDEFINED) {
             sb.append(" mode=").append(windowingModeName(windowingMode))
@@ -68,14 +67,14 @@ data class WaitForValidActivityState(
         return sb.toString()
     }
 
-    class Builder constructor(internal var activityName: FlickerComponentName? = null) {
-        internal var windowName: String? = activityName?.toWindowName()
+    class Builder constructor(internal var activityName: IComponentMatcher? = null) {
+        internal var windowIdentifier: String? = activityName?.toWindowIdentifier()
         internal var stackId = ActivityTaskManager.INVALID_STACK_ID
         internal var windowingMode = WindowConfiguration.WINDOWING_MODE_UNDEFINED
         internal var activityType = WindowConfiguration.ACTIVITY_TYPE_UNDEFINED
 
-        fun setWindowName(windowName: String): Builder {
-            this.windowName = windowName
+        fun setWindowIdentifier(windowIdentifier: String): Builder {
+            this.windowIdentifier = windowIdentifier
             return this
         }
 
@@ -102,7 +101,7 @@ data class WaitForValidActivityState(
     companion object {
         @JvmStatic
         fun forWindow(windowName: String): WaitForValidActivityState {
-            return Builder().setWindowName(windowName).build()
+            return Builder().setWindowIdentifier(windowName).build()
         }
 
         private fun windowingModeName(windowingMode: Int): String {
@@ -110,9 +109,6 @@ data class WaitForValidActivityState(
                 WindowConfiguration.WINDOWING_MODE_UNDEFINED -> "UNDEFINED"
                 WindowConfiguration.WINDOWING_MODE_FULLSCREEN -> "FULLSCREEN"
                 WindowConfiguration.WINDOWING_MODE_PINNED -> "PINNED"
-                WindowConfiguration.WINDOWING_MODE_SPLIT_SCREEN_PRIMARY -> "SPLIT_SCREEN_PRIMARY"
-                WindowConfiguration.WINDOWING_MODE_SPLIT_SCREEN_SECONDARY ->
-                    "SPLIT_SCREEN_SECONDARY"
                 WindowConfiguration.WINDOWING_MODE_FREEFORM -> "FREEFORM"
                 else -> throw IllegalArgumentException("Unknown WINDOWING_MODE_: $windowingMode")
             }

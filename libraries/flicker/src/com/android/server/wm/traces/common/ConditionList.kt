@@ -16,28 +16,38 @@
 
 package com.android.server.wm.traces.common
 
+import kotlin.js.JsName
+
 /**
  * The utility class to validate a set of conditions
  *
- * This class is used to easily integrate multiple conditions into a single
- * verification, for example, during [WaitCondition], while keeping the individual
- * conditions separate for better reuse
+ * This class is used to easily integrate multiple conditions into a single verification, for
+ * example, during [WaitCondition], while keeping the individual conditions separate for better
+ * reuse
  *
  * @param conditions conditions to be checked
  */
-class ConditionList<T>(
-    val conditions: List<Condition<T>>
-) : Condition<T>("", { false }) {
-    constructor(vararg conditions: Condition<T>): this(listOf(*conditions))
+class ConditionList<T>(@JsName("conditions") val conditions: List<Condition<T>>) :
+    Condition<T>("", { false }) {
+    constructor(vararg conditions: Condition<T>) : this(listOf(*conditions))
 
     override val message: String
-        get() = conditions.joinToString(" and ") { it.toString() }
-
-    override val condition: (T) -> Boolean
-        get() = {
-            conditions.all { condition -> condition.isSatisfied(it) }
+        get() {
+            return "(\n${
+                conditions
+                    .joinToString(" and \n") { it.toString() }
+                    .prependIndent("    ")
+            }\n)"
         }
 
-    override fun getMessage(value: T): String = conditions
-        .joinToString(" and ") { it.getMessage(value) }
+    override val condition: (T) -> Boolean
+        get() = { conditions.all { condition -> condition.isSatisfied(it) } }
+
+    override fun getMessage(value: T): String {
+        return "(\n${
+            conditions
+                .joinToString(" and \n") { it.getMessage(value) }
+                .prependIndent("    ")
+        }\n)"
+    }
 }

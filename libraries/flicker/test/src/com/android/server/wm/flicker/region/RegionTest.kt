@@ -18,6 +18,7 @@ package com.android.server.wm.flicker.region
 
 import com.android.server.wm.traces.common.Rect
 import com.android.server.wm.traces.common.region.Region
+import kotlin.random.Random
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotSame
@@ -26,96 +27,248 @@ import org.junit.Before
 import org.junit.FixMethodOrder
 import org.junit.Test
 import org.junit.runners.MethodSorters
-import kotlin.random.Random
 
-/**
- * Contains [Region] tests. To run this test:
- * `atest FlickerLibTest:RegionTest`
- */
+/** Contains [Region] tests. To run this test: `atest FlickerLibTest:RegionTest` */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class RegionTest {
     // DIFFERENCE
-    private val DIFFERENCE_WITH1 = arrayOf(
-        intArrayOf(0, 0), intArrayOf(4, 4), intArrayOf(10, 10), intArrayOf(19, 19),
-        intArrayOf(19, 0), intArrayOf(10, 4), intArrayOf(4, 10), intArrayOf(0, 19))
-    private val DIFFERENCE_WITHOUT1 = arrayOf(intArrayOf(5, 5), intArrayOf(9, 9), intArrayOf(9, 5),
-        intArrayOf(5, 9))
+    private val DIFFERENCE_WITH1 =
+        arrayOf(
+            intArrayOf(0, 0),
+            intArrayOf(4, 4),
+            intArrayOf(10, 10),
+            intArrayOf(19, 19),
+            intArrayOf(19, 0),
+            intArrayOf(10, 4),
+            intArrayOf(4, 10),
+            intArrayOf(0, 19)
+        )
+    private val DIFFERENCE_WITHOUT1 =
+        arrayOf(intArrayOf(5, 5), intArrayOf(9, 9), intArrayOf(9, 5), intArrayOf(5, 9))
 
-    private val DIFFERENCE_WITH2 = arrayOf(intArrayOf(0, 0), intArrayOf(19, 0), intArrayOf(9, 9),
-        intArrayOf(19, 9), intArrayOf(0, 19), intArrayOf(9, 19))
-    private val DIFFERENCE_WITHOUT2 = arrayOf(intArrayOf(10, 10), intArrayOf(19, 10),
-        intArrayOf(10, 19), intArrayOf(19, 19), intArrayOf(29, 10), intArrayOf(29, 29),
-        intArrayOf(10, 29))
+    private val DIFFERENCE_WITH2 =
+        arrayOf(
+            intArrayOf(0, 0),
+            intArrayOf(19, 0),
+            intArrayOf(9, 9),
+            intArrayOf(19, 9),
+            intArrayOf(0, 19),
+            intArrayOf(9, 19)
+        )
+    private val DIFFERENCE_WITHOUT2 =
+        arrayOf(
+            intArrayOf(10, 10),
+            intArrayOf(19, 10),
+            intArrayOf(10, 19),
+            intArrayOf(19, 19),
+            intArrayOf(29, 10),
+            intArrayOf(29, 29),
+            intArrayOf(10, 29)
+        )
 
-    private val DIFFERENCE_WITH3 = arrayOf(intArrayOf(0, 0), intArrayOf(19, 0), intArrayOf(0, 19),
-        intArrayOf(19, 19))
-    private val DIFFERENCE_WITHOUT3 = arrayOf(intArrayOf(40, 40), intArrayOf(40, 59),
-        intArrayOf(59, 40), intArrayOf(59, 59))
+    private val DIFFERENCE_WITH3 =
+        arrayOf(intArrayOf(0, 0), intArrayOf(19, 0), intArrayOf(0, 19), intArrayOf(19, 19))
+    private val DIFFERENCE_WITHOUT3 =
+        arrayOf(intArrayOf(40, 40), intArrayOf(40, 59), intArrayOf(59, 40), intArrayOf(59, 59))
 
     // INTERSECT
-    private val INTERSECT_WITH1 = arrayOf(intArrayOf(5, 5), intArrayOf(9, 9), intArrayOf(9, 5),
-        intArrayOf(5, 9))
-    private val INTERSECT_WITHOUT1 = arrayOf(intArrayOf(0, 0), intArrayOf(2, 2), intArrayOf(4, 4),
-        intArrayOf(10, 10), intArrayOf(19, 19), intArrayOf(19, 0), intArrayOf(10, 4),
-        intArrayOf(4, 10), intArrayOf(0, 19))
+    private val INTERSECT_WITH1 =
+        arrayOf(intArrayOf(5, 5), intArrayOf(9, 9), intArrayOf(9, 5), intArrayOf(5, 9))
+    private val INTERSECT_WITHOUT1 =
+        arrayOf(
+            intArrayOf(0, 0),
+            intArrayOf(2, 2),
+            intArrayOf(4, 4),
+            intArrayOf(10, 10),
+            intArrayOf(19, 19),
+            intArrayOf(19, 0),
+            intArrayOf(10, 4),
+            intArrayOf(4, 10),
+            intArrayOf(0, 19)
+        )
 
-    private val INTERSECT_WITH2 = arrayOf(intArrayOf(10, 10), intArrayOf(19, 10),
-        intArrayOf(10, 19), intArrayOf(19, 19))
-    private val INTERSECT_WITHOUT2 = arrayOf(intArrayOf(0, 0), intArrayOf(19, 0), intArrayOf(9, 9),
-        intArrayOf(19, 9), intArrayOf(0, 19), intArrayOf(9, 19), intArrayOf(29, 10),
-        intArrayOf(29, 29), intArrayOf(10, 29))
+    private val INTERSECT_WITH2 =
+        arrayOf(intArrayOf(10, 10), intArrayOf(19, 10), intArrayOf(10, 19), intArrayOf(19, 19))
+    private val INTERSECT_WITHOUT2 =
+        arrayOf(
+            intArrayOf(0, 0),
+            intArrayOf(19, 0),
+            intArrayOf(9, 9),
+            intArrayOf(19, 9),
+            intArrayOf(0, 19),
+            intArrayOf(9, 19),
+            intArrayOf(29, 10),
+            intArrayOf(29, 29),
+            intArrayOf(10, 29)
+        )
 
     // UNION
-    private val UNION_WITH1 = arrayOf(intArrayOf(0, 0), intArrayOf(2, 2), intArrayOf(4, 4),
-        intArrayOf(6, 6), intArrayOf(10, 10), intArrayOf(19, 19), intArrayOf(19, 0),
-        intArrayOf(10, 4), intArrayOf(4, 10), intArrayOf(0, 19), intArrayOf(5, 5), intArrayOf(9, 9),
-        intArrayOf(9, 5), intArrayOf(5, 9))
+    private val UNION_WITH1 =
+        arrayOf(
+            intArrayOf(0, 0),
+            intArrayOf(2, 2),
+            intArrayOf(4, 4),
+            intArrayOf(6, 6),
+            intArrayOf(10, 10),
+            intArrayOf(19, 19),
+            intArrayOf(19, 0),
+            intArrayOf(10, 4),
+            intArrayOf(4, 10),
+            intArrayOf(0, 19),
+            intArrayOf(5, 5),
+            intArrayOf(9, 9),
+            intArrayOf(9, 5),
+            intArrayOf(5, 9)
+        )
     private val UNION_WITHOUT1 = arrayOf(intArrayOf(0, 20), intArrayOf(20, 20), intArrayOf(20, 0))
 
-    private val UNION_WITH2 = arrayOf(intArrayOf(0, 0), intArrayOf(2, 2), intArrayOf(19, 0),
-        intArrayOf(9, 9), intArrayOf(19, 9), intArrayOf(0, 19), intArrayOf(9, 19),
-        intArrayOf(21, 21), intArrayOf(10, 10), intArrayOf(19, 10), intArrayOf(10, 19),
-        intArrayOf(19, 19), intArrayOf(29, 10), intArrayOf(29, 29), intArrayOf(10, 29))
-    private val UNION_WITHOUT2 = arrayOf(intArrayOf(0, 29), intArrayOf(0, 20), intArrayOf(9, 29),
-        intArrayOf(9, 20), intArrayOf(29, 0), intArrayOf(20, 0), intArrayOf(29, 9),
-        intArrayOf(20, 9))
+    private val UNION_WITH2 =
+        arrayOf(
+            intArrayOf(0, 0),
+            intArrayOf(2, 2),
+            intArrayOf(19, 0),
+            intArrayOf(9, 9),
+            intArrayOf(19, 9),
+            intArrayOf(0, 19),
+            intArrayOf(9, 19),
+            intArrayOf(21, 21),
+            intArrayOf(10, 10),
+            intArrayOf(19, 10),
+            intArrayOf(10, 19),
+            intArrayOf(19, 19),
+            intArrayOf(29, 10),
+            intArrayOf(29, 29),
+            intArrayOf(10, 29)
+        )
+    private val UNION_WITHOUT2 =
+        arrayOf(
+            intArrayOf(0, 29),
+            intArrayOf(0, 20),
+            intArrayOf(9, 29),
+            intArrayOf(9, 20),
+            intArrayOf(29, 0),
+            intArrayOf(20, 0),
+            intArrayOf(29, 9),
+            intArrayOf(20, 9)
+        )
 
-    private val UNION_WITH3 = arrayOf(intArrayOf(0, 0), intArrayOf(2, 2), intArrayOf(19, 0),
-        intArrayOf(0, 19), intArrayOf(19, 19), intArrayOf(40, 40), intArrayOf(41, 41),
-        intArrayOf(40, 59), intArrayOf(59, 40), intArrayOf(59, 59))
+    private val UNION_WITH3 =
+        arrayOf(
+            intArrayOf(0, 0),
+            intArrayOf(2, 2),
+            intArrayOf(19, 0),
+            intArrayOf(0, 19),
+            intArrayOf(19, 19),
+            intArrayOf(40, 40),
+            intArrayOf(41, 41),
+            intArrayOf(40, 59),
+            intArrayOf(59, 40),
+            intArrayOf(59, 59)
+        )
     private val UNION_WITHOUT3 = arrayOf(intArrayOf(20, 20), intArrayOf(39, 39))
 
     // XOR
-    private val XOR_WITH1 = arrayOf(intArrayOf(0, 0), intArrayOf(2, 2), intArrayOf(4, 4),
-        intArrayOf(10, 10), intArrayOf(19, 19), intArrayOf(19, 0), intArrayOf(10, 4),
-        intArrayOf(4, 10), intArrayOf(0, 19))
-    private val XOR_WITHOUT1 = arrayOf(intArrayOf(5, 5), intArrayOf(6, 6), intArrayOf(9, 9),
-        intArrayOf(9, 5), intArrayOf(5, 9))
+    private val XOR_WITH1 =
+        arrayOf(
+            intArrayOf(0, 0),
+            intArrayOf(2, 2),
+            intArrayOf(4, 4),
+            intArrayOf(10, 10),
+            intArrayOf(19, 19),
+            intArrayOf(19, 0),
+            intArrayOf(10, 4),
+            intArrayOf(4, 10),
+            intArrayOf(0, 19)
+        )
+    private val XOR_WITHOUT1 =
+        arrayOf(
+            intArrayOf(5, 5),
+            intArrayOf(6, 6),
+            intArrayOf(9, 9),
+            intArrayOf(9, 5),
+            intArrayOf(5, 9)
+        )
 
-    private val XOR_WITH2 = arrayOf(intArrayOf(0, 0), intArrayOf(2, 2), intArrayOf(19, 0),
-        intArrayOf(9, 9), intArrayOf(19, 9), intArrayOf(0, 19), intArrayOf(9, 19),
-        intArrayOf(21, 21), intArrayOf(29, 10), intArrayOf(10, 29), intArrayOf(20, 10),
-        intArrayOf(10, 20), intArrayOf(20, 20), intArrayOf(29, 29))
-    private val XOR_WITHOUT2 = arrayOf(intArrayOf(10, 10), intArrayOf(11, 11), intArrayOf(19, 10),
-        intArrayOf(10, 19), intArrayOf(19, 19))
+    private val XOR_WITH2 =
+        arrayOf(
+            intArrayOf(0, 0),
+            intArrayOf(2, 2),
+            intArrayOf(19, 0),
+            intArrayOf(9, 9),
+            intArrayOf(19, 9),
+            intArrayOf(0, 19),
+            intArrayOf(9, 19),
+            intArrayOf(21, 21),
+            intArrayOf(29, 10),
+            intArrayOf(10, 29),
+            intArrayOf(20, 10),
+            intArrayOf(10, 20),
+            intArrayOf(20, 20),
+            intArrayOf(29, 29)
+        )
+    private val XOR_WITHOUT2 =
+        arrayOf(
+            intArrayOf(10, 10),
+            intArrayOf(11, 11),
+            intArrayOf(19, 10),
+            intArrayOf(10, 19),
+            intArrayOf(19, 19)
+        )
 
-    private val XOR_WITH3 = arrayOf(intArrayOf(0, 0), intArrayOf(2, 2), intArrayOf(19, 0),
-        intArrayOf(0, 19), intArrayOf(19, 19), intArrayOf(40, 40), intArrayOf(41, 41),
-        intArrayOf(40, 59), intArrayOf(59, 40), intArrayOf(59, 59))
+    private val XOR_WITH3 =
+        arrayOf(
+            intArrayOf(0, 0),
+            intArrayOf(2, 2),
+            intArrayOf(19, 0),
+            intArrayOf(0, 19),
+            intArrayOf(19, 19),
+            intArrayOf(40, 40),
+            intArrayOf(41, 41),
+            intArrayOf(40, 59),
+            intArrayOf(59, 40),
+            intArrayOf(59, 59)
+        )
     private val XOR_WITHOUT3 = arrayOf(intArrayOf(20, 20), intArrayOf(39, 39))
 
     // REVERSE_DIFFERENCE
-    private val REVERSE_DIFFERENCE_WITH2 = arrayOf(intArrayOf(29, 10), intArrayOf(10, 29),
-        intArrayOf(20, 10), intArrayOf(10, 20), intArrayOf(20, 20), intArrayOf(29, 29),
-        intArrayOf(21, 21))
-    private val REVERSE_DIFFERENCE_WITHOUT2 = arrayOf(intArrayOf(0, 0), intArrayOf(19, 0),
-        intArrayOf(0, 19), intArrayOf(19, 19), intArrayOf(2, 2), intArrayOf(11, 11))
+    private val REVERSE_DIFFERENCE_WITH2 =
+        arrayOf(
+            intArrayOf(29, 10),
+            intArrayOf(10, 29),
+            intArrayOf(20, 10),
+            intArrayOf(10, 20),
+            intArrayOf(20, 20),
+            intArrayOf(29, 29),
+            intArrayOf(21, 21)
+        )
+    private val REVERSE_DIFFERENCE_WITHOUT2 =
+        arrayOf(
+            intArrayOf(0, 0),
+            intArrayOf(19, 0),
+            intArrayOf(0, 19),
+            intArrayOf(19, 19),
+            intArrayOf(2, 2),
+            intArrayOf(11, 11)
+        )
 
-    private val REVERSE_DIFFERENCE_WITH3 = arrayOf(intArrayOf(40, 40), intArrayOf(40, 59),
-        intArrayOf(59, 40), intArrayOf(59, 59), intArrayOf(41, 41))
-    private val REVERSE_DIFFERENCE_WITHOUT3 = arrayOf(intArrayOf(0, 0), intArrayOf(19, 0),
-        intArrayOf(0, 19), intArrayOf(19, 19), intArrayOf(20, 20), intArrayOf(39, 39),
-        intArrayOf(2, 2))
+    private val REVERSE_DIFFERENCE_WITH3 =
+        arrayOf(
+            intArrayOf(40, 40),
+            intArrayOf(40, 59),
+            intArrayOf(59, 40),
+            intArrayOf(59, 59),
+            intArrayOf(41, 41)
+        )
+    private val REVERSE_DIFFERENCE_WITHOUT3 =
+        arrayOf(
+            intArrayOf(0, 0),
+            intArrayOf(19, 0),
+            intArrayOf(0, 19),
+            intArrayOf(19, 19),
+            intArrayOf(20, 20),
+            intArrayOf(39, 39),
+            intArrayOf(2, 2)
+        )
 
     private var mRegion: Region = Region()
 
@@ -146,7 +299,7 @@ class RegionTest {
         Region.from(oriRegion)
 
         // Test Region(Rect)
-        val rect = Rect()
+        val rect = Rect.from(0, 0, 0, 0)
         Region.from(rect)
 
         // Test Region(int, int, int, int)
@@ -155,7 +308,7 @@ class RegionTest {
 
     @Test
     fun testSet1() {
-        val rect = Rect(1, 2, 3, 4)
+        val rect = Rect.from(1, 2, 3, 4)
         val oriRegion = Region.from(rect)
         assertTrue(mRegion.set(oriRegion))
         assertEquals(1, mRegion.bounds.left)
@@ -166,7 +319,7 @@ class RegionTest {
 
     @Test
     fun testSet2() {
-        val rect = Rect(1, 2, 3, 4)
+        val rect = Rect.from(1, 2, 3, 4)
         assertTrue(mRegion.set(rect))
         assertEquals(1, mRegion.bounds.left)
         assertEquals(2, mRegion.bounds.top)
@@ -203,17 +356,17 @@ class RegionTest {
         // More than one rectangle
         mRegion = Region()
         mRegion.set(1, 1, 2, 2)
-        mRegion.union(Rect(3, 3, 5, 5))
+        mRegion.union(Rect.from(3, 3, 5, 5))
         assertTrue(mRegion.isComplex())
     }
 
     @Test
     fun testUnion() {
-        val rect1 = Rect()
-        val rect2 = Rect(0, 0, 20, 20)
-        val rect3 = Rect(5, 5, 10, 10)
-        val rect4 = Rect(10, 10, 30, 30)
-        val rect5 = Rect(40, 40, 60, 60)
+        val rect1 = Rect.from(0, 0, 0, 0)
+        val rect2 = Rect.from(0, 0, 20, 20)
+        val rect3 = Rect.from(5, 5, 10, 10)
+        val rect4 = Rect.from(10, 10, 30, 30)
+        val rect5 = Rect.from(40, 40, 60, 60)
 
         // union (inclusive-or) the two regions
         mRegion.set(rect2)
@@ -290,11 +443,11 @@ class RegionTest {
 
     @Test
     fun testOp1() {
-        val rect1 = Rect()
-        val rect2 = Rect(0, 0, 20, 20)
-        val rect3 = Rect(5, 5, 10, 10)
-        val rect4 = Rect(10, 10, 30, 30)
-        val rect5 = Rect(40, 40, 60, 60)
+        val rect1 = Rect.from(0, 0, 0, 0)
+        val rect2 = Rect.from(0, 0, 20, 20)
+        val rect3 = Rect.from(5, 5, 10, 10)
+        val rect4 = Rect.from(10, 10, 30, 30)
+        val rect5 = Rect.from(40, 40, 60, 60)
         verifyNullRegionOp1(rect1)
         verifyDifferenceOp1(rect1, rect2, rect3, rect4, rect5)
         verifyIntersectOp1(rect1, rect2, rect3, rect4, rect5)
@@ -519,10 +672,10 @@ class RegionTest {
 
     @Test
     fun testOp2() {
-        val rect2 = Rect(0, 0, 20, 20)
-        val rect3 = Rect(5, 5, 10, 10)
-        val rect4 = Rect(10, 10, 30, 30)
-        val rect5 = Rect(40, 40, 60, 60)
+        val rect2 = Rect.from(0, 0, 20, 20)
+        val rect3 = Rect.from(5, 5, 10, 10)
+        val rect4 = Rect.from(10, 10, 30, 30)
+        val rect5 = Rect.from(40, 40, 60, 60)
         verifyNullRegionOp2()
         verifyDifferenceOp2(rect2)
         verifyIntersectOp2(rect2)
@@ -973,8 +1126,8 @@ class RegionTest {
 
     @Test
     fun testOp4() {
-        val rect1 = Rect()
-        val rect2 = Rect(0, 0, 20, 20)
+        val rect1 = Rect.from(0, 0, 0, 0)
+        val rect2 = Rect.from(0, 0, 20, 20)
         val region1 = Region()
         val region2 = Region.from(0, 0, 20, 20)
         val region3 = Region.from(5, 5, 10, 10)
@@ -985,10 +1138,8 @@ class RegionTest {
         verifyIntersectOp4(rect1, rect2, region1, region3, region4, region5)
         verifyUnionOp4(rect1, rect2, region1, region3, region4, region5)
         verifyXorOp4(rect1, rect2, region1, region3, region4, region5)
-        verifyReverseDifferenceOp4(rect1, rect2, region1, region3, region4,
-            region5)
-        verifyReplaceOp4(rect1, rect2, region1, region2, region3, region4,
-            region5)
+        verifyReverseDifferenceOp4(rect1, rect2, region1, region3, region4, region5)
+        verifyReplaceOp4(rect1, rect2, region1, region2, region3, region4, region5)
     }
 
     private fun verifyNullRegionOp4(rect1: Rect, region1: Region) {
@@ -1419,22 +1570,24 @@ class RegionTest {
         assertEquals(region5.bounds, mRegion.bounds)
     }
 
-    val flickerRegionOperations = listOf(
-        Region.Op.DIFFERENCE,
-        Region.Op.INTERSECT,
-        Region.Op.UNION,
-        Region.Op.XOR,
-        Region.Op.REVERSE_DIFFERENCE,
-        Region.Op.REPLACE
-    )
-    val nativeRegionOperations = listOf(
-        android.graphics.Region.Op.DIFFERENCE,
-        android.graphics.Region.Op.INTERSECT,
-        android.graphics.Region.Op.UNION,
-        android.graphics.Region.Op.XOR,
-        android.graphics.Region.Op.REVERSE_DIFFERENCE,
-        android.graphics.Region.Op.REPLACE
-    )
+    val flickerRegionOperations =
+        listOf(
+            Region.Op.DIFFERENCE,
+            Region.Op.INTERSECT,
+            Region.Op.UNION,
+            Region.Op.XOR,
+            Region.Op.REVERSE_DIFFERENCE,
+            Region.Op.REPLACE
+        )
+    val nativeRegionOperations =
+        listOf(
+            android.graphics.Region.Op.DIFFERENCE,
+            android.graphics.Region.Op.INTERSECT,
+            android.graphics.Region.Op.UNION,
+            android.graphics.Region.Op.XOR,
+            android.graphics.Region.Op.REVERSE_DIFFERENCE,
+            android.graphics.Region.Op.REPLACE
+        )
 
     @Test
     fun testFlickerRegionAndNativeRegionProvideSameOutputForSingleOperation() {
@@ -1493,8 +1646,7 @@ class RegionTest {
 
     @Test
     fun testFlickerRegionAndNativeRegionProvideSameOutputFor100OperationsFromEmpty() {
-        testFlickerRegionAndNativeRegionProvideSameOutput(
-            100, startEmpty = true, iterations = 10)
+        testFlickerRegionAndNativeRegionProvideSameOutput(100, startEmpty = true, iterations = 10)
     }
 
     @Test
@@ -1526,12 +1678,13 @@ class RegionTest {
         totalOperations: Int,
         startEmpty: Boolean = false,
         iterations: Int = 100,
-        assertion: (
-            seed: Long,
-            history: String,
-            flickerRegion: Region,
-            nativeRegion: android.graphics.Region
-        ) -> Any,
+        assertion:
+            (
+                seed: Long,
+                history: String,
+                flickerRegion: Region,
+                nativeRegion: android.graphics.Region
+            ) -> Any,
         seed: Long = System.currentTimeMillis()
     ) {
         val random = Random(seed)
@@ -1578,17 +1731,26 @@ class RegionTest {
         startEmpty: Boolean = false,
         iterations: Int = 100
     ) {
-        testFlickerRegionAgainstNativeRegion(totalOperations, startEmpty, iterations, {
-            seed: Long,
-            history: String,
-            flickerRegion: Region,
-            nativeRegion: android.graphics.Region -> {
-                assertEquals("Ran with seed $seed\n" +
-                        "$history should equal \n" +
-                        "$nativeRegion\n but was\n$flickerRegion\n\n",
-                        nativeRegion.toString(), flickerRegion.toString())
+        testFlickerRegionAgainstNativeRegion(
+            totalOperations,
+            startEmpty,
+            iterations,
+            {
+                seed: Long,
+                history: String,
+                flickerRegion: Region,
+                nativeRegion: android.graphics.Region ->
+                {
+                    assertEquals(
+                        "Ran with seed $seed\n" +
+                            "$history should equal \n" +
+                            "$nativeRegion\n but was\n$flickerRegion\n\n",
+                        nativeRegion.toString(),
+                        flickerRegion.toString()
+                    )
+                }
             }
-        })
+        )
     }
 
     private fun testFlickerRegionAndNativeRegionProvideSameBounds(
@@ -1596,19 +1758,27 @@ class RegionTest {
         startEmpty: Boolean = false,
         iterations: Int = 100
     ) {
-        testFlickerRegionAgainstNativeRegion(totalOperations, startEmpty, iterations, {
-            seed: Long,
-            history: String,
-            flickerRegion: Region,
-            nativeRegion: android.graphics.Region -> {
-                val bounds = flickerRegion.bounds
-                val nBounds = nativeRegion.bounds
-                assertEquals("Ran with seed $seed\n" +
-                        "$history.bounds() should equal \n" +
-                        "${nBounds}\n but was\n${bounds}\n\n",
+        testFlickerRegionAgainstNativeRegion(
+            totalOperations,
+            startEmpty,
+            iterations,
+            {
+                seed: Long,
+                history: String,
+                flickerRegion: Region,
+                nativeRegion: android.graphics.Region ->
+                {
+                    val bounds = flickerRegion.bounds
+                    val nBounds = nativeRegion.bounds
+                    assertEquals(
+                        "Ran with seed $seed\n" +
+                            "$history.bounds() should equal \n" +
+                            "${nBounds}\n but was\n${bounds}\n\n",
                         "${nBounds.left},${nBounds.top},${nBounds.right},${nBounds.bottom}",
-                        "${bounds.left},${bounds.top},${bounds.right},${bounds.bottom}")
+                        "${bounds.left},${bounds.top},${bounds.right},${bounds.bottom}"
+                    )
+                }
             }
-        })
+        )
     }
 }

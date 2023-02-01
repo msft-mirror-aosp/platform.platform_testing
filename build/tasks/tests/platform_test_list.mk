@@ -73,7 +73,6 @@ platform_tests += \
     NoLocVersionedTestApp_v1 \
     NoLocVersionedTestApp_v2 \
     NotificationFunctionalTests \
-    NotificationStressTests \
     OverviewFunctionalTests \
     perfetto_trace_processor_shell \
     PerformanceAppTest \
@@ -110,6 +109,7 @@ platform_tests += \
     UpdateExternalLocTestApp_v2_none \
     UpdateExtToIntLocTestApp_v1_ext \
     UpdateExtToIntLocTestApp_v2_int \
+    uwb_snippet \
     VersatileTestApp_Auto \
     VersatileTestApp_External \
     VersatileTestApp_Internal \

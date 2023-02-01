@@ -16,38 +16,51 @@
 
 package com.android.server.wm.traces.common.windowmanager.windows
 
+import com.android.server.wm.traces.common.IComponentMatcher
 import com.android.server.wm.traces.common.Rect
+import com.android.server.wm.traces.common.service.PlatformConsts
+import kotlin.js.JsName
+import kotlin.math.min
 
 /**
  * Represents a display content in the window manager hierarchy
  *
- * This is a generic object that is reused by both Flicker and Winscope and cannot
- * access internal Java/Android functionality
- *
+ * This is a generic object that is reused by both Flicker and Winscope and cannot access internal
+ * Java/Android functionality
  */
-open class DisplayContent(
-    val id: Int,
-    val focusedRootTaskId: Int,
-    val resumedActivity: String,
-    val singleTaskInstance: Boolean,
-    val defaultPinnedStackBounds: Rect,
-    val pinnedStackMovementBounds: Rect,
-    val displayRect: Rect,
-    val appRect: Rect,
-    val dpi: Int,
-    val flags: Int,
-    val stableBounds: Rect,
-    val surfaceSize: Int,
-    val focusedApp: String,
-    val lastTransition: String,
-    val appTransitionState: String,
-    val rotation: Int,
-    val lastOrientation: Int,
+class DisplayContent(
+    @JsName("id") val id: Int,
+    @JsName("focusedRootTaskId") val focusedRootTaskId: Int,
+    @JsName("resumedActivity") val resumedActivity: String,
+    @JsName("singleTaskInstance") val singleTaskInstance: Boolean,
+    @JsName("defaultPinnedStackBounds") val defaultPinnedStackBounds: Rect,
+    @JsName("pinnedStackMovementBounds") val pinnedStackMovementBounds: Rect,
+    @JsName("displayRect") val displayRect: Rect,
+    @JsName("appRect") val appRect: Rect,
+    @JsName("dpi") val dpi: Int,
+    @JsName("flags") val flags: Int,
+    @JsName("stableBounds") val stableBounds: Rect,
+    @JsName("surfaceSize") val surfaceSize: Int,
+    @JsName("focusedApp") val focusedApp: String,
+    @JsName("lastTransition") val lastTransition: String,
+    @JsName("appTransitionState") val appTransitionState: String,
+    @JsName("rotation") val rotation: PlatformConsts.Rotation,
+    @JsName("lastOrientation") val lastOrientation: Int,
+    @JsName("cutout") val cutout: DisplayCutout?,
     windowContainer: WindowContainer
 ) : WindowContainer(windowContainer) {
     override val name: String = id.toString()
     override val isVisible: Boolean = false
 
+    @JsName("isTablet")
+    val isTablet: Boolean
+        get() {
+            val smallestWidth =
+                dpiFromPx(min(displayRect.width.toFloat(), displayRect.height.toFloat()), dpi)
+            return smallestWidth >= TABLET_MIN_DPS
+        }
+
+    @JsName("rootTasks")
     val rootTasks: Array<Task>
         get() {
             val tasks = this.collectDescendants<Task> { it.isRootTask }.toMutableList()
@@ -70,16 +83,30 @@ open class DisplayContent(
             return tasks.toTypedArray()
         }
 
-    fun containsActivity(activityName: String): Boolean =
-        rootTasks.any { it.containsActivity(activityName) }
+    /**
+     * @return if [componentMatcher] matches any activity
+     *
+     * @param componentMatcher Components to search
+     */
+    @JsName("containsActivity")
+    fun containsActivity(componentMatcher: IComponentMatcher): Boolean =
+        rootTasks.any { it.containsActivity(componentMatcher) }
 
-    fun getTaskDisplayArea(activityName: String): DisplayArea? {
-        val taskDisplayAreas = this.collectDescendants<DisplayArea> { it.isTaskDisplayArea }
-            .filter { it.containsActivity(activityName) }
+    /**
+     * @return THe [DisplayArea] matching [componentMatcher], or null if none matches
+     *
+     * @param componentMatcher Components to search
+     */
+    @JsName("getTaskDisplayArea")
+    fun getTaskDisplayArea(componentMatcher: IComponentMatcher): DisplayArea? {
+        val taskDisplayAreas =
+            this.collectDescendants<DisplayArea> { it.isTaskDisplayArea }
+                .filter { it.containsActivity(componentMatcher) }
 
         if (taskDisplayAreas.size > 1) {
             throw IllegalArgumentException(
-                "There must be exactly one activity among all TaskDisplayAreas.")
+                "There must be exactly one activity among all TaskDisplayAreas."
+            )
         }
 
         return taskDisplayAreas.firstOrNull()
@@ -110,6 +137,7 @@ open class DisplayContent(
         if (appTransitionState != other.appTransitionState) return false
         if (rotation != other.rotation) return false
         if (lastOrientation != other.lastOrientation) return false
+        if (cutout != other.cutout) return false
         if (name != other.name) return false
         if (singleTaskInstance != other.singleTaskInstance) return false
         if (surfaceSize != other.surfaceSize) return false
@@ -134,10 +162,24 @@ open class DisplayContent(
         result = 31 * result + focusedApp.hashCode()
         result = 31 * result + lastTransition.hashCode()
         result = 31 * result + appTransitionState.hashCode()
-        result = 31 * result + rotation
+        result = 31 * result + rotation.value
         result = 31 * result + lastOrientation
+        result = 31 * result + cutout.hashCode()
         result = 31 * result + name.hashCode()
         result = 31 * result + isVisible.hashCode()
         return result
+    }
+
+    companion object {
+        /** From [android.util.DisplayMetrics] */
+        @JsName("DENSITY_DEFAULT") private const val DENSITY_DEFAULT = 160f
+        /** From [com.android.systemui.shared.recents.utilities.Utilities] */
+        @JsName("TABLET_MIN_DPS") private const val TABLET_MIN_DPS = 600f
+
+        @JsName("dpiFromPx")
+        private fun dpiFromPx(size: Float, densityDpi: Int): Float {
+            val densityRatio: Float = densityDpi.toFloat() / DENSITY_DEFAULT
+            return size / densityRatio
+        }
     }
 }

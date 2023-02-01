@@ -16,88 +16,75 @@
 
 package com.android.server.wm.flicker.traces.eventlog
 
-import com.android.server.wm.flicker.assertions.AssertionsChecker
 import com.android.server.wm.flicker.assertions.FlickerSubject
-import com.android.server.wm.traces.common.prettyTimestamp
+import com.android.server.wm.flicker.helpers.format
+import com.android.server.wm.traces.common.Timestamp
+import com.android.server.wm.traces.common.events.EventLog
+import com.android.server.wm.traces.common.events.FocusEvent
 import com.google.common.truth.Fact
 import com.google.common.truth.FailureMetadata
 import com.google.common.truth.Subject.Factory
 import com.google.common.truth.Truth
 
-/**
- * Truth subject for [FocusEvent] objects.
- */
-class EventLogSubject private constructor(
-    failureMetadata: FailureMetadata,
-    private val trace: List<FocusEvent>
-) : FlickerSubject(failureMetadata, trace) {
-    override val timestamp: Long get() = 0
-    override val parent: FlickerSubject? get() = null
+/** Truth subject for [FocusEvent] objects. */
+class EventLogSubject
+private constructor(failureMetadata: FailureMetadata, val eventLog: EventLog) :
+    FlickerSubject(failureMetadata, eventLog) {
+
+    override val timestamp: Timestamp
+        get() = Timestamp.EMPTY
+    override val parent: FlickerSubject?
+        get() = null
     override val selfFacts by lazy {
-        val firstTimestamp = subjects.firstOrNull()?.timestamp ?: 0L
-        val lastTimestamp = subjects.lastOrNull()?.timestamp ?: 0L
-        val first = "${prettyTimestamp(firstTimestamp)} (timestamp=$firstTimestamp)"
-        val last = "${prettyTimestamp(lastTimestamp)} (timestamp=$lastTimestamp)"
-        listOf(Fact.fact("Trace start", first),
-                Fact.fact("Trace end", last))
+        val firstTimestamp = eventLog.entries.firstOrNull()?.timestamp ?: Timestamp.EMPTY
+        val lastTimestamp = eventLog.entries.lastOrNull()?.timestamp ?: Timestamp.EMPTY
+        listOf(
+            Fact.fact("Trace start", firstTimestamp.format()),
+            Fact.fact("Trace end", lastTimestamp.format())
+        )
     }
 
     private val subjects by lazy {
-        trace.map { FocusEventSubject.assertThat(it, this) }
+        eventLog.focusEvents.map { FocusEventSubject.assertThat(it, this) }
     }
 
-    private val assertionsChecker = AssertionsChecker<FocusEventSubject>()
     private val _focusChanges by lazy {
         val focusList = mutableListOf<String>()
-        trace.firstOrNull { !it.hasFocus() }?.let { focusList.add(it.window) }
-        focusList + trace.filter { it.hasFocus() }.map { it.window }
+        eventLog.focusEvents.firstOrNull { !it.hasFocus() }?.let { focusList.add(it.window) }
+        focusList + eventLog.focusEvents.filter { it.hasFocus() }.map { it.window }
     }
 
     fun focusChanges(vararg windows: String) = apply {
         if (windows.isNotEmpty()) {
-            val focusChanges = _focusChanges
-                .dropWhile { !it.contains(windows.first()) }
-                .take(windows.size)
-            val success = windows.size <= focusChanges.size &&
-                focusChanges.zip(windows).all { (focus, search) -> focus.contains(search) }
+            val focusChanges =
+                _focusChanges.dropWhile { !it.contains(windows.first()) }.take(windows.size)
+            val success =
+                windows.size <= focusChanges.size &&
+                    focusChanges.zip(windows).all { (focus, search) -> focus.contains(search) }
 
             if (!success) {
-                fail(Fact.fact("Expected", windows.joinToString(",")),
-                    Fact.fact("Found", focusChanges.joinToString(",")))
+                fail(
+                    Fact.fact("Expected", windows.joinToString(",")),
+                    Fact.fact("Found", focusChanges.joinToString(","))
+                )
             }
         }
     }
 
-    fun focusDoesNotChange() = apply {
-        check("Focus should not change")
-            .that(_focusChanges)
-            .isEmpty()
-    }
+    fun focusDoesNotChange() = apply { check("Focus changes").that(_focusChanges).isEmpty() }
 
     companion object {
-        /**
-         * Boiler-plate Subject.Factory for EventLogSubject
-         */
-        private val FACTORY = Factory { fm: FailureMetadata, subject: List<FocusEvent> ->
+        /** Boiler-plate Subject.Factory for EventLogSubject */
+        private val FACTORY = Factory { fm: FailureMetadata, subject: EventLog ->
             EventLogSubject(fm, subject)
         }
 
-        /**
-         * User-defined entry point
-         */
-        fun assertThat(entry: List<FocusEvent>) =
-                Truth.assertAbout(FACTORY).that(entry) as EventLogSubject
+        /** User-defined entry point */
+        fun assertThat(logs: EventLog) = Truth.assertAbout(FACTORY).that(logs) as EventLogSubject
 
-        /**
-         * Static method for getting the subject factory (for use with assertAbout())
-         */
-        fun entries(): Factory<EventLogSubject, List<FocusEvent>> {
+        /** Static method for getting the subject factory (for use with assertAbout()) */
+        fun entries(): Factory<EventLogSubject, EventLog> {
             return FACTORY
         }
     }
-
-    /**
-     * Run the assertions.
-     */
-    fun forAllEntries(): Unit = assertionsChecker.test(subjects)
 }

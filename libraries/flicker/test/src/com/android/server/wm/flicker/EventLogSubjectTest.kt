@@ -16,40 +16,81 @@
 
 package com.android.server.wm.flicker
 
-import com.android.server.wm.flicker.FlickerRunResult.Companion.RunStatus.RUN_SUCCESS
+import com.android.server.wm.flicker.assertions.SubjectsParser
+import com.android.server.wm.flicker.io.ParsedTracesReader
 import com.android.server.wm.flicker.traces.eventlog.EventLogSubject
-import com.android.server.wm.flicker.traces.eventlog.FocusEvent
+import com.android.server.wm.traces.common.Timestamp
+import com.android.server.wm.traces.common.events.EventLog
+import com.android.server.wm.traces.common.events.FocusEvent
 import org.junit.Test
 
 /**
- * Contains [EventLogSubject] tests. To run this test: `atest
- * FlickerLibTest:EventLogSubjectTest`
+ * Contains [EventLogSubject] tests. To run this test: `atest FlickerLibTest:EventLogSubjectTest`
  */
 class EventLogSubjectTest {
     @Test
     fun canDetectFocusChanges() {
-        val builder = FlickerRunResult.Builder()
-        builder.eventLog =
-                listOf(FocusEvent(0, "WinB", FocusEvent.Focus.GAINED, "test"),
-                        FocusEvent(0, "test WinA window", FocusEvent.Focus.LOST, "test"),
-                        FocusEvent(0, "WinB", FocusEvent.Focus.LOST, "test"),
-                        FocusEvent(0, "test WinC", FocusEvent.Focus.GAINED, "test"))
-        val result = builder.buildEventLogResult(RUN_SUCCESS).eventLogSubject
-        requireNotNull(result) { "Event log subject was not built" }
-        result.focusChanges("WinA", "WinB", "WinC")
-                .forAllEntries()
-        result.focusChanges("WinA", "WinB").forAllEntries()
-        result.focusChanges("WinB", "WinC").forAllEntries()
-        result.focusChanges("WinA").forAllEntries()
-        result.focusChanges("WinB").forAllEntries()
-        result.focusChanges("WinC").forAllEntries()
+        val reader =
+            ParsedTracesReader(
+                eventLog =
+                    EventLog(
+                        arrayOf(
+                            FocusEvent(
+                                Timestamp(unixNanos = 0),
+                                "WinB",
+                                FocusEvent.Type.GAINED,
+                                "test",
+                                0,
+                                "0",
+                                0
+                            ),
+                            FocusEvent(
+                                Timestamp(unixNanos = 0),
+                                "test WinA window",
+                                FocusEvent.Type.LOST,
+                                "test",
+                                0,
+                                "0",
+                                0
+                            ),
+                            FocusEvent(
+                                Timestamp(unixNanos = 0),
+                                "WinB",
+                                FocusEvent.Type.LOST,
+                                "test",
+                                0,
+                                "0",
+                                0
+                            ),
+                            FocusEvent(
+                                Timestamp(unixNanos = 0),
+                                "test WinC",
+                                FocusEvent.Type.GAINED,
+                                "test",
+                                0,
+                                "0",
+                                0
+                            )
+                        )
+                    )
+            )
+        val subjectsParser = SubjectsParser(reader)
+
+        val subject = subjectsParser.eventLogSubject ?: error("Event log subject not built")
+        subject.focusChanges("WinA", "WinB", "WinC")
+        subject.focusChanges("WinA", "WinB")
+        subject.focusChanges("WinB", "WinC")
+        subject.focusChanges("WinA")
+        subject.focusChanges("WinB")
+        subject.focusChanges("WinC")
     }
 
     @Test
     fun canDetectFocusDoesNotChange() {
-        val builder = FlickerRunResult.Builder()
-        val result = builder.buildEventLogResult(RUN_SUCCESS).eventLogSubject
-        require(result != null) { "Event log subject was not built" }
-        result.focusDoesNotChange().forAllEntries()
+        val reader = ParsedTracesReader(eventLog = EventLog(emptyArray()))
+        val subjectsParser = SubjectsParser(reader)
+
+        val subject = subjectsParser.eventLogSubject ?: error("Event log subject not built")
+        subject.focusDoesNotChange()
     }
 }

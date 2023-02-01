@@ -18,16 +18,18 @@ package com.android.server.wm.traces.parser
 
 import com.android.server.wm.traces.common.DeviceStateDump
 import com.android.server.wm.traces.common.DeviceTraceDump
-import com.android.server.wm.traces.common.layers.LayersTrace
+import com.android.server.wm.traces.common.NullableDeviceStateDump
 import com.android.server.wm.traces.common.layers.BaseLayerTraceEntry
-import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
+import com.android.server.wm.traces.common.layers.LayersTrace
 import com.android.server.wm.traces.common.windowmanager.WindowManagerState
+import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 import com.android.server.wm.traces.parser.layers.LayersTraceParser
+import com.android.server.wm.traces.parser.windowmanager.WindowManagerDumpParser
 import com.android.server.wm.traces.parser.windowmanager.WindowManagerTraceParser
 
 /**
- * Represents a state dump containing the [WindowManagerTrace] and the [LayersTrace] both parsed
- * and in raw (byte) data.
+ * Represents a state dump containing the [WindowManagerTrace] and the [LayersTrace] both parsed and
+ * in raw (byte) data.
  */
 class DeviceDumpParser {
     companion object {
@@ -38,48 +40,90 @@ class DeviceDumpParser {
          *
          * @param wmTraceData [WindowManagerTrace] content
          * @param layersTraceData [LayersTrace] content
+         * @param clearCacheAfterParsing If the caching used while parsing the proto should be
+         * ```
+         *                               cleared or remain in memory
+         * ```
          */
+        @JvmStatic
+        fun fromNullableDump(
+            wmTraceData: ByteArray,
+            layersTraceData: ByteArray,
+            clearCacheAfterParsing: Boolean
+        ): NullableDeviceStateDump {
+            return withPerfettoTrace("fromNullableDump") {
+                NullableDeviceStateDump(
+                    wmState =
+                        if (wmTraceData.isNotEmpty()) {
+                            WindowManagerDumpParser()
+                                .parse(wmTraceData, clearCache = clearCacheAfterParsing)
+                                .first()
+                        } else {
+                            null
+                        },
+                    layerState =
+                        if (layersTraceData.isNotEmpty()) {
+                            LayersTraceParser()
+                                .parse(layersTraceData, clearCache = clearCacheAfterParsing)
+                                .first()
+                        } else {
+                            null
+                        }
+                )
+            }
+        }
+
+        /** See [fromNullableDump] */
         @JvmStatic
         fun fromDump(
             wmTraceData: ByteArray,
-            layersTraceData: ByteArray
-        ): DeviceStateDump<WindowManagerState?, BaseLayerTraceEntry?> {
-            return DeviceStateDump(
-                wmState = if (wmTraceData.isNotEmpty()) {
-                    WindowManagerTraceParser.parseFromDump(wmTraceData).first()
-                } else {
-                    null
-                },
-                layerState = if (layersTraceData.isNotEmpty()) {
-                    LayersTraceParser.parseFromTrace(layersTraceData).first()
-                } else {
-                    null
-                }
-            )
+            layersTraceData: ByteArray,
+            clearCacheAfterParsing: Boolean
+        ): DeviceStateDump {
+            return withPerfettoTrace("fromDump") {
+                val nullableDump =
+                    fromNullableDump(wmTraceData, layersTraceData, clearCacheAfterParsing)
+                DeviceStateDump(
+                    nullableDump.wmState ?: error("WMState dump missing"),
+                    nullableDump.layerState ?: error("Layer State dump missing")
+                )
+            }
         }
 
         /**
-         * Creates a device state dump containing the WindowManager and Layers trace
-         * obtained from a regular trace. The parsed traces may contain a multiple
-         * [WindowManagerState] or [LayerTraceEntry].
+         * Creates a device state dump containing the WindowManager and Layers trace obtained from a
+         * regular trace. The parsed traces may contain a multiple [WindowManagerState] or
+         * [BaseLayerTraceEntry].
          *
          * @param wmTraceData [WindowManagerTrace] content
          * @param layersTraceData [LayersTrace] content
+         * @param clearCache If the caching used while parsing the proto should be
+         * ```
+         *                               cleared or remain in memory
+         * ```
          */
         @JvmStatic
-        fun fromTrace(wmTraceData: ByteArray, layersTraceData: ByteArray): DeviceTraceDump {
-            return DeviceTraceDump(
-                wmTrace = if (wmTraceData.isNotEmpty()) {
-                    WindowManagerTraceParser.parseFromTrace(wmTraceData)
-                } else {
-                    null
-                },
-                layersTrace = if (layersTraceData.isNotEmpty()) {
-                    LayersTraceParser.parseFromTrace(layersTraceData)
-                } else {
-                    null
-                }
-            )
+        fun fromTrace(
+            wmTraceData: ByteArray,
+            layersTraceData: ByteArray,
+            clearCache: Boolean
+        ): DeviceTraceDump {
+            return withPerfettoTrace("fromTrace") {
+                DeviceTraceDump(
+                    wmTrace =
+                        if (wmTraceData.isNotEmpty()) {
+                            WindowManagerTraceParser().parse(wmTraceData, clearCache = clearCache)
+                        } else {
+                            null
+                        },
+                    layersTrace =
+                        if (layersTraceData.isNotEmpty()) {
+                            LayersTraceParser().parse(layersTraceData, clearCache = clearCache)
+                        } else {
+                            null
+                        }
+                )
+            }
         }
     }
 }

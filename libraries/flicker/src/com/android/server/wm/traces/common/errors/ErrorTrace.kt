@@ -22,10 +22,8 @@ import com.android.server.wm.traces.common.ITrace
  * Represents all the states with errors in an entire trace.
  * @param entries States with errors contained in this trace
  */
-data class ErrorTrace(
-    override val entries: Array<ErrorState>
-) : ITrace<ErrorState>,
-    List<ErrorState> by entries.toList() {
+data class ErrorTrace(override val entries: Array<ErrorState>) :
+    ITrace<ErrorState>, List<ErrorState> by entries.toList() {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is ErrorTrace) return false
@@ -35,6 +33,6 @@ data class ErrorTrace(
 
     override fun hashCode(): Int = entries.contentDeepHashCode()
 
-    override fun toString(): String = "FlickerErrorTrace(First: ${entries.firstOrNull()}," +
-            "End: ${entries.lastOrNull()})"
+    override fun toString(): String =
+        "FlickerErrorTrace(First: ${entries.firstOrNull()}," + "End: ${entries.lastOrNull()})"
 }

@@ -17,6 +17,8 @@
 package com.android.server.wm.traces.common.windowmanager
 
 import com.android.server.wm.traces.common.ITrace
+import com.android.server.wm.traces.common.service.PlatformConsts
+import kotlin.js.JsName
 
 /**
  * Contains a collection of parsed WindowManager trace entries and assertions to apply over a single
@@ -24,14 +26,16 @@ import com.android.server.wm.traces.common.ITrace
  *
  * Each entry is parsed into a list of [WindowManagerState] objects.
  *
- * This is a generic object that is reused by both Flicker and Winscope and cannot
- * access internal Java/Android functionality
- *
+ * This is a generic object that is reused by both Flicker and Winscope and cannot access internal
+ * Java/Android functionality
  */
-data class WindowManagerTrace(
-    override val entries: Array<WindowManagerState>
-) : ITrace<WindowManagerState>,
-    List<WindowManagerState> by entries.toList() {
+data class WindowManagerTrace(override val entries: Array<WindowManagerState>) :
+    ITrace<WindowManagerState>, List<WindowManagerState> by entries.toList() {
+
+    @JsName("isTablet")
+    val isTablet: Boolean
+        get() = entries.any { it.isTablet }
+
     override fun toString(): String {
         return "WindowManagerTrace(Start: ${entries.firstOrNull()}, " +
             "End: ${entries.lastOrNull()})"
@@ -50,18 +54,13 @@ data class WindowManagerTrace(
         return entries.contentHashCode()
     }
 
-    /**
-     * Split the trace by the start and end timestamp.
-     *
-     * @param from the start timestamp
-     * @param to the end timestamp
-     * @return the subtrace trace(from, to)
-     */
-    fun filter(from: Long, to: Long): WindowManagerTrace {
-        return WindowManagerTrace(
-            this.entries
-                .dropWhile { it.timestamp < from }
-                .dropLastWhile { it.timestamp > to }
-                .toTypedArray())
+    /** Get the initial rotation */
+    fun getInitialRotation(): PlatformConsts.Rotation {
+        if (entries.isEmpty()) {
+            throw RuntimeException("WindowManager Trace has no entries")
+        }
+        val firstWmState = entries[0]
+        return firstWmState.policy?.rotation
+            ?: run { throw RuntimeException("Wm state has no policy") }
     }
 }

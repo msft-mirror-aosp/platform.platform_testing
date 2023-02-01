@@ -17,47 +17,40 @@
 package com.android.server.wm.flicker.traces
 
 import com.android.server.wm.flicker.assertions.FlickerSubject
-import com.android.server.wm.traces.common.prettyTimestamp
+import com.android.server.wm.flicker.helpers.format
 
-/**
- * Exception thrown by [FlickerSubject]s
- */
-class FlickerSubjectException(
-    internal val subject: FlickerSubject,
-    cause: Throwable
-) : AssertionError(cause.message, if (cause is FlickerSubjectException) null else cause) {
-    internal val timestamp = subject.timestamp
-    private val prettyTimestamp =
-            if (timestamp > 0) "${prettyTimestamp(timestamp)} (timestamp=$timestamp)" else ""
+/** Exception thrown by [FlickerSubject]s */
+class FlickerSubjectException(internal val subject: FlickerSubject, cause: Throwable) :
+    AssertionError(cause.message, if (cause is FlickerSubjectException) null else cause) {
 
     internal val errorType: String =
-            if (cause is AssertionError) "Flicker assertion error" else "Unknown error"
+        if (cause is AssertionError) "Flicker assertion error" else "Unknown error"
 
     internal val errorDescription = buildString {
-        appendln("Where? $prettyTimestamp")
+        appendLine("Where? ${subject.timestamp.format()}")
         val message = (cause.message ?: "").split(("\n"))
         append("What? ")
         if (message.size == 1) {
             // Single line error message
-            appendln(message.first())
+            appendLine(message.first())
         } else {
             // Multi line error message
-            appendln()
-            message.forEach { appendln("\t$it") }
+            appendLine()
+            message.forEach { appendLine("\t$it") }
         }
     }
 
     internal val subjectInformation = buildString {
-        appendln("Facts:")
-        subject.completeFacts.forEach { append("\t").appendln(it) }
+        appendLine("Facts:")
+        subject.completeFacts.forEach { appendLine(it.toString().prependIndent("\t")) }
     }
 
     override val message: String
         get() = buildString {
-            appendln(errorType)
-            appendln()
+            appendLine(errorType)
+            appendLine()
             append(errorDescription)
-            appendln()
+            appendLine()
             append(subjectInformation)
         }
 }

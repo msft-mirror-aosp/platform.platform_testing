@@ -16,91 +16,93 @@
 
 package com.android.server.wm.flicker.assertions
 
-import com.android.server.wm.flicker.TraceFile
-import com.android.server.wm.flicker.dsl.AssertionTag
+import com.android.server.wm.flicker.AssertionTag
+import com.android.server.wm.flicker.io.IReader
 import com.android.server.wm.flicker.traces.FlickerSubjectException
 import com.google.common.truth.Fact
 import java.io.ByteArrayOutputStream
 import java.io.PrintStream
+import java.nio.file.Path
 
 class FlickerAssertionErrorBuilder {
     private var error: Throwable? = null
-    private var traceFile: TraceFile? = null
+    private var artifactPath: Path? = null
     private var tag = ""
 
-    fun fromError(error: Throwable): FlickerAssertionErrorBuilder = apply {
-        this.error = error
+    fun fromError(error: Throwable): FlickerAssertionErrorBuilder = apply { this.error = error }
+
+    fun withReader(reader: IReader): FlickerAssertionErrorBuilder = apply {
+        artifactPath = reader.artifactPath
     }
 
-    fun withTrace(traceFile: TraceFile?): FlickerAssertionErrorBuilder = apply {
-        this.traceFile = traceFile
-    }
-
-    fun atTag(tag: String): FlickerAssertionErrorBuilder = apply {
-        this.tag = when (tag) {
-            AssertionTag.START -> "before transition (initial state)"
-            AssertionTag.END -> "after transition (final state)"
-            AssertionTag.ALL -> "during transition"
-            else -> "at user-defined location ($tag)"
-        }
+    fun atTag(_tag: String): FlickerAssertionErrorBuilder = apply {
+        tag =
+            when (_tag) {
+                AssertionTag.START -> "before transition (initial state)"
+                AssertionTag.END -> "after transition (final state)"
+                AssertionTag.ALL -> "during transition"
+                else -> "at user-defined location ($_tag)"
+            }
     }
 
     fun build(): FlickerAssertionError {
-        return FlickerAssertionError(errorMessage, rootCause, traceFile)
+        return FlickerAssertionError(errorMessage, rootCause)
     }
 
-    private val errorMessage get() = buildString {
-        val error = error
-        requireNotNull(error)
-        if (error is FlickerSubjectException) {
-            appendLine(error.errorType)
+    private val errorMessage
+        get() = buildString {
+            val error = error
+            requireNotNull(error)
+            if (error is FlickerSubjectException) {
+                appendLine(error.errorType)
+                appendLine()
+                append(error.errorDescription)
+                appendLine()
+                append(error.subjectInformation)
+                append("\t").appendLine(Fact.fact("Location", tag))
+                appendLine()
+            } else {
+                appendLine(error.message)
+            }
+            append("Trace file:").append(traceFileMessage)
             appendLine()
-            append(error.errorDescription)
+            appendLine("Cause:")
+            append(rootCauseStackTrace)
             appendLine()
-            append(error.subjectInformation)
-            append("\t").appendLine(Fact.fact("Location", tag))
+            appendLine("Full stacktrace:")
             appendLine()
-        } else {
-            appendLine(error.message)
         }
-        append("Trace file:").append(traceFileMessage)
-        appendLine()
-        appendLine("Cause:")
-        append(rootCauseStackTrace)
-        appendLine()
-        appendLine("Full stacktrace:")
-        appendLine()
-    }
 
-    private val traceFileMessage get() = buildString {
-        traceFile?.traceFile?.let {
-            append("\t")
-            append(it)
+    private val traceFileMessage
+        get() = buildString {
+            artifactPath?.let {
+                append("\t")
+                append(it)
+            }
         }
-    }
 
-    private val rootCauseStackTrace: String get() {
-        val rootCause = rootCause
-        return if (rootCause != null) {
-            val baos = ByteArrayOutputStream()
-            PrintStream(baos, true)
-                    .use { ps -> rootCause.printStackTrace(ps) }
-            "\t$baos"
-        } else {
-            ""
+    private val rootCauseStackTrace: String
+        get() {
+            val rootCause = rootCause
+            return if (rootCause != null) {
+                val baos = ByteArrayOutputStream()
+                PrintStream(baos, true).use { ps -> rootCause.printStackTrace(ps) }
+                "\t$baos"
+            } else {
+                ""
+            }
         }
-    }
 
     /**
-     * In some paths the exceptions are encapsulated by the Truth subjects
-     * To make sure the correct error is printed, located the first non-subject
-     * related exception and use that as cause.
+     * In some paths the exceptions are encapsulated by the Truth subjects To make sure the correct
+     * error is printed, located the first non-subject related exception and use that as cause.
      */
-    private val rootCause: Throwable? get() {
-        var childCause: Throwable? = this.error?.cause
-        if (childCause != null && childCause is FlickerSubjectException) {
-            childCause = childCause.cause
+    private val rootCause: Throwable?
+        get() {
+            var childCause: Throwable? = this.error?.cause
+            if (childCause != null && childCause is FlickerSubjectException) {
+                childCause = childCause.cause
+            }
+            return childCause
         }
-        return childCause
-    }
 }

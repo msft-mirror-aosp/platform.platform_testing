@@ -16,47 +16,50 @@
 
 package com.android.server.wm.traces.common.windowmanager.windows
 
-import com.android.server.wm.traces.common.Size
 import com.android.server.wm.traces.common.Rect
+import com.android.server.wm.traces.common.Size
 import com.android.server.wm.traces.common.region.Region
+import kotlin.js.JsName
 
 /**
  * Represents a window in the window manager hierarchy
  *
- * This is a generic object that is reused by both Flicker and Winscope and cannot
- * access internal Java/Android functionality
- *
+ * This is a generic object that is reused by both Flicker and Winscope and cannot access internal
+ * Java/Android functionality
  */
-open class WindowState(
-    val attributes: WindowLayoutParams,
-    val displayId: Int,
-    val stackId: Int,
-    val layer: Int,
-    val isSurfaceShown: Boolean,
-    val windowType: Int,
-    val requestedSize: Size,
-    val surfacePosition: Rect?,
-    val frame: Rect,
-    val containingFrame: Rect,
-    val parentFrame: Rect,
-    val contentFrame: Rect,
-    val contentInsets: Rect,
-    val surfaceInsets: Rect,
-    val givenContentInsets: Rect,
-    val crop: Rect,
+class WindowState(
+    @JsName("attributes") val attributes: WindowLayoutParams,
+    @JsName("displayId") val displayId: Int,
+    @JsName("stackId") val stackId: Int,
+    @JsName("layer") val layer: Int,
+    @JsName("isSurfaceShown") val isSurfaceShown: Boolean,
+    @JsName("windowType") val windowType: Int,
+    @JsName("requestedSize") val requestedSize: Size,
+    @JsName("surfacePosition") val surfacePosition: Rect?,
+    @JsName("frame") val frame: Rect,
+    @JsName("containingFrame") val containingFrame: Rect,
+    @JsName("parentFrame") val parentFrame: Rect,
+    @JsName("contentFrame") val contentFrame: Rect,
+    @JsName("contentInsets") val contentInsets: Rect,
+    @JsName("surfaceInsets") val surfaceInsets: Rect,
+    @JsName("givenContentInsets") val givenContentInsets: Rect,
+    @JsName("crop") val crop: Rect,
     windowContainer: WindowContainer,
-    val isAppWindow: Boolean
+    @JsName("isAppWindow") val isAppWindow: Boolean
 ) : WindowContainer(windowContainer, getWindowTitle(windowContainer.title)) {
-    override val isVisible: Boolean get() = super.isVisible && attributes.alpha > 0
+    override val isVisible: Boolean
+        get() = super.isVisible && attributes.alpha > 0
 
-    override val isFullscreen: Boolean get() = this.attributes.flags.and(FLAG_FULLSCREEN) > 0
-    val isStartingWindow: Boolean = windowType == WINDOW_TYPE_STARTING
-    val isExitingWindow: Boolean = windowType == WINDOW_TYPE_EXITING
-    val isDebuggerWindow: Boolean = windowType == WINDOW_TYPE_DEBUGGER
-    val isValidNavBarType: Boolean = attributes.isValidNavBarType
+    override val isFullscreen: Boolean
+        get() = this.attributes.flags.and(FLAG_FULLSCREEN) > 0
+    @JsName("isStartingWindow") val isStartingWindow: Boolean = windowType == WINDOW_TYPE_STARTING
+    @JsName("isExitingWindow") val isExitingWindow: Boolean = windowType == WINDOW_TYPE_EXITING
+    @JsName("isDebuggerWindow") val isDebuggerWindow: Boolean = windowType == WINDOW_TYPE_DEBUGGER
+    @JsName("isValidNavBarType") val isValidNavBarType: Boolean = attributes.isValidNavBarType
 
-    val frameRegion: Region = Region.from(frame)
+    @JsName("frameRegion") val frameRegion: Region = Region.from(frame)
 
+    @JsName("getWindowTypeSuffix")
     private fun getWindowTypeSuffix(windowType: Int): String =
         when (windowType) {
             WINDOW_TYPE_STARTING -> " STARTING"
@@ -65,9 +68,10 @@ open class WindowState(
             else -> ""
         }
 
-    override fun toString(): String = "${this::class.simpleName}: " +
-        "{$token $title${getWindowTypeSuffix(windowType)}} " +
-        "type=${attributes.type} cf=$containingFrame pf=$parentFrame"
+    override fun toString(): String =
+        "${this::class.simpleName}: " +
+            "{$token $title${getWindowTypeSuffix(windowType)}} " +
+            "type=${attributes.type} cf=$containingFrame pf=$parentFrame"
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -123,17 +127,18 @@ open class WindowState(
         /**
          * From {@see android.view.WindowManager.FLAG_FULLSCREEN}.
          *
-         * This class is shared between JVM and JS (Winscope) and cannot access
-         * Android internals
+         * This class is shared between JVM and JS (Winscope) and cannot access Android internals
          */
-        private const val FLAG_FULLSCREEN = 0x00000400
-        internal const val WINDOW_TYPE_STARTING = 1
-        internal const val WINDOW_TYPE_EXITING = 2
-        private const val WINDOW_TYPE_DEBUGGER = 3
+        @JsName("FLAG_FULLSCREEN") private const val FLAG_FULLSCREEN = 0x00000400
+        @JsName("WINDOW_TYPE_STARTING") internal const val WINDOW_TYPE_STARTING = 1
+        @JsName("WINDOW_TYPE_EXITING") internal const val WINDOW_TYPE_EXITING = 2
+        @JsName("WINDOW_TYPE_DEBUGGER") private const val WINDOW_TYPE_DEBUGGER = 3
 
-        internal const val STARTING_WINDOW_PREFIX = "Starting "
+        @JsName("STARTING_WINDOW_PREFIX") internal const val STARTING_WINDOW_PREFIX = "Starting "
+        @JsName("DEBUGGER_WINDOW_PREFIX")
         internal const val DEBUGGER_WINDOW_PREFIX = "Waiting For Debugger: "
 
+        @JsName("getWindowTitle")
         private fun getWindowTitle(title: String): String {
             return when {
                 // Existing code depends on the prefix being removed
@@ -143,6 +148,30 @@ open class WindowState(
                     title.substring(DEBUGGER_WINDOW_PREFIX.length)
                 else -> title
             }
+        }
+
+        fun withTitle(title: String): WindowState {
+            val windowContainer = WindowContainer.withTitle(title)
+            return WindowState(
+                WindowLayoutParams.EMPTY,
+                0,
+                0,
+                0,
+                false,
+                0,
+                Size.EMPTY,
+                Rect.EMPTY,
+                Rect.EMPTY,
+                Rect.EMPTY,
+                Rect.EMPTY,
+                Rect.EMPTY,
+                Rect.EMPTY,
+                Rect.EMPTY,
+                Rect.EMPTY,
+                Rect.EMPTY,
+                windowContainer,
+                false
+            )
         }
     }
 }

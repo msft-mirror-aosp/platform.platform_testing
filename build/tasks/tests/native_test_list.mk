@@ -13,6 +13,7 @@
 # limitations under the License.
 
 native_tests := \
+    aaudio_test_mmap_path \
     adbd_test \
     android_logger_test_src_lib \
     android_logger_test_tests_config_log_level \
@@ -30,7 +31,6 @@ native_tests := \
     anyhow_test_tests_test_repr \
     anyhow_test_tests_test_source \
     audio_health_tests \
-    backtrace_test \
     bionic-unit-tests \
     bionic-unit-tests-static \
     bluetoothtbd_test \
@@ -40,8 +40,6 @@ native_tests := \
     boringssl_ssl_test \
     bsdiff_unittest \
     buffer_hub-test \
-    buffer_hub_queue-test \
-    buffer_hub_queue_producer-test \
     bugreportz_test \
     bytes_test_tests_test_buf \
     bytes_test_tests_test_buf_mut \
@@ -63,9 +61,6 @@ native_tests := \
     dumpstate_test \
     dumpstate_test_fixture \
     dumpsys_test \
-    dvr_api-test \
-    dvr_buffer_queue-test \
-    dvr_display-test \
     gpuservice_unittest \
     gwp_asan_unittest \
     hello_world_test \
@@ -212,7 +207,6 @@ native_tests := \
     tokio_test_tests_sync_barrier \
     tokio_test_tests_sync_broadcast \
     tokio_test_tests_sync_errors \
-    tokio_test_tests_sync_mpsc \
     tokio_test_tests_sync_mutex \
     tokio_test_tests_sync_mutex_owned \
     tokio_test_tests_sync_notify \
@@ -257,7 +251,9 @@ native_tests := \
     lmkd_unit_test
 
 ifeq ($(BOARD_IS_AUTOMOTIVE), true)
-native_tests += libwatchdog_test
+native_tests += \
+    libwatchdog_test \
+    evsmanagerd_test
 endif
 
 ifneq ($(strip $(BOARD_PERFSETUP_SCRIPT)),)

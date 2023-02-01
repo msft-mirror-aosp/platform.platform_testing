@@ -22,8 +22,8 @@ import static org.junit.Assert.assertTrue;
 import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.runner.AndroidJUnit4;
 import androidx.test.uiautomator.UiDevice;
+
 import com.android.helpers.HeapDumpHelper;
-import java.util.Map;
 
 import org.junit.After;
 import org.junit.Before;
@@ -31,6 +31,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.io.IOException;
+import java.util.Map;
 
 /**
  * Android Unit tests for {@link HeapDumpHelper}.
@@ -70,8 +71,10 @@ public class HeapDumpHelperTest {
         assertTrue(mHeapDumpHelper.startCollecting("sample-heapdump-1"));
         Map<String, String> metrics = mHeapDumpHelper.getMetrics();
         assertTrue(metrics.size() == 1);
-        assertTrue(metrics.get("heapdump_file_1").equalsIgnoreCase(
-                "/data/local/tmp/#system#bin#surfaceflinger_sample-heapdump-1.hprof"));
+        assertTrue(
+                metrics.get("managed_heapdump_file_1")
+                        .equalsIgnoreCase(
+                                "/data/local/tmp/managed_heapdump_file_#system#bin#surfaceflinger_sample-heapdump-1.hprof"));
     }
 
     @Test
@@ -81,6 +84,20 @@ public class HeapDumpHelperTest {
         assertTrue(mHeapDumpHelper.startCollecting("sample-heapdump-2"));
         Map<String, String> metrics = mHeapDumpHelper.getMetrics();
         assertTrue(metrics.size() == 2);
+    }
+
+    @Test
+    public void testSuccessfulNativeHeapDumpCollectionForTwoProcesses() {
+        String[] processNames = new String[] {"com.android.systemui", "system_server"};
+        mHeapDumpHelper.setUp("/data/local/tmp/", processNames);
+        mHeapDumpHelper.enableNativeHeapDump();
+        assertTrue(mHeapDumpHelper.startCollecting("sample-heapdump-2"));
+        Map<String, String> metrics = mHeapDumpHelper.getMetrics();
+        assertTrue(metrics.size() == 4);
+        assertTrue(
+                metrics.get("native_heapdump_file_2")
+                        .equalsIgnoreCase(
+                                "/data/local/tmp/native_heapdump_file_system_server_sample-heapdump-2.txt"));
     }
 
     @Test

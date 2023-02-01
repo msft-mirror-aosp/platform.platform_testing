@@ -16,12 +16,10 @@
 
 package com.android.server.wm.traces.common
 
-/**
- * Common interface for Layer and WindowManager trace entries.
- */
+import kotlin.js.JsName
+
+/** Common interface for Layer and WindowManager trace entries. */
 interface ITraceEntry {
-    /**
-     * @return timestamp of current entry
-     */
-    val timestamp: Long
+    /** @return timestamp of current entry */
+    @JsName("timestamp") val timestamp: Timestamp
 }

@@ -16,8 +16,8 @@
 
 package com.android.server.wm.traces.parser.layers
 
-import android.surfaceflinger.nano.Layers
-import android.surfaceflinger.nano.Common.TransformProto
+import android.surfaceflinger.Common.TransformProto
+import android.surfaceflinger.Layers
 import com.android.server.wm.traces.common.Matrix33
 import com.android.server.wm.traces.common.layers.Transform
 import com.android.server.wm.traces.common.layers.Transform.Companion.FLIP_H_VAL
@@ -28,43 +28,32 @@ import com.android.server.wm.traces.common.layers.Transform.Companion.SCALE_VAL
 import com.android.server.wm.traces.common.layers.Transform.Companion.isFlagClear
 import com.android.server.wm.traces.common.layers.Transform.Companion.isFlagSet
 
-class Transform(transform: TransformProto?, position: Layers.PositionProto?) :
-        Transform(
-            transform?.type,
-            getMatrix(transform, position)
-        )
+fun Transform(transform: TransformProto?, position: Layers.PositionProto?) =
+    Transform.from(transform?.type, getMatrix(transform, position))
 
-private fun getMatrix(transform: TransformProto?, position: Layers.PositionProto?):
-        Matrix33 {
+private fun getMatrix(transform: TransformProto?, position: Layers.PositionProto?): Matrix33 {
     val x = position?.x ?: 0f
     val y = position?.y ?: 0f
 
     return when {
         transform == null || Transform.isSimpleTransform(transform.type) ->
             transform?.type.getDefaultTransform(x, y)
-        else ->
-            Matrix33(transform.dsdx, transform.dtdx, x, transform.dsdy, transform.dtdy, y)
+        else -> Matrix33.from(transform.dsdx, transform.dtdx, x, transform.dsdy, transform.dtdy, y)
     }
 }
 
 private fun Int?.getDefaultTransform(x: Float, y: Float): Matrix33 {
     return when {
         // IDENTITY
-        this == null ->
-            Matrix33(1f, 0f, x, 0f, 1f, y)
+        this == null -> Matrix33.identity(x, y)
         // // ROT_270 = ROT_90|FLIP_H|FLIP_V
-        isFlagSet(ROT_90_VAL or FLIP_V_VAL or FLIP_H_VAL) ->
-            Matrix33(0f, -1f, x, 1f, 0f, y)
+        isFlagSet(ROT_90_VAL or FLIP_V_VAL or FLIP_H_VAL) -> Matrix33.rot270(x, y)
         // ROT_180 = FLIP_H|FLIP_V
-        isFlagSet(FLIP_V_VAL or FLIP_H_VAL) ->
-            Matrix33(-1f, 0f, x, 0f, -1f, y)
+        isFlagSet(FLIP_V_VAL or FLIP_H_VAL) -> Matrix33.rot180(x, y)
         // ROT_90
-        isFlagSet(ROT_90_VAL) ->
-            Matrix33(0f, 1f, x, -1f, 0f, y)
+        isFlagSet(ROT_90_VAL) -> Matrix33.rot90(x, y)
         // IDENTITY
-        isFlagClear(SCALE_VAL or ROTATE_VAL) ->
-            Matrix33(1f, 0f, x, 0f, 1f, y)
-        else ->
-            throw IllegalStateException("Unknown transform type $this")
+        isFlagClear(SCALE_VAL or ROTATE_VAL) -> Matrix33.identity(x, y)
+        else -> throw IllegalStateException("Unknown transform type $this")
     }
 }

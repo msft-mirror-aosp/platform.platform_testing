@@ -16,146 +16,142 @@
 
 package com.android.server.wm.flicker.region
 
+import com.android.server.wm.flicker.assertExceptionMessageCause
 import com.android.server.wm.flicker.assertThrows
 import com.android.server.wm.flicker.traces.region.RegionSubject
 import com.android.server.wm.traces.common.Rect
-import com.google.common.truth.Truth
+import com.android.server.wm.traces.common.Timestamp
 import org.junit.FixMethodOrder
 import org.junit.Test
 import org.junit.runners.MethodSorters
 
-/**
- * Contains [RegionSubject] tests. To run this test:
- * `atest FlickerLibTest:RegionSubjectTest`
- */
+/** Contains [RegionSubject] tests. To run this test: `atest FlickerLibTest:RegionSubjectTest` */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class RegionSubjectTest {
     private fun assertFail(expectedMessage: String, predicate: () -> Any) {
-        val error = assertThrows(AssertionError::class.java) {
-            predicate()
-        }
-        Truth.assertThat(error).hasCauseThat().hasMessageThat().contains(expectedMessage)
+        val error = assertThrows(AssertionError::class.java) { predicate() }
+        assertExceptionMessageCause(error, expectedMessage)
     }
 
     private fun expectAllFailPositionChange(expectedMessage: String, rectA: Rect, rectB: Rect) {
         assertFail(expectedMessage) {
-            RegionSubject.assertThat(rectA, timestamp = 0).isHigher(rectB)
+            RegionSubject.assertThat(rectA, timestamp = Timestamp.EMPTY).isHigher(rectB)
         }
         assertFail(expectedMessage) {
-            RegionSubject.assertThat(rectA, timestamp = 0).isHigherOrEqual(rectB)
+            RegionSubject.assertThat(rectA, timestamp = Timestamp.EMPTY).isHigherOrEqual(rectB)
         }
         assertFail(expectedMessage) {
-            RegionSubject.assertThat(rectA, timestamp = 0).isLower(rectB)
+            RegionSubject.assertThat(rectA, timestamp = Timestamp.EMPTY).isLower(rectB)
         }
         assertFail(expectedMessage) {
-            RegionSubject.assertThat(rectA, timestamp = 0).isLowerOrEqual(rectB)
+            RegionSubject.assertThat(rectA, timestamp = Timestamp.EMPTY).isLowerOrEqual(rectB)
         }
     }
 
     @Test
     fun detectPositionChangeHigher() {
-        val rectA = Rect(left = 0, top = 0, right = 1, bottom = 1)
-        val rectB = Rect(left = 0, top = 1, right = 1, bottom = 2)
-        RegionSubject.assertThat(rectA, timestamp = 0).isHigher(rectB)
-        RegionSubject.assertThat(rectA, timestamp = 0).isHigherOrEqual(rectB)
+        val rectA = Rect.from(left = 0, top = 0, right = 1, bottom = 1)
+        val rectB = Rect.from(left = 0, top = 1, right = 1, bottom = 2)
+        RegionSubject.assertThat(rectA, timestamp = Timestamp.EMPTY).isHigher(rectB)
+        RegionSubject.assertThat(rectA, timestamp = Timestamp.EMPTY).isHigherOrEqual(rectB)
         assertFail(RegionSubject.MSG_ERROR_TOP_POSITION) {
-            RegionSubject.assertThat(rectA, timestamp = 0).isLower(rectB)
+            RegionSubject.assertThat(rectA, timestamp = Timestamp.EMPTY).isLower(rectB)
         }
         assertFail(RegionSubject.MSG_ERROR_TOP_POSITION) {
-            RegionSubject.assertThat(rectA, timestamp = 0).isLowerOrEqual(rectB)
+            RegionSubject.assertThat(rectA, timestamp = Timestamp.EMPTY).isLowerOrEqual(rectB)
         }
     }
 
     @Test
     fun detectPositionChangeLower() {
-        val rectA = Rect(left = 0, top = 2, right = 1, bottom = 3)
-        val rectB = Rect(left = 0, top = 0, right = 1, bottom = 1)
-        RegionSubject.assertThat(rectA, timestamp = 0).isLower(rectB)
-        RegionSubject.assertThat(rectA, timestamp = 0).isLowerOrEqual(rectB)
+        val rectA = Rect.from(left = 0, top = 2, right = 1, bottom = 3)
+        val rectB = Rect.from(left = 0, top = 0, right = 1, bottom = 1)
+        RegionSubject.assertThat(rectA, timestamp = Timestamp.EMPTY).isLower(rectB)
+        RegionSubject.assertThat(rectA, timestamp = Timestamp.EMPTY).isLowerOrEqual(rectB)
         assertFail(RegionSubject.MSG_ERROR_TOP_POSITION) {
-            RegionSubject.assertThat(rectA, timestamp = 0).isHigher(rectB)
+            RegionSubject.assertThat(rectA, timestamp = Timestamp.EMPTY).isHigher(rectB)
         }
         assertFail(RegionSubject.MSG_ERROR_TOP_POSITION) {
-            RegionSubject.assertThat(rectA, timestamp = 0).isHigherOrEqual(rectB)
+            RegionSubject.assertThat(rectA, timestamp = Timestamp.EMPTY).isHigherOrEqual(rectB)
         }
     }
 
     @Test
     fun detectPositionChangeEqualHigherLower() {
-        val rectA = Rect(left = 0, top = 1, right = 1, bottom = 0)
-        val rectB = Rect(left = 1, top = 1, right = 2, bottom = 0)
-        RegionSubject.assertThat(rectA, timestamp = 0).isHigherOrEqual(rectB)
-        RegionSubject.assertThat(rectA, timestamp = 0).isLowerOrEqual(rectB)
+        val rectA = Rect.from(left = 0, top = 1, right = 1, bottom = 0)
+        val rectB = Rect.from(left = 1, top = 1, right = 2, bottom = 0)
+        RegionSubject.assertThat(rectA, timestamp = Timestamp.EMPTY).isHigherOrEqual(rectB)
+        RegionSubject.assertThat(rectA, timestamp = Timestamp.EMPTY).isLowerOrEqual(rectB)
         assertFail(RegionSubject.MSG_ERROR_TOP_POSITION) {
-            RegionSubject.assertThat(rectA, timestamp = 0).isHigher(rectB)
+            RegionSubject.assertThat(rectA, timestamp = Timestamp.EMPTY).isHigher(rectB)
         }
         assertFail(RegionSubject.MSG_ERROR_TOP_POSITION) {
-            RegionSubject.assertThat(rectA, timestamp = 0).isLower(rectB)
+            RegionSubject.assertThat(rectA, timestamp = Timestamp.EMPTY).isLower(rectB)
         }
     }
 
     @Test
     fun detectPositionChangeInvalid() {
-        val rectA = Rect(left = 0, top = 1, right = 2, bottom = 2)
-        val rectB = Rect(left = 1, top = 1, right = 2, bottom = 2)
-        val rectC = Rect(left = 0, top = 1, right = 3, bottom = 1)
+        val rectA = Rect.from(left = 0, top = 1, right = 2, bottom = 2)
+        val rectB = Rect.from(left = 1, top = 1, right = 2, bottom = 2)
+        val rectC = Rect.from(left = 0, top = 1, right = 3, bottom = 1)
         expectAllFailPositionChange(RegionSubject.MSG_ERROR_LEFT_POSITION, rectA, rectB)
         expectAllFailPositionChange(RegionSubject.MSG_ERROR_RIGHT_POSITION, rectA, rectC)
     }
 
     @Test
     fun detectCoversAtLeast() {
-        val rectA = Rect(left = 1, top = 1, right = 2, bottom = 2)
-        val rectB = Rect(left = 0, top = 0, right = 2, bottom = 2)
-        RegionSubject.assertThat(rectA, timestamp = 0).coversAtLeast(rectA)
-        RegionSubject.assertThat(rectB, timestamp = 0).coversAtLeast(rectA)
+        val rectA = Rect.from(left = 1, top = 1, right = 2, bottom = 2)
+        val rectB = Rect.from(left = 0, top = 0, right = 2, bottom = 2)
+        RegionSubject.assertThat(rectA, timestamp = Timestamp.EMPTY).coversAtLeast(rectA)
+        RegionSubject.assertThat(rectB, timestamp = Timestamp.EMPTY).coversAtLeast(rectA)
         assertFail("SkRegion((0,0,2,1)(0,1,1,2))") {
-            RegionSubject.assertThat(rectA, timestamp = 0).coversAtLeast(rectB)
+            RegionSubject.assertThat(rectA, timestamp = Timestamp.EMPTY).coversAtLeast(rectB)
         }
     }
 
     @Test
     fun detectCoversAtMost() {
-        val rectA = Rect(left = 1, top = 1, right = 2, bottom = 2)
-        val rectB = Rect(left = 0, top = 0, right = 2, bottom = 2)
-        RegionSubject.assertThat(rectA, timestamp = 0).coversAtMost(rectA)
-        RegionSubject.assertThat(rectA, timestamp = 0).coversAtMost(rectB)
+        val rectA = Rect.from(left = 1, top = 1, right = 2, bottom = 2)
+        val rectB = Rect.from(left = 0, top = 0, right = 2, bottom = 2)
+        RegionSubject.assertThat(rectA, timestamp = Timestamp.EMPTY).coversAtMost(rectA)
+        RegionSubject.assertThat(rectA, timestamp = Timestamp.EMPTY).coversAtMost(rectB)
         assertFail("SkRegion((0,0,2,1)(0,1,1,2))") {
-            RegionSubject.assertThat(rectB, timestamp = 0).coversAtMost(rectA)
+            RegionSubject.assertThat(rectB, timestamp = Timestamp.EMPTY).coversAtMost(rectA)
         }
     }
 
     @Test
     fun detectCoversExactly() {
-        val rectA = Rect(left = 1, top = 1, right = 2, bottom = 2)
-        val rectB = Rect(left = 0, top = 0, right = 2, bottom = 2)
-        RegionSubject.assertThat(rectA, timestamp = 0).coversExactly(rectA)
+        val rectA = Rect.from(left = 1, top = 1, right = 2, bottom = 2)
+        val rectB = Rect.from(left = 0, top = 0, right = 2, bottom = 2)
+        RegionSubject.assertThat(rectA, timestamp = Timestamp.EMPTY).coversExactly(rectA)
         assertFail("SkRegion((0,0,2,1)(0,1,1,2))") {
-            RegionSubject.assertThat(rectA, timestamp = 0).coversExactly(rectB)
+            RegionSubject.assertThat(rectA, timestamp = Timestamp.EMPTY).coversExactly(rectB)
         }
     }
 
     @Test
     fun detectOverlaps() {
-        val rectA = Rect(left = 1, top = 1, right = 2, bottom = 2)
-        val rectB = Rect(left = 0, top = 0, right = 2, bottom = 2)
-        val rectC = Rect(left = 2, top = 2, right = 3, bottom = 3)
-        RegionSubject.assertThat(rectA, timestamp = 0).overlaps(rectB)
-        RegionSubject.assertThat(rectB, timestamp = 0).overlaps(rectA)
+        val rectA = Rect.from(left = 1, top = 1, right = 2, bottom = 2)
+        val rectB = Rect.from(left = 0, top = 0, right = 2, bottom = 2)
+        val rectC = Rect.from(left = 2, top = 2, right = 3, bottom = 3)
+        RegionSubject.assertThat(rectA, timestamp = Timestamp.EMPTY).overlaps(rectB)
+        RegionSubject.assertThat(rectB, timestamp = Timestamp.EMPTY).overlaps(rectA)
         assertFail("Overlap region: SkRegion()") {
-            RegionSubject.assertThat(rectA, timestamp = 0).overlaps(rectC)
+            RegionSubject.assertThat(rectA, timestamp = Timestamp.EMPTY).overlaps(rectC)
         }
     }
 
     @Test
     fun detectsNotOverlaps() {
-        val rectA = Rect(left = 1, top = 1, right = 2, bottom = 2)
-        val rectB = Rect(left = 2, top = 2, right = 3, bottom = 3)
-        val rectC = Rect(left = 0, top = 0, right = 2, bottom = 2)
-        RegionSubject.assertThat(rectA, timestamp = 0).notOverlaps(rectB)
-        RegionSubject.assertThat(rectB, timestamp = 0).notOverlaps(rectA)
+        val rectA = Rect.from(left = 1, top = 1, right = 2, bottom = 2)
+        val rectB = Rect.from(left = 2, top = 2, right = 3, bottom = 3)
+        val rectC = Rect.from(left = 0, top = 0, right = 2, bottom = 2)
+        RegionSubject.assertThat(rectA, timestamp = Timestamp.EMPTY).notOverlaps(rectB)
+        RegionSubject.assertThat(rectB, timestamp = Timestamp.EMPTY).notOverlaps(rectA)
         assertFail("SkRegion((1,1,2,2))") {
-            RegionSubject.assertThat(rectA, timestamp = 0).notOverlaps(rectC)
+            RegionSubject.assertThat(rectA, timestamp = Timestamp.EMPTY).notOverlaps(rectC)
         }
     }
 }

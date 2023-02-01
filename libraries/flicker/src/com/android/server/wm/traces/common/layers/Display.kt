@@ -18,20 +18,23 @@ package com.android.server.wm.traces.common.layers
 
 import com.android.server.wm.traces.common.Rect
 import com.android.server.wm.traces.common.Size
+import com.android.server.wm.traces.common.withCache
+import kotlin.js.JsName
 
-/**
- * Wrapper for DisplayProto (frameworks/native/services/surfaceflinger/layerproto/display.proto)
- */
-data class Display(
-    val id: ULong,
-    val name: String,
-    val layerStackId: Int,
-    val size: Size,
-    val layerStackSpace: Rect,
-    val transform: Transform,
-    val isVirtual: Boolean
+const val BLANK_LAYER_STACK = -1
+
+/** Wrapper for DisplayProto (frameworks/native/services/surfaceflinger/layerproto/display.proto) */
+class Display
+private constructor(
+    @JsName("id") val id: ULong,
+    @JsName("name") val name: String,
+    @JsName("layerStackId") val layerStackId: Int,
+    @JsName("size") val size: Size,
+    @JsName("layerStackSpace") val layerStackSpace: Rect,
+    @JsName("transform") val transform: Transform,
+    @JsName("isVirtual") val isVirtual: Boolean
 ) {
-    val isOff = layerStackId == BLANK_LAYER_STACK
+    @JsName("isOff") val isOff = layerStackId == BLANK_LAYER_STACK
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -60,16 +63,31 @@ data class Display(
     }
 
     companion object {
-        const val BLANK_LAYER_STACK = - 1
+        @JsName("EMPTY")
+        val EMPTY: Display
+            get() = withCache {
+                Display(
+                    id = 0.toULong(),
+                    name = "EMPTY",
+                    layerStackId = BLANK_LAYER_STACK,
+                    size = Size.EMPTY,
+                    layerStackSpace = Rect.EMPTY,
+                    transform = Transform.EMPTY,
+                    isVirtual = false
+                )
+            }
 
-        val EMPTY = Display(
-            id = 0.toULong(),
-            name = "EMPTY",
-            layerStackId = BLANK_LAYER_STACK,
-            size = Size.EMPTY,
-            layerStackSpace = Rect.EMPTY,
-            transform = Transform.EMPTY,
-            isVirtual = false
-        )
+        @JsName("from")
+        fun from(
+            id: ULong,
+            name: String,
+            layerStackId: Int,
+            size: Size,
+            layerStackSpace: Rect,
+            transform: Transform,
+            isVirtual: Boolean
+        ): Display = withCache {
+            Display(id, name, layerStackId, size, layerStackSpace, transform, isVirtual)
+        }
     }
 }

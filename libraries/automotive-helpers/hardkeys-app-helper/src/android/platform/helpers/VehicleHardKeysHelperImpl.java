@@ -31,7 +31,7 @@ import androidx.test.InstrumentationRegistry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class VehicleHardKeysHelperImpl extends AbstractAutoStandardAppHelper
+public class VehicleHardKeysHelperImpl extends AbstractStandardAppHelper
         implements IAutoVehicleHardKeysHelper {
 
     private static final String ENABLE_DRIVING_MODE =
@@ -58,6 +58,12 @@ public class VehicleHardKeysHelperImpl extends AbstractAutoStandardAppHelper
 
     /** {@inheritDoc} */
     @Override
+    public void dismissInitialDialogs() {
+        // Nothing to dismiss
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public String getPackage() {
         return "";
     }
@@ -76,42 +82,42 @@ public class VehicleHardKeysHelperImpl extends AbstractAutoStandardAppHelper
 
     /** {@inheritDoc} */
     public void pressRecieveCallKey() { // NOTYPO
-        executeShellCommand("input keyevent KEYCODE_CALL");
+        getSpectatioUiUtil().executeShellCommand("input keyevent KEYCODE_CALL");
     }
 
     /** {@inheritDoc} */
     public void pressEndCallKey() {
-        String cmd = executeShellCommand("input keyevent KEYCODE_ENDCALL");
+        getSpectatioUiUtil().executeShellCommand("input keyevent KEYCODE_ENDCALL");
     }
 
     /** {@inheritDoc} */
     public void pressMediaNextTrackKey() {
-        String cmd = executeShellCommand("input keyevent KEYCODE_MEDIA_NEXT");
+        getSpectatioUiUtil().executeShellCommand("input keyevent KEYCODE_MEDIA_NEXT");
     }
 
     /** {@inheritDoc} */
     public void pressMediaPreviousTrackKey() {
-        String cmd = executeShellCommand("input keyevent KEYCODE_MEDIA_PREVIOUS");
+        getSpectatioUiUtil().executeShellCommand("input keyevent KEYCODE_MEDIA_PREVIOUS");
     }
 
     /** {@inheritDoc} */
     public void tuneVolumeUpKey() {
-        String cmd = executeShellCommand("input keyevent KEYCODE_VOLUME_UP");
+        getSpectatioUiUtil().executeShellCommand("input keyevent KEYCODE_VOLUME_UP");
     }
 
     /** {@inheritDoc} */
     public void tuneVolumeDownKey() {
-        String cmd = executeShellCommand("input keyevent KEYCODE_VOLUME_DOWN");
+        getSpectatioUiUtil().executeShellCommand("input keyevent KEYCODE_VOLUME_DOWN");
     }
 
     /** {@inheritDoc} */
     public void pressBrightnessUpKey() {
-        String cmd = executeShellCommand("input keyevent KEYCODE_BRIGHTNESS_UP");
+        getSpectatioUiUtil().executeShellCommand("input keyevent KEYCODE_BRIGHTNESS_UP");
     }
 
     /** {@inheritDoc} */
     public void pressBrightnessDownKey() {
-        String cmd = executeShellCommand("input keyevent KEYCODE_BRIGHTNESS_DOWN");
+        getSpectatioUiUtil().executeShellCommand("input keyevent KEYCODE_BRIGHTNESS_DOWN");
     }
 
     /** {@inheritDoc} */
@@ -121,7 +127,7 @@ public class VehicleHardKeysHelperImpl extends AbstractAutoStandardAppHelper
 
     /** {@inheritDoc} */
     public void tuneMuteKey() {
-        String cmd = executeShellCommand("input keyevent KEYCODE_VOLUME_MUTE");
+        getSpectatioUiUtil().executeShellCommand("input keyevent KEYCODE_VOLUME_MUTE");
     }
 
     /** {@inheritDoc} */
@@ -167,7 +173,7 @@ public class VehicleHardKeysHelperImpl extends AbstractAutoStandardAppHelper
                 break;
         }
         String cmd = "dumpsys car_service";
-        String res = executeShellCommand(cmd);
+        String res = getSpectatioUiUtil().executeShellCommand(cmd);
         Pattern p =
                 Pattern.compile(
                         "(?s).+CarVolumeGroup.+?"
@@ -205,9 +211,9 @@ public class VehicleHardKeysHelperImpl extends AbstractAutoStandardAppHelper
         if (state == DrivingState.UNKNOWN) {
             throw new RuntimeException("State not supported");
         } else if (state == DrivingState.PARKED) {
-            executeShellCommand(ENABLE_PARKING_MODE);
+            getSpectatioUiUtil().executeShellCommand(ENABLE_PARKING_MODE);
         } else {
-            executeShellCommand(ENABLE_DRIVING_MODE);
+            getSpectatioUiUtil().executeShellCommand(ENABLE_DRIVING_MODE);
         }
     }
 
@@ -216,7 +222,7 @@ public class VehicleHardKeysHelperImpl extends AbstractAutoStandardAppHelper
         if (getDrivingState() == DrivingState.PARKED) {
             throw new RuntimeException("Car is in parking mode.");
         } else {
-            executeShellCommand(String.format(SET_SPEED, speed));
+            getSpectatioUiUtil().executeShellCommand(String.format(SET_SPEED, speed));
         }
     }
 }

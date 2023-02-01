@@ -16,9 +16,79 @@
 
 package com.android.server.wm.flicker.service.assertors
 
-import com.android.server.wm.traces.common.FlickerComponentName
+import android.content.ComponentName
+import com.android.server.wm.traces.common.ComponentNameMatcher
+import com.android.server.wm.traces.common.IComponentMatcher
+import com.android.server.wm.traces.common.transition.Transition
+import com.android.server.wm.traces.common.transition.Transition.Companion.Type.CLOSE
+import com.android.server.wm.traces.common.transition.Transition.Companion.Type.OPEN
+
+data class ComponentBuilder(val name: String, val build: (t: Transition) -> IComponentMatcher) {
+    override fun equals(other: Any?): Boolean {
+        return other is ComponentBuilder && name == other.name
+    }
+
+    override fun hashCode(): Int {
+        var result = name.hashCode()
+        return result
+    }
+}
 
 object Components {
-    val LAUNCHER = FlickerComponentName("com.google.android.apps.nexuslauncher",
-        "com.google.android.apps.nexuslauncher.NexusLauncherActivity")
+
+    val NAV_BAR = ComponentBuilder("Navbar") { ComponentNameMatcher.NAV_BAR }
+    val STATUS_BAR = ComponentBuilder("StatusBar") { ComponentNameMatcher.STATUS_BAR }
+    val LAUNCHER = ComponentBuilder("Launcher") { ComponentNameMatcher.LAUNCHER }
+
+    val OPENING_APP = ComponentBuilder("OPENING_APP") { t: Transition -> openingAppFrom(t) }
+    val CLOSING_APP = ComponentBuilder("CLOSING_APP") { t: Transition -> closingAppFrom(t) }
+
+    val EMPTY = ComponentBuilder("") { ComponentNameMatcher("", "") }
+
+    // TODO: Extract out common code between two functions below
+    private fun openingAppFrom(transition: Transition): IComponentMatcher {
+        val openingWindows = transition.changes.filter { it.transitMode == OPEN }
+
+        val windowNames = openingWindows.map { it.windowName }.distinct()
+        if (windowNames.size > 1) {
+            error(
+                "Was not expecting more than one opening windowNames got " +
+                    windowNames.joinToString()
+            )
+        }
+        if (windowNames.isEmpty()) {
+            error("No opening windows for $transition...")
+        }
+
+        // TODO: (b/231974873) use windowId instead of window name to match instead
+        val openWindowName = openingWindows.first().windowName
+        val component = ComponentName.unflattenFromString(openWindowName)
+
+        return ComponentNameMatcher(component!!.packageName, component.className)
+    }
+
+    private fun closingAppFrom(transition: Transition): IComponentMatcher {
+        val closingWindows = transition.changes.filter { it.transitMode == CLOSE }
+
+        val windowNames = closingWindows.map { it.windowName }.distinct()
+        if (windowNames.size > 1) {
+            error(
+                "Was not expecting more than one opening windowNames got " +
+                    windowNames.joinToString()
+            )
+        }
+        if (windowNames.isEmpty()) {
+            error("No closing windows for $transition...")
+        }
+
+        // TODO: (b/231974873) use windowId instead of window name to match instead
+        val closeWindowName = closingWindows.firstOrNull()?.windowName
+        val closeWindowPackage = closeWindowName?.split('/')?.get(0) ?: ""
+        val closeWindowClass = closeWindowName?.split('/')?.get(0) ?: ""
+
+        return ComponentNameMatcher(closeWindowPackage, closeWindowClass)
+    }
+
+    val byType: Map<String, ComponentBuilder> =
+        mapOf("OPENING_APP" to OPENING_APP, "CLOSING_APP" to CLOSING_APP)
 }

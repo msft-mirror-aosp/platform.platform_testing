@@ -16,26 +16,51 @@
 
 package com.android.server.wm.traces.common.windowmanager.windows
 
+import kotlin.js.JsName
+
 /**
  * Represents a task fragment in the window manager hierarchy
  *
- * This is a generic object that is reused by both Flicker and Winscope and cannot
- * access internal Java/Android functionality
- *
+ * This is a generic object that is reused by both Flicker and Winscope and cannot access internal
+ * Java/Android functionality
  */
-open class TaskFragment(
+class TaskFragment(
     override val activityType: Int,
-    val displayId: Int,
-    val minWidth: Int,
-    val minHeight: Int,
+    @JsName("displayId") val displayId: Int,
+    @JsName("minWidth") val minWidth: Int,
+    @JsName("minHeight") val minHeight: Int,
     windowContainer: WindowContainer
 ) : WindowContainer(windowContainer) {
+    @JsName("tasks")
     val tasks: Array<Task>
         get() = this.children.reversed().filterIsInstance<Task>().toTypedArray()
+    @JsName("taskFragments")
     val taskFragments: Array<TaskFragment>
         get() = this.children.reversed().filterIsInstance<TaskFragment>().toTypedArray()
+    @JsName("activities")
     val activities: Array<Activity>
         get() = this.children.reversed().filterIsInstance<Activity>().toTypedArray()
+
+    @JsName("getActivity")
+    fun getActivity(predicate: (Activity) -> Boolean): Activity? {
+        var activity: Activity? = activities.firstOrNull { predicate(it) }
+        if (activity != null) {
+            return activity
+        }
+        for (task in tasks) {
+            activity = task.getActivity(predicate)
+            if (activity != null) {
+                return activity
+            }
+        }
+        for (taskFragment in taskFragments) {
+            activity = taskFragment.getActivity(predicate)
+            if (activity != null) {
+                return activity
+            }
+        }
+        return null
+    }
 
     override fun toString(): String {
         return "${this::class.simpleName}: {$token $title} bounds=$bounds"

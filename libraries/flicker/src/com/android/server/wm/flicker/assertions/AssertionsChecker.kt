@@ -24,8 +24,8 @@ import kotlin.math.max
 /**
  * Runs sequences of assertions on sequences of subjects.
  *
- * Starting at the first assertion and first trace entry, executes the assertions iteratively
- * on the trace until all assertions and trace entries succeed.
+ * Starting at the first assertion and first trace entry, executes the assertions iteratively on the
+ * trace until all assertions and trace entries succeed.
  *
  * @param <T> trace entry type </T>
  */
@@ -33,23 +33,14 @@ class AssertionsChecker<T : FlickerSubject> {
     private val assertions = mutableListOf<CompoundAssertion<T>>()
     private var skipUntilFirstAssertion = false
 
-    /**
-     * Empty the list of assertions.
-     */
-    internal fun clear() {
-        assertions.clear()
-    }
+    internal fun isEmpty() = assertions.isEmpty()
 
-    /**
-     * Add [assertion] to a new [CompoundAssertion] block.
-     */
+    /** Add [assertion] to a new [CompoundAssertion] block. */
     fun add(name: String, isOptional: Boolean = false, assertion: Assertion<T>) {
         assertions.add(CompoundAssertion(assertion, name, isOptional))
     }
 
-    /**
-     * Append [assertion] to the last existing set of assertions.
-     */
+    /** Append [assertion] to the last existing set of assertions. */
     fun append(name: String, isOptional: Boolean = false, assertion: Assertion<T>) {
         assertions.last().add(assertion, name, isOptional)
     }
@@ -66,17 +57,15 @@ class AssertionsChecker<T : FlickerSubject> {
      * Steps through each trace entry checking if provided assertions are true in the order they are
      * added. Each assertion must be true for at least a single trace entry.
      *
+     * This can be used to check for asserting a change in property over a trace. Such as visibility
+     * for a window changes from true to false or top-most window changes from A to B and back to A
+     * again.
      *
-     * This can be used to check for asserting a change in property over a trace. Such as
-     * visibility for a window changes from true to false or top-most window changes from A to B and
-     * back to A again.
-     *
-     *
-     * It is also possible to ignore failures on initial elements, until the first assertion
-     * passes, this allows the trace to be recorded for longer periods, and the checks to happen
-     * only after some time.
+     * It is also possible to ignore failures on initial elements, until the first assertion passes,
+     * this allows the trace to be recorded for longer periods, and the checks to happen only after
+     * some time.
      */
-    private fun assertChanges(entries: List<T>) {
+    fun assertChanges(entries: List<T>) {
         if (assertions.isEmpty() || entries.isEmpty()) {
             return
         }
@@ -90,7 +79,8 @@ class AssertionsChecker<T : FlickerSubject> {
             val currentAssertion = assertions[assertionIndex]
             val currEntry = entries[entryIndex]
             try {
-                val log = "${assertionIndex + 1}/${assertions.size}:[${currentAssertion.name}]\t" +
+                val log =
+                    "${assertionIndex + 1}/${assertions.size}:[${currentAssertion.name}]\t" +
                         "Entry: ${entryIndex + 1}/${entries.size} $currEntry"
                 Log.v(FLICKER_TAG, "Checking Assertion: $log")
                 assertionTrace.add(log)
@@ -128,10 +118,9 @@ class AssertionsChecker<T : FlickerSubject> {
 
         val untestedAssertions = assertions.drop(assertionIndex + 1)
         if (failures.isEmpty() && untestedAssertions.any { !it.isOptional }) {
-            val passedAssertionsFacts = assertions.take(assertionIndex)
-                    .map { Fact.fact("Passed", it) }
-            val untestedAssertionsFacts = untestedAssertions
-                    .map { Fact.fact("Untested", it) }
+            val passedAssertionsFacts =
+                assertions.take(assertionIndex).map { Fact.fact("Passed", it) }
+            val untestedAssertionsFacts = untestedAssertions.map { Fact.fact("Untested", it) }
             val trace = assertionTrace.map { Fact.fact("Trace", it) }
             val reason = mutableListOf<Fact>()
             reason.addAll(passedAssertionsFacts)
@@ -149,5 +138,20 @@ class AssertionsChecker<T : FlickerSubject> {
      */
     fun skipUntilFirstAssertion() {
         skipUntilFirstAssertion = true
+    }
+
+    fun isEqual(other: Any?): Boolean {
+        if (
+            other !is AssertionsChecker<*> ||
+                skipUntilFirstAssertion != other.skipUntilFirstAssertion
+        ) {
+            return false
+        }
+        assertions.forEachIndexed { index, assertion ->
+            if (!assertion.isEqual(other.assertions[index])) {
+                return false
+            }
+        }
+        return true
     }
 }

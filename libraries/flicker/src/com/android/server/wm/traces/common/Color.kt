@@ -16,17 +16,21 @@
 
 package com.android.server.wm.traces.common
 
+import kotlin.js.JsName
+
 /**
  * Wrapper for ColorProto (frameworks/native/services/surfaceflinger/layerproto/common.proto)
  *
  * This class is used by flicker and Winscope
  */
-class Color(r: Float, g: Float, b: Float, val a: Float) : Color3(r, g, b) {
+class Color private constructor(r: Float, g: Float, b: Float, val a: Float) : Color3(r, g, b) {
     override val isEmpty: Boolean
         get() = a == 0f || r < 0 || g < 0 || b < 0
 
     override val isNotEmpty: Boolean
         get() = !isEmpty
+
+    @JsName("isOpaque") val isOpaque: Boolean = a == 1.0f
 
     override fun prettyPrint(): String {
         val parentPrint = super.prettyPrint()
@@ -50,6 +54,11 @@ class Color(r: Float, g: Float, b: Float, val a: Float) : Color3(r, g, b) {
     }
 
     companion object {
-        val EMPTY: Color = Color(r = -1f, g = -1f, b = -1f, a = 0f)
+        val EMPTY: Color
+            get() = withCache { Color(r = -1f, g = -1f, b = -1f, a = 0f) }
+        val DEFAULT: Color
+            get() = withCache { Color(r = 0f, g = 0f, b = 0f, a = 1f) }
+
+        fun from(r: Float, g: Float, b: Float, a: Float): Color = withCache { Color(r, g, b, a) }
     }
 }

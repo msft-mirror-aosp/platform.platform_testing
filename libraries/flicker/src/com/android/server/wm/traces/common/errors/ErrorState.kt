@@ -1,19 +1,14 @@
 package com.android.server.wm.traces.common.errors
 
 import com.android.server.wm.traces.common.ITraceEntry
-import com.android.server.wm.traces.common.prettyTimestamp
+import com.android.server.wm.traces.common.Timestamp
 
 /**
  * A state at a particular time within a trace that holds a list of errors there may be.
  * @param errors Errors contained in the state
  * @param _timestamp Timestamp of this state
  */
-class ErrorState(
-    val errors: Array<Error>,
-    _timestamp: String
-) : ITraceEntry {
-    override val timestamp: Long = _timestamp.toLong()
-
+class ErrorState(val errors: Array<Error>, override val timestamp: Timestamp) : ITraceEntry {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is ErrorState) return false
@@ -28,7 +23,8 @@ class ErrorState(
         return result
     }
 
-    override fun toString(): String = "FlickerErrorState(" +
-            "timestamp=${prettyTimestamp(timestamp)}, numberOfErrors=${errors.size} " +
+    override fun toString(): String =
+        "FlickerErrorState(" +
+            "timestamp=$timestamp}, numberOfErrors=${errors.size} " +
             "${errors.joinToString("\n") { it.assertionName }})"
 }

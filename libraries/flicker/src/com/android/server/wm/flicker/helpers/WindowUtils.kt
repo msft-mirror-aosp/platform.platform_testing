@@ -16,45 +16,42 @@
 
 package com.android.server.wm.flicker.helpers
 
-import android.content.Context
-import android.graphics.Point
 import android.graphics.Rect
-import android.view.Surface
-import android.view.WindowManager
+import androidx.collection.LruCache
 import androidx.test.platform.app.InstrumentationRegistry
 import com.android.server.wm.traces.common.layers.Display
 import com.android.server.wm.traces.common.region.Region
-
-fun Int.isRotated() = this == Surface.ROTATION_90 || this == Surface.ROTATION_270
+import com.android.server.wm.traces.common.service.PlatformConsts
+import com.android.server.wm.traces.common.windowmanager.windows.DisplayContent
+import com.android.server.wm.traces.parser.getCurrentStateDump
+import com.android.server.wm.traces.parser.toAndroidRect
 
 object WindowUtils {
-    /**
-     * Helper functions to retrieve system window sizes and positions.
-     */
-    private val context
-        get() = InstrumentationRegistry.getInstrumentation().context
+
+    private val displayBoundsCache = LruCache<PlatformConsts.Rotation, Region>(1)
+    private val instrumentation = InstrumentationRegistry.getInstrumentation()
+
+    /** Helper functions to retrieve system window sizes and positions. */
+    private val context = instrumentation.context
 
     private val resources
         get() = context.getResources()
 
-    /**
-     * Get the display bounds
-     */
+    /** Get the display bounds */
     val displayBounds: Rect
         get() {
-            val display = Point()
-            val wm = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
-            wm.defaultDisplay.getRealSize(display)
-            return Rect(0, 0, display.x, display.y)
+            val currState =
+                getCurrentStateDump(instrumentation.uiAutomation, clearCacheAfterParsing = false)
+            return currState.layerState.physicalDisplay?.layerStackSpace?.toAndroidRect() ?: Rect()
         }
 
-    /**
-     * Gets the current display rotation
-     */
-    val displayRotation: Int
+    /** Gets the current display rotation */
+    val displayRotation: PlatformConsts.Rotation
         get() {
-            val wm = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
-            return wm.defaultDisplay.rotation
+            val currState =
+                getCurrentStateDump(instrumentation.uiAutomation, clearCacheAfterParsing = false)
+
+            return currState.wmState.getRotation(PlatformConsts.DEFAULT_DISPLAY)
         }
 
     /**
@@ -62,17 +59,34 @@ object WindowUtils {
      *
      * @param requestedRotation Device rotation
      */
-    fun getDisplayBounds(requestedRotation: Int): Region {
-        val displayIsRotated = displayRotation.isRotated()
-        val requestedDisplayIsRotated = requestedRotation.isRotated()
+    fun getDisplayBounds(requestedRotation: PlatformConsts.Rotation): Region {
+        return displayBoundsCache[requestedRotation]
+            ?: let {
+                val displayIsRotated = displayRotation.isRotated()
+                val requestedDisplayIsRotated = requestedRotation.isRotated()
 
-        // if the current orientation changes with the requested rotation,
-        // flip height and width of display bounds.
-        return if (displayIsRotated != requestedDisplayIsRotated) {
-            Region.from(0, 0, displayBounds.height(), displayBounds.width())
-        } else {
-            Region.from(0, 0, displayBounds.width(), displayBounds.height())
-        }
+                // if the current orientation changes with the requested rotation,
+                // flip height and width of display bounds.
+                val displayBounds = displayBounds
+                val retval: Region
+                if (displayIsRotated != requestedDisplayIsRotated) {
+                    retval = Region.from(0, 0, displayBounds.height(), displayBounds.width())
+                } else {
+                    retval = Region.from(0, 0, displayBounds.width(), displayBounds.height())
+                }
+                displayBoundsCache.put(requestedRotation, retval)
+                return retval
+            }
+    }
+    /** Gets the status bar height with a specific display cutout. */
+    private fun getExpectedStatusBarHeight(displayContent: DisplayContent): Int {
+        val cutout = displayContent.cutout
+        val defaultSize = status_bar_height_default
+        val safeInsetTop = cutout?.insets?.top ?: 0
+        val waterfallInsetTop = cutout?.waterfallInsets?.top ?: 0
+        // The status bar height should be:
+        // Max(top cutout size, (status bar default height + waterfall top size))
+        return safeInsetTop.coerceAtLeast(defaultSize + waterfallInsetTop)
     }
 
     /**
@@ -80,15 +94,9 @@ object WindowUtils {
      *
      * @param display the main display
      */
-    fun getStatusBarPosition(display: Display): Region {
-        val resourceName = if (!display.transform.getRotation().isRotated()) {
-            "status_bar_height_portrait"
-        } else {
-            "status_bar_height_landscape"
-        }
-        val resourceId = resources.getIdentifier(resourceName, "dimen", "android")
-        val height = resources.getDimensionPixelSize(resourceId)
-        return Region.from(0, 0, display.layerStackSpace.width, height)
+    fun getExpectedStatusBarPosition(display: DisplayContent): Region {
+        val height = getExpectedStatusBarHeight(display)
+        return Region.from(0, 0, display.displayRect.width, height)
     }
 
     /**
@@ -97,22 +105,31 @@ object WindowUtils {
      * @param display the main display
      */
     fun getNavigationBarPosition(display: Display): Region {
+        return getNavigationBarPosition(display, isGesturalNavigationEnabled)
+    }
+
+    /**
+     * Gets the expected navigation bar position for a specific display
+     *
+     * @param display the main display
+     * @param isGesturalNavigation whether gestural navigation is enabled
+     */
+    fun getNavigationBarPosition(display: Display, isGesturalNavigation: Boolean): Region {
         val navBarWidth = getDimensionPixelSize("navigation_bar_width")
-        val navBarHeight = navigationBarFrameHeight
         val displayHeight = display.layerStackSpace.height
         val displayWidth = display.layerStackSpace.width
         val requestedRotation = display.transform.getRotation()
+        val navBarHeight = getNavigationBarFrameHeight(requestedRotation, isGesturalNavigation)
 
         return when {
             // nav bar is at the bottom of the screen
-            requestedRotation in listOf(Surface.ROTATION_0, Surface.ROTATION_180) ||
-                    isGesturalNavigationEnabled ->
+            !requestedRotation.isRotated() || isGesturalNavigation ->
                 Region.from(0, displayHeight - navBarHeight, displayWidth, displayHeight)
-            // nav bar is at the right side
-            requestedRotation == Surface.ROTATION_90 ->
+            // nav bar is on the right side
+            requestedRotation == PlatformConsts.Rotation.ROTATION_90 ->
                 Region.from(displayWidth - navBarWidth, 0, displayWidth, displayHeight)
-            // nav bar is at the left side
-            requestedRotation == Surface.ROTATION_270 ->
+            // nav bar is on the left side
+            requestedRotation == PlatformConsts.Rotation.ROTATION_270 ->
                 Region.from(0, 0, navBarWidth, displayHeight)
             else -> error("Unknown rotation $requestedRotation")
         }
@@ -123,7 +140,7 @@ object WindowUtils {
      *
      * @param requestedRotation Device rotation
      */
-    fun estimateNavigationBarPosition(requestedRotation: Int): Region {
+    fun estimateNavigationBarPosition(requestedRotation: PlatformConsts.Rotation): Region {
         val displayBounds = displayBounds
         val displayWidth: Int
         val displayHeight: Int
@@ -136,30 +153,28 @@ object WindowUtils {
             displayHeight = displayBounds.width()
         }
         val navBarWidth = getDimensionPixelSize("navigation_bar_width")
-        val navBarHeight = navigationBarFrameHeight
+        val navBarHeight =
+            getNavigationBarFrameHeight(requestedRotation, isGesturalNavigation = false)
 
         return when {
             // nav bar is at the bottom of the screen
-            requestedRotation in listOf(Surface.ROTATION_0, Surface.ROTATION_180) ||
-                isGesturalNavigationEnabled ->
+            !requestedRotation.isRotated() || isGesturalNavigationEnabled ->
                 Region.from(0, displayHeight - navBarHeight, displayWidth, displayHeight)
-            // nav bar is at the right side
-            requestedRotation == Surface.ROTATION_90 ->
+            // nav bar is on the right side
+            requestedRotation == PlatformConsts.Rotation.ROTATION_90 ->
                 Region.from(displayWidth - navBarWidth, 0, displayWidth, displayHeight)
-            // nav bar is at the left side
-            requestedRotation == Surface.ROTATION_270 ->
+            // nav bar is on the left side
+            requestedRotation == PlatformConsts.Rotation.ROTATION_270 ->
                 Region.from(0, 0, navBarWidth, displayHeight)
             else -> error("Unknown rotation $requestedRotation")
         }
     }
 
-    /**
-     * Checks if the device uses gestural navigation
-     */
+    /** Checks if the device uses gestural navigation */
     val isGesturalNavigationEnabled: Boolean
         get() {
-            val resourceId = resources
-                    .getIdentifier("config_navBarInteractionMode", "integer", "android")
+            val resourceId =
+                resources.getIdentifier("config_navBarInteractionMode", "integer", "android")
             return resources.getInteger(resourceId) == 2 /* NAV_BAR_MODE_GESTURAL */
         }
 
@@ -168,21 +183,40 @@ object WindowUtils {
         return resources.getDimensionPixelSize(resourceId)
     }
 
-    /**
-     * Gets the navigation bar frame height
-     */
-    val navigationBarFrameHeight: Int
+    /** Gets the navigation bar frame height */
+    fun getNavigationBarFrameHeight(
+        rotation: PlatformConsts.Rotation,
+        isGesturalNavigation: Boolean
+    ): Int {
+        return if (rotation.isRotated()) {
+            if (isGesturalNavigation) {
+                getDimensionPixelSize("navigation_bar_frame_height")
+            } else {
+                getDimensionPixelSize("navigation_bar_height_landscape")
+            }
+        } else {
+            getDimensionPixelSize("navigation_bar_frame_height")
+        }
+    }
+
+    private val status_bar_height_default: Int
         get() {
-            return getDimensionPixelSize("navigation_bar_frame_height")
+            val resourceId =
+                resources.getIdentifier("status_bar_height_default", "dimen", "android")
+            return resources.getDimensionPixelSize(resourceId)
         }
 
-    /**
-     * Split screen divider inset height
-     */
+    val quick_qs_offset_height: Int
+        get() {
+            val resourceId = resources.getIdentifier("quick_qs_offset_height", "dimen", "android")
+            return resources.getDimensionPixelSize(resourceId)
+        }
+
+    /** Split screen divider inset height */
     val dockedStackDividerInset: Int
         get() {
-            val resourceId = resources
-                    .getIdentifier("docked_stack_divider_insets", "dimen", "android")
+            val resourceId =
+                resources.getIdentifier("docked_stack_divider_insets", "dimen", "android")
             return resources.getDimensionPixelSize(resourceId)
         }
 }

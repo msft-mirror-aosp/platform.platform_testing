@@ -17,33 +17,47 @@
 package com.android.server.wm.flicker.assertions
 
 import androidx.annotation.VisibleForTesting
-import com.android.server.wm.flicker.FlickerRunResult
 import kotlin.reflect.KClass
 
-/**
- * Class containing basic data about a trace assertion for Flicker DSL
- */
-data class AssertionData @VisibleForTesting constructor(
-    /**
-     * Segment of the trace where the assertion will be applied (e.g., start, end).
-     */
-    @JvmField val tag: String,
-    /**
-     * Expected run result type
-     */
-    @JvmField val expectedSubjectClass: KClass<out FlickerSubject>,
-    /**
-     * Assertion command
-     */
-    @JvmField val assertion: FlickerSubject.() -> Unit
+/** Class containing basic data about an assertion */
+data class AssertionData
+internal constructor(
+    /** Segment of the trace where the assertion will be applied (e.g., start, end). */
+    val tag: String,
+    /** Expected run result type */
+    val expectedSubjectClass: KClass<out FlickerSubject>,
+    /** Assertion command */
+    val assertion: FlickerSubject.() -> Unit
 ) {
     /**
      * Extracts the data from the result and executes the assertion
      *
      * @param run Run to be asserted
      */
-    fun checkAssertion(run: FlickerRunResult) {
-        val subjects = run.getSubjects().firstOrNull { expectedSubjectClass.isInstance(it) }
-        subjects?.run { assertion(this) }
+    fun checkAssertion(run: SubjectsParser) {
+        val subjects = run.getSubjects(tag).filter { expectedSubjectClass.isInstance(it) }
+        if (subjects.isEmpty()) {
+            return
+        }
+        subjects.forEach { it.run { assertion(this) } }
+    }
+
+    override fun toString(): String = buildString {
+        append("AssertionData(tag='")
+        append(tag)
+        append("', expectedSubjectClass='")
+        append(expectedSubjectClass.simpleName)
+        append("', assertion='")
+        append(assertion)
+        append(")")
+    }
+
+    companion object {
+        @VisibleForTesting
+        fun newTestInstance(
+            tag: String,
+            expectedSubjectClass: KClass<out FlickerSubject>,
+            assertion: FlickerSubject.() -> Unit
+        ) = AssertionData(tag, expectedSubjectClass, assertion)
     }
 }

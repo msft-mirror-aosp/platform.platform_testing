@@ -72,13 +72,6 @@ public interface IAutoSettingHelper extends IAppHelper, Scrollable {
     void openFullSettings();
 
     /**
-     * Setup expectations: The app is open
-     *
-     * <p>Open quick settings page
-     */
-    void openQuickSettings();
-
-    /**
      * Setup expectations: The app is open and wifi setting options is selected
      *
      * @param option to turn on/off wifi
@@ -98,6 +91,13 @@ public interface IAutoSettingHelper extends IAppHelper, Scrollable {
      * @param turnOn to turn on/off Hotspot
      */
     void turnOnOffHotspot(boolean turnOn);
+
+    /**
+     * Setup expectations: The app is open.
+     *
+     * <p>Toggle on/off hotspot.
+     */
+    void toggleHotspot();
 
     /**
      * Setup expectations: The app is open.
@@ -166,22 +166,6 @@ public interface IAutoSettingHelper extends IAppHelper, Scrollable {
      * @param changeType determines to increase or decrease the value of setting.
      */
     void changeSeekbarLevel(int index, ChangeType changeType);
-
-    /**
-     * Setup expectations: quick settings facet is open.
-     *
-     * <p>set day/night mode.
-     *
-     * @param mode determines to set day mode or night mode.
-     */
-    void setDayNightMode(DayNightMode mode);
-
-    /**
-     * Setup expectations: quick settings facet is open.
-     *
-     * <p>get day/night mode status.
-     */
-    DayNightMode getDayNightModeStatus();
 
     /**
      * Setup expectations: full settings facet is open.

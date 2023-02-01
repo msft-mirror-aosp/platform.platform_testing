@@ -31,11 +31,10 @@ android_robolectric_test {
     libs: [
         "androidx.test.core",
         "androidx.test.runner",
+        "RobolectricTestUtils",
     ],
 
     instrumentation_for: "MyRoboApplication",
 
     upstream: true,
-
-    test_suites: ["general-tests"],
 }

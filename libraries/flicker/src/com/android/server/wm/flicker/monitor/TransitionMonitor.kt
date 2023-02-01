@@ -16,14 +16,11 @@
 
 package com.android.server.wm.flicker.monitor
 
-import com.android.server.wm.flicker.FlickerRunResult
 import java.nio.file.Files
 import java.nio.file.Path
 
-abstract class TransitionMonitor(
-    outputDir: Path,
-    sourceFile: Path
-) : TraceMonitor(outputDir, sourceFile) {
+abstract class TransitionMonitor(outputDir: Path, sourceFile: Path) :
+    TraceMonitor(outputDir, sourceFile) {
     /**
      * Acquires the trace generated when executing the commands defined in the [predicate].
      *
@@ -32,8 +29,9 @@ abstract class TransitionMonitor(
      */
     fun withTracing(predicate: () -> Unit): ByteArray {
         if (this.isEnabled) {
-            throw UnsupportedOperationException("Trace already running. " +
-                    "This is likely due to chained 'withTracing' calls.")
+            throw UnsupportedOperationException(
+                "Trace already running. " + "This is likely due to chained 'withTracing' calls."
+            )
         }
         try {
             this.start()
@@ -42,11 +40,7 @@ abstract class TransitionMonitor(
             this.stop()
         }
 
-        val builder = FlickerRunResult.Builder()
-        builder.setResultFrom(this)
-
-        return outputFile.let {
-            Files.readAllBytes(it).also { _ -> Files.delete(it) }
-        } ?: error("Unable to acquire trace")
+        return outputFile.let { Files.readAllBytes(it).also { _ -> Files.delete(it) } }
+            ?: error("Unable to acquire trace")
     }
 }

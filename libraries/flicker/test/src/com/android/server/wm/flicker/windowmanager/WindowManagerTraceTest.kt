@@ -16,18 +16,18 @@
 
 package com.android.server.wm.flicker.windowmanager
 
-import com.android.server.wm.flicker.readTestFile
 import com.android.server.wm.flicker.readWmTraceFromFile
-import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
+import com.android.server.wm.traces.common.Cache
 import com.android.server.wm.traces.common.windowmanager.WindowManagerState
+import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 import com.android.server.wm.traces.common.windowmanager.windows.WindowContainer
-import com.android.server.wm.traces.parser.windowmanager.WindowManagerTraceParser
 import com.google.common.truth.Truth.assertThat
 import com.google.common.truth.Truth.assertWithMessage
+import java.lang.reflect.Modifier
+import org.junit.Before
 import org.junit.FixMethodOrder
 import org.junit.Test
 import org.junit.runners.MethodSorters
-import java.lang.reflect.Modifier
 
 /**
  * Contains [WindowManagerTrace] tests. To run this test: `atest
@@ -35,63 +35,50 @@ import java.lang.reflect.Modifier
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class WindowManagerTraceTest {
-    private val trace: WindowManagerTrace by lazy {
-        readWmTraceFromFile("wm_trace_openchrome.pb")
-    }
+    private val trace
+        get() = readWmTraceFromFile("wm_trace_openchrome.pb")
 
-    @Test
-    fun canParseAllEntries() {
-        val firstEntry = trace.entries[0]
-        assertThat(firstEntry.timestamp).isEqualTo(9213763541297L)
-        assertThat(firstEntry.windowStates.size).isEqualTo(10)
-        assertThat(firstEntry.visibleWindows.size).isEqualTo(5)
-        assertThat(trace.entries[trace.entries.size - 1].timestamp)
-                .isEqualTo(9216093628925L)
+    @Before
+    fun before() {
+        Cache.clear()
     }
 
     @Test
     fun canDetectAppWindow() {
-        val appWindows = trace.getEntry(9213763541297L).appWindows
+        val appWindows = trace.getEntryByElapsedTimestamp(9213763541297L).appWindows
         assertWithMessage("Unable to detect app windows").that(appWindows.size).isEqualTo(2)
     }
 
-    @Test
-    fun canParseFromDump() {
-        val trace = try {
-            WindowManagerTraceParser.parseFromDump(
-                readTestFile("wm_trace_dump.pb"))
-        } catch (e: Exception) {
-            throw RuntimeException(e)
-        }
-        assertWithMessage("Unable to parse dump").that(trace).hasSize(1)
-    }
-
     /**
-     * Access all public methods and invokes all public getters from the object
-     * to check that all lazy properties contain valid values
+     * Access all public methods and invokes all public getters from the object to check that all
+     * lazy properties contain valid values
      */
     private fun <T> Class<T>.accessProperties(obj: Any) {
-        val propertyValues = this.declaredFields
-            .filter { Modifier.isPublic(it.modifiers) }
-            .map { kotlin.runCatching { Pair(it.name, it.get(obj)) } }
-            .filter { it.isFailure }
+        val propertyValues =
+            this.declaredFields
+                .filter { Modifier.isPublic(it.modifiers) }
+                .map { kotlin.runCatching { Pair(it.name, it.get(obj)) } }
+                .filter { it.isFailure }
 
-        assertWithMessage("The following properties could not be read: " +
-            propertyValues.joinToString("\n"))
+        assertWithMessage(
+                "The following properties could not be read: " + propertyValues.joinToString("\n")
+            )
             .that(propertyValues)
             .isEmpty()
 
-        val getterValues = this.declaredMethods
-            .filter {
-                Modifier.isPublic(it.modifiers) &&
-                    it.name.startsWith("get") &&
-                    it.parameterCount == 0
-            }
-            .map { kotlin.runCatching { Pair(it.name, it.invoke(obj)) } }
-            .filter { it.isFailure }
+        val getterValues =
+            this.declaredMethods
+                .filter {
+                    Modifier.isPublic(it.modifiers) &&
+                        it.name.startsWith("get") &&
+                        it.parameterCount == 0
+                }
+                .map { kotlin.runCatching { Pair(it.name, it.invoke(obj)) } }
+                .filter { it.isFailure }
 
-        assertWithMessage("The following methods could not be invoked: " +
-            getterValues.joinToString("\n"))
+        assertWithMessage(
+                "The following methods could not be invoked: " + getterValues.joinToString("\n")
+            )
             .that(getterValues)
             .isEmpty()
 
@@ -102,17 +89,14 @@ class WindowManagerTraceTest {
     }
 
     /**
-     * Tests if all properties of the flicker objects are accessible. This is necessary because
-     * most values are lazy initialized and only trigger errors when being accessed for the
-     * first time.
+     * Tests if all properties of the flicker objects are accessible. This is necessary because most
+     * values are lazy initialized and only trigger errors when being accessed for the first time.
      */
     @Test
     fun canAccessAllProperties() {
         arrayOf("wm_trace_activity_transition.pb", "wm_trace_openchrome2.pb").forEach { traceName ->
             val trace = readWmTraceFromFile(traceName)
-            assertWithMessage("Unable to parse dump")
-                .that(trace.entries.size)
-                .isGreaterThan(1)
+            assertWithMessage("Unable to parse dump").that(trace.entries.size).isGreaterThan(1)
 
             trace.entries.forEach { entry: WindowManagerState ->
                 entry::class.java.accessProperties(entry)
@@ -123,7 +107,7 @@ class WindowManagerTraceTest {
 
     @Test
     fun canDetectValidState() {
-        val entry = trace.getEntry(9213763541297)
+        val entry = trace.getEntryByElapsedTimestamp(9213763541297)
         assertWithMessage("${entry.timestamp}: ${entry.getIsIncompleteReason()}")
             .that(entry.isIncomplete())
             .isFalse()
@@ -131,29 +115,32 @@ class WindowManagerTraceTest {
 
     @Test
     fun canDetectInvalidState() {
-        val entry = trace.getEntry(9215511235586)
+        val entry = trace.getEntryByElapsedTimestamp(9215511235586)
         assertWithMessage("${entry.timestamp}: ${entry.getIsIncompleteReason()}")
             .that(entry.isIncomplete())
             .isTrue()
 
-        assertThat(entry.getIsIncompleteReason())
-            .contains("No resumed activities found")
+        assertThat(entry.getIsIncompleteReason()).contains("No resumed activities found")
     }
 
     @Test
-    fun canFilter() {
-        val splitWmTrace = trace.filter(9215895891561, 9216093628925)
+    fun canSlice() {
+        val trace =
+            readWmTraceFromFile(
+                "wm_trace_openchrome2.pb",
+                from = 174686204723645,
+                to = 174686640998584
+            )
 
-        assertThat(splitWmTrace).isNotEmpty()
-
-        assertThat(splitWmTrace.entries.first().timestamp).isEqualTo(9215895891561)
-        assertThat(splitWmTrace.entries.last().timestamp).isEqualTo(9216093628925)
+        assertThat(trace).isNotEmpty()
+        assertThat(trace.entries.first().timestamp.elapsedNanos).isEqualTo(174686204723645)
+        assertThat(trace.entries.last().timestamp.elapsedNanos).isEqualTo(174686640998584)
     }
 
     @Test
-    fun canFilter_wrongTimestamps() {
-        val splitWmTrace = trace.filter(71607477186189, 71607812120180)
-
-        assertThat(splitWmTrace).isEmpty()
+    fun canSliceWithWrongTimestamps() {
+        val trace =
+            readWmTraceFromFile("wm_trace_openchrome2.pb", from = 9213763541297, to = 9215895891561)
+        assertThat(trace).isEmpty()
     }
 }

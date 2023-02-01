@@ -16,36 +16,38 @@
 
 package com.android.server.wm.flicker.monitor
 
-import androidx.test.uiautomator.UiDevice
 import com.android.server.wm.nano.WindowManagerTraceFileProto
 import com.google.common.truth.Truth
+import java.nio.file.Path
 import org.junit.FixMethodOrder
 import org.junit.Test
 import org.junit.runners.MethodSorters
-import java.nio.file.Path
 
+/**
+ * Contains [WindowManagerTraceMonitor] tests. To run this test: `atest
+ * FlickerLibTest:LayersTraceMonitorTest`
+ */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class WindowManagerTraceMonitorTest : TraceMonitorTest<WindowManagerTraceMonitor>() {
-
     override fun getMonitor(outputDir: Path) = WindowManagerTraceMonitor(outputDir)
 
     override fun assertTrace(traceData: ByteArray) {
         val trace = WindowManagerTraceFileProto.parseFrom(traceData)
         Truth.assertThat(trace.magicNumber)
-                .isEqualTo(WindowManagerTraceFileProto.MAGIC_NUMBER_H.toLong() shl 32
-                        or WindowManagerTraceFileProto.MAGIC_NUMBER_L.toLong())
+            .isEqualTo(
+                WindowManagerTraceFileProto.MAGIC_NUMBER_H.toLong() shl
+                    32 or
+                    WindowManagerTraceFileProto.MAGIC_NUMBER_L.toLong()
+            )
     }
 
     @Test
     fun withWMTracing() {
         val trace = withWMTracing {
-            val device = UiDevice.getInstance(instrumentation)
             device.pressHome()
             device.pressRecentApps()
         }
 
-        Truth.assertWithMessage("Could not obtain WM trace")
-            .that(trace.entries)
-            .isNotEmpty()
+        Truth.assertWithMessage("Could not obtain WM trace").that(trace.entries).isNotEmpty()
     }
 }

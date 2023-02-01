@@ -25,30 +25,11 @@ java_test {
         enabled: false
     },
     srcs: [
-        "src/**/*.java",
-        "src/**/*.kt"
-    ],
-    static_libs: [
-        "flickerlib-core",
-        "flickerlib-helpers"
-    ],
-}
-
-java_library {
-    name: "flickerlib-core",
-    platform_apis: true,
-    optimize: {
-        enabled: false
-    },
-    srcs: [
         "src/com/android/server/wm/flicker/**/*.java",
         "src/com/android/server/wm/flicker/**/*.kt"
     ],
     java_resource_dirs: [
         "src/com/android/server/wm/flicker/service/resources/"
-    ],
-    exclude_srcs: [
-        "**/helpers/*",
     ],
     static_libs: [
         "flickerlib-helpers",
@@ -56,14 +37,13 @@ java_library {
         "ub-uiautomator",
         "androidx.test.uiautomator_uiautomator",
         "androidx.test.ext.junit",
-        "truth-prebuilt",
+        "truth",
         "launcher-helper-lib",
         "wm-proto-parsers",
         "platform-test-annotations",
         "platform-test-core-rules",
         "health-testing-utils",
         "collector-device-lib",
-        "kotlinx-coroutines-android",
     ],
 }
 
@@ -82,24 +62,32 @@ java_library {
         "app-helpers-core",
         "launcher-helper-lib",
         "wm-proto-parsers",
+        "launcher-aosp-tapl",
     ],
 }
 
 java_library {
     name: "wm-proto-parsers",
     sdk_version: "test_current",
+    kotlincflags: [
+        "-Xmulti-platform",
+        "-opt-in=kotlin.ExperimentalMultiplatform",
+    ],
     optimize: {
         enabled: false
     },
     srcs: [
-        "src/com/android/server/wm/traces/**/*.java",
-        "src/com/android/server/wm/traces/**/*.kt",
+        "src/com/android/server/wm/traces/parser/**/*.java",
+        "src/com/android/server/wm/traces/parser/**/*.kt",
+    ],
+    common_srcs: [
+        "src/com/android/server/wm/traces/common/**/*.kt",
     ],
     static_libs: [
         "android-support-annotations",
         "androidx.test.ext.junit",
         "platformprotosnano",
-        "layersprotosnano",
+        "layersprotoslite",
         "flicker-tags-proto",
     ],
 }

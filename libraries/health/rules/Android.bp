@@ -19,8 +19,11 @@ package {
 java_library {
     name: "platform-test-rules",
     static_libs: [
+        "androidx.benchmark_benchmark-common",
+        "androidx.benchmark_benchmark-macro",
+        "androidx.benchmark_benchmark-macro-junit4",
         "androidx.test.runner",
-        "androidx.test.uiautomator",
+        "androidx.test.uiautomator_uiautomator",
         "app-helpers-handheld-interfaces",
         "collector-device-lib",
         "collector-device-lib-platform",
@@ -32,6 +35,7 @@ java_library {
         "statsd-helper",
         "health-testing-utils",
         "ub-uiautomator",
+        "uiautomator-helpers",
     ],
     srcs: [
         "src/**/*.java",
@@ -43,8 +47,11 @@ java_library {
     name: "platform-test-core-rules",
     sdk_version: "test_current",
     static_libs: [
+        "androidx.benchmark_benchmark-common",
+        "androidx.benchmark_benchmark-macro",
+        "androidx.benchmark_benchmark-macro-junit4",
         "androidx.test.runner",
-        "androidx.test.uiautomator",
+        "androidx.test.uiautomator_uiautomator",
         "app-helpers-handheld-interfaces",
         "collector-device-lib",
         "collector-device-lib-platform",

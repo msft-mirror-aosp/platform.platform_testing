@@ -18,6 +18,8 @@ package com.android.server.wm.traces.common.region
 
 import com.android.server.wm.traces.common.Rect
 import com.android.server.wm.traces.common.RectF
+import com.android.server.wm.traces.common.region.Region.Companion.from
+import kotlin.js.JsName
 import kotlin.math.min
 
 /**
@@ -27,12 +29,12 @@ import kotlin.math.min
  *
  * This class is used by flicker and Winscope
  *
- * It has a single constructor and different [from] functions on its companion because JS
- * doesn't support constructor overload
+ * It has a single constructor and different [from] functions on its companion because JS doesn't
+ * support constructor overload
  */
 class Region(rects: Array<Rect> = arrayOf()) {
-    private var fBounds = Rect.EMPTY
-    private var fRunHead: RunHead? = RunHead(isEmptyHead = true)
+    @JsName("fBounds") private var fBounds = Rect.EMPTY
+    @JsName("fRunHead") private var fRunHead: RunHead? = RunHead(isEmptyHead = true)
 
     init {
         if (rects.isEmpty()) {
@@ -44,18 +46,30 @@ class Region(rects: Array<Rect> = arrayOf()) {
         }
     }
 
-    val rects get() = getRectsFromString(toString())
+    @JsName("rects")
+    val rects
+        get() = getRectsFromString(toString())
 
-    val width: Int get() = bounds.width
-    val height: Int get() = bounds.height
+    @JsName("width")
+    val width: Int
+        get() = bounds.width
+    @JsName("height")
+    val height: Int
+        get() = bounds.height
+
     // if null we are a rect not empty
-    val isEmpty: Boolean get() = fRunHead?.isEmptyHead ?: false
-    val isNotEmpty: Boolean get() = !isEmpty
-    val bounds get() = fBounds
+    @JsName("isEmpty")
+    val isEmpty: Boolean
+        get() = fRunHead?.isEmptyHead ?: false
+    @JsName("isNotEmpty")
+    val isNotEmpty: Boolean
+        get() = !isEmpty
+    @JsName("bounds")
+    val bounds
+        get() = fBounds
 
-    /**
-     * Set the region to the empty region
-     */
+    /** Set the region to the empty region */
+    @JsName("setEmpty")
     fun setEmpty(): Boolean {
         fBounds = Rect.EMPTY
         fRunHead = RunHead(isEmptyHead = true)
@@ -63,22 +77,22 @@ class Region(rects: Array<Rect> = arrayOf()) {
         return false
     }
 
-    /**
-     * Set the region to the specified region.
-     */
+    /** Set the region to the specified region. */
+    @JsName("setRegion")
     fun set(region: Region): Boolean {
         fBounds = region.fBounds.clone()
         fRunHead = region.fRunHead?.clone()
         return !(fRunHead?.isEmptyHead ?: false)
     }
 
-    /**
-     * Set the region to the specified rectangle
-     */
+    /** Set the region to the specified rectangle */
+    @JsName("set")
     fun set(r: Rect): Boolean {
-        return if (r.isEmpty ||
-            SkRegion_kRunTypeSentinel == r.right ||
-            SkRegion_kRunTypeSentinel == r.bottom) {
+        return if (
+            r.isEmpty ||
+                SkRegion_kRunTypeSentinel == r.right ||
+                SkRegion_kRunTypeSentinel == r.bottom
+        ) {
             this.setEmpty()
         } else {
             fBounds = r
@@ -87,21 +101,22 @@ class Region(rects: Array<Rect> = arrayOf()) {
         }
     }
 
-    /**
-     * Set the region to the specified rectangle
-     */
+    /** Set the region to the specified rectangle */
     operator fun set(left: Int, top: Int, right: Int, bottom: Int): Boolean {
         return set(Rect(left, top, right, bottom))
     }
 
+    @JsName("isRect")
     fun isRect(): Boolean {
         return fRunHead == null
     }
 
+    @JsName("isComplex")
     fun isComplex(): Boolean {
         return !this.isEmpty && !this.isRect()
     }
 
+    @JsName("contains")
     fun contains(x: Int, y: Int): Boolean {
         if (!fBounds.contains(x, y)) {
             return false
@@ -136,11 +151,11 @@ class Region(rects: Array<Rect> = arrayOf()) {
 
     override fun toString(): String = prettyPrint()
 
-    class Iterator(private val rgn: Region) {
-        private var done: Boolean
-        private var rect: Rect
-        private var fRuns: List<Int>? = null
-        private var fRunsIndex = 0
+    class Iterator(@JsName("rgn") private val rgn: Region) {
+        @JsName("_done") private var done: Boolean
+        @JsName("_rect") private var rect: Rect
+        @JsName("fRuns") private var fRuns: Array<Int>? = null
+        @JsName("fRunsIndex") private var fRunsIndex = 0
 
         init {
             fRunsIndex = 0
@@ -154,13 +169,13 @@ class Region(rects: Array<Rect> = arrayOf()) {
                     fRuns = null
                 } else {
                     fRuns = rgn.fRunHead!!.readonlyRuns
-                    rect = Rect(fRuns!![3], fRuns!![0],
-                        fRuns!![4], fRuns!![1])
+                    rect = Rect(fRuns!![3], fRuns!![0], fRuns!![4], fRuns!![1])
                     fRunsIndex = 5
                 }
             }
         }
 
+        @JsName("next")
         fun next() {
             if (done) {
                 return
@@ -190,8 +205,7 @@ class Region(rects: Array<Rect> = arrayOf()) {
 
                     assert_sentinel(runs[runsIndex + 2], false)
                     assert_sentinel(runs[runsIndex + 3], false)
-                    rect =
-                        Rect(runs[runsIndex + 2], rect.top, runs[runsIndex + 3], runs[runsIndex])
+                    rect = Rect(runs[runsIndex + 2], rect.top, runs[runsIndex + 3], runs[runsIndex])
                     runsIndex += 4
                 } else { // end of rgn
                     done = true
@@ -200,15 +214,18 @@ class Region(rects: Array<Rect> = arrayOf()) {
             fRunsIndex = runsIndex
         }
 
+        @JsName("done")
         fun done(): Boolean {
             return done
         }
 
+        @JsName("rect")
         fun rect(): Rect {
             return rect
         }
     }
 
+    @JsName("prettyPrint")
     fun prettyPrint(): String {
         val iter = Iterator(this)
         val result = StringBuilder("SkRegion(")
@@ -224,31 +241,41 @@ class Region(rects: Array<Rect> = arrayOf()) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is Region) return false
-        if (!super.equals(other)) return false
         if (!rects.contentEquals(other.rects)) return false
         return true
     }
 
     override fun hashCode(): Int {
-        var result = super.hashCode()
-        result = 31 * result + rects.contentHashCode()
+        var result = 1
+        val iter = Iterator(this)
+        while (!iter.done()) {
+            result = 31 * result + iter.rect().hashCode()
+            iter.next()
+        }
         return result
     }
 
     // the native values for these must match up with the enum in SkRegion.h
     enum class Op(val nativeInt: Int) {
-        DIFFERENCE(0), INTERSECT(1), UNION(2), XOR(3),
-        REVERSE_DIFFERENCE(4), REPLACE(5);
+        DIFFERENCE(0),
+        INTERSECT(1),
+        UNION(2),
+        XOR(3),
+        REVERSE_DIFFERENCE(4),
+        REPLACE(5)
     }
 
+    @JsName("union")
     fun union(r: Rect): Boolean {
         return op(r, Op.UNION)
     }
 
+    @JsName("toRectF")
     fun toRectF(): RectF {
         return bounds.toRectF()
     }
 
+    @JsName("oper")
     private fun oper(rgnA: Region, rgnB: Region, op: Op): Boolean {
         // simple cases
         when (op) {
@@ -276,8 +303,9 @@ class Region(rects: Array<Rect> = arrayOf()) {
             }
             Op.INTERSECT -> {
                 when {
-                    rgnA.isEmpty || rgnB.isEmpty
-                        || rgnA.bounds.intersection(rgnB.bounds).isEmpty -> {
+                    rgnA.isEmpty ||
+                        rgnB.isEmpty ||
+                        rgnA.bounds.intersection(rgnB.bounds).isEmpty -> {
                         this.setEmpty()
                         return false
                     }
@@ -337,25 +365,26 @@ class Region(rects: Array<Rect> = arrayOf()) {
     }
 
     class RunArray {
-        private val kRunArrayStackCount = 256
-        var runs: MutableList<Int> = MutableList(kRunArrayStackCount) { 0 }
-        private var fCount: Int = kRunArrayStackCount
+        @JsName("kRunArrayStackCount") private val kRunArrayStackCount = 256
+        @JsName("runs") var runs: Array<Int> = Array(kRunArrayStackCount) { 0 }
+        @JsName("fCount") private var fCount: Int = kRunArrayStackCount
 
-        val count: Int get() = fCount
+        @JsName("count")
+        val count: Int
+            get() = fCount
 
         operator fun get(i: Int): Int {
             return runs[i]
         }
 
+        @JsName("resizeToAtLeast")
         fun resizeToAtLeast(_count: Int) {
             var count = _count
             if (count > fCount) {
                 // leave at least 50% extra space for future growth.
                 count += count shr 1
-                val newRuns = MutableList(count) { 0 }
-                runs.forEachIndexed { index, value ->
-                    newRuns[index] = value
-                }
+                val newRuns = Array(count) { 0 }
+                runs.forEachIndexed { index, value -> newRuns[index] = value }
                 runs = newRuns
                 fCount = count
             }
@@ -365,6 +394,7 @@ class Region(rects: Array<Rect> = arrayOf()) {
             runs[i] = value
         }
 
+        @JsName("subList")
         fun subList(startIndex: Int, stopIndex: Int): RunArray {
             val subRuns = RunArray()
             subRuns.resizeToAtLeast(this.fCount)
@@ -374,26 +404,29 @@ class Region(rects: Array<Rect> = arrayOf()) {
             return subRuns
         }
 
+        @JsName("clone")
         fun clone(): RunArray {
             val clone = RunArray()
-            clone.runs = runs.toMutableList()
+            clone.runs = runs.copyOf()
             clone.fCount = fCount
             return clone
         }
     }
 
     /**
-     * Set this region to the result of performing the Op on the specified
-     * regions. Return true if the result is not empty.
+     * Set this region to the result of performing the Op on the specified regions. Return true if
+     * the result is not empty.
      */
+    @JsName("opRegions")
     fun op(rgnA: Region, rgnB: Region, op: Op): Boolean {
         return this.oper(rgnA, rgnB, op)
     }
 
-    private fun getRuns(): List<Int> {
-        val runs: List<Int>
+    @JsName("getRuns")
+    private fun getRuns(): Array<Int> {
+        val runs: Array<Int>
         if (this.isEmpty) {
-            runs = MutableList(kRectRegionRuns) { 0 }
+            runs = Array(kRectRegionRuns) { 0 }
             runs[0] = SkRegion_kRunTypeSentinel
         } else if (this.isRect()) {
             runs = buildRectRuns(fBounds)
@@ -404,8 +437,9 @@ class Region(rects: Array<Rect> = arrayOf()) {
         return runs
     }
 
-    private fun buildRectRuns(bounds: Rect): List<Int> {
-        val runs = MutableList(kRectRegionRuns) { 0 }
+    @JsName("buildRectRuns")
+    private fun buildRectRuns(bounds: Rect): Array<Int> {
+        val runs = Array(kRectRegionRuns) { 0 }
         runs[0] = bounds.top
         runs[1] = bounds.bottom
         runs[2] = 1 // 1 interval for this scanline
@@ -416,12 +450,14 @@ class Region(rects: Array<Rect> = arrayOf()) {
         return runs
     }
 
-    class RunHead(val isEmptyHead: Boolean = false) {
+    class RunHead(@JsName("isEmptyHead") val isEmptyHead: Boolean = false) {
+        @JsName("setRuns")
         fun setRuns(runs: RunArray, count: Int) {
             this.runs = runs
             this.fRunCount = count
         }
 
+        @JsName("computeRunBounds")
         fun computeRunBounds(): Rect {
             var runsIndex = 0
             val top = runs[runsIndex]
@@ -469,9 +505,10 @@ class Region(rects: Array<Rect> = arrayOf()) {
             fYSpanCount = ySpanCount
             fIntervalCount = intervalCount
 
-            return Rect(left, top, right, bot)
+            return Rect.from(left, top, right, bot)
         }
 
+        @JsName("clone")
         fun clone(): RunHead {
             val clone = RunHead(isEmptyHead)
             clone.fIntervalCount = fIntervalCount
@@ -482,13 +519,14 @@ class Region(rects: Array<Rect> = arrayOf()) {
         }
 
         /**
-         *  Return the scanline that contains the Y value. This requires that the Y
-         *  value is already known to be contained within the bounds of the region,
-         *  and so this routine never returns nullptr.
+         * Return the scanline that contains the Y value. This requires that the Y value is already
+         * known to be contained within the bounds of the region, and so this routine never returns
+         * nullptr.
          *
-         *  It returns the beginning of the scanline, starting with its Bottom value.
+         * It returns the beginning of the scanline, starting with its Bottom value.
          */
-        fun findScanline(y: Int): List<Int> {
+        @JsName("findScanline")
+        fun findScanline(y: Int): Array<Int> {
             val runs = readonlyRuns
 
             // if the top-check fails, we didn't do a quick check on the bounds
@@ -503,16 +541,25 @@ class Region(rects: Array<Rect> = arrayOf()) {
                 if (y < bottom) {
                     break
                 }
-                runsIndex = SkipEntireScanline(runsIndex)
+                runsIndex = skipEntireScanline(runsIndex)
             }
-            return runs.subList(runsIndex, runs.size - runsIndex)
+
+            val newArray = Array(runs.size - runsIndex) { 0 }
+            runs.copyInto(
+                newArray,
+                destinationOffset = 0,
+                startIndex = runsIndex,
+                endIndex = runs.size - runsIndex
+            )
+            return newArray
         }
 
         /**
-         *  Given a scanline (including its Bottom value at runs[0]), return the next
-         *  scanline. Asserts that there is one (i.e. runs[0] < Sentinel)
+         * Given a scanline (including its Bottom value at runs[0]), return the next scanline.
+         * Asserts that there is one (i.e. runs[0] < Sentinel)
          */
-        fun SkipEntireScanline(_runsIndex: Int): Int {
+        @JsName("SkipEntireScanline")
+        fun skipEntireScanline(_runsIndex: Int): Int {
             var runsIndex = _runsIndex
             // we are not the Y Sentinel
             require(runs[runsIndex] < SkRegion_kRunTypeSentinel)
@@ -530,9 +577,11 @@ class Region(rects: Array<Rect> = arrayOf()) {
         var runs = RunArray()
         var fRunCount: Int = 0
 
-        val readonlyRuns: List<Int> get() = runs.runs
+        val readonlyRuns: Array<Int>
+            get() = runs.runs
     }
 
+    @JsName("setRuns")
     private fun setRuns(runs: RunArray, _count: Int): Boolean {
         require(_count > 0)
 
@@ -581,12 +630,12 @@ class Region(rects: Array<Rect> = arrayOf()) {
                 // kill empty last span
                 trimmedRuns[stopIndex - 4] = SkRegion_kRunTypeSentinel
                 stopIndex -= 3
-                assert_sentinel(runs[stopIndex - 1], true)    // last y-sentinel
-                assert_sentinel(runs[stopIndex - 2], true)    // last x-sentinel
-                assert_sentinel(runs[stopIndex - 3], false)   // last right
-                assert_sentinel(runs[stopIndex - 4], false)   // last left
-                assert_sentinel(runs[stopIndex - 5], false)   // last interval-count
-                assert_sentinel(runs[stopIndex - 6], false)   // last bottom
+                assert_sentinel(runs[stopIndex - 1], true) // last y-sentinel
+                assert_sentinel(runs[stopIndex - 2], true) // last x-sentinel
+                assert_sentinel(runs[stopIndex - 3], false) // last right
+                assert_sentinel(runs[stopIndex - 4], false) // last left
+                assert_sentinel(runs[stopIndex - 5], false) // last interval-count
+                assert_sentinel(runs[stopIndex - 6], false) // last bottom
                 trimmedRuns = trimmedRuns.subList(startIndex, stopIndex)
             }
 
@@ -622,9 +671,13 @@ class Region(rects: Array<Rect> = arrayOf()) {
         return true
     }
 
+    @JsName("setRect")
     private fun setRect(r: Rect): Boolean {
-        if (r.isEmpty || SkRegion_kRunTypeSentinel == r.right ||
-            SkRegion_kRunTypeSentinel == r.bottom) {
+        if (
+            r.isEmpty ||
+                SkRegion_kRunTypeSentinel == r.right ||
+                SkRegion_kRunTypeSentinel == r.bottom
+        ) {
             return this.setEmpty()
         }
         fBounds = r
@@ -632,41 +685,48 @@ class Region(rects: Array<Rect> = arrayOf()) {
         return true
     }
 
+    @JsName("isRunCountEmpty")
     private fun isRunCountEmpty(count: Int): Boolean {
         return count <= 2
     }
 
+    @JsName("runsAreARect")
     private fun runsAreARect(runs: RunArray, count: Int): Boolean {
         require(count >= kRectRegionRuns)
 
         if (count == kRectRegionRuns) {
             assert_sentinel(runs[1], false) // bottom
             require(1 == runs[2])
-            assert_sentinel(runs[3], false)    // left
-            assert_sentinel(runs[4], false)    // right
+            assert_sentinel(runs[3], false) // left
+            assert_sentinel(runs[4], false) // right
             assert_sentinel(runs[5], true)
             assert_sentinel(runs[6], true)
 
-            require(runs[0] < runs[1])    // valid height
-            require(runs[3] < runs[4])    // valid width
+            require(runs[0] < runs[1]) // valid height
+            require(runs[3] < runs[4]) // valid width
 
             return true
         }
         return false
     }
 
-    class RgnOper(var top: Int, private val runArray: RunArray, op: Op) {
-        private val fMin = gOpMinMax[op]!!.min
-        private val fMax = gOpMinMax[op]!!.max
+    class RgnOper(
+        @JsName("top") var top: Int,
+        @JsName("runArray") private val runArray: RunArray,
+        op: Op
+    ) {
+        @JsName("fMin") private val fMin = gOpMinMax[op]!!.min
+        @JsName("fMax") private val fMax = gOpMinMax[op]!!.max
 
-        private var fStartDst = 0
-        private var fPrevDst = 1
-        private var fPrevLen = 0
+        @JsName("fStartDst") private var fStartDst = 0
+        @JsName("fPrevDst") private var fPrevDst = 1
+        @JsName("fPrevLen") private var fPrevLen = 0
 
+        @JsName("addSpan")
         fun addSpan(
             bottom: Int,
-            aRuns: List<Int>,
-            bRuns: List<Int>,
+            aRuns: Array<Int>,
+            bRuns: Array<Int>,
             aRunsIndex: Int,
             bRunsIndex: Int
         ) {
@@ -681,9 +741,12 @@ class Region(rects: Array<Rect> = arrayOf()) {
 
             // Assert memcmp won't exceed fArray->count().
             require(runArray.count >= start + len - 1)
-            if (fPrevLen == len &&
-                (1 == len || runArray.subList(fPrevDst, fPrevDst + len).runs
-                    == runArray.subList(start, start + len).runs)) {
+            if (
+                fPrevLen == len &&
+                    (1 == len ||
+                        runArray.subList(fPrevDst, fPrevDst + len).runs ==
+                            runArray.subList(start, start + len).runs)
+            ) {
                 // update Y value
                 runArray[fPrevDst - 2] = bottom
             } else { // accept the new span
@@ -698,6 +761,7 @@ class Region(rects: Array<Rect> = arrayOf()) {
             }
         }
 
+        @JsName("flush")
         fun flush(): Int {
             runArray[fStartDst] = top
             // Previously reserved enough for TWO sentinals.
@@ -707,21 +771,21 @@ class Region(rects: Array<Rect> = arrayOf()) {
         }
 
         class SpanRect(
-            private val aRuns: List<Int>,
-            private val bRuns: List<Int>,
+            @JsName("aRuns") private val aRuns: Array<Int>,
+            @JsName("bRuns") private val bRuns: Array<Int>,
             aIndex: Int,
             bIndex: Int
         ) {
-            var fLeft: Int = 0
-            var fRight: Int = 0
-            var fInside: Int = 0
+            @JsName("fLeft") var fLeft: Int = 0
+            @JsName("fRight") var fRight: Int = 0
+            @JsName("fInside") var fInside: Int = 0
 
-            var fALeft: Int
-            var fARight: Int
-            var fBLeft: Int
-            var fBRight: Int
-            var fARuns: Int
-            var fBRuns: Int
+            @JsName("fALeft") var fALeft: Int
+            @JsName("fARight") var fARight: Int
+            @JsName("fBLeft") var fBLeft: Int
+            @JsName("fBRight") var fBRight: Int
+            @JsName("fARuns") var fARuns: Int
+            @JsName("fBRuns") var fBRuns: Int
 
             init {
                 fALeft = aRuns[aIndex]
@@ -732,16 +796,17 @@ class Region(rects: Array<Rect> = arrayOf()) {
                 fBRuns = bIndex + 2
             }
 
+            @JsName("done")
             fun done(): Boolean {
                 require(fALeft <= SkRegion_kRunTypeSentinel)
                 require(fBLeft <= SkRegion_kRunTypeSentinel)
-                return fALeft == SkRegion_kRunTypeSentinel &&
-                    fBLeft == SkRegion_kRunTypeSentinel
+                return fALeft == SkRegion_kRunTypeSentinel && fBLeft == SkRegion_kRunTypeSentinel
             }
 
+            @JsName("next")
             fun next() {
-                var inside = 0
-                var left = 0
+                val inside: Int
+                val left: Int
                 var right = 0
                 var aFlush = false
                 var bFlush = false
@@ -813,9 +878,10 @@ class Region(rects: Array<Rect> = arrayOf()) {
             }
         }
 
+        @JsName("operateOnSpan")
         private fun operateOnSpan(
-            a_runs: List<Int>,
-            b_runs: List<Int>,
+            a_runs: Array<Int>,
+            b_runs: Array<Int>,
             a_run_index: Int,
             b_run_index: Int,
             array: RunArray,
@@ -825,8 +891,11 @@ class Region(rects: Array<Rect> = arrayOf()) {
         ): Int {
             // This is a worst-case for this span plus two for TWO terminating sentinels.
             array.resizeToAtLeast(
-                dstOffset + distance_to_sentinel(a_runs, a_run_index) +
-                    distance_to_sentinel(b_runs, b_run_index) + 2)
+                dstOffset +
+                    distance_to_sentinel(a_runs, a_run_index) +
+                    distance_to_sentinel(b_runs, b_run_index) +
+                    2
+            )
             var dstIndex = dstOffset
 
             val rec = SpanRect(a_runs, b_runs, a_run_index, b_run_index)
@@ -839,8 +908,9 @@ class Region(rects: Array<Rect> = arrayOf()) {
                 val right = rec.fRight
 
                 // add left,right to our dst buffer (checking for coincidence
-                if ((rec.fInside - min).toUInt() <= (max - min).toUInt() &&
-                    left < right) { // skip if equal
+                if (
+                    (rec.fInside - min).toUInt() <= (max - min).toUInt() && left < right
+                ) { // skip if equal
                     if (firstInterval || array[dstIndex - 1] < left) {
                         array[dstIndex] = left
                         dstIndex++
@@ -859,7 +929,8 @@ class Region(rects: Array<Rect> = arrayOf()) {
             return dstIndex // dst - &(*array)[0]
         }
 
-        private fun distance_to_sentinel(runs: List<Int>, startIndex: Int): Int {
+        @JsName("distance_to_sentinel")
+        private fun distance_to_sentinel(runs: Array<Int>, startIndex: Int): Int {
             var index = startIndex
             if (runs.size <= index) {
                 println("We fucked up...")
@@ -875,9 +946,10 @@ class Region(rects: Array<Rect> = arrayOf()) {
         }
     }
 
+    @JsName("operate")
     private fun operate(
-        aRuns: List<Int>,
-        bRuns: List<Int>,
+        aRuns: Array<Int>,
+        bRuns: Array<Int>,
         dst: RunArray,
         op: Op,
         _aRunsIndex: Int = 0,
@@ -898,17 +970,18 @@ class Region(rects: Array<Rect> = arrayOf()) {
         aRunsIndex++ // skip the intervalCount
         bRunsIndex++ // skip the intervalCount
 
-        val gEmptyScanline: List<Int> = listOf(
-            0, // fake bottom value
-            0, // zero intervals
-            SkRegion_kRunTypeSentinel,
-            // just need a 2nd value, since spanRec.init() reads 2 values, even
-            // though if the first value is the sentinel, it ignores the 2nd value.
-            // w/o the 2nd value here, we might read uninitialized memory.
-            // This happens when we are using gSentinel, which is pointing at
-            // our sentinel value.
-            0
-        )
+        val gEmptyScanline: Array<Int> =
+            arrayOf(
+                0, // fake bottom value
+                0, // zero intervals
+                SkRegion_kRunTypeSentinel,
+                // just need a 2nd value, since spanRec.init() reads 2 values, even
+                // though if the first value is the sentinel, it ignores the 2nd value.
+                // w/o the 2nd value here, we might read uninitialized memory.
+                // This happens when we are using gSentinel, which is pointing at
+                // our sentinel value.
+                0
+            )
         val gSentinel = 2
 
         // Now aRuns and bRuns to their intervals (or sentinel)
@@ -1005,93 +1078,138 @@ class Region(rects: Array<Rect> = arrayOf()) {
         return oper.flush()
     }
 
-    private fun skipIntervals(runs: List<Int>, index: Int): Int {
+    @JsName("skipIntervals")
+    private fun skipIntervals(runs: Array<Int>, index: Int): Int {
         val intervals = runs[index - 1]
         return index + intervals * 2 + 1
     }
 
     /**
-     * Perform the specified Op on this region and the specified region. Return
-     * true if the result of the op is not empty.
+     * Perform the specified Op on this region and the specified region. Return true if the result
+     * of the op is not empty.
      */
+    @JsName("opRegion")
     fun op(region: Region, op: Op): Boolean {
         return op(this, region, op)
     }
 
     /**
-     * Perform the specified Op on this region and the specified rect. Return
-     * true if the result of the op is not empty.
+     * Perform the specified Op on this region and the specified rect. Return true if the result of
+     * the op is not empty.
      */
+    @JsName("op")
     fun op(left: Int, top: Int, right: Int, bottom: Int, op: Op): Boolean {
         return op(Rect(left, top, right, bottom), op)
     }
 
     /**
-     * Perform the specified Op on this region and the specified rect. Return
-     * true if the result of the op is not empty.
+     * Perform the specified Op on this region and the specified rect. Return true if the result of
+     * the op is not empty.
      */
+    @JsName("opRect")
     fun op(r: Rect, op: Op): Boolean {
         return op(from(r), op)
     }
 
     /**
-     * Set this region to the result of performing the Op on the specified rect
-     * and region. Return true if the result is not empty.
+     * Set this region to the result of performing the Op on the specified rect and region. Return
+     * true if the result is not empty.
      */
+    @JsName("opAndSetRegion")
     fun op(rect: Rect, region: Region, op: Op): Boolean {
         return op(from(rect), region, op)
     }
 
+    @JsName("minus")
     fun minus(other: Region): Region {
         val thisRegion = from(this)
-        thisRegion.op(other, Region.Op.XOR)
+        thisRegion.op(other, Op.XOR)
         return thisRegion
     }
 
+    @JsName("coversAtMost")
+    fun coversAtMost(testRegion: Region): Boolean {
+        val testRect = testRegion.bounds
+        val intersection = from(this)
+        return intersection.op(testRect, Op.INTERSECT) && !intersection.op(this, Op.XOR)
+    }
+
+    @JsName("coversAtLeast")
+    fun coversAtLeast(testRegion: Region): Boolean {
+        val intersection = from(this)
+        return intersection.op(testRegion, Op.INTERSECT) && !intersection.op(testRegion, Op.XOR)
+    }
+
+    @JsName("coversMoreThan")
+    fun coversMoreThan(testRegion: Region): Boolean {
+        return coversAtLeast(testRegion) && from(this).minus(testRegion).isNotEmpty
+    }
+
+    @JsName("outOfBoundsRegion")
+    fun outOfBoundsRegion(testRegion: Region): Region {
+        val testRect = testRegion.bounds
+        val outOfBoundsRegion = from(this)
+        outOfBoundsRegion.op(testRect, Op.INTERSECT) && outOfBoundsRegion.op(this, Op.XOR)
+        return outOfBoundsRegion
+    }
+
+    @JsName("uncoveredRegion")
+    fun uncoveredRegion(testRegion: Region): Region {
+        val uncoveredRegion = from(this)
+        uncoveredRegion.op(testRegion, Op.INTERSECT) && uncoveredRegion.op(testRegion, Op.XOR)
+        return uncoveredRegion
+    }
+
     companion object {
-        val EMPTY get() = Region()
+        @JsName("EMPTY")
+        val EMPTY: Region
+            get() = Region()
 
-        const val SkRegion_kRunTypeSentinel = 0x7FFFFFFF
+        @JsName("SkRegion_kRunTypeSentinel") const val SkRegion_kRunTypeSentinel = 0x7FFFFFFF
 
-        const val kRectRegionRuns = 7
+        @JsName("kRectRegionRuns") const val kRectRegionRuns = 7
 
         class MinMax(val min: Int, val max: Int)
 
-        val gOpMinMax = mapOf(
-            Op.DIFFERENCE to MinMax(1, 1),
-            Op.INTERSECT to MinMax(3, 3),
-            Op.UNION to MinMax(1, 3),
-            Op.XOR to MinMax(1, 2)
-        )
+        @JsName("gOpMinMax")
+        val gOpMinMax =
+            mapOf(
+                Op.DIFFERENCE to MinMax(1, 1),
+                Op.INTERSECT to MinMax(3, 3),
+                Op.UNION to MinMax(1, 3),
+                Op.XOR to MinMax(1, 2)
+            )
 
-        fun from(
-            left: Int,
-            top: Int,
-            right: Int,
-            bottom: Int
-        ): Region = from(Rect(left, top, right, bottom))
+        @JsName("from")
+        fun from(left: Int, top: Int, right: Int, bottom: Int): Region =
+            from(Rect(left, top, right, bottom))
 
-        fun from(region: Region): Region = Region().also { it.set(region) }
+        @JsName("fromRegion") fun from(region: Region): Region = Region().also { it.set(region) }
 
-        fun from(rect: Rect? = null): Region = Region().also {
-            it.fRunHead = null
-            it.setRect(rect ?: Rect.EMPTY)
-        }
+        @JsName("fromRect")
+        fun from(rect: Rect? = null): Region =
+            Region().also {
+                it.fRunHead = null
+                it.setRect(rect ?: Rect.EMPTY)
+            }
 
-        fun from(rect: RectF?): Region = from(rect?.toRect())
+        @JsName("fromRectF") fun from(rect: RectF?): Region = from(rect?.toRect())
 
-        fun from(): Region = from(Rect.EMPTY)
+        @JsName("fromEmpty") fun from(): Region = from(Rect.EMPTY)
 
+        @JsName("SkRegionValueIsSentinel")
         private fun SkRegionValueIsSentinel(value: Int): Boolean {
             return value == SkRegion_kRunTypeSentinel
         }
 
+        @JsName("assert_sentinel")
         private fun assert_sentinel(value: Int, isSentinel: Boolean) {
             require(SkRegionValueIsSentinel(value) == isSentinel)
         }
 
+        @JsName("getRectsFromString")
         private fun getRectsFromString(regionString: String): Array<Rect> {
-            val rects: ArrayList<Rect> = ArrayList()
+            val rects = mutableListOf<Rect>()
 
             if (regionString == "SkRegion()") {
                 return rects.toTypedArray()

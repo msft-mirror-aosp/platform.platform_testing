@@ -17,24 +17,22 @@
 package com.android.server.wm.traces.common.layers
 
 import com.android.server.wm.traces.common.ITrace
+import kotlin.js.JsName
 
 /**
  * Contains a collection of parsed Layers trace entries and assertions to apply over a single entry.
  *
  * Each entry is parsed into a list of [LayerTraceEntry] objects.
  *
- * This is a generic object that is reused by both Flicker and Winscope and cannot
- * access internal Java/Android functionality
- *
+ * This is a generic object that is reused by both Flicker and Winscope and cannot access internal
+ * Java/Android functionality
  */
-data class LayersTrace(
-    override val entries: Array<BaseLayerTraceEntry>
-) : ITrace<BaseLayerTraceEntry>, List<BaseLayerTraceEntry> by entries.toList() {
-    constructor(entry: BaseLayerTraceEntry): this(arrayOf(entry))
+data class LayersTrace(override val entries: Array<BaseLayerTraceEntry>) :
+    ITrace<BaseLayerTraceEntry>, List<BaseLayerTraceEntry> by entries.toList() {
+    constructor(entry: BaseLayerTraceEntry) : this(arrayOf(entry))
 
     override fun toString(): String {
-        return "LayersTrace(Start: ${entries.firstOrNull()}, " +
-            "End: ${entries.lastOrNull()})"
+        return "LayersTrace(Start: ${entries.firstOrNull()}, " + "End: ${entries.lastOrNull()})"
     }
 
     override fun equals(other: Any?): Boolean {
@@ -47,22 +45,15 @@ data class LayersTrace(
     }
 
     override fun hashCode(): Int {
-        var result = entries.contentHashCode()
-        return result
+        return entries.contentHashCode()
     }
 
-    /**
-     * Split the trace by the start and end timestamp.
-     *
-     * @param from the start timestamp
-     * @param to the end timestamp
-     * @return the subtrace trace(from, to)
-     */
-    fun filter(from: Long, to: Long): LayersTrace {
+    @JsName("vSyncSlice")
+    fun vSyncSlice(from: Int, to: Int): LayersTrace {
         return LayersTrace(
             this.entries
-                .dropWhile { it.timestamp < from }
-                .dropLastWhile { it.timestamp > to }
+                .dropWhile { it.vSyncId < from }
+                .dropLastWhile { it.vSyncId > to }
                 .toTypedArray()
         )
     }

@@ -17,6 +17,7 @@
 package android.platform.test.longevity;
 
 import static com.google.common.truth.Truth.assertThat;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.argThat;
 import static org.mockito.Mockito.atLeastOnce;
@@ -32,12 +33,9 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import android.os.Bundle;
 import android.platform.test.rule.TestWatcher;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.junit.Assert;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -54,6 +52,9 @@ import org.junit.runners.model.Statement;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.exceptions.base.MockitoAssertionError;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /** Unit tests for the {@link LongevityClassRunner}. */
 public class LongevityClassRunnerTest {

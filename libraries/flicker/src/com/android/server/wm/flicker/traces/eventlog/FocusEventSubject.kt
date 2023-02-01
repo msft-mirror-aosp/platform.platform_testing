@@ -18,28 +18,28 @@ package com.android.server.wm.flicker.traces.eventlog
 
 import com.android.server.wm.flicker.assertions.FlickerSubject
 import com.android.server.wm.flicker.traces.FlickerFailureStrategy
+import com.android.server.wm.traces.common.Timestamp
+import com.android.server.wm.traces.common.events.FocusEvent
 import com.google.common.truth.Fact
 import com.google.common.truth.FailureMetadata
 import com.google.common.truth.StandardSubjectBuilder
+import com.google.common.truth.Subject.Factory
 
 class FocusEventSubject(
     fm: FailureMetadata,
     val event: FocusEvent,
     override val parent: EventLogSubject?
 ) : FlickerSubject(fm, event) {
-    override val timestamp: Long get() = 0
+    override val timestamp: Timestamp
+        get() = event.timestamp
     override val selfFacts by lazy { listOf(Fact.simpleFact(event.toString())) }
 
     fun hasFocus() {
-        check("Does not have focus")
-            .that(event.hasFocus())
-            .isTrue()
+        check("Has focus").that(event.hasFocus()).isTrue()
     }
 
     fun hasNotFocus() {
-        check("Does not have focus")
-            .that(event.hasFocus())
-            .isFalse()
+        check("Has focus").that(event.hasFocus()).isFalse()
     }
 
     companion object {
@@ -50,8 +50,9 @@ class FocusEventSubject(
          */
         private fun getFactory(
             trace: EventLogSubject? = null
-        ): Factory<FocusEventSubject, FocusEvent> =
-            Factory { fm, subject -> FocusEventSubject(fm, subject, trace) }
+        ): Factory<FocusEventSubject, FocusEvent> = Factory { fm, subject ->
+            FocusEventSubject(fm, subject, trace)
+        }
 
         /**
          * User-defined entry point
@@ -63,9 +64,10 @@ class FocusEventSubject(
         @JvmOverloads
         fun assertThat(event: FocusEvent, trace: EventLogSubject? = null): FocusEventSubject {
             val strategy = FlickerFailureStrategy()
-            val subject = StandardSubjectBuilder.forCustomFailureStrategy(strategy)
-                .about(getFactory(trace))
-                .that(event) as FocusEventSubject
+            val subject =
+                StandardSubjectBuilder.forCustomFailureStrategy(strategy)
+                    .about(getFactory(trace))
+                    .that(event) as FocusEventSubject
             strategy.init(subject)
             return subject
         }

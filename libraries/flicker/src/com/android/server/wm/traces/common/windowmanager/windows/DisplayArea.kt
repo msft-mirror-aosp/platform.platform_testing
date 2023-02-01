@@ -16,29 +16,39 @@
 
 package com.android.server.wm.traces.common.windowmanager.windows
 
+import com.android.server.wm.traces.common.IComponentMatcher
+import kotlin.js.JsName
+
 /**
  * Represents a display area in the window manager hierarchy
  *
- * This is a generic object that is reused by both Flicker and Winscope and cannot
- * access internal Java/Android functionality
- *
+ * This is a generic object that is reused by both Flicker and Winscope and cannot access internal
+ * Java/Android functionality
  */
-open class DisplayArea(
-    val isTaskDisplayArea: Boolean,
+class DisplayArea(
+    @JsName("isTaskDisplayArea") val isTaskDisplayArea: Boolean,
     windowContainer: WindowContainer
 ) : WindowContainer(windowContainer) {
+    @JsName("activities")
     val activities: Array<Activity>
-        get() = if (isTaskDisplayArea) {
-            this.collectDescendants()
-        } else {
-            emptyArray()
-        }
+        get() =
+            if (isTaskDisplayArea) {
+                this.collectDescendants()
+            } else {
+                emptyArray()
+            }
 
-    fun containsActivity(activityName: String): Boolean {
+    /**
+     * @return if [componentMatcher] matches any activity
+     *
+     * @param componentMatcher Components to search
+     */
+    @JsName("containsActivity")
+    fun containsActivity(componentMatcher: IComponentMatcher): Boolean {
         return if (!isTaskDisplayArea) {
             false
         } else {
-            activities.any { it.title == activityName }
+            componentMatcher.activityMatchesAnyOf(activities)
         }
     }
 

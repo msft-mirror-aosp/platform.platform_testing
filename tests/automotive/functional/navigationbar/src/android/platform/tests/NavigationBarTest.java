@@ -91,9 +91,4 @@ public class NavigationBarTest {
         mNotificationHelper.get().open();
         assertTrue("Notification did not open.", mNotificationHelper.get().isAppInForeground());
     }
-
-    @Test
-    public void testQuickSetting() {
-        mSettingHelper.get().openQuickSettings();
-    }
 }

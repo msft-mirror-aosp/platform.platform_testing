@@ -16,25 +16,32 @@
 
 package com.android.server.wm.traces.common
 
+import kotlin.js.JsName
+
 /**
  * Wrapper for FloatRectProto (frameworks/native/services/surfaceflinger/layerproto/layers.proto)
  *
  * This class is used by flicker and Winscope
  */
-data class RectF(
-    val left: Float = 0f,
-    val top: Float = 0f,
-    val right: Float = 0f,
-    val bottom: Float = 0f
+class RectF
+private constructor(
+    @JsName("left") val left: Float = 0f,
+    @JsName("top") val top: Float = 0f,
+    @JsName("right") val right: Float = 0f,
+    @JsName("bottom") val bottom: Float = 0f
 ) {
-    val height: Float get() = bottom - top
-    val width: Float get() = right - left
+    @JsName("height")
+    val height: Float
+        get() = bottom - top
+    @JsName("width")
+    val width: Float
+        get() = right - left
 
-    /**
-     * Returns true if the rectangle is empty (left >= right or top >= bottom)
-     */
+    /** Returns true if the rectangle is empty (left >= right or top >= bottom) */
+    @JsName("isEmpty")
     val isEmpty: Boolean
         get() = width <= 0f || height <= 0f
+    @JsName("isNotEmpty")
     val isNotEmpty: Boolean
         get() = !isEmpty
 
@@ -43,22 +50,29 @@ data class RectF(
      *
      * All fractional parts are rounded to 0
      */
+    @JsName("toRect")
     fun toRect(): Rect {
-        return Rect(left.toInt(), top.toInt(), right.toInt(), bottom.toInt())
+        return Rect.from(left.toInt(), top.toInt(), right.toInt(), bottom.toInt())
     }
 
     /**
-     * Returns true iff the specified rectangle r is inside or equal to this
-     * rectangle. An empty rectangle never contains another rectangle.
+     * Returns true iff the specified rectangle r is inside or equal to this rectangle. An empty
+     * rectangle never contains another rectangle.
      *
      * @param r The rectangle being tested for containment.
      * @return true iff the specified rectangle r is inside or equal to this
+     * ```
      *              rectangle
+     * ```
      */
     operator fun contains(r: RectF): Boolean {
         // check for empty first
-        return this.left < this.right && this.top < this.bottom && // now check for containment
-                left <= r.left && top <= r.top && right >= r.right && bottom >= r.bottom
+        return this.left < this.right &&
+            this.top < this.bottom && // now check for containment
+            left <= r.left &&
+            top <= r.top &&
+            right >= r.right &&
+            bottom >= r.bottom
     }
 
     /**
@@ -66,30 +80,28 @@ data class RectF(
      *
      * @param crop The crop that should be applied to this layer
      */
+    @JsName("crop")
     fun crop(crop: RectF): RectF {
         val newLeft = maxOf(left, crop.left)
         val newTop = maxOf(top, crop.top)
         val newRight = minOf(right, crop.right)
         val newBottom = minOf(bottom, crop.bottom)
-        return RectF(newLeft, newTop, newRight, newBottom)
+        return from(newLeft, newTop, newRight, newBottom)
     }
 
     /**
-     * If the rectangle specified by left,top,right,bottom intersects this
-     * rectangle, return true and set this rectangle to that intersection,
-     * otherwise return false and do not change this rectangle. No check is
-     * performed to see if either rectangle is empty. Note: To just test for
+     * If the rectangle specified by left,top,right,bottom intersects this rectangle, return true
+     * and set this rectangle to that intersection, otherwise return false and do not change this
+     * rectangle. No check is performed to see if either rectangle is empty. Note: To just test for
      * intersection, use intersects()
      *
-     * @param left The left side of the rectangle being intersected with this
-     * rectangle
+     * @param left The left side of the rectangle being intersected with this rectangle
      * @param top The top of the rectangle being intersected with this rectangle
-     * @param right The right side of the rectangle being intersected with this
-     * rectangle.
-     * @param bottom The bottom of the rectangle being intersected with this
-     * rectangle.
+     * @param right The right side of the rectangle being intersected with this rectangle.
+     * @param bottom The bottom of the rectangle being intersected with this rectangle.
      * @return A rectangle with the intersection coordinates
      */
+    @JsName("intersection")
     fun intersection(left: Float, top: Float, right: Float, bottom: Float): RectF {
         if (this.left < right && left < this.right && this.top <= bottom && top <= this.bottom) {
             var intersectionLeft = this.left
@@ -109,22 +121,24 @@ data class RectF(
             if (this.bottom > bottom) {
                 intersectionBottom = bottom
             }
-            return RectF(intersectionLeft, intersectionTop, intersectionRight, intersectionBottom)
+            return from(intersectionLeft, intersectionTop, intersectionRight, intersectionBottom)
         }
         return EMPTY
     }
 
     /**
-     * If the specified rectangle intersects this rectangle, return true and set
-     * this rectangle to that intersection, otherwise return false and do not
-     * change this rectangle. No check is performed to see if either rectangle
-     * is empty. To just test for intersection, use intersects()
+     * If the specified rectangle intersects this rectangle, return true and set this rectangle to
+     * that intersection, otherwise return false and do not change this rectangle. No check is
+     * performed to see if either rectangle is empty. To just test for intersection, use
+     * intersects()
      *
      * @param r The rectangle being intersected with this rectangle.
      * @return A rectangle with the intersection coordinates
      */
+    @JsName("intersectionWithRect")
     fun intersection(r: RectF): RectF = intersection(r.left, r.top, r.right, r.bottom)
 
+    @JsName("prettyPrint")
     fun prettyPrint(): String =
         if (isEmpty) {
             "[empty]"
@@ -159,6 +173,13 @@ data class RectF(
     }
 
     companion object {
-        val EMPTY: RectF = RectF()
+        @JsName("EMPTY")
+        val EMPTY: RectF
+            get() = withCache { RectF() }
+
+        @JsName("from")
+        fun from(left: Float, top: Float, right: Float, bottom: Float): RectF = withCache {
+            RectF(left, top, right, bottom)
+        }
     }
 }

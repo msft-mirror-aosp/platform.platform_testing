@@ -16,49 +16,58 @@
 
 package com.android.server.wm.traces.common
 
+import kotlin.js.JsName
+
 /**
  * Wrapper for RectProto
+ * ```
  *     - frameworks/native/services/surfaceflinger/layerproto/common.proto and
  *     - frameworks/base/core/proto/android/graphics/rect.proto
- *
+ * ```
  * This class is used by flicker and Winscope
  */
-open class Rect(
-    val left: Int = 0,
-    val top: Int = 0,
-    val right: Int = 0,
-    val bottom: Int = 0
+open class Rect
+internal constructor(
+    @JsName("left") val left: Int = 0,
+    @JsName("top") val top: Int = 0,
+    @JsName("right") val right: Int = 0,
+    @JsName("bottom") val bottom: Int = 0
 ) {
-    val height: Int get() = bottom - top
-    val width: Int get() = right - left
-    fun centerX(): Int = (left + right) / 2
-    fun centerY(): Int = (top + bottom) / 2
-    /**
-     * Returns true if the rectangle is empty (left >= right or top >= bottom)
-     */
-    val isEmpty: Boolean = width <= 0 || height <= 0
+    @JsName("height")
+    val height: Int
+        get() = bottom - top
+    @JsName("width")
+    val width: Int
+        get() = right - left
+    @JsName("centerX") fun centerX(): Int = (left + right) / 2
+    @JsName("centerY") fun centerY(): Int = (top + bottom) / 2
+    /** Returns true if the rectangle is empty (left >= right or top >= bottom) */
+    @JsName("isEmpty")
+    open val isEmpty: Boolean
+        get() = width <= 0 || height <= 0
 
-    val isNotEmpty: Boolean = !isEmpty
+    @JsName("isNotEmpty")
+    val isNotEmpty: Boolean
+        get() = !isEmpty
 
-    /**
-     * Returns a [RectF] version fo this rectangle.
-     */
+    /** Returns a [RectF] version fo this rectangle. */
+    @JsName("toRectF")
     fun toRectF(): RectF {
-        return RectF(left.toFloat(), top.toFloat(), right.toFloat(), bottom.toFloat())
+        return RectF.from(left.toFloat(), top.toFloat(), right.toFloat(), bottom.toFloat())
     }
 
-    open fun prettyPrint(): String =
-        if (isEmpty) "[empty]" else "($left, $top) - ($right, $bottom)"
-
-    override fun equals(other: Any?): Boolean = other?.toString() == this.toString()
+    @JsName("prettyPrint")
+    fun prettyPrint(): String = if (isEmpty) "[empty]" else "($left, $top) - ($right, $bottom)"
 
     /**
-     * Returns true iff the specified rectangle r is inside or equal to this
-     * rectangle. An empty rectangle never contains another rectangle.
+     * Returns true iff the specified rectangle r is inside or equal to this rectangle. An empty
+     * rectangle never contains another rectangle.
      *
      * @param rect The rectangle being tested for containment.
      * @return true iff the specified rectangle r is inside or equal to this
+     * ```
      *              rectangle
+     * ```
      */
     operator fun contains(rect: Rect): Boolean {
         val thisRect = toRectF()
@@ -71,37 +80,39 @@ open class Rect(
      *
      * @param crop The crop that should be applied to this layer
      */
+    @JsName("crop")
     fun crop(crop: Rect): Rect {
         val newLeft = maxOf(left, crop.left)
         val newTop = maxOf(top, crop.top)
         val newRight = minOf(right, crop.right)
         val newBottom = minOf(bottom, crop.bottom)
-        return Rect(newLeft, newTop, newRight, newBottom)
+        return from(newLeft, newTop, newRight, newBottom)
     }
 
-    /** Returns true if: fLeft <= x < fRight && fTop <= y < fBottom.
-    Returns false if SkIRect is empty.
-
-    Considers input to describe constructed SkIRect: (x, y, x + 1, y + 1) and
-    returns true if constructed area is completely enclosed by SkIRect area.
-
-    @param x  test SkIPoint x-coordinate
-    @param y  test SkIPoint y-coordinate
-    @return   true if (x, y) is inside SkIRect
+    /**
+     * Returns true if: fLeft <= x < fRight && fTop <= y < fBottom. Returns false if SkIRect is
+     * empty.
+     *
+     * Considers input to describe constructed SkIRect: (x, y, x + 1, y + 1) and returns true if
+     * constructed area is completely enclosed by SkIRect area.
+     *
+     * @param x test SkIPoint x-coordinate @param y test SkIPoint y-coordinate @return true if (x,
+     * y) is inside SkIRect
      */
     fun contains(x: Int, y: Int): Boolean {
         return x in left until right && y in top until bottom
     }
 
     /**
-     * If the specified rectangle intersects this rectangle, return true and set
-     * this rectangle to that intersection, otherwise return false and do not
-     * change this rectangle. No check is performed to see if either rectangle
-     * is empty. To just test for intersection, use intersects()
+     * If the specified rectangle intersects this rectangle, return true and set this rectangle to
+     * that intersection, otherwise return false and do not change this rectangle. No check is
+     * performed to see if either rectangle is empty. To just test for intersection, use
+     * intersects()
      *
      * @param rect The rectangle being intersected with this rectangle.
      * @return A rectangle with the intersection coordinates
      */
+    @JsName("intersection")
     fun intersection(rect: Rect): Rect {
         val thisRect = toRectF()
         val otherRect = rect.toRectF()
@@ -118,11 +129,31 @@ open class Rect(
 
     override fun toString(): String = prettyPrint()
 
+    @JsName("clone")
     fun clone(): Rect {
-        return if (this == EMPTY) EMPTY else Rect(left, top, right, bottom)
+        return from(left, top, right, bottom)
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is Rect) return false
+
+        if (left != other.left) return false
+        if (top != other.top) return false
+        if (right != other.right) return false
+        if (bottom != other.bottom) return false
+
+        return true
     }
 
     companion object {
-        val EMPTY: Rect = Rect()
+        @JsName("EMPTY")
+        val EMPTY: Rect
+            get() = withCache { Rect() }
+
+        @JsName("from")
+        fun from(left: Int, top: Int, right: Int, bottom: Int): Rect = withCache {
+            Rect(left, top, right, bottom)
+        }
     }
 }

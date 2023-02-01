@@ -19,13 +19,10 @@ package com.android.server.wm.traces.common.windowmanager.windows
 /**
  * Represents the root window container in the window manager hierarchy
  *
- * This is a generic object that is reused by both Flicker and Winscope and cannot
- * access internal Java/Android functionality
- *
+ * This is a generic object that is reused by both Flicker and Winscope and cannot access internal
+ * Java/Android functionality
  */
-open class RootWindowContainer(
-    windowContainer: WindowContainer
-) : WindowContainer(windowContainer) {
+class RootWindowContainer(windowContainer: WindowContainer) : WindowContainer(windowContainer) {
     override fun toString(): String {
         return "${this::class.simpleName}: {$token $title}"
     }

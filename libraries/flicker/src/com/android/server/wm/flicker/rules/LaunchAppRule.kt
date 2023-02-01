@@ -21,34 +21,52 @@ import android.util.Log
 import androidx.test.platform.app.InstrumentationRegistry
 import com.android.server.wm.flicker.FLICKER_TAG
 import com.android.server.wm.flicker.helpers.StandardAppHelper
-import com.android.server.wm.traces.common.FlickerComponentName
+import com.android.server.wm.traces.common.ComponentNameMatcher
 import com.android.server.wm.traces.parser.windowmanager.WindowManagerStateHelper
+import com.android.server.wm.traces.parser.withPerfettoTrace
 import org.junit.rules.TestWatcher
 import org.junit.runner.Description
 
 /**
- * Launched an app before the test
+ * Launches an app before the test
  *
  * @param instrumentation Instrumentation mechanism to use
  * @param wmHelper WM/SF synchronization helper
  * @param appHelper App to launch
+ * @param clearCacheAfterParsing If the caching used while parsing the proto should be
+ * ```
+ *                               cleared or remain in memory
+ * ```
  */
-class LaunchAppRule @JvmOverloads constructor(
+class LaunchAppRule
+@JvmOverloads
+constructor(
     private val appHelper: StandardAppHelper,
     private val instrumentation: Instrumentation = appHelper.mInstrumentation,
-    private val wmHelper: WindowManagerStateHelper = WindowManagerStateHelper()
+    private val clearCacheAfterParsing: Boolean = true,
+    private val wmHelper: WindowManagerStateHelper =
+        WindowManagerStateHelper(clearCacheAfterParsing = clearCacheAfterParsing)
 ) : TestWatcher() {
     @JvmOverloads
     constructor(
-        component: FlickerComponentName,
+        componentMatcher: ComponentNameMatcher,
         appName: String = "",
         instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation(),
-        wmHelper: WindowManagerStateHelper = WindowManagerStateHelper()
-    ): this(StandardAppHelper(instrumentation, appName, component), instrumentation, wmHelper)
+        clearCache: Boolean = true,
+        wmHelper: WindowManagerStateHelper =
+            WindowManagerStateHelper(clearCacheAfterParsing = clearCache)
+    ) : this(
+        StandardAppHelper(instrumentation, appName, componentMatcher),
+        instrumentation,
+        clearCache,
+        wmHelper
+    )
 
     override fun starting(description: Description?) {
-        Log.v(FLICKER_TAG, "Launching app $appHelper")
-        appHelper.launchViaIntent()
-        appHelper.exit(wmHelper)
+        withPerfettoTrace("LaunchAppRule:finished") {
+            Log.v(FLICKER_TAG, "Launching app $appHelper")
+            appHelper.launchViaIntent()
+            appHelper.exit(wmHelper)
+        }
     }
 }

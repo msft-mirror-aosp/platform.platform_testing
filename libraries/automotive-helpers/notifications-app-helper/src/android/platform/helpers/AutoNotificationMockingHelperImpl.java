@@ -27,18 +27,16 @@ import android.app.PendingIntent;
 import android.app.Person;
 import android.content.Context;
 import android.os.SystemClock;
-import android.support.test.uiautomator.By;
+import android.platform.spectatio.exceptions.MissingUiElementException;
 import android.support.test.uiautomator.BySelector;
 import android.support.test.uiautomator.UiObject2;
 
-import java.util.List;
 import java.util.ArrayList;
-import java.util.stream.Collectors;
+import java.util.List;
 
-public class AutoNotificationMockingHelperImpl extends AbstractAutoStandardAppHelper
+/** Helper for creating mock notifications on Automotive device */
+public class AutoNotificationMockingHelperImpl extends AbstractStandardAppHelper
         implements IAutoNotificationMockingHelper {
-
-    private static final int UI_RESPONSE_WAIT_MS = 5000;
 
     private static final String NOTIFICATION_CHANNEL_ID = "auto_test_channel_id";
     private static final String NOTIFICATION_CHANNEL_NAME = "Test Channel";
@@ -52,6 +50,16 @@ public class AutoNotificationMockingHelperImpl extends AbstractAutoStandardAppHe
 
     private NotificationManager mNotificationManager;
 
+    private enum ScrollActions {
+        USE_BUTTON,
+        USE_GESTURE;
+    }
+
+    private enum ScrollDirection {
+        VERTICAL,
+        HORIZONTAL;
+    }
+
     public AutoNotificationMockingHelperImpl(Instrumentation instr) {
         super(instr);
         mNotificationManager = instr.getContext().getSystemService(NotificationManager.class);
@@ -62,27 +70,36 @@ public class AutoNotificationMockingHelperImpl extends AbstractAutoStandardAppHe
                         NotificationManager.IMPORTANCE_HIGH);
         mNotificationManager.createNotificationChannel(channel);
         NOTIFICATION_REQUIRED_FIELDS.add(
-                getResourceFromConfig(
-                        AutoConfigConstants.NOTIFICATIONS,
-                        AutoConfigConstants.EXPANDED_NOTIFICATIONS_SCREEN,
-                        AutoConfigConstants.APP_ICON));
+                getUiElementFromConfig(AutomotiveConfigConstants.APP_ICON));
         NOTIFICATION_REQUIRED_FIELDS.add(
-                getResourceFromConfig(
-                        AutoConfigConstants.NOTIFICATIONS,
-                        AutoConfigConstants.EXPANDED_NOTIFICATIONS_SCREEN,
-                        AutoConfigConstants.NOTIFICATION_TITLE));
+                getUiElementFromConfig(AutomotiveConfigConstants.NOTIFICATION_TITLE));
         NOTIFICATION_REQUIRED_FIELDS.add(
-                getResourceFromConfig(
-                        AutoConfigConstants.NOTIFICATIONS,
-                        AutoConfigConstants.EXPANDED_NOTIFICATIONS_SCREEN,
-                        AutoConfigConstants.NOTIFICATION_BODY));
+                getUiElementFromConfig(AutomotiveConfigConstants.NOTIFICATION_BODY));
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String getLauncherName() {
+        throw new UnsupportedOperationException("Operation not supported.");
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String getPackage() {
+        throw new UnsupportedOperationException("Operation not supported.");
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void dismissInitialDialogs() {
+        // Nothing to dismiss
     }
 
     /** {@inheritDoc} */
     @Override
     public void postNotifications(int count) {
         postNotifications(count, null);
-        SystemClock.sleep(UI_RESPONSE_WAIT_MS);
+        getSpectatioUiUtil().wait1Second();
         assertTrue(
                 "Notification does not have all required fields",
                 checkNotificationRequiredFieldsExist(NOTIFICATION_TITLE_TEXT));
@@ -128,17 +145,66 @@ public class AutoNotificationMockingHelperImpl extends AbstractAutoStandardAppHe
                     String.format("Unable to find notification with title %s", title));
         }
         for (BySelector selector : NOTIFICATION_REQUIRED_FIELDS) {
-            UiObject2 obj = findUiObject(selector);
+            UiObject2 obj = getSpectatioUiUtil().findUiObject(selector);
             if (obj == null) {
-                throw new RuntimeException("Unable to find required notification field");
+                throw new RuntimeException(
+                        String.format(
+                                "Unable to find required notification field %s",
+                                selector.toString()));
             }
         }
         return true;
     }
 
     private boolean checkNotificationExists(String title) {
-        executeShellCommand(getApplicationConfig(AutoConfigConstants.OPEN_NOTIFICATIONS_COMMAND));
-        UiObject2 postedNotification = findUiObject(By.text(title));
+        getSpectatioUiUtil()
+                .executeShellCommand(
+                        getCommandFromConfig(AutomotiveConfigConstants.OPEN_NOTIFICATIONS_COMMAND));
+
+        UiObject2 postedNotification;
+        try {
+            ScrollActions scrollAction =
+                    ScrollActions.valueOf(
+                            getActionFromConfig(
+                                    AutomotiveConfigConstants.NOTIFICATION_LIST_SCROLL_ACTION));
+            switch (scrollAction) {
+                case USE_BUTTON:
+                    BySelector forwardButtonSelector =
+                            getUiElementFromConfig(
+                                    AutomotiveConfigConstants.NOTIFICATION_LIST_SCROLL_FORWARD);
+                    BySelector backwardButtonSelector =
+                            getUiElementFromConfig(
+                                    AutomotiveConfigConstants.NOTIFICATION_LIST_SCROLL_BACKWARD);
+                    postedNotification =
+                            getSpectatioUiUtil()
+                                    .scrollAndFindUiObject(
+                                            forwardButtonSelector, backwardButtonSelector, title);
+                    break;
+                case USE_GESTURE:
+                    BySelector scrollElementSelector =
+                            getUiElementFromConfig(AutomotiveConfigConstants.NOTIFICATION_LIST);
+                    ScrollDirection scrollDirection =
+                            ScrollDirection.valueOf(
+                                    getActionFromConfig(
+                                            AutomotiveConfigConstants
+                                                    .NOTIFICATION_LIST_SCROLL_DIRECTION));
+                    postedNotification =
+                            getSpectatioUiUtil()
+                                    .scrollAndFindUiObject(
+                                            scrollElementSelector,
+                                            title,
+                                            (scrollDirection == ScrollDirection.VERTICAL));
+                    break;
+                default:
+                    throw new IllegalStateException(
+                            String.format(
+                                    "Cannot scroll through notification list. Unknown Scroll Action"
+                                            + " %s.",
+                                    scrollAction));
+            }
+        } catch (MissingUiElementException ex) {
+            throw new RuntimeException("Unable to scroll through notification list ", ex);
+        }
         return postedNotification != null;
     }
 
@@ -155,19 +221,9 @@ public class AutoNotificationMockingHelperImpl extends AbstractAutoStandardAppHe
                             context,
                             0,
                             context.getPackageManager().getLaunchIntentForPackage(pkg),
-                            android.content.Intent.FLAG_ACTIVITY_NEW_TASK));
+                            android.content.Intent.FLAG_ACTIVITY_NEW_TASK
+                                    | PendingIntent.FLAG_IMMUTABLE));
         }
         return builder;
-    }
-
-    private List<UiObject2> getNotificationStack() {
-        List<UiObject2> objects =
-                findUiObjects(
-                        getResourceFromConfig(
-                                AutoConfigConstants.NOTIFICATIONS,
-                                AutoConfigConstants.EXPANDED_NOTIFICATIONS_SCREEN,
-                                AutoConfigConstants.CARD_VIEW),
-                        NOTIFICATION_DEPTH);
-        return objects.stream().map(o -> o.getParent().getParent()).collect(Collectors.toList());
     }
 }

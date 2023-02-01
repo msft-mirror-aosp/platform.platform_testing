@@ -19,17 +19,16 @@ package android.platform.tests;
 import static junit.framework.Assert.assertTrue;
 
 import android.platform.helpers.AutoConfigConstants;
-import android.platform.helpers.AutoUtility;
 import android.platform.helpers.HelperAccessor;
 import android.platform.helpers.IAutoLockScreenHelper;
 import android.platform.helpers.IAutoLockScreenHelper.LockType;
 import android.platform.helpers.IAutoSecuritySettingsHelper;
 import android.platform.helpers.IAutoSettingHelper;
+
 import androidx.test.runner.AndroidJUnit4;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -47,11 +46,6 @@ public class LockScreenTest {
         mSecuritySettingsHelper = new HelperAccessor<>(IAutoSecuritySettingsHelper.class);
         mLockScreenHelper = new HelperAccessor<>(IAutoLockScreenHelper.class);
         mSettingHelper = new HelperAccessor<>(IAutoSettingHelper.class);
-    }
-
-    @BeforeClass
-    public static void exitSuw() {
-        AutoUtility.exitSuw();
     }
 
     @Before

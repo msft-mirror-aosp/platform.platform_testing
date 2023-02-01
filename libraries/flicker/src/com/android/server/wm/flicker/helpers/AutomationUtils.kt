@@ -24,8 +24,6 @@ import android.os.RemoteException
 import android.os.SystemClock
 import android.util.Log
 import android.util.Rational
-import android.view.Display
-import android.view.Surface
 import android.view.View
 import android.view.ViewConfiguration
 import androidx.annotation.VisibleForTesting
@@ -37,8 +35,9 @@ import androidx.test.uiautomator.Until
 import com.android.compatibility.common.util.SystemUtil
 import com.android.server.wm.flicker.helpers.WindowUtils.displayBounds
 import com.android.server.wm.flicker.helpers.WindowUtils.estimateNavigationBarPosition
-import com.android.server.wm.traces.common.FlickerComponentName
+import com.android.server.wm.traces.common.ComponentNameMatcher
 import com.android.server.wm.traces.common.WindowManagerConditionsFactory
+import com.android.server.wm.traces.common.service.PlatformConsts
 import com.android.server.wm.traces.parser.toAndroidRect
 import com.android.server.wm.traces.parser.windowmanager.WindowManagerStateHelper
 import org.junit.Assert
@@ -46,61 +45,45 @@ import org.junit.Assert.assertNotNull
 
 const val FIND_TIMEOUT: Long = 10000
 const val FAST_WAIT_TIMEOUT: Long = 0
-const val DOCKED_STACK_DIVIDER = "DockedStackDivider"
+val DOCKED_STACK_DIVIDER = ComponentNameMatcher("", "DockedStackDivider")
 const val IME_PACKAGE = "com.google.android.inputmethod.latin"
-@VisibleForTesting
-const val SYSTEMUI_PACKAGE = "com.android.systemui"
+@VisibleForTesting const val SYSTEMUI_PACKAGE = "com.android.systemui"
 private val LONG_PRESS_TIMEOUT = ViewConfiguration.getLongPressTimeout() * 2L
 private const val TAG = "FLICKER"
 
 /**
  * Sets [android.app.UiAutomation.waitForIdle] global timeout to 0 causing the
- * [android.app.UiAutomation.waitForIdle] function to timeout instantly. This
- * removes some delays when using the UIAutomator library required to create fast UI
- * transitions.
+ * [android.app.UiAutomation.waitForIdle] function to timeout instantly. This removes some delays
+ * when using the UIAutomator library required to create fast UI transitions.
  */
 fun setFastWait() {
     Configurator.getInstance().waitForIdleTimeout = FAST_WAIT_TIMEOUT
 }
 
-/**
- * Reverts [android.app.UiAutomation.waitForIdle] to default behavior.
- */
+/** Reverts [android.app.UiAutomation.waitForIdle] to default behavior. */
 fun setDefaultWait() {
     Configurator.getInstance().waitForIdleTimeout = FIND_TIMEOUT
 }
 
-/**
- * Checks if the device is running on gestural or 2-button navigation modes
- */
+/** Checks if the device is running on gestural or 2-button navigation modes */
 fun UiDevice.isQuickstepEnabled(): Boolean {
     val enabled = this.findObject(By.res(SYSTEMUI_PACKAGE, "recent_apps")) == null
     Log.d(TAG, "Quickstep enabled: $enabled")
     return enabled
 }
 
-/**
- * Checks if the display is rotated or not
- */
+/** Checks if the display is rotated or not */
 fun UiDevice.isRotated(): Boolean {
-    return this.displayRotation.isRotated()
+    return PlatformConsts.Rotation.getByValue(this.displayRotation).isRotated()
 }
 
-/**
- * Reopens the first device window from the list of recent apps (overview)
- */
-fun UiDevice.reopenAppFromOverview(
-    wmHelper: WindowManagerStateHelper
-) {
+/** Reopens the first device window from the list of recent apps (overview) */
+fun UiDevice.reopenAppFromOverview(wmHelper: WindowManagerStateHelper) {
     val x = this.displayWidth / 2
     val y = this.displayHeight / 2
     this.click(x, y)
 
-    wmHelper.waitFor(
-        WindowManagerConditionsFactory.isAppTransitionIdle(Display.DEFAULT_DISPLAY),
-        WindowManagerConditionsFactory.isLayerVisible(FlickerComponentName.SNAPSHOT).negate(),
-        WindowManagerConditionsFactory.isLayerVisible(FlickerComponentName.SPLASH_SCREEN).negate()
-    )
+    wmHelper.StateSyncBuilder().withAppTransitionIdle().waitFor()
 }
 
 /**
@@ -108,20 +91,20 @@ fun UiDevice.reopenAppFromOverview(
  *
  * @throws AssertionError When quickstep does not appear
  */
-fun UiDevice.openQuickstep(
-    wmHelper: WindowManagerStateHelper
-) {
+fun UiDevice.openQuickstep(wmHelper: WindowManagerStateHelper) {
     if (this.isQuickstepEnabled()) {
         val navBar = this.findObject(By.res(SYSTEMUI_PACKAGE, "navigation_bar_frame"))
-        val navBarVisibleBounds: Rect
 
         // TODO(vishnun) investigate why this object cannot be found.
-        navBarVisibleBounds = if (navBar != null) {
-            navBar.visibleBounds
-        } else {
-            Log.e(TAG, "Could not find nav bar, infer location")
-            estimateNavigationBarPosition(Surface.ROTATION_0).bounds.toAndroidRect()
-        }
+        val navBarVisibleBounds: Rect =
+            if (navBar != null) {
+                navBar.visibleBounds
+            } else {
+                Log.e(TAG, "Could not find nav bar, infer location")
+                estimateNavigationBarPosition(PlatformConsts.Rotation.ROTATION_0)
+                    .bounds
+                    .toAndroidRect()
+            }
 
         val startX = navBarVisibleBounds.centerX()
         val startY = navBarVisibleBounds.centerY()
@@ -159,11 +142,12 @@ fun UiDevice.openQuickstep(
         recents = this.wait(Until.findObject(recentsSysUISelector), FIND_TIMEOUT)
     }
     assertNotNull("Recent items didn't appear", recents)
-    wmHelper.waitFor(
-        WindowManagerConditionsFactory.isNavBarVisible(),
-        WindowManagerConditionsFactory.isStatusBarVisible(),
-        WindowManagerConditionsFactory.isAppTransitionIdle(Display.DEFAULT_DISPLAY)
-    )
+    wmHelper
+        .StateSyncBuilder()
+        .withNavOrTaskBarVisible()
+        .withStatusBarVisible()
+        .withAppTransitionIdle()
+        .waitForAndVerify()
 }
 
 private fun getLauncherOverviewSelector(device: UiDevice): BySelector {
@@ -177,9 +161,7 @@ private fun longPressRecents(device: UiDevice) {
     recentsButton.click(LONG_PRESS_TIMEOUT)
 }
 
-/**
- * Wait for any IME view to appear
- */
+/** Wait for any IME view to appear */
 fun UiDevice.waitForIME(): Boolean {
     val ime = this.wait(Until.findObject(By.pkg(IME_PACKAGE)), FIND_TIMEOUT)
     return ime != null
@@ -198,16 +180,13 @@ private fun openQuickStepAndLongPressOverviewIcon(
             Log.e(TAG, "launchSplitScreen", e)
         }
     }
-    val overviewIconSelector = By.res(device.launcherPackageName, "icon")
-        .clazz(View::class.java)
+    val overviewIconSelector = By.res(device.launcherPackageName, "icon").clazz(View::class.java)
     val overviewIcon = device.wait(Until.findObject(overviewIconSelector), FIND_TIMEOUT)
     assertNotNull("Unable to find app icon in Overview", overviewIcon)
     overviewIcon.click()
 }
 
-fun UiDevice.openQuickStepAndClearRecentAppsFromOverview(
-    wmHelper: WindowManagerStateHelper
-) {
+fun UiDevice.openQuickStepAndClearRecentAppsFromOverview(wmHelper: WindowManagerStateHelper) {
     if (this.isQuickstepEnabled()) {
         this.openQuickstep(wmHelper)
     } else {
@@ -219,74 +198,66 @@ fun UiDevice.openQuickStepAndClearRecentAppsFromOverview(
     }
     for (i in 0..9) {
         this.swipe(
-                this.getDisplayWidth() / 2,
-                this.getDisplayHeight() / 2,
-                this.getDisplayWidth(),
-                this.getDisplayHeight() / 2,
-                5)
+            this.displayWidth / 2,
+            this.displayHeight / 2,
+            this.displayWidth,
+            this.displayHeight / 2,
+            5
+        )
         // If "Clear all"  button appears, use it
-        val clearAllSelector = By.res(this.getLauncherPackageName(), "clear_all")
-        val clearAllButton = this.wait(Until.findObject(clearAllSelector), FAST_WAIT_TIMEOUT)
-        if (clearAllButton != null) {
-            clearAllButton.click()
-        }
+        val clearAllSelector = By.res(this.launcherPackageName, "clear_all")
+        wait(Until.findObject(clearAllSelector), FAST_WAIT_TIMEOUT)?.click()
     }
     this.pressHome()
 }
 
 /**
- * Opens quick step and puts the first app from the list of recently used apps into
- * split-screen
+ * Opens quick step and puts the first app from the list of recently used apps into split-screen
  *
- * @throws AssertionError when unable to open the list of recently used apps, or when it does
- * not contain a button to enter split screen mode
+ * @throws AssertionError when unable to open the list of recently used apps, or when it does not
+ * contain a button to enter split screen mode
  */
-fun UiDevice.launchSplitScreen(
-    wmHelper: WindowManagerStateHelper
-) {
+fun UiDevice.launchSplitScreen(wmHelper: WindowManagerStateHelper) {
     openQuickStepAndLongPressOverviewIcon(this, wmHelper)
     val splitScreenButtonSelector = By.text("Split screen")
-    val splitScreenButton =
-            this.wait(Until.findObject(splitScreenButtonSelector), FIND_TIMEOUT)
+    val splitScreenButton = this.wait(Until.findObject(splitScreenButtonSelector), FIND_TIMEOUT)
     assertNotNull("Unable to find Split screen button in Overview", splitScreenButton)
     splitScreenButton.click()
 
     // Wait for animation to complete.
     this.wait(Until.findObject(splitScreenDividerSelector), FIND_TIMEOUT)
-    wmHelper.waitFor(
-        WindowManagerConditionsFactory.isLayerVisible(DOCKED_STACK_DIVIDER),
-        WindowManagerConditionsFactory.isAppTransitionIdle(Display.DEFAULT_DISPLAY))
+    wmHelper
+        .StateSyncBuilder()
+        .add(WindowManagerConditionsFactory.isLayerVisible(DOCKED_STACK_DIVIDER))
+        .withAppTransitionIdle()
+        .waitForAndVerify()
 
     if (!this.isInSplitScreen()) {
         Assert.fail("Unable to find Split screen divider")
     }
 }
 
-/**
- * Checks if the recent application is able to split screen(resizeable)
- */
-fun UiDevice.canSplitScreen(
-    wmHelper: WindowManagerStateHelper
-): Boolean {
+/** Checks if the recent application is able to split screen(resizeable) */
+fun UiDevice.canSplitScreen(wmHelper: WindowManagerStateHelper): Boolean {
     openQuickStepAndLongPressOverviewIcon(this, wmHelper)
     val splitScreenButtonSelector = By.text("Split screen")
     val canSplitScreen =
-            this.wait(Until.findObject(splitScreenButtonSelector), FIND_TIMEOUT) != null
+        this.wait(Until.findObject(splitScreenButtonSelector), FIND_TIMEOUT) != null
     this.pressHome()
     return canSplitScreen
 }
 
-/**
- * Checks if the device is in split screen by searching for the split screen divider
- */
+/** Checks if the device is in split screen by searching for the split screen divider */
 fun UiDevice.isInSplitScreen(): Boolean {
     return this.wait(Until.findObject(splitScreenDividerSelector), FIND_TIMEOUT) != null
 }
 
-fun waitSplitScreenGone(wmHelper: WindowManagerStateHelper): Boolean {
-    return wmHelper.waitFor(
-        WindowManagerConditionsFactory.isLayerVisible(DOCKED_STACK_DIVIDER),
-        WindowManagerConditionsFactory.isAppTransitionIdle(Display.DEFAULT_DISPLAY))
+fun waitSplitScreenGone(wmHelper: WindowManagerStateHelper) {
+    return wmHelper
+        .StateSyncBuilder()
+        .add(WindowManagerConditionsFactory.isLayerVisible(DOCKED_STACK_DIVIDER).negate())
+        .withAppTransitionIdle()
+        .waitForAndVerify()
 }
 
 private val splitScreenDividerSelector: BySelector
@@ -303,11 +274,12 @@ fun UiDevice.exitSplitScreen() {
     assertNotNull("Unable to find Split screen divider", divider)
 
     // Drag the split screen divider to the top of the screen
-    val dstPoint = if (this.isRotated()) {
-        Point(0, this.displayWidth / 2)
-    } else {
-        Point(this.displayWidth / 2, 0)
-    }
+    val dstPoint =
+        if (this.isRotated()) {
+            Point(0, this.displayWidth / 2)
+        } else {
+            Point(this.displayWidth / 2, 0)
+        }
     divider.drag(dstPoint, 400)
     // Wait for animation to complete.
     SystemClock.sleep(2000)
@@ -324,15 +296,14 @@ fun UiDevice.exitSplitScreenFromBottom(wmHelper: WindowManagerStateHelper) {
     assertNotNull("Unable to find Split screen divider", divider)
 
     // Drag the split screen divider to the bottom of the screen
-    val dstPoint = if (this.isRotated()) {
-        Point(this.displayWidth, this.displayWidth / 2)
-    } else {
-        Point(this.displayWidth / 2, this.displayHeight)
-    }
+    val dstPoint =
+        if (this.isRotated()) {
+            Point(this.displayWidth, this.displayWidth / 2)
+        } else {
+            Point(this.displayWidth / 2, this.displayHeight)
+        }
     divider.drag(dstPoint, 400)
-    if (!waitSplitScreenGone(wmHelper)) {
-        Assert.fail("Split screen divider never disappeared")
-    }
+    waitSplitScreenGone(wmHelper)
 }
 
 /**
@@ -349,37 +320,35 @@ fun UiDevice.resizeSplitScreen(windowHeightRatio: Rational) {
     // Drag the split screen divider to so that the ratio of top window height and bottom
     // window height is windowHeightRatio
     this.drag(
-            divider.visibleBounds.centerX(),
-            divider.visibleBounds.centerY(),
-            this.displayWidth / 2,
-            destHeight,
-            10)
+        divider.visibleBounds.centerX(),
+        divider.visibleBounds.centerY(),
+        this.displayWidth / 2,
+        destHeight,
+        10
+    )
     this.wait(Until.findObject(dividerSelector), FIND_TIMEOUT)
     // Wait for animation to complete.
     SystemClock.sleep(2000)
 }
 
-/**
- * Checks if the device has a window with the package name
- */
+/** Checks if the device has a window with the package name */
 fun UiDevice.hasWindow(packageName: String): Boolean {
     return this.wait(Until.findObject(By.pkg(packageName)), FIND_TIMEOUT) != null
 }
 
-/**
- * Waits until the package with that name is gone
- */
+/** Waits until the package with that name is gone */
 fun UiDevice.waitUntilGone(packageName: String): Boolean {
     return this.wait(Until.gone(By.pkg(packageName)), FIND_TIMEOUT) != null
 }
 
 fun stopPackage(context: Context, packageName: String) {
     SystemUtil.runShellCommand("am force-stop $packageName")
-    val packageUid = try {
-        context.packageManager.getPackageUid(packageName, /* flags= */0)
-    } catch (e: PackageManager.NameNotFoundException) {
-        return
-    }
+    val packageUid =
+        try {
+            context.packageManager.getPackageUid(packageName, /* flags */ 0)
+        } catch (e: PackageManager.NameNotFoundException) {
+            return
+        }
     while (targetPackageIsRunning(packageUid)) {
         try {
             Thread.sleep(100)
@@ -393,9 +362,7 @@ private fun targetPackageIsRunning(uid: Int): Boolean {
     return !result.contains("(NONEXISTENT)")
 }
 
-/**
- * Turns on the device display and presses the home button to reach the launcher screen
- */
+/** Turns on the device display and presses the home button to reach the launcher screen */
 fun UiDevice.wakeUpAndGoToHomeScreen() {
     try {
         this.wakeUp()

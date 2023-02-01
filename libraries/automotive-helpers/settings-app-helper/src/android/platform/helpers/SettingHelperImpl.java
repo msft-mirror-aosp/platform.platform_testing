@@ -113,6 +113,7 @@ public class SettingHelperImpl extends AbstractAutoStandardAppHelper implements 
 
     @Override
     public void findSettingMenuAndClick(String setting) {
+        SystemClock.sleep(UI_RESPONSE_WAIT_MS);
         UiObject2 settingMenu = findSettingMenu(setting);
         if (settingMenu != null) {
             clickAndWaitForIdleScreen(settingMenu);
@@ -134,20 +135,6 @@ public class SettingHelperImpl extends AbstractAutoStandardAppHelper implements 
     }
 
     /** {@inheritDoc} */
-    @Override
-    public void openQuickSettings() {
-        pressHome();
-        executeShellCommand(getApplicationConfig(AutoConfigConstants.OPEN_QUICK_SETTINGS_COMMAND));
-        UiObject2 settingObject =
-                findUiObject(
-                        getResourceFromConfig(
-                                AutoConfigConstants.SETTINGS,
-                                AutoConfigConstants.QUICK_SETTINGS,
-                                AutoConfigConstants.OPEN_MORE_SETTINGS));
-        if (settingObject == null) {
-            throw new RuntimeException("Failed to open quick settings.");
-        }
-    }
 
     private void verifyAvailableOptions(String setting) {
         String[] expectedOptions = getSettingOptions(setting);
@@ -212,6 +199,19 @@ public class SettingHelperImpl extends AbstractAutoStandardAppHelper implements 
             throw new RuntimeException(
                     "Hotspot enabled state is already " + (onOff ? "on" : "off"));
         }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void toggleHotspot() {
+        UiObject2 enableOption =
+                findUiObject(
+                        getResourceFromConfig(
+                                AutoConfigConstants.SETTINGS,
+                                AutoConfigConstants.NETWORK_AND_INTERNET_SETTINGS,
+                                AutoConfigConstants.TOGGLE_HOTSPOT));
+        clickAndWaitForWindowUpdate(
+                getApplicationConfig(AutoConfigConstants.SETTINGS_PACKAGE), enableOption);
     }
 
     /** {@inheritDoc} */
@@ -441,40 +441,6 @@ public class SettingHelperImpl extends AbstractAutoStandardAppHelper implements 
         } catch (UiObjectNotFoundException exception) {
             throw new RuntimeException("Unable to find seekbar");
         }
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void setDayNightMode(DayNightMode mode) {
-        if (mode == DayNightMode.DAY_MODE
-                        && getDayNightModeStatus().getValue() == mUiModeManager.MODE_NIGHT_YES
-                || mode == DayNightMode.NIGHT_MODE
-                        && getDayNightModeStatus().getValue() != mUiModeManager.MODE_NIGHT_YES) {
-            clickAndWaitForWindowUpdate(
-                    getApplicationConfig(AutoConfigConstants.SETTINGS_PACKAGE),
-                    getNightModeButton());
-        }
-    }
-
-    private UiObject2 getNightModeButton() {
-        UiObject2 nightModeButton =
-                scrollAndFindUiObject(
-                        getResourceFromConfig(
-                                AutoConfigConstants.SETTINGS,
-                                AutoConfigConstants.QUICK_SETTINGS,
-                                AutoConfigConstants.NIGHT_MODE));
-        if (nightModeButton == null) {
-            throw new RuntimeException("Unable to find night mode button");
-        }
-        return nightModeButton.getParent();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public DayNightMode getDayNightModeStatus() {
-        return mUiModeManager.getNightMode() == mUiModeManager.MODE_NIGHT_YES
-                ? DayNightMode.NIGHT_MODE
-                : DayNightMode.DAY_MODE;
     }
 
     private int getScrollScreenIndex() {

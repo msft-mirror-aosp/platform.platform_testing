@@ -16,15 +16,20 @@
 
 package com.android.server.wm.traces.common
 
+import kotlin.js.JsName
+
 /**
  * Wrapper for SizeProto (frameworks/native/services/surfaceflinger/layerproto/common.proto)
  *
  * This class is used by flicker and Winscope
  */
-open class Size(val width: Int, val height: Int) {
-    open val isEmpty: Boolean
+open class Size
+protected constructor(@JsName("width") val width: Int = 0, @JsName("height") val height: Int = 0) {
+    @JsName("isEmpty")
+    val isEmpty: Boolean
         get() = height == 0 || width == 0
 
+    @JsName("isNotEmpty")
     val isNotEmpty: Boolean
         get() = !isEmpty
 
@@ -33,9 +38,7 @@ open class Size(val width: Int, val height: Int) {
     override fun toString(): String = if (isEmpty) "[empty]" else prettyPrint()
 
     override fun equals(other: Any?): Boolean =
-        other is Size &&
-            other.height == height &&
-            other.width == width
+        other is Size && other.height == height && other.width == width
 
     override fun hashCode(): Int {
         var result = width
@@ -44,6 +47,9 @@ open class Size(val width: Int, val height: Int) {
     }
 
     companion object {
-        val EMPTY: Size = Size(0, 0)
+        @JsName("EMPTY")
+        val EMPTY: Size
+            get() = withCache { Size() }
+        @JsName("from") fun from(width: Int, height: Int): Size = withCache { Size(width, height) }
     }
 }

@@ -1,139 +1,381 @@
 package com.android.server.wm.flicker.monitor
 
 import android.util.EventLog
-import com.android.server.wm.flicker.FlickerRunResult
-import com.android.server.wm.flicker.traces.eventlog.FocusEvent
+import com.android.server.wm.flicker.DEFAULT_TRACE_CONFIG
+import com.android.server.wm.flicker.io.ResultReader
+import com.android.server.wm.flicker.newTestResultWriter
+import com.android.server.wm.flicker.now
+import com.android.server.wm.traces.common.events.CujEvent
+import com.android.server.wm.traces.common.events.CujType
+import com.android.server.wm.traces.common.events.EventLog.Companion.MAGIC_NUMBER
+import com.android.server.wm.traces.common.events.FocusEvent
+import com.android.server.wm.traces.parser.events.EventLogParser.Companion.WM_JANK_CUJ_EVENTS_BEGIN_REQUEST
+import com.android.server.wm.traces.parser.events.EventLogParser.Companion.WM_JANK_CUJ_EVENTS_CANCEL_REQUEST
+import com.android.server.wm.traces.parser.events.EventLogParser.Companion.WM_JANK_CUJ_EVENTS_END_REQUEST
+import com.google.common.truth.Truth
+import java.nio.file.Files
+import java.nio.file.Path
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /**
- * Contains [EventLogMonitor] tests. To run this test: {@code
- * atest FlickerLibTest:EventLogMonitorTest}
+ * Contains [EventLogMonitor] tests. To run this test: {@code atest
+ * FlickerLibTest:EventLogMonitorTest}
  */
-class EventLogMonitorTest {
+class EventLogMonitorTest : TraceMonitorTest<EventLogMonitor>() {
+    override fun getMonitor(outputDir: Path): EventLogMonitor = EventLogMonitor(outputDir)
+
+    override fun assertTrace(traceData: ByteArray) {
+        Truth.assertThat(traceData.size).isAtLeast(MAGIC_NUMBER.toByteArray().size)
+        Truth.assertThat(traceData.slice(0 until MAGIC_NUMBER.toByteArray().size))
+            .isEqualTo(MAGIC_NUMBER.toByteArray().asList())
+    }
+
     @Test
     fun canCaptureFocusEventLogs() {
         val monitor = EventLogMonitor()
-        EventLog.writeEvent(INPUT_FOCUS_TAG /* input_focus */,
+        EventLog.writeEvent(
+            INPUT_FOCUS_TAG /* input_focus */,
             "Focus entering 111 com.android.phone/" +
                 "com.android.phone.settings.fdn.FdnSetting (server)",
-            "reason=test")
-        EventLog.writeEvent(INPUT_FOCUS_TAG /* input_focus */,
+            "reason=test"
+        )
+        EventLog.writeEvent(
+            INPUT_FOCUS_TAG /* input_focus */,
             "Focus leaving 222 com.google.android.apps.nexuslauncher/" +
                 "com.google.android.apps.nexuslauncher.NexusLauncherActivity (server)",
-            "reason=test")
-        EventLog.writeEvent(INPUT_FOCUS_TAG /* input_focus */,
+            "reason=test"
+        )
+        EventLog.writeEvent(
+            INPUT_FOCUS_TAG /* input_focus */,
             "Focus entering 333 com.android.phone/" +
                 "com.android.phone.settings.fdn.FdnSetting (server)",
-            "reason=test")
+            "reason=test"
+        )
         monitor.start()
-        EventLog.writeEvent(INPUT_FOCUS_TAG /* input_focus */,
+        EventLog.writeEvent(
+            INPUT_FOCUS_TAG /* input_focus */,
             "Focus leaving 4749f88 com.android.phone/" +
                 "com.android.phone.settings.fdn.FdnSetting (server)",
-            "reason=test")
-        EventLog.writeEvent(INPUT_FOCUS_TAG /* input_focus */,
+            "reason=test"
+        )
+        EventLog.writeEvent(
+            INPUT_FOCUS_TAG /* input_focus */,
             "Focus entering 7c01447 com.android.phone/" +
                 "com.android.phone.settings.fdn.FdnSetting (server)",
-            "reason=test")
+            "reason=test"
+        )
         monitor.stop()
-        EventLog.writeEvent(INPUT_FOCUS_TAG /* input_focus */,
+        EventLog.writeEvent(
+            INPUT_FOCUS_TAG /* input_focus */,
             "Focus entering 2aa30cd com.android.phone/" +
                 "com.android.phone.settings.fdn.FdnSetting (server)",
-            "reason=test")
+            "reason=test"
+        )
+        val writer = newTestResultWriter()
+        monitor.setResult(writer)
+        val result = writer.write()
 
-        val resultBuilder = FlickerRunResult.Builder()
-        resultBuilder.setResultFrom(monitor)
+        val reader = ResultReader(result, DEFAULT_TRACE_CONFIG)
+        val eventLog = reader.readEventLogTrace()
+        requireNotNull(eventLog) { "EventLog was null" }
 
-        assertEquals(2, resultBuilder.eventLog?.size)
+        assertEquals(2, eventLog.focusEvents.size)
         assertEquals(
             "4749f88 com.android.phone/com.android.phone.settings.fdn.FdnSetting (server)",
-            resultBuilder.eventLog?.get(0)?.window)
-        assertEquals(FocusEvent.Focus.LOST, resultBuilder.eventLog?.get(0)?.focus)
+            eventLog.focusEvents[0].window
+        )
+        assertEquals(FocusEvent.Type.LOST, eventLog.focusEvents[0].type)
         assertEquals(
             "7c01447 com.android.phone/com.android.phone.settings.fdn.FdnSetting (server)",
-            resultBuilder.eventLog?.get(1)?.window)
-        assertEquals(FocusEvent.Focus.GAINED, resultBuilder.eventLog?.get(1)?.focus)
-        assertTrue(resultBuilder.eventLog?.get(0)?.timestamp ?: 0
-            <= resultBuilder.eventLog?.get(1)?.timestamp ?: 0)
-        assertEquals(resultBuilder.eventLog?.get(0)?.reason, "test")
+            eventLog.focusEvents[1].window
+        )
+        assertEquals(FocusEvent.Type.GAINED, eventLog.focusEvents[1].type)
+        assertTrue(eventLog.focusEvents[0].timestamp <= eventLog.focusEvents[1].timestamp)
+        assertEquals(eventLog.focusEvents[0].reason, "test")
     }
 
     @Test
     fun onlyCapturesLastTransition() {
         val monitor = EventLogMonitor()
         monitor.start()
-        EventLog.writeEvent(INPUT_FOCUS_TAG /* input_focus */,
+        EventLog.writeEvent(
+            INPUT_FOCUS_TAG /* input_focus */,
             "Focus leaving 11111 com.android.phone/" +
                 "com.android.phone.settings.fdn.FdnSetting (server)",
-            "reason=test")
-        EventLog.writeEvent(INPUT_FOCUS_TAG /* input_focus */,
+            "reason=test"
+        )
+        EventLog.writeEvent(
+            INPUT_FOCUS_TAG /* input_focus */,
             "Focus entering 22222 com.android.phone/" +
                 "com.android.phone.settings.fdn.FdnSetting (server)",
-            "reason=test")
+            "reason=test"
+        )
         monitor.stop()
 
         monitor.start()
-        EventLog.writeEvent(INPUT_FOCUS_TAG /* input_focus */,
+        EventLog.writeEvent(
+            INPUT_FOCUS_TAG /* input_focus */,
             "Focus leaving 479f88 com.android.phone/" +
                 "com.android.phone.settings.fdn.FdnSetting (server)",
-            "reason=test")
-        EventLog.writeEvent(INPUT_FOCUS_TAG /* input_focus */,
+            "reason=test"
+        )
+        EventLog.writeEvent(
+            INPUT_FOCUS_TAG /* input_focus */,
             "Focus entering 7c01447 com.android.phone/" +
                 "com.android.phone.settings.fdn.FdnSetting (server)",
-            "reason=test")
+            "reason=test"
+        )
         monitor.stop()
 
-        val resultBuilder = FlickerRunResult.Builder()
-        resultBuilder.setResultFrom(monitor)
+        val writer = newTestResultWriter()
+        monitor.setResult(writer)
+        val result = writer.write()
 
-        assertEquals(2, resultBuilder.eventLog?.size)
-        assertEquals("479f88 " +
-            "com.android.phone/" +
-            "com.android.phone.settings.fdn.FdnSetting (server)",
-            resultBuilder.eventLog?.get(0)?.window)
-        assertEquals(FocusEvent.Focus.LOST, resultBuilder.eventLog?.get(0)?.focus)
-        assertEquals("7c01447 com.android.phone/" +
-            "com.android.phone.settings.fdn.FdnSetting (server)",
-            resultBuilder.eventLog?.get(1)?.window)
-        assertEquals(FocusEvent.Focus.GAINED, resultBuilder.eventLog?.get(1)?.focus)
-        assertTrue(resultBuilder.eventLog?.get(0)?.timestamp ?: 0
-            <= resultBuilder.eventLog?.get(1)?.timestamp ?: 0)
+        val reader = ResultReader(result, DEFAULT_TRACE_CONFIG)
+        val eventLog = reader.readEventLogTrace()
+        requireNotNull(eventLog) { "EventLog was null" }
+
+        assertEquals(2, eventLog.focusEvents.size)
+        assertEquals(
+            "479f88 com.android.phone/com.android.phone.settings.fdn.FdnSetting (server)",
+            eventLog.focusEvents[0].window
+        )
+        assertEquals(FocusEvent.Type.LOST, eventLog.focusEvents[0].type)
+        assertEquals(
+            "7c01447 com.android.phone/com.android.phone.settings.fdn.FdnSetting (server)",
+            eventLog.focusEvents[1].window
+        )
+        assertEquals(FocusEvent.Type.GAINED, eventLog.focusEvents[1].type)
+        assertTrue(eventLog.focusEvents[0].timestamp <= eventLog.focusEvents[1].timestamp)
     }
 
     @Test
     fun ignoreFocusRequestLogs() {
         val monitor = EventLogMonitor()
         monitor.start()
-        EventLog.writeEvent(INPUT_FOCUS_TAG /* input_focus */,
-                "Focus leaving 4749f88 com.android.phone/" +
-                        "com.android.phone.settings.fdn.FdnSetting (server)",
-                "reason=test")
-        EventLog.writeEvent(INPUT_FOCUS_TAG /* input_focus */,
-                "Focus request 111 com.android.phone/" +
-                        "com.android.phone.settings.fdn.FdnSetting (server)",
-                "reason=test")
-        EventLog.writeEvent(INPUT_FOCUS_TAG /* input_focus */,
-                "Focus entering 7c01447 com.android.phone/" +
-                        "com.android.phone.settings.fdn.FdnSetting (server)",
-                "reason=test")
+        EventLog.writeEvent(
+            INPUT_FOCUS_TAG /* input_focus */,
+            "Focus leaving 4749f88 com.android.phone/" +
+                "com.android.phone.settings.fdn.FdnSetting (server)",
+            "reason=test"
+        )
+        EventLog.writeEvent(
+            INPUT_FOCUS_TAG /* input_focus */,
+            "Focus request 111 com.android.phone/" +
+                "com.android.phone.settings.fdn.FdnSetting (server)",
+            "reason=test"
+        )
+        EventLog.writeEvent(
+            INPUT_FOCUS_TAG /* input_focus */,
+            "Focus entering 7c01447 com.android.phone/" +
+                "com.android.phone.settings.fdn.FdnSetting (server)",
+            "reason=test"
+        )
         monitor.stop()
 
-        val resultBuilder = FlickerRunResult.Builder()
-        resultBuilder.setResultFrom(monitor)
+        val writer = newTestResultWriter()
+        monitor.setResult(writer)
+        val result = writer.write()
 
-        assertEquals(2, resultBuilder.eventLog?.size)
+        val reader = ResultReader(result, DEFAULT_TRACE_CONFIG)
+        val eventLog = reader.readEventLogTrace()
+        requireNotNull(eventLog) { "EventLog was null" }
+
+        assertEquals(2, eventLog.focusEvents.size)
         assertEquals(
-                "4749f88 com.android.phone/com.android.phone.settings.fdn.FdnSetting (server)",
-                resultBuilder.eventLog?.get(0)?.window)
-        assertEquals(FocusEvent.Focus.LOST, resultBuilder.eventLog?.get(0)?.focus)
+            "4749f88 com.android.phone/com.android.phone.settings.fdn.FdnSetting (server)",
+            eventLog.focusEvents[0].window
+        )
+        assertEquals(FocusEvent.Type.LOST, eventLog.focusEvents[0].type)
         assertEquals(
-                "7c01447 com.android.phone/com.android.phone.settings.fdn.FdnSetting (server)",
-                resultBuilder.eventLog?.get(1)?.window)
-        assertEquals(FocusEvent.Focus.GAINED, resultBuilder.eventLog?.get(1)?.focus)
-        assertTrue(resultBuilder.eventLog?.get(0)?.timestamp ?: 0
-            <= resultBuilder.eventLog?.get(1)?.timestamp ?: 0)
-        assertEquals(resultBuilder.eventLog?.get(0)?.reason, "test")
+            "7c01447 com.android.phone/com.android.phone.settings.fdn.FdnSetting (server)",
+            eventLog.focusEvents[1].window
+        )
+        assertEquals(FocusEvent.Type.GAINED, eventLog.focusEvents[1].type)
+        assertTrue(eventLog.focusEvents[0].timestamp <= eventLog.focusEvents[1].timestamp)
+        assertEquals(eventLog.focusEvents[0].reason, "test")
+    }
+
+    @Test
+    fun savesEventLogsToFile() {
+        val monitor = EventLogMonitor()
+        monitor.start()
+        EventLog.writeEvent(
+            INPUT_FOCUS_TAG /* input_focus */,
+            "Focus leaving 4749f88 com.android.phone/" +
+                "com.android.phone.settings.fdn.FdnSetting (server)",
+            "reason=test"
+        )
+        EventLog.writeEvent(
+            INPUT_FOCUS_TAG /* input_focus */,
+            "Focus request 111 com.android.phone/" +
+                "com.android.phone.settings.fdn.FdnSetting (server)",
+            "reason=test"
+        )
+        EventLog.writeEvent(
+            INPUT_FOCUS_TAG /* input_focus */,
+            "Focus entering 7c01447 com.android.phone/" +
+                "com.android.phone.settings.fdn.FdnSetting (server)",
+            "reason=test"
+        )
+        monitor.stop()
+
+        Truth.assertWithMessage("Trace file ${monitor.outputFile} not found")
+            .that(Files.exists(monitor.outputFile))
+            .isTrue()
+    }
+
+    @Test
+    fun cropsEventsFromBeforeMonitorStart() {
+        val monitor = EventLogMonitor()
+
+        EventLog.writeEvent(
+            INPUT_FOCUS_TAG /* input_focus */,
+            "Focus leaving 4749f88 com.android.phone/" +
+                "com.android.phone.settings.fdn.FdnSetting (server)",
+            "reason=test"
+        )
+
+        monitor.start()
+
+        EventLog.writeEvent(
+            INPUT_FOCUS_TAG /* input_focus */,
+            "Focus entering 7c01447 com.android.phone/" +
+                "com.android.phone.settings.fdn.FdnSetting (server)",
+            "reason=test"
+        )
+
+        monitor.stop()
+
+        val writer = newTestResultWriter()
+        monitor.setResult(writer)
+        val result = writer.write()
+
+        val reader = ResultReader(result, DEFAULT_TRACE_CONFIG)
+        val eventLog = reader.readEventLogTrace() ?: error("EventLog should have been created")
+
+        Truth.assertThat(eventLog.focusEvents).hasLength(1)
+        Truth.assertThat(eventLog.focusEvents.first().type).isEqualTo(FocusEvent.Type.GAINED)
+    }
+
+    @Test
+    fun cropsEventsOutsideOfTransitionTimes() {
+        val monitor = EventLogMonitor()
+        val writer = newTestResultWriter()
+        monitor.start()
+
+        EventLog.writeEvent(
+            INPUT_FOCUS_TAG /* input_focus */,
+            "Focus leaving 4749f88 com.android.phone/" +
+                "com.android.phone.settings.fdn.FdnSetting (server)",
+            "reason=test"
+        )
+
+        writer.setTransitionStartTime(now())
+
+        EventLog.writeEvent(
+            INPUT_FOCUS_TAG /* input_focus */,
+            "Focus entering 7c01447 com.android.phone/" +
+                "com.android.phone.settings.fdn.FdnSetting (server)",
+            "reason=test"
+        )
+
+        writer.setTransitionEndTime(now())
+
+        EventLog.writeEvent(
+            INPUT_FOCUS_TAG /* input_focus */,
+            "Focus entering 7c01447 com.android.phone/" +
+                "com.android.phone.settings.fdn.FdnSetting (server)",
+            "reason=test"
+        )
+
+        monitor.stop()
+        monitor.setResult(writer)
+        val result = writer.write()
+
+        val reader = ResultReader(result, DEFAULT_TRACE_CONFIG)
+        val eventLog = reader.readEventLogTrace() ?: error("EventLog should have been created")
+
+        Truth.assertThat(eventLog.focusEvents).hasLength(1)
+        Truth.assertThat(eventLog.focusEvents.first().hasFocus()).isTrue()
+    }
+
+    @Test
+    fun canCaptureCujEvents() {
+        val monitor = EventLogMonitor()
+        val writer = newTestResultWriter()
+        monitor.start()
+        EventLog.writeEvent(WM_JANK_CUJ_EVENTS_BEGIN_REQUEST, 10)
+        EventLog.writeEvent(WM_JANK_CUJ_EVENTS_END_REQUEST, 10)
+        monitor.stop()
+        monitor.setResult(writer)
+        val result = writer.write()
+
+        val reader = ResultReader(result, DEFAULT_TRACE_CONFIG)
+        val eventLog = reader.readEventLogTrace() ?: error("EventLog should have been created")
+
+        assertEquals(2, eventLog.cujEvents.size)
+    }
+
+    @Test
+    fun collectsCujEventData() {
+        val monitor = EventLogMonitor()
+        val writer = newTestResultWriter()
+        monitor.start()
+        EventLog.writeEvent(
+            WM_JANK_CUJ_EVENTS_BEGIN_REQUEST,
+            CujType.CUJ_LAUNCHER_QUICK_SWITCH.ordinal
+        )
+        EventLog.writeEvent(
+            WM_JANK_CUJ_EVENTS_END_REQUEST,
+            CujType.CUJ_LAUNCHER_ALL_APPS_SCROLL.ordinal
+        )
+        EventLog.writeEvent(
+            WM_JANK_CUJ_EVENTS_CANCEL_REQUEST,
+            CujType.CUJ_LOCKSCREEN_LAUNCH_CAMERA.ordinal
+        )
+        monitor.stop()
+        monitor.setResult(writer)
+        val result = writer.write()
+
+        val reader = ResultReader(result, DEFAULT_TRACE_CONFIG)
+        val eventLog = reader.readEventLogTrace() ?: error("EventLog should have been created")
+
+        assertEquals(3, eventLog.cujEvents.size)
+
+        Truth.assertThat(eventLog.cujEvents[0].type).isEqualTo(CujEvent.Companion.Type.START)
+        Truth.assertThat(eventLog.cujEvents[0].cuj).isEqualTo(CujType.CUJ_LAUNCHER_QUICK_SWITCH)
+
+        Truth.assertThat(eventLog.cujEvents[1].type).isEqualTo(CujEvent.Companion.Type.END)
+        Truth.assertThat(eventLog.cujEvents[1].cuj).isEqualTo(CujType.CUJ_LAUNCHER_ALL_APPS_SCROLL)
+
+        Truth.assertThat(eventLog.cujEvents[2].type).isEqualTo(CujEvent.Companion.Type.CANCEL)
+        Truth.assertThat(eventLog.cujEvents[2].cuj).isEqualTo(CujType.CUJ_LOCKSCREEN_LAUNCH_CAMERA)
+    }
+
+    @Test
+    fun canParseHandleUnknownCujTypes() {
+        val unknownCujId = Int.MAX_VALUE
+        val monitor = EventLogMonitor()
+        val writer = newTestResultWriter()
+        monitor.start()
+        EventLog.writeEvent(WM_JANK_CUJ_EVENTS_BEGIN_REQUEST, unknownCujId)
+        EventLog.writeEvent(WM_JANK_CUJ_EVENTS_END_REQUEST, unknownCujId)
+        EventLog.writeEvent(WM_JANK_CUJ_EVENTS_CANCEL_REQUEST, unknownCujId)
+        monitor.stop()
+        monitor.setResult(writer)
+        val result = writer.write()
+
+        val reader = ResultReader(result, DEFAULT_TRACE_CONFIG)
+        val eventLog = reader.readEventLogTrace()
+        requireNotNull(eventLog) { "EventLog should have been created" }
+
+        assertEquals(3, eventLog.cujEvents.size)
+        Truth.assertThat(eventLog.cujEvents[0].cuj).isEqualTo(CujType.UNKNOWN)
+        Truth.assertThat(eventLog.cujEvents[1].cuj).isEqualTo(CujType.UNKNOWN)
+        Truth.assertThat(eventLog.cujEvents[2].cuj).isEqualTo(CujType.UNKNOWN)
     }
 
     private companion object {
