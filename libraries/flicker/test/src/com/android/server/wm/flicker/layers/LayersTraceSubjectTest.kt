@@ -215,11 +215,12 @@ class LayersTraceSubjectTest {
     }
 
     @Test
-    fun canTestLayerOccludedByAppLayerIsNotVisible() {
+    fun canTestLayerOccludedBySplashScreenLayerIsNotVisible() {
         val trace = readLayerTraceFromFile("layers_trace_occluded.pb")
         val entry =
             assertThat(trace).getEntryBySystemUpTime(1700382131522L, byElapsedTimestamp = true)
-        entry.isVisible(TestComponents.SIMPLE_APP)
+        entry.isInvisible(TestComponents.SIMPLE_APP)
+        entry.isVisible(ComponentNameMatcher.SPLASH_SCREEN)
     }
 
     @Test

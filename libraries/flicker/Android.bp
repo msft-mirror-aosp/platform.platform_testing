@@ -44,7 +44,6 @@ java_test {
         "platform-test-core-rules",
         "health-testing-utils",
         "collector-device-lib",
-        "kotlinx-coroutines-android",
     ],
 }
 
