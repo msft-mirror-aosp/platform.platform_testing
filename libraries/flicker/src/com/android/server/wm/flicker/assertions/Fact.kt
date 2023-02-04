@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 The Android Open Source Project
+ * Copyright (C) 2023 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,18 +14,14 @@
  * limitations under the License.
  */
 
-package com.android.server.wm.flicker.traces
+package com.android.server.wm.flicker.assertions
 
-import com.android.server.wm.flicker.assertions.FlickerSubject
-import com.google.common.truth.FailureStrategy
+/** A string key-value pair in a failure message, such as "expected: abc" or "but was: xyz." */
+data class Fact(val key: String, val value: String) {
 
-class FlickerFailureStrategy : FailureStrategy {
-    private lateinit var subject: FlickerSubject
+    constructor(key: String, value: Any? = null) : this(key, "$value")
 
-    fun init(subject: FlickerSubject) = apply { this.subject = subject }
-
-    override fun fail(error: AssertionError) {
-        require(::subject.isInitialized) { "Failure strategy is not initialized" }
-        throw FlickerSubjectException(subject, error)
+    override fun toString(): String {
+        return if (value == null) key else "$key: $value"
     }
 }

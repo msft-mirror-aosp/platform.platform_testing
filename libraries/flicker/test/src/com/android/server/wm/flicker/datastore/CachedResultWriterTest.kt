@@ -48,7 +48,7 @@ class CachedResultWriterTest {
     fun writeToStoreFailsWhenWriteTwice() {
         val writer = newTestCachedResultWriter()
         val failure =
-            assertThrows(IllegalStateException::class.java) {
+            assertThrows<IllegalStateException> {
                 writer.write()
                 writer.write()
             }

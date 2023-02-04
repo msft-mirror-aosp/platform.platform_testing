@@ -58,7 +58,7 @@ object DeviceHelpers {
      */
     fun UiDevice.waitForObj(
         selector: BySelector,
-        timeout: Duration = SHORT_WAIT,
+        timeout: Duration = LONG_WAIT,
         errorProvider: () -> String = { "Object $selector not found" },
     ): UiObject2 = waitFor("$selector object", timeout, errorProvider) { findObject(selector) }
 

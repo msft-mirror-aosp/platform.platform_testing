@@ -18,7 +18,7 @@ package com.android.server.wm.flicker.assertiongenerator
 
 import android.util.Log
 import com.android.server.wm.flicker.TraceFileReader
-import com.android.server.wm.flicker.assertFailure
+import com.android.server.wm.flicker.assertFailureFact
 import com.android.server.wm.flicker.assertThrows
 import com.android.server.wm.flicker.assertiongenerator.AssertionGenConfigTestConst.Companion.emptyDeviceTraceConfiguration
 import com.android.server.wm.flicker.assertiongenerator.AssertionProducerTestConst.Companion.expectedLayersAssertionStringsFileTrace
@@ -28,6 +28,7 @@ import com.android.server.wm.flicker.assertiongenerator.layers.LayersComponentLi
 import com.android.server.wm.flicker.assertiongenerator.layers.LayersLifecycleExtractor
 import com.android.server.wm.flicker.assertiongenerator.layers.LayersTraceLifecycle
 import com.android.server.wm.flicker.assertiongenerator.layers.LayersVisibilityAssertionProducer
+import com.android.server.wm.flicker.traces.FlickerSubjectException
 import com.android.server.wm.traces.common.ComponentNameMatcher
 import com.android.server.wm.traces.common.DeviceTraceDump
 import com.android.server.wm.traces.common.layers.LayersTrace
@@ -273,11 +274,11 @@ class LayersVisibilityAssertionProducerTest {
                 ElementLifecycleExtractorTestConst.mapOfFlattenedLayersAllVisibilityAssertions_fail1
             )
         val error =
-            assertThrows(AssertionError::class.java) {
+            assertThrows<FlickerSubjectException> {
                 assertionFail.execute(layersTrace, failTransition)
             }
-        assertFailure(error).factValue("Assertion").contains("notContains(StatusBar)")
-        assertFailure(error).factValue("Found").contains("Layer:StatusBar")
+        assertFailureFact(error, "Assertion").contains("notContains(StatusBar)")
+        assertFailureFact(error, "Found").contains("Layer:StatusBar")
     }
 
     @Test
@@ -287,12 +288,12 @@ class LayersVisibilityAssertionProducerTest {
                 ElementLifecycleExtractorTestConst.mapOfFlattenedLayersAllVisibilityAssertions_fail2
             )
         val error =
-            assertThrows(AssertionError::class.java) {
+            assertThrows<FlickerSubjectException> {
                 assertionFail.execute(layersTrace, failTransition)
             }
-        assertFailure(error).factValue("Passed").contains("notContains(StatusBar)")
-        assertFailure(error).factValue("Assertion never failed").contains("isVisible(StatusBar)")
-        assertFailure(error).factValue("Untested").contains("isInvisible(StatusBar)")
+        assertFailureFact(error, "Passed").contains("notContains(StatusBar)")
+        assertFailureFact(error, "Assertion never failed").contains("isVisible(StatusBar)")
+        assertFailureFact(error, "Untested").contains("isInvisible(StatusBar)")
     }
 
     @Test
@@ -302,13 +303,11 @@ class LayersVisibilityAssertionProducerTest {
                 ElementLifecycleExtractorTestConst.mapOfFlattenedLayersAllVisibilityAssertions_fail3
             )
         val error =
-            assertThrows(AssertionError::class.java) {
+            assertThrows<FlickerSubjectException> {
                 assertionFail.execute(layersTrace, failTransition)
             }
-        assertFailure(error).factValue("Assertion never failed").contains("notContains(StatusBar)")
-        Truth.assertThat(error)
-            .hasMessageThat()
-            .contains("Untested              : isVisible(StatusBar)")
+        assertFailureFact(error, "Assertion never failed").contains("notContains(StatusBar)")
+        Truth.assertThat(error).hasMessageThat().contains("Untested: isVisible(StatusBar)")
     }
 
     @Test
@@ -318,10 +317,10 @@ class LayersVisibilityAssertionProducerTest {
                 ElementLifecycleExtractorTestConst.mapOfFlattenedLayersAllVisibilityAssertions_fail4
             )
         val error =
-            assertThrows(AssertionError::class.java) {
+            assertThrows<FlickerSubjectException> {
                 assertionFail.execute(layersTrace, failTransition)
             }
-        assertFailure(error).factValue("Assertion").contains("isVisible(StatusBar)")
+        assertFailureFact(error, "Assertion").contains("isVisible(StatusBar)")
         Truth.assertThat(error).hasMessageThat().contains("Is Invisible")
         Truth.assertThat(error).hasMessageThat().contains("Crop is 0x0")
     }

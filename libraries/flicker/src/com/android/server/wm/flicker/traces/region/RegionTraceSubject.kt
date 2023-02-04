@@ -17,26 +17,17 @@
 package com.android.server.wm.flicker.traces.region
 
 import com.android.server.wm.flicker.assertions.FlickerSubject
-import com.android.server.wm.flicker.traces.FlickerFailureStrategy
 import com.android.server.wm.flicker.traces.FlickerTraceSubject
 import com.android.server.wm.traces.common.Rect
 import com.android.server.wm.traces.common.region.Region
 import com.android.server.wm.traces.common.region.RegionTrace
-import com.google.common.truth.FailureMetadata
-import com.google.common.truth.StandardSubjectBuilder
-import com.google.common.truth.Subject.Factory
 
-class RegionTraceSubject(
-    fm: FailureMetadata,
-    val trace: RegionTrace,
-    override val parent: FlickerSubject?
-) : FlickerTraceSubject<RegionSubject>(fm, trace) {
+class RegionTraceSubject(val trace: RegionTrace, override val parent: FlickerSubject?) :
+    FlickerTraceSubject<RegionSubject>() {
 
     private val components = trace.components
 
-    override val subjects by lazy {
-        trace.entries.map { RegionSubject.assertThat(it, this, it.timestamp) }
-    }
+    override val subjects by lazy { trace.entries.map { RegionSubject(it, this, it.timestamp) } }
 
     private val componentsAsString
         get() =
@@ -98,36 +89,5 @@ class RegionTraceSubject(
         addAssertion("coversExactly($expectedVisibleRegion, $componentsAsString)") {
             it.coversExactly(expectedVisibleRegion)
         }
-    }
-
-    companion object {
-        /** Boiler-plate Subject.Factory for RegionTraceSubject */
-        private fun getFactory(parent: FlickerSubject?): Factory<RegionTraceSubject, RegionTrace> =
-            Factory { fm, subject ->
-                RegionTraceSubject(fm, subject, parent)
-            }
-
-        /**
-         * Creates a [RegionTraceSubject] representing a trace of the visible region of a window or
-         * layer which can be used to make assertions.
-         *
-         * @param trace The region trace to assert on
-         */
-        @JvmStatic
-        @JvmOverloads
-        fun assertThat(trace: RegionTrace, parent: FlickerSubject? = null): RegionTraceSubject {
-            val strategy = FlickerFailureStrategy()
-            val subject =
-                StandardSubjectBuilder.forCustomFailureStrategy(strategy)
-                    .about(getFactory(parent))
-                    .that(trace) as RegionTraceSubject
-            strategy.init(subject)
-            return subject
-        }
-
-        /** Static method for getting the subject factory (for use with assertAbout()) */
-        @JvmStatic
-        fun entries(parent: FlickerSubject?): Factory<RegionTraceSubject, RegionTrace> =
-            getFactory(parent)
     }
 }

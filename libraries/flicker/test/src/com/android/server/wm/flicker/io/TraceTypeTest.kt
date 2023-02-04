@@ -60,7 +60,7 @@ class TraceTypeTest {
     }
 
     private fun assertFailure(fileName: String) {
-        assertThrows(IllegalStateException::class.java) { TraceType.fromFileName(fileName) }
+        assertThrows<IllegalStateException> { TraceType.fromFileName(fileName) }
     }
 
     private fun assertFileName(

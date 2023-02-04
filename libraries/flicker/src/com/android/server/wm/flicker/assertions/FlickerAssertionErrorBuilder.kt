@@ -19,7 +19,6 @@ package com.android.server.wm.flicker.assertions
 import com.android.server.wm.flicker.AssertionTag
 import com.android.server.wm.flicker.io.IReader
 import com.android.server.wm.flicker.traces.FlickerSubjectException
-import com.google.common.truth.Fact
 import java.io.ByteArrayOutputStream
 import java.io.PrintStream
 import java.nio.file.Path
@@ -54,12 +53,9 @@ class FlickerAssertionErrorBuilder {
             val error = error
             requireNotNull(error)
             if (error is FlickerSubjectException) {
-                appendLine(error.errorType)
+                appendLine(error.message)
                 appendLine()
-                append(error.errorDescription)
-                appendLine()
-                append(error.subjectInformation)
-                append("\t").appendLine(Fact.fact("Location", tag))
+                append("\t").appendLine(Fact("Location", tag))
                 appendLine()
             } else {
                 appendLine(error.message)

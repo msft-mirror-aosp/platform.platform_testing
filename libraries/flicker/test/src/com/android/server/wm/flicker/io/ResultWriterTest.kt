@@ -42,7 +42,7 @@ class ResultWriterTest {
     @Test
     fun cannotWriteFileWithoutScenario() {
         val exception =
-            assertThrows(IllegalArgumentException::class.java) {
+            assertThrows<IllegalArgumentException> {
                 val writer =
                     newTestResultWriter().forScenario(ScenarioBuilder().createEmptyScenario())
                 writer.write()

@@ -16,41 +16,37 @@
 
 package com.android.server.wm.flicker.traces
 
+import com.android.server.wm.flicker.assertions.Fact
 import com.android.server.wm.flicker.assertions.FlickerSubject
 import com.android.server.wm.flicker.helpers.format
+import com.android.server.wm.traces.common.Timestamp
 
 /** Exception thrown by [FlickerSubject]s */
-class FlickerSubjectException(internal val subject: FlickerSubject, cause: Throwable) :
-    AssertionError(cause.message, if (cause is FlickerSubjectException) null else cause) {
-
-    internal val errorType: String =
-        if (cause is AssertionError) "Flicker assertion error" else "Unknown error"
-
-    internal val errorDescription = buildString {
-        appendLine("Where? ${subject.timestamp.format()}")
-        val message = (cause.message ?: "").split(("\n"))
-        append("What? ")
-        if (message.size == 1) {
-            // Single line error message
-            appendLine(message.first())
-        } else {
-            // Multi line error message
-            appendLine()
-            message.forEach { appendLine("\t$it") }
-        }
-    }
-
-    internal val subjectInformation = buildString {
-        appendLine("Facts:")
-        subject.completeFacts.forEach { appendLine(it.toString().prependIndent("\t")) }
-    }
-
+class FlickerSubjectException(
+    private val timestamp: Timestamp,
+    val facts: List<Fact>,
+    override val cause: Throwable? = null
+) : AssertionError() {
     override val message: String
         get() = buildString {
             appendLine(errorType)
+
             appendLine()
-            append(errorDescription)
+            appendLine("What? ")
+            cause?.message?.split("\n")?.forEach {
+                appendLine()
+                appendLine(it.prependIndent("\t"))
+            }
+
             appendLine()
-            append(subjectInformation)
+            appendLine("Where?")
+            appendLine(timestamp.format().prependIndent("\t"))
+
+            appendLine()
+            appendLine("Facts")
+            facts.forEach { appendLine(it.toString().prependIndent("\t")) }
         }
+
+    private val errorType: String =
+        if (cause == null) "Flicker assertion error" else "Unknown error"
 }

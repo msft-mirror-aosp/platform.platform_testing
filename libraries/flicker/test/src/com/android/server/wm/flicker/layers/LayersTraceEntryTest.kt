@@ -20,7 +20,7 @@ import com.android.server.wm.flicker.TestComponents
 import com.android.server.wm.flicker.assertThatErrorContainsDebugInfo
 import com.android.server.wm.flicker.assertThrows
 import com.android.server.wm.flicker.readLayerTraceFromFile
-import com.android.server.wm.flicker.traces.layers.LayersTraceSubject.Companion.assertThat
+import com.android.server.wm.flicker.traces.layers.LayersTraceSubject
 import com.android.server.wm.traces.common.Cache
 import com.android.server.wm.traces.common.ComponentNameMatcher
 import com.android.server.wm.traces.common.Timestamp
@@ -43,8 +43,8 @@ class LayersTraceEntryTest {
     fun exceptionContainsDebugInfo() {
         val layersTraceEntries = readLayerTraceFromFile("layers_trace_emptyregion.pb")
         val error =
-            assertThrows(AssertionError::class.java) {
-                assertThat(layersTraceEntries).first().contains(TestComponents.IMAGINARY)
+            assertThrows<AssertionError> {
+                LayersTraceSubject(layersTraceEntries).first().contains(TestComponents.IMAGINARY)
             }
         assertThatErrorContainsDebugInfo(error)
     }
@@ -168,7 +168,8 @@ class LayersTraceEntryTest {
     fun canDetectInvisibleLayerOutOfScreen() {
         val layersTrace = readLayerTraceFromFile("layers_trace_visible_outside_bounds.winscope")
         val subject =
-            assertThat(layersTrace).getEntryBySystemUpTime(1253267561044, byElapsedTimestamp = true)
+            LayersTraceSubject(layersTrace)
+                .getEntryBySystemUpTime(1253267561044, byElapsedTimestamp = true)
         val region = subject.visibleRegion(ComponentNameMatcher.IME_SNAPSHOT)
         region.isEmpty()
         subject.isInvisible(ComponentNameMatcher.IME_SNAPSHOT)
@@ -177,7 +178,7 @@ class LayersTraceEntryTest {
     @Test
     fun canDetectInvisibleLayerOutOfScreen_ConsecutiveLayers() {
         val layersTrace = readLayerTraceFromFile("layers_trace_visible_outside_bounds.winscope")
-        val subject = assertThat(layersTrace)
+        val subject = LayersTraceSubject(layersTrace)
         subject.visibleLayersShownMoreThanOneConsecutiveEntry()
     }
 

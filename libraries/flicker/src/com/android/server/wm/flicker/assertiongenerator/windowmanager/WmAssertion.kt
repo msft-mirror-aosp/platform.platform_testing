@@ -54,7 +54,7 @@ class WmAssertion : Assertion {
         require(newTrace is WindowManagerTrace) {
             "Requires a trace of type 'WindowManagerTrace' to execute WmAssertion."
         }
-        execute(WindowManagerTraceSubject.assertThat(newTrace), transition)
+        execute(WindowManagerTraceSubject(newTrace), transition)
     }
 
     override fun execute(

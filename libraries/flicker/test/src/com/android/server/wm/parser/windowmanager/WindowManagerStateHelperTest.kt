@@ -204,12 +204,12 @@ class WindowManagerStateHelperTest {
                 retryIntervalMs = 1
             )
         try {
-            WindowManagerStateSubject.assertThat(helper.wmState)
+            WindowManagerStateSubject(helper.wmState)
                 .isNonAppWindowVisible(ComponentNameMatcher.IME)
             error("IME state should not be available")
         } catch (e: AssertionError) {
             helper.StateSyncBuilder().withImeShown().waitFor()
-            WindowManagerStateSubject.assertThat(helper.wmState)
+            WindowManagerStateSubject(helper.wmState)
                 .isNonAppWindowVisible(ComponentNameMatcher.IME)
         }
     }
@@ -226,12 +226,12 @@ class WindowManagerStateHelperTest {
                 retryIntervalMs = 1
             )
         try {
-            WindowManagerStateSubject.assertThat(helper.wmState)
+            WindowManagerStateSubject(helper.wmState)
                 .isNonAppWindowVisible(ComponentNameMatcher.IME)
             error("IME state should not be available")
         } catch (e: AssertionError) {
             helper.StateSyncBuilder().withImeShown().waitFor()
-            WindowManagerStateSubject.assertThat(helper.wmState)
+            WindowManagerStateSubject(helper.wmState)
                 .isNonAppWindowVisible(ComponentNameMatcher.IME)
         }
     }
@@ -248,13 +248,11 @@ class WindowManagerStateHelperTest {
                 retryIntervalMs = 1
             )
         try {
-            WindowManagerStateSubject.assertThat(helper.wmState)
-                .containsAppWindow(simpleAppComponentName)
+            WindowManagerStateSubject(helper.wmState).containsAppWindow(simpleAppComponentName)
             error("Chrome window should not exist in the start of the trace")
         } catch (e: AssertionError) {
             helper.StateSyncBuilder().withWindowSurfaceAppeared(simpleAppComponentName).waitFor()
-            WindowManagerStateSubject.assertThat(helper.wmState)
-                .isAppWindowVisible(simpleAppComponentName)
+            WindowManagerStateSubject(helper.wmState).isAppWindowVisible(simpleAppComponentName)
         }
     }
 
@@ -270,8 +268,7 @@ class WindowManagerStateHelperTest {
                 retryIntervalMs = 1
             )
         try {
-            WindowManagerStateSubject.assertThat(helper.wmState)
-                .containsAppWindow(simpleAppComponentName)
+            WindowManagerStateSubject(helper.wmState).containsAppWindow(simpleAppComponentName)
             error("SimpleActivity window should not exist in the start of the trace")
         } catch (e: AssertionError) {
             // nothing to do
@@ -280,7 +277,7 @@ class WindowManagerStateHelperTest {
         try {
             helper.StateSyncBuilder().withWindowSurfaceAppeared(simpleAppComponentName).waitFor()
         } catch (e: IllegalArgumentException) {
-            WindowManagerStateSubject.assertThat(helper.wmState).notContains(simpleAppComponentName)
+            WindowManagerStateSubject(helper.wmState).notContains(simpleAppComponentName)
         }
     }
 
@@ -295,11 +292,11 @@ class WindowManagerStateHelperTest {
                 numRetries = trace.entries.size,
                 retryIntervalMs = 1
             )
-        WindowManagerStateSubject.assertThat(helper.wmState).isHomeActivityVisible()
+        WindowManagerStateSubject(helper.wmState).isHomeActivityVisible()
         helper.StateSyncBuilder().withWindowSurfaceAppeared(chromeComponent).waitFor()
-        WindowManagerStateSubject.assertThat(helper.wmState).isHomeActivityInvisible()
+        WindowManagerStateSubject(helper.wmState).isHomeActivityInvisible()
         helper.StateSyncBuilder().withHomeActivityVisible().waitFor()
-        WindowManagerStateSubject.assertThat(helper.wmState).isHomeActivityVisible()
+        WindowManagerStateSubject(helper.wmState).isHomeActivityVisible()
     }
 
     @Test
@@ -313,13 +310,13 @@ class WindowManagerStateHelperTest {
                 numRetries = trace.entries.size,
                 retryIntervalMs = 1
             )
-        WindowManagerStateSubject.assertThat(helper.wmState)
+        WindowManagerStateSubject(helper.wmState)
             .isHomeActivityVisible()
             .notContains(chromeComponent)
         helper.StateSyncBuilder().withWindowSurfaceAppeared(chromeComponent).waitFor()
-        WindowManagerStateSubject.assertThat(helper.wmState).isAppWindowVisible(chromeComponent)
+        WindowManagerStateSubject(helper.wmState).isAppWindowVisible(chromeComponent)
         helper.StateSyncBuilder().withActivityRemoved(chromeComponent).waitFor()
-        WindowManagerStateSubject.assertThat(helper.wmState)
+        WindowManagerStateSubject(helper.wmState)
             .notContains(chromeComponent)
             .isHomeActivityVisible()
     }
@@ -338,13 +335,13 @@ class WindowManagerStateHelperTest {
                 retryIntervalMs = 1
             )
         try {
-            WindowManagerStateSubject.assertThat(helper.wmState).isValid()
+            WindowManagerStateSubject(helper.wmState).isValid()
             error("Initial state in the trace should not be valid")
         } catch (e: AssertionError) {
             Truth.assertWithMessage("App transition never became idle")
                 .that(helper.StateSyncBuilder().withAppTransitionIdle().waitFor())
                 .isTrue()
-            WindowManagerStateSubject.assertThat(helper.wmState).isValid()
+            WindowManagerStateSubject(helper.wmState).isValid()
         }
     }
 
@@ -359,14 +356,11 @@ class WindowManagerStateHelperTest {
                 numRetries = trace.entries.size,
                 retryIntervalMs = 1
             )
-        WindowManagerStateSubject.assertThat(helper.wmState)
-            .hasRotation(PlatformConsts.Rotation.ROTATION_0)
+        WindowManagerStateSubject(helper.wmState).hasRotation(PlatformConsts.Rotation.ROTATION_0)
         helper.StateSyncBuilder().withRotation(PlatformConsts.Rotation.ROTATION_270).waitFor()
-        WindowManagerStateSubject.assertThat(helper.wmState)
-            .hasRotation(PlatformConsts.Rotation.ROTATION_270)
+        WindowManagerStateSubject(helper.wmState).hasRotation(PlatformConsts.Rotation.ROTATION_270)
         helper.StateSyncBuilder().withRotation(PlatformConsts.Rotation.ROTATION_0).waitFor()
-        WindowManagerStateSubject.assertThat(helper.wmState)
-            .hasRotation(PlatformConsts.Rotation.ROTATION_0)
+        WindowManagerStateSubject(helper.wmState).hasRotation(PlatformConsts.Rotation.ROTATION_0)
     }
 
     @Test
@@ -391,8 +385,8 @@ class WindowManagerStateHelperTest {
                 numRetries = trace.entries.size,
                 retryIntervalMs = 1
             )
-        WindowManagerStateSubject.assertThat(helper.wmState).isRecentsActivityInvisible()
+        WindowManagerStateSubject(helper.wmState).isRecentsActivityInvisible()
         helper.StateSyncBuilder().withRecentsActivityVisible().waitFor()
-        WindowManagerStateSubject.assertThat(helper.wmState).isRecentsActivityVisible()
+        WindowManagerStateSubject(helper.wmState).isRecentsActivityVisible()
     }
 }

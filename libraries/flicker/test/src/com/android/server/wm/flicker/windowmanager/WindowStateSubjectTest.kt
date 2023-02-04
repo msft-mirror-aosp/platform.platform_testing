@@ -38,8 +38,8 @@ class WindowStateSubjectTest {
     @Test
     fun exceptionContainsDebugInfoImaginary() {
         val error =
-            assertThrows(AssertionError::class.java) {
-                WindowManagerTraceSubject.assertThat(trace)
+            assertThrows<AssertionError> {
+                WindowManagerTraceSubject(trace)
                     .first()
                     .windowState(TestComponents.IMAGINARY.className)
                     .exists()
@@ -52,8 +52,8 @@ class WindowStateSubjectTest {
     @Test
     fun exceptionContainsDebugInfoConcrete() {
         val error =
-            assertThrows(AssertionError::class.java) {
-                WindowManagerTraceSubject.assertThat(trace).first().subjects.first().doesNotExist()
+            assertThrows<AssertionError> {
+                WindowManagerTraceSubject(trace).first().subjects.first().doesNotExist()
             }
         assertThatErrorContainsDebugInfo(error)
     }

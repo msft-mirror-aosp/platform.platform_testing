@@ -19,13 +19,9 @@ package com.android.server.wm.flicker.assertions
 import androidx.annotation.VisibleForTesting
 import com.android.server.wm.flicker.traces.FlickerSubjectException
 import com.android.server.wm.traces.common.Timestamp
-import com.google.common.truth.Fact
-import com.google.common.truth.FailureMetadata
-import com.google.common.truth.StandardSubjectBuilder
-import com.google.common.truth.Subject
 
 /** Base subject for flicker assertions */
-abstract class FlickerSubject(protected val fm: FailureMetadata, data: Any?) : Subject(fm, data) {
+abstract class FlickerSubject {
     @VisibleForTesting abstract val timestamp: Timestamp
     protected abstract val parent: FlickerSubject?
 
@@ -47,13 +43,12 @@ abstract class FlickerSubject(protected val fm: FailureMetadata, data: Any?) : S
      */
     open fun fail(reason: List<Fact>): FlickerSubject = apply {
         require(reason.isNotEmpty()) { "Failure should contain at least 1 fact" }
-        val facts = reason.drop(1).toTypedArray()
-        failWithoutActual(reason.first(), *facts)
+        throw FlickerSubjectException(timestamp, reason + completeFacts)
     }
 
     fun fail(reason: Fact, vararg rest: Fact): FlickerSubject = apply {
-        val facts = mutableListOf(reason).also { it.addAll(rest) }
-        fail(facts)
+        val what = mutableListOf(reason).also { it.addAll(rest) }
+        fail(what)
     }
 
     /**
@@ -68,7 +63,7 @@ abstract class FlickerSubject(protected val fm: FailureMetadata, data: Any?) : S
      *
      * @param reason for the failure
      */
-    fun fail(reason: String): FlickerSubject = apply { fail(Fact.fact("Reason", reason)) }
+    fun fail(reason: String): FlickerSubject = apply { fail(Fact("Reason", reason)) }
 
     /**
      * Fails an assertion on a subject
@@ -76,7 +71,7 @@ abstract class FlickerSubject(protected val fm: FailureMetadata, data: Any?) : S
      * @param reason for the failure
      * @param value for the failure
      */
-    fun fail(reason: String, value: Any): FlickerSubject = apply { fail(Fact.fact(reason, value)) }
+    fun fail(reason: String, value: Any): FlickerSubject = apply { fail(Fact(reason, value)) }
 
     /**
      * Fails an assertion on a subject
@@ -87,15 +82,13 @@ abstract class FlickerSubject(protected val fm: FailureMetadata, data: Any?) : S
         if (reason is FlickerSubjectException) {
             throw reason
         } else {
-            throw FlickerSubjectException(this, reason)
+            throw FlickerSubjectException(timestamp, completeFacts, reason)
         }
     }
 
-    /**
-     * Function to make external assertions using the subjects Necessary because check is protected
-     * and final in the Truth library
-     */
-    fun verify(message: String): StandardSubjectBuilder = check(message)
+    fun check(lazyMessage: () -> String): CheckSubjectBuilder {
+        return CheckSubjectBuilder(lazyMessage, this)
+    }
 
     companion object {
         @VisibleForTesting @JvmStatic val ASSERTION_TAG = "Assertion"

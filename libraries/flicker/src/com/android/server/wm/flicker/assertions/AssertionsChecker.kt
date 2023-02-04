@@ -18,7 +18,6 @@ package com.android.server.wm.flicker.assertions
 
 import android.util.Log
 import com.android.server.wm.flicker.FLICKER_TAG
-import com.google.common.truth.Fact
 import kotlin.math.max
 
 /**
@@ -118,13 +117,12 @@ class AssertionsChecker<T : FlickerSubject> {
 
         val untestedAssertions = assertions.drop(assertionIndex + 1)
         if (failures.isEmpty() && untestedAssertions.any { !it.isOptional }) {
-            val passedAssertionsFacts =
-                assertions.take(assertionIndex).map { Fact.fact("Passed", it) }
-            val untestedAssertionsFacts = untestedAssertions.map { Fact.fact("Untested", it) }
-            val trace = assertionTrace.map { Fact.fact("Trace", it) }
+            val passedAssertionsFacts = assertions.take(assertionIndex).map { Fact("Passed", it) }
+            val untestedAssertionsFacts = untestedAssertions.map { Fact("Untested", it) }
+            val trace = assertionTrace.map { Fact("Trace", it) }
             val reason = mutableListOf<Fact>()
             reason.addAll(passedAssertionsFacts)
-            reason.add(Fact.fact("Assertion never failed", assertions[assertionIndex]))
+            reason.add(Fact("Assertion never failed", assertions[assertionIndex]))
             reason.addAll(untestedAssertionsFacts)
             reason.addAll(trace)
             entries.first().fail(reason)

@@ -57,7 +57,7 @@ open class SubjectsParser(private val resultReader: IReader) {
 
     protected open fun doGetWmTraceSubject(): WindowManagerTraceSubject? {
         val trace = resultReader.readWmTrace() ?: return null
-        return WindowManagerTraceSubject.assertThat(trace)
+        return WindowManagerTraceSubject(trace)
     }
 
     /** Truth subject that corresponds to a [LayersTrace] */
@@ -66,7 +66,7 @@ open class SubjectsParser(private val resultReader: IReader) {
 
     protected open fun doGetLayersTraceSubject(): LayersTraceSubject? {
         val trace = resultReader.readLayersTrace() ?: return null
-        return LayersTraceSubject.assertThat(trace)
+        return LayersTraceSubject(trace)
     }
 
     /** Truth subject that corresponds to a [WindowManagerState] */
@@ -79,7 +79,7 @@ open class SubjectsParser(private val resultReader: IReader) {
             AssertionTag.END -> wmTraceSubject?.subjects?.lastOrNull()
             else -> {
                 val trace = resultReader.readWmState(tag) ?: return null
-                WindowManagerStateSubject.assertThat(trace.first())
+                WindowManagerStateSubject(trace.first())
             }
         }
     }
@@ -94,7 +94,7 @@ open class SubjectsParser(private val resultReader: IReader) {
             AssertionTag.END -> layersTraceSubject?.subjects?.lastOrNull()
             else -> {
                 val trace = resultReader.readLayersDump(tag) ?: return null
-                return LayersTraceSubject.assertThat(trace).first()
+                return LayersTraceSubject(trace).first()
             }
         }
     }
@@ -105,7 +105,7 @@ open class SubjectsParser(private val resultReader: IReader) {
 
     protected open fun doGetEventLogSubject(): EventLogSubject? {
         val trace = resultReader.readEventLogTrace() ?: return null
-        return EventLogSubject.assertThat(trace)
+        return EventLogSubject(trace)
     }
 
     /**

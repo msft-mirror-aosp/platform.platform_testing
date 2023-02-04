@@ -42,7 +42,7 @@ class DataStoreTest {
     @Test
     fun throwsErrorAddElementTwice() {
         val failure =
-            assertThrows(IllegalStateException::class.java) {
+            assertThrows<IllegalStateException> {
                 DataStore.addResult(TEST_SCENARIO, Consts.TEST_RESULT)
                 DataStore.addResult(TEST_SCENARIO, Consts.TEST_RESULT)
             }
@@ -61,8 +61,7 @@ class DataStoreTest {
 
     @Test
     fun getsElementThrowErrorDoesNotExist() {
-        val failure =
-            assertThrows(IllegalStateException::class.java) { DataStore.getResult(TEST_SCENARIO) }
+        val failure = assertThrows<IllegalStateException> { DataStore.getResult(TEST_SCENARIO) }
         assertExceptionMessage(failure, TEST_SCENARIO.toString())
     }
 
@@ -77,7 +76,7 @@ class DataStoreTest {
     @Test
     fun replacesElementThrowErrorDoesNotExist() {
         val failure =
-            assertThrows(IllegalStateException::class.java) {
+            assertThrows<IllegalStateException> {
                 DataStore.replaceResult(TEST_SCENARIO, Consts.RESULT_FAILURE)
             }
         assertExceptionMessage(failure, TEST_SCENARIO.toString())

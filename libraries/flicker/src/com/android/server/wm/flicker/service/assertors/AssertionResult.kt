@@ -16,8 +16,6 @@
 
 package com.android.server.wm.flicker.service.assertors
 
-import com.android.server.wm.flicker.assertions.FlickerSubject
-import com.android.server.wm.flicker.traces.FlickerSubjectException
 import com.android.server.wm.traces.common.service.AssertionInvocationGroup
 import com.android.server.wm.traces.common.service.FlickerServiceScenario
 
@@ -30,7 +28,4 @@ data class AssertionResult(
 ) {
     val failed: Boolean
         get() = (assertionError !== null)
-
-    val failureSubject: FlickerSubject?
-        get() = if (assertionError is FlickerSubjectException) assertionError.subject else null
 }

@@ -17,49 +17,84 @@
 package com.android.server.wm.flicker.traces.region
 
 import androidx.annotation.VisibleForTesting
+import com.android.server.wm.flicker.assertions.Fact
 import com.android.server.wm.flicker.assertions.FlickerSubject
-import com.android.server.wm.flicker.traces.FlickerFailureStrategy
 import com.android.server.wm.traces.common.Rect
 import com.android.server.wm.traces.common.RectF
 import com.android.server.wm.traces.common.Timestamp
 import com.android.server.wm.traces.common.region.Region
 import com.android.server.wm.traces.common.region.RegionEntry
-import com.google.common.truth.Fact
-import com.google.common.truth.FailureMetadata
-import com.google.common.truth.StandardSubjectBuilder
-import com.google.common.truth.Subject.Factory
 import kotlin.math.abs
 
-/**
- * Truth subject for [Rect] objects, used to make assertions over behaviors that occur on a
- * rectangle.
- */
+/** Subject for [Rect] objects, used to make assertions over behaviors that occur on a rectangle. */
 class RegionSubject(
-    fm: FailureMetadata,
     override val parent: FlickerSubject?,
     val regionEntry: RegionEntry,
     override val timestamp: Timestamp
-) : FlickerSubject(fm, regionEntry) {
+) : FlickerSubject() {
+
+    /** Custom constructor for existing android regions */
+    constructor(
+        region: Region?,
+        parent: FlickerSubject? = null,
+        timestamp: Timestamp
+    ) : this(parent, RegionEntry(region ?: Region.EMPTY, timestamp), timestamp)
+
+    /** Custom constructor for existing rects */
+    constructor(
+        rect: Array<Rect>,
+        parent: FlickerSubject? = null,
+        timestamp: Timestamp
+    ) : this(Region(rect), parent, timestamp)
+
+    /** Custom constructor for existing rects */
+    constructor(
+        rect: Rect?,
+        parent: FlickerSubject? = null,
+        timestamp: Timestamp
+    ) : this(Region.from(rect), parent, timestamp)
+
+    /** Custom constructor for existing rects */
+    constructor(
+        rect: RectF?,
+        parent: FlickerSubject? = null,
+        timestamp: Timestamp
+    ) : this(rect?.toRect(), parent, timestamp)
+
+    /** Custom constructor for existing rects */
+    constructor(
+        rect: Array<RectF>,
+        parent: FlickerSubject? = null,
+        timestamp: Timestamp
+    ) : this(mergeRegions(rect.map { Region.from(it.toRect()) }.toTypedArray()), parent, timestamp)
+
+    /** Custom constructor for existing regions */
+    constructor(
+        regions: Array<Region>,
+        parent: FlickerSubject? = null,
+        timestamp: Timestamp
+    ) : this(mergeRegions(regions), parent, timestamp)
+
+    /**
+     * Custom constructor
+     *
+     * @param regionEntry to assert
+     * @param parent containing the entry
+     */
+    constructor(
+        regionEntry: RegionEntry?,
+        parent: FlickerSubject? = null,
+        timestamp: Timestamp
+    ) : this(regionEntry?.region, parent, timestamp)
 
     val region = regionEntry.region
-
-    private val topPositionSubject
-        get() = check(MSG_ERROR_TOP_POSITION).that(region.bounds.top)
-    private val bottomPositionSubject
-        get() = check(MSG_ERROR_BOTTOM_POSITION).that(region.bounds.bottom)
-    private val leftPositionSubject
-        get() = check(MSG_ERROR_LEFT_POSITION).that(region.bounds.left)
-    private val rightPositionSubject
-        get() = check(MSG_ERROR_RIGHT_POSITION).that(region.bounds.right)
-    private val areaSubject
-        get() = check(MSG_ERROR_AREA).that(region.bounds.area)
 
     private val android.graphics.Rect.area
         get() = this.width() * this.height()
     private val Rect.area
         get() = this.width * this.height
 
-    override val selfFacts = listOf(Fact.fact("Region - Covered", region.toString()))
+    override val selfFacts = listOf(Fact("Region - Covered", region.toString()))
 
     /** {@inheritDoc} */
     override fun fail(reason: List<Fact>): FlickerSubject {
@@ -68,33 +103,31 @@ class RegionSubject(
     }
 
     /** Asserts that the current [Region] doesn't contain layers */
-    fun isEmpty(): RegionSubject = apply {
-        check("Region").that(regionEntry.region.isEmpty).isTrue()
-    }
+    fun isEmpty(): RegionSubject = apply { check(regionEntry.region.isEmpty) { "Region is empty" } }
 
     /** Asserts that the current [Region] doesn't contain layers */
     fun isNotEmpty(): RegionSubject = apply {
-        check("Region").that(regionEntry.region.isEmpty).isFalse()
+        check(regionEntry.region.isNotEmpty) { "Region is not empty" }
     }
 
     private fun assertLeftRightAndAreaEquals(other: Region) {
-        leftPositionSubject.isEqualTo(other.bounds.left)
-        rightPositionSubject.isEqualTo(other.bounds.right)
-        areaSubject.isEqualTo(other.bounds.area)
+        check { MSG_ERROR_LEFT_POSITION }.that(region.bounds.left).isEqual(other.bounds.left)
+        check { MSG_ERROR_RIGHT_POSITION }.that(region.bounds.right).isEqual(other.bounds.right)
+        check { MSG_ERROR_AREA }.that(region.bounds.area).isEqual(other.bounds.area)
     }
 
     /** Subtracts [other] from this subject [region] */
     fun minus(other: Region): RegionSubject {
         val remainingRegion = Region.from(this.region)
         remainingRegion.op(other, Region.Op.XOR)
-        return assertThat(remainingRegion, this, timestamp)
+        return RegionSubject(remainingRegion, this, timestamp)
     }
 
     /** Adds [other] to this subject [region] */
     fun plus(other: Region): RegionSubject {
         val remainingRegion = Region.from(this.region)
         remainingRegion.op(other, Region.Op.UNION)
-        return assertThat(remainingRegion, this, timestamp)
+        return RegionSubject(remainingRegion, this, timestamp)
     }
 
     /**
@@ -123,8 +156,10 @@ class RegionSubject(
      */
     fun isHigherOrEqual(other: Region): RegionSubject = apply {
         assertLeftRightAndAreaEquals(other)
-        topPositionSubject.isAtMost(other.bounds.top)
-        bottomPositionSubject.isAtMost(other.bounds.bottom)
+        check { MSG_ERROR_TOP_POSITION }.that(region.bounds.top).isLowerOrEqual(other.bounds.top)
+        check { MSG_ERROR_BOTTOM_POSITION }
+            .that(region.bounds.bottom)
+            .isLowerOrEqual(other.bounds.bottom)
     }
 
     /**
@@ -153,8 +188,10 @@ class RegionSubject(
      */
     fun isLowerOrEqual(other: Region): RegionSubject = apply {
         assertLeftRightAndAreaEquals(other)
-        topPositionSubject.isAtLeast(other.bounds.top)
-        bottomPositionSubject.isAtLeast(other.bounds.bottom)
+        check { MSG_ERROR_TOP_POSITION }.that(region.bounds.top).isGreaterOrEqual(other.bounds.top)
+        check { MSG_ERROR_BOTTOM_POSITION }
+            .that(region.bounds.bottom)
+            .isGreaterOrEqual(other.bounds.bottom)
     }
 
     /**
@@ -179,8 +216,8 @@ class RegionSubject(
      */
     fun isHigher(other: Region): RegionSubject = apply {
         assertLeftRightAndAreaEquals(other)
-        topPositionSubject.isLessThan(other.bounds.top)
-        bottomPositionSubject.isLessThan(other.bounds.bottom)
+        check { MSG_ERROR_TOP_POSITION }.that(region.bounds.top).isLower(other.bounds.top)
+        check { MSG_ERROR_BOTTOM_POSITION }.that(region.bounds.bottom).isLower(other.bounds.bottom)
     }
 
     /**
@@ -205,8 +242,10 @@ class RegionSubject(
      */
     fun isLower(other: Region): RegionSubject = apply {
         assertLeftRightAndAreaEquals(other)
-        topPositionSubject.isGreaterThan(other.bounds.top)
-        bottomPositionSubject.isGreaterThan(other.bounds.bottom)
+        check { MSG_ERROR_TOP_POSITION }.that(region.bounds.top).isGreater(other.bounds.top)
+        check { MSG_ERROR_BOTTOM_POSITION }
+            .that(region.bounds.bottom)
+            .isGreater(other.bounds.bottom)
     }
 
     /**
@@ -218,9 +257,9 @@ class RegionSubject(
     fun coversAtMost(testRegion: Region): RegionSubject = apply {
         if (!region.coversAtMost(testRegion)) {
             fail(
-                Fact.fact("Region to test", testRegion),
-                Fact.fact("Covered region", region),
-                Fact.fact("Out-of-bounds region", region.outOfBoundsRegion(testRegion))
+                Fact("Region to test", testRegion),
+                Fact("Covered region", region),
+                Fact("Out-of-bounds region", region.outOfBoundsRegion(testRegion))
             )
         }
     }
@@ -244,10 +283,10 @@ class RegionSubject(
 
         if (area > testArea) {
             fail(
-                Fact.fact("Region to test", testRegion),
-                Fact.fact("Area of test region", testArea),
-                Fact.fact("Covered region", region),
-                Fact.fact("Area of region", area)
+                Fact("Region to test", testRegion),
+                Fact("Area of test region", testArea),
+                Fact("Covered region", region),
+                Fact("Area of region", area)
             )
         }
     }
@@ -265,7 +304,7 @@ class RegionSubject(
         val verticallyPositionedToTheBottom = testRegion.bounds.top - threshold <= region.bounds.top
 
         if (!horizontallyPositionedToTheRight || !verticallyPositionedToTheBottom) {
-            fail(Fact.fact("Region to test", testRegion), Fact.fact("Actual region", region))
+            fail(Fact("Region to test", testRegion), Fact("Actual region", region))
         }
     }
 
@@ -278,9 +317,9 @@ class RegionSubject(
     fun coversAtLeast(testRegion: Region): RegionSubject = apply {
         if (!region.coversAtLeast(testRegion)) {
             fail(
-                Fact.fact("Region to test", testRegion),
-                Fact.fact("Covered region", region),
-                Fact.fact("Uncovered region", region.uncoveredRegion(testRegion))
+                Fact("Region to test", testRegion),
+                Fact("Covered region", region),
+                Fact("Uncovered region", region.uncoveredRegion(testRegion))
             )
         }
     }
@@ -306,9 +345,9 @@ class RegionSubject(
 
         if (isNotEmpty) {
             fail(
-                Fact.fact("Region to test", testRegion),
-                Fact.fact("Covered region", region),
-                Fact.fact("Uncovered region", intersection)
+                Fact("Region to test", testRegion),
+                Fact("Covered region", region),
+                Fact("Uncovered region", intersection)
             )
         }
     }
@@ -333,9 +372,9 @@ class RegionSubject(
 
         if (isEmpty) {
             fail(
-                Fact.fact("Region to test", testRegion),
-                Fact.fact("Covered region", region),
-                Fact.fact("Overlap region", intersection)
+                Fact("Region to test", testRegion),
+                Fact("Covered region", region),
+                Fact("Overlap region", intersection)
             )
         }
     }
@@ -358,9 +397,9 @@ class RegionSubject(
 
         if (!isEmpty) {
             fail(
-                Fact.fact("Region to test", testRegion),
-                Fact.fact("Covered region", region),
-                Fact.fact("Overlap region", intersection)
+                Fact("Region to test", testRegion),
+                Fact("Covered region", region),
+                Fact("Overlap region", intersection)
             )
         }
     }
@@ -380,9 +419,9 @@ class RegionSubject(
     fun isSameAspectRatio(other: RegionSubject): RegionSubject = apply {
         val aspectRatio = this.region.width.toFloat() / this.region.height
         val otherAspectRatio = other.region.width.toFloat() / other.region.height
-        check("Aspect Ratio Difference (Old=$aspectRatio, New=$otherAspectRatio)")
+        check { "Aspect Ratio Difference" }
             .that(abs(aspectRatio - otherAspectRatio))
-            .isAtMost(0.1f)
+            .isLowerOrEqual(0.1f)
     }
 
     companion object {
@@ -403,93 +442,5 @@ class RegionSubject(
             }
             return result
         }
-
-        /** Boiler-plate Subject.Factory for RectSubject */
-        @JvmStatic
-        fun getFactory(parent: FlickerSubject?, timestamp: Timestamp) =
-            Factory { fm: FailureMetadata, region: Region? ->
-                val regionEntry = RegionEntry(region ?: Region.EMPTY, timestamp)
-                RegionSubject(fm, parent, regionEntry, timestamp)
-            }
-
-        /** User-defined entry point for existing android regions */
-        @JvmStatic
-        fun assertThat(
-            region: Region?,
-            parent: FlickerSubject? = null,
-            timestamp: Timestamp
-        ): RegionSubject {
-            val strategy = FlickerFailureStrategy()
-            val subject =
-                StandardSubjectBuilder.forCustomFailureStrategy(strategy)
-                    .about(getFactory(parent, timestamp))
-                    .that(region ?: Region.EMPTY) as RegionSubject
-            strategy.init(subject)
-            return subject
-        }
-
-        /** User-defined entry point for existing rects */
-        @JvmStatic
-        @JvmOverloads
-        fun assertThat(
-            rect: Array<Rect>,
-            parent: FlickerSubject? = null,
-            timestamp: Timestamp
-        ): RegionSubject = assertThat(Region(rect), parent, timestamp)
-
-        /** User-defined entry point for existing rects */
-        @JvmStatic
-        @JvmOverloads
-        fun assertThat(
-            rect: Rect?,
-            parent: FlickerSubject? = null,
-            timestamp: Timestamp
-        ): RegionSubject = assertThat(Region.from(rect), parent, timestamp)
-
-        /** User-defined entry point for existing rects */
-        @JvmStatic
-        @JvmOverloads
-        fun assertThat(
-            rect: RectF?,
-            parent: FlickerSubject? = null,
-            timestamp: Timestamp
-        ): RegionSubject = assertThat(rect?.toRect(), parent, timestamp)
-
-        /** User-defined entry point for existing rects */
-        @JvmStatic
-        @JvmOverloads
-        fun assertThat(
-            rect: Array<RectF>,
-            parent: FlickerSubject? = null,
-            timestamp: Timestamp
-        ): RegionSubject =
-            assertThat(
-                mergeRegions(rect.map { Region.from(it.toRect()) }.toTypedArray()),
-                parent,
-                timestamp
-            )
-
-        /** User-defined entry point for existing regions */
-        @JvmStatic
-        @JvmOverloads
-        fun assertThat(
-            regions: Array<Region>,
-            parent: FlickerSubject? = null,
-            timestamp: Timestamp
-        ): RegionSubject = assertThat(mergeRegions(regions), parent, timestamp)
-
-        /**
-         * User-defined entry point
-         *
-         * @param regionEntry to assert
-         * @param parent containing the entry
-         */
-        @JvmStatic
-        @JvmOverloads
-        fun assertThat(
-            regionEntry: RegionEntry?,
-            parent: FlickerSubject? = null,
-            timestamp: Timestamp
-        ): RegionSubject = assertThat(regionEntry?.region, parent, timestamp)
     }
 }

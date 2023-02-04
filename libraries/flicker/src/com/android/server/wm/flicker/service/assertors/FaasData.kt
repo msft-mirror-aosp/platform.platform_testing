@@ -16,12 +16,12 @@
 
 package com.android.server.wm.flicker.service.assertors
 
+import com.android.server.wm.flicker.assertions.Fact
 import com.android.server.wm.flicker.helpers.TimeFormatter
 import com.android.server.wm.flicker.helpers.format
 import com.android.server.wm.traces.common.layers.LayersTrace
 import com.android.server.wm.traces.common.service.ScenarioInstance
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
-import com.google.common.truth.Fact
 
 data class FaasData(
     val scenarioInstance: ScenarioInstance,
@@ -30,27 +30,24 @@ data class FaasData(
 ) {
     fun toFacts(): Collection<Fact> {
         return listOf(
-            Fact.fact("Extracted from WM trace start", entireWmTrace.first().timestamp.format()),
-            Fact.fact("Extracted from WM trace end", entireWmTrace.first().timestamp.format()),
-            Fact.fact(
-                "Extracted from SF trace start",
-                entireLayersTrace.first().timestamp.format()
-            ),
-            Fact.fact("Extracted from SF trace end", entireLayersTrace.first().timestamp.format()),
-            Fact.fact("Scenario type", scenarioInstance.scenario.scenarioType),
-            Fact.fact("Scenario rotation", scenarioInstance.scenario.startRotation),
-            Fact.fact(
+            Fact("Extracted from WM trace start", entireWmTrace.first().timestamp.format()),
+            Fact("Extracted from WM trace end", entireWmTrace.first().timestamp.format()),
+            Fact("Extracted from SF trace start", entireLayersTrace.first().timestamp.format()),
+            Fact("Extracted from SF trace end", entireLayersTrace.first().timestamp.format()),
+            Fact("Scenario type", scenarioInstance.scenario.scenarioType),
+            Fact("Scenario rotation", scenarioInstance.scenario.startRotation),
+            Fact(
                 "Scenario start",
                 "${TimeFormatter.format(scenarioInstance.startTimestamp)} " +
                     "(timestamp=${scenarioInstance.startTimestamp})"
             ),
-            Fact.fact(
+            Fact(
                 "Scenario end",
                 "${TimeFormatter.format(scenarioInstance.endTimestamp)} " +
                     "(timestamp=${scenarioInstance.endTimestamp})"
             ),
-            Fact.fact("Associated transition type", scenarioInstance.associatedTransition.type),
-            Fact.fact(
+            Fact("Associated transition type", scenarioInstance.associatedTransition.type),
+            Fact(
                 "Associated transition changes",
                 scenarioInstance.associatedTransition.changes.joinToString("\n  -", "\n  -") {
                     "${it.transitMode} ${it.windowName}"

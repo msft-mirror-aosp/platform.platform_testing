@@ -79,13 +79,13 @@ class TransitionAsserter(
             val faasFacts = FaasData(scenarioInstance, entireWmTrace, entireLayersTrace).toFacts()
             val wmSubject =
                 if (wmTraceToAssert != null) {
-                    WindowManagerTraceSubject.assertThat(wmTraceToAssert, facts = faasFacts)
+                    WindowManagerTraceSubject(wmTraceToAssert, facts = faasFacts)
                 } else {
                     null
                 }
             val layersSubject =
                 if (layersTraceToAssert != null) {
-                    LayersTraceSubject.assertThat(layersTraceToAssert, facts = faasFacts)
+                    LayersTraceSubject(layersTraceToAssert, facts = faasFacts)
                 } else {
                     null
                 }

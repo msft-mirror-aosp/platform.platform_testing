@@ -17,47 +17,38 @@ package com.android.server.wm.flicker.traces.layers
 
 import android.graphics.Point
 import com.android.server.wm.flicker.assertions.Assertion
+import com.android.server.wm.flicker.assertions.Fact
 import com.android.server.wm.flicker.assertions.FlickerSubject
-import com.android.server.wm.flicker.traces.FlickerFailureStrategy
 import com.android.server.wm.flicker.traces.region.RegionSubject
 import com.android.server.wm.traces.common.Size
 import com.android.server.wm.traces.common.Timestamp
 import com.android.server.wm.traces.common.layers.Layer
-import com.google.common.truth.Fact
-import com.google.common.truth.FailureMetadata
-import com.google.common.truth.FailureStrategy
-import com.google.common.truth.StandardSubjectBuilder
-import com.google.common.truth.Subject.Factory
 
 /**
- * Truth subject for [Layer] objects, used to make assertions over behaviors that occur on a single
- * layer of a SurfaceFlinger state.
+ * Subject for [Layer] objects, used to make assertions over behaviors that occur on a single layer
+ * of a SurfaceFlinger state.
  *
  * To make assertions over a layer from a state it is recommended to create a subject using
  * [LayerTraceEntrySubject.layer](layerName)
  *
- * Alternatively, it is also possible to use [LayerSubject.assertThat](myLayer) or
- * Truth.assertAbout([LayerSubject.getFactory]), however they will provide less debug information
- * because it uses Truth's default [FailureStrategy].
+ * Alternatively, it is also possible to use [LayerSubject](myLayer).
  *
  * Example:
  * ```
  *    val trace = LayersTraceParser().parse(myTraceFile)
- *    val subject = LayersTraceSubject.assertThat(trace).first()
+ *    val subject = LayersTraceSubject(trace).first()
  *        .layer("ValidLayer")
  *        .exists()
  *        .hasBufferSize(BUFFER_SIZE)
  *        .invoke { myCustomAssertion(this) }
  * ```
  */
-class LayerSubject
-private constructor(
-    fm: FailureMetadata,
+class LayerSubject(
     public override val parent: FlickerSubject,
     override val timestamp: Timestamp,
     val layer: Layer?,
     private val layerName: String? = null
-) : FlickerSubject(fm, layer) {
+) : FlickerSubject() {
     val isEmpty: Boolean
         get() = layer == null
     val isNotEmpty: Boolean
@@ -71,7 +62,7 @@ private constructor(
 
     /** Visible region calculated by the Composition Engine */
     val visibleRegion: RegionSubject
-        get() = RegionSubject.assertThat(layer?.visibleRegion, this, timestamp)
+        get() = RegionSubject(layer?.visibleRegion, this, timestamp)
 
     val visibilityReason: Array<String>
         get() = layer?.visibilityReason ?: emptyArray()
@@ -81,13 +72,13 @@ private constructor(
      * the layer bounds and transform
      */
     val screenBounds: RegionSubject
-        get() = RegionSubject.assertThat(layer?.screenBounds, this, timestamp)
+        get() = RegionSubject(layer?.screenBounds, this, timestamp)
 
     override val selfFacts =
         if (layer != null) {
-            listOf(Fact.fact("Frame", layer.currFrame), Fact.fact("Layer", layer.name))
+            listOf(Fact("Frame", layer.currFrame), Fact("Layer", layer.name))
         } else {
-            listOf(Fact.fact("Layer name", layerName))
+            listOf(Fact("Layer name", layerName))
         }
 
     /** If the [layer] exists, executes a custom [assertion] on the current subject */
@@ -98,17 +89,15 @@ private constructor(
 
     /** Asserts that current subject doesn't exist in the layer hierarchy */
     fun doesNotExist(): LayerSubject = apply {
-        check("Layer exists ${layer?.name}").that(layer == null).isTrue()
+        check { "Layer does not exist ${layer?.name}" }.that(layer).isEqual(null)
     }
 
     /** Asserts that current subject exists in the layer hierarchy */
-    fun exists(): LayerSubject = apply {
-        check("Layer exists $layerName").that(layer == null).isFalse()
-    }
+    fun exists(): LayerSubject = apply { check { "Layer exists" }.that(layer).isNotEqual(null) }
 
     @Deprecated("Prefer hasBufferSize(bounds)")
-    fun hasBufferSize(size: Point): LayerSubject = apply {
-        val bounds = Size.from(size.x, size.y)
+    fun hasBufferSize(expected: Point): LayerSubject = apply {
+        val bounds = Size.from(expected.x, expected.y)
         hasBufferSize(bounds)
     }
 
@@ -116,12 +105,12 @@ private constructor(
      * Asserts that current subject has an [Layer.activeBuffer] with width equals to [Point.x] and
      * height equals to [Point.y]
      *
-     * @param size expected buffer size
+     * @param expected expected buffer size
      */
-    fun hasBufferSize(size: Size): LayerSubject = apply {
+    fun hasBufferSize(expected: Size): LayerSubject = apply {
         layer ?: return exists()
         val bufferSize = Size.from(layer.activeBuffer.width, layer.activeBuffer.height)
-        check("Buffer size").that(bufferSize).isEqualTo(size)
+        check { "Buffer size" }.that(bufferSize).isEqual(expected)
     }
 
     /**
@@ -133,7 +122,7 @@ private constructor(
     fun hasLayerSize(size: Point): LayerSubject = apply {
         layer ?: return exists()
         val layerSize = Point(layer.screenBounds.width.toInt(), layer.screenBounds.height.toInt())
-        check("Number of layers").that(layerSize).isEqualTo(size)
+        check { "Number of layers" }.that(layerSize).isEqual(size)
     }
 
     /**
@@ -143,7 +132,9 @@ private constructor(
     fun hasScalingMode(expectedScalingMode: Int): LayerSubject = apply {
         layer ?: return exists()
         val actualScalingMode = layer.effectiveScalingMode
-        check("Scaling mode").that(actualScalingMode).isEqualTo(expectedScalingMode)
+        check(actualScalingMode == expectedScalingMode) {
+            "Scaling mode. Actual: $actualScalingMode, expected: $expectedScalingMode"
+        }
     }
 
     /**
@@ -155,47 +146,12 @@ private constructor(
         // see Transform::getOrientation
         val bufferTransformType = layer.bufferTransform.type ?: 0
         val actualOrientation = (bufferTransformType shr 8) and 0xFF
-        check("BufferTransformOrientation").that(actualOrientation).isEqualTo(expectedOrientation)
+        check(actualOrientation == expectedOrientation) {
+            "Buffer orientation. Actual: $actualOrientation, expected: $expectedOrientation"
+        }
     }
 
     override fun toString(): String {
         return "Layer:${layer?.name} frame#${layer?.currFrame}"
-    }
-
-    companion object {
-        /** Boiler-plate Subject.Factory for LayerSubject */
-        @JvmStatic
-        fun getFactory(parent: FlickerSubject, timestamp: Timestamp, name: String?) =
-            Factory { fm: FailureMetadata, subject: Layer? ->
-                LayerSubject(fm, parent, timestamp, subject, name)
-            }
-
-        /** User-defined parent point for existing layers */
-        @JvmStatic
-        fun assertThat(layer: Layer?, parent: FlickerSubject, timestamp: Timestamp): LayerSubject {
-            val strategy = FlickerFailureStrategy()
-            val subject =
-                StandardSubjectBuilder.forCustomFailureStrategy(strategy)
-                    .about(getFactory(parent, timestamp, name = null))
-                    .that(layer) as LayerSubject
-            strategy.init(subject)
-            return subject
-        }
-
-        /** User-defined parent point for non existing layers */
-        @JvmStatic
-        internal fun assertThat(
-            name: String,
-            parent: FlickerSubject,
-            timestamp: Timestamp
-        ): LayerSubject {
-            val strategy = FlickerFailureStrategy()
-            val subject =
-                StandardSubjectBuilder.forCustomFailureStrategy(strategy)
-                    .about(getFactory(parent, timestamp, name))
-                    .that(null) as LayerSubject
-            strategy.init(subject)
-            return subject
-        }
     }
 }

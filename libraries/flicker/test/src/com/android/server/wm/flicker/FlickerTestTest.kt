@@ -43,9 +43,7 @@ class FlickerTestTest {
     fun failsWithoutScenario() {
         val actual = FlickerTest()
         val failure =
-            assertThrows(IllegalArgumentException::class.java) {
-                actual.assertLayers { executionCount++ }
-            }
+            assertThrows<IllegalArgumentException> { actual.assertLayers { executionCount++ } }
         assertExceptionMessage(failure, "Scenario shouldn't be empty")
         Truth.assertWithMessage("Executed").that(executionCount).isEqualTo(0)
     }

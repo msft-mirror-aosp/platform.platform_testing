@@ -37,7 +37,7 @@ class LayersAssertion() : Assertion {
         require(newTrace is LayersTrace) {
             "Requires a trace of type 'LayersTrace' to execute LayersAssertion."
         }
-        execute(LayersTraceSubject.assertThat(newTrace), transition)
+        execute(LayersTraceSubject(newTrace), transition)
     }
 
     override fun execute(

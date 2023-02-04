@@ -37,9 +37,8 @@ import com.android.server.wm.traces.parser.windowmanager.WindowManagerDumpParser
 import com.android.server.wm.traces.parser.windowmanager.WindowManagerStateHelper
 import com.android.server.wm.traces.parser.windowmanager.WindowManagerTraceParser
 import com.google.common.io.ByteStreams
-import com.google.common.truth.ExpectFailure
+import com.google.common.truth.StringSubject
 import com.google.common.truth.Truth
-import com.google.common.truth.TruthFailureSubject
 import java.io.File
 import java.io.FileInputStream
 import java.io.IOException
@@ -153,30 +152,42 @@ fun readAssetAsFile(relativePath: String): File {
  * @throws AssertionError if `r` does not throw, or throws a runnable that is not an instance of
  * `expectedThrowable`.
  */
-fun assertThrows(expectedThrowable: Class<out Throwable>, r: () -> Unit): Throwable {
+inline fun <reified ExceptionType> assertThrows(r: () -> Unit): ExceptionType {
     try {
         r()
     } catch (t: Throwable) {
         when {
-            expectedThrowable.isInstance(t) -> return t
+            ExceptionType::class.java.isInstance(t) -> return t as ExceptionType
             t is Exception ->
-                throw AssertionError("Expected $expectedThrowable, but got ${t.javaClass}", t)
+                throw AssertionError(
+                    "Expected ${ExceptionType::class.java}, but got '${t.javaClass}'",
+                    t
+                )
             // Re-throw Errors and other non-Exception throwables.
             else -> throw t
         }
     }
-    error("Expected $expectedThrowable, but nothing was thrown")
+    error("Expected exception ${ExceptionType::class.java}, but nothing was thrown")
 }
 
-fun assertFailure(failure: Throwable?): TruthFailureSubject {
-    val target =
-        when (failure) {
-            is FlickerSubjectException -> failure.cause
-            is AssertionError -> failure
-            else -> error("Expected assertion error, received $failure")
+fun assertFailureFact(
+    failure: FlickerSubjectException,
+    factKey: String,
+    factIndex: Int = 0
+): StringSubject {
+    val matchingFacts = failure.facts.filter { it.key == factKey }
+
+    if (factIndex >= matchingFacts.size) {
+        val message = buildString {
+            appendLine("Cannot find failure fact with key '$factKey' and index $factIndex")
+            appendLine()
+            appendLine("Available facts:")
+            failure.facts.forEach { appendLine(it.toString()) }
         }
-    require(target is AssertionError) { "Unknown failure $target" }
-    return ExpectFailure.assertThat(target)
+        throw AssertionError(message)
+    }
+
+    return Truth.assertThat(matchingFacts[factIndex].value)
 }
 
 fun assertThatErrorContainsDebugInfo(error: Throwable, withBlameEntry: Boolean = true) {

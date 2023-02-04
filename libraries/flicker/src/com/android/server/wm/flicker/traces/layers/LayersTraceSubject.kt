@@ -17,7 +17,7 @@
 package com.android.server.wm.flicker.traces.layers
 
 import com.android.server.wm.flicker.assertions.Assertion
-import com.android.server.wm.flicker.traces.FlickerFailureStrategy
+import com.android.server.wm.flicker.assertions.Fact
 import com.android.server.wm.flicker.traces.FlickerTraceSubject
 import com.android.server.wm.flicker.traces.region.RegionTraceSubject
 import com.android.server.wm.traces.common.ComponentNameMatcher
@@ -27,26 +27,18 @@ import com.android.server.wm.traces.common.Timestamp
 import com.android.server.wm.traces.common.layers.Layer
 import com.android.server.wm.traces.common.layers.LayersTrace
 import com.android.server.wm.traces.common.region.RegionTrace
-import com.google.common.truth.Fact
-import com.google.common.truth.FailureMetadata
-import com.google.common.truth.FailureStrategy
-import com.google.common.truth.StandardSubjectBuilder
-import com.google.common.truth.Subject
-import com.google.common.truth.Subject.Factory
 
 /**
- * Truth subject for [LayersTrace] objects, used to make assertions over behaviors that occur
- * throughout a whole trace
+ * Subject for [LayersTrace] objects, used to make assertions over behaviors that occur throughout a
+ * whole trace
  *
  * To make assertions over a trace it is recommended to create a subject using
- * [LayersTraceSubject.assertThat](myTrace). Alternatively, it is also possible to use
- * Truth.assertAbout(LayersTraceSubject.FACTORY), however it will provide less debug information
- * because it uses Truth's default [FailureStrategy].
+ * [LayersTraceSubject](myTrace).
  *
  * Example:
  * ```
  *    val trace = LayersTraceParser().parse(myTraceFile)
- *    val subject = LayersTraceSubject.assertThat(trace)
+ *    val subject = LayersTraceSubject(trace)
  *        .contains("ValidLayer")
  *        .notContains("ImaginaryLayer")
  *        .coversExactly(DISPLAY_AREA)
@@ -55,19 +47,17 @@ import com.google.common.truth.Subject.Factory
  * Example2:
  * ```
  *    val trace = LayersTraceParser().parse(myTraceFile)
- *    val subject = LayersTraceSubject.assertThat(trace) {
+ *    val subject = LayersTraceSubject(trace) {
  *        check("Custom check") { myCustomAssertion(this) }
  *    }
  * ```
  */
-class LayersTraceSubject
-private constructor(
-    fm: FailureMetadata,
+class LayersTraceSubject(
     val trace: LayersTrace,
-    override val parent: LayersTraceSubject?,
-    val facts: Collection<Fact>
+    override val parent: LayersTraceSubject? = null,
+    val facts: Collection<Fact> = emptyList()
 ) :
-    FlickerTraceSubject<LayerTraceEntrySubject>(fm, trace),
+    FlickerTraceSubject<LayerTraceEntrySubject>(),
     ILayerSubject<LayersTraceSubject, RegionTraceSubject> {
 
     override val selfFacts by lazy {
@@ -76,28 +66,28 @@ private constructor(
         allFacts
     }
 
-    override val subjects by lazy {
-        trace.entries.map { LayerTraceEntrySubject.assertThat(it, trace, this) }
-    }
+    override val subjects by lazy { trace.entries.map { LayerTraceEntrySubject(it, trace, this) } }
 
     /** {@inheritDoc} */
     override fun then(): LayersTraceSubject = apply { super.then() }
 
     /** {@inheritDoc} */
-    override fun isEmpty(): LayersTraceSubject = apply { check("Trace").that(trace).isEmpty() }
+    override fun isEmpty(): LayersTraceSubject = apply {
+        check { "Trace is empty" }.that(trace.isEmpty()).isEqual(true)
+    }
 
     /** {@inheritDoc} */
     override fun isNotEmpty(): LayersTraceSubject = apply {
-        check("Trace").that(trace).isNotEmpty()
+        check { "Trace is not empty" }.that(trace.isNotEmpty()).isEqual(true)
     }
 
     /** {@inheritDoc} */
     override fun layer(name: String, frameNumber: Long): LayerSubject {
         return subjects.map { it.layer(name, frameNumber) }.firstOrNull { it.isNotEmpty }
-            ?: LayerSubject.assertThat(
-                null,
+            ?: LayerSubject(
                 this,
-                timestamp = subjects.firstOrNull()?.entry?.timestamp ?: Timestamp.EMPTY
+                timestamp = subjects.firstOrNull()?.entry?.timestamp ?: Timestamp.EMPTY,
+                null
             )
     }
 
@@ -232,7 +222,7 @@ private constructor(
                     }
                     .toTypedArray()
             )
-        return RegionTraceSubject.assertThat(regionTrace, this)
+        return RegionTraceSubject(regionTrace, this)
     }
 
     /** Executes a custom [assertion] on the current subject */
@@ -304,47 +294,6 @@ private constructor(
             subjects.first { it.entry.elapsedTimestamp == timestamp }
         } else {
             subjects.first { it.entry.timestamp.systemUptimeNanos == timestamp }
-        }
-    }
-
-    companion object {
-        /** Boilerplate Subject.Factory for LayersTraceSubject */
-        private fun getFactory(
-            parent: LayersTraceSubject?,
-            facts: Collection<Fact> = emptyList()
-        ): Factory<Subject, LayersTrace> = Factory { fm, subject ->
-            LayersTraceSubject(fm, subject, parent, facts)
-        }
-
-        /**
-         * Creates a [LayersTraceSubject] to representing a SurfaceFlinger trace, which can be used
-         * to make assertions.
-         *
-         * @param trace SurfaceFlinger trace
-         */
-        @JvmStatic
-        @JvmOverloads
-        fun assertThat(
-            trace: LayersTrace,
-            parent: LayersTraceSubject? = null,
-            facts: Collection<Fact> = emptyList()
-        ): LayersTraceSubject {
-            val strategy = FlickerFailureStrategy()
-            val subject =
-                StandardSubjectBuilder.forCustomFailureStrategy(strategy)
-                    .about(getFactory(parent, facts))
-                    .that(trace) as LayersTraceSubject
-            strategy.init(subject)
-            return subject
-        }
-
-        /** Static method for getting the subject factory (for use with assertAbout()) */
-        @JvmStatic
-        fun entries(
-            parent: LayersTraceSubject?,
-            facts: Collection<Fact> = emptyList()
-        ): Factory<Subject, LayersTrace> {
-            return getFactory(parent, facts)
         }
     }
 }

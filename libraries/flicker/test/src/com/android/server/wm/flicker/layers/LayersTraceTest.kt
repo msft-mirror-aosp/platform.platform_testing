@@ -112,9 +112,7 @@ class LayersTraceTest {
     fun exceptionContainsDebugInfo() {
         val layersTraceEntries = readLayerTraceFromFile("layers_trace_emptyregion.pb")
         val error =
-            assertThrows(AssertionError::class.java) {
-                LayersTraceSubject.assertThat(layersTraceEntries).isEmpty()
-            }
+            assertThrows<AssertionError> { LayersTraceSubject(layersTraceEntries).isEmpty() }
         assertThatErrorContainsDebugInfo(error, withBlameEntry = false)
     }
 }

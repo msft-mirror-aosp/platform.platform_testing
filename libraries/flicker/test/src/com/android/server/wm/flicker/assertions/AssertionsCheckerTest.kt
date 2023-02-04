@@ -16,15 +16,12 @@
 
 package com.android.server.wm.flicker.assertions
 
-import com.android.server.wm.flicker.assertFailure
-import com.android.server.wm.flicker.traces.FlickerFailureStrategy
+import com.android.server.wm.flicker.assertFailureFact
+import com.android.server.wm.flicker.assertThrows
 import com.android.server.wm.flicker.traces.FlickerSubjectException
 import com.android.server.wm.traces.common.ITraceEntry
 import com.android.server.wm.traces.common.Timestamp
-import com.google.common.truth.Fact
-import com.google.common.truth.FailureMetadata
-import com.google.common.truth.StandardSubjectBuilder
-import com.google.common.truth.Subject
+import com.google.common.truth.Truth
 import org.junit.FixMethodOrder
 import org.junit.Test
 import org.junit.runners.MethodSorters
@@ -109,13 +106,9 @@ class AssertionsCheckerTest {
         val checker = AssertionsChecker<SimpleEntrySubject>()
         checker.add("isData42") { it.isData42() }
         checker.add("isData0") { it.isData0() }
-        try {
-            checker.test(getTestEntries(0, 0, 0, 0, 0))
-        } catch (failure: Throwable) {
-            require(failure is FlickerSubjectException) { "Unknown failure $failure" }
-            assertFailure(failure.cause).factValue("expected").isEqualTo("42")
-            assertFailure(failure.cause).factValue("but was").isEqualTo("0")
-        }
+        val failure =
+            assertThrows<FlickerSubjectException> { checker.test(getTestEntries(0, 0, 0, 0, 0)) }
+        assertFailureFact(failure, "Assertion failed").isEqualTo("data is 42")
     }
 
     @Test
@@ -132,61 +125,40 @@ class AssertionsCheckerTest {
         val checker = AssertionsChecker<SimpleEntrySubject>()
         checker.add("isData42") { it.isData42() }
         checker.add("isData0") { it.isData0() }
-        try {
-            checker.test(getTestEntries(42, 42, 42, 42, 42))
-        } catch (failure: Throwable) {
-            require(failure is FlickerSubjectException) { "Unknown failure $failure" }
-            assertFailure(failure.cause)
-                .hasMessageThat()
-                .contains("Assertion never failed: isData42")
-        }
+        val failure =
+            assertThrows<FlickerSubjectException> {
+                checker.test(getTestEntries(42, 42, 42, 42, 42))
+            }
+        Truth.assertThat(failure).hasMessageThat().contains("Assertion never failed: isData42")
     }
 
     @Test
     fun canFailCheckChangingAssertionsIfUsingCompoundAssertion() {
         val checker = AssertionsChecker<SimpleEntrySubject>()
         checker.add("isData42/0") { it.isData42().isData0() }
-        try {
-            checker.test(getTestEntries(0, 0, 0, 0, 0))
-        } catch (failure: Throwable) {
-            require(failure is FlickerSubjectException) { "Unknown failure $failure" }
-            assertFailure(failure.cause).factValue("expected").isEqualTo("42")
-            assertFailure(failure.cause).factValue("but was").isEqualTo("0")
-        }
+        val failure =
+            assertThrows<FlickerSubjectException> { checker.test(getTestEntries(0, 0, 0, 0, 0)) }
+        assertFailureFact(failure, "Assertion failed").isEqualTo("data is 42")
     }
 
-    private class SimpleEntrySubject(
-        failureMetadata: FailureMetadata,
-        private val entry: SimpleEntry
-    ) : FlickerSubject(failureMetadata, entry) {
+    private class SimpleEntrySubject(private val entry: SimpleEntry) : FlickerSubject() {
         override val timestamp: Timestamp
             get() = Timestamp.EMPTY
         override val parent: FlickerSubject?
             get() = null
-        override val selfFacts = listOf(Fact.fact("SimpleEntry", entry.mData.toString()))
+        override val selfFacts = listOf(Fact("SimpleEntry", entry.mData.toString()))
 
-        fun isData42() = apply { check("is42").that(entry.mData).isEqualTo(42) }
+        fun isData42() = apply { check { "data is 42" }.that(entry.mData).isEqual(42) }
 
-        fun isData0() = apply { check("is0").that(entry.mData).isEqualTo(0) }
+        fun isData0() = apply { check { "data is 0" }.that(entry.mData).isEqual(0) }
 
-        fun isData1() = apply { check("is1").that(entry.mData).isEqualTo(1) }
+        fun isData1() = apply { check { "data is 1" }.that(entry.mData).isEqual(1) }
 
         companion object {
-            /** Boiler-plate Subject.Factory for LayersTraceSubject */
-            private val FACTORY: Factory<Subject, SimpleEntry> = Factory { fm, subject ->
-                SimpleEntrySubject(fm, subject)
-            }
-
             /** User-defined entry point */
             @JvmStatic
             fun assertThat(entry: SimpleEntry): SimpleEntrySubject {
-                val strategy = FlickerFailureStrategy()
-                val subject =
-                    StandardSubjectBuilder.forCustomFailureStrategy(strategy)
-                        .about(FACTORY)
-                        .that(entry) as SimpleEntrySubject
-                strategy.init(subject)
-                return subject
+                return SimpleEntrySubject(entry)
             }
         }
     }
@@ -200,9 +172,7 @@ class AssertionsCheckerTest {
          */
         private fun getTestEntries(vararg data: Int): List<SimpleEntrySubject> =
             data.indices.map {
-                SimpleEntrySubject.assertThat(
-                    SimpleEntry(Timestamp(elapsedNanos = it.toLong()), data[it])
-                )
+                SimpleEntrySubject(SimpleEntry(Timestamp(elapsedNanos = it.toLong()), data[it]))
             }
     }
 }

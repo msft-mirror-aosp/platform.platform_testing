@@ -18,7 +18,7 @@ package com.android.server.wm.flicker.traces.windowmanager
 
 import androidx.annotation.VisibleForTesting
 import com.android.server.wm.flicker.assertions.Assertion
-import com.android.server.wm.flicker.traces.FlickerFailureStrategy
+import com.android.server.wm.flicker.assertions.Fact
 import com.android.server.wm.flicker.traces.FlickerTraceSubject
 import com.android.server.wm.flicker.traces.region.RegionTraceSubject
 import com.android.server.wm.traces.common.ComponentNameMatcher
@@ -27,26 +27,18 @@ import com.android.server.wm.traces.common.region.RegionTrace
 import com.android.server.wm.traces.common.service.PlatformConsts
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 import com.android.server.wm.traces.common.windowmanager.windows.WindowState
-import com.google.common.truth.Fact
-import com.google.common.truth.FailureMetadata
-import com.google.common.truth.FailureStrategy
-import com.google.common.truth.StandardSubjectBuilder
-import com.google.common.truth.Subject
-import com.google.common.truth.Subject.Factory
 
 /**
- * Truth subject for [WindowManagerTrace] objects, used to make assertions over behaviors that occur
+ * Subject for [WindowManagerTrace] objects, used to make assertions over behaviors that occur
  * throughout a whole trace.
  *
  * To make assertions over a trace it is recommended to create a subject using
- * [WindowManagerTraceSubject.assertThat](myTrace). Alternatively, it is also possible to use
- * Truth.assertAbout(WindowManagerTraceSubject.FACTORY), however it will provide less debug
- * information because it uses Truth's default [FailureStrategy].
+ * [WindowManagerTraceSubject](myTrace).
  *
  * Example:
  * ```
  *    val trace = WindowManagerTraceParser().parse(myTraceFile)
- *    val subject = WindowManagerTraceSubject.assertThat(trace)
+ *    val subject = WindowManagerTraceSubject(trace)
  *        .contains("ValidWindow")
  *        .notContains("ImaginaryWindow")
  *        .showsAboveAppWindow("NavigationBar")
@@ -55,19 +47,17 @@ import com.google.common.truth.Subject.Factory
  * Example2:
  * ```
  *    val trace = WindowManagerTraceParser().parse(myTraceFile)
- *    val subject = WindowManagerTraceSubject.assertThat(trace) {
- *        check("Custom check") { myCustomAssertion(this) }
+ *    val subject = WindowManagerTraceSubject(trace) {
+ *        check(myCustomAssertion(this)) { "My assertion lazy message" }
  *    }
  * ```
  */
-class WindowManagerTraceSubject
-private constructor(
-    fm: FailureMetadata,
+class WindowManagerTraceSubject(
     val trace: WindowManagerTrace,
-    override val parent: WindowManagerTraceSubject?,
-    private val facts: Collection<Fact>
+    override val parent: WindowManagerTraceSubject? = null,
+    private val facts: Collection<Fact> = emptyList()
 ) :
-    FlickerTraceSubject<WindowManagerStateSubject>(fm, trace),
+    FlickerTraceSubject<WindowManagerStateSubject>(),
     IWindowManagerSubject<WindowManagerTraceSubject, RegionTraceSubject> {
 
     override val selfFacts by lazy {
@@ -77,7 +67,7 @@ private constructor(
     }
 
     override val subjects by lazy {
-        trace.entries.map { WindowManagerStateSubject.assertThat(it, this, this) }
+        trace.entries.map { WindowManagerStateSubject(it, this, this) }
     }
 
     /** {@inheritDoc} */
@@ -90,12 +80,12 @@ private constructor(
 
     /** {@inheritDoc} */
     override fun isEmpty(): WindowManagerTraceSubject = apply {
-        check("Trace").that(trace).isEmpty()
+        check { "Trace is empty" }.that(trace.isEmpty()).isEqual(true)
     }
 
     /** {@inheritDoc} */
     override fun isNotEmpty(): WindowManagerTraceSubject = apply {
-        check("Trace").that(trace).isNotEmpty()
+        check { "Trace is not empty" }.that(trace.isEmpty()).isEqual(false)
     }
 
     /**
@@ -359,7 +349,7 @@ private constructor(
                 subjects.map { it.visibleRegion(componentMatcher).regionEntry }.toTypedArray()
             )
 
-        return RegionTraceSubject.assertThat(regionTrace, this)
+        return RegionTraceSubject(regionTrace, this)
     }
 
     /** {@inheritDoc} */
@@ -592,43 +582,4 @@ private constructor(
      */
     fun getEntryByElapsedTimestamp(timestamp: Long): WindowManagerStateSubject =
         subjects.first { it.wmState.timestamp.elapsedNanos == timestamp }
-
-    companion object {
-        /** Boilerplate Subject.Factory for WmTraceSubject */
-        private fun getFactory(
-            parent: WindowManagerTraceSubject?,
-            facts: Collection<Fact> = emptyList()
-        ): Factory<Subject, WindowManagerTrace> = Factory { fm, subject ->
-            WindowManagerTraceSubject(fm, subject, parent, facts)
-        }
-
-        /**
-         * Creates a [WindowManagerTraceSubject] representing a WindowManager trace, which can be
-         * used to make assertions.
-         *
-         * @param trace WindowManager trace
-         */
-        @JvmStatic
-        @JvmOverloads
-        fun assertThat(
-            trace: WindowManagerTrace,
-            parent: WindowManagerTraceSubject? = null,
-            facts: Collection<Fact> = emptyList()
-        ): WindowManagerTraceSubject {
-            val strategy = FlickerFailureStrategy()
-            val subject =
-                StandardSubjectBuilder.forCustomFailureStrategy(strategy)
-                    .about(getFactory(parent, facts))
-                    .that(trace) as WindowManagerTraceSubject
-            strategy.init(subject)
-            return subject
-        }
-
-        /** Static method for getting the subject factory (for use with assertAbout()) */
-        @JvmStatic
-        fun entries(
-            parent: WindowManagerTraceSubject?,
-            facts: Collection<Fact>
-        ): Factory<Subject, WindowManagerTrace> = getFactory(parent, facts)
-    }
 }

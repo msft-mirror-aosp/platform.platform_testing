@@ -16,60 +16,22 @@
 
 package com.android.server.wm.flicker.traces.eventlog
 
+import com.android.server.wm.flicker.assertions.Fact
 import com.android.server.wm.flicker.assertions.FlickerSubject
-import com.android.server.wm.flicker.traces.FlickerFailureStrategy
 import com.android.server.wm.traces.common.Timestamp
 import com.android.server.wm.traces.common.events.FocusEvent
-import com.google.common.truth.Fact
-import com.google.common.truth.FailureMetadata
-import com.google.common.truth.StandardSubjectBuilder
-import com.google.common.truth.Subject.Factory
 
-class FocusEventSubject(
-    fm: FailureMetadata,
-    val event: FocusEvent,
-    override val parent: EventLogSubject?
-) : FlickerSubject(fm, event) {
+class FocusEventSubject(val event: FocusEvent, override val parent: EventLogSubject?) :
+    FlickerSubject() {
     override val timestamp: Timestamp
         get() = event.timestamp
-    override val selfFacts by lazy { listOf(Fact.simpleFact(event.toString())) }
+    override val selfFacts by lazy { listOf(Fact(event.toString())) }
 
     fun hasFocus() {
-        check("Has focus").that(event.hasFocus()).isTrue()
+        check { "Has focus" }.that(event.hasFocus()).isEqual(true)
     }
 
     fun hasNotFocus() {
-        check("Has focus").that(event.hasFocus()).isFalse()
-    }
-
-    companion object {
-        /**
-         * Boiler-plate Subject.Factory for EventLogSubject
-         *
-         * @param trace containing this event
-         */
-        private fun getFactory(
-            trace: EventLogSubject? = null
-        ): Factory<FocusEventSubject, FocusEvent> = Factory { fm, subject ->
-            FocusEventSubject(fm, subject, trace)
-        }
-
-        /**
-         * User-defined entry point
-         *
-         * @param event Focus event
-         * @param trace containing this event
-         */
-        @JvmStatic
-        @JvmOverloads
-        fun assertThat(event: FocusEvent, trace: EventLogSubject? = null): FocusEventSubject {
-            val strategy = FlickerFailureStrategy()
-            val subject =
-                StandardSubjectBuilder.forCustomFailureStrategy(strategy)
-                    .about(getFactory(trace))
-                    .that(event) as FocusEventSubject
-            strategy.init(subject)
-            return subject
-        }
+        check { "Has not focus" }.that(event.hasFocus()).isEqual(false)
     }
 }
