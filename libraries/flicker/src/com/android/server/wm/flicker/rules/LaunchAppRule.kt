@@ -21,7 +21,7 @@ import android.util.Log
 import androidx.test.platform.app.InstrumentationRegistry
 import com.android.server.wm.flicker.FLICKER_TAG
 import com.android.server.wm.flicker.helpers.StandardAppHelper
-import com.android.server.wm.traces.common.ComponentNameMatcher
+import com.android.server.wm.traces.common.component.matchers.ComponentNameMatcher
 import com.android.server.wm.traces.parser.windowmanager.WindowManagerStateHelper
 import com.android.server.wm.traces.parser.withPerfettoTrace
 import org.junit.rules.TestWatcher

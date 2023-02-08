@@ -21,7 +21,8 @@ import com.android.server.wm.flicker.assertThrows
 import com.android.server.wm.flicker.readLayerTraceFromFile
 import com.android.server.wm.flicker.traces.layers.LayersTraceSubject
 import com.android.server.wm.traces.common.Cache
-import com.android.server.wm.traces.common.ComponentNameMatcher
+import com.android.server.wm.traces.common.Timestamp
+import com.android.server.wm.traces.common.component.matchers.ComponentNameMatcher
 import com.android.server.wm.traces.common.layers.LayersTrace
 import com.google.common.truth.Truth
 import org.junit.Before
@@ -32,8 +33,8 @@ import org.junit.runners.MethodSorters
 /** Contains [LayersTrace] tests. To run this test: `atest FlickerLibTest:LayersTraceTest` */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class LayersTraceTest {
-    private fun detectRootLayer(fileName: String) {
-        val layersTrace = readLayerTraceFromFile(fileName)
+    private fun detectRootLayer(fileName: String, legacyTrace: Boolean = false) {
+        val layersTrace = readLayerTraceFromFile(fileName, legacyTrace = legacyTrace)
         for (entry in layersTrace.entries) {
             val rootLayers = entry.children
             Truth.assertWithMessage("Does not have any root layer")
@@ -53,18 +54,18 @@ class LayersTraceTest {
 
     @Test
     fun testCanDetectRootLayer() {
-        detectRootLayer("layers_trace_root.pb")
+        detectRootLayer("layers_trace_root.pb", legacyTrace = true)
     }
 
     @Test
     fun testCanDetectRootLayerAOSP() {
-        detectRootLayer("layers_trace_root_aosp.pb")
+        detectRootLayer("layers_trace_root_aosp.pb", legacyTrace = true)
     }
 
     @Test
     fun canTestLayerOccludedByAppLayerHasVisibleRegion() {
-        val trace = readLayerTraceFromFile("layers_trace_occluded.pb")
-        val entry = trace.getEntryBySystemUptime(1700382131522L)
+        val trace = readLayerTraceFromFile("layers_trace_occluded.pb", legacyTrace = true)
+        val entry = trace.getEntryExactlyAt(Timestamp(systemUptimeNanos = 1700382131522L))
         val component =
             ComponentNameMatcher("", "com.android.server.wm.flicker.testapp.SimpleActivity#0")
         val layer = entry.getLayerWithBuffer(component)
@@ -90,8 +91,8 @@ class LayersTraceTest {
     fun canTestLayerOccludedByAppLayerIsOccludedBySplashScreen() {
         val layerName = "com.android.server.wm.flicker.testapp.SimpleActivity#0"
         val component = ComponentNameMatcher("", layerName)
-        val trace = readLayerTraceFromFile("layers_trace_occluded.pb")
-        val entry = trace.getEntryBySystemUptime(1700382131522L)
+        val trace = readLayerTraceFromFile("layers_trace_occluded.pb", legacyTrace = true)
+        val entry = trace.getEntryExactlyAt(Timestamp(systemUptimeNanos = 1700382131522L))
         val layer = entry.getLayerWithBuffer(component)
         val occludedBy = layer?.occludedBy ?: emptyArray()
         val partiallyOccludedBy = layer?.partiallyOccludedBy ?: emptyArray()
@@ -110,7 +111,8 @@ class LayersTraceTest {
 
     @Test
     fun exceptionContainsDebugInfo() {
-        val layersTraceEntries = readLayerTraceFromFile("layers_trace_emptyregion.pb")
+        val layersTraceEntries =
+            readLayerTraceFromFile("layers_trace_emptyregion.pb", legacyTrace = true)
         val error =
             assertThrows<AssertionError> { LayersTraceSubject(layersTraceEntries).isEmpty() }
         assertThatErrorContainsDebugInfo(error, withBlameEntry = false)

@@ -18,11 +18,11 @@ package com.android.server.wm.traces.common
 
 object Utils {
     fun getTimestampsInRange(
-        entries: List<Long>,
-        from: Long,
-        to: Long,
+        entries: List<Timestamp>,
+        from: Timestamp,
+        to: Timestamp,
         addInitialEntry: Boolean
-    ): Set<Long> {
+    ): Set<Timestamp> {
         require(from <= to) { "`from` must be smaller or equal to `to` but was $from and $to" }
 
         return when {

@@ -18,7 +18,7 @@ package com.android.server.wm.flicker.junit
 
 import com.android.server.wm.flicker.datastore.DataStore
 import com.android.server.wm.flicker.service.FlickerServiceResultsCollector
-import com.android.server.wm.flicker.service.assertors.AssertionResult
+import com.android.server.wm.flicker.service.assertors.IAssertionResult
 import com.android.server.wm.traces.common.Cache
 import com.android.server.wm.traces.common.IScenario
 import com.android.server.wm.traces.common.service.AssertionInvocationGroup
@@ -38,19 +38,17 @@ class FlickerServiceCachedTestCase(
 ) : FrameworkMethod(method) {
     private val fullResults =
         DataStore.getFlickerServiceResultsForAssertion(scenario, assertionName)
-    private val results: List<AssertionResult>
+    private val results: List<IAssertionResult>
         get() =
             fullResults.filter {
-                !onlyBlocking || it.invocationGroup == AssertionInvocationGroup.BLOCKING
+                !onlyBlocking || it.assertion.stabilityGroup == AssertionInvocationGroup.BLOCKING
             }
-
-    private val faasScenario = fullResults.firstOrNull()?.scenario
 
     override fun invokeExplosively(target: Any?, vararg params: Any?): Any {
         error("Shouldn't have reached here")
     }
 
-    override fun getName(): String = "FaaS_${faasScenario}_$assertionName"
+    override fun getName(): String = "FaaS_$assertionName"
 
     fun execute(description: Description) {
         val results = results

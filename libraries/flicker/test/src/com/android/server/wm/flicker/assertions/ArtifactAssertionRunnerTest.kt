@@ -30,7 +30,11 @@ import java.nio.file.Files
 import org.junit.Before
 import org.junit.Test
 
-/** Tests for [ArtifactAssertionRunner] */
+/**
+ * Tests for [ArtifactAssertionRunner]
+ *
+ * run with `atest FlickerLibTest:ArtifactAssertionRunnerTest`
+ */
 @SuppressLint("VisibleForTests")
 class ArtifactAssertionRunnerTest {
     private var executionCount = 0

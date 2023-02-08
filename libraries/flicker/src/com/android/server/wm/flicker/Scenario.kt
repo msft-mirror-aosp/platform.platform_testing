@@ -35,7 +35,7 @@ class Scenario
 internal constructor(
     @VisibleForTesting val testClass: String,
     override val startRotation: PlatformConsts.Rotation,
-    val endRotation: PlatformConsts.Rotation,
+    override val endRotation: PlatformConsts.Rotation,
     override val navBarMode: PlatformConsts.NavBar,
     _extraConfig: Map<String, Any?>,
     override val description: String

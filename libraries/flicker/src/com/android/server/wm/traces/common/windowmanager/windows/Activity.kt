@@ -16,7 +16,7 @@
 
 package com.android.server.wm.traces.common.windowmanager.windows
 
-import com.android.server.wm.traces.common.IComponentMatcher
+import com.android.server.wm.traces.common.component.matchers.IComponentMatcher
 import kotlin.js.JsName
 
 /**

@@ -17,36 +17,36 @@
 package com.android.server.wm.flicker.service.assertors.assertions
 
 import com.android.server.wm.flicker.helpers.WindowUtils
-import com.android.server.wm.flicker.service.assertors.BaseAssertionBuilder
+import com.android.server.wm.flicker.service.IScenarioInstance
+import com.android.server.wm.flicker.service.assertors.AssertionTemplate
 import com.android.server.wm.flicker.traces.layers.LayersTraceSubject
-import com.android.server.wm.flicker.traces.windowmanager.WindowManagerTraceSubject
-import com.android.server.wm.traces.common.ComponentNameMatcher
+import com.android.server.wm.traces.common.component.matchers.ComponentNameMatcher
 import com.android.server.wm.traces.common.region.Region
 import com.android.server.wm.traces.common.service.PlatformConsts
-import com.android.server.wm.traces.common.transition.Transition
 
 /**
  * Checks if the [ComponentNameMatcher.STATUS_BAR] layer is placed at the correct position at the
  * start of the transition
  */
-class StatusBarLayerPositionAtStart : BaseAssertionBuilder() {
-    private var navBarPosition = Region.EMPTY
-
-    override fun doSetup(
-        transition: Transition,
-        wmSubject: WindowManagerTraceSubject?,
-        layerSubject: LayersTraceSubject?
-    ) {
-        val traceSubject = wmSubject ?: return
-        val subject = traceSubject.first()
-        val display =
-            subject.wmState.getDisplay(PlatformConsts.DEFAULT_DISPLAY) ?: error("Display not found")
-        navBarPosition = WindowUtils.getExpectedStatusBarPosition(display)
+class StatusBarLayerPositionAtStart : AssertionTemplate() {
+    /** {@inheritDoc} */
+    override fun doEvaluate(scenarioInstance: IScenarioInstance, layerSubject: LayersTraceSubject) {
+        val subject = layerSubject.first()
+        subject
+            .visibleRegion(ComponentNameMatcher.STATUS_BAR)
+            .coversExactly(getExpectedStatusbarPosition(scenarioInstance))
     }
 
-    /** {@inheritDoc} */
-    override fun doEvaluate(transition: Transition, layerSubject: LayersTraceSubject) {
-        val subject = layerSubject.first()
-        subject.visibleRegion(ComponentNameMatcher.STATUS_BAR).coversExactly(navBarPosition)
+    // TODO: Maybe find another way to get the expected position that doesn't rely on use the data
+    // from the WM trace
+    // can we maybe dump another trace that just has system info for this purpose?
+    // TODO: Also this is duplicated code we can probably extract this out
+    private fun getExpectedStatusbarPosition(scenarioInstance: IScenarioInstance): Region {
+        val wmState =
+            scenarioInstance.reader.readWmTrace()?.entries?.last()
+                ?: error("Missing wm trace entries")
+        val display =
+            wmState.getDisplay(PlatformConsts.DEFAULT_DISPLAY) ?: error("Display not found")
+        return WindowUtils.getExpectedStatusBarPosition(display)
     }
 }

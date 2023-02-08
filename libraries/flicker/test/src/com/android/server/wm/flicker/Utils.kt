@@ -21,12 +21,21 @@ import android.content.Context
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.UiDevice
 import com.android.server.wm.flicker.datastore.CachedResultWriter
+import com.android.server.wm.flicker.io.ResultReader
 import com.android.server.wm.flicker.io.ResultWriter
 import com.android.server.wm.flicker.io.WINSCOPE_EXT
+import com.android.server.wm.flicker.monitor.EventLogMonitor
 import com.android.server.wm.flicker.monitor.LayersTraceMonitor
+import com.android.server.wm.flicker.monitor.ScreenRecorder
+import com.android.server.wm.flicker.monitor.TransactionsTraceMonitor
+import com.android.server.wm.flicker.monitor.TransitionsTraceMonitor
 import com.android.server.wm.flicker.monitor.WindowManagerTraceMonitor
 import com.android.server.wm.flicker.traces.FlickerSubjectException
+import com.android.server.wm.traces.common.IScenario
+import com.android.server.wm.traces.common.Timestamp
+import com.android.server.wm.traces.common.events.EventLog
 import com.android.server.wm.traces.common.layers.LayersTrace
+import com.android.server.wm.traces.common.parser.events.EventLogParser
 import com.android.server.wm.traces.common.transactions.TransactionsTrace
 import com.android.server.wm.traces.common.transition.TransitionsTrace
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
@@ -72,11 +81,18 @@ internal fun readWmTraceFromFile(
     relativePath: String,
     from: Long = Long.MIN_VALUE,
     to: Long = Long.MAX_VALUE,
-    addInitialEntry: Boolean = true
+    addInitialEntry: Boolean = true,
+    legacyTrace: Boolean = false,
 ): WindowManagerTrace {
     return try {
-        WindowManagerTraceParser()
-            .parse(readAsset(relativePath), from, to, addInitialEntry, clearCache = false)
+        WindowManagerTraceParser(legacyTrace)
+            .parse(
+                readAsset(relativePath),
+                Timestamp(elapsedNanos = from),
+                Timestamp(elapsedNanos = to),
+                addInitialEntry,
+                clearCache = false
+            )
     } catch (e: Exception) {
         throw RuntimeException(e)
     }
@@ -92,13 +108,17 @@ internal fun readWmTraceFromDumpFile(relativePath: String): WindowManagerTrace {
 
 internal fun readLayerTraceFromFile(
     relativePath: String,
-    ignoreOrphanLayers: Boolean = true
+    ignoreOrphanLayers: Boolean = true,
+    legacyTrace: Boolean = false,
 ): LayersTrace {
     return try {
         LayersTraceParser(
                 ignoreLayersStackMatchNoDisplay = false,
-                ignoreLayersInVirtualDisplay = false
-            ) { ignoreOrphanLayers }
+                ignoreLayersInVirtualDisplay = false,
+                legacyTrace = legacyTrace,
+            ) {
+                ignoreOrphanLayers
+            }
             .parse(readAsset(relativePath))
     } catch (e: Exception) {
         throw RuntimeException(e)
@@ -118,7 +138,15 @@ internal fun readTransitionsTraceFromFile(
     transactionsTrace: TransactionsTrace
 ): TransitionsTrace {
     return try {
-        TransitionsTraceParser(transactionsTrace).parse(readAsset(relativePath))
+        TransitionsTraceParser().parse(readAsset(relativePath))
+    } catch (e: Exception) {
+        throw RuntimeException(e)
+    }
+}
+
+internal fun readEventLogFromFile(relativePath: String): EventLog {
+    return try {
+        EventLogParser().parse(readAsset(relativePath))
     } catch (e: Exception) {
         throw RuntimeException(e)
     }
@@ -219,16 +247,18 @@ fun assertArchiveContainsFiles(archivePath: Path, expectedFiles: List<String>) {
 fun getScenarioTraces(scenario: String): FlickerBuilder.TraceFiles {
     val randomString = (1..10).map { (('A'..'Z') + ('a'..'z')).random() }.joinToString("")
 
-    var wmTrace: File? = null
-    var layersTrace: File? = null
-    var transactionsTrace: File? = null
-    var transitionsTrace: File? = null
+    lateinit var wmTrace: File
+    lateinit var layersTrace: File
+    lateinit var transactionsTrace: File
+    lateinit var transitionsTrace: File
+    lateinit var eventLog: File
     val traces =
         mapOf<String, (File) -> Unit>(
             "wm_trace" to { wmTrace = it },
             "layers_trace" to { layersTrace = it },
             "transactions_trace" to { transactionsTrace = it },
-            "transition_trace" to { transitionsTrace = it }
+            "transition_trace" to { transitionsTrace = it },
+            "eventlog" to { eventLog = it }
         )
     for ((traceName, resultSetter) in traces.entries) {
         val traceBytes = readAsset("scenarios/$scenario/$traceName$WINSCOPE_EXT")
@@ -241,10 +271,11 @@ fun getScenarioTraces(scenario: String): FlickerBuilder.TraceFiles {
     }
 
     return FlickerBuilder.TraceFiles(
-        wmTrace!!,
-        layersTrace!!,
-        transactionsTrace!!,
-        transitionsTrace!!
+        wmTrace,
+        layersTrace,
+        transactionsTrace,
+        transitionsTrace,
+        eventLog
     )
 }
 
@@ -283,4 +314,35 @@ fun createMockedFlicker(
     Mockito.`when`(mockedFlicker.transitionTeardown).thenReturn(teardown)
     Mockito.`when`(mockedFlicker.transitions).thenReturn(transitions)
     return mockedFlicker
+}
+
+fun captureTrace(scenario: IScenario, actions: () -> Unit): ResultReader {
+    if (scenario == null) {
+        ScenarioBuilder().forClass("UNNAMED_CAPTURE").build()
+    }
+    val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
+    val writer =
+        ResultWriter()
+            .forScenario(scenario)
+            .withOutputDir(getDefaultFlickerOutputDir())
+            .setRunComplete()
+    val monitors =
+        listOf(
+            ScreenRecorder(instrumentation.targetContext),
+            EventLogMonitor(),
+            TransactionsTraceMonitor(),
+            TransitionsTraceMonitor(),
+            WindowManagerTraceMonitor(),
+            LayersTraceMonitor()
+        )
+    try {
+        monitors.forEach { it.start() }
+        actions.invoke()
+    } finally {
+        monitors.forEach { it.stop() }
+    }
+    monitors.forEach { it.setResult(writer) }
+    val result = writer.write()
+
+    return ResultReader(result, DEFAULT_TRACE_CONFIG)
 }

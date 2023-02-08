@@ -21,21 +21,29 @@ import kotlin.js.JsName
 interface ITrace<Entry : ITraceEntry> {
     @JsName("entries") val entries: Array<Entry>
 
-    @JsName("getEntryByElapsedTimestamp")
-    fun getEntryByElapsedTimestamp(timestamp: Long): Entry {
-        return entries.firstOrNull { it.timestamp.elapsedNanos == timestamp }
+    @JsName("slice") fun slice(startTimestamp: Timestamp, endTimestamp: Timestamp): ITrace<Entry>
+
+    /**
+     * @return an entry that matches exactly [timestamp]
+     * @throws if there is no entry in the trace at [timestamp]
+     */
+    @JsName("getEntryExactlyAt")
+    fun getEntryExactlyAt(timestamp: Timestamp): Entry {
+        return entries.firstOrNull { it.timestamp == timestamp }
             ?: throw RuntimeException("Entry does not exist for timestamp $timestamp")
     }
 
-    @JsName("getEntryBySystemUptime")
-    fun getEntryBySystemUptime(timestamp: Long): Entry {
-        return entries.firstOrNull { it.timestamp.systemUptimeNanos == timestamp }
-            ?: throw RuntimeException("Entry does not exist for timestamp $timestamp")
-    }
-
-    @JsName("getEntryByUnixTimestamp")
-    fun getEntryByUnixTimestamp(timestamp: Long): Entry {
-        return entries.firstOrNull { it.timestamp.unixNanos == timestamp }
-            ?: throw RuntimeException("Entry does not exist for timestamp $timestamp")
+    /**
+     * @return the entry that is "active' at [timestamp]
+     * ```
+     *         (the entry at [timestamp] or the one before it if no entry exists at [timestamp])
+     * @throws if
+     * ```
+     * the provided [timestamp] is before all entries in the trace
+     */
+    @JsName("getEntryExactlyAt")
+    fun getEntryAt(timestamp: Timestamp): Entry {
+        return entries.dropLastWhile { it.timestamp <= timestamp }.lastOrNull()
+            ?: error("No entry at or before timestamp $timestamp")
     }
 }

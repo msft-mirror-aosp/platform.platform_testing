@@ -18,6 +18,7 @@ package com.android.server.wm.flicker.windowmanager
 
 import com.android.server.wm.flicker.readWmTraceFromFile
 import com.android.server.wm.traces.common.Cache
+import com.android.server.wm.traces.common.Timestamp
 import com.android.server.wm.traces.common.windowmanager.WindowManagerState
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 import com.android.server.wm.traces.common.windowmanager.windows.WindowContainer
@@ -36,7 +37,7 @@ import org.junit.runners.MethodSorters
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class WindowManagerTraceTest {
     private val trace
-        get() = readWmTraceFromFile("wm_trace_openchrome.pb")
+        get() = readWmTraceFromFile("wm_trace_openchrome.pb", legacyTrace = true)
 
     @Before
     fun before() {
@@ -45,7 +46,8 @@ class WindowManagerTraceTest {
 
     @Test
     fun canDetectAppWindow() {
-        val appWindows = trace.getEntryByElapsedTimestamp(9213763541297L).appWindows
+        val appWindows =
+            trace.getEntryExactlyAt(Timestamp(elapsedNanos = 9213763541297L)).appWindows
         assertWithMessage("Unable to detect app windows").that(appWindows.size).isEqualTo(2)
     }
 
@@ -95,7 +97,7 @@ class WindowManagerTraceTest {
     @Test
     fun canAccessAllProperties() {
         arrayOf("wm_trace_activity_transition.pb", "wm_trace_openchrome2.pb").forEach { traceName ->
-            val trace = readWmTraceFromFile(traceName)
+            val trace = readWmTraceFromFile(traceName, legacyTrace = true)
             assertWithMessage("Unable to parse dump").that(trace.entries.size).isGreaterThan(1)
 
             trace.entries.forEach { entry: WindowManagerState ->
@@ -107,7 +109,7 @@ class WindowManagerTraceTest {
 
     @Test
     fun canDetectValidState() {
-        val entry = trace.getEntryByElapsedTimestamp(9213763541297)
+        val entry = trace.getEntryExactlyAt(Timestamp(elapsedNanos = 9213763541297))
         assertWithMessage("${entry.timestamp}: ${entry.getIsIncompleteReason()}")
             .that(entry.isIncomplete())
             .isFalse()
@@ -115,7 +117,7 @@ class WindowManagerTraceTest {
 
     @Test
     fun canDetectInvalidState() {
-        val entry = trace.getEntryByElapsedTimestamp(9215511235586)
+        val entry = trace.getEntryExactlyAt(Timestamp(elapsedNanos = 9215511235586))
         assertWithMessage("${entry.timestamp}: ${entry.getIsIncompleteReason()}")
             .that(entry.isIncomplete())
             .isTrue()
@@ -129,7 +131,8 @@ class WindowManagerTraceTest {
             readWmTraceFromFile(
                 "wm_trace_openchrome2.pb",
                 from = 174686204723645,
-                to = 174686640998584
+                to = 174686640998584,
+                legacyTrace = true
             )
 
         assertThat(trace).isNotEmpty()
@@ -140,7 +143,12 @@ class WindowManagerTraceTest {
     @Test
     fun canSliceWithWrongTimestamps() {
         val trace =
-            readWmTraceFromFile("wm_trace_openchrome2.pb", from = 9213763541297, to = 9215895891561)
+            readWmTraceFromFile(
+                "wm_trace_openchrome2.pb",
+                from = 9213763541297,
+                to = 9215895891561,
+                legacyTrace = true
+            )
         assertThat(trace).isEmpty()
     }
 }

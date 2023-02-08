@@ -16,15 +16,18 @@
 
 package com.android.server.wm.flicker.service.assertors.assertions
 
-import com.android.server.wm.flicker.service.assertors.ComponentBuilder
+import com.android.server.wm.flicker.service.IScenarioInstance
+import com.android.server.wm.flicker.service.assertors.ComponentTemplate
 import com.android.server.wm.flicker.traces.windowmanager.WindowManagerTraceSubject
-import com.android.server.wm.traces.common.transition.Transition
 
 /** Checks that [getWindowState] window remains visible throughout the transition */
-class AppWindowIsVisibleAlways(component: ComponentBuilder) :
-    BaseAssertionBuilderWithComponent(component) {
+class AppWindowIsVisibleAlways(component: ComponentTemplate) :
+    AssertionTemplateWithComponent(component) {
     /** {@inheritDoc} */
-    override fun doEvaluate(transition: Transition, wmSubject: WindowManagerTraceSubject) {
-        wmSubject.isAppWindowVisible(component.build(transition)).forAllEntries()
+    override fun doEvaluate(
+        scenarioInstance: IScenarioInstance,
+        wmSubject: WindowManagerTraceSubject
+    ) {
+        wmSubject.isAppWindowVisible(component.build(scenarioInstance)).forAllEntries()
     }
 }

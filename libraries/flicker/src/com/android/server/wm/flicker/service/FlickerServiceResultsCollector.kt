@@ -24,7 +24,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.android.internal.annotations.VisibleForTesting
 import com.android.server.wm.flicker.FLICKER_TAG
 import com.android.server.wm.flicker.runner.ExecutionError
-import com.android.server.wm.flicker.service.assertors.AssertionResult
+import com.android.server.wm.flicker.service.assertors.IAssertionResult
 import com.android.server.wm.traces.common.service.AssertionInvocationGroup
 import org.junit.runner.Description
 import org.junit.runner.Result
@@ -48,9 +48,9 @@ class FlickerServiceResultsCollector(
     override val executionErrors: List<ExecutionError>
         get() = _executionErrors
 
-    @VisibleForTesting val assertionResults = mutableListOf<AssertionResult>()
+    @VisibleForTesting val assertionResults = mutableListOf<IAssertionResult>()
     @VisibleForTesting
-    val assertionResultsByTest = mutableMapOf<Description, List<AssertionResult>>()
+    val assertionResultsByTest = mutableMapOf<Description, List<IAssertionResult>>()
 
     init {
         setInstrumentation(instrumentation)
@@ -137,7 +137,7 @@ class FlickerServiceResultsCollector(
     }
 
     private fun processFlickerResults(
-        results: List<AssertionResult>
+        results: List<IAssertionResult>
     ): Map<String, AggregatedFlickerResult> {
         val aggregatedResults = mutableMapOf<String, AggregatedFlickerResult>()
         for (result in results) {
@@ -163,9 +163,8 @@ class FlickerServiceResultsCollector(
         }
     }
 
-    private fun getKeyForAssertionResult(result: AssertionResult): String {
-        val assertionName = "${result.scenario}#${result.assertionName}"
-        return "$FAAS_METRICS_PREFIX::$assertionName"
+    private fun getKeyForAssertionResult(result: IAssertionResult): String {
+        return "$FAAS_METRICS_PREFIX::${result.assertion.name}"
     }
 
     private fun errorReportingBlock(function: () -> Unit) {
@@ -182,7 +181,7 @@ class FlickerServiceResultsCollector(
         return resultsForTest.any { it.failed }
     }
 
-    override fun resultsForTest(description: Description): List<AssertionResult> {
+    override fun resultsForTest(description: Description): List<IAssertionResult> {
         val resultsForTest = assertionResultsByTest[description]
         requireNotNull(resultsForTest) { "No results set for test $description" }
         return resultsForTest
@@ -200,7 +199,7 @@ class FlickerServiceResultsCollector(
             val errors = mutableListOf<String>()
             var invocationGroup: AssertionInvocationGroup? = null
 
-            fun addResult(result: AssertionResult) {
+            fun addResult(result: IAssertionResult) {
                 if (result.failed) {
                     failures++
                     errors.add(result.assertionError?.message ?: "FAILURE WITHOUT ERROR MESSAGE...")
@@ -209,10 +208,10 @@ class FlickerServiceResultsCollector(
                 }
 
                 if (invocationGroup == null) {
-                    invocationGroup = result.invocationGroup
+                    invocationGroup = result.assertion.stabilityGroup
                 }
 
-                if (invocationGroup != result.invocationGroup) {
+                if (invocationGroup != result.assertion.stabilityGroup) {
                     error("Unexpected assertion group mismatch")
                 }
             }

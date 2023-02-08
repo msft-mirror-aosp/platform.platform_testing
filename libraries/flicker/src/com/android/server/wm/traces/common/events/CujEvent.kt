@@ -42,17 +42,53 @@ class CujEvent(
         threadId: Int,
         tag: String,
         data: String
-    ) : this(timestamp, getCujMarkerFromData(data), processId, uid, threadId, tag)
+    ) : this(
+        Timestamp(
+            elapsedNanos = getElapsedTimestampFromData(data),
+            systemUptimeNanos = getSystemUptimeNanosFromData(data),
+            unixNanos = timestamp.unixNanos
+        ),
+        getCujMarkerFromData(data),
+        processId,
+        uid,
+        threadId,
+        tag
+    )
 
     override fun toString(): String {
-        return "CujEvent(timestamp=$timestamp, cuj=$cuj, processId=$processId, uid=$uid, threadId=$threadId, tag=$tag)"
+        return "CujEvent(" +
+            "timestamp=$timestamp, " +
+            "cuj=$cuj, " +
+            "processId=$processId, " +
+            "uid=$uid, " +
+            "threadId=$threadId, " +
+            "tag=$tag" +
+            ")"
     }
 
     companion object {
         private fun getCujMarkerFromData(data: String): CujType {
-            val eventId = data.toIntOrNull()
-            requireNotNull(eventId) { "Data expected to be an integer" }
+            val dataEntries = getDataEntries(data)
+            val eventId = dataEntries[0].toInt()
             return CujType.from(eventId)
+        }
+
+        private fun getElapsedTimestampFromData(data: String): Long {
+            val dataEntries = getDataEntries(data)
+            return dataEntries[1].toLong()
+        }
+
+        private fun getSystemUptimeNanosFromData(data: String): Long {
+            val dataEntries = getDataEntries(data)
+            return dataEntries[2].toLong()
+        }
+
+        private fun getDataEntries(data: String): List<String> {
+            require("""\[[0-9]+,[0-9]+,[0-9]+]""".toRegex().matches(data)) {
+                "Data ($data) didn't match expected format"
+            }
+
+            return data.slice(1..data.length - 2).split(",")
         }
 
         enum class Type {

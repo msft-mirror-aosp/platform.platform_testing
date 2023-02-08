@@ -29,7 +29,7 @@ import com.android.server.wm.flicker.helpers.IS_FAAS_ENABLED
 import com.android.server.wm.flicker.helpers.isShellTransitionsEnabled
 import com.android.server.wm.flicker.service.FlickerService
 import com.android.server.wm.flicker.service.FlickerServiceResultsCollector
-import com.android.server.wm.flicker.service.assertors.AssertionResult
+import com.android.server.wm.flicker.service.assertors.IAssertionResult
 import com.android.server.wm.traces.parser.withPerfettoTrace
 import org.junit.runner.Description
 import org.junit.runners.model.FrameworkMethod
@@ -160,7 +160,7 @@ class FlickerServiceDecorator(
             this.doRunFlickerService(test)
         }
         val aggregateResults =
-            DataStore.getFlickerServiceResults(scenario).groupBy { it.assertionName }
+            DataStore.getFlickerServiceResults(scenario).groupBy { it.assertion.name }
 
         val cachedResultMethod =
             FlickerServiceCachedTestCase::class.java.getMethod("execute", Description::class.java)
@@ -176,7 +176,7 @@ class FlickerServiceDecorator(
         }
     }
 
-    private fun doRunFlickerService(test: Any): List<AssertionResult> {
+    private fun doRunFlickerService(test: Any): List<IAssertionResult> {
         requireNotNull(scenario) { "Expected to have a scenario to run" }
         val description =
             Description.createTestDescription(

@@ -17,8 +17,8 @@
 package com.android.server.wm.traces.parser.windowmanager
 
 import com.android.server.wm.nano.WindowManagerServiceDumpProto
+import com.android.server.wm.traces.common.parser.AbstractParser
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
-import com.android.server.wm.traces.parser.AbstractParser
 
 /** Parser for [WindowManagerTrace] objects containing dumps */
 class WindowManagerDumpParser :

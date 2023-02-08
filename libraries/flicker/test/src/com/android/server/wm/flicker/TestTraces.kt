@@ -60,25 +60,16 @@ object TestTraces {
     object TransitionTrace {
         private const val ASSET = "transition_trace.winscope"
         val START_TIME =
-            Timestamp(
-                elapsedNanos = 1619596081652,
-                systemUptimeNanos = TransactionTrace.START_TIME.systemUptimeNanos
-            )
+            Timestamp(elapsedNanos = 169632392038504, systemUptimeNanos = 0, unixNanos = 0)
         val VALID_SLICE_TIME =
-            Timestamp(
-                elapsedNanos = 1620068193157,
-                systemUptimeNanos = TransactionTrace.VALID_SLICE_TIME.systemUptimeNanos
-            )
+            Timestamp(elapsedNanos = 169632392038504, systemUptimeNanos = 0, unixNanos = 0)
         val INVALID_SLICE_TIME =
             Timestamp(
                 elapsedNanos = 0L,
                 systemUptimeNanos = TransactionTrace.INVALID_SLICE_TIME.systemUptimeNanos
             )
         val END_TIME =
-            Timestamp(
-                elapsedNanos = 1620120359204,
-                systemUptimeNanos = TransactionTrace.END_TIME.systemUptimeNanos
-            )
+            Timestamp(elapsedNanos = 169632392038504, systemUptimeNanos = 0, unixNanos = 0)
         val FILE
             get() = readAssetAsFile(ASSET)
     }

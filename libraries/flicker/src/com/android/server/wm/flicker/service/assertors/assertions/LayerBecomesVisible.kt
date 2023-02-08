@@ -16,22 +16,22 @@
 
 package com.android.server.wm.flicker.service.assertors.assertions
 
-import com.android.server.wm.flicker.service.assertors.ComponentBuilder
+import com.android.server.wm.flicker.service.IScenarioInstance
+import com.android.server.wm.flicker.service.assertors.ComponentTemplate
 import com.android.server.wm.flicker.traces.layers.LayersTraceSubject
-import com.android.server.wm.traces.common.transition.Transition
 
 /**
  * Checks if the [componentMatcher] layer is invisible at the start of the transition and becomes
  * visible
  */
-class LayerBecomesVisible(component: ComponentBuilder) :
-    BaseAssertionBuilderWithComponent(component) {
+class LayerBecomesVisible(component: ComponentTemplate) :
+    AssertionTemplateWithComponent(component) {
     /** {@inheritDoc} */
-    override fun doEvaluate(transition: Transition, layerSubject: LayersTraceSubject) {
+    override fun doEvaluate(scenarioInstance: IScenarioInstance, layerSubject: LayersTraceSubject) {
         layerSubject
-            .isInvisible(component.build(transition))
+            .isInvisible(component.build(scenarioInstance))
             .then()
-            .isVisible(component.build(transition))
+            .isVisible(component.build(scenarioInstance))
             .forAllEntries()
     }
 }

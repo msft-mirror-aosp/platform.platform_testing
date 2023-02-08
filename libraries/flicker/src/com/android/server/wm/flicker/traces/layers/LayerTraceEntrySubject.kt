@@ -20,8 +20,8 @@ import com.android.server.wm.flicker.assertions.Assertion
 import com.android.server.wm.flicker.assertions.Fact
 import com.android.server.wm.flicker.assertions.FlickerSubject
 import com.android.server.wm.flicker.traces.region.RegionSubject
-import com.android.server.wm.traces.common.IComponentMatcher
 import com.android.server.wm.traces.common.Timestamp
+import com.android.server.wm.traces.common.component.matchers.IComponentMatcher
 import com.android.server.wm.traces.common.layers.BaseLayerTraceEntry
 import com.android.server.wm.traces.common.layers.Layer
 import com.android.server.wm.traces.common.layers.LayersTrace

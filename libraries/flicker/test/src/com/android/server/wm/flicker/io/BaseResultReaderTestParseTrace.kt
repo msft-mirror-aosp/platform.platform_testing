@@ -105,8 +105,7 @@ abstract class BaseResultReaderTestParseTrace {
 
     @Test
     fun readTraceAndSliceTraceByTimestampAndFailInvalidSize() {
-        val result =
-            setupWriter(newTestResultWriter()).setTransitionEndTime(Timestamp.EMPTY).write()
+        val result = setupWriter(newTestResultWriter()).setTransitionEndTime(Timestamp.MIN).write()
         val reader = ResultReader(result, DEFAULT_TRACE_CONFIG)
         val exception =
             assertThrows<IllegalArgumentException> {

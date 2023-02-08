@@ -21,17 +21,19 @@ import android.app.Instrumentation
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.platform.helpers.AbstractStandardAppHelper
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.BySelector
 import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.Until
 import com.android.launcher3.tapl.LauncherInstrumentation
-import com.android.server.wm.traces.common.ComponentNameMatcher
 import com.android.server.wm.traces.common.Condition
 import com.android.server.wm.traces.common.DeviceStateDump
-import com.android.server.wm.traces.common.IComponentNameMatcher
 import com.android.server.wm.traces.common.WindowManagerConditionsFactory
+import com.android.server.wm.traces.common.component.matchers.ComponentNameMatcher
+import com.android.server.wm.traces.common.component.matchers.IComponentMatcher
+import com.android.server.wm.traces.common.component.matchers.IComponentNameMatcher
 import com.android.server.wm.traces.common.windowmanager.WindowManagerState
 import com.android.server.wm.traces.parser.windowmanager.WindowManagerStateHelper
 import com.android.server.wm.traces.parser.withPerfettoTrace
@@ -51,6 +53,8 @@ open class StandardAppHelper(
         packageName: String,
         activity: String
     ) : this(instr, appName, ComponentNameMatcher(packageName, ".$activity"))
+
+    protected val pkgManager: PackageManager = instr.context.packageManager
 
     protected val tapl: LauncherInstrumentation = LauncherInstrumentation()
 
@@ -170,14 +174,14 @@ open class StandardAppHelper(
     @JvmOverloads
     open fun launchViaIntent(
         wmHelper: WindowManagerStateHelper,
-        expectedWindowName: String = "",
+        launchedAppComponentMatcherOverride: IComponentMatcher? = null,
         action: String? = null,
         stringExtras: Map<String, String> = mapOf(),
         waitConditions: Array<Condition<DeviceStateDump>> = emptyArray()
     ) =
         launchViaIntentAndWaitShown(
             wmHelper,
-            expectedWindowName,
+            launchedAppComponentMatcherOverride,
             action,
             stringExtras,
             waitConditions
@@ -189,27 +193,22 @@ open class StandardAppHelper(
      */
     protected fun launchViaIntentAndWaitShown(
         wmHelper: WindowManagerStateHelper,
-        expectedWindowName: String = "",
+        launchedAppComponentMatcherOverride: IComponentMatcher? = null,
         action: String? = null,
         stringExtras: Map<String, String> = mapOf(),
         waitConditions: Array<Condition<DeviceStateDump>> = emptyArray()
     ) {
         launchAppViaIntent(action, stringExtras)
-        doWaitShown(wmHelper, expectedWindowName, waitConditions)
+        doWaitShown(wmHelper, launchedAppComponentMatcherOverride, waitConditions)
     }
 
     private fun doWaitShown(
         wmHelper: WindowManagerStateHelper,
-        expectedWindowName: String = "",
+        launchedAppComponentMatcherOverride: IComponentMatcher? = null,
         waitConditions: Array<Condition<DeviceStateDump>> = emptyArray()
     ) {
         withPerfettoTrace("${this::class.simpleName}#doWaitShown") {
-            val expectedWindow =
-                if (expectedWindowName.isNotEmpty()) {
-                    ComponentNameMatcher("", expectedWindowName)
-                } else {
-                    componentMatcher
-                }
+            val expectedWindow = launchedAppComponentMatcherOverride ?: componentMatcher
             val builder =
                 wmHelper
                     .StateSyncBuilder()
@@ -229,6 +228,15 @@ open class StandardAppHelper(
                     .withStatusBarVisible()
                     .waitForAndVerify()
             }
+        }
+    }
+
+    fun isAvailable(): Boolean {
+        return try {
+            pkgManager.getPackageInfo(packageName, PackageManager.PackageInfoFlags.of(0))
+            true
+        } catch (e: PackageManager.NameNotFoundException) {
+            false
         }
     }
 

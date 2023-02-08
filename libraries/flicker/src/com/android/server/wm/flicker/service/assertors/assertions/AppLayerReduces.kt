@@ -16,15 +16,15 @@
 
 package com.android.server.wm.flicker.service.assertors.assertions
 
-import com.android.server.wm.flicker.service.assertors.ComponentBuilder
+import com.android.server.wm.flicker.service.IScenarioInstance
+import com.android.server.wm.flicker.service.assertors.ComponentTemplate
 import com.android.server.wm.flicker.traces.layers.LayersTraceSubject
-import com.android.server.wm.traces.common.transition.Transition
 
 /** Checks that the visible region of [getWindowState] always reduces during the animation */
-class AppLayerReduces(component: ComponentBuilder) : BaseAssertionBuilderWithComponent(component) {
+class AppLayerReduces(component: ComponentTemplate) : AssertionTemplateWithComponent(component) {
     /** {@inheritDoc} */
-    override fun doEvaluate(transition: Transition, layerSubject: LayersTraceSubject) {
-        val layerMatcher = component.build(transition)
+    override fun doEvaluate(scenarioInstance: IScenarioInstance, layerSubject: LayersTraceSubject) {
+        val layerMatcher = component.build(scenarioInstance)
         val layerList = layerSubject.layers { layerMatcher.layerMatchesAnyOf(it) && it.isVisible }
         layerList.zipWithNext { previous, current ->
             current.visibleRegion.coversAtMost(previous.visibleRegion.region)

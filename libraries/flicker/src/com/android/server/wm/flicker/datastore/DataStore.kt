@@ -18,13 +18,13 @@ package com.android.server.wm.flicker.datastore
 
 import androidx.annotation.VisibleForTesting
 import com.android.server.wm.flicker.io.ResultData
-import com.android.server.wm.flicker.service.assertors.AssertionResult
+import com.android.server.wm.flicker.service.assertors.IAssertionResult
 import com.android.server.wm.traces.common.IScenario
 
 /** In memory data store for flicker transitions, assertions and results */
 object DataStore {
     private val cachedResults = mutableMapOf<IScenario, ResultData>()
-    private val cachedFlickerServiceAssertions = mutableMapOf<IScenario, List<AssertionResult>>()
+    private val cachedFlickerServiceAssertions = mutableMapOf<IScenario, List<IAssertionResult>>()
 
     @VisibleForTesting
     fun clear() {
@@ -74,14 +74,14 @@ object DataStore {
     fun containsFlickerServiceResult(scenario: IScenario): Boolean =
         cachedFlickerServiceAssertions.containsKey(scenario)
 
-    fun addFlickerServiceResults(scenario: IScenario, results: List<AssertionResult>) {
+    fun addFlickerServiceResults(scenario: IScenario, results: List<IAssertionResult>) {
         if (containsFlickerServiceResult(scenario)) {
             error("Result for $scenario already in data store")
         }
         cachedFlickerServiceAssertions[scenario] = results
     }
 
-    fun getFlickerServiceResults(scenario: IScenario): List<AssertionResult> {
+    fun getFlickerServiceResults(scenario: IScenario): List<IAssertionResult> {
         return cachedFlickerServiceAssertions[scenario]
             ?: error("No flicker service results for $scenario")
     }
@@ -89,9 +89,9 @@ object DataStore {
     fun getFlickerServiceResultsForAssertion(
         scenario: IScenario,
         assertionName: String
-    ): List<AssertionResult> {
+    ): List<IAssertionResult> {
         return cachedFlickerServiceAssertions[scenario]?.filter {
-            it.assertionName == assertionName
+            it.assertion.name == assertionName
         }
             ?: error("Assertion with name $assertionName not found for scenario $scenario")
     }

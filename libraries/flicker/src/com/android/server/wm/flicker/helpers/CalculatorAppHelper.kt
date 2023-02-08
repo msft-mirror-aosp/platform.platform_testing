@@ -17,10 +17,10 @@
 package com.android.server.wm.flicker.helpers
 
 import android.app.Instrumentation
-import com.android.server.wm.traces.common.ComponentNameMatcher
+import com.android.server.wm.traces.common.component.matchers.ComponentNameMatcher
 
 /**
- * Helper to launch the default messaging app (not compatible with AOSP)
+ * Helper to launch the calculator app (not compatible with AOSP)
  *
  * This helper has no other functionality but the app launch.
  */

@@ -85,6 +85,12 @@ enum class CujType {
     CUJ_TASKBAR_EXPAND,
     CUJ_TASKBAR_COLLAPSE,
     CUJ_SHADE_CLEAR_ALL,
+    CUJ_LAUNCHER_UNLOCK_ENTRANCE_ANIMATION,
+    CUJ_LOCKSCREEN_OCCLUSION,
+    CUJ_RECENTS_SCROLLING,
+    CUJ_LAUNCHER_APP_SWIPE_TO_RECENTS,
+    CUJ_LAUNCHER_CLOSE_ALL_APPS_SWIPE,
+    CUJ_LAUNCHER_CLOSE_ALL_APPS_TO_HOME,
 
     // KEEP AS LAST TYPE
     // used to handle new types that haven't been added here yet but might be dumped by the platform

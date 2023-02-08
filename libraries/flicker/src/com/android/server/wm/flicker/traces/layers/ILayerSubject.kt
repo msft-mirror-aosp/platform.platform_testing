@@ -16,7 +16,7 @@
 
 package com.android.server.wm.flicker.traces.layers
 
-import com.android.server.wm.traces.common.IComponentMatcher
+import com.android.server.wm.traces.common.component.matchers.IComponentMatcher
 import com.android.server.wm.traces.common.layers.Layer
 
 /** Base interface for Layer trace and state assertions */

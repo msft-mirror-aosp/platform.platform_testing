@@ -16,29 +16,32 @@
 
 package com.android.server.wm.flicker.service.assertors.assertions
 
-import com.android.server.wm.flicker.service.assertors.ComponentBuilder
+import com.android.server.wm.flicker.service.IScenarioInstance
+import com.android.server.wm.flicker.service.assertors.ComponentTemplate
 import com.android.server.wm.flicker.traces.windowmanager.WindowManagerTraceSubject
-import com.android.server.wm.traces.common.transition.Transition
 
 /**
  * Checks that [getWindowState] window is pinned and visible at the start and then becomes unpinned
  * and invisible at the same moment, and remains unpinned and invisible until the end of the
  * transition
  */
-class PipWindowBecomesInvisible(component: ComponentBuilder) :
-    BaseAssertionBuilderWithComponent(component) {
+class PipWindowBecomesInvisible(component: ComponentTemplate) :
+    AssertionTemplateWithComponent(component) {
     /** {@inheritDoc} */
-    override fun doEvaluate(transition: Transition, wmSubject: WindowManagerTraceSubject) {
+    override fun doEvaluate(
+        scenarioInstance: IScenarioInstance,
+        wmSubject: WindowManagerTraceSubject
+    ) {
         val appComponent = component
         wmSubject
             .invoke("hasPipWindow") {
-                it.isPinned(appComponent.build(transition))
-                    .isAppWindowVisible(appComponent.build(transition))
+                it.isPinned(appComponent.build(scenarioInstance))
+                    .isAppWindowVisible(appComponent.build(scenarioInstance))
             }
             .then()
             .invoke("!hasPipWindow") {
-                it.isNotPinned(appComponent.build(transition))
-                    .isAppWindowInvisible(appComponent.build(transition))
+                it.isNotPinned(appComponent.build(scenarioInstance))
+                    .isAppWindowInvisible(appComponent.build(scenarioInstance))
             }
             .forAllEntries()
     }

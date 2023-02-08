@@ -16,10 +16,10 @@
 
 package com.android.server.wm.traces.common.windowmanager
 
-import com.android.server.wm.traces.common.IComponentMatcher
 import com.android.server.wm.traces.common.ITraceEntry
 import com.android.server.wm.traces.common.Timestamp
 import com.android.server.wm.traces.common.Timestamp.Companion.NULL_TIMESTAMP
+import com.android.server.wm.traces.common.component.matchers.IComponentMatcher
 import com.android.server.wm.traces.common.service.PlatformConsts
 import com.android.server.wm.traces.common.windowmanager.windows.Activity
 import com.android.server.wm.traces.common.windowmanager.windows.DisplayContent
@@ -382,7 +382,7 @@ class WindowManagerState(
      */
     @JsName("containsWindow")
     fun containsWindow(componentMatcher: IComponentMatcher): Boolean =
-        componentMatcher.windowMatchesAnyOf(windowStates)
+        componentMatcher.windowMatchesAnyOf(windowStates.asList())
 
     /**
      * Check if at least one [WindowState] matching [componentMatcher] is visible
@@ -403,7 +403,7 @@ class WindowManagerState(
      */
     @JsName("isInPipMode")
     fun isInPipMode(componentMatcher: IComponentMatcher): Boolean =
-        componentMatcher.windowMatchesAnyOf(pinnedWindows)
+        componentMatcher.windowMatchesAnyOf(pinnedWindows.asList())
 
     @JsName("getZOrder")
     fun getZOrder(w: WindowState): Int = windowStates.size - windowStates.indexOf(w)

@@ -28,9 +28,9 @@ import com.android.server.wm.flicker.traces.layers.LayersTraceSubject
 import com.android.server.wm.flicker.utils.MockLayerBuilder
 import com.android.server.wm.flicker.utils.MockLayerTraceEntryBuilder
 import com.android.server.wm.traces.common.Cache
-import com.android.server.wm.traces.common.ComponentNameMatcher
-import com.android.server.wm.traces.common.OrComponentMatcher
 import com.android.server.wm.traces.common.Rect
+import com.android.server.wm.traces.common.component.matchers.ComponentNameMatcher
+import com.android.server.wm.traces.common.component.matchers.OrComponentMatcher
 import com.android.server.wm.traces.common.region.Region
 import com.google.common.truth.Truth
 import org.junit.Before
@@ -51,7 +51,8 @@ class LayerTraceEntrySubjectTest {
 
     @Test
     fun exceptionContainsDebugInfo() {
-        val layersTraceEntries = readLayerTraceFromFile("layers_trace_emptyregion.pb")
+        val layersTraceEntries =
+            readLayerTraceFromFile("layers_trace_emptyregion.pb", legacyTrace = true)
         val error =
             assertThrows<FlickerSubjectException> {
                 LayersTraceSubject(layersTraceEntries)
@@ -65,7 +66,8 @@ class LayerTraceEntrySubjectTest {
 
     @Test
     fun testCanInspectBeginning() {
-        val layersTraceEntries = readLayerTraceFromFile("layers_trace_launch_split_screen.pb")
+        val layersTraceEntries =
+            readLayerTraceFromFile("layers_trace_launch_split_screen.pb", legacyTrace = true)
         LayerTraceEntrySubject(layersTraceEntries.entries.first())
             .isVisible(ComponentNameMatcher.NAV_BAR)
             .notContains(TestComponents.DOCKER_STACK_DIVIDER)
@@ -74,7 +76,8 @@ class LayerTraceEntrySubjectTest {
 
     @Test
     fun testCanInspectEnd() {
-        val layersTraceEntries = readLayerTraceFromFile("layers_trace_launch_split_screen.pb")
+        val layersTraceEntries =
+            readLayerTraceFromFile("layers_trace_launch_split_screen.pb", legacyTrace = true)
         LayerTraceEntrySubject(layersTraceEntries.entries.last())
             .isVisible(ComponentNameMatcher.NAV_BAR)
             .isVisible(TestComponents.DOCKER_STACK_DIVIDER)
@@ -83,7 +86,7 @@ class LayerTraceEntrySubjectTest {
     // b/75276931
     @Test
     fun canDetectUncoveredRegion() {
-        val trace = readLayerTraceFromFile("layers_trace_emptyregion.pb")
+        val trace = readLayerTraceFromFile("layers_trace_emptyregion.pb", legacyTrace = true)
         val expectedRegion = Region.from(0, 0, 1440, 2960)
         val error =
             assertThrows<FlickerSubjectException> {
@@ -100,7 +103,7 @@ class LayerTraceEntrySubjectTest {
     // Visible region tests
     @Test
     fun canTestLayerVisibleRegion_layerDoesNotExist() {
-        val trace = readLayerTraceFromFile("layers_trace_emptyregion.pb")
+        val trace = readLayerTraceFromFile("layers_trace_emptyregion.pb", legacyTrace = true)
         val expectedVisibleRegion = Region.from(0, 0, 1, 1)
         val error =
             assertThrows<FlickerSubjectException> {
@@ -115,7 +118,7 @@ class LayerTraceEntrySubjectTest {
 
     @Test
     fun canTestLayerVisibleRegion_layerDoesNotHaveExpectedVisibleRegion() {
-        val trace = readLayerTraceFromFile("layers_trace_emptyregion.pb")
+        val trace = readLayerTraceFromFile("layers_trace_emptyregion.pb", legacyTrace = true)
         val expectedVisibleRegion = Region.from(0, 0, 1, 1)
         val error =
             assertThrows<FlickerSubjectException> {
@@ -129,7 +132,7 @@ class LayerTraceEntrySubjectTest {
 
     @Test
     fun canTestLayerVisibleRegion_layerIsHiddenByParent() {
-        val trace = readLayerTraceFromFile("layers_trace_emptyregion.pb")
+        val trace = readLayerTraceFromFile("layers_trace_emptyregion.pb", legacyTrace = true)
         val expectedVisibleRegion = Region.from(0, 0, 1, 1)
         val error =
             assertThrows<FlickerSubjectException> {
@@ -143,7 +146,7 @@ class LayerTraceEntrySubjectTest {
 
     @Test
     fun canTestLayerVisibleRegion_incorrectRegionSize() {
-        val trace = readLayerTraceFromFile("layers_trace_emptyregion.pb")
+        val trace = readLayerTraceFromFile("layers_trace_emptyregion.pb", legacyTrace = true)
         val expectedVisibleRegion = Region.from(0, 0, 1440, 99)
         val error =
             assertThrows<FlickerSubjectException> {
@@ -157,7 +160,8 @@ class LayerTraceEntrySubjectTest {
 
     @Test
     fun canTestLayerVisibleRegion() {
-        val trace = readLayerTraceFromFile("layers_trace_launch_split_screen.pb")
+        val trace =
+            readLayerTraceFromFile("layers_trace_launch_split_screen.pb", legacyTrace = true)
         val expectedVisibleRegion = Region.from(0, 0, 1080, 145)
         LayersTraceSubject(trace)
             .getEntryBySystemUpTime(90480846872160, byElapsedTimestamp = true)
@@ -167,7 +171,8 @@ class LayerTraceEntrySubjectTest {
 
     @Test
     fun canTestLayerVisibleRegion_layerIsNotVisible() {
-        val trace = readLayerTraceFromFile("layers_trace_invalid_layer_visibility.pb")
+        val trace =
+            readLayerTraceFromFile("layers_trace_invalid_layer_visibility.pb", legacyTrace = true)
         val error =
             assertThrows<FlickerSubjectException> {
                 LayersTraceSubject(trace)

@@ -18,12 +18,29 @@ package com.android.server.wm.flicker.service
 
 import android.util.Log
 import com.android.server.wm.flicker.FLICKER_TAG
+import com.android.server.wm.flicker.helpers.isShellTransitionsEnabled
 import com.android.server.wm.flicker.io.IReader
-import com.android.server.wm.flicker.service.assertors.AssertionResult
+import com.android.server.wm.flicker.service.assertors.IAssertionResult
+import com.android.server.wm.flicker.service.assertors.factories.AssertionFactory
+import com.android.server.wm.flicker.service.assertors.factories.CombinedAssertionFactory
+import com.android.server.wm.flicker.service.assertors.factories.GeneratedAssertionsFactory
+import com.android.server.wm.flicker.service.assertors.factories.IAssertionFactory
+import com.android.server.wm.flicker.service.assertors.runners.AssertionRunner
+import com.android.server.wm.flicker.service.assertors.runners.IAssertionRunner
+import com.android.server.wm.flicker.service.config.FlickerServiceConfig
+import com.android.server.wm.flicker.service.extractors.CombinedScenarioExtractor
+import com.android.server.wm.flicker.service.extractors.IScenarioExtractor
 import com.android.server.wm.traces.common.errors.ErrorTrace
+import com.android.server.wm.traces.parser.withPerfettoTrace
 
 /** Contains the logic for Flicker as a Service. */
-class FlickerService : IFlickerService {
+class FlickerService(
+    val scenarioExtractor: IScenarioExtractor =
+        CombinedScenarioExtractor(FlickerServiceConfig.getExtractors()),
+    val assertionFactory: IAssertionFactory =
+        CombinedAssertionFactory(listOf(AssertionFactory(), GeneratedAssertionsFactory())),
+    val assertionRunner: IAssertionRunner = AssertionRunner(),
+) : IFlickerService {
     /**
      * The entry point for WM Flicker Service.
      *
@@ -33,16 +50,21 @@ class FlickerService : IFlickerService {
      * @return A pair with an [ErrorTrace] and a map that associates assertion names with 0 if it
      * fails and 1 if it passes
      */
-    override fun process(reader: IReader): List<AssertionResult> {
-        try {
-            val assertionEngine =
-                AssertionEngine(AssertionGeneratorConfigProducer()) {
-                    Log.v("$FLICKER_TAG-ASSERT", it)
+    override fun process(reader: IReader): List<IAssertionResult> {
+        withPerfettoTrace("FlickerService#process") {
+            try {
+                require(isShellTransitionsEnabled) {
+                    "Shell transitions must be enabled for FaaS to work!"
                 }
-            return assertionEngine.analyze(reader, AssertionEngine.AssertionsToUse.ALL)
-        } catch (exception: Throwable) {
-            Log.e("$FLICKER_TAG-ASSERT", "FAILED PROCESSING", exception)
-            throw exception
+
+                val scenarioInstances = scenarioExtractor.extract(reader)
+                val assertions =
+                    scenarioInstances.flatMap { assertionFactory.generateAssertionsFor(it) }
+                return assertionRunner.execute(assertions)
+            } catch (exception: Throwable) {
+                Log.e("$FLICKER_TAG-ASSERT", "FAILED PROCESSING", exception)
+                throw exception
+            }
         }
     }
 }

@@ -23,7 +23,7 @@ import com.android.server.wm.flicker.readWmTraceFromFile
 import com.android.server.wm.flicker.traces.FlickerSubjectException
 import com.android.server.wm.flicker.traces.windowmanager.WindowManagerTraceSubject
 import com.android.server.wm.traces.common.Cache
-import com.android.server.wm.traces.common.ComponentNameMatcher
+import com.android.server.wm.traces.common.component.matchers.ComponentNameMatcher
 import com.google.common.truth.Truth
 import org.junit.Before
 import org.junit.FixMethodOrder
@@ -37,9 +37,9 @@ import org.junit.runners.MethodSorters
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class WindowManagerTraceSubjectTest {
     private val chromeTrace
-        get() = readWmTraceFromFile("wm_trace_openchrome.pb")
+        get() = readWmTraceFromFile("wm_trace_openchrome.pb", legacyTrace = true)
     private val imeTrace
-        get() = readWmTraceFromFile("wm_trace_ime.pb")
+        get() = readWmTraceFromFile("wm_trace_ime.pb", legacyTrace = true)
 
     @Before
     fun before() {
@@ -84,7 +84,7 @@ class WindowManagerTraceSubjectTest {
 
     @Test
     fun testCanDetectTransitionWithOptionalValue() {
-        val trace = readWmTraceFromFile("wm_trace_open_from_overview.pb")
+        val trace = readWmTraceFromFile("wm_trace_open_from_overview.pb", legacyTrace = true)
         val subject = WindowManagerTraceSubject(trace)
         subject
             .isAppWindowOnTop(TestComponents.LAUNCHER)
@@ -171,7 +171,7 @@ class WindowManagerTraceSubjectTest {
 
     @Test
     fun testCanTransitionBelowAppWindow() {
-        val trace = readWmTraceFromFile("wm_trace_open_app_cold.pb")
+        val trace = readWmTraceFromFile("wm_trace_open_app_cold.pb", legacyTrace = true)
         WindowManagerTraceSubject(trace)
             .skipUntilFirstAssertion()
             .isBelowAppWindowVisible(TestComponents.WALLPAPER)
@@ -182,7 +182,7 @@ class WindowManagerTraceSubjectTest {
 
     @Test
     fun testCanDetectVisibleWindowsMoreThanOneConsecutiveEntry() {
-        val trace = readWmTraceFromFile("wm_trace_valid_visible_windows.pb")
+        val trace = readWmTraceFromFile("wm_trace_valid_visible_windows.pb", legacyTrace = true)
         WindowManagerTraceSubject(trace)
             .visibleWindowsShownMoreThanOneConsecutiveEntry()
             .forAllEntries()
@@ -215,7 +215,11 @@ class WindowManagerTraceSubjectTest {
 
     @Test
     fun testCanDetectSnapshotStartingWindow() {
-        val trace = readWmTraceFromFile("quick_switch_to_app_killed_in_background_trace.pb")
+        val trace =
+            readWmTraceFromFile(
+                "quick_switch_to_app_killed_in_background_trace.pb",
+                legacyTrace = true
+            )
         val app1 =
             ComponentNameMatcher(
                 "com.android.server.wm.flicker.testapp",
@@ -241,7 +245,11 @@ class WindowManagerTraceSubjectTest {
 
     @Test
     fun canDetectAppInvisibleSnapshotStartingWindowVisible() {
-        val trace = readWmTraceFromFile("quick_switch_to_app_killed_in_background_trace.pb")
+        val trace =
+            readWmTraceFromFile(
+                "quick_switch_to_app_killed_in_background_trace.pb",
+                legacyTrace = true
+            )
         val subject = WindowManagerTraceSubject(trace).getEntryByElapsedTimestamp(694827105830L)
         val app =
             ComponentNameMatcher(
@@ -254,13 +262,13 @@ class WindowManagerTraceSubjectTest {
 
     @Test
     fun canDetectAppVisibleTablet() {
-        val trace = readWmTraceFromFile("tablet/wm_trace_open_chrome.winscope")
+        val trace = readWmTraceFromFile("tablet/wm_trace_open_chrome.winscope", legacyTrace = true)
         WindowManagerTraceSubject(trace).isAppWindowVisible(TestComponents.CHROME).forAllEntries()
     }
 
     @Test
     fun canDetectAppOpenRecentsTablet() {
-        val trace = readWmTraceFromFile("tablet/wm_trace_open_recents.winscope")
+        val trace = readWmTraceFromFile("tablet/wm_trace_open_recents.winscope", legacyTrace = true)
         WindowManagerTraceSubject(trace).isRecentsActivityVisible().forAllEntries()
     }
 }

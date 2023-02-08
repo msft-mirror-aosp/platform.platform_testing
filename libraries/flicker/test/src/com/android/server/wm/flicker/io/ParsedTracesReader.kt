@@ -17,6 +17,8 @@
 package com.android.server.wm.flicker.io
 
 import com.android.server.wm.flicker.RunStatus
+import com.android.server.wm.traces.common.Timestamp
+import com.android.server.wm.traces.common.events.CujTrace
 import com.android.server.wm.traces.common.events.EventLog
 import com.android.server.wm.traces.common.layers.LayersTrace
 import com.android.server.wm.traces.common.transactions.TransactionsTrace
@@ -45,6 +47,18 @@ class ParsedTracesReader(
     override fun readWmTrace(): WindowManagerTrace? = wmTrace
 
     override fun readEventLogTrace(): EventLog? = eventLog
+
+    override fun readCujTrace(): CujTrace? = eventLog?.cujTrace
+
+    override fun slice(startTimestamp: Timestamp, endTimestamp: Timestamp): ParsedTracesReader {
+        return ParsedTracesReader(
+            wmTrace?.slice(startTimestamp, endTimestamp),
+            layersTrace?.slice(startTimestamp, endTimestamp),
+            transitionsTrace?.slice(startTimestamp, endTimestamp),
+            transactionsTrace?.slice(startTimestamp, endTimestamp),
+            eventLog?.slice(startTimestamp, endTimestamp)
+        )
+    }
 
     override fun readLayersDump(tag: String): LayersTrace? {
         error("Trace type not available")

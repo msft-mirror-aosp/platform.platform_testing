@@ -26,7 +26,8 @@ java_test {
     },
     srcs: [
         "src/com/android/server/wm/flicker/**/*.java",
-        "src/com/android/server/wm/flicker/**/*.kt"
+        "src/com/android/server/wm/flicker/**/*.kt",
+        "src/com/android/server/wm/flicker/**/*.eventlog"
     ],
     java_resource_dirs: [
         "src/com/android/server/wm/flicker/service/resources/"

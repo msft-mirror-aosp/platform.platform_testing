@@ -25,6 +25,7 @@ import com.android.server.wm.traces.common.Color
 import com.android.server.wm.traces.common.Rect
 import com.android.server.wm.traces.common.RectF
 import com.android.server.wm.traces.common.Size
+import com.android.server.wm.traces.common.Timestamp
 import com.android.server.wm.traces.common.layers.HwcCompositionType
 import com.android.server.wm.traces.common.layers.Layer
 import com.android.server.wm.traces.common.layers.LayerTraceEntry
@@ -37,12 +38,13 @@ import com.android.server.wm.traces.parser.AbstractTraceParser
 class LayersTraceParser(
     private val ignoreLayersStackMatchNoDisplay: Boolean = true,
     private val ignoreLayersInVirtualDisplay: Boolean = true,
-    private val orphanLayerCallback: ((Layer) -> Boolean)? = null
+    private val legacyTrace: Boolean = false,
+    private val orphanLayerCallback: ((Layer) -> Boolean)? = null,
 ) :
     AbstractTraceParser<
         Layerstrace.LayersTraceFileProto, Layerstrace.LayersTraceProto, LayerTraceEntry, LayersTrace
     >() {
-    private var realToElapsedTimeOffsetNanos = 0L
+    private var realToElapsedTimeOffsetNanos = Timestamp.NULL_TIMESTAMP
 
     override val traceName: String = "Layers Trace"
 
@@ -56,8 +58,13 @@ class LayersTraceParser(
         input: Layerstrace.LayersTraceFileProto
     ): List<Layerstrace.LayersTraceProto> = input.entryList
 
-    override fun getTimestamp(entry: Layerstrace.LayersTraceProto): Long =
-        entry.elapsedRealtimeNanos
+    override fun getTimestamp(entry: Layerstrace.LayersTraceProto): Timestamp {
+        require(legacyTrace || realToElapsedTimeOffsetNanos != Timestamp.NULL_TIMESTAMP)
+        return Timestamp(
+            systemUptimeNanos = entry.elapsedRealtimeNanos,
+            unixNanos = entry.elapsedRealtimeNanos + realToElapsedTimeOffsetNanos
+        )
+    }
 
     override fun onBeforeParse(input: Layerstrace.LayersTraceFileProto) {
         realToElapsedTimeOffsetNanos = input.realToElapsedTimeOffsetNanos

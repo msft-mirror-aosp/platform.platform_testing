@@ -53,6 +53,14 @@ constructor(
         windowContainer.computedZ
     )
 
+    @JsName("parent")
+    var parent: WindowContainer? = null
+        private set
+
+    init {
+        children.forEach { it.parent = this }
+    }
+
     @JsName("isVisible") open val isVisible: Boolean = _isVisible
     @JsName("name") open val name: String = title
     @JsName("stableId")
