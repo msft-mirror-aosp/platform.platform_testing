@@ -85,6 +85,7 @@ public class AutomotiveConfigConstants {
     public static final String HOME_BOTTOM_CARD = "HOME_BOTTOM_CARD";
     public static final String HOME_TOP_CARD = "HOME_TOP_CARD";
     public static final String HOME_MAP_CARD = "HOME_MAP_CARD";
+    // APP GRID
     public static final String OPEN_APP_GRID_COMMAND = "OPEN_APP_GRID_COMMAND";
     public static final String APP_GRID_SCROLL_BACKWARD_BUTTON = "APP_GRID_SCROLL_BACKWARD_BUTTON";
     public static final String APP_GRID_SCROLL_FORWARD_BUTTON = "APP_GRID_SCROLL_FORWARD_BUTTON";
@@ -94,6 +95,7 @@ public class AutomotiveConfigConstants {
     public static final String APP_LIST_SCROLL_ELEMENT = "APP_LIST_SCROLL_ELEMENT";
     public static final String APP_LIST_SCROLL_ACTION = "APP_LIST_SCROLL_ACTION";
     public static final String APP_LIST_SCROLL_DIRECTION = "APP_LIST_SCROLL_DIRECTION";
+    // SECURITY_SETTINGS
     public static final String SECURITY_SETTINGS_SCROLLABLE_ELEMENT =
             "SECURITY_SETTINGS_SCROLLABLE_ELEMENT";
     public static final String SECURITY_SETTINGS_REMOVE_BUTTON = "SECURITY_SETTINGS_REMOVE_BUTTON";
@@ -176,5 +178,51 @@ public class AutomotiveConfigConstants {
     public static final String SYSTEM_SETTINGS_SCROLL_MARGIN = "SYSTEM_SETTINGS_SCROLL_MARGIN";
     public static final String SYSTEM_SETTINGS_SCROLL_WAIT_TIME =
             "SYSTEM_SETTINGS_SCROLL_WAIT_TIME";
-}
 
+    // Sound Setting Constants
+    public static final String SOUND_SETTINGS_SAVE_BUTTON = "SOUND_SETTINGS_SAVE_BUTTON";
+    public static final String SOUND_SETTINGS_LIST_SCROLL_DIRECTION =
+            "SOUND_SETTINGS_LIST_SCROLL_DIRECTION";
+    public static final String SOUND_SETTINGS_LIST_SCROLL_ACTION =
+            "SOUND_SETTINGS_LIST_SCROLL_ACTION";
+    public static final String SOUND_SETTINGS_SCROLL_ELEMENT = "SOUND_SETTINGS_SCROLL_ELEMENT";
+    public static final String SOUND_SETTINGS_SCROLL_FORWARD_BUTTON =
+            "SOUND_SETTINGS_SCROLL_FORWARD_BUTTON";
+    public static final String SOUND_SETTINGS_SCROLL_BACKWARD_BUTTON =
+            "SOUND_SETTINGS_SCROLL_BACKWARD_BUTTON";
+    public static final String SOUND_SETTINGS_SCROLL_MARGIN = "SOUND_SETTINGS_SCROLL_MARGIN";
+    public static final String SOUND_SETTINGS_SCROLL_WAIT_TIME = "SOUND_SETTINGS_SCROLL_WAIT_TIME";
+
+    // APPINFO SETTINGS CONSTANTS
+    public static final String OPEN_SETTINGS_COMMAND = "OPEN_SETTINGS_COMMAND";
+    public static final String APP_INFO_SETTINGS_SCROLL_ACTION = "APP_INFO_SETTINGS_SCROLL_ACTION";
+    public static final String APP_INFO_SETTINGS_SCROLL_DIRECTION =
+            "APP_INFO_SETTINGS_SCROLL_DIRECTION";
+    public static final String APP_INFO_SETTINGS_VIEW_ALL = "APP_INFO_SETTINGS_VIEW_ALL";
+    public static final String APP_INFO_SETTINGS_SCROLL_ELEMENT =
+            "APP_INFO_SETTINGS_SCROLL_ELEMENT";
+    public static final String APP_INFO_SETTINGS_SCROLL_FORWARD_BUTTON =
+            "APP_INFO_SETTINGS_SCROLL_FORWARD_BUTTON";
+    public static final String APP_INFO_SETTINGS_SCROLL_BACKWARD_BUTTON =
+            "APP_INFO_SETTINGS_SCROLL_BACKWARD_BUTTON";
+    public static final String APP_INFO_SETTINGS_ENABLE_DISABLE_BUTTON =
+            "APP_INFO_SETTINGS_ENABLE_DISABLE_BUTTON";
+    public static final String APP_INFO_SETTINGS_DISABLE_BUTTON_TEXT = "Disable";
+    public static final String APP_INFO_SETTINGS_DISABLE_APP_BUTTON =
+            "APP_INFO_SETTINGS_DISABLE_APP_BUTTON";
+    public static final String APP_INFO_SETTINGS_ENABLE_BUTTON_TEXT = "Enable";
+    public static final String APP_INFO_SETTINGS_OK_BUTTON = "APP_INFO_SETTINGS_OK_BUTTON";
+    public static final String APP_INFO_SETTINGS_PERMISSIONS_MENU =
+            "APP_INFO_SETTINGS_PERMISSIONS_MENU";
+    public static final String APP_INFO_SETTINGS_ALLOW_BUTTON = "APP_INFO_SETTINGS_ALLOW_BUTTON";
+    public static final String APP_INFO_SETTINGS_DONT_ALLOW_BUTTON =
+            "APP_INFO_SETTINGS_DONT_ALLOW_BUTTON";
+    public static final String APP_INFO_SETTINGS_DONT_ALLOW_ANYWAY_BUTTON =
+            "APP_INFO_SETTINGS_DONT_ALLOW_ANYWAY_BUTTON";
+    public static final String APP_INFO_SETTINGS_FORCE_STOP_BUTTON =
+            "APP_INFO_SETTINGS_FORCE_STOP_BUTTON";
+    public static final String APP_INFO_SETTINGS_TITTLE = "APP_INFO_SETTINGS_TITTLE";
+    public static final String APP_INFO_SETTINGS_SCROLL_MARGIN = "APP_INFO_SETTINGS_SCROLL_MARGIN";
+    public static final String APP_INFO_SETTINGS_SCROLL_WAIT_TIME =
+            "APP_INFO_SETTINGS_SCROLL_WAIT_TIME";
+}
