@@ -41,7 +41,7 @@ interface ITrace<Entry : ITraceEntry> {
      * ```
      * the provided [timestamp] is before all entries in the trace
      */
-    @JsName("getEntryExactlyAt")
+    @JsName("getEntryAt")
     fun getEntryAt(timestamp: Timestamp): Entry {
         return entries.dropLastWhile { it.timestamp <= timestamp }.lastOrNull()
             ?: error("No entry at or before timestamp $timestamp")

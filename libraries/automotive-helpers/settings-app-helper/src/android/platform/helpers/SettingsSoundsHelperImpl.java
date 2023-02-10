@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 The Android Open Source Project
+ * Copyright (C) 2023 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,17 +26,22 @@ import android.app.UiAutomation;
 import android.car.Car;
 import android.car.media.CarAudioManager;
 import android.content.Context;
-import android.os.SystemClock;
+import android.platform.helpers.ScrollUtility.ScrollActions;
+import android.platform.helpers.ScrollUtility.ScrollDirection;
+import android.platform.helpers.exceptions.UnknownUiException;
 import android.support.test.uiautomator.By;
+import android.support.test.uiautomator.BySelector;
 import android.support.test.uiautomator.UiObject2;
+
 import androidx.test.InstrumentationRegistry;
 
 import java.util.List;
 
-public class SettingsSoundsHelperImpl extends AbstractAutoStandardAppHelper
+/** Sound setting app helper file */
+public class SettingsSoundsHelperImpl extends AbstractStandardAppHelper
         implements IAutoSoundsSettingHelper {
-    private static final int UI_RESPONSE_WAIT_MS = 5000;
-    private static final int SHORT_UI_RESPONSE_TIME = 1000;
+
+    private ScrollUtility mScrollUtility;
     private static final int VOLUME_FLAGS = 0;
     private static final int USAGE_INVALID = -1;
     private static final int MINIMUM_NUMBER_OF_CHILDREN = 2;
@@ -54,12 +59,32 @@ public class SettingsSoundsHelperImpl extends AbstractAutoStandardAppHelper
                 "android.car.permission.CAR_CONTROL_AUDIO_VOLUME",
                 "android.car.permission.CAR_CONTROL_AUDIO_SETTINGS");
         mCarAudioManager = (CarAudioManager) car.getCarManager(Car.AUDIO_SERVICE);
+        mScrollUtility = ScrollUtility.getInstance(getSpectatioUiUtil());
+        mScrollUtility.setScrollValues(
+                Integer.valueOf(
+                        getActionFromConfig(
+                                AutomotiveConfigConstants.SOUND_SETTINGS_SCROLL_MARGIN)),
+                Integer.valueOf(
+                        getActionFromConfig(
+                                AutomotiveConfigConstants.SOUND_SETTINGS_SCROLL_WAIT_TIME)));
     }
 
     /** {@inheritDoc} */
     @Override
     public String getPackage() {
-        return getApplicationConfig(AutoConfigConstants.SETTINGS_PACKAGE);
+        return getPackageFromConfig(AutomotiveConfigConstants.SETTINGS_PACKAGE);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String getLauncherName() {
+        throw new UnsupportedOperationException("Operation not supported.");
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void dismissInitialDialogs() {
+        // Nothing to dismiss
     }
 
     /** {@inheritDoc} */
@@ -82,7 +107,7 @@ public class SettingsSoundsHelperImpl extends AbstractAutoStandardAppHelper
         }
         int volumeGroupId = mCarAudioManager.getVolumeGroupIdForUsage(audioAttribute);
         mCarAudioManager.setGroupVolume(volumeGroupId, index, VOLUME_FLAGS);
-        SystemClock.sleep(SHORT_UI_RESPONSE_TIME);
+        getSpectatioUiUtil().wait1Second();
     }
 
     /** {@inheritDoc} */
@@ -123,36 +148,55 @@ public class SettingsSoundsHelperImpl extends AbstractAutoStandardAppHelper
                 type = "Phone ringtone";
                 break;
         }
-        UiObject2 object = scrollAndFindUiObject(By.text(type), getScrollScreenIndex());
+        BySelector typeSelector = By.text(type);
+        ScrollActions scrollAction =
+                ScrollActions.valueOf(
+                        getActionFromConfig(
+                                AutomotiveConfigConstants.SOUND_SETTINGS_LIST_SCROLL_ACTION));
+        BySelector backwardButtonSelector =
+                getUiElementFromConfig(
+                        AutomotiveConfigConstants.SOUND_SETTINGS_SCROLL_BACKWARD_BUTTON);
+        BySelector forwardButtonSelector =
+                getUiElementFromConfig(
+                        AutomotiveConfigConstants.SOUND_SETTINGS_SCROLL_FORWARD_BUTTON);
+        BySelector scrollableElementSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.SOUND_SETTINGS_SCROLL_ELEMENT);
+        ScrollDirection scrollDirection =
+                ScrollDirection.valueOf(
+                        getActionFromConfig(
+                                AutomotiveConfigConstants.SOUND_SETTINGS_LIST_SCROLL_DIRECTION));
+        UiObject2 object =
+                mScrollUtility.scrollAndFindUiObject(
+                        scrollAction,
+                        scrollDirection,
+                        forwardButtonSelector,
+                        backwardButtonSelector,
+                        scrollableElementSelector,
+                        typeSelector,
+                        String.format("Scroll on sound to find %s", type));
         String currentSound = getSound(soundType);
-        object.click();
-        SystemClock.sleep(SHORT_UI_RESPONSE_TIME);
-        boolean scrollDown = false;
-        if (currentSound.compareToIgnoreCase(sound) < 0) {
-            scrollDown = true;
-        }
-        UiObject2 soundObject = findUiObject(By.text(sound));
-        while (soundObject == null) {
-            if (scrollDown) {
-                scrollDownOnePage(getScrollScreenIndex());
-            } else {
-                scrollUpOnePage(getScrollScreenIndex());
-            }
-            soundObject = findUiObject(By.text(sound));
-        }
-        if (soundObject == null) {
-            throw new RuntimeException(String.format("Unable to find sound %s", sound));
-        }
-        soundObject.click();
+        validateUiObject(object, String.format("sound type %s", type));
+        getSpectatioUiUtil().clickAndWait(object);
+        getSpectatioUiUtil().wait1Second();
+        BySelector soundSelector = By.text(sound);
+        UiObject2 soundObject =
+                mScrollUtility.scrollAndFindUiObject(
+                        scrollAction,
+                        scrollDirection,
+                        forwardButtonSelector,
+                        backwardButtonSelector,
+                        scrollableElementSelector,
+                        soundSelector,
+                        String.format("Scroll on sound list to find %s", sound));
+        validateUiObject(soundObject, String.format("sound %s", sound));
+        getSpectatioUiUtil().clickAndWait(soundObject);
         UiObject2 saveButton =
-                findUiObject(
-                        getResourceFromConfig(
-                                AutoConfigConstants.SETTINGS,
-                                AutoConfigConstants.SOUND_SETTINGS,
-                                AutoConfigConstants.SAVE_BUTTON));
-        saveButton.click();
-        // TODO(b/235250932): Make these pauses only run against emulators.
-        SystemClock.sleep(SHORT_UI_RESPONSE_TIME);
+                getSpectatioUiUtil()
+                        .findUiObject(
+                                getUiElementFromConfig(
+                                        AutomotiveConfigConstants.SOUND_SETTINGS_SAVE_BUTTON));
+        validateUiObject(saveButton, "save button");
+        getSpectatioUiUtil().clickAndWait(saveButton);
     }
 
     /** {@inheritDoc} */
@@ -170,22 +214,53 @@ public class SettingsSoundsHelperImpl extends AbstractAutoStandardAppHelper
                 type = "Phone ringtone";
                 break;
         }
-        SystemClock.sleep(SHORT_UI_RESPONSE_TIME);
-        UiObject2 object = scrollAndFindUiObject(By.text(type), getScrollScreenIndex());
+        getSpectatioUiUtil().wait1Second();
+        BySelector typeSelector = By.text(type);
+        ScrollActions scrollAction =
+                ScrollActions.valueOf(
+                        getActionFromConfig(
+                                AutomotiveConfigConstants.SOUND_SETTINGS_LIST_SCROLL_ACTION));
+        BySelector backwardButtonSelector =
+                getUiElementFromConfig(
+                        AutomotiveConfigConstants.SOUND_SETTINGS_SCROLL_BACKWARD_BUTTON);
+        BySelector forwardButtonSelector =
+                getUiElementFromConfig(
+                        AutomotiveConfigConstants.SOUND_SETTINGS_SCROLL_FORWARD_BUTTON);
+        BySelector scrollableElementSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.SOUND_SETTINGS_SCROLL_ELEMENT);
+        ScrollDirection scrollDirection =
+                ScrollDirection.valueOf(
+                        getActionFromConfig(
+                                AutomotiveConfigConstants.SOUND_SETTINGS_LIST_SCROLL_DIRECTION));
+        UiObject2 object =
+                mScrollUtility.scrollAndFindUiObject(
+                        scrollAction,
+                        scrollDirection,
+                        forwardButtonSelector,
+                        backwardButtonSelector,
+                        scrollableElementSelector,
+                        typeSelector,
+                        String.format("Scroll on sound to find %s", type));
+        validateUiObject(object, String.format("sound type %s", type));
         List<UiObject2> list = object.getParent().getChildren();
         if (list.size() < 2) {
-            scrollDownOnePage(1);
+            mScrollUtility.scrollForward(
+                    scrollAction,
+                    scrollDirection,
+                    forwardButtonSelector,
+                    scrollableElementSelector,
+                    String.format("Scroll on sound to find %s", type));
+            validateUiObject(object, String.format("sound type %s", type));
             list = object.getParent().getChildren();
         }
         UiObject2 summary = list.get(1);
         return summary.getText();
     }
 
-    private int getScrollScreenIndex() {
-        int scrollScreenIndex = 0;
-        if (hasSplitScreenSettingsUI()) {
-            scrollScreenIndex = 1;
+    private void validateUiObject(UiObject2 uiObject, String action) {
+        if (uiObject == null) {
+            throw new UnknownUiException(
+                    String.format("Unable to find UI Element for %s.", action));
         }
-        return scrollScreenIndex;
     }
 }
