@@ -148,7 +148,6 @@ public class AutomotiveConfigConstants {
     public static final String NOTIFICATION_LIST_SCROLL_ACTION = "NOTIFICATION_LIST_SCROLL_ACTION";
     public static final String NOTIFICATION_LIST_SCROLL_DIRECTION =
             "NOTIFICATION_LIST_SCROLL_DIRECTION";
-
     // System Settings Constants
     public static final String SETTINGS_PACKAGE = "SETTINGS_PACKAGE";
     public static final String SYSTEM_SETTINGS_SCROLL_ACTION = "SYSTEM_SETTINGS_SCROLL_ACTION";
@@ -178,6 +177,34 @@ public class AutomotiveConfigConstants {
     public static final String SYSTEM_SETTINGS_SCROLL_MARGIN = "SYSTEM_SETTINGS_SCROLL_MARGIN";
     public static final String SYSTEM_SETTINGS_SCROLL_WAIT_TIME =
             "SYSTEM_SETTINGS_SCROLL_WAIT_TIME";
+
+    // Date and time Constants
+    public static final String DATE_TIME_SETTINGS_SCROLL_ACTION =
+            "DATE_TIME_SETTINGS_SCROLL_ACTION";
+    public static final String DATE_TIME_SETTINGS_SCROLL_DIRECTION =
+            "DATE_TIME_SETTINGS_SCROLL_DIRECTION";
+    public static final String DATE_TIME_SETTINGS_SET_TIME_AUTOMATICALLY =
+            "DATE_TIME_SETTINGS_SET_TIME_AUTOMATICALLY";
+    public static final String DATE_TIME_SETTINGS_SET_TIME_ZONE_AUTOMATICALLY =
+            "DATE_TIME_SETTINGS_SET_TIME_ZONE_AUTOMATICALLY";
+    public static final String DATE_TIME_SETTINGS_SET_DATE = "DATE_TIME_SETTINGS_SET_DATE";
+    public static final String DATE_TIME_SETTINGS_SET_TIME = "DATE_TIME_SETTINGS_SET_TIME";
+    public static final String DATE_TIME_SETTINGS_USE_24_HOUR_FORMAT =
+            "DATE_TIME_SETTINGS_USE_24_HOUR_FORMAT";
+    public static final String DATE_TIME_SETTINGS_SELECT_TIME_ZONE =
+            "DATE_TIME_SETTINGS_SELECT_TIME_ZONE";
+    public static final String DATE_TIME_SETTINGS_SCROLL_FORWARD_BUTTON =
+            "DATE_TIME_SETTINGS_SCROLL_FORWARD_BUTTON";
+    public static final String DATE_TIME_SETTINGS_SCROLL_BACKWARD_BUTTON =
+            "DATE_TIME_SETTINGS_SCROLL_BACKWARD_BUTTON";
+    public static final String DATE_TIME_SETTINGS_SCROLL_ELEMENT =
+            "DATE_TIME_SETTINGS_SCROLL_ELEMENT";
+    public static final String NUMBER_PICKER_WIDGET_CLASS = "NUMBER_PICKER_WIDGET_CLASS";
+    public static final String EDIT_TEXT_WIDGET_CLASS = "EDIT_TEXT_WIDGET_CLASS";
+    public static final String DATE_TIME_SETTINGS_SCROLL_MARGIN =
+            "DATE_TIME_SETTINGS_SCROLL_MARGIN";
+    public static final String DATE_TIME_SETTINGS_SCROLL_WAIT_TIME =
+            "DATE_TIME_SETTINGS_SCROLL_WAIT_TIME";
 
     // Sound Setting Constants
     public static final String SOUND_SETTINGS_SAVE_BUTTON = "SOUND_SETTINGS_SAVE_BUTTON";
