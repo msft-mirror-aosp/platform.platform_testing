@@ -5,7 +5,9 @@
     "HOME_PACKAGE": "com.android.car.carlauncher",
     "SECURITY_SETTINGS_PACKAGE": "com.android.car.settings",
     "LOCK_SCREEN_PACKAGE": "com.android.systemui",
-    "SETTINGS_PACKAGE": "com.android.car.settings"
+    "SETTINGS_PACKAGE": "com.android.car.settings",
+    "NUMBER_PICKER_WIDGET_CLASS" : "android.widget.NumberPicker",
+    "EDIT_TEXT_WIDGET_CLASS" : "android.widget.EditText"
   },
   "ACTIONS": {
     "CONTACT_LIST_SCROLL_ACTION" : "USE_BUTTON",
@@ -31,7 +33,11 @@
     "SOUND_SETTINGS_LIST_SCROLL_ACTION": "USE_GESTURE",
     "SOUND_SETTINGS_LIST_SCROLL_DIRECTION": "VERTICAL",
     "SOUND_SETTINGS_SCROLL_MARGIN": "10",
-    "SOUND_SETTINGS_SCROLL_WAIT_TIME": "1"
+    "SOUND_SETTINGS_SCROLL_WAIT_TIME": "1",
+    "DATE_TIME_SETTINGS_SCROLL_MARGIN": "6",
+    "DATE_TIME_SETTINGS_SCROLL_WAIT_TIME": "2",
+    "DATE_TIME_SETTINGS_SCROLL_ACTION": "USE_GESTURE",
+    "DATE_TIME_SETTINGS_SCROLL_DIRECTION": "VERTICAL"
   },
   "COMMANDS": {
     "OPEN_DIAL_PAD_COMMAND": "am start -a android.intent.action.DIAL",
@@ -607,6 +613,45 @@
     "SOUND_SETTINGS_SAVE_BUTTON": {
       "TYPE": "DESCRIPTION",
       "VALUE": "Save"
+    },
+    "DATE_TIME_SETTINGS_SET_TIME_AUTOMATICALLY": {
+      "TYPE": "TEXT",
+      "VALUE": "Set time automatically"
+    },
+    "DATE_TIME_SETTINGS_SET_TIME_ZONE_AUTOMATICALLY": {
+      "TYPE": "TEXT",
+      "VALUE": "Set time zone automatically"
+    } ,
+    "DATE_TIME_SETTINGS_SET_DATE": {
+      "TYPE": "TEXT",
+      "VALUE": "Set date"
+    },
+    "DATE_TIME_SETTINGS_SET_TIME": {
+      "TYPE": "TEXT",
+      "VALUE": "Set time"
+    },
+    "DATE_TIME_SETTINGS_USE_24_HOUR_FORMAT": {
+      "TYPE": "TEXT",
+      "VALUE": "Use 24-hour format"
+    },
+    "DATE_TIME_SETTINGS_SELECT_TIME_ZONE": {
+      "TYPE": "TEXT",
+      "VALUE": "Select time zone"
+    },
+    "DATE_TIME_SETTINGS_SCROLL_FORWARD_BUTTON": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "car_ui_scrollbar_page_down",
+      "PACKAGE": "com.android.car.ui.sharedlibrary"
+    },
+    "DATE_TIME_SETTINGS_SCROLL_BACKWARD_BUTTON": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "car_ui_scrollbar_page_up",
+      "PACKAGE": "com.android.car.ui.sharedlibrary"
+    },
+    "DATE_TIME_SETTINGS_SCROLL_ELEMENT": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "car_ui_internal_recycler_view",
+      "PACKAGE": "com.android.car.ui.sharedlibrary"
     }
   }
 }

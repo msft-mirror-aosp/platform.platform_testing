@@ -20,6 +20,7 @@ import com.android.server.wm.flicker.helpers.MILLISECOND_AS_NANOSECONDS
 import com.android.server.wm.flicker.io.IReader
 import com.android.server.wm.flicker.service.extractors.TransitionTransforms.inCujRangeFilter
 import com.android.server.wm.flicker.service.extractors.TransitionTransforms.mergeTrampolineTransitions
+import com.android.server.wm.flicker.service.extractors.TransitionTransforms.noOpTransitionsTransform
 import com.android.server.wm.traces.common.events.Cuj
 import com.android.server.wm.traces.common.transition.Transition
 
@@ -28,11 +29,12 @@ typealias TransitionsTransform =
 
 class TransitionMatcher(
     private val mainTransform: TransitionsTransform,
+    private val finalTransform: TransitionsTransform = noOpTransitionsTransform,
     private val associatedTransitionRequired: Boolean = true,
     // Transformations applied, in order, to all transitions the reader returns to end up with the
     // targeted transition.
     private val transforms: List<TransitionsTransform> =
-        listOf(mainTransform, inCujRangeFilter, mergeTrampolineTransitions)
+        listOf(mainTransform, inCujRangeFilter, mergeTrampolineTransitions, finalTransform)
 ) : ITransitionMatcher {
     override fun getTransition(cujEntry: Cuj, reader: IReader): Transition? {
         val transitionsTrace = reader.readTransitionsTrace() ?: error("Missing transitions trace")
@@ -88,6 +90,8 @@ object TransitionTransforms {
             transitions
         }
     }
+
+    val noOpTransitionsTransform: TransitionsTransform = { transitions, _, _ -> transitions }
 
     private fun isTrampolinedOpenTransition(
         firstTransition: Transition,
