@@ -17,12 +17,15 @@
 package com.android.server.wm.flicker.service.config
 
 import com.android.server.wm.flicker.service.assertors.IAssertionTemplate
-import com.android.server.wm.flicker.service.config.AssertionTemplates.APP_CLOSE_ASSERTIONS
+import com.android.server.wm.flicker.service.config.AssertionTemplates.APP_CLOSE_TO_HOME_ASSERTIONS
 import com.android.server.wm.flicker.service.config.AssertionTemplates.APP_LAUNCH_FROM_HOME_ASSERTIONS
 import com.android.server.wm.flicker.service.config.AssertionTemplates.APP_LAUNCH_FROM_NOTIFICATION_ASSERTIONS
 import com.android.server.wm.flicker.service.config.AssertionTemplates.COMMON_ASSERTIONS
+import com.android.server.wm.flicker.service.config.AssertionTemplates.LAUNCHER_QUICK_SWITCH_ASSERTIONS
 import com.android.server.wm.flicker.service.config.TransitionFilters.CLOSE_APP_TO_LAUNCHER_FILTER
 import com.android.server.wm.flicker.service.config.TransitionFilters.OPEN_APP_TRANSITION_FILTER
+import com.android.server.wm.flicker.service.config.TransitionFilters.QUICK_SWITCH_TRANSITION_FILTER
+import com.android.server.wm.flicker.service.config.TransitionFilters.QUICK_SWITCH_TRANSITION_MERGE
 import com.android.server.wm.flicker.service.extractors.EntireTraceExtractor
 import com.android.server.wm.flicker.service.extractors.IScenarioExtractor
 import com.android.server.wm.flicker.service.extractors.TaggedScenarioExtractor
@@ -43,7 +46,7 @@ object FlickerServiceConfig {
                     extractor =
                         TaggedScenarioExtractor(
                             targetTag = CujType.CUJ_LAUNCHER_APP_LAUNCH_FROM_ICON,
-                            type = FaasScenarioType.LAUNCHER_APP_LAUNCH_FROM_ICON,
+                            type,
                             transitionMatcher = TransitionMatcher(OPEN_APP_TRANSITION_FILTER)
                         ),
                     assertionTemplates = APP_LAUNCH_FROM_HOME_ASSERTIONS
@@ -53,20 +56,44 @@ object FlickerServiceConfig {
                     extractor =
                         TaggedScenarioExtractor(
                             targetTag = CujType.CUJ_LAUNCHER_APP_CLOSE_TO_HOME,
-                            type = FaasScenarioType.APP_CLOSE_TO_HOME,
+                            type,
                             transitionMatcher = TransitionMatcher(CLOSE_APP_TO_LAUNCHER_FILTER)
                         ),
-                    assertionTemplates = APP_CLOSE_ASSERTIONS
+                    assertionTemplates = APP_CLOSE_TO_HOME_ASSERTIONS
                 )
             FaasScenarioType.NOTIFICATION_APP_START ->
                 ScenarioConfig(
                     extractor =
                         TaggedScenarioExtractor(
                             targetTag = CujType.CUJ_NOTIFICATION_APP_START,
-                            type = FaasScenarioType.NOTIFICATION_APP_START,
+                            type,
                             transitionMatcher = TransitionMatcher(OPEN_APP_TRANSITION_FILTER)
                         ),
                     assertionTemplates = APP_LAUNCH_FROM_NOTIFICATION_ASSERTIONS
+                )
+            FaasScenarioType.LAUNCHER_QUICK_SWITCH ->
+                ScenarioConfig(
+                    extractor =
+                        TaggedScenarioExtractor(
+                            targetTag = CujType.CUJ_LAUNCHER_QUICK_SWITCH,
+                            type,
+                            transitionMatcher =
+                                TransitionMatcher(
+                                    QUICK_SWITCH_TRANSITION_FILTER,
+                                    finalTransform = QUICK_SWITCH_TRANSITION_MERGE
+                                )
+                        ),
+                    assertionTemplates = LAUNCHER_QUICK_SWITCH_ASSERTIONS
+                )
+            FaasScenarioType.LAUNCHER_APP_LAUNCH_FROM_RECENTS ->
+                ScenarioConfig(
+                    extractor =
+                        TaggedScenarioExtractor(
+                            targetTag = CujType.CUJ_LAUNCHER_APP_LAUNCH_FROM_RECENTS,
+                            type,
+                            transitionMatcher = TransitionMatcher(OPEN_APP_TRANSITION_FILTER)
+                        ),
+                    assertionTemplates = APP_LAUNCH_FROM_HOME_ASSERTIONS
                 )
         }
 
