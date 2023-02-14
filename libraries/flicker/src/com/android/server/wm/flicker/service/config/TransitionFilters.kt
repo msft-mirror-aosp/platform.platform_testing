@@ -47,4 +47,50 @@ object TransitionFilters {
                 }
         }
     }
+
+    val QUICK_SWITCH_TRANSITION_FILTER: TransitionsTransform = { ts, _, _ ->
+        ts.filter { t ->
+            t.changes.size == 2 &&
+                t.changes.any { it.transitMode == Transition.Companion.Type.TO_BACK } &&
+                t.changes.any { it.transitMode == Transition.Companion.Type.TO_FRONT }
+        }
+    }
+
+    val QUICK_SWITCH_TRANSITION_MERGE: TransitionsTransform = { transitions, _, _ ->
+        require(transitions.size == 2) { "Expected 2 transitions but got ${transitions.size}" }
+
+        require(transitions[0].changes.size == 2)
+        require(transitions[0].changes.any { it.transitMode == Transition.Companion.Type.TO_BACK })
+        require(transitions[0].changes.any { it.transitMode == Transition.Companion.Type.TO_FRONT })
+
+        require(transitions[1].changes.size == 2)
+        require(transitions[1].changes.any { it.transitMode == Transition.Companion.Type.TO_BACK })
+        require(transitions[1].changes.any { it.transitMode == Transition.Companion.Type.TO_FRONT })
+
+        val candidateWallpaper1 =
+            transitions[0].changes.first { it.transitMode == Transition.Companion.Type.TO_FRONT }
+        val candidateWallpaper2 =
+            transitions[1].changes.first { it.transitMode == Transition.Companion.Type.TO_BACK }
+
+        require(candidateWallpaper1.layerId == candidateWallpaper2.layerId)
+
+        val closingAppChange =
+            transitions[0].changes.first { it.transitMode == Transition.Companion.Type.TO_BACK }
+        val openingAppChange =
+            transitions[1].changes.first { it.transitMode == Transition.Companion.Type.TO_FRONT }
+
+        listOf(
+            Transition(
+                start = transitions[0].start,
+                sendTime = transitions[0].sendTime,
+                startTransactionId = transitions[0].startTransactionId,
+                // NOTE: Relies on the implementation detail that the second
+                // finishTransaction is merged into the first and applied.
+                finishTransactionId = transitions[0].finishTransactionId,
+                changes = listOf(closingAppChange, openingAppChange),
+                played = true,
+                aborted = false
+            )
+        )
+    }
 }

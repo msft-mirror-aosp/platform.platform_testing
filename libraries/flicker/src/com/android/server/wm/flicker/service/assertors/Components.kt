@@ -91,7 +91,7 @@ object Components {
             "Expected 1 closing layer but got ${closingLayerIds.size}"
         }
 
-        val closingWindowIds = targetChanges.map { it.layerId }
+        val closingWindowIds = targetChanges.map { it.windowId }
         require(closingWindowIds.size == 1) {
             "Expected 1 closing window but got ${closingWindowIds.size}"
         }
