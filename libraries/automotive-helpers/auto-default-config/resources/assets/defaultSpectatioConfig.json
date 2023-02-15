@@ -7,7 +7,8 @@
     "LOCK_SCREEN_PACKAGE": "com.android.systemui",
     "SETTINGS_PACKAGE": "com.android.car.settings",
     "NUMBER_PICKER_WIDGET_CLASS" : "android.widget.NumberPicker",
-    "EDIT_TEXT_WIDGET_CLASS" : "android.widget.EditText"
+    "EDIT_TEXT_WIDGET_CLASS" : "android.widget.EditText",
+    "USER_SETTINGS_PACKAGE": "com.android.car.settings"
   },
   "ACTIONS": {
     "CONTACT_LIST_SCROLL_ACTION" : "USE_BUTTON",
@@ -37,7 +38,11 @@
     "DATE_TIME_SETTINGS_SCROLL_MARGIN": "6",
     "DATE_TIME_SETTINGS_SCROLL_WAIT_TIME": "2",
     "DATE_TIME_SETTINGS_SCROLL_ACTION": "USE_GESTURE",
-    "DATE_TIME_SETTINGS_SCROLL_DIRECTION": "VERTICAL"
+    "DATE_TIME_SETTINGS_SCROLL_DIRECTION": "VERTICAL",
+    "USER_SETTINGS_SCROLL_ACTION": "USE_GESTURE",
+    "USER_SETTINGS_SCROLL_DIRECTION": "VERTICAL",
+    "USER_SETTINGS_SCROLL_MARGIN":"6",
+    "USER_SETTINGS_SCROLL_WAIT_TIME":"2"
   },
   "COMMANDS": {
     "OPEN_DIAL_PAD_COMMAND": "am start -a android.intent.action.DIAL",
@@ -652,6 +657,53 @@
       "TYPE": "RESOURCE_ID",
       "VALUE": "car_ui_internal_recycler_view",
       "PACKAGE": "com.android.car.ui.sharedlibrary"
+    },
+    "USER_SETTINGS_ADD_PROFILE": {
+      "TYPE": "TEXT",
+      "VALUE": "Add.*profile"
+    },
+    "USER_SETTINGS_DELETE": {
+      "TYPE": "TEXT",
+      "VALUE": "Delete"
+    },
+    "USER_SETTINGS_OK": {
+      "TYPE": "TEXT",
+      "VALUE": "OK"
+    },
+    "USER_SETTINGS_DELETE_SELF": {
+      "TYPE": "TEXT",
+      "VALUE": "Delete this profile"
+    },
+    "USER_SETTINGS_MAKE_ADMIN": {
+      "TYPE": "TEXT",
+      "VALUE": "Make Admin"
+    },
+    "USER_SETTINGS_MAKE_ADMIN_CONFIRM": {
+      "TYPE": "TEXT",
+      "VALUE": "Yes, make admin"
+    },
+    "USER_SETTINGS_MAKE_TIME_PATTERN": {
+      "TYPE": "TEXT",
+      "VALUE": "(1[012]|[1-9]):[0-5][0-9](\\s)?.*"
+    },
+    "USER_SETTINGS_SCROLL_FORWARD": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "car_ui_scrollbar_page_down",
+      "PACKAGE": "com.android.car.ui.sharedlibrary"
+    },
+    "USER_SETTINGS_SCROLL_BACKWARD": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "car_ui_scrollbar_page_up",
+      "PACKAGE": "com.android.car.ui.sharedlibrary"
+    },
+    "USER_SETTINGS_SCROLL_ELEMENT": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "car_ui_internal_recycler_view",
+      "PACKAGE": "com.android.car.ui.sharedlibrary"
+    },
+    "USER_SETTINGS_MANAGE_OTHER_PROFILES": {
+      "TYPE": "TEXT",
+      "VALUE": "Manage other profiles"
     }
   }
 }

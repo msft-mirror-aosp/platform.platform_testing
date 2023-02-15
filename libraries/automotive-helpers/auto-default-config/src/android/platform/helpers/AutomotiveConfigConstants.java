@@ -252,4 +252,24 @@ public class AutomotiveConfigConstants {
     public static final String APP_INFO_SETTINGS_SCROLL_MARGIN = "APP_INFO_SETTINGS_SCROLL_MARGIN";
     public static final String APP_INFO_SETTINGS_SCROLL_WAIT_TIME =
             "APP_INFO_SETTINGS_SCROLL_WAIT_TIME";
+
+    // Settings User
+    public static final String USER_SETTINGS_PACKAGE = "USER_SETTINGS_PACKAGE";
+    public static final String USER_SETTINGS_SCROLL_ACTION = "USER_SETTINGS_SCROLL_ACTION";
+    public static final String USER_SETTINGS_SCROLL_DIRECTION = "USER_SETTINGS_SCROLL_DIRECTION";
+    public static final String USER_SETTINGS_ADD_PROFILE = "USER_SETTINGS_ADD_PROFILE";
+    public static final String USER_SETTINGS_DELETE = "USER_SETTINGS_DELETE";
+    public static final String USER_SETTINGS_OK = "USER_SETTINGS_OK";
+    public static final String USER_SETTINGS_DELETE_SELF = "USER_SETTINGS_DELETE_SELF";
+    public static final String USER_SETTINGS_MAKE_ADMIN = "USER_SETTINGS_MAKE_ADMIN";
+    public static final String USER_SETTINGS_MAKE_ADMIN_CONFIRM =
+            "USER_SETTINGS_MAKE_ADMIN_CONFIRM";
+    public static final String USER_SETTINGS_MAKE_TIME_PATTERN = "USER_SETTINGS_MAKE_TIME_PATTERN";
+    public static final String USER_SETTINGS_SCROLL_FORWARD = "USER_SETTINGS_SCROLL_FORWARD";
+    public static final String USER_SETTINGS_SCROLL_BACKWARD = "USER_SETTINGS_SCROLL_BACKWARD";
+    public static final String USER_SETTINGS_SCROLL_ELEMENT = "USER_SETTINGS_SCROLL_ELEMENT";
+    public static final String USER_SETTINGS_MANAGE_OTHER_PROFILES =
+            "USER_SETTINGS_MANAGE_OTHER_PROFILES";
+    public static final String USER_SETTINGS_SCROLL_MARGIN = "USER_SETTINGS_SCROLL_MARGIN";
+    public static final String USER_SETTINGS_SCROLL_WAIT_TIME = "USER_SETTINGS_SCROLL_WAIT_TIME";
 }
