@@ -40,7 +40,8 @@ class LayerSubjectTest {
 
     @Test
     fun exceptionContainsDebugInfoImaginary() {
-        val layersTraceEntries = readLayerTraceFromFile("layers_trace_emptyregion.pb")
+        val layersTraceEntries =
+            readLayerTraceFromFile("layers_trace_emptyregion.pb", legacyTrace = true)
         val error =
             assertThrows<FlickerSubjectException> {
                 LayersTraceSubject(layersTraceEntries).first().layer("ImaginaryLayer", 0).exists()
@@ -52,7 +53,8 @@ class LayerSubjectTest {
 
     @Test
     fun exceptionContainsDebugInfoConcrete() {
-        val layersTraceEntries = readLayerTraceFromFile("layers_trace_emptyregion.pb")
+        val layersTraceEntries =
+            readLayerTraceFromFile("layers_trace_emptyregion.pb", legacyTrace = true)
         val error =
             assertThrows<FlickerSubjectException> {
                 LayersTraceSubject(layersTraceEntries).first().subjects.first().doesNotExist()
@@ -62,7 +64,8 @@ class LayerSubjectTest {
 
     @Test
     fun canTestAssertionsOnLayer() {
-        val layersTraceEntries = readLayerTraceFromFile("layers_trace_emptyregion.pb")
+        val layersTraceEntries =
+            readLayerTraceFromFile("layers_trace_emptyregion.pb", legacyTrace = true)
         LayersTraceSubject(layersTraceEntries)
             .layer("SoundVizWallpaperV2", 26033)
             .hasBufferSize(Size.from(1440, 2960))

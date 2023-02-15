@@ -16,18 +16,18 @@
 
 package com.android.server.wm.flicker.service.assertors.assertions
 
-import com.android.server.wm.flicker.service.assertors.ComponentBuilder
+import com.android.server.wm.flicker.service.IScenarioInstance
+import com.android.server.wm.flicker.service.assertors.ComponentTemplate
 import com.android.server.wm.flicker.traces.layers.LayersTraceSubject
-import com.android.server.wm.traces.common.transition.Transition
 
 /**
  * Checks if the [getWindowState] layer remains inside the display bounds throughout the whole
  * animation
  */
-class AppLayerRemainInsideDisplayBounds(component: ComponentBuilder) :
-    BaseAssertionBuilderWithComponent(component) {
+class AppLayerRemainInsideDisplayBounds(component: ComponentTemplate) :
+    AssertionTemplateWithComponent(component) {
     /** {@inheritDoc} */
-    override fun doEvaluate(transition: Transition, layerSubject: LayersTraceSubject) {
+    override fun doEvaluate(scenarioInstance: IScenarioInstance, layerSubject: LayersTraceSubject) {
         layerSubject
             .invoke("appLayerRemainInsideDisplayBounds") { entry ->
                 val displays = entry.entry.displays
@@ -36,7 +36,7 @@ class AppLayerRemainInsideDisplayBounds(component: ComponentBuilder) :
                 }
                 displays.forEach { display ->
                     entry
-                        .visibleRegion(component.build(transition))
+                        .visibleRegion(component.build(scenarioInstance))
                         .coversAtMost(display.layerStackSpace)
                 }
             }

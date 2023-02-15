@@ -16,26 +16,26 @@
 
 package com.android.server.wm.flicker.service.assertors.assertions
 
-import com.android.server.wm.flicker.service.assertors.ComponentBuilder
+import com.android.server.wm.flicker.service.IScenarioInstance
+import com.android.server.wm.flicker.service.assertors.ComponentTemplate
 import com.android.server.wm.flicker.traces.layers.LayersTraceSubject
-import com.android.server.wm.traces.common.ComponentNameMatcher
-import com.android.server.wm.traces.common.transition.Transition
+import com.android.server.wm.traces.common.component.matchers.ComponentNameMatcher
 
 /**
  * Checks that the app layer doesn't exist or is invisible at the start of the transition, but is
  * created and/or becomes visible during the transition.
  */
-class AppLayerBecomesVisible(component: ComponentBuilder) :
-    BaseAssertionBuilderWithComponent(component) {
+class AppLayerBecomesVisible(component: ComponentTemplate) :
+    AssertionTemplateWithComponent(component) {
     /** {@inheritDoc} */
-    override fun doEvaluate(transition: Transition, layerSubject: LayersTraceSubject) {
+    override fun doEvaluate(scenarioInstance: IScenarioInstance, layerSubject: LayersTraceSubject) {
         layerSubject
-            .isInvisible(component.build(transition))
+            .isInvisible(component.build(scenarioInstance))
             .then()
             .isVisible(ComponentNameMatcher.SNAPSHOT, isOptional = true)
             .then()
             .isVisible(ComponentNameMatcher.SPLASH_SCREEN, isOptional = true)
             .then()
-            .isVisible(component.build(transition))
+            .isVisible(component.build(scenarioInstance))
     }
 }

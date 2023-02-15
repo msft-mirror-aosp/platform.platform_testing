@@ -24,7 +24,7 @@ import com.android.server.wm.flicker.readLayerTraceFromFile
 import com.android.server.wm.flicker.traces.FlickerSubjectException
 import com.android.server.wm.flicker.traces.layers.LayersTraceSubject
 import com.android.server.wm.traces.common.Cache
-import com.android.server.wm.traces.common.ComponentNameMatcher
+import com.android.server.wm.traces.common.component.matchers.ComponentNameMatcher
 import com.android.server.wm.traces.common.layers.LayersTrace
 import com.android.server.wm.traces.common.region.Region
 import com.google.common.truth.Truth
@@ -46,7 +46,8 @@ class LayersTraceSubjectTest {
 
     @Test
     fun exceptionContainsDebugInfo() {
-        val layersTraceEntries = readLayerTraceFromFile("layers_trace_launch_split_screen.pb")
+        val layersTraceEntries =
+            readLayerTraceFromFile("layers_trace_launch_split_screen.pb", legacyTrace = true)
         val error =
             assertThrows<AssertionError> { LayersTraceSubject(layersTraceEntries).isEmpty() }
         Truth.assertThat(error).hasMessageThat().contains("Trace start")
@@ -55,7 +56,8 @@ class LayersTraceSubjectTest {
 
     @Test
     fun testCanDetectEmptyRegionFromLayerTrace() {
-        val layersTraceEntries = readLayerTraceFromFile("layers_trace_emptyregion.pb")
+        val layersTraceEntries =
+            readLayerTraceFromFile("layers_trace_emptyregion.pb", legacyTrace = true)
         val failure =
             assertThrows<FlickerSubjectException> {
                 LayersTraceSubject(layersTraceEntries)
@@ -70,7 +72,8 @@ class LayersTraceSubjectTest {
 
     @Test
     fun testCanInspectBeginning() {
-        val layersTraceEntries = readLayerTraceFromFile("layers_trace_launch_split_screen.pb")
+        val layersTraceEntries =
+            readLayerTraceFromFile("layers_trace_launch_split_screen.pb", legacyTrace = true)
         LayersTraceSubject(layersTraceEntries)
             .first()
             .isVisible(ComponentNameMatcher.NAV_BAR)
@@ -80,7 +83,8 @@ class LayersTraceSubjectTest {
 
     @Test
     fun testCanInspectEnd() {
-        val layersTraceEntries = readLayerTraceFromFile("layers_trace_launch_split_screen.pb")
+        val layersTraceEntries =
+            readLayerTraceFromFile("layers_trace_launch_split_screen.pb", legacyTrace = true)
         LayersTraceSubject(layersTraceEntries)
             .last()
             .isVisible(ComponentNameMatcher.NAV_BAR)
@@ -89,7 +93,8 @@ class LayersTraceSubjectTest {
 
     @Test
     fun testAssertionsOnRange() {
-        val layersTraceEntries = readLayerTraceFromFile("layers_trace_launch_split_screen.pb")
+        val layersTraceEntries =
+            readLayerTraceFromFile("layers_trace_launch_split_screen.pb", legacyTrace = true)
 
         LayersTraceSubject(layersTraceEntries)
             .isVisible(ComponentNameMatcher.NAV_BAR)
@@ -104,7 +109,8 @@ class LayersTraceSubjectTest {
 
     @Test
     fun testCanDetectChangingAssertions() {
-        val layersTraceEntries = readLayerTraceFromFile("layers_trace_launch_split_screen.pb")
+        val layersTraceEntries =
+            readLayerTraceFromFile("layers_trace_launch_split_screen.pb", legacyTrace = true)
         LayersTraceSubject(layersTraceEntries)
             .isVisible(ComponentNameMatcher.NAV_BAR)
             .notContains(TestComponents.DOCKER_STACK_DIVIDER)
@@ -120,7 +126,8 @@ class LayersTraceSubjectTest {
     @FlakyTest
     @Test
     fun testCanDetectIncorrectVisibilityFromLayerTrace() {
-        val layersTraceEntries = readLayerTraceFromFile("layers_trace_invalid_layer_visibility.pb")
+        val layersTraceEntries =
+            readLayerTraceFromFile("layers_trace_invalid_layer_visibility.pb", legacyTrace = true)
         val error =
             assertThrows<FlickerSubjectException> {
                 LayersTraceSubject(layersTraceEntries)
@@ -145,7 +152,8 @@ class LayersTraceSubjectTest {
 
     @Test
     fun testCanDetectInvalidVisibleLayerForMoreThanOneConsecutiveEntry() {
-        val layersTraceEntries = readLayerTraceFromFile("layers_trace_invalid_visible_layers.pb")
+        val layersTraceEntries =
+            readLayerTraceFromFile("layers_trace_invalid_visible_layers.pb", legacyTrace = true)
         val error =
             assertThrows<FlickerSubjectException> {
                 LayersTraceSubject(layersTraceEntries)
@@ -166,13 +174,14 @@ class LayersTraceSubjectTest {
     @Test
     fun testCanDetectVisibleLayersMoreThanOneConsecutiveEntry() {
         testCanDetectVisibleLayersMoreThanOneConsecutiveEntry(
-            readLayerTraceFromFile("layers_trace_snapshot_visible.pb")
+            readLayerTraceFromFile("layers_trace_snapshot_visible.pb", legacyTrace = true)
         )
     }
 
     @Test
     fun testCanIgnoreLayerEqualNameInVisibleLayersMoreThanOneConsecutiveEntry() {
-        val layersTraceEntries = readLayerTraceFromFile("layers_trace_invalid_visible_layers.pb")
+        val layersTraceEntries =
+            readLayerTraceFromFile("layers_trace_invalid_visible_layers.pb", legacyTrace = true)
         LayersTraceSubject(layersTraceEntries)
             .visibleLayersShownMoreThanOneConsecutiveEntry(listOf(ComponentNameMatcher.STATUS_BAR))
             .forAllEntries()
@@ -180,7 +189,8 @@ class LayersTraceSubjectTest {
 
     @Test
     fun testCanIgnoreLayerShorterNameInVisibleLayersMoreThanOneConsecutiveEntry() {
-        val layersTraceEntries = readLayerTraceFromFile("one_visible_layer_launcher_trace.pb")
+        val layersTraceEntries =
+            readLayerTraceFromFile("one_visible_layer_launcher_trace.pb", legacyTrace = true)
         val launcherComponent =
             ComponentNameMatcher(
                 "com.google.android.apps.nexuslauncher",
@@ -191,8 +201,8 @@ class LayersTraceSubjectTest {
             .forAllEntries()
     }
 
-    private fun detectRootLayer(fileName: String) {
-        val layersTrace = readLayerTraceFromFile(fileName)
+    private fun detectRootLayer(fileName: String, legacyTrace: Boolean = false) {
+        val layersTrace = readLayerTraceFromFile(fileName, legacyTrace = legacyTrace)
         for (entry in layersTrace.entries) {
             val rootLayers = entry.children
             Truth.assertWithMessage("Does not have any root layer")
@@ -207,17 +217,17 @@ class LayersTraceSubjectTest {
 
     @Test
     fun testCanDetectRootLayer() {
-        detectRootLayer("layers_trace_root.pb")
+        detectRootLayer("layers_trace_root.pb", legacyTrace = true)
     }
 
     @Test
     fun testCanDetectRootLayerAOSP() {
-        detectRootLayer("layers_trace_root_aosp.pb")
+        detectRootLayer("layers_trace_root_aosp.pb", legacyTrace = true)
     }
 
     @Test
     fun canTestLayerOccludedBySplashScreenLayerIsNotVisible() {
-        val trace = readLayerTraceFromFile("layers_trace_occluded.pb")
+        val trace = readLayerTraceFromFile("layers_trace_occluded.pb", legacyTrace = true)
         val entry =
             LayersTraceSubject(trace)
                 .getEntryBySystemUpTime(1700382131522L, byElapsedTimestamp = true)
@@ -227,7 +237,8 @@ class LayersTraceSubjectTest {
 
     @Test
     fun testCanDetectLayerExpanding() {
-        val layersTraceEntries = readLayerTraceFromFile("layers_trace_openchrome.pb")
+        val layersTraceEntries =
+            readLayerTraceFromFile("layers_trace_openchrome.pb", legacyTrace = true)
         val animation =
             LayersTraceSubject(layersTraceEntries).layers("animation-leash of app_transition#0")
         // Obtain the area of each layer and checks if the next area is
@@ -247,7 +258,8 @@ class LayersTraceSubjectTest {
 
     @Test
     fun checkVisibleRegionAppMinusPipLayer() {
-        val layersTraceEntries = readLayerTraceFromFile("layers_trace_pip_wmshell.pb")
+        val layersTraceEntries =
+            readLayerTraceFromFile("layers_trace_pip_wmshell.pb", legacyTrace = true)
         val subject = LayersTraceSubject(layersTraceEntries).last()
 
         try {
@@ -264,7 +276,8 @@ class LayersTraceSubjectTest {
 
     @Test
     fun checkVisibleRegionAppPlusPipLayer() {
-        val layersTraceEntries = readLayerTraceFromFile("layers_trace_pip_wmshell.pb")
+        val layersTraceEntries =
+            readLayerTraceFromFile("layers_trace_pip_wmshell.pb", legacyTrace = true)
         val subject = LayersTraceSubject(layersTraceEntries).last()
         val pipRegion = subject.visibleRegion(TestComponents.PIP_APP).region
         subject
@@ -275,7 +288,7 @@ class LayersTraceSubjectTest {
 
     @Test
     fun checkCanDetectSplashScreen() {
-        val trace = readLayerTraceFromFile("layers_trace_splashscreen.pb")
+        val trace = readLayerTraceFromFile("layers_trace_splashscreen.pb", legacyTrace = true)
         val newLayer =
             ComponentNameMatcher(
                 "com.android.server.wm.flicker.testapp",
@@ -302,7 +315,7 @@ class LayersTraceSubjectTest {
 
     @Test
     fun checkCanDetectMissingSplashScreen() {
-        val trace = readLayerTraceFromFile("layers_trace_splashscreen.pb")
+        val trace = readLayerTraceFromFile("layers_trace_splashscreen.pb", legacyTrace = true)
         val newLayer =
             ComponentNameMatcher(
                 "com.android.server.wm.flicker.testapp",

@@ -17,6 +17,7 @@
 package com.android.server.wm.traces.common.layers
 
 import com.android.server.wm.traces.common.ITrace
+import com.android.server.wm.traces.common.Timestamp
 import kotlin.js.JsName
 
 /**
@@ -54,6 +55,15 @@ data class LayersTrace(override val entries: Array<BaseLayerTraceEntry>) :
             this.entries
                 .dropWhile { it.vSyncId < from }
                 .dropLastWhile { it.vSyncId > to }
+                .toTypedArray()
+        )
+    }
+
+    override fun slice(startTimestamp: Timestamp, endTimestamp: Timestamp): LayersTrace {
+        return LayersTrace(
+            entries
+                .dropWhile { it.timestamp < startTimestamp }
+                .dropLastWhile { it.timestamp > endTimestamp }
                 .toTypedArray()
         )
     }

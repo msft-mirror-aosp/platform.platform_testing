@@ -17,6 +17,7 @@
 package com.android.server.wm.traces.common.transactions
 
 import com.android.server.wm.traces.common.ITrace
+import com.android.server.wm.traces.common.Timestamp
 import kotlin.js.JsName
 
 class TransactionsTrace(override val entries: Array<TransactionsTraceEntry>) :
@@ -35,4 +36,13 @@ class TransactionsTrace(override val entries: Array<TransactionsTraceEntry>) :
 
     @JsName("allTransactions")
     val allTransactions: List<Transaction> = entries.toList().flatMap { it.transactions.toList() }
+
+    override fun slice(startTimestamp: Timestamp, endTimestamp: Timestamp): TransactionsTrace {
+        return TransactionsTrace(
+            entries
+                .dropWhile { it.timestamp < startTimestamp }
+                .dropLastWhile { it.timestamp > endTimestamp }
+                .toTypedArray()
+        )
+    }
 }

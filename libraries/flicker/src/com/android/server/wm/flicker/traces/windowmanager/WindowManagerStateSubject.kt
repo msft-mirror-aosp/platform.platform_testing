@@ -21,9 +21,9 @@ import com.android.server.wm.flicker.assertions.Assertion
 import com.android.server.wm.flicker.assertions.Fact
 import com.android.server.wm.flicker.assertions.FlickerSubject
 import com.android.server.wm.flicker.traces.region.RegionSubject
-import com.android.server.wm.traces.common.ComponentNameMatcher
-import com.android.server.wm.traces.common.IComponentMatcher
 import com.android.server.wm.traces.common.Timestamp
+import com.android.server.wm.traces.common.component.matchers.ComponentNameMatcher
+import com.android.server.wm.traces.common.component.matchers.IComponentMatcher
 import com.android.server.wm.traces.common.region.Region
 import com.android.server.wm.traces.common.service.PlatformConsts
 import com.android.server.wm.traces.common.windowmanager.WindowManagerState

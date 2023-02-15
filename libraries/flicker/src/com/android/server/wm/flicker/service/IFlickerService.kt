@@ -17,8 +17,8 @@
 package com.android.server.wm.flicker.service
 
 import com.android.server.wm.flicker.io.IReader
-import com.android.server.wm.flicker.service.assertors.AssertionResult
+import com.android.server.wm.flicker.service.assertors.IAssertionResult
 
 interface IFlickerService {
-    fun process(reader: IReader): List<AssertionResult>
+    fun process(reader: IReader): List<IAssertionResult>
 }

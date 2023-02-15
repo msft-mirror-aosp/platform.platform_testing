@@ -17,10 +17,8 @@
 package com.android.server.wm.flicker
 
 import com.android.compatibility.common.util.SystemUtil
-import com.android.server.wm.flicker.assertiongenerator.DeviceTraceConfiguration
-import com.android.server.wm.flicker.assertiongenerator.layers.LayersElementLifecycle
 import com.android.server.wm.flicker.service.assertors.ComponentTypeMatcher
-import com.android.server.wm.traces.common.ComponentNameMatcher
+import com.android.server.wm.traces.common.component.matchers.ComponentNameMatcher
 import java.nio.file.Path
 
 object Utils {
@@ -86,55 +84,6 @@ object Utils {
         }
     }
 
-    fun componentNameMatcherConfig(
-        str: String,
-        deviceTraceConfiguration: DeviceTraceConfiguration
-    ): ComponentNameMatcher? {
-        for ((compName, compBuilder) in deviceTraceConfiguration.componentToTypeMap) {
-            val compNameElements = compName.split('/')
-            val compPackage = compNameElements[0]
-            val compClass = compNameElements[1]
-            if (str.contains(compPackage) && str.contains(compClass)) {
-                return ComponentTypeMatcher(compName, compBuilder)
-            }
-        }
-        return null
-    }
-
-    /**
-     * Obtains the component name matcher corresponding to a name (str) Returns null if the name is
-     * not found in the hardcoded list or in the config, and it does not contain both the package
-     * and class name (with a / separator)
-     */
-    fun componentNameMatcherFromNameWithConfigExtended(
-        str: String,
-        deviceTraceConfiguration: DeviceTraceConfiguration
-    ): ComponentNameMatcher? {
-        return try {
-            componentNameMatcherHardcoded(str)
-                ?: componentNameMatcherConfig(str, deviceTraceConfiguration)
-                    ?: ComponentNameMatcher.unflattenFromStringWithJunk(str)
-        } catch (err: IllegalStateException) {
-            null
-        }
-    }
-
-    /**
-     * Obtains the component name matcher corresponding to a name (str) Returns null if the name is
-     * not found in the hardcoded list or in the config
-     */
-    fun componentNameMatcherFromNameWithConfig(
-        str: String,
-        deviceTraceConfiguration: DeviceTraceConfiguration
-    ): ComponentNameMatcher? {
-        return try {
-            componentNameMatcherHardcoded(str)
-                ?: componentNameMatcherConfig(str, deviceTraceConfiguration)
-        } catch (err: IllegalStateException) {
-            null
-        }
-    }
-
     /**
      * Obtains the component name matcher corresponding to a name (str) Returns null if the name is
      * not found in the hardcoded list, and it does not contain both the package and class name
@@ -175,15 +124,5 @@ object Utils {
     fun componentNameMatcherAsStringFromName(str: String): String? {
         val componentMatcher = componentNameMatcherFromName(str)
         return componentMatcher?.componentNameMatcherToString()
-    }
-
-    /** Gets the name of the states in a layers lifecycle */
-    fun getLayersElementLifecycleName(elementLifecycle: LayersElementLifecycle): String {
-        for (state in elementLifecycle.states) {
-            if (state != null) {
-                return state.name
-            }
-        }
-        return ""
     }
 }

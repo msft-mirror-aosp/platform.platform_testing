@@ -16,20 +16,23 @@
 
 package com.android.server.wm.flicker.service.assertors.assertions
 
-import com.android.server.wm.flicker.service.assertors.ComponentBuilder
+import com.android.server.wm.flicker.service.IScenarioInstance
+import com.android.server.wm.flicker.service.assertors.ComponentTemplate
 import com.android.server.wm.flicker.traces.windowmanager.WindowManagerTraceSubject
-import com.android.server.wm.traces.common.ComponentNameMatcher
-import com.android.server.wm.traces.common.transition.Transition
+import com.android.server.wm.traces.common.component.matchers.ComponentNameMatcher
 
 /**
  * Checks that the app layer doesn't exist or is invisible at the start of the transition, but is
  * created and/or becomes visible during the transition.
  */
-class AppWindowBecomesTopWindow(component: ComponentBuilder) :
-    BaseAssertionBuilderWithComponent(component) {
+class AppWindowBecomesTopWindow(component: ComponentTemplate) :
+    AssertionTemplateWithComponent(component) {
     /** {@inheritDoc} */
-    override fun doEvaluate(transition: Transition, wmSubject: WindowManagerTraceSubject) {
-        val testApp = component.build(transition)
+    override fun doEvaluate(
+        scenarioInstance: IScenarioInstance,
+        wmSubject: WindowManagerTraceSubject
+    ) {
+        val testApp = component.build(scenarioInstance)
         wmSubject
             .isAppWindowNotOnTop(testApp)
             .then()

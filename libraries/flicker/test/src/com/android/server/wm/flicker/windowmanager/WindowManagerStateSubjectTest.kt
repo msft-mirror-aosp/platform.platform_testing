@@ -27,7 +27,7 @@ import com.android.server.wm.flicker.traces.FlickerSubjectException
 import com.android.server.wm.flicker.traces.windowmanager.WindowManagerStateSubject
 import com.android.server.wm.flicker.traces.windowmanager.WindowManagerTraceSubject
 import com.android.server.wm.traces.common.Cache
-import com.android.server.wm.traces.common.ComponentNameMatcher
+import com.android.server.wm.traces.common.component.matchers.ComponentNameMatcher
 import com.android.server.wm.traces.common.region.Region
 import com.android.server.wm.traces.common.windowmanager.WindowManagerState
 import com.android.server.wm.traces.common.windowmanager.windows.ConfigurationContainer
@@ -47,7 +47,7 @@ import org.junit.runners.MethodSorters
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class WindowManagerStateSubjectTest {
     private val trace
-        get() = readWmTraceFromFile("wm_trace_openchrome.pb")
+        get() = readWmTraceFromFile("wm_trace_openchrome.pb", legacyTrace = true)
 
     // Launcher is visible in fullscreen in the first frame of the trace
     private val traceFirstFrameTimestamp = 9213763541297
@@ -262,7 +262,8 @@ class WindowManagerStateSubjectTest {
 
     @Test
     fun canDetectAppWindowVisibilitySubject() {
-        val trace = readWmTraceFromFile("wm_trace_launcher_visible_background.pb")
+        val trace =
+            readWmTraceFromFile("wm_trace_launcher_visible_background.pb", legacyTrace = true)
         val firstEntry = WindowManagerTraceSubject(trace).first()
         val appWindowNames = firstEntry.wmState.appWindows.map { it.name }
         val expectedAppWindowName =
@@ -277,7 +278,8 @@ class WindowManagerStateSubjectTest {
 
     @Test
     fun canDetectLauncherVisibility() {
-        val trace = readWmTraceFromFile("wm_trace_launcher_visible_background.pb")
+        val trace =
+            readWmTraceFromFile("wm_trace_launcher_visible_background.pb", legacyTrace = true)
         val subject = WindowManagerTraceSubject(trace)
         val firstTrace = subject.first()
         firstTrace.isAppWindowInvisible(TestComponents.LAUNCHER)
@@ -341,7 +343,7 @@ class WindowManagerStateSubjectTest {
 
     @Test
     fun canDetectActivityVisibility() {
-        val trace = readWmTraceFromFile("wm_trace_split_screen.pb")
+        val trace = readWmTraceFromFile("wm_trace_split_screen.pb", legacyTrace = true)
         val lastEntry = WindowManagerTraceSubject(trace).last()
         lastEntry.isAppWindowVisible(TestComponents.SHELL_SPLIT_SCREEN_PRIMARY)
         lastEntry.isAppWindowVisible(TestComponents.SHELL_SPLIT_SCREEN_SECONDARY)
@@ -395,14 +397,14 @@ class WindowManagerStateSubjectTest {
 
     @Test
     fun canDetectNoVisibleAppWindows() {
-        val trace = readWmTraceFromFile("wm_trace_unlock.pb")
+        val trace = readWmTraceFromFile("wm_trace_unlock.pb", legacyTrace = true)
         val firstEntry = WindowManagerTraceSubject(trace).first()
         firstEntry.hasNoVisibleAppWindow()
     }
 
     @Test
     fun canDetectHasVisibleAppWindows() {
-        val trace = readWmTraceFromFile("wm_trace_unlock.pb")
+        val trace = readWmTraceFromFile("wm_trace_unlock.pb", legacyTrace = true)
         val lastEntry = WindowManagerTraceSubject(trace).last()
         val failure = assertThrows<FlickerSubjectException> { lastEntry.hasNoVisibleAppWindow() }
         Truth.assertThat(failure).hasMessageThat().contains("Found visible windows")
@@ -440,7 +442,8 @@ class WindowManagerStateSubjectTest {
 
     @Test
     fun canDetectWindowVisibilityWhen2WindowsHaveSameName() {
-        val trace = readWmTraceFromFile("wm_trace_2activities_same_name.winscope")
+        val trace =
+            readWmTraceFromFile("wm_trace_2activities_same_name.winscope", legacyTrace = true)
         val componentMatcher =
             ComponentNameMatcher(
                 "com.android.server.wm.flicker.testapp",

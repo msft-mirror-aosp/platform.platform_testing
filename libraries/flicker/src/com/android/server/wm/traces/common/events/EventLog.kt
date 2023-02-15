@@ -17,6 +17,7 @@
 package com.android.server.wm.traces.common.events
 
 import com.android.server.wm.traces.common.ITrace
+import com.android.server.wm.traces.common.Timestamp
 import kotlin.js.JsName
 
 /**
@@ -29,18 +30,27 @@ import kotlin.js.JsName
 class EventLog(override val entries: Array<Event>) :
     ITrace<Event>, List<Event> by entries.toList() {
     @JsName("focusEvents")
-    val focusEvents: Array<FocusEvent>
-        get() =
-            entries
-                .filterIsInstance<FocusEvent>()
-                .filter { it.type !== FocusEvent.Type.REQUESTED }
-                .toTypedArray()
+    val focusEvents: Array<FocusEvent> =
+        entries
+            .filterIsInstance<FocusEvent>()
+            .filter { it.type !== FocusEvent.Type.REQUESTED }
+            .toTypedArray()
 
     @JsName("cujEvents")
-    val cujEvents: Array<CujEvent>
-        get() = entries.filterIsInstance<CujEvent>().toTypedArray()
+    val cujEvents: Array<CujEvent> = entries.filterIsInstance<CujEvent>().toTypedArray()
+
+    @JsName("cujTrace") val cujTrace: CujTrace = CujTrace.from(cujEvents)
 
     companion object {
         const val MAGIC_NUMBER = "EventLog"
+    }
+
+    override fun slice(startTimestamp: Timestamp, endTimestamp: Timestamp): EventLog {
+        return EventLog(
+            entries
+                .dropWhile { it.timestamp < startTimestamp }
+                .dropLastWhile { it.timestamp > endTimestamp }
+                .toTypedArray()
+        )
     }
 }

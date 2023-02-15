@@ -32,8 +32,8 @@ import com.android.server.wm.flicker.traces.layers.LayersTraceSubject
 import com.android.server.wm.flicker.traces.region.RegionTraceSubject
 import com.android.server.wm.flicker.traces.windowmanager.WindowManagerStateSubject
 import com.android.server.wm.flicker.traces.windowmanager.WindowManagerTraceSubject
-import com.android.server.wm.traces.common.IComponentMatcher
 import com.android.server.wm.traces.common.IScenario
+import com.android.server.wm.traces.common.component.matchers.IComponentMatcher
 import com.android.server.wm.traces.parser.withPerfettoTrace
 
 /** Specification of a flicker test for JUnit ParameterizedRunner class */

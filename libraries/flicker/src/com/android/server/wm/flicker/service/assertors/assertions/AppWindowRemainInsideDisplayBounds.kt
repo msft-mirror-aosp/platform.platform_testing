@@ -16,18 +16,21 @@
 
 package com.android.server.wm.flicker.service.assertors.assertions
 
-import com.android.server.wm.flicker.service.assertors.ComponentBuilder
+import com.android.server.wm.flicker.service.IScenarioInstance
+import com.android.server.wm.flicker.service.assertors.ComponentTemplate
 import com.android.server.wm.flicker.traces.windowmanager.WindowManagerTraceSubject
-import com.android.server.wm.traces.common.transition.Transition
 
 /**
  * Checks that [getWindowState] window remains inside the display bounds throughout the whole
  * animation
  */
-class AppWindowRemainInsideDisplayBounds(component: ComponentBuilder) :
-    BaseAssertionBuilderWithComponent(component) {
+class AppWindowRemainInsideDisplayBounds(component: ComponentTemplate) :
+    AssertionTemplateWithComponent(component) {
     /** {@inheritDoc} */
-    override fun doEvaluate(transition: Transition, wmSubject: WindowManagerTraceSubject) {
+    override fun doEvaluate(
+        scenarioInstance: IScenarioInstance,
+        wmSubject: WindowManagerTraceSubject
+    ) {
         wmSubject
             .invoke("appWindowRemainInsideDisplayBounds") { entry ->
                 val displays = entry.wmState.displays
@@ -35,7 +38,9 @@ class AppWindowRemainInsideDisplayBounds(component: ComponentBuilder) :
                     entry.fail("No displays found")
                 }
                 val display = entry.wmState.displays.sortedBy { it.id }.first()
-                entry.visibleRegion(component.build(transition)).coversAtMost(display.displayRect)
+                entry
+                    .visibleRegion(component.build(scenarioInstance))
+                    .coversAtMost(display.displayRect)
             }
             .forAllEntries()
     }

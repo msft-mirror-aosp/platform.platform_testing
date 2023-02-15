@@ -16,6 +16,8 @@
 
 package com.android.server.wm.traces.common
 
+import com.android.server.wm.traces.common.component.matchers.ComponentNameMatcher
+import com.android.server.wm.traces.common.component.matchers.IComponentMatcher
 import com.android.server.wm.traces.common.layers.Layer
 import com.android.server.wm.traces.common.layers.Transform
 import com.android.server.wm.traces.common.layers.Transform.Companion.isFlagSet

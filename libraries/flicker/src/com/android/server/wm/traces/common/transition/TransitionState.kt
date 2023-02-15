@@ -16,12 +16,13 @@
 
 package com.android.server.wm.traces.common.transition
 
+import com.android.server.wm.traces.common.Timestamp
 import kotlin.js.JsName
 
 data class TransitionState(
     @JsName("id") val id: Int,
     @JsName("type") val type: Transition.Companion.Type,
-    @JsName("timestamp") val timestamp: Long,
+    @JsName("timestamp") val timestamp: Timestamp,
     @JsName("state") val state: State,
     @JsName("flags") val flags: Int,
     @JsName("changes") val changes: List<TransitionChange>,

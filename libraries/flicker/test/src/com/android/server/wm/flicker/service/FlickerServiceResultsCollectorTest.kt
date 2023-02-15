@@ -20,13 +20,12 @@ import android.device.collectors.DataRecord
 import com.android.server.wm.flicker.io.IReader
 import com.android.server.wm.flicker.io.ParsedTracesReader
 import com.android.server.wm.flicker.service.assertors.AssertionResult
+import com.android.server.wm.flicker.service.assertors.IAssertionResult
+import com.android.server.wm.flicker.service.assertors.IFaasAssertion
 import com.android.server.wm.flicker.utils.KotlinMockito
 import com.android.server.wm.flicker.utils.MockLayersTraceBuilder
 import com.android.server.wm.flicker.utils.MockWindowManagerTraceBuilder
 import com.android.server.wm.traces.common.service.AssertionInvocationGroup
-import com.android.server.wm.traces.common.service.FlickerServiceScenario
-import com.android.server.wm.traces.common.service.PlatformConsts
-import com.android.server.wm.traces.common.service.ScenarioType
 import com.android.server.wm.traces.common.transition.TransitionsTrace
 import com.google.common.truth.Truth
 import org.junit.FixMethodOrder
@@ -56,19 +55,7 @@ class FlickerServiceResultsCollectorTest {
             )
         val mockFlickerService = Mockito.mock(IFlickerService::class.java)
         Mockito.`when`(mockFlickerService.process(KotlinMockito.any(IReader::class.java)))
-            .thenReturn(
-                listOf(
-                    AssertionResult(
-                        "assertionName",
-                        FlickerServiceScenario(
-                            ScenarioType.APP_LAUNCH,
-                            PlatformConsts.Rotation.ROTATION_0
-                        ),
-                        AssertionInvocationGroup.BLOCKING,
-                        null
-                    )
-                )
-            )
+            .thenReturn(listOf(mockSuccessfulAssertionResult))
 
         val collector =
             FlickerServiceResultsCollector(
@@ -107,19 +94,7 @@ class FlickerServiceResultsCollectorTest {
             )
         val mockFlickerService = Mockito.mock(IFlickerService::class.java)
         Mockito.`when`(mockFlickerService.process(KotlinMockito.any(IReader::class.java)))
-            .thenReturn(
-                listOf(
-                    AssertionResult(
-                        "assertionName",
-                        FlickerServiceScenario(
-                            ScenarioType.APP_LAUNCH,
-                            PlatformConsts.Rotation.ROTATION_0
-                        ),
-                        AssertionInvocationGroup.BLOCKING,
-                        null
-                    )
-                )
-            )
+            .thenReturn(listOf(mockSuccessfulAssertionResult))
         val collector =
             FlickerServiceResultsCollector(
                 tracesCollector = mockTraceCollector,
@@ -157,19 +132,7 @@ class FlickerServiceResultsCollectorTest {
             )
         val mockFlickerService = Mockito.mock(IFlickerService::class.java)
         Mockito.`when`(mockFlickerService.process(KotlinMockito.any(IReader::class.java)))
-            .thenReturn(
-                listOf(
-                    AssertionResult(
-                        "assertionName",
-                        FlickerServiceScenario(
-                            ScenarioType.APP_LAUNCH,
-                            PlatformConsts.Rotation.ROTATION_0
-                        ),
-                        AssertionInvocationGroup.BLOCKING,
-                        null
-                    )
-                )
-            )
+            .thenReturn(listOf(mockSuccessfulAssertionResult))
         val collector =
             FlickerServiceResultsCollector(
                 tracesCollector = mockTraceCollector,
@@ -206,19 +169,7 @@ class FlickerServiceResultsCollectorTest {
             )
         val mockFlickerService = Mockito.mock(IFlickerService::class.java)
         Mockito.`when`(mockFlickerService.process(KotlinMockito.any(IReader::class.java)))
-            .thenReturn(
-                listOf(
-                    AssertionResult(
-                        "assertionName",
-                        FlickerServiceScenario(
-                            ScenarioType.APP_LAUNCH,
-                            PlatformConsts.Rotation.ROTATION_0
-                        ),
-                        AssertionInvocationGroup.BLOCKING,
-                        null
-                    )
-                )
-            )
+            .thenReturn(listOf(mockSuccessfulAssertionResult))
         val collector =
             FlickerServiceResultsCollector(
                 tracesCollector = mockTraceCollector,
@@ -239,5 +190,21 @@ class FlickerServiceResultsCollectorTest {
         Truth.assertThat(collector.executionErrors).isEmpty()
         Truth.assertThat(collector.assertionResults).isNotEmpty()
         Truth.assertThat(runData.hasMetrics()).isTrue()
+    }
+
+    companion object {
+        val mockSuccessfulAssertionResult =
+            AssertionResult(
+                object : IFaasAssertion {
+                    override val name: String
+                        get() = "MockAssertion"
+                    override val stabilityGroup: AssertionInvocationGroup
+                        get() = AssertionInvocationGroup.BLOCKING
+                    override fun evaluate(): IAssertionResult {
+                        error("Unimplemented - shouldn't be called")
+                    }
+                },
+                assertionError = null
+            )
     }
 }

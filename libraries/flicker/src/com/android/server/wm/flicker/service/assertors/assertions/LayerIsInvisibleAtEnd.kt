@@ -16,15 +16,15 @@
 
 package com.android.server.wm.flicker.service.assertors.assertions
 
-import com.android.server.wm.flicker.service.assertors.ComponentBuilder
+import com.android.server.wm.flicker.service.IScenarioInstance
+import com.android.server.wm.flicker.service.assertors.ComponentTemplate
 import com.android.server.wm.flicker.traces.layers.LayersTraceSubject
-import com.android.server.wm.traces.common.transition.Transition
 
 /** Checks if the [componentMatcher] layer is invisible at the end of the transition */
-class LayerIsInvisibleAtEnd(component: ComponentBuilder) :
-    BaseAssertionBuilderWithComponent(component) {
+class LayerIsInvisibleAtEnd(component: ComponentTemplate) :
+    AssertionTemplateWithComponent(component) {
     /** {@inheritDoc} */
-    override fun doEvaluate(transition: Transition, layerSubject: LayersTraceSubject) {
-        layerSubject.last().isInvisible(component.build(transition))
+    override fun doEvaluate(scenarioInstance: IScenarioInstance, layerSubject: LayersTraceSubject) {
+        layerSubject.last().isInvisible(component.build(scenarioInstance))
     }
 }

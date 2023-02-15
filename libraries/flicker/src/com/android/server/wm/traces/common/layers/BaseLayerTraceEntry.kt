@@ -16,10 +16,10 @@
 
 package com.android.server.wm.traces.common.layers
 
-import com.android.server.wm.traces.common.ComponentNameMatcher
-import com.android.server.wm.traces.common.IComponentMatcher
 import com.android.server.wm.traces.common.ITraceEntry
 import com.android.server.wm.traces.common.Rect
+import com.android.server.wm.traces.common.component.matchers.ComponentNameMatcher
+import com.android.server.wm.traces.common.component.matchers.IComponentMatcher
 import kotlin.js.JsName
 
 /** Base class for SF trace entries */

@@ -16,19 +16,22 @@
 
 package com.android.server.wm.flicker.service.assertors.assertions
 
-import com.android.server.wm.flicker.service.assertors.ComponentBuilder
+import com.android.server.wm.flicker.service.IScenarioInstance
+import com.android.server.wm.flicker.service.assertors.ComponentTemplate
 import com.android.server.wm.flicker.traces.windowmanager.WindowManagerTraceSubject
-import com.android.server.wm.traces.common.transition.Transition
 
 /** Checks that [component] starts on top and moves out of top during the transition */
-open class WindowMovesOutOfTop(component: ComponentBuilder) :
-    BaseAssertionBuilderWithComponent(component) {
+open class WindowMovesOutOfTop(component: ComponentTemplate) :
+    AssertionTemplateWithComponent(component) {
     /** {@inheritDoc} */
-    override fun doEvaluate(transition: Transition, wmSubject: WindowManagerTraceSubject) {
+    override fun doEvaluate(
+        scenarioInstance: IScenarioInstance,
+        wmSubject: WindowManagerTraceSubject
+    ) {
         wmSubject
-            .isAppWindowOnTop(component.build(transition))
+            .isAppWindowOnTop(component.build(scenarioInstance))
             .then()
-            .isAppWindowNotOnTop(component.build(transition))
+            .isAppWindowNotOnTop(component.build(scenarioInstance))
             .forAllEntries()
     }
 }

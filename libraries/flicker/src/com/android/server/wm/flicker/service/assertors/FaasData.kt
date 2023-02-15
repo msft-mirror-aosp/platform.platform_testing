@@ -17,10 +17,9 @@
 package com.android.server.wm.flicker.service.assertors
 
 import com.android.server.wm.flicker.assertions.Fact
-import com.android.server.wm.flicker.helpers.TimeFormatter
 import com.android.server.wm.flicker.helpers.format
+import com.android.server.wm.flicker.service.ScenarioInstance
 import com.android.server.wm.traces.common.layers.LayersTrace
-import com.android.server.wm.traces.common.service.ScenarioInstance
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 
 data class FaasData(
@@ -29,30 +28,31 @@ data class FaasData(
     val entireLayersTrace: LayersTrace
 ) {
     fun toFacts(): Collection<Fact> {
-        return listOf(
-            Fact("Extracted from WM trace start", entireWmTrace.first().timestamp.format()),
-            Fact("Extracted from WM trace end", entireWmTrace.first().timestamp.format()),
-            Fact("Extracted from SF trace start", entireLayersTrace.first().timestamp.format()),
-            Fact("Extracted from SF trace end", entireLayersTrace.first().timestamp.format()),
-            Fact("Scenario type", scenarioInstance.scenario.scenarioType),
-            Fact("Scenario rotation", scenarioInstance.scenario.startRotation),
-            Fact(
-                "Scenario start",
-                "${TimeFormatter.format(scenarioInstance.startTimestamp)} " +
-                    "(timestamp=${scenarioInstance.startTimestamp})"
-            ),
-            Fact(
-                "Scenario end",
-                "${TimeFormatter.format(scenarioInstance.endTimestamp)} " +
-                    "(timestamp=${scenarioInstance.endTimestamp})"
-            ),
-            Fact("Associated transition type", scenarioInstance.associatedTransition.type),
-            Fact(
-                "Associated transition changes",
-                scenarioInstance.associatedTransition.changes.joinToString("\n  -", "\n  -") {
-                    "${it.transitMode} ${it.windowName}"
-                }
+        return mutableListOf(
+                Fact("Extracted from WM trace start", entireWmTrace.first().timestamp.format()),
+                Fact("Extracted from WM trace end", entireWmTrace.first().timestamp.format()),
+                Fact("Extracted from SF trace start", entireLayersTrace.first().timestamp.format()),
+                Fact("Extracted from SF trace end", entireLayersTrace.first().timestamp.format()),
+                Fact("Scenario description", scenarioInstance.description),
+                Fact("Scenario rotation", scenarioInstance.startRotation),
+                Fact("Scenario start", "${scenarioInstance.startTimestamp}"),
+                Fact("Scenario end", "${scenarioInstance.endTimestamp}")
             )
-        )
+            .apply {
+                if (scenarioInstance.associatedTransition != null) {
+                    this.add(
+                        Fact(
+                            "Associated transition changes",
+                            scenarioInstance.associatedTransition.changes.joinToString(
+                                "\n  -",
+                                "\n  -"
+                            ) { "${it.transitMode} ${it.layerId}" }
+                        )
+                    )
+                }
+                if (scenarioInstance.associatedCuj !== null) {
+                    this.add(Fact("Associated CUJ", scenarioInstance.associatedCuj))
+                }
+            }
     }
 }

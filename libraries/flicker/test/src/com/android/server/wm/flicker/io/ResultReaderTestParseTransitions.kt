@@ -36,8 +36,8 @@ class ResultReaderTestParseTransitions : BaseResultReaderTestParseTrace() {
     override fun getTime(traceTime: Timestamp) = traceTime.elapsedNanos
     override fun setupWriter(writer: ResultWriter): ResultWriter {
         return super.setupWriter(writer).also {
-            val trace = readAssetAsFile("transactions_trace.winscope")
-            it.addTraceResult(TraceType.TRANSACTION, trace)
+            val trace = readAssetAsFile("transition_trace.winscope")
+            it.addTraceResult(TraceType.TRANSITION, trace)
         }
     }
 }

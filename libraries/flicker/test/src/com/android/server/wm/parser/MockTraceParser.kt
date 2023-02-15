@@ -16,6 +16,7 @@
 
 package com.android.server.wm.parser
 
+import com.android.server.wm.traces.common.Timestamp
 import com.android.server.wm.traces.common.windowmanager.WindowManagerState
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
 import com.android.server.wm.traces.parser.AbstractTraceParser
@@ -32,6 +33,7 @@ class MockTraceParser(private val data: WindowManagerTrace) :
     override fun doParseEntry(entry: WindowManagerState): WindowManagerState = entry
     override fun getEntries(input: WindowManagerTrace): List<WindowManagerState> =
         input.entries.toList()
-    override fun getTimestamp(entry: WindowManagerState): Long = entry.elapsedTimestamp
+    override fun getTimestamp(entry: WindowManagerState): Timestamp =
+        Timestamp(elapsedNanos = entry.elapsedTimestamp)
     override fun onBeforeParse(input: WindowManagerTrace) {}
 }

@@ -17,6 +17,7 @@
 package com.android.server.wm.traces.common.transition
 
 import com.android.server.wm.traces.common.ITrace
+import com.android.server.wm.traces.common.Timestamp
 import kotlin.js.JsName
 import kotlin.text.StringBuilder
 
@@ -31,12 +32,6 @@ data class TransitionsTrace(override val entries: Array<Transition>) :
         if (!entries.contentEquals(other.entries)) return false
 
         return true
-    }
-
-    fun slice(from: Long, to: Long): TransitionsTrace {
-        return TransitionsTrace(
-            this.entries.dropWhile { it.start < from }.dropLastWhile { it.end > to }.toTypedArray()
-        )
     }
 
     override fun hashCode(): Int {
@@ -56,5 +51,22 @@ data class TransitionsTrace(override val entries: Array<Transition>) :
             sb.append("\n)")
         }
         return sb.toString()
+    }
+
+    override fun slice(startTimestamp: Timestamp, endTimestamp: Timestamp): TransitionsTrace {
+        require(
+            startTimestamp.elapsedNanos != Timestamp.NULL_TIMESTAMP &&
+                endTimestamp.elapsedNanos != Timestamp.NULL_TIMESTAMP
+        )
+        return sliceElapsed(startTimestamp.elapsedNanos, endTimestamp.elapsedNanos)
+    }
+
+    private fun sliceElapsed(from: Long, to: Long): TransitionsTrace {
+        return TransitionsTrace(
+            this.entries
+                .dropWhile { it.sendTime.elapsedNanos < from }
+                .dropLastWhile { it.start.elapsedNanos > to }
+                .toTypedArray()
+        )
     }
 }

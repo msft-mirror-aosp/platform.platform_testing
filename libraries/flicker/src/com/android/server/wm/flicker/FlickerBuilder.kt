@@ -187,7 +187,8 @@ private constructor(
         val wmTrace: File,
         val layersTrace: File,
         val transactions: File,
-        val transitions: File
+        val transitions: File,
+        val eventLog: File
     )
 
     /** Use pre-executed results instead of running transitions to get the traces */
@@ -203,6 +204,7 @@ private constructor(
         addMonitor(
             NoTraceMonitor { it.addTraceResult(TraceType.TRANSITION, traceFiles.transitions) }
         )
+        addMonitor(NoTraceMonitor { it.addTraceResult(TraceType.EVENT_LOG, traceFiles.eventLog) })
 
         // Remove all transitions execution
         this.transitionCommands.clear()

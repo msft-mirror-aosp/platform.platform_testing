@@ -17,6 +17,7 @@
 package com.android.server.wm.traces.common.errors
 
 import com.android.server.wm.traces.common.ITrace
+import com.android.server.wm.traces.common.Timestamp
 
 /**
  * Represents all the states with errors in an entire trace.
@@ -35,4 +36,13 @@ data class ErrorTrace(override val entries: Array<ErrorState>) :
 
     override fun toString(): String =
         "FlickerErrorTrace(First: ${entries.firstOrNull()}," + "End: ${entries.lastOrNull()})"
+
+    override fun slice(startTimestamp: Timestamp, endTimestamp: Timestamp): ErrorTrace {
+        return ErrorTrace(
+            entries
+                .dropWhile { it.timestamp < startTimestamp }
+                .dropLastWhile { it.timestamp > endTimestamp }
+                .toTypedArray()
+        )
+    }
 }

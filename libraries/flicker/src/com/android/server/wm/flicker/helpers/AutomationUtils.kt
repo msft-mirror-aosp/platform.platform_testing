@@ -35,8 +35,8 @@ import androidx.test.uiautomator.Until
 import com.android.compatibility.common.util.SystemUtil
 import com.android.server.wm.flicker.helpers.WindowUtils.displayBounds
 import com.android.server.wm.flicker.helpers.WindowUtils.estimateNavigationBarPosition
-import com.android.server.wm.traces.common.ComponentNameMatcher
 import com.android.server.wm.traces.common.WindowManagerConditionsFactory
+import com.android.server.wm.traces.common.component.matchers.ComponentNameMatcher
 import com.android.server.wm.traces.common.service.PlatformConsts
 import com.android.server.wm.traces.parser.toAndroidRect
 import com.android.server.wm.traces.parser.windowmanager.WindowManagerStateHelper

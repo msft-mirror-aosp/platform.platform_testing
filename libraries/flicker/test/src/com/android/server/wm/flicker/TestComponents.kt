@@ -18,7 +18,7 @@
 
 package com.android.server.wm.flicker
 
-import com.android.server.wm.traces.common.ComponentNameMatcher
+import com.android.server.wm.traces.common.component.matchers.ComponentNameMatcher
 
 internal object TestComponents {
     @JvmStatic

@@ -16,15 +16,15 @@
 
 package com.android.server.wm.flicker.service.assertors.assertions
 
-import com.android.server.wm.flicker.service.assertors.ComponentBuilder
+import com.android.server.wm.flicker.service.IScenarioInstance
+import com.android.server.wm.flicker.service.assertors.ComponentTemplate
 import com.android.server.wm.flicker.traces.layers.LayersTraceSubject
-import com.android.server.wm.traces.common.transition.Transition
 
 /** Checks if the [component] layer is visible at the start of the transition */
-class LayerIsVisibleAtStart(component: ComponentBuilder) :
-    BaseAssertionBuilderWithComponent(component) {
+class LayerIsVisibleAtStart(component: ComponentTemplate) :
+    AssertionTemplateWithComponent(component) {
     /** {@inheritDoc} */
-    override fun doEvaluate(transition: Transition, layerSubject: LayersTraceSubject) {
-        layerSubject.first().isVisible(component.build(transition))
+    override fun doEvaluate(scenarioInstance: IScenarioInstance, layerSubject: LayersTraceSubject) {
+        layerSubject.first().isVisible(component.build(scenarioInstance))
     }
 }

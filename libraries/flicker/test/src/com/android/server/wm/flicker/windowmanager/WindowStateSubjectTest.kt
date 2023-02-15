@@ -28,7 +28,7 @@ import org.junit.Test
 
 class WindowStateSubjectTest {
     private val trace
-        get() = readWmTraceFromFile("wm_trace_openchrome.pb")
+        get() = readWmTraceFromFile("wm_trace_openchrome.pb", legacyTrace = true)
 
     @Before
     fun before() {

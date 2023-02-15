@@ -28,7 +28,7 @@ class TraceParserTest {
     @Test
     fun canSliceWithAllBefore() {
         testSliceUsingElapsedTimestamp(
-            0L,
+            Timestamp.MIN.elapsedNanos,
             mockTraceForSliceTests.first().timestamp.elapsedNanos - 1,
             listOf<Long>()
         )
@@ -40,12 +40,22 @@ class TraceParserTest {
         val to = mockTraceForSliceTests.last().elapsedTimestamp + 20
         val splitLayersTraceWithoutInitialEntry =
             MockTraceParser(mockTraceForSliceTests)
-                .parse(mockTraceForSliceTests, from, to, addInitialEntry = false)
+                .parse(
+                    mockTraceForSliceTests,
+                    Timestamp(elapsedNanos = from),
+                    Timestamp(elapsedNanos = to),
+                    addInitialEntry = false
+                )
         Truth.assertThat(splitLayersTraceWithoutInitialEntry).isEmpty()
 
         val splitLayersTraceWithInitialEntry =
             MockTraceParser(mockTraceForSliceTests)
-                .parse(mockTraceForSliceTests, from, to, addInitialEntry = true)
+                .parse(
+                    mockTraceForSliceTests,
+                    Timestamp(elapsedNanos = from),
+                    Timestamp(elapsedNanos = to),
+                    addInitialEntry = true
+                )
         Truth.assertThat(splitLayersTraceWithInitialEntry).hasSize(1)
         Truth.assertThat(splitLayersTraceWithInitialEntry.first().timestamp)
             .isEqualTo(mockTraceForSliceTests.last().timestamp)
@@ -228,14 +238,24 @@ class TraceParserTest {
     private fun testSliceWithOutInitialEntry(from: Long, to: Long, expected: List<Long>) {
         val splitLayersTrace =
             MockTraceParser(mockTraceForSliceTests)
-                .parse(mockTraceForSliceTests, from, to, addInitialEntry = false)
+                .parse(
+                    mockTraceForSliceTests,
+                    Timestamp(elapsedNanos = from),
+                    Timestamp(elapsedNanos = to),
+                    addInitialEntry = false
+                )
         Truth.assertThat(splitLayersTrace.map { it.timestamp.elapsedNanos }).isEqualTo(expected)
     }
 
     private fun testSliceWithInitialEntry(from: Long, to: Long, expected: List<Long>) {
         val splitLayersTraceWithStartEntry =
             MockTraceParser(mockTraceForSliceTests)
-                .parse(mockTraceForSliceTests, from, to, addInitialEntry = true)
+                .parse(
+                    mockTraceForSliceTests,
+                    Timestamp(elapsedNanos = from),
+                    Timestamp(elapsedNanos = to),
+                    addInitialEntry = true
+                )
         Truth.assertThat(splitLayersTraceWithStartEntry.map { it.timestamp.elapsedNanos })
             .isEqualTo(expected)
     }

@@ -16,17 +16,20 @@
 
 package com.android.server.wm.flicker.service.assertors.assertions
 
-import com.android.server.wm.flicker.service.assertors.BaseAssertionBuilder
+import com.android.server.wm.flicker.service.IScenarioInstance
+import com.android.server.wm.flicker.service.assertors.AssertionTemplate
 import com.android.server.wm.flicker.traces.windowmanager.WindowManagerTraceSubject
-import com.android.server.wm.traces.common.transition.Transition
 
 /**
  * Checks that all windows that are visible on the trace, are visible for at least 2 consecutive
  * entries.
  */
-class VisibleWindowsShownMoreThanOneConsecutiveEntry : BaseAssertionBuilder() {
+class VisibleWindowsShownMoreThanOneConsecutiveEntry : AssertionTemplate() {
     /** {@inheritDoc} */
-    override fun doEvaluate(transition: Transition, wmSubject: WindowManagerTraceSubject) {
+    override fun doEvaluate(
+        scenarioInstance: IScenarioInstance,
+        wmSubject: WindowManagerTraceSubject
+    ) {
         wmSubject.visibleWindowsShownMoreThanOneConsecutiveEntry().forAllEntries()
     }
 }

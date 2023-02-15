@@ -31,7 +31,8 @@ class LayerTraceParserTest {
 
     @Test
     fun canParseFromTrace() {
-        val trace = LayersTraceParser().parse(readAsset("layers_trace_occluded.pb"))
+        val trace =
+            LayersTraceParser(legacyTrace = true).parse(readAsset("layers_trace_occluded.pb"))
         Truth.assertWithMessage("Trace").that(trace).isNotEmpty()
         Truth.assertWithMessage("Trace contains entry")
             .that(trace.entries.map { it.elapsedTimestamp })
@@ -40,7 +41,8 @@ class LayerTraceParserTest {
 
     @Test
     fun canParseFromDumpWithDisplay() {
-        val trace = LayersTraceParser().parse(readAsset("layers_dump_with_display.pb"))
+        val trace =
+            LayersTraceParser(legacyTrace = true).parse(readAsset("layers_dump_with_display.pb"))
         Truth.assertWithMessage("Dump").that(trace).isNotEmpty()
         Truth.assertWithMessage("Dump contains display")
             .that(trace.first().displays)

@@ -19,23 +19,21 @@ package com.android.server.wm.traces.common.transition
 import com.android.server.wm.traces.common.ITraceEntry
 import com.android.server.wm.traces.common.Timestamp
 import com.android.server.wm.traces.common.transactions.Transaction
-import com.android.server.wm.traces.common.transactions.TransactionsTrace
-import com.android.server.wm.traces.common.transition.TransitionState.Companion.State
 import kotlin.js.JsName
 
 class Transition(
-    @JsName("type") val type: Type,
-    @JsName("start") val start: Long,
-    @JsName("end") val end: Long,
-    @JsName("collectingStart") val collectingStart: Long,
-    @JsName("startTransaction") val startTransaction: Transaction?,
-    @JsName("finishTransaction") val finishTransaction: Transaction?,
+    @JsName("start") val start: Timestamp,
+    @JsName("sendTime") val sendTime: Timestamp,
+    @JsName("startTransactionId") val startTransactionId: Long,
+    @JsName("finishTransactionId") val finishTransactionId: Long,
     @JsName("changes") val changes: List<TransitionChange>,
     @JsName("played") val played: Boolean,
     @JsName("aborted") val aborted: Boolean
 ) : ITraceEntry {
-    // TODO: Dump other timestamps for this trace
-    override val timestamp = Timestamp(elapsedNanos = start)
+    override val timestamp = start
+
+    @JsName("startTransaction") val startTransaction: Transaction? = null // TODO: Get
+    @JsName("finishTransaction") val finishTransaction: Transaction? = null // TODO: Get
 
     @JsName("isIncomplete")
     val isIncomplete: Boolean
@@ -43,9 +41,9 @@ class Transition(
 
     override fun toString(): String =
         "Transition#${hashCode()}" +
-            "($type, aborted=$aborted, start=$start, end=$end," +
-            "startTransaction=$startTransaction, finishTransaction=$finishTransaction, " +
-            "changes=[${changes.joinToString()}])"
+            "(\naborted=$aborted,\nstart=$start,\nsendTime=$sendTime,\n" +
+            "startTransaction=$startTransaction,\nfinishTransaction=$finishTransaction,\n" +
+            "changes=[\n${changes.joinToString(",\n").prependIndent()}\n])"
 
     companion object {
         enum class Type(val value: Int) {
@@ -66,140 +64,8 @@ class Transition(
             FIRST_CUSTOM(12); // TODO: Add custom types we know about
 
             companion object {
-                fun fromInt(value: Int) = values().first { it.value == value }
+                @JsName("fromInt") fun fromInt(value: Int) = values().first { it.value == value }
             }
-        }
-
-        class Builder(val id: Int) {
-            @JsName("type") var type: Type = Type.UNDEFINED
-            @JsName("start") var start: Long = -1
-            @JsName("end") var end: Long = -1
-            @JsName("collectingStart") var collectingStart: Long = -1
-            @JsName("changes") var changes: List<TransitionChange> = emptyList()
-            @JsName("played") var played = false
-            @JsName("aborted") var aborted = false
-            @JsName("startTransactionId") var startTransactionId = -1L
-            @JsName("finishTransactionId") var finishTransactionId = -1L
-            @JsName("startTransaction") var startTransaction: Transaction? = null
-            @JsName("finishTransaction") var finishTransaction: Transaction? = null
-
-            // Assumes each state is reported once
-            @JsName("addState")
-            fun addState(state: TransitionState) {
-                when (state.state) {
-                    State.PENDING -> {
-                        // Nothing to do
-                    }
-                    State.COLLECTING -> {
-                        this.collectingStart = state.timestamp
-                    }
-                    State.STARTED -> {
-                        // Nothing to do
-                    }
-                    State.PLAYING -> {
-                        this.start = state.timestamp
-                        this.changes = state.changes
-                        this.type = state.type
-                        this.startTransactionId = state.startTransactionId
-                        this.finishTransactionId = state.finishTransactionId
-                        this.played = true
-                    }
-                    State.ABORT -> {
-                        this.end = state.timestamp
-                        this.aborted = true
-                    }
-                    State.FINISHED -> {
-                        this.end = state.timestamp
-                    }
-                }
-            }
-
-            @JsName("linkTransactions")
-            fun linkTransactions(transactionsTrace: TransactionsTrace) {
-                if (this.startTransactionId == -1L || this.finishTransactionId == -1L) {
-                    // Transition not played
-                    require(this.aborted) {
-                        "$this has no start or finish transaction but is not aborted"
-                    }
-                    return
-                }
-
-                startTransaction =
-                    transactionsTrace.allTransactions.firstOrNull { transaction ->
-                        transaction.id == startTransactionId
-                    }
-                finishTransaction =
-                    transactionsTrace.allTransactions.firstOrNull { transaction ->
-                        transaction.id == finishTransactionId
-                    }
-
-                val startTransaction = startTransaction
-                requireNotNull(startTransaction) {
-                    "Failed to find a matching start transaction for $this on linking. " +
-                        "Transaction with id $startTransactionId not found in transactions trace."
-                }
-                val finishTransaction = finishTransaction
-                requireNotNull(finishTransaction) {
-                    "Failed to find a matching finish transaction for $this on linking. " +
-                        "Transaction with id $finishTransactionId not found in transactions trace."
-                }
-
-                require(startTransaction.appliedVSyncId != -1L) {
-                    "Matched start transaction had a vSyncId of -1..."
-                }
-                require(finishTransaction.appliedVSyncId != -1L) {
-                    "Matched start transaction had a vSyncId of -1..."
-                }
-            }
-
-            @JsName("build")
-            fun build(): Transition {
-                val startTransaction = startTransaction
-                require(startTransaction != null || !played) {
-                    "Can't build played transition without matched start transaction"
-                }
-                val finishTransaction = finishTransaction
-                require(finishTransaction != null || aborted) {
-                    "Can't build non-aborted transition without matched finish transaction"
-                }
-                return Transition(
-                    type,
-                    start,
-                    end,
-                    collectingStart,
-                    startTransaction,
-                    finishTransaction,
-                    changes,
-                    played,
-                    aborted
-                )
-            }
-
-            override fun toString(): String {
-                return buildString {
-                    appendLine("Transition.Builder(")
-                    appendLine("  id=$id")
-                    appendLine("  type=$type")
-                    appendLine("  start=$start")
-                    appendLine("  end=$end")
-                    appendLine("  collectingStart=$collectingStart")
-                    appendLine("  changes=$changes")
-                    appendLine("  aborted=$aborted")
-                    appendLine("  startTransactionId=$startTransactionId")
-                    appendLine("  finishTransactionId=$finishTransactionId")
-                    appendLine("  startTransaction=$startTransaction")
-                    appendLine("  finishTransaction=$finishTransaction")
-                    append(")")
-                }
-            }
-        }
-
-        @JsName("emptyTransition")
-        fun emptyTransition(stateId: Int = 0): Transition {
-            val transitionBuilder = Builder(stateId)
-            transitionBuilder.startTransaction = Transaction.emptyTransaction()
-            transitionBuilder.finishTransaction = Transaction.emptyTransaction()
-            return transitionBuilder.build()
         }
     }
 }

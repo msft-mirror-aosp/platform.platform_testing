@@ -18,6 +18,7 @@ package com.android.server.wm.flicker.io
 
 import androidx.collection.LruCache
 import com.android.server.wm.flicker.TraceConfigs
+import com.android.server.wm.traces.common.Timestamp
 import com.android.server.wm.traces.common.events.EventLog
 import com.android.server.wm.traces.common.layers.LayersTrace
 import com.android.server.wm.traces.common.windowmanager.WindowManagerTrace
@@ -39,7 +40,7 @@ open class ResultReaderWithLru(
     @Throws(IOException::class)
     override fun readWmTrace(): WindowManagerTrace? {
         val descriptor = ResultArtifactDescriptor(TraceType.SF)
-        val key = CacheKey(reader.artifactPath, descriptor)
+        val key = CacheKey(reader.artifactPath, descriptor, reader.transitionTimeRange)
         val trace = wmTraceCache[key] ?: reader.readWmTrace()
         return trace?.also { wmTraceCache.put(key, trace) }
     }
@@ -48,7 +49,7 @@ open class ResultReaderWithLru(
     @Throws(IOException::class)
     override fun readLayersTrace(): LayersTrace? {
         val descriptor = ResultArtifactDescriptor(TraceType.SF)
-        val key = CacheKey(reader.artifactPath, descriptor)
+        val key = CacheKey(reader.artifactPath, descriptor, reader.transitionTimeRange)
         val trace = layersTraceCache[key] ?: reader.readLayersTrace()
         return trace?.also { layersTraceCache.put(key, trace) }
     }
@@ -57,15 +58,21 @@ open class ResultReaderWithLru(
     @Throws(IOException::class)
     override fun readEventLogTrace(): EventLog? {
         val descriptor = ResultArtifactDescriptor(TraceType.EVENT_LOG)
-        val key = CacheKey(reader.artifactPath, descriptor)
+        val key = CacheKey(reader.artifactPath, descriptor, reader.transitionTimeRange)
         val trace = eventLogCache[key] ?: reader.readEventLogTrace()
         return trace?.also { eventLogCache.put(key, trace) }
+    }
+
+    override fun slice(startTimestamp: Timestamp, endTimestamp: Timestamp): ResultReaderWithLru {
+        val slicedReader = reader.slice(startTimestamp, endTimestamp)
+        return ResultReaderWithLru(slicedReader.result, slicedReader.traceConfig, slicedReader)
     }
 
     companion object {
         data class CacheKey(
             private val artifactPath: Path,
-            private val descriptor: ResultArtifactDescriptor
+            private val descriptor: ResultArtifactDescriptor,
+            private val transitionTimeRange: TransitionTimeRange
         )
 
         private val wmTraceCache = LruCache<CacheKey, WindowManagerTrace>(1)

@@ -16,90 +16,61 @@
 
 package com.android.server.wm.traces.parser.transition
 
-import android.util.Log
-import com.android.server.wm.shell.nano.ChangeInfo
 import com.android.server.wm.shell.nano.TransitionTraceProto
-import com.android.server.wm.traces.common.transactions.TransactionsTrace
+import com.android.server.wm.traces.common.Timestamp
+import com.android.server.wm.traces.common.WindowingMode
 import com.android.server.wm.traces.common.transition.Transition
 import com.android.server.wm.traces.common.transition.Transition.Companion.Type
 import com.android.server.wm.traces.common.transition.TransitionChange
-import com.android.server.wm.traces.common.transition.TransitionState
-import com.android.server.wm.traces.common.transition.TransitionState.Companion.State
 import com.android.server.wm.traces.common.transition.TransitionsTrace
 import com.android.server.wm.traces.parser.AbstractTraceParser
-import com.android.server.wm.traces.parser.LOG_TAG
 
 /** Parser for [TransitionsTrace] objects */
-class TransitionsTraceParser(private val transactions: TransactionsTrace) :
+class TransitionsTraceParser :
     AbstractTraceParser<
         TransitionTraceProto,
         com.android.server.wm.shell.nano.Transition,
-        TransitionState,
+        Transition,
         TransitionsTrace
     >() {
     override val traceName: String = "Transition trace"
 
-    override fun createTrace(entries: List<TransitionState>): TransitionsTrace {
-        val transitions = transitionStatesToTransitions(entries, transactions)
-        return TransitionsTrace(transitions.toTypedArray())
+    override fun createTrace(entries: List<Transition>): TransitionsTrace {
+        return TransitionsTrace(entries.toTypedArray())
     }
 
     override fun doDecodeByteArray(bytes: ByteArray): TransitionTraceProto =
         TransitionTraceProto.parseFrom(bytes)
 
     override fun shouldParseEntry(entry: com.android.server.wm.shell.nano.Transition): Boolean {
-        return (entry.id != -1).also {
-            // Invalid transition state
-            Log.w(LOG_TAG, "Got transition state with invalid id :: $entry")
-        }
+        return true
     }
 
     override fun getEntries(
         input: TransitionTraceProto
-    ): List<com.android.server.wm.shell.nano.Transition> = input.transition.toList()
+    ): List<com.android.server.wm.shell.nano.Transition> = input.sentTransitions.toList()
 
-    override fun getTimestamp(entry: com.android.server.wm.shell.nano.Transition): Long =
-        entry.timestamp
+    override fun getTimestamp(entry: com.android.server.wm.shell.nano.Transition): Timestamp {
+        return Timestamp(elapsedNanos = entry.createTimeNs)
+    }
 
     override fun onBeforeParse(input: TransitionTraceProto) {}
 
-    override fun doParseEntry(entry: com.android.server.wm.shell.nano.Transition): TransitionState {
-        val changes = entry.change.map { parseTransitionChangeFromProto(it) }
-        return TransitionState(
-            entry.id,
-            Type.fromInt(entry.transitionType),
-            entry.timestamp,
-            State.fromInt(entry.state),
-            entry.flags,
-            changes,
-            entry.startTransactionId,
-            entry.finishTransactionId
-        )
-    }
-
-    private fun transitionStatesToTransitions(
-        transitionStates: List<TransitionState>,
-        transactions: TransactionsTrace
-    ): List<Transition> {
-        val transitionBuilders: MutableMap<Int, Transition.Companion.Builder> = mutableMapOf()
-
-        for (state in transitionStates) {
-            if (!transitionBuilders.containsKey(state.id)) {
-                transitionBuilders[state.id] = Transition.Companion.Builder(state.id)
+    override fun doParseEntry(entry: com.android.server.wm.shell.nano.Transition): Transition {
+        val windowingMode = WindowingMode.WINDOWING_MODE_UNDEFINED // TODO: Get the windowing mode
+        val changes =
+            entry.targets.map {
+                TransitionChange(Type.fromInt(it.mode), it.layerId, it.windowId, windowingMode)
             }
-            val builder = transitionBuilders[state.id]!!
-            builder.addState(state)
-        }
 
-        transitionBuilders.values.forEach { it.linkTransactions(transactions) }
-        val transitions = transitionBuilders.values.map { it.build() }
-        return transitions.sortedBy { it.start }
-    }
-
-    private fun parseTransitionChangeFromProto(proto: ChangeInfo): TransitionChange {
-        val windowName = proto.windowIdentifier.title
-        val windowId = proto.windowIdentifier.hashCode.toString(16)
-
-        return TransitionChange(windowName, Type.fromInt(proto.transitMode))
+        return Transition(
+            start = Timestamp(elapsedNanos = entry.createTimeNs),
+            sendTime = Timestamp(elapsedNanos = entry.sendTimeNs),
+            startTransactionId = entry.startTransactionId,
+            finishTransactionId = entry.finishTransactionId,
+            changes = changes,
+            played = true,
+            aborted = false,
+        )
     }
 }

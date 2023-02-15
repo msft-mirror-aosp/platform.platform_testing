@@ -31,6 +31,7 @@ import android.support.test.uiautomator.UiObject2;
 import android.support.test.uiautomator.UiObjectNotFoundException;
 import android.support.test.uiautomator.UiScrollable;
 import android.support.test.uiautomator.UiSelector;
+import android.support.test.uiautomator.Until;
 
 import java.util.List;
 import java.util.regex.Pattern;
@@ -344,10 +345,9 @@ public class MediaCenterHelperImpl extends AbstractAutoStandardAppHelper
         }
     }
 
-    /**
-     * Minimize the Now Playing window.
-     */
-    private void minimizeNowPlaying() {
+    /** {@inheritDoc} */
+    @Override
+    public void minimizeNowPlaying() {
         UiObject2 trackNameText =
                 findUiObject(
                         getResourceFromConfig(
@@ -356,6 +356,20 @@ public class MediaCenterHelperImpl extends AbstractAutoStandardAppHelper
                                 AutoConfigConstants.TRACK_NAME));
         if (trackNameText != null) {
             trackNameText.swipe(Direction.DOWN, 1.0f, 500);
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void maximizeNowPlaying() {
+        UiObject2 trackNameText =
+                findUiObject(
+                        getResourceFromConfig(
+                                AutoConfigConstants.MEDIA_CENTER,
+                                AutoConfigConstants.MEDIA_CENTER_SCREEN,
+                                AutoConfigConstants.MINIMIZED_MEDIA_CONTROLS));
+        if (trackNameText != null) {
+            trackNameText.click();
         }
     }
 
@@ -484,5 +498,24 @@ public class MediaCenterHelperImpl extends AbstractAutoStandardAppHelper
             throw new UnknownUiException("Unable to find Media app error text.");
         }
         return noLoginMsg.getText();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void selectMediaTrack(String... menuOptions) {
+        for (String option : menuOptions) {
+            while (true) {
+                UiObject2 object =
+                        mDevice.wait(Until.findObject(By.text(option)), UI_RESPONSE_WAIT_MS);
+                if (object != null) {
+                    object.click();
+                    mDevice.waitForIdle();
+                    break;
+                }
+                if (!scrollDownOnePage()) {
+                    throw new UnknownUiException("Unable to find object " + option);
+                }
+            }
+        }
     }
 }

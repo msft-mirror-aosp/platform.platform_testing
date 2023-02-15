@@ -24,7 +24,7 @@ class FlickerTestCase(val results: List<AssertionResult>, isBlockingTest: Boolea
 
     private val resultsToReport =
         if (isBlockingTest) {
-            results.filter { it.invocationGroup == AssertionInvocationGroup.BLOCKING }
+            results.filter { it.assertion.stabilityGroup == AssertionInvocationGroup.BLOCKING }
         } else {
             results
         }

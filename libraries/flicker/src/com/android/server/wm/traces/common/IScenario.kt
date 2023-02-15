@@ -23,7 +23,7 @@ interface IScenario {
     val key: String
     val isEmpty: Boolean
 
-    /** Initial screen rotation */
     val startRotation: PlatformConsts.Rotation
+    val endRotation: PlatformConsts.Rotation
     val navBarMode: PlatformConsts.NavBar
 }

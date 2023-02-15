@@ -17,6 +17,8 @@
 package com.android.server.wm.flicker.io
 
 import com.android.server.wm.flicker.RunStatus
+import com.android.server.wm.traces.common.Timestamp
+import com.android.server.wm.traces.common.events.CujTrace
 import com.android.server.wm.traces.common.events.EventLog
 import com.android.server.wm.traces.common.layers.LayersTrace
 import com.android.server.wm.traces.common.transactions.TransactionsTrace
@@ -73,4 +75,13 @@ interface IReader {
      * @throws IOException if the artifact file doesn't exist or can't be read
      */
     @Throws(IOException::class) fun readEventLogTrace(): EventLog?
+
+    /**
+     * @return a [CujTrace] for the part of the trace we want to run the assertions on
+     * @throws IOException if the artifact file doesn't exist or can't be read
+     */
+    @Throws(IOException::class) fun readCujTrace(): CujTrace?
+
+    /** @return an [IReader] for the subsection of the trace we are reading in this reader */
+    fun slice(startTimestamp: Timestamp, endTimestamp: Timestamp): IReader
 }

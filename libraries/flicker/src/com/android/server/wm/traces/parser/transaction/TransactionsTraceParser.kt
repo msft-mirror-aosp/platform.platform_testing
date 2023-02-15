@@ -34,15 +34,20 @@ class TransactionsTraceParser :
         TransactionsTraceEntry,
         TransactionsTrace
     >() {
-    private var timestampOffset = 0L
+    private var timestampOffset = Timestamp.NULL_TIMESTAMP
     override val traceName: String = "Transactions trace"
 
     override fun onBeforeParse(input: TransactionTraceFile) {
         timestampOffset = input.realToElapsedTimeOffsetNanos
     }
 
-    override fun getTimestamp(entry: Transactions.TransactionTraceEntry): Long =
-        entry.elapsedRealtimeNanos
+    override fun getTimestamp(entry: Transactions.TransactionTraceEntry): Timestamp {
+        require(timestampOffset != Timestamp.NULL_TIMESTAMP)
+        return Timestamp(
+            elapsedNanos = entry.elapsedRealtimeNanos,
+            unixNanos = entry.elapsedRealtimeNanos + timestampOffset
+        )
+    }
 
     override fun createTrace(entries: List<TransactionsTraceEntry>): TransactionsTrace =
         TransactionsTrace(entries.toTypedArray())

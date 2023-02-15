@@ -20,7 +20,7 @@ import android.app.Instrumentation
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
-import com.android.server.wm.traces.common.ComponentNameMatcher
+import com.android.server.wm.traces.common.component.matchers.ComponentNameMatcher
 
 /**
  * Helper to launch the default browser app (compatible with AOSP)
@@ -32,7 +32,7 @@ import com.android.server.wm.traces.common.ComponentNameMatcher
  */
 class BrowserAppHelper(
     instrumentation: Instrumentation,
-    private val pkgManager: PackageManager = instrumentation.context.packageManager
+    pkgManager: PackageManager = instrumentation.context.packageManager
 ) :
     StandardAppHelper(
         instrumentation,

@@ -16,19 +16,22 @@
 
 package com.android.server.wm.flicker.service.assertors.assertions
 
-import com.android.server.wm.flicker.service.assertors.ComponentBuilder
+import com.android.server.wm.flicker.service.IScenarioInstance
+import com.android.server.wm.flicker.service.assertors.ComponentTemplate
 import com.android.server.wm.flicker.traces.windowmanager.WindowManagerTraceSubject
-import com.android.server.wm.traces.common.transition.Transition
 
 /** Checks that [getWindowState] window becomes pinned */
-class AppWindowBecomesPinned(component: ComponentBuilder) :
-    BaseAssertionBuilderWithComponent(component) {
+class AppWindowBecomesPinned(component: ComponentTemplate) :
+    AssertionTemplateWithComponent(component) {
     /** {@inheritDoc} */
-    override fun doEvaluate(transition: Transition, wmSubject: WindowManagerTraceSubject) {
+    override fun doEvaluate(
+        scenarioInstance: IScenarioInstance,
+        wmSubject: WindowManagerTraceSubject
+    ) {
         wmSubject
-            .invoke("appWindowIsNotPinned") { it.isNotPinned(component.build(transition)) }
+            .invoke("appWindowIsNotPinned") { it.isNotPinned(component.build(scenarioInstance)) }
             .then()
-            .invoke("appWindowIsPinned") { it.isPinned(component.build(transition)) }
+            .invoke("appWindowIsPinned") { it.isPinned(component.build(scenarioInstance)) }
             .forAllEntries()
     }
 }

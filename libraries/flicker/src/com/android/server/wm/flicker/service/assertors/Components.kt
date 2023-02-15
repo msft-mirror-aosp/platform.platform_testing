@@ -16,79 +16,91 @@
 
 package com.android.server.wm.flicker.service.assertors
 
-import android.content.ComponentName
-import com.android.server.wm.traces.common.ComponentNameMatcher
-import com.android.server.wm.traces.common.IComponentMatcher
+import com.android.server.wm.flicker.service.IScenarioInstance
+import com.android.server.wm.traces.common.component.matchers.ComponentNameMatcher
+import com.android.server.wm.traces.common.component.matchers.FullComponentIdMatcher
+import com.android.server.wm.traces.common.component.matchers.IComponentMatcher
 import com.android.server.wm.traces.common.transition.Transition
-import com.android.server.wm.traces.common.transition.Transition.Companion.Type.CLOSE
-import com.android.server.wm.traces.common.transition.Transition.Companion.Type.OPEN
 
-data class ComponentBuilder(val name: String, val build: (t: Transition) -> IComponentMatcher) {
+data class ComponentTemplate(
+    val name: String,
+    val build: (scenarioInstance: IScenarioInstance) -> IComponentMatcher
+) {
     override fun equals(other: Any?): Boolean {
-        return other is ComponentBuilder && name == other.name
+        return other is ComponentTemplate && name == other.name && build == other.build
     }
 
     override fun hashCode(): Int {
-        var result = name.hashCode()
-        return result
+        return name.hashCode() * 39 + build.hashCode()
     }
 }
 
 object Components {
 
-    val NAV_BAR = ComponentBuilder("Navbar") { ComponentNameMatcher.NAV_BAR }
-    val STATUS_BAR = ComponentBuilder("StatusBar") { ComponentNameMatcher.STATUS_BAR }
-    val LAUNCHER = ComponentBuilder("Launcher") { ComponentNameMatcher.LAUNCHER }
+    val NAV_BAR = ComponentTemplate("Navbar") { ComponentNameMatcher.NAV_BAR }
+    val STATUS_BAR = ComponentTemplate("StatusBar") { ComponentNameMatcher.STATUS_BAR }
+    val LAUNCHER = ComponentTemplate("Launcher") { ComponentNameMatcher.LAUNCHER }
 
-    val OPENING_APP = ComponentBuilder("OPENING_APP") { t: Transition -> openingAppFrom(t) }
-    val CLOSING_APP = ComponentBuilder("CLOSING_APP") { t: Transition -> closingAppFrom(t) }
+    val OPENING_APP =
+        ComponentTemplate("OPENING_APP") { scenarioInstance: IScenarioInstance ->
+            openingAppFrom(
+                scenarioInstance.associatedTransition ?: error("Missing associated transition")
+            )
+        }
+    val CLOSING_APP =
+        ComponentTemplate("CLOSING_APP") { scenarioInstance: IScenarioInstance ->
+            closingAppFrom(
+                scenarioInstance.associatedTransition ?: error("Missing associated transition")
+            )
+        }
 
-    val EMPTY = ComponentBuilder("") { ComponentNameMatcher("", "") }
+    val EMPTY = ComponentTemplate("") { ComponentNameMatcher("", "") }
 
     // TODO: Extract out common code between two functions below
     private fun openingAppFrom(transition: Transition): IComponentMatcher {
-        val openingWindows = transition.changes.filter { it.transitMode == OPEN }
+        val targetChanges =
+            transition.changes.filter {
+                it.transitMode == Transition.Companion.Type.OPEN ||
+                    it.transitMode == Transition.Companion.Type.TO_FRONT
+            }
 
-        val windowNames = openingWindows.map { it.windowName }.distinct()
-        if (windowNames.size > 1) {
-            error(
-                "Was not expecting more than one opening windowNames got " +
-                    windowNames.joinToString()
-            )
-        }
-        if (windowNames.isEmpty()) {
-            error("No opening windows for $transition...")
+        val openingLayerIds = targetChanges.map { it.layerId }
+        require(openingLayerIds.size == 1) {
+            "Expected 1 opening layer but got ${openingLayerIds.size}"
         }
 
-        // TODO: (b/231974873) use windowId instead of window name to match instead
-        val openWindowName = openingWindows.first().windowName
-        val component = ComponentName.unflattenFromString(openWindowName)
+        val openingWindowIds = targetChanges.map { it.windowId }
+        require(openingWindowIds.size == 1) {
+            "Expected 1 opening window but got ${openingWindowIds.size}"
+        }
 
-        return ComponentNameMatcher(component!!.packageName, component.className)
+        val windowId = openingWindowIds.first()
+        val layerId = openingLayerIds.first()
+        return FullComponentIdMatcher(windowId, layerId)
     }
 
     private fun closingAppFrom(transition: Transition): IComponentMatcher {
-        val closingWindows = transition.changes.filter { it.transitMode == CLOSE }
+        val targetChanges =
+            transition.changes.filter {
+                it.transitMode == Transition.Companion.Type.CLOSE ||
+                    it.transitMode == Transition.Companion.Type.TO_BACK
+            }
 
-        val windowNames = closingWindows.map { it.windowName }.distinct()
-        if (windowNames.size > 1) {
-            error(
-                "Was not expecting more than one opening windowNames got " +
-                    windowNames.joinToString()
-            )
-        }
-        if (windowNames.isEmpty()) {
-            error("No closing windows for $transition...")
+        val closingLayerIds = targetChanges.map { it.layerId }
+        require(closingLayerIds.size == 1) {
+            "Expected 1 closing layer but got ${closingLayerIds.size}"
         }
 
-        // TODO: (b/231974873) use windowId instead of window name to match instead
-        val closeWindowName = closingWindows.firstOrNull()?.windowName
-        val closeWindowPackage = closeWindowName?.split('/')?.get(0) ?: ""
-        val closeWindowClass = closeWindowName?.split('/')?.get(0) ?: ""
+        val closingWindowIds = targetChanges.map { it.windowId }
+        require(closingWindowIds.size == 1) {
+            "Expected 1 closing window but got ${closingWindowIds.size}"
+        }
 
-        return ComponentNameMatcher(closeWindowPackage, closeWindowClass)
+        val windowId = closingWindowIds.first()
+        val layerId = closingLayerIds.first()
+        return FullComponentIdMatcher(windowId, layerId)
     }
 
-    val byType: Map<String, ComponentBuilder> =
+    val byType: Map<String, ComponentTemplate> =
         mapOf("OPENING_APP" to OPENING_APP, "CLOSING_APP" to CLOSING_APP)
 }

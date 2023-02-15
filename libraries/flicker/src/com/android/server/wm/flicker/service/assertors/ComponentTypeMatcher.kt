@@ -17,17 +17,16 @@
 package com.android.server.wm.flicker.service.assertors
 
 import com.android.server.wm.flicker.Utils
-import com.android.server.wm.flicker.assertiongenerator.DeviceTraceConfiguration
-import com.android.server.wm.traces.common.ComponentName
-import com.android.server.wm.traces.common.ComponentNameMatcher
-import com.android.server.wm.traces.common.transition.Transition
+import com.android.server.wm.flicker.service.ScenarioInstance
+import com.android.server.wm.traces.common.component.ComponentName
+import com.android.server.wm.traces.common.component.matchers.ComponentNameMatcher
 
 /**
  * ComponentMatcher based on type (e.g. open/close app) It is initialized late based on the
  * transition passed through the execute function of the assertion
  */
 class ComponentTypeMatcher(val name: String) : ComponentNameMatcher(ComponentName("", "")) {
-    constructor(name: String, componentBuilder: ComponentBuilder) : this(name) {
+    constructor(name: String, componentBuilder: ComponentTemplate) : this(name) {
         this.componentBuilder = componentBuilder
     }
 
@@ -40,16 +39,17 @@ class ComponentTypeMatcher(val name: String) : ComponentNameMatcher(ComponentNam
             return field
         }
 
-    var componentBuilder: ComponentBuilder = Components.EMPTY
+    var componentBuilder: ComponentTemplate = Components.EMPTY
 
-    fun initialize(transition: Transition) {
+    fun initialize(scenarioInstance: ScenarioInstance) {
         Utils.componentNameMatcherHardcoded(name)?.run {
             this@ComponentTypeMatcher.component = this.component
         }
             ?: run {
                 // safe cast because both openingAppFrom and closingAppFrom
                 // in Components return ComponentNameMatcher
-                val componentMatcher = componentBuilder.build(transition) as ComponentNameMatcher
+                val componentMatcher =
+                    componentBuilder.build(scenarioInstance) as ComponentNameMatcher
                 this.component = componentMatcher.component
             }
         this.initialized = true
@@ -69,27 +69,6 @@ class ComponentTypeMatcher(val name: String) : ComponentNameMatcher(ComponentNam
         var result = name.hashCode()
         result = 31 * result + componentBuilder.hashCode()
         return result
-    }
-
-    companion object {
-        fun componentMatcherFromName(
-            name: String,
-            traceConfiguration: DeviceTraceConfiguration
-        ): ComponentNameMatcher? {
-            Utils.componentNameMatcherHardcoded(name)?.run {
-                return ComponentNameMatcher(this.component)
-            }
-                ?: run {
-                    val componentMatcher = ComponentTypeMatcher(name)
-                    if (traceConfiguration.componentToTypeMap[name] != null) {
-                        componentMatcher.componentBuilder =
-                            traceConfiguration.componentToTypeMap[name]!!
-                        return componentMatcher
-                    } else {
-                        return null
-                    }
-                }
-        }
     }
 }
 

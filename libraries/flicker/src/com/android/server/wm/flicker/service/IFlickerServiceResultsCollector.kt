@@ -17,7 +17,7 @@
 package com.android.server.wm.flicker.service
 
 import com.android.server.wm.flicker.runner.ExecutionError
-import com.android.server.wm.flicker.service.assertors.AssertionResult
+import com.android.server.wm.flicker.service.assertors.IAssertionResult
 import org.junit.runner.Description
 import org.junit.runner.notification.Failure
 
@@ -28,5 +28,5 @@ interface IFlickerServiceResultsCollector {
     fun testSkipped(description: Description)
     fun testFinished(description: Description)
     fun testContainsFlicker(description: Description): Boolean
-    fun resultsForTest(description: Description): List<AssertionResult>
+    fun resultsForTest(description: Description): List<IAssertionResult>
 }

@@ -18,10 +18,13 @@ package com.android.server.wm.flicker.runner
 
 import android.app.Instrumentation
 import android.platform.test.rule.ArtifactSaver
+import android.util.EventLog
 import android.util.Log
+import com.android.server.wm.flicker.FlickerTag
 import com.android.server.wm.flicker.IFlickerTestData
 import com.android.server.wm.flicker.io.ResultWriter
 import com.android.server.wm.flicker.io.TraceType
+import com.android.server.wm.flicker.now
 import com.android.server.wm.traces.common.IScenario
 import com.android.server.wm.traces.parser.getCurrentState
 import com.android.server.wm.traces.parser.windowmanager.WindowManagerStateHelper
@@ -79,7 +82,14 @@ class TransitionExecutionRule(
         withPerfettoTrace("doRunBeforeTransition") {
             Utils.notifyRunnerProgress(scenario, "Running doRunBeforeTransition")
             Log.d(FLICKER_RUNNER_TAG, "doRunBeforeTransition")
-            resultWriter.setTransitionStartTime()
+            val now = now()
+            resultWriter.setTransitionStartTime(now)
+            EventLog.writeEvent(
+                FlickerTag.TRANSITION_START,
+                now.unixNanos,
+                now.elapsedNanos,
+                now.systemUptimeNanos
+            )
             flicker.setCreateTagListener { doCreateTag(it) }
             doValidate()
         }
@@ -90,7 +100,14 @@ class TransitionExecutionRule(
             Utils.notifyRunnerProgress(scenario, "Running doRunAfterTransition")
             Log.d(FLICKER_RUNNER_TAG, "doRunAfterTransition")
             Utils.doWaitForUiStabilize(wmHelper)
-            resultWriter.setTransitionEndTime()
+            val now = now()
+            resultWriter.setTransitionEndTime(now)
+            EventLog.writeEvent(
+                FlickerTag.TRANSITION_END,
+                now.unixNanos,
+                now.elapsedNanos,
+                now.systemUptimeNanos
+            )
             flicker.clearTagListener()
         }
     }

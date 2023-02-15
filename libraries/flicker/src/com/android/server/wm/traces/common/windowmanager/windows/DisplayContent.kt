@@ -16,8 +16,8 @@
 
 package com.android.server.wm.traces.common.windowmanager.windows
 
-import com.android.server.wm.traces.common.IComponentMatcher
 import com.android.server.wm.traces.common.Rect
+import com.android.server.wm.traces.common.component.matchers.IComponentMatcher
 import com.android.server.wm.traces.common.service.PlatformConsts
 import kotlin.js.JsName
 import kotlin.math.min

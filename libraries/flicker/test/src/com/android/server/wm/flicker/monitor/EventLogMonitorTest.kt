@@ -1,6 +1,8 @@
 package com.android.server.wm.flicker.monitor
 
+import android.os.SystemClock
 import android.util.EventLog
+import com.android.internal.jank.EventLogTags
 import com.android.server.wm.flicker.DEFAULT_TRACE_CONFIG
 import com.android.server.wm.flicker.io.ResultReader
 import com.android.server.wm.flicker.newTestResultWriter
@@ -9,9 +11,6 @@ import com.android.server.wm.traces.common.events.CujEvent
 import com.android.server.wm.traces.common.events.CujType
 import com.android.server.wm.traces.common.events.EventLog.Companion.MAGIC_NUMBER
 import com.android.server.wm.traces.common.events.FocusEvent
-import com.android.server.wm.traces.parser.events.EventLogParser.Companion.WM_JANK_CUJ_EVENTS_BEGIN_REQUEST
-import com.android.server.wm.traces.parser.events.EventLogParser.Companion.WM_JANK_CUJ_EVENTS_CANCEL_REQUEST
-import com.android.server.wm.traces.parser.events.EventLogParser.Companion.WM_JANK_CUJ_EVENTS_END_REQUEST
 import com.google.common.truth.Truth
 import java.nio.file.Files
 import java.nio.file.Path
@@ -307,8 +306,16 @@ class EventLogMonitorTest : TraceMonitorTest<EventLogMonitor>() {
         val monitor = EventLogMonitor()
         val writer = newTestResultWriter()
         monitor.start()
-        EventLog.writeEvent(WM_JANK_CUJ_EVENTS_BEGIN_REQUEST, 10)
-        EventLog.writeEvent(WM_JANK_CUJ_EVENTS_END_REQUEST, 10)
+        EventLogTags.writeJankCujEventsBeginRequest(
+            CujType.CUJ_NOTIFICATION_APP_START.ordinal,
+            SystemClock.elapsedRealtimeNanos(),
+            SystemClock.uptimeNanos()
+        )
+        EventLogTags.writeJankCujEventsEndRequest(
+            CujType.CUJ_NOTIFICATION_APP_START.ordinal,
+            SystemClock.elapsedRealtimeNanos(),
+            SystemClock.uptimeNanos()
+        )
         monitor.stop()
         monitor.setResult(writer)
         val result = writer.write()
@@ -324,17 +331,20 @@ class EventLogMonitorTest : TraceMonitorTest<EventLogMonitor>() {
         val monitor = EventLogMonitor()
         val writer = newTestResultWriter()
         monitor.start()
-        EventLog.writeEvent(
-            WM_JANK_CUJ_EVENTS_BEGIN_REQUEST,
-            CujType.CUJ_LAUNCHER_QUICK_SWITCH.ordinal
+        EventLogTags.writeJankCujEventsBeginRequest(
+            CujType.CUJ_LAUNCHER_QUICK_SWITCH.ordinal,
+            SystemClock.elapsedRealtimeNanos(),
+            SystemClock.uptimeNanos()
         )
-        EventLog.writeEvent(
-            WM_JANK_CUJ_EVENTS_END_REQUEST,
-            CujType.CUJ_LAUNCHER_ALL_APPS_SCROLL.ordinal
+        EventLogTags.writeJankCujEventsEndRequest(
+            CujType.CUJ_LAUNCHER_ALL_APPS_SCROLL.ordinal,
+            SystemClock.elapsedRealtimeNanos(),
+            SystemClock.uptimeNanos()
         )
-        EventLog.writeEvent(
-            WM_JANK_CUJ_EVENTS_CANCEL_REQUEST,
-            CujType.CUJ_LOCKSCREEN_LAUNCH_CAMERA.ordinal
+        EventLogTags.writeJankCujEventsCancelRequest(
+            CujType.CUJ_LOCKSCREEN_LAUNCH_CAMERA.ordinal,
+            SystemClock.elapsedRealtimeNanos(),
+            SystemClock.uptimeNanos()
         )
         monitor.stop()
         monitor.setResult(writer)
@@ -361,9 +371,21 @@ class EventLogMonitorTest : TraceMonitorTest<EventLogMonitor>() {
         val monitor = EventLogMonitor()
         val writer = newTestResultWriter()
         monitor.start()
-        EventLog.writeEvent(WM_JANK_CUJ_EVENTS_BEGIN_REQUEST, unknownCujId)
-        EventLog.writeEvent(WM_JANK_CUJ_EVENTS_END_REQUEST, unknownCujId)
-        EventLog.writeEvent(WM_JANK_CUJ_EVENTS_CANCEL_REQUEST, unknownCujId)
+        EventLogTags.writeJankCujEventsBeginRequest(
+            unknownCujId,
+            SystemClock.elapsedRealtimeNanos(),
+            SystemClock.uptimeNanos()
+        )
+        EventLogTags.writeJankCujEventsEndRequest(
+            unknownCujId,
+            SystemClock.elapsedRealtimeNanos(),
+            SystemClock.uptimeNanos()
+        )
+        EventLogTags.writeJankCujEventsCancelRequest(
+            unknownCujId,
+            SystemClock.elapsedRealtimeNanos(),
+            SystemClock.uptimeNanos()
+        )
         monitor.stop()
         monitor.setResult(writer)
         val result = writer.write()

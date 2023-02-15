@@ -36,7 +36,7 @@ class WindowManagerTraceParserTest {
     @Test
     fun canParseAllEntriesFromStoredTrace() {
         val trace =
-            WindowManagerTraceParser()
+            WindowManagerTraceParser(legacyTrace = true)
                 .parse(readAsset("wm_trace_openchrome.pb"), clearCache = false)
         val firstEntry = trace.entries[0]
         Truth.assertThat(firstEntry.timestamp.elapsedNanos).isEqualTo(9213763541297L)
