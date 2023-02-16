@@ -17,6 +17,7 @@
 package android.platform.helpers;
 
 public class AutomotiveConfigConstants {
+
     // Phone App Constants
     public static final String OPEN_DIAL_PAD_COMMAND = "OPEN_DIAL_PAD_COMMAND";
     public static final String OPEN_PHONE_ACTIVITY_COMMAND = "OPEN_PHONE_ACTIVITY_COMMAND";
@@ -148,6 +149,7 @@ public class AutomotiveConfigConstants {
     public static final String NOTIFICATION_LIST_SCROLL_ACTION = "NOTIFICATION_LIST_SCROLL_ACTION";
     public static final String NOTIFICATION_LIST_SCROLL_DIRECTION =
             "NOTIFICATION_LIST_SCROLL_DIRECTION";
+
     // System Settings Constants
     public static final String SETTINGS_PACKAGE = "SETTINGS_PACKAGE";
     public static final String SYSTEM_SETTINGS_SCROLL_ACTION = "SYSTEM_SETTINGS_SCROLL_ACTION";
@@ -272,4 +274,26 @@ public class AutomotiveConfigConstants {
             "USER_SETTINGS_MANAGE_OTHER_PROFILES";
     public static final String USER_SETTINGS_SCROLL_MARGIN = "USER_SETTINGS_SCROLL_MARGIN";
     public static final String USER_SETTINGS_SCROLL_WAIT_TIME = "USER_SETTINGS_SCROLL_WAIT_TIME";
+
+    // Account Settings Constants
+    public static final String ACCOUNT_SETTINGS_SCROLL_ACTION = "ACCOUNT_SETTINGS_SCROLL_ACTION";
+    public static final String ACCOUNT_SETTINGS_SCROLL_DIRECTION =
+            "ACCOUNT_SETTINGS_SCROLL_DIRECTION";
+    public static final String ACCOUNT_SETTINGS_DONE_BUTTON = "ACCOUNT_SETTINGS_DONE_BUTTON";
+    public static final String ACCOUNT_SETTINGS_ADD_ACCOUNT = "ACCOUNT_SETTINGS_ADD_ACCOUNT";
+    public static final String ACCOUNT_SETTINGS_SIGN_IN_ON_CAR_SCREEN =
+            "ACCOUNT_SETTINGS_SIGN_IN_ON_CAR_SCREEN";
+    public static final String ACCOUNT_SETTINGS_REMOVE_BUTTON = "ACCOUNT_SETTINGS_REMOVE_BUTTON";
+    public static final String ACCOUNT_SETTINGS_REMOVE_ACCOUNT_BUTTON =
+            "ACCOUNT_SETTINGS_REMOVE_ACCOUNT_BUTTON";
+    public static final String ACCOUNT_SETTINGS_ENTER_EMAIL = "ACCOUNT_SETTINGS_ENTER_EMAIL";
+    public static final String ACCOUNT_SETTINGS_ENTER_PASSWORD = "ACCOUNT_SETTINGS_ENTER_PASSWORD";
+    public static final String ACCOUNT_SETTINGS_NEXT_BUTTON = "ACCOUNT_SETTINGS_NEXT_BUTTON";
+    public static final String ACCOUNT_SETTINGS_SCROLL_BACKWARD_BUTTON =
+            "ACCOUNT_SETTINGS_SCROLL_BACKWARD_BUTTON";
+    public static final String ACCOUNT_SETTINGS_SCROLL_FORWARD_BUTTON =
+            "ACCOUNT_SETTINGS_SCROLL_FORWARD_BUTTON";
+    public static final String ACCOUNT_SETTINGS_SCROLL_ELEMENT = "ACCOUNT_SETTINGS_SCROLL_ELEMENT";
+    public static final String ACCOUNT_SETTINGS_GOOGLE_SIGN_IN_SCREEN =
+            "ACCOUNT_SETTINGS_GOOGLE_SIGN_IN_SCREEN";
 }

@@ -42,6 +42,11 @@ public class SettingsSoundsHelperImpl extends AbstractStandardAppHelper
         implements IAutoSoundsSettingHelper {
 
     private ScrollUtility mScrollUtility;
+    private ScrollActions mScrollAction;
+    private BySelector mBackwardButtonSelector;
+    private BySelector mForwardButtonSelector;
+    private BySelector mScrollableElementSelector;
+    private ScrollDirection mScrollDirection;
     private static final int VOLUME_FLAGS = 0;
     private static final int USAGE_INVALID = -1;
     private static final int MINIMUM_NUMBER_OF_CHILDREN = 2;
@@ -60,6 +65,22 @@ public class SettingsSoundsHelperImpl extends AbstractStandardAppHelper
                 "android.car.permission.CAR_CONTROL_AUDIO_SETTINGS");
         mCarAudioManager = (CarAudioManager) car.getCarManager(Car.AUDIO_SERVICE);
         mScrollUtility = ScrollUtility.getInstance(getSpectatioUiUtil());
+        mScrollAction =
+                ScrollActions.valueOf(
+                        getActionFromConfig(
+                                AutomotiveConfigConstants.SOUND_SETTINGS_LIST_SCROLL_ACTION));
+        mBackwardButtonSelector =
+                getUiElementFromConfig(
+                        AutomotiveConfigConstants.SOUND_SETTINGS_SCROLL_BACKWARD_BUTTON);
+        mForwardButtonSelector =
+                getUiElementFromConfig(
+                        AutomotiveConfigConstants.SOUND_SETTINGS_SCROLL_FORWARD_BUTTON);
+        mScrollableElementSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.SOUND_SETTINGS_SCROLL_ELEMENT);
+        mScrollDirection =
+                ScrollDirection.valueOf(
+                        getActionFromConfig(
+                                AutomotiveConfigConstants.SOUND_SETTINGS_LIST_SCROLL_DIRECTION));
         mScrollUtility.setScrollValues(
                 Integer.valueOf(
                         getActionFromConfig(
@@ -149,29 +170,13 @@ public class SettingsSoundsHelperImpl extends AbstractStandardAppHelper
                 break;
         }
         BySelector typeSelector = By.text(type);
-        ScrollActions scrollAction =
-                ScrollActions.valueOf(
-                        getActionFromConfig(
-                                AutomotiveConfigConstants.SOUND_SETTINGS_LIST_SCROLL_ACTION));
-        BySelector backwardButtonSelector =
-                getUiElementFromConfig(
-                        AutomotiveConfigConstants.SOUND_SETTINGS_SCROLL_BACKWARD_BUTTON);
-        BySelector forwardButtonSelector =
-                getUiElementFromConfig(
-                        AutomotiveConfigConstants.SOUND_SETTINGS_SCROLL_FORWARD_BUTTON);
-        BySelector scrollableElementSelector =
-                getUiElementFromConfig(AutomotiveConfigConstants.SOUND_SETTINGS_SCROLL_ELEMENT);
-        ScrollDirection scrollDirection =
-                ScrollDirection.valueOf(
-                        getActionFromConfig(
-                                AutomotiveConfigConstants.SOUND_SETTINGS_LIST_SCROLL_DIRECTION));
         UiObject2 object =
                 mScrollUtility.scrollAndFindUiObject(
-                        scrollAction,
-                        scrollDirection,
-                        forwardButtonSelector,
-                        backwardButtonSelector,
-                        scrollableElementSelector,
+                        mScrollAction,
+                        mScrollDirection,
+                        mForwardButtonSelector,
+                        mBackwardButtonSelector,
+                        mScrollableElementSelector,
                         typeSelector,
                         String.format("Scroll on sound to find %s", type));
         String currentSound = getSound(soundType);
@@ -181,11 +186,11 @@ public class SettingsSoundsHelperImpl extends AbstractStandardAppHelper
         BySelector soundSelector = By.text(sound);
         UiObject2 soundObject =
                 mScrollUtility.scrollAndFindUiObject(
-                        scrollAction,
-                        scrollDirection,
-                        forwardButtonSelector,
-                        backwardButtonSelector,
-                        scrollableElementSelector,
+                        mScrollAction,
+                        mScrollDirection,
+                        mForwardButtonSelector,
+                        mBackwardButtonSelector,
+                        mScrollableElementSelector,
                         soundSelector,
                         String.format("Scroll on sound list to find %s", sound));
         validateUiObject(soundObject, String.format("sound %s", sound));
@@ -216,39 +221,23 @@ public class SettingsSoundsHelperImpl extends AbstractStandardAppHelper
         }
         getSpectatioUiUtil().wait1Second();
         BySelector typeSelector = By.text(type);
-        ScrollActions scrollAction =
-                ScrollActions.valueOf(
-                        getActionFromConfig(
-                                AutomotiveConfigConstants.SOUND_SETTINGS_LIST_SCROLL_ACTION));
-        BySelector backwardButtonSelector =
-                getUiElementFromConfig(
-                        AutomotiveConfigConstants.SOUND_SETTINGS_SCROLL_BACKWARD_BUTTON);
-        BySelector forwardButtonSelector =
-                getUiElementFromConfig(
-                        AutomotiveConfigConstants.SOUND_SETTINGS_SCROLL_FORWARD_BUTTON);
-        BySelector scrollableElementSelector =
-                getUiElementFromConfig(AutomotiveConfigConstants.SOUND_SETTINGS_SCROLL_ELEMENT);
-        ScrollDirection scrollDirection =
-                ScrollDirection.valueOf(
-                        getActionFromConfig(
-                                AutomotiveConfigConstants.SOUND_SETTINGS_LIST_SCROLL_DIRECTION));
         UiObject2 object =
                 mScrollUtility.scrollAndFindUiObject(
-                        scrollAction,
-                        scrollDirection,
-                        forwardButtonSelector,
-                        backwardButtonSelector,
-                        scrollableElementSelector,
+                        mScrollAction,
+                        mScrollDirection,
+                        mForwardButtonSelector,
+                        mBackwardButtonSelector,
+                        mScrollableElementSelector,
                         typeSelector,
                         String.format("Scroll on sound to find %s", type));
         validateUiObject(object, String.format("sound type %s", type));
         List<UiObject2> list = object.getParent().getChildren();
         if (list.size() < 2) {
             mScrollUtility.scrollForward(
-                    scrollAction,
-                    scrollDirection,
-                    forwardButtonSelector,
-                    scrollableElementSelector,
+                    mScrollAction,
+                    mScrollDirection,
+                    mForwardButtonSelector,
+                    mScrollableElementSelector,
                     String.format("Scroll on sound to find %s", type));
             validateUiObject(object, String.format("sound type %s", type));
             list = object.getParent().getChildren();

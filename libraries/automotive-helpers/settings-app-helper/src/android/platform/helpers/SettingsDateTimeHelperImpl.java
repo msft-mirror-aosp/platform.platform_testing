@@ -44,10 +44,31 @@ public class SettingsDateTimeHelperImpl extends AbstractStandardAppHelper
     private static final TextStyle TEXT_STYLE = TextStyle.SHORT;
     private static final String LOG_TAG = SettingsDateTimeHelperImpl.class.getSimpleName();
     private ScrollUtility mScrollUtility;
+    private ScrollActions mScrollAction;
+    private BySelector mBackwardButtonSelector;
+    private BySelector mForwardButtonSelector;
+    private BySelector mScrollableElementSelector;
+    private ScrollDirection mScrollDirection;
 
     public SettingsDateTimeHelperImpl(Instrumentation instr) {
         super(instr);
         mScrollUtility = ScrollUtility.getInstance(getSpectatioUiUtil());
+        mScrollAction =
+                ScrollActions.valueOf(
+                        getActionFromConfig(
+                                AutomotiveConfigConstants.DATE_TIME_SETTINGS_SCROLL_ACTION));
+        mBackwardButtonSelector =
+                getUiElementFromConfig(
+                        AutomotiveConfigConstants.DATE_TIME_SETTINGS_SCROLL_BACKWARD_BUTTON);
+        mForwardButtonSelector =
+                getUiElementFromConfig(
+                        AutomotiveConfigConstants.DATE_TIME_SETTINGS_SCROLL_FORWARD_BUTTON);
+        mScrollableElementSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.DATE_TIME_SETTINGS_SCROLL_ELEMENT);
+        mScrollDirection =
+                ScrollDirection.valueOf(
+                        getActionFromConfig(
+                                AutomotiveConfigConstants.DATE_TIME_SETTINGS_SCROLL_DIRECTION));
         mScrollUtility.setScrollValues(
                 Integer.valueOf(
                         getActionFromConfig(
@@ -544,29 +565,13 @@ public class SettingsDateTimeHelperImpl extends AbstractStandardAppHelper
 
     private UiObject2 getSwitchWidget(BySelector bySelector) {
         BySelector selector = By.hasDescendant(bySelector);
-        ScrollActions scrollAction =
-                ScrollActions.valueOf(
-                        getActionFromConfig(
-                                AutomotiveConfigConstants.DATE_TIME_SETTINGS_SCROLL_ACTION));
-        BySelector backwardButtonSelector =
-                getUiElementFromConfig(
-                        AutomotiveConfigConstants.DATE_TIME_SETTINGS_SCROLL_BACKWARD_BUTTON);
-        BySelector forwardButtonSelector =
-                getUiElementFromConfig(
-                        AutomotiveConfigConstants.DATE_TIME_SETTINGS_SCROLL_FORWARD_BUTTON);
-        BySelector scrollElementSelector =
-                getUiElementFromConfig(AutomotiveConfigConstants.DATE_TIME_SETTINGS_SCROLL_ELEMENT);
-        ScrollDirection scrollDirection =
-                ScrollDirection.valueOf(
-                        getActionFromConfig(
-                                AutomotiveConfigConstants.DATE_TIME_SETTINGS_SCROLL_DIRECTION));
         UiObject2 object =
                 mScrollUtility.scrollAndFindUiObject(
-                        scrollAction,
-                        scrollDirection,
-                        forwardButtonSelector,
-                        backwardButtonSelector,
-                        scrollElementSelector,
+                        mScrollAction,
+                        mScrollDirection,
+                        mForwardButtonSelector,
+                        mBackwardButtonSelector,
+                        mScrollableElementSelector,
                         selector,
                         String.format("Scroll on date & time to find %s", selector));
         List<UiObject2> list = object.getParent().getChildren();

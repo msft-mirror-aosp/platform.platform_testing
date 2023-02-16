@@ -43,7 +43,7 @@ interface ITrace<Entry : ITraceEntry> {
      */
     @JsName("getEntryAt")
     fun getEntryAt(timestamp: Timestamp): Entry {
-        return entries.dropLastWhile { it.timestamp <= timestamp }.lastOrNull()
+        return entries.dropLastWhile { it.timestamp > timestamp }.lastOrNull()
             ?: error("No entry at or before timestamp $timestamp")
     }
 }

@@ -42,7 +42,9 @@
     "USER_SETTINGS_SCROLL_ACTION": "USE_GESTURE",
     "USER_SETTINGS_SCROLL_DIRECTION": "VERTICAL",
     "USER_SETTINGS_SCROLL_MARGIN":"6",
-    "USER_SETTINGS_SCROLL_WAIT_TIME":"2"
+    "USER_SETTINGS_SCROLL_WAIT_TIME":"2",
+    "ACCOUNT_SETTINGS_SCROLL_ACTION" : "USE_GESTURE",
+    "ACCOUNT_SETTINGS_SCROLL_DIRECTION" : "VERTICAL"
   },
   "COMMANDS": {
     "OPEN_DIAL_PAD_COMMAND": "am start -a android.intent.action.DIAL",
@@ -704,6 +706,58 @@
     "USER_SETTINGS_MANAGE_OTHER_PROFILES": {
       "TYPE": "TEXT",
       "VALUE": "Manage other profiles"
+    },
+    "ACCOUNT_SETTINGS_DONE_BUTTON": {
+      "TYPE": "TEXT",
+      "VALUE": "Done"
+    },
+    "ACCOUNT_SETTINGS_ADD_ACCOUNT": {
+      "TYPE": "TEXT",
+      "VALUE": "ADD ACCOUNT"
+    },
+    "ACCOUNT_SETTINGS_SIGN_IN_ON_CAR_SCREEN": {
+      "TYPE": "TEXT",
+      "VALUE": "Sign in on car screen"
+    },
+    "ACCOUNT_SETTINGS_REMOVE_BUTTON": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "car_ui_secondary_action",
+      "PACKAGE": "com.android.car.settings"
+    },
+    "ACCOUNT_SETTINGS_REMOVE_ACCOUNT_BUTTON": {
+      "TYPE": "TEXT",
+      "VALUE": "Remove Account"
+    },
+    "ACCOUNT_SETTINGS_ENTER_EMAIL": {
+      "TYPE": "CLASS",
+      "VALUE": "android.widget.EditText"
+    },
+    "ACCOUNT_SETTINGS_ENTER_PASSWORD": {
+      "TYPE": "CLASS",
+      "VALUE": "android.widget.EditText"
+    },
+    "ACCOUNT_SETTINGS_NEXT_BUTTON": {
+      "TYPE": "TEXT",
+      "VALUE": "Next"
+    },
+    "ACCOUNT_SETTINGS_SCROLL_BACKWARD_BUTTON": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "car_ui_scrollbar_page_up",
+      "PACKAGE": "com.android.car.ui.sharedlibrary"
+    },
+    "ACCOUNT_SETTINGS_SCROLL_FORWARD_BUTTON": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "car_ui_scrollbar_page_down",
+      "PACKAGE": "com.android.car.ui.sharedlibrary"
+    },
+    "ACCOUNT_SETTINGS_SCROLL_ELEMENT": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "car_ui_internal_recycler_view",
+      "PACKAGE": "com.android.car.ui.sharedlibrary"
+    },
+    "ACCOUNT_SETTINGS_GOOGLE_SIGN_IN_SCREEN": {
+      "TYPE": "TEXT",
+      "VALUE": "Sign in to your Google Account"
     }
   }
 }
