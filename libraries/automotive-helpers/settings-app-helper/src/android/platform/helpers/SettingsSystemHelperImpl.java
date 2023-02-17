@@ -34,10 +34,31 @@ public class SettingsSystemHelperImpl extends AbstractStandardAppHelper
         implements IAutoSystemSettingsHelper {
 
     private ScrollUtility mScrollUtility;
+    private ScrollActions mScrollAction;
+    private BySelector mBackwardButtonSelector;
+    private BySelector mForwardButtonSelector;
+    private BySelector mScrollableElementSelector;
+    private ScrollDirection mScrollDirection;
 
     public SettingsSystemHelperImpl(Instrumentation instr) {
         super(instr);
         mScrollUtility = ScrollUtility.getInstance(getSpectatioUiUtil());
+        mScrollAction =
+                ScrollActions.valueOf(
+                        getActionFromConfig(
+                                AutomotiveConfigConstants.SYSTEM_SETTINGS_SCROLL_ACTION));
+        mBackwardButtonSelector =
+                getUiElementFromConfig(
+                        AutomotiveConfigConstants.SYSTEM_SETTINGS_SCROLL_BACKWARD_BUTTON);
+        mForwardButtonSelector =
+                getUiElementFromConfig(
+                        AutomotiveConfigConstants.SYSTEM_SETTINGS_SCROLL_FORWARD_BUTTON);
+        mScrollableElementSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.SYSTEM_SETTINGS_SCROLL_ELEMENT);
+        mScrollDirection =
+                ScrollDirection.valueOf(
+                        getActionFromConfig(
+                                AutomotiveConfigConstants.SYSTEM_SETTINGS_SCROLL_DIRECTION));
         mScrollUtility.setScrollValues(
                 Integer.valueOf(
                         getActionFromConfig(
@@ -282,32 +303,13 @@ public class SettingsSystemHelperImpl extends AbstractStandardAppHelper
     }
 
     private UiObject2 getMenu(BySelector selector) {
-        ScrollActions scrollAction =
-                ScrollActions.valueOf(
-                        getActionFromConfig(
-                                AutomotiveConfigConstants.SYSTEM_SETTINGS_SCROLL_ACTION));
-
-        BySelector forwardButtonSelector =
-                getUiElementFromConfig(
-                        AutomotiveConfigConstants.SYSTEM_SETTINGS_SCROLL_BACKWARD_BUTTON);
-        BySelector backwardButtonSelector =
-                getUiElementFromConfig(
-                        AutomotiveConfigConstants.SYSTEM_SETTINGS_SCROLL_BACKWARD_BUTTON);
-
-        BySelector scrollableElementSelector =
-                getUiElementFromConfig(AutomotiveConfigConstants.SYSTEM_SETTINGS_SCROLL_ELEMENT);
-        ScrollDirection scrollDirection =
-                ScrollDirection.valueOf(
-                        getActionFromConfig(
-                                AutomotiveConfigConstants.SYSTEM_SETTINGS_SCROLL_DIRECTION));
-
         UiObject2 object =
                 mScrollUtility.scrollAndFindUiObject(
-                        scrollAction,
-                        scrollDirection,
-                        forwardButtonSelector,
-                        backwardButtonSelector,
-                        scrollableElementSelector,
+                        mScrollAction,
+                        mScrollDirection,
+                        mForwardButtonSelector,
+                        mBackwardButtonSelector,
+                        mScrollableElementSelector,
                         selector,
                         String.format("Scroll on system setting to find %s", selector));
 

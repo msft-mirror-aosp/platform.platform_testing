@@ -45,9 +45,10 @@ constructor(
             tracesCollector = FlickerServiceTracesCollector(getDefaultFlickerOutputDir()),
             instrumentation = InstrumentationRegistry.getInstrumentation()
         ),
-    // null parses to false (so defaults to not failing tests)
+    // defaults to true
     private val failTestOnFaasFailure: Boolean =
-        InstrumentationRegistry.getArguments().getString("faas:blocking").toBoolean()
+        InstrumentationRegistry.getArguments().getString("faas:blocking")?.let { it.toBoolean() }
+            ?: true
 ) : TestWatcher() {
 
     /** Invoked when a test is about to start */
