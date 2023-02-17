@@ -11,16 +11,16 @@
     "USER_SETTINGS_PACKAGE": "com.android.car.settings"
   },
   "ACTIONS": {
-    "CONTACT_LIST_SCROLL_ACTION" : "USE_BUTTON",
-    "CONTACT_LIST_SCROLL_DIRECTION" : "VERTICAL",
-    "CONTACT_SETTING_SCROLL_ACTION" : "USE_BUTTON",
-    "CONTACT_SETTING_SCROLL_DIRECTION" : "VERTICAL",
-    "CONTACT_DETAILS_SCROLL_ACTION" : "USE_BUTTON",
-    "CONTACT_DETAILS_SCROLL_DIRECTION" : "VERTICAL",
-    "APP_LIST_SCROLL_ACTION" : "USE_BUTTON",
-    "APP_LIST_SCROLL_DIRECTION" : "VERTICAL",
-    "SECURITY_SCROLL_ACTION": "USE_BUTTON",
-    "SECURITY_SCROLL_DIRECTION": "VERTICAL",
+    "CONTACT_LIST_SCROLL_ACTION": "USE_BUTTON",
+    "CONTACT_LIST_SCROLL_DIRECTION": "VERTICAL",
+    "CONTACT_SETTING_SCROLL_ACTION": "USE_BUTTON",
+    "CONTACT_SETTING_SCROLL_DIRECTION": "VERTICAL",
+    "CONTACT_DETAILS_SCROLL_ACTION": "USE_BUTTON",
+    "CONTACT_DETAILS_SCROLL_DIRECTION": "VERTICAL",
+    "APP_LIST_SCROLL_ACTION": "USE_BUTTON",
+    "APP_LIST_SCROLL_DIRECTION": "VERTICAL",
+    "SECURITY_SETTINGS_SCROLL_ACTION": "USE_BUTTON",
+    "SECURITY_SETTINGS_SCROLL_DIRECTION": "VERTICAL",
     "NOTIFICATION_LIST_SCROLL_ACTION": "USE_GESTURE",
     "NOTIFICATION_LIST_SCROLL_DIRECTION": "VERTICAL",
     "SYSTEM_SETTINGS_SCROLL_ACTION": "USE_GESTURE",
@@ -44,13 +44,16 @@
     "USER_SETTINGS_SCROLL_MARGIN":"6",
     "USER_SETTINGS_SCROLL_WAIT_TIME":"2",
     "ACCOUNT_SETTINGS_SCROLL_ACTION" : "USE_GESTURE",
-    "ACCOUNT_SETTINGS_SCROLL_DIRECTION" : "VERTICAL"
+    "ACCOUNT_SETTINGS_SCROLL_DIRECTION" : "VERTICAL",
+    "SETTINGS_SUB_SETTING_SCROLL_ACTION": "USE_GESTURE",
+    "SETTINGS_SUB_SETTING_SCROLL_DIRECTION": "VERTICAL"
   },
   "COMMANDS": {
     "OPEN_DIAL_PAD_COMMAND": "am start -a android.intent.action.DIAL",
     "OPEN_PHONE_ACTIVITY_COMMAND": "am start -n com.android.car.dialer/.ui.TelecomActivity",
     "OPEN_APP_GRID_COMMAND": "am start -n com.android.car.carlauncher/.GASAppGridActivity",
     "OPEN_NOTIFICATIONS_COMMAND": "service call statusbar 1",
+    "STOP_SETTING_APP_COMMAND": "am force-stop com.android.car.settings",
     "OPEN_SETTINGS_COMMAND": "am start -a android.settings.SETTINGS"
   },
   "UI_ELEMENTS": {
@@ -304,10 +307,10 @@
     },
     "APP_GRID_VIEW_ID": {
       "TYPE": "RESOURCE_ID",
-      "VALUE":"apps_grid",
+      "VALUE": "apps_grid",
       "PACKAGE": "com.android.car.carlauncher"
     },
-    "APPLICATION_NAME" : {
+    "APPLICATION_NAME": {
       "TYPE": "RESOURCE_ID",
       "VALUE": "app_name",
       "PACKAGE": "com.android.car.carlauncher"
@@ -354,10 +357,6 @@
       "TYPE":"TEXT",
       "VALUE": "Confirm"
     },
-    "SECURITY_SETTINGS": {
-      "TYPE":"TEXT",
-      "VALUE": "SECURITY"
-    },
     "SECURITY_SETTINGS_ENTER_PIN_BUTTON": {
       "TYPE":"RESOURCE_ID",
       "VALUE": "key_enter",
@@ -376,17 +375,17 @@
       "TYPE": "TEXT",
       "VALUE": "Remove"
     },
-    "SECURITY_SETTINGS_SCROLLABLE_ELEMENT": {
+    "SECURITY_SETTINGS_SCROLL_ELEMENT": {
       "TYPE": "RESOURCE_ID",
       "VALUE": "car_ui_recycler_view",
       "PACKAGE": "com.android.car.ui.sharedlibrary"
     },
-    "SECURITY_SCROLL_FORWARD_BUTTON": {
+    "SECURITY_SETTINGS_SCROLL_FORWARD": {
       "TYPE": "RESOURCE_ID",
       "VALUE": "car_ui_scrollbar_page_down",
       "PACKAGE": "com.android.car.ui.sharedlibrary"
     },
-    "SECURITY_SCROLL_BACKWARD_BUTTON": {
+    "SECURITY_SETTINGS_SCROLL_BACKWARD": {
       "TYPE": "RESOURCE_ID",
       "VALUE": "car_ui_scrollbar_page_up",
       "PACKAGE": "com.android.car.ui.sharedlibrary"
@@ -591,17 +590,17 @@
       "TYPE": "RESOURCE_ID",
       "VALUE": "car_ui_internal_recycler_view",
       "PACKAGE": "com.android.car.ui.sharedlibrary"
-   },
+    },
     "SYSTEM_SETTINGS_SCROLL_FORWARD_BUTTON": {
       "TYPE": "RESOURCE_ID",
       "VALUE": "car_ui_scrollbar_page_down",
      "PACKAGE": "com.android.car.ui.sharedlibrary"
     },
-   "SYSTEM_SETTINGS_SCROLL_BACKWARD_BUTTON": {
-     "TYPE": "RESOURCE_ID",
-     "VALUE": "car_ui_scrollbar_page_up",
-     "PACKAGE": "com.android.car.ui.sharedlibrary"
-   },
+    "SYSTEM_SETTINGS_SCROLL_BACKWARD_BUTTON": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "car_ui_scrollbar_page_up",
+      "PACKAGE": "com.android.car.ui.sharedlibrary"
+    },
     "SOUND_SETTINGS_SCROLL_ELEMENT": {
       "TYPE": "RESOURCE_ID",
       "VALUE": "car_ui_internal_recycler_view",
@@ -758,6 +757,400 @@
     "ACCOUNT_SETTINGS_GOOGLE_SIGN_IN_SCREEN": {
       "TYPE": "TEXT",
       "VALUE": "Sign in to your Google Account"
+    },
+    "TOGGLE_WIFI": {
+      "TYPE": "DESCRIPTION",
+      "VALUE": "Wi‑Fi toggle switch"
+    },
+    "TOGGLE_HOTSPOT": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "car_ui_secondary_action_concrete",
+      "PACKAGE": "com.android.car.settings"
+    },
+    "TOGGLE_BLUETOOTH": {
+      "TYPE": "DESCRIPTION",
+      "VALUE": "Bluetooth toggle switch"
+    },
+    "SEARCH": {
+      "TYPE": "DESCRIPTION",
+      "VALUE": "Search"
+    },
+    "SEARCH_BOX": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "car_ui_toolbar_search_bar",
+      "PACKAGE": "com.android.settings.intelligence"
+    },
+    "SEARCH_RESULTS": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "car_ui_recycler_view",
+      "PACKAGE": "com.android.car.ui.sharedlibrary"
+    },
+    "PAGE_TITLE": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "car_ui_toolbar_title",
+      "PACKAGE": "com.android.car.settings"
+    },
+    "PERMISSIONS_PAGE_TITLE": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "car_ui_toolbar_title",
+      "PACKAGE": "com.android.permissioncontroller"
+    },
+    "SETTINGS_TITLE_TEXT": {
+      "TYPE": "TEXT",
+      "VALUE": "Settings"
+    },
+    "SETTINGS_SUB_SETTING_SCROLL_BACKWARD_BUTTON": {
+      "TYPE": "DESCRIPTION",
+      "VALUE": "Scroll up"
+    },
+    "SETTINGS_SUB_SETTING_SCROLL_FORWARD_BUTTON": {
+      "TYPE": "DESCRIPTION",
+      "VALUE": "Scroll down"
+    },
+    "SETTINGS_SUB_SETTING_SCROLL_ELEMENT": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "car_ui_internal_recycler_view",
+      "PACKAGE": "com.chassis.car.ui.plugin"
     }
+  },
+  "WORKFLOWS": {
+    "OPEN_SOUND_SETTINGS_WORKFLOW": [
+      {
+        "NAME": "Go to Home",
+        "TYPE": "PRESS",
+        "CONFIG": {
+          "TEXT": "HOME"
+        }
+      },
+      {
+        "NAME": "Open Settings",
+        "TYPE": "COMMAND",
+        "CONFIG": {
+          "TEXT": "am start -a android.settings.SETTINGS"
+        }
+      },
+      {
+        "NAME": "Open Sound Settings",
+        "TYPE": "SCROLL_TO_FIND_AND_CLICK",
+        "CONFIG": {
+          "UI_ELEMENT": {
+            "TYPE": "TEXT",
+            "VALUE": "Sound"
+          }
+        },
+        "SCROLL_CONFIG": {
+          "SCROLL_ACTION": "USE_GESTURE",
+          "SCROLL_DIRECTION": "VERTICAL",
+          "SCROLL_ELEMENT": {
+            "TYPE": "RESOURCE_ID",
+            "VALUE": "car_ui_recycler_view",
+            "PACKAGE": "com.android.car.ui.sharedlibrary"
+          }
+        }
+      }
+    ],
+    "OPEN_NETWORK_AND_INTERNET_SETTINGS_WORKFLOW": [
+      {
+        "NAME": "Go to Home",
+        "TYPE": "PRESS",
+        "CONFIG": {
+          "TEXT": "HOME"
+        }
+      },
+      {
+        "NAME": "Open Settings",
+        "TYPE": "COMMAND",
+        "CONFIG": {
+          "TEXT": "am start -a android.settings.SETTINGS"
+        }
+      },
+      {
+        "NAME": "Open Network & Internet Settings",
+        "TYPE": "SCROLL_TO_FIND_AND_CLICK",
+        "CONFIG": {
+          "UI_ELEMENT": {
+            "TYPE": "TEXT",
+            "VALUE": "Network & internet"
+          }
+        },
+        "SCROLL_CONFIG": {
+          "SCROLL_ACTION": "USE_GESTURE",
+          "SCROLL_DIRECTION": "VERTICAL",
+          "SCROLL_ELEMENT": {
+            "TYPE": "RESOURCE_ID",
+            "VALUE": "car_ui_recycler_view",
+            "PACKAGE": "com.android.car.ui.sharedlibrary"
+          }
+        }
+      }
+    ],
+    "OPEN_BLUETOOTH_SETTINGS_WORKFLOW": [
+      {
+        "NAME": "Go to Home",
+        "TYPE": "PRESS",
+        "CONFIG": {
+          "TEXT": "HOME"
+        }
+      },
+      {
+        "NAME": "Open Settings",
+        "TYPE": "COMMAND",
+        "CONFIG": {
+          "TEXT": "am start -a android.settings.SETTINGS"
+        }
+      },
+      {
+        "NAME": "Open Bluetooth Settings",
+        "TYPE": "SCROLL_TO_FIND_AND_CLICK",
+        "CONFIG": {
+          "UI_ELEMENT": {
+            "TYPE": "TEXT",
+            "VALUE": "Bluetooth"
+          }
+        },
+        "SCROLL_CONFIG": {
+          "SCROLL_ACTION": "USE_GESTURE",
+          "SCROLL_DIRECTION": "VERTICAL",
+          "SCROLL_ELEMENT": {
+            "TYPE": "RESOURCE_ID",
+            "VALUE": "car_ui_recycler_view",
+            "PACKAGE": "com.android.car.ui.sharedlibrary"
+          }
+        }
+      }
+    ],
+    "OPEN_SYSTEM_SETTINGS_WORKFLOW": [
+      {
+        "NAME": "Go to Home",
+        "TYPE": "PRESS",
+        "CONFIG": {
+          "TEXT": "HOME"
+        }
+      },
+      {
+        "NAME": "Open Settings",
+        "TYPE": "COMMAND",
+        "CONFIG": {
+          "TEXT": "am start -a android.settings.SETTINGS"
+        }
+      },
+      {
+        "NAME": "Open System Settings",
+        "TYPE": "SCROLL_TO_FIND_AND_CLICK",
+        "CONFIG": {
+          "UI_ELEMENT": {
+            "TYPE": "TEXT",
+            "VALUE": "System"
+          }
+        },
+        "SCROLL_CONFIG": {
+          "SCROLL_ACTION": "USE_GESTURE",
+          "SCROLL_DIRECTION": "VERTICAL",
+          "SCROLL_ELEMENT": {
+            "TYPE": "RESOURCE_ID",
+            "VALUE": "car_ui_recycler_view",
+            "PACKAGE": "com.android.car.ui.sharedlibrary"
+          }
+        }
+      }
+    ],
+    "OPEN_PROFILE_ACCOUNT_SETTINGS_WORKFLOW": [
+      {
+        "NAME": "Go to Home",
+        "TYPE": "PRESS",
+        "CONFIG": {
+          "TEXT": "HOME"
+        }
+      },
+      {
+        "NAME": "Open Settings",
+        "TYPE": "COMMAND",
+        "CONFIG": {
+          "TEXT": "am start -a android.settings.SETTINGS"
+        }
+      },
+      {
+        "NAME": "Open Profile & Accounts Settings",
+        "TYPE": "SCROLL_TO_FIND_AND_CLICK",
+        "CONFIG": {
+          "UI_ELEMENT": {
+            "TYPE": "TEXT",
+            "VALUE": "Profiles & accounts"
+          }
+        },
+        "SCROLL_CONFIG": {
+          "SCROLL_ACTION": "USE_GESTURE",
+          "SCROLL_DIRECTION": "VERTICAL",
+          "SCROLL_ELEMENT": {
+            "TYPE": "RESOURCE_ID",
+            "VALUE": "car_ui_recycler_view",
+            "PACKAGE": "com.android.car.ui.sharedlibrary"
+          }
+        }
+      }
+    ],
+    "OPEN_APPS_SETTINGS_WORKFLOW": [
+      {
+        "NAME": "Go to Home",
+        "TYPE": "PRESS",
+        "CONFIG": {
+          "TEXT": "HOME"
+        }
+      },
+      {
+        "NAME": "Open Settings",
+        "TYPE": "COMMAND",
+        "CONFIG": {
+          "TEXT": "am start -a android.settings.SETTINGS"
+        }
+      },
+      {
+        "NAME": "Open Apps Settings",
+        "TYPE": "SCROLL_TO_FIND_AND_CLICK",
+        "CONFIG": {
+          "UI_ELEMENT": {
+            "TYPE": "TEXT",
+            "VALUE": "Apps"
+          }
+        },
+        "SCROLL_CONFIG": {
+          "SCROLL_ACTION": "USE_GESTURE",
+          "SCROLL_DIRECTION": "VERTICAL",
+          "SCROLL_ELEMENT": {
+            "TYPE": "RESOURCE_ID",
+            "VALUE": "car_ui_recycler_view",
+            "PACKAGE": "com.android.car.ui.sharedlibrary"
+          },
+          "SCROLL_MARGIN": "8",
+          "SCROLL_WAIT_TIME":"3"
+        }
+      }
+    ],
+    "OPEN_SECURITY_SETTINGS_WORKFLOW": [
+      {
+        "NAME": "Go to Home",
+        "TYPE": "PRESS",
+        "CONFIG": {
+          "TEXT": "HOME"
+        }
+      },
+      {
+        "NAME": "Open Settings",
+        "TYPE": "COMMAND",
+        "CONFIG": {
+          "TEXT": "am start -a android.settings.SETTINGS"
+        }
+      },
+      {
+        "NAME": "Open Security Settings",
+        "TYPE": "SCROLL_TO_FIND_AND_CLICK",
+        "CONFIG": {
+          "UI_ELEMENT": {
+            "TYPE": "TEXT",
+            "VALUE": "Security"
+          }
+        },
+        "SCROLL_CONFIG": {
+          "SCROLL_ACTION": "USE_GESTURE",
+          "SCROLL_DIRECTION": "VERTICAL",
+          "SCROLL_ELEMENT": {
+            "TYPE": "RESOURCE_ID",
+            "VALUE": "car_ui_recycler_view",
+            "PACKAGE": "com.android.car.ui.sharedlibrary"
+          }
+        }
+      }
+    ],
+    "OPEN_DISPLAY_SETTINGS_WORKFLOW": [
+      {
+        "NAME": "Go to Home",
+        "TYPE": "PRESS",
+        "CONFIG": {
+          "TEXT": "HOME"
+        }
+      },
+      {
+        "NAME": "Open Settings",
+        "TYPE": "COMMAND",
+        "CONFIG": {
+          "TEXT": "am start -a android.settings.SETTINGS"
+        }
+      },
+      {
+        "NAME": "Open Display Settings",
+        "TYPE": "SCROLL_TO_FIND_AND_CLICK",
+        "CONFIG": {
+          "UI_ELEMENT": {
+            "TYPE": "TEXT",
+            "VALUE": "Display"
+          }
+        },
+        "SCROLL_CONFIG": {
+          "SCROLL_ACTION": "USE_GESTURE",
+          "SCROLL_DIRECTION": "VERTICAL",
+          "SCROLL_ELEMENT": {
+            "TYPE": "RESOURCE_ID",
+            "VALUE": "car_ui_recycler_view",
+            "PACKAGE": "com.android.car.ui.sharedlibrary"
+          },
+          "SCROLL_MARGIN": "8",
+          "SCROLL_WAIT_TIME":"3"
+        }
+      }
+    ],
+    "OPEN_DATE_AND_TIME_SETTINGS_WORKFLOW": [
+      {
+        "NAME": "Go to Home",
+        "TYPE": "PRESS",
+        "CONFIG": {
+          "TEXT": "HOME"
+        }
+      },
+      {
+        "NAME": "Open Settings",
+        "TYPE": "COMMAND",
+        "CONFIG": {
+          "TEXT": "am start -a android.settings.SETTINGS"
+        }
+      },
+      {
+        "NAME": "Open System Settings",
+        "TYPE": "SCROLL_TO_FIND_AND_CLICK",
+        "CONFIG": {
+          "UI_ELEMENT": {
+            "TYPE": "TEXT",
+            "VALUE": "System"
+          }
+        },
+        "SCROLL_CONFIG": {
+          "SCROLL_ACTION": "USE_GESTURE",
+          "SCROLL_DIRECTION": "VERTICAL",
+          "SCROLL_ELEMENT": {
+            "TYPE": "RESOURCE_ID",
+            "VALUE": "car_ui_recycler_view",
+            "PACKAGE": "com.android.car.ui.sharedlibrary"
+          }
+        }
+      },
+      {
+        "NAME": "Open Date and Time Settings",
+        "TYPE": "SCROLL_TO_FIND_AND_CLICK",
+        "CONFIG": {
+          "UI_ELEMENT": {
+            "TYPE": "TEXT",
+            "VALUE": "Date & time"
+          }
+        },
+        "SCROLL_CONFIG": {
+          "SCROLL_ACTION": "USE_GESTURE",
+          "SCROLL_DIRECTION": "VERTICAL",
+          "SCROLL_ELEMENT": {
+            "TYPE": "RESOURCE_ID",
+            "VALUE": "car_ui_internal_recycler_view",
+            "PACKAGE": "com.android.car.ui.sharedlibrary"
+          }
+        }
+      }
+    ]
   }
 }

@@ -32,10 +32,28 @@ public class SettingUserHelperImpl extends AbstractStandardAppHelper implements 
     private static final String TAG = "SettingUserHelperImpl";
 
     private ScrollUtility mScrollUtility;
+    private ScrollActions mScrollAction;
+    private BySelector mBackwardButtonSelector;
+    private BySelector mForwardButtonSelector;
+    private BySelector mScrollableElementSelector;
+    private ScrollDirection mScrollDirection;
 
     public SettingUserHelperImpl(Instrumentation instr) {
         super(instr);
         mScrollUtility = ScrollUtility.getInstance(getSpectatioUiUtil());
+        mScrollAction =
+                ScrollActions.valueOf(
+                        getActionFromConfig(AutomotiveConfigConstants.USER_SETTINGS_SCROLL_ACTION));
+        mBackwardButtonSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.USER_SETTINGS_SCROLL_BACKWARD);
+        mForwardButtonSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.USER_SETTINGS_SCROLL_FORWARD);
+        mScrollableElementSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.USER_SETTINGS_SCROLL_ELEMENT);
+        mScrollDirection =
+                ScrollDirection.valueOf(
+                        getActionFromConfig(
+                                AutomotiveConfigConstants.USER_SETTINGS_SCROLL_DIRECTION));
         mScrollUtility.setScrollValues(
                 Integer.valueOf(
                         getActionFromConfig(AutomotiveConfigConstants.USER_SETTINGS_SCROLL_MARGIN)),
@@ -97,28 +115,15 @@ public class SettingUserHelperImpl extends AbstractStandardAppHelper implements 
     // check if a user is present in the list of existing users
     @Override
     public boolean isUserPresent(String user) {
-        ScrollActions scrollAction =
-                ScrollActions.valueOf(
-                        getActionFromConfig(AutomotiveConfigConstants.USER_SETTINGS_SCROLL_ACTION));
-        BySelector backwardButtonSelector =
-                getUiElementFromConfig(AutomotiveConfigConstants.USER_SETTINGS_SCROLL_BACKWARD);
-        BySelector forwardButtonSelector =
-                getUiElementFromConfig(AutomotiveConfigConstants.USER_SETTINGS_SCROLL_FORWARD);
-        BySelector scrollElementSelector =
-                getUiElementFromConfig(AutomotiveConfigConstants.USER_SETTINGS_SCROLL_ELEMENT);
-        ScrollDirection scrollDirection =
-                ScrollDirection.valueOf(
-                        getActionFromConfig(
-                                AutomotiveConfigConstants.USER_SETTINGS_SCROLL_DIRECTION));
         BySelector buttonSelector =
                 getUiElementFromConfig(AutomotiveConfigConstants.USER_SETTINGS_ADD_PROFILE);
         UiObject2 addUserButton =
                 mScrollUtility.scrollAndFindUiObject(
-                        scrollAction,
-                        scrollDirection,
-                        forwardButtonSelector,
-                        backwardButtonSelector,
-                        scrollElementSelector,
+                        mScrollAction,
+                        mScrollDirection,
+                        mForwardButtonSelector,
+                        mBackwardButtonSelector,
+                        mScrollableElementSelector,
                         buttonSelector,
                         String.format("Scroll to find %s", user));
         Log.v(
@@ -131,11 +136,11 @@ public class SettingUserHelperImpl extends AbstractStandardAppHelper implements 
             getSpectatioUiUtil().wait5Seconds();
             UiObject2 UserObject =
                     mScrollUtility.scrollAndFindUiObject(
-                            scrollAction,
-                            scrollDirection,
-                            forwardButtonSelector,
-                            backwardButtonSelector,
-                            scrollElementSelector,
+                            mScrollAction,
+                            mScrollDirection,
+                            mForwardButtonSelector,
+                            mBackwardButtonSelector,
+                            mScrollableElementSelector,
                             By.text(user),
                             String.format("Scroll to find %s", user));
             getSpectatioUiUtil().wait1Second();
@@ -186,27 +191,14 @@ public class SettingUserHelperImpl extends AbstractStandardAppHelper implements 
 
     // click an on-screen element if expected text for that element is present
     private void clickbutton(String button_text) {
-        ScrollActions scrollAction =
-                ScrollActions.valueOf(
-                        getActionFromConfig(AutomotiveConfigConstants.USER_SETTINGS_SCROLL_ACTION));
-        BySelector backwardButtonSelector =
-                getUiElementFromConfig(AutomotiveConfigConstants.USER_SETTINGS_SCROLL_BACKWARD);
-        BySelector forwardButtonSelector =
-                getUiElementFromConfig(AutomotiveConfigConstants.USER_SETTINGS_SCROLL_FORWARD);
-        BySelector scrollElementSelector =
-                getUiElementFromConfig(AutomotiveConfigConstants.USER_SETTINGS_SCROLL_ELEMENT);
-        ScrollDirection scrollDirection =
-                ScrollDirection.valueOf(
-                        getActionFromConfig(
-                                AutomotiveConfigConstants.USER_SETTINGS_SCROLL_DIRECTION));
         BySelector buttonSelector = getUiElementFromConfig(button_text);
         UiObject2 buttonObject =
                 mScrollUtility.scrollAndFindUiObject(
-                        scrollAction,
-                        scrollDirection,
-                        forwardButtonSelector,
-                        backwardButtonSelector,
-                        scrollElementSelector,
+                        mScrollAction,
+                        mScrollDirection,
+                        mForwardButtonSelector,
+                        mBackwardButtonSelector,
+                        mScrollableElementSelector,
                         buttonSelector,
                         String.format("Scroll to find %s", button_text));
         Log.v(TAG, String.format("button =  %s ; UI_Obj = %s", button_text, buttonObject));

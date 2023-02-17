@@ -214,6 +214,13 @@ public interface IAutoSettingHelper extends IAppHelper, Scrollable {
     /**
      * Setup expectations: Setting is open.
      *
+     * <p>check whether a setting menu in Settings is displayed or not.
+     */
+    boolean checkMenuExists(String setting);
+
+    /**
+     * Setup expectations: Setting is open.
+     *
      * <p>Find the setting menu and perform a click action.
      *
      * @param name of the setting menu.

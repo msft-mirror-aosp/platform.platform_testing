@@ -82,6 +82,8 @@ public class JsonConfigConstants {
     public static final String SCROLL_FORWARD = "SCROLL_FORWARD";
     public static final String SCROLL_BACKWARD = "SCROLL_BACKWARD";
     public static final String SCROLL_ELEMENT = "SCROLL_ELEMENT";
+    public static final String SCROLL_MARGIN = "SCROLL_MARGIN";
+    public static final String SCROLL_WAIT_TIME = "SCROLL_WAIT_TIME";
 
     // Scroll Action
     public static enum ScrollActions {
