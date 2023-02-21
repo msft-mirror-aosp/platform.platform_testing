@@ -87,7 +87,7 @@ public class LockScreenHelperImpl extends AbstractStandardAppHelper
         getSpectatioUiUtil().executeShellCommand(String.format(UNLOCK_BY, password));
         getSpectatioUiUtil().wait5Seconds();
         pressEnter();
-        mSettingHelper.get().openSetting(AutomotiveConfigConstants.LOCK_SCREEN_SETTINGS_TEXT);
+        mSettingHelper.get().openSetting(SettingsConstants.SECURITY_SETTINGS);
     }
 
     private void unlockByPin(String pin) {
