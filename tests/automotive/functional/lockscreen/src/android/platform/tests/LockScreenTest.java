@@ -18,12 +18,12 @@ package android.platform.tests;
 
 import static junit.framework.Assert.assertTrue;
 
-import android.platform.helpers.AutoConfigConstants;
 import android.platform.helpers.HelperAccessor;
 import android.platform.helpers.IAutoLockScreenHelper;
 import android.platform.helpers.IAutoLockScreenHelper.LockType;
 import android.platform.helpers.IAutoSecuritySettingsHelper;
 import android.platform.helpers.IAutoSettingHelper;
+import android.platform.helpers.SettingsConstants;
 
 import androidx.test.runner.AndroidJUnit4;
 
@@ -50,7 +50,10 @@ public class LockScreenTest {
 
     @Before
     public void openSecuritySettingFacet() {
-        mSettingHelper.get().openSetting(AutoConfigConstants.SECURITY_SETTINGS);
+        mSettingHelper.get().openSetting(SettingsConstants.SECURITY_SETTINGS);
+        assertTrue(
+                "Security settings did not open",
+                mSettingHelper.get().checkMenuExists("Profile lock"));
     }
 
     @After

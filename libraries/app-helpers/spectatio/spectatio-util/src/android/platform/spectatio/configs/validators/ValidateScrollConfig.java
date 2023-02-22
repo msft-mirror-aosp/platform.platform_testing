@@ -22,8 +22,8 @@ import android.platform.spectatio.constants.JsonConfigConstants;
 import android.platform.spectatio.constants.JsonConfigConstants.ScrollActions;
 import android.platform.spectatio.constants.JsonConfigConstants.ScrollDirection;
 
-import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
@@ -50,7 +50,9 @@ public class ValidateScrollConfig implements JsonDeserializer<ScrollConfig> {
                     JsonConfigConstants.SCROLL_DIRECTION,
                     JsonConfigConstants.SCROLL_FORWARD,
                     JsonConfigConstants.SCROLL_BACKWARD,
-                    JsonConfigConstants.SCROLL_ELEMENT);
+                    JsonConfigConstants.SCROLL_ELEMENT,
+                    JsonConfigConstants.SCROLL_MARGIN,
+                    JsonConfigConstants.SCROLL_WAIT_TIME);
 
     @Override
     public ScrollConfig deserialize(
@@ -94,6 +96,22 @@ public class ValidateScrollConfig implements JsonDeserializer<ScrollConfig> {
                                 JsonConfigConstants.SCROLL_DIRECTION,
                                 jsonObject, /*isOptional*/
                                 false);
+                String scrollMargin =
+                        validateAndGetValue(
+                                JsonConfigConstants.SCROLL_MARGIN, jsonObject, /*isOptional*/ true);
+                if (scrollMargin != null) {
+                    validateIsNumeric(scrollMargin, jsonObject);
+                }
+
+                String scrollWaitTime =
+                        validateAndGetValue(
+                                JsonConfigConstants.SCROLL_WAIT_TIME,
+                                jsonObject, /*isOptional*/
+                                true);
+                if (scrollWaitTime != null) {
+                    validateIsNumeric(scrollWaitTime, jsonObject);
+                }
+
                 try {
                     // Check if given scroll direction is valid
                     ScrollDirection.valueOf(scrollDirection);
@@ -109,7 +127,9 @@ public class ValidateScrollConfig implements JsonDeserializer<ScrollConfig> {
                                 (UiElement)
                                         context.deserialize(
                                                 jsonObject.get(JsonConfigConstants.SCROLL_ELEMENT),
-                                                UiElement.class));
+                                                UiElement.class),
+                                scrollMargin,
+                                scrollWaitTime);
                 break;
         }
         return scrollConfig;
@@ -142,6 +162,14 @@ public class ValidateScrollConfig implements JsonDeserializer<ScrollConfig> {
         JsonElement value = jsonObject.get(key);
         if (value == null || value.isJsonNull()) {
             throwRuntimeException("Non-optional Property", key, jsonObject, "Missing or Invalid");
+        }
+    }
+
+    private void validateIsNumeric(String str, JsonObject jsonObject) {
+        try {
+            Integer.parseInt(str);
+        } catch (NumberFormatException e) {
+            throwRuntimeException("Numeric Property", str, jsonObject, "Invalid");
         }
     }
 

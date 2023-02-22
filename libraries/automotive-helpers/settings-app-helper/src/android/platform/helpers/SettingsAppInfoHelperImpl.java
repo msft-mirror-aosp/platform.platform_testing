@@ -33,10 +33,31 @@ public class SettingsAppInfoHelperImpl extends AbstractStandardAppHelper
         implements IAutoAppInfoSettingsHelper {
 
     private ScrollUtility mScrollUtility;
+    private ScrollActions mScrollAction;
+    private BySelector mBackwardButtonSelector;
+    private BySelector mForwardButtonSelector;
+    private BySelector mScrollableElementSelector;
+    private ScrollDirection mScrollDirection;
 
     public SettingsAppInfoHelperImpl(Instrumentation instr) {
         super(instr);
         mScrollUtility = ScrollUtility.getInstance(getSpectatioUiUtil());
+        mScrollAction =
+                ScrollActions.valueOf(
+                        getActionFromConfig(
+                                AutomotiveConfigConstants.APP_INFO_SETTINGS_SCROLL_ACTION));
+        mBackwardButtonSelector =
+                getUiElementFromConfig(
+                        AutomotiveConfigConstants.APP_INFO_SETTINGS_SCROLL_BACKWARD_BUTTON);
+        mForwardButtonSelector =
+                getUiElementFromConfig(
+                        AutomotiveConfigConstants.APP_INFO_SETTINGS_SCROLL_FORWARD_BUTTON);
+        mScrollableElementSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.APP_INFO_SETTINGS_SCROLL_ELEMENT);
+        mScrollDirection =
+                ScrollDirection.valueOf(
+                        getActionFromConfig(
+                                AutomotiveConfigConstants.APP_INFO_SETTINGS_SCROLL_DIRECTION));
         mScrollUtility.setScrollValues(
                 Integer.valueOf(
                         getActionFromConfig(
@@ -80,29 +101,13 @@ public class SettingsAppInfoHelperImpl extends AbstractStandardAppHelper
                         .hasDescendant(
                                 getUiElementFromConfig(
                                         AutomotiveConfigConstants.APP_INFO_SETTINGS_VIEW_ALL));
-        ScrollActions scrollAction =
-                ScrollActions.valueOf(
-                        getActionFromConfig(
-                                AutomotiveConfigConstants.APP_INFO_SETTINGS_SCROLL_ACTION));
-        BySelector backwardButtonSelector =
-                getUiElementFromConfig(
-                        AutomotiveConfigConstants.APP_INFO_SETTINGS_SCROLL_BACKWARD_BUTTON);
-        BySelector forwardButtonSelector =
-                getUiElementFromConfig(
-                        AutomotiveConfigConstants.APP_INFO_SETTINGS_SCROLL_FORWARD_BUTTON);
-        BySelector scrollElementSelector =
-                getUiElementFromConfig(AutomotiveConfigConstants.APP_INFO_SETTINGS_SCROLL_ELEMENT);
-        ScrollDirection scrollDirection =
-                ScrollDirection.valueOf(
-                        getActionFromConfig(
-                                AutomotiveConfigConstants.APP_INFO_SETTINGS_SCROLL_DIRECTION));
         UiObject2 show_all_apps_menu =
                 mScrollUtility.scrollAndFindUiObject(
-                        scrollAction,
-                        scrollDirection,
-                        forwardButtonSelector,
-                        backwardButtonSelector,
-                        scrollElementSelector,
+                        mScrollAction,
+                        mScrollDirection,
+                        mForwardButtonSelector,
+                        mBackwardButtonSelector,
+                        mScrollableElementSelector,
                         selector,
                         "Scroll on Apps to find View all button");
         validateUiObject(show_all_apps_menu, "View all button");
@@ -112,33 +117,16 @@ public class SettingsAppInfoHelperImpl extends AbstractStandardAppHelper
     /** {@inheritDoc} */
     @Override
     public void enableDisableApplication(State state) {
-        ScrollActions scrollAction =
-                ScrollActions.valueOf(
-                        getActionFromConfig(
-                                AutomotiveConfigConstants.APP_INFO_SETTINGS_SCROLL_ACTION));
-        BySelector backwardButtonSelector =
-                getUiElementFromConfig(
-                        AutomotiveConfigConstants.APP_INFO_SETTINGS_SCROLL_BACKWARD_BUTTON);
-        BySelector forwardButtonSelector =
-                getUiElementFromConfig(
-                        AutomotiveConfigConstants.APP_INFO_SETTINGS_SCROLL_FORWARD_BUTTON);
-
-        BySelector scrollElementSelector =
-                getUiElementFromConfig(AutomotiveConfigConstants.APP_INFO_SETTINGS_SCROLL_ELEMENT);
-        ScrollDirection scrollDirection =
-                ScrollDirection.valueOf(
-                        getActionFromConfig(
-                                AutomotiveConfigConstants.APP_INFO_SETTINGS_SCROLL_DIRECTION));
         BySelector enableDisableBtnSelector =
                 getUiElementFromConfig(
                         AutomotiveConfigConstants.APP_INFO_SETTINGS_ENABLE_DISABLE_BUTTON);
         UiObject2 enableDisableBtn =
                 mScrollUtility.scrollAndFindUiObject(
-                        scrollAction,
-                        scrollDirection,
-                        forwardButtonSelector,
-                        backwardButtonSelector,
-                        scrollElementSelector,
+                        mScrollAction,
+                        mScrollDirection,
+                        mForwardButtonSelector,
+                        mBackwardButtonSelector,
+                        mScrollableElementSelector,
                         enableDisableBtnSelector,
                         String.format("Scroll on App info to find %s", state));
         validateUiObject(enableDisableBtn, String.format("Enable Disable Button"));
@@ -196,44 +184,27 @@ public class SettingsAppInfoHelperImpl extends AbstractStandardAppHelper
     /** {@inheritDoc} */
     @Override
     public void setAppPermission(String permission, State state) {
-
-        ScrollActions scrollAction =
-                ScrollActions.valueOf(
-                        getActionFromConfig(
-                                AutomotiveConfigConstants.APP_INFO_SETTINGS_SCROLL_ACTION));
-        BySelector backwardButtonSelector =
-                getUiElementFromConfig(
-                        AutomotiveConfigConstants.APP_INFO_SETTINGS_SCROLL_BACKWARD_BUTTON);
-        BySelector forwardButtonSelector =
-                getUiElementFromConfig(
-                        AutomotiveConfigConstants.APP_INFO_SETTINGS_SCROLL_FORWARD_BUTTON);
-        BySelector scrollElementSelector =
-                getUiElementFromConfig(AutomotiveConfigConstants.APP_INFO_SETTINGS_SCROLL_ELEMENT);
-        ScrollDirection scrollDirection =
-                ScrollDirection.valueOf(
-                        getActionFromConfig(
-                                AutomotiveConfigConstants.APP_INFO_SETTINGS_SCROLL_DIRECTION));
         BySelector permissions_selector =
                 getUiElementFromConfig(
                         AutomotiveConfigConstants.APP_INFO_SETTINGS_PERMISSIONS_MENU);
         UiObject2 permissions_menu =
                 mScrollUtility.scrollAndFindUiObject(
-                        scrollAction,
-                        scrollDirection,
-                        forwardButtonSelector,
-                        backwardButtonSelector,
-                        scrollElementSelector,
+                        mScrollAction,
+                        mScrollDirection,
+                        mForwardButtonSelector,
+                        mBackwardButtonSelector,
+                        mScrollableElementSelector,
                         permissions_selector,
                         String.format("Scroll on %s permission to find %s", permission, state));
         getSpectatioUiUtil().clickAndWait(permissions_menu);
         BySelector permission_selector = By.text(permission);
         UiObject2 permission_menu =
                 mScrollUtility.scrollAndFindUiObject(
-                        scrollAction,
-                        scrollDirection,
-                        forwardButtonSelector,
-                        backwardButtonSelector,
-                        scrollElementSelector,
+                        mScrollAction,
+                        mScrollDirection,
+                        mForwardButtonSelector,
+                        mBackwardButtonSelector,
+                        mScrollableElementSelector,
                         permission_selector,
                         String.format("Scroll on %s permission to find %s", permission, state));
         if (permission_menu == null) {
@@ -243,11 +214,11 @@ public class SettingsAppInfoHelperImpl extends AbstractStandardAppHelper
         if (state == State.ENABLE) {
             UiObject2 allow_btn =
                     mScrollUtility.scrollAndFindUiObject(
-                            scrollAction,
-                            scrollDirection,
-                            forwardButtonSelector,
-                            backwardButtonSelector,
-                            scrollElementSelector,
+                            mScrollAction,
+                            mScrollDirection,
+                            mForwardButtonSelector,
+                            mBackwardButtonSelector,
+                            mScrollableElementSelector,
                             getUiElementFromConfig(
                                     AutomotiveConfigConstants.APP_INFO_SETTINGS_ALLOW_BUTTON),
                             "Scroll on App info to find Allow Button");
@@ -256,22 +227,22 @@ public class SettingsAppInfoHelperImpl extends AbstractStandardAppHelper
         } else {
             UiObject2 dont_allow_btn =
                     mScrollUtility.scrollAndFindUiObject(
-                            scrollAction,
-                            scrollDirection,
-                            forwardButtonSelector,
-                            backwardButtonSelector,
-                            scrollElementSelector,
+                            mScrollAction,
+                            mScrollDirection,
+                            mForwardButtonSelector,
+                            mBackwardButtonSelector,
+                            mScrollableElementSelector,
                             getUiElementFromConfig(
                                     AutomotiveConfigConstants.APP_INFO_SETTINGS_DONT_ALLOW_BUTTON),
                             "Scroll on App info to find Don't Allow Button");
             getSpectatioUiUtil().clickAndWait(dont_allow_btn);
             UiObject2 dont_allow_anyway_btn =
                     mScrollUtility.scrollAndFindUiObject(
-                            scrollAction,
-                            scrollDirection,
-                            forwardButtonSelector,
-                            backwardButtonSelector,
-                            scrollElementSelector,
+                            mScrollAction,
+                            mScrollDirection,
+                            mForwardButtonSelector,
+                            mBackwardButtonSelector,
+                            mScrollableElementSelector,
                             getUiElementFromConfig(
                                     AutomotiveConfigConstants
                                             .APP_INFO_SETTINGS_DONT_ALLOW_ANYWAY_BUTTON),
@@ -288,29 +259,13 @@ public class SettingsAppInfoHelperImpl extends AbstractStandardAppHelper
         BySelector permissions_selector =
                 getUiElementFromConfig(
                         AutomotiveConfigConstants.APP_INFO_SETTINGS_PERMISSIONS_MENU);
-        ScrollActions scrollAction =
-                ScrollActions.valueOf(
-                        getActionFromConfig(
-                                AutomotiveConfigConstants.APP_INFO_SETTINGS_SCROLL_ACTION));
-        BySelector backwardButtonSelector =
-                getUiElementFromConfig(
-                        AutomotiveConfigConstants.APP_INFO_SETTINGS_SCROLL_BACKWARD_BUTTON);
-        BySelector forwardButtonSelector =
-                getUiElementFromConfig(
-                        AutomotiveConfigConstants.APP_INFO_SETTINGS_SCROLL_FORWARD_BUTTON);
-        BySelector scrollElementSelector =
-                getUiElementFromConfig(AutomotiveConfigConstants.APP_INFO_SETTINGS_SCROLL_ELEMENT);
-        ScrollDirection scrollDirection =
-                ScrollDirection.valueOf(
-                        getActionFromConfig(
-                                AutomotiveConfigConstants.APP_INFO_SETTINGS_SCROLL_DIRECTION));
         UiObject2 permission_menu =
                 mScrollUtility.scrollAndFindUiObject(
-                        scrollAction,
-                        scrollDirection,
-                        forwardButtonSelector,
-                        backwardButtonSelector,
-                        scrollElementSelector,
+                        mScrollAction,
+                        mScrollDirection,
+                        mForwardButtonSelector,
+                        mBackwardButtonSelector,
+                        mScrollableElementSelector,
                         permissions_selector,
                         "Scroll on App info to find permission menu");
         String currentPermissions = permission_menu.getParent().getChildren().get(1).getText();
@@ -322,29 +277,13 @@ public class SettingsAppInfoHelperImpl extends AbstractStandardAppHelper
     public void selectApp(String application) {
 
         BySelector applicationSelector = By.text(application);
-        ScrollActions scrollAction =
-                ScrollActions.valueOf(
-                        getActionFromConfig(
-                                AutomotiveConfigConstants.APP_INFO_SETTINGS_SCROLL_ACTION));
-        BySelector backwardButtonSelector =
-                getUiElementFromConfig(
-                        AutomotiveConfigConstants.APP_INFO_SETTINGS_SCROLL_BACKWARD_BUTTON);
-        BySelector forwardButtonSelector =
-                getUiElementFromConfig(
-                        AutomotiveConfigConstants.APP_INFO_SETTINGS_SCROLL_FORWARD_BUTTON);
-        BySelector scrollElementSelector =
-                getUiElementFromConfig(AutomotiveConfigConstants.APP_INFO_SETTINGS_SCROLL_ELEMENT);
-        ScrollDirection scrollDirection =
-                ScrollDirection.valueOf(
-                        getActionFromConfig(
-                                AutomotiveConfigConstants.APP_INFO_SETTINGS_SCROLL_DIRECTION));
         UiObject2 object =
                 mScrollUtility.scrollAndFindUiObject(
-                        scrollAction,
-                        scrollDirection,
-                        forwardButtonSelector,
-                        backwardButtonSelector,
-                        scrollElementSelector,
+                        mScrollAction,
+                        mScrollDirection,
+                        mForwardButtonSelector,
+                        mBackwardButtonSelector,
+                        mScrollableElementSelector,
                         applicationSelector,
                         String.format("Scroll on App info to find %s", application));
         validateUiObject(object, String.format("App %s", application));
@@ -356,29 +295,13 @@ public class SettingsAppInfoHelperImpl extends AbstractStandardAppHelper
         BySelector forceStopSelector =
                 getUiElementFromConfig(
                         AutomotiveConfigConstants.APP_INFO_SETTINGS_FORCE_STOP_BUTTON);
-        ScrollActions scrollAction =
-                ScrollActions.valueOf(
-                        getActionFromConfig(
-                                AutomotiveConfigConstants.APP_INFO_SETTINGS_SCROLL_ACTION));
-        BySelector backwardButtonSelector =
-                getUiElementFromConfig(
-                        AutomotiveConfigConstants.APP_INFO_SETTINGS_SCROLL_BACKWARD_BUTTON);
-        BySelector forwardButtonSelector =
-                getUiElementFromConfig(
-                        AutomotiveConfigConstants.APP_INFO_SETTINGS_SCROLL_FORWARD_BUTTON);
-        BySelector scrollElementSelector =
-                getUiElementFromConfig(AutomotiveConfigConstants.APP_INFO_SETTINGS_SCROLL_ELEMENT);
-        ScrollDirection scrollDirection =
-                ScrollDirection.valueOf(
-                        getActionFromConfig(
-                                AutomotiveConfigConstants.APP_INFO_SETTINGS_SCROLL_DIRECTION));
         UiObject2 forceStopButton =
                 mScrollUtility.scrollAndFindUiObject(
-                        scrollAction,
-                        scrollDirection,
-                        forwardButtonSelector,
-                        backwardButtonSelector,
-                        scrollElementSelector,
+                        mScrollAction,
+                        mScrollDirection,
+                        mForwardButtonSelector,
+                        mBackwardButtonSelector,
+                        mScrollableElementSelector,
                         forceStopSelector,
                         "Scroll on App info to find force stop button");
         return forceStopButton;

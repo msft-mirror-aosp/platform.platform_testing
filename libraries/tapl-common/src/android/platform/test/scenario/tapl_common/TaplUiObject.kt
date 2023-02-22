@@ -15,17 +15,16 @@
  */
 package android.platform.test.scenario.tapl_common
 
-import android.graphics.Point
 import android.graphics.Rect
-import android.platform.uiautomator_helpers.BetterSwipe
-import android.platform.uiautomator_helpers.PRECISE_GESTURE_INTERPOLATOR
+import android.platform.uiautomator_helpers.BetterScroll
+import android.platform.uiautomator_helpers.DeviceHelpers.waitForObj
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.Direction
 import androidx.test.uiautomator.UiObject2
-import androidx.test.uiautomator.Until
 
 /**
  * Ui object with diagnostic metadata and flake-free gestures.
+ *
  * @param [uiObject] UI Automator object
  * @param [name] Name of the object for diags
  */
@@ -73,11 +72,7 @@ class TaplUiObject constructor(val uiObject: UiObject2, private val name: String
      */
     fun waitForChildObject(childResourceId: String, childObjectName: String): TaplUiObject {
         val selector = By.res(uiObject.applicationPackage, childResourceId)
-        val childObject =
-            uiObject.wait(Until.findObject(selector), TaplUiDevice.WAIT_TIME.toMillis())
-                ?: throw AssertionError(
-                    "UI object '$childObjectName' is not found in '$name'; selector: $selector."
-                )
+        val childObject = uiObject.waitForObj(selector)
         return TaplUiObject(childObject, childObjectName)
     }
 
@@ -89,29 +84,7 @@ class TaplUiObject constructor(val uiObject: UiObject2, private val name: String
      * @param percent The size of the swipe as a percentage of the total area.
      */
     private fun scrollRect(area: Rect, direction: Direction, percent: Float) {
-        val start: Point
-        val end: Point
-        when (direction) {
-            Direction.LEFT -> {
-                start = Point(area.right, area.centerY())
-                end = Point(area.right - (area.width() * percent).toInt(), area.centerY())
-            }
-            Direction.RIGHT -> {
-                start = Point(area.left, area.centerY())
-                end = Point(area.left + (area.width() * percent).toInt(), area.centerY())
-            }
-            Direction.UP -> {
-                start = Point(area.centerX(), area.bottom)
-                end = Point(area.centerX(), area.bottom - (area.height() * percent).toInt())
-            }
-            Direction.DOWN -> {
-                start = Point(area.centerX(), area.top)
-                end = Point(area.centerX(), area.top + (area.height() * percent).toInt())
-            }
-            else -> throw RuntimeException()
-        }
-
-        BetterSwipe.from(start).to(end, interpolator = PRECISE_GESTURE_INTERPOLATOR).release()
+        BetterScroll.scroll(area, direction, percent)
     }
 
     /**

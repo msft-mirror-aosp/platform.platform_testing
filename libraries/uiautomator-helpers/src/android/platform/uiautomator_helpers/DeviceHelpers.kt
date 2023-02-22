@@ -55,12 +55,24 @@ object DeviceHelpers {
      * Waits for an object to be visible and returns it.
      *
      * Throws an error with message provided by [errorProvider] if the object is not found.
+     * @deprecated Use [DeviceHelpers.waitForObj] instead.
      */
     fun UiDevice.waitForObj(
         selector: BySelector,
         timeout: Duration = LONG_WAIT,
         errorProvider: () -> String = { "Object $selector not found" },
     ): UiObject2 = waitFor("$selector object", timeout, errorProvider) { findObject(selector) }
+
+    /**
+     * Waits for an object to be visible and returns it.
+     *
+     * Throws an error with message provided by [errorProvider] if the object is not found.
+     */
+    fun waitForObj(
+        selector: BySelector,
+        timeout: Duration = LONG_WAIT,
+        errorProvider: () -> String = { "Object $selector not found" },
+    ): UiObject2 = uiDevice.waitForObj(selector, timeout, errorProvider)
 
     /**
      * Waits for an object to be visible and returns it.
@@ -75,11 +87,21 @@ object DeviceHelpers {
 
     /**
      * Waits for an object to be visible and returns it. Returns `null` if the object is not found.
+     *
+     * @deprecated use [DeviceHelpers.waitForNullableObj] instead.
      */
     fun UiDevice.waitForNullableObj(
         selector: BySelector,
         timeout: Duration = SHORT_WAIT,
     ): UiObject2? = waitForNullable("nullable $selector objects", timeout) { findObject(selector) }
+
+    /**
+     * Waits for an object to be visible and returns it. Returns `null` if the object is not found.
+     */
+    fun waitForNullableObj(
+        selector: BySelector,
+        timeout: Duration = SHORT_WAIT,
+    ): UiObject2? = uiDevice.waitForNullableObj(selector, timeout)
 
     /**
      * Waits for objects matched by [selector] to be visible and returns them. Returns `null` if no
