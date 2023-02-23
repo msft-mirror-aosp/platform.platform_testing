@@ -15,11 +15,9 @@
  */
 package android.platform.test.scenario.tapl_common
 
-import android.graphics.Point
 import android.graphics.Rect
-import android.platform.uiautomator_helpers.BetterSwipe
+import android.platform.uiautomator_helpers.BetterScroll
 import android.platform.uiautomator_helpers.DeviceHelpers.waitForObj
-import android.platform.uiautomator_helpers.PRECISE_GESTURE_INTERPOLATOR
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.Direction
 import androidx.test.uiautomator.UiObject2
@@ -86,29 +84,7 @@ class TaplUiObject constructor(val uiObject: UiObject2, private val name: String
      * @param percent The size of the swipe as a percentage of the total area.
      */
     private fun scrollRect(area: Rect, direction: Direction, percent: Float) {
-        val start: Point
-        val end: Point
-        when (direction) {
-            Direction.LEFT -> {
-                start = Point(area.right, area.centerY())
-                end = Point(area.right - (area.width() * percent).toInt(), area.centerY())
-            }
-            Direction.RIGHT -> {
-                start = Point(area.left, area.centerY())
-                end = Point(area.left + (area.width() * percent).toInt(), area.centerY())
-            }
-            Direction.UP -> {
-                start = Point(area.centerX(), area.bottom)
-                end = Point(area.centerX(), area.bottom - (area.height() * percent).toInt())
-            }
-            Direction.DOWN -> {
-                start = Point(area.centerX(), area.top)
-                end = Point(area.centerX(), area.top + (area.height() * percent).toInt())
-            }
-            else -> throw RuntimeException()
-        }
-
-        BetterSwipe.from(start).to(end, interpolator = PRECISE_GESTURE_INTERPOLATOR).release()
+        BetterScroll.scroll(area, direction, percent)
     }
 
     /**

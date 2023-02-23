@@ -33,6 +33,7 @@ import java.time.temporal.ChronoUnit.MILLIS
 import java.util.concurrent.atomic.AtomicInteger
 
 private val DEFAULT_DURATION: Duration = Duration.of(500, MILLIS)
+private val PAUSE_DURATION: Duration = Duration.of(250, MILLIS)
 private val GESTURE_STEP = Duration.of(16, MILLIS)
 
 /**
@@ -116,6 +117,11 @@ object BetterSwipe {
             interpolator: TimeInterpolator = FLING_GESTURE_INTERPOLATOR
         ): Swipe {
             return to(PointF(end.x.toFloat(), end.y.toFloat()), duration, interpolator)
+        }
+
+        /** Sends the last point, simulating a finger pause. */
+        fun pause(): Swipe {
+            return to(PointF(lastPoint.x, lastPoint.y), PAUSE_DURATION)
         }
 
         /** Moves the pointer up, finishing the swipe. Further calls will result in an exception. */
