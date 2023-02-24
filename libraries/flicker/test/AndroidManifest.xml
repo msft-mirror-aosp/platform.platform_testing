@@ -4,7 +4,7 @@
  -->
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="android.tools">
+          package="com.android.server.wm.flicker">
 
     <uses-sdk android:minSdkVersion="29" android:targetSdkVersion="29"/>
     <!-- Read and write traces from external storage -->
@@ -31,7 +31,7 @@
     </application>
 
     <instrumentation android:name="androidx.test.runner.AndroidJUnitRunner"
-                     android:targetPackage="android.tools"
+                     android:targetPackage="com.android.server.wm.flicker"
                      android:label="WindowManager Flicker Lib Test">
     </instrumentation>
 

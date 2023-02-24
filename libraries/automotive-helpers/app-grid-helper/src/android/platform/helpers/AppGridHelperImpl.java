@@ -214,17 +214,6 @@ public class AppGridHelperImpl extends AbstractStandardAppHelper implements IAut
                 String.format("Scroll up one page on app grid"));
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public void scrollToTop() {
-        mScrollUtility.scrollToBeginning(
-                mScrollAction,
-                mScrollDirection,
-                mBackwardButtonSelector,
-                mScrollableElementSelector,
-                "Scroll to top of app grid");
-    }
-
     @Override
     public boolean scrollDownOnePage() {
         return mScrollUtility.scrollForward(

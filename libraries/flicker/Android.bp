@@ -21,28 +21,26 @@ package {
 java_test {
     name: "flickerlib",
     platform_apis: true,
-    kotlincflags: [
-        "-Xmulti-platform",
-        "-opt-in=kotlin.ExperimentalMultiplatform",
-    ],
     optimize: {
         enabled: false
     },
     srcs: [
-        "src/android/tools/device/flicker/**/*.kt",
-        "src/android/tools/device/flicker/**/*.eventlog"
+        "src/com/android/server/wm/flicker/**/*.java",
+        "src/com/android/server/wm/flicker/**/*.kt",
+        "src/com/android/server/wm/flicker/**/*.eventlog"
     ],
-    common_srcs: [
-        "src/android/tools/common/**/*.kt",
+    java_resource_dirs: [
+        "src/com/android/server/wm/flicker/service/resources/"
     ],
     static_libs: [
-        "flickerlib-apphelpers",
         "flickerlib-helpers",
-        "flickerlib-parsers",
         "compatibility-device-util-axt",
+        "ub-uiautomator",
         "androidx.test.uiautomator_uiautomator",
         "androidx.test.ext.junit",
+        "truth",
         "launcher-helper-lib",
+        "wm-proto-parsers",
         "platform-test-annotations",
         "platform-test-core-rules",
         "health-testing-utils",
@@ -51,41 +49,27 @@ java_test {
 }
 
 java_library {
-    name: "flickerlib-apphelpers",
-    platform_apis: true,
+    name: "flickerlib-helpers",
+    sdk_version: "test_current",
     optimize: {
         enabled: false
     },
     srcs: [
-        "src/android/tools/device/apphelpers/*.kt",
+        "src/**/helpers/*.java",
+        "src/**/helpers/*.kt",
     ],
     static_libs: [
-        "flickerlib-parsers",
         "compatibility-device-util-axt",
         "app-helpers-core",
         "launcher-helper-lib",
+        "wm-proto-parsers",
         "launcher-aosp-tapl",
     ],
 }
 
 java_library {
-    name: "flickerlib-helpers",
-    platform_apis: true,
-    optimize: {
-        enabled: false
-    },
-    srcs: [
-        "src/android/tools/device/helpers/*.kt",
-    ],
-    static_libs: [
-        "flickerlib-parsers",
-        "androidx.test.uiautomator_uiautomator",
-    ],
-}
-
-java_library {
-    name: "flickerlib-parsers",
-    platform_apis: true,
+    name: "wm-proto-parsers",
+    sdk_version: "test_current",
     kotlincflags: [
         "-Xmulti-platform",
         "-opt-in=kotlin.ExperimentalMultiplatform",
@@ -94,30 +78,27 @@ java_library {
         enabled: false
     },
     srcs: [
-        "src/android/tools/device/traces/**/*.kt",
+        "src/com/android/server/wm/traces/parser/**/*.java",
+        "src/com/android/server/wm/traces/parser/**/*.kt",
     ],
     common_srcs: [
-        "src/android/tools/common/**/*.kt",
+        "src/com/android/server/wm/traces/common/**/*.kt",
     ],
     static_libs: [
-        "flickerlib-common",
-        "androidx.test.uiautomator_uiautomator",
-        "androidx.test.runner",
+        "android-support-annotations",
+        "androidx.test.ext.junit",
         "platformprotosnano",
         "layersprotoslite",
+        "flicker-tags-proto",
     ],
 }
 
 java_library {
-    name: "flickerlib-common",
-    kotlincflags: [
-        "-Xmulti-platform",
-        "-opt-in=kotlin.ExperimentalMultiplatform",
+    name: "flicker-tags-proto",
+    srcs: [
+        "**/*.proto",
     ],
     optimize: {
         enabled: false
-    },
-    common_srcs: [
-        "src/android/tools/common/**/*.kt",
-    ],
+    }
 }
