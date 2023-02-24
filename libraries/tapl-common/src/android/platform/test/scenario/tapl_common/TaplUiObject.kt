@@ -16,6 +16,7 @@
 package android.platform.test.scenario.tapl_common
 
 import android.graphics.Rect
+import android.platform.uiautomator_helpers.BetterFling
 import android.platform.uiautomator_helpers.BetterScroll
 import android.platform.uiautomator_helpers.DeviceHelpers.waitForObj
 import androidx.test.uiautomator.By
@@ -77,17 +78,6 @@ class TaplUiObject constructor(val uiObject: UiObject2, private val name: String
     }
 
     /**
-     * Performs a horizontal or vertical swipe over an area.
-     *
-     * @param area The area to swipe over.
-     * @param direction The direction in which to swipe.
-     * @param percent The size of the swipe as a percentage of the total area.
-     */
-    private fun scrollRect(area: Rect, direction: Direction, percent: Float) {
-        BetterScroll.scroll(area, direction, percent)
-    }
-
-    /**
      * Performs a scroll gesture on this object.
      *
      * @param direction The direction in which to scroll.
@@ -109,6 +99,31 @@ class TaplUiObject constructor(val uiObject: UiObject2, private val name: String
         // Scroll by performing repeated swipes
         val bounds: Rect = getVisibleBoundsForGestures()
         val segment = Math.min(percent, 1.0f)
-        scrollRect(bounds, swipeDirection, segment)
+        BetterScroll.scroll(bounds, swipeDirection, segment)
+    }
+
+    /**
+     * Performs a fling gesture on this object.
+     *
+     * @param direction The direction in which to scroll.
+     * @param percent The distance to scroll as a percentage of this object's visible size.
+     * @param verifyIsScrollable Whether to verify that the object is scrollable.
+     */
+    fun fling(direction: Direction, percent: Float, verifyIsScrollable: Boolean = false) {
+        if (verifyIsScrollable) {
+            Gestures.waitForObjectEnabled(uiObject, name)
+            Gestures.waitForObjectScrollable(uiObject, name)
+        }
+
+        require(percent >= 0.0f) { "Percent must be greater than 0.0f" }
+        require(percent <= 1.0f) { "Percent must be less than 1.0f" }
+
+        // To fling, we swipe in the opposite direction
+        val swipeDirection: Direction = Direction.reverse(direction)
+
+        val bounds: Rect = getVisibleBoundsForGestures()
+        val segment = Math.min(percent, 1.0f)
+
+        BetterFling.fling(bounds, swipeDirection, percentage = segment)
     }
 }

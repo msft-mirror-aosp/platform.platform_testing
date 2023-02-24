@@ -26,6 +26,7 @@ java_library {
         "app-helpers-auto-interfaces",
         "android-support-annotations",
         "automotive-config-lib",
+        "automotive-utility-helper",
     ],
     srcs: ["src/**/*.java"],
     sdk_version: "test_current",
