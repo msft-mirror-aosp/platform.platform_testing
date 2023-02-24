@@ -8,7 +8,8 @@
     "SETTINGS_PACKAGE": "com.android.car.settings",
     "NUMBER_PICKER_WIDGET_CLASS" : "android.widget.NumberPicker",
     "EDIT_TEXT_WIDGET_CLASS" : "android.widget.EditText",
-    "USER_SETTINGS_PACKAGE": "com.android.car.settings"
+    "USER_SETTINGS_PACKAGE": "com.android.car.settings",
+    "MEDIA_CENTER_PACKAGE": "com.android.car.media"
   },
   "ACTIONS": {
     "CONTACT_LIST_SCROLL_ACTION": "USE_BUTTON",
@@ -46,7 +47,9 @@
     "ACCOUNT_SETTINGS_SCROLL_ACTION" : "USE_GESTURE",
     "ACCOUNT_SETTINGS_SCROLL_DIRECTION" : "VERTICAL",
     "SETTINGS_SUB_SETTING_SCROLL_ACTION": "USE_GESTURE",
-    "SETTINGS_SUB_SETTING_SCROLL_DIRECTION": "VERTICAL"
+    "SETTINGS_SUB_SETTING_SCROLL_DIRECTION": "VERTICAL",
+    "MEDIA_APP_SCROLL_ACTION": "USE_GESTURE",
+    "MEDIA_APP_SCROLL_DIRECTION": "VERTICAL"
   },
   "COMMANDS": {
     "OPEN_DIAL_PAD_COMMAND": "am start -a android.intent.action.DIAL",
@@ -54,7 +57,8 @@
     "OPEN_APP_GRID_COMMAND": "am start -n com.android.car.carlauncher/.GASAppGridActivity",
     "OPEN_NOTIFICATIONS_COMMAND": "service call statusbar 1",
     "STOP_SETTING_APP_COMMAND": "am force-stop com.android.car.settings",
-    "OPEN_SETTINGS_COMMAND": "am start -a android.settings.SETTINGS"
+    "OPEN_SETTINGS_COMMAND": "am start -a android.settings.SETTINGS",
+    "MEDIA_LAUNCH_COMMAND":"am start -a android.car.intent.action.MEDIA_TEMPLATE -e android.car.intent.extra.MEDIA_COMPONENT com.android.bluetooth/com.android.bluetooth.avrcpcontroller.BluetoothMediaBrowserService"
   },
   "UI_ELEMENTS": {
     "MAKE_CALL": {
@@ -354,11 +358,11 @@
       "VALUE": "Continue"
     },
     "SECURITY_SETTINGS_CONFIRM_BUTTON": {
-      "TYPE":"TEXT",
+      "TYPE": "TEXT",
       "VALUE": "Confirm"
     },
     "SECURITY_SETTINGS_ENTER_PIN_BUTTON": {
-      "TYPE":"RESOURCE_ID",
+      "TYPE": "RESOURCE_ID",
       "VALUE": "key_enter",
       "PACKAGE": "com.android.car.settings"
     },
@@ -508,11 +512,11 @@
       "VALUE": "empty_notification_text",
       "PACKAGE": "com.android.systemui"
     },
-    "NOTIFICATION_LIST_SCROLL_FORWARD": {
+    "NOTIFICATION_LIST_SCROLL_FORWARD_BUTTON": {
       "TYPE": "DESCRIPTION",
       "VALUE": "Scroll Down"
     },
-    "NOTIFICATION_LIST_SCROLL_BACKWARD": {
+    "NOTIFICATION_LIST_SCROLL_BACKWARD_BUTTON": {
       "TYPE": "DESCRIPTION",
       "VALUE": "Scroll Up"
     },
@@ -594,7 +598,7 @@
     "SYSTEM_SETTINGS_SCROLL_FORWARD_BUTTON": {
       "TYPE": "RESOURCE_ID",
       "VALUE": "car_ui_scrollbar_page_down",
-     "PACKAGE": "com.android.car.ui.sharedlibrary"
+      "PACKAGE": "com.android.car.ui.sharedlibrary"
     },
     "SYSTEM_SETTINGS_SCROLL_BACKWARD_BUTTON": {
       "TYPE": "RESOURCE_ID",
@@ -754,6 +758,104 @@
       "VALUE": "car_ui_internal_recycler_view",
       "PACKAGE": "com.android.car.ui.sharedlibrary"
     },
+    "PLAY_PAUSE_BUTTON": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "play_pause_stop",
+      "PACKAGE": "com.android.car.media"
+    },
+    "NEXT_BUTTON": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "skip_next",
+      "PACKAGE": "com.android.car.media"
+    },
+    "PREVIOUS_BUTTON": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "skip_prev",
+      "PACKAGE": "com.android.car.media"
+    },
+    "SHUFFLE_BUTTON": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "overflow_on",
+      "PACKAGE": "com.android.car.media"
+    },
+    "MINIMIZED_MEDIA_CONTROLS": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "minimized_playback_controls",
+      "PACKAGE": "com.android.car.media"
+    },
+    "TRACK_NAME": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "title",
+      "PACKAGE": "com.android.car.media"
+    },
+    "TRACK_NAME_MINIMIZED_CONTROL": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "minimized_control_bar_title",
+      "PACKAGE": "com.android.car.media"
+    },
+    "BACK_BUTTON": {
+      "TYPE": "DESCRIPTION",
+      "VALUE": "back",
+      "PACKAGE": "com.android.car.media"
+    },
+    "MEDIA_APP_TITLE": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "car_ui_toolbar_title",
+      "PACKAGE": "com.android.car.media"
+    },
+    "MEDIA_APP_DROP_DOWN_MENU": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "car_ui_toolbar_menu_item_icon",
+      "PACKAGE": "com.android.car.media"
+    },
+    "MEDIA_APP_NO_LOGIN_MSG": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "error_message",
+      "PACKAGE": "com.android.car.media"
+    },
+    "MEDIA_APP_NAVIGATION_ICON": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "car_ui_toolbar_nav_icon_container",
+      "PACKAGE": "com.android.car.media"
+    },
+    "MEDIA_APPS_GRID_TITLE": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "car_ui_toolbar_title",
+      "PACKAGE": "com.android.car.carlauncher"
+    },
+    "PREVIOUS_BUTTON_HOME_SCREEN": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "skip_prev",
+      "PACKAGE": "com.android.car.carlauncher"
+    },
+    "NEXT_BUTTON_HOME_SCREEN": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "skip_next",
+      "PACKAGE": "com.android.car.carlauncher"
+    },
+    "TRACK_NAME_HOME_SCREEN": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "title",
+      "PACKAGE": "com.android.car.carlauncher"
+    },
+    "MEDIA_SONGS_LIST": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "item_container",
+      "PACKAGE": "com.android.car.media"
+    },
+    "MEDIA_APP_SCROLL_FORWARD_BUTTON": {
+      "TYPE": "DESCRIPTION",
+      "VALUE": "Scroll Down"
+    },
+    "MEDIA_APP_SCROLL_BACKWARD_BUTTON": {
+      "TYPE": "DESCRIPTION",
+      "VALUE": "Scroll Up"
+    },
+    "MEDIA_APP_SCROLL_ELEMENT": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "car_ui_internal_recycler_view",
+      "PACKAGE": "com.android.car.ui.sharedlibrary"
+    },
     "ACCOUNT_SETTINGS_GOOGLE_SIGN_IN_SCREEN": {
       "TYPE": "TEXT",
       "VALUE": "Sign in to your Google Account"
@@ -811,6 +913,27 @@
       "TYPE": "RESOURCE_ID",
       "VALUE": "car_ui_internal_recycler_view",
       "PACKAGE": "com.chassis.car.ui.plugin"
+    },
+    "TEST_MEDIA_ACCOUNT_TYPE": {
+      "TYPE": "TEXT",
+      "VALUE": "Account Type"
+    },
+    "TEST_MEDIA_ACCOUNT_TYPE_PAID": {
+      "TYPE": "TEXT",
+      "VALUE": "Paid"
+    },
+    "TEST_MEDIA_ROOT_NODE_TYPE": {
+      "TYPE": "TEXT",
+      "VALUE": "Root node type"
+    },
+    "TEST_MEDIA_ROOT_NODE_TYPE_BROWSABLE": {
+      "TYPE": "TEXT",
+      "VALUE": "Only browse-able content"
+    },
+    "TEST_MEDIA_APP_CLOSE_SETTING": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "close_target",
+      "PACKAGE": "com.android.car.media.testmediaapp"
     }
   },
   "WORKFLOWS": {

@@ -17,11 +17,14 @@
 package android.platform.helpers;
 
 import android.app.Instrumentation;
-import android.content.Context;
-import android.platform.helpers.exceptions.UnknownUiException;
-import android.platform.spectatio.exceptions.MissingUiElementException;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
+import android.content.Context;
+import android.platform.helpers.ScrollUtility.ScrollActions;
+import android.platform.helpers.ScrollUtility.ScrollDirection;
+import android.platform.helpers.exceptions.UnknownUiException;
+import android.platform.spectatio.exceptions.MissingUiElementException;
+import android.support.test.uiautomator.By;
 import android.support.test.uiautomator.BySelector;
 import android.support.test.uiautomator.UiObject2;
 
@@ -31,15 +34,12 @@ public class DialHelperImpl extends AbstractStandardAppHelper implements IAutoDi
     private BluetoothManager mBluetoothManager;
     private BluetoothAdapter mBluetoothAdapter;
 
-    private static enum ScrollActions {
-        USE_BUTTON,
-        USE_GESTURE;
-    }
-
-    private static enum ScrollDirection {
-        VERTICAL,
-        HORIZONTAL;
-    }
+    private ScrollUtility mScrollUtility;
+    private ScrollActions mScrollAction;
+    private BySelector mBackwardButtonSelector;
+    private BySelector mForwardButtonSelector;
+    private BySelector mScrollableElementSelector;
+    private ScrollDirection mScrollDirection;
 
     public DialHelperImpl(Instrumentation instr) {
         super(instr);
@@ -47,6 +47,20 @@ public class DialHelperImpl extends AbstractStandardAppHelper implements IAutoDi
                 (BluetoothManager)
                         mInstrumentation.getContext().getSystemService(Context.BLUETOOTH_SERVICE);
         mBluetoothAdapter = mBluetoothManager.getAdapter();
+        mScrollUtility = ScrollUtility.getInstance(getSpectatioUiUtil());
+        mScrollAction =
+                ScrollActions.valueOf(
+                        getActionFromConfig(AutomotiveConfigConstants.CONTACT_LIST_SCROLL_ACTION));
+        mBackwardButtonSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.CONTACT_LIST_SCROLL_BACKWARD);
+        mForwardButtonSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.CONTACT_LIST_SCROLL_FORWARD);
+        mScrollableElementSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.CONTACT_LIST_SCROLL_ELEMENT);
+        mScrollDirection =
+                ScrollDirection.valueOf(
+                        getActionFromConfig(
+                                AutomotiveConfigConstants.CONTACT_LIST_SCROLL_DIRECTION));
     }
 
     /** {@inheritDoc} */
@@ -199,52 +213,18 @@ public class DialHelperImpl extends AbstractStandardAppHelper implements IAutoDi
     }
 
     private UiObject2 getContactFromContactList(String contact) {
-        try {
-            ScrollActions scrollAction =
-                    ScrollActions.valueOf(
-                            getActionFromConfig(
-                                    AutomotiveConfigConstants.CONTACT_LIST_SCROLL_ACTION));
-            UiObject2 contactFromList = null;
-            switch (scrollAction) {
-                case USE_BUTTON:
-                    BySelector forwardButtonSelector =
-                            getUiElementFromConfig(
-                                    AutomotiveConfigConstants.CONTACT_LIST_SCROLL_FORWARD);
-                    BySelector backwardButtonSelector =
-                            getUiElementFromConfig(
-                                    AutomotiveConfigConstants.CONTACT_LIST_SCROLL_BACKWARD);
-                    contactFromList =
-                            getSpectatioUiUtil()
-                                    .scrollAndFindUiObject(
-                                            forwardButtonSelector, backwardButtonSelector, contact);
-                    break;
-                case USE_GESTURE:
-                    BySelector scrollElementSelector =
-                            getUiElementFromConfig(
-                                    AutomotiveConfigConstants.CONTACT_LIST_SCROLL_ELEMENT);
-                    ScrollDirection scrollDirection =
-                            ScrollDirection.valueOf(
-                                    getActionFromConfig(
-                                            AutomotiveConfigConstants
-                                                    .CONTACT_LIST_SCROLL_DIRECTION));
-                    contactFromList =
-                            getSpectatioUiUtil()
-                                    .scrollAndFindUiObject(
-                                            scrollElementSelector,
-                                            contact,
-                                            (scrollDirection == ScrollDirection.VERTICAL));
-                    break;
-                default:
-                    throw new IllegalStateException(
-                            String.format(
-                                    "Cannot scroll through contact list. Unknown Scroll Action %s.",
-                                    scrollAction));
-            }
+        BySelector contactSelector = By.text(contact);
+        UiObject2 contactFromList =
+                mScrollUtility.scrollAndFindUiObject(
+                        mScrollAction,
+                        mScrollDirection,
+                        mForwardButtonSelector,
+                        mBackwardButtonSelector,
+                        mScrollableElementSelector,
+                        contactSelector,
+                        String.format("scroll to find %s", contact));
             validateUiObject(contactFromList, String.format("Given Contact %s", contact));
             return contactFromList;
-        } catch (MissingUiElementException ex) {
-            throw new RuntimeException("Unable to scroll through contact list.", ex);
-        }
     }
 
     /** {@inheritDoc} */
@@ -404,41 +384,12 @@ public class DialHelperImpl extends AbstractStandardAppHelper implements IAutoDi
     }
 
     private void scrollToTopOfContactList() {
-        try {
-            ScrollActions scrollAction =
-                    ScrollActions.valueOf(
-                            getActionFromConfig(
-                                    AutomotiveConfigConstants.CONTACT_LIST_SCROLL_ACTION));
-            switch (scrollAction) {
-                case USE_BUTTON:
-                    BySelector backwardButtonSelector =
-                            getUiElementFromConfig(
-                                    AutomotiveConfigConstants.CONTACT_LIST_SCROLL_BACKWARD);
-                    getSpectatioUiUtil().scrollToBeginning(backwardButtonSelector);
-                    break;
-                case USE_GESTURE:
-                    BySelector scrollElementSelector =
-                            getUiElementFromConfig(
-                                    AutomotiveConfigConstants.CONTACT_LIST_SCROLL_ELEMENT);
-                    ScrollDirection scrollDirection =
-                            ScrollDirection.valueOf(
-                                    getActionFromConfig(
-                                            AutomotiveConfigConstants
-                                                    .CONTACT_LIST_SCROLL_DIRECTION));
-                    getSpectatioUiUtil()
-                            .scrollToBeginning(
-                                    scrollElementSelector,
-                                    (scrollDirection == ScrollDirection.VERTICAL));
-                    break;
-                default:
-                    throw new IllegalStateException(
-                            String.format(
-                                    "Cannot scroll through contact list. Unknown Scroll Action %s.",
-                                    scrollAction));
-            }
-        } catch (MissingUiElementException ex) {
-            throw new RuntimeException("Unable to scroll through contact list.", ex);
-        }
+        mScrollUtility.scrollToBeginning(
+                mScrollAction,
+                mScrollDirection,
+                mBackwardButtonSelector,
+                mScrollableElementSelector,
+                "Scroll to top of Contact list");
     }
 
     /** {@inheritDoc} */

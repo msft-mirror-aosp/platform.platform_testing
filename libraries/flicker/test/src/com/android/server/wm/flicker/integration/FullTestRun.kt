@@ -26,7 +26,7 @@ import com.android.server.wm.flicker.FlickerTestFactory
 import com.android.server.wm.flicker.Scenario
 import com.android.server.wm.flicker.annotation.FlickerServiceCompatible
 import com.android.server.wm.flicker.assertions.FlickerSubject
-import com.android.server.wm.flicker.helpers.CalculatorAppHelper
+import com.android.server.wm.flicker.helpers.BrowserAppHelper
 import com.android.server.wm.flicker.junit.FlickerBuilderProvider
 import com.android.server.wm.flicker.junit.FlickerParametersRunnerFactory
 import com.android.server.wm.flicker.traces.layers.LayersTraceSubject
@@ -44,7 +44,7 @@ import org.junit.runners.Parameterized
 @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
 class FullTestRun(private val flicker: FlickerTest) {
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
-    private val testApp: CalculatorAppHelper = CalculatorAppHelper(instrumentation)
+    private val testApp = BrowserAppHelper(instrumentation)
     private val tapl: LauncherInstrumentation = LauncherInstrumentation()
 
     init {
