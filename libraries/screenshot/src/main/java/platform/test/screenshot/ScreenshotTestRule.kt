@@ -27,6 +27,8 @@ import java.io.File
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
 import java.io.IOException
+import androidx.test.runner.screenshot.Screenshot
+import com.android.internal.app.SimpleIconFactory
 import org.junit.rules.TestRule
 import org.junit.rules.TestWatcher
 import org.junit.runner.Description
@@ -78,7 +80,12 @@ open class ScreenshotTestRule(
 
     class ScreenshotTestStatement(private val base: Statement) : Statement() {
         override fun evaluate() {
-            base.evaluate()
+            try {
+                SimpleIconFactory.setPoolEnabled(false)
+                base.evaluate()
+            } finally {
+                SimpleIconFactory.setPoolEnabled(true)
+            }
         }
     }
 
@@ -118,7 +125,8 @@ open class ScreenshotTestRule(
      * @throws IllegalArgumentException If the golden identifier contains forbidden characters or
      * is empty.
      */
-    fun assertBitmapAgainstGolden(
+    @Deprecated("use the ScreenshotTestRuleAsserter")
+    public fun assertBitmapAgainstGolden(
         actual: Bitmap,
         goldenIdentifier: String,
         matcher: BitmapMatcher
@@ -150,7 +158,8 @@ open class ScreenshotTestRule(
      * @throws IllegalArgumentException If the golden identifier contains forbidden characters or
      * is empty.
      */
-    fun assertBitmapAgainstGolden(
+    @Deprecated("use the ScreenshotTestRuleAsserter")
+    public fun assertBitmapAgainstGolden(
         actual: Bitmap,
         goldenIdentifier: String,
         matcher: BitmapMatcher,
@@ -251,18 +260,18 @@ open class ScreenshotTestRule(
 
         val report = Bundle()
 
-        actual.writeToDevice(OutputFileType.IMAGE_ACTUAL).also {
+        actual.writeToDevice(OutputFileType.IMAGE_ACTUAL, goldenIdentifier).also {
             resultProto.imageLocationTest = it.name
             report.putString(bundleKeyPrefix + OutputFileType.IMAGE_ACTUAL, it.absolutePath)
         }
         diff?.run {
-            writeToDevice(OutputFileType.IMAGE_DIFF).also {
+            writeToDevice(OutputFileType.IMAGE_DIFF, goldenIdentifier).also {
                 resultProto.imageLocationDiff = it.name
                 report.putString(bundleKeyPrefix + OutputFileType.IMAGE_DIFF, it.absolutePath)
             }
         }
         expected?.run {
-            writeToDevice(OutputFileType.IMAGE_EXPECTED).also {
+            writeToDevice(OutputFileType.IMAGE_EXPECTED, goldenIdentifier).also {
                 resultProto.imageLocationReference = it.name
                 report.putString(
                     bundleKeyPrefix + OutputFileType.IMAGE_EXPECTED,
@@ -271,13 +280,13 @@ open class ScreenshotTestRule(
             }
         }
 
-        writeToDevice(OutputFileType.RESULT_PROTO) {
+        writeToDevice(OutputFileType.RESULT_PROTO, goldenIdentifier) {
             it.write(resultProto.build().toString().toByteArray())
         }.also {
             report.putString(bundleKeyPrefix + OutputFileType.RESULT_PROTO, it.absolutePath)
         }
 
-        writeToDevice(OutputFileType.RESULT_BIN_PROTO) {
+        writeToDevice(OutputFileType.RESULT_BIN_PROTO, goldenIdentifier) {
             it.write(resultProto.build().toByteArray())
         }.also {
             report.putString(bundleKeyPrefix + OutputFileType.RESULT_BIN_PROTO, it.absolutePath)
@@ -286,28 +295,30 @@ open class ScreenshotTestRule(
         InstrumentationRegistry.getInstrumentation().sendStatus(bundleStatusInProgress, report)
     }
 
-    internal fun getPathOnDeviceFor(fileType: OutputFileType): File {
+    internal fun getPathOnDeviceFor(fileType: OutputFileType, goldenIdentifier: String): File {
+        val imageSuffix = "${goldenImagePathManager}_$goldenIdentifier$imageExtension"
         val fileName = when (fileType) {
             OutputFileType.IMAGE_ACTUAL ->
-                "${testIdentifier}_actual_$goldenImagePathManager.$imageExtension"
+                "${testIdentifier}_actual_$imageSuffix"
             OutputFileType.IMAGE_EXPECTED ->
-                "${testIdentifier}_expected_$goldenImagePathManager.$imageExtension"
+                "${testIdentifier}_expected_$imageSuffix"
             OutputFileType.IMAGE_DIFF ->
-                "${testIdentifier}_diff_$goldenImagePathManager.$imageExtension"
+                "${testIdentifier}_diff_$imageSuffix"
             OutputFileType.RESULT_PROTO -> "${testIdentifier}_$resultProtoFileSuffix"
             OutputFileType.RESULT_BIN_PROTO -> "${testIdentifier}_$resultBinaryProtoFileSuffix"
         }
         return File(goldenImagePathManager.deviceLocalPath, fileName)
     }
 
-    private fun Bitmap.writeToDevice(fileType: OutputFileType): File {
-        return writeToDevice(fileType) {
+    private fun Bitmap.writeToDevice(fileType: OutputFileType, goldenIdentifier: String): File {
+        return writeToDevice(fileType, goldenIdentifier) {
             compress(Bitmap.CompressFormat.PNG, 0 /*ignored for png*/, it)
         }
     }
 
     private fun writeToDevice(
         fileType: OutputFileType,
+        goldenIdentifier: String,
         writeAction: (FileOutputStream) -> Unit
     ): File {
         val fileGolden = File(goldenImagePathManager.deviceLocalPath)
@@ -315,7 +326,7 @@ open class ScreenshotTestRule(
             throw IOException("Could not create folder $fileGolden.")
         }
 
-        var file = getPathOnDeviceFor(fileType)
+        var file = getPathOnDeviceFor(fileType, goldenIdentifier)
         try {
             FileOutputStream(file).use {
                 writeAction(it)
@@ -400,6 +411,44 @@ open class ScreenshotTestRule(
             }
         }
         return Bitmap.createBitmap(bitmapArray, original.width, original.height, original.config)
+    }
+}
+
+typealias BitmapSupplier = () -> Bitmap
+
+/**
+ * Implements a screenshot asserter based on the ScreenshotRule
+ */
+class ScreenshotRuleAsserter private constructor(private val rule: ScreenshotTestRule) : ScreenshotAsserter {
+    // use the most constraining matcher as default
+    private var matcher: BitmapMatcher = PixelPerfectMatcher()
+    // use the instrumentation screenshot as default
+    private var screenShotter: BitmapSupplier = { Screenshot.capture().bitmap }
+    override fun assertGoldenImage(goldenId: String) {
+        rule.assertBitmapAgainstGolden(screenShotter(), goldenId, matcher)
+    }
+
+    override fun assertGoldenImage(goldenId: String, areas: List<Rect>) {
+        rule.assertBitmapAgainstGolden(screenShotter(), goldenId, matcher, areas)
+    }
+
+    class Builder(private val rule: ScreenshotTestRule) {
+        private var asserter = ScreenshotRuleAsserter(rule)
+        fun withMatcher(matcher: BitmapMatcher): Builder {
+            asserter.matcher = matcher
+            return this
+        }
+
+        fun setScreenshotProvider(screenshotProvider: BitmapSupplier): Builder {
+            asserter.screenShotter = screenshotProvider
+            return this
+        }
+
+        fun build(): ScreenshotAsserter {
+            val built = asserter
+            asserter = ScreenshotRuleAsserter(rule)
+            return built
+        }
     }
 }
 

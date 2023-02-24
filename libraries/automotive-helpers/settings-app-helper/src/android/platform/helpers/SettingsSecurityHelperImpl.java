@@ -3,11 +3,14 @@ package android.platform.helpers;
 import android.app.Instrumentation;
 import android.support.test.uiautomator.By;
 import android.support.test.uiautomator.UiObject2;
+import android.os.SystemClock;
 
 import java.util.List;
 
 public class SettingsSecurityHelperImpl extends AbstractAutoStandardAppHelper
         implements IAutoSecuritySettingsHelper {
+    private static final int UI_RESPONSE_WAIT_MS = 1000;
+
     public SettingsSecurityHelperImpl(Instrumentation instr) {
         super(instr);
     }
@@ -37,6 +40,7 @@ public class SettingsSecurityHelperImpl extends AbstractAutoStandardAppHelper
     }
 
     private void openChooseLockTypeMenu() {
+        SystemClock.sleep(UI_RESPONSE_WAIT_MS);
         List<UiObject2> titles =
                 findUiObjects(
                         getResourceFromConfig(
@@ -182,6 +186,7 @@ public class SettingsSecurityHelperImpl extends AbstractAutoStandardAppHelper
                                 AutoConfigConstants.LOCK_TYPE_NONE));
         clickAndWaitForWindowUpdate(
                 getApplicationConfig(AutoConfigConstants.SETTINGS_PACKAGE), none_menu);
+        SystemClock.sleep(UI_RESPONSE_WAIT_MS);
         UiObject2 remove_button =
                 findUiObject(
                         getResourceFromConfig(

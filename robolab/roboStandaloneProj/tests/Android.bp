@@ -29,13 +29,12 @@ android_robolectric_test {
     java_resource_dirs: ["config"],
 
     libs: [
-        "Robolectric_all-target",
-        "robolectric_android-all-stub",
         "androidx.test.core",
         "androidx.test.runner",
+        "RobolectricTestUtils",
     ],
 
     instrumentation_for: "MyRoboApplication",
 
-    test_suites: ["general-tests"],
+    upstream: true,
 }

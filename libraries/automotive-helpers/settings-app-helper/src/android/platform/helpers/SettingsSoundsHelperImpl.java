@@ -82,6 +82,7 @@ public class SettingsSoundsHelperImpl extends AbstractAutoStandardAppHelper
         }
         int volumeGroupId = mCarAudioManager.getVolumeGroupIdForUsage(audioAttribute);
         mCarAudioManager.setGroupVolume(volumeGroupId, index, VOLUME_FLAGS);
+        SystemClock.sleep(SHORT_UI_RESPONSE_TIME);
     }
 
     /** {@inheritDoc} */
@@ -150,6 +151,8 @@ public class SettingsSoundsHelperImpl extends AbstractAutoStandardAppHelper
                                 AutoConfigConstants.SOUND_SETTINGS,
                                 AutoConfigConstants.SAVE_BUTTON));
         saveButton.click();
+        // TODO(b/235250932): Make these pauses only run against emulators.
+        SystemClock.sleep(SHORT_UI_RESPONSE_TIME);
     }
 
     /** {@inheritDoc} */
@@ -167,6 +170,7 @@ public class SettingsSoundsHelperImpl extends AbstractAutoStandardAppHelper
                 type = "Phone ringtone";
                 break;
         }
+        SystemClock.sleep(SHORT_UI_RESPONSE_TIME);
         UiObject2 object = scrollAndFindUiObject(By.text(type), getScrollScreenIndex());
         List<UiObject2> list = object.getParent().getChildren();
         if (list.size() < 2) {

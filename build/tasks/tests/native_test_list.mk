@@ -32,14 +32,12 @@ native_tests := \
     audio_health_tests \
     bionic-unit-tests \
     bionic-unit-tests-static \
-    bluetoothtbd_test \
     bluetooth_test_common \
     bootstat_tests \
     boringssl_crypto_test \
     boringssl_ssl_test \
     bsdiff_unittest \
     buffer_hub-test \
-    buffer_hub_queue-test \
     bugreportz_test \
     bytes_test_tests_test_buf \
     bytes_test_tests_test_buf_mut \
@@ -207,7 +205,6 @@ native_tests := \
     tokio_test_tests_sync_barrier \
     tokio_test_tests_sync_broadcast \
     tokio_test_tests_sync_errors \
-    tokio_test_tests_sync_mpsc \
     tokio_test_tests_sync_mutex \
     tokio_test_tests_sync_mutex_owned \
     tokio_test_tests_sync_notify \

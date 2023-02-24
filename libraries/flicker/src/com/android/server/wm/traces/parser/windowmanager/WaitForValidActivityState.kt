@@ -110,9 +110,6 @@ data class WaitForValidActivityState(
                 WindowConfiguration.WINDOWING_MODE_UNDEFINED -> "UNDEFINED"
                 WindowConfiguration.WINDOWING_MODE_FULLSCREEN -> "FULLSCREEN"
                 WindowConfiguration.WINDOWING_MODE_PINNED -> "PINNED"
-                WindowConfiguration.WINDOWING_MODE_SPLIT_SCREEN_PRIMARY -> "SPLIT_SCREEN_PRIMARY"
-                WindowConfiguration.WINDOWING_MODE_SPLIT_SCREEN_SECONDARY ->
-                    "SPLIT_SCREEN_SECONDARY"
                 WindowConfiguration.WINDOWING_MODE_FREEFORM -> "FREEFORM"
                 else -> throw IllegalArgumentException("Unknown WINDOWING_MODE_: $windowingMode")
             }

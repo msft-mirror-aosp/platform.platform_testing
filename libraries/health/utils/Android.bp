@@ -23,6 +23,7 @@ java_library_static {
     ],
     libs: [
         "androidx.test.runner",
+        "ub-uiautomator",
     ],
     min_sdk_version: "26",
 }

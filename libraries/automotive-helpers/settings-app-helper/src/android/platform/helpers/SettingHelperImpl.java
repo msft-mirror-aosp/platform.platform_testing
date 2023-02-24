@@ -113,6 +113,7 @@ public class SettingHelperImpl extends AbstractAutoStandardAppHelper implements 
 
     @Override
     public void findSettingMenuAndClick(String setting) {
+        SystemClock.sleep(UI_RESPONSE_WAIT_MS);
         UiObject2 settingMenu = findSettingMenu(setting);
         if (settingMenu != null) {
             clickAndWaitForIdleScreen(settingMenu);
@@ -212,6 +213,19 @@ public class SettingHelperImpl extends AbstractAutoStandardAppHelper implements 
             throw new RuntimeException(
                     "Hotspot enabled state is already " + (onOff ? "on" : "off"));
         }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void toggleHotspot() {
+        UiObject2 enableOption =
+                findUiObject(
+                        getResourceFromConfig(
+                                AutoConfigConstants.SETTINGS,
+                                AutoConfigConstants.NETWORK_AND_INTERNET_SETTINGS,
+                                AutoConfigConstants.TOGGLE_HOTSPOT));
+        clickAndWaitForWindowUpdate(
+                getApplicationConfig(AutoConfigConstants.SETTINGS_PACKAGE), enableOption);
     }
 
     /** {@inheritDoc} */
