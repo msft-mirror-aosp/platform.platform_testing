@@ -512,11 +512,11 @@
       "VALUE": "empty_notification_text",
       "PACKAGE": "com.android.systemui"
     },
-    "NOTIFICATION_LIST_SCROLL_FORWARD": {
+    "NOTIFICATION_LIST_SCROLL_FORWARD_BUTTON": {
       "TYPE": "DESCRIPTION",
       "VALUE": "Scroll Down"
     },
-    "NOTIFICATION_LIST_SCROLL_BACKWARD": {
+    "NOTIFICATION_LIST_SCROLL_BACKWARD_BUTTON": {
       "TYPE": "DESCRIPTION",
       "VALUE": "Scroll Up"
     },
@@ -598,7 +598,7 @@
     "SYSTEM_SETTINGS_SCROLL_FORWARD_BUTTON": {
       "TYPE": "RESOURCE_ID",
       "VALUE": "car_ui_scrollbar_page_down",
-     "PACKAGE": "com.android.car.ui.sharedlibrary"
+      "PACKAGE": "com.android.car.ui.sharedlibrary"
     },
     "SYSTEM_SETTINGS_SCROLL_BACKWARD_BUTTON": {
       "TYPE": "RESOURCE_ID",
