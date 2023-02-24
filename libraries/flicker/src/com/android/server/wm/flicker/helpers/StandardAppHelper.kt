@@ -145,7 +145,7 @@ open class StandardAppHelper(
     ) {
         withPerfettoTrace("${this::class.simpleName}#launchAppViaIntent") {
             val intent = openAppIntent
-            intent.action = action
+            intent.action = action ?: Intent.ACTION_MAIN
             stringExtras.forEach { intent.putExtra(it.key, it.value) }
             context.startActivity(intent)
         }

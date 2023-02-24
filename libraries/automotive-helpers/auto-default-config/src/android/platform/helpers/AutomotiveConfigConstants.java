@@ -144,10 +144,10 @@ public class AutomotiveConfigConstants {
     public static final String NOTIFICATION_TITLE = "NOTIFICATION_TITLE";
     public static final String NOTIFICATION_BODY = "NOTIFICATION_BODY";
     public static final String NOTIFICATION_LIST_EMPTY = "NOTIFICATION_LIST_EMPTY";
-    public static final String NOTIFICATION_LIST_SCROLL_FORWARD =
-            "NOTIFICATION_LIST_SCROLL_FORWARD";
-    public static final String NOTIFICATION_LIST_SCROLL_BACKWARD =
-            "NOTIFICATION_LIST_SCROLL_BACKWARD";
+    public static final String NOTIFICATION_LIST_SCROLL_FORWARD_BUTTON =
+            "NOTIFICATION_LIST_SCROLL_FORWARD_BUTTON";
+    public static final String NOTIFICATION_LIST_SCROLL_BACKWARD_BUTTON =
+            "NOTIFICATION_LIST_SCROLL_BACKWARD_BUTTON";
     public static final String NOTIFICATION_LIST_SCROLL_ACTION = "NOTIFICATION_LIST_SCROLL_ACTION";
     public static final String NOTIFICATION_LIST_SCROLL_DIRECTION =
             "NOTIFICATION_LIST_SCROLL_DIRECTION";
@@ -223,7 +223,49 @@ public class AutomotiveConfigConstants {
     public static final String SOUND_SETTINGS_SCROLL_MARGIN = "SOUND_SETTINGS_SCROLL_MARGIN";
     public static final String SOUND_SETTINGS_SCROLL_WAIT_TIME = "SOUND_SETTINGS_SCROLL_WAIT_TIME";
 
-    // Setting Constants
+    // Media Center
+    public static final String MEDIA_CENTER_PACKAGE = "MEDIA_CENTER_PACKAGE";
+    public static final String MEDIA_LAUNCH_COMMAND = "MEDIA_LAUNCH_COMMAND";
+    // Media Center Screen
+    public static final String PLAY_PAUSE_BUTTON = "PLAY_PAUSE_BUTTON";
+    public static final String MEDIA_SONGS_LIST = "MEDIA_SONGS_LIST";
+    // NEXT_BUTTON from Account Settings
+    public static final String PREVIOUS_BUTTON = "PREVIOUS_BUTTON";
+    public static final String SHUFFLE_BUTTON = "SHUFFLE_BUTTON";
+    public static final String MINIMIZED_MEDIA_CONTROLS = "MINIMIZED_MEDIA_CONTROLS";
+    public static final String TRACK_NAME = "TRACK_NAME";
+    public static final String TRACK_NAME_MINIMIZED_CONTROL = "TRACK_NAME_MINIMIZED_CONTROL";
+    public static final String BACK_BUTTON = "BACK_BUTTON";
+    // Media Center On Home Screen
+    public static final String PLAY_PAUSE_BUTTON_HOME_SCREEN = "PLAY_PAUSE_BUTTON_HOME_SCREEN";
+    public static final String PREVIOUS_BUTTON_HOME_SCREEN = "PREVIOUS_BUTTON_HOME_SCREEN";
+    public static final String NEXT_BUTTON_HOME_SCREEN = "NEXT_BUTTON_HOME_SCREEN";
+    public static final String TRACK_NAME_HOME_SCREEN = "TRACK_NAME_HOME_SCREEN";
+    // Media Apps Grid
+    public static final String MEDIA_APPS_GRID_TITLE = "MEDIA_APPS_GRID_TITLE";
+    // Media App UI View
+    public static final String MEDIA_APP_TITLE = "MEDIA_APP_TITLE";
+    public static final String MEDIA_APP_DROP_DOWN_MENU = "MEDIA_APP_DROP_DOWN_MENU";
+    public static final String MEDIA_APP_NAVIGATION_ICON = "MEDIA_APP_NAVIGATION_ICON";
+    public static final String MEDIA_APP_NO_LOGIN_MSG = "MEDIA_APP_NO_LOGIN_MSG";
+    // Test Media App
+    public static final String TEST_MEDIA_ACCOUNT_TYPE = "TEST_MEDIA_ACCOUNT_TYPE";
+    public static final String TEST_MEDIA_ACCOUNT_TYPE_PAID = "TEST_MEDIA_ACCOUNT_TYPE_PAID";
+    public static final String TEST_MEDIA_ROOT_NODE_TYPE = "TEST_MEDIA_ROOT_NODE_TYPE";
+    public static final String TEST_MEDIA_ROOT_NODE_TYPE_BROWSABLE =
+            "TEST_MEDIA_ROOT_NODE_TYPE_BROWSABLE";
+    public static final String TEST_MEDIA_APP_CLOSE_SETTING = "TEST_MEDIA_APP_CLOSE_SETTING";
+    // Same NEXT_BUTTON is applicable for Media Center
+    public static final String NEXT_BUTTON = "NEXT_BUTTON";
+    public static final String DONE_BUTTON = "DONE_BUTTON";
+    public static final String MEDIA_APP_SCROLL_ACTION = "MEDIA_APP_SCROLL_ACTION";
+    public static final String MEDIA_APP_SCROLL_DIRECTION = "MEDIA_APP_SCROLL_DIRECTION";
+    public static final String MEDIA_APP_SCROLL_FORWARD_BUTTON = "MEDIA_APP_SCROLL_FORWARD_BUTTON";
+    public static final String MEDIA_APP_SCROLL_BACKWARD_BUTTON =
+            "MEDIA_APP_SCROLL_BACKWARD_BUTTON";
+    public static final String MEDIA_APP_SCROLL_ELEMENT = "MEDIA_APP_SCROLL_ELEMENT";
+
+    // SETTINGS CONSTANTS
     public static final String OPEN_SETTINGS_COMMAND = "OPEN_SETTINGS_COMMAND";
     public static final String STOP_SETTING_APP_COMMAND = "STOP_SETTING_APP_COMMAND";
     public static final String TOGGLE_WIFI = "TOGGLE_WIFI";
