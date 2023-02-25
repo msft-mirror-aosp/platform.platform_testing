@@ -103,12 +103,12 @@
     "CONTACT_LIST_SCROLL_FORWARD": {
       "TYPE": "RESOURCE_ID",
       "VALUE": "car_ui_scrollbar_page_down",
-      "PACKAGE": "com.android.car.dialer"
+      "PACKAGE": "com.android.car.ui.sharedlibrary"
     },
     "CONTACT_LIST_SCROLL_BACKWARD": {
       "TYPE": "RESOURCE_ID",
       "VALUE": "car_ui_scrollbar_page_up",
-      "PACKAGE": "com.android.car.dialer"
+      "PACKAGE": "com.android.car.ui.sharedlibrary"
     },
     "CONTACT_LIST_SCROLL_ELEMENT": {
       "TYPE": "RESOURCE_ID",
@@ -141,6 +141,11 @@
     "SEARCH_RESULT": {
       "TYPE": "RESOURCE_ID",
       "VALUE": "contact_name",
+      "PACKAGE": "com.android.car.dialer"
+    },
+    "SEARCH_BACK_BUTTON": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "car_ui_toolbar_nav_icon_container",
       "PACKAGE": "com.android.car.dialer"
     },
     "CONTACT_SETTING_SCROLL_FORWARD": {

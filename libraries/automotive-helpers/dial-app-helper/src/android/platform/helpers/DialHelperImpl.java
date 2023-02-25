@@ -302,8 +302,16 @@ public class DialHelperImpl extends AbstractStandardAppHelper implements IAutoDi
         UiObject2 searchResult = getSpectatioUiUtil().findUiObject(searchResultSelector);
         validateUiObject(searchResult, AutomotiveConfigConstants.SEARCH_RESULT);
         String result = searchResult.getText();
-        getSpectatioUiUtil().pressBack();
+        exitSearchResultPage();
         return result;
+    }
+
+    private void exitSearchResultPage() {
+        BySelector searchBackButtonSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.SEARCH_BACK_BUTTON);
+        UiObject2 searchBackButton = getSpectatioUiUtil().findUiObject(searchBackButtonSelector);
+        validateUiObject(searchBackButton, AutomotiveConfigConstants.SEARCH_BACK_BUTTON);
+        getSpectatioUiUtil().clickAndWait(searchBackButton);
     }
 
     private void openContactOrder() {
