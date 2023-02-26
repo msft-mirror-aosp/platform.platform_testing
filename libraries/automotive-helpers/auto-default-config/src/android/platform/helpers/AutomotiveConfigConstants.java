@@ -42,6 +42,7 @@ public class AutomotiveConfigConstants {
     public static final String DIALED_CONTACT_TYPE = "DIALED_CONTACT_TYPE";
     public static final String CONTACT_SEARCH_BAR = "CONTACT_SEARCH_BAR";
     public static final String SEARCH_RESULT = "SEARCH_RESULT";
+    public static final String SEARCH_BACK_BUTTON = "SEARCH_BACK_BUTTON";
     public static final String CONTACT_SETTING_SCROLL_ACTION = "CONTACT_SETTING_SCROLL_ACTION";
     public static final String CONTACT_SETTING_SCROLL_FORWARD = "CONTACT_SETTING_SCROLL_FORWARD";
     public static final String CONTACT_SETTING_SCROLL_BACKWARD = "CONTACT_SETTING_SCROLL_BACKWARD";
