@@ -1,8 +1,0 @@
-[
-  {
-    "componentToTypeMap": {
-      "openingLayerName_toBeCompleted": "OPENING_APP",
-      "closingLayerName_toBeCompleted": "CLOSING_APP"
-    }
-  }
-]
