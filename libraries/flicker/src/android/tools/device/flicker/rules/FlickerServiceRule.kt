@@ -43,15 +43,16 @@ import org.junit.runner.notification.Failure
 open class FlickerServiceRule
 @JvmOverloads
 constructor(
+    private val enabled: Boolean = true,
+    // defaults to true
+    private val failTestOnFaasFailure: Boolean =
+        InstrumentationRegistry.getArguments().getString("faas:blocking")?.let { it.toBoolean() }
+            ?: enabled,
     private val metricsCollector: IFlickerServiceResultsCollector =
         FlickerServiceResultsCollector(
             tracesCollector = FlickerServiceTracesCollector(getDefaultFlickerOutputDir()),
             instrumentation = InstrumentationRegistry.getInstrumentation()
         ),
-    // defaults to true
-    private val failTestOnFaasFailure: Boolean =
-        InstrumentationRegistry.getArguments().getString("faas:blocking")?.let { it.toBoolean() }
-            ?: true
 ) : TestWatcher() {
 
     init {
@@ -61,29 +62,59 @@ constructor(
 
     /** Invoked when a test is about to start */
     public override fun starting(description: Description) {
-        CrossPlatform.log.i(LOG_TAG, "Test starting $description")
-        metricsCollector.testStarted(description)
+        if (enabled) {
+            handleStarting(description)
+        }
     }
 
     /** Invoked when a test succeeds */
     public override fun succeeded(description: Description) {
-        CrossPlatform.log.i(LOG_TAG, "Test succeeded $description")
+        if (enabled) {
+            handleSucceeded(description)
+        }
     }
 
     /** Invoked when a test fails */
     public override fun failed(e: Throwable?, description: Description) {
-        CrossPlatform.log.e(LOG_TAG, "$description test failed  with $e")
-        metricsCollector.testFailure(Failure(description, e))
+        if (enabled) {
+            handleFailed(e, description)
+        }
     }
 
     /** Invoked when a test is skipped due to a failed assumption. */
     public override fun skipped(e: AssumptionViolatedException, description: Description) {
-        CrossPlatform.log.i(LOG_TAG, "Test skipped $description with $e")
-        metricsCollector.testSkipped(description)
+        if (enabled) {
+            handleSkipped(e, description)
+        }
     }
 
     /** Invoked when a test method finishes (whether passing or failing) */
     public override fun finished(description: Description) {
+        if (enabled) {
+            handleFinished(description)
+        }
+    }
+
+    private fun handleStarting(description: Description) {
+        CrossPlatform.log.i(LOG_TAG, "Test starting $description")
+        metricsCollector.testStarted(description)
+    }
+
+    private fun handleSucceeded(description: Description) {
+        CrossPlatform.log.i(LOG_TAG, "Test succeeded $description")
+    }
+
+    private fun handleFailed(e: Throwable?, description: Description) {
+        CrossPlatform.log.e(LOG_TAG, "$description test failed  with $e")
+        metricsCollector.testFailure(Failure(description, e))
+    }
+
+    private fun handleSkipped(e: AssumptionViolatedException, description: Description) {
+        CrossPlatform.log.i(LOG_TAG, "Test skipped $description with $e")
+        metricsCollector.testSkipped(description)
+    }
+
+    private fun handleFinished(description: Description) {
         CrossPlatform.log.i(LOG_TAG, "Test finished $description")
         metricsCollector.testFinished(description)
         if (metricsCollector.executionErrors.isNotEmpty()) {
