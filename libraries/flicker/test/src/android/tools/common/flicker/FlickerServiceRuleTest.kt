@@ -52,7 +52,7 @@ class FlickerServiceRuleTest {
     fun startsTraceCollectionOnTestStarting() {
         val mockFlickerServiceResultsCollector =
             Mockito.mock(IFlickerServiceResultsCollector::class.java)
-        val testRule = FlickerServiceRule(mockFlickerServiceResultsCollector)
+        val testRule = FlickerServiceRule(metricsCollector = mockFlickerServiceResultsCollector)
         val mockDescription = Description.createTestDescription("MockClass", "mockTest")
 
         testRule.starting(mockDescription)
@@ -63,7 +63,7 @@ class FlickerServiceRuleTest {
     fun stopsTraceCollectionOnTestFinished() {
         val mockFlickerServiceResultsCollector =
             Mockito.mock(IFlickerServiceResultsCollector::class.java)
-        val testRule = FlickerServiceRule(mockFlickerServiceResultsCollector)
+        val testRule = FlickerServiceRule(metricsCollector = mockFlickerServiceResultsCollector)
         val mockDescription = Description.createTestDescription("MockClass", "mockTest")
 
         testRule.finished(mockDescription)
@@ -74,7 +74,7 @@ class FlickerServiceRuleTest {
     fun reportsFailuresToMetricsCollector() {
         val mockFlickerServiceResultsCollector =
             Mockito.mock(IFlickerServiceResultsCollector::class.java)
-        val testRule = FlickerServiceRule(mockFlickerServiceResultsCollector)
+        val testRule = FlickerServiceRule(metricsCollector = mockFlickerServiceResultsCollector)
         val mockDescription = Description.createTestDescription("MockClass", "mockTest")
         val mockError = Throwable("Mock error")
 
@@ -91,7 +91,7 @@ class FlickerServiceRuleTest {
     fun reportsSkippedToMetricsCollector() {
         val mockFlickerServiceResultsCollector =
             Mockito.mock(IFlickerServiceResultsCollector::class.java)
-        val testRule = FlickerServiceRule(mockFlickerServiceResultsCollector)
+        val testRule = FlickerServiceRule(metricsCollector = mockFlickerServiceResultsCollector)
         val mockDescription = Description.createTestDescription("MockClass", "mockTest")
         val mockAssumptionFailure = AssumptionViolatedException("Mock error")
 
@@ -104,7 +104,10 @@ class FlickerServiceRuleTest {
         val mockFlickerServiceResultsCollector =
             Mockito.mock(IFlickerServiceResultsCollector::class.java)
         val testRule =
-            FlickerServiceRule(mockFlickerServiceResultsCollector, failTestOnFaasFailure = false)
+            FlickerServiceRule(
+                metricsCollector = mockFlickerServiceResultsCollector,
+                failTestOnFaasFailure = false
+            )
         val mockDescription = Description.createTestDescription("MockClass", "mockTest")
 
         val assertionError = Throwable("Some assertion error")
@@ -123,7 +126,10 @@ class FlickerServiceRuleTest {
         val mockFlickerServiceResultsCollector =
             Mockito.mock(IFlickerServiceResultsCollector::class.java)
         val testRule =
-            FlickerServiceRule(mockFlickerServiceResultsCollector, failTestOnFaasFailure = true)
+            FlickerServiceRule(
+                metricsCollector = mockFlickerServiceResultsCollector,
+                failTestOnFaasFailure = true
+            )
         val mockDescription = Description.createTestDescription("MockClass", "mockTest")
 
         val assertionError = Throwable("Some assertion error")
@@ -147,7 +153,10 @@ class FlickerServiceRuleTest {
         val mockFlickerServiceResultsCollector =
             Mockito.mock(IFlickerServiceResultsCollector::class.java)
         val testRule =
-            FlickerServiceRule(mockFlickerServiceResultsCollector, failTestOnFaasFailure = true)
+            FlickerServiceRule(
+                metricsCollector = mockFlickerServiceResultsCollector,
+                failTestOnFaasFailure = true
+            )
         val mockDescription = Description.createTestDescription("MockClass", "mockTest")
 
         val executionError = Throwable(Consts.FAILURE)
@@ -162,6 +171,32 @@ class FlickerServiceRuleTest {
         } catch (e: Throwable) {
             Truth.assertThat(e).isEqualTo(executionError)
         }
+    }
+
+    @Test
+    fun canBeDisabled() {
+        val mockFlickerServiceResultsCollector =
+            Mockito.mock(IFlickerServiceResultsCollector::class.java)
+        val testRule =
+            FlickerServiceRule(
+                enabled = false,
+                metricsCollector = mockFlickerServiceResultsCollector,
+                failTestOnFaasFailure = true
+            )
+
+        val mockDescription = Description.createTestDescription("MockClass", "mockTest")
+
+        val executionError = Throwable(Consts.FAILURE)
+        `when`(mockFlickerServiceResultsCollector.executionErrors)
+            .thenReturn(listOf(executionError))
+
+        testRule.starting(mockDescription)
+        testRule.succeeded(mockDescription)
+        testRule.finished(mockDescription)
+        testRule.failed(Throwable(), mockDescription)
+        testRule.skipped(Mockito.mock(AssumptionViolatedException::class.java), mockDescription)
+
+        Mockito.verifyZeroInteractions(mockFlickerServiceResultsCollector)
     }
 
     companion object {

@@ -22,7 +22,6 @@ import android.os.SystemClock
 import android.tools.InitRule
 import android.tools.TEST_SCENARIO
 import android.tools.assertExceptionMessage
-import android.tools.assertExceptionMessageCause
 import android.tools.assertThrows
 import android.tools.device.flicker.legacy.AbstractFlickerTestData
 import android.tools.device.flicker.legacy.IFlickerTestData
