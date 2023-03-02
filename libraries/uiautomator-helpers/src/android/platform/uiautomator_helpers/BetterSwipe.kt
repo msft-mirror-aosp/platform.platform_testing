@@ -162,7 +162,9 @@ object BetterSwipe {
                 getInstrumentation()
                     .uiAutomation
                     .injectInputEvent(event, sync, /* waitForAnimations= */ false)
-            ) { "Touch injection failed" }
+            ) {
+                "Touch injection failed"
+            }
             event.recycle()
         }
 

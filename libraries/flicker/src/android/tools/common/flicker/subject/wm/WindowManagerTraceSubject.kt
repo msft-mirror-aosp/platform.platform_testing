@@ -42,6 +42,7 @@ import android.tools.common.traces.wm.WindowState
  *        .showsAboveAppWindow("NavigationBar")
  *        .forAllEntries()
  * ```
+ *
  * Example2:
  * ```
  *    val trace = WindowManagerTraceParser().parse(myTraceFile)
@@ -88,11 +89,13 @@ class WindowManagerTraceSubject(
 
     /**
      * @return List of [WindowStateSubject]s matching [componentMatcher] in the order they
+     *
      * ```
      *      appear on the trace
      *
      * @param componentMatcher
      * ```
+     *
      * Components to search
      */
     fun windowStates(componentMatcher: IComponentMatcher): List<WindowStateSubject> = windowStates {
@@ -101,11 +104,13 @@ class WindowManagerTraceSubject(
 
     /**
      * @return List of [WindowStateSubject]s matching [predicate] in the order they
+     *
      * ```
      *      appear on the trace
      *
      * @param predicate
      * ```
+     *
      * To search
      */
     fun windowStates(predicate: (WindowState) -> Boolean): List<WindowStateSubject> {
@@ -139,7 +144,9 @@ class WindowManagerTraceSubject(
         addAssertion(
             "isAboveAppWindowVisible(${componentMatcher.toWindowIdentifier()})",
             isOptional
-        ) { it.isAboveAppWindowVisible(componentMatcher) }
+        ) {
+            it.isAboveAppWindowVisible(componentMatcher)
+        }
     }
 
     /** {@inheritDoc} */
@@ -155,7 +162,9 @@ class WindowManagerTraceSubject(
         addAssertion(
             "isAboveAppWindowInvisible(${componentMatcher.toWindowIdentifier()})",
             isOptional
-        ) { it.isAboveAppWindowInvisible(componentMatcher) }
+        ) {
+            it.isAboveAppWindowInvisible(componentMatcher)
+        }
     }
 
     /** {@inheritDoc} */
@@ -171,7 +180,9 @@ class WindowManagerTraceSubject(
         addAssertion(
             "isBelowAppWindowVisible(${componentMatcher.toWindowIdentifier()})",
             isOptional
-        ) { it.isBelowAppWindowVisible(componentMatcher) }
+        ) {
+            it.isBelowAppWindowVisible(componentMatcher)
+        }
     }
 
     /** {@inheritDoc} */
@@ -187,7 +198,9 @@ class WindowManagerTraceSubject(
         addAssertion(
             "isBelowAppWindowInvisible(${componentMatcher.toWindowIdentifier()})",
             isOptional
-        ) { it.isBelowAppWindowInvisible(componentMatcher) }
+        ) {
+            it.isBelowAppWindowInvisible(componentMatcher)
+        }
     }
 
     /** {@inheritDoc} */
@@ -203,7 +216,9 @@ class WindowManagerTraceSubject(
         addAssertion(
             "isNonAppWindowVisible(${componentMatcher.toWindowIdentifier()})",
             isOptional
-        ) { it.isNonAppWindowVisible(componentMatcher) }
+        ) {
+            it.isNonAppWindowVisible(componentMatcher)
+        }
     }
 
     /** {@inheritDoc} */
@@ -219,7 +234,9 @@ class WindowManagerTraceSubject(
         addAssertion(
             "isNonAppWindowInvisible(${componentMatcher.toWindowIdentifier()})",
             isOptional
-        ) { it.isNonAppWindowInvisible(componentMatcher) }
+        ) {
+            it.isNonAppWindowInvisible(componentMatcher)
+        }
     }
 
     /** {@inheritDoc} */
@@ -298,7 +315,9 @@ class WindowManagerTraceSubject(
         addAssertion(
             "isAppSnapshotStartingWindowVisibleFor(${componentMatcher.toWindowIdentifier()})",
             isOptional
-        ) { it.isAppSnapshotStartingWindowVisibleFor(componentMatcher) }
+        ) {
+            it.isAppSnapshotStartingWindowVisibleFor(componentMatcher)
+        }
     }
 
     /** {@inheritDoc} */
@@ -374,7 +393,9 @@ class WindowManagerTraceSubject(
         addAssertion(
             "containsAboveAppWindow(${componentMatcher.toWindowIdentifier()})",
             isOptional
-        ) { it.containsAboveAppWindow(componentMatcher) }
+        ) {
+            it.containsAboveAppWindow(componentMatcher)
+        }
     }
 
     /** {@inheritDoc} */
@@ -404,7 +425,9 @@ class WindowManagerTraceSubject(
         addAssertion(
             "containsBelowAppWindows(${componentMatcher.toWindowIdentifier()})",
             isOptional
-        ) { it.containsBelowAppWindow(componentMatcher) }
+        ) {
+            it.containsBelowAppWindow(componentMatcher)
+        }
     }
 
     /** {@inheritDoc} */

@@ -25,11 +25,14 @@ import kotlin.js.JsName
  * @param <T> The type of the object to validate.
  *
  * <p>Sample:</p> <pre> // Simple case. if (Condition.waitFor("true value", () -> true)) {
+ *
  * ```
  *     println("Success");
  * ```
+ *
  * } // Wait for customized result with customized validation. String result =
  * WaitForCondition.Builder(supplier = () -> "Result string")
+ *
  * ```
  *         .withCondition(str -> str.equals("Expected string"))
  *         .withRetryIntervalMs(500)
@@ -38,6 +41,7 @@ import kotlin.js.JsName
  *         .build()
  *         .waitFor()
  * ```
+ *
  * </pre>
  *
  * @param condition If it returns true, that means the condition is satisfied.

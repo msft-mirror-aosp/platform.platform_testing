@@ -210,12 +210,16 @@ class TraceParserTest {
             fromBefore ||
                 fromAfter ||
                 mockTraceForSliceTests.entries.map { it.timestamp.elapsedNanos }.contains(from)
-        ) { "`from` need to be in the trace or before or after all entries" }
+        ) {
+            "`from` need to be in the trace or before or after all entries"
+        }
         require(
             toBefore ||
                 toAfter ||
                 mockTraceForSliceTests.entries.map { it.timestamp.elapsedNanos }.contains(to)
-        ) { "`to` need to be in the trace or before or after all entries" }
+        ) {
+            "`to` need to be in the trace or before or after all entries"
+        }
 
         testSliceWithOutInitialEntry(from, to, expected)
         if (!fromAfter) {

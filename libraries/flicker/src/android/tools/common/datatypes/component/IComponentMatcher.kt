@@ -30,67 +30,59 @@ interface IComponentMatcher {
     }
 
     /**
-     * @return if any of the [components] matches [window]
-     *
      * @param window to search
+     * @return if any of the [components] matches [window]
      */
     @JsName("windowMatchesAnyOf")
     fun windowMatchesAnyOf(window: WindowContainer): Boolean = windowMatchesAnyOf(arrayOf(window))
 
     /**
-     * @return if any of the [components] matches any of [windows]
-     *
      * @param windows to search
+     * @return if any of the [components] matches any of [windows]
      */
     @JsName("windowMatchesAnyOfCollection")
     fun windowMatchesAnyOf(windows: Collection<WindowContainer>): Boolean =
         windowMatchesAnyOf(windows.toTypedArray())
 
     /**
-     * @return if any of the [windows] fit the matching conditions of the matcher
-     *
      * @param windows to search
+     * @return if any of the [windows] fit the matching conditions of the matcher
      */
     @JsName("windowMatchesAnyOfArray")
     fun windowMatchesAnyOf(windows: Array<WindowContainer>): Boolean
 
     /**
-     * @return if any of the [components] matches [activity]
-     *
      * @param activity to search
+     * @return if any of the [components] matches [activity]
      */
     @JsName("activityMatchesAnyOf")
     fun activityMatchesAnyOf(activity: Activity): Boolean = activityMatchesAnyOf(arrayOf(activity))
 
     /**
-     * @return if any of the [components] matches any of [activities]
-     *
      * @param activities to search
+     * @return if any of the [components] matches any of [activities]
      */
     @JsName("activityMatchesAnyOfCollection")
     fun activityMatchesAnyOf(activities: Collection<Activity>): Boolean =
         activityMatchesAnyOf(activities.toTypedArray())
 
     /**
-     * @return if any of the [components] matches any of [activities]
-     *
      * @param activities to search
+     * @return if any of the [components] matches any of [activities]
      */
     @JsName("activityMatchesAnyOfArray")
     fun activityMatchesAnyOf(activities: Array<Activity>): Boolean
 
     /**
-     * @return if any of the [components] matches [layer]
-     *
      * @param layer to search
+     * @return if any of the [components] matches [layer]
      */
     @JsName("layerMatchesAnyOf")
     fun layerMatchesAnyOf(layer: Layer): Boolean = layerMatchesAnyOf(arrayOf(layer))
 
     /**
-     * @return if any of the [components] matches any of [layers]
-     *
      * @param layers to search
+     * @return if any of the [components] matches any of [layers]
      */
     @JsName("layerMatchesAnyOfCollection")
     fun layerMatchesAnyOf(layers: Collection<Layer>): Boolean =
@@ -100,6 +92,7 @@ interface IComponentMatcher {
 
     /**
      * @return an identifier string that provides enough information to determine which activities
+     *
      * ```
      *         the matcher is looking to match. Mostly used for debugging purposes in error messages
      * ```
@@ -108,6 +101,7 @@ interface IComponentMatcher {
 
     /**
      * @return an identifier string that provides enough information to determine which windows the
+     *
      * ```
      *         matcher is looking to match. Mostly used for debugging purposes in error messages.
      * ```
@@ -116,6 +110,7 @@ interface IComponentMatcher {
 
     /**
      * @return an identifier string that provides enough information to determine which layers the
+     *
      * ```
      *         matcher is looking to match. Mostly used for debugging purposes in error messages.
      * ```
@@ -125,11 +120,14 @@ interface IComponentMatcher {
     /**
      * @param layers Collection of layers check for matches
      * @param condition A function taking the matched layers of a base level component and returning
+     *
      * ```
      *              true or false base on if the check succeeded.
      * @return
      * ```
+     *
      * true iff all the check condition is satisfied according to the ComponentMatcher's
+     *
      * ```
      *         defined execution of it.
      * ```

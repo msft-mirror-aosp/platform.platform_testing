@@ -29,9 +29,8 @@ import android.tools.common.traces.wm.WindowContainer
  */
 class FullComponentIdMatcher(val windowId: Int, val layerId: Int) : IComponentMatcher {
     /**
-     * @return if any of the [components] matches any of [windows]
-     *
      * @param windows to search
+     * @return if any of the [components] matches any of [windows]
      */
     override fun windowMatchesAnyOf(windows: Array<WindowContainer>): Boolean =
         windows.any {
@@ -44,17 +43,15 @@ class FullComponentIdMatcher(val windowId: Int, val layerId: Int) : IComponentMa
         }
 
     /**
-     * @return if any of the [components] matches any of [activities]
-     *
      * @param activities to search
+     * @return if any of the [components] matches any of [activities]
      */
     override fun activityMatchesAnyOf(activities: Array<Activity>) =
         activities.any { it.token == windowId.toString(16) }
 
     /**
-     * @return if any of the [components] matches any of [layers]
-     *
      * @param layers to search
+     * @return if any of the [components] matches any of [layers]
      */
     override fun layerMatchesAnyOf(layers: Array<Layer>) =
         layers.any {

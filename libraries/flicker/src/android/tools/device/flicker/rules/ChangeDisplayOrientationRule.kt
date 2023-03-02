@@ -35,6 +35,7 @@ import org.junit.runner.Description
  * @param targetOrientation Target orientation
  * @param instrumentation Instrumentation mechanism to use
  * @param clearCacheAfterParsing If the caching used while parsing the proto should be
+ *
  * ```
  *                               cleared or remain in memory
  * ```

@@ -42,6 +42,7 @@ import android.tools.common.traces.surfaceflinger.LayersTrace
  *        .coversExactly(DISPLAY_AREA)
  *        .forAllEntries()
  * ```
+ *
  * Example2:
  * ```
  *    val trace = LayersTraceParser().parse(myTraceFile)
@@ -193,7 +194,9 @@ class LayersTraceSubject(
         addAssertion(
             "isSplashScreenVisibleFor(${componentMatcher.toLayerIdentifier()})",
             isOptional
-        ) { it.isSplashScreenVisibleFor(componentMatcher) }
+        ) {
+            it.isSplashScreenVisibleFor(componentMatcher)
+        }
     }
 
     /** See [visibleRegion] */

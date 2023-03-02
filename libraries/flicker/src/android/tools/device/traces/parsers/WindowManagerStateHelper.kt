@@ -81,10 +81,9 @@ constructor(
     }
 
     /**
-     * @return a [WindowState] from the current device state matching [componentMatcher], or null
-     * otherwise
-     *
      * @param componentMatcher Components to search
+     * @return a [WindowState] from the current device state matching [componentMatcher], or null
+     *   otherwise
      */
     fun getWindow(componentMatcher: IComponentMatcher): WindowState? {
         return this.currentState.wmState.windowStates.firstOrNull {
@@ -93,9 +92,8 @@ constructor(
     }
 
     /**
-     * @return The frame [Region] a [WindowState] matching [componentMatcher]
-     *
      * @param componentMatcher Components to search
+     * @return The frame [Region] a [WindowState] matching [componentMatcher]
      */
     fun getWindowRegion(componentMatcher: IComponentMatcher): Region =
         getWindow(componentMatcher)?.frameRegion ?: Region.EMPTY
@@ -236,7 +234,9 @@ constructor(
             add(
                 Condition(
                     "state of ${componentMatcher.toActivityIdentifier()} to be $activityState"
-                ) { it.wmState.hasActivityState(componentMatcher, activityState) }
+                ) {
+                    it.wmState.hasActivityState(componentMatcher, activityState)
+                }
             )
 
         /**
@@ -333,7 +333,6 @@ constructor(
 
         /**
          * Waits until a window is in PIP mode. That is:
-         *
          * - wait until a window is pinned ([WindowManagerState.pinnedWindows])
          * - no layers animating
          * - and [ComponentNameMatcher.PIP_CONTENT_OVERLAY] is no longer visible
@@ -346,7 +345,6 @@ constructor(
 
         /**
          * Waits until a window is no longer in PIP mode. That is:
-         *
          * - wait until there are no pinned ([WindowManagerState.pinnedWindows])
          * - no layers animating
          * - and [ComponentNameMatcher.PIP_CONTENT_OVERLAY] is no longer visible

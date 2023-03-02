@@ -41,9 +41,8 @@ class DisplayArea(
             }
 
     /**
-     * @return if [componentMatcher] matches any activity
-     *
      * @param componentMatcher Components to search
+     * @return if [componentMatcher] matches any activity
      */
     @JsName("containsActivity")
     fun containsActivity(componentMatcher: IComponentMatcher): Boolean {

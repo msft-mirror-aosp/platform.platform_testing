@@ -171,8 +171,8 @@ class AssertionsCheckerTest {
 
     companion object {
         /**
-         * Returns a list of SimpleEntry objects with `data` and incremental timestamps starting at
-         * 0.
+         * Returns a list of SimpleEntry objects with `data` and incremental timestamps starting
+         * at 0.
          */
         private fun getTestEntries(vararg data: Int): List<SimpleEntrySubject> =
             data.indices.map {

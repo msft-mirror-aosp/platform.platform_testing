@@ -49,10 +49,13 @@ import org.junit.runners.parameterized.TestWithParameters
  *
  * When using this runner the default `atest class#method` command doesn't work. Instead use: --
  * --test-arg \
+ *
  * ```
  *     com.android.tradefed.testtype.AndroidJUnitTest:instrumentation-arg:filter-tests:=<TEST_NAME>
  * ```
+ *
  * For example: `atest FlickerTests -- \
+ *
  * ```
  *     --test-arg com.android.tradefed.testtype.AndroidJUnitTest:instrumentation-arg:filter-tests\
  *     :=com.android.server.wm.flicker.close.\

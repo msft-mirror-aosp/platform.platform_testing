@@ -98,6 +98,7 @@ fun getCurrentState(
  *
  * @param dumpTypes Flags determining which types of traces should be included in the dump
  * @param clearCacheAfterParsing If the caching used while parsing the proto should be
+ *
  * ```
  *                               cleared or remain in memory
  * ```

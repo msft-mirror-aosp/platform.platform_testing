@@ -114,9 +114,8 @@ class Task(
     }
 
     /**
-     * @return the first [Activity] matching [componentMatcher], or null otherwise
-     *
      * @param componentMatcher Components to search
+     * @return the first [Activity] matching [componentMatcher], or null otherwise
      */
     @JsName("getActivity")
     fun getActivity(componentMatcher: IComponentMatcher): Activity? = getActivity { activity ->
@@ -124,9 +123,8 @@ class Task(
     }
 
     /**
-     * @return if any activity matches [componentMatcher]
-     *
      * @param componentMatcher Components to search
+     * @return if any activity matches [componentMatcher]
      */
     @JsName("containsActivity")
     fun containsActivity(componentMatcher: IComponentMatcher) =

@@ -42,6 +42,7 @@ class DeviceDumpParser {
          * @param wmTraceData [WindowManagerTrace] content
          * @param layersTraceData [LayersTrace] content
          * @param clearCacheAfterParsing If the caching used while parsing the proto should be
+         *
          * ```
          *                               cleared or remain in memory
          * ```
@@ -101,6 +102,7 @@ class DeviceDumpParser {
          * @param wmTraceData [WindowManagerTrace] content
          * @param layersTraceData [LayersTrace] content
          * @param clearCache If the caching used while parsing the proto should be
+         *
          * ```
          *                               cleared or remain in memory
          * ```

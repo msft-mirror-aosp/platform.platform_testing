@@ -35,6 +35,7 @@ import android.tools.common.traces.surfaceflinger.LayersTrace
  *     [LayersTraceSubject.last]
  *     [LayersTraceSubject.entry]
  * ```
+ *
  * Alternatively, it is also possible to use [LayerTraceEntrySubject](myState).
  *
  * Example:
@@ -285,7 +286,6 @@ class LayerTraceEntrySubject(
      * and error if the layer doesn't exist
      *
      * @param predicate to search for a layer
-     *
      * @return [LayerSubject] that can be used to make assertions
      */
     fun layer(predicate: (Layer) -> Boolean): LayerSubject? =

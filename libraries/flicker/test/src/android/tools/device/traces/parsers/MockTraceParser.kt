@@ -24,7 +24,8 @@ import android.tools.common.traces.wm.WindowManagerTrace
 
 class MockTraceParser(private val data: WindowManagerTrace) :
     AbstractTraceParser<
-        WindowManagerTrace, WindowManagerState, WindowManagerState, WindowManagerTrace>() {
+        WindowManagerTrace, WindowManagerState, WindowManagerState, WindowManagerTrace
+    >() {
     override val traceName: String = "In memory trace"
 
     override fun createTrace(entries: List<WindowManagerState>): WindowManagerTrace =

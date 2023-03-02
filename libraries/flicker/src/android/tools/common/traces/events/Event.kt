@@ -25,7 +25,7 @@ import android.tools.common.Timestamp
  * @param timestamp The wall clock time in nanoseconds when the entry was written.
  * @param processId The process ID which wrote the log entry
  * @param uid The UID which wrote the log entry, special UIDs are strings instead of numbers (e.g.
- * root)
+ *   root)
  * @param threadId The thread which wrote the log entry
  * @param tag The type tag code of the entry
  */
