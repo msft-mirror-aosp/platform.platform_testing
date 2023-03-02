@@ -33,6 +33,7 @@ import org.junit.runner.Description
  * @param wmHelper WM/SF synchronization helper
  * @param appHelper App to launch
  * @param clearCacheAfterParsing If the caching used while parsing the proto should be
+ *
  * ```
  *                               cleared or remain in memory
  * ```

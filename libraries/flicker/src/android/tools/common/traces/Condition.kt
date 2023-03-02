@@ -25,11 +25,14 @@ import kotlin.js.JsName
  * @param <T> The type of the object to validate.
  *
  * <p>Sample:</p> <pre> // Simple case. if (Condition.waitFor("true value", () -> true)) {
+ *
  * ```
  *     println("Success");
  * ```
+ *
  * } // Wait for customized result with customized validation. String result =
  * Condition.waitForResult(new Condition<String>("string comparison")
+ *
  * ```
  *         .setResultSupplier(() -> "Result string")
  *         .setResultValidator(str -> str.equals("Expected string"))
@@ -37,6 +40,7 @@ import kotlin.js.JsName
  *         .setRetryLimit(3)
  *         .setOnFailure(str -> println("Failed on " + str)));
  * ```
+ *
  * </pre>
  *
  * @param message The message to show what is waiting for.

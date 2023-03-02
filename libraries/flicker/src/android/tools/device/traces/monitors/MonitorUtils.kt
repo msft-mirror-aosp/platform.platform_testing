@@ -73,8 +73,8 @@ fun withTracing(predicate: () -> Unit): DeviceTraceDump {
  * executing the commands defined in the [predicate].
  *
  * @param predicate Commands to execute
- * @throws UnsupportedOperationException If tracing is already activated
  * @return a pair containing the WM and SF traces
+ * @throws UnsupportedOperationException If tracing is already activated
  */
 fun recordTraces(predicate: () -> Unit): Pair<ByteArray, ByteArray> {
     var wmTraceData = ByteArray(0)

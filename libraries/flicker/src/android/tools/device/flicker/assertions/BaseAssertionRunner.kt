@@ -36,7 +36,6 @@ abstract class BaseAssertionRunner(
      * status
      *
      * @param assertion to run
-     *
      * @return the transition execution error (if any) , assertion error (if any), null otherwise
      */
     fun runAssertion(assertion: AssertionData): Throwable? {

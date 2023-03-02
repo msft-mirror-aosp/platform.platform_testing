@@ -32,8 +32,8 @@ interface ILayerSubject<LayerSubjectType, RegionSubjectType> {
      *
      * @param componentMatcher Components to search
      * @param useCompositionEngineRegionOnly If true, uses only the region calculated from the
-     * Composition Engine (CE) -- visibleRegion in the proto definition. Otherwise, calculates the
-     * visible region when the information is not available from the CE
+     *   Composition Engine (CE) -- visibleRegion in the proto definition. Otherwise, calculates the
+     *   visible region when the information is not available from the CE
      */
     fun visibleRegion(
         componentMatcher: IComponentMatcher? = null,
@@ -98,7 +98,7 @@ interface ILayerSubject<LayerSubjectType, RegionSubjectType> {
      * exists in the hierarchy use [LayerSubject.exists] or [LayerSubject.doesNotExist]
      *
      * @return LayerSubject that can be used to make assertions on a single layer matching [name]
-     * and [frameNumber].
+     *   and [frameNumber].
      */
     fun layer(name: String, frameNumber: Long): LayerSubject?
 }

@@ -213,7 +213,7 @@ fun UiDevice.openQuickStepAndClearRecentAppsFromOverview(wmHelper: WindowManager
  * Opens quick step and puts the first app from the list of recently used apps into split-screen
  *
  * @throws AssertionError when unable to open the list of recently used apps, or when it does not
- * contain a button to enter split screen mode
+ *   contain a button to enter split screen mode
  */
 fun UiDevice.launchSplitScreen(wmHelper: WindowManagerStateHelper) {
     openQuickStepAndLongPressOverviewIcon(this, wmHelper)

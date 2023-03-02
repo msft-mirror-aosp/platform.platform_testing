@@ -289,18 +289,16 @@ class WindowManagerState(
     }
 
     /**
-     * @return if any activity matches [componentMatcher]
-     *
      * @param componentMatcher Components to search
+     * @return if any activity matches [componentMatcher]
      */
     @JsName("containsActivity")
     fun containsActivity(componentMatcher: IComponentMatcher): Boolean =
         rootTasks.any { it.containsActivity(componentMatcher) }
 
     /**
-     * @return the first [Activity] matching [componentMatcher], or null otherwise
-     *
      * @param componentMatcher Components to search
+     * @return the first [Activity] matching [componentMatcher], or null otherwise
      */
     @JsName("getActivity")
     fun getActivity(componentMatcher: IComponentMatcher): Activity? =
@@ -313,37 +311,33 @@ class WindowManagerState(
         }
 
     /**
-     * @return if any activity matching [componentMatcher] is visible
-     *
      * @param componentMatcher Components to search
+     * @return if any activity matching [componentMatcher] is visible
      */
     @JsName("isActivityVisible")
     fun isActivityVisible(componentMatcher: IComponentMatcher): Boolean =
         getActivity(componentMatcher)?.isVisible ?: false
 
     /**
-     * @return if any activity matching [componentMatcher] has state of [activityState]
-     *
      * @param componentMatcher Components to search
      * @param activityState expected activity state
+     * @return if any activity matching [componentMatcher] has state of [activityState]
      */
     @JsName("hasActivityState")
     fun hasActivityState(componentMatcher: IComponentMatcher, activityState: String): Boolean =
         rootTasks.any { it.getActivity(componentMatcher)?.state == activityState }
 
     /**
-     * @return if any pending activities match [componentMatcher]
-     *
      * @param componentMatcher Components to search
+     * @return if any pending activities match [componentMatcher]
      */
     @JsName("pendingActivityContain")
     fun pendingActivityContain(componentMatcher: IComponentMatcher): Boolean =
         componentMatcher.activityMatchesAnyOf(pendingActivities)
 
     /**
-     * @return the visible [WindowState]s matching [componentMatcher]
-     *
      * @param componentMatcher Components to search
+     * @return the visible [WindowState]s matching [componentMatcher]
      */
     @JsName("getMatchingVisibleWindowState")
     fun getMatchingVisibleWindowState(componentMatcher: IComponentMatcher): Array<WindowState> {

@@ -72,10 +72,9 @@ class LayerTraceEntry(
         get() = physicalDisplay?.layerStackSpace
 
     /**
-     * @return A [Layer] matching [componentMatcher] with a non-empty active buffer, or null if no
-     * layer matches [componentMatcher] or if the matching layer's buffer is empty
-     *
      * @param componentMatcher Components to search
+     * @return A [Layer] matching [componentMatcher] with a non-empty active buffer, or null if no
+     *   layer matches [componentMatcher] or if the matching layer's buffer is empty
      */
     fun getLayerWithBuffer(componentMatcher: IComponentMatcher): Layer? {
         return flattenedLayers.firstOrNull {

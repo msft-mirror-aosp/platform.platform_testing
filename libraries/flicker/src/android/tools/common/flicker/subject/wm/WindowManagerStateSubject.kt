@@ -37,6 +37,7 @@ import android.tools.common.traces.wm.WindowState
  *     [WindowManagerTraceSubject.last]
  *     [WindowManagerTraceSubject.entry]
  * ```
+ *
  * Alternatively, it is also possible to use [WindowManagerStateSubject](myState).
  *
  * Example:

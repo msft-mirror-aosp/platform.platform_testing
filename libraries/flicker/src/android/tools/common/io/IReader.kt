@@ -62,7 +62,7 @@ interface IReader {
 
     /**
      * @return [ByteArray] with the contents of a file from the artifact, or null if the file
-     * doesn't exist
+     *   doesn't exist
      */
     fun readBytes(traceType: TraceType, tag: String = Tag.ALL): ByteArray?
 }

@@ -215,8 +215,8 @@ data class FlickerTest(
      *
      * @param componentMatcher Components to search
      * @param useCompositionEngineRegionOnly If true, uses only the region calculated from the
-     * Composition Engine (CE) -- visibleRegion in the proto definition. Otherwise, calculates the
-     * visible region when the information is not available from the CE
+     *   Composition Engine (CE) -- visibleRegion in the proto definition. Otherwise, calculates the
+     *   visible region when the information is not available from the CE
      * @param assertion Assertion predicate
      */
     @JvmOverloads

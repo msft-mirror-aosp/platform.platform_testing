@@ -127,6 +127,7 @@ open class ResultReader(internal var result: IResultData, internal val traceConf
 
     /**
      * {@inheritDoc}
+     *
      * @throws IOException if the artifact file doesn't exist or can't be read
      */
     @Throws(IOException::class)
@@ -139,6 +140,7 @@ open class ResultReader(internal var result: IResultData, internal val traceConf
 
     /**
      * {@inheritDoc}
+     *
      * @throws IOException if the artifact file doesn't exist or can't be read
      */
     @Throws(IOException::class)
@@ -167,6 +169,7 @@ open class ResultReader(internal var result: IResultData, internal val traceConf
 
     /**
      * {@inheritDoc}
+     *
      * @throws IOException if the artifact file doesn't exist or can't be read
      */
     @Throws(IOException::class)
@@ -195,6 +198,7 @@ open class ResultReader(internal var result: IResultData, internal val traceConf
 
     /**
      * {@inheritDoc}
+     *
      * @throws IOException if the artifact file doesn't exist or can't be read
      */
     @Throws(IOException::class)
@@ -206,6 +210,7 @@ open class ResultReader(internal var result: IResultData, internal val traceConf
 
     /**
      * {@inheritDoc}
+     *
      * @throws IOException if the artifact file doesn't exist or can't be read
      */
     @Throws(IOException::class)
@@ -223,6 +228,7 @@ open class ResultReader(internal var result: IResultData, internal val traceConf
 
     /**
      * {@inheritDoc}
+     *
      * @throws IOException if the artifact file doesn't exist or can't be read
      */
     @Throws(IOException::class)
@@ -243,6 +249,7 @@ open class ResultReader(internal var result: IResultData, internal val traceConf
 
     /**
      * {@inheritDoc}
+     *
      * @throws IOException if the artifact file doesn't exist or can't be read
      */
     @Throws(IOException::class)
@@ -256,6 +263,7 @@ open class ResultReader(internal var result: IResultData, internal val traceConf
 
     /**
      * {@inheritDoc}
+     *
      * @throws IOException if the artifact file doesn't exist or can't be read
      */
     @Throws(IOException::class)

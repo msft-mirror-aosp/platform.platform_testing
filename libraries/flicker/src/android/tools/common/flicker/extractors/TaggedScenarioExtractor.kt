@@ -67,7 +67,9 @@ class TaggedScenarioExtractor(
                     require(
                         layersTrace.entries.first().vSyncId <= finishTransaction.appliedVSyncId &&
                             finishTransaction.appliedVSyncId <= layersTrace.entries.last().vSyncId
-                    ) { "Finish transaction not in layer trace" }
+                    ) {
+                        "Finish transaction not in layer trace"
+                    }
                     val appliedInLayerEntry =
                         layersTrace.entries.first { it.vSyncId >= finishTransaction.appliedVSyncId }
                     appliedInLayerEntry.timestamp

@@ -41,10 +41,8 @@ class LayerTraceEntryBuilder {
 
     @JsName("setVSyncId")
     fun setVSyncId(vSyncId: String): LayerTraceEntryBuilder =
-    // Necessary for compatibility with JS number type
-    apply {
-        this.vSyncId = vSyncId.toLong()
-    }
+        // Necessary for compatibility with JS number type
+        apply { this.vSyncId = vSyncId.toLong() }
 
     @JsName("setHwcBlob")
     fun setHwcBlob(hwcBlob: String): LayerTraceEntryBuilder = apply { this.hwcBlob = hwcBlob }
@@ -59,10 +57,8 @@ class LayerTraceEntryBuilder {
 
     @JsName("setElapsedTimestamp")
     fun setElapsedTimestamp(timestamp: String): LayerTraceEntryBuilder =
-    // Necessary for compatibility with JS number type
-    apply {
-        this.elapsedTimestamp = timestamp.toLong()
-    }
+        // Necessary for compatibility with JS number type
+        apply { this.elapsedTimestamp = timestamp.toLong() }
 
     @JsName("setRealToElapsedTimeOffsetNs")
     fun setRealToElapsedTimeOffsetNs(realToElapsedTimeOffsetNs: String?): LayerTraceEntryBuilder =

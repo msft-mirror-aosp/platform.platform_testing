@@ -63,7 +63,6 @@ object DataStore {
 
     /**
      * @return the result for [scenario]
-     *
      * @throws IllegalStateException is [scenario] doesn't exist in the data store
      */
     @Throws(IllegalStateException::class)

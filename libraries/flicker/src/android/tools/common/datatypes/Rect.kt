@@ -22,10 +22,12 @@ import kotlin.js.JsName
 
 /**
  * Wrapper for RectProto
+ *
  * ```
  *     - frameworks/native/services/surfaceflinger/layerproto/common.proto and
  *     - frameworks/base/core/proto/android/graphics/rect.proto
  * ```
+ *
  * This class is used by flicker and Winscope
  */
 @JsExport
@@ -68,6 +70,7 @@ protected constructor(
      *
      * @param rect The rectangle being tested for containment.
      * @return true iff the specified rectangle r is inside or equal to this
+     *
      * ```
      *              rectangle
      * ```
@@ -100,7 +103,7 @@ protected constructor(
      * constructed area is completely enclosed by SkIRect area.
      *
      * @param x test SkIPoint x-coordinate @param y test SkIPoint y-coordinate @return true if (x,
-     * y) is inside SkIRect
+     *   y) is inside SkIRect
      */
     @JsName("containsPoint")
     fun contains(x: Int, y: Int): Boolean {

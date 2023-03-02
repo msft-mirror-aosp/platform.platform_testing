@@ -177,9 +177,10 @@ fun readAssetAsFile(relativePath: String): File {
 
 /**
  * Runs `r` and asserts that an exception with type `expectedThrowable` is thrown.
+ *
  * @param r the [Runnable] which is run and expected to throw.
  * @throws AssertionError if `r` does not throw, or throws a runnable that is not an instance of
- * `expectedThrowable`.
+ *   `expectedThrowable`.
  */
 inline fun <reified ExceptionType> assertThrows(r: () -> Unit): ExceptionType {
     try {

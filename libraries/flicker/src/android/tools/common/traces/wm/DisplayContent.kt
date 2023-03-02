@@ -86,18 +86,16 @@ class DisplayContent(
         }
 
     /**
-     * @return if [componentMatcher] matches any activity
-     *
      * @param componentMatcher Components to search
+     * @return if [componentMatcher] matches any activity
      */
     @JsName("containsActivity")
     fun containsActivity(componentMatcher: IComponentMatcher): Boolean =
         rootTasks.any { it.containsActivity(componentMatcher) }
 
     /**
-     * @return THe [DisplayArea] matching [componentMatcher], or null if none matches
-     *
      * @param componentMatcher Components to search
+     * @return THe [DisplayArea] matching [componentMatcher], or null if none matches
      */
     @JsName("getTaskDisplayArea")
     fun getTaskDisplayArea(componentMatcher: IComponentMatcher): DisplayArea? {

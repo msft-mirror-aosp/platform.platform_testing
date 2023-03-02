@@ -27,7 +27,7 @@ import android.tools.common.Timestamp
  * @param reason The reason for the focus event.
  * @param processId The process ID which wrote the log entry
  * @param uid The UID which wrote the log entry, special UIDs are strings instead of numbers (e.g.
- * root)
+ *   root)
  * @param threadId The thread which wrote the log entry
  * @param tag The type tag code of the entry
  */
