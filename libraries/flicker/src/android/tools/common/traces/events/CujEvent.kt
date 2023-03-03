@@ -42,7 +42,6 @@ class CujEvent(
         }
 
     constructor(
-        timestamp: Timestamp,
         processId: Int,
         uid: String,
         threadId: Int,
@@ -52,7 +51,7 @@ class CujEvent(
         CrossPlatform.timestamp.from(
             elapsedNanos = getElapsedTimestampFromData(data),
             systemUptimeNanos = getSystemUptimeNanosFromData(data),
-            unixNanos = timestamp.unixNanos
+            unixNanos = getUnixTimestampFromData(data)
         ),
         getCujMarkerFromData(data),
         processId,
@@ -79,19 +78,24 @@ class CujEvent(
             return CujType.from(eventId)
         }
 
-        private fun getElapsedTimestampFromData(data: String): Long {
+        private fun getUnixTimestampFromData(data: String): Long {
             val dataEntries = getDataEntries(data)
             return dataEntries[1].toLong()
         }
 
-        private fun getSystemUptimeNanosFromData(data: String): Long {
+        private fun getElapsedTimestampFromData(data: String): Long {
             val dataEntries = getDataEntries(data)
             return dataEntries[2].toLong()
         }
 
+        private fun getSystemUptimeNanosFromData(data: String): Long {
+            val dataEntries = getDataEntries(data)
+            return dataEntries[3].toLong()
+        }
+
         private fun getDataEntries(data: String): List<String> {
-            require("""\[\d+,\d+,\d+]""".toRegex().matches(data)) {
-                "Data ($data) didn't match expected format"
+            require("""\[[0-9]+,[0-9]+,[0-9]+,[0-9]+]""".toRegex().matches(data)) {
+                "Data \"$data\" didn't match expected format"
             }
 
             return data.slice(1..data.length - 2).split(",")

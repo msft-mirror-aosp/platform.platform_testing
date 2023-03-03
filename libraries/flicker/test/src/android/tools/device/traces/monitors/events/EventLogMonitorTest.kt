@@ -16,7 +16,6 @@
 
 package android.tools.device.traces.monitors.events
 
-import android.os.SystemClock
 import android.tools.InitRule
 import android.tools.common.io.TraceType
 import android.tools.common.traces.events.CujEvent
@@ -320,15 +319,19 @@ class EventLogMonitorTest : TraceMonitorTest<EventLogMonitor>() {
         val monitor = EventLogMonitor()
         val writer = newTestResultWriter()
         monitor.start()
+        var now = now()
         EventLogTags.writeJankCujEventsBeginRequest(
             CujType.CUJ_NOTIFICATION_APP_START.ordinal,
-            SystemClock.elapsedRealtimeNanos(),
-            SystemClock.uptimeNanos()
+            now.unixNanos,
+            now.elapsedNanos,
+            now.systemUptimeNanos
         )
+        now = now()
         EventLogTags.writeJankCujEventsEndRequest(
             CujType.CUJ_NOTIFICATION_APP_START.ordinal,
-            SystemClock.elapsedRealtimeNanos(),
-            SystemClock.uptimeNanos()
+            now.unixNanos,
+            now.elapsedNanos,
+            now.systemUptimeNanos
         )
         monitor.stop(writer)
         val result = writer.write()
@@ -344,20 +347,26 @@ class EventLogMonitorTest : TraceMonitorTest<EventLogMonitor>() {
         val monitor = EventLogMonitor()
         val writer = newTestResultWriter()
         monitor.start()
+        var now = now()
         EventLogTags.writeJankCujEventsBeginRequest(
             CujType.CUJ_LAUNCHER_QUICK_SWITCH.ordinal,
-            SystemClock.elapsedRealtimeNanos(),
-            SystemClock.uptimeNanos()
+            now.unixNanos,
+            now.elapsedNanos,
+            now.systemUptimeNanos
         )
+        now = now()
         EventLogTags.writeJankCujEventsEndRequest(
             CujType.CUJ_LAUNCHER_ALL_APPS_SCROLL.ordinal,
-            SystemClock.elapsedRealtimeNanos(),
-            SystemClock.uptimeNanos()
+            now.unixNanos,
+            now.elapsedNanos,
+            now.systemUptimeNanos
         )
+        now = now()
         EventLogTags.writeJankCujEventsCancelRequest(
             CujType.CUJ_LOCKSCREEN_LAUNCH_CAMERA.ordinal,
-            SystemClock.elapsedRealtimeNanos(),
-            SystemClock.uptimeNanos()
+            now.unixNanos,
+            now.elapsedNanos,
+            now.systemUptimeNanos
         )
         monitor.stop(writer)
         val result = writer.write()
@@ -383,20 +392,26 @@ class EventLogMonitorTest : TraceMonitorTest<EventLogMonitor>() {
         val monitor = EventLogMonitor()
         val writer = newTestResultWriter()
         monitor.start()
+        var now = now()
         EventLogTags.writeJankCujEventsBeginRequest(
             unknownCujId,
-            SystemClock.elapsedRealtimeNanos(),
-            SystemClock.uptimeNanos()
+            now.unixNanos,
+            now.elapsedNanos,
+            now.systemUptimeNanos
         )
+        now = now()
         EventLogTags.writeJankCujEventsEndRequest(
             unknownCujId,
-            SystemClock.elapsedRealtimeNanos(),
-            SystemClock.uptimeNanos()
+            now.unixNanos,
+            now.elapsedNanos,
+            now.systemUptimeNanos
         )
+        now = now()
         EventLogTags.writeJankCujEventsCancelRequest(
             unknownCujId,
-            SystemClock.elapsedRealtimeNanos(),
-            SystemClock.uptimeNanos()
+            now.unixNanos,
+            now.elapsedNanos,
+            now.systemUptimeNanos
         )
         monitor.stop(writer)
         val result = writer.write()
