@@ -32,7 +32,6 @@ native_tests := \
     audio_health_tests \
     bionic-unit-tests \
     bionic-unit-tests-static \
-    bluetoothtbd_test \
     bluetooth_test_common \
     bootstat_tests \
     boringssl_crypto_test \
