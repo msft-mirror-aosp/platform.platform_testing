@@ -39,6 +39,10 @@ ext.copyArtifacts = { nativeDir ->
         from project('sts-test').layout.projectDirectory.file('libs')
         into layout.buildDirectory.dir('android-sts/tools')
     }
+    copy {
+        from project('sts-test').layout.projectDirectory.dir('jdk')
+        into layout.buildDirectory.dir('android-sts/jdk')
+    }
 }
 
 task assembleStsARM {
@@ -79,4 +83,19 @@ task assembleStsx86 {
     doLast {
         copyArtifacts('testcases_x86')
     }
+}
+
+task zipForSubmission(type: Zip) {
+    from('.') {
+        exclude "**/build"
+        exclude '.gradle'
+        exclude 'test-app/libs'
+        exclude 'sts-test/libs'
+        exclude 'sts-test/jdk'
+        exclude 'sts-test/utils'
+        exclude "**/.cxx"
+    }
+    from project('sts-test').layout.projectDirectory.file('libs/version.txt')
+    archiveFileName.set("codesubmission.zip")
+    destinationDirectory.set(layout.buildDirectory)
 }
