@@ -1,4 +1,4 @@
-// Copyright (C) 2020 The Android Open Source Project
+// Copyright (C) 2023 The Android Open Source Project
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,22 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Used for collecting generic metrics from binary test.
 package {
     default_applicable_licenses: ["Android-Apache-2.0"],
 }
 
-android_test {
-    name: "CollectorsHelperAospTest",
+java_library {
+    name: "generic-helper",
     defaults: ["tradefed_errorprone_defaults"],
 
+    srcs: [
+        "src/**/*.java",
+    ],
+
     static_libs: [
-        "adservices-helper-test",
-        "app-collector-helper-test",
-        "generic-helper-test",
-        "jank-helper-test",
-        "memory-helper-test",
-        "perfetto-helper-test",
-        "system-helper-test",
+        "androidx.test.runner",
+        "androidx.test.uiautomator_uiautomator",
+        "collector-helper-utilities",
     ],
 
     sdk_version: "current",
