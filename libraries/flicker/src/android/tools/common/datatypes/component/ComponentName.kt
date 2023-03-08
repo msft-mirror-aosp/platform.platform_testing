@@ -111,7 +111,7 @@ data class ComponentName(override val packageName: String, override val classNam
 
     @JsName("toActivityRecordFilter")
     fun toActivityRecordFilter(): Regex =
-        Regex("ActivityRecord\\{.*${Regex.escape(this.toShortWindowName())}")
+        Regex("ActivityRecord\\{.*${Regex.escape(this.toShortWindowName())}.*")
 
     @JsName("toActivityNameRegex")
     fun toActivityNameRegex(): Regex = Regex(".*${Regex.escape(this.toActivityName())}.*")
