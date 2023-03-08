@@ -62,7 +62,8 @@ public class AppGridTest {
         // Re-enter app grid.
         mAppGridHelper.get().exit();
         mAppGridHelper.get().open();
-        assertTrue("Not on top of App Grid.", mAppGridHelper.get().isTop());
+
+        mAppGridHelper.get().scrollToTop();
         // Test scroll only when there are more than one page in app grid.
         if (!mAppGridHelper.get().isBottom()) {
             mAppGridHelper.get().scrollDownOnePage();

@@ -41,6 +41,13 @@ public interface IAutoAppGridHelper extends IAppHelper, Scrollable {
     /**
      * Setup expectations: In App grid.
      *
+     * <p>Scroll to the top of the app grid.
+     */
+    void scrollToTop();
+
+    /**
+     * Setup expectations: In App grid.
+     *
      * <p>Scroll down on page.
      */
     boolean scrollDownOnePage();

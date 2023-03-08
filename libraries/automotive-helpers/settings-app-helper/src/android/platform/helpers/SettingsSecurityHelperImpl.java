@@ -17,8 +17,9 @@
 package android.platform.helpers;
 
 import android.app.Instrumentation;
+import android.platform.helpers.ScrollUtility.ScrollActions;
+import android.platform.helpers.ScrollUtility.ScrollDirection;
 import android.platform.helpers.exceptions.UnknownUiException;
-import android.platform.spectatio.exceptions.MissingUiElementException;
 import android.support.test.uiautomator.By;
 import android.support.test.uiautomator.BySelector;
 import android.support.test.uiautomator.UiObject2;
@@ -29,18 +30,32 @@ import java.util.List;
 public class SettingsSecurityHelperImpl extends AbstractStandardAppHelper
         implements IAutoSecuritySettingsHelper {
 
-    private enum ScrollActions {
-        USE_BUTTON,
-        USE_GESTURE;
-    }
-
-    private enum ScrollDirection {
-        VERTICAL,
-        HORIZONTAL;
-    }
+    private static final String CHOOSE_LOCK_TYPE = "Choose a lock type";
+    private static final int KEY_ENTER = 66;
+    private ScrollUtility mScrollUtility;
+    private ScrollActions mScrollAction;
+    private BySelector mBackwardButtonSelector;
+    private BySelector mForwardButtonSelector;
+    private BySelector mScrollableElementSelector;
+    private ScrollDirection mScrollDirection;
 
     public SettingsSecurityHelperImpl(Instrumentation instr) {
         super(instr);
+        mScrollUtility = ScrollUtility.getInstance(getSpectatioUiUtil());
+        mScrollAction =
+                ScrollActions.valueOf(
+                        getActionFromConfig(
+                                AutomotiveConfigConstants.SECURITY_SETTINGS_SCROLL_ACTION));
+        mBackwardButtonSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.SECURITY_SETTINGS_SCROLL_BACKWARD);
+        mForwardButtonSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.SECURITY_SETTINGS_SCROLL_FORWARD);
+        mScrollableElementSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.SECURITY_SETTINGS_SCROLL_ELEMENT);
+        mScrollDirection =
+                ScrollDirection.valueOf(
+                        getActionFromConfig(
+                                AutomotiveConfigConstants.SECURITY_SETTINGS_SCROLL_DIRECTION));
     }
 
     /** {@inheritDoc} */
@@ -83,64 +98,25 @@ public class SettingsSecurityHelperImpl extends AbstractStandardAppHelper
         List<UiObject2> titles = getSpectatioUiUtil().findUiObjects(titlesSelector);
         validateUiObject(titles, AutomotiveConfigConstants.SECURITY_SETTINGS_TITLE);
         UiObject2 title = titles.get(titles.size() - 1);
-        if (title != null
-                && title.getText()
-                        .equalsIgnoreCase(
-                                AutomotiveConfigConstants.SECURITY_SETTINGS_CHOOSE_LOCK_TYPE)) {
+        if (title != null && title.getText().equalsIgnoreCase(CHOOSE_LOCK_TYPE)) {
             // CHOOSE_LOCK_TYPE is already open
             return;
         }
-        try {
-            BySelector profileLockMenuSelector =
-                    getUiElementFromConfig(
-                            AutomotiveConfigConstants.SECURITY_SETTINGS_PROFILE_LOCK);
-            ScrollActions scrollAction =
-                    ScrollActions.valueOf(
-                            getActionFromConfig(AutomotiveConfigConstants.SECURITY_SCROLL_ACTION));
-            UiObject2 profileLockMenu = null;
-            switch (scrollAction) {
-                case USE_BUTTON:
-                    BySelector forwardButtonSelector =
-                            getUiElementFromConfig(
-                                    AutomotiveConfigConstants.SECURITY_SCROLL_FORWARD_BUTTON);
-                    BySelector backwardButtonSelector =
-                            getUiElementFromConfig(
-                                    AutomotiveConfigConstants.SECURITY_SCROLL_BACKWARD_BUTTON);
-                    profileLockMenu =
-                            getSpectatioUiUtil()
-                                    .scrollAndFindUiObject(
-                                            forwardButtonSelector,
-                                            backwardButtonSelector,
-                                            profileLockMenuSelector);
-                    break;
-                case USE_GESTURE:
-                    ScrollDirection scrollDirection =
-                            ScrollDirection.valueOf(
-                                    getActionFromConfig(
-                                            AutomotiveConfigConstants.SECURITY_SCROLL_DIRECTION));
-                    BySelector scrollableElementSelector =
-                            getUiElementFromConfig(
-                                    AutomotiveConfigConstants.SECURITY_SETTINGS_SCROLLABLE_ELEMENT);
-                    profileLockMenu =
-                            getSpectatioUiUtil()
-                                    .scrollAndFindUiObject(
-                                            scrollableElementSelector,
-                                            profileLockMenuSelector,
-                                            (scrollDirection == ScrollDirection.VERTICAL));
-                    break;
-                default:
-                    throw new IllegalStateException(
-                            String.format(
-                                    "Cannot scroll through. Unknown Scroll Action %s.",
-                                    scrollAction));
-            }
-            validateUiObject(
-                    profileLockMenu, String.format("Profile Lock is %s", profileLockMenuSelector));
-            getSpectatioUiUtil().clickAndWait(profileLockMenu);
+        BySelector profileLockMenuSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.SECURITY_SETTINGS_PROFILE_LOCK);
+        UiObject2 profileLockMenu =
+                mScrollUtility.scrollAndFindUiObject(
+                        mScrollAction,
+                        mScrollDirection,
+                        mForwardButtonSelector,
+                        mBackwardButtonSelector,
+                        mScrollableElementSelector,
+                        profileLockMenuSelector,
+                        "Scroll to find Profile lock");
+        validateUiObject(
+                profileLockMenu, String.format("Profile Lock %s", profileLockMenuSelector));
+        getSpectatioUiUtil().clickAndWait(profileLockMenu);
             getSpectatioUiUtil().wait5Seconds();
-        } catch (MissingUiElementException ex) {
-            throw new IllegalStateException(String.format("Unable to find Profile Lock Menu."));
-        }
     }
 
     private void typePasswordOnTextEditor(String password) {
@@ -273,7 +249,7 @@ public class SettingsSecurityHelperImpl extends AbstractStandardAppHelper
         }
     }
 
-    private void pressEnter() {
-        mDevice.pressEnter();
+    protected void pressEnter() {
+        getSpectatioUiUtil().pressKeyCode(KEY_ENTER);
     }
 }

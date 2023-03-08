@@ -156,4 +156,32 @@ public class ScrollUtility {
                     String.format("Unable to %s. Error: %s", action, ex.getMessage()));
         }
     }
+
+    /** Scroll to beginning by using button or use guesture on device screen. */
+    public void scrollToBeginning(
+            ScrollActions scrollAction,
+            ScrollDirection scrollDirection,
+            BySelector backwardButtonSelector,
+            BySelector scrollElementSelector,
+            String action) {
+        try {
+            switch (scrollAction) {
+                case USE_BUTTON:
+                    mSpectatioUiUtil.scrollToBeginning(backwardButtonSelector);
+                    break;
+                case USE_GESTURE:
+                    mSpectatioUiUtil.scrollToBeginning(
+                            scrollElementSelector, (scrollDirection == ScrollDirection.VERTICAL));
+                    break;
+                default:
+                    throw new IllegalStateException(
+                            String.format(
+                                    "Unable to %s, unknown scroll action %s.",
+                                    action, scrollAction));
+            }
+        } catch (MissingUiElementException ex) {
+            throw new IllegalStateException(
+                    String.format("Unable to %s. Error: %s", action, ex.getMessage()));
+        }
+    }
 }

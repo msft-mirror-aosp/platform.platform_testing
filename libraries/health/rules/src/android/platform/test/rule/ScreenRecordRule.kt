@@ -48,8 +48,8 @@ import org.junit.runners.model.Statement
  * After adding this rule to the test class either:
  * - apply the annotation [ScreenRecord] to individual tests or classes
  * - pass the [SCREEN_RECORDING_TEST_LEVEL_OVERRIDE_KEY] or
- * [SCREEN_RECORDING_CLASS_LEVEL_OVERRIDE_KEY] instrumentation argument. e.g. `adb shell am
- * instrument -w -e <key> true <test>`).
+ *   [SCREEN_RECORDING_CLASS_LEVEL_OVERRIDE_KEY] instrumentation argument. e.g. `adb shell am
+ *   instrument -w -e <key> true <test>`).
  */
 class ScreenRecordRule : TestRule {
 
@@ -130,8 +130,8 @@ class ScreenRecordRule : TestRule {
                 File size: ${Files.size(outputFile.toPath()) / 1024} KB
                 screenrecord command output:
 
-                """.trimIndent() +
-                    screenRecordOutput.prependIndent("   ")
+                """
+                    .trimIndent() + screenRecordOutput.prependIndent("   ")
             )
         }
 
@@ -157,7 +157,9 @@ class ScreenRecordRule : TestRule {
             waitForValueToSettle(
                 "Screen recording output size",
                 minimumSettleTime = Duration.ofSeconds(5)
-            ) { length() }
+            ) {
+                length()
+            }
         } catch (e: FailedEnsureException) {
             Log.e(TAG, "Recording size didn't settle.", e)
         }

@@ -17,8 +17,9 @@
 package android.platform.helpers;
 
 import android.app.Instrumentation;
+import android.platform.helpers.ScrollUtility.ScrollActions;
+import android.platform.helpers.ScrollUtility.ScrollDirection;
 import android.platform.helpers.exceptions.UnknownUiException;
-import android.platform.spectatio.exceptions.MissingUiElementException;
 import android.support.test.uiautomator.BySelector;
 import android.support.test.uiautomator.UiObject2;
 
@@ -26,18 +27,30 @@ public class ContactDetailsHelperImpl extends AbstractStandardAppHelper
         implements IAutoDialContactDetailsHelper {
     private static final String LOG_TAG = DialHelperImpl.class.getSimpleName();
 
-    private static enum ScrollActions {
-        USE_BUTTON,
-        USE_GESTURE;
-    }
-
-    private static enum ScrollDirection {
-        VERTICAL,
-        HORIZONTAL;
-    }
+    private ScrollUtility mScrollUtility;
+    private ScrollActions mScrollAction;
+    private BySelector mBackwardButtonSelector;
+    private BySelector mForwardButtonSelector;
+    private BySelector mScrollableElementSelector;
+    private ScrollDirection mScrollDirection;
 
     public ContactDetailsHelperImpl(Instrumentation instr) {
         super(instr);
+        mScrollUtility = ScrollUtility.getInstance(getSpectatioUiUtil());
+        mScrollAction =
+                ScrollActions.valueOf(
+                        getActionFromConfig(
+                                AutomotiveConfigConstants.CONTACT_DETAILS_SCROLL_ACTION));
+        mBackwardButtonSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.CONTACT_DETAILS_SCROLL_BACKWARD);
+        mForwardButtonSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.CONTACT_DETAILS_SCROLL_FORWARD);
+        mScrollableElementSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.CONTACT_DETAILS_SCROLL_ELEMENT);
+        mScrollDirection =
+                ScrollDirection.valueOf(
+                        getActionFromConfig(
+                                AutomotiveConfigConstants.CONTACT_DETAILS_SCROLL_DIRECTION));
     }
 
     /** {@inheritDoc} */
@@ -79,55 +92,17 @@ public class ContactDetailsHelperImpl extends AbstractStandardAppHelper
     }
 
     private UiObject2 getNumberByContactType(String type) {
-        try {
-            ScrollActions scrollAction =
-                    ScrollActions.valueOf(
-                            getActionFromConfig(
-                                    AutomotiveConfigConstants.CONTACT_DETAILS_SCROLL_ACTION));
-            UiObject2 contactByType = null;
-            switch (scrollAction) {
-                case USE_BUTTON:
-                    BySelector forwardButtonSelector =
-                            getUiElementFromConfig(
-                                    AutomotiveConfigConstants.CONTACT_DETAILS_SCROLL_FORWARD);
-                    BySelector backwardButtonSelector =
-                            getUiElementFromConfig(
-                                    AutomotiveConfigConstants.CONTACT_DETAILS_SCROLL_BACKWARD);
-                    contactByType =
-                            getSpectatioUiUtil()
-                                    .scrollAndFindUiObject(
-                                            forwardButtonSelector,
-                                            backwardButtonSelector,
-                                            getUiElementFromConfig(type));
-                    break;
-                case USE_GESTURE:
-                    BySelector scrollElementSelector =
-                            getUiElementFromConfig(
-                                    AutomotiveConfigConstants.CONTACT_DETAILS_SCROLL_ELEMENT);
-                    ScrollDirection scrollDirection =
-                            ScrollDirection.valueOf(
-                                    getActionFromConfig(
-                                            AutomotiveConfigConstants
-                                                    .CONTACT_DETAILS_SCROLL_DIRECTION));
-                    contactByType =
-                            getSpectatioUiUtil()
-                                    .scrollAndFindUiObject(
-                                            scrollElementSelector,
-                                            getUiElementFromConfig(type),
-                                            (scrollDirection == ScrollDirection.VERTICAL));
-                    break;
-                default:
-                    throw new IllegalStateException(
-                            String.format(
-                                    "Cannot scroll through contact details. Unknown Scroll Action"
-                                            + " %s.",
-                                    scrollAction));
-            }
+        UiObject2 contactByType =
+                mScrollUtility.scrollAndFindUiObject(
+                        mScrollAction,
+                        mScrollDirection,
+                        mForwardButtonSelector,
+                        mBackwardButtonSelector,
+                        mScrollableElementSelector,
+                        getUiElementFromConfig(type),
+                        String.format("scroll to find %s", type));
             validateUiObject(contactByType, String.format("Given type %s", type));
             return contactByType;
-        } catch (MissingUiElementException ex) {
-            throw new RuntimeException("Unable to scroll through contact details.", ex);
-        }
     }
 
     /** {@inheritDoc} */

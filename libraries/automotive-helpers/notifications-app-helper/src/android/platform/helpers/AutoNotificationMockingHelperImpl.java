@@ -27,7 +27,9 @@ import android.app.PendingIntent;
 import android.app.Person;
 import android.content.Context;
 import android.os.SystemClock;
-import android.platform.spectatio.exceptions.MissingUiElementException;
+import android.platform.helpers.ScrollUtility.ScrollActions;
+import android.platform.helpers.ScrollUtility.ScrollDirection;
+import android.support.test.uiautomator.By;
 import android.support.test.uiautomator.BySelector;
 import android.support.test.uiautomator.UiObject2;
 
@@ -50,15 +52,12 @@ public class AutoNotificationMockingHelperImpl extends AbstractStandardAppHelper
 
     private NotificationManager mNotificationManager;
 
-    private enum ScrollActions {
-        USE_BUTTON,
-        USE_GESTURE;
-    }
-
-    private enum ScrollDirection {
-        VERTICAL,
-        HORIZONTAL;
-    }
+    private ScrollUtility mScrollUtility;
+    private ScrollActions mScrollAction;
+    private BySelector mBackwardButtonSelector;
+    private BySelector mForwardButtonSelector;
+    private BySelector mScrollableElementSelector;
+    private ScrollDirection mScrollDirection;
 
     public AutoNotificationMockingHelperImpl(Instrumentation instr) {
         super(instr);
@@ -75,6 +74,24 @@ public class AutoNotificationMockingHelperImpl extends AbstractStandardAppHelper
                 getUiElementFromConfig(AutomotiveConfigConstants.NOTIFICATION_TITLE));
         NOTIFICATION_REQUIRED_FIELDS.add(
                 getUiElementFromConfig(AutomotiveConfigConstants.NOTIFICATION_BODY));
+
+        mScrollUtility = ScrollUtility.getInstance(getSpectatioUiUtil());
+        mScrollAction =
+                ScrollActions.valueOf(
+                        getActionFromConfig(
+                                AutomotiveConfigConstants.NOTIFICATION_LIST_SCROLL_ACTION));
+        mBackwardButtonSelector =
+                getUiElementFromConfig(
+                        AutomotiveConfigConstants.NOTIFICATION_LIST_SCROLL_BACKWARD_BUTTON);
+        mForwardButtonSelector =
+                getUiElementFromConfig(
+                        AutomotiveConfigConstants.NOTIFICATION_LIST_SCROLL_FORWARD_BUTTON);
+        mScrollableElementSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.NOTIFICATION_LIST);
+        mScrollDirection =
+                ScrollDirection.valueOf(
+                        getActionFromConfig(
+                                AutomotiveConfigConstants.NOTIFICATION_LIST_SCROLL_DIRECTION));
     }
 
     /** {@inheritDoc} */
@@ -161,50 +178,16 @@ public class AutoNotificationMockingHelperImpl extends AbstractStandardAppHelper
                 .executeShellCommand(
                         getCommandFromConfig(AutomotiveConfigConstants.OPEN_NOTIFICATIONS_COMMAND));
 
-        UiObject2 postedNotification;
-        try {
-            ScrollActions scrollAction =
-                    ScrollActions.valueOf(
-                            getActionFromConfig(
-                                    AutomotiveConfigConstants.NOTIFICATION_LIST_SCROLL_ACTION));
-            switch (scrollAction) {
-                case USE_BUTTON:
-                    BySelector forwardButtonSelector =
-                            getUiElementFromConfig(
-                                    AutomotiveConfigConstants.NOTIFICATION_LIST_SCROLL_FORWARD);
-                    BySelector backwardButtonSelector =
-                            getUiElementFromConfig(
-                                    AutomotiveConfigConstants.NOTIFICATION_LIST_SCROLL_BACKWARD);
-                    postedNotification =
-                            getSpectatioUiUtil()
-                                    .scrollAndFindUiObject(
-                                            forwardButtonSelector, backwardButtonSelector, title);
-                    break;
-                case USE_GESTURE:
-                    BySelector scrollElementSelector =
-                            getUiElementFromConfig(AutomotiveConfigConstants.NOTIFICATION_LIST);
-                    ScrollDirection scrollDirection =
-                            ScrollDirection.valueOf(
-                                    getActionFromConfig(
-                                            AutomotiveConfigConstants
-                                                    .NOTIFICATION_LIST_SCROLL_DIRECTION));
-                    postedNotification =
-                            getSpectatioUiUtil()
-                                    .scrollAndFindUiObject(
-                                            scrollElementSelector,
-                                            title,
-                                            (scrollDirection == ScrollDirection.VERTICAL));
-                    break;
-                default:
-                    throw new IllegalStateException(
-                            String.format(
-                                    "Cannot scroll through notification list. Unknown Scroll Action"
-                                            + " %s.",
-                                    scrollAction));
-            }
-        } catch (MissingUiElementException ex) {
-            throw new RuntimeException("Unable to scroll through notification list ", ex);
-        }
+        BySelector selector = By.text(title);
+        UiObject2 postedNotification =
+                mScrollUtility.scrollAndFindUiObject(
+                        mScrollAction,
+                        mScrollDirection,
+                        mForwardButtonSelector,
+                        mBackwardButtonSelector,
+                        mScrollableElementSelector,
+                        selector,
+                        String.format("Scroll on notification list to find %s", selector));
         return postedNotification != null;
     }
 

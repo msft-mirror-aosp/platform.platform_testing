@@ -16,11 +16,11 @@
 
 package android.platform.spectatio.configs;
 
-import android.platform.spectatio.utils.SpectatioUiUtil;
 import android.platform.spectatio.constants.JsonConfigConstants.ScrollActions;
 import android.platform.spectatio.constants.JsonConfigConstants.ScrollDirection;
 import android.platform.spectatio.constants.JsonConfigConstants.SupportedWorkFlowTasks;
 import android.platform.spectatio.exceptions.MissingUiElementException;
+import android.platform.spectatio.utils.SpectatioUiUtil;
 import android.support.test.uiautomator.BySelector;
 import android.support.test.uiautomator.UiObject2;
 import android.util.Log;
@@ -249,6 +249,9 @@ public class WorkflowTask {
                     case USE_GESTURE:
                         BySelector scrollElementSelector =
                                 scrollConfig.getScrollElement().getBySelectorForUiElement();
+                        Integer scrollMargin = Integer.valueOf(scrollConfig.getScrollMargin());
+                        Integer scrollWaitTime = Integer.valueOf(scrollConfig.getScrollWaitTime());
+
                         ScrollDirection scrollDirection = null;
                         try {
                             scrollDirection =
@@ -260,6 +263,7 @@ public class WorkflowTask {
                                     workflowName,
                                     "Not Supported");
                         }
+                        spectatioUiUtil.addScrollValues(scrollMargin, scrollWaitTime);
                         uiObject =
                                 spectatioUiUtil.scrollAndFindUiObject(
                                         scrollElementSelector,

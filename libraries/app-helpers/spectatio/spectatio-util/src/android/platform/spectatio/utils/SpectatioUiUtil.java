@@ -853,6 +853,7 @@ public class SpectatioUiUtil {
 
     private boolean scroll(BySelector scrollableSelector, Direction direction)
             throws MissingUiElementException {
+
         UiObject2 scrollableObject = validateAndGetScrollableObject(scrollableSelector);
 
         Rect bounds = scrollableObject.getVisibleBounds();

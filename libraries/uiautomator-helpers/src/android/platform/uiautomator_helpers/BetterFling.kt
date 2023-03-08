@@ -16,57 +16,54 @@
 
 package android.platform.uiautomator_helpers
 
-import android.graphics.Point
+import android.graphics.Rect
 import android.platform.uiautomator_helpers.DeviceHelpers.context
 import android.platform.uiautomator_helpers.DeviceHelpers.uiDevice
+import android.platform.uiautomator_helpers.SwipeUtils.calculateStartEndPoint
+import android.platform.uiautomator_helpers.TracingUtils.trace
 import android.util.TypedValue
 import androidx.test.uiautomator.Direction
 import androidx.test.uiautomator.UiObject2
 import androidx.test.uiautomator.Until
 import java.time.Duration
 import java.time.temporal.ChronoUnit
-import kotlin.math.roundToInt
 
-/** A fling utility that should be used instead of [UiObject2.fling] for more reliable flings. */
+/**
+ * A fling utility that should be used instead of [UiObject2.fling] for more reliable flings.
+ *
+ * See [BetterSwipe] for more details on the problem of [UiObject2.fling].
+ */
 object BetterFling {
     private const val DEFAULT_FLING_MARGIN_DP = 30
+    private const val DEFAULT_PERCENTAGE = 1.0f
     private val DEFAULT_FLING_DURATION = Duration.of(100, ChronoUnit.MILLIS)
     private val DEFAULT_WAIT_TIMEOUT = Duration.of(5, ChronoUnit.SECONDS)
 
-    /** Fling [obj] in the given [direction]. */
+    /**
+     * Flings [percentage] of [rect] in the given [direction], with [marginDp] margins.
+     *
+     * Note that when direction is [Direction.DOWN], the scroll will be from the top to the bottom
+     * (to scroll down).
+     */
     @JvmStatic
     @JvmOverloads
     fun fling(
-        obj: UiObject2,
+        rect: Rect,
         direction: Direction,
         duration: Duration = DEFAULT_FLING_DURATION,
         marginDp: Int = DEFAULT_FLING_MARGIN_DP,
+        percentage: Float = DEFAULT_PERCENTAGE,
     ) {
-        val margin = marginDp.dpToPx().roundToInt()
-        val bounds = obj.visibleBounds
-        val centerX = bounds.centerX()
-        val centerY = bounds.centerY()
         val (start, stop) =
-            when (direction) {
-                Direction.LEFT -> {
-                    Point(bounds.right - margin, centerY) to Point(bounds.left + margin, centerY)
-                }
-                Direction.RIGHT -> {
-                    Point(bounds.left + margin, centerY) to Point(bounds.right - margin, centerY)
-                }
-                Direction.UP -> {
-                    Point(centerX, bounds.bottom - margin) to Point(centerX, bounds.top + margin)
-                }
-                Direction.DOWN -> {
-                    Point(centerX, bounds.top + margin) to Point(centerX, bounds.bottom - margin)
-                }
-            }
+            calculateStartEndPoint(rect, direction, percentage, marginDp.dpToPx().toInt())
 
-        uiDevice.performActionAndWait(
-            { BetterSwipe.from(start).to(stop, duration).release() },
-            Until.scrollFinished(Direction.reverse(direction)),
-            DEFAULT_WAIT_TIMEOUT.toMillis()
-        )
+        trace("Fling $start -> $stop") {
+            uiDevice.performActionAndWait(
+                { BetterSwipe.from(start).to(stop, duration).release() },
+                Until.scrollFinished(Direction.reverse(direction)),
+                DEFAULT_WAIT_TIMEOUT.toMillis()
+            )
+        }
     }
 
     private fun Number.dpToPx(): Float {

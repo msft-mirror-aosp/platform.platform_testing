@@ -1,0 +1,6 @@
+# See system/core/logcat/event.logtags for a description of the format of this file.
+
+option java_package package com.android.server.wm.flicker;
+
+# A timestamped tag of a flicker event
+89001 flicker_event (Tag|1|5),(Unix Ns|2|3),(Elapsed Time Ns|2|3),(Uptime Ns|2|3)
