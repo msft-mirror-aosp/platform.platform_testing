@@ -17,6 +17,7 @@
 package android.tools.common.flicker.subject.layers
 
 import android.tools.common.datatypes.component.IComponentMatcher
+import android.tools.common.datatypes.component.IComponentNameMatcher
 import android.tools.common.traces.surfaceflinger.Layer
 
 /** Base interface for Layer trace and state assertions */
@@ -74,7 +75,7 @@ interface ILayerSubject<LayerSubjectType, RegionSubjectType> {
      *
      * @param componentMatcher Components to search
      */
-    fun isSplashScreenVisibleFor(componentMatcher: IComponentMatcher): LayerSubjectType
+    fun isSplashScreenVisibleFor(componentMatcher: IComponentNameMatcher): LayerSubjectType
 
     /**
      * Asserts that a [Layer] matching [componentMatcher] has a color set on it.

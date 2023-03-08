@@ -78,7 +78,7 @@ class AssertionsChecker<T : FlickerSubject> {
                 currentAssertion.invoke(currEntry)
                 lastPassedAssertionIndex = assertionIndex
                 entryIndex++
-            } catch (e: Throwable) {
+            } catch (e: AssertionError) {
                 // ignore errors at the start of the trace
                 val ignoreFailure = skipUntilFirstAssertion && lastPassedAssertionIndex == -1
                 if (ignoreFailure) {

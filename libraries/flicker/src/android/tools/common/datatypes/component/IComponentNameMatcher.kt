@@ -16,6 +16,32 @@
 
 package android.tools.common.datatypes.component
 
+import android.tools.common.traces.surfaceflinger.Layer
+import kotlin.js.JsName
+
 interface IComponentNameMatcher : IComponentMatcher, IComponentName {
     fun componentNameMatcherToString(): String
+
+    /**
+     * @param layer to search
+     * @return if any of the [components] matches [layer]
+     */
+    @JsName("activityRecordMatchesAnyOf")
+    fun activityRecordMatchesAnyOf(layer: Layer): Boolean =
+        activityRecordMatchesAnyOf(arrayOf(layer))
+
+    /**
+     * @param layers to search
+     * @return if any of the [components] matches any of [layers]
+     */
+    @JsName("activityRecordMatchesAnyOfCollection")
+    fun activityRecordMatchesAnyOf(layers: Collection<Layer>): Boolean =
+        activityRecordMatchesAnyOf(layers.toTypedArray())
+
+    /**
+     * @param layers to search
+     * @return if any of the [components] matches any of [layers]
+     */
+    @JsName("activityRecordMatchesAnyOfArray")
+    fun activityRecordMatchesAnyOf(layers: Array<Layer>): Boolean
 }

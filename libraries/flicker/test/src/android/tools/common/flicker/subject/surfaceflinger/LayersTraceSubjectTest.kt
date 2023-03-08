@@ -325,20 +325,15 @@ class LayersTraceSubjectTest {
             )
 
         // No splashscreen because no matching activity record
-        var failure =
+        val failure =
             assertThrows<FlickerSubjectException> {
                 LayersTraceSubject(trace)
                     .first()
                     .isSplashScreenVisibleFor(TestComponents.SIMPLE_APP)
             }
-        Truth.assertThat(failure).hasMessageThat().contains("Could not find Activity Record layer")
-
-        // No splashscreen for target activity record
-        failure =
-            assertThrows<FlickerSubjectException> {
-                LayersTraceSubject(trace).first().isSplashScreenVisibleFor(TestComponents.LAUNCHER)
-            }
-        Truth.assertThat(failure).hasMessageThat().contains("No splash screen visible")
+        Truth.assertThat(failure)
+            .hasMessageThat()
+            .contains("Could not find Splash screen and activity record layer")
     }
 
     companion object {

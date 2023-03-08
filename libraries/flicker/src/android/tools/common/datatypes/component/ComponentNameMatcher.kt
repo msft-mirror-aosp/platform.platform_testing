@@ -48,6 +48,9 @@ class ComponentNameMatcher(var component: ComponentName) : IComponentNameMatcher
         return targets.any { value -> componentRegex.matches(value) }
     }
 
+    override fun activityRecordMatchesAnyOf(layers: Array<Layer>): Boolean =
+        matchesAnyOf(layers, { it.name }, { it.toActivityRecordFilter() })
+
     override fun componentNameMatcherToString(): String {
         return "ComponentNameMatcher(\"${this.packageName}\", " + "\"${this.className}\")"
     }
@@ -90,36 +93,53 @@ class ComponentNameMatcher(var component: ComponentName) : IComponentNameMatcher
     override fun toString(): String = component.toString()
 
     companion object {
-        @JsName("NAV_BAR") val NAV_BAR = ComponentNameMatcher("", "NavigationBar0")
-        @JsName("TASK_BAR") val TASK_BAR = ComponentNameMatcher("", "Taskbar")
-        @JsName("STATUS_BAR") val STATUS_BAR = ComponentNameMatcher("", "StatusBar")
-        @JsName("ROTATION") val ROTATION = ComponentNameMatcher("", "RotationLayer")
-        @JsName("BACK_SURFACE") val BACK_SURFACE = ComponentNameMatcher("", "BackColorSurface")
-        @JsName("IME") val IME = ComponentNameMatcher("", "InputMethod")
-        @JsName("IME_SNAPSHOT") val IME_SNAPSHOT = ComponentNameMatcher("", "IME-snapshot-surface")
-        @JsName("SPLASH_SCREEN") val SPLASH_SCREEN = ComponentNameMatcher("", "Splash Screen")
-        @JsName("SNAPSHOT") val SNAPSHOT = ComponentNameMatcher("", "SnapshotStartingWindow")
+        @JsName("NAV_BAR")
+        val NAV_BAR = ComponentNameMatcher("", "NavigationBar0")
+        @JsName("TASK_BAR")
+        val TASK_BAR = ComponentNameMatcher("", "Taskbar")
+        @JsName("STATUS_BAR")
+        val STATUS_BAR = ComponentNameMatcher("", "StatusBar")
+        @JsName("ROTATION")
+        val ROTATION = ComponentNameMatcher("", "RotationLayer")
+        @JsName("BACK_SURFACE")
+        val BACK_SURFACE = ComponentNameMatcher("", "BackColorSurface")
+        @JsName("IME")
+        val IME = ComponentNameMatcher("", "InputMethod")
+        @JsName("IME_SNAPSHOT")
+        val IME_SNAPSHOT = ComponentNameMatcher("", "IME-snapshot-surface")
+        @JsName("SPLASH_SCREEN")
+        val SPLASH_SCREEN = ComponentNameMatcher("", "Splash Screen")
+        @JsName("SNAPSHOT")
+        val SNAPSHOT = ComponentNameMatcher("", "SnapshotStartingWindow")
+
         @JsName("TRANSITION_SNAPSHOT")
         val TRANSITION_SNAPSHOT = ComponentNameMatcher("", "transition snapshot")
-        @JsName("LETTERBOX") val LETTERBOX = ComponentNameMatcher("", "Letterbox")
+        @JsName("LETTERBOX")
+        val LETTERBOX = ComponentNameMatcher("", "Letterbox")
+
         @JsName("WALLPAPER_BBQ_WRAPPER")
         val WALLPAPER_BBQ_WRAPPER = ComponentNameMatcher("", "Wallpaper BBQ wrapper")
+
         @JsName("PIP_CONTENT_OVERLAY")
         val PIP_CONTENT_OVERLAY = ComponentNameMatcher("", "PipContentOverlay")
+
         @JsName("LAUNCHER")
         val LAUNCHER =
             ComponentNameMatcher(
                 "com.google.android.apps.nexuslauncher",
                 "com.google.android.apps.nexuslauncher.NexusLauncherActivity"
             )
+
         @JsName("AOSP_LAUNCHER")
         val AOSP_LAUNCHER =
             ComponentNameMatcher(
                 "com.android.launcher3",
                 "com.android.launcher3.uioverrides.QuickstepLauncher"
             )
+
         @JsName("SPLIT_DIVIDER")
         val SPLIT_DIVIDER = ComponentNameMatcher("", "StageCoordinatorSplitDivider")
+
         @JsName("DEFAULT_TASK_DISPLAY_AREA")
         val DEFAULT_TASK_DISPLAY_AREA = ComponentNameMatcher("", "DefaultTaskDisplayArea")
 

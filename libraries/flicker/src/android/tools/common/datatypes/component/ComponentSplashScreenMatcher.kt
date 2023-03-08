@@ -20,7 +20,7 @@ import android.tools.common.traces.surfaceflinger.Layer
 import android.tools.common.traces.wm.Activity
 import android.tools.common.traces.wm.WindowContainer
 
-class ComponentSplashScreenMatcher(val componentNameMatcher: ComponentNameMatcher) :
+class ComponentSplashScreenMatcher(val componentNameMatcher: IComponentNameMatcher) :
     IComponentMatcher {
     override fun windowMatchesAnyOf(windows: Array<WindowContainer>): Boolean {
         error("Unimplemented - There are no splashscreen windows")
@@ -41,7 +41,7 @@ class ComponentSplashScreenMatcher(val componentNameMatcher: ComponentNameMatche
             }
             val grandParent = it.parent?.parent
             requireNotNull(grandParent) { "Splash screen layer's grandparent shouldn't be null" }
-            return@any componentNameMatcher.layerMatchesAnyOf(grandParent)
+            return@any componentNameMatcher.activityRecordMatchesAnyOf(grandParent)
         }
     }
 
@@ -62,7 +62,7 @@ class ComponentSplashScreenMatcher(val componentNameMatcher: ComponentNameMatche
         condition: (Collection<Layer>) -> Boolean
     ): Boolean {
         val splashScreenLayer = layers.filter { layerMatchesAnyOf(it) }
-        require(splashScreenLayer.size < 1) {
+        require(splashScreenLayer.size <= 1) {
             "More than on SplashScreen layer found. Only up to 1 match was expected."
         }
         return condition(splashScreenLayer)

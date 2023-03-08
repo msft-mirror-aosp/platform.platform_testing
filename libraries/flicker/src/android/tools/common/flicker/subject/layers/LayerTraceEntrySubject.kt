@@ -16,7 +16,9 @@
 
 package android.tools.common.flicker.subject.layers
 
+import android.tools.common.datatypes.component.ComponentSplashScreenMatcher
 import android.tools.common.datatypes.component.IComponentMatcher
+import android.tools.common.datatypes.component.IComponentNameMatcher
 import android.tools.common.flicker.assertions.Fact
 import android.tools.common.flicker.subject.FlickerSubject
 import android.tools.common.flicker.subject.region.RegionSubject
@@ -196,52 +198,23 @@ class LayerTraceEntrySubject(
 
     /** {@inheritDoc} */
     override fun isSplashScreenVisibleFor(
-        componentMatcher: IComponentMatcher
+        componentMatcher: IComponentNameMatcher
     ): LayerTraceEntrySubject = apply {
-        var target: FlickerSubject? = null
-        var reason: Fact? = null
+        val splashScreenMatcher = ComponentSplashScreenMatcher(componentMatcher)
+        val matchingSubjects = subjects.any { splashScreenMatcher.layerMatchesAnyOf(it.layer) }
 
-        val matchingLayer =
-            subjects.map { it.layer }.filter { componentMatcher.layerMatchesAnyOf(it) }
-        val matchingActivityRecords = matchingLayer.mapNotNull { getActivityRecordFor(it) }
-
-        if (matchingActivityRecords.isEmpty()) {
+        if (!matchingSubjects) {
             fail(
                 Fact(
                     ASSERTION_TAG,
                     "isSplashScreenVisibleFor(${componentMatcher.toLayerIdentifier()})"
                 ),
-                Fact("Could not find Activity Record layer", componentMatcher.toLayerIdentifier())
-            )
-            return this
-        }
-
-        // Check the matched activity record layers for containing splash screens
-        for (layer in matchingActivityRecords) {
-            val splashScreenContainers = layer.children.filter { it.name.contains("Splash Screen") }
-            val splashScreenLayers =
-                splashScreenContainers.flatMap {
-                    it.children.filter { childLayer -> childLayer.name.contains("Splash Screen") }
-                }
-
-            if (splashScreenLayers.all { it.isHiddenByParent || !it.isVisible }) {
-                reason = Fact("No splash screen visible for", layer.name)
-                target = subjects.first { it.layer == layer }
-                continue
-            }
-            reason = null
-            target = null
-            break
-        }
-
-        reason?.run {
-            target?.fail(
                 Fact(
-                    ASSERTION_TAG,
-                    "isSplashScreenVisibleFor(${componentMatcher.toLayerIdentifier()})"
-                ),
-                reason
+                    "Could not find Splash screen and activity record layer",
+                    componentMatcher.toLayerIdentifier()
+                )
             )
+            error("Shouldn't reach here")
         }
     }
 
