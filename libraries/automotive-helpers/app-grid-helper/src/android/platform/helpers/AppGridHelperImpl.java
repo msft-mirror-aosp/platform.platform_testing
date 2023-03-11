@@ -128,25 +128,25 @@ public class AppGridHelperImpl extends AbstractStandardAppHelper implements IAut
 
     /** {@inherticDoc} */
     @Override
-    public boolean isTop() {
-        boolean isOnTop = false;
+    public boolean isAtBeginning() {
+        boolean isAtBeginning = false;
         try {
             if (isAppInForeground()) {
                 UiObject2 pageUp = getSpectatioUiUtil().findUiObject(mBackwardButtonSelector);
                 if (pageUp != null) {
-                    isOnTop = !pageUp.isEnabled();
+                    isAtBeginning = !pageUp.isEnabled();
                 } else {
                     boolean isScrollable =
                             getSpectatioUiUtil()
                                     .findUiObject(mScrollableElementSelector)
                                     .isScrollable();
                     if (isScrollable) {
-                        isOnTop =
+                        isAtBeginning =
                                 !getSpectatioUiUtil()
                                         .scrollBackward(
                                                 mScrollableElementSelector,
                                                 (mScrollDirection == ScrollDirection.VERTICAL));
-                        if (!isOnTop) {
+                        if (!isAtBeginning) {
                             // To place the scroll in previous position
                             getSpectatioUiUtil()
                                     .scrollForward(
@@ -155,11 +155,11 @@ public class AppGridHelperImpl extends AbstractStandardAppHelper implements IAut
                         }
                     } else {
                         // Number of apps fits in one page, at top by default
-                        isOnTop = true;
+                        isAtBeginning = true;
                     }
                 }
             }
-            return isOnTop;
+            return isAtBeginning;
         } catch (MissingUiElementException ex) {
             throw new IllegalStateException("App grid is not open.");
         }
@@ -167,25 +167,25 @@ public class AppGridHelperImpl extends AbstractStandardAppHelper implements IAut
 
     /** {@inherticDoc} */
     @Override
-    public boolean isBottom() {
-        boolean isAtBotton = false;
+    public boolean isAtEnd() {
+        boolean isAtEnd = false;
         try {
             if (isAppInForeground()) {
                 UiObject2 pageDown = getSpectatioUiUtil().findUiObject(mForwardButtonSelector);
                 if (pageDown != null) {
-                    isAtBotton = !pageDown.isEnabled();
+                    isAtEnd = !pageDown.isEnabled();
                 } else {
                     boolean isScrollable =
                             getSpectatioUiUtil()
                                     .findUiObject(mScrollableElementSelector)
                                     .isScrollable();
                     if (isScrollable) {
-                        isAtBotton =
+                        isAtEnd =
                                 !getSpectatioUiUtil()
                                         .scrollForward(
                                                 mScrollableElementSelector,
                                                 (mScrollDirection == ScrollDirection.VERTICAL));
-                        if (!isAtBotton) {
+                        if (!isAtEnd) {
                             // To place the scroll in previous position
                             getSpectatioUiUtil()
                                     .scrollBackward(
@@ -194,45 +194,45 @@ public class AppGridHelperImpl extends AbstractStandardAppHelper implements IAut
                         }
                     } else {
                         // Number of apps fits in one page, at top by default
-                        isAtBotton = true;
+                        isAtEnd = true;
                     }
                 }
             }
-            return isAtBotton;
+            return isAtEnd;
         } catch (MissingUiElementException ex) {
             throw new IllegalStateException("App grid is not open.");
         }
     }
 
     @Override
-    public boolean scrollUpOnePage() {
+    public boolean scrollBackward() {
         return mScrollUtility.scrollBackward(
                 mScrollAction,
                 mScrollDirection,
                 mBackwardButtonSelector,
                 mScrollableElementSelector,
-                String.format("Scroll up one page on app grid"));
+                String.format("Scroll backward on app grid"));
     }
 
     /** {@inheritDoc} */
     @Override
-    public void scrollToTop() {
+    public void scrollToBeginning() {
         mScrollUtility.scrollToBeginning(
                 mScrollAction,
                 mScrollDirection,
                 mBackwardButtonSelector,
                 mScrollableElementSelector,
-                "Scroll to top of app grid");
+                "Scroll to beginning of app grid");
     }
 
     @Override
-    public boolean scrollDownOnePage() {
+    public boolean scrollForward() {
         return mScrollUtility.scrollForward(
                 mScrollAction,
                 mScrollDirection,
                 mForwardButtonSelector,
                 mScrollableElementSelector,
-                String.format("Scroll down one page on app grid"));
+                String.format("Scroll forward on app grid"));
     }
 
     private void validateUiObject(UiObject2 uiObject, String action) {
