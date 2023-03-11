@@ -113,6 +113,12 @@ class RegionSubject(
         check { MSG_ERROR_AREA }.that(region.bounds.area).isEqual(other.bounds.area)
     }
 
+    private fun assertTopBottomAndAreaEquals(other: Region) {
+        check { MSG_ERROR_TOP_POSITION }.that(region.bounds.top).isEqual(other.bounds.top)
+        check { MSG_ERROR_BOTTOM_POSITION }.that(region.bounds.bottom).isEqual(other.bounds.bottom)
+        check { MSG_ERROR_AREA }.that(region.bounds.area).isEqual(other.bounds.area)
+    }
+
     /** Subtracts [other] from this subject [region] */
     fun minus(other: Region): RegionSubject {
         val remainingRegion = Region.from(this.region)
@@ -189,6 +195,22 @@ class RegionSubject(
         check { MSG_ERROR_BOTTOM_POSITION }
             .that(region.bounds.bottom)
             .isGreaterOrEqual(other.bounds.bottom)
+    }
+
+    /**
+     * Asserts that the left and right coordinates of [other] are lower or equal to those of
+     * [region].
+     *
+     * Also checks that the top and bottom positions, as well as area, don't change
+     */
+    fun isToTheRight(other: Region): RegionSubject = apply {
+        assertTopBottomAndAreaEquals(other)
+        check { MSG_ERROR_LEFT_POSITION }
+            .that(region.bounds.left)
+            .isGreaterOrEqual(other.bounds.left)
+        check { MSG_ERROR_RIGHT_POSITION }
+            .that(region.bounds.right)
+            .isGreaterOrEqual(other.bounds.right)
     }
 
     /**
