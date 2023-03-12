@@ -16,41 +16,42 @@
 
 package android.platform.helpers;
 
-public interface IAutoAppGridHelper extends IAppHelper, Scrollable {
+/** Interface Helper class for App Grid functional tests */
+public interface IAutoAppGridHelper extends IAppHelper {
     /**
      * Setup expectations: In App grid.
      *
-     * Check if device is currently at the top of app grid.
+     * <p>Check if device is currently at the beginning of app grid.
      */
-    public boolean isTop();
+    boolean isAtBeginning();
 
     /**
      * Setup expectations: In App grid.
      *
-     * Check if device is currently at the bottom of app grid.
+     * <p>Check if device is currently at the end of app grid.
      */
-    public boolean isBottom();
+    boolean isAtEnd();
 
     /**
      * Setup expectations: In App grid.
      *
-     * <p>Scroll up on page.
+     * <p>Scroll backward on appgrid app.
      */
-    boolean scrollUpOnePage();
+    boolean scrollBackward();
 
     /**
      * Setup expectations: In App grid.
      *
-     * <p>Scroll to the top of the app grid.
+     * <p>Scroll to the beginning of the app grid.
      */
-    void scrollToTop();
+    void scrollToBeginning();
 
     /**
      * Setup expectations: In App grid.
      *
-     * <p>Scroll down on page.
+     * <p>Scroll forward on appgrid app.
      */
-    boolean scrollDownOnePage();
+    boolean scrollForward();
 
     /**
      * Setup expectations: In App grid.

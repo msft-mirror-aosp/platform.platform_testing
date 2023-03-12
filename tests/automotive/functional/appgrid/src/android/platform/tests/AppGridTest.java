@@ -63,12 +63,12 @@ public class AppGridTest {
         mAppGridHelper.get().exit();
         mAppGridHelper.get().open();
 
-        mAppGridHelper.get().scrollToTop();
+        mAppGridHelper.get().scrollToBeginning();
         // Test scroll only when there are more than one page in app grid.
-        if (!mAppGridHelper.get().isBottom()) {
-            mAppGridHelper.get().scrollDownOnePage();
-            assertFalse("Scrolling did not work.", mAppGridHelper.get().isTop());
-            mAppGridHelper.get().scrollUpOnePage();
+        if (!mAppGridHelper.get().isAtEnd()) {
+            mAppGridHelper.get().scrollForward();
+            assertFalse("Scrolling did not work.", mAppGridHelper.get().isAtBeginning());
+            mAppGridHelper.get().scrollBackward();
         }
     }
 }
