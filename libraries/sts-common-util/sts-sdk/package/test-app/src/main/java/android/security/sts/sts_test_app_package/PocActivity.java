@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package android.security.sts.CVE_2020_0215;
+package android.security.sts.sts_test_app_package;
 
 import android.app.Activity;
 import android.os.Bundle;

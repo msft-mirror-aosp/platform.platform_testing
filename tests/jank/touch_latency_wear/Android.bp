@@ -31,4 +31,7 @@ android_test {
     sdk_version: "current",
 
     test_suites: ["device-tests"],
+    data: [
+        ":TouchLatency",
+    ],
 }
