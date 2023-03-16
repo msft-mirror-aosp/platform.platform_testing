@@ -39,9 +39,18 @@ class ComponentSplashScreenMatcher(val componentNameMatcher: IComponentNameMatch
                 // Not leaf splash screen layer but container of the splash screen layer
                 return@any false
             }
-            val grandParent = it.parent?.parent
-            requireNotNull(grandParent) { "Splash screen layer's grandparent shouldn't be null" }
-            return@any componentNameMatcher.activityRecordMatchesAnyOf(grandParent)
+
+            var ancestor: Layer? = it.parent?.parent
+            requireNotNull(ancestor) { "Splash screen layer's grandparent shouldn't be null" }
+
+            var hasActivityRecord = componentNameMatcher.activityRecordMatchesAnyOf(ancestor)
+            var count = 0
+            while (!hasActivityRecord && ancestor != null && count++ < 5) {
+                ancestor = ancestor.parent
+                hasActivityRecord =
+                    ancestor != null && componentNameMatcher.activityRecordMatchesAnyOf(ancestor)
+            }
+            return@any hasActivityRecord
         }
     }
 

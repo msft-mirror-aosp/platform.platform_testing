@@ -16,19 +16,21 @@
 
 package android.platform.spectatio.utils;
 
+import android.app.Instrumentation;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.os.RemoteException;
 import android.os.SystemClock;
 import android.platform.spectatio.exceptions.MissingUiElementException;
-import android.support.test.uiautomator.By;
-import android.support.test.uiautomator.BySelector;
-import android.support.test.uiautomator.Direction;
-import android.support.test.uiautomator.UiDevice;
-import android.support.test.uiautomator.UiObject2;
-import android.support.test.uiautomator.Until;
 import android.util.Log;
 import android.view.KeyEvent;
+
+import androidx.test.uiautomator.By;
+import androidx.test.uiautomator.BySelector;
+import androidx.test.uiautomator.Direction;
+import androidx.test.uiautomator.UiDevice;
+import androidx.test.uiautomator.UiObject2;
+import androidx.test.uiautomator.Until;
 
 import com.google.common.base.Strings;
 
@@ -72,6 +74,15 @@ public class SpectatioUiUtil {
             sSpectatioUiUtil = new SpectatioUiUtil(mDevice);
         }
         return sSpectatioUiUtil;
+    }
+
+    /**
+     * Initialize a UiDevice for the given instrumentation, then initialize Spectatio for that
+     * device. If Spectatio has already been initialized, return the previously initialized
+     * instance.
+     */
+    public static SpectatioUiUtil getInstance(Instrumentation instrumentation) {
+        return getInstance(UiDevice.getInstance(instrumentation));
     }
 
     /** Sets the scroll margin and wait time after the scroll */

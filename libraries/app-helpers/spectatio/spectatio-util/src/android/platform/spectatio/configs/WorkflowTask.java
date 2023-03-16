@@ -21,9 +21,10 @@ import android.platform.spectatio.constants.JsonConfigConstants.ScrollDirection;
 import android.platform.spectatio.constants.JsonConfigConstants.SupportedWorkFlowTasks;
 import android.platform.spectatio.exceptions.MissingUiElementException;
 import android.platform.spectatio.utils.SpectatioUiUtil;
-import android.support.test.uiautomator.BySelector;
-import android.support.test.uiautomator.UiObject2;
 import android.util.Log;
+
+import androidx.test.uiautomator.BySelector;
+import androidx.test.uiautomator.UiObject2;
 
 import com.google.common.base.Strings;
 import com.google.gson.annotations.SerializedName;

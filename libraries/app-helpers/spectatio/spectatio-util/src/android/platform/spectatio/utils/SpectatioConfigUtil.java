@@ -22,13 +22,14 @@ import android.platform.spectatio.configs.UiElement;
 import android.platform.spectatio.configs.WorkflowTask;
 import android.platform.spectatio.configs.WorkflowTaskConfig;
 import android.platform.spectatio.configs.validators.ValidateMapEntries;
-import android.platform.spectatio.configs.validators.ValidateSpectatioConfigForUnknownProperties;
 import android.platform.spectatio.configs.validators.ValidateScrollConfig;
+import android.platform.spectatio.configs.validators.ValidateSpectatioConfigForUnknownProperties;
+import android.platform.spectatio.configs.validators.ValidateUiElement;
 import android.platform.spectatio.configs.validators.ValidateWorkflowTask;
 import android.platform.spectatio.configs.validators.ValidateWorkflowTaskConfig;
-import android.platform.spectatio.configs.validators.ValidateUiElement;
-import android.support.test.uiautomator.BySelector;
 import android.util.Log;
+
+import androidx.test.uiautomator.BySelector;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -37,9 +38,9 @@ import com.google.gson.reflect.TypeToken;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
