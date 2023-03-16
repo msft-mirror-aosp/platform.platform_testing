@@ -20,6 +20,7 @@ android_test {
     name: "AutomotivePhoneSnippet",
     static_libs: [
         "automotive-dial-app-helper",
+        "automotive-vehiclehardkeys-app-helper",
         "mobly-snippet-lib",
     ],
     srcs: ["src/**/*.java"],

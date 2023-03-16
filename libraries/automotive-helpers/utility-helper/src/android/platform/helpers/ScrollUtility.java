@@ -18,8 +18,9 @@ package android.platform.helpers;
 
 import android.platform.spectatio.exceptions.MissingUiElementException;
 import android.platform.spectatio.utils.SpectatioUiUtil;
-import android.support.test.uiautomator.BySelector;
-import android.support.test.uiautomator.UiObject2;
+
+import androidx.test.uiautomator.BySelector;
+import androidx.test.uiautomator.UiObject2;
 
 /** Utility file for scroll functions */
 public class ScrollUtility {

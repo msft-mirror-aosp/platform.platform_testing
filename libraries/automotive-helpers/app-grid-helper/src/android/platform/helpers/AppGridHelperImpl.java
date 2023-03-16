@@ -21,9 +21,10 @@ import android.platform.helpers.ScrollUtility.ScrollActions;
 import android.platform.helpers.ScrollUtility.ScrollDirection;
 import android.platform.helpers.exceptions.UnknownUiException;
 import android.platform.spectatio.exceptions.MissingUiElementException;
-import android.support.test.uiautomator.By;
-import android.support.test.uiautomator.BySelector;
-import android.support.test.uiautomator.UiObject2;
+
+import androidx.test.uiautomator.By;
+import androidx.test.uiautomator.BySelector;
+import androidx.test.uiautomator.UiObject2;
 
 /** Helper class for functional test for App Grid test */
 public class AppGridHelperImpl extends AbstractStandardAppHelper implements IAutoAppGridHelper {
@@ -104,7 +105,7 @@ public class AppGridHelperImpl extends AbstractStandardAppHelper implements IAut
     @Override
     public void exit() {
         if (isAppInForeground()) {
-            mDevice.pressHome();
+            getSpectatioUiUtil().pressHome();
         }
     }
 
