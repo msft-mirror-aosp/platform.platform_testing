@@ -16,6 +16,8 @@
 
 package com.android.compatibility.common.util;
 
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -1208,6 +1210,8 @@ public class ReadElf implements AutoCloseable {
         return mFile.read() & 0xff;
     }
 
+    /** Gets the symbol by name. */
+    @CanIgnoreReturnValue
     public Symbol getSymbol(String name) {
         if (mSymbols == null) {
             try {
@@ -1227,6 +1231,8 @@ public class ReadElf implements AutoCloseable {
         return mSymbols.get(name);
     }
 
+    /** Gets a dynamic symbol by name. */
+    @CanIgnoreReturnValue
     public Symbol getDynamicSymbol(String name) throws IOException {
         if (mDynamicSymbols == null) {
             try {
