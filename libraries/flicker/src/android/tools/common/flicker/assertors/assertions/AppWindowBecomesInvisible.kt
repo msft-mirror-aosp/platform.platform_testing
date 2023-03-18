@@ -24,7 +24,7 @@ import android.tools.common.flicker.subject.wm.WindowManagerTraceSubject
  * Checks that the app layer doesn't exist or is invisible at the start of the transition, but is
  * created and/or becomes visible during the transition.
  */
-class AppWindowBecomesInvisible(component: ComponentTemplate) :
+class AppWindowBecomesInvisible(private val component: ComponentTemplate) :
     AssertionTemplateWithComponent(component) {
     /** {@inheritDoc} */
     override fun doEvaluate(

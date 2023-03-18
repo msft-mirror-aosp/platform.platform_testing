@@ -17,7 +17,7 @@
 package android.tools.device.traces.io
 
 import android.annotation.SuppressLint
-import android.tools.InitRule
+import android.tools.CleanFlickerEnvironmentRule
 import android.tools.TEST_SCENARIO
 import android.tools.TestTraces
 import android.tools.assertExceptionMessage
@@ -35,6 +35,7 @@ import com.google.common.truth.Truth
 import java.io.File
 import org.junit.ClassRule
 import org.junit.FixMethodOrder
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runners.MethodSorters
 
@@ -42,6 +43,7 @@ import org.junit.runners.MethodSorters
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @SuppressLint("VisibleForTests")
 class ResultWriterTest {
+
     @Test
     fun cannotWriteFileWithoutScenario() {
         val exception =
@@ -59,7 +61,7 @@ class ResultWriterTest {
         outputFileName(RunStatus.RUN_EXECUTED).deleteIfExists()
         val writer = newTestResultWriter()
         val result = writer.write()
-        val path = result.artifact
+        val path = result.artifact.file
         Truth.assertWithMessage("File exists").that(path.exists()).isTrue()
         Truth.assertWithMessage("Transition start time")
             .that(result.transitionTimeRange.start)
@@ -77,7 +79,7 @@ class ResultWriterTest {
         val writer =
             ResultWriter().forScenario(TEST_SCENARIO).withOutputDir(getDefaultFlickerOutputDir())
         val result = writer.write()
-        val path = result.artifact
+        val path = result.artifact.file
         validateFileName(path, RunStatus.UNDEFINED)
     }
 
@@ -86,7 +88,7 @@ class ResultWriterTest {
         outputFileName(RunStatus.RUN_EXECUTED).deleteIfExists()
         val writer = newTestResultWriter().setRunComplete()
         val result = writer.write()
-        val path = result.artifact
+        val path = result.artifact.file
         validateFileName(path, RunStatus.RUN_EXECUTED)
     }
 
@@ -95,7 +97,7 @@ class ResultWriterTest {
         outputFileName(RunStatus.RUN_FAILED).deleteIfExists()
         val writer = newTestResultWriter().setRunFailed(EXPECTED_FAILURE)
         val result = writer.write()
-        val path = result.artifact
+        val path = result.artifact.file
         validateFileName(path, RunStatus.RUN_FAILED)
         Truth.assertWithMessage("Expected assertion")
             .that(result.executionError)
@@ -200,6 +202,6 @@ class ResultWriterTest {
                 .contains(status.prefix)
         }
 
-        @ClassRule @JvmField val initRule = InitRule()
+        @Rule @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
     }
 }

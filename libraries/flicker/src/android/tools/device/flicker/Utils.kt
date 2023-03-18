@@ -16,25 +16,22 @@
 
 package android.tools.device.flicker
 
+import android.tools.common.IScenario
 import android.tools.common.datatypes.component.ComponentNameMatcher
+import android.tools.device.traces.DEFAULT_TRACE_CONFIG
+import android.tools.device.traces.getDefaultFlickerOutputDir
+import android.tools.device.traces.io.ResultReader
+import android.tools.device.traces.io.ResultWriter
+import android.tools.device.traces.monitors.ScreenRecorder
+import android.tools.device.traces.monitors.TraceMonitor
+import android.tools.device.traces.monitors.events.EventLogMonitor
+import android.tools.device.traces.monitors.surfaceflinger.LayersTraceMonitor
+import android.tools.device.traces.monitors.surfaceflinger.TransactionsTraceMonitor
+import android.tools.device.traces.monitors.wm.TransitionsTraceMonitor
+import android.tools.device.traces.monitors.wm.WindowManagerTraceMonitor
+import androidx.test.platform.app.InstrumentationRegistry
 
 object Utils {
-    fun componentMatcherParamsFromName(name: String): Pair<String, String> {
-        var packageName = ""
-        var className = ""
-        if (name.contains("/")) {
-            if (name.contains("#")) {
-                name.removeSuffix("#")
-            }
-            val splitString = name.split('/')
-            packageName = splitString[0]
-            className = splitString[1]
-        } else {
-            className = name
-        }
-        return Pair(packageName, className)
-    }
-
     fun componentNameMatcherHardcoded(str: String): ComponentNameMatcher? {
         return when (true) {
             str.contains("NavigationBar0") -> ComponentNameMatcher.NAV_BAR
@@ -89,5 +86,31 @@ object Utils {
     fun componentNameMatcherAsStringFromName(str: String): String? {
         val componentMatcher = componentNameMatcherFromName(str)
         return componentMatcher?.componentNameMatcherToString()
+    }
+
+    fun captureTrace(
+        scenario: IScenario,
+        monitors: List<TraceMonitor> =
+            listOf(
+                TransitionsTraceMonitor(),
+                TransactionsTraceMonitor(),
+                WindowManagerTraceMonitor(),
+                LayersTraceMonitor(),
+                EventLogMonitor(),
+                ScreenRecorder(InstrumentationRegistry.getInstrumentation().targetContext)
+            ),
+        actions: (writer: ResultWriter) -> Unit
+    ): ResultReader {
+        val writer =
+            ResultWriter()
+                .forScenario(scenario)
+                .withOutputDir(getDefaultFlickerOutputDir())
+                .setRunComplete()
+        monitors.fold({ actions.invoke(writer) }) { action, monitor ->
+            { monitor.withTracing(writer) { action() } }
+        }()
+        val result = writer.write()
+
+        return ResultReader(result, DEFAULT_TRACE_CONFIG)
     }
 }

@@ -21,7 +21,7 @@ import android.tools.common.flicker.assertors.ComponentTemplate
 import android.tools.common.flicker.subject.layers.LayersTraceSubject
 
 /** Checks if the [component] layer is visible throughout the animation */
-class AppLayerIsVisibleAlways(component: ComponentTemplate) :
+class AppLayerIsVisibleAlways(private val component: ComponentTemplate) :
     AssertionTemplateWithComponent(component) {
     /** {@inheritDoc} */
     override fun doEvaluate(scenarioInstance: IScenarioInstance, layerSubject: LayersTraceSubject) {

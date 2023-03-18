@@ -17,7 +17,7 @@
 package android.tools.common.flicker
 
 import android.app.Instrumentation
-import android.tools.InitRule
+import android.tools.CleanFlickerEnvironmentRule
 import android.tools.assertArchiveContainsFiles
 import android.tools.device.apphelpers.BrowserAppHelper
 import android.tools.device.flicker.FlickerServiceTracesCollector
@@ -103,6 +103,6 @@ class FlickerServiceTracesCollectorTest {
                 "eventlog.winscope"
             )
 
-        @ClassRule @JvmField val initRule = InitRule()
+        @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
     }
 }

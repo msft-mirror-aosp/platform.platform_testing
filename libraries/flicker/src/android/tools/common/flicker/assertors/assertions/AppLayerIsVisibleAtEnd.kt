@@ -21,7 +21,7 @@ import android.tools.common.flicker.assertors.ComponentTemplate
 import android.tools.common.flicker.subject.layers.LayersTraceSubject
 
 /** Checks if the [component] layer is visible at the end of the transition */
-class AppLayerIsVisibleAtEnd(component: ComponentTemplate) :
+class AppLayerIsVisibleAtEnd(private val component: ComponentTemplate) :
     AssertionTemplateWithComponent(component) {
     /** {@inheritDoc} */
     override fun doEvaluate(scenarioInstance: IScenarioInstance, layerSubject: LayersTraceSubject) {

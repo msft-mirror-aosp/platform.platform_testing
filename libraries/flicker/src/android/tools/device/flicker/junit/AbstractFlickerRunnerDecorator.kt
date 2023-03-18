@@ -19,20 +19,15 @@ package android.tools.device.flicker.junit
 import android.app.Instrumentation
 import android.tools.common.CrossPlatform
 import android.tools.common.FLICKER_TAG
-import android.tools.common.Scenario
-import android.tools.device.flicker.datastore.DataStore
 import android.tools.device.flicker.legacy.FlickerBuilder
 import android.tools.device.flicker.legacy.FlickerTest
-import android.tools.device.flicker.legacy.runner.TransitionRunner
 import androidx.test.platform.app.InstrumentationRegistry
 import java.lang.reflect.Modifier
-import org.junit.runner.Description
 import org.junit.runners.model.FrameworkMethod
 import org.junit.runners.model.TestClass
 
 abstract class AbstractFlickerRunnerDecorator(
     protected val testClass: TestClass,
-    protected val scenario: Scenario?,
     protected val inner: IFlickerJUnitDecorator?
 ) : IFlickerJUnitDecorator {
     protected val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
@@ -45,12 +40,20 @@ abstract class AbstractFlickerRunnerDecorator(
         return errors
     }
 
-    final override fun doValidateInstanceMethods(): List<Throwable> {
+    override fun doValidateInstanceMethods(): List<Throwable> {
         val errors = internalDoValidateInstanceMethods().toMutableList()
         if (errors.isEmpty()) {
             inner?.doValidateInstanceMethods()?.let { errors.addAll(it) }
         }
         return errors
+    }
+
+    override fun shouldRunBeforeOn(method: FrameworkMethod): Boolean {
+        return inner?.shouldRunBeforeOn(method) ?: true
+    }
+
+    override fun shouldRunAfterOn(method: FrameworkMethod): Boolean {
+        return inner?.shouldRunAfterOn(method) ?: true
     }
 
     private fun internalDoValidateConstructor(): List<Throwable> {
@@ -104,21 +107,6 @@ abstract class AbstractFlickerRunnerDecorator(
         }
 
         return errors
-    }
-
-    protected fun doRunTransition(test: Any, description: Description?) {
-        CrossPlatform.log.d(FLICKER_TAG, "$scenario - Setting up FaaS")
-        val scenario = scenario
-        requireNotNull(scenario) { "Expected to have a scenario to run" }
-        if (!DataStore.containsResult(scenario)) {
-            CrossPlatform.log.v(FLICKER_TAG, "Creating flicker object for $scenario")
-            val builder = getFlickerBuilder(test)
-            CrossPlatform.log.v(FLICKER_TAG, "Creating flicker object for $scenario")
-            val flicker = builder.build()
-            val runner = TransitionRunner(scenario, instrumentation)
-            CrossPlatform.log.v(FLICKER_TAG, "Running transition for $scenario")
-            runner.execute(flicker, description)
-        }
     }
 
     private val providerMethod: FrameworkMethod

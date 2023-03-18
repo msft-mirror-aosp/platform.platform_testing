@@ -16,7 +16,7 @@
 
 package android.tools.common.flicker.subject.events
 
-import android.tools.InitRule
+import android.tools.CleanFlickerEnvironmentRule
 import android.tools.common.CrossPlatform
 import android.tools.common.flicker.assertions.SubjectsParser
 import android.tools.common.traces.events.EventLog
@@ -96,6 +96,6 @@ class EventLogSubjectTest {
     }
 
     companion object {
-        @ClassRule @JvmField val initRule = InitRule()
+        @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
     }
 }

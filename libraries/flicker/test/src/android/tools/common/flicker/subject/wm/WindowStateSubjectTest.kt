@@ -16,7 +16,7 @@
 
 package android.tools.common.flicker.subject.wm
 
-import android.tools.InitRule
+import android.tools.CleanFlickerEnvironmentRule
 import android.tools.TestComponents
 import android.tools.common.Cache
 import android.tools.readWmTraceFromFile
@@ -44,6 +44,6 @@ class WindowStateSubjectTest {
     }
 
     companion object {
-        @ClassRule @JvmField val initRule = InitRule()
+        @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
     }
 }

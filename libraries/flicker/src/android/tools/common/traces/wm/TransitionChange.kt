@@ -16,22 +16,51 @@
 
 package android.tools.common.traces.wm
 
-import android.tools.common.traces.wm.Transition.Companion.Type
+import android.tools.common.io.IReader
 import kotlin.js.JsName
 
 class TransitionChange(
-    @JsName("transitMode") val transitMode: Type,
+    @JsName("transitMode") val transitMode: TransitionType,
     @JsName("layerId") val layerId: Int,
     @JsName("windowId") val windowId: Int,
     @JsName("windowingMode") val windowingMode: WindowingMode
 ) {
 
-    override fun toString(): String {
-        return "TransitionChange(" +
-            "transitMode=$transitMode, " +
-            "layerId=$layerId, " +
-            "windowId=$windowId, " +
-            "windowingMode=$windowingMode" +
-            ")"
+    override fun toString(): String = Formatter(null).format(this)
+
+    class Formatter(val reader: IReader?) {
+        fun format(change: TransitionChange): String {
+            val layersTrace = reader?.readLayersTrace()
+            val wmTrace = reader?.readWmTrace()
+
+            val layerName =
+                layersTrace
+                    ?.entries
+                    ?.flatMap { it.flattenedLayers.asList() }
+                    ?.firstOrNull { it.id == change.layerId }
+                    ?.name
+
+            val windowName =
+                wmTrace
+                    ?.entries
+                    ?.flatMap { it.windowStates.asList() }
+                    ?.firstOrNull { it.token == change.windowId.toString(16) }
+                    ?.name
+
+            return buildString {
+                append("TransitionChange(")
+                append("transitMode=${change.transitMode}, ")
+                append("layerId=${change.layerId}, ")
+                if (layerName != null) {
+                    append("layerName=$layerName, ")
+                }
+                append("windowId=${change.windowId}, ")
+                if (windowName != null) {
+                    append("windowName=$windowName, ")
+                }
+                append("windowingMode=${change.windowingMode}")
+                append(")")
+            }
+        }
     }
 }

@@ -29,7 +29,7 @@ open class WindowManagerTraceMonitor : TraceMonitor() {
     override val isEnabled
         get() = windowManager.isWindowTraceEnabled
 
-    override fun start() {
+    override fun doStart() {
         windowManager.startWindowTrace()
     }
 

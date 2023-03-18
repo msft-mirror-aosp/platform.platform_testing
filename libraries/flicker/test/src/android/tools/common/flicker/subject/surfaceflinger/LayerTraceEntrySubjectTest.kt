@@ -16,7 +16,7 @@
 
 package android.tools.common.flicker.subject.surfaceflinger
 
-import android.tools.InitRule
+import android.tools.CleanFlickerEnvironmentRule
 import android.tools.TestComponents
 import android.tools.assertFailureFact
 import android.tools.assertThatErrorContainsDebugInfo
@@ -398,6 +398,6 @@ class LayerTraceEntrySubjectTest {
     }
 
     companion object {
-        @ClassRule @JvmField val initRule = InitRule()
+        @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
     }
 }

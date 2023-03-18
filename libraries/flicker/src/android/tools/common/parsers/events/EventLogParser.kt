@@ -70,13 +70,13 @@ class EventLogParser : AbstractParser<Array<String>, EventLog>() {
                 FocusEvent(timestamp, pid, uid, tid, parseDataArray(eventData))
             }
             JANK_CUJ_BEGIN_TAG -> {
-                CujEvent(pid, uid, tid, tag, eventData)
+                CujEvent.fromData(pid, uid, tid, tag, eventData)
             }
             JANK_CUJ_END_TAG -> {
-                CujEvent(pid, uid, tid, tag, eventData)
+                CujEvent.fromData(pid, uid, tid, tag, eventData)
             }
             JANK_CUJ_CANCEL_TAG -> {
-                CujEvent(pid, uid, tid, tag, eventData)
+                CujEvent.fromData(pid, uid, tid, tag, eventData)
             }
             else -> {
                 Event(timestamp, pid, uid, tid, tag)

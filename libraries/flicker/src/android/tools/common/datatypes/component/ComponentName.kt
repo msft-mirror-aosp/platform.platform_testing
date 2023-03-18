@@ -123,4 +123,22 @@ data class ComponentName(override val packageName: String, override val classNam
     fun toLayerNameRegex(): Regex = Regex(".*${Regex.escape(this.toLayerName())}.*")
 
     override fun toString(): String = toShortWindowName()
+
+    companion object {
+        fun fromLayerName(name: String): IComponentName {
+            var packageName = ""
+            var className = ""
+            if (name.contains("/")) {
+                if (name.contains("#")) {
+                    name.removeSuffix("#")
+                }
+                val splitString = name.split('/')
+                packageName = splitString[0]
+                className = splitString[1]
+            } else {
+                className = name
+            }
+            return ComponentName(packageName, className)
+        }
+    }
 }

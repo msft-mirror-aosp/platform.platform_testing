@@ -17,7 +17,7 @@
 package android.tools.device.flicker.legacy.runner
 
 import android.app.Instrumentation
-import android.tools.InitRule
+import android.tools.CleanFlickerEnvironmentRule
 import android.tools.TEST_SCENARIO
 import android.tools.assertThrows
 import android.tools.device.flicker.legacy.AbstractFlickerTestData
@@ -99,6 +99,6 @@ class SetupTeardownRuleTest {
             )
         }
 
-        @ClassRule @JvmField val initRule = InitRule()
+        @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
     }
 }

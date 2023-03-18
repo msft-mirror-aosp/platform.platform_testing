@@ -16,7 +16,7 @@
 
 package android.tools.common.io
 
-import android.tools.InitRule
+import android.tools.CleanFlickerEnvironmentRule
 import android.tools.assertThrows
 import com.google.common.truth.Truth
 import org.junit.ClassRule
@@ -73,6 +73,6 @@ class TraceTypeTest {
     }
 
     companion object {
-        @ClassRule @JvmField val initRule = InitRule()
+        @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
     }
 }

@@ -18,7 +18,7 @@ package android.tools.device.traces.monitors
 
 import android.app.Instrumentation
 import android.support.test.uiautomator.UiDevice
-import android.tools.InitRule
+import android.tools.CleanFlickerEnvironmentRule
 import android.tools.common.io.RunStatus
 import android.tools.common.io.TraceType
 import android.tools.common.traces.DeviceTraceDump
@@ -131,6 +131,6 @@ abstract class TraceMonitorTest<T : TraceMonitor> {
     }
 
     companion object {
-        @ClassRule @JvmField val initRule = InitRule()
+        @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
     }
 }

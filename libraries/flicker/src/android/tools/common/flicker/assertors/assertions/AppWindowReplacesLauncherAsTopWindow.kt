@@ -26,7 +26,7 @@ import android.tools.common.flicker.subject.wm.WindowManagerTraceSubject
  * Checks that [Components.LAUNCHER] is the top visible app window at the start of the transition
  * and that it is replaced by [component] during the transition
  */
-class AppWindowReplacesLauncherAsTopWindow(component: ComponentTemplate) :
+class AppWindowReplacesLauncherAsTopWindow(private val component: ComponentTemplate) :
     AssertionTemplateWithComponent(component) {
     /** {@inheritDoc} */
     override fun doEvaluate(

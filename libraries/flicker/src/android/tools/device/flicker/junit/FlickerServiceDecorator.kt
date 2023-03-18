@@ -16,20 +16,25 @@
 
 package android.tools.device.flicker.junit
 
-import android.os.Bundle
-import android.tools.common.CrossPlatform
-import android.tools.common.FLICKER_TAG
-import android.tools.common.Scenario
-import android.tools.common.flicker.assertors.IAssertionResult
+import android.platform.test.rule.ArtifactSaver
+import android.tools.common.IScenario
+import android.tools.common.ScenarioBuilder
+import android.tools.common.flicker.IFlickerService
+import android.tools.common.flicker.IScenarioInstance
+import android.tools.common.flicker.assertors.IFaasAssertion
+import android.tools.common.flicker.config.FaasScenarioType
+import android.tools.common.io.IReader
 import android.tools.device.flicker.FlickerService
 import android.tools.device.flicker.FlickerServiceResultsCollector
-import android.tools.device.flicker.IS_FAAS_ENABLED
-import android.tools.device.flicker.annotation.FlickerServiceCompatible
-import android.tools.device.flicker.datastore.CachedResultReader
+import android.tools.device.flicker.Utils.captureTrace
+import android.tools.device.flicker.annotation.ExpectedScenarios
 import android.tools.device.flicker.datastore.DataStore
-import android.tools.device.flicker.isShellTransitionsEnabled
-import android.tools.device.traces.DEFAULT_TRACE_CONFIG
-import androidx.test.platform.app.InstrumentationRegistry
+import android.tools.device.traces.now
+import com.google.common.truth.Truth
+import java.lang.reflect.Method
+import org.junit.After
+import org.junit.Before
+import org.junit.Test
 import org.junit.runner.Description
 import org.junit.runners.model.FrameworkMethod
 import org.junit.runners.model.Statement
@@ -37,68 +42,70 @@ import org.junit.runners.model.TestClass
 
 class FlickerServiceDecorator(
     testClass: TestClass,
-    scenario: Scenario?,
-    inner: IFlickerJUnitDecorator?
-) : AbstractFlickerRunnerDecorator(testClass, scenario, inner) {
-    private val arguments: Bundle = InstrumentationRegistry.getArguments()
+    val paramString: String?,
+    inner: IFlickerJUnitDecorator
+) : AbstractFlickerRunnerDecorator(testClass, inner) {
     private val flickerService = FlickerService()
-    private val metricsCollector: FlickerServiceResultsCollector? =
-        scenario?.let {
-            FlickerServiceResultsCollector(
-                LegacyFlickerTraceCollector(scenario),
-                collectMetricsPerTest = true
-            )
-        }
-
-    private val onlyBlocking
-        get() =
-            scenario?.getConfigValue<Boolean>(Scenario.FAAS_BLOCKING)
-                ?: arguments.getString(Scenario.FAAS_BLOCKING).toBoolean()
-
-    private val isClassFlickerServiceCompatible: Boolean
-        get() =
-            testClass.annotations.filterIsInstance<FlickerServiceCompatible>().firstOrNull() != null
 
     override fun getChildDescription(method: FrameworkMethod?): Description? {
-        requireNotNull(scenario) { "Expected to have a scenario to run" }
-        return if (method is FlickerServiceCachedTestCase) {
-            Description.createTestDescription(
-                testClass.javaClass,
-                "${method.name}[${scenario.description}]",
-                *method.getAnnotations()
-            )
+        return if (method?.let { isMethodHandledByDecorator(it) } == true) {
+            Description.createTestDescription(testClass.javaClass, method.name, *method.annotations)
         } else {
             inner?.getChildDescription(method)
         }
     }
 
-    override fun getTestMethods(test: Any): List<FrameworkMethod> {
-        val result = inner?.getTestMethods(test)?.toMutableList() ?: mutableListOf()
-        if (shouldComputeTestMethods()) {
-            CrossPlatform.log.withTracing(
-                "$FAAS_METRICS_PREFIX getTestMethods ${testClass.javaClass.simpleName}"
-            ) {
-                result.addAll(computeFlickerServiceTests(test))
-                CrossPlatform.log.d(FLICKER_TAG, "Computed ${result.size} flicker tests")
-            }
-        }
-        return result
-    }
+    private val flickerServiceMethodsFor = mutableMapOf<FrameworkMethod, List<InjectedTestCase>>()
+    private val innerMethodsResults = mutableMapOf<FrameworkMethod, Throwable?>()
 
-    override fun getMethodInvoker(method: FrameworkMethod, test: Any): Statement {
-        return object : Statement() {
-            @Throws(Throwable::class)
-            override fun evaluate() {
-                if (method is FlickerServiceCachedTestCase) {
-                    val description = getChildDescription(method) ?: error("Missing description")
-                    method.execute(description)
-                } else {
-                    inner?.getMethodInvoker(method, test)?.evaluate()
+    override fun getTestMethods(test: Any): List<FrameworkMethod> {
+        val testMethods = mutableListOf<FrameworkMethod>()
+        val innerMethods =
+            inner?.getTestMethods(test)
+                ?: error("FlickerServiceDecorator requires a non-null inner decorator")
+        testMethods.addAll(innerMethods)
+
+        if (shouldComputeTestMethods()) {
+            for (method in innerMethods) {
+                if (!innerMethodsResults.containsKey(method)) {
+                    val scenario =
+                        ScenarioBuilder().forClass("${testClass.name}${paramString ?: ""}").build()
+                    var methodResult: Throwable? =
+                        null // TODO: Maybe don't use null but wrap in another object
+                    val reader =
+                        captureTrace(scenario) { writer ->
+                            try {
+                                val befores = testClass.getAnnotatedMethods(Before::class.java)
+                                befores.forEach { it.invokeExplosively(test) }
+
+                                writer.setTransitionStartTime(now())
+                                method.invokeExplosively(test)
+                                writer.setTransitionEndTime(now())
+
+                                val afters = testClass.getAnnotatedMethods(After::class.java)
+                                afters.forEach { it.invokeExplosively(test) }
+                            } catch (e: Throwable) {
+                                methodResult = e
+                            } finally {
+                                innerMethodsResults[method] = methodResult
+                            }
+                        }
+                    if (methodResult == null) {
+                        flickerServiceMethodsFor[method] =
+                            computeFlickerServiceTests(reader, scenario, method)
+                    }
+                }
+
+                if (innerMethodsResults[method] == null) {
+                    testMethods.addAll(flickerServiceMethodsFor[method]!!)
                 }
             }
         }
+
+        return testMethods
     }
 
+    // TODO: Common with LegacyFlickerServiceDecorator, might be worth extracting this up
     private fun shouldComputeTestMethods(): Boolean {
         // Don't compute when called from validateInstanceMethods since this will fail
         // as the parameters will not be set. And AndroidLogOnlyBuilder is a non-executing runner
@@ -114,86 +121,164 @@ class FlickerServiceDecorator(
                     it.className == "androidx.test.internal.runner.NonExecutingRunner"
                 }
 
-        val filters = getFiltersFromArguments()
-        // a method is filtered out if there's a filter and the filter doesn't include it's class
-        // or if the filter includes its class, but it's not flicker as a service
-        val isFilteredOut =
-            filters.isNotEmpty() && !(filters[testClass.javaClass.simpleName] ?: false)
-
-        return IS_FAAS_ENABLED &&
-            isShellTransitionsEnabled &&
-            isClassFlickerServiceCompatible &&
-            !isFilteredOut &&
-            !isDryRun
+        return !isDryRun
     }
 
-    private fun getFiltersFromArguments(): Map<String, Boolean> {
-        val testFilters = arguments.getString(OPTION_NAME) ?: return emptyMap()
-        val result = mutableMapOf<String, Boolean>()
-
-        // Test the display name against all filter arguments.
-        for (testFilter in testFilters.split(",")) {
-            val filterComponents = testFilter.split("#")
-            if (filterComponents.size != 2) {
-                CrossPlatform.log.e(
-                    LOG_TAG,
-                    "Invalid filter-tests instrumentation argument supplied, $testFilter."
-                )
-                continue
+    override fun getMethodInvoker(method: FrameworkMethod, test: Any): Statement {
+        return object : Statement() {
+            @Throws(Throwable::class)
+            override fun evaluate() {
+                val description = getChildDescription(method) ?: error("Missing description")
+                if (isMethodHandledByDecorator(method)) {
+                    (method as InjectedTestCase).execute(description)
+                } else {
+                    if (innerMethodsResults.containsKey(method)) {
+                        innerMethodsResults[method]?.let {
+                            ArtifactSaver.onError(description, it)
+                            throw it
+                        }
+                    } else {
+                        inner?.getMethodInvoker(method, test)?.evaluate()
+                    }
+                }
             }
-            val methodName = filterComponents[1]
-            val className = filterComponents[0]
-            result[className] = methodName.startsWith(FAAS_METRICS_PREFIX)
-        }
-
-        return result
-    }
-
-    /**
-     * Runs the flicker transition to collect the traces and run FaaS on them to get the FaaS
-     * results and then create functional test results for each of them.
-     */
-    private fun computeFlickerServiceTests(test: Any): List<FrameworkMethod> {
-        requireNotNull(scenario) { "Expected to have a scenario to run" }
-        if (!DataStore.containsFlickerServiceResult(scenario)) {
-            this.doRunFlickerService(test)
-        }
-        val aggregateResults =
-            DataStore.getFlickerServiceResults(scenario).groupBy { it.assertion.name }
-
-        val cachedResultMethod =
-            FlickerServiceCachedTestCase::class.java.getMethod("execute", Description::class.java)
-        return aggregateResults.keys.mapIndexed { idx, value ->
-            FlickerServiceCachedTestCase(
-                cachedResultMethod,
-                scenario,
-                value,
-                onlyBlocking,
-                metricsCollector,
-                isLast = aggregateResults.keys.size == idx
-            )
         }
     }
 
-    private fun doRunFlickerService(test: Any): List<IAssertionResult> {
-        requireNotNull(scenario) { "Expected to have a scenario to run" }
-        val description =
-            Description.createTestDescription(
-                this::class.java.simpleName,
-                "computeFlickerServiceTests"
-            )
-        this.doRunTransition(test, description)
+    override fun doValidateInstanceMethods(): List<Throwable> {
+        val errors = super.doValidateInstanceMethods().toMutableList()
 
-        val reader = CachedResultReader(scenario, DEFAULT_TRACE_CONFIG)
-        val results = flickerService.process(reader)
+        val testMethods = testClass.getAnnotatedMethods(Test::class.java)
+        if (testMethods.size > 0) {
+            errors.add(IllegalArgumentException("Only one @Test annotated method is supported"))
+        }
 
-        DataStore.addFlickerServiceResults(scenario, results)
-        return results
+        return errors
+    }
+
+    override fun shouldRunBeforeOn(method: FrameworkMethod): Boolean {
+        return false
+    }
+
+    override fun shouldRunAfterOn(method: FrameworkMethod): Boolean {
+        return false
+    }
+
+    private fun isMethodHandledByDecorator(method: FrameworkMethod): Boolean {
+        return method is InjectedTestCase && method.injectedBy == this
+    }
+
+    private fun computeFlickerServiceTests(
+        reader: IReader,
+        testScenario: IScenario,
+        method: FrameworkMethod
+    ): List<InjectedTestCase> {
+        val faasTestCases =
+            getFaasTestCase(testScenario, paramString ?: "", reader, flickerService, this)
+
+        val expectedScenarios =
+            (method.annotations
+                    .filterIsInstance<ExpectedScenarios>()
+                    .firstOrNull()
+                    ?.expectedScenarios
+                    ?: emptyArray())
+                .toSet()
+
+        val detectedScenarioTestCase =
+            AnonymousInjectedTestCase(
+                getCachedResultMethod(),
+                "FaaS_DetectedExpectedScenarios${paramString ?: ""}",
+                injectedBy = this
+            ) {
+                Truth.assertThat(getDetectedScenarios(testScenario, reader, flickerService))
+                    .containsAtLeastElementsIn(expectedScenarios)
+            }
+
+        return faasTestCases + listOf(detectedScenarioTestCase)
     }
 
     companion object {
-        private const val FAAS_METRICS_PREFIX = "FAAS"
-        private const val OPTION_NAME = "filter-tests"
-        private val LOG_TAG = FlickerServiceDecorator::class.java.simpleName
+        internal fun getDetectedScenarios(
+            testScenario: IScenario,
+            reader: IReader,
+            flickerService: IFlickerService
+        ): Collection<FaasScenarioType> {
+            val groupedAssertions = getGroupedAssertions(testScenario, reader, flickerService)
+            return groupedAssertions.keys.map { it.type }.distinct()
+        }
+
+        internal fun getCachedResultMethod(): Method {
+            return InjectedTestCase::class.java.getMethod("execute", Description::class.java)
+        }
+
+        private fun getGroupedAssertions(
+            testScenario: IScenario,
+            reader: IReader,
+            flickerService: IFlickerService
+        ): Map<IScenarioInstance, Collection<IFaasAssertion>> {
+            if (!DataStore.containsFlickerServiceResult(testScenario)) {
+                val detectedScenarios = flickerService.detectScenarios(reader)
+                val groupedAssertions =
+                    mutableMapOf<IScenarioInstance, Collection<IFaasAssertion>>()
+                detectedScenarios.forEach {
+                    groupedAssertions[it] = flickerService.generateAssertions(it)
+                }
+                DataStore.addFlickerServiceAssertions(testScenario, groupedAssertions)
+            }
+
+            return DataStore.getFlickerServiceAssertions(testScenario)
+        }
+
+        internal fun getFaasTestCase(
+            testScenario: IScenario,
+            paramString: String,
+            reader: IReader,
+            flickerService: IFlickerService,
+            caller: IFlickerJUnitDecorator
+        ): Collection<FlickerServiceCachedTestCase> {
+            val groupedAssertions = getGroupedAssertions(testScenario, reader, flickerService)
+
+            val metricsCollector =
+                FlickerServiceResultsCollector(
+                    LegacyFlickerTraceCollector(testScenario),
+                    collectMetricsPerTest = true
+                )
+
+            val organizedScenarioInstances: Map<FaasScenarioType, List<IScenarioInstance>> =
+                groupedAssertions.keys.groupBy { it.type }
+
+            val faasTestCases = mutableListOf<FlickerServiceCachedTestCase>()
+            organizedScenarioInstances.values.forEachIndexed {
+                scenarioTypesIndex,
+                scenarioInstancesOfSameType ->
+                scenarioInstancesOfSameType.forEachIndexed { scenarioInstanceIndex, scenarioInstance
+                    ->
+                    val assertionsForScenarioInstance = groupedAssertions[scenarioInstance]!!
+
+                    assertionsForScenarioInstance.forEach {
+                        faasTestCases.add(
+                            FlickerServiceCachedTestCase(
+                                it,
+                                flickerService,
+                                getCachedResultMethod(),
+                                onlyBlocking = false,
+                                metricsCollector,
+                                isLast =
+                                    organizedScenarioInstances.values.size == scenarioTypesIndex &&
+                                        scenarioInstancesOfSameType.size == scenarioInstanceIndex,
+                                injectedBy = caller,
+                                "${paramString ?: ""}${
+                                    if (scenarioInstancesOfSameType.size > 1)
+                                        "_${scenarioInstanceIndex + 1}"
+                                    else
+                                        ""}",
+                            )
+                        )
+                    }
+                }
+            }
+
+            return faasTestCases
+        }
     }
 }

@@ -19,13 +19,14 @@ package android.tools.common.flicker.config
 import android.tools.common.datatypes.component.ComponentNameMatcher
 import android.tools.common.flicker.extractors.TransitionsTransform
 import android.tools.common.traces.wm.Transition
+import android.tools.common.traces.wm.TransitionType
 
 object TransitionFilters {
     val OPEN_APP_TRANSITION_FILTER: TransitionsTransform = { ts, _, _ ->
         ts.filter { t ->
             t.changes.any {
-                it.transitMode == Transition.Companion.Type.OPEN || // cold launch
-                it.transitMode == Transition.Companion.Type.TO_FRONT // warm launch
+                it.transitMode == TransitionType.OPEN || // cold launch
+                it.transitMode == TransitionType.TO_FRONT // warm launch
             }
         }
     }
@@ -38,12 +39,11 @@ object TransitionFilters {
 
         ts.filter { t ->
             t.changes.any {
-                it.transitMode == Transition.Companion.Type.CLOSE ||
-                    it.transitMode == Transition.Companion.Type.TO_BACK
+                it.transitMode == TransitionType.CLOSE || it.transitMode == TransitionType.TO_BACK
             } &&
                 t.changes.any { change ->
                     launcherLayers.any { it.id == change.layerId }
-                    change.transitMode == Transition.Companion.Type.TO_FRONT
+                    change.transitMode == TransitionType.TO_FRONT
                 }
         }
     }
@@ -51,8 +51,8 @@ object TransitionFilters {
     val QUICK_SWITCH_TRANSITION_FILTER: TransitionsTransform = { ts, _, _ ->
         ts.filter { t ->
             t.changes.size == 2 &&
-                t.changes.any { it.transitMode == Transition.Companion.Type.TO_BACK } &&
-                t.changes.any { it.transitMode == Transition.Companion.Type.TO_FRONT }
+                t.changes.any { it.transitMode == TransitionType.TO_BACK } &&
+                t.changes.any { it.transitMode == TransitionType.TO_FRONT }
         }
     }
 
@@ -60,37 +60,74 @@ object TransitionFilters {
         require(transitions.size == 2) { "Expected 2 transitions but got ${transitions.size}" }
 
         require(transitions[0].changes.size == 2)
-        require(transitions[0].changes.any { it.transitMode == Transition.Companion.Type.TO_BACK })
-        require(transitions[0].changes.any { it.transitMode == Transition.Companion.Type.TO_FRONT })
+        require(transitions[0].changes.any { it.transitMode == TransitionType.TO_BACK })
+        require(transitions[0].changes.any { it.transitMode == TransitionType.TO_FRONT })
 
         require(transitions[1].changes.size == 2)
-        require(transitions[1].changes.any { it.transitMode == Transition.Companion.Type.TO_BACK })
-        require(transitions[1].changes.any { it.transitMode == Transition.Companion.Type.TO_FRONT })
+        require(transitions[1].changes.any { it.transitMode == TransitionType.TO_BACK })
+        require(transitions[1].changes.any { it.transitMode == TransitionType.TO_FRONT })
 
         val candidateWallpaper1 =
-            transitions[0].changes.first { it.transitMode == Transition.Companion.Type.TO_FRONT }
+            transitions[0].changes.first { it.transitMode == TransitionType.TO_FRONT }
         val candidateWallpaper2 =
-            transitions[1].changes.first { it.transitMode == Transition.Companion.Type.TO_BACK }
+            transitions[1].changes.first { it.transitMode == TransitionType.TO_BACK }
 
         require(candidateWallpaper1.layerId == candidateWallpaper2.layerId)
 
         val closingAppChange =
-            transitions[0].changes.first { it.transitMode == Transition.Companion.Type.TO_BACK }
+            transitions[0].changes.first { it.transitMode == TransitionType.TO_BACK }
         val openingAppChange =
-            transitions[1].changes.first { it.transitMode == Transition.Companion.Type.TO_FRONT }
+            transitions[1].changes.first { it.transitMode == TransitionType.TO_FRONT }
 
         listOf(
             Transition(
-                start = transitions[0].start,
+                createTime = transitions[0].createTime,
                 sendTime = transitions[0].sendTime,
+                // NOTE: Relies on the implementation detail that the second
+                // finishTransaction is merged into the first and applied.
+                finishTime = transitions[0].finishTime,
                 startTransactionId = transitions[0].startTransactionId,
                 // NOTE: Relies on the implementation detail that the second
                 // finishTransaction is merged into the first and applied.
                 finishTransactionId = transitions[0].finishTransactionId,
+                type = transitions[1].type,
                 changes = listOf(closingAppChange, openingAppChange),
-                played = true,
-                aborted = false
+                played = transitions[1].played,
+                aborted = transitions[1].aborted,
             )
         )
+    }
+
+    val APP_CLOSE_TO_PIP_TRANSITION_FILTER: TransitionsTransform = { ts, _, _ ->
+        ts.filter { it.type == TransitionType.PIP }
+    }
+
+    val ENTER_SPLIT_SCREEN_FILTER: TransitionsTransform = { ts, _, _ ->
+        ts.filter { isSplitscreenEnterTransition(it) }
+    }
+
+    val EXIT_SPLIT_SCREEN_FILTER: TransitionsTransform = { ts, _, _ ->
+        ts.filter { isSplitscreenExitTransition(it) }
+    }
+
+    val RESIZE_SPLIT_SCREEN_FILTER: TransitionsTransform = { ts, _, _ ->
+        ts.filter { isSplitscreenResizeTransition(it) }
+    }
+
+    fun isSplitscreenEnterTransition(transition: Transition): Boolean {
+        return transition.type == TransitionType.SPLIT_SCREEN_PAIR_OPEN ||
+            transition.type == TransitionType.SPLIT_SCREEN_OPEN_TO_SIDE
+    }
+
+    fun isSplitscreenExitTransition(transition: Transition): Boolean {
+        return transition.type == TransitionType.SPLIT_DISMISS ||
+            transition.type == TransitionType.SPLIT_DISMISS_SNAP
+    }
+
+    fun isSplitscreenResizeTransition(transition: Transition): Boolean {
+        // This transition doesn't have a special type
+        return transition.type == TransitionType.CHANGE &&
+            transition.changes.size == 2 &&
+            transition.changes.all { change -> change.transitMode == TransitionType.CHANGE }
     }
 }

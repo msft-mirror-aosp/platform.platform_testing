@@ -16,7 +16,7 @@
 
 package android.tools.common.flicker.subject.surfaceflinger
 
-import android.tools.InitRule
+import android.tools.CleanFlickerEnvironmentRule
 import android.tools.TestComponents
 import android.tools.assertFailureFact
 import android.tools.assertThrows
@@ -345,6 +345,6 @@ class LayersTraceSubjectTest {
         private val PIP_APP =
             ComponentNameMatcher(SHELL_APP_PACKAGE, "$SHELL_APP_PACKAGE.PipActivity")
 
-        @ClassRule @JvmField val initRule = InitRule()
+        @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
     }
 }

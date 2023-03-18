@@ -18,6 +18,7 @@ package android.tools.common.traces.events
 
 import android.tools.common.CrossPlatform
 import android.tools.common.Timestamp
+import kotlin.js.JsName
 
 /**
  * Represents a CUJ Event from the [EventLog]
@@ -30,35 +31,11 @@ class CujEvent(
     processId: Int,
     uid: String,
     threadId: Int,
-    tag: String
-) : Event(timestamp, processId, uid, threadId, tag) {
+    eventTag: String,
+    val cujTag: String?,
+) : Event(timestamp, processId, uid, threadId, eventTag) {
 
-    val type: Type =
-        when (tag) {
-            JANK_CUJ_BEGIN_TAG -> Type.START
-            JANK_CUJ_END_TAG -> Type.END
-            JANK_CUJ_CANCEL_TAG -> Type.CANCEL
-            else -> error("Unhandled tag type")
-        }
-
-    constructor(
-        processId: Int,
-        uid: String,
-        threadId: Int,
-        tag: String,
-        data: String
-    ) : this(
-        CrossPlatform.timestamp.from(
-            elapsedNanos = getElapsedTimestampFromData(data),
-            systemUptimeNanos = getSystemUptimeNanosFromData(data),
-            unixNanos = getUnixTimestampFromData(data)
-        ),
-        getCujMarkerFromData(data),
-        processId,
-        uid,
-        threadId,
-        tag
-    )
+    val type: Type = eventTag.asCujType()
 
     override fun toString(): String {
         return "CujEvent(" +
@@ -72,30 +49,70 @@ class CujEvent(
     }
 
     companion object {
-        private fun getCujMarkerFromData(data: String): CujType {
-            val dataEntries = getDataEntries(data)
+        @JsName("fromData")
+        fun fromData(
+            processId: Int,
+            uid: String,
+            threadId: Int,
+            eventTag: String,
+            data: String
+        ): CujEvent {
+            return CujEvent(
+                CrossPlatform.timestamp.from(
+                    elapsedNanos = getElapsedTimestampFromData(data, eventTag.asCujType()),
+                    systemUptimeNanos = getSystemUptimeNanosFromData(data, eventTag.asCujType()),
+                    unixNanos = getUnixTimestampFromData(data, eventTag.asCujType())
+                ),
+                getCujMarkerFromData(data, eventTag.asCujType()),
+                processId,
+                uid,
+                threadId,
+                eventTag,
+                getCujTagFromData(data, eventTag.asCujType())
+            )
+        }
+
+        private fun getCujMarkerFromData(data: String, cujType: Type): CujType {
+            val dataEntries = getDataEntries(data, cujType)
             val eventId = dataEntries[0].toInt()
             return CujType.from(eventId)
         }
 
-        private fun getUnixTimestampFromData(data: String): Long {
-            val dataEntries = getDataEntries(data)
+        private fun getUnixTimestampFromData(data: String, cujType: Type): Long {
+            val dataEntries = getDataEntries(data, cujType)
             return dataEntries[1].toLong()
         }
 
-        private fun getElapsedTimestampFromData(data: String): Long {
-            val dataEntries = getDataEntries(data)
+        private fun getElapsedTimestampFromData(data: String, cujType: Type): Long {
+            val dataEntries = getDataEntries(data, cujType)
             return dataEntries[2].toLong()
         }
 
-        private fun getSystemUptimeNanosFromData(data: String): Long {
-            val dataEntries = getDataEntries(data)
+        private fun getSystemUptimeNanosFromData(data: String, cujType: Type): Long {
+            val dataEntries = getDataEntries(data, cujType)
             return dataEntries[3].toLong()
         }
 
-        private fun getDataEntries(data: String): List<String> {
-            require("""\[[0-9]+,[0-9]+,[0-9]+,[0-9]+]""".toRegex().matches(data)) {
-                "Data \"$data\" didn't match expected format"
+        private fun getCujTagFromData(data: String, cujType: Type): String? {
+            val dataEntries = getDataEntries(data, cujType)
+            return when (cujType) {
+                Type.START -> dataEntries[4]
+                else -> null
+            }
+        }
+
+        private fun getDataEntries(data: String, cujType: Type): List<String> {
+            when (cujType) {
+                Type.START ->
+                    require(
+                        """\[[0-9]+,[0-9]+,[0-9]+,[0-9]+,((?!,).)*]""".toRegex().matches(data)
+                    ) {
+                        "Data \"$data\" didn't match expected format"
+                    }
+                else ->
+                    require("""\[[0-9]+,[0-9]+,[0-9]+,[0-9]+]""".toRegex().matches(data)) {
+                        "Data \"$data\" didn't match expected format"
+                    }
             }
 
             return data.slice(1..data.length - 2).split(",")
@@ -110,5 +127,14 @@ class CujEvent(
         const val JANK_CUJ_BEGIN_TAG = "jank_cuj_events_begin_request"
         const val JANK_CUJ_END_TAG = "jank_cuj_events_end_request"
         const val JANK_CUJ_CANCEL_TAG = "jank_cuj_events_cancel_request"
+
+        fun String.asCujType(): Type {
+            return when (this) {
+                JANK_CUJ_BEGIN_TAG -> Type.START
+                JANK_CUJ_END_TAG -> Type.END
+                JANK_CUJ_CANCEL_TAG -> Type.CANCEL
+                else -> error("Unhandled tag type")
+            }
+        }
     }
 }

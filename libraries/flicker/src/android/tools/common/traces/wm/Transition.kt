@@ -18,54 +18,61 @@ package android.tools.common.traces.wm
 
 import android.tools.common.ITraceEntry
 import android.tools.common.Timestamp
+import android.tools.common.io.IReader
 import android.tools.common.traces.surfaceflinger.Transaction
+import android.tools.common.traces.surfaceflinger.TransactionsTrace
 import kotlin.js.JsName
 
 class Transition(
-    @JsName("start") val start: Timestamp,
+    @JsName("createTime") val createTime: Timestamp,
     @JsName("sendTime") val sendTime: Timestamp,
+    @JsName("finishTime") val finishTime: Timestamp,
     @JsName("startTransactionId") val startTransactionId: Long,
     @JsName("finishTransactionId") val finishTransactionId: Long,
+    @JsName("type") val type: TransitionType,
     @JsName("changes") val changes: List<TransitionChange>,
     @JsName("played") val played: Boolean,
     @JsName("aborted") val aborted: Boolean
 ) : ITraceEntry {
-    override val timestamp = start
+    override val timestamp = createTime
 
-    @JsName("startTransaction") val startTransaction: Transaction? = null // TODO: Get
-    @JsName("finishTransaction") val finishTransaction: Transaction? = null // TODO: Get
+    @JsName("getStartTransaction")
+    fun getStartTransaction(transactionsTrace: TransactionsTrace): Transaction? {
+        return transactionsTrace.allTransactions.firstOrNull { it.id == this.startTransactionId }
+    }
+
+    @JsName("getFinishTransaction")
+    fun getFinishTransaction(transactionsTrace: TransactionsTrace): Transaction? {
+        return transactionsTrace.allTransactions.firstOrNull { it.id == this.finishTransactionId }
+    }
 
     @JsName("isIncomplete")
     val isIncomplete: Boolean
         get() = !played || aborted
 
-    override fun toString(): String =
-        "Transition#${hashCode()}" +
-            "(\naborted=$aborted,\nstart=$start,\nsendTime=$sendTime,\n" +
-            "startTransaction=$startTransaction,\nfinishTransaction=$finishTransaction,\n" +
-            "changes=[\n${changes.joinToString(",\n").prependIndent()}\n])"
+    override fun toString(): String = Formatter(null).format(this)
 
-    companion object {
-        enum class Type(val value: Int) {
-            UNDEFINED(-1),
-            NONE(0),
-            OPEN(1),
-            CLOSE(2),
-            TO_FRONT(3),
-            TO_BACK(4),
-            RELAUNCH(5),
-            CHANGE(6),
-            KEYGUARD_GOING_AWAY(7),
-            KEYGUARD_OCCLUDE(8),
-            KEYGUARD_UNOCCLUDE(9),
-            PIP(10),
-            WAKE(11),
-            // START OF CUSTOM TYPES
-            FIRST_CUSTOM(12); // TODO: Add custom types we know about
+    class Formatter(val reader: IReader?) {
+        private val changeFormatter = TransitionChange.Formatter(reader)
 
-            companion object {
-                @JsName("fromInt") fun fromInt(value: Int) = values().first { it.value == value }
-            }
+        fun format(transition: Transition): String = buildString {
+            appendLine("Transition#${hashCode()}(")
+            appendLine("type=${transition.type},")
+            appendLine("aborted=${transition.aborted},")
+            appendLine("played=${transition.played},")
+            appendLine("createTime=${transition.createTime},")
+            appendLine("sendTime=${transition.sendTime},")
+            appendLine("finishTime=${transition.finishTime},")
+            appendLine("startTransactionId=${transition.startTransactionId},")
+            appendLine("finishTransactionId=${transition.finishTransactionId},")
+            appendLine("changes=[")
+            appendLine(
+                transition.changes
+                    .joinToString(",\n") { changeFormatter.format(it) }
+                    .prependIndent()
+            )
+            appendLine("]")
+            appendLine(")")
         }
     }
 }

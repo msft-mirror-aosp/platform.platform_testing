@@ -17,7 +17,7 @@
 package android.tools.device.traces.parsers
 
 import android.annotation.SuppressLint
-import android.tools.InitRule
+import android.tools.CleanFlickerEnvironmentRule
 import android.tools.common.Cache
 import android.tools.common.CrossPlatform
 import android.tools.common.Rotation
@@ -395,6 +395,6 @@ class WindowManagerStateHelperTest {
     }
 
     companion object {
-        @ClassRule @JvmField val initRule = InitRule()
+        @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
     }
 }

@@ -30,7 +30,7 @@ open class TransitionsTraceMonitor : TraceMonitor() {
     override val isEnabled
         get() = windowManager.isTransitionTraceEnabled
 
-    override fun start() {
+    override fun doStart() {
         windowManager.startTransitionTrace()
     }
 

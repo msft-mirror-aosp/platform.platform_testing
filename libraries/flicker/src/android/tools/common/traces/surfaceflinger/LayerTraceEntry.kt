@@ -125,7 +125,7 @@ class LayerTraceEntry(
     /** @return A [LayersTrace] object containing this state as its only entry */
     fun asTrace(): LayersTrace = LayersTrace(arrayOf(this))
 
-    override fun toString(): String = "${timestamp}ns"
+    override fun toString(): String = timestamp.toString()
 
     override fun equals(other: Any?): Boolean {
         return other is LayerTraceEntry && other.timestamp == this.timestamp

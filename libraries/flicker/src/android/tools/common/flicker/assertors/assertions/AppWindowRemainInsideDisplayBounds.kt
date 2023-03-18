@@ -23,7 +23,7 @@ import android.tools.common.flicker.subject.wm.WindowManagerTraceSubject
 /**
  * Checks that [component] window remains inside the display bounds throughout the whole animation
  */
-class AppWindowRemainInsideDisplayBounds(component: ComponentTemplate) :
+class AppWindowRemainInsideDisplayBounds(private val component: ComponentTemplate) :
     AssertionTemplateWithComponent(component) {
     /** {@inheritDoc} */
     override fun doEvaluate(

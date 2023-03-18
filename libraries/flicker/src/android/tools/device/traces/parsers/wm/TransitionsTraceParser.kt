@@ -20,8 +20,8 @@ import android.tools.common.CrossPlatform
 import android.tools.common.Timestamp
 import android.tools.common.parsers.AbstractTraceParser
 import android.tools.common.traces.wm.Transition
-import android.tools.common.traces.wm.Transition.Companion.Type
 import android.tools.common.traces.wm.TransitionChange
+import android.tools.common.traces.wm.TransitionType
 import android.tools.common.traces.wm.TransitionsTrace
 import android.tools.common.traces.wm.WindowingMode
 import com.android.server.wm.shell.nano.TransitionTraceProto
@@ -49,7 +49,7 @@ class TransitionsTraceParser :
 
     override fun getEntries(
         input: TransitionTraceProto
-    ): List<com.android.server.wm.shell.nano.Transition> = input.sentTransitions.toList()
+    ): List<com.android.server.wm.shell.nano.Transition> = input.finishedTransitions.toList()
 
     override fun getTimestamp(entry: com.android.server.wm.shell.nano.Transition): Timestamp {
         return CrossPlatform.timestamp.from(elapsedNanos = entry.createTimeNs)
@@ -61,17 +61,24 @@ class TransitionsTraceParser :
         val windowingMode = WindowingMode.WINDOWING_MODE_UNDEFINED // TODO: Get the windowing mode
         val changes =
             entry.targets.map {
-                TransitionChange(Type.fromInt(it.mode), it.layerId, it.windowId, windowingMode)
+                TransitionChange(
+                    TransitionType.fromInt(it.mode),
+                    it.layerId,
+                    it.windowId,
+                    windowingMode
+                )
             }
 
         return Transition(
-            start = CrossPlatform.timestamp.from(elapsedNanos = entry.createTimeNs),
+            createTime = CrossPlatform.timestamp.from(elapsedNanos = entry.createTimeNs),
             sendTime = CrossPlatform.timestamp.from(elapsedNanos = entry.sendTimeNs),
+            finishTime = CrossPlatform.timestamp.from(elapsedNanos = entry.finishTimeNs),
             startTransactionId = entry.startTransactionId,
             finishTransactionId = entry.finishTransactionId,
+            type = TransitionType.fromInt(entry.type),
             changes = changes,
-            played = true,
-            aborted = false,
+            played = entry.finishTimeNs > 0L,
+            aborted = entry.finishTimeNs == 0L,
         )
     }
 }

@@ -31,7 +31,7 @@ open class LayersTraceMonitor @JvmOverloads constructor(private val traceFlags: 
     override val isEnabled
         get() = windowManager.isLayerTracing
 
-    override fun start() {
+    override fun doStart() {
         windowManager.setLayerTracingFlags(traceFlags)
         windowManager.isLayerTracing = true
     }

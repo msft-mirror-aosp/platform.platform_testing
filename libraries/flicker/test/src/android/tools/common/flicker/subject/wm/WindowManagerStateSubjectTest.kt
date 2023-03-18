@@ -16,7 +16,7 @@
 
 package android.tools.common.flicker.subject.wm
 
-import android.tools.InitRule
+import android.tools.CleanFlickerEnvironmentRule
 import android.tools.TestComponents
 import android.tools.assertFailureFact
 import android.tools.assertThatErrorContainsDebugInfo
@@ -467,6 +467,6 @@ class WindowManagerStateSubjectTest {
     }
 
     companion object {
-        @ClassRule @JvmField val initRule = InitRule()
+        @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
     }
 }

@@ -21,6 +21,7 @@ import android.tools.common.datatypes.Color
 import android.tools.common.datatypes.Rect
 import android.tools.common.datatypes.RectF
 import android.tools.common.datatypes.Region
+import android.tools.common.datatypes.component.ComponentName
 import kotlin.js.JsExport
 import kotlin.js.JsName
 
@@ -44,6 +45,7 @@ private constructor(
     var parent: Layer? = null
     var zOrderRelativeOf: Layer? = null
     var zOrderRelativeParentOf: Int = 0
+    val packageName = ComponentName.fromLayerName(name).packageName
 
     /**
      * Checks if the [Layer] is a root layer in the hierarchy

@@ -16,10 +16,13 @@
 
 package android.tools.common
 
+import com.android.internal.annotations.VisibleForTesting
 import kotlin.js.JsName
 
 object Cache {
-    private val cache = mutableMapOf<Any, Any>()
+    private var cache = mutableMapOf<Any, Any>()
+
+    data class Backup(val cache: MutableMap<Any, Any>)
 
     @JsName("get")
     fun <T : Any> get(element: T): T {
@@ -28,6 +31,16 @@ object Cache {
 
     @JsName("clear")
     fun clear() {
-        Cache.cache.clear()
+        Cache.cache = mutableMapOf<Any, Any>()
+    }
+
+    @VisibleForTesting
+    fun backup(): Backup {
+        return Backup(cache.toMutableMap())
+    }
+
+    @VisibleForTesting
+    fun restore(backup: Cache.Backup) {
+        cache = backup.cache
     }
 }
