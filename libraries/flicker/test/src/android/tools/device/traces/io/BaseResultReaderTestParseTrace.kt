@@ -16,7 +16,7 @@
 
 package android.tools.device.traces.io
 
-import android.tools.InitRule
+import android.tools.CleanFlickerEnvironmentRule
 import android.tools.TestTraces
 import android.tools.assertExceptionMessage
 import android.tools.assertThrows
@@ -122,6 +122,6 @@ abstract class BaseResultReaderTestParseTrace {
     }
 
     companion object {
-        @ClassRule @JvmField val initRule = InitRule()
+        @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
     }
 }

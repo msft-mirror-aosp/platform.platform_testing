@@ -48,13 +48,39 @@ internal constructor(
     }
 
     override fun toString(): String {
-        return when {
-            isEmpty -> "<NO TIMESTAMP>"
-            hasUnixTimestamp -> "${realTimestampFormatter(unixNanos)} (${unixNanos}ns)"
-            hasSystemUptimeTimestamp ->
-                "${formatElapsedTimestamp(systemUptimeNanos)} (${systemUptimeNanos}ns)"
-            hasElapsedTimestamp -> "${formatElapsedTimestamp(elapsedNanos)} (${elapsedNanos}ns)"
-            else -> error("Timestamp had no valid timestamps sets")
+        if (isEmpty) {
+            return "<NO TIMESTAMP>"
+        }
+
+        return buildString {
+            append("Timestamp(")
+            append(
+                mutableListOf<String>()
+                    .apply {
+                        if (hasUnixTimestamp) {
+                            add("UNIX=${realTimestampFormatter(unixNanos)}(${unixNanos}ns)")
+                        } else {
+                            add("UNIX=${unixNanos}ns")
+                        }
+                        if (hasSystemUptimeTimestamp) {
+                            add(
+                                "UPTIME=${formatElapsedTimestamp(systemUptimeNanos)}" +
+                                    "(${systemUptimeNanos}ns)"
+                            )
+                        } else {
+                            add("UPTIME=${systemUptimeNanos}ns")
+                        }
+                        if (hasElapsedTimestamp) {
+                            add(
+                                "ELAPSED=${formatElapsedTimestamp(elapsedNanos)}(${elapsedNanos}ns)"
+                            )
+                        } else {
+                            add("ELAPSED=${elapsedNanos}ns")
+                        }
+                    }
+                    .joinToString()
+            )
+            append(")")
         }
     }
 

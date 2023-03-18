@@ -16,7 +16,7 @@
 
 package android.tools.common.assertions
 
-import android.tools.InitRule
+import android.tools.CleanFlickerEnvironmentRule
 import android.tools.assertFailureFact
 import android.tools.assertThrows
 import android.tools.common.CrossPlatform
@@ -180,6 +180,6 @@ class AssertionsCheckerTest {
                     SimpleEntry(CrossPlatform.timestamp.from(elapsedNanos = it.toLong()), data[it])
                 )
             }
-        @ClassRule @JvmField val initRule = InitRule()
+        @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
     }
 }

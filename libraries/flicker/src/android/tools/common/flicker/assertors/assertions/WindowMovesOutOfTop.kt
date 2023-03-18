@@ -21,7 +21,7 @@ import android.tools.common.flicker.assertors.ComponentTemplate
 import android.tools.common.flicker.subject.wm.WindowManagerTraceSubject
 
 /** Checks that [component] starts on top and moves out of top during the transition */
-open class WindowMovesOutOfTop(component: ComponentTemplate) :
+open class WindowMovesOutOfTop(private val component: ComponentTemplate) :
     AssertionTemplateWithComponent(component) {
     /** {@inheritDoc} */
     override fun doEvaluate(

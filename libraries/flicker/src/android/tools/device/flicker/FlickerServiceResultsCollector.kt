@@ -25,6 +25,7 @@ import android.tools.common.flicker.AssertionInvocationGroup
 import android.tools.common.flicker.IFlickerService
 import android.tools.common.flicker.ITracesCollector
 import android.tools.common.flicker.assertors.IAssertionResult
+import android.tools.common.flicker.config.FaasScenarioType
 import androidx.test.platform.app.InstrumentationRegistry
 import com.android.internal.annotations.VisibleForTesting
 import org.junit.runner.Description
@@ -51,7 +52,9 @@ class FlickerServiceResultsCollector(
 
     @VisibleForTesting val assertionResults = mutableListOf<IAssertionResult>()
     @VisibleForTesting
-    val assertionResultsByTest = mutableMapOf<Description, List<IAssertionResult>>()
+    val assertionResultsByTest = mutableMapOf<Description, Collection<IAssertionResult>>()
+    @VisibleForTesting
+    val detectedScenariosByTest = mutableMapOf<Description, Collection<FaasScenarioType>>()
 
     init {
         setInstrumentation(instrumentation)
@@ -136,21 +139,27 @@ class FlickerServiceResultsCollector(
         val reader = tracesCollector.getResultReader()
         dataRecord.addStringMetric(WINSCOPE_FILE_PATH_KEY, reader.artifactPath)
         CrossPlatform.log.i(LOG_TAG, "Processing traces")
-        val results = flickerService.process(reader)
+        val scenarios = flickerService.detectScenarios(reader)
+        val assertions = flickerService.generateAssertions(scenarios)
+        val results = flickerService.executeAssertions(assertions)
         CrossPlatform.log.i(LOG_TAG, "Got ${results.size} results")
         assertionResults.addAll(results)
         if (description != null) {
             require(assertionResultsByTest[description] == null) {
                 "Test description already contains flicker assertion results."
             }
+            require(detectedScenariosByTest[description] == null) {
+                "Test description already contains detected scenarios."
+            }
             assertionResultsByTest[description] = results
+            detectedScenariosByTest[description] = scenarios.map { it.type }.distinct()
         }
         val aggregatedResults = processFlickerResults(results)
         collectMetrics(dataRecord, aggregatedResults)
     }
 
     private fun processFlickerResults(
-        results: List<IAssertionResult>
+        results: Collection<IAssertionResult>
     ): Map<String, AggregatedFlickerResult> {
         val aggregatedResults = mutableMapOf<String, AggregatedFlickerResult>()
         for (result in results) {
@@ -189,15 +198,16 @@ class FlickerServiceResultsCollector(
         }
     }
 
-    override fun testContainsFlicker(description: Description): Boolean {
-        val resultsForTest = resultsForTest(description)
-        return resultsForTest.any { it.failed }
-    }
-
-    override fun resultsForTest(description: Description): List<IAssertionResult> {
+    override fun resultsForTest(description: Description): Collection<IAssertionResult> {
         val resultsForTest = assertionResultsByTest[description]
         requireNotNull(resultsForTest) { "No results set for test $description" }
         return resultsForTest
+    }
+
+    override fun detectedScenariosForTest(description: Description): Collection<FaasScenarioType> {
+        val scenariosForTest = detectedScenariosByTest[description]
+        requireNotNull(scenariosForTest) { "No detected scenarios set for test $description" }
+        return scenariosForTest
     }
 
     companion object {

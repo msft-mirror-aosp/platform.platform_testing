@@ -25,7 +25,7 @@ import android.tools.common.flicker.subject.layers.LayersTraceSubject
  * Checks that the [ComponentNameMatcher.ROTATION] layer appears during the transition, doesn't
  * flicker, and disappears before the transition is complete.
  */
-class RotationLayerAppearsAndVanishes(component: ComponentTemplate) :
+class RotationLayerAppearsAndVanishes(private val component: ComponentTemplate) :
     AssertionTemplateWithComponent(component) {
     /** {@inheritDoc} */
     override fun doEvaluate(scenarioInstance: IScenarioInstance, layerSubject: LayersTraceSubject) {

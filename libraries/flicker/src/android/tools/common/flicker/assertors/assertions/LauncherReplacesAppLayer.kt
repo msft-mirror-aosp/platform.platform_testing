@@ -29,7 +29,7 @@ import android.tools.common.flicker.subject.layers.LayersTraceSubject
  *     [Components.LAUNCHER] becomes visible
  * ```
  */
-class LauncherReplacesAppLayer(component: ComponentTemplate) :
+class LauncherReplacesAppLayer(private val component: ComponentTemplate) :
     AssertionTemplateWithComponent(component) {
     /** {@inheritDoc} */
     override fun doEvaluate(scenarioInstance: IScenarioInstance, layerSubject: LayersTraceSubject) {

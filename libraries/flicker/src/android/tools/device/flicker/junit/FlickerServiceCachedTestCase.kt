@@ -17,48 +17,37 @@
 package android.tools.device.flicker.junit
 
 import android.tools.common.Cache
-import android.tools.common.IScenario
 import android.tools.common.flicker.AssertionInvocationGroup
-import android.tools.common.flicker.assertors.IAssertionResult
+import android.tools.common.flicker.IFlickerService
+import android.tools.common.flicker.assertors.IFaasAssertion
 import android.tools.device.flicker.FlickerServiceResultsCollector
-import android.tools.device.flicker.datastore.DataStore
 import java.lang.reflect.Method
 import org.junit.Assume
 import org.junit.runner.Description
 import org.junit.runner.notification.Failure
-import org.junit.runners.model.FrameworkMethod
 
 class FlickerServiceCachedTestCase(
+    private val assertion: IFaasAssertion,
+    private val flickerService: IFlickerService,
     method: Method,
-    scenario: IScenario,
-    internal val assertionName: String,
     private val onlyBlocking: Boolean,
     private val metricsCollector: FlickerServiceResultsCollector?,
-    private val isLast: Boolean
-) : FrameworkMethod(method) {
-    private val fullResults =
-        DataStore.getFlickerServiceResultsForAssertion(scenario, assertionName)
-    private val results: List<IAssertionResult>
-        get() =
-            fullResults.filter {
-                !onlyBlocking || it.assertion.stabilityGroup == AssertionInvocationGroup.BLOCKING
-            }
-
-    override fun invokeExplosively(target: Any?, vararg params: Any?): Any {
-        error("Shouldn't have reached here")
-    }
-
-    override fun getName(): String = "FaaS_$assertionName"
-
-    fun execute(description: Description) {
-        val results = results
+    private val isLast: Boolean,
+    injectedBy: IFlickerJUnitDecorator,
+    paramString: String = "",
+) : InjectedTestCase(method, "FaaS_${assertion.name}$paramString", injectedBy) {
+    override fun execute(description: Description) {
+        val result = flickerService.executeAssertion(assertion)
 
         if (isLast) {
             metricsCollector?.testStarted(description)
         }
         try {
-            Assume.assumeFalse(results.isEmpty())
-            results.firstOrNull { it.assertionError != null }?.assertionError?.let { throw it }
+            Assume.assumeTrue(
+                !onlyBlocking ||
+                    result.assertion.stabilityGroup == AssertionInvocationGroup.BLOCKING
+            )
+            result.assertionError?.let { throw it }
         } catch (e: Throwable) {
             metricsCollector?.testFailure(Failure(description, e))
             throw e

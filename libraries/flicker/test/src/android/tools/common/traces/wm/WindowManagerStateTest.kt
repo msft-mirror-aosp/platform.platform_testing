@@ -16,7 +16,7 @@
 
 package android.tools.common.traces.wm
 
-import android.tools.InitRule
+import android.tools.CleanFlickerEnvironmentRule
 import android.tools.common.CrossPlatform
 import com.google.common.truth.Truth
 import org.junit.ClassRule
@@ -98,6 +98,6 @@ class WindowManagerStateTest {
     }
 
     companion object {
-        @ClassRule @JvmField val initRule = InitRule()
+        @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
     }
 }

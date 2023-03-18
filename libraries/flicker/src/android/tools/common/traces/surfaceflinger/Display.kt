@@ -35,6 +35,7 @@ private constructor(
     @JsName("isVirtual") val isVirtual: Boolean
 ) {
     @JsName("isOff") val isOff = layerStackId == BLANK_LAYER_STACK
+    @JsName("isOn") val isOn = !isOff
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

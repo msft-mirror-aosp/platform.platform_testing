@@ -21,7 +21,7 @@ import android.tools.common.flicker.assertors.ComponentTemplate
 import android.tools.common.flicker.subject.wm.WindowManagerTraceSubject
 
 /** Checks if the [getWindowState] layer is invisible at the end of the transition */
-class AppWindowIsInvisibleAtEnd(component: ComponentTemplate) :
+class AppWindowIsInvisibleAtEnd(private val component: ComponentTemplate) :
     AssertionTemplateWithComponent(component) {
     /** {@inheritDoc} */
     override fun doEvaluate(

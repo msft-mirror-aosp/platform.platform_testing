@@ -16,7 +16,7 @@
 
 package android.tools.utils
 
-import android.tools.InitRule
+import android.tools.CleanFlickerEnvironmentRule
 import android.tools.common.datatypes.Rect
 import com.google.common.truth.Truth
 import org.junit.ClassRule
@@ -85,6 +85,6 @@ class MockLayerTraceBuilderTest {
     }
 
     companion object {
-        @ClassRule @JvmField val initRule = InitRule()
+        @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
     }
 }

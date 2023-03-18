@@ -25,6 +25,7 @@ import android.tools.device.flicker.FlickerTag
 import android.tools.device.flicker.legacy.IFlickerTestData
 import android.tools.device.traces.getCurrentState
 import android.tools.device.traces.io.ResultWriter
+import android.tools.device.traces.monitors.NoTraceMonitor
 import android.tools.device.traces.now
 import android.tools.device.traces.parsers.WindowManagerStateHelper
 import android.util.EventLog
@@ -108,7 +109,10 @@ class TransitionExecutionRule(
     }
 
     private fun doValidate() {
-        require(commands.isNotEmpty()) { EMPTY_TRANSITIONS_ERROR }
+        require(flicker.traceMonitors.isNotEmpty()) { NO_MONITORS_ERROR }
+        require(commands.isNotEmpty() || flicker.traceMonitors.all { it is NoTraceMonitor }) {
+            EMPTY_TRANSITIONS_ERROR
+        }
     }
 
     private fun doValidateTag(tag: String) {

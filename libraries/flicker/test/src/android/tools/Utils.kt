@@ -65,7 +65,7 @@ import org.mockito.Mockito
 internal val TEST_SCENARIO = ScenarioBuilder().forClass("test").build()
 
 internal fun outputFileName(status: RunStatus) =
-    File("/sdcard/flicker/${status.prefix}_test_ROTATION_0_GESTURAL_NAV.zip")
+    File("/sdcard/flicker/${status.prefix}__test_ROTATION_0_GESTURAL_NAV.zip")
 
 internal fun newTestResultWriter() =
     ResultWriter()

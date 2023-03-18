@@ -49,6 +49,6 @@ class FlickerParametersRunnerFactory : ParametersRunnerFactory {
                 /* testClass */ test.testClass,
                 /* parameters */ test.parameters
             )
-        return FlickerBlockJUnit4ClassRunner(newTest, scenario)
+        return LegacyFlickerJUnit4ClassRunner(newTest, scenario)
     }
 }

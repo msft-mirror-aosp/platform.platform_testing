@@ -21,7 +21,7 @@ import android.tools.common.flicker.assertors.IAssertionResult
 import android.tools.common.flicker.assertors.IFaasAssertion
 
 class AssertionRunner : IAssertionRunner {
-    override fun execute(assertions: List<IFaasAssertion>): List<IAssertionResult> {
+    override fun execute(assertions: Collection<IFaasAssertion>): Collection<IAssertionResult> {
         return CrossPlatform.log.withTracing("AssertionRunner#execute") {
             assertions.map { it.evaluate() }
         }

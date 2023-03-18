@@ -17,7 +17,7 @@
 package android.tools.device.flicker.datastore
 
 import android.annotation.SuppressLint
-import android.tools.InitRule
+import android.tools.CleanFlickerEnvironmentRule
 import android.tools.TEST_SCENARIO
 import android.tools.assertExceptionMessage
 import android.tools.common.Tag
@@ -30,6 +30,7 @@ import android.tools.newTestResultWriter
 import com.google.common.truth.Truth
 import org.junit.Before
 import org.junit.ClassRule
+import org.junit.Rule
 import org.junit.Test
 
 /** Tests for [CachedAssertionRunner] */
@@ -46,7 +47,6 @@ class CachedAssertionRunnerTest {
     @Before
     fun setup() {
         executionCount = 0
-        DataStore.clear()
         val writer = newTestResultWriter()
         val monitor = EventLogMonitor()
         monitor.start()
@@ -124,6 +124,6 @@ class CachedAssertionRunnerTest {
         private fun newAssertionData(assertion: (FlickerSubject) -> Unit) =
             AssertionData(Tag.ALL, EventLogSubject::class, assertion)
 
-        @ClassRule @JvmField val initRule = InitRule()
+        @Rule @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
     }
 }

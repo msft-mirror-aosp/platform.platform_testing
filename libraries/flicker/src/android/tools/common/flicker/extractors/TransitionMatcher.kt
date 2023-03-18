@@ -16,42 +16,56 @@
 
 package android.tools.common.flicker.extractors
 
-import android.tools.common.MILLISECOND_AS_NANOSECONDS
 import android.tools.common.flicker.extractors.TransitionTransforms.inCujRangeFilter
 import android.tools.common.flicker.extractors.TransitionTransforms.mergeTrampolineTransitions
 import android.tools.common.flicker.extractors.TransitionTransforms.noOpTransitionsTransform
+import android.tools.common.flicker.extractors.TransitionTransforms.permissionDialogFilter
 import android.tools.common.io.IReader
 import android.tools.common.traces.events.Cuj
 import android.tools.common.traces.wm.Transition
+import android.tools.common.traces.wm.TransitionType
 
 typealias TransitionsTransform =
     (transitions: List<Transition>, cujEntry: Cuj, reader: IReader) -> List<Transition>
 
 class TransitionMatcher(
-    private val mainTransform: TransitionsTransform,
+    private val mainTransform: TransitionsTransform = noOpTransitionsTransform,
     private val finalTransform: TransitionsTransform = noOpTransitionsTransform,
     private val associatedTransitionRequired: Boolean = true,
     // Transformations applied, in order, to all transitions the reader returns to end up with the
     // targeted transition.
     private val transforms: List<TransitionsTransform> =
-        listOf(mainTransform, inCujRangeFilter, mergeTrampolineTransitions, finalTransform)
+        listOf(
+            mainTransform,
+            inCujRangeFilter,
+            permissionDialogFilter,
+            mergeTrampolineTransitions,
+            finalTransform
+        )
 ) : ITransitionMatcher {
     override fun getTransition(cujEntry: Cuj, reader: IReader): Transition? {
         val transitionsTrace = reader.readTransitionsTrace() ?: error("Missing transitions trace")
 
         val completeTransitions = transitionsTrace.entries.filter { !it.isIncomplete }
 
+        var appliedTransformsCount = 0
         val matchedTransitions =
             transforms.fold(completeTransitions) { transitions, transform ->
-                transform(transitions, cujEntry, reader)
-            }
+                val remainingTransitions = transform(transitions, cujEntry, reader)
 
-        require(!associatedTransitionRequired || matchedTransitions.isNotEmpty()) {
-            "Required an associated transition for " +
-                "${cujEntry.cuj.name}(${cujEntry.startTimestamp},${cujEntry.endTimestamp}) " +
-                "but no transition left after all filters from: " +
-                "[\n${transitionsTrace.entries.joinToString(",\n").prependIndent()}\n]!"
-        }
+                appliedTransformsCount++
+                require(!associatedTransitionRequired || remainingTransitions.isNotEmpty()) {
+                    "Required an associated transition for ${cujEntry.cuj.name}" +
+                        "(${cujEntry.startTimestamp},${cujEntry.endTimestamp}) " +
+                        "but no transition left after $appliedTransformsCount/${transforms.size} " +
+                        "filters from: " +
+                        "[\n${transitionsTrace.entries.joinToString(",\n") {
+                            Transition.Formatter(reader).format(it)
+                        }.prependIndent()}\n]!"
+                }
+
+                remainingTransitions
+            }
 
         require(!associatedTransitionRequired || matchedTransitions.size == 1) {
             "Got too many associated transitions expected only 1."
@@ -62,24 +76,44 @@ class TransitionMatcher(
 }
 
 object TransitionTransforms {
-    val inCujRangeFilter: TransitionsTransform = { transitions, cujEntry, _ ->
+    val inCujRangeFilter: TransitionsTransform = { transitions, cujEntry, reader ->
         transitions.filter { transition ->
+            val transitionCreatedWithinCujTags =
+                cujEntry.startTimestamp <= transition.createTime &&
+                    transition.createTime <= cujEntry.endTimestamp
+
             val transitionSentWithinCujTags =
                 cujEntry.startTimestamp <= transition.sendTime &&
                     transition.sendTime <= cujEntry.endTimestamp
 
-            // TODO: This threshold should be made more robust. Can fail to match on slower devices.
-            val toleranceNanos = 50 * MILLISECOND_AS_NANOSECONDS
-            val transitionSentJustBeforeCujStart =
-                cujEntry.startTimestamp - toleranceNanos <= transition.sendTime &&
-                    transition.sendTime <= cujEntry.startTimestamp
-
-            return@filter transitionSentWithinCujTags || transitionSentJustBeforeCujStart
+            val transactionsTrace =
+                reader.readTransactionsTrace() ?: error("Missing transactions trace")
+            val layersTrace = reader.readLayersTrace() ?: error("Missing layers trace")
+            val finishTransaction = transition.getFinishTransaction(transactionsTrace)
+            val transitionEndTimestamp =
+                if (finishTransaction != null) {
+                    layersTrace.getEntryForTransaction(finishTransaction).timestamp
+                } else {
+                    transition.finishTime
+                }
+            val cujStartsDuringTransition =
+                transition.sendTime <= cujEntry.startTimestamp &&
+                    cujEntry.startTimestamp <= transitionEndTimestamp
+            return@filter transitionCreatedWithinCujTags ||
+                transitionSentWithinCujTags ||
+                cujStartsDuringTransition
         }
     }
 
+    val permissionDialogFilter: TransitionsTransform = { transitions, _, reader ->
+        transitions.filter { !isPermissionDialogOpenTransition(it, reader) }
+    }
+
     val mergeTrampolineTransitions: TransitionsTransform = { transitions, _, reader ->
-        require(transitions.size <= 2)
+        require(transitions.size <= 2) {
+            "Got to merging trampoline transitions with more than 2 transitions left :: " +
+                transitions.joinToString { Transition.Formatter(reader).format(it) }
+        }
         if (
             transitions.size == 2 &&
                 isTrampolinedOpenTransition(transitions[0], transitions[1], reader)
@@ -93,6 +127,26 @@ object TransitionTransforms {
 
     val noOpTransitionsTransform: TransitionsTransform = { transitions, _, _ -> transitions }
 
+    private fun isPermissionDialogOpenTransition(transition: Transition, reader: IReader): Boolean {
+        if (transition.changes.size != 1) {
+            return false
+        }
+
+        val change = transition.changes[0]
+        if (transition.type != TransitionType.OPEN || change.transitMode != TransitionType.OPEN) {
+            return false
+        }
+
+        val layersTrace = reader.readLayersTrace() ?: error("Missing layers trace")
+        val layers =
+            layersTrace.entries.flatMap { it.flattenedLayers.asList() }.distinctBy { it.id }
+
+        val candidateLayer =
+            layers.firstOrNull { it.id == change.layerId }
+                ?: error("Open layer from $transition not found in layers trace")
+        return candidateLayer.name.contains("permissioncontroller")
+    }
+
     private fun isTrampolinedOpenTransition(
         firstTransition: Transition,
         secondTransition: Transition,
@@ -101,8 +155,8 @@ object TransitionTransforms {
         val candidateTaskLayers =
             firstTransition.changes
                 .filter {
-                    it.transitMode == Transition.Companion.Type.OPEN ||
-                        it.transitMode == Transition.Companion.Type.TO_FRONT
+                    it.transitMode == TransitionType.OPEN ||
+                        it.transitMode == TransitionType.TO_FRONT
                 }
                 .map { it.layerId }
         if (candidateTaskLayers.isEmpty()) {
@@ -125,13 +179,13 @@ object TransitionTransforms {
 
         val candidateTrampolinedActivities =
             secondTransition.changes
-                .filter { it.transitMode == Transition.Companion.Type.CLOSE }
+                .filter { it.transitMode == TransitionType.CLOSE }
                 .map { it.layerId }
         val candidateTargetActivities =
             secondTransition.changes
                 .filter {
-                    it.transitMode == Transition.Companion.Type.OPEN ||
-                        it.transitMode == Transition.Companion.Type.TO_FRONT
+                    it.transitMode == TransitionType.OPEN ||
+                        it.transitMode == TransitionType.TO_FRONT
                 }
                 .map { it.layerId }
         if (candidateTrampolinedActivities.isEmpty() || candidateTargetActivities.isEmpty()) {

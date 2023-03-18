@@ -30,7 +30,7 @@ import android.tools.common.flicker.subject.layers.LayersTraceSubject
  *     [component] remains visible until the end of the trace
  * ```
  */
-class AppLayerReplacesLauncher(component: ComponentTemplate) :
+class AppLayerReplacesLauncher(private val component: ComponentTemplate) :
     AssertionTemplateWithComponent(component) {
     /** {@inheritDoc} */
     override fun doEvaluate(scenarioInstance: IScenarioInstance, layerSubject: LayersTraceSubject) {

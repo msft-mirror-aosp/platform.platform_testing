@@ -29,13 +29,11 @@ class EntireScreenCoveredAlways : AssertionTemplate() {
     override fun doEvaluate(scenarioInstance: IScenarioInstance, layerSubject: LayersTraceSubject) {
         layerSubject
             .invoke("entireScreenCovered") { entry ->
-                val displays = entry.entry.displays
-                if (displays.isEmpty()) {
-                    entry.fail("No displays found")
-                }
-                displays.forEach { display ->
-                    entry.visibleRegion().coversAtLeast(display.layerStackSpace)
-                }
+                entry.entry.displays
+                    .filter { it.isOn }
+                    .forEach { display ->
+                        entry.visibleRegion().coversAtLeast(display.layerStackSpace)
+                    }
             }
             .forAllEntries()
     }

@@ -52,7 +52,8 @@ class RegionTraceSubject(val trace: RegionTrace, override val parent: FlickerSub
      *
      * @param testRegion Expected covered area
      */
-    fun coversAtMost(testRegion: Rect): RegionTraceSubject = this.coversAtMost(testRegion)
+    fun coversAtMost(testRegion: Rect): RegionTraceSubject =
+        this.coversAtMost(Region.from(testRegion))
 
     /**
      * Asserts that the visible area covered by any element in the state covers at least

@@ -16,7 +16,7 @@
 
 package android.tools.common.assertions
 
-import android.tools.InitRule
+import android.tools.CleanFlickerEnvironmentRule
 import android.tools.assertThrows
 import android.tools.common.Tag
 import android.tools.common.flicker.assertions.SubjectsParser
@@ -42,6 +42,6 @@ class SubjectsParserTest {
     }
 
     companion object {
-        @ClassRule @JvmField val initRule = InitRule()
+        @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
     }
 }

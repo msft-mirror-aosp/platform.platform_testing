@@ -21,7 +21,7 @@ import kotlin.js.JsName
 
 data class TransitionState(
     @JsName("id") val id: Int,
-    @JsName("type") val type: Transition.Companion.Type,
+    @JsName("type") val type: TransitionType,
     @JsName("timestamp") val timestamp: Timestamp,
     @JsName("state") val state: State,
     @JsName("flags") val flags: Int,

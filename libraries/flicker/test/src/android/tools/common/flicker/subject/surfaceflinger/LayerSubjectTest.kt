@@ -16,7 +16,7 @@
 
 package android.tools.common.flicker.subject.surfaceflinger
 
-import android.tools.InitRule
+import android.tools.CleanFlickerEnvironmentRule
 import android.tools.common.Cache
 import android.tools.common.datatypes.Size
 import android.tools.common.flicker.subject.layers.LayerSubject
@@ -56,6 +56,6 @@ class LayerSubjectTest {
     }
 
     companion object {
-        @ClassRule @JvmField val initRule = InitRule()
+        @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
     }
 }

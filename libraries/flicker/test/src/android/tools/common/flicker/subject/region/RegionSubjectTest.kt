@@ -16,7 +16,7 @@
 
 package android.tools.common.flicker.subject.region
 
-import android.tools.InitRule
+import android.tools.CleanFlickerEnvironmentRule
 import android.tools.assertThrows
 import android.tools.common.CrossPlatform
 import android.tools.common.datatypes.Rect
@@ -158,6 +158,6 @@ class RegionSubjectTest {
     }
 
     companion object {
-        @ClassRule @JvmField val initRule = InitRule()
+        @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
     }
 }

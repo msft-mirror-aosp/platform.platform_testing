@@ -16,7 +16,7 @@
 
 package android.tools.common.io
 
-import android.tools.InitRule
+import android.tools.CleanFlickerEnvironmentRule
 import android.tools.common.Tag
 import com.google.common.truth.Truth
 import org.junit.ClassRule
@@ -129,6 +129,6 @@ class ResultArtifactDescriptorTest {
     companion object {
         private const val TEST_TAG = "testTag"
 
-        @ClassRule @JvmField val initRule = InitRule()
+        @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
     }
 }

@@ -453,7 +453,7 @@ class WindowManagerState(
     @JsName("asTrace") fun asTrace(): WindowManagerTrace = WindowManagerTrace(arrayOf(this))
 
     override fun toString(): String {
-        return "${timestamp}ns"
+        return timestamp.toString()
     }
 
     companion object {

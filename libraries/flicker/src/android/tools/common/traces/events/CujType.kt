@@ -91,6 +91,7 @@ enum class CujType {
     CUJ_LAUNCHER_APP_SWIPE_TO_RECENTS,
     CUJ_LAUNCHER_CLOSE_ALL_APPS_SWIPE,
     CUJ_LAUNCHER_CLOSE_ALL_APPS_TO_HOME,
+    CUJ_IME_INSETS_ANIMATION,
 
     // KEEP AS LAST TYPE
     // used to handle new types that haven't been added here yet but might be dumped by the platform

@@ -61,7 +61,7 @@ data class TransitionsTrace(override val entries: Array<Transition>) : ITrace<Tr
         return TransitionsTrace(
             this.entries
                 .dropWhile { it.sendTime.elapsedNanos < from }
-                .dropLastWhile { it.start.elapsedNanos > to }
+                .dropLastWhile { it.createTime.elapsedNanos > to }
                 .toTypedArray()
         )
     }

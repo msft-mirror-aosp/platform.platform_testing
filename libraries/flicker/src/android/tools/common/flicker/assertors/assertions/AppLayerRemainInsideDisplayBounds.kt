@@ -23,7 +23,7 @@ import android.tools.common.flicker.subject.layers.LayersTraceSubject
 /**
  * Checks if the [component] layer remains inside the display bounds throughout the whole animation
  */
-class AppLayerRemainInsideDisplayBounds(component: ComponentTemplate) :
+class AppLayerRemainInsideDisplayBounds(private val component: ComponentTemplate) :
     AssertionTemplateWithComponent(component) {
     /** {@inheritDoc} */
     override fun doEvaluate(scenarioInstance: IScenarioInstance, layerSubject: LayersTraceSubject) {

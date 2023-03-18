@@ -24,7 +24,6 @@ import android.tools.device.apphelpers.MessagingAppHelper
 import android.tools.device.flicker.datastore.DataStore
 import android.tools.device.flicker.legacy.FlickerBuilder
 import android.tools.device.flicker.legacy.runner.TransitionRunner
-import android.tools.device.traces.executeShellCommand
 import androidx.test.platform.app.InstrumentationRegistry
 import org.junit.runner.Description
 
@@ -61,9 +60,6 @@ object Utils {
     fun runTransition(onExecuted: () -> Unit) {
         DataStore.clear()
         val flicker = createFlicker(onExecuted)
-
-        // Clear the trace output directory
-        executeShellCommand("rm -rf ${flicker.outputDir}")
 
         val runner = TransitionRunner(TEST_SCENARIO, instrumentation)
         runner.execute(flicker, Description.createTestDescription(this::class.java, "test"))
