@@ -78,7 +78,7 @@ class ScreenRecordingRunnable(
     override fun run() {
         CrossPlatform.log.d(FLICKER_TAG, "Starting screen recording to file $outputFile")
 
-        val timestampsUs = mutableListOf<Long>()
+        val timestampsMonotonicUs = mutableListOf<Long>()
         try {
             // Start encoder and muxer
             encoder.start()
@@ -89,18 +89,18 @@ class ScreenRecordingRunnable(
                 if (bufferIndex == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
                     prepareMuxer()
                 } else if (bufferIndex >= 0) {
-                    val elapsedTimeUs = writeSample(bufferIndex, bufferInfo)
+                    val timestampMonotonicUs = writeSample(bufferIndex, bufferInfo)
                     val endOfStream = bufferInfo.flags and MediaCodec.BUFFER_FLAG_END_OF_STREAM
                     // end of the stream samples have 0 timestamp
                     if (endOfStream > 0) {
                         break
                     } else {
-                        timestampsUs.add(elapsedTimeUs)
+                        timestampsMonotonicUs.add(timestampMonotonicUs)
                     }
                 }
             }
         } finally {
-            writeMetadata(timestampsUs)
+            writeMetadata(timestampsMonotonicUs)
             encoder.stop()
             muxer.stop()
             muxer.release()
@@ -156,41 +156,49 @@ class ScreenRecordingRunnable(
      *     - System time in elapsed clock timebase in nanoseconds (8B little endian).
      * ```
      */
-    private fun writeMetadata(timestampsUs: List<Long>) {
-        if (timestampsUs.isEmpty()) {
+    private fun writeMetadata(timestampsMonotonicUs: List<Long>) {
+        if (timestampsMonotonicUs.isEmpty()) {
             CrossPlatform.log.v(FLICKER_TAG, "Not writing winscope metadata (no frames/timestamps)")
             return
         }
 
         CrossPlatform.log.v(
             FLICKER_TAG,
-            "Writing winscope metadata (size=${timestampsUs.size} " +
-                "(timestamps [us] = ${timestampsUs.first()}-${timestampsUs.last()})"
+            "Writing winscope metadata (size=${timestampsMonotonicUs.size} " +
+                ", monotonic timestamps range [us] = " +
+                "${timestampsMonotonicUs.first()}-${timestampsMonotonicUs.last()})"
         )
 
-        val timeOffsetNs =
-            TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis()) -
-                SystemClock.elapsedRealtimeNanos()
+        val monotonicTimeNs = TimeUnit.MILLISECONDS.toNanos(SystemClock.uptimeMillis())
+        val elapsedTimeNs = SystemClock.elapsedRealtimeNanos()
+        val realTimeNs = TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis())
+
+        val elapsedToMonotonicTimeOffsetNs = elapsedTimeNs - monotonicTimeNs
+        val realToElapsedTimeOffsetNs = realTimeNs - elapsedTimeNs
 
         val bufferSize =
             WINSCOPE_MAGIC_STRING.toByteArray().size +
                 Int.SIZE_BYTES +
                 Long.SIZE_BYTES +
                 Int.SIZE_BYTES +
-                (timestampsUs.size * Long.SIZE_BYTES)
+                (timestampsMonotonicUs.size * Long.SIZE_BYTES)
 
         val buffer =
             ByteBuffer.allocate(bufferSize)
                 .order(ByteOrder.LITTLE_ENDIAN)
                 .put(WINSCOPE_MAGIC_STRING.toByteArray())
                 .putInt(WINSCOPE_METADATA_VERSION)
-                .putLong(timeOffsetNs)
-                .putInt(timestampsUs.size)
-                .apply { timestampsUs.forEach { putLong(TimeUnit.MICROSECONDS.toNanos(it)) } }
+                .putLong(realToElapsedTimeOffsetNs)
+                .putInt(timestampsMonotonicUs.size)
+                .apply {
+                    timestampsMonotonicUs.forEach {
+                        putLong(elapsedToMonotonicTimeOffsetNs + TimeUnit.MICROSECONDS.toNanos(it))
+                    }
+                }
 
         val bufferInfo = MediaCodec.BufferInfo()
         bufferInfo.size = bufferSize
-        bufferInfo.presentationTimeUs = timestampsUs[0]
+        bufferInfo.presentationTimeUs = timestampsMonotonicUs[0]
         muxer.writeSampleData(metadataTrackIndex, buffer, bufferInfo)
     }
 
