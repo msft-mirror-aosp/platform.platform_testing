@@ -28,6 +28,7 @@ java_library {
         "androidx.test.runner",
         "androidx.test.uiautomator",
         "app-collector-helper",
+        "generic-helper",
         "jank-helper",
         "junit",
         "lyric-metric-helper",
