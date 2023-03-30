@@ -32,7 +32,7 @@ enum class RunStatus(val prefix: String, val isFailure: Boolean) {
     }
 
     companion object {
-        fun fromFileName(fileName: String): RunStatus {
+        fun fromFileName(fileName: String): RunStatus? {
             if (!fileName.contains("__")) {
                 return UNDEFINED
             }
@@ -45,7 +45,8 @@ enum class RunStatus(val prefix: String, val isFailure: Boolean) {
                 RUN_FAILED.prefix -> RUN_FAILED
                 PARSING_FAILURE.prefix -> PARSING_FAILURE
                 ASSERTION_FAILED.prefix -> ASSERTION_FAILED
-                else -> UNDEFINED
+                UNDEFINED.prefix -> UNDEFINED
+                else -> null
             }
         }
 

@@ -424,9 +424,6 @@ class WindowManagerStateSubject(
         subjectList: List<WindowStateSubject>,
         componentMatcher: IComponentMatcher
     ) {
-        // Check existence of window.
-        contains(subjectList, componentMatcher)
-
         val foundWindows =
             subjectList.filter { componentMatcher.windowMatchesAnyOf(it.windowState) }
 

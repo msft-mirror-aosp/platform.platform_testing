@@ -16,6 +16,7 @@
 
 package android.tools.device.traces.io
 
+import android.tools.common.ScenarioBuilder
 import android.tools.common.Timestamp
 import android.tools.common.io.IReader
 import android.tools.common.io.RunStatus
@@ -26,6 +27,7 @@ import android.tools.common.traces.surfaceflinger.LayersTrace
 import android.tools.common.traces.surfaceflinger.TransactionsTrace
 import android.tools.common.traces.wm.TransitionsTrace
 import android.tools.common.traces.wm.WindowManagerTrace
+import android.tools.device.traces.getDefaultFlickerOutputDir
 
 /** Reads parsed traces from in memory objects */
 class ParsedTracesReader(
@@ -35,6 +37,14 @@ class ParsedTracesReader(
     private val transactionsTrace: TransactionsTrace? = null,
     private val eventLog: EventLog? = null
 ) : IReader {
+    // TODO: Refactor all these values out of IReader, they don't totally make sense here
+    override val artifact: Artifact =
+        Artifact(
+            RunStatus.RUN_EXECUTED,
+            ScenarioBuilder().forClass("ParsedTraces").build(),
+            getDefaultFlickerOutputDir(),
+            emptyMap()
+        )
     override val artifactPath = ""
     override val runStatus = RunStatus.UNDEFINED
     override val executionError = null

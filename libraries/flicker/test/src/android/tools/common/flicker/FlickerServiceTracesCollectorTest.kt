@@ -18,6 +18,7 @@ package android.tools.common.flicker
 
 import android.app.Instrumentation
 import android.tools.CleanFlickerEnvironmentRule
+import android.tools.TEST_SCENARIO
 import android.tools.assertArchiveContainsFiles
 import android.tools.device.apphelpers.BrowserAppHelper
 import android.tools.device.flicker.FlickerServiceTracesCollector
@@ -31,6 +32,7 @@ import org.junit.Assume
 import org.junit.Before
 import org.junit.ClassRule
 import org.junit.FixMethodOrder
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runners.MethodSorters
 
@@ -52,11 +54,10 @@ class FlickerServiceTracesCollectorTest {
     fun canCollectTraces() {
         val wmHelper = WindowManagerStateHelper(instrumentation)
         val collector = FlickerServiceTracesCollector(getDefaultFlickerOutputDir())
-        collector.start()
+        collector.start(TEST_SCENARIO)
         testApp.launchViaIntent(wmHelper)
         testApp.exit(wmHelper)
-        collector.stop()
-        val reader = collector.getResultReader()
+        val reader = collector.stop()
 
         Truth.assertThat(reader.readWmTrace()?.entries ?: emptyArray()).isNotEmpty()
         Truth.assertThat(reader.readLayersTrace()?.entries ?: emptyArray()).isNotEmpty()
@@ -67,11 +68,11 @@ class FlickerServiceTracesCollectorTest {
     fun reportsTraceFile() {
         val wmHelper = WindowManagerStateHelper(instrumentation)
         val collector = FlickerServiceTracesCollector(getDefaultFlickerOutputDir())
-        collector.start()
+        collector.start(TEST_SCENARIO)
         testApp.launchViaIntent(wmHelper)
         testApp.exit(wmHelper)
-        collector.stop()
-        val tracePath = collector.getResultReader().artifactPath
+        val reader = collector.stop()
+        val tracePath = reader.artifactPath
 
         require(tracePath.isNotEmpty()) { "Artifact path missing in result" }
         val traceFile = File(tracePath)
@@ -82,11 +83,11 @@ class FlickerServiceTracesCollectorTest {
     fun reportedTraceFileContainsAllTraces() {
         val wmHelper = WindowManagerStateHelper(instrumentation)
         val collector = FlickerServiceTracesCollector(getDefaultFlickerOutputDir())
-        collector.start()
+        collector.start(TEST_SCENARIO)
         testApp.launchViaIntent(wmHelper)
         testApp.exit(wmHelper)
-        collector.stop()
-        val tracePath = collector.getResultReader().artifactPath
+        val reader = collector.stop()
+        val tracePath = reader.artifactPath
 
         require(tracePath.isNotEmpty()) { "Artifact path missing in result" }
         val traceFile = File(tracePath)
@@ -103,6 +104,6 @@ class FlickerServiceTracesCollectorTest {
                 "eventlog.winscope"
             )
 
-        @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
+        @Rule @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
     }
 }

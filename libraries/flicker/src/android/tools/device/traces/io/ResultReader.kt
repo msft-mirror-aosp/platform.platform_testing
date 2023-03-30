@@ -58,6 +58,7 @@ open class ResultReader(_result: IResultData, internal val traceConfig: TraceCon
     @VisibleForTesting
     var result = _result
         internal set
+    override val artifact: Artifact = result.artifact
     override val artifactPath: String
         get() = result.artifact.file.absolutePath
     override val runStatus
