@@ -33,11 +33,7 @@ LOCAL_PATH:= $(call my-dir)
 #    device/<OEM name>/<device name/
 # 3. add variable "BOARD_PERFSETUP_SCRIPT", and point it at the path to the new
 #    perf setup script; the path should be relative to the build root
-ifeq ($(strip $(BOARD_PERFSETUP_SCRIPT)),)
-perfsetup_script := platform_testing/scripts/perf-setup/empty-setup.sh
-else
-perfsetup_script := $(BOARD_PERFSETUP_SCRIPT)
-endif
+ifneq ($(strip $(BOARD_PERFSETUP_SCRIPT)),)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := perf-setup
@@ -47,8 +43,8 @@ LOCAL_MODULE_CLASS := EXECUTABLES
 LOCAL_MODULE_TAGS := optional
 LOCAL_MODULE_PATH := $(TARGET_OUT_DATA)/local/tmp
 LOCAL_MODULE_STEM := perf-setup.sh
-LOCAL_PREBUILT_MODULE_FILE := $(perfsetup_script)
+LOCAL_PREBUILT_MODULE_FILE := $(BOARD_PERFSETUP_SCRIPT)
 LOCAL_COMPATIBILITY_SUITE := device-tests
 include $(BUILD_PREBUILT)
 
-perfsetup_script :=
+endif
