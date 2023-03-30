@@ -16,10 +16,11 @@
 
 package android.tools.common.flicker
 
+import android.tools.common.IScenario
 import android.tools.common.io.IReader
 
 interface ITracesCollector {
-    fun start()
-    fun stop()
-    fun getResultReader(): IReader
+    fun start(scenario: IScenario)
+    fun stop(): IReader
+    fun cleanup()
 }

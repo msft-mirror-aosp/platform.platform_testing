@@ -53,7 +53,7 @@ class Artifact(
     outputDir: File,
     files: Map<ResultArtifactDescriptor, File>
 ) {
-    final lateinit var file: File
+    lateinit var file: File
         private set
 
     init {
@@ -66,14 +66,13 @@ class Artifact(
         }
     }
 
-    final val runStatus: RunStatus
-        get() = RunStatus.fromFileName(file.name)
+    val runStatus: RunStatus
+        get() =
+            RunStatus.fromFileName(file.name)
+                ?: error("Failed to get RunStatus from file name ${file.name}")
 
     fun updateStatus(newStatus: RunStatus) {
         val currFile = file
-        require(RunStatus.fromFileName(currFile.name) != RunStatus.UNDEFINED) {
-            "File name should start with a value from `RunStatus`, instead it was $currFile"
-        }
         val newFile = getNewFilePath(newStatus)
         if (currFile != newFile) {
             IoUtils.moveFile(currFile, newFile)

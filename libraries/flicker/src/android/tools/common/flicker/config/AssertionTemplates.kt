@@ -40,8 +40,6 @@ import android.tools.common.flicker.assertors.assertions.AppWindowIsVisibleAtSta
 import android.tools.common.flicker.assertors.assertions.AppWindowOnTopAtEnd
 import android.tools.common.flicker.assertors.assertions.AppWindowOnTopAtStart
 import android.tools.common.flicker.assertors.assertions.EntireScreenCoveredAlways
-import android.tools.common.flicker.assertors.assertions.EntireScreenCoveredAtEnd
-import android.tools.common.flicker.assertors.assertions.EntireScreenCoveredAtStart
 import android.tools.common.flicker.assertors.assertions.FocusChanges
 import android.tools.common.flicker.assertors.assertions.HasAtMostOneWindowMatching
 import android.tools.common.flicker.assertors.assertions.LayerBecomesInvisible
@@ -61,8 +59,6 @@ import android.tools.common.flicker.assertors.assertions.WindowRemainInsideVisib
 object AssertionTemplates {
     val COMMON_ASSERTIONS =
         listOf(
-            EntireScreenCoveredAtStart(),
-            EntireScreenCoveredAtEnd(),
             EntireScreenCoveredAlways(),
             VisibleWindowsShownMoreThanOneConsecutiveEntry(),
             VisibleLayersShownMoreThanOneConsecutiveEntry(),

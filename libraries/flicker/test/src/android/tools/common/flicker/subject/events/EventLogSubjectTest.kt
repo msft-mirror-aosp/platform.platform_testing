@@ -23,6 +23,7 @@ import android.tools.common.traces.events.EventLog
 import android.tools.common.traces.events.FocusEvent
 import android.tools.device.traces.io.ParsedTracesReader
 import org.junit.ClassRule
+import org.junit.Rule
 import org.junit.Test
 
 /**
@@ -96,6 +97,6 @@ class EventLogSubjectTest {
     }
 
     companion object {
-        @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
+        @Rule @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
     }
 }
