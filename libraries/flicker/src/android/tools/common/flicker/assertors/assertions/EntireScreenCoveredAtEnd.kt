@@ -28,11 +28,11 @@ class EntireScreenCoveredAtEnd : AssertionTemplate() {
     /** {@inheritDoc} */
     override fun doEvaluate(scenarioInstance: IScenarioInstance, layerSubject: LayersTraceSubject) {
         val subject = layerSubject.last()
-        val displays = subject.entry.displays
-        if (displays.isEmpty()) {
-            subject.fail("No displays found")
+        val onDisplays = subject.entry.displays.filter { it.isOn }
+        if (onDisplays.isEmpty()) {
+            subject.fail("No on displays found")
         }
-        displays.forEach { display ->
+        onDisplays.forEach { display ->
             subject.visibleRegion().coversAtLeast(display.layerStackSpace)
         }
     }
