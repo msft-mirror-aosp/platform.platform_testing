@@ -919,6 +919,16 @@
       "VALUE": "car_ui_internal_recycler_view",
       "PACKAGE": "com.chassis.car.ui.plugin"
     },
+    "BLOCKING_MESSAGE": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "blocking_text",
+      "PACKAGE": "com.android.systemui"
+    },
+    "BLOCKING_SCREEN":  {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "activity_blocking_content",
+      "PACKAGE": "com.android.systemui"
+    },
     "TEST_MEDIA_ACCOUNT_TYPE": {
       "TYPE": "TEXT",
       "VALUE": "Account Type"

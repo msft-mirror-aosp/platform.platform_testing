@@ -59,4 +59,29 @@ public interface IAutoAppGridHelper extends IAppHelper {
      * <p>Find and open an application.
      */
     void openApp(String appName);
+
+    /**
+     * Setup expectations: Blocking Message displayed.
+     *
+     * <p>Get the Screen Blocking Message when in Driving Mode.
+     *
+     * @param appName is name of the application
+     */
+    String getScreenBlockingMessage(String appName);
+
+    /**
+     * Setup expectations: package is in foreground
+     *
+     * <p>Check the package is in foreground
+     *
+     * @param packageName is package of the application
+     */
+    boolean checkPackageInForeground(String packageName);
+
+    /**
+     * Setup expectations: Go To Home.
+     *
+     * <p>Press home button.
+     */
+    void goToHomePage();
 }

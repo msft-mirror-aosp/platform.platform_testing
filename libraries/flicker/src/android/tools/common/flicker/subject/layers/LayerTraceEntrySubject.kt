@@ -244,6 +244,26 @@ class LayerTraceEntrySubject(
         }
     }
 
+    /** {@inheritDoc} */
+    override fun hasRoundedCorners(componentMatcher: IComponentMatcher): LayerTraceEntrySubject =
+        apply {
+            contains(componentMatcher)
+
+            val hasRoundedCornersLayer =
+                componentMatcher.check(subjects.map { it.layer }) {
+                    it.all { layer -> layer.cornerRadius > 0 }
+                }
+
+            if (!hasRoundedCornersLayer) {
+                fail(
+                    Fact(
+                        ASSERTION_TAG,
+                        "hasRoundedCorners(${componentMatcher.toLayerIdentifier()})"
+                    )
+                )
+            }
+        }
+
     /** See [layer] */
     fun layer(componentMatcher: IComponentMatcher): LayerSubject? {
         return layer { componentMatcher.layerMatchesAnyOf(it) }

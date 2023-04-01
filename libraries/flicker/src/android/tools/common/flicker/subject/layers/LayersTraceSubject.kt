@@ -190,6 +190,14 @@ class LayersTraceSubject(
         }
     }
 
+    /** {@inheritDoc} */
+    override fun hasRoundedCorners(componentMatcher: IComponentMatcher): LayersTraceSubject =
+        apply {
+            addAssertion("hasRoundedCorners(${componentMatcher.toLayerIdentifier()})") {
+                it.hasRoundedCorners(componentMatcher)
+            }
+        }
+
     /** See [isSplashScreenVisibleFor] */
     fun isSplashScreenVisibleFor(
         componentMatcher: IComponentNameMatcher,
