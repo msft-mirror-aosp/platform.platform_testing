@@ -125,6 +125,7 @@ public class AppGridHelperImpl extends AbstractStandardAppHelper implements IAut
 
         validateUiObject(app, String.format("Given app %s", appName));
         getSpectatioUiUtil().clickAndWait(app);
+        getSpectatioUiUtil().wait5Seconds();
     }
 
     /** {@inherticDoc} */
@@ -234,6 +235,36 @@ public class AppGridHelperImpl extends AbstractStandardAppHelper implements IAut
                 mForwardButtonSelector,
                 mScrollableElementSelector,
                 String.format("Scroll forward on app grid"));
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String getScreenBlockingMessage(String appName) {
+        BySelector screenBlockingSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.BLOCKING_SCREEN);
+        UiObject2 screenBlocking = getSpectatioUiUtil().findUiObject(screenBlockingSelector);
+        validateUiObject(
+                screenBlocking,
+                String.format("Screen Blocking message when opening %s app", appName));
+        BySelector screenBlockingMessageSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.BLOCKING_MESSAGE);
+        UiObject2 screenBlockingMessage =
+                getSpectatioUiUtil().findUiObject(screenBlockingMessageSelector);
+        validateUiObject(
+                screenBlockingMessage,
+                String.format("Screen Blocking message for %s app", appName));
+        return getSpectatioUiUtil().getTextForUiElement(screenBlockingMessage);
+    }
+
+    @Override
+    public boolean checkPackageInForeground(String packageName) {
+        return getSpectatioUiUtil().hasPackageInForeground(packageName);
+    }
+
+    @Override
+    public void goToHomePage() {
+        getSpectatioUiUtil().pressHome();
+        getSpectatioUiUtil().wait1Second();
     }
 
     private void validateUiObject(UiObject2 uiObject, String action) {
