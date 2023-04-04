@@ -81,6 +81,7 @@ public class AutomotiveConfigConstants {
             "CONTACT_DETAILS_SCROLL_DIRECTION";
     public static final String DIAL_PAD_MENU = "DIAL_PAD_MENU";
     public static final String FAVORITES_MENU = "FAVORITES_MENU";
+    public static final String DIALER_VIEW = "DIALER_VIEW";
 
     // Home App Constants
     public static final String HOME_PACKAGE = "HOME_PACKAGE";
@@ -375,4 +376,12 @@ public class AutomotiveConfigConstants {
     public static final String ACCOUNT_SETTINGS_SCROLL_ELEMENT = "ACCOUNT_SETTINGS_SCROLL_ELEMENT";
     public static final String ACCOUNT_SETTINGS_GOOGLE_SIGN_IN_SCREEN =
             "ACCOUNT_SETTINGS_GOOGLE_SIGN_IN_SCREEN";
+
+    // Facet bar constants
+    public static final String HOME_FACET_BUTTON = "HOME_FACET_BUTTON";
+    public static final String PHONE_FACET_BUTTON = "PHONE_FACET_BUTTON";
+    public static final String APP_GRID_FACET_BUTTON = "APP_GRID_FACET_BUTTON";
+    public static final String NOTIFICATION_FACET_BUTTON = "NOTIFICATION_FACET_BUTTON";
+    public static final String HVAC_FACET_BUTTON = "HVAC_FACET_BUTTON";
+    public static final String HVAC_PANEL = "HVAC_PANEL";
 }
