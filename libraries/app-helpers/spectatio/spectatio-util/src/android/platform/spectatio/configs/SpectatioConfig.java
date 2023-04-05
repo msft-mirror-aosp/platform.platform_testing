@@ -62,36 +62,44 @@ public class SpectatioConfig {
         return mWorkflows;
     }
 
-    public void updateConfig(SpectatioConfig newSpectatioConfig) {
-        // Override Commands with values from Runtime Json Config
-        overrideConfigValues(mCommands, newSpectatioConfig.getCommands());
+    /**
+     * Update config values for runtime and gas jsons. ThrowErrorForNewKeys should be true for
+     * runtime jsons
+     */
+    public void updateConfig(SpectatioConfig newSpectatioConfig, boolean throwErrorForNewKeys) {
+        // Update Config with values from Runtime/GAS Json Config
+        updateConfigValues(mCommands, newSpectatioConfig.getCommands(), throwErrorForNewKeys);
 
-        // Override Packages with values from Runtime Json Config
-        overrideConfigValues(mPackages, newSpectatioConfig.getPackages());
+        // Update Config with values from Runtime/GAS Json Config
+        updateConfigValues(mPackages, newSpectatioConfig.getPackages(), throwErrorForNewKeys);
 
-        // Override Actions with values from Runtime Json Config
-        overrideConfigValues(mActions, newSpectatioConfig.getActions());
+        // Update Config with values from Runtime/GAS Json Config
+        updateConfigValues(mActions, newSpectatioConfig.getActions(), throwErrorForNewKeys);
 
-        // Override Ui Elements with values from Runtime Json Config
-        overrideConfigValues(mUiElements, newSpectatioConfig.getUiElements());
+        // Update Config with values from Runtime/GAS Json Config
+        updateConfigValues(mUiElements, newSpectatioConfig.getUiElements(), throwErrorForNewKeys);
 
-        // Override Workflows with values from Runtime Json Config
-        overrideConfigValues(mWorkflows, newSpectatioConfig.getWorkflows());
+        // Update Config with values from Runtime/GAS Json Config
+        updateConfigValues(mWorkflows, newSpectatioConfig.getWorkflows(), throwErrorForNewKeys);
     }
 
-    private <T> void overrideConfigValues(
-            Map<String, T> currentConfigMap, Map<String, T> newConfigMap) {
+    private <T> void updateConfigValues(
+            Map<String, T> currentConfigMap,
+            Map<String, T> newConfigMap,
+            boolean throwErrorForNewKeys) {
         if (currentConfigMap == null || newConfigMap == null) {
             throw new RuntimeException(
                     "Validate Spectatio Json Config as it does not allow null values.");
         }
-        Sets.SetView<String> newKeys =
-                Sets.difference(newConfigMap.keySet(), currentConfigMap.keySet());
-        if (!newKeys.isEmpty()) {
-            throw new RuntimeException(
-                    String.format(
-                            "Unknown keys in runtime config: %s.",
-                            newKeys.stream().collect(Collectors.joining(", "))));
+        if (throwErrorForNewKeys) {
+            Sets.SetView<String> newKeys =
+                    Sets.difference(newConfigMap.keySet(), currentConfigMap.keySet());
+            if (!newKeys.isEmpty()) {
+                throw new RuntimeException(
+                        String.format(
+                                "Unknown keys in runtime config: %s.",
+                                newKeys.stream().collect(Collectors.joining(", "))));
+            }
         }
         currentConfigMap.putAll(newConfigMap);
     }
