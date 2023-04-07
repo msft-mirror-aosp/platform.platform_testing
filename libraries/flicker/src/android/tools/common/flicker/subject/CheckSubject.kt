@@ -16,35 +16,70 @@
 
 package android.tools.common.flicker.subject
 
+import android.tools.common.Timestamp
 import android.tools.common.flicker.assertions.Fact
+import android.tools.common.flicker.subject.exceptions.ExceptionBuilder
+import android.tools.common.flicker.subject.exceptions.InvalidPropertyException
+import android.tools.common.io.IReader
 
 /** Subject for flicker checks */
 data class CheckSubject<T>(
     private val actualValue: T?,
-    private val subject: FlickerSubject,
+    private val timestamp: Timestamp,
+    private val extraFacts: List<Fact>,
+    private val reader: IReader?,
     private val lazyMessage: () -> String,
 ) {
+    private val exceptionBuilder: ExceptionBuilder
+        get() {
+            val builder =
+                ExceptionBuilder()
+                    .setTimestamp(timestamp)
+                    .addExtraDescription(*extraFacts.toTypedArray())
+                    .ofType { InvalidPropertyException(it) }
+            if (reader != null) {
+                builder.setReader(reader)
+            }
+            return builder
+        }
+
     fun isEqual(expectedValue: T?) {
         if (actualValue != expectedValue) {
-            failWithFactForExpectedValue(Fact("expected to be equal to", expectedValue))
+            throw exceptionBuilder
+                .setMessage(lazyMessage.invoke())
+                .setExpected(expectedValue)
+                .setActual(actualValue)
+                .build()
         }
     }
 
     fun isNotEqual(expectedValue: T?) {
         if (actualValue == expectedValue) {
-            failWithFactForExpectedValue(Fact("expected to be different from", expectedValue))
+            throw exceptionBuilder
+                .setMessage(lazyMessage.invoke())
+                .setExpected("Different from $expectedValue")
+                .setActual(actualValue)
+                .build()
         }
     }
 
     fun isNull() {
         if (actualValue != null) {
-            failWithFactForExpectedValue(Fact("expected to be", null))
+            throw exceptionBuilder
+                .setMessage(lazyMessage.invoke())
+                .setExpected(null)
+                .setActual(actualValue)
+                .build()
         }
     }
 
     fun isNotNull() {
         if (actualValue == null) {
-            failWithFactForExpectedValue(Fact("expected not to be", null))
+            throw exceptionBuilder
+                .setMessage(lazyMessage.invoke())
+                .setExpected("Not null")
+                .setActual(null)
+                .build()
         }
     }
 
@@ -54,7 +89,11 @@ data class CheckSubject<T>(
                 expectedValue == null ||
                 (actualValue as Comparable<T>) >= expectedValue
         ) {
-            failWithFactForExpectedValue(Fact("expected to be lower than", expectedValue))
+            throw exceptionBuilder
+                .setMessage(lazyMessage.invoke())
+                .setExpected("Lower than $expectedValue")
+                .setActual(actualValue)
+                .build()
         }
     }
 
@@ -64,7 +103,11 @@ data class CheckSubject<T>(
                 expectedValue == null ||
                 (actualValue as Comparable<T>) > expectedValue
         ) {
-            failWithFactForExpectedValue(Fact("expected to be lower or equal to", expectedValue))
+            throw exceptionBuilder
+                .setMessage(lazyMessage.invoke())
+                .setExpected("Lower or equal to $expectedValue")
+                .setActual(actualValue)
+                .build()
         }
     }
 
@@ -74,7 +117,11 @@ data class CheckSubject<T>(
                 expectedValue == null ||
                 (actualValue as Comparable<T>) <= expectedValue
         ) {
-            failWithFactForExpectedValue(Fact("expected to be greater than", expectedValue))
+            throw exceptionBuilder
+                .setMessage(lazyMessage.invoke())
+                .setExpected("Greater than $expectedValue")
+                .setActual(actualValue)
+                .build()
         }
     }
 
@@ -84,23 +131,21 @@ data class CheckSubject<T>(
                 expectedValue == null ||
                 (actualValue as Comparable<T>) < expectedValue
         ) {
-            failWithFactForExpectedValue(Fact("expected to be greater or equal to", expectedValue))
+            throw exceptionBuilder
+                .setMessage(lazyMessage.invoke())
+                .setExpected("Greater or equal to $expectedValue")
+                .setActual(actualValue)
+                .build()
         }
     }
 
     fun <U> contains(expectedValue: U) {
         if (actualValue !is List<*> || !(actualValue as List<U>).contains(expectedValue)) {
-            failWithFactForExpectedValue(Fact("expected to contain", expectedValue))
+            throw exceptionBuilder
+                .setMessage(lazyMessage.invoke())
+                .setExpected("Contain $expectedValue")
+                .setActual(actualValue)
+                .build()
         }
-    }
-
-    private fun failWithFactForExpectedValue(factForExpectedValue: Fact) {
-        val facts =
-            listOf(
-                Fact("Assertion failed", lazyMessage()),
-                Fact("Actual value", actualValue),
-                factForExpectedValue,
-            )
-        subject.fail(facts)
     }
 }

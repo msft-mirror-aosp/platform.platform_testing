@@ -20,6 +20,7 @@ import android.tools.common.Timestamp
 import android.tools.common.flicker.assertions.Fact
 import android.tools.common.flicker.subject.FlickerSubject
 import android.tools.common.flicker.subject.region.RegionSubject
+import android.tools.common.io.IReader
 import android.tools.common.traces.wm.WindowState
 
 /**
@@ -41,7 +42,7 @@ import android.tools.common.traces.wm.WindowState
  * ```
  */
 class WindowStateSubject(
-    override val parent: WindowManagerStateSubject,
+    override val reader: IReader? = null,
     override val timestamp: Timestamp,
     val windowState: WindowState
 ) : FlickerSubject() {
@@ -49,7 +50,7 @@ class WindowStateSubject(
     val isInvisible: Boolean = !windowState.isVisible
     val name: String = windowState.name
     val frame: RegionSubject
-        get() = RegionSubject(windowState.frame, this, timestamp)
+        get() = RegionSubject(windowState.frame, timestamp, reader)
 
     override val selfFacts = listOf(Fact("Window title", windowState.title))
 

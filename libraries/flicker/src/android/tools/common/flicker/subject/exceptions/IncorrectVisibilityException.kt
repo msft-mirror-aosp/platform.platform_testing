@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-package android.tools.common.flicker.subject
+package android.tools.common.flicker.subject.exceptions
 
-import kotlin.AssertionError
-
-/** Exception type for assertion errors caused by flicker subjects */
-class FlickerAssertionError(message: String, cause: Throwable?) : AssertionError(message, cause)
+/** Exception thrown when an element has the incorrect visibility */
+class IncorrectVisibilityException(msg: String) : AssertionError(msg)

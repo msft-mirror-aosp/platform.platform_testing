@@ -18,21 +18,19 @@ package android.tools.common.flicker.subject.wm
 
 import android.tools.CleanFlickerEnvironmentRule
 import android.tools.TestComponents
-import android.tools.assertFailureFact
+import android.tools.assertFail
 import android.tools.assertThatErrorContainsDebugInfo
 import android.tools.assertThrows
 import android.tools.common.Cache
 import android.tools.common.datatypes.Region
 import android.tools.common.datatypes.component.ComponentNameMatcher
-import android.tools.common.flicker.subject.FlickerSubject
-import android.tools.common.flicker.subject.FlickerSubjectException
 import android.tools.common.traces.wm.ConfigurationContainer
 import android.tools.common.traces.wm.KeyguardControllerState
 import android.tools.common.traces.wm.RootWindowContainer
 import android.tools.common.traces.wm.WindowContainer
 import android.tools.common.traces.wm.WindowManagerState
-import android.tools.readWmTraceFromDumpFile
-import android.tools.readWmTraceFromFile
+import android.tools.getWmDumpReaderFromAsset
+import android.tools.getWmTraceReaderFromAsset
 import com.google.common.truth.Truth
 import org.junit.Before
 import org.junit.ClassRule
@@ -46,8 +44,9 @@ import org.junit.runners.MethodSorters
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class WindowManagerStateSubjectTest {
+    private val reader = getWmTraceReaderFromAsset("wm_trace_openchrome.pb", legacyTrace = true)
     private val trace
-        get() = readWmTraceFromFile("wm_trace_openchrome.pb", legacyTrace = true)
+        get() = reader.readWmTrace() ?: error("Unable to read WM trace")
 
     // Launcher is visible in fullscreen in the first frame of the trace
     private val traceFirstFrameTimestamp = 9213763541297
@@ -69,17 +68,18 @@ class WindowManagerStateSubjectTest {
     @Test
     fun exceptionContainsDebugInfo() {
         val error =
-            assertThrows<FlickerSubjectException> {
-                WindowManagerTraceSubject(trace).first().visibleRegion(TestComponents.IMAGINARY)
+            assertThrows<AssertionError> {
+                WindowManagerTraceSubject(trace, reader)
+                    .first()
+                    .visibleRegion(TestComponents.IMAGINARY)
             }
         assertThatErrorContainsDebugInfo(error)
         Truth.assertThat(error).hasMessageThat().contains(TestComponents.IMAGINARY.className)
-        Truth.assertThat(error).hasMessageThat().contains(FlickerSubject.ASSERTION_TAG)
     }
 
     @Test
     fun canDetectAboveAppWindowVisibility_isVisible() {
-        WindowManagerTraceSubject(trace)
+        WindowManagerTraceSubject(trace, reader)
             .getEntryByElapsedTimestamp(traceFirstFrameTimestamp)
             .containsAboveAppWindow(ComponentNameMatcher.NAV_BAR)
             .containsAboveAppWindow(TestComponents.SCREEN_DECOR_OVERLAY)
@@ -89,28 +89,26 @@ class WindowManagerStateSubjectTest {
     @Test
     fun canDetectAboveAppWindowVisibility_isInvisible() {
         val subject =
-            WindowManagerTraceSubject(trace).getEntryByElapsedTimestamp(traceFirstFrameTimestamp)
-        var failure =
-            assertThrows<FlickerSubjectException> {
-                subject
-                    .containsAboveAppWindow(TestComponents.PIP_OVERLAY)
-                    .isNonAppWindowVisible(TestComponents.PIP_OVERLAY)
-            }
-        assertFailureFact(failure, "Is Invisible").contains("pip-dismiss-overlay")
+            WindowManagerTraceSubject(trace, reader)
+                .getEntryByElapsedTimestamp(traceFirstFrameTimestamp)
+        assertFail("pip-dismiss-overlay") {
+            subject
+                .containsAboveAppWindow(TestComponents.PIP_OVERLAY)
+                .isNonAppWindowVisible(TestComponents.PIP_OVERLAY)
+        }
 
-        failure =
-            assertThrows<FlickerSubjectException> {
-                subject
-                    .containsAboveAppWindow(ComponentNameMatcher.NAV_BAR)
-                    .isNonAppWindowInvisible(ComponentNameMatcher.NAV_BAR)
-            }
-        assertFailureFact(failure, "Is Visible").contains("NavigationBar")
+        assertFail("NavigationBar") {
+            subject
+                .containsAboveAppWindow(ComponentNameMatcher.NAV_BAR)
+                .isNonAppWindowInvisible(ComponentNameMatcher.NAV_BAR)
+        }
     }
 
     @Test
     fun canDetectWindowCoversAtLeastRegion_exactSize() {
         val entry =
-            WindowManagerTraceSubject(trace).getEntryByElapsedTimestamp(traceFirstFrameTimestamp)
+            WindowManagerTraceSubject(trace, reader)
+                .getEntryByElapsedTimestamp(traceFirstFrameTimestamp)
 
         entry.visibleRegion(ComponentNameMatcher.STATUS_BAR).coversAtLeast(statusBarRegion)
         entry.visibleRegion(TestComponents.LAUNCHER).coversAtLeast(displayBounds)
@@ -119,7 +117,8 @@ class WindowManagerStateSubjectTest {
     @Test
     fun canDetectWindowCoversAtLeastRegion_smallerRegion() {
         val entry =
-            WindowManagerTraceSubject(trace).getEntryByElapsedTimestamp(traceFirstFrameTimestamp)
+            WindowManagerTraceSubject(trace, reader)
+                .getEntryByElapsedTimestamp(traceFirstFrameTimestamp)
         entry
             .visibleRegion(ComponentNameMatcher.STATUS_BAR)
             .coversAtLeast(Region.from(0, 0, 100, 100))
@@ -129,28 +128,26 @@ class WindowManagerStateSubjectTest {
     @Test
     fun canDetectWindowCoversAtLeastRegion_largerRegion() {
         val subject =
-            WindowManagerTraceSubject(trace).getEntryByElapsedTimestamp(traceFirstFrameTimestamp)
-        var failure =
-            assertThrows<FlickerSubjectException> {
-                subject
-                    .visibleRegion(ComponentNameMatcher.STATUS_BAR)
-                    .coversAtLeast(Region.from(0, 0, 1441, 171))
-            }
-        assertFailureFact(failure, "Uncovered region").contains("SkRegion((1440,0,1441,171))")
+            WindowManagerTraceSubject(trace, reader)
+                .getEntryByElapsedTimestamp(traceFirstFrameTimestamp)
+        assertFail("SkRegion((1440,0,1441,171))") {
+            subject
+                .visibleRegion(ComponentNameMatcher.STATUS_BAR)
+                .coversAtLeast(Region.from(0, 0, 1441, 171))
+        }
 
-        failure =
-            assertThrows<FlickerSubjectException> {
-                subject
-                    .visibleRegion(TestComponents.LAUNCHER)
-                    .coversAtLeast(Region.from(0, 0, 1440, 2961))
-            }
-        assertFailureFact(failure, "Uncovered region").contains("SkRegion((0,2960,1440,2961))")
+        assertFail("SkRegion((0,2960,1440,2961))") {
+            subject
+                .visibleRegion(TestComponents.LAUNCHER)
+                .coversAtLeast(Region.from(0, 0, 1440, 2961))
+        }
     }
 
     @Test
     fun canDetectWindowCoversExactlyRegion_exactSize() {
         val entry =
-            WindowManagerTraceSubject(trace).getEntryByElapsedTimestamp(traceFirstFrameTimestamp)
+            WindowManagerTraceSubject(trace, reader)
+                .getEntryByElapsedTimestamp(traceFirstFrameTimestamp)
 
         entry.visibleRegion(ComponentNameMatcher.STATUS_BAR).coversExactly(statusBarRegion)
         entry.visibleRegion(TestComponents.LAUNCHER).coversExactly(displayBounds)
@@ -159,51 +156,42 @@ class WindowManagerStateSubjectTest {
     @Test
     fun canDetectWindowCoversExactlyRegion_smallerRegion() {
         val subject =
-            WindowManagerTraceSubject(trace).getEntryByElapsedTimestamp(traceFirstFrameTimestamp)
-        var failure =
-            assertThrows<FlickerSubjectException> {
-                subject
-                    .visibleRegion(ComponentNameMatcher.STATUS_BAR)
-                    .coversAtMost(Region.from(0, 0, 100, 100))
-            }
-        assertFailureFact(failure, "Out-of-bounds region")
-            .contains("SkRegion((100,0,1440,100)(0,100,1440,171))")
+            WindowManagerTraceSubject(trace, reader)
+                .getEntryByElapsedTimestamp(traceFirstFrameTimestamp)
+        assertFail("SkRegion((0,0,1440,171)) should cover at most SkRegion((0,0,100,100))") {
+            subject
+                .visibleRegion(ComponentNameMatcher.STATUS_BAR)
+                .coversAtMost(Region.from(0, 0, 100, 100))
+        }
 
-        failure =
-            assertThrows<FlickerSubjectException> {
-                subject
-                    .visibleRegion(TestComponents.LAUNCHER)
-                    .coversAtMost(Region.from(0, 0, 100, 100))
-            }
-        assertFailureFact(failure, "Out-of-bounds region")
-            .contains("SkRegion((100,0,1440,100)(0,100,1440,2960))")
+        assertFail("Out-of-bounds region: SkRegion((100,0,1440,100)(0,100,1440,2960))") {
+            subject.visibleRegion(TestComponents.LAUNCHER).coversAtMost(Region.from(0, 0, 100, 100))
+        }
     }
 
     @Test
     fun canDetectWindowCoversExactlyRegion_largerRegion() {
         val subject =
-            WindowManagerTraceSubject(trace).getEntryByElapsedTimestamp(traceFirstFrameTimestamp)
-        var failure =
-            assertThrows<FlickerSubjectException> {
-                subject
-                    .visibleRegion(ComponentNameMatcher.STATUS_BAR)
-                    .coversAtLeast(Region.from(0, 0, 1441, 171))
-            }
-        assertFailureFact(failure, "Uncovered region").contains("SkRegion((1440,0,1441,171))")
+            WindowManagerTraceSubject(trace, reader)
+                .getEntryByElapsedTimestamp(traceFirstFrameTimestamp)
+        assertFail("Uncovered region: SkRegion((1440,0,1441,171))") {
+            subject
+                .visibleRegion(ComponentNameMatcher.STATUS_BAR)
+                .coversAtLeast(Region.from(0, 0, 1441, 171))
+        }
 
-        failure =
-            assertThrows<FlickerSubjectException> {
-                subject
-                    .visibleRegion(TestComponents.LAUNCHER)
-                    .coversAtLeast(Region.from(0, 0, 1440, 2961))
-            }
-        assertFailureFact(failure, "Uncovered region").contains("SkRegion((0,2960,1440,2961))")
+        assertFail("Uncovered region: SkRegion((0,2960,1440,2961))") {
+            subject
+                .visibleRegion(TestComponents.LAUNCHER)
+                .coversAtLeast(Region.from(0, 0, 1440, 2961))
+        }
     }
 
     @Test
     fun canDetectWindowCoversAtMostRegion_extactSize() {
         val entry =
-            WindowManagerTraceSubject(trace).getEntryByElapsedTimestamp(traceFirstFrameTimestamp)
+            WindowManagerTraceSubject(trace, reader)
+                .getEntryByElapsedTimestamp(traceFirstFrameTimestamp)
         entry.visibleRegion(ComponentNameMatcher.STATUS_BAR).coversAtMost(statusBarRegion)
         entry.visibleRegion(TestComponents.LAUNCHER).coversAtMost(displayBounds)
     }
@@ -211,30 +199,24 @@ class WindowManagerStateSubjectTest {
     @Test
     fun canDetectWindowCoversAtMostRegion_smallerRegion() {
         val subject =
-            WindowManagerTraceSubject(trace).getEntryByElapsedTimestamp(traceFirstFrameTimestamp)
-        var failure =
-            assertThrows<FlickerSubjectException> {
-                subject
-                    .visibleRegion(ComponentNameMatcher.STATUS_BAR)
-                    .coversAtMost(Region.from(0, 0, 100, 100))
-            }
-        assertFailureFact(failure, "Out-of-bounds region")
-            .contains("SkRegion((100,0,1440,100)(0,100,1440,171))")
+            WindowManagerTraceSubject(trace, reader)
+                .getEntryByElapsedTimestamp(traceFirstFrameTimestamp)
+        assertFail("SkRegion((0,0,1440,171)) should cover at most SkRegion((0,0,100,100))") {
+            subject
+                .visibleRegion(ComponentNameMatcher.STATUS_BAR)
+                .coversAtMost(Region.from(0, 0, 100, 100))
+        }
 
-        failure =
-            assertThrows<FlickerSubjectException> {
-                subject
-                    .visibleRegion(TestComponents.LAUNCHER)
-                    .coversAtMost(Region.from(0, 0, 100, 100))
-            }
-        assertFailureFact(failure, "Out-of-bounds region")
-            .contains("SkRegion((100,0,1440,100)(0,100,1440,2960))")
+        assertFail("SkRegion((0,0,1440,2960)) should cover at most SkRegion((0,0,100,100))") {
+            subject.visibleRegion(TestComponents.LAUNCHER).coversAtMost(Region.from(0, 0, 100, 100))
+        }
     }
 
     @Test
     fun canDetectWindowCoversAtMostRegion_largerRegion() {
         val entry =
-            WindowManagerTraceSubject(trace).getEntryByElapsedTimestamp(traceFirstFrameTimestamp)
+            WindowManagerTraceSubject(trace, reader)
+                .getEntryByElapsedTimestamp(traceFirstFrameTimestamp)
 
         entry
             .visibleRegion(ComponentNameMatcher.STATUS_BAR)
@@ -244,27 +226,28 @@ class WindowManagerStateSubjectTest {
 
     @Test
     fun canDetectBelowAppWindowVisibility() {
-        WindowManagerTraceSubject(trace)
+        WindowManagerTraceSubject(trace, reader)
             .getEntryByElapsedTimestamp(traceFirstFrameTimestamp)
             .containsNonAppWindow(TestComponents.WALLPAPER)
     }
 
     @Test
     fun canDetectAppWindowVisibility() {
-        WindowManagerTraceSubject(trace)
+        WindowManagerTraceSubject(trace, reader)
             .getEntryByElapsedTimestamp(traceFirstFrameTimestamp)
             .containsAppWindow(TestComponents.LAUNCHER)
 
-        WindowManagerTraceSubject(trace)
+        WindowManagerTraceSubject(trace, reader)
             .getEntryByElapsedTimestamp(traceFirstChromeFlashScreenTimestamp)
             .containsAppWindow(TestComponents.CHROME_SPLASH_SCREEN)
     }
 
     @Test
     fun canDetectAppWindowVisibilitySubject() {
-        val trace =
-            readWmTraceFromFile("wm_trace_launcher_visible_background.pb", legacyTrace = true)
-        val firstEntry = WindowManagerTraceSubject(trace).first()
+        val reader =
+            getWmTraceReaderFromAsset("wm_trace_launcher_visible_background.pb", legacyTrace = true)
+        val trace = reader.readWmTrace() ?: error("Unable to read WM trace")
+        val firstEntry = WindowManagerTraceSubject(trace, reader).first()
         val appWindowNames = firstEntry.wmState.appWindows.map { it.name }
         val expectedAppWindowName =
             "com.android.server.wm.flicker.testapp/" +
@@ -278,9 +261,10 @@ class WindowManagerStateSubjectTest {
 
     @Test
     fun canDetectLauncherVisibility() {
-        val trace =
-            readWmTraceFromFile("wm_trace_launcher_visible_background.pb", legacyTrace = true)
-        val subject = WindowManagerTraceSubject(trace)
+        val reader =
+            getWmTraceReaderFromAsset("wm_trace_launcher_visible_background.pb", legacyTrace = true)
+        val trace = reader.readWmTrace() ?: error("Unable to read WM trace")
+        val subject = WindowManagerTraceSubject(trace, reader)
         val firstTrace = subject.first()
         firstTrace.isAppWindowInvisible(TestComponents.LAUNCHER)
 
@@ -299,30 +283,26 @@ class WindowManagerStateSubjectTest {
 
     @Test
     fun canFailWithReasonForVisibilityChecks_windowNotFound() {
-        val failure =
-            assertThrows<FlickerSubjectException> {
-                WindowManagerTraceSubject(trace)
-                    .getEntryByElapsedTimestamp(traceFirstFrameTimestamp)
-                    .containsNonAppWindow(TestComponents.IMAGINARY)
-            }
-        Truth.assertThat(failure).hasMessageThat().contains(TestComponents.IMAGINARY.packageName)
+        assertFail(TestComponents.IMAGINARY.packageName) {
+            WindowManagerTraceSubject(trace, reader)
+                .getEntryByElapsedTimestamp(traceFirstFrameTimestamp)
+                .containsNonAppWindow(TestComponents.IMAGINARY)
+        }
     }
 
     @Test
     fun canFailWithReasonForVisibilityChecks_windowNotVisible() {
-        val failure =
-            assertThrows<FlickerSubjectException> {
-                WindowManagerTraceSubject(trace)
-                    .getEntryByElapsedTimestamp(traceFirstFrameTimestamp)
-                    .containsNonAppWindow(ComponentNameMatcher.IME)
-                    .isNonAppWindowVisible(ComponentNameMatcher.IME)
-            }
-        assertFailureFact(failure, "Is Invisible").contains(ComponentNameMatcher.IME.packageName)
+        assertFail(ComponentNameMatcher.IME.packageName) {
+            WindowManagerTraceSubject(trace, reader)
+                .getEntryByElapsedTimestamp(traceFirstFrameTimestamp)
+                .containsNonAppWindow(ComponentNameMatcher.IME)
+                .isNonAppWindowVisible(ComponentNameMatcher.IME)
+        }
     }
 
     @Test
     fun canDetectAppZOrder() {
-        WindowManagerTraceSubject(trace)
+        WindowManagerTraceSubject(trace, reader)
             .getEntryByElapsedTimestamp(traceFirstChromeFlashScreenTimestamp)
             .containsAppWindow(TestComponents.LAUNCHER)
             .isAppWindowVisible(TestComponents.LAUNCHER)
@@ -332,19 +312,18 @@ class WindowManagerStateSubjectTest {
 
     @Test
     fun canFailWithReasonForZOrderChecks_windowNotOnTop() {
-        val failure =
-            assertThrows<FlickerSubjectException> {
-                WindowManagerTraceSubject(trace)
-                    .getEntryByElapsedTimestamp(traceFirstChromeFlashScreenTimestamp)
-                    .isAppWindowOnTop(TestComponents.CHROME_SPLASH_SCREEN)
-            }
-        assertFailureFact(failure, "Found").contains(TestComponents.LAUNCHER.packageName)
+        assertFail(TestComponents.LAUNCHER.packageName) {
+            WindowManagerTraceSubject(trace, reader)
+                .getEntryByElapsedTimestamp(traceFirstChromeFlashScreenTimestamp)
+                .isAppWindowOnTop(TestComponents.CHROME_SPLASH_SCREEN)
+        }
     }
 
     @Test
     fun canDetectActivityVisibility() {
-        val trace = readWmTraceFromFile("wm_trace_split_screen.pb", legacyTrace = true)
-        val lastEntry = WindowManagerTraceSubject(trace).last()
+        val reader = getWmTraceReaderFromAsset("wm_trace_split_screen.pb", legacyTrace = true)
+        val trace = reader.readWmTrace() ?: error("Unable to read WM trace")
+        val lastEntry = WindowManagerTraceSubject(trace, reader).last()
         lastEntry.isAppWindowVisible(TestComponents.SHELL_SPLIT_SCREEN_PRIMARY)
         lastEntry.isAppWindowVisible(TestComponents.SHELL_SPLIT_SCREEN_SECONDARY)
     }
@@ -388,43 +367,44 @@ class WindowManagerStateSubjectTest {
 
         val mockComponent = ComponentNameMatcher("", "Mock")
 
-        val failure =
-            assertThrows<FlickerSubjectException> {
-                WindowManagerStateSubject(noWindowsState).isAppWindowOnTop(mockComponent)
-            }
-        Truth.assertThat(failure).hasMessageThat().contains("No visible app windows found")
+        assertFail("Mock should exist") {
+            WindowManagerStateSubject(noWindowsState).isAppWindowOnTop(mockComponent)
+        }
     }
 
     @Test
     fun canDetectNoVisibleAppWindows() {
-        val trace = readWmTraceFromFile("wm_trace_unlock.pb", legacyTrace = true)
-        val firstEntry = WindowManagerTraceSubject(trace).first()
+        val reader = getWmTraceReaderFromAsset("wm_trace_unlock.pb", legacyTrace = true)
+        val trace = reader.readWmTrace() ?: error("Unable to read WM trace")
+        val firstEntry = WindowManagerTraceSubject(trace, reader).first()
         firstEntry.hasNoVisibleAppWindow()
     }
 
     @Test
     fun canDetectHasVisibleAppWindows() {
-        val trace = readWmTraceFromFile("wm_trace_unlock.pb", legacyTrace = true)
-        val lastEntry = WindowManagerTraceSubject(trace).last()
-        val failure = assertThrows<FlickerSubjectException> { lastEntry.hasNoVisibleAppWindow() }
-        Truth.assertThat(failure).hasMessageThat().contains("Found visible windows")
+        val reader = getWmTraceReaderFromAsset("wm_trace_unlock.pb", legacyTrace = true)
+        val trace = reader.readWmTrace() ?: error("Unable to read WM trace")
+        val lastEntry = WindowManagerTraceSubject(trace, reader).last()
+        assertFail("Visible app windows") { lastEntry.hasNoVisibleAppWindow() }
     }
 
     @Test
     fun canDetectTaskFragment() {
         // Verify if parser can read a dump file with 2 TaskFragments showed side-by-side.
-        val trace = readWmTraceFromDumpFile("wm_trace_taskfragment.winscope")
+        val reader = getWmDumpReaderFromAsset("wm_trace_taskfragment.winscope")
+        val trace = reader.readWmTrace() ?: error("Unable to read WM trace")
         // There's only one entry in dump file.
-        val entry = WindowManagerTraceSubject(trace).first()
+        val entry = WindowManagerTraceSubject(trace, reader).first()
         // Verify there's exact 2 TaskFragments in window hierarchy.
         Truth.assertThat(entry.wmState.taskFragments.size).isEqualTo(2)
     }
 
     @Test
     fun canDetectIsHomeActivityVisibleTablet() {
-        val trace = readWmTraceFromDumpFile("tablet/wm_dump_home_screen.winscope")
+        val reader = getWmDumpReaderFromAsset("tablet/wm_dump_home_screen.winscope")
+        val trace = reader.readWmTrace() ?: error("Unable to read WM trace")
         // There's only one entry in dump file.
-        val entry = WindowManagerTraceSubject(trace).first()
+        val entry = WindowManagerTraceSubject(trace, reader).first()
         // Verify that the device is in home screen
         Truth.assertThat(entry.wmState.isHomeActivityVisible).isTrue()
         // Verify that the subject is in home screen
@@ -433,23 +413,25 @@ class WindowManagerStateSubjectTest {
 
     @Test
     fun canDetectTaskBarIsVisible() {
-        val trace = readWmTraceFromDumpFile("tablet/wm_dump_home_screen.winscope")
+        val reader = getWmDumpReaderFromAsset("tablet/wm_dump_home_screen.winscope")
+        val trace = reader.readWmTrace() ?: error("Unable to read WM trace")
         // There's only one entry in dump file.
-        val entry = WindowManagerTraceSubject(trace).first()
+        val entry = WindowManagerTraceSubject(trace, reader).first()
         // Verify that the taskbar is visible
         entry.isNonAppWindowVisible(ComponentNameMatcher.TASK_BAR)
     }
 
     @Test
     fun canDetectWindowVisibilityWhen2WindowsHaveSameName() {
-        val trace =
-            readWmTraceFromFile("wm_trace_2activities_same_name.winscope", legacyTrace = true)
+        val reader =
+            getWmTraceReaderFromAsset("wm_trace_2activities_same_name.winscope", legacyTrace = true)
+        val trace = reader.readWmTrace() ?: error("Unable to read WM trace")
         val componentMatcher =
             ComponentNameMatcher(
                 "com.android.server.wm.flicker.testapp",
                 "com.android.server.wm.flicker.testapp.NotificationActivity"
             )
-        WindowManagerTraceSubject(trace)
+        WindowManagerTraceSubject(trace, reader)
             .isAppWindowInvisible(componentMatcher)
             .then()
             .isAppWindowVisible(ComponentNameMatcher.SNAPSHOT, isOptional = true)
@@ -462,7 +444,8 @@ class WindowManagerStateSubjectTest {
 
     @Test
     fun canDetectInvisibleWindowBecauseActivityIsInvisible() {
-        val entry = WindowManagerTraceSubject(trace).getEntryByElapsedTimestamp(9215551505798L)
+        val entry =
+            WindowManagerTraceSubject(trace, reader).getEntryByElapsedTimestamp(9215551505798L)
         entry.isAppWindowInvisible(TestComponents.CHROME_SPLASH_SCREEN)
     }
 

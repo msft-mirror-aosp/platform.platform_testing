@@ -24,6 +24,7 @@ import android.tools.device.traces.io.IoUtils
 import android.tools.device.traces.io.ResultReader
 import android.tools.device.traces.io.ResultWriter
 import java.io.File
+import kotlin.io.path.createTempDirectory
 
 /**
  * Base class for monitors containing common logic to read the trace as a byte array and save the
@@ -102,7 +103,7 @@ abstract class TraceMonitor : ITransitionMonitor {
     private fun createWriter(): ResultWriter {
         val className = this::class.simpleName ?: error("Missing class name for $this")
         val scenario = ScenarioBuilder().forClass(className).build()
-        val tmpDir = File.createTempFile("withTracing", className).parentFile
+        val tmpDir = createTempDirectory("withTracing").toFile()
         return ResultWriter().forScenario(scenario).withOutputDir(tmpDir)
     }
 

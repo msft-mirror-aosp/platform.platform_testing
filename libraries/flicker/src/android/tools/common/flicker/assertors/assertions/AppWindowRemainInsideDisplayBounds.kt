@@ -31,12 +31,9 @@ class AppWindowRemainInsideDisplayBounds(private val component: ComponentTemplat
         wmSubject: WindowManagerTraceSubject
     ) {
         wmSubject
+            .containsAtLeastOneDisplay()
             .invoke("appWindowRemainInsideDisplayBounds") { entry ->
-                val displays = entry.wmState.displays
-                if (displays.isEmpty()) {
-                    entry.fail("No displays found")
-                }
-                val display = entry.wmState.displays.sortedBy { it.id }.first()
+                val display = entry.wmState.displays.minByOrNull { it.id }!!
                 entry
                     .visibleRegion(component.build(scenarioInstance))
                     .coversAtMost(display.displayRect)

@@ -24,11 +24,10 @@ import android.tools.common.traces.surfaceflinger.LayersTrace
 import android.tools.common.traces.surfaceflinger.TransactionsTrace
 import android.tools.common.traces.wm.TransitionsTrace
 import android.tools.common.traces.wm.WindowManagerTrace
-import android.tools.device.traces.io.Artifact
 
 /** Helper class to read results from a flicker artifact */
 interface IReader {
-    val artifact: Artifact
+    val artifact: IArtifact
     val artifactPath: String
     val executionError: Throwable?
     val runStatus: RunStatus

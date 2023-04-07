@@ -134,4 +134,12 @@ interface IComponentMatcher {
      */
     @JsName("check")
     fun check(layers: Collection<Layer>, condition: (Collection<Layer>) -> Boolean): Boolean
+
+    @JsName("filterLayers")
+    fun filterLayers(layers: Collection<Layer>): Collection<Layer> =
+        layers.filter { layerMatchesAnyOf(it) }
+
+    @JsName("filterWindows")
+    fun filterWindows(windows: Collection<WindowContainer>): Collection<WindowContainer> =
+        windows.filter { windowMatchesAnyOf(it) }
 }

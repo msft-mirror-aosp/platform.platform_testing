@@ -30,8 +30,11 @@ import android.tools.device.traces.monitors.surfaceflinger.TransactionsTraceMoni
 import android.tools.device.traces.monitors.wm.TransitionsTraceMonitor
 import android.tools.device.traces.monitors.wm.WindowManagerTraceMonitor
 import java.io.File
+import kotlin.io.path.createTempDirectory
 
-class FlickerServiceTracesCollector(private val outputDir: File) : ITracesCollector {
+class FlickerServiceTracesCollector(
+    private val outputDir: File = createTempDirectory().toFile(),
+) : ITracesCollector {
     private var scenario: IScenario? = null
 
     private val traceMonitors =

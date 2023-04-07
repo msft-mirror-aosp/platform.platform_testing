@@ -142,9 +142,6 @@ class FullTestRun(private val flicker: FlickerTest) {
     private fun validateState(actual: FlickerSubject?, expected: FlickerSubject?) {
         Truth.assertWithMessage("Actual state").that(actual).isNotNull()
         Truth.assertWithMessage("Expected state").that(expected).isNotNull()
-        Truth.assertWithMessage("Incorrect state")
-            .that(actual?.completeFacts?.joinToString { it.toString() })
-            .isEqualTo(expected?.completeFacts?.joinToString { it.toString() })
     }
 
     private fun validateVisibleRegion(

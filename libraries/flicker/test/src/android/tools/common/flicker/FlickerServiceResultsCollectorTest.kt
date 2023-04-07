@@ -24,6 +24,7 @@ import android.tools.common.flicker.assertors.IFaasAssertion
 import android.tools.common.io.IReader
 import android.tools.common.traces.wm.TransitionsTrace
 import android.tools.device.flicker.FlickerServiceResultsCollector
+import android.tools.device.traces.io.InMemoryArtifact
 import android.tools.device.traces.io.ParsedTracesReader
 import android.tools.utils.KotlinMockito
 import android.tools.utils.MockLayersTraceBuilder
@@ -50,6 +51,7 @@ class FlickerServiceResultsCollectorTest {
         Mockito.`when`(mockTraceCollector.stop())
             .thenReturn(
                 ParsedTracesReader(
+                    artifact = InMemoryArtifact.EMPTY,
                     wmTrace = MockWindowManagerTraceBuilder().build(),
                     layersTrace = MockLayersTraceBuilder().build(),
                     transitionsTrace = TransitionsTrace(emptyArray()),
@@ -91,6 +93,7 @@ class FlickerServiceResultsCollectorTest {
         Mockito.`when`(mockTraceCollector.stop())
             .thenReturn(
                 ParsedTracesReader(
+                    artifact = InMemoryArtifact.EMPTY,
                     wmTrace = MockWindowManagerTraceBuilder().build(),
                     layersTrace = MockLayersTraceBuilder().build(),
                     transitionsTrace = TransitionsTrace(emptyArray()),
@@ -131,6 +134,7 @@ class FlickerServiceResultsCollectorTest {
         Mockito.`when`(mockTraceCollector.stop())
             .thenReturn(
                 ParsedTracesReader(
+                    artifact = InMemoryArtifact.EMPTY,
                     wmTrace = MockWindowManagerTraceBuilder().build(),
                     layersTrace = MockLayersTraceBuilder().build(),
                     transitionsTrace = TransitionsTrace(emptyArray()),
@@ -170,6 +174,7 @@ class FlickerServiceResultsCollectorTest {
         Mockito.`when`(mockTraceCollector.stop())
             .thenReturn(
                 ParsedTracesReader(
+                    artifact = InMemoryArtifact.EMPTY,
                     wmTrace = MockWindowManagerTraceBuilder().build(),
                     layersTrace = MockLayersTraceBuilder().build(),
                     transitionsTrace = TransitionsTrace(emptyArray()),

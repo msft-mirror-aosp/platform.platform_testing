@@ -19,7 +19,6 @@ package android.tools.common.flicker.assertors.assertions
 import android.tools.common.flicker.IScenarioInstance
 import android.tools.common.flicker.assertors.AssertionTemplate
 import android.tools.common.flicker.subject.layers.LayersTraceSubject
-import org.junit.Assert.fail
 
 /**
  * Checks if the stack space of all displays is fully covered by any visible layer, during the whole
@@ -28,13 +27,7 @@ import org.junit.Assert.fail
 class EntireScreenCoveredAlways : AssertionTemplate() {
     /** {@inheritDoc} */
     override fun doEvaluate(scenarioInstance: IScenarioInstance, layerSubject: LayersTraceSubject) {
-        // Check the display is on at some point to ensure the assertion runs at least once
-        val hasAtLeastOneOnDisplay =
-            layerSubject.trace.entries.any { it.displays.any { display -> display.isOn } }
-        if (!hasAtLeastOneOnDisplay) {
-            fail("No on display found in trace")
-        }
-
+        layerSubject.atLeastOneEntryContainsOneDisplayOn()
         layerSubject
             .invoke("entireScreenCovered") { entry ->
                 entry.entry.displays

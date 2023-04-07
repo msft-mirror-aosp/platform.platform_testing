@@ -19,7 +19,7 @@ package android.tools.common.traces.wm
 import android.tools.CleanFlickerEnvironmentRule
 import android.tools.common.Cache
 import android.tools.common.CrossPlatform
-import android.tools.readWmTraceFromFile
+import android.tools.getWmTraceReaderFromAsset
 import com.google.common.truth.Truth.assertThat
 import com.google.common.truth.Truth.assertWithMessage
 import java.lang.reflect.Modifier
@@ -35,8 +35,9 @@ import org.junit.runners.MethodSorters
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class WindowManagerTraceTest {
+    private val reader = getWmTraceReaderFromAsset("wm_trace_openchrome.pb", legacyTrace = true)
     private val trace
-        get() = readWmTraceFromFile("wm_trace_openchrome.pb", legacyTrace = true)
+        get() = reader.readWmTrace() ?: error("Unable to read WM trace")
 
     @Before
     fun before() {
@@ -98,7 +99,8 @@ class WindowManagerTraceTest {
     @Test
     fun canAccessAllProperties() {
         arrayOf("wm_trace_activity_transition.pb", "wm_trace_openchrome2.pb").forEach { traceName ->
-            val trace = readWmTraceFromFile(traceName, legacyTrace = true)
+            val reader = getWmTraceReaderFromAsset(traceName, legacyTrace = true)
+            val trace = reader.readWmTrace() ?: error("Unable to read WM trace")
             assertWithMessage("Unable to parse dump").that(trace.entries.size).isGreaterThan(1)
 
             trace.entries.forEach { entry: WindowManagerState ->
@@ -130,13 +132,14 @@ class WindowManagerTraceTest {
 
     @Test
     fun canSlice() {
-        val trace =
-            readWmTraceFromFile(
+        val reader =
+            getWmTraceReaderFromAsset(
                 "wm_trace_openchrome2.pb",
                 from = 174686204723645,
                 to = 174686640998584,
                 legacyTrace = true
             )
+        val trace = reader.readWmTrace() ?: error("Unable to read WM trace")
 
         assertThat(trace.entries).asList().isNotEmpty()
         assertThat(trace.entries.first().timestamp.elapsedNanos).isEqualTo(174686204723645)
@@ -145,13 +148,14 @@ class WindowManagerTraceTest {
 
     @Test
     fun canSliceWithWrongTimestamps() {
-        val trace =
-            readWmTraceFromFile(
+        val reader =
+            getWmTraceReaderFromAsset(
                 "wm_trace_openchrome2.pb",
                 from = 9213763541297,
                 to = 9215895891561,
                 legacyTrace = true
             )
+        val trace = reader.readWmTrace() ?: error("Unable to read WM trace")
         assertThat(trace.entries).asList().isEmpty()
     }
 
