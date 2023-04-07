@@ -16,30 +16,17 @@
 
 package android.tools.device.flicker.datastore
 
-import android.tools.TEST_SCENARIO
 import android.tools.common.CrossPlatform
-import android.tools.common.io.ResultArtifactDescriptor
-import android.tools.common.io.RunStatus
 import android.tools.common.io.TransitionTimeRange
-import android.tools.device.traces.getDefaultFlickerOutputDir
-import android.tools.device.traces.io.Artifact
+import android.tools.device.traces.io.InMemoryArtifact
 import android.tools.device.traces.io.ResultData
-import java.io.File
 
 object Consts {
     internal const val FAILURE = "Expected failure"
 
-    private val artifact =
-        Artifact(
-            RunStatus.RUN_EXECUTED,
-            TEST_SCENARIO,
-            getDefaultFlickerOutputDir(),
-            emptyMap<ResultArtifactDescriptor, File>()
-        )
-
     internal val TEST_RESULT =
         ResultData(
-            _artifact = artifact,
+            _artifact = InMemoryArtifact("TEST_RESULT"),
             _transitionTimeRange =
                 TransitionTimeRange(
                     CrossPlatform.timestamp.empty(),
@@ -50,7 +37,7 @@ object Consts {
 
     internal val RESULT_FAILURE =
         ResultData(
-            _artifact = artifact,
+            _artifact = InMemoryArtifact("RESULT_FAILURE"),
             _transitionTimeRange =
                 TransitionTimeRange(
                     CrossPlatform.timestamp.empty(),

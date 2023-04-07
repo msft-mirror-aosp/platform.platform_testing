@@ -20,6 +20,7 @@ import android.tools.common.PlatformConsts
 import android.tools.common.Rotation
 import android.tools.common.datatypes.component.IComponentMatcher
 import android.tools.common.traces.wm.Activity
+import android.tools.common.traces.wm.DisplayContent
 import android.tools.common.traces.wm.WindowState
 
 /** Base interface for WM trace and state assertions */
@@ -272,4 +273,7 @@ interface IWindowManagerSubject<WMSubjectType, RegionSubjectType> {
      * @param componentMatcher Components to search
      */
     fun isBelowAppWindowInvisible(componentMatcher: IComponentMatcher): WMSubjectType
+
+    /** Checks if the state contains at least one [DisplayContent] */
+    fun containsAtLeastOneDisplay(): WMSubjectType
 }

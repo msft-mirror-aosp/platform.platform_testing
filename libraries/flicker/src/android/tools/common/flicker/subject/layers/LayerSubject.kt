@@ -20,6 +20,7 @@ import android.tools.common.datatypes.Size
 import android.tools.common.flicker.assertions.Fact
 import android.tools.common.flicker.subject.FlickerSubject
 import android.tools.common.flicker.subject.region.RegionSubject
+import android.tools.common.io.IReader
 import android.tools.common.traces.surfaceflinger.Layer
 
 /**
@@ -42,7 +43,7 @@ import android.tools.common.traces.surfaceflinger.Layer
  * ```
  */
 class LayerSubject(
-    public override val parent: FlickerSubject,
+    public override val reader: IReader? = null,
     override val timestamp: Timestamp,
     val layer: Layer
 ) : FlickerSubject() {
@@ -55,7 +56,7 @@ class LayerSubject(
 
     /** Visible region calculated by the Composition Engine */
     val visibleRegion: RegionSubject
-        get() = RegionSubject(layer.visibleRegion, this, timestamp)
+        get() = RegionSubject(layer.visibleRegion, timestamp, reader)
 
     val visibilityReason: Array<String>
         get() = layer.visibilityReason
@@ -65,7 +66,7 @@ class LayerSubject(
      * the layer bounds and transform
      */
     val screenBounds: RegionSubject
-        get() = RegionSubject(layer.screenBounds, this, timestamp)
+        get() = RegionSubject(layer.screenBounds, timestamp, reader)
 
     override val selfFacts = listOf(Fact("Frame", layer.currFrame), Fact("Layer", layer.name))
 
@@ -85,36 +86,27 @@ class LayerSubject(
     /**
      * Asserts that current subject has an [Layer.screenBounds]
      *
-     * @param size expected layer bounds size
+     * @param expected expected layer bounds size
      */
-    fun hasLayerSize(size: Size): LayerSubject = apply {
+    fun hasLayerSize(expected: Size): LayerSubject = apply {
         val layerSize =
             Size.from(layer.screenBounds.width.toInt(), layer.screenBounds.height.toInt())
-        check { "Number of layers" }.that(layerSize).isEqual(size)
+        check { "Number of layers" }.that(layerSize).isEqual(expected)
+    }
+
+    /** Asserts that current subject has an [Layer.effectiveScalingMode] equals to [expected] */
+    fun hasScalingMode(expected: Int): LayerSubject = apply {
+        check { "Scaling mode" }.that(layer.effectiveScalingMode).isEqual(expected)
     }
 
     /**
-     * Asserts that current subject has an [Layer.effectiveScalingMode] equals to
-     * [expectedScalingMode]
+     * Asserts that current subject has an [Layer.bufferTransform] orientation equals to [expected]
      */
-    fun hasScalingMode(expectedScalingMode: Int): LayerSubject = apply {
-        val actualScalingMode = layer.effectiveScalingMode
-        check(actualScalingMode == expectedScalingMode) {
-            "Scaling mode. Actual: $actualScalingMode, expected: $expectedScalingMode"
-        }
-    }
-
-    /**
-     * Asserts that current subject has an [Layer.bufferTransform] orientation equals to
-     * [expectedOrientation]
-     */
-    fun hasBufferOrientation(expectedOrientation: Int): LayerSubject = apply {
+    fun hasBufferOrientation(expected: Int): LayerSubject = apply {
         // see Transform::getOrientation
         val bufferTransformType = layer.bufferTransform.type ?: 0
         val actualOrientation = (bufferTransformType shr 8) and 0xFF
-        check(actualOrientation == expectedOrientation) {
-            "Buffer orientation. Actual: $actualOrientation, expected: $expectedOrientation"
-        }
+        check { "Buffer orientation" }.that(actualOrientation).isEqual(expected)
     }
 
     override fun toString(): String {

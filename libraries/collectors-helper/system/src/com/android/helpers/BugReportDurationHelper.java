@@ -19,14 +19,15 @@ package com.android.helpers;
 import android.app.UiAutomation;
 import android.os.ParcelFileDescriptor;
 import android.util.Log;
+
 import androidx.annotation.VisibleForTesting;
 import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.uiautomator.UiDevice;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -75,15 +76,17 @@ public class BugReportDurationHelper implements ICollectorHelper<Double> {
 
     @Override
     public Map<String, Double> getMetrics() {
+        Log.d(TAG, "Grabbing metrics for BugReportDuration.");
         Map<String, Double> metrics = new HashMap<>();
         String archive = getLatestBugReport();
         // No bug report was found, so there are no metrics to return.
         if (archive == null) {
+            Log.w(TAG, "No bug report was found in directory: " + bugReportDir);
             return metrics;
         }
         ArrayList<String> durationLines = extractAndFilterBugReport(archive);
         // No lines relevant to bug report durations were found, so there are no metrics to return.
-        if (durationLines == null) {
+        if (durationLines == null || durationLines.isEmpty()) {
             Log.w(TAG, "No lines relevant to bug report durations were found.");
             return metrics;
         }
@@ -109,6 +112,7 @@ public class BugReportDurationHelper implements ICollectorHelper<Double> {
 
     @Override
     public boolean stopCollecting() {
+        Log.d(TAG, "Stopped collecting for BugReportDuration.");
         return true;
     }
 

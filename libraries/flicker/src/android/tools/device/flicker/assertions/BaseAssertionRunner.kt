@@ -49,11 +49,7 @@ abstract class BaseAssertionRunner(
             null
         } catch (error: Throwable) {
             updateResultStatus(error)
-            FlickerAssertionErrorBuilder()
-                .fromError(error)
-                .atTag(assertion.tag)
-                .withReader(resultReader)
-                .build()
+            error
         }
     }
 

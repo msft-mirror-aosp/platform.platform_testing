@@ -29,6 +29,7 @@ import android.tools.device.flicker.FlickerServiceResultsCollector
 import android.tools.device.flicker.Utils.captureTrace
 import android.tools.device.flicker.annotation.ExpectedScenarios
 import android.tools.device.flicker.datastore.DataStore
+import android.tools.device.traces.getDefaultFlickerOutputDir
 import android.tools.device.traces.now
 import com.google.common.truth.Truth
 import java.lang.reflect.Method
@@ -73,7 +74,7 @@ class FlickerServiceDecorator(
                     var methodResult: Throwable? =
                         null // TODO: Maybe don't use null but wrap in another object
                     val reader =
-                        captureTrace(scenario) { writer ->
+                        captureTrace(scenario, getDefaultFlickerOutputDir()) { writer ->
                             try {
                                 val befores = testClass.getAnnotatedMethods(Before::class.java)
                                 befores.forEach { it.invokeExplosively(test) }

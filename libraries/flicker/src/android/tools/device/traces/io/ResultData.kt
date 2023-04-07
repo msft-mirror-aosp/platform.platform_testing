@@ -17,6 +17,7 @@
 package android.tools.device.traces.io
 
 import android.tools.common.Timestamp
+import android.tools.common.io.IArtifact
 import android.tools.common.io.RunStatus
 import android.tools.common.io.TransitionTimeRange
 
@@ -28,18 +29,15 @@ import android.tools.common.io.TransitionTimeRange
  * @param _executionError Transition execution error (if any)
  */
 open class ResultData(
-    _artifact: Artifact,
+    _artifact: IArtifact,
     _transitionTimeRange: TransitionTimeRange,
     _executionError: Throwable?
 ) : IResultData {
-    final override val artifact: Artifact = _artifact
+    final override val artifact: IArtifact = _artifact
     final override val transitionTimeRange: TransitionTimeRange = _transitionTimeRange
     final override val executionError: Throwable? = _executionError
     final override val runStatus: RunStatus
         get() = artifact.runStatus
-
-    /** {@inheritDoc} */
-    override fun getArtifactBytes(): ByteArray = artifact.file.readBytes()
 
     /** {@inheritDoc} */
     override fun slice(startTimestamp: Timestamp, endTimestamp: Timestamp) = apply {

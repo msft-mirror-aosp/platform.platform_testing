@@ -21,6 +21,7 @@ import android.tools.common.CrossPlatform
 import android.tools.common.flicker.assertions.SubjectsParser
 import android.tools.common.traces.events.EventLog
 import android.tools.common.traces.events.FocusEvent
+import android.tools.device.traces.io.InMemoryArtifact
 import android.tools.device.traces.io.ParsedTracesReader
 import org.junit.ClassRule
 import org.junit.Rule
@@ -34,6 +35,7 @@ class EventLogSubjectTest {
     fun canDetectFocusChanges() {
         val reader =
             ParsedTracesReader(
+                artifact = InMemoryArtifact.EMPTY,
                 eventLog =
                     EventLog(
                         arrayOf(
@@ -89,7 +91,8 @@ class EventLogSubjectTest {
 
     @Test
     fun canDetectFocusDoesNotChange() {
-        val reader = ParsedTracesReader(eventLog = EventLog(emptyArray()))
+        val reader =
+            ParsedTracesReader(artifact = InMemoryArtifact.EMPTY, eventLog = EventLog(emptyArray()))
         val subjectsParser = SubjectsParser(reader)
 
         val subject = subjectsParser.eventLogSubject ?: error("Event log subject not built")

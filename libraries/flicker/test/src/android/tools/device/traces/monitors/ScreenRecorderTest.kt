@@ -24,7 +24,6 @@ import android.os.SystemClock
 import android.tools.CleanFlickerEnvironmentRule
 import android.tools.common.io.TraceType
 import android.tools.device.traces.DEFAULT_TRACE_CONFIG
-import android.tools.device.traces.getDefaultFlickerOutputDir
 import android.tools.device.traces.io.ResultReader
 import android.tools.newTestResultWriter
 import androidx.test.platform.app.InstrumentationRegistry
@@ -40,8 +39,7 @@ import org.junit.runners.MethodSorters
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class ScreenRecorderTest {
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
-    private val mScreenRecorder =
-        ScreenRecorder(instrumentation.targetContext, getDefaultFlickerOutputDir())
+    private val mScreenRecorder = ScreenRecorder(instrumentation.targetContext)
 
     @After
     fun teardown() {

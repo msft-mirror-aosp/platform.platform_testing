@@ -23,7 +23,6 @@ import android.tools.assertArchiveContainsFiles
 import android.tools.device.apphelpers.BrowserAppHelper
 import android.tools.device.flicker.FlickerServiceTracesCollector
 import android.tools.device.flicker.isShellTransitionsEnabled
-import android.tools.device.traces.getDefaultFlickerOutputDir
 import android.tools.device.traces.parsers.WindowManagerStateHelper
 import androidx.test.platform.app.InstrumentationRegistry
 import com.google.common.truth.Truth
@@ -53,7 +52,7 @@ class FlickerServiceTracesCollectorTest {
     @Test
     fun canCollectTraces() {
         val wmHelper = WindowManagerStateHelper(instrumentation)
-        val collector = FlickerServiceTracesCollector(getDefaultFlickerOutputDir())
+        val collector = FlickerServiceTracesCollector()
         collector.start(TEST_SCENARIO)
         testApp.launchViaIntent(wmHelper)
         testApp.exit(wmHelper)
@@ -67,7 +66,7 @@ class FlickerServiceTracesCollectorTest {
     @Test
     fun reportsTraceFile() {
         val wmHelper = WindowManagerStateHelper(instrumentation)
-        val collector = FlickerServiceTracesCollector(getDefaultFlickerOutputDir())
+        val collector = FlickerServiceTracesCollector()
         collector.start(TEST_SCENARIO)
         testApp.launchViaIntent(wmHelper)
         testApp.exit(wmHelper)
@@ -82,7 +81,7 @@ class FlickerServiceTracesCollectorTest {
     @Test
     fun reportedTraceFileContainsAllTraces() {
         val wmHelper = WindowManagerStateHelper(instrumentation)
-        val collector = FlickerServiceTracesCollector(getDefaultFlickerOutputDir())
+        val collector = FlickerServiceTracesCollector()
         collector.start(TEST_SCENARIO)
         testApp.launchViaIntent(wmHelper)
         testApp.exit(wmHelper)

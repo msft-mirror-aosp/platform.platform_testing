@@ -18,6 +18,7 @@ package android.tools.common.flicker.subject.layers
 
 import android.tools.common.datatypes.component.IComponentMatcher
 import android.tools.common.datatypes.component.IComponentNameMatcher
+import android.tools.common.traces.surfaceflinger.Display
 import android.tools.common.traces.surfaceflinger.Layer
 
 /** Base interface for Layer trace and state assertions */
@@ -102,11 +103,11 @@ interface ILayerSubject<LayerSubjectType, RegionSubjectType> {
      * Obtains a [LayerSubject] for the first occurrence of a [Layer] with [Layer.name] containing
      * [name] in [frameNumber].
      *
-     * Always returns a subject, event when the layer doesn't exist. To verify if layer actually
-     * exists in the hierarchy use [LayerSubject.exists] or [LayerSubject.doesNotExist]
-     *
      * @return LayerSubject that can be used to make assertions on a single layer matching [name]
      *   and [frameNumber].
      */
     fun layer(name: String, frameNumber: Long): LayerSubject?
+
+    /** Checks if the state contains at least one [Display] */
+    fun containsAtLeastOneDisplay(): LayerSubjectType
 }

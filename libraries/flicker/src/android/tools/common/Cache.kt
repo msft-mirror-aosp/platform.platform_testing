@@ -16,7 +16,6 @@
 
 package android.tools.common
 
-import com.android.internal.annotations.VisibleForTesting
 import kotlin.js.JsName
 
 object Cache {
@@ -34,12 +33,10 @@ object Cache {
         Cache.cache = mutableMapOf<Any, Any>()
     }
 
-    @VisibleForTesting
     fun backup(): Backup {
         return Backup(cache.toMutableMap())
     }
 
-    @VisibleForTesting
     fun restore(backup: Cache.Backup) {
         cache = backup.cache
     }

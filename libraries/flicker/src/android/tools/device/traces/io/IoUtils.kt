@@ -16,17 +16,12 @@
 
 package android.tools.device.traces.io
 
-import android.tools.common.io.RunStatus
 import android.tools.device.traces.executeShellCommand
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths
 
 object IoUtils {
-    private fun renameFile(src: File, dst: File) {
-        executeShellCommand("mv $src $dst")
-    }
-
     private fun copyFile(src: File, dst: File) {
         executeShellCommand("cp $src $dst")
         executeShellCommand("chmod a+r $dst")
@@ -46,23 +41,17 @@ object IoUtils {
         executeShellCommand("rm $src")
     }
 
-    fun moveDirectory(src: File, dst: File) {
+    private fun moveDirectory(src: File, dst: File) {
         require(src.isDirectory) { "$src is not a directory" }
 
         Files.createDirectories(Paths.get(dst.path))
 
-        src.listFiles().forEach {
+        src.listFiles()?.forEach {
             if (it.isDirectory) {
                 moveDirectory(src, dst.resolve(it.name))
             } else {
                 moveFile(it, dst.resolve(it.name))
             }
         }
-    }
-
-    fun addStatusToFileName(traceFile: File, status: RunStatus) {
-        val newFileName = "${status.prefix}__${traceFile.name}"
-        val dst = traceFile.resolveSibling(newFileName)
-        renameFile(traceFile, dst)
     }
 }

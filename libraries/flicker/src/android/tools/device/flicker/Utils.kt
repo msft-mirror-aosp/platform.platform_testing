@@ -19,7 +19,6 @@ package android.tools.device.flicker
 import android.tools.common.IScenario
 import android.tools.common.datatypes.component.ComponentNameMatcher
 import android.tools.device.traces.DEFAULT_TRACE_CONFIG
-import android.tools.device.traces.getDefaultFlickerOutputDir
 import android.tools.device.traces.io.ResultReader
 import android.tools.device.traces.io.ResultWriter
 import android.tools.device.traces.monitors.ScreenRecorder
@@ -30,6 +29,8 @@ import android.tools.device.traces.monitors.surfaceflinger.TransactionsTraceMoni
 import android.tools.device.traces.monitors.wm.TransitionsTraceMonitor
 import android.tools.device.traces.monitors.wm.WindowManagerTraceMonitor
 import androidx.test.platform.app.InstrumentationRegistry
+import java.io.File
+import kotlin.io.path.createTempDirectory
 
 object Utils {
     fun componentNameMatcherHardcoded(str: String): ComponentNameMatcher? {
@@ -90,6 +91,7 @@ object Utils {
 
     fun captureTrace(
         scenario: IScenario,
+        outputDir: File = createTempDirectory().toFile(),
         monitors: List<TraceMonitor> =
             listOf(
                 TransitionsTraceMonitor(),
@@ -101,11 +103,7 @@ object Utils {
             ),
         actions: (writer: ResultWriter) -> Unit
     ): ResultReader {
-        val writer =
-            ResultWriter()
-                .forScenario(scenario)
-                .withOutputDir(getDefaultFlickerOutputDir())
-                .setRunComplete()
+        val writer = ResultWriter().forScenario(scenario).withOutputDir(outputDir).setRunComplete()
         monitors.fold({ actions.invoke(writer) }) { action, monitor ->
             { monitor.withTracing(writer) { action() } }
         }()

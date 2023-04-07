@@ -17,7 +17,7 @@
 package android.tools.common.flicker.assertions
 
 import android.tools.common.flicker.subject.FlickerSubject
-import kotlin.math.max
+import android.tools.common.flicker.subject.exceptions.ExceptionBuilder
 
 /**
  * Runs sequences of assertions on sequences of subjects.
@@ -92,32 +92,38 @@ class AssertionsChecker<T : FlickerSubject> {
                     continue
                 }
                 if (lastPassedAssertionIndex != assertionIndex) {
-                    val prevEntry = entries[max(entryIndex - 1, 0)]
-                    prevEntry.fail(e)
+                    throw e
                 }
                 assertionIndex++
                 if (assertionIndex == assertions.size) {
-                    val prevEntry = entries[max(entryIndex - 1, 0)]
-                    prevEntry.fail(e)
+                    throw e
                 }
             }
         }
         // Didn't pass any assertions
         if (lastPassedAssertionIndex == -1 && assertions.isNotEmpty()) {
-            entries.first().fail("Assertion never passed", assertions.first())
+            throw ExceptionBuilder()
+                .forSubject(entries.first())
+                .setMessage("Assertion never passed ${assertions.first()}")
+                .addExtraDescription(
+                    *assertions
+                        .mapIndexed { idx, it -> Fact("Assertion$idx", it.toString()) }
+                        .toTypedArray()
+                )
+                .build()
         }
 
         val untestedAssertions = assertions.drop(assertionIndex + 1)
         if (untestedAssertions.any { !it.isOptional }) {
             val passedAssertionsFacts = assertions.take(assertionIndex).map { Fact("Passed", it) }
             val untestedAssertionsFacts = untestedAssertions.map { Fact("Untested", it) }
-            val trace = assertionTrace.map { Fact("Trace", it) }
-            val reason = mutableListOf<Fact>()
-            reason.addAll(passedAssertionsFacts)
-            reason.add(Fact("Assertion never failed", assertions[assertionIndex]))
-            reason.addAll(untestedAssertionsFacts)
-            reason.addAll(trace)
-            entries.first().fail(reason)
+
+            throw ExceptionBuilder()
+                .forSubject(entries.last())
+                .setMessage("Assertion $assertionIndex never failed: ${assertions[assertionIndex]}")
+                .addExtraDescription(*passedAssertionsFacts.toTypedArray())
+                .addExtraDescription(*untestedAssertionsFacts.toTypedArray())
+                .build()
         }
     }
 
