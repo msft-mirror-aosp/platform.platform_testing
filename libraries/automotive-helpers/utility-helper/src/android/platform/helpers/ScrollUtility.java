@@ -18,8 +18,9 @@ package android.platform.helpers;
 
 import android.platform.spectatio.exceptions.MissingUiElementException;
 import android.platform.spectatio.utils.SpectatioUiUtil;
-import android.support.test.uiautomator.BySelector;
-import android.support.test.uiautomator.UiObject2;
+
+import androidx.test.uiautomator.BySelector;
+import androidx.test.uiautomator.UiObject2;
 
 /** Utility file for scroll functions */
 public class ScrollUtility {
@@ -47,6 +48,11 @@ public class ScrollUtility {
             sScrollUtilityInstance = new ScrollUtility(spectatioUiUtil);
         }
         return sScrollUtilityInstance;
+    }
+
+    /** Sets the scrolls margins and wait time after the scroll */
+    public void setScrollValues(Integer scrollMargin, Integer waitTimeAfterSCroll) {
+        mSpectatioUiUtil.addScrollValues(scrollMargin, waitTimeAfterSCroll);
     }
 
     /** Scroll using backward buttons or guesture on device screen */
@@ -146,6 +152,34 @@ public class ScrollUtility {
                                     action, scrollAction));
             }
             return scrollResult;
+        } catch (MissingUiElementException ex) {
+            throw new IllegalStateException(
+                    String.format("Unable to %s. Error: %s", action, ex.getMessage()));
+        }
+    }
+
+    /** Scroll to beginning by using button or use guesture on device screen. */
+    public void scrollToBeginning(
+            ScrollActions scrollAction,
+            ScrollDirection scrollDirection,
+            BySelector backwardButtonSelector,
+            BySelector scrollElementSelector,
+            String action) {
+        try {
+            switch (scrollAction) {
+                case USE_BUTTON:
+                    mSpectatioUiUtil.scrollToBeginning(backwardButtonSelector);
+                    break;
+                case USE_GESTURE:
+                    mSpectatioUiUtil.scrollToBeginning(
+                            scrollElementSelector, (scrollDirection == ScrollDirection.VERTICAL));
+                    break;
+                default:
+                    throw new IllegalStateException(
+                            String.format(
+                                    "Unable to %s, unknown scroll action %s.",
+                                    action, scrollAction));
+            }
         } catch (MissingUiElementException ex) {
             throw new IllegalStateException(
                     String.format("Unable to %s. Error: %s", action, ex.getMessage()));

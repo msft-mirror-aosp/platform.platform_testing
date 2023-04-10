@@ -21,17 +21,35 @@ import android.platform.helpers.ScrollUtility.ScrollActions;
 import android.platform.helpers.ScrollUtility.ScrollDirection;
 import android.platform.helpers.exceptions.UnknownUiException;
 import android.platform.spectatio.exceptions.MissingUiElementException;
-import android.support.test.uiautomator.By;
-import android.support.test.uiautomator.BySelector;
-import android.support.test.uiautomator.UiObject2;
+
+import androidx.test.uiautomator.By;
+import androidx.test.uiautomator.BySelector;
+import androidx.test.uiautomator.UiObject2;
 
 /** Helper class for functional test for App Grid test */
 public class AppGridHelperImpl extends AbstractStandardAppHelper implements IAutoAppGridHelper {
     private ScrollUtility mScrollUtility;
+    private ScrollActions mScrollAction;
+    private BySelector mBackwardButtonSelector;
+    private BySelector mForwardButtonSelector;
+    private BySelector mScrollableElementSelector;
+    private ScrollDirection mScrollDirection;
 
     public AppGridHelperImpl(Instrumentation instr) {
         super(instr);
         mScrollUtility = ScrollUtility.getInstance(getSpectatioUiUtil());
+        mScrollAction =
+                ScrollActions.valueOf(
+                        getActionFromConfig(AutomotiveConfigConstants.APP_LIST_SCROLL_ACTION));
+        mBackwardButtonSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.APP_GRID_SCROLL_BACKWARD_BUTTON);
+        mForwardButtonSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.APP_GRID_SCROLL_FORWARD_BUTTON);
+        mScrollableElementSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.APP_LIST_SCROLL_ELEMENT);
+        mScrollDirection =
+                ScrollDirection.valueOf(
+                        getActionFromConfig(AutomotiveConfigConstants.APP_LIST_SCROLL_DIRECTION));
     }
 
     /** {@inheritDoc} */
@@ -87,83 +105,63 @@ public class AppGridHelperImpl extends AbstractStandardAppHelper implements IAut
     @Override
     public void exit() {
         if (isAppInForeground()) {
-            mDevice.pressHome();
+            getSpectatioUiUtil().pressHome();
         }
     }
 
     @Override
     public void openApp(String appName) {
         BySelector appNameSelector = By.text(appName);
-        ScrollActions scrollAction =
-                ScrollActions.valueOf(
-                        getActionFromConfig(AutomotiveConfigConstants.APP_LIST_SCROLL_ACTION));
-        BySelector backwardButtonSelector =
-                getUiElementFromConfig(AutomotiveConfigConstants.APP_GRID_SCROLL_BACKWARD_BUTTON);
-        BySelector forwardButtonSelector =
-                getUiElementFromConfig(AutomotiveConfigConstants.APP_GRID_SCROLL_FORWARD_BUTTON);
-        BySelector scrollableElementSelector =
-                getUiElementFromConfig(AutomotiveConfigConstants.APP_LIST_SCROLL_ELEMENT);
-        ScrollDirection scrollDirection =
-                ScrollDirection.valueOf(
-                        getActionFromConfig(AutomotiveConfigConstants.APP_LIST_SCROLL_DIRECTION));
+
         UiObject2 app =
                 mScrollUtility.scrollAndFindUiObject(
-                        scrollAction,
-                        scrollDirection,
-                        forwardButtonSelector,
-                        backwardButtonSelector,
-                        scrollableElementSelector,
+                        mScrollAction,
+                        mScrollDirection,
+                        mForwardButtonSelector,
+                        mBackwardButtonSelector,
+                        mScrollableElementSelector,
                         appNameSelector,
                         String.format("Scroll on app grid to find %s", appName));
 
         validateUiObject(app, String.format("Given app %s", appName));
         getSpectatioUiUtil().clickAndWait(app);
+        getSpectatioUiUtil().wait5Seconds();
     }
 
     /** {@inherticDoc} */
     @Override
-    public boolean isTop() {
-        boolean isOnTop = false;
+    public boolean isAtBeginning() {
+        boolean isAtBeginning = false;
         try {
             if (isAppInForeground()) {
-                BySelector pageUpSelector =
-                        getUiElementFromConfig(
-                                AutomotiveConfigConstants.APP_GRID_SCROLL_BACKWARD_BUTTON);
-                UiObject2 pageUp = getSpectatioUiUtil().findUiObject(pageUpSelector);
+                UiObject2 pageUp = getSpectatioUiUtil().findUiObject(mBackwardButtonSelector);
                 if (pageUp != null) {
-                    isOnTop = !pageUp.isEnabled();
+                    isAtBeginning = !pageUp.isEnabled();
                 } else {
-                    BySelector scrollableElementSelector =
-                            getUiElementFromConfig(
-                                    AutomotiveConfigConstants.APP_LIST_SCROLL_ELEMENT);
                     boolean isScrollable =
                             getSpectatioUiUtil()
-                                    .findUiObject(scrollableElementSelector)
+                                    .findUiObject(mScrollableElementSelector)
                                     .isScrollable();
-                    ScrollDirection scrollDirection =
-                            ScrollDirection.valueOf(
-                                    getActionFromConfig(
-                                            AutomotiveConfigConstants.APP_LIST_SCROLL_DIRECTION));
                     if (isScrollable) {
-                        isOnTop =
+                        isAtBeginning =
                                 !getSpectatioUiUtil()
                                         .scrollBackward(
-                                                scrollableElementSelector,
-                                                (scrollDirection == ScrollDirection.VERTICAL));
-                        if (!isOnTop) {
+                                                mScrollableElementSelector,
+                                                (mScrollDirection == ScrollDirection.VERTICAL));
+                        if (!isAtBeginning) {
                             // To place the scroll in previous position
                             getSpectatioUiUtil()
                                     .scrollForward(
-                                            scrollableElementSelector,
-                                            (scrollDirection == ScrollDirection.VERTICAL));
+                                            mScrollableElementSelector,
+                                            (mScrollDirection == ScrollDirection.VERTICAL));
                         }
                     } else {
                         // Number of apps fits in one page, at top by default
-                        isOnTop = true;
+                        isAtBeginning = true;
                     }
                 }
             }
-            return isOnTop;
+            return isAtBeginning;
         } catch (MissingUiElementException ex) {
             throw new IllegalStateException("App grid is not open.");
         }
@@ -171,93 +169,102 @@ public class AppGridHelperImpl extends AbstractStandardAppHelper implements IAut
 
     /** {@inherticDoc} */
     @Override
-    public boolean isBottom() {
-        boolean isAtBotton = false;
+    public boolean isAtEnd() {
+        boolean isAtEnd = false;
         try {
             if (isAppInForeground()) {
-                BySelector pageDownSelector =
-                        getUiElementFromConfig(
-                                AutomotiveConfigConstants.APP_GRID_SCROLL_FORWARD_BUTTON);
-                UiObject2 pageDown = getSpectatioUiUtil().findUiObject(pageDownSelector);
+                UiObject2 pageDown = getSpectatioUiUtil().findUiObject(mForwardButtonSelector);
                 if (pageDown != null) {
-                    isAtBotton = !pageDown.isEnabled();
+                    isAtEnd = !pageDown.isEnabled();
                 } else {
-                    BySelector scrollableElementSelector =
-                            getUiElementFromConfig(
-                                    AutomotiveConfigConstants.APP_LIST_SCROLL_ELEMENT);
                     boolean isScrollable =
                             getSpectatioUiUtil()
-                                    .findUiObject(scrollableElementSelector)
+                                    .findUiObject(mScrollableElementSelector)
                                     .isScrollable();
-                    ScrollDirection scrollDirection =
-                            ScrollDirection.valueOf(
-                                    getActionFromConfig(
-                                            AutomotiveConfigConstants.APP_LIST_SCROLL_DIRECTION));
                     if (isScrollable) {
-                        isAtBotton =
+                        isAtEnd =
                                 !getSpectatioUiUtil()
                                         .scrollForward(
-                                                scrollableElementSelector,
-                                                (scrollDirection == ScrollDirection.VERTICAL));
-                        if (!isAtBotton) {
+                                                mScrollableElementSelector,
+                                                (mScrollDirection == ScrollDirection.VERTICAL));
+                        if (!isAtEnd) {
                             // To place the scroll in previous position
                             getSpectatioUiUtil()
                                     .scrollBackward(
-                                            scrollableElementSelector,
-                                            (scrollDirection == ScrollDirection.VERTICAL));
+                                            mScrollableElementSelector,
+                                            (mScrollDirection == ScrollDirection.VERTICAL));
                         }
                     } else {
                         // Number of apps fits in one page, at top by default
-                        isAtBotton = true;
+                        isAtEnd = true;
                     }
                 }
             }
-            return isAtBotton;
+            return isAtEnd;
         } catch (MissingUiElementException ex) {
             throw new IllegalStateException("App grid is not open.");
         }
     }
 
     @Override
-    public boolean scrollUpOnePage() {
-            ScrollActions scrollAction =
-                    ScrollActions.valueOf(
-                            getActionFromConfig(AutomotiveConfigConstants.APP_LIST_SCROLL_ACTION));
-                    BySelector backwardButtonSelector =
-                            getUiElementFromConfig(
-                                    AutomotiveConfigConstants.APP_GRID_SCROLL_BACKWARD_BUTTON);
-                    ScrollDirection scrollDirection =
-                            ScrollDirection.valueOf(
-                                    getActionFromConfig(
-                                            AutomotiveConfigConstants.APP_LIST_SCROLL_DIRECTION));
-        BySelector scrollableElementSelector =
-                getUiElementFromConfig(AutomotiveConfigConstants.APP_LIST_SCROLL_ELEMENT);
+    public boolean scrollBackward() {
         return mScrollUtility.scrollBackward(
-                scrollAction,
-                scrollDirection,
-                backwardButtonSelector,
-                scrollableElementSelector,
-                String.format("Scroll up one page on app grid"));
+                mScrollAction,
+                mScrollDirection,
+                mBackwardButtonSelector,
+                mScrollableElementSelector,
+                String.format("Scroll backward on app grid"));
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void scrollToBeginning() {
+        mScrollUtility.scrollToBeginning(
+                mScrollAction,
+                mScrollDirection,
+                mBackwardButtonSelector,
+                mScrollableElementSelector,
+                "Scroll to beginning of app grid");
     }
 
     @Override
-    public boolean scrollDownOnePage() {
-        ScrollActions scrollAction =
-                ScrollActions.valueOf(
-                        getActionFromConfig(AutomotiveConfigConstants.APP_LIST_SCROLL_ACTION));
-        BySelector forwardButtonSelector =
-                getUiElementFromConfig(AutomotiveConfigConstants.APP_GRID_SCROLL_FORWARD_BUTTON);
-        ScrollDirection scrollDirection =
-                ScrollDirection.valueOf(
-                        getActionFromConfig(AutomotiveConfigConstants.APP_LIST_SCROLL_DIRECTION));
-        BySelector scrollableElementSelector =
-                getUiElementFromConfig(AutomotiveConfigConstants.APP_LIST_SCROLL_ELEMENT);
+    public boolean scrollForward() {
         return mScrollUtility.scrollForward(
-                scrollAction,
-                scrollDirection,
-                forwardButtonSelector,
-                scrollableElementSelector,
-                String.format("Scroll down one page on app grid"));
+                mScrollAction,
+                mScrollDirection,
+                mForwardButtonSelector,
+                mScrollableElementSelector,
+                String.format("Scroll forward on app grid"));
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String getScreenBlockingMessage(String appName) {
+        BySelector screenBlockingSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.BLOCKING_SCREEN);
+        UiObject2 screenBlocking = getSpectatioUiUtil().findUiObject(screenBlockingSelector);
+        validateUiObject(
+                screenBlocking,
+                String.format("Screen Blocking message when opening %s app", appName));
+        BySelector screenBlockingMessageSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.BLOCKING_MESSAGE);
+        UiObject2 screenBlockingMessage =
+                getSpectatioUiUtil().findUiObject(screenBlockingMessageSelector);
+        validateUiObject(
+                screenBlockingMessage,
+                String.format("Screen Blocking message for %s app", appName));
+        return getSpectatioUiUtil().getTextForUiElement(screenBlockingMessage);
+    }
+
+    @Override
+    public boolean checkPackageInForeground(String packageName) {
+        return getSpectatioUiUtil().hasPackageInForeground(packageName);
+    }
+
+    @Override
+    public void goToHomePage() {
+        getSpectatioUiUtil().pressHome();
+        getSpectatioUiUtil().wait1Second();
     }
 
     private void validateUiObject(UiObject2 uiObject, String action) {

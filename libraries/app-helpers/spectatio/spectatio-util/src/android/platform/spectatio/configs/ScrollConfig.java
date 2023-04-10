@@ -41,6 +41,14 @@ public class ScrollConfig {
     @SerializedName("SCROLL_ELEMENT")
     private UiElement mScrollElement;
 
+    // If task needs scrolling and Scroll Action = USE_GESTURE, provide Scroll Margin
+    @SerializedName("SCROLL_MARGIN")
+    private String mScrollMargin = "10";
+
+    // If task needs scrolling and Scroll Action = USE_GESTURE, provide Scroll wait time
+    @SerializedName("SCROLL_WAIT_TIME")
+    private String mScrollWaitTime = "1";
+
     public ScrollConfig(
             String scrollAction,
             String scrollDirection,
@@ -60,10 +68,22 @@ public class ScrollConfig {
         mScrollBackward = scrollBackward;
     }
 
-    public ScrollConfig(String scrollAction, String scrollDirection, UiElement scrollElement) {
+    public ScrollConfig(
+            String scrollAction,
+            String scrollDirection,
+            UiElement scrollElement,
+            String scrollMargin,
+            String scrollWaitTime) {
         mScrollAction = scrollAction;
         mScrollDirection = scrollDirection;
         mScrollElement = scrollElement;
+
+        if (scrollMargin != null) {
+            mScrollMargin = scrollMargin;
+        }
+        if (scrollWaitTime != null) {
+            mScrollWaitTime = scrollWaitTime;
+        }
     }
 
     public String getScrollAction() {
@@ -84,5 +104,15 @@ public class ScrollConfig {
 
     public UiElement getScrollElement() {
         return mScrollElement;
+    }
+
+    /** Getter Function for ScrollMargin */
+    public String getScrollMargin() {
+        return mScrollMargin;
+    }
+
+    /** Getter Function for ScrollWaitTime */
+    public String getScrollWaitTime() {
+        return mScrollWaitTime;
     }
 }

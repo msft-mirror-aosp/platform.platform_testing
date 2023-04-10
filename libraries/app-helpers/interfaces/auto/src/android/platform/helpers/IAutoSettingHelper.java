@@ -16,7 +16,7 @@
 
 package android.platform.helpers;
 
-import android.support.test.uiautomator.UiObject2;
+import androidx.test.uiautomator.UiObject2;
 
 /** Helper class for functional tests of Settings facet */
 public interface IAutoSettingHelper extends IAppHelper, Scrollable {
@@ -210,6 +210,13 @@ public interface IAutoSettingHelper extends IAppHelper, Scrollable {
      * <p>Get the current page title text.
      */
     String getPageTitleText();
+
+    /**
+     * Setup expectations: Setting is open.
+     *
+     * <p>check whether a setting menu in Settings is displayed or not.
+     */
+    boolean checkMenuExists(String setting);
 
     /**
      * Setup expectations: Setting is open.

@@ -16,19 +16,21 @@
 
 package android.platform.spectatio.utils;
 
+import android.app.Instrumentation;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.os.RemoteException;
 import android.os.SystemClock;
 import android.platform.spectatio.exceptions.MissingUiElementException;
-import android.support.test.uiautomator.By;
-import android.support.test.uiautomator.BySelector;
-import android.support.test.uiautomator.Direction;
-import android.support.test.uiautomator.UiDevice;
-import android.support.test.uiautomator.UiObject2;
-import android.support.test.uiautomator.Until;
 import android.util.Log;
 import android.view.KeyEvent;
+
+import androidx.test.uiautomator.By;
+import androidx.test.uiautomator.BySelector;
+import androidx.test.uiautomator.Direction;
+import androidx.test.uiautomator.UiDevice;
+import androidx.test.uiautomator.UiObject2;
+import androidx.test.uiautomator.Until;
 
 import com.google.common.base.Strings;
 
@@ -51,6 +53,9 @@ public class SpectatioUiUtil {
     private static final float SCROLL_PERCENT = 1.0f;
     private static final float SWIPE_PERCENT = 1.0f;
 
+    private int mWaitTimeAfterScroll = 5; // seconds
+    private int mScrollMargin = 4;
+
     private UiDevice mDevice;
 
     public enum SwipeDirection {
@@ -69,6 +74,21 @@ public class SpectatioUiUtil {
             sSpectatioUiUtil = new SpectatioUiUtil(mDevice);
         }
         return sSpectatioUiUtil;
+    }
+
+    /**
+     * Initialize a UiDevice for the given instrumentation, then initialize Spectatio for that
+     * device. If Spectatio has already been initialized, return the previously initialized
+     * instance.
+     */
+    public static SpectatioUiUtil getInstance(Instrumentation instrumentation) {
+        return getInstance(UiDevice.getInstance(instrumentation));
+    }
+
+    /** Sets the scroll margin and wait time after the scroll */
+    public void addScrollValues(Integer scrollMargin, Integer waitTime) {
+        this.mScrollMargin = scrollMargin;
+        this.mWaitTimeAfterScroll = waitTime;
     }
 
     public boolean pressBack() {
@@ -844,11 +864,12 @@ public class SpectatioUiUtil {
 
     private boolean scroll(BySelector scrollableSelector, Direction direction)
             throws MissingUiElementException {
+
         UiObject2 scrollableObject = validateAndGetScrollableObject(scrollableSelector);
 
         Rect bounds = scrollableObject.getVisibleBounds();
-        int horizontalMargin = (int) (Math.abs(bounds.width()) / 4);
-        int verticalMargin = (int) (Math.abs(bounds.height()) / 4);
+        int horizontalMargin = (int) (Math.abs(bounds.width()) / mScrollMargin);
+        int verticalMargin = (int) (Math.abs(bounds.height()) / mScrollMargin);
 
         scrollableObject.setGestureMargins(
                 horizontalMargin, // left
@@ -859,7 +880,7 @@ public class SpectatioUiUtil {
         String previousView = getViewHierarchy();
 
         scrollableObject.scroll(direction, SCROLL_PERCENT);
-        wait5Seconds();
+        waitNSeconds(mWaitTimeAfterScroll);
 
         String currentView = getViewHierarchy();
 

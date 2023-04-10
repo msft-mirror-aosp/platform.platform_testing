@@ -21,9 +21,8 @@ import static org.junit.Assume.assumeThat;
 
 import android.app.Instrumentation;
 
-import com.android.compatibility.common.util.SettingsUtils;
+import com.android.compatibility.common.util.UserSettings;
 
-import java.io.IOException;
 import java.util.Optional;
 
 public class SystemUtil {
@@ -40,11 +39,12 @@ public class SystemUtil {
      */
     public static AutoCloseable withSetting(Instrumentation instrumentation, final String namespace,
             final String key, String value) {
-        String getSettingRes = SettingsUtils.get(namespace, key);
+        UserSettings userSettings = new UserSettings(UserSettings.Namespace.of(namespace));
+        String getSettingRes = userSettings.get(key);
         final Optional<String> oldSetting = Optional.ofNullable(getSettingRes);
-        SettingsUtils.set(namespace, key, value);
+        userSettings.set(key, value);
 
-        String getSettingCurrent = SettingsUtils.get(namespace, key);
+        String getSettingCurrent = userSettings.get(key);
         Optional<String> currSetting = Optional.ofNullable(getSettingCurrent);
         assumeThat(String.format("Could not set %s:%s to %s", namespace, key, value),
                 currSetting.isPresent() ? currSetting.get().trim() : null, equalTo(value));
@@ -53,15 +53,17 @@ public class SystemUtil {
             @Override
             public void close() throws Exception {
                 if (!oldSetting.isPresent()) {
-                    SettingsUtils.delete(namespace, key);
+                    userSettings.delete(key);
                 } else {
                     String oldValue = oldSetting.get().trim();
-                    SettingsUtils.set(namespace, key, oldValue);
+                    userSettings.set(key, oldValue);
                     String failMsg =
                             String.format("could not reset '%s' back to '%s'", key, oldValue);
-                    String getSettingCurrent = SettingsUtils.get(namespace, key);
+                    String getSettingCurrent = userSettings.get(key);
                     Optional<String> currSetting = Optional.ofNullable(getSettingCurrent);
-                    assumeThat(failMsg, currSetting.isPresent() ? currSetting.get().trim() : null,
+                    assumeThat(
+                            failMsg,
+                            currSetting.isPresent() ? currSetting.get().trim() : null,
                             equalTo(oldValue));
                 }
             }

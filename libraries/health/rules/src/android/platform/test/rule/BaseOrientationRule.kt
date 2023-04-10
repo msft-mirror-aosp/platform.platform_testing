@@ -130,11 +130,16 @@ object RotationUtils {
         }
     }
 
+    /** returns stable orientation, doesn't necessarily mean orientation needs to happen */
+    fun waitForOrientationToSettle(): Orientation {
+        return device.stableOrientation
+    }
+
     fun clearOrientationOverride() {
         device.setOrientationNatural()
         launcher.setEnableRotation(false)
         device.unfreezeRotation()
-        device.stableOrientation // wait for orientation to settle
+        waitForOrientationToSettle()
         log("Rotation override cleared.")
     }
 

@@ -18,20 +18,21 @@ package android.platform.tests;
 
 import static junit.framework.Assert.assertTrue;
 
-import android.platform.helpers.AutoConfigConstants;
 import android.platform.helpers.AutoUtility;
+import android.platform.helpers.HelperAccessor;
 import android.platform.helpers.IAutoDateTimeSettingsHelper;
 import android.platform.helpers.IAutoSettingHelper;
-import android.platform.helpers.HelperAccessor;
-import androidx.test.runner.AndroidJUnit4;
+import android.platform.helpers.SettingsConstants;
 
-import java.time.LocalDate;
+import androidx.test.runner.AndroidJUnit4;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.time.LocalDate;
 
 @RunWith(AndroidJUnit4.class)
 public class DateTimeSettingTest {
@@ -64,7 +65,7 @@ public class DateTimeSettingTest {
 
     @Before
     public void openDateTimeFacet() {
-        mSettingHelper.get().openSetting(AutoConfigConstants.DATE_AND_TIME_SETTINGS);
+        mSettingHelper.get().openSetting(SettingsConstants.DATE_AND_TIME_SETTINGS);
     }
 
     @After

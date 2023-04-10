@@ -20,10 +20,8 @@ package {
 
 java_library {
     name: "spectatio-util-lib",
-    libs: [
-        "ub-uiautomator",
-    ],
     static_libs: [
+        "androidx.test.uiautomator_uiautomator",
         "gson",
         "guava",
     ],

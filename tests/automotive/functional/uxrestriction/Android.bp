@@ -30,6 +30,7 @@ android_test {
         "platform-test-options",
         "automotive-vehiclehardkeys-app-helper",
         "automotive-app-grid-helper",
+        "automotive-facet-bar-helper",
     ],
     srcs: ["src/**/*.java"],
     test_suites: ["catbox"],
