@@ -53,7 +53,7 @@ class CachedResultWriterTest {
             .that(DataStore.containsResult(TEST_SCENARIO))
             .isTrue()
         assertExceptionMessage(failure, TEST_SCENARIO.toString())
-        assertExceptionMessage(failure, "already exists")
+        assertExceptionMessage(failure, "already in data store")
     }
 
     companion object {

@@ -24,6 +24,7 @@ import android.tools.common.flicker.assertors.IFaasAssertion
 import android.tools.common.io.IReader
 import android.tools.common.traces.wm.TransitionsTrace
 import android.tools.device.flicker.FlickerServiceResultsCollector
+import android.tools.device.traces.io.InMemoryArtifact
 import android.tools.device.traces.io.ParsedTracesReader
 import android.tools.utils.KotlinMockito
 import android.tools.utils.MockLayersTraceBuilder
@@ -31,6 +32,7 @@ import android.tools.utils.MockWindowManagerTraceBuilder
 import com.google.common.truth.Truth
 import org.junit.ClassRule
 import org.junit.FixMethodOrder
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.Description
 import org.junit.runner.notification.Failure
@@ -46,9 +48,10 @@ class FlickerServiceResultsCollectorTest {
     @Test
     fun reportsMetricsOnlyForPassingTestsIfRequested() {
         val mockTraceCollector = Mockito.mock(ITracesCollector::class.java)
-        Mockito.`when`(mockTraceCollector.getResultReader())
+        Mockito.`when`(mockTraceCollector.stop())
             .thenReturn(
                 ParsedTracesReader(
+                    artifact = InMemoryArtifact.EMPTY,
                     wmTrace = MockWindowManagerTraceBuilder().build(),
                     layersTrace = MockLayersTraceBuilder().build(),
                     transitionsTrace = TransitionsTrace(emptyArray()),
@@ -87,9 +90,10 @@ class FlickerServiceResultsCollectorTest {
     @Test
     fun reportsMetricsForFailingTestsIfRequested() {
         val mockTraceCollector = Mockito.mock(ITracesCollector::class.java)
-        Mockito.`when`(mockTraceCollector.getResultReader())
+        Mockito.`when`(mockTraceCollector.stop())
             .thenReturn(
                 ParsedTracesReader(
+                    artifact = InMemoryArtifact.EMPTY,
                     wmTrace = MockWindowManagerTraceBuilder().build(),
                     layersTrace = MockLayersTraceBuilder().build(),
                     transitionsTrace = TransitionsTrace(emptyArray()),
@@ -127,9 +131,10 @@ class FlickerServiceResultsCollectorTest {
     @Test
     fun collectsMetricsForEachTestIfRequested() {
         val mockTraceCollector = Mockito.mock(ITracesCollector::class.java)
-        Mockito.`when`(mockTraceCollector.getResultReader())
+        Mockito.`when`(mockTraceCollector.stop())
             .thenReturn(
                 ParsedTracesReader(
+                    artifact = InMemoryArtifact.EMPTY,
                     wmTrace = MockWindowManagerTraceBuilder().build(),
                     layersTrace = MockLayersTraceBuilder().build(),
                     transitionsTrace = TransitionsTrace(emptyArray()),
@@ -166,9 +171,10 @@ class FlickerServiceResultsCollectorTest {
     @Test
     fun collectsMetricsForEntireTestRunIfRequested() {
         val mockTraceCollector = Mockito.mock(ITracesCollector::class.java)
-        Mockito.`when`(mockTraceCollector.getResultReader())
+        Mockito.`when`(mockTraceCollector.stop())
             .thenReturn(
                 ParsedTracesReader(
+                    artifact = InMemoryArtifact.EMPTY,
                     wmTrace = MockWindowManagerTraceBuilder().build(),
                     layersTrace = MockLayersTraceBuilder().build(),
                     transitionsTrace = TransitionsTrace(emptyArray()),
@@ -188,7 +194,7 @@ class FlickerServiceResultsCollectorTest {
             )
 
         val runData = DataRecord()
-        val runDescription = Description.createSuiteDescription("TestSuite")
+        val runDescription = Description.createSuiteDescription(this::class.java)
         val testData = DataRecord()
         val testDescription = Description.createTestDescription(this::class.java, "TestName")
 
@@ -217,6 +223,6 @@ class FlickerServiceResultsCollectorTest {
                 assertionError = null
             )
 
-        @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
+        @Rule @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
     }
 }

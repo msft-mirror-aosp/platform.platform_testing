@@ -299,6 +299,11 @@
       "TYPE": "TEXT",
       "VALUE": "Favo.?rite.?"
     },
+    "DIALER_VIEW": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "no_hfp_error_container",
+      "PACKAGE": "com.android.car.dialer"
+    },
     "HOME_TOP_CARD": {
       "TYPE": "RESOURCE_ID",
       "VALUE": "top_card",
@@ -313,6 +318,36 @@
       "TYPE": "RESOURCE_ID",
       "VALUE": "scene_card",
       "PACKAGE": "com.android.car.carlauncher"
+    },
+    "HOME_FACET_BUTTON": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "home",
+      "PACKAGE": "com.android.systemui"
+    },
+    "PHONE_FACET_BUTTON": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "phone_nav",
+      "PACKAGE": "com.android.systemui"
+    },
+    "APP_GRID_FACET_BUTTON": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "grid_nav",
+      "PACKAGE": "com.android.systemui"
+    },
+    "HVAC_FACET_BUTTON": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "hvac",
+      "PACKAGE": "com.android.systemui"
+    },
+    "HVAC_PANEL": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "hvac_panel",
+      "PACKAGE": "com.android.systemui"
+    },
+    "NOTIFICATION_FACET_BUTTON": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "notifications",
+      "PACKAGE": "com.android.systemui"
     },
     "APP_GRID_VIEW_ID": {
       "TYPE": "RESOURCE_ID",
@@ -918,6 +953,16 @@
       "TYPE": "RESOURCE_ID",
       "VALUE": "car_ui_internal_recycler_view",
       "PACKAGE": "com.chassis.car.ui.plugin"
+    },
+    "BLOCKING_MESSAGE": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "blocking_text",
+      "PACKAGE": "com.android.systemui"
+    },
+    "BLOCKING_SCREEN":  {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "activity_blocking_content",
+      "PACKAGE": "com.android.systemui"
     },
     "TEST_MEDIA_ACCOUNT_TYPE": {
       "TYPE": "TEXT",

@@ -29,15 +29,21 @@ import android.tools.common.traces.wm.WindowManagerTrace
 
 /** Reads parsed traces from in memory objects */
 class ParsedTracesReader(
+    override val artifact: InMemoryArtifact,
     private val wmTrace: WindowManagerTrace? = null,
     private val layersTrace: LayersTrace? = null,
     private val transitionsTrace: TransitionsTrace? = null,
     private val transactionsTrace: TransactionsTrace? = null,
-    private val eventLog: EventLog? = null
+    private val eventLog: EventLog? = null,
+    private val layerDumps: Map<String, LayersTrace> = emptyMap(),
+    private val wmDumps: Map<String, WindowManagerTrace> = emptyMap(),
 ) : IReader {
-    override val artifactPath = ""
+    // TODO: Refactor all these values out of IReader, they don't totally make sense here
+
     override val runStatus = RunStatus.UNDEFINED
     override val executionError = null
+    override val artifactPath: String
+        get() = artifact.path
 
     override fun readLayersTrace(): LayersTrace? = layersTrace
 
@@ -53,21 +59,20 @@ class ParsedTracesReader(
 
     override fun slice(startTimestamp: Timestamp, endTimestamp: Timestamp): ParsedTracesReader {
         return ParsedTracesReader(
+            artifact,
             wmTrace?.slice(startTimestamp, endTimestamp),
             layersTrace?.slice(startTimestamp, endTimestamp),
             transitionsTrace?.slice(startTimestamp, endTimestamp),
             transactionsTrace?.slice(startTimestamp, endTimestamp),
-            eventLog?.slice(startTimestamp, endTimestamp)
+            eventLog?.slice(startTimestamp, endTimestamp),
+            layerDumps,
+            wmDumps
         )
     }
 
-    override fun readLayersDump(tag: String): LayersTrace? {
-        error("Trace type not available")
-    }
+    override fun readLayersDump(tag: String): LayersTrace? = layerDumps[tag]
 
-    override fun readWmState(tag: String): WindowManagerTrace? {
-        error("Trace type not available")
-    }
+    override fun readWmState(tag: String): WindowManagerTrace? = wmDumps[tag]
 
     override fun readBytes(traceType: TraceType, tag: String): ByteArray? {
         error("Feature not available")

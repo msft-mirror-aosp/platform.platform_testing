@@ -113,6 +113,9 @@ class ComponentNameMatcher(var component: ComponentName) : IComponentNameMatcher
         @JsName("PIP_CONTENT_OVERLAY")
         val PIP_CONTENT_OVERLAY = ComponentNameMatcher("", "PipContentOverlay")
 
+        @JsName("EDGE_BACK_GESTURE_HANDLER")
+        val EDGE_BACK_GESTURE_HANDLER = ComponentNameMatcher("", "EdgeBackGestureHandler")
+
         @JsName("LAUNCHER")
         val LAUNCHER =
             ComponentNameMatcher(

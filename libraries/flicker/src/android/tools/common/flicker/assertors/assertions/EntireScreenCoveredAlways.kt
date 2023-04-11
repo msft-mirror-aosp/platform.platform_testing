@@ -27,6 +27,7 @@ import android.tools.common.flicker.subject.layers.LayersTraceSubject
 class EntireScreenCoveredAlways : AssertionTemplate() {
     /** {@inheritDoc} */
     override fun doEvaluate(scenarioInstance: IScenarioInstance, layerSubject: LayersTraceSubject) {
+        layerSubject.atLeastOneEntryContainsOneDisplayOn()
         layerSubject
             .invoke("entireScreenCovered") { entry ->
                 entry.entry.displays

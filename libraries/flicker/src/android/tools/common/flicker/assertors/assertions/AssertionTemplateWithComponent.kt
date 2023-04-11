@@ -23,8 +23,7 @@ import android.tools.common.flicker.assertors.ComponentTemplate
 abstract class AssertionTemplateWithComponent(vararg val components: ComponentTemplate) :
     AssertionTemplate() {
 
-    override val assertionName =
-        "${this::class.java.simpleName}(${components.joinToString { it.name }})"
+    override val assertionName = "${this::class.simpleName}(${components.joinToString { it.name }})"
 
     override fun equals(other: Any?): Boolean {
         if (other !is AssertionTemplateWithComponent) {

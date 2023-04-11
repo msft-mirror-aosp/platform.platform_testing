@@ -18,10 +18,13 @@ package android.tools.common.flicker.assertions
 
 /** A string key-value pair in a failure message, such as "expected: abc" or "but was: xyz." */
 data class Fact(val key: String, val value: String) {
-
     constructor(key: String, value: Any? = null) : this(key, "$value")
 
-    override fun toString(): String {
-        return if (value.isEmpty()) key else "$key: $value"
+    internal val isEmpty = key.isEmpty()
+
+    override fun toString(): String = if (value.isEmpty()) key else "$key: $value"
+
+    companion object {
+        internal val EMPTY = Fact(key = "")
     }
 }

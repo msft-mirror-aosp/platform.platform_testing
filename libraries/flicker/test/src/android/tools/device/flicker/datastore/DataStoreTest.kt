@@ -39,7 +39,7 @@ class DataStoreTest {
     @Test
     fun throwsErrorAddElementTwice() {
         val failure =
-            assertThrows<IllegalStateException> {
+            assertThrows<IllegalArgumentException> {
                 DataStore.addResult(TEST_SCENARIO, Consts.TEST_RESULT)
                 DataStore.addResult(TEST_SCENARIO, Consts.TEST_RESULT)
             }

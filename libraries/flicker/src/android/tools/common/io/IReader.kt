@@ -27,6 +27,7 @@ import android.tools.common.traces.wm.WindowManagerTrace
 
 /** Helper class to read results from a flicker artifact */
 interface IReader {
+    val artifact: IArtifact
     val artifactPath: String
     val executionError: Throwable?
     val runStatus: RunStatus

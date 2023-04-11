@@ -27,12 +27,19 @@ enum class RunStatus(val prefix: String, val isFailure: Boolean) {
     PARSING_FAILURE("FAILED_PARSING", true),
     ASSERTION_FAILED("FAIL", true);
 
-    fun generateArchiveNameFor(scenario: IScenario): String {
-        return "${this.prefix}__$scenario.zip"
+    fun generateArchiveNameFor(scenario: IScenario, counter: Int): String = buildString {
+        append(prefix)
+        append("__")
+        append(scenario)
+        if (counter > 0) {
+            append("_")
+            append(counter)
+        }
+        append(".zip")
     }
 
     companion object {
-        fun fromFileName(fileName: String): RunStatus {
+        fun fromFileName(fileName: String): RunStatus? {
             if (!fileName.contains("__")) {
                 return UNDEFINED
             }
@@ -45,7 +52,8 @@ enum class RunStatus(val prefix: String, val isFailure: Boolean) {
                 RUN_FAILED.prefix -> RUN_FAILED
                 PARSING_FAILURE.prefix -> PARSING_FAILURE
                 ASSERTION_FAILED.prefix -> ASSERTION_FAILED
-                else -> UNDEFINED
+                UNDEFINED.prefix -> UNDEFINED
+                else -> null
             }
         }
 

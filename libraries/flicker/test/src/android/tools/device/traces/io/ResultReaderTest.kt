@@ -44,7 +44,7 @@ class ResultReaderTest {
     @Test
     fun failFileNotFound() {
         val data = newTestResultWriter().write()
-        outputFileName(RunStatus.RUN_EXECUTED).deleteIfExists()
+        data.artifact.deleteIfExists()
         val reader = ResultReader(data, DEFAULT_TRACE_CONFIG)
         assertThrows<FileNotFoundException> {
             reader.readTransitionsTrace() ?: error("Should have failed")

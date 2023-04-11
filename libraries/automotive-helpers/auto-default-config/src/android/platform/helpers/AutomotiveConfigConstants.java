@@ -81,6 +81,7 @@ public class AutomotiveConfigConstants {
             "CONTACT_DETAILS_SCROLL_DIRECTION";
     public static final String DIAL_PAD_MENU = "DIAL_PAD_MENU";
     public static final String FAVORITES_MENU = "FAVORITES_MENU";
+    public static final String DIALER_VIEW = "DIALER_VIEW";
 
     // Home App Constants
     public static final String HOME_PACKAGE = "HOME_PACKAGE";
@@ -98,6 +99,8 @@ public class AutomotiveConfigConstants {
     public static final String APP_LIST_SCROLL_ELEMENT = "APP_LIST_SCROLL_ELEMENT";
     public static final String APP_LIST_SCROLL_ACTION = "APP_LIST_SCROLL_ACTION";
     public static final String APP_LIST_SCROLL_DIRECTION = "APP_LIST_SCROLL_DIRECTION";
+    public static final String BLOCKING_MESSAGE = "BLOCKING_MESSAGE";
+    public static final String BLOCKING_SCREEN = "BLOCKING_SCREEN";
 
     // Security Settings  Constants
     public static final String SECURITY_SETTINGS_SCROLL_ELEMENT =
@@ -277,7 +280,6 @@ public class AutomotiveConfigConstants {
     public static final String SEARCH_RESULTS = "SEARCH_RESULTS";
     public static final String PAGE_TITLE = "PAGE_TITLE";
     public static final String PERMISSIONS_PAGE_TITLE = "PERMISSIONS_PAGE_TITLE";
-
     public static final String SOUND_SETTINGS = "OPEN_SOUND_SETTINGS_WORKFLOW";
     public static final String NETWORK_AND_INTERNET_SETTINGS =
             "OPEN_NETWORK_AND_INTERNET_SETTINGS_WORKFLOW";
@@ -298,6 +300,8 @@ public class AutomotiveConfigConstants {
     public static final String SETTINGS_SUB_SETTING_SCROLL_ELEMENT =
             "SETTINGS_SUB_SETTING_SCROLL_ELEMENT";
     public static final String SETTINGS_TITLE_TEXT = "SETTINGS_TITLE_TEXT";
+
+
 
     // App Info Settings Constants
     public static final String APP_INFO_SETTINGS_SCROLL_ACTION = "APP_INFO_SETTINGS_SCROLL_ACTION";
@@ -372,4 +376,12 @@ public class AutomotiveConfigConstants {
     public static final String ACCOUNT_SETTINGS_SCROLL_ELEMENT = "ACCOUNT_SETTINGS_SCROLL_ELEMENT";
     public static final String ACCOUNT_SETTINGS_GOOGLE_SIGN_IN_SCREEN =
             "ACCOUNT_SETTINGS_GOOGLE_SIGN_IN_SCREEN";
+
+    // Facet bar constants
+    public static final String HOME_FACET_BUTTON = "HOME_FACET_BUTTON";
+    public static final String PHONE_FACET_BUTTON = "PHONE_FACET_BUTTON";
+    public static final String APP_GRID_FACET_BUTTON = "APP_GRID_FACET_BUTTON";
+    public static final String NOTIFICATION_FACET_BUTTON = "NOTIFICATION_FACET_BUTTON";
+    public static final String HVAC_FACET_BUTTON = "HVAC_FACET_BUTTON";
+    public static final String HVAC_PANEL = "HVAC_PANEL";
 }

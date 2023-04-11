@@ -14,17 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.robotestutil;
+package android.tools.common.flicker.subject.exceptions
 
-public class RobolectricTestUtil {
-
-    /** Determine whether the running test is a Robolectric test */
-    public static boolean isRobolectricTest() {
-        try {
-            Class.forName("org.robolectric.Robolectric");
-        } catch (ClassNotFoundException e) {
-            return false;
-        }
-        return true;
-    }
-}
+/** Exception thrown when an element has the incorrect visibility */
+class IncorrectVisibilityException(msg: String) : AssertionError(msg)

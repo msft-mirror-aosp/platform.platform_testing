@@ -14,9 +14,13 @@
  * limitations under the License.
  */
 
-package android.tools.common.flicker.subject
+package com.android.server.wm.flicker.traces.inputmethod
 
-import kotlin.AssertionError
+/** Base interface for ImeClient trace and state assertions */
+interface IImeClientSubject<ImeClientSubjectType> {
+    /** Asserts that the current ImeClient state doesn't contain anything */
+    fun isEmpty(): ImeClientSubjectType
 
-/** Exception type for assertion errors caused by flicker subjects */
-class FlickerAssertionError(message: String, cause: Throwable?) : AssertionError(message, cause)
+    /** Asserts that the current ImeClient state contains something */
+    fun isNotEmpty(): ImeClientSubjectType
+}

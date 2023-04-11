@@ -37,11 +37,17 @@ abstract class AssertionTemplate : IAssertionTemplate {
 
             override fun evaluate(): AssertionResult {
                 val wmTraceSubject =
-                    scenarioInstance.reader.readWmTrace()?.let { WindowManagerTraceSubject(it) }
+                    scenarioInstance.reader.readWmTrace()?.let {
+                        WindowManagerTraceSubject(it, scenarioInstance.reader)
+                    }
                 val layersTraceSubject =
-                    scenarioInstance.reader.readLayersTrace()?.let { LayersTraceSubject(it) }
+                    scenarioInstance.reader.readLayersTrace()?.let {
+                        LayersTraceSubject(it, scenarioInstance.reader)
+                    }
                 val eventLogSubject =
-                    scenarioInstance.reader.readEventLogTrace()?.let { EventLogSubject(it) }
+                    scenarioInstance.reader.readEventLogTrace()?.let {
+                        EventLogSubject(it, scenarioInstance.reader)
+                    }
 
                 var assertionError: Throwable? = null
                 try {
@@ -104,7 +110,7 @@ abstract class AssertionTemplate : IAssertionTemplate {
      * Evaluates assertions that require the vent log. NOTE: Will not run if the event log traces is
      * not available.
      */
-    protected open fun doEvaluate(scenarioInstance: IScenarioInstance, evntlog: EventLogSubject) {
+    protected open fun doEvaluate(scenarioInstance: IScenarioInstance, eventLog: EventLogSubject) {
         // Does nothing, unless overridden
     }
 

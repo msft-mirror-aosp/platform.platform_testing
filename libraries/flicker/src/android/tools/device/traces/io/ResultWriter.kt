@@ -89,8 +89,15 @@ open class ResultWriter {
                 CrossPlatform.log.w(FLICKER_IO_TAG, "Writing result with $runStatus run status")
             }
 
+            val artifact =
+                ArtifactBuilder()
+                    .withScenario(scenario)
+                    .withOutputDir(outputDir)
+                    .withStatus(runStatus)
+                    .withFiles(files)
+                    .build()
             ResultData(
-                Artifact(runStatus, scenario, outputDir, files),
+                artifact,
                 TransitionTimeRange(transitionStartTime, transitionEndTime),
                 executionError
             )

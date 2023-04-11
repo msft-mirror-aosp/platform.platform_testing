@@ -17,6 +17,7 @@
 package android.tools.device.traces.io
 
 import android.tools.common.Timestamp
+import android.tools.common.io.IArtifact
 import android.tools.common.io.RunStatus
 import android.tools.common.io.TransitionTimeRange
 
@@ -24,10 +25,8 @@ import android.tools.common.io.TransitionTimeRange
 interface IResultData {
     val transitionTimeRange: TransitionTimeRange
     val executionError: Throwable?
-    val artifact: Artifact
+    val artifact: IArtifact
     val runStatus: RunStatus
-
-    fun getArtifactBytes(): ByteArray
 
     /** updates the artifact status to [newStatus] */
     fun updateStatus(newStatus: RunStatus): IResultData

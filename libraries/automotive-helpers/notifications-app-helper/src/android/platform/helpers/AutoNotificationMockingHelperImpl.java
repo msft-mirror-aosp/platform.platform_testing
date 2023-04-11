@@ -147,6 +147,9 @@ public class AutoNotificationMockingHelperImpl extends AbstractStandardAppHelper
 
         for (int i = initialCount; i < initialCount + count; i++) {
             builder.setContentText(String.format(NOTIFICATION_CONTENT_TEXT_FORMAT, i));
+
+            // Set unique group for each notification so that they're NOT grouped together
+            builder.setGroup(String.format("GROUP_KEY_%d", i));
             mNotificationManager.notify(i, builder.build());
         }
     }
