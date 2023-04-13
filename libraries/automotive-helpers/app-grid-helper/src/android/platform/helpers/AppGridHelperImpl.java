@@ -256,9 +256,11 @@ public class AppGridHelperImpl extends AbstractStandardAppHelper implements IAut
         return getSpectatioUiUtil().getTextForUiElement(screenBlockingMessage);
     }
 
+    /** To verify if given package is in Foreground */
     @Override
     public boolean checkPackageInForeground(String packageName) {
-        return getSpectatioUiUtil().hasPackageInForeground(packageName);
+        String foregroundPackage = getPackageFromConfig(packageName);
+        return getSpectatioUiUtil().hasPackageInForeground(foregroundPackage);
     }
 
     @Override
