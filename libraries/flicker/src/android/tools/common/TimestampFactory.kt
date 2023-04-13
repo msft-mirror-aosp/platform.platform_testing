@@ -16,8 +16,10 @@
 
 package android.tools.common
 
+import kotlin.js.JsExport
 import kotlin.js.JsName
 
+@JsExport
 class TimestampFactory(private val realTimestampFormatter: (Long) -> String = { it.toString() }) {
     private val empty by lazy { Timestamp(0L, 0L, 0L, realTimestampFormatter) }
     private val min by lazy { Timestamp(1, 1, 1, realTimestampFormatter) }

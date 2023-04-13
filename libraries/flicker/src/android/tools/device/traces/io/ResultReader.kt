@@ -199,7 +199,7 @@ open class ResultReader(_result: IResultData, internal val traceConfig: TraceCon
         val descriptor = ResultArtifactDescriptor(TraceType.EVENT_LOG)
         return artifact.readBytes(descriptor)?.let {
             EventLogParser()
-                .parse(it, from = transitionTimeRange.start, to = transitionTimeRange.end)
+                .parseSlice(it, from = transitionTimeRange.start, to = transitionTimeRange.end)
         }
     }
 

@@ -24,9 +24,11 @@ import android.tools.common.traces.events.Event
 import android.tools.common.traces.events.EventLog
 import android.tools.common.traces.events.EventLog.Companion.MAGIC_NUMBER
 import android.tools.common.traces.events.FocusEvent
+import kotlin.js.JsExport
 
 operator fun <T> List<T>.component6(): T = get(5)
 
+@JsExport
 class EventLogParser : AbstractParser<Array<String>, EventLog>() {
     override val traceName: String = "Event Log"
 
@@ -67,7 +69,7 @@ class EventLogParser : AbstractParser<Array<String>, EventLog>() {
 
         return when (tag) {
             INPUT_FOCUS_TAG -> {
-                FocusEvent(timestamp, pid, uid, tid, parseDataArray(eventData))
+                FocusEvent.from(timestamp, pid, uid, tid, parseDataArray(eventData))
             }
             JANK_CUJ_BEGIN_TAG -> {
                 CujEvent.fromData(pid, uid, tid, tag, eventData)
@@ -90,7 +92,7 @@ class EventLogParser : AbstractParser<Array<String>, EventLog>() {
         return data.drop(1).dropLast(1).split(",").toTypedArray()
     }
 
-    fun parse(bytes: ByteArray, from: Timestamp, to: Timestamp): EventLog {
+    fun parseSlice(bytes: ByteArray, from: Timestamp, to: Timestamp): EventLog {
         require(from.unixNanos < to.unixNanos) { "'to' needs to be greater than 'from'" }
         require(from.hasUnixTimestamp && to.hasUnixTimestamp) { "Missing required timestamp type" }
         return doParse(

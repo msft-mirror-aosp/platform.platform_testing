@@ -21,8 +21,10 @@ import android.tools.common.Timestamp
 import android.tools.common.io.IReader
 import android.tools.common.traces.surfaceflinger.Transaction
 import android.tools.common.traces.surfaceflinger.TransactionsTrace
+import kotlin.js.JsExport
 import kotlin.js.JsName
 
+@JsExport
 class Transition(
     @JsName("createTime") val createTime: Timestamp,
     @JsName("sendTime") val sendTime: Timestamp,
@@ -30,7 +32,7 @@ class Transition(
     @JsName("startTransactionId") val startTransactionId: Long,
     @JsName("finishTransactionId") val finishTransactionId: Long,
     @JsName("type") val type: TransitionType,
-    @JsName("changes") val changes: List<TransitionChange>,
+    @JsName("changes") val changes: Array<TransitionChange>,
     @JsName("played") val played: Boolean,
     @JsName("aborted") val aborted: Boolean
 ) : ITraceEntry {

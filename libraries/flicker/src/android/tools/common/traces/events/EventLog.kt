@@ -18,6 +18,7 @@ package android.tools.common.traces.events
 
 import android.tools.common.ITrace
 import android.tools.common.Timestamp
+import kotlin.js.JsExport
 import kotlin.js.JsName
 
 /**
@@ -27,6 +28,7 @@ import kotlin.js.JsName
  * This is a generic object that is reused by both Flicker and Winscope and cannot access internal
  * Java/Android functionality
  */
+@JsExport
 class EventLog(override val entries: Array<Event>) : ITrace<Event> {
     @JsName("focusEvents")
     val focusEvents: Array<FocusEvent> =
