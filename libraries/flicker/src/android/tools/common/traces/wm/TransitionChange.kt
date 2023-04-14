@@ -17,8 +17,10 @@
 package android.tools.common.traces.wm
 
 import android.tools.common.io.IReader
+import kotlin.js.JsExport
 import kotlin.js.JsName
 
+@JsExport
 class TransitionChange(
     @JsName("transitMode") val transitMode: TransitionType,
     @JsName("layerId") val layerId: Int,

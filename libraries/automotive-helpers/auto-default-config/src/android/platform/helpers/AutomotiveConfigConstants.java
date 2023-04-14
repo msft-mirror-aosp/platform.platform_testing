@@ -101,6 +101,10 @@ public class AutomotiveConfigConstants {
     public static final String APP_LIST_SCROLL_DIRECTION = "APP_LIST_SCROLL_DIRECTION";
     public static final String BLOCKING_MESSAGE = "BLOCKING_MESSAGE";
     public static final String BLOCKING_SCREEN = "BLOCKING_SCREEN";
+    public static final String CONTACTS_PACKAGE = "CONTACTS_PACKAGE";
+    public static final String RADIO_PACKAGE = "RADIO_PACKAGE";
+    public static final String APPS_INITIAL_DIALOGS = "DISMISS_APPS_INITIAL_DIALOGS";
+    public static final String CONTACTS_DIALOG_BOX = "CONTACTS_DIALOG_BOX";
 
     // Security Settings  Constants
     public static final String SECURITY_SETTINGS_SCROLL_ELEMENT =

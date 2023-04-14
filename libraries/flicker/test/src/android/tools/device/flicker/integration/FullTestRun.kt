@@ -25,6 +25,7 @@ import android.tools.common.flicker.subject.FlickerSubject
 import android.tools.common.flicker.subject.layers.LayersTraceSubject
 import android.tools.common.flicker.subject.region.RegionSubject
 import android.tools.common.flicker.subject.wm.WindowManagerTraceSubject
+import android.tools.common.io.RunStatus
 import android.tools.device.apphelpers.BrowserAppHelper
 import android.tools.device.flicker.annotation.FlickerServiceCompatible
 import android.tools.device.flicker.junit.FlickerBuilderProvider
@@ -137,6 +138,17 @@ class FullTestRun(private val flicker: FlickerTest) {
             validateVisibleRegion(this.visibleRegion(), trace?.last()?.visibleRegion())
         }
         Truth.assertWithMessage("Execution count").that(executionCount).isEqualTo(4)
+    }
+
+    @Presubmit
+    @Test
+    fun exceptionMessageCheck() {
+        val failure: Result<Any> = runCatching { flicker.assertLayers { this.isEmpty() } }
+        val exception = failure.exceptionOrNull() ?: error("Should have thrown failure")
+        Truth.assertWithMessage("Artifact path on exception")
+            .that(exception)
+            .hasMessageThat()
+            .contains(RunStatus.ASSERTION_FAILED.prefix)
     }
 
     private fun validateState(actual: FlickerSubject?, expected: FlickerSubject?) {

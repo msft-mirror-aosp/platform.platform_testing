@@ -21,7 +21,7 @@ import android.tools.common.datatypes.Rect
 import android.tools.common.datatypes.RectF
 import android.tools.common.datatypes.Region
 import android.tools.common.flicker.subject.FlickerSubject
-import android.tools.common.flicker.subject.exceptions.ExceptionBuilder
+import android.tools.common.flicker.subject.exceptions.ExceptionMessageBuilder
 import android.tools.common.flicker.subject.exceptions.IncorrectRegionException
 import android.tools.common.io.IReader
 import android.tools.common.traces.region.RegionEntry
@@ -83,12 +83,13 @@ class RegionSubject(
      */
     fun isEmpty(): RegionSubject = apply {
         if (regionEntry.region.isNotEmpty) {
-            throw ExceptionBuilder()
-                .forSubject(this)
-                .forIncorrectRegion("region")
-                .setExpected(Region.EMPTY)
-                .setActual(regionEntry.region)
-                .build()
+            val errorMsgBuilder =
+                ExceptionMessageBuilder()
+                    .forSubject(this)
+                    .forIncorrectRegion("region")
+                    .setExpected(Region.EMPTY)
+                    .setActual(regionEntry.region)
+            throw IncorrectRegionException(errorMsgBuilder)
         }
     }
 
@@ -99,12 +100,13 @@ class RegionSubject(
      */
     fun isNotEmpty(): RegionSubject = apply {
         if (regionEntry.region.isEmpty) {
-            throw ExceptionBuilder()
-                .forSubject(this)
-                .forIncorrectRegion("region")
-                .setExpected("Not empty")
-                .setActual(regionEntry.region)
-                .build()
+            val errorMsgBuilder =
+                ExceptionMessageBuilder()
+                    .forSubject(this)
+                    .forIncorrectRegion("region")
+                    .setExpected("Not empty")
+                    .setActual(regionEntry.region)
+            throw IncorrectRegionException(errorMsgBuilder)
         }
     }
 
@@ -240,13 +242,14 @@ class RegionSubject(
     /** {@inheritDoc} */
     override fun coversAtMost(other: Region): RegionSubject = apply {
         if (!region.coversAtMost(other)) {
-            throw ExceptionBuilder()
-                .forSubject(this)
-                .forIncorrectRegion("region. $region should cover at most $other")
-                .setExpected(other)
-                .setActual(regionEntry.region)
-                .addExtraDescription("Out-of-bounds region", region.outOfBoundsRegion(other))
-                .build()
+            val errorMsgBuilder =
+                ExceptionMessageBuilder()
+                    .forSubject(this)
+                    .forIncorrectRegion("region. $region should cover at most $other")
+                    .setExpected(other)
+                    .setActual(regionEntry.region)
+                    .addExtraDescription("Out-of-bounds region", region.outOfBoundsRegion(other))
+            throw IncorrectRegionException(errorMsgBuilder)
         }
     }
 
@@ -259,14 +262,15 @@ class RegionSubject(
         val area = region.bounds.area
 
         if (area > testArea) {
-            throw ExceptionBuilder()
-                .forSubject(this)
-                .forIncorrectRegion("region. $region area should not be bigger than $testArea")
-                .setExpected(other)
-                .setActual(area)
-                .addExtraDescription("Expected area", testArea)
-                .addExtraDescription("Actual area", area)
-                .build()
+            val errorMsgBuilder =
+                ExceptionMessageBuilder()
+                    .forSubject(this)
+                    .forIncorrectRegion("region. $region area should not be bigger than $testArea")
+                    .setExpected(other)
+                    .setActual(area)
+                    .addExtraDescription("Expected area", testArea)
+                    .addExtraDescription("Actual area", area)
+            throw IncorrectRegionException(errorMsgBuilder)
         }
     }
 
@@ -276,34 +280,38 @@ class RegionSubject(
         val verticallyPositionedToTheBottom = other.bounds.top - threshold <= region.bounds.top
 
         if (!horizontallyPositionedToTheRight || !verticallyPositionedToTheBottom) {
-            throw ExceptionBuilder()
-                .forSubject(this)
-                .forIncorrectRegion("region. $region area should be to the right bottom of $other")
-                .setExpected(other)
-                .setActual(regionEntry.region)
-                .addExtraDescription("Threshold", threshold)
-                .addExtraDescription(
-                    "Horizontally positioned to the right",
-                    horizontallyPositionedToTheRight
-                )
-                .addExtraDescription(
-                    "Vertically positioned to the bottom",
-                    verticallyPositionedToTheBottom
-                )
-                .build()
+            val errorMsgBuilder =
+                ExceptionMessageBuilder()
+                    .forSubject(this)
+                    .forIncorrectRegion(
+                        "region. $region area should be to the right bottom of $other"
+                    )
+                    .setExpected(other)
+                    .setActual(regionEntry.region)
+                    .addExtraDescription("Threshold", threshold)
+                    .addExtraDescription(
+                        "Horizontally positioned to the right",
+                        horizontallyPositionedToTheRight
+                    )
+                    .addExtraDescription(
+                        "Vertically positioned to the bottom",
+                        verticallyPositionedToTheBottom
+                    )
+            throw IncorrectRegionException(errorMsgBuilder)
         }
     }
 
     /** {@inheritDoc} */
     override fun coversAtLeast(other: Region): RegionSubject = apply {
         if (!region.coversAtLeast(other)) {
-            throw ExceptionBuilder()
-                .forSubject(this)
-                .forIncorrectRegion("region. $region should cover at least $other")
-                .setExpected(other)
-                .setActual(regionEntry.region)
-                .addExtraDescription("Uncovered region", region.uncoveredRegion(other))
-                .build()
+            val errorMsgBuilder =
+                ExceptionMessageBuilder()
+                    .forSubject(this)
+                    .forIncorrectRegion("region. $region should cover at least $other")
+                    .setExpected(other)
+                    .setActual(regionEntry.region)
+                    .addExtraDescription("Uncovered region", region.uncoveredRegion(other))
+            throw IncorrectRegionException(errorMsgBuilder)
         }
     }
 
@@ -316,13 +324,14 @@ class RegionSubject(
         val isNotEmpty = intersection.op(other, Region.Op.XOR)
 
         if (isNotEmpty) {
-            throw ExceptionBuilder()
-                .forSubject(this)
-                .forIncorrectRegion("region. $region should cover exactly $other")
-                .setExpected(other)
-                .setActual(regionEntry.region)
-                .addExtraDescription("Difference", intersection)
-                .build()
+            val errorMsgBuilder =
+                ExceptionMessageBuilder()
+                    .forSubject(this)
+                    .forIncorrectRegion("region. $region should cover exactly $other")
+                    .setExpected(other)
+                    .setActual(regionEntry.region)
+                    .addExtraDescription("Difference", intersection)
+            throw IncorrectRegionException(errorMsgBuilder)
         }
     }
 
@@ -335,12 +344,13 @@ class RegionSubject(
         val isEmpty = !intersection.op(other, Region.Op.INTERSECT)
 
         if (isEmpty) {
-            throw ExceptionBuilder()
-                .forSubject(this)
-                .forIncorrectRegion("region. $region should overlap with $other")
-                .setExpected(other)
-                .setActual(regionEntry.region)
-                .build()
+            val errorMsgBuilder =
+                ExceptionMessageBuilder()
+                    .forSubject(this)
+                    .forIncorrectRegion("region. $region should overlap with $other")
+                    .setExpected(other)
+                    .setActual(regionEntry.region)
+            throw IncorrectRegionException(errorMsgBuilder)
         }
     }
 
@@ -353,13 +363,14 @@ class RegionSubject(
         val isEmpty = !intersection.op(other, Region.Op.INTERSECT)
 
         if (!isEmpty) {
-            throw ExceptionBuilder()
-                .forSubject(this)
-                .forIncorrectRegion("region. $region should not overlap with $other")
-                .setExpected(other)
-                .setActual(regionEntry.region)
-                .addExtraDescription("Overlap region", intersection)
-                .build()
+            val errorMsgBuilder =
+                ExceptionMessageBuilder()
+                    .forSubject(this)
+                    .forIncorrectRegion("region. $region should not overlap with $other")
+                    .setExpected(other)
+                    .setActual(regionEntry.region)
+                    .addExtraDescription("Overlap region", intersection)
+            throw IncorrectRegionException(errorMsgBuilder)
         }
     }
 
@@ -371,15 +382,18 @@ class RegionSubject(
         val aspectRatio = this.region.width.toFloat() / this.region.height
         val otherAspectRatio = other.width.toFloat() / other.height
         if (abs(aspectRatio - otherAspectRatio) > threshold) {
-            throw ExceptionBuilder()
-                .forSubject(this)
-                .forIncorrectRegion("region. $region should have the same aspect ratio as $other")
-                .setExpected(other)
-                .setActual(regionEntry.region)
-                .addExtraDescription("Threshold", threshold)
-                .addExtraDescription("Region aspect ratio", aspectRatio)
-                .addExtraDescription("Other aspect ratio", otherAspectRatio)
-                .build()
+            val errorMsgBuilder =
+                ExceptionMessageBuilder()
+                    .forSubject(this)
+                    .forIncorrectRegion(
+                        "region. $region should have the same aspect ratio as $other"
+                    )
+                    .setExpected(other)
+                    .setActual(regionEntry.region)
+                    .addExtraDescription("Threshold", threshold)
+                    .addExtraDescription("Region aspect ratio", aspectRatio)
+                    .addExtraDescription("Other aspect ratio", otherAspectRatio)
+            throw IncorrectRegionException(errorMsgBuilder)
         }
     }
 
@@ -395,14 +409,15 @@ class RegionSubject(
         val thisValue = valueProvider(region.bounds)
         val otherValue = valueProvider(other.bounds)
         if (!boundsCheck(thisValue, otherValue)) {
-            throw ExceptionBuilder()
-                .forSubject(this)
-                .forIncorrectRegion(name)
-                .setExpected(otherValue.toString())
-                .setActual(thisValue.toString())
-                .addExtraDescription("Actual region", region)
-                .addExtraDescription("Expected region", other)
-                .build()
+            val errorMsgBuilder =
+                ExceptionMessageBuilder()
+                    .forSubject(this)
+                    .forIncorrectRegion(name)
+                    .setExpected(otherValue.toString())
+                    .setActual(thisValue.toString())
+                    .addExtraDescription("Actual region", region)
+                    .addExtraDescription("Expected region", other)
+            throw IncorrectRegionException(errorMsgBuilder)
         }
     }
 

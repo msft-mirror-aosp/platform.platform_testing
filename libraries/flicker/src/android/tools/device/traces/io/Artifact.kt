@@ -68,8 +68,11 @@ internal constructor(
             RunStatus.fromFileName(file.name)
                 ?: error("Failed to get RunStatus from file name ${file.name}")
 
-    override val path: String
+    override val absolutePath: String
         get() = file.absolutePath
+
+    override val fileName: String
+        get() = file.name
 
     override fun updateStatus(newStatus: RunStatus) {
         val currFile = file
@@ -96,7 +99,7 @@ internal constructor(
         return count
     }
 
-    override fun toString(): String = file.absolutePath
+    override fun toString(): String = fileName
 
     /** updates the artifact status to [newStatus] */
     private fun getNewFilePath(newStatus: RunStatus): File {

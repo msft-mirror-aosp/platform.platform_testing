@@ -20,7 +20,9 @@ import android.tools.common.io.IArtifact
 import android.tools.common.io.ResultArtifactDescriptor
 import android.tools.common.io.RunStatus
 
-class InMemoryArtifact(override val path: String) : IArtifact {
+class InMemoryArtifact(override val absolutePath: String) : IArtifact {
+
+    override val fileName: String = absolutePath
 
     override val runStatus = RunStatus.UNDEFINED
 

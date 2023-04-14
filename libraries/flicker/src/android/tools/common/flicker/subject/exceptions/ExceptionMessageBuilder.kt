@@ -23,13 +23,12 @@ import android.tools.common.flicker.subject.FlickerSubject
 import android.tools.common.io.IReader
 
 /** Class to build flicker exception messages */
-class ExceptionBuilder {
+class ExceptionMessageBuilder {
     private var timestamp = CrossPlatform.timestamp.empty()
     private var expected = ""
     private var actual = mutableListOf<String>()
     private var headerDescription = ""
-    private var extraDescription = mutableListOf<String>()
-    private var exceptionBuilder: (String) -> AssertionError = { SubjectAssertionError(it) }
+    private var extraDescription = mutableListOf<Fact>()
 
     fun forSubject(value: FlickerSubject) = apply {
         setTimestamp(value.timestamp)
@@ -43,19 +42,14 @@ class ExceptionBuilder {
     fun forInvalidElement(elementName: String, expectElementExists: Boolean) =
         setMessage("$elementName should ${if (expectElementExists) "" else "not "}exist")
             .setExpected(elementName)
-            .ofType { InvalidElementException(it) }
 
     fun forIncorrectVisibility(elementName: String, expectElementVisible: Boolean) =
         setMessage("$elementName should ${if (expectElementVisible) "" else "not "}be visible")
-            .ofType { IncorrectVisibilityException(it) }
             .setExpected(elementName)
 
-    fun forInvalidProperty(propertyName: String) =
-        setMessage("Incorrect value for $propertyName").ofType { InvalidPropertyException(it) }
+    fun forInvalidProperty(propertyName: String) = setMessage("Incorrect value for $propertyName")
 
-    fun forIncorrectRegion(propertyName: String) =
-        setMessage("Incorrect $propertyName").ofType { IncorrectRegionException(it) }
-    fun ofType(value: (String) -> AssertionError) = apply { exceptionBuilder = value }
+    fun forIncorrectRegion(propertyName: String) = setMessage("Incorrect $propertyName")
 
     fun setTimestamp(value: Timestamp) = apply { timestamp = value }
 
@@ -73,11 +67,9 @@ class ExceptionBuilder {
 
     fun addExtraDescription(key: String, value: Any?) = addExtraDescription(Fact(key, value))
 
-    fun addExtraDescription(vararg value: Fact) = apply {
-        extraDescription.addAll(value.map { it.toString() })
-    }
+    fun addExtraDescription(vararg value: Fact) = apply { extraDescription.addAll(value.toList()) }
 
-    private fun buildMessage(): String = buildString {
+    fun build(): String = buildString {
         if (headerDescription.isNotEmpty()) {
             appendLine(headerDescription)
             appendLine()
@@ -108,12 +100,10 @@ class ExceptionBuilder {
         if (extraDescription.isNotEmpty()) {
             appendLine()
             appendLine("Other information")
-            extraDescription.forEach { appendLine(it.prependIndent("\t")) }
+            extraDescription.forEach { appendLine(it.toString().prependIndent("\t")) }
         }
 
         appendLine()
         appendLine("Check the test run artifacts for trace files")
     }
-
-    fun build() = exceptionBuilder(buildMessage())
 }

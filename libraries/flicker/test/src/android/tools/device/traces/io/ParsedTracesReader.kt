@@ -43,7 +43,7 @@ class ParsedTracesReader(
     override val runStatus = RunStatus.UNDEFINED
     override val executionError = null
     override val artifactPath: String
-        get() = artifact.path
+        get() = artifact.absolutePath
 
     override fun readLayersTrace(): LayersTrace? = layersTrace
 

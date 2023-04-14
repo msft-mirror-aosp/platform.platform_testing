@@ -60,14 +60,16 @@ class TransitionsTraceParser :
     override fun doParseEntry(entry: com.android.server.wm.shell.nano.Transition): Transition {
         val windowingMode = WindowingMode.WINDOWING_MODE_UNDEFINED // TODO: Get the windowing mode
         val changes =
-            entry.targets.map {
-                TransitionChange(
-                    TransitionType.fromInt(it.mode),
-                    it.layerId,
-                    it.windowId,
-                    windowingMode
-                )
-            }
+            entry.targets
+                .map {
+                    TransitionChange(
+                        TransitionType.fromInt(it.mode),
+                        it.layerId,
+                        it.windowId,
+                        windowingMode
+                    )
+                }
+                .toTypedArray()
 
         return Transition(
             createTime = CrossPlatform.timestamp.from(elapsedNanos = entry.createTimeNs),

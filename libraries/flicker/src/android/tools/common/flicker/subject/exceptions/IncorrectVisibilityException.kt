@@ -17,4 +17,5 @@
 package android.tools.common.flicker.subject.exceptions
 
 /** Exception thrown when an element has the incorrect visibility */
-class IncorrectVisibilityException(msg: String) : AssertionError(msg)
+class IncorrectVisibilityException(override val messageBuilder: ExceptionMessageBuilder) :
+    BaseException()

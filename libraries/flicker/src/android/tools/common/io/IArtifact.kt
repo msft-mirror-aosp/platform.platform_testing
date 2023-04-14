@@ -18,7 +18,8 @@ package android.tools.common.io
 
 interface IArtifact {
     val runStatus: RunStatus
-    val path: String
+    val absolutePath: String
+    val fileName: String
 
     fun updateStatus(newStatus: RunStatus)
     fun readBytes(descriptor: ResultArtifactDescriptor): ByteArray?

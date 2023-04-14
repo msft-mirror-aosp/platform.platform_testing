@@ -53,7 +53,7 @@ open class ResultReader(_result: IResultData, internal val traceConfig: TraceCon
         internal set
     override val artifact: IArtifact = result.artifact
     override val artifactPath: String
-        get() = result.artifact.path
+        get() = result.artifact.absolutePath
     override val runStatus
         get() = result.runStatus
     internal val transitionTimeRange
@@ -199,7 +199,7 @@ open class ResultReader(_result: IResultData, internal val traceConfig: TraceCon
         val descriptor = ResultArtifactDescriptor(TraceType.EVENT_LOG)
         return artifact.readBytes(descriptor)?.let {
             EventLogParser()
-                .parse(it, from = transitionTimeRange.start, to = transitionTimeRange.end)
+                .parseSlice(it, from = transitionTimeRange.start, to = transitionTimeRange.end)
         }
     }
 

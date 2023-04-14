@@ -17,4 +17,5 @@
 package android.tools.common.flicker.subject.exceptions
 
 /** Exception thrown when an incorrect focus change occurs */
-class IncorrectFocusException(msg: String) : AssertionError(msg)
+class IncorrectFocusException(override val messageBuilder: ExceptionMessageBuilder) :
+    BaseException()
