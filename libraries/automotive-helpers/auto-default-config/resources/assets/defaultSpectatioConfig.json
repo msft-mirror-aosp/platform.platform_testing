@@ -9,7 +9,9 @@
     "NUMBER_PICKER_WIDGET_CLASS" : "android.widget.NumberPicker",
     "EDIT_TEXT_WIDGET_CLASS" : "android.widget.EditText",
     "USER_SETTINGS_PACKAGE": "com.android.car.settings",
-    "MEDIA_CENTER_PACKAGE": "com.android.car.media"
+    "MEDIA_CENTER_PACKAGE": "com.android.car.media",
+    "CONTACTS_PACKAGE": "com.android.contacts",
+    "RADIO_PACKAGE": "com.android.car.radio"
   },
   "ACTIONS": {
     "CONTACT_LIST_SCROLL_ACTION": "USE_BUTTON",
@@ -984,9 +986,26 @@
       "TYPE": "RESOURCE_ID",
       "VALUE": "close_target",
       "PACKAGE": "com.android.car.media.testmediaapp"
+    },
+    "CONTACTS_DIALOG_BOX": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "car_ui_list_item_touch_interceptor",
+      "PACKAGE": "com.android.permissioncontroller"
     }
   },
   "WORKFLOWS": {
+    "DISMISS_APPS_INITIAL_DIALOGS": [
+      {
+        "NAME": "Allow Button",
+        "TYPE": "CLICK_IF_EXIST",
+        "CONFIG": {
+          "UI_ELEMENT": {
+            "TYPE": "TEXT",
+            "VALUE": "Allow"
+          }
+        }
+      }
+    ],
     "OPEN_SOUND_SETTINGS_WORKFLOW": [
       {
         "NAME": "Go to Home",

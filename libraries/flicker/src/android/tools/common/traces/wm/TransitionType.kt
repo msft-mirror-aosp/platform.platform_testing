@@ -16,8 +16,10 @@
 
 package android.tools.common.traces.wm
 
+import kotlin.js.JsExport
 import kotlin.js.JsName
 
+@JsExport
 enum class TransitionType(val value: Int) {
     UNDEFINED(-1),
     NONE(0),

@@ -17,7 +17,8 @@
 package android.tools.common.flicker.assertions
 
 import android.tools.common.flicker.subject.FlickerSubject
-import android.tools.common.flicker.subject.exceptions.ExceptionBuilder
+import android.tools.common.flicker.subject.exceptions.ExceptionMessageBuilder
+import android.tools.common.flicker.subject.exceptions.SubjectAssertionError
 
 /**
  * Runs sequences of assertions on sequences of subjects.
@@ -102,15 +103,16 @@ class AssertionsChecker<T : FlickerSubject> {
         }
         // Didn't pass any assertions
         if (lastPassedAssertionIndex == -1 && assertions.isNotEmpty()) {
-            throw ExceptionBuilder()
-                .forSubject(entries.first())
-                .setMessage("Assertion never passed ${assertions.first()}")
-                .addExtraDescription(
-                    *assertions
-                        .mapIndexed { idx, it -> Fact("Assertion$idx", it.toString()) }
-                        .toTypedArray()
-                )
-                .build()
+            val errorMsg =
+                ExceptionMessageBuilder()
+                    .forSubject(entries.first())
+                    .setMessage("Assertion never passed ${assertions.first()}")
+                    .addExtraDescription(
+                        *assertions
+                            .mapIndexed { idx, it -> Fact("Assertion$idx", it.toString()) }
+                            .toTypedArray()
+                    )
+            throw SubjectAssertionError(errorMsg)
         }
 
         val untestedAssertions = assertions.drop(assertionIndex + 1)
@@ -118,12 +120,16 @@ class AssertionsChecker<T : FlickerSubject> {
             val passedAssertionsFacts = assertions.take(assertionIndex).map { Fact("Passed", it) }
             val untestedAssertionsFacts = untestedAssertions.map { Fact("Untested", it) }
 
-            throw ExceptionBuilder()
-                .forSubject(entries.last())
-                .setMessage("Assertion $assertionIndex never failed: ${assertions[assertionIndex]}")
-                .addExtraDescription(*passedAssertionsFacts.toTypedArray())
-                .addExtraDescription(*untestedAssertionsFacts.toTypedArray())
-                .build()
+            val errorMsg =
+                ExceptionMessageBuilder()
+                    .forSubject(entries.last())
+                    .setMessage(
+                        "Assertion $assertionIndex never failed: ${assertions[assertionIndex]}"
+                    )
+                    .addExtraDescription(*passedAssertionsFacts.toTypedArray())
+                    .addExtraDescription(*untestedAssertionsFacts.toTypedArray())
+
+            throw SubjectAssertionError(errorMsg)
         }
     }
 

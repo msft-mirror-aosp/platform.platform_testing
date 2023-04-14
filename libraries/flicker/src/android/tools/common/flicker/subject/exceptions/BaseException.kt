@@ -14,17 +14,12 @@
  * limitations under the License.
  */
 
-package android.tools.common.traces.wm
+package android.tools.common.flicker.subject.exceptions
 
-class TransitionTraceEntry
-private constructor(
-    val transitionState: TransitionState? = null,
-    val transitionInfo: TransitionInfo? = null
-) {
-    fun hasTransitionState(): Boolean = transitionState != null
-    fun hasTransitionInfo(): Boolean = transitionInfo != null
+/** Base class for flicker subject exceptions */
+abstract class BaseException : AssertionError() {
+    abstract val messageBuilder: ExceptionMessageBuilder
 
-    constructor(transitionState: TransitionState) : this(transitionState, null)
-
-    constructor(transitionInfo: TransitionInfo) : this(null, transitionInfo)
+    override val message
+        get() = messageBuilder.build()
 }

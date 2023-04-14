@@ -19,7 +19,9 @@ package android.tools.common.traces.events
 import android.tools.common.CrossPlatform
 import android.tools.common.ITrace
 import android.tools.common.Timestamp
+import kotlin.js.JsExport
 
+@JsExport
 class CujTrace(override val entries: Array<Cuj>) : ITrace<Cuj> {
 
     override fun slice(startTimestamp: Timestamp, endTimestamp: Timestamp): CujTrace {

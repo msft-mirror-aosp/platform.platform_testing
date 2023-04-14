@@ -22,7 +22,11 @@ import android.tools.common.datatypes.component.ComponentNameMatcher
 import android.tools.common.datatypes.component.IComponentMatcher
 import android.tools.common.flicker.assertions.Fact
 import android.tools.common.flicker.subject.FlickerSubject
-import android.tools.common.flicker.subject.exceptions.ExceptionBuilder
+import android.tools.common.flicker.subject.exceptions.ExceptionMessageBuilder
+import android.tools.common.flicker.subject.exceptions.IncorrectVisibilityException
+import android.tools.common.flicker.subject.exceptions.InvalidElementException
+import android.tools.common.flicker.subject.exceptions.InvalidPropertyException
+import android.tools.common.flicker.subject.exceptions.SubjectAssertionError
 import android.tools.common.flicker.subject.region.RegionSubject
 import android.tools.common.io.IReader
 import android.tools.common.traces.wm.WindowManagerState
@@ -106,13 +110,14 @@ class WindowManagerStateSubject(
             }
 
         if (selectedWindows.isEmpty()) {
-            throw ExceptionBuilder()
-                .forSubject(this)
-                .forInvalidElement(
-                    componentMatcher?.toWindowIdentifier() ?: "<any>",
-                    expectElementExists = true
-                )
-                .build()
+            val errorMsgBuilder =
+                ExceptionMessageBuilder()
+                    .forSubject(this)
+                    .forInvalidElement(
+                        componentMatcher?.toWindowIdentifier() ?: "<any>",
+                        expectElementExists = true
+                    )
+            throw InvalidElementException(errorMsgBuilder)
         }
 
         val visibleWindows = selectedWindows.filter { it.isVisible }
@@ -143,8 +148,8 @@ class WindowManagerStateSubject(
         val belowWindow =
             wmState.windowStates.first { belowWindowComponentMatcher.windowMatchesAnyOf(it) }
 
-        val builder =
-            ExceptionBuilder()
+        val errorMsgBuilder =
+            ExceptionMessageBuilder()
                 .forSubject(this)
                 .addExtraDescription(
                     Fact("Above window filter", aboveWindowComponentMatcher.toWindowIdentifier())
@@ -154,10 +159,10 @@ class WindowManagerStateSubject(
                 )
 
         if (aboveWindow == belowWindow) {
-            throw builder
+            errorMsgBuilder
                 .setMessage("Above and below windows should be different")
                 .setActual(aboveWindow.title)
-                .build()
+            throw SubjectAssertionError(errorMsgBuilder)
         }
 
         // windows are ordered by z-order, from top to bottom
@@ -166,11 +171,11 @@ class WindowManagerStateSubject(
         val belowZ =
             wmState.windowStates.indexOfFirst { belowWindowComponentMatcher.windowMatchesAnyOf(it) }
         if (aboveZ >= belowZ) {
-            throw builder
+            errorMsgBuilder
                 .setMessage("${aboveWindow.title} should be above ${belowWindow.title}")
                 .setActual("${belowWindow.title} is above")
                 .setExpected("${aboveWindow.title} is below")
-                .build()
+            throw SubjectAssertionError(errorMsgBuilder)
         }
     }
 
@@ -183,14 +188,15 @@ class WindowManagerStateSubject(
     override fun isAppWindowOnTop(componentMatcher: IComponentMatcher): WindowManagerStateSubject =
         apply {
             if (wmState.visibleAppWindows.isEmpty()) {
-                throw ExceptionBuilder()
-                    .forSubject(this)
-                    .forInvalidElement(
-                        componentMatcher.toWindowIdentifier(),
-                        expectElementExists = true
-                    )
-                    .addExtraDescription("Type", "App window")
-                    .build()
+                val errorMsgBuilder =
+                    ExceptionMessageBuilder()
+                        .forSubject(this)
+                        .forInvalidElement(
+                            componentMatcher.toWindowIdentifier(),
+                            expectElementExists = true
+                        )
+                        .addExtraDescription("Type", "App window")
+                throw InvalidElementException(errorMsgBuilder)
             }
 
             val topVisibleAppWindow = wmState.topVisibleAppWindow
@@ -201,12 +207,13 @@ class WindowManagerStateSubject(
             if (!topWindowMatches) {
                 isNotEmpty()
 
-                throw ExceptionBuilder()
-                    .forSubject(this)
-                    .forInvalidProperty("Top visible app window")
-                    .setActual(topVisibleAppWindow?.name)
-                    .setExpected(componentMatcher.toWindowIdentifier())
-                    .build()
+                val errorMsgBuilder =
+                    ExceptionMessageBuilder()
+                        .forSubject(this)
+                        .forInvalidProperty("Top visible app window")
+                        .setActual(topVisibleAppWindow?.name)
+                        .setExpected(componentMatcher.toWindowIdentifier())
+                throw InvalidPropertyException(errorMsgBuilder)
             }
         }
 
@@ -219,14 +226,15 @@ class WindowManagerStateSubject(
             topVisibleAppWindow != null && componentMatcher.windowMatchesAnyOf(topVisibleAppWindow)
         ) {
             val topWindow = subjects.first { it.windowState == topVisibleAppWindow }
-            throw ExceptionBuilder()
-                .forSubject(this)
-                .forInvalidProperty("${topWindow.name} should not be on top")
-                .setActual(topWindow.name)
-                .setExpected(componentMatcher.toWindowIdentifier())
-                .addExtraDescription("Type", "App window")
-                .addExtraDescription("Filter", componentMatcher.toWindowIdentifier())
-                .build()
+            val errorMsgBuilder =
+                ExceptionMessageBuilder()
+                    .forSubject(this)
+                    .forInvalidProperty("${topWindow.name} should not be on top")
+                    .setActual(topWindow.name)
+                    .setExpected(componentMatcher.toWindowIdentifier())
+                    .addExtraDescription("Type", "App window")
+                    .addExtraDescription("Filter", componentMatcher.toWindowIdentifier())
+            throw InvalidPropertyException(errorMsgBuilder)
         }
     }
 
@@ -260,14 +268,15 @@ class WindowManagerStateSubject(
                 val (otherTitle, otherRegion) = regions[j]
                 val overlapRegion = Region().also { it.set(ourRegion) }
                 if (overlapRegion.op(otherRegion, Region.Op.INTERSECT)) {
-                    throw ExceptionBuilder()
-                        .forSubject(this)
-                        .setMessage("$componentNames should not overlap")
-                        .setActual("$ourTitle overlaps with $otherTitle")
-                        .addExtraDescription("$ourTitle region", ourRegion)
-                        .addExtraDescription("$otherTitle region", otherRegion)
-                        .addExtraDescription("Overlap region", overlapRegion)
-                        .build()
+                    val errorMsgBuilder =
+                        ExceptionMessageBuilder()
+                            .forSubject(this)
+                            .setMessage("$componentNames should not overlap")
+                            .setActual("$ourTitle overlaps with $otherTitle")
+                            .addExtraDescription("$ourTitle region", ourRegion)
+                            .addExtraDescription("$otherTitle region", otherRegion)
+                            .addExtraDescription("Overlap region", overlapRegion)
+                    throw SubjectAssertionError(errorMsgBuilder)
                 }
             }
         }
@@ -277,14 +286,18 @@ class WindowManagerStateSubject(
     override fun containsAppWindow(componentMatcher: IComponentMatcher): WindowManagerStateSubject =
         apply {
             // Check existence of activity
-            wmState.getActivitiesForWindow(componentMatcher).firstOrNull()
-                ?: throw ExceptionBuilder()
-                    .forSubject(this)
-                    .forInvalidElement(
-                        componentMatcher.toActivityIdentifier(),
-                        expectElementExists = true
-                    )
-                    .build()
+            val activity = wmState.getActivitiesForWindow(componentMatcher).firstOrNull()
+
+            if (activity == null) {
+                val errorMsgBuilder =
+                    ExceptionMessageBuilder()
+                        .forSubject(this)
+                        .forInvalidElement(
+                            componentMatcher.toActivityIdentifier(),
+                            expectElementExists = true
+                        )
+                throw InvalidElementException(errorMsgBuilder)
+            }
             // Check existence of window.
             contains(componentMatcher)
         }
@@ -307,13 +320,14 @@ class WindowManagerStateSubject(
         // system components (e.g., NavBar, StatusBar, PipOverlay) don't have a package name
         // nor an activity, ignore them
         if (wmState.containsActivity(componentMatcher)) {
-            throw ExceptionBuilder()
-                .forSubject(this)
-                .forInvalidElement(
-                    componentMatcher.toActivityIdentifier(),
-                    expectElementExists = false
-                )
-                .build()
+            val errorMsgBuilder =
+                ExceptionMessageBuilder()
+                    .forSubject(this)
+                    .forInvalidElement(
+                        componentMatcher.toActivityIdentifier(),
+                        expectElementExists = false
+                    )
+            throw InvalidElementException(errorMsgBuilder)
         }
         notContains(componentMatcher)
     }
@@ -322,13 +336,14 @@ class WindowManagerStateSubject(
     override fun notContains(componentMatcher: IComponentMatcher): WindowManagerStateSubject =
         apply {
             if (wmState.containsWindow(componentMatcher)) {
-                throw ExceptionBuilder()
-                    .forSubject(this)
-                    .forInvalidElement(
-                        componentMatcher.toWindowIdentifier(),
-                        expectElementExists = false
-                    )
-                    .build()
+                val errorMsgBuilder =
+                    ExceptionMessageBuilder()
+                        .forSubject(this)
+                        .forInvalidElement(
+                            componentMatcher.toWindowIdentifier(),
+                            expectElementExists = false
+                        )
+                throw InvalidElementException(errorMsgBuilder)
             }
         }
 
@@ -338,11 +353,12 @@ class WindowManagerStateSubject(
             isHomeActivityVisible()
         } else {
             if (!wmState.isRecentsActivityVisible) {
-                throw ExceptionBuilder()
-                    .forSubject(this)
-                    .forIncorrectVisibility("Recents activity", expectElementVisible = true)
-                    .setActual(wmState.isRecentsActivityVisible)
-                    .build()
+                val errorMsgBuilder =
+                    ExceptionMessageBuilder()
+                        .forSubject(this)
+                        .forIncorrectVisibility("Recents activity", expectElementVisible = true)
+                        .setActual(wmState.isRecentsActivityVisible)
+                throw IncorrectVisibilityException(errorMsgBuilder)
             }
         }
     }
@@ -353,11 +369,12 @@ class WindowManagerStateSubject(
             isHomeActivityInvisible()
         } else {
             if (wmState.isRecentsActivityVisible) {
-                throw ExceptionBuilder()
-                    .forSubject(this)
-                    .forIncorrectVisibility("Recents activity", expectElementVisible = false)
-                    .setActual(wmState.isRecentsActivityVisible)
-                    .build()
+                val errorMsgBuilder =
+                    ExceptionMessageBuilder()
+                        .forSubject(this)
+                        .forIncorrectVisibility("Recents activity", expectElementVisible = false)
+                        .setActual(wmState.isRecentsActivityVisible)
+                throw IncorrectVisibilityException(errorMsgBuilder)
             }
         }
     }
@@ -436,14 +453,15 @@ class WindowManagerStateSubject(
             }
 
         if (visibleWindows.isEmpty()) {
-            throw ExceptionBuilder()
-                .forSubject(this)
-                .forIncorrectVisibility(
-                    componentMatcher.toWindowIdentifier(),
-                    expectElementVisible = true
-                )
-                .setActual(foundWindows.map { Fact("Is invisible", it.name) })
-                .build()
+            val errorMsgBuilder =
+                ExceptionMessageBuilder()
+                    .forSubject(this)
+                    .forIncorrectVisibility(
+                        componentMatcher.toWindowIdentifier(),
+                        expectElementVisible = true
+                    )
+                    .setActual(foundWindows.map { Fact("Is invisible", it.name) })
+            throw IncorrectVisibilityException(errorMsgBuilder)
         }
     }
 
@@ -460,14 +478,15 @@ class WindowManagerStateSubject(
             }
 
         if (visibleWindows.isNotEmpty()) {
-            throw ExceptionBuilder()
-                .forSubject(this)
-                .forIncorrectVisibility(
-                    componentMatcher.toWindowIdentifier(),
-                    expectElementVisible = false
-                )
-                .setActual(visibleWindows.map { Fact("Is visible", it.name) })
-                .build()
+            val errorMsgBuilder =
+                ExceptionMessageBuilder()
+                    .forSubject(this)
+                    .forIncorrectVisibility(
+                        componentMatcher.toWindowIdentifier(),
+                        expectElementVisible = false
+                    )
+                    .setActual(visibleWindows.map { Fact("Is visible", it.name) })
+            throw IncorrectVisibilityException(errorMsgBuilder)
         }
     }
 
@@ -476,31 +495,34 @@ class WindowManagerStateSubject(
         componentMatcher: IComponentMatcher
     ) {
         if (!componentMatcher.windowMatchesAnyOf(subjectList.map { it.windowState })) {
-            throw ExceptionBuilder()
-                .forSubject(this)
-                .forInvalidElement(
-                    componentMatcher.toWindowIdentifier(),
-                    expectElementExists = true
-                )
-                .build()
+            val errorMsgBuilder =
+                ExceptionMessageBuilder()
+                    .forSubject(this)
+                    .forInvalidElement(
+                        componentMatcher.toWindowIdentifier(),
+                        expectElementExists = true
+                    )
+            throw InvalidElementException(errorMsgBuilder)
         }
     }
 
     /** {@inheritDoc} */
     override fun isHomeActivityVisible(): WindowManagerStateSubject = apply {
         if (wmState.homeActivity == null) {
-            throw ExceptionBuilder()
-                .forSubject(this)
-                .forInvalidElement("Home activity", expectElementExists = true)
-                .build()
+            val errorMsgBuilder =
+                ExceptionMessageBuilder()
+                    .forSubject(this)
+                    .forInvalidElement("Home activity", expectElementExists = true)
+            throw IncorrectVisibilityException(errorMsgBuilder)
         }
 
         val homeIsVisible = wmState.homeActivity?.isVisible ?: false
         if (!homeIsVisible) {
-            throw ExceptionBuilder()
-                .forSubject(this)
-                .forIncorrectVisibility("Home activity", expectElementVisible = true)
-                .build()
+            val errorMsgBuilder =
+                ExceptionMessageBuilder()
+                    .forSubject(this)
+                    .forIncorrectVisibility("Home activity", expectElementVisible = true)
+            throw IncorrectVisibilityException(errorMsgBuilder)
         }
     }
 
@@ -508,10 +530,11 @@ class WindowManagerStateSubject(
     override fun isHomeActivityInvisible(): WindowManagerStateSubject = apply {
         val homeIsVisible = wmState.homeActivity?.isVisible ?: false
         if (homeIsVisible) {
-            throw ExceptionBuilder()
-                .forSubject(this)
-                .forIncorrectVisibility("Home activity", expectElementVisible = false)
-                .build()
+            val errorMsgBuilder =
+                ExceptionMessageBuilder()
+                    .forSubject(this)
+                    .forIncorrectVisibility("Home activity", expectElementVisible = false)
+            throw IncorrectVisibilityException(errorMsgBuilder)
         }
     }
 
@@ -546,43 +569,54 @@ class WindowManagerStateSubject(
     override fun isAppSnapshotStartingWindowVisibleFor(
         componentMatcher: IComponentMatcher
     ): WindowManagerStateSubject = apply {
-        val builder = ExceptionBuilder().forSubject(this)
+        val activity = wmState.getActivitiesForWindow(componentMatcher).firstOrNull()
 
-        val activity =
-            wmState.getActivitiesForWindow(componentMatcher).firstOrNull()
-                ?: throw builder
+        if (activity == null) {
+            val errorMsgBuilder =
+                ExceptionMessageBuilder()
+                    .forSubject(this)
                     .forInvalidElement(
                         componentMatcher.toActivityIdentifier(),
                         expectElementExists = true
                     )
-                    .build()
+            throw InvalidElementException(errorMsgBuilder)
+        }
 
         // Check existence and visibility of SnapshotStartingWindow
         val snapshotStartingWindow =
             activity.getWindows(ComponentNameMatcher.SNAPSHOT).firstOrNull()
-                ?: throw builder
+
+        if (snapshotStartingWindow == null) {
+            val errorMsgBuilder =
+                ExceptionMessageBuilder()
+                    .forSubject(this)
                     .forInvalidElement(
                         ComponentNameMatcher.SNAPSHOT.toWindowIdentifier(),
                         expectElementExists = true
                     )
-                    .build()
+            throw InvalidElementException(errorMsgBuilder)
+        }
 
         if (!activity.isVisible) {
-            throw builder
-                .forIncorrectVisibility(
-                    componentMatcher.toActivityIdentifier(),
-                    expectElementVisible = true
-                )
-                .build()
+            val errorMsgBuilder =
+                ExceptionMessageBuilder()
+                    .forSubject(this)
+                    .forIncorrectVisibility(
+                        componentMatcher.toActivityIdentifier(),
+                        expectElementVisible = true
+                    )
+            throw IncorrectVisibilityException(errorMsgBuilder)
         }
 
         if (!snapshotStartingWindow.isVisible) {
-            throw builder
-                .forIncorrectVisibility(
-                    ComponentNameMatcher.SNAPSHOT.toWindowIdentifier(),
-                    expectElementVisible = true
-                )
-                .build()
+            val errorMsgBuilder =
+                ExceptionMessageBuilder()
+                    .forSubject(this)
+                    .forIncorrectVisibility(
+                        ComponentNameMatcher.SNAPSHOT.toWindowIdentifier(),
+                        expectElementVisible = true
+                    )
+            throw IncorrectVisibilityException(errorMsgBuilder)
         }
     }
 

@@ -16,11 +16,14 @@
 
 package android.tools.common.traces.events
 
+import kotlin.js.JsExport
+
 /**
  * From com.android.internal.jank.InteractionJankMonitor.
  *
  * NOTE: Make sure order is the same as in {@see com.android.internal.jank.InteractionJankMonitor}.
  */
+@JsExport
 enum class CujType {
     CUJ_NOTIFICATION_SHADE_EXPAND_COLLAPSE,
     CUJ_NOTIFICATION_SHADE_EXPAND_COLLAPSE_LOCK,

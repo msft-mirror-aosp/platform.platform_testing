@@ -91,7 +91,7 @@ object TransitionFilters {
                 // finishTransaction is merged into the first and applied.
                 finishTransactionId = transitions[0].finishTransactionId,
                 type = transitions[1].type,
-                changes = listOf(closingAppChange, openingAppChange),
+                changes = arrayOf(closingAppChange, openingAppChange),
                 played = transitions[1].played,
                 aborted = transitions[1].aborted,
             )

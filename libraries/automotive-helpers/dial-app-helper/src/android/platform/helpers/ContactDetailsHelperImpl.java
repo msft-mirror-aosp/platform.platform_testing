@@ -57,7 +57,14 @@ public class ContactDetailsHelperImpl extends AbstractStandardAppHelper
     /** {@inheritDoc} */
     @Override
     public void dismissInitialDialogs() {
-        // Nothing to dismiss
+        UiObject2 dialogBox =
+                getSpectatioUiUtil()
+                        .findUiObject(
+                                getUiElementFromConfig(
+                                        AutomotiveConfigConstants.CONTACTS_DIALOG_BOX));
+        if (dialogBox != null) {
+            executeWorkflow(AutomotiveConfigConstants.APPS_INITIAL_DIALOGS);
+        }
     }
 
     /** {@inheritDoc} */
