@@ -20,6 +20,8 @@ interface IArtifact {
     val runStatus: RunStatus
     val absolutePath: String
     val fileName: String
+    /** Stable identifier for this artifact (e.g. scenario + counter without current status) */
+    val stableId: String
 
     fun updateStatus(newStatus: RunStatus)
     fun readBytes(descriptor: ResultArtifactDescriptor): ByteArray?

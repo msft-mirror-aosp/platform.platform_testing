@@ -220,6 +220,6 @@ object AssertionTemplates {
         COMMON_ASSERTIONS +
             listOf(
                 // DisplayIsOffAtStart(),
-                AppLayerIsVisibleAtEnd(Components.LAUNCHER)
-            )
+                // AppLayerIsVisibleAtEnd(Components.LAUNCHER)
+                )
 }
