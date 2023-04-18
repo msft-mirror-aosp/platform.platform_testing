@@ -22,6 +22,7 @@ import android.tools.common.CrossPlatform
 import android.tools.common.IScenario
 import android.tools.common.ScenarioBuilder
 import android.tools.common.io.IReader
+import android.tools.common.io.ResultArtifactDescriptor
 import android.tools.common.io.RunStatus
 import android.tools.common.io.WINSCOPE_EXT
 import android.tools.device.flicker.datastore.CachedResultWriter
@@ -29,6 +30,7 @@ import android.tools.device.flicker.legacy.AbstractFlickerTestData
 import android.tools.device.flicker.legacy.FlickerBuilder
 import android.tools.device.flicker.legacy.IFlickerTestData
 import android.tools.device.traces.DEFAULT_TRACE_CONFIG
+import android.tools.device.traces.io.ArtifactBuilder
 import android.tools.device.traces.io.InMemoryArtifact
 import android.tools.device.traces.io.ParsedTracesReader
 import android.tools.device.traces.io.ResultReader
@@ -279,3 +281,14 @@ fun captureTrace(scenario: IScenario, actions: () -> Unit): ResultReader {
 
     return ResultReader(result, DEFAULT_TRACE_CONFIG)
 }
+
+fun createDefaultArtifactBuilder(
+    status: RunStatus,
+    outputDir: File = createTempDirectory().toFile(),
+    files: Map<ResultArtifactDescriptor, File> = emptyMap()
+) =
+    ArtifactBuilder()
+        .withScenario(TEST_SCENARIO)
+        .withOutputDir(outputDir)
+        .withStatus(status)
+        .withFiles(files)
