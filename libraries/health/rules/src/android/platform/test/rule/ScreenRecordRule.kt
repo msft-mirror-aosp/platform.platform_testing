@@ -50,6 +50,14 @@ import org.junit.runners.model.Statement
  * - pass the [SCREEN_RECORDING_TEST_LEVEL_OVERRIDE_KEY] or
  *   [SCREEN_RECORDING_CLASS_LEVEL_OVERRIDE_KEY] instrumentation argument. e.g. `adb shell am
  *   instrument -w -e <key> true <test>`).
+ *
+ * Important note: After the file is created, in order to see it in artifacts, it needs to be
+ * pulled from the device. Typically, this is done using [FilePullerLogCollector] at module
+ * level, changing AndroidTest.xml.
+ *
+ * Note that when this rule is set as:
+ * - `@ClassRule`, it will check only if the class has the [ScreenRecord] annotation.
+ * - `@Rule`, it will check each single test method.
  */
 class ScreenRecordRule : TestRule {
 
