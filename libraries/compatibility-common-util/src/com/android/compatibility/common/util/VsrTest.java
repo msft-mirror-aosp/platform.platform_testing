@@ -14,17 +14,16 @@
  * limitations under the License.
  */
 
-package com.android.robotestutil;
+package com.android.compatibility.common.util;
 
-public class RobolectricTestUtil {
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-    /** Determine whether the running test is a Robolectric test */
-    public static boolean isRobolectricTest() {
-        try {
-            Class.forName("org.robolectric.Robolectric");
-        } catch (ClassNotFoundException e) {
-            return false;
-        }
-        return true;
-    }
+/** Marks the type of test with purpose of asserting VSR requirements. */
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.METHOD, ElementType.TYPE})
+public @interface VsrTest {
+    String[] requirements();
 }
