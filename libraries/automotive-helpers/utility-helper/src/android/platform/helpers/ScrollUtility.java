@@ -185,4 +185,43 @@ public class ScrollUtility {
                     String.format("Unable to %s. Error: %s", action, ex.getMessage()));
         }
     }
+
+    /**
+     * Find UI element by scrolling using forward and backward buttons or guesture on device screen
+     */
+    public boolean scrollAndCheckIfUiElementExist(
+            ScrollActions scrollAction,
+            ScrollDirection scrollDirection,
+            BySelector forwardButtonSelector,
+            BySelector backwardButtonSelector,
+            BySelector scrollableElementSelector,
+            BySelector elementSelector,
+            String action) {
+        boolean scrollResult = false;
+        try {
+            switch (scrollAction) {
+                case USE_BUTTON:
+                    scrollResult =
+                            mSpectatioUiUtil.scrollAndCheckIfUiElementExist(
+                                    forwardButtonSelector, backwardButtonSelector, elementSelector);
+                    break;
+                case USE_GESTURE:
+                    scrollResult =
+                            mSpectatioUiUtil.scrollAndCheckIfUiElementExist(
+                                    scrollableElementSelector,
+                                    elementSelector,
+                                    (scrollDirection == ScrollDirection.VERTICAL));
+                    break;
+                default:
+                    throw new IllegalStateException(
+                            String.format(
+                                    "Unable to %s, unknown scroll action %s.",
+                                    action, scrollAction));
+            }
+            return scrollResult;
+        } catch (MissingUiElementException ex) {
+            throw new IllegalStateException(
+                    String.format("Unable to %s. Error: %s", action, ex.getMessage()));
+        }
+    }
 }

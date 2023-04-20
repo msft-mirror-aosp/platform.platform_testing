@@ -388,4 +388,17 @@ public class AutomotiveConfigConstants {
     public static final String NOTIFICATION_FACET_BUTTON = "NOTIFICATION_FACET_BUTTON";
     public static final String HVAC_FACET_BUTTON = "HVAC_FACET_BUTTON";
     public static final String HVAC_PANEL = "HVAC_PANEL";
+
+    // APP info Setting UI ELEMENTS
+    public static final String RECENTLY_OPENED_UI_ELEMENT = "RECENTLY_OPENED_UI_ELEMENT";
+    public static final String NOTIFICATIONS_UI_ELEMENT = "NOTIFICATIONS_UI_ELEMENT";
+    public static final String STOP_APP_UI_ELEMENT = "STOP_APP_UI_ELEMENT";
+    public static final String PERMISSIONS_UI_ELEMENT = "PERMISSIONS_UI_ELEMENT";
+    public static final String STORAGE_CACHE_UI_ELEMENT = "STORAGE_CACHE_UI_ELEMENT";
+    public static final String PERMISSION_MANAGER_UI_ELEMENT = "PERMISSION_MANAGER_UI_ELEMENT";
+    public static final String DEFAULT_APPS_UI_ELEMENT = "DEFAULT_APPS_UI_ELEMENT";
+    public static final String UNUSED_APPS_UI_ELEMENT = "UNUSED_APPS_UI_ELEMENT";
+    public static final String PERFORMANCE_IMPACTING_APPS_UI_ELEMENT =
+            "PERFORMANCE_IMPACTING_APPS_UI_ELEMENT";
+    public static final String SPECIAL_APPS_UI_ELEMENT = "SPECIAL_APPS_UI_ELEMENT";
 }
