@@ -991,6 +991,46 @@
       "TYPE": "RESOURCE_ID",
       "VALUE": "car_ui_list_item_touch_interceptor",
       "PACKAGE": "com.android.permissioncontroller"
+    },
+    "RECENTLY_OPENED_UI_ELEMENT": {
+      "TYPE": "TEXT",
+      "VALUE": "Recently opened"
+    },
+    "NOTIFICATIONS_UI_ELEMENT": {
+      "TYPE": "TEXT",
+      "VALUE": "Notifications"
+    },
+    "STOP_APP_UI_ELEMENT": {
+      "TYPE": "TEXT",
+      "VALUE": "Stop app"
+    },
+    "PERMISSIONS_UI_ELEMENT": {
+      "TYPE": "TEXT",
+      "VALUE": "Permissions"
+    },
+    "STORAGE_CACHE_UI_ELEMENT": {
+      "TYPE": "TEXT",
+      "VALUE": "Storage & cache"
+    },
+    "PERMISSION_MANAGER_UI_ELEMENT": {
+      "TYPE": "TEXT",
+      "VALUE": "Permission manager"
+    },
+    "DEFAULT_APPS_UI_ELEMENT": {
+    "TYPE": "TEXT",
+    "VALUE": "Default apps"
+    },
+    "UNUSED_APPS_UI_ELEMENT": {
+      "TYPE": "TEXT",
+      "VALUE": "Unused apps"
+    },
+    "PERFORMANCE_IMPACTING_APPS_UI_ELEMENT": {
+      "TYPE": "TEXT",
+      "VALUE": "Performance-impacting apps"
+    },
+    "SPECIAL_APPS_UI_ELEMENT": {
+      "TYPE": "TEXT",
+      "VALUE": "Special app access"
     }
   },
   "WORKFLOWS": {
