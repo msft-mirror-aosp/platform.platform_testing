@@ -251,7 +251,12 @@ public final class MediaInstrumentation {
                 .build());
     }
 
-    private void setCurrentMediaState(int state) {
+    /**
+     * Sets the Media's state to the given state.
+     *
+     * @param state the {@link PlaybackState}.
+     */
+    public void setCurrentMediaState(int state) {
         mCurrentMediaState = state;
         updatePlaybackState();
     }

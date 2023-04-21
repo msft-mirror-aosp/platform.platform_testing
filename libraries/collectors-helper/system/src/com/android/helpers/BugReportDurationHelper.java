@@ -19,14 +19,15 @@ package com.android.helpers;
 import android.app.UiAutomation;
 import android.os.ParcelFileDescriptor;
 import android.util.Log;
+
 import androidx.annotation.VisibleForTesting;
 import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.uiautomator.UiDevice;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -44,7 +45,8 @@ public class BugReportDurationHelper implements ICollectorHelper<Double> {
     private static final String TAG = BugReportDurationHelper.class.getSimpleName();
 
     private static final String LS_CMD = "ls %s";
-    private static final String UNZIP_CMD = "unzip -p %s %s";
+    private static final String UNZIP_EXTRACT_CMD = "unzip -p %s %s";
+    private static final String UNZIP_CONTENTS_CMD = "unzip -l %s";
     private static final String DURATION_FILTER = "was the duration of \'";
     private static final String SHOWMAP_FILTER = "SHOW MAP";
 
@@ -75,15 +77,17 @@ public class BugReportDurationHelper implements ICollectorHelper<Double> {
 
     @Override
     public Map<String, Double> getMetrics() {
+        Log.d(TAG, "Grabbing metrics for BugReportDuration.");
         Map<String, Double> metrics = new HashMap<>();
         String archive = getLatestBugReport();
         // No bug report was found, so there are no metrics to return.
         if (archive == null) {
+            Log.w(TAG, "No bug report was found in directory: " + bugReportDir);
             return metrics;
         }
         ArrayList<String> durationLines = extractAndFilterBugReport(archive);
         // No lines relevant to bug report durations were found, so there are no metrics to return.
-        if (durationLines == null) {
+        if (durationLines == null || durationLines.isEmpty()) {
             Log.w(TAG, "No lines relevant to bug report durations were found.");
             return metrics;
         }
@@ -109,6 +113,7 @@ public class BugReportDurationHelper implements ICollectorHelper<Double> {
 
     @Override
     public boolean stopCollecting() {
+        Log.d(TAG, "Stopped collecting for BugReportDuration.");
         return true;
     }
 
@@ -122,12 +127,24 @@ public class BugReportDurationHelper implements ICollectorHelper<Double> {
             HashSet<String> bugreports = new HashSet<>();
             for (String file : files) {
                 if (file.contains("bugreport") && file.contains("zip")) {
-                    bugreports.add(file);
+                    // We don't want to keep track of wifi or telephony bug reports because they
+                    // break the assumption that lexicographically-greater bug reports are also
+                    // more-recent.
+                    if (file.contains("wifi") || file.contains("telephony")) {
+                        Log.w(TAG, "Wifi or telephony bug report found and skipped: " + file);
+                    } else {
+                        bugreports.add(file);
+                    }
                 }
             }
             if (bugreports.size() == 0) {
                 Log.e(TAG, "Failed to find a bug report in " + bugReportDir);
                 return null;
+            } else if (bugreports.size() > 1) {
+                Log.w(TAG, "There are multiple bug reports in " + bugReportDir + ":");
+                for (String bugreport : bugreports) {
+                    Log.w(TAG, "    " + bugreport);
+                }
             }
             // Returns the newest bug report. Bug report names contain a timestamp, so the
             // lexicographically-greatest name will correspond to the most recent bug report.
@@ -142,24 +159,58 @@ public class BugReportDurationHelper implements ICollectorHelper<Double> {
     // names and durations.
     @VisibleForTesting
     public ArrayList<String> extractAndFilterBugReport(String archive) {
+        String archivePath = bugReportDir + archive;
         String entry = archive.replace("zip", "txt");
         UiAutomation automation = InstrumentationRegistry.getInstrumentation().getUiAutomation();
-        String cmd = String.format(UNZIP_CMD, bugReportDir + archive, entry);
+        String cmd = String.format(UNZIP_EXTRACT_CMD, archivePath, entry);
+        Log.d(TAG, "The unzip command that will be run is: " + cmd);
+
+        // We keep track of whether the buffered reader was empty because this probably indicates an
+        // issue in unzipping (e.g. a mismatch in the bugreport's .zip name and .txt entry name).
+        boolean bufferedReaderNotEmpty = false;
+        ArrayList<String> durationLines = new ArrayList<>();
         try (InputStream is =
                         new ParcelFileDescriptor.AutoCloseInputStream(
                                 automation.executeShellCommand(cmd));
                 BufferedReader br = new BufferedReader(new InputStreamReader(is)); ) {
-            ArrayList<String> durationLines = new ArrayList<>();
             String line;
             while ((line = br.readLine()) != null) {
+                bufferedReaderNotEmpty = true;
                 if (line.contains(DURATION_FILTER) && !line.contains(SHOWMAP_FILTER)) {
                     durationLines.add(line);
                 }
             }
-            return durationLines;
         } catch (IOException e) {
             Log.e(TAG, "Failed to extract and parse the raw bug report: " + e.getMessage());
             return null;
+        }
+        if (!bufferedReaderNotEmpty) {
+            Log.e(
+                    TAG,
+                    String.format(
+                            "The buffered reader for file %s in archive %s was empty.",
+                            entry, archivePath));
+            dumpBugReportEntries(archivePath);
+        }
+        return durationLines;
+    }
+
+    // Prints out every entry contained in the zip archive at archivePath.
+    private void dumpBugReportEntries(String archivePath) {
+        UiAutomation automation = InstrumentationRegistry.getInstrumentation().getUiAutomation();
+        String cmd = String.format(UNZIP_CONTENTS_CMD, archivePath);
+        Log.d(TAG, "The list-contents command that will be run is: " + cmd);
+        try (InputStream is =
+                        new ParcelFileDescriptor.AutoCloseInputStream(
+                                automation.executeShellCommand(cmd));
+                BufferedReader br = new BufferedReader(new InputStreamReader(is)); ) {
+            String line;
+            Log.d(TAG, "Dumping list of entries in " + archivePath);
+            while ((line = br.readLine()) != null) {
+                Log.d(TAG, "    " + line);
+            }
+        } catch (IOException e) {
+            Log.e(TAG, "Failed to list the contents of the bug report: " + e.getMessage());
         }
     }
 

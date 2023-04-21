@@ -17,8 +17,9 @@
 package android.platform.spectatio.configs;
 
 import android.platform.spectatio.constants.JsonConfigConstants;
-import android.support.test.uiautomator.By;
-import android.support.test.uiautomator.BySelector;
+
+import androidx.test.uiautomator.By;
+import androidx.test.uiautomator.BySelector;
 
 import com.google.gson.annotations.SerializedName;
 

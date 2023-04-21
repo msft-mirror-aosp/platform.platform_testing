@@ -55,6 +55,7 @@ object DeviceHelpers {
      * Waits for an object to be visible and returns it.
      *
      * Throws an error with message provided by [errorProvider] if the object is not found.
+     *
      * @deprecated Use [DeviceHelpers.waitForObj] instead.
      */
     fun UiDevice.waitForObj(
@@ -151,7 +152,9 @@ object DeviceHelpers {
             "$selector is ${visible.asVisibilityBoolean()} inside $this",
             timeout,
             errorProvider
-        ) { hasObject(selector) == visible }
+        ) {
+            hasObject(selector) == visible
+        }
     }
 
     /** Asserts that a this selector is visible. Throws otherwise. */

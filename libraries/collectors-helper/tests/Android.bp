@@ -23,6 +23,7 @@ android_test {
     static_libs: [
         "adservices-helper-test",
         "app-collector-helper-test",
+        "generic-helper-test",
         "jank-helper-test",
         "memory-helper-test",
         "perfetto-helper-test",

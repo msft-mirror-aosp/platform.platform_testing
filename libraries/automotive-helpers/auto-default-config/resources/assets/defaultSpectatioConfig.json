@@ -9,7 +9,9 @@
     "NUMBER_PICKER_WIDGET_CLASS" : "android.widget.NumberPicker",
     "EDIT_TEXT_WIDGET_CLASS" : "android.widget.EditText",
     "USER_SETTINGS_PACKAGE": "com.android.car.settings",
-    "MEDIA_CENTER_PACKAGE": "com.android.car.media"
+    "MEDIA_CENTER_PACKAGE": "com.android.car.media",
+    "CONTACTS_PACKAGE": "com.android.contacts",
+    "RADIO_PACKAGE": "com.android.car.radio"
   },
   "ACTIONS": {
     "CONTACT_LIST_SCROLL_ACTION": "USE_BUTTON",
@@ -18,8 +20,8 @@
     "CONTACT_SETTING_SCROLL_DIRECTION": "VERTICAL",
     "CONTACT_DETAILS_SCROLL_ACTION": "USE_BUTTON",
     "CONTACT_DETAILS_SCROLL_DIRECTION": "VERTICAL",
-    "APP_LIST_SCROLL_ACTION": "USE_BUTTON",
-    "APP_LIST_SCROLL_DIRECTION": "VERTICAL",
+    "APP_LIST_SCROLL_ACTION": "USE_GESTURE",
+    "APP_LIST_SCROLL_DIRECTION": "HORIZONTAL",
     "SECURITY_SETTINGS_SCROLL_ACTION": "USE_BUTTON",
     "SECURITY_SETTINGS_SCROLL_DIRECTION": "VERTICAL",
     "NOTIFICATION_LIST_SCROLL_ACTION": "USE_GESTURE",
@@ -299,6 +301,11 @@
       "TYPE": "TEXT",
       "VALUE": "Favo.?rite.?"
     },
+    "DIALER_VIEW": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "no_hfp_error_container",
+      "PACKAGE": "com.android.car.dialer"
+    },
     "HOME_TOP_CARD": {
       "TYPE": "RESOURCE_ID",
       "VALUE": "top_card",
@@ -313,6 +320,36 @@
       "TYPE": "RESOURCE_ID",
       "VALUE": "scene_card",
       "PACKAGE": "com.android.car.carlauncher"
+    },
+    "HOME_FACET_BUTTON": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "home",
+      "PACKAGE": "com.android.systemui"
+    },
+    "PHONE_FACET_BUTTON": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "phone_nav",
+      "PACKAGE": "com.android.systemui"
+    },
+    "APP_GRID_FACET_BUTTON": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "grid_nav",
+      "PACKAGE": "com.android.systemui"
+    },
+    "HVAC_FACET_BUTTON": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "hvac",
+      "PACKAGE": "com.android.systemui"
+    },
+    "HVAC_PANEL": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "hvac_panel",
+      "PACKAGE": "com.android.systemui"
+    },
+    "NOTIFICATION_FACET_BUTTON": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "notifications",
+      "PACKAGE": "com.android.systemui"
     },
     "APP_GRID_VIEW_ID": {
       "TYPE": "RESOURCE_ID",
@@ -334,7 +371,7 @@
     },
     "APP_LIST_SCROLL_ELEMENT": {
       "TYPE": "RESOURCE_ID",
-      "VALUE": "car_ui_internal_recycler_view",
+      "VALUE": "apps_grid",
       "PACKAGE": "com.android.car.carlauncher"
     },
     "SECURITY_SETTINGS_TITLE": {
@@ -919,6 +956,16 @@
       "VALUE": "car_ui_internal_recycler_view",
       "PACKAGE": "com.chassis.car.ui.plugin"
     },
+    "BLOCKING_MESSAGE": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "blocking_text",
+      "PACKAGE": "com.android.systemui"
+    },
+    "BLOCKING_SCREEN":  {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "activity_blocking_content",
+      "PACKAGE": "com.android.systemui"
+    },
     "TEST_MEDIA_ACCOUNT_TYPE": {
       "TYPE": "TEXT",
       "VALUE": "Account Type"
@@ -939,9 +986,66 @@
       "TYPE": "RESOURCE_ID",
       "VALUE": "close_target",
       "PACKAGE": "com.android.car.media.testmediaapp"
+    },
+    "CONTACTS_DIALOG_BOX": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "car_ui_list_item_touch_interceptor",
+      "PACKAGE": "com.android.permissioncontroller"
+    },
+    "RECENTLY_OPENED_UI_ELEMENT": {
+      "TYPE": "TEXT",
+      "VALUE": "Recently opened"
+    },
+    "NOTIFICATIONS_UI_ELEMENT": {
+      "TYPE": "TEXT",
+      "VALUE": "Notifications"
+    },
+    "STOP_APP_UI_ELEMENT": {
+      "TYPE": "TEXT",
+      "VALUE": "Stop app"
+    },
+    "PERMISSIONS_UI_ELEMENT": {
+      "TYPE": "TEXT",
+      "VALUE": "Permissions"
+    },
+    "STORAGE_CACHE_UI_ELEMENT": {
+      "TYPE": "TEXT",
+      "VALUE": "Storage & cache"
+    },
+    "PERMISSION_MANAGER_UI_ELEMENT": {
+      "TYPE": "TEXT",
+      "VALUE": "Permission manager"
+    },
+    "DEFAULT_APPS_UI_ELEMENT": {
+    "TYPE": "TEXT",
+    "VALUE": "Default apps"
+    },
+    "UNUSED_APPS_UI_ELEMENT": {
+      "TYPE": "TEXT",
+      "VALUE": "Unused apps"
+    },
+    "PERFORMANCE_IMPACTING_APPS_UI_ELEMENT": {
+      "TYPE": "TEXT",
+      "VALUE": "Performance-impacting apps"
+    },
+    "SPECIAL_APPS_UI_ELEMENT": {
+      "TYPE": "TEXT",
+      "VALUE": "Special app access"
     }
   },
   "WORKFLOWS": {
+    "DISMISS_APPS_INITIAL_DIALOGS": [
+      {
+        "NAME": "Allow Button",
+        "TYPE": "CLICK_IF_EXIST",
+        "CONFIG": {
+          "UI_ELEMENT": {
+            "TYPE": "TEXT",
+            "VALUE": "Allow"
+          }
+        }
+      }
+    ],
     "OPEN_SOUND_SETTINGS_WORKFLOW": [
       {
         "NAME": "Go to Home",

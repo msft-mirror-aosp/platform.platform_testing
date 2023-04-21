@@ -22,7 +22,6 @@ java_library {
     name: "automotive-settings-app-helper",
 
     static_libs: [
-        "ub-uiautomator",
         "spectatio-lib",
         "app-helpers-auto-interfaces",
         "android-support-annotations",
