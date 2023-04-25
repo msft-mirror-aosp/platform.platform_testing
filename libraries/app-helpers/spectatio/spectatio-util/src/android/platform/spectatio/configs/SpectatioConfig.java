@@ -126,6 +126,7 @@ public class SpectatioConfig {
         return getValueFromConfig(mPackages, packageName, JsonConfigConstants.PACKAGES);
     }
 
+    /** Instantiate a UI element specifier from the config values at the specified key */
     public UiElement getUiElementFromConfig(String uiElementName) {
         return getValueFromConfig(mUiElements, uiElementName, JsonConfigConstants.UI_ELEMENTS);
     }

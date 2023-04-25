@@ -185,6 +185,7 @@ public class AutomotiveConfigConstants {
     public static final String LANGUAGES_MENU = "LANGUAGES_MENU";
     public static final String LANGUAGES_MENU_IN_SELECTED_LANGUAGE =
             "LANGUAGES_MENU_IN_SELECTED_LANGUAGE";
+    public static final String SETTINGS_SUMMARY = "SETTINGS_SUMMARY";
     public static final String SYSTEM_SETTINGS_SCROLL_MARGIN = "SYSTEM_SETTINGS_SCROLL_MARGIN";
     public static final String SYSTEM_SETTINGS_SCROLL_WAIT_TIME =
             "SYSTEM_SETTINGS_SCROLL_WAIT_TIME";
