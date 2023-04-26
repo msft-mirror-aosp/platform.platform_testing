@@ -18,7 +18,7 @@ package android.tools.common.traces.region
 
 import android.tools.common.ITrace
 import android.tools.common.Timestamp
-import android.tools.common.datatypes.component.IComponentMatcher
+import android.tools.common.traces.component.IComponentMatcher
 import kotlin.js.JsName
 
 /**

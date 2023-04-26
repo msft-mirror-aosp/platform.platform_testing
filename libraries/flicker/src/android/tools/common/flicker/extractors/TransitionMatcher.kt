@@ -60,7 +60,10 @@ class TransitionMatcher(
                         "but no transition left after $appliedTransformsCount/${transforms.size} " +
                         "filters from: " +
                         "[\n${transitionsTrace.entries.joinToString(",\n") {
-                            Transition.Formatter(reader).format(it)
+                            Transition.Formatter(
+                                reader.readLayersTrace(),
+                                reader.readWmTrace()
+                            ).format(it)
                         }.prependIndent()}\n]!"
                 }
 
@@ -112,7 +115,9 @@ object TransitionTransforms {
     val mergeTrampolineTransitions: TransitionsTransform = { transitions, _, reader ->
         require(transitions.size <= 2) {
             "Got to merging trampoline transitions with more than 2 transitions left :: " +
-                transitions.joinToString { Transition.Formatter(reader).format(it) }
+                transitions.joinToString {
+                    Transition.Formatter(reader.readLayersTrace(), reader.readWmTrace()).format(it)
+                }
         }
         if (
             transitions.size == 2 &&

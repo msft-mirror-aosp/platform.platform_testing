@@ -24,12 +24,12 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.platform.helpers.AbstractStandardAppHelper
 import android.tools.common.CrossPlatform
-import android.tools.common.datatypes.component.ComponentNameMatcher
-import android.tools.common.datatypes.component.IComponentMatcher
-import android.tools.common.datatypes.component.IComponentNameMatcher
 import android.tools.common.traces.Condition
 import android.tools.common.traces.ConditionsFactory
 import android.tools.common.traces.DeviceStateDump
+import android.tools.common.traces.component.ComponentNameMatcher
+import android.tools.common.traces.component.IComponentMatcher
+import android.tools.common.traces.component.IComponentNameMatcher
 import android.tools.common.traces.wm.WindowManagerState
 import android.tools.device.traces.parsers.WindowManagerStateHelper
 import androidx.test.uiautomator.By

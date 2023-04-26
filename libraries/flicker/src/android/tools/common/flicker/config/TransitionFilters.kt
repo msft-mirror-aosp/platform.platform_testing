@@ -16,8 +16,8 @@
 
 package android.tools.common.flicker.config
 
-import android.tools.common.datatypes.component.ComponentNameMatcher
 import android.tools.common.flicker.extractors.TransitionsTransform
+import android.tools.common.traces.component.ComponentNameMatcher
 import android.tools.common.traces.wm.Transition
 import android.tools.common.traces.wm.TransitionType
 
