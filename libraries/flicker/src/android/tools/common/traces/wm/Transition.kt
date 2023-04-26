@@ -18,7 +18,7 @@ package android.tools.common.traces.wm
 
 import android.tools.common.ITraceEntry
 import android.tools.common.Timestamp
-import android.tools.common.io.IReader
+import android.tools.common.traces.surfaceflinger.LayersTrace
 import android.tools.common.traces.surfaceflinger.Transaction
 import android.tools.common.traces.surfaceflinger.TransactionsTrace
 import kotlin.js.JsExport
@@ -52,10 +52,10 @@ class Transition(
     val isIncomplete: Boolean
         get() = !played || aborted
 
-    override fun toString(): String = Formatter(null).format(this)
+    override fun toString(): String = Formatter(null, null).format(this)
 
-    class Formatter(val reader: IReader?) {
-        private val changeFormatter = TransitionChange.Formatter(reader)
+    class Formatter(val layersTrace: LayersTrace?, val wmTrace: WindowManagerTrace?) {
+        private val changeFormatter = TransitionChange.Formatter(layersTrace, wmTrace)
 
         fun format(transition: Transition): String = buildString {
             appendLine("Transition#${hashCode()}(")

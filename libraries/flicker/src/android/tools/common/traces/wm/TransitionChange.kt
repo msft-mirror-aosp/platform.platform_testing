@@ -16,7 +16,7 @@
 
 package android.tools.common.traces.wm
 
-import android.tools.common.io.IReader
+import android.tools.common.traces.surfaceflinger.LayersTrace
 import kotlin.js.JsExport
 import kotlin.js.JsName
 
@@ -28,13 +28,10 @@ class TransitionChange(
     @JsName("windowingMode") val windowingMode: WindowingMode
 ) {
 
-    override fun toString(): String = Formatter(null).format(this)
+    override fun toString(): String = Formatter(null, null).format(this)
 
-    class Formatter(val reader: IReader?) {
+    class Formatter(val layersTrace: LayersTrace?, val wmTrace: WindowManagerTrace?) {
         fun format(change: TransitionChange): String {
-            val layersTrace = reader?.readLayersTrace()
-            val wmTrace = reader?.readWmTrace()
-
             val layerName =
                 layersTrace
                     ?.entries

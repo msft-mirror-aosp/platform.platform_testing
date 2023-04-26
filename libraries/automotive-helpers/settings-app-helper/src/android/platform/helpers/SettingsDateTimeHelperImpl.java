@@ -49,6 +49,7 @@ public class SettingsDateTimeHelperImpl extends AbstractStandardAppHelper
     private BySelector mBackwardButtonSelector;
     private BySelector mForwardButtonSelector;
     private BySelector mScrollableElementSelector;
+    private BySelector mSummarySelector;
     private ScrollDirection mScrollDirection;
 
     public SettingsDateTimeHelperImpl(Instrumentation instr) {
@@ -66,6 +67,7 @@ public class SettingsDateTimeHelperImpl extends AbstractStandardAppHelper
                         AutomotiveConfigConstants.DATE_TIME_SETTINGS_SCROLL_FORWARD_BUTTON);
         mScrollableElementSelector =
                 getUiElementFromConfig(AutomotiveConfigConstants.DATE_TIME_SETTINGS_SCROLL_ELEMENT);
+        mSummarySelector = getUiElementFromConfig(AutomotiveConfigConstants.SETTINGS_SUMMARY);
         mScrollDirection =
                 ScrollDirection.valueOf(
                         getActionFromConfig(
@@ -581,7 +583,7 @@ public class SettingsDateTimeHelperImpl extends AbstractStandardAppHelper
     }
 
     private String getMenuSummaryText(UiObject2 obj) {
-        return obj.getChildren().get(0).getChildren().get(1).getText();
+        return obj.findObject(mSummarySelector).getText();
     }
 
     private boolean isAutomaticOn(String name) {
