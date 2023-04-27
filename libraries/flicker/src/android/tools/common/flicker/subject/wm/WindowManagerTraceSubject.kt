@@ -569,7 +569,9 @@ class WindowManagerTraceSubject(
         visibleEntriesShownMoreThanOneConsecutiveTime { subject ->
             subject.wmState.windowStates
                 .filter { it.isVisible }
-                .filter { ignoreWindows.none { windowName -> windowName.windowMatchesAnyOf(it) } }
+                .filter { window ->
+                    ignoreWindows.none { matcher -> matcher.windowMatchesAnyOf(window) }
+                }
                 .map { it.name }
                 .toSet()
         }

@@ -16,9 +16,7 @@
 
 package android.tools.common.flicker
 
-class TagIdGenerator {
-    companion object {
-        fun getNext() = ++latestId
-        private var latestId = 0
-    }
+object TagIdGenerator {
+    fun getNext() = ++latestId
+    private var latestId = 0
 }

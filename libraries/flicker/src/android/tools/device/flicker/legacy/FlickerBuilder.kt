@@ -64,6 +64,9 @@ class FlickerBuilder(
 ) {
     private var usingExistingTraces = false
 
+    /** Disable [WindowManagerTraceMonitor]. */
+    fun withoutWindowManagerTracing(): FlickerBuilder = apply { withWindowManagerTracing { null } }
+
     /**
      * Configure a [WindowManagerTraceMonitor] to obtain [WindowManagerTrace]
      *
