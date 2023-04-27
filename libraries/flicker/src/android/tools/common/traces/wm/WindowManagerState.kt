@@ -19,7 +19,7 @@ package android.tools.common.traces.wm
 import android.tools.common.CrossPlatform
 import android.tools.common.ITraceEntry
 import android.tools.common.Rotation
-import android.tools.common.datatypes.component.IComponentMatcher
+import android.tools.common.traces.component.IComponentMatcher
 import kotlin.js.JsExport
 import kotlin.js.JsName
 

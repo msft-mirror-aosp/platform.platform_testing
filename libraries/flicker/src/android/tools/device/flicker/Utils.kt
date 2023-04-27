@@ -17,7 +17,7 @@
 package android.tools.device.flicker
 
 import android.tools.common.IScenario
-import android.tools.common.datatypes.component.ComponentNameMatcher
+import android.tools.common.traces.component.ComponentNameMatcher
 import android.tools.device.traces.DEFAULT_TRACE_CONFIG
 import android.tools.device.traces.io.ResultReader
 import android.tools.device.traces.io.ResultWriter

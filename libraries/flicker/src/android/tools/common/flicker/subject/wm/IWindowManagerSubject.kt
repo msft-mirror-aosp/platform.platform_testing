@@ -18,7 +18,7 @@ package android.tools.common.flicker.subject.wm
 
 import android.tools.common.PlatformConsts
 import android.tools.common.Rotation
-import android.tools.common.datatypes.component.IComponentMatcher
+import android.tools.common.traces.component.IComponentMatcher
 import android.tools.common.traces.wm.Activity
 import android.tools.common.traces.wm.DisplayContent
 import android.tools.common.traces.wm.WindowState

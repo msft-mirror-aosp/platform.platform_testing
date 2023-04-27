@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package android.tools.common.datatypes.component
+package android.tools.common.traces.component
 
 import android.tools.common.traces.surfaceflinger.Layer
 import kotlin.js.JsName

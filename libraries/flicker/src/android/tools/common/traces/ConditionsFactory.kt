@@ -18,8 +18,8 @@ package android.tools.common.traces
 
 import android.tools.common.PlatformConsts
 import android.tools.common.Rotation
-import android.tools.common.datatypes.component.ComponentNameMatcher
-import android.tools.common.datatypes.component.IComponentMatcher
+import android.tools.common.traces.component.ComponentNameMatcher
+import android.tools.common.traces.component.IComponentMatcher
 import android.tools.common.traces.surfaceflinger.Layer
 import android.tools.common.traces.surfaceflinger.Transform
 import android.tools.common.traces.surfaceflinger.Transform.Companion.isFlagSet

@@ -23,7 +23,7 @@ import android.tools.assertThatErrorContainsDebugInfo
 import android.tools.assertThrows
 import android.tools.common.Cache
 import android.tools.common.datatypes.Region
-import android.tools.common.datatypes.component.ComponentNameMatcher
+import android.tools.common.traces.component.ComponentNameMatcher
 import android.tools.common.traces.wm.ConfigurationContainer
 import android.tools.common.traces.wm.KeyguardControllerState
 import android.tools.common.traces.wm.RootWindowContainer

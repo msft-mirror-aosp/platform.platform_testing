@@ -18,8 +18,6 @@ package android.tools.common.flicker.subject.wm
 
 import android.tools.common.Rotation
 import android.tools.common.datatypes.Region
-import android.tools.common.datatypes.component.ComponentNameMatcher
-import android.tools.common.datatypes.component.IComponentMatcher
 import android.tools.common.flicker.assertions.Fact
 import android.tools.common.flicker.subject.FlickerSubject
 import android.tools.common.flicker.subject.exceptions.ExceptionMessageBuilder
@@ -29,6 +27,8 @@ import android.tools.common.flicker.subject.exceptions.InvalidPropertyException
 import android.tools.common.flicker.subject.exceptions.SubjectAssertionError
 import android.tools.common.flicker.subject.region.RegionSubject
 import android.tools.common.io.IReader
+import android.tools.common.traces.component.ComponentNameMatcher
+import android.tools.common.traces.component.IComponentMatcher
 import android.tools.common.traces.wm.WindowManagerState
 import android.tools.common.traces.wm.WindowState
 

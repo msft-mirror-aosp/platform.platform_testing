@@ -21,7 +21,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
 import android.net.Uri
-import android.tools.common.datatypes.component.ComponentNameMatcher
+import android.tools.common.traces.component.ComponentNameMatcher
 
 /** Helper to launch the Maps app (not compatible with AOSP) */
 class MapsAppHelper

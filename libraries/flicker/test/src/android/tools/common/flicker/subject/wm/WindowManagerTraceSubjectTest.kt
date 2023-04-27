@@ -21,7 +21,7 @@ import android.tools.TestComponents
 import android.tools.assertThatErrorContainsDebugInfo
 import android.tools.assertThrows
 import android.tools.common.Cache
-import android.tools.common.datatypes.component.ComponentNameMatcher
+import android.tools.common.traces.component.ComponentNameMatcher
 import android.tools.getWmTraceReaderFromAsset
 import com.google.common.truth.Truth
 import org.junit.Before
