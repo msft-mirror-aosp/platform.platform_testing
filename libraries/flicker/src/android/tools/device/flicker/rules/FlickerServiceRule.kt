@@ -45,11 +45,19 @@ import org.junit.runner.notification.Failure
 open class FlickerServiceRule
 @JvmOverloads
 constructor(
-    private val enabled: Boolean = true,
+    // defaults to true
+    private val enabled: Boolean =
+        InstrumentationRegistry.getArguments().getString("faas:enabled")?.let { it.toBoolean() }
+            ?: true,
     // defaults to true
     private val failTestOnFaasFailure: Boolean =
-        InstrumentationRegistry.getArguments().getString("faas:blocking")?.let { it.toBoolean() }
-            ?: enabled,
+        InstrumentationRegistry.getArguments().getString("faas:failTestOnFaasFailure")?.let {
+            it.toBoolean()
+        }
+            ?: InstrumentationRegistry.getArguments().getString("faas:blocking")?.let {
+                it.toBoolean()
+            }
+                ?: enabled,
     private val metricsCollector: IFlickerServiceResultsCollector =
         FlickerServiceResultsCollector(
             tracesCollector = FlickerServiceTracesCollector(getDefaultFlickerOutputDir()),

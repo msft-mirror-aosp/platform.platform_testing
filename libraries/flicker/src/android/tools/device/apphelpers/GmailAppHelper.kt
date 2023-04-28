@@ -17,7 +17,7 @@
 package android.tools.device.apphelpers
 
 import android.app.Instrumentation
-import android.tools.common.datatypes.component.ComponentNameMatcher
+import android.tools.common.traces.component.ComponentNameMatcher
 
 /** Helper to launch the Gmail app (not compatible with AOSP) */
 class GmailAppHelper(instrumentation: Instrumentation) :

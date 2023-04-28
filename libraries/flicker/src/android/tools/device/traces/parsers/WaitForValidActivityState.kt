@@ -18,7 +18,7 @@ package android.tools.device.traces.parsers
 
 import android.app.ActivityTaskManager
 import android.app.WindowConfiguration
-import android.tools.common.datatypes.component.IComponentMatcher
+import android.tools.common.traces.component.IComponentMatcher
 
 data class WaitForValidActivityState(
     @JvmField val activityMatcher: IComponentMatcher?,

@@ -53,7 +53,7 @@ open class ResultReader(_result: IResultData, internal val traceConfig: TraceCon
         internal set
     override val artifact: IArtifact = result.artifact
     override val artifactPath: String
-        get() = result.artifact.path
+        get() = result.artifact.absolutePath
     override val runStatus
         get() = result.runStatus
     internal val transitionTimeRange
@@ -73,10 +73,15 @@ open class ResultReader(_result: IResultData, internal val traceConfig: TraceCon
      */
     @Throws(IOException::class)
     override fun readWmState(tag: String): WindowManagerTrace? {
-        val descriptor = ResultArtifactDescriptor(TraceType.WM_DUMP, tag)
-        CrossPlatform.log.d(FLICKER_IO_TAG, "Reading WM trace descriptor=$descriptor from $result")
-        val traceData = artifact.readBytes(descriptor)
-        return traceData?.let { WindowManagerDumpParser().parse(it, clearCache = true) }
+        return CrossPlatform.log.withTracing("readWmState#$tag") {
+            val descriptor = ResultArtifactDescriptor(TraceType.WM_DUMP, tag)
+            CrossPlatform.log.d(
+                FLICKER_IO_TAG,
+                "Reading WM trace descriptor=$descriptor from $result"
+            )
+            val traceData = artifact.readBytes(descriptor)
+            traceData?.let { WindowManagerDumpParser().parse(it, clearCache = true) }
+        }
     }
 
     /**
@@ -86,25 +91,27 @@ open class ResultReader(_result: IResultData, internal val traceConfig: TraceCon
      */
     @Throws(IOException::class)
     override fun readWmTrace(): WindowManagerTrace? {
-        val descriptor = ResultArtifactDescriptor(TraceType.WM)
-        return artifact.readBytes(descriptor)?.let {
-            val trace =
-                WindowManagerTraceParser()
-                    .parse(
-                        it,
-                        from = transitionTimeRange.start,
-                        to = transitionTimeRange.end,
-                        addInitialEntry = true,
-                        clearCache = true
-                    )
-            val minimumEntries = minimumTraceEntriesForConfig(traceConfig.wmTrace)
-            require(trace.entries.size >= minimumEntries) {
-                "WM trace contained ${trace.entries.size} entries, " +
-                    "expected at least $minimumEntries... :: " +
-                    "transition starts at ${transitionTimeRange.start} and " +
-                    "ends at ${transitionTimeRange.end}."
+        return CrossPlatform.log.withTracing("readWmTrace") {
+            val descriptor = ResultArtifactDescriptor(TraceType.WM)
+            artifact.readBytes(descriptor)?.let {
+                val trace =
+                    WindowManagerTraceParser()
+                        .parse(
+                            it,
+                            from = transitionTimeRange.start,
+                            to = transitionTimeRange.end,
+                            addInitialEntry = true,
+                            clearCache = true
+                        )
+                val minimumEntries = minimumTraceEntriesForConfig(traceConfig.wmTrace)
+                require(trace.entries.size >= minimumEntries) {
+                    "WM trace contained ${trace.entries.size} entries, " +
+                        "expected at least $minimumEntries... :: " +
+                        "transition starts at ${transitionTimeRange.start} and " +
+                        "ends at ${transitionTimeRange.end}."
+                }
+                trace
             }
-            trace
         }
     }
 
@@ -115,25 +122,27 @@ open class ResultReader(_result: IResultData, internal val traceConfig: TraceCon
      */
     @Throws(IOException::class)
     override fun readLayersTrace(): LayersTrace? {
-        val descriptor = ResultArtifactDescriptor(TraceType.SF)
-        return artifact.readBytes(descriptor)?.let {
-            val trace =
-                LayersTraceParser()
-                    .parse(
-                        it,
-                        transitionTimeRange.start,
-                        transitionTimeRange.end,
-                        addInitialEntry = true,
-                        clearCache = true
-                    )
-            val minimumEntries = minimumTraceEntriesForConfig(traceConfig.layersTrace)
-            require(trace.entries.size >= minimumEntries) {
-                "Layers trace contained ${trace.entries.size} entries, " +
-                    "expected at least $minimumEntries... :: " +
-                    "transition starts at ${transitionTimeRange.start} and " +
-                    "ends at ${transitionTimeRange.end}."
+        return CrossPlatform.log.withTracing("readLayersTrace") {
+            val descriptor = ResultArtifactDescriptor(TraceType.SF)
+            artifact.readBytes(descriptor)?.let {
+                val trace =
+                    LayersTraceParser()
+                        .parse(
+                            it,
+                            transitionTimeRange.start,
+                            transitionTimeRange.end,
+                            addInitialEntry = true,
+                            clearCache = true
+                        )
+                val minimumEntries = minimumTraceEntriesForConfig(traceConfig.layersTrace)
+                require(trace.entries.size >= minimumEntries) {
+                    "Layers trace contained ${trace.entries.size} entries, " +
+                        "expected at least $minimumEntries... :: " +
+                        "transition starts at ${transitionTimeRange.start} and " +
+                        "ends at ${transitionTimeRange.end}."
+                }
+                trace
             }
-            trace
         }
     }
 
@@ -144,9 +153,11 @@ open class ResultReader(_result: IResultData, internal val traceConfig: TraceCon
      */
     @Throws(IOException::class)
     override fun readLayersDump(tag: String): LayersTrace? {
-        val descriptor = ResultArtifactDescriptor(TraceType.SF_DUMP, tag)
-        val traceData = artifact.readBytes(descriptor)
-        return traceData?.let { LayersTraceParser().parse(it, clearCache = true) }
+        return CrossPlatform.log.withTracing("readLayersDump#$tag") {
+            val descriptor = ResultArtifactDescriptor(TraceType.SF_DUMP, tag)
+            val traceData = artifact.readBytes(descriptor)
+            traceData?.let { LayersTraceParser().parse(it, clearCache = true) }
+        }
     }
 
     /**
@@ -156,7 +167,9 @@ open class ResultReader(_result: IResultData, internal val traceConfig: TraceCon
      */
     @Throws(IOException::class)
     override fun readTransactionsTrace(): TransactionsTrace? =
-        doReadTransactionsTrace(from = transitionTimeRange.start, to = transitionTimeRange.end)
+        CrossPlatform.log.withTracing("readTransactionsTrace") {
+            doReadTransactionsTrace(from = transitionTimeRange.start, to = transitionTimeRange.end)
+        }
 
     private fun doReadTransactionsTrace(from: Timestamp, to: Timestamp): TransactionsTrace? {
         val traceData = artifact.readBytes(ResultArtifactDescriptor(TraceType.TRANSACTION))
@@ -174,15 +187,16 @@ open class ResultReader(_result: IResultData, internal val traceConfig: TraceCon
      */
     @Throws(IOException::class)
     override fun readTransitionsTrace(): TransitionsTrace? {
-        val traceData =
-            artifact.readBytes(ResultArtifactDescriptor(TraceType.TRANSITION)) ?: return null
-
-        val fullTrace = TransitionsTraceParser().parse(traceData)
-        val trace = fullTrace.slice(transitionTimeRange.start, transitionTimeRange.end)
-        if (!traceConfig.transitionsTrace.allowNoChange) {
-            require(trace.entries.isNotEmpty()) { "Transitions trace cannot be empty" }
+        return CrossPlatform.log.withTracing("readTransitionsTrace") {
+            artifact.readBytes(ResultArtifactDescriptor(TraceType.TRANSITION))?.let { traceData ->
+                val fullTrace = TransitionsTraceParser().parse(traceData)
+                val trace = fullTrace.slice(transitionTimeRange.start, transitionTimeRange.end)
+                if (!traceConfig.transitionsTrace.allowNoChange) {
+                    require(trace.entries.isNotEmpty()) { "Transitions trace cannot be empty" }
+                }
+                trace
+            }
         }
-        return trace
     }
 
     private fun minimumTraceEntriesForConfig(config: TraceConfig): Int {
@@ -196,10 +210,12 @@ open class ResultReader(_result: IResultData, internal val traceConfig: TraceCon
      */
     @Throws(IOException::class)
     override fun readEventLogTrace(): EventLog? {
-        val descriptor = ResultArtifactDescriptor(TraceType.EVENT_LOG)
-        return artifact.readBytes(descriptor)?.let {
-            EventLogParser()
-                .parseSlice(it, from = transitionTimeRange.start, to = transitionTimeRange.end)
+        return CrossPlatform.log.withTracing("readEventLogTrace") {
+            val descriptor = ResultArtifactDescriptor(TraceType.EVENT_LOG)
+            artifact.readBytes(descriptor)?.let {
+                EventLogParser()
+                    .parseSlice(it, from = transitionTimeRange.start, to = transitionTimeRange.end)
+            }
         }
     }
 

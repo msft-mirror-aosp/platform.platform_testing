@@ -13,14 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package android.tools.common.datatypes.component
 
-import kotlin.js.JsName
+package android.tools.common.flicker.subject.exceptions
 
-interface IComponentName {
-    @JsName("packageName") val packageName: String
-    @JsName("className") val className: String
-    @JsName("toActivityName") fun toActivityName(): String
-    @JsName("toWindowName") fun toWindowName(): String
-    @JsName("toLayerName") fun toLayerName(): String
+/** Base class for flicker subject exceptions */
+abstract class BaseException : AssertionError() {
+    abstract val messageBuilder: ExceptionMessageBuilder
+
+    override val message
+        get() = messageBuilder.build()
 }

@@ -17,11 +17,11 @@
 package android.tools.common.flicker.subject.wm
 
 import android.tools.common.Rotation
-import android.tools.common.datatypes.component.ComponentNameMatcher
-import android.tools.common.datatypes.component.IComponentMatcher
 import android.tools.common.flicker.subject.FlickerTraceSubject
 import android.tools.common.flicker.subject.region.RegionTraceSubject
 import android.tools.common.io.IReader
+import android.tools.common.traces.component.ComponentNameMatcher
+import android.tools.common.traces.component.IComponentMatcher
 import android.tools.common.traces.region.RegionTrace
 import android.tools.common.traces.wm.WindowManagerTrace
 import android.tools.common.traces.wm.WindowState

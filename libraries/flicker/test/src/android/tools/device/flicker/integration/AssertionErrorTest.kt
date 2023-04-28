@@ -45,9 +45,7 @@ class AssertionErrorTest {
 
     @Test
     fun executesTransition() {
-        Truth.assertWithMessage("Transition executed")
-            .that(AssertionErrorTest.Companion.transitionExecuted)
-            .isTrue()
+        Truth.assertWithMessage("Transition executed").that(transitionExecuted).isTrue()
         assertArtifactExists()
     }
 
@@ -83,8 +81,7 @@ class AssertionErrorTest {
         private var transitionExecuted = false
         @BeforeClass
         @JvmStatic
-        fun runTransition() =
-            Utils.runTransition { AssertionErrorTest.Companion.transitionExecuted = true }
+        fun runTransition() = Utils.runTransition { transitionExecuted = true }
 
         @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
     }

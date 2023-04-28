@@ -16,14 +16,16 @@
 
 package android.tools.common.flicker.subject.layers
 
-import android.tools.common.datatypes.component.ComponentNameMatcher
-import android.tools.common.datatypes.component.EdgeExtensionComponentMatcher
-import android.tools.common.datatypes.component.IComponentMatcher
-import android.tools.common.datatypes.component.IComponentNameMatcher
 import android.tools.common.flicker.subject.FlickerTraceSubject
-import android.tools.common.flicker.subject.exceptions.ExceptionBuilder
+import android.tools.common.flicker.subject.exceptions.ExceptionMessageBuilder
+import android.tools.common.flicker.subject.exceptions.InvalidElementException
+import android.tools.common.flicker.subject.exceptions.InvalidPropertyException
 import android.tools.common.flicker.subject.region.RegionTraceSubject
 import android.tools.common.io.IReader
+import android.tools.common.traces.component.ComponentNameMatcher
+import android.tools.common.traces.component.EdgeExtensionComponentMatcher
+import android.tools.common.traces.component.IComponentMatcher
+import android.tools.common.traces.component.IComponentNameMatcher
 import android.tools.common.traces.region.RegionTrace
 import android.tools.common.traces.surfaceflinger.Layer
 import android.tools.common.traces.surfaceflinger.LayersTrace
@@ -76,12 +78,18 @@ class LayersTraceSubject(val trace: LayersTrace, override val reader: IReader? =
 
     /** {@inheritDoc} */
     override fun layer(name: String, frameNumber: Long): LayerSubject {
-        return subjects.firstNotNullOfOrNull { it.layer(name, frameNumber) }
-            ?: throw ExceptionBuilder()
-                .forSubject(this)
-                .forInvalidElement(name, expectElementExists = true)
-                .addExtraDescription("Frame number", frameNumber)
-                .build()
+        val result = subjects.firstNotNullOfOrNull { it.layer(name, frameNumber) }
+
+        if (result == null) {
+            val errorMsgBuilder =
+                ExceptionMessageBuilder()
+                    .forSubject(this)
+                    .forInvalidElement(name, expectElementExists = true)
+                    .addExtraDescription("Frame number", frameNumber)
+            throw InvalidElementException(errorMsgBuilder)
+        }
+
+        return result
     }
 
     /** @return List of [LayerSubject]s matching [name] in the order they appear on the trace */
@@ -235,11 +243,12 @@ class LayersTraceSubject(val trace: LayersTrace, override val reader: IReader? =
         val anyEntryWithDisplayOn =
             subjects.any { it.entry.displays.any { display -> display.isOn } }
         if (!anyEntryWithDisplayOn) {
-            throw ExceptionBuilder()
-                .forInvalidProperty("Display")
-                .setExpected("At least one display On in any entry")
-                .setActual("No displays on in any entry")
-                .build()
+            val errorMsgBuilder =
+                ExceptionMessageBuilder()
+                    .forInvalidProperty("Display")
+                    .setExpected("At least one display On in any entry")
+                    .setActual("No displays on in any entry")
+            throw InvalidPropertyException(errorMsgBuilder)
         }
     }
 
@@ -286,11 +295,15 @@ class LayersTraceSubject(val trace: LayersTrace, override val reader: IReader? =
                 .all { it }
         val allFramesFound = frameNumbers.count() == numFound
         if (!allFramesFound || !frameNumbersMatch) {
-            throw ExceptionBuilder()
-                .forSubject(this)
-                .forInvalidElement(componentMatcher.toLayerIdentifier(), expectElementExists = true)
-                .addExtraDescription("With frame sequence", frameNumbers.joinToString(","))
-                .build()
+            val errorMsgBuilder =
+                ExceptionMessageBuilder()
+                    .forSubject(this)
+                    .forInvalidElement(
+                        componentMatcher.toLayerIdentifier(),
+                        expectElementExists = true
+                    )
+                    .addExtraDescription("With frame sequence", frameNumbers.joinToString(","))
+            throw InvalidElementException(errorMsgBuilder)
         }
     }
 

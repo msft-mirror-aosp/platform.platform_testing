@@ -34,8 +34,9 @@ enum class TransitionType(val value: Int) {
     KEYGUARD_UNOCCLUDE(9),
     PIP(10),
     WAKE(11),
+    SLEEP(12),
     // START OF CUSTOM TYPES
-    FIRST_CUSTOM(12),
+    FIRST_CUSTOM(1000),
     EXIT_PIP(FIRST_CUSTOM.value + 1),
     EXIT_PIP_TO_SPLIT(FIRST_CUSTOM.value + 2),
     REMOVE_PIP(FIRST_CUSTOM.value + 3),
@@ -44,7 +45,10 @@ enum class TransitionType(val value: Int) {
     SPLIT_DISMISS_SNAP(FIRST_CUSTOM.value + 6),
     SPLIT_DISMISS(FIRST_CUSTOM.value + 7),
     MAXIMIZE(FIRST_CUSTOM.value + 8),
-    RESTORE_FROM_MAXIMIZE(FIRST_CUSTOM.value + 9);
+    RESTORE_FROM_MAXIMIZE(FIRST_CUSTOM.value + 9),
+    ENTER_FREEFORM(FIRST_CUSTOM.value + 10),
+    ENTER_DESKTOP_MODE(FIRST_CUSTOM.value + 11),
+    EXIT_DESKTOP_MODE(FIRST_CUSTOM.value + 12);
 
     companion object {
         @JsName("fromInt") fun fromInt(value: Int) = values().first { it.value == value }

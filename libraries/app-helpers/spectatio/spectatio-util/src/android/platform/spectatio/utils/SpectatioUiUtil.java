@@ -786,9 +786,13 @@ public class SpectatioUiUtil {
         validateUiObjectAndThrowMissingUiElementException(
                 scrollableObject, scrollableSelector, /* action= */ "Scroll");
         if (!scrollableObject.isScrollable()) {
+            scrollableObject = scrollableObject.findObject(By.scrollable(true));
+        }
+        if ((scrollableObject == null) || !scrollableObject.isScrollable()) {
             throw new IllegalStateException(
                     String.format(
-                            "Cannot scroll; UI Object for selector %s is not scrollable.",
+                            "Cannot scroll; UI Object for selector %s is not scrollable and has no"
+                                    + " scrollable children.",
                             scrollableSelector));
         }
         return scrollableObject;

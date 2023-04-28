@@ -16,11 +16,11 @@
 
 package android.tools.common.flicker.assertors
 
-import android.tools.common.datatypes.component.ComponentNameMatcher
-import android.tools.common.datatypes.component.FullComponentIdMatcher
-import android.tools.common.datatypes.component.IComponentMatcher
 import android.tools.common.flicker.IScenarioInstance
 import android.tools.common.flicker.config.FaasScenarioType
+import android.tools.common.traces.component.ComponentNameMatcher
+import android.tools.common.traces.component.FullComponentIdMatcher
+import android.tools.common.traces.component.IComponentMatcher
 import android.tools.common.traces.wm.Transition
 import android.tools.common.traces.wm.TransitionType
 
@@ -76,12 +76,14 @@ object Components {
             when (scenarioInstance.type) {
                 FaasScenarioType.SPLIT_SCREEN_ENTER -> {
                     TODO(
-                        "Not implemented :: ${scenarioInstance.type} :: ${scenarioInstance.associatedTransition}"
+                        "Not implemented :: ${scenarioInstance.type} :: " +
+                            "${scenarioInstance.associatedTransition}"
                     )
                 }
                 FaasScenarioType.SPLIT_SCREEN_EXIT -> {
                     TODO(
-                        "Not implemented :: ${scenarioInstance.type} :: ${scenarioInstance.associatedTransition}"
+                        "Not implemented :: ${scenarioInstance.type} :: " +
+                            "${scenarioInstance.associatedTransition}"
                     )
                 }
                 FaasScenarioType.SPLIT_SCREEN_RESIZE -> {
@@ -101,12 +103,14 @@ object Components {
             when (scenarioInstance.type) {
                 FaasScenarioType.SPLIT_SCREEN_ENTER -> {
                     TODO(
-                        "Not implemented :: ${scenarioInstance.type} :: ${scenarioInstance.associatedTransition}"
+                        "Not implemented :: ${scenarioInstance.type} :: " +
+                            "${scenarioInstance.associatedTransition}"
                     )
                 }
                 FaasScenarioType.SPLIT_SCREEN_EXIT -> {
                     TODO(
-                        "Not implemented :: ${scenarioInstance.type} :: ${scenarioInstance.associatedTransition}"
+                        "Not implemented :: ${scenarioInstance.type} :: " +
+                            "${scenarioInstance.associatedTransition}"
                     )
                 }
                 FaasScenarioType.SPLIT_SCREEN_RESIZE -> {

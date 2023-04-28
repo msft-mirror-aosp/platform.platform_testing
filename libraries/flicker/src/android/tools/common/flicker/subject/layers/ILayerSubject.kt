@@ -16,8 +16,8 @@
 
 package android.tools.common.flicker.subject.layers
 
-import android.tools.common.datatypes.component.IComponentMatcher
-import android.tools.common.datatypes.component.IComponentNameMatcher
+import android.tools.common.traces.component.IComponentMatcher
+import android.tools.common.traces.component.IComponentNameMatcher
 import android.tools.common.traces.surfaceflinger.Display
 import android.tools.common.traces.surfaceflinger.Layer
 

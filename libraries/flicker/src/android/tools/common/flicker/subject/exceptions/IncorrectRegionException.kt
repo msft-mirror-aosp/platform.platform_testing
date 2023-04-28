@@ -17,4 +17,5 @@
 package android.tools.common.flicker.subject.exceptions
 
 /** Exception thrown when a visible region differs from the expected one */
-class IncorrectRegionException(msg: String) : AssertionError(msg)
+class IncorrectRegionException(override val messageBuilder: ExceptionMessageBuilder) :
+    BaseException()
