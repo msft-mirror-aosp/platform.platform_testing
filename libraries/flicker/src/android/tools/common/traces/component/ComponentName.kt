@@ -125,12 +125,13 @@ data class ComponentName(override val packageName: String, override val classNam
     override fun toString(): String = toShortWindowName()
 
     companion object {
-        fun fromLayerName(name: String): IComponentName {
+        fun fromLayerName(layerName: String): IComponentName {
+            var name = layerName
             var packageName = ""
             var className = ""
             if (name.contains("/")) {
                 if (name.contains("#")) {
-                    name.removeSuffix("#")
+                    name = name.removeSuffix("#")
                 }
                 val splitString = name.split('/')
                 packageName = splitString[0]

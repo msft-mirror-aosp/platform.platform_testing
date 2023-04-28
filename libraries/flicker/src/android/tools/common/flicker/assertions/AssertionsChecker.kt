@@ -109,7 +109,9 @@ class AssertionsChecker<T : FlickerSubject> {
                     .setMessage("Assertion never passed ${assertions.first()}")
                     .addExtraDescription(
                         *assertions
-                            .mapIndexed { idx, it -> Fact("Assertion$idx", it.toString()) }
+                            .mapIndexed { idx, assertion ->
+                                Fact("Assertion$idx", assertion.toString())
+                            }
                             .toTypedArray()
                     )
             throw SubjectAssertionError(errorMsg)

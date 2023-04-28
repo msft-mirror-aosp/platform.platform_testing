@@ -65,8 +65,6 @@ class EventLogParser : AbstractParser<Array<String>, EventLog>() {
         tag: String,
         eventData: String
     ): Event {
-        eventData.split(",")
-
         return when (tag) {
             INPUT_FOCUS_TAG -> {
                 FocusEvent.from(timestamp, pid, uid, tid, parseDataArray(eventData))
