@@ -88,6 +88,7 @@ public class AutomotiveConfigConstants {
     public static final String HOME_BOTTOM_CARD = "HOME_BOTTOM_CARD";
     public static final String HOME_TOP_CARD = "HOME_TOP_CARD";
     public static final String HOME_MAP_CARD = "HOME_MAP_CARD";
+    public static final String HOME_ASSISTANT_CARD = "HOME_ASSISTANT_CARD";
 
     // App Grid Constants
     public static final String OPEN_APP_GRID_COMMAND = "OPEN_APP_GRID_COMMAND";
@@ -402,4 +403,23 @@ public class AutomotiveConfigConstants {
     public static final String PERFORMANCE_IMPACTING_APPS_UI_ELEMENT =
             "PERFORMANCE_IMPACTING_APPS_UI_ELEMENT";
     public static final String SPECIAL_APPS_UI_ELEMENT = "SPECIAL_APPS_UI_ELEMENT";
+
+    // Micro Phone Constants
+    public static final String MICRO_PHONE_SWITCH = "MICRO_PHONE_SWITCH";
+    public static final String TOGGLE_MICROPHONE = "TOGGLE_MICROPHONE";
+    public static final String MICRO_PHONE_VIEW_ALL = "MICRO_PHONE_VIEW_ALL";
+    public static final String MICRO_PHONE_MUTED_CHIP_STATUS_BAR =
+            "MICRO_PHONE_MUTED_CHIP_STATUS_BAR";
+    public static final String MICRO_PHONE_MUTED_CHIP_MIC_PANEL =
+            "MICRO_PHONE_MUTED_CHIP_MIC_PANEL";
+    public static final String MICRO_PHONE_CHIP_STATUS_BAR = "MICRO_PHONE_CHIP_STATUS_BAR";
+    public static final String MICRO_PHONE_SETTING_LINK = "MICRO_PHONE_SETTING_LINK";
+    public static final String MANAGE_MICRO_PHONE_PERMISSIONS = "MANAGE_MICRO_PHONE_PERMISSIONS";
+    public static final String ASSISTANT_CARD = "ASSISTANT_CARD";
+    public static final String NO_RECENT_APPS = "NO_RECENT_APPS";
+    public static final String ADD_ACCOUNT_TEXT = "ADD_ACCOUNT_TEXT";
+    public static final String NO_ACCOUNT_TEXT = "NO_ACCOUNT_TEXT";
+    public static final String MANAGE_ACTIVITY_CONTROL_TEXT = "MANAGE_ACTIVITY_CONTROL_TEXT";
+    public static final String RECENT_APPS_TIMESTAMP_TEXT = "RECENT_APPS_TIMESTAMP_TEXT";
+    public static final String RECENT_APPS_TIMESTAMP = "RECENT_APPS_TIMESTAMP";
 }
