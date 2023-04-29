@@ -116,8 +116,8 @@ class LayersTraceSubject(val trace: LayersTrace, override val reader: IReader? =
     ): LayersTraceSubject = apply {
         visibleEntriesShownMoreThanOneConsecutiveTime { subject ->
             subject.entry.visibleLayers
-                .filter {
-                    ignoreLayers.none { componentMatcher -> componentMatcher.layerMatchesAnyOf(it) }
+                .filter { visibleLayer ->
+                    ignoreLayers.none { matcher -> matcher.layerMatchesAnyOf(visibleLayer) }
                 }
                 .map { it.name }
                 .toSet()

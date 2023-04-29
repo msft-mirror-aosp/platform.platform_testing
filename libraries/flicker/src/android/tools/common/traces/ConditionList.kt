@@ -41,7 +41,7 @@ class ConditionList<T>(@JsName("conditions") val conditions: List<Condition<T>>)
         }
 
     override val condition: (T) -> Boolean
-        get() = { conditions.all { condition -> condition.isSatisfied(it) } }
+        get() = { value -> conditions.all { condition -> condition.isSatisfied(value) } }
 
     override fun getMessage(value: T): String {
         return "(\n${
