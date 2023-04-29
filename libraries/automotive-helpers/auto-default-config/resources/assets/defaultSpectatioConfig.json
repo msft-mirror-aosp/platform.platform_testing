@@ -51,7 +51,8 @@
     "SETTINGS_SUB_SETTING_SCROLL_ACTION": "USE_GESTURE",
     "SETTINGS_SUB_SETTING_SCROLL_DIRECTION": "VERTICAL",
     "MEDIA_APP_SCROLL_ACTION": "USE_GESTURE",
-    "MEDIA_APP_SCROLL_DIRECTION": "VERTICAL"
+    "MEDIA_APP_SCROLL_DIRECTION": "VERTICAL",
+    "RECENT_APPS_TIMESTAMP_TEXT": "min. ago"
   },
   "COMMANDS": {
     "OPEN_DIAL_PAD_COMMAND": "am start -a android.intent.action.DIAL",
@@ -320,6 +321,10 @@
       "TYPE": "RESOURCE_ID",
       "VALUE": "scene_card",
       "PACKAGE": "com.android.car.carlauncher"
+    },
+    "HOME_ASSISTANT_CARD": {
+      "TYPE": "TEXT",
+      "VALUE": "Assistant"
     },
     "HOME_FACET_BUTTON": {
       "TYPE": "RESOURCE_ID",
@@ -678,7 +683,7 @@
     "DATE_TIME_SETTINGS_SET_TIME_ZONE_AUTOMATICALLY": {
       "TYPE": "TEXT",
       "VALUE": "Set time zone automatically"
-    } ,
+    },
     "DATE_TIME_SETTINGS_SET_DATE": {
       "TYPE": "TEXT",
       "VALUE": "Set date"
@@ -966,7 +971,7 @@
       "VALUE": "blocking_text",
       "PACKAGE": "com.android.systemui"
     },
-    "BLOCKING_SCREEN":  {
+    "BLOCKING_SCREEN": {
       "TYPE": "RESOURCE_ID",
       "VALUE": "activity_blocking_content",
       "PACKAGE": "com.android.systemui"
@@ -1022,8 +1027,8 @@
       "VALUE": "Permission manager"
     },
     "DEFAULT_APPS_UI_ELEMENT": {
-    "TYPE": "TEXT",
-    "VALUE": "Default apps"
+      "TYPE": "TEXT",
+      "VALUE": "Default apps"
     },
     "UNUSED_APPS_UI_ELEMENT": {
       "TYPE": "TEXT",
@@ -1036,6 +1041,67 @@
     "SPECIAL_APPS_UI_ELEMENT": {
       "TYPE": "TEXT",
       "VALUE": "Special app access"
+    },
+    "TOGGLE_MICROPHONE": {
+      "TYPE": "TEXT",
+      "VALUE": "Use microphone"
+    },
+    "MICRO_PHONE_MUTED_CHIP_STATUS_BAR": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "light_muted_icon",
+      "PACKAGE": "com.android.systemui"
+    },
+    "MICRO_PHONE_MUTED_CHIP_MIC_PANEL": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "dark_muted_icon",
+      "PACKAGE": "com.android.systemui"
+    },
+    "MICRO_PHONE_CHIP_STATUS_BAR": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "mic_privacy_chip",
+      "PACKAGE": "com.android.systemui"
+    },
+    "MICRO_PHONE_SETTING_LINK": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "qc_mic_footer_button",
+      "PACKAGE": "com.android.systemui"
+    },
+    "MICRO_PHONE_SWITCH": {
+      "TYPE": "CLASS",
+      "VALUE": "android.widget.Switch"
+    },
+    "MANAGE_MICRO_PHONE_PERMISSIONS": {
+      "TYPE": "TEXT",
+      "VALUE": "Manage microphone permissions"
+    },
+    "ASSISTANT_CARD": {
+      "TYPE": "TEXT",
+      "VALUE": "Assistant"
+    },
+    "NO_RECENT_APPS": {
+      "TYPE": "TEXT",
+      "VALUE": "No recent apps"
+    },
+    "ADD_ACCOUNT_TEXT": {
+      "TYPE": "TEXT",
+      "VALUE": "Add a Google Account"
+    },
+    "NO_ACCOUNT_TEXT": {
+      "TYPE": "TEXT",
+      "VALUE": "No account on this device"
+    },
+    "MANAGE_ACTIVITY_CONTROL_TEXT": {
+      "TYPE": "TEXT",
+      "VALUE": "Manage activity controls"
+    },
+    "MICRO_PHONE_VIEW_ALL": {
+      "TYPE": "TEXT",
+      "VALUE": "View all"
+    },
+    "RECENT_APPS_TIMESTAMP": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "summary",
+      "PACKAGE": "android"
     }
   },
   "WORKFLOWS": {
@@ -1385,6 +1451,42 @@
             "TYPE": "RESOURCE_ID",
             "VALUE": "fragment_container",
             "PACKAGE": "com.android.car.settings"
+          }
+        }
+      }
+    ],
+    "OPEN_PRIVACY_SETTINGS_WORKFLOW": [
+      {
+        "NAME": "Go to Home",
+        "TYPE": "PRESS",
+        "CONFIG": {
+          "TEXT": "HOME"
+        }
+      },
+      {
+        "NAME": "Open Settings",
+        "TYPE": "COMMAND",
+        "CONFIG": {
+          "TEXT": "am start -a android.settings.SETTINGS"
+        }
+      },
+      {
+        "NAME": "Open Privacy Settings",
+        "TYPE": "SCROLL_TO_FIND_AND_CLICK",
+        "CONFIG": {
+          "UI_ELEMENT": {
+            "TYPE": "TEXT",
+            "VALUE": "Privacy"
+          }
+        },
+        "SCROLL_CONFIG": {
+          "SCROLL_ACTION": "USE_GESTURE",
+          "SCROLL_DIRECTION": "VERTICAL",
+          "SCROLL_ELEMENT": {
+            "TYPE": "RESOURCE_ID",
+            "VALUE": "car_ui_recycler_view",
+            "PACKAGE": "com.android.car.ui.sharedlibrary"
+            "PACKAGE": "com.android.car.ui.sharedlibrar"
           }
         }
       }
