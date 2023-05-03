@@ -335,10 +335,7 @@ open class ScreenshotTestRule(
                 writeAction(it)
             }
         } catch (e: Exception) {
-            throw IOException(
-                "Could not write file to storage (path: ${file.absolutePath}). " +
-                    " Stacktrace: " + e.stackTrace
-            )
+            throw IOException("Could not write file to storage (path: ${file.absolutePath}). ", e)
         }
         return file
     }
