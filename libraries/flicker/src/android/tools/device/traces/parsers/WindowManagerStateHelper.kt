@@ -59,9 +59,9 @@ constructor(
         getCurrentStateDump(clearCacheAfterParsing = clearCacheAfterParsing)
     },
     /** Number of attempts to satisfy a wait condition */
-    private val numRetries: Int = WaitCondition.DEFAULT_RETRY_LIMIT,
+    private val numRetries: Int = DEFAULT_RETRY_LIMIT,
     /** Interval between wait for state dumps during wait conditions */
-    private val retryIntervalMs: Long = WaitCondition.DEFAULT_RETRY_INTERVAL_MS
+    private val retryIntervalMs: Long = DEFAULT_RETRY_INTERVAL_MS
 ) {
     private var internalState: DeviceStateDump? = null
 
@@ -398,6 +398,12 @@ constructor(
     }
 
     companion object {
+        // TODO(b/112837428): Implement a incremental retry policy to reduce the unnecessary
+        // constant time, currently keep the default as 5*1s because most of the original code
+        // uses it, and some tests might be sensitive to the waiting interval.
+        private const val DEFAULT_RETRY_LIMIT = 50
+        private const val DEFAULT_RETRY_INTERVAL_MS = 100L
+
         /** @return true if it should wait for some activities to become visible. */
         private fun shouldWaitForActivities(
             state: DeviceStateDump,

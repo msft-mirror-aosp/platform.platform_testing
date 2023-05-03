@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package com.android.server.wm.flicker.traces.inputmethod
+package android.tools.common.flicker.subject.inputmethod
 
-/** Base interface for ImeClient trace and state assertions */
-interface IImeClientSubject<ImeClientSubjectType> {
-    /** Asserts that the current ImeClient state doesn't contain anything */
-    fun isEmpty(): ImeClientSubjectType
+/** Base interface for InputMethodService trace and state assertions */
+interface IInputMethodServiceSubject<InputMethodServiceSubjectType> {
+    /** Asserts that the current InputMethodService state doesn't contain anything */
+    fun isEmpty(): InputMethodServiceSubjectType
 
-    /** Asserts that the current ImeClient state contains something */
-    fun isNotEmpty(): ImeClientSubjectType
+    /** Asserts that the current InputMethodService state contains something */
+    fun isNotEmpty(): InputMethodServiceSubjectType
 }

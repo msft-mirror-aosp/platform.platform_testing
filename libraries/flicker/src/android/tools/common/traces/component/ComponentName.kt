@@ -16,8 +16,6 @@
 
 package android.tools.common.traces.component
 
-import kotlin.js.JsName
-
 /**
  * Create a new component identifier.
  *
@@ -65,7 +63,6 @@ data class ComponentName(override val packageName: String, override val classNam
         }
     }
 
-    @JsName("toShortWindowName")
     private fun toShortWindowName(): String {
         return when {
             packageName.isNotEmpty() && className.isNotEmpty() ->
@@ -90,13 +87,11 @@ data class ComponentName(override val packageName: String, override val classNam
         return result
     }
 
-    @JsName("appendShortString")
     private fun appendShortString(sb: StringBuilder, packageName: String, className: String) {
         sb.append(packageName).append('/')
         appendShortClassName(sb, packageName, className)
     }
 
-    @JsName("appendShortClassName")
     private fun appendShortClassName(sb: StringBuilder, packageName: String, className: String) {
         if (className.startsWith(packageName)) {
             val packageNameLength = packageName.length
@@ -109,17 +104,13 @@ data class ComponentName(override val packageName: String, override val classNam
         sb.append(className)
     }
 
-    @JsName("toActivityRecordFilter")
     fun toActivityRecordFilter(): Regex =
         Regex("ActivityRecord\\{.*${Regex.escape(this.toShortWindowName())}.*")
 
-    @JsName("toActivityNameRegex")
     fun toActivityNameRegex(): Regex = Regex(".*${Regex.escape(this.toActivityName())}.*")
 
-    @JsName("toWindowNameRegex")
     fun toWindowNameRegex(): Regex = Regex(".*${Regex.escape(this.toWindowName())}.*")
 
-    @JsName("toLayerNameRegex")
     fun toLayerNameRegex(): Regex = Regex(".*${Regex.escape(this.toLayerName())}.*")
 
     override fun toString(): String = toShortWindowName()

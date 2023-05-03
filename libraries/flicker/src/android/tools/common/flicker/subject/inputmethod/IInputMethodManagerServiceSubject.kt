@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package com.android.server.wm.flicker.traces.inputmethod
+package android.tools.common.flicker.subject.inputmethod
 
-/** Base interface for InputMethodService trace and state assertions */
-interface IInputMethodServiceSubject<InputMethodServiceSubjectType> {
-    /** Asserts that the current InputMethodService state doesn't contain anything */
-    fun isEmpty(): InputMethodServiceSubjectType
+/** Base interface for InputMethodManagerService trace and state assertions */
+interface IInputMethodManagerServiceSubject<InputMethodManagerServiceSubjectType> {
+    /** Asserts that the current InputMethodManagerService state doesn't contain anything */
+    fun isEmpty(): InputMethodManagerServiceSubjectType
 
-    /** Asserts that the current InputMethodService state contains something */
-    fun isNotEmpty(): InputMethodServiceSubjectType
+    /** Asserts that the current InputMethodManagerService state contains something */
+    fun isNotEmpty(): InputMethodManagerServiceSubjectType
 }

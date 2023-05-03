@@ -41,7 +41,6 @@ class Activity(
      *
      * @param componentMatcher Components to search
      */
-    @JsName("getWindows")
     fun getWindows(componentMatcher: IComponentMatcher): Array<WindowState> = getWindows {
         componentMatcher.windowMatchesAnyOf(it)
     }
@@ -59,7 +58,6 @@ class Activity(
     internal fun hasWindowState(windowState: WindowState): Boolean =
         getWindows { windowState == it }.isNotEmpty()
 
-    @JsName("isTablet")
     private fun getWindows(predicate: (WindowState) -> Boolean) =
         collectDescendants<WindowState> { predicate(it) }
 

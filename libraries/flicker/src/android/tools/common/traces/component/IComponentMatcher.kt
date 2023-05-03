@@ -19,12 +19,8 @@ package android.tools.common.traces.component
 import android.tools.common.traces.surfaceflinger.Layer
 import android.tools.common.traces.wm.Activity
 import android.tools.common.traces.wm.WindowContainer
-import kotlin.js.JsExport
-import kotlin.js.JsName
 
-@JsExport
 interface IComponentMatcher {
-    @JsName("or")
     fun or(other: IComponentMatcher): IComponentMatcher {
         return OrComponentMatcher(arrayOf(this, other))
     }
@@ -33,14 +29,12 @@ interface IComponentMatcher {
      * @param window to search
      * @return if any of the [components] matches [window]
      */
-    @JsName("windowMatchesAnyOf")
     fun windowMatchesAnyOf(window: WindowContainer): Boolean = windowMatchesAnyOf(arrayOf(window))
 
     /**
      * @param windows to search
      * @return if any of the [components] matches any of [windows]
      */
-    @JsName("windowMatchesAnyOfCollection")
     fun windowMatchesAnyOf(windows: Collection<WindowContainer>): Boolean =
         windowMatchesAnyOf(windows.toTypedArray())
 
@@ -48,21 +42,18 @@ interface IComponentMatcher {
      * @param windows to search
      * @return if any of the [windows] fit the matching conditions of the matcher
      */
-    @JsName("windowMatchesAnyOfArray")
     fun windowMatchesAnyOf(windows: Array<WindowContainer>): Boolean
 
     /**
      * @param activity to search
      * @return if any of the [components] matches [activity]
      */
-    @JsName("activityMatchesAnyOf")
     fun activityMatchesAnyOf(activity: Activity): Boolean = activityMatchesAnyOf(arrayOf(activity))
 
     /**
      * @param activities to search
      * @return if any of the [components] matches any of [activities]
      */
-    @JsName("activityMatchesAnyOfCollection")
     fun activityMatchesAnyOf(activities: Collection<Activity>): Boolean =
         activityMatchesAnyOf(activities.toTypedArray())
 
@@ -70,25 +61,22 @@ interface IComponentMatcher {
      * @param activities to search
      * @return if any of the [components] matches any of [activities]
      */
-    @JsName("activityMatchesAnyOfArray")
     fun activityMatchesAnyOf(activities: Array<Activity>): Boolean
 
     /**
      * @param layer to search
      * @return if any of the [components] matches [layer]
      */
-    @JsName("layerMatchesAnyOf")
     fun layerMatchesAnyOf(layer: Layer): Boolean = layerMatchesAnyOf(arrayOf(layer))
 
     /**
      * @param layers to search
      * @return if any of the [components] matches any of [layers]
      */
-    @JsName("layerMatchesAnyOfCollection")
     fun layerMatchesAnyOf(layers: Collection<Layer>): Boolean =
         layerMatchesAnyOf(layers.toTypedArray())
 
-    @JsName("layerMatchesAnyOfArray") fun layerMatchesAnyOf(layers: Array<Layer>): Boolean
+    fun layerMatchesAnyOf(layers: Array<Layer>): Boolean
 
     /**
      * @return an identifier string that provides enough information to determine which activities
@@ -106,7 +94,7 @@ interface IComponentMatcher {
      *         matcher is looking to match. Mostly used for debugging purposes in error messages.
      * ```
      */
-    @JsName("toWindowIdentifier") fun toWindowIdentifier(): String
+    fun toWindowIdentifier(): String
 
     /**
      * @return an identifier string that provides enough information to determine which layers the
@@ -115,7 +103,7 @@ interface IComponentMatcher {
      *         matcher is looking to match. Mostly used for debugging purposes in error messages.
      * ```
      */
-    @JsName("toLayerIdentifier") fun toLayerIdentifier(): String
+    fun toLayerIdentifier(): String
 
     /**
      * @param layers Collection of layers check for matches
@@ -132,14 +120,11 @@ interface IComponentMatcher {
      *         defined execution of it.
      * ```
      */
-    @JsName("check")
     fun check(layers: Collection<Layer>, condition: (Collection<Layer>) -> Boolean): Boolean
 
-    @JsName("filterLayers")
     fun filterLayers(layers: Collection<Layer>): Collection<Layer> =
         layers.filter { layerMatchesAnyOf(it) }
 
-    @JsName("filterWindows")
     fun filterWindows(windows: Collection<WindowContainer>): Collection<WindowContainer> =
         windows.filter { windowMatchesAnyOf(it) }
 }

@@ -16,8 +16,5 @@
 
 package android.tools.common
 
-import kotlin.js.JsName
-
-@JsName("withCache")
 inline fun <reified T : Any> withCache(newInstancePredicate: () -> T): T =
     Cache.get(newInstancePredicate())
