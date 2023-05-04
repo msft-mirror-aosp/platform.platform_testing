@@ -19,12 +19,17 @@ package com.android.helpers;
 import static com.android.helpers.MetricUtility.constructKey;
 
 import android.util.Log;
+
+import androidx.annotation.VisibleForTesting;
 import androidx.test.InstrumentationRegistry;
 import androidx.test.uiautomator.UiDevice;
+
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.InputMismatchException;
@@ -49,7 +54,13 @@ public class ShowmapSnapshotHelper implements ICollectorHelper<String> {
     public static final String ALL_PROCESSES_CMD = "ps -A";
     private static final String SHOWMAP_CMD = "showmap -v %d";
     private static final String CHILD_PROCESSES_CMD = "ps -A --ppid %d";
-
+    @VisibleForTesting public static final String OOM_SCORE_ADJ_CMD = "cat /proc/%d/oom_score_adj";
+    private static final String THREADS_FILE_PATH = "/sdcard/countThreads.sh";
+    @VisibleForTesting public static final String THREADS_CMD = "sh /sdcard/countThreads.sh";
+    private static final String THREADS_EXEC_SCRIPT =
+            "for i in $(ls /proc | grep -E [0-9]+); do echo \"threads_count_$(cat"
+                    + " /proc/$i/cmdline) : $(ls /proc/$i/task | wc -l)\"; done;";
+    public static final String THREADS_PATTERN = "(?<key>^threads_count_.+) : (?<value>[0-9]+)";
     public static final String OUTPUT_METRIC_PATTERN = "showmap_%s_bytes";
     public static final String OUTPUT_FILE_PATH_KEY = "showmap_output_file";
     public static final String PROCESS_COUNT = "process_count";
@@ -57,10 +68,11 @@ public class ShowmapSnapshotHelper implements ICollectorHelper<String> {
     public static final String OUTPUT_CHILD_PROCESS_COUNT_KEY = CHILD_PROCESS_COUNT_PREFIX + "_%s";
     public static final String PROCESS_WITH_CHILD_PROCESS_COUNT =
             "process_with_child_process_count";
-    private static final String CHILD_PROCESS_NAME_REGEX = "(\\S+)$";
     private static final String METRIC_VALUE_SEPARATOR = "_";
     public static final String PARENT_PROCESS_STRING = "parent_process";
     public static final String CHILD_PROCESS_STRING = "child_process";
+    // The reason to skip the process: b/272181398#comment24
+    private static final Set<String> SKIP_PROCESS = new HashSet<>(Arrays.asList("logcat", "sh"));
 
     private String[] mProcessNames = null;
     private String mTestOutputDir = null;
@@ -70,6 +82,7 @@ public class ShowmapSnapshotHelper implements ICollectorHelper<String> {
     private boolean mCollectForAllProcesses = false;
     private UiDevice mUiDevice;
     private boolean mRunGcPrecollection;
+    private boolean mRunCountThreads;
 
     // Map to maintain per-process memory info
     private Map<String, String> mMemoryMap = new HashMap<>();
@@ -79,11 +92,12 @@ public class ShowmapSnapshotHelper implements ICollectorHelper<String> {
     private Map<String, List<Integer>> mMetricNameIndexMap = new HashMap<>();
 
     public void setUp(String testOutputDir, String... processNames) {
-      mProcessNames = processNames;
-      mTestOutputDir = testOutputDir;
-      mDropCacheOption = 0;
-      mRunGcPrecollection = false;
-      mUiDevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
+        mProcessNames = processNames;
+        mTestOutputDir = testOutputDir;
+        mDropCacheOption = 0;
+        mRunGcPrecollection = false;
+        mRunCountThreads = false;
+        mUiDevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
     }
 
     @Override
@@ -133,11 +147,13 @@ public class ShowmapSnapshotHelper implements ICollectorHelper<String> {
     @Override
     public Map<String, String> getMetrics() {
         try {
+            if (mRunCountThreads) {
+                mMemoryMap.putAll(execCountThreads());
+            }
             // Drop cache if requested
             if (mDropCacheOption > 0) {
                 dropCache(mDropCacheOption);
             }
-
             if (mCollectForAllProcesses) {
                 Log.i(TAG, "Collecting memory metrics for all processes.");
                 mProcessNames = getAllProcessNames();
@@ -148,7 +164,6 @@ public class ShowmapSnapshotHelper implements ICollectorHelper<String> {
                 return mMemoryMap;
             }
             HashSet<Integer> zygoteChildrenPids = getZygoteChildrenPids();
-
             FileWriter writer = new FileWriter(new File(mTestOutputFile), true);
             for (String processName : mProcessNames) {
                 List<Integer> pids = new ArrayList<>();
@@ -156,31 +171,37 @@ public class ShowmapSnapshotHelper implements ICollectorHelper<String> {
                 try {
                     pids = getPids(processName);
                     for (Integer pid : pids) {
-                      // Force Garbage collect to trim transient objects before taking memory
-                      // measurements as memory tests aim to track persistent memory regression
-                      // instead of transient memory which also allows for de-noising and reducing
-                      // likelihood of false alerts.
-                      if (mRunGcPrecollection && zygoteChildrenPids.contains(pid)) {
-                        // Skip native processes from sending GC signal.
-                        android.os.Trace.beginSection("IssueGCForPid: " + pid);
-                        // Perform a synchronous GC which happens when we request meminfo
-                        // This save us the need of setting up timeouts that may or may not
-                        // match with the end time of GC.
-                        mUiDevice.executeShellCommand("dumpsys meminfo -a " + pid);
-                        android.os.Trace.endSection();
-                      }
+                        // Force Garbage collect to trim transient objects before taking memory
+                        // measurements as memory tests aim to track persistent memory regression
+                        // instead of transient memory which also allows for de-noising and reducing
+                        // likelihood of false alerts.
+                        if (mRunGcPrecollection && zygoteChildrenPids.contains(pid)) {
+                            // Skip native processes from sending GC signal.
+                            android.os.Trace.beginSection("IssueGCForPid: " + pid);
+                            // Perform a synchronous GC which happens when we request meminfo
+                            // This save us the need of setting up timeouts that may or may not
+                            // match with the end time of GC.
+                            mUiDevice.executeShellCommand("dumpsys meminfo -a " + pid);
+                            android.os.Trace.endSection();
+                        }
 
-                      android.os.Trace.beginSection("ExecuteShowmap");
-                      String showmapOutput = execShowMap(processName, pid);
-                      android.os.Trace.endSection();
-                      parseAndUpdateMemoryInfo(processName, showmapOutput);
-                      // Store showmap output into file. If there are more than one process
-                      // with same name write the individual showmap associated with pid.
-                      storeToFile(mTestOutputFile, processName, pid, showmapOutput, writer);
-                      // Parse number of child processes for the given pid and update the
-                      // total number of child process count for the process name that pid
-                      // is associated with.
-                      updateChildProcessesDetails(processName, pid);
+                        // Skip the cached process for showmap and child process count
+                        if (isCachedProcess(processName, pid)) {
+                            Log.i(TAG, String.format("Skip the cached process %s.", processName));
+                            continue;
+                        }
+
+                        android.os.Trace.beginSection("ExecuteShowmap");
+                        String showmapOutput = execShowMap(processName, pid);
+                        android.os.Trace.endSection();
+                        parseAndUpdateMemoryInfo(processName, showmapOutput);
+                        // Store showmap output into file. If there are more than one process
+                        // with same name write the individual showmap associated with pid.
+                        storeToFile(mTestOutputFile, processName, pid, showmapOutput, writer);
+                        // Parse number of child processes for the given pid and update the
+                        // total number of child process count for the process name that pid
+                        // is associated with.
+                        updateChildProcessesDetails(processName, pid);
                     }
                 } catch (RuntimeException e) {
                     Log.e(TAG, e.getMessage(), e.getCause());
@@ -206,7 +227,6 @@ public class ShowmapSnapshotHelper implements ICollectorHelper<String> {
         } catch (IOException e) {
             Log.e(TAG, String.format("Failed to write output file %s", mTestOutputFile), e);
         }
-
         return mMemoryMap;
     }
 
@@ -223,8 +243,9 @@ public class ShowmapSnapshotHelper implements ICollectorHelper<String> {
         String childrenCmdOutput = "";
         try {
             // Execute shell does not support shell substitution so it has to be executed twice.
-            childrenCmdOutput = mUiDevice.executeShellCommand(
-                "pgrep -P " + mUiDevice.executeShellCommand("pidof " + processName));
+            childrenCmdOutput =
+                    mUiDevice.executeShellCommand(
+                            "pgrep -P " + mUiDevice.executeShellCommand("pidof " + processName));
         } catch (IOException e) {
             Log.e(TAG, "Exception occurred reading children for process " + processName);
         }
@@ -254,6 +275,15 @@ public class ShowmapSnapshotHelper implements ICollectorHelper<String> {
      */
     public void setGcOnPrecollectOption(boolean shouldGcOnPrecollect) {
         mRunGcPrecollection = shouldGcOnPrecollect;
+    }
+
+    /**
+     * Sets option for counting the threads for all processes.
+     *
+     * @param shouldCountThreads whether it should run count threads
+     */
+    public void setCountThreadsOption(boolean shouldCountThreads) {
+        mRunCountThreads = shouldCountThreads;
     }
 
     /**
@@ -323,6 +353,41 @@ public class ShowmapSnapshotHelper implements ICollectorHelper<String> {
         } catch (IOException e) {
             throw new RuntimeException(
                     String.format("Unable to execute showmap command for %s ", processName), e);
+        }
+    }
+
+    /**
+     * Executes counting threads command for the process.
+     *
+     * @param processName name of the process to run showmap for
+     * @param pid pid of the process to run showmap for
+     * @return the output of showmap command
+     */
+    private Map<String, String> execCountThreads() throws IOException {
+        String countOutput;
+        Map<String, String> countResults = new HashMap<>();
+        try {
+            File execTempFile = new File(THREADS_FILE_PATH);
+            execTempFile.setWritable(true);
+            execTempFile.setExecutable(true, /*ownersOnly*/ false);
+            String countThreadsScriptPath = execTempFile.getAbsolutePath();
+            BufferedWriter writer = new BufferedWriter(new FileWriter(countThreadsScriptPath));
+            writer.write(THREADS_EXEC_SCRIPT);
+            writer.close();
+            countOutput = executeShellCommand(THREADS_CMD);
+            Pattern pattern =
+                    Pattern.compile(THREADS_PATTERN, Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
+            String[] lines = countOutput.split("\n");
+            for (String line : lines) {
+                Matcher matcher = pattern.matcher(line);
+                boolean matchFound = matcher.find();
+                if (matchFound) {
+                    countResults.put(matcher.group(1), matcher.group(2));
+                }
+            }
+            return countResults;
+        } catch (IOException e) {
+            throw new RuntimeException("Unable to execute counting threads command", e);
         }
     }
 
@@ -417,6 +482,22 @@ public class ShowmapSnapshotHelper implements ICollectorHelper<String> {
         Log.i(TAG, String.format("Metric Name index map size %s", mMetricNameIndexMap.size()));
     }
 
+    /** Return true if the giving process is a cached process */
+    public boolean isCachedProcess(String processName, long pid) {
+        try {
+            String score = executeShellCommand(String.format(OOM_SCORE_ADJ_CMD, pid));
+            boolean result = Integer.parseInt(score.trim()) >= 900;
+            if (result) {
+                Log.i(TAG, String.format("The process %s with pid %d is cached", processName, pid));
+            }
+            return result;
+        } catch (IOException e) {
+            Log.e(TAG, String.format("Unable to get process oom_score_adj for %s", processName), e);
+            // We don't know the process is cached or not, still collect it
+            return false;
+        }
+    }
+
     /**
      * Retrieves the number of child processes for the given process id and updates the total
      * process count and adds a child process metric for the process name that pid is associated
@@ -427,8 +508,8 @@ public class ShowmapSnapshotHelper implements ICollectorHelper<String> {
      */
     private void updateChildProcessesDetails(String processName, long pid) {
         String childProcessName;
+        String childPID;
         String completeChildProcessMetric;
-        Pattern childProcessPattern = Pattern.compile(CHILD_PROCESS_NAME_REGEX);
         try {
             Log.i(TAG,
                     String.format("Retrieving child processes count for process name: %s with"
@@ -436,37 +517,46 @@ public class ShowmapSnapshotHelper implements ICollectorHelper<String> {
             String childProcessesStr = mUiDevice
                     .executeShellCommand(String.format(CHILD_PROCESSES_CMD, pid));
             Log.i(TAG, String.format("Child processes cmd output: %s", childProcessesStr));
-            String[] childProcessStrSplit = childProcessesStr.split("\\n");
-            // To discard the header line in the command output.
-            int childProcessCount = childProcessStrSplit.length - 1;
-            String childCountMetricKey = String.format(OUTPUT_CHILD_PROCESS_COUNT_KEY, processName);
 
+            int childProcessCount = 0;
+            String[] childProcessStrSplit = childProcessesStr.split("\\n");
+            for (String line : childProcessStrSplit) {
+                // To discard the header line in the command output.
+                if (Objects.equals(line, childProcessStrSplit[0])) continue;
+                String[] childProcessSplit = line.trim().split("\\s+");
+                /**
+                 * final metric will be of following format
+                 * parent_process_<process>_child_process_<process>
+                 * parent_process_zygote64_child_process_system_server
+                 */
+                childPID = childProcessSplit[1];
+                childProcessName = childProcessSplit[8];
+                // Skip the logcat and sh processes in child process count
+                if (SKIP_PROCESS.contains(childProcessName)
+                        || isCachedProcess(childProcessName, Long.parseLong(childPID))) {
+                    Log.i(
+                            TAG,
+                            String.format(
+                                    "Skip the child process %s in the parent process %s.",
+                                    childProcessName, processName));
+                    continue;
+                }
+                childProcessCount++;
+                completeChildProcessMetric =
+                        String.join(
+                                METRIC_VALUE_SEPARATOR,
+                                PARENT_PROCESS_STRING,
+                                processName,
+                                CHILD_PROCESS_STRING,
+                                childProcessName);
+                mMemoryMap.put(completeChildProcessMetric, "1");
+            }
+            String childCountMetricKey = String.format(OUTPUT_CHILD_PROCESS_COUNT_KEY, processName);
             if (childProcessCount > 0) {
                 mMemoryMap.put(childCountMetricKey,
                         Long.toString(
                                 Long.parseLong(mMemoryMap.getOrDefault(childCountMetricKey, "0"))
                                         + childProcessCount));
-            }
-            for (String line : childProcessStrSplit) {
-                // To discard the header line in the command output.
-                if (Objects.equals(line, childProcessStrSplit[0])) continue;
-                Matcher childProcessMatcher = childProcessPattern.matcher(line);
-                if (childProcessMatcher.find()) {
-                    /**
-                     * final metric will be of following format
-                     * parent_process_<process>_child_process_<process>
-                     * parent_process_zygote64_child_process_system_server
-                     */
-                    childProcessName = childProcessMatcher.group(1);
-                    completeChildProcessMetric =
-                            String.join(
-                                    METRIC_VALUE_SEPARATOR,
-                                    PARENT_PROCESS_STRING,
-                                    processName,
-                                    CHILD_PROCESS_STRING,
-                                    childProcessName);
-                    mMemoryMap.put(completeChildProcessMetric, "1");
-                }
             }
         } catch (IOException e) {
             throw new RuntimeException("Unable to run child process command.", e);
@@ -512,5 +602,11 @@ public class ShowmapSnapshotHelper implements ICollectorHelper<String> {
                     ioe);
         }
         return allProcessNames.toArray(new String[0]);
+    }
+
+    /* Execute a shell command and return its output. */
+    @VisibleForTesting
+    public String executeShellCommand(String command) throws IOException {
+        return mUiDevice.executeShellCommand(command);
     }
 }
