@@ -55,7 +55,6 @@ private constructor(
                 isFixedOrientationPortrait ||
                 orientation == SCREEN_ORIENTATION_LOCKED
 
-    @JsName("isFixedOrientationLandscape")
     private val isFixedOrientationLandscape
         get() =
             orientation == SCREEN_ORIENTATION_LANDSCAPE ||
@@ -63,7 +62,6 @@ private constructor(
                 orientation == SCREEN_ORIENTATION_REVERSE_LANDSCAPE ||
                 orientation == SCREEN_ORIENTATION_USER_LANDSCAPE
 
-    @JsName("isFixedOrientationPortrait")
     private val isFixedOrientationPortrait
         get() =
             orientation == SCREEN_ORIENTATION_PORTRAIT ||

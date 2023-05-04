@@ -15,12 +15,10 @@
  */
 package android.tools.common.traces.component
 
-import kotlin.js.JsName
-
 interface IComponentName {
-    @JsName("packageName") val packageName: String
-    @JsName("className") val className: String
-    @JsName("toActivityName") fun toActivityName(): String
-    @JsName("toWindowName") fun toWindowName(): String
-    @JsName("toLayerName") fun toLayerName(): String
+    val packageName: String
+    val className: String
+    fun toActivityName(): String
+    fun toWindowName(): String
+    fun toLayerName(): String
 }

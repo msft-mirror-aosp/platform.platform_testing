@@ -19,7 +19,6 @@ package android.tools.common.traces.component
 import android.tools.common.traces.surfaceflinger.Layer
 import android.tools.common.traces.wm.Activity
 import android.tools.common.traces.wm.WindowContainer
-import kotlin.js.JsName
 
 /** ComponentMatcher based on name */
 class ComponentNameMatcher(var component: ComponentName) : IComponentNameMatcher {
@@ -93,47 +92,39 @@ class ComponentNameMatcher(var component: ComponentName) : IComponentNameMatcher
     override fun toString(): String = component.toString()
 
     companion object {
-        @JsName("NAV_BAR") val NAV_BAR = ComponentNameMatcher("", "NavigationBar0")
-        @JsName("TASK_BAR") val TASK_BAR = ComponentNameMatcher("", "Taskbar")
-        @JsName("STATUS_BAR") val STATUS_BAR = ComponentNameMatcher("", "StatusBar")
-        @JsName("ROTATION") val ROTATION = ComponentNameMatcher("", "RotationLayer")
-        @JsName("BACK_SURFACE") val BACK_SURFACE = ComponentNameMatcher("", "BackColorSurface")
-        @JsName("IME") val IME = ComponentNameMatcher("", "InputMethod")
-        @JsName("IME_SNAPSHOT") val IME_SNAPSHOT = ComponentNameMatcher("", "IME-snapshot-surface")
-        @JsName("SPLASH_SCREEN") val SPLASH_SCREEN = ComponentNameMatcher("", "Splash Screen")
-        @JsName("SNAPSHOT") val SNAPSHOT = ComponentNameMatcher("", "SnapshotStartingWindow")
+        val NAV_BAR = ComponentNameMatcher("", "NavigationBar0")
+        val TASK_BAR = ComponentNameMatcher("", "Taskbar")
+        val STATUS_BAR = ComponentNameMatcher("", "StatusBar")
+        val ROTATION = ComponentNameMatcher("", "RotationLayer")
+        val BACK_SURFACE = ComponentNameMatcher("", "BackColorSurface")
+        val IME = ComponentNameMatcher("", "InputMethod")
+        val IME_SNAPSHOT = ComponentNameMatcher("", "IME-snapshot-surface")
+        val SPLASH_SCREEN = ComponentNameMatcher("", "Splash Screen")
+        val SNAPSHOT = ComponentNameMatcher("", "SnapshotStartingWindow")
 
-        @JsName("TRANSITION_SNAPSHOT")
         val TRANSITION_SNAPSHOT = ComponentNameMatcher("", "transition snapshot")
-        @JsName("LETTERBOX") val LETTERBOX = ComponentNameMatcher("", "Letterbox")
+        val LETTERBOX = ComponentNameMatcher("", "Letterbox")
 
-        @JsName("WALLPAPER_BBQ_WRAPPER")
         val WALLPAPER_BBQ_WRAPPER = ComponentNameMatcher("", "Wallpaper BBQ wrapper")
 
-        @JsName("PIP_CONTENT_OVERLAY")
         val PIP_CONTENT_OVERLAY = ComponentNameMatcher("", "PipContentOverlay")
 
-        @JsName("EDGE_BACK_GESTURE_HANDLER")
         val EDGE_BACK_GESTURE_HANDLER = ComponentNameMatcher("", "EdgeBackGestureHandler")
 
-        @JsName("LAUNCHER")
         val LAUNCHER =
             ComponentNameMatcher(
                 "com.google.android.apps.nexuslauncher",
                 "com.google.android.apps.nexuslauncher.NexusLauncherActivity"
             )
 
-        @JsName("AOSP_LAUNCHER")
         val AOSP_LAUNCHER =
             ComponentNameMatcher(
                 "com.android.launcher3",
                 "com.android.launcher3.uioverrides.QuickstepLauncher"
             )
 
-        @JsName("SPLIT_DIVIDER")
         val SPLIT_DIVIDER = ComponentNameMatcher("", "StageCoordinatorSplitDivider")
 
-        @JsName("DEFAULT_TASK_DISPLAY_AREA")
         val DEFAULT_TASK_DISPLAY_AREA = ComponentNameMatcher("", "DefaultTaskDisplayArea")
 
         /**
@@ -143,7 +134,6 @@ class ComponentNameMatcher(var component: ComponentName) : IComponentNameMatcher
          *
          * @param str Value to parse
          */
-        @JsName("unflattenFromString")
         fun unflattenFromString(str: String): ComponentNameMatcher {
             val sep = str.indexOf('/')
             if (sep < 0 || sep + 1 >= str.length) {
@@ -166,7 +156,6 @@ class ComponentNameMatcher(var component: ComponentName) : IComponentNameMatcher
          *
          * @param str Value to parse
          */
-        @JsName("unflattenFromStringWithJunk")
         fun unflattenFromStringWithJunk(str: String): ComponentNameMatcher {
             val sep = str.indexOf('/')
             if (sep < 0 || sep + 1 >= str.length) {

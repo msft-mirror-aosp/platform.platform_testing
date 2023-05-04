@@ -19,7 +19,6 @@ package android.tools.common.traces.region
 import android.tools.common.ITrace
 import android.tools.common.Timestamp
 import android.tools.common.traces.component.IComponentMatcher
-import kotlin.js.JsName
 
 /**
  * Contains a collection of parsed Region trace entries.
@@ -30,7 +29,7 @@ import kotlin.js.JsName
  * Java/Android functionality
  */
 data class RegionTrace(
-    @JsName("components") val components: IComponentMatcher?,
+    val components: IComponentMatcher?,
     override val entries: Array<RegionEntry>
 ) : ITrace<RegionEntry> {
     override fun equals(other: Any?): Boolean {

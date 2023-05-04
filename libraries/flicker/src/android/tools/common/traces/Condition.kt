@@ -16,8 +16,6 @@
 
 package android.tools.common.traces
 
-import kotlin.js.JsName
-
 /**
  * The utility class to wait a condition with customized options. The default retry policy is 5
  * times with interval 1 second.
@@ -47,21 +45,18 @@ import kotlin.js.JsName
  * @param condition If it returns true, that means the condition is satisfied.
  */
 open class Condition<T>(
-    @JsName("message") protected open val message: String = "",
-    @JsName("condition") protected open val condition: (T) -> Boolean
+    protected open val message: String = "",
+    protected open val condition: (T) -> Boolean
 ) {
     /** @return if [value] satisfies the condition */
-    @JsName("isSatisfied")
     fun isSatisfied(value: T): Boolean {
         return condition.invoke(value)
     }
 
     /** @return the negation of the current assertion */
-    @JsName("negate")
     fun negate(): Condition<T> = Condition(message = "!$message") { !this.condition.invoke(it) }
 
     /** @return a formatted message for the passing or failing condition on a state */
-    @JsName("getMessage")
     open fun getMessage(value: T): String = "$message(passed=${isSatisfied(value)})"
 
     override fun toString(): String = this.message

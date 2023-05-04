@@ -14,8 +14,13 @@
  * limitations under the License.
  */
 
-package com.android.server.wm.flicker.annotation
+package android.tools.common.flicker.subject.inputmethod
 
-@Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
-@Retention(AnnotationRetention.RUNTIME)
-annotation class BeforeCuj()
+/** Base interface for ImeClient trace and state assertions */
+interface IImeClientSubject<ImeClientSubjectType> {
+    /** Asserts that the current ImeClient state doesn't contain anything */
+    fun isEmpty(): ImeClientSubjectType
+
+    /** Asserts that the current ImeClient state contains something */
+    fun isNotEmpty(): ImeClientSubjectType
+}

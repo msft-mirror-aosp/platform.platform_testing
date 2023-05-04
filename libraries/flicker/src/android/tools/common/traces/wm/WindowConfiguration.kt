@@ -29,11 +29,11 @@ import kotlin.js.JsName
  */
 @JsExport
 open class WindowConfiguration(
-    @JsName("appBounds") val appBounds: Rect = Rect.EMPTY,
-    @JsName("bounds") val bounds: Rect = Rect.EMPTY,
-    @JsName("maxBounds") val maxBounds: Rect = Rect.EMPTY,
-    @JsName("windowingMode") val windowingMode: Int = 0,
-    @JsName("activityType") val activityType: Int = 0
+    val appBounds: Rect = Rect.EMPTY,
+    val bounds: Rect = Rect.EMPTY,
+    val maxBounds: Rect = Rect.EMPTY,
+    val windowingMode: Int = 0,
+    val activityType: Int = 0
 ) {
     @JsName("isEmpty")
     val isEmpty: Boolean

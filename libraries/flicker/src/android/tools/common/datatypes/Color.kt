@@ -18,7 +18,6 @@ package android.tools.common.datatypes
 
 import android.tools.common.withCache
 import kotlin.js.JsExport
-import kotlin.js.JsName
 
 /**
  * Wrapper for ColorProto (frameworks/native/services/surfaceflinger/layerproto/common.proto)
@@ -33,7 +32,7 @@ class Color private constructor(r: Float, g: Float, b: Float, val a: Float) : Co
     override val isNotEmpty: Boolean
         get() = !isEmpty
 
-    @JsName("isOpaque") val isOpaque: Boolean = a == 1.0f
+    val isOpaque: Boolean = a == 1.0f
 
     override fun prettyPrint(): String {
         val parentPrint = super.prettyPrint()
