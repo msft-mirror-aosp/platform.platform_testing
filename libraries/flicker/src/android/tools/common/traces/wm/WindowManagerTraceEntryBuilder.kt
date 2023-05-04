@@ -22,22 +22,21 @@ import kotlin.js.JsName
 @JsExport
 class WindowManagerTraceEntryBuilder(
     _elapsedTimestamp: String,
-    @JsName("policy") private val policy: WindowManagerPolicy?,
-    @JsName("focusedApp") private val focusedApp: String,
-    @JsName("focusedDisplayId") private val focusedDisplayId: Int,
-    @JsName("focusedWindow") private val focusedWindow: String,
-    @JsName("inputMethodWindowAppToken") private val inputMethodWindowAppToken: String,
-    @JsName("isHomeRecentsComponent") private val isHomeRecentsComponent: Boolean,
-    @JsName("isDisplayFrozen") private val isDisplayFrozen: Boolean,
-    @JsName("pendingActivities") private val pendingActivities: Array<String>,
-    @JsName("root") private val root: RootWindowContainer,
-    @JsName("keyguardControllerState") private val keyguardControllerState: KeyguardControllerState,
-    @JsName("where") private val where: String = "",
+    private val policy: WindowManagerPolicy?,
+    private val focusedApp: String,
+    private val focusedDisplayId: Int,
+    private val focusedWindow: String,
+    private val inputMethodWindowAppToken: String,
+    private val isHomeRecentsComponent: Boolean,
+    private val isDisplayFrozen: Boolean,
+    private val pendingActivities: Array<String>,
+    private val root: RootWindowContainer,
+    private val keyguardControllerState: KeyguardControllerState,
+    private val where: String = "",
     realToElapsedTimeOffsetNs: String? = null,
 ) {
     // Necessary for compatibility with JS number type
-    @JsName("elapsedTimestamp") private val elapsedTimestamp: Long = _elapsedTimestamp.toLong()
-    @JsName("realTimestamp")
+    private val elapsedTimestamp: Long = _elapsedTimestamp.toLong()
     private val realTimestamp: Long? =
         if (realToElapsedTimeOffsetNs != null && realToElapsedTimeOffsetNs.toLong() != 0L) {
             realToElapsedTimeOffsetNs.toLong() + _elapsedTimestamp.toLong()
