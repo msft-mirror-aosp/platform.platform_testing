@@ -30,7 +30,6 @@ import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * {@link ValidateUiElement} is a deserializer that validates Ui Elements in Spectatio JSON Config
@@ -48,6 +47,7 @@ public class ValidateUiElement implements JsonDeserializer<UiElement> {
                     JsonConfigConstants.TEXT_CONTAINS,
                     JsonConfigConstants.DESCRIPTION,
                     JsonConfigConstants.CLASS,
+                    JsonConfigConstants.HAS_ANCESTOR,
                     JsonConfigConstants.HAS_DESCENDANT,
                     JsonConfigConstants.MULTIPLE,
                     JsonConfigConstants.RESOURCE_ID);
@@ -59,6 +59,7 @@ public class ValidateUiElement implements JsonDeserializer<UiElement> {
                     JsonConfigConstants.PACKAGE,
                     JsonConfigConstants.FLAG,
                     JsonConfigConstants.MAX_DEPTH,
+                    JsonConfigConstants.ANCESTOR,
                     JsonConfigConstants.DESCENDANT,
                     JsonConfigConstants.SPECIFIERS);
 
@@ -88,13 +89,32 @@ public class ValidateUiElement implements JsonDeserializer<UiElement> {
                     specifiersJson.asList().stream()
                             .map(element -> context.<UiElement>deserialize(element, typeOfT))
                             .toList();
+
+            int ancestorSpecifiers = 0;
             for (UiElement specifier : specifiers) {
                 if (JsonConfigConstants.MULTIPLE.equals(specifier.getType())) {
                     throw new RuntimeException(
                             "Multiple-specifier can't contain a multiple-specifier.");
                 }
+                if (JsonConfigConstants.HAS_ANCESTOR.equals(specifier.getType())) {
+                    ancestorSpecifiers++;
+                    if (ancestorSpecifiers > 1) {
+                        throw new RuntimeException(
+                                "Multiple-specifier can't contain more than one ancestor "
+                                        + "specifier.");
+                    }
+                }
             }
             return new UiElement(specifiers);
+        }
+
+        if (JsonConfigConstants.HAS_ANCESTOR.equals(type)) {
+            JsonObject parent = validateAndGetObject(JsonConfigConstants.ANCESTOR, jsonObject);
+            int maxDepth = validateAndGetInteger(JsonConfigConstants.MAX_DEPTH, jsonObject, 1);
+            return new UiElement(
+                    JsonConfigConstants.HAS_ANCESTOR,
+                    context.deserialize(parent, typeOfT),
+                    maxDepth);
         }
 
         if (JsonConfigConstants.HAS_DESCENDANT.equals(type)) {
@@ -236,7 +256,7 @@ public class ValidateUiElement implements JsonDeserializer<UiElement> {
                     String.format(
                             "UI Element TYPE %s in Spectatio JSON Config is invalid. Supported"
                                 + " Types: [ RESOURCE_ID, TEXT, TEXT_CONTAINS, DESCRIPTION, CLASS,"
-                                + " MULTIPLE ]",
+                                + " MULTIPLE, HAS_ANCESTOR, HAS_DESCENDANT ]",
                             type));
         }
     }
@@ -247,13 +267,12 @@ public class ValidateUiElement implements JsonDeserializer<UiElement> {
                         .map(Entry::getKey)
                         .map(String::trim)
                         .filter(key -> !mSupportedProperties.contains(key))
-                        .collect(Collectors.toList());
+                        .toList();
         if (!unknownProperties.isEmpty()) {
             throw new RuntimeException(
                     String.format(
                             "Unknown properties: [ %s ] for %s in Spectatio JSON Config",
-                            unknownProperties.stream().collect(Collectors.joining(", ")),
-                            jsonObject));
+                            String.join(", ", unknownProperties), jsonObject));
         }
     }
 }

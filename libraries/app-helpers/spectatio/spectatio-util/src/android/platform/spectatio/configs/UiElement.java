@@ -59,7 +59,11 @@ public class UiElement {
     @SerializedName("SPECIFIERS")
     private List<UiElement> mSpecifiers;
 
-    // The specifier for the child of a HAS_CHILD specifier
+    // The specifier for the parent of a HAS_ASCENDANT specifier
+    @SerializedName("ANCESTOR")
+    private UiElement mAncestor;
+
+    // The specifier for the child of a HAS_DESCENDANT specifier
     @SerializedName("DESCENDANT")
     private UiElement mDescendant;
 
@@ -79,9 +83,19 @@ public class UiElement {
         mSpecifiers = specifiers;
     }
 
-    public UiElement(String type, UiElement descendant, int maxDepth) {
+    public UiElement(String type, UiElement relative, int maxDepth) {
         mType = type;
-        mDescendant = descendant;
+        switch (type) {
+            case JsonConfigConstants.HAS_DESCENDANT:
+                mDescendant = relative;
+                break;
+            case JsonConfigConstants.HAS_ANCESTOR:
+                mAncestor = relative;
+                break;
+            default:
+                throw new RuntimeException(
+                        "Unrecognized type given to UiElement constructor with relative argument");
+        }
         mMaxDepth = maxDepth;
     }
 
@@ -119,6 +133,8 @@ public class UiElement {
                     return By.clazz(mPackage, mValue);
                 }
                 return By.clazz(mValue);
+            case JsonConfigConstants.HAS_ANCESTOR:
+                return By.hasAncestor(mAncestor.getBySelectorForUiElement(), mMaxDepth);
             case JsonConfigConstants.HAS_DESCENDANT:
                 return By.hasDescendant(mDescendant.getBySelectorForUiElement(), mMaxDepth);
             case JsonConfigConstants.MULTIPLE:
@@ -165,6 +181,8 @@ public class UiElement {
                 }
                 s.clazz(mValue);
                 break;
+            case JsonConfigConstants.HAS_ANCESTOR:
+                s.hasAncestor(mAncestor.getBySelectorForUiElement(), mMaxDepth);
             case JsonConfigConstants.HAS_DESCENDANT:
                 s.hasDescendant(mDescendant.getBySelectorForUiElement(), mMaxDepth);
                 break;
