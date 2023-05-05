@@ -47,7 +47,8 @@ class EventLogParser : AbstractParser<Array<String>, EventLog>() {
         val events =
             input.map { log ->
                 val (metaData, eventData) = log.split(":", limit = 2).map { it.trim() }
-                val (rawTimestamp, uid, pid, tid, priority, tag) = metaData.split("\\s+".toRegex())
+                val (rawTimestamp, uid, pid, tid, priority, tag) =
+                    metaData.split(" ").filter { it.isNotEmpty() }
 
                 val timestamp =
                     CrossPlatform.timestamp.from(unixNanos = rawTimestamp.replace(".", "").toLong())
@@ -103,7 +104,7 @@ class EventLogParser : AbstractParser<Array<String>, EventLog>() {
 
     private fun getTimestampFromRawEntry(entry: String): Timestamp {
         val (metaData, _) = entry.split(":", limit = 2).map { it.trim() }
-        val (rawTimestamp, _, _, _, _, _) = metaData.split("\\s+".toRegex())
+        val (rawTimestamp, _, _, _, _, _) = metaData.split(" ").filter { it.isNotEmpty() }
         return CrossPlatform.timestamp.from(unixNanos = rawTimestamp.replace(".", "").toLong())
     }
 

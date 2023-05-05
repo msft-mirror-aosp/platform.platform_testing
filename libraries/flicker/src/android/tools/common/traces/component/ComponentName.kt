@@ -63,7 +63,7 @@ data class ComponentName(override val packageName: String, override val classNam
         }
     }
 
-    private fun toShortWindowName(): String {
+    internal fun toShortWindowName(): String {
         return when {
             packageName.isNotEmpty() && className.isNotEmpty() ->
                 "$packageName/${className.removePrefix(packageName)}"
@@ -103,15 +103,6 @@ data class ComponentName(override val packageName: String, override val classNam
         }
         sb.append(className)
     }
-
-    fun toActivityRecordFilter(): Regex =
-        Regex("ActivityRecord\\{.*${Regex.escape(this.toShortWindowName())}.*")
-
-    fun toActivityNameRegex(): Regex = Regex(".*${Regex.escape(this.toActivityName())}.*")
-
-    fun toWindowNameRegex(): Regex = Regex(".*${Regex.escape(this.toWindowName())}.*")
-
-    fun toLayerNameRegex(): Regex = Regex(".*${Regex.escape(this.toLayerName())}.*")
 
     override fun toString(): String = toShortWindowName()
 
