@@ -13,30 +13,40 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.android.helpers.tests;
 
 import static com.android.helpers.MetricUtility.constructKey;
-import static org.junit.Assert.fail;
+
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.matches;
+import static org.mockito.Mockito.anyLong;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
 import androidx.test.runner.AndroidJUnit4;
+
 import com.android.helpers.ShowmapSnapshotHelper;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.MockitoAnnotations;
+import org.mockito.Spy;
 
+import java.io.IOException;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Android Unit tests for {@link ShowmapSnapshotHelper}.
  *
- * To run:
- * atest CollectorsHelperTest:com.android.helpers.tests.ShowmapSnapshotHelperTest
+ * <p>To run: atest CollectorsHelperAospTest:ShowmapSnapshotHelperTest
  */
 @RunWith(AndroidJUnit4.class)
 public class ShowmapSnapshotHelperTest {
@@ -63,15 +73,25 @@ public class ShowmapSnapshotHelperTest {
     private static final String[] TWO_PROCESS_LIST = {
             "com.android.systemui", "system_server"
     };
+    private static final String[] MIXED_PROCESS_LIST = {
+        "com.android.systemui",
+        "system_server",
+        "com.google.android.googlequicksearchbox:search",
+        "android.process.acore"
+    };
+    private static final String[] CACHED_PROCESS_LIST = {
+        "com.google.android.googlequicksearchbox:search", "android.process.acore"
+    };
     private static final String[] NO_PROCESS_LIST = {
             null
     };
 
-    private ShowmapSnapshotHelper mShowmapSnapshotHelper;
+    private @Spy ShowmapSnapshotHelper mShowmapSnapshotHelper;
 
     @Before
     public void setUp() {
         mShowmapSnapshotHelper = new ShowmapSnapshotHelper();
+        MockitoAnnotations.initMocks(this);
     }
 
     /**
@@ -146,6 +166,71 @@ public class ShowmapSnapshotHelperTest {
         testProcessList(METRIC_INDEX_STR, TWO_PROCESS_LIST);
     }
 
+    /** Test that cached processes are skipped for showmap metrics. */
+    @Test
+    public void testGetMetrics_MixedProcess() {
+        doReturn(true)
+                .when(mShowmapSnapshotHelper)
+                .isCachedProcess(eq("com.google.android.googlequicksearchbox:search"), anyLong());
+        doReturn(true)
+                .when(mShowmapSnapshotHelper)
+                .isCachedProcess(eq("android.process.acore"), anyLong());
+        doReturn(false)
+                .when(mShowmapSnapshotHelper)
+                .isCachedProcess(eq("com.android.systemui"), anyLong());
+        doReturn(false)
+                .when(mShowmapSnapshotHelper)
+                .isCachedProcess(eq("system_server"), anyLong());
+        mShowmapSnapshotHelper.setUp(VALID_OUTPUT_DIR, MIXED_PROCESS_LIST);
+        mShowmapSnapshotHelper.setMetricNameIndex(METRIC_INDEX_STR);
+        assertTrue(mShowmapSnapshotHelper.startCollecting());
+        Map<String, String> metrics = mShowmapSnapshotHelper.getMetrics();
+        assertFalse(metrics.isEmpty());
+        for (String processName : CACHED_PROCESS_LIST) {
+            assertFalse(
+                    metrics.containsKey(
+                            constructKey(
+                                    String.format(
+                                            ShowmapSnapshotHelper.OUTPUT_METRIC_PATTERN, "rss"),
+                                    processName)));
+            assertFalse(
+                    metrics.containsKey(
+                            constructKey(
+                                    String.format(
+                                            ShowmapSnapshotHelper.OUTPUT_METRIC_PATTERN, "pss"),
+                                    processName)));
+        }
+        assertTrue(metrics.containsKey(ShowmapSnapshotHelper.OUTPUT_FILE_PATH_KEY));
+    }
+
+    /** Test isCachedProcess() from cached process only. */
+    @Test
+    public void testGetMetrics_CachedProcess() throws IOException {
+        doReturn("1000")
+                .when(mShowmapSnapshotHelper)
+                .executeShellCommand(matches(mShowmapSnapshotHelper.OOM_SCORE_ADJ_CMD));
+        mShowmapSnapshotHelper.setUp(VALID_OUTPUT_DIR, CACHED_PROCESS_LIST);
+        mShowmapSnapshotHelper.setMetricNameIndex(METRIC_INDEX_STR);
+        assertTrue(mShowmapSnapshotHelper.startCollecting());
+        Map<String, String> metrics = mShowmapSnapshotHelper.getMetrics();
+        assertFalse(metrics.isEmpty());
+        for (String processName : CACHED_PROCESS_LIST) {
+            assertFalse(
+                    metrics.containsKey(
+                            constructKey(
+                                    String.format(
+                                            ShowmapSnapshotHelper.OUTPUT_METRIC_PATTERN, "rss"),
+                                    processName)));
+            assertFalse(
+                    metrics.containsKey(
+                            constructKey(
+                                    String.format(
+                                            ShowmapSnapshotHelper.OUTPUT_METRIC_PATTERN, "pss"),
+                                    processName)));
+        }
+        assertTrue(metrics.containsKey(ShowmapSnapshotHelper.OUTPUT_FILE_PATH_KEY));
+    }
+
     /**
      * Test all process flag return more than 2 processes metrics at least.
      */
@@ -158,7 +243,6 @@ public class ShowmapSnapshotHelperTest {
         Map<String, String> metrics = mShowmapSnapshotHelper.getMetrics();
         assertTrue(metrics.size() > 2);
         assertTrue(metrics.containsKey(ShowmapSnapshotHelper.OUTPUT_FILE_PATH_KEY));
-
     }
 
     @Test
@@ -211,7 +295,6 @@ public class ShowmapSnapshotHelperTest {
         mShowmapSnapshotHelper.setAllProcesses();
         assertTrue(mShowmapSnapshotHelper.startCollecting());
         Map<String, String> metrics = mShowmapSnapshotHelper.getMetrics();
-
         assertTrue(metrics.size() != 0);
 
         // process count, process with child process count and path to snapshot file in the output
@@ -226,6 +309,19 @@ public class ShowmapSnapshotHelperTest {
         // At least one process (i.e init) will have child process
         assertTrue(parentWithChildProcessSet.size() > 0);
         assertTrue(metrics.containsKey(ShowmapSnapshotHelper.CHILD_PROCESS_COUNT_PREFIX + "_init"));
+        // These assertions are for checking SKIP_PROCESS
+        assertFalse(
+                metrics.containsKey(
+                        ShowmapSnapshotHelper.PARENT_PROCESS_STRING
+                                + "_init_"
+                                + ShowmapSnapshotHelper.CHILD_PROCESS_STRING
+                                + "_logcat"));
+        assertFalse(
+                metrics.containsKey(
+                        ShowmapSnapshotHelper.PARENT_PROCESS_STRING
+                                + "_init_"
+                                + ShowmapSnapshotHelper.CHILD_PROCESS_STRING
+                                + "_sh"));
     }
 
     @Test
@@ -265,6 +361,7 @@ public class ShowmapSnapshotHelperTest {
     }
 
     private void testProcessList(String metricIndexStr, String... processNames) {
+        doReturn(false).when(mShowmapSnapshotHelper).isCachedProcess(anyString(), anyLong());
         mShowmapSnapshotHelper.setUp(VALID_OUTPUT_DIR, processNames);
         mShowmapSnapshotHelper.setMetricNameIndex(metricIndexStr);
         assertTrue(mShowmapSnapshotHelper.startCollecting());
@@ -279,5 +376,36 @@ public class ShowmapSnapshotHelperTest {
                             ShowmapSnapshotHelper.OUTPUT_METRIC_PATTERN, "pss"), processName)));
         }
         assertTrue(metrics.containsKey(ShowmapSnapshotHelper.OUTPUT_FILE_PATH_KEY));
+    }
+
+    /** Test count threads. */
+    @Test
+    public void testCountThreads() throws IOException {
+        String countThreadsSampleOutput =
+                "threads_count_com.google.android.inputmethod.latin : 41\n"
+                        + "threads_count_com.google.android.ims : 35\n"
+                        + "threads_count_ : 1\n"
+                        + "threads_count_com.google.android.connectivitymonitor : 21\n";
+        doReturn(countThreadsSampleOutput)
+                .when(mShowmapSnapshotHelper)
+                .executeShellCommand(matches(mShowmapSnapshotHelper.THREADS_CMD));
+        mShowmapSnapshotHelper.setCountThreadsOption(true);
+        Map<String, String> metrics = mShowmapSnapshotHelper.getMetrics();
+        assertFalse(metrics.isEmpty());
+        assertTrue(metrics.size() == 3);
+        metrics.forEach(
+                (key, value) -> {
+                    assertTrue(key.contains("threads_count_"));
+                });
+    }
+
+    /** Test count threads. */
+    @Test
+    public void testNoCountThreads() throws IOException {
+        mShowmapSnapshotHelper.setCountThreadsOption(false);
+        Map<String, String> metrics = mShowmapSnapshotHelper.getMetrics();
+        assertTrue(metrics.isEmpty());
+        verify(mShowmapSnapshotHelper, never())
+                .executeShellCommand(matches(mShowmapSnapshotHelper.THREADS_CMD));
     }
 }
