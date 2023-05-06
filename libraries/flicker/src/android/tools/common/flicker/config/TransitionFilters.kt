@@ -20,6 +20,7 @@ import android.tools.common.flicker.extractors.TransitionsTransform
 import android.tools.common.traces.component.ComponentNameMatcher
 import android.tools.common.traces.wm.Transition
 import android.tools.common.traces.wm.TransitionType
+import android.tools.common.traces.wm.WmTransitionData
 
 object TransitionFilters {
     val OPEN_APP_TRANSITION_FILTER: TransitionsTransform = { ts, _, _ ->
@@ -81,19 +82,21 @@ object TransitionFilters {
 
         listOf(
             Transition(
-                createTime = transitions[0].createTime,
-                sendTime = transitions[0].sendTime,
-                // NOTE: Relies on the implementation detail that the second
-                // finishTransaction is merged into the first and applied.
-                finishTime = transitions[0].finishTime,
-                startTransactionId = transitions[0].startTransactionId,
-                // NOTE: Relies on the implementation detail that the second
-                // finishTransaction is merged into the first and applied.
-                finishTransactionId = transitions[0].finishTransactionId,
-                type = transitions[1].type,
-                changes = arrayOf(closingAppChange, openingAppChange),
-                played = transitions[1].played,
-                aborted = transitions[1].aborted,
+                transitions[0].id,
+                WmTransitionData(
+                    createTime = transitions[0].wmData.createTime,
+                    sendTime = transitions[0].wmData.sendTime,
+                    abortTime = transitions[0].wmData.abortTime,
+                    // NOTE: Relies on the implementation detail that the second
+                    // finishTransaction is merged into the first and applied.
+                    finishTime = transitions[0].wmData.finishTime,
+                    startTransactionId = transitions[0].wmData.startTransactionId,
+                    // NOTE: Relies on the implementation detail that the second
+                    // finishTransaction is merged into the first and applied.
+                    finishTransactionId = transitions[0].wmData.finishTransactionId,
+                    type = transitions[1].wmData.type,
+                    changes = arrayOf(closingAppChange, openingAppChange),
+                )
             )
         )
     }

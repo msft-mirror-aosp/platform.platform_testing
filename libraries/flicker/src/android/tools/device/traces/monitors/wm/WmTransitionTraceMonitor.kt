@@ -17,16 +17,15 @@
 package android.tools.device.traces.monitors.wm
 
 import android.tools.common.io.TraceType
-import android.tools.common.io.WINSCOPE_EXT
 import android.tools.common.traces.wm.TransitionsTrace
 import android.tools.device.traces.monitors.TraceMonitor
 import android.view.WindowManagerGlobal
 import java.io.File
 
 /** Captures [TransitionsTrace] from SurfaceFlinger. */
-open class TransitionsTraceMonitor : TraceMonitor() {
+open class WmTransitionTraceMonitor : TraceMonitor() {
     private val windowManager = WindowManagerGlobal.getWindowManagerService()
-    override val traceType = TraceType.TRANSITION
+    override val traceType = TraceType.WM_TRANSITION
     override val isEnabled
         get() = windowManager.isTransitionTraceEnabled
 
@@ -36,6 +35,6 @@ open class TransitionsTraceMonitor : TraceMonitor() {
 
     override fun doStop(): File {
         windowManager.stopTransitionTrace()
-        return TRACE_DIR.resolve("transition_trace$WINSCOPE_EXT")
+        return TRACE_DIR.resolve(traceType.fileName)
     }
 }

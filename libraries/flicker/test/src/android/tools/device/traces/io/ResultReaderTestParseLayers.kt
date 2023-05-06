@@ -22,13 +22,12 @@ import android.tools.common.io.TraceType
 
 /** Tests for [ResultReader] parsing [TraceType.SF] */
 class ResultReaderTestParseLayers : BaseResultReaderTestParseTrace() {
-    override val assetFile = TestTraces.LayerTrace.FILE
+    override val assetFiles = mapOf(TraceType.SF to TestTraces.LayerTrace.FILE)
     override val traceName = "Layers trace"
     override val startTimeTrace = TestTraces.LayerTrace.START_TIME
     override val endTimeTrace = TestTraces.LayerTrace.END_TIME
     override val validSliceTime = TestTraces.LayerTrace.SLICE_TIME
     override val invalidSliceTime = startTimeTrace
-    override val traceType = TraceType.SF
     override val expectedSlicedTraceSize = 2
 
     override fun doParse(reader: ResultReader) = reader.readLayersTrace()

@@ -106,6 +106,7 @@ java_library {
         "platformprotosnano",
         "layersprotoslite",
         "view_capture_proto",
+        "WindowManager-Shell-proto",
     ],
 }
 

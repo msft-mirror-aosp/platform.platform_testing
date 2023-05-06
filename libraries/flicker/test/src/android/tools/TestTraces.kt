@@ -71,32 +71,41 @@ object TestTraces {
     }
 
     object TransitionTrace {
-        private const val ASSET = "transition_trace.winscope"
+        private val WM_ASSET = "wm_transition_trace.winscope"
+
+        private val SHELL_ASSET = "shell_transition_trace.winscope"
+
         val START_TIME =
             CrossPlatform.timestamp.from(
-                elapsedNanos = 169632392038504,
+                elapsedNanos = 760760231809,
                 systemUptimeNanos = 0,
                 unixNanos = 0
             )
         val VALID_SLICE_TIME =
             CrossPlatform.timestamp.from(
-                elapsedNanos = 169632392038504,
+                elapsedNanos = 2770105426934 - 1000,
                 systemUptimeNanos = 0,
                 unixNanos = 0
             )
         val INVALID_SLICE_TIME =
             CrossPlatform.timestamp.from(
-                elapsedNanos = 0L,
-                systemUptimeNanos = TransactionTrace.INVALID_SLICE_TIME.systemUptimeNanos
+                elapsedNanos = 2770105426934 + 1,
+                systemUptimeNanos = 0,
+                unixNanos = 0,
             )
         val END_TIME =
             CrossPlatform.timestamp.from(
-                elapsedNanos = 169632392038504,
+                elapsedNanos = 2770105426934,
                 systemUptimeNanos = 0,
                 unixNanos = 0
             )
-        val FILE
-            get() = readAssetAsFile(ASSET)
+
+        val WM_FILE
+            get() = readAssetAsFile(WM_ASSET)
+        val SHELL_FILE
+            get() = readAssetAsFile(SHELL_ASSET)
+        val FILES
+            get() = listOf(WM_FILE, SHELL_FILE)
     }
 
     val TIME_5 = CrossPlatform.timestamp.from(5, 5, 5)

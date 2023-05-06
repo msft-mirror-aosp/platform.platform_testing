@@ -40,8 +40,9 @@ import android.tools.device.traces.monitors.ScreenRecorder
 import android.tools.device.traces.monitors.events.EventLogMonitor
 import android.tools.device.traces.monitors.surfaceflinger.LayersTraceMonitor
 import android.tools.device.traces.monitors.surfaceflinger.TransactionsTraceMonitor
-import android.tools.device.traces.monitors.wm.TransitionsTraceMonitor
+import android.tools.device.traces.monitors.wm.ShellTransitionTraceMonitor
 import android.tools.device.traces.monitors.wm.WindowManagerTraceMonitor
+import android.tools.device.traces.monitors.wm.WmTransitionTraceMonitor
 import android.tools.device.traces.parsers.WindowManagerStateHelper
 import android.tools.device.traces.parsers.surfaceflinger.LayersTraceParser
 import android.tools.device.traces.parsers.wm.WindowManagerDumpParser
@@ -192,19 +193,19 @@ fun assertArchiveContainsFiles(archivePath: File, expectedFiles: List<String>) {
 }
 
 fun getScenarioTraces(scenario: String): FlickerBuilder.TraceFiles {
-    val randomString = (1..10).map { (('A'..'Z') + ('a'..'z')).random() }.joinToString("")
-
     lateinit var wmTrace: File
     lateinit var layersTrace: File
     lateinit var transactionsTrace: File
-    lateinit var transitionsTrace: File
+    lateinit var wmTransitionTrace: File
+    lateinit var shellTransitionTrace: File
     lateinit var eventLog: File
     val traces =
         mapOf<String, (File) -> Unit>(
             "wm_trace" to { wmTrace = it },
             "layers_trace" to { layersTrace = it },
             "transactions_trace" to { transactionsTrace = it },
-            "transition_trace" to { transitionsTrace = it },
+            "wm_transition_trace" to { wmTransitionTrace = it },
+            "shell_transition_trace" to { shellTransitionTrace = it },
             "eventlog" to { eventLog = it }
         )
     for ((traceName, resultSetter) in traces.entries) {
@@ -218,8 +219,9 @@ fun getScenarioTraces(scenario: String): FlickerBuilder.TraceFiles {
         wmTrace,
         layersTrace,
         transactionsTrace,
-        transitionsTrace,
-        eventLog
+        wmTransitionTrace,
+        shellTransitionTrace,
+        eventLog,
     )
 }
 
@@ -267,7 +269,8 @@ fun captureTrace(scenario: IScenario, actions: () -> Unit): ResultReader {
             ScreenRecorder(instrumentation.targetContext),
             EventLogMonitor(),
             TransactionsTraceMonitor(),
-            TransitionsTraceMonitor(),
+            WmTransitionTraceMonitor(),
+            ShellTransitionTraceMonitor(),
             WindowManagerTraceMonitor(),
             LayersTraceMonitor()
         )
