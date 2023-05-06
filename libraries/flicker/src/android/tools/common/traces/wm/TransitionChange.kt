@@ -25,7 +25,6 @@ class TransitionChange(
     @JsName("transitMode") val transitMode: TransitionType,
     @JsName("layerId") val layerId: Int,
     @JsName("windowId") val windowId: Int,
-    @JsName("windowingMode") val windowingMode: WindowingMode
 ) {
 
     override fun toString(): String = Formatter(null, null).format(this)
@@ -57,7 +56,6 @@ class TransitionChange(
                 if (windowName != null) {
                     append("windowName=$windowName, ")
                 }
-                append("windowingMode=${change.windowingMode}")
                 append(")")
             }
         }

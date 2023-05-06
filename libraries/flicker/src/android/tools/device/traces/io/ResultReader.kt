@@ -35,7 +35,7 @@ import android.tools.device.traces.TraceConfig
 import android.tools.device.traces.TraceConfigs
 import android.tools.device.traces.parsers.surfaceflinger.LayersTraceParser
 import android.tools.device.traces.parsers.surfaceflinger.TransactionsTraceParser
-import android.tools.device.traces.parsers.wm.TransitionsTraceParser
+import android.tools.device.traces.parsers.wm.TransitionTraceParser
 import android.tools.device.traces.parsers.wm.WindowManagerDumpParser
 import android.tools.device.traces.parsers.wm.WindowManagerTraceParser
 import androidx.annotation.VisibleForTesting
@@ -188,9 +188,22 @@ open class ResultReader(_result: IResultData, internal val traceConfig: TraceCon
     @Throws(IOException::class)
     override fun readTransitionsTrace(): TransitionsTrace? {
         return CrossPlatform.log.withTracing("readTransitionsTrace") {
-            artifact.readBytes(ResultArtifactDescriptor(TraceType.TRANSITION))?.let { traceData ->
-                val fullTrace = TransitionsTraceParser().parse(traceData)
-                val trace = fullTrace.slice(transitionTimeRange.start, transitionTimeRange.end)
+            val wmSideTraceData =
+                artifact.readBytes(ResultArtifactDescriptor(TraceType.WM_TRANSITION))
+            val shellSideTraceData =
+                artifact.readBytes(ResultArtifactDescriptor(TraceType.SHELL_TRANSITION))
+
+            if (wmSideTraceData == null || shellSideTraceData == null) {
+                null
+            } else {
+                val trace =
+                    TransitionTraceParser()
+                        .parse(
+                            wmSideTraceData,
+                            shellSideTraceData,
+                            from = transitionTimeRange.start,
+                            to = transitionTimeRange.end
+                        )
                 if (!traceConfig.transitionsTrace.allowNoChange) {
                     require(trace.entries.isNotEmpty()) { "Transitions trace cannot be empty" }
                 }
