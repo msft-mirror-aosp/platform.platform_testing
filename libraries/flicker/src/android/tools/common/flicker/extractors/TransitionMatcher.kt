@@ -48,6 +48,21 @@ class TransitionMatcher(
 
         val completeTransitions = transitionsTrace.entries.filter { !it.isIncomplete }
 
+        val formattedTransitions = {
+            "[\n" +
+                "${
+                        transitionsTrace.entries.joinToString(",\n") {
+                            Transition.Formatter(reader.readLayersTrace(),
+                                    reader.readWmTrace()).format(it)
+                        }.prependIndent()
+                    }\n" +
+                "]"
+        }
+
+        require(!associatedTransitionRequired || completeTransitions.isNotEmpty()) {
+            "No successfully finished transitions in: ${formattedTransitions()}"
+        }
+
         var appliedTransformsCount = 0
         val matchedTransitions =
             transforms.fold(completeTransitions) { transitions, transform ->
@@ -58,13 +73,7 @@ class TransitionMatcher(
                     "Required an associated transition for ${cujEntry.cuj.name}" +
                         "(${cujEntry.startTimestamp},${cujEntry.endTimestamp}) " +
                         "but no transition left after $appliedTransformsCount/${transforms.size} " +
-                        "filters from: " +
-                        "[\n${transitionsTrace.entries.joinToString(",\n") {
-                            Transition.Formatter(
-                                reader.readLayersTrace(),
-                                reader.readWmTrace()
-                            ).format(it)
-                        }.prependIndent()}\n]!"
+                        "filters from: ${formattedTransitions()}!"
                 }
 
                 remainingTransitions

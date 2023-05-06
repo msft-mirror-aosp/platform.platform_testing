@@ -29,6 +29,7 @@ public class JsonConfigConstants {
     public static final String VALUE = "VALUE";
     public static final String FLAG = "FLAG";
     public static final String PACKAGE = "PACKAGE";
+    public static final String ANCESTOR = "ANCESTOR";
     public static final String DESCENDANT = "DESCENDANT";
     public static final String MAX_DEPTH = "MAX_DEPTH";
     public static final String SPECIFIERS = "SPECIFIERS";
@@ -40,6 +41,7 @@ public class JsonConfigConstants {
     public static final String TEXT_CONTAINS = "TEXT_CONTAINS";
     public static final String DESCRIPTION = "DESCRIPTION";
     public static final String CLASS = "CLASS";
+    public static final String HAS_ANCESTOR = "HAS_ANCESTOR";
     public static final String HAS_DESCENDANT = "HAS_DESCENDANT";
     public static final String MULTIPLE = "MULTIPLE";
 

@@ -105,6 +105,8 @@ java_library {
         "androidx.test.runner",
         "platformprotosnano",
         "layersprotoslite",
+        "view_capture_proto",
+        "WindowManager-Shell-proto",
     ],
 }
 

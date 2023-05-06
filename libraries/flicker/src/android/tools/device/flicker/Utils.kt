@@ -26,8 +26,9 @@ import android.tools.device.traces.monitors.TraceMonitor
 import android.tools.device.traces.monitors.events.EventLogMonitor
 import android.tools.device.traces.monitors.surfaceflinger.LayersTraceMonitor
 import android.tools.device.traces.monitors.surfaceflinger.TransactionsTraceMonitor
-import android.tools.device.traces.monitors.wm.TransitionsTraceMonitor
+import android.tools.device.traces.monitors.wm.ShellTransitionTraceMonitor
 import android.tools.device.traces.monitors.wm.WindowManagerTraceMonitor
+import android.tools.device.traces.monitors.wm.WmTransitionTraceMonitor
 import androidx.test.platform.app.InstrumentationRegistry
 import java.io.File
 import kotlin.io.path.createTempDirectory
@@ -94,7 +95,8 @@ object Utils {
         outputDir: File = createTempDirectory().toFile(),
         monitors: List<TraceMonitor> =
             listOf(
-                TransitionsTraceMonitor(),
+                WmTransitionTraceMonitor(),
+                ShellTransitionTraceMonitor(),
                 TransactionsTraceMonitor(),
                 WindowManagerTraceMonitor(),
                 LayersTraceMonitor(),
