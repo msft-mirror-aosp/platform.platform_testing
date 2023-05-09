@@ -186,18 +186,32 @@ object DeviceHelpers {
      * Executes a shell command on the device.
      *
      * Adds some logging. Throws [RuntimeException] In case of failures.
+     *
+     * @Deprecated: Use [DeviceHelpers.shell] directly.
+     */
+    @JvmStatic fun UiDevice.shell(command: String): String = DeviceHelpers.shell(command)
+
+    /**
+     * Executes a shell command on the device, and return its output one it finishes.
+     *
+     * Adds some logging to [UiDevice.executeShellCommand]. Throws [RuntimeException] In case of
+     * failures. Blocks until the command returns.
+     *
+     * @param command Shell command to execute
+     * @return Standard output of the command.
      */
     @JvmStatic
-    fun UiDevice.shell(command: String): String =
+    fun shell(command: String): String {
         trace("Executing shell command: $command") {
             Log.d(TAG, "Executing Shell Command: $command")
             return try {
-                executeShellCommand(command)
+                uiDevice.executeShellCommand(command)
             } catch (e: IOException) {
                 Log.e(TAG, "IOException Occurred.", e)
                 throw RuntimeException(e)
             }
         }
+    }
 
     /** Perform double tap at specified x and y position */
     @JvmStatic
