@@ -18,23 +18,24 @@ package android.security.sts;
 
 import static com.android.sts.common.CommandUtil.runAndCheck;
 
-
-import com.android.sts.common.tradefed.testtype.StsExtraBusinessLogicHostTestBase;
+import com.android.sts.common.NativePoc;
+import com.android.sts.common.NativePocStatusAsserter;
+import com.android.sts.common.tradefed.testtype.NonRootSecurityTestCase;
 import com.android.tradefed.device.ITestDevice;
 import com.android.tradefed.testtype.DeviceJUnit4ClassRunner;
 
-import org.junit.runner.RunWith;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 @RunWith(DeviceJUnit4ClassRunner.class)
-public class StsHostSideTestCase extends StsExtraBusinessLogicHostTestBase {
+public class StsHostSideTestCase extends NonRootSecurityTestCase {
 
     static final String TEST_APP = "sts_test_app_package.apk";
     static final String TEST_PKG = "android.security.sts.sts_test_app_package";
     static final String TEST_CLASS = TEST_PKG + "." + "DeviceTest";
 
     @Test
-    public void testPoc() throws Exception {
+    public void testWithApp() throws Exception {
         // Note: this test is for CVE-2020-0215
         ITestDevice device = getDevice();
         device.enableAdbRoot();
@@ -47,5 +48,18 @@ public class StsHostSideTestCase extends StsExtraBusinessLogicHostTestBase {
         installPackage(TEST_APP);
         runDeviceTests(TEST_PKG, TEST_CLASS, "testDeviceSideMethod");
     }
-}
 
+    @Test
+    public void testWithNativePoc() throws Exception {
+        NativePoc.builder()
+                .pocName("native-poc")
+                .resources("res.txt")
+                .args("res.txt", "arg2")
+                .useDefaultLdLibraryPath(true)
+                .assumePocExitSuccess(true)
+                .after(r -> getDevice().executeShellV2Command("ls -l /"))
+                .asserter(NativePocStatusAsserter.assertNotVulnerableExitCode()) // not 113
+                .build()
+                .run(this);
+    }
+}

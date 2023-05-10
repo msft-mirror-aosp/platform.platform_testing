@@ -34,12 +34,21 @@ import java.util.Map;
 
 public class SelectAdsLatencyHelperTest {
     private static final String TEST_FILTER_LABEL = "SelectAds";
-    private static final String LOG_LABEL_P50_5G = "SELECT_ADS_LATENCY_P50_5G";
-    private static final String LOG_LABEL_P50_4GPLUS = "SELECT_ADS_LATENCY_P50_4GPLUS";
-    private static final String LOG_LABEL_P50_4G = "SELECT_ADS_LATENCY_P50_4G";
-    private static final String LOG_LABEL_P90_5G = "SELECT_ADS_LATENCY_P90_5G";
-    private static final String LOG_LABEL_P90_4GPLUS = "SELECT_ADS_LATENCY_P90_4GPLUS";
-    private static final String LOG_LABEL_P90_4G = "SELECT_ADS_LATENCY_P90_4G";
+    private static final String LOG_LABEL_P50_5G =
+            "SELECT_ADS_LATENCY_SelectAdsLatency#selectAds_p50_5G";
+    private static final String LOG_LABEL_P50_4GPLUS =
+            "SELECT_ADS_LATENCY_SelectAdsLatency#selectAds_p50_4GPLUS";
+    private static final String LOG_LABEL_P50_4G =
+            "SELECT_ADS_LATENCY_SelectAdsLatency#selectAds_p50_4G";
+    private static final String LOG_LABEL_P90_5G =
+            "SELECT_ADS_LATENCY_SelectAdsLatency#selectAds_p90_5G";
+    private static final String LOG_LABEL_P90_4GPLUS =
+            "SELECT_ADS_LATENCY_SelectAdsLatency#selectAds_p90_4GPLUS";
+    private static final String LOG_LABEL_P90_4G =
+            "SELECT_ADS_LATENCY_SelectAdsLatency#selectAds_p90_4G";
+    private static final String LOG_LABEL_REAL_SERVER_P50 =
+            "SELECT_ADS_LATENCY_SelectAdsTestServerLatency#selectAds_oneBuyer_realServer";
+
     @Mock private LatencyHelper.InputStreamFilter mInputStreamFilter;
 
     @Mock private Clock mClock;
@@ -59,14 +68,26 @@ public class SelectAdsLatencyHelperTest {
     @Test
     public void testInitTimeInLogcat() throws IOException {
         String logcatOutput =
-                "06-13 18:09:24.022 20765 D SelectAds: (SELECT_ADS_LATENCY_P50_5G: 102 ms)\n"
-                    + "06-29 02:47:32.030 31075 D SelectAds: (SELECT_ADS_LATENCY_P50_4GPLUS: 1"
-                    + " ms)\n"
-                    + "06-13 18:09:24.058 20765 D SelectAds: (SELECT_ADS_LATENCY_P50_4G: 43 ms)\n"
-                    + "06-13 18:09:24.058 31075 D SelectAds: (SELECT_ADS_LATENCY_P90_5G: 23 ms)\n"
-                    + "06-13 18:09:24.129 20765 D SelectAds: (SELECT_ADS_LATENCY_P90_4GPLUS: 45"
-                    + " ms)\n"
-                    + "06-13 18:09:24.130 31075 D SelectAds: (SELECT_ADS_LATENCY_P90_4G: 1 ms)";
+                "06-13 18:09:24.022 20765 D SelectAds: "
+                        + "(SELECT_ADS_LATENCY_SelectAdsLatency#selectAds_p50_5G: 102 ms)\n"
+                        + "06-29 02:47:32.030 31075 D SelectAds: "
+                        + "(SELECT_ADS_LATENCY_SelectAdsLatency#selectAds_p50_4GPLUS: 1"
+                        + " ms)\n"
+                        + "06-13 18:09:24.058 20765 D SelectAds: "
+                        + "(SELECT_ADS_LATENCY_SelectAdsLatency#selectAds_p50_4G: 43 "
+                        + "ms)\n"
+                        + "06-13 18:09:24.058 31075 D SelectAds: "
+                        + "(SELECT_ADS_LATENCY_SelectAdsLatency#selectAds_p90_5G: 23 "
+                        + "ms)\n"
+                        + "06-13 18:09:24.129 20765 D SelectAds: "
+                        + "(SELECT_ADS_LATENCY_SelectAdsLatency#selectAds_p90_4GPLUS: 45"
+                        + " ms)\n"
+                        + "06-13 18:09:24.130 31075 D SelectAds: "
+                        + "(SELECT_ADS_LATENCY_SelectAdsLatency#selectAds_p90_4G: 1 "
+                        + "ms)\n"
+                        + "06-13 18:09:25.058 20765 D SelectAds: "
+                        + "(SELECT_ADS_LATENCY_SelectAdsTestServerLatency"
+                        + "#selectAds_oneBuyer_realServer: 117 ms)\n";
 
         when(mInputStreamFilter.getStream(TEST_FILTER_LABEL, mInstant))
                 .thenReturn(new ByteArrayInputStream(logcatOutput.getBytes()));
@@ -78,6 +99,17 @@ public class SelectAdsLatencyHelperTest {
         assertThat(actual.get(LOG_LABEL_P90_5G)).isEqualTo(23);
         assertThat(actual.get(LOG_LABEL_P90_4GPLUS)).isEqualTo(45);
         assertThat(actual.get(LOG_LABEL_P90_4G)).isEqualTo(1);
+        assertThat(actual.get(LOG_LABEL_REAL_SERVER_P50)).isEqualTo(117);
+    }
+
+    @Test
+    public void testWithNonMatchingInput() throws IOException {
+        String logcatOutput = "Some random string";
+        when(mInputStreamFilter.getStream(TEST_FILTER_LABEL, mInstant))
+                .thenReturn(new ByteArrayInputStream(logcatOutput.getBytes()));
+        Map<String, Long> actual = mSelectAdsLatencyHelper.getMetrics();
+
+        assertThat(actual.size()).isEqualTo(0);
     }
 
     @Test
@@ -85,9 +117,7 @@ public class SelectAdsLatencyHelperTest {
         when(mInputStreamFilter.getStream(TEST_FILTER_LABEL, mInstant))
                 .thenReturn(new ByteArrayInputStream("".getBytes()));
         Map<String, Long> actual = mSelectAdsLatencyHelper.getMetrics();
-        for (Long val : actual.values()) {
-            assertThat(val).isEqualTo(0);
-        }
+        assertThat(actual.size()).isEqualTo(0);
     }
 
     @Test

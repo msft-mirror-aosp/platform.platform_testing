@@ -105,8 +105,8 @@ native_tests := \
     libunwindstack_unit_test \
     libuwb_core_tests \
     libuwb_uci_jni_rust_tests \
-    libuwb_uci_rust_tests \
     libuwb_uci_packet_tests \
+    libuci_hal_android_tests \
     libvintf_test \
     linker-unit-tests \
     logcat-unit-tests \

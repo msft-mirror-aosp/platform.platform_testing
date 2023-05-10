@@ -24,12 +24,17 @@ import static org.junit.Assume.assumeNoException;
 import com.android.tradefed.device.DeviceNotAvailableException;
 import com.android.tradefed.device.ITestDevice;
 import com.android.tradefed.log.LogUtil.CLog;
+
 import com.google.common.collect.ImmutableList;
 
 import java.util.concurrent.TimeoutException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Utilities to setup malloc debug options on a process, check for malloc debug errors, and cleaning
+ * up afterwards.
+ */
 public class MallocDebug implements AutoCloseable {
     private static final String LOG_TAG = MallocDebug.class.getSimpleName();
     private static final String MALLOC_DEBUG_OPTIONS_PROP = "libc.debug.malloc.options";
@@ -63,9 +68,9 @@ public class MallocDebug implements AutoCloseable {
 
         try {
             this.setMallocDebugOptionsProperty =
-                    SystemUtil.withProperty(MALLOC_DEBUG_OPTIONS_PROP, mallocDebugOption, device);
+                    SystemUtil.withProperty(device, MALLOC_DEBUG_OPTIONS_PROP, mallocDebugOption);
             this.setAttachedProgramProperty =
-                    SystemUtil.withProperty(MALLOC_DEBUG_PROGRAM_PROP, processName, device);
+                    SystemUtil.withProperty(device, MALLOC_DEBUG_PROGRAM_PROP, processName);
 
             // Kill and wait for the process to come back if we're attaching to a service
             this.killProcess = null;
