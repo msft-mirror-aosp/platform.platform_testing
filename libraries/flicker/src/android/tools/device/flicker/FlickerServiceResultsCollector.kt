@@ -145,50 +145,54 @@ class FlickerServiceResultsCollector(
         dataRecord: DataRecord,
         description: Description? = null
     ) {
-        CrossPlatform.log.i(LOG_TAG, "Stopping trace collection")
-        val reader = tracesCollector.stop()
-        CrossPlatform.log.i(LOG_TAG, "Stopped trace collection")
-        if (reportOnlyForPassingTests && hasFailedTest) {
-            return
-        }
-
-        CrossPlatform.log.i(LOG_TAG, "Processing traces")
-        val scenarios = flickerService.detectScenarios(reader)
-        val assertions = flickerService.generateAssertions(scenarios)
-        val results = flickerService.executeAssertions(assertions)
-        reader.artifact.updateStatus(RunStatus.RUN_EXECUTED)
-        CrossPlatform.log.i(LOG_TAG, "Got ${results.size} results")
-        assertionResults.addAll(results)
-        if (description != null) {
-            require(assertionResultsByTest[description] == null) {
-                "Test description already contains flicker assertion results."
+        errorReportingBlock {
+            CrossPlatform.log.i(LOG_TAG, "Stopping trace collection")
+            val reader = tracesCollector.stop()
+            CrossPlatform.log.i(LOG_TAG, "Stopped trace collection")
+            if (reportOnlyForPassingTests && hasFailedTest) {
+                return@errorReportingBlock
             }
-            require(detectedScenariosByTest[description] == null) {
-                "Test description already contains detected scenarios."
+
+            try {
+                CrossPlatform.log.i(LOG_TAG, "Processing traces")
+                val scenarios = flickerService.detectScenarios(reader)
+                val assertions = flickerService.generateAssertions(scenarios)
+                val results = flickerService.executeAssertions(assertions)
+                reader.artifact.updateStatus(RunStatus.RUN_EXECUTED)
+                CrossPlatform.log.i(LOG_TAG, "Got ${results.size} results")
+                assertionResults.addAll(results)
+                if (description != null) {
+                    require(assertionResultsByTest[description] == null) {
+                        "Test description already contains flicker assertion results."
+                    }
+                    require(detectedScenariosByTest[description] == null) {
+                        "Test description already contains detected scenarios."
+                    }
+                    assertionResultsByTest[description] = results
+                    detectedScenariosByTest[description] = scenarios.map { it.type }.distinct()
+                }
+                if (results.any { it.failed }) {
+                    reader.artifact.updateStatus(RunStatus.ASSERTION_FAILED)
+                } else {
+                    reader.artifact.updateStatus(RunStatus.ASSERTION_SUCCESS)
+                }
+
+                CrossPlatform.log.v(
+                    LOG_TAG,
+                    "Adding metric $FLICKER_ASSERTIONS_COUNT_KEY = ${results.size}"
+                )
+                dataRecord.addStringMetric(FLICKER_ASSERTIONS_COUNT_KEY, "${results.size}")
+
+                val aggregatedResults = processFlickerResults(results)
+                collectMetrics(dataRecord, aggregatedResults)
+            } finally {
+                CrossPlatform.log.v(
+                    LOG_TAG,
+                    "Adding metric $WINSCOPE_FILE_PATH_KEY = ${reader.artifactPath}"
+                )
+                dataRecord.addStringMetric(WINSCOPE_FILE_PATH_KEY, reader.artifactPath)
             }
-            assertionResultsByTest[description] = results
-            detectedScenariosByTest[description] = scenarios.map { it.type }.distinct()
         }
-        if (results.any { it.failed }) {
-            reader.artifact.updateStatus(RunStatus.ASSERTION_FAILED)
-        } else {
-            reader.artifact.updateStatus(RunStatus.ASSERTION_SUCCESS)
-        }
-
-        CrossPlatform.log.v(
-            LOG_TAG,
-            "Adding metric $WINSCOPE_FILE_PATH_KEY = ${reader.artifactPath}"
-        )
-        dataRecord.addStringMetric(WINSCOPE_FILE_PATH_KEY, reader.artifactPath)
-
-        CrossPlatform.log.v(
-            LOG_TAG,
-            "Adding metric $FLICKER_ASSERTIONS_COUNT_KEY = ${results.size}"
-        )
-        dataRecord.addStringMetric(FLICKER_ASSERTIONS_COUNT_KEY, "${results.size}")
-
-        val aggregatedResults = processFlickerResults(results)
-        collectMetrics(dataRecord, aggregatedResults)
     }
 
     private fun processFlickerResults(
@@ -247,7 +251,7 @@ class FlickerServiceResultsCollector(
         // Unique prefix to add to all FaaS metrics to identify them
         private const val FAAS_METRICS_PREFIX = "FAAS"
         private const val LOG_TAG = "$FLICKER_TAG-Collector"
-        private const val WINSCOPE_FILE_PATH_KEY = "winscope_file_path"
+        const val WINSCOPE_FILE_PATH_KEY = "winscope_file_path"
         const val FLICKER_ASSERTIONS_COUNT_KEY = "flicker_assertions_count"
 
         class AggregatedFlickerResult {
