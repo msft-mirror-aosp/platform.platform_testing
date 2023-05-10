@@ -21,7 +21,7 @@ import android.tools.common.flicker.assertors.ComponentTemplate
 import android.tools.common.flicker.subject.wm.WindowManagerTraceSubject
 
 /** Checks that [component] window becomes pinned */
-class AppWindowBecomesPinned(component: ComponentTemplate) :
+class AppWindowBecomesPinned(private val component: ComponentTemplate) :
     AssertionTemplateWithComponent(component) {
     /** {@inheritDoc} */
     override fun doEvaluate(

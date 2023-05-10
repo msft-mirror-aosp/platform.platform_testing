@@ -19,6 +19,7 @@ package android.tools.common.flicker.assertors
 import android.tools.common.flicker.AssertionInvocationGroup
 import android.tools.common.flicker.AssertionInvocationGroup.NON_BLOCKING
 import android.tools.common.flicker.IScenarioInstance
+import android.tools.common.flicker.subject.events.EventLogSubject
 import android.tools.common.flicker.subject.layers.LayersTraceSubject
 import android.tools.common.flicker.subject.wm.WindowManagerTraceSubject
 
@@ -29,16 +30,24 @@ abstract class AssertionTemplate : IAssertionTemplate {
 
     override fun createAssertion(scenarioInstance: IScenarioInstance): IFaasAssertion {
         return object : IFaasAssertion {
-            override val name = this@AssertionTemplate.assertionName
+            override val name = "${scenarioInstance.type}::${this@AssertionTemplate.assertionName}"
 
             override val stabilityGroup
                 get() = this@AssertionTemplate.stabilityGroup
 
             override fun evaluate(): AssertionResult {
                 val wmTraceSubject =
-                    scenarioInstance.reader.readWmTrace()?.let { WindowManagerTraceSubject(it) }
+                    scenarioInstance.reader.readWmTrace()?.let {
+                        WindowManagerTraceSubject(it, scenarioInstance.reader)
+                    }
                 val layersTraceSubject =
-                    scenarioInstance.reader.readLayersTrace()?.let { LayersTraceSubject(it) }
+                    scenarioInstance.reader.readLayersTrace()?.let {
+                        LayersTraceSubject(it, scenarioInstance.reader)
+                    }
+                val eventLogSubject =
+                    scenarioInstance.reader.readEventLogTrace()?.let {
+                        EventLogSubject(it, scenarioInstance.reader)
+                    }
 
                 var assertionError: Throwable? = null
                 try {
@@ -50,6 +59,9 @@ abstract class AssertionTemplate : IAssertionTemplate {
                     }
                     if (wmTraceSubject !== null && layersTraceSubject !== null) {
                         doEvaluate(scenarioInstance, wmTraceSubject, layersTraceSubject)
+                    }
+                    if (eventLogSubject != null) {
+                        doEvaluate(scenarioInstance, eventLogSubject)
                     }
                 } catch (e: Throwable) {
                     assertionError = e
@@ -91,6 +103,14 @@ abstract class AssertionTemplate : IAssertionTemplate {
         wmSubject: WindowManagerTraceSubject,
         layerSubject: LayersTraceSubject
     ) {
+        // Does nothing, unless overridden
+    }
+
+    /**
+     * Evaluates assertions that require the vent log. NOTE: Will not run if the event log traces is
+     * not available.
+     */
+    protected open fun doEvaluate(scenarioInstance: IScenarioInstance, eventLog: EventLogSubject) {
         // Does nothing, unless overridden
     }
 

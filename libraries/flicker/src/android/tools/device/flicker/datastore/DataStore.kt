@@ -17,19 +17,36 @@
 package android.tools.device.flicker.datastore
 
 import android.tools.common.IScenario
-import android.tools.common.flicker.assertors.IAssertionResult
+import android.tools.common.flicker.IScenarioInstance
+import android.tools.common.flicker.assertors.IFaasAssertion
 import android.tools.device.traces.io.IResultData
 import androidx.annotation.VisibleForTesting
 
 /** In memory data store for flicker transitions, assertions and results */
 object DataStore {
-    private val cachedResults = mutableMapOf<IScenario, IResultData>()
-    private val cachedFlickerServiceAssertions = mutableMapOf<IScenario, List<IAssertionResult>>()
+    private var cachedResults = mutableMapOf<IScenario, IResultData>()
+    private var cachedFlickerServiceAssertions =
+        mutableMapOf<IScenario, Map<IScenarioInstance, Collection<IFaasAssertion>>>()
+
+    data class Backup(
+        val cachedResults: MutableMap<IScenario, IResultData>,
+        val cachedFlickerServiceAssertions:
+            MutableMap<IScenario, Map<IScenarioInstance, Collection<IFaasAssertion>>>
+    )
 
     @VisibleForTesting
     fun clear() {
-        cachedResults.clear()
-        cachedFlickerServiceAssertions.clear()
+        cachedResults = mutableMapOf()
+        cachedFlickerServiceAssertions = mutableMapOf()
+    }
+
+    fun backup(): Backup {
+        return Backup(cachedResults.toMutableMap(), cachedFlickerServiceAssertions.toMutableMap())
+    }
+
+    fun restore(backup: Backup) {
+        cachedResults = backup.cachedResults
+        cachedFlickerServiceAssertions = backup.cachedFlickerServiceAssertions
     }
 
     /** @return if the store has results for [scenario] */
@@ -40,11 +57,8 @@ object DataStore {
      *
      * @throws IllegalStateException is [scenario] already exists in the data store
      */
-    @Throws(IllegalStateException::class)
     fun addResult(scenario: IScenario, result: IResultData) {
-        if (containsResult(scenario)) {
-            error("Result for $scenario already in data store")
-        }
+        require(!containsResult(scenario)) { "Result for $scenario already in data store" }
         cachedResults[scenario] = result
     }
 
@@ -53,7 +67,6 @@ object DataStore {
      *
      * @throws IllegalStateException is [scenario] doesn't exist in the data store
      */
-    @Throws(IllegalStateException::class)
     fun replaceResult(scenario: IScenario, newResult: IResultData) {
         if (!containsResult(scenario)) {
             error("Result for $scenario not in data store")
@@ -65,7 +78,6 @@ object DataStore {
      * @return the result for [scenario]
      * @throws IllegalStateException is [scenario] doesn't exist in the data store
      */
-    @Throws(IllegalStateException::class)
     fun getResult(scenario: IScenario): IResultData =
         cachedResults[scenario] ?: error("No value for $scenario")
 
@@ -73,25 +85,20 @@ object DataStore {
     fun containsFlickerServiceResult(scenario: IScenario): Boolean =
         cachedFlickerServiceAssertions.containsKey(scenario)
 
-    fun addFlickerServiceResults(scenario: IScenario, results: List<IAssertionResult>) {
+    fun addFlickerServiceAssertions(
+        scenario: IScenario,
+        groupedAssertions: Map<IScenarioInstance, Collection<IFaasAssertion>>
+    ) {
         if (containsFlickerServiceResult(scenario)) {
             error("Result for $scenario already in data store")
         }
-        cachedFlickerServiceAssertions[scenario] = results
+        cachedFlickerServiceAssertions[scenario] = groupedAssertions
     }
 
-    fun getFlickerServiceResults(scenario: IScenario): List<IAssertionResult> {
+    fun getFlickerServiceAssertions(
+        scenario: IScenario
+    ): Map<IScenarioInstance, Collection<IFaasAssertion>> {
         return cachedFlickerServiceAssertions[scenario]
             ?: error("No flicker service results for $scenario")
-    }
-
-    fun getFlickerServiceResultsForAssertion(
-        scenario: IScenario,
-        assertionName: String
-    ): List<IAssertionResult> {
-        return cachedFlickerServiceAssertions[scenario]?.filter {
-            it.assertion.name == assertionName
-        }
-            ?: error("Assertion with name $assertionName not found for scenario $scenario")
     }
 }

@@ -20,10 +20,10 @@ import android.tools.common.flicker.assertors.AssertionTemplate
 import android.tools.common.flicker.assertors.ComponentTemplate
 
 /** Base class for tests that require a [component] named window name */
-abstract class AssertionTemplateWithComponent(val component: ComponentTemplate) :
+abstract class AssertionTemplateWithComponent(vararg val components: ComponentTemplate) :
     AssertionTemplate() {
 
-    override val assertionName = "${this::class.simpleName}(${component.name})"
+    override val assertionName = "${this::class.simpleName}(${components.joinToString { it.name }})"
 
     override fun equals(other: Any?): Boolean {
         if (other !is AssertionTemplateWithComponent) {
@@ -31,17 +31,22 @@ abstract class AssertionTemplateWithComponent(val component: ComponentTemplate) 
         }
 
         // Check both assertions are instances of the same class.
-        if (this::class != component::class) {
+        if (this::class != other::class) {
+            return false
+        }
+
+        if (components.size != other.components.size) {
             return false
         }
 
         // TODO: Make sure equality is properly defined on the component
-        return other.component == component
+        // Order of components matters
+        return components.zip(other.components).all { it.first == it.second }
     }
 
     override fun hashCode(): Int {
         var result = super.hashCode()
-        result = 31 * result + component.hashCode()
+        result = 31 * result + assertionName.hashCode()
         return result
     }
 }

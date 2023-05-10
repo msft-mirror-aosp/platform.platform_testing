@@ -24,8 +24,11 @@ open class AssertionFactory : IAssertionFactory {
     override fun generateAssertionsFor(
         scenarioInstance: IScenarioInstance
     ): Collection<IFaasAssertion> {
-        val assertionTemplates =
-            FlickerServiceConfig.getScenarioConfigFor(scenarioInstance.type).assertionTemplates
+        val scenarioConfig = FlickerServiceConfig.getScenarioConfigFor(scenarioInstance.type)
+        if (!scenarioConfig.enabled) {
+            return emptyList()
+        }
+        val assertionTemplates = scenarioConfig.assertionTemplates
         return assertionTemplates.map { it.createAssertion(scenarioInstance) }
     }
 }

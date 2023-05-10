@@ -16,7 +16,7 @@
 
 package android.tools.device.traces.io
 
-import android.tools.InitRule
+import android.tools.CleanFlickerEnvironmentRule
 import android.tools.TestTraces
 import android.tools.assertExceptionMessage
 import android.tools.assertThrows
@@ -37,13 +37,12 @@ import org.junit.Test
 
 /** Base class for [ResultReader] tests parsing traces */
 abstract class BaseResultReaderTestParseTrace {
-    protected abstract val assetFile: File
+    protected abstract val assetFiles: Map<TraceType, File>
     protected abstract val traceName: String
     protected abstract val startTimeTrace: Timestamp
     protected abstract val endTimeTrace: Timestamp
     protected abstract val validSliceTime: Timestamp
     protected abstract val invalidSliceTime: Timestamp
-    protected abstract val traceType: TraceType
     protected abstract val expectedSlicedTraceSize: Int
     protected open val invalidSizeMessage: String
         get() = "$traceName contained 0 entries, expected at least 2"
@@ -52,7 +51,7 @@ abstract class BaseResultReaderTestParseTrace {
     protected abstract fun getTime(traceTime: Timestamp): Long
 
     protected open fun setupWriter(writer: ResultWriter): ResultWriter {
-        writer.addTraceResult(traceType, assetFile)
+        assetFiles.forEach { (traceType, assetFile) -> writer.addTraceResult(traceType, assetFile) }
         return writer
     }
 
@@ -122,6 +121,6 @@ abstract class BaseResultReaderTestParseTrace {
     }
 
     companion object {
-        @ClassRule @JvmField val initRule = InitRule()
+        @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
     }
 }

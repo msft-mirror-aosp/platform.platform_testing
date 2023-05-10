@@ -17,24 +17,16 @@
 package android.tools.device.traces.io
 
 import android.tools.common.Timestamp
+import android.tools.common.io.IArtifact
 import android.tools.common.io.RunStatus
 import android.tools.common.io.TransitionTimeRange
-import java.io.File
 
 /** Contents of a flicker run (e.g. files, status, event log) */
 interface IResultData {
     val transitionTimeRange: TransitionTimeRange
     val executionError: Throwable?
-    val artifact: File
+    val artifact: IArtifact
     val runStatus: RunStatus
-
-    fun getArtifactBytes(): ByteArray
-
-    /** updates the artifact status to [newStatus] */
-    fun getNewFilePath(newStatus: RunStatus): File {
-        val currTestName = artifact.name.dropWhile { it != '_' }
-        return artifact.resolveSibling("${newStatus.prefix}_$currTestName")
-    }
 
     /** updates the artifact status to [newStatus] */
     fun updateStatus(newStatus: RunStatus): IResultData

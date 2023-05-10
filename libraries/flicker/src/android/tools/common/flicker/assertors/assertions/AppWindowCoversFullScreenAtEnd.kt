@@ -20,7 +20,7 @@ import android.tools.common.flicker.IScenarioInstance
 import android.tools.common.flicker.assertors.ComponentTemplate
 import android.tools.common.flicker.subject.wm.WindowManagerTraceSubject
 
-class AppWindowCoversFullScreenAtEnd(component: ComponentTemplate) :
+class AppWindowCoversFullScreenAtEnd(private val component: ComponentTemplate) :
     AssertionTemplateWithComponent(component) {
     /** {@inheritDoc} */
     override fun doEvaluate(

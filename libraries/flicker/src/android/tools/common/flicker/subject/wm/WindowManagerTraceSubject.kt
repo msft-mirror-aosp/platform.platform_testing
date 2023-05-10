@@ -17,11 +17,11 @@
 package android.tools.common.flicker.subject.wm
 
 import android.tools.common.Rotation
-import android.tools.common.datatypes.component.ComponentNameMatcher
-import android.tools.common.datatypes.component.IComponentMatcher
-import android.tools.common.flicker.assertions.Fact
 import android.tools.common.flicker.subject.FlickerTraceSubject
 import android.tools.common.flicker.subject.region.RegionTraceSubject
+import android.tools.common.io.IReader
+import android.tools.common.traces.component.ComponentNameMatcher
+import android.tools.common.traces.component.IComponentMatcher
 import android.tools.common.traces.region.RegionTrace
 import android.tools.common.traces.wm.WindowManagerTrace
 import android.tools.common.traces.wm.WindowState
@@ -53,20 +53,13 @@ import android.tools.common.traces.wm.WindowState
  */
 class WindowManagerTraceSubject(
     val trace: WindowManagerTrace,
-    override val parent: WindowManagerTraceSubject? = null,
-    private val facts: Collection<Fact> = emptyList()
+    override val reader: IReader? = null
 ) :
     FlickerTraceSubject<WindowManagerStateSubject>(),
     IWindowManagerSubject<WindowManagerTraceSubject, RegionTraceSubject> {
 
-    override val selfFacts by lazy {
-        val allFacts = super.selfFacts.toMutableList()
-        allFacts.addAll(facts)
-        allFacts
-    }
-
     override val subjects by lazy {
-        trace.entries.map { WindowManagerStateSubject(it, this, this) }
+        trace.entries.map { WindowManagerStateSubject(it, reader, this) }
     }
 
     /** {@inheritDoc} */
@@ -363,7 +356,7 @@ class WindowManagerTraceSubject(
                 subjects.map { it.visibleRegion(componentMatcher).regionEntry }.toTypedArray()
             )
 
-        return RegionTraceSubject(regionTrace, this)
+        return RegionTraceSubject(regionTrace, reader)
     }
 
     /** {@inheritDoc} */
@@ -561,6 +554,13 @@ class WindowManagerTraceSubject(
         }
     }
 
+    /** {@inheritDoc} */
+    override fun containsAtLeastOneDisplay(): WindowManagerTraceSubject = apply {
+        addAssertion("containAtLeastOneDisplay", isOptional = false) {
+            it.containsAtLeastOneDisplay()
+        }
+    }
+
     /** Checks that all visible layers are shown for more than one consecutive entry */
     fun visibleWindowsShownMoreThanOneConsecutiveEntry(
         ignoreWindows: List<ComponentNameMatcher> =
@@ -569,7 +569,9 @@ class WindowManagerTraceSubject(
         visibleEntriesShownMoreThanOneConsecutiveTime { subject ->
             subject.wmState.windowStates
                 .filter { it.isVisible }
-                .filter { ignoreWindows.none { windowName -> windowName.windowMatchesAnyOf(it) } }
+                .filter { window ->
+                    ignoreWindows.none { matcher -> matcher.windowMatchesAnyOf(window) }
+                }
                 .map { it.name }
                 .toSet()
         }

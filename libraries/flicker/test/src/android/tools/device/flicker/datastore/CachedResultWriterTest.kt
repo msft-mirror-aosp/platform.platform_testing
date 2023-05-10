@@ -17,24 +17,19 @@
 package android.tools.device.flicker.datastore
 
 import android.annotation.SuppressLint
-import android.tools.InitRule
+import android.tools.CleanFlickerEnvironmentRule
 import android.tools.TEST_SCENARIO
 import android.tools.assertExceptionMessage
 import android.tools.assertThrows
 import android.tools.newTestCachedResultWriter
 import com.google.common.truth.Truth
-import org.junit.Before
 import org.junit.ClassRule
+import org.junit.Rule
 import org.junit.Test
 
 /** Tests for [CachedResultWriterTest] */
 @SuppressLint("VisibleForTests")
 class CachedResultWriterTest {
-    @Before
-    fun setup() {
-        DataStore.clear()
-    }
-
     @Test
     fun writeToStore() {
         val writer = newTestCachedResultWriter()
@@ -50,7 +45,7 @@ class CachedResultWriterTest {
     fun writeToStoreFailsWhenWriteTwice() {
         val writer = newTestCachedResultWriter()
         val failure =
-            assertThrows<IllegalStateException> {
+            assertThrows<IllegalArgumentException> {
                 writer.write()
                 writer.write()
             }
@@ -58,9 +53,10 @@ class CachedResultWriterTest {
             .that(DataStore.containsResult(TEST_SCENARIO))
             .isTrue()
         assertExceptionMessage(failure, TEST_SCENARIO.toString())
+        assertExceptionMessage(failure, "already in data store")
     }
 
     companion object {
-        @ClassRule @JvmField val initRule = InitRule()
+        @Rule @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
     }
 }

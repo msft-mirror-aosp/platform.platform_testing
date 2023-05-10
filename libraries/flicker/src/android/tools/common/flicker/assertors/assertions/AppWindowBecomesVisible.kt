@@ -16,16 +16,16 @@
 
 package android.tools.common.flicker.assertors.assertions
 
-import android.tools.common.datatypes.component.ComponentNameMatcher
 import android.tools.common.flicker.IScenarioInstance
 import android.tools.common.flicker.assertors.ComponentTemplate
 import android.tools.common.flicker.subject.wm.WindowManagerTraceSubject
+import android.tools.common.traces.component.ComponentNameMatcher
 
 /**
  * Checks that the app layer doesn't exist or is invisible at the start of the transition, but is
  * created and/or becomes visible during the transition.
  */
-class AppWindowBecomesVisible(component: ComponentTemplate) :
+class AppWindowBecomesVisible(private val component: ComponentTemplate) :
     AssertionTemplateWithComponent(component) {
     /** {@inheritDoc} */
     override fun doEvaluate(
@@ -40,5 +40,7 @@ class AppWindowBecomesVisible(component: ComponentTemplate) :
             .isAppWindowVisible(ComponentNameMatcher.SPLASH_SCREEN, isOptional = true)
             .then()
             .isAppWindowVisible(component.build(scenarioInstance))
+            .forAllEntries()
+        // TODO: Check everywhere we are missing this!
     }
 }

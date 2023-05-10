@@ -17,8 +17,9 @@ package android.platform.helpers;
 
 import android.app.Instrumentation;
 import android.platform.helpers.exceptions.UnknownUiException;
-import android.support.test.uiautomator.UiObject2;
-import android.support.test.uiautomator.BySelector;
+
+import androidx.test.uiautomator.BySelector;
+import androidx.test.uiautomator.UiObject2;
 
 public class HomeHelperImpl extends AbstractStandardAppHelper implements IAutoHomeHelper {
 

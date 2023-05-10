@@ -16,93 +16,58 @@
 
 package android.tools.common.flicker.config
 
-import android.tools.common.flicker.assertors.IAssertionTemplate
-import android.tools.common.flicker.config.AssertionTemplates.APP_CLOSE_TO_HOME_ASSERTIONS
-import android.tools.common.flicker.config.AssertionTemplates.APP_LAUNCH_FROM_HOME_ASSERTIONS
-import android.tools.common.flicker.config.AssertionTemplates.APP_LAUNCH_FROM_NOTIFICATION_ASSERTIONS
-import android.tools.common.flicker.config.AssertionTemplates.COMMON_ASSERTIONS
-import android.tools.common.flicker.config.AssertionTemplates.LAUNCHER_QUICK_SWITCH_ASSERTIONS
-import android.tools.common.flicker.config.TransitionFilters.CLOSE_APP_TO_LAUNCHER_FILTER
-import android.tools.common.flicker.config.TransitionFilters.OPEN_APP_TRANSITION_FILTER
-import android.tools.common.flicker.config.TransitionFilters.QUICK_SWITCH_TRANSITION_FILTER
-import android.tools.common.flicker.config.TransitionFilters.QUICK_SWITCH_TRANSITION_MERGE
-import android.tools.common.flicker.extractors.EntireTraceExtractor
+import android.tools.common.flicker.config.appclose.AppClose
+import android.tools.common.flicker.config.applaunch.AppLaunch
+import android.tools.common.flicker.config.foldables.Foldables
+import android.tools.common.flicker.config.gesturenav.GestureNav
+import android.tools.common.flicker.config.ime.Ime
+import android.tools.common.flicker.config.launcher.Launcher
+import android.tools.common.flicker.config.lockscreen.Lockscreen
+import android.tools.common.flicker.config.notification.Notification
+import android.tools.common.flicker.config.others.Others
+import android.tools.common.flicker.config.pip.Pip
+import android.tools.common.flicker.config.settings.Settings
+import android.tools.common.flicker.config.splashscreen.Splashscreen
+import android.tools.common.flicker.config.splitscreen.SplitScreen
+import android.tools.common.flicker.config.suw.Suw
+import android.tools.common.flicker.config.taskbar.Taskbar
+import android.tools.common.flicker.config.wallpaper.Wallpaper
 import android.tools.common.flicker.extractors.IScenarioExtractor
-import android.tools.common.flicker.extractors.TaggedScenarioExtractor
-import android.tools.common.flicker.extractors.TransitionMatcher
-import android.tools.common.traces.events.CujType
 
 object FlickerServiceConfig {
-    /** EDIT THIS CONFIG TO ADD SCENARIOS TO FAAS */
-    fun getScenarioConfigFor(type: FaasScenarioType): ScenarioConfig =
-        when (type) {
-            FaasScenarioType.COMMON ->
-                ScenarioConfig(
-                    extractor = EntireTraceExtractor(FaasScenarioType.COMMON),
-                    assertionTemplates = COMMON_ASSERTIONS
-                )
-            FaasScenarioType.LAUNCHER_APP_LAUNCH_FROM_ICON ->
-                ScenarioConfig(
-                    extractor =
-                        TaggedScenarioExtractor(
-                            targetTag = CujType.CUJ_LAUNCHER_APP_LAUNCH_FROM_ICON,
-                            type,
-                            transitionMatcher = TransitionMatcher(OPEN_APP_TRANSITION_FILTER)
-                        ),
-                    assertionTemplates = APP_LAUNCH_FROM_HOME_ASSERTIONS
-                )
-            FaasScenarioType.APP_CLOSE_TO_HOME ->
-                ScenarioConfig(
-                    extractor =
-                        TaggedScenarioExtractor(
-                            targetTag = CujType.CUJ_LAUNCHER_APP_CLOSE_TO_HOME,
-                            type,
-                            transitionMatcher = TransitionMatcher(CLOSE_APP_TO_LAUNCHER_FILTER)
-                        ),
-                    assertionTemplates = APP_CLOSE_TO_HOME_ASSERTIONS
-                )
-            FaasScenarioType.NOTIFICATION_APP_START ->
-                ScenarioConfig(
-                    extractor =
-                        TaggedScenarioExtractor(
-                            targetTag = CujType.CUJ_NOTIFICATION_APP_START,
-                            type,
-                            transitionMatcher = TransitionMatcher(OPEN_APP_TRANSITION_FILTER)
-                        ),
-                    assertionTemplates = APP_LAUNCH_FROM_NOTIFICATION_ASSERTIONS
-                )
-            FaasScenarioType.LAUNCHER_QUICK_SWITCH ->
-                ScenarioConfig(
-                    extractor =
-                        TaggedScenarioExtractor(
-                            targetTag = CujType.CUJ_LAUNCHER_QUICK_SWITCH,
-                            type,
-                            transitionMatcher =
-                                TransitionMatcher(
-                                    QUICK_SWITCH_TRANSITION_FILTER,
-                                    finalTransform = QUICK_SWITCH_TRANSITION_MERGE
-                                )
-                        ),
-                    assertionTemplates = LAUNCHER_QUICK_SWITCH_ASSERTIONS
-                )
-            FaasScenarioType.LAUNCHER_APP_LAUNCH_FROM_RECENTS ->
-                ScenarioConfig(
-                    extractor =
-                        TaggedScenarioExtractor(
-                            targetTag = CujType.CUJ_LAUNCHER_APP_LAUNCH_FROM_RECENTS,
-                            type,
-                            transitionMatcher = TransitionMatcher(OPEN_APP_TRANSITION_FILTER)
-                        ),
-                    assertionTemplates = APP_LAUNCH_FROM_HOME_ASSERTIONS
-                )
-        }
+    private val supportedScenarios =
+        listOf(
+                AppClose.SCENARIOS,
+                AppLaunch.SCENARIOS,
+                Foldables.SCENARIOS,
+                GestureNav.SCENARIOS,
+                Ime.SCENARIOS,
+                Launcher.SCENARIOS,
+                Lockscreen.SCENARIOS,
+                Notification.SCENARIOS,
+                Others.SCENARIOS,
+                Pip.SCENARIOS,
+                Settings.SCENARIOS,
+                Splashscreen.SCENARIOS,
+                SplitScreen.SCENARIOS,
+                Suw.SCENARIOS,
+                Taskbar.SCENARIOS,
+                Wallpaper.SCENARIOS
+            )
+            .flatten()
 
-    fun getExtractors(): List<IScenarioExtractor> {
-        return FaasScenarioType.values().map { getScenarioConfigFor(it).extractor }
+    /** EDIT THIS CONFIG TO ADD SCENARIOS TO FAAS */
+    fun getScenarioConfigFor(type: FaasScenarioType): IScenarioConfig =
+        supportedScenarios.firstOrNull { it.type == type }
+            ?: error("Scenario $type is not supported")
+
+    fun getExtractors(enabledOnly: Boolean = true): List<IScenarioExtractor> {
+        val scenarios: Collection<FaasScenarioType> =
+            if (enabledOnly) {
+                FaasScenarioType.values().filter { getScenarioConfigFor(it).enabled }
+            } else {
+                FaasScenarioType.values().asList()
+            }
+        return scenarios.map { getScenarioConfigFor(it).extractor }
     }
 }
-
-data class ScenarioConfig(
-    val extractor: IScenarioExtractor,
-    val assertionTemplates: Collection<IAssertionTemplate>
-)

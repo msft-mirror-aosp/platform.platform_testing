@@ -16,7 +16,7 @@
 
 package android.tools.common.traces.events
 
-import android.tools.InitRule
+import android.tools.CleanFlickerEnvironmentRule
 import android.tools.common.CrossPlatform
 import com.google.common.truth.Truth
 import org.junit.ClassRule
@@ -146,11 +146,24 @@ class CujTraceTest {
         Truth.assertThat(trace.entries).hasLength(0)
     }
 
-    private fun createCujEvent(timestamp: Long, cuj: CujType, tag: String): CujEvent {
-        return CujEvent(CrossPlatform.timestamp.from(unixNanos = timestamp), cuj, 0, "root", 0, tag)
+    private fun createCujEvent(
+        timestamp: Long,
+        cuj: CujType,
+        type: String,
+        tag: String? = null
+    ): CujEvent {
+        return CujEvent(
+            CrossPlatform.timestamp.from(unixNanos = timestamp),
+            cuj,
+            0,
+            "root",
+            0,
+            type,
+            tag,
+        )
     }
 
     companion object {
-        @ClassRule @JvmField val initRule = InitRule()
+        @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
     }
 }

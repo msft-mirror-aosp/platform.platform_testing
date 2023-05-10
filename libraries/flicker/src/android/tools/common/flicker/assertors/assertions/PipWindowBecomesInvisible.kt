@@ -24,7 +24,7 @@ import android.tools.common.flicker.subject.wm.WindowManagerTraceSubject
  * Checks that [component] window is pinned and visible at the start and then becomes unpinned and
  * invisible at the same moment, and remains unpinned and invisible until the end of the transition
  */
-class PipWindowBecomesInvisible(component: ComponentTemplate) :
+class PipWindowBecomesInvisible(private val component: ComponentTemplate) :
     AssertionTemplateWithComponent(component) {
     /** {@inheritDoc} */
     override fun doEvaluate(

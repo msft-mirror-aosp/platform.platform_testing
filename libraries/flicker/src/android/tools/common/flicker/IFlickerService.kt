@@ -17,8 +17,19 @@
 package android.tools.common.flicker
 
 import android.tools.common.flicker.assertors.IAssertionResult
+import android.tools.common.flicker.assertors.IFaasAssertion
 import android.tools.common.io.IReader
 
 interface IFlickerService {
-    fun process(reader: IReader): List<IAssertionResult>
+    fun process(reader: IReader): Collection<IAssertionResult>
+    fun detectScenarios(reader: IReader): Collection<IScenarioInstance>
+    fun generateAssertions(
+        vararg scenarioInstances: IScenarioInstance
+    ): Collection<IFaasAssertion> = generateAssertions(scenarioInstances.asList())
+    fun generateAssertions(
+        scenarioInstances: Collection<IScenarioInstance>
+    ): Collection<IFaasAssertion>
+    fun executeAssertion(assertion: IFaasAssertion): IAssertionResult =
+        executeAssertions(listOf(assertion)).first()
+    fun executeAssertions(assertions: Collection<IFaasAssertion>): Collection<IAssertionResult>
 }

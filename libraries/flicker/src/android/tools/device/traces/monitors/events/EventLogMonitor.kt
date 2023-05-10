@@ -35,7 +35,7 @@ open class EventLogMonitor : TraceMonitor() {
 
     private var traceStartTime: Timestamp? = null
 
-    override fun start() {
+    override fun doStart() {
         require(!isEnabled) { "Trace already running" }
         isEnabled = true
         traceStartTime = now()

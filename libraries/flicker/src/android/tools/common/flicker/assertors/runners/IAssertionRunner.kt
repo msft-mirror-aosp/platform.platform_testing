@@ -20,5 +20,5 @@ import android.tools.common.flicker.assertors.IAssertionResult
 import android.tools.common.flicker.assertors.IFaasAssertion
 
 interface IAssertionRunner {
-    fun execute(assertions: List<IFaasAssertion>): List<IAssertionResult>
+    fun execute(assertions: Collection<IFaasAssertion>): Collection<IAssertionResult>
 }

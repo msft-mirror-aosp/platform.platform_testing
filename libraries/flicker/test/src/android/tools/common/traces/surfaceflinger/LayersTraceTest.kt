@@ -16,14 +16,14 @@
 
 package android.tools.common.traces.surfaceflinger
 
-import android.tools.InitRule
+import android.tools.CleanFlickerEnvironmentRule
 import android.tools.assertThatErrorContainsDebugInfo
 import android.tools.assertThrows
 import android.tools.common.Cache
 import android.tools.common.CrossPlatform
-import android.tools.common.datatypes.component.ComponentNameMatcher
 import android.tools.common.flicker.subject.layers.LayersTraceSubject
-import android.tools.readLayerTraceFromFile
+import android.tools.common.traces.component.ComponentNameMatcher
+import android.tools.getLayerTraceReaderFromAsset
 import com.google.common.truth.Truth
 import org.junit.Before
 import org.junit.ClassRule
@@ -35,8 +35,9 @@ import org.junit.runners.MethodSorters
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class LayersTraceTest {
     private fun detectRootLayer(fileName: String, legacyTrace: Boolean = false) {
-        val layersTrace = readLayerTraceFromFile(fileName, legacyTrace = legacyTrace)
-        for (entry in layersTrace.entries) {
+        val reader = getLayerTraceReaderFromAsset(fileName, legacyTrace = legacyTrace)
+        val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
+        for (entry in trace.entries) {
             val rootLayers = entry.children
             Truth.assertWithMessage("Does not have any root layer")
                 .that(rootLayers.size)
@@ -65,7 +66,8 @@ class LayersTraceTest {
 
     @Test
     fun canTestLayerOccludedByAppLayerHasVisibleRegion() {
-        val trace = readLayerTraceFromFile("layers_trace_occluded.pb", legacyTrace = true)
+        val reader = getLayerTraceReaderFromAsset("layers_trace_occluded.pb", legacyTrace = true)
+        val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
         val entry =
             trace.getEntryExactlyAt(
                 CrossPlatform.timestamp.from(systemUptimeNanos = 1700382131522L)
@@ -95,7 +97,8 @@ class LayersTraceTest {
     fun canTestLayerOccludedByAppLayerIsOccludedBySplashScreen() {
         val layerName = "com.android.server.wm.flicker.testapp.SimpleActivity#0"
         val component = ComponentNameMatcher("", layerName)
-        val trace = readLayerTraceFromFile("layers_trace_occluded.pb", legacyTrace = true)
+        val reader = getLayerTraceReaderFromAsset("layers_trace_occluded.pb", legacyTrace = true)
+        val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
         val entry =
             trace.getEntryExactlyAt(
                 CrossPlatform.timestamp.from(systemUptimeNanos = 1700382131522L)
@@ -118,14 +121,13 @@ class LayersTraceTest {
 
     @Test
     fun exceptionContainsDebugInfo() {
-        val layersTraceEntries =
-            readLayerTraceFromFile("layers_trace_emptyregion.pb", legacyTrace = true)
-        val error =
-            assertThrows<AssertionError> { LayersTraceSubject(layersTraceEntries).isEmpty() }
-        assertThatErrorContainsDebugInfo(error, withBlameEntry = false)
+        val reader = getLayerTraceReaderFromAsset("layers_trace_emptyregion.pb", legacyTrace = true)
+        val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
+        val error = assertThrows<AssertionError> { LayersTraceSubject(trace, reader).isEmpty() }
+        assertThatErrorContainsDebugInfo(error)
     }
 
     companion object {
-        @ClassRule @JvmField val initRule = InitRule()
+        @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
     }
 }

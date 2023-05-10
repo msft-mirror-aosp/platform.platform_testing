@@ -16,6 +16,8 @@
 
 package android.tools.common.io
 
+import android.tools.common.IScenario
+
 /** Possible status of a flicker ru */
 enum class RunStatus(val prefix: String, val isFailure: Boolean) {
     UNDEFINED("UNDEFINED", false),
@@ -25,25 +27,36 @@ enum class RunStatus(val prefix: String, val isFailure: Boolean) {
     PARSING_FAILURE("FAILED_PARSING", true),
     ASSERTION_FAILED("FAIL", true);
 
+    fun generateArchiveNameFor(scenario: IScenario, counter: Int): String = buildString {
+        append(prefix)
+        append("__")
+        append(scenario)
+        if (counter > 0) {
+            append("_")
+            append(counter)
+        }
+        append(".zip")
+    }
+
     companion object {
-        fun fromFileName(fileName: String): RunStatus =
-            when (fileName.takeWhile { it != '_' }) {
+        fun fromFileName(fileName: String): RunStatus? {
+            if (!fileName.contains("__")) {
+                return UNDEFINED
+            }
+
+            val prefix = fileName.split("__")[0]
+
+            return when (prefix) {
                 RUN_EXECUTED.prefix -> RUN_EXECUTED
                 ASSERTION_SUCCESS.prefix -> ASSERTION_SUCCESS
                 RUN_FAILED.prefix -> RUN_FAILED
                 PARSING_FAILURE.prefix -> PARSING_FAILURE
                 ASSERTION_FAILED.prefix -> ASSERTION_FAILED
-                else -> UNDEFINED
+                UNDEFINED.prefix -> UNDEFINED
+                else -> null
             }
+        }
 
-        val ALL: List<RunStatus> =
-            listOf(
-                UNDEFINED,
-                RUN_EXECUTED,
-                ASSERTION_SUCCESS,
-                RUN_FAILED,
-                PARSING_FAILURE,
-                ASSERTION_FAILED
-            )
+        val ALL: List<RunStatus> = RunStatus.values().toList()
     }
 }

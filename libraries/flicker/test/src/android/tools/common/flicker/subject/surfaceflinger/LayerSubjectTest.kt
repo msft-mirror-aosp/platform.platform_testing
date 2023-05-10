@@ -16,12 +16,12 @@
 
 package android.tools.common.flicker.subject.surfaceflinger
 
-import android.tools.InitRule
+import android.tools.CleanFlickerEnvironmentRule
 import android.tools.common.Cache
 import android.tools.common.datatypes.Size
 import android.tools.common.flicker.subject.layers.LayerSubject
 import android.tools.common.flicker.subject.layers.LayersTraceSubject
-import android.tools.readLayerTraceFromFile
+import android.tools.getLayerTraceReaderFromAsset
 import com.google.common.truth.Truth
 import org.junit.Before
 import org.junit.ClassRule
@@ -39,23 +39,23 @@ class LayerSubjectTest {
 
     @Test
     fun exceptionContainsDebugInfoImaginary() {
-        val layersTraceEntries =
-            readLayerTraceFromFile("layers_trace_emptyregion.pb", legacyTrace = true)
-        val foundLayer = LayersTraceSubject(layersTraceEntries).first().layer("ImaginaryLayer", 0)
+        val reader = getLayerTraceReaderFromAsset("layers_trace_emptyregion.pb", legacyTrace = true)
+        val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
+        val foundLayer = LayersTraceSubject(trace, reader).first().layer("ImaginaryLayer", 0)
         Truth.assertWithMessage("ImaginaryLayer is not found").that(foundLayer).isNull()
     }
 
     @Test
     fun canTestAssertionsOnLayer() {
-        val layersTraceEntries =
-            readLayerTraceFromFile("layers_trace_emptyregion.pb", legacyTrace = true)
-        LayersTraceSubject(layersTraceEntries)
+        val reader = getLayerTraceReaderFromAsset("layers_trace_emptyregion.pb", legacyTrace = true)
+        val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
+        LayersTraceSubject(trace, reader)
             .layer("SoundVizWallpaperV2", 26033)
             .hasBufferSize(Size.from(1440, 2960))
             .hasScalingMode(0)
     }
 
     companion object {
-        @ClassRule @JvmField val initRule = InitRule()
+        @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
     }
 }

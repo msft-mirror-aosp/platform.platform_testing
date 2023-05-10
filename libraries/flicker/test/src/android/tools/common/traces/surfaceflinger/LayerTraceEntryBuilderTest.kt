@@ -16,7 +16,7 @@
 
 package android.tools.common.traces.surfaceflinger
 
-import android.tools.InitRule
+import android.tools.CleanFlickerEnvironmentRule
 import android.tools.common.CrossPlatform
 import com.google.common.truth.Truth
 import org.junit.ClassRule
@@ -70,6 +70,6 @@ class LayerTraceEntryBuilderTest {
     }
 
     companion object {
-        @ClassRule @JvmField val initRule = InitRule()
+        @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
     }
 }

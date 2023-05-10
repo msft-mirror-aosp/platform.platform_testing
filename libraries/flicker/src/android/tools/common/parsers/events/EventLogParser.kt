@@ -24,9 +24,11 @@ import android.tools.common.traces.events.Event
 import android.tools.common.traces.events.EventLog
 import android.tools.common.traces.events.EventLog.Companion.MAGIC_NUMBER
 import android.tools.common.traces.events.FocusEvent
+import kotlin.js.JsExport
 
 operator fun <T> List<T>.component6(): T = get(5)
 
+@JsExport
 class EventLogParser : AbstractParser<Array<String>, EventLog>() {
     override val traceName: String = "Event Log"
 
@@ -45,7 +47,8 @@ class EventLogParser : AbstractParser<Array<String>, EventLog>() {
         val events =
             input.map { log ->
                 val (metaData, eventData) = log.split(":", limit = 2).map { it.trim() }
-                val (rawTimestamp, uid, pid, tid, priority, tag) = metaData.split("\\s+".toRegex())
+                val (rawTimestamp, uid, pid, tid, priority, tag) =
+                    metaData.split(" ").filter { it.isNotEmpty() }
 
                 val timestamp =
                     CrossPlatform.timestamp.from(unixNanos = rawTimestamp.replace(".", "").toLong())
@@ -63,20 +66,18 @@ class EventLogParser : AbstractParser<Array<String>, EventLog>() {
         tag: String,
         eventData: String
     ): Event {
-        eventData.split(",")
-
         return when (tag) {
             INPUT_FOCUS_TAG -> {
-                FocusEvent(timestamp, pid, uid, tid, parseDataArray(eventData))
+                FocusEvent.from(timestamp, pid, uid, tid, parseDataArray(eventData))
             }
             JANK_CUJ_BEGIN_TAG -> {
-                CujEvent(pid, uid, tid, tag, eventData)
+                CujEvent.fromData(pid, uid, tid, tag, eventData)
             }
             JANK_CUJ_END_TAG -> {
-                CujEvent(pid, uid, tid, tag, eventData)
+                CujEvent.fromData(pid, uid, tid, tag, eventData)
             }
             JANK_CUJ_CANCEL_TAG -> {
-                CujEvent(pid, uid, tid, tag, eventData)
+                CujEvent.fromData(pid, uid, tid, tag, eventData)
             }
             else -> {
                 Event(timestamp, pid, uid, tid, tag)
@@ -90,7 +91,7 @@ class EventLogParser : AbstractParser<Array<String>, EventLog>() {
         return data.drop(1).dropLast(1).split(",").toTypedArray()
     }
 
-    fun parse(bytes: ByteArray, from: Timestamp, to: Timestamp): EventLog {
+    fun parseSlice(bytes: ByteArray, from: Timestamp, to: Timestamp): EventLog {
         require(from.unixNanos < to.unixNanos) { "'to' needs to be greater than 'from'" }
         require(from.hasUnixTimestamp && to.hasUnixTimestamp) { "Missing required timestamp type" }
         return doParse(
@@ -103,7 +104,7 @@ class EventLogParser : AbstractParser<Array<String>, EventLog>() {
 
     private fun getTimestampFromRawEntry(entry: String): Timestamp {
         val (metaData, _) = entry.split(":", limit = 2).map { it.trim() }
-        val (rawTimestamp, _, _, _, _, _) = metaData.split("\\s+".toRegex())
+        val (rawTimestamp, _, _, _, _, _) = metaData.split(" ").filter { it.isNotEmpty() }
         return CrossPlatform.timestamp.from(unixNanos = rawTimestamp.replace(".", "").toLong())
     }
 

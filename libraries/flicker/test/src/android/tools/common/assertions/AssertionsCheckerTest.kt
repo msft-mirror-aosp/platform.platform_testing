@@ -16,17 +16,13 @@
 
 package android.tools.common.assertions
 
-import android.tools.InitRule
-import android.tools.assertFailureFact
-import android.tools.assertThrows
+import android.tools.CleanFlickerEnvironmentRule
+import android.tools.assertFail
 import android.tools.common.CrossPlatform
 import android.tools.common.ITraceEntry
 import android.tools.common.Timestamp
 import android.tools.common.flicker.assertions.AssertionsChecker
-import android.tools.common.flicker.assertions.Fact
 import android.tools.common.flicker.subject.FlickerSubject
-import android.tools.common.flicker.subject.FlickerSubjectException
-import com.google.common.truth.Truth
 import org.junit.ClassRule
 import org.junit.FixMethodOrder
 import org.junit.Test
@@ -112,9 +108,7 @@ class AssertionsCheckerTest {
         val checker = AssertionsChecker<SimpleEntrySubject>()
         checker.add("isData42") { it.isData42() }
         checker.add("isData0") { it.isData0() }
-        val failure =
-            assertThrows<FlickerSubjectException> { checker.test(getTestEntries(0, 0, 0, 0, 0)) }
-        assertFailureFact(failure, "Assertion failed").isEqualTo("data is 42")
+        assertFail("data is 42") { checker.test(getTestEntries(0, 0, 0, 0, 0)) }
     }
 
     @Test
@@ -131,26 +125,18 @@ class AssertionsCheckerTest {
         val checker = AssertionsChecker<SimpleEntrySubject>()
         checker.add("isData42") { it.isData42() }
         checker.add("isData0") { it.isData0() }
-        val failure =
-            assertThrows<FlickerSubjectException> {
-                checker.test(getTestEntries(42, 42, 42, 42, 42))
-            }
-        Truth.assertThat(failure).hasMessageThat().contains("Assertion never failed: isData42")
+        assertFail("never failed: isData42") { checker.test(getTestEntries(42, 42, 42, 42, 42)) }
     }
 
     @Test
     fun canFailCheckChangingAssertionsIfUsingCompoundAssertion() {
         val checker = AssertionsChecker<SimpleEntrySubject>()
         checker.add("isData42/0") { it.isData42().isData0() }
-        val failure =
-            assertThrows<FlickerSubjectException> { checker.test(getTestEntries(0, 0, 0, 0, 0)) }
-        assertFailureFact(failure, "Assertion failed").isEqualTo("data is 42")
+        assertFail("data is 42") { checker.test(getTestEntries(0, 0, 0, 0, 0)) }
     }
 
     private class SimpleEntrySubject(private val entry: SimpleEntry) : FlickerSubject() {
         override val timestamp = CrossPlatform.timestamp.empty()
-        override val parent = null
-        override val selfFacts = listOf(Fact("SimpleEntry", entry.mData.toString()))
 
         fun isData42() = apply { check { "data is 42" }.that(entry.mData).isEqual(42) }
 
@@ -180,6 +166,6 @@ class AssertionsCheckerTest {
                     SimpleEntry(CrossPlatform.timestamp.from(elapsedNanos = it.toLong()), data[it])
                 )
             }
-        @ClassRule @JvmField val initRule = InitRule()
+        @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
     }
 }

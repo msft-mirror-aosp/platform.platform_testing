@@ -20,10 +20,12 @@ import android.app.Instrumentation
 import android.platform.test.annotations.Presubmit
 import android.tools.common.Scenario
 import android.tools.common.datatypes.Region
+import android.tools.common.flicker.config.FaasScenarioType
 import android.tools.common.flicker.subject.FlickerSubject
 import android.tools.common.flicker.subject.layers.LayersTraceSubject
 import android.tools.common.flicker.subject.region.RegionSubject
 import android.tools.common.flicker.subject.wm.WindowManagerTraceSubject
+import android.tools.common.io.RunStatus
 import android.tools.device.apphelpers.BrowserAppHelper
 import android.tools.device.flicker.annotation.FlickerServiceCompatible
 import android.tools.device.flicker.junit.FlickerBuilderProvider
@@ -39,7 +41,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 
-@FlickerServiceCompatible
+@FlickerServiceCompatible(expectedCujs = [FaasScenarioType.COMMON])
 @RunWith(Parameterized::class)
 @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
 class FullTestRun(private val flicker: FlickerTest) {
@@ -138,12 +140,20 @@ class FullTestRun(private val flicker: FlickerTest) {
         Truth.assertWithMessage("Execution count").that(executionCount).isEqualTo(4)
     }
 
+    @Presubmit
+    @Test
+    fun exceptionMessageCheck() {
+        val failure: Result<Any> = runCatching { flicker.assertLayers { this.isEmpty() } }
+        val exception = failure.exceptionOrNull() ?: error("Should have thrown failure")
+        Truth.assertWithMessage("Artifact path on exception")
+            .that(exception)
+            .hasMessageThat()
+            .contains(RunStatus.ASSERTION_FAILED.prefix)
+    }
+
     private fun validateState(actual: FlickerSubject?, expected: FlickerSubject?) {
         Truth.assertWithMessage("Actual state").that(actual).isNotNull()
         Truth.assertWithMessage("Expected state").that(expected).isNotNull()
-        Truth.assertWithMessage("Incorrect state")
-            .that(actual?.completeFacts?.joinToString { it.toString() })
-            .isEqualTo(expected?.completeFacts?.joinToString { it.toString() })
     }
 
     private fun validateVisibleRegion(

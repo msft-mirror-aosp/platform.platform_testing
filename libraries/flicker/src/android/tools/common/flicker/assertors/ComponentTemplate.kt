@@ -16,8 +16,8 @@
 
 package android.tools.common.flicker.assertors
 
-import android.tools.common.datatypes.component.IComponentMatcher
 import android.tools.common.flicker.IScenarioInstance
+import android.tools.common.traces.component.IComponentMatcher
 
 data class ComponentTemplate(
     val name: String,

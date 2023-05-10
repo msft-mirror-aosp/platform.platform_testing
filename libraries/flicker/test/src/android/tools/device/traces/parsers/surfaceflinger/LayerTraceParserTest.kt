@@ -16,7 +16,7 @@
 
 package android.tools.device.traces.parsers.surfaceflinger
 
-import android.tools.InitRule
+import android.tools.CleanFlickerEnvironmentRule
 import android.tools.common.Cache
 import android.tools.readAsset
 import com.google.common.truth.Truth
@@ -52,6 +52,6 @@ class LayerTraceParserTest {
     }
 
     companion object {
-        @ClassRule @JvmField val initRule = InitRule()
+        @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
     }
 }

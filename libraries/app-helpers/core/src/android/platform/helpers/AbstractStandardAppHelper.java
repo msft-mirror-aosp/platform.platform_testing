@@ -124,7 +124,7 @@ public abstract class AbstractStandardAppHelper implements IAppHelper {
     // Start Spectatio Util Helper Methods
 
     private void initializeSpectatioUtils() {
-        mSpectatioUiUtil = SpectatioUiUtil.getInstance(mDevice);
+        mSpectatioUiUtil = SpectatioUiUtil.getInstance(mInstrumentation);
         mSpectatioConfigUtil = SpectatioConfigUtil.getInstance();
     }
 
@@ -182,7 +182,7 @@ public abstract class AbstractStandardAppHelper implements IAppHelper {
      *
      * @param uiElementName is the Key for the Ui Element to read from config
      */
-    protected BySelector getUiElementFromConfig(String uiElementName) {
+    protected androidx.test.uiautomator.BySelector getUiElementFromConfig(String uiElementName) {
         return mSpectatioConfigUtil.getUiElementFromConfig(uiElementName);
     }
 

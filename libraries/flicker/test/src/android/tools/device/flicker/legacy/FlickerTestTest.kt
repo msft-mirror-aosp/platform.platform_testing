@@ -17,24 +17,22 @@
 package android.tools.device.flicker.legacy
 
 import android.annotation.SuppressLint
-import android.tools.InitRule
+import android.tools.CleanFlickerEnvironmentRule
 import android.tools.TEST_SCENARIO
 import android.tools.TestTraces
 import android.tools.assertExceptionMessage
 import android.tools.assertThrows
-import android.tools.common.io.RunStatus
 import android.tools.common.io.TraceType
 import android.tools.device.flicker.datastore.CachedResultReader
 import android.tools.device.flicker.datastore.DataStore
 import android.tools.device.traces.DEFAULT_TRACE_CONFIG
-import android.tools.device.traces.deleteIfExists
 import android.tools.device.traces.io.ResultReader
 import android.tools.newTestCachedResultWriter
-import android.tools.outputFileName
 import com.google.common.truth.Truth
 import java.io.File
 import org.junit.Before
 import org.junit.ClassRule
+import org.junit.Rule
 import org.junit.Test
 
 /** Tests for [FlickerTest] */
@@ -45,8 +43,6 @@ class FlickerTestTest {
     @Before
     fun setup() {
         executionCount = 0
-        outputFileName(RunStatus.RUN_EXECUTED).deleteIfExists()
-        DataStore.clear()
     }
 
     @Test
@@ -244,6 +240,6 @@ class FlickerTestTest {
     }
 
     companion object {
-        @ClassRule @JvmField val initRule = InitRule()
+        @Rule @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
     }
 }

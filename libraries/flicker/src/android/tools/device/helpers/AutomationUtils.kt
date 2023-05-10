@@ -24,8 +24,8 @@ import android.os.RemoteException
 import android.os.SystemClock
 import android.tools.common.CrossPlatform
 import android.tools.common.Rotation
-import android.tools.common.datatypes.component.ComponentNameMatcher
 import android.tools.common.traces.ConditionsFactory
+import android.tools.common.traces.component.ComponentNameMatcher
 import android.tools.device.helpers.WindowUtils.displayBounds
 import android.tools.device.helpers.WindowUtils.estimateNavigationBarPosition
 import android.tools.device.traces.executeShellCommand

@@ -33,11 +33,6 @@ data class ScenarioInstance(
     val associatedCuj: CujType? = null,
     override val associatedTransition: Transition? = null,
 ) : IScenarioInstance {
-    val startTransaction
-        get() = associatedTransition?.startTransaction
-    val finishTransaction
-        get() = associatedTransition?.finishTransaction
-
     // b/227752705
     override val navBarMode
         get() = error("Unsupported")

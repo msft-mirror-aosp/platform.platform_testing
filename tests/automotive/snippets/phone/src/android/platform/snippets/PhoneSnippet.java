@@ -19,6 +19,7 @@ package android.platform.snippets;
 import android.platform.helpers.HelperAccessor;
 import android.platform.helpers.IAutoDialContactDetailsHelper;
 import android.platform.helpers.IAutoDialHelper;
+import android.platform.helpers.IAutoVehicleHardKeysHelper;
 
 import com.google.android.mobly.snippet.Snippet;
 import com.google.android.mobly.snippet.rpc.Rpc;
@@ -27,10 +28,12 @@ import com.google.android.mobly.snippet.rpc.Rpc;
 public class PhoneSnippet implements Snippet {
     private final HelperAccessor<IAutoDialHelper> mDialerHelper;
     private final HelperAccessor<IAutoDialContactDetailsHelper> mContactsDetailsHelper;
+    private final HelperAccessor<IAutoVehicleHardKeysHelper> mHardKeysHelper;
 
     public PhoneSnippet() {
         mDialerHelper = new HelperAccessor<>(IAutoDialHelper.class);
         mContactsDetailsHelper = new HelperAccessor<>(IAutoDialContactDetailsHelper.class);
+        mHardKeysHelper = new HelperAccessor<>(IAutoVehicleHardKeysHelper.class);
     }
 
     @Rpc(description = "Open Phone Application.")
@@ -51,6 +54,11 @@ public class PhoneSnippet implements Snippet {
     @Rpc(description = "End the call.")
     public void endCall() {
         mDialerHelper.get().endCall();
+    }
+
+    @Rpc(description = "Press the hardkey for ending the call.")
+    public void endCallWithHardkey() {
+        mHardKeysHelper.get().pressEndCallKey();
     }
 
     @Rpc(description = "Open Call History.")

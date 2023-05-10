@@ -22,7 +22,6 @@ java_library {
     name: "spectatio-lib",
     static_libs: [
         "androidx.test.runner",
-        "ub-uiautomator",
         "app-helpers-core",
     ],
     sdk_version: "test_current",

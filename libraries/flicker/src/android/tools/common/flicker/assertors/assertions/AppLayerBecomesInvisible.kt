@@ -24,7 +24,7 @@ import android.tools.common.flicker.subject.layers.LayersTraceSubject
  * Checks that the app layer doesn't exist or is invisible at the start of the transition, but is
  * created and/or becomes visible during the transition.
  */
-class AppLayerBecomesInvisible(component: ComponentTemplate) :
+class AppLayerBecomesInvisible(private val component: ComponentTemplate) :
     AssertionTemplateWithComponent(component) {
     /** {@inheritDoc} */
     override fun doEvaluate(scenarioInstance: IScenarioInstance, layerSubject: LayersTraceSubject) {

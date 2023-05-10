@@ -24,9 +24,10 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.platform.helpers.ScrollUtility.ScrollActions;
 import android.platform.helpers.ScrollUtility.ScrollDirection;
 import android.platform.helpers.exceptions.UnknownUiException;
-import android.support.test.uiautomator.By;
-import android.support.test.uiautomator.BySelector;
-import android.support.test.uiautomator.UiObject2;
+
+import androidx.test.uiautomator.By;
+import androidx.test.uiautomator.BySelector;
+import androidx.test.uiautomator.UiObject2;
 
 /** App info settings helper file */
 public class SettingsAppInfoHelperImpl extends AbstractStandardAppHelper
@@ -318,6 +319,26 @@ public class SettingsAppInfoHelperImpl extends AbstractStandardAppHelper
             throw new RuntimeException(String.format("Failed to find package: %s", packageName), e);
         }
         return applicationDisabled;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean hasUIElement(String element) {
+        boolean isElementPresent;
+        BySelector elementSelector = getUiElementFromConfig(element);
+        isElementPresent = getSpectatioUiUtil().hasUiElement(elementSelector);
+        if (!isElementPresent) {
+            isElementPresent =
+                    mScrollUtility.scrollAndCheckIfUiElementExist(
+                            mScrollAction,
+                            mScrollDirection,
+                            mForwardButtonSelector,
+                            mBackwardButtonSelector,
+                            mScrollableElementSelector,
+                            elementSelector,
+                            "scroll and find UI Element");
+        }
+        return isElementPresent;
     }
 
     private void validateUiObject(UiObject2 uiObject, String action) {

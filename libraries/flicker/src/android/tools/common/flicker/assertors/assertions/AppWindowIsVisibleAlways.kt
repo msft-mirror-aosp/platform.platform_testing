@@ -21,7 +21,7 @@ import android.tools.common.flicker.assertors.ComponentTemplate
 import android.tools.common.flicker.subject.wm.WindowManagerTraceSubject
 
 /** Checks that [component] window remains visible throughout the transition */
-class AppWindowIsVisibleAlways(component: ComponentTemplate) :
+class AppWindowIsVisibleAlways(private val component: ComponentTemplate) :
     AssertionTemplateWithComponent(component) {
     /** {@inheritDoc} */
     override fun doEvaluate(

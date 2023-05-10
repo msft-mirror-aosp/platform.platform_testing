@@ -16,7 +16,7 @@
 
 package android.tools.device.traces.parsers
 
-import android.tools.InitRule
+import android.tools.CleanFlickerEnvironmentRule
 import android.tools.common.CrossPlatform
 import android.tools.common.Timestamp
 import android.tools.common.parsers.AbstractTraceParser
@@ -284,6 +284,6 @@ class TraceParserTest {
                 )
                 .build()
 
-        @ClassRule @JvmField val initRule = InitRule()
+        @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
     }
 }

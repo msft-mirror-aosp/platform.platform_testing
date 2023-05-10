@@ -16,7 +16,7 @@
 
 package android.tools.device.traces.monitors.events
 
-import android.tools.InitRule
+import android.tools.CleanFlickerEnvironmentRule
 import android.tools.common.io.TraceType
 import android.tools.common.traces.events.CujEvent
 import android.tools.common.traces.events.CujType
@@ -324,7 +324,8 @@ class EventLogMonitorTest : TraceMonitorTest<EventLogMonitor>() {
             CujType.CUJ_NOTIFICATION_APP_START.ordinal,
             now.unixNanos,
             now.elapsedNanos,
-            now.systemUptimeNanos
+            now.systemUptimeNanos,
+            ""
         )
         now = now()
         EventLogTags.writeJankCujEventsEndRequest(
@@ -352,7 +353,8 @@ class EventLogMonitorTest : TraceMonitorTest<EventLogMonitor>() {
             CujType.CUJ_LAUNCHER_QUICK_SWITCH.ordinal,
             now.unixNanos,
             now.elapsedNanos,
-            now.systemUptimeNanos
+            now.systemUptimeNanos,
+            ""
         )
         now = now()
         EventLogTags.writeJankCujEventsEndRequest(
@@ -397,7 +399,8 @@ class EventLogMonitorTest : TraceMonitorTest<EventLogMonitor>() {
             unknownCujId,
             now.unixNanos,
             now.elapsedNanos,
-            now.systemUptimeNanos
+            now.systemUptimeNanos,
+            ""
         )
         now = now()
         EventLogTags.writeJankCujEventsEndRequest(
@@ -429,6 +432,6 @@ class EventLogMonitorTest : TraceMonitorTest<EventLogMonitor>() {
     private companion object {
         const val INPUT_FOCUS_TAG = 62001
 
-        @ClassRule @JvmField val initRule = InitRule()
+        @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
     }
 }

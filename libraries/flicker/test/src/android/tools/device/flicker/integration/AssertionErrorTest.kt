@@ -16,7 +16,7 @@
 
 package android.tools.device.flicker.integration
 
-import android.tools.InitRule
+import android.tools.CleanFlickerEnvironmentRule
 import android.tools.TEST_SCENARIO
 import android.tools.common.io.RunStatus
 import android.tools.device.flicker.datastore.CachedResultReader
@@ -45,9 +45,7 @@ class AssertionErrorTest {
 
     @Test
     fun executesTransition() {
-        Truth.assertWithMessage("Transition executed")
-            .that(AssertionErrorTest.Companion.transitionExecuted)
-            .isTrue()
+        Truth.assertWithMessage("Transition executed").that(transitionExecuted).isTrue()
         assertArtifactExists()
     }
 
@@ -83,9 +81,8 @@ class AssertionErrorTest {
         private var transitionExecuted = false
         @BeforeClass
         @JvmStatic
-        fun runTransition() =
-            Utils.runTransition { AssertionErrorTest.Companion.transitionExecuted = true }
+        fun runTransition() = Utils.runTransition { transitionExecuted = true }
 
-        @ClassRule @JvmField val initRule = InitRule()
+        @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
     }
 }

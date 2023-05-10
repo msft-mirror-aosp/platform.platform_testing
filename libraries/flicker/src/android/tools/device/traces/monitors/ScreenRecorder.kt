@@ -53,7 +53,7 @@ constructor(
                 else -> recordingRunnable?.isFrameRecorded ?: false
             }
 
-    override fun start() {
+    override fun doStart() {
         require(recordingThread == null) { "Screen recorder already running" }
 
         val recordingThread = newRecordingThread()

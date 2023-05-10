@@ -34,11 +34,8 @@ data class AssertionData(
      * @param run Run to be asserted
      */
     fun checkAssertion(run: SubjectsParser) {
-        val subjects = run.getSubjects(tag).filter { expectedSubjectClass.isInstance(it) }
-        if (subjects.isEmpty()) {
-            return
-        }
-        subjects.forEach { it.run { assertion(this) } }
+        val subject = run.getSubjectOfType(tag, expectedSubjectClass)
+        subject?.let { assertion(it) }
     }
 
     override fun toString(): String = buildString {

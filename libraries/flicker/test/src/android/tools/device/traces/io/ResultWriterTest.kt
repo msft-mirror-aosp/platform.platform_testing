@@ -17,7 +17,7 @@
 package android.tools.device.traces.io
 
 import android.annotation.SuppressLint
-import android.tools.InitRule
+import android.tools.CleanFlickerEnvironmentRule
 import android.tools.TEST_SCENARIO
 import android.tools.TestTraces
 import android.tools.assertExceptionMessage
@@ -28,13 +28,14 @@ import android.tools.common.io.RunStatus
 import android.tools.common.io.TraceType
 import android.tools.device.traces.DEFAULT_TRACE_CONFIG
 import android.tools.device.traces.deleteIfExists
-import android.tools.device.traces.getDefaultFlickerOutputDir
 import android.tools.newTestResultWriter
 import android.tools.outputFileName
 import com.google.common.truth.Truth
 import java.io.File
+import kotlin.io.path.createTempDirectory
 import org.junit.ClassRule
 import org.junit.FixMethodOrder
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runners.MethodSorters
 
@@ -42,6 +43,7 @@ import org.junit.runners.MethodSorters
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @SuppressLint("VisibleForTests")
 class ResultWriterTest {
+
     @Test
     fun cannotWriteFileWithoutScenario() {
         val exception =
@@ -59,7 +61,7 @@ class ResultWriterTest {
         outputFileName(RunStatus.RUN_EXECUTED).deleteIfExists()
         val writer = newTestResultWriter()
         val result = writer.write()
-        val path = result.artifact
+        val path = File(result.artifact.absolutePath)
         Truth.assertWithMessage("File exists").that(path.exists()).isTrue()
         Truth.assertWithMessage("Transition start time")
             .that(result.transitionTimeRange.start)
@@ -75,9 +77,9 @@ class ResultWriterTest {
     fun writesUndefinedFile() {
         outputFileName(RunStatus.RUN_EXECUTED).deleteIfExists()
         val writer =
-            ResultWriter().forScenario(TEST_SCENARIO).withOutputDir(getDefaultFlickerOutputDir())
+            ResultWriter().forScenario(TEST_SCENARIO).withOutputDir(createTempDirectory().toFile())
         val result = writer.write()
-        val path = result.artifact
+        val path = File(result.artifact.absolutePath)
         validateFileName(path, RunStatus.UNDEFINED)
     }
 
@@ -86,7 +88,7 @@ class ResultWriterTest {
         outputFileName(RunStatus.RUN_EXECUTED).deleteIfExists()
         val writer = newTestResultWriter().setRunComplete()
         val result = writer.write()
-        val path = result.artifact
+        val path = File(result.artifact.absolutePath)
         validateFileName(path, RunStatus.RUN_EXECUTED)
     }
 
@@ -95,7 +97,7 @@ class ResultWriterTest {
         outputFileName(RunStatus.RUN_FAILED).deleteIfExists()
         val writer = newTestResultWriter().setRunFailed(EXPECTED_FAILURE)
         val result = writer.write()
-        val path = result.artifact
+        val path = File(result.artifact.absolutePath)
         validateFileName(path, RunStatus.RUN_FAILED)
         Truth.assertWithMessage("Expected assertion")
             .that(result.executionError)
@@ -157,12 +159,16 @@ class ResultWriterTest {
     fun writeTransitionTrace() {
         val writer =
             newTestResultWriter()
-                .addTraceResult(TraceType.TRANSITION, TestTraces.TransitionTrace.FILE)
+                .addTraceResult(TraceType.WM_TRANSITION, TestTraces.TransitionTrace.WM_FILE)
+                .addTraceResult(TraceType.SHELL_TRANSITION, TestTraces.TransitionTrace.SHELL_FILE)
         val result = writer.write()
         val reader = ResultReader(result, DEFAULT_TRACE_CONFIG)
-        Truth.assertWithMessage("File count").that(reader.countFiles()).isEqualTo(1)
+        Truth.assertWithMessage("File count").that(reader.countFiles()).isEqualTo(2)
         Truth.assertWithMessage("Has file with type")
-            .that(reader.hasTraceFile(TraceType.TRANSITION))
+            .that(reader.hasTraceFile(TraceType.WM_TRANSITION))
+            .isTrue()
+        Truth.assertWithMessage("Has file with type")
+            .that(reader.hasTraceFile(TraceType.SHELL_TRANSITION))
             .isTrue()
     }
 
@@ -172,11 +178,12 @@ class ResultWriterTest {
             newTestResultWriter()
                 .addTraceResult(TraceType.WM, TestTraces.WMTrace.FILE)
                 .addTraceResult(TraceType.SF, TestTraces.LayerTrace.FILE)
-                .addTraceResult(TraceType.TRANSITION, TestTraces.TransactionTrace.FILE)
-                .addTraceResult(TraceType.TRANSACTION, TestTraces.TransitionTrace.FILE)
+                .addTraceResult(TraceType.TRANSACTION, TestTraces.TransactionTrace.FILE)
+                .addTraceResult(TraceType.WM_TRANSITION, TestTraces.TransitionTrace.WM_FILE)
+                .addTraceResult(TraceType.SHELL_TRANSITION, TestTraces.TransitionTrace.SHELL_FILE)
         val result = writer.write()
         val reader = ResultReader(result, DEFAULT_TRACE_CONFIG)
-        Truth.assertWithMessage("File count").that(reader.countFiles()).isEqualTo(4)
+        Truth.assertWithMessage("File count").that(reader.countFiles()).isEqualTo(5)
         Truth.assertWithMessage("Has file with type")
             .that(reader.hasTraceFile(TraceType.WM))
             .isTrue()
@@ -184,7 +191,10 @@ class ResultWriterTest {
             .that(reader.hasTraceFile(TraceType.WM))
             .isTrue()
         Truth.assertWithMessage("Has file with type")
-            .that(reader.hasTraceFile(TraceType.TRANSITION))
+            .that(reader.hasTraceFile(TraceType.WM_TRANSITION))
+            .isTrue()
+        Truth.assertWithMessage("Has file with type")
+            .that(reader.hasTraceFile(TraceType.SHELL_TRANSITION))
             .isTrue()
         Truth.assertWithMessage("Has file with type")
             .that(reader.hasTraceFile(TraceType.TRANSACTION))
@@ -200,6 +210,6 @@ class ResultWriterTest {
                 .contains(status.prefix)
         }
 
-        @ClassRule @JvmField val initRule = InitRule()
+        @Rule @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
     }
 }

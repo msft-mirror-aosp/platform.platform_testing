@@ -21,7 +21,6 @@ import android.tools.common.IScenario
 import android.tools.common.Scenario
 import android.tools.common.ScenarioBuilder
 import android.tools.common.Tag
-import android.tools.common.datatypes.component.IComponentMatcher
 import android.tools.common.flicker.assertions.AssertionData
 import android.tools.common.flicker.assertions.SubjectsParser
 import android.tools.common.flicker.subject.FlickerSubject
@@ -33,6 +32,7 @@ import android.tools.common.flicker.subject.region.RegionTraceSubject
 import android.tools.common.flicker.subject.wm.WindowManagerStateSubject
 import android.tools.common.flicker.subject.wm.WindowManagerTraceSubject
 import android.tools.common.io.IReader
+import android.tools.common.traces.component.IComponentMatcher
 import android.tools.device.flicker.assertions.AssertionDataFactory
 import android.tools.device.flicker.assertions.AssertionStateDataFactory
 import android.tools.device.flicker.assertions.BaseAssertionRunner

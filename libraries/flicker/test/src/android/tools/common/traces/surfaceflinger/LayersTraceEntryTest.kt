@@ -16,15 +16,15 @@
 
 package android.tools.common.traces.surfaceflinger
 
-import android.tools.InitRule
+import android.tools.CleanFlickerEnvironmentRule
 import android.tools.TestComponents
 import android.tools.assertThatErrorContainsDebugInfo
 import android.tools.assertThrows
 import android.tools.common.Cache
 import android.tools.common.CrossPlatform
-import android.tools.common.datatypes.component.ComponentNameMatcher
 import android.tools.common.flicker.subject.layers.LayersTraceSubject
-import android.tools.readLayerTraceFromFile
+import android.tools.common.traces.component.ComponentNameMatcher
+import android.tools.getLayerTraceReaderFromAsset
 import com.google.common.truth.Truth
 import org.junit.Before
 import org.junit.ClassRule
@@ -42,18 +42,19 @@ class LayersTraceEntryTest {
 
     @Test
     fun exceptionContainsDebugInfo() {
-        val layersTraceEntries =
-            readLayerTraceFromFile("layers_trace_emptyregion.pb", legacyTrace = true)
+        val reader = getLayerTraceReaderFromAsset("layers_trace_emptyregion.pb", legacyTrace = true)
+        val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
         val error =
             assertThrows<AssertionError> {
-                LayersTraceSubject(layersTraceEntries).first().contains(TestComponents.IMAGINARY)
+                LayersTraceSubject(trace, reader).first().contains(TestComponents.IMAGINARY)
             }
         assertThatErrorContainsDebugInfo(error)
     }
 
     @Test
     fun canParseAllLayers() {
-        val trace = readLayerTraceFromFile("layers_trace_emptyregion.pb", legacyTrace = true)
+        val reader = getLayerTraceReaderFromAsset("layers_trace_emptyregion.pb", legacyTrace = true)
+        val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
         Truth.assertThat(trace.entries).isNotEmpty()
         Truth.assertThat(trace.entries.first().timestamp.systemUptimeNanos).isEqualTo(922839428857)
         Truth.assertThat(trace.entries.last().timestamp.systemUptimeNanos).isEqualTo(941432656959)
@@ -62,8 +63,9 @@ class LayersTraceEntryTest {
 
     @Test
     fun canParseVisibleLayersLauncher() {
-        val trace =
-            readLayerTraceFromFile("layers_trace_launch_split_screen.pb", legacyTrace = true)
+        val reader =
+            getLayerTraceReaderFromAsset("layers_trace_launch_split_screen.pb", legacyTrace = true)
+        val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
         val visibleLayers =
             trace
                 .getEntryExactlyAt(CrossPlatform.timestamp.from(systemUptimeNanos = 90480846872160))
@@ -80,8 +82,9 @@ class LayersTraceEntryTest {
 
     @Test
     fun canParseVisibleLayersSplitScreen() {
-        val trace =
-            readLayerTraceFromFile("layers_trace_launch_split_screen.pb", legacyTrace = true)
+        val reader =
+            getLayerTraceReaderFromAsset("layers_trace_launch_split_screen.pb", legacyTrace = true)
+        val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
         val visibleLayers =
             trace
                 .getEntryExactlyAt(CrossPlatform.timestamp.from(systemUptimeNanos = 90493757372977))
@@ -99,8 +102,9 @@ class LayersTraceEntryTest {
 
     @Test
     fun canParseVisibleLayersInTransition() {
-        val trace =
-            readLayerTraceFromFile("layers_trace_launch_split_screen.pb", legacyTrace = true)
+        val reader =
+            getLayerTraceReaderFromAsset("layers_trace_launch_split_screen.pb", legacyTrace = true)
+        val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
         val visibleLayers =
             trace
                 .getEntryExactlyAt(CrossPlatform.timestamp.from(systemUptimeNanos = 90488463619533))
@@ -122,7 +126,8 @@ class LayersTraceEntryTest {
 
     @Test
     fun canParseLayerHierarchy() {
-        val trace = readLayerTraceFromFile("layers_trace_emptyregion.pb", legacyTrace = true)
+        val reader = getLayerTraceReaderFromAsset("layers_trace_emptyregion.pb", legacyTrace = true)
+        val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
         Truth.assertThat(trace.entries).isNotEmpty()
         Truth.assertThat(trace.entries.first().timestamp.systemUptimeNanos).isEqualTo(922839428857)
         Truth.assertThat(trace.entries.last().timestamp.systemUptimeNanos).isEqualTo(941432656959)
@@ -136,14 +141,13 @@ class LayersTraceEntryTest {
     @Test
     fun canDetectOrphanLayers() {
         try {
-            readLayerTraceFromFile(
+            val reader =
+                getLayerTraceReaderFromAsset(
                     "layers_trace_orphanlayers.pb",
                     ignoreOrphanLayers = false,
                     legacyTrace = true
                 )
-                .entries
-                .first()
-                .flattenedLayers
+            reader.readLayersTrace()?.entries?.first()?.flattenedLayers
             error("Failed to detect orphaned layers.")
         } catch (exception: RuntimeException) {
             Truth.assertThat(exception.message)
@@ -157,12 +161,11 @@ class LayersTraceEntryTest {
     @Test
     fun testCanParseNonCroppedLayerWithHWC() {
         val layerName = "BackColorSurface#0"
-        val layersTrace =
-            readLayerTraceFromFile("layers_trace_backcolorsurface.pb", legacyTrace = true)
+        val reader =
+            getLayerTraceReaderFromAsset("layers_trace_backcolorsurface.pb", legacyTrace = true)
+        val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
         val entry =
-            layersTrace.getEntryExactlyAt(
-                CrossPlatform.timestamp.from(systemUptimeNanos = 131954021476)
-            )
+            trace.getEntryExactlyAt(CrossPlatform.timestamp.from(systemUptimeNanos = 131954021476))
         Truth.assertWithMessage("$layerName should not be visible")
             .that(entry.visibleLayers.map { it.name })
             .doesNotContain(layerName)
@@ -175,9 +178,10 @@ class LayersTraceEntryTest {
 
     @Test
     fun canParseTraceEmptyState() {
-        val layersTrace =
-            readLayerTraceFromFile("layers_trace_empty_state.winscope", legacyTrace = true)
-        val emptyStates = layersTrace.entries.filter { it.flattenedLayers.isEmpty() }
+        val reader =
+            getLayerTraceReaderFromAsset("layers_trace_empty_state.winscope", legacyTrace = true)
+        val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
+        val emptyStates = trace.entries.filter { it.flattenedLayers.isEmpty() }
 
         Truth.assertWithMessage("Some states in the trace should be empty")
             .that(emptyStates)
@@ -190,9 +194,10 @@ class LayersTraceEntryTest {
 
     @Test
     fun canDetectInvisibleLayerOutOfScreen() {
-        val layersTrace = readLayerTraceFromFile("layers_trace_visible_outside_bounds.winscope")
+        val reader = getLayerTraceReaderFromAsset("layers_trace_visible_outside_bounds.winscope")
+        val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
         val subject =
-            LayersTraceSubject(layersTrace)
+            LayersTraceSubject(trace, reader)
                 .getEntryBySystemUpTime(1253267561044, byElapsedTimestamp = true)
         val region = subject.visibleRegion(ComponentNameMatcher.IME_SNAPSHOT)
         region.isEmpty()
@@ -201,8 +206,9 @@ class LayersTraceEntryTest {
 
     @Test
     fun canDetectInvisibleLayerOutOfScreen_ConsecutiveLayers() {
-        val layersTrace = readLayerTraceFromFile("layers_trace_visible_outside_bounds.winscope")
-        val subject = LayersTraceSubject(layersTrace)
+        val reader = getLayerTraceReaderFromAsset("layers_trace_visible_outside_bounds.winscope")
+        val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
+        val subject = LayersTraceSubject(trace, reader)
         subject.visibleLayersShownMoreThanOneConsecutiveEntry()
     }
 
@@ -241,6 +247,6 @@ class LayersTraceEntryTest {
     }
 
     companion object {
-        @ClassRule @JvmField val initRule = InitRule()
+        @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
     }
 }
