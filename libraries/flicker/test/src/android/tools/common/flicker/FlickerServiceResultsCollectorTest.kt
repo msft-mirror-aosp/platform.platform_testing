@@ -25,6 +25,7 @@ import android.tools.common.io.IReader
 import android.tools.common.traces.wm.TransitionsTrace
 import android.tools.device.flicker.FlickerServiceResultsCollector
 import android.tools.device.flicker.FlickerServiceResultsCollector.Companion.FLICKER_ASSERTIONS_COUNT_KEY
+import android.tools.device.flicker.FlickerServiceResultsCollector.Companion.WINSCOPE_FILE_PATH_KEY
 import android.tools.device.traces.io.InMemoryArtifact
 import android.tools.device.traces.io.ParsedTracesReader
 import android.tools.utils.KotlinMockito
@@ -150,10 +151,62 @@ class FlickerServiceResultsCollectorTest {
         Truth.assertThat(runData.hasMetrics()).isFalse()
     }
 
+    @Test
+    fun reportsMetricForTraceFile() {
+        val assertionResults = listOf(mockSuccessfulAssertionResult, mockFailedAssertionResult)
+        val collector = createCollector(assertionResults = assertionResults)
+        val runData = DataRecord()
+        val runDescription = Description.createSuiteDescription(this::class.java)
+        val testData = SpyDataRecord()
+        val testDescription = Description.createTestDescription(this::class.java, "TestName")
+
+        collector.onTestRunStart(runData, runDescription)
+        collector.onTestStart(testData, testDescription)
+        collector.onTestEnd(testData, testDescription)
+        collector.onTestRunEnd(runData, Mockito.mock(org.junit.runner.Result::class.java))
+
+        Truth.assertThat(collector.executionErrors).isEmpty()
+        Truth.assertThat(collector.assertionResults).isNotEmpty()
+
+        Truth.assertThat(testData.hasMetrics()).isTrue()
+        Truth.assertThat(testData.stringMetrics).containsKey(WINSCOPE_FILE_PATH_KEY)
+        Truth.assertThat(testData.stringMetrics[WINSCOPE_FILE_PATH_KEY])
+            .isEqualTo("IN_MEMORY/Empty")
+
+        Truth.assertThat(runData.hasMetrics()).isFalse()
+    }
+
+    @Test
+    fun reportsMetricForTraceFileOnServiceFailure() {
+        val assertionResults = listOf(mockSuccessfulAssertionResult, mockFailedAssertionResult)
+        val collector =
+            createCollector(assertionResults = assertionResults, serviceProcessingError = true)
+        val runData = DataRecord()
+        val runDescription = Description.createSuiteDescription(this::class.java)
+        val testData = SpyDataRecord()
+        val testDescription = Description.createTestDescription(this::class.java, "TestName")
+
+        collector.onTestRunStart(runData, runDescription)
+        collector.onTestStart(testData, testDescription)
+        collector.onTestEnd(testData, testDescription)
+        collector.onTestRunEnd(runData, Mockito.mock(org.junit.runner.Result::class.java))
+
+        Truth.assertThat(collector.executionErrors).isNotEmpty()
+        Truth.assertThat(collector.assertionResults).isEmpty()
+
+        Truth.assertThat(testData.hasMetrics()).isTrue()
+        Truth.assertThat(testData.stringMetrics).containsKey(WINSCOPE_FILE_PATH_KEY)
+        Truth.assertThat(testData.stringMetrics[WINSCOPE_FILE_PATH_KEY])
+            .isEqualTo("IN_MEMORY/Empty")
+
+        Truth.assertThat(runData.hasMetrics()).isFalse()
+    }
+
     private fun createCollector(
         assertionResults: Collection<AssertionResult> = listOf(mockSuccessfulAssertionResult),
         reportOnlyForPassingTests: Boolean = true,
-        collectMetricsPerTest: Boolean = true
+        collectMetricsPerTest: Boolean = true,
+        serviceProcessingError: Boolean = false,
     ): FlickerServiceResultsCollector {
         val mockTraceCollector = Mockito.mock(ITracesCollector::class.java)
         Mockito.`when`(mockTraceCollector.stop())
@@ -167,8 +220,12 @@ class FlickerServiceResultsCollectorTest {
                 )
             )
         val mockFlickerService = Mockito.mock(IFlickerService::class.java)
-        Mockito.`when`(mockFlickerService.process(KotlinMockito.any(IReader::class.java)))
-            .thenReturn(assertionResults)
+        if (serviceProcessingError) {
+            Mockito.`when`(
+                    mockFlickerService.detectScenarios(KotlinMockito.any(IReader::class.java))
+                )
+                .thenThrow(RuntimeException("Flicker Service Processing Error"))
+        }
         Mockito.`when`(mockFlickerService.executeAssertions(KotlinMockito.argThat { true }))
             .thenReturn(assertionResults)
 
