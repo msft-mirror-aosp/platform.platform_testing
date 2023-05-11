@@ -16,7 +16,7 @@
 
 package android.tools.common.traces.wm
 
-import android.tools.common.datatypes.component.IComponentMatcher
+import android.tools.common.traces.component.IComponentMatcher
 import kotlin.js.JsExport
 import kotlin.js.JsName
 
@@ -41,7 +41,6 @@ class Activity(
      *
      * @param componentMatcher Components to search
      */
-    @JsName("getWindows")
     fun getWindows(componentMatcher: IComponentMatcher): Array<WindowState> = getWindows {
         componentMatcher.windowMatchesAnyOf(it)
     }
@@ -59,7 +58,6 @@ class Activity(
     internal fun hasWindowState(windowState: WindowState): Boolean =
         getWindows { windowState == it }.isNotEmpty()
 
-    @JsName("isTablet")
     private fun getWindows(predicate: (WindowState) -> Boolean) =
         collectDescendants<WindowState> { predicate(it) }
 

@@ -16,4 +16,5 @@
 
 package android.tools.common.flicker.subject.exceptions
 
-class SubjectAssertionError(msg: String) : AssertionError(msg)
+/** Generic flicker exception */
+class SubjectAssertionError(override val messageBuilder: ExceptionMessageBuilder) : BaseException()

@@ -29,4 +29,5 @@ public class SettingsConstants {
     public static final String SECURITY_SETTINGS = "OPEN_SECURITY_SETTINGS_WORKFLOW";
     public static final String DISPLAY_SETTINGS = "OPEN_DISPLAY_SETTINGS_WORKFLOW";
     public static final String DATE_AND_TIME_SETTINGS = "OPEN_DATE_AND_TIME_SETTINGS_WORKFLOW";
+    public static final String PRIVACY_SETTINGS = "OPEN_PRIVACY_SETTINGS_WORKFLOW";
 }

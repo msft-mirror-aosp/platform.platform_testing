@@ -18,11 +18,13 @@ package android.tools.common.traces.wm
 
 import android.tools.common.ITraceEntry
 import android.tools.common.Timestamp
-import android.tools.common.io.IReader
+import android.tools.common.traces.surfaceflinger.LayersTrace
 import android.tools.common.traces.surfaceflinger.Transaction
 import android.tools.common.traces.surfaceflinger.TransactionsTrace
+import kotlin.js.JsExport
 import kotlin.js.JsName
 
+@JsExport
 class Transition(
     @JsName("createTime") val createTime: Timestamp,
     @JsName("sendTime") val sendTime: Timestamp,
@@ -30,7 +32,7 @@ class Transition(
     @JsName("startTransactionId") val startTransactionId: Long,
     @JsName("finishTransactionId") val finishTransactionId: Long,
     @JsName("type") val type: TransitionType,
-    @JsName("changes") val changes: List<TransitionChange>,
+    @JsName("changes") val changes: Array<TransitionChange>,
     @JsName("played") val played: Boolean,
     @JsName("aborted") val aborted: Boolean
 ) : ITraceEntry {
@@ -50,10 +52,10 @@ class Transition(
     val isIncomplete: Boolean
         get() = !played || aborted
 
-    override fun toString(): String = Formatter(null).format(this)
+    override fun toString(): String = Formatter(null, null).format(this)
 
-    class Formatter(val reader: IReader?) {
-        private val changeFormatter = TransitionChange.Formatter(reader)
+    class Formatter(val layersTrace: LayersTrace?, val wmTrace: WindowManagerTrace?) {
+        private val changeFormatter = TransitionChange.Formatter(layersTrace, wmTrace)
 
         fun format(transition: Transition): String = buildString {
             appendLine("Transition#${hashCode()}(")

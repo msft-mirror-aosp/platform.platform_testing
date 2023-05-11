@@ -29,9 +29,10 @@ class AppLayerRemainInsideDisplayBounds(private val component: ComponentTemplate
     override fun doEvaluate(scenarioInstance: IScenarioInstance, layerSubject: LayersTraceSubject) {
         layerSubject
             .containsAtLeastOneDisplay()
-            .invoke("appLayerRemainInsideDisplayBounds") {
-                it.entry.displays.forEach { display ->
-                    it.visibleRegion(component.build(scenarioInstance))
+            .invoke("appLayerRemainInsideDisplayBounds") { subject ->
+                subject.entry.displays.forEach { display ->
+                    subject
+                        .visibleRegion(component.build(scenarioInstance))
                         .coversAtMost(display.layerStackSpace)
                 }
             }

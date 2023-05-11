@@ -67,7 +67,6 @@ data class LayersTrace(override val entries: Array<LayerTraceEntry>) : ITrace<La
         )
     }
 
-    @JsName("getEntryForTransaction")
     fun getEntryForTransaction(transaction: Transaction): LayerTraceEntry {
         require(
             this.entries.first().vSyncId <= transaction.appliedVSyncId &&

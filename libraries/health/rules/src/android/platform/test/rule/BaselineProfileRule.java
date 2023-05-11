@@ -67,6 +67,7 @@ public class BaselineProfileRule extends TestWatcher {
                                         mBaselineProfilePackage,
                                         1, // Iterations are supported by most Runners already.
                                         null, // No special prefixing necessary.
+                                        true, // Include startup profile.
                                         null, // Don't apply any profile filters.
                                         (scope) -> {
                                             // Evaluating the base Statement may throw a Throwable,

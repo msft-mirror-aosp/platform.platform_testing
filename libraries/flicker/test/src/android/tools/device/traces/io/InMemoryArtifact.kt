@@ -20,8 +20,11 @@ import android.tools.common.io.IArtifact
 import android.tools.common.io.ResultArtifactDescriptor
 import android.tools.common.io.RunStatus
 
-class InMemoryArtifact(override val path: String) : IArtifact {
+class InMemoryArtifact(artifactIdentifier: String) : IArtifact {
 
+    override val absolutePath = "IN_MEMORY/$artifactIdentifier"
+    override val stableId = artifactIdentifier
+    override val fileName = absolutePath
     override val runStatus = RunStatus.UNDEFINED
 
     override fun deleteIfExists() {
@@ -36,6 +39,19 @@ class InMemoryArtifact(override val path: String) : IArtifact {
 
     override fun updateStatus(newStatus: RunStatus) {
         // No op
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is InMemoryArtifact) return false
+
+        if (absolutePath != other.absolutePath) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        return absolutePath.hashCode()
     }
 
     companion object {

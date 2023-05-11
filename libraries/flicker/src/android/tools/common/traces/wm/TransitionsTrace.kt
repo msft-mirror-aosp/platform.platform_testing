@@ -18,12 +18,12 @@ package android.tools.common.traces.wm
 
 import android.tools.common.ITrace
 import android.tools.common.Timestamp
+import kotlin.js.JsExport
 import kotlin.js.JsName
 import kotlin.text.StringBuilder
 
+@JsExport
 data class TransitionsTrace(override val entries: Array<Transition>) : ITrace<Transition> {
-    constructor(entry: Transition) : this(arrayOf(entry))
-
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is TransitionsTrace) return false

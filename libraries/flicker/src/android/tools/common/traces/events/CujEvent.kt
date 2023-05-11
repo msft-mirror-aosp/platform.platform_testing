@@ -18,6 +18,7 @@ package android.tools.common.traces.events
 
 import android.tools.common.CrossPlatform
 import android.tools.common.Timestamp
+import kotlin.js.JsExport
 import kotlin.js.JsName
 
 /**
@@ -25,6 +26,7 @@ import kotlin.js.JsName
  *
  * {@inheritDoc}
  */
+@JsExport
 class CujEvent(
     timestamp: Timestamp,
     val cuj: CujType,
@@ -104,13 +106,17 @@ class CujEvent(
         private fun getDataEntries(data: String, cujType: Type): List<String> {
             when (cujType) {
                 Type.START ->
+                    // Redundant escape character required otherwise JS code with complain
+                    // about invalid regular expression due to lone quantifier brackets
                     require(
-                        """\[[0-9]+,[0-9]+,[0-9]+,[0-9]+,((?!,).)*]""".toRegex().matches(data)
+                        """\[[0-9]+,[0-9]+,[0-9]+,[0-9]+,((?!,).)*\]""".toRegex().matches(data)
                     ) {
                         "Data \"$data\" didn't match expected format"
                     }
                 else ->
-                    require("""\[[0-9]+,[0-9]+,[0-9]+,[0-9]+]""".toRegex().matches(data)) {
+                    // Redundant escape character required otherwise JS code with complain
+                    // about invalid regular expression due to lone quantifier brackets
+                    require("""\[[0-9]+,[0-9]+,[0-9]+,[0-9]+\]""".toRegex().matches(data)) {
                         "Data \"$data\" didn't match expected format"
                     }
             }

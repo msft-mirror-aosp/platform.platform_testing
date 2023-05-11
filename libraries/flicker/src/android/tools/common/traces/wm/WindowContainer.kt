@@ -60,7 +60,6 @@ constructor(
         windowContainer.computedZ
     )
 
-    @JsName("parent")
     var parent: WindowContainer? = null
         private set
 
@@ -73,7 +72,7 @@ constructor(
     @JsName("stableId")
     open val stableId: String
         get() = "${this::class.simpleName} $token $title"
-    @JsName("isFullscreen") open val isFullscreen: Boolean = false
+    open val isFullscreen: Boolean = false
     @JsName("bounds") open val bounds: Rect = Rect.EMPTY
 
     internal fun traverseTopDown(): List<WindowContainer> {

@@ -16,9 +16,8 @@
 
 package android.tools.common.traces.wm
 
-import android.tools.common.datatypes.component.IComponentMatcher
+import android.tools.common.traces.component.IComponentMatcher
 import kotlin.js.JsExport
-import kotlin.js.JsName
 
 /**
  * Represents a display area in the window manager hierarchy
@@ -27,11 +26,8 @@ import kotlin.js.JsName
  * Java/Android functionality
  */
 @JsExport
-class DisplayArea(
-    @JsName("isTaskDisplayArea") val isTaskDisplayArea: Boolean,
-    windowContainer: WindowContainer
-) : WindowContainer(windowContainer) {
-    @JsName("activities")
+class DisplayArea(val isTaskDisplayArea: Boolean, windowContainer: WindowContainer) :
+    WindowContainer(windowContainer) {
     val activities: Array<Activity>
         get() =
             if (isTaskDisplayArea) {
@@ -44,7 +40,6 @@ class DisplayArea(
      * @param componentMatcher Components to search
      * @return if [componentMatcher] matches any activity
      */
-    @JsName("containsActivity")
     fun containsActivity(componentMatcher: IComponentMatcher): Boolean {
         return if (!isTaskDisplayArea) {
             false

@@ -18,7 +18,7 @@ package android.tools.common.flicker.subject
 
 import android.tools.common.Timestamp
 import android.tools.common.flicker.assertions.Fact
-import android.tools.common.flicker.subject.exceptions.ExceptionBuilder
+import android.tools.common.flicker.subject.exceptions.ExceptionMessageBuilder
 import android.tools.common.flicker.subject.exceptions.InvalidPropertyException
 import android.tools.common.io.IReader
 
@@ -30,13 +30,12 @@ data class CheckSubject<T>(
     private val reader: IReader?,
     private val lazyMessage: () -> String,
 ) {
-    private val exceptionBuilder: ExceptionBuilder
+    private val exceptionMessageBuilder: ExceptionMessageBuilder
         get() {
             val builder =
-                ExceptionBuilder()
+                ExceptionMessageBuilder()
                     .setTimestamp(timestamp)
                     .addExtraDescription(*extraFacts.toTypedArray())
-                    .ofType { InvalidPropertyException(it) }
             if (reader != null) {
                 builder.setReader(reader)
             }
@@ -45,41 +44,45 @@ data class CheckSubject<T>(
 
     fun isEqual(expectedValue: T?) {
         if (actualValue != expectedValue) {
-            throw exceptionBuilder
-                .setMessage(lazyMessage.invoke())
-                .setExpected(expectedValue)
-                .setActual(actualValue)
-                .build()
+            val errorMsgBuilder =
+                exceptionMessageBuilder
+                    .setMessage(lazyMessage.invoke())
+                    .setExpected(expectedValue)
+                    .setActual(actualValue)
+            throw InvalidPropertyException(errorMsgBuilder)
         }
     }
 
     fun isNotEqual(expectedValue: T?) {
         if (actualValue == expectedValue) {
-            throw exceptionBuilder
-                .setMessage(lazyMessage.invoke())
-                .setExpected("Different from $expectedValue")
-                .setActual(actualValue)
-                .build()
+            val errorMsgBuilder =
+                exceptionMessageBuilder
+                    .setMessage(lazyMessage.invoke())
+                    .setExpected("Different from $expectedValue")
+                    .setActual(actualValue)
+            throw InvalidPropertyException(errorMsgBuilder)
         }
     }
 
     fun isNull() {
         if (actualValue != null) {
-            throw exceptionBuilder
-                .setMessage(lazyMessage.invoke())
-                .setExpected(null)
-                .setActual(actualValue)
-                .build()
+            val errorMsgBuilder =
+                exceptionMessageBuilder
+                    .setMessage(lazyMessage.invoke())
+                    .setExpected(null)
+                    .setActual(actualValue)
+            throw InvalidPropertyException(errorMsgBuilder)
         }
     }
 
     fun isNotNull() {
         if (actualValue == null) {
-            throw exceptionBuilder
-                .setMessage(lazyMessage.invoke())
-                .setExpected("Not null")
-                .setActual(null)
-                .build()
+            val errorMsgBuilder =
+                exceptionMessageBuilder
+                    .setMessage(lazyMessage.invoke())
+                    .setExpected("Not null")
+                    .setActual(null)
+            throw InvalidPropertyException(errorMsgBuilder)
         }
     }
 
@@ -89,11 +92,12 @@ data class CheckSubject<T>(
                 expectedValue == null ||
                 (actualValue as Comparable<T>) >= expectedValue
         ) {
-            throw exceptionBuilder
-                .setMessage(lazyMessage.invoke())
-                .setExpected("Lower than $expectedValue")
-                .setActual(actualValue)
-                .build()
+            val errorMsgBuilder =
+                exceptionMessageBuilder
+                    .setMessage(lazyMessage.invoke())
+                    .setExpected("Lower than $expectedValue")
+                    .setActual(actualValue)
+            throw InvalidPropertyException(errorMsgBuilder)
         }
     }
 
@@ -103,11 +107,12 @@ data class CheckSubject<T>(
                 expectedValue == null ||
                 (actualValue as Comparable<T>) > expectedValue
         ) {
-            throw exceptionBuilder
-                .setMessage(lazyMessage.invoke())
-                .setExpected("Lower or equal to $expectedValue")
-                .setActual(actualValue)
-                .build()
+            val errorMsgBuilder =
+                exceptionMessageBuilder
+                    .setMessage(lazyMessage.invoke())
+                    .setExpected("Lower or equal to $expectedValue")
+                    .setActual(actualValue)
+            throw InvalidPropertyException(errorMsgBuilder)
         }
     }
 
@@ -117,11 +122,12 @@ data class CheckSubject<T>(
                 expectedValue == null ||
                 (actualValue as Comparable<T>) <= expectedValue
         ) {
-            throw exceptionBuilder
-                .setMessage(lazyMessage.invoke())
-                .setExpected("Greater than $expectedValue")
-                .setActual(actualValue)
-                .build()
+            val errorMsgBuilder =
+                exceptionMessageBuilder
+                    .setMessage(lazyMessage.invoke())
+                    .setExpected("Greater than $expectedValue")
+                    .setActual(actualValue)
+            throw InvalidPropertyException(errorMsgBuilder)
         }
     }
 
@@ -131,21 +137,23 @@ data class CheckSubject<T>(
                 expectedValue == null ||
                 (actualValue as Comparable<T>) < expectedValue
         ) {
-            throw exceptionBuilder
-                .setMessage(lazyMessage.invoke())
-                .setExpected("Greater or equal to $expectedValue")
-                .setActual(actualValue)
-                .build()
+            val errorMsgBuilder =
+                exceptionMessageBuilder
+                    .setMessage(lazyMessage.invoke())
+                    .setExpected("Greater or equal to $expectedValue")
+                    .setActual(actualValue)
+            throw InvalidPropertyException(errorMsgBuilder)
         }
     }
 
     fun <U> contains(expectedValue: U) {
         if (actualValue !is List<*> || !(actualValue as List<U>).contains(expectedValue)) {
-            throw exceptionBuilder
-                .setMessage(lazyMessage.invoke())
-                .setExpected("Contain $expectedValue")
-                .setActual(actualValue)
-                .build()
+            val errorMsgBuilder =
+                exceptionMessageBuilder
+                    .setMessage(lazyMessage.invoke())
+                    .setExpected("Contain $expectedValue")
+                    .setActual(actualValue)
+            throw InvalidPropertyException(errorMsgBuilder)
         }
     }
 }

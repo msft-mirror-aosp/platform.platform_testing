@@ -21,7 +21,7 @@ import android.tools.common.datatypes.Color
 import android.tools.common.datatypes.Rect
 import android.tools.common.datatypes.RectF
 import android.tools.common.datatypes.Region
-import android.tools.common.datatypes.component.ComponentName
+import android.tools.common.traces.component.ComponentName
 import kotlin.js.JsExport
 import kotlin.js.JsName
 

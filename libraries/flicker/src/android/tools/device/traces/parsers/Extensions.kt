@@ -20,7 +20,7 @@ package android.tools.device.traces.parsers
 
 import android.content.ComponentName
 import android.tools.common.datatypes.Rect
-import android.tools.common.datatypes.component.ComponentNameMatcher
+import android.tools.common.traces.component.ComponentNameMatcher
 
 fun Rect.toAndroidRect(): android.graphics.Rect {
     return android.graphics.Rect(left, top, right, bottom)

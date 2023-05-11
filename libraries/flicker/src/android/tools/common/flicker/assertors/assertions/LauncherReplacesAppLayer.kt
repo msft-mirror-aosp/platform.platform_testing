@@ -16,10 +16,10 @@
 
 package android.tools.common.flicker.assertors.assertions
 
-import android.tools.common.datatypes.component.ComponentNameMatcher
 import android.tools.common.flicker.IScenarioInstance
 import android.tools.common.flicker.assertors.ComponentTemplate
 import android.tools.common.flicker.subject.layers.LayersTraceSubject
+import android.tools.common.traces.component.ComponentNameMatcher
 
 /**
  * Asserts that:

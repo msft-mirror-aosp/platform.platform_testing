@@ -18,7 +18,7 @@ package android.tools.common.traces.events
 
 import android.tools.common.ITrace
 import android.tools.common.Timestamp
-import kotlin.js.JsName
+import kotlin.js.JsExport
 
 /**
  * Represents the data from the Android EventLog and contains a collection of parsed events of
@@ -27,18 +27,17 @@ import kotlin.js.JsName
  * This is a generic object that is reused by both Flicker and Winscope and cannot access internal
  * Java/Android functionality
  */
+@JsExport
 class EventLog(override val entries: Array<Event>) : ITrace<Event> {
-    @JsName("focusEvents")
     val focusEvents: Array<FocusEvent> =
         entries
             .filterIsInstance<FocusEvent>()
             .filter { it.type !== FocusEvent.Type.REQUESTED }
             .toTypedArray()
 
-    @JsName("cujEvents")
     val cujEvents: Array<CujEvent> = entries.filterIsInstance<CujEvent>().toTypedArray()
 
-    @JsName("cujTrace") val cujTrace: CujTrace = CujTrace.from(cujEvents)
+    val cujTrace: CujTrace = CujTrace.from(cujEvents)
 
     companion object {
         const val MAGIC_NUMBER = "EventLog"

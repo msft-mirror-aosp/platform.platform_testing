@@ -259,6 +259,19 @@ public class SpectatioUiUtil {
     }
 
     /**
+     * Find the UI Object in given element.
+     *
+     * @param uiObject Find the ui object(selector) in this element.
+     * @param selector Find this ui object in the given element.
+     */
+    public UiObject2 findUiObjectInGivenElement(UiObject2 uiObject, BySelector selector) {
+        validateUiObjectAndThrowIllegalArgumentException(
+                uiObject, /* action= */ "Find UI object in given element");
+        validateSelector(selector, /* action= */ "Find UI object in given element");
+        return uiObject.findObject(selector);
+    }
+
+    /**
      * Checks if given text is available on the Device UI. The text should be exactly same as seen
      * on the screen.
      *
@@ -786,9 +799,13 @@ public class SpectatioUiUtil {
         validateUiObjectAndThrowMissingUiElementException(
                 scrollableObject, scrollableSelector, /* action= */ "Scroll");
         if (!scrollableObject.isScrollable()) {
+            scrollableObject = scrollableObject.findObject(By.scrollable(true));
+        }
+        if ((scrollableObject == null) || !scrollableObject.isScrollable()) {
             throw new IllegalStateException(
                     String.format(
-                            "Cannot scroll; UI Object for selector %s is not scrollable.",
+                            "Cannot scroll; UI Object for selector %s is not scrollable and has no"
+                                    + " scrollable children.",
                             scrollableSelector));
         }
         return scrollableObject;

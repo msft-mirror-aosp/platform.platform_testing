@@ -68,8 +68,13 @@ internal constructor(
             RunStatus.fromFileName(file.name)
                 ?: error("Failed to get RunStatus from file name ${file.name}")
 
-    override val path: String
+    override val absolutePath: String
         get() = file.absolutePath
+
+    override val fileName: String
+        get() = file.name
+
+    override val stableId: String = "$scenario$counter"
 
     override fun updateStatus(newStatus: RunStatus) {
         val currFile = file
@@ -96,7 +101,20 @@ internal constructor(
         return count
     }
 
-    override fun toString(): String = file.absolutePath
+    override fun toString(): String = fileName
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is Artifact) return false
+
+        if (absolutePath != other.absolutePath) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        return absolutePath.hashCode()
+    }
 
     /** updates the artifact status to [newStatus] */
     private fun getNewFilePath(newStatus: RunStatus): File {

@@ -20,8 +20,8 @@ import android.tools.common.CrossPlatform
 import android.tools.common.ITraceEntry
 import android.tools.common.datatypes.Rect
 import android.tools.common.datatypes.RectF
-import android.tools.common.datatypes.component.ComponentNameMatcher
-import android.tools.common.datatypes.component.IComponentMatcher
+import android.tools.common.traces.component.ComponentNameMatcher
+import android.tools.common.traces.component.IComponentMatcher
 import kotlin.js.JsExport
 import kotlin.js.JsName
 
@@ -35,7 +35,7 @@ import kotlin.js.JsName
 class LayerTraceEntry(
     @JsName("elapsedTimestamp") val elapsedTimestamp: Long,
     @JsName("clockTimestamp") val clockTimestamp: Long?,
-    @JsName("hwcBlob") val hwcBlob: String,
+    val hwcBlob: String,
     @JsName("where") val where: String,
     @JsName("displays") val displays: Array<Display>,
     @JsName("vSyncId") val vSyncId: Long,

@@ -23,9 +23,9 @@ import android.tools.assertThatErrorContainsDebugInfo
 import android.tools.assertThrows
 import android.tools.common.Cache
 import android.tools.common.datatypes.Region
-import android.tools.common.datatypes.component.ComponentNameMatcher
 import android.tools.common.flicker.subject.layers.LayersTraceSubject
 import android.tools.common.io.IReader
+import android.tools.common.traces.component.ComponentNameMatcher
 import android.tools.getLayerTraceReaderFromAsset
 import androidx.test.filters.FlakyTest
 import com.google.common.truth.Truth

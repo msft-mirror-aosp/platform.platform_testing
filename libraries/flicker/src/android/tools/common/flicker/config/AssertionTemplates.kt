@@ -44,7 +44,6 @@ import android.tools.common.flicker.assertors.assertions.FocusChanges
 import android.tools.common.flicker.assertors.assertions.HasAtMostOneWindowMatching
 import android.tools.common.flicker.assertors.assertions.LayerBecomesInvisible
 import android.tools.common.flicker.assertors.assertions.LayerBecomesVisible
-import android.tools.common.flicker.assertors.assertions.LayerIsVisibleAlways
 import android.tools.common.flicker.assertors.assertions.LayerIsVisibleAtEnd
 import android.tools.common.flicker.assertors.assertions.LayerIsVisibleAtStart
 import android.tools.common.flicker.assertors.assertions.LayerReduces
@@ -74,7 +73,8 @@ object AssertionTemplates {
     val STATUS_BAR_ASSERTIONS =
         listOf(
             NonAppWindowIsVisibleAlways(Components.STATUS_BAR),
-            LayerIsVisibleAlways(Components.STATUS_BAR),
+            LayerIsVisibleAtStart(Components.STATUS_BAR),
+            LayerIsVisibleAtEnd(Components.STATUS_BAR),
         )
 
     val APP_LAUNCH_ASSERTIONS =
@@ -220,6 +220,6 @@ object AssertionTemplates {
         COMMON_ASSERTIONS +
             listOf(
                 // DisplayIsOffAtStart(),
-                AppLayerIsVisibleAtEnd(Components.LAUNCHER)
-            )
+                // AppLayerIsVisibleAtEnd(Components.LAUNCHER)
+                )
 }

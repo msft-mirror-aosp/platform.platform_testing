@@ -16,8 +16,8 @@
 
 package android.tools.common.flicker.config
 
-import android.tools.common.datatypes.component.ComponentNameMatcher
 import android.tools.common.flicker.extractors.TransitionsTransform
+import android.tools.common.traces.component.ComponentNameMatcher
 import android.tools.common.traces.wm.Transition
 import android.tools.common.traces.wm.TransitionType
 
@@ -91,7 +91,7 @@ object TransitionFilters {
                 // finishTransaction is merged into the first and applied.
                 finishTransactionId = transitions[0].finishTransactionId,
                 type = transitions[1].type,
-                changes = listOf(closingAppChange, openingAppChange),
+                changes = arrayOf(closingAppChange, openingAppChange),
                 played = transitions[1].played,
                 aborted = transitions[1].aborted,
             )

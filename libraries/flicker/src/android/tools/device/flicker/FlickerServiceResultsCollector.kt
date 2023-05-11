@@ -174,7 +174,19 @@ class FlickerServiceResultsCollector(
         } else {
             reader.artifact.updateStatus(RunStatus.ASSERTION_SUCCESS)
         }
+
+        CrossPlatform.log.v(
+            LOG_TAG,
+            "Adding metric $WINSCOPE_FILE_PATH_KEY = ${reader.artifactPath}"
+        )
         dataRecord.addStringMetric(WINSCOPE_FILE_PATH_KEY, reader.artifactPath)
+
+        CrossPlatform.log.v(
+            LOG_TAG,
+            "Adding metric $FLICKER_ASSERTIONS_COUNT_KEY = ${results.size}"
+        )
+        dataRecord.addStringMetric(FLICKER_ASSERTIONS_COUNT_KEY, "${results.size}")
+
         val aggregatedResults = processFlickerResults(results)
         collectMetrics(dataRecord, aggregatedResults)
     }
@@ -236,6 +248,7 @@ class FlickerServiceResultsCollector(
         private const val FAAS_METRICS_PREFIX = "FAAS"
         private const val LOG_TAG = "$FLICKER_TAG-Collector"
         private const val WINSCOPE_FILE_PATH_KEY = "winscope_file_path"
+        const val FLICKER_ASSERTIONS_COUNT_KEY = "flicker_assertions_count"
 
         class AggregatedFlickerResult {
             var failures = 0

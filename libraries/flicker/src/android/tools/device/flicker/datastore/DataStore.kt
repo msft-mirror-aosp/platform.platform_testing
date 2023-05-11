@@ -36,16 +36,15 @@ object DataStore {
 
     @VisibleForTesting
     fun clear() {
-        cachedResults = mutableMapOf<IScenario, IResultData>()
-        cachedFlickerServiceAssertions =
-            mutableMapOf<IScenario, Map<IScenarioInstance, Collection<IFaasAssertion>>>()
+        cachedResults = mutableMapOf()
+        cachedFlickerServiceAssertions = mutableMapOf()
     }
 
     fun backup(): Backup {
         return Backup(cachedResults.toMutableMap(), cachedFlickerServiceAssertions.toMutableMap())
     }
 
-    fun restore(backup: DataStore.Backup) {
+    fun restore(backup: Backup) {
         cachedResults = backup.cachedResults
         cachedFlickerServiceAssertions = backup.cachedFlickerServiceAssertions
     }

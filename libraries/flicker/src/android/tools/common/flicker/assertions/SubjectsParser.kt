@@ -29,6 +29,7 @@ import android.tools.common.traces.surfaceflinger.LayerTraceEntry
 import android.tools.common.traces.surfaceflinger.LayersTrace
 import android.tools.common.traces.wm.WindowManagerState
 import android.tools.common.traces.wm.WindowManagerTrace
+import kotlin.reflect.KClass
 
 /**
  * Helper class to read traces from a [resultReader] and parse them into subjects for assertion
@@ -36,19 +37,20 @@ import android.tools.common.traces.wm.WindowManagerTrace
  * @param resultReader to read the result artifacts
  */
 open class SubjectsParser(private val resultReader: IReader) {
-    fun getSubjects(tag: String): List<FlickerSubject> {
-        val result = mutableListOf<FlickerSubject>()
-
-        if (tag == Tag.ALL) {
-            wmTraceSubject?.let { result.add(it) }
-            layersTraceSubject?.let { result.add(it) }
-        } else {
-            getWmStateSubject(tag)?.let { result.add(it) }
-            getLayerTraceEntrySubject(tag)?.let { result.add(it) }
+    fun getSubjectOfType(
+        tag: String,
+        expectedSubjectClass: KClass<out FlickerSubject>
+    ): FlickerSubject? {
+        return when {
+            tag == Tag.ALL && expectedSubjectClass == WindowManagerTraceSubject::class ->
+                wmTraceSubject
+            tag == Tag.ALL && expectedSubjectClass == LayersTraceSubject::class ->
+                layersTraceSubject
+            expectedSubjectClass == EventLogSubject::class -> eventLogSubject
+            expectedSubjectClass == WindowManagerStateSubject::class -> getWmStateSubject(tag)
+            expectedSubjectClass == LayerTraceEntrySubject::class -> getLayerTraceEntrySubject(tag)
+            else -> error("Unknown expected subject type $expectedSubjectClass")
         }
-        eventLogSubject?.let { result.add(it) }
-
-        return result
     }
 
     /** Truth subject that corresponds to a [WindowManagerTrace] */

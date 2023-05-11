@@ -45,17 +45,23 @@ import org.junit.runner.notification.Failure
 open class FlickerServiceRule
 @JvmOverloads
 constructor(
-    private val enabled: Boolean = true,
-    // defaults to true
-    private val failTestOnFaasFailure: Boolean =
-        InstrumentationRegistry.getArguments().getString("faas:blocking")?.let { it.toBoolean() }
-            ?: enabled,
+    enabled: Boolean = true,
+    failTestOnFaasFailure: Boolean = enabled,
     private val metricsCollector: IFlickerServiceResultsCollector =
         FlickerServiceResultsCollector(
             tracesCollector = FlickerServiceTracesCollector(getDefaultFlickerOutputDir()),
             instrumentation = InstrumentationRegistry.getInstrumentation()
         ),
 ) : TestWatcher() {
+    private val enabled: Boolean =
+        InstrumentationRegistry.getArguments().getString("faas:enabled")?.let { it.toBoolean() }
+            ?: enabled
+
+    private val failTestOnFaasFailure: Boolean =
+        InstrumentationRegistry.getArguments().getString("faas:failTestOnFaasFailure")?.let {
+            it.toBoolean()
+        }
+            ?: failTestOnFaasFailure
 
     init {
         CrossPlatform.setLogger(ANDROID_LOGGER)

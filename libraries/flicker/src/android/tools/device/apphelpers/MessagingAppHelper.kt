@@ -20,7 +20,7 @@ import android.app.Instrumentation
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
-import android.tools.common.datatypes.component.ComponentNameMatcher
+import android.tools.common.traces.component.ComponentNameMatcher
 
 /**
  * Helper to launch the default messaging app (compatible with AOSP)
