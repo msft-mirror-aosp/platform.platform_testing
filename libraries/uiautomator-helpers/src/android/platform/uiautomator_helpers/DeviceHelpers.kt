@@ -37,6 +37,7 @@ import java.time.Duration
 private const val TAG = "DeviceHelpers"
 
 object DeviceHelpers {
+    private val SHORT_WAIT = Duration.ofMillis(1500)
     private val LONG_WAIT = Duration.ofSeconds(10)
     private val DOUBLE_TAP_INTERVAL = Duration.ofMillis(100)
 
@@ -97,7 +98,7 @@ object DeviceHelpers {
     )
     fun UiDevice.waitForNullableObj(
         selector: BySelector,
-        timeout: Duration = LONG_WAIT,
+        timeout: Duration = SHORT_WAIT,
     ): UiObject2? = DeviceHelpers.waitForNullableObj(selector, timeout)
 
     /**
@@ -105,7 +106,7 @@ object DeviceHelpers {
      */
     fun waitForNullableObj(
         selector: BySelector,
-        timeout: Duration = LONG_WAIT,
+        timeout: Duration = SHORT_WAIT,
     ): UiObject2? =
         waitForNullable("nullable $selector objects", timeout) { uiDevice.findObject(selector) }
 
@@ -115,7 +116,7 @@ object DeviceHelpers {
      */
     fun waitForNullableObjects(
         selector: BySelector,
-        timeout: Duration = LONG_WAIT,
+        timeout: Duration = SHORT_WAIT,
     ): List<UiObject2>? =
         waitForNullable("$selector objects", timeout) { uiDevice.findObjects(selector) }
 
@@ -129,7 +130,7 @@ object DeviceHelpers {
     )
     fun UiDevice.waitForNullableObjects(
         selector: BySelector,
-        timeout: Duration = LONG_WAIT,
+        timeout: Duration = SHORT_WAIT,
     ): List<UiObject2>? = DeviceHelpers.waitForNullableObjects(selector, timeout)
 
     /**
