@@ -37,18 +37,8 @@ class ComponentNameMatcher(var component: ComponentName) : IComponentNameMatcher
 
     constructor(className: String) : this("", className)
 
-    private fun <T> matchesAnyOf(
-        values: Array<T>,
-        valueProducer: (T) -> String,
-        regexProducer: (ComponentName) -> Regex,
-    ): Boolean {
-        val componentRegex = regexProducer.invoke(component)
-        val targets = values.map { valueProducer.invoke(it) }
-        return targets.any { value -> componentRegex.matches(value) }
-    }
-
     override fun activityRecordMatchesAnyOf(layers: Array<Layer>): Boolean =
-        matchesAnyOf(layers, { it.name }, { it.toActivityRecordFilter() })
+        layers.any { activityRecordFilter.invoke(it.name) }
 
     override fun componentNameMatcherToString(): String {
         return "ComponentNameMatcher(\"${this.packageName}\", " + "\"${this.className}\")"
@@ -56,15 +46,15 @@ class ComponentNameMatcher(var component: ComponentName) : IComponentNameMatcher
 
     /** {@inheritDoc} */
     override fun windowMatchesAnyOf(windows: Array<WindowContainer>): Boolean =
-        matchesAnyOf(windows, { it.title }, { it.toWindowNameRegex() })
+        windows.any { windowNameFilter.invoke(it.title) }
 
     /** {@inheritDoc} */
     override fun activityMatchesAnyOf(activities: Array<Activity>): Boolean =
-        matchesAnyOf(activities, { it.name }, { it.toActivityNameRegex() })
+        activities.any { activityNameFilter.invoke(it.name) }
 
     /** {@inheritDoc} */
     override fun layerMatchesAnyOf(layers: Array<Layer>): Boolean =
-        matchesAnyOf(layers, { it.name }, { it.toLayerNameRegex() })
+        layers.any { layerNameFilter.invoke(it.name) }
 
     /** {@inheritDoc} */
     override fun check(
@@ -90,6 +80,18 @@ class ComponentNameMatcher(var component: ComponentName) : IComponentNameMatcher
     override fun hashCode(): Int = component.hashCode()
 
     override fun toString(): String = component.toString()
+
+    private val activityRecordFilter: (String) -> Boolean
+        get() = { it.startsWith("ActivityRecord{") && it.contains(component.toShortWindowName()) }
+
+    private val activityNameFilter: (String) -> Boolean
+        get() = { it.contains(component.toActivityName()) }
+
+    private val windowNameFilter: (String) -> Boolean
+        get() = { it.contains(component.toWindowName()) }
+
+    private val layerNameFilter: (String) -> Boolean
+        get() = { it.contains(component.toLayerName()) }
 
     companion object {
         val NAV_BAR = ComponentNameMatcher("", "NavigationBar0")
