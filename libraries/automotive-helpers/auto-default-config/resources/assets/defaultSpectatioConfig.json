@@ -460,6 +460,21 @@
       "VALUE": "car_ui_scrollbar_page_up",
       "PACKAGE": "com.android.car.ui.sharedlibrary"
     },
+    "APP_INFO_SETTINGS_PERMISSIONS_SCROLL_ELEMENT": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "car_ui_internal_recycler_view",
+      "PACKAGE": "com.android.permissioncontroller"
+    },
+    "APP_INFO_SETTINGS_PERMISSIONS_SCROLL_FORWARD_BUTTON": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "car_ui_scrollbar_page_down",
+      "PACKAGE": "com.android.permissioncontroller"
+    },
+    "APP_INFO_SETTINGS_PERMISSIONS_SCROLL_BACKWARD_BUTTON": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "car_ui_scrollbar_page_up",
+      "PACKAGE": "com.android.permissioncontroller"
+    },
     "APP_INFO_SETTINGS_ENABLE_DISABLE_BUTTON": {
       "TYPE": "RESOURCE_ID",
       "VALUE": "button1Text",
