@@ -79,12 +79,28 @@ class Transition(
 
     @JsName("getStartTransaction")
     fun getStartTransaction(transactionsTrace: TransactionsTrace): Transaction? {
-        return transactionsTrace.allTransactions.firstOrNull { it.id == this.startTransactionId }
+        val matches =
+            transactionsTrace.allTransactions.filter {
+                it.id == this.startTransactionId ||
+                    it.mergedTransactionIds.contains(this.startTransactionId)
+            }
+        require(matches.size <= 1) {
+            "Too many transactions matches found for Transaction#${this.startTransactionId}."
+        }
+        return matches.firstOrNull()
     }
 
     @JsName("getFinishTransaction")
     fun getFinishTransaction(transactionsTrace: TransactionsTrace): Transaction? {
-        return transactionsTrace.allTransactions.firstOrNull { it.id == this.finishTransactionId }
+        val matches =
+            transactionsTrace.allTransactions.filter {
+                it.id == this.finishTransactionId ||
+                    it.mergedTransactionIds.contains(this.finishTransactionId)
+            }
+        require(matches.size <= 1) {
+            "Too many transactions matches found for Transaction#${this.finishTransactionId}."
+        }
+        return matches.firstOrNull()
     }
 
     @JsName("isIncomplete")

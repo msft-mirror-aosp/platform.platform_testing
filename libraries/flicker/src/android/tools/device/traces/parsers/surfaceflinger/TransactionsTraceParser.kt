@@ -85,7 +85,8 @@ class TransactionsTraceParser :
                     state.uid,
                     state.vsyncId,
                     state.postTime,
-                    state.transactionId
+                    state.transactionId,
+                    state.mergedTransactionIdsList.toTypedArray()
                 )
             transactions.add(transaction)
         }

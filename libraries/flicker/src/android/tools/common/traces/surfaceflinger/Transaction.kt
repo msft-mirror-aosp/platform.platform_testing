@@ -26,6 +26,7 @@ data class Transaction(
     @JsName("requestedVSyncId") val requestedVSyncId: Long,
     @JsName("postTime") val postTime: Long,
     @JsName("id") val id: Long,
+    @JsName("mergedTransactionIds") val mergedTransactionIds: Array<Long>,
 ) {
     var appliedInEntry: TransactionsTraceEntry? = null
 
@@ -41,7 +42,7 @@ data class Transaction(
     companion object {
         @JsName("emptyTransaction")
         fun emptyTransaction(): Transaction {
-            return Transaction(0, 0, 0, 0, 0)
+            return Transaction(0, 0, 0, 0, 0, emptyArray())
         }
     }
 }
