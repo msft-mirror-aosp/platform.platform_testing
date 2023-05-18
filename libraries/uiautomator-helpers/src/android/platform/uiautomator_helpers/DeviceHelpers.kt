@@ -25,6 +25,7 @@ import android.platform.uiautomator_helpers.TracingUtils.trace
 import android.platform.uiautomator_helpers.WaitUtils.ensureThat
 import android.platform.uiautomator_helpers.WaitUtils.waitFor
 import android.platform.uiautomator_helpers.WaitUtils.waitForNullable
+import android.platform.uiautomator_helpers.WaitUtils.waitForPossibleEmpty
 import android.platform.uiautomator_helpers.WaitUtils.waitForValueToSettle
 import android.util.Log
 import androidx.test.platform.app.InstrumentationRegistry
@@ -114,11 +115,27 @@ object DeviceHelpers {
      * Waits for objects matched by [selector] to be visible and returns them. Returns `null` if no
      * objects are found
      */
+    @Deprecated(
+        "Use DeviceHelpers.waitForPossibleEmpty",
+        ReplaceWith(
+            "waitForPossibleEmpty(selector, timeout)",
+            "android.platform.uiautomator_helpers.DeviceHelpers.waitForPossibleEmpty"
+        )
+    )
     fun waitForNullableObjects(
         selector: BySelector,
         timeout: Duration = SHORT_WAIT,
-    ): List<UiObject2>? =
-        waitForNullable("$selector objects", timeout) { uiDevice.findObjects(selector) }
+    ): List<UiObject2>? = waitForPossibleEmpty(selector, timeout)
+
+    /**
+     * Waits for objects matched by selector to be visible. Returns an empty list when none is
+     * visible.
+     */
+    fun waitForPossibleEmpty(
+        selector: BySelector,
+        timeout: Duration = SHORT_WAIT,
+    ): List<UiObject2> =
+        waitForPossibleEmpty("$selector objects", timeout) { uiDevice.findObjects(selector) }
 
     /**
      * Waits for objects matched by [selector] to be visible and returns them. Returns `null` if no
@@ -132,6 +149,16 @@ object DeviceHelpers {
         selector: BySelector,
         timeout: Duration = SHORT_WAIT,
     ): List<UiObject2>? = DeviceHelpers.waitForNullableObjects(selector, timeout)
+
+    /** Returns [true] when the [selector] is visible. */
+    fun hasObject(
+        selector: BySelector,
+    ): Boolean = trace("Checking if device has $selector") { uiDevice.hasObject(selector) }
+
+    /** Finds an object with this selector and clicks on it. */
+    fun BySelector.click() {
+        trace("Clicking $this") { waitForObj(this).click() }
+    }
 
     /**
      * Asserts visibility of a [selector], waiting for [timeout] until visibility matches the
