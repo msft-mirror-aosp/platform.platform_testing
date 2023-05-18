@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 The Android Open Source Project
+ * Copyright (C) 2023 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -11,36 +11,35 @@
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
- * limitations under the License
+ * limitations under the License.
  */
 
 package android.platform.test.utils;
 
 import android.app.Instrumentation;
 import android.os.SystemClock;
-import android.support.test.uiautomator.Direction;
-import android.support.test.uiautomator.EventCondition;
-import android.support.test.uiautomator.UiDevice;
 import android.util.Log;
 import android.view.KeyEvent;
 
+import androidx.test.uiautomator.Direction;
+import androidx.test.uiautomator.EventCondition;
+import androidx.test.uiautomator.UiDevice;
+
 import java.io.IOException;
 
-/**
- * @deprecated , Use {@link DPadUtil2}, which uses latest androidx automator classes.
- */
-public class DPadUtil {
 
-    private static final String TAG = DPadUtil.class.getSimpleName();
+public class DPadUtil2 {
+
+    private static final String TAG = DPadUtil2.class.getSimpleName();
     private static final long DPAD_DEFAULT_WAIT_TIME_MS = 1000; // 1 sec
     private UiDevice mDevice;
 
 
-    public DPadUtil(Instrumentation instrumentation) {
+    public DPadUtil2(Instrumentation instrumentation) {
         mDevice = UiDevice.getInstance(instrumentation);
     }
 
-    public DPadUtil(UiDevice uiDevice) {
+    public DPadUtil2(UiDevice uiDevice) {
         mDevice = uiDevice;
     }
 
