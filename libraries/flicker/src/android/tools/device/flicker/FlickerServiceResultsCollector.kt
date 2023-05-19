@@ -216,13 +216,16 @@ class FlickerServiceResultsCollector(
         val it = aggregatedResults.entries.iterator()
 
         while (it.hasNext()) {
-            val (key, result) = it.next()
-            CrossPlatform.log.v(LOG_TAG, "Adding metric ${key}_FAILURES = ${result.failures}")
-            data.addStringMetric("${key}_FAILURES", "${result.failures}")
+            val (key, aggregatedResult) = it.next()
+            aggregatedResult.results.forEachIndexed { index, result ->
+                val resultStatus = if (result.passed) 0 else 1
+                CrossPlatform.log.v(LOG_TAG, "Adding metric ${key}_$index = $resultStatus")
+                data.addStringMetric("${key}_$index", "$resultStatus")
+            }
         }
     }
 
-    private fun getKeyForAssertionResult(result: IAssertionResult): String {
+    fun getKeyForAssertionResult(result: IAssertionResult): String {
         return "$FAAS_METRICS_PREFIX::${result.assertion.name}"
     }
 
@@ -255,12 +258,15 @@ class FlickerServiceResultsCollector(
         const val FLICKER_ASSERTIONS_COUNT_KEY = "flicker_assertions_count"
 
         class AggregatedFlickerResult {
+            val results = mutableListOf<IAssertionResult>()
             var failures = 0
             var passes = 0
             val errors = mutableListOf<String>()
             var invocationGroup: AssertionInvocationGroup? = null
 
             fun addResult(result: IAssertionResult) {
+                results.add(result)
+
                 if (result.failed) {
                     failures++
                     errors.add(result.assertionError?.message ?: "FAILURE WITHOUT ERROR MESSAGE...")
