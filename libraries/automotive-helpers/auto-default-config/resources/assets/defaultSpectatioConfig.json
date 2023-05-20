@@ -582,6 +582,19 @@
       "TYPE": "DESCRIPTION",
       "VALUE": "Scroll Up"
     },
+    "MANAGE_BUTTON": {
+      "TYPE": "TEXT",
+      "VALUE": "Manage"
+    },
+    "NOTIFICATION_SETTINGS_LAYOUT": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "car_ui_base_layout_content_container",
+      "PACKAGE": "com.android.car.settings"
+    },
+    "NOTIFICATION_SETTINGS_TITLE": {
+      "TYPE": "TEXT",
+      "VALUE": "Notifications"
+    },
     "ABOUT_MENU": {
       "TYPE": "TEXT",
       "VALUE": "About",
