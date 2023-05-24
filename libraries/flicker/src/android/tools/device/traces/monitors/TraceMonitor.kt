@@ -18,8 +18,7 @@ package android.tools.device.traces.monitors
 
 import android.tools.common.ScenarioBuilder
 import android.tools.common.io.TraceType
-import android.tools.device.traces.DEFAULT_TRACE_CONFIG
-import android.tools.device.traces.deleteIfExists
+import android.tools.device.traces.TRACE_CONFIG_REQUIRE_CHANGES
 import android.tools.device.traces.io.IoUtils
 import android.tools.device.traces.io.ResultReader
 import android.tools.device.traces.io.ResultWriter
@@ -94,7 +93,7 @@ abstract class TraceMonitor : ITransitionMonitor {
         val writer = createWriter()
         withTracing(writer, predicate)
         val result = writer.write()
-        val reader = ResultReader(result, DEFAULT_TRACE_CONFIG)
+        val reader = ResultReader(result, TRACE_CONFIG_REQUIRE_CHANGES)
         val bytes = reader.readBytes(traceType) ?: error("Missing trace $traceType")
         result.artifact.deleteIfExists()
         return bytes

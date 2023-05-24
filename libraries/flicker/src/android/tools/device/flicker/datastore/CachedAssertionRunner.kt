@@ -20,7 +20,7 @@ import android.tools.common.IScenario
 import android.tools.common.flicker.assertions.SubjectsParser
 import android.tools.common.io.RunStatus
 import android.tools.device.flicker.assertions.BaseAssertionRunner
-import android.tools.device.traces.DEFAULT_TRACE_CONFIG
+import android.tools.device.traces.TRACE_CONFIG_REQUIRE_CHANGES
 
 /**
  * Helper class to run an assertion on a flicker artifact from a [DataStore]
@@ -31,7 +31,7 @@ import android.tools.device.traces.DEFAULT_TRACE_CONFIG
  */
 class CachedAssertionRunner(
     private val scenario: IScenario,
-    resultReader: CachedResultReader = CachedResultReader(scenario, DEFAULT_TRACE_CONFIG),
+    resultReader: CachedResultReader = CachedResultReader(scenario, TRACE_CONFIG_REQUIRE_CHANGES),
     subjectsParser: SubjectsParser = SubjectsParser(resultReader)
 ) : BaseAssertionRunner(resultReader, subjectsParser) {
     override fun doUpdateStatus(newStatus: RunStatus) {

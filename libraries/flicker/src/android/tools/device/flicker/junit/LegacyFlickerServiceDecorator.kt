@@ -28,7 +28,7 @@ import android.tools.device.flicker.annotation.FlickerServiceCompatible
 import android.tools.device.flicker.datastore.CachedResultReader
 import android.tools.device.flicker.datastore.DataStore
 import android.tools.device.flicker.isShellTransitionsEnabled
-import android.tools.device.traces.DEFAULT_TRACE_CONFIG
+import android.tools.device.traces.TRACE_CONFIG_REQUIRE_CHANGES
 import androidx.test.platform.app.InstrumentationRegistry
 import com.google.common.truth.Truth
 import org.junit.runner.Description
@@ -172,7 +172,7 @@ class LegacyFlickerServiceDecorator(
                 )
             transitionRunner.runTransition(testScenario, test, description)
         }
-        val reader = CachedResultReader(testScenario, DEFAULT_TRACE_CONFIG)
+        val reader = CachedResultReader(testScenario, TRACE_CONFIG_REQUIRE_CHANGES)
 
         val faasTestCases =
             FlickerServiceDecorator.getFaasTestCase(testScenario, "", reader, flickerService, this)

@@ -21,7 +21,7 @@ import android.tools.assertThrows
 import android.tools.common.Tag
 import android.tools.common.flicker.assertions.SubjectsParser
 import android.tools.common.flicker.subject.layers.LayersTraceSubject
-import android.tools.device.traces.DEFAULT_TRACE_CONFIG
+import android.tools.device.traces.TRACE_CONFIG_REQUIRE_CHANGES
 import android.tools.device.traces.io.ResultReader
 import android.tools.newTestResultWriter
 import java.io.FileNotFoundException
@@ -35,7 +35,7 @@ class SubjectsParserTest {
     fun failFileNotFound() {
         val data = newTestResultWriter().write()
         data.artifact.deleteIfExists()
-        val parser = SubjectsParser(ResultReader(data, DEFAULT_TRACE_CONFIG))
+        val parser = SubjectsParser(ResultReader(data, TRACE_CONFIG_REQUIRE_CHANGES))
         assertThrows<FileNotFoundException> {
             parser.getSubjectOfType(Tag.ALL, LayersTraceSubject::class)
         }

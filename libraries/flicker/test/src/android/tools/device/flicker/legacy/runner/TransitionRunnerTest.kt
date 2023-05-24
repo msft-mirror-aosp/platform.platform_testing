@@ -25,7 +25,7 @@ import android.tools.assertExceptionMessage
 import android.tools.common.io.RunStatus
 import android.tools.createMockedFlicker
 import android.tools.device.flicker.legacy.IFlickerTestData
-import android.tools.device.traces.DEFAULT_TRACE_CONFIG
+import android.tools.device.traces.TRACE_CONFIG_REQUIRE_CHANGES
 import android.tools.device.traces.io.ResultReader
 import android.tools.device.traces.io.ResultWriter
 import android.tools.device.traces.monitors.ITransitionMonitor
@@ -80,7 +80,7 @@ class TransitionRunnerTest {
                 extraMonitor = dummyMonitor
             )
         val result = runner.execute(mockedFlicker, Consts.description(this))
-        val reader = ResultReader(result, DEFAULT_TRACE_CONFIG)
+        val reader = ResultReader(result, TRACE_CONFIG_REQUIRE_CHANGES)
 
         validateExecutionOrder(hasTransition = true)
         dummyMonitor.validate()
@@ -101,7 +101,7 @@ class TransitionRunnerTest {
                 extraMonitor = dummyMonitor
             )
         val result = runner.execute(mockedFlicker, Consts.description(this))
-        val reader = ResultReader(result, DEFAULT_TRACE_CONFIG)
+        val reader = ResultReader(result, TRACE_CONFIG_REQUIRE_CHANGES)
 
         validateExecutionOrder(hasTransition = false)
         dummyMonitor.validate()
@@ -122,7 +122,7 @@ class TransitionRunnerTest {
                 extraMonitor = dummyMonitor
             )
         val result = runner.execute(mockedFlicker, Consts.description(this))
-        val reader = ResultReader(result, DEFAULT_TRACE_CONFIG)
+        val reader = ResultReader(result, TRACE_CONFIG_REQUIRE_CHANGES)
 
         validateExecutionOrder(hasTransition = false)
         dummyMonitor.validate()
@@ -143,7 +143,7 @@ class TransitionRunnerTest {
                 extraMonitor = dummyMonitor
             )
         val result = runner.execute(mockedFlicker, Consts.description(this))
-        val reader = ResultReader(result, DEFAULT_TRACE_CONFIG)
+        val reader = ResultReader(result, TRACE_CONFIG_REQUIRE_CHANGES)
 
         validateExecutionOrder(hasTransition = false)
         dummyMonitor.validate()
@@ -164,7 +164,7 @@ class TransitionRunnerTest {
                 extraMonitor = dummyMonitor
             )
         val result = runner.execute(mockedFlicker, Consts.description(this))
-        val reader = ResultReader(result, DEFAULT_TRACE_CONFIG)
+        val reader = ResultReader(result, TRACE_CONFIG_REQUIRE_CHANGES)
 
         validateExecutionOrder(hasTransition = true)
         dummyMonitor.validate()

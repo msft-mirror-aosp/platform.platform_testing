@@ -194,6 +194,9 @@ public class AutomotiveConfigConstants {
     public static final String SYSTEM_SETTINGS_SCROLL_WAIT_TIME =
             "SYSTEM_SETTINGS_SCROLL_WAIT_TIME";
 
+    // Display Settings Constants
+    public static final String BRIGHTNESS_SEEKBAR = "BRIGHTNESS_SEEKBAR";
+
     // Date and time Settings Constants
     public static final String DATE_TIME_SETTINGS_SCROLL_ACTION =
             "DATE_TIME_SETTINGS_SCROLL_ACTION";
