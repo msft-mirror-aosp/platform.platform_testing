@@ -25,7 +25,7 @@ import android.tools.assertExceptionMessage
 import android.tools.assertThrows
 import android.tools.device.flicker.legacy.AbstractFlickerTestData
 import android.tools.device.flicker.legacy.IFlickerTestData
-import android.tools.device.traces.DEFAULT_TRACE_CONFIG
+import android.tools.device.traces.TRACE_CONFIG_REQUIRE_CHANGES
 import android.tools.device.traces.io.ResultReader
 import android.tools.device.traces.io.ResultWriter
 import android.tools.device.traces.monitors.TraceMonitor
@@ -124,7 +124,7 @@ class TransitionExecutionRuleTest {
         val rule = createRule(listOf(runCreateValidTags), writer)
         rule.apply(base = null, description = Consts.description(this)).evaluate()
         val result = writer.write()
-        val reader = ResultReader(result, DEFAULT_TRACE_CONFIG)
+        val reader = ResultReader(result, TRACE_CONFIG_REQUIRE_CHANGES)
         val wmStateValidTag1 =
             reader.readWmState(VALID_TAG_1) ?: error("Couldn't parse WM state for $VALID_TAG_1")
         val wmStateValidTag2 =

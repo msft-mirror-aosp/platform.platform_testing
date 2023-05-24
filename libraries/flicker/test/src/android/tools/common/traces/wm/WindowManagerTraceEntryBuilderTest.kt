@@ -39,8 +39,8 @@ class WindowManagerTraceEntryBuilderTest {
                 orientation = 0,
                 layerId = 0,
                 _isVisible = true,
-                children = emptyArray(),
-                configurationContainer = ConfigurationContainer(null, null, null),
+                _children = emptyArray(),
+                configurationContainer = ConfigurationContainer.EMPTY,
                 computedZ = 0
             )
         )

@@ -183,6 +183,7 @@ public class UiElement {
                 break;
             case JsonConfigConstants.HAS_ANCESTOR:
                 s.hasAncestor(mAncestor.getBySelectorForUiElement(), mMaxDepth);
+                break;
             case JsonConfigConstants.HAS_DESCENDANT:
                 s.hasDescendant(mDescendant.getBySelectorForUiElement(), mMaxDepth);
                 break;

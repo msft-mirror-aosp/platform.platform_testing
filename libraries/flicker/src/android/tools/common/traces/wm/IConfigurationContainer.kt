@@ -17,17 +17,25 @@
 package android.tools.common.traces.wm
 
 import kotlin.js.JsExport
+import kotlin.js.JsName
 
 /**
- * Represents the root window container in the window manager hierarchy
+ * Represents the configuration of an element in the window manager hierarchy
  *
  * This is a generic object that is reused by both Flicker and Winscope and cannot access internal
  * Java/Android functionality
  */
 @JsExport
-class RootWindowContainer(private val windowContainer: IWindowContainer) :
-    IWindowContainer by windowContainer {
-    override fun toString(): String {
-        return "${this::class.simpleName}: {$token $title}"
-    }
+interface IConfigurationContainer {
+    @JsName("overrideConfiguration") val overrideConfiguration: Configuration?
+
+    @JsName("fullConfiguration") val fullConfiguration: Configuration?
+
+    @JsName("mergedOverrideConfiguration") val mergedOverrideConfiguration: Configuration?
+
+    @JsName("windowingMode") val windowingMode: Int
+
+    @JsName("activityType") val activityType: Int
+
+    @JsName("isEmpty") val isEmpty: Boolean
 }

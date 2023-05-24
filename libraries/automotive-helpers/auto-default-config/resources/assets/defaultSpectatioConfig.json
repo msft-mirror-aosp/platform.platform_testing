@@ -704,6 +704,26 @@
       "TYPE": "DESCRIPTION",
       "VALUE": "Save"
     },
+    "BRIGHTNESS_SEEKBAR": {
+      "TYPE": "MULTIPLE",
+      "SPECIFIERS": [
+        {
+          "TYPE": "CLASS",
+          "VALUE": "android.widget.SeekBar"
+        },
+        {
+          "TYPE": "HAS_ANCESTOR",
+          "MAX_DEPTH": 2,
+          "ANCESTOR": {
+            "TYPE": "HAS_DESCENDANT",
+            "DESCENDANT": {
+              "TYPE": "TEXT",
+              "VALUE": "Brightness level"
+            }
+          }
+        }
+      ]
+    },
     "DATE_TIME_SETTINGS_SET_TIME_AUTOMATICALLY": {
       "TYPE": "TEXT",
       "VALUE": "Set time automatically"

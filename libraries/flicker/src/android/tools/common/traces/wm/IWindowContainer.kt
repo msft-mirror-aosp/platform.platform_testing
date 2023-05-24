@@ -16,18 +16,32 @@
 
 package android.tools.common.traces.wm
 
+import android.tools.common.datatypes.Rect
 import kotlin.js.JsExport
+import kotlin.js.JsName
 
-/**
- * Represents the root window container in the window manager hierarchy
- *
- * This is a generic object that is reused by both Flicker and Winscope and cannot access internal
- * Java/Android functionality
- */
 @JsExport
-class RootWindowContainer(private val windowContainer: IWindowContainer) :
-    IWindowContainer by windowContainer {
-    override fun toString(): String {
-        return "${this::class.simpleName}: {$token $title}"
-    }
+interface IWindowContainer : IConfigurationContainer {
+    @JsName("title") val title: String
+
+    @JsName("token") val token: String
+
+    @JsName("orientation") val orientation: Int
+
+    @JsName("layerId") val layerId: Int
+
+    @JsName("children") val children: Array<IWindowContainer>
+
+    @JsName("computedZ") val computedZ: Int
+
+    @JsName("isVisible") val isVisible: Boolean
+
+    @JsName("name") val name: String
+
+    @JsName("stableId") val stableId: String
+    val isFullscreen: Boolean
+
+    @JsName("bounds") val bounds: Rect
+
+    @JsName("parent") var parent: IWindowContainer?
 }

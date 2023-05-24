@@ -21,6 +21,7 @@ import android.tools.common.ITraceEntry
 import android.tools.common.PlatformConsts
 import android.tools.common.Rotation
 import android.tools.common.traces.component.IComponentMatcher
+import android.tools.common.traces.wm.Utils.collectDescendants
 import kotlin.js.JsExport
 import kotlin.js.JsName
 
@@ -58,11 +59,11 @@ class WindowManagerState(
         get() = displays.any { it.isTablet }
 
     @JsName("windowContainers")
-    val windowContainers: Array<WindowContainer>
+    val windowContainers: Array<IWindowContainer>
         get() = root.collectDescendants()
 
     @JsName("children")
-    val children: Array<WindowContainer>
+    val children: Array<IWindowContainer>
         get() = root.children.reversedArray()
 
     /** Displays in z-order with the top most at the front of the list, starting with primary. */

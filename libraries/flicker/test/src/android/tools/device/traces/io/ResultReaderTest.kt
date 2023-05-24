@@ -20,7 +20,7 @@ import android.tools.CleanFlickerEnvironmentRule
 import android.tools.assertThrows
 import android.tools.common.CrossPlatform
 import android.tools.common.io.RunStatus
-import android.tools.device.traces.DEFAULT_TRACE_CONFIG
+import android.tools.device.traces.TRACE_CONFIG_REQUIRE_CHANGES
 import android.tools.device.traces.deleteIfExists
 import android.tools.newTestResultWriter
 import android.tools.outputFileName
@@ -45,7 +45,7 @@ class ResultReaderTest {
     fun failFileNotFound() {
         val data = newTestResultWriter().write()
         data.artifact.deleteIfExists()
-        val reader = ResultReader(data, DEFAULT_TRACE_CONFIG)
+        val reader = ResultReader(data, TRACE_CONFIG_REQUIRE_CHANGES)
         assertThrows<FileNotFoundException> {
             reader.readTransitionsTrace() ?: error("Should have failed")
         }
@@ -54,7 +54,7 @@ class ResultReaderTest {
     @Test
     fun slicedResultKeepsStatusInSync() {
         val data = newTestResultWriter().setRunComplete().write()
-        val reader = ResultReader(data, DEFAULT_TRACE_CONFIG)
+        val reader = ResultReader(data, TRACE_CONFIG_REQUIRE_CHANGES)
         val slicedReader =
             reader.slice(CrossPlatform.timestamp.min(), CrossPlatform.timestamp.max())
         reader.result.updateStatus(RunStatus.ASSERTION_SUCCESS)
