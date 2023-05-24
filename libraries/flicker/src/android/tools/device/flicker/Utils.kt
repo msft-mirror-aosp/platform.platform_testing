@@ -18,7 +18,7 @@ package android.tools.device.flicker
 
 import android.tools.common.IScenario
 import android.tools.common.traces.component.ComponentNameMatcher
-import android.tools.device.traces.DEFAULT_TRACE_CONFIG
+import android.tools.device.traces.TRACE_CONFIG_REQUIRE_CHANGES
 import android.tools.device.traces.io.ResultReader
 import android.tools.device.traces.io.ResultWriter
 import android.tools.device.traces.monitors.ScreenRecorder
@@ -111,6 +111,6 @@ object Utils {
         }()
         val result = writer.write()
 
-        return ResultReader(result, DEFAULT_TRACE_CONFIG)
+        return ResultReader(result, TRACE_CONFIG_REQUIRE_CHANGES)
     }
 }

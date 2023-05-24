@@ -195,6 +195,16 @@ public class SpectatioUiUtil {
         wait1Second();
     }
 
+    /**
+     * Click at a specific location in the UI, and wait one second
+     *
+     * @param location Where to click
+     */
+    public void clickAndWait(Point location) {
+        mDevice.click(location.x, location.y);
+        wait1Second();
+    }
+
     public void waitForIdle() {
         mDevice.waitForIdle();
     }

@@ -22,7 +22,7 @@ import android.tools.CleanFlickerEnvironmentRule
 import android.tools.common.io.RunStatus
 import android.tools.common.io.TraceType
 import android.tools.common.traces.DeviceTraceDump
-import android.tools.device.traces.DEFAULT_TRACE_CONFIG
+import android.tools.device.traces.TRACE_CONFIG_REQUIRE_CHANGES
 import android.tools.device.traces.deleteIfExists
 import android.tools.device.traces.io.ResultReader
 import android.tools.device.traces.parsers.DeviceDumpParser
@@ -86,7 +86,7 @@ abstract class TraceMonitorTest<T : TraceMonitor> {
         val writer = newTestResultWriter()
         traceMonitor.stop(writer)
         val result = writer.write()
-        val reader = ResultReader(result, DEFAULT_TRACE_CONFIG)
+        val reader = ResultReader(result, TRACE_CONFIG_REQUIRE_CHANGES)
         Truth.assertWithMessage("Trace file exists ${traceMonitor.traceType}")
             .that(reader.hasTraceFile(traceMonitor.traceType))
             .isTrue()

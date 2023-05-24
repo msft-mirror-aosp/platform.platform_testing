@@ -25,8 +25,8 @@ data class WmTransitionData(
     val sendTime: Timestamp? = null,
     val abortTime: Timestamp? = null,
     val finishTime: Timestamp? = null,
-    val startTransactionId: Long? = null,
-    val finishTransactionId: Long? = null,
+    val startTransactionId: String? = null, // strings instead of longs for JS compatibility
+    val finishTransactionId: String? = null, // strings instead of longs for JS compatibility
     val type: TransitionType? = null,
     val changes: Array<TransitionChange>? = null,
 ) {

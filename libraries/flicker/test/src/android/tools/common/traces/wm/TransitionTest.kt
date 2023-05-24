@@ -78,8 +78,8 @@ class TransitionTest {
                         sendTime = CrossPlatform.timestamp.from(20),
                         abortTime = CrossPlatform.timestamp.from(30),
                         finishTime = CrossPlatform.timestamp.from(40),
-                        startTransactionId = 1,
-                        finishTransactionId = 2,
+                        startTransactionId = "1",
+                        finishTransactionId = "2",
                         type = TransitionType.CLOSE,
                         changes = arrayOf(),
                     ),
@@ -103,8 +103,8 @@ class TransitionTest {
                         sendTime = CrossPlatform.timestamp.from(200),
                         abortTime = CrossPlatform.timestamp.from(300),
                         finishTime = CrossPlatform.timestamp.from(400),
-                        startTransactionId = 10,
-                        finishTransactionId = 20,
+                        startTransactionId = "10",
+                        finishTransactionId = "20",
                         type = TransitionType.OPEN,
                         changes = arrayOf(),
                     ),
@@ -145,7 +145,7 @@ class TransitionTest {
                 wmData =
                     WmTransitionData(
                         sendTime = CrossPlatform.timestamp.from(1),
-                        startTransactionId = transactionId
+                        startTransactionId = transactionId.toString()
                     )
             )
 
@@ -184,7 +184,7 @@ class TransitionTest {
                 wmData =
                     WmTransitionData(
                         sendTime = CrossPlatform.timestamp.from(1),
-                        startTransactionId = transactionId
+                        startTransactionId = transactionId.toString()
                     )
             )
 
@@ -223,7 +223,7 @@ class TransitionTest {
                 wmData =
                     WmTransitionData(
                         sendTime = CrossPlatform.timestamp.from(1),
-                        startTransactionId = transactionId
+                        startTransactionId = transactionId.toString()
                     )
             )
 
@@ -262,7 +262,7 @@ class TransitionTest {
                 wmData =
                     WmTransitionData(
                         sendTime = CrossPlatform.timestamp.from(1),
-                        finishTransactionId = transactionId
+                        finishTransactionId = transactionId.toString()
                     )
             )
 
@@ -301,7 +301,7 @@ class TransitionTest {
                 wmData =
                     WmTransitionData(
                         sendTime = CrossPlatform.timestamp.from(1),
-                        finishTransactionId = transactionId
+                        finishTransactionId = transactionId.toString()
                     )
             )
 
@@ -340,7 +340,7 @@ class TransitionTest {
                 wmData =
                     WmTransitionData(
                         sendTime = CrossPlatform.timestamp.from(1),
-                        finishTransactionId = transactionId
+                        finishTransactionId = transactionId.toString()
                     )
             )
 

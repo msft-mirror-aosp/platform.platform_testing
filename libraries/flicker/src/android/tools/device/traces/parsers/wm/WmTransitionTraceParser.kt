@@ -116,9 +116,11 @@ class WmTransitionTraceParser :
                         if (entry.finishTimeNs == 0L) null
                         else CrossPlatform.timestamp.from(elapsedNanos = entry.finishTimeNs),
                     startTransactionId =
-                        if (entry.startTransactionId == 0L) null else entry.startTransactionId,
+                        if (entry.startTransactionId == 0L) null
+                        else entry.startTransactionId.toString(),
                     finishTransactionId =
-                        if (entry.finishTransactionId == 0L) null else entry.finishTransactionId,
+                        if (entry.finishTransactionId == 0L) null
+                        else entry.finishTransactionId.toString(),
                     type = if (entry.type == 0) null else TransitionType.fromInt(entry.type),
                     changes = changes,
                 ),

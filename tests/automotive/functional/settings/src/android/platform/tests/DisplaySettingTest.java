@@ -26,12 +26,9 @@ import org.junit.Test;
 
 public class DisplaySettingTest {
 
-    private HelperAccessor<IAutoSettingHelper> mSettingHelper;
+    private final HelperAccessor<IAutoSettingHelper> mSettingHelper;
 
-    private static final String SCREEN_BRIGHTNESS = "screen_brightness";
-    private static final int STARTING_SCREEN_BRIGHTNESS_VALUE = 10;
-
-    public DisplaySettingTest() throws Exception {
+    public DisplaySettingTest() {
         mSettingHelper = new HelperAccessor<>(IAutoSettingHelper.class);
     }
 
@@ -41,19 +38,19 @@ public class DisplaySettingTest {
         assertTrue(
                 "Display Setting did not open",
                 mSettingHelper.get().checkMenuExists("Brightness level"));
-        mSettingHelper.get().setValue(SCREEN_BRIGHTNESS, STARTING_SCREEN_BRIGHTNESS_VALUE);
+
+        int lowBrightness = mSettingHelper.get().setBrightness(0.1f);
 
         // Increase the screen brightness
-        mSettingHelper.get().changeSeekbarLevel(0, IAutoSettingHelper.ChangeType.INCREASE);
+        int highBrightness = mSettingHelper.get().setBrightness(0.9f);
 
         // Verify that the screen brightness has changed.
-        int newBrightnessLevel = mSettingHelper.get().getValue(SCREEN_BRIGHTNESS);
         assertTrue(
                 "Brightness was not increased (from "
-                        + STARTING_SCREEN_BRIGHTNESS_VALUE
+                        + lowBrightness
                         + " to "
-                        + newBrightnessLevel
+                        + highBrightness
                         + ")",
-                newBrightnessLevel > STARTING_SCREEN_BRIGHTNESS_VALUE);
+                lowBrightness < highBrightness);
     }
 }
