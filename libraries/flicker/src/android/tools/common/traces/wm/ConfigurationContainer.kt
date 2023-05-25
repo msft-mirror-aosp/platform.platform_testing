@@ -17,8 +17,10 @@
 package android.tools.common.traces.wm
 
 import android.tools.common.withCache
+import kotlin.js.JsExport
 import kotlin.js.JsName
 
+@JsExport
 /** {@inheritDoc} */
 class ConfigurationContainer
 private constructor(

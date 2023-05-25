@@ -31,16 +31,16 @@ import kotlin.js.JsName
  */
 @JsExport
 class WindowState(
-    @JsName("attributes") val attributes: WindowLayoutParams,
+    val attributes: WindowLayoutParams,
     @JsName("displayId") val displayId: Int,
     @JsName("stackId") val stackId: Int,
     @JsName("layer") val layer: Int,
-    @JsName("isSurfaceShown") val isSurfaceShown: Boolean,
-    @JsName("windowType") val windowType: Int,
-    @JsName("requestedSize") val requestedSize: Size,
-    @JsName("surfacePosition") val surfacePosition: Rect?,
+    val isSurfaceShown: Boolean,
+    val windowType: Int,
+    val requestedSize: Size,
+    val surfacePosition: Rect?,
     @JsName("frame") val frame: Rect,
-    @JsName("containingFrame") val containingFrame: Rect,
+    val containingFrame: Rect,
     val parentFrame: Rect,
     val contentFrame: Rect,
     val contentInsets: Rect,
