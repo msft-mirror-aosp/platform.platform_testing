@@ -19,7 +19,7 @@ package android.tools.device.flicker.rules
 import android.app.Instrumentation
 import android.tools.common.CrossPlatform
 import android.tools.common.FLICKER_TAG
-import android.tools.common.datatypes.component.ComponentNameMatcher
+import android.tools.common.traces.component.ComponentNameMatcher
 import android.tools.device.apphelpers.StandardAppHelper
 import android.tools.device.traces.parsers.WindowManagerStateHelper
 import androidx.test.platform.app.InstrumentationRegistry
@@ -33,6 +33,7 @@ import org.junit.runner.Description
  * @param wmHelper WM/SF synchronization helper
  * @param appHelper App to launch
  * @param clearCacheAfterParsing If the caching used while parsing the proto should be
+ *
  * ```
  *                               cleared or remain in memory
  * ```

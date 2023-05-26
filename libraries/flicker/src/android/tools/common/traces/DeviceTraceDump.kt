@@ -21,7 +21,6 @@ import android.tools.common.traces.surfaceflinger.LayersTrace
 import android.tools.common.traces.surfaceflinger.TransactionsTrace
 import android.tools.common.traces.wm.TransitionsTrace
 import android.tools.common.traces.wm.WindowManagerTrace
-import kotlin.js.JsName
 
 /**
  * Represents a state dump containing the [WindowManagerTrace] and the [LayersTrace] both parsed and
@@ -34,11 +33,11 @@ import kotlin.js.JsName
  * @param eventLog Parsed [EventLog]
  */
 class DeviceTraceDump(
-    @JsName("wmTrace") val wmTrace: WindowManagerTrace?,
-    @JsName("layersTrace") val layersTrace: LayersTrace?,
-    @JsName("transactionsTrace") val transactionsTrace: TransactionsTrace? = null,
-    @JsName("transitionsTrace") val transitionsTrace: TransitionsTrace? = null,
-    @JsName("eventLog") val eventLog: EventLog? = null,
+    val wmTrace: WindowManagerTrace?,
+    val layersTrace: LayersTrace?,
+    val transactionsTrace: TransactionsTrace? = null,
+    val transitionsTrace: TransitionsTrace? = null,
+    val eventLog: EventLog? = null,
 ) {
     /** A deviceTraceDump is considered valid if at least one of the layers/wm traces is non-null */
     val isValid: Boolean

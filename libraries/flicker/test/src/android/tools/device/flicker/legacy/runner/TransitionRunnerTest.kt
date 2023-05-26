@@ -19,15 +19,13 @@ package android.tools.device.flicker.legacy.runner
 import android.annotation.SuppressLint
 import android.app.Instrumentation
 import android.os.SystemClock
-import android.tools.InitRule
+import android.tools.CleanFlickerEnvironmentRule
 import android.tools.TEST_SCENARIO
 import android.tools.assertExceptionMessage
 import android.tools.common.io.RunStatus
 import android.tools.createMockedFlicker
 import android.tools.device.flicker.legacy.IFlickerTestData
-import android.tools.device.traces.DEFAULT_TRACE_CONFIG
-import android.tools.device.traces.executeShellCommand
-import android.tools.device.traces.getDefaultFlickerOutputDir
+import android.tools.device.traces.TRACE_CONFIG_REQUIRE_CHANGES
 import android.tools.device.traces.io.ResultReader
 import android.tools.device.traces.io.ResultWriter
 import android.tools.device.traces.monitors.ITransitionMonitor
@@ -35,9 +33,9 @@ import android.view.WindowManagerGlobal
 import androidx.test.platform.app.InstrumentationRegistry
 import com.google.common.truth.Truth
 import org.junit.After
-import org.junit.Before
 import org.junit.ClassRule
 import org.junit.FixMethodOrder
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runners.MethodSorters
 
@@ -61,12 +59,6 @@ class TransitionRunnerTest {
     }
     private val throwError: IFlickerTestData.() -> Unit = { error(Consts.FAILURE) }
 
-    @Before
-    fun setup() {
-        executionOrder.clear()
-        executeShellCommand("rm -rf ${getDefaultFlickerOutputDir()}")
-    }
-
     @After
     fun assertTracingStopped() {
         val windowManager = WindowManagerGlobal.getWindowManagerService()
@@ -88,7 +80,7 @@ class TransitionRunnerTest {
                 extraMonitor = dummyMonitor
             )
         val result = runner.execute(mockedFlicker, Consts.description(this))
-        val reader = ResultReader(result, DEFAULT_TRACE_CONFIG)
+        val reader = ResultReader(result, TRACE_CONFIG_REQUIRE_CHANGES)
 
         validateExecutionOrder(hasTransition = true)
         dummyMonitor.validate()
@@ -109,7 +101,7 @@ class TransitionRunnerTest {
                 extraMonitor = dummyMonitor
             )
         val result = runner.execute(mockedFlicker, Consts.description(this))
-        val reader = ResultReader(result, DEFAULT_TRACE_CONFIG)
+        val reader = ResultReader(result, TRACE_CONFIG_REQUIRE_CHANGES)
 
         validateExecutionOrder(hasTransition = false)
         dummyMonitor.validate()
@@ -130,7 +122,7 @@ class TransitionRunnerTest {
                 extraMonitor = dummyMonitor
             )
         val result = runner.execute(mockedFlicker, Consts.description(this))
-        val reader = ResultReader(result, DEFAULT_TRACE_CONFIG)
+        val reader = ResultReader(result, TRACE_CONFIG_REQUIRE_CHANGES)
 
         validateExecutionOrder(hasTransition = false)
         dummyMonitor.validate()
@@ -151,7 +143,7 @@ class TransitionRunnerTest {
                 extraMonitor = dummyMonitor
             )
         val result = runner.execute(mockedFlicker, Consts.description(this))
-        val reader = ResultReader(result, DEFAULT_TRACE_CONFIG)
+        val reader = ResultReader(result, TRACE_CONFIG_REQUIRE_CHANGES)
 
         validateExecutionOrder(hasTransition = false)
         dummyMonitor.validate()
@@ -172,7 +164,7 @@ class TransitionRunnerTest {
                 extraMonitor = dummyMonitor
             )
         val result = runner.execute(mockedFlicker, Consts.description(this))
-        val reader = ResultReader(result, DEFAULT_TRACE_CONFIG)
+        val reader = ResultReader(result, TRACE_CONFIG_REQUIRE_CHANGES)
 
         validateExecutionOrder(hasTransition = true)
         dummyMonitor.validate()
@@ -225,6 +217,6 @@ class TransitionRunnerTest {
     companion object {
         private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
 
-        @ClassRule @JvmField val initRule = InitRule()
+        @Rule @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
     }
 }

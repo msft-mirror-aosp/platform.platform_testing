@@ -20,8 +20,9 @@ import android.app.Instrumentation;
 import android.platform.helpers.ScrollUtility.ScrollActions;
 import android.platform.helpers.ScrollUtility.ScrollDirection;
 import android.platform.helpers.exceptions.UnknownUiException;
-import android.support.test.uiautomator.BySelector;
-import android.support.test.uiautomator.UiObject2;
+
+import androidx.test.uiautomator.BySelector;
+import androidx.test.uiautomator.UiObject2;
 
 public class ContactDetailsHelperImpl extends AbstractStandardAppHelper
         implements IAutoDialContactDetailsHelper {
@@ -56,7 +57,14 @@ public class ContactDetailsHelperImpl extends AbstractStandardAppHelper
     /** {@inheritDoc} */
     @Override
     public void dismissInitialDialogs() {
-        // Nothing to dismiss
+        UiObject2 dialogBox =
+                getSpectatioUiUtil()
+                        .findUiObject(
+                                getUiElementFromConfig(
+                                        AutomotiveConfigConstants.CONTACTS_DIALOG_BOX));
+        if (dialogBox != null) {
+            executeWorkflow(AutomotiveConfigConstants.APPS_INITIAL_DIALOGS);
+        }
     }
 
     /** {@inheritDoc} */

@@ -45,7 +45,9 @@ data class FaasData(
                             scenarioInstance.associatedTransition.changes.joinToString(
                                 "\n  -",
                                 "\n  -"
-                            ) { "${it.transitMode} ${it.layerId}" }
+                            ) {
+                                "${it.transitMode} ${it.layerId}"
+                            }
                         )
                     )
                 }

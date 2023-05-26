@@ -23,10 +23,13 @@ import kotlin.js.JsName
 
 /**
  * Representation of a matrix 3x3 used for layer transforms
+ *
  * ```
  *          |dsdx dsdy  tx|
  * ```
+ *
  * matrix = |dtdx dtdy ty|
+ *
  * ```
  *          |0    0     1 |
  * ```

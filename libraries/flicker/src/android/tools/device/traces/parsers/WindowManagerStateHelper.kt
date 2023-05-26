@@ -24,17 +24,17 @@ import android.os.Trace
 import android.tools.common.CrossPlatform
 import android.tools.common.Rotation
 import android.tools.common.datatypes.Region
-import android.tools.common.datatypes.component.ComponentNameMatcher
-import android.tools.common.datatypes.component.ComponentNameMatcher.Companion.IME
-import android.tools.common.datatypes.component.ComponentNameMatcher.Companion.LAUNCHER
-import android.tools.common.datatypes.component.ComponentNameMatcher.Companion.SNAPSHOT
-import android.tools.common.datatypes.component.ComponentNameMatcher.Companion.SPLASH_SCREEN
-import android.tools.common.datatypes.component.ComponentNameMatcher.Companion.SPLIT_DIVIDER
-import android.tools.common.datatypes.component.IComponentMatcher
 import android.tools.common.traces.Condition
 import android.tools.common.traces.ConditionsFactory
 import android.tools.common.traces.DeviceStateDump
 import android.tools.common.traces.WaitCondition
+import android.tools.common.traces.component.ComponentNameMatcher
+import android.tools.common.traces.component.ComponentNameMatcher.Companion.IME
+import android.tools.common.traces.component.ComponentNameMatcher.Companion.LAUNCHER
+import android.tools.common.traces.component.ComponentNameMatcher.Companion.SNAPSHOT
+import android.tools.common.traces.component.ComponentNameMatcher.Companion.SPLASH_SCREEN
+import android.tools.common.traces.component.ComponentNameMatcher.Companion.SPLIT_DIVIDER
+import android.tools.common.traces.component.IComponentMatcher
 import android.tools.common.traces.surfaceflinger.LayerTraceEntry
 import android.tools.common.traces.surfaceflinger.LayersTrace
 import android.tools.common.traces.wm.Activity
@@ -59,9 +59,9 @@ constructor(
         getCurrentStateDump(clearCacheAfterParsing = clearCacheAfterParsing)
     },
     /** Number of attempts to satisfy a wait condition */
-    private val numRetries: Int = WaitCondition.DEFAULT_RETRY_LIMIT,
+    private val numRetries: Int = DEFAULT_RETRY_LIMIT,
     /** Interval between wait for state dumps during wait conditions */
-    private val retryIntervalMs: Long = WaitCondition.DEFAULT_RETRY_INTERVAL_MS
+    private val retryIntervalMs: Long = DEFAULT_RETRY_INTERVAL_MS
 ) {
     private var internalState: DeviceStateDump? = null
 
@@ -81,10 +81,9 @@ constructor(
     }
 
     /**
-     * @return a [WindowState] from the current device state matching [componentMatcher], or null
-     * otherwise
-     *
      * @param componentMatcher Components to search
+     * @return a [WindowState] from the current device state matching [componentMatcher], or null
+     *   otherwise
      */
     fun getWindow(componentMatcher: IComponentMatcher): WindowState? {
         return this.currentState.wmState.windowStates.firstOrNull {
@@ -93,9 +92,8 @@ constructor(
     }
 
     /**
-     * @return The frame [Region] a [WindowState] matching [componentMatcher]
-     *
      * @param componentMatcher Components to search
+     * @return The frame [Region] a [WindowState] matching [componentMatcher]
      */
     fun getWindowRegion(componentMatcher: IComponentMatcher): Region =
         getWindow(componentMatcher)?.frameRegion ?: Region.EMPTY
@@ -236,7 +234,9 @@ constructor(
             add(
                 Condition(
                     "state of ${componentMatcher.toActivityIdentifier()} to be $activityState"
-                ) { it.wmState.hasActivityState(componentMatcher, activityState) }
+                ) {
+                    it.wmState.hasActivityState(componentMatcher, activityState)
+                }
             )
 
         /**
@@ -333,7 +333,6 @@ constructor(
 
         /**
          * Waits until a window is in PIP mode. That is:
-         *
          * - wait until a window is pinned ([WindowManagerState.pinnedWindows])
          * - no layers animating
          * - and [ComponentNameMatcher.PIP_CONTENT_OVERLAY] is no longer visible
@@ -346,7 +345,6 @@ constructor(
 
         /**
          * Waits until a window is no longer in PIP mode. That is:
-         *
          * - wait until there are no pinned ([WindowManagerState.pinnedWindows])
          * - no layers animating
          * - and [ComponentNameMatcher.PIP_CONTENT_OVERLAY] is no longer visible
@@ -400,6 +398,12 @@ constructor(
     }
 
     companion object {
+        // TODO(b/112837428): Implement a incremental retry policy to reduce the unnecessary
+        // constant time, currently keep the default as 5*1s because most of the original code
+        // uses it, and some tests might be sensitive to the waiting interval.
+        private const val DEFAULT_RETRY_LIMIT = 50
+        private const val DEFAULT_RETRY_INTERVAL_MS = 100L
+
         /** @return true if it should wait for some activities to become visible. */
         private fun shouldWaitForActivities(
             state: DeviceStateDump,

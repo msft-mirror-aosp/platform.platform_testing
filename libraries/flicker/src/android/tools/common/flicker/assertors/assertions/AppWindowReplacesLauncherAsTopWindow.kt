@@ -16,17 +16,17 @@
 
 package android.tools.common.flicker.assertors.assertions
 
-import android.tools.common.datatypes.component.ComponentNameMatcher
 import android.tools.common.flicker.IScenarioInstance
 import android.tools.common.flicker.assertors.ComponentTemplate
 import android.tools.common.flicker.assertors.Components
 import android.tools.common.flicker.subject.wm.WindowManagerTraceSubject
+import android.tools.common.traces.component.ComponentNameMatcher
 
 /**
  * Checks that [Components.LAUNCHER] is the top visible app window at the start of the transition
  * and that it is replaced by [component] during the transition
  */
-class AppWindowReplacesLauncherAsTopWindow(component: ComponentTemplate) :
+class AppWindowReplacesLauncherAsTopWindow(private val component: ComponentTemplate) :
     AssertionTemplateWithComponent(component) {
     /** {@inheritDoc} */
     override fun doEvaluate(

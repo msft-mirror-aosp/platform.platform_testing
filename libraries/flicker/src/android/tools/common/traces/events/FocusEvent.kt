@@ -17,6 +17,7 @@
 package android.tools.common.traces.events
 
 import android.tools.common.Timestamp
+import kotlin.js.JsExport
 
 /**
  * An Event from the [EventLog] representing a window focus change or request.
@@ -27,10 +28,11 @@ import android.tools.common.Timestamp
  * @param reason The reason for the focus event.
  * @param processId The process ID which wrote the log entry
  * @param uid The UID which wrote the log entry, special UIDs are strings instead of numbers (e.g.
- * root)
+ *   root)
  * @param threadId The thread which wrote the log entry
  * @param tag The type tag code of the entry
  */
+@JsExport
 class FocusEvent(
     timestamp: Timestamp,
     val window: String,
@@ -46,22 +48,6 @@ class FocusEvent(
         REQUESTED
     }
 
-    constructor(
-        timestamp: Timestamp,
-        processId: Int,
-        uid: String,
-        threadId: Int,
-        data: Array<String>
-    ) : this(
-        timestamp,
-        getWindowFromData(data[0]),
-        getFocusFromData(data[0]),
-        data[1].removePrefix("reason="),
-        processId,
-        uid,
-        threadId
-    )
-
     override fun toString(): String {
         return "$timestamp: Focus ${type.name} $window Reason=$reason"
     }
@@ -71,6 +57,23 @@ class FocusEvent(
     }
 
     companion object {
+        fun from(
+            timestamp: Timestamp,
+            processId: Int,
+            uid: String,
+            threadId: Int,
+            data: Array<String>
+        ) =
+            FocusEvent(
+                timestamp,
+                getWindowFromData(data[0]),
+                getFocusFromData(data[0]),
+                data[1].removePrefix("reason="),
+                processId,
+                uid,
+                threadId
+            )
+
         private fun getWindowFromData(data: String): String {
             var expectedWhiteSpace = 2
             return data.dropWhile { !it.isWhitespace() || --expectedWhiteSpace > 0 }.drop(1)

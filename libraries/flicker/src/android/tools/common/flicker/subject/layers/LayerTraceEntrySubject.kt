@@ -16,10 +16,18 @@
 
 package android.tools.common.flicker.subject.layers
 
-import android.tools.common.datatypes.component.IComponentMatcher
+import android.tools.common.datatypes.Color
 import android.tools.common.flicker.assertions.Fact
 import android.tools.common.flicker.subject.FlickerSubject
+import android.tools.common.flicker.subject.exceptions.ExceptionMessageBuilder
+import android.tools.common.flicker.subject.exceptions.IncorrectVisibilityException
+import android.tools.common.flicker.subject.exceptions.InvalidElementException
+import android.tools.common.flicker.subject.exceptions.InvalidPropertyException
 import android.tools.common.flicker.subject.region.RegionSubject
+import android.tools.common.io.IReader
+import android.tools.common.traces.component.ComponentSplashScreenMatcher
+import android.tools.common.traces.component.IComponentMatcher
+import android.tools.common.traces.component.IComponentNameMatcher
 import android.tools.common.traces.surfaceflinger.Layer
 import android.tools.common.traces.surfaceflinger.LayerTraceEntry
 import android.tools.common.traces.surfaceflinger.LayersTrace
@@ -35,6 +43,7 @@ import android.tools.common.traces.surfaceflinger.LayersTrace
  *     [LayersTraceSubject.last]
  *     [LayersTraceSubject.entry]
  * ```
+ *
  * Alternatively, it is also possible to use [LayerTraceEntrySubject](myState).
  *
  * Example:
@@ -49,13 +58,12 @@ import android.tools.common.traces.surfaceflinger.LayersTrace
  */
 class LayerTraceEntrySubject(
     val entry: LayerTraceEntry,
+    override val reader: IReader? = null,
     val trace: LayersTrace? = null,
-    override val parent: FlickerSubject? = null
 ) : FlickerSubject(), ILayerSubject<LayerTraceEntrySubject, RegionSubject> {
     override val timestamp = entry.timestamp
-    override val selfFacts = listOf(Fact("SF State", entry))
 
-    val subjects by lazy { entry.flattenedLayers.map { LayerSubject(this, timestamp, it) } }
+    val subjects by lazy { entry.flattenedLayers.map { LayerSubject(reader, timestamp, it) } }
 
     /** Executes a custom [assertion] on the current subject */
     operator fun invoke(assertion: (LayerTraceEntry) -> Unit): LayerTraceEntrySubject = apply {
@@ -64,12 +72,12 @@ class LayerTraceEntrySubject(
 
     /** {@inheritDoc} */
     override fun isEmpty(): LayerTraceEntrySubject = apply {
-        check(entry.flattenedLayers.isEmpty()) { "SF state is empty" }
+        check { "SF state size" }.that(entry.flattenedLayers.size).isEqual(0)
     }
 
     /** {@inheritDoc} */
     override fun isNotEmpty(): LayerTraceEntrySubject = apply {
-        check(entry.flattenedLayers.isNotEmpty()) { "SF state is not empty" }
+        check { "SF state size" }.that(entry.flattenedLayers.size).isGreater(0)
     }
 
     /** See [visibleRegion] */
@@ -94,79 +102,83 @@ class LayerTraceEntrySubject(
             }
 
         if (selectedLayers.isEmpty()) {
-            val str = componentMatcher?.toLayerIdentifier() ?: "<any>"
-            fail(
-                listOf(
-                    Fact(ASSERTION_TAG, "visibleRegion($str)"),
-                    Fact("Use composition engine region", useCompositionEngineRegionOnly),
-                    Fact("Could not find layers", str)
-                )
-            )
+            val errorMsgBuilder =
+                ExceptionMessageBuilder()
+                    .forSubject(this)
+                    .forInvalidElement(
+                        componentMatcher?.toLayerIdentifier() ?: "<any>",
+                        expectElementExists = true
+                    )
+                    .addExtraDescription(
+                        Fact("Use composition engine region", useCompositionEngineRegionOnly)
+                    )
+            throw InvalidElementException(errorMsgBuilder)
         }
 
         val visibleLayers = selectedLayers.filter { it.isVisible }
         return if (useCompositionEngineRegionOnly) {
             val visibleAreas = visibleLayers.mapNotNull { it.layer.visibleRegion }.toTypedArray()
-            RegionSubject(visibleAreas, this, timestamp)
+            RegionSubject(visibleAreas, timestamp, reader)
         } else {
             val visibleAreas = visibleLayers.map { it.layer.screenBounds }.toTypedArray()
-            RegionSubject(visibleAreas, this, timestamp)
+            RegionSubject(visibleAreas, timestamp, reader)
         }
     }
 
     /** {@inheritDoc} */
     override fun contains(componentMatcher: IComponentMatcher): LayerTraceEntrySubject = apply {
-        val found = componentMatcher.layerMatchesAnyOf(entry.flattenedLayers)
-        if (!found) {
-            fail(
-                Fact(ASSERTION_TAG, "contains(${componentMatcher.toLayerIdentifier()})"),
-                Fact("Could not find", componentMatcher.toLayerIdentifier())
-            )
+        if (!componentMatcher.layerMatchesAnyOf(entry.flattenedLayers)) {
+            val errorMsgBuilder =
+                ExceptionMessageBuilder()
+                    .forSubject(this)
+                    .forInvalidElement(
+                        componentMatcher.toLayerIdentifier(),
+                        expectElementExists = true
+                    )
+            throw InvalidElementException(errorMsgBuilder)
         }
     }
 
     /** {@inheritDoc} */
     override fun notContains(componentMatcher: IComponentMatcher): LayerTraceEntrySubject = apply {
         val layers = subjects.map { it.layer }
-        val notContainsComponent =
-            componentMatcher.check(layers) { matchedLayers -> matchedLayers.isEmpty() }
+        val foundElements = componentMatcher.filterLayers(layers)
 
-        if (notContainsComponent) {
-            return@apply
+        if (foundElements.isNotEmpty()) {
+            val errorMsgBuilder =
+                ExceptionMessageBuilder()
+                    .forSubject(this)
+                    .forInvalidElement(
+                        componentMatcher.toLayerIdentifier(),
+                        expectElementExists = false
+                    )
+                    .setActual(foundElements.map { Fact("Found", it) })
+            throw InvalidElementException(errorMsgBuilder)
         }
-
-        val failedEntries = subjects.filter { componentMatcher.layerMatchesAnyOf(it.layer) }
-        val failureFacts =
-            mutableListOf(
-                Fact(ASSERTION_TAG, "notContains(${componentMatcher.toLayerIdentifier()})")
-            )
-        failedEntries.forEach { entry -> failureFacts.add(Fact("Found", entry)) }
-        failedEntries.firstOrNull()?.fail(failureFacts)
     }
 
     /** {@inheritDoc} */
     override fun isVisible(componentMatcher: IComponentMatcher): LayerTraceEntrySubject = apply {
         contains(componentMatcher)
         val layers = subjects.map { it.layer }
-        val hasVisibleSubject =
-            componentMatcher.check(layers) { matchedLayers ->
-                matchedLayers.any { layer -> layer.isVisible }
-            }
+        val matchedLayers = componentMatcher.filterLayers(layers)
+        val visibleLayers = matchedLayers.filter { it.isVisible }
 
-        if (hasVisibleSubject) {
-            return@apply
+        if (visibleLayers.isEmpty()) {
+            val failedEntries =
+                matchedLayers
+                    .filterNot { it.isVisible }
+                    .map { Fact(it.name, it.visibilityReason.joinToString()) }
+            val errorMsgBuilder =
+                ExceptionMessageBuilder()
+                    .forSubject(this)
+                    .forIncorrectVisibility(
+                        componentMatcher.toLayerIdentifier(),
+                        expectElementVisible = true
+                    )
+                    .setActual(failedEntries)
+            throw IncorrectVisibilityException(errorMsgBuilder)
         }
-
-        val matchingSubjects = subjects.filter { componentMatcher.layerMatchesAnyOf(it.layer) }
-        val failedEntries = matchingSubjects.filter { it.isInvisible }
-        val failureFacts =
-            mutableListOf(Fact(ASSERTION_TAG, "isVisible(${componentMatcher.toLayerIdentifier()})"))
-
-        failedEntries.forEach { entry ->
-            failureFacts.add(Fact("Is Invisible", entry))
-            failureFacts.addAll(entry.visibilityReason.map { Fact("Invisibility reason", it) })
-        }
-        failedEntries.firstOrNull()?.fail(failureFacts)
     }
 
     /** {@inheritDoc} */
@@ -183,64 +195,51 @@ class LayerTraceEntrySubject(
             return@apply
         }
 
-        val matchingSubjects = subjects.filter { componentMatcher.layerMatchesAnyOf(it.layer) }
-        val failedEntries = matchingSubjects.filter { it.isVisible }
-        val failureFacts =
-            mutableListOf(
-                Fact(ASSERTION_TAG, "isInvisible(${componentMatcher.toLayerIdentifier()})")
-            )
-        failureFacts.addAll(failedEntries.map { Fact("Is Visible", it) })
-        failedEntries.firstOrNull()?.fail(failureFacts)
+        val failedEntries =
+            componentMatcher
+                .filterLayers(layers)
+                .filter { it.isVisible }
+                .map { Fact("Is visible", it.name) }
+        val errorMsgBuilder =
+            ExceptionMessageBuilder()
+                .forSubject(this)
+                .forIncorrectVisibility(
+                    componentMatcher.toLayerIdentifier(),
+                    expectElementVisible = false
+                )
+                .setActual(failedEntries)
+        throw IncorrectVisibilityException(errorMsgBuilder)
     }
 
     /** {@inheritDoc} */
     override fun isSplashScreenVisibleFor(
-        componentMatcher: IComponentMatcher
+        componentMatcher: IComponentNameMatcher
     ): LayerTraceEntrySubject = apply {
-        var target: FlickerSubject? = null
-        var reason: Fact? = null
+        val splashScreenMatcher = ComponentSplashScreenMatcher(componentMatcher)
+        val matchingSubjects = subjects.filter { splashScreenMatcher.layerMatchesAnyOf(it.layer) }
+        val hasVisibleMatchingSubject = matchingSubjects.any { it.isVisible }
 
-        val matchingLayer =
-            subjects.map { it.layer }.filter { componentMatcher.layerMatchesAnyOf(it) }
-        val matchingActivityRecords = matchingLayer.mapNotNull { getActivityRecordFor(it) }
-
-        if (matchingActivityRecords.isEmpty()) {
-            fail(
-                Fact(
-                    ASSERTION_TAG,
-                    "isSplashScreenVisibleFor(${componentMatcher.toLayerIdentifier()})"
-                ),
-                Fact("Could not find Activity Record layer", componentMatcher.toLayerIdentifier())
-            )
-            return this
-        }
-
-        // Check the matched activity record layers for containing splash screens
-        for (layer in matchingActivityRecords) {
-            val splashScreenContainers = layer.children.filter { it.name.contains("Splash Screen") }
-            val splashScreenLayers =
-                splashScreenContainers.flatMap {
-                    it.children.filter { childLayer -> childLayer.name.contains("Splash Screen") }
-                }
-
-            if (splashScreenLayers.all { it.isHiddenByParent || !it.isVisible }) {
-                reason = Fact("No splash screen visible for", layer.name)
-                target = subjects.first { it.layer == layer }
-                continue
+        val errorMsgBuilder = ExceptionMessageBuilder().forSubject(this)
+        if (!hasVisibleMatchingSubject) {
+            if (matchingSubjects.isEmpty()) {
+                errorMsgBuilder.forInvalidElement(
+                    componentMatcher.toLayerIdentifier(),
+                    expectElementExists = true
+                )
+            } else {
+                errorMsgBuilder
+                    .forIncorrectVisibility(
+                        "Splash screen for ${componentMatcher.toLayerIdentifier()}",
+                        expectElementVisible = true
+                    )
+                    .setActual(
+                        matchingSubjects
+                            .filter { it.isInvisible }
+                            .map { Fact(it.name, it.visibilityReason.joinToString()) }
+                    )
             }
-            reason = null
-            target = null
-            break
-        }
 
-        reason?.run {
-            target?.fail(
-                Fact(
-                    ASSERTION_TAG,
-                    "isSplashScreenVisibleFor(${componentMatcher.toLayerIdentifier()})"
-                ),
-                reason
-            )
+            throw IncorrectVisibilityException(errorMsgBuilder)
         }
     }
 
@@ -248,27 +247,62 @@ class LayerTraceEntrySubject(
     override fun hasColor(componentMatcher: IComponentMatcher): LayerTraceEntrySubject = apply {
         contains(componentMatcher)
 
-        val hasColorLayer =
-            componentMatcher.check(subjects.map { it.layer }) {
-                it.any { layer -> layer.color.isNotEmpty }
-            }
+        val targets = componentMatcher.filterLayers(subjects.map { it.layer })
+        val hasLayerColor = targets.any { it.color.isNotEmpty }
 
-        if (!hasColorLayer) {
-            fail(Fact(ASSERTION_TAG, "hasColor(${componentMatcher.toLayerIdentifier()})"))
+        if (!hasLayerColor) {
+            val errorMsgBuilder =
+                ExceptionMessageBuilder()
+                    .forSubject(this)
+                    .forInvalidProperty("Color")
+                    .setExpected("Not empty")
+                    .setActual(targets.map { Fact(it.name, it.color) })
+            throw InvalidPropertyException(errorMsgBuilder)
         }
     }
 
     /** {@inheritDoc} */
     override fun hasNoColor(componentMatcher: IComponentMatcher): LayerTraceEntrySubject = apply {
-        val hasNoColorLayer =
-            componentMatcher.check(subjects.map { it.layer }) {
-                it.all { layer -> layer.color.isEmpty }
-            }
+        val targets = componentMatcher.filterLayers(subjects.map { it.layer })
+        val hasNoLayerColor = targets.all { it.color.isEmpty }
 
-        if (!hasNoColorLayer) {
-            fail(Fact(ASSERTION_TAG, "hasNoColor(${componentMatcher.toLayerIdentifier()})"))
+        if (!hasNoLayerColor) {
+            val errorMsgBuilder =
+                ExceptionMessageBuilder()
+                    .forSubject(this)
+                    .forInvalidProperty("Color")
+                    .setExpected(Color.EMPTY.toString())
+                    .setActual(targets.map { Fact(it.name, it.color) })
+            throw InvalidPropertyException(errorMsgBuilder)
         }
     }
+
+    /** {@inheritDoc} */
+    override fun containsAtLeastOneDisplay(): LayerTraceEntrySubject = apply {
+        check { "Displays" }.that(entry.displays.size).isGreater(0)
+    }
+
+    /** {@inheritDoc} */
+    override fun hasRoundedCorners(componentMatcher: IComponentMatcher): LayerTraceEntrySubject =
+        apply {
+            contains(componentMatcher)
+
+            val hasRoundedCornersLayer =
+                componentMatcher.check(subjects.map { it.layer }) {
+                    it.all { layer -> layer.cornerRadius > 0 }
+                }
+
+            if (!hasRoundedCornersLayer) {
+                val errorMsgBuilder =
+                    ExceptionMessageBuilder()
+                        .forSubject(this)
+                        .forInvalidProperty("RoundedCorners")
+                        .setExpected("Not 0")
+                        .setActual("0")
+                        .addExtraDescription("Filter", componentMatcher.toLayerIdentifier())
+                throw InvalidPropertyException(errorMsgBuilder)
+            }
+        }
 
     /** See [layer] */
     fun layer(componentMatcher: IComponentMatcher): LayerSubject? {
@@ -285,7 +319,6 @@ class LayerTraceEntrySubject(
      * and error if the layer doesn't exist
      *
      * @param predicate to search for a layer
-     *
      * @return [LayerSubject] that can be used to make assertions
      */
     fun layer(predicate: (Layer) -> Boolean): LayerSubject? =

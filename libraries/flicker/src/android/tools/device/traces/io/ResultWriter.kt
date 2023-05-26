@@ -21,20 +21,12 @@ import android.tools.common.IScenario
 import android.tools.common.ScenarioBuilder
 import android.tools.common.Tag
 import android.tools.common.Timestamp
-import android.tools.common.io.BUFFER_SIZE
 import android.tools.common.io.FLICKER_IO_TAG
 import android.tools.common.io.ResultArtifactDescriptor
 import android.tools.common.io.RunStatus
 import android.tools.common.io.TraceType
 import android.tools.common.io.TransitionTimeRange
-import android.tools.device.traces.deleteIfExists
-import java.io.BufferedInputStream
-import java.io.BufferedOutputStream
 import java.io.File
-import java.io.FileInputStream
-import java.io.FileOutputStream
-import java.util.zip.ZipEntry
-import java.util.zip.ZipOutputStream
 
 /** Helper class to create run result artifact files */
 open class ResultWriter {
@@ -86,59 +78,28 @@ open class ResultWriter {
         files[fileDescriptor] = artifact
     }
 
-    private fun addFile(zipOutputStream: ZipOutputStream, artifact: File, nameInArchive: String) {
-        CrossPlatform.log.v(FLICKER_IO_TAG, "Adding $artifact with name $nameInArchive to zip")
-        val fi = FileInputStream(artifact)
-        val inputStream = BufferedInputStream(fi, BUFFER_SIZE)
-        inputStream.use {
-            val entry = ZipEntry(nameInArchive)
-            zipOutputStream.putNextEntry(entry)
-            val data = ByteArray(BUFFER_SIZE)
-            var count: Int = it.read(data, 0, BUFFER_SIZE)
-            while (count != -1) {
-                zipOutputStream.write(data, 0, count)
-                count = it.read(data, 0, BUFFER_SIZE)
-            }
-        }
-        zipOutputStream.closeEntry()
-        artifact.deleteIfExists()
-    }
-
-    private fun createZipFile(file: File): ZipOutputStream {
-        return ZipOutputStream(BufferedOutputStream(FileOutputStream(file), BUFFER_SIZE))
-    }
-
     /** @return writes the result artifact to disk and returns it */
     open fun write(): IResultData {
         return CrossPlatform.log.withTracing("write") {
             val outputDir = outputDir
             requireNotNull(outputDir) { "Output dir not configured" }
             require(!scenario.isEmpty) { "Scenario shouldn't be empty" }
-            // Ensure output directory exists
-            outputDir.mkdirs()
 
             if (runStatus == RunStatus.UNDEFINED) {
                 CrossPlatform.log.w(FLICKER_IO_TAG, "Writing result with $runStatus run status")
             }
 
-            val newFileName = "${runStatus.prefix}_$scenario.zip"
-            val dstFile = outputDir.resolve(newFileName)
-            CrossPlatform.log.d(FLICKER_IO_TAG, "Writing artifact file $dstFile")
-            createZipFile(dstFile).use { zipOutputStream ->
-                files.forEach { (descriptor, artifact) ->
-                    addFile(
-                        zipOutputStream,
-                        artifact,
-                        nameInArchive = descriptor.fileNameInArtifact
-                    )
-                }
-            }
-
+            val artifact =
+                ArtifactBuilder()
+                    .withScenario(scenario)
+                    .withOutputDir(outputDir)
+                    .withStatus(runStatus)
+                    .withFiles(files)
+                    .build()
             ResultData(
-                dstFile,
+                artifact,
                 TransitionTimeRange(transitionStartTime, transitionEndTime),
-                executionError,
-                runStatus
+                executionError
             )
         }
     }

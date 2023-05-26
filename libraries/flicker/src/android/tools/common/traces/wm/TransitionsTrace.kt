@@ -18,12 +18,12 @@ package android.tools.common.traces.wm
 
 import android.tools.common.ITrace
 import android.tools.common.Timestamp
+import kotlin.js.JsExport
 import kotlin.js.JsName
 import kotlin.text.StringBuilder
 
+@JsExport
 data class TransitionsTrace(override val entries: Array<Transition>) : ITrace<Transition> {
-    constructor(entry: Transition) : this(arrayOf(entry))
-
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is TransitionsTrace) return false
@@ -52,6 +52,26 @@ data class TransitionsTrace(override val entries: Array<Transition>) : ITrace<Tr
         return sb.toString()
     }
 
+    @JsName("asCompressed")
+    fun asCompressed(): TransitionsTrace {
+        val transitionById = mutableMapOf<Int, Transition>()
+
+        for (transition in this.entries) {
+            require(transition.id != 0) { "Requires non-null transition id" }
+            val accumulatedTransition = transitionById[transition.id]
+            if (accumulatedTransition == null) {
+                transitionById[transition.id] = transition
+            } else {
+                transitionById[transition.id] = accumulatedTransition.merge(transition)
+            }
+        }
+
+        val sortedCompressedTransitions =
+            transitionById.values.sortedWith(compareBy { it.timestamp })
+
+        return TransitionsTrace(sortedCompressedTransitions.toTypedArray())
+    }
+
     override fun slice(startTimestamp: Timestamp, endTimestamp: Timestamp): TransitionsTrace {
         require(startTimestamp.hasElapsedTimestamp && endTimestamp.hasElapsedTimestamp)
         return sliceElapsed(startTimestamp.elapsedNanos, endTimestamp.elapsedNanos)
@@ -61,7 +81,7 @@ data class TransitionsTrace(override val entries: Array<Transition>) : ITrace<Tr
         return TransitionsTrace(
             this.entries
                 .dropWhile { it.sendTime.elapsedNanos < from }
-                .dropLastWhile { it.start.elapsedNanos > to }
+                .dropLastWhile { it.createTime.elapsedNanos > to }
                 .toTypedArray()
         )
     }

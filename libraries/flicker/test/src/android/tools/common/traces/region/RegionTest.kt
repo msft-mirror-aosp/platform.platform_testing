@@ -16,7 +16,7 @@
 
 package android.tools.common.traces.region
 
-import android.tools.InitRule
+import android.tools.CleanFlickerEnvironmentRule
 import android.tools.common.datatypes.Rect
 import android.tools.common.datatypes.Region
 import kotlin.random.Random
@@ -1785,6 +1785,6 @@ class RegionTest {
     }
 
     companion object {
-        @ClassRule @JvmField val initRule = InitRule()
+        @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
     }
 }

@@ -19,6 +19,7 @@
 package android.tools.device.traces
 
 import android.app.UiAutomation
+import android.os.IBinder
 import android.os.ParcelFileDescriptor
 import android.tools.common.CrossPlatform
 import android.tools.common.MILLISECOND_AS_NANOSECONDS
@@ -53,9 +54,33 @@ fun executeShellCommand(cmd: String): ByteArray {
     }
 }
 
-private fun getCurrentWindowManagerState() = executeShellCommand("dumpsys window --proto")
+private fun doBinderDump(name: String): ByteArray {
+    // create an fd for the binder transaction
+    val pipe = ParcelFileDescriptor.createPipe()
+    val source = pipe[0]
+    val sink = pipe[1]
 
-private fun getCurrentLayersState() = executeShellCommand("dumpsys SurfaceFlinger --proto")
+    // ServiceManager isn't accessible from tests, so use reflection
+    // this should return an IBinder
+    val service =
+        Class.forName("android.os.ServiceManager")
+            .getMethod("getServiceOrThrow", String::class.java)
+            .invoke(null, name) as IBinder?
+
+    // this is equal to ServiceManager::PROTO_ARG
+    val args = arrayOf("--proto")
+    service?.dump(sink.fileDescriptor, args)
+    sink.close()
+
+    // convert the FD into a ByteArray
+    ParcelFileDescriptor.AutoCloseInputStream(source).use { inputStream ->
+        return inputStream.readBytes()
+    }
+}
+
+private fun getCurrentWindowManagerState() = doBinderDump("window")
+
+private fun getCurrentLayersState() = doBinderDump("SurfaceFlinger")
 
 /**
  * Gets the current device state dump containing the [WindowManagerState] (optional) and the
@@ -98,6 +123,7 @@ fun getCurrentState(
  *
  * @param dumpTypes Flags determining which types of traces should be included in the dump
  * @param clearCacheAfterParsing If the caching used while parsing the proto should be
+ *
  * ```
  *                               cleared or remain in memory
  * ```

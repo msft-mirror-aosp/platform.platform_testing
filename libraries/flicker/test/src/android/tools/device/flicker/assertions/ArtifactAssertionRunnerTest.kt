@@ -16,7 +16,7 @@
 
 package android.tools.device.flicker.assertions
 
-import android.tools.InitRule
+import android.tools.CleanFlickerEnvironmentRule
 import android.tools.assertExceptionMessage
 import android.tools.common.Tag
 import android.tools.common.assertions.Consts
@@ -139,6 +139,6 @@ class ArtifactAssertionRunnerTest {
             return writer.write()
         }
 
-        @ClassRule @JvmField val initRule = InitRule()
+        @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
     }
 }

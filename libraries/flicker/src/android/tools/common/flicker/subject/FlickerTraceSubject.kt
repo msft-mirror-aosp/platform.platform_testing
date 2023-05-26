@@ -18,18 +18,13 @@ package android.tools.common.flicker.subject
 
 import android.tools.common.CrossPlatform
 import android.tools.common.flicker.assertions.AssertionsChecker
-import android.tools.common.flicker.assertions.Fact
+import android.tools.common.flicker.subject.exceptions.ExceptionMessageBuilder
+import android.tools.common.flicker.subject.exceptions.SubjectAssertionError
 
 /** Base subject for flicker trace assertions */
 abstract class FlickerTraceSubject<EntrySubject : FlickerSubject> : FlickerSubject() {
     override val timestamp
         get() = subjects.firstOrNull()?.timestamp ?: CrossPlatform.timestamp.empty()
-    override val selfFacts by lazy {
-        listOf(
-            Fact("Trace start", subjects.firstOrNull()?.timestamp),
-            Fact("Trace end", subjects.lastOrNull()?.timestamp)
-        )
-    }
 
     protected val assertionsChecker = AssertionsChecker<EntrySubject>()
     private var newAssertionBlock = true
@@ -144,16 +139,22 @@ abstract class FlickerTraceSubject<EntrySubject : FlickerSubject> : FlickerSubje
             lastNew.removeAll(currentVisible)
 
             if (lastNew.isNotEmpty()) {
-                val prevEntry = subjects[index]
-                prevEntry.fail("$lastNew is not visible for 2 entries")
+                val errorMsgBuilder =
+                    ExceptionMessageBuilder()
+                        .forSubject(subjects[index])
+                        .setMessage("$lastNew is not visible for 2 entries")
+                throw SubjectAssertionError(errorMsgBuilder)
             }
             lastNew.addAll(newVisible)
             lastVisible = currentVisible
         }
 
         if (lastNew.isNotEmpty()) {
-            val lastEntry = subjects.last()
-            lastEntry.fail("$lastNew is not visible for 2 entries")
+            val errorMsgBuilder =
+                ExceptionMessageBuilder()
+                    .forSubject(subjects.last())
+                    .setMessage("$lastNew is not visible for 2 entries")
+            throw SubjectAssertionError(errorMsgBuilder)
         }
     }
 

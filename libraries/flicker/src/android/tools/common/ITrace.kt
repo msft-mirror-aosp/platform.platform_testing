@@ -37,10 +37,12 @@ interface ITrace<Entry : ITraceEntry> {
 
     /**
      * @return the entry that is "active' at [timestamp]
+     *
      * ```
      *         (the entry at [timestamp] or the one before it if no entry exists at [timestamp])
      * @throws if
      * ```
+     *
      * the provided [timestamp] is before all entries in the trace
      */
     @JsName("getEntryAt")

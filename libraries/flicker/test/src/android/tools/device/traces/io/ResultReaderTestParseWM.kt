@@ -22,13 +22,12 @@ import android.tools.common.io.TraceType
 
 /** Tests for [ResultReader] parsing [TraceType.WM] */
 class ResultReaderTestParseWM : BaseResultReaderTestParseTrace() {
-    override val assetFile = TestTraces.WMTrace.FILE
+    override val assetFiles = mapOf(TraceType.WM to TestTraces.WMTrace.FILE)
     override val traceName = "WM trace"
     override val startTimeTrace = TestTraces.WMTrace.START_TIME
     override val endTimeTrace = TestTraces.WMTrace.END_TIME
     override val validSliceTime = TestTraces.WMTrace.SLICE_TIME
     override val invalidSliceTime = startTimeTrace
-    override val traceType = TraceType.WM
     override val expectedSlicedTraceSize: Int = 2
 
     override fun doParse(reader: ResultReader) = reader.readWmTrace()

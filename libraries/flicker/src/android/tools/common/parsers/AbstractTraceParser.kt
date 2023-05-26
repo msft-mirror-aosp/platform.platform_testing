@@ -32,7 +32,7 @@ abstract class AbstractTraceParser<
 
     open fun shouldParseEntry(entry: InputTypeEntry) = true
 
-    override fun parse(bytes: ByteArray, clearCache: Boolean): OutputTypeTrace {
+    final override fun parse(bytes: ByteArray, clearCache: Boolean): OutputTypeTrace {
         return parse(
             bytes,
             from = CrossPlatform.timestamp.min(),
@@ -42,7 +42,7 @@ abstract class AbstractTraceParser<
         )
     }
 
-    override fun parse(input: InputTypeTrace, clearCache: Boolean): OutputTypeTrace {
+    final override fun parse(input: InputTypeTrace, clearCache: Boolean): OutputTypeTrace {
         return parse(
             input,
             from = CrossPlatform.timestamp.min(),
@@ -52,7 +52,7 @@ abstract class AbstractTraceParser<
         )
     }
 
-    override fun doParse(input: InputTypeTrace): OutputTypeTrace {
+    final override fun doParse(input: InputTypeTrace): OutputTypeTrace {
         return doParse(
             input,
             from = CrossPlatform.timestamp.min(),
@@ -69,7 +69,7 @@ abstract class AbstractTraceParser<
      * @param to Final timestamp to be parsed
      * @param addInitialEntry If the last entry smaller than [from] should be included as well
      */
-    private fun doParse(
+    protected open fun doParse(
         input: InputTypeTrace,
         from: Timestamp,
         to: Timestamp,

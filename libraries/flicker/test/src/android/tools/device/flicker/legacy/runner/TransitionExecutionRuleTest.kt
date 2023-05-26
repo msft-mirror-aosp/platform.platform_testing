@@ -19,16 +19,16 @@ package android.tools.device.flicker.legacy.runner
 import android.annotation.SuppressLint
 import android.app.Instrumentation
 import android.os.SystemClock
-import android.tools.InitRule
+import android.tools.CleanFlickerEnvironmentRule
 import android.tools.TEST_SCENARIO
 import android.tools.assertExceptionMessage
-import android.tools.assertExceptionMessageCause
 import android.tools.assertThrows
 import android.tools.device.flicker.legacy.AbstractFlickerTestData
 import android.tools.device.flicker.legacy.IFlickerTestData
-import android.tools.device.traces.DEFAULT_TRACE_CONFIG
+import android.tools.device.traces.TRACE_CONFIG_REQUIRE_CHANGES
 import android.tools.device.traces.io.ResultReader
 import android.tools.device.traces.io.ResultWriter
+import android.tools.device.traces.monitors.TraceMonitor
 import android.tools.device.traces.parsers.WindowManagerStateHelper
 import android.tools.newTestResultWriter
 import androidx.test.platform.app.InstrumentationRegistry
@@ -36,6 +36,7 @@ import com.google.common.truth.Truth
 import org.junit.Before
 import org.junit.ClassRule
 import org.junit.FixMethodOrder
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runners.MethodSorters
 import org.mockito.Mockito
@@ -123,7 +124,7 @@ class TransitionExecutionRuleTest {
         val rule = createRule(listOf(runCreateValidTags), writer)
         rule.apply(base = null, description = Consts.description(this)).evaluate()
         val result = writer.write()
-        val reader = ResultReader(result, DEFAULT_TRACE_CONFIG)
+        val reader = ResultReader(result, TRACE_CONFIG_REQUIRE_CHANGES)
         val wmStateValidTag1 =
             reader.readWmState(VALID_TAG_1) ?: error("Couldn't parse WM state for $VALID_TAG_1")
         val wmStateValidTag2 =
@@ -193,6 +194,8 @@ class TransitionExecutionRuleTest {
         ): TransitionExecutionRule {
             val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
             val mockedFlicker = Mockito.mock(AbstractFlickerTestData::class.java)
+            val mockedMonitor = Mockito.mock(TraceMonitor::class.java)
+            Mockito.`when`(mockedFlicker.traceMonitors).thenReturn(listOf(mockedMonitor))
             return TransitionExecutionRule(
                 mockedFlicker,
                 writer,
@@ -203,6 +206,6 @@ class TransitionExecutionRuleTest {
             )
         }
 
-        @ClassRule @JvmField val initRule = InitRule()
+        @Rule @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
     }
 }

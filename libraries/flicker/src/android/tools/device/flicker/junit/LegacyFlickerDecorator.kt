@@ -17,6 +17,7 @@
 package android.tools.device.flicker.junit
 
 import android.tools.common.Scenario
+import android.tools.device.flicker.datastore.DataStore
 import org.junit.runner.Description
 import org.junit.runners.model.FrameworkMethod
 import org.junit.runners.model.Statement
@@ -24,9 +25,10 @@ import org.junit.runners.model.TestClass
 
 class LegacyFlickerDecorator(
     testClass: TestClass,
-    scenario: Scenario?,
+    val scenario: Scenario?,
+    val transitionRunner: ITransitionRunner,
     inner: IFlickerJUnitDecorator?
-) : AbstractFlickerRunnerDecorator(testClass, scenario, inner) {
+) : AbstractFlickerRunnerDecorator(testClass, inner) {
     override fun getChildDescription(method: FrameworkMethod?): Description? {
         return inner?.getChildDescription(method)
     }
@@ -38,8 +40,11 @@ class LegacyFlickerDecorator(
     override fun getMethodInvoker(method: FrameworkMethod, test: Any): Statement {
         return object : Statement() {
             override fun evaluate() {
+                requireNotNull(scenario) { "Expected to have a scenario to run" }
                 val description = getChildDescription(method)
-                doRunTransition(test, description)
+                if (!DataStore.containsResult(scenario)) {
+                    transitionRunner.runTransition(scenario, test, description)
+                }
                 inner?.getMethodInvoker(method, test)?.evaluate()
             }
         }

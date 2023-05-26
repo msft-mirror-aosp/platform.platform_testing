@@ -24,7 +24,6 @@ import android.tools.common.traces.surfaceflinger.TransactionsTrace
 import android.tools.common.traces.wm.TransitionsTrace
 import android.tools.common.traces.wm.WindowManagerState
 import android.tools.common.traces.wm.WindowManagerTrace
-import android.tools.device.flicker.isShellTransitionsEnabled
 import android.tools.device.traces.getDefaultFlickerOutputDir
 import android.tools.device.traces.monitors.ITransitionMonitor
 import android.tools.device.traces.monitors.NoTraceMonitor
@@ -32,8 +31,9 @@ import android.tools.device.traces.monitors.ScreenRecorder
 import android.tools.device.traces.monitors.events.EventLogMonitor
 import android.tools.device.traces.monitors.surfaceflinger.LayersTraceMonitor
 import android.tools.device.traces.monitors.surfaceflinger.TransactionsTraceMonitor
-import android.tools.device.traces.monitors.wm.TransitionsTraceMonitor
+import android.tools.device.traces.monitors.wm.ShellTransitionTraceMonitor
 import android.tools.device.traces.monitors.wm.WindowManagerTraceMonitor
+import android.tools.device.traces.monitors.wm.WmTransitionTraceMonitor
 import android.tools.device.traces.parsers.WindowManagerStateHelper
 import androidx.test.uiautomator.UiDevice
 import java.io.File
@@ -53,16 +53,17 @@ class FlickerBuilder(
         mutableListOf<ITransitionMonitor>().also {
             it.add(WindowManagerTraceMonitor())
             it.add(LayersTraceMonitor())
-            if (isShellTransitionsEnabled) {
-                // Transition tracing only works if shell transitions are enabled.
-                it.add(TransitionsTraceMonitor())
-            }
+            it.add(WmTransitionTraceMonitor())
+            it.add(ShellTransitionTraceMonitor())
             it.add(TransactionsTraceMonitor())
             it.add(ScreenRecorder(instrumentation.targetContext))
             it.add(EventLogMonitor())
         }
 ) {
     private var usingExistingTraces = false
+
+    /** Disable [WindowManagerTraceMonitor]. */
+    fun withoutWindowManagerTracing(): FlickerBuilder = apply { withWindowManagerTracing { null } }
 
     /**
      * Configure a [WindowManagerTraceMonitor] to obtain [WindowManagerTrace]
@@ -94,17 +95,17 @@ class FlickerBuilder(
         addMonitor(traceMonitor())
     }
 
-    /** Disable [TransitionsTraceMonitor]. */
+    /** Disable [WmTransitionTraceMonitor]. */
     fun withoutTransitionTracing(): FlickerBuilder = apply { withTransitionTracing { null } }
 
     /**
-     * Configure a [TransitionsTraceMonitor] to obtain [TransitionsTrace].
+     * Configure a [WmTransitionTraceMonitor] to obtain [TransitionsTrace].
      *
      * By default, shell transition tracing is disabled.
      */
-    fun withTransitionTracing(traceMonitor: () -> TransitionsTraceMonitor?): FlickerBuilder =
+    fun withTransitionTracing(traceMonitor: () -> WmTransitionTraceMonitor?): FlickerBuilder =
         apply {
-            traceMonitors.removeIf { it is TransitionsTraceMonitor }
+            traceMonitors.removeIf { it is WmTransitionTraceMonitor }
             addMonitor(traceMonitor())
         }
 
@@ -158,7 +159,8 @@ class FlickerBuilder(
         val wmTrace: File,
         val layersTrace: File,
         val transactions: File,
-        val transitions: File,
+        val wmTransitions: File,
+        val shellTransitions: File,
         val eventLog: File
     )
 
@@ -173,7 +175,12 @@ class FlickerBuilder(
             NoTraceMonitor { it.addTraceResult(TraceType.TRANSACTION, traceFiles.transactions) }
         )
         addMonitor(
-            NoTraceMonitor { it.addTraceResult(TraceType.TRANSITION, traceFiles.transitions) }
+            NoTraceMonitor { it.addTraceResult(TraceType.WM_TRANSITION, traceFiles.wmTransitions) }
+        )
+        addMonitor(
+            NoTraceMonitor {
+                it.addTraceResult(TraceType.SHELL_TRANSITION, traceFiles.shellTransitions)
+            }
         )
         addMonitor(NoTraceMonitor { it.addTraceResult(TraceType.EVENT_LOG, traceFiles.eventLog) })
 

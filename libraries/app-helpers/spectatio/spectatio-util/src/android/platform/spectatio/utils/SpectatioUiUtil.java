@@ -16,19 +16,21 @@
 
 package android.platform.spectatio.utils;
 
+import android.app.Instrumentation;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.os.RemoteException;
 import android.os.SystemClock;
 import android.platform.spectatio.exceptions.MissingUiElementException;
-import android.support.test.uiautomator.By;
-import android.support.test.uiautomator.BySelector;
-import android.support.test.uiautomator.Direction;
-import android.support.test.uiautomator.UiDevice;
-import android.support.test.uiautomator.UiObject2;
-import android.support.test.uiautomator.Until;
 import android.util.Log;
 import android.view.KeyEvent;
+
+import androidx.test.uiautomator.By;
+import androidx.test.uiautomator.BySelector;
+import androidx.test.uiautomator.Direction;
+import androidx.test.uiautomator.UiDevice;
+import androidx.test.uiautomator.UiObject2;
+import androidx.test.uiautomator.Until;
 
 import com.google.common.base.Strings;
 
@@ -72,6 +74,15 @@ public class SpectatioUiUtil {
             sSpectatioUiUtil = new SpectatioUiUtil(mDevice);
         }
         return sSpectatioUiUtil;
+    }
+
+    /**
+     * Initialize a UiDevice for the given instrumentation, then initialize Spectatio for that
+     * device. If Spectatio has already been initialized, return the previously initialized
+     * instance.
+     */
+    public static SpectatioUiUtil getInstance(Instrumentation instrumentation) {
+        return getInstance(UiDevice.getInstance(instrumentation));
     }
 
     /** Sets the scroll margin and wait time after the scroll */
@@ -184,6 +195,16 @@ public class SpectatioUiUtil {
         wait1Second();
     }
 
+    /**
+     * Click at a specific location in the UI, and wait one second
+     *
+     * @param location Where to click
+     */
+    public void clickAndWait(Point location) {
+        mDevice.click(location.x, location.y);
+        wait1Second();
+    }
+
     public void waitForIdle() {
         mDevice.waitForIdle();
     }
@@ -245,6 +266,19 @@ public class SpectatioUiUtil {
     public UiObject2 findUiObject(String text) {
         validateText(text, /* type= */ "Text");
         return findUiObject(By.text(text));
+    }
+
+    /**
+     * Find the UI Object in given element.
+     *
+     * @param uiObject Find the ui object(selector) in this element.
+     * @param selector Find this ui object in the given element.
+     */
+    public UiObject2 findUiObjectInGivenElement(UiObject2 uiObject, BySelector selector) {
+        validateUiObjectAndThrowIllegalArgumentException(
+                uiObject, /* action= */ "Find UI object in given element");
+        validateSelector(selector, /* action= */ "Find UI object in given element");
+        return uiObject.findObject(selector);
     }
 
     /**
@@ -775,9 +809,13 @@ public class SpectatioUiUtil {
         validateUiObjectAndThrowMissingUiElementException(
                 scrollableObject, scrollableSelector, /* action= */ "Scroll");
         if (!scrollableObject.isScrollable()) {
+            scrollableObject = scrollableObject.findObject(By.scrollable(true));
+        }
+        if ((scrollableObject == null) || !scrollableObject.isScrollable()) {
             throw new IllegalStateException(
                     String.format(
-                            "Cannot scroll; UI Object for selector %s is not scrollable.",
+                            "Cannot scroll; UI Object for selector %s is not scrollable and has no"
+                                    + " scrollable children.",
                             scrollableSelector));
         }
         return scrollableObject;

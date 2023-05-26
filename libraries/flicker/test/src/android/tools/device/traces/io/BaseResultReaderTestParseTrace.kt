@@ -16,7 +16,7 @@
 
 package android.tools.device.traces.io
 
-import android.tools.InitRule
+import android.tools.CleanFlickerEnvironmentRule
 import android.tools.TestTraces
 import android.tools.assertExceptionMessage
 import android.tools.assertThrows
@@ -25,7 +25,7 @@ import android.tools.common.ITrace
 import android.tools.common.Timestamp
 import android.tools.common.io.RunStatus
 import android.tools.common.io.TraceType
-import android.tools.device.traces.DEFAULT_TRACE_CONFIG
+import android.tools.device.traces.TRACE_CONFIG_REQUIRE_CHANGES
 import android.tools.device.traces.deleteIfExists
 import android.tools.newTestResultWriter
 import android.tools.outputFileName
@@ -37,13 +37,12 @@ import org.junit.Test
 
 /** Base class for [ResultReader] tests parsing traces */
 abstract class BaseResultReaderTestParseTrace {
-    protected abstract val assetFile: File
+    protected abstract val assetFiles: Map<TraceType, File>
     protected abstract val traceName: String
     protected abstract val startTimeTrace: Timestamp
     protected abstract val endTimeTrace: Timestamp
     protected abstract val validSliceTime: Timestamp
     protected abstract val invalidSliceTime: Timestamp
-    protected abstract val traceType: TraceType
     protected abstract val expectedSlicedTraceSize: Int
     protected open val invalidSizeMessage: String
         get() = "$traceName contained 0 entries, expected at least 2"
@@ -52,7 +51,7 @@ abstract class BaseResultReaderTestParseTrace {
     protected abstract fun getTime(traceTime: Timestamp): Long
 
     protected open fun setupWriter(writer: ResultWriter): ResultWriter {
-        writer.addTraceResult(traceType, assetFile)
+        assetFiles.forEach { (traceType, assetFile) -> writer.addTraceResult(traceType, assetFile) }
         return writer
     }
 
@@ -66,7 +65,7 @@ abstract class BaseResultReaderTestParseTrace {
         val writer = setupWriter(newTestResultWriter())
         val result = writer.write()
 
-        val reader = ResultReader(result, DEFAULT_TRACE_CONFIG)
+        val reader = ResultReader(result, TRACE_CONFIG_REQUIRE_CHANGES)
         val trace = doParse(reader) ?: error("$traceName not built")
 
         Truth.assertWithMessage(traceName).that(trace.entries).asList().isNotEmpty()
@@ -82,7 +81,7 @@ abstract class BaseResultReaderTestParseTrace {
     fun readTraceNullWhenDoesNotExist() {
         val writer = newTestResultWriter()
         val result = writer.write()
-        val reader = ResultReader(result, DEFAULT_TRACE_CONFIG)
+        val reader = ResultReader(result, TRACE_CONFIG_REQUIRE_CHANGES)
         val trace = doParse(reader)
 
         Truth.assertWithMessage(traceName).that(trace).isNull()
@@ -113,7 +112,7 @@ abstract class BaseResultReaderTestParseTrace {
             setupWriter(newTestResultWriter())
                 .setTransitionEndTime(CrossPlatform.timestamp.min())
                 .write()
-        val reader = ResultReader(result, DEFAULT_TRACE_CONFIG)
+        val reader = ResultReader(result, TRACE_CONFIG_REQUIRE_CHANGES)
         val exception =
             assertThrows<IllegalArgumentException> {
                 doParse(reader) ?: error("$traceName not built")
@@ -122,6 +121,6 @@ abstract class BaseResultReaderTestParseTrace {
     }
 
     companion object {
-        @ClassRule @JvmField val initRule = InitRule()
+        @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
     }
 }

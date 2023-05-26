@@ -18,10 +18,10 @@ package android.platform.helpers;
 
 import android.app.Instrumentation;
 import android.platform.helpers.exceptions.UnknownUiException;
-import android.support.test.uiautomator.By;
-import android.support.test.uiautomator.BySelector;
-import android.support.test.uiautomator.UiObject2;
-import android.support.test.uiautomator.Until;
+
+import androidx.test.uiautomator.By;
+import androidx.test.uiautomator.BySelector;
+import androidx.test.uiautomator.UiObject2;
 
 /** Helper class for functional test for LockScreen test */
 public class LockScreenHelperImpl extends AbstractStandardAppHelper
@@ -115,7 +115,7 @@ public class LockScreenHelperImpl extends AbstractStandardAppHelper
                     By.res(
                             getPackageFromConfig(AutomotiveConfigConstants.LOCK_SCREEN_PACKAGE),
                             resourceId);
-            UiObject2 number = mDevice.wait(Until.findObject(number_selector), DEFAULT_WAIT_TIME);
+            UiObject2 number = getSpectatioUiUtil().findUiObject(number_selector);
             number.click();
         }
     }

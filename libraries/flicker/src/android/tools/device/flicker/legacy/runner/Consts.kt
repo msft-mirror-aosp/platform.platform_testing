@@ -20,3 +20,4 @@ import android.tools.common.FLICKER_TAG
 
 internal const val FLICKER_RUNNER_TAG = "$FLICKER_TAG-Runner"
 const val EMPTY_TRANSITIONS_ERROR = "A flicker test must include transitions to run"
+const val NO_MONITORS_ERROR = "A flicker test must have some monitors to capture traces"

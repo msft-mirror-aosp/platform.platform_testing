@@ -23,7 +23,7 @@ import android.tools.common.flicker.subject.wm.WindowManagerTraceSubject
 /**
  * Checks that [component] window remains inside the display bounds throughout the whole animation
  */
-class AppWindowRemainInsideDisplayBounds(component: ComponentTemplate) :
+class AppWindowRemainInsideDisplayBounds(private val component: ComponentTemplate) :
     AssertionTemplateWithComponent(component) {
     /** {@inheritDoc} */
     override fun doEvaluate(
@@ -31,12 +31,9 @@ class AppWindowRemainInsideDisplayBounds(component: ComponentTemplate) :
         wmSubject: WindowManagerTraceSubject
     ) {
         wmSubject
+            .containsAtLeastOneDisplay()
             .invoke("appWindowRemainInsideDisplayBounds") { entry ->
-                val displays = entry.wmState.displays
-                if (displays.isEmpty()) {
-                    entry.fail("No displays found")
-                }
-                val display = entry.wmState.displays.sortedBy { it.id }.first()
+                val display = entry.wmState.displays.minByOrNull { it.id }!!
                 entry
                     .visibleRegion(component.build(scenarioInstance))
                     .coversAtMost(display.displayRect)

@@ -16,10 +16,12 @@
 
 package android.tools.device.flicker.annotation
 
+import android.tools.common.flicker.config.FaasScenarioType
+
 /**
  * Annotate your Flicker test class with this annotation to enable Flicker as a Service on the
  * transition defined in the Flicker test class. It requires shell transitions to be enabled.
  */
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.RUNTIME)
-annotation class FlickerServiceCompatible
+annotation class FlickerServiceCompatible(val expectedCujs: Array<FaasScenarioType> = [])

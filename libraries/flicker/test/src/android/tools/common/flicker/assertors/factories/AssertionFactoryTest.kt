@@ -16,7 +16,7 @@
 
 package android.tools.common.flicker.assertors.factories
 
-import android.tools.InitRule
+import android.tools.CleanFlickerEnvironmentRule
 import android.tools.common.CrossPlatform
 import android.tools.common.Rotation
 import android.tools.common.flicker.ScenarioInstance
@@ -54,12 +54,12 @@ class AssertionFactoryTest {
         Truth.assertThat(assertions.map { it.name })
             .containsExactlyElementsIn(
                 FlickerServiceConfig.getScenarioConfigFor(type = type).assertionTemplates.map {
-                    it.assertionName
+                    "$type::${it.assertionName}"
                 }
             )
     }
 
     companion object {
-        @ClassRule @JvmField val initRule = InitRule()
+        @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
     }
 }

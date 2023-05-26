@@ -16,7 +16,7 @@
 
 package android.tools.device.traces.monitors.wm
 
-import android.tools.InitRule
+import android.tools.CleanFlickerEnvironmentRule
 import android.tools.common.io.TraceType
 import android.tools.device.traces.monitors.TraceMonitorTest
 import android.tools.device.traces.monitors.withWMTracing
@@ -57,6 +57,6 @@ class WindowManagerTraceMonitorTest : TraceMonitorTest<WindowManagerTraceMonitor
     }
 
     companion object {
-        @ClassRule @JvmField val initRule = InitRule()
+        @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
     }
 }

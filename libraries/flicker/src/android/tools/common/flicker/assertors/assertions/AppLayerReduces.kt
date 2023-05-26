@@ -21,7 +21,8 @@ import android.tools.common.flicker.assertors.ComponentTemplate
 import android.tools.common.flicker.subject.layers.LayersTraceSubject
 
 /** Checks that the visible region of [component] always reduces during the animation */
-class AppLayerReduces(component: ComponentTemplate) : AssertionTemplateWithComponent(component) {
+class AppLayerReduces(private val component: ComponentTemplate) :
+    AssertionTemplateWithComponent(component) {
     /** {@inheritDoc} */
     override fun doEvaluate(scenarioInstance: IScenarioInstance, layerSubject: LayersTraceSubject) {
         val layerMatcher = component.build(scenarioInstance)

@@ -18,7 +18,6 @@ package android.tools.common.traces
 
 import android.tools.common.traces.surfaceflinger.LayerTraceEntry
 import android.tools.common.traces.wm.WindowManagerState
-import kotlin.js.JsName
 
 /**
  * Represents a state dump optionally containing the [WindowManagerState] and the [LayerTraceEntry]
@@ -26,8 +25,8 @@ import kotlin.js.JsName
  */
 open class NullableDeviceStateDump(
     /** Parsed [WindowManagerState] */
-    @JsName("wmState") open val wmState: WindowManagerState?,
+    open val wmState: WindowManagerState?,
 
     /** Parsed [LayerTraceEntry] */
-    @JsName("layerState") open val layerState: LayerTraceEntry?
+    open val layerState: LayerTraceEntry?
 )

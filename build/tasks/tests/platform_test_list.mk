@@ -17,7 +17,6 @@ platform_tests += \
     BackgroundDexOptServiceIntegrationTests \
     BandwidthEnforcementTest \
     BandwidthTests \
-    BluetoothTests \
     BootHelperApp \
     BusinessCard \
     CalculatorFunctionalTests \
@@ -64,11 +63,6 @@ platform_tests += \
     MultiDexLegacyVersionedTestApp_v1 \
     MultiDexLegacyVersionedTestApp_v2 \
     MultiDexLegacyVersionedTestApp_v3 \
-    net_test_bluetooth \
-    net_test_btcore \
-    net_test_device \
-    net_test_hci \
-    net_test_osi \
     NoLocTestApp \
     NoLocVersionedTestApp_v1 \
     NoLocVersionedTestApp_v2 \

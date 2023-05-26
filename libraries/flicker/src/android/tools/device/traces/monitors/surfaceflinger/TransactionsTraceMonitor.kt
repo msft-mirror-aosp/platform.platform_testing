@@ -29,8 +29,12 @@ open class TransactionsTraceMonitor : TraceMonitor() {
     override val isEnabled = true
     override val traceType = TraceType.TRANSACTION
 
-    override fun start() {
+    override fun doStart() {
         windowManager.setActiveTransactionTracing(true)
+    }
+
+    override fun validateStart() {
+        // No validation required
     }
 
     override fun doStop(): File {

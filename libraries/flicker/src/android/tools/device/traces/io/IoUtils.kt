@@ -16,21 +16,21 @@
 
 package android.tools.device.traces.io
 
-import android.tools.common.io.RunStatus
 import android.tools.device.traces.executeShellCommand
 import java.io.File
+import java.nio.file.Files
+import java.nio.file.Paths
 
 object IoUtils {
-    private fun renameFile(src: File, dst: File) {
-        executeShellCommand("mv $src $dst")
-    }
-
     private fun copyFile(src: File, dst: File) {
         executeShellCommand("cp $src $dst")
         executeShellCommand("chmod a+r $dst")
     }
 
     fun moveFile(src: File, dst: File) {
+        if (src.isDirectory) {
+            moveDirectory(src, dst)
+        }
         // Move the  file to the output directory
         // Note: Due to b/141386109, certain devices do not allow moving the files between
         //       directories with different encryption policies, so manually copy and then
@@ -41,9 +41,17 @@ object IoUtils {
         executeShellCommand("rm $src")
     }
 
-    fun addStatusToFileName(traceFile: File, status: RunStatus) {
-        val newFileName = "${status.prefix}_${traceFile.name}"
-        val dst = traceFile.resolveSibling(newFileName)
-        renameFile(traceFile, dst)
+    private fun moveDirectory(src: File, dst: File) {
+        require(src.isDirectory) { "$src is not a directory" }
+
+        Files.createDirectories(Paths.get(dst.path))
+
+        src.listFiles()?.forEach {
+            if (it.isDirectory) {
+                moveDirectory(src, dst.resolve(it.name))
+            } else {
+                moveFile(it, dst.resolve(it.name))
+            }
+        }
     }
 }

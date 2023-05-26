@@ -16,12 +16,16 @@
 
 package android.tools.common.flicker.subject.layers
 
-import android.tools.common.datatypes.component.ComponentNameMatcher
-import android.tools.common.datatypes.component.EdgeExtensionComponentMatcher
-import android.tools.common.datatypes.component.IComponentMatcher
-import android.tools.common.flicker.assertions.Fact
 import android.tools.common.flicker.subject.FlickerTraceSubject
+import android.tools.common.flicker.subject.exceptions.ExceptionMessageBuilder
+import android.tools.common.flicker.subject.exceptions.InvalidElementException
+import android.tools.common.flicker.subject.exceptions.InvalidPropertyException
 import android.tools.common.flicker.subject.region.RegionTraceSubject
+import android.tools.common.io.IReader
+import android.tools.common.traces.component.ComponentNameMatcher
+import android.tools.common.traces.component.EdgeExtensionComponentMatcher
+import android.tools.common.traces.component.IComponentMatcher
+import android.tools.common.traces.component.IComponentNameMatcher
 import android.tools.common.traces.region.RegionTrace
 import android.tools.common.traces.surfaceflinger.Layer
 import android.tools.common.traces.surfaceflinger.LayersTrace
@@ -42,6 +46,7 @@ import android.tools.common.traces.surfaceflinger.LayersTrace
  *        .coversExactly(DISPLAY_AREA)
  *        .forAllEntries()
  * ```
+ *
  * Example2:
  * ```
  *    val trace = LayersTraceParser().parse(myTraceFile)
@@ -50,21 +55,13 @@ import android.tools.common.traces.surfaceflinger.LayersTrace
  *    }
  * ```
  */
-class LayersTraceSubject(
-    val trace: LayersTrace,
-    override val parent: LayersTraceSubject? = null,
-    val facts: Collection<Fact> = emptyList()
-) :
+class LayersTraceSubject(val trace: LayersTrace, override val reader: IReader? = null) :
     FlickerTraceSubject<LayerTraceEntrySubject>(),
     ILayerSubject<LayersTraceSubject, RegionTraceSubject> {
 
-    override val selfFacts by lazy {
-        val allFacts = super.selfFacts.toMutableList()
-        allFacts.addAll(facts)
-        allFacts
+    override val subjects by lazy {
+        trace.entries.map { LayerTraceEntrySubject(it, reader, trace) }
     }
-
-    override val subjects by lazy { trace.entries.map { LayerTraceEntrySubject(it, trace, this) } }
 
     /** {@inheritDoc} */
     override fun then(): LayersTraceSubject = apply { super.then() }
@@ -81,12 +78,18 @@ class LayersTraceSubject(
 
     /** {@inheritDoc} */
     override fun layer(name: String, frameNumber: Long): LayerSubject {
-        val value = subjects.firstNotNullOfOrNull { it.layer(name, frameNumber) }
-        if (value == null) {
-            fail("Layer does not exist $name")
+        val result = subjects.firstNotNullOfOrNull { it.layer(name, frameNumber) }
+
+        if (result == null) {
+            val errorMsgBuilder =
+                ExceptionMessageBuilder()
+                    .forSubject(this)
+                    .forInvalidElement(name, expectElementExists = true)
+                    .addExtraDescription("Frame number", frameNumber)
+            throw InvalidElementException(errorMsgBuilder)
         }
-        requireNotNull(value)
-        return value
+
+        return result
     }
 
     /** @return List of [LayerSubject]s matching [name] in the order they appear on the trace */
@@ -106,13 +109,15 @@ class LayersTraceSubject(
                 ComponentNameMatcher.SPLASH_SCREEN,
                 ComponentNameMatcher.SNAPSHOT,
                 ComponentNameMatcher.IME_SNAPSHOT,
+                ComponentNameMatcher.PIP_CONTENT_OVERLAY,
+                ComponentNameMatcher.EDGE_BACK_GESTURE_HANDLER,
                 EdgeExtensionComponentMatcher()
             )
     ): LayersTraceSubject = apply {
         visibleEntriesShownMoreThanOneConsecutiveTime { subject ->
             subject.entry.visibleLayers
-                .filter {
-                    ignoreLayers.none { componentMatcher -> componentMatcher.layerMatchesAnyOf(it) }
+                .filter { visibleLayer ->
+                    ignoreLayers.none { matcher -> matcher.layerMatchesAnyOf(visibleLayer) }
                 }
                 .map { it.name }
                 .toSet()
@@ -168,8 +173,9 @@ class LayersTraceSubject(
         }
 
     /** {@inheritDoc} */
-    override fun isSplashScreenVisibleFor(componentMatcher: IComponentMatcher): LayersTraceSubject =
-        isSplashScreenVisibleFor(componentMatcher, isOptional = false)
+    override fun isSplashScreenVisibleFor(
+        componentMatcher: IComponentNameMatcher
+    ): LayersTraceSubject = isSplashScreenVisibleFor(componentMatcher, isOptional = false)
 
     /** {@inheritDoc} */
     override fun hasColor(componentMatcher: IComponentMatcher): LayersTraceSubject = apply {
@@ -185,15 +191,25 @@ class LayersTraceSubject(
         }
     }
 
+    /** {@inheritDoc} */
+    override fun hasRoundedCorners(componentMatcher: IComponentMatcher): LayersTraceSubject =
+        apply {
+            addAssertion("hasRoundedCorners(${componentMatcher.toLayerIdentifier()})") {
+                it.hasRoundedCorners(componentMatcher)
+            }
+        }
+
     /** See [isSplashScreenVisibleFor] */
     fun isSplashScreenVisibleFor(
-        componentMatcher: IComponentMatcher,
+        componentMatcher: IComponentNameMatcher,
         isOptional: Boolean
     ): LayersTraceSubject = apply {
         addAssertion(
             "isSplashScreenVisibleFor(${componentMatcher.toLayerIdentifier()})",
             isOptional
-        ) { it.isSplashScreenVisibleFor(componentMatcher) }
+        ) {
+            it.isSplashScreenVisibleFor(componentMatcher)
+        }
     }
 
     /** See [visibleRegion] */
@@ -219,7 +235,27 @@ class LayersTraceSubject(
                     }
                     .toTypedArray()
             )
-        return RegionTraceSubject(regionTrace, this)
+        return RegionTraceSubject(regionTrace, reader)
+    }
+
+    fun atLeastOneEntryContainsOneDisplayOn(): LayersTraceSubject = apply {
+        isNotEmpty()
+        val anyEntryWithDisplayOn =
+            subjects.any { it.entry.displays.any { display -> display.isOn } }
+        if (!anyEntryWithDisplayOn) {
+            val errorMsgBuilder =
+                ExceptionMessageBuilder()
+                    .forInvalidProperty("Display")
+                    .setExpected("At least one display On in any entry")
+                    .setActual("No displays on in any entry")
+            throw InvalidPropertyException(errorMsgBuilder)
+        }
+    }
+
+    override fun containsAtLeastOneDisplay(): LayersTraceSubject = apply {
+        addAssertion("containAtLeastOneDisplay", isOptional = false) {
+            it.containsAtLeastOneDisplay()
+        }
     }
 
     /** Executes a custom [assertion] on the current subject */
@@ -259,14 +295,15 @@ class LayersTraceSubject(
                 .all { it }
         val allFramesFound = frameNumbers.count() == numFound
         if (!allFramesFound || !frameNumbersMatch) {
-            val message =
-                "Could not find Layer:" +
-                    componentMatcher.toLayerIdentifier() +
-                    " with frame sequence:" +
-                    frameNumbers.joinToString(",") +
-                    " Found:\n" +
-                    entries.joinToString("\n")
-            fail(message)
+            val errorMsgBuilder =
+                ExceptionMessageBuilder()
+                    .forSubject(this)
+                    .forInvalidElement(
+                        componentMatcher.toLayerIdentifier(),
+                        expectElementExists = true
+                    )
+                    .addExtraDescription("With frame sequence", frameNumbers.joinToString(","))
+            throw InvalidElementException(errorMsgBuilder)
         }
     }
 

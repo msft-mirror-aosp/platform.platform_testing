@@ -18,6 +18,7 @@ package android.tools.common.traces.events
 
 import android.tools.common.ITraceEntry
 import android.tools.common.Timestamp
+import kotlin.js.JsExport
 
 /**
  * Represents an Event from the [EventLog]
@@ -25,10 +26,11 @@ import android.tools.common.Timestamp
  * @param timestamp The wall clock time in nanoseconds when the entry was written.
  * @param processId The process ID which wrote the log entry
  * @param uid The UID which wrote the log entry, special UIDs are strings instead of numbers (e.g.
- * root)
+ *   root)
  * @param threadId The thread which wrote the log entry
  * @param tag The type tag code of the entry
  */
+@JsExport
 open class Event(
     override val timestamp: Timestamp,
     val processId: Int,

@@ -20,7 +20,7 @@ import android.tools.common.flicker.IScenarioInstance
 import android.tools.common.flicker.assertors.ComponentTemplate
 import android.tools.common.flicker.subject.layers.LayersTraceSubject
 
-class AppLayerCoversFullScreenAtStart(component: ComponentTemplate) :
+class AppLayerCoversFullScreenAtStart(private val component: ComponentTemplate) :
     AssertionTemplateWithComponent(component) {
     /** {@inheritDoc} */
     override fun doEvaluate(scenarioInstance: IScenarioInstance, layerSubject: LayersTraceSubject) {

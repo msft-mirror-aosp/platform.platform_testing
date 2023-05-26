@@ -16,10 +16,10 @@
 
 package android.tools.common.flicker.assertors.assertions
 
-import android.tools.common.datatypes.component.ComponentNameMatcher
 import android.tools.common.flicker.IScenarioInstance
 import android.tools.common.flicker.assertors.ComponentTemplate
 import android.tools.common.flicker.subject.layers.LayersTraceSubject
+import android.tools.common.traces.component.ComponentNameMatcher
 
 /**
  * Asserts that:
@@ -30,7 +30,7 @@ import android.tools.common.flicker.subject.layers.LayersTraceSubject
  *     [component] remains visible until the end of the trace
  * ```
  */
-class AppLayerReplacesLauncher(component: ComponentTemplate) :
+class AppLayerReplacesLauncher(private val component: ComponentTemplate) :
     AssertionTemplateWithComponent(component) {
     /** {@inheritDoc} */
     override fun doEvaluate(scenarioInstance: IScenarioInstance, layerSubject: LayersTraceSubject) {

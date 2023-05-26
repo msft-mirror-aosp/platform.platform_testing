@@ -16,16 +16,14 @@
 
 package android.tools.common.assertions
 
-import android.tools.InitRule
+import android.tools.CleanFlickerEnvironmentRule
 import android.tools.assertThrows
 import android.tools.common.Tag
 import android.tools.common.flicker.assertions.SubjectsParser
-import android.tools.common.io.RunStatus
-import android.tools.device.traces.DEFAULT_TRACE_CONFIG
-import android.tools.device.traces.deleteIfExists
+import android.tools.common.flicker.subject.layers.LayersTraceSubject
+import android.tools.device.traces.TRACE_CONFIG_REQUIRE_CHANGES
 import android.tools.device.traces.io.ResultReader
 import android.tools.newTestResultWriter
-import android.tools.outputFileName
 import java.io.FileNotFoundException
 import org.junit.ClassRule
 import org.junit.Test
@@ -36,12 +34,14 @@ class SubjectsParserTest {
     @Test
     fun failFileNotFound() {
         val data = newTestResultWriter().write()
-        outputFileName(RunStatus.RUN_EXECUTED).deleteIfExists()
-        val parser = SubjectsParser(ResultReader(data, DEFAULT_TRACE_CONFIG))
-        assertThrows<FileNotFoundException> { parser.getSubjects(Tag.ALL) }
+        data.artifact.deleteIfExists()
+        val parser = SubjectsParser(ResultReader(data, TRACE_CONFIG_REQUIRE_CHANGES))
+        assertThrows<FileNotFoundException> {
+            parser.getSubjectOfType(Tag.ALL, LayersTraceSubject::class)
+        }
     }
 
     companion object {
-        @ClassRule @JvmField val initRule = InitRule()
+        @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
     }
 }

@@ -16,7 +16,7 @@
 
 package android.tools.device.traces.parsers
 
-import android.tools.InitRule
+import android.tools.CleanFlickerEnvironmentRule
 import android.tools.common.CrossPlatform
 import android.tools.common.Timestamp
 import android.tools.common.parsers.AbstractTraceParser
@@ -210,12 +210,16 @@ class TraceParserTest {
             fromBefore ||
                 fromAfter ||
                 mockTraceForSliceTests.entries.map { it.timestamp.elapsedNanos }.contains(from)
-        ) { "`from` need to be in the trace or before or after all entries" }
+        ) {
+            "`from` need to be in the trace or before or after all entries"
+        }
         require(
             toBefore ||
                 toAfter ||
                 mockTraceForSliceTests.entries.map { it.timestamp.elapsedNanos }.contains(to)
-        ) { "`to` need to be in the trace or before or after all entries" }
+        ) {
+            "`to` need to be in the trace or before or after all entries"
+        }
 
         testSliceWithOutInitialEntry(from, to, expected)
         if (!fromAfter) {
@@ -280,6 +284,6 @@ class TraceParserTest {
                 )
                 .build()
 
-        @ClassRule @JvmField val initRule = InitRule()
+        @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
     }
 }

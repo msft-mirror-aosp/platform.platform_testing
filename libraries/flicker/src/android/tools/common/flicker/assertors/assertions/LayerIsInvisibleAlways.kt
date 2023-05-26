@@ -21,7 +21,7 @@ import android.tools.common.flicker.assertors.ComponentTemplate
 import android.tools.common.flicker.subject.layers.LayersTraceSubject
 
 /** Checks if the [componentMatcher] layer is invisible during the entire transition */
-class LayerIsInvisibleAlways(component: ComponentTemplate) :
+class LayerIsInvisibleAlways(private val component: ComponentTemplate) :
     AssertionTemplateWithComponent(component) {
     /** {@inheritDoc} */
     override fun doEvaluate(scenarioInstance: IScenarioInstance, layerSubject: LayersTraceSubject) {

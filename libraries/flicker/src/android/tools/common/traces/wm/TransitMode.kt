@@ -16,8 +16,6 @@
 
 package android.tools.common.traces.wm
 
-import kotlin.js.JsName
-
 enum class TransitMode {
     TRANSIT_NONE,
     TRANSIT_OPEN,
@@ -27,6 +25,6 @@ enum class TransitMode {
     TRANSIT_CHANGE;
 
     companion object {
-        @JsName("fromInt") fun fromInt(value: Int) = values().first { it.ordinal == value }
+        fun fromInt(value: Int) = values().first { it.ordinal == value }
     }
 }

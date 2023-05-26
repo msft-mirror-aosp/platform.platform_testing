@@ -18,75 +18,16 @@ package android.tools.common.flicker.subject
 
 import android.tools.common.Timestamp
 import android.tools.common.flicker.assertions.Fact
+import android.tools.common.io.IReader
 
 /** Base subject for flicker assertions */
 abstract class FlickerSubject {
     abstract val timestamp: Timestamp
-    protected abstract val parent: FlickerSubject?
-
-    protected abstract val selfFacts: List<Fact>
-    val completeFacts: List<Fact>
-        get() {
-            val facts = selfFacts.toMutableList()
-            parent?.run {
-                val ancestorFacts = this.completeFacts
-                facts.addAll(ancestorFacts)
-            }
-            return facts
-        }
-
-    /**
-     * Fails an assertion on a subject
-     *
-     * @param reason for the failure
-     */
-    open fun fail(reason: List<Fact>): FlickerSubject = apply {
-        require(reason.isNotEmpty()) { "Failure should contain at least 1 fact" }
-        throw FlickerSubjectException(timestamp, reason + completeFacts)
-    }
-
-    fun fail(reason: Fact, vararg rest: Fact): FlickerSubject = apply {
-        val what = mutableListOf(reason).also { it.addAll(rest) }
-        fail(what)
-    }
-
-    /**
-     * Fails an assertion on a subject
-     *
-     * @param reason for the failure
-     */
-    fun fail(reason: Fact): FlickerSubject = apply { fail(listOf(reason)) }
-
-    /**
-     * Fails an assertion on a subject
-     *
-     * @param reason for the failure
-     */
-    fun fail(reason: String): FlickerSubject = apply { fail(Fact("Reason", reason)) }
-
-    /**
-     * Fails an assertion on a subject
-     *
-     * @param reason for the failure
-     * @param value for the failure
-     */
-    fun fail(reason: String, value: Any): FlickerSubject = apply { fail(Fact(reason, value)) }
-
-    /**
-     * Fails an assertion on a subject
-     *
-     * @param reason for the failure
-     */
-    fun fail(reason: Throwable) {
-        if (reason is FlickerSubjectException) {
-            throw reason
-        } else {
-            throw FlickerSubjectException(timestamp, completeFacts, reason)
-        }
-    }
+    internal open val reader: IReader? = null
+    internal open val selfFacts: List<Fact> = emptyList()
 
     fun check(lazyMessage: () -> String): CheckSubjectBuilder {
-        return CheckSubjectBuilder(this, lazyMessage)
+        return CheckSubjectBuilder(this.timestamp, this.selfFacts, this.reader, lazyMessage)
     }
 
     companion object {

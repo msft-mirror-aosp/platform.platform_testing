@@ -21,7 +21,7 @@ import android.tools.common.flicker.assertors.ComponentTemplate
 import android.tools.common.flicker.subject.wm.WindowManagerTraceSubject
 
 /** Checks if the [component] window is invisible during the entire transition */
-class NonAppWindowIsInvisibleAlways(component: ComponentTemplate) :
+class NonAppWindowIsInvisibleAlways(private val component: ComponentTemplate) :
     AssertionTemplateWithComponent(component) {
     /** {@inheritDoc} */
     override fun doEvaluate(

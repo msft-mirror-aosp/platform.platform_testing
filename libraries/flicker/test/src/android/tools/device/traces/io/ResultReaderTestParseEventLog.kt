@@ -25,13 +25,12 @@ import org.junit.runners.MethodSorters
 /** Tests for [ResultReader] parsing event log */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class ResultReaderTestParseEventLog : BaseResultReaderTestParseTrace() {
-    override val assetFile = TestTraces.EventLog.FILE
+    override val assetFiles = mapOf(TraceType.EVENT_LOG to TestTraces.EventLog.FILE)
     override val traceName = "Event Log"
     override val startTimeTrace = TestTraces.EventLog.START_TIME
     override val endTimeTrace = TestTraces.EventLog.END_TIME
     override val validSliceTime = TestTraces.EventLog.SLICE_TIME
     override val invalidSliceTime = startTimeTrace
-    override val traceType = TraceType.EVENT_LOG
     override val expectedSlicedTraceSize = 125
     override val invalidSizeMessage: String = "'to' needs to be greater than 'from'"
 

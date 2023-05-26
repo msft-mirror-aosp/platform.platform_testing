@@ -16,16 +16,16 @@
 
 package android.tools.common.flicker.assertors.assertions
 
-import android.tools.common.datatypes.component.ComponentNameMatcher
 import android.tools.common.flicker.IScenarioInstance
 import android.tools.common.flicker.assertors.ComponentTemplate
 import android.tools.common.flicker.subject.layers.LayersTraceSubject
+import android.tools.common.traces.component.ComponentNameMatcher
 
 /**
  * Checks that the [ComponentNameMatcher.ROTATION] layer appears during the transition, doesn't
  * flicker, and disappears before the transition is complete.
  */
-class RotationLayerAppearsAndVanishes(component: ComponentTemplate) :
+class RotationLayerAppearsAndVanishes(private val component: ComponentTemplate) :
     AssertionTemplateWithComponent(component) {
     /** {@inheritDoc} */
     override fun doEvaluate(scenarioInstance: IScenarioInstance, layerSubject: LayersTraceSubject) {

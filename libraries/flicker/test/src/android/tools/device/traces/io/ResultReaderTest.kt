@@ -16,13 +16,15 @@
 
 package android.tools.device.traces.io
 
-import android.tools.InitRule
+import android.tools.CleanFlickerEnvironmentRule
 import android.tools.assertThrows
+import android.tools.common.CrossPlatform
 import android.tools.common.io.RunStatus
-import android.tools.device.traces.DEFAULT_TRACE_CONFIG
+import android.tools.device.traces.TRACE_CONFIG_REQUIRE_CHANGES
 import android.tools.device.traces.deleteIfExists
 import android.tools.newTestResultWriter
 import android.tools.outputFileName
+import com.google.common.truth.Truth
 import java.io.FileNotFoundException
 import org.junit.Before
 import org.junit.ClassRule
@@ -36,19 +38,35 @@ class ResultReaderTest {
     @Before
     fun setup() {
         outputFileName(RunStatus.RUN_EXECUTED).deleteIfExists()
+        outputFileName(RunStatus.ASSERTION_SUCCESS).deleteIfExists()
     }
 
     @Test
     fun failFileNotFound() {
         val data = newTestResultWriter().write()
-        outputFileName(RunStatus.RUN_EXECUTED).deleteIfExists()
-        val reader = ResultReader(data, DEFAULT_TRACE_CONFIG)
+        data.artifact.deleteIfExists()
+        val reader = ResultReader(data, TRACE_CONFIG_REQUIRE_CHANGES)
         assertThrows<FileNotFoundException> {
             reader.readTransitionsTrace() ?: error("Should have failed")
         }
     }
 
+    @Test
+    fun slicedResultKeepsStatusInSync() {
+        val data = newTestResultWriter().setRunComplete().write()
+        val reader = ResultReader(data, TRACE_CONFIG_REQUIRE_CHANGES)
+        val slicedReader =
+            reader.slice(CrossPlatform.timestamp.min(), CrossPlatform.timestamp.max())
+        reader.result.updateStatus(RunStatus.ASSERTION_SUCCESS)
+
+        Truth.assertThat(reader.runStatus).isEqualTo(RunStatus.ASSERTION_SUCCESS)
+        Truth.assertThat(reader.runStatus).isEqualTo(slicedReader.runStatus)
+
+        Truth.assertThat(reader.artifactPath).contains(RunStatus.ASSERTION_SUCCESS.prefix)
+        Truth.assertThat(reader.artifactPath).isEqualTo(slicedReader.artifactPath)
+    }
+
     companion object {
-        @ClassRule @JvmField val initRule = InitRule()
+        @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
     }
 }

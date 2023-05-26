@@ -21,7 +21,6 @@ import android.tools.common.IScenario
 import android.tools.common.Scenario
 import android.tools.common.ScenarioBuilder
 import android.tools.common.Tag
-import android.tools.common.datatypes.component.IComponentMatcher
 import android.tools.common.flicker.assertions.AssertionData
 import android.tools.common.flicker.assertions.SubjectsParser
 import android.tools.common.flicker.subject.FlickerSubject
@@ -33,18 +32,19 @@ import android.tools.common.flicker.subject.region.RegionTraceSubject
 import android.tools.common.flicker.subject.wm.WindowManagerStateSubject
 import android.tools.common.flicker.subject.wm.WindowManagerTraceSubject
 import android.tools.common.io.IReader
+import android.tools.common.traces.component.IComponentMatcher
 import android.tools.device.flicker.assertions.AssertionDataFactory
 import android.tools.device.flicker.assertions.AssertionStateDataFactory
 import android.tools.device.flicker.assertions.BaseAssertionRunner
 import android.tools.device.flicker.datastore.CachedAssertionRunner
 import android.tools.device.flicker.datastore.CachedResultReader
-import android.tools.device.traces.DEFAULT_TRACE_CONFIG
+import android.tools.device.traces.TRACE_CONFIG_REQUIRE_CHANGES
 
 /** Specification of a flicker test for JUnit ParameterizedRunner class */
 data class FlickerTest(
     private val scenarioBuilder: ScenarioBuilder = ScenarioBuilder(),
     private val resultReaderProvider: (IScenario) -> CachedResultReader = {
-        CachedResultReader(it, DEFAULT_TRACE_CONFIG)
+        CachedResultReader(it, TRACE_CONFIG_REQUIRE_CHANGES)
     },
     private val subjectsParserProvider: (IReader) -> SubjectsParser = { SubjectsParser(it) },
     private val runnerProvider: (Scenario) -> BaseAssertionRunner = {
@@ -215,8 +215,8 @@ data class FlickerTest(
      *
      * @param componentMatcher Components to search
      * @param useCompositionEngineRegionOnly If true, uses only the region calculated from the
-     * Composition Engine (CE) -- visibleRegion in the proto definition. Otherwise, calculates the
-     * visible region when the information is not available from the CE
+     *   Composition Engine (CE) -- visibleRegion in the proto definition. Otherwise, calculates the
+     *   visible region when the information is not available from the CE
      * @param assertion Assertion predicate
      */
     @JvmOverloads

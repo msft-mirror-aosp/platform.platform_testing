@@ -29,9 +29,10 @@ import android.content.Context;
 import android.os.SystemClock;
 import android.platform.helpers.ScrollUtility.ScrollActions;
 import android.platform.helpers.ScrollUtility.ScrollDirection;
-import android.support.test.uiautomator.By;
-import android.support.test.uiautomator.BySelector;
-import android.support.test.uiautomator.UiObject2;
+
+import androidx.test.uiautomator.By;
+import androidx.test.uiautomator.BySelector;
+import androidx.test.uiautomator.UiObject2;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -146,6 +147,9 @@ public class AutoNotificationMockingHelperImpl extends AbstractStandardAppHelper
 
         for (int i = initialCount; i < initialCount + count; i++) {
             builder.setContentText(String.format(NOTIFICATION_CONTENT_TEXT_FORMAT, i));
+
+            // Set unique group for each notification so that they're NOT grouped together
+            builder.setGroup(String.format("GROUP_KEY_%d", i));
             mNotificationManager.notify(i, builder.build());
         }
     }

@@ -24,7 +24,7 @@ import android.tools.common.flicker.subject.wm.WindowManagerTraceSubject
  * Checks that non-app window [component] is visible at the start of the transition and becomes
  * invisible
  */
-open class NonAppWindowBecomesInvisible(component: ComponentTemplate) :
+open class NonAppWindowBecomesInvisible(private val component: ComponentTemplate) :
     AssertionTemplateWithComponent(component) {
     /** {@inheritDoc} */
     override fun doEvaluate(

@@ -17,9 +17,9 @@
 package android.tools.device.traces.io
 
 import android.tools.common.Timestamp
+import android.tools.common.io.IArtifact
 import android.tools.common.io.RunStatus
 import android.tools.common.io.TransitionTimeRange
-import java.io.File
 
 /**
  * Contents of a flicker run (e.g. files, status, event log)
@@ -27,25 +27,17 @@ import java.io.File
  * @param _artifact Path to the artifact file
  * @param _transitionTimeRange Transition start and end time
  * @param _executionError Transition execution error (if any)
- * @param _runStatus Status of the run
  */
 open class ResultData(
-    _artifact: File,
+    _artifact: IArtifact,
     _transitionTimeRange: TransitionTimeRange,
-    _executionError: Throwable?,
-    _runStatus: RunStatus
+    _executionError: Throwable?
 ) : IResultData {
-    final override var artifact: File = _artifact
-        private set
-    final override var transitionTimeRange: TransitionTimeRange = _transitionTimeRange
-        private set
-    final override var executionError: Throwable? = _executionError
-        private set
-    final override var runStatus: RunStatus = _runStatus
-        private set
-
-    /** {@inheritDoc} */
-    override fun getArtifactBytes(): ByteArray = artifact.readBytes()
+    final override val artifact: IArtifact = _artifact
+    final override val transitionTimeRange: TransitionTimeRange = _transitionTimeRange
+    final override val executionError: Throwable? = _executionError
+    final override val runStatus: RunStatus
+        get() = artifact.runStatus
 
     /** {@inheritDoc} */
     override fun slice(startTimestamp: Timestamp, endTimestamp: Timestamp) = apply {
@@ -54,8 +46,7 @@ open class ResultData(
         return ResultData(
             artifact,
             TransitionTimeRange(startTimestamp, endTimestamp),
-            executionError,
-            runStatus
+            executionError
         )
     }
 
@@ -71,16 +62,5 @@ open class ResultData(
     }
 
     /** {@inheritDoc} */
-    override fun updateStatus(newStatus: RunStatus) = apply {
-        val currFile = artifact
-        require(RunStatus.fromFileName(currFile.name) != RunStatus.UNDEFINED) {
-            "File name should start with a value from `RunStatus`, instead it was $currFile"
-        }
-        val newFile = getNewFilePath(newStatus)
-        if (currFile != newFile) {
-            IoUtils.moveFile(currFile, newFile)
-            artifact = newFile
-            runStatus = newStatus
-        }
-    }
+    override fun updateStatus(newStatus: RunStatus) = apply { artifact.updateStatus(newStatus) }
 }

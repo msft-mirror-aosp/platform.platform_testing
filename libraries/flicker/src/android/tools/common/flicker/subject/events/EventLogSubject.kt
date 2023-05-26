@@ -17,23 +17,16 @@
 package android.tools.common.flicker.subject.events
 
 import android.tools.common.CrossPlatform
-import android.tools.common.flicker.assertions.Fact
 import android.tools.common.flicker.subject.FlickerSubject
+import android.tools.common.flicker.subject.exceptions.ExceptionMessageBuilder
+import android.tools.common.flicker.subject.exceptions.IncorrectFocusException
+import android.tools.common.io.IReader
 import android.tools.common.traces.events.EventLog
 import android.tools.common.traces.events.FocusEvent
 
 /** Truth subject for [FocusEvent] objects. */
-class EventLogSubject(val eventLog: EventLog) : FlickerSubject() {
+class EventLogSubject(val eventLog: EventLog, override val reader: IReader) : FlickerSubject() {
     override val timestamp = CrossPlatform.timestamp.empty()
-    override val parent = null
-    override val selfFacts by lazy {
-        listOf(
-            Fact("Trace start", "${eventLog.entries.firstOrNull()?.timestamp}"),
-            Fact("Trace end", "${eventLog.entries.lastOrNull()?.timestamp}")
-        )
-    }
-
-    private val subjects by lazy { eventLog.focusEvents.map { FocusEventSubject(it, this) } }
 
     private val _focusChanges by lazy {
         val focusList = mutableListOf<String>()
@@ -41,22 +34,41 @@ class EventLogSubject(val eventLog: EventLog) : FlickerSubject() {
         focusList + eventLog.focusEvents.filter { it.hasFocus() }.map { it.window }
     }
 
+    private val exceptionMessageBuilder
+        get() = ExceptionMessageBuilder().forSubject(this)
+
     fun focusChanges(vararg windows: String) = apply {
         if (windows.isNotEmpty()) {
             val focusChanges =
                 _focusChanges.dropWhile { !it.contains(windows.first()) }.take(windows.size)
+
+            val builder =
+                exceptionMessageBuilder.setExpected(windows.joinToString()).setActual(focusChanges)
+
+            if (focusChanges.isEmpty()) {
+                val errorMsgBuilder = builder.setMessage("Focus did not change")
+                throw IncorrectFocusException(errorMsgBuilder)
+            }
+
             val success =
                 windows.size <= focusChanges.size &&
                     focusChanges.zip(windows).all { (focus, search) -> focus.contains(search) }
 
             if (!success) {
-                fail(
-                    Fact("Expected", windows.joinToString(",")),
-                    Fact("Found", focusChanges.joinToString(","))
-                )
+                val errorMsgBuilder = builder.setMessage("Incorrect focus change")
+                throw IncorrectFocusException(errorMsgBuilder)
             }
         }
     }
 
-    fun focusDoesNotChange() = apply { check(_focusChanges.isEmpty()) { "Focus does not change" } }
+    fun focusDoesNotChange() = apply {
+        if (_focusChanges.isNotEmpty()) {
+            val errorMsgBuilder =
+                exceptionMessageBuilder
+                    .setMessage("Focus changes")
+                    .setExpected("")
+                    .setActual(_focusChanges)
+            throw IncorrectFocusException(errorMsgBuilder)
+        }
+    }
 }

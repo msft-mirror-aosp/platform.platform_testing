@@ -27,6 +27,7 @@ import android.tools.common.traces.wm.WindowManagerTrace
 
 /** Helper class to read results from a flicker artifact */
 interface IReader {
+    val artifact: IArtifact
     val artifactPath: String
     val executionError: Throwable?
     val runStatus: RunStatus
@@ -62,7 +63,7 @@ interface IReader {
 
     /**
      * @return [ByteArray] with the contents of a file from the artifact, or null if the file
-     * doesn't exist
+     *   doesn't exist
      */
     fun readBytes(traceType: TraceType, tag: String = Tag.ALL): ByteArray?
 }

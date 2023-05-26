@@ -17,11 +17,11 @@
 package android.tools.device.flicker.datastore
 
 import android.annotation.SuppressLint
-import android.tools.InitRule
+import android.tools.CleanFlickerEnvironmentRule
 import android.tools.TEST_SCENARIO
 import android.tools.TestTraces
 import android.tools.common.io.TraceType
-import android.tools.device.traces.DEFAULT_TRACE_CONFIG
+import android.tools.device.traces.TRACE_CONFIG_REQUIRE_CHANGES
 import android.tools.newTestResultWriter
 import com.google.common.truth.Truth
 import org.junit.Before
@@ -42,12 +42,12 @@ class CachedResultReaderTest {
         writer.addTraceResult(TraceType.EVENT_LOG, TestTraces.EventLog.FILE)
         val result = writer.write()
         DataStore.addResult(TEST_SCENARIO, result)
-        val reader = CachedResultReader(TEST_SCENARIO, DEFAULT_TRACE_CONFIG)
+        val reader = CachedResultReader(TEST_SCENARIO, TRACE_CONFIG_REQUIRE_CHANGES)
         val actual = reader.readEventLogTrace()
         Truth.assertWithMessage("Event log size").that(actual).isNotNull()
     }
 
     companion object {
-        @ClassRule @JvmField val initRule = InitRule()
+        @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
     }
 }

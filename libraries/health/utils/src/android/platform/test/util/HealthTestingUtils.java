@@ -17,7 +17,8 @@
 package android.platform.test.util;
 
 import android.platform.uiautomator_helpers.WaitUtils;
-import android.support.test.uiautomator.StaleObjectException;
+
+import androidx.test.uiautomator.StaleObjectException;
 
 import java.time.Duration;
 import java.util.Optional;

@@ -48,9 +48,11 @@ private constructor(@JsName("type") val type: Int?, @JsName("matrix") val matrix
      * X or Y is 0, then the scaling matrix is not invertible, which makes the transformation matrix
      * not invertible as well. A 2D matrix with components | A B | is not invertible if and only if
      * AD - BC = 0.
+     *
      * ```
      *            | C D |
      * ```
+     *
      * This check is included above.
      */
     @JsName("isValid")

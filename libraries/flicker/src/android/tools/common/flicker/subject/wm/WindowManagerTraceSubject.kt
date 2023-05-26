@@ -17,11 +17,11 @@
 package android.tools.common.flicker.subject.wm
 
 import android.tools.common.Rotation
-import android.tools.common.datatypes.component.ComponentNameMatcher
-import android.tools.common.datatypes.component.IComponentMatcher
-import android.tools.common.flicker.assertions.Fact
 import android.tools.common.flicker.subject.FlickerTraceSubject
 import android.tools.common.flicker.subject.region.RegionTraceSubject
+import android.tools.common.io.IReader
+import android.tools.common.traces.component.ComponentNameMatcher
+import android.tools.common.traces.component.IComponentMatcher
 import android.tools.common.traces.region.RegionTrace
 import android.tools.common.traces.wm.WindowManagerTrace
 import android.tools.common.traces.wm.WindowState
@@ -42,6 +42,7 @@ import android.tools.common.traces.wm.WindowState
  *        .showsAboveAppWindow("NavigationBar")
  *        .forAllEntries()
  * ```
+ *
  * Example2:
  * ```
  *    val trace = WindowManagerTraceParser().parse(myTraceFile)
@@ -52,20 +53,13 @@ import android.tools.common.traces.wm.WindowState
  */
 class WindowManagerTraceSubject(
     val trace: WindowManagerTrace,
-    override val parent: WindowManagerTraceSubject? = null,
-    private val facts: Collection<Fact> = emptyList()
+    override val reader: IReader? = null
 ) :
     FlickerTraceSubject<WindowManagerStateSubject>(),
     IWindowManagerSubject<WindowManagerTraceSubject, RegionTraceSubject> {
 
-    override val selfFacts by lazy {
-        val allFacts = super.selfFacts.toMutableList()
-        allFacts.addAll(facts)
-        allFacts
-    }
-
     override val subjects by lazy {
-        trace.entries.map { WindowManagerStateSubject(it, this, this) }
+        trace.entries.map { WindowManagerStateSubject(it, reader, this) }
     }
 
     /** {@inheritDoc} */
@@ -88,11 +82,13 @@ class WindowManagerTraceSubject(
 
     /**
      * @return List of [WindowStateSubject]s matching [componentMatcher] in the order they
+     *
      * ```
      *      appear on the trace
      *
      * @param componentMatcher
      * ```
+     *
      * Components to search
      */
     fun windowStates(componentMatcher: IComponentMatcher): List<WindowStateSubject> = windowStates {
@@ -101,11 +97,13 @@ class WindowManagerTraceSubject(
 
     /**
      * @return List of [WindowStateSubject]s matching [predicate] in the order they
+     *
      * ```
      *      appear on the trace
      *
      * @param predicate
      * ```
+     *
      * To search
      */
     fun windowStates(predicate: (WindowState) -> Boolean): List<WindowStateSubject> {
@@ -139,7 +137,9 @@ class WindowManagerTraceSubject(
         addAssertion(
             "isAboveAppWindowVisible(${componentMatcher.toWindowIdentifier()})",
             isOptional
-        ) { it.isAboveAppWindowVisible(componentMatcher) }
+        ) {
+            it.isAboveAppWindowVisible(componentMatcher)
+        }
     }
 
     /** {@inheritDoc} */
@@ -155,7 +155,9 @@ class WindowManagerTraceSubject(
         addAssertion(
             "isAboveAppWindowInvisible(${componentMatcher.toWindowIdentifier()})",
             isOptional
-        ) { it.isAboveAppWindowInvisible(componentMatcher) }
+        ) {
+            it.isAboveAppWindowInvisible(componentMatcher)
+        }
     }
 
     /** {@inheritDoc} */
@@ -171,7 +173,9 @@ class WindowManagerTraceSubject(
         addAssertion(
             "isBelowAppWindowVisible(${componentMatcher.toWindowIdentifier()})",
             isOptional
-        ) { it.isBelowAppWindowVisible(componentMatcher) }
+        ) {
+            it.isBelowAppWindowVisible(componentMatcher)
+        }
     }
 
     /** {@inheritDoc} */
@@ -187,7 +191,9 @@ class WindowManagerTraceSubject(
         addAssertion(
             "isBelowAppWindowInvisible(${componentMatcher.toWindowIdentifier()})",
             isOptional
-        ) { it.isBelowAppWindowInvisible(componentMatcher) }
+        ) {
+            it.isBelowAppWindowInvisible(componentMatcher)
+        }
     }
 
     /** {@inheritDoc} */
@@ -203,7 +209,9 @@ class WindowManagerTraceSubject(
         addAssertion(
             "isNonAppWindowVisible(${componentMatcher.toWindowIdentifier()})",
             isOptional
-        ) { it.isNonAppWindowVisible(componentMatcher) }
+        ) {
+            it.isNonAppWindowVisible(componentMatcher)
+        }
     }
 
     /** {@inheritDoc} */
@@ -219,7 +227,9 @@ class WindowManagerTraceSubject(
         addAssertion(
             "isNonAppWindowInvisible(${componentMatcher.toWindowIdentifier()})",
             isOptional
-        ) { it.isNonAppWindowInvisible(componentMatcher) }
+        ) {
+            it.isNonAppWindowInvisible(componentMatcher)
+        }
     }
 
     /** {@inheritDoc} */
@@ -298,7 +308,9 @@ class WindowManagerTraceSubject(
         addAssertion(
             "isAppSnapshotStartingWindowVisibleFor(${componentMatcher.toWindowIdentifier()})",
             isOptional
-        ) { it.isAppSnapshotStartingWindowVisibleFor(componentMatcher) }
+        ) {
+            it.isAppSnapshotStartingWindowVisibleFor(componentMatcher)
+        }
     }
 
     /** {@inheritDoc} */
@@ -344,7 +356,7 @@ class WindowManagerTraceSubject(
                 subjects.map { it.visibleRegion(componentMatcher).regionEntry }.toTypedArray()
             )
 
-        return RegionTraceSubject(regionTrace, this)
+        return RegionTraceSubject(regionTrace, reader)
     }
 
     /** {@inheritDoc} */
@@ -374,7 +386,9 @@ class WindowManagerTraceSubject(
         addAssertion(
             "containsAboveAppWindow(${componentMatcher.toWindowIdentifier()})",
             isOptional
-        ) { it.containsAboveAppWindow(componentMatcher) }
+        ) {
+            it.containsAboveAppWindow(componentMatcher)
+        }
     }
 
     /** {@inheritDoc} */
@@ -404,7 +418,9 @@ class WindowManagerTraceSubject(
         addAssertion(
             "containsBelowAppWindows(${componentMatcher.toWindowIdentifier()})",
             isOptional
-        ) { it.containsBelowAppWindow(componentMatcher) }
+        ) {
+            it.containsBelowAppWindow(componentMatcher)
+        }
     }
 
     /** {@inheritDoc} */
@@ -538,6 +554,13 @@ class WindowManagerTraceSubject(
         }
     }
 
+    /** {@inheritDoc} */
+    override fun containsAtLeastOneDisplay(): WindowManagerTraceSubject = apply {
+        addAssertion("containAtLeastOneDisplay", isOptional = false) {
+            it.containsAtLeastOneDisplay()
+        }
+    }
+
     /** Checks that all visible layers are shown for more than one consecutive entry */
     fun visibleWindowsShownMoreThanOneConsecutiveEntry(
         ignoreWindows: List<ComponentNameMatcher> =
@@ -546,7 +569,9 @@ class WindowManagerTraceSubject(
         visibleEntriesShownMoreThanOneConsecutiveTime { subject ->
             subject.wmState.windowStates
                 .filter { it.isVisible }
-                .filter { ignoreWindows.none { windowName -> windowName.windowMatchesAnyOf(it) } }
+                .filter { window ->
+                    ignoreWindows.none { matcher -> matcher.windowMatchesAnyOf(window) }
+                }
                 .map { it.name }
                 .toSet()
         }

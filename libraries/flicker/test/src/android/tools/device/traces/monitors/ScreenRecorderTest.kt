@@ -21,18 +21,15 @@ import android.media.MediaCodec
 import android.media.MediaFormat
 import android.media.MediaParser
 import android.os.SystemClock
-import android.tools.InitRule
+import android.tools.CleanFlickerEnvironmentRule
 import android.tools.common.io.TraceType
-import android.tools.device.traces.DEFAULT_TRACE_CONFIG
-import android.tools.device.traces.executeShellCommand
-import android.tools.device.traces.getDefaultFlickerOutputDir
+import android.tools.device.traces.TRACE_CONFIG_REQUIRE_CHANGES
 import android.tools.device.traces.io.ResultReader
 import android.tools.newTestResultWriter
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.UiDevice
 import com.google.common.truth.Truth
 import org.junit.After
-import org.junit.Before
 import org.junit.ClassRule
 import org.junit.FixMethodOrder
 import org.junit.Test
@@ -42,13 +39,7 @@ import org.junit.runners.MethodSorters
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class ScreenRecorderTest {
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
-    private val mScreenRecorder =
-        ScreenRecorder(instrumentation.targetContext, getDefaultFlickerOutputDir())
-
-    @Before
-    fun clearOutputDir() {
-        executeShellCommand("rm -rf ${getDefaultFlickerOutputDir()}")
-    }
+    private val mScreenRecorder = ScreenRecorder(instrumentation.targetContext)
 
     @After
     fun teardown() {
@@ -73,7 +64,7 @@ class ScreenRecorderTest {
         mScreenRecorder.stop(writer)
         val result = writer.write()
 
-        val reader = ResultReader(result, DEFAULT_TRACE_CONFIG)
+        val reader = ResultReader(result, TRACE_CONFIG_REQUIRE_CHANGES)
         Truth.assertWithMessage("Screen recording file exists")
             .that(reader.hasTraceFile(TraceType.SCREEN_RECORDING))
             .isTrue()
@@ -125,7 +116,7 @@ class ScreenRecorderTest {
                 0x23
             ) // "#VV1NSC0PET1ME2#"
 
-        @ClassRule @JvmField val initRule = InitRule()
+        @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
     }
 
     internal class ScreenRecorderSeekableInputReader(private val bytes: ByteArray) :

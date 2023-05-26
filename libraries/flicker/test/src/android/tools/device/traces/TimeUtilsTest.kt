@@ -16,8 +16,7 @@
 
 package android.tools.device.traces
 
-import android.tools.InitRule
-import android.tools.common.CrossPlatform
+import android.tools.CleanFlickerEnvironmentRule
 import android.tools.common.Timestamp
 import android.tools.device.flicker.Utils
 import com.google.common.truth.Truth
@@ -85,16 +84,6 @@ class TimeUtilsTest {
             .isEqualTo("2022-11-10T00:00:00.000000001")
     }
 
-    @Test
-    fun formatToRightType() {
-        Truth.assertThat(CrossPlatform.timestamp.from(unixNanos = 1668117894186123212L).toString())
-            .startsWith("2022-11-10T22:04:54.186123212")
-        Truth.assertThat(
-                CrossPlatform.timestamp.from(elapsedNanos = 10 * DAY + 12 * HOUR).toString()
-            )
-            .startsWith("10d12h0m0s0ms0ns")
-    }
-
     companion object {
         private const val MILLISECOND = 1000000L
         private const val SECOND = 1000 * MILLISECOND
@@ -103,6 +92,6 @@ class TimeUtilsTest {
         private const val DAY = 24 * HOUR
         private const val NOV_10_2022 = 1668038400000 * MILLISECOND
 
-        @ClassRule @JvmField val initRule = InitRule()
+        @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
     }
 }

@@ -16,19 +16,16 @@
 
 package android.tools.common.flicker.subject.wm
 
-import android.tools.InitRule
+import android.tools.CleanFlickerEnvironmentRule
 import android.tools.TestComponents
 import android.tools.common.Cache
-import android.tools.readWmTraceFromFile
+import android.tools.getWmTraceReaderFromAsset
 import com.google.common.truth.Truth
 import org.junit.Before
 import org.junit.ClassRule
 import org.junit.Test
 
 class WindowStateSubjectTest {
-    private val trace
-        get() = readWmTraceFromFile("wm_trace_openchrome.pb", legacyTrace = true)
-
     @Before
     fun before() {
         Cache.clear()
@@ -36,14 +33,18 @@ class WindowStateSubjectTest {
 
     @Test
     fun exceptionContainsDebugInfoImaginary() {
+        val reader = getWmTraceReaderFromAsset("wm_trace_openchrome.pb", legacyTrace = true)
+        val trace = reader.readWmTrace() ?: error("Unable to read WM trace")
         val foundWindow =
-            WindowManagerTraceSubject(trace).first().windowState(TestComponents.IMAGINARY.className)
+            WindowManagerTraceSubject(trace, reader)
+                .first()
+                .windowState(TestComponents.IMAGINARY.className)
         Truth.assertWithMessage("${TestComponents.IMAGINARY.className} is not found")
             .that(foundWindow)
             .isNull()
     }
 
     companion object {
-        @ClassRule @JvmField val initRule = InitRule()
+        @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
     }
 }
