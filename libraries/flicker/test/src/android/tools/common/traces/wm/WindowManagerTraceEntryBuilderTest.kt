@@ -47,28 +47,19 @@ class WindowManagerTraceEntryBuilderTest {
 
     @Test
     fun createsEntryWithCorrectClockTime() {
-        val builder =
-            WindowManagerTraceEntryBuilder(
-                _elapsedTimestamp = "100",
-                where = "",
-                policy = null,
-                focusedApp = "",
-                focusedDisplayId = 0,
-                focusedWindow = "",
-                inputMethodWindowAppToken = "",
-                isHomeRecentsComponent = false,
-                isDisplayFrozen = false,
-                pendingActivities = emptyArray(),
-                root = emptyRootContainer,
-                keyguardControllerState =
+        val entry =
+            WindowManagerTraceEntryBuilder()
+                .setElapsedTimestamp("100")
+                .setRoot(emptyRootContainer)
+                .setKeyguardControllerState(
                     KeyguardControllerState.from(
                         isAodShowing = false,
                         isKeyguardShowing = false,
                         keyguardOccludedStates = mapOf()
-                    ),
-                realToElapsedTimeOffsetNs = "500"
-            )
-        val entry = builder.build()
+                    )
+                )
+                .setRealToElapsedTimeOffsetNs("500")
+                .build()
         Truth.assertThat(entry.elapsedTimestamp).isEqualTo(100)
         Truth.assertThat(entry.clockTimestamp).isEqualTo(600)
 
@@ -80,27 +71,18 @@ class WindowManagerTraceEntryBuilderTest {
 
     @Test
     fun supportsMissingRealToElapsedTimeOffsetNs() {
-        val builder =
-            WindowManagerTraceEntryBuilder(
-                _elapsedTimestamp = "100",
-                where = "",
-                policy = null,
-                focusedApp = "",
-                focusedDisplayId = 0,
-                focusedWindow = "",
-                inputMethodWindowAppToken = "",
-                isHomeRecentsComponent = false,
-                isDisplayFrozen = false,
-                pendingActivities = emptyArray(),
-                root = emptyRootContainer,
-                keyguardControllerState =
+        val entry =
+            WindowManagerTraceEntryBuilder()
+                .setElapsedTimestamp("100")
+                .setRoot(emptyRootContainer)
+                .setKeyguardControllerState(
                     KeyguardControllerState.from(
                         isAodShowing = false,
                         isKeyguardShowing = false,
                         keyguardOccludedStates = mapOf()
                     )
-            )
-        val entry = builder.build()
+                )
+                .build()
         Truth.assertThat(entry.elapsedTimestamp).isEqualTo(100)
         Truth.assertThat(entry.clockTimestamp).isEqualTo(null)
 

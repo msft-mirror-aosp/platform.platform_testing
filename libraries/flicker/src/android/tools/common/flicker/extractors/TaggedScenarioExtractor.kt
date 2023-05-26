@@ -62,22 +62,22 @@ class TaggedScenarioExtractor(
                 estimateScenarioStartTimestamp(cujEntry, associatedTransition, reader)
             val endTimestamp = estimateScenarioEndTimestamp(cujEntry, associatedTransition, reader)
 
+            val displayAtStart =
+                layersTrace.getEntryAt(startTimestamp).displays.firstOrNull {
+                    !it.isVirtual && it.layerStackSpace.isNotEmpty
+                }
+                    ?: error("Failed to get a display for start of transition")
+
+            val displayAtEnd =
+                layersTrace.getEntryAt(endTimestamp).displays.firstOrNull {
+                    !it.isVirtual && it.layerStackSpace.isNotEmpty
+                }
+                    ?: error("Failed to get a display for end of transition")
+
             ScenarioInstance(
                 type,
-                startRotation =
-                    layersTrace
-                        .getEntryAt(startTimestamp)
-                        .displays
-                        .first { !it.isVirtual && it.layerStackSpace.isNotEmpty }
-                        .transform
-                        .getRotation(),
-                endRotation =
-                    layersTrace
-                        .getEntryAt(endTimestamp)
-                        .displays
-                        .first { !it.isVirtual && it.layerStackSpace.isNotEmpty }
-                        .transform
-                        .getRotation(),
+                startRotation = displayAtStart.transform.getRotation(),
+                endRotation = displayAtEnd.transform.getRotation(),
                 startTimestamp = startTimestamp,
                 endTimestamp = endTimestamp,
                 associatedCuj = cujEntry.cuj,
@@ -213,13 +213,12 @@ class TaggedScenarioExtractor(
                 if (wmEntryAtTransitionFinished != null) {
                     wmEntryAtTransitionFinished.timestamp.unixNanos
                 } else {
-                    require(wmTrace.entries.isNotEmpty())
+                    require(wmTrace.entries.isNotEmpty()) { "WM trace should not be empty!" }
                     val closestWmEntry =
-                        wmTrace.entries
-                            .sortedBy {
-                                abs(it.timestamp.elapsedNanos - transition.finishTime.elapsedNanos)
-                            }
-                            .first()
+                        wmTrace.entries.minByOrNull {
+                            abs(it.timestamp.elapsedNanos - transition.finishTime.elapsedNanos)
+                        }
+                            ?: error("WM entry was unexpectedly empty!")
                     val offset =
                         closestWmEntry.timestamp.unixNanos - closestWmEntry.timestamp.elapsedNanos
                     transition.finishTime.elapsedNanos + offset

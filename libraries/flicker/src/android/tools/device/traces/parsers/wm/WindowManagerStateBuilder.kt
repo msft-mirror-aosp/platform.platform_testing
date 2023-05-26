@@ -84,28 +84,30 @@ class WindowManagerStateBuilder {
         requireNotNull(proto) { "Proto object not specified" }
 
         computedZCounter = 0
-        return WindowManagerTraceEntryBuilder(
-                _elapsedTimestamp = timestamp.toString(),
-                policy = createWindowManagerPolicy(proto.policy),
-                focusedApp = proto.focusedApp,
-                focusedDisplayId = proto.focusedDisplayId,
-                focusedWindow = proto.focusedWindow?.title ?: "",
-                inputMethodWindowAppToken =
-                    if (proto.inputMethodWindow != null) {
-                        Integer.toHexString(proto.inputMethodWindow.hashCode)
-                    } else {
-                        ""
-                    },
-                isHomeRecentsComponent = proto.rootWindowContainer.isHomeRecentsComponent,
-                isDisplayFrozen = proto.displayFrozen,
-                pendingActivities =
-                    proto.rootWindowContainer.pendingActivities.map { it.title }.toTypedArray(),
-                root = createRootWindowContainer(proto.rootWindowContainer),
-                keyguardControllerState =
-                    createKeyguardControllerState(proto.rootWindowContainer.keyguardController),
-                where = where,
-                realToElapsedTimeOffsetNs = realToElapsedTimeOffsetNanos.toString()
+        return WindowManagerTraceEntryBuilder()
+            .setElapsedTimestamp(timestamp.toString())
+            .setPolicy(createWindowManagerPolicy(proto.policy))
+            .setFocusedApp(proto.focusedApp)
+            .setFocusedDisplayId(proto.focusedDisplayId)
+            .setFocusedWindow(proto.focusedWindow?.title ?: "")
+            .setInputMethodWindowAppToken(
+                if (proto.inputMethodWindow != null) {
+                    Integer.toHexString(proto.inputMethodWindow.hashCode)
+                } else {
+                    ""
+                }
             )
+            .setIsHomeRecentsComponent(proto.rootWindowContainer.isHomeRecentsComponent)
+            .setIsDisplayFrozen(proto.displayFrozen)
+            .setPendingActivities(
+                proto.rootWindowContainer.pendingActivities.map { it.title }.toTypedArray()
+            )
+            .setRoot(createRootWindowContainer(proto.rootWindowContainer))
+            .setKeyguardControllerState(
+                createKeyguardControllerState(proto.rootWindowContainer.keyguardController)
+            )
+            .setWhere(where)
+            .setRealToElapsedTimeOffsetNs(realToElapsedTimeOffsetNanos.toString())
             .build()
     }
 
