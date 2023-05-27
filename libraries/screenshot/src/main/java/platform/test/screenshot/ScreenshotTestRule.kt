@@ -330,6 +330,12 @@ open class ScreenshotTestRule(
         }
 
         var file = getPathOnDeviceFor(fileType, goldenIdentifier)
+        if (file.exists()) {
+            // This typically happens when in one test, the same golden image was repeatedly
+            // compared with. In this scenario, multiple actual/expected/diff images with same
+            // names will be attempted to write to the device.
+            return file
+        }
         try {
             FileOutputStream(file).use {
                 writeAction(it)
@@ -419,7 +425,9 @@ typealias BitmapSupplier = () -> Bitmap
 /**
  * Implements a screenshot asserter based on the ScreenshotRule
  */
-class ScreenshotRuleAsserter private constructor(private val rule: ScreenshotTestRule) : ScreenshotAsserter {
+class ScreenshotRuleAsserter private constructor(
+    private val rule: ScreenshotTestRule
+) : ScreenshotAsserter {
     // use the most constraining matcher as default
     private var matcher: BitmapMatcher = PixelPerfectMatcher()
     private var beforeScreenshot: Runnable? = null
@@ -427,22 +435,20 @@ class ScreenshotRuleAsserter private constructor(private val rule: ScreenshotTes
     // use the instrumentation screenshot as default
     private var screenShotter: BitmapSupplier = { Screenshot.capture().bitmap }
     override fun assertGoldenImage(goldenId: String) {
-        beforeScreenshot?.run();
+        beforeScreenshot?.run()
         try {
             rule.assertBitmapAgainstGolden(screenShotter(), goldenId, matcher)
-        }
-        finally {
-            afterScreenshot?.run();
+        } finally {
+            afterScreenshot?.run()
         }
     }
 
     override fun assertGoldenImage(goldenId: String, areas: List<Rect>) {
-        beforeScreenshot?.run();
+        beforeScreenshot?.run()
         try {
             rule.assertBitmapAgainstGolden(screenShotter(), goldenId, matcher, areas)
-        }
-        finally {
-            afterScreenshot?.run();
+        } finally {
+            afterScreenshot?.run()
         }
     }
 

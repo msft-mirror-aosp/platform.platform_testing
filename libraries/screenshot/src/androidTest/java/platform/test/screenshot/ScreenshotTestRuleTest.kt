@@ -27,6 +27,7 @@ import java.io.FileInputStream
 import java.lang.AssertionError
 import java.util.ArrayList
 import org.junit.After
+import org.junit.Assert.assertThrows
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -223,6 +224,32 @@ class ScreenshotTestRuleTest {
         assertThat(rule.getPathOnDeviceFor(IMAGE_DIFF, goldenIdentifier).exists()).isTrue()
         assertThat(rule.getPathOnDeviceFor(IMAGE_EXPECTED, goldenIdentifier).exists()).isTrue()
         assertThat(rule.getPathOnDeviceFor(RESULT_BIN_PROTO, goldenIdentifier).exists()).isTrue()
+    }
+
+    @Test
+    fun performDiff_sameSizes_pixelPerfect_noMatch_noDuplicateImageWritten() {
+        val first = loadBitmap("round_rect_gray")
+        val second = loadBitmap("round_rect_gray_dark")
+        val compStatistics = ScreenshotResultProto.DiffResult.ComparisonStatistics.newBuilder()
+            .setNumberPixelsCompared(2304)
+            .setNumberPixelsDifferent(556)
+            .setNumberPixelsIdentical(1748)
+            .build()
+
+        val goldenIdentifier = "round_rect_green"
+        assertThrows(AssertionError::class.java) {
+            first
+                .assertAgainstGolden(rule, goldenIdentifier, matcher = PixelPerfectMatcher())
+        }
+        val actualFile1 = rule.getPathOnDeviceFor(IMAGE_ACTUAL, goldenIdentifier)
+
+        assertThrows(AssertionError::class.java) {
+            second
+                .assertAgainstGolden(rule, goldenIdentifier, matcher = PixelPerfectMatcher())
+        }
+        val actualFile2 = rule.getPathOnDeviceFor(IMAGE_ACTUAL, goldenIdentifier)
+
+        assertThat(actualFile1).isEqualTo(actualFile2)
     }
 
     @Test
