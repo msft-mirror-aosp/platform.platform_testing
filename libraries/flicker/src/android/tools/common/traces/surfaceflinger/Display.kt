@@ -64,7 +64,7 @@ private constructor(
     }
 
     companion object {
-        private const val BLANK_LAYER_STACK = -1
+        const val BLANK_LAYER_STACK = -1
 
         @JsName("EMPTY")
         val EMPTY: Display
