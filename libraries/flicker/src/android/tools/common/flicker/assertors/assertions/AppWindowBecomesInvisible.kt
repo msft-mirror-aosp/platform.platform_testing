@@ -35,5 +35,6 @@ class AppWindowBecomesInvisible(private val component: ComponentTemplate) :
             .isAppWindowVisible(component.build(scenarioInstance))
             .then()
             .isAppWindowInvisible(component.build(scenarioInstance))
+            .forAllEntries()
     }
 }
