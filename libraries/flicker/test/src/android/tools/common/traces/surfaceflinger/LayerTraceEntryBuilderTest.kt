@@ -18,6 +18,13 @@ package android.tools.common.traces.surfaceflinger
 
 import android.tools.CleanFlickerEnvironmentRule
 import android.tools.common.CrossPlatform
+import android.tools.common.datatypes.ActiveBuffer
+import android.tools.common.datatypes.Color
+import android.tools.common.datatypes.Rect
+import android.tools.common.datatypes.RectF
+import android.tools.common.datatypes.Region
+import android.tools.common.datatypes.Size
+import android.tools.common.traces.surfaceflinger.Display.Companion.BLANK_LAYER_STACK
 import com.google.common.truth.Truth
 import org.junit.ClassRule
 import org.junit.FixMethodOrder
@@ -68,6 +75,76 @@ class LayerTraceEntryBuilderTest {
         Truth.assertThat(entry.timestamp.unixNanos)
             .isEqualTo(CrossPlatform.timestamp.empty().unixNanos)
     }
+
+    @Test
+    fun removesLayersFromOffDisplays() {
+        val offDisplayStackId = BLANK_LAYER_STACK
+
+        val layers =
+            listOf(
+                Layer.from(
+                    name = "layer",
+                    id = 1,
+                    parentId = -1,
+                    z = 1,
+                    visibleRegion = Region.EMPTY,
+                    activeBuffer = ActiveBuffer.EMPTY,
+                    flags = 0,
+                    bounds = RectF.EMPTY,
+                    color = Color.EMPTY,
+                    isOpaque = true,
+                    shadowRadius = 0f,
+                    cornerRadius = 0f,
+                    type = "type",
+                    screenBounds = RectF.EMPTY,
+                    transform = Transform.EMPTY,
+                    sourceBounds = RectF.EMPTY,
+                    currFrame = 0,
+                    effectiveScalingMode = 0,
+                    bufferTransform = Transform.EMPTY,
+                    hwcCompositionType = HwcCompositionType.INVALID,
+                    hwcCrop = RectF.EMPTY,
+                    hwcFrame = Rect.EMPTY,
+                    backgroundBlurRadius = 0,
+                    crop = null,
+                    isRelativeOf = false,
+                    zOrderRelativeOfId = 0,
+                    stackId = offDisplayStackId,
+                    requestedTransform = Transform.EMPTY,
+                    requestedColor = Color.EMPTY,
+                    cornerRadiusCrop = RectF.EMPTY,
+                    inputTransform = Transform.EMPTY,
+                    inputRegion = null,
+                    excludesCompositionState = true
+                )
+            )
+
+        val displays =
+            listOf(
+                Display.from(
+                    id = "display#1",
+                    name = "display",
+                    layerStackId = offDisplayStackId,
+                    size = Size.EMPTY,
+                    layerStackSpace = Rect.EMPTY,
+                    transform = Transform.EMPTY,
+                    isVirtual = false
+                )
+            )
+
+        val builder =
+            LayerTraceEntryBuilder()
+                .setElapsedTimestamp("100")
+                .setLayers(layers.toTypedArray())
+                .setDisplays(displays.toTypedArray())
+                .setVSyncId("123")
+        val entry = builder.build()
+
+        Truth.assertThat(entry.displays.all { it.isOff })
+        Truth.assertThat(entry.flattenedLayers).isEmpty()
+    }
+
+    @Test fun keepsOffDisplays() {}
 
     companion object {
         @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
