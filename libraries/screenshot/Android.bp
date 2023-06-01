@@ -55,9 +55,9 @@ android_library {
     ],
     static_libs: [
         "androidx.annotation_annotation",
-	"androidx.test.ext.junit",
-        "platform-screenshot-diff-proto",
+        "androidx.test.ext.junit",
         "androidx.test.runner",
+        "platform-screenshot-diff-proto",
     ],
 }
 
