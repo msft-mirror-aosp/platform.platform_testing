@@ -39,5 +39,6 @@ class AppWindowBecomesTopWindow(private val component: ComponentTemplate) :
             .isAppWindowOnTop(
                 testApp.or(ComponentNameMatcher.SNAPSHOT).or(ComponentNameMatcher.SPLASH_SCREEN)
             )
+            .forAllEntries()
     }
 }
