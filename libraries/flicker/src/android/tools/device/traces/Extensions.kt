@@ -22,6 +22,7 @@ import android.os.SystemClock
 import android.tools.common.CrossPlatform
 import android.tools.common.SECOND_AS_NANOSECONDS
 import android.tools.common.Timestamp
+import androidx.test.platform.app.InstrumentationRegistry
 import java.io.File
 import java.time.Instant
 
@@ -29,7 +30,8 @@ import java.time.Instant
  * Gets the default flicker output dir. By default, the data is stored in /sdcard/flicker instead of
  * using the app's internal data directory to be accessible by other components (i.e. FilePuller)
  */
-fun getDefaultFlickerOutputDir() = File("/sdcard/flicker")
+fun getDefaultFlickerOutputDir() =
+    InstrumentationRegistry.getInstrumentation().targetContext.filesDir
 
 /** @return the current timestamp as [Timestamp] */
 fun now(): Timestamp {
