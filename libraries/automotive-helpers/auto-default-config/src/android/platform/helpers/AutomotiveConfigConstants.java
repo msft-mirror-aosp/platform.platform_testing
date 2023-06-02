@@ -225,6 +225,24 @@ public class AutomotiveConfigConstants {
     public static final String DATE_TIME_SETTINGS_SCROLL_WAIT_TIME =
             "DATE_TIME_SETTINGS_SCROLL_WAIT_TIME";
 
+    // Display Settings Constants
+    public static final String DISPLAY_SETTINGS_LIST_SCROLL_ACTION =
+            "DISPLAY_SETTINGS_LIST_SCROLL_ACTION";
+    public static final String DISPLAY_SETTINGS_SCROLL_BACKWARD_BUTTON =
+            "DISPLAY_SETTINGS_SCROLL_BACKWARD_BUTTON";
+    public static final String DISPLAY_SETTINGS_SCROLL_FORWARD_BUTTON =
+            "DISPLAY_SETTINGS_SCROLL_FORWARD_BUTTON";
+    public static final String DISPLAY_SETTINGS_SCROLL_ELEMENT = "DISPLAY_SETTINGS_SCROLL_ELEMENT";
+    public static final String DISPLAY_SETTINGS_LIST_SCROLL_DIRECTION =
+            "DISPLAY_SETTINGS_LIST_SCROLL_DIRECTION";
+    public static final String DISPLAY_SETTINGS_SCROLL_MARGIN = "DISPLAY_SETTINGS_SCROLL_MARGIN";
+
+    public static final String DISPLAY_SETTINGS_SCROLL_WAIT_TIME =
+            "DISPLAY_SETTINGS_SCROLL_WAIT_TIME";
+
+    public static final String DISPLAY_SETTINGS_ADAPTIVE_BRIGHTNESS_TOGGLE =
+            "DISPLAY_SETTINGS_ADAPTIVE_BRIGHTNESS_TOGGLE";
+
     // Sound Setting Constants
     public static final String SOUND_SETTINGS_SAVE_BUTTON = "SOUND_SETTINGS_SAVE_BUTTON";
     public static final String SOUND_SETTINGS_LIST_SCROLL_DIRECTION =
