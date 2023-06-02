@@ -52,6 +52,13 @@ public class SettingsPrivacyHelperImpl extends AbstractStandardAppHelper
 
     /** {@inheritDoc} */
     @Override
+    public void exit() {
+        getSpectatioUiUtil().pressHome();
+        getSpectatioUiUtil().wait1Second();
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public void turnOnOffMicroPhone(boolean onOff) {
         boolean isOn = isMicroPhoneOn();
         if (isOn != onOff) {
@@ -102,12 +109,22 @@ public class SettingsPrivacyHelperImpl extends AbstractStandardAppHelper
 
     /** {@inheritDoc} */
     @Override
-    public void tapOnMicroPhoneStatusBar() {
+    public void clickMicroPhoneStatusBar() {
         BySelector microPhoneChipSelector =
                 getUiElementFromConfig(AutomotiveConfigConstants.MICRO_PHONE_MUTED_CHIP_STATUS_BAR);
         UiObject2 microPhoneChip = getSpectatioUiUtil().findUiObject(microPhoneChipSelector);
         validateUiObject(
                 microPhoneChip, AutomotiveConfigConstants.MICRO_PHONE_MUTED_CHIP_STATUS_BAR);
+        getSpectatioUiUtil().clickAndWait(microPhoneChip);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void clickUnMutedMicroPhoneStatusBar() {
+        BySelector microPhoneChipSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.MICRO_PHONE_CHIP_STATUS_BAR);
+        UiObject2 microPhoneChip = getSpectatioUiUtil().findUiObject(microPhoneChipSelector);
+        validateUiObject(microPhoneChip, AutomotiveConfigConstants.MICRO_PHONE_CHIP_STATUS_BAR);
         getSpectatioUiUtil().clickAndWait(microPhoneChip);
     }
 
@@ -141,7 +158,7 @@ public class SettingsPrivacyHelperImpl extends AbstractStandardAppHelper
 
     /** {@inheritDoc} */
     @Override
-    public void tapOnMicroPhoneToggleStatusBar() {
+    public void clickMicroPhoneToggleStatusBar() {
         BySelector microPhoneSwitchSelector =
                 getUiElementFromConfig(AutomotiveConfigConstants.MICRO_PHONE_SWITCH);
         UiObject2 microPhoneSwitch = getSpectatioUiUtil().findUiObject(microPhoneSwitchSelector);
@@ -166,7 +183,7 @@ public class SettingsPrivacyHelperImpl extends AbstractStandardAppHelper
 
     /** {@inheritDoc} */
     @Override
-    public void tapOnManageMicroPhonePermissions() {
+    public void clickManageMicroPhonePermissions() {
         BySelector manageMicroPhoneButtonSelector =
                 getUiElementFromConfig(AutomotiveConfigConstants.MANAGE_MICRO_PHONE_PERMISSIONS);
         UiObject2 manageMicroPhoneButton =
@@ -237,7 +254,7 @@ public class SettingsPrivacyHelperImpl extends AbstractStandardAppHelper
 
     /** {@inheritDoc} */
     @Override
-    public void tapOnViewAll() {
+    public void clickViewAllLink() {
         BySelector viewAllLinkSelector =
                 getUiElementFromConfig(AutomotiveConfigConstants.MICRO_PHONE_VIEW_ALL);
         UiObject2 viewAllLink = getSpectatioUiUtil().findUiObject(viewAllLinkSelector);

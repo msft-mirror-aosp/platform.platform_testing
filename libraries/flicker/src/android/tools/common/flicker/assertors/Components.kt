@@ -25,31 +25,32 @@ import android.tools.common.traces.wm.Transition
 import android.tools.common.traces.wm.TransitionType
 
 object Components {
+    /** Common */
     val NAV_BAR = ComponentTemplate("Navbar") { ComponentNameMatcher.NAV_BAR }
     val STATUS_BAR = ComponentTemplate("StatusBar") { ComponentNameMatcher.STATUS_BAR }
     val LAUNCHER = ComponentTemplate("Launcher") { ComponentNameMatcher.LAUNCHER }
 
-    val PIP_DISMISS_OVERLAY =
-        ComponentTemplate("PipDismissOverlay") { ComponentNameMatcher("", "pip-dismiss-overlay") }
-    val PIP_CONTENT_OVERLAY =
-        ComponentTemplate("PipContentOverlay") { ComponentNameMatcher.PIP_CONTENT_OVERLAY }
-    val SPLIT_SCREEN_DIVIDER =
-        ComponentTemplate("SplitScreenDivider") {
-            ComponentNameMatcher("", "StageCoordinatorSplitDivider#")
-        }
-
+    /** App launch */
     val OPENING_APP =
         ComponentTemplate("OPENING_APP") { scenarioInstance: IScenarioInstance ->
             openingAppFrom(
                 scenarioInstance.associatedTransition ?: error("Missing associated transition")
             )
         }
+
+    /** App close */
     val CLOSING_APP =
         ComponentTemplate("CLOSING_APP") { scenarioInstance: IScenarioInstance ->
             closingAppFrom(
                 scenarioInstance.associatedTransition ?: error("Missing associated transition")
             )
         }
+
+    /** PIP */
+    val PIP_DISMISS_OVERLAY =
+        ComponentTemplate("PipDismissOverlay") { ComponentNameMatcher("", "pip-dismiss-overlay") }
+    val PIP_CONTENT_OVERLAY =
+        ComponentTemplate("PipContentOverlay") { ComponentNameMatcher.PIP_CONTENT_OVERLAY }
     val PIP_APP =
         ComponentTemplate("PIP") { scenarioInstance: IScenarioInstance ->
             if (scenarioInstance.type == FaasScenarioType.LAUNCHER_APP_CLOSE_TO_PIP) {
@@ -66,6 +67,11 @@ object Components {
             }
         }
 
+    /** Splitscreen */
+    val SPLIT_SCREEN_DIVIDER =
+        ComponentTemplate("SplitScreenDivider") {
+            ComponentNameMatcher("", "StageCoordinatorSplitDivider#")
+        }
     val SPLIT_SCREEN_PRIMARY_APP =
         ComponentTemplate("SPLIT_SCREEN_PRIMARY_APP") { scenarioInstance: IScenarioInstance ->
             val associatedTransition = scenarioInstance.associatedTransition
@@ -123,7 +129,6 @@ object Components {
 
     val EMPTY = ComponentTemplate("") { ComponentNameMatcher("", "") }
 
-    // TODO: Extract out common code between two functions below
     private fun openingAppFrom(transition: Transition): IComponentMatcher {
         val targetChanges =
             transition.changes.filter {

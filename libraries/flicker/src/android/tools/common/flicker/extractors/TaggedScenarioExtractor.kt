@@ -23,6 +23,7 @@ import android.tools.common.flicker.config.FaasScenarioType
 import android.tools.common.io.IReader
 import android.tools.common.traces.events.Cuj
 import android.tools.common.traces.events.CujType
+import android.tools.common.traces.surfaceflinger.Display
 import android.tools.common.traces.surfaceflinger.LayerTraceEntry
 import android.tools.common.traces.wm.Transition
 import kotlin.math.abs
@@ -63,16 +64,9 @@ class TaggedScenarioExtractor(
             val endTimestamp = estimateScenarioEndTimestamp(cujEntry, associatedTransition, reader)
 
             val displayAtStart =
-                layersTrace.getEntryAt(startTimestamp).displays.firstOrNull {
-                    !it.isVirtual && it.layerStackSpace.isNotEmpty
-                }
-                    ?: error("Failed to get a display for start of transition")
-
+                getOnDisplayFor(layersTrace.getFirstEntryWithOnDisplayAfter(startTimestamp))
             val displayAtEnd =
-                layersTrace.getEntryAt(endTimestamp).displays.firstOrNull {
-                    !it.isVirtual && it.layerStackSpace.isNotEmpty
-                }
-                    ?: error("Failed to get a display for end of transition")
+                getOnDisplayFor(layersTrace.getLastEntryWithOnDisplayBefore(endTimestamp))
 
             ScenarioInstance(
                 type,
@@ -85,6 +79,15 @@ class TaggedScenarioExtractor(
                 reader = reader.slice(startTimestamp, endTimestamp)
             )
         }
+    }
+
+    private fun getOnDisplayFor(layerTraceEntry: LayerTraceEntry): Display {
+        val displays = layerTraceEntry.displays.filter { !it.isVirtual }
+        require(displays.isNotEmpty()) { "Failed to get a display for provided entry" }
+        val onDisplays = displays.filter { it.isOn }
+        require(onDisplays.isNotEmpty()) { "No on displays found for entry" }
+        require(onDisplays.size == 1) { "More than one on display found!" }
+        return onDisplays.first()
     }
 
     private fun estimateScenarioStartTimestamp(

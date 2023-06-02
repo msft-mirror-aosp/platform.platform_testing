@@ -16,9 +16,11 @@
 
 package android.platform.tests;
 
+import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
 
 import android.platform.helpers.HelperAccessor;
+import android.platform.helpers.IAutoDisplaySettingsHelper;
 import android.platform.helpers.IAutoSettingHelper;
 import android.platform.helpers.SettingsConstants;
 
@@ -27,9 +29,11 @@ import org.junit.Test;
 public class DisplaySettingTest {
 
     private final HelperAccessor<IAutoSettingHelper> mSettingHelper;
+    private HelperAccessor<IAutoDisplaySettingsHelper> mDisplaySettingsHelper;
 
     public DisplaySettingTest() {
         mSettingHelper = new HelperAccessor<>(IAutoSettingHelper.class);
+        mDisplaySettingsHelper = new HelperAccessor<>(IAutoDisplaySettingsHelper.class);
     }
 
     @Test
@@ -52,5 +56,38 @@ public class DisplaySettingTest {
                         + highBrightness
                         + ")",
                 lowBrightness < highBrightness);
+    }
+
+    @Test
+    public void testAdaptiveBrightnessDefaultValue() {
+        mSettingHelper.get().openSetting(SettingsConstants.DISPLAY_SETTINGS);
+        assertTrue(
+                "Display Setting did not open",
+                mSettingHelper.get().checkMenuExists("Adaptive brightness"));
+
+        // Verify that Adaptive Brightness is not enabled.
+        assertFalse(
+                "Adaptive Brightness was enabled, when it should be disabled by default.",
+                mDisplaySettingsHelper.get().isAdaptiveBrightnessEnabled());
+    }
+
+    @Test
+    public void testAdaptiveBrightnessToggle() {
+        mSettingHelper.get().openSetting(SettingsConstants.DISPLAY_SETTINGS);
+        assertTrue(
+                "Display Setting did not open",
+                mSettingHelper.get().checkMenuExists("Adaptive brightness"));
+
+        // Verify that Adaptive Brightness can be toggled.
+        boolean startSetting = mDisplaySettingsHelper.get().isAdaptiveBrightnessEnabled();
+        mDisplaySettingsHelper.get().toggleAdaptiveBrightness();
+        boolean endSetting = mDisplaySettingsHelper.get().isAdaptiveBrightnessEnabled();
+
+        assertFalse(
+                String.format(
+                        "Adaptive Brightness value did not change after toggle;"
+                                + "Value started at %b and ended at %b ",
+                        startSetting, endSetting),
+                startSetting == endSetting);
     }
 }
