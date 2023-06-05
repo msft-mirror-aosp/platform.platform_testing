@@ -16,9 +16,11 @@
 
 package android.platform.tests;
 
+import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
 
 import android.platform.helpers.HelperAccessor;
+import android.platform.helpers.IAutoDisplaySettingsHelper;
 import android.platform.helpers.IAutoSettingHelper;
 import android.platform.helpers.SettingsConstants;
 
@@ -26,13 +28,12 @@ import org.junit.Test;
 
 public class DisplaySettingTest {
 
-    private HelperAccessor<IAutoSettingHelper> mSettingHelper;
+    private final HelperAccessor<IAutoSettingHelper> mSettingHelper;
+    private HelperAccessor<IAutoDisplaySettingsHelper> mDisplaySettingsHelper;
 
-    private static final String SCREEN_BRIGHTNESS = "screen_brightness";
-    private static final int STARTING_SCREEN_BRIGHTNESS_VALUE = 10;
-
-    public DisplaySettingTest() throws Exception {
+    public DisplaySettingTest() {
         mSettingHelper = new HelperAccessor<>(IAutoSettingHelper.class);
+        mDisplaySettingsHelper = new HelperAccessor<>(IAutoDisplaySettingsHelper.class);
     }
 
     @Test
@@ -41,19 +42,52 @@ public class DisplaySettingTest {
         assertTrue(
                 "Display Setting did not open",
                 mSettingHelper.get().checkMenuExists("Brightness level"));
-        mSettingHelper.get().setValue(SCREEN_BRIGHTNESS, STARTING_SCREEN_BRIGHTNESS_VALUE);
+
+        int lowBrightness = mSettingHelper.get().setBrightness(0.1f);
 
         // Increase the screen brightness
-        mSettingHelper.get().changeSeekbarLevel(0, IAutoSettingHelper.ChangeType.INCREASE);
+        int highBrightness = mSettingHelper.get().setBrightness(0.9f);
 
         // Verify that the screen brightness has changed.
-        int newBrightnessLevel = mSettingHelper.get().getValue(SCREEN_BRIGHTNESS);
         assertTrue(
                 "Brightness was not increased (from "
-                        + STARTING_SCREEN_BRIGHTNESS_VALUE
+                        + lowBrightness
                         + " to "
-                        + newBrightnessLevel
+                        + highBrightness
                         + ")",
-                newBrightnessLevel > STARTING_SCREEN_BRIGHTNESS_VALUE);
+                lowBrightness < highBrightness);
+    }
+
+    @Test
+    public void testAdaptiveBrightnessDefaultValue() {
+        mSettingHelper.get().openSetting(SettingsConstants.DISPLAY_SETTINGS);
+        assertTrue(
+                "Display Setting did not open",
+                mSettingHelper.get().checkMenuExists("Adaptive brightness"));
+
+        // Verify that Adaptive Brightness is not enabled.
+        assertFalse(
+                "Adaptive Brightness was enabled, when it should be disabled by default.",
+                mDisplaySettingsHelper.get().isAdaptiveBrightnessEnabled());
+    }
+
+    @Test
+    public void testAdaptiveBrightnessToggle() {
+        mSettingHelper.get().openSetting(SettingsConstants.DISPLAY_SETTINGS);
+        assertTrue(
+                "Display Setting did not open",
+                mSettingHelper.get().checkMenuExists("Adaptive brightness"));
+
+        // Verify that Adaptive Brightness can be toggled.
+        boolean startSetting = mDisplaySettingsHelper.get().isAdaptiveBrightnessEnabled();
+        mDisplaySettingsHelper.get().toggleAdaptiveBrightness();
+        boolean endSetting = mDisplaySettingsHelper.get().isAdaptiveBrightnessEnabled();
+
+        assertFalse(
+                String.format(
+                        "Adaptive Brightness value did not change after toggle;"
+                                + "Value started at %b and ended at %b ",
+                        startSetting, endSetting),
+                startSetting == endSetting);
     }
 }

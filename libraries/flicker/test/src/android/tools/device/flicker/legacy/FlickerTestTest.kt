@@ -25,7 +25,7 @@ import android.tools.assertThrows
 import android.tools.common.io.TraceType
 import android.tools.device.flicker.datastore.CachedResultReader
 import android.tools.device.flicker.datastore.DataStore
-import android.tools.device.traces.DEFAULT_TRACE_CONFIG
+import android.tools.device.traces.TRACE_CONFIG_REQUIRE_CHANGES
 import android.tools.device.traces.io.ResultReader
 import android.tools.newTestCachedResultWriter
 import com.google.common.truth.Truth
@@ -225,8 +225,8 @@ class FlickerTestTest {
                 resultReaderProvider = {
                     CachedResultReader(
                         it,
-                        DEFAULT_TRACE_CONFIG,
-                        reader = ResultReader(DataStore.getResult(it), DEFAULT_TRACE_CONFIG)
+                        TRACE_CONFIG_REQUIRE_CHANGES,
+                        reader = ResultReader(DataStore.getResult(it), TRACE_CONFIG_REQUIRE_CHANGES)
                     )
                 }
             )

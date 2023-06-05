@@ -34,6 +34,10 @@
     "APP_INFO_SETTINGS_SCROLL_DIRECTION": "VERTICAL",
     "APP_INFO_SETTINGS_SCROLL_MARGIN": "10",
     "APP_INFO_SETTINGS_SCROLL_WAIT_TIME": "2",
+    "DISPLAY_SETTINGS_LIST_SCROLL_ACTION": "USE_GESTURE",
+    "DISPLAY_SETTINGS_LIST_SCROLL_DIRECTION": "VERTICAL",
+    "DISPLAY_SETTINGS_SCROLL_MARGIN": "10",
+    "DISPLAY_SETTINGS_SCROLL_WAIT_TIME": "1",
     "SOUND_SETTINGS_LIST_SCROLL_ACTION": "USE_GESTURE",
     "SOUND_SETTINGS_LIST_SCROLL_DIRECTION": "VERTICAL",
     "SOUND_SETTINGS_SCROLL_MARGIN": "10",
@@ -582,6 +586,19 @@
       "TYPE": "DESCRIPTION",
       "VALUE": "Scroll Up"
     },
+    "MANAGE_BUTTON": {
+      "TYPE": "TEXT",
+      "VALUE": "Manage"
+    },
+    "NOTIFICATION_SETTINGS_LAYOUT": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "car_ui_base_layout_content_container",
+      "PACKAGE": "com.android.car.settings"
+    },
+    "NOTIFICATION_SETTINGS_TITLE": {
+      "TYPE": "TEXT",
+      "VALUE": "Notifications"
+    },
     "ABOUT_MENU": {
       "TYPE": "TEXT",
       "VALUE": "About",
@@ -652,10 +669,47 @@
       "VALUE": "Idiomas",
       "PACKAGE": "com.android.car.settings"
     },
+
     "SETTINGS_SUMMARY": {
       "TYPE": "RESOURCE_ID",
       "VALUE": "summary",
       "PACKAGE": "android"
+    },
+    "DISPLAY_SETTINGS_SCROLL_ELEMENT": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "car_ui_internal_recycler_view",
+      "PACKAGE": "com.android.car.ui.sharedlibrary"
+    },
+    "DISPLAY_SETTINGS_SCROLL_BACKWARD_BUTTON": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "car_ui_scrollbar_page_up",
+      "PACKAGE": "com.android.car.ui.sharedlibrary"
+    },
+    "DISPLAY_SETTINGS_SCROLL_FORWARD_BUTTON": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "car_ui_scrollbar_page_down",
+      "PACKAGE": "com.android.car.ui.sharedlibrary"
+    },
+    "DISPLAY_SETTINGS_ADAPTIVE_BRIGHTNESS_TOGGLE": {
+    "TYPE": "MULTIPLE",
+    "SPECIFIERS": [
+        {
+          "TYPE": "CLASS",
+          "VALUE": "android.widget.Switch"
+        },
+        {
+          "TYPE": "HAS_ANCESTOR",
+          "MAX_DEPTH": 3,
+          "ANCESTOR": {
+            "TYPE": "HAS_DESCENDANT",
+            "MAX_DEPTH": 2,
+            "DESCENDANT": {
+              "TYPE": "TEXT",
+              "VALUE": "Adaptive brightness"
+            }
+          }
+        }
+      ]
     },
     "SYSTEM_SETTINGS_SCROLL_ELEMENT": {
       "TYPE": "RESOURCE_ID",
@@ -690,6 +744,26 @@
     "SOUND_SETTINGS_SAVE_BUTTON": {
       "TYPE": "DESCRIPTION",
       "VALUE": "Save"
+    },
+    "BRIGHTNESS_SEEKBAR": {
+      "TYPE": "MULTIPLE",
+      "SPECIFIERS": [
+        {
+          "TYPE": "CLASS",
+          "VALUE": "android.widget.SeekBar"
+        },
+        {
+          "TYPE": "HAS_ANCESTOR",
+          "MAX_DEPTH": 2,
+          "ANCESTOR": {
+            "TYPE": "HAS_DESCENDANT",
+            "DESCENDANT": {
+              "TYPE": "TEXT",
+              "VALUE": "Brightness level"
+            }
+          }
+        }
+      ]
     },
     "DATE_TIME_SETTINGS_SET_TIME_AUTOMATICALLY": {
       "TYPE": "TEXT",

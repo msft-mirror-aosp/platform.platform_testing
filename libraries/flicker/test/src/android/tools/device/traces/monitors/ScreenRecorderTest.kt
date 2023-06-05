@@ -23,7 +23,7 @@ import android.media.MediaParser
 import android.os.SystemClock
 import android.tools.CleanFlickerEnvironmentRule
 import android.tools.common.io.TraceType
-import android.tools.device.traces.DEFAULT_TRACE_CONFIG
+import android.tools.device.traces.TRACE_CONFIG_REQUIRE_CHANGES
 import android.tools.device.traces.io.ResultReader
 import android.tools.newTestResultWriter
 import androidx.test.platform.app.InstrumentationRegistry
@@ -64,7 +64,7 @@ class ScreenRecorderTest {
         mScreenRecorder.stop(writer)
         val result = writer.write()
 
-        val reader = ResultReader(result, DEFAULT_TRACE_CONFIG)
+        val reader = ResultReader(result, TRACE_CONFIG_REQUIRE_CHANGES)
         Truth.assertWithMessage("Screen recording file exists")
             .that(reader.hasTraceFile(TraceType.SCREEN_RECORDING))
             .isTrue()

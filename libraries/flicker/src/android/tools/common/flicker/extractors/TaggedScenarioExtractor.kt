@@ -23,6 +23,7 @@ import android.tools.common.flicker.config.FaasScenarioType
 import android.tools.common.io.IReader
 import android.tools.common.traces.events.Cuj
 import android.tools.common.traces.events.CujType
+import android.tools.common.traces.surfaceflinger.Display
 import android.tools.common.traces.surfaceflinger.LayerTraceEntry
 import android.tools.common.traces.wm.Transition
 import kotlin.math.abs
@@ -62,22 +63,15 @@ class TaggedScenarioExtractor(
                 estimateScenarioStartTimestamp(cujEntry, associatedTransition, reader)
             val endTimestamp = estimateScenarioEndTimestamp(cujEntry, associatedTransition, reader)
 
+            val displayAtStart =
+                getOnDisplayFor(layersTrace.getFirstEntryWithOnDisplayAfter(startTimestamp))
+            val displayAtEnd =
+                getOnDisplayFor(layersTrace.getLastEntryWithOnDisplayBefore(endTimestamp))
+
             ScenarioInstance(
                 type,
-                startRotation =
-                    layersTrace
-                        .getEntryAt(startTimestamp)
-                        .displays
-                        .first { !it.isVirtual && it.layerStackSpace.isNotEmpty }
-                        .transform
-                        .getRotation(),
-                endRotation =
-                    layersTrace
-                        .getEntryAt(endTimestamp)
-                        .displays
-                        .first { !it.isVirtual && it.layerStackSpace.isNotEmpty }
-                        .transform
-                        .getRotation(),
+                startRotation = displayAtStart.transform.getRotation(),
+                endRotation = displayAtEnd.transform.getRotation(),
                 startTimestamp = startTimestamp,
                 endTimestamp = endTimestamp,
                 associatedCuj = cujEntry.cuj,
@@ -85,6 +79,15 @@ class TaggedScenarioExtractor(
                 reader = reader.slice(startTimestamp, endTimestamp)
             )
         }
+    }
+
+    private fun getOnDisplayFor(layerTraceEntry: LayerTraceEntry): Display {
+        val displays = layerTraceEntry.displays.filter { !it.isVirtual }
+        require(displays.isNotEmpty()) { "Failed to get a display for provided entry" }
+        val onDisplays = displays.filter { it.isOn }
+        require(onDisplays.isNotEmpty()) { "No on displays found for entry" }
+        require(onDisplays.size == 1) { "More than one on display found!" }
+        return onDisplays.first()
     }
 
     private fun estimateScenarioStartTimestamp(
@@ -213,13 +216,12 @@ class TaggedScenarioExtractor(
                 if (wmEntryAtTransitionFinished != null) {
                     wmEntryAtTransitionFinished.timestamp.unixNanos
                 } else {
-                    require(wmTrace.entries.isNotEmpty())
+                    require(wmTrace.entries.isNotEmpty()) { "WM trace should not be empty!" }
                     val closestWmEntry =
-                        wmTrace.entries
-                            .sortedBy {
-                                abs(it.timestamp.elapsedNanos - transition.finishTime.elapsedNanos)
-                            }
-                            .first()
+                        wmTrace.entries.minByOrNull {
+                            abs(it.timestamp.elapsedNanos - transition.finishTime.elapsedNanos)
+                        }
+                            ?: error("WM entry was unexpectedly empty!")
                     val offset =
                         closestWmEntry.timestamp.unixNanos - closestWmEntry.timestamp.elapsedNanos
                     transition.finishTime.elapsedNanos + offset

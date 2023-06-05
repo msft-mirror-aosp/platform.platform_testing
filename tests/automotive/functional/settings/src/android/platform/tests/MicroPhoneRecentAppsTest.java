@@ -39,6 +39,7 @@ public class MicroPhoneRecentAppsTest {
     private HelperAccessor<IAutoPrivacySettingsHelper> mPrivacySettingsHelper;
 
     private static final String APP = "Google Assistant";
+    private static final String APP_TXT = "Google Assistant is using the mic";
 
     public MicroPhoneRecentAppsTest() throws Exception {
         mAppGridHelper = new HelperAccessor<>(IAutoAppGridHelper.class);
@@ -57,6 +58,11 @@ public class MicroPhoneRecentAppsTest {
         mAppGridHelper.get().openApp(APP);
     }
 
+    @Before
+    public void exit() {
+        mPrivacySettingsHelper.get().exit();
+    }
+
     @Test
     public void testRecentlyAccessedApps() {
         mSettingHelper.get().openSetting(SettingsConstants.PRIVACY_SETTINGS);
@@ -67,12 +73,20 @@ public class MicroPhoneRecentAppsTest {
     }
 
     @Test
-    public void testViewAll() {
+    public void testViewAllLink() {
         mSettingHelper.get().openSetting(SettingsConstants.PRIVACY_SETTINGS);
         mSettingHelper.get().openMenuWith("MicroPhone");
-        mPrivacySettingsHelper.get().tapOnViewAll();
+        mPrivacySettingsHelper.get().clickViewAllLink();
         assertTrue(
                 "Recent App time stamp is not displayed in view all page",
                 mPrivacySettingsHelper.get().isRecentAppDisplayedWithStamp(APP));
+    }
+
+    @Test
+    public void testMicroPhonePanelUpdatedWithCurrentAppUsage() {
+        mPrivacySettingsHelper.get().clickUnMutedMicroPhoneStatusBar();
+        assertTrue(
+                "Current App usage is not displayed in the panel",
+                mPrivacySettingsHelper.get().isMicroPhoneStatusMessageUpdated(APP_TXT));
     }
 }

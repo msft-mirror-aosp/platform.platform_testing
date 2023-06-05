@@ -29,7 +29,7 @@ import android.tools.device.flicker.datastore.CachedResultWriter
 import android.tools.device.flicker.legacy.AbstractFlickerTestData
 import android.tools.device.flicker.legacy.FlickerBuilder
 import android.tools.device.flicker.legacy.IFlickerTestData
-import android.tools.device.traces.DEFAULT_TRACE_CONFIG
+import android.tools.device.traces.TRACE_CONFIG_REQUIRE_CHANGES
 import android.tools.device.traces.io.ArtifactBuilder
 import android.tools.device.traces.io.InMemoryArtifact
 import android.tools.device.traces.io.ParsedTracesReader
@@ -282,7 +282,7 @@ fun captureTrace(scenario: IScenario, actions: () -> Unit): ResultReader {
     }
     val result = writer.write()
 
-    return ResultReader(result, DEFAULT_TRACE_CONFIG)
+    return ResultReader(result, TRACE_CONFIG_REQUIRE_CHANGES)
 }
 
 fun createDefaultArtifactBuilder(

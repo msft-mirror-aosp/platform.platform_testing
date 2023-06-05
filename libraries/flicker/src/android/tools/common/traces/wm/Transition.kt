@@ -66,8 +66,10 @@ class Transition(
     @JsName("mergeTime") val mergeTime: Timestamp? = shellData.mergeTime
     @JsName("shellAbortTime") val shellAbortTime: Timestamp? = shellData.abortTime
 
-    @JsName("startTransactionId") val startTransactionId: Long = wmData.startTransactionId ?: -1L
-    @JsName("finishTransactionId") val finishTransactionId: Long = wmData.finishTransactionId ?: -1L
+    @JsName("startTransactionId")
+    val startTransactionId: Long = wmData.startTransactionId?.toLong() ?: -1L
+    @JsName("finishTransactionId")
+    val finishTransactionId: Long = wmData.finishTransactionId?.toLong() ?: -1L
     @JsName("type") val type: TransitionType = wmData.type ?: TransitionType.UNDEFINED
     @JsName("changes") val changes: Array<TransitionChange> = wmData.changes ?: emptyArray()
     @JsName("mergedInto") val mergedInto = shellData.mergedInto

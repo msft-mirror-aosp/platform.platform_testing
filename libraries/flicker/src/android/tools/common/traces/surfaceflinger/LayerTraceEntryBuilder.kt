@@ -184,8 +184,12 @@ class LayerTraceEntryBuilder {
         return displays.filterNot { it.isVirtual }
     }
 
-    private fun filterOutOffDisplays(displays: List<Display>): List<Display> {
-        return displays.filterNot { it.isOff }
+    private fun filterOutLayersInOffDisplays(roots: List<Layer>): List<Layer> {
+        val offDisplays = displays.filter { it.isOff }.map { it.layerStackId }
+
+        // Negated filtering because legacy traces do not contain any displays, so we don't want to
+        // remove all traces since displays will be empty, so we won't have any on or off displays
+        return roots.filterNot { offDisplays.contains(it.stackId) }
     }
 
     private fun filterOutLayersStackMatchNoDisplay(roots: List<Layer>): List<Layer> {
@@ -232,7 +236,7 @@ class LayerTraceEntryBuilder {
             filteredDisplays = filterOutVirtualDisplays(filteredDisplays)
         }
 
-        filteredDisplays = filterOutOffDisplays(filteredDisplays)
+        filteredRoots = filterOutLayersInOffDisplays(filteredRoots)
 
         // Fail if we find orphan layers.
         notifyOrphansLayers()

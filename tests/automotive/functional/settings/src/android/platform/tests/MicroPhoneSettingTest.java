@@ -113,7 +113,7 @@ public class MicroPhoneSettingTest {
         // turn off microphone
         mPrivacySettingsHelper.get().turnOnOffMicroPhone(false);
         // open microphone panel
-        mPrivacySettingsHelper.get().tapOnMicroPhoneStatusBar();
+        mPrivacySettingsHelper.get().clickMicroPhoneStatusBar();
         assertTrue(
                 "MicroPhone status not updated",
                 mPrivacySettingsHelper.get().isMicroPhoneStatusMessageUpdated(MICROPHONE_OFF_TXT));
@@ -131,7 +131,7 @@ public class MicroPhoneSettingTest {
         mPrivacySettingsHelper.get().turnOnOffMicroPhone(false);
         mFacetBarHelper.get().goToHomeScreen();
         // open microphone panel
-        mPrivacySettingsHelper.get().tapOnMicroPhoneStatusBar();
+        mPrivacySettingsHelper.get().clickMicroPhoneStatusBar();
         assertTrue(
                 "MicroPhone settings link is not present",
                 mPrivacySettingsHelper.get().isMicroPhoneSettingsLinkPresent());
@@ -145,7 +145,7 @@ public class MicroPhoneSettingTest {
         // turn off microphone
         mPrivacySettingsHelper.get().turnOnOffMicroPhone(false);
         // open microphone panel
-        mPrivacySettingsHelper.get().tapOnMicroPhoneStatusBar();
+        mPrivacySettingsHelper.get().clickMicroPhoneStatusBar();
         // go to privacy settings
         mPrivacySettingsHelper.get().clickMicroPhoneSettingsLink();
         assertTrue(
@@ -157,9 +157,9 @@ public class MicroPhoneSettingTest {
     public void testMicroPhonePanelToggle() {
         // turn off microphone
         mPrivacySettingsHelper.get().turnOnOffMicroPhone(false);
-        mPrivacySettingsHelper.get().tapOnMicroPhoneStatusBar();
+        mPrivacySettingsHelper.get().clickMicroPhoneStatusBar();
         // turn on microphone
-        mPrivacySettingsHelper.get().tapOnMicroPhoneToggleStatusBar();
+        mPrivacySettingsHelper.get().clickMicroPhoneToggleStatusBar();
         assertTrue("MicroPhone is still off", mPrivacySettingsHelper.get().isMicroPhoneOn());
         assertFalse(
                 "MicroPhone button not updated in status bar",
@@ -168,7 +168,7 @@ public class MicroPhoneSettingTest {
                 "MicroPhone status not updated",
                 mPrivacySettingsHelper.get().isMicroPhoneStatusMessageUpdated(USE_MICROPHONE_TXT));
         // turn off microphone
-        mPrivacySettingsHelper.get().tapOnMicroPhoneToggleStatusBar();
+        mPrivacySettingsHelper.get().clickMicroPhoneToggleStatusBar();
         assertTrue(
                 "MicroPhone button should be muted",
                 mPrivacySettingsHelper.get().isMutedMicChipPresentWithMicPanel());
@@ -177,9 +177,9 @@ public class MicroPhoneSettingTest {
     @Test
     public void testMicroPhoneButtonDimiss() {
         mPrivacySettingsHelper.get().turnOnOffMicroPhone(false);
-        mPrivacySettingsHelper.get().tapOnMicroPhoneStatusBar();
+        mPrivacySettingsHelper.get().clickMicroPhoneStatusBar();
         // turn microphone on
-        mPrivacySettingsHelper.get().tapOnMicroPhoneToggleStatusBar();
+        mPrivacySettingsHelper.get().clickMicroPhoneToggleStatusBar();
         assertFalse(
                 "Muted MicroPhone button is displayed in status bar",
                 mPrivacySettingsHelper.get().isMutedMicChipPresentWithMicPanel());

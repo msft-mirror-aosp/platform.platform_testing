@@ -19,7 +19,7 @@ package android.tools.device.flicker.assertions
 import android.tools.common.flicker.assertions.SubjectsParser
 import android.tools.common.io.IReader
 import android.tools.common.io.RunStatus
-import android.tools.device.traces.DEFAULT_TRACE_CONFIG
+import android.tools.device.traces.TRACE_CONFIG_REQUIRE_CHANGES
 import android.tools.device.traces.io.IResultData
 import android.tools.device.traces.io.ResultReaderWithLru
 
@@ -32,7 +32,7 @@ import android.tools.device.traces.io.ResultReaderWithLru
  */
 class ArtifactAssertionRunner(
     private val result: IResultData,
-    resultReader: IReader = ResultReaderWithLru(result, DEFAULT_TRACE_CONFIG),
+    resultReader: IReader = ResultReaderWithLru(result, TRACE_CONFIG_REQUIRE_CHANGES),
     subjectsParser: SubjectsParser = SubjectsParser(resultReader)
 ) : BaseAssertionRunner(resultReader, subjectsParser) {
     override fun doUpdateStatus(newStatus: RunStatus) {

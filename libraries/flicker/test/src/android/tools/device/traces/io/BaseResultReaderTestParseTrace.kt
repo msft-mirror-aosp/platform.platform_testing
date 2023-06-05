@@ -25,7 +25,7 @@ import android.tools.common.ITrace
 import android.tools.common.Timestamp
 import android.tools.common.io.RunStatus
 import android.tools.common.io.TraceType
-import android.tools.device.traces.DEFAULT_TRACE_CONFIG
+import android.tools.device.traces.TRACE_CONFIG_REQUIRE_CHANGES
 import android.tools.device.traces.deleteIfExists
 import android.tools.newTestResultWriter
 import android.tools.outputFileName
@@ -65,7 +65,7 @@ abstract class BaseResultReaderTestParseTrace {
         val writer = setupWriter(newTestResultWriter())
         val result = writer.write()
 
-        val reader = ResultReader(result, DEFAULT_TRACE_CONFIG)
+        val reader = ResultReader(result, TRACE_CONFIG_REQUIRE_CHANGES)
         val trace = doParse(reader) ?: error("$traceName not built")
 
         Truth.assertWithMessage(traceName).that(trace.entries).asList().isNotEmpty()
@@ -81,7 +81,7 @@ abstract class BaseResultReaderTestParseTrace {
     fun readTraceNullWhenDoesNotExist() {
         val writer = newTestResultWriter()
         val result = writer.write()
-        val reader = ResultReader(result, DEFAULT_TRACE_CONFIG)
+        val reader = ResultReader(result, TRACE_CONFIG_REQUIRE_CHANGES)
         val trace = doParse(reader)
 
         Truth.assertWithMessage(traceName).that(trace).isNull()
@@ -112,7 +112,7 @@ abstract class BaseResultReaderTestParseTrace {
             setupWriter(newTestResultWriter())
                 .setTransitionEndTime(CrossPlatform.timestamp.min())
                 .write()
-        val reader = ResultReader(result, DEFAULT_TRACE_CONFIG)
+        val reader = ResultReader(result, TRACE_CONFIG_REQUIRE_CHANGES)
         val exception =
             assertThrows<IllegalArgumentException> {
                 doParse(reader) ?: error("$traceName not built")

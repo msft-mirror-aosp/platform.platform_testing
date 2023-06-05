@@ -29,6 +29,9 @@ class AppLayerBecomesVisible(private val component: ComponentTemplate) :
     AssertionTemplateWithComponent(component) {
     /** {@inheritDoc} */
     override fun doEvaluate(scenarioInstance: IScenarioInstance, layerSubject: LayersTraceSubject) {
+        // The app launch transition can finish when the splashscreen or SnapshotStartingWindows
+        // are shown before the app window and layers are actually shown. (b/284302118)
+
         layerSubject
             .isInvisible(component.build(scenarioInstance))
             .then()
@@ -36,6 +39,14 @@ class AppLayerBecomesVisible(private val component: ComponentTemplate) :
             .then()
             .isVisible(ComponentNameMatcher.SPLASH_SCREEN, isOptional = true)
             .then()
-            .isVisible(component.build(scenarioInstance))
+            .isVisible(component.build(scenarioInstance), isOptional = true)
+            .forAllEntries()
+
+        layerSubject
+            .last()
+            .isVisible(
+                ComponentNameMatcher.SNAPSHOT.or(ComponentNameMatcher.SPLASH_SCREEN)
+                    .or(component.build(scenarioInstance))
+            )
     }
 }
