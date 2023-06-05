@@ -111,7 +111,7 @@ class LayersTraceSubject(val trace: LayersTrace, override val reader: IReader? =
                 ComponentNameMatcher.IME_SNAPSHOT,
                 ComponentNameMatcher.PIP_CONTENT_OVERLAY,
                 ComponentNameMatcher.EDGE_BACK_GESTURE_HANDLER,
-                ComponentNameMatcher.COLOR_FADE_BLAST,
+                ComponentNameMatcher.COLOR_FADE,
                 EdgeExtensionComponentMatcher()
             )
     ): LayersTraceSubject = apply {

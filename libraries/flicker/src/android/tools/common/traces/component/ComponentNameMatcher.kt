@@ -113,7 +113,7 @@ class ComponentNameMatcher(var component: ComponentName) : IComponentNameMatcher
 
         val EDGE_BACK_GESTURE_HANDLER = ComponentNameMatcher("", "EdgeBackGestureHandler")
 
-        val COLOR_FADE_BLAST = ComponentNameMatcher("", "ColorFade BLAST")
+        val COLOR_FADE = ComponentNameMatcher("", "ColorFade")
 
         val LAUNCHER =
             ComponentNameMatcher(
