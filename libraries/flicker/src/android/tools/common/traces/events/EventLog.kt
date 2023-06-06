@@ -19,6 +19,7 @@ package android.tools.common.traces.events
 import android.tools.common.ITrace
 import android.tools.common.Timestamp
 import kotlin.js.JsExport
+import kotlin.js.JsName
 
 /**
  * Represents the data from the Android EventLog and contains a collection of parsed events of
@@ -37,7 +38,7 @@ class EventLog(override val entries: Array<Event>) : ITrace<Event> {
 
     val cujEvents: Array<CujEvent> = entries.filterIsInstance<CujEvent>().toTypedArray()
 
-    val cujTrace: CujTrace = CujTrace.from(cujEvents)
+    @JsName("cujTrace") val cujTrace: CujTrace = CujTrace.from(cujEvents)
 
     companion object {
         const val MAGIC_NUMBER = "EventLog"

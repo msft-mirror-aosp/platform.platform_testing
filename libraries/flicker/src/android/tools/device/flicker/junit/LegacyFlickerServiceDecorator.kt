@@ -175,7 +175,7 @@ class LegacyFlickerServiceDecorator(
         val reader = CachedResultReader(testScenario, TRACE_CONFIG_REQUIRE_CHANGES)
 
         val faasTestCases =
-            FlickerServiceDecorator.getFaasTestCase(testScenario, "", reader, flickerService, this)
+            FlickerServiceDecorator.getFaasTestCases(testScenario, "", reader, flickerService, this)
 
         val expectedScenarios =
             testClass.annotations.filterIsInstance<FlickerServiceCompatible>().first().expectedCujs
