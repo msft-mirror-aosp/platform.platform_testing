@@ -175,7 +175,7 @@ class FlickerServiceDecorator(
         method: FrameworkMethod
     ): List<InjectedTestCase> {
         val faasTestCases =
-            getFaasTestCase(testScenario, paramString ?: "", reader, flickerService, this)
+            getFaasTestCases(testScenario, paramString ?: "", reader, flickerService, this)
 
         val expectedScenarios =
             (method.annotations
@@ -230,7 +230,7 @@ class FlickerServiceDecorator(
             return DataStore.getFlickerServiceAssertions(testScenario)
         }
 
-        internal fun getFaasTestCase(
+        internal fun getFaasTestCases(
             testScenario: IScenario,
             paramString: String,
             reader: IReader,
@@ -268,7 +268,7 @@ class FlickerServiceDecorator(
                                     organizedScenarioInstances.values.size == scenarioTypesIndex &&
                                         scenarioInstancesOfSameType.size == scenarioInstanceIndex,
                                 injectedBy = caller,
-                                "${paramString ?: ""}${
+                                "${paramString}${
                                     if (scenarioInstancesOfSameType.size > 1)
                                         "_${scenarioInstanceIndex + 1}"
                                     else
