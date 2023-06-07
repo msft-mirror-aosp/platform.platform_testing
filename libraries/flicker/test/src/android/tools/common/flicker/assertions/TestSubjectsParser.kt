@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-package android.tools.common.assertions
+package android.tools.common.flicker.assertions
 
-import android.tools.common.flicker.assertions.SubjectsParser
 import android.tools.common.flicker.subject.events.EventLogSubject
 import android.tools.common.flicker.subject.layers.LayerTraceEntrySubject
 import android.tools.common.flicker.subject.layers.LayersTraceSubject

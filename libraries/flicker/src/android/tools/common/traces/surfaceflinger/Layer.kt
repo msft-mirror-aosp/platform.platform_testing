@@ -223,7 +223,7 @@ private constructor(
         return buildString {
             append(name)
 
-            if (activeBuffer.isNotEmpty) {
+            if (!activeBuffer.isEmpty) {
                 append(" buffer:$activeBuffer")
                 append(" frame#$currFrame")
             }

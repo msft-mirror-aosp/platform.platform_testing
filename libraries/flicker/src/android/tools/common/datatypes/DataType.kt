@@ -16,26 +16,29 @@
 
 package android.tools.common.datatypes
 
-import android.tools.common.FloatFormatter
-import android.tools.common.withCache
 import kotlin.js.JsExport
 import kotlin.js.JsName
 
-/**
- * Wrapper for PositionProto (frameworks/native/services/surfaceflinger/layerproto/layers.proto)
- *
- * This class is used by flicker and Winscope
- */
 @JsExport
-class PointF private constructor(val x: Float, val y: Float) : DataType() {
-    override val isEmpty = x == 0f && y == 0f
-    override fun doPrintValue() = "(${FloatFormatter.format(x)}, ${FloatFormatter.format(y)})"
+abstract class DataType {
+    @JsName("isEmpty") abstract val isEmpty: Boolean
 
-    companion object {
-        @JsName("EMPTY")
-        val EMPTY: PointF
-            get() = withCache { PointF(x = 0f, y = 0f) }
+    val isNotEmpty
+        get() = !isEmpty
 
-        @JsName("from") fun from(x: Float, y: Float): PointF = withCache { PointF(x, y) }
+    protected abstract fun doPrintValue(): String
+
+    @JsName("prettyPrint") fun prettyPrint(): String = if (isEmpty) "[empty]" else doPrintValue()
+
+    final override fun toString() = prettyPrint()
+
+    final override fun hashCode() = doPrintValue().hashCode()
+
+    final override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is DataType) return false
+        if (this::class != other::class) return false
+
+        return doPrintValue() == other.doPrintValue()
     }
 }

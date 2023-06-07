@@ -14,14 +14,13 @@
  * limitations under the License.
  */
 
-package android.tools.common.assertions
+package android.tools.common.flicker.assertions
 
 import android.tools.CleanFlickerEnvironmentRule
 import android.tools.assertFail
 import android.tools.common.CrossPlatform
 import android.tools.common.ITraceEntry
 import android.tools.common.Timestamp
-import android.tools.common.flicker.assertions.AssertionsChecker
 import android.tools.common.flicker.subject.FlickerSubject
 import org.junit.ClassRule
 import org.junit.FixMethodOrder

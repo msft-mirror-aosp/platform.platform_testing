@@ -22,12 +22,18 @@ import android.tools.TEST_SCENARIO
 import android.tools.assertExceptionMessage
 import android.tools.assertThrows
 import com.google.common.truth.Truth
+import org.junit.Before
 import org.junit.ClassRule
 import org.junit.Rule
 import org.junit.Test
 
 @SuppressLint("VisibleForTests")
 class DataStoreTest {
+    @Before
+    fun setup() {
+        DataStore.clear()
+    }
+
     @Test
     fun addsElement() {
         DataStore.addResult(TEST_SCENARIO, Consts.TEST_RESULT)

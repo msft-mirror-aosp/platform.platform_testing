@@ -115,7 +115,7 @@ class LayerTraceEntrySubjectTest {
         val reader = getLayerTraceReaderFromAsset("layers_trace_emptyregion.pb", legacyTrace = true)
         val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
         val expectedVisibleRegion = Region.from(0, 0, 1, 1)
-        assertFail("SkRegion() should cover exactly SkRegion((0,0,1,1))") {
+        assertFail("[empty] should cover exactly SkRegion((0,0,1,1))") {
             LayersTraceSubject(trace, reader)
                 .getEntryBySystemUpTime(937126074082, byElapsedTimestamp = true)
                 .visibleRegion(TestComponents.DOCKER_STACK_DIVIDER)
@@ -128,7 +128,7 @@ class LayerTraceEntrySubjectTest {
         val reader = getLayerTraceReaderFromAsset("layers_trace_emptyregion.pb", legacyTrace = true)
         val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
         val expectedVisibleRegion = Region.from(0, 0, 1, 1)
-        assertFail("SkRegion() should cover exactly SkRegion((0,0,1,1))") {
+        assertFail("[empty] should cover exactly SkRegion((0,0,1,1))") {
             LayersTraceSubject(trace, reader)
                 .getEntryBySystemUpTime(935346112030, byElapsedTimestamp = true)
                 .visibleRegion(TestComponents.SIMPLE_APP)

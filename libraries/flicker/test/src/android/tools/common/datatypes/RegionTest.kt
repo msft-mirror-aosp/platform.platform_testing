@@ -14,11 +14,9 @@
  * limitations under the License.
  */
 
-package android.tools.common.traces.region
+package android.tools.common.datatypes
 
 import android.tools.CleanFlickerEnvironmentRule
-import android.tools.common.datatypes.Rect
-import android.tools.common.datatypes.Region
 import kotlin.random.Random
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -33,262 +31,23 @@ import org.junit.runners.MethodSorters
 /** Contains [Region] tests. To run this test: `atest FlickerLibTest:RegionTest` */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class RegionTest {
-    // DIFFERENCE
-    private val DIFFERENCE_WITH1 =
-        arrayOf(
-            intArrayOf(0, 0),
-            intArrayOf(4, 4),
-            intArrayOf(10, 10),
-            intArrayOf(19, 19),
-            intArrayOf(19, 0),
-            intArrayOf(10, 4),
-            intArrayOf(4, 10),
-            intArrayOf(0, 19)
-        )
-    private val DIFFERENCE_WITHOUT1 =
-        arrayOf(intArrayOf(5, 5), intArrayOf(9, 9), intArrayOf(9, 5), intArrayOf(5, 9))
-
-    private val DIFFERENCE_WITH2 =
-        arrayOf(
-            intArrayOf(0, 0),
-            intArrayOf(19, 0),
-            intArrayOf(9, 9),
-            intArrayOf(19, 9),
-            intArrayOf(0, 19),
-            intArrayOf(9, 19)
-        )
-    private val DIFFERENCE_WITHOUT2 =
-        arrayOf(
-            intArrayOf(10, 10),
-            intArrayOf(19, 10),
-            intArrayOf(10, 19),
-            intArrayOf(19, 19),
-            intArrayOf(29, 10),
-            intArrayOf(29, 29),
-            intArrayOf(10, 29)
-        )
-
-    private val DIFFERENCE_WITH3 =
-        arrayOf(intArrayOf(0, 0), intArrayOf(19, 0), intArrayOf(0, 19), intArrayOf(19, 19))
-    private val DIFFERENCE_WITHOUT3 =
-        arrayOf(intArrayOf(40, 40), intArrayOf(40, 59), intArrayOf(59, 40), intArrayOf(59, 59))
-
-    // INTERSECT
-    private val INTERSECT_WITH1 =
-        arrayOf(intArrayOf(5, 5), intArrayOf(9, 9), intArrayOf(9, 5), intArrayOf(5, 9))
-    private val INTERSECT_WITHOUT1 =
-        arrayOf(
-            intArrayOf(0, 0),
-            intArrayOf(2, 2),
-            intArrayOf(4, 4),
-            intArrayOf(10, 10),
-            intArrayOf(19, 19),
-            intArrayOf(19, 0),
-            intArrayOf(10, 4),
-            intArrayOf(4, 10),
-            intArrayOf(0, 19)
-        )
-
-    private val INTERSECT_WITH2 =
-        arrayOf(intArrayOf(10, 10), intArrayOf(19, 10), intArrayOf(10, 19), intArrayOf(19, 19))
-    private val INTERSECT_WITHOUT2 =
-        arrayOf(
-            intArrayOf(0, 0),
-            intArrayOf(19, 0),
-            intArrayOf(9, 9),
-            intArrayOf(19, 9),
-            intArrayOf(0, 19),
-            intArrayOf(9, 19),
-            intArrayOf(29, 10),
-            intArrayOf(29, 29),
-            intArrayOf(10, 29)
-        )
-
-    // UNION
-    private val UNION_WITH1 =
-        arrayOf(
-            intArrayOf(0, 0),
-            intArrayOf(2, 2),
-            intArrayOf(4, 4),
-            intArrayOf(6, 6),
-            intArrayOf(10, 10),
-            intArrayOf(19, 19),
-            intArrayOf(19, 0),
-            intArrayOf(10, 4),
-            intArrayOf(4, 10),
-            intArrayOf(0, 19),
-            intArrayOf(5, 5),
-            intArrayOf(9, 9),
-            intArrayOf(9, 5),
-            intArrayOf(5, 9)
-        )
-    private val UNION_WITHOUT1 = arrayOf(intArrayOf(0, 20), intArrayOf(20, 20), intArrayOf(20, 0))
-
-    private val UNION_WITH2 =
-        arrayOf(
-            intArrayOf(0, 0),
-            intArrayOf(2, 2),
-            intArrayOf(19, 0),
-            intArrayOf(9, 9),
-            intArrayOf(19, 9),
-            intArrayOf(0, 19),
-            intArrayOf(9, 19),
-            intArrayOf(21, 21),
-            intArrayOf(10, 10),
-            intArrayOf(19, 10),
-            intArrayOf(10, 19),
-            intArrayOf(19, 19),
-            intArrayOf(29, 10),
-            intArrayOf(29, 29),
-            intArrayOf(10, 29)
-        )
-    private val UNION_WITHOUT2 =
-        arrayOf(
-            intArrayOf(0, 29),
-            intArrayOf(0, 20),
-            intArrayOf(9, 29),
-            intArrayOf(9, 20),
-            intArrayOf(29, 0),
-            intArrayOf(20, 0),
-            intArrayOf(29, 9),
-            intArrayOf(20, 9)
-        )
-
-    private val UNION_WITH3 =
-        arrayOf(
-            intArrayOf(0, 0),
-            intArrayOf(2, 2),
-            intArrayOf(19, 0),
-            intArrayOf(0, 19),
-            intArrayOf(19, 19),
-            intArrayOf(40, 40),
-            intArrayOf(41, 41),
-            intArrayOf(40, 59),
-            intArrayOf(59, 40),
-            intArrayOf(59, 59)
-        )
-    private val UNION_WITHOUT3 = arrayOf(intArrayOf(20, 20), intArrayOf(39, 39))
-
-    // XOR
-    private val XOR_WITH1 =
-        arrayOf(
-            intArrayOf(0, 0),
-            intArrayOf(2, 2),
-            intArrayOf(4, 4),
-            intArrayOf(10, 10),
-            intArrayOf(19, 19),
-            intArrayOf(19, 0),
-            intArrayOf(10, 4),
-            intArrayOf(4, 10),
-            intArrayOf(0, 19)
-        )
-    private val XOR_WITHOUT1 =
-        arrayOf(
-            intArrayOf(5, 5),
-            intArrayOf(6, 6),
-            intArrayOf(9, 9),
-            intArrayOf(9, 5),
-            intArrayOf(5, 9)
-        )
-
-    private val XOR_WITH2 =
-        arrayOf(
-            intArrayOf(0, 0),
-            intArrayOf(2, 2),
-            intArrayOf(19, 0),
-            intArrayOf(9, 9),
-            intArrayOf(19, 9),
-            intArrayOf(0, 19),
-            intArrayOf(9, 19),
-            intArrayOf(21, 21),
-            intArrayOf(29, 10),
-            intArrayOf(10, 29),
-            intArrayOf(20, 10),
-            intArrayOf(10, 20),
-            intArrayOf(20, 20),
-            intArrayOf(29, 29)
-        )
-    private val XOR_WITHOUT2 =
-        arrayOf(
-            intArrayOf(10, 10),
-            intArrayOf(11, 11),
-            intArrayOf(19, 10),
-            intArrayOf(10, 19),
-            intArrayOf(19, 19)
-        )
-
-    private val XOR_WITH3 =
-        arrayOf(
-            intArrayOf(0, 0),
-            intArrayOf(2, 2),
-            intArrayOf(19, 0),
-            intArrayOf(0, 19),
-            intArrayOf(19, 19),
-            intArrayOf(40, 40),
-            intArrayOf(41, 41),
-            intArrayOf(40, 59),
-            intArrayOf(59, 40),
-            intArrayOf(59, 59)
-        )
-    private val XOR_WITHOUT3 = arrayOf(intArrayOf(20, 20), intArrayOf(39, 39))
-
-    // REVERSE_DIFFERENCE
-    private val REVERSE_DIFFERENCE_WITH2 =
-        arrayOf(
-            intArrayOf(29, 10),
-            intArrayOf(10, 29),
-            intArrayOf(20, 10),
-            intArrayOf(10, 20),
-            intArrayOf(20, 20),
-            intArrayOf(29, 29),
-            intArrayOf(21, 21)
-        )
-    private val REVERSE_DIFFERENCE_WITHOUT2 =
-        arrayOf(
-            intArrayOf(0, 0),
-            intArrayOf(19, 0),
-            intArrayOf(0, 19),
-            intArrayOf(19, 19),
-            intArrayOf(2, 2),
-            intArrayOf(11, 11)
-        )
-
-    private val REVERSE_DIFFERENCE_WITH3 =
-        arrayOf(
-            intArrayOf(40, 40),
-            intArrayOf(40, 59),
-            intArrayOf(59, 40),
-            intArrayOf(59, 59),
-            intArrayOf(41, 41)
-        )
-    private val REVERSE_DIFFERENCE_WITHOUT3 =
-        arrayOf(
-            intArrayOf(0, 0),
-            intArrayOf(19, 0),
-            intArrayOf(0, 19),
-            intArrayOf(19, 19),
-            intArrayOf(20, 20),
-            intArrayOf(39, 39),
-            intArrayOf(2, 2)
-        )
-
-    private var mRegion: Region = Region()
+    private var region: Region = Region()
 
     private fun verifyPointsInsideRegion(area: Array<IntArray>) {
         for (i in area.indices) {
-            assertTrue(mRegion.contains(area[i][0], area[i][1]))
+            assertTrue(region.contains(area[i][0], area[i][1]))
         }
     }
 
     private fun verifyPointsOutsideRegion(area: Array<IntArray>) {
         for (i in area.indices) {
-            assertFalse(mRegion.contains(area[i][0], area[i][1]))
+            assertFalse(region.contains(area[i][0], area[i][1]))
         }
     }
 
     @Before
     fun setup() {
-        mRegion = Region()
+        region = Region()
     }
 
     @Test
@@ -312,54 +71,54 @@ class RegionTest {
     fun testSet1() {
         val rect = Rect.from(1, 2, 3, 4)
         val oriRegion = Region.from(rect)
-        assertTrue(mRegion.set(oriRegion))
-        assertEquals(1, mRegion.bounds.left)
-        assertEquals(2, mRegion.bounds.top)
-        assertEquals(3, mRegion.bounds.right)
-        assertEquals(4, mRegion.bounds.bottom)
+        assertTrue(region.set(oriRegion))
+        assertEquals(1, region.bounds.left)
+        assertEquals(2, region.bounds.top)
+        assertEquals(3, region.bounds.right)
+        assertEquals(4, region.bounds.bottom)
     }
 
     @Test
     fun testSet2() {
         val rect = Rect.from(1, 2, 3, 4)
-        assertTrue(mRegion.set(rect))
-        assertEquals(1, mRegion.bounds.left)
-        assertEquals(2, mRegion.bounds.top)
-        assertEquals(3, mRegion.bounds.right)
-        assertEquals(4, mRegion.bounds.bottom)
+        assertTrue(region.set(rect))
+        assertEquals(1, region.bounds.left)
+        assertEquals(2, region.bounds.top)
+        assertEquals(3, region.bounds.right)
+        assertEquals(4, region.bounds.bottom)
     }
 
     @Test
     fun testSet3() {
-        assertTrue(mRegion.set(1, 2, 3, 4))
-        assertEquals(1, mRegion.bounds.left)
-        assertEquals(2, mRegion.bounds.top)
-        assertEquals(3, mRegion.bounds.right)
-        assertEquals(4, mRegion.bounds.bottom)
+        assertTrue(region.set(1, 2, 3, 4))
+        assertEquals(1, region.bounds.left)
+        assertEquals(2, region.bounds.top)
+        assertEquals(3, region.bounds.right)
+        assertEquals(4, region.bounds.bottom)
     }
 
     @Test
     fun testIsRect() {
-        assertFalse(mRegion.isRect())
-        mRegion = Region.from(1, 2, 3, 4)
-        assertTrue(mRegion.isRect())
+        assertFalse(region.isRect())
+        region = Region.from(1, 2, 3, 4)
+        assertTrue(region.isRect())
     }
 
     @Test
     fun testIsComplex() {
         // Region is empty
-        assertFalse(mRegion.isComplex())
+        assertFalse(region.isComplex())
 
         // Only one rectangle
-        mRegion = Region()
-        mRegion.set(1, 2, 3, 4)
-        assertFalse(mRegion.isComplex())
+        region = Region()
+        region.set(1, 2, 3, 4)
+        assertFalse(region.isComplex())
 
         // More than one rectangle
-        mRegion = Region()
-        mRegion.set(1, 1, 2, 2)
-        mRegion.union(Rect.from(3, 3, 5, 5))
-        assertTrue(mRegion.isComplex())
+        region = Region()
+        region.set(1, 1, 2, 2)
+        region.union(Rect.from(3, 3, 5, 5))
+        assertTrue(region.isComplex())
     }
 
     @Test
@@ -371,76 +130,76 @@ class RegionTest {
         val rect5 = Rect.from(40, 40, 60, 60)
 
         // union (inclusive-or) the two regions
-        mRegion.set(rect2)
+        region.set(rect2)
         // union null rectangle
-        assertTrue(mRegion.contains(6, 6))
-        assertTrue(mRegion.union(rect1))
-        assertTrue(mRegion.contains(6, 6))
+        assertTrue(region.contains(6, 6))
+        assertTrue(region.union(rect1))
+        assertTrue(region.contains(6, 6))
 
         // 1. union rectangle inside this region
-        mRegion.set(rect2)
-        assertTrue(mRegion.contains(2, 2))
-        assertTrue(mRegion.contains(6, 6))
-        assertTrue(mRegion.union(rect3))
+        region.set(rect2)
+        assertTrue(region.contains(2, 2))
+        assertTrue(region.contains(6, 6))
+        assertTrue(region.union(rect3))
         verifyPointsInsideRegion(UNION_WITH1)
         verifyPointsOutsideRegion(UNION_WITHOUT1)
 
         // 2. union rectangle overlap this region
-        mRegion.set(rect2)
-        assertTrue(mRegion.contains(2, 2))
-        assertFalse(mRegion.contains(21, 21))
-        assertTrue(mRegion.union(rect4))
+        region.set(rect2)
+        assertTrue(region.contains(2, 2))
+        assertFalse(region.contains(21, 21))
+        assertTrue(region.union(rect4))
         verifyPointsInsideRegion(UNION_WITH2)
         verifyPointsOutsideRegion(UNION_WITHOUT2)
 
         // 3. union rectangle out of this region
-        mRegion.set(rect2)
-        assertTrue(mRegion.contains(2, 2))
-        assertFalse(mRegion.contains(41, 41))
-        assertTrue(mRegion.union(rect5))
+        region.set(rect2)
+        assertTrue(region.contains(2, 2))
+        assertFalse(region.contains(41, 41))
+        assertTrue(region.union(rect5))
         verifyPointsInsideRegion(UNION_WITH3)
         verifyPointsOutsideRegion(UNION_WITHOUT3)
     }
 
     @Test
     fun testContains() {
-        mRegion.set(2, 2, 5, 5)
+        region.set(2, 2, 5, 5)
         // Not contain (1, 1).
-        assertFalse(mRegion.contains(1, 1))
+        assertFalse(region.contains(1, 1))
 
         // Test point inside this region.
-        assertTrue(mRegion.contains(3, 3))
+        assertTrue(region.contains(3, 3))
 
         // Test left-top corner.
-        assertTrue(mRegion.contains(2, 2))
+        assertTrue(region.contains(2, 2))
 
         // Test left-bottom corner.
-        assertTrue(mRegion.contains(2, 4))
+        assertTrue(region.contains(2, 4))
 
         // Test right-top corner.
-        assertTrue(mRegion.contains(4, 2))
+        assertTrue(region.contains(4, 2))
 
         // Test right-bottom corner.
-        assertTrue(mRegion.contains(4, 4))
+        assertTrue(region.contains(4, 4))
 
         // Though you set 5, but 5 is not contained by this region.
-        assertFalse(mRegion.contains(5, 5))
-        assertFalse(mRegion.contains(2, 5))
-        assertFalse(mRegion.contains(5, 2))
+        assertFalse(region.contains(5, 5))
+        assertFalse(region.contains(2, 5))
+        assertFalse(region.contains(5, 2))
 
         // Set a new rectangle.
-        mRegion.set(6, 6, 8, 8)
-        assertFalse(mRegion.contains(3, 3))
-        assertTrue(mRegion.contains(7, 7))
+        region.set(6, 6, 8, 8)
+        assertFalse(region.contains(3, 3))
+        assertTrue(region.contains(7, 7))
     }
 
     @Test
     fun testEmpty() {
-        assertTrue(mRegion.isEmpty)
-        mRegion = Region.from(1, 2, 3, 4)
-        assertFalse(mRegion.isEmpty)
-        mRegion.setEmpty()
-        assertTrue(mRegion.isEmpty)
+        assertTrue(region.isEmpty)
+        region = Region.from(1, 2, 3, 4)
+        assertFalse(region.isEmpty)
+        region.setEmpty()
+        assertTrue(region.isEmpty)
     }
 
     @Test
@@ -461,13 +220,13 @@ class RegionTest {
 
     private fun verifyNullRegionOp1(rect1: Rect) {
         // Region without rectangle
-        mRegion = Region()
-        assertFalse(mRegion.op(rect1, Region.Op.DIFFERENCE))
-        assertFalse(mRegion.op(rect1, Region.Op.INTERSECT))
-        assertFalse(mRegion.op(rect1, Region.Op.UNION))
-        assertFalse(mRegion.op(rect1, Region.Op.XOR))
-        assertFalse(mRegion.op(rect1, Region.Op.REVERSE_DIFFERENCE))
-        assertFalse(mRegion.op(rect1, Region.Op.REPLACE))
+        region = Region()
+        assertFalse(region.op(rect1, Region.Op.DIFFERENCE))
+        assertFalse(region.op(rect1, Region.Op.INTERSECT))
+        assertFalse(region.op(rect1, Region.Op.UNION))
+        assertFalse(region.op(rect1, Region.Op.XOR))
+        assertFalse(region.op(rect1, Region.Op.REVERSE_DIFFERENCE))
+        assertFalse(region.op(rect1, Region.Op.REPLACE))
     }
 
     private fun verifyDifferenceOp1(
@@ -479,28 +238,28 @@ class RegionTest {
     ) {
         // DIFFERENCE, Region with rectangle
         // subtract the op region from the first region
-        mRegion = Region()
+        region = Region()
         // subtract null rectangle
-        mRegion.set(rect2)
-        assertTrue(mRegion.op(rect1, Region.Op.DIFFERENCE))
+        region.set(rect2)
+        assertTrue(region.op(rect1, Region.Op.DIFFERENCE))
 
         // 1. subtract rectangle inside this region
-        mRegion.set(rect2)
-        assertTrue(mRegion.contains(6, 6))
-        assertTrue(mRegion.op(rect3, Region.Op.DIFFERENCE))
+        region.set(rect2)
+        assertTrue(region.contains(6, 6))
+        assertTrue(region.op(rect3, Region.Op.DIFFERENCE))
         verifyPointsInsideRegion(DIFFERENCE_WITH1)
         verifyPointsOutsideRegion(DIFFERENCE_WITHOUT1)
 
         // 2. subtract rectangle overlap this region
-        mRegion.set(rect2)
-        assertTrue(mRegion.contains(11, 11))
-        assertTrue(mRegion.op(rect4, Region.Op.DIFFERENCE))
+        region.set(rect2)
+        assertTrue(region.contains(11, 11))
+        assertTrue(region.op(rect4, Region.Op.DIFFERENCE))
         verifyPointsInsideRegion(DIFFERENCE_WITH2)
         verifyPointsOutsideRegion(DIFFERENCE_WITHOUT2)
 
         // 3. subtract rectangle out of this region
-        mRegion.set(rect2)
-        assertTrue(mRegion.op(rect5, Region.Op.DIFFERENCE))
+        region.set(rect2)
+        assertTrue(region.op(rect5, Region.Op.DIFFERENCE))
         verifyPointsInsideRegion(DIFFERENCE_WITH3)
         verifyPointsOutsideRegion(DIFFERENCE_WITHOUT3)
     }
@@ -514,61 +273,61 @@ class RegionTest {
     ) {
         // INTERSECT, Region with rectangle
         // intersect the two regions
-        mRegion = Region()
+        region = Region()
         // intersect null rectangle
-        mRegion.set(rect2)
-        assertFalse(mRegion.op(rect1, Region.Op.INTERSECT))
+        region.set(rect2)
+        assertFalse(region.op(rect1, Region.Op.INTERSECT))
 
         // 1. intersect rectangle inside this region
-        mRegion.set(rect2)
-        assertTrue(mRegion.contains(2, 2))
-        assertTrue(mRegion.op(rect3, Region.Op.INTERSECT))
+        region.set(rect2)
+        assertTrue(region.contains(2, 2))
+        assertTrue(region.op(rect3, Region.Op.INTERSECT))
         verifyPointsInsideRegion(INTERSECT_WITH1)
         verifyPointsOutsideRegion(INTERSECT_WITHOUT1)
 
         // 2. intersect rectangle overlap this region
-        mRegion.set(rect2)
-        assertTrue(mRegion.contains(9, 9))
-        assertTrue(mRegion.op(rect4, Region.Op.INTERSECT))
+        region.set(rect2)
+        assertTrue(region.contains(9, 9))
+        assertTrue(region.op(rect4, Region.Op.INTERSECT))
         verifyPointsInsideRegion(INTERSECT_WITH2)
         verifyPointsOutsideRegion(INTERSECT_WITHOUT2)
 
         // 3. intersect rectangle out of this region
-        mRegion.set(rect2)
-        assertFalse(mRegion.op(rect5, Region.Op.INTERSECT))
+        region.set(rect2)
+        assertFalse(region.op(rect5, Region.Op.INTERSECT))
     }
 
     private fun verifyUnionOp1(rect1: Rect, rect2: Rect, rect3: Rect, rect4: Rect, rect5: Rect) {
         // UNION, Region with rectangle
         // union (inclusive-or) the two regions
-        mRegion = Region()
-        mRegion.set(rect2)
+        region = Region()
+        region.set(rect2)
         // union null rectangle
-        assertTrue(mRegion.contains(6, 6))
-        assertTrue(mRegion.op(rect1, Region.Op.UNION))
-        assertTrue(mRegion.contains(6, 6))
+        assertTrue(region.contains(6, 6))
+        assertTrue(region.op(rect1, Region.Op.UNION))
+        assertTrue(region.contains(6, 6))
 
         // 1. union rectangle inside this region
-        mRegion.set(rect2)
-        assertTrue(mRegion.contains(2, 2))
-        assertTrue(mRegion.contains(6, 6))
-        assertTrue(mRegion.op(rect3, Region.Op.UNION))
+        region.set(rect2)
+        assertTrue(region.contains(2, 2))
+        assertTrue(region.contains(6, 6))
+        assertTrue(region.op(rect3, Region.Op.UNION))
         verifyPointsInsideRegion(UNION_WITH1)
         verifyPointsOutsideRegion(UNION_WITHOUT1)
 
         // 2. union rectangle overlap this region
-        mRegion.set(rect2)
-        assertTrue(mRegion.contains(2, 2))
-        assertFalse(mRegion.contains(21, 21))
-        assertTrue(mRegion.op(rect4, Region.Op.UNION))
+        region.set(rect2)
+        assertTrue(region.contains(2, 2))
+        assertFalse(region.contains(21, 21))
+        assertTrue(region.op(rect4, Region.Op.UNION))
         verifyPointsInsideRegion(UNION_WITH2)
         verifyPointsOutsideRegion(UNION_WITHOUT2)
 
         // 3. union rectangle out of this region
-        mRegion.set(rect2)
-        assertTrue(mRegion.contains(2, 2))
-        assertFalse(mRegion.contains(41, 41))
-        assertTrue(mRegion.op(rect5, Region.Op.UNION))
+        region.set(rect2)
+        assertTrue(region.contains(2, 2))
+        assertFalse(region.contains(41, 41))
+        assertTrue(region.op(rect5, Region.Op.UNION))
         verifyPointsInsideRegion(UNION_WITH3)
         verifyPointsOutsideRegion(UNION_WITHOUT3)
     }
@@ -576,33 +335,33 @@ class RegionTest {
     private fun verifyXorOp1(rect1: Rect, rect2: Rect, rect3: Rect, rect4: Rect, rect5: Rect) {
         // XOR, Region with rectangle
         // exclusive-or the two regions
-        mRegion = Region()
+        region = Region()
         // xor null rectangle
-        mRegion.set(rect2)
-        assertTrue(mRegion.op(rect1, Region.Op.XOR))
+        region.set(rect2)
+        assertTrue(region.op(rect1, Region.Op.XOR))
 
         // 1. xor rectangle inside this region
-        mRegion.set(rect2)
-        assertTrue(mRegion.contains(2, 2))
-        assertTrue(mRegion.contains(6, 6))
-        assertTrue(mRegion.op(rect3, Region.Op.XOR))
+        region.set(rect2)
+        assertTrue(region.contains(2, 2))
+        assertTrue(region.contains(6, 6))
+        assertTrue(region.op(rect3, Region.Op.XOR))
         verifyPointsInsideRegion(XOR_WITH1)
         verifyPointsOutsideRegion(XOR_WITHOUT1)
 
         // 2. xor rectangle overlap this region
-        mRegion.set(rect2)
-        assertTrue(mRegion.contains(2, 2))
-        assertTrue(mRegion.contains(11, 11))
-        assertFalse(mRegion.contains(21, 21))
-        assertTrue(mRegion.op(rect4, Region.Op.XOR))
+        region.set(rect2)
+        assertTrue(region.contains(2, 2))
+        assertTrue(region.contains(11, 11))
+        assertFalse(region.contains(21, 21))
+        assertTrue(region.op(rect4, Region.Op.XOR))
         verifyPointsInsideRegion(XOR_WITH2)
         verifyPointsOutsideRegion(XOR_WITHOUT2)
 
         // 3. xor rectangle out of this region
-        mRegion.set(rect2)
-        assertTrue(mRegion.contains(2, 2))
-        assertFalse(mRegion.contains(41, 41))
-        assertTrue(mRegion.op(rect5, Region.Op.XOR))
+        region.set(rect2)
+        assertTrue(region.contains(2, 2))
+        assertFalse(region.contains(41, 41))
+        assertTrue(region.op(rect5, Region.Op.XOR))
         verifyPointsInsideRegion(XOR_WITH3)
         verifyPointsOutsideRegion(XOR_WITHOUT3)
     }
@@ -616,31 +375,31 @@ class RegionTest {
     ) {
         // REVERSE_DIFFERENCE, Region with rectangle
         // reverse difference the first region from the op region
-        mRegion = Region()
-        mRegion.set(rect2)
+        region = Region()
+        region.set(rect2)
         // reverse difference null rectangle
-        assertFalse(mRegion.op(rect1, Region.Op.REVERSE_DIFFERENCE))
+        assertFalse(region.op(rect1, Region.Op.REVERSE_DIFFERENCE))
 
         // 1. reverse difference rectangle inside this region
-        mRegion.set(rect2)
-        assertTrue(mRegion.contains(2, 2))
-        assertTrue(mRegion.contains(6, 6))
-        assertFalse(mRegion.op(rect3, Region.Op.REVERSE_DIFFERENCE))
+        region.set(rect2)
+        assertTrue(region.contains(2, 2))
+        assertTrue(region.contains(6, 6))
+        assertFalse(region.op(rect3, Region.Op.REVERSE_DIFFERENCE))
 
         // 2. reverse difference rectangle overlap this region
-        mRegion.set(rect2)
-        assertTrue(mRegion.contains(2, 2))
-        assertTrue(mRegion.contains(11, 11))
-        assertFalse(mRegion.contains(21, 21))
-        assertTrue(mRegion.op(rect4, Region.Op.REVERSE_DIFFERENCE))
+        region.set(rect2)
+        assertTrue(region.contains(2, 2))
+        assertTrue(region.contains(11, 11))
+        assertFalse(region.contains(21, 21))
+        assertTrue(region.op(rect4, Region.Op.REVERSE_DIFFERENCE))
         verifyPointsInsideRegion(REVERSE_DIFFERENCE_WITH2)
         verifyPointsOutsideRegion(REVERSE_DIFFERENCE_WITHOUT2)
 
         // 3. reverse difference rectangle out of this region
-        mRegion.set(rect2)
-        assertTrue(mRegion.contains(2, 2))
-        assertFalse(mRegion.contains(41, 41))
-        assertTrue(mRegion.op(rect5, Region.Op.REVERSE_DIFFERENCE))
+        region.set(rect2)
+        assertTrue(region.contains(2, 2))
+        assertFalse(region.contains(41, 41))
+        assertTrue(region.op(rect5, Region.Op.REVERSE_DIFFERENCE))
         verifyPointsInsideRegion(REVERSE_DIFFERENCE_WITH3)
         verifyPointsOutsideRegion(REVERSE_DIFFERENCE_WITHOUT3)
     }
@@ -648,28 +407,28 @@ class RegionTest {
     private fun verifyReplaceOp1(rect1: Rect, rect2: Rect, rect3: Rect, rect4: Rect, rect5: Rect) {
         // REPLACE, Region with rectangle
         // replace the dst region with the op region
-        mRegion = Region()
-        mRegion.set(rect2)
+        region = Region()
+        region.set(rect2)
         // subtract null rectangle
-        assertFalse(mRegion.op(rect1, Region.Op.REPLACE))
+        assertFalse(region.op(rect1, Region.Op.REPLACE))
         // subtract rectangle inside this region
-        mRegion.set(rect2)
-        assertEquals(rect2, mRegion.bounds)
-        assertTrue(mRegion.op(rect3, Region.Op.REPLACE))
-        assertNotSame(rect2, mRegion.bounds)
-        assertEquals(rect3, mRegion.bounds)
+        region.set(rect2)
+        assertEquals(rect2, region.bounds)
+        assertTrue(region.op(rect3, Region.Op.REPLACE))
+        assertNotSame(rect2, region.bounds)
+        assertEquals(rect3, region.bounds)
         // subtract rectangle overlap this region
-        mRegion.set(rect2)
-        assertEquals(rect2, mRegion.bounds)
-        assertTrue(mRegion.op(rect4, Region.Op.REPLACE))
-        assertNotSame(rect2, mRegion.bounds)
-        assertEquals(rect4, mRegion.bounds)
+        region.set(rect2)
+        assertEquals(rect2, region.bounds)
+        assertTrue(region.op(rect4, Region.Op.REPLACE))
+        assertNotSame(rect2, region.bounds)
+        assertEquals(rect4, region.bounds)
         // subtract rectangle out of this region
-        mRegion.set(rect2)
-        assertEquals(rect2, mRegion.bounds)
-        assertTrue(mRegion.op(rect5, Region.Op.REPLACE))
-        assertNotSame(rect2, mRegion.bounds)
-        assertEquals(rect5, mRegion.bounds)
+        region.set(rect2)
+        assertEquals(rect2, region.bounds)
+        assertTrue(region.op(rect5, Region.Op.REPLACE))
+        assertNotSame(rect2, region.bounds)
+        assertEquals(rect5, region.bounds)
     }
 
     @Test
@@ -689,40 +448,40 @@ class RegionTest {
 
     private fun verifyNullRegionOp2() {
         // Region without rectangle
-        mRegion = Region()
-        assertFalse(mRegion.op(0, 0, 0, 0, Region.Op.DIFFERENCE))
-        assertFalse(mRegion.op(0, 0, 0, 0, Region.Op.INTERSECT))
-        assertFalse(mRegion.op(0, 0, 0, 0, Region.Op.UNION))
-        assertFalse(mRegion.op(0, 0, 0, 0, Region.Op.XOR))
-        assertFalse(mRegion.op(0, 0, 0, 0, Region.Op.REVERSE_DIFFERENCE))
-        assertFalse(mRegion.op(0, 0, 0, 0, Region.Op.REPLACE))
+        region = Region()
+        assertFalse(region.op(0, 0, 0, 0, Region.Op.DIFFERENCE))
+        assertFalse(region.op(0, 0, 0, 0, Region.Op.INTERSECT))
+        assertFalse(region.op(0, 0, 0, 0, Region.Op.UNION))
+        assertFalse(region.op(0, 0, 0, 0, Region.Op.XOR))
+        assertFalse(region.op(0, 0, 0, 0, Region.Op.REVERSE_DIFFERENCE))
+        assertFalse(region.op(0, 0, 0, 0, Region.Op.REPLACE))
     }
 
     private fun verifyDifferenceOp2(rect2: Rect) {
         // DIFFERENCE, Region with rectangle
         // subtract the op region from the first region
-        mRegion = Region()
+        region = Region()
         // subtract null rectangle
-        mRegion.set(rect2)
-        assertTrue(mRegion.op(0, 0, 0, 0, Region.Op.DIFFERENCE))
+        region.set(rect2)
+        assertTrue(region.op(0, 0, 0, 0, Region.Op.DIFFERENCE))
 
         // 1. subtract rectangle inside this region
-        mRegion.set(rect2)
-        assertTrue(mRegion.contains(6, 6))
-        assertTrue(mRegion.op(5, 5, 10, 10, Region.Op.DIFFERENCE))
+        region.set(rect2)
+        assertTrue(region.contains(6, 6))
+        assertTrue(region.op(5, 5, 10, 10, Region.Op.DIFFERENCE))
         verifyPointsInsideRegion(DIFFERENCE_WITH1)
         verifyPointsOutsideRegion(DIFFERENCE_WITHOUT1)
 
         // 2. subtract rectangle overlap this region
-        mRegion.set(rect2)
-        assertTrue(mRegion.contains(11, 11))
-        assertTrue(mRegion.op(10, 10, 30, 30, Region.Op.DIFFERENCE))
+        region.set(rect2)
+        assertTrue(region.contains(11, 11))
+        assertTrue(region.op(10, 10, 30, 30, Region.Op.DIFFERENCE))
         verifyPointsInsideRegion(DIFFERENCE_WITH2)
         verifyPointsOutsideRegion(DIFFERENCE_WITHOUT2)
 
         // 3. subtract rectangle out of this region
-        mRegion.set(rect2)
-        assertTrue(mRegion.op(40, 40, 60, 60, Region.Op.DIFFERENCE))
+        region.set(rect2)
+        assertTrue(region.op(40, 40, 60, 60, Region.Op.DIFFERENCE))
         verifyPointsInsideRegion(DIFFERENCE_WITH3)
         verifyPointsOutsideRegion(DIFFERENCE_WITHOUT3)
     }
@@ -730,61 +489,61 @@ class RegionTest {
     private fun verifyIntersectOp2(rect2: Rect) {
         // INTERSECT, Region with rectangle
         // intersect the two regions
-        mRegion = Region()
+        region = Region()
         // intersect null rectangle
-        mRegion.set(rect2)
-        assertFalse(mRegion.op(0, 0, 0, 0, Region.Op.INTERSECT))
+        region.set(rect2)
+        assertFalse(region.op(0, 0, 0, 0, Region.Op.INTERSECT))
 
         // 1. intersect rectangle inside this region
-        mRegion.set(rect2)
-        assertTrue(mRegion.contains(2, 2))
-        assertTrue(mRegion.op(5, 5, 10, 10, Region.Op.INTERSECT))
+        region.set(rect2)
+        assertTrue(region.contains(2, 2))
+        assertTrue(region.op(5, 5, 10, 10, Region.Op.INTERSECT))
         verifyPointsInsideRegion(INTERSECT_WITH1)
         verifyPointsOutsideRegion(INTERSECT_WITHOUT1)
 
         // 2. intersect rectangle overlap this region
-        mRegion.set(rect2)
-        assertTrue(mRegion.contains(9, 9))
-        assertTrue(mRegion.op(10, 10, 30, 30, Region.Op.INTERSECT))
+        region.set(rect2)
+        assertTrue(region.contains(9, 9))
+        assertTrue(region.op(10, 10, 30, 30, Region.Op.INTERSECT))
         verifyPointsInsideRegion(INTERSECT_WITH2)
         verifyPointsOutsideRegion(INTERSECT_WITHOUT2)
 
         // 3. intersect rectangle out of this region
-        mRegion.set(rect2)
-        assertFalse(mRegion.op(40, 40, 60, 60, Region.Op.INTERSECT))
+        region.set(rect2)
+        assertFalse(region.op(40, 40, 60, 60, Region.Op.INTERSECT))
     }
 
     private fun verifyUnionOp2(rect2: Rect) {
         // UNION, Region with rectangle
         // union (inclusive-or) the two regions
-        mRegion = Region()
-        mRegion.set(rect2)
+        region = Region()
+        region.set(rect2)
         // union null rectangle
-        assertTrue(mRegion.contains(6, 6))
-        assertTrue(mRegion.op(0, 0, 0, 0, Region.Op.UNION))
-        assertTrue(mRegion.contains(6, 6))
+        assertTrue(region.contains(6, 6))
+        assertTrue(region.op(0, 0, 0, 0, Region.Op.UNION))
+        assertTrue(region.contains(6, 6))
 
         // 1. union rectangle inside this region
-        mRegion.set(rect2)
-        assertTrue(mRegion.contains(2, 2))
-        assertTrue(mRegion.contains(6, 6))
-        assertTrue(mRegion.op(5, 5, 10, 10, Region.Op.UNION))
+        region.set(rect2)
+        assertTrue(region.contains(2, 2))
+        assertTrue(region.contains(6, 6))
+        assertTrue(region.op(5, 5, 10, 10, Region.Op.UNION))
         verifyPointsInsideRegion(UNION_WITH1)
         verifyPointsOutsideRegion(UNION_WITHOUT1)
 
         // 2. union rectangle overlap this region
-        mRegion.set(rect2)
-        assertTrue(mRegion.contains(2, 2))
-        assertFalse(mRegion.contains(21, 21))
-        assertTrue(mRegion.op(10, 10, 30, 30, Region.Op.UNION))
+        region.set(rect2)
+        assertTrue(region.contains(2, 2))
+        assertFalse(region.contains(21, 21))
+        assertTrue(region.op(10, 10, 30, 30, Region.Op.UNION))
         verifyPointsInsideRegion(UNION_WITH2)
         verifyPointsOutsideRegion(UNION_WITHOUT2)
 
         // 3. union rectangle out of this region
-        mRegion.set(rect2)
-        assertTrue(mRegion.contains(2, 2))
-        assertFalse(mRegion.contains(41, 41))
-        assertTrue(mRegion.op(40, 40, 60, 60, Region.Op.UNION))
+        region.set(rect2)
+        assertTrue(region.contains(2, 2))
+        assertFalse(region.contains(41, 41))
+        assertTrue(region.op(40, 40, 60, 60, Region.Op.UNION))
         verifyPointsInsideRegion(UNION_WITH3)
         verifyPointsOutsideRegion(UNION_WITHOUT3)
     }
@@ -792,33 +551,33 @@ class RegionTest {
     private fun verifyXorOp2(rect2: Rect) {
         // XOR, Region with rectangle
         // exclusive-or the two regions
-        mRegion = Region()
-        mRegion.set(rect2)
+        region = Region()
+        region.set(rect2)
         // xor null rectangle
-        assertTrue(mRegion.op(0, 0, 0, 0, Region.Op.XOR))
+        assertTrue(region.op(0, 0, 0, 0, Region.Op.XOR))
 
         // 1. xor rectangle inside this region
-        mRegion.set(rect2)
-        assertTrue(mRegion.contains(2, 2))
-        assertTrue(mRegion.contains(6, 6))
-        assertTrue(mRegion.op(5, 5, 10, 10, Region.Op.XOR))
+        region.set(rect2)
+        assertTrue(region.contains(2, 2))
+        assertTrue(region.contains(6, 6))
+        assertTrue(region.op(5, 5, 10, 10, Region.Op.XOR))
         verifyPointsInsideRegion(XOR_WITH1)
         verifyPointsOutsideRegion(XOR_WITHOUT1)
 
         // 2. xor rectangle overlap this region
-        mRegion.set(rect2)
-        assertTrue(mRegion.contains(2, 2))
-        assertTrue(mRegion.contains(11, 11))
-        assertFalse(mRegion.contains(21, 21))
-        assertTrue(mRegion.op(10, 10, 30, 30, Region.Op.XOR))
+        region.set(rect2)
+        assertTrue(region.contains(2, 2))
+        assertTrue(region.contains(11, 11))
+        assertFalse(region.contains(21, 21))
+        assertTrue(region.op(10, 10, 30, 30, Region.Op.XOR))
         verifyPointsInsideRegion(XOR_WITH2)
         verifyPointsOutsideRegion(XOR_WITHOUT2)
 
         // 3. xor rectangle out of this region
-        mRegion.set(rect2)
-        assertTrue(mRegion.contains(2, 2))
-        assertFalse(mRegion.contains(41, 41))
-        assertTrue(mRegion.op(40, 40, 60, 60, Region.Op.XOR))
+        region.set(rect2)
+        assertTrue(region.contains(2, 2))
+        assertFalse(region.contains(41, 41))
+        assertTrue(region.op(40, 40, 60, 60, Region.Op.XOR))
         verifyPointsInsideRegion(XOR_WITH3)
         verifyPointsOutsideRegion(XOR_WITHOUT3)
     }
@@ -826,28 +585,28 @@ class RegionTest {
     private fun verifyReverseDifferenceOp2(rect2: Rect) {
         // REVERSE_DIFFERENCE, Region with rectangle
         // reverse difference the first region from the op region
-        mRegion = Region()
-        mRegion.set(rect2)
+        region = Region()
+        region.set(rect2)
         // reverse difference null rectangle
-        assertFalse(mRegion.op(0, 0, 0, 0, Region.Op.REVERSE_DIFFERENCE))
+        assertFalse(region.op(0, 0, 0, 0, Region.Op.REVERSE_DIFFERENCE))
         // reverse difference rectangle inside this region
-        mRegion.set(rect2)
-        assertTrue(mRegion.contains(2, 2))
-        assertTrue(mRegion.contains(6, 6))
-        assertFalse(mRegion.op(5, 5, 10, 10, Region.Op.REVERSE_DIFFERENCE))
+        region.set(rect2)
+        assertTrue(region.contains(2, 2))
+        assertTrue(region.contains(6, 6))
+        assertFalse(region.op(5, 5, 10, 10, Region.Op.REVERSE_DIFFERENCE))
         // reverse difference rectangle overlap this region
-        mRegion.set(rect2)
-        assertTrue(mRegion.contains(2, 2))
-        assertTrue(mRegion.contains(11, 11))
-        assertFalse(mRegion.contains(21, 21))
-        assertTrue(mRegion.op(10, 10, 30, 30, Region.Op.REVERSE_DIFFERENCE))
+        region.set(rect2)
+        assertTrue(region.contains(2, 2))
+        assertTrue(region.contains(11, 11))
+        assertFalse(region.contains(21, 21))
+        assertTrue(region.op(10, 10, 30, 30, Region.Op.REVERSE_DIFFERENCE))
         verifyPointsInsideRegion(REVERSE_DIFFERENCE_WITH2)
         verifyPointsOutsideRegion(REVERSE_DIFFERENCE_WITHOUT2)
         // reverse difference rectangle out of this region
-        mRegion.set(rect2)
-        assertTrue(mRegion.contains(2, 2))
-        assertFalse(mRegion.contains(41, 41))
-        assertTrue(mRegion.op(40, 40, 60, 60, Region.Op.REVERSE_DIFFERENCE))
+        region.set(rect2)
+        assertTrue(region.contains(2, 2))
+        assertFalse(region.contains(41, 41))
+        assertTrue(region.op(40, 40, 60, 60, Region.Op.REVERSE_DIFFERENCE))
         verifyPointsInsideRegion(REVERSE_DIFFERENCE_WITH3)
         verifyPointsOutsideRegion(REVERSE_DIFFERENCE_WITHOUT3)
     }
@@ -855,28 +614,28 @@ class RegionTest {
     private fun verifyReplaceOp2(rect2: Rect, rect3: Rect, rect4: Rect, rect5: Rect) {
         // REPLACE, Region w1ith rectangle
         // replace the dst region with the op region
-        mRegion = Region()
-        mRegion.set(rect2)
+        region = Region()
+        region.set(rect2)
         // subtract null rectangle
-        assertFalse(mRegion.op(0, 0, 0, 0, Region.Op.REPLACE))
+        assertFalse(region.op(0, 0, 0, 0, Region.Op.REPLACE))
         // subtract rectangle inside this region
-        mRegion.set(rect2)
-        assertEquals(rect2, mRegion.bounds)
-        assertTrue(mRegion.op(5, 5, 10, 10, Region.Op.REPLACE))
-        assertNotSame(rect2, mRegion.bounds)
-        assertEquals(rect3, mRegion.bounds)
+        region.set(rect2)
+        assertEquals(rect2, region.bounds)
+        assertTrue(region.op(5, 5, 10, 10, Region.Op.REPLACE))
+        assertNotSame(rect2, region.bounds)
+        assertEquals(rect3, region.bounds)
         // subtract rectangle overlap this region
-        mRegion.set(rect2)
-        assertEquals(rect2, mRegion.bounds)
-        assertTrue(mRegion.op(10, 10, 30, 30, Region.Op.REPLACE))
-        assertNotSame(rect2, mRegion.bounds)
-        assertEquals(rect4, mRegion.bounds)
+        region.set(rect2)
+        assertEquals(rect2, region.bounds)
+        assertTrue(region.op(10, 10, 30, 30, Region.Op.REPLACE))
+        assertNotSame(rect2, region.bounds)
+        assertEquals(rect4, region.bounds)
         // subtract rectangle out of this region
-        mRegion.set(rect2)
-        assertEquals(rect2, mRegion.bounds)
-        assertTrue(mRegion.op(40, 40, 60, 60, Region.Op.REPLACE))
-        assertNotSame(rect2, mRegion.bounds)
-        assertEquals(rect5, mRegion.bounds)
+        region.set(rect2)
+        assertEquals(rect2, region.bounds)
+        assertTrue(region.op(40, 40, 60, 60, Region.Op.REPLACE))
+        assertNotSame(rect2, region.bounds)
+        assertEquals(rect5, region.bounds)
     }
 
     @Test
@@ -897,13 +656,13 @@ class RegionTest {
 
     private fun verifyNullRegionOp3(region1: Region) {
         // Region without rectangle
-        mRegion = Region()
-        assertFalse(mRegion.op(region1, Region.Op.DIFFERENCE))
-        assertFalse(mRegion.op(region1, Region.Op.INTERSECT))
-        assertFalse(mRegion.op(region1, Region.Op.UNION))
-        assertFalse(mRegion.op(region1, Region.Op.XOR))
-        assertFalse(mRegion.op(region1, Region.Op.REVERSE_DIFFERENCE))
-        assertFalse(mRegion.op(region1, Region.Op.REPLACE))
+        region = Region()
+        assertFalse(region.op(region1, Region.Op.DIFFERENCE))
+        assertFalse(region.op(region1, Region.Op.INTERSECT))
+        assertFalse(region.op(region1, Region.Op.UNION))
+        assertFalse(region.op(region1, Region.Op.XOR))
+        assertFalse(region.op(region1, Region.Op.REVERSE_DIFFERENCE))
+        assertFalse(region.op(region1, Region.Op.REPLACE))
     }
 
     private fun verifyDifferenceOp3(
@@ -915,28 +674,28 @@ class RegionTest {
     ) {
         // DIFFERENCE, Region with rectangle
         // subtract the op region from the first region
-        mRegion = Region()
+        region = Region()
         // subtract null rectangle
-        mRegion.set(region2)
-        assertTrue(mRegion.op(region1, Region.Op.DIFFERENCE))
+        region.set(region2)
+        assertTrue(region.op(region1, Region.Op.DIFFERENCE))
 
         // 1. subtract rectangle inside this region
-        mRegion.set(region2)
-        assertTrue(mRegion.contains(6, 6))
-        assertTrue(mRegion.op(region3, Region.Op.DIFFERENCE))
+        region.set(region2)
+        assertTrue(region.contains(6, 6))
+        assertTrue(region.op(region3, Region.Op.DIFFERENCE))
         verifyPointsInsideRegion(DIFFERENCE_WITH1)
         verifyPointsOutsideRegion(DIFFERENCE_WITHOUT1)
 
         // 2. subtract rectangle overlap this region
-        mRegion.set(region2)
-        assertTrue(mRegion.contains(11, 11))
-        assertTrue(mRegion.op(region4, Region.Op.DIFFERENCE))
+        region.set(region2)
+        assertTrue(region.contains(11, 11))
+        assertTrue(region.op(region4, Region.Op.DIFFERENCE))
         verifyPointsInsideRegion(DIFFERENCE_WITH2)
         verifyPointsOutsideRegion(DIFFERENCE_WITHOUT2)
 
         // 3. subtract rectangle out of this region
-        mRegion.set(region2)
-        assertTrue(mRegion.op(region5, Region.Op.DIFFERENCE))
+        region.set(region2)
+        assertTrue(region.op(region5, Region.Op.DIFFERENCE))
         verifyPointsInsideRegion(DIFFERENCE_WITH3)
         verifyPointsOutsideRegion(DIFFERENCE_WITHOUT3)
     }
@@ -950,28 +709,28 @@ class RegionTest {
     ) {
         // INTERSECT, Region with rectangle
         // intersect the two regions
-        mRegion = Region()
-        mRegion.set(region2)
+        region = Region()
+        region.set(region2)
         // intersect null rectangle
-        assertFalse(mRegion.op(region1, Region.Op.INTERSECT))
+        assertFalse(region.op(region1, Region.Op.INTERSECT))
 
         // 1. intersect rectangle inside this region
-        mRegion.set(region2)
-        assertTrue(mRegion.contains(2, 2))
-        assertTrue(mRegion.op(region3, Region.Op.INTERSECT))
+        region.set(region2)
+        assertTrue(region.contains(2, 2))
+        assertTrue(region.op(region3, Region.Op.INTERSECT))
         verifyPointsInsideRegion(INTERSECT_WITH1)
         verifyPointsOutsideRegion(INTERSECT_WITHOUT1)
 
         // 2. intersect rectangle overlap this region
-        mRegion.set(region2)
-        assertTrue(mRegion.contains(9, 9))
-        assertTrue(mRegion.op(region4, Region.Op.INTERSECT))
+        region.set(region2)
+        assertTrue(region.contains(9, 9))
+        assertTrue(region.op(region4, Region.Op.INTERSECT))
         verifyPointsInsideRegion(INTERSECT_WITH2)
         verifyPointsOutsideRegion(INTERSECT_WITHOUT2)
 
         // 3. intersect rectangle out of this region
-        mRegion.set(region2)
-        assertFalse(mRegion.op(region5, Region.Op.INTERSECT))
+        region.set(region2)
+        assertFalse(region.op(region5, Region.Op.INTERSECT))
     }
 
     private fun verifyUnionOp3(
@@ -983,34 +742,34 @@ class RegionTest {
     ) {
         // UNION, Region with rectangle
         // union (inclusive-or) the two regions
-        mRegion = Region()
+        region = Region()
         // union null rectangle
-        mRegion.set(region2)
-        assertTrue(mRegion.contains(6, 6))
-        assertTrue(mRegion.op(region1, Region.Op.UNION))
-        assertTrue(mRegion.contains(6, 6))
+        region.set(region2)
+        assertTrue(region.contains(6, 6))
+        assertTrue(region.op(region1, Region.Op.UNION))
+        assertTrue(region.contains(6, 6))
 
         // 1. union rectangle inside this region
-        mRegion.set(region2)
-        assertTrue(mRegion.contains(2, 2))
-        assertTrue(mRegion.contains(6, 6))
-        assertTrue(mRegion.op(region3, Region.Op.UNION))
+        region.set(region2)
+        assertTrue(region.contains(2, 2))
+        assertTrue(region.contains(6, 6))
+        assertTrue(region.op(region3, Region.Op.UNION))
         verifyPointsInsideRegion(UNION_WITH1)
         verifyPointsOutsideRegion(UNION_WITHOUT1)
 
         // 2. union rectangle overlap this region
-        mRegion.set(region2)
-        assertTrue(mRegion.contains(2, 2))
-        assertFalse(mRegion.contains(21, 21))
-        assertTrue(mRegion.op(region4, Region.Op.UNION))
+        region.set(region2)
+        assertTrue(region.contains(2, 2))
+        assertFalse(region.contains(21, 21))
+        assertTrue(region.op(region4, Region.Op.UNION))
         verifyPointsInsideRegion(UNION_WITH2)
         verifyPointsOutsideRegion(UNION_WITHOUT2)
 
         // 3. union rectangle out of this region
-        mRegion.set(region2)
-        assertTrue(mRegion.contains(2, 2))
-        assertFalse(mRegion.contains(41, 41))
-        assertTrue(mRegion.op(region5, Region.Op.UNION))
+        region.set(region2)
+        assertTrue(region.contains(2, 2))
+        assertFalse(region.contains(41, 41))
+        assertTrue(region.op(region5, Region.Op.UNION))
         verifyPointsInsideRegion(UNION_WITH3)
         verifyPointsOutsideRegion(UNION_WITHOUT3)
     }
@@ -1024,33 +783,33 @@ class RegionTest {
     ) {
         // XOR, Region with rectangle
         // exclusive-or the two regions
-        mRegion = Region()
+        region = Region()
         // xor null rectangle
-        mRegion.set(region2)
-        assertTrue(mRegion.op(region1, Region.Op.XOR))
+        region.set(region2)
+        assertTrue(region.op(region1, Region.Op.XOR))
 
         // 1. xor rectangle inside this region
-        mRegion.set(region2)
-        assertTrue(mRegion.contains(2, 2))
-        assertTrue(mRegion.contains(6, 6))
-        assertTrue(mRegion.op(region3, Region.Op.XOR))
+        region.set(region2)
+        assertTrue(region.contains(2, 2))
+        assertTrue(region.contains(6, 6))
+        assertTrue(region.op(region3, Region.Op.XOR))
         verifyPointsInsideRegion(XOR_WITH1)
         verifyPointsOutsideRegion(XOR_WITHOUT1)
 
         // 2. xor rectangle overlap this region
-        mRegion.set(region2)
-        assertTrue(mRegion.contains(2, 2))
-        assertTrue(mRegion.contains(11, 11))
-        assertFalse(mRegion.contains(21, 21))
-        assertTrue(mRegion.op(region4, Region.Op.XOR))
+        region.set(region2)
+        assertTrue(region.contains(2, 2))
+        assertTrue(region.contains(11, 11))
+        assertFalse(region.contains(21, 21))
+        assertTrue(region.op(region4, Region.Op.XOR))
         verifyPointsInsideRegion(XOR_WITH2)
         verifyPointsOutsideRegion(XOR_WITHOUT2)
 
         // 3. xor rectangle out of this region
-        mRegion.set(region2)
-        assertTrue(mRegion.contains(2, 2))
-        assertFalse(mRegion.contains(41, 41))
-        assertTrue(mRegion.op(region5, Region.Op.XOR))
+        region.set(region2)
+        assertTrue(region.contains(2, 2))
+        assertFalse(region.contains(41, 41))
+        assertTrue(region.op(region5, Region.Op.XOR))
         verifyPointsInsideRegion(XOR_WITH3)
         verifyPointsOutsideRegion(XOR_WITHOUT3)
     }
@@ -1064,31 +823,31 @@ class RegionTest {
     ) {
         // REVERSE_DIFFERENCE, Region with rectangle
         // reverse difference the first region from the op region
-        mRegion = Region()
+        region = Region()
         // reverse difference null rectangle
-        mRegion.set(region2)
-        assertFalse(mRegion.op(region1, Region.Op.REVERSE_DIFFERENCE))
+        region.set(region2)
+        assertFalse(region.op(region1, Region.Op.REVERSE_DIFFERENCE))
 
         // 1. reverse difference rectangle inside this region
-        mRegion.set(region2)
-        assertTrue(mRegion.contains(2, 2))
-        assertTrue(mRegion.contains(6, 6))
-        assertFalse(mRegion.op(region3, Region.Op.REVERSE_DIFFERENCE))
+        region.set(region2)
+        assertTrue(region.contains(2, 2))
+        assertTrue(region.contains(6, 6))
+        assertFalse(region.op(region3, Region.Op.REVERSE_DIFFERENCE))
 
         // 2. reverse difference rectangle overlap this region
-        mRegion.set(region2)
-        assertTrue(mRegion.contains(2, 2))
-        assertTrue(mRegion.contains(11, 11))
-        assertFalse(mRegion.contains(21, 21))
-        assertTrue(mRegion.op(region4, Region.Op.REVERSE_DIFFERENCE))
+        region.set(region2)
+        assertTrue(region.contains(2, 2))
+        assertTrue(region.contains(11, 11))
+        assertFalse(region.contains(21, 21))
+        assertTrue(region.op(region4, Region.Op.REVERSE_DIFFERENCE))
         verifyPointsInsideRegion(REVERSE_DIFFERENCE_WITH2)
         verifyPointsOutsideRegion(REVERSE_DIFFERENCE_WITHOUT2)
 
         // 3. reverse difference rectangle out of this region
-        mRegion.set(region2)
-        assertTrue(mRegion.contains(2, 2))
-        assertFalse(mRegion.contains(41, 41))
-        assertTrue(mRegion.op(region5, Region.Op.REVERSE_DIFFERENCE))
+        region.set(region2)
+        assertTrue(region.contains(2, 2))
+        assertFalse(region.contains(41, 41))
+        assertTrue(region.op(region5, Region.Op.REVERSE_DIFFERENCE))
         verifyPointsInsideRegion(REVERSE_DIFFERENCE_WITH3)
         verifyPointsOutsideRegion(REVERSE_DIFFERENCE_WITHOUT3)
     }
@@ -1102,28 +861,28 @@ class RegionTest {
     ) {
         // REPLACE, Region with rectangle
         // replace the dst region with the op region
-        mRegion = Region()
-        mRegion.set(region2)
+        region = Region()
+        region.set(region2)
         // subtract null rectangle
-        assertFalse(mRegion.op(region1, Region.Op.REPLACE))
+        assertFalse(region.op(region1, Region.Op.REPLACE))
         // subtract rectangle inside this region
-        mRegion.set(region2)
-        assertEquals(region2.bounds, mRegion.bounds)
-        assertTrue(mRegion.op(region3, Region.Op.REPLACE))
-        assertNotSame(region2.bounds, mRegion.bounds)
-        assertEquals(region3.bounds, mRegion.bounds)
+        region.set(region2)
+        assertEquals(region2.bounds, region.bounds)
+        assertTrue(region.op(region3, Region.Op.REPLACE))
+        assertNotSame(region2.bounds, region.bounds)
+        assertEquals(region3.bounds, region.bounds)
         // subtract rectangle overlap this region
-        mRegion.set(region2)
-        assertEquals(region2.bounds, mRegion.bounds)
-        assertTrue(mRegion.op(region4, Region.Op.REPLACE))
-        assertNotSame(region2.bounds, mRegion.bounds)
-        assertEquals(region4.bounds, mRegion.bounds)
+        region.set(region2)
+        assertEquals(region2.bounds, region.bounds)
+        assertTrue(region.op(region4, Region.Op.REPLACE))
+        assertNotSame(region2.bounds, region.bounds)
+        assertEquals(region4.bounds, region.bounds)
         // subtract rectangle out of this region
-        mRegion.set(region2)
-        assertEquals(region2.bounds, mRegion.bounds)
-        assertTrue(mRegion.op(region5, Region.Op.REPLACE))
-        assertNotSame(region2.bounds, mRegion.bounds)
-        assertEquals(region5.bounds, mRegion.bounds)
+        region.set(region2)
+        assertEquals(region2.bounds, region.bounds)
+        assertTrue(region.op(region5, Region.Op.REPLACE))
+        assertNotSame(region2.bounds, region.bounds)
+        assertEquals(region5.bounds, region.bounds)
     }
 
     @Test
@@ -1146,13 +905,13 @@ class RegionTest {
 
     private fun verifyNullRegionOp4(rect1: Rect, region1: Region) {
         // Region without rectangle
-        mRegion = Region()
-        assertFalse(mRegion.op(rect1, region1, Region.Op.DIFFERENCE))
-        assertFalse(mRegion.op(rect1, region1, Region.Op.INTERSECT))
-        assertFalse(mRegion.op(rect1, region1, Region.Op.UNION))
-        assertFalse(mRegion.op(rect1, region1, Region.Op.XOR))
-        assertFalse(mRegion.op(rect1, region1, Region.Op.REVERSE_DIFFERENCE))
-        assertFalse(mRegion.op(rect1, region1, Region.Op.REPLACE))
+        region = Region()
+        assertFalse(region.op(rect1, region1, Region.Op.DIFFERENCE))
+        assertFalse(region.op(rect1, region1, Region.Op.INTERSECT))
+        assertFalse(region.op(rect1, region1, Region.Op.UNION))
+        assertFalse(region.op(rect1, region1, Region.Op.XOR))
+        assertFalse(region.op(rect1, region1, Region.Op.REVERSE_DIFFERENCE))
+        assertFalse(region.op(rect1, region1, Region.Op.REPLACE))
     }
 
     private fun verifyDifferenceOp4(
@@ -1165,25 +924,25 @@ class RegionTest {
     ) {
         // DIFFERENCE, Region with rectangle
         // subtract the op region from the first region
-        mRegion = Region()
+        region = Region()
         // subtract null rectangle
-        assertTrue(mRegion.op(rect2, region1, Region.Op.DIFFERENCE))
+        assertTrue(region.op(rect2, region1, Region.Op.DIFFERENCE))
 
         // 1. subtract rectangle inside this region
-        mRegion.set(rect1)
-        assertTrue(mRegion.op(rect2, region3, Region.Op.DIFFERENCE))
+        region.set(rect1)
+        assertTrue(region.op(rect2, region3, Region.Op.DIFFERENCE))
         verifyPointsInsideRegion(DIFFERENCE_WITH1)
         verifyPointsOutsideRegion(DIFFERENCE_WITHOUT1)
 
         // 2. subtract rectangle overlap this region
-        mRegion.set(rect1)
-        assertTrue(mRegion.op(rect2, region4, Region.Op.DIFFERENCE))
+        region.set(rect1)
+        assertTrue(region.op(rect2, region4, Region.Op.DIFFERENCE))
         verifyPointsInsideRegion(DIFFERENCE_WITH2)
         verifyPointsOutsideRegion(DIFFERENCE_WITHOUT2)
 
         // 3. subtract rectangle out of this region
-        mRegion.set(rect1)
-        assertTrue(mRegion.op(rect2, region5, Region.Op.DIFFERENCE))
+        region.set(rect1)
+        assertTrue(region.op(rect2, region5, Region.Op.DIFFERENCE))
         verifyPointsInsideRegion(DIFFERENCE_WITH3)
         verifyPointsOutsideRegion(DIFFERENCE_WITHOUT3)
     }
@@ -1198,26 +957,26 @@ class RegionTest {
     ) {
         // INTERSECT, Region with rectangle
         // intersect the two regions
-        mRegion = Region()
+        region = Region()
         // intersect null rectangle
-        mRegion.set(rect1)
-        assertFalse(mRegion.op(rect2, region1, Region.Op.INTERSECT))
+        region.set(rect1)
+        assertFalse(region.op(rect2, region1, Region.Op.INTERSECT))
 
         // 1. intersect rectangle inside this region
-        mRegion.set(rect1)
-        assertTrue(mRegion.op(rect2, region3, Region.Op.INTERSECT))
+        region.set(rect1)
+        assertTrue(region.op(rect2, region3, Region.Op.INTERSECT))
         verifyPointsInsideRegion(INTERSECT_WITH1)
         verifyPointsOutsideRegion(INTERSECT_WITHOUT1)
 
         // 2. intersect rectangle overlap this region
-        mRegion.set(rect1)
-        assertTrue(mRegion.op(rect2, region4, Region.Op.INTERSECT))
+        region.set(rect1)
+        assertTrue(region.op(rect2, region4, Region.Op.INTERSECT))
         verifyPointsInsideRegion(INTERSECT_WITH2)
         verifyPointsOutsideRegion(INTERSECT_WITHOUT2)
 
         // 3. intersect rectangle out of this region
-        mRegion.set(rect1)
-        assertFalse(mRegion.op(rect2, region5, Region.Op.INTERSECT))
+        region.set(rect1)
+        assertFalse(region.op(rect2, region5, Region.Op.INTERSECT))
     }
 
     private fun verifyUnionOp4(
@@ -1230,27 +989,27 @@ class RegionTest {
     ) {
         // UNION, Region with rectangle
         // union (inclusive-or) the two regions
-        mRegion = Region()
+        region = Region()
         // union null rectangle
-        mRegion.set(rect1)
-        assertTrue(mRegion.op(rect2, region1, Region.Op.UNION))
-        assertTrue(mRegion.contains(6, 6))
+        region.set(rect1)
+        assertTrue(region.op(rect2, region1, Region.Op.UNION))
+        assertTrue(region.contains(6, 6))
 
         // 1. union rectangle inside this region
-        mRegion.set(rect1)
-        assertTrue(mRegion.op(rect2, region3, Region.Op.UNION))
+        region.set(rect1)
+        assertTrue(region.op(rect2, region3, Region.Op.UNION))
         verifyPointsInsideRegion(UNION_WITH1)
         verifyPointsOutsideRegion(UNION_WITHOUT1)
 
         // 2. union rectangle overlap this region
-        mRegion.set(rect1)
-        assertTrue(mRegion.op(rect2, region4, Region.Op.UNION))
+        region.set(rect1)
+        assertTrue(region.op(rect2, region4, Region.Op.UNION))
         verifyPointsInsideRegion(UNION_WITH2)
         verifyPointsOutsideRegion(UNION_WITHOUT2)
 
         // 3. union rectangle out of this region
-        mRegion.set(rect1)
-        assertTrue(mRegion.op(rect2, region5, Region.Op.UNION))
+        region.set(rect1)
+        assertTrue(region.op(rect2, region5, Region.Op.UNION))
         verifyPointsInsideRegion(UNION_WITH3)
         verifyPointsOutsideRegion(UNION_WITHOUT3)
     }
@@ -1265,26 +1024,26 @@ class RegionTest {
     ) {
         // XOR, Region with rectangle
         // exclusive-or the two regions
-        mRegion = Region()
+        region = Region()
         // xor null rectangle
-        mRegion.set(rect1)
-        assertTrue(mRegion.op(rect2, region1, Region.Op.XOR))
+        region.set(rect1)
+        assertTrue(region.op(rect2, region1, Region.Op.XOR))
 
         // 1. xor rectangle inside this region
-        mRegion.set(rect1)
-        assertTrue(mRegion.op(rect2, region3, Region.Op.XOR))
+        region.set(rect1)
+        assertTrue(region.op(rect2, region3, Region.Op.XOR))
         verifyPointsInsideRegion(XOR_WITH1)
         verifyPointsOutsideRegion(XOR_WITHOUT1)
 
         // 2. xor rectangle overlap this region
-        mRegion.set(rect1)
-        assertTrue(mRegion.op(rect2, region4, Region.Op.XOR))
+        region.set(rect1)
+        assertTrue(region.op(rect2, region4, Region.Op.XOR))
         verifyPointsInsideRegion(XOR_WITH2)
         verifyPointsOutsideRegion(XOR_WITHOUT2)
 
         // 3. xor rectangle out of this region
-        mRegion.set(rect1)
-        assertTrue(mRegion.op(rect2, region5, Region.Op.XOR))
+        region.set(rect1)
+        assertTrue(region.op(rect2, region5, Region.Op.XOR))
         verifyPointsInsideRegion(XOR_WITH3)
         verifyPointsOutsideRegion(XOR_WITHOUT3)
     }
@@ -1299,24 +1058,24 @@ class RegionTest {
     ) {
         // REVERSE_DIFFERENCE, Region with rectangle
         // reverse difference the first region from the op region
-        mRegion = Region()
+        region = Region()
         // reverse difference null rectangle
-        mRegion.set(rect1)
-        assertFalse(mRegion.op(rect2, region1, Region.Op.REVERSE_DIFFERENCE))
+        region.set(rect1)
+        assertFalse(region.op(rect2, region1, Region.Op.REVERSE_DIFFERENCE))
 
         // 1. reverse difference rectangle inside this region
-        mRegion.set(rect1)
-        assertFalse(mRegion.op(rect2, region3, Region.Op.REVERSE_DIFFERENCE))
+        region.set(rect1)
+        assertFalse(region.op(rect2, region3, Region.Op.REVERSE_DIFFERENCE))
 
         // 2. reverse difference rectangle overlap this region
-        mRegion.set(rect1)
-        assertTrue(mRegion.op(rect2, region4, Region.Op.REVERSE_DIFFERENCE))
+        region.set(rect1)
+        assertTrue(region.op(rect2, region4, Region.Op.REVERSE_DIFFERENCE))
         verifyPointsInsideRegion(REVERSE_DIFFERENCE_WITH2)
         verifyPointsOutsideRegion(REVERSE_DIFFERENCE_WITHOUT2)
 
         // 3. reverse difference rectangle out of this region
-        mRegion.set(rect1)
-        assertTrue(mRegion.op(rect2, region5, Region.Op.REVERSE_DIFFERENCE))
+        region.set(rect1)
+        assertTrue(region.op(rect2, region5, Region.Op.REVERSE_DIFFERENCE))
         verifyPointsInsideRegion(REVERSE_DIFFERENCE_WITH3)
         verifyPointsOutsideRegion(REVERSE_DIFFERENCE_WITHOUT3)
     }
@@ -1332,25 +1091,25 @@ class RegionTest {
     ) {
         // REPLACE, Region with rectangle
         // replace the dst region with the op region
-        mRegion = Region()
+        region = Region()
         // subtract null rectangle
-        mRegion.set(rect1)
-        assertFalse(mRegion.op(rect2, region1, Region.Op.REPLACE))
+        region.set(rect1)
+        assertFalse(region.op(rect2, region1, Region.Op.REPLACE))
         // subtract rectangle inside this region
-        mRegion.set(rect1)
-        assertTrue(mRegion.op(rect2, region3, Region.Op.REPLACE))
-        assertNotSame(region2.bounds, mRegion.bounds)
-        assertEquals(region3.bounds, mRegion.bounds)
+        region.set(rect1)
+        assertTrue(region.op(rect2, region3, Region.Op.REPLACE))
+        assertNotSame(region2.bounds, region.bounds)
+        assertEquals(region3.bounds, region.bounds)
         // subtract rectangle overlap this region
-        mRegion.set(rect1)
-        assertTrue(mRegion.op(rect2, region4, Region.Op.REPLACE))
-        assertNotSame(region2.bounds, mRegion.bounds)
-        assertEquals(region4.bounds, mRegion.bounds)
+        region.set(rect1)
+        assertTrue(region.op(rect2, region4, Region.Op.REPLACE))
+        assertNotSame(region2.bounds, region.bounds)
+        assertEquals(region4.bounds, region.bounds)
         // subtract rectangle out of this region
-        mRegion.set(rect1)
-        assertTrue(mRegion.op(rect2, region5, Region.Op.REPLACE))
-        assertNotSame(region2.bounds, mRegion.bounds)
-        assertEquals(region5.bounds, mRegion.bounds)
+        region.set(rect1)
+        assertTrue(region.op(rect2, region5, Region.Op.REPLACE))
+        assertNotSame(region2.bounds, region.bounds)
+        assertEquals(region5.bounds, region.bounds)
     }
 
     @Test
@@ -1371,13 +1130,13 @@ class RegionTest {
 
     private fun verifyNullRegionOp5(region1: Region) {
         // Region without rectangle
-        mRegion = Region()
-        assertFalse(mRegion.op(mRegion, region1, Region.Op.DIFFERENCE))
-        assertFalse(mRegion.op(mRegion, region1, Region.Op.INTERSECT))
-        assertFalse(mRegion.op(mRegion, region1, Region.Op.UNION))
-        assertFalse(mRegion.op(mRegion, region1, Region.Op.XOR))
-        assertFalse(mRegion.op(mRegion, region1, Region.Op.REVERSE_DIFFERENCE))
-        assertFalse(mRegion.op(mRegion, region1, Region.Op.REPLACE))
+        region = Region()
+        assertFalse(region.op(region, region1, Region.Op.DIFFERENCE))
+        assertFalse(region.op(region, region1, Region.Op.INTERSECT))
+        assertFalse(region.op(region, region1, Region.Op.UNION))
+        assertFalse(region.op(region, region1, Region.Op.XOR))
+        assertFalse(region.op(region, region1, Region.Op.REVERSE_DIFFERENCE))
+        assertFalse(region.op(region, region1, Region.Op.REPLACE))
     }
 
     private fun verifyDifferenceOp5(
@@ -1389,26 +1148,26 @@ class RegionTest {
     ) {
         // DIFFERENCE, Region with rectangle
         // subtract the op region from the first region
-        mRegion = Region()
+        region = Region()
         // subtract null rectangle
-        mRegion.set(region1)
-        assertTrue(mRegion.op(region2, region1, Region.Op.DIFFERENCE))
+        region.set(region1)
+        assertTrue(region.op(region2, region1, Region.Op.DIFFERENCE))
 
         // 1. subtract rectangle inside this region
-        mRegion.set(region1)
-        assertTrue(mRegion.op(region2, region3, Region.Op.DIFFERENCE))
+        region.set(region1)
+        assertTrue(region.op(region2, region3, Region.Op.DIFFERENCE))
         verifyPointsInsideRegion(DIFFERENCE_WITH1)
         verifyPointsOutsideRegion(DIFFERENCE_WITHOUT1)
 
         // 2. subtract rectangle overlap this region
-        mRegion.set(region1)
-        assertTrue(mRegion.op(region2, region4, Region.Op.DIFFERENCE))
+        region.set(region1)
+        assertTrue(region.op(region2, region4, Region.Op.DIFFERENCE))
         verifyPointsInsideRegion(DIFFERENCE_WITH2)
         verifyPointsOutsideRegion(DIFFERENCE_WITHOUT2)
 
         // 3. subtract rectangle out of this region
-        mRegion.set(region1)
-        assertTrue(mRegion.op(region2, region5, Region.Op.DIFFERENCE))
+        region.set(region1)
+        assertTrue(region.op(region2, region5, Region.Op.DIFFERENCE))
         verifyPointsInsideRegion(DIFFERENCE_WITH3)
         verifyPointsOutsideRegion(DIFFERENCE_WITHOUT3)
     }
@@ -1422,26 +1181,26 @@ class RegionTest {
     ) {
         // INTERSECT, Region with rectangle
         // intersect the two regions
-        mRegion = Region()
+        region = Region()
         // intersect null rectangle
-        mRegion.set(region1)
-        assertFalse(mRegion.op(region2, region1, Region.Op.INTERSECT))
+        region.set(region1)
+        assertFalse(region.op(region2, region1, Region.Op.INTERSECT))
 
         // 1. intersect rectangle inside this region
-        mRegion.set(region1)
-        assertTrue(mRegion.op(region2, region3, Region.Op.INTERSECT))
+        region.set(region1)
+        assertTrue(region.op(region2, region3, Region.Op.INTERSECT))
         verifyPointsInsideRegion(INTERSECT_WITH1)
         verifyPointsOutsideRegion(INTERSECT_WITHOUT1)
 
         // 2. intersect rectangle overlap this region
-        mRegion.set(region1)
-        assertTrue(mRegion.op(region2, region4, Region.Op.INTERSECT))
+        region.set(region1)
+        assertTrue(region.op(region2, region4, Region.Op.INTERSECT))
         verifyPointsInsideRegion(INTERSECT_WITH2)
         verifyPointsOutsideRegion(INTERSECT_WITHOUT2)
 
         // 3. intersect rectangle out of this region
-        mRegion.set(region1)
-        assertFalse(mRegion.op(region2, region5, Region.Op.INTERSECT))
+        region.set(region1)
+        assertFalse(region.op(region2, region5, Region.Op.INTERSECT))
     }
 
     private fun verifyUnionOp5(
@@ -1453,27 +1212,27 @@ class RegionTest {
     ) {
         // UNION, Region with rectangle
         // union (inclusive-or) the two regions
-        mRegion = Region()
+        region = Region()
         // union null rectangle
-        mRegion.set(region1)
-        assertTrue(mRegion.op(region2, region1, Region.Op.UNION))
-        assertTrue(mRegion.contains(6, 6))
+        region.set(region1)
+        assertTrue(region.op(region2, region1, Region.Op.UNION))
+        assertTrue(region.contains(6, 6))
 
         // 1. union rectangle inside this region
-        mRegion.set(region1)
-        assertTrue(mRegion.op(region2, region3, Region.Op.UNION))
+        region.set(region1)
+        assertTrue(region.op(region2, region3, Region.Op.UNION))
         verifyPointsInsideRegion(UNION_WITH1)
         verifyPointsOutsideRegion(UNION_WITHOUT1)
 
         // 2. union rectangle overlap this region
-        mRegion.set(region1)
-        assertTrue(mRegion.op(region2, region4, Region.Op.UNION))
+        region.set(region1)
+        assertTrue(region.op(region2, region4, Region.Op.UNION))
         verifyPointsInsideRegion(UNION_WITH2)
         verifyPointsOutsideRegion(UNION_WITHOUT2)
 
         // 3. union rectangle out of this region
-        mRegion.set(region1)
-        assertTrue(mRegion.op(region2, region5, Region.Op.UNION))
+        region.set(region1)
+        assertTrue(region.op(region2, region5, Region.Op.UNION))
         verifyPointsInsideRegion(UNION_WITH3)
         verifyPointsOutsideRegion(UNION_WITHOUT3)
     }
@@ -1487,26 +1246,26 @@ class RegionTest {
     ) {
         // XOR, Region with rectangle
         // exclusive-or the two regions
-        mRegion = Region()
+        region = Region()
         // xor null rectangle
-        mRegion.set(region1)
-        assertTrue(mRegion.op(region2, region1, Region.Op.XOR))
+        region.set(region1)
+        assertTrue(region.op(region2, region1, Region.Op.XOR))
 
         // 1. xor rectangle inside this region
-        mRegion.set(region1)
-        assertTrue(mRegion.op(region2, region3, Region.Op.XOR))
+        region.set(region1)
+        assertTrue(region.op(region2, region3, Region.Op.XOR))
         verifyPointsInsideRegion(XOR_WITH1)
         verifyPointsOutsideRegion(XOR_WITHOUT1)
 
         // 2. xor rectangle overlap this region
-        mRegion.set(region1)
-        assertTrue(mRegion.op(region2, region4, Region.Op.XOR))
+        region.set(region1)
+        assertTrue(region.op(region2, region4, Region.Op.XOR))
         verifyPointsInsideRegion(XOR_WITH2)
         verifyPointsOutsideRegion(XOR_WITHOUT2)
 
         // 3. xor rectangle out of this region
-        mRegion.set(region1)
-        assertTrue(mRegion.op(region2, region5, Region.Op.XOR))
+        region.set(region1)
+        assertTrue(region.op(region2, region5, Region.Op.XOR))
         verifyPointsInsideRegion(XOR_WITH3)
         verifyPointsOutsideRegion(XOR_WITHOUT3)
     }
@@ -1520,24 +1279,24 @@ class RegionTest {
     ) {
         // REVERSE_DIFFERENCE, Region with rectangle
         // reverse difference the first region from the op region
-        mRegion = Region()
+        region = Region()
         // reverse difference null rectangle
-        mRegion.set(region1)
-        assertFalse(mRegion.op(region2, region1, Region.Op.REVERSE_DIFFERENCE))
+        region.set(region1)
+        assertFalse(region.op(region2, region1, Region.Op.REVERSE_DIFFERENCE))
 
         // 1. reverse difference rectangle inside this region
-        mRegion.set(region1)
-        assertFalse(mRegion.op(region2, region3, Region.Op.REVERSE_DIFFERENCE))
+        region.set(region1)
+        assertFalse(region.op(region2, region3, Region.Op.REVERSE_DIFFERENCE))
 
         // 2. reverse difference rectangle overlap this region
-        mRegion.set(region1)
-        assertTrue(mRegion.op(region2, region4, Region.Op.REVERSE_DIFFERENCE))
+        region.set(region1)
+        assertTrue(region.op(region2, region4, Region.Op.REVERSE_DIFFERENCE))
         verifyPointsInsideRegion(REVERSE_DIFFERENCE_WITH2)
         verifyPointsOutsideRegion(REVERSE_DIFFERENCE_WITHOUT2)
 
         // 3. reverse difference rectangle out of this region
-        mRegion.set(region1)
-        assertTrue(mRegion.op(region2, region5, Region.Op.REVERSE_DIFFERENCE))
+        region.set(region1)
+        assertTrue(region.op(region2, region5, Region.Op.REVERSE_DIFFERENCE))
         verifyPointsInsideRegion(REVERSE_DIFFERENCE_WITH3)
         verifyPointsOutsideRegion(REVERSE_DIFFERENCE_WITHOUT3)
     }
@@ -1551,25 +1310,25 @@ class RegionTest {
     ) {
         // REPLACE, Region with rectangle
         // replace the dst region with the op region
-        mRegion = Region()
+        region = Region()
         // subtract null rectangle
-        mRegion.set(region1)
-        assertFalse(mRegion.op(region2, region1, Region.Op.REPLACE))
+        region.set(region1)
+        assertFalse(region.op(region2, region1, Region.Op.REPLACE))
         // subtract rectangle inside this region
-        mRegion.set(region1)
-        assertTrue(mRegion.op(region2, region3, Region.Op.REPLACE))
-        assertNotSame(region2.bounds, mRegion.bounds)
-        assertEquals(region3.bounds, mRegion.bounds)
+        region.set(region1)
+        assertTrue(region.op(region2, region3, Region.Op.REPLACE))
+        assertNotSame(region2.bounds, region.bounds)
+        assertEquals(region3.bounds, region.bounds)
         // subtract rectangle overlap this region
-        mRegion.set(region1)
-        assertTrue(mRegion.op(region2, region4, Region.Op.REPLACE))
-        assertNotSame(region2.bounds, mRegion.bounds)
-        assertEquals(region4.bounds, mRegion.bounds)
+        region.set(region1)
+        assertTrue(region.op(region2, region4, Region.Op.REPLACE))
+        assertNotSame(region2.bounds, region.bounds)
+        assertEquals(region4.bounds, region.bounds)
         // subtract rectangle out of this region
-        mRegion.set(region1)
-        assertTrue(mRegion.op(region2, region5, Region.Op.REPLACE))
-        assertNotSame(region2.bounds, mRegion.bounds)
-        assertEquals(region5.bounds, mRegion.bounds)
+        region.set(region1)
+        assertTrue(region.op(region2, region5, Region.Op.REPLACE))
+        assertNotSame(region2.bounds, region.bounds)
+        assertEquals(region5.bounds, region.bounds)
     }
 
     val flickerRegionOperations =
@@ -1786,5 +1545,245 @@ class RegionTest {
 
     companion object {
         @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
+
+        // DIFFERENCE
+        private val DIFFERENCE_WITH1 =
+            arrayOf(
+                intArrayOf(0, 0),
+                intArrayOf(4, 4),
+                intArrayOf(10, 10),
+                intArrayOf(19, 19),
+                intArrayOf(19, 0),
+                intArrayOf(10, 4),
+                intArrayOf(4, 10),
+                intArrayOf(0, 19)
+            )
+        private val DIFFERENCE_WITHOUT1 =
+            arrayOf(intArrayOf(5, 5), intArrayOf(9, 9), intArrayOf(9, 5), intArrayOf(5, 9))
+
+        private val DIFFERENCE_WITH2 =
+            arrayOf(
+                intArrayOf(0, 0),
+                intArrayOf(19, 0),
+                intArrayOf(9, 9),
+                intArrayOf(19, 9),
+                intArrayOf(0, 19),
+                intArrayOf(9, 19)
+            )
+        private val DIFFERENCE_WITHOUT2 =
+            arrayOf(
+                intArrayOf(10, 10),
+                intArrayOf(19, 10),
+                intArrayOf(10, 19),
+                intArrayOf(19, 19),
+                intArrayOf(29, 10),
+                intArrayOf(29, 29),
+                intArrayOf(10, 29)
+            )
+
+        private val DIFFERENCE_WITH3 =
+            arrayOf(intArrayOf(0, 0), intArrayOf(19, 0), intArrayOf(0, 19), intArrayOf(19, 19))
+        private val DIFFERENCE_WITHOUT3 =
+            arrayOf(intArrayOf(40, 40), intArrayOf(40, 59), intArrayOf(59, 40), intArrayOf(59, 59))
+
+        // INTERSECT
+        private val INTERSECT_WITH1 =
+            arrayOf(intArrayOf(5, 5), intArrayOf(9, 9), intArrayOf(9, 5), intArrayOf(5, 9))
+        private val INTERSECT_WITHOUT1 =
+            arrayOf(
+                intArrayOf(0, 0),
+                intArrayOf(2, 2),
+                intArrayOf(4, 4),
+                intArrayOf(10, 10),
+                intArrayOf(19, 19),
+                intArrayOf(19, 0),
+                intArrayOf(10, 4),
+                intArrayOf(4, 10),
+                intArrayOf(0, 19)
+            )
+
+        private val INTERSECT_WITH2 =
+            arrayOf(intArrayOf(10, 10), intArrayOf(19, 10), intArrayOf(10, 19), intArrayOf(19, 19))
+        private val INTERSECT_WITHOUT2 =
+            arrayOf(
+                intArrayOf(0, 0),
+                intArrayOf(19, 0),
+                intArrayOf(9, 9),
+                intArrayOf(19, 9),
+                intArrayOf(0, 19),
+                intArrayOf(9, 19),
+                intArrayOf(29, 10),
+                intArrayOf(29, 29),
+                intArrayOf(10, 29)
+            )
+
+        // UNION
+        private val UNION_WITH1 =
+            arrayOf(
+                intArrayOf(0, 0),
+                intArrayOf(2, 2),
+                intArrayOf(4, 4),
+                intArrayOf(6, 6),
+                intArrayOf(10, 10),
+                intArrayOf(19, 19),
+                intArrayOf(19, 0),
+                intArrayOf(10, 4),
+                intArrayOf(4, 10),
+                intArrayOf(0, 19),
+                intArrayOf(5, 5),
+                intArrayOf(9, 9),
+                intArrayOf(9, 5),
+                intArrayOf(5, 9)
+            )
+        private val UNION_WITHOUT1 =
+            arrayOf(intArrayOf(0, 20), intArrayOf(20, 20), intArrayOf(20, 0))
+
+        private val UNION_WITH2 =
+            arrayOf(
+                intArrayOf(0, 0),
+                intArrayOf(2, 2),
+                intArrayOf(19, 0),
+                intArrayOf(9, 9),
+                intArrayOf(19, 9),
+                intArrayOf(0, 19),
+                intArrayOf(9, 19),
+                intArrayOf(21, 21),
+                intArrayOf(10, 10),
+                intArrayOf(19, 10),
+                intArrayOf(10, 19),
+                intArrayOf(19, 19),
+                intArrayOf(29, 10),
+                intArrayOf(29, 29),
+                intArrayOf(10, 29)
+            )
+        private val UNION_WITHOUT2 =
+            arrayOf(
+                intArrayOf(0, 29),
+                intArrayOf(0, 20),
+                intArrayOf(9, 29),
+                intArrayOf(9, 20),
+                intArrayOf(29, 0),
+                intArrayOf(20, 0),
+                intArrayOf(29, 9),
+                intArrayOf(20, 9)
+            )
+
+        private val UNION_WITH3 =
+            arrayOf(
+                intArrayOf(0, 0),
+                intArrayOf(2, 2),
+                intArrayOf(19, 0),
+                intArrayOf(0, 19),
+                intArrayOf(19, 19),
+                intArrayOf(40, 40),
+                intArrayOf(41, 41),
+                intArrayOf(40, 59),
+                intArrayOf(59, 40),
+                intArrayOf(59, 59)
+            )
+        private val UNION_WITHOUT3 = arrayOf(intArrayOf(20, 20), intArrayOf(39, 39))
+
+        // XOR
+        private val XOR_WITH1 =
+            arrayOf(
+                intArrayOf(0, 0),
+                intArrayOf(2, 2),
+                intArrayOf(4, 4),
+                intArrayOf(10, 10),
+                intArrayOf(19, 19),
+                intArrayOf(19, 0),
+                intArrayOf(10, 4),
+                intArrayOf(4, 10),
+                intArrayOf(0, 19)
+            )
+        private val XOR_WITHOUT1 =
+            arrayOf(
+                intArrayOf(5, 5),
+                intArrayOf(6, 6),
+                intArrayOf(9, 9),
+                intArrayOf(9, 5),
+                intArrayOf(5, 9)
+            )
+
+        private val XOR_WITH2 =
+            arrayOf(
+                intArrayOf(0, 0),
+                intArrayOf(2, 2),
+                intArrayOf(19, 0),
+                intArrayOf(9, 9),
+                intArrayOf(19, 9),
+                intArrayOf(0, 19),
+                intArrayOf(9, 19),
+                intArrayOf(21, 21),
+                intArrayOf(29, 10),
+                intArrayOf(10, 29),
+                intArrayOf(20, 10),
+                intArrayOf(10, 20),
+                intArrayOf(20, 20),
+                intArrayOf(29, 29)
+            )
+        private val XOR_WITHOUT2 =
+            arrayOf(
+                intArrayOf(10, 10),
+                intArrayOf(11, 11),
+                intArrayOf(19, 10),
+                intArrayOf(10, 19),
+                intArrayOf(19, 19)
+            )
+
+        private val XOR_WITH3 =
+            arrayOf(
+                intArrayOf(0, 0),
+                intArrayOf(2, 2),
+                intArrayOf(19, 0),
+                intArrayOf(0, 19),
+                intArrayOf(19, 19),
+                intArrayOf(40, 40),
+                intArrayOf(41, 41),
+                intArrayOf(40, 59),
+                intArrayOf(59, 40),
+                intArrayOf(59, 59)
+            )
+        private val XOR_WITHOUT3 = arrayOf(intArrayOf(20, 20), intArrayOf(39, 39))
+
+        // REVERSE_DIFFERENCE
+        private val REVERSE_DIFFERENCE_WITH2 =
+            arrayOf(
+                intArrayOf(29, 10),
+                intArrayOf(10, 29),
+                intArrayOf(20, 10),
+                intArrayOf(10, 20),
+                intArrayOf(20, 20),
+                intArrayOf(29, 29),
+                intArrayOf(21, 21)
+            )
+        private val REVERSE_DIFFERENCE_WITHOUT2 =
+            arrayOf(
+                intArrayOf(0, 0),
+                intArrayOf(19, 0),
+                intArrayOf(0, 19),
+                intArrayOf(19, 19),
+                intArrayOf(2, 2),
+                intArrayOf(11, 11)
+            )
+
+        private val REVERSE_DIFFERENCE_WITH3 =
+            arrayOf(
+                intArrayOf(40, 40),
+                intArrayOf(40, 59),
+                intArrayOf(59, 40),
+                intArrayOf(59, 59),
+                intArrayOf(41, 41)
+            )
+        private val REVERSE_DIFFERENCE_WITHOUT3 =
+            arrayOf(
+                intArrayOf(0, 0),
+                intArrayOf(19, 0),
+                intArrayOf(0, 19),
+                intArrayOf(19, 19),
+                intArrayOf(20, 20),
+                intArrayOf(39, 39),
+                intArrayOf(2, 2)
+            )
     }
 }

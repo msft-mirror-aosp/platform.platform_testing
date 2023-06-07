@@ -56,6 +56,8 @@ import java.io.FileInputStream
 import java.io.IOException
 import java.util.zip.ZipInputStream
 import kotlin.io.path.createTempDirectory
+import kotlin.io.path.createTempFile
+import kotlin.io.path.name
 import org.mockito.Mockito
 
 internal val TEST_SCENARIO = ScenarioBuilder().forClass("test").build()
@@ -63,9 +65,11 @@ internal val TEST_SCENARIO = ScenarioBuilder().forClass("test").build()
 internal fun outputFileName(status: RunStatus) =
     File("/sdcard/flicker/${status.prefix}__test_ROTATION_0_GESTURAL_NAV.zip")
 
-internal fun newTestResultWriter() =
+internal fun newTestResultWriter(
+    scenario: IScenario = ScenarioBuilder().forClass(createTempFile().name).build()
+) =
     ResultWriter()
-        .forScenario(TEST_SCENARIO)
+        .forScenario(scenario)
         .withOutputDir(createTempDirectory().toFile())
         .setRunComplete()
 

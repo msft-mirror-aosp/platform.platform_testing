@@ -14,8 +14,12 @@
  * limitations under the License.
  */
 
-package android.tools.common.assertions
+package android.tools.common.datatypes
 
-object Consts {
-    internal const val FAILURE = "Expected failure"
+class SizeTest : DatatypeTest<Size>() {
+    override val valueEmpty = Size.EMPTY
+    override val valueTest = Size.from(1, 2)
+    override val valueEqual = Size.from(1, 2)
+    override val valueDifferent = Size.from(2, 3)
+    override val expectedValueAString = "1 x 2"
 }

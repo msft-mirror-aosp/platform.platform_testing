@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package android.tools.common.assertions
+package android.tools.common.flicker.assertions
 
 import android.tools.CleanFlickerEnvironmentRule
 import android.tools.common.Tag

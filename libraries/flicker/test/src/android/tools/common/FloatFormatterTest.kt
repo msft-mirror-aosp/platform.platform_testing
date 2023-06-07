@@ -16,24 +16,15 @@
 
 package android.tools.common
 
-object Cache {
-    private var cache = mutableMapOf<Any, Any>()
+import org.junit.Assert
+import org.junit.Test
 
-    data class Backup(val cache: MutableMap<Any, Any>)
-
-    fun <T : Any> get(element: T): T {
-        return cache.getOrPut(element) { element } as T
-    }
-
-    fun clear() {
-        cache = mutableMapOf()
-    }
-
-    fun backup(): Backup {
-        return Backup(cache.toMutableMap())
-    }
-
-    fun restore(backup: Backup) {
-        cache = backup.cache
+class FloatFormatterTest {
+    @Test
+    fun testFormat() {
+        Assert.assertEquals(FloatFormatter.format(0.0f), "0.0")
+        Assert.assertEquals(FloatFormatter.format(0.00001f), "0.0")
+        Assert.assertEquals(FloatFormatter.format(0.10f), "0.1")
+        Assert.assertEquals(FloatFormatter.format(10.0001f), "10.0")
     }
 }

@@ -16,25 +16,10 @@
 
 package android.tools.common.datatypes
 
-import android.tools.common.withCache
-import kotlin.js.JsExport
-import kotlin.js.JsName
-
-/**
- * Wrapper for PointProto (frameworks/base/core/proto/android/graphics/point.proto)
- *
- * This class is used by flicker and Winscope
- */
-@JsExport
-class Point private constructor(val x: Int, val y: Int) : DataType() {
-    override val isEmpty = x == 0 && y == 0
-    override fun doPrintValue() = "($x, $y)"
-
-    companion object {
-        @JsName("EMPTY")
-        val EMPTY: Point
-            get() = withCache { Point(x = 0, y = 0) }
-
-        @JsName("from") fun from(x: Int, y: Int): Point = withCache { Point(x, y) }
-    }
+class PointFTest : DatatypeTest<PointF>() {
+    override val valueEmpty = PointF.EMPTY
+    override val valueTest = PointF.from(0.1f, 1.1f)
+    override val valueEqual = PointF.from(0.1f, 1.1f)
+    override val valueDifferent = PointF.from(2f, 3f)
+    override val expectedValueAString = "(0.1, 1.1)"
 }

@@ -26,39 +26,16 @@ import kotlin.js.JsExport
  * This class is used by flicker and Winscope
  */
 @JsExport
-class Color private constructor(val r: Float, val g: Float, val b: Float, val a: Float) {
-    val isEmpty: Boolean = a == 0f || r < 0 || g < 0 || b < 0
-
-    val isNotEmpty: Boolean = !isEmpty
-
+class Color private constructor(val r: Float, val g: Float, val b: Float, val a: Float) :
+    DataType() {
+    override val isEmpty = a == 0f || r < 0 || g < 0 || b < 0
     val isOpaque: Boolean = a == 1.0f
 
-    fun prettyPrint(): String {
-        val r = FloatFormatter.format(r)
-        val g = FloatFormatter.format(g)
-        val b = FloatFormatter.format(b)
-        val a = FloatFormatter.format(a)
-        return "r:$r g:$g b:$b a:$a"
-    }
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other !is Color) return false
-
-        if (r != other.r) return false
-        if (g != other.g) return false
-        if (b != other.b) return false
-        if (a != other.a) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = r.hashCode()
-        result = 31 * result + g.hashCode()
-        result = 31 * result + b.hashCode()
-        result = 31 * result + a.hashCode()
-        return result
+    override fun doPrintValue() = buildString {
+        append("r:${FloatFormatter.format(r)} ")
+        append("g:${FloatFormatter.format(g)} ")
+        append("b:${FloatFormatter.format(b)} ")
+        append("a:${FloatFormatter.format(a)}")
     }
 
     companion object {

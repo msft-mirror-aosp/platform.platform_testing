@@ -47,7 +47,7 @@ class CachedAssertionRunnerTest {
     @Before
     fun setup() {
         executionCount = 0
-        val writer = newTestResultWriter()
+        val writer = newTestResultWriter(TEST_SCENARIO)
         val monitor = EventLogMonitor()
         monitor.start()
         monitor.stop(writer)

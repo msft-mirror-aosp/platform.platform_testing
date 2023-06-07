@@ -19,8 +19,8 @@ package android.tools.device.flicker.assertions
 import android.tools.CleanFlickerEnvironmentRule
 import android.tools.assertExceptionMessage
 import android.tools.common.Tag
-import android.tools.common.assertions.Consts
 import android.tools.common.flicker.assertions.AssertionData
+import android.tools.common.flicker.assertions.Consts
 import android.tools.common.flicker.subject.FlickerSubject
 import android.tools.common.flicker.subject.events.EventLogSubject
 import android.tools.common.io.RunStatus

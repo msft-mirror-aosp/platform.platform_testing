@@ -26,11 +26,7 @@ import kotlin.js.JsName
  *
  * ```
  *          |dsdx dsdy  tx|
- * ```
- *
  * matrix = |dtdx dtdy ty|
- *
- * ```
  *          |0    0     1 |
  * ```
  */
@@ -43,38 +39,17 @@ private constructor(
     @JsName("dsdy") val dsdy: Float,
     @JsName("dtdy") val dtdy: Float,
     @JsName("ty") val ty: Float = 0F
-) {
-    fun prettyPrint(): String = buildString {
+) : DataType() {
+    override val isEmpty =
+        dsdx == 0f && dtdx == 0f && tx == 0f && dsdy == 0f && dtdy == 0f && ty == 0f
+
+    override fun doPrintValue() = buildString {
         append("dsdx:${FloatFormatter.format(dsdx)}   ")
         append("dtdx:${FloatFormatter.format(dtdx)}   ")
         append("dsdy:${FloatFormatter.format(dsdy)}   ")
         append("dtdy:${FloatFormatter.format(dtdy)}   ")
         append("tx:${FloatFormatter.format(tx)}   ")
-        append("ty:${FloatFormatter.format(ty)}   ")
-    }
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other !is Matrix33) return false
-
-        if (dsdx != other.dsdx) return false
-        if (dtdx != other.dtdx) return false
-        if (tx != other.tx) return false
-        if (dsdy != other.dsdy) return false
-        if (dtdy != other.dtdy) return false
-        if (ty != other.ty) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = dsdx.hashCode()
-        result = 31 * result + dtdx.hashCode()
-        result = 31 * result + tx.hashCode()
-        result = 31 * result + dsdy.hashCode()
-        result = 31 * result + dtdy.hashCode()
-        result = 31 * result + ty.hashCode()
-        return result
+        append("ty:${FloatFormatter.format(ty)}")
     }
 
     companion object {

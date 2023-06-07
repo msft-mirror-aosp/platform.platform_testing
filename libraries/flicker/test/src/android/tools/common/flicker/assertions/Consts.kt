@@ -14,26 +14,8 @@
  * limitations under the License.
  */
 
-package android.tools.common
+package android.tools.common.flicker.assertions
 
-object Cache {
-    private var cache = mutableMapOf<Any, Any>()
-
-    data class Backup(val cache: MutableMap<Any, Any>)
-
-    fun <T : Any> get(element: T): T {
-        return cache.getOrPut(element) { element } as T
-    }
-
-    fun clear() {
-        cache = mutableMapOf()
-    }
-
-    fun backup(): Backup {
-        return Backup(cache.toMutableMap())
-    }
-
-    fun restore(backup: Backup) {
-        cache = backup.cache
-    }
+object Consts {
+    internal const val FAILURE = "Expected failure"
 }

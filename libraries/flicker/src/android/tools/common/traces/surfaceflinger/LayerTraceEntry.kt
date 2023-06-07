@@ -78,7 +78,7 @@ class LayerTraceEntry(
      */
     fun getLayerWithBuffer(componentMatcher: IComponentMatcher): Layer? {
         return flattenedLayers.firstOrNull {
-            componentMatcher.layerMatchesAnyOf(it) && it.activeBuffer.isNotEmpty
+            componentMatcher.layerMatchesAnyOf(it) && !it.activeBuffer.isEmpty
         }
     }
 
