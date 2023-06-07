@@ -54,8 +54,24 @@ import android.tools.common.flicker.assertors.assertions.VisibleLayersShownMoreT
 import android.tools.common.flicker.assertors.assertions.VisibleWindowsShownMoreThanOneConsecutiveEntry
 import android.tools.common.flicker.assertors.assertions.WindowBecomesPinned
 import android.tools.common.flicker.assertors.assertions.WindowRemainInsideVisibleBounds
+import android.tools.common.traces.component.ComponentNameMatcher
 
 object AssertionTemplates {
+    val ENTIRE_TRACE_ASSERTIONS =
+        listOf(
+            EntireScreenCoveredAlways(),
+            VisibleWindowsShownMoreThanOneConsecutiveEntry(),
+            // Temporarily ignore these layers which might be visible for a single entry
+            // and contain only view level changes during that entry (b/286054008)
+            VisibleLayersShownMoreThanOneConsecutiveEntry(
+                ignore =
+                    listOf(
+                        ComponentNameMatcher.NOTIFICATION_SHADE,
+                        ComponentNameMatcher.VOLUME_DIALOG,
+                    )
+            ),
+        )
+
     val COMMON_ASSERTIONS =
         listOf(
             EntireScreenCoveredAlways(),

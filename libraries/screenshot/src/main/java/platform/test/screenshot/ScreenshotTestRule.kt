@@ -215,17 +215,17 @@ open class ScreenshotTestRule(
             ScreenshotResultProto.DiffResult.Status.FAILED
         }
 
-        reportResult(
-            status = status,
-            assetsPathRelativeToRepo = goldenImagePathManager.assetsPathRelativeToBuildRoot,
-            goldenIdentifier = goldenIdentifier,
-            actual = actual,
-            comparisonStatistics = comparisonResult.comparisonStatistics,
-            expected = highlightedBitmap(expected, regions),
-            diff = comparisonResult.diff
-        )
-
         if (!comparisonResult.matches) {
+            reportResult(
+                status = status,
+                assetsPathRelativeToRepo = goldenImagePathManager.assetsPathRelativeToBuildRoot,
+                goldenIdentifier = goldenIdentifier,
+                actual = actual,
+                comparisonStatistics = comparisonResult.comparisonStatistics,
+                expected = highlightedBitmap(expected, regions),
+                diff = comparisonResult.diff
+            )
+
             throw AssertionError(
                 "Image mismatch! Comparison stats: '${comparisonResult
                     .comparisonStatistics}'"

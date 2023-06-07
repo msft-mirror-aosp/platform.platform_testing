@@ -103,6 +103,7 @@ class ComponentNameMatcher(var component: ComponentName) : IComponentNameMatcher
         val IME_SNAPSHOT = ComponentNameMatcher("", "IME-snapshot-surface")
         val SPLASH_SCREEN = ComponentNameMatcher("", "Splash Screen")
         val SNAPSHOT = ComponentNameMatcher("", "SnapshotStartingWindow")
+        val SECONDARY_HOME_HANDLE = ComponentNameMatcher("", "SecondaryHomeHandle")
 
         val TRANSITION_SNAPSHOT = ComponentNameMatcher("", "transition snapshot")
         val LETTERBOX = ComponentNameMatcher("", "Letterbox")
@@ -114,6 +115,12 @@ class ComponentNameMatcher(var component: ComponentName) : IComponentNameMatcher
         val EDGE_BACK_GESTURE_HANDLER = ComponentNameMatcher("", "EdgeBackGestureHandler")
 
         val COLOR_FADE = ComponentNameMatcher("", "ColorFade")
+
+        val WALLPAPER_WINDOW_TOKEN = ComponentNameMatcher("", "WallpaperWindowToken")
+
+        val NOTIFICATION_SHADE = ComponentNameMatcher("", "NotificationShade")
+
+        val VOLUME_DIALOG = ComponentNameMatcher("", "VolumeDialog")
 
         val LAUNCHER =
             ComponentNameMatcher(

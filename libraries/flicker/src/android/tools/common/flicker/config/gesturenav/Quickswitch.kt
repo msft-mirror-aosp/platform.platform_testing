@@ -38,7 +38,7 @@ class Quickswitch : IScenarioConfig {
             transitionMatcher =
                 TransitionMatcher(
                     TransitionFilters.QUICK_SWITCH_TRANSITION_FILTER,
-                    finalTransform = TransitionFilters.QUICK_SWITCH_TRANSITION_MERGE
+                    finalTransform = TransitionFilters.QUICK_SWITCH_TRANSITION_POST_PROCESSING
                 )
         )
 }
