@@ -37,6 +37,9 @@ private constructor(
     @JsName("isOff") val isOff = layerStackId == BLANK_LAYER_STACK
     @JsName("isOn") val isOn = !isOff
 
+    // Alias for layerStackSpace, since bounds is what is used for layers
+    val bounds = layerStackSpace
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is Display) return false

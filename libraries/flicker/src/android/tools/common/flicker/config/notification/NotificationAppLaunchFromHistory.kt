@@ -20,8 +20,8 @@ import android.tools.common.flicker.config.AssertionTemplates
 import android.tools.common.flicker.config.FaasScenarioType
 import android.tools.common.flicker.config.IScenarioConfig
 import android.tools.common.flicker.config.TransitionFilters
+import android.tools.common.flicker.extractors.TaggedCujTransitionMatcher
 import android.tools.common.flicker.extractors.TaggedScenarioExtractor
-import android.tools.common.flicker.extractors.TransitionMatcher
 import android.tools.common.traces.events.CujType
 
 class NotificationAppLaunchFromHistory : IScenarioConfig {
@@ -35,6 +35,7 @@ class NotificationAppLaunchFromHistory : IScenarioConfig {
         TaggedScenarioExtractor(
             targetTag = CujType.CUJ_SHADE_APP_LAUNCH_FROM_HISTORY_BUTTON,
             type,
-            transitionMatcher = TransitionMatcher(TransitionFilters.OPEN_APP_TRANSITION_FILTER)
+            transitionMatcher =
+                TaggedCujTransitionMatcher(TransitionFilters.OPEN_APP_TRANSITION_FILTER)
         )
 }

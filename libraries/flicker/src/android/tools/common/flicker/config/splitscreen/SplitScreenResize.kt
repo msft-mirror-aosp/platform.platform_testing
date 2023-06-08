@@ -20,8 +20,8 @@ import android.tools.common.flicker.config.AssertionTemplates
 import android.tools.common.flicker.config.FaasScenarioType
 import android.tools.common.flicker.config.IScenarioConfig
 import android.tools.common.flicker.config.TransitionFilters
+import android.tools.common.flicker.extractors.TaggedCujTransitionMatcher
 import android.tools.common.flicker.extractors.TaggedScenarioExtractor
-import android.tools.common.flicker.extractors.TransitionMatcher
 import android.tools.common.traces.events.CujType
 
 class SplitScreenResize : IScenarioConfig {
@@ -35,6 +35,7 @@ class SplitScreenResize : IScenarioConfig {
         TaggedScenarioExtractor(
             targetTag = CujType.CUJ_SPLIT_SCREEN_RESIZE,
             type,
-            transitionMatcher = TransitionMatcher(TransitionFilters.RESIZE_SPLIT_SCREEN_FILTER)
+            transitionMatcher =
+                TaggedCujTransitionMatcher(TransitionFilters.RESIZE_SPLIT_SCREEN_FILTER)
         )
 }
