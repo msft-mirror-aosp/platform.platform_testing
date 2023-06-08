@@ -17,7 +17,6 @@
 package android.tools.device.flicker.legacy
 
 import android.annotation.SuppressLint
-import android.tools.CleanFlickerEnvironmentRule
 import android.tools.TEST_SCENARIO
 import android.tools.TestTraces
 import android.tools.assertExceptionMessage
@@ -28,10 +27,10 @@ import android.tools.device.flicker.datastore.DataStore
 import android.tools.device.traces.TRACE_CONFIG_REQUIRE_CHANGES
 import android.tools.device.traces.io.ResultReader
 import android.tools.newTestCachedResultWriter
+import android.tools.rules.CleanFlickerEnvironmentRule
 import com.google.common.truth.Truth
 import java.io.File
 import org.junit.Before
-import org.junit.ClassRule
 import org.junit.Rule
 import org.junit.Test
 
@@ -39,6 +38,7 @@ import org.junit.Test
 @SuppressLint("VisibleForTests")
 class FlickerTestTest {
     private var executionCount = 0
+    @Rule @JvmField val envCleanup = CleanFlickerEnvironmentRule()
 
     @Before
     fun setup() {
@@ -237,9 +237,5 @@ class FlickerTestTest {
         predicate.invoke(flickerWrapper)
 
         Truth.assertWithMessage("Executed").that(executionCount).isEqualTo(expectedExecutionCount)
-    }
-
-    companion object {
-        @Rule @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
     }
 }

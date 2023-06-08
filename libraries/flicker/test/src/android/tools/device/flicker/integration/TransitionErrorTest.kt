@@ -16,12 +16,12 @@
 
 package android.tools.device.flicker.integration
 
-import android.tools.CleanFlickerEnvironmentRule
 import android.tools.TEST_SCENARIO
 import android.tools.common.io.RunStatus
 import android.tools.device.flicker.datastore.CachedResultReader
 import android.tools.device.flicker.legacy.FlickerTest
 import android.tools.device.traces.TRACE_CONFIG_REQUIRE_CHANGES
+import android.tools.rules.CleanFlickerEnvironmentRule
 import com.google.common.truth.Truth
 import java.io.File
 import org.junit.Before
@@ -81,6 +81,6 @@ class TransitionErrorTest {
 
         @BeforeClass @JvmStatic fun runTransition() = Utils.runTransition { error(Utils.FAILURE) }
 
-        @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
+        @ClassRule @JvmField val ENV_CLEANUP = CleanFlickerEnvironmentRule()
     }
 }

@@ -16,13 +16,13 @@
 
 package android.tools.common.flicker.assertors.factories
 
-import android.tools.CleanFlickerEnvironmentRule
 import android.tools.common.CrossPlatform
 import android.tools.common.Rotation
 import android.tools.common.flicker.ScenarioInstance
 import android.tools.common.flicker.config.FaasScenarioType
 import android.tools.common.flicker.config.FlickerServiceConfig
 import android.tools.common.io.IReader
+import android.tools.rules.CleanFlickerEnvironmentRule
 import com.google.common.truth.Truth
 import org.junit.ClassRule
 import org.junit.Test
@@ -60,6 +60,6 @@ class AssertionFactoryTest {
     }
 
     companion object {
-        @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
+        @ClassRule @JvmField val ENV_CLEANUP = CleanFlickerEnvironmentRule()
     }
 }

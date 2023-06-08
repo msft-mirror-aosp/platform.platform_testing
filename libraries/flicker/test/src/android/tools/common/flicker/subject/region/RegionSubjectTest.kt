@@ -16,11 +16,11 @@
 
 package android.tools.common.flicker.subject.region
 
-import android.tools.CleanFlickerEnvironmentRule
 import android.tools.assertFail
 import android.tools.common.CrossPlatform
 import android.tools.common.datatypes.Rect
 import android.tools.common.datatypes.Region
+import android.tools.rules.CleanFlickerEnvironmentRule
 import org.junit.ClassRule
 import org.junit.FixMethodOrder
 import org.junit.Test
@@ -152,7 +152,7 @@ class RegionSubjectTest {
     }
 
     companion object {
-        @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
+        @ClassRule @JvmField val ENV_CLEANUP = CleanFlickerEnvironmentRule()
         private const val MSG_ERROR_TOP_POSITION = "top"
         private const val MSG_ERROR_LEFT_POSITION = "left"
         private const val MSG_ERROR_RIGHT_POSITION = "right"

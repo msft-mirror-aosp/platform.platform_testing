@@ -169,6 +169,9 @@ private constructor(
             return zOrderPath.toTypedArray()
         }
 
+    val isTask: Boolean
+        get() = name.startsWith("Task=")
+
     /**
      * Returns true iff the [innerLayer] screen bounds are inside or equal to this layer's
      * [screenBounds] and neither layers are rotating.

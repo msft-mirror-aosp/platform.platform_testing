@@ -16,7 +16,6 @@
 
 package android.tools.common.flicker
 
-import android.tools.CleanFlickerEnvironmentRule
 import android.tools.common.flicker.assertors.AssertionResult
 import android.tools.common.flicker.assertors.IAssertionResult
 import android.tools.common.flicker.assertors.IFaasAssertion
@@ -24,6 +23,7 @@ import android.tools.device.flicker.IFlickerServiceResultsCollector
 import android.tools.device.flicker.isShellTransitionsEnabled
 import android.tools.device.flicker.legacy.runner.Consts
 import android.tools.device.flicker.rules.FlickerServiceRule
+import android.tools.rules.CleanFlickerEnvironmentRule
 import android.tools.utils.KotlinMockito
 import com.google.common.truth.Truth
 import org.junit.Assume
@@ -211,6 +211,6 @@ class FlickerServiceRuleTest {
             )
         }
 
-        @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
+        @ClassRule @JvmField val ENV_CLEANUP = CleanFlickerEnvironmentRule()
     }
 }

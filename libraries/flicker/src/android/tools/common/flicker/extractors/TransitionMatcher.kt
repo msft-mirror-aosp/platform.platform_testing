@@ -69,6 +69,7 @@ class TransitionMatcher(
                 val remainingTransitions = transform(transitions, cujEntry, reader)
 
                 appliedTransformsCount++
+
                 require(!associatedTransitionRequired || remainingTransitions.isNotEmpty()) {
                     "Required an associated transition for ${cujEntry.cuj.name}" +
                         "(${cujEntry.startTimestamp},${cujEntry.endTimestamp}) " +

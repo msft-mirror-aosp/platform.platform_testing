@@ -17,13 +17,13 @@
 package android.tools.device.flicker.legacy.runner
 
 import android.app.Instrumentation
-import android.tools.CleanFlickerEnvironmentRule
 import android.tools.TEST_SCENARIO
 import android.tools.assertThrows
 import android.tools.device.flicker.legacy.AbstractFlickerTestData
 import android.tools.device.flicker.legacy.IFlickerTestData
 import android.tools.device.traces.io.ResultWriter
 import android.tools.device.traces.parsers.WindowManagerStateHelper
+import android.tools.rules.CleanFlickerEnvironmentRule
 import androidx.test.platform.app.InstrumentationRegistry
 import com.google.common.truth.Truth
 import org.junit.Before
@@ -99,6 +99,6 @@ class SetupTeardownRuleTest {
             )
         }
 
-        @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
+        @ClassRule @JvmField val ENV_CLEANUP = CleanFlickerEnvironmentRule()
     }
 }

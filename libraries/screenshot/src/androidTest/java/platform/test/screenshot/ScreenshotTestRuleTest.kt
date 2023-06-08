@@ -23,7 +23,6 @@ import androidx.test.filters.MediumTest
 import androidx.test.platform.app.InstrumentationRegistry
 import com.google.common.truth.Truth.assertThat
 import java.io.File
-import java.io.FileInputStream
 import java.lang.AssertionError
 import java.util.ArrayList
 import org.junit.After
@@ -75,17 +74,10 @@ class ScreenshotTestRuleTest {
         first
             .assertAgainstGolden(rule, goldenIdentifier, matcher = PixelPerfectMatcher())
 
-        val resultProto = rule.getPathOnDeviceFor(RESULT_PROTO, goldenIdentifier)
-        val fileResultBinProto = rule.getPathOnDeviceFor(RESULT_BIN_PROTO, goldenIdentifier)
-        var diffProto = ScreenshotResultProto.DiffResult.newBuilder()
-        diffProto.mergeFrom(FileInputStream(fileResultBinProto))
-
-        assertThat(resultProto.readText()).contains("PASS")
-        assertThat(rule.getPathOnDeviceFor(IMAGE_ACTUAL, goldenIdentifier).exists()).isTrue()
+        assertThat(rule.getPathOnDeviceFor(IMAGE_ACTUAL, goldenIdentifier).exists()).isFalse()
         assertThat(rule.getPathOnDeviceFor(IMAGE_DIFF, goldenIdentifier).exists()).isFalse()
-        assertThat(rule.getPathOnDeviceFor(IMAGE_EXPECTED, goldenIdentifier).exists()).isTrue()
-        assertThat(rule.getPathOnDeviceFor(RESULT_BIN_PROTO, goldenIdentifier).exists()).isTrue()
-        assertThat(diffProto.build().imageLocationGolden.startsWith("assets")).isTrue()
+        assertThat(rule.getPathOnDeviceFor(IMAGE_EXPECTED, goldenIdentifier).exists()).isFalse()
+        assertThat(rule.getPathOnDeviceFor(RESULT_BIN_PROTO, goldenIdentifier).exists()).isFalse()
     }
 
     @Test
@@ -96,23 +88,14 @@ class ScreenshotTestRuleTest {
         first
             .assertAgainstGolden(customizedRule, goldenIdentifier, matcher = PixelPerfectMatcher())
 
-        val resultProto = customizedRule.getPathOnDeviceFor(RESULT_PROTO, goldenIdentifier)
-        val fileResultBinProto = customizedRule.getPathOnDeviceFor(
-            RESULT_BIN_PROTO, goldenIdentifier)
-        var diffProto = ScreenshotResultProto.DiffResult.newBuilder()
-        diffProto.mergeFrom(FileInputStream(fileResultBinProto))
-
-        assertThat(resultProto.readText()).contains("PASS")
         assertThat(customizedRule.getPathOnDeviceFor(IMAGE_ACTUAL, goldenIdentifier).exists())
-            .isTrue()
+            .isFalse()
         assertThat(customizedRule.getPathOnDeviceFor(IMAGE_DIFF, goldenIdentifier).exists())
             .isFalse()
         assertThat(customizedRule.getPathOnDeviceFor(IMAGE_EXPECTED, goldenIdentifier).exists())
-            .isTrue()
+            .isFalse()
         assertThat(customizedRule.getPathOnDeviceFor(RESULT_BIN_PROTO, goldenIdentifier).exists())
-            .isTrue()
-        assertThat(diffProto.build().imageLocationGolden.startsWith(customizedAssetsPath))
-            .isTrue()
+            .isFalse()
     }
 
     @Test
@@ -127,12 +110,10 @@ class ScreenshotTestRuleTest {
             regions = regions
         )
 
-        val resultProto = rule.getPathOnDeviceFor(RESULT_PROTO, goldenIdentifier)
-        assertThat(resultProto.readText()).contains("PASS")
-        assertThat(rule.getPathOnDeviceFor(IMAGE_ACTUAL, goldenIdentifier).exists()).isTrue()
+        assertThat(rule.getPathOnDeviceFor(IMAGE_ACTUAL, goldenIdentifier).exists()).isFalse()
         assertThat(rule.getPathOnDeviceFor(IMAGE_DIFF, goldenIdentifier).exists()).isFalse()
-        assertThat(rule.getPathOnDeviceFor(IMAGE_EXPECTED, goldenIdentifier).exists()).isTrue()
-        assertThat(rule.getPathOnDeviceFor(RESULT_BIN_PROTO, goldenIdentifier).exists()).isTrue()
+        assertThat(rule.getPathOnDeviceFor(IMAGE_EXPECTED, goldenIdentifier).exists()).isFalse()
+        assertThat(rule.getPathOnDeviceFor(RESULT_BIN_PROTO, goldenIdentifier).exists()).isFalse()
     }
 
     @Test
@@ -152,12 +133,10 @@ class ScreenshotTestRuleTest {
             rule, goldenIdentifier, matcher, regions
         )
 
-        val resultProto = rule.getPathOnDeviceFor(RESULT_PROTO, goldenIdentifier)
-        assertThat(resultProto.readText()).contains("PASS")
-        assertThat(rule.getPathOnDeviceFor(IMAGE_ACTUAL, goldenIdentifier).exists()).isTrue()
+        assertThat(rule.getPathOnDeviceFor(IMAGE_ACTUAL, goldenIdentifier).exists()).isFalse()
         assertThat(rule.getPathOnDeviceFor(IMAGE_DIFF, goldenIdentifier).exists()).isFalse()
-        assertThat(rule.getPathOnDeviceFor(IMAGE_EXPECTED, goldenIdentifier).exists()).isTrue()
-        assertThat(rule.getPathOnDeviceFor(RESULT_BIN_PROTO, goldenIdentifier).exists()).isTrue()
+        assertThat(rule.getPathOnDeviceFor(IMAGE_EXPECTED, goldenIdentifier).exists()).isFalse()
+        assertThat(rule.getPathOnDeviceFor(RESULT_BIN_PROTO, goldenIdentifier).exists()).isFalse()
     }
 
     @Test
@@ -230,11 +209,6 @@ class ScreenshotTestRuleTest {
     fun performDiff_sameSizes_pixelPerfect_noMatch_noDuplicateImageWritten() {
         val first = loadBitmap("round_rect_gray")
         val second = loadBitmap("round_rect_gray_dark")
-        val compStatistics = ScreenshotResultProto.DiffResult.ComparisonStatistics.newBuilder()
-            .setNumberPixelsCompared(2304)
-            .setNumberPixelsDifferent(556)
-            .setNumberPixelsIdentical(1748)
-            .build()
 
         val goldenIdentifier = "round_rect_green"
         assertThrows(AssertionError::class.java) {
@@ -250,6 +224,30 @@ class ScreenshotTestRuleTest {
         val actualFile2 = rule.getPathOnDeviceFor(IMAGE_ACTUAL, goldenIdentifier)
 
         assertThat(actualFile1).isEqualTo(actualFile2)
+    }
+
+    @Test
+    fun performDiff_sameSizes_pixelPerfect_firstMatchSecondNoMatch_noDuplicateImageWritten() {
+        val first = loadBitmap("round_rect_green")
+        val second = loadBitmap("round_rect_gray")
+
+        val goldenIdentifier = "round_rect_green"
+        first.assertAgainstGolden(rule, goldenIdentifier, matcher = PixelPerfectMatcher())
+
+        assertThat(rule.getPathOnDeviceFor(IMAGE_ACTUAL, goldenIdentifier).exists()).isFalse()
+        assertThat(rule.getPathOnDeviceFor(IMAGE_DIFF, goldenIdentifier).exists()).isFalse()
+        assertThat(rule.getPathOnDeviceFor(IMAGE_EXPECTED, goldenIdentifier).exists()).isFalse()
+        assertThat(rule.getPathOnDeviceFor(RESULT_BIN_PROTO, goldenIdentifier).exists()).isFalse()
+
+        assertThrows(AssertionError::class.java) {
+            second
+                .assertAgainstGolden(rule, goldenIdentifier, matcher = PixelPerfectMatcher())
+        }
+
+        assertThat(rule.getPathOnDeviceFor(IMAGE_ACTUAL, goldenIdentifier).exists()).isTrue()
+        assertThat(rule.getPathOnDeviceFor(IMAGE_DIFF, goldenIdentifier).exists()).isTrue()
+        assertThat(rule.getPathOnDeviceFor(IMAGE_EXPECTED, goldenIdentifier).exists()).isTrue()
+        assertThat(rule.getPathOnDeviceFor(RESULT_BIN_PROTO, goldenIdentifier).exists()).isTrue()
     }
 
     @Test

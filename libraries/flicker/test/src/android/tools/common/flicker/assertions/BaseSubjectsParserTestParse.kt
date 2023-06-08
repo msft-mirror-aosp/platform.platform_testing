@@ -16,7 +16,6 @@
 
 package android.tools.common.flicker.assertions
 
-import android.tools.CleanFlickerEnvironmentRule
 import android.tools.common.Tag
 import android.tools.common.Timestamp
 import android.tools.common.flicker.subject.FlickerSubject
@@ -29,6 +28,7 @@ import android.tools.device.traces.io.ResultReader
 import android.tools.device.traces.io.ResultWriter
 import android.tools.newTestResultWriter
 import android.tools.outputFileName
+import android.tools.rules.CleanFlickerEnvironmentRule
 import com.google.common.truth.Truth
 import java.io.File
 import org.junit.Before
@@ -109,6 +109,6 @@ abstract class BaseSubjectsParserTestParse {
     }
 
     companion object {
-        @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
+        @ClassRule @JvmField val ENV_CLEANUP = CleanFlickerEnvironmentRule()
     }
 }

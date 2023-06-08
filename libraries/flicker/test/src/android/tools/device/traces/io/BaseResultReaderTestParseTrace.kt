@@ -16,7 +16,6 @@
 
 package android.tools.device.traces.io
 
-import android.tools.CleanFlickerEnvironmentRule
 import android.tools.TestTraces
 import android.tools.assertExceptionMessage
 import android.tools.assertThrows
@@ -29,6 +28,7 @@ import android.tools.device.traces.TRACE_CONFIG_REQUIRE_CHANGES
 import android.tools.device.traces.deleteIfExists
 import android.tools.newTestResultWriter
 import android.tools.outputFileName
+import android.tools.rules.CleanFlickerEnvironmentRule
 import com.google.common.truth.Truth
 import java.io.File
 import org.junit.Before
@@ -121,6 +121,6 @@ abstract class BaseResultReaderTestParseTrace {
     }
 
     companion object {
-        @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
+        @ClassRule @JvmField val ENV_CLEANUP = CleanFlickerEnvironmentRule()
     }
 }

@@ -17,7 +17,6 @@
 package android.tools.common.flicker
 
 import android.device.collectors.DataRecord
-import android.tools.CleanFlickerEnvironmentRule
 import android.tools.common.flicker.assertors.AssertionResult
 import android.tools.common.flicker.assertors.IAssertionResult
 import android.tools.common.flicker.assertors.IFaasAssertion
@@ -28,13 +27,13 @@ import android.tools.device.flicker.FlickerServiceResultsCollector.Companion.FLI
 import android.tools.device.flicker.FlickerServiceResultsCollector.Companion.WINSCOPE_FILE_PATH_KEY
 import android.tools.device.traces.io.InMemoryArtifact
 import android.tools.device.traces.io.ParsedTracesReader
+import android.tools.rules.CleanFlickerEnvironmentRule
 import android.tools.utils.KotlinMockito
 import android.tools.utils.MockLayersTraceBuilder
 import android.tools.utils.MockWindowManagerTraceBuilder
 import com.google.common.truth.Truth
 import org.junit.ClassRule
 import org.junit.FixMethodOrder
-import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.Description
 import org.junit.runner.notification.Failure
@@ -316,6 +315,6 @@ class FlickerServiceResultsCollectorTest {
             }
         }
 
-        @Rule @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
+        @ClassRule @JvmField val ENV_CLEANUP = CleanFlickerEnvironmentRule()
     }
 }

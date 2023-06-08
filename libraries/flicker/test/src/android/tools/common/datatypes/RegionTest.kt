@@ -16,7 +16,7 @@
 
 package android.tools.common.datatypes
 
-import android.tools.CleanFlickerEnvironmentRule
+import android.tools.rules.CleanFlickerEnvironmentRule
 import kotlin.random.Random
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -1544,7 +1544,7 @@ class RegionTest {
     }
 
     companion object {
-        @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
+        @ClassRule @JvmField val ENV_CLEANUP = CleanFlickerEnvironmentRule()
 
         // DIFFERENCE
         private val DIFFERENCE_WITH1 =

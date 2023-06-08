@@ -16,12 +16,12 @@
 
 package android.tools.device.flicker.assertions
 
-import android.tools.CleanFlickerEnvironmentRule
 import android.tools.common.Tag
 import android.tools.common.flicker.assertions.AssertionData
 import android.tools.common.flicker.subject.events.EventLogSubject
 import android.tools.common.flicker.subject.layers.LayerTraceEntrySubject
 import android.tools.common.flicker.subject.wm.WindowManagerStateSubject
+import android.tools.rules.CleanFlickerEnvironmentRule
 import com.google.common.truth.Truth
 import kotlin.reflect.KClass
 import org.junit.ClassRule
@@ -102,6 +102,6 @@ open class AssertionStateDataFactoryTest {
 
     companion object {
         internal const val TAG = "tag"
-        @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
+        @ClassRule @JvmField val ENV_CLEANUP = CleanFlickerEnvironmentRule()
     }
 }

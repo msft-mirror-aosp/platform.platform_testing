@@ -17,12 +17,12 @@
 package android.tools.device.flicker.junit
 
 import android.annotation.SuppressLint
-import android.tools.CleanFlickerEnvironmentRule
 import android.tools.TEST_SCENARIO
 import android.tools.device.flicker.datastore.DataStore
 import android.tools.device.flicker.isShellTransitionsEnabled
 import android.tools.device.flicker.legacy.FlickerBuilder
 import android.tools.device.flicker.legacy.FlickerTest
+import android.tools.rules.CleanFlickerEnvironmentRule
 import com.google.common.truth.Truth
 import kotlin.reflect.KClass
 import org.junit.Before
@@ -187,6 +187,6 @@ class LegacyFlickerServiceDecoratorTest {
     }
 
     companion object {
-        @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
+        @ClassRule @JvmField val ENV_CLEANUP = CleanFlickerEnvironmentRule()
     }
 }

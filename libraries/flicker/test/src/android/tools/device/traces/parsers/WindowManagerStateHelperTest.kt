@@ -17,7 +17,6 @@
 package android.tools.device.traces.parsers
 
 import android.annotation.SuppressLint
-import android.tools.CleanFlickerEnvironmentRule
 import android.tools.common.Cache
 import android.tools.common.CrossPlatform
 import android.tools.common.Rotation
@@ -39,6 +38,7 @@ import android.tools.common.traces.wm.WindowManagerState
 import android.tools.common.traces.wm.WindowManagerTrace
 import android.tools.getWmDumpReaderFromAsset
 import android.tools.getWmTraceReaderFromAsset
+import android.tools.rules.CleanFlickerEnvironmentRule
 import androidx.test.filters.FlakyTest
 import androidx.test.platform.app.InstrumentationRegistry
 import com.google.common.truth.Truth
@@ -411,6 +411,6 @@ class WindowManagerStateHelperTest {
     }
 
     companion object {
-        @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
+        @ClassRule @JvmField val ENV_CLEANUP = CleanFlickerEnvironmentRule()
     }
 }

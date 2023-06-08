@@ -62,7 +62,8 @@ data class TransitionsTrace(override val entries: Array<Transition>) : ITrace<Tr
             if (accumulatedTransition == null) {
                 transitionById[transition.id] = transition
             } else {
-                transitionById[transition.id] = accumulatedTransition.merge(transition)
+                transitionById[transition.id] =
+                    Transition.mergePartialTransitions(accumulatedTransition, transition)
             }
         }
 

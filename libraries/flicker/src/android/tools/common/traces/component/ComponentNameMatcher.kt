@@ -115,6 +115,8 @@ class ComponentNameMatcher(var component: ComponentName) : IComponentNameMatcher
 
         val COLOR_FADE = ComponentNameMatcher("", "ColorFade")
 
+        val WALLPAPER_WINDOW_TOKEN = ComponentNameMatcher("", "WallpaperWindowToken")
+
         val LAUNCHER =
             ComponentNameMatcher(
                 "com.google.android.apps.nexuslauncher",

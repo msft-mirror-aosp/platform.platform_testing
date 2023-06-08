@@ -16,7 +16,6 @@
 
 package android.tools.common.traces.surfaceflinger
 
-import android.tools.CleanFlickerEnvironmentRule
 import android.tools.common.CrossPlatform
 import android.tools.common.datatypes.ActiveBuffer
 import android.tools.common.datatypes.Color
@@ -25,6 +24,7 @@ import android.tools.common.datatypes.RectF
 import android.tools.common.datatypes.Region
 import android.tools.common.datatypes.Size
 import android.tools.common.traces.surfaceflinger.Display.Companion.BLANK_LAYER_STACK
+import android.tools.rules.CleanFlickerEnvironmentRule
 import com.google.common.truth.Truth
 import org.junit.ClassRule
 import org.junit.FixMethodOrder
@@ -147,6 +147,6 @@ class LayerTraceEntryBuilderTest {
     @Test fun keepsOffDisplays() {}
 
     companion object {
-        @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
+        @ClassRule @JvmField val ENV_CLEANUP = CleanFlickerEnvironmentRule()
     }
 }

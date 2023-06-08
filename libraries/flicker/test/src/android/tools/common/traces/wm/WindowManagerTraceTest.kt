@@ -16,10 +16,10 @@
 
 package android.tools.common.traces.wm
 
-import android.tools.CleanFlickerEnvironmentRule
 import android.tools.common.Cache
 import android.tools.common.CrossPlatform
 import android.tools.getWmTraceReaderFromAsset
+import android.tools.rules.CleanFlickerEnvironmentRule
 import com.google.common.truth.Truth.assertThat
 import com.google.common.truth.Truth.assertWithMessage
 import java.lang.reflect.Modifier
@@ -160,6 +160,6 @@ class WindowManagerTraceTest {
     }
 
     companion object {
-        @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
+        @ClassRule @JvmField val ENV_CLEANUP = CleanFlickerEnvironmentRule()
     }
 }

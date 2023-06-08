@@ -16,7 +16,6 @@
 
 package android.tools.common.flicker.subject.surfaceflinger
 
-import android.tools.CleanFlickerEnvironmentRule
 import android.tools.TestComponents
 import android.tools.assertFail
 import android.tools.assertThatErrorContainsDebugInfo
@@ -29,6 +28,7 @@ import android.tools.common.flicker.subject.layers.LayersTraceSubject
 import android.tools.common.traces.component.ComponentNameMatcher
 import android.tools.common.traces.component.OrComponentMatcher
 import android.tools.getLayerTraceReaderFromAsset
+import android.tools.rules.CleanFlickerEnvironmentRule
 import android.tools.utils.MockLayerBuilder
 import android.tools.utils.MockLayerTraceEntryBuilder
 import com.google.common.truth.Truth
@@ -392,6 +392,6 @@ class LayerTraceEntrySubjectTest {
     }
 
     companion object {
-        @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
+        @ClassRule @JvmField val ENV_CLEANUP = CleanFlickerEnvironmentRule()
     }
 }

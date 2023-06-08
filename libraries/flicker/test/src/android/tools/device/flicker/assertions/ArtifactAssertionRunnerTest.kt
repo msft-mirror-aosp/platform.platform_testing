@@ -16,7 +16,6 @@
 
 package android.tools.device.flicker.assertions
 
-import android.tools.CleanFlickerEnvironmentRule
 import android.tools.assertExceptionMessage
 import android.tools.common.Tag
 import android.tools.common.flicker.assertions.AssertionData
@@ -29,6 +28,7 @@ import android.tools.device.traces.io.IResultData
 import android.tools.device.traces.monitors.events.EventLogMonitor
 import android.tools.newTestResultWriter
 import android.tools.outputFileName
+import android.tools.rules.CleanFlickerEnvironmentRule
 import com.google.common.truth.Truth
 import org.junit.Before
 import org.junit.ClassRule
@@ -139,6 +139,6 @@ class ArtifactAssertionRunnerTest {
             return writer.write()
         }
 
-        @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
+        @ClassRule @JvmField val ENV_CLEANUP = CleanFlickerEnvironmentRule()
     }
 }

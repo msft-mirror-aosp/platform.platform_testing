@@ -19,7 +19,6 @@ package android.tools.device.flicker.legacy.runner
 import android.annotation.SuppressLint
 import android.app.Instrumentation
 import android.os.SystemClock
-import android.tools.CleanFlickerEnvironmentRule
 import android.tools.TEST_SCENARIO
 import android.tools.assertExceptionMessage
 import android.tools.assertThrows
@@ -31,12 +30,12 @@ import android.tools.device.traces.io.ResultWriter
 import android.tools.device.traces.monitors.TraceMonitor
 import android.tools.device.traces.parsers.WindowManagerStateHelper
 import android.tools.newTestResultWriter
+import android.tools.rules.CleanFlickerEnvironmentRule
 import androidx.test.platform.app.InstrumentationRegistry
 import com.google.common.truth.Truth
 import org.junit.Before
 import org.junit.ClassRule
 import org.junit.FixMethodOrder
-import org.junit.Rule
 import org.junit.Test
 import org.junit.runners.MethodSorters
 import org.mockito.Mockito
@@ -206,6 +205,6 @@ class TransitionExecutionRuleTest {
             )
         }
 
-        @Rule @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
+        @ClassRule @JvmField val ENV_CLEANUP = CleanFlickerEnvironmentRule()
     }
 }

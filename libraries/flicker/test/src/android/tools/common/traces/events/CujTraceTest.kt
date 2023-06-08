@@ -16,8 +16,8 @@
 
 package android.tools.common.traces.events
 
-import android.tools.CleanFlickerEnvironmentRule
 import android.tools.common.CrossPlatform
+import android.tools.rules.CleanFlickerEnvironmentRule
 import com.google.common.truth.Truth
 import org.junit.ClassRule
 import org.junit.Test
@@ -164,6 +164,6 @@ class CujTraceTest {
     }
 
     companion object {
-        @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
+        @ClassRule @JvmField val ENV_CLEANUP = CleanFlickerEnvironmentRule()
     }
 }

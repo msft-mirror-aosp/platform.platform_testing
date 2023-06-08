@@ -16,10 +16,10 @@
 
 package android.tools.device.traces.parsers
 
-import android.tools.CleanFlickerEnvironmentRule
 import android.tools.common.CrossPlatform
 import android.tools.common.Timestamp
 import android.tools.common.parsers.AbstractTraceParser
+import android.tools.rules.CleanFlickerEnvironmentRule
 import android.tools.utils.MockWindowManagerTraceBuilder
 import android.tools.utils.MockWindowStateBuilder
 import com.google.common.truth.Truth
@@ -284,6 +284,6 @@ class TraceParserTest {
                 )
                 .build()
 
-        @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
+        @ClassRule @JvmField val ENV_CLEANUP = CleanFlickerEnvironmentRule()
     }
 }

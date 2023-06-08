@@ -16,13 +16,13 @@
 
 package android.tools.common.flicker.assertions
 
-import android.tools.CleanFlickerEnvironmentRule
 import android.tools.assertThrows
 import android.tools.common.Tag
 import android.tools.common.flicker.subject.layers.LayersTraceSubject
 import android.tools.device.traces.TRACE_CONFIG_REQUIRE_CHANGES
 import android.tools.device.traces.io.ResultReader
 import android.tools.newTestResultWriter
+import android.tools.rules.CleanFlickerEnvironmentRule
 import java.io.FileNotFoundException
 import org.junit.ClassRule
 import org.junit.Test
@@ -41,6 +41,6 @@ class SubjectsParserTest {
     }
 
     companion object {
-        @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
+        @ClassRule @JvmField val ENV_CLEANUP = CleanFlickerEnvironmentRule()
     }
 }

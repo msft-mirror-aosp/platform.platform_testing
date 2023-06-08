@@ -17,7 +17,6 @@
 package android.tools.common.flicker
 
 import android.app.Instrumentation
-import android.tools.CleanFlickerEnvironmentRule
 import android.tools.common.flicker.assertors.IFaasAssertion
 import android.tools.common.flicker.assertors.factories.IAssertionFactory
 import android.tools.common.flicker.assertors.runners.IAssertionRunner
@@ -25,6 +24,7 @@ import android.tools.common.flicker.extractors.IScenarioExtractor
 import android.tools.common.io.IReader
 import android.tools.device.flicker.FlickerService
 import android.tools.device.traces.parsers.WindowManagerStateHelper
+import android.tools.rules.CleanFlickerEnvironmentRule
 import androidx.test.platform.app.InstrumentationRegistry
 import org.junit.ClassRule
 import org.junit.FixMethodOrder
@@ -98,6 +98,6 @@ class FlickerServiceTest {
     inline fun <reified T : Any> argumentCaptor() = ArgumentCaptor.forClass(T::class.java)
 
     companion object {
-        @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
+        @ClassRule @JvmField val ENV_CLEANUP = CleanFlickerEnvironmentRule()
     }
 }

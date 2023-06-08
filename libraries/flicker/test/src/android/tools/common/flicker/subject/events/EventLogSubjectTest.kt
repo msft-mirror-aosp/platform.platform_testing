@@ -16,15 +16,14 @@
 
 package android.tools.common.flicker.subject.events
 
-import android.tools.CleanFlickerEnvironmentRule
 import android.tools.common.CrossPlatform
 import android.tools.common.flicker.assertions.SubjectsParser
 import android.tools.common.traces.events.EventLog
 import android.tools.common.traces.events.FocusEvent
 import android.tools.device.traces.io.InMemoryArtifact
 import android.tools.device.traces.io.ParsedTracesReader
+import android.tools.rules.CleanFlickerEnvironmentRule
 import org.junit.ClassRule
-import org.junit.Rule
 import org.junit.Test
 
 /**
@@ -100,6 +99,6 @@ class EventLogSubjectTest {
     }
 
     companion object {
-        @Rule @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
+        @ClassRule @JvmField val ENV_CLEANUP = CleanFlickerEnvironmentRule()
     }
 }

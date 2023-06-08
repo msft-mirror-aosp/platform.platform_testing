@@ -16,8 +16,8 @@
 
 package android.tools.device.flicker.legacy
 
-import android.tools.CleanFlickerEnvironmentRule
 import android.tools.common.Rotation
+import android.tools.rules.CleanFlickerEnvironmentRule
 import com.google.common.truth.Truth
 import org.junit.ClassRule
 import org.junit.FixMethodOrder
@@ -64,6 +64,6 @@ class FlickerTestFactoryTest {
     }
 
     companion object {
-        @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
+        @ClassRule @JvmField val ENV_CLEANUP = CleanFlickerEnvironmentRule()
     }
 }

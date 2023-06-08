@@ -22,6 +22,8 @@ import android.platform.helpers.AutomotiveConfigConstants;
 import android.platform.helpers.HelperAccessor;
 import android.platform.helpers.IAutoAppGridHelper;
 import android.platform.helpers.IAutoDialContactDetailsHelper;
+import android.platform.helpers.IAutoFacetBarHelper;
+import android.platform.helpers.IAutoNotificationHelper;
 import android.platform.helpers.IAutoVehicleHardKeysHelper;
 import android.platform.helpers.IAutoVehicleHardKeysHelper.DrivingState;
 
@@ -33,18 +35,22 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(AndroidJUnit4.class)
-public class UxRestrictionDOAppsTest {
+public class DrivingOptimizedAppsTest {
     private HelperAccessor<IAutoDialContactDetailsHelper> mContactHelper;
     private HelperAccessor<IAutoAppGridHelper> mAppGridHelper;
     private HelperAccessor<IAutoVehicleHardKeysHelper> mHardKeysHelper;
+    private HelperAccessor<IAutoFacetBarHelper> mFacetBarHelper;
+    private HelperAccessor<IAutoNotificationHelper> mNotificationHelper;
 
+    private static final String NOTIFICATION_TITLE = "Check recent permissions";
     private static final int SPEED_TWENTY = 20;
-    private static final int SPEED_ZERO = 0;
 
-    public UxRestrictionDOAppsTest() throws Exception {
+    public DrivingOptimizedAppsTest() throws Exception {
         mAppGridHelper = new HelperAccessor<>(IAutoAppGridHelper.class);
         mContactHelper = new HelperAccessor<>(IAutoDialContactDetailsHelper.class);
         mHardKeysHelper = new HelperAccessor<>(IAutoVehicleHardKeysHelper.class);
+        mFacetBarHelper = new HelperAccessor<>(IAutoFacetBarHelper.class);
+        mNotificationHelper = new HelperAccessor<>(IAutoNotificationHelper.class);
     }
 
     @Before
@@ -56,7 +62,6 @@ public class UxRestrictionDOAppsTest {
     @After
     public void disableDrivingMode() {
         mAppGridHelper.get().goToHomePage();
-        mHardKeysHelper.get().setSpeed(SPEED_ZERO);
         mHardKeysHelper.get().setDrivingState(DrivingState.PARKED);
     }
 
@@ -93,8 +98,13 @@ public class UxRestrictionDOAppsTest {
                         .checkPackageInForeground(AutomotiveConfigConstants.DIAL_PACKAGE));
     }
 
+    /**
+     * The test below verifies. 1. Contacts can be openned while on Drive mode 2. After the park
+     * mode, notifications are sent when a certain permission is granted while driving (Silent
+     * post-drive notification)
+     */
     @Test
-    public void testOpenContacts() {
+    public void testOpenContactsAndVerifyPostDriveNotification() {
         mAppGridHelper.get().open();
         mAppGridHelper.get().openApp("Contacts");
         mContactHelper.get().dismissInitialDialogs();
@@ -103,5 +113,10 @@ public class UxRestrictionDOAppsTest {
                 mAppGridHelper
                         .get()
                         .checkPackageInForeground(AutomotiveConfigConstants.CONTACTS_PACKAGE));
+        disableDrivingMode();
+        mFacetBarHelper.get().clickOnFacetIcon(IAutoFacetBarHelper.FACET_BAR.NOTIFICATION);
+        assertTrue(
+                "Recent Permission is not Notified",
+                mNotificationHelper.get().checkNotificationExists(NOTIFICATION_TITLE));
     }
 }

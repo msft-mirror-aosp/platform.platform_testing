@@ -29,6 +29,7 @@ android_test {
         "automotive-config-lib",
         "hamcrest-library",
         "platform-test-options",
+        "automotive-notifications-app-helper",
         "automotive-vehiclehardkeys-app-helper",
         "automotive-dial-app-helper",
         "automotive-app-grid-helper",
