@@ -107,6 +107,10 @@
       "VALUE": "mute_button",
       "PACKAGE": "com.android.car.dialer"
     },
+    "ONGOING_CALL": {
+      "TYPE": "TEXT",
+      "VALUE": "Ongoing call"
+    },
     "CONTACT_LIST_SCROLL_FORWARD": {
       "TYPE": "RESOURCE_ID",
       "VALUE": "car_ui_scrollbar_page_down",
@@ -330,6 +334,10 @@
       "TYPE": "TEXT",
       "VALUE": "Assistant"
     },
+    "HOME_PHONE_CARD": {
+      "TYPE": "TEXT",
+      "VALUE": "Phone"
+    },
     "HOME_FACET_BUTTON": {
       "TYPE": "RESOURCE_ID",
       "VALUE": "home",
@@ -451,33 +459,36 @@
     },
     "APP_INFO_SETTINGS_SCROLL_ELEMENT": {
       "TYPE": "RESOURCE_ID",
-      "VALUE": "car_ui_internal_recycler_view",
-      "PACKAGE": "com.android.car.ui.sharedlibrary"
+      "VALUE": "fragment_container",
+      "PACKAGE": "com.android.car.settings"
     },
     "APP_INFO_SETTINGS_SCROLL_FORWARD_BUTTON": {
-      "TYPE": "RESOURCE_ID",
-      "VALUE": "car_ui_scrollbar_page_down",
-      "PACKAGE": "com.android.car.ui.sharedlibrary"
+      "TYPE": "DESCRIPTION",
+      "VALUE": "Scroll up"
     },
     "APP_INFO_SETTINGS_SCROLL_BACKWARD_BUTTON": {
-      "TYPE": "RESOURCE_ID",
-      "VALUE": "car_ui_scrollbar_page_up",
-      "PACKAGE": "com.android.car.ui.sharedlibrary"
+      "TYPE": "DESCRIPTION",
+      "VALUE": "Scroll down"
     },
     "APP_INFO_SETTINGS_PERMISSIONS_SCROLL_ELEMENT": {
-      "TYPE": "RESOURCE_ID",
-      "VALUE": "car_ui_internal_recycler_view",
-      "PACKAGE": "com.android.permissioncontroller"
-    },
-    "APP_INFO_SETTINGS_PERMISSIONS_SCROLL_FORWARD_BUTTON": {
-      "TYPE": "RESOURCE_ID",
-      "VALUE": "car_ui_scrollbar_page_down",
-      "PACKAGE": "com.android.permissioncontroller"
-    },
-    "APP_INFO_SETTINGS_PERMISSIONS_SCROLL_BACKWARD_BUTTON": {
-      "TYPE": "RESOURCE_ID",
-      "VALUE": "car_ui_scrollbar_page_up",
-      "PACKAGE": "com.android.permissioncontroller"
+      "TYPE": "MULTIPLE",
+      "SPECIFIERS": [
+        {
+          "TYPE": "HAS_ANCESTOR",
+          "ANCESTOR": {
+            "TYPE": "CLASS",
+            "VALUE": "com.android.car.ui.FocusArea"
+          }
+        },
+        {
+          "TYPE": "HAS_DESCENDANT",
+          "MAX_DEPTH": 2,
+          "DESCENDANT": {
+          "TYPE": "CLASS",
+          "VALUE": "android.widget.FrameLayout"
+          }
+        }
+      ]
     },
     "APP_INFO_SETTINGS_ENABLE_DISABLE_BUTTON": {
       "TYPE": "RESOURCE_ID",

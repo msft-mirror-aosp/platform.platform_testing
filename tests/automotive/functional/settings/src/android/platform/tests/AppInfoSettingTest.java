@@ -2,7 +2,6 @@ package android.platform.tests;
 
 import static junit.framework.Assert.assertTrue;
 
-import android.platform.helpers.AutoUtility;
 import android.platform.helpers.HelperAccessor;
 import android.platform.helpers.IAutoAppInfoSettingsHelper;
 import android.platform.helpers.IAutoAppInfoSettingsHelper.State;
@@ -13,7 +12,6 @@ import androidx.test.runner.AndroidJUnit4;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -31,11 +29,6 @@ public class AppInfoSettingTest {
         mSettingHelper = new HelperAccessor<>(IAutoSettingHelper.class);
     }
 
-    @BeforeClass
-    public static void exitSuw() {
-        AutoUtility.exitSuw();
-    }
-
     @Before
     public void openAppInfoFacet() {
         mSettingHelper.get().openSetting(SettingsConstants.APPS_SETTINGS);
@@ -47,7 +40,7 @@ public class AppInfoSettingTest {
 
     @After
     public void goBackToSettingsScreen() {
-        mSettingHelper.get().goBackToSettingsScreen();
+        mSettingHelper.get().exit();
     }
 
     @Test

@@ -25,6 +25,7 @@ public class AutomotiveConfigConstants {
     public static final String PHONE_ACTIVITY = "PHONE_ACTIVITY";
     public static final String MAKE_CALL = "MAKE_CALL";
     public static final String END_CALL = "END_CALL";
+    public static final String ONGOING_CALL = "ONGOING_CALL";
     public static final String CALL_HISTORY_MENU = "CALL_HISTORY_MENU";
     public static final String DELETE_NUMBER = "DELETE_NUMBER";
     public static final String DIAL_IN_NUMBER = "DIAL_IN_NUMBER";
@@ -89,6 +90,7 @@ public class AutomotiveConfigConstants {
     public static final String HOME_TOP_CARD = "HOME_TOP_CARD";
     public static final String HOME_MAP_CARD = "HOME_MAP_CARD";
     public static final String HOME_ASSISTANT_CARD = "HOME_ASSISTANT_CARD";
+    public static final String HOME_PHONE_CARD = "HOME_PHONE_CARD";
 
     // App Grid Constants
     public static final String OPEN_APP_GRID_COMMAND = "OPEN_APP_GRID_COMMAND";
@@ -340,10 +342,6 @@ public class AutomotiveConfigConstants {
     public static final String APP_INFO_SETTINGS_VIEW_ALL = "APP_INFO_SETTINGS_VIEW_ALL";
     public static final String APP_INFO_SETTINGS_PERMISSIONS_SCROLL_ELEMENT =
             "APP_INFO_SETTINGS_PERMISSIONS_SCROLL_ELEMENT";
-    public static final String APP_INFO_SETTINGS_PERMISSIONS_SCROLL_FORWARD_BUTTON =
-            "APP_INFO_SETTINGS_PERMISSIONS_SCROLL_FORWARD_BUTTON";
-    public static final String APP_INFO_SETTINGS_PERMISSIONS_SCROLL_BACKWARD_BUTTON =
-            "APP_INFO_SETTINGS_PERMISSIONS_SCROLL_BACKWARD_BUTTON";
     public static final String APP_INFO_SETTINGS_SCROLL_ELEMENT =
             "APP_INFO_SETTINGS_SCROLL_ELEMENT";
     public static final String APP_INFO_SETTINGS_SCROLL_FORWARD_BUTTON =

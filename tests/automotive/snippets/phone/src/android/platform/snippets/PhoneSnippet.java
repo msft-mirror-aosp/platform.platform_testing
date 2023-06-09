@@ -118,6 +118,16 @@ public class PhoneSnippet implements Snippet {
         mDialerHelper.get().unmuteCall();
     }
 
+    @Rpc(description = "Ongoing Call on homescreen.")
+    public void isOngoingCallDisplayedOnHome() {
+        mDialerHelper.get().isOngoingCallDisplayedOnHome();
+    }
+
+    @Rpc(description = "Open Phone from Home Screen card.")
+    public void openPhoneAppFromHome() {
+        mDialerHelper.get().openPhoneAppFromHome();
+    }
+
     @Rpc(description = "Change audio source to Phone when the call is in progress.")
     public void changeAudioSourceToPhone() {
         mDialerHelper.get().changeAudioSource(IAutoDialHelper.AudioSource.PHONE);

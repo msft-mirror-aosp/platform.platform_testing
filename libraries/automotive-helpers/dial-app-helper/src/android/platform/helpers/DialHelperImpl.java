@@ -519,6 +519,24 @@ public class DialHelperImpl extends AbstractStandardAppHelper implements IAutoDi
         }
     }
 
+    /** This method is used check if ongoing call is displayed on home. */
+    public boolean isOngoingCallDisplayedOnHome() {
+        getSpectatioUiUtil().wait5Seconds();
+        getSpectatioUiUtil().pressHome();
+        BySelector ongoingCallSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.ONGOING_CALL);
+        return getSpectatioUiUtil().hasUiElement(ongoingCallSelector);
+    }
+
+    /** This method opens the phone app on tapping the home phone card on home screen */
+    public void openPhoneAppFromHome() {
+        BySelector homePhoneCardSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.HOME_PHONE_CARD);
+        UiObject2 homePhoneCard = getSpectatioUiUtil().findUiObject(homePhoneCardSelector);
+        validateUiObject(homePhoneCard, AutomotiveConfigConstants.HOME_PHONE_CARD);
+        getSpectatioUiUtil().clickAndWait(homePhoneCard);
+    }
+
     private void validateUiObject(UiObject2 uiObject, String action) {
         if (uiObject == null) {
             throw new UnknownUiException(

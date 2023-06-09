@@ -19,8 +19,8 @@ package android.tools.common.flicker.config.notification
 import android.tools.common.flicker.config.AssertionTemplates
 import android.tools.common.flicker.config.FaasScenarioType
 import android.tools.common.flicker.config.IScenarioConfig
+import android.tools.common.flicker.extractors.TaggedCujTransitionMatcher
 import android.tools.common.flicker.extractors.TaggedScenarioExtractor
-import android.tools.common.flicker.extractors.TransitionMatcher
 import android.tools.common.traces.events.CujType
 
 class NotificationHeadsUpDisappear : IScenarioConfig {
@@ -35,6 +35,6 @@ class NotificationHeadsUpDisappear : IScenarioConfig {
         TaggedScenarioExtractor(
             targetTag = CujType.CUJ_NOTIFICATION_HEADS_UP_DISAPPEAR,
             type,
-            transitionMatcher = TransitionMatcher(associatedTransitionRequired = false),
+            transitionMatcher = TaggedCujTransitionMatcher(associatedTransitionRequired = false),
         )
 }

@@ -49,13 +49,29 @@ import android.tools.common.flicker.assertors.assertions.LayerIsVisibleAtStart
 import android.tools.common.flicker.assertors.assertions.LayerReduces
 import android.tools.common.flicker.assertors.assertions.NonAppWindowIsVisibleAlways
 import android.tools.common.flicker.assertors.assertions.ScreenLockedAtStart
-import android.tools.common.flicker.assertors.assertions.SplitAppLayerBoundsSnapToDivider
+import android.tools.common.flicker.assertors.assertions.SplitAppLayerBoundsBecomesVisible
 import android.tools.common.flicker.assertors.assertions.VisibleLayersShownMoreThanOneConsecutiveEntry
 import android.tools.common.flicker.assertors.assertions.VisibleWindowsShownMoreThanOneConsecutiveEntry
 import android.tools.common.flicker.assertors.assertions.WindowBecomesPinned
 import android.tools.common.flicker.assertors.assertions.WindowRemainInsideVisibleBounds
+import android.tools.common.traces.component.ComponentNameMatcher
 
 object AssertionTemplates {
+    val ENTIRE_TRACE_ASSERTIONS =
+        listOf(
+            EntireScreenCoveredAlways(),
+            VisibleWindowsShownMoreThanOneConsecutiveEntry(),
+            // Temporarily ignore these layers which might be visible for a single entry
+            // and contain only view level changes during that entry (b/286054008)
+            VisibleLayersShownMoreThanOneConsecutiveEntry(
+                ignore =
+                    listOf(
+                        ComponentNameMatcher.NOTIFICATION_SHADE,
+                        ComponentNameMatcher.VOLUME_DIALOG,
+                    )
+            ),
+        )
+
     val COMMON_ASSERTIONS =
         listOf(
             EntireScreenCoveredAlways(),
@@ -168,8 +184,14 @@ object AssertionTemplates {
                 LayerBecomesVisible(Components.SPLIT_SCREEN_DIVIDER),
                 AppLayerIsVisibleAtEnd(Components.SPLIT_SCREEN_PRIMARY_APP),
                 AppLayerBecomesVisible(Components.SPLIT_SCREEN_SECONDARY_APP),
-                SplitAppLayerBoundsSnapToDivider(Components.SPLIT_SCREEN_PRIMARY_APP),
-                SplitAppLayerBoundsSnapToDivider(Components.SPLIT_SCREEN_SECONDARY_APP),
+                SplitAppLayerBoundsBecomesVisible(
+                    Components.SPLIT_SCREEN_PRIMARY_APP,
+                    isPrimaryApp = true
+                ),
+                SplitAppLayerBoundsBecomesVisible(
+                    Components.SPLIT_SCREEN_SECONDARY_APP,
+                    isPrimaryApp = false
+                ),
                 AppWindowBecomesVisible(Components.SPLIT_SCREEN_PRIMARY_APP),
                 AppWindowBecomesVisible(Components.SPLIT_SCREEN_SECONDARY_APP),
             )
