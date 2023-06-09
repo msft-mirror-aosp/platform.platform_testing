@@ -21,6 +21,7 @@ import android.tools.common.flicker.config.FaasScenarioType
 import android.tools.common.traces.component.ComponentNameMatcher
 import android.tools.common.traces.component.FullComponentIdMatcher
 import android.tools.common.traces.component.IComponentMatcher
+import android.tools.common.traces.surfaceflinger.LayersTrace
 import android.tools.common.traces.wm.Transition
 import android.tools.common.traces.wm.TransitionType
 
@@ -74,17 +75,17 @@ object Components {
         }
     val SPLIT_SCREEN_PRIMARY_APP =
         ComponentTemplate("SPLIT_SCREEN_PRIMARY_APP") { scenarioInstance: IScenarioInstance ->
-            val associatedTransition = scenarioInstance.associatedTransition
-            requireNotNull(associatedTransition) {
-                "Can only extract SPLIT_SCREEN_PRIMARY_APP from scenario with transition"
-            }
+            val associatedTransition =
+                scenarioInstance.associatedTransition
+                    ?: error(
+                        "Can only extract SPLIT_SCREEN_PRIMARY_APP from scenario with transition"
+                    )
+            val layersTrace =
+                scenarioInstance.reader.readLayersTrace() ?: error("Missing layers trace")
 
             when (scenarioInstance.type) {
                 FaasScenarioType.SPLIT_SCREEN_ENTER -> {
-                    TODO(
-                        "Not implemented :: ${scenarioInstance.type} :: " +
-                            "${scenarioInstance.associatedTransition}"
-                    )
+                    getSplitscreenOpeningComponentMatchers(associatedTransition, layersTrace)[0]
                 }
                 FaasScenarioType.SPLIT_SCREEN_EXIT -> {
                     TODO(
@@ -101,17 +102,17 @@ object Components {
         }
     val SPLIT_SCREEN_SECONDARY_APP =
         ComponentTemplate("SPLIT_SCREEN_SECONDARY_APP") { scenarioInstance: IScenarioInstance ->
-            val associatedTransition = scenarioInstance.associatedTransition
-            requireNotNull(associatedTransition) {
-                "Can only extract SPLIT_SCREEN_SECONDARY_APP from scenario with transition"
-            }
+            val associatedTransition =
+                scenarioInstance.associatedTransition
+                    ?: error(
+                        "Can only extract SPLIT_SCREEN_SECONDARY_APP from scenario with transition"
+                    )
+            val layersTrace =
+                scenarioInstance.reader.readLayersTrace() ?: error("Missing layers trace")
 
             when (scenarioInstance.type) {
                 FaasScenarioType.SPLIT_SCREEN_ENTER -> {
-                    TODO(
-                        "Not implemented :: ${scenarioInstance.type} :: " +
-                            "${scenarioInstance.associatedTransition}"
-                    )
+                    getSplitscreenOpeningComponentMatchers(associatedTransition, layersTrace)[1]
                 }
                 FaasScenarioType.SPLIT_SCREEN_EXIT -> {
                     TODO(
@@ -128,6 +129,40 @@ object Components {
         }
 
     val EMPTY = ComponentTemplate("") { ComponentNameMatcher("", "") }
+
+    private fun getSplitscreenOpeningComponentMatchers(
+        associatedTransition: Transition,
+        layersTrace: LayersTrace
+    ): List<IComponentMatcher> {
+        // Task (part of changes)
+        // - Task (part of changes)
+        //   - SplitDecorManager
+        //   - Task for app (part of changes)
+        // - Task (part of changes)
+        //   - SplitDecorManager
+        //   - Task for app (part of changes)
+        // - SplitWindowManager
+        //   - StageCoordinatorSplitDividerLeash#1378
+
+        val layerIds = associatedTransition.changes.map { it.layerId }
+        val layers =
+            associatedTransition.changes.map { change ->
+                layersTrace.entries.last().flattenedLayers.first { it.id == change.layerId }
+            }
+
+        val appIds = layers.filter { layerIds.contains(it.parent?.parent?.id) }.map { it.id }
+
+        val componentMatchers =
+            associatedTransition.changes
+                .filter { appIds.contains(it.layerId) }
+                .map { FullComponentIdMatcher(it.windowId, it.layerId) }
+
+        require(componentMatchers.size == 2) {
+            "Expected to get 2 splitscreen apps but got ${componentMatchers.size}"
+        }
+
+        return componentMatchers
+    }
 
     private fun openingAppFrom(transition: Transition): IComponentMatcher {
         val targetChanges =
