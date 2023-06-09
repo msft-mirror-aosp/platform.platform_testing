@@ -16,10 +16,8 @@
 
 package android.tools.common.flicker.extractors
 
-import android.tools.common.io.IReader
-import android.tools.common.traces.events.Cuj
 import android.tools.common.traces.wm.Transition
 
 interface ITransitionMatcher {
-    fun getTransition(cujEntry: Cuj, reader: IReader): Transition?
+    fun findAll(transitions: Collection<Transition>): Collection<Transition>
 }

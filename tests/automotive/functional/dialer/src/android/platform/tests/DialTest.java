@@ -28,12 +28,13 @@ import android.platform.helpers.IAutoDialHelper.AudioSource;
 import android.platform.helpers.IAutoDialHelper.OrderType;
 import android.platform.helpers.IAutoVehicleHardKeysHelper;
 import android.platform.test.option.StringOption;
+
 import androidx.test.runner.AndroidJUnit4;
 
 import org.junit.After;
 import org.junit.ClassRule;
-import org.junit.runner.RunWith;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 @RunWith(AndroidJUnit4.class)
 public class DialTest {

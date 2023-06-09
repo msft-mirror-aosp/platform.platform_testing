@@ -19,8 +19,8 @@ package android.tools.common.flicker.config.taskbar
 import android.tools.common.flicker.config.AssertionTemplates
 import android.tools.common.flicker.config.FaasScenarioType
 import android.tools.common.flicker.config.IScenarioConfig
+import android.tools.common.flicker.extractors.TaggedCujTransitionMatcher
 import android.tools.common.flicker.extractors.TaggedScenarioExtractor
-import android.tools.common.flicker.extractors.TransitionMatcher
 import android.tools.common.traces.events.CujType
 
 class TaskbarExpand : IScenarioConfig {
@@ -35,6 +35,6 @@ class TaskbarExpand : IScenarioConfig {
         TaggedScenarioExtractor(
             targetTag = CujType.CUJ_TASKBAR_EXPAND,
             type,
-            transitionMatcher = TransitionMatcher(associatedTransitionRequired = false),
+            transitionMatcher = TaggedCujTransitionMatcher(associatedTransitionRequired = false),
         )
 }

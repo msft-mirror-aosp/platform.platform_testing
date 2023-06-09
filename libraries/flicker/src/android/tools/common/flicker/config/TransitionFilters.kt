@@ -16,6 +16,8 @@
 
 package android.tools.common.flicker.config
 
+import android.tools.common.PlatformConsts.SPLIT_SCREEN_TRANSITION_HANDLER
+import android.tools.common.flicker.extractors.ITransitionMatcher
 import android.tools.common.flicker.extractors.TransitionsTransform
 import android.tools.common.traces.component.ComponentNameMatcher
 import android.tools.common.traces.surfaceflinger.LayersTrace
@@ -189,9 +191,12 @@ object TransitionFilters {
         ts.filter { it.type == TransitionType.PIP }
     }
 
-    val ENTER_SPLIT_SCREEN_FILTER: TransitionsTransform = { ts, _, _ ->
-        ts.filter { isSplitscreenEnterTransition(it) }
-    }
+    val ENTER_SPLIT_SCREEN_MATCHER =
+        object : ITransitionMatcher {
+            override fun findAll(transitions: Collection<Transition>): Collection<Transition> {
+                return transitions.filter { isSplitscreenEnterTransition(it) }
+            }
+        }
 
     val EXIT_SPLIT_SCREEN_FILTER: TransitionsTransform = { ts, _, _ ->
         ts.filter { isSplitscreenExitTransition(it) }
@@ -202,8 +207,8 @@ object TransitionFilters {
     }
 
     fun isSplitscreenEnterTransition(transition: Transition): Boolean {
-        return transition.type == TransitionType.SPLIT_SCREEN_PAIR_OPEN ||
-            transition.type == TransitionType.SPLIT_SCREEN_OPEN_TO_SIDE
+        return transition.handler == SPLIT_SCREEN_TRANSITION_HANDLER &&
+            transition.type == TransitionType.TO_FRONT
     }
 
     fun isSplitscreenExitTransition(transition: Transition): Boolean {
