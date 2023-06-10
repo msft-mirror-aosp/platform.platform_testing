@@ -109,7 +109,9 @@ class LegacyFlickerJUnit4ClassRunner(test: TestWithParameters?, private val scen
         testClass.getAnnotatedMethods(FlickerBuilderProvider::class.java) ?: emptyList()
 
     private val arguments: Bundle = InstrumentationRegistry.getArguments()
-    private val flickerDecorator =
+
+    @VisibleForTesting
+    val flickerDecorator =
         test?.let {
             LegacyFlickerServiceDecorator(
                 test.testClass,

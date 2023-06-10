@@ -225,10 +225,6 @@ class FlickerServiceResultsCollector(
         }
     }
 
-    fun getKeyForAssertionResult(result: IAssertionResult): String {
-        return "$FAAS_METRICS_PREFIX::${result.assertion.name}"
-    }
-
     private fun errorReportingBlock(function: () -> Unit) {
         try {
             function()
@@ -252,10 +248,14 @@ class FlickerServiceResultsCollector(
 
     companion object {
         // Unique prefix to add to all FaaS metrics to identify them
-        private const val FAAS_METRICS_PREFIX = "FAAS"
+        const val FAAS_METRICS_PREFIX = "FAAS"
         private const val LOG_TAG = "$FLICKER_TAG-Collector"
         const val WINSCOPE_FILE_PATH_KEY = "winscope_file_path"
         const val FLICKER_ASSERTIONS_COUNT_KEY = "flicker_assertions_count"
+
+        fun getKeyForAssertionResult(result: IAssertionResult): String {
+            return "$FAAS_METRICS_PREFIX::${result.assertion.name}"
+        }
 
         class AggregatedFlickerResult {
             val results = mutableListOf<IAssertionResult>()
