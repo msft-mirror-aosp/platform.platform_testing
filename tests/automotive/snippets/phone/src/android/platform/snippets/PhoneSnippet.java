@@ -119,8 +119,8 @@ public class PhoneSnippet implements Snippet {
     }
 
     @Rpc(description = "Ongoing Call on homescreen.")
-    public void isOngoingCallDisplayedOnHome() {
-        mDialerHelper.get().isOngoingCallDisplayedOnHome();
+    public boolean isOngoingCallDisplayedOnHome() {
+        return mDialerHelper.get().isOngoingCallDisplayedOnHome();
     }
 
     @Rpc(description = "Open Phone from Home Screen card.")
