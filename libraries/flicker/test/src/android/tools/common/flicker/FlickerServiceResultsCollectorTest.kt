@@ -26,6 +26,7 @@ import android.tools.common.traces.wm.TransitionsTrace
 import android.tools.device.flicker.FlickerServiceResultsCollector
 import android.tools.device.flicker.FlickerServiceResultsCollector.Companion.FLICKER_ASSERTIONS_COUNT_KEY
 import android.tools.device.flicker.FlickerServiceResultsCollector.Companion.WINSCOPE_FILE_PATH_KEY
+import android.tools.device.flicker.FlickerServiceResultsCollector.Companion.getKeyForAssertionResult
 import android.tools.device.traces.io.InMemoryArtifact
 import android.tools.device.traces.io.ParsedTracesReader
 import android.tools.utils.KotlinMockito
@@ -233,9 +234,9 @@ class FlickerServiceResultsCollectorTest {
         Truth.assertThat(testData.stringMetrics[FLICKER_ASSERTIONS_COUNT_KEY])
             .isEqualTo("${assertionResults.size}")
 
-        val key0 = "${collector.getKeyForAssertionResult(mockSuccessfulAssertionResult)}_0"
-        val key1 = "${collector.getKeyForAssertionResult(mockSuccessfulAssertionResult)}_1"
-        val key2 = "${collector.getKeyForAssertionResult(mockFailedAssertionResult)}_0"
+        val key0 = "${getKeyForAssertionResult(mockSuccessfulAssertionResult)}_0"
+        val key1 = "${getKeyForAssertionResult(mockSuccessfulAssertionResult)}_1"
+        val key2 = "${getKeyForAssertionResult(mockFailedAssertionResult)}_0"
         Truth.assertThat(testData.stringMetrics).containsKey(key0)
         Truth.assertThat(testData.stringMetrics[key0]).isEqualTo("0")
         Truth.assertThat(testData.stringMetrics[key1]).isEqualTo("0")
