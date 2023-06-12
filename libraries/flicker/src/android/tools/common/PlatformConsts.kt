@@ -127,4 +127,7 @@ object PlatformConsts {
 
     internal const val STARTING_WINDOW_PREFIX = "Starting "
     internal const val DEBUGGER_WINDOW_PREFIX = "Waiting For Debugger: "
+
+    internal const val SPLIT_SCREEN_TRANSITION_HANDLER =
+        "com.android.wm.shell.splitscreen.StageCoordinator"
 }

@@ -104,16 +104,7 @@ class LayersTraceSubject(val trace: LayersTrace, override val reader: IReader? =
 
     /** Checks that all visible layers are shown for more than one consecutive entry */
     fun visibleLayersShownMoreThanOneConsecutiveEntry(
-        ignoreLayers: List<IComponentMatcher> =
-            listOf(
-                ComponentNameMatcher.SPLASH_SCREEN,
-                ComponentNameMatcher.SNAPSHOT,
-                ComponentNameMatcher.IME_SNAPSHOT,
-                ComponentNameMatcher.PIP_CONTENT_OVERLAY,
-                ComponentNameMatcher.EDGE_BACK_GESTURE_HANDLER,
-                ComponentNameMatcher.COLOR_FADE_BLAST,
-                EdgeExtensionComponentMatcher()
-            )
+        ignoreLayers: List<IComponentMatcher> = VISIBLE_FOR_MORE_THAN_ONE_ENTRY_IGNORE_LAYERS
     ): LayersTraceSubject = apply {
         visibleEntriesShownMoreThanOneConsecutiveTime { subject ->
             subject.entry.visibleLayers
@@ -329,5 +320,18 @@ class LayersTraceSubject(val trace: LayersTrace, override val reader: IReader? =
         } else {
             subjects.first { it.entry.timestamp.systemUptimeNanos == timestamp }
         }
+    }
+
+    companion object {
+        val VISIBLE_FOR_MORE_THAN_ONE_ENTRY_IGNORE_LAYERS =
+            listOf(
+                ComponentNameMatcher.SPLASH_SCREEN,
+                ComponentNameMatcher.SNAPSHOT,
+                ComponentNameMatcher.IME_SNAPSHOT,
+                ComponentNameMatcher.PIP_CONTENT_OVERLAY,
+                ComponentNameMatcher.EDGE_BACK_GESTURE_HANDLER,
+                ComponentNameMatcher.COLOR_FADE,
+                EdgeExtensionComponentMatcher()
+            )
     }
 }

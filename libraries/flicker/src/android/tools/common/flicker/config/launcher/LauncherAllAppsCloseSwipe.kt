@@ -19,8 +19,8 @@ package android.tools.common.flicker.config.launcher
 import android.tools.common.flicker.config.AssertionTemplates
 import android.tools.common.flicker.config.FaasScenarioType
 import android.tools.common.flicker.config.IScenarioConfig
+import android.tools.common.flicker.extractors.TaggedCujTransitionMatcher
 import android.tools.common.flicker.extractors.TaggedScenarioExtractor
-import android.tools.common.flicker.extractors.TransitionMatcher
 import android.tools.common.traces.events.CujType
 
 class LauncherAllAppsCloseSwipe : IScenarioConfig {
@@ -35,6 +35,6 @@ class LauncherAllAppsCloseSwipe : IScenarioConfig {
         TaggedScenarioExtractor(
             targetTag = CujType.CUJ_LAUNCHER_CLOSE_ALL_APPS_SWIPE,
             type,
-            transitionMatcher = TransitionMatcher(associatedTransitionRequired = false),
+            transitionMatcher = TaggedCujTransitionMatcher(associatedTransitionRequired = false),
         )
 }

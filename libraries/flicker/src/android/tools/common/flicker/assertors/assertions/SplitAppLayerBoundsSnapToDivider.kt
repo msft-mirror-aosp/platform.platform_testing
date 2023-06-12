@@ -47,6 +47,10 @@ class SplitAppLayerBoundsSnapToDivider(private val component: ComponentTemplate)
                     it.layer(splitscreenDivider)?.visibleRegion?.region
                         ?: error("Missing splitscreen divider")
 
+                require(dividerRegion.isNotEmpty) {
+                    "Splitscreen divider region should not be empty"
+                }
+
                 it.visibleRegion(component.build(scenarioInstance))
                     .coversAtMost(
                         if (displaySize.width > displaySize.height) {

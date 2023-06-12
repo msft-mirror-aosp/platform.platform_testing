@@ -50,7 +50,6 @@ internal class FoldableDeviceController {
     private var rearDisplayState by notNull<Int>()
     private var currentState: Int? = null
 
-    private val deviceStateInitLatch = CountDownLatch(1)
     private var deviceStateLatch = CountDownLatch(1)
     private var pendingRequest: DeviceStateRequest? = null
 
@@ -98,9 +97,8 @@ internal class FoldableDeviceController {
     }
 
     fun init() {
-        findStates()
         deviceStateManager.registerCallback(context.mainExecutor, deviceStateCallback)
-        deviceStateInitLatch.await { "Device state wasn't initialized within the timeout" }
+        findStates()
         hingeAngleSensor.init()
     }
 
@@ -185,11 +183,7 @@ internal class FoldableDeviceController {
         check(this.await(DEVICE_STATE_MAX_TIMEOUT.toMillis(), TimeUnit.MILLISECONDS), error)
     }
 
-    private val deviceStateCallback = DeviceStateCallback { state ->
-        Log.d(TAG, "Device state changed ${state.desc()}")
-        currentState = state
-        deviceStateInitLatch.countDown()
-    }
+    private val deviceStateCallback = DeviceStateCallback { state -> currentState = state }
 
     private val deviceStateRequestCallback =
         object : DeviceStateRequest.Callback {
