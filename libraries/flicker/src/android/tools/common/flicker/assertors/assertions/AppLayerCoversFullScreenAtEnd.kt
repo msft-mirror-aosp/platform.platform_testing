@@ -19,6 +19,7 @@ package android.tools.common.flicker.assertors.assertions
 import android.tools.common.flicker.IScenarioInstance
 import android.tools.common.flicker.assertors.ComponentTemplate
 import android.tools.common.flicker.subject.layers.LayersTraceSubject
+import android.tools.common.traces.component.ComponentNameMatcher
 
 class AppLayerCoversFullScreenAtEnd(private val component: ComponentTemplate) :
     AssertionTemplateWithComponent(component) {
@@ -29,9 +30,11 @@ class AppLayerCoversFullScreenAtEnd(private val component: ComponentTemplate) :
             layersTrace.entries.last().physicalDisplayBounds
                 ?: error("Missing physical display bounds")
 
-        layerSubject
-            .last()
-            .visibleRegion(component.build(scenarioInstance))
-            .coversExactly(startDisplayBounds)
+        val visibleRegionSubject =
+            layerSubject
+                .last()
+                .visibleRegion(component.build(scenarioInstance).or(ComponentNameMatcher.LETTERBOX))
+
+        visibleRegionSubject.coversExactly(startDisplayBounds)
     }
 }
