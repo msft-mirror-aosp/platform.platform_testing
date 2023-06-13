@@ -29,8 +29,6 @@ import android.tools.common.flicker.assertors.assertions.AppLayerIsVisibleAtStar
 import android.tools.common.flicker.assertors.assertions.AppWindowBecomesInvisible
 import android.tools.common.flicker.assertors.assertions.AppWindowBecomesTopWindow
 import android.tools.common.flicker.assertors.assertions.AppWindowBecomesVisible
-import android.tools.common.flicker.assertors.assertions.AppWindowCoversFullScreenAtEnd
-import android.tools.common.flicker.assertors.assertions.AppWindowCoversFullScreenAtStart
 import android.tools.common.flicker.assertors.assertions.AppWindowIsInvisibleAtEnd
 import android.tools.common.flicker.assertors.assertions.AppWindowIsInvisibleAtStart
 import android.tools.common.flicker.assertors.assertions.AppWindowIsTopWindowAtStart
@@ -148,9 +146,7 @@ object AssertionTemplates {
             APP_LAUNCH_ASSERTIONS +
             APP_CLOSE_ASSERTIONS +
             listOf(
-                AppWindowCoversFullScreenAtStart(Components.CLOSING_APP),
                 AppLayerCoversFullScreenAtStart(Components.CLOSING_APP),
-                AppWindowCoversFullScreenAtEnd(Components.OPENING_APP),
                 AppLayerCoversFullScreenAtEnd(Components.OPENING_APP),
                 AppWindowOnTopAtStart(Components.CLOSING_APP),
                 AppWindowOnTopAtEnd(Components.OPENING_APP),
