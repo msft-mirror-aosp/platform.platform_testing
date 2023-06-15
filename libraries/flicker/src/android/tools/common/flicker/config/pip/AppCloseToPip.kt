@@ -26,7 +26,7 @@ import android.tools.common.traces.events.Cuj
 import android.tools.common.traces.events.CujType
 
 class AppCloseToPip : IScenarioConfig {
-    override val enabled = true
+    override val enabled = false
 
     override val type = FaasScenarioType.LAUNCHER_APP_CLOSE_TO_PIP
 
