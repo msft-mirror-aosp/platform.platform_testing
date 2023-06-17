@@ -24,6 +24,8 @@ import android.platform.helpers.IAutoVehicleHardKeysHelper;
 import com.google.android.mobly.snippet.Snippet;
 import com.google.android.mobly.snippet.rpc.Rpc;
 
+import java.util.List;
+
 /** Snippet class for exposing Phone/Dial App APIs. */
 public class PhoneSnippet implements Snippet {
     private final HelperAccessor<IAutoDialHelper> mDialerHelper;
@@ -227,6 +229,11 @@ public class PhoneSnippet implements Snippet {
     @Rpc(description = "Close contact details page.")
     public void closeDetailsPage() {
         mContactsDetailsHelper.get().closeDetailsPage();
+    }
+
+    @Rpc(description = "Get list of visible contacts")
+    public List<String> getListOfAllContacts() {
+        return mDialerHelper.get().getListOfAllVisibleContacts();
     }
 
     @Override

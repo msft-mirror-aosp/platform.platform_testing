@@ -84,6 +84,8 @@ public class AutomotiveConfigConstants {
     public static final String FAVORITES_MENU = "FAVORITES_MENU";
     public static final String DIALER_VIEW = "DIALER_VIEW";
 
+    public static final String CONTACT_NAME_TITLE = "CONTACT_NAME_TITLE";
+
     // Home App Constants
     public static final String HOME_PACKAGE = "HOME_PACKAGE";
     public static final String HOME_BOTTOM_CARD = "HOME_BOTTOM_CARD";
