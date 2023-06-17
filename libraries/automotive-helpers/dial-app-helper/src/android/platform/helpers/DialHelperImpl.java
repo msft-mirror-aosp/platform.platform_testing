@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 The Android Open Source Project
+ * Copyright (C) 2023 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,10 @@ import androidx.test.uiautomator.By;
 import androidx.test.uiautomator.BySelector;
 import androidx.test.uiautomator.UiObject2;
 
+import java.util.ArrayList;
+import java.util.List;
+
+/** DialHelperImpl class for Android Auto platform functional tests */
 public class DialHelperImpl extends AbstractStandardAppHelper implements IAutoDialHelper {
     private static final String LOG_TAG = DialHelperImpl.class.getSimpleName();
 
@@ -224,8 +228,8 @@ public class DialHelperImpl extends AbstractStandardAppHelper implements IAutoDi
                         mScrollableElementSelector,
                         contactSelector,
                         String.format("scroll to find %s", contact));
-            validateUiObject(contactFromList, String.format("Given Contact %s", contact));
-            return contactFromList;
+        validateUiObject(contactFromList, String.format("Given Contact %s", contact));
+        return contactFromList;
     }
 
     /** {@inheritDoc} */
@@ -315,7 +319,12 @@ public class DialHelperImpl extends AbstractStandardAppHelper implements IAutoDi
         getSpectatioUiUtil().clickAndWait(searchBackButton);
     }
 
-    private void openContactOrder() {
+    /**
+     * Setup expectations: The Dialer app is open.
+     *
+     * <p>This method is used to open contact order for Dialer
+     */
+    public void openContactOrder() {
         try {
             ScrollActions scrollAction =
                     ScrollActions.valueOf(
@@ -542,5 +551,23 @@ public class DialHelperImpl extends AbstractStandardAppHelper implements IAutoDi
             throw new UnknownUiException(
                     String.format("Unable to find UI Element for %s.", action));
         }
+    }
+
+    /** This method is used to get list of visible contacts */
+    @Override
+    public List<String> getListOfAllVisibleContacts() {
+        List<String> listOfContactsResults = new ArrayList<>();
+        BySelector contactNameSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.CONTACT_NAME_TITLE);
+        List<UiObject2> listOfContacts = getSpectatioUiUtil().findUiObjects(contactNameSelector);
+
+        // Going through each displayed contact and adding contact`s text value to the list
+        for (UiObject2 contact : listOfContacts) {
+            listOfContactsResults.add(contact.getText().trim());
+        }
+        if (listOfContactsResults.size() == 0) {
+            throw new UnknownUiException("Unable to find any contacts on the screen");
+        }
+        return listOfContactsResults;
     }
 }
