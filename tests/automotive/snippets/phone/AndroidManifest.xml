@@ -16,7 +16,7 @@
 -->
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="android.platform.snippets">
+          package="com.google.android.mobly.snippet.bundled">
   <uses-permission android:name="android.permission.BLUETOOTH"/>
   <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
   <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
@@ -28,10 +28,10 @@
   <application android:allowBackup="false">
     <meta-data
         android:name="mobly-snippets"
-        android:value="android.platform.snippets.PhoneSnippet" />
+        android:value="com.google.android.mobly.snippet.bundled.PhoneSnippet" />
   </application>
   <instrumentation
       android:name="com.google.android.mobly.snippet.SnippetRunner"
-      android:targetPackage="android.platform.snippets"
+      android:targetPackage="com.google.android.mobly.snippet.bundled"
       android:label="Automotive Phone Snippet Library" />
 </manifest>

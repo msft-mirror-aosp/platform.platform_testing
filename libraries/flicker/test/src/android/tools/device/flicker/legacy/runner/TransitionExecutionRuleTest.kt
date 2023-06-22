@@ -23,7 +23,7 @@ import android.tools.TEST_SCENARIO
 import android.tools.assertExceptionMessage
 import android.tools.assertThrows
 import android.tools.device.flicker.legacy.AbstractFlickerTestData
-import android.tools.device.flicker.legacy.IFlickerTestData
+import android.tools.device.flicker.legacy.FlickerTestData
 import android.tools.device.traces.TRACE_CONFIG_REQUIRE_CHANGES
 import android.tools.device.traces.io.ResultReader
 import android.tools.device.traces.io.ResultWriter
@@ -46,20 +46,20 @@ import org.mockito.Mockito
 class TransitionExecutionRuleTest {
     private var executed = false
 
-    private val runTransition: IFlickerTestData.() -> Unit = {
+    private val runTransition: FlickerTestData.() -> Unit = {
         executed = true
         SystemClock.sleep(100)
     }
-    private val runCreateValidTags: IFlickerTestData.() -> Unit = {
+    private val runCreateValidTags: FlickerTestData.() -> Unit = {
         createTag(VALID_TAG_1)
         createTag(VALID_TAG_2)
     }
-    private val runInvalidTagSpace: IFlickerTestData.() -> Unit = { createTag(INVALID_TAG_SPACE) }
-    private val runInvalidTagUnderscore: IFlickerTestData.() -> Unit = {
+    private val runInvalidTagSpace: FlickerTestData.() -> Unit = { createTag(INVALID_TAG_SPACE) }
+    private val runInvalidTagUnderscore: FlickerTestData.() -> Unit = {
         createTag(INVALID_TAG_UNDERSCORE)
     }
-    private val throwTransitionError: IFlickerTestData.() -> Unit = { error(Consts.FAILURE) }
-    private val throwAssertionError: IFlickerTestData.() -> Unit = {
+    private val throwTransitionError: FlickerTestData.() -> Unit = { error(Consts.FAILURE) }
+    private val throwAssertionError: FlickerTestData.() -> Unit = {
         throw AssertionError(Consts.FAILURE)
     }
 
@@ -188,7 +188,7 @@ class TransitionExecutionRuleTest {
         private const val INVALID_TAG_UNDERSCORE = "Invalid__Tag"
 
         private fun createRule(
-            commands: List<IFlickerTestData.() -> Unit>,
+            commands: List<FlickerTestData.() -> Unit>,
             writer: ResultWriter = newTestResultWriter()
         ): TransitionExecutionRule {
             val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()

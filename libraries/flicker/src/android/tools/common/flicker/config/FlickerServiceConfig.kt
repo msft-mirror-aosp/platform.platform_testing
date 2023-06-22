@@ -32,7 +32,7 @@ import android.tools.common.flicker.config.splitscreen.SplitScreen
 import android.tools.common.flicker.config.suw.Suw
 import android.tools.common.flicker.config.taskbar.Taskbar
 import android.tools.common.flicker.config.wallpaper.Wallpaper
-import android.tools.common.flicker.extractors.IScenarioExtractor
+import android.tools.common.flicker.extractors.ScenarioExtractor
 
 object FlickerServiceConfig {
     private val supportedScenarios =
@@ -57,11 +57,11 @@ object FlickerServiceConfig {
             .flatten()
 
     /** EDIT THIS CONFIG TO ADD SCENARIOS TO FAAS */
-    fun getScenarioConfigFor(type: FaasScenarioType): IScenarioConfig =
+    fun getScenarioConfigFor(type: FaasScenarioType): ScenarioConfig =
         supportedScenarios.firstOrNull { it.type == type }
             ?: error("Scenario $type is not supported")
 
-    fun getExtractors(enabledOnly: Boolean = true): List<IScenarioExtractor> {
+    fun getExtractors(enabledOnly: Boolean = true): List<ScenarioExtractor> {
         val scenarios: Collection<FaasScenarioType> =
             if (enabledOnly) {
                 FaasScenarioType.values().filter { getScenarioConfigFor(it).enabled }

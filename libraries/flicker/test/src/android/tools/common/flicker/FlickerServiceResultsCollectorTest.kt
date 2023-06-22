@@ -16,11 +16,13 @@
 
 package android.tools.common.flicker
 
+import android.annotation.SuppressLint
 import android.device.collectors.DataRecord
-import android.tools.common.flicker.assertors.AssertionResult
-import android.tools.common.flicker.assertors.IAssertionResult
-import android.tools.common.flicker.assertors.IFaasAssertion
-import android.tools.common.io.IReader
+import android.tools.common.flicker.assertions.AssertionData
+import android.tools.common.flicker.assertions.AssertionResult
+import android.tools.common.flicker.assertions.ScenarioAssertion
+import android.tools.common.flicker.assertions.SubjectsParser
+import android.tools.common.io.Reader
 import android.tools.common.traces.wm.TransitionsTrace
 import android.tools.device.flicker.FlickerServiceResultsCollector
 import android.tools.device.flicker.FlickerServiceResultsCollector.Companion.FLICKER_ASSERTIONS_COUNT_KEY
@@ -45,6 +47,7 @@ import org.mockito.Mockito
  * Contains [FlickerServiceResultsCollector] tests. To run this test: `atest
  * FlickerLibTest:FlickerServiceResultsCollectorTest`
  */
+@SuppressLint("VisibleForTests")
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class FlickerServiceResultsCollectorTest {
     @Test
@@ -250,7 +253,7 @@ class FlickerServiceResultsCollectorTest {
         collectMetricsPerTest: Boolean = true,
         serviceProcessingError: Boolean = false,
     ): FlickerServiceResultsCollector {
-        val mockTraceCollector = Mockito.mock(ITracesCollector::class.java)
+        val mockTraceCollector = Mockito.mock(TracesCollector::class.java)
         Mockito.`when`(mockTraceCollector.stop())
             .thenReturn(
                 ParsedTracesReader(
@@ -261,15 +264,27 @@ class FlickerServiceResultsCollectorTest {
                     transactionsTrace = null
                 )
             )
-        val mockFlickerService = Mockito.mock(IFlickerService::class.java)
+        val mockFlickerService = Mockito.mock(FlickerService::class.java)
         if (serviceProcessingError) {
             Mockito.`when`(
-                    mockFlickerService.detectScenarios(KotlinMockito.any(IReader::class.java))
+                    mockFlickerService.detectScenarios(KotlinMockito.any(Reader::class.java))
                 )
                 .thenThrow(RuntimeException("Flicker Service Processing Error"))
+        } else {
+            val mockScenarioInstance = Mockito.mock(ScenarioInstance::class.java)
+            val mockedAssertions =
+                assertionResults.map { assertion ->
+                    val mockScenarioAssertion = Mockito.mock(ScenarioAssertion::class.java)
+                    Mockito.`when`(mockScenarioAssertion.execute()).thenReturn(assertion)
+                    mockScenarioAssertion
+                }
+            Mockito.`when`(mockScenarioInstance.generateAssertions()).thenReturn(mockedAssertions)
+
+            Mockito.`when`(
+                    mockFlickerService.detectScenarios(KotlinMockito.any(Reader::class.java))
+                )
+                .thenReturn(listOf(mockScenarioInstance))
         }
-        Mockito.`when`(mockFlickerService.executeAssertions(KotlinMockito.argThat { true }))
-            .thenReturn(assertionResults)
 
         return FlickerServiceResultsCollector(
             tracesCollector = mockTraceCollector,
@@ -281,32 +296,32 @@ class FlickerServiceResultsCollectorTest {
 
     companion object {
         val mockSuccessfulAssertionResult =
-            AssertionResult(
-                object : IFaasAssertion {
-                    override val name: String
-                        get() = "MockPassedAssertion"
-                    override val stabilityGroup: AssertionInvocationGroup
-                        get() = AssertionInvocationGroup.BLOCKING
-                    override fun evaluate(): IAssertionResult {
-                        error("Unimplemented - shouldn't be called")
+            object : AssertionResult {
+                override val assertion =
+                    object : AssertionData {
+                        override val name = "MockPassedAssertion"
+                        override fun checkAssertion(run: SubjectsParser) {
+                            error("Unimplemented - shouldn't be called")
+                        }
                     }
-                },
-                assertionError = null
-            )
+                override val assertionError = null
+                override val stabilityGroup = AssertionInvocationGroup.BLOCKING
+                override val passed = true
+            }
 
         val mockFailedAssertionResult =
-            AssertionResult(
-                object : IFaasAssertion {
-                    override val name: String
-                        get() = "MockFailedAssertion"
-                    override val stabilityGroup: AssertionInvocationGroup
-                        get() = AssertionInvocationGroup.BLOCKING
-                    override fun evaluate(): IAssertionResult {
-                        error("Unimplemented - shouldn't be called")
+            object : AssertionResult {
+                override val assertion =
+                    object : AssertionData {
+                        override val name = "MockFailedAssertion"
+                        override fun checkAssertion(run: SubjectsParser) {
+                            error("Unimplemented - shouldn't be called")
+                        }
                     }
-                },
-                assertionError = Throwable("Assertion failed")
-            )
+                override val assertionError = Throwable("Assertion failed")
+                override val stabilityGroup = AssertionInvocationGroup.BLOCKING
+                override val passed = false
+            }
 
         private class SpyDataRecord : DataRecord() {
             val stringMetrics = mutableMapOf<String, String>()

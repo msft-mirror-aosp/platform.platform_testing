@@ -16,7 +16,7 @@
 
 package android.tools.common.flicker.assertors
 
-import android.tools.common.flicker.IScenarioInstance
+import android.tools.common.flicker.ScenarioInstance
 import android.tools.common.flicker.config.FaasScenarioType
 import android.tools.common.traces.component.ComponentNameMatcher
 import android.tools.common.traces.component.FullComponentIdMatcher
@@ -33,7 +33,7 @@ object Components {
 
     /** App launch */
     val OPENING_APP =
-        ComponentTemplate("OPENING_APP") { scenarioInstance: IScenarioInstance ->
+        ComponentTemplate("OPENING_APP") { scenarioInstance: ScenarioInstance ->
             openingAppFrom(
                 scenarioInstance.associatedTransition ?: error("Missing associated transition")
             )
@@ -41,7 +41,7 @@ object Components {
 
     /** App close */
     val CLOSING_APP =
-        ComponentTemplate("CLOSING_APP") { scenarioInstance: IScenarioInstance ->
+        ComponentTemplate("CLOSING_APP") { scenarioInstance: ScenarioInstance ->
             closingAppFrom(
                 scenarioInstance.associatedTransition ?: error("Missing associated transition")
             )
@@ -53,7 +53,7 @@ object Components {
     val PIP_CONTENT_OVERLAY =
         ComponentTemplate("PipContentOverlay") { ComponentNameMatcher.PIP_CONTENT_OVERLAY }
     val PIP_APP =
-        ComponentTemplate("PIP") { scenarioInstance: IScenarioInstance ->
+        ComponentTemplate("PIP") { scenarioInstance: ScenarioInstance ->
             if (scenarioInstance.type == FaasScenarioType.LAUNCHER_APP_CLOSE_TO_PIP) {
                 val associatedTransition =
                     scenarioInstance.associatedTransition ?: error("Missing associated transition")
@@ -74,7 +74,7 @@ object Components {
             ComponentNameMatcher("", "StageCoordinatorSplitDivider#")
         }
     val SPLIT_SCREEN_PRIMARY_APP =
-        ComponentTemplate("SPLIT_SCREEN_PRIMARY_APP") { scenarioInstance: IScenarioInstance ->
+        ComponentTemplate("SPLIT_SCREEN_PRIMARY_APP") { scenarioInstance: ScenarioInstance ->
             val associatedTransition =
                 scenarioInstance.associatedTransition
                     ?: error(
@@ -101,7 +101,7 @@ object Components {
             }
         }
     val SPLIT_SCREEN_SECONDARY_APP =
-        ComponentTemplate("SPLIT_SCREEN_SECONDARY_APP") { scenarioInstance: IScenarioInstance ->
+        ComponentTemplate("SPLIT_SCREEN_SECONDARY_APP") { scenarioInstance: ScenarioInstance ->
             val associatedTransition =
                 scenarioInstance.associatedTransition
                     ?: error(

@@ -16,7 +16,7 @@
 
 package android.tools.common.traces.events
 
-import android.tools.common.CrossPlatform
+import android.tools.common.Timestamps
 import android.tools.rules.CleanFlickerEnvironmentRule
 import com.google.common.truth.Truth
 import org.junit.ClassRule
@@ -153,7 +153,7 @@ class CujTraceTest {
         tag: String? = null
     ): CujEvent {
         return CujEvent(
-            CrossPlatform.timestamp.from(unixNanos = timestamp),
+            Timestamps.from(unixNanos = timestamp),
             cuj,
             0,
             "root",

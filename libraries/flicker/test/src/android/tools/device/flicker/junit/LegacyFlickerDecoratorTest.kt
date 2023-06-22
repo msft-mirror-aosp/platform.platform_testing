@@ -19,7 +19,7 @@ package android.tools.device.flicker.junit
 import android.annotation.SuppressLint
 import android.tools.common.ScenarioBuilder
 import android.tools.device.flicker.datastore.DataStore
-import android.tools.device.flicker.legacy.FlickerTest
+import android.tools.device.flicker.legacy.LegacyFlickerTest
 import android.tools.rules.CleanFlickerEnvironmentRule
 import com.google.common.truth.Truth
 import org.junit.Before
@@ -71,7 +71,7 @@ class LegacyFlickerDecoratorTest {
         val method =
             FrameworkMethod(TestUtils.DummyTestClassValid::class.java.getMethod("dummyExecute"))
         val description = decorator.getChildDescription(method)
-        val invokerTest = TestUtils.DummyTestClassValid(FlickerTest())
+        val invokerTest = TestUtils.DummyTestClassValid(LegacyFlickerTest())
         decorator
             .getMethodInvoker(
                 method,
@@ -103,7 +103,7 @@ class LegacyFlickerDecoratorTest {
             decorator
                 .getMethodInvoker(
                     method,
-                    test = TestUtils.DummyTestClassValid(FlickerTest()),
+                    test = TestUtils.DummyTestClassValid(LegacyFlickerTest()),
                 )
                 .evaluate()
         }

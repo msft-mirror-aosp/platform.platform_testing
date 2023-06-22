@@ -16,10 +16,10 @@
 
 package android.tools.common.traces.wm
 
-import android.tools.common.CrossPlatform
 import android.tools.common.ITraceEntry
 import android.tools.common.PlatformConsts
 import android.tools.common.Rotation
+import android.tools.common.Timestamps
 import android.tools.common.traces.component.IComponentMatcher
 import android.tools.common.traces.wm.Utils.collectDescendants
 import kotlin.js.JsExport
@@ -50,7 +50,7 @@ class WindowManagerState(
     val keyguardControllerState: KeyguardControllerState
 ) : ITraceEntry {
     override val timestamp =
-        CrossPlatform.timestamp.from(elapsedNanos = elapsedTimestamp, unixNanos = clockTimestamp)
+        Timestamps.from(elapsedNanos = elapsedTimestamp, unixNanos = clockTimestamp)
     @JsName("isVisible") val isVisible: Boolean = true
     @JsName("stableId")
     val stableId: String

@@ -17,9 +17,9 @@
 package android.tools.common.flicker.assertions
 
 import android.tools.assertFail
-import android.tools.common.CrossPlatform
 import android.tools.common.ITraceEntry
 import android.tools.common.Timestamp
+import android.tools.common.Timestamps
 import android.tools.common.flicker.subject.FlickerSubject
 import android.tools.rules.CleanFlickerEnvironmentRule
 import org.junit.ClassRule
@@ -135,7 +135,7 @@ class AssertionsCheckerTest {
     }
 
     private class SimpleEntrySubject(private val entry: SimpleEntry) : FlickerSubject() {
-        override val timestamp = CrossPlatform.timestamp.empty()
+        override val timestamp = Timestamps.empty()
 
         fun isData42() = apply { check { "data is 42" }.that(entry.mData).isEqual(42) }
 
@@ -162,7 +162,7 @@ class AssertionsCheckerTest {
         private fun getTestEntries(vararg data: Int): List<SimpleEntrySubject> =
             data.indices.map {
                 SimpleEntrySubject(
-                    SimpleEntry(CrossPlatform.timestamp.from(elapsedNanos = it.toLong()), data[it])
+                    SimpleEntry(Timestamps.from(elapsedNanos = it.toLong()), data[it])
                 )
             }
         @ClassRule @JvmField val ENV_CLEANUP = CleanFlickerEnvironmentRule()

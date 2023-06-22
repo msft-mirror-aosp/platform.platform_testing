@@ -16,8 +16,8 @@
 
 package android.tools.device.traces.parsers.wm
 
-import android.tools.common.CrossPlatform
 import android.tools.common.Timestamp
+import android.tools.common.Timestamps
 import android.tools.common.parsers.AbstractTraceParser
 import android.tools.common.traces.wm.Transition
 import android.tools.common.traces.wm.TransitionChange
@@ -55,16 +55,16 @@ class WmTransitionTraceParser :
         requireValidTimestamp(entry)
 
         if (entry.createTimeNs != 0L) {
-            return CrossPlatform.timestamp.from(elapsedNanos = entry.createTimeNs)
+            return Timestamps.from(elapsedNanos = entry.createTimeNs)
         }
         if (entry.sendTimeNs != 0L) {
-            return CrossPlatform.timestamp.from(elapsedNanos = entry.sendTimeNs)
+            return Timestamps.from(elapsedNanos = entry.sendTimeNs)
         }
         if (entry.abortTimeNs != 0L) {
-            return CrossPlatform.timestamp.from(elapsedNanos = entry.abortTimeNs)
+            return Timestamps.from(elapsedNanos = entry.abortTimeNs)
         }
         if (entry.finishTimeNs != 0L) {
-            return CrossPlatform.timestamp.from(elapsedNanos = entry.finishTimeNs)
+            return Timestamps.from(elapsedNanos = entry.finishTimeNs)
         }
 
         error("No valid timestamp available in entry")
@@ -105,16 +105,16 @@ class WmTransitionTraceParser :
                 WmTransitionData(
                     createTime =
                         if (entry.createTimeNs == 0L) null
-                        else CrossPlatform.timestamp.from(elapsedNanos = entry.createTimeNs),
+                        else Timestamps.from(elapsedNanos = entry.createTimeNs),
                     sendTime =
                         if (entry.sendTimeNs == 0L) null
-                        else CrossPlatform.timestamp.from(elapsedNanos = entry.sendTimeNs),
+                        else Timestamps.from(elapsedNanos = entry.sendTimeNs),
                     abortTime =
                         if (entry.abortTimeNs == 0L) null
-                        else CrossPlatform.timestamp.from(elapsedNanos = entry.abortTimeNs),
+                        else Timestamps.from(elapsedNanos = entry.abortTimeNs),
                     finishTime =
                         if (entry.finishTimeNs == 0L) null
-                        else CrossPlatform.timestamp.from(elapsedNanos = entry.finishTimeNs),
+                        else Timestamps.from(elapsedNanos = entry.finishTimeNs),
                     startTransactionId =
                         if (entry.startTransactionId == 0L) null
                         else entry.startTransactionId.toString(),

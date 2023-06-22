@@ -19,7 +19,7 @@ package android.tools.device.flicker.integration
 import android.tools.TEST_SCENARIO
 import android.tools.common.io.RunStatus
 import android.tools.device.flicker.datastore.CachedResultReader
-import android.tools.device.flicker.legacy.FlickerTest
+import android.tools.device.flicker.legacy.LegacyFlickerTest
 import android.tools.device.traces.TRACE_CONFIG_REQUIRE_CHANGES
 import android.tools.rules.CleanFlickerEnvironmentRule
 import com.google.common.truth.Truth
@@ -36,7 +36,7 @@ import org.junit.Test
  */
 class AssertionErrorTest {
     private var assertionExecuted = false
-    private val testParam = FlickerTest().also { it.initialize(TEST_SCENARIO.testClass) }
+    private val testParam = LegacyFlickerTest().also { it.initialize(TEST_SCENARIO.testClass) }
 
     @Before
     fun setup() {

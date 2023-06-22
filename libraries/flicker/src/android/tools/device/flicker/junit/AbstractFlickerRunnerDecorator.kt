@@ -17,10 +17,10 @@
 package android.tools.device.flicker.junit
 
 import android.app.Instrumentation
-import android.tools.common.CrossPlatform
 import android.tools.common.FLICKER_TAG
+import android.tools.common.Logger
+import android.tools.common.flicker.assertions.FlickerTest
 import android.tools.device.flicker.legacy.FlickerBuilder
-import android.tools.device.flicker.legacy.FlickerTest
 import androidx.test.platform.app.InstrumentationRegistry
 import java.lang.reflect.Modifier
 import org.junit.runners.model.FrameworkMethod
@@ -115,7 +115,7 @@ abstract class AbstractFlickerRunnerDecorator(
                 ?: error("Provider method not found")
 
     private fun getFlickerBuilder(test: Any): FlickerBuilder {
-        CrossPlatform.log.v(FLICKER_TAG, "Obtaining flicker builder for $testClass")
+        Logger.v(FLICKER_TAG, "Obtaining flicker builder for $testClass")
         return providerMethod.invokeExplosively(test) as FlickerBuilder
     }
 

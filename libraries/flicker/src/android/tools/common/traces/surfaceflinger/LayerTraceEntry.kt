@@ -16,8 +16,8 @@
 
 package android.tools.common.traces.surfaceflinger
 
-import android.tools.common.CrossPlatform
 import android.tools.common.ITraceEntry
+import android.tools.common.Timestamps
 import android.tools.common.datatypes.Rect
 import android.tools.common.datatypes.RectF
 import android.tools.common.traces.component.ComponentNameMatcher
@@ -42,10 +42,7 @@ class LayerTraceEntry(
     _rootLayers: Array<Layer>
 ) : ITraceEntry {
     override val timestamp =
-        CrossPlatform.timestamp.from(
-            systemUptimeNanos = elapsedTimestamp,
-            unixNanos = clockTimestamp
-        )
+        Timestamps.from(systemUptimeNanos = elapsedTimestamp, unixNanos = clockTimestamp)
 
     @JsName("stableId")
     val stableId: String = this::class.simpleName ?: error("Unable to determine class")

@@ -19,9 +19,9 @@
 package android.tools.device.traces
 
 import android.os.SystemClock
-import android.tools.common.CrossPlatform
 import android.tools.common.SECOND_AS_NANOSECONDS
 import android.tools.common.Timestamp
+import android.tools.common.Timestamps
 import androidx.test.platform.app.InstrumentationRegistry
 import java.io.File
 import java.time.Instant
@@ -36,7 +36,7 @@ fun getDefaultFlickerOutputDir() =
 /** @return the current timestamp as [Timestamp] */
 fun now(): Timestamp {
     val now = Instant.now()
-    return CrossPlatform.timestamp.from(
+    return Timestamps.from(
         elapsedNanos = SystemClock.elapsedRealtimeNanos(),
         systemUptimeNanos = SystemClock.uptimeNanos(),
         unixNanos = now.epochSecond * SECOND_AS_NANOSECONDS + now.nano

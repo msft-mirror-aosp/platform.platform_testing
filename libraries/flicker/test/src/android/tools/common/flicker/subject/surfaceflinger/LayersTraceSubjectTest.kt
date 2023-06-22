@@ -23,7 +23,7 @@ import android.tools.assertThrows
 import android.tools.common.Cache
 import android.tools.common.datatypes.Region
 import android.tools.common.flicker.subject.layers.LayersTraceSubject
-import android.tools.common.io.IReader
+import android.tools.common.io.Reader
 import android.tools.common.traces.component.ComponentNameMatcher
 import android.tools.getLayerTraceReaderFromAsset
 import android.tools.rules.CleanFlickerEnvironmentRule
@@ -177,7 +177,7 @@ class LayersTraceSubjectTest {
         Truth.assertThat(error).hasMessageThat().contains("is not visible for 2 entries")
     }
 
-    private fun testCanDetectVisibleLayersMoreThanOneConsecutiveEntry(reader: IReader) {
+    private fun testCanDetectVisibleLayersMoreThanOneConsecutiveEntry(reader: Reader) {
         val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
         LayersTraceSubject(trace, reader)
             .visibleLayersShownMoreThanOneConsecutiveEntry()

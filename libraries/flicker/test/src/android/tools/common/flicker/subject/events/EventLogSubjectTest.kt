@@ -16,7 +16,7 @@
 
 package android.tools.common.flicker.subject.events
 
-import android.tools.common.CrossPlatform
+import android.tools.common.Timestamps
 import android.tools.common.flicker.assertions.SubjectsParser
 import android.tools.common.traces.events.EventLog
 import android.tools.common.traces.events.FocusEvent
@@ -39,7 +39,7 @@ class EventLogSubjectTest {
                     EventLog(
                         arrayOf(
                             FocusEvent(
-                                CrossPlatform.timestamp.from(unixNanos = 0),
+                                Timestamps.from(unixNanos = 0),
                                 "WinB",
                                 FocusEvent.Type.GAINED,
                                 "test",
@@ -48,7 +48,7 @@ class EventLogSubjectTest {
                                 0
                             ),
                             FocusEvent(
-                                CrossPlatform.timestamp.from(unixNanos = 0),
+                                Timestamps.from(unixNanos = 0),
                                 "test WinA window",
                                 FocusEvent.Type.LOST,
                                 "test",
@@ -57,7 +57,7 @@ class EventLogSubjectTest {
                                 0
                             ),
                             FocusEvent(
-                                CrossPlatform.timestamp.from(unixNanos = 0),
+                                Timestamps.from(unixNanos = 0),
                                 "WinB",
                                 FocusEvent.Type.LOST,
                                 "test",
@@ -66,7 +66,7 @@ class EventLogSubjectTest {
                                 0
                             ),
                             FocusEvent(
-                                CrossPlatform.timestamp.from(unixNanos = 0),
+                                Timestamps.from(unixNanos = 0),
                                 "test WinC",
                                 FocusEvent.Type.GAINED,
                                 "test",
