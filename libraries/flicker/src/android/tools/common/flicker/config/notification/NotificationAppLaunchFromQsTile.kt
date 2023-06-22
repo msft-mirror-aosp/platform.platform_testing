@@ -18,24 +18,27 @@ package android.tools.common.flicker.config.notification
 
 import android.tools.common.flicker.config.AssertionTemplates
 import android.tools.common.flicker.config.FaasScenarioType
-import android.tools.common.flicker.config.IScenarioConfig
+import android.tools.common.flicker.config.FlickerServiceConfig
+import android.tools.common.flicker.config.ScenarioConfig
 import android.tools.common.flicker.config.TransitionFilters
 import android.tools.common.flicker.extractors.TaggedCujTransitionMatcher
-import android.tools.common.flicker.extractors.TaggedScenarioExtractor
+import android.tools.common.flicker.extractors.TaggedScenarioExtractorBuilder
 import android.tools.common.traces.events.CujType
 
-class NotificationAppLaunchFromQsTile : IScenarioConfig {
+class NotificationAppLaunchFromQsTile : ScenarioConfig {
     override val enabled = true
 
     override val type = FaasScenarioType.SHADE_APP_LAUNCH_FROM_QS_TILE
 
     override val assertionTemplates = AssertionTemplates.APP_LAUNCH_ASSERTIONS
 
-    override val extractor =
-        TaggedScenarioExtractor(
-            targetTag = CujType.CUJ_SHADE_APP_LAUNCH_FROM_QS_TILE,
-            type,
-            transitionMatcher =
+    override val extractor by lazy {
+        TaggedScenarioExtractorBuilder()
+            .setConfig(FlickerServiceConfig.getScenarioConfigFor(type))
+            .setTargetTag(CujType.CUJ_SHADE_APP_LAUNCH_FROM_QS_TILE)
+            .setTransitionMatcher(
                 TaggedCujTransitionMatcher(TransitionFilters.OPEN_APP_TRANSITION_FILTER)
-        )
+            )
+            .build()
+    }
 }

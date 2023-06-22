@@ -20,7 +20,7 @@ import android.annotation.SuppressLint
 import android.tools.TEST_SCENARIO
 import android.tools.assertExceptionMessage
 import android.tools.common.Tag
-import android.tools.common.flicker.assertions.AssertionData
+import android.tools.common.flicker.assertions.AssertionDataImpl
 import android.tools.common.flicker.subject.FlickerSubject
 import android.tools.common.flicker.subject.events.EventLogSubject
 import android.tools.common.io.RunStatus
@@ -122,7 +122,7 @@ class CachedAssertionRunnerTest {
 
     companion object {
         private fun newAssertionData(assertion: (FlickerSubject) -> Unit) =
-            AssertionData(Tag.ALL, EventLogSubject::class, assertion)
+            AssertionDataImpl(name = "", Tag.ALL, EventLogSubject::class, assertion)
 
         @ClassRule @JvmField val ENV_CLEANUP = CleanFlickerEnvironmentRule()
     }

@@ -16,9 +16,9 @@
 
 package android.tools.common.traces.wm
 
-import android.tools.common.CrossPlatform
 import android.tools.common.ITraceEntry
 import android.tools.common.Timestamp
+import android.tools.common.Timestamps
 import android.tools.common.traces.surfaceflinger.LayersTrace
 import android.tools.common.traces.surfaceflinger.Transaction
 import android.tools.common.traces.surfaceflinger.TransactionsTrace
@@ -52,16 +52,13 @@ class Transition(
                 ?: shellData.mergeTime ?: shellData.abortTime ?: wmData.finishTime
                 ?: wmData.abortTime ?: error("Missing non-null timestamp")
 
-    @JsName("createTime")
-    val createTime: Timestamp = wmData.createTime ?: CrossPlatform.timestamp.min()
-    @JsName("sendTime") val sendTime: Timestamp = wmData.sendTime ?: CrossPlatform.timestamp.min()
+    @JsName("createTime") val createTime: Timestamp = wmData.createTime ?: Timestamps.min()
+    @JsName("sendTime") val sendTime: Timestamp = wmData.sendTime ?: Timestamps.min()
     @JsName("abortTime") val abortTime: Timestamp? = wmData.abortTime
     @JsName("finishTime")
-    val finishTime: Timestamp =
-        wmData.finishTime ?: wmData.abortTime ?: CrossPlatform.timestamp.max()
+    val finishTime: Timestamp = wmData.finishTime ?: wmData.abortTime ?: Timestamps.max()
 
-    @JsName("dispatchTime")
-    val dispatchTime: Timestamp = shellData.dispatchTime ?: CrossPlatform.timestamp.min()
+    @JsName("dispatchTime") val dispatchTime: Timestamp = shellData.dispatchTime ?: Timestamps.min()
     @JsName("mergeRequestTime") val mergeRequestTime: Timestamp? = shellData.mergeRequestTime
     @JsName("mergeTime") val mergeTime: Timestamp? = shellData.mergeTime
     @JsName("shellAbortTime") val shellAbortTime: Timestamp? = shellData.abortTime

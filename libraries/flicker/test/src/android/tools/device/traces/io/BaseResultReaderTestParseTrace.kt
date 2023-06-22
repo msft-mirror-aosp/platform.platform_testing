@@ -19,9 +19,9 @@ package android.tools.device.traces.io
 import android.tools.TestTraces
 import android.tools.assertExceptionMessage
 import android.tools.assertThrows
-import android.tools.common.CrossPlatform
 import android.tools.common.ITrace
 import android.tools.common.Timestamp
+import android.tools.common.Timestamps
 import android.tools.common.io.RunStatus
 import android.tools.common.io.TraceType
 import android.tools.device.traces.TRACE_CONFIG_REQUIRE_CHANGES
@@ -109,9 +109,7 @@ abstract class BaseResultReaderTestParseTrace {
     @Test
     fun readTraceAndSliceTraceByTimestampAndFailInvalidSize() {
         val result =
-            setupWriter(newTestResultWriter())
-                .setTransitionEndTime(CrossPlatform.timestamp.min())
-                .write()
+            setupWriter(newTestResultWriter()).setTransitionEndTime(Timestamps.min()).write()
         val reader = ResultReader(result, TRACE_CONFIG_REQUIRE_CHANGES)
         val exception =
             assertThrows<IllegalArgumentException> {

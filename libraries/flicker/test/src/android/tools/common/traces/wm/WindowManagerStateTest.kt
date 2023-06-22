@@ -16,7 +16,7 @@
 
 package android.tools.common.traces.wm
 
-import android.tools.common.CrossPlatform
+import android.tools.common.Timestamps
 import android.tools.rules.CleanFlickerEnvironmentRule
 import com.google.common.truth.Truth
 import org.junit.ClassRule
@@ -93,8 +93,7 @@ class WindowManagerStateTest {
                     )
             )
         Truth.assertThat(entry.timestamp.elapsedNanos).isEqualTo(100)
-        Truth.assertThat(entry.timestamp.unixNanos)
-            .isEqualTo(CrossPlatform.timestamp.empty().unixNanos)
+        Truth.assertThat(entry.timestamp.unixNanos).isEqualTo(Timestamps.empty().unixNanos)
     }
 
     companion object {

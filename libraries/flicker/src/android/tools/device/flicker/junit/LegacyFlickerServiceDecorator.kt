@@ -17,11 +17,10 @@
 package android.tools.device.flicker.junit
 
 import android.os.Bundle
-import android.tools.common.CrossPlatform
 import android.tools.common.FLICKER_TAG
-import android.tools.common.IScenario
+import android.tools.common.Logger
 import android.tools.common.Scenario
-import android.tools.device.flicker.FlickerService
+import android.tools.common.flicker.FlickerService
 import android.tools.device.flicker.FlickerServiceResultsCollector.Companion.FAAS_METRICS_PREFIX
 import android.tools.device.flicker.IS_FAAS_ENABLED
 import android.tools.device.flicker.annotation.FlickerServiceCompatible
@@ -38,7 +37,7 @@ import org.junit.runners.model.TestClass
 class LegacyFlickerServiceDecorator(
     testClass: TestClass,
     val scenario: Scenario?,
-    val transitionRunner: ITransitionRunner,
+    private val transitionRunner: ITransitionRunner,
     inner: IFlickerJUnitDecorator?
 ) : AbstractFlickerRunnerDecorator(testClass, inner) {
     private val arguments: Bundle = InstrumentationRegistry.getArguments()
@@ -69,12 +68,12 @@ class LegacyFlickerServiceDecorator(
     override fun getTestMethods(test: Any): List<FrameworkMethod> {
         val result = inner?.getTestMethods(test)?.toMutableList() ?: mutableListOf()
         if (shouldComputeTestMethods()) {
-            CrossPlatform.log.withTracing(
+            Logger.withTracing(
                 "$FAAS_METRICS_PREFIX getTestMethods ${testClass.javaClass.simpleName}"
             ) {
                 requireNotNull(scenario) { "Expected to have a scenario to run" }
                 result.addAll(computeFlickerServiceTests(test, scenario))
-                CrossPlatform.log.d(FLICKER_TAG, "Computed ${result.size} flicker tests")
+                Logger.d(FLICKER_TAG, "Computed ${result.size} flicker tests")
             }
         }
         return result
@@ -134,7 +133,7 @@ class LegacyFlickerServiceDecorator(
         for (testFilter in testFilters.split(",")) {
             val filterComponents = testFilter.split("#")
             if (filterComponents.size != 2) {
-                CrossPlatform.log.e(
+                Logger.e(
                     LOG_TAG,
                     "Invalid filter-tests instrumentation argument supplied, $testFilter."
                 )
@@ -154,8 +153,8 @@ class LegacyFlickerServiceDecorator(
      */
     private fun computeFlickerServiceTests(
         test: Any,
-        testScenario: IScenario
-    ): List<InjectedTestCase> {
+        testScenario: Scenario
+    ): Collection<InjectedTestCase> {
         if (!DataStore.containsResult(testScenario)) {
             val description =
                 Description.createTestDescription(

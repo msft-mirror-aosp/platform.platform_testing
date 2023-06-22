@@ -18,8 +18,8 @@ package android.tools.device.traces.parsers
 
 import android.annotation.SuppressLint
 import android.tools.common.Cache
-import android.tools.common.CrossPlatform
 import android.tools.common.Rotation
+import android.tools.common.Timestamps
 import android.tools.common.datatypes.ActiveBuffer
 import android.tools.common.datatypes.Color
 import android.tools.common.datatypes.Matrix33
@@ -342,8 +342,7 @@ class WindowManagerStateHelperTest {
         val trace = reader.readWmTrace() ?: error("Unable to read WM trace")
         val initialTimestamp = 69443918698679
         val supplier = trace.asSupplier(startingTimestamp = initialTimestamp)
-        val initialEntry =
-            trace.getEntryExactlyAt(CrossPlatform.timestamp.from(elapsedNanos = initialTimestamp))
+        val initialEntry = trace.getEntryExactlyAt(Timestamps.from(elapsedNanos = initialTimestamp))
         val helper =
             TestWindowManagerStateHelper(
                 initialEntry,

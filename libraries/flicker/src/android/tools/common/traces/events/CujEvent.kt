@@ -16,8 +16,8 @@
 
 package android.tools.common.traces.events
 
-import android.tools.common.CrossPlatform
 import android.tools.common.Timestamp
+import android.tools.common.Timestamps
 import kotlin.js.JsExport
 import kotlin.js.JsName
 
@@ -60,7 +60,7 @@ class CujEvent(
             data: String
         ): CujEvent {
             return CujEvent(
-                CrossPlatform.timestamp.from(
+                Timestamps.from(
                     elapsedNanos = getElapsedTimestampFromData(data, eventTag.asCujType()),
                     systemUptimeNanos = getSystemUptimeNanosFromData(data, eventTag.asCujType()),
                     unixNanos = getUnixTimestampFromData(data, eventTag.asCujType())

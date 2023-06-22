@@ -16,9 +16,9 @@
 
 package android.tools.common.flicker
 
-import android.tools.common.flicker.assertors.AssertionResult
-import android.tools.common.flicker.assertors.IAssertionResult
-import android.tools.common.flicker.assertors.IFaasAssertion
+import android.tools.common.flicker.assertions.AssertionData
+import android.tools.common.flicker.assertions.AssertionResult
+import android.tools.common.flicker.assertions.SubjectsParser
 import android.tools.device.flicker.IFlickerServiceResultsCollector
 import android.tools.device.flicker.isShellTransitionsEnabled
 import android.tools.device.flicker.legacy.runner.Consts
@@ -196,20 +196,19 @@ class FlickerServiceRuleTest {
     }
 
     companion object {
-        fun mockFailureAssertionResult(error: Throwable): IAssertionResult {
-            return AssertionResult(
-                object : IFaasAssertion {
-                    override val name: String
-                        get() = "MockAssertion"
-                    override val stabilityGroup: AssertionInvocationGroup
-                        get() = AssertionInvocationGroup.BLOCKING
-                    override fun evaluate(): IAssertionResult {
-                        error("Unimplemented - shouldn't be called")
+        fun mockFailureAssertionResult(error: Throwable) =
+            object : AssertionResult {
+                override val assertion =
+                    object : AssertionData {
+                        override val name = "MockAssertion"
+                        override fun checkAssertion(run: SubjectsParser) {
+                            error("Unimplemented - shouldn't be called")
+                        }
                     }
-                },
-                assertionError = error
-            )
-        }
+                override val assertionError = error
+                override val stabilityGroup = AssertionInvocationGroup.BLOCKING
+                override val passed = false
+            }
 
         @ClassRule @JvmField val ENV_CLEANUP = CleanFlickerEnvironmentRule()
     }

@@ -18,12 +18,13 @@ package android.tools.common.flicker.config.launcher
 
 import android.tools.common.flicker.config.AssertionTemplates
 import android.tools.common.flicker.config.FaasScenarioType
-import android.tools.common.flicker.config.IScenarioConfig
+import android.tools.common.flicker.config.FlickerServiceConfig
+import android.tools.common.flicker.config.ScenarioConfig
 import android.tools.common.flicker.extractors.TaggedCujTransitionMatcher
-import android.tools.common.flicker.extractors.TaggedScenarioExtractor
+import android.tools.common.flicker.extractors.TaggedScenarioExtractorBuilder
 import android.tools.common.traces.events.CujType
 
-class LauncherAllAppsCloseSwipe : IScenarioConfig {
+class LauncherAllAppsCloseSwipe : ScenarioConfig {
     override val enabled = false
 
     override val type = FaasScenarioType.LAUNCHER_CLOSE_ALL_APPS_SWIPE
@@ -31,10 +32,11 @@ class LauncherAllAppsCloseSwipe : IScenarioConfig {
     override val assertionTemplates =
         AssertionTemplates.COMMON_ASSERTIONS // TODO: Add specific assertions
 
-    override val extractor =
-        TaggedScenarioExtractor(
-            targetTag = CujType.CUJ_LAUNCHER_CLOSE_ALL_APPS_SWIPE,
-            type,
-            transitionMatcher = TaggedCujTransitionMatcher(associatedTransitionRequired = false),
-        )
+    override val extractor by lazy {
+        TaggedScenarioExtractorBuilder()
+            .setConfig(FlickerServiceConfig.getScenarioConfigFor(type))
+            .setTargetTag(CujType.CUJ_LAUNCHER_CLOSE_ALL_APPS_SWIPE)
+            .setTransitionMatcher(TaggedCujTransitionMatcher(associatedTransitionRequired = false))
+            .build()
+    }
 }

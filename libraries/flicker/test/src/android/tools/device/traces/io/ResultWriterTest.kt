@@ -21,8 +21,8 @@ import android.tools.TEST_SCENARIO
 import android.tools.TestTraces
 import android.tools.assertExceptionMessage
 import android.tools.assertThrows
-import android.tools.common.CrossPlatform
 import android.tools.common.ScenarioBuilder
+import android.tools.common.Timestamps
 import android.tools.common.io.RunStatus
 import android.tools.common.io.TraceType
 import android.tools.device.traces.TRACE_CONFIG_REQUIRE_CHANGES
@@ -64,10 +64,10 @@ class ResultWriterTest {
         Truth.assertWithMessage("File exists").that(path.exists()).isTrue()
         Truth.assertWithMessage("Transition start time")
             .that(result.transitionTimeRange.start)
-            .isEqualTo(CrossPlatform.timestamp.min())
+            .isEqualTo(Timestamps.min())
         Truth.assertWithMessage("Transition end time")
             .that(result.transitionTimeRange.end)
-            .isEqualTo(CrossPlatform.timestamp.max())
+            .isEqualTo(Timestamps.max())
         val reader = ResultReader(result, TRACE_CONFIG_REQUIRE_CHANGES)
         Truth.assertWithMessage("File count").that(reader.countFiles()).isEqualTo(0)
     }
