@@ -82,15 +82,15 @@ class LimitDevicesRule(private val thisDevice: String = Build.PRODUCT) : TestRul
         listOfNotNull(
                 getAnnotation(AllowedDevices::class.java)?.allowed,
                 getAnnotation(ScreenshotTestDevices::class.java)?.allowed,
-                testClass.getAnnotation(AllowedDevices::class.java)?.allowed,
-                testClass.getAnnotation(ScreenshotTestDevices::class.java)?.allowed,
+                testClass?.getAnnotation(AllowedDevices::class.java)?.allowed,
+                testClass?.getAnnotation(ScreenshotTestDevices::class.java)?.allowed,
             )
             .flatMap { devices -> devices.map { it.product } }
 
     private fun Description.deniedDevices(): List<String> =
         listOfNotNull(
                 getAnnotation(DeniedDevices::class.java)?.denied,
-                testClass.getAnnotation(DeniedDevices::class.java)?.denied
+                testClass?.getAnnotation(DeniedDevices::class.java)?.denied
             )
             .flatMap { devices -> devices.map { it.product } }
 
@@ -99,9 +99,9 @@ class LimitDevicesRule(private val thisDevice: String = Build.PRODUCT) : TestRul
             getAnnotation(AllowedDevices::class.java),
             getAnnotation(DeniedDevices::class.java),
             getAnnotation(ScreenshotTestDevices::class.java),
-            testClass.getAnnotation(AllowedDevices::class.java),
-            testClass.getAnnotation(DeniedDevices::class.java),
-            testClass.getAnnotation(ScreenshotTestDevices::class.java)
+            testClass?.getAnnotation(AllowedDevices::class.java),
+            testClass?.getAnnotation(DeniedDevices::class.java),
+            testClass?.getAnnotation(ScreenshotTestDevices::class.java)
         )
 }
 
