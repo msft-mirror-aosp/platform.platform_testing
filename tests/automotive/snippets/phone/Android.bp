@@ -22,6 +22,7 @@ android_test {
         "automotive-dial-app-helper",
         "automotive-vehiclehardkeys-app-helper",
         "mobly-snippet-lib",
+        "mobly-bundled-snippets-lib",
     ],
     srcs: ["src/**/*.java"],
     compile_multilib: "both",
