@@ -34,6 +34,7 @@ import android.tools.common.traces.component.ComponentNameMatcher.Companion.LAUN
 import android.tools.common.traces.component.ComponentNameMatcher.Companion.SNAPSHOT
 import android.tools.common.traces.component.ComponentNameMatcher.Companion.SPLASH_SCREEN
 import android.tools.common.traces.component.ComponentNameMatcher.Companion.SPLIT_DIVIDER
+import android.tools.common.traces.component.ComponentNameMatcher.Companion.TRANSITION_SNAPSHOT
 import android.tools.common.traces.component.IComponentMatcher
 import android.tools.common.traces.surfaceflinger.LayerTraceEntry
 import android.tools.common.traces.surfaceflinger.LayersTrace
@@ -360,6 +361,10 @@ constructor(
 
         /** Waits until the [SPLASH_SCREEN] is gone */
         fun withSplashScreenGone() = add(ConditionsFactory.isLayerVisible(SPLASH_SCREEN).negate())
+
+        /** Waits until the [TRANSITION_SNAPSHOT] is gone */
+        fun withTransitionSnapshotGone() =
+                add(ConditionsFactory.isLayerVisible(TRANSITION_SNAPSHOT).negate())
 
         /** Waits until the is no top visible app window in the [WindowManagerState] */
         fun withoutTopVisibleAppWindows() =
