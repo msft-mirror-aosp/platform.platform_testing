@@ -45,7 +45,8 @@ annotation class ScreenshotTestDevices(vararg val allowed: DeviceProduct = [CF_P
  * Limits a test to run specified devices.
  *
  * Devices are specified by [AllowedDevices], [DeniedDevices] and [ScreenshotTestDevices]
- * annotations. Only one annotation per test is supported. Values are matched against [thisDevice].
+ * annotations. Only one annotation on class or one per test is supported. Values are matched
+ * against [thisDevice].
  *
  * NOTE: It's not encouraged to use this to filter if it's possible to filter based on other device
  * characteristics. For example, to run a test only only on large screens or foldable,
@@ -57,34 +58,50 @@ class LimitDevicesRule(private val thisDevice: String = Build.PRODUCT) : TestRul
     override fun apply(base: Statement, description: Description): Statement {
         val limitDevicesAnnotations = description.limitDevicesAnnotation()
         if (limitDevicesAnnotations.count() > 1) {
-            return makeErrorStatement(
+            return makeAssumptionViolatedStatement(
                 "Only one LimitDeviceRule annotation is supported. Found $limitDevicesAnnotations"
             )
         }
-        val deniedDevices = description.deniedDevices() ?: emptyList()
+        val deniedDevices = description.deniedDevices()
         if (thisDevice in deniedDevices) {
-            return makeErrorStatement("Skipping test as $thisDevice in in $deniedDevices")
+            return makeAssumptionViolatedStatement(
+                "Skipping test as $thisDevice is in $deniedDevices"
+            )
         }
-        val allowedDevices = description.allowedDevices() ?: return base
-        return when (thisDevice) {
-            in allowedDevices -> base
-            else -> makeErrorStatement("Skipping test as $thisDevice in not in $allowedDevices")
+
+        val allowedDevices = description.allowedDevices()
+        if (allowedDevices.isEmpty() || thisDevice in allowedDevices) {
+            return base
         }
+        return makeAssumptionViolatedStatement(
+            "Skipping test as $thisDevice in not in $allowedDevices"
+        )
     }
 
-    private fun Description.allowedDevices(): List<String>? {
-        return getAnnotation(AllowedDevices::class.java)?.allowed?.map { it.product }
-            ?: getAnnotation(ScreenshotTestDevices::class.java)?.allowed?.map { it.product }
-    }
+    private fun Description.allowedDevices(): List<String> =
+        listOfNotNull(
+                getAnnotation(AllowedDevices::class.java)?.allowed,
+                getAnnotation(ScreenshotTestDevices::class.java)?.allowed,
+                testClass?.getAnnotation(AllowedDevices::class.java)?.allowed,
+                testClass?.getAnnotation(ScreenshotTestDevices::class.java)?.allowed,
+            )
+            .flatMap { devices -> devices.map { it.product } }
 
-    private fun Description.deniedDevices(): List<String>? =
-        getAnnotation(DeniedDevices::class.java)?.denied?.map { it.product }
+    private fun Description.deniedDevices(): List<String> =
+        listOfNotNull(
+                getAnnotation(DeniedDevices::class.java)?.denied,
+                testClass?.getAnnotation(DeniedDevices::class.java)?.denied
+            )
+            .flatMap { devices -> devices.map { it.product } }
 
     private fun Description.limitDevicesAnnotation(): List<Annotation> =
         listOfNotNull(
             getAnnotation(AllowedDevices::class.java),
             getAnnotation(DeniedDevices::class.java),
-            getAnnotation(ScreenshotTestDevices::class.java)
+            getAnnotation(ScreenshotTestDevices::class.java),
+            testClass?.getAnnotation(AllowedDevices::class.java),
+            testClass?.getAnnotation(DeniedDevices::class.java),
+            testClass?.getAnnotation(ScreenshotTestDevices::class.java)
         )
 }
 
@@ -93,7 +110,7 @@ enum class DeviceProduct(val product: String) {
     CF_TABLET("cf_x86_64_tablet")
 }
 
-private fun makeErrorStatement(errorMessage: String): Statement =
+private fun makeAssumptionViolatedStatement(errorMessage: String): Statement =
     object : Statement() {
         override fun evaluate() {
             throw AssumptionViolatedException(errorMessage)
