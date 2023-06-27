@@ -91,7 +91,7 @@ object PlatformConsts {
     internal const val STATE_INITIALIZING = "INITIALIZING"
     const val STATE_RESUMED = "RESUMED"
     const val STATE_PAUSED = "PAUSED"
-    internal const val STATE_STOPPED = "STOPPED"
+    const val STATE_STOPPED = "STOPPED"
     const val STATE_DESTROYED = "DESTROYED"
     internal const val APP_STATE_IDLE = "APP_STATE_IDLE"
     internal const val ACTIVITY_TYPE_UNDEFINED = 0
