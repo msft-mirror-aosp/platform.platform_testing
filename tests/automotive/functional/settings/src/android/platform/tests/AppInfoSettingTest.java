@@ -15,6 +15,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.List;
+
 @RunWith(AndroidJUnit4.class)
 public class AppInfoSettingTest {
     private HelperAccessor<IAutoAppInfoSettingsHelper> mAppInfoSettingsHelper;
@@ -67,5 +69,38 @@ public class AppInfoSettingTest {
         assertTrue(
                 "Permission is disabled",
                 mAppInfoSettingsHelper.get().getCurrentPermissions().contains(PHONE_PERMISSION));
+    }
+
+    @Test
+    public void testAllowedAppNumber() {
+
+        // Navigate to the app permission manager.
+        mSettingHelper.get().openSetting(SettingsConstants.APPS_SETTINGS);
+        mAppInfoSettingsHelper.get().openPermissionManager();
+
+        // Get one specific Permission UI element (that we have not looked at before).
+        // Check whether its displayed allowed apps matches its (internal) listed apps.
+        List<Integer> results =
+                mAppInfoSettingsHelper.get().validateAppsPermissionManager(CONTACTS_APP);
+        int summaryAllowed = results.get(0);
+        int summaryTotal = results.get(1);
+        int listedAllowed = results.get(2);
+        int listedTotal = results.get(3);
+
+        assertTrue(
+                String.format(
+                        "Number of listed apps allowed does not match display."
+                                + "\nSummary Value: %d \tListed: %d \t"
+                                + results.toString(),
+                        summaryAllowed,
+                        listedAllowed),
+                summaryAllowed == listedAllowed);
+
+        assertTrue(
+                String.format(
+                        "Number of listed apps not allowed does not match display."
+                                + "\nSummary Value: %d \tListed: %d",
+                        summaryTotal, listedTotal),
+                summaryTotal == listedTotal);
     }
 }

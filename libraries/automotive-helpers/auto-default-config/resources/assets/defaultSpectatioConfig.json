@@ -453,6 +453,66 @@
       "VALUE": "car_ui_scrollbar_page_up",
       "PACKAGE": "com.android.car.ui.sharedlibrary"
     },
+    "APP_INFO_SETTINGS_PERMISSION_MANAGER": {
+      "TYPE": "MULTIPLE",
+      "SPECIFIERS": [
+        {
+          "TYPE": "CLASS",
+          "VALUE": "android.widget.RelativeLayout"
+        },
+        {
+          "TYPE": "HAS_DESCENDANT",
+          "MAX_DEPTH": 2,
+          "DESCENDANT": {
+            "TYPE": "TEXT",
+            "VALUE": "Permission manager"
+          }
+        }
+      ]
+    },
+    "APP_INFO_SETTINGS_PERMISSION_MANAGER_APP_COUNTER": {
+      "TYPE": "TEXT_CONTAINS",
+      "VALUE": "allowed"
+    },
+    "APP_INFO_SETTINGS_PERMISSION_APP_LIST_VIEW": {
+      "TYPE": "DESCRIPTION",
+      "VALUE": "com.android.car.ui.utils.ROTARY_CONTAINER",
+      "PACKAGE": "com.google.android.permissioncontroller"
+    },
+    "APP_INFO_SETTINGS_APP_NAME_ELEMENT": {
+      "TYPE": "MULTIPLE",
+      "SPECIFIERS": [
+        {
+          "TYPE": "CLASS",
+          "VALUE": "android.widget.LinearLayout"
+        },
+        {
+          "TYPE": "HAS_DESCENDANT",
+          "MAX_DEPTH": 1,
+          "DESCENDANT": {
+            "TYPE": "CLASS",
+            "VALUE": "android.widget.TextView"
+          }
+        }
+      ]
+    },
+    "APP_INFO_SETTINGS_SINGLE_PERMISSION_SUMMARY": {
+      "TYPE": "MULTIPLE",
+      "SPECIFIERS": [
+        {
+          "TYPE": "CLASS",
+          "VALUE": "android.widget.LinearLayout"
+        },
+        {
+          "TYPE": "HAS_DESCENDANT",
+          "MAX_DEPTH": 1,
+          "DESCENDANT": {
+            "TYPE": "CLASS",
+            "VALUE": "android.widget.TextView"
+          }
+        }
+      ]
+    },
     "APP_INFO_SETTINGS_VIEW_ALL": {
       "TYPE": "TEXT_CONTAINS",
       "VALUE": "View all"

@@ -190,6 +190,11 @@ public class PhoneSnippet implements Snippet {
         return mDialerHelper.get().isContactInFavorites(contact);
     }
 
+    @Rpc(description = "Bluetooth HFP Error")
+    public boolean isBluetoothHfpErrorDisplayed() {
+        return mDialerHelper.get().isBluetoothHfpErrorDisplayed();
+    }
+
     @Rpc(description = "Open details page for given contact.")
     public void openDetailsPage(String contact) {
         mDialerHelper.get().openDetailsPage(contact);
