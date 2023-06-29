@@ -258,4 +258,11 @@ public interface IAutoDialHelper extends IAppHelper, Scrollable {
      * <p>This method is used to get visible contacts list
      */
     List<String> getListOfAllVisibleContacts();
+
+    /**
+     * Setup expectations: Checks if bluetooth
+     *
+     * <p>This method is used for opening phone app from homescreen
+     */
+    boolean isBluetoothHfpErrorDisplayed();
 }

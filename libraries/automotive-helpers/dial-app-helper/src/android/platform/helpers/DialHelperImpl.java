@@ -546,6 +546,13 @@ public class DialHelperImpl extends AbstractStandardAppHelper implements IAutoDi
         getSpectatioUiUtil().clickAndWait(homePhoneCard);
     }
 
+    @Override
+    public boolean isBluetoothHfpErrorDisplayed() {
+        BySelector bluetoothHfpErrorSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.DIALER_VIEW);
+        return getSpectatioUiUtil().hasUiElement(bluetoothHfpErrorSelector);
+    }
+
     private void validateUiObject(UiObject2 uiObject, String action) {
         if (uiObject == null) {
             throw new UnknownUiException(

@@ -335,9 +335,9 @@ public class AutomotiveConfigConstants {
             "SETTINGS_SUB_SETTING_SCROLL_ELEMENT";
     public static final String SETTINGS_TITLE_TEXT = "SETTINGS_TITLE_TEXT";
 
-
-
     // App Info Settings Constants
+    public static final String APP_INFO_SETTINGS_APP_NAME_ELEMENT =
+            "APP_INFO_SETTINGS_APP_NAME_ELEMENT";
     public static final String APP_INFO_SETTINGS_SCROLL_ACTION = "APP_INFO_SETTINGS_SCROLL_ACTION";
     public static final String APP_INFO_SETTINGS_SCROLL_DIRECTION =
             "APP_INFO_SETTINGS_SCROLL_DIRECTION";
@@ -359,6 +359,10 @@ public class AutomotiveConfigConstants {
     public static final String APP_INFO_SETTINGS_OK_BUTTON = "APP_INFO_SETTINGS_OK_BUTTON";
     public static final String APP_INFO_SETTINGS_PERMISSIONS_MENU =
             "APP_INFO_SETTINGS_PERMISSIONS_MENU";
+    public static final String APP_INFO_SETTINGS_PERMISSION_MANAGER =
+            "APP_INFO_SETTINGS_PERMISSION_MANAGER";
+    public static final String APP_INFO_SETTINGS_PERMISSION_MANAGER_APP_COUNTER =
+            "APP_INFO_SETTINGS_PERMISSION_MANAGER_APP_COUNTER";
     public static final String APP_INFO_SETTINGS_ALLOW_BUTTON = "APP_INFO_SETTINGS_ALLOW_BUTTON";
     public static final String APP_INFO_SETTINGS_DONT_ALLOW_BUTTON =
             "APP_INFO_SETTINGS_DONT_ALLOW_BUTTON";
@@ -370,7 +374,10 @@ public class AutomotiveConfigConstants {
     public static final String APP_INFO_SETTINGS_SCROLL_MARGIN = "APP_INFO_SETTINGS_SCROLL_MARGIN";
     public static final String APP_INFO_SETTINGS_SCROLL_WAIT_TIME =
             "APP_INFO_SETTINGS_SCROLL_WAIT_TIME";
-
+    public static final String APP_INFO_SETTINGS_SINGLE_PERMISSION_SUMMARY =
+            "APP_INFO_SETTINGS_SINGLE_PERMISSION_SUMMARY";
+    public static final String APP_INFO_SETTINGS_PERMISSION_APP_LIST_VIEW =
+            "APP_INFO_SETTINGS_PERMISSION_APP_LIST_VIEW";
     // Settings User Constants
     public static final String USER_SETTINGS_PACKAGE = "USER_SETTINGS_PACKAGE";
     public static final String USER_SETTINGS_SCROLL_ACTION = "USER_SETTINGS_SCROLL_ACTION";
