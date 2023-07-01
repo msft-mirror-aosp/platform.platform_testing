@@ -21,9 +21,9 @@ import android.tools.common.FLICKER_TAG
 import android.tools.common.Logger
 import android.tools.common.Scenario
 import android.tools.common.flicker.FlickerService
+import android.tools.common.flicker.annotation.FlickerServiceCompatible
 import android.tools.device.flicker.FlickerServiceResultsCollector.Companion.FAAS_METRICS_PREFIX
 import android.tools.device.flicker.IS_FAAS_ENABLED
-import android.tools.device.flicker.annotation.FlickerServiceCompatible
 import android.tools.device.flicker.datastore.CachedResultReader
 import android.tools.device.flicker.datastore.DataStore
 import android.tools.device.flicker.isShellTransitionsEnabled

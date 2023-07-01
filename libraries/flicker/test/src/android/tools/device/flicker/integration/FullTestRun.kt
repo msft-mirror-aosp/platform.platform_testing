@@ -20,14 +20,13 @@ import android.app.Instrumentation
 import android.platform.test.annotations.Presubmit
 import android.tools.common.Scenario
 import android.tools.common.datatypes.Region
-import android.tools.common.flicker.config.FaasScenarioType
+import android.tools.common.flicker.annotation.FlickerServiceCompatible
 import android.tools.common.flicker.subject.FlickerSubject
 import android.tools.common.flicker.subject.layers.LayersTraceSubject
 import android.tools.common.flicker.subject.region.RegionSubject
 import android.tools.common.flicker.subject.wm.WindowManagerTraceSubject
 import android.tools.common.io.RunStatus
 import android.tools.device.apphelpers.BrowserAppHelper
-import android.tools.device.flicker.annotation.FlickerServiceCompatible
 import android.tools.device.flicker.junit.FlickerBuilderProvider
 import android.tools.device.flicker.junit.FlickerParametersRunnerFactory
 import android.tools.device.flicker.legacy.FlickerBuilder
@@ -41,7 +40,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 
-@FlickerServiceCompatible(expectedCujs = [FaasScenarioType.COMMON])
+@FlickerServiceCompatible
 @RunWith(Parameterized::class)
 @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
 class FullTestRun(private val flicker: LegacyFlickerTest) {

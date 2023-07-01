@@ -21,11 +21,11 @@ import android.tools.common.CrossPlatform
 import android.tools.common.FLICKER_TAG
 import android.tools.common.Logger
 import android.tools.common.TimestampFactory
+import android.tools.common.flicker.annotation.FlickerTest
 import android.tools.device.AndroidLogger
 import android.tools.device.flicker.FlickerServiceResultsCollector
 import android.tools.device.flicker.FlickerServiceTracesCollector
 import android.tools.device.flicker.IFlickerServiceResultsCollector
-import android.tools.device.flicker.annotation.FlickerTest
 import android.tools.device.traces.formatRealTimestamp
 import android.tools.device.traces.getDefaultFlickerOutputDir
 import androidx.test.platform.app.InstrumentationRegistry
