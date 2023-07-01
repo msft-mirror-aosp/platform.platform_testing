@@ -19,10 +19,10 @@ package android.tools.device.flicker.junit
 import android.annotation.SuppressLint
 import android.app.Instrumentation
 import android.platform.test.annotations.FlakyTest
+import android.tools.common.flicker.annotation.FlickerServiceCompatible
 import android.tools.common.flicker.assertions.FlickerTest
 import android.tools.device.apphelpers.BrowserAppHelper
 import android.tools.device.flicker.IS_FAAS_ENABLED
-import android.tools.device.flicker.annotation.FlickerServiceCompatible
 import android.tools.device.flicker.isShellTransitionsEnabled
 import android.tools.device.flicker.legacy.FlickerBuilder
 import android.tools.device.flicker.legacy.LegacyFlickerTest

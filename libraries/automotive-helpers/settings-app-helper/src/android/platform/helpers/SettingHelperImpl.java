@@ -19,7 +19,9 @@ package android.platform.helpers;
 import android.app.Instrumentation;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
+import android.content.Intent;
 import android.net.wifi.WifiManager;
+import android.os.UserHandle;
 import android.platform.helpers.ScrollUtility.ScrollActions;
 import android.platform.helpers.ScrollUtility.ScrollDirection;
 import android.platform.helpers.exceptions.UnknownUiException;
@@ -64,7 +66,7 @@ public class SettingHelperImpl extends AbstractStandardAppHelper implements IAut
             openFullSettings();
         } else {
             Log.i(LOG_TAG, "Using Intent to open Settings.");
-            super.open();
+            openSettingsIntent();
         }
     }
 
@@ -120,7 +122,16 @@ public class SettingHelperImpl extends AbstractStandardAppHelper implements IAut
                         getCommandFromConfig(AutomotiveConfigConstants.OPEN_SETTINGS_COMMAND));
     }
 
-    /** {@inheritDoc} */
+    private void openSettingsIntent() {
+        // Launch the application as normal.
+        String pkg = getPackage();
+        Log.i(LOG_TAG, String.format("Sending command to launch app: %s", pkg));
+        mInstrumentation
+                .getContext()
+                .startActivityAsUser(
+                        getOpenAppIntent().addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+                        UserHandle.CURRENT);
+    }
 
     /** {@inheritDoc} */
     @Override

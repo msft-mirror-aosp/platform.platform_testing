@@ -14,10 +14,8 @@
  * limitations under the License.
  */
 
-package android.tools.device.flicker.annotation
-
-import android.tools.common.flicker.config.FaasScenarioType
+package android.tools.common.flicker.annotation
 
 @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
 @Retention(AnnotationRetention.RUNTIME)
-annotation class ExpectedScenarios(val expectedScenarios: Array<FaasScenarioType>)
+annotation class ExpectedScenarios(val expectedScenarios: Array<String>)
