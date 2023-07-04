@@ -14,12 +14,14 @@
  * limitations under the License.
  */
 
-package android.tools.common.flicker.annotation
+package android.tools.common.flicker
 
-@Target(
-    AnnotationTarget.FUNCTION,
-    AnnotationTarget.PROPERTY_GETTER,
-    AnnotationTarget.PROPERTY_SETTER
-)
-@Retention(AnnotationRetention.RUNTIME)
-annotation class Registry
+fun String.camelToSnakeCase(): String {
+    return this.fold(StringBuilder()) { acc, c ->
+            acc.let {
+                val lowerC = c.lowercase()
+                acc.append(if (acc.isNotEmpty() && c.isUpperCase()) "_$lowerC" else lowerC)
+            }
+        }
+        .toString()
+}

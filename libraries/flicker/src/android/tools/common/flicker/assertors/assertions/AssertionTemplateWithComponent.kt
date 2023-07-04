@@ -16,7 +16,6 @@
 
 package android.tools.common.flicker.assertors.assertions
 
-import android.tools.common.flicker.ScenarioInstance
 import android.tools.common.flicker.assertors.AssertionTemplate
 import android.tools.common.flicker.assertors.ComponentTemplate
 
@@ -24,8 +23,7 @@ import android.tools.common.flicker.assertors.ComponentTemplate
 abstract class AssertionTemplateWithComponent(vararg val components: ComponentTemplate) :
     AssertionTemplate() {
 
-    override fun defaultAssertionName(scenarioInstance: ScenarioInstance) =
-        "${super.defaultAssertionName(scenarioInstance)}(${components.joinToString { it.name }})"
+    override val name = "${super.name}(${components.joinToString { it.name }})"
 
     override fun equals(other: Any?): Boolean {
         if (other !is AssertionTemplateWithComponent) {

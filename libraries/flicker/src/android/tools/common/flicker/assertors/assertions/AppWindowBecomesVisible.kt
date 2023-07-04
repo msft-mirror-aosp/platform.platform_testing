@@ -41,7 +41,7 @@ class AppWindowBecomesVisible(private val component: ComponentTemplate) :
                 .isAppWindowVisible(component.build(scenarioInstance), isOptional = true)
         }
 
-        flicker.assertWmEnd("AppWindowBecomesVisibleEnd") {
+        flicker.assertWmEnd {
             isAppWindowVisible(
                 ComponentNameMatcher.SNAPSHOT.or(ComponentNameMatcher.SPLASH_SCREEN)
                     .or(component.build(scenarioInstance))

@@ -43,14 +43,14 @@ class FlickerServiceCachedTestCase(
             val metricBundle = Bundle()
             metricBundle.putString(
                 getKeyForAssertionResult(result),
-                if (result.assertionError == null) "0" else "1"
+                if (result.passed) "0" else "1"
             )
             SendToInstrumentation.sendBundle(instrumentation, metricBundle)
 
             Assume.assumeTrue(
                 !onlyBlocking || result.stabilityGroup == AssertionInvocationGroup.BLOCKING
             )
-            result.assertionError?.let { throw it }
+            result.assertionErrors.firstOrNull()?.let { throw it }
         } catch (e: Throwable) {
             throw e
         } finally {

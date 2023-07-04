@@ -23,10 +23,12 @@ import android.tools.common.FLICKER_TAG
 import android.tools.common.Logger
 import android.tools.common.ScenarioBuilder
 import android.tools.common.flicker.AssertionInvocationGroup
+import android.tools.common.flicker.FlickerConfig
 import android.tools.common.flicker.FlickerService
 import android.tools.common.flicker.TracesCollector
 import android.tools.common.flicker.assertions.AssertionResult
-import android.tools.common.flicker.config.FaasScenarioType
+import android.tools.common.flicker.config.FlickerServiceConfig
+import android.tools.common.flicker.config.ScenarioId
 import android.tools.common.io.RunStatus
 import androidx.test.platform.app.InstrumentationRegistry
 import com.android.internal.annotations.VisibleForTesting
@@ -40,7 +42,8 @@ import org.junit.runner.notification.Failure
  */
 class FlickerServiceResultsCollector(
     private val tracesCollector: TracesCollector,
-    private val flickerService: FlickerService = FlickerService(),
+    private val flickerService: FlickerService =
+        FlickerService(FlickerConfig().use(FlickerServiceConfig.DEFAULT)),
     instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation(),
     private val collectMetricsPerTest: Boolean = true,
     private val reportOnlyForPassingTests: Boolean = true
@@ -56,7 +59,7 @@ class FlickerServiceResultsCollector(
     @VisibleForTesting
     val assertionResultsByTest = mutableMapOf<Description, Collection<AssertionResult>>()
     @VisibleForTesting
-    val detectedScenariosByTest = mutableMapOf<Description, Collection<FaasScenarioType>>()
+    val detectedScenariosByTest = mutableMapOf<Description, Collection<ScenarioId>>()
 
     init {
         setInstrumentation(instrumentation)
@@ -221,7 +224,7 @@ class FlickerServiceResultsCollector(
         return resultsForTest
     }
 
-    override fun detectedScenariosForTest(description: Description): Collection<FaasScenarioType> {
+    override fun detectedScenariosForTest(description: Description): Collection<ScenarioId> {
         val scenariosForTest = detectedScenariosByTest[description]
         requireNotNull(scenariosForTest) { "No detected scenarios set for test $description" }
         return scenariosForTest
@@ -235,7 +238,7 @@ class FlickerServiceResultsCollector(
         const val FLICKER_ASSERTIONS_COUNT_KEY = "flicker_assertions_count"
 
         fun getKeyForAssertionResult(result: AssertionResult): String {
-            return "$FAAS_METRICS_PREFIX::${result.assertion.name}"
+            return "$FAAS_METRICS_PREFIX::${result.name}"
         }
 
         class AggregatedFlickerResult {
@@ -250,7 +253,9 @@ class FlickerServiceResultsCollector(
 
                 if (result.failed) {
                     failures++
-                    errors.add(result.assertionError?.message ?: "FAILURE WITHOUT ERROR MESSAGE...")
+                    result.assertionErrors.forEach {
+                        errors.add(it.message ?: "FAILURE WITHOUT ERROR MESSAGE...")
+                    }
                 } else {
                     passes++
                 }

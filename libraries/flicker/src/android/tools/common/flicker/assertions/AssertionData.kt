@@ -18,7 +18,6 @@ package android.tools.common.flicker.assertions
 
 /** Interface containing basic data about an assertion */
 interface AssertionData {
-    val name: String
     /**
      * Extracts the data from the result and executes the assertion
      *

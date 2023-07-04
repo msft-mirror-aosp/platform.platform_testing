@@ -16,13 +16,10 @@
 
 package android.tools.common.flicker.assertions
 
-class ServiceFlickerTest(defaultAssertionName: String) : BaseFlickerTest(defaultAssertionName) {
-    private val assertionsMap = mutableMapOf<String, AssertionData>()
-    val assertions: Collection<AssertionData> = assertionsMap.values
+class ServiceFlickerTest : BaseFlickerTest() {
+    internal val assertions = mutableListOf<AssertionData>()
 
     override fun doProcess(assertion: AssertionData) {
-        val name = assertion.name
-        require(!assertionsMap.containsKey(assertion.name)) { "Assertion name $name already used" }
-        assertionsMap[name] = assertion
+        assertions.add(assertion)
     }
 }

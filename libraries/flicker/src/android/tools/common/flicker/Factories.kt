@@ -16,11 +16,11 @@
 
 package android.tools.common.flicker
 
-import android.tools.common.flicker.extractors.ScenarioExtractor
+import android.tools.common.flicker.config.FlickerConfig
+import android.tools.common.flicker.config.FlickerConfigImpl
 import kotlin.js.JsName
 
-@JsName("FlickerServiceFactory") fun FlickerService(): FlickerService = FlickerServiceImpl()
+@JsName("FlickerServiceFactory")
+fun FlickerService(flickerConfig: FlickerConfig): FlickerService = FlickerServiceImpl(flickerConfig)
 
-@JsName("FlickerServiceFactoryWithScenario")
-fun FlickerService(scenarioExtractor: ScenarioExtractor): FlickerService =
-    FlickerServiceImpl(scenarioExtractor)
+@JsName("ServiceRegistryFactory") fun FlickerConfig(): FlickerConfig = FlickerConfigImpl()

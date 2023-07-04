@@ -19,7 +19,6 @@ package android.tools.common.flicker.assertors.assertions
 import android.tools.common.flicker.ScenarioInstance
 import android.tools.common.flicker.assertions.FlickerTest
 import android.tools.common.flicker.assertors.ComponentTemplate
-import android.tools.common.flicker.assertors.Components
 import android.tools.common.traces.component.ComponentNameMatcher
 
 /**

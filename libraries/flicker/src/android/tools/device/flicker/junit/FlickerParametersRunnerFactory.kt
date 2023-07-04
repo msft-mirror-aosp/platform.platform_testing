@@ -18,7 +18,6 @@ package android.tools.device.flicker.junit
 
 import android.tools.common.CrossPlatform
 import android.tools.common.TimestampFactory
-import android.tools.common.flicker.assertions.FlickerTest
 import android.tools.device.AndroidLogger
 import android.tools.device.flicker.legacy.LegacyFlickerTest
 import android.tools.device.traces.formatRealTimestamp
@@ -41,7 +40,7 @@ class FlickerParametersRunnerFactory : ParametersRunnerFactory {
         val flickerTest =
             test.parameters.filterIsInstance<LegacyFlickerTest>().firstOrNull()
                 ?: error(
-                    "Unable to extract ${FlickerTest::class.simpleName} " +
+                    "Unable to extract ${LegacyFlickerTest::class.simpleName} " +
                         "for class $simpleClassName"
                 )
         val scenario = flickerTest.initialize(simpleClassName)

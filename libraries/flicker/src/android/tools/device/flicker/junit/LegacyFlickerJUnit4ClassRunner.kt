@@ -29,9 +29,6 @@ import com.google.common.annotations.VisibleForTesting
 import java.util.Collections
 import java.util.concurrent.locks.Lock
 import java.util.concurrent.locks.ReentrantLock
-import kotlin.Comparator
-import kotlin.collections.ArrayList
-import kotlin.collections.LinkedHashMap
 import org.junit.FixMethodOrder
 import org.junit.Ignore
 import org.junit.internal.AssumptionViolatedException
@@ -46,6 +43,7 @@ import org.junit.runner.manipulation.Sorter
 import org.junit.runner.notification.RunNotifier
 import org.junit.runner.notification.StoppedByUserException
 import org.junit.runners.model.FrameworkMethod
+import org.junit.runners.model.InvalidTestClassError
 import org.junit.runners.model.RunnerScheduler
 import org.junit.runners.model.Statement
 import org.junit.runners.model.TestClass
@@ -110,16 +108,23 @@ class LegacyFlickerJUnit4ClassRunner(test: TestWithParameters?, private val scen
     private val arguments: Bundle = InstrumentationRegistry.getArguments()
 
     @VisibleForTesting
-    val flickerDecorator =
-        test?.let {
-            LegacyFlickerServiceDecorator(
-                test.testClass,
-                scenario,
-                transitionRunner,
-                inner =
-                    LegacyFlickerDecorator(test.testClass, scenario, transitionRunner, inner = this)
-            )
+    val flickerDecorator: LegacyFlickerServiceDecorator =
+        LegacyFlickerServiceDecorator(
+            this.testClass,
+            scenario,
+            transitionRunner,
+            inner = LegacyFlickerDecorator(this.testClass, scenario, transitionRunner, inner = this)
+        )
+
+    init {
+        val errors = mutableListOf<Throwable>()
+        flickerDecorator.doValidateInstanceMethods().let { errors.addAll(it) }
+        flickerDecorator.doValidateConstructor().let { errors.addAll(it) }
+
+        if (errors.isNotEmpty()) {
+            throw InvalidTestClassError(testClass.javaClass, errors)
         }
+    }
 
     override fun run(notifier: RunNotifier) {
         val testNotifier = EachTestNotifier(notifier, description)
@@ -165,6 +170,7 @@ class LegacyFlickerJUnit4ClassRunner(test: TestWithParameters?, private val scen
                 }
             }
             filteredChildren = Collections.unmodifiableList(children)
+            val filteredChildren = filteredChildren
             if (filteredChildren!!.isEmpty()) {
                 throw NoTestsRemainException()
             }
@@ -189,14 +195,19 @@ class LegacyFlickerJUnit4ClassRunner(test: TestWithParameters?, private val scen
         val result = mutableListOf<FrameworkMethod>()
         if (scenario != null) {
             val testInstance = createTest()
-            result.addAll(flickerDecorator?.getTestMethods(testInstance) ?: emptyList())
+            result.addAll(flickerDecorator.getTestMethods(testInstance))
+        } else {
+            result.addAll(getTestMethods({} /* placeholder param */))
         }
         return result
     }
 
-    override fun describeChild(method: FrameworkMethod?): Description {
-        return flickerDecorator?.getChildDescription(method)
-            ?: error("There are no children to describe")
+    override fun describeChild(method: FrameworkMethod): Description {
+        return if (scenario != null) {
+            flickerDecorator.getChildDescription(method)
+        } else {
+            getChildDescription(method)
+        }
     }
 
     /** {@inheritDoc} */
@@ -210,21 +221,7 @@ class LegacyFlickerJUnit4ClassRunner(test: TestWithParameters?, private val scen
     }
 
     override fun methodInvoker(method: FrameworkMethod, test: Any): Statement {
-        return flickerDecorator?.getMethodInvoker(method, test)
-            ?: error("No statements to invoke for $method in $test")
-    }
-
-    override fun validateConstructor(errors: MutableList<Throwable>) {
-        super.validateConstructor(errors)
-
-        if (errors.isEmpty()) {
-            flickerDecorator?.doValidateConstructor()?.let { errors.addAll(it) }
-        }
-    }
-
-    @Deprecated("Deprecated in Java")
-    override fun validateInstanceMethods(errors: MutableList<Throwable>?) {
-        flickerDecorator?.doValidateInstanceMethods()?.let { errors?.addAll(it) }
+        return flickerDecorator.getMethodInvoker(method, test)
     }
 
     /** IFlickerJunitDecorator implementation */
@@ -234,20 +231,24 @@ class LegacyFlickerJUnit4ClassRunner(test: TestWithParameters?, private val scen
         return tests
     }
 
-    override fun getChildDescription(method: FrameworkMethod?): Description? {
-        return super.describeChild(method)
-    }
-
     override fun doValidateInstanceMethods(): List<Throwable> {
-        val errors = mutableListOf<Throwable>()
+        // NOOP - handled in init of this class otherwise called on initialization of parent class
+        // which means this class is not initialized yet leading to issues
+        val errors = emptyList<Throwable>()
         super.validateInstanceMethods(errors)
         return errors
     }
 
     override fun doValidateConstructor(): List<Throwable> {
-        val result = mutableListOf<Throwable>()
-        super.validateConstructor(result)
-        return result
+        // NOOP - handled in init of this class otherwise called on initialization of parent class
+        // which means this class is not initialized yet leading to issues
+        val errors = emptyList<Throwable>()
+        super.validateInstanceMethods(errors)
+        return errors
+    }
+
+    override fun getChildDescription(method: FrameworkMethod): Description {
+        return super.describeChild(method)
     }
 
     override fun getMethodInvoker(method: FrameworkMethod, test: Any): Statement {
@@ -339,7 +340,7 @@ class LegacyFlickerJUnit4ClassRunner(test: TestWithParameters?, private val scen
                 orderer.apply(child)
             }
             val inOrder = orderer.order(childMap.keys)
-            children = ArrayList<FrameworkMethod>(children.size)
+            children = ArrayList(children.size)
             for (description in inOrder) {
                 children.addAll(childMap[description]!!)
             }

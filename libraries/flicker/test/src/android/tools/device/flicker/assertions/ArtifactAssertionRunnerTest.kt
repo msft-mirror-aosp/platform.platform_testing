@@ -128,7 +128,6 @@ class ArtifactAssertionRunnerTest {
     companion object {
         private fun newAssertionData(assertion: () -> Unit) =
             object : AssertionData {
-                override val name = ""
                 override fun checkAssertion(run: SubjectsParser) {
                     assertion.invoke()
                 }

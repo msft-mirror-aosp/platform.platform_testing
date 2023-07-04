@@ -44,14 +44,16 @@ class FlickerServiceCachedTestCaseTest {
         val mockScenarioAssertion = Mockito.mock(ScenarioAssertion::class.java)
         val assertionResult =
             object : AssertionResult {
-                override val assertion =
-                    object : AssertionData {
-                        override val name = "AssertionName"
-                        override fun checkAssertion(run: SubjectsParser) {
-                            error("Unimplemented - shouldn't be called")
+                override val name: String = "MOCK_SCENARIO#mockAssertion"
+                override val assertionData =
+                    listOf(
+                        object : AssertionData {
+                            override fun checkAssertion(run: SubjectsParser) {
+                                error("Unimplemented - shouldn't be called")
+                            }
                         }
-                    }
-                override val assertionError = null
+                    )
+                override val assertionErrors = emptyList<Throwable>()
                 override val stabilityGroup = AssertionInvocationGroup.BLOCKING
                 override val passed = true
             }
@@ -80,7 +82,7 @@ class FlickerServiceCachedTestCaseTest {
                 KotlinMockito.argThat {
                     this.getString(
                         "${FlickerServiceResultsCollector.FAAS_METRICS_PREFIX}::" +
-                            assertionResult.assertion.name
+                            assertionResult.name
                     ) == "0"
                 }
             )
@@ -95,14 +97,16 @@ class FlickerServiceCachedTestCaseTest {
         val mockScenarioAssertion = Mockito.mock(ScenarioAssertion::class.java)
         val assertionResult =
             object : AssertionResult {
-                override val assertion =
-                    object : AssertionData {
-                        override val name = "AssertionName"
-                        override fun checkAssertion(run: SubjectsParser) {
-                            error("Unimplemented - shouldn't be called")
+                override val name: String = "MY_CUSTOM_SCENARIO#myAssertion"
+                override val assertionData =
+                    listOf(
+                        object : AssertionData {
+                            override fun checkAssertion(run: SubjectsParser) {
+                                error("Unimplemented - shouldn't be called")
+                            }
                         }
-                    }
-                override val assertionError = Exception("EXPECTED")
+                    )
+                override val assertionErrors = listOf(Exception("EXPECTED"))
                 override val stabilityGroup = AssertionInvocationGroup.BLOCKING
                 override val passed = false
             }
@@ -133,7 +137,7 @@ class FlickerServiceCachedTestCaseTest {
                 KotlinMockito.argThat {
                     this.getString(
                         "${FlickerServiceResultsCollector.FAAS_METRICS_PREFIX}::" +
-                            assertionResult.assertion.name
+                            assertionResult.name
                     ) == "1"
                 }
             )

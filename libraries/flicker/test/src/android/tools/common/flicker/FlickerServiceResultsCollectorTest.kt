@@ -297,30 +297,35 @@ class FlickerServiceResultsCollectorTest {
     companion object {
         val mockSuccessfulAssertionResult =
             object : AssertionResult {
-                override val assertion =
-                    object : AssertionData {
-                        override val name = "MockPassedAssertion"
-                        override fun checkAssertion(run: SubjectsParser) {
-                            error("Unimplemented - shouldn't be called")
+                override val name: String = "MOCK_SCENARIO#mockSuccessfulAssertion"
+                override val assertionData =
+                    listOf(
+                        object : AssertionData {
+                            override fun checkAssertion(run: SubjectsParser) {
+                                error("Unimplemented - shouldn't be called")
+                            }
                         }
-                    }
-                override val assertionError = null
+                    )
+                override val assertionErrors = emptyList<Throwable>()
                 override val stabilityGroup = AssertionInvocationGroup.BLOCKING
                 override val passed = true
             }
 
         val mockFailedAssertionResult =
             object : AssertionResult {
-                override val assertion =
-                    object : AssertionData {
-                        override val name = "MockFailedAssertion"
-                        override fun checkAssertion(run: SubjectsParser) {
-                            error("Unimplemented - shouldn't be called")
+                override val name: String = "MOCK_SCENARIO#mockFailedAssertion"
+                override val assertionData =
+                    listOf(
+                        object : AssertionData {
+                            override fun checkAssertion(run: SubjectsParser) {
+                                error("Unimplemented - shouldn't be called")
+                            }
                         }
-                    }
-                override val assertionError = Throwable("Assertion failed")
+                    )
+                override val assertionErrors = listOf(Throwable("Assertion failed"))
                 override val stabilityGroup = AssertionInvocationGroup.BLOCKING
                 override val passed = false
+                override val failed: Boolean = true
             }
 
         private class SpyDataRecord : DataRecord() {

@@ -17,26 +17,22 @@
 package android.tools.common.flicker.config.suw
 
 import android.tools.common.flicker.config.AssertionTemplates
-import android.tools.common.flicker.config.FaasScenarioType
-import android.tools.common.flicker.config.FlickerServiceConfig
-import android.tools.common.flicker.config.ScenarioConfig
+import android.tools.common.flicker.config.FlickerConfigEntry
+import android.tools.common.flicker.config.ScenarioId
 import android.tools.common.flicker.extractors.TaggedCujTransitionMatcher
 import android.tools.common.flicker.extractors.TaggedScenarioExtractorBuilder
 import android.tools.common.traces.events.CujType
 
-class SuwShowFunctionScreenWithActions : ScenarioConfig {
-    override val enabled = false
-
-    override val type = FaasScenarioType.SUW_SHOW_FUNCTION_SCREEN_WITH_ACTIONS
-
-    override val assertionTemplates =
-        AssertionTemplates.COMMON_ASSERTIONS // TODO: Add specific assertions
-
-    override val extractor by lazy {
-        TaggedScenarioExtractorBuilder()
-            .setConfig(FlickerServiceConfig.getScenarioConfigFor(type))
-            .setTargetTag(CujType.CUJ_SUW_SHOW_FUNCTION_SCREEN_WITH_ACTIONS)
-            .setTransitionMatcher(TaggedCujTransitionMatcher(associatedTransitionRequired = false))
-            .build()
-    }
-}
+val SuwShowFunctionScreenWithActions =
+    FlickerConfigEntry(
+        enabled = false,
+        scenarioId = ScenarioId("SUW_SHOW_FUNCTION_SCREEN_WITH_ACTIONS"),
+        assertions = AssertionTemplates.COMMON_ASSERTIONS,
+        extractor =
+            TaggedScenarioExtractorBuilder()
+                .setTargetTag(CujType.CUJ_SUW_SHOW_FUNCTION_SCREEN_WITH_ACTIONS)
+                .setTransitionMatcher(
+                    TaggedCujTransitionMatcher(associatedTransitionRequired = false)
+                )
+                .build()
+    )

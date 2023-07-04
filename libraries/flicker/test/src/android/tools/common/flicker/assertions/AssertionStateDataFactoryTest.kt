@@ -38,17 +38,17 @@ open class AssertionStateDataFactoryTest {
     @Test
     open fun checkBuildsStartAssertion() {
         validate(
-            wmAssertionFactory.createStartStateAssertion(name = "") {},
+            wmAssertionFactory.createStartStateAssertion {},
             WindowManagerStateSubject::class,
             Tag.START
         )
         validate(
-            layersAssertionFactory.createStartStateAssertion(name = "") {},
+            layersAssertionFactory.createStartStateAssertion {},
             LayerTraceEntrySubject::class,
             Tag.START
         )
         validate(
-            eventLogAssertionFactory.createStartStateAssertion(name = "") {},
+            eventLogAssertionFactory.createStartStateAssertion {},
             EventLogSubject::class,
             Tag.START
         )
@@ -57,17 +57,17 @@ open class AssertionStateDataFactoryTest {
     @Test
     open fun checkBuildsEndAssertion() {
         validate(
-            wmAssertionFactory.createEndStateAssertion(name = "") {},
+            wmAssertionFactory.createEndStateAssertion {},
             WindowManagerStateSubject::class,
             Tag.END
         )
         validate(
-            layersAssertionFactory.createEndStateAssertion(name = "") {},
+            layersAssertionFactory.createEndStateAssertion {},
             LayerTraceEntrySubject::class,
             Tag.END
         )
         validate(
-            eventLogAssertionFactory.createEndStateAssertion(name = "") {},
+            eventLogAssertionFactory.createEndStateAssertion {},
             EventLogSubject::class,
             Tag.END
         )
@@ -76,20 +76,16 @@ open class AssertionStateDataFactoryTest {
     @Test
     open fun checkBuildsTagAssertion() {
         validate(
-            wmAssertionFactory.createTagAssertion(name = "", TAG) {},
+            wmAssertionFactory.createTagAssertion(TAG) {},
             WindowManagerStateSubject::class,
             TAG
         )
         validate(
-            layersAssertionFactory.createTagAssertion(name = "", TAG) {},
+            layersAssertionFactory.createTagAssertion(TAG) {},
             LayerTraceEntrySubject::class,
             TAG
         )
-        validate(
-            eventLogAssertionFactory.createTagAssertion(name = "", TAG) {},
-            EventLogSubject::class,
-            TAG
-        )
+        validate(eventLogAssertionFactory.createTagAssertion(TAG) {}, EventLogSubject::class, TAG)
     }
 
     protected fun validate(

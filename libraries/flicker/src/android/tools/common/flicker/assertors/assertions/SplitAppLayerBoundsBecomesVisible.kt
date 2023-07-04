@@ -20,7 +20,7 @@ import android.tools.common.datatypes.Region
 import android.tools.common.flicker.ScenarioInstance
 import android.tools.common.flicker.assertions.FlickerTest
 import android.tools.common.flicker.assertors.ComponentTemplate
-import android.tools.common.flicker.assertors.Components
+import android.tools.common.flicker.config.splitscreen.Components.SPLIT_SCREEN_DIVIDER
 import android.tools.common.flicker.subject.layers.LayerTraceEntrySubject
 import android.tools.common.flicker.subject.layers.LayersTraceSubject
 import android.tools.common.traces.component.IComponentMatcher
@@ -30,7 +30,7 @@ class SplitAppLayerBoundsBecomesVisible(
     val isPrimaryApp: Boolean
 ) : AssertionTemplateWithComponent(component) {
     override fun doEvaluate(scenarioInstance: ScenarioInstance, flicker: FlickerTest) {
-        val splitScreenDivider = Components.SPLIT_SCREEN_DIVIDER.build(scenarioInstance)
+        val splitScreenDivider = SPLIT_SCREEN_DIVIDER.build(scenarioInstance)
         val app = component.build(scenarioInstance)
 
         val landscapePosLeft: Boolean

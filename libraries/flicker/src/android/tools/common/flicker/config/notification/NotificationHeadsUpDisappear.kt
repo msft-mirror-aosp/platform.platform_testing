@@ -17,26 +17,22 @@
 package android.tools.common.flicker.config.notification
 
 import android.tools.common.flicker.config.AssertionTemplates
-import android.tools.common.flicker.config.FaasScenarioType
-import android.tools.common.flicker.config.FlickerServiceConfig
-import android.tools.common.flicker.config.ScenarioConfig
+import android.tools.common.flicker.config.FlickerConfigEntry
+import android.tools.common.flicker.config.ScenarioId
 import android.tools.common.flicker.extractors.TaggedCujTransitionMatcher
 import android.tools.common.flicker.extractors.TaggedScenarioExtractorBuilder
 import android.tools.common.traces.events.CujType
 
-class NotificationHeadsUpDisappear : ScenarioConfig {
-    override val enabled = false
-
-    override val type = FaasScenarioType.NOTIFICATION_HEADS_UP_DISAPPEAR
-
-    override val assertionTemplates =
-        AssertionTemplates.COMMON_ASSERTIONS // TODO: Add specific assertions
-
-    override val extractor by lazy {
-        TaggedScenarioExtractorBuilder()
-            .setConfig(FlickerServiceConfig.getScenarioConfigFor(type))
-            .setTargetTag(CujType.CUJ_NOTIFICATION_HEADS_UP_DISAPPEAR)
-            .setTransitionMatcher(TaggedCujTransitionMatcher(associatedTransitionRequired = false))
-            .build()
-    }
-}
+val NotificationHeadsUpDisappear =
+    FlickerConfigEntry(
+        enabled = false,
+        scenarioId = ScenarioId("NOTIFICATION_HEADS_UP_DISAPPEAR"),
+        assertions = AssertionTemplates.COMMON_ASSERTIONS,
+        extractor =
+            TaggedScenarioExtractorBuilder()
+                .setTargetTag(CujType.CUJ_NOTIFICATION_HEADS_UP_DISAPPEAR)
+                .setTransitionMatcher(
+                    TaggedCujTransitionMatcher(associatedTransitionRequired = false)
+                )
+                .build()
+    )

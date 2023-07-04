@@ -17,26 +17,22 @@
 package android.tools.common.flicker.config.lockscreen
 
 import android.tools.common.flicker.config.AssertionTemplates
-import android.tools.common.flicker.config.FaasScenarioType
-import android.tools.common.flicker.config.FlickerServiceConfig
-import android.tools.common.flicker.config.ScenarioConfig
+import android.tools.common.flicker.config.FlickerConfigEntry
+import android.tools.common.flicker.config.ScenarioId
 import android.tools.common.flicker.extractors.TaggedCujTransitionMatcher
 import android.tools.common.flicker.extractors.TaggedScenarioExtractorBuilder
 import android.tools.common.traces.events.CujType
 
-class LockscreenPinAppear : ScenarioConfig {
-    override val enabled = false
-
-    override val type = FaasScenarioType.LOCKSCREEN_PIN_APPEAR
-
-    override val assertionTemplates =
-        AssertionTemplates.COMMON_ASSERTIONS // TODO: Add specific assertions
-
-    override val extractor by lazy {
-        TaggedScenarioExtractorBuilder()
-            .setConfig(FlickerServiceConfig.getScenarioConfigFor(type))
-            .setTargetTag(CujType.CUJ_LOCKSCREEN_PIN_APPEAR)
-            .setTransitionMatcher(TaggedCujTransitionMatcher(associatedTransitionRequired = false))
-            .build()
-    }
-}
+val LockscreenPinAppear =
+    FlickerConfigEntry(
+        enabled = false,
+        scenarioId = ScenarioId("LOCKSCREEN_PIN_APPEAR"),
+        assertions = AssertionTemplates.COMMON_ASSERTIONS,
+        extractor =
+            TaggedScenarioExtractorBuilder()
+                .setTargetTag(CujType.CUJ_LOCKSCREEN_PIN_APPEAR)
+                .setTransitionMatcher(
+                    TaggedCujTransitionMatcher(associatedTransitionRequired = false)
+                )
+                .build()
+    )
