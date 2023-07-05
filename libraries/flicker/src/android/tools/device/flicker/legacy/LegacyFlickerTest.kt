@@ -31,7 +31,7 @@ import android.tools.device.traces.TRACE_CONFIG_REQUIRE_CHANGES
 /** Specification of a flicker test for JUnit ParameterizedRunner class */
 data class LegacyFlickerTest(
     private val scenarioBuilder: ScenarioBuilder = ScenarioBuilder(),
-    private val resultReaderProvider: (Scenario) -> CachedResultReader = {
+    private val resultReaderProvider: (Scenario) -> Reader = {
         CachedResultReader(it, TRACE_CONFIG_REQUIRE_CHANGES)
     },
     private val subjectsParserProvider: (Reader) -> SubjectsParser = { SubjectsParser(it) },

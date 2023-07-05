@@ -21,6 +21,7 @@ import android.content.Context
 import android.tools.common.Scenario
 import android.tools.common.ScenarioBuilder
 import android.tools.common.ScenarioImpl
+import android.tools.common.Timestamp
 import android.tools.common.Timestamps
 import android.tools.common.io.Reader
 import android.tools.common.io.ResultArtifactDescriptor
@@ -115,6 +116,8 @@ internal fun getLayerTraceReaderFromAsset(
     relativePath: String,
     ignoreOrphanLayers: Boolean = true,
     legacyTrace: Boolean = false,
+    from: Timestamp = Timestamps.min(),
+    to: Timestamp = Timestamps.max()
 ): Reader {
     return ParsedTracesReader(
         artifact = InMemoryArtifact(relativePath),
@@ -126,7 +129,7 @@ internal fun getLayerTraceReaderFromAsset(
                 ) {
                     ignoreOrphanLayers
                 }
-                .parse(readAsset(relativePath))
+                .parse(readAsset(relativePath), from, to)
     )
 }
 

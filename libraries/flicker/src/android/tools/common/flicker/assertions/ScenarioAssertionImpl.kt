@@ -36,8 +36,8 @@ internal data class ScenarioAssertionImpl(
         Logger.withTracing("executeAssertion") {
             AssertionResultImpl(
                     name,
-                    assertionData,
-                    assertionData.mapNotNull { assertionRunner.runAssertion(it) },
+                    assertionData.toTypedArray(),
+                    assertionData.mapNotNull { assertionRunner.runAssertion(it) }.toTypedArray(),
                     stabilityGroup
                 )
                 .also { log(it) }

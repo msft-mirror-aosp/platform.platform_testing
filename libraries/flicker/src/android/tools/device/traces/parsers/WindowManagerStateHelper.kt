@@ -364,7 +364,7 @@ constructor(
 
         /** Waits until the [TRANSITION_SNAPSHOT] is gone */
         fun withTransitionSnapshotGone() =
-                add(ConditionsFactory.isLayerVisible(TRANSITION_SNAPSHOT).negate())
+            add(ConditionsFactory.isLayerVisible(TRANSITION_SNAPSHOT).negate())
 
         /** Waits until the is no top visible app window in the [WindowManagerState] */
         fun withoutTopVisibleAppWindows() =
