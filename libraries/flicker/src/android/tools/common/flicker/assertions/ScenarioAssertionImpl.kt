@@ -22,32 +22,37 @@ import android.tools.common.flicker.AssertionInvocationGroup
 import android.tools.common.io.Reader
 
 internal data class ScenarioAssertionImpl(
+    private val name: String,
     private val reader: Reader,
-    private val assertionData: AssertionData,
+    private val assertionData: Collection<AssertionData>,
     override val stabilityGroup: AssertionInvocationGroup,
     private val assertionRunner: AssertionRunner = ReaderAssertionRunner(reader)
 ) : ScenarioAssertion {
+    init {
+        require(assertionData.isNotEmpty()) { "Expected at least one assertion data object." }
+    }
+
     override fun execute() =
         Logger.withTracing("executeAssertion") {
             AssertionResultImpl(
+                    name,
                     assertionData,
-                    assertionRunner.runAssertion(assertionData),
+                    assertionData.mapNotNull { assertionRunner.runAssertion(it) },
                     stabilityGroup
                 )
                 .also { log(it) }
         }
 
-    override fun toString() = assertionData.name
+    override fun toString() = name
 
     private fun log(result: AssertionResult) {
         if (result.failed) {
             Logger.w(
                 "$FLICKER_TAG-SERVICE",
-                "${result.assertion} FAILED :: " +
-                    (result.assertionError?.message ?: "<NO ERROR MESSAGE>")
+                "${result.name} FAILED :: " + result.assertionErrors.map { it.message }
             )
         } else {
-            Logger.w("$FLICKER_TAG-SERVICE", "${result.assertion} PASSED")
+            Logger.w("$FLICKER_TAG-SERVICE", "${result.name} PASSED")
         }
     }
 }

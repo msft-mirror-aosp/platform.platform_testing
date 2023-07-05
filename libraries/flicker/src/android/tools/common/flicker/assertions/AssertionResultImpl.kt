@@ -20,7 +20,8 @@ import android.tools.common.flicker.AssertionInvocationGroup
 
 /** Base class for a FaaS assertion */
 internal data class AssertionResultImpl(
-    override val assertion: AssertionData,
-    override val assertionError: Throwable?,
+    override val name: String,
+    override val assertionData: Collection<AssertionData>,
+    override val assertionErrors: Collection<Throwable>,
     override val stabilityGroup: AssertionInvocationGroup
 ) : AssertionResult

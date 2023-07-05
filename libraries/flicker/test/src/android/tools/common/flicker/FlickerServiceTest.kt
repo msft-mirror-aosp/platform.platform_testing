@@ -16,8 +16,13 @@
 
 package android.tools.common.flicker
 
+import android.tools.common.Timestamps
+import android.tools.common.flicker.config.FlickerConfig
+import android.tools.common.flicker.config.FlickerConfigEntry
+import android.tools.common.flicker.config.ScenarioId
 import android.tools.common.flicker.extractors.ScenarioExtractor
-import android.tools.common.io.Reader
+import android.tools.common.flicker.extractors.TraceSlice
+import android.tools.getTraceReaderFromScenario
 import android.tools.rules.CleanFlickerEnvironmentRule
 import org.junit.ClassRule
 import org.junit.FixMethodOrder
@@ -31,37 +36,50 @@ class FlickerServiceTest {
 
     @Test
     fun generatesAssertionsFromExtractedScenarios() {
-        val mockReader = Mockito.mock(Reader::class.java)
+        val reader = getTraceReaderFromScenario("AppLaunch")
+        val mockFlickerConfig = Mockito.mock(FlickerConfig::class.java)
         val mockScenarioExtractor = Mockito.mock(ScenarioExtractor::class.java)
-
-        val scenarioInstance = Mockito.mock(ScenarioInstance::class.java)
-
-        Mockito.`when`(mockScenarioExtractor.extract(mockReader))
-            .thenReturn(listOf(scenarioInstance))
-
-        val service =
-            FlickerService(
-                scenarioExtractor = mockScenarioExtractor,
+        val mockConfigEntry =
+            FlickerConfigEntry(
+                scenarioId = ScenarioId("TEST_SCENARIO"),
+                extractor = mockScenarioExtractor,
+                assertions = emptyMap()
             )
-        service.detectScenarios(mockReader)
 
-        Mockito.verify(mockScenarioExtractor).extract(mockReader)
+        val traceSlice =
+            TraceSlice(startTimestamp = Timestamps.min(), endTimestamp = Timestamps.max())
+
+        Mockito.`when`(mockFlickerConfig.getEntries()).thenReturn(listOf(mockConfigEntry))
+        Mockito.`when`(mockScenarioExtractor.extract(reader)).thenReturn(listOf(traceSlice))
+
+        val service = FlickerService(mockFlickerConfig)
+        service.detectScenarios(reader)
+
+        Mockito.verify(mockScenarioExtractor).extract(reader)
     }
 
     @Test
     fun executesAssertionsReturnedByAssertionFactories() {
-        val mockReader = Mockito.mock(Reader::class.java)
+        val reader = getTraceReaderFromScenario("AppLaunch")
+        val mockFlickerConfig = Mockito.mock(FlickerConfig::class.java)
         val mockScenarioExtractor = Mockito.mock(ScenarioExtractor::class.java)
+        val mockConfigEntry =
+            FlickerConfigEntry(
+                scenarioId = ScenarioId("TEST_SCENARIO"),
+                extractor = mockScenarioExtractor,
+                assertions = emptyMap()
+            )
 
-        val scenarioInstance = Mockito.mock(ScenarioInstance::class.java)
+        val traceSlice =
+            TraceSlice(startTimestamp = Timestamps.min(), endTimestamp = Timestamps.max())
 
-        Mockito.`when`(mockScenarioExtractor.extract(mockReader))
-            .thenReturn(listOf(scenarioInstance))
+        Mockito.`when`(mockFlickerConfig.getEntries()).thenReturn(listOf(mockConfigEntry))
+        Mockito.`when`(mockScenarioExtractor.extract(reader)).thenReturn(listOf(traceSlice))
 
-        val service = FlickerService(scenarioExtractor = mockScenarioExtractor)
-        service.detectScenarios(mockReader)
+        val service = FlickerService(mockFlickerConfig)
+        service.detectScenarios(reader)
 
-        Mockito.verify(mockScenarioExtractor).extract(mockReader)
+        Mockito.verify(mockScenarioExtractor).extract(reader)
     }
 
     companion object {

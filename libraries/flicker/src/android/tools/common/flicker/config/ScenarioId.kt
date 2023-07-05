@@ -16,12 +16,20 @@
 
 package android.tools.common.flicker.config
 
-import android.tools.common.flicker.assertors.AssertionTemplate
-import android.tools.common.flicker.extractors.ScenarioExtractor
+import android.tools.common.flicker.camelToSnakeCase
+import kotlin.reflect.KClass
 
-interface ScenarioConfig {
-    val extractor: ScenarioExtractor
-    val assertionTemplates: Collection<AssertionTemplate>
-    val enabled: Boolean
-    val type: FaasScenarioType
+data class ScenarioId(val name: String) {
+    companion object {
+        fun fromClass(kClass: KClass<*>): ScenarioId {
+            return ScenarioId(
+                kClass.simpleName?.camelToSnakeCase()?.uppercase()
+                    ?: error("Class $kClass has no simple name")
+            )
+        }
+    }
+
+    override fun toString(): String {
+        return name
+    }
 }

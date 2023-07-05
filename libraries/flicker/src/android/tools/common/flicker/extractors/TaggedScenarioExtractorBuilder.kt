@@ -16,14 +16,12 @@
 
 package android.tools.common.flicker.extractors
 
-import android.tools.common.flicker.config.ScenarioConfig
 import android.tools.common.io.Reader
 import android.tools.common.traces.events.Cuj
 import android.tools.common.traces.events.CujType
 
 class TaggedScenarioExtractorBuilder {
     private var targetTag: CujType? = null
-    private var config: ScenarioConfig? = null
     private var transitionMatcher: TransitionMatcher = TaggedCujTransitionMatcher()
     private var adjustCuj: CujAdjust =
         object : CujAdjust {
@@ -32,17 +30,14 @@ class TaggedScenarioExtractorBuilder {
 
     fun setTargetTag(value: CujType): TaggedScenarioExtractorBuilder = apply { targetTag = value }
 
-    fun setConfig(value: ScenarioConfig): TaggedScenarioExtractorBuilder = apply { config = value }
-
     fun setTransitionMatcher(value: TransitionMatcher): TaggedScenarioExtractorBuilder = apply {
         transitionMatcher = value
     }
 
     fun setAdjustCuj(value: CujAdjust): TaggedScenarioExtractorBuilder = apply { adjustCuj = value }
 
-    fun build(): TaggedScenarioExtractor {
+    fun build(): ScenarioExtractor {
         val targetTag = targetTag ?: error("Missing targetTag")
-        val config = config ?: error("Missing type")
-        return TaggedScenarioExtractor(targetTag, config, transitionMatcher, adjustCuj)
+        return TaggedScenarioExtractor(targetTag, transitionMatcher, adjustCuj)
     }
 }

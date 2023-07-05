@@ -69,10 +69,10 @@ class QuickswitchTest {
         browser.exit()
         camera.exit()
 
-        val quickSwitchExtractor = Quickswitch().extractor
-        val scenarioInstances = quickSwitchExtractor.extract(reader)
+        val quickSwitchExtractor = Quickswitch.extractor
+        val slices = quickSwitchExtractor.extract(reader)
 
-        Truth.assertThat(scenarioInstances).hasSize(1)
+        Truth.assertThat(slices).hasSize(1)
     }
 
     companion object {

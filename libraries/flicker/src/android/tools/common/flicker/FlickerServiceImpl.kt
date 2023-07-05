@@ -17,19 +17,18 @@
 package android.tools.common.flicker
 
 import android.tools.common.Logger
-import android.tools.common.flicker.config.FlickerServiceConfig
-import android.tools.common.flicker.extractors.CombinedScenarioExtractor
-import android.tools.common.flicker.extractors.ScenarioExtractor
+import android.tools.common.flicker.config.FlickerConfig
 import android.tools.common.io.Reader
 
 /** Contains the logic for Flicker as a Service. */
-internal class FlickerServiceImpl(
-    private val scenarioExtractor: ScenarioExtractor =
-        CombinedScenarioExtractor(FlickerServiceConfig.getExtractors())
-) : FlickerService {
+class FlickerServiceImpl(private val flickerConfig: FlickerConfig) : FlickerService {
     override fun detectScenarios(reader: Reader): Collection<ScenarioInstance> {
         return Logger.withTracing("FlickerService#detectScenarios") {
-            scenarioExtractor.extract(reader)
+            flickerConfig.getEntries().flatMap { configEntry ->
+                configEntry.extractor.extract(reader).map { traceSlice ->
+                    ScenarioInstanceImpl.fromSlice(traceSlice, reader, configEntry)
+                }
+            }
         }
     }
 }

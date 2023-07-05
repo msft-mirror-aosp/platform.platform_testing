@@ -21,7 +21,6 @@ import kotlin.reflect.KClass
 
 /** Class containing basic data about an assertion */
 data class AssertionDataImpl(
-    override val name: String,
     /** Segment of the trace where the assertion will be applied (e.g., start, end). */
     val tag: String,
     /** Expected run result type */

@@ -41,7 +41,7 @@ class AppLayerBecomesVisible(private val component: ComponentTemplate) :
                 .isVisible(component.build(scenarioInstance), isOptional = true)
         }
 
-        flicker.assertLayersEnd("AppLayerBecomesVisibleEnd") {
+        flicker.assertLayersEnd {
             isVisible(
                 ComponentNameMatcher.SNAPSHOT.or(ComponentNameMatcher.SPLASH_SCREEN)
                     .or(component.build(scenarioInstance))

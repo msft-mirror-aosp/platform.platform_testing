@@ -26,95 +26,78 @@ import android.tools.common.flicker.subject.wm.WindowManagerTraceSubject
 import android.tools.common.traces.component.IComponentMatcher
 
 abstract class BaseFlickerTest(
-    private val defaultAssertionName: String,
     private val assertionFactory: AssertionFactory = AssertionFactory()
 ) : FlickerTest {
     protected abstract fun doProcess(assertion: AssertionData)
 
-    override fun assertWmStart(name: String, assertion: WindowManagerStateSubject.() -> Unit) {
+    override fun assertWmStart(assertion: WindowManagerStateSubject.() -> Unit) {
         Logger.withTracing("assertWmStart") {
-            val assertionData = assertionFactory.createWmStartAssertion(name, assertion)
+            val assertionData = assertionFactory.createWmStartAssertion(assertion)
             doProcess(assertionData)
         }
     }
 
-    override fun assertWmEnd(name: String, assertion: WindowManagerStateSubject.() -> Unit) {
+    override fun assertWmEnd(assertion: WindowManagerStateSubject.() -> Unit) {
         Logger.withTracing("assertWmEnd") {
-            val assertionData = assertionFactory.createWmEndAssertion(name, assertion)
+            val assertionData = assertionFactory.createWmEndAssertion(assertion)
             doProcess(assertionData)
         }
     }
 
-    override fun assertWm(name: String, assertion: WindowManagerTraceSubject.() -> Unit) {
+    override fun assertWm(assertion: WindowManagerTraceSubject.() -> Unit) {
         Logger.withTracing("assertWm") {
-            val assertionData = assertionFactory.createWmAssertion(name, assertion)
+            val assertionData = assertionFactory.createWmAssertion(assertion)
             doProcess(assertionData)
         }
     }
 
-    override fun assertWmTag(
-        name: String,
-        tag: String,
-        assertion: WindowManagerStateSubject.() -> Unit
-    ) {
+    override fun assertWmTag(tag: String, assertion: WindowManagerStateSubject.() -> Unit) {
         Logger.withTracing("assertWmTag") {
-            val assertionData = assertionFactory.createWmTagAssertion(tag, name, assertion)
+            val assertionData = assertionFactory.createWmTagAssertion(tag, assertion)
             doProcess(assertionData)
         }
     }
 
     override fun assertWmVisibleRegion(
-        name: String,
         componentMatcher: IComponentMatcher,
         assertion: RegionTraceSubject.() -> Unit
     ) {
         Logger.withTracing("assertWmVisibleRegion") {
             val assertionData =
-                assertionFactory.createWmVisibleRegionAssertion(componentMatcher, name, assertion)
+                assertionFactory.createWmVisibleRegionAssertion(componentMatcher, assertion)
             doProcess(assertionData)
         }
     }
 
-    override fun assertLayersStart(name: String, assertion: LayerTraceEntrySubject.() -> Unit) {
+    override fun assertLayersStart(assertion: LayerTraceEntrySubject.() -> Unit) {
         Logger.withTracing("assertLayersStart") {
-            val assertionData = assertionFactory.createLayersStartAssertion(name, assertion)
+            val assertionData = assertionFactory.createLayersStartAssertion(assertion)
             doProcess(assertionData)
         }
     }
 
-    override fun assertLayersEnd(name: String, assertion: LayerTraceEntrySubject.() -> Unit) {
+    override fun assertLayersEnd(assertion: LayerTraceEntrySubject.() -> Unit) {
         Logger.withTracing("assertLayersEnd") {
-            val assertionData = assertionFactory.createLayersEndAssertion(name, assertion)
+            val assertionData = assertionFactory.createLayersEndAssertion(assertion)
             doProcess(assertionData)
         }
     }
 
-    override fun assertLayers(name: String, assertion: LayersTraceSubject.() -> Unit) {
+    override fun assertLayers(assertion: LayersTraceSubject.() -> Unit) {
         Logger.withTracing("assertLayers") {
-            val assertionData =
-                assertionFactory.createLayersAssertion(name = defaultAssertionName, assertion)
+            val assertionData = assertionFactory.createLayersAssertion(assertion)
             doProcess(assertionData)
         }
     }
 
-    override fun assertLayersTag(
-        name: String,
-        tag: String,
-        assertion: LayerTraceEntrySubject.() -> Unit
-    ) {
+    override fun assertLayersTag(tag: String, assertion: LayerTraceEntrySubject.() -> Unit) {
         Logger.withTracing("assertLayersTag") {
-            val assertionData =
-                assertionFactory.createLayersTagAssertion(
-                    tag,
-                    name = defaultAssertionName,
-                    assertion
-                )
+            val assertionData = assertionFactory.createLayersTagAssertion(tag, assertion)
             doProcess(assertionData)
         }
     }
 
     override fun assertLayersVisibleRegion(
-        name: String,
         componentMatcher: IComponentMatcher,
         useCompositionEngineRegionOnly: Boolean,
         assertion: RegionTraceSubject.() -> Unit
@@ -123,7 +106,6 @@ abstract class BaseFlickerTest(
             val assertionData =
                 assertionFactory.createLayersVisibleRegionAssertion(
                     componentMatcher,
-                    name = defaultAssertionName,
                     useCompositionEngineRegionOnly,
                     assertion
                 )
@@ -131,55 +113,10 @@ abstract class BaseFlickerTest(
         }
     }
 
-    override fun assertEventLog(name: String, assertion: EventLogSubject.() -> Unit) {
+    override fun assertEventLog(assertion: EventLogSubject.() -> Unit) {
         Logger.withTracing("assertEventLog") {
-            val assertionData =
-                assertionFactory.createEventLogAssertion(name = defaultAssertionName, assertion)
+            val assertionData = assertionFactory.createEventLogAssertion(assertion)
             doProcess(assertionData)
         }
     }
-
-    override fun assertWmStart(assertion: WindowManagerStateSubject.() -> Unit) =
-        assertWmStart(name = defaultAssertionName, assertion)
-
-    override fun assertWmEnd(assertion: WindowManagerStateSubject.() -> Unit) =
-        assertWmEnd(name = defaultAssertionName, assertion)
-
-    override fun assertWm(assertion: WindowManagerTraceSubject.() -> Unit) =
-        assertWm(name = defaultAssertionName, assertion)
-
-    override fun assertWmTag(tag: String, assertion: WindowManagerStateSubject.() -> Unit) =
-        assertWmTag(name = defaultAssertionName, tag, assertion)
-
-    override fun assertWmVisibleRegion(
-        componentMatcher: IComponentMatcher,
-        assertion: RegionTraceSubject.() -> Unit
-    ) = assertWmVisibleRegion(name = defaultAssertionName, componentMatcher, assertion)
-
-    override fun assertLayersStart(assertion: LayerTraceEntrySubject.() -> Unit) =
-        assertLayersStart(name = defaultAssertionName, assertion)
-
-    override fun assertLayersEnd(assertion: LayerTraceEntrySubject.() -> Unit) =
-        assertLayersEnd(name = defaultAssertionName, assertion)
-
-    override fun assertLayers(assertion: LayersTraceSubject.() -> Unit) =
-        assertLayers(name = defaultAssertionName, assertion)
-
-    override fun assertLayersTag(tag: String, assertion: LayerTraceEntrySubject.() -> Unit) =
-        assertLayersTag(name = defaultAssertionName, tag, assertion)
-
-    override fun assertLayersVisibleRegion(
-        componentMatcher: IComponentMatcher,
-        useCompositionEngineRegionOnly: Boolean,
-        assertion: RegionTraceSubject.() -> Unit
-    ) =
-        assertLayersVisibleRegion(
-            name = defaultAssertionName,
-            componentMatcher,
-            useCompositionEngineRegionOnly,
-            assertion
-        )
-
-    override fun assertEventLog(assertion: EventLogSubject.() -> Unit) =
-        assertEventLog(name = defaultAssertionName, assertion)
 }

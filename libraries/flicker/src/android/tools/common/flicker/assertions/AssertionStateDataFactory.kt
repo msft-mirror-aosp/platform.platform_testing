@@ -31,9 +31,8 @@ open class AssertionStateDataFactory(private val stateSubject: KClass<out Flicke
      *
      * @param assertion Assertion predicate
      */
-    fun createStartStateAssertion(name: String, assertion: FlickerSubject.() -> Unit) =
+    fun createStartStateAssertion(assertion: FlickerSubject.() -> Unit) =
         AssertionDataImpl(
-            name,
             tag = Tag.START,
             expectedSubjectClass = stateSubject,
             assertion = assertion
@@ -44,24 +43,14 @@ open class AssertionStateDataFactory(private val stateSubject: KClass<out Flicke
      *
      * @param assertion Assertion predicate
      */
-    fun createEndStateAssertion(name: String, assertion: FlickerSubject.() -> Unit) =
-        AssertionDataImpl(
-            name,
-            tag = Tag.END,
-            expectedSubjectClass = stateSubject,
-            assertion = assertion
-        )
+    fun createEndStateAssertion(assertion: FlickerSubject.() -> Unit) =
+        AssertionDataImpl(tag = Tag.END, expectedSubjectClass = stateSubject, assertion = assertion)
 
     /**
      * Creates an [assertion] to be executed on a user defined moment ([tag]) of a trace
      *
      * @param assertion Assertion predicate
      */
-    fun createTagAssertion(name: String, tag: String, assertion: FlickerSubject.() -> Unit) =
-        AssertionDataImpl(
-            name,
-            tag = tag,
-            expectedSubjectClass = stateSubject,
-            assertion = assertion
-        )
+    fun createTagAssertion(tag: String, assertion: FlickerSubject.() -> Unit) =
+        AssertionDataImpl(tag = tag, expectedSubjectClass = stateSubject, assertion = assertion)
 }

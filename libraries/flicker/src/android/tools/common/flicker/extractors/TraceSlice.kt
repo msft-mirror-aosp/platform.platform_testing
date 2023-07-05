@@ -16,15 +16,13 @@
 
 package android.tools.common.flicker.extractors
 
-import android.tools.common.Logger
-import android.tools.common.flicker.ScenarioInstance
-import android.tools.common.io.Reader
+import android.tools.common.Timestamp
+import android.tools.common.traces.events.CujType
+import android.tools.common.traces.wm.Transition
 
-class CombinedScenarioExtractor(private val extractors: List<ScenarioExtractor>) :
-    ScenarioExtractor {
-    override fun extract(reader: Reader): List<ScenarioInstance> {
-        return Logger.withTracing("CombinedScenarioExtractor#extract") {
-            extractors.flatMap { it.extract(reader) }
-        }
-    }
-}
+data class TraceSlice(
+    val startTimestamp: Timestamp,
+    val endTimestamp: Timestamp,
+    val associatedTransition: Transition? = null,
+    val associatedCuj: CujType? = null
+)

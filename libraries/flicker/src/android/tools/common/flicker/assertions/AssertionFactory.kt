@@ -40,15 +40,9 @@ class AssertionFactory {
      *
      * @param assertion Assertion predicate
      */
-    fun createWmStartAssertion(
-        name: String,
-        assertion: WindowManagerStateSubject.() -> Unit
-    ): AssertionData =
+    fun createWmStartAssertion(assertion: WindowManagerStateSubject.() -> Unit): AssertionData =
         Logger.withTracing("createWmStartAssertion") {
-            wmAssertionFactory.createStartStateAssertion(
-                name,
-                assertion as FlickerSubject.() -> Unit
-            )
+            wmAssertionFactory.createStartStateAssertion(assertion as FlickerSubject.() -> Unit)
         }
 
     /**
@@ -56,12 +50,9 @@ class AssertionFactory {
      *
      * @param assertion Assertion predicate
      */
-    fun createWmEndAssertion(
-        name: String,
-        assertion: WindowManagerStateSubject.() -> Unit
-    ): AssertionData =
+    fun createWmEndAssertion(assertion: WindowManagerStateSubject.() -> Unit): AssertionData =
         Logger.withTracing("createWmEndAssertion") {
-            wmAssertionFactory.createEndStateAssertion(name, assertion as FlickerSubject.() -> Unit)
+            wmAssertionFactory.createEndStateAssertion(assertion as FlickerSubject.() -> Unit)
         }
 
     /**
@@ -69,13 +60,9 @@ class AssertionFactory {
      *
      * @param assertion Assertion predicate
      */
-    fun createWmAssertion(
-        name: String,
-        assertion: WindowManagerTraceSubject.() -> Unit
-    ): AssertionData =
+    fun createWmAssertion(assertion: WindowManagerTraceSubject.() -> Unit): AssertionData =
         Logger.withTracing("createWmAssertion") {
             wmAssertionFactory.createTraceAssertion(
-                name,
                 assertion as (FlickerTraceSubject<FlickerSubject>) -> Unit
             )
         }
@@ -87,11 +74,10 @@ class AssertionFactory {
      */
     fun createWmTagAssertion(
         tag: String,
-        name: String,
         assertion: WindowManagerStateSubject.() -> Unit
     ): AssertionData =
         Logger.withTracing("createWmTagAssertion") {
-            wmAssertionFactory.createTagAssertion(name, tag, assertion as FlickerSubject.() -> Unit)
+            wmAssertionFactory.createTagAssertion(tag, assertion as FlickerSubject.() -> Unit)
         }
 
     /**
@@ -102,7 +88,6 @@ class AssertionFactory {
      */
     fun createWmVisibleRegionAssertion(
         componentMatcher: IComponentMatcher,
-        name: String,
         assertion: RegionTraceSubject.() -> Unit
     ): AssertionData =
         Logger.withTracing("createWmVisibleRegionAssertion") {
@@ -117,7 +102,6 @@ class AssertionFactory {
             }
 
             wmAssertionFactory.createTraceAssertion(
-                name,
                 closedAssertion as (FlickerTraceSubject<FlickerSubject>) -> Unit
             )
         }
@@ -127,15 +111,9 @@ class AssertionFactory {
      *
      * @param assertion Assertion predicate
      */
-    fun createLayersStartAssertion(
-        name: String,
-        assertion: LayerTraceEntrySubject.() -> Unit
-    ): AssertionData =
+    fun createLayersStartAssertion(assertion: LayerTraceEntrySubject.() -> Unit): AssertionData =
         Logger.withTracing("createLayersStartAssertion") {
-            layersAssertionFactory.createStartStateAssertion(
-                name,
-                assertion as FlickerSubject.() -> Unit
-            )
+            layersAssertionFactory.createStartStateAssertion(assertion as FlickerSubject.() -> Unit)
         }
 
     /**
@@ -143,15 +121,9 @@ class AssertionFactory {
      *
      * @param assertion Assertion predicate
      */
-    fun createLayersEndAssertion(
-        name: String,
-        assertion: LayerTraceEntrySubject.() -> Unit
-    ): AssertionData =
+    fun createLayersEndAssertion(assertion: LayerTraceEntrySubject.() -> Unit): AssertionData =
         Logger.withTracing("createLayersEndAssertion") {
-            layersAssertionFactory.createEndStateAssertion(
-                name,
-                assertion as FlickerSubject.() -> Unit
-            )
+            layersAssertionFactory.createEndStateAssertion(assertion as FlickerSubject.() -> Unit)
         }
 
     /**
@@ -159,13 +131,9 @@ class AssertionFactory {
      *
      * @param assertion Assertion predicate
      */
-    fun createLayersAssertion(
-        name: String,
-        assertion: LayersTraceSubject.() -> Unit
-    ): AssertionData =
+    fun createLayersAssertion(assertion: LayersTraceSubject.() -> Unit): AssertionData =
         Logger.withTracing("createLayersAssertion") {
             layersAssertionFactory.createTraceAssertion(
-                name,
                 assertion as (FlickerTraceSubject<FlickerSubject>) -> Unit
             )
         }
@@ -177,15 +145,10 @@ class AssertionFactory {
      */
     fun createLayersTagAssertion(
         tag: String,
-        name: String,
         assertion: LayerTraceEntrySubject.() -> Unit
     ): AssertionData =
         Logger.withTracing("createLayersTagAssertion") {
-            layersAssertionFactory.createTagAssertion(
-                name,
-                tag,
-                assertion as FlickerSubject.() -> Unit
-            )
+            layersAssertionFactory.createTagAssertion(tag, assertion as FlickerSubject.() -> Unit)
         }
 
     /**
@@ -200,7 +163,6 @@ class AssertionFactory {
      */
     fun createLayersVisibleRegionAssertion(
         componentMatcher: IComponentMatcher,
-        name: String,
         useCompositionEngineRegionOnly: Boolean = true,
         assertion: RegionTraceSubject.() -> Unit
     ): AssertionData =
@@ -218,7 +180,6 @@ class AssertionFactory {
             }
 
             layersAssertionFactory.createTraceAssertion(
-                name,
                 closedAssertion as (FlickerTraceSubject<*>) -> Unit
             )
         }
@@ -228,13 +189,9 @@ class AssertionFactory {
      *
      * @param assertion Assertion predicate
      */
-    fun createEventLogAssertion(
-        name: String,
-        assertion: EventLogSubject.() -> Unit
-    ): AssertionData =
+    fun createEventLogAssertion(assertion: EventLogSubject.() -> Unit): AssertionData =
         Logger.withTracing("createEventLogAssertion") {
             eventLogAssertionFactory.createTagAssertion(
-                name,
                 Tag.ALL,
                 assertion as FlickerSubject.() -> Unit
             )

@@ -16,35 +16,45 @@
 
 package android.tools.common.flicker.assertors
 
-import android.tools.common.flicker.AssertionInvocationGroup
-import android.tools.common.flicker.AssertionInvocationGroup.NON_BLOCKING
 import android.tools.common.flicker.ScenarioInstance
 import android.tools.common.flicker.assertions.AssertionData
 import android.tools.common.flicker.assertions.FlickerTest
 import android.tools.common.flicker.assertions.ServiceFlickerTest
+import android.tools.common.flicker.assertions.SubjectsParser
 
 /** Base class for a FaaS assertion */
-abstract class AssertionTemplate(nameOverride: String? = null) {
-    private val name = nameOverride ?: this::class.simpleName
+abstract class AssertionTemplate(name: String? = null) {
+    protected open val name =
+        this::class.simpleName
+            ?: name ?: error("Must provide a name to assertions when using anonymous classes.")
+    val id
+        get() = AssertionId(name)
 
-    open fun defaultAssertionName(scenarioInstance: ScenarioInstance): String =
+    fun qualifiedAssertionName(scenarioInstance: ScenarioInstance): String =
         "${scenarioInstance.type}::$name"
-    open val stabilityGroup: AssertionInvocationGroup = NON_BLOCKING
 
     /** Evaluates assertions */
     abstract fun doEvaluate(scenarioInstance: ScenarioInstance, flicker: FlickerTest)
 
     fun createAssertions(scenarioInstance: ScenarioInstance): Collection<AssertionData> {
-        val flicker = ServiceFlickerTest(defaultAssertionName(scenarioInstance))
-        doEvaluate(scenarioInstance, flicker)
+        val flicker = ServiceFlickerTest()
 
-        return flicker.assertions + doCreateExtraAssertions(scenarioInstance)
+        val mainBlockAssertions = mutableListOf<AssertionData>()
+        try {
+            doEvaluate(scenarioInstance, flicker)
+        } catch (e: Throwable) {
+            // Any failure that occurred outside of the Flicker assertion blocks
+            mainBlockAssertions.add(
+                object : AssertionData {
+                    override fun checkAssertion(run: SubjectsParser) {
+                        throw e
+                    }
+                }
+            )
+        }
+
+        return flicker.assertions + mainBlockAssertions
     }
-
-    /** Evaluates assertions */
-    protected open fun doCreateExtraAssertions(
-        scenarioInstance: ScenarioInstance
-    ): List<AssertionData> = emptyList()
 
     override fun equals(other: Any?): Boolean {
         if (other == null) {
@@ -55,8 +65,11 @@ abstract class AssertionTemplate(nameOverride: String? = null) {
     }
 
     override fun hashCode(): Int {
-        var result = stabilityGroup.hashCode()
-        result = 31 * result + this::class.simpleName.hashCode()
-        return result
+        return id.hashCode()
     }
 }
+
+data class Assertion(
+    val flickerAssertions: List<AssertionData>,
+    val genericAssertions: List<Throwable>
+)

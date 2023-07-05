@@ -250,11 +250,11 @@ class LegacyFlickerJUnit4ClassRunnerTest {
     @RunWith(Parameterized::class)
     @FlickerServiceCompatible
     @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
-    open class SimpleFaasTest(flicker: FlickerTest) : SimpleTest(flicker)
+    open class SimpleFaasTest(flicker: LegacyFlickerTest) : SimpleTest(flicker)
 
     @RunWith(Parameterized::class)
     @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
-    class AlwaysFailExecutionTestClass(private val flicker: FlickerTest) {
+    class AlwaysFailExecutionTestClass(private val flicker: LegacyFlickerTest) {
         val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
 
         @FlickerBuilderProvider
@@ -276,7 +276,7 @@ class LegacyFlickerJUnit4ClassRunnerTest {
 
     @RunWith(Parameterized::class)
     @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
-    open class SimpleTestWithFlakyTest(flicker: FlickerTest) : SimpleTest(flicker) {
+    open class SimpleTestWithFlakyTest(flicker: LegacyFlickerTest) : SimpleTest(flicker) {
         @FlakyTest
         @Test
         fun flakyTest() {
@@ -291,12 +291,13 @@ class LegacyFlickerJUnit4ClassRunnerTest {
     @RunWith(Parameterized::class)
     @FlickerServiceCompatible
     @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
-    class SimpleFaasTestWithFlakyTest(flicker: FlickerTest) : SimpleTestWithFlakyTest(flicker)
+    class SimpleFaasTestWithFlakyTest(flicker: LegacyFlickerTest) :
+        SimpleTestWithFlakyTest(flicker)
 
     @RunWith(Parameterized::class)
     @FlickerServiceCompatible
     @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
-    class TransitionRunCounterWithFaasTest(flicker: FlickerTest) : SimpleFaasTest(flicker) {
+    class TransitionRunCounterWithFaasTest(flicker: LegacyFlickerTest) : SimpleFaasTest(flicker) {
         @FlickerBuilderProvider
         override fun buildFlicker(): FlickerBuilder {
             return FlickerBuilder(instrumentation).apply { transitions { transitionRunCount++ } }
@@ -305,7 +306,7 @@ class LegacyFlickerJUnit4ClassRunnerTest {
 
     companion object {
         const val TRANSITION_FAILURE_MESSAGE = "Transition execution failed"
-        private val NO_SCENARIO_MESSAGE = "Unable to extract ${FlickerTest::class.simpleName}"
+        private val NO_SCENARIO_MESSAGE = "Unable to extract ${LegacyFlickerTest::class.simpleName}"
 
         val FLAKY_TEST_FILTER =
             object : Filter() {

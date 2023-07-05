@@ -16,30 +16,11 @@
 
 package android.tools.common.flicker.extractors
 
-import android.tools.common.Rotation
-import android.tools.common.flicker.ScenarioInstance
-import android.tools.common.flicker.ScenarioInstanceImpl
-import android.tools.common.flicker.config.ScenarioConfig
+import android.tools.common.Timestamps
 import android.tools.common.io.Reader
 
-class EntireTraceExtractor(val config: ScenarioConfig) : ScenarioExtractor {
-    override fun extract(reader: Reader): List<ScenarioInstance> {
-        val layersTrace = reader.readLayersTrace() ?: error("Missing layers trace")
-
-        return listOf(
-            ScenarioInstanceImpl(
-                config,
-                startRotation =
-                    layersTrace.entries.first().physicalDisplay?.transform?.getRotation()
-                        ?: Rotation.ROTATION_0,
-                endRotation = layersTrace.entries.last().physicalDisplay?.transform?.getRotation()
-                        ?: Rotation.ROTATION_0,
-                startTimestamp = layersTrace.entries.first().timestamp,
-                endTimestamp = layersTrace.entries.last().timestamp,
-                associatedCuj = null,
-                associatedTransition = null,
-                reader = reader
-            )
-        )
+class EntireTraceExtractor : ScenarioExtractor {
+    override fun extract(reader: Reader): List<TraceSlice> {
+        return listOf(TraceSlice(Timestamps.min(), Timestamps.max()))
     }
 }

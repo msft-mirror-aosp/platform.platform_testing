@@ -122,7 +122,7 @@ class CachedAssertionRunnerTest {
 
     companion object {
         private fun newAssertionData(assertion: (FlickerSubject) -> Unit) =
-            AssertionDataImpl(name = "", Tag.ALL, EventLogSubject::class, assertion)
+            AssertionDataImpl(Tag.ALL, EventLogSubject::class, assertion)
 
         @ClassRule @JvmField val ENV_CLEANUP = CleanFlickerEnvironmentRule()
     }
