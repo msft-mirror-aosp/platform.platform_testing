@@ -21,7 +21,29 @@ import android.tools.common.flicker.AssertionInvocationGroup
 /** Base class for a FaaS assertion */
 internal data class AssertionResultImpl(
     override val name: String,
-    override val assertionData: Collection<AssertionData>,
-    override val assertionErrors: Collection<Throwable>,
+    override val assertionData: Array<AssertionData>,
+    override val assertionErrors: Array<Throwable>,
     override val stabilityGroup: AssertionInvocationGroup
-) : AssertionResult
+) : AssertionResult {
+    // Overriding equals because of use of Array
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is AssertionResultImpl) return false
+
+        if (name != other.name) return false
+        if (!assertionData.contentEquals(other.assertionData)) return false
+        if (!assertionErrors.contentEquals(other.assertionErrors)) return false
+        if (stabilityGroup != other.stabilityGroup) return false
+
+        return true
+    }
+
+    // Overriding hashCode because of use of Array
+    override fun hashCode(): Int {
+        var result = name.hashCode()
+        result = 31 * result + assertionData.contentHashCode()
+        result = 31 * result + assertionErrors.contentHashCode()
+        result = 31 * result + stabilityGroup.hashCode()
+        return result
+    }
+}

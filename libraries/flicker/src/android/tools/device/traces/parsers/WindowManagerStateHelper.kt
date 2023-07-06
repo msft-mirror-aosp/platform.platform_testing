@@ -312,6 +312,24 @@ constructor(
                 .add(ConditionsFactory.isLayerVisible(componentMatcher))
 
         /**
+         * Wait until least one layer matching [componentMatcher] has [expectedRegion]
+         *
+         * @param componentMatcher Components to search
+         * @param expectedRegion of the target surface
+         */
+        fun withSurfaceVisibleRegion(componentMatcher: IComponentMatcher, expectedRegion: Region) =
+            add(
+                Condition("surfaceRegion") {
+                    val layer =
+                        it.layerState.visibleLayers.firstOrNull { layer ->
+                            componentMatcher.layerMatchesAnyOf(layer)
+                        }
+
+                    layer?.visibleRegion == expectedRegion
+                }
+            )
+
+        /**
          * Waits until the IME window and layer are visible
          *
          * @param displayId of the target display
@@ -364,7 +382,7 @@ constructor(
 
         /** Waits until the [TRANSITION_SNAPSHOT] is gone */
         fun withTransitionSnapshotGone() =
-                add(ConditionsFactory.isLayerVisible(TRANSITION_SNAPSHOT).negate())
+            add(ConditionsFactory.isLayerVisible(TRANSITION_SNAPSHOT).negate())
 
         /** Waits until the is no top visible app window in the [WindowManagerState] */
         fun withoutTopVisibleAppWindows() =

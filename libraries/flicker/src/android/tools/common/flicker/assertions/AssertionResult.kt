@@ -20,8 +20,8 @@ import android.tools.common.flicker.AssertionInvocationGroup
 
 interface AssertionResult {
     val name: String
-    val assertionData: Collection<AssertionData>
-    val assertionErrors: Collection<Throwable>
+    val assertionData: Array<AssertionData>
+    val assertionErrors: Array<Throwable>
     val stabilityGroup: AssertionInvocationGroup
     val passed: Boolean
         get() = assertionErrors.isEmpty()
