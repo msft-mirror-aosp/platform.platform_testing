@@ -30,7 +30,6 @@ java_library {
         "app-collector-helper",
         "truth-prebuilt",
         "androidx.test.ext.junit",
-        "androidx.test.uiautomator",
         "mockito-target-minus-junit4",
     ],
 
