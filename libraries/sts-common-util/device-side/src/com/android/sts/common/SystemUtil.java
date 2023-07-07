@@ -24,7 +24,7 @@ import android.app.Instrumentation;
 import android.os.Handler;
 import android.os.HandlerThread;
 
-import com.android.compatibility.common.util.SettingsUtils;
+import com.android.compatibility.common.util.UserSettings;
 
 import java.util.Optional;
 import java.util.concurrent.Semaphore;
@@ -51,11 +51,12 @@ public class SystemUtil {
             final String namespace,
             final String key,
             String value) {
-        String getSettingRes = SettingsUtils.get(namespace, key);
+        UserSettings userSettings = new UserSettings(UserSettings.Namespace.of(namespace));
+        String getSettingRes = userSettings.get(key);
         final Optional<String> oldSetting = Optional.ofNullable(getSettingRes);
-        SettingsUtils.set(namespace, key, value);
+        userSettings.set(key, value);
 
-        String getSettingCurrent = SettingsUtils.get(namespace, key);
+        String getSettingCurrent = userSettings.get(key);
         Optional<String> currSetting = Optional.ofNullable(getSettingCurrent);
         assumeThat(
                 String.format("Could not set %s:%s to %s", namespace, key, value),
@@ -66,13 +67,13 @@ public class SystemUtil {
             @Override
             public void close() throws Exception {
                 if (!oldSetting.isPresent()) {
-                    SettingsUtils.delete(namespace, key);
+                    userSettings.delete(key);
                 } else {
                     String oldValue = oldSetting.get().trim();
-                    SettingsUtils.set(namespace, key, oldValue);
+                    userSettings.set(key, oldValue);
                     String failMsg =
                             String.format("could not reset '%s' back to '%s'", key, oldValue);
-                    String getSettingCurrent = SettingsUtils.get(namespace, key);
+                    String getSettingCurrent = userSettings.get(key);
                     Optional<String> currSetting = Optional.ofNullable(getSettingCurrent);
                     assumeThat(
                             failMsg,
