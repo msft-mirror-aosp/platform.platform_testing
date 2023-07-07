@@ -12,6 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+package {
+    default_applicable_licenses: ["Android-Apache-2.0"],
+}
+
 java_test_host {
     name: "StsCommonUtilHostTests",
 
@@ -22,6 +26,7 @@ java_test_host {
 
     static_libs: [
         "sts-host-util",
+        "mockito-host",
     ],
 
     // tag this module as a test artifact

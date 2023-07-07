@@ -77,12 +77,8 @@ public class TombstoneUtils {
         }
         final Collection<IFileEntry> excludeTombstoneFiles = existingDeviceTombstoneFiles;
 
-        // track existing tombstones so we only check new ones
-        if (useTombstoneFiles) {
-            CLog.d("Using tombstone files");
-            CommandUtil.runAndCheck(device, String.format("rm %s/*", TOMBSTONES_PATH));
-        } else {
-            // fallback to logcat
+        if (!useTombstoneFiles) {
+            // clear existing tombstones so we only check new ones
             CLog.d("Using logcat");
             CommandUtil.runAndCheck(device, "logcat -c");
         }
@@ -103,7 +99,8 @@ public class TombstoneUtils {
                                                         try {
                                                             ProcessUtil.waitPidExited(device, pid);
                                                         } catch (TimeoutException
-                                                                | DeviceNotAvailableException e) {
+                                                                | DeviceNotAvailableException
+                                                                | ProcessUtil.KillException e) {
                                                             CLog.w(e);
                                                         }
                                                     });
@@ -234,10 +231,17 @@ public class TombstoneUtils {
     public static boolean isSecurityCrash(Tombstone tombstone, Config config) {
 
         // match process patterns
-        Optional<String> processFilename = getProcessFilename(tombstone);
-        if (processFilename.isPresent() && !config.processPatterns.isEmpty()) {
-            if (!matchesAny(processFilename.get(), config.processPatterns)) {
-                return false;
+        {
+            Optional<String> processFilename = getProcessFilename(tombstone);
+            if (!config.processPatterns.isEmpty()) {
+                if (!processFilename.isPresent()) {
+                    // no tombstone process filename to compare
+                    return false;
+                }
+                if (!matchesAny(processFilename.get(), config.processPatterns)) {
+                    // tombstone process filename doesn't match
+                    return false;
+                }
             }
         }
 
@@ -264,9 +268,14 @@ public class TombstoneUtils {
         }
 
         // match signal
-        if (tombstone.hasSignalInfo() && !config.signals.isEmpty()) {
+        if (!config.signals.isEmpty()) {
+            if (!tombstone.hasSignalInfo()) {
+                // no tombstone signal to compare
+                return false;
+            }
             Signal signalInfo = tombstone.getSignalInfo();
             if (!config.signals.contains(signalInfo.getName())) {
+                // tombstone signal doesn't match
                 return false;
             }
 
@@ -306,12 +315,14 @@ public class TombstoneUtils {
         if (!backtraceIncludes.isEmpty()) {
             Optional<com.android.server.os.TombstoneProtos.Thread> thread =
                     getMainThread(tombstone);
-            if (thread.isPresent()) {
-                if (!thread.get().getCurrentBacktraceList().stream()
-                        .flatMap(frame -> backtraceIncludes.stream().map(p -> p.match(frame)))
-                        .anyMatch(matched -> matched)) {
-                    return false;
-                }
+            if (!thread.isPresent()) {
+                // required backtrace but none found - must not be the same crash
+                return false;
+            }
+            if (!thread.get().getCurrentBacktraceList().stream()
+                    .flatMap(frame -> backtraceIncludes.stream().map(p -> p.match(frame)))
+                    .anyMatch(matched -> matched)) {
+                return false;
             }
         }
 
