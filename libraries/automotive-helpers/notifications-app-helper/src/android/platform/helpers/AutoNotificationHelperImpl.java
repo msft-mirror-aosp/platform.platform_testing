@@ -20,9 +20,10 @@ import android.app.Instrumentation;
 import android.platform.helpers.ScrollUtility.ScrollActions;
 import android.platform.helpers.ScrollUtility.ScrollDirection;
 import android.platform.helpers.exceptions.UnknownUiException;
-import android.support.test.uiautomator.By;
-import android.support.test.uiautomator.BySelector;
-import android.support.test.uiautomator.UiObject2;
+
+import androidx.test.uiautomator.By;
+import androidx.test.uiautomator.BySelector;
+import androidx.test.uiautomator.UiObject2;
 
 /** Helper for Notifications on Automotive device */
 public class AutoNotificationHelperImpl extends AbstractStandardAppHelper
@@ -133,6 +134,28 @@ public class AutoNotificationHelperImpl extends AbstractStandardAppHelper
 
     /** {@inheritDoc} */
     @Override
+    public void clickManageBtn() {
+        open();
+        getSpectatioUiUtil().wait5Seconds();
+        UiObject2 empty_notification =
+                getSpectatioUiUtil()
+                        .findUiObject(
+                                getUiElementFromConfig(
+                                        AutomotiveConfigConstants.NOTIFICATION_LIST_EMPTY));
+        if (empty_notification == null) {
+            BySelector manageButtonSelector =
+                    getUiElementFromConfig(AutomotiveConfigConstants.MANAGE_BUTTON);
+            if (checkIfManageButtonExist(manageButtonSelector)) {
+                UiObject2 manage_btn = getSpectatioUiUtil().findUiObject(manageButtonSelector);
+                getSpectatioUiUtil().clickAndWait(manage_btn);
+            } else {
+                throw new RuntimeException("Cannot find Manage button");
+            }
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public boolean checkNotificationExists(String title) {
         open();
         BySelector selector = By.text(title);
@@ -165,32 +188,62 @@ public class AutoNotificationHelperImpl extends AbstractStandardAppHelper
         return clr_btn != null;
     }
 
+    private boolean checkIfManageButtonExist(BySelector selector) {
+        open();
+        UiObject2 manage_btn = findInNotificationList(selector);
+        return manage_btn != null;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean isNotificationSettingsOpened() {
+        BySelector notificationSettingsSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.NOTIFICATION_SETTINGS_TITLE);
+        BySelector notificationLayOutSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.NOTIFICATION_SETTINGS_LAYOUT);
+        UiObject2 notificationLayOut =
+                getSpectatioUiUtil().findUiObject(notificationLayOutSelector);
+        validateUiObject(
+                notificationLayOut, AutomotiveConfigConstants.NOTIFICATION_SETTINGS_LAYOUT);
+
+        UiObject2 notificationPageObj =
+                getSpectatioUiUtil()
+                        .findUiObjectInGivenElement(
+                                notificationLayOut, notificationSettingsSelector);
+        validateUiObject(notificationPageObj, String.format("notification page"));
+        return notificationPageObj != null;
+    }
+
     @Override
     public boolean scrollDownOnePage() {
         UiObject2 notification_list = getSpectatioUiUtil().findUiObject(mScrollableElementSelector);
-        if (notification_list.isScrollable()) {
-            mScrollUtility.scrollForward(
-                    mScrollAction,
-                    mScrollDirection,
-                    mBackwardButtonSelector,
-                    mScrollableElementSelector,
-                    String.format("Scroll up one page on notification list"));
+        boolean swipeResult = false;
+        if (notification_list != null && notification_list.isScrollable()) {
+            swipeResult =
+                    mScrollUtility.scrollForward(
+                            mScrollAction,
+                            mScrollDirection,
+                            mForwardButtonSelector,
+                            mScrollableElementSelector,
+                            String.format("Scroll down one page on notification list"));
         }
-        return true;
+        return swipeResult;
     }
 
     @Override
     public boolean scrollUpOnePage() {
         UiObject2 notification_list = getSpectatioUiUtil().findUiObject(mScrollableElementSelector);
-        if (notification_list.isScrollable()) {
-            mScrollUtility.scrollBackward(
-                    mScrollAction,
-                    mScrollDirection,
-                    mBackwardButtonSelector,
-                    mScrollableElementSelector,
-                    String.format("Scroll up one page on notification list"));
+        boolean swipeResult = false;
+        if (notification_list != null && notification_list.isScrollable()) {
+            swipeResult =
+                    mScrollUtility.scrollBackward(
+                            mScrollAction,
+                            mScrollDirection,
+                            mBackwardButtonSelector,
+                            mScrollableElementSelector,
+                            String.format("Scroll up one page on notification list"));
         }
-        return true;
+        return swipeResult;
     }
 
     private UiObject2 findInNotificationList(BySelector selector) {

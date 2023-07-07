@@ -23,13 +23,14 @@ import android.content.ContentResolver;
 import android.platform.helpers.ScrollUtility.ScrollActions;
 import android.platform.helpers.ScrollUtility.ScrollDirection;
 import android.platform.helpers.exceptions.UnknownUiException;
-import android.support.test.uiautomator.By;
-import android.support.test.uiautomator.BySelector;
-import android.support.test.uiautomator.UiObject;
-import android.support.test.uiautomator.UiObject2;
-import android.support.test.uiautomator.UiScrollable;
-import android.support.test.uiautomator.UiSelector;
 import android.text.format.DateFormat;
+
+import androidx.test.uiautomator.By;
+import androidx.test.uiautomator.BySelector;
+import androidx.test.uiautomator.UiObject;
+import androidx.test.uiautomator.UiObject2;
+import androidx.test.uiautomator.UiScrollable;
+import androidx.test.uiautomator.UiSelector;
 
 import java.time.LocalDate;
 import java.time.Month;
@@ -48,6 +49,7 @@ public class SettingsDateTimeHelperImpl extends AbstractStandardAppHelper
     private BySelector mBackwardButtonSelector;
     private BySelector mForwardButtonSelector;
     private BySelector mScrollableElementSelector;
+    private BySelector mSummarySelector;
     private ScrollDirection mScrollDirection;
 
     public SettingsDateTimeHelperImpl(Instrumentation instr) {
@@ -65,6 +67,7 @@ public class SettingsDateTimeHelperImpl extends AbstractStandardAppHelper
                         AutomotiveConfigConstants.DATE_TIME_SETTINGS_SCROLL_FORWARD_BUTTON);
         mScrollableElementSelector =
                 getUiElementFromConfig(AutomotiveConfigConstants.DATE_TIME_SETTINGS_SCROLL_ELEMENT);
+        mSummarySelector = getUiElementFromConfig(AutomotiveConfigConstants.SETTINGS_SUMMARY);
         mScrollDirection =
                 ScrollDirection.valueOf(
                         getActionFromConfig(
@@ -580,7 +583,7 @@ public class SettingsDateTimeHelperImpl extends AbstractStandardAppHelper
     }
 
     private String getMenuSummaryText(UiObject2 obj) {
-        return obj.getChildren().get(0).getChildren().get(1).getText();
+        return obj.findObject(mSummarySelector).getText();
     }
 
     private boolean isAutomaticOn(String name) {

@@ -59,9 +59,16 @@ private const val ORIENTATION_TAG = "orientation"
 open class GoldenImagePathManager @JvmOverloads constructor(
     open val appContext: Context,
     open val assetsPathRelativeToBuildRoot: String = "assets",
-    open val deviceLocalPath: String = getDeviceOutputDirectory(appContext),
+    open var deviceLocalPath: String = getDeviceOutputDirectory(appContext),
     open val pathConfig: PathConfig = getSimplePathConfig()
 ) {
+
+    init {
+        val robolectricOverride = System.getProperty("robolectric.artifacts.dir")
+        if (Build.FINGERPRINT.contains("robolectric") && !robolectricOverride.isNullOrEmpty()) {
+            deviceLocalPath = robolectricOverride
+        }
+    }
 
     public val imageExtension = "png"
 

@@ -1,7 +1,6 @@
 package android.platform.helpers
 
 import android.platform.uiautomator_helpers.DeviceHelpers.shell
-import android.platform.uiautomator_helpers.DeviceHelpers.uiDevice
 import android.platform.uiautomator_helpers.WaitUtils.ensureThat
 import android.util.Log
 
@@ -16,7 +15,7 @@ class ProcessUtil(private val packageName: String) {
         initialPids
             .map { pid -> "kill $pid" }
             .forEach { killCmd ->
-                val result = uiDevice.shell(killCmd)
+                val result = shell(killCmd)
                 Log.d(TAG, "Result of \"$killCmd\": \"$result\"")
             }
         ensureThat("All sysui process restarted") { allProcessesRestarted(initialPids) }
@@ -24,7 +23,7 @@ class ProcessUtil(private val packageName: String) {
 
     private val pids: List<String>
         get() {
-            val pidofResult = uiDevice.shell("pidof $packageName")
+            val pidofResult = shell("pidof $packageName")
             return if (pidofResult.isEmpty()) {
                 emptyList()
             } else pidofResult.split("\\s".toRegex())

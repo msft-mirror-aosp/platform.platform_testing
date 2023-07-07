@@ -22,13 +22,14 @@ import android.platform.spectatio.configs.UiElement;
 import android.platform.spectatio.configs.WorkflowTask;
 import android.platform.spectatio.configs.WorkflowTaskConfig;
 import android.platform.spectatio.configs.validators.ValidateMapEntries;
-import android.platform.spectatio.configs.validators.ValidateSpectatioConfigForUnknownProperties;
 import android.platform.spectatio.configs.validators.ValidateScrollConfig;
+import android.platform.spectatio.configs.validators.ValidateSpectatioConfigForUnknownProperties;
+import android.platform.spectatio.configs.validators.ValidateUiElement;
 import android.platform.spectatio.configs.validators.ValidateWorkflowTask;
 import android.platform.spectatio.configs.validators.ValidateWorkflowTaskConfig;
-import android.platform.spectatio.configs.validators.ValidateUiElement;
-import android.support.test.uiautomator.BySelector;
 import android.util.Log;
+
+import androidx.test.uiautomator.BySelector;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -37,9 +38,9 @@ import com.google.gson.reflect.TypeToken;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
@@ -51,6 +52,9 @@ public class SpectatioConfigUtil {
 
     // Path for default configuration ( Loaded from Resources )
     private static final String DEFAULT_CONFIG_PATH = "/assets/defaultSpectatioConfig.json";
+
+    // Path for gas default configuration ( Loaded from Resources )
+    private static final String DEFAULT_GAS_CONFIG_PATH = "/assets/gasDefaultSpectatioConfig.json";
 
     // Path for runtime configuration ( Loaded from device Path )
     private static final String RUNTIME_CONFIG_PATH = "/data/local/tmp/runtimeSpectatioConfig.json";
@@ -74,11 +78,19 @@ public class SpectatioConfigUtil {
                                 new ValidateMapEntries())
                         .create();
 
-        mSpectatioConfig = loadDefaultConfiguration();
+        mSpectatioConfig = loadDefaultConfiguration(DEFAULT_CONFIG_PATH);
 
         if (mSpectatioConfig == null) {
-            // Default config was not provided so skip loading runtime config
+            // Default config was not provided so skip loading gas/runtime config
+            Log.w(LOG_TAG, String.format("Default config not present, so exiting"));
             return;
+        }
+
+        SpectatioConfig mGasSpectatioConfig = loadDefaultConfiguration(DEFAULT_GAS_CONFIG_PATH);
+        // Load Gas Config
+        if (mGasSpectatioConfig != null) {
+            // If gas config is available, merge the gas config values to default
+            mSpectatioConfig.updateConfig(mGasSpectatioConfig, /* throwErrorForNewKeys= */ false);
         }
 
         // Load Runtime Config ( if runtimeSpectatioConfig.json file exist on the device )
@@ -86,7 +98,7 @@ public class SpectatioConfigUtil {
 
         if (runtimeSpectatioConfig != null) {
             // If runtime config is available, update default config with new values
-            mSpectatioConfig.updateConfig(runtimeSpectatioConfig);
+            mSpectatioConfig.updateConfig(runtimeSpectatioConfig, /* throwErrorForNewKeys= */ true);
         }
     }
 
@@ -97,34 +109,33 @@ public class SpectatioConfigUtil {
         return sSpectatioConfigUtil;
     }
 
-    private SpectatioConfig loadDefaultConfiguration() {
-        Log.i(LOG_TAG, String.format("Loading default config: %s", DEFAULT_CONFIG_PATH));
+    private SpectatioConfig loadDefaultConfiguration(String path) {
+        Log.i(LOG_TAG, String.format("Loading default config: %s", path));
 
         // Read default config file
         String defaultConfigData;
         try {
-            defaultConfigData = getResourceFileDataFromPath(DEFAULT_CONFIG_PATH);
+            defaultConfigData = getResourceFileDataFromPath(path);
         } catch (IOException ex) {
             Log.e(
                     LOG_TAG,
                     String.format(
-                            "Unable to read default config: %s, Error: %s",
-                            DEFAULT_CONFIG_PATH, ex.getMessage()));
+                            "Unable to read default config: %s, Error: %s", path, ex.getMessage()));
             throw new RuntimeException(
-                    String.format("Unable to read default config: %s", DEFAULT_CONFIG_PATH), ex);
+                    String.format("Unable to read default config: %s", path), ex);
         }
 
         // Check if config file data is valid
         if (!isValidConfigFileData(defaultConfigData)) {
             // Ignore if config file is not provided
-            Log.w(LOG_TAG, String.format("Default config not available: %s", DEFAULT_CONFIG_PATH));
+            Log.w(LOG_TAG, String.format("Default config not available: %s", path));
             return null;
         }
 
         SpectatioConfig defaultSpectatioConfig =
                 mGson.fromJson(defaultConfigData, new TypeToken<SpectatioConfig>() {}.getType());
 
-        Log.i(LOG_TAG, String.format("Done loading default config: %s", DEFAULT_CONFIG_PATH));
+        Log.i(LOG_TAG, String.format("Done loading default config: %s", path));
         return defaultSpectatioConfig;
     }
 

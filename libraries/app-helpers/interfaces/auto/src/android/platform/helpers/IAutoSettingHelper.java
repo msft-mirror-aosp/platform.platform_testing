@@ -16,7 +16,7 @@
 
 package android.platform.helpers;
 
-import android.support.test.uiautomator.UiObject2;
+import androidx.test.uiautomator.UiObject2;
 
 /** Helper class for functional tests of Settings facet */
 public interface IAutoSettingHelper extends IAppHelper, Scrollable {
@@ -159,15 +159,6 @@ public interface IAutoSettingHelper extends IAppHelper, Scrollable {
     void setValue(String setting, int value);
 
     /**
-     * Setup expectations: settings app is open and a seekbar is visible on the screen
-     *
-     * changes setting level of seekbar for the given index.
-     * @param index of seekbar. should be passed as 0 if only one seekbar is present on screen.
-     * @param changeType determines to increase or decrease the value of setting.
-     */
-    void changeSeekbarLevel(int index, ChangeType changeType);
-
-    /**
      * Setup expectations: full settings facet is open.
      *
      * <p>search in settings app and select the first search result.
@@ -226,4 +217,12 @@ public interface IAutoSettingHelper extends IAppHelper, Scrollable {
      * @param name of the setting menu.
      */
     void findSettingMenuAndClick(String setting);
+
+    /**
+     * Set the brightness and report the resulting brightness value
+     *
+     * @param targetPercentage Where on the brightness seekbar to tap
+     * @return The brightness value as reported by the service
+     */
+    int setBrightness(float targetPercentage);
 }

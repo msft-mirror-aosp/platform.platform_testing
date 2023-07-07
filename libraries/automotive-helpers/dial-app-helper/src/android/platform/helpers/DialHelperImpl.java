@@ -24,9 +24,10 @@ import android.platform.helpers.ScrollUtility.ScrollActions;
 import android.platform.helpers.ScrollUtility.ScrollDirection;
 import android.platform.helpers.exceptions.UnknownUiException;
 import android.platform.spectatio.exceptions.MissingUiElementException;
-import android.support.test.uiautomator.By;
-import android.support.test.uiautomator.BySelector;
-import android.support.test.uiautomator.UiObject2;
+
+import androidx.test.uiautomator.By;
+import androidx.test.uiautomator.BySelector;
+import androidx.test.uiautomator.UiObject2;
 
 public class DialHelperImpl extends AbstractStandardAppHelper implements IAutoDialHelper {
     private static final String LOG_TAG = DialHelperImpl.class.getSimpleName();
@@ -302,8 +303,16 @@ public class DialHelperImpl extends AbstractStandardAppHelper implements IAutoDi
         UiObject2 searchResult = getSpectatioUiUtil().findUiObject(searchResultSelector);
         validateUiObject(searchResult, AutomotiveConfigConstants.SEARCH_RESULT);
         String result = searchResult.getText();
-        getSpectatioUiUtil().pressBack();
+        exitSearchResultPage();
         return result;
+    }
+
+    private void exitSearchResultPage() {
+        BySelector searchBackButtonSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.SEARCH_BACK_BUTTON);
+        UiObject2 searchBackButton = getSpectatioUiUtil().findUiObject(searchBackButtonSelector);
+        validateUiObject(searchBackButton, AutomotiveConfigConstants.SEARCH_BACK_BUTTON);
+        getSpectatioUiUtil().clickAndWait(searchBackButton);
     }
 
     private void openContactOrder() {

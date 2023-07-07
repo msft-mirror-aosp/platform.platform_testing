@@ -17,19 +17,18 @@
 package android.platform.helpers;
 
 import android.app.Instrumentation;
-import android.app.UiModeManager;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.net.wifi.WifiManager;
 import android.platform.helpers.ScrollUtility.ScrollActions;
 import android.platform.helpers.ScrollUtility.ScrollDirection;
 import android.platform.helpers.exceptions.UnknownUiException;
-import android.support.test.uiautomator.By;
-import android.support.test.uiautomator.BySelector;
-import android.support.test.uiautomator.UiObject2;
 import android.util.Log;
 
 import androidx.test.InstrumentationRegistry;
+import androidx.test.uiautomator.By;
+import androidx.test.uiautomator.BySelector;
+import androidx.test.uiautomator.UiObject2;
 
 import java.util.List;
 import java.util.Locale;
@@ -37,27 +36,24 @@ import java.util.regex.Pattern;
 
 /** Setting Helper class for Android Auto platform functional tests */
 public class SettingHelperImpl extends AbstractStandardAppHelper implements IAutoSettingHelper {
-
     private static final String LOG_TAG = SettingHelperImpl.class.getSimpleName();
 
-    private ScrollUtility mScrollUtility;
+    private static final String SCREEN_BRIGHTNESS = "screen_brightness";
 
-    private UiModeManager mUiModeManager;
+    private final ScrollUtility mScrollUtility;
+    private final SeekUtility mSeekUtility;
     private Context mContext;
     private boolean mUseCommandToOpenSettings = true;
 
     public SettingHelperImpl(Instrumentation instr) {
         super(instr);
-        mUiModeManager =
-                InstrumentationRegistry.getInstrumentation()
-                        .getContext()
-                        .getSystemService(UiModeManager.class);
         mContext = InstrumentationRegistry.getContext();
         mUseCommandToOpenSettings =
-                Boolean.valueOf(
+                Boolean.parseBoolean(
                         InstrumentationRegistry.getArguments()
                                 .getString("use_command_to_open_settings", "true"));
         mScrollUtility = ScrollUtility.getInstance(getSpectatioUiUtil());
+        mSeekUtility = SeekUtility.getInstance(getSpectatioUiUtil());
     }
 
     /** {@inheritDoc} */
@@ -234,6 +230,8 @@ public class SettingHelperImpl extends AbstractStandardAppHelper implements IAut
         BySelector searchResultsSelector =
                 getUiElementFromConfig(AutomotiveConfigConstants.SEARCH_RESULTS);
         UiObject2 searchResults = getSpectatioUiUtil().findUiObject(searchResultsSelector);
+
+
         validateUiObject(searchResults, AutomotiveConfigConstants.SEARCH_RESULTS);
         int numberOfResults = searchResults.getChildren().get(0).getChildren().size();
         if (numberOfResults == 0) {
@@ -388,6 +386,16 @@ public class SettingHelperImpl extends AbstractStandardAppHelper implements IAut
     @Override
     public void findSettingMenuAndClick(String setting) {}
 
+    @Override
+    public int setBrightness(float targetPercentage) {
+        mSeekUtility.registerSeekBar(
+                SCREEN_BRIGHTNESS,
+                AutomotiveConfigConstants.BRIGHTNESS_SEEKBAR,
+                SeekUtility.SeekLayout.HORIZONTAL,
+                () -> getValue(SCREEN_BRIGHTNESS));
+        return mSeekUtility.seek(SCREEN_BRIGHTNESS, targetPercentage);
+    }
+
     /**
      * Checks whether a setting menu is enabled or not. When not enabled, the menu item cannot be
      * clicked.
@@ -403,7 +411,5 @@ public class SettingHelperImpl extends AbstractStandardAppHelper implements IAut
         return menuButton;
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public void changeSeekbarLevel(int index, ChangeType changeType) {}
+
 }

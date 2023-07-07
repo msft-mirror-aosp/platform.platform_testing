@@ -21,11 +21,11 @@ package {
 java_library {
     name: "app-helpers-core",
     libs: [
-        "ub-uiautomator",
         "androidx.test.runner",
         "launcher-helper-lib",
     ],
     static_libs: [
+        "ub-uiautomator",
         "spectatio-util-lib",
     ],
     srcs: ["src/**/*.java"],

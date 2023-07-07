@@ -26,6 +26,7 @@ import android.car.Car;
 import android.car.drivingstate.CarDrivingStateEvent;
 import android.car.drivingstate.CarDrivingStateManager;
 import android.content.Context;
+
 import androidx.test.InstrumentationRegistry;
 
 import java.util.regex.Matcher;
@@ -40,6 +41,8 @@ public class VehicleHardKeysHelperImpl extends AbstractStandardAppHelper
             "cmd car_service " + "inject-vhal-event 0x11400400 4";
     private static final String SET_SPEED =
             "cmd car_service " + "inject-vhal-event 0x11600207 %s -t 2000";
+
+    private static final int WAIT_TIME_SEC = 2;
 
     private Car mCar;
     private Context mContext;
@@ -215,6 +218,7 @@ public class VehicleHardKeysHelperImpl extends AbstractStandardAppHelper
         } else {
             getSpectatioUiUtil().executeShellCommand(ENABLE_DRIVING_MODE);
         }
+        getSpectatioUiUtil().waitNSeconds(WAIT_TIME_SEC);
     }
 
     /** {@inheritDoc} */
@@ -224,5 +228,6 @@ public class VehicleHardKeysHelperImpl extends AbstractStandardAppHelper
         } else {
             getSpectatioUiUtil().executeShellCommand(String.format(SET_SPEED, speed));
         }
+        getSpectatioUiUtil().waitNSeconds(WAIT_TIME_SEC);
     }
 }

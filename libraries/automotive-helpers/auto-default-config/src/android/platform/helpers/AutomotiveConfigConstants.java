@@ -42,6 +42,7 @@ public class AutomotiveConfigConstants {
     public static final String DIALED_CONTACT_TYPE = "DIALED_CONTACT_TYPE";
     public static final String CONTACT_SEARCH_BAR = "CONTACT_SEARCH_BAR";
     public static final String SEARCH_RESULT = "SEARCH_RESULT";
+    public static final String SEARCH_BACK_BUTTON = "SEARCH_BACK_BUTTON";
     public static final String CONTACT_SETTING_SCROLL_ACTION = "CONTACT_SETTING_SCROLL_ACTION";
     public static final String CONTACT_SETTING_SCROLL_FORWARD = "CONTACT_SETTING_SCROLL_FORWARD";
     public static final String CONTACT_SETTING_SCROLL_BACKWARD = "CONTACT_SETTING_SCROLL_BACKWARD";
@@ -80,12 +81,14 @@ public class AutomotiveConfigConstants {
             "CONTACT_DETAILS_SCROLL_DIRECTION";
     public static final String DIAL_PAD_MENU = "DIAL_PAD_MENU";
     public static final String FAVORITES_MENU = "FAVORITES_MENU";
+    public static final String DIALER_VIEW = "DIALER_VIEW";
 
     // Home App Constants
     public static final String HOME_PACKAGE = "HOME_PACKAGE";
     public static final String HOME_BOTTOM_CARD = "HOME_BOTTOM_CARD";
     public static final String HOME_TOP_CARD = "HOME_TOP_CARD";
     public static final String HOME_MAP_CARD = "HOME_MAP_CARD";
+    public static final String HOME_ASSISTANT_CARD = "HOME_ASSISTANT_CARD";
 
     // App Grid Constants
     public static final String OPEN_APP_GRID_COMMAND = "OPEN_APP_GRID_COMMAND";
@@ -97,6 +100,12 @@ public class AutomotiveConfigConstants {
     public static final String APP_LIST_SCROLL_ELEMENT = "APP_LIST_SCROLL_ELEMENT";
     public static final String APP_LIST_SCROLL_ACTION = "APP_LIST_SCROLL_ACTION";
     public static final String APP_LIST_SCROLL_DIRECTION = "APP_LIST_SCROLL_DIRECTION";
+    public static final String BLOCKING_MESSAGE = "BLOCKING_MESSAGE";
+    public static final String BLOCKING_SCREEN = "BLOCKING_SCREEN";
+    public static final String CONTACTS_PACKAGE = "CONTACTS_PACKAGE";
+    public static final String RADIO_PACKAGE = "RADIO_PACKAGE";
+    public static final String APPS_INITIAL_DIALOGS = "DISMISS_APPS_INITIAL_DIALOGS";
+    public static final String CONTACTS_DIALOG_BOX = "CONTACTS_DIALOG_BOX";
 
     // Security Settings  Constants
     public static final String SECURITY_SETTINGS_SCROLL_ELEMENT =
@@ -151,6 +160,9 @@ public class AutomotiveConfigConstants {
     public static final String NOTIFICATION_LIST_SCROLL_ACTION = "NOTIFICATION_LIST_SCROLL_ACTION";
     public static final String NOTIFICATION_LIST_SCROLL_DIRECTION =
             "NOTIFICATION_LIST_SCROLL_DIRECTION";
+    public static final String MANAGE_BUTTON = "MANAGE_BUTTON";
+    public static final String NOTIFICATION_SETTINGS_LAYOUT = "NOTIFICATION_SETTINGS_LAYOUT";
+    public static final String NOTIFICATION_SETTINGS_TITLE = "NOTIFICATION_SETTINGS_TITLE";
 
     // System Settings Constants
     public static final String SETTINGS_PACKAGE = "SETTINGS_PACKAGE";
@@ -177,9 +189,13 @@ public class AutomotiveConfigConstants {
     public static final String LANGUAGES_MENU = "LANGUAGES_MENU";
     public static final String LANGUAGES_MENU_IN_SELECTED_LANGUAGE =
             "LANGUAGES_MENU_IN_SELECTED_LANGUAGE";
+    public static final String SETTINGS_SUMMARY = "SETTINGS_SUMMARY";
     public static final String SYSTEM_SETTINGS_SCROLL_MARGIN = "SYSTEM_SETTINGS_SCROLL_MARGIN";
     public static final String SYSTEM_SETTINGS_SCROLL_WAIT_TIME =
             "SYSTEM_SETTINGS_SCROLL_WAIT_TIME";
+
+    // Display Settings Constants
+    public static final String BRIGHTNESS_SEEKBAR = "BRIGHTNESS_SEEKBAR";
 
     // Date and time Settings Constants
     public static final String DATE_TIME_SETTINGS_SCROLL_ACTION =
@@ -208,6 +224,24 @@ public class AutomotiveConfigConstants {
             "DATE_TIME_SETTINGS_SCROLL_MARGIN";
     public static final String DATE_TIME_SETTINGS_SCROLL_WAIT_TIME =
             "DATE_TIME_SETTINGS_SCROLL_WAIT_TIME";
+
+    // Display Settings Constants
+    public static final String DISPLAY_SETTINGS_LIST_SCROLL_ACTION =
+            "DISPLAY_SETTINGS_LIST_SCROLL_ACTION";
+    public static final String DISPLAY_SETTINGS_SCROLL_BACKWARD_BUTTON =
+            "DISPLAY_SETTINGS_SCROLL_BACKWARD_BUTTON";
+    public static final String DISPLAY_SETTINGS_SCROLL_FORWARD_BUTTON =
+            "DISPLAY_SETTINGS_SCROLL_FORWARD_BUTTON";
+    public static final String DISPLAY_SETTINGS_SCROLL_ELEMENT = "DISPLAY_SETTINGS_SCROLL_ELEMENT";
+    public static final String DISPLAY_SETTINGS_LIST_SCROLL_DIRECTION =
+            "DISPLAY_SETTINGS_LIST_SCROLL_DIRECTION";
+    public static final String DISPLAY_SETTINGS_SCROLL_MARGIN = "DISPLAY_SETTINGS_SCROLL_MARGIN";
+
+    public static final String DISPLAY_SETTINGS_SCROLL_WAIT_TIME =
+            "DISPLAY_SETTINGS_SCROLL_WAIT_TIME";
+
+    public static final String DISPLAY_SETTINGS_ADAPTIVE_BRIGHTNESS_TOGGLE =
+            "DISPLAY_SETTINGS_ADAPTIVE_BRIGHTNESS_TOGGLE";
 
     // Sound Setting Constants
     public static final String SOUND_SETTINGS_SAVE_BUTTON = "SOUND_SETTINGS_SAVE_BUTTON";
@@ -276,7 +310,6 @@ public class AutomotiveConfigConstants {
     public static final String SEARCH_RESULTS = "SEARCH_RESULTS";
     public static final String PAGE_TITLE = "PAGE_TITLE";
     public static final String PERMISSIONS_PAGE_TITLE = "PERMISSIONS_PAGE_TITLE";
-
     public static final String SOUND_SETTINGS = "OPEN_SOUND_SETTINGS_WORKFLOW";
     public static final String NETWORK_AND_INTERNET_SETTINGS =
             "OPEN_NETWORK_AND_INTERNET_SETTINGS_WORKFLOW";
@@ -298,11 +331,19 @@ public class AutomotiveConfigConstants {
             "SETTINGS_SUB_SETTING_SCROLL_ELEMENT";
     public static final String SETTINGS_TITLE_TEXT = "SETTINGS_TITLE_TEXT";
 
+
+
     // App Info Settings Constants
     public static final String APP_INFO_SETTINGS_SCROLL_ACTION = "APP_INFO_SETTINGS_SCROLL_ACTION";
     public static final String APP_INFO_SETTINGS_SCROLL_DIRECTION =
             "APP_INFO_SETTINGS_SCROLL_DIRECTION";
     public static final String APP_INFO_SETTINGS_VIEW_ALL = "APP_INFO_SETTINGS_VIEW_ALL";
+    public static final String APP_INFO_SETTINGS_PERMISSIONS_SCROLL_ELEMENT =
+            "APP_INFO_SETTINGS_PERMISSIONS_SCROLL_ELEMENT";
+    public static final String APP_INFO_SETTINGS_PERMISSIONS_SCROLL_FORWARD_BUTTON =
+            "APP_INFO_SETTINGS_PERMISSIONS_SCROLL_FORWARD_BUTTON";
+    public static final String APP_INFO_SETTINGS_PERMISSIONS_SCROLL_BACKWARD_BUTTON =
+            "APP_INFO_SETTINGS_PERMISSIONS_SCROLL_BACKWARD_BUTTON";
     public static final String APP_INFO_SETTINGS_SCROLL_ELEMENT =
             "APP_INFO_SETTINGS_SCROLL_ELEMENT";
     public static final String APP_INFO_SETTINGS_SCROLL_FORWARD_BUTTON =
@@ -371,4 +412,44 @@ public class AutomotiveConfigConstants {
     public static final String ACCOUNT_SETTINGS_SCROLL_ELEMENT = "ACCOUNT_SETTINGS_SCROLL_ELEMENT";
     public static final String ACCOUNT_SETTINGS_GOOGLE_SIGN_IN_SCREEN =
             "ACCOUNT_SETTINGS_GOOGLE_SIGN_IN_SCREEN";
+
+    // Facet bar constants
+    public static final String HOME_FACET_BUTTON = "HOME_FACET_BUTTON";
+    public static final String PHONE_FACET_BUTTON = "PHONE_FACET_BUTTON";
+    public static final String APP_GRID_FACET_BUTTON = "APP_GRID_FACET_BUTTON";
+    public static final String NOTIFICATION_FACET_BUTTON = "NOTIFICATION_FACET_BUTTON";
+    public static final String HVAC_FACET_BUTTON = "HVAC_FACET_BUTTON";
+    public static final String HVAC_PANEL = "HVAC_PANEL";
+
+    // APP info Setting UI ELEMENTS
+    public static final String RECENTLY_OPENED_UI_ELEMENT = "RECENTLY_OPENED_UI_ELEMENT";
+    public static final String NOTIFICATIONS_UI_ELEMENT = "NOTIFICATIONS_UI_ELEMENT";
+    public static final String STOP_APP_UI_ELEMENT = "STOP_APP_UI_ELEMENT";
+    public static final String PERMISSIONS_UI_ELEMENT = "PERMISSIONS_UI_ELEMENT";
+    public static final String STORAGE_CACHE_UI_ELEMENT = "STORAGE_CACHE_UI_ELEMENT";
+    public static final String PERMISSION_MANAGER_UI_ELEMENT = "PERMISSION_MANAGER_UI_ELEMENT";
+    public static final String DEFAULT_APPS_UI_ELEMENT = "DEFAULT_APPS_UI_ELEMENT";
+    public static final String UNUSED_APPS_UI_ELEMENT = "UNUSED_APPS_UI_ELEMENT";
+    public static final String PERFORMANCE_IMPACTING_APPS_UI_ELEMENT =
+            "PERFORMANCE_IMPACTING_APPS_UI_ELEMENT";
+    public static final String SPECIAL_APPS_UI_ELEMENT = "SPECIAL_APPS_UI_ELEMENT";
+
+    // Micro Phone Constants
+    public static final String MICRO_PHONE_SWITCH = "MICRO_PHONE_SWITCH";
+    public static final String TOGGLE_MICROPHONE = "TOGGLE_MICROPHONE";
+    public static final String MICRO_PHONE_VIEW_ALL = "MICRO_PHONE_VIEW_ALL";
+    public static final String MICRO_PHONE_MUTED_CHIP_STATUS_BAR =
+            "MICRO_PHONE_MUTED_CHIP_STATUS_BAR";
+    public static final String MICRO_PHONE_MUTED_CHIP_MIC_PANEL =
+            "MICRO_PHONE_MUTED_CHIP_MIC_PANEL";
+    public static final String MICRO_PHONE_CHIP_STATUS_BAR = "MICRO_PHONE_CHIP_STATUS_BAR";
+    public static final String MICRO_PHONE_SETTING_LINK = "MICRO_PHONE_SETTING_LINK";
+    public static final String MANAGE_MICRO_PHONE_PERMISSIONS = "MANAGE_MICRO_PHONE_PERMISSIONS";
+    public static final String ASSISTANT_CARD = "ASSISTANT_CARD";
+    public static final String NO_RECENT_APPS = "NO_RECENT_APPS";
+    public static final String ADD_ACCOUNT_TEXT = "ADD_ACCOUNT_TEXT";
+    public static final String NO_ACCOUNT_TEXT = "NO_ACCOUNT_TEXT";
+    public static final String MANAGE_ACTIVITY_CONTROL_TEXT = "MANAGE_ACTIVITY_CONTROL_TEXT";
+    public static final String RECENT_APPS_TIMESTAMP_TEXT = "RECENT_APPS_TIMESTAMP_TEXT";
+    public static final String RECENT_APPS_TIMESTAMP = "RECENT_APPS_TIMESTAMP";
 }
