@@ -21,7 +21,8 @@ enum class TraceType(val fileName: String, val isTrace: Boolean) {
     SF("layers_trace$WINSCOPE_EXT", isTrace = true),
     WM("wm_trace$WINSCOPE_EXT", isTrace = true),
     TRANSACTION("transactions_trace$WINSCOPE_EXT", isTrace = true),
-    TRANSITION("transition_trace$WINSCOPE_EXT", isTrace = true),
+    WM_TRANSITION("wm_transition_trace$WINSCOPE_EXT", isTrace = true),
+    SHELL_TRANSITION("shell_transition_trace$WINSCOPE_EXT", isTrace = true),
     EVENT_LOG("eventlog$WINSCOPE_EXT", isTrace = true),
     SCREEN_RECORDING("transition.mp4", isTrace = true),
     SF_DUMP("sf_dump$WINSCOPE_EXT", isTrace = false),
@@ -33,7 +34,8 @@ enum class TraceType(val fileName: String, val isTrace: Boolean) {
                 fileName == SF.fileName -> SF
                 fileName == WM.fileName -> WM
                 fileName == TRANSACTION.fileName -> TRANSACTION
-                fileName == TRANSITION.fileName -> TRANSITION
+                fileName == WM_TRANSITION.fileName -> WM_TRANSITION
+                fileName == SHELL_TRANSITION.fileName -> SHELL_TRANSITION
                 fileName == SCREEN_RECORDING.fileName -> SCREEN_RECORDING
                 fileName.endsWith(SF_DUMP.fileName) -> SF_DUMP
                 fileName.endsWith(WM_DUMP.fileName) -> WM_DUMP

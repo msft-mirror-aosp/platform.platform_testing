@@ -30,14 +30,12 @@ import kotlin.js.JsName
  */
 @JsExport
 class EventLog(override val entries: Array<Event>) : ITrace<Event> {
-    @JsName("focusEvents")
     val focusEvents: Array<FocusEvent> =
         entries
             .filterIsInstance<FocusEvent>()
             .filter { it.type !== FocusEvent.Type.REQUESTED }
             .toTypedArray()
 
-    @JsName("cujEvents")
     val cujEvents: Array<CujEvent> = entries.filterIsInstance<CujEvent>().toTypedArray()
 
     @JsName("cujTrace") val cujTrace: CujTrace = CujTrace.from(cujEvents)

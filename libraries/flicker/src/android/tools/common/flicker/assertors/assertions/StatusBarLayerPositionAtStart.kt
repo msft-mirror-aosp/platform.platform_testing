@@ -18,10 +18,10 @@ package android.tools.common.flicker.assertors.assertions
 
 import android.tools.common.PlatformConsts
 import android.tools.common.datatypes.Region
-import android.tools.common.datatypes.component.ComponentNameMatcher
 import android.tools.common.flicker.IScenarioInstance
 import android.tools.common.flicker.assertors.AssertionTemplate
 import android.tools.common.flicker.subject.layers.LayersTraceSubject
+import android.tools.common.traces.component.ComponentNameMatcher
 
 /**
  * Checks if the [ComponentNameMatcher.STATUS_BAR] layer is placed at the correct position at the
@@ -30,8 +30,8 @@ import android.tools.common.flicker.subject.layers.LayersTraceSubject
 class StatusBarLayerPositionAtStart : AssertionTemplate() {
     /** {@inheritDoc} */
     override fun doEvaluate(scenarioInstance: IScenarioInstance, layerSubject: LayersTraceSubject) {
-        val subject = layerSubject.first()
-        subject
+        layerSubject
+            .first()
             .visibleRegion(ComponentNameMatcher.STATUS_BAR)
             .coversExactly(getExpectedStatusbarPosition(scenarioInstance))
     }

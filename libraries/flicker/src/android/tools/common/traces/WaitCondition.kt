@@ -16,8 +16,6 @@
 
 package android.tools.common.traces
 
-import kotlin.js.JsName
-
 /**
  * The utility class to wait a condition with customized options. The default retry policy is 5
  * times with interval 1 second.
@@ -48,18 +46,17 @@ import kotlin.js.JsName
  */
 class WaitCondition<T>
 private constructor(
-    @JsName("supplier") private val supplier: () -> T,
-    @JsName("condition") private val condition: Condition<T>,
-    @JsName("retryLimit") private val retryLimit: Int,
-    @JsName("onLog") private val onLog: ((String, Boolean) -> Unit)?,
-    @JsName("onFailure") private val onFailure: ((T) -> Any)?,
-    @JsName("onRetry") private val onRetry: ((T) -> Any)?,
-    @JsName("onSuccess") private val onSuccess: ((T) -> Any)?,
-    @JsName("onStart") private val onStart: ((String) -> Any)?,
-    @JsName("onEnd") private val onEnd: (() -> Any)?
+    private val supplier: () -> T,
+    private val condition: Condition<T>,
+    private val retryLimit: Int,
+    private val onLog: ((String, Boolean) -> Unit)?,
+    private val onFailure: ((T) -> Any)?,
+    private val onRetry: ((T) -> Any)?,
+    private val onSuccess: ((T) -> Any)?,
+    private val onStart: ((String) -> Any)?,
+    private val onEnd: (() -> Any)?
 ) {
     /** @return `false` if the condition does not satisfy within the time limit. */
-    @JsName("waitFor")
     fun waitFor(): Boolean {
         onStart?.invoke("waitFor")
         try {
@@ -127,11 +124,8 @@ private constructor(
         }
     }
 
-    class Builder<T>(
-        @JsName("supplier") private val supplier: () -> T,
-        @JsName("retryLimit") private var retryLimit: Int
-    ) {
-        @JsName("conditions") private val conditions = mutableListOf<Condition<T>>()
+    class Builder<T>(private val supplier: () -> T, private var retryLimit: Int) {
+        private val conditions = mutableListOf<Condition<T>>()
         private var onStart: ((String) -> Any)? = null
         private var onEnd: (() -> Any)? = null
         private var onFailure: ((T) -> Any)? = null
@@ -139,15 +133,12 @@ private constructor(
         private var onSuccess: ((T) -> Any)? = null
         private var onLog: ((String, Boolean) -> Unit)? = null
 
-        @JsName("withCondition")
         fun withCondition(condition: Condition<T>) = apply { conditions.add(condition) }
 
-        @JsName("withConditionAndMessage")
         fun withCondition(message: String, condition: (T) -> Boolean) = apply {
             withCondition(Condition(message, condition))
         }
 
-        @JsName("spreadConditionList")
         private fun spreadConditionList(): List<Condition<T>> =
             conditions.flatMap {
                 if (it is ConditionList<T>) {
@@ -161,29 +152,22 @@ private constructor(
          * Executes the action when the condition does not satisfy within the time limit. The passed
          * object to the consumer will be the last result from the supplier.
          */
-        @JsName("onFailure")
         fun onFailure(onFailure: (T) -> Any): Builder<T> = apply { this.onFailure = onFailure }
 
-        @JsName("onLog")
         fun onLog(onLog: (String, Boolean) -> Unit): Builder<T> = apply { this.onLog = onLog }
 
-        @JsName("onRetry")
         fun onRetry(onRetry: ((T) -> Any)? = null): Builder<T> = apply { this.onRetry = onRetry }
 
-        @JsName("onStart")
         fun onStart(onStart: ((String) -> Any)? = null): Builder<T> = apply {
             this.onStart = onStart
         }
 
-        @JsName("onEnd")
         fun onEnd(onEnd: (() -> Any)? = null): Builder<T> = apply { this.onEnd = onEnd }
 
-        @JsName("onSuccess")
         fun onSuccess(onRetry: ((T) -> Any)? = null): Builder<T> = apply {
             this.onSuccess = onRetry
         }
 
-        @JsName("build")
         fun build(): WaitCondition<T> =
             WaitCondition(
                 supplier,
@@ -196,13 +180,5 @@ private constructor(
                 onStart,
                 onEnd
             )
-    }
-
-    companion object {
-        // TODO(b/112837428): Implement a incremental retry policy to reduce the unnecessary
-        // constant time, currently keep the default as 5*1s because most of the original code
-        // uses it, and some tests might be sensitive to the waiting interval.
-        @JsName("DEFAULT_RETRY_LIMIT") const val DEFAULT_RETRY_LIMIT = 50
-        @JsName("DEFAULT_RETRY_INTERVAL_MS") const val DEFAULT_RETRY_INTERVAL_MS = 100L
     }
 }

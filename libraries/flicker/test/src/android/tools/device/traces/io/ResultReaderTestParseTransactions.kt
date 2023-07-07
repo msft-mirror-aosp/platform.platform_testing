@@ -22,13 +22,12 @@ import android.tools.common.io.TraceType
 
 /** Tests for [ResultReader] parsing [TraceType.TRANSACTION] */
 class ResultReaderTestParseTransactions : BaseResultReaderTestParseTrace() {
-    override val assetFile = TestTraces.TransactionTrace.FILE
+    override val assetFiles = mapOf(TraceType.TRANSACTION to TestTraces.TransactionTrace.FILE)
     override val traceName = "Transactions trace"
     override val startTimeTrace = TestTraces.TransactionTrace.START_TIME
     override val endTimeTrace = TestTraces.TransactionTrace.END_TIME
     override val validSliceTime = TestTraces.TransactionTrace.VALID_SLICE_TIME
     override val invalidSliceTime = TestTraces.TransactionTrace.INVALID_SLICE_TIME
-    override val traceType = TraceType.TRANSACTION
     override val invalidSizeMessage = "Transactions trace cannot be empty"
     override val expectedSlicedTraceSize = 2
 

@@ -17,8 +17,8 @@
 package android.tools.device.flicker
 
 import android.tools.common.IScenario
-import android.tools.common.datatypes.component.ComponentNameMatcher
-import android.tools.device.traces.DEFAULT_TRACE_CONFIG
+import android.tools.common.traces.component.ComponentNameMatcher
+import android.tools.device.traces.TRACE_CONFIG_REQUIRE_CHANGES
 import android.tools.device.traces.io.ResultReader
 import android.tools.device.traces.io.ResultWriter
 import android.tools.device.traces.monitors.ScreenRecorder
@@ -26,8 +26,9 @@ import android.tools.device.traces.monitors.TraceMonitor
 import android.tools.device.traces.monitors.events.EventLogMonitor
 import android.tools.device.traces.monitors.surfaceflinger.LayersTraceMonitor
 import android.tools.device.traces.monitors.surfaceflinger.TransactionsTraceMonitor
-import android.tools.device.traces.monitors.wm.TransitionsTraceMonitor
+import android.tools.device.traces.monitors.wm.ShellTransitionTraceMonitor
 import android.tools.device.traces.monitors.wm.WindowManagerTraceMonitor
+import android.tools.device.traces.monitors.wm.WmTransitionTraceMonitor
 import androidx.test.platform.app.InstrumentationRegistry
 import java.io.File
 import kotlin.io.path.createTempDirectory
@@ -94,7 +95,8 @@ object Utils {
         outputDir: File = createTempDirectory().toFile(),
         monitors: List<TraceMonitor> =
             listOf(
-                TransitionsTraceMonitor(),
+                WmTransitionTraceMonitor(),
+                ShellTransitionTraceMonitor(),
                 TransactionsTraceMonitor(),
                 WindowManagerTraceMonitor(),
                 LayersTraceMonitor(),
@@ -109,6 +111,6 @@ object Utils {
         }()
         val result = writer.write()
 
-        return ResultReader(result, DEFAULT_TRACE_CONFIG)
+        return ResultReader(result, TRACE_CONFIG_REQUIRE_CHANGES)
     }
 }

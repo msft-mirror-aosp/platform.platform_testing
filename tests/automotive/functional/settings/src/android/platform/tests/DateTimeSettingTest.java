@@ -48,7 +48,7 @@ public class DateTimeSettingTest {
     private static final int DAY = 9;
     private static final LocalDate DATE = LocalDate.of(YEAR, MONTH, DAY);
 
-    private static final String FULL_TIME_TWELVE = "9:23 AM";
+    private static final String FULL_TIME_TWELVE_REGEX = "9:23[ \\x{202f}]AM";
     private static final String FULL_TIME_TWENTYFOUR = "09:23";
     private static final String TIME_ZONE = "Costa Rica";
     private static final String TIME_ZONE_FULL = "GMT-06:00 Central Standard Time";
@@ -82,7 +82,7 @@ public class DateTimeSettingTest {
     @Test
     public void testSetTimeTwelveHourFormat() {
         mDateTimeSettingsHelper.get().setTimeInTwelveHourFormat(HOUR, MINUTE, IS_AM);
-        assertTrue(mDateTimeSettingsHelper.get().getTime().equals(FULL_TIME_TWELVE));
+        assertTrue(mDateTimeSettingsHelper.get().getTime().matches(FULL_TIME_TWELVE_REGEX));
     }
 
     @Test

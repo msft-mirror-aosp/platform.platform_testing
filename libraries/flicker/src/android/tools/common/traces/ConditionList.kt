@@ -16,8 +16,6 @@
 
 package android.tools.common.traces
 
-import kotlin.js.JsName
-
 /**
  * The utility class to validate a set of conditions
  *
@@ -27,8 +25,7 @@ import kotlin.js.JsName
  *
  * @param conditions conditions to be checked
  */
-class ConditionList<T>(@JsName("conditions") val conditions: List<Condition<T>>) :
-    Condition<T>("", { false }) {
+class ConditionList<T>(val conditions: List<Condition<T>>) : Condition<T>("", { false }) {
     constructor(vararg conditions: Condition<T>) : this(listOf(*conditions))
 
     override val message: String
@@ -41,7 +38,7 @@ class ConditionList<T>(@JsName("conditions") val conditions: List<Condition<T>>)
         }
 
     override val condition: (T) -> Boolean
-        get() = { conditions.all { condition -> condition.isSatisfied(it) } }
+        get() = { value -> conditions.all { condition -> condition.isSatisfied(value) } }
 
     override fun getMessage(value: T): String {
         return "(\n${

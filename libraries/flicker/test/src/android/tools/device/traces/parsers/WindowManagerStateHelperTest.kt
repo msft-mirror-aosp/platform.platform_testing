@@ -27,10 +27,10 @@ import android.tools.common.datatypes.Matrix33
 import android.tools.common.datatypes.Rect
 import android.tools.common.datatypes.RectF
 import android.tools.common.datatypes.Region
-import android.tools.common.datatypes.component.ComponentNameMatcher
-import android.tools.common.datatypes.component.IComponentName
 import android.tools.common.flicker.subject.wm.WindowManagerStateSubject
 import android.tools.common.traces.DeviceStateDump
+import android.tools.common.traces.component.ComponentNameMatcher
+import android.tools.common.traces.component.IComponentName
 import android.tools.common.traces.surfaceflinger.HwcCompositionType
 import android.tools.common.traces.surfaceflinger.Layer
 import android.tools.common.traces.surfaceflinger.LayerTraceEntryBuilder

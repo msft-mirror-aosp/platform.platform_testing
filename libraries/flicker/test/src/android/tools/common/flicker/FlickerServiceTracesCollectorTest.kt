@@ -99,7 +99,8 @@ class FlickerServiceTracesCollectorTest {
                 "wm_trace.winscope",
                 "layers_trace.winscope",
                 "transactions_trace.winscope",
-                "transition_trace.winscope",
+                "wm_transition_trace.winscope",
+                "shell_transition_trace.winscope",
                 "eventlog.winscope"
             )
 

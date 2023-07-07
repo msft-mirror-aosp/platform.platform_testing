@@ -195,6 +195,16 @@ public class SpectatioUiUtil {
         wait1Second();
     }
 
+    /**
+     * Click at a specific location in the UI, and wait one second
+     *
+     * @param location Where to click
+     */
+    public void clickAndWait(Point location) {
+        mDevice.click(location.x, location.y);
+        wait1Second();
+    }
+
     public void waitForIdle() {
         mDevice.waitForIdle();
     }
@@ -256,6 +266,19 @@ public class SpectatioUiUtil {
     public UiObject2 findUiObject(String text) {
         validateText(text, /* type= */ "Text");
         return findUiObject(By.text(text));
+    }
+
+    /**
+     * Find the UI Object in given element.
+     *
+     * @param uiObject Find the ui object(selector) in this element.
+     * @param selector Find this ui object in the given element.
+     */
+    public UiObject2 findUiObjectInGivenElement(UiObject2 uiObject, BySelector selector) {
+        validateUiObjectAndThrowIllegalArgumentException(
+                uiObject, /* action= */ "Find UI object in given element");
+        validateSelector(selector, /* action= */ "Find UI object in given element");
+        return uiObject.findObject(selector);
     }
 
     /**
@@ -786,9 +809,13 @@ public class SpectatioUiUtil {
         validateUiObjectAndThrowMissingUiElementException(
                 scrollableObject, scrollableSelector, /* action= */ "Scroll");
         if (!scrollableObject.isScrollable()) {
+            scrollableObject = scrollableObject.findObject(By.scrollable(true));
+        }
+        if ((scrollableObject == null) || !scrollableObject.isScrollable()) {
             throw new IllegalStateException(
                     String.format(
-                            "Cannot scroll; UI Object for selector %s is not scrollable.",
+                            "Cannot scroll; UI Object for selector %s is not scrollable and has no"
+                                    + " scrollable children.",
                             scrollableSelector));
         }
         return scrollableObject;

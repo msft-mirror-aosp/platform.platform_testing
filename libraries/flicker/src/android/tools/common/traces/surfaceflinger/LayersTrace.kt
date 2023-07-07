@@ -67,7 +67,6 @@ data class LayersTrace(override val entries: Array<LayerTraceEntry>) : ITrace<La
         )
     }
 
-    @JsName("getEntryForTransaction")
     fun getEntryForTransaction(transaction: Transaction): LayerTraceEntry {
         require(
             this.entries.first().vSyncId <= transaction.appliedVSyncId &&
@@ -76,5 +75,19 @@ data class LayersTrace(override val entries: Array<LayerTraceEntry>) : ITrace<La
             "Finish transaction not in layer trace"
         }
         return this.entries.first { it.vSyncId >= transaction.appliedVSyncId }
+    }
+
+    fun getFirstEntryWithOnDisplayAfter(timestamp: Timestamp): LayerTraceEntry {
+        return this.entries.firstOrNull {
+            it.timestamp >= timestamp && it.displays.any { display -> display.isOn }
+        }
+            ?: error("No entry after $timestamp in layer trace with on display.")
+    }
+
+    fun getLastEntryWithOnDisplayBefore(timestamp: Timestamp): LayerTraceEntry {
+        return this.entries.lastOrNull {
+            it.timestamp <= timestamp && it.displays.any { display -> display.isOn }
+        }
+            ?: error("No entry before $timestamp in layer trace with on display.")
     }
 }

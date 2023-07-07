@@ -145,38 +145,54 @@ class FlickerServiceResultsCollector(
         dataRecord: DataRecord,
         description: Description? = null
     ) {
-        CrossPlatform.log.i(LOG_TAG, "Stopping trace collection")
-        val reader = tracesCollector.stop()
-        CrossPlatform.log.i(LOG_TAG, "Stopped trace collection")
-        if (reportOnlyForPassingTests && hasFailedTest) {
-            return
-        }
+        errorReportingBlock {
+            CrossPlatform.log.i(LOG_TAG, "Stopping trace collection")
+            val reader = tracesCollector.stop()
+            CrossPlatform.log.i(LOG_TAG, "Stopped trace collection")
+            if (reportOnlyForPassingTests && hasFailedTest) {
+                return@errorReportingBlock
+            }
 
-        CrossPlatform.log.i(LOG_TAG, "Processing traces")
-        val scenarios = flickerService.detectScenarios(reader)
-        val assertions = flickerService.generateAssertions(scenarios)
-        val results = flickerService.executeAssertions(assertions)
-        reader.artifact.updateStatus(RunStatus.RUN_EXECUTED)
-        CrossPlatform.log.i(LOG_TAG, "Got ${results.size} results")
-        assertionResults.addAll(results)
-        if (description != null) {
-            require(assertionResultsByTest[description] == null) {
-                "Test description already contains flicker assertion results."
+            try {
+                CrossPlatform.log.i(LOG_TAG, "Processing traces")
+                val scenarios = flickerService.detectScenarios(reader)
+                val assertions = flickerService.generateAssertions(scenarios)
+                val results = flickerService.executeAssertions(assertions)
+                reader.artifact.updateStatus(RunStatus.RUN_EXECUTED)
+                CrossPlatform.log.i(LOG_TAG, "Got ${results.size} results")
+                assertionResults.addAll(results)
+                if (description != null) {
+                    require(assertionResultsByTest[description] == null) {
+                        "Test description already contains flicker assertion results."
+                    }
+                    require(detectedScenariosByTest[description] == null) {
+                        "Test description already contains detected scenarios."
+                    }
+                    assertionResultsByTest[description] = results
+                    detectedScenariosByTest[description] = scenarios.map { it.type }.distinct()
+                }
+                if (results.any { it.failed }) {
+                    reader.artifact.updateStatus(RunStatus.ASSERTION_FAILED)
+                } else {
+                    reader.artifact.updateStatus(RunStatus.ASSERTION_SUCCESS)
+                }
+
+                CrossPlatform.log.v(
+                    LOG_TAG,
+                    "Adding metric $FLICKER_ASSERTIONS_COUNT_KEY = ${results.size}"
+                )
+                dataRecord.addStringMetric(FLICKER_ASSERTIONS_COUNT_KEY, "${results.size}")
+
+                val aggregatedResults = processFlickerResults(results)
+                collectMetrics(dataRecord, aggregatedResults)
+            } finally {
+                CrossPlatform.log.v(
+                    LOG_TAG,
+                    "Adding metric $WINSCOPE_FILE_PATH_KEY = ${reader.artifactPath}"
+                )
+                dataRecord.addStringMetric(WINSCOPE_FILE_PATH_KEY, reader.artifactPath)
             }
-            require(detectedScenariosByTest[description] == null) {
-                "Test description already contains detected scenarios."
-            }
-            assertionResultsByTest[description] = results
-            detectedScenariosByTest[description] = scenarios.map { it.type }.distinct()
         }
-        if (results.any { it.failed }) {
-            reader.artifact.updateStatus(RunStatus.ASSERTION_FAILED)
-        } else {
-            reader.artifact.updateStatus(RunStatus.ASSERTION_SUCCESS)
-        }
-        dataRecord.addStringMetric(WINSCOPE_FILE_PATH_KEY, reader.artifactPath)
-        val aggregatedResults = processFlickerResults(results)
-        collectMetrics(dataRecord, aggregatedResults)
     }
 
     private fun processFlickerResults(
@@ -200,14 +216,13 @@ class FlickerServiceResultsCollector(
         val it = aggregatedResults.entries.iterator()
 
         while (it.hasNext()) {
-            val (key, result) = it.next()
-            CrossPlatform.log.v(LOG_TAG, "Adding metric ${key}_FAILURES = ${result.failures}")
-            data.addStringMetric("${key}_FAILURES", "${result.failures}")
+            val (key, aggregatedResult) = it.next()
+            aggregatedResult.results.forEachIndexed { index, result ->
+                val resultStatus = if (result.passed) 0 else 1
+                CrossPlatform.log.v(LOG_TAG, "Adding metric ${key}_$index = $resultStatus")
+                data.addStringMetric("${key}_$index", "$resultStatus")
+            }
         }
-    }
-
-    private fun getKeyForAssertionResult(result: IAssertionResult): String {
-        return "$FAAS_METRICS_PREFIX::${result.assertion.name}"
     }
 
     private fun errorReportingBlock(function: () -> Unit) {
@@ -233,17 +248,25 @@ class FlickerServiceResultsCollector(
 
     companion object {
         // Unique prefix to add to all FaaS metrics to identify them
-        private const val FAAS_METRICS_PREFIX = "FAAS"
+        const val FAAS_METRICS_PREFIX = "FAAS"
         private const val LOG_TAG = "$FLICKER_TAG-Collector"
-        private const val WINSCOPE_FILE_PATH_KEY = "winscope_file_path"
+        const val WINSCOPE_FILE_PATH_KEY = "winscope_file_path"
+        const val FLICKER_ASSERTIONS_COUNT_KEY = "flicker_assertions_count"
+
+        fun getKeyForAssertionResult(result: IAssertionResult): String {
+            return "$FAAS_METRICS_PREFIX::${result.assertion.name}"
+        }
 
         class AggregatedFlickerResult {
+            val results = mutableListOf<IAssertionResult>()
             var failures = 0
             var passes = 0
             val errors = mutableListOf<String>()
             var invocationGroup: AssertionInvocationGroup? = null
 
             fun addResult(result: IAssertionResult) {
+                results.add(result)
+
                 if (result.failed) {
                     failures++
                     errors.add(result.assertionError?.message ?: "FAILURE WITHOUT ERROR MESSAGE...")

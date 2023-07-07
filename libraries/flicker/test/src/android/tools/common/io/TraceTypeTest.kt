@@ -32,7 +32,8 @@ class TraceTypeTest {
         assertFileName(TraceType.SF)
         assertFileName(TraceType.WM)
         assertFileName(TraceType.TRANSACTION)
-        assertFileName(TraceType.TRANSITION)
+        assertFileName(TraceType.WM_TRANSITION)
+        assertFileName(TraceType.SHELL_TRANSITION)
         assertFileName(TraceType.SCREEN_RECORDING)
     }
 
@@ -55,7 +56,7 @@ class TraceTypeTest {
         assertFailure("prefix${TraceType.SF.fileName}")
         assertFailure("prefix${TraceType.WM.fileName}")
         assertFailure("prefix${TraceType.TRANSACTION.fileName}")
-        assertFailure("prefix${TraceType.TRANSITION.fileName}")
+        assertFailure("prefix${TraceType.WM_TRANSITION.fileName}")
         assertFailure("prefix${TraceType.SCREEN_RECORDING.fileName}")
         assertFailure("${TraceType.SF_DUMP.fileName}suffix")
         assertFailure("${TraceType.WM_DUMP.fileName}suffix")

@@ -52,6 +52,27 @@ data class TransitionsTrace(override val entries: Array<Transition>) : ITrace<Tr
         return sb.toString()
     }
 
+    @JsName("asCompressed")
+    fun asCompressed(): TransitionsTrace {
+        val transitionById = mutableMapOf<Int, Transition>()
+
+        for (transition in this.entries) {
+            require(transition.id != 0) { "Requires non-null transition id" }
+            val accumulatedTransition = transitionById[transition.id]
+            if (accumulatedTransition == null) {
+                transitionById[transition.id] = transition
+            } else {
+                transitionById[transition.id] =
+                    Transition.mergePartialTransitions(accumulatedTransition, transition)
+            }
+        }
+
+        val sortedCompressedTransitions =
+            transitionById.values.sortedWith(compareBy { it.timestamp })
+
+        return TransitionsTrace(sortedCompressedTransitions.toTypedArray())
+    }
+
     override fun slice(startTimestamp: Timestamp, endTimestamp: Timestamp): TransitionsTrace {
         require(startTimestamp.hasElapsedTimestamp && endTimestamp.hasElapsedTimestamp)
         return sliceElapsed(startTimestamp.elapsedNanos, endTimestamp.elapsedNanos)

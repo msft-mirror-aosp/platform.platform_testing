@@ -103,22 +103,38 @@ class CujEvent(
             }
         }
 
+        private fun isNumeric(toCheck: String): Boolean {
+            return toCheck.all { char -> char.isDigit() }
+        }
+
         private fun getDataEntries(data: String, cujType: Type): List<String> {
             when (cujType) {
-                Type.START ->
-                    // Redundant escape character required otherwise JS code with complain
-                    // about invalid regular expression due to lone quantifier brackets
+                Type.START -> {
+                    val (rawTimestamp, uid, pid, tid, _) =
+                        data.replace("[", "").replace("]", "").split(",")
+                    // Not using a Regex because it's not supported by Kotlin/Closure
                     require(
-                        """\[[0-9]+,[0-9]+,[0-9]+,[0-9]+,((?!,).)*\]""".toRegex().matches(data)
+                        isNumeric(rawTimestamp) &&
+                            isNumeric(uid) &&
+                            isNumeric(pid) &&
+                            isNumeric(tid)
                     ) {
                         "Data \"$data\" didn't match expected format"
                     }
-                else ->
-                    // Redundant escape character required otherwise JS code with complain
-                    // about invalid regular expression due to lone quantifier brackets
-                    require("""\[[0-9]+,[0-9]+,[0-9]+,[0-9]+\]""".toRegex().matches(data)) {
+                }
+                else -> {
+                    // Not using a Regex because it's not supported by Kotlin/Closure
+                    val (rawTimestamp, uid, pid, tid, _) =
+                        data.replace("[", "").replace("]", "").split(",")
+                    require(
+                        isNumeric(rawTimestamp) &&
+                            isNumeric(uid) &&
+                            isNumeric(pid) &&
+                            isNumeric(tid)
+                    ) {
                         "Data \"$data\" didn't match expected format"
                     }
+                }
             }
 
             return data.slice(1..data.length - 2).split(",")

@@ -22,8 +22,8 @@ import android.tools.assertThatErrorContainsDebugInfo
 import android.tools.assertThrows
 import android.tools.common.Cache
 import android.tools.common.CrossPlatform
-import android.tools.common.datatypes.component.ComponentNameMatcher
 import android.tools.common.flicker.subject.layers.LayersTraceSubject
+import android.tools.common.traces.component.ComponentNameMatcher
 import android.tools.getLayerTraceReaderFromAsset
 import com.google.common.truth.Truth
 import org.junit.Before

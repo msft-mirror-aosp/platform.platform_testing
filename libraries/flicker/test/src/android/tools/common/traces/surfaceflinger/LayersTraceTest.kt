@@ -21,8 +21,8 @@ import android.tools.assertThatErrorContainsDebugInfo
 import android.tools.assertThrows
 import android.tools.common.Cache
 import android.tools.common.CrossPlatform
-import android.tools.common.datatypes.component.ComponentNameMatcher
 import android.tools.common.flicker.subject.layers.LayersTraceSubject
+import android.tools.common.traces.component.ComponentNameMatcher
 import android.tools.getLayerTraceReaderFromAsset
 import com.google.common.truth.Truth
 import org.junit.Before
@@ -125,6 +125,46 @@ class LayersTraceTest {
         val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
         val error = assertThrows<AssertionError> { LayersTraceSubject(trace, reader).isEmpty() }
         assertThatErrorContainsDebugInfo(error)
+    }
+
+    @Test
+    fun getFirstEntryWithOnDisplay() {
+        val reader =
+            getLayerTraceReaderFromAsset(
+                "layers_trace_unlock_and_lock_device.pb",
+                legacyTrace = false
+            )
+        val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
+        val matchingEntry = trace.getFirstEntryWithOnDisplayAfter(CrossPlatform.timestamp.min())
+
+        Truth.assertThat(matchingEntry.timestamp)
+            .isEqualTo(CrossPlatform.timestamp.from(null, 20143030557279, 1685030549975607247))
+
+        try {
+            trace.getFirstEntryWithOnDisplayAfter(CrossPlatform.timestamp.max())
+        } catch (e: Throwable) {
+            Truth.assertThat(e).hasMessageThat().contains("No entry after")
+        }
+    }
+
+    @Test
+    fun getLastEntryWithOnDisplay() {
+        val reader =
+            getLayerTraceReaderFromAsset(
+                "layers_trace_unlock_and_lock_device.pb",
+                legacyTrace = false
+            )
+        val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
+        val matchingEntry = trace.getLastEntryWithOnDisplayBefore(CrossPlatform.timestamp.max())
+
+        Truth.assertThat(matchingEntry.timestamp)
+            .isEqualTo(CrossPlatform.timestamp.from(null, 20147964614573, 1685030554909664541))
+
+        try {
+            trace.getLastEntryWithOnDisplayBefore(CrossPlatform.timestamp.min())
+        } catch (e: Throwable) {
+            Truth.assertThat(e).hasMessageThat().contains("No entry before")
+        }
     }
 
     companion object {

@@ -16,10 +16,10 @@
 
 package android.tools.common.flicker.assertors.assertions
 
-import android.tools.common.datatypes.component.ComponentNameMatcher
 import android.tools.common.flicker.IScenarioInstance
 import android.tools.common.flicker.assertors.ComponentTemplate
 import android.tools.common.flicker.subject.wm.WindowManagerTraceSubject
+import android.tools.common.traces.component.ComponentNameMatcher
 
 /**
  * Checks that the app layer doesn't exist or is invisible at the start of the transition, but is
@@ -32,6 +32,9 @@ class AppWindowBecomesVisible(private val component: ComponentTemplate) :
         scenarioInstance: IScenarioInstance,
         wmSubject: WindowManagerTraceSubject
     ) {
+        // The app launch transition can finish when the splashscreen or SnapshotStartingWindows
+        // are shown before the app window and layers are actually shown. (b/284302118)
+
         wmSubject
             .isAppWindowInvisible(component.build(scenarioInstance))
             .then()
@@ -39,8 +42,14 @@ class AppWindowBecomesVisible(private val component: ComponentTemplate) :
             .then()
             .isAppWindowVisible(ComponentNameMatcher.SPLASH_SCREEN, isOptional = true)
             .then()
-            .isAppWindowVisible(component.build(scenarioInstance))
+            .isAppWindowVisible(component.build(scenarioInstance), isOptional = true)
             .forAllEntries()
-        // TODO: Check everywhere we are missing this!
+
+        wmSubject
+            .last()
+            .isAppWindowVisible(
+                ComponentNameMatcher.SNAPSHOT.or(ComponentNameMatcher.SPLASH_SCREEN)
+                    .or(component.build(scenarioInstance))
+            )
     }
 }

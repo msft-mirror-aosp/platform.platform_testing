@@ -21,14 +21,15 @@ import android.tools.common.FLICKER_TAG
 import android.tools.common.IScenario
 import android.tools.common.flicker.ITracesCollector
 import android.tools.common.io.IReader
-import android.tools.device.traces.DEFAULT_TRACE_CONFIG
+import android.tools.device.traces.SERVICE_TRACE_CONFIG
 import android.tools.device.traces.io.ResultReaderWithLru
 import android.tools.device.traces.io.ResultWriter
 import android.tools.device.traces.monitors.events.EventLogMonitor
 import android.tools.device.traces.monitors.surfaceflinger.LayersTraceMonitor
 import android.tools.device.traces.monitors.surfaceflinger.TransactionsTraceMonitor
-import android.tools.device.traces.monitors.wm.TransitionsTraceMonitor
+import android.tools.device.traces.monitors.wm.ShellTransitionTraceMonitor
 import android.tools.device.traces.monitors.wm.WindowManagerTraceMonitor
+import android.tools.device.traces.monitors.wm.WmTransitionTraceMonitor
 import java.io.File
 import kotlin.io.path.createTempDirectory
 
@@ -41,7 +42,8 @@ class FlickerServiceTracesCollector(
         listOf(
             WindowManagerTraceMonitor(),
             LayersTraceMonitor(),
-            TransitionsTraceMonitor(),
+            WmTransitionTraceMonitor(),
+            ShellTransitionTraceMonitor(),
             TransactionsTraceMonitor(),
             EventLogMonitor()
         )
@@ -68,7 +70,7 @@ class FlickerServiceTracesCollector(
             this.scenario = null
             val result = writer.write()
 
-            ResultReaderWithLru(result, DEFAULT_TRACE_CONFIG)
+            ResultReaderWithLru(result, SERVICE_TRACE_CONFIG)
         }
     }
 

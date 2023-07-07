@@ -88,11 +88,7 @@ class Region(rects: Array<Rect> = arrayOf()) {
     /** Set the region to the specified rectangle */
     @JsName("setRect")
     fun set(r: Rect): Boolean {
-        return if (
-            r.isEmpty ||
-                SkRegion_kRunTypeSentinel == r.right ||
-                SkRegion_kRunTypeSentinel == r.bottom
-        ) {
+        return if (r.isEmpty || RUN_TYPE_SENTINEL == r.right || RUN_TYPE_SENTINEL == r.bottom) {
             this.setEmpty()
         } else {
             fBounds = r
@@ -189,13 +185,13 @@ class Region(rects: Array<Rect> = arrayOf()) {
             val runs = fRuns!!
             var runsIndex = fRunsIndex
 
-            if (runs[runsIndex] < SkRegion_kRunTypeSentinel) { // valid X value
+            if (runs[runsIndex] < RUN_TYPE_SENTINEL) { // valid X value
                 rect =
                     Rect.withoutCache(runs[runsIndex], rect.top, runs[runsIndex + 1], rect.bottom)
                 runsIndex += 2
             } else { // we're at the end of a line
                 runsIndex += 1
-                if (runs[runsIndex] < SkRegion_kRunTypeSentinel) { // valid Y value
+                if (runs[runsIndex] < RUN_TYPE_SENTINEL) { // valid Y value
                     val intervals = runs[runsIndex + 1]
                     if (0 == intervals) { // empty line
                         rect =
@@ -427,8 +423,8 @@ class Region(rects: Array<Rect> = arrayOf()) {
     private fun getRuns(): Array<Int> {
         val runs: Array<Int>
         if (this.isEmpty) {
-            runs = Array(kRectRegionRuns) { 0 }
-            runs[0] = SkRegion_kRunTypeSentinel
+            runs = Array(RECT_REGION_RUNS) { 0 }
+            runs[0] = RUN_TYPE_SENTINEL
         } else if (this.isRect()) {
             runs = buildRectRuns(fBounds)
         } else {
@@ -439,14 +435,14 @@ class Region(rects: Array<Rect> = arrayOf()) {
     }
 
     private fun buildRectRuns(bounds: Rect): Array<Int> {
-        val runs = Array(kRectRegionRuns) { 0 }
+        val runs = Array(RECT_REGION_RUNS) { 0 }
         runs[0] = bounds.top
         runs[1] = bounds.bottom
         runs[2] = 1 // 1 interval for this scanline
         runs[3] = bounds.left
         runs[4] = bounds.right
-        runs[5] = SkRegion_kRunTypeSentinel
-        runs[6] = SkRegion_kRunTypeSentinel
+        runs[5] = RUN_TYPE_SENTINEL
+        runs[6] = RUN_TYPE_SENTINEL
         return runs
     }
 
@@ -470,35 +466,35 @@ class Region(rects: Array<Rect> = arrayOf()) {
             do {
                 bot = runs[runsIndex]
                 runsIndex++
-                require(bot < SkRegion_kRunTypeSentinel)
+                require(bot < RUN_TYPE_SENTINEL)
                 ySpanCount += 1
 
                 val intervals = runs[runsIndex]
                 runsIndex++
                 require(intervals >= 0)
-                require(intervals < SkRegion_kRunTypeSentinel)
+                require(intervals < RUN_TYPE_SENTINEL)
 
                 if (intervals > 0) {
                     val L = runs[runsIndex]
-                    require(L < SkRegion_kRunTypeSentinel)
+                    require(L < RUN_TYPE_SENTINEL)
                     if (left > L) {
                         left = L
                     }
 
                     runsIndex += intervals * 2
                     val R = runs[runsIndex - 1]
-                    require(R < SkRegion_kRunTypeSentinel)
+                    require(R < RUN_TYPE_SENTINEL)
                     if (right < R) {
                         right = R
                     }
 
                     intervalCount += intervals
                 }
-                require(SkRegion_kRunTypeSentinel == runs[runsIndex])
+                require(RUN_TYPE_SENTINEL == runs[runsIndex])
                 runsIndex += 1 // skip x-sentinel
 
                 // test Y-sentinel
-            } while (SkRegion_kRunTypeSentinel > runs[runsIndex])
+            } while (RUN_TYPE_SENTINEL > runs[runsIndex])
 
             fYSpanCount = ySpanCount
             fIntervalCount = intervalCount
@@ -533,7 +529,7 @@ class Region(rects: Array<Rect> = arrayOf()) {
                 val bottom = runs[runsIndex]
                 // If we hit this, we've walked off the region, and our bounds check
                 // failed.
-                require(bottom < SkRegion_kRunTypeSentinel)
+                require(bottom < RUN_TYPE_SENTINEL)
                 if (y < bottom) {
                     break
                 }
@@ -557,10 +553,10 @@ class Region(rects: Array<Rect> = arrayOf()) {
         fun skipEntireScanline(_runsIndex: Int): Int {
             var runsIndex = _runsIndex
             // we are not the Y Sentinel
-            require(runs[runsIndex] < SkRegion_kRunTypeSentinel)
+            require(runs[runsIndex] < RUN_TYPE_SENTINEL)
 
             val intervals = runs[runsIndex + 1]
-            require(runs[runsIndex + 2 + intervals * 2] == SkRegion_kRunTypeSentinel)
+            require(runs[runsIndex + 2 + intervals * 2] == RUN_TYPE_SENTINEL)
 
             // skip the entire line [B N [L R] S]
             runsIndex += 1 + 1 + intervals * 2 + 1
@@ -589,14 +585,14 @@ class Region(rects: Array<Rect> = arrayOf()) {
         // trim off any empty spans from the top and bottom
         // weird I should need this, perhaps op() could be smarter...
         var trimmedRuns = runs
-        if (count > kRectRegionRuns) {
+        if (count > RECT_REGION_RUNS) {
             var stopIndex = count
             assertSentinel(runs[0], false) // top
             assertSentinel(runs[1], false) // bottom
             // runs[2] is uncomputed intervalCount
 
             var trimLeft = false
-            if (runs[3] == SkRegion_kRunTypeSentinel) { // should be first left...
+            if (runs[3] == RUN_TYPE_SENTINEL) { // should be first left...
                 trimLeft = true
                 assertSentinel(runs[1], false) // bot: a sentinel would mean two in a row
                 assertSentinel(runs[2], false) // interval count
@@ -609,7 +605,7 @@ class Region(rects: Array<Rect> = arrayOf()) {
 
             var trimRight = false
             // now check for a trailing empty span
-            if (runs[stopIndex - 5] == SkRegion_kRunTypeSentinel) {
+            if (runs[stopIndex - 5] == RUN_TYPE_SENTINEL) {
                 // eek, stop[-4] was a bottom with no x-runs
                 trimRight = true
             }
@@ -622,7 +618,7 @@ class Region(rects: Array<Rect> = arrayOf()) {
             }
             if (trimRight) {
                 // kill empty last span
-                trimmedRuns[stopIndex - 4] = SkRegion_kRunTypeSentinel
+                trimmedRuns[stopIndex - 4] = RUN_TYPE_SENTINEL
                 stopIndex -= 3
                 assertSentinel(runs[stopIndex - 1], true) // last y-sentinel
                 assertSentinel(runs[stopIndex - 2], true) // last x-sentinel
@@ -636,7 +632,7 @@ class Region(rects: Array<Rect> = arrayOf()) {
             count = stopIndex - startIndex
         }
 
-        require(count >= kRectRegionRuns)
+        require(count >= RECT_REGION_RUNS)
 
         if (runsAreARect(trimmedRuns, count)) {
             fBounds =
@@ -667,11 +663,7 @@ class Region(rects: Array<Rect> = arrayOf()) {
     }
 
     private fun setRect(r: Rect): Boolean {
-        if (
-            r.isEmpty ||
-                SkRegion_kRunTypeSentinel == r.right ||
-                SkRegion_kRunTypeSentinel == r.bottom
-        ) {
+        if (r.isEmpty || RUN_TYPE_SENTINEL == r.right || RUN_TYPE_SENTINEL == r.bottom) {
             return this.setEmpty()
         }
         fBounds = r
@@ -684,9 +676,9 @@ class Region(rects: Array<Rect> = arrayOf()) {
     }
 
     private fun runsAreARect(runs: RunArray, count: Int): Boolean {
-        require(count >= kRectRegionRuns)
+        require(count >= RECT_REGION_RUNS)
 
-        if (count == kRectRegionRuns) {
+        if (count == RECT_REGION_RUNS) {
             assertSentinel(runs[1], false) // bottom
             require(1 == runs[2])
             assertSentinel(runs[3], false) // left
@@ -724,7 +716,7 @@ class Region(rects: Array<Rect> = arrayOf()) {
                 operateOnSpan(aRuns, bRuns, aRunsIndex, bRunsIndex, runArray, start, fMin, fMax)
             val len = stop - start
             require(len >= 1 && (len and 1) == 1)
-            require(SkRegion_kRunTypeSentinel == runArray[stop - 1])
+            require(RUN_TYPE_SENTINEL == runArray[stop - 1])
 
             // Assert memcmp won't exceed fArray->count().
             require(runArray.count >= start + len - 1)
@@ -754,7 +746,7 @@ class Region(rects: Array<Rect> = arrayOf()) {
             runArray[fStartDst] = top
             // Previously reserved enough for TWO sentinals.
             // SkASSERT(fArray->count() > SkToInt(fPrevDst + fPrevLen));
-            runArray[fPrevDst + fPrevLen] = SkRegion_kRunTypeSentinel
+            runArray[fPrevDst + fPrevLen] = RUN_TYPE_SENTINEL
             return fPrevDst - fStartDst + fPrevLen + 1
         }
 
@@ -785,9 +777,9 @@ class Region(rects: Array<Rect> = arrayOf()) {
             }
 
             fun done(): Boolean {
-                require(fALeft <= SkRegion_kRunTypeSentinel)
-                require(fBLeft <= SkRegion_kRunTypeSentinel)
-                return fALeft == SkRegion_kRunTypeSentinel && fBLeft == SkRegion_kRunTypeSentinel
+                require(fALeft <= RUN_TYPE_SENTINEL)
+                require(fBLeft <= RUN_TYPE_SENTINEL)
+                return fALeft == RUN_TYPE_SENTINEL && fBLeft == RUN_TYPE_SENTINEL
             }
 
             fun next() {
@@ -909,7 +901,7 @@ class Region(rects: Array<Rect> = arrayOf()) {
                 }
             }
 
-            array[dstIndex] = SkRegion_kRunTypeSentinel
+            array[dstIndex] = RUN_TYPE_SENTINEL
             dstIndex++
             return dstIndex // dst - &(*array)[0]
         }
@@ -919,7 +911,7 @@ class Region(rects: Array<Rect> = arrayOf()) {
             if (runs.size <= index) {
                 println("We fucked up...")
             }
-            while (runs[index] != SkRegion_kRunTypeSentinel) {
+            while (runs[index] != RUN_TYPE_SENTINEL) {
                 if (runs.size <= index + 2) {
                     println("We fucked up...")
                     return 256
@@ -957,7 +949,7 @@ class Region(rects: Array<Rect> = arrayOf()) {
             arrayOf(
                 0, // fake bottom value
                 0, // zero intervals
-                SkRegion_kRunTypeSentinel,
+                RUN_TYPE_SENTINEL,
                 // just need a 2nd value, since spanRec.init() reads 2 values, even
                 // though if the first value is the sentinel, it ignores the 2nd value.
                 // w/o the 2nd value here, we might read uninitialized memory.
@@ -976,9 +968,9 @@ class Region(rects: Array<Rect> = arrayOf()) {
 
         val oper = RgnOper(min(aTop, bTop), dst, op)
 
-        var prevBot = SkRegion_kRunTypeSentinel // so we fail the first test
+        var prevBot = RUN_TYPE_SENTINEL // so we fail the first test
 
-        while (aBot < SkRegion_kRunTypeSentinel || bBot < SkRegion_kRunTypeSentinel) {
+        while (aBot < RUN_TYPE_SENTINEL || bBot < RUN_TYPE_SENTINEL) {
             var top: Int
             var bot = 0
 
@@ -1040,7 +1032,7 @@ class Region(rects: Array<Rect> = arrayOf()) {
                 aBot = aRuns[aRunsIndex]
                 aRunsIndex++ // skip to next index
                 aRunsIndex++ // skip uninitialized intervalCount
-                if (aBot == SkRegion_kRunTypeSentinel) {
+                if (aBot == RUN_TYPE_SENTINEL) {
                     aTop = aBot
                 }
             }
@@ -1050,7 +1042,7 @@ class Region(rects: Array<Rect> = arrayOf()) {
                 bBot = bRuns[bRunsIndex]
                 bRunsIndex++ // skip to next index
                 bRunsIndex++ // skip uninitialized intervalCount
-                if (bBot == SkRegion_kRunTypeSentinel) {
+                if (bBot == RUN_TYPE_SENTINEL) {
                     bTop = bBot
                 }
             }
@@ -1147,9 +1139,9 @@ class Region(rects: Array<Rect> = arrayOf()) {
         val EMPTY: Region
             get() = Region()
 
-        private const val SkRegion_kRunTypeSentinel = 0x7FFFFFFF
+        private const val RUN_TYPE_SENTINEL = 0x7FFFFFFF
 
-        private const val kRectRegionRuns = 7
+        private const val RECT_REGION_RUNS = 7
 
         private class MinMax(val min: Int, val max: Int)
 
@@ -1179,7 +1171,7 @@ class Region(rects: Array<Rect> = arrayOf()) {
         @JsName("fromEmpty") fun from(): Region = from(Rect.EMPTY)
 
         private fun skRegionValueIsSentinel(value: Int): Boolean {
-            return value == SkRegion_kRunTypeSentinel
+            return value == RUN_TYPE_SENTINEL
         }
 
         private fun assertSentinel(value: Int, isSentinel: Boolean) {

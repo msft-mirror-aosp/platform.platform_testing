@@ -19,6 +19,7 @@ package android.tools.device.traces.parsers.wm
 import android.app.nano.WindowConfigurationProto
 import android.content.nano.ConfigurationProto
 import android.graphics.nano.RectProto
+import android.tools.common.PlatformConsts
 import android.tools.common.Rotation
 import android.tools.common.datatypes.Insets
 import android.tools.common.datatypes.Rect
@@ -361,11 +362,11 @@ class WindowManagerStateBuilder {
                 isSurfaceShown = proto.animator?.surface?.shown ?: false,
                 windowType =
                     when {
-                        identifierName.startsWith(WindowState.STARTING_WINDOW_PREFIX) ->
-                            WindowState.WINDOW_TYPE_STARTING
-                        proto.animatingExit -> WindowState.WINDOW_TYPE_EXITING
-                        identifierName.startsWith(WindowState.DEBUGGER_WINDOW_PREFIX) ->
-                            WindowState.WINDOW_TYPE_STARTING
+                        identifierName.startsWith(PlatformConsts.STARTING_WINDOW_PREFIX) ->
+                            PlatformConsts.WINDOW_TYPE_STARTING
+                        proto.animatingExit -> PlatformConsts.WINDOW_TYPE_EXITING
+                        identifierName.startsWith(PlatformConsts.DEBUGGER_WINDOW_PREFIX) ->
+                            PlatformConsts.WINDOW_TYPE_STARTING
                         else -> 0
                     },
                 requestedSize = Size.from(proto.requestedWidth, proto.requestedHeight),
@@ -387,13 +388,13 @@ class WindowManagerStateBuilder {
                         nameOverride =
                             when {
                                 // Existing code depends on the prefix being removed
-                                identifierName.startsWith(WindowState.STARTING_WINDOW_PREFIX) ->
+                                identifierName.startsWith(PlatformConsts.STARTING_WINDOW_PREFIX) ->
                                     identifierName.substring(
-                                        WindowState.STARTING_WINDOW_PREFIX.length
+                                        PlatformConsts.STARTING_WINDOW_PREFIX.length
                                     )
-                                identifierName.startsWith(WindowState.DEBUGGER_WINDOW_PREFIX) ->
+                                identifierName.startsWith(PlatformConsts.DEBUGGER_WINDOW_PREFIX) ->
                                     identifierName.substring(
-                                        WindowState.DEBUGGER_WINDOW_PREFIX.length
+                                        PlatformConsts.DEBUGGER_WINDOW_PREFIX.length
                                     )
                                 else -> identifierName
                             }

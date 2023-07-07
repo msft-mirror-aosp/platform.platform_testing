@@ -17,9 +17,6 @@
 package android.tools.common.flicker.subject.layers
 
 import android.tools.common.datatypes.Color
-import android.tools.common.datatypes.component.ComponentSplashScreenMatcher
-import android.tools.common.datatypes.component.IComponentMatcher
-import android.tools.common.datatypes.component.IComponentNameMatcher
 import android.tools.common.flicker.assertions.Fact
 import android.tools.common.flicker.subject.FlickerSubject
 import android.tools.common.flicker.subject.exceptions.ExceptionMessageBuilder
@@ -28,6 +25,9 @@ import android.tools.common.flicker.subject.exceptions.InvalidElementException
 import android.tools.common.flicker.subject.exceptions.InvalidPropertyException
 import android.tools.common.flicker.subject.region.RegionSubject
 import android.tools.common.io.IReader
+import android.tools.common.traces.component.ComponentSplashScreenMatcher
+import android.tools.common.traces.component.IComponentMatcher
+import android.tools.common.traces.component.IComponentNameMatcher
 import android.tools.common.traces.surfaceflinger.Layer
 import android.tools.common.traces.surfaceflinger.LayerTraceEntry
 import android.tools.common.traces.surfaceflinger.LayersTrace

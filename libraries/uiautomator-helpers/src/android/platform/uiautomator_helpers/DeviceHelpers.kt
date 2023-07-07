@@ -25,6 +25,7 @@ import android.platform.uiautomator_helpers.TracingUtils.trace
 import android.platform.uiautomator_helpers.WaitUtils.ensureThat
 import android.platform.uiautomator_helpers.WaitUtils.waitFor
 import android.platform.uiautomator_helpers.WaitUtils.waitForNullable
+import android.platform.uiautomator_helpers.WaitUtils.waitForPossibleEmpty
 import android.platform.uiautomator_helpers.WaitUtils.waitForValueToSettle
 import android.util.Log
 import androidx.test.platform.app.InstrumentationRegistry
@@ -55,14 +56,16 @@ object DeviceHelpers {
      * Waits for an object to be visible and returns it.
      *
      * Throws an error with message provided by [errorProvider] if the object is not found.
-     *
-     * @deprecated Use [DeviceHelpers.waitForObj] instead.
      */
+    @Deprecated(
+        "Use [DeviceHelpers.waitForObj] instead.",
+        ReplaceWith("DeviceHelpers.waitForObj(selector, timeout, errorProvider)")
+    )
     fun UiDevice.waitForObj(
         selector: BySelector,
         timeout: Duration = LONG_WAIT,
         errorProvider: () -> String = { "Object $selector not found" },
-    ): UiObject2 = waitFor("$selector object", timeout, errorProvider) { findObject(selector) }
+    ): UiObject2 = DeviceHelpers.waitForObj(selector, timeout, errorProvider)
 
     /**
      * Waits for an object to be visible and returns it.
@@ -73,7 +76,8 @@ object DeviceHelpers {
         selector: BySelector,
         timeout: Duration = LONG_WAIT,
         errorProvider: () -> String = { "Object $selector not found" },
-    ): UiObject2 = uiDevice.waitForObj(selector, timeout, errorProvider)
+    ): UiObject2 =
+        waitFor("$selector object", timeout, errorProvider) { uiDevice.findObject(selector) }
 
     /**
      * Waits for an object to be visible and returns it.
@@ -88,13 +92,15 @@ object DeviceHelpers {
 
     /**
      * Waits for an object to be visible and returns it. Returns `null` if the object is not found.
-     *
-     * @deprecated use [DeviceHelpers.waitForNullableObj] instead.
      */
+    @Deprecated(
+        "Use [DeviceHelpers.waitForNullableObj] instead.",
+        ReplaceWith("DeviceHelpers.waitForNullableObj(selector, timeout)")
+    )
     fun UiDevice.waitForNullableObj(
         selector: BySelector,
         timeout: Duration = SHORT_WAIT,
-    ): UiObject2? = waitForNullable("nullable $selector objects", timeout) { findObject(selector) }
+    ): UiObject2? = DeviceHelpers.waitForNullableObj(selector, timeout)
 
     /**
      * Waits for an object to be visible and returns it. Returns `null` if the object is not found.
@@ -102,16 +108,57 @@ object DeviceHelpers {
     fun waitForNullableObj(
         selector: BySelector,
         timeout: Duration = SHORT_WAIT,
-    ): UiObject2? = uiDevice.waitForNullableObj(selector, timeout)
+    ): UiObject2? =
+        waitForNullable("nullable $selector objects", timeout) { uiDevice.findObject(selector) }
 
     /**
      * Waits for objects matched by [selector] to be visible and returns them. Returns `null` if no
      * objects are found
      */
+    @Deprecated(
+        "Use DeviceHelpers.waitForPossibleEmpty",
+        ReplaceWith(
+            "waitForPossibleEmpty(selector, timeout)",
+            "android.platform.uiautomator_helpers.DeviceHelpers.waitForPossibleEmpty"
+        )
+    )
+    fun waitForNullableObjects(
+        selector: BySelector,
+        timeout: Duration = SHORT_WAIT,
+    ): List<UiObject2>? = waitForPossibleEmpty(selector, timeout)
+
+    /**
+     * Waits for objects matched by selector to be visible. Returns an empty list when none is
+     * visible.
+     */
+    fun waitForPossibleEmpty(
+        selector: BySelector,
+        timeout: Duration = SHORT_WAIT,
+    ): List<UiObject2> =
+        waitForPossibleEmpty("$selector objects", timeout) { uiDevice.findObjects(selector) }
+
+    /**
+     * Waits for objects matched by [selector] to be visible and returns them. Returns `null` if no
+     * objects are found
+     */
+    @Deprecated(
+        "Use DeviceHelpers.waitForNullableObjects",
+        ReplaceWith("DeviceHelpers.waitForNullableObjects(selector, timeout)")
+    )
     fun UiDevice.waitForNullableObjects(
         selector: BySelector,
         timeout: Duration = SHORT_WAIT,
-    ): List<UiObject2>? = waitForNullable("$selector objects", timeout) { findObjects(selector) }
+    ): List<UiObject2>? = DeviceHelpers.waitForNullableObjects(selector, timeout)
+
+    /** Returns [true] when the [selector] is visible. */
+    fun hasObject(
+        selector: BySelector,
+    ): Boolean = trace("Checking if device has $selector") { uiDevice.hasObject(selector) }
+
+    /** Finds an object with this selector and clicks on it. */
+    fun BySelector.click() {
+        trace("Clicking $this") { waitForObj(this).click() }
+    }
 
     /**
      * Asserts visibility of a [selector], waiting for [timeout] until visibility matches the
@@ -121,14 +168,35 @@ object DeviceHelpers {
      */
     @JvmOverloads
     @JvmStatic
+    @Deprecated(
+        "Use DeviceHelpers.assertVisibility directly",
+        ReplaceWith("DeviceHelpers.assertVisibility(selector, visible, timeout, errorProvider)")
+    )
     fun UiDevice.assertVisibility(
         selector: BySelector,
         visible: Boolean = true,
         timeout: Duration = LONG_WAIT,
         errorProvider: (() -> String)? = null,
     ) {
+        DeviceHelpers.assertVisibility(selector, visible, timeout, errorProvider)
+    }
+
+    /**
+     * Asserts visibility of a [selector], waiting for [timeout] until visibility matches the
+     * expected.
+     *
+     * If [container] is provided, the object is searched only inside of it.
+     */
+    @JvmOverloads
+    @JvmStatic
+    fun assertVisibility(
+        selector: BySelector,
+        visible: Boolean = true,
+        timeout: Duration = LONG_WAIT,
+        errorProvider: (() -> String)? = null,
+    ) {
         ensureThat("$selector is ${visible.asVisibilityBoolean()}", timeout, errorProvider) {
-            hasObject(selector) == visible
+            uiDevice.hasObject(selector) == visible
         }
     }
 
@@ -187,17 +255,31 @@ object DeviceHelpers {
      *
      * Adds some logging. Throws [RuntimeException] In case of failures.
      */
+    @Deprecated("Use [DeviceHelpers.shell] directly", ReplaceWith("DeviceHelpers.shell(command)"))
     @JvmStatic
-    fun UiDevice.shell(command: String): String =
+    fun UiDevice.shell(command: String): String = DeviceHelpers.shell(command)
+
+    /**
+     * Executes a shell command on the device, and return its output one it finishes.
+     *
+     * Adds some logging to [UiDevice.executeShellCommand]. Throws [RuntimeException] In case of
+     * failures. Blocks until the command returns.
+     *
+     * @param command Shell command to execute
+     * @return Standard output of the command.
+     */
+    @JvmStatic
+    fun shell(command: String): String {
         trace("Executing shell command: $command") {
             Log.d(TAG, "Executing Shell Command: $command")
             return try {
-                executeShellCommand(command)
+                uiDevice.executeShellCommand(command)
             } catch (e: IOException) {
                 Log.e(TAG, "IOException Occurred.", e)
                 throw RuntimeException(e)
             }
         }
+    }
 
     /** Perform double tap at specified x and y position */
     @JvmStatic
@@ -214,7 +296,28 @@ object DeviceHelpers {
      * [BetterSwipe].
      */
     @JvmStatic
+    @Deprecated(
+        "Use DeviceHelpers.betterSwipe directly",
+        ReplaceWith("DeviceHelpers.betterSwipe(startX, startY, endX, endY, interpolator)")
+    )
     fun UiDevice.betterSwipe(
+        startX: Int,
+        startY: Int,
+        endX: Int,
+        endY: Int,
+        interpolator: TimeInterpolator = FLING_GESTURE_INTERPOLATOR
+    ) {
+        DeviceHelpers.betterSwipe(startX, startY, endX, endY, interpolator)
+    }
+
+    /**
+     * Aims at replacing [UiDevice.swipe].
+     *
+     * This should be used instead of [UiDevice.swipe] as it causes less flakiness. See
+     * [BetterSwipe].
+     */
+    @JvmStatic
+    fun betterSwipe(
         startX: Int,
         startY: Int,
         endX: Int,

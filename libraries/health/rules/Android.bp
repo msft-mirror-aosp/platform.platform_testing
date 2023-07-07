@@ -36,6 +36,7 @@ java_library {
         "health-testing-utils",
         "ub-uiautomator",
         "uiautomator-helpers",
+        "uinput-device-test-helper"
     ],
     srcs: [
         "src/**/*.java",

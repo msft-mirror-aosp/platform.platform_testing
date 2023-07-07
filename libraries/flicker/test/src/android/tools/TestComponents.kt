@@ -18,7 +18,7 @@
 
 package android.tools
 
-import android.tools.common.datatypes.component.ComponentNameMatcher
+import android.tools.common.traces.component.ComponentNameMatcher
 
 internal object TestComponents {
     @JvmStatic

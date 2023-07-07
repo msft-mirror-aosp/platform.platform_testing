@@ -17,11 +17,11 @@
 package android.tools.common.flicker.subject.wm
 
 import android.tools.common.Rotation
-import android.tools.common.datatypes.component.ComponentNameMatcher
-import android.tools.common.datatypes.component.IComponentMatcher
 import android.tools.common.flicker.subject.FlickerTraceSubject
 import android.tools.common.flicker.subject.region.RegionTraceSubject
 import android.tools.common.io.IReader
+import android.tools.common.traces.component.ComponentNameMatcher
+import android.tools.common.traces.component.IComponentMatcher
 import android.tools.common.traces.region.RegionTrace
 import android.tools.common.traces.wm.WindowManagerTrace
 import android.tools.common.traces.wm.WindowState
@@ -564,12 +564,18 @@ class WindowManagerTraceSubject(
     /** Checks that all visible layers are shown for more than one consecutive entry */
     fun visibleWindowsShownMoreThanOneConsecutiveEntry(
         ignoreWindows: List<ComponentNameMatcher> =
-            listOf(ComponentNameMatcher.SPLASH_SCREEN, ComponentNameMatcher.SNAPSHOT)
+            listOf(
+                ComponentNameMatcher.SPLASH_SCREEN,
+                ComponentNameMatcher.SNAPSHOT,
+                ComponentNameMatcher.SECONDARY_HOME_HANDLE,
+            )
     ): WindowManagerTraceSubject = apply {
         visibleEntriesShownMoreThanOneConsecutiveTime { subject ->
             subject.wmState.windowStates
                 .filter { it.isVisible }
-                .filter { ignoreWindows.none { windowName -> windowName.windowMatchesAnyOf(it) } }
+                .filter { window ->
+                    ignoreWindows.none { matcher -> matcher.windowMatchesAnyOf(window) }
+                }
                 .map { it.name }
                 .toSet()
         }

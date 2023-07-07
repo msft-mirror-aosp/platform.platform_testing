@@ -197,6 +197,17 @@ public final class MediaInstrumentation {
         return new MediaController(this, notification);
     }
 
+    /**
+     * Wait for UMO is gone.
+     *
+     * @param timeout Maximum amount of time to wait in milliseconds.
+     * @return The final result returned by the condition, or null if the condition was not met
+     *     before the timeout.
+     */
+    public boolean waitUmoGone(long timeout) {
+        return mDevice.wait(Until.gone(By.res(PKG, MEDIA_CONTROLLER_RES_ID)), timeout);
+    }
+
     public boolean isMediaNotificationVisible() {
         return mDevice.hasObject(By.res(PKG, MEDIA_CONTROLLER_RES_ID));
     }

@@ -26,7 +26,7 @@ import android.tools.common.CrossPlatform
 import android.tools.common.ScenarioBuilder
 import android.tools.common.io.RunStatus
 import android.tools.common.io.TraceType
-import android.tools.device.traces.DEFAULT_TRACE_CONFIG
+import android.tools.device.traces.TRACE_CONFIG_REQUIRE_CHANGES
 import android.tools.device.traces.deleteIfExists
 import android.tools.newTestResultWriter
 import android.tools.outputFileName
@@ -69,7 +69,7 @@ class ResultWriterTest {
         Truth.assertWithMessage("Transition end time")
             .that(result.transitionTimeRange.end)
             .isEqualTo(CrossPlatform.timestamp.max())
-        val reader = ResultReader(result, DEFAULT_TRACE_CONFIG)
+        val reader = ResultReader(result, TRACE_CONFIG_REQUIRE_CHANGES)
         Truth.assertWithMessage("File count").that(reader.countFiles()).isEqualTo(0)
     }
 
@@ -124,7 +124,7 @@ class ResultWriterTest {
     fun writeWMTrace() {
         val writer = newTestResultWriter().addTraceResult(TraceType.WM, TestTraces.WMTrace.FILE)
         val result = writer.write()
-        val reader = ResultReader(result, DEFAULT_TRACE_CONFIG)
+        val reader = ResultReader(result, TRACE_CONFIG_REQUIRE_CHANGES)
         Truth.assertWithMessage("File count").that(reader.countFiles()).isEqualTo(1)
         Truth.assertWithMessage("Has file with type")
             .that(reader.hasTraceFile(TraceType.WM))
@@ -135,7 +135,7 @@ class ResultWriterTest {
     fun writeLayersTrace() {
         val writer = newTestResultWriter().addTraceResult(TraceType.SF, TestTraces.LayerTrace.FILE)
         val result = writer.write()
-        val reader = ResultReader(result, DEFAULT_TRACE_CONFIG)
+        val reader = ResultReader(result, TRACE_CONFIG_REQUIRE_CHANGES)
         Truth.assertWithMessage("File count").that(reader.countFiles()).isEqualTo(1)
         Truth.assertWithMessage("Has file with type")
             .that(reader.hasTraceFile(TraceType.SF))
@@ -148,7 +148,7 @@ class ResultWriterTest {
             newTestResultWriter()
                 .addTraceResult(TraceType.TRANSACTION, TestTraces.TransactionTrace.FILE)
         val result = writer.write()
-        val reader = ResultReader(result, DEFAULT_TRACE_CONFIG)
+        val reader = ResultReader(result, TRACE_CONFIG_REQUIRE_CHANGES)
         Truth.assertWithMessage("File count").that(reader.countFiles()).isEqualTo(1)
         Truth.assertWithMessage("Has file with type")
             .that(reader.hasTraceFile(TraceType.TRANSACTION))
@@ -159,12 +159,16 @@ class ResultWriterTest {
     fun writeTransitionTrace() {
         val writer =
             newTestResultWriter()
-                .addTraceResult(TraceType.TRANSITION, TestTraces.TransitionTrace.FILE)
+                .addTraceResult(TraceType.WM_TRANSITION, TestTraces.TransitionTrace.WM_FILE)
+                .addTraceResult(TraceType.SHELL_TRANSITION, TestTraces.TransitionTrace.SHELL_FILE)
         val result = writer.write()
-        val reader = ResultReader(result, DEFAULT_TRACE_CONFIG)
-        Truth.assertWithMessage("File count").that(reader.countFiles()).isEqualTo(1)
+        val reader = ResultReader(result, TRACE_CONFIG_REQUIRE_CHANGES)
+        Truth.assertWithMessage("File count").that(reader.countFiles()).isEqualTo(2)
         Truth.assertWithMessage("Has file with type")
-            .that(reader.hasTraceFile(TraceType.TRANSITION))
+            .that(reader.hasTraceFile(TraceType.WM_TRANSITION))
+            .isTrue()
+        Truth.assertWithMessage("Has file with type")
+            .that(reader.hasTraceFile(TraceType.SHELL_TRANSITION))
             .isTrue()
     }
 
@@ -174,11 +178,12 @@ class ResultWriterTest {
             newTestResultWriter()
                 .addTraceResult(TraceType.WM, TestTraces.WMTrace.FILE)
                 .addTraceResult(TraceType.SF, TestTraces.LayerTrace.FILE)
-                .addTraceResult(TraceType.TRANSITION, TestTraces.TransactionTrace.FILE)
-                .addTraceResult(TraceType.TRANSACTION, TestTraces.TransitionTrace.FILE)
+                .addTraceResult(TraceType.TRANSACTION, TestTraces.TransactionTrace.FILE)
+                .addTraceResult(TraceType.WM_TRANSITION, TestTraces.TransitionTrace.WM_FILE)
+                .addTraceResult(TraceType.SHELL_TRANSITION, TestTraces.TransitionTrace.SHELL_FILE)
         val result = writer.write()
-        val reader = ResultReader(result, DEFAULT_TRACE_CONFIG)
-        Truth.assertWithMessage("File count").that(reader.countFiles()).isEqualTo(4)
+        val reader = ResultReader(result, TRACE_CONFIG_REQUIRE_CHANGES)
+        Truth.assertWithMessage("File count").that(reader.countFiles()).isEqualTo(5)
         Truth.assertWithMessage("Has file with type")
             .that(reader.hasTraceFile(TraceType.WM))
             .isTrue()
@@ -186,7 +191,10 @@ class ResultWriterTest {
             .that(reader.hasTraceFile(TraceType.WM))
             .isTrue()
         Truth.assertWithMessage("Has file with type")
-            .that(reader.hasTraceFile(TraceType.TRANSITION))
+            .that(reader.hasTraceFile(TraceType.WM_TRANSITION))
+            .isTrue()
+        Truth.assertWithMessage("Has file with type")
+            .that(reader.hasTraceFile(TraceType.SHELL_TRANSITION))
             .isTrue()
         Truth.assertWithMessage("Has file with type")
             .that(reader.hasTraceFile(TraceType.TRANSACTION))
