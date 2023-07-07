@@ -26,6 +26,7 @@ import android.tools.common.traces.wm.TransitionsTrace
 import android.tools.device.flicker.FlickerServiceResultsCollector
 import android.tools.device.flicker.FlickerServiceResultsCollector.Companion.FLICKER_ASSERTIONS_COUNT_KEY
 import android.tools.device.flicker.FlickerServiceResultsCollector.Companion.WINSCOPE_FILE_PATH_KEY
+import android.tools.device.flicker.FlickerServiceResultsCollector.Companion.getKeyForAssertionResult
 import android.tools.device.traces.io.InMemoryArtifact
 import android.tools.device.traces.io.ParsedTracesReader
 import android.tools.utils.KotlinMockito
@@ -198,6 +199,48 @@ class FlickerServiceResultsCollectorTest {
         Truth.assertThat(testData.stringMetrics).containsKey(WINSCOPE_FILE_PATH_KEY)
         Truth.assertThat(testData.stringMetrics[WINSCOPE_FILE_PATH_KEY])
             .isEqualTo("IN_MEMORY/Empty")
+
+        Truth.assertThat(runData.hasMetrics()).isFalse()
+    }
+
+    @Test
+    fun reportsDuplicateAssertionsWithIndex() {
+        val assertionResults =
+            listOf(
+                mockSuccessfulAssertionResult,
+                mockSuccessfulAssertionResult,
+                mockFailedAssertionResult
+            )
+        val collector = createCollector(assertionResults = assertionResults)
+        val runData = DataRecord()
+        val runDescription = Description.createSuiteDescription(this::class.java)
+        val testData = SpyDataRecord()
+        val testDescription = Description.createTestDescription(this::class.java, "TestName")
+
+        collector.onTestRunStart(runData, runDescription)
+        collector.onTestStart(testData, testDescription)
+        collector.onTestEnd(testData, testDescription)
+        collector.onTestRunEnd(runData, Mockito.mock(org.junit.runner.Result::class.java))
+
+        Truth.assertThat(collector.executionErrors).isEmpty()
+        Truth.assertThat(collector.assertionResults).isNotEmpty()
+
+        Truth.assertThat(testData.hasMetrics()).isTrue()
+        Truth.assertThat(testData.stringMetrics).containsKey(WINSCOPE_FILE_PATH_KEY)
+        Truth.assertThat(testData.stringMetrics[WINSCOPE_FILE_PATH_KEY])
+            .isEqualTo("IN_MEMORY/Empty")
+
+        Truth.assertThat(testData.stringMetrics).containsKey(FLICKER_ASSERTIONS_COUNT_KEY)
+        Truth.assertThat(testData.stringMetrics[FLICKER_ASSERTIONS_COUNT_KEY])
+            .isEqualTo("${assertionResults.size}")
+
+        val key0 = "${getKeyForAssertionResult(mockSuccessfulAssertionResult)}_0"
+        val key1 = "${getKeyForAssertionResult(mockSuccessfulAssertionResult)}_1"
+        val key2 = "${getKeyForAssertionResult(mockFailedAssertionResult)}_0"
+        Truth.assertThat(testData.stringMetrics).containsKey(key0)
+        Truth.assertThat(testData.stringMetrics[key0]).isEqualTo("0")
+        Truth.assertThat(testData.stringMetrics[key1]).isEqualTo("0")
+        Truth.assertThat(testData.stringMetrics[key2]).isEqualTo("1")
 
         Truth.assertThat(runData.hasMetrics()).isFalse()
     }

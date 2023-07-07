@@ -53,7 +53,7 @@ class FlickerService(
             try {
                 val scenarioInstances = detectScenarios(reader)
                 val assertions = generateAssertions(scenarioInstances)
-                assertionRunner.execute(assertions)
+                executeAssertions(assertions)
             } catch (exception: Throwable) {
                 CrossPlatform.log.e("$FLICKER_TAG-ASSERT", "FAILED PROCESSING", exception)
                 throw exception
@@ -79,7 +79,23 @@ class FlickerService(
         assertions: Collection<IFaasAssertion>
     ): Collection<IAssertionResult> {
         return CrossPlatform.log.withTracing("FlickerService#executeAssertions") {
-            assertionRunner.execute(assertions)
+            val results = assertionRunner.execute(assertions)
+            logResults(results)
+            results
+        }
+    }
+
+    private fun logResults(results: Collection<IAssertionResult>) {
+        results.forEach {
+            if (it.failed) {
+                CrossPlatform.log.w(
+                    "$FLICKER_TAG-SERVICE",
+                    "${it.assertion} FAILED :: " +
+                        (it.assertionError?.message ?: "<NO ERROR MESSAGE>")
+                )
+            } else {
+                CrossPlatform.log.w("$FLICKER_TAG-SERVICE", "${it.assertion} PASSED")
+            }
         }
     }
 }

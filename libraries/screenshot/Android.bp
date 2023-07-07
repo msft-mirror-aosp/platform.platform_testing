@@ -56,9 +56,12 @@ android_library {
     ],
     static_libs: [
         "androidx.annotation_annotation",
-	"androidx.test.ext.junit",
+        "androidx.test.ext.junit",
         "platform-screenshot-diff-proto",
         "androidx.test.runner",
+        "androidx.test.espresso.core",
+        "androidx.appcompat_appcompat",
+        "guava",
     ],
 }
 

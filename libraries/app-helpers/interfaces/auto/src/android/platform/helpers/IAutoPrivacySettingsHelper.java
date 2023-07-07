@@ -60,7 +60,7 @@ public interface IAutoPrivacySettingsHelper extends IAppHelper {
      *
      * <p>This method taps microphone button in status bar.
      */
-    void tapOnMicroPhoneStatusBar();
+    void clickMicroPhoneStatusBar();
 
     /**
      * Setup expectation: MicroPhone panel is open.
@@ -86,9 +86,9 @@ public interface IAutoPrivacySettingsHelper extends IAppHelper {
     /**
      * Setup expectation: MicroPhone panel is open.
      *
-     * <p>This method taos on micro phone toggle
+     * <p>This method taps on micro phone toggle
      */
-    void tapOnMicroPhoneToggleStatusBar();
+    void clickMicroPhoneToggleStatusBar();
 
     /**
      * Setup expectation: MicroPhone Settings is open and no apps has used microphone recently.
@@ -109,7 +109,7 @@ public interface IAutoPrivacySettingsHelper extends IAppHelper {
      *
      * <p>This method taps on Micro Phone Permissions
      */
-    void tapOnManageMicroPhonePermissions();
+    void clickManageMicroPhonePermissions();
 
     /**
      * Setup expectation: MicroPhone settings is open, google account is added.
@@ -145,5 +145,12 @@ public interface IAutoPrivacySettingsHelper extends IAppHelper {
      *
      * <p>This method clicks on ViewAll Link.
      */
-    void tapOnViewAll();
+    void clickViewAllLink();
+
+    /**
+     * Setup expectation: open Google assistant app, microphone is on
+     *
+     * <p>Tap on unmuted microphone status bar
+     */
+    void clickUnMutedMicroPhoneStatusBar();
 }

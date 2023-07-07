@@ -66,8 +66,10 @@ class Transition(
     @JsName("mergeTime") val mergeTime: Timestamp? = shellData.mergeTime
     @JsName("shellAbortTime") val shellAbortTime: Timestamp? = shellData.abortTime
 
-    @JsName("startTransactionId") val startTransactionId: Long = wmData.startTransactionId ?: -1L
-    @JsName("finishTransactionId") val finishTransactionId: Long = wmData.finishTransactionId ?: -1L
+    @JsName("startTransactionId")
+    val startTransactionId: Long = wmData.startTransactionId?.toLong() ?: -1L
+    @JsName("finishTransactionId")
+    val finishTransactionId: Long = wmData.finishTransactionId?.toLong() ?: -1L
     @JsName("type") val type: TransitionType = wmData.type ?: TransitionType.UNDEFINED
     @JsName("changes") val changes: Array<TransitionChange> = wmData.changes ?: emptyArray()
     @JsName("mergedInto") val mergedInto = shellData.mergedInto
@@ -79,12 +81,28 @@ class Transition(
 
     @JsName("getStartTransaction")
     fun getStartTransaction(transactionsTrace: TransactionsTrace): Transaction? {
-        return transactionsTrace.allTransactions.firstOrNull { it.id == this.startTransactionId }
+        val matches =
+            transactionsTrace.allTransactions.filter {
+                it.id == this.startTransactionId ||
+                    it.mergedTransactionIds.contains(this.startTransactionId)
+            }
+        require(matches.size <= 1) {
+            "Too many transactions matches found for Transaction#${this.startTransactionId}."
+        }
+        return matches.firstOrNull()
     }
 
     @JsName("getFinishTransaction")
     fun getFinishTransaction(transactionsTrace: TransactionsTrace): Transaction? {
-        return transactionsTrace.allTransactions.firstOrNull { it.id == this.finishTransactionId }
+        val matches =
+            transactionsTrace.allTransactions.filter {
+                it.id == this.finishTransactionId ||
+                    it.mergedTransactionIds.contains(this.finishTransactionId)
+            }
+        require(matches.size <= 1) {
+            "Too many transactions matches found for Transaction#${this.finishTransactionId}."
+        }
+        return matches.firstOrNull()
     }
 
     @JsName("isIncomplete")
@@ -93,12 +111,36 @@ class Transition(
 
     @JsName("merge")
     fun merge(transition: Transition): Transition {
-        require(this.id == transition.id) { "Can't merge transitions with mismatching ids" }
+        require(transition.mergedInto == this.id) {
+            "Can't merge transition with mergedInto id ${transition.mergedInto} " +
+                "into transition with id ${this.id}"
+        }
+
+        val finishTransition =
+            if (transition.finishTime > this.finishTime) {
+                transition
+            } else {
+                this
+            }
 
         return Transition(
             id = this.id,
-            this.wmData.merge(transition.wmData),
-            this.shellData.merge(transition.shellData)
+            wmData =
+                WmTransitionData(
+                    createTime = wmData.createTime,
+                    sendTime = wmData.sendTime,
+                    abortTime = wmData.abortTime,
+                    finishTime = finishTransition.wmData.finishTime,
+                    startTransactionId = wmData.startTransactionId,
+                    finishTransactionId = finishTransition.wmData.finishTransactionId,
+                    type = wmData.type,
+                    changes =
+                        (wmData.changes ?: emptyArray())
+                            .toMutableList()
+                            .apply { addAll(transition.wmData.changes ?: emptyArray()) }
+                            .toTypedArray()
+                ),
+            shellData = shellData
         )
     }
 
@@ -129,6 +171,21 @@ class Transition(
             )
             appendLine("]")
             appendLine(")")
+        }
+    }
+
+    companion object {
+        @JsName("mergePartialTransitions")
+        fun mergePartialTransitions(transition1: Transition, transition2: Transition): Transition {
+            require(transition1.id == transition2.id) {
+                "Can't merge transitions with mismatching ids"
+            }
+
+            return Transition(
+                id = transition1.id,
+                transition1.wmData.merge(transition2.wmData),
+                transition1.shellData.merge(transition2.shellData)
+            )
         }
     }
 }

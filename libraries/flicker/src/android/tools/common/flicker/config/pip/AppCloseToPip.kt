@@ -20,8 +20,8 @@ import android.tools.common.flicker.config.AssertionTemplates
 import android.tools.common.flicker.config.FaasScenarioType
 import android.tools.common.flicker.config.IScenarioConfig
 import android.tools.common.flicker.config.TransitionFilters
+import android.tools.common.flicker.extractors.TaggedCujTransitionMatcher
 import android.tools.common.flicker.extractors.TaggedScenarioExtractor
-import android.tools.common.flicker.extractors.TransitionMatcher
 import android.tools.common.traces.events.Cuj
 import android.tools.common.traces.events.CujType
 
@@ -37,7 +37,7 @@ class AppCloseToPip : IScenarioConfig {
             targetTag = CujType.CUJ_LAUNCHER_APP_CLOSE_TO_PIP,
             type,
             transitionMatcher =
-                TransitionMatcher(TransitionFilters.APP_CLOSE_TO_PIP_TRANSITION_FILTER),
+                TaggedCujTransitionMatcher(TransitionFilters.APP_CLOSE_TO_PIP_TRANSITION_FILTER),
             adjustCuj = { cuj, reader ->
                 val cujs = reader.readCujTrace() ?: error("Missing CUJ trace")
                 val closeToHomeCuj =

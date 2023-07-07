@@ -40,7 +40,7 @@ val ANDROID_LOGGER =
         }
         .build()
 
-val DEFAULT_TRACE_CONFIG =
+val TRACE_CONFIG_REQUIRE_CHANGES =
     TraceConfigs(
         wmTrace = TraceConfig(required = true, allowNoChange = false, usingExistingTraces = false),
         layersTrace =
@@ -49,4 +49,15 @@ val DEFAULT_TRACE_CONFIG =
             TraceConfig(required = false, allowNoChange = false, usingExistingTraces = false),
         transactionsTrace =
             TraceConfig(required = false, allowNoChange = false, usingExistingTraces = false)
+    )
+
+val SERVICE_TRACE_CONFIG =
+    TraceConfigs(
+        wmTrace = TraceConfig(required = false, allowNoChange = true, usingExistingTraces = false),
+        layersTrace =
+            TraceConfig(required = true, allowNoChange = true, usingExistingTraces = false),
+        transitionsTrace =
+            TraceConfig(required = true, allowNoChange = false, usingExistingTraces = false),
+        transactionsTrace =
+            TraceConfig(required = true, allowNoChange = true, usingExistingTraces = false)
     )

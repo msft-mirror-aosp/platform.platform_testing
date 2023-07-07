@@ -22,7 +22,7 @@ import android.tools.common.traces.events.CujEvent
 import android.tools.common.traces.events.CujType
 import android.tools.common.traces.events.EventLog.Companion.MAGIC_NUMBER
 import android.tools.common.traces.events.FocusEvent
-import android.tools.device.traces.DEFAULT_TRACE_CONFIG
+import android.tools.device.traces.TRACE_CONFIG_REQUIRE_CHANGES
 import android.tools.device.traces.io.ResultReader
 import android.tools.device.traces.monitors.TraceMonitorTest
 import android.tools.device.traces.now
@@ -93,7 +93,7 @@ class EventLogMonitorTest : TraceMonitorTest<EventLogMonitor>() {
         )
         val result = writer.write()
 
-        val reader = ResultReader(result, DEFAULT_TRACE_CONFIG)
+        val reader = ResultReader(result, TRACE_CONFIG_REQUIRE_CHANGES)
         val eventLog = reader.readEventLogTrace()
         requireNotNull(eventLog) { "EventLog was null" }
 
@@ -147,7 +147,7 @@ class EventLogMonitorTest : TraceMonitorTest<EventLogMonitor>() {
         monitor.stop(writer)
         val result = writer.write()
 
-        val reader = ResultReader(result, DEFAULT_TRACE_CONFIG)
+        val reader = ResultReader(result, TRACE_CONFIG_REQUIRE_CHANGES)
         val eventLog = reader.readEventLogTrace()
         requireNotNull(eventLog) { "EventLog was null" }
 
@@ -191,7 +191,7 @@ class EventLogMonitorTest : TraceMonitorTest<EventLogMonitor>() {
         monitor.stop(writer)
         val result = writer.write()
 
-        val reader = ResultReader(result, DEFAULT_TRACE_CONFIG)
+        val reader = ResultReader(result, TRACE_CONFIG_REQUIRE_CHANGES)
         val eventLog = reader.readEventLogTrace()
         requireNotNull(eventLog) { "EventLog was null" }
 
@@ -235,7 +235,7 @@ class EventLogMonitorTest : TraceMonitorTest<EventLogMonitor>() {
         val writer = newTestResultWriter()
         monitor.stop(writer)
         val result = writer.write()
-        val reader = ResultReader(result, DEFAULT_TRACE_CONFIG)
+        val reader = ResultReader(result, TRACE_CONFIG_REQUIRE_CHANGES)
 
         Truth.assertWithMessage("Trace not found")
             .that(reader.hasTraceFile(TraceType.EVENT_LOG))
@@ -266,7 +266,7 @@ class EventLogMonitorTest : TraceMonitorTest<EventLogMonitor>() {
         monitor.stop(writer)
         val result = writer.write()
 
-        val reader = ResultReader(result, DEFAULT_TRACE_CONFIG)
+        val reader = ResultReader(result, TRACE_CONFIG_REQUIRE_CHANGES)
         val eventLog = reader.readEventLogTrace() ?: error("EventLog should have been created")
 
         Truth.assertThat(eventLog.focusEvents).hasLength(1)
@@ -307,7 +307,7 @@ class EventLogMonitorTest : TraceMonitorTest<EventLogMonitor>() {
         monitor.stop(writer)
         val result = writer.write()
 
-        val reader = ResultReader(result, DEFAULT_TRACE_CONFIG)
+        val reader = ResultReader(result, TRACE_CONFIG_REQUIRE_CHANGES)
         val eventLog = reader.readEventLogTrace() ?: error("EventLog should have been created")
 
         Truth.assertThat(eventLog.focusEvents).hasLength(1)
@@ -337,7 +337,7 @@ class EventLogMonitorTest : TraceMonitorTest<EventLogMonitor>() {
         monitor.stop(writer)
         val result = writer.write()
 
-        val reader = ResultReader(result, DEFAULT_TRACE_CONFIG)
+        val reader = ResultReader(result, TRACE_CONFIG_REQUIRE_CHANGES)
         val eventLog = reader.readEventLogTrace() ?: error("EventLog should have been created")
 
         assertEquals(2, eventLog.cujEvents.size)
@@ -373,7 +373,7 @@ class EventLogMonitorTest : TraceMonitorTest<EventLogMonitor>() {
         monitor.stop(writer)
         val result = writer.write()
 
-        val reader = ResultReader(result, DEFAULT_TRACE_CONFIG)
+        val reader = ResultReader(result, TRACE_CONFIG_REQUIRE_CHANGES)
         val eventLog = reader.readEventLogTrace() ?: error("EventLog should have been created")
 
         assertEquals(3, eventLog.cujEvents.size)
@@ -419,7 +419,7 @@ class EventLogMonitorTest : TraceMonitorTest<EventLogMonitor>() {
         monitor.stop(writer)
         val result = writer.write()
 
-        val reader = ResultReader(result, DEFAULT_TRACE_CONFIG)
+        val reader = ResultReader(result, TRACE_CONFIG_REQUIRE_CHANGES)
         val eventLog = reader.readEventLogTrace()
         requireNotNull(eventLog) { "EventLog should have been created" }
 

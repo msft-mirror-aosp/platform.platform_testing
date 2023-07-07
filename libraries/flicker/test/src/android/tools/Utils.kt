@@ -25,11 +25,12 @@ import android.tools.common.io.IReader
 import android.tools.common.io.ResultArtifactDescriptor
 import android.tools.common.io.RunStatus
 import android.tools.common.io.WINSCOPE_EXT
+import android.tools.common.parsers.events.EventLogParser
 import android.tools.device.flicker.datastore.CachedResultWriter
 import android.tools.device.flicker.legacy.AbstractFlickerTestData
 import android.tools.device.flicker.legacy.FlickerBuilder
 import android.tools.device.flicker.legacy.IFlickerTestData
-import android.tools.device.traces.DEFAULT_TRACE_CONFIG
+import android.tools.device.traces.TRACE_CONFIG_REQUIRE_CHANGES
 import android.tools.device.traces.io.ArtifactBuilder
 import android.tools.device.traces.io.InMemoryArtifact
 import android.tools.device.traces.io.ParsedTracesReader
@@ -45,6 +46,8 @@ import android.tools.device.traces.monitors.wm.WindowManagerTraceMonitor
 import android.tools.device.traces.monitors.wm.WmTransitionTraceMonitor
 import android.tools.device.traces.parsers.WindowManagerStateHelper
 import android.tools.device.traces.parsers.surfaceflinger.LayersTraceParser
+import android.tools.device.traces.parsers.surfaceflinger.TransactionsTraceParser
+import android.tools.device.traces.parsers.wm.TransitionTraceParser
 import android.tools.device.traces.parsers.wm.WindowManagerDumpParser
 import android.tools.device.traces.parsers.wm.WindowManagerTraceParser
 import androidx.test.platform.app.InstrumentationRegistry
@@ -119,6 +122,25 @@ internal fun getLayerTraceReaderFromAsset(
                     ignoreOrphanLayers
                 }
                 .parse(readAsset(relativePath))
+    )
+}
+
+internal fun getTraceReaderFromScenario(scenario: String): IReader {
+    val scenarioTraces = getScenarioTraces("AppLaunch")
+
+    return ParsedTracesReader(
+        artifact = InMemoryArtifact(scenario),
+        wmTrace = WindowManagerTraceParser().parse(scenarioTraces.wmTrace.readBytes()),
+        layersTrace = LayersTraceParser().parse(scenarioTraces.layersTrace.readBytes()),
+        transitionsTrace =
+            TransitionTraceParser()
+                .parse(
+                    scenarioTraces.wmTransitions.readBytes(),
+                    scenarioTraces.shellTransitions.readBytes()
+                ),
+        transactionsTrace =
+            TransactionsTraceParser().parse(scenarioTraces.transactions.readBytes()),
+        eventLog = EventLogParser().parse(scenarioTraces.eventLog.readBytes()),
     )
 }
 
@@ -282,7 +304,7 @@ fun captureTrace(scenario: IScenario, actions: () -> Unit): ResultReader {
     }
     val result = writer.write()
 
-    return ResultReader(result, DEFAULT_TRACE_CONFIG)
+    return ResultReader(result, TRACE_CONFIG_REQUIRE_CHANGES)
 }
 
 fun createDefaultArtifactBuilder(

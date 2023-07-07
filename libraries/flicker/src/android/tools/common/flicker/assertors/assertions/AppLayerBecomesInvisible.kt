@@ -32,5 +32,6 @@ class AppLayerBecomesInvisible(private val component: ComponentTemplate) :
             .isVisible(component.build(scenarioInstance))
             .then()
             .isInvisible(component.build(scenarioInstance))
+            .forAllEntries()
     }
 }

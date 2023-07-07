@@ -103,4 +103,13 @@ public class NotificationTest {
         mNotificationHelper.get().openNotification();
         assertTrue("Notification is not open", mNotificationHelper.get().isAppInForeground());
     }
+
+    @Test
+    public void testManageButton() {
+        mNotificationMockingHelper.get().postNotifications(1);
+        mNotificationHelper.get().clickManageBtn();
+        assertTrue(
+                "Notification Settings did not open.",
+                mNotificationHelper.get().isNotificationSettingsOpened());
+    }
 }
