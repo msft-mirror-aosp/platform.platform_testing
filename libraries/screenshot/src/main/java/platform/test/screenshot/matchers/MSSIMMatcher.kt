@@ -58,11 +58,13 @@ class MSSIMMatcher(
             .setNumberPixelsSimilar(calSSIMResult.numPixelsSimilar)
             .setNumberPixelsIgnored(calSSIMResult.numPixelsIgnored)
             .setNumberPixelsDifferent(
-                calSSIMResult.numPixelsCompared - calSSIMResult.numPixelsSimilar)
+                calSSIMResult.numPixelsCompared - calSSIMResult.numPixelsSimilar
+            )
             .build()
 
         if (calSSIMResult.numPixelsSimilar
-            >= threshold * calSSIMResult.numPixelsCompared.toDouble()) {
+            >= threshold * calSSIMResult.numPixelsCompared.toDouble()
+        ) {
             return MatchResult(
                 matches = true,
                 diff = null,

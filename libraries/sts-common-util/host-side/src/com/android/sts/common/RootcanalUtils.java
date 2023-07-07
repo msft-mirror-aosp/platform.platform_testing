@@ -101,6 +101,10 @@ public class RootcanalUtils extends TestWatcher {
             throw new AssertionError("Device unavailable when cleaning up", e);
         } catch (TimeoutException e) {
             CLog.w("Could not kill rootcanal HAL during cleanup");
+        } catch (ProcessUtil.KillException e) {
+            if (e.getReason() != ProcessUtil.KillException.Reason.NO_SUCH_PROCESS) {
+                CLog.w("Could not kill rootcanal HAL during cleanup: " + e.getMessage());
+            }
         }
     }
 
@@ -213,6 +217,8 @@ public class RootcanalUtils extends TestWatcher {
                     device, "android\\.hardware\\.bluetooth@1\\.1-service\\.sim", 10_000);
         } catch (TimeoutException e) {
             assumeNoException("Could not start virtual BT HAL", e);
+        } catch (ProcessUtil.KillException e) {
+            assumeNoException("Failed to kill process", e);
         }
 
         // Reenable Bluetooth and enable RootCanal control channel

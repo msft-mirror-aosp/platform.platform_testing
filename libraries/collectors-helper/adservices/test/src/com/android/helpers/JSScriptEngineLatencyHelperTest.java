@@ -36,11 +36,18 @@ import java.util.Map;
  * To run, use atest CollectorsHelperAospTest:com.android.helpers.JSScriptEngineLatencyHelperTest
  */
 public class JSScriptEngineLatencyHelperTest {
-    @Mock private JSScriptEngineLatencyHelper.MetricsEventStreamReader mMetricsEventStreamReader;
+    private static final String TEST_FILTER_LABEL = "JSScriptEngine";
+    private static final String SANDBOX_INIT_TIME_AVG = "SANDBOX_INIT_TIME_AVG";
+    private static final String ISOLATE_CREATE_TIME_AVG = "ISOLATE_CREATE_TIME_AVG";
+    private static final String WEBVIEW_EXECUTION_TIME_AVG = "WEBVIEW_EXECUTION_TIME_AVG";
+    private static final String JAVA_EXECUTION_TIME_AVG = "JAVA_EXECUTION_TIME_AVG";
+    private static final String NUM_ITERATIONS = "NUM_ITERATIONS";
+
+    @Mock private LatencyHelper.InputStreamFilter mInputStreamFilter;
 
     @Mock private Clock mClock;
 
-    private JSScriptEngineLatencyHelper mJSScriptEngineLatencyHelper;
+    private LatencyHelper mJSScriptEngineLatencyHelper;
     private Instant mInstant = Clock.systemUTC().instant();
 
     @Before
@@ -49,7 +56,7 @@ public class JSScriptEngineLatencyHelperTest {
         when(mClock.getZone()).thenReturn(ZoneId.of("UTC")); // Used by DateTimeFormatter.
         when(mClock.instant()).thenReturn(mInstant);
         mJSScriptEngineLatencyHelper =
-                new JSScriptEngineLatencyHelper(() -> mMetricsEventStreamReader, mClock);
+                JSScriptEngineLatencyHelper.getCollector(mInputStreamFilter, mClock);
         mJSScriptEngineLatencyHelper.startCollecting();
     }
 
@@ -65,24 +72,20 @@ public class JSScriptEngineLatencyHelperTest {
                     + "06-13 18:09:24.152 20765 D JSScriptEngine: (JAVA_EXECUTION_TIME: 19)\n"
                     + "06-29 02:47:31.824 31075 D JSScriptEngine: (WEBVIEW_EXECUTION_TIME: 29)";
 
-        when(mMetricsEventStreamReader.getMetricsEvents(mInstant))
+        when(mInputStreamFilter.getStream(TEST_FILTER_LABEL, mInstant))
                 .thenReturn(new ByteArrayInputStream(logcatOutput.getBytes()));
         Map<String, Long> actual = mJSScriptEngineLatencyHelper.getMetrics();
 
-        assertThat(actual.get(JSScriptEngineLatencyHelper.SANDBOX_INIT_TIME_AVG))
-                .isEqualTo((102 + 45) / 2);
-        assertThat(actual.get(JSScriptEngineLatencyHelper.ISOLATE_CREATE_TIME_AVG))
-                .isEqualTo((1 + 1) / 2);
-        assertThat(actual.get(JSScriptEngineLatencyHelper.JAVA_EXECUTION_TIME_AVG))
-                .isEqualTo((43 + 19) / 2);
-        assertThat(actual.get(JSScriptEngineLatencyHelper.WEBVIEW_EXECUTION_TIME_AVG))
-                .isEqualTo((23 + 29) / 2);
-        assertThat(actual.get(JSScriptEngineLatencyHelper.NUM_ITERATIONS)).isEqualTo(2);
+        assertThat(actual.get(SANDBOX_INIT_TIME_AVG)).isEqualTo((102 + 45) / 2);
+        assertThat(actual.get(ISOLATE_CREATE_TIME_AVG)).isEqualTo((1 + 1) / 2);
+        assertThat(actual.get(JAVA_EXECUTION_TIME_AVG)).isEqualTo((43 + 19) / 2);
+        assertThat(actual.get(WEBVIEW_EXECUTION_TIME_AVG)).isEqualTo((23 + 29) / 2);
+        assertThat(actual.get(NUM_ITERATIONS)).isEqualTo(2);
     }
 
     @Test
     public void testWithEmptyLogcat() throws IOException {
-        when(mMetricsEventStreamReader.getMetricsEvents(mInstant))
+        when(mInputStreamFilter.getStream(TEST_FILTER_LABEL, mInstant))
                 .thenReturn(new ByteArrayInputStream("".getBytes()));
         Map<String, Long> actual = mJSScriptEngineLatencyHelper.getMetrics();
         for (Long val : actual.values()) {
@@ -92,7 +95,8 @@ public class JSScriptEngineLatencyHelperTest {
 
     @Test
     public void testInputStreamThrowsException() throws IOException {
-        when(mMetricsEventStreamReader.getMetricsEvents(mInstant)).thenThrow(new IOException());
+        when(mInputStreamFilter.getStream(TEST_FILTER_LABEL, mInstant))
+                .thenThrow(new IOException());
         Map<String, Long> actual = mJSScriptEngineLatencyHelper.getMetrics();
         for (Long val : actual.values()) {
             assertThat(val).isEqualTo(0);
