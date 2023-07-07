@@ -19,8 +19,12 @@ package com.android.helpers;
 import static com.android.helpers.MetricUtility.constructKey;
 
 import android.util.Log;
+
+import androidx.annotation.VisibleForTesting;
 import androidx.test.InstrumentationRegistry;
 import androidx.test.uiautomator.UiDevice;
+
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -49,7 +53,12 @@ public class ShowmapSnapshotHelper implements ICollectorHelper<String> {
     public static final String ALL_PROCESSES_CMD = "ps -A";
     private static final String SHOWMAP_CMD = "showmap -v %d";
     private static final String CHILD_PROCESSES_CMD = "ps -A --ppid %d";
-
+    private static final String THREADS_FILE_PATH = "/sdcard/countThreads.sh";
+    @VisibleForTesting public static final String THREADS_CMD = "sh /sdcard/countThreads.sh";
+    private static final String THREADS_EXEC_SCRIPT =
+            "for i in $(ls /proc | grep -E [0-9]+); do echo \"threads_count_$(cat"
+                    + " /proc/$i/cmdline) : $(ls /proc/$i/task | wc -l)\"; done;";
+    public static final String THREADS_PATTERN = "(?<key>^threads_count_.+) : (?<value>[0-9]+)";
     public static final String OUTPUT_METRIC_PATTERN = "showmap_%s_bytes";
     public static final String OUTPUT_FILE_PATH_KEY = "showmap_output_file";
     public static final String PROCESS_COUNT = "process_count";
@@ -70,6 +79,7 @@ public class ShowmapSnapshotHelper implements ICollectorHelper<String> {
     private boolean mCollectForAllProcesses = false;
     private UiDevice mUiDevice;
     private boolean mRunGcPrecollection;
+    private boolean mRunCountThreads;
 
     // Map to maintain per-process memory info
     private Map<String, String> mMemoryMap = new HashMap<>();
@@ -79,11 +89,12 @@ public class ShowmapSnapshotHelper implements ICollectorHelper<String> {
     private Map<String, List<Integer>> mMetricNameIndexMap = new HashMap<>();
 
     public void setUp(String testOutputDir, String... processNames) {
-      mProcessNames = processNames;
-      mTestOutputDir = testOutputDir;
-      mDropCacheOption = 0;
-      mRunGcPrecollection = false;
-      mUiDevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
+        mProcessNames = processNames;
+        mTestOutputDir = testOutputDir;
+        mDropCacheOption = 0;
+        mRunGcPrecollection = false;
+        mRunCountThreads = false;
+        mUiDevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
     }
 
     @Override
@@ -133,11 +144,13 @@ public class ShowmapSnapshotHelper implements ICollectorHelper<String> {
     @Override
     public Map<String, String> getMetrics() {
         try {
+            if (mRunCountThreads) {
+                mMemoryMap.putAll(execCountThreads());
+            }
             // Drop cache if requested
             if (mDropCacheOption > 0) {
                 dropCache(mDropCacheOption);
             }
-
             if (mCollectForAllProcesses) {
                 Log.i(TAG, "Collecting memory metrics for all processes.");
                 mProcessNames = getAllProcessNames();
@@ -148,7 +161,6 @@ public class ShowmapSnapshotHelper implements ICollectorHelper<String> {
                 return mMemoryMap;
             }
             HashSet<Integer> zygoteChildrenPids = getZygoteChildrenPids();
-
             FileWriter writer = new FileWriter(new File(mTestOutputFile), true);
             for (String processName : mProcessNames) {
                 List<Integer> pids = new ArrayList<>();
@@ -206,7 +218,6 @@ public class ShowmapSnapshotHelper implements ICollectorHelper<String> {
         } catch (IOException e) {
             Log.e(TAG, String.format("Failed to write output file %s", mTestOutputFile), e);
         }
-
         return mMemoryMap;
     }
 
@@ -254,6 +265,15 @@ public class ShowmapSnapshotHelper implements ICollectorHelper<String> {
      */
     public void setGcOnPrecollectOption(boolean shouldGcOnPrecollect) {
         mRunGcPrecollection = shouldGcOnPrecollect;
+    }
+
+    /**
+     * Sets option for counting the threads for all processes.
+     *
+     * @param shouldCountThreads whether it should run count threads
+     */
+    public void setCountThreadsOption(boolean shouldCountThreads) {
+        mRunCountThreads = shouldCountThreads;
     }
 
     /**
@@ -323,6 +343,41 @@ public class ShowmapSnapshotHelper implements ICollectorHelper<String> {
         } catch (IOException e) {
             throw new RuntimeException(
                     String.format("Unable to execute showmap command for %s ", processName), e);
+        }
+    }
+
+    /**
+     * Executes counting threads command for the process.
+     *
+     * @param processName name of the process to run showmap for
+     * @param pid pid of the process to run showmap for
+     * @return the output of showmap command
+     */
+    private Map<String, String> execCountThreads() throws IOException {
+        String countOutput;
+        Map<String, String> countResults = new HashMap<>();
+        try {
+            File execTempFile = new File(THREADS_FILE_PATH);
+            execTempFile.setWritable(true);
+            execTempFile.setExecutable(true, /*ownersOnly*/ false);
+            String countThreadsScriptPath = execTempFile.getAbsolutePath();
+            BufferedWriter writer = new BufferedWriter(new FileWriter(countThreadsScriptPath));
+            writer.write(THREADS_EXEC_SCRIPT);
+            writer.close();
+            countOutput = executeShellCommand(THREADS_CMD);
+            Pattern pattern =
+                    Pattern.compile(THREADS_PATTERN, Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
+            String[] lines = countOutput.split("\n");
+            for (String line : lines) {
+                Matcher matcher = pattern.matcher(line);
+                boolean matchFound = matcher.find();
+                if (matchFound) {
+                    countResults.put(matcher.group(1), matcher.group(2));
+                }
+            }
+            return countResults;
+        } catch (IOException e) {
+            throw new RuntimeException("Unable to execute counting threads command", e);
         }
     }
 
@@ -512,5 +567,11 @@ public class ShowmapSnapshotHelper implements ICollectorHelper<String> {
                     ioe);
         }
         return allProcessNames.toArray(new String[0]);
+    }
+
+    /* Execute a shell command and return its output. */
+    @VisibleForTesting
+    public String executeShellCommand(String command) throws IOException {
+        return mUiDevice.executeShellCommand(command);
     }
 }
