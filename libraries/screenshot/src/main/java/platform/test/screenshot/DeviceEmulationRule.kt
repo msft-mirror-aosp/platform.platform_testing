@@ -73,7 +73,9 @@ class DeviceEmulationRule(private val spec: DeviceEmulationSpec) : TestRule {
             val runtimeEnvironment = Class.forName("org.robolectric.RuntimeEnvironment")
             val setQualifiers =
                 runtimeEnvironment.getDeclaredMethod("setQualifiers", String::class.java)
-            val qualifier = "w${width}dp-h${height}dp-${density}dpi"
+            val scaledWidth = width * 160 / density
+            val scaledHeight = height * 160 / density
+            val qualifier = "w${scaledWidth}dp-h${scaledHeight}dp-${density}dpi"
             setQualifiers.invoke(null, qualifier)
         } else {
             // Make sure that we are in natural orientation (rotation 0) before we set the screen size

@@ -26,7 +26,7 @@ import android.tools.common.traces.events.CujType
 val LockscreenUnlockAnimation =
     FlickerConfigEntry(
         enabled = true,
-        scenarioId = ScenarioId("LOCKSCNREEN_UNLOCK_ANIMATION"),
+        scenarioId = ScenarioId("LOCKSCREEN_UNLOCK_ANIMATION"),
         assertions = AssertionTemplates.COMMON_ASSERTIONS,
         extractor =
             TaggedScenarioExtractorBuilder()
