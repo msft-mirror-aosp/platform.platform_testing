@@ -72,6 +72,8 @@ object DeviceHelpers {
      *
      * Throws an error with message provided by [errorProvider] if the object is not found.
      */
+    @JvmOverloads
+    @JvmStatic
     fun waitForObj(
         selector: BySelector,
         timeout: Duration = LONG_WAIT,
