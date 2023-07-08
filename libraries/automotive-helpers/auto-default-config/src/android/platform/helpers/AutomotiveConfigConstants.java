@@ -459,4 +459,10 @@ public class AutomotiveConfigConstants {
     public static final String MANAGE_ACTIVITY_CONTROL_TEXT = "MANAGE_ACTIVITY_CONTROL_TEXT";
     public static final String RECENT_APPS_TIMESTAMP_TEXT = "RECENT_APPS_TIMESTAMP_TEXT";
     public static final String RECENT_APPS_TIMESTAMP = "RECENT_APPS_TIMESTAMP";
+
+    // Status Bar Constants
+    public static final String STATUS_BAR_BRIGHTNESS_BUTTON = "STATUS_BAR_BRIGHTNESS_BUTTON";
+    public static final String STATUS_BAR_DISPLAY_BRIGHTNESS_PALETTE =
+            "STATUS_BAR_DISPLAY_BRIGHTNESS_PALETTE";
+    public static final String STATUS_BAR_ADAPTIVE_BRIGHTNESS = "STATUS_BAR_ADAPTIVE_BRIGHTNESS";
 }

@@ -110,27 +110,28 @@ class CujEvent(
         private fun getDataEntries(data: String, cujType: Type): List<String> {
             when (cujType) {
                 Type.START -> {
-                    val (rawTimestamp, uid, pid, tid, _) =
+                    // (CUJ Type|1|5),(Unix Time Ns|2|3),(Elapsed Time Ns|2|3),(Uptime Time Ns|2|3)
+                    val (cujType, unixNs, elapsedNs, uptimeNs, tag) =
                         data.replace("[", "").replace("]", "").split(",")
                     // Not using a Regex because it's not supported by Kotlin/Closure
                     require(
-                        isNumeric(rawTimestamp) &&
-                            isNumeric(uid) &&
-                            isNumeric(pid) &&
-                            isNumeric(tid)
+                        isNumeric(cujType) &&
+                            isNumeric(unixNs) &&
+                            isNumeric(elapsedNs) &&
+                            isNumeric(uptimeNs)
                     ) {
                         "Data \"$data\" didn't match expected format"
                     }
                 }
                 else -> {
                     // Not using a Regex because it's not supported by Kotlin/Closure
-                    val (rawTimestamp, uid, pid, tid, _) =
+                    val (cujType, unixNs, elapsedNs, uptimeNs) =
                         data.replace("[", "").replace("]", "").split(",")
                     require(
-                        isNumeric(rawTimestamp) &&
-                            isNumeric(uid) &&
-                            isNumeric(pid) &&
-                            isNumeric(tid)
+                        isNumeric(cujType) &&
+                            isNumeric(unixNs) &&
+                            isNumeric(elapsedNs) &&
+                            isNumeric(uptimeNs)
                     ) {
                         "Data \"$data\" didn't match expected format"
                     }

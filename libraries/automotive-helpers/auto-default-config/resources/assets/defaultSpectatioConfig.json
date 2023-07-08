@@ -6,8 +6,8 @@
     "SECURITY_SETTINGS_PACKAGE": "com.android.car.settings",
     "LOCK_SCREEN_PACKAGE": "com.android.systemui",
     "SETTINGS_PACKAGE": "com.android.car.settings",
-    "NUMBER_PICKER_WIDGET_CLASS" : "android.widget.NumberPicker",
-    "EDIT_TEXT_WIDGET_CLASS" : "android.widget.EditText",
+    "NUMBER_PICKER_WIDGET_CLASS": "android.widget.NumberPicker",
+    "EDIT_TEXT_WIDGET_CLASS": "android.widget.EditText",
     "USER_SETTINGS_PACKAGE": "com.android.car.settings",
     "MEDIA_CENTER_PACKAGE": "com.android.car.media",
     "CONTACTS_PACKAGE": "com.android.contacts",
@@ -30,7 +30,7 @@
     "SYSTEM_SETTINGS_SCROLL_DIRECTION": "VERTICAL",
     "SYSTEM_SETTINGS_SCROLL_MARGIN": "6",
     "SYSTEM_SETTINGS_SCROLL_WAIT_TIME": "2",
-    "APP_INFO_SETTINGS_SCROLL_ACTION" : "USE_GESTURE",
+    "APP_INFO_SETTINGS_SCROLL_ACTION": "USE_GESTURE",
     "APP_INFO_SETTINGS_SCROLL_DIRECTION": "VERTICAL",
     "APP_INFO_SETTINGS_SCROLL_MARGIN": "10",
     "APP_INFO_SETTINGS_SCROLL_WAIT_TIME": "2",
@@ -48,10 +48,10 @@
     "DATE_TIME_SETTINGS_SCROLL_DIRECTION": "VERTICAL",
     "USER_SETTINGS_SCROLL_ACTION": "USE_GESTURE",
     "USER_SETTINGS_SCROLL_DIRECTION": "VERTICAL",
-    "USER_SETTINGS_SCROLL_MARGIN":"6",
-    "USER_SETTINGS_SCROLL_WAIT_TIME":"2",
-    "ACCOUNT_SETTINGS_SCROLL_ACTION" : "USE_GESTURE",
-    "ACCOUNT_SETTINGS_SCROLL_DIRECTION" : "VERTICAL",
+    "USER_SETTINGS_SCROLL_MARGIN": "6",
+    "USER_SETTINGS_SCROLL_WAIT_TIME": "2",
+    "ACCOUNT_SETTINGS_SCROLL_ACTION": "USE_GESTURE",
+    "ACCOUNT_SETTINGS_SCROLL_DIRECTION": "VERTICAL",
     "SETTINGS_SUB_SETTING_SCROLL_ACTION": "USE_GESTURE",
     "SETTINGS_SUB_SETTING_SCROLL_DIRECTION": "VERTICAL",
     "MEDIA_APP_SCROLL_ACTION": "USE_GESTURE",
@@ -65,7 +65,7 @@
     "OPEN_NOTIFICATIONS_COMMAND": "service call statusbar 1",
     "STOP_SETTING_APP_COMMAND": "am force-stop com.android.car.settings",
     "OPEN_SETTINGS_COMMAND": "am start -a android.settings.SETTINGS",
-    "MEDIA_LAUNCH_COMMAND":"am start -a android.car.intent.action.MEDIA_TEMPLATE -e android.car.intent.extra.MEDIA_COMPONENT com.android.bluetooth/com.android.bluetooth.avrcpcontroller.BluetoothMediaBrowserService"
+    "MEDIA_LAUNCH_COMMAND": "am start -a android.car.intent.action.MEDIA_TEMPLATE -e android.car.intent.extra.MEDIA_COMPONENT com.android.bluetooth/com.android.bluetooth.avrcpcontroller.BluetoothMediaBrowserService"
   },
   "UI_ELEMENTS": {
     "MAKE_CALL": {
@@ -329,6 +329,21 @@
       "TYPE": "RESOURCE_ID",
       "VALUE": "scene_card",
       "PACKAGE": "com.android.car.carlauncher"
+    },
+    "STATUS_BAR_BRIGHTNESS_BUTTON": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "qc_display_status_icon",
+      "PACKAGE": "com.android.systemui"
+    },
+    "STATUS_BAR_DISPLAY_BRIGHTNESS_PALETTE": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "qc_seekbar",
+      "PACKAGE": "com.android.systemui"
+    },
+    "STATUS_BAR_ADAPTIVE_BRIGHTNESS": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "switch_widget",
+      "PACKAGE": "android"
     },
     "HOME_ASSISTANT_CARD": {
       "TYPE": "TEXT",
@@ -1490,7 +1505,7 @@
             "PACKAGE": "com.android.car.settings"
           },
           "SCROLL_MARGIN": "8",
-          "SCROLL_WAIT_TIME":"3"
+          "SCROLL_WAIT_TIME": "3"
         }
       }
     ],
@@ -1562,7 +1577,7 @@
             "PACKAGE": "com.android.car.settings"
           },
           "SCROLL_MARGIN": "8",
-          "SCROLL_WAIT_TIME":"3"
+          "SCROLL_WAIT_TIME": "3"
         }
       }
     ],
