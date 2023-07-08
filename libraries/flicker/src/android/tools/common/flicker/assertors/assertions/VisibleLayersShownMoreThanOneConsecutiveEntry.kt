@@ -19,14 +19,22 @@ package android.tools.common.flicker.assertors.assertions
 import android.tools.common.flicker.IScenarioInstance
 import android.tools.common.flicker.assertors.AssertionTemplate
 import android.tools.common.flicker.subject.layers.LayersTraceSubject
+import android.tools.common.flicker.subject.layers.LayersTraceSubject.Companion.VISIBLE_FOR_MORE_THAN_ONE_ENTRY_IGNORE_LAYERS
+import android.tools.common.traces.component.IComponentMatcher
 
 /**
  * Checks that all layers that are visible on the trace, are visible for at least 2 consecutive
  * entries.
  */
-class VisibleLayersShownMoreThanOneConsecutiveEntry : AssertionTemplate() {
+class VisibleLayersShownMoreThanOneConsecutiveEntry(
+    private val ignore: List<IComponentMatcher> = listOf()
+) : AssertionTemplate() {
     /** {@inheritDoc} */
     override fun doEvaluate(scenarioInstance: IScenarioInstance, layerSubject: LayersTraceSubject) {
-        layerSubject.visibleLayersShownMoreThanOneConsecutiveEntry().forAllEntries()
+        layerSubject
+            .visibleLayersShownMoreThanOneConsecutiveEntry(
+                ignoreLayers = VISIBLE_FOR_MORE_THAN_ONE_ENTRY_IGNORE_LAYERS + ignore
+            )
+            .forAllEntries()
     }
 }

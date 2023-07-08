@@ -19,8 +19,8 @@ package android.tools.common.flicker.config.lockscreen
 import android.tools.common.flicker.config.AssertionTemplates
 import android.tools.common.flicker.config.FaasScenarioType
 import android.tools.common.flicker.config.IScenarioConfig
+import android.tools.common.flicker.extractors.TaggedCujTransitionMatcher
 import android.tools.common.flicker.extractors.TaggedScenarioExtractor
-import android.tools.common.flicker.extractors.TransitionMatcher
 import android.tools.common.traces.events.CujType
 
 class LockscreenPatternAppear : IScenarioConfig {
@@ -35,6 +35,6 @@ class LockscreenPatternAppear : IScenarioConfig {
         TaggedScenarioExtractor(
             targetTag = CujType.CUJ_LOCKSCREEN_PATTERN_APPEAR,
             type,
-            transitionMatcher = TransitionMatcher(associatedTransitionRequired = false),
+            transitionMatcher = TaggedCujTransitionMatcher(associatedTransitionRequired = false),
         )
 }

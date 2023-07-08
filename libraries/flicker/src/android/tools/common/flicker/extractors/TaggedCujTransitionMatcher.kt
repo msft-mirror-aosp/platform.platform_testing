@@ -28,7 +28,7 @@ import android.tools.common.traces.wm.TransitionType
 typealias TransitionsTransform =
     (transitions: List<Transition>, cujEntry: Cuj, reader: IReader) -> List<Transition>
 
-class TransitionMatcher(
+class TaggedCujTransitionMatcher(
     private val mainTransform: TransitionsTransform = noOpTransitionsTransform,
     private val finalTransform: TransitionsTransform = noOpTransitionsTransform,
     private val associatedTransitionRequired: Boolean = true,
@@ -42,8 +42,8 @@ class TransitionMatcher(
             mergeTrampolineTransitions,
             finalTransform
         )
-) : ITransitionMatcher {
-    override fun getTransition(cujEntry: Cuj, reader: IReader): Transition? {
+) {
+    fun getMatches(reader: IReader, cujEntry: Cuj): Collection<Transition> {
         val transitionsTrace = reader.readTransitionsTrace() ?: error("Missing transitions trace")
 
         val completeTransitions = transitionsTrace.entries.filter { !it.isIncomplete }
@@ -69,6 +69,7 @@ class TransitionMatcher(
                 val remainingTransitions = transform(transitions, cujEntry, reader)
 
                 appliedTransformsCount++
+
                 require(!associatedTransitionRequired || remainingTransitions.isNotEmpty()) {
                     "Required an associated transition for ${cujEntry.cuj.name}" +
                         "(${cujEntry.startTimestamp},${cujEntry.endTimestamp}) " +
@@ -83,7 +84,7 @@ class TransitionMatcher(
             "Got too many associated transitions expected only 1."
         }
 
-        return if (matchedTransitions.isNotEmpty()) matchedTransitions[0] else null
+        return matchedTransitions
     }
 }
 

@@ -25,6 +25,7 @@ import android.tools.common.io.IReader
 import android.tools.common.io.ResultArtifactDescriptor
 import android.tools.common.io.RunStatus
 import android.tools.common.io.WINSCOPE_EXT
+import android.tools.common.parsers.events.EventLogParser
 import android.tools.device.flicker.datastore.CachedResultWriter
 import android.tools.device.flicker.legacy.AbstractFlickerTestData
 import android.tools.device.flicker.legacy.FlickerBuilder
@@ -45,6 +46,8 @@ import android.tools.device.traces.monitors.wm.WindowManagerTraceMonitor
 import android.tools.device.traces.monitors.wm.WmTransitionTraceMonitor
 import android.tools.device.traces.parsers.WindowManagerStateHelper
 import android.tools.device.traces.parsers.surfaceflinger.LayersTraceParser
+import android.tools.device.traces.parsers.surfaceflinger.TransactionsTraceParser
+import android.tools.device.traces.parsers.wm.TransitionTraceParser
 import android.tools.device.traces.parsers.wm.WindowManagerDumpParser
 import android.tools.device.traces.parsers.wm.WindowManagerTraceParser
 import androidx.test.platform.app.InstrumentationRegistry
@@ -119,6 +122,25 @@ internal fun getLayerTraceReaderFromAsset(
                     ignoreOrphanLayers
                 }
                 .parse(readAsset(relativePath))
+    )
+}
+
+internal fun getTraceReaderFromScenario(scenario: String): IReader {
+    val scenarioTraces = getScenarioTraces("AppLaunch")
+
+    return ParsedTracesReader(
+        artifact = InMemoryArtifact(scenario),
+        wmTrace = WindowManagerTraceParser().parse(scenarioTraces.wmTrace.readBytes()),
+        layersTrace = LayersTraceParser().parse(scenarioTraces.layersTrace.readBytes()),
+        transitionsTrace =
+            TransitionTraceParser()
+                .parse(
+                    scenarioTraces.wmTransitions.readBytes(),
+                    scenarioTraces.shellTransitions.readBytes()
+                ),
+        transactionsTrace =
+            TransactionsTraceParser().parse(scenarioTraces.transactions.readBytes()),
+        eventLog = EventLogParser().parse(scenarioTraces.eventLog.readBytes()),
     )
 }
 

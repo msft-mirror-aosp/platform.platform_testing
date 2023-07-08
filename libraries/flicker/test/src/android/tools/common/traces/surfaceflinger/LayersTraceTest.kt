@@ -127,6 +127,46 @@ class LayersTraceTest {
         assertThatErrorContainsDebugInfo(error)
     }
 
+    @Test
+    fun getFirstEntryWithOnDisplay() {
+        val reader =
+            getLayerTraceReaderFromAsset(
+                "layers_trace_unlock_and_lock_device.pb",
+                legacyTrace = false
+            )
+        val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
+        val matchingEntry = trace.getFirstEntryWithOnDisplayAfter(CrossPlatform.timestamp.min())
+
+        Truth.assertThat(matchingEntry.timestamp)
+            .isEqualTo(CrossPlatform.timestamp.from(null, 20143030557279, 1685030549975607247))
+
+        try {
+            trace.getFirstEntryWithOnDisplayAfter(CrossPlatform.timestamp.max())
+        } catch (e: Throwable) {
+            Truth.assertThat(e).hasMessageThat().contains("No entry after")
+        }
+    }
+
+    @Test
+    fun getLastEntryWithOnDisplay() {
+        val reader =
+            getLayerTraceReaderFromAsset(
+                "layers_trace_unlock_and_lock_device.pb",
+                legacyTrace = false
+            )
+        val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
+        val matchingEntry = trace.getLastEntryWithOnDisplayBefore(CrossPlatform.timestamp.max())
+
+        Truth.assertThat(matchingEntry.timestamp)
+            .isEqualTo(CrossPlatform.timestamp.from(null, 20147964614573, 1685030554909664541))
+
+        try {
+            trace.getLastEntryWithOnDisplayBefore(CrossPlatform.timestamp.min())
+        } catch (e: Throwable) {
+            Truth.assertThat(e).hasMessageThat().contains("No entry before")
+        }
+    }
+
     companion object {
         @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
     }

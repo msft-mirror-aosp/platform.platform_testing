@@ -30,8 +30,8 @@ import android.tools.common.traces.component.ComponentNameMatcher
 class StatusBarLayerPositionAtStart : AssertionTemplate() {
     /** {@inheritDoc} */
     override fun doEvaluate(scenarioInstance: IScenarioInstance, layerSubject: LayersTraceSubject) {
-        val subject = layerSubject.first()
-        subject
+        layerSubject
+            .first()
             .visibleRegion(ComponentNameMatcher.STATUS_BAR)
             .coversExactly(getExpectedStatusbarPosition(scenarioInstance))
     }

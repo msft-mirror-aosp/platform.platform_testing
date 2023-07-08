@@ -564,7 +564,11 @@ class WindowManagerTraceSubject(
     /** Checks that all visible layers are shown for more than one consecutive entry */
     fun visibleWindowsShownMoreThanOneConsecutiveEntry(
         ignoreWindows: List<ComponentNameMatcher> =
-            listOf(ComponentNameMatcher.SPLASH_SCREEN, ComponentNameMatcher.SNAPSHOT)
+            listOf(
+                ComponentNameMatcher.SPLASH_SCREEN,
+                ComponentNameMatcher.SNAPSHOT,
+                ComponentNameMatcher.SECONDARY_HOME_HANDLE,
+            )
     ): WindowManagerTraceSubject = apply {
         visibleEntriesShownMoreThanOneConsecutiveTime { subject ->
             subject.wmState.windowStates

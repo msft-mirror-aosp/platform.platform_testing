@@ -22,7 +22,7 @@ import android.tools.common.FLICKER_TAG
 import android.tools.common.IScenario
 import android.tools.common.Scenario
 import android.tools.device.flicker.FlickerService
-import android.tools.device.flicker.FlickerServiceResultsCollector
+import android.tools.device.flicker.FlickerServiceResultsCollector.Companion.FAAS_METRICS_PREFIX
 import android.tools.device.flicker.IS_FAAS_ENABLED
 import android.tools.device.flicker.annotation.FlickerServiceCompatible
 import android.tools.device.flicker.datastore.CachedResultReader
@@ -30,7 +30,6 @@ import android.tools.device.flicker.datastore.DataStore
 import android.tools.device.flicker.isShellTransitionsEnabled
 import android.tools.device.traces.TRACE_CONFIG_REQUIRE_CHANGES
 import androidx.test.platform.app.InstrumentationRegistry
-import com.google.common.truth.Truth
 import org.junit.runner.Description
 import org.junit.runners.model.FrameworkMethod
 import org.junit.runners.model.Statement
@@ -44,13 +43,6 @@ class LegacyFlickerServiceDecorator(
 ) : AbstractFlickerRunnerDecorator(testClass, inner) {
     private val arguments: Bundle = InstrumentationRegistry.getArguments()
     private val flickerService = FlickerService()
-    private val metricsCollector: FlickerServiceResultsCollector? =
-        scenario?.let {
-            FlickerServiceResultsCollector(
-                LegacyFlickerTraceCollector(scenario),
-                collectMetricsPerTest = true
-            )
-        }
 
     private val onlyBlocking
         get() =
@@ -174,33 +166,25 @@ class LegacyFlickerServiceDecorator(
         }
         val reader = CachedResultReader(testScenario, TRACE_CONFIG_REQUIRE_CHANGES)
 
-        val faasTestCases =
-            FlickerServiceDecorator.getFaasTestCase(testScenario, "", reader, flickerService, this)
-
         val expectedScenarios =
-            testClass.annotations.filterIsInstance<FlickerServiceCompatible>().first().expectedCujs
+            testClass.annotations
+                .filterIsInstance<FlickerServiceCompatible>()
+                .first()
+                .expectedCujs
+                .toSet()
 
-        val detectedScenarioTestCase =
-            AnonymousInjectedTestCase(
-                FlickerServiceDecorator.getCachedResultMethod(),
-                "FaaS_DetectedExpectedScenarios",
-                injectedBy = this
-            ) {
-                Truth.assertThat(
-                        FlickerServiceDecorator.getDetectedScenarios(
-                            testScenario,
-                            reader,
-                            flickerService
-                        )
-                    )
-                    .containsAtLeastElementsIn(expectedScenarios)
-            }
-
-        return faasTestCases + listOf(detectedScenarioTestCase)
+        return FlickerServiceDecorator.getFaasTestCases(
+            testScenario,
+            expectedScenarios,
+            "",
+            reader,
+            flickerService,
+            instrumentation,
+            this
+        )
     }
 
     companion object {
-        private const val FAAS_METRICS_PREFIX = "FAAS"
         private const val OPTION_NAME = "filter-tests"
         private val LOG_TAG = LegacyFlickerServiceDecorator::class.java.simpleName
     }

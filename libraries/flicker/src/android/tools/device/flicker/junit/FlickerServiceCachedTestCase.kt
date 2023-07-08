@@ -16,45 +16,49 @@
 
 package android.tools.device.flicker.junit
 
+import android.app.Instrumentation
+import android.device.collectors.util.SendToInstrumentation
+import android.os.Bundle
 import android.tools.common.Cache
 import android.tools.common.flicker.AssertionInvocationGroup
 import android.tools.common.flicker.IFlickerService
 import android.tools.common.flicker.assertors.IFaasAssertion
-import android.tools.device.flicker.FlickerServiceResultsCollector
+import android.tools.device.flicker.FlickerServiceResultsCollector.Companion.getKeyForAssertionResult
 import java.lang.reflect.Method
 import org.junit.Assume
 import org.junit.runner.Description
-import org.junit.runner.notification.Failure
 
 class FlickerServiceCachedTestCase(
     private val assertion: IFaasAssertion,
     private val flickerService: IFlickerService,
     method: Method,
     private val onlyBlocking: Boolean,
-    private val metricsCollector: FlickerServiceResultsCollector?,
     private val isLast: Boolean,
     injectedBy: IFlickerJUnitDecorator,
+    private val instrumentation: Instrumentation,
     paramString: String = "",
 ) : InjectedTestCase(method, "FaaS_${assertion.name}$paramString", injectedBy) {
     override fun execute(description: Description) {
-        val result = flickerService.executeAssertion(assertion)
-
-        if (isLast) {
-            metricsCollector?.testStarted(description)
-        }
         try {
+            val result = flickerService.executeAssertion(assertion)
+
+            val metricBundle = Bundle()
+            metricBundle.putString(
+                getKeyForAssertionResult(result),
+                if (result.assertionError == null) "0" else "1"
+            )
+            SendToInstrumentation.sendBundle(instrumentation, metricBundle)
+
             Assume.assumeTrue(
                 !onlyBlocking ||
                     result.assertion.stabilityGroup == AssertionInvocationGroup.BLOCKING
             )
             result.assertionError?.let { throw it }
         } catch (e: Throwable) {
-            metricsCollector?.testFailure(Failure(description, e))
             throw e
         } finally {
             if (isLast) {
                 Cache.clear()
-                metricsCollector?.testFinished(description)
             }
         }
     }

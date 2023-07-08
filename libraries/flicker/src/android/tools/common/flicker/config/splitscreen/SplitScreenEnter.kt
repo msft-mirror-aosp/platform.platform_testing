@@ -20,9 +20,7 @@ import android.tools.common.flicker.config.AssertionTemplates
 import android.tools.common.flicker.config.FaasScenarioType
 import android.tools.common.flicker.config.IScenarioConfig
 import android.tools.common.flicker.config.TransitionFilters
-import android.tools.common.flicker.extractors.TaggedScenarioExtractor
-import android.tools.common.flicker.extractors.TransitionMatcher
-import android.tools.common.traces.events.CujType
+import android.tools.common.flicker.extractors.ShellTransitionScenarioExtractor
 
 class SplitScreenEnter : IScenarioConfig {
     override val enabled = true
@@ -32,9 +30,8 @@ class SplitScreenEnter : IScenarioConfig {
     override val assertionTemplates = AssertionTemplates.ENTER_SPLITSCREEN_ASSERTIONS
 
     override val extractor =
-        TaggedScenarioExtractor(
-            targetTag = CujType.CUJ_SPLIT_SCREEN_ENTER,
+        ShellTransitionScenarioExtractor(
             type,
-            transitionMatcher = TransitionMatcher(TransitionFilters.ENTER_SPLIT_SCREEN_FILTER)
+            transitionMatcher = TransitionFilters.ENTER_SPLIT_SCREEN_MATCHER
         )
 }
