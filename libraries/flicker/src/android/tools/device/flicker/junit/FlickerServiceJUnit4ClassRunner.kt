@@ -29,6 +29,7 @@ import org.junit.internal.AssumptionViolatedException
 import org.junit.internal.runners.model.EachTestNotifier
 import org.junit.internal.runners.model.ReflectiveCallable
 import org.junit.internal.runners.statements.Fail
+import org.junit.rules.TestRule
 import org.junit.runner.Description
 import org.junit.runner.manipulation.Filter
 import org.junit.runner.manipulation.InvalidOrderingException
@@ -373,19 +374,46 @@ constructor(testClass: Class<*>?, paramString: String? = null) :
         var statement: Statement? = methodInvoker(method!!, test)
         statement = possiblyExpectingExceptions(method, test, statement)
         statement = withPotentialTimeout(method, test, statement)
-        if (flickerDecorator.shouldRunBeforeOn(method)) {
-            statement = withBefores(method, test, statement)
+
+        if (method.declaringClass != InjectedTestCase::class.java) {
+            if (flickerDecorator.shouldRunBeforeOn(method)) {
+                statement = withBefores(method, test, statement)
+            }
+            if (flickerDecorator.shouldRunAfterOn(method)) {
+                statement = withAfters(method, test, statement)
+            }
+            statement = withRules(method, test, statement)
         }
-        if (flickerDecorator.shouldRunAfterOn(method)) {
-            statement = withAfters(method, test, statement)
-        }
-        //        statement = withRules(method, test, statement)
+
         statement = withInterruptIsolation(statement)
         return statement
     }
 
     private fun comparator(sorter: Sorter): Comparator<in FrameworkMethod> {
         return Comparator { o1, o2 -> sorter.compare(describeChild(o1), describeChild(o2)) }
+    }
+
+    private fun withRules(method: FrameworkMethod, target: Any, statement: Statement): Statement? {
+        val ruleContainer = RuleContainer()
+        CURRENT_RULE_CONTAINER.set(ruleContainer)
+        try {
+            val testRules = getTestRules(target)
+            for (each in rules(target)) {
+                if (!(each is TestRule && testRules.contains(each))) {
+                    ruleContainer.add(each)
+                }
+            }
+            for (rule in testRules) {
+                ruleContainer.add(rule)
+            }
+        } finally {
+            CURRENT_RULE_CONTAINER.remove()
+        }
+        return ruleContainer.apply(method, describeChild(method), target, statement)
+    }
+
+    companion object {
+        private val CURRENT_RULE_CONTAINER = ThreadLocal<RuleContainer>()
     }
 
     /**

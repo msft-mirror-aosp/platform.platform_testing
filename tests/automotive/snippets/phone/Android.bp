@@ -21,6 +21,7 @@ android_test {
     static_libs: [
         "automotive-dial-app-helper",
         "automotive-vehiclehardkeys-app-helper",
+        "automotive-settings-app-helper",
         "mobly-snippet-lib",
         "mobly-bundled-snippets-lib",
     ],

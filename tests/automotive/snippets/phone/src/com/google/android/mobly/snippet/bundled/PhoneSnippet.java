@@ -19,6 +19,7 @@ package com.google.android.mobly.snippet.bundled;
 import android.platform.helpers.HelperAccessor;
 import android.platform.helpers.IAutoDialContactDetailsHelper;
 import android.platform.helpers.IAutoDialHelper;
+import android.platform.helpers.IAutoPrivacySettingsHelper;
 import android.platform.helpers.IAutoVehicleHardKeysHelper;
 
 import com.google.android.mobly.snippet.Snippet;
@@ -31,11 +32,13 @@ public class PhoneSnippet implements Snippet {
     private final HelperAccessor<IAutoDialHelper> mDialerHelper;
     private final HelperAccessor<IAutoDialContactDetailsHelper> mContactsDetailsHelper;
     private final HelperAccessor<IAutoVehicleHardKeysHelper> mHardKeysHelper;
+    private final HelperAccessor<IAutoPrivacySettingsHelper> mPrivacySettingsHelper;
 
     public PhoneSnippet() {
         mDialerHelper = new HelperAccessor<>(IAutoDialHelper.class);
         mContactsDetailsHelper = new HelperAccessor<>(IAutoDialContactDetailsHelper.class);
         mHardKeysHelper = new HelperAccessor<>(IAutoVehicleHardKeysHelper.class);
+        mPrivacySettingsHelper = new HelperAccessor<>(IAutoPrivacySettingsHelper.class);
     }
 
     @Rpc(description = "Open Phone Application.")
@@ -239,6 +242,11 @@ public class PhoneSnippet implements Snippet {
     @Rpc(description = "Get list of visible contacts")
     public List<String> getListOfAllContacts() {
         return mDialerHelper.get().getListOfAllVisibleContacts();
+    }
+
+    @Rpc(description = "Microphone Chip.")
+    public boolean isMicChipPresentOnStatusBar() {
+        return mPrivacySettingsHelper.get().isMicChipPresentOnStatusBar();
     }
 
     @Override

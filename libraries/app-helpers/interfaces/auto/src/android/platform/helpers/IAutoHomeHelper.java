@@ -21,7 +21,7 @@ public interface IAutoHomeHelper extends IAppHelper {
     /**
      * Setup expectations: Should be on home screen.
      *
-     * Checks if exists a map widget.
+     * <p>Checks if exists a map widget.
      */
     boolean hasMapWidget();
 
@@ -39,8 +39,23 @@ public interface IAutoHomeHelper extends IAppHelper {
      */
     boolean hasAssistantWidget();
 
-    /**
-     * Opens Media Widget from home screen.
-     */
+    /** Opens Media Widget from home screen. */
     void openMediaWidget();
+
+    /**
+     * Setup expectations: Should be on home screen.
+     *
+     * <p>Checks if exists a brightness palette.
+     */
+    boolean hasDisplayBrightessPalette();
+
+    /**
+     * Setup expectations: Should be on home screen.
+     *
+     * <p>Checks if exists a adaptive brightness.
+     */
+    boolean hasAdaptiveBrightness();
+
+    /** Click on brightness button. */
+    void openBrightnessPalette();
 }

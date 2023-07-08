@@ -63,6 +63,33 @@ public class HomeHelperImpl extends AbstractStandardAppHelper implements IAutoHo
         return (getSpectatioUiUtil().hasUiElement(mediaWidgetSelector));
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public void openBrightnessPalette() {
+        BySelector brightnesButtonSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.STATUS_BAR_BRIGHTNESS_BUTTON);
+        UiObject2 brightnessButton = getSpectatioUiUtil().findUiObject(brightnesButtonSelector);
+        validateUiObject(brightnessButton, AutomotiveConfigConstants.STATUS_BAR_BRIGHTNESS_BUTTON);
+        getSpectatioUiUtil().clickAndWait(brightnessButton);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean hasDisplayBrightessPalette() {
+        BySelector displaybrightnessPaletteSelector =
+                getUiElementFromConfig(
+                        AutomotiveConfigConstants.STATUS_BAR_DISPLAY_BRIGHTNESS_PALETTE);
+        return (getSpectatioUiUtil().hasUiElement(displaybrightnessPaletteSelector));
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean hasAdaptiveBrightness() {
+        BySelector adaptiveBrightnessSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.STATUS_BAR_ADAPTIVE_BRIGHTNESS);
+        return (getSpectatioUiUtil().hasUiElement(adaptiveBrightnessSelector));
+    }
+
     @Override
     public void openMediaWidget() {
         getSpectatioUiUtil().pressHome();
