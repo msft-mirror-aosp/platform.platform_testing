@@ -18,7 +18,6 @@ package android.platform.tests;
 
 import static junit.framework.Assert.assertTrue;
 
-import android.platform.helpers.AutoUtility;
 import android.platform.helpers.HelperAccessor;
 import android.platform.helpers.IAutoAppGridHelper;
 import android.platform.helpers.IAutoFacetBarHelper;
@@ -29,7 +28,6 @@ import androidx.test.runner.AndroidJUnit4;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -49,10 +47,6 @@ public class UxRestrictionFacetBarTest {
         mHardKeysHelper = new HelperAccessor<>(IAutoVehicleHardKeysHelper.class);
     }
 
-    @BeforeClass
-    public static void exitSuw() {
-        AutoUtility.exitSuw();
-    }
 
     @Before
     public void enableDrivingMode() {

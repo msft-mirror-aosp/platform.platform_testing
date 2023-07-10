@@ -465,4 +465,9 @@ public class AutomotiveConfigConstants {
     public static final String STATUS_BAR_DISPLAY_BRIGHTNESS_PALETTE =
             "STATUS_BAR_DISPLAY_BRIGHTNESS_PALETTE";
     public static final String STATUS_BAR_ADAPTIVE_BRIGHTNESS = "STATUS_BAR_ADAPTIVE_BRIGHTNESS";
+
+    // Quick Controls
+    public static final String HOME_BLUETOOTH_BUTTON = "HOME_BLUETOOTH_BUTTON";
+    public static final String HOME_NETWORK_BUTTON = "HOME_NETWORK_BUTTON";
+    public static final String HOME_DISPLAY_BRIGHTNESS_BUTTON = "HOME_DISPLAY_BRIGHTNESS_BUTTON";
 }

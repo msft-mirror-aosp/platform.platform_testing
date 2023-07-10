@@ -353,6 +353,21 @@
       "TYPE": "TEXT",
       "VALUE": "Phone"
     },
+    "HOME_BLUETOOTH_BUTTON": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "qc_bluetooth_status_icon",
+      "PACKAGE": "com.android.systemui"
+    },
+    "HOME_DISPLAY_BRIGHTNESS_BUTTON": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "qc_display_status_icon",
+      "PACKAGE": "com.android.systemui"
+    },
+    "HOME_NETWORK_BUTTON": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "qc_signal_status_icon",
+      "PACKAGE": "com.android.systemui"
+    },
     "HOME_FACET_BUTTON": {
       "TYPE": "RESOURCE_ID",
       "VALUE": "home",
