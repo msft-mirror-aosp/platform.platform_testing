@@ -62,4 +62,18 @@ public interface IAutoNotificationHelper extends Scrollable, IAppHelper {
      * <p>Checks if notification settings page is opened.
      */
     boolean isNotificationSettingsOpened();
+
+    /**
+     * Setup expectations: None.
+     *
+     * <p>Checks if notification are received under recent category.
+     */
+    boolean isRecentNotification();
+
+    /**
+     * Setup expectations: None.
+     *
+     * <p>Checks if notification are received under older category.
+     */
+    boolean isOlderNotification();
 }

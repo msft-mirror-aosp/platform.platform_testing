@@ -267,6 +267,36 @@ public class AutoNotificationHelperImpl extends AbstractStandardAppHelper
         return object;
     }
 
+    @Override
+    public boolean isRecentNotification() {
+        BySelector recentNotificationsPanel =
+                getUiElementFromConfig(AutomotiveConfigConstants.RECENT_NOTIFICATIONS);
+        UiObject2 recentNotificationLayOut =
+                getSpectatioUiUtil().findUiObject(recentNotificationsPanel);
+        validateUiObject(recentNotificationLayOut, AutomotiveConfigConstants.RECENT_NOTIFICATIONS);
+        BySelector testNotification =
+                getUiElementFromConfig(AutomotiveConfigConstants.TEST_NOTIFICATION);
+        UiObject2 testNotificationLayout =
+                getSpectatioUiUtil()
+                        .findUiObjectInGivenElement(recentNotificationLayOut, testNotification);
+        return testNotificationLayout != null;
+    }
+
+    @Override
+    public boolean isOlderNotification() {
+        BySelector olderNotificationsPanel =
+                getUiElementFromConfig(AutomotiveConfigConstants.OLDER_NOTIFICATIONS);
+        UiObject2 olderNotificationLayOut =
+                getSpectatioUiUtil().findUiObject(olderNotificationsPanel);
+        validateUiObject(olderNotificationLayOut, AutomotiveConfigConstants.OLDER_NOTIFICATIONS);
+        BySelector testNotification =
+                getUiElementFromConfig(AutomotiveConfigConstants.TEST_NOTIFICATION);
+        UiObject2 testNotificationLayout =
+                getSpectatioUiUtil()
+                        .findUiObjectInGivenElement(olderNotificationLayOut, testNotification);
+        return testNotificationLayout != null;
+    }
+
     private void validateUiObject(UiObject2 uiObject, String action) {
         if (uiObject == null) {
             throw new UnknownUiException(

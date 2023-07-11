@@ -93,6 +93,7 @@ public class AutomotiveConfigConstants {
     public static final String HOME_MAP_CARD = "HOME_MAP_CARD";
     public static final String HOME_ASSISTANT_CARD = "HOME_ASSISTANT_CARD";
     public static final String HOME_PHONE_CARD = "HOME_PHONE_CARD";
+    public static final String HOME_TEMPERATURE_BUTTON = "HOME_TEMPERATURE_BUTTON";
 
     // App Grid Constants
     public static final String OPEN_APP_GRID_COMMAND = "OPEN_APP_GRID_COMMAND";
@@ -197,7 +198,9 @@ public class AutomotiveConfigConstants {
     public static final String SYSTEM_SETTINGS_SCROLL_MARGIN = "SYSTEM_SETTINGS_SCROLL_MARGIN";
     public static final String SYSTEM_SETTINGS_SCROLL_WAIT_TIME =
             "SYSTEM_SETTINGS_SCROLL_WAIT_TIME";
-
+    public static final String RECENT_NOTIFICATIONS = "RECENT_NOTIFICATIONS";
+    public static final String OLDER_NOTIFICATIONS = "OLDER_NOTIFICATIONS";
+    public static final String TEST_NOTIFICATION = "TEST_NOTIFICATION";
     // Display Settings Constants
     public static final String BRIGHTNESS_SEEKBAR = "BRIGHTNESS_SEEKBAR";
 
