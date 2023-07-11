@@ -19,7 +19,6 @@ package android.platform.tests;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
 
-import android.platform.helpers.AutoUtility;
 import android.platform.helpers.HelperAccessor;
 import android.platform.helpers.IAutoFacetBarHelper;
 import android.platform.helpers.IAutoPrivacySettingsHelper;
@@ -30,7 +29,6 @@ import androidx.test.runner.AndroidJUnit4;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -49,10 +47,6 @@ public class MicroPhoneSettingTest {
         mPrivacySettingsHelper = new HelperAccessor<>(IAutoPrivacySettingsHelper.class);
     }
 
-    @BeforeClass
-    public static void exitSuw() {
-        AutoUtility.exitSuw();
-    }
 
     @Before
     public void openPrivacySetting() {

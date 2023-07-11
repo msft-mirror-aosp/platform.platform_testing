@@ -39,6 +39,27 @@ public interface IAutoHomeHelper extends IAppHelper {
      */
     boolean hasAssistantWidget();
 
+    /**
+     * Setup expectations: Should be on home screen.
+     *
+     * <p>Checks if exists a bluetooth widget.
+     */
+    boolean hasBluetoothButton();
+
+    /**
+     * Setup expectations: Should be on home screen.
+     *
+     * <p>Checks if exists a network widget.
+     */
+    boolean hasNetworkButton();
+
+    /**
+     * Setup expectations: Should be on home screen.
+     *
+     * <p>Checks if exists a Brightness widget.
+     */
+    boolean hasDisplayBrightness();
+
     /** Opens Media Widget from home screen. */
     void openMediaWidget();
 

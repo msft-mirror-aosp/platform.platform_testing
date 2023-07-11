@@ -45,6 +45,30 @@ public class HomeHelperImpl extends AbstractStandardAppHelper implements IAutoHo
         // Nothing to dismiss
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public boolean hasBluetoothButton() {
+        BySelector bluetoothWidgetSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.HOME_BLUETOOTH_BUTTON);
+        return getSpectatioUiUtil().hasUiElement(bluetoothWidgetSelector);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean hasNetworkButton() {
+        BySelector networkWidgetSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.HOME_NETWORK_BUTTON);
+        return getSpectatioUiUtil().hasUiElement(networkWidgetSelector);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean hasDisplayBrightness() {
+        BySelector displayBrightnessWidgetSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.HOME_DISPLAY_BRIGHTNESS_BUTTON);
+        return getSpectatioUiUtil().hasUiElement(displayBrightnessWidgetSelector);
+    }
+
     public boolean hasMapWidget() {
         BySelector mapWidgetSelector =
                 getUiElementFromConfig(AutomotiveConfigConstants.HOME_MAP_CARD);
