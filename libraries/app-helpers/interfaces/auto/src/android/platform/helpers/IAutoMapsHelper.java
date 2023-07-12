@@ -144,4 +144,11 @@ public interface IAutoMapsHelper extends IAppHelper {
      * @param durationMs The duration it takes to perform this gesture in milliseconds.
      */
     void tiltDown(float angle, long durationMs);
+
+    /**
+     * Setup expectations: Maps widget is displayed
+     *
+     * <p>This method is used to verify whether Maps widget is displayed.
+     */
+    boolean hasMapsWidget();
 }

@@ -106,4 +106,19 @@ public class NotificationTest {
                 "Notification Settings did not open.",
                 mNotificationHelper.get().isNotificationSettingsOpened());
     }
+
+    @Test
+    public void testRecentAndOlderNotifications() {
+        mNotificationHelper.get().tapClearAllBtn();
+        mNotificationMockingHelper.get().postNotifications(1);
+        mNotificationHelper.get().open();
+        assertTrue(
+                "Notification are not present under recent category",
+                mNotificationHelper.get().isRecentNotification());
+        mNotificationHelper.get().exit();
+        mNotificationHelper.get().open();
+        assertTrue(
+                "Notification are not present under older category",
+                mNotificationHelper.get().isOlderNotification());
+    }
 }

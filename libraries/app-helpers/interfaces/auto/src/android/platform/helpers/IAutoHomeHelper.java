@@ -16,14 +16,9 @@
 
 package android.platform.helpers;
 
-public interface IAutoHomeHelper extends IAppHelper {
+import java.util.List;
 
-    /**
-     * Setup expectations: Should be on home screen.
-     *
-     * <p>Checks if exists a map widget.
-     */
-    boolean hasMapWidget();
+public interface IAutoHomeHelper extends IAppHelper {
 
     /**
      * Setup expectations: Should be on home screen.
@@ -79,4 +74,7 @@ public interface IAutoHomeHelper extends IAppHelper {
 
     /** Click on brightness button. */
     void openBrightnessPalette();
+
+    /** Get temperature from home screen */
+    List<String> getTemperature();
 }

@@ -21,6 +21,9 @@ import android.platform.helpers.exceptions.UnknownUiException;
 import androidx.test.uiautomator.BySelector;
 import androidx.test.uiautomator.UiObject2;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class HomeHelperImpl extends AbstractStandardAppHelper implements IAutoHomeHelper {
 
     public HomeHelperImpl(Instrumentation instr) {
@@ -67,12 +70,6 @@ public class HomeHelperImpl extends AbstractStandardAppHelper implements IAutoHo
         BySelector displayBrightnessWidgetSelector =
                 getUiElementFromConfig(AutomotiveConfigConstants.HOME_DISPLAY_BRIGHTNESS_BUTTON);
         return getSpectatioUiUtil().hasUiElement(displayBrightnessWidgetSelector);
-    }
-
-    public boolean hasMapWidget() {
-        BySelector mapWidgetSelector =
-                getUiElementFromConfig(AutomotiveConfigConstants.HOME_MAP_CARD);
-        return (getSpectatioUiUtil().hasUiElement(mapWidgetSelector));
     }
 
     public boolean hasAssistantWidget() {
@@ -137,5 +134,21 @@ public class HomeHelperImpl extends AbstractStandardAppHelper implements IAutoHo
             throw new UnknownUiException(
                     String.format("Unable to find UI Element for %s.", action));
         }
+    }
+
+    @Override
+    public List<String> getTemperature() {
+        getSpectatioUiUtil().pressHome();
+        getSpectatioUiUtil().waitForIdle();
+        BySelector temperatureSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.HOME_TEMPERATURE_BUTTON);
+        List<UiObject2> temperature = getSpectatioUiUtil().findUiObjects(temperatureSelector);
+        validateUiObject(temperature.get(0), AutomotiveConfigConstants.HOME_TEMPERATURE_BUTTON);
+        validateUiObject(temperature.get(1), AutomotiveConfigConstants.HOME_TEMPERATURE_BUTTON);
+        List<String> temperatureText = new ArrayList<>();
+        for (UiObject2 uiObject : temperature) {
+            temperatureText.add(getSpectatioUiUtil().getTextForUiElement(uiObject));
+        }
+        return temperatureText;
     }
 }

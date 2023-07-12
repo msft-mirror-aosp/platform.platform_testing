@@ -16,25 +16,23 @@
 
 package android.platform.test.rule
 
-import androidx.test.platform.app.InstrumentationRegistry
-import androidx.test.uiautomator.UiDevice
+import android.platform.uiautomator_helpers.DeviceHelpers.shell
 import org.junit.rules.TestWatcher
 import org.junit.runner.Description
 
 class DisableAnimationsRule: TestWatcher() {
-    private val uiDevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
     private var prevAnimationState: AnimationState = defaultAnimationState
     private var animationState: AnimationState
         get() =
             AnimationState(
-                uiDevice.executeShellCommand("settings get global transition_animation_scale").toFloatOrNull() ?: 1f,
-                uiDevice.executeShellCommand("settings get global window_animation_scale").toFloatOrNull() ?: 1f,
-                uiDevice.executeShellCommand("settings get global animator_duration_scale").toFloatOrNull() ?: 1f,
+                shell("settings get global transition_animation_scale").toFloatOrNull() ?: 1f,
+                shell("settings get global window_animation_scale").toFloatOrNull() ?: 1f,
+                shell("settings get global animator_duration_scale").toFloatOrNull() ?: 1f,
             )
         set(value) {
-            uiDevice.executeShellCommand("settings put global transition_animation_scale ${value.transitions}")
-            uiDevice.executeShellCommand("settings put global window_animation_scale ${value.windows}")
-            uiDevice.executeShellCommand("settings put global animator_duration_scale ${value.animators}")
+            shell("settings put global transition_animation_scale ${value.transitions}")
+            shell("settings put global window_animation_scale ${value.windows}")
+            shell("settings put global animator_duration_scale ${value.animators}")
         }
 
     override fun starting(description: Description) {
