@@ -236,6 +236,7 @@ public class DialHelperImpl extends AbstractStandardAppHelper implements IAutoDi
     public void dialFromList(String contact) {
         UiObject2 contactToCall = getContactFromContactList(contact);
         getSpectatioUiUtil().clickAndWait(contactToCall);
+        executeWorkflow(AutomotiveConfigConstants.DIAL_CONTACT_WORKFLOW);
     }
 
     /** {@inheritDoc} */
