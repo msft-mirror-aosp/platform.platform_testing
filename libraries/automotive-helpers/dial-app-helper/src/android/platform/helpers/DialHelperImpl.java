@@ -284,20 +284,14 @@ public class DialHelperImpl extends AbstractStandardAppHelper implements IAutoDi
     /** {@inheritDoc} */
     public void searchContactsByName(String contact) {
         openSearchContact();
-        BySelector searchBoxSelector =
-                getUiElementFromConfig(AutomotiveConfigConstants.CONTACT_SEARCH_BAR);
-        UiObject2 searchBox = getSpectatioUiUtil().findUiObject(searchBoxSelector);
-        validateUiObject(searchBox, AutomotiveConfigConstants.CONTACT_SEARCH_BAR);
+        UiObject2 searchBox = getSearchBox();
         searchBox.setText(contact);
     }
 
     /** {@inheritDoc} */
     public void searchContactsByNumber(String number) {
         openSearchContact();
-        BySelector searchBoxSelector =
-                getUiElementFromConfig(AutomotiveConfigConstants.CONTACT_SEARCH_BAR);
-        UiObject2 searchBox = getSpectatioUiUtil().findUiObject(searchBoxSelector);
-        validateUiObject(searchBox, AutomotiveConfigConstants.CONTACT_SEARCH_BAR);
+        UiObject2 searchBox = getSearchBox();
         searchBox.setText(number);
     }
 
@@ -429,6 +423,52 @@ public class DialHelperImpl extends AbstractStandardAppHelper implements IAutoDi
         openFavorites();
         UiObject2 uiObject = getSpectatioUiUtil().findUiObject(contact);
         return uiObject != null;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void addFavoritesFromFavoritesTab(String contact) {
+        openFavorites();
+        openAddFavoriteDialog(contact);
+
+        BySelector addfavoriteSelector =
+                getUiElementFromConfig(
+                        AutomotiveConfigConstants.ADD_CONTACT_TO_FAVORITE_FROM_DIALOG_BOX);
+        UiObject2 addfavorite = getSpectatioUiUtil().findUiObject(addfavoriteSelector);
+        validateUiObject(
+                addfavorite, AutomotiveConfigConstants.ADD_CONTACT_TO_FAVORITE_FROM_DIALOG_BOX);
+        getSpectatioUiUtil().clickAndWait(addfavorite);
+
+        BySelector closeDialogSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.ADD_TO_FAVORITE_DIALOG_OK);
+        UiObject2 closeDialog = getSpectatioUiUtil().findUiObject(closeDialogSelector);
+        validateUiObject(closeDialog, AutomotiveConfigConstants.ADD_TO_FAVORITE_DIALOG_OK);
+        getSpectatioUiUtil().clickAndWait(closeDialog);
+    }
+
+    private void openAddFavoriteDialog(String contact) {
+        BySelector favoriteButtonSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.ADD_TO_FAVORITE_BUTTON);
+        UiObject2 favoriteButton = getSpectatioUiUtil().findUiObject(favoriteButtonSelector);
+        validateUiObject(favoriteButton, AutomotiveConfigConstants.ADD_TO_FAVORITE_BUTTON);
+        getSpectatioUiUtil().clickAndWait(favoriteButton);
+
+        UiObject2 searchBox = getSearchBox();
+        searchBox.setText(contact);
+
+        BySelector searchResultSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.SEARCH_RESULT);
+        UiObject2 searchResult = getSpectatioUiUtil().findUiObject(searchResultSelector);
+        validateUiObject(searchResult, AutomotiveConfigConstants.SEARCH_RESULT);
+        getSpectatioUiUtil().clickAndWait(searchResult);
+    }
+
+    private UiObject2 getSearchBox() {
+        BySelector searchBoxSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.CONTACT_SEARCH_BAR);
+        UiObject2 searchBox = getSpectatioUiUtil().findUiObject(searchBoxSelector);
+        validateUiObject(searchBox, AutomotiveConfigConstants.CONTACT_SEARCH_BAR);
+        return searchBox;
     }
 
     /** {@inheritDoc} */
