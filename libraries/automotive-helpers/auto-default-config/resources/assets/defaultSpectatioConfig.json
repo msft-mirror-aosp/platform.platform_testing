@@ -720,6 +720,33 @@
       "VALUE": "Languages & input",
       "PACKAGE": "com.android.car.settings"
     },
+    "STATUS_BAR_BLUETOOTH_BUTTON": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "qc_bluetooth_status_icon",
+      "PACKAGE": "com.android.systemui"
+    },
+    "STATUS_BAR_BLUETOOTH_TOGGLE_ON": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "switch_widget",
+      "PACKAGE": "android"
+    },
+    "STATUS_BAR_BLUETOOTH_TOGGLE_ON_MESSAGE": {
+      "TYPE": "TEXT",
+      "VALUE": "To pair a device, open Bluetooth settings"
+    },
+    "STATUS_BAR_BLUETOOTH_TOGGLE_OFF_MESSAGE": {
+      "TYPE": "TEXT",
+      "VALUE": "To see your devices, turn on Bluetooth"
+    },
+    "STATUS_BAR_BLUETOOTH_SETTINGS": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "qc_bluetooth_footer_button",
+      "PACKAGE": "com.android.systemui"
+    },
+    "STATUS_BAR_BLUETOOTH_SETTINGS_PAGE_TITLE": {
+      "TYPE": "TEXT",
+      "VALUE": "Bluetooth"
+    },
     "DEVICE_MODEL": {
       "TYPE": "TEXT",
       "VALUE": "Model & hardware",
@@ -1319,14 +1346,10 @@
       "TYPE": "RESOURCE_ID",
       "VALUE": "summary",
       "PACKAGE": "android"
-    },
-    "CONTACT_NAME_TITLE": {
-      "TYPE": "RESOURCE_ID",
-      "VALUE": "title",
-      "PACKAGE": "com.android.car.dialer"
     }
   },
   "WORKFLOWS": {
+    "DIAL_CONTACT_WORKFLOW": [],
     "DISMISS_APPS_INITIAL_DIALOGS": [
       {
         "NAME": "Allow Button",
