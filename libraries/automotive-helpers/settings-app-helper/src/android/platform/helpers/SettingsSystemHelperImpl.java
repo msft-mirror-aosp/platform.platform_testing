@@ -21,6 +21,7 @@ import android.content.res.Resources;
 import android.platform.helpers.ScrollUtility.ScrollActions;
 import android.platform.helpers.ScrollUtility.ScrollDirection;
 import android.platform.helpers.exceptions.UnknownUiException;
+import android.platform.spectatio.exceptions.MissingUiElementException;
 
 import androidx.test.uiautomator.By;
 import androidx.test.uiautomator.BySelector;
@@ -324,5 +325,43 @@ public class SettingsSystemHelperImpl extends AbstractStandardAppHelper
             throw new UnknownUiException(
                     String.format("Unable to find UI Element for %s.", action));
         }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean hasDeveloperOptions() throws MissingUiElementException {
+        getSpectatioUiUtil().wait1Second();
+        boolean hasDeveloperOptions =
+                getSpectatioUiUtil()
+                        .scrollAndCheckIfUiElementExist(
+                                mScrollableElementSelector, "Developer options", true);
+        return hasDeveloperOptions;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void openDeveloperOptions() {
+        getSpectatioUiUtil().wait1Second();
+        UiObject2 developerOptions =
+                getMenu(getUiElementFromConfig(AutomotiveConfigConstants.DEVELOPER_OPTIONS));
+        validateUiObject(
+                developerOptions, String.format("Unable to find UI Element for Developer Options"));
+        getSpectatioUiUtil().clickAndWait(developerOptions);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void enterDeveloperMode() {
+        openAboutMenu();
+        getSpectatioUiUtil().wait1Second();
+        UiObject2 buildNumber =
+                getMenu(getUiElementFromConfig(AutomotiveConfigConstants.BUILD_NUMBER));
+        validateUiObject(buildNumber, String.format("Unable to find UI Element for build number"));
+        for (int i = 0; i <= 6; i++) {
+            getSpectatioUiUtil().clickAndWait(buildNumber);
+            getSpectatioUiUtil().wait1Second();
+        }
+        getSpectatioUiUtil().pressBack();
+        getSpectatioUiUtil().waitForIdle();
     }
 }

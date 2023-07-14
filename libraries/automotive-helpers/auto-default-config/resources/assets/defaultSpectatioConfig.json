@@ -275,6 +275,19 @@
       "VALUE": "contact_details_favorite_button",
       "PACKAGE": "com.android.car.dialer"
     },
+    "ADD_CONTACT_TO_FAVORITE_FROM_DIALOG_BOX": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "car_ui_list_item_action_container",
+      "PACKAGE": "com.android.car.dialer"
+    },
+    "ADD_TO_FAVORITE_BUTTON": {
+      "TYPE": "TEXT",
+      "VALUE": "Add a favorite"
+    },
+    "ADD_TO_FAVORITE_DIALOG_OK": {
+      "TYPE": "TEXT",
+      "VALUE": "OK"
+    },
     "CONTACT_TYPE_HOME": {
       "TYPE": "TEXT",
       "VALUE": "Home"
@@ -579,8 +592,8 @@
           "TYPE": "HAS_DESCENDANT",
           "MAX_DEPTH": 2,
           "DESCENDANT": {
-          "TYPE": "CLASS",
-          "VALUE": "android.widget.FrameLayout"
+            "TYPE": "CLASS",
+            "VALUE": "android.widget.FrameLayout"
           }
         }
       ]
@@ -710,6 +723,15 @@
       "VALUE": "About",
       "PACKAGE": "com.android.car.settings"
     },
+    "DEVELOPER_OPTIONS": {
+      "TYPE": "TEXT",
+      "VALUE": "Developer options"
+    },
+    "DEVELOPER_OPTIONS_SWITCH": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "switch_widget",
+      "PACKAGE": "android"
+    },
     "RESET_OPTIONS_MENU": {
       "TYPE": "TEXT",
       "VALUE": "Reset options",
@@ -824,8 +846,8 @@
       "PACKAGE": "com.android.car.ui.sharedlibrary"
     },
     "DISPLAY_SETTINGS_ADAPTIVE_BRIGHTNESS_TOGGLE": {
-    "TYPE": "MULTIPLE",
-    "SPECIFIERS": [
+      "TYPE": "MULTIPLE",
+      "SPECIFIERS": [
         {
           "TYPE": "CLASS",
           "VALUE": "android.widget.Switch"
@@ -1346,6 +1368,32 @@
       "TYPE": "RESOURCE_ID",
       "VALUE": "summary",
       "PACKAGE": "android"
+    },
+    "CONTACT_NAME_TITLE": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "title",
+      "PACKAGE": "com.android.car.dialer"
+    },
+    "LOCATION_ACCESS": {
+      "TYPE": "TEXT",
+      "VALUE": "Location access"
+    },
+    "TOGGLE_LOCATION": {
+      "TYPE": "TEXT",
+      "VALUE": "Use location"
+    },
+    "LOCATION_SWITCH": {
+      "TYPE": "CLASS",
+      "VALUE": "android.widget.Switch"
+    },
+    "LOCATION_WIDGET": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "qc_location_status_icon",
+      "PACKAGE": "com.android.systemui"
+    },
+    "RECENTLY_CLOSED_TEXT": {
+      "TYPE": "TEXT",
+      "VALUE": "Recently accessed"
     }
   },
   "WORKFLOWS": {
@@ -1358,6 +1406,41 @@
           "UI_ELEMENT": {
             "TYPE": "TEXT",
             "VALUE": "Allow"
+          }
+        }
+      }
+    ],
+    "OPEN_LOCATION_SETTINGS_WORKFLOW": [
+      {
+        "NAME": "Go to Home",
+        "TYPE": "PRESS",
+        "CONFIG": {
+          "TEXT": "HOME"
+        }
+      },
+      {
+        "NAME": "Open Settings",
+        "TYPE": "COMMAND",
+        "CONFIG": {
+          "TEXT": "am start -a android.settings.SETTINGS"
+        }
+      },
+      {
+        "NAME": "Open Location Settings",
+        "TYPE": "SCROLL_TO_FIND_AND_CLICK",
+        "CONFIG": {
+          "UI_ELEMENT": {
+            "TYPE": "TEXT",
+            "VALUE": "Location"
+          }
+        },
+        "SCROLL_CONFIG": {
+          "SCROLL_ACTION": "USE_GESTURE",
+          "SCROLL_DIRECTION": "VERTICAL",
+          "SCROLL_ELEMENT": {
+            "TYPE": "RESOURCE_ID",
+            "VALUE": "top_level_menu_container",
+            "PACKAGE": "com.android.car.settings"
           }
         }
       }

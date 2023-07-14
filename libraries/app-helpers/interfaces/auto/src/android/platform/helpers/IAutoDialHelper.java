@@ -265,4 +265,11 @@ public interface IAutoDialHelper extends IAppHelper, Scrollable {
      * <p>This method is used for opening phone app from homescreen
      */
     boolean isBluetoothHfpErrorDisplayed();
+
+    /**
+     * Setup expectations: The app is open
+     *
+     * <p>This method is adding favorites from the Favorites Tab
+     */
+    void addFavoritesFromFavoritesTab(String contact);
 }

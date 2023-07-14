@@ -71,6 +71,11 @@ public class AutomotiveConfigConstants {
     public static final String DIGIT_EIGHT = "8";
     public static final String DIGIT_NINE = "9";
     public static final String ADD_CONTACT_TO_FAVORITE = "ADD_CONTACT_TO_FAVORITE";
+    public static final String ADD_CONTACT_TO_FAVORITE_FROM_DIALOG_BOX =
+            "ADD_CONTACT_TO_FAVORITE_FROM_DIALOG_BOX";
+    public static final String ADD_TO_FAVORITE_BUTTON = "ADD_TO_FAVORITE_BUTTON";
+    public static final String ADD_TO_FAVORITE_DIALOG_OK = "ADD_TO_FAVORITE_DIALOG_OK";
+
     public static final String CONTACT_TYPE_HOME = "CONTACT_TYPE_HOME";
     public static final String CONTACT_TYPE_WORK = "CONTACT_TYPE_WORK";
     public static final String CONTACT_TYPE_MOBILE = "CONTACT_TYPE_MOBILE";
@@ -178,6 +183,8 @@ public class AutomotiveConfigConstants {
             "SYSTEM_SETTINGS_SCROLL_BACKWARD_BUTTON";
     public static final String SYSTEM_SETTINGS_SCROLL_ELEMENT = "SYSTEM_SETTINGS_SCROLL_ELEMENT";
     public static final String ABOUT_MENU = "ABOUT_MENU";
+    public static final String DEVELOPER_OPTIONS = "DEVELOPER_OPTIONS";
+    public static final String DEVELOPER_OPTIONS_SWITCH = "DEVELOPER_OPTIONS_SWITCH";
     public static final String RESET_OPTIONS_MENU = "RESET_OPTIONS_MENU";
     public static final String LANGUAGES_AND_INPUT_MENU = "LANGUAGES_AND_INPUT_MENU";
     public static final String DEVICE_MODEL = "DEVICE_MODEL";
@@ -472,8 +479,10 @@ public class AutomotiveConfigConstants {
     public static final String HOME_BLUETOOTH_BUTTON = "HOME_BLUETOOTH_BUTTON";
     public static final String HOME_NETWORK_BUTTON = "HOME_NETWORK_BUTTON";
     public static final String HOME_DISPLAY_BRIGHTNESS_BUTTON = "HOME_DISPLAY_BRIGHTNESS_BUTTON";
+
     // status bar constants
     public static final String STATUS_BAR_BLUETOOTH_TOGGLE_ON = "STATUS_BAR_BLUETOOTH_TOGGLE_ON";
+    public static final String STATUS_BAR_BLUETOOTH_TOGGLE_OFF = "STATUS_BAR_BLUETOOTH_TOGGLE_OFF";
     public static final String STATUS_BAR_BLUETOOTH_TOGGLE_ON_MESSAGE =
             "STATUS_BAR_BLUETOOTH_TOGGLE_ON_MESSAGE";
     public static final String STATUS_BAR_BLUETOOTH_TOGGLE_OFF_MESSAGE =
@@ -482,4 +491,10 @@ public class AutomotiveConfigConstants {
     public static final String STATUS_BAR_BLUETOOTH_SETTINGS_PAGE_TITLE =
             "STATUS_BAR_BLUETOOTH_SETTINGS_PAGE_TITLE";
     public static final String STATUS_BAR_BLUETOOTH_BUTTON = "STATUS_BAR_BLUETOOTH_BUTTON";
+
+    public static final String TOGGLE_LOCATION = "TOGGLE_LOCATION";
+    public static final String LOCATION_ACCESS = "LOCATION_ACCESS";
+    public static final String LOCATION_SWITCH = "LOCATION_SWITCH";
+    public static final String LOCATION_WIDGET = "LOCATION_WIDGET";
+    public static final String RECENTLY_CLOSED_TEXT = "RECENTLY_CLOSED_TEXT";
 }

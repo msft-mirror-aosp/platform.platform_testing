@@ -249,6 +249,11 @@ public class PhoneSnippet implements Snippet {
         return mPrivacySettingsHelper.get().isMicChipPresentOnStatusBar();
     }
 
+    @Rpc(description = "Add Favorites from favorites tab")
+    public void addFavoritesFromFavoritesTab(String contact) {
+        mDialerHelper.get().addFavoritesFromFavoritesTab(contact);
+    }
+
     @Override
     public void shutdown() {}
 }
