@@ -723,6 +723,15 @@
       "VALUE": "About",
       "PACKAGE": "com.android.car.settings"
     },
+    "DEVELOPER_OPTIONS": {
+      "TYPE": "TEXT",
+      "VALUE": "Developer options"
+    },
+    "DEVELOPER_OPTIONS_SWITCH": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "switch_widget",
+      "PACKAGE": "android"
+    },
     "RESET_OPTIONS_MENU": {
       "TYPE": "TEXT",
       "VALUE": "Reset options",

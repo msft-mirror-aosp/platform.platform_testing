@@ -16,9 +16,8 @@
 
 package android.platform.helpers;
 
-/**
- * Helper class for functional tests of system settings
- */
+/** Helper class for functional tests of system settings */
+import android.platform.spectatio.exceptions.MissingUiElementException;
 
 import java.util.Date;
 
@@ -92,7 +91,28 @@ public interface IAutoSystemSettingsHelper extends IAppHelper {
     /**
      * Setup expectation: System setting is open.
      *
-     * Open Languages & input menu.
+     * <p>Open Languages & input menu.
      */
     void openLanguagesInputMenu();
+
+    /**
+     * Setup expectation: System setting is open.
+     *
+     * <p>Click on build number.
+     */
+    void enterDeveloperMode();
+
+    /**
+     * Setup expectation: Click to open developer options.
+     *
+     * <p>Click on about.
+     */
+    void openDeveloperOptions();
+
+    /**
+     * Setup expectation: Scroll to developer options and Checks if Developer Options is available
+     *
+     * <p>Checks if Developer Options is available
+     */
+    boolean hasDeveloperOptions() throws MissingUiElementException;
 }
