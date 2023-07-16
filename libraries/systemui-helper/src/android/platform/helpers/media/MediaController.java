@@ -158,6 +158,7 @@ public class MediaController {
         final BySelector mediaArtistSelector =
             By.res(PKG, "header_artist")
                 .text(meta.getString(MediaMetadata.METADATA_KEY_ARTIST));
+        mInstrumentation.getUiAutomation().clearCache();
         return mUiObject.hasObject(mediaTitleSelector) && mUiObject.hasObject(mediaArtistSelector);
     }
 
