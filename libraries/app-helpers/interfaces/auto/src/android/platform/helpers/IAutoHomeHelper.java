@@ -55,6 +55,13 @@ public interface IAutoHomeHelper extends IAppHelper {
      */
     boolean hasDisplayBrightness();
 
+    /**
+     * Setup expectations: Verifying the Guest label displayed in profile icon in status bar
+     *
+     * <p>Get the text of the Guest profile
+     */
+    String getUserProfileName();
+
     /** Opens Media Widget from home screen. */
     void openMediaWidget();
 

@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class HomeHelperImpl extends AbstractStandardAppHelper implements IAutoHomeHelper {
+    private static final int WAIT_TIME_MS = 30000;
 
     public HomeHelperImpl(Instrumentation instr) {
         super(instr);
@@ -120,6 +121,20 @@ public class HomeHelperImpl extends AbstractStandardAppHelper implements IAutoHo
         UiObject2 mediaWidget = getSpectatioUiUtil().findUiObject(mediaWidgetSelector);
         validateUiObject(mediaWidget, AutomotiveConfigConstants.HOME_BOTTOM_CARD);
         getSpectatioUiUtil().clickAndWait(mediaWidget);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String getUserProfileName() {
+        getSpectatioUiUtil().waitForIdle();
+        getSpectatioUiUtil().waitNSeconds(WAIT_TIME_MS);
+        BySelector profileGuestIconWidgetSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.HOME_PROFILE_GUEST_ICON);
+        UiObject2 guestIconButtonLink =
+                getSpectatioUiUtil().findUiObject(profileGuestIconWidgetSelector);
+        validateUiObject(guestIconButtonLink, AutomotiveConfigConstants.HOME_PROFILE_GUEST_ICON);
+        String profileText = guestIconButtonLink.getText();
+        return profileText;
     }
 
     /** {@inheritDoc} */

@@ -381,6 +381,11 @@
       "VALUE": "qc_signal_status_icon",
       "PACKAGE": "com.android.systemui"
     },
+    "HOME_PROFILE_GUEST_ICON": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "user_name_text",
+      "PACKAGE": "com.android.systemui"
+    },
     "HOME_FACET_BUTTON": {
       "TYPE": "RESOURCE_ID",
       "VALUE": "home",
@@ -1394,6 +1399,14 @@
     "RECENTLY_CLOSED_TEXT": {
       "TYPE": "TEXT",
       "VALUE": "Recently accessed"
+    },
+    "LOCATION_SETTINGS_RECENTLY_ACCESSED_MAPS": {
+      "TYPE": "TEXT",
+      "VALUE": "Maps"
+    },
+    "LOCATION_SETTINGS_VIEW_ALL": {
+      "TYPE": "TEXT",
+      "VALUE": "View all"
     }
   },
   "WORKFLOWS": {
