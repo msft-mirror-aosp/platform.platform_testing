@@ -283,6 +283,18 @@ public class SettingsSystemHelperImpl extends AbstractStandardAppHelper
         getSpectatioUiUtil().clickAndWait(aboutMenu);
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public void openViewAll() {
+        getSpectatioUiUtil().wait1Second();
+        UiObject2 viewAll =
+                getMenu(
+                        getUiElementFromConfig(
+                                AutomotiveConfigConstants.LOCATION_SETTINGS_VIEW_ALL));
+        validateUiObject(viewAll, String.format("Unable to find UI Element for view all"));
+        getSpectatioUiUtil().clickAndWait(viewAll);
+    }
+
     private void openLanguageMenu() {
         UiObject2 languageMenu =
                 getBtnByText(

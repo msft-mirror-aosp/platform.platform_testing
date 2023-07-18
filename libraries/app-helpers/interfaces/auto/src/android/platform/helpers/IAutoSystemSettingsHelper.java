@@ -115,4 +115,11 @@ public interface IAutoSystemSettingsHelper extends IAppHelper {
      * <p>Checks if Developer Options is available
      */
     boolean hasDeveloperOptions() throws MissingUiElementException;
+
+    /**
+     * Setup expectation: Location setting is open.
+     *
+     * <p>Clicks on view all.
+     */
+    void openViewAll();
 }
