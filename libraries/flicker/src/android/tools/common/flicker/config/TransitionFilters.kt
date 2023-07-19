@@ -76,9 +76,8 @@ object TransitionFilters {
                 ts.filter { t ->
                     t.changes.size == 2 &&
                         t.changes.any {
-                            it.transitMode == TransitionType.TO_BACK &&
-                                isLauncherTopLevelTaskLayer(it.layerId, layersTrace)
-                        } && // LAUNCHER
+                            it.transitMode == TransitionType.TO_BACK
+                        } && // closing app
                         t.changes.any {
                             it.transitMode == TransitionType.TO_FRONT
                         } && // opening app
