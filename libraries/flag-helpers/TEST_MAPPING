@@ -1,0 +1,12 @@
+{
+  "presubmit": [
+    {
+      "name": "FlagAnnotationTests",
+      "options": [
+        {
+          "include-filter": "android.cts.flags.tests.FlagAnnotationTest"
+        }
+      ]
+    }
+  ]
+}

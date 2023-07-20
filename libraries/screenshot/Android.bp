@@ -47,6 +47,7 @@ android_library {
     name: "platform-screenshot-diff-core",
     manifest: "AndroidManifest.xml",
     platform_apis: true,
+    lint: { test: true },
     optimize: {
         enabled: false
     },
@@ -56,8 +57,11 @@ android_library {
     static_libs: [
         "androidx.annotation_annotation",
         "androidx.test.ext.junit",
-        "androidx.test.runner",
         "platform-screenshot-diff-proto",
+        "androidx.test.runner",
+        "androidx.test.espresso.core",
+        "androidx.appcompat_appcompat",
+        "guava",
     ],
 }
 
