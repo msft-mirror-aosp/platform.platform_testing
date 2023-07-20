@@ -25,7 +25,10 @@ import androidx.test.uiautomator.By;
 import androidx.test.uiautomator.BySelector;
 import androidx.test.uiautomator.UiObject2;
 
-/** Helper for Notifications on Automotive device */
+/**
+ * Helper for Notifications on Automotive device openNotification() for swipeDown is removed- Not
+ * supported in UDC- bug b/285387870
+ */
 public class AutoNotificationHelperImpl extends AbstractStandardAppHelper
         implements IAutoNotificationHelper {
 
@@ -173,13 +176,6 @@ public class AutoNotificationHelperImpl extends AbstractStandardAppHelper
                 postedNotification, String.format("Unable to get the posted notification."));
         getSpectatioUiUtil().swipeLeft(postedNotification);
         getSpectatioUiUtil().wait5Seconds();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void openNotification() {
-        // Swipe Down From top of screen to the bottom in one step
-        getSpectatioUiUtil().swipeDown();
     }
 
     private boolean checkIfClearAllButtonExist(BySelector selector) {

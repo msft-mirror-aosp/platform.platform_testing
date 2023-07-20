@@ -41,14 +41,6 @@ public interface IAutoNotificationHelper extends Scrollable, IAppHelper {
      * @param title of the notification to be swiped.
      */
     void removeNotification(String title);
-
-    /**
-     * Setup expectations: None.
-     *
-     * <p>Swipe down from status bar to open notifications.
-     */
-    void openNotification();
-
     /**
      * Setup expectations: Notification app is open and scrolled to the bottom.
      *

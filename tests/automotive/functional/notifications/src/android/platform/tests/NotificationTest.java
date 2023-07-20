@@ -93,12 +93,6 @@ public class NotificationTest {
     }
 
     @Test
-    public void testSwipeDownNotification() {
-        mNotificationHelper.get().openNotification();
-        assertTrue("Notification is not open", mNotificationHelper.get().isAppInForeground());
-    }
-
-    @Test
     public void testManageButton() {
         mNotificationMockingHelper.get().postNotifications(1);
         mNotificationHelper.get().clickManageBtn();
