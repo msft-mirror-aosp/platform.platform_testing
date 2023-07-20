@@ -503,4 +503,9 @@ public class AutomotiveConfigConstants {
 
     // Guest Profile
     public static final String HOME_PROFILE_GUEST_ICON = "HOME_PROFILE_GUEST_ICON";
+
+    public static final String HOME_PROFILE_ICON_BUTTON = "HOME_PROFILE_ICON_BUTTON";
+    public static final String HOME_GUEST_BUTTON = "HOME_GUEST_BUTTON";
+    public static final String HOME_DRIVER_BUTTON = "HOME_DRIVER_BUTTON";
+    public static final String HOME_SECONDARY_USER_BUTTON = "HOME_SECONDARY_USER_BUTTON";
 }

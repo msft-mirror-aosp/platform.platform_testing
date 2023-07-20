@@ -84,4 +84,18 @@ public interface IAutoHomeHelper extends IAppHelper {
 
     /** Get temperature from home screen */
     List<String> getTemperature();
+
+    /**
+     * Setup expectations: To Open Profile Icon button.
+     *
+     * <p>Opens Profile Icon button on status bar.
+     */
+    void openStatusBarProfiles();
+
+    /**
+     * Setup expectations: To get Profiles in a List
+     *
+     * <p>Getting Profiles in a list and comparing based on position
+     */
+    List<String> getUserProfileNames();
 }

@@ -139,6 +139,60 @@ public class HomeHelperImpl extends AbstractStandardAppHelper implements IAutoHo
 
     /** {@inheritDoc} */
     @Override
+    public void openStatusBarProfiles() {
+        BySelector profileWidgetSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.HOME_PROFILE_ICON_BUTTON);
+        UiObject2 profileButtonLink = getSpectatioUiUtil().findUiObject(profileWidgetSelector);
+        validateUiObject(profileButtonLink, AutomotiveConfigConstants.HOME_PROFILE_ICON_BUTTON);
+        getSpectatioUiUtil().clickAndWait(profileButtonLink);
+    }
+
+    private String getDriverIconText() {
+        getSpectatioUiUtil().wait5Seconds();
+        BySelector profileDriverIconWidgetSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.HOME_DRIVER_BUTTON);
+        UiObject2 driverIconButtonLink =
+                getSpectatioUiUtil().findUiObject(profileDriverIconWidgetSelector);
+        validateUiObject(driverIconButtonLink, AutomotiveConfigConstants.HOME_DRIVER_BUTTON);
+        String driverProfileIndex = driverIconButtonLink.getText();
+        return driverProfileIndex;
+    }
+
+    private String getGuestIconText() {
+        getSpectatioUiUtil().wait5Seconds();
+        BySelector profileGuestIconWidgetSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.HOME_GUEST_BUTTON);
+        UiObject2 guestIconButtonLink =
+                getSpectatioUiUtil().findUiObject(profileGuestIconWidgetSelector);
+        validateUiObject(guestIconButtonLink, AutomotiveConfigConstants.HOME_GUEST_BUTTON);
+        String guestProfileIndex = guestIconButtonLink.getText();
+        return guestProfileIndex;
+    }
+
+    private String getSecondaryUserIconText() {
+        getSpectatioUiUtil().wait5Seconds();
+        BySelector secondaryUserWidgetSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.HOME_SECONDARY_USER_BUTTON);
+        UiObject2 secondaryUserButtonLink =
+                getSpectatioUiUtil().findUiObject(secondaryUserWidgetSelector);
+        validateUiObject(
+                secondaryUserButtonLink, AutomotiveConfigConstants.HOME_SECONDARY_USER_BUTTON);
+        String secondaryUserProfileIndex = secondaryUserButtonLink.getText();
+        return secondaryUserProfileIndex;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public List<String> getUserProfileNames() {
+        List<String> profiles = new ArrayList<String>();
+        profiles.add(getDriverIconText());
+        profiles.add(getSecondaryUserIconText());
+        profiles.add(getGuestIconText());
+        return profiles;
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public void open() {
         getSpectatioUiUtil().pressHome();
         getSpectatioUiUtil().waitForIdle();
@@ -167,3 +221,5 @@ public class HomeHelperImpl extends AbstractStandardAppHelper implements IAutoHo
         return temperatureText;
     }
 }
+
+

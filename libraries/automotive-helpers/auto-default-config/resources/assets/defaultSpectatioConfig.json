@@ -358,6 +358,23 @@
       "VALUE": "switch_widget",
       "PACKAGE": "android"
     },
+    "HOME_PROFILE_ICON_BUTTON": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "user_name_text",
+      "PACKAGE": "com.android.systemui"
+    },
+    "HOME_GUEST_BUTTON": {
+      "TYPE": "TEXT",
+      "VALUE": "Guest"
+    },
+    "HOME_DRIVER_BUTTON": {
+      "TYPE": "TEXT",
+      "VALUE": "Driver"
+    },
+    "HOME_SECONDARY_USER_BUTTON": {
+      "TYPE": "TEXT",
+      "VALUE": "SecondaryUser"
+    },
     "HOME_ASSISTANT_CARD": {
       "TYPE": "TEXT",
       "VALUE": "Assistant"
@@ -1833,3 +1850,5 @@
     ]
   }
 }
+
+
