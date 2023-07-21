@@ -29,7 +29,7 @@ abstract class UInputDevice {
     abstract val supportedKeys: Array<Int>
 
     // Based on cts/tests/input/res/raw/test_bluetooth_stylus_register.json
-    fun getRegisterCommand(): String {
+    open fun getRegisterCommand(): String {
         return """{
             "id": 1,
             "type": "uinput",
