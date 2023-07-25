@@ -22,8 +22,6 @@ import android.platform.uiautomator_helpers.DeviceHelpers
 import android.view.InputDevice
 import androidx.core.content.getSystemService
 import androidx.test.platform.app.InstrumentationRegistry
-import java.io.Closeable
-import java.io.OutputStream
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import org.junit.runner.Description
@@ -46,12 +44,14 @@ import org.junit.runner.Description
  * }
  * ```
  */
-class InputDeviceRule : TestWatcher() {
+class InputDeviceRule : TestWatcher(), UInputDevice.EventInjector {
 
     private val inputManager = DeviceHelpers.context.getSystemService<InputManager>()!!
     private val deviceAddedMap = mutableMapOf<UInputDevice, CountDownLatch>()
     private val inputManagerDevices = mutableMapOf<DeviceId, UInputDevice>()
-    private val closeablesToCloseOnFinish: MutableList<Closeable> = mutableListOf()
+
+    private lateinit var inputStream: ParcelFileDescriptor.AutoCloseInputStream
+    private lateinit var outputStream: ParcelFileDescriptor.AutoCloseOutputStream
 
     private val inputDeviceListenerDelegate =
         object : InputManager.InputDeviceListener {
@@ -70,6 +70,15 @@ class InputDeviceRule : TestWatcher() {
 
     override fun starting(description: Description?) {
         super.starting(description)
+
+        val (stdOut, stdIn) =
+            InstrumentationRegistry.getInstrumentation()
+                .uiAutomation
+                .executeShellCommandRw("uinput -")
+
+        inputStream = ParcelFileDescriptor.AutoCloseInputStream(stdOut)
+        outputStream = ParcelFileDescriptor.AutoCloseOutputStream(stdIn)
+
         inputManager.registerInputDeviceListener(
             inputDeviceListenerDelegate,
             DeviceHelpers.context.mainThreadHandler
@@ -77,7 +86,9 @@ class InputDeviceRule : TestWatcher() {
     }
 
     override fun finished(description: Description?) {
-        closeablesToCloseOnFinish.forEach { it.close() }
+        inputStream.close()
+        outputStream.close()
+
         inputManager.unregisterInputDeviceListener(inputDeviceListenerDelegate)
         deviceAddedMap.clear()
         inputManagerDevices.clear()
@@ -90,20 +101,9 @@ class InputDeviceRule : TestWatcher() {
      * @throws RuntimeException if the device did not register successfully.
      */
     fun registerDevice(device: UInputDevice) {
-        val parcelFileDescriptors =
-            InstrumentationRegistry.getInstrumentation()
-                .uiAutomation
-                .executeShellCommandRw("uinput -")
-        val (stdOut, stdIn) = parcelFileDescriptors
-        ParcelFileDescriptor.AutoCloseInputStream(stdOut).also { closeablesToCloseOnFinish.add(it) }
-        val outputStream =
-            ParcelFileDescriptor.AutoCloseOutputStream(stdIn).also {
-                closeablesToCloseOnFinish.add(it)
-            }
-
         deviceAddedMap.putIfAbsent(device, CountDownLatch(1))
 
-        writeCommand(device.getRegisterCommand(), outputStream)
+        writeCommand(device.getRegisterCommand())
 
         deviceAddedMap[device]!!.let { latch ->
             latch.await(20, TimeUnit.SECONDS)
@@ -115,7 +115,28 @@ class InputDeviceRule : TestWatcher() {
         }
     }
 
-    private fun writeCommand(command: String, outputStream: OutputStream) {
+    /** Send the [keycode] event, both key down and key up events, for the provided [deviceId]. */
+    override fun sendKeyEvent(deviceId: Int, keycode: Int) {
+        injectEvdevEvents(deviceId, listOf(EV_KEY, keycode, KEY_DOWN, EV_SYN, SYN_REPORT, 0))
+        injectEvdevEvents(deviceId, listOf(EV_KEY, keycode, KEY_UP, EV_SYN, SYN_REPORT, 0))
+    }
+
+    /**
+     * Inject array of uinput events for a device. The following is an example of events: [[EV_KEY],
+     * [KEY_UP], [KEY_DOWN], [EV_SYN], [SYN_REPORT], 0]. The number of entries in the provided
+     * [evdevEvents] has to be a multiple of 3.
+     *
+     * @param deviceId The id corresponding to [UInputDevice] to associate with the [evdevEvents]
+     * @param evdevEvents The uinput events to be injected
+     */
+    private fun injectEvdevEvents(deviceId: Int, evdevEvents: List<Int>) {
+        assert(evdevEvents.size % 3 == 0) { "Number of injected events should be a multiple of 3" }
+
+        val command = """{"command": "inject","id": $deviceId,"events": $evdevEvents}"""
+        writeCommand(command)
+    }
+
+    private fun writeCommand(command: String) {
         outputStream.write(command.toByteArray())
         outputStream.flush()
     }
@@ -129,4 +150,15 @@ class InputDeviceRule : TestWatcher() {
     }
 
     @JvmInline value class DeviceId(val deviceId: Int)
+
+    private companion object {
+        // See
+        // https://cs.android.com/android/kernel/superproject/+/common-android-mainline:common/include/uapi/linux/input-event-codes.h
+        // for these mappings.
+        const val EV_KEY = 1
+        const val EV_SYN = 0
+        const val SYN_REPORT = 0
+        const val KEY_UP = 0
+        const val KEY_DOWN = 1
+    }
 }

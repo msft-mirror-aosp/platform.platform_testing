@@ -51,4 +51,9 @@ abstract class UInputDevice {
         this.name == inputDevice.name &&
             this.vendorId == inputDevice.vendorId &&
             this.productId == inputDevice.productId
+
+    /** An interface to inject events for an [UInputDevice]. */
+    interface EventInjector {
+        fun sendKeyEvent(deviceId: Int, keycode: Int)
+    }
 }

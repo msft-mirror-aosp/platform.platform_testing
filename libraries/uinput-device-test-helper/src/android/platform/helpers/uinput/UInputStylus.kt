@@ -20,15 +20,15 @@ package android.platform.helpers.uinput
  * [android.platform.test.rule.InputDeviceRule].
  *
  * @param supportedKeys should be keycodes obtained from the linux event code set. See
- *   https://source.corp.google.com/kernel-upstream/include/uapi/linux/input-event-codes.h
+ *   https://cs.android.com/android/kernel/superproject/+/common-android-mainline:common/include/uapi/linux/input-event-codes.h
  */
 class UInputStylus(
     val inputDeviceId: Int,
     val displayWidth: Int,
     val displayHeight: Int,
-    override val vendorId: Int = ARBITRARY_VENDOR_ID,
-    override val productId: Int = ARBITRARY_PRODUCT_ID,
-    override val name: String = "Test capactive stylus with buttons",
+    override val vendorId: Int = VENDOR_ID,
+    override val productId: Int = PRODUCT_ID,
+    override val name: String = "Test capacitive stylus with buttons",
     override val supportedKeys: Array<Int> = SUPPORTED_KEYBITS,
 ) : UInputDevice() {
     override val bus = "bluetooth"
@@ -92,6 +92,12 @@ class UInputStylus(
       ]
     }"""
 
+    /** Sends the STYLUS_BUTTON_TAIL event.. */
+    fun sendTailButtonClickEvent(eventInjector: EventInjector) {
+        // KEY_JOURNAL is remapped to STYLUS_BUTTON_TAIL.
+        eventInjector.sendKeyEvent(inputDeviceId, KEY_JOURNAL)
+    }
+
     private companion object {
         // EV_KEY
         val SUPPORTED_ENVBITS =
@@ -108,6 +114,7 @@ class UInputStylus(
                 /* ABS_TILT_X */ 26,
                 /* ABS_TILT_Y */ 27,
             )
+        const val KEY_JOURNAL = 578
         // UI_SET_KEYBIT
         val SUPPORTED_KEYBITS =
             arrayOf(
@@ -115,8 +122,13 @@ class UInputStylus(
                 /* BTN_TOUCH */ 330,
                 /* BTN_STYLUS */ 331,
                 /* BTN_STYLUS2 */ 332,
+                KEY_JOURNAL,
             )
-        const val ARBITRARY_VENDOR_ID = 0x18d1
-        const val ARBITRARY_PRODUCT_ID = 0xabcd
+        // Using the below combination of product and vendor ID allows us to remap KEY_JOURNAL to
+        // STYLUS_BUTTON_TAIL. This is because STYLUS_BUTTON_TAIL is not a proper Linux input event
+        // code yet and we remap the buttons for generic android stylus which is represented by the
+        // below combination of IDs.
+        const val VENDOR_ID = 0x18d1
+        const val PRODUCT_ID = 0x4f80
     }
 }
