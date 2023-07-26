@@ -96,15 +96,6 @@ public interface IAutoAppInfoSettingsHelper extends IAppHelper {
     boolean isApplicationDisabled(String packageName);
 
     /**
-     * Setup expectation: To Verify if UI element is present
-     *
-     * <p>This method is to check if UI element is present
-     *
-     * @param target - UI element text
-     */
-    boolean hasUIElement(String target);
-
-    /**
      * Setup expectation: Settings screen is open.
      *
      * <p>Opens the 'Permission manager' submenu from the Apps menu.

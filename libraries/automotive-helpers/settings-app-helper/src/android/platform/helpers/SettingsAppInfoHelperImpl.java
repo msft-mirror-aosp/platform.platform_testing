@@ -389,26 +389,6 @@ public class SettingsAppInfoHelperImpl extends AbstractStandardAppHelper
         return applicationDisabled;
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public boolean hasUIElement(String element) {
-        boolean isElementPresent;
-        BySelector elementSelector = getUiElementFromConfig(element);
-        isElementPresent = getSpectatioUiUtil().hasUiElement(elementSelector);
-        if (!isElementPresent) {
-            isElementPresent =
-                    mScrollUtility.scrollAndCheckIfUiElementExist(
-                            mScrollAction,
-                            mScrollDirection,
-                            mForwardButtonSelector,
-                            mBackwardButtonSelector,
-                            mScrollableElementSelector,
-                            elementSelector,
-                            "scroll and find UI Element");
-        }
-        return isElementPresent;
-    }
-
     private void validateUiObject(UiObject2 uiObject, String action) {
         if (uiObject == null) {
             throw new UnknownUiException(

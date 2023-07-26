@@ -472,6 +472,7 @@ public class AutomotiveConfigConstants {
     public static final String RECENT_APPS_TIMESTAMP_TEXT = "RECENT_APPS_TIMESTAMP_TEXT";
     public static final String RECENT_APPS_TIMESTAMP = "RECENT_APPS_TIMESTAMP";
 
+
     // Status Bar Constants
     public static final String STATUS_BAR_BRIGHTNESS_BUTTON = "STATUS_BAR_BRIGHTNESS_BUTTON";
     public static final String STATUS_BAR_DISPLAY_BRIGHTNESS_PALETTE =
@@ -508,4 +509,24 @@ public class AutomotiveConfigConstants {
     public static final String HOME_GUEST_BUTTON = "HOME_GUEST_BUTTON";
     public static final String HOME_DRIVER_BUTTON = "HOME_DRIVER_BUTTON";
     public static final String HOME_SECONDARY_USER_BUTTON = "HOME_SECONDARY_USER_BUTTON";
+
+    // Privacy UI Options
+    public static final String MICROPHONE = "MICROPHONE";
+    public static final String LOCATION = "LOCATION";
+    public static final String APP_PERMISSION = "APP_PERMISSION";
+    public static final String INFOTAINMENT_SYSTEM_DATA = "INFOTAINMENT_SYSTEM_DATA";
+    public static final String DATA_SHARING_WITH_GOOGLE = "DATA_SHARING_WITH_GOOGLE";
+    public static final String SETTINGS_BACK_BUTTON = "SETTINGS_BACK_BUTTON";
+    public static final String SETTINGS_UI_SUB_SETTING_SCROLL_ELEMENT =
+            "SETTINGS_UI_SUB_SETTING_SCROLL_ELEMENT";
+    public static final String SETTINGS_PERMISSIONS_BACK_BUTTON =
+            "SETTINGS_PERMISSIONS_BACK_BUTTON";
+
+    // Storage Settings
+    public static final String STORAGE_SYSTEM_SUB_SETTINGS = "STORAGE_SYSTEM_SUB_SETTINGS";
+    public static final String STORAGE_MUSIC_AUDIO_SETTINGS = "STORAGE_MUSIC_AUDIO_SETTINGS";
+    public static final String STORAGE_OTHER_APPS_SETTINGS = "STORAGE_OTHER_APPS_SETTINGS";
+    public static final String STORAGE_OPTIONS_SUMMARY = "STORAGE_OPTIONS_SUMMARY";
+    public static final String STORAGE_FILES_SETTINGS = "STORAGE_FILES_SETTINGS";
+    public static final String STORAGE_SYSTEM_SETTINGS = "STORAGE_SYSTEM_SETTINGS";
 }

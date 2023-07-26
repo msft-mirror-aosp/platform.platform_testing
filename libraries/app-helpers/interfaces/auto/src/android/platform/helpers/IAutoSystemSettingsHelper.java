@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 The Android Open Source Project
+ * Copyright (C) 2023 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -87,6 +87,21 @@ public interface IAutoSystemSettingsHelper extends IAppHelper {
      * Reset application preferences.
      */
     void resetAppPreferences();
+    /**
+     * Setup expectation: System setting is open.
+     *
+     * <p>Open Storage Menu
+     */
+    void openStorageMenu();
+
+    /**
+     * Setup expectation: Storage setting is open
+     *
+     * <p>To verify if App usage in GB
+     *
+     * @param option - input storage option.
+     */
+    boolean verifyUsageinGB(String option);
 
     /**
      * Setup expectation: System setting is open.

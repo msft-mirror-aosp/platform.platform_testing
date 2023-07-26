@@ -846,7 +846,6 @@
       "VALUE": "Idiomas",
       "PACKAGE": "com.android.car.settings"
     },
-
     "SETTINGS_SUMMARY": {
       "TYPE": "RESOURCE_ID",
       "VALUE": "summary",
@@ -1254,6 +1253,11 @@
       "VALUE": "car_ui_internal_recycler_view",
       "PACKAGE": "com.chassis.car.ui.plugin"
     },
+    "SETTINGS_UI_SUB_SETTING_SCROLL_ELEMENT": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "fragment_container",
+      "PACKAGE": "com.android.car.settings"
+    },
     "BLOCKING_MESSAGE": {
       "TYPE": "RESOURCE_ID",
       "VALUE": "blocking_text",
@@ -1424,6 +1428,55 @@
     "LOCATION_SETTINGS_VIEW_ALL": {
       "TYPE": "TEXT",
       "VALUE": "View all"
+    },
+    "MICROPHONE": {
+      "TYPE": "TEXT",
+      "VALUE": "Microphone"
+    },
+    "LOCATION": {
+      "TYPE": "TEXT",
+      "VALUE": "Location"
+    },
+    "APP_PERMISSION": {
+      "TYPE": "TEXT",
+      "VALUE": "App permissions"
+    },
+    "INFOTAINMENT_SYSTEM_DATA": {
+      "TYPE": "TEXT",
+      "VALUE": "Infotainment system data"
+    },
+    "DATA_SHARING_WITH_GOOGLE": {
+      "TYPE": "TEXT",
+      "VALUE": "Data Sharing with Google"
+    },
+    "SETTINGS_BACK_BUTTON": {
+      "TYPE": "DESCRIPTION",
+      "VALUE": "Back"
+    },
+    "STORAGE_SYSTEM_SUB_SETTINGS": {
+      "TYPE": "TEXT",
+      "VALUE": "Storage"
+    },
+    "STORAGE_MUSIC_AUDIO_SETTINGS": {
+      "TYPE": "TEXT",
+      "VALUE": "Music & audio"
+    },
+    "STORAGE_OTHER_APPS_SETTINGS": {
+      "TYPE": "TEXT",
+      "VALUE": "Other apps"
+    },
+    "STORAGE_FILES_SETTINGS": {
+      "TYPE": "TEXT",
+      "VALUE": "Files"
+    },
+    "STORAGE_SYSTEM_SETTINGS": {
+      "TYPE": "TEXT",
+      "VALUE": "System"
+    },
+    "STORAGE_OPTIONS_SUMMARY": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "summary",
+      "PACKAGE": "android"
     }
   },
   "WORKFLOWS": {

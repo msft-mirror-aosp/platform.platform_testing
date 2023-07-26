@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 The Android Open Source Project
+ * Copyright (C) 2023 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -314,6 +314,38 @@ public class SettingsSystemHelperImpl extends AbstractStandardAppHelper
             }
         }
         throw new RuntimeException("Cannot find button");
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void openStorageMenu() {
+        UiObject2 aboutMenu =
+                getMenu(
+                        getUiElementFromConfig(
+                                AutomotiveConfigConstants.STORAGE_SYSTEM_SUB_SETTINGS));
+        validateUiObject(aboutMenu, String.format("Unable to find UI Element for Storage menu"));
+        getSpectatioUiUtil().clickAndWait(aboutMenu);
+        getSpectatioUiUtil().wait5Seconds();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean verifyUsageinGB(String option) {
+        boolean isUsageinGB = false;
+        UiObject2 targetObject =
+                getSpectatioUiUtil()
+                        .findUiObject(
+                                getUiElementFromConfig(
+                                        AutomotiveConfigConstants
+                                                .SETTINGS_UI_SUB_SETTING_SCROLL_ELEMENT));
+        UiObject2 target =
+                getSpectatioUiUtil()
+                        .findUiObjectInGivenElement(targetObject, getUiElementFromConfig(option));
+        String targetText = getSummeryText(target);
+        if (targetText.contains("GB")) {
+            isUsageinGB = true;
+        }
+        return isUsageinGB;
     }
 
     private UiObject2 getMenu(BySelector selector) {

@@ -266,10 +266,10 @@ class RegionSubject(
                 ExceptionMessageBuilder()
                     .forSubject(this)
                     .forIncorrectRegion("region. $region area should not be bigger than $testArea")
-                    .setExpected(other)
+                    .setExpected(testArea)
                     .setActual(area)
-                    .addExtraDescription("Expected area", testArea)
-                    .addExtraDescription("Actual area", area)
+                    .addExtraDescription("Expected region", other)
+                    .addExtraDescription("Actual region", regionEntry.region)
             throw IncorrectRegionException(errorMsgBuilder)
         }
     }

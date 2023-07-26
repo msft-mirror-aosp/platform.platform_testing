@@ -38,7 +38,7 @@ open class Rect(
     @JsName("bottom") val bottom: Int = 0
 ) : DataType() {
     @JsName("height") val height: Int = bottom - top
-    @JsName("width") val width = right - left
+    @JsName("width") val width: Int = right - left
     @JsName("centerX") fun centerX(): Int = (left + right) / 2
     @JsName("centerY") fun centerY(): Int = (top + bottom) / 2
     /** Returns true if the rectangle is empty (left >= right or top >= bottom) */

@@ -276,7 +276,6 @@ public class SettingHelperImpl extends AbstractStandardAppHelper implements IAut
 
         for (BySelector selector : selectors) {
             List<UiObject2> pageTitles = getSpectatioUiUtil().findUiObjects(selector);
-            validateUiObject(pageTitles, String.format("Page title"));
             if (pageTitles != null && pageTitles.size() > 0) {
                 return pageTitles.get(pageTitles.size() - 1);
             }
