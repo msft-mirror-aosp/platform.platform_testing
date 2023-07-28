@@ -19,6 +19,7 @@ package com.android.google.tools.security.shell_as;
 import android.app.Activity;
 import android.os.Bundle;
 
+/** An empty activity for the shell-as test app. */
 public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
