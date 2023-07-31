@@ -16,6 +16,7 @@
 
 package android.platform.tests;
 
+import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
 
 import android.content.pm.UserInfo;
@@ -59,7 +60,7 @@ public class AddUserSettings {
     }
 
     @Test
-    public void testAddUser() throws Exception {
+    public void testAddNonAdminUser() throws Exception {
         // create new user
         UserInfo initialUser = mMultiUserHelper.getCurrentForegroundUserInfo();
         mUsersHelper.get().addUser();
@@ -69,6 +70,8 @@ public class AddUserSettings {
         mUsersHelper.get().switchUser(newUser.name, initialUser.name);
         // verify new user is seen in list of users
         assertTrue(mMultiUserHelper.getUserByName(newUser.name) != null);
+        // Verify new user is non-Admin
+        assertFalse("New user has Admin Access", mUsersHelper.get().isNewUserAnAdmin(newUser.name));
         // remove new user
         mMultiUserHelper.removeUser(newUser);
     }
