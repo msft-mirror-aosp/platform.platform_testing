@@ -1222,9 +1222,16 @@
       "PACKAGE": "com.android.settings.intelligence"
     },
     "SEARCH_RESULTS": {
-      "TYPE": "RESOURCE_ID",
-      "VALUE": "car_ui_recycler_view",
-      "PACKAGE": "com.android.car.ui.sharedlibrary"
+      "TYPE": "MULTIPLE",
+      "SPECIFIERS": [
+        {
+          "TYPE": "DESCRIPTION",
+          "VALUE": "com.android.car.ui.utils.ROTARY_CONTAINER"
+        },{
+          "TYPE": "CLASS",
+          "VALUE": "androidx.recyclerview.widget.RecyclerView"
+        }
+      ]
     },
     "PAGE_TITLE": {
       "TYPE": "RESOURCE_ID",

@@ -16,6 +16,7 @@
 
 package android.platform.tests;
 
+import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
 
 import android.content.pm.UserInfo;
@@ -23,6 +24,7 @@ import android.platform.helpers.HelperAccessor;
 import android.platform.helpers.IAutoSettingHelper;
 import android.platform.helpers.IAutoUserHelper;
 import android.platform.helpers.MultiUserHelper;
+import android.platform.helpers.SettingsConstants;
 
 import androidx.test.runner.AndroidJUnit4;
 
@@ -38,6 +40,7 @@ import org.junit.runner.RunWith;
 public class AddUserQuickSettings {
 
     private final MultiUserHelper mMultiUserHelper = MultiUserHelper.getInstance();
+    // private static final String userName = MultiUserConstants.SECONDARY_USER_NAME;
     private HelperAccessor<IAutoUserHelper> mUsersHelper;
     private HelperAccessor<IAutoSettingHelper> mSettingHelper;
 
@@ -52,7 +55,7 @@ public class AddUserQuickSettings {
     }
 
     @Test
-    public void testAddUser() throws Exception {
+    public void testAddNonAdminUser() throws Exception {
         // create new user quick settings
         UserInfo initialUser = mMultiUserHelper.getCurrentForegroundUserInfo();
         mUsersHelper.get().addUserQuickSettings(initialUser.name);
@@ -62,6 +65,9 @@ public class AddUserQuickSettings {
         mUsersHelper.get().switchUser(newUser.name, initialUser.name);
         // verify new user is seen in list of users
         assertTrue(mMultiUserHelper.getUserByName(newUser.name) != null);
+        // Verify new user is non-admin Profile
+        mSettingHelper.get().openSetting(SettingsConstants.PROFILE_ACCOUNT_SETTINGS);
+        assertFalse("New user has Admin Access", mUsersHelper.get().isNewUserAnAdmin(newUser.name));
         // remove new user
         mMultiUserHelper.removeUser(newUser);
     }

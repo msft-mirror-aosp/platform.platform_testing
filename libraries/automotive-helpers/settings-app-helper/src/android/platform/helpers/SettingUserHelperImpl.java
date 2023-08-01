@@ -208,6 +208,31 @@ public class SettingUserHelperImpl extends AbstractStandardAppHelper implements 
         getSpectatioUiUtil().wait1Second();
     }
 
+    @Override
+    public boolean isNewUserAnAdmin(String user) {
+        boolean isUserAdmin = true;
+        clickbutton(AutomotiveConfigConstants.USER_SETTINGS_MANAGE_OTHER_PROFILES);
+        getSpectatioUiUtil().wait5Seconds();
+        UiObject2 UserObject =
+                mScrollUtility.scrollAndFindUiObject(
+                        mScrollAction,
+                        mScrollDirection,
+                        mForwardButtonSelector,
+                        mBackwardButtonSelector,
+                        mScrollableElementSelector,
+                        By.text(user),
+                        String.format("Scroll to find %s", user));
+        getSpectatioUiUtil().clickAndWait(UserObject);
+        getSpectatioUiUtil().wait1Second();
+        if (getSpectatioUiUtil()
+                .hasUiElement(
+                        getUiElementFromConfig(
+                                AutomotiveConfigConstants.USER_SETTINGS_MAKE_ADMIN))) {
+            return !isUserAdmin;
+        }
+        return isUserAdmin;
+    }
+
     // go to quick Settings for switching User
     private void goToQuickSettings() {
         clickbutton(AutomotiveConfigConstants.USER_SETTINGS_MAKE_TIME_PATTERN);
