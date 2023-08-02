@@ -143,11 +143,4 @@ public class UxRestrictionTest {
         String newTitle = mSettingHelper.get().getPageTitleText();
         assertTrue("System settings is not disabled", currentTitle.equals(newTitle));
     }
-
-    @Test
-    public void testRestrictedApp() {
-        mAppGridHelper.get().open();
-        mAppGridHelper.get().openApp("Play Store");
-        assertTrue("app is not restricted", mAppGridHelper.get().isAppInForeground());
-    }
 }

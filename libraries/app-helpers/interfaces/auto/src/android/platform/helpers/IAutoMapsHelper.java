@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 The Android Open Source Project
+ * Copyright (C) 2023 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,6 +55,27 @@ public interface IAutoMapsHelper extends IAppHelper {
      * <p>This method is used to get searched address
      */
     String getAddress();
+
+    /**
+     * Setup expectations: Maps app is open
+     *
+     * <p>This method verifies the if searchBar is restricted when the drive mode is enabled.
+     */
+    boolean isSearchBarRestricted();
+
+    /**
+     * Setup expectations: Maps app is open
+     *
+     * <p>This method will launch the keyboard.
+     */
+    void launchKeyboard();
+
+    /**
+     * Setup expectations: Maps app is open
+     *
+     * <p>This method verifies the if keyboard is restricted when the drive mode is enabled.
+     */
+    boolean isKeyboardRestricted();
 
     /**
      * Setup expectations: Maps app is open
