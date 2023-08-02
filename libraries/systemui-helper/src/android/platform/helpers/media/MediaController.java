@@ -65,10 +65,11 @@ public class MediaController {
 
     public void play() {
         runToNextState(
-            () -> mUiObject
-                .wait(Until.findObject(PLAY_BTN_SELECTOR), WAIT_TIME_MILLIS)
-                .click(),
-            PlaybackState.STATE_PLAYING);
+                () -> {
+                    mInstrumentation.getUiAutomation().clearCache();
+                    mUiObject.wait(Until.findObject(PLAY_BTN_SELECTOR), WAIT_TIME_MILLIS).click();
+                },
+                PlaybackState.STATE_PLAYING);
     }
 
     public void pause() {
@@ -158,6 +159,7 @@ public class MediaController {
         final BySelector mediaArtistSelector =
             By.res(PKG, "header_artist")
                 .text(meta.getString(MediaMetadata.METADATA_KEY_ARTIST));
+        mInstrumentation.getUiAutomation().clearCache();
         return mUiObject.hasObject(mediaTitleSelector) && mUiObject.hasObject(mediaArtistSelector);
     }
 
