@@ -120,6 +120,13 @@ public class SettingsPrivacyHelperImpl extends AbstractStandardAppHelper
 
     /** {@inheritDoc} */
     @Override
+    public boolean verifyMicrophoneStatusMessage(String target) {
+        BySelector microphoneStatusMessageSelector = getUiElementFromConfig(target);
+        return getSpectatioUiUtil().hasUiElement(microphoneStatusMessageSelector);
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public void clickUnMutedMicroPhoneStatusBar() {
         BySelector microPhoneChipSelector =
                 getUiElementFromConfig(AutomotiveConfigConstants.MICRO_PHONE_CHIP_STATUS_BAR);

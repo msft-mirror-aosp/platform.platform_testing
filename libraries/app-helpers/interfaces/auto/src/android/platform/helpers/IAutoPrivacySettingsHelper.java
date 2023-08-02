@@ -145,6 +145,7 @@ public interface IAutoPrivacySettingsHelper extends IAppHelper {
      *
      * <p>This method clicks on ViewAll Link.
      */
+
     void clickViewAllLink();
 
     /**
@@ -153,4 +154,13 @@ public interface IAutoPrivacySettingsHelper extends IAppHelper {
      * <p>Tap on unmuted microphone status bar
      */
     void clickUnMutedMicroPhoneStatusBar();
+
+    /**
+     * Setup expectation: Microphone status bar is opened
+     *
+     * <p>This method clicks on microphone on status bar
+     *
+     * @param target is config constant of the Status message
+     */
+    boolean verifyMicrophoneStatusMessage(String target);
 }

@@ -23,10 +23,17 @@ android_test {
         "androidx.test.runner",
         "androidx.test.rules",
         "app-helpers-auto-interfaces",
+        "automotive-status-bar-helper",
         "ub-uiautomator",
         "hamcrest-library",
         "automotive-home-helper",
+        "automotive-utility-helper",
     ],
     srcs: ["src/**/*.java"],
-    test_suites: ["catbox"],
+    test_suites: [
+        "catbox",
+        "general-tests",
+        "automotive-tests",
+    ],
 }
+

@@ -57,6 +57,27 @@ public interface IAutoMapsHelper extends IAppHelper {
     String getAddress();
 
     /**
+     * Setup expectations: Click on Mic button
+     *
+     * <p>This method is used to click on Mic button on maps
+     */
+    void openMapMicButton();
+
+    /**
+     * Setup expectations: verifies unblock message
+     *
+     * <p>Verify if unblock message is displayed
+     */
+    boolean isMicrophoneUnblockMessageDisplayed();
+
+    /**
+     * Setup expectations: click Cancel
+     *
+     * <p>Clicks on cancel button
+     */
+    void cancelUnblockMessage();
+
+    /**
      * Setup expectations: Maps app is open
      *
      * <p>This method verifies the if searchBar is restricted when the drive mode is enabled.
