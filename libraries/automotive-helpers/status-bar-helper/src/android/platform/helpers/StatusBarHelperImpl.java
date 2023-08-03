@@ -139,9 +139,6 @@ public class StatusBarHelperImpl extends AbstractStandardAppHelper implements IA
             validateUiObject(
                     enableOption, AutomotiveConfigConstants.STATUS_BAR_BLUETOOTH_TOGGLE_ON);
             getSpectatioUiUtil().clickAndWait(enableOption);
-        } else {
-            throw new RuntimeException(
-                    "Bluetooth enabled state is already " + (onOff ? "on" : "off"));
         }
     }
 
