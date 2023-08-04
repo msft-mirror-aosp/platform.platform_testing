@@ -11,7 +11,8 @@
     "USER_SETTINGS_PACKAGE": "com.android.car.settings",
     "MEDIA_CENTER_PACKAGE": "com.android.car.media",
     "CONTACTS_PACKAGE": "com.android.contacts",
-    "RADIO_PACKAGE": "com.android.car.radio"
+    "RADIO_PACKAGE": "com.android.car.radio",
+    "SMS_PACKAGE":"com.android.car.messenger"
   },
   "ACTIONS": {
     "CONTACT_LIST_SCROLL_ACTION": "USE_BUTTON",
@@ -61,6 +62,7 @@
   "COMMANDS": {
     "OPEN_DIAL_PAD_COMMAND": "am start -a android.intent.action.DIAL",
     "OPEN_PHONE_ACTIVITY_COMMAND": "am start -n com.android.car.dialer/.ui.TelecomActivity",
+    "OPEN_SMS_ACTIVITY_COMMAND": "am start -n com.android.car.messenger/.core.ui.launcher.MessageLauncherActivity",
     "OPEN_APP_GRID_COMMAND": "am start -n com.android.car.carlauncher/.GASAppGridActivity",
     "OPEN_NOTIFICATIONS_COMMAND": "service call statusbar 1",
     "STOP_SETTING_APP_COMMAND": "am force-stop com.android.car.settings",
@@ -1484,6 +1486,11 @@
       "TYPE": "RESOURCE_ID",
       "VALUE": "summary",
       "PACKAGE": "android"
+    },
+    "SMS_BLUETOOTH_ERROR": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "error_message",
+      "PACKAGE": "com.android.car.messenger"
     }
   },
   "WORKFLOWS": {

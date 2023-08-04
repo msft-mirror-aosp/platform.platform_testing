@@ -1,4 +1,4 @@
-// Copyright (C) 2022 The Android Open Source Project
+// Copyright (C) 2023 The Android Open Source Project
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,17 +16,27 @@ package {
     default_applicable_licenses: ["Android-Apache-2.0"],
 }
 
-android_test {
-    name: "AutomotivePhoneSnippet",
-    static_libs: [
-        "automotive-dial-app-helper",
-        "automotive-vehiclehardkeys-app-helper",
-        "automotive-settings-app-helper",
-        "automotive-sms-helper",
-        "mobly-snippet-lib",
-        "mobly-bundled-snippets-lib",
+python_test_host {
+    name: "BTDiscoveryTest",
+    main: "bt_discovery_test.py",
+    srcs: ["bt_discovery_test.py"],
+    libs: [
+        "mobly",
     ],
-    srcs: ["src/**/*.java"],
-    compile_multilib: "both",
-    sdk_version: "current",
+    test_suites: [
+        "catbox",
+    ],
+    test_options: {
+        unit_test: false,
+    },
+    data: [
+        // Package the snippet with the mobly test
+        ":AutomotivePhoneSnippet",
+        ":mobly-bundled-snippets",
+    ],
+    version: {
+        py3: {
+            embedded_launcher: true,
+        },
+    },
 }
