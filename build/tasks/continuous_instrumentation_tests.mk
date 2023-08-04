@@ -52,7 +52,7 @@ api_xml := $(coverage_out)/api.xml
 $(api_xml) : $(api_text) $(APICHECK)
 	$(hide) echo "Converting API file to XML: $@"
 	$(hide) mkdir -p $(dir $@)
-	$(hide) $(APICHECK_COMMAND) -convert2xml $< $@
+	$(hide) $(APICHECK_COMMAND) signature-to-jdiff --strip $< $@
 
 # CTS API coverage tool
 api_coverage_exe := $(HOST_OUT_EXECUTABLES)/cts-api-coverage

@@ -18,6 +18,8 @@ package android.platform.test.flag.junit;
 
 import android.annotation.SuppressLint;
 import android.app.UiAutomation;
+import android.platform.test.flag.util.Flag;
+import android.platform.test.flag.util.FlagReadException;
 import android.provider.DeviceConfig;
 
 import androidx.test.platform.app.InstrumentationRegistry;
@@ -32,7 +34,6 @@ import java.util.Set;
 public class DeviceFlagsValueProvider implements IFlagsValueProvider {
     private static final String READ_DEVICE_CONFIG_PERMISSION =
             "android.permission.READ_DEVICE_CONFIG";
-    private static final String LEGACY_NAMESPACE_FLAG_SEPARATOR = "/";
 
     private static final Set<String> VALID_BOOLEAN_VALUE = Set.of("true", "false");
 
@@ -50,20 +51,23 @@ public class DeviceFlagsValueProvider implements IFlagsValueProvider {
 
     @Override
     public boolean getBoolean(String flag) throws FlagReadException {
-        if (flag.contains(LEGACY_NAMESPACE_FLAG_SEPARATOR)) {
-            return getLegacyFlagBoolean(flag);
+        Flag parsedFlag = Flag.createFlag(flag);
+        if (parsedFlag.namespace() != null) {
+            if (parsedFlag.packageName() != null) {
+                throw new FlagReadException(
+                        flag, "You can not specify the namespace for aconfig flags.");
+            }
+            return getLegacyFlagBoolean(parsedFlag);
         }
-        if (!flag.contains(".")) {
+        if (parsedFlag.packageName() == null) {
             throw new FlagReadException(
                     flag, "Flag name is not the expected format {packageName}.{flagName}.");
         }
-        int index = flag.lastIndexOf(".");
-        String packageName = flag.substring(0, index);
-        String className = String.format("%s.Flags", packageName);
-        String flagName = flag.substring(index + 1);
+        String className = parsedFlag.flagsClassName();
+        String simpleFlagName = parsedFlag.simpleFlagName();
 
         // Must be consistent with method name in aconfig auto generated code.
-        String methodName = CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, flagName);
+        String methodName = CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, simpleFlagName);
 
         try {
             Class<?> flagsClass = Class.forName(className);
@@ -98,18 +102,17 @@ public class DeviceFlagsValueProvider implements IFlagsValueProvider {
         }
     }
 
-    private boolean getLegacyFlagBoolean(String flag) throws FlagReadException {
-        String[] namespaceAndFlag = flag.split(LEGACY_NAMESPACE_FLAG_SEPARATOR, 2);
+    private boolean getLegacyFlagBoolean(Flag flag) throws FlagReadException {
         @SuppressLint("MissingPermission")
-        String property = DeviceConfig.getProperty(namespaceAndFlag[0], namespaceAndFlag[1]);
+        String property = DeviceConfig.getProperty(flag.namespace(), flag.fullFlagName());
         if (property == null) {
-            throw new FlagReadException(flag, "Flag does not exist on the device.");
+            throw new FlagReadException(flag.fullFlagName(), "Flag does not exist on the device.");
         }
         if (VALID_BOOLEAN_VALUE.contains(property)) {
             return Boolean.valueOf(property);
         }
         throw new FlagReadException(
-                flag, String.format("Value %s is not a valid boolean.", property));
+                flag.fullFlagName(), String.format("Value %s is not a valid boolean.", property));
     }
 
     @Override

@@ -16,17 +16,12 @@
 
 package android.platform.test.flag.junit;
 
-/** Exception to read flag values. */
-public class FlagReadException extends Exception {
-    public FlagReadException(String flag, String msg) {
-        super(String.format("Flag %s read error: %s", flag, msg));
-    }
+/** A Fake FeatureFlags to test the {@code MockFlagsRule}. */
+public interface FeatureFlags {
 
-    public FlagReadException(String flag, String msg, Throwable cause) {
-        super(String.format("Flag %s read error: %s", flag, msg), cause);
-    }
+    /** Returns the flag value. */
+    boolean flagName3();
 
-    public FlagReadException(String flag, Throwable cause) {
-        super(String.format("Flag %s read error", flag), cause);
-    }
+    /** another flag */
+    boolean flagName4();
 }

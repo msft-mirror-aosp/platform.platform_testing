@@ -27,4 +27,20 @@ public class Flags {
     public static int flagName2() {
         return 1;
     }
+
+    /** Returns the flag value. */
+    public static boolean flagName3() {
+        return sFeatureFlags.flagName3();
+    }
+
+    /** Another flag. */
+    public static boolean flagName4() {
+        return sFeatureFlags.flagName4();
+    }
+
+    public static void setFeatureFlagsImpl(FeatureFlags featureFlagsImpl) {
+        sFeatureFlags = featureFlagsImpl;
+    }
+
+    private static FeatureFlags sFeatureFlags;
 }

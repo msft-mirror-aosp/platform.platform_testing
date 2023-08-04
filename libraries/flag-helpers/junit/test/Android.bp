@@ -22,6 +22,7 @@
      name: "FlagJUnitTests",
      plugins: ["auto_annotation_plugin"],
      srcs: ["src/**/*.java"],
+     exclude_srcs: ["src/**/host/*.java"],
      sdk_version: "test_current",
      static_libs: [
          "androidx.test.rules",
@@ -43,8 +44,10 @@
      plugins: ["auto_annotation_plugin"],
      static_libs: [
          "auto_value_annotations",
-         "flag-junit-base",
+         "flag-junit-host",
          "junit",
+         "mockito-host",
+         "objenesis",
          "platform-test-annotations",
      ],
      test_options: {

@@ -26,8 +26,13 @@ import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
 /**
- * A test rule that checks flags condition and skips tests with "assumption failed" if the condition
- * can not be met.
+ * A {@code TestRule} that checks flags condition and skips tests with "assumption failed" if the
+ * condition can not be met.
+ *
+ * <p>This {@code TestRule} is used together with the flag requirement annotations, including {@code
+ * RequiresFlagsEnabled} and {@code RequiresFlagsDisabled}. It parses the annotations on test
+ * methods and classes, and decides whether the tests should be skipped according to the flag values
+ * on the device.
  */
 public final class CheckFlagsRule implements TestRule {
     private final IFlagsValueProvider mFlagsValueProvider;
