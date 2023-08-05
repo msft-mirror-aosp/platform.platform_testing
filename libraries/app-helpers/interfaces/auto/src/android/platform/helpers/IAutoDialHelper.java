@@ -260,9 +260,9 @@ public interface IAutoDialHelper extends IAppHelper, Scrollable {
     List<String> getListOfAllVisibleContacts();
 
     /**
-     * Setup expectations: Checks if bluetooth
+     * Setup expectations: bluetooth is off
      *
-     * <p>This method is used for opening phone app from homescreen
+     * <p>This method is used for checking if error message is displaye when bluetooth is off
      */
     boolean isBluetoothHfpErrorDisplayed();
 

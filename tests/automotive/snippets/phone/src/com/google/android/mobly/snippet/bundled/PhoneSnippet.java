@@ -17,6 +17,7 @@
 package com.google.android.mobly.snippet.bundled;
 
 import android.platform.helpers.HelperAccessor;
+import android.platform.helpers.IAutoCarSmsMessengerHelper;
 import android.platform.helpers.IAutoDialContactDetailsHelper;
 import android.platform.helpers.IAutoDialHelper;
 import android.platform.helpers.IAutoPrivacySettingsHelper;
@@ -33,12 +34,14 @@ public class PhoneSnippet implements Snippet {
     private final HelperAccessor<IAutoDialContactDetailsHelper> mContactsDetailsHelper;
     private final HelperAccessor<IAutoVehicleHardKeysHelper> mHardKeysHelper;
     private final HelperAccessor<IAutoPrivacySettingsHelper> mPrivacySettingsHelper;
+    private final HelperAccessor<IAutoCarSmsMessengerHelper> mCarSmsMessengerHelper;
 
     public PhoneSnippet() {
         mDialerHelper = new HelperAccessor<>(IAutoDialHelper.class);
         mContactsDetailsHelper = new HelperAccessor<>(IAutoDialContactDetailsHelper.class);
         mHardKeysHelper = new HelperAccessor<>(IAutoVehicleHardKeysHelper.class);
         mPrivacySettingsHelper = new HelperAccessor<>(IAutoPrivacySettingsHelper.class);
+        mCarSmsMessengerHelper = new HelperAccessor<>(IAutoCarSmsMessengerHelper.class);
     }
 
     @Rpc(description = "Open Phone Application.")
@@ -252,6 +255,16 @@ public class PhoneSnippet implements Snippet {
     @Rpc(description = "Add Favorites from favorites tab")
     public void addFavoritesFromFavoritesTab(String contact) {
         mDialerHelper.get().addFavoritesFromFavoritesTab(contact);
+    }
+
+    @Rpc(description = "Open SMS Application.")
+    public void openSmsApp() {
+        mCarSmsMessengerHelper.get().open();
+    }
+
+    @Rpc(description = "Bluetooth SMS Error")
+    public boolean isSmsBluetoothErrorDisplayed() {
+        return mCarSmsMessengerHelper.get().isSmsBluetoothErrorDisplayed();
     }
 
     @Override
