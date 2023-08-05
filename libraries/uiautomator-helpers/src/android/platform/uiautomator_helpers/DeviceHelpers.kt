@@ -114,6 +114,14 @@ object DeviceHelpers {
         waitForNullable("nullable $selector objects", timeout) { uiDevice.findObject(selector) }
 
     /**
+     * Waits for an object to be visible and returns it. Returns `null` if the object is not found.
+     */
+    fun UiObject2.waitForNullableObj(
+        selector: BySelector,
+        timeout: Duration = SHORT_WAIT,
+    ): UiObject2? = waitForNullable("nullable $selector objects", timeout) { findObject(selector) }
+
+    /**
      * Waits for objects matched by [selector] to be visible and returns them. Returns `null` if no
      * objects are found
      */
