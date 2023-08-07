@@ -64,4 +64,18 @@ public interface IAutoStatusBarHelper extends IAppHelper {
 
     /** Bluetooth switch button. */
     void turnOnOffBluetooth(boolean onOff);
+
+    /**
+     * Setup expectations: Open Bluetooth Palette
+     *
+     * <p>This method clicks bluetooth button</>
+     */
+    void clickBluetoothButton();
+
+    /**
+     * Setup expectations: Open Bluetooth Palette
+     *
+     * <p>This method checks bluetooth connected text</>
+     */
+    boolean isBluetoothConnected();
 }
