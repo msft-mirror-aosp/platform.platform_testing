@@ -144,6 +144,36 @@ public class StatusBarHelperImpl extends AbstractStandardAppHelper implements IA
 
     /** {@inheritDoc} */
     @Override
+    public void clickBluetoothButton() {
+        BySelector bluetoothButtonSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.BLUETOOTH_BUTTON);
+        UiObject2 bluetoothButton = getSpectatioUiUtil().findUiObject(bluetoothButtonSelector);
+        validateUiObject(bluetoothButton, AutomotiveConfigConstants.BLUETOOTH_BUTTON);
+        getSpectatioUiUtil().clickAndWait(bluetoothButton);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean isBluetoothConnected() {
+        boolean isBluetoothConnected = false;
+        BySelector btconnectedDisconnectedTextSelector =
+                getUiElementFromConfig(
+                        AutomotiveConfigConstants.BLUETOOTH_CONNECTED_DISCONNECTED_TEXT);
+        UiObject2 btconnectedDisconnectedText =
+                getSpectatioUiUtil().findUiObject(btconnectedDisconnectedTextSelector);
+        validateUiObject(
+                btconnectedDisconnectedText,
+                AutomotiveConfigConstants.BLUETOOTH_CONNECTED_DISCONNECTED_TEXT);
+        if (getSpectatioUiUtil()
+                .getTextForUiElement(btconnectedDisconnectedText)
+                .equals("Connected")) {
+            return !isBluetoothConnected;
+        }
+        return isBluetoothConnected;
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public void open() {
         getSpectatioUiUtil().pressHome();
         getSpectatioUiUtil().waitForIdle();

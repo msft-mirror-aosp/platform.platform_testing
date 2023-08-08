@@ -1491,6 +1491,34 @@
       "TYPE": "RESOURCE_ID",
       "VALUE": "error_message",
       "PACKAGE": "com.android.car.messenger"
+    },
+    "BLUETOOTH_BUTTON": {
+      "TYPE": "MULTIPLE",
+      "SPECIFIERS": [
+        {
+          "TYPE": "RESOURCE_ID",
+          "VALUE": "qc_toggle_button",
+          "PACKAGE": "com.android.systemui"
+        },
+        {
+          "TYPE": "CLASS",
+          "VALUE": "android.widget.ToggleButton"
+        }
+      ]
+    },
+    "BLUETOOTH_CONNECTED_DISCONNECTED_TEXT": {
+      "TYPE": "MULTIPLE",
+      "SPECIFIERS": [
+        {
+          "TYPE": "RESOURCE_ID",
+          "VALUE": "qc_summary",
+          "PACKAGE": "com.android.systemui"
+        },
+        {
+          "TYPE": "CLASS",
+          "VALUE": "android.widget.TextView"
+        }
+      ]
     }
   },
   "WORKFLOWS": {

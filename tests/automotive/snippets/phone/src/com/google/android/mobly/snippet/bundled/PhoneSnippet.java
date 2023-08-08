@@ -21,6 +21,7 @@ import android.platform.helpers.IAutoCarSmsMessengerHelper;
 import android.platform.helpers.IAutoDialContactDetailsHelper;
 import android.platform.helpers.IAutoDialHelper;
 import android.platform.helpers.IAutoPrivacySettingsHelper;
+import android.platform.helpers.IAutoStatusBarHelper;
 import android.platform.helpers.IAutoVehicleHardKeysHelper;
 
 import com.google.android.mobly.snippet.Snippet;
@@ -35,6 +36,7 @@ public class PhoneSnippet implements Snippet {
     private final HelperAccessor<IAutoVehicleHardKeysHelper> mHardKeysHelper;
     private final HelperAccessor<IAutoPrivacySettingsHelper> mPrivacySettingsHelper;
     private final HelperAccessor<IAutoCarSmsMessengerHelper> mCarSmsMessengerHelper;
+    private final HelperAccessor<IAutoStatusBarHelper> mStatusBarHelper;
 
     public PhoneSnippet() {
         mDialerHelper = new HelperAccessor<>(IAutoDialHelper.class);
@@ -42,6 +44,7 @@ public class PhoneSnippet implements Snippet {
         mHardKeysHelper = new HelperAccessor<>(IAutoVehicleHardKeysHelper.class);
         mPrivacySettingsHelper = new HelperAccessor<>(IAutoPrivacySettingsHelper.class);
         mCarSmsMessengerHelper = new HelperAccessor<>(IAutoCarSmsMessengerHelper.class);
+        mStatusBarHelper = new HelperAccessor<>(IAutoStatusBarHelper.class);
     }
 
     @Rpc(description = "Open Phone Application.")
@@ -265,6 +268,21 @@ public class PhoneSnippet implements Snippet {
     @Rpc(description = "Bluetooth SMS Error")
     public boolean isSmsBluetoothErrorDisplayed() {
         return mCarSmsMessengerHelper.get().isSmsBluetoothErrorDisplayed();
+    }
+
+    @Rpc(description = "Open Bluetooth Palette")
+    public void openBluetoothPalette() {
+        mStatusBarHelper.get().openBluetoothPalette();
+    }
+
+    @Rpc(description = "Click Bluetooth Button")
+    public void clickBluetoothButton() {
+        mStatusBarHelper.get().clickBluetoothButton();
+    }
+
+    @Rpc(description = "is Bluetooth Connected")
+    public boolean isBluetoothConnected() {
+        return mStatusBarHelper.get().isBluetoothConnected();
     }
 
     @Override

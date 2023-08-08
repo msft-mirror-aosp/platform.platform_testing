@@ -25,6 +25,7 @@ android_test {
         "automotive-sms-helper",
         "mobly-snippet-lib",
         "mobly-bundled-snippets-lib",
+        "automotive-status-bar-helper",
     ],
     srcs: ["src/**/*.java"],
     compile_multilib: "both",
