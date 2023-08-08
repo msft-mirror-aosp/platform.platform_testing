@@ -1519,7 +1519,8 @@
           "VALUE": "android.widget.TextView"
         }
       ]
-    },
+    }
+  },
   "WORKFLOWS": {
     "DIAL_CONTACT_WORKFLOW": [],
     "DISMISS_APPS_INITIAL_DIALOGS": [
