@@ -38,7 +38,7 @@ public class Flags {
         return sFeatureFlags.flagName4();
     }
 
-    public static void setFeatureFlagsImpl(FeatureFlags featureFlagsImpl) {
+    public static void setFeatureFlags(FeatureFlags featureFlagsImpl) {
         sFeatureFlags = featureFlagsImpl;
     }
 

@@ -18,12 +18,12 @@ package android.platform.test.flag.junit;
 
 import java.util.HashMap;
 
-/** A Fake FeatureFlagsImpl to test the {@code MockFlagsRule}. */
-public class FeatureFlagsImpl implements FeatureFlags {
+/** A Fake FakeFeatureFlagsImpl to test the {@code MockFlagsRule}. */
+public class FakeFeatureFlagsImpl implements FeatureFlags {
 
     private HashMap<String, Boolean> mFlagMap = new HashMap<>();
 
-    public FeatureFlagsImpl() {
+    public FakeFeatureFlagsImpl() {
         this.mFlagMap.put("android.platform.test.flag.junit.flagName3", null);
         this.mFlagMap.put("android.platform.test.flag.junit.flagName4", null);
     }

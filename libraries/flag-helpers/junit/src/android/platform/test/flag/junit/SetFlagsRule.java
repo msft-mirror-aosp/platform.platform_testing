@@ -26,11 +26,11 @@ import org.junit.runners.model.Statement;
 import java.util.HashMap;
 import java.util.Map;
 
-/** A {@link TestRule} that helps to mock flag values in unit test. */
-public final class MockFlagsRule implements TestRule {
+/** A {@link TestRule} that helps to set flag values in unit test. */
+public final class SetFlagsRule implements TestRule {
+    private static final String FAKE_FEATURE_FLAGS_IMPL_CLASS_NAME = "FakeFeatureFlagsImpl";
     private static final String FEATURE_FLAGS_INTERFACE_NAME = "FeatureFlags";
-    private static final String FEATURE_FLAGS_IMPL_CLASS_NAME = "FeatureFlagsImpl";
-    private static final String SET_FEATURE_FLAGS_IMPL_METHOD_NAME = "setFeatureFlagsImpl";
+    private static final String SET_FEATURE_FLAGS_METHOD_NAME = "setFeatureFlags";
     private static final String SET_FLAG_METHOD_NAME = "setFlag";
     private static final String RESET_ALL_METHOD_NAME = "resetAll";
 
@@ -133,7 +133,7 @@ public final class MockFlagsRule implements TestRule {
     private Object createFlagImplInstance(Class<?> flagsClass, String fullFlagName)
             throws FlagSetException {
         String packageName = flagsClass.getPackageName();
-        String className = String.format("%s.%s", packageName, FEATURE_FLAGS_IMPL_CLASS_NAME);
+        String className = String.format("%s.%s", packageName, FAKE_FEATURE_FLAGS_IMPL_CLASS_NAME);
         Object flagImplInstance = null;
 
         try {
@@ -143,7 +143,7 @@ public final class MockFlagsRule implements TestRule {
                     Class.forName(
                             String.format("%s.%s", packageName, FEATURE_FLAGS_INTERFACE_NAME));
             flagsClass
-                    .getMethod(SET_FEATURE_FLAGS_IMPL_METHOD_NAME, flagInterface)
+                    .getMethod(SET_FEATURE_FLAGS_METHOD_NAME, flagInterface)
                     .invoke(null, flagImplInstance);
         } catch (NoSuchMethodException e) {
             throw new FlagSetException(

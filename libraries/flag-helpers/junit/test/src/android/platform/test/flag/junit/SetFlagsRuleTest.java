@@ -29,14 +29,14 @@ import org.junit.runners.JUnit4;
 
 /** Unit tests for {@code ResetFlagsRule}. */
 @RunWith(JUnit4.class)
-public final class MockFlagsRuleTest {
+public final class SetFlagsRuleTest {
 
-    @Rule public final MockFlagsRule mMockFlagsRule = new MockFlagsRule();
+    @Rule public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
 
     @Test
     public void setFlagValues() throws Exception {
-        mMockFlagsRule.enableFlags("android.platform.test.flag.junit.flagName3");
-        mMockFlagsRule.disableFlags("android.platform.test.flag.junit.flagName4");
+        mSetFlagsRule.enableFlags("android.platform.test.flag.junit.flagName3");
+        mSetFlagsRule.disableFlags("android.platform.test.flag.junit.flagName4");
         assertTrue(Flags.flagName3());
         assertFalse(Flags.flagName4());
     }
@@ -49,13 +49,13 @@ public final class MockFlagsRuleTest {
 
     @Test
     public void setFlagsAfterOneTest() throws Exception {
-        mMockFlagsRule.enableFlags(
+        mSetFlagsRule.enableFlags(
                 "android.platform.test.flag.junit.flagName3",
                 "android.platform.test.flag.junit.flagName4");
         assertTrue(Flags.flagName3());
         assertTrue(Flags.flagName4());
 
-        mMockFlagsRule.disableFlags(
+        mSetFlagsRule.disableFlags(
                 "android.platform.test.flag.junit.flagName3",
                 "android.platform.test.flag.junit.flagName4");
         assertFalse(Flags.flagName3());
@@ -67,7 +67,7 @@ public final class MockFlagsRuleTest {
         assertThrows(
                 FlagSetException.class,
                 () -> {
-                    mMockFlagsRule.enableFlags("flagName3");
+                    mSetFlagsRule.enableFlags("flagName3");
                 });
     }
 }
