@@ -285,6 +285,41 @@ public class PhoneSnippet implements Snippet {
         return mStatusBarHelper.get().isBluetoothConnected();
     }
 
+    @Rpc(description = "Verify Bluetooth")
+    public boolean verifyBluetooth() {
+        return mStatusBarHelper.get().verifyBluetooth();
+    }
+
+    @Rpc(description = "Verify Phone")
+    public boolean verifyPhone() {
+        return mStatusBarHelper.get().verifyPhone();
+    }
+
+    @Rpc(description = "Verify Media")
+    public boolean verifyMedia() {
+        return mStatusBarHelper.get().verifyMedia();
+    }
+
+    @Rpc(description = "Verify Device Name")
+    public boolean verifyDeviceName() {
+        return mStatusBarHelper.get().verifyDeviceName();
+    }
+
+    @Rpc(description = "Verify Disabled Bluetooth Profile")
+    public boolean verifyDisabledBluetoothProfile() {
+        return mStatusBarHelper.get().verifyDisabledBluetoothProfile();
+    }
+
+    @Rpc(description = "Verify Disabled Phone Profile")
+    public boolean verifyDisabledPhoneProfile() {
+        return mStatusBarHelper.get().verifyDisabledPhoneProfile();
+    }
+
+    @Rpc(description = "Verify Disabled Media Profile")
+    public boolean verifyDisabledMediaProfile() {
+        return mStatusBarHelper.get().verifyDisabledMediaProfile();
+    }
+
     @Override
     public void shutdown() {}
 }

@@ -1501,10 +1501,23 @@
           "PACKAGE": "com.android.systemui"
         },
         {
-          "TYPE": "CLASS",
-          "VALUE": "android.widget.ToggleButton"
+          "TYPE": "DESCRIPTION",
+          "VALUE": "Bluetooth"
         }
       ]
+    },
+    "PHONE_BUTTON": {
+      "TYPE": "DESCRIPTION",
+      "VALUE": "Phone"
+    },
+    "MEDIA_BUTTON": {
+      "TYPE": "DESCRIPTION",
+      "VALUE": "Media"
+    },
+    "DEVICE_NAME": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "qc_title",
+      "PACKAGE": "com.android.systemui"
     },
     "BLUETOOTH_CONNECTED_DISCONNECTED_TEXT": {
       "TYPE": "MULTIPLE",
@@ -1517,6 +1530,99 @@
         {
           "TYPE": "CLASS",
           "VALUE": "android.widget.TextView"
+        }
+      ]
+    },
+    "DISABLED_PHONE_PROFILE": {
+      "TYPE": "MULTIPLE",
+      "SPECIFIERS": [
+        {
+          "TYPE": "DESCRIPTION",
+          "VALUE": "Phone"
+        },
+        {
+          "TYPE": "CLASS",
+          "VALUE": "android.widget.ToggleButton"
+        }
+      ]
+    },
+    "DISABLED_MEDIA_PROFILE": {
+      "TYPE": "MULTIPLE",
+      "SPECIFIERS": [
+        {
+          "TYPE": "DESCRIPTION",
+          "VALUE": "Media"
+        },
+        {
+          "TYPE": "CLASS",
+          "VALUE": "android.widget.ToggleButton"
+        }
+      ]
+    },
+    "NETWORK_PALETTE": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "qc_signal_status_icon",
+      "PACKAGE": "com.android.systemui"
+    },
+    "NETWORK_PALETTE_HOTSPOT": {
+      "TYPE": "MULTIPLE",
+      "SPECIFIERS": [
+        {
+          "TYPE": "HAS_ANCESTOR",
+          "ANCESTOR": {
+            "TYPE": "CLASS",
+            "VALUE": "android.view.ViewGroup"
+          }
+        },
+        {
+          "TYPE": "HAS_DESCENDANT",
+          "DESCENDANT": {
+            "TYPE": "TEXT_CONTAINS",
+            "VALUE": "Hotspot"
+          }
+        }
+      ]
+    },
+    "NETWORK_PALETTE_SWITCH_WIDGET": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "switch_widget",
+      "PACKAGE": "android"
+    },
+    "NETWORK_PALETTE_SUMMARY": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "qc_summary",
+      "PACKAGE": "com.android.systemui"
+    },
+    "FORGET_WIFI": {
+      "TYPE": "MULTIPLE",
+      "SPECIFIERS": [
+        {
+          "TYPE": "CLASS",
+          "VALUE": "android.widget.ImageView"
+        },
+        {
+          "TYPE": "RESOURCE_ID",
+          "VALUE": "car_ui_secondary_action_concrete",
+          "PACKAGE": "com.android.car.settings"
+        }
+      ]
+    },
+    "NETWORK_PALETTE_WIFI": {
+      "TYPE": "MULTIPLE",
+      "SPECIFIERS": [
+        {
+          "TYPE": "HAS_ANCESTOR",
+          "ANCESTOR": {
+            "TYPE": "CLASS",
+            "VALUE": "android.view.ViewGroup"
+          }
+        },
+        {
+          "TYPE": "HAS_DESCENDANT",
+          "DESCENDANT": {
+            "TYPE": "TEXT_CONTAINS",
+            "VALUE": "Wi‑Fi"
+          }
         }
       ]
     }
