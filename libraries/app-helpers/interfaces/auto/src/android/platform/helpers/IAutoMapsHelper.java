@@ -193,4 +193,32 @@ public interface IAutoMapsHelper extends IAppHelper {
      * <p>This method is used to verify whether Maps widget is displayed.
      */
     boolean hasMapsWidget();
+
+    /**
+     * Setup expectations: Gas station widget is displayed in maps full screen
+     *
+     * <p>This method is used to verify whether Gas Station Widget is displayed.
+     */
+    boolean hasGasStationWidget();
+
+    /**
+     * Setup expectations: Restaurant widget is displayed in maps full screen
+     *
+     * <p>This method is used to verify whether Restaurant Widget is displayed.
+     */
+    boolean hasRestaurantWidget();
+
+    /**
+     * Setup expectations: Grocery Store widget is displayed in maps full screen
+     *
+     * <p>This method is used to verify whether Grocery Store Widget is displayed.
+     */
+    boolean hasGroceryStoreWidget();
+
+    /**
+     * Setup expectations: Coffee Shop widget is displayed in maps full screen
+     *
+     * <p>This method is used to verify whether Coffee Shop Widget is displayed.
+     */
+    boolean hasCoffeeShopsWidget();
 }

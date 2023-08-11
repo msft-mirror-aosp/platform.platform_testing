@@ -28,6 +28,11 @@ android_test {
         "hamcrest-library",
         "automotive-home-helper",
         "automotive-utility-helper",
+        "automotive-settings-app-helper",
+        "automotive-status-bar-helper",
+        "automotive-utility-helper",
+        "app-helpers-auto-interfaces",
+        "hamcrest-library",
     ],
     srcs: ["src/**/*.java"],
     test_suites: [

@@ -25,9 +25,57 @@ import androidx.test.uiautomator.Direction
 import androidx.test.uiautomator.UiObject2
 import com.google.common.truth.Truth.assertWithMessage
 
+/** Checks the view is in the vertical (Y) centre of the screen (+- 1 px). */
+fun UiObject2.assertInVerticalCentre() {
+    assertWithMessage("${this.resourceName} should be vertically (Y) centred (+- 1px)")
+        .that(this.stableBounds.centerY())
+        .isIn(uiDevice.displayHeight / 2 - 1..uiDevice.displayHeight / 2 + 1)
+}
+
+/** Checks the view is in the horizontal (X) centre of the screen (+- 1 px). */
+fun UiObject2.assertInHorizontalCentre() {
+    assertWithMessage("${this.resourceName} should be horizontally (X) centred (+- 1px)")
+        .that(this.stableBounds.centerX())
+        .isIn(uiDevice.displayWidth / 2 - 1..uiDevice.displayWidth / 2 + 1)
+}
+
+/**
+ * Checks if top of the view is on the bottom side by checking top bound is in the middle of the
+ * screen or in the bottom half of the screen vertically.
+ */
+fun UiObject2.assertTopOnBottomSide() {
+    assertWithMessage("${this.resourceName} should be on the bottom side")
+        .that(this.stableBounds.top > uiDevice.displayHeight / 2)
+        .isTrue()
+}
+
+/**
+ * Checks if top of the view is on the top side by checking top bound is in the middle of the screen
+ * or in the top half of the screen vertically.
+ */
+fun UiObject2.assertTopOnTopSide() {
+    assertWithMessage("${this.resourceName} should be on the top side")
+        .that(this.stableBounds.top < uiDevice.displayHeight / 2)
+        .isTrue()
+}
+
+/** Checks if view horizontal (X) centre is on the right side */
+fun UiObject2.assertCenterOnTheRightSide() {
+    assertWithMessage("${this.resourceName} should be on the right side")
+        .that(this.stableBounds.centerX() > uiDevice.displayWidth / 2)
+        .isTrue()
+}
+
+/** Checks if view horizontal (X) centre is on the left side */
+fun UiObject2.assertCenterOnTheLeftSide() {
+    assertWithMessage("${this.resourceName} should be on the left side")
+        .that(this.stableBounds.centerX() < uiDevice.displayWidth / 2)
+        .isTrue()
+}
+
 /**
  * Checks if view is on the right side by checking left bound is in the middle of the screen or in
- * the right half of the screen.
+ * the right half of the screen horizontally.
  */
 fun UiObject2.assertOnTheRightSide() {
     assertWithMessage("${this.resourceName} should be on the right side")
@@ -37,7 +85,7 @@ fun UiObject2.assertOnTheRightSide() {
 
 /**
  * Checks if view is on the left side by checking right bound is in the middle of the screen or in
- * the left half of the screen.
+ * the left half of the screen horizontally.
  */
 fun UiObject2.assertOnTheLeftSide() {
     assertWithMessage("${this.resourceName} should be on the left side")

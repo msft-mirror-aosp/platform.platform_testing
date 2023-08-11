@@ -154,6 +154,17 @@ public class StatusBarHelperImpl extends AbstractStandardAppHelper implements IA
 
     /** {@inheritDoc} */
     @Override
+    public void openNetworkPalette() {
+        BySelector networkPaletteSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.NETWORK_PALETTE);
+        UiObject2 networkPalette = getSpectatioUiUtil().findUiObject(networkPaletteSelector);
+        validateUiObject(networkPalette, AutomotiveConfigConstants.NETWORK_PALETTE);
+        getSpectatioUiUtil().clickAndWait(networkPalette);
+        getSpectatioUiUtil().wait5Seconds();
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public boolean isBluetoothConnected() {
         boolean isBluetoothConnected = false;
         BySelector btconnectedDisconnectedTextSelector =
@@ -170,6 +181,141 @@ public class StatusBarHelperImpl extends AbstractStandardAppHelper implements IA
             return !isBluetoothConnected;
         }
         return isBluetoothConnected;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean verifyBluetooth() {
+        BySelector bluetoothSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.BLUETOOTH_BUTTON);
+        return getSpectatioUiUtil().hasUiElement(bluetoothSelector);
+    }
+    /** {@inheritDoc} */
+    @Override
+    public boolean isNetworkSwitchEnabled(String target) {
+        UiObject2 enableOption = getSwitchObject(target);
+        return enableOption.isChecked();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean verifyPhone() {
+        BySelector phoneSelector = getUiElementFromConfig(AutomotiveConfigConstants.PHONE_BUTTON);
+        return getSpectatioUiUtil().hasUiElement(phoneSelector);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void networkPaletteToggleOnOff(String target) {
+        UiObject2 object = getSwitchObject(target);
+        getSpectatioUiUtil().clickAndWait(object);
+        getSpectatioUiUtil().wait5Seconds();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean verifyMedia() {
+        BySelector mediaSelector = getUiElementFromConfig(AutomotiveConfigConstants.MEDIA_BUTTON);
+        return getSpectatioUiUtil().hasUiElement(mediaSelector);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean isHotspotNameDisplayed() {
+        BySelector selector =
+                getUiElementFromConfig(AutomotiveConfigConstants.NETWORK_PALETTE_HOTSPOT);
+        UiObject2 object = getSpectatioUiUtil().findUiObject(selector);
+        UiObject2 summary =
+                getSpectatioUiUtil()
+                        .findUiObjectInGivenElement(
+                                object,
+                                getUiElementFromConfig(
+                                        AutomotiveConfigConstants.NETWORK_PALETTE_SUMMARY));
+        validateUiObject(summary, String.format("to get the hotspot name"));
+        return (summary.getText() != null && !summary.getText().equalsIgnoreCase("off"));
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean verifyDeviceName() {
+        BySelector deviceNameSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.DEVICE_NAME);
+        return getSpectatioUiUtil().hasUiElement(deviceNameSelector);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean isWifiNameDisplayed() {
+        BySelector selector =
+                getUiElementFromConfig(AutomotiveConfigConstants.NETWORK_PALETTE_WIFI);
+        getSpectatioUiUtil().wait1Second();
+        UiObject2 object = getSpectatioUiUtil().findUiObject(selector);
+        UiObject2 summary =
+                getSpectatioUiUtil()
+                        .findUiObjectInGivenElement(
+                                object,
+                                getUiElementFromConfig(
+                                        AutomotiveConfigConstants.NETWORK_PALETTE_SUMMARY));
+        validateUiObject(summary, String.format("to get the Wi-Fi name"));
+        return (summary.getText() != null
+                && !summary.getText().equalsIgnoreCase("not connected")
+                && !summary.getText().equalsIgnoreCase("wi‑fi disabled"));
+    }
+
+    private UiObject2 getSwitchObject(String target) {
+        BySelector targetSelector = getUiElementFromConfig(target);
+        UiObject2 targetObject = getSpectatioUiUtil().findUiObject(targetSelector).getParent();
+        validateUiObject(targetObject, target);
+        UiObject2 switchWidgetObject =
+                targetObject.findObject(
+                        getUiElementFromConfig(
+                                AutomotiveConfigConstants.NETWORK_PALETTE_SWITCH_WIDGET));
+        validateUiObject(switchWidgetObject, target);
+        return switchWidgetObject;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean verifyDisabledBluetoothProfile() {
+        BySelector disabledBluetoothProfileSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.BLUETOOTH_BUTTON);
+        UiObject2 disabledBluetoothProfile =
+                getSpectatioUiUtil().findUiObject(disabledBluetoothProfileSelector);
+        validateUiObject(disabledBluetoothProfile, AutomotiveConfigConstants.BLUETOOTH_BUTTON);
+        return disabledBluetoothProfile.isChecked();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean verifyDisabledPhoneProfile() {
+        BySelector disabledPhoneProfileNameSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.DISABLED_PHONE_PROFILE);
+        UiObject2 disabledPhoneProfile =
+                getSpectatioUiUtil().findUiObject(disabledPhoneProfileNameSelector);
+        validateUiObject(disabledPhoneProfile, AutomotiveConfigConstants.DISABLED_PHONE_PROFILE);
+        return disabledPhoneProfile.isChecked();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean verifyDisabledMediaProfile() {
+        BySelector disabledMediaProfileNameSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.DISABLED_MEDIA_PROFILE);
+        UiObject2 disabledMediaProfile =
+                getSpectatioUiUtil().findUiObject(disabledMediaProfileNameSelector);
+        validateUiObject(disabledMediaProfile, AutomotiveConfigConstants.DISABLED_MEDIA_PROFILE);
+        return disabledMediaProfile.isChecked();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void forgetWifi() {
+        UiObject2 forgetObject =
+                getSpectatioUiUtil()
+                        .findUiObject(
+                                getUiElementFromConfig(AutomotiveConfigConstants.FORGET_WIFI));
+        validateUiObject(forgetObject, AutomotiveConfigConstants.FORGET_WIFI);
+        getSpectatioUiUtil().clickAndWait(forgetObject);
     }
 
     /** {@inheritDoc} */
