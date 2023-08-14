@@ -56,6 +56,7 @@ public class MediaController {
     private final UiDevice mDevice = UiDevice.getInstance(mInstrumentation);
     private final List<Integer> mStateChanges;
     private Runnable mStateListener;
+    private static final Object sStateListenerLock = new Object();
 
     MediaController(MediaInstrumentation media, UiObject2 uiObject) {
         media.addMediaSessionStateChangedListeners(this::onMediaSessionStageChanged);
@@ -65,17 +66,21 @@ public class MediaController {
 
     public void play() {
         runToNextState(
-            () -> mUiObject
-                .wait(Until.findObject(PLAY_BTN_SELECTOR), WAIT_TIME_MILLIS)
-                .click(),
-            PlaybackState.STATE_PLAYING);
+                () -> {
+                    mInstrumentation.getUiAutomation().clearCache();
+                    mUiObject.wait(Until.findObject(PLAY_BTN_SELECTOR), WAIT_TIME_MILLIS).click();
+                },
+                PlaybackState.STATE_PLAYING);
     }
 
     public void pause() {
         runToNextState(
-                () -> Gestures.click(
-                        mUiObject.wait(Until.findObject(PAUSE_BTN_SELECTOR), WAIT_TIME_MILLIS),
-                        "Pause button"),
+                () -> {
+                    mInstrumentation.getUiAutomation().clearCache();
+                    Gestures.click(
+                            mUiObject.wait(Until.findObject(PAUSE_BTN_SELECTOR), WAIT_TIME_MILLIS),
+                            "Pause button");
+                },
                 PlaybackState.STATE_PAUSED);
     }
 
@@ -98,11 +103,14 @@ public class MediaController {
     private void runToNextState(Runnable runnable, int state) {
         mStateChanges.clear();
         CountDownLatch latch = new CountDownLatch(1);
-        mStateListener = latch::countDown;
+        synchronized (sStateListenerLock) {
+            mStateListener = latch::countDown;
+        }
         runnable.run();
         try {
             if (!latch.await(WAIT_TIME_MILLIS, TimeUnit.MILLISECONDS)) {
-                throw new RuntimeException("PlaybackState didn't change and timeout.");
+                throw new RuntimeException(
+                        "PlaybackState didn't change to state:" + state + " and timeout.");
             }
         } catch (InterruptedException e) {
             throw new RuntimeException();
@@ -115,8 +123,10 @@ public class MediaController {
     private void onMediaSessionStageChanged(int state) {
         mStateChanges.add(state);
         if (mStateListener != null) {
-            mStateListener.run();
-            mStateListener = null;
+            synchronized (sStateListenerLock) {
+                mStateListener.run();
+                mStateListener = null;
+            }
         }
     }
 
@@ -158,6 +168,7 @@ public class MediaController {
         final BySelector mediaArtistSelector =
             By.res(PKG, "header_artist")
                 .text(meta.getString(MediaMetadata.METADATA_KEY_ARTIST));
+        mInstrumentation.getUiAutomation().clearCache();
         return mUiObject.hasObject(mediaTitleSelector) && mUiObject.hasObject(mediaArtistSelector);
     }
 
