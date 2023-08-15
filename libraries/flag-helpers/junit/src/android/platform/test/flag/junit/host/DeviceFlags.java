@@ -26,7 +26,10 @@ import com.android.tradefed.device.DeviceNotAvailableException;
 import com.android.tradefed.device.ITestDevice;
 import com.android.tradefed.log.LogUtil;
 
+import com.google.protobuf.TextFormat;
+
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Nullable;
@@ -47,6 +50,13 @@ import javax.annotation.Nullable;
  */
 public class DeviceFlags {
     private static final String DUMP_DEVICE_CONFIG_CMD = "device_config list";
+
+    /**
+     * Partitions that contain the aconfig_flags.textproto files. Should be consistent with the
+     * partitions defined in core/packaging/flags.mk.
+     */
+    private static final List<String> FLAG_PARTITIONS =
+            List.of("product", "system", "system_ext", "vendor");
 
     /**
      * The key is the flag name with namespace ({namespace}/{flagName} for legacy flags,
@@ -83,7 +93,7 @@ public class DeviceFlags {
         mFlagNameWithNamespaces.clear();
         LogUtil.CLog.i("Dumping all flag values from the device ...");
         getDeviceConfigFlags(testDevice);
-        getAconfigFlags();
+        getAconfigFlags(testDevice);
         LogUtil.CLog.i("Dumped all flag values from the device.");
     }
 
@@ -103,8 +113,8 @@ public class DeviceFlags {
         }
     }
 
-    private void getAconfigFlags() {
-        getAconfigParsedFlags()
+    private void getAconfigFlags(ITestDevice testDevice) throws FlagReadException {
+        getAconfigParsedFlags(testDevice)
                 .getParsedFlagList()
                 .forEach(
                         parsedFlag -> {
@@ -131,8 +141,23 @@ public class DeviceFlags {
                         });
     }
 
-    private parsed_flags getAconfigParsedFlags() {
-        // TODO(b/289906970): Dump the real aconfig flag values.
-        return parsed_flags.getDefaultInstance();
+    private parsed_flags getAconfigParsedFlags(ITestDevice testDevice) throws FlagReadException {
+        parsed_flags.Builder builder = parsed_flags.newBuilder();
+
+        for (String flagPartition : FLAG_PARTITIONS) {
+            try {
+                String aconfigTextProtoFile =
+                        String.format("/%s/etc/aconfig_flags.textproto", flagPartition);
+                if (!testDevice.doesFileExist(aconfigTextProtoFile)) {
+                    continue;
+                }
+                String textProto = testDevice.executeShellCommand("cat " + aconfigTextProtoFile);
+                parsed_flags parsedFlags = TextFormat.parse(textProto, parsed_flags.class);
+                builder.addAllParsedFlag(parsedFlags.getParsedFlagList());
+            } catch (DeviceNotAvailableException | TextFormat.ParseException e) {
+                throw new FlagReadException("ALL_FLAGS", e);
+            }
+        }
+        return builder.build();
     }
 }

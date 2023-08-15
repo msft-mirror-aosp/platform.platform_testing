@@ -68,7 +68,7 @@ java_library_host {
     static_libs: [
         "flag-junit-base",
         "flag-util",
-        "libaconfig_java_proto_lite",
+        "libaconfig_java_proto_full",
         "tradefed",
     ],
 }

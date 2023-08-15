@@ -17,11 +17,15 @@
 #include <string>
 #include <utility>
 #include <functional>
-#include <string>
 #include <sstream>
 
 #include <flag_checker.h>
 #include <gtest/gtest.h>
+#include <android-base/strings.h>
+#include <android-base/stringprintf.h>
+#include <android-base/properties.h>
+
+#define SYSTEM_PROPERTY_PREFIX "persist.device_config."
 
 namespace android::test::flag {
 
@@ -46,11 +50,24 @@ void SkipIfFlagRequirementsNotMet(
 }
 
 bool CheckFlagCondition(bool expected_condition, const p_flag feature_flag) {
-  if (feature_flag.first == nullptr) {
-    // TODO: Add check for the legacy feature flag.
+  // Checks the aconfig flag.
+  if (feature_flag.first) {
+    return feature_flag.first() == expected_condition;
+  }
+  // Checks the legacy flag.
+  std::vector<std::string> flag_args = android::base::Split(feature_flag.second, ",");
+  if (flag_args.size() != 3) {
     return false;
   }
-  return feature_flag.first() == expected_condition;
+  std::string package_name = android::base::StringReplace(flag_args[1], "::", ".", true);
+  std::string full_flag_name = android::base::StringPrintf(
+    "%s.%s.%s",
+    android::base::Trim(flag_args[0]).c_str(),
+    android::base::Trim(package_name).c_str(),
+    android::base::Trim(flag_args[2]).c_str()
+  );
+  return android::base::GetProperty(SYSTEM_PROPERTY_PREFIX + full_flag_name, "") ==
+    (expected_condition ? "true":"false");
 }
 
 }  // namespace android::test::flag

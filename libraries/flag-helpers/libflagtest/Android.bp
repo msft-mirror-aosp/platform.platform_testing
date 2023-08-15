@@ -18,6 +18,17 @@ package {
     default_applicable_licenses: ["Android-Apache-2.0"],
 }
 
+aconfig_declarations {
+    name: "flag_checker_tests",
+    package: "android.test.myflags",
+    srcs: ["android.test.myflags.aconfig"],
+}
+
+cc_aconfig_library {
+    name: "flags_checker_tests_cc",
+    aconfig_declarations: "flag_checker_tests",
+}
+
 cc_defaults {
     name: "libflagtest_defaults",
     export_include_dirs: ["include"],
@@ -51,4 +62,34 @@ cc_library_static {
     native_bridge_supported: true,
     srcs: ["flag_checker.cpp"],
     static_libs: ["libgtest"],
+    shared_libs: ["libbase"],
+}
+
+cc_test {
+    name: "libflagtest_test",
+    compile_multilib: "both",
+    multilib: {
+        lib32: {
+            suffix: "32",
+        },
+        lib64: {
+            suffix: "64",
+        },
+    },
+    require_root: true,
+    srcs: ["flag_checker_test.cpp"],
+    cflags: [
+        "-Wall",
+        "-Werror",
+    ],
+    static_libs: [
+        "libflagtest",
+        "libgtest",
+        "flags_checker_tests_cc",
+    ],
+    shared_libs: [
+        "libbase",
+        "server_configurable_flags",
+    ],
+    test_suites: ["device-tests"],
 }

@@ -158,6 +158,19 @@ public class PerfettoListener extends BaseMetricListener {
             return;
         }
 
+        if (mPerfettoHelper.getPerfettoPid() > 0) {
+            try {
+                if (mPerfettoHelper.stopPerfetto()) {
+                    Log.i(
+                            getTag(),
+                            "Stopped the already running perfetto tracing before the new test run"
+                                    + " start.");
+                }
+            } catch (IOException e) {
+                Log.e(getTag(), "Failed to stop the perfetto.", e);
+            }
+        }
+
         Runnable task =
                 () -> {
                     Log.i(getTag(), "Starting perfetto before test run started.");

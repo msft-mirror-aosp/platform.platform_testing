@@ -258,4 +258,8 @@ public class PerfettoHelper {
     public void setPerfettoStartBgWait(boolean perfettoStartBgWait) {
         mPerfettoStartBgWait = perfettoStartBgWait;
     }
+
+    public int getPerfettoPid() {
+        return mPerfettoProcId;
+    }
 }

@@ -40,6 +40,17 @@ import org.mockito.junit.MockitoRule;
 public class HostFlagsValueProviderTest {
     private static final String DEVICE_CONFIG_LIST =
             "namespace1/flag1=true\nnamespace1/flag2=false\nnamespace2/flag1=abc";
+    private static final String ACONFIG_FLAGS_TEXTPROTO =
+            "parsed_flag {\n"
+                    + "  package: \"com.android.flags\"\n"
+                    + "  name: \"my_flag\"\n"
+                    + "  namespace: \"cts\"\n"
+                    + "  description: \"A sample flag\"\n"
+                    + "  bug: \"12345678\"\n"
+                    + "  state: DISABLED\n"
+                    + "  permission: READ_WRITE\n"
+                    + "}\n";
+
     @Rule public final MockitoRule mockito = MockitoJUnit.rule();
 
     @Mock private ITestDevice mTestDevice;
@@ -51,6 +62,15 @@ public class HostFlagsValueProviderTest {
         when(mTestDevice.executeShellCommand(eq("device_config list")))
                 .thenReturn(DEVICE_CONFIG_LIST);
         when(mTestDevice.getSerialNumber()).thenReturn("123456");
+        when(mTestDevice.doesFileExist("/system/etc/aconfig_flags.textproto")).thenReturn(true);
+        when(mTestDevice.doesFileExist("/product/etc/aconfig_flags.textproto")).thenReturn(true);
+        when(mTestDevice.doesFileExist("/system_ext/etc/aconfig_flags.textproto"))
+                .thenReturn(false);
+        when(mTestDevice.doesFileExist("/vendor/etc/aconfig_flags.textproto")).thenReturn(false);
+        when(mTestDevice.executeShellCommand("cat /system/etc/aconfig_flags.textproto"))
+                .thenReturn(ACONFIG_FLAGS_TEXTPROTO);
+        when(mTestDevice.executeShellCommand("cat /product/etc/aconfig_flags.textproto"))
+                .thenReturn("# no flags");
         mHostFlagsValueProvider =
                 new HostFlagsValueProvider(
                         () -> {
@@ -77,6 +97,7 @@ public class HostFlagsValueProviderTest {
     public void getBoolean_verify() throws Exception {
         assertTrue(mHostFlagsValueProvider.getBoolean("namespace1/flag1"));
         assertFalse(mHostFlagsValueProvider.getBoolean("namespace1/flag2"));
+        assertFalse(mHostFlagsValueProvider.getBoolean("cts/com.android.flags.my_flag"));
     }
 
     @Test
