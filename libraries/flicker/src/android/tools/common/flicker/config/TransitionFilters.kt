@@ -137,6 +137,7 @@ object TransitionFilters {
                     sendTime = transition.wmData.sendTime,
                     abortTime = transition.wmData.abortTime,
                     finishTime = transition.wmData.finishTime,
+                    startingWindowRemoveTime = transition.wmData.startingWindowRemoveTime,
                     startTransactionId = transition.wmData.startTransactionId,
                     finishTransactionId = transition.wmData.finishTransactionId,
                     type = transition.wmData.type,
