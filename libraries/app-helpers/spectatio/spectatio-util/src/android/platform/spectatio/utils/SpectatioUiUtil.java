@@ -933,6 +933,33 @@ public class SpectatioUiUtil {
         }
     }
 
+    /**
+     * A simple null-check on a single uiObject2 instance
+     *
+     * @param uiObject - The object to be checked.
+     * @param action - The UI action being performed when the object was generated or searched-for.
+     */
+    public void validateUiObject(UiObject2 uiObject, String action) {
+        if (uiObject == null) {
+            throw new MissingUiElementException(
+                    String.format("Unable to find UI Element for %s.", action));
+        }
+    }
+
+    /**
+     * A simple null-check on a list of UIObjects
+     *
+     * @param uiObjects - The list to check
+     * @param action - A string description of the UI action being taken when this list was
+     *     generated.
+     */
+    public void validateUiObjects(List<UiObject2> uiObjects, String action) {
+        if (uiObjects == null) {
+            throw new MissingUiElementException(
+                    String.format("Unable to find UI Element for %s.", action));
+        }
+    }
+
     public boolean isValidUiObject(UiObject2 uiObject) {
         return uiObject != null;
     }

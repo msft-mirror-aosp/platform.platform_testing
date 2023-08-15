@@ -16,7 +16,6 @@
 package android.platform.helpers;
 
 import android.app.Instrumentation;
-import android.platform.helpers.exceptions.UnknownUiException;
 
 import androidx.test.uiautomator.BySelector;
 import androidx.test.uiautomator.UiObject2;
@@ -90,7 +89,9 @@ public class HomeHelperImpl extends AbstractStandardAppHelper implements IAutoHo
         BySelector brightnesButtonSelector =
                 getUiElementFromConfig(AutomotiveConfigConstants.STATUS_BAR_BRIGHTNESS_BUTTON);
         UiObject2 brightnessButton = getSpectatioUiUtil().findUiObject(brightnesButtonSelector);
-        validateUiObject(brightnessButton, AutomotiveConfigConstants.STATUS_BAR_BRIGHTNESS_BUTTON);
+        getSpectatioUiUtil()
+                .validateUiObject(
+                        brightnessButton, AutomotiveConfigConstants.STATUS_BAR_BRIGHTNESS_BUTTON);
         getSpectatioUiUtil().clickAndWait(brightnessButton);
     }
 
@@ -118,7 +119,8 @@ public class HomeHelperImpl extends AbstractStandardAppHelper implements IAutoHo
         BySelector mediaWidgetSelector =
                 getUiElementFromConfig(AutomotiveConfigConstants.HOME_BOTTOM_CARD);
         UiObject2 mediaWidget = getSpectatioUiUtil().findUiObject(mediaWidgetSelector);
-        validateUiObject(mediaWidget, AutomotiveConfigConstants.HOME_BOTTOM_CARD);
+        getSpectatioUiUtil()
+                .validateUiObject(mediaWidget, AutomotiveConfigConstants.HOME_BOTTOM_CARD);
         getSpectatioUiUtil().clickAndWait(mediaWidget);
     }
 
@@ -129,7 +131,9 @@ public class HomeHelperImpl extends AbstractStandardAppHelper implements IAutoHo
                 getUiElementFromConfig(AutomotiveConfigConstants.HOME_PROFILE_GUEST_ICON);
         UiObject2 guestIconButtonLink =
                 getSpectatioUiUtil().findUiObject(profileGuestIconWidgetSelector);
-        validateUiObject(guestIconButtonLink, AutomotiveConfigConstants.HOME_PROFILE_GUEST_ICON);
+        getSpectatioUiUtil()
+                .validateUiObject(
+                        guestIconButtonLink, AutomotiveConfigConstants.HOME_PROFILE_GUEST_ICON);
         String profileText = guestIconButtonLink.getText();
         return profileText;
     }
@@ -140,7 +144,9 @@ public class HomeHelperImpl extends AbstractStandardAppHelper implements IAutoHo
         BySelector profileWidgetSelector =
                 getUiElementFromConfig(AutomotiveConfigConstants.HOME_PROFILE_ICON_BUTTON);
         UiObject2 profileButtonLink = getSpectatioUiUtil().findUiObject(profileWidgetSelector);
-        validateUiObject(profileButtonLink, AutomotiveConfigConstants.HOME_PROFILE_ICON_BUTTON);
+        getSpectatioUiUtil()
+                .validateUiObject(
+                        profileButtonLink, AutomotiveConfigConstants.HOME_PROFILE_ICON_BUTTON);
         getSpectatioUiUtil().clickAndWait(profileButtonLink);
     }
 
@@ -150,7 +156,9 @@ public class HomeHelperImpl extends AbstractStandardAppHelper implements IAutoHo
                 getUiElementFromConfig(AutomotiveConfigConstants.HOME_DRIVER_BUTTON);
         UiObject2 driverIconButtonLink =
                 getSpectatioUiUtil().findUiObject(profileDriverIconWidgetSelector);
-        validateUiObject(driverIconButtonLink, AutomotiveConfigConstants.HOME_DRIVER_BUTTON);
+        getSpectatioUiUtil()
+                .validateUiObject(
+                        driverIconButtonLink, AutomotiveConfigConstants.HOME_DRIVER_BUTTON);
         String driverProfileIndex = driverIconButtonLink.getText();
         return driverProfileIndex;
     }
@@ -161,7 +169,8 @@ public class HomeHelperImpl extends AbstractStandardAppHelper implements IAutoHo
                 getUiElementFromConfig(AutomotiveConfigConstants.HOME_GUEST_BUTTON);
         UiObject2 guestIconButtonLink =
                 getSpectatioUiUtil().findUiObject(profileGuestIconWidgetSelector);
-        validateUiObject(guestIconButtonLink, AutomotiveConfigConstants.HOME_GUEST_BUTTON);
+        getSpectatioUiUtil()
+                .validateUiObject(guestIconButtonLink, AutomotiveConfigConstants.HOME_GUEST_BUTTON);
         String guestProfileIndex = guestIconButtonLink.getText();
         return guestProfileIndex;
     }
@@ -172,8 +181,10 @@ public class HomeHelperImpl extends AbstractStandardAppHelper implements IAutoHo
                 getUiElementFromConfig(AutomotiveConfigConstants.HOME_SECONDARY_USER_BUTTON);
         UiObject2 secondaryUserButtonLink =
                 getSpectatioUiUtil().findUiObject(secondaryUserWidgetSelector);
-        validateUiObject(
-                secondaryUserButtonLink, AutomotiveConfigConstants.HOME_SECONDARY_USER_BUTTON);
+        getSpectatioUiUtil()
+                .validateUiObject(
+                        secondaryUserButtonLink,
+                        AutomotiveConfigConstants.HOME_SECONDARY_USER_BUTTON);
         String secondaryUserProfileIndex = secondaryUserButtonLink.getText();
         return secondaryUserProfileIndex;
     }
@@ -195,13 +206,6 @@ public class HomeHelperImpl extends AbstractStandardAppHelper implements IAutoHo
         getSpectatioUiUtil().waitForIdle();
     }
 
-    private void validateUiObject(UiObject2 uiObject, String action) {
-        if (uiObject == null) {
-            throw new UnknownUiException(
-                    String.format("Unable to find UI Element for %s.", action));
-        }
-    }
-
     @Override
     public List<String> getTemperature() {
         getSpectatioUiUtil().pressHome();
@@ -209,8 +213,12 @@ public class HomeHelperImpl extends AbstractStandardAppHelper implements IAutoHo
         BySelector temperatureSelector =
                 getUiElementFromConfig(AutomotiveConfigConstants.HOME_TEMPERATURE_BUTTON);
         List<UiObject2> temperature = getSpectatioUiUtil().findUiObjects(temperatureSelector);
-        validateUiObject(temperature.get(0), AutomotiveConfigConstants.HOME_TEMPERATURE_BUTTON);
-        validateUiObject(temperature.get(1), AutomotiveConfigConstants.HOME_TEMPERATURE_BUTTON);
+        getSpectatioUiUtil()
+                .validateUiObject(
+                        temperature.get(0), AutomotiveConfigConstants.HOME_TEMPERATURE_BUTTON);
+        getSpectatioUiUtil()
+                .validateUiObject(
+                        temperature.get(1), AutomotiveConfigConstants.HOME_TEMPERATURE_BUTTON);
         List<String> temperatureText = new ArrayList<>();
         for (UiObject2 uiObject : temperature) {
             temperatureText.add(getSpectatioUiUtil().getTextForUiElement(uiObject));

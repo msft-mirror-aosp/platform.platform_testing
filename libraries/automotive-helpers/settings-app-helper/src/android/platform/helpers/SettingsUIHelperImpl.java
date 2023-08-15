@@ -19,7 +19,6 @@ package android.platform.helpers;
 import android.app.Instrumentation;
 import android.platform.helpers.ScrollUtility.ScrollActions;
 import android.platform.helpers.ScrollUtility.ScrollDirection;
-import android.platform.helpers.exceptions.UnknownUiException;
 
 import androidx.test.uiautomator.BySelector;
 import androidx.test.uiautomator.UiObject2;
@@ -117,8 +116,10 @@ public class SettingsUIHelperImpl extends AbstractStandardAppHelper
         if (optionObjects.size() > 0) {
             object = optionObjects.get(optionObjects.size() - 1);
         }
-        validateUiObject(
-                object, String.format("Unable to find UI Element for %s menu", targetConstant));
+        getSpectatioUiUtil()
+                .validateUiObject(
+                        object,
+                        String.format("Unable to find UI Element for %s menu", targetConstant));
         getSpectatioUiUtil().clickAndWait(object);
         getSpectatioUiUtil().wait5Seconds();
     }
@@ -128,26 +129,16 @@ public class SettingsUIHelperImpl extends AbstractStandardAppHelper
         BySelector backButtonselectors =
                 getUiElementFromConfig(AutomotiveConfigConstants.SETTINGS_BACK_BUTTON);
         List<UiObject2> backButtonObjects = getSpectatioUiUtil().findUiObjects(backButtonselectors);
-        validateUiObjects(backButtonObjects, String.format("Back Button on Settings App"));
+        getSpectatioUiUtil()
+                .validateUiObjects(backButtonObjects, String.format("Back Button on Settings App"));
         if (backButtonObjects != null && backButtonObjects.size() > 0) {
             UiObject2 backButtonObject = backButtonObjects.get(backButtonObjects.size() - 1);
-            validateUiObject(backButtonObject, String.format("Back Button on Settings App"));
+            getSpectatioUiUtil()
+                    .validateUiObject(
+                            backButtonObject, String.format("Back Button on Settings App"));
             getSpectatioUiUtil().clickAndWait(backButtonObject);
             getSpectatioUiUtil().wait5Seconds();
         }
     }
 
-    private void validateUiObject(UiObject2 uiObject, String action) {
-        if (uiObject == null) {
-            throw new UnknownUiException(
-                    String.format("Unable to find UI Element for %s.", action));
-        }
-    }
-
-    private void validateUiObjects(List<UiObject2> uiObjects, String action) {
-        if (uiObjects == null) {
-            throw new UnknownUiException(
-                    String.format("Unable to find UI Element for %s.", action));
-        }
-    }
 }

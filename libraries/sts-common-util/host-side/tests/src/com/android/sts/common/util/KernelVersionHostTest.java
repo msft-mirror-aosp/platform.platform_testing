@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 The Android Open Source Project
+ * Copyright (C) 2023 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,19 @@
  * limitations under the License.
  */
 
-package android.platform.spectatio.exceptions;
+package com.android.sts.common.util;
 
-/** Indicates that an expected ui did not show up on the device under test. */
-public final class MissingUiElementException extends RuntimeException {
-    public MissingUiElementException(String msg) {
-        super(msg);
+import com.android.tradefed.testtype.DeviceJUnit4ClassRunner;
+import com.android.tradefed.testtype.junit4.BaseHostJUnit4Test;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+@RunWith(DeviceJUnit4ClassRunner.class)
+public class KernelVersionHostTest extends BaseHostJUnit4Test {
+
+    @Test
+    public final void testGetKernelVersion() throws Exception {
+        KernelVersionHost.getKernelVersion(getDevice());
     }
 }
