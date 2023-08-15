@@ -66,6 +66,9 @@ class WmTransitionTraceParser :
         if (entry.finishTimeNs != 0L) {
             return Timestamps.from(elapsedNanos = entry.finishTimeNs)
         }
+        if (entry.startingWindowRemoveTimeNs != 0L) {
+            return Timestamps.from(elapsedNanos = entry.startingWindowRemoveTimeNs)
+        }
 
         error("No valid timestamp available in entry")
     }
@@ -115,6 +118,9 @@ class WmTransitionTraceParser :
                     finishTime =
                         if (entry.finishTimeNs == 0L) null
                         else Timestamps.from(elapsedNanos = entry.finishTimeNs),
+                    startingWindowRemoveTime =
+                        if (entry.startingWindowRemoveTimeNs == 0L) null
+                        else Timestamps.from(elapsedNanos = entry.startingWindowRemoveTimeNs),
                     startTransactionId =
                         if (entry.startTransactionId == 0L) null
                         else entry.startTransactionId.toString(),
@@ -132,7 +138,8 @@ class WmTransitionTraceParser :
                 entry.createTimeNs != 0L ||
                     entry.sendTimeNs != 0L ||
                     entry.abortTimeNs != 0L ||
-                    entry.finishTimeNs != 0L
+                    entry.finishTimeNs != 0L ||
+                    entry.startingWindowRemoveTimeNs != 0L
             ) {
                 "Requires at least one non-null timestamp"
             }

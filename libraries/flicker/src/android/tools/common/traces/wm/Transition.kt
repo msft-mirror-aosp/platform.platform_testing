@@ -37,6 +37,7 @@ class Transition(
                 wmData.sendTime != null ||
                 wmData.abortTime != null ||
                 wmData.finishTime != null ||
+                wmData.startingWindowRemoveTime != null ||
                 shellData.dispatchTime != null ||
                 shellData.mergeRequestTime != null ||
                 shellData.mergeTime != null ||
@@ -50,13 +51,16 @@ class Transition(
         wmData.createTime
             ?: wmData.sendTime ?: shellData.dispatchTime ?: shellData.mergeRequestTime
                 ?: shellData.mergeTime ?: shellData.abortTime ?: wmData.finishTime
-                ?: wmData.abortTime ?: error("Missing non-null timestamp")
+                ?: wmData.abortTime ?: wmData.startingWindowRemoveTime
+                ?: error("Missing non-null timestamp")
 
     @JsName("createTime") val createTime: Timestamp = wmData.createTime ?: Timestamps.min()
     @JsName("sendTime") val sendTime: Timestamp = wmData.sendTime ?: Timestamps.min()
     @JsName("abortTime") val abortTime: Timestamp? = wmData.abortTime
     @JsName("finishTime")
     val finishTime: Timestamp = wmData.finishTime ?: wmData.abortTime ?: Timestamps.max()
+    @JsName("startingWindowRemoveTime")
+    val startingWindowRemoveTime: Timestamp? = wmData.startingWindowRemoveTime
 
     @JsName("dispatchTime") val dispatchTime: Timestamp = shellData.dispatchTime ?: Timestamps.min()
     @JsName("mergeRequestTime") val mergeRequestTime: Timestamp? = shellData.mergeRequestTime
@@ -128,6 +132,7 @@ class Transition(
                     sendTime = wmData.sendTime,
                     abortTime = wmData.abortTime,
                     finishTime = finishTransition.wmData.finishTime,
+                    startingWindowRemoveTime = wmData.startingWindowRemoveTime,
                     startTransactionId = wmData.startTransactionId,
                     finishTransactionId = finishTransition.wmData.finishTransactionId,
                     type = wmData.type,
@@ -158,6 +163,7 @@ class Transition(
             appendLine("mergeTime=${transition.mergeTime},")
             appendLine("shellAbortTime=${transition.shellAbortTime},")
             appendLine("finishTime=${transition.finishTime},")
+            appendLine("startingWindowRemoveTime=${transition.startingWindowRemoveTime},")
             appendLine("startTransactionId=${transition.startTransactionId},")
             appendLine("finishTransactionId=${transition.finishTransactionId},")
             appendLine("changes=[")
