@@ -52,7 +52,7 @@ class UInputStylus(
         {"code":0x00, "info": {       // ABS_X
           "value": 0,
           "minimum": 0,
-          "maximum": ${displayWidth - 1},
+          "maximum": 3199, // Display width * 2 - 1. Hardcoded with values from recording device.
           "fuzz": 0,
           "flat": 0,
           "resolution": 0
@@ -60,7 +60,7 @@ class UInputStylus(
         {"code":0x01, "info": {       // ABS_Y
           "value": 0,
           "minimum": 0,
-          "maximum": ${displayHeight - 1},
+          "maximum": 5119, // Display height * 2 - 1. Hardcoded with values from recording device.
           "fuzz": 0,
           "flat": 0,
           "resolution": 0
@@ -90,12 +90,35 @@ class UInputStylus(
           "resolution": 0
         }}
       ]
-    }"""
+    }
 
-    /** Sends the STYLUS_BUTTON_TAIL event.. */
+    {
+      "id": 1,
+      "command": "delay",
+      "duration": 3000
+    }
+
+    // Sends an event which tells the device that this is a stylus device not a finger.
+    {
+      "id": $inputDeviceId,
+      "command": "inject",
+      "events": [
+        1,    // EV_KEY
+        320,  // BTN_TOOL_PEN
+        1
+      ]
+    }
+    """
+
+    /** Sends the STYLUS_BUTTON_TAIL event. */
     fun sendTailButtonClickEvent(eventInjector: EventInjector) {
         // KEY_JOURNAL is remapped to STYLUS_BUTTON_TAIL.
         eventInjector.sendKeyEvent(inputDeviceId, KEY_JOURNAL)
+    }
+
+    /** Sends the events contained within the specified file. */
+    fun sendEventsFromInputFile(eventInjector: EventInjector, assetsFilePath: String) {
+        eventInjector.sendEventsFromInputFile(inputDeviceId, assetsFilePath)
     }
 
     private companion object {
