@@ -23,7 +23,6 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.platform.helpers.ScrollUtility.ScrollActions;
 import android.platform.helpers.ScrollUtility.ScrollDirection;
-import android.platform.helpers.exceptions.UnknownUiException;
 import android.util.Log;
 
 import androidx.test.uiautomator.By;
@@ -127,7 +126,7 @@ public class SettingsAppInfoHelperImpl extends AbstractStandardAppHelper
                         mScrollableElementSelector,
                         selector,
                         "Scroll on Apps to find View all button");
-        validateUiObject(show_all_apps_menu, "View all button");
+        getSpectatioUiUtil().validateUiObject(show_all_apps_menu, "View all button");
         getSpectatioUiUtil().clickAndWait(show_all_apps_menu);
     }
 
@@ -149,7 +148,7 @@ public class SettingsAppInfoHelperImpl extends AbstractStandardAppHelper
                         permissions_selector,
                         action);
 
-        validateUiObject(permissionsManager, action);
+        getSpectatioUiUtil().validateUiObject(permissionsManager, action);
         getSpectatioUiUtil().clickAndWait(permissionsManager);
     }
 
@@ -198,7 +197,8 @@ public class SettingsAppInfoHelperImpl extends AbstractStandardAppHelper
                         mScrollableElementSelector,
                         enableDisableBtnSelector,
                         String.format("Scroll on App info to find %s", state));
-        validateUiObject(enableDisableBtn, String.format("Enable Disable Button"));
+        getSpectatioUiUtil()
+                .validateUiObject(enableDisableBtn, String.format("Enable Disable Button"));
         getSpectatioUiUtil().clickAndWait(enableDisableBtn.getParent());
         if (state == State.ENABLE) {
             assertTrue(
@@ -214,7 +214,8 @@ public class SettingsAppInfoHelperImpl extends AbstractStandardAppHelper
                     getUiElementFromConfig(
                             AutomotiveConfigConstants.APP_INFO_SETTINGS_DISABLE_APP_BUTTON);
             UiObject2 disableAppBtn = getSpectatioUiUtil().findUiObject(disableAppBtnSelector);
-            validateUiObject(disableAppBtn, String.format("Disable app button"));
+            getSpectatioUiUtil()
+                    .validateUiObject(disableAppBtn, String.format("Disable app button"));
             getSpectatioUiUtil().clickAndWait(disableAppBtn);
             assertTrue(
                     "application is not disabled",
@@ -241,12 +242,12 @@ public class SettingsAppInfoHelperImpl extends AbstractStandardAppHelper
     @Override
     public void forceStop() {
         UiObject2 forceStopButton = getForceStopButton();
-        validateUiObject(forceStopButton, "force stop button");
+        getSpectatioUiUtil().validateUiObject(forceStopButton, "force stop button");
         getSpectatioUiUtil().clickAndWait(forceStopButton);
         BySelector okBtnSelector =
                 getUiElementFromConfig(AutomotiveConfigConstants.APP_INFO_SETTINGS_OK_BUTTON);
         UiObject2 okBtn = getSpectatioUiUtil().findUiObject(okBtnSelector);
-        validateUiObject(okBtn, "Ok button");
+        getSpectatioUiUtil().validateUiObject(okBtn, "Ok button");
         getSpectatioUiUtil().clickAndWait(okBtn);
     }
 
@@ -291,7 +292,7 @@ public class SettingsAppInfoHelperImpl extends AbstractStandardAppHelper
                             getUiElementFromConfig(
                                     AutomotiveConfigConstants.APP_INFO_SETTINGS_ALLOW_BUTTON),
                             "Scroll on App info to find Allow Button");
-            validateUiObject(allow_btn, "Allow button");
+            getSpectatioUiUtil().validateUiObject(allow_btn, "Allow button");
             getSpectatioUiUtil().clickAndWait(allow_btn);
         } else {
             UiObject2 dont_allow_btn =
@@ -355,7 +356,7 @@ public class SettingsAppInfoHelperImpl extends AbstractStandardAppHelper
                         mScrollableElementSelector,
                         applicationSelector,
                         String.format("Scroll on App info to find %s", application));
-        validateUiObject(object, String.format("App %s", application));
+        getSpectatioUiUtil().validateUiObject(object, String.format("App %s", application));
         getSpectatioUiUtil().clickAndWait(object);
         getSpectatioUiUtil().wait5Seconds();
     }
@@ -387,13 +388,6 @@ public class SettingsAppInfoHelperImpl extends AbstractStandardAppHelper
             throw new RuntimeException(String.format("Failed to find package: %s", packageName), e);
         }
         return applicationDisabled;
-    }
-
-    private void validateUiObject(UiObject2 uiObject, String action) {
-        if (uiObject == null) {
-            throw new UnknownUiException(
-                    String.format("Unable to find UI Element for %s.", action));
-        }
     }
 
     /** {@inheritDoc} */
@@ -484,7 +478,8 @@ public class SettingsAppInfoHelperImpl extends AbstractStandardAppHelper
                         AutomotiveConfigConstants.APP_INFO_SETTINGS_PERMISSION_APP_LIST_VIEW);
 
         UiObject2 permissionView = getSpectatioUiUtil().findUiObject(permissionAppListView);
-        validateUiObject(permissionView, "Searching for permission app list view.");
+        getSpectatioUiUtil()
+                .validateUiObject(permissionView, "Searching for permission app list view.");
 
         // Get a complete list of text from UI elements.
         // While scrolling

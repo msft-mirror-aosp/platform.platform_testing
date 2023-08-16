@@ -17,7 +17,6 @@
 package android.platform.helpers;
 
 import android.app.Instrumentation;
-import android.platform.helpers.exceptions.UnknownUiException;
 
 import androidx.test.uiautomator.By;
 import androidx.test.uiautomator.BySelector;
@@ -66,7 +65,9 @@ public class SettingsPrivacyHelperImpl extends AbstractStandardAppHelper
                     getUiElementFromConfig(AutomotiveConfigConstants.TOGGLE_MICROPHONE);
             UiObject2 microPhoneSwitch =
                     getSpectatioUiUtil().findUiObject(microPhoneSwitchSelector);
-            validateUiObject(microPhoneSwitch, AutomotiveConfigConstants.TOGGLE_MICROPHONE);
+            getSpectatioUiUtil()
+                    .validateUiObject(
+                            microPhoneSwitch, AutomotiveConfigConstants.TOGGLE_MICROPHONE);
             getSpectatioUiUtil().clickAndWait(microPhoneSwitch);
         } else {
             throw new RuntimeException("MicroPhone state is already " + (onOff ? "on" : "off"));
@@ -78,7 +79,8 @@ public class SettingsPrivacyHelperImpl extends AbstractStandardAppHelper
         BySelector enableOptionSelector =
                 getUiElementFromConfig(AutomotiveConfigConstants.MICRO_PHONE_SWITCH);
         UiObject2 enableOption = getSpectatioUiUtil().findUiObject(enableOptionSelector);
-        validateUiObject(enableOption, AutomotiveConfigConstants.MICRO_PHONE_SWITCH);
+        getSpectatioUiUtil()
+                .validateUiObject(enableOption, AutomotiveConfigConstants.MICRO_PHONE_SWITCH);
         return enableOption.isChecked();
     }
 
@@ -113,8 +115,10 @@ public class SettingsPrivacyHelperImpl extends AbstractStandardAppHelper
         BySelector microPhoneChipSelector =
                 getUiElementFromConfig(AutomotiveConfigConstants.MICRO_PHONE_MUTED_CHIP_STATUS_BAR);
         UiObject2 microPhoneChip = getSpectatioUiUtil().findUiObject(microPhoneChipSelector);
-        validateUiObject(
-                microPhoneChip, AutomotiveConfigConstants.MICRO_PHONE_MUTED_CHIP_STATUS_BAR);
+        getSpectatioUiUtil()
+                .validateUiObject(
+                        microPhoneChip,
+                        AutomotiveConfigConstants.MICRO_PHONE_MUTED_CHIP_STATUS_BAR);
         getSpectatioUiUtil().clickAndWait(microPhoneChip);
     }
 
@@ -131,7 +135,9 @@ public class SettingsPrivacyHelperImpl extends AbstractStandardAppHelper
         BySelector microPhoneChipSelector =
                 getUiElementFromConfig(AutomotiveConfigConstants.MICRO_PHONE_CHIP_STATUS_BAR);
         UiObject2 microPhoneChip = getSpectatioUiUtil().findUiObject(microPhoneChipSelector);
-        validateUiObject(microPhoneChip, AutomotiveConfigConstants.MICRO_PHONE_CHIP_STATUS_BAR);
+        getSpectatioUiUtil()
+                .validateUiObject(
+                        microPhoneChip, AutomotiveConfigConstants.MICRO_PHONE_CHIP_STATUS_BAR);
         getSpectatioUiUtil().clickAndWait(microPhoneChip);
     }
 
@@ -150,8 +156,9 @@ public class SettingsPrivacyHelperImpl extends AbstractStandardAppHelper
                 getUiElementFromConfig(AutomotiveConfigConstants.MICRO_PHONE_SETTING_LINK);
         UiObject2 microPhoneSettingsLink =
                 getSpectatioUiUtil().findUiObject(microPhoneSettingsLinkSelector);
-        validateUiObject(
-                microPhoneSettingsLink, AutomotiveConfigConstants.MICRO_PHONE_SETTING_LINK);
+        getSpectatioUiUtil()
+                .validateUiObject(
+                        microPhoneSettingsLink, AutomotiveConfigConstants.MICRO_PHONE_SETTING_LINK);
         getSpectatioUiUtil().clickAndWait(microPhoneSettingsLink);
     }
 
@@ -169,7 +176,8 @@ public class SettingsPrivacyHelperImpl extends AbstractStandardAppHelper
         BySelector microPhoneSwitchSelector =
                 getUiElementFromConfig(AutomotiveConfigConstants.MICRO_PHONE_SWITCH);
         UiObject2 microPhoneSwitch = getSpectatioUiUtil().findUiObject(microPhoneSwitchSelector);
-        validateUiObject(microPhoneSwitch, AutomotiveConfigConstants.MICRO_PHONE_SWITCH);
+        getSpectatioUiUtil()
+                .validateUiObject(microPhoneSwitch, AutomotiveConfigConstants.MICRO_PHONE_SWITCH);
         getSpectatioUiUtil().clickAndWait(microPhoneSwitch);
         getSpectatioUiUtil().wait1Second();
     }
@@ -195,8 +203,10 @@ public class SettingsPrivacyHelperImpl extends AbstractStandardAppHelper
                 getUiElementFromConfig(AutomotiveConfigConstants.MANAGE_MICRO_PHONE_PERMISSIONS);
         UiObject2 manageMicroPhoneButton =
                 getSpectatioUiUtil().findUiObject(manageMicroPhoneButtonSelector);
-        validateUiObject(
-                manageMicroPhoneButton, AutomotiveConfigConstants.MANAGE_MICRO_PHONE_PERMISSIONS);
+        getSpectatioUiUtil()
+                .validateUiObject(
+                        manageMicroPhoneButton,
+                        AutomotiveConfigConstants.MANAGE_MICRO_PHONE_PERMISSIONS);
         getSpectatioUiUtil().clickAndWait(manageMicroPhoneButton);
     }
 
@@ -239,7 +249,8 @@ public class SettingsPrivacyHelperImpl extends AbstractStandardAppHelper
     public boolean isRecentAppDisplayedWithStamp(String app) {
         BySelector recentAppSelector = By.text(app);
         UiObject2 recentApp = getSpectatioUiUtil().findUiObject(recentAppSelector);
-        validateUiObject(recentApp, String.format("Recently accessed app - %s", app));
+        getSpectatioUiUtil()
+                .validateUiObject(recentApp, String.format("Recently accessed app - %s", app));
 
         UiObject2 recentAppsTime = recentApp.getParent();
         if (recentAppsTime.getChildren().size() < 2) {
@@ -251,7 +262,7 @@ public class SettingsPrivacyHelperImpl extends AbstractStandardAppHelper
         UiObject2 timestampObject =
                 getSpectatioUiUtil()
                         .findUiObjectInGivenElement(recentAppsTime, recentAppTimeStampSelector);
-        validateUiObject(timestampObject, String.format("timestamp object"));
+        getSpectatioUiUtil().validateUiObject(timestampObject, String.format("timestamp object"));
         String timestamp = timestampObject.getText();
 
         String recentAppTimeStampTxt =
@@ -265,14 +276,8 @@ public class SettingsPrivacyHelperImpl extends AbstractStandardAppHelper
         BySelector viewAllLinkSelector =
                 getUiElementFromConfig(AutomotiveConfigConstants.MICRO_PHONE_VIEW_ALL);
         UiObject2 viewAllLink = getSpectatioUiUtil().findUiObject(viewAllLinkSelector);
-        validateUiObject(viewAllLink, AutomotiveConfigConstants.MICRO_PHONE_VIEW_ALL);
+        getSpectatioUiUtil()
+                .validateUiObject(viewAllLink, AutomotiveConfigConstants.MICRO_PHONE_VIEW_ALL);
         getSpectatioUiUtil().clickAndWait(viewAllLink);
-    }
-
-    private void validateUiObject(UiObject2 uiObject, String action) {
-        if (uiObject == null) {
-            throw new UnknownUiException(
-                    String.format("Unable to find UI Element for %s.", action));
-        }
     }
 }

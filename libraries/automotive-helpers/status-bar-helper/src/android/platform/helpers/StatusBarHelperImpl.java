@@ -16,7 +16,6 @@
 package android.platform.helpers;
 
 import android.app.Instrumentation;
-import android.platform.helpers.exceptions.UnknownUiException;
 
 import androidx.test.uiautomator.BySelector;
 import androidx.test.uiautomator.UiObject2;
@@ -52,8 +51,9 @@ public class StatusBarHelperImpl extends AbstractStandardAppHelper implements IA
         BySelector bluetoothButtonSelector =
                 getUiElementFromConfig(AutomotiveConfigConstants.STATUS_BAR_BLUETOOTH_BUTTON);
         UiObject2 bluetoothButtonLink = getSpectatioUiUtil().findUiObject(bluetoothButtonSelector);
-        validateUiObject(
-                bluetoothButtonLink, AutomotiveConfigConstants.STATUS_BAR_BLUETOOTH_BUTTON);
+        getSpectatioUiUtil()
+                .validateUiObject(
+                        bluetoothButtonLink, AutomotiveConfigConstants.STATUS_BAR_BLUETOOTH_BUTTON);
         getSpectatioUiUtil().clickAndWait(bluetoothButtonLink);
     }
 
@@ -72,9 +72,10 @@ public class StatusBarHelperImpl extends AbstractStandardAppHelper implements IA
                 getUiElementFromConfig(AutomotiveConfigConstants.STATUS_BAR_BLUETOOTH_TOGGLE_ON);
         UiObject2 bluetoothButtonSwitchLink =
                 getSpectatioUiUtil().findUiObject(bluetoothButtonSwitchSelector);
-        validateUiObject(
-                bluetoothButtonSwitchLink,
-                AutomotiveConfigConstants.STATUS_BAR_BLUETOOTH_TOGGLE_ON);
+        getSpectatioUiUtil()
+                .validateUiObject(
+                        bluetoothButtonSwitchLink,
+                        AutomotiveConfigConstants.STATUS_BAR_BLUETOOTH_TOGGLE_ON);
         getSpectatioUiUtil().clickAndWait(bluetoothButtonSwitchLink);
     }
 
@@ -103,8 +104,10 @@ public class StatusBarHelperImpl extends AbstractStandardAppHelper implements IA
                 getUiElementFromConfig(AutomotiveConfigConstants.STATUS_BAR_BLUETOOTH_SETTINGS);
         UiObject2 bluetoothSettingsLink =
                 getSpectatioUiUtil().findUiObject(openBluetoothSettingsSelector);
-        validateUiObject(
-                bluetoothSettingsLink, AutomotiveConfigConstants.STATUS_BAR_BLUETOOTH_SETTINGS);
+        getSpectatioUiUtil()
+                .validateUiObject(
+                        bluetoothSettingsLink,
+                        AutomotiveConfigConstants.STATUS_BAR_BLUETOOTH_SETTINGS);
         getSpectatioUiUtil().clickAndWait(bluetoothSettingsLink);
         getSpectatioUiUtil().wait5Seconds();
     }
@@ -123,7 +126,9 @@ public class StatusBarHelperImpl extends AbstractStandardAppHelper implements IA
         BySelector enableOptionSelector =
                 getUiElementFromConfig(AutomotiveConfigConstants.STATUS_BAR_BLUETOOTH_TOGGLE_ON);
         UiObject2 enableOption = getSpectatioUiUtil().findUiObject(enableOptionSelector);
-        validateUiObject(enableOption, AutomotiveConfigConstants.STATUS_BAR_BLUETOOTH_TOGGLE_ON);
+        getSpectatioUiUtil()
+                .validateUiObject(
+                        enableOption, AutomotiveConfigConstants.STATUS_BAR_BLUETOOTH_TOGGLE_ON);
         return enableOption.isChecked();
     }
 
@@ -136,8 +141,9 @@ public class StatusBarHelperImpl extends AbstractStandardAppHelper implements IA
                     getUiElementFromConfig(
                             AutomotiveConfigConstants.STATUS_BAR_BLUETOOTH_TOGGLE_ON);
             UiObject2 enableOption = getSpectatioUiUtil().findUiObject(enableOptionSelector);
-            validateUiObject(
-                    enableOption, AutomotiveConfigConstants.STATUS_BAR_BLUETOOTH_TOGGLE_ON);
+            getSpectatioUiUtil()
+                    .validateUiObject(
+                            enableOption, AutomotiveConfigConstants.STATUS_BAR_BLUETOOTH_TOGGLE_ON);
             getSpectatioUiUtil().clickAndWait(enableOption);
         }
     }
@@ -148,7 +154,8 @@ public class StatusBarHelperImpl extends AbstractStandardAppHelper implements IA
         BySelector bluetoothButtonSelector =
                 getUiElementFromConfig(AutomotiveConfigConstants.BLUETOOTH_BUTTON);
         UiObject2 bluetoothButton = getSpectatioUiUtil().findUiObject(bluetoothButtonSelector);
-        validateUiObject(bluetoothButton, AutomotiveConfigConstants.BLUETOOTH_BUTTON);
+        getSpectatioUiUtil()
+                .validateUiObject(bluetoothButton, AutomotiveConfigConstants.BLUETOOTH_BUTTON);
         getSpectatioUiUtil().clickAndWait(bluetoothButton);
     }
 
@@ -158,7 +165,8 @@ public class StatusBarHelperImpl extends AbstractStandardAppHelper implements IA
         BySelector networkPaletteSelector =
                 getUiElementFromConfig(AutomotiveConfigConstants.NETWORK_PALETTE);
         UiObject2 networkPalette = getSpectatioUiUtil().findUiObject(networkPaletteSelector);
-        validateUiObject(networkPalette, AutomotiveConfigConstants.NETWORK_PALETTE);
+        getSpectatioUiUtil()
+                .validateUiObject(networkPalette, AutomotiveConfigConstants.NETWORK_PALETTE);
         getSpectatioUiUtil().clickAndWait(networkPalette);
         getSpectatioUiUtil().wait5Seconds();
     }
@@ -172,9 +180,10 @@ public class StatusBarHelperImpl extends AbstractStandardAppHelper implements IA
                         AutomotiveConfigConstants.BLUETOOTH_CONNECTED_DISCONNECTED_TEXT);
         UiObject2 btconnectedDisconnectedText =
                 getSpectatioUiUtil().findUiObject(btconnectedDisconnectedTextSelector);
-        validateUiObject(
-                btconnectedDisconnectedText,
-                AutomotiveConfigConstants.BLUETOOTH_CONNECTED_DISCONNECTED_TEXT);
+        getSpectatioUiUtil()
+                .validateUiObject(
+                        btconnectedDisconnectedText,
+                        AutomotiveConfigConstants.BLUETOOTH_CONNECTED_DISCONNECTED_TEXT);
         if (getSpectatioUiUtil()
                 .getTextForUiElement(btconnectedDisconnectedText)
                 .equals("Connected")) {
@@ -231,7 +240,7 @@ public class StatusBarHelperImpl extends AbstractStandardAppHelper implements IA
                                 object,
                                 getUiElementFromConfig(
                                         AutomotiveConfigConstants.NETWORK_PALETTE_SUMMARY));
-        validateUiObject(summary, String.format("to get the hotspot name"));
+        getSpectatioUiUtil().validateUiObject(summary, String.format("to get the hotspot name"));
         return (summary.getText() != null && !summary.getText().equalsIgnoreCase("off"));
     }
 
@@ -256,7 +265,7 @@ public class StatusBarHelperImpl extends AbstractStandardAppHelper implements IA
                                 object,
                                 getUiElementFromConfig(
                                         AutomotiveConfigConstants.NETWORK_PALETTE_SUMMARY));
-        validateUiObject(summary, String.format("to get the Wi-Fi name"));
+        getSpectatioUiUtil().validateUiObject(summary, String.format("to get the Wi-Fi name"));
         return (summary.getText() != null
                 && !summary.getText().equalsIgnoreCase("not connected")
                 && !summary.getText().equalsIgnoreCase("wi‑fi disabled"));
@@ -265,12 +274,12 @@ public class StatusBarHelperImpl extends AbstractStandardAppHelper implements IA
     private UiObject2 getSwitchObject(String target) {
         BySelector targetSelector = getUiElementFromConfig(target);
         UiObject2 targetObject = getSpectatioUiUtil().findUiObject(targetSelector).getParent();
-        validateUiObject(targetObject, target);
+        getSpectatioUiUtil().validateUiObject(targetObject, target);
         UiObject2 switchWidgetObject =
                 targetObject.findObject(
                         getUiElementFromConfig(
                                 AutomotiveConfigConstants.NETWORK_PALETTE_SWITCH_WIDGET));
-        validateUiObject(switchWidgetObject, target);
+        getSpectatioUiUtil().validateUiObject(switchWidgetObject, target);
         return switchWidgetObject;
     }
 
@@ -281,7 +290,9 @@ public class StatusBarHelperImpl extends AbstractStandardAppHelper implements IA
                 getUiElementFromConfig(AutomotiveConfigConstants.BLUETOOTH_BUTTON);
         UiObject2 disabledBluetoothProfile =
                 getSpectatioUiUtil().findUiObject(disabledBluetoothProfileSelector);
-        validateUiObject(disabledBluetoothProfile, AutomotiveConfigConstants.BLUETOOTH_BUTTON);
+        getSpectatioUiUtil()
+                .validateUiObject(
+                        disabledBluetoothProfile, AutomotiveConfigConstants.BLUETOOTH_BUTTON);
         return disabledBluetoothProfile.isChecked();
     }
 
@@ -292,7 +303,9 @@ public class StatusBarHelperImpl extends AbstractStandardAppHelper implements IA
                 getUiElementFromConfig(AutomotiveConfigConstants.DISABLED_PHONE_PROFILE);
         UiObject2 disabledPhoneProfile =
                 getSpectatioUiUtil().findUiObject(disabledPhoneProfileNameSelector);
-        validateUiObject(disabledPhoneProfile, AutomotiveConfigConstants.DISABLED_PHONE_PROFILE);
+        getSpectatioUiUtil()
+                .validateUiObject(
+                        disabledPhoneProfile, AutomotiveConfigConstants.DISABLED_PHONE_PROFILE);
         return disabledPhoneProfile.isChecked();
     }
 
@@ -303,7 +316,9 @@ public class StatusBarHelperImpl extends AbstractStandardAppHelper implements IA
                 getUiElementFromConfig(AutomotiveConfigConstants.DISABLED_MEDIA_PROFILE);
         UiObject2 disabledMediaProfile =
                 getSpectatioUiUtil().findUiObject(disabledMediaProfileNameSelector);
-        validateUiObject(disabledMediaProfile, AutomotiveConfigConstants.DISABLED_MEDIA_PROFILE);
+        getSpectatioUiUtil()
+                .validateUiObject(
+                        disabledMediaProfile, AutomotiveConfigConstants.DISABLED_MEDIA_PROFILE);
         return disabledMediaProfile.isChecked();
     }
 
@@ -314,7 +329,7 @@ public class StatusBarHelperImpl extends AbstractStandardAppHelper implements IA
                 getSpectatioUiUtil()
                         .findUiObject(
                                 getUiElementFromConfig(AutomotiveConfigConstants.FORGET_WIFI));
-        validateUiObject(forgetObject, AutomotiveConfigConstants.FORGET_WIFI);
+        getSpectatioUiUtil().validateUiObject(forgetObject, AutomotiveConfigConstants.FORGET_WIFI);
         getSpectatioUiUtil().clickAndWait(forgetObject);
     }
 
@@ -325,10 +340,4 @@ public class StatusBarHelperImpl extends AbstractStandardAppHelper implements IA
         getSpectatioUiUtil().waitForIdle();
     }
 
-    private void validateUiObject(UiObject2 uiObject, String action) {
-        if (uiObject == null) {
-            throw new UnknownUiException(
-                    String.format("Unable to find UI Element for %s.", action));
-        }
-    }
 }

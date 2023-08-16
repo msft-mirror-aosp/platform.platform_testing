@@ -17,7 +17,6 @@
 package android.platform.helpers;
 
 import android.app.Instrumentation;
-import android.platform.helpers.exceptions.UnknownUiException;
 
 import androidx.test.uiautomator.BySelector;
 import androidx.test.uiautomator.UiObject2;
@@ -53,7 +52,8 @@ public class SettingsLocationHelperImpl extends AbstractStandardAppHelper
         BySelector locationAccessSelector =
                 getUiElementFromConfig(AutomotiveConfigConstants.LOCATION_ACCESS);
         UiObject2 locationAccess = getSpectatioUiUtil().findUiObject(locationAccessSelector);
-        validateUiObject(locationAccess, AutomotiveConfigConstants.LOCATION_ACCESS);
+        getSpectatioUiUtil()
+                .validateUiObject(locationAccess, AutomotiveConfigConstants.LOCATION_ACCESS);
         getSpectatioUiUtil().clickAndWait(locationAccess);
     }
 
@@ -73,7 +73,8 @@ public class SettingsLocationHelperImpl extends AbstractStandardAppHelper
             BySelector locationSwitchSelector =
                     getUiElementFromConfig(AutomotiveConfigConstants.TOGGLE_LOCATION);
             UiObject2 locationSwitch = getSpectatioUiUtil().findUiObject(locationSwitchSelector);
-            validateUiObject(locationSwitch, AutomotiveConfigConstants.TOGGLE_LOCATION);
+            getSpectatioUiUtil()
+                    .validateUiObject(locationSwitch, AutomotiveConfigConstants.TOGGLE_LOCATION);
             getSpectatioUiUtil().clickAndWait(locationSwitch);
             getSpectatioUiUtil().waitNSeconds(1000);
         } else {
@@ -87,7 +88,8 @@ public class SettingsLocationHelperImpl extends AbstractStandardAppHelper
         BySelector enableOptionSelector =
                 getUiElementFromConfig(AutomotiveConfigConstants.LOCATION_SWITCH);
         UiObject2 enableOption = getSpectatioUiUtil().findUiObject(enableOptionSelector);
-        validateUiObject(enableOption, AutomotiveConfigConstants.LOCATION_SWITCH);
+        getSpectatioUiUtil()
+                .validateUiObject(enableOption, AutomotiveConfigConstants.LOCATION_SWITCH);
         return enableOption.isChecked();
     }
 
@@ -99,10 +101,4 @@ public class SettingsLocationHelperImpl extends AbstractStandardAppHelper
         return (getSpectatioUiUtil().hasUiElement(mapsWidgetSelector));
     }
 
-    private void validateUiObject(UiObject2 uiObject, String action) {
-        if (uiObject == null) {
-            throw new UnknownUiException(
-                    String.format("Unable to find UI Element for %s.", action));
-        }
-    }
 }

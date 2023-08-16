@@ -156,7 +156,7 @@ open class ViewScreenshotTestRule(
 
     private fun Dialog.toBitmap(): Bitmap {
         val window = window
-        return if (isRobolectric) {
+        if (isRobolectric) {
             return window.decorView.captureToBitmap(window).get(10, TimeUnit.SECONDS)
                 ?: error("timeout while trying to capture view to bitmap for window")
         } else {

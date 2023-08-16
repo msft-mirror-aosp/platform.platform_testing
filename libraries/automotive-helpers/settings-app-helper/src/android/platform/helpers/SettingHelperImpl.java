@@ -24,7 +24,6 @@ import android.net.wifi.WifiManager;
 import android.os.UserHandle;
 import android.platform.helpers.ScrollUtility.ScrollActions;
 import android.platform.helpers.ScrollUtility.ScrollDirection;
-import android.platform.helpers.exceptions.UnknownUiException;
 import android.util.Log;
 
 import androidx.test.InstrumentationRegistry;
@@ -141,7 +140,8 @@ public class SettingHelperImpl extends AbstractStandardAppHelper implements IAut
             BySelector enableOptionSelector =
                     getUiElementFromConfig(AutomotiveConfigConstants.TOGGLE_WIFI);
             UiObject2 enableOption = getSpectatioUiUtil().findUiObject(enableOptionSelector);
-            validateUiObject(enableOption, AutomotiveConfigConstants.TOGGLE_WIFI);
+            getSpectatioUiUtil()
+                    .validateUiObject(enableOption, AutomotiveConfigConstants.TOGGLE_WIFI);
             getSpectatioUiUtil().clickAndWait(enableOption);
         } else {
             throw new RuntimeException("Wi-Fi enabled state is already " + (onOff ? "on" : "off"));
@@ -163,7 +163,8 @@ public class SettingHelperImpl extends AbstractStandardAppHelper implements IAut
             BySelector enableOptionSelector =
                     getUiElementFromConfig(AutomotiveConfigConstants.TOGGLE_HOTSPOT);
             UiObject2 enableOption = getSpectatioUiUtil().findUiObject(enableOptionSelector);
-            validateUiObject(enableOption, AutomotiveConfigConstants.TOGGLE_HOTSPOT);
+            getSpectatioUiUtil()
+                    .validateUiObject(enableOption, AutomotiveConfigConstants.TOGGLE_HOTSPOT);
             getSpectatioUiUtil().clickAndWait(enableOption);
         } else {
             throw new RuntimeException(
@@ -177,7 +178,8 @@ public class SettingHelperImpl extends AbstractStandardAppHelper implements IAut
         BySelector enableOptionSelector =
                 getUiElementFromConfig(AutomotiveConfigConstants.TOGGLE_HOTSPOT);
         UiObject2 enableOption = getSpectatioUiUtil().findUiObject(enableOptionSelector);
-        validateUiObject(enableOption, AutomotiveConfigConstants.TOGGLE_HOTSPOT);
+        getSpectatioUiUtil()
+                .validateUiObject(enableOption, AutomotiveConfigConstants.TOGGLE_HOTSPOT);
         getSpectatioUiUtil().clickAndWait(enableOption);
     }
 
@@ -187,7 +189,8 @@ public class SettingHelperImpl extends AbstractStandardAppHelper implements IAut
         BySelector enableOptionSelector =
                 getUiElementFromConfig(AutomotiveConfigConstants.TOGGLE_HOTSPOT);
         UiObject2 enableOption = getSpectatioUiUtil().findUiObject(enableOptionSelector);
-        validateUiObject(enableOption, AutomotiveConfigConstants.TOGGLE_HOTSPOT);
+        getSpectatioUiUtil()
+                .validateUiObject(enableOption, AutomotiveConfigConstants.TOGGLE_HOTSPOT);
         return enableOption.isChecked();
     }
 
@@ -199,7 +202,8 @@ public class SettingHelperImpl extends AbstractStandardAppHelper implements IAut
             BySelector enableOptionSelector =
                     getUiElementFromConfig(AutomotiveConfigConstants.TOGGLE_BLUETOOTH);
             UiObject2 enableOption = getSpectatioUiUtil().findUiObject(enableOptionSelector);
-            validateUiObject(enableOption, AutomotiveConfigConstants.TOGGLE_BLUETOOTH);
+            getSpectatioUiUtil()
+                    .validateUiObject(enableOption, AutomotiveConfigConstants.TOGGLE_BLUETOOTH);
             getSpectatioUiUtil().clickAndWait(enableOption);
         } else {
             throw new RuntimeException(
@@ -225,13 +229,13 @@ public class SettingHelperImpl extends AbstractStandardAppHelper implements IAut
     public void searchAndSelect(String item, int selectedIndex) {
         BySelector searchButtonSelector = getUiElementFromConfig(AutomotiveConfigConstants.SEARCH);
         UiObject2 searchButton = getSpectatioUiUtil().findUiObject(searchButtonSelector);
-        validateUiObject(searchButton, AutomotiveConfigConstants.SEARCH);
+        getSpectatioUiUtil().validateUiObject(searchButton, AutomotiveConfigConstants.SEARCH);
         getSpectatioUiUtil().clickAndWait(searchButton);
         getSpectatioUiUtil().waitForIdle();
 
         BySelector searchBoxSelector = getUiElementFromConfig(AutomotiveConfigConstants.SEARCH_BOX);
         UiObject2 searchBox = getSpectatioUiUtil().findUiObject(searchBoxSelector);
-        validateUiObject(searchBox, AutomotiveConfigConstants.SEARCH_BOX);
+        getSpectatioUiUtil().validateUiObject(searchBox, AutomotiveConfigConstants.SEARCH_BOX);
         searchBox.setText(item);
         getSpectatioUiUtil().wait5Seconds();
 
@@ -242,8 +246,8 @@ public class SettingHelperImpl extends AbstractStandardAppHelper implements IAut
                 getUiElementFromConfig(AutomotiveConfigConstants.SEARCH_RESULTS);
         UiObject2 searchResults = getSpectatioUiUtil().findUiObject(searchResultsSelector);
 
-
-        validateUiObject(searchResults, AutomotiveConfigConstants.SEARCH_RESULTS);
+        getSpectatioUiUtil()
+                .validateUiObject(searchResults, AutomotiveConfigConstants.SEARCH_RESULTS);
         int numberOfResults = searchResults.getChildren().get(0).getChildren().size();
         if (numberOfResults == 0) {
             throw new RuntimeException("No results found");
@@ -255,8 +259,10 @@ public class SettingHelperImpl extends AbstractStandardAppHelper implements IAut
 
         BySelector objectSelector = By.textContains(item);
         UiObject2 object = getSpectatioUiUtil().findUiObject(objectSelector);
-        validateUiObject(object, AutomotiveConfigConstants.SEARCH_RESULTS);
-        validateUiObject(object, String.format("Opened page does not contain searched item"));
+        getSpectatioUiUtil().validateUiObject(object, AutomotiveConfigConstants.SEARCH_RESULTS);
+        getSpectatioUiUtil()
+                .validateUiObject(
+                        object, String.format("Opened page does not contain searched item"));
     }
 
     /** {@inheritDoc} */
@@ -339,8 +345,10 @@ public class SettingHelperImpl extends AbstractStandardAppHelper implements IAut
                             selector,
                             String.format("Scroll on setting to find subssetting %s", selector));
 
-            validateUiObject(
-                    object, String.format("Unable to find UI Element %s.", selector.toString()));
+            getSpectatioUiUtil()
+                    .validateUiObject(
+                            object,
+                            String.format("Unable to find UI Element %s.", selector.toString()));
             getSpectatioUiUtil().clickAndWait(object);
             getSpectatioUiUtil().waitForIdle();
         }
@@ -365,20 +373,6 @@ public class SettingHelperImpl extends AbstractStandardAppHelper implements IAut
     @Override
     public boolean checkMenuExists(String setting) {
         return getSpectatioUiUtil().hasUiElement(setting);
-    }
-
-    private void validateUiObject(UiObject2 uiObject, String action) {
-        if (uiObject == null) {
-            throw new UnknownUiException(
-                    String.format("Unable to find UI Element for %s.", action));
-        }
-    }
-
-    private void validateUiObject(List<UiObject2> uiObjects, String action) {
-        if (uiObjects == null) {
-            throw new UnknownUiException(
-                    String.format("Unable to find UI Element for %s.", action));
-        }
     }
 
     /**
@@ -425,7 +419,8 @@ public class SettingHelperImpl extends AbstractStandardAppHelper implements IAut
     @Override
     public boolean isRecentAppDisplayedInLocationSettings(String app) {
         UiObject2 recentApp = getSpectatioUiUtil().findUiObject("Maps");
-        validateUiObject(recentApp, String.format("Recently accessed app - %s", app));
+        getSpectatioUiUtil()
+                .validateUiObject(recentApp, String.format("Recently accessed app - %s", app));
         UiObject2 recentAppsTime = recentApp.getParent();
         if (recentAppsTime.getChildren().size() < 2) {
             throw new RuntimeException("TimeStamp not displayed for Recently accessed app");
@@ -435,7 +430,7 @@ public class SettingHelperImpl extends AbstractStandardAppHelper implements IAut
         UiObject2 timestampObject =
                 getSpectatioUiUtil()
                         .findUiObjectInGivenElement(recentAppsTime, recentAppTimeStampSelector);
-        validateUiObject(timestampObject, String.format("timestamp object"));
+        getSpectatioUiUtil().validateUiObject(timestampObject, String.format("timestamp object"));
         String timestamp = timestampObject.getText();
         String recentAppTimeStampTxt =
                 getActionFromConfig(AutomotiveConfigConstants.RECENT_APPS_TIMESTAMP_TEXT);
