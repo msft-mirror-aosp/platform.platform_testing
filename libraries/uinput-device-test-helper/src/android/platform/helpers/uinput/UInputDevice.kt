@@ -55,5 +55,6 @@ abstract class UInputDevice {
     /** An interface to inject events for an [UInputDevice]. */
     interface EventInjector {
         fun sendKeyEvent(deviceId: Int, keycode: Int)
+        fun sendEventsFromInputFile(deviceId: Int, inputFile: String)
     }
 }

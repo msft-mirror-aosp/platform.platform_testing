@@ -19,12 +19,17 @@ import android.hardware.input.InputManager
 import android.os.ParcelFileDescriptor
 import android.platform.helpers.uinput.UInputDevice
 import android.platform.uiautomator_helpers.DeviceHelpers
+import android.util.Log
 import android.view.InputDevice
 import androidx.core.content.getSystemService
 import androidx.test.platform.app.InstrumentationRegistry
-import java.util.concurrent.CountDownLatch
-import java.util.concurrent.TimeUnit
+import com.google.common.util.concurrent.MoreExecutors
+import com.google.gson.stream.JsonReader
 import org.junit.runner.Description
+import java.io.InputStreamReader
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 
 /**
  * This rule allows end-to-end tests to add input devices through Uinput more easily. Additionally
@@ -121,6 +126,25 @@ class InputDeviceRule : TestWatcher(), UInputDevice.EventInjector {
         injectEvdevEvents(deviceId, listOf(EV_KEY, keycode, KEY_UP, EV_SYN, SYN_REPORT, 0))
     }
 
+    /** The provided file should contain Uinput events in json format.
+     * The file path should be relative to the assets root.
+     */
+    override fun sendEventsFromInputFile(deviceId: Int, inputFile: String) {
+        InstrumentationRegistry.getInstrumentation()
+                .context
+                .assets
+                .open(inputFile)
+                .use { writeCommand(it.readBytes()) }
+
+        val executor = MoreExecutors.listeningDecorator(Executors.newCachedThreadPool())
+        val future = executor.submit { waitForEmptyUinputEventQueue() }
+        try {
+            future.get(waitForSyncTokenDurationSeconds, TimeUnit.SECONDS)
+        } catch (e: Exception) {
+            error("Did not receive '$EVENT_REPLAY_COMPLETE_SYNC_TOKEN' within timeout")
+        }
+    }
+
     /**
      * Inject array of uinput events for a device. The following is an example of events: [[EV_KEY],
      * [KEY_UP], [KEY_DOWN], [EV_SYN], [SYN_REPORT], 0]. The number of entries in the provided
@@ -137,7 +161,11 @@ class InputDeviceRule : TestWatcher(), UInputDevice.EventInjector {
     }
 
     private fun writeCommand(command: String) {
-        outputStream.write(command.toByteArray())
+        writeCommand(command.toByteArray())
+    }
+
+    private fun writeCommand(command: ByteArray) {
+        outputStream.write(command)
         outputStream.flush()
     }
 
@@ -147,6 +175,40 @@ class InputDeviceRule : TestWatcher(), UInputDevice.EventInjector {
 
         inputManagerDevices[deviceId] = uinputDevice
         deviceAddedMap[uinputDevice]!!.countDown()
+    }
+
+    private fun waitForEmptyUinputEventQueue() {
+        writeCommand(EVENT_REPLAY_COMPLETE_SYNC_TOKEN_EVENT)
+
+        Log.d("InputDeviceRule", "'$EVENT_REPLAY_COMPLETE_SYNC_TOKEN' sync token sent, waiting for it to be processed...")
+        var nextSyncToken: String? = null
+        while (nextSyncToken != EVENT_REPLAY_COMPLETE_SYNC_TOKEN) {
+            nextSyncToken = readSyncTokenFromInputStream()
+        }
+        Log.d("InputDeviceRule", "'$EVENT_REPLAY_COMPLETE_SYNC_TOKEN' sync token processed")
+    }
+
+    /** Returns the syncToken from the inputStream or null if the inputStream contains content other
+     * than a syncToken.
+     */
+    private fun readSyncTokenFromInputStream(): String? {
+        val reader = JsonReader(InputStreamReader(inputStream, Charsets.UTF_8))
+        var reason: String? = null
+        var syncToken: String? = null
+
+        reader.beginObject()
+        while (reader.hasNext()) {
+            when (reader.nextName()) {
+                "reason" -> reason = reader.nextString()
+                "syncToken" -> syncToken = reader.nextString()
+                else -> reader.skipValue()
+            }
+        }
+        reader.endObject()
+
+        if (reason != "sync" || syncToken == null) return null
+
+        return syncToken
     }
 
     @JvmInline value class DeviceId(val deviceId: Int)
@@ -160,5 +222,21 @@ class InputDeviceRule : TestWatcher(), UInputDevice.EventInjector {
         const val SYN_REPORT = 0
         const val KEY_UP = 0
         const val KEY_DOWN = 1
+
+        const val EVENT_REPLAY_COMPLETE_SYNC_TOKEN = "event_replay_complete"
+        val EVENT_REPLAY_COMPLETE_SYNC_TOKEN_EVENT = """
+            {
+                "id": 1,
+                "command": "sync",
+                "syncToken": "$EVENT_REPLAY_COMPLETE_SYNC_TOKEN"
+            }
+
+            {
+              "id": 1,
+              "command": "delay",
+              "duration": 100
+            }
+            """.trimIndent()
+        const val waitForSyncTokenDurationSeconds = 20L
     }
 }
