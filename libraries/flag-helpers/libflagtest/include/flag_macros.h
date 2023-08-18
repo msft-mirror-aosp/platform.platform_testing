@@ -17,11 +17,14 @@
 #pragma once
 
 #include <utility>
+#include <sstream>
+#include <string>
+#include <vector>
 
 #include <flag_checker.h>
 #include <gtest/gtest.h>
 
-#define _FLAG_GTEST_CLASS_NAME(test_fixture, test_name)                    \
+#define _FLAG_GTEST_CLASS_NAME(test_fixture, test_name)                      \
   test_fixture##_##test_name##_FLAG_GTest
 
 #define _FLAG_STRINGFY(...) #__VA_ARGS__
@@ -34,13 +37,29 @@
 // SkipIfFlagRequirementsNotMet to decide whether the test should be
 // skipped.
 
-#define _FLAG_GTEST_CLASS(test_fixture, test_name, parent_class, flags...) \
-  class _FLAG_GTEST_CLASS_NAME(test_fixture, test_name)                    \
-                            : public parent_class {                        \
-    public:                                                                \
-      _FLAG_GTEST_CLASS_NAME(test_fixture, test_name)() {                  \
-        android::test::flag::SkipIfFlagRequirementsNotMet({flags});        \
-      }                                                                    \
+#define _FLAG_GTEST_CLASS(test_fixture, test_name, parent_class, flags...)   \
+  class _FLAG_GTEST_CLASS_NAME(test_fixture, test_name)                      \
+                            : public parent_class {                          \
+    public:                                                                  \
+      void SkipTest(                                                         \
+        std::vector<std::pair<bool, std::string>> unsatisfied_flags) {       \
+        std::ostringstream skip_message;                                     \
+        for (const std::pair<bool, std::string> flag : unsatisfied_flags) {  \
+          skip_message << " flag("                                           \
+              << flag.second << ")="                                         \
+              << (flag.first ? "true":"false");                              \
+        }                                                                    \
+        GTEST_SKIP() << "Skipping test: not meet feature flag conditions:"   \
+          << skip_message.str();                                             \
+      }                                                                      \
+                                                                             \
+      _FLAG_GTEST_CLASS_NAME(test_fixture, test_name)() {                    \
+        std::vector<std::pair<bool, std::string>> unsatisfied_flags =        \
+          android::test::flag::GetFlagsNotMetRequirements({flags});          \
+        if (unsatisfied_flags.size() != 0) {                                 \
+          SkipTest(unsatisfied_flags);                                       \
+        }                                                                    \
+      }                                                                      \
   };
 
 // Defines an aconfig feature flag.
@@ -51,8 +70,8 @@
 // For example: ACONFIG_FLAG(android::cts::test, flag_rw)
 
 #if !TEST_WITH_FLAGS_DONT_DEFINE
-#define ACONFIG_FLAG(package, flag)                                       \
-  std::make_pair<std::function<bool()>, std::string>(                     \
+#define ACONFIG_FLAG(package, flag)                                         \
+  std::make_pair<std::function<bool()>, std::string>(                       \
     _FLAG_NAME(package, flag), _FLAG_STRINGFY(package, flag))
 #endif
 
@@ -65,8 +84,8 @@
 // For example: LEGACY_FLAG(cts, android::cts::test, flag_rw)
 
 #if !TEST_WITH_FLAGS_DONT_DEFINE
-#define LEGACY_FLAG(namespace, package, flag)                             \
-  std::make_pair<std::function<bool()>, std::string>(                     \
+#define LEGACY_FLAG(namespace, package, flag)                               \
+  std::make_pair<std::function<bool()>, std::string>(                       \
     nullptr, _FLAG_STRINGFY(namespace, package, flag))
 #endif
 
@@ -80,8 +99,8 @@
 //   REQUIRES_FLAGS_ENABLED(LEGACY_FLAG(...), ACONFIG_FLAG(...))
 
 #if !TEST_WITH_FLAGS_DONT_DEFINE
-#define REQUIRES_FLAGS_ENABLED(flags...)                                  \
-  std::make_pair<bool, std::vector<                                       \
+#define REQUIRES_FLAGS_ENABLED(flags...)                                    \
+  std::make_pair<bool, std::vector<                                         \
     std::pair<std::function<bool()>, std::string>>>(true, {flags})
 #endif
 
@@ -95,8 +114,8 @@
 //   REQUIRES_FLAGS_DISABLED(LEGACY_FLAG(...), ACONFIG_FLAG(...))
 
 #if !TEST_WITH_FLAGS_DONT_DEFINE
-#define REQUIRES_FLAGS_DISABLED(flags...)                                 \
-  std::make_pair<bool, std::vector<                                       \
+#define REQUIRES_FLAGS_DISABLED(flags...)                                   \
+  std::make_pair<bool, std::vector<                                         \
     std::pair<std::function<bool()>, std::string>>>(false, {flags})
 #endif
 
@@ -117,10 +136,10 @@
 // skipped.
 
 #if !TEST_WITH_FLAGS_DONT_DEFINE
-#define TEST_F_WITH_FLAGS(test_fixture, test_name, flags...)               \
-  _FLAG_GTEST_CLASS(test_fixture, test_name, test_fixture, flags)          \
-  GTEST_TEST_(test_fixture, test_name,                                     \
-              _FLAG_GTEST_CLASS_NAME(test_fixture, test_name),             \
+#define TEST_F_WITH_FLAGS(test_fixture, test_name, flags...)                 \
+  _FLAG_GTEST_CLASS(test_fixture, test_name, test_fixture, flags)            \
+  GTEST_TEST_(test_fixture, test_name,                                       \
+              _FLAG_GTEST_CLASS_NAME(test_fixture, test_name),               \
               ::testing::internal::GetTypeId<test_fixture>())
 #endif
 
@@ -141,9 +160,9 @@
 // skipped.
 
 #if !TEST_WITH_FLAGS_DONT_DEFINE
-#define TEST_WITH_FLAGS(test_fixture, test_name, flags...)                 \
-  _FLAG_GTEST_CLASS(test_fixture, test_name, ::testing::Test, flags)       \
-  GTEST_TEST_(test_fixture, test_name,                                     \
-              _FLAG_GTEST_CLASS_NAME(test_fixture, test_name),             \
+#define TEST_WITH_FLAGS(test_fixture, test_name, flags...)                   \
+  _FLAG_GTEST_CLASS(test_fixture, test_name, ::testing::Test, flags)         \
+  GTEST_TEST_(test_fixture, test_name,                                       \
+              _FLAG_GTEST_CLASS_NAME(test_fixture, test_name),               \
               ::testing::internal::GetTestTypeId())
 #endif

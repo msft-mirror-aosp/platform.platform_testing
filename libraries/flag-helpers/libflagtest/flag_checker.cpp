@@ -17,7 +17,7 @@
 #include <string>
 #include <utility>
 #include <functional>
-#include <sstream>
+#include <vector>
 
 #include <flag_checker.h>
 #include <gtest/gtest.h>
@@ -29,24 +29,19 @@
 
 namespace android::test::flag {
 
-void SkipIfFlagRequirementsNotMet(
+std::vector<std::pair<bool, std::string>> GetFlagsNotMetRequirements(
   const std::vector<std::pair<bool, std::vector<p_flag>>> flag_conditions) {
-  std::ostringstream oss;
+  std::vector<std::pair<bool, std::string>> unsatisfied_flags;
   for (const std::pair<bool, std::vector<p_flag>> flag_condition : flag_conditions) {
     bool expected_condition = flag_condition.first;
     for (const p_flag feature_flag : flag_condition.second) {
       if (!CheckFlagCondition(expected_condition, feature_flag)) {
-        // Record the feature flag if it doesn't meet the expected condition.
-        oss << " flag("
-            << feature_flag.second << ")="
-            << (expected_condition ? "true":"false");
+        // Records the feature flag if it doesn't meet the expected condition.
+        unsatisfied_flags.push_back({expected_condition, feature_flag.second});
       }
     }
   }
-  std::string skip_message = oss.str();
-  if (skip_message != "") {
-    GTEST_SKIP() << "Skipping test: not meet feature flag conditions:" << skip_message;
-  }
+  return unsatisfied_flags;
 }
 
 bool CheckFlagCondition(bool expected_condition, const p_flag feature_flag) {
