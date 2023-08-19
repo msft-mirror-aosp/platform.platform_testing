@@ -40,8 +40,28 @@ fun UiObject2.assertInHorizontalCentre() {
 }
 
 /**
- * Checks if top of the view is on the bottom side by checking top bound is in the middle of the
- * screen or in the bottom half of the screen vertically.
+ * Checks if centre of the view is on the bottom side by checking y centre is in the bottom half of
+ * the screen vertically.
+ */
+fun UiObject2.assertCentreOnBottomSide() {
+    assertWithMessage("${this.resourceName} centre should be on the bottom side")
+        .that(this.stableBounds.centerY() > uiDevice.displayHeight / 2)
+        .isTrue()
+}
+
+/**
+ * Checks if centre of the view is on the top side by checking y centre is in the top half of the
+ * screen vertically.
+ */
+fun UiObject2.assertCentreOnTopSide() {
+    assertWithMessage("${this.resourceName} centre should be on the bottom side")
+        .that(this.stableBounds.centerY() < uiDevice.displayHeight / 2)
+        .isTrue()
+}
+
+/**
+ * Checks if top of the view is on the bottom side by checking top bound is in the bottom half of
+ * the screen vertically.
  */
 fun UiObject2.assertTopOnBottomSide() {
     assertWithMessage("${this.resourceName} should be on the bottom side")
@@ -50,8 +70,8 @@ fun UiObject2.assertTopOnBottomSide() {
 }
 
 /**
- * Checks if top of the view is on the top side by checking top bound is in the middle of the screen
- * or in the top half of the screen vertically.
+ * Checks if top of the view is on the top side by checking top bound is in the top half of the
+ * screen vertically.
  */
 fun UiObject2.assertTopOnTopSide() {
     assertWithMessage("${this.resourceName} should be on the top side")
