@@ -21,6 +21,7 @@ import android.graphics.Rect;
 import android.media.MediaMetadata;
 import android.media.session.PlaybackState;
 import android.platform.test.scenario.tapl_common.Gestures;
+import android.util.Log;
 
 import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.uiautomator.By;
@@ -36,7 +37,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 public class MediaController {
-
+    private static final String TAG = MediaController.class.getSimpleName();
     private static final String PKG = "com.android.systemui";
     private static final String HIDE_BTN_RES = "dismiss";
     private static final BySelector PLAY_BTN_SELECTOR =
@@ -163,13 +164,25 @@ public class MediaController {
      * @return boolean
      */
     public boolean hasMetadata(MediaMetadata meta) {
+        Log.d(
+                TAG,
+                "[Check metadata] hasMetadata: By.header_title="
+                        + meta.getString(MediaMetadata.METADATA_KEY_TITLE)
+                        + "By.header_artist="
+                        + meta.getString(MediaMetadata.METADATA_KEY_ARTIST));
         final BySelector mediaTitleSelector =
             By.res(PKG, "header_title").text(meta.getString(MediaMetadata.METADATA_KEY_TITLE));
         final BySelector mediaArtistSelector =
             By.res(PKG, "header_artist")
                 .text(meta.getString(MediaMetadata.METADATA_KEY_ARTIST));
         mInstrumentation.getUiAutomation().clearCache();
-        return mUiObject.hasObject(mediaTitleSelector) && mUiObject.hasObject(mediaArtistSelector);
+        final boolean titleCheckResult = mUiObject.hasObject(mediaTitleSelector);
+        final boolean artistCheckResult = mUiObject.hasObject(mediaArtistSelector);
+
+        Log.d(
+                TAG,
+                "[Check metadata] title: " + titleCheckResult + ". artist: " + artistCheckResult);
+        return titleCheckResult && artistCheckResult;
     }
 
     public boolean swipe(Direction direction) {
