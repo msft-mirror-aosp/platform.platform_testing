@@ -16,7 +16,6 @@
 
 package android.tools.device.flicker.assertions
 
-import android.tools.assertExceptionMessage
 import android.tools.common.flicker.assertions.AssertionData
 import android.tools.common.flicker.assertions.Consts
 import android.tools.common.flicker.assertions.SubjectsParser
@@ -24,9 +23,10 @@ import android.tools.common.io.RunStatus
 import android.tools.device.traces.deleteIfExists
 import android.tools.device.traces.io.IResultData
 import android.tools.device.traces.monitors.events.EventLogMonitor
-import android.tools.newTestResultWriter
-import android.tools.outputFileName
-import android.tools.rules.CleanFlickerEnvironmentRule
+import android.tools.utils.CleanFlickerEnvironmentRule
+import android.tools.utils.assertExceptionMessage
+import android.tools.utils.newTestResultWriter
+import android.tools.utils.outputFileName
 import com.google.common.truth.Truth
 import org.junit.Before
 import org.junit.ClassRule

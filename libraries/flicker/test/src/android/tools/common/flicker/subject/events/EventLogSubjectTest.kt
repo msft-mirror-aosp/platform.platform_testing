@@ -20,9 +20,9 @@ import android.tools.common.Timestamps
 import android.tools.common.flicker.assertions.SubjectsParser
 import android.tools.common.traces.events.EventLog
 import android.tools.common.traces.events.FocusEvent
-import android.tools.device.traces.io.InMemoryArtifact
-import android.tools.device.traces.io.ParsedTracesReader
-import android.tools.rules.CleanFlickerEnvironmentRule
+import android.tools.utils.CleanFlickerEnvironmentRule
+import android.tools.utils.InMemoryArtifact
+import android.tools.utils.ParsedTracesReader
 import org.junit.ClassRule
 import org.junit.Test
 

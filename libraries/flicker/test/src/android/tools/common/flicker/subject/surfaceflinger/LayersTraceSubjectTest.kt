@@ -16,10 +16,7 @@
 
 package android.tools.common.flicker.subject.surfaceflinger
 
-import android.tools.TestComponents
-import android.tools.assertFail
-import android.tools.assertThatErrorContainsDebugInfo
-import android.tools.assertThrows
+import android.tools.CleanFlickerEnvironmentRuleWithDataStore
 import android.tools.common.Cache
 import android.tools.common.ScenarioBuilder
 import android.tools.common.Timestamps
@@ -31,8 +28,11 @@ import android.tools.common.traces.component.ComponentNameMatcher
 import android.tools.device.flicker.datastore.DataStore
 import android.tools.device.flicker.legacy.LegacyFlickerTest
 import android.tools.device.traces.io.IResultData
-import android.tools.getLayerTraceReaderFromAsset
-import android.tools.rules.CleanFlickerEnvironmentRule
+import android.tools.utils.TestComponents
+import android.tools.utils.assertFail
+import android.tools.utils.assertThatErrorContainsDebugInfo
+import android.tools.utils.assertThrows
+import android.tools.utils.getLayerTraceReaderFromAsset
 import androidx.test.filters.FlakyTest
 import com.google.common.truth.Truth
 import org.junit.Before
@@ -392,6 +392,6 @@ class LayersTraceSubjectTest {
         private val DISPLAY_REGION = Region.from(0, 0, 1440, 2880)
         private val DISPLAY_REGION_ROTATED = Region.from(0, 0, 2160, 1080)
 
-        @ClassRule @JvmField val ENV_CLEANUP = CleanFlickerEnvironmentRule()
+        @ClassRule @JvmField val ENV_CLEANUP = CleanFlickerEnvironmentRuleWithDataStore()
     }
 }

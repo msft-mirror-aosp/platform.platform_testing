@@ -16,6 +16,7 @@
 
 package android.tools.common.flicker
 
+import android.tools.CleanFlickerEnvironmentRuleWithDataStore
 import android.tools.common.Timestamps
 import android.tools.common.flicker.config.FlickerConfig
 import android.tools.common.flicker.config.FlickerConfigEntry
@@ -23,7 +24,6 @@ import android.tools.common.flicker.config.ScenarioId
 import android.tools.common.flicker.extractors.ScenarioExtractor
 import android.tools.common.flicker.extractors.TraceSlice
 import android.tools.getTraceReaderFromScenario
-import android.tools.rules.CleanFlickerEnvironmentRule
 import org.junit.ClassRule
 import org.junit.FixMethodOrder
 import org.junit.Test
@@ -83,6 +83,6 @@ class FlickerServiceTest {
     }
 
     companion object {
-        @ClassRule @JvmField val ENV_CLEANUP = CleanFlickerEnvironmentRule()
+        @ClassRule @JvmField val ENV_CLEANUP = CleanFlickerEnvironmentRuleWithDataStore()
     }
 }

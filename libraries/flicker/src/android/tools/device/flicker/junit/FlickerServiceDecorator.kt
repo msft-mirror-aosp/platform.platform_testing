@@ -19,7 +19,6 @@ package android.tools.device.flicker.junit
 import android.app.Instrumentation
 import android.device.collectors.util.SendToInstrumentation
 import android.os.Bundle
-import android.platform.test.rule.ArtifactSaver
 import android.tools.common.Scenario
 import android.tools.common.ScenarioBuilder
 import android.tools.common.flicker.FlickerService
@@ -140,10 +139,7 @@ class FlickerServiceDecorator(
                     (method as InjectedTestCase).execute(description)
                 } else {
                     if (innerMethodsResults.containsKey(method)) {
-                        innerMethodsResults[method]?.let {
-                            ArtifactSaver.onError(description, it)
-                            throw it
-                        }
+                        innerMethodsResults[method]?.let { throw it }
                     } else {
                         inner?.getMethodInvoker(method, test)?.evaluate()
                     }

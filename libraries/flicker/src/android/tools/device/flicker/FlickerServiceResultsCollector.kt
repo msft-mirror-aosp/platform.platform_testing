@@ -56,8 +56,10 @@ class FlickerServiceResultsCollector(
         get() = _executionErrors
 
     @VisibleForTesting val assertionResults = mutableListOf<AssertionResult>()
+
     @VisibleForTesting
     val assertionResultsByTest = mutableMapOf<Description, Collection<AssertionResult>>()
+
     @VisibleForTesting
     val detectedScenariosByTest = mutableMapOf<Description, Collection<ScenarioId>>()
 
@@ -121,6 +123,10 @@ class FlickerServiceResultsCollector(
                 stopTracingAndCollectFlickerMetrics(testData, description)
             }
         }
+
+        if (collectMetricsPerTest) {
+            reportFlickerServiceStatus(testData)
+        }
     }
 
     override fun onTestRunEnd(runData: DataRecord, result: Result) {
@@ -129,6 +135,10 @@ class FlickerServiceResultsCollector(
             if (!collectMetricsPerTest) {
                 stopTracingAndCollectFlickerMetrics(runData)
             }
+        }
+
+        if (!collectMetricsPerTest) {
+            reportFlickerServiceStatus(runData)
         }
     }
 
@@ -228,6 +238,11 @@ class FlickerServiceResultsCollector(
         val scenariosForTest = detectedScenariosByTest[description]
         requireNotNull(scenariosForTest) { "No detected scenarios set for test $description" }
         return scenariosForTest
+    }
+
+    private fun reportFlickerServiceStatus(record: DataRecord) {
+        val status = if (executionErrors.isEmpty()) "OK" else "EXECUTION_FAILED"
+        record.addStringMetric("${FAAS_METRICS_PREFIX}_STATUS", status)
     }
 
     companion object {

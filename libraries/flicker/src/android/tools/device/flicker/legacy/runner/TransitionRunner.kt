@@ -25,6 +25,7 @@ import android.tools.common.Scenario
 import android.tools.device.apphelpers.MessagingAppHelper
 import android.tools.device.flicker.datastore.CachedResultWriter
 import android.tools.device.flicker.legacy.FlickerTestData
+import android.tools.device.flicker.rules.ArtifactSaverRule
 import android.tools.device.flicker.rules.ChangeDisplayOrientationRule
 import android.tools.device.flicker.rules.LaunchAppRule
 import android.tools.device.flicker.rules.RemoveAllTasksButHomeRule
@@ -49,7 +50,7 @@ class TransitionRunner(
 
             val ruleChain = buildTestRuleChain(flicker)
             try {
-                ruleChain.apply(/* statement */ null, description).evaluate()
+                ruleChain.apply(null, description).evaluate()
                 resultWriter.setRunComplete()
             } catch (e: Throwable) {
                 resultWriter.setRunFailed(e)
@@ -72,13 +73,9 @@ class TransitionRunner(
      * different problems during testing (e.g. IME now shown on app launch)
      */
     private fun buildTestRuleChain(flicker: FlickerTestData): RuleChain {
-        return RuleChain.outerRule(UnlockScreenRule())
-            .around(
-                NavigationModeRule(
-                    scenario.navBarMode.value,
-                    /* changeNavigationModeAfterTest */ false
-                )
-            )
+        return RuleChain.outerRule(ArtifactSaverRule())
+            .around(UnlockScreenRule())
+            .around(NavigationModeRule(scenario.navBarMode.value, false))
             .around(
                 LaunchAppRule(MessagingAppHelper(instrumentation), clearCacheAfterParsing = false)
             )

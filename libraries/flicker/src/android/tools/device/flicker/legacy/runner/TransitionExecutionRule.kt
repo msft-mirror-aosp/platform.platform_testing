@@ -17,7 +17,6 @@
 package android.tools.device.flicker.legacy.runner
 
 import android.app.Instrumentation
-import android.platform.test.rule.ArtifactSaver
 import android.tools.common.Logger
 import android.tools.common.Scenario
 import android.tools.common.io.TraceType
@@ -63,9 +62,6 @@ class TransitionExecutionRule(
                         doRunBeforeTransition()
                         commands.forEach { it.invoke(flicker) }
                         base?.evaluate()
-                    } catch (e: Throwable) {
-                        ArtifactSaver.onError(Utils.expandDescription(description, "transition"), e)
-                        throw e
                     } finally {
                         doRunAfterTransition()
                     }

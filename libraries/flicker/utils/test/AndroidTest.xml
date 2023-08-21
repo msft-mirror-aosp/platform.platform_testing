@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+ * Copyright 2018 Google Inc. All Rights Reserved.
+ -->
+<configuration description="Config for WindowManager Flicker Tests">
+    <option name="test-tag" value="FlickerLibUtilsTest"/>
+    <target_preparer class="com.android.tradefed.targetprep.suite.SuiteApkInstaller">
+        <option name="cleanup-apks" value="true"/>
+        <option name="test-file-name" value="FlickerLibUtilsTest.apk"/>
+    </target_preparer>
+    <target_preparer class="com.android.tradefed.targetprep.DeviceSetup">
+        <option name="set-test-harness" value="true" />
+        <option name="screen-always-on" value="on" />
+    </target_preparer>
+    <test class="com.android.tradefed.testtype.AndroidJUnitTest">
+        <option name="exclude-annotation" value="androidx.test.filters.FlakyTest"/>
+        <option name="package" value="android.tools"/>
+        <option name="hidden-api-checks" value="false"/>
+    </test>
+</configuration>

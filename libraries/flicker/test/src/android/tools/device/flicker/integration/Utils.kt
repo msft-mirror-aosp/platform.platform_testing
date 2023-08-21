@@ -18,12 +18,12 @@ package android.tools.device.flicker.integration
 
 import android.annotation.SuppressLint
 import android.app.Instrumentation
-import android.tools.TEST_SCENARIO
 import android.tools.device.apphelpers.BrowserAppHelper
 import android.tools.device.apphelpers.MessagingAppHelper
 import android.tools.device.flicker.datastore.DataStore
 import android.tools.device.flicker.legacy.FlickerBuilder
 import android.tools.device.flicker.legacy.runner.TransitionRunner
+import android.tools.utils.TEST_SCENARIO
 import androidx.test.platform.app.InstrumentationRegistry
 import org.junit.runner.Description
 

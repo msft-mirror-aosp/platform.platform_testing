@@ -17,7 +17,6 @@
 package android.tools.device.flicker.legacy.runner
 
 import android.app.Instrumentation
-import android.platform.test.rule.ArtifactSaver
 import android.tools.common.Logger
 import android.tools.common.Scenario
 import android.tools.device.flicker.legacy.FlickerTestData
@@ -63,26 +62,16 @@ class SetupTeardownRule(
     private fun doRunTransitionSetup(description: Description?) {
         Logger.withTracing("doRunTransitionSetup") {
             Utils.notifyRunnerProgress(scenario, "Running transition setup for $description")
-            try {
-                setupCommands.forEach { it.invoke(flicker) }
-                Utils.doWaitForUiStabilize(wmHelper)
-            } catch (e: Throwable) {
-                ArtifactSaver.onError(Utils.expandDescription(description, "setup"), e)
-                throw e
-            }
+            setupCommands.forEach { it.invoke(flicker) }
+            Utils.doWaitForUiStabilize(wmHelper)
         }
     }
 
     private fun doRunTransitionTeardown(description: Description?) {
         Logger.withTracing("doRunTransitionTeardown") {
             Utils.notifyRunnerProgress(scenario, "Running transition teardown for $description")
-            try {
-                teardownCommands.forEach { it.invoke(flicker) }
-                Utils.doWaitForUiStabilize(wmHelper)
-            } catch (e: Throwable) {
-                ArtifactSaver.onError(Utils.expandDescription(description, "teardown"), e)
-                throw e
-            }
+            teardownCommands.forEach { it.invoke(flicker) }
+            Utils.doWaitForUiStabilize(wmHelper)
         }
     }
 }

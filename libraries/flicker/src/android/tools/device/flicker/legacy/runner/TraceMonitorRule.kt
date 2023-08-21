@@ -17,7 +17,6 @@
 package android.tools.device.flicker.legacy.runner
 
 import android.app.Instrumentation
-import android.platform.test.rule.ArtifactSaver
 import android.tools.common.FLICKER_TAG
 import android.tools.common.Logger
 import android.tools.common.Scenario
@@ -60,14 +59,7 @@ class TraceMonitorRule(
     private fun doStartMonitors(description: Description?) {
         Logger.withTracing("doStartMonitors") {
             Utils.notifyRunnerProgress(scenario, "Starting traces for $description")
-            traceMonitors.forEach {
-                try {
-                    it.start()
-                } catch (e: Throwable) {
-                    ArtifactSaver.onError(Utils.expandDescription(description, "startTrace"), e)
-                    throw e
-                }
-            }
+            traceMonitors.forEach { it.start() }
         }
     }
 
@@ -80,10 +72,6 @@ class TraceMonitorRule(
                         try {
                             it.stop(resultWriter)
                         } catch (e: Throwable) {
-                            ArtifactSaver.onError(
-                                Utils.expandDescription(description, "stopTrace"),
-                                e
-                            )
                             Logger.e(FLICKER_TAG, "Unable to stop $it", e)
                             throw e
                         }

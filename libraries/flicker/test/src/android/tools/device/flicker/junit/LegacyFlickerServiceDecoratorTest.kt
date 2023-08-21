@@ -17,11 +17,11 @@
 package android.tools.device.flicker.junit
 
 import android.annotation.SuppressLint
-import android.tools.TEST_SCENARIO
 import android.tools.device.flicker.datastore.DataStore
 import android.tools.device.flicker.isShellTransitionsEnabled
 import android.tools.device.flicker.legacy.LegacyFlickerTest
-import android.tools.rules.CleanFlickerEnvironmentRule
+import android.tools.utils.CleanFlickerEnvironmentRule
+import android.tools.utils.TEST_SCENARIO
 import androidx.test.platform.app.InstrumentationRegistry
 import com.google.common.truth.Truth
 import org.junit.Before

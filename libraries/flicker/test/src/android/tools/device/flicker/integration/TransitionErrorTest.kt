@@ -16,12 +16,12 @@
 
 package android.tools.device.flicker.integration
 
-import android.tools.TEST_SCENARIO
 import android.tools.common.io.RunStatus
 import android.tools.device.flicker.datastore.CachedResultReader
 import android.tools.device.flicker.legacy.LegacyFlickerTest
 import android.tools.device.traces.TRACE_CONFIG_REQUIRE_CHANGES
-import android.tools.rules.CleanFlickerEnvironmentRule
+import android.tools.utils.CleanFlickerEnvironmentRule
+import android.tools.utils.TEST_SCENARIO
 import com.google.common.truth.Truth
 import java.io.File
 import org.junit.Before

@@ -16,7 +16,6 @@
 
 package android.tools.common.flicker.config
 
-import android.tools.assertThrows
 import android.tools.common.flicker.AssertionInvocationGroup
 import android.tools.common.flicker.FlickerConfig
 import android.tools.common.flicker.ScenarioInstance
@@ -28,6 +27,7 @@ import android.tools.common.flicker.extractors.ScenarioExtractor
 import android.tools.common.flicker.extractors.TraceSlice
 import android.tools.common.io.Reader
 import android.tools.getTraceReaderFromScenario
+import android.tools.utils.assertThrows
 import com.google.common.truth.Truth
 import org.junit.Test
 
