@@ -286,27 +286,44 @@ open class ScreenshotTestRule(
 
     internal fun getPathOnDeviceFor(fileType: OutputFileType, goldenIdentifier: String): File {
         val imageSuffix = getOnDeviceImageSuffix(goldenIdentifier)
-        val resolvedGoldenIdentifier =
-            goldenImagePathManager.goldenIdentifierResolver(goldenIdentifier).replace('/', '_')
+        val protoSuffix = getOnDeviceArtifactsSuffix(goldenIdentifier, resultProtoFileSuffix)
+        val binProtoSuffix =
+            getOnDeviceArtifactsSuffix(goldenIdentifier, resultBinaryProtoFileSuffix)
+        val succinctTestIdentifier = getSuccinctTestIdentifier(testIdentifier)
         val fileName = when (fileType) {
             OutputFileType.IMAGE_ACTUAL ->
-                "${testIdentifier}_actual_$imageSuffix"
+                "${succinctTestIdentifier}_actual_$imageSuffix"
             OutputFileType.IMAGE_EXPECTED ->
-                "${testIdentifier}_expected_$imageSuffix"
+                "${succinctTestIdentifier}_expected_$imageSuffix"
             OutputFileType.IMAGE_DIFF ->
-                "${testIdentifier}_diff_$imageSuffix"
+                "${succinctTestIdentifier}_diff_$imageSuffix"
             OutputFileType.RESULT_PROTO ->
-                "${testIdentifier}_${resolvedGoldenIdentifier}_$resultProtoFileSuffix"
+                "${succinctTestIdentifier}_$protoSuffix"
             OutputFileType.RESULT_BIN_PROTO ->
-                "${testIdentifier}_${resolvedGoldenIdentifier}_$resultBinaryProtoFileSuffix"
+                "${succinctTestIdentifier}_$binProtoSuffix"
         }
         return File(goldenImagePathManager.deviceLocalPath, fileName)
     }
 
     open fun getOnDeviceImageSuffix(goldenIdentifier: String): String {
         val resolvedGoldenIdentifier =
-                goldenImagePathManager.goldenIdentifierResolver(goldenIdentifier).replace('/', '_')
-        return "${goldenImagePathManager}_$resolvedGoldenIdentifier$imageExtension"
+            goldenImagePathManager.goldenIdentifierResolver(goldenIdentifier)
+                .replace('/', '_')
+                .replace(imageExtension, "")
+        return "$resolvedGoldenIdentifier$imageExtension"
+    }
+
+    open fun getOnDeviceArtifactsSuffix(goldenIdentifier: String, suffix: String): String {
+        val resolvedGoldenIdentifier =
+            goldenImagePathManager.goldenIdentifierResolver(goldenIdentifier)
+                .replace('/', '_')
+                .replace(imageExtension, "")
+        return "${resolvedGoldenIdentifier}_$suffix"
+    }
+
+    open fun getSuccinctTestIdentifier(identifier: String): String {
+        val pattern = Regex("\\[([A-Za-z0-9_]+)\\]")
+        return pattern.replace(identifier, "")
     }
 
     private fun Bitmap.writeToDevice(fileType: OutputFileType, goldenIdentifier: String): File {
