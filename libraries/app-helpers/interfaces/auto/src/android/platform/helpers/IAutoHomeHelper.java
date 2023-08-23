@@ -82,8 +82,8 @@ public interface IAutoHomeHelper extends IAppHelper {
     /** Click on brightness button. */
     void openBrightnessPalette();
 
-    /** Get temperature from home screen */
-    List<String> getTemperature();
+    /** Checks if Temperature widget is present on home screen */
+    boolean hasTemperatureWidget();
 
     /**
      * Setup expectations: To Open Profile Icon button.

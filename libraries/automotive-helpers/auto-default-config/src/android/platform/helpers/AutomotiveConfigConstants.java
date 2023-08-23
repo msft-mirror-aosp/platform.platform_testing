@@ -550,4 +550,23 @@ public class AutomotiveConfigConstants {
     public static final String DEVICE_NAME = "DEVICE_NAME";
     public static final String DISABLED_PHONE_PROFILE = "DISABLED_PHONE_PROFILE";
     public static final String DISABLED_MEDIA_PROFILE = "DISABLED_MEDIA_PROFILE";
+    public static final String ASSISTANT_PERMISSION = "OPEN_GOOGLE_ASSISTANT_PERMISSION";
+    public static final String LAYOUT_SELECTOR = "LAYOUT_SELECTOR";
+
+    // App Permissions- Privacy Dashboard and Permission Manager
+
+    public static final String PERMISSION_DECISION = "PERMISSION_DECISION";
+    public static final String PRIVACY_DASHBOARD = "PRIVACY_DASHBOARD";
+    public static final String PRIVACY_LOCATION = "PRIVACY_LOCATION";
+    public static final String PERMISSION_DONT_ALLOW = "PERMISSION_DONT_ALLOW";
+    public static final String PERMISSION_ALLOW_ALL_TIME = "PERMISSION_ALLOW_ALL_TIME";
+    public static final String PERMISSION_ALLOW = "PERMISSION_ALLOW";
+    public static final String PERMISSION_MESSAGE = "PERMISSION_MESSAGE";
+    public static final String CANCEL = "CANCEL";
+    public static final String RADIO_BUTTON = "RADIO_BUTTON";
+    public static final String PRIVACY_PERMISSION_MANAGER = "PRIVACY_PERMISSION_MANAGER";
+    public static final String ALLOW_WHILE_USING_APP = "PERMISSION_ALLOW_WHILE_USING_APP";
+    public static final String CALENDAR_PERMISSION = "OPEN_CALENDAR_PERMISSION_PAGE";
+    public static final String PRIVACY_CALENDAR = "PRIVACY_CALENDAR";
+    public static final String RECENT_PERMISSION_DECISIONS = "RECENT_PERMISSION_DECISIONS";
 }
