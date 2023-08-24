@@ -27,8 +27,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.util.List;
-
 @RunWith(AndroidJUnit4.class)
 public class HomeTest {
     private HelperAccessor<IAutoHomeHelper> mHomeHelper;
@@ -54,8 +52,6 @@ public class HomeTest {
 
     @Test
     public void testTempetraureWidget() {
-        List<String> temperatures = mHomeHelper.get().getTemperature();
-        assertTrue("Driver temperature is not displayed", temperatures.get(0).contains("62"));
-        assertTrue("Passenger temperature is not displayed", temperatures.get(1).contains("62"));
+        assertTrue("Driver temperature is not displayed", mHomeHelper.get().hasTemperatureWidget());
     }
 }

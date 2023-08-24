@@ -1583,7 +1583,7 @@
         }
       ]
     },
-    "NETWORK_PALETTE_SWITCH_WIDGET": {
+    "TOGGLE_LOCATIONs": {
       "TYPE": "RESOURCE_ID",
       "VALUE": "switch_widget",
       "PACKAGE": "android"
@@ -1625,6 +1625,44 @@
           }
         }
       ]
+    },
+    "PRIVACY_LOCATION": {
+      "TYPE": "TEXT",
+      "VALUE": "location"
+    },
+    "LAYOUT_SELECTOR": {
+      "TYPE": "CLASS",
+      "VALUE": "android.widget.RelativeLayout"
+    },
+    "PRIVACY_DASHBOARD": {
+      "TYPE": "TEXT",
+      "VALUE": "Privacy dashboard"
+    },
+    "PERMISSION_MESSAGE": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "message",
+      "PACKAGE": "android"
+    },
+    "CANCEL": {
+      "TYPE": "TEXT",
+      "VALUE": "Cancel"
+    },
+    "RADIO_BUTTON": {
+        "TYPE": "RESOURCE_ID",
+        "VALUE": "radio_button",
+        "PACKAGE": "com.android.permissioncontroller"
+    },
+    "PRIVACY_PERMISSION_MANAGER":{
+      "TYPE": "TEXT",
+      "VALUE": "Permission manager"
+    },
+    "PRIVACY_CALENDAR": {
+      "TYPE": "TEXT_CONTAINS",
+      "VALUE": "Calendar"
+    },
+    "RECENT_PERMISSION_DECISIONS": {
+      "TYPE": "TEXT",
+      "VALUE": "Recent permission decisions"
     }
   },
   "WORKFLOWS": {
@@ -2045,6 +2083,122 @@
             "TYPE": "RESOURCE_ID",
             "VALUE": "top_level_menu_container",
             "PACKAGE": "com.android.car.settings"
+          }
+        }
+      }
+    ],
+    "PERMISSION_DONT_ALLOW": [
+      {
+        "NAME": "Click on Don't allow",
+        "TYPE": "SCROLL_TO_FIND_AND_CLICK",
+        "CONFIG": {
+          "UI_ELEMENT": {
+            "TYPE": "TEXT",
+            "VALUE": "Don’t allow"
+          }
+        },
+        "SCROLL_CONFIG": {
+          "SCROLL_ACTION": "USE_GESTURE",
+          "SCROLL_DIRECTION": "VERTICAL",
+          "SCROLL_ELEMENT": {
+            "TYPE": "RESOURCE_ID",
+            "VALUE": "recycler_view",
+            "PACKAGE": "com.android.permissioncontroller"
+          }
+        }
+      },
+      {
+        "NAME": "Click on Don’t allow anyway",
+        "TYPE": "CLICK_IF_EXIST",
+        "CONFIG": {
+          "UI_ELEMENT": {
+            "TYPE": "TEXT",
+            "VALUE": "Don’t allow anyway"
+          }
+        }
+      }
+    ],
+    "PERMISSION_ALLOW": [
+      {
+        "NAME": "Click on allow",
+        "TYPE": "SCROLL_TO_FIND_AND_CLICK",
+        "CONFIG": {
+          "UI_ELEMENT": {
+            "TYPE": "TEXT",
+            "VALUE": "Allow"
+          }
+        },
+        "SCROLL_CONFIG": {
+          "SCROLL_ACTION": "USE_GESTURE",
+          "SCROLL_DIRECTION": "VERTICAL",
+          "SCROLL_ELEMENT": {
+            "TYPE": "RESOURCE_ID",
+            "VALUE": "recycler_view",
+            "PACKAGE": "com.android.permissioncontroller"
+          }
+        }
+      }
+    ],
+    "PERMISSION_ALLOW_ALL_TIME": [
+        {
+          "NAME": "Click on allow",
+          "TYPE": "SCROLL_TO_FIND_AND_CLICK",
+          "CONFIG": {
+            "UI_ELEMENT": {
+              "TYPE": "TEXT",
+              "VALUE": "Allow all the time"
+            }
+          },
+          "SCROLL_CONFIG": {
+            "SCROLL_ACTION": "USE_GESTURE",
+            "SCROLL_DIRECTION": "VERTICAL",
+            "SCROLL_ELEMENT": {
+              "TYPE": "RESOURCE_ID",
+              "VALUE": "recycler_view",
+              "PACKAGE": "com.android.permissioncontroller"
+            }
+          }
+        }
+      ],
+    "PERMISSION_ALLOW_WHILE_USING_APP": [
+      {
+        "NAME": "Click on allow",
+        "TYPE": "SCROLL_TO_FIND_AND_CLICK",
+        "CONFIG": {
+          "UI_ELEMENT": {
+            "TYPE": "TEXT",
+            "VALUE": "Allow only while using the app"
+          }
+        },
+        "SCROLL_CONFIG": {
+          "SCROLL_ACTION": "USE_GESTURE",
+          "SCROLL_DIRECTION": "VERTICAL",
+          "SCROLL_ELEMENT": {
+            "TYPE": "RESOURCE_ID",
+            "VALUE": "recycler_view",
+            "PACKAGE": "com.android.permissioncontroller"
+          }
+        }
+      }
+    ],
+    "OPEN_CALENDAR_PERMISSION_PAGE": [
+      {
+        "NAME": "Open Calendar",
+        "TYPE": "CLICK",
+        "CONFIG": {
+          "UI_ELEMENT": {
+            "TYPE": "TEXT",
+            "VALUE": "Calendar"
+          }
+        }
+      },
+      {
+        "NAME": "Open Calendar Permission",
+        "TYPE": "CLICK",
+        "CONFIG": {
+          "UI_ELEMENT": {
+            "TYPE": "DESCRIPTION",
+            "VALUE": "Calendar"
           }
         }
       }
