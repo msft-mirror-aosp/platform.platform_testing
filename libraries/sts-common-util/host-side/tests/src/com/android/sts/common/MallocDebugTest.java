@@ -16,6 +16,11 @@
 
 package com.android.sts.common;
 
+import static com.google.common.truth.Truth.assertWithMessage;
+
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import com.android.tradefed.testtype.DeviceJUnit4ClassRunner;
 import com.android.tradefed.testtype.junit4.BaseHostJUnit4Test;
 
@@ -53,5 +58,60 @@ public class MallocDebugTest extends BaseHostJUnit4Test {
     @Test(expected = AssertionError.class)
     public void testMallocDebugWithErrors() throws Exception {
         MallocDebug.assertNoMallocDebugErrors(logcatWithErrors);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testMallocDebugAutocloseableNonRoot() throws Exception {
+        assertTrue(getDevice().disableAdbRoot());
+        try (AutoCloseable mallocDebug =
+                MallocDebug.withLibcMallocDebugOnNewProcess(
+                        getDevice(), "backtrace guard", "native-poc")) {
+            // empty
+        }
+    }
+
+    @Test
+    public void testMallocDebugAutocloseableRoot() throws Exception {
+        assertTrue("must test with rootable device", getDevice().enableAdbRoot());
+        try (AutoCloseable mallocDebug =
+                MallocDebug.withLibcMallocDebugOnNewProcess(
+                        getDevice(), "backtrace guard", "native-poc")) {
+            // empty
+        }
+    }
+
+    @Test
+    public void testMallocDebugAutocloseableNonRootCleanup() throws Exception {
+        assertTrue("must test with rootable device", getDevice().enableAdbRoot());
+        try (AutoCloseable mallocDebug =
+                MallocDebug.withLibcMallocDebugOnNewProcess(
+                        getDevice(), "backtrace guard", "native-poc")) {
+            assertTrue("could not disable root", getDevice().disableAdbRoot());
+        }
+        assertFalse(
+                "device should not be root after autoclose if the body unrooted",
+                getDevice().isAdbRoot());
+    }
+
+    @Test
+    public void testMallocDebugAutoseablePriorValueNoException() throws Exception {
+        assertTrue("must test with rootable device", getDevice().enableAdbRoot());
+        final String oldValue = "TEST_VALUE_OLD";
+        final String newValue = "TEST_VALUE_NEW";
+        assertTrue(
+                "could not set property",
+                getDevice().setProperty("libc.debug.malloc.options", oldValue));
+        assertWithMessage("test property was not properly set on device")
+                .that(getDevice().getProperty("libc.debug.malloc.options"))
+                .isEqualTo(oldValue);
+        try (AutoCloseable mallocDebug =
+                MallocDebug.withLibcMallocDebugOnNewProcess(getDevice(), newValue, "native-poc")) {
+            assertWithMessage("new property was not set during malloc debug body")
+                    .that(getDevice().getProperty("libc.debug.malloc.options"))
+                    .isEqualTo(newValue);
+        }
+        assertWithMessage("prior property was not restored after test")
+                .that(getDevice().getProperty("libc.debug.malloc.options"))
+                .isEqualTo(oldValue);
     }
 }

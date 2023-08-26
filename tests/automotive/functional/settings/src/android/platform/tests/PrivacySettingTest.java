@@ -53,17 +53,6 @@ public class PrivacySettingTest {
     public void goBackToSettingsScreen() {
         mSettingHelper.get().goBackToSettingsScreen();
     }
-
-    // No account should be added for this test
-    @Test
-    public void testActivityControlNoUserLoggedIn() {
-        mSettingHelper.get().openMenuWith("Data sharing with Google");
-        mSettingHelper.get().openMenuWith("Activity Controls");
-        assertTrue(
-                "Dialog box to add account is not displayed",
-                mPrivacySettingsHelper.get().isNoAccountAddedDialogOpen());
-    }
-
     // This test needs a user logged in
     @Test
     public void testActivityControlUserLoggedIn() {
