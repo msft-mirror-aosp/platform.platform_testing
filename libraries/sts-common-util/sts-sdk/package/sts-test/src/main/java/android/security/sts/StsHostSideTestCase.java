@@ -16,6 +16,7 @@
 
 package android.security.sts;
 
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
 import com.android.sts.common.CommandUtil;
@@ -49,9 +50,8 @@ public class StsHostSideTestCase extends NonRootSecurityTestCase {
     /** An app test, which uses this host Java test to launch an Android instrumented test */
     @Test
     public void testWithApp() throws Exception {
-        // this example test is based on CVE-2020-0215
         ITestDevice device = getDevice();
-        device.enableAdbRoot();
+        assertTrue("could not disable root", device.disableAdbRoot());
         uninstallPackage(device, TEST_PKG);
 
         installPackage(TEST_APP);
