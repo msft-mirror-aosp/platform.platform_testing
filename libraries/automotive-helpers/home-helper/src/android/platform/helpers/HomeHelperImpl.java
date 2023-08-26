@@ -207,7 +207,7 @@ public class HomeHelperImpl extends AbstractStandardAppHelper implements IAutoHo
     }
 
     @Override
-    public List<String> getTemperature() {
+    public boolean hasTemperatureWidget() {
         getSpectatioUiUtil().pressHome();
         getSpectatioUiUtil().waitForIdle();
         BySelector temperatureSelector =
@@ -221,9 +221,10 @@ public class HomeHelperImpl extends AbstractStandardAppHelper implements IAutoHo
                         temperature.get(1), AutomotiveConfigConstants.HOME_TEMPERATURE_BUTTON);
         List<String> temperatureText = new ArrayList<>();
         for (UiObject2 uiObject : temperature) {
-            temperatureText.add(getSpectatioUiUtil().getTextForUiElement(uiObject));
+            String tempText = getSpectatioUiUtil().getTextForUiElement(uiObject);
+            if (tempText == null) return false;
         }
-        return temperatureText;
+        return true;
     }
 }
 

@@ -22,7 +22,7 @@ import android.tools.common.traces.events.CujType
 
 class TaggedScenarioExtractorBuilder {
     private var targetTag: CujType? = null
-    private var transitionMatcher: TransitionMatcher = TaggedCujTransitionMatcher()
+    private var transitionMatcher: TransitionMatcher? = null
     private var adjustCuj: CujAdjust =
         object : CujAdjust {
             override fun adjustCuj(cujEntry: Cuj, reader: Reader): Cuj = cujEntry

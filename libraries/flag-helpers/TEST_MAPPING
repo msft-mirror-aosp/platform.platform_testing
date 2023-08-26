@@ -7,6 +7,9 @@
           "include-filter": "android.cts.flags.tests.FlagAnnotationTest"
         }
       ]
+    },
+    {
+      "name": "FlagMacrosTests"
     }
   ]
 }

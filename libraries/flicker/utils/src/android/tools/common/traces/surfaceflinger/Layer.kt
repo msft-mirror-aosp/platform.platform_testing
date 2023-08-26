@@ -41,7 +41,7 @@ private constructor(
     val currFrame: Long,
     properties: ILayerProperties,
 ) : ILayerProperties by properties {
-    val stableId: String = "$type $id $name"
+    val stableId: String = "$id $name"
     var parent: Layer? = null
     var zOrderRelativeOf: Layer? = null
     var zOrderRelativeParentOf: Int = 0
@@ -260,24 +260,15 @@ private constructor(
         if (color != other.color) return false
         if (shadowRadius != other.shadowRadius) return false
         if (cornerRadius != other.cornerRadius) return false
-        if (type != other.type) return false
         if (transform != other.transform) return false
-        if (sourceBounds != other.sourceBounds) return false
         if (effectiveScalingMode != other.effectiveScalingMode) return false
         if (bufferTransform != other.bufferTransform) return false
         if (hwcCompositionType != other.hwcCompositionType) return false
-        if (hwcCrop != other.hwcCrop) return false
-        if (hwcFrame != other.hwcFrame) return false
         if (backgroundBlurRadius != other.backgroundBlurRadius) return false
         if (crop != other.crop) return false
         if (isRelativeOf != other.isRelativeOf) return false
         if (zOrderRelativeOfId != other.zOrderRelativeOfId) return false
         if (stackId != other.stackId) return false
-        if (requestedTransform != other.requestedTransform) return false
-        if (requestedColor != other.requestedColor) return false
-        if (cornerRadiusCrop != other.cornerRadiusCrop) return false
-        if (inputTransform != other.inputTransform) return false
-        if (inputRegion != other.inputRegion) return false
         if (screenBounds != other.screenBounds) return false
         if (isOpaque != other.isOpaque) return false
         if (excludesCompositionState != other.excludesCompositionState) return false
@@ -293,24 +284,15 @@ private constructor(
         result = 31 * result + color.hashCode()
         result = 31 * result + shadowRadius.hashCode()
         result = 31 * result + cornerRadius.hashCode()
-        result = 31 * result + type.hashCode()
         result = 31 * result + transform.hashCode()
-        result = 31 * result + sourceBounds.hashCode()
         result = 31 * result + effectiveScalingMode
         result = 31 * result + bufferTransform.hashCode()
         result = 31 * result + hwcCompositionType.hashCode()
-        result = 31 * result + hwcCrop.hashCode()
-        result = 31 * result + hwcFrame.hashCode()
         result = 31 * result + backgroundBlurRadius
         result = 31 * result + crop.hashCode()
         result = 31 * result + isRelativeOf.hashCode()
         result = 31 * result + zOrderRelativeOfId
         result = 31 * result + stackId
-        result = 31 * result + requestedTransform.hashCode()
-        result = 31 * result + requestedColor.hashCode()
-        result = 31 * result + cornerRadiusCrop.hashCode()
-        result = 31 * result + inputTransform.hashCode()
-        result = 31 * result + (inputRegion?.hashCode() ?: 0)
         result = 31 * result + screenBounds.hashCode()
         result = 31 * result + isOpaque.hashCode()
         result = 31 * result + name.hashCode()
@@ -345,26 +327,17 @@ private constructor(
             isOpaque: Boolean,
             shadowRadius: Float,
             cornerRadius: Float,
-            type: String,
             screenBounds: RectF,
             transform: Transform,
-            sourceBounds: RectF,
             currFrame: Long,
             effectiveScalingMode: Int,
             bufferTransform: Transform,
             hwcCompositionType: HwcCompositionType,
-            hwcCrop: RectF,
-            hwcFrame: Rect,
             backgroundBlurRadius: Int,
             crop: Rect?,
             isRelativeOf: Boolean,
             zOrderRelativeOfId: Int,
             stackId: Int,
-            requestedTransform: Transform,
-            requestedColor: Color,
-            cornerRadiusCrop: RectF,
-            inputTransform: Transform,
-            inputRegion: Region?,
             excludesCompositionState: Boolean
         ): Layer {
             val properties =
@@ -377,25 +350,16 @@ private constructor(
                     isOpaque,
                     shadowRadius,
                     cornerRadius,
-                    type,
                     screenBounds,
                     transform,
-                    sourceBounds,
                     effectiveScalingMode,
                     bufferTransform,
                     hwcCompositionType,
-                    hwcCrop,
-                    hwcFrame,
                     backgroundBlurRadius,
                     crop,
                     isRelativeOf,
                     zOrderRelativeOfId,
                     stackId,
-                    requestedTransform,
-                    requestedColor,
-                    cornerRadiusCrop,
-                    inputTransform,
-                    inputRegion,
                     excludesCompositionState
                 )
             return Layer(name, id, parentId, z, currFrame, properties)

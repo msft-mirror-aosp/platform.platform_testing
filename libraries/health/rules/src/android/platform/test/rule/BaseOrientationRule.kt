@@ -15,6 +15,7 @@
  */
 package android.platform.test.rule
 
+import android.app.ActivityManager
 import android.graphics.Rect
 import android.platform.test.rule.Orientation.LANDSCAPE
 import android.platform.test.rule.Orientation.NATURAL
@@ -97,8 +98,7 @@ object RotationUtils {
     private val device: UiDevice =
         UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
 
-    private val launcher: LauncherInstrumentation
-        get() = LauncherInstrumentation()
+    private val launcher: LauncherInstrumentation by lazy { LauncherInstrumentation() }
 
     /**
      * Sets device orientation to [expectedOrientation], according to [Rect.orientation] definition.
@@ -111,7 +111,7 @@ object RotationUtils {
     fun setOrientationOverride(orientation: Orientation) {
         val expectedOrientation =
             if (orientation == NATURAL) device.naturalOrientation else orientation
-        launcher.setEnableRotation(true)
+        setEnableLauncherRotation(true)
         if (device.stableOrientation == expectedOrientation) {
             return
         }
@@ -137,10 +137,17 @@ object RotationUtils {
 
     fun clearOrientationOverride() {
         device.setOrientationNatural()
-        launcher.setEnableRotation(false)
+        setEnableLauncherRotation(false)
         device.unfreezeRotation()
         waitForOrientationToSettle()
         log("Rotation override cleared.")
+    }
+
+    private fun setEnableLauncherRotation(enable: Boolean) {
+        // Launcher is only allowed to enable rotation when the device in test harness mode.
+        if (ActivityManager.isRunningInTestHarness()) {
+            launcher.setEnableRotation(enable)
+        }
     }
 
     private fun log(message: String) = Log.d("RotationUtils", message)

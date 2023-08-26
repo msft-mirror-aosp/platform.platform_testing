@@ -19,7 +19,6 @@ package android.tools.common.traces.surfaceflinger
 import android.tools.common.Cache
 import android.tools.common.datatypes.ActiveBuffer
 import android.tools.common.datatypes.Color
-import android.tools.common.datatypes.Rect
 import android.tools.common.datatypes.RectF
 import android.tools.common.datatypes.Region
 import com.google.common.truth.Truth.assertThat
@@ -135,26 +134,17 @@ class LayerTest {
             false,
             -1f,
             -1f,
-            "",
             RectF.EMPTY,
             Transform.EMPTY,
-            RectF.EMPTY,
             -1,
             -1,
             Transform.EMPTY,
             HwcCompositionType.HWC_TYPE_UNSPECIFIED,
-            RectF.EMPTY,
-            Rect.EMPTY,
             -1,
             null,
             false,
             -1,
             -1,
-            Transform.EMPTY,
-            Color.EMPTY,
-            RectF.EMPTY,
-            Transform.EMPTY,
-            null,
             excludeCompositionState
         )
     }

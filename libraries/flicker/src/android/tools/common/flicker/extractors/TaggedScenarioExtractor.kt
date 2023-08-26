@@ -27,7 +27,7 @@ import kotlin.math.min
 
 class TaggedScenarioExtractor(
     private val targetTag: CujType,
-    private val transitionMatcher: TransitionMatcher,
+    private val transitionMatcher: TransitionMatcher?,
     private val adjustCuj: CujAdjust
 ) : ScenarioExtractor {
     override fun extract(reader: Reader): List<TraceSlice> {
@@ -46,8 +46,7 @@ class TaggedScenarioExtractor(
 
         return targetCujEntries.map { cujEntry ->
             val associatedTransition =
-                transitionMatcher.getMatches(reader, cujEntry).firstOrNull()
-                    ?: error("Missing associated transition")
+                transitionMatcher?.getMatches(reader, cujEntry)?.firstOrNull()
 
             require(
                 cujEntry.startTimestamp.hasAllTimestamps && cujEntry.endTimestamp.hasAllTimestamps
@@ -107,7 +106,9 @@ class TaggedScenarioExtractor(
             if (associatedTransition != null) {
                 Utils.interpolateFinishTimestampFromTransition(associatedTransition, reader)
             } else {
-                null
+                val layersTrace = reader.readLayersTrace() ?: error("Missing layers trace")
+                val nextSfEntry = layersTrace.getFirstEntryWithOnDisplayAfter(cujEntry.endTimestamp)
+                Utils.getFullTimestampAt(nextSfEntry, reader)
             }
 
         return Timestamps.from(

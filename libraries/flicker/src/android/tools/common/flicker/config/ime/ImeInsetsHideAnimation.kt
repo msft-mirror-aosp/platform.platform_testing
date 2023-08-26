@@ -16,21 +16,30 @@
 
 package android.tools.common.flicker.config.ime
 
+import android.tools.common.flicker.AssertionInvocationGroup
+import android.tools.common.flicker.assertors.assertions.LayerBecomesInvisible
+import android.tools.common.flicker.assertors.assertions.NonAppWindowBecomesInvisible
 import android.tools.common.flicker.config.AssertionTemplates
 import android.tools.common.flicker.config.FlickerConfigEntry
 import android.tools.common.flicker.config.ScenarioId
+import android.tools.common.flicker.config.ime.Components.IME
 import android.tools.common.flicker.extractors.TaggedCujTransitionMatcher
 import android.tools.common.flicker.extractors.TaggedScenarioExtractorBuilder
 import android.tools.common.traces.events.CujType
 
-val ImeInsetsAnimation =
+val ImeInsetsHideAnimation =
     FlickerConfigEntry(
-        enabled = false,
-        scenarioId = ScenarioId("IME_INSETS_ANIMATION"),
-        assertions = AssertionTemplates.COMMON_ASSERTIONS,
+        enabled = true,
+        scenarioId = ScenarioId("IME_INSETS_HIDE_ANIMATION"),
+        assertions =
+            AssertionTemplates.COMMON_ASSERTIONS +
+                mapOf(
+                    NonAppWindowBecomesInvisible(IME) to AssertionInvocationGroup.BLOCKING,
+                    LayerBecomesInvisible(IME) to AssertionInvocationGroup.BLOCKING
+                ),
         extractor =
             TaggedScenarioExtractorBuilder()
-                .setTargetTag(CujType.CUJ_IME_INSETS_ANIMATION)
+                .setTargetTag(CujType.CUJ_IME_INSETS_HIDE_ANIMATION)
                 .setTransitionMatcher(
                     TaggedCujTransitionMatcher(associatedTransitionRequired = false)
                 )

@@ -121,6 +121,20 @@ object Utils {
         return Timestamps.from(elapsedNanos, systemUptimeNanos, unixNanos)
     }
 
+    fun getFullTimestampAt(layersTraceEntry: LayerTraceEntry, reader: Reader): Timestamp {
+        val wmTrace = reader.readWmTrace() ?: error("Missing WM trace")
+
+        val elapsedNanos =
+            (wmTrace.entries.firstOrNull { it.timestamp >= layersTraceEntry.timestamp }
+                    ?: wmTrace.entries.last())
+                .timestamp
+                .elapsedNanos
+        val systemUptimeNanos = layersTraceEntry.timestamp.systemUptimeNanos
+        val unixNanos = layersTraceEntry.timestamp.unixNanos
+
+        return Timestamps.from(elapsedNanos, systemUptimeNanos, unixNanos)
+    }
+
     fun getOnDisplayFor(layerTraceEntry: LayerTraceEntry): Display {
         val displays = layerTraceEntry.displays.filter { !it.isVirtual }
         require(displays.isNotEmpty()) { "Failed to get a display for provided entry" }

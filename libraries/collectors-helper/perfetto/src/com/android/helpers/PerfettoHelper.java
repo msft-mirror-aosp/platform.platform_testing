@@ -52,6 +52,8 @@ public class PerfettoHelper {
     private static final String PERFETTO_PROC_ID_EXIST_CHECK = "ls -l /proc/%d/exe";
     // Remove the trace output file /data/misc/perfetto-traces/trace_output.perfetto-trace
     private static final String REMOVE_CMD = "rm %s";
+    // Add the trace output file /data/misc/perfetto-traces/trace_output.perfetto-trace
+    private static final String CREATE_FILE_CMD = "touch %s";
     // Command to move the perfetto output trace file to given folder.
     private static final String MOVE_CMD = "mv %s %s";
     // Max wait count for checking if perfetto is stopped successfully
@@ -94,6 +96,16 @@ public class PerfettoHelper {
             String output = mUIDevice.executeShellCommand(String.format(REMOVE_CMD,
                     PERFETTO_TMP_OUTPUT_FILE));
             Log.i(LOG_TAG, String.format("Perfetto output file cleanup - %s", output));
+
+            // Create new temporary output trace file before tracing.
+            output = mUIDevice.executeShellCommand(
+                    String.format(CREATE_FILE_CMD, PERFETTO_TMP_OUTPUT_FILE));
+            if (output.isEmpty()) {
+                Log.i(LOG_TAG, "Perfetto output file create success.");
+            } else {
+                Log.e(LOG_TAG, String.format("Unable to create Perfetto output file - %s", output));
+                return false;
+            }
 
             String perfettoCmd =
                     String.format(

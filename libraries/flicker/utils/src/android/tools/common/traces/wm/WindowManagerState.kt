@@ -393,6 +393,7 @@ class WindowManagerState(
      *
      * @param componentMatcher Components to search
      */
+    @JsName("isVisibleComponentMatcher")
     fun isVisible(componentMatcher: IComponentMatcher): Boolean =
         componentMatcher.windowMatchesAnyOf(visibleWindows.toList())
 

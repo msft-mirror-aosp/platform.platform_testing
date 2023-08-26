@@ -21,6 +21,20 @@
           "exclude-annotation": "android.platform.test.annotations.Postsubmit"
         }
       ]
+    },
+    {
+      "name": "SystemUIGoogleBiometricsScreenshotTests",
+      "options": [
+        {
+          "exclude-annotation": "org.junit.Ignore"
+        },
+        {
+          "exclude-annotation": "androidx.test.filters.FlakyTest"
+        },
+        {
+          "exclude-annotation": "android.platform.test.annotations.Postsubmit"
+        }
+      ]
     }
   ]
 }

@@ -297,8 +297,8 @@ object ConditionsFactory {
 
             val pipLayer = it.layerState.getLayerById(layerId)
             val layerHeight =
-                pipLayer?.sourceBounds?.height ?: error("Unable to find layer with id $layerId")
-            val layerWidth = pipLayer.sourceBounds.width
+                pipLayer?.screenBounds?.height ?: error("Unable to find layer with id $layerId")
+            val layerWidth = pipLayer.screenBounds.width
 
             windowHeight == layerHeight && windowWidth == layerWidth
         }

@@ -14,7 +14,6 @@
 
 import logging
 
-from mobly.controllers import android_device
 
 class CallUtils:
     """Calling sequence utility for BT calling test using Spectatio UI APIs.
@@ -33,3 +32,27 @@ class CallUtils:
     def open_phone_app(self):
         logging.info('Open phone app')
         self.device.mbs.openPhoneApp()
+
+    # Dial phone number
+    def dial_a_number(self, callee_number):
+        logging.info('Dial phone number <%s>', callee_number)
+        self.device.mbs.dialANumber(callee_number)
+
+    # Make call
+    def make_call(self):
+        logging.info('Make a call')
+        self.device.mbs.makeCall()
+
+    # Get dialing phone number
+    def get_dialing_number(self):
+        return self.device.mbs.getDialedNumber()
+
+    # End call
+    def end_call(self):
+        logging.info('End the call')
+        self.device.mbs.endCall()
+
+    # Open call history
+    def open_call_history(self):
+        logging.info('Open call history')
+        self.device.mbs.openCallHistory()

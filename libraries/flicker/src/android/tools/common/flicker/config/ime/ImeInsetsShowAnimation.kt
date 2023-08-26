@@ -14,25 +14,30 @@
  * limitations under the License.
  */
 
-package android.tools.common.flicker.config.notification
+package android.tools.common.flicker.config.ime
 
+import android.tools.common.flicker.AssertionInvocationGroup
+import android.tools.common.flicker.assertors.assertions.LayerBecomesVisible
+import android.tools.common.flicker.assertors.assertions.NonAppWindowBecomesVisible
 import android.tools.common.flicker.config.AssertionTemplates
 import android.tools.common.flicker.config.FlickerConfigEntry
 import android.tools.common.flicker.config.ScenarioId
-import android.tools.common.flicker.extractors.TaggedCujTransitionMatcher
+import android.tools.common.flicker.config.ime.Components.IME
 import android.tools.common.flicker.extractors.TaggedScenarioExtractorBuilder
 import android.tools.common.traces.events.CujType
 
-val NotificationExpandCollapseLockscreen =
+val ImeInsetsShowAnimation =
     FlickerConfigEntry(
-        enabled = false,
-        scenarioId = ScenarioId("NOTIFICATION_EXPAND_COLLAPSE_LOCKSCREEN"),
-        assertions = AssertionTemplates.COMMON_ASSERTIONS,
+        enabled = true,
+        scenarioId = ScenarioId("IME_INSETS_SHOW_ANIMATION"),
+        assertions =
+            AssertionTemplates.COMMON_ASSERTIONS +
+                mapOf(
+                    NonAppWindowBecomesVisible(IME) to AssertionInvocationGroup.BLOCKING,
+                    LayerBecomesVisible(IME) to AssertionInvocationGroup.BLOCKING
+                ),
         extractor =
             TaggedScenarioExtractorBuilder()
-                .setTargetTag(CujType.CUJ_NOTIFICATION_SHADE_EXPAND_COLLAPSE_LOCK)
-                .setTransitionMatcher(
-                    TaggedCujTransitionMatcher(associatedTransitionRequired = false)
-                )
+                .setTargetTag(CujType.CUJ_IME_INSETS_SHOW_ANIMATION)
                 .build()
     )

@@ -40,25 +40,16 @@ interface ILayerProperties {
     @JsName("isOpaque") val isOpaque: Boolean
     @JsName("shadowRadius") val shadowRadius: Float
     @JsName("cornerRadius") val cornerRadius: Float
-    @JsName("type") val type: String
     @JsName("screenBounds") val screenBounds: RectF
     @JsName("transform") val transform: Transform
-    @JsName("sourceBounds") val sourceBounds: RectF
     @JsName("effectiveScalingMode") val effectiveScalingMode: Int
     @JsName("bufferTransform") val bufferTransform: Transform
     @JsName("hwcCompositionType") val hwcCompositionType: HwcCompositionType
-    @JsName("hwcCrop") val hwcCrop: RectF
-    @JsName("hwcFrame") val hwcFrame: Rect
     @JsName("backgroundBlurRadius") val backgroundBlurRadius: Int
     @JsName("crop") val crop: Rect
     @JsName("isRelativeOf") val isRelativeOf: Boolean
     @JsName("zOrderRelativeOfId") val zOrderRelativeOfId: Int
     @JsName("stackId") val stackId: Int
-    @JsName("requestedTransform") val requestedTransform: Transform
-    @JsName("requestedColor") val requestedColor: Color
-    @JsName("cornerRadiusCrop") val cornerRadiusCrop: RectF
-    @JsName("inputTransform") val inputTransform: Transform
-    @JsName("inputRegion") val inputRegion: Region?
     @JsName("excludesCompositionState") val excludesCompositionState: Boolean
 
     @JsName("isScaling")

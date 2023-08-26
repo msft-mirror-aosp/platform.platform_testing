@@ -92,6 +92,15 @@ class FlickerServiceTracesCollectorTest {
         assertArchiveContainsFiles(traceFile, expectedTraces)
     }
 
+    @Test
+    fun supportHavingNoTransitions() {
+        val collector = FlickerServiceTracesCollector()
+        collector.start(TEST_SCENARIO)
+        val reader = collector.stop()
+        val transitionTrace = reader.readTransitionsTrace() ?: error("Expected a transition trace")
+        Truth.assertThat(transitionTrace.entries).isEmpty()
+    }
+
     companion object {
         val expectedTraces =
             listOf(
@@ -103,6 +112,8 @@ class FlickerServiceTracesCollectorTest {
                 "eventlog.winscope"
             )
 
-        @ClassRule @JvmField val ENV_CLEANUP = CleanFlickerEnvironmentRule()
+        @ClassRule
+        @JvmField
+        val ENV_CLEANUP = CleanFlickerEnvironmentRule()
     }
 }

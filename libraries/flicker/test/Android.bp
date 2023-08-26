@@ -38,4 +38,7 @@ android_test {
         "launcher-aosp-tapl",
         "mockito-target-extended-minus-junit4"
     ],
+    data: [
+        "trace_config/*",
+    ]
 }

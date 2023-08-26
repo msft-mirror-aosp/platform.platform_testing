@@ -26,6 +26,7 @@
     <uses-permission android:name="android.permission.FORCE_STOP_PACKAGES"/>
     <!-- Allow the test to connect to perfetto trace processor -->
     <uses-permission android:name="android.permission.INTERNET"/>
+
     <!-- Allow the test to write directly to /sdcard/ -->
     <application android:label="FlickerLibTest"
                  android:requestLegacyExternalStorage="true"

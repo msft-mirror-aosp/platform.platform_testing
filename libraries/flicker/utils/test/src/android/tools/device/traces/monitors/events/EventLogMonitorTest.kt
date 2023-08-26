@@ -350,7 +350,7 @@ class EventLogMonitorTest : TraceMonitorTest<EventLogMonitor>() {
         monitor.start()
         var now = now()
         EventLogTags.writeJankCujEventsBeginRequest(
-            CujType.CUJ_LAUNCHER_QUICK_SWITCH.ordinal,
+            CujType.CUJ_LAUNCHER_QUICK_SWITCH.id,
             now.unixNanos,
             now.elapsedNanos,
             now.systemUptimeNanos,
@@ -358,14 +358,14 @@ class EventLogMonitorTest : TraceMonitorTest<EventLogMonitor>() {
         )
         now = now()
         EventLogTags.writeJankCujEventsEndRequest(
-            CujType.CUJ_LAUNCHER_ALL_APPS_SCROLL.ordinal,
+            CujType.CUJ_LAUNCHER_ALL_APPS_SCROLL.id,
             now.unixNanos,
             now.elapsedNanos,
             now.systemUptimeNanos
         )
         now = now()
         EventLogTags.writeJankCujEventsCancelRequest(
-            CujType.CUJ_LOCKSCREEN_LAUNCH_CAMERA.ordinal,
+            CujType.CUJ_LOCKSCREEN_LAUNCH_CAMERA.id,
             now.unixNanos,
             now.elapsedNanos,
             now.systemUptimeNanos
@@ -432,6 +432,8 @@ class EventLogMonitorTest : TraceMonitorTest<EventLogMonitor>() {
     private companion object {
         const val INPUT_FOCUS_TAG = 62001
 
-        @ClassRule @JvmField val ENV_CLEANUP = CleanFlickerEnvironmentRule()
+        @ClassRule
+        @JvmField
+        val ENV_CLEANUP = CleanFlickerEnvironmentRule()
     }
 }

@@ -37,7 +37,7 @@ val SERVICE_TRACE_CONFIG =
         layersTrace =
             TraceConfig(required = true, allowNoChange = true, usingExistingTraces = false),
         transitionsTrace =
-            TraceConfig(required = true, allowNoChange = false, usingExistingTraces = false),
+            TraceConfig(required = true, allowNoChange = true, usingExistingTraces = false),
         transactionsTrace =
             TraceConfig(required = true, allowNoChange = true, usingExistingTraces = false)
     )

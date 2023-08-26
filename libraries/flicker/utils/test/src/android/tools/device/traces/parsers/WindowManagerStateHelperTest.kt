@@ -23,7 +23,6 @@ import android.tools.common.Timestamps
 import android.tools.common.datatypes.ActiveBuffer
 import android.tools.common.datatypes.Color
 import android.tools.common.datatypes.Matrix33
-import android.tools.common.datatypes.Rect
 import android.tools.common.datatypes.RectF
 import android.tools.common.datatypes.Region
 import android.tools.common.traces.DeviceStateDump
@@ -112,26 +111,17 @@ class WindowManagerStateHelperTest {
             isOpaque = true,
             shadowRadius = 0f,
             cornerRadius = 0f,
-            type = "",
             screenBounds = rect,
             transform = transform,
-            sourceBounds = rect,
             currFrame = 0,
             effectiveScalingMode = 0,
             bufferTransform = transform,
             hwcCompositionType = HwcCompositionType.HWC_TYPE_UNSPECIFIED,
-            hwcCrop = RectF.EMPTY,
-            hwcFrame = Rect.EMPTY,
             crop = rect.toRect(),
             backgroundBlurRadius = 0,
             isRelativeOf = false,
             zOrderRelativeOfId = -1,
             stackId = 0,
-            requestedTransform = transform,
-            requestedColor = Color.DEFAULT,
-            cornerRadiusCrop = RectF.EMPTY,
-            inputTransform = transform,
-            inputRegion = Region.from(rect.toRect()),
             excludesCompositionState = false
         )
     }

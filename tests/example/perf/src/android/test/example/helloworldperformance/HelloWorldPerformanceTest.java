@@ -16,24 +16,27 @@
 
 package android.test.example.helloworldperformance;
 
-import android.util.Log;
+import com.android.tradefed.testtype.DeviceJUnit4ClassRunner;
+import com.android.tradefed.testtype.DeviceJUnit4ClassRunner.TestMetrics;
 
-import androidx.test.filters.SmallTest;
-
-import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 
-@RunWith(JUnit4.class)
+@RunWith(DeviceJUnit4ClassRunner.class)
 public class HelloWorldPerformanceTest {
+
+    @Rule public TestMetrics metrics = new TestMetrics();
 
     private static final String TAG = HelloWorldPerformanceTest.class.getSimpleName();
 
     @Test
-    @SmallTest
     public void testHelloWorld() {
-        Log.d(TAG, "HelloWorldPerformanceTest()");
-        Assert.assertNotEquals("Hello", "world");
+        metrics.addTestMetric("Hello", "world");
+    }
+
+    @Test
+    public void testHalloWelt() {
+        metrics.addTestMetric("Hallo", "Welt");
     }
 }

@@ -192,32 +192,17 @@ class LayersTraceParser(
                 layer.getChild("is_opaque")?.getBoolean() ?: false,
                 layer.getChild("shadow_radius")?.getFloat() ?: 0f,
                 layer.getChild("corner_radius")?.getFloat() ?: 0f,
-                layer.getChild("type")?.getString() ?: "",
                 newRectF(layer.getChild("screen_bounds")),
                 newTransform(layer.getChild("transform"), position = layer.getChild("position")),
-                newRectF(layer.getChild("source_bounds")),
                 layer.getChild("curr_frame")?.getLong() ?: -1,
                 layer.getChild("effective_scaling_mode")?.getInt() ?: 0,
                 newTransform(layer.getChild("buffer_transform"), position = null),
                 newHwcCompositionType(layer.getChild("hwc_composition_type")),
-                newRectF(layer.getChild("hwc_crop")),
-                newRect(layer.getChild("hwc_frame")),
                 layer.getChild("background_blur_radius")?.getInt() ?: 0,
                 crop,
                 layer.getChild("is_relative_of")?.getBoolean() ?: false,
                 layer.getChild("z_order_relative_of")?.getInt() ?: 0,
                 layer.getChild("layer_stack")?.getInt() ?: 0,
-                newTransform(
-                    layer.getChild("transform"),
-                    position = layer.getChild("requested_position")
-                ),
-                newColor(layer.getChild("requested_color")),
-                newRectF(layer.getChild("corner_radius_crop")),
-                newTransform(
-                    layer.getChild("input_window_info")?.getChild("transform"),
-                    position = null
-                ),
-                newRegion(layer.getChild("input_window_info")?.getChild("touchable_region")),
                 excludeCompositionState
             )
         }

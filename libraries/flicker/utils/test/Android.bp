@@ -63,6 +63,10 @@ android_test {
         "FlickerLibTest-Utils",
         "androidx.test.runner",
         "truth-prebuilt",
-        "mockito-target-extended-minus-junit4"
+        "mockito-target-extended-minus-junit4",
+        "collector-device-lib",
     ],
+    data: [
+        "trace_config/*",
+    ]
 }
