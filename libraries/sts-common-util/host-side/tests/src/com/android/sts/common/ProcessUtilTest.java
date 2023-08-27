@@ -24,6 +24,8 @@ import com.android.tradefed.device.IFileEntry;
 import com.android.tradefed.testtype.DeviceJUnit4ClassRunner;
 import com.android.tradefed.testtype.junit4.BaseHostJUnit4Test;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -34,9 +36,18 @@ import java.util.regex.Pattern;
 @RunWith(DeviceJUnit4ClassRunner.class)
 public class ProcessUtilTest extends BaseHostJUnit4Test {
 
+    @Before
+    public void setUp() throws Exception {
+        assertTrue("could not unroot", getDevice().disableAdbRoot());
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        assertTrue("could not unroot", getDevice().disableAdbRoot());
+    }
+
     @Test(expected = IllegalStateException.class)
     public void testFindLoadedByProcessNonRoot() throws Exception {
-        assertTrue(getDevice().disableAdbRoot());
         // expect failure because the shell user has no permission to read process info of other
         // users
         ProcessUtil.findFileLoadedByProcess(
@@ -45,7 +56,6 @@ public class ProcessUtilTest extends BaseHostJUnit4Test {
 
     @Test(expected = IllegalArgumentException.class)
     public void testFindLoadedByProcessMultipleProcesses() throws Exception {
-        assertTrue(getDevice().disableAdbRoot());
         // pattern 'android' has multiple (android.hardware.drm, android.hardware.gnss, etc)
         ProcessUtil.findFileLoadedByProcess(getDevice(), "android", null);
     }
@@ -63,6 +73,18 @@ public class ProcessUtilTest extends BaseHostJUnit4Test {
         assertWithMessage("file entry should be a path to libc.so")
                 .that(fileEntry.getFullPath())
                 .contains("libc.so");
-        assertTrue(getDevice().disableAdbRoot());
+    }
+
+    @Test
+    public void testFindLoadedByProcessUtilNoMatch() throws Exception {
+        assertTrue("must test with rootable device", getDevice().enableAdbRoot());
+        Optional<IFileEntry> fileEntryOptional =
+                ProcessUtil.findFileLoadedByProcess(
+                        getDevice(),
+                        "system_server",
+                        Pattern.compile(Pattern.quote("doesnotexist.foobar")));
+        assertWithMessage("file entry should be empty if no matches")
+                .that(fileEntryOptional.isPresent())
+                .isFalse();
     }
 }
