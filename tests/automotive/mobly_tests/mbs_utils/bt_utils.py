@@ -14,12 +14,15 @@
 
 import logging
 import pprint
+import time
 
+from mbs_utils import constants
 from mobly import asserts
 from mobly.controllers import android_device
 
 # Number of seconds for the target to stay discoverable on Bluetooth.
 DISCOVERABLE_TIME = 60
+TIME_FOR_PROMPT_TO_LOAD = 3
 class BTUtils:
     """A utility that provides access to Bluetooth connectivity controls."""
 
@@ -42,3 +45,44 @@ class BTUtils:
             target_name in discovered_names,
             'Failed to discover the target device %s over Bluetooth.' %
             target_name)
+
+    def pair_primary_to_secondary(self):
+        """Enable discovery on the target so the discoverer can find it."""
+        # Turn bluetooth on in both machines
+        logging.info('Enabling Bluetooth on both devices')
+        self.discoverer.mbs.btEnable()
+        self.target.mbs.btEnable()
+        logging.info('Setting devices to be discoverable')
+        self.discoverer.mbs.btSetName('discover')
+        self.target.mbs.btSetName('target')
+        self.target.mbs.btBecomeDiscoverable(DISCOVERABLE_TIME)
+        self.target.mbs.btStartAutoAcceptIncomingPairRequest()
+        target_name = self.target.mbs.btGetName()
+        discovered_names = []
+        discovered_addrs = []
+
+        logging.info('Scanning for discoverable devices')
+        # Discovery of target device is tried 5 times.
+        for attempt in range(5):
+            logging.info('Attempt %d', attempt)
+            discovered_devices = self.discoverer.mbs.btDiscoverAndGetResults()
+            discovered_names = [device['Name'] for device in discovered_devices]
+            discovered_addrs = [device['Address'] for device in discovered_devices]
+
+            for i, name in enumerate(discovered_names):
+                if name == target_name:
+                    logging.info('Device \'%s\' found. Pairing.' % target_name)
+                    self.discoverer.mbs.btPairDevice(discovered_addrs[i])
+                    self.target_adrr = discovered_addrs[i]
+                    logging.info('Allowing contact sharing on secondary device.')
+                    time.sleep(constants.DEFAULT_WAIT_TIME_FIVE_SECS)
+                    self.press_allow_on_device() ## Attempts multiple presses
+                    time.sleep(constants.SYNC_WAIT_TIME)
+                    return
+
+    def press_allow_on_device(self):
+        logging.info('Attempting to press ALLOW')
+        while (self.target.mbs.btPressAllow()):
+            logging.info('ALLOW pressed!')
+            time.sleep(TIME_FOR_PROMPT_TO_LOAD)
+        logging.info('(No more ALLOW prompts discovered)')
