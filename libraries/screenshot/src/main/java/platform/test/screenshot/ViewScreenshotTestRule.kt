@@ -121,48 +121,13 @@ open class ViewScreenshotTestRule(
         goldenIdentifier: String,
         dialogProvider: (Activity) -> Dialog,
     ) {
-        var dialog: Dialog? = null
-        activityRule.scenario.onActivity { activity ->
-            dialog =
-                dialogProvider(activity).apply {
-                    val window = checkNotNull(window)
-                    // Make sure that the dialog draws full screen and fits the whole display
-                    // instead of the system bars.
-                    window.setDecorFitsSystemWindows(false)
-
-                    // Disable enter/exit animations.
-                    create()
-                    window.setWindowAnimations(0)
-
-                    // Elevation/shadows is not deterministic when doing hardware rendering, so we
-                    // disable it for any view in the hierarchy.
-                    window.decorView.removeElevationRecursively()
-
-                    // Show the dialog.
-                    show()
-                }
-        }
-
-        try {
-            val bitmap = dialog?.toBitmap() ?: error("dialog is null")
-            screenshotRule.assertBitmapAgainstGolden(
-                bitmap,
-                goldenIdentifier,
-                matcher,
-            )
-        } finally {
-            dialog?.dismiss()
-        }
-    }
-
-    private fun Dialog.toBitmap(): Bitmap {
-        val window = checkNotNull(window)
-        if (isRobolectric) {
-            return window.decorView.captureToBitmap(window).get(10, TimeUnit.SECONDS)
-                ?: error("timeout while trying to capture view to bitmap for window")
-        } else {
-            return window.decorView.toBitmap(window)
-        }
+        dialogScreenshotTest(
+            activityRule,
+            screenshotRule,
+            matcher,
+            goldenIdentifier,
+            dialogProvider = dialogProvider,
+        )
     }
 
     enum class Mode(val layoutParams: LayoutParams) {

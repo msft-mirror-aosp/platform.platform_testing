@@ -64,19 +64,25 @@ class MaterialYouColorsRule(
                 }
 
                 try {
-                    changeColorSetting(context, colorsConfiguration)
+                    changeColorSetting(context, colorsConfiguration, previousSettingValue)
                     base.evaluate()
                 } finally {
                     // Restore the previous colors.
-                    changeColorSetting(context, previousSettingValue)
+                    changeColorSetting(context, previousSettingValue, colorsConfiguration)
                 }
             }
         }
     }
 
-    private fun changeColorSetting(context: Context, settingValue: String?) {
+    private fun changeColorSetting(
+        context: Context,
+        settingValue: String?,
+        previousSettingValue: String?
+    ) {
+        fun primaryDark() = context.getColor(android.R.color.system_primary_dark)
+
         // Save the current value of the system_primary_dark color.
-        val primaryDarkBefore = context.getColor(android.R.color.system_primary_dark)
+        val primaryDarkBefore = primaryDark()
 
         // Change the Material You colors configuration.
         Settings.Secure.putString(
@@ -88,9 +94,16 @@ class MaterialYouColorsRule(
         // Wait for the setting propagation by waiting for the system_primary_dark color to change.
         waitFor(
             timeoutMs = 5_000,
-            errorMessage = "system_primary_dark color did not change within 5s"
+            errorMessage =
+                """
+                system_primary_dark color did not change within 5s
+                primaryDarkBefore=${primaryDark()}
+                settingValue=$settingValue
+                previousSettingValue=$previousSettingValue
+            """
+                    .trimIndent()
         ) {
-            primaryDarkBefore != context.getColor(android.R.color.system_primary_dark)
+            primaryDarkBefore != primaryDark()
         }
     }
 
