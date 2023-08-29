@@ -16,10 +16,12 @@
 
 package android.platform.tests;
 
+import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
 
 import android.platform.helpers.HelperAccessor;
 import android.platform.helpers.IAutoHomeHelper;
+import android.platform.helpers.IAutoStatusBarHelper;
 
 import androidx.test.runner.AndroidJUnit4;
 
@@ -30,9 +32,11 @@ import org.junit.runner.RunWith;
 public class StatusBarTest {
 
     private HelperAccessor<IAutoHomeHelper> mHomeHelper;
+    private HelperAccessor<IAutoStatusBarHelper> mStatusBarHelper;
 
     public StatusBarTest() {
         mHomeHelper = new HelperAccessor<>(IAutoHomeHelper.class);
+        mStatusBarHelper = new HelperAccessor<>(IAutoStatusBarHelper.class);
     }
 
     @Test
@@ -40,5 +44,19 @@ public class StatusBarTest {
         assertTrue("Bluetooth Button is not displayed", mHomeHelper.get().hasBluetoothButton());
         assertTrue("Network Button is not displayed", mHomeHelper.get().hasNetworkButton());
         assertTrue("Brightness Button is not displayed", mHomeHelper.get().hasDisplayBrightness());
+    }
+
+    @Test
+    public void testToVerifyChangeToDayMode() {
+        assertTrue("Unable to change to day mode", mStatusBarHelper.get().changeToDayMode());
+        // Constant value is 1 for Night mode no
+        assertEquals(1, mStatusBarHelper.get().getCurrentDisplayMode());
+    }
+
+    @Test
+    public void testToVerifyChangeToNightMode() {
+        assertTrue("Unable to change to night mode", mStatusBarHelper.get().changeToNightMode());
+        // Constant value is 2 for Night mode yes
+        assertEquals(2, mStatusBarHelper.get().getCurrentDisplayMode());
     }
 }

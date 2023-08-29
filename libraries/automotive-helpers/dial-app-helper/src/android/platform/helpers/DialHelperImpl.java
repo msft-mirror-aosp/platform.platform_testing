@@ -75,6 +75,16 @@ public class DialHelperImpl extends AbstractStandardAppHelper implements IAutoDi
     }
 
     /** {@inheritDoc} */
+    @Override
+    public void pressDeviceOnPrompt() {
+        BySelector deviceButtonSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.DEVICE_TITLE);
+        UiObject2 deviceButton = getSpectatioUiUtil().findUiObject(deviceButtonSelector);
+
+        if (deviceButton != null) getSpectatioUiUtil().clickAndWait(deviceButton);
+    }
+
+    /** {@inheritDoc} */
     public void open() {
         getSpectatioUiUtil().pressHome();
         getSpectatioUiUtil().wait1Second();
@@ -279,9 +289,12 @@ public class DialHelperImpl extends AbstractStandardAppHelper implements IAutoDi
     public String getContactName() {
         BySelector contactNameSelector =
                 getUiElementFromConfig(AutomotiveConfigConstants.DIALED_CONTACT_TITLE);
+        String action =
+                String.format(
+                        "Find contact name using BySelector: %s", contactNameSelector.toString());
+
         UiObject2 contactName = getSpectatioUiUtil().findUiObject(contactNameSelector);
-        getSpectatioUiUtil()
-                .validateUiObject(contactName, AutomotiveConfigConstants.DIALED_CONTACT_TITLE);
+        getSpectatioUiUtil().validateUiObject(contactName, action);
         return contactName.getText();
     }
 

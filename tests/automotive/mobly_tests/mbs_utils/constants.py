@@ -16,8 +16,12 @@
 APS_PACKAGE = 'android.platform.snippets'
 DIAL_A_NUMBER = 'Dial a number'
 DEFAULT_WAIT_TIME_FIVE_SECS = 5
+WAIT_FOR_LOAD = 2
 BT_DEFAULT_TIMEOUT = 15
 WAIT_ONE_SEC = 1
+WAIT_TWO_SECONDS = 2
+SYNC_WAIT_TIME = 10 # Sometimes syncing between devices can take a while
+
 BTSNOOP_LOG_PATH_ON_DEVICE = '/data/misc/bluetooth/logs/btsnoop_hci.log'
 BTSNOOP_LAST_LOG_PATH_ON_DEVICE = (
     '/data/misc/bluetooth/logs/btsnoop_hci.log.last'
@@ -61,3 +65,16 @@ BT_PROFILE_STATES = {
     'connected': 2,
     'disconnecting': 3,
 }
+PATH_TO_CONTACTS_VCF_FILE = 'platform_testing/tests/automotive/mobly_tests/mbs_utils/contacts_test.vcf'
+
+PHONE_CONTACTS_DESTINATION_PATH = (
+    '/data/data/com.google.android.contacts/cache/contacts.vcf'
+)
+
+IMPOST_CONTACTS_SHELL_COMAND = (
+    'am start-activity -W -t "text/x-vcard" -d file://'
+    + PHONE_CONTACTS_DESTINATION_PATH
+    + ' -a android.intent.action.VIEW com.google.android.contacts'
+)
+
+ONE_SEC = 1

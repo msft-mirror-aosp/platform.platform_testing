@@ -1,0 +1,8 @@
+TestBeds:
+  - Name: TwoDeviceTestBed
+    Controllers:
+      AndroidDevice:
+      - serial: serial_number
+        label: hu
+      - serial: serial_number
+        label: phone
