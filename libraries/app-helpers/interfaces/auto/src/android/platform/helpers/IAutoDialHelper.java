@@ -41,6 +41,15 @@ public interface IAutoDialHelper extends IAppHelper, Scrollable {
     void dialANumber(String phoneNumber);
 
     /**
+     * Setup expectations: A prompt allowing the user to select "Device" is open.
+     *
+     * <p>This method is meant to be used when contacts are being uploaded onto a device (the
+     * confirmation dialogue allows either the device to be selected for upload, or for
+     * cancellation.
+     */
+    void pressDeviceOnPrompt();
+
+    /**
      * Setup expectations: The app is open and there is an ongoing call.
      *
      * <p>This method is used to end call using softkey.

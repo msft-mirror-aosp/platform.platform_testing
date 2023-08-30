@@ -67,7 +67,9 @@
     "OPEN_NOTIFICATIONS_COMMAND": "service call statusbar 1",
     "STOP_SETTING_APP_COMMAND": "am force-stop com.android.car.settings",
     "OPEN_SETTINGS_COMMAND": "am start -a android.settings.SETTINGS",
-    "MEDIA_LAUNCH_COMMAND": "am start -a android.car.intent.action.MEDIA_TEMPLATE -e android.car.intent.extra.MEDIA_COMPONENT com.android.bluetooth/com.android.bluetooth.avrcpcontroller.BluetoothMediaBrowserService"
+    "MEDIA_LAUNCH_COMMAND": "am start -a android.car.intent.action.MEDIA_TEMPLATE -e android.car.intent.extra.MEDIA_COMPONENT com.android.bluetooth/com.android.bluetooth.avrcpcontroller.BluetoothMediaBrowserService",
+    "NIGHT_MODE_COMMAND": "dumpsys activity service com.android.car/.CarService day-night-mode  night",
+    "DAY_MODE_COMMAND": "dumpsys activity service com.android.car/.CarService day-night-mode  day"
   },
   "UI_ELEMENTS": {
     "MAKE_CALL": {
@@ -116,12 +118,12 @@
     "CONTACT_LIST_SCROLL_FORWARD": {
       "TYPE": "RESOURCE_ID",
       "VALUE": "car_ui_scrollbar_page_down",
-      "PACKAGE": "com.android.car.ui.sharedlibrary"
+      "PACKAGE": "com.chassis.car.ui.plugin"
     },
     "CONTACT_LIST_SCROLL_BACKWARD": {
       "TYPE": "RESOURCE_ID",
       "VALUE": "car_ui_scrollbar_page_up",
-      "PACKAGE": "com.android.car.ui.sharedlibrary"
+      "PACKAGE": "com.chassis.car.ui.plugin"
     },
     "CONTACT_LIST_SCROLL_ELEMENT": {
       "TYPE": "RESOURCE_ID",
@@ -1518,6 +1520,10 @@
       "TYPE": "RESOURCE_ID",
       "VALUE": "qc_title",
       "PACKAGE": "com.android.systemui"
+    },
+    "DEVICE_TITLE": {
+      "TYPE": "TEXT",
+      "VALUE": "Device"
     },
     "BLUETOOTH_CONNECTED_DISCONNECTED_TEXT": {
       "TYPE": "MULTIPLE",

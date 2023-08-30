@@ -22,6 +22,8 @@ import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.Rect
 import android.os.Bundle
+import android.platform.uiautomator_helpers.DeviceHelpers.shell
+import android.provider.Settings.System
 import androidx.test.platform.app.InstrumentationRegistry
 import java.io.File
 import java.io.FileNotFoundException
@@ -30,7 +32,6 @@ import java.io.IOException
 import androidx.test.runner.screenshot.Screenshot
 import com.android.internal.app.SimpleIconFactory
 import org.junit.rules.TestRule
-import org.junit.rules.TestWatcher
 import org.junit.runner.Description
 import org.junit.runners.model.Statement
 import platform.test.screenshot.matchers.BitmapMatcher
@@ -445,24 +446,53 @@ class ScreenshotRuleAsserter private constructor(
     private var matcher: BitmapMatcher = PixelPerfectMatcher()
     private var beforeScreenshot: Runnable? = null
     private var afterScreenshot: Runnable? = null
+
     // use the instrumentation screenshot as default
     private var screenShotter: BitmapSupplier = { Screenshot.capture().bitmap }
+
+    private var pointerLocationSetting: Int
+        get() = shell("settings get system ${System.POINTER_LOCATION}").trim().toIntOrNull() ?: 0
+        set(value) { shell("settings put system ${System.POINTER_LOCATION} $value") }
+
+    private var showTouchesSetting
+        get() = shell("settings get system ${System.SHOW_TOUCHES}").trim().toIntOrNull() ?: 0
+        set(value) { shell("settings put system ${System.SHOW_TOUCHES} $value") }
+
+    private var prevPointerLocationSetting: Int? = null
+    private var prevShowTouchesSetting: Int? = null
     override fun assertGoldenImage(goldenId: String) {
-        beforeScreenshot?.run()
+        runBeforeScreenshot()
         try {
             rule.assertBitmapAgainstGolden(screenShotter(), goldenId, matcher)
         } finally {
-            afterScreenshot?.run()
+            runAfterScreenshot()
         }
     }
 
     override fun assertGoldenImage(goldenId: String, areas: List<Rect>) {
-        beforeScreenshot?.run()
+        runBeforeScreenshot()
         try {
             rule.assertBitmapAgainstGolden(screenShotter(), goldenId, matcher, areas)
         } finally {
-            afterScreenshot?.run()
+            runAfterScreenshot()
         }
+    }
+
+    private fun runBeforeScreenshot() {
+        prevPointerLocationSetting = pointerLocationSetting
+        prevShowTouchesSetting = showTouchesSetting
+
+        if (prevPointerLocationSetting != 0) pointerLocationSetting = 0
+        if (prevShowTouchesSetting != 0) showTouchesSetting = 0
+
+        beforeScreenshot?.run()
+    }
+
+    private fun runAfterScreenshot() {
+        afterScreenshot?.run()
+
+        prevPointerLocationSetting?.let { pointerLocationSetting = it }
+        prevShowTouchesSetting?.let { showTouchesSetting = it }
     }
 
     class Builder(private val rule: ScreenshotTestRule) {

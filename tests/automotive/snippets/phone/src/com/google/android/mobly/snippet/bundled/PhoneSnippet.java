@@ -214,6 +214,11 @@ public class PhoneSnippet implements Snippet {
         mDialerHelper.get().openContacts();
     }
 
+    @Rpc(description = "Press 'Device' on a prompt, if present.")
+    public void pressDevice() {
+        mDialerHelper.get().pressDeviceOnPrompt();
+    }
+
     @Rpc(description = "Add and remove contact ( contact details are open ) from favorites.")
     public void addRemoveFavoriteContact() {
         mContactsDetailsHelper.get().addRemoveFavoriteContact();

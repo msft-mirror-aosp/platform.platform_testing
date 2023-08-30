@@ -13,7 +13,15 @@
 #  limitations under the License.
 
 import logging
+import time
 
+
+from mobly.controllers import android_device
+from mbs_utils import constants
+
+""" This exception may be expanded in the future to provide better error discoverability."""
+class CallUtilsError(Exception):
+  pass
 
 class CallUtils:
     """Calling sequence utility for BT calling test using Spectatio UI APIs.
@@ -28,31 +36,98 @@ class CallUtils:
     def __init__(self, device):
         self.device = device
 
-    # Open contacts
-    def open_phone_app(self):
-        logging.info('Open phone app')
-        self.device.mbs.openPhoneApp()
-
-    # Dial phone number
     def dial_a_number(self, callee_number):
+        """ Dial phone number """
         logging.info('Dial phone number <%s>', callee_number)
         self.device.mbs.dialANumber(callee_number)
 
-    # Make call
-    def make_call(self):
-        logging.info('Make a call')
-        self.device.mbs.makeCall()
 
-    # Get dialing phone number
-    def get_dialing_number(self):
-        return self.device.mbs.getDialedNumber()
-
-    # End call
     def end_call(self):
+        """  End the call. Throws an error if non call is currently ongoing. """
         logging.info('End the call')
         self.device.mbs.endCall()
 
-    # Open call history
+
+    def execute_shell_on_device(self, device_target, shell_command):
+        """Execute any shell command on any device"""
+        logging.info(
+            'Executing shell command: <%s> on device <%s>',
+            shell_command,
+            device_target.serial,
+        )
+        device_target.adb.shell(shell_command)
+
+
+    def get_dialing_number(self):
+        """ Get dialing phone number"""
+        return self.device.mbs.getDialedNumber()
+
+
+    def import_contacts_from_vcf_file(self, device_target):
+        """ Importing contacts from VCF file"""
+        logging.info('Importing contacts from VCF file to device Contacts')
+        self.execute_shell_on_device(
+            device_target,
+            constants.IMPOST_CONTACTS_SHELL_COMAND,
+        )
+
+    def make_call(self):
+        """ Make call"""
+        logging.info('Make a call')
+        self.device.mbs.makeCall()
+
     def open_call_history(self):
+        """ Open call history """
         logging.info('Open call history')
         self.device.mbs.openCallHistory()
+
+    def open_contacts(self):
+        """Open contacts"""
+        logging.info('Opening contacts')
+        self.device.mbs.openContacts()
+    def open_phone_app(self):
+        logging.info('Opening phone app')
+        self.device.mbs.openPhoneApp()
+
+    def press_enter_on_device(self, device_target):
+        """Press ENTER on device"""
+        logging.info('Press ENTER on device')
+        self.execute_shell_on_device(device_target, 'input keyevent KEYCODE_ENTER')
+        self.wait_with_log(constants.ONE_SEC)
+
+    def push_vcf_contacts_to_device(self, device_target, path_to_contacts_file):
+        """Pushing contacts file to device using adb command"""
+        logging.info(
+            'Pushing VCF contacts to device %s to destination <%s>',
+            device_target.serial,
+            constants.PHONE_CONTACTS_DESTINATION_PATH,
+        )
+        device_target.adb.push(
+            [path_to_contacts_file, constants.PHONE_CONTACTS_DESTINATION_PATH],
+            timeout=20,
+        )
+
+
+    def upload_vcf_contacts_to_device(self, device_target, path_to_contacts_file):
+        """Upload contacts do device"""
+        self.push_vcf_contacts_to_device(device_target, path_to_contacts_file)
+        self.import_contacts_from_vcf_file(device_target)
+        device_target.mbs.pressDevice()
+
+    def verify_contact_name(self, expected_contact):
+        actual_dialed_contact = self.device.mbs.getContactName()
+        logging.info(
+            'Expected contact name being called: <%s>, Actual: <%s>',
+            expected_contact,
+            actual_dialed_contact,
+        )
+        if actual_dialed_contact != expected_contact:
+            raise CallUtilsError(
+                "Actual and Expected contacts on dial pad don't match."
+            )
+    def wait_with_log(self, wait_time):
+        """ Wait for specific time for debugging"""
+        logging.info('Sleep for %s seconds', wait_time)
+        time.sleep(wait_time)
+
+

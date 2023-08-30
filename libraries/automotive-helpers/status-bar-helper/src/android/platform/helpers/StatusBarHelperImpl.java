@@ -16,6 +16,8 @@
 package android.platform.helpers;
 
 import android.app.Instrumentation;
+import android.app.UiModeManager;
+import android.content.Context;
 
 import androidx.test.uiautomator.BySelector;
 import androidx.test.uiautomator.UiObject2;
@@ -23,8 +25,13 @@ import androidx.test.uiautomator.UiObject2;
 /** Helper file for status bar tests */
 public class StatusBarHelperImpl extends AbstractStandardAppHelper implements IAutoStatusBarHelper {
 
+    private final UiModeManager mUiModeManager;
+    private final Context mContext;
+
     public StatusBarHelperImpl(Instrumentation instr) {
         super(instr);
+        mContext = instr.getContext();
+        mUiModeManager = mContext.getSystemService(UiModeManager.class);
     }
 
     /** {@inheritDoc} */
@@ -340,4 +347,28 @@ public class StatusBarHelperImpl extends AbstractStandardAppHelper implements IA
         getSpectatioUiUtil().waitForIdle();
     }
 
+    @Override
+    public boolean changeToDayMode() {
+        String dayModeResult =
+                getSpectatioUiUtil()
+                        .executeShellCommand(
+                                getCommandFromConfig(AutomotiveConfigConstants.DAY_MODE_COMMAND));
+        boolean result = dayModeResult.contains("changed to: day");
+        return result;
+    }
+
+    @Override
+    public boolean changeToNightMode() {
+        String nightModeResult =
+                getSpectatioUiUtil()
+                        .executeShellCommand(
+                                getCommandFromConfig(AutomotiveConfigConstants.NIGHT_MODE_COMMAND));
+        boolean result = nightModeResult.contains("changed to: night");
+        return result;
+    }
+
+    @Override
+    public int getCurrentDisplayMode() {
+        return mUiModeManager.getNightMode();
+    }
 }
