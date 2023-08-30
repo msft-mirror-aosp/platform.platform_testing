@@ -67,7 +67,9 @@
     "OPEN_NOTIFICATIONS_COMMAND": "service call statusbar 1",
     "STOP_SETTING_APP_COMMAND": "am force-stop com.android.car.settings",
     "OPEN_SETTINGS_COMMAND": "am start -a android.settings.SETTINGS",
-    "MEDIA_LAUNCH_COMMAND": "am start -a android.car.intent.action.MEDIA_TEMPLATE -e android.car.intent.extra.MEDIA_COMPONENT com.android.bluetooth/com.android.bluetooth.avrcpcontroller.BluetoothMediaBrowserService"
+    "MEDIA_LAUNCH_COMMAND": "am start -a android.car.intent.action.MEDIA_TEMPLATE -e android.car.intent.extra.MEDIA_COMPONENT com.android.bluetooth/com.android.bluetooth.avrcpcontroller.BluetoothMediaBrowserService",
+    "NIGHT_MODE_COMMAND": "dumpsys activity service com.android.car/.CarService day-night-mode  night",
+    "DAY_MODE_COMMAND": "dumpsys activity service com.android.car/.CarService day-night-mode  day"
   },
   "UI_ELEMENTS": {
     "MAKE_CALL": {

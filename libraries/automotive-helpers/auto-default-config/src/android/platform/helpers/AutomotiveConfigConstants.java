@@ -500,6 +500,8 @@ public class AutomotiveConfigConstants {
     public static final String STATUS_BAR_BLUETOOTH_SETTINGS_PAGE_TITLE =
             "STATUS_BAR_BLUETOOTH_SETTINGS_PAGE_TITLE";
     public static final String STATUS_BAR_BLUETOOTH_BUTTON = "STATUS_BAR_BLUETOOTH_BUTTON";
+    public static final String NIGHT_MODE_COMMAND = "NIGHT_MODE_COMMAND";
+    public static final String DAY_MODE_COMMAND = "DAY_MODE_COMMAND";
 
     public static final String TOGGLE_LOCATION = "TOGGLE_LOCATION";
     public static final String LOCATION_ACCESS = "LOCATION_ACCESS";

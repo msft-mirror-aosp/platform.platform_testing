@@ -173,4 +173,26 @@ public interface IAutoStatusBarHelper extends IAppHelper {
      * <p>click on forget button
      */
     void forgetWifi();
+
+    /**
+     * Setup expectations: None
+     *
+     * <p>This method changes the device mode to DAY Mode</>
+     */
+    boolean changeToDayMode();
+
+    /**
+     * Setup expectations: None
+     *
+     * <p>This method changes the device mode to NIGHT Mode</>
+     */
+    boolean changeToNightMode();
+
+    /**
+     * Setup expectations: None
+     *
+     * <p>This method gets the current night mode, for night mode no the value should be 1 for night
+     * mode yes the return value should be 2</>
+     */
+    int getCurrentDisplayMode();
 }
