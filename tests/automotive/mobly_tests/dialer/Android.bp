@@ -43,9 +43,35 @@ python_test_host {
 }
 
 python_test_host {
+    name: "BTContactSortTest",
+    main: "dialer_test_sort_contacts_by_last_name.py",
+    srcs: ["dialer_test_sort_contacts_by_last_name.py"],
+    libs: [
+        "mobly",
+        "mbs_utils"
+    ],
+    test_suites: [
+        "catbox",
+    ],
+    test_options: {
+        unit_test: false,
+    },
+    data: [
+        // Package the snippet with the mobly test
+        ":AutomotivePhoneSnippet",
+        ":mobly-bundled-snippets",
+    ],
+    version: {
+        py3: {
+            embedded_launcher: true,
+        },
+    },
+}
+
+python_test_host {
     name: "BTContactTest",
-    main: "bt_contact_test.py",
-    srcs: ["bt_contact_test.py"],
+    main: "dialer_test_contact_test.py",
+    srcs: ["dialer_test_contact_test.py"],
     libs: [
         "mobly",
         "mbs_utils"
