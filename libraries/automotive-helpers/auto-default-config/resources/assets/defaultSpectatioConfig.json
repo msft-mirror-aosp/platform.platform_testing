@@ -1525,6 +1525,15 @@
       "TYPE": "TEXT",
       "VALUE": "Device"
     },
+    "RADIO_BUTTON": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "radio_button",
+      "PACKAGE": "com.android.permissioncontroller"
+    },
+    "PRIVACY_PERMISSION_MANAGER":{
+      "TYPE": "TEXT",
+      "VALUE": "Permission manager"
+    },
     "BLUETOOTH_CONNECTED_DISCONNECTED_TEXT": {
       "TYPE": "MULTIPLE",
       "SPECIFIERS": [
@@ -1652,15 +1661,6 @@
     "CANCEL": {
       "TYPE": "TEXT",
       "VALUE": "Cancel"
-    },
-    "RADIO_BUTTON": {
-        "TYPE": "RESOURCE_ID",
-        "VALUE": "radio_button",
-        "PACKAGE": "com.android.permissioncontroller"
-    },
-    "PRIVACY_PERMISSION_MANAGER":{
-      "TYPE": "TEXT",
-      "VALUE": "Permission manager"
     },
     "PRIVACY_CALENDAR": {
       "TYPE": "TEXT_CONTAINS",
