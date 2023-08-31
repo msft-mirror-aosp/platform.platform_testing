@@ -18,9 +18,9 @@ package android.tools.common
 
 interface ILogger {
     fun <T> withTracing(name: String, predicate: () -> T): T
-    fun v(tag: String, msg: String)
-    fun d(tag: String, msg: String)
-    fun i(tag: String, msg: String)
-    fun w(tag: String, msg: String)
+    fun v(tag: String, msg: String, error: Throwable? = null)
+    fun d(tag: String, msg: String, error: Throwable? = null)
+    fun i(tag: String, msg: String, error: Throwable? = null)
+    fun w(tag: String, msg: String, error: Throwable? = null)
     fun e(tag: String, msg: String, error: Throwable? = null)
 }

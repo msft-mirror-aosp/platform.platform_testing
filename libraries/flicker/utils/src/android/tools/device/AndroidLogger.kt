@@ -21,20 +21,20 @@ import android.tools.common.ILogger
 import android.util.Log
 
 class AndroidLogger : ILogger {
-    override fun v(tag: String, msg: String) {
-        Log.v(tag, msg)
+    override fun v(tag: String, msg: String, error: Throwable?) {
+        Log.v(tag, msg, error)
     }
 
-    override fun d(tag: String, msg: String) {
-        Log.d(tag, msg)
+    override fun d(tag: String, msg: String, error: Throwable?) {
+        Log.d(tag, msg, error)
     }
 
-    override fun i(tag: String, msg: String) {
-        Log.i(tag, msg)
+    override fun i(tag: String, msg: String, error: Throwable?) {
+        Log.i(tag, msg, error)
     }
 
-    override fun w(tag: String, msg: String) {
-        Log.w(tag, msg)
+    override fun w(tag: String, msg: String, error: Throwable?) {
+        Log.w(tag, msg, error)
     }
 
     override fun e(tag: String, msg: String, error: Throwable?) {

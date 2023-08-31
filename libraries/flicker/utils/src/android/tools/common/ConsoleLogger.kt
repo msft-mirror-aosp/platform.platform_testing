@@ -17,13 +17,25 @@
 package android.tools.common
 
 class ConsoleLogger : ILogger {
-    override fun v(tag: String, msg: String) = println("(V) $tag $msg")
+    override fun v(tag: String, msg: String, error: Throwable?) {
+        println("(V) $tag $msg")
+        error?.printStackTrace()
+    }
 
-    override fun d(tag: String, msg: String) = println("(D) $tag $msg")
+    override fun d(tag: String, msg: String, error: Throwable?) {
+        println("(D) $tag $msg")
+        error?.printStackTrace()
+    }
 
-    override fun i(tag: String, msg: String) = println("(I) $tag $msg")
+    override fun i(tag: String, msg: String, error: Throwable?) {
+        println("(I) $tag $msg")
+        error?.printStackTrace()
+    }
 
-    override fun w(tag: String, msg: String) = println("(W) $tag $msg")
+    override fun w(tag: String, msg: String, error: Throwable?) {
+        println("(W) $tag $msg")
+        error?.printStackTrace()
+    }
 
     override fun e(tag: String, msg: String, error: Throwable?) {
         println("(e) $tag $msg $error")

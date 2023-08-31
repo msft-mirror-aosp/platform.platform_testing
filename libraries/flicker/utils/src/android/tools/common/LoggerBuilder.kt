@@ -17,10 +17,22 @@
 package android.tools.common
 
 class LoggerBuilder {
-    private var onV: (tag: String, msg: String) -> Unit = { tag, msg -> println("(V) $tag $msg") }
-    private var onD: (tag: String, msg: String) -> Unit = { tag, msg -> println("(D) $tag $msg") }
-    private var onI: (tag: String, msg: String) -> Unit = { tag, msg -> println("(I) $tag $msg") }
-    private var onW: (tag: String, msg: String) -> Unit = { tag, msg -> println("(W) $tag $msg") }
+    private var onV: (tag: String, msg: String, error: Throwable?) -> Unit = { tag, msg, error ->
+        println("(V) $tag $msg")
+        error?.printStackTrace()
+    }
+    private var onD: (tag: String, msg: String, error: Throwable?) -> Unit = { tag, msg, error ->
+        println("(D) $tag $msg")
+        error?.printStackTrace()
+    }
+    private var onI: (tag: String, msg: String, error: Throwable?) -> Unit = { tag, msg, error ->
+        println("(I) $tag $msg")
+        error?.printStackTrace()
+    }
+    private var onW: (tag: String, msg: String, error: Throwable?) -> Unit = { tag, msg, error ->
+        println("(W) $tag $msg")
+        error?.printStackTrace()
+    }
     private var onE: (tag: String, msg: String, error: Throwable?) -> Unit = { tag, msg, error ->
         println("(e) $tag $msg $error")
         error?.printStackTrace()
@@ -34,21 +46,25 @@ class LoggerBuilder {
         }
     }
 
-    fun setV(predicate: (tag: String, msg: String) -> Unit): LoggerBuilder = apply {
-        onV = predicate
-    }
+    fun setV(predicate: (tag: String, msg: String, error: Throwable?) -> Unit): LoggerBuilder =
+        apply {
+            onV = predicate
+        }
 
-    fun setD(predicate: (tag: String, msg: String) -> Unit): LoggerBuilder = apply {
-        onD = predicate
-    }
+    fun setD(predicate: (tag: String, msg: String, error: Throwable?) -> Unit): LoggerBuilder =
+        apply {
+            onD = predicate
+        }
 
-    fun setI(predicate: (tag: String, msg: String) -> Unit): LoggerBuilder = apply {
-        onI = predicate
-    }
+    fun setI(predicate: (tag: String, msg: String, error: Throwable?) -> Unit): LoggerBuilder =
+        apply {
+            onI = predicate
+        }
 
-    fun setW(predicate: (tag: String, msg: String) -> Unit): LoggerBuilder = apply {
-        onW = predicate
-    }
+    fun setW(predicate: (tag: String, msg: String, error: Throwable?) -> Unit): LoggerBuilder =
+        apply {
+            onW = predicate
+        }
 
     fun setE(predicate: (tag: String, msg: String, error: Throwable?) -> Unit): LoggerBuilder =
         apply {
@@ -62,15 +78,15 @@ class LoggerBuilder {
 
     fun build(): ILogger {
         return object : ILogger {
-            override fun d(tag: String, msg: String) = onD(tag, msg)
+            override fun d(tag: String, msg: String, error: Throwable?) = onD(tag, msg, error)
 
             override fun e(tag: String, msg: String, error: Throwable?) = onE(tag, msg, error)
 
-            override fun i(tag: String, msg: String) = onI(tag, msg)
+            override fun i(tag: String, msg: String, error: Throwable?) = onI(tag, msg, error)
 
-            override fun v(tag: String, msg: String) = onV(tag, msg)
+            override fun v(tag: String, msg: String, error: Throwable?) = onV(tag, msg, error)
 
-            override fun w(tag: String, msg: String) = onW(tag, msg)
+            override fun w(tag: String, msg: String, error: Throwable?) = onW(tag, msg, error)
 
             override fun <T> withTracing(name: String, predicate: () -> T): T {
                 return onTracing(name, predicate as () -> Any) as T

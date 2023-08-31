@@ -33,6 +33,7 @@ python_test_host {
         // Package the snippet with the mobly test
         ":AutomotivePhoneSnippet",
         ":mobly-bundled-snippets",
+        "bt_discovery_config.yaml",
     ],
     version: {
         py3: {

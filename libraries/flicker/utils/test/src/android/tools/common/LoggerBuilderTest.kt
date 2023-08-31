@@ -22,14 +22,16 @@ import org.junit.Test
 class LoggerBuilderTest {
 
     @Test
-    fun testOnV() {
+    fun testOnVerboseWithoutException() {
         var actualTag = ""
         var actualMsg = ""
+        var actualError: Throwable? = Exception(ERROR)
         val logger =
             LoggerBuilder()
-                .setV { tag, msg ->
+                .setV { tag, msg, error ->
                     actualTag = tag
                     actualMsg = msg
+                    actualError = error
                 }
                 .build()
         logger.v(EXPECTED_TAG, EXPECTED_MSG)
@@ -39,17 +41,43 @@ class LoggerBuilderTest {
         logger.e(ERROR, ERROR)
         Assert.assertEquals(actualTag, EXPECTED_TAG)
         Assert.assertEquals(actualMsg, EXPECTED_MSG)
+        Assert.assertNull(actualError)
     }
 
     @Test
-    fun testOnD() {
+    fun testOnVerboseWithException() {
         var actualTag = ""
         var actualMsg = ""
+        var actualError: Throwable? = Exception(ERROR)
         val logger =
             LoggerBuilder()
-                .setD { tag, msg ->
+                .setV { tag, msg, error ->
                     actualTag = tag
                     actualMsg = msg
+                    actualError = error
+                }
+                .build()
+        logger.v(EXPECTED_TAG, EXPECTED_MSG, EXPECTED_ERROR)
+        logger.d(ERROR, ERROR)
+        logger.i(ERROR, ERROR)
+        logger.w(ERROR, ERROR)
+        logger.e(ERROR, ERROR)
+        Assert.assertEquals(actualTag, EXPECTED_TAG)
+        Assert.assertEquals(actualMsg, EXPECTED_MSG)
+        Assert.assertSame(actualError, EXPECTED_ERROR)
+    }
+
+    @Test
+    fun testOnDebugWithoutException() {
+        var actualTag = ""
+        var actualMsg = ""
+        var actualError: Throwable? = Exception(ERROR)
+        val logger =
+            LoggerBuilder()
+                .setD { tag, msg, error ->
+                    actualTag = tag
+                    actualMsg = msg
+                    actualError = error
                 }
                 .build()
         logger.d(EXPECTED_TAG, EXPECTED_MSG)
@@ -59,17 +87,43 @@ class LoggerBuilderTest {
         logger.e(ERROR, ERROR)
         Assert.assertEquals(actualTag, EXPECTED_TAG)
         Assert.assertEquals(actualMsg, EXPECTED_MSG)
+        Assert.assertNull(actualError)
     }
 
     @Test
-    fun testOnI() {
+    fun testOnDebugWithException() {
         var actualTag = ""
         var actualMsg = ""
+        var actualError: Throwable? = Exception(ERROR)
         val logger =
             LoggerBuilder()
-                .setI { tag, msg ->
+                .setD { tag, msg, error ->
                     actualTag = tag
                     actualMsg = msg
+                    actualError = error
+                }
+                .build()
+        logger.d(EXPECTED_TAG, EXPECTED_MSG, EXPECTED_ERROR)
+        logger.v(ERROR, ERROR)
+        logger.i(ERROR, ERROR)
+        logger.w(ERROR, ERROR)
+        logger.e(ERROR, ERROR)
+        Assert.assertEquals(actualTag, EXPECTED_TAG)
+        Assert.assertEquals(actualMsg, EXPECTED_MSG)
+        Assert.assertSame(actualError, EXPECTED_ERROR)
+    }
+
+    @Test
+    fun testOnInfoWithoutException() {
+        var actualTag = ""
+        var actualMsg = ""
+        var actualError: Throwable? = Exception(ERROR)
+        val logger =
+            LoggerBuilder()
+                .setI { tag, msg, error ->
+                    actualTag = tag
+                    actualMsg = msg
+                    actualError = error
                 }
                 .build()
         logger.i(EXPECTED_TAG, EXPECTED_MSG)
@@ -79,17 +133,43 @@ class LoggerBuilderTest {
         logger.e(ERROR, ERROR)
         Assert.assertEquals(actualTag, EXPECTED_TAG)
         Assert.assertEquals(actualMsg, EXPECTED_MSG)
+        Assert.assertNull(actualError)
     }
 
     @Test
-    fun testOnW() {
+    fun testOnInfoWithException() {
         var actualTag = ""
         var actualMsg = ""
+        var actualError: Throwable? = Exception(ERROR)
         val logger =
             LoggerBuilder()
-                .setW { tag, msg ->
+                .setI { tag, msg, error ->
                     actualTag = tag
                     actualMsg = msg
+                    actualError = error
+                }
+                .build()
+        logger.i(EXPECTED_TAG, EXPECTED_MSG, EXPECTED_ERROR)
+        logger.d(ERROR, ERROR)
+        logger.v(ERROR, ERROR)
+        logger.w(ERROR, ERROR)
+        logger.e(ERROR, ERROR)
+        Assert.assertEquals(actualTag, EXPECTED_TAG)
+        Assert.assertEquals(actualMsg, EXPECTED_MSG)
+        Assert.assertSame(actualError, EXPECTED_ERROR)
+    }
+
+    @Test
+    fun testOnWarmWithoutException() {
+        var actualTag = ""
+        var actualMsg = ""
+        var actualError: Throwable? = Exception(ERROR)
+        val logger =
+            LoggerBuilder()
+                .setW { tag, msg, error ->
+                    actualTag = tag
+                    actualMsg = msg
+                    actualError = error
                 }
                 .build()
         logger.w(EXPECTED_TAG, EXPECTED_MSG)
@@ -99,10 +179,34 @@ class LoggerBuilderTest {
         logger.e(ERROR, ERROR)
         Assert.assertEquals(actualTag, EXPECTED_TAG)
         Assert.assertEquals(actualMsg, EXPECTED_MSG)
+        Assert.assertNull(actualError)
     }
 
     @Test
-    fun testOnEWithoutException() {
+    fun testOnWarmWithException() {
+        var actualTag = ""
+        var actualMsg = ""
+        var actualError: Throwable? = Exception(ERROR)
+        val logger =
+            LoggerBuilder()
+                .setW { tag, msg, error ->
+                    actualTag = tag
+                    actualMsg = msg
+                    actualError = error
+                }
+                .build()
+        logger.w(EXPECTED_TAG, EXPECTED_MSG, EXPECTED_ERROR)
+        logger.v(ERROR, ERROR)
+        logger.d(ERROR, ERROR)
+        logger.i(ERROR, ERROR)
+        logger.e(ERROR, ERROR)
+        Assert.assertEquals(actualTag, EXPECTED_TAG)
+        Assert.assertEquals(actualMsg, EXPECTED_MSG)
+        Assert.assertSame(actualError, EXPECTED_ERROR)
+    }
+
+    @Test
+    fun testOnErrorWithoutException() {
         var actualTag = ""
         var actualMsg = ""
         var actualError: Throwable? = Exception(ERROR)
@@ -125,7 +229,7 @@ class LoggerBuilderTest {
     }
 
     @Test
-    fun testOnEWithException() {
+    fun testOnErrorWithException() {
         var actualTag = ""
         var actualMsg = ""
         var actualError: Throwable? = Exception(ERROR)
