@@ -81,8 +81,8 @@ class BTUtils:
                     return
 
     def press_allow_on_device(self):
+        """ Repeatedly presses "Allow" on prompts until no more prompts appear"""
         logging.info('Attempting to press ALLOW')
         while (self.target.mbs.btPressAllow()):
             logging.info('ALLOW pressed!')
             time.sleep(TIME_FOR_PROMPT_TO_LOAD)
-        logging.info('(No more ALLOW prompts discovered)')
