@@ -65,6 +65,8 @@ constructor(
         }
             ?: failTestOnFaasFailure
 
+    private var testFailed = false
+
     init {
         CrossPlatform.setLogger(AndroidLogger())
             .setTimestampFactory(TimestampFactory { formatRealTimestamp(it) })
@@ -108,6 +110,7 @@ constructor(
     private fun handleStarting(description: Description) {
         Logger.i(LOG_TAG, "Test starting $description")
         metricsCollector.testStarted(description)
+        testFailed = false
     }
 
     private fun handleSucceeded(description: Description) {
@@ -115,12 +118,13 @@ constructor(
     }
 
     private fun handleFailed(e: Throwable?, description: Description) {
-        Logger.e(LOG_TAG, "$description test failed  with $e")
+        Logger.e(LOG_TAG, "$description test failed with", e)
         metricsCollector.testFailure(Failure(description, e))
+        testFailed = true
     }
 
     private fun handleSkipped(e: AssumptionViolatedException, description: Description) {
-        Logger.i(LOG_TAG, "Test skipped $description with $e")
+        Logger.i(LOG_TAG, "Test skipped $description with", e)
         metricsCollector.testSkipped(description)
     }
 
@@ -141,6 +145,12 @@ constructor(
         metricsCollector.testFinished(description)
         for (executionError in metricsCollector.executionErrors) {
             Logger.e(LOG_TAG, "FaaS reported execution errors", executionError)
+        }
+        if (testFailed || metricsCollector.executionErrors.isNotEmpty()) {
+            // If we had an execution error or the underlying test failed, then we have no
+            // guarantees about the correctness of the flicker assertions and detect scenarios,
+            // so we should not check those and instead return immediately.
+            return
         }
         if (failTestOnFaasFailure && testContainsFlicker(description)) {
             throw metricsCollector

@@ -190,6 +190,28 @@ class FlickerServiceRuleTest {
         Mockito.verifyZeroInteractions(mockFlickerServiceResultsCollector)
     }
 
+    @Test
+    fun assertionFailuresNotReportedIfUnderlyingTestFailed() {
+        val mockFlickerServiceResultsCollector =
+            Mockito.mock(IFlickerServiceResultsCollector::class.java)
+        val testRule =
+            FlickerServiceRule(
+                metricsCollector = mockFlickerServiceResultsCollector,
+                failTestOnFaasFailure = true
+            )
+        val mockDescription = Description.createTestDescription(this::class.java, "mockTest")
+
+        val assertionError = Throwable("Some assertion error")
+        `when`(mockFlickerServiceResultsCollector.resultsForTest(mockDescription))
+            .thenReturn(listOf(mockFailureAssertionResult(assertionError)))
+
+        testRule.starting(mockDescription)
+        testRule.failed(Throwable("Mock failure"), mockDescription)
+
+        // Should not throw any assertion errors
+        testRule.finished(mockDescription)
+    }
+
     companion object {
         fun mockFailureAssertionResult(error: Throwable) =
             object : AssertionResult {
@@ -207,8 +229,6 @@ class FlickerServiceRuleTest {
                 override val passed = false
             }
 
-        @ClassRule
-        @JvmField
-        val ENV_CLEANUP = CleanFlickerEnvironmentRule()
+        @ClassRule @JvmField val ENV_CLEANUP = CleanFlickerEnvironmentRule()
     }
 }

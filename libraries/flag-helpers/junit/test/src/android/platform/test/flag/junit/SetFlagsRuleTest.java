@@ -34,7 +34,7 @@ public final class SetFlagsRuleTest {
     @Rule public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
 
     @Test
-    public void setFlagValues() throws Exception {
+    public void setFlagValues() {
         mSetFlagsRule.enableFlags("android.platform.test.flag.junit.flagName3");
         mSetFlagsRule.disableFlags("android.platform.test.flag.junit.flagName4");
         assertTrue(Flags.flagName3());
@@ -48,7 +48,7 @@ public final class SetFlagsRuleTest {
     }
 
     @Test
-    public void setFlagsAfterOneTest() throws Exception {
+    public void setFlagsAfterOneTest() {
         mSetFlagsRule.enableFlags(
                 "android.platform.test.flag.junit.flagName3",
                 "android.platform.test.flag.junit.flagName4");

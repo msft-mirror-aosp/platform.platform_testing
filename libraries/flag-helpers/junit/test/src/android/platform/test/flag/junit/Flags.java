@@ -30,17 +30,17 @@ public class Flags {
 
     /** Returns the flag value. */
     public static boolean flagName3() {
-        return sFeatureFlags.flagName3();
+        return FEATURE_FLAGS.flagName3();
     }
 
     /** Another flag. */
     public static boolean flagName4() {
-        return sFeatureFlags.flagName4();
+        return FEATURE_FLAGS.flagName4();
     }
 
     public static void setFeatureFlags(FeatureFlags featureFlagsImpl) {
-        sFeatureFlags = featureFlagsImpl;
+        FEATURE_FLAGS = featureFlagsImpl;
     }
 
-    private static FeatureFlags sFeatureFlags;
+    private static FeatureFlags FEATURE_FLAGS;
 }

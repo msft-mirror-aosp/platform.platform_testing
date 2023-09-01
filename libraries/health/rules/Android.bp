@@ -29,6 +29,7 @@ java_library {
         "collector-device-lib-platform",
         "guava",
         "memory-helper",
+        "notes-role-test-helper",
         "package-helper",
         "launcher-aosp-tapl",
         "flickerlib",
@@ -36,7 +37,8 @@ java_library {
         "health-testing-utils",
         "ub-uiautomator",
         "uiautomator-helpers",
-        "uinput-device-test-helper"
+        "uinput-device-test-helper",
+        "user-helper",
     ],
     srcs: [
         "src/**/*.java",
@@ -67,5 +69,12 @@ java_library {
     srcs: ["src/**/*.java"],
     exclude_srcs: [
         "src/android/platform/test/rule/flicker/**/*.java",
+    ],
+}
+
+filegroup {
+    name: "platform-test-screenshot-rules",
+    srcs: [
+        "src/android/platform/test/rule/DisableAnimationsRule.kt",
     ],
 }

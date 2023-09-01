@@ -17,7 +17,7 @@
 package android.platform.test.flag.util;
 
 /** Exception to set flag values. */
-public class FlagSetException extends Exception {
+public class FlagSetException extends RuntimeException {
     public FlagSetException(String flag, String msg) {
         super(String.format("Flag %s set error: %s", flag, msg));
     }
