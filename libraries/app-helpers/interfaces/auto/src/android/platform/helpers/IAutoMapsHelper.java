@@ -221,4 +221,17 @@ public interface IAutoMapsHelper extends IAppHelper {
      * <p>This method is used to verify whether Coffee Shop Widget is displayed.
      */
     boolean hasCoffeeShopsWidget();
+
+    /**
+     * Setup expectations: Maps Keyboard is Open
+     *
+     * <p>click on handwriting and speech to text on keyboard
+     */
+    void clickKeyboardSpeechToTextButton();
+    /**
+     * Setup expectations: Maps is Open
+     *
+     * <p>Returns true if Alert Message is displayed
+     */
+    boolean isAlertMessageDisplayed();
 }
