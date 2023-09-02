@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 The Android Open Source Project
+ * Copyright (C) 2023 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,25 @@
  * limitations under the License.
  */
 
-#include <gtest/gtest.h>
+#include <optional>
+#include <string>
+#include <string_view>
+#include <vector>
 
-#include <stdio.h>
+namespace android::automotive::proxyconfig {
 
-TEST(HelloWorldTest, PrintHelloWorld) {
-    printf("Hello, World!");
-}
+struct Service {
+    std::string name;
+    unsigned port;
+};
 
-TEST(HelloWorldTest, SayHelloWorld) {
-    printf("Hello, World!");
-}
+struct VmProxyConfig {
+    unsigned cid;
+    std::vector<Service> services;
+};
 
+void setProxyConfigFile(std::string_view configFile);
+std::vector<VmProxyConfig> getAllVmProxyConfigs();
+std::optional<Service> getServiceConfig(std::string_view name);
+
+}  // namespace android::automotive::proxyconfig

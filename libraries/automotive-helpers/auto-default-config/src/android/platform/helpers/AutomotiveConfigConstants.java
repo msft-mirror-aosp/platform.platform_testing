@@ -472,6 +472,7 @@ public class AutomotiveConfigConstants {
     public static final String RECENT_APPS_TIMESTAMP_TEXT = "RECENT_APPS_TIMESTAMP_TEXT";
     public static final String RECENT_APPS_TIMESTAMP = "RECENT_APPS_TIMESTAMP";
 
+
     // Status Bar Constants
     public static final String STATUS_BAR_BRIGHTNESS_BUTTON = "STATUS_BAR_BRIGHTNESS_BUTTON";
     public static final String STATUS_BAR_DISPLAY_BRIGHTNESS_PALETTE =
@@ -573,4 +574,5 @@ public class AutomotiveConfigConstants {
     public static final String CALENDAR_PERMISSION = "OPEN_CALENDAR_PERMISSION_PAGE";
     public static final String PRIVACY_CALENDAR = "PRIVACY_CALENDAR";
     public static final String RECENT_PERMISSION_DECISIONS = "RECENT_PERMISSION_DECISIONS";
+
 }

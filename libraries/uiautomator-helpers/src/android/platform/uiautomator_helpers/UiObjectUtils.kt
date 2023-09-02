@@ -54,7 +54,7 @@ fun UiObject2.assertCentreOnBottomSide() {
  * screen vertically.
  */
 fun UiObject2.assertCentreOnTopSide() {
-    assertWithMessage("${this.resourceName} centre should be on the bottom side")
+    assertWithMessage("${this.resourceName} centre should be on the top side")
         .that(this.stableBounds.centerY() < uiDevice.displayHeight / 2)
         .isTrue()
 }
@@ -64,7 +64,7 @@ fun UiObject2.assertCentreOnTopSide() {
  * the screen vertically.
  */
 fun UiObject2.assertTopOnBottomSide() {
-    assertWithMessage("${this.resourceName} should be on the bottom side")
+    assertWithMessage("${this.resourceName} top should be on the bottom side")
         .that(this.stableBounds.top > uiDevice.displayHeight / 2)
         .isTrue()
 }
@@ -74,21 +74,21 @@ fun UiObject2.assertTopOnBottomSide() {
  * screen vertically.
  */
 fun UiObject2.assertTopOnTopSide() {
-    assertWithMessage("${this.resourceName} should be on the top side")
+    assertWithMessage("${this.resourceName} top should be on the top side")
         .that(this.stableBounds.top < uiDevice.displayHeight / 2)
         .isTrue()
 }
 
 /** Checks if view horizontal (X) centre is on the right side */
 fun UiObject2.assertCenterOnTheRightSide() {
-    assertWithMessage("${this.resourceName} should be on the right side")
+    assertWithMessage("${this.resourceName} center should be on the right side")
         .that(this.stableBounds.centerX() > uiDevice.displayWidth / 2)
         .isTrue()
 }
 
 /** Checks if view horizontal (X) centre is on the left side */
 fun UiObject2.assertCenterOnTheLeftSide() {
-    assertWithMessage("${this.resourceName} should be on the left side")
+    assertWithMessage("${this.resourceName} center should be on the left side")
         .that(this.stableBounds.centerX() < uiDevice.displayWidth / 2)
         .isTrue()
 }
@@ -98,7 +98,7 @@ fun UiObject2.assertCenterOnTheLeftSide() {
  * the right half of the screen horizontally.
  */
 fun UiObject2.assertOnTheRightSide() {
-    assertWithMessage("${this.resourceName} should be on the right side")
+    assertWithMessage("${this.resourceName} left should be on the right side")
         .that(this.stableBounds.left >= uiDevice.displayWidth / 2)
         .isTrue()
 }
@@ -108,7 +108,7 @@ fun UiObject2.assertOnTheRightSide() {
  * the left half of the screen horizontally.
  */
 fun UiObject2.assertOnTheLeftSide() {
-    assertWithMessage("${this.resourceName} should be on the left side")
+    assertWithMessage("${this.resourceName} right should be on the left side")
         .that(this.stableBounds.right <= uiDevice.displayWidth / 2)
         .isTrue()
 }
