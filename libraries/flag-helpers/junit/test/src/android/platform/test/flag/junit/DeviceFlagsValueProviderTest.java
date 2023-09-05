@@ -19,6 +19,8 @@ package android.platform.test.flag.junit;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -27,6 +29,16 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public final class DeviceFlagsValueProviderTest {
     private final DeviceFlagsValueProvider mFlagsValueProvider = new DeviceFlagsValueProvider();
+
+    @Before
+    public void setUp() {
+        mFlagsValueProvider.setUp();
+    }
+
+    @After
+    public void tearDown() {
+        mFlagsValueProvider.tearDownBeforeTest();
+    }
 
     @Test
     public void getBoolean_invalidFormat_throwException() {
@@ -60,5 +72,24 @@ public final class DeviceFlagsValueProviderTest {
                 () ->
                         mFlagsValueProvider.getBoolean(
                                 "android.platform.test.flag.junit.flag_name_2"));
+    }
+
+    @Test
+    public void getBoolean_fromNotExistLegacyFlag_throwException() {
+        assertThrows(
+                FlagReadException.class,
+                () -> mFlagsValueProvider.getBoolean("does_not_exist/flag"));
+    }
+
+    @Test
+    public void getBoolean_fromLegacyNonBooleanFlag_throwException() {
+        assertThrows(
+                FlagReadException.class,
+                () -> mFlagsValueProvider.getBoolean("my_namespace/flag2"));
+    }
+
+    @Test
+    public void getBoolean_fromLegacyBooleanFlag() throws Exception {
+        assertTrue(mFlagsValueProvider.getBoolean("my_namespace/flag1"));
     }
 }

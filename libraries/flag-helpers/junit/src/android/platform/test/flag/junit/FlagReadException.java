@@ -22,6 +22,10 @@ public class FlagReadException extends Exception {
         super(String.format("Flag %s read error: %s", flag, msg));
     }
 
+    public FlagReadException(String flag, String msg, Throwable cause) {
+        super(String.format("Flag %s read error: %s", flag, msg), cause);
+    }
+
     public FlagReadException(String flag, Throwable cause) {
         super(String.format("Flag %s read error", flag), cause);
     }

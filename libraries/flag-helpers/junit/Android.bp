@@ -45,5 +45,8 @@
           "androidx.test.rules",
           "flag-junit-base",
       ],
-      sdk_version: "current",
+      libs: [
+          "framework-configinfrastructure",
+      ],
+      sdk_version: "module_current",
   }

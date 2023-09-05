@@ -19,6 +19,10 @@
         <option name="cleanup-apks" value="true" />
         <option name="test-file-name" value="FlagJUnitTests.apk" />
     </target_preparer>
+    <target_preparer class="com.android.tradefed.targetprep.RunCommandTargetPreparer">
+        <option name="run-command" value="device_config put my_namespace flag1 true" />
+        <option name="run-command" value="device_config put my_namespace flag2 string_value" />
+    </target_preparer>
     <test class="com.android.tradefed.testtype.AndroidJUnitTest" >
         <option name="package" value="android.platform.test.flag.junit" />
         <option name="runtime-hint" value="1m" />

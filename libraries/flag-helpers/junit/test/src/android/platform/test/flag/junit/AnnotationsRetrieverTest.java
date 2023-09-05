@@ -30,9 +30,19 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 import java.lang.annotation.Annotation;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 @RunWith(JUnit4.class)
 public class AnnotationsRetrieverTest {
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target({ElementType.METHOD, ElementType.TYPE})
+    @RequiresFlagsEnabled("flag1")
+    @RequiresFlagsDisabled("flag2")
+    public @interface CompositeFlagRequirements {}
+
     static class TestClassHasNoAnnotation {}
 
     @RequiresFlagsEnabled({"flag1", "flag2"})
@@ -138,6 +148,20 @@ public class AnnotationsRetrieverTest {
                 createRequiresFlagsDisabled(new String[]{"flag3", "flag4"}));
     }
 
+    @Test
+    public void getFlagAnnotations_recursively() {
+        AnnotationsRetriever.FlagAnnotations flagAnnotations =
+                getFlagAnnotations(
+                        TestClassHasAllAnnotations.class, createCompositeFlagRequirements());
+
+        assertEquals(
+                flagAnnotations.mRequiresFlagsEnabled,
+                createRequiresFlagsEnabled(new String[] {"flag1"}));
+        assertEquals(
+                flagAnnotations.mRequiresFlagsDisabled,
+                createRequiresFlagsDisabled(new String[] {"flag2"}));
+    }
+
     private AnnotationsRetriever.FlagAnnotations getFlagAnnotations(
             Class<?> testClass, Annotation... annotations) {
         Description description =
@@ -153,5 +177,10 @@ public class AnnotationsRetrieverTest {
     @AutoAnnotation
     private static RequiresFlagsDisabled createRequiresFlagsDisabled(String[] value) {
         return new AutoAnnotation_AnnotationsRetrieverTest_createRequiresFlagsDisabled(value);
+    }
+
+    @AutoAnnotation
+    private static CompositeFlagRequirements createCompositeFlagRequirements() {
+        return new AutoAnnotation_AnnotationsRetrieverTest_createCompositeFlagRequirements();
     }
 }
