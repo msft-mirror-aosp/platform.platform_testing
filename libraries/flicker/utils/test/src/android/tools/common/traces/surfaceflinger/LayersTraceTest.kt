@@ -31,8 +31,8 @@ import org.junit.runners.MethodSorters
 /** Contains [LayersTrace] tests. To run this test: `atest FlickerLibTest:LayersTraceTest` */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class LayersTraceTest {
-    private fun detectRootLayer(fileName: String, legacyTrace: Boolean = false) {
-        val reader = getLayerTraceReaderFromAsset(fileName, legacyTrace = legacyTrace)
+    private fun detectRootLayer(fileName: String) {
+        val reader = getLayerTraceReaderFromAsset(fileName)
         val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
         for (entry in trace.entries) {
             val rootLayers = entry.children
@@ -53,17 +53,17 @@ class LayersTraceTest {
 
     @Test
     fun testCanDetectRootLayer() {
-        detectRootLayer("layers_trace_root.pb", legacyTrace = true)
+        detectRootLayer("layers_trace_root.perfetto-trace")
     }
 
     @Test
     fun testCanDetectRootLayerAOSP() {
-        detectRootLayer("layers_trace_root_aosp.pb", legacyTrace = true)
+        detectRootLayer("layers_trace_root_aosp.perfetto-trace")
     }
 
     @Test
     fun canTestLayerOccludedByAppLayerHasVisibleRegion() {
-        val reader = getLayerTraceReaderFromAsset("layers_trace_occluded.pb", legacyTrace = true)
+        val reader = getLayerTraceReaderFromAsset("layers_trace_occluded.perfetto-trace")
         val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
         val entry = trace.getEntryExactlyAt(Timestamps.from(systemUptimeNanos = 1700382131522L))
         val component =
@@ -91,7 +91,7 @@ class LayersTraceTest {
     fun canTestLayerOccludedByAppLayerIsOccludedBySplashScreen() {
         val layerName = "com.android.server.wm.flicker.testapp.SimpleActivity#0"
         val component = ComponentNameMatcher("", layerName)
-        val reader = getLayerTraceReaderFromAsset("layers_trace_occluded.pb", legacyTrace = true)
+        val reader = getLayerTraceReaderFromAsset("layers_trace_occluded.perfetto-trace")
         val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
         val entry = trace.getEntryExactlyAt(Timestamps.from(systemUptimeNanos = 1700382131522L))
         val layer = entry.getLayerWithBuffer(component)
@@ -113,10 +113,7 @@ class LayersTraceTest {
     @Test
     fun getFirstEntryWithOnDisplay() {
         val reader =
-            getLayerTraceReaderFromAsset(
-                "layers_trace_unlock_and_lock_device.pb",
-                legacyTrace = false
-            )
+            getLayerTraceReaderFromAsset("layers_trace_unlock_and_lock_device.perfetto-trace")
         val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
         val matchingEntry = trace.getFirstEntryWithOnDisplayAfter(Timestamps.min())
 
@@ -133,10 +130,7 @@ class LayersTraceTest {
     @Test
     fun getLastEntryWithOnDisplay() {
         val reader =
-            getLayerTraceReaderFromAsset(
-                "layers_trace_unlock_and_lock_device.pb",
-                legacyTrace = false
-            )
+            getLayerTraceReaderFromAsset("layers_trace_unlock_and_lock_device.perfetto-trace")
         val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
         val matchingEntry = trace.getLastEntryWithOnDisplayBefore(Timestamps.max())
 

@@ -126,8 +126,21 @@ class ArtifactBuilder {
     private fun writeToZip(file: File, files: Map<ResultArtifactDescriptor, File>) {
         ZipOutputStream(BufferedOutputStream(FileOutputStream(file), BUFFER_SIZE)).use {
             zipOutputStream ->
+            val writtenFileNames = HashSet<String>()
             files.forEach { (descriptor, artifact) ->
-                addFile(zipOutputStream, artifact, nameInArchive = descriptor.fileNameInArtifact)
+                if (!writtenFileNames.contains(descriptor.fileNameInArtifact)) {
+                    addFile(
+                        zipOutputStream,
+                        artifact,
+                        nameInArchive = descriptor.fileNameInArtifact
+                    )
+                    writtenFileNames.add(descriptor.fileNameInArtifact)
+                } else {
+                    Logger.d(
+                        FLICKER_IO_TAG,
+                        "Not adding duplicated ${descriptor.fileNameInArtifact} to zip"
+                    )
+                }
             }
         }
     }

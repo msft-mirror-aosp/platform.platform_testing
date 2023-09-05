@@ -33,8 +33,9 @@ import android.tools.common.traces.wm.TransitionsTrace
 import android.tools.common.traces.wm.WindowManagerTrace
 import android.tools.device.traces.TraceConfig
 import android.tools.device.traces.TraceConfigs
-import android.tools.device.traces.parsers.surfaceflinger.LayersTraceParser
-import android.tools.device.traces.parsers.surfaceflinger.TransactionsTraceParser
+import android.tools.device.traces.parsers.perfetto.LayersTraceParser
+import android.tools.device.traces.parsers.perfetto.TraceProcessorSession
+import android.tools.device.traces.parsers.perfetto.TransactionsTraceParser
 import android.tools.device.traces.parsers.wm.TransitionTraceParser
 import android.tools.device.traces.parsers.wm.WindowManagerDumpParser
 import android.tools.device.traces.parsers.wm.WindowManagerTraceParser
@@ -123,14 +124,16 @@ open class ResultReader(_result: IResultData, internal val traceConfig: TraceCon
             val descriptor = ResultArtifactDescriptor(TraceType.SF)
             artifact.readBytes(descriptor)?.let {
                 val trace =
-                    LayersTraceParser()
-                        .parse(
-                            it,
-                            transitionTimeRange.start,
-                            transitionTimeRange.end,
-                            addInitialEntry = true,
-                            clearCache = true
-                        )
+                    TraceProcessorSession.loadPerfettoTrace(it) { session ->
+                        LayersTraceParser()
+                            .parse(
+                                session,
+                                transitionTimeRange.start,
+                                transitionTimeRange.end,
+                                addInitialEntry = true,
+                                clearCache = true
+                            )
+                    }
                 val minimumEntries = minimumTraceEntriesForConfig(traceConfig.layersTrace)
                 require(trace.entries.size >= minimumEntries) {
                     "Layers trace contained ${trace.entries.size} entries, " +
@@ -153,7 +156,13 @@ open class ResultReader(_result: IResultData, internal val traceConfig: TraceCon
         return Logger.withTracing("readLayersDump#$tag") {
             val descriptor = ResultArtifactDescriptor(TraceType.SF_DUMP, tag)
             val traceData = artifact.readBytes(descriptor)
-            traceData?.let { LayersTraceParser().parse(it, clearCache = true) }
+            if (traceData != null) {
+                TraceProcessorSession.loadPerfettoTrace(traceData) { session ->
+                    LayersTraceParser().parse(session, clearCache = true)
+                }
+            } else {
+                null
+            }
         }
     }
 
@@ -171,7 +180,10 @@ open class ResultReader(_result: IResultData, internal val traceConfig: TraceCon
     private fun doReadTransactionsTrace(from: Timestamp, to: Timestamp): TransactionsTrace? {
         val traceData = artifact.readBytes(ResultArtifactDescriptor(TraceType.TRANSACTION))
         return traceData?.let {
-            val trace = TransactionsTraceParser().parse(it, from, to, addInitialEntry = true)
+            val trace =
+                TraceProcessorSession.loadPerfettoTrace(traceData) { session ->
+                    TransactionsTraceParser().parse(session, from, to, addInitialEntry = true)
+                }
             require(trace.entries.isNotEmpty()) { "Transactions trace cannot be empty" }
             trace
         }

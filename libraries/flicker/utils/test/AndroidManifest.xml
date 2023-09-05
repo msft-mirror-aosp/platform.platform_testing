@@ -18,6 +18,9 @@
     <uses-permission android:name="android.permission.DUMP" />
     <!-- Allow the test to write directly to /sdcard/ -->
     <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
+    <!-- Allow the test to connect to perfetto trace processor -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+
 
     <uses-sdk android:minSdkVersion="29" android:targetSdkVersion="29"/>
     <application android:label="FlickerLibUtilsTest"

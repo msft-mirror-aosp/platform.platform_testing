@@ -16,6 +16,7 @@
 
 package android.tools.device.traces.parsers.perfetto
 
+import android.tools.common.Logger
 import android.tools.common.Timestamp
 import android.tools.common.datatypes.ActiveBuffer
 import android.tools.common.datatypes.Color
@@ -54,17 +55,26 @@ class LayersTraceParser(
     override fun shouldParseEntry(entry: LayerTraceEntry) = true
 
     override fun getEntries(session: TraceProcessorSession): List<LayerTraceEntry> {
-        val realToMonotonicTimeOffsetNs = queryRealToMonotonicTimeOffsetNs(session)
+        val realToMonotonicTimeOffsetNs =
+            queryRealToMonotonicTimeOffsetNs(session, "surfaceflinger_layers_snapshot")
 
         return session.query(getSqlQuerySnapshots()) { snapshotsRows ->
             val traceEntries = ArrayList<LayerTraceEntry>()
             val snapshotGroups = snapshotsRows.groupBy { it.get("snapshot_id") }
 
             for (snapshotId in 0L..(snapshotGroups.size - 1)) {
-                val layerRows = session.query(getSqlQueryLayers(snapshotId)) { it }
-                val snapshotRows = snapshotGroups[snapshotId]!!
-                val entry = buildTraceEntry(snapshotRows, layerRows, realToMonotonicTimeOffsetNs)
-                traceEntries.add(entry)
+                Logger.withTracing("query + build entry") {
+                    val layerRows =
+                        Logger.withTracing("query layer rows") {
+                            session.query(getSqlQueryLayers(snapshotId)) { it }
+                        }
+                    Logger.withTracing("build entry") {
+                        val snapshotRows = snapshotGroups[snapshotId]!!
+                        val entry =
+                            buildTraceEntry(snapshotRows, layerRows, realToMonotonicTimeOffsetNs)
+                        traceEntries.add(entry)
+                    }
+                }
             }
 
             traceEntries
@@ -113,36 +123,6 @@ class LayersTraceParser(
     }
 
     companion object {
-        private fun queryRealToMonotonicTimeOffsetNs(session: TraceProcessorSession): Long {
-            val monotonic = queryLastClockSnapshot(session, "MONOTONIC")
-            val real = queryLastClockSnapshot(session, "REALTIME")
-            return real - monotonic
-        }
-
-        private fun queryLastClockSnapshot(
-            session: TraceProcessorSession,
-            clockName: String
-        ): Long {
-            val sql =
-                """
-                SELECT
-                    snapshot_id, clock_name, clock_value
-                FROM clock_snapshot
-                WHERE
-                    snapshot_id = ( SELECT MAX(snapshot_id) FROM clock_snapshot )
-                    AND clock_name = '$clockName';
-            """
-                    .trimIndent()
-            val value =
-                session.query(sql) { rows ->
-                    require(rows.size == 1) {
-                        "Perfetto trace expected to contain at least one clock snapshot"
-                    }
-                    rows.get(0).get("clock_value") as Long
-                }
-            return value
-        }
-
         private fun getSqlQuerySnapshots(): String {
             return """
                 SELECT
@@ -266,7 +246,7 @@ class LayersTraceParser(
         }
 
         private fun newHwcCompositionType(value: Args?): HwcCompositionType {
-            if (value == null) {
+            if (value == null || !value.isString()) {
                 return HwcCompositionType.HWC_TYPE_UNRECOGNIZED
             }
             return HwcCompositionType.valueOf(value.getString())

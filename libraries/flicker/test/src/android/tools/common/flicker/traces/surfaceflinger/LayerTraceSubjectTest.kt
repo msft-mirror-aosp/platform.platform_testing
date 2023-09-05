@@ -25,7 +25,7 @@ import org.junit.Test
 class LayerTraceSubjectTest {
     @Test
     fun exceptionContainsDebugInfo() {
-        val reader = getLayerTraceReaderFromAsset("layers_trace_emptyregion.pb", legacyTrace = true)
+        val reader = getLayerTraceReaderFromAsset("layers_trace_emptyregion.perfetto-trace")
         val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
         val error = assertThrows<AssertionError> { LayersTraceSubject(trace, reader).isEmpty() }
         assertThatErrorContainsDebugInfo(error)

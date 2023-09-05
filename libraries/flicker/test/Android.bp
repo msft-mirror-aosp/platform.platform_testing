@@ -34,6 +34,7 @@ android_test {
     },
     static_libs: [
         "flickerlib",
+        "flickerlib-trace_processor_shell",
         "FlickerLibTest-Utils",
         "launcher-aosp-tapl",
         "mockito-target-extended-minus-junit4"

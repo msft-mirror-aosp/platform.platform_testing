@@ -18,13 +18,13 @@ package android.tools.common.io
 
 /** Types of traces/dumps that cna be in a flicker result */
 enum class TraceType(val fileName: String, val isTrace: Boolean) {
-    SF("layers_trace$WINSCOPE_EXT", isTrace = true),
+    SF("trace$PERFETTO_EXT", isTrace = true),
     WM("wm_trace$WINSCOPE_EXT", isTrace = true),
-    TRANSACTION("transactions_trace$WINSCOPE_EXT", isTrace = true),
+    TRANSACTION("trace$PERFETTO_EXT", isTrace = true),
     WM_TRANSITION("wm_transition_trace$WINSCOPE_EXT", isTrace = true),
     SHELL_TRANSITION("shell_transition_trace$WINSCOPE_EXT", isTrace = true),
     EVENT_LOG("eventlog$WINSCOPE_EXT", isTrace = true),
     SCREEN_RECORDING("transition.mp4", isTrace = true),
-    SF_DUMP("sf_dump$WINSCOPE_EXT", isTrace = false),
-    WM_DUMP("wm_dump$WINSCOPE_EXT", isTrace = false)
+    SF_DUMP("trace$PERFETTO_EXT", isTrace = false),
+    WM_DUMP("trace$WINSCOPE_EXT", isTrace = false)
 }

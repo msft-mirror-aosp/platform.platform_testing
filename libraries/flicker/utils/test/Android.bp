@@ -60,6 +60,7 @@ android_test {
     static_libs: [
         "flickerlib-parsers",
         "flickerlib-apphelpers",
+        "flickerlib-trace_processor_shell",
         "FlickerLibTest-Utils",
         "androidx.test.runner",
         "truth-prebuilt",

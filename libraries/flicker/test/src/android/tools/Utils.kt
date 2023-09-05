@@ -19,6 +19,7 @@ package android.tools
 import android.app.Instrumentation
 import android.tools.common.Scenario
 import android.tools.common.ScenarioBuilder
+import android.tools.common.io.PERFETTO_EXT
 import android.tools.common.io.Reader
 import android.tools.common.io.WINSCOPE_EXT
 import android.tools.common.parsers.events.EventLogParser
@@ -30,16 +31,16 @@ import android.tools.device.traces.TRACE_CONFIG_REQUIRE_CHANGES
 import android.tools.device.traces.io.ResultReader
 import android.tools.device.traces.io.ResultWriter
 import android.tools.device.traces.monitors.ITransitionMonitor
+import android.tools.device.traces.monitors.PerfettoTraceMonitor
 import android.tools.device.traces.monitors.ScreenRecorder
 import android.tools.device.traces.monitors.events.EventLogMonitor
-import android.tools.device.traces.monitors.surfaceflinger.LayersTraceMonitor
-import android.tools.device.traces.monitors.surfaceflinger.TransactionsTraceMonitor
 import android.tools.device.traces.monitors.wm.ShellTransitionTraceMonitor
 import android.tools.device.traces.monitors.wm.WindowManagerTraceMonitor
 import android.tools.device.traces.monitors.wm.WmTransitionTraceMonitor
 import android.tools.device.traces.parsers.WindowManagerStateHelper
-import android.tools.device.traces.parsers.surfaceflinger.LayersTraceParser
-import android.tools.device.traces.parsers.surfaceflinger.TransactionsTraceParser
+import android.tools.device.traces.parsers.perfetto.LayersTraceParser
+import android.tools.device.traces.parsers.perfetto.TraceProcessorSession
+import android.tools.device.traces.parsers.perfetto.TransactionsTraceParser
 import android.tools.device.traces.parsers.wm.TransitionTraceParser
 import android.tools.device.traces.parsers.wm.WindowManagerTraceParser
 import android.tools.rules.DataStoreCleanupRule
@@ -59,51 +60,54 @@ fun CleanFlickerEnvironmentRuleWithDataStore(): RuleChain =
     CleanFlickerEnvironmentRule().around(DataStoreCleanupRule())
 
 internal fun getTraceReaderFromScenario(scenario: String): Reader {
-    val scenarioTraces = getScenarioTraces("AppLaunch")
+    val scenarioTraces = getScenarioTraces(scenario)
+
+    val (layersTrace, transactionsTrace) =
+        TraceProcessorSession.loadPerfettoTrace(scenarioTraces.perfetto.readBytes()) { session ->
+            val layersTrace = LayersTraceParser().parse(session)
+            val transactionsTrace = TransactionsTraceParser().parse(session)
+            Pair(layersTrace, transactionsTrace)
+        }
 
     return ParsedTracesReader(
         artifact = InMemoryArtifact(scenario),
         wmTrace = WindowManagerTraceParser().parse(scenarioTraces.wmTrace.readBytes()),
-        layersTrace = LayersTraceParser().parse(scenarioTraces.layersTrace.readBytes()),
+        layersTrace = layersTrace,
         transitionsTrace =
             TransitionTraceParser()
                 .parse(
                     scenarioTraces.wmTransitions.readBytes(),
                     scenarioTraces.shellTransitions.readBytes()
                 ),
-        transactionsTrace =
-            TransactionsTraceParser().parse(scenarioTraces.transactions.readBytes()),
+        transactionsTrace = transactionsTrace,
         eventLog = EventLogParser().parse(scenarioTraces.eventLog.readBytes()),
     )
 }
 
 fun getScenarioTraces(scenario: String): FlickerBuilder.TraceFiles {
     lateinit var wmTrace: File
-    lateinit var layersTrace: File
-    lateinit var transactionsTrace: File
+    lateinit var perfettoTrace: File
     lateinit var wmTransitionTrace: File
     lateinit var shellTransitionTrace: File
     lateinit var eventLog: File
     val traces =
         mapOf<String, (File) -> Unit>(
-            "wm_trace" to { wmTrace = it },
-            "layers_trace" to { layersTrace = it },
-            "transactions_trace" to { transactionsTrace = it },
-            "wm_transition_trace" to { wmTransitionTrace = it },
-            "shell_transition_trace" to { shellTransitionTrace = it },
-            "eventlog" to { eventLog = it }
+            "wm_trace$WINSCOPE_EXT" to { wmTrace = it },
+            "layers_and_transactions_trace$PERFETTO_EXT" to { perfettoTrace = it },
+            "wm_transition_trace$WINSCOPE_EXT" to { wmTransitionTrace = it },
+            "shell_transition_trace$WINSCOPE_EXT" to { shellTransitionTrace = it },
+            "eventlog$WINSCOPE_EXT" to { eventLog = it }
         )
-    for ((traceName, resultSetter) in traces.entries) {
-        val traceBytes = readAsset("scenarios/$scenario/$traceName$WINSCOPE_EXT")
-        val traceFile = File.createTempFile(traceName, WINSCOPE_EXT)
+    for ((traceFileName, resultSetter) in traces.entries) {
+        val traceBytes = readAsset("scenarios/$scenario/$traceFileName")
+        val traceFile = File.createTempFile(traceFileName, "")
         traceFile.writeBytes(traceBytes)
         resultSetter.invoke(traceFile)
     }
 
     return FlickerBuilder.TraceFiles(
         wmTrace,
-        layersTrace,
-        transactionsTrace,
+        perfettoTrace,
         wmTransitionTrace,
         shellTransitionTrace,
         eventLog,
@@ -120,7 +124,7 @@ fun createMockedFlicker(
     val uiDevice: UiDevice = UiDevice.getInstance(instrumentation)
     val mockedFlicker = Mockito.mock(AbstractFlickerTestData::class.java)
     val monitors: MutableList<ITransitionMonitor> =
-        mutableListOf(WindowManagerTraceMonitor(), LayersTraceMonitor())
+        mutableListOf(WindowManagerTraceMonitor(), PerfettoTraceMonitor().enableLayersTrace())
     extraMonitor?.let { monitors.add(it) }
     Mockito.`when`(mockedFlicker.wmHelper).thenReturn(WindowManagerStateHelper())
     Mockito.`when`(mockedFlicker.device).thenReturn(uiDevice)
@@ -146,11 +150,10 @@ fun captureTrace(scenario: Scenario, actions: () -> Unit): ResultReader {
         listOf(
             ScreenRecorder(instrumentation.targetContext),
             EventLogMonitor(),
-            TransactionsTraceMonitor(),
             WmTransitionTraceMonitor(),
             ShellTransitionTraceMonitor(),
             WindowManagerTraceMonitor(),
-            LayersTraceMonitor()
+            PerfettoTraceMonitor().enableLayersTrace().enableTransactionsTrace(),
         )
     try {
         monitors.forEach { it.start() }

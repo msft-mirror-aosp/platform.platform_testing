@@ -19,5 +19,6 @@ package android.tools.common.io
 import android.tools.common.FLICKER_TAG
 
 const val WINSCOPE_EXT = ".winscope"
+const val PERFETTO_EXT = ".perfetto-trace"
 const val FLICKER_IO_TAG = "$FLICKER_TAG-IO"
 const val BUFFER_SIZE = 2048

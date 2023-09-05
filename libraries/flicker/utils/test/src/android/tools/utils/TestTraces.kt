@@ -22,7 +22,7 @@ import android.tools.device.traces.TraceConfigs
 
 object TestTraces {
     object LayerTrace {
-        private const val ASSET = "layers_trace.winscope"
+        private const val ASSET = "layers_trace.perfetto-trace"
         val START_TIME = Timestamps.from(systemUptimeNanos = 1618663562444)
         val SLICE_TIME = Timestamps.from(systemUptimeNanos = 1618715108595)
         val END_TIME = Timestamps.from(systemUptimeNanos = 1620770824112)
@@ -49,7 +49,7 @@ object TestTraces {
     }
 
     object TransactionTrace {
-        private const val ASSET = "transactions_trace.winscope"
+        private const val ASSET = "transactions_trace.perfetto-trace"
         val START_TIME =
             Timestamps.from(systemUptimeNanos = 1556111744859, elapsedNanos = 1556111744859)
         val VALID_SLICE_TIME =

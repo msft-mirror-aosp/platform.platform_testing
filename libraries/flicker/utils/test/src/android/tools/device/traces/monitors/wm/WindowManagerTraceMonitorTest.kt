@@ -27,10 +27,7 @@ import org.junit.FixMethodOrder
 import org.junit.Test
 import org.junit.runners.MethodSorters
 
-/**
- * Contains [WindowManagerTraceMonitor] tests. To run this test: `atest
- * FlickerLibTest:LayersTraceMonitorTest`
- */
+/** Contains [WindowManagerTraceMonitor] tests. */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class WindowManagerTraceMonitorTest : TraceMonitorTest<WindowManagerTraceMonitor>() {
     override val traceType = TraceType.WM

@@ -21,6 +21,7 @@
 
 package android.tools.device.traces.parsers.perfetto
 
+import android.tools.common.Logger
 import android.tools.common.io.TraceType
 import androidx.benchmark.perfetto.PerfettoTrace
 import androidx.benchmark.perfetto.PerfettoTraceProcessor
@@ -37,21 +38,25 @@ class TraceProcessorSession {
     }
 
     fun <T> query(sql: String, predicate: (List<Row>) -> T): T {
-        val rows = session.query(sql)
-        return predicate(rows.toList())
+        return Logger.withTracing("TraceProcessorSession#query") {
+            val rows = session.query(sql)
+            predicate(rows.toList())
+        }
     }
 
     companion object {
         fun <T> loadPerfettoTrace(trace: ByteArray, predicate: (TraceProcessorSession) -> T): T {
-            val traceFile = File.createTempFile(TraceType.SF.fileName, "")
-            FileOutputStream(traceFile).use { it.write(trace) }
-            val result =
-                PerfettoTraceProcessor.runServer {
-                    loadTrace(PerfettoTrace(traceFile.absolutePath)) {
-                        predicate(TraceProcessorSession(this))
+            return Logger.withTracing("TraceProcessorSession#loadPerfettoTrace") {
+                val traceFile = File.createTempFile(TraceType.SF.fileName, "")
+                FileOutputStream(traceFile).use { it.write(trace) }
+                val result =
+                    PerfettoTraceProcessor.runServer {
+                        loadTrace(PerfettoTrace(traceFile.absolutePath)) {
+                            predicate(TraceProcessorSession(this))
+                        }
                     }
-                }
-            return result
+                result
+            }
         }
     }
 }
