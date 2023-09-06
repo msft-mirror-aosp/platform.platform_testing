@@ -217,4 +217,11 @@ public interface IAutoPrivacySettingsHelper extends IAppHelper {
      * <p>To verify if Permission default status is Allow
      */
     boolean isAllowDefaultPermission();
+
+    /**
+     * Setup expectation: verify microphone manage permissions page
+     *
+     * <p>To verify if microphone manage permissions page is displayed
+     */
+    boolean verifyMicrophoneManagePermissionsPage();
 }

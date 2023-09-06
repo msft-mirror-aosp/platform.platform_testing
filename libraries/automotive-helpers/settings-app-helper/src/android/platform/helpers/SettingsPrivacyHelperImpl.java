@@ -190,6 +190,16 @@ public class SettingsPrivacyHelperImpl extends AbstractStandardAppHelper
                         AutomotiveConfigConstants.MANAGE_MICRO_PHONE_PERMISSIONS);
         getSpectatioUiUtil().clickAndWait(manageMicroPhoneButton);
     }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean verifyMicrophoneManagePermissionsPage() {
+        getSpectatioUiUtil().wait5Seconds();
+        BySelector microphoneManagePermissionsSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.MICROPHONE_PERMISSIONS_PAGE);
+        return getSpectatioUiUtil().hasUiElement(microphoneManagePermissionsSelector);
+    }
+
     /** {@inheritDoc} */
     @Override
     public boolean isAccountAddedAutofill() {
