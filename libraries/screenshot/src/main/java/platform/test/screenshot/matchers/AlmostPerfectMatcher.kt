@@ -98,9 +98,9 @@ class AlmostPerfectMatcher(
         val green = Color.green(referenceColor) - Color.green(testColor)
         val blue = Color.blue(referenceColor) - Color.blue(testColor)
         val red = Color.red(referenceColor) - Color.red(testColor)
-        val redDelta = abs(red)
-        val redScalar = if (redDelta < 128) 2 else 3
-        val blueScalar = if (redDelta < 128) 3 else 2
+        val redMean = (Color.red(referenceColor) + Color.red(testColor)) / 2
+        val redScalar = if (redMean < 128) 2 else 3
+        val blueScalar = if (redMean < 128) 3 else 2
         val greenScalar = 4
         val correction = sqrt((
                 (redScalar * red * red) +

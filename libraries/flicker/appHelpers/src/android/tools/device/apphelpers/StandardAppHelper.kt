@@ -55,7 +55,7 @@ open class StandardAppHelper(
 
     protected val pkgManager: PackageManager = instrumentation.context.packageManager
 
-    protected val tapl: LauncherInstrumentation = LauncherInstrumentation()
+    protected val tapl: LauncherInstrumentation by lazy { LauncherInstrumentation() }
 
     private val activityManager: ActivityManager?
         get() = instrumentation.context.getSystemService(ActivityManager::class.java)

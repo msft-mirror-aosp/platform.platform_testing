@@ -22,16 +22,17 @@ import android.view.InputDevice
  * [android.platform.test.rule.InputDeviceRule].
  */
 abstract class UInputDevice {
+    abstract val inputDeviceId: Int
     abstract val vendorId: Int
     abstract val productId: Int
     abstract val name: String
     abstract val bus: String
-    abstract val supportedKeys: Array<Int>
+    abstract val supportedKeys: List<Int>
 
     // Based on cts/tests/input/res/raw/test_bluetooth_stylus_register.json
     open fun getRegisterCommand(): String {
         return """{
-            "id": 1,
+            "id": $inputDeviceId,
             "type": "uinput",
             "command": "register",
             "name": "$name",
@@ -40,7 +41,7 @@ abstract class UInputDevice {
             "bus": "$bus",
             "configuration":[
                 {"type": 100, "data": [1]},
-                {"type": 101, "data": ${supportedKeys.contentToString()}}
+                {"type": 101, "data": $supportedKeys}
             ]
         }"""
             .trimIndent()

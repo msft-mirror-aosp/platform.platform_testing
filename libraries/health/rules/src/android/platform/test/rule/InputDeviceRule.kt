@@ -156,8 +156,7 @@ class InputDeviceRule : TestWatcher(), UInputDevice.EventInjector {
     private fun injectEvdevEvents(deviceId: Int, evdevEvents: List<Int>) {
         assert(evdevEvents.size % 3 == 0) { "Number of injected events should be a multiple of 3" }
 
-        val command = """{"command": "inject","id": $deviceId,"events": $evdevEvents}"""
-        writeCommand(command)
+        writeCommand("""{"command": "inject","id": $deviceId,"events": $evdevEvents}""")
     }
 
     private fun writeCommand(command: String) {

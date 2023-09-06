@@ -23,4 +23,7 @@ java_library {
     srcs: [
         "src/**/*.kt",
     ],
+    libs: [
+        "truth-prebuilt",
+    ],
 }

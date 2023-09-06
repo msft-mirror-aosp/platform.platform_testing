@@ -23,13 +23,13 @@ package android.platform.helpers.uinput
  *   https://cs.android.com/android/kernel/superproject/+/common-android-mainline:common/include/uapi/linux/input-event-codes.h
  */
 class UInputStylus(
-    val inputDeviceId: Int,
+    override val inputDeviceId: Int,
     val displayWidth: Int,
     val displayHeight: Int,
     override val vendorId: Int = VENDOR_ID,
     override val productId: Int = PRODUCT_ID,
     override val name: String = "Test capacitive stylus with buttons",
-    override val supportedKeys: Array<Int> = SUPPORTED_KEYBITS,
+    override val supportedKeys: List<Int> = SUPPORTED_KEYBITS,
 ) : UInputDevice() {
     override val bus = "bluetooth"
 
@@ -43,9 +43,9 @@ class UInputStylus(
       "pid": $productId,
       "bus": "$bus",
       "configuration": [
-        {"type": 100, "data": ${SUPPORTED_ENVBITS.contentToString()}},  // UI_SET_EVBIT
-        {"type": 101, "data": ${SUPPORTED_KEYBITS.contentToString()}},  // UI_SET_KEYBIT
-        {"type": 103, "data": ${SUPPORTED_ABSBITS.contentToString()}},  // UI_SET_ABSBIT
+        {"type": 100, "data": $SUPPORTED_ENVBITS },  // UI_SET_EVBIT
+        {"type": 101, "data": $SUPPORTED_KEYBITS },  // UI_SET_KEYBIT
+        {"type": 103, "data": $SUPPORTED_ABSBITS },  // UI_SET_ABSBIT
         {"type": 110, "data": [1]}  // UI_SET_PROPBIT : INPUT_PROP_DIRECT
       ],
       "abs_info": [
@@ -124,13 +124,13 @@ class UInputStylus(
     private companion object {
         // EV_KEY
         val SUPPORTED_ENVBITS =
-            arrayOf(
+            listOf(
                 /* EV_KEY */ 1,
                 /* EV_ABS */ 3,
             )
         // UI_SET_ABSBIT
         val SUPPORTED_ABSBITS =
-            arrayOf(
+            listOf(
                 /* ABS_X */ 0,
                 /* ABS_Y */ 1,
                 /* ABS_PRESSURE */ 24,
@@ -140,7 +140,7 @@ class UInputStylus(
         const val KEY_JOURNAL = 578
         // UI_SET_KEYBIT
         val SUPPORTED_KEYBITS =
-            arrayOf(
+            listOf(
                 /* BTN_TOOL_PEN */ 320,
                 /* BTN_TOUCH */ 330,
                 /* BTN_STYLUS */ 331,
