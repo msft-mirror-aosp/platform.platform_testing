@@ -113,7 +113,13 @@ fun UiObject2.assertOnTheLeftSide() {
         .isTrue()
 }
 
-private val UiObject2.stableBounds: Rect
+/**
+ * Settled visible bounds of the object.
+ *
+ * Before returning, ensures visible bounds stay the same for a few seconds or fails. Useful to get
+ * bounds of objects that might be animating.
+ */
+val UiObject2.stableBounds: Rect
     get() = waitForValueToSettle("${this.resourceName} bounds") { visibleBounds }
 
 private const val MAX_FIND_ELEMENT_ATTEMPT = 15
