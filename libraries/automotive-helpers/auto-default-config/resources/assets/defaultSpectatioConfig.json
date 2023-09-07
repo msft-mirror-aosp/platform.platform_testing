@@ -1669,6 +1669,10 @@
     "RECENT_PERMISSION_DECISIONS": {
       "TYPE": "TEXT",
       "VALUE": "Recent permission decisions"
+    },
+    "MICROPHONE_PERMISSIONS_PAGE": {
+      "TYPE": "TEXT",
+      "VALUE": "Apps with this permission can record audio"
     }
   },
   "WORKFLOWS": {

@@ -60,6 +60,19 @@ public class MicroPhoneSettingTest {
                 mSettingHelper.get().checkMenuExists("Use microphone"));
     }
 
+    @Test
+    public void manageMicrophonePermissions() {
+        mSettingHelper.get().openSetting(SettingsConstants.PRIVACY_SETTINGS);
+        assertTrue(
+                "Privacy settings did not open",
+                mSettingHelper.get().checkMenuExists("Microphone"));
+        mSettingHelper.get().openMenuWith("MicroPhone");
+        mPrivacySettingsHelper.get().clickManageMicroPhonePermissions();
+        assertTrue(
+                "Microphone Permissions page is not displayed",
+                mPrivacySettingsHelper.get().verifyMicrophoneManagePermissionsPage());
+    }
+
     @After
     public void goBackToSettingsScreen() {
         mSettingHelper.get().goBackToSettingsScreen();
