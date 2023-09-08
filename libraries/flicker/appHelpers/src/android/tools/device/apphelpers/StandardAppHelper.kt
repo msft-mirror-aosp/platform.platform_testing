@@ -189,6 +189,38 @@ open class StandardAppHelper(
         doWaitShown(wmHelper, launchedAppComponentMatcherOverride, waitConditions)
     }
 
+    /**
+     * Launches the app through an intent instead of interacting with the launcher and waits until
+     * the app window is visible
+     */
+    @JvmOverloads
+    open fun launchViaIntent(
+        wmHelper: WindowManagerStateHelper,
+        intent: Intent,
+        launchedAppComponentMatcherOverride: IComponentMatcher? = null,
+        waitConditions: Array<Condition<DeviceStateDump>> = emptyArray()
+    ) =
+        launchViaIntentAndWaitShown(
+            wmHelper,
+            intent,
+            launchedAppComponentMatcherOverride,
+            waitConditions
+        )
+
+    /**
+     * Launches the app through an intent instead of interacting with the launcher and waits until
+     * the app window is visible
+     */
+    protected fun launchViaIntentAndWaitShown(
+        wmHelper: WindowManagerStateHelper,
+        intent: Intent,
+        launchedAppComponentMatcherOverride: IComponentMatcher? = null,
+        waitConditions: Array<Condition<DeviceStateDump>> = emptyArray()
+    ) {
+        context.startActivity(intent)
+        doWaitShown(wmHelper, launchedAppComponentMatcherOverride, waitConditions)
+    }
+
     private fun doWaitShown(
         wmHelper: WindowManagerStateHelper,
         launchedAppComponentMatcherOverride: IComponentMatcher? = null,

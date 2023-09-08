@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package android.tools.device.flicker.legacy.runner
+package android.tools.device.flicker.junit
 
 import android.app.Instrumentation
 import android.os.Bundle
@@ -22,6 +22,7 @@ import android.tools.common.Logger
 import android.tools.common.Scenario
 import android.tools.common.traces.ConditionList
 import android.tools.common.traces.ConditionsFactory
+import android.tools.device.flicker.legacy.runner.FLICKER_RUNNER_TAG
 import android.tools.device.traces.parsers.WindowManagerStateHelper
 import androidx.test.platform.app.InstrumentationRegistry
 import org.junit.runner.Description
@@ -39,14 +40,25 @@ object Utils {
                 ConditionsFactory.hasLayersAnimating().negate()
             )
         )
-    private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
 
     internal fun doWaitForUiStabilize(wmHelper: WindowManagerStateHelper) {
         wmHelper.StateSyncBuilder().add(UI_STABLE_CONDITIONS).waitFor()
     }
 
-    internal fun notifyRunnerProgress(scenario: Scenario, msg: String) {
-        Logger.d(FLICKER_RUNNER_TAG, "${scenario.key} - $msg")
+    internal fun notifyRunnerProgress(
+        scenario: Scenario,
+        msg: String,
+        instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
+    ) {
+        notifyRunnerProgress(scenario.key, msg, instrumentation)
+    }
+
+    internal fun notifyRunnerProgress(
+        scenarioName: String,
+        msg: String,
+        instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
+    ) {
+        Logger.d(FLICKER_RUNNER_TAG, "$scenarioName - $msg")
         val results = Bundle()
         results.putString(Instrumentation.REPORT_KEY_STREAMRESULT, "$msg\n")
         instrumentation.sendStatus(1, results)

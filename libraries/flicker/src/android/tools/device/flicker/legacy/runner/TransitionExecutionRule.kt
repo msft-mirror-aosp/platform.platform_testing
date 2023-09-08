@@ -21,6 +21,7 @@ import android.tools.common.Logger
 import android.tools.common.Scenario
 import android.tools.common.io.TraceType
 import android.tools.device.flicker.FlickerTag
+import android.tools.device.flicker.junit.Utils
 import android.tools.device.flicker.legacy.FlickerTestData
 import android.tools.device.traces.getCurrentState
 import android.tools.device.traces.io.ResultWriter

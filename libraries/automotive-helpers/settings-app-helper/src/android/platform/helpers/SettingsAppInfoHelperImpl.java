@@ -167,13 +167,14 @@ public class SettingsAppInfoHelperImpl extends AbstractStandardAppHelper
         BySelector permissionObjectSelector =
                 permissionSummarySelector.hasChild(By.text(permissionName));
 
+        getSpectatioUiUtil().scrollToBeginning(mAppInfoPermissionsScrollableElementSelector, true);
         UiObject2 permissionSummary =
                 mScrollUtility.scrollAndFindUiObject(
                         mScrollAction,
                         mScrollDirection,
                         mForwardButtonSelector,
                         mBackwardButtonSelector,
-                        mScrollableElementSelector,
+                        mAppInfoPermissionsScrollableElementSelector,
                         permissionObjectSelector,
                         String.format(
                                 "Scroll on Permission manager to find permission: %s",
@@ -477,16 +478,17 @@ public class SettingsAppInfoHelperImpl extends AbstractStandardAppHelper
                 getUiElementFromConfig(
                         AutomotiveConfigConstants.APP_INFO_SETTINGS_PERMISSION_APP_LIST_VIEW);
 
-        UiObject2 permissionView = getSpectatioUiUtil().findUiObject(permissionAppListView);
-        getSpectatioUiUtil()
-                .validateUiObject(permissionView, "Searching for permission app list view.");
-
         // Get a complete list of text from UI elements.
         // While scrolling
         int scrollCount = 0;
-        do {
+        boolean canScroll = true;
+        while (scrollCount < MAX_SCROLL_COUNT) {
+            UiObject2 permissionView = getSpectatioUiUtil().findUiObject(permissionAppListView);
+            getSpectatioUiUtil()
+                    .validateUiObject(permissionView, "Searching for permission app list view.");
             List<UiObject2> layoutsWithText = permissionView.findObjects(layoutWithText);
 
+            boolean newText = false;
             for (UiObject2 layout : layoutsWithText) {
 
                 // Filter out the permission name header.
@@ -500,11 +502,16 @@ public class SettingsAppInfoHelperImpl extends AbstractStandardAppHelper
                     if (!textSeen.contains(content)) {
                         textFields.add(content);
                         textSeen.add(content);
+                        newText = true;
                     }
                 }
             }
+            if (!canScroll || !newText) {
+                break;
+            }
             scrollCount++;
-        } while (permissionView.scroll(Direction.DOWN, 0.6f) && scrollCount < MAX_SCROLL_COUNT);
+            canScroll = permissionView.scroll(Direction.DOWN, 0.6f);
+        }
 
         // Debug statements
         Log.d(LOGGING_TAG, "Gathered text fields: \n " + textFields.toString());

@@ -20,6 +20,7 @@ import android.app.Instrumentation
 import android.tools.common.FLICKER_TAG
 import android.tools.common.Logger
 import android.tools.common.Scenario
+import android.tools.device.flicker.junit.Utils
 import android.tools.device.traces.io.ResultWriter
 import android.tools.device.traces.monitors.ITransitionMonitor
 import android.tools.device.traces.parsers.WindowManagerStateHelper

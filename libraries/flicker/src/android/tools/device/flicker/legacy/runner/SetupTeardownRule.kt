@@ -19,6 +19,7 @@ package android.tools.device.flicker.legacy.runner
 import android.app.Instrumentation
 import android.tools.common.Logger
 import android.tools.common.Scenario
+import android.tools.device.flicker.junit.Utils
 import android.tools.device.flicker.legacy.FlickerTestData
 import android.tools.device.traces.io.ResultWriter
 import android.tools.device.traces.parsers.WindowManagerStateHelper
