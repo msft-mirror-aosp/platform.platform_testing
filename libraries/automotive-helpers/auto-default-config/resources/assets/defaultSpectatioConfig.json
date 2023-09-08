@@ -609,6 +609,7 @@
       "SPECIFIERS": [
         {
           "TYPE": "HAS_ANCESTOR",
+          "MAX_DEPTH": 2,
           "ANCESTOR": {
             "TYPE": "CLASS",
             "VALUE": "com.android.car.ui.FocusArea"
@@ -616,7 +617,7 @@
         },
         {
           "TYPE": "HAS_DESCENDANT",
-          "MAX_DEPTH": 2,
+          "MAX_DEPTH": 1,
           "DESCENDANT": {
             "TYPE": "CLASS",
             "VALUE": "android.widget.FrameLayout"

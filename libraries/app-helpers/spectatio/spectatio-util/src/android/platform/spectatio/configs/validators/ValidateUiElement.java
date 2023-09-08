@@ -29,7 +29,6 @@ import com.google.gson.JsonParseException;
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -136,11 +135,6 @@ public class ValidateUiElement implements JsonDeserializer<UiElement> {
         // Package is optional for CLASS and RESOURCE_ID
         String pkg =
                 validateAndGetValue(JsonConfigConstants.PACKAGE, jsonObject, /*isOptional*/ true);
-
-        // For RESOURCE_ID, unspecified package should be treated as the empty string
-        if (JsonConfigConstants.RESOURCE_ID.equals(type)) {
-            pkg = Objects.requireNonNullElse(pkg, "");
-        }
 
         return new UiElement(type, value, pkg);
     }
