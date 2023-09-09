@@ -195,4 +195,20 @@ public interface IAutoStatusBarHelper extends IAppHelper {
      * mode yes the return value should be 2</>
      */
     int getCurrentDisplayMode();
+
+    /**
+     * Setup expectations: Open Bluetooth Palette
+     *
+     * <p>This method checks bluetooth connected text</>
+     *
+     * <p>This method checks if mobile is connected to bluetooth</>
+     */
+    boolean isBluetoothConnectedToMobile();
+
+    /**
+     * Setup expectations: Open Bluetooth Palette
+     *
+     * <p>This method checks if mobile is disconnected to bluetooth</>
+     */
+    boolean isBluetoothDisconnected();
 }

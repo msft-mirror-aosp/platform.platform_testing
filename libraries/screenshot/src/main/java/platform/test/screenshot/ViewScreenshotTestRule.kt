@@ -42,16 +42,18 @@ open class ViewScreenshotTestRule(
     private val matcher: BitmapMatcher = UnitTestBitmapMatcher
 ) : TestRule {
     private val colorsRule = MaterialYouColorsRule()
+    private val timeZoneRule = TimeZoneRule()
     private val deviceEmulationRule = DeviceEmulationRule(emulationSpec)
     protected val screenshotRule = ScreenshotTestRule(pathManager)
     private val activityRule = ActivityScenarioRule(ScreenshotActivity::class.java)
-    private val roboRule =
+    private val commonRule =
         RuleChain.outerRule(deviceEmulationRule).around(screenshotRule).around(activityRule)
-    private val delegateRule = RuleChain.outerRule(colorsRule).around(roboRule)
+    private val deviceRule = RuleChain.outerRule(colorsRule).around(commonRule)
+    private val roboRule = RuleChain.outerRule(timeZoneRule).around(commonRule)
     private val isRobolectric = if (Build.FINGERPRINT.contains("robolectric")) true else false
 
     override fun apply(base: Statement, description: Description): Statement {
-        val ruleToApply = if (isRobolectric) roboRule else delegateRule
+        val ruleToApply = if (isRobolectric) roboRule else deviceRule
         return ruleToApply.apply(base, description)
     }
 

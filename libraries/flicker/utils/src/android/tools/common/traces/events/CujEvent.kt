@@ -104,7 +104,11 @@ class CujEvent(
         }
 
         private fun isNumeric(toCheck: String): Boolean {
-            return toCheck.all { char -> char.isDigit() }
+            return try {
+                toCheck.toLong().toString() == toCheck
+            } catch (e: NumberFormatException) {
+                false
+            }
         }
 
         private fun getDataEntries(data: String, cujType: Type): List<String> {

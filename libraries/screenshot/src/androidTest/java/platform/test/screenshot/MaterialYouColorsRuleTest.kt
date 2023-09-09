@@ -2,44 +2,30 @@ package platform.test.screenshot
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import com.google.common.truth.Truth.assertThat
+import org.junit.Assert
 import org.junit.Rule
 import org.junit.Test
-import org.junit.rules.TestRule
 import org.junit.runner.RunWith
-import org.junit.runners.model.Statement
 
 @RunWith(AndroidJUnit4::class)
 class MaterialYouColorsRuleTest {
-    // A custom rule that saves the value of system_primary_dark before the MaterialYouColors rule
-    // is applied.
-    private var primaryDarkBefore = 0
-    @get:Rule
-    val savePreviousValueRule = TestRule { base, _ ->
-        object : Statement() {
-            override fun evaluate() {
-                primaryDarkBefore = systemPrimaryDark()
-                base.evaluate()
-            }
-        }
-    }
+    private val colors = MaterialYouColors.GreenBlue
 
-    @get:Rule val colorsRule = MaterialYouColorsRule()
+    @get:Rule val colorsRule = MaterialYouColorsRule(colors)
 
     @Test
-    fun testMaterialYouColorsChanged() {
-        val systemPrimaryDark = systemPrimaryDark()
+    fun testApplyMaterialYouColors() {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        // Assert that all colors are the same.
+        val firstResourceId = android.R.color.system_neutral1_0
+        val lastResourceId = android.R.color.system_accent3_1000
+        val nColors = lastResourceId - firstResourceId + 1
+        val resourceIds = List(nColors) { firstResourceId + it }
 
-        // primaryDarkBefore was set by our custom rule.
-        assertThat(primaryDarkBefore).isNotEqualTo(0)
+        val resources = context.resources
+        val expectedColors = resourceIds.map { colors.colors[it] }.toTypedArray()
+        val actualColors = resourceIds.map { resources.getColor(it) }.toTypedArray()
 
-        // The value of system_primary_dark was changed by the MaterialYouColorsRule.
-        assertThat(systemPrimaryDark).isNotEqualTo(primaryDarkBefore)
-    }
-
-    private fun systemPrimaryDark(): Int {
-        return InstrumentationRegistry.getInstrumentation()
-            .targetContext
-            .getColor(android.R.color.system_primary_dark)
+        Assert.assertArrayEquals(expectedColors, actualColors)
     }
 }

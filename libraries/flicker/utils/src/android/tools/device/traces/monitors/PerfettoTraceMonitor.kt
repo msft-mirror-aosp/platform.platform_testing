@@ -18,6 +18,7 @@ package android.tools.device.traces.monitors
 
 import android.tools.common.io.TraceType
 import android.tools.device.traces.executeShellCommand
+import android.tools.device.traces.io.IoUtils
 import java.io.File
 import java.io.FileOutputStream
 import java.util.concurrent.locks.ReentrantLock
@@ -48,8 +49,9 @@ open class PerfettoTraceMonitor : TraceMonitor() {
     private var isTransactionsTraceEnabled = false
 
     private var perfettoPid: Int? = null
-    private var tempConfigFile: File? = null
+    private var configFileInPerfettoDir: File? = null
     private var traceFile: File? = null
+    private var traceFileInPerfettoDir: File? = null
     private val PERFETTO_CONFIGS_DIR = File("/data/misc/perfetto-configs")
     private val PERFETTO_TRACES_DIR = File("/data/misc/perfetto-traces")
 
@@ -79,8 +81,11 @@ open class PerfettoTraceMonitor : TraceMonitor() {
     }
 
     override fun doStart() {
-        tempConfigFile = File.createTempFile("flickerlib-config-", ".cfg")
+        val configFile = File.createTempFile("flickerlib-config-", ".cfg")
+        configFileInPerfettoDir = PERFETTO_CONFIGS_DIR.resolve(requireNotNull(configFile).name)
+
         traceFile = File.createTempFile(traceType.fileName, "")
+        traceFileInPerfettoDir = PERFETTO_TRACES_DIR.resolve(requireNotNull(traceFile).name)
 
         val configBuilder =
             TraceConfig.newBuilder()
@@ -103,15 +108,13 @@ open class PerfettoTraceMonitor : TraceMonitor() {
 
         val config = configBuilder.build()
 
-        FileOutputStream(tempConfigFile).use { config.writeTo(it) }
-        executeShellCommand(
-            "cp ${tempConfigFile?.absolutePath} ${PERFETTO_CONFIGS_DIR.absolutePath}"
-        )
+        FileOutputStream(configFile).use { config.writeTo(it) }
+        IoUtils.moveFile(requireNotNull(configFile), requireNotNull(configFileInPerfettoDir))
 
         val command =
             "perfetto --background-wait" +
-                " --config ${PERFETTO_CONFIGS_DIR.absolutePath}/${tempConfigFile?.name}" +
-                " --out ${PERFETTO_TRACES_DIR.absolutePath}/${traceFile?.name}"
+                " --config ${configFileInPerfettoDir?.absolutePath}" +
+                " --out ${traceFileInPerfettoDir?.absolutePath}"
         val stdout = String(executeShellCommand(command))
         val pid = stdout.trim().toInt()
         perfettoPid = pid
@@ -125,14 +128,12 @@ open class PerfettoTraceMonitor : TraceMonitor() {
 
     override fun doStop(): File {
         require(isEnabled) { "Attempted to stop disabled trace monitor" }
-        killPerfettoProcess(perfettoPid!!)
-        waitPerfettoProcessExits(perfettoPid!!)
-        executeShellCommand("rm ${PERFETTO_CONFIGS_DIR.absolutePath}/${tempConfigFile?.name}")
-        executeShellCommand(
-            "mv ${PERFETTO_TRACES_DIR.absolutePath}/${traceFile?.name} ${traceFile?.absolutePath}"
-        )
+        killPerfettoProcess(requireNotNull(perfettoPid))
+        waitPerfettoProcessExits(requireNotNull(perfettoPid))
+        IoUtils.moveFile(requireNotNull(traceFileInPerfettoDir), requireNotNull(traceFile))
+        executeShellCommand("rm ${configFileInPerfettoDir?.absolutePath}")
         perfettoPid = null
-        return traceFile!!
+        return requireNotNull(traceFile)
     }
 
     private fun createLayersTraceDataSourceConfig(): TraceConfig.DataSource {

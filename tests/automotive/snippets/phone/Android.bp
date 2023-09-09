@@ -17,7 +17,7 @@ package {
 }
 
 android_test {
-    name: "AutomotivePhoneSnippet",
+    name: "AutomotiveSnippet",
     static_libs: [
         "automotive-dial-app-helper",
         "automotive-vehiclehardkeys-app-helper",
@@ -28,6 +28,18 @@ android_test {
         "automotive-status-bar-helper",
     ],
     srcs: ["src/**/*.java"],
+    manifest: "AndroidAutomotiveManifest.xml",
     compile_multilib: "both",
     sdk_version: "current",
+}
+
+android_test {
+    name: "PhoneSnippet",
+    static_libs: [
+        "mobly-bundled-snippets-lib",
+    ],
+    manifest: "AndroidPhoneManifest.xml",
+    compile_multilib: "both",
+    sdk_version: "current",
+    min_sdk_version: "31",
 }

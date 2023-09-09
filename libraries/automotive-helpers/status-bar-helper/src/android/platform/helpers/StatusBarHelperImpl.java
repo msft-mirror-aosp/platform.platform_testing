@@ -346,7 +346,21 @@ public class StatusBarHelperImpl extends AbstractStandardAppHelper implements IA
         getSpectatioUiUtil().pressHome();
         getSpectatioUiUtil().waitForIdle();
     }
+    // BT related
+    /** {@inheritDoc} */
+    @Override
+    public boolean isBluetoothConnectedToMobile() {
+        BySelector bluetoothConnectedSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.BT_CONNECTED_STATUS);
+        UiObject2 bluetoothConnected =
+                getSpectatioUiUtil().findUiObject(bluetoothConnectedSelector);
+        getSpectatioUiUtil()
+                .validateUiObject(
+                        bluetoothConnected, AutomotiveConfigConstants.BT_CONNECTED_STATUS);
+        return bluetoothConnected.isEnabled();
+    }
 
+    /** {@inheritDoc} */
     @Override
     public boolean changeToDayMode() {
         String dayModeResult =
@@ -357,6 +371,7 @@ public class StatusBarHelperImpl extends AbstractStandardAppHelper implements IA
         return result;
     }
 
+    /** {@inheritDoc} */
     @Override
     public boolean changeToNightMode() {
         String nightModeResult =
@@ -367,8 +382,21 @@ public class StatusBarHelperImpl extends AbstractStandardAppHelper implements IA
         return result;
     }
 
+    /** {@inheritDoc} */
     @Override
     public int getCurrentDisplayMode() {
         return mUiModeManager.getNightMode();
+    }
+    /** {@inheritDoc} */
+    @Override
+    public boolean isBluetoothDisconnected() {
+        BySelector bluetoothDisconnectedSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.BT_DISCONNECTED_STATUS);
+        UiObject2 bluetoothDisconnected =
+                getSpectatioUiUtil().findUiObject(bluetoothDisconnectedSelector);
+        getSpectatioUiUtil()
+                .validateUiObject(
+                        bluetoothDisconnected, AutomotiveConfigConstants.BT_DISCONNECTED_STATUS);
+        return bluetoothDisconnected.isEnabled();
     }
 }

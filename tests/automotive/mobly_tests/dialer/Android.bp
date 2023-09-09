@@ -32,8 +32,8 @@ python_test_host {
     },
     data: [
         // Package the snippet with the mobly test
-        ":AutomotivePhoneSnippet",
-        ":mobly-bundled-snippets",
+        ":AutomotiveSnippet",
+        ":PhoneSnippet",
     ],
     version: {
         py3: {
@@ -58,8 +58,8 @@ python_test_host {
     },
     data: [
         // Package the snippet with the mobly test
-        ":AutomotivePhoneSnippet",
-        ":mobly-bundled-snippets",
+        ":AutomotiveSnippet",
+        ":PhoneSnippet",
     ],
     version: {
         py3: {
@@ -84,8 +84,8 @@ python_test_host {
     },
     data: [
         // Package the snippet with the mobly test
-        ":AutomotivePhoneSnippet",
-        ":mobly-bundled-snippets",
+        ":AutomotiveSnippet",
+        ":PhoneSnippet",
     ],
     version: {
         py3: {

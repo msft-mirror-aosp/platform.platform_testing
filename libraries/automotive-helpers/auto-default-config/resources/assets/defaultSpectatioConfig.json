@@ -796,6 +796,14 @@
       "TYPE": "TEXT",
       "VALUE": "Bluetooth"
     },
+    "BT_CONNECTED_STATUS": {
+      "TYPE": "TEXT",
+      "VALUE": "Connected"
+    },
+    "BT_DISCONNECTED_STATUS": {
+      "TYPE": "TEXT",
+      "VALUE": "Disconnected"
+    },
     "DEVICE_MODEL": {
       "TYPE": "TEXT",
       "VALUE": "Model & hardware",
@@ -1599,7 +1607,7 @@
         }
       ]
     },
-    "TOGGLE_LOCATIONs": {
+    "NETWORK_PALETTE_SWITCH_WIDGET": {
       "TYPE": "RESOURCE_ID",
       "VALUE": "switch_widget",
       "PACKAGE": "android"
