@@ -46,11 +46,10 @@
                        com.google.android.mobly.snippet.bundled.FileSnippet,
                        com.google.android.mobly.snippet.bundled.SmsSnippet,
                        com.google.android.mobly.snippet.bundled.WifiManagerSnippet,
-                       com.google.android.mobly.snippet.bundled.StorageSnippet,
-                       com.google.android.mobly.snippet.bundled.PhoneSnippet" />
+                       com.google.android.mobly.snippet.bundled.StorageSnippet" />
   </application>
   <instrumentation
       android:name="com.google.android.mobly.snippet.SnippetRunner"
       android:targetPackage="com.google.android.mobly.snippet.bundled"
-      android:label="Automotive Phone Snippet Library" />
+      android:label="Phone Snippet Library" />
 </manifest>

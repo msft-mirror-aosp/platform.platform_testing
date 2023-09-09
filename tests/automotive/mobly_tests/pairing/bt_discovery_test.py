@@ -12,7 +12,7 @@ from mobly import test_runner
 from mobly.controllers import android_device
 
 # Number of seconds for the target to stay discoverable on Bluetooth.
-DISCOVERABLE_TIME = 60
+DISCOVERABLE_TIME = 120
 
 class MultiDeviceTest(base_test.BaseTestClass):
 

@@ -609,6 +609,7 @@
       "SPECIFIERS": [
         {
           "TYPE": "HAS_ANCESTOR",
+          "MAX_DEPTH": 2,
           "ANCESTOR": {
             "TYPE": "CLASS",
             "VALUE": "com.android.car.ui.FocusArea"
@@ -616,7 +617,7 @@
         },
         {
           "TYPE": "HAS_DESCENDANT",
-          "MAX_DEPTH": 2,
+          "MAX_DEPTH": 1,
           "DESCENDANT": {
             "TYPE": "CLASS",
             "VALUE": "android.widget.FrameLayout"
@@ -794,6 +795,14 @@
     "STATUS_BAR_BLUETOOTH_SETTINGS_PAGE_TITLE": {
       "TYPE": "TEXT",
       "VALUE": "Bluetooth"
+    },
+    "BT_CONNECTED_STATUS": {
+      "TYPE": "TEXT",
+      "VALUE": "Connected"
+    },
+    "BT_DISCONNECTED_STATUS": {
+      "TYPE": "TEXT",
+      "VALUE": "Disconnected"
     },
     "DEVICE_MODEL": {
       "TYPE": "TEXT",
@@ -1598,7 +1607,7 @@
         }
       ]
     },
-    "TOGGLE_LOCATIONs": {
+    "NETWORK_PALETTE_SWITCH_WIDGET": {
       "TYPE": "RESOURCE_ID",
       "VALUE": "switch_widget",
       "PACKAGE": "android"
