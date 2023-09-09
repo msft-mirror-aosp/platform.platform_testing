@@ -517,6 +517,7 @@ public class AutomotiveConfigConstants {
     public static final String HOME_DRIVER_BUTTON = "HOME_DRIVER_BUTTON";
     public static final String HOME_SECONDARY_USER_BUTTON = "HOME_SECONDARY_USER_BUTTON";
 
+
     // Privacy UI Options
     public static final String MICROPHONE = "MICROPHONE";
     public static final String LOCATION = "LOCATION";
@@ -575,4 +576,8 @@ public class AutomotiveConfigConstants {
     public static final String PRIVACY_CALENDAR = "PRIVACY_CALENDAR";
     public static final String RECENT_PERMISSION_DECISIONS = "RECENT_PERMISSION_DECISIONS";
     public static final String MICROPHONE_PERMISSIONS_PAGE = "MICROPHONE_PERMISSIONS_PAGE";
+
+    // BT related
+    public static final String BT_CONNECTED_STATUS = "BT_CONNECTED_STATUS";
+    public static final String BT_DISCONNECTED_STATUS = "BT_DISCONNECTED_STATUS";
 }

@@ -325,6 +325,16 @@ public class PhoneSnippet implements Snippet {
         return mStatusBarHelper.get().verifyDisabledMediaProfile();
     }
 
+    @Rpc(description = "is Mobile Connected")
+    public boolean isBluetoothConnectedToMobile() {
+        return mStatusBarHelper.get().isBluetoothConnectedToMobile();
+    }
+
+    @Rpc(description = "is Mobile Disconnected")
+    public boolean isBluetoothDisconnected() {
+        return mStatusBarHelper.get().isBluetoothDisconnected();
+    }
+
     @Override
     public void shutdown() {}
 }
