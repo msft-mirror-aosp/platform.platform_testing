@@ -18,14 +18,12 @@ package platform.test.screenshot.matchers
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.Rect
-import kotlin.math.abs
 import kotlin.math.sqrt
 import platform.test.screenshot.proto.ScreenshotResultProto
 
 /**
  * Matcher for differences not detectable by human eye
  * The relaxed threshold allows for low quality png storage
- * TODO(b/238758872): replace after b/238758872 is closed
  */
 class AlmostPerfectMatcher(
     private val acceptableThreshold: Double = 0.0,
@@ -44,27 +42,11 @@ class AlmostPerfectMatcher(
         var same = 0
         var ignored = 0
 
-        val diffArray = IntArray(width * height)
-
-        for (x in 0 until width) {
-            for (y in 0 until height) {
-                val index = x + y * width
-                if (filter[index] == 0) {
-                    ignored++
-                    continue
-                }
-                val referenceColor = expected[index]
-                val testColor = given[index]
-                if (areSame(referenceColor, testColor)) {
-                    ++same
-                } else {
-                    ++different
-                }
-                diffArray[index] =
-                        diffColor(
-                                referenceColor,
-                                testColor
-                        )
+        val diffArray = IntArray(width * height) { index ->
+            when {
+                filter[index] == 0 -> Color.TRANSPARENT.also { ignored++ }
+                areSame(expected[index], given[index]) -> Color.TRANSPARENT.also { same++ }
+                else -> Color.MAGENTA.also { different++ }
             }
         }
 
@@ -81,14 +63,6 @@ class AlmostPerfectMatcher(
             return MatchResult(matches = false, diff = diff, comparisonStatistics = stats)
         }
         return MatchResult(matches = true, diff = null, comparisonStatistics = stats)
-    }
-
-    private fun diffColor(referenceColor: Int, testColor: Int): Int {
-        return if (areSame(referenceColor, testColor)) {
-            Color.TRANSPARENT
-        } else {
-            Color.MAGENTA
-        }
     }
 
     // ref

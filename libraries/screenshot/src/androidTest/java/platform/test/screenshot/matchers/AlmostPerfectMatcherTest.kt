@@ -24,7 +24,7 @@ import platform.test.screenshot.toIntArray
 import platform.test.screenshot.utils.loadBitmap
 
 class AlmostPerfectMatcherTest {
-    val matcher = AlmostPerfectMatcher()
+    private val matcher = AlmostPerfectMatcher()
 
     @Test
     fun diffColor_exactMatch() {
@@ -141,8 +141,8 @@ class AlmostPerfectMatcherTest {
         val diffImage = result.diff!!.toIntArray()
 
         assertThat(result.matches).isFalse()
-        for (i in 0..first.height - 1) {
-            for (j in 0..first.width - 1) {
+        for (i in 0 until first.height) {
+            for (j in 0 until first.width) {
                 val rowInRange = i >= interestingRegion.top && i <= interestingRegion.bottom
                 val colInRange = j >= interestingRegion.left && j <= interestingRegion.right
                 if (!(rowInRange && colInRange)) {

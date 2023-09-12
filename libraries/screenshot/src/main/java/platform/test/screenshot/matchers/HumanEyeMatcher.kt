@@ -35,42 +35,45 @@ class HumanEyeMatcher(
             "Pixels in expected (${expected.size}) does not match pixels in actual (${given.size})"
         }
 
-        val filter = getFilter(width, height, regions)
         var ignored = 0
 
         // Prepare colorDiffArray
-        val colorDiffArray = Array(width * height) { index ->
-            if (filter[index] == 0) {
-                ignored++
-                null
-            } else {
+        val colorDiffArray = DoubleArray(width * height) { index ->
+            val x = index % width
+            val y = index / width
+
+            if (regions.isEmpty() || regions.any { it.containsInclusive(x, y) }) {
                 if (accountForTransparency) {
                     colorDiffWithTransparency(expected[index], given[index])
                 } else {
                     colorDiff(expected[index], given[index])
                 }
+            } else {
+                ignored++
+                IGNORED_COLOR_DIFF
             }
         }
 
-        fun isIndexSameForLargeArea(index: Int) = isSameForLargeArea(colorDiffArray[index] ?: 0.0)
+        fun isIndexSameForLargeArea(index: Int) = isSameForLargeArea(colorDiffArray[index])
 
         if (!accountForGrouping) {
+            val diffArray = IntArray(width * height) { index ->
+                if (isIndexSameForLargeArea(index)) Color.TRANSPARENT else Color.MAGENTA
+            }
             return createMatchResult(
                     width,
                     height,
-                    colorDiffArray.count { diff -> diff != null && isSameForLargeArea(diff) },
-                    colorDiffArray.count { diff -> diff != null && !isSameForLargeArea(diff)},
+                    diffArray.count { diff -> diff == Color.TRANSPARENT } - ignored,
+                    diffArray.count { diff -> diff == Color.MAGENTA },
                     ignored,
-                    IntArray(width * height) { index ->
-                        if (isIndexSameForLargeArea(index)) Color.TRANSPARENT else Color.MAGENTA
-                    }
+                    diffArray,
             )
         }
 
-        val easiestThresholdFailed = Array(width * height) { index ->
+         fun getEasiestThresholdFailed(index: Int): Double? {
             val colorDiff = colorDiffArray[index]
-            when {
-                colorDiff == null -> null
+            return when {
+                colorDiff == IGNORED_COLOR_DIFF -> null
                 colorDiff > THRESHOLD_ISOLATED_PIXEL -> THRESHOLD_ISOLATED_PIXEL
                 colorDiff > THRESHOLD_1PX_LINE_OF_PIXELS -> THRESHOLD_1PX_LINE_OF_PIXELS
                 colorDiff > THRESHOLD_2PX_LINE_OF_PIXELS -> THRESHOLD_2PX_LINE_OF_PIXELS
@@ -80,17 +83,18 @@ class HumanEyeMatcher(
         }
 
         val diffArray = IntArray(colorDiffArray.size) { index ->
+            // Also covers the ignored case
             if (isIndexSameForLargeArea(index)) return@IntArray Color.TRANSPARENT
 
             val x = index % width
             val y = index / width
 
-            val currThreshold = easiestThresholdFailed[x + width * y]!!
+            val currThreshold = getEasiestThresholdFailed(index)!!
             // null = ignored or out of bounds of image
-            val upThreshold = if (y > 0) easiestThresholdFailed[x + width * (y - 1)] else null
-            val downThreshold = if (y < height - 1) easiestThresholdFailed[x + width * (y + 1)] else null
-            val leftThreshold = if (x > 0) easiestThresholdFailed[x - 1 + width * y] else null
-            val rightThreshold = if (x < width - 1) easiestThresholdFailed[x + 1 + width * y] else null
+            val upThreshold = if (y > 0) getEasiestThresholdFailed(x + width * (y - 1)) else null
+            val downThreshold = if (y < height - 1) getEasiestThresholdFailed(x + width * (y + 1)) else null
+            val leftThreshold = if (x > 0) getEasiestThresholdFailed(x - 1 + width * y) else null
+            val rightThreshold = if (x < width - 1) getEasiestThresholdFailed(x + 1 + width * y) else null
 
             // Pixels with lower diff thresholds are not counted as neighbouring diffs
             var neighbouringDiffs = 4
@@ -99,13 +103,11 @@ class HumanEyeMatcher(
             if (leftThreshold != null && currThreshold > leftThreshold) neighbouringDiffs--
             if (rightThreshold != null && currThreshold > rightThreshold) neighbouringDiffs--
 
-            colorDiffArray[index]?.let { originalColorDiff ->
-                if (isSame(originalColorDiff, neighbouringDiffs)) {
-                    Color.TRANSPARENT
-                } else {
-                    Color.MAGENTA
-                }
-            } ?: Color.TRANSPARENT
+            if (isSame(colorDiffArray[index], neighbouringDiffs)) {
+                Color.TRANSPARENT
+            } else {
+                Color.MAGENTA
+            }
         }
 
         return createMatchResult(
@@ -213,5 +215,9 @@ class HumanEyeMatcher(
         const val THRESHOLD_2PX_LINE_OF_PIXELS = 10.0
         const val THRESHOLD_1PX_LINE_OF_PIXELS = 12.0
         const val THRESHOLD_ISOLATED_PIXEL = 40.0
+
+        const val IGNORED_COLOR_DIFF = -1.0
+
+        private fun Rect.containsInclusive(x: Int, y: Int) = x in left..right && y in top..bottom
     }
 }
