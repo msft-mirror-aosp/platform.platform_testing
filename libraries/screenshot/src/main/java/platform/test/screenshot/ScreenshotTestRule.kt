@@ -16,6 +16,7 @@
 
 package platform.test.screenshot
 
+import android.annotation.ColorInt
 import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -360,77 +361,40 @@ open class ScreenshotTestRule(
         return file
     }
 
-    private fun colorPixel(
-        bitmapArray: IntArray,
-        width: Int,
-        height: Int,
-        row: Int,
-        column: Int,
-        extra: Int,
-        colorForHighlight: Int
-    ) {
-        val startRow = if (row - extra < 0) { 0 } else { row - extra }
-        val endRow = if (row + extra >= height) { height - 1 } else { row + extra }
-        val startColumn = if (column - extra < 0) { 0 } else { column - extra }
-        val endColumn = if (column + extra >= width) { width - 1 } else { column + extra }
-        for (i in startRow..endRow) {
-            for (j in startColumn..endColumn) {
-                bitmapArray[j + i * width] = colorForHighlight
+    /** This will create a new Bitmap with the output (not modifying the [original] Bitmap */
+    private fun highlightedBitmap(original: Bitmap, regions: List<Rect>): Bitmap {
+        if (regions.isEmpty()) return original
+
+        val outputBitmap = original.copy(original.config!!, true)
+        val imageRect = Rect(0, 0, original.width, original.height)
+        val regionLineWidth = 2
+        for (region in regions) {
+            val regionToDraw = Rect(region)
+                    .apply {
+                        inset(-regionLineWidth, -regionLineWidth)
+                        intersect(imageRect)
+                    }
+
+            repeat(regionLineWidth) {
+                drawRectOnBitmap(outputBitmap, regionToDraw, Color.RED)
+                regionToDraw.inset(1, 1)
+                regionToDraw.intersect(imageRect)
             }
         }
+        return outputBitmap
     }
 
-    private fun highlightedBitmap(original: Bitmap?, regions: List<Rect>): Bitmap? {
-        if (original == null || regions.isEmpty()) {
-            return original
+    private fun drawRectOnBitmap(bitmap: Bitmap, rect: Rect, @ColorInt color: Int) {
+        // Draw top and bottom edges
+        for (x in rect.left until rect.right) {
+            bitmap.setPixel(x, rect.top, color)
+            bitmap.setPixel(x, rect.bottom - 1, color)
         }
-        val bitmapArray = original.toIntArray()
-        val colorForHighlight = Color.argb(255, 255, 0, 0)
-        for (region in regions) {
-            for (i in region.top..region.bottom) {
-                if (i >= original.height) { break }
-                colorPixel(
-                    bitmapArray,
-                    original.width,
-                    original.height,
-                    i,
-                    region.left,
-                    /* extra= */2,
-                    colorForHighlight
-                )
-                colorPixel(
-                    bitmapArray,
-                    original.width,
-                    original.height,
-                    i,
-                    region.right,
-                    /* extra= */2,
-                    colorForHighlight
-                )
-            }
-            for (j in region.left..region.right) {
-                if (j >= original.width) { break }
-                colorPixel(
-                    bitmapArray,
-                    original.width,
-                    original.height,
-                    region.top,
-                    j,
-                    /* extra= */2,
-                    colorForHighlight
-                )
-                colorPixel(
-                    bitmapArray,
-                    original.width,
-                    original.height,
-                    region.bottom,
-                    j,
-                    /* extra= */2,
-                    colorForHighlight
-                )
-            }
+        // Draw left and right edge
+        for (y in rect.top until rect.bottom) {
+            bitmap.setPixel(rect.left, y, color)
+            bitmap.setPixel(rect.right - 1, y, color)
         }
-        return Bitmap.createBitmap(bitmapArray, original.width, original.height, original.config)
     }
 }
 

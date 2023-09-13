@@ -429,8 +429,8 @@ constructor(
         // TODO(b/112837428): Implement a incremental retry policy to reduce the unnecessary
         // constant time, currently keep the default as 5*1s because most of the original code
         // uses it, and some tests might be sensitive to the waiting interval.
-        private const val DEFAULT_RETRY_LIMIT = 50
-        private const val DEFAULT_RETRY_INTERVAL_MS = 100L
+        private const val DEFAULT_RETRY_LIMIT = 20
+        private const val DEFAULT_RETRY_INTERVAL_MS = 300L
 
         /** @return true if it should wait for some activities to become visible. */
         private fun shouldWaitForActivities(

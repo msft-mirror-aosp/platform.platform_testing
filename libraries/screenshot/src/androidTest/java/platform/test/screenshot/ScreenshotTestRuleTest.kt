@@ -83,6 +83,23 @@ class ScreenshotTestRuleTest {
     }
 
     @Test
+    fun performDiff_sameBitmaps_materialYouColors() {
+        val goldenIdentifier = "defaultClock_largeClock_regionSampledColor"
+        val first = bitmapWithMaterialYouColorsSimulation(
+            loadBitmap("defaultClock_largeClock_regionSampledColor_original"),
+            /* isDarkTheme= */ true
+        )
+
+        first
+            .assertAgainstGolden(rule, goldenIdentifier, matcher = PixelPerfectMatcher())
+
+        assertThat(rule.getPathOnDeviceFor(IMAGE_ACTUAL, goldenIdentifier).exists()).isFalse()
+        assertThat(rule.getPathOnDeviceFor(IMAGE_DIFF, goldenIdentifier).exists()).isFalse()
+        assertThat(rule.getPathOnDeviceFor(IMAGE_EXPECTED, goldenIdentifier).exists()).isFalse()
+        assertThat(rule.getPathOnDeviceFor(RESULT_BIN_PROTO, goldenIdentifier).exists()).isFalse()
+    }
+
+    @Test
     fun performDiff_sameBitmaps_customizedAssetsPath() {
         val goldenIdentifier = "round_rect_gray"
         val first = loadBitmap(goldenIdentifier)

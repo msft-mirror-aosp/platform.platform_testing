@@ -37,7 +37,7 @@ import platform.test.screenshot.matchers.BitmapMatcher
 
 /** A rule for View screenshot diff unit tests. */
 open class ViewScreenshotTestRule(
-    emulationSpec: DeviceEmulationSpec,
+    private val emulationSpec: DeviceEmulationSpec,
     pathManager: GoldenImagePathManager,
     private val matcher: BitmapMatcher = UnitTestBitmapMatcher
 ) : TestRule {
@@ -89,11 +89,14 @@ open class ViewScreenshotTestRule(
             beforeScreenshot(activity)
         }
 
-        return if (isRobolectric) {
-            contentView?.captureToBitmap()?.get(10, TimeUnit.SECONDS)
-                ?: error("timeout while trying to capture view to bitmap")
+        if (isRobolectric) {
+            val originalBitmap = contentView?.captureToBitmap()?.get(10, TimeUnit.SECONDS)
+            if (originalBitmap == null) {
+                error("timeout while trying to capture view to bitmap")
+            }
+            return bitmapWithMaterialYouColorsSimulation(originalBitmap, emulationSpec.isDarkTheme)
         } else {
-            contentView?.toBitmap() ?: error("contentView is null")
+            return contentView?.toBitmap() ?: error("contentView is null")
         }
     }
 

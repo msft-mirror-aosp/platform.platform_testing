@@ -43,8 +43,8 @@ public final class SetFlagsRuleTest {
 
     @Test
     public void flagsShouldResetAfterOneTest() {
-        assertThrows(NullPointerException.class, () -> Flags.flagName3());
-        assertThrows(NullPointerException.class, () -> Flags.flagName4());
+        assertFalse(Flags.flagName3());
+        assertTrue(Flags.flagName4());
     }
 
     @Test

@@ -14,8 +14,20 @@
  * limitations under the License.
  */
 
-package android.tools.common.flicker.subject.exceptions
+package android.device.collectors;
 
-/** Generic flicker exception */
-class SubjectAssertionError(override val messageBuilder: ExceptionMessageBuilder) :
-    FlickerAssertionError()
+import android.device.collectors.annotations.OptionClass;
+
+import com.android.helpers.SlabinfoHelper;
+
+/**
+ * A {@link SlabinfoListener} that records long-term changes in linux kernel slab sizes to look for
+ * memory leaks / memory abandonment.
+ */
+@OptionClass(alias = "slabinfo-listener")
+public class SlabinfoListener extends BaseCollectionListener<Double> {
+
+    public SlabinfoListener() {
+        createHelperInstance(new SlabinfoHelper());
+    }
+}

@@ -113,17 +113,13 @@ class TaggedScenarioExtractor(
 
         return Timestamps.from(
             elapsedNanos =
-                max(
-                    cujEntry.endTimestamp.elapsedNanos,
-                    interpolatedEndTimestamp?.elapsedNanos ?: -1L
-                ),
+                max(cujEntry.endTimestamp.elapsedNanos, interpolatedEndTimestamp.elapsedNanos),
             systemUptimeNanos =
                 max(
                     cujEntry.endTimestamp.systemUptimeNanos,
-                    interpolatedEndTimestamp?.systemUptimeNanos ?: -1L
+                    interpolatedEndTimestamp.systemUptimeNanos
                 ),
-            unixNanos =
-                max(cujEntry.endTimestamp.unixNanos, interpolatedEndTimestamp?.unixNanos ?: -1L)
+            unixNanos = max(cujEntry.endTimestamp.unixNanos, interpolatedEndTimestamp.unixNanos)
         )
     }
 }
