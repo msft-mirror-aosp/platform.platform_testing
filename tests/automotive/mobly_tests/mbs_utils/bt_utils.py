@@ -86,3 +86,4 @@ class BTUtils:
         while (self.target.mbs.btPressAllow()):
             logging.info('ALLOW pressed!')
             time.sleep(TIME_FOR_PROMPT_TO_LOAD)
+
