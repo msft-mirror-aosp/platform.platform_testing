@@ -16,6 +16,7 @@
 
 package android.tools.device.flicker.integration
 
+import android.tools.common.flicker.subject.exceptions.SimpleFlickerAssertionError
 import android.tools.common.io.RunStatus
 import android.tools.device.flicker.datastore.CachedResultReader
 import android.tools.device.flicker.legacy.LegacyFlickerTest
@@ -54,7 +55,7 @@ class AssertionErrorTest {
         val result = runCatching {
             testParam.assertLayers {
                 assertionExecuted = true
-                error(Utils.FAILURE)
+                throw SimpleFlickerAssertionError(Utils.FAILURE)
             }
         }
 

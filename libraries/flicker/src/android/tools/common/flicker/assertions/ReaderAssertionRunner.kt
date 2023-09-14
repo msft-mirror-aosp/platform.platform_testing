@@ -16,6 +16,7 @@
 
 package android.tools.common.flicker.assertions
 
+import android.tools.common.flicker.subject.exceptions.FlickerAssertionError
 import android.tools.common.io.Reader
 
 class ReaderAssertionRunner(
@@ -25,11 +26,11 @@ class ReaderAssertionRunner(
     override fun runAssertion(assertion: AssertionData): Throwable? =
         resultReader.executionError ?: doRunAssertion(assertion)
 
-    private fun doRunAssertion(assertion: AssertionData): Throwable? {
+    private fun doRunAssertion(assertion: AssertionData): FlickerAssertionError? {
         return try {
             assertion.checkAssertion(subjectsParser)
             null
-        } catch (error: Throwable) {
+        } catch (error: FlickerAssertionError) {
             error
         }
     }

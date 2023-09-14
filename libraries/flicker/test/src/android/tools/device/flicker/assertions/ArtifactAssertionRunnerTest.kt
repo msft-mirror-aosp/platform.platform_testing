@@ -19,6 +19,7 @@ package android.tools.device.flicker.assertions
 import android.tools.common.flicker.assertions.AssertionData
 import android.tools.common.flicker.assertions.Consts
 import android.tools.common.flicker.assertions.SubjectsParser
+import android.tools.common.flicker.subject.exceptions.SimpleFlickerAssertionError
 import android.tools.common.io.RunStatus
 import android.tools.device.traces.deleteIfExists
 import android.tools.device.traces.io.IResultData
@@ -43,7 +44,7 @@ class ArtifactAssertionRunnerTest {
     private val assertionSuccess = newAssertionData { executionCount++ }
     private val assertionFailure = newAssertionData {
         executionCount++
-        error(Consts.FAILURE)
+        throw SimpleFlickerAssertionError(Consts.FAILURE)
     }
 
     @Before

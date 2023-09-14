@@ -22,6 +22,8 @@ import android.tools.common.flicker.assertions.AssertionData
 import android.tools.common.flicker.assertions.AssertionResult
 import android.tools.common.flicker.assertions.ScenarioAssertion
 import android.tools.common.flicker.assertions.SubjectsParser
+import android.tools.common.flicker.subject.exceptions.FlickerAssertionError
+import android.tools.common.flicker.subject.exceptions.SimpleFlickerAssertionError
 import android.tools.common.io.Reader
 import android.tools.common.traces.wm.TransitionsTrace
 import android.tools.device.flicker.FlickerServiceResultsCollector
@@ -351,7 +353,7 @@ class FlickerServiceResultsCollectorTest {
                             }
                         }
                     )
-                override val assertionErrors = emptyArray<Throwable>()
+                override val assertionErrors = emptyArray<FlickerAssertionError>()
                 override val stabilityGroup = AssertionInvocationGroup.BLOCKING
                 override val passed = true
             }
@@ -367,7 +369,8 @@ class FlickerServiceResultsCollectorTest {
                             }
                         }
                     )
-                override val assertionErrors = arrayOf(Throwable("Assertion failed"))
+                override val assertionErrors =
+                    arrayOf<FlickerAssertionError>(SimpleFlickerAssertionError("Assertion failed"))
                 override val stabilityGroup = AssertionInvocationGroup.BLOCKING
                 override val passed = false
                 override val failed: Boolean = true
@@ -381,8 +384,6 @@ class FlickerServiceResultsCollectorTest {
             }
         }
 
-        @ClassRule
-        @JvmField
-        val ENV_CLEANUP = CleanFlickerEnvironmentRule()
+        @ClassRule @JvmField val ENV_CLEANUP = CleanFlickerEnvironmentRule()
     }
 }

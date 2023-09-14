@@ -25,6 +25,8 @@ import android.tools.common.flicker.assertions.AssertionData
 import android.tools.common.flicker.assertions.AssertionResult
 import android.tools.common.flicker.assertions.ScenarioAssertion
 import android.tools.common.flicker.assertions.SubjectsParser
+import android.tools.common.flicker.subject.exceptions.FlickerAssertionError
+import android.tools.common.flicker.subject.exceptions.SimpleFlickerAssertionError
 import android.tools.common.io.Reader
 import android.tools.device.flicker.FlickerServiceResultsCollector
 import android.tools.utils.KotlinMockito
@@ -54,7 +56,7 @@ class FlickerServiceCachedTestCaseTest {
                             }
                         }
                     )
-                override val assertionErrors = emptyArray<Throwable>()
+                override val assertionErrors = emptyArray<FlickerAssertionError>()
                 override val stabilityGroup = AssertionInvocationGroup.BLOCKING
                 override val passed = true
             }
@@ -107,7 +109,8 @@ class FlickerServiceCachedTestCaseTest {
                             }
                         }
                     )
-                override val assertionErrors = arrayOf<Throwable>(Exception("EXPECTED"))
+                override val assertionErrors =
+                    arrayOf<FlickerAssertionError>(SimpleFlickerAssertionError("EXPECTED"))
                 override val stabilityGroup = AssertionInvocationGroup.BLOCKING
                 override val passed = false
             }
@@ -130,7 +133,7 @@ class FlickerServiceCachedTestCaseTest {
             )
 
         val failure = assertThrows<Throwable> { test.execute(mockDescription) }
-        Truth.assertThat(failure).hasMessageThat().isEqualTo("EXPECTED")
+        Truth.assertThat(failure).hasMessageThat().startsWith("EXPECTED")
 
         Mockito.verify(mockInstrumentation)
             .sendStatus(
@@ -162,7 +165,8 @@ class FlickerServiceCachedTestCaseTest {
                             }
                         }
                     )
-                override val assertionErrors = arrayOf<Throwable>(Exception("EXPECTED"))
+                override val assertionErrors =
+                    arrayOf<FlickerAssertionError>(SimpleFlickerAssertionError("EXPECTED"))
                 override val stabilityGroup = AssertionInvocationGroup.NON_BLOCKING
                 override val passed = false
             }

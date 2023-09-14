@@ -21,6 +21,7 @@ import android.tools.common.Tag
 import android.tools.common.flicker.assertions.AssertionDataImpl
 import android.tools.common.flicker.subject.FlickerSubject
 import android.tools.common.flicker.subject.events.EventLogSubject
+import android.tools.common.flicker.subject.exceptions.SimpleFlickerAssertionError
 import android.tools.common.io.RunStatus
 import android.tools.device.traces.monitors.events.EventLogMonitor
 import android.tools.utils.CleanFlickerEnvironmentRule
@@ -40,7 +41,7 @@ class CachedAssertionRunnerTest {
     private val assertionSuccess = newAssertionData { executionCount++ }
     private val assertionFailure = newAssertionData {
         executionCount++
-        error(Consts.FAILURE)
+        throw SimpleFlickerAssertionError(Consts.FAILURE)
     }
 
     @Before
