@@ -22,6 +22,10 @@ import android.content.Context;
 import androidx.test.uiautomator.BySelector;
 import androidx.test.uiautomator.UiObject2;
 
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+
 /** Helper file for status bar tests */
 public class StatusBarHelperImpl extends AbstractStandardAppHelper implements IAutoStatusBarHelper {
 
@@ -361,6 +365,30 @@ public class StatusBarHelperImpl extends AbstractStandardAppHelper implements IA
     }
 
     /** {@inheritDoc} */
+    @Override
+    public String getClockTime() {
+        BySelector clockSelector = getUiElementFromConfig(AutomotiveConfigConstants.CLOCK_TIME);
+        UiObject2 clockObject = getSpectatioUiUtil().findUiObject(clockSelector);
+        getSpectatioUiUtil().validateUiObject(clockObject, AutomotiveConfigConstants.CLOCK_TIME);
+        String clockTime = getSpectatioUiUtil().getTextForUiElement(clockObject);
+        // To trim the space in the clock text
+        String timePattern = "[ \\x{202f}]";
+        clockTime = clockTime.replaceAll(timePattern, "");
+        return clockTime.trim();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String getCurrentTimeWithTimeZone(String timezone) {
+        ZonedDateTime currentTimeInZone = ZonedDateTime.now(ZoneId.of(timezone));
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("hh:mm");
+        String time = currentTimeInZone.format(formatter);
+        // To trim the 0 prefixed to match the clock time in Status bar
+        String timePattern = "^0+(?!$)";
+        time = time.replaceAll(timePattern, "");
+        return time;
+    }
+
     @Override
     public boolean changeToDayMode() {
         String dayModeResult =

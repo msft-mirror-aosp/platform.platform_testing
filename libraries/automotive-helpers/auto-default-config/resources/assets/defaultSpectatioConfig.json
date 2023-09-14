@@ -1682,6 +1682,11 @@
     "MICROPHONE_PERMISSIONS_PAGE": {
       "TYPE": "TEXT",
       "VALUE": "Apps with this permission can record audio"
+    },
+    "CLOCK_TIME": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "clock",
+      "PACKAGE": "com.android.systemui"
     }
   },
   "WORKFLOWS": {
