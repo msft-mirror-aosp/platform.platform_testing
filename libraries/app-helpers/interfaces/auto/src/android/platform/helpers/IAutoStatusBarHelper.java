@@ -211,4 +211,18 @@ public interface IAutoStatusBarHelper extends IAppHelper {
      * <p>This method checks if mobile is disconnected to bluetooth</>
      */
     boolean isBluetoothDisconnected();
+
+    /**
+     * Setup expectations: Home screen
+     *
+     * <p>Get time from the Status bar
+     */
+    String getClockTime();
+
+    /**
+     * Setup expectations: None
+     *
+     * <p>Get the current time for given time zone</>
+     */
+    String getCurrentTimeWithTimeZone(String timezone);
 }
