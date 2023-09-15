@@ -89,6 +89,7 @@ public class AutomotiveConfigConstants {
     public static final String FAVORITES_MENU = "FAVORITES_MENU";
     public static final String DIALER_VIEW = "DIALER_VIEW";
     public static final String CONTACT_NAME_TITLE = "CONTACT_NAME_TITLE";
+
     // Home App Constants
     public static final String HOME_PACKAGE = "HOME_PACKAGE";
     public static final String HOME_BOTTOM_CARD = "HOME_BOTTOM_CARD";
@@ -484,6 +485,7 @@ public class AutomotiveConfigConstants {
     public static final String NETWORK_PALETTE_SUMMARY = "NETWORK_PALETTE_SUMMARY";
     public static final String NETWORK_PALETTE_SWITCH_WIDGET = "NETWORK_PALETTE_SWITCH_WIDGET";
     public static final String FORGET_WIFI = "FORGET_WIFI";
+    public static final String CLOCK_TIME = "CLOCK_TIME";
 
     // Quick Controls
     public static final String HOME_BLUETOOTH_BUTTON = "HOME_BLUETOOTH_BUTTON";

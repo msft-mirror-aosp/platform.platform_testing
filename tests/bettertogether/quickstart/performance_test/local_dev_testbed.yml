@@ -1,0 +1,58 @@
+x-test-params: &test-params
+  wifi_country_code: "US"
+  wifi_ssid: ""
+  wifi_password: ""
+  # the serial of source device(discoverer, old device to migrate), see
+  # the AndroidDevice#serial, by default the source and target are selected randomly.
+  # source_device_serial: "123456ABCDEF"
+  # target_device_serial: "ABCDEF123456"
+
+x-controllers: &controllers
+  Controllers:
+    AndroidDevice: '*'
+    # - serial: "123456ABCDEF"
+    # - serial: "ABCDEF123456"
+
+TestBeds:
+- Name: LocalCustomizedTestbed
+  <<: *controllers
+  TestParams:
+      <<: *test-params
+
+- Name: LocalUS2GTestbed
+  <<: *controllers
+  TestParams:
+      <<: *test-params
+      test_report_alias_name: "US-2G"
+      wifi_ssid: "AP-2437"
+      wifi_password: "AP-2437"
+
+- Name: LocalUS5GTestbed
+  <<: *controllers
+  TestParams:
+      <<: *test-params
+      test_report_alias_name: "US-5G"
+      wifi_ssid: "AP-5180"
+      wifi_password: "AP-5180"
+
+- Name: LocalJP5GTestbed
+  <<: *controllers
+  TestParams:
+      <<: *test-params
+      test_report_alias_name: "JP-5G"
+      wifi_country_code: "JP"
+      wifi_ssid: "AP-5180"
+      wifi_password: "AP-5180"
+      # 5M Bytes per second
+      wifi_transfer_throughput_kbs_percentile: "5120"
+
+- Name: LocalGB5GTestbed
+  <<: *controllers
+  TestParams:
+      <<: *test-params
+      test_report_alias_name: "GB-5G"
+      wifi_country_code: "GB"
+      wifi_ssid: "AP-5260"
+      wifi_password: "AP-5260"
+      # 5M Bytes per second
+      wifi_transfer_throughput_kbs_percentile: "5120"

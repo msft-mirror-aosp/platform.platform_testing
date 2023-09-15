@@ -20,7 +20,12 @@ import android.app.Instrumentation
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
+import android.graphics.Rect
+import android.net.Uri
 import android.tools.common.traces.component.ComponentNameMatcher
+import androidx.test.uiautomator.By
+import androidx.test.uiautomator.UiObject2
+import androidx.test.uiautomator.Until
 
 /**
  * Helper to launch Youtube (not compatible with AOSP)
@@ -36,9 +41,61 @@ class YouTubeAppHelper(
         getYoutubeLauncherName(pkgManager),
         getYoutubeComponent(pkgManager),
     ) {
+
+    fun waitForVideoPlaying() {
+        displayControls()
+        getPauseButton()
+    }
+
+    /**
+     * This re-displays the controls if they are already displayed so that the timer until they're
+     * off again, is reset giving the tests more time to target them. If the controls are already
+     * off, then this simply displays them by clicking off to the left side of the player.
+     */
+    private fun displayControls() {
+        val player: UiObject2 = uiDevice.findObject(By.res(PACKAGE_NAME, UI_WATCH_PLAYER_ID))
+        val playerRect: Rect = player.getVisibleBounds()
+        // Always touch the screen when requested to display controls regardless of
+        // the current state of the controls. This always starts the timer giving the test
+        // 3 seconds to perform the operation.
+        uiDevice.click(playerRect.centerX(), playerRect.centerY())
+
+        val controls: UiObject2? =
+            uiDevice.wait(Until.findObject(By.res(PACKAGE_NAME, UI_CONTROL_ID)), WAIT_DELAY)
+        if (controls != null) {
+            // nothing to do here. We return now since the controls are visible.
+            return
+        }
+
+        // Since our first tap may have turned off the controls, we tap again and exit
+        uiDevice.click(playerRect.centerX(), playerRect.centerY())
+    }
+
+    protected fun getPauseButton(): UiObject2? {
+        return uiDevice.wait(Until.findObject(By.desc(UI_PAUSE_BUTTON_DESC)), WAIT_DELAY)
+    }
+
     companion object {
+        const val INTENT_WATCH_VIDEO_PATTERN = "vnd.youtube:%s"
+        const val PACKAGE_NAME = "com.google.android.youtube"
+        const val UI_WATCH_PLAYER_ID = "watch_player"
+        const val UI_CONTROL_ID = "controls_layout"
+        const val UI_PAUSE_BUTTON_DESC = "Pause video"
+        const val WAIT_DELAY: Long = 2000
+
+        fun getYoutubeVideoIntent(videoId: String?): Intent {
+            val youTubeVideoIntent =
+                Intent(
+                    Intent.ACTION_VIEW,
+                    Uri.parse(String.format(INTENT_WATCH_VIDEO_PATTERN, videoId))
+                )
+            youTubeVideoIntent.setPackage(PACKAGE_NAME)
+            youTubeVideoIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            return youTubeVideoIntent
+        }
+
         private fun getYoutubeIntent(pkgManager: PackageManager): Intent {
-            return pkgManager.getLaunchIntentForPackage("com.google.android.youtube")
+            return pkgManager.getLaunchIntentForPackage(PACKAGE_NAME)
                 ?: error("Youtube launch intent not found")
         }
 

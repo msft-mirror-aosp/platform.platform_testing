@@ -31,6 +31,7 @@ import org.junit.runner.RunWith;
 @RunWith(AndroidJUnit4.class)
 public class StatusBarTest {
 
+    private static final String TIME_ZONE = "GMT";
     private HelperAccessor<IAutoHomeHelper> mHomeHelper;
     private HelperAccessor<IAutoStatusBarHelper> mStatusBarHelper;
 
@@ -58,5 +59,13 @@ public class StatusBarTest {
         assertTrue("Unable to change to night mode", mStatusBarHelper.get().changeToNightMode());
         // Constant value is 2 for Night mode yes
         assertEquals(2, mStatusBarHelper.get().getCurrentDisplayMode());
+    }
+
+    @Test
+    public void testClockTime() {
+        assertEquals(
+                "Clock time in Status bar is not displayed",
+                mStatusBarHelper.get().getClockTime(),
+                mStatusBarHelper.get().getCurrentTimeWithTimeZone(TIME_ZONE));
     }
 }
