@@ -15,12 +15,20 @@
 """Stress tests for Neaby Connections used by the quick start flow."""
 
 import datetime
+import os
 import logging
+import sys
 import time
 
 from mobly import asserts
 from mobly import base_test
 from mobly import test_runner
+
+# Allows local imports to be resolved via relative path, so the test can be run
+# without building.
+_performance_test_dir = os.path.dirname(os.path.dirname(__file__))
+if _performance_test_dir not in sys.path:
+  sys.path.append(_performance_test_dir)
 
 from performance_test import nc_base_test
 from performance_test import nc_constants
@@ -478,4 +486,3 @@ class QuickStartStressTest(nc_base_test.NCBaseTestClass):
 
 if __name__ == '__main__':
   test_runner.main()
-
