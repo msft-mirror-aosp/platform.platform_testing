@@ -162,7 +162,8 @@ class QuickStartStressTest(nc_base_test.NCBaseTestClass):
     file_1_mb = _TRANSFER_FILE_SIZE_1MB
     self._test_result.first_bt_transfer_throughput_kbs = (
         nearby_snippet_1.transfer_file(
-            file_1_mb, nc_constants.FILE_1M_PAYLOAD_TRANSFER_TIMEOUT))
+            file_1_mb, nc_constants.FILE_1M_PAYLOAD_TRANSFER_TIMEOUT,
+            nc_constants.PayloadType.FILE))
 
     # second Wifi connection and transfer
     # 4. advertiser connect to wifi wlan
@@ -205,7 +206,8 @@ class QuickStartStressTest(nc_base_test.NCBaseTestClass):
     file_1_gb = _TRANSFER_FILE_SIZE_1GB
     self._test_result.second_wifi_transfer_throughput_kbs = (
         nearby_snippet_2.transfer_file(
-            file_1_gb, nc_constants.FILE_1G_PAYLOAD_TRANSFER_TIMEOUT))
+            file_1_gb, nc_constants.FILE_1G_PAYLOAD_TRANSFER_TIMEOUT,
+            self.test_parameters.payload_type))
 
     # 7. disconnect 1st connection
     nearby_snippet_1.disconnect_endpoint()
@@ -272,33 +274,6 @@ class QuickStartStressTest(nc_base_test.NCBaseTestClass):
     self._quick_start_test_metrics.advertiser_wifi_wlan_latencies.append(
         self._test_result.advertiser_wifi_wlan_latency)
 
-  def _stats_latency_result(
-      self,
-      latency_indicators: list[datetime.timedelta],
-      latency_benchmark: datetime.timedelta,
-      target_reach_percentile: int,
-      success_percentile: int | None = None,
-  ) -> nc_constants.ResultStats:
-    """Statistics the latency test result of all iterations."""
-    n = self.performance_test_iterations
-    latency_reach_count = 0
-    success_count = 0
-    for latency in latency_indicators:
-      # UNSET_LATENCY means, that iteration failed.
-      if latency != nc_constants.UNSET_LATENCY:
-        success_count += 1
-        if latency <= latency_benchmark:
-          latency_reach_count += 1
-    latency_reach_rate = round(latency_reach_count * 100.0 / n, 1)
-    success_rate = round(success_count * 100.0 / n, 1)
-    success = True
-    if latency_reach_rate < target_reach_percentile:
-      success = False
-    elif success_percentile and success_rate < success_percentile:
-      success = False
-
-    return nc_constants.ResultStats(success, latency_reach_rate, success_rate)
-
   def _stats_throughput_result(
       self,
       throughput_indicators: list[float],
@@ -325,76 +300,10 @@ class QuickStartStressTest(nc_base_test.NCBaseTestClass):
     """Summarizes test results of all iterations."""
     fail_targets: list[nc_constants.FailTargetSummary] = []
     reach_target: bool = True
-    first_discovery_stats = self._stats_latency_result(
-        self._quick_start_test_metrics.first_discovery_latencies,
-        nc_constants.FIRST_DISCOVERY_LATENCY_BENCHMARK,
-        self.test_parameters.first_discovery_latency_percentile,
-    )
-    reach_target &= first_discovery_stats.reach_target
-    if not first_discovery_stats.reach_target:
-      fail_targets.append(
-          nc_constants.FailTargetSummary(
-              'first_discovery_latency_reach_rate',
-              first_discovery_stats.reach_rate,
-              self.test_parameters.first_discovery_latency_percentile))
-
-    first_connection_stats = self._stats_latency_result(
-        self._quick_start_test_metrics.first_connection_latencies,
-        nc_constants.FIRST_CONNECTION_LATENCY_BENCHMARK,
-        self.test_parameters.first_connection_latency_percentile,
-        self.test_parameters.first_connection_success_percentile,
-    )
-    reach_target &= first_connection_stats.reach_target
-    if not first_connection_stats.reach_target:
-      fail_targets.append(
-          nc_constants.FailTargetSummary(
-              'first_connection_latency_reach_rate',
-              first_connection_stats.reach_rate,
-              self.test_parameters.first_connection_latency_percentile))
-
-    second_discovery_stats = self._stats_latency_result(
-        self._quick_start_test_metrics.second_discovery_latencies,
-        nc_constants.SECOND_DISCOVERY_LATENCY_BENCHMARK,
-        self.test_parameters.second_discovery_latency_percentile,
-    )
-    reach_target &= second_discovery_stats.reach_target
-    if not second_discovery_stats.reach_target:
-      fail_targets.append(
-          nc_constants.FailTargetSummary(
-              'second_discovery_latency_reach_rate',
-              second_discovery_stats.reach_rate,
-              self.test_parameters.second_discovery_latency_percentile))
-
-    second_connection_stats = self._stats_latency_result(
-        self._quick_start_test_metrics.second_connection_latencies,
-        nc_constants.SECOND_CONNECTION_LATENCY_BENCHMARK,
-        self.test_parameters.second_connection_latency_percentile,
-        self.test_parameters.second_connection_success_percentile,
-    )
-    reach_target &= second_connection_stats.reach_target
-    if not second_connection_stats.reach_target:
-      fail_targets.append(
-          nc_constants.FailTargetSummary(
-              'second_connection_latency_reach_rate',
-              second_connection_stats.reach_rate,
-              self.test_parameters.second_connection_latency_percentile))
-
-    second_medium_upgrade_stats = self._stats_latency_result(
-        self._quick_start_test_metrics.second_medium_upgrade_latencies,
-        nc_constants.MEDIUM_UPGRADE_LATENCY_BENCHMARK,
-        self.test_parameters.second_medium_upgrade_latency_percentile,
-    )
-    reach_target &= second_medium_upgrade_stats.reach_target
-    if not second_medium_upgrade_stats.reach_target:
-      fail_targets.append(
-          nc_constants.FailTargetSummary(
-              'second_medium_upgrade_latency_reach_rate',
-              second_medium_upgrade_stats.reach_rate,
-              self.test_parameters.second_medium_upgrade_latency_percentile))
 
     first_bt_transfer_stats = self._stats_throughput_result(
         self._quick_start_test_metrics.bt_transfer_throughputs_kbs,
-        nc_constants.BT_TRANSFER_THROUGHPUT_BENCHMARK_KBS,
+        self.test_parameters.bt_transfer_throughput_benchmark_kbs,
         self.test_parameters.bt_transfer_throughput_kbs_percentile,
     )
     reach_target &= first_bt_transfer_stats.reach_target
@@ -407,7 +316,7 @@ class QuickStartStressTest(nc_base_test.NCBaseTestClass):
 
     second_wifi_transfer_stats = self._stats_throughput_result(
         self._quick_start_test_metrics.wifi_transfer_throughputs_kbs,
-        nc_constants.WIFI_TRANSFER_THROUGHPUT_BENCHMARK_KBS,
+        self.test_parameters.wifi_transfer_throughput_benchmark_kbs,
         self.test_parameters.wifi_transfer_throughput_kbs_percentile,
     )
     reach_target &= second_wifi_transfer_stats.reach_target
@@ -431,65 +340,21 @@ class QuickStartStressTest(nc_base_test.NCBaseTestClass):
                 self.advertiser),
             'all_iterations': self.performance_test_iterations,
             'all_qualities_reach_target': reach_target,
-            'first_discovery_latency_reach_rate': (
-                first_discovery_stats.reach_rate),
-            'first_discovery_latency_benchmark': (
-                nc_constants.FIRST_DISCOVERY_LATENCY_BENCHMARK.total_seconds()),
-            'first_discovery_latency_percentile': (
-                self.test_parameters.first_discovery_latency_percentile),
-            'first_discovery_success_rate': first_discovery_stats.success_rate,
-            'first_connection_reach_rate': first_connection_stats.reach_rate,
-            'first_connection_latency_benchmark': (
-                nc_constants.FIRST_CONNECTION_LATENCY_BENCHMARK.total_seconds()
-                ),
-            'first_connection_latency_percentile': (
-                self.test_parameters.first_connection_latency_percentile),
-            'first_connection_success_rate': (
-                first_connection_stats.success_rate),
-            'first_connection_success_percentile': (
-                self.test_parameters.first_connection_success_percentile),
-            'first_bt_transfer_reach_rate': first_bt_transfer_stats.reach_rate,
-            'first_bt_transfer_throughput_benchmark_kbs': (
-                nc_constants.BT_TRANSFER_THROUGHPUT_BENCHMARK_KBS),
-            'first_bt_transfer_throughput_kbs_percentile': (
+            '1st_bt_transfer_reach_rate': first_bt_transfer_stats.reach_rate,
+            '1st_bt_transfer_throughput_benchmark_kbs': (
+                self.test_parameters.bt_transfer_throughput_benchmark_kbs),
+            '1st_bt_transfer_throughput_kbs_percentile': (
                 self.test_parameters.bt_transfer_throughput_kbs_percentile),
-            'first_bt_transfer_success_rate': (
+            '1st_bt_transfer_success_rate': (
                 first_bt_transfer_stats.success_rate),
-            'second_discovery_latency_reach_rate': (
-                second_discovery_stats.reach_rate),
-            'second_discovery_latency_benchmark': (
-                nc_constants.SECOND_DISCOVERY_LATENCY_BENCHMARK.total_seconds()
-                ),
-            'second_discovery_latency_percentile': (
-                self.test_parameters.second_discovery_latency_percentile),
-            'second_discovery_success_rate': (
-                second_discovery_stats.success_rate),
-            'second_connection_latency_reach_rate': (
-                second_connection_stats.reach_rate),
-            'second_connection_latency_benchmark': (
-                nc_constants.SECOND_CONNECTION_LATENCY_BENCHMARK.total_seconds()
-                ),
-            'second_connection_latency_percentile': (
-                self.test_parameters.second_connection_latency_percentile),
-            'second_connection_success_rate': (
-                second_connection_stats.success_rate),
-            'second_connection_success_percentile': (
-                self.test_parameters.second_connection_success_percentile),
-            'second_medium_upgrade_latency_reach_rate': (
-                second_medium_upgrade_stats.reach_rate),
-            'second_medium_upgrade_latency_benchmark': (
-                nc_constants.MEDIUM_UPGRADE_LATENCY_BENCHMARK.total_seconds()),
-            'second_medium_upgrade_latency_percentile': (
-                self.test_parameters.second_medium_upgrade_latency_percentile),
-            'second_medium_upgrade_success_rate': (
-                second_medium_upgrade_stats.success_rate),
-            'second_wifi_transfer_reach_rate': (
+
+            '2nd_wifi_transfer_reach_rate': (
                 second_wifi_transfer_stats.reach_rate),
-            'second_wifi_transfer_throuput_benchmark_kbs': (
-                nc_constants.WIFI_TRANSFER_THROUGHPUT_BENCHMARK_KBS),
-            'second_wifi_transfer_throughput_percentile': (
+            '2nd_wifi_transfer_throuput_benchmark_kbs': (
+                self.test_parameters.wifi_transfer_throughput_benchmark_kbs),
+            '2nd_wifi_transfer_throughput_percentile': (
                 self.test_parameters.wifi_transfer_throughput_kbs_percentile),
-            'second_wifi_transfer_success_rate': (
+            '2nd_wifi_transfer_success_rate': (
                 second_wifi_transfer_stats.success_rate),
             }
         })

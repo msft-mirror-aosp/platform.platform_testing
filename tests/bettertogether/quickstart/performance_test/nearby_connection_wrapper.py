@@ -307,10 +307,11 @@ class NearbyConnectionWrapper:
     self.stop_advertising()
 
   def transfer_file(
-      self, file_size_kb: int, timeout: datetime.timedelta) -> float:
+      self, file_size_kb: int, timeout: datetime.timedelta,
+      payload_type: nc_constants.PayloadType) -> float:
     """Sends payloads and returns the transfer speed in kBS."""
     try:
-      transfer_speed_kbs = self._transfer_file(file_size_kb, timeout)
+      transfer_speed_kbs = self._transfer_file(file_size_kb, timeout, payload_type)
     finally:
       # clean up
       utils.concurrent_exec(
@@ -320,14 +321,15 @@ class NearbyConnectionWrapper:
     return transfer_speed_kbs
 
   def _transfer_file(
-      self, file_size_kb: int, timeout: datetime.timedelta
+      self, file_size_kb: int, timeout: datetime.timedelta,
+      payload_type: nc_constants.PayloadType
   ) -> float:
     """Sends payloads and returns the transfer speed in kBS."""
     # Creates a file and send it to the advertiser.
     file_name = utils.rand_ascii_str(8)
-    self.discoverer.log.info('Start sending payloads')
-    payload_id = self.discoverer_nearby.sendPayload(
-        self._advertiser_endpoint_id, file_name, file_size_kb
+    self.discoverer.log.info(f'Start sending payloads with type: {payload_type.name}')
+    payload_id = self.discoverer_nearby.sendPayloadWithType(
+        self._advertiser_endpoint_id, file_name, file_size_kb, payload_type
     )
 
     # Waits for the advertiser received.

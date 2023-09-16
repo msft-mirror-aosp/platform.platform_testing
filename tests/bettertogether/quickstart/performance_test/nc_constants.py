@@ -33,26 +33,20 @@ FILE_1G_PAYLOAD_TRANSFER_TIMEOUT = datetime.timedelta(seconds=210)
 WIFI_WLAN_CONNECTING_TIME_OUT = datetime.timedelta(seconds=25)
 DISCONNECTION_TIMEOUT = datetime.timedelta(seconds=15)
 
-FIRST_DISCOVERY_LATENCY_BENCHMARK = datetime.timedelta(seconds=10)
-FIRST_CONNECTION_LATENCY_BENCHMARK = datetime.timedelta(seconds=10)
 BT_TRANSFER_THROUGHPUT_BENCHMARK_KBS = 10.0  # 10KBps
-SECOND_DISCOVERY_LATENCY_BENCHMARK = datetime.timedelta(seconds=10)
-SECOND_CONNECTION_LATENCY_BENCHMARK = datetime.timedelta(seconds=5)
-MEDIUM_UPGRADE_LATENCY_BENCHMARK = datetime.timedelta(seconds=5)
 WIFI_TRANSFER_THROUGHPUT_BENCHMARK_KBS = 10.0 * 1024  # 10MBps
 
-FIRST_DISCOVERY_LATENCY_PERCENTILE = 80
-FIRST_CONNECTION_LATENCY_PERCENTILE = 95
-FIRST_CONNECTION_SUCCESS_PERCENTILE = 100
 BT_TRANSFER_THROUGHPUT_KBS_PERCENTILE = 95
-SECOND_DISCOVERY_LATENCY_PERCENTILE = 80
-SECOND_CONNECTION_LATENCY_PERCENTILE = 95
-SECOND_CONNECTION_SUCCESS_PERCENTILE = 100
-MEDIUM_UPGRADE_LATENCY_PERCENTILE = 80
 WIFI_TRANSFER_THROUGHPUT_KBS_PERCENTILE = 95
 
 UNSET_LATENCY = datetime.timedelta.max
 UNSET_THROUGHPUT_KBS = -1.0
+
+
+@enum.unique
+class PayloadType(enum.IntEnum):
+  FILE = 2
+  STREAM = 3
 
 
 @dataclasses.dataclass(frozen=False)
@@ -65,25 +59,19 @@ class TestParameters:
   wifi_password: str = ''
   toggle_airplane_mode_target_side: bool = True
   disconnect_wifi_after_test: bool = False
-  first_discovery_latency_percentile: int = FIRST_DISCOVERY_LATENCY_PERCENTILE
-  first_connection_latency_percentile: int = FIRST_CONNECTION_LATENCY_PERCENTILE
-  first_connection_success_percentile: int = FIRST_CONNECTION_SUCCESS_PERCENTILE
+  bt_transfer_throughput_benchmark_kbs: float = (
+      BT_TRANSFER_THROUGHPUT_BENCHMARK_KBS
+  )
   bt_transfer_throughput_kbs_percentile: int = (
       BT_TRANSFER_THROUGHPUT_KBS_PERCENTILE
   )
-  second_discovery_latency_percentile: int = SECOND_DISCOVERY_LATENCY_PERCENTILE
-  second_connection_latency_percentile: int = (
-      SECOND_CONNECTION_LATENCY_PERCENTILE
-  )
-  second_connection_success_percentile: int = (
-      SECOND_CONNECTION_SUCCESS_PERCENTILE
-  )
-  second_medium_upgrade_latency_percentile: int = (
-      MEDIUM_UPGRADE_LATENCY_PERCENTILE
+  wifi_transfer_throughput_benchmark_kbs: float = (
+      WIFI_TRANSFER_THROUGHPUT_BENCHMARK_KBS
   )
   wifi_transfer_throughput_kbs_percentile: int = (
       WIFI_TRANSFER_THROUGHPUT_KBS_PERCENTILE
   )
+  payload_type: PayloadType = PayloadType.STREAM
 
 
 @enum.unique

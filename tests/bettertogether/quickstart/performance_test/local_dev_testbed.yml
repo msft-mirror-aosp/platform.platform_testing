@@ -42,7 +42,7 @@ TestBeds:
       wifi_ssid: "AP-5180"
       wifi_password: "AP-5180"
       # 5M Bytes per second
-      wifi_transfer_throughput_kbs_percentile: "5120"
+      wifi_transfer_throughput_benchmark_kbs: "5120"
 
 - Name: LocalGB5GTestbed
   <<: *controllers
@@ -53,4 +53,4 @@ TestBeds:
       wifi_ssid: "AP-5260"
       wifi_password: "AP-5260"
       # 5M Bytes per second
-      wifi_transfer_throughput_kbs_percentile: "5120"
+      wifi_transfer_throughput_benchmark_kbs: "5120"
