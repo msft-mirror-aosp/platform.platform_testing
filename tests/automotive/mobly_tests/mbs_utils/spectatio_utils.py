@@ -62,6 +62,10 @@ class CallUtils:
         """ Get dialing phone number"""
         return self.device.mbs.getDialedNumber()
 
+    def get_home_address_from_details(self):
+        """Return the home address of the contact whose details are currently being displayed"""
+        return self.device.mbs.getHomeAddress()
+
 
     def import_contacts_from_vcf_file(self, device_target):
         """ Importing contacts from VCF file"""
@@ -88,6 +92,12 @@ class CallUtils:
     def open_phone_app(self):
         logging.info('Opening phone app')
         self.device.mbs.openPhoneApp()
+
+    def open_first_contact_details(self):
+        """Open the contact details page for the first contact visible in the contact list.
+        Assumes we are on the contacts page. """
+        logging.info('Getting details for first contact on the page')
+        self.device.mbs.openFirstContactDetails()
 
     def press_enter_on_device(self, device_target):
         """Press ENTER on device"""

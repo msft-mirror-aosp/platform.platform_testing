@@ -45,6 +45,7 @@ public class DialHelperImpl extends AbstractStandardAppHelper implements IAutoDi
     private BySelector mForwardButtonSelector;
     private BySelector mScrollableElementSelector;
     private ScrollDirection mScrollDirection;
+    private UiObject2 mHomeAddress;
 
     public DialHelperImpl(Instrumentation instr) {
         super(instr);
@@ -454,6 +455,7 @@ public class DialHelperImpl extends AbstractStandardAppHelper implements IAutoDi
     }
 
     /** {@inheritDoc} */
+    @Override
     public boolean isContactInFavorites(String contact) {
         openFavorites();
         UiObject2 uiObject = getSpectatioUiUtil().findUiObject(contact);
@@ -529,6 +531,32 @@ public class DialHelperImpl extends AbstractStandardAppHelper implements IAutoDi
         getSpectatioUiUtil().clickAndWait(contactDetailButton);
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public String getHomeAddress() {
+
+        BySelector homeAddressSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.CONTACT_HOME_ADDRESS);
+
+        BySelector detailsScrollableSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.CONTACT_DETAILS_PAGE);
+
+        UiObject2 homeAddress =
+                mScrollUtility.scrollAndFindUiObject(
+                        mScrollAction,
+                        mScrollDirection,
+                        mForwardButtonSelector,
+                        mBackwardButtonSelector,
+                        detailsScrollableSelector,
+                        homeAddressSelector,
+                        String.format("scroll to find home address."));
+
+        getSpectatioUiUtil()
+                .validateUiObject(homeAddress, AutomotiveConfigConstants.CONTACT_HOME_ADDRESS);
+
+        return homeAddress.getText();
+    }
+
     /** This method is used to get the first history in the Recents tab. */
     private UiObject2 getCallHistory() {
         BySelector callHistorySelector =
@@ -548,6 +576,16 @@ public class DialHelperImpl extends AbstractStandardAppHelper implements IAutoDi
         getSpectatioUiUtil()
                 .validateUiObject(contactMenuButton, AutomotiveConfigConstants.CONTACTS_MENU);
         getSpectatioUiUtil().clickAndWait(contactMenuButton);
+    }
+
+    /** This method opens the details page of the first contact on the page. */
+    public void openFirstContactDetails() {
+        BySelector contactDetailsSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.CONTACT_DETAIL);
+        UiObject2 contactDetailButton = getSpectatioUiUtil().findUiObject(contactDetailsSelector);
+        getSpectatioUiUtil()
+                .validateUiObject(contactDetailButton, AutomotiveConfigConstants.CONTACT_DETAIL);
+        getSpectatioUiUtil().clickAndWait(contactDetailButton);
     }
 
     /** This method opens the contact search window. */
