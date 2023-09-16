@@ -28,7 +28,8 @@ import kotlin.math.min
 class TaggedScenarioExtractor(
     private val targetTag: CujType,
     private val transitionMatcher: TransitionMatcher?,
-    private val adjustCuj: CujAdjust
+    private val adjustCuj: CujAdjust,
+    private val ignoreIfNoMatchingTransition: Boolean = false,
 ) : ScenarioExtractor {
     override fun extract(reader: Reader): List<TraceSlice> {
         val cujTrace = reader.readCujTrace() ?: error("Missing CUJ trace")
@@ -44,9 +45,13 @@ class TaggedScenarioExtractor(
             return emptyList()
         }
 
-        return targetCujEntries.map { cujEntry ->
+        return targetCujEntries.mapNotNull { cujEntry ->
             val associatedTransition =
                 transitionMatcher?.getMatches(reader, cujEntry)?.firstOrNull()
+
+            if (ignoreIfNoMatchingTransition && associatedTransition == null) {
+                return@mapNotNull null
+            }
 
             require(
                 cujEntry.startTimestamp.hasAllTimestamps && cujEntry.endTimestamp.hasAllTimestamps

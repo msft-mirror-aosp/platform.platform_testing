@@ -108,15 +108,10 @@ class CallContactSortTest(base_test.BaseTestClass):
             "When sorting by last name, expected %s, found %s" % (top_contact_by_last_name,
             first_contact))
 
-
-
-
-
-
-def teardown_test(self):
-        # Turn Bluetooth off on both devices after test finishes.
-        self.target.mbs.btDisable()
-        self.discoverer.mbs.btDisable()
+    def teardown_test(self):
+            # Turn Bluetooth off on both devices after test finishes.
+            self.target.mbs.btDisable()
+            self.discoverer.mbs.btDisable()
 
 
 

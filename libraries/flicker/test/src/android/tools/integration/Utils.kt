@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package android.tools.device.flicker.integration
+package android.tools.integration
 
 import android.annotation.SuppressLint
 import android.app.Instrumentation

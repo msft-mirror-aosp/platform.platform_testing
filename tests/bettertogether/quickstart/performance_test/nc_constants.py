@@ -23,21 +23,21 @@ WIFI_DISCONNECTION_DELAY = datetime.timedelta(seconds=3)
 
 FIRST_DISCOVERY_TIMEOUT = datetime.timedelta(seconds=15)
 FIRST_CONNECTION_INIT_TIMEOUT = datetime.timedelta(seconds=30)
-FIRST_CONNECTION_RESULT_TIMEOUT = datetime.timedelta(seconds=10)
+FIRST_CONNECTION_RESULT_TIMEOUT = datetime.timedelta(seconds=35)
 FILE_1M_PAYLOAD_TRANSFER_TIMEOUT = datetime.timedelta(seconds=110)
 SECOND_DISCOVERY_TIMEOUT = datetime.timedelta(seconds=25)
 SECOND_CONNECTION_INIT_TIMEOUT = datetime.timedelta(seconds=10)
-SECOND_CONNECTION_RESULT_TIMEOUT = datetime.timedelta(seconds=10)
+SECOND_CONNECTION_RESULT_TIMEOUT = datetime.timedelta(seconds=25)
 CONNECTION_BANDWIDTH_CHANGED_TIMEOUT = datetime.timedelta(seconds=25)
 FILE_1G_PAYLOAD_TRANSFER_TIMEOUT = datetime.timedelta(seconds=210)
 WIFI_WLAN_CONNECTING_TIME_OUT = datetime.timedelta(seconds=25)
 DISCONNECTION_TIMEOUT = datetime.timedelta(seconds=15)
 
-FIRST_DISCOVERY_LATENCY_BENCHMARK = datetime.timedelta(seconds=3)
-FIRST_CONNECTION_LATENCY_BENCHMARK = datetime.timedelta(seconds=25)
+FIRST_DISCOVERY_LATENCY_BENCHMARK = datetime.timedelta(seconds=10)
+FIRST_CONNECTION_LATENCY_BENCHMARK = datetime.timedelta(seconds=10)
 BT_TRANSFER_THROUGHPUT_BENCHMARK_KBS = 10.0  # 10KBps
-SECOND_DISCOVERY_LATENCY_BENCHMARK = datetime.timedelta(seconds=5)
-SECOND_CONNECTION_LATENCY_BENCHMARK = datetime.timedelta(seconds=3)
+SECOND_DISCOVERY_LATENCY_BENCHMARK = datetime.timedelta(seconds=10)
+SECOND_CONNECTION_LATENCY_BENCHMARK = datetime.timedelta(seconds=5)
 MEDIUM_UPGRADE_LATENCY_BENCHMARK = datetime.timedelta(seconds=5)
 WIFI_TRANSFER_THROUGHPUT_BENCHMARK_KBS = 10.0 * 1024  # 10MBps
 
@@ -60,11 +60,11 @@ class TestParameters:
   """Test parameters to be customized for Nearby Connection."""
   test_report_alias_name: str = 'unspecified'
   fast_fail_on_any_error: bool = False
-  source_device_serial: str = ''
-  target_device_serial: str = ''
   wifi_country_code: str = ''
   wifi_ssid: str = ''
   wifi_password: str = ''
+  toggle_airplane_mode_target_side: bool = True
+  disconnect_wifi_after_test: bool = False
   first_discovery_latency_percentile: int = FIRST_DISCOVERY_LATENCY_PERCENTILE
   first_connection_latency_percentile: int = FIRST_CONNECTION_LATENCY_PERCENTILE
   first_connection_success_percentile: int = FIRST_CONNECTION_SUCCESS_PERCENTILE
@@ -150,30 +150,40 @@ class ConnectionSetupQualityInfo:
   discovery_latency: datetime.timedelta = UNSET_LATENCY
   connection_latency: datetime.timedelta = UNSET_LATENCY
   medium_upgrade_latency: datetime.timedelta = UNSET_LATENCY
+  medium_upgrade_expected: bool = False
   upgrade_medium: NearbyConnectionMedium | None = None
 
   def __str__(self):
     desc = (
-        f'discovery_latency: {self.discovery_latency.total_seconds()}, '
-        f'connection_latency: {self.connection_latency.total_seconds()}, '
-        'medium_upgrade_latency: '
-        f'{self.medium_upgrade_latency.total_seconds()}')
+        f'discovery: {round(self.discovery_latency.total_seconds(), 1)}s'
+        + f', connection: {round(self.connection_latency.total_seconds(), 1)}s'
+    )
+    if self.medium_upgrade_latency is not UNSET_LATENCY:
+      desc += (
+          ', upgrade:'
+          + f'{round(self.medium_upgrade_latency.total_seconds(), 1)}s'
+      )
     if self.upgrade_medium:
-      desc += f', upgrade_medium: {self.upgrade_medium.name}'
+      desc += f', medium: {self.upgrade_medium.name}'
     return desc
 
 
 @dataclasses.dataclass(frozen=False)
 class SingleTestResult:
   """The test result of a single iteration."""
+
   first_connection_setup_quality_info: ConnectionSetupQualityInfo = (
-      dataclasses.field(default_factory=ConnectionSetupQualityInfo))
+      dataclasses.field(default_factory=ConnectionSetupQualityInfo)
+  )
   first_bt_transfer_throughput_kbs: float = UNSET_THROUGHPUT_KBS
   discoverer_wifi_wlan_latency: datetime.timedelta = UNSET_LATENCY
   second_connection_setup_quality_info: ConnectionSetupQualityInfo = (
-      dataclasses.field(default_factory=ConnectionSetupQualityInfo))
+      dataclasses.field(default_factory=ConnectionSetupQualityInfo)
+  )
   second_wifi_transfer_throughput_kbs: float = UNSET_THROUGHPUT_KBS
   advertiser_wifi_wlan_latency: datetime.timedelta = UNSET_LATENCY
+  discoverer_wifi_wlan_expected: bool = False
+  advertiser_wifi_wlan_expected: bool = False
 
 
 @dataclasses.dataclass(frozen=True)

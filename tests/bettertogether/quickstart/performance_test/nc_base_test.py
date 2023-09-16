@@ -23,6 +23,7 @@ from mobly import base_test
 from mobly import records
 from mobly import utils
 from mobly.controllers import android_device
+from mobly.controllers.android_device_lib import errors
 
 from performance_test import nc_constants
 from performance_test import setup_utils
@@ -57,14 +58,15 @@ class NCBaseTestClass(base_test.BaseTestClass):
         raise_on_exception=True,
     )
 
-    if self.test_parameters.source_device_serial:
-      for ad in self.ads:
-        if ad.serial == self.test_parameters.source_device_serial:
-          self.discoverer = ad
-        if ad.serial == self.test_parameters.target_device_serial:
-          self.advertiser = ad
-    else:
-      self.discoverer, self.advertiser = self.ads
+    try:
+      self.discoverer = android_device.get_device(
+          self.ads, role='source_device')
+      self.advertiser = android_device.get_device(
+          self.ads, role='target_device')
+    except errors.Error:
+      logging.warning('The source,target devices are not specified in testbed;'
+                      'The result may not be expected.')
+      self.advertiser, self.discoverer = self.ads
 
   def _setup_android_device(self, ad: android_device.AndroidDevice) -> None:
     asserts.skip_if(
@@ -72,6 +74,7 @@ class NCBaseTestClass(base_test.BaseTestClass):
         'The test only can run on userdebug build.',
     )
 
+    ad.debug_tag = ad.serial + '(' + ad.adb.getprop('ro.product.model') + ')'
     ad.log.info('try to install nearby_snippet_apks')
     if self._nearby_snippet_apk_path:
       setup_utils.install_apk(ad, self._nearby_snippet_apk_path)
@@ -108,7 +111,8 @@ class NCBaseTestClass(base_test.BaseTestClass):
 
   def _teardown_device(self, ad: android_device.AndroidDevice) -> None:
     ad.nearby.transferFilesCleanup()
-    self._disconnect_from_wifi(ad)
+    if self.test_parameters.disconnect_wifi_after_test:
+      self._disconnect_from_wifi(ad)
     ad.unload_snippet('nearby')
     ad.unload_snippet('nearby2')
 

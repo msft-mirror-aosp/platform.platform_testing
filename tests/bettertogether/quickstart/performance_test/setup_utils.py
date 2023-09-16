@@ -22,7 +22,7 @@ from mobly import asserts
 from mobly.controllers import android_device
 
 WIFI_COUNTRYCODE_CONFIG_TIME_SEC = 3
-TOGGLE_AIRPLANE_MODE_WAIT_TEM_SEC = 1
+TOGGLE_AIRPLANE_MODE_WAIT_TIME_SEC = 2
 
 LOG_TAGS = [
     'Nearby',
@@ -96,6 +96,18 @@ def dump_gms_version(ad: android_device.AndroidDevice) -> Mapping[str, str]:
   return {f'GMS core version on {ad.serial}': out}
 
 
+def toggle_airplane_mode(ad: android_device.AndroidDevice) -> None:
+  asserts.skip_if(
+      not ad.is_adb_root,
+      f'Skipped airplane mode toggling on device "{ad.serial}" '
+      'because we do not do that on unrooted phone.',
+  )
+  ad.log.info('turn on airplane mode')
+  enable_airplane_mode(ad)
+  ad.log.info('turn off airplane mode')
+  disable_airplane_mode(ad)
+
+
 def connect_to_wifi_wlan_till_success(
     ad: android_device.AndroidDevice, wifi_ssid: str, wifi_password: str
 ) -> datetime.timedelta:
@@ -148,7 +160,7 @@ def enable_airplane_mode(ad: android_device.AndroidDevice) -> None:
       'am', 'broadcast', '-a', 'android.intent.action.AIRPLANE_MODE', '--ez',
       'state', 'true'
   ])
-  time.sleep(TOGGLE_AIRPLANE_MODE_WAIT_TEM_SEC)
+  time.sleep(TOGGLE_AIRPLANE_MODE_WAIT_TIME_SEC)
 
 
 def disable_airplane_mode(ad: android_device.AndroidDevice) -> None:
@@ -158,7 +170,7 @@ def disable_airplane_mode(ad: android_device.AndroidDevice) -> None:
       'am', 'broadcast', '-a', 'android.intent.action.AIRPLANE_MODE', '--ez',
       'state', 'false'
   ])
-  time.sleep(TOGGLE_AIRPLANE_MODE_WAIT_TEM_SEC)
+  time.sleep(TOGGLE_AIRPLANE_MODE_WAIT_TIME_SEC)
 
 
 def install_apk(ad: android_device.AndroidDevice, apk_path: str) -> None:

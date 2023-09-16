@@ -27,6 +27,7 @@ class TaggedScenarioExtractorBuilder {
         object : CujAdjust {
             override fun adjustCuj(cujEntry: Cuj, reader: Reader): Cuj = cujEntry
         }
+    private var ignoreIfNoMatchingTransition: Boolean = false
 
     fun setTargetTag(value: CujType): TaggedScenarioExtractorBuilder = apply { targetTag = value }
 
@@ -36,8 +37,17 @@ class TaggedScenarioExtractorBuilder {
 
     fun setAdjustCuj(value: CujAdjust): TaggedScenarioExtractorBuilder = apply { adjustCuj = value }
 
+    fun setIgnoreIfNoMatchingTransition(value: Boolean) = apply {
+        ignoreIfNoMatchingTransition = value
+    }
+
     fun build(): ScenarioExtractor {
         val targetTag = targetTag ?: error("Missing targetTag")
-        return TaggedScenarioExtractor(targetTag, transitionMatcher, adjustCuj)
+        return TaggedScenarioExtractor(
+            targetTag,
+            transitionMatcher,
+            adjustCuj,
+            ignoreIfNoMatchingTransition
+        )
     }
 }

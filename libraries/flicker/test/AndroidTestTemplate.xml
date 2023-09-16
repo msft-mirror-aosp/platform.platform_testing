@@ -2,7 +2,7 @@
 <!--
  * Copyright 2018 Google Inc. All Rights Reserved.
  -->
-<configuration description="Config for WindowManager Flicker Tests">
+<configuration description="Tests WM Flicker detection library {MODULE}">
     <option name="test-tag" value="FlickerLibTest"/>
     <!-- Needed for storing the perfetto trace files in the sdcard/test_results-->
     <option name="isolated-storage" value="false"/>
@@ -21,7 +21,7 @@
     </target_preparer>
     <target_preparer class="com.android.tradefed.targetprep.suite.SuiteApkInstaller">
         <option name="cleanup-apks" value="true"/>
-        <option name="test-file-name" value="FlickerLibTest.apk"/>
+        <option name="test-file-name" value="{MODULE}.apk"/>
     </target_preparer>
     <target_preparer class="com.android.tradefed.targetprep.RunCommandTargetPreparer">
         <option name="test-user-token" value="%TEST_USER%"/>
@@ -38,7 +38,9 @@
 
     <test class="com.android.tradefed.testtype.AndroidJUnitTest">
         <option name="exclude-annotation" value="androidx.test.filters.FlakyTest"/>
-        <option name="package" value="android.tools"/>
+        <option name="package" value="{PACKAGE}"/>
+        <option name="shell-timeout" value="6600s"/>
+        <option name="test-timeout" value="6600s"/>
         <option name="hidden-api-checks" value="false"/>
         <!-- PerfettoListener related arguments -->
         <!-- TODO(b/288396763): re-enable when PerfettoListener is fixed
@@ -55,6 +57,7 @@
     <metrics_collector class="com.android.tradefed.device.metric.FilePullerLogCollector">
         <option name="pull-pattern-keys" value="perfetto_file_path"/>
         <option name="directory-keys" value="/data/user/0/android.tools/files"/>
+        <option name="directory-keys" value="/data/user/0/android.tools.integration/files"/>
         <option name="collect-on-run-ended-only" value="true"/>
         <option name="clean-up" value="true"/>
     </metrics_collector>

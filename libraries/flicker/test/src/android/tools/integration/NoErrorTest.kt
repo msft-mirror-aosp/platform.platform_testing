@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package android.tools.device.flicker.integration
+package android.tools.integration
 
 import android.tools.common.io.RunStatus
 import android.tools.device.flicker.datastore.CachedResultReader

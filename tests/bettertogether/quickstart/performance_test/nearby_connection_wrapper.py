@@ -86,13 +86,13 @@ class NearbyConnectionWrapper:
       self, timeout: datetime.timedelta
   ) -> None:
     """Starts Nearby Connection discovery."""
+    self.discoverer.log.info('Start discovery')
     self._discoverer_endpoint_discovery_callback = (
         self.discoverer_nearby.startDiscovery(
             self.service_id, self.advertising_discovery_medium.value
         )
     )
 
-    self.discoverer.log.info('Start discovery')
     endpoint_found_event = (
         self._discoverer_endpoint_discovery_callback.waitAndGet(
             'onEndpointFound', timeout=timeout.total_seconds()
@@ -129,6 +129,7 @@ class NearbyConnectionWrapper:
   ) -> None:
     """Requests Nearby Connection."""
 
+    self.discoverer.log.info('Start connection request')
     self._discoverer_connection_lifecycle_callback = (
         self.discoverer_nearby.requestConnection(
             self.discoverer.serial,
@@ -138,7 +139,6 @@ class NearbyConnectionWrapper:
             medium_upgrade_type.value,
         )
     )
-    self.discoverer.log.info('Start connection request')
 
     d_connection_init_event = (
         self._discoverer_connection_lifecycle_callback.waitAndGet(
@@ -364,4 +364,4 @@ class NearbyConnectionWrapper:
 
     transfer_time = datetime.timedelta(
         microseconds=payload_transfer_event.data['transferTimeNs'] / 1_000)
-    return file_size_kb/transfer_time.total_seconds()
+    return round(file_size_kb/transfer_time.total_seconds())

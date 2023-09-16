@@ -105,8 +105,11 @@ object Utils {
             systemUptimeNanos = sfEntryAtTransitionFinished.timestamp.systemUptimeNanos
         } else {
             elapsedNanos =
-                wmTrace.entries
-                    .first { it.timestamp >= finishTransactionAppliedTimestamp }
+                (wmTrace.entries.firstOrNull { it.timestamp >= finishTransactionAppliedTimestamp }
+                        ?: error(
+                            "No WM trace entry with timestamp greater than or equal to the " +
+                                "layers trace the finish transaction was applied in"
+                        ))
                     .timestamp
                     .elapsedNanos
             systemUptimeNanos =

@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-package android.tools.device.flicker.integration
+package android.tools.integration
 
-import android.tools.common.flicker.subject.exceptions.SimpleFlickerAssertionError
 import android.tools.common.io.RunStatus
 import android.tools.device.flicker.datastore.CachedResultReader
 import android.tools.device.flicker.legacy.LegacyFlickerTest
@@ -30,12 +29,7 @@ import org.junit.BeforeClass
 import org.junit.ClassRule
 import org.junit.Test
 
-/**
- * Integration tests to ensure assertions fail correctly
- *
- * To run this test: `atest FlickerLibTest:AssertionErrorTest`
- */
-class AssertionErrorTest {
+class TransitionErrorTest {
     private var assertionExecuted = false
     private val testParam = LegacyFlickerTest().also { it.initialize(TEST_SCENARIO.testClass) }
 
@@ -45,30 +39,34 @@ class AssertionErrorTest {
     }
 
     @Test
-    fun executesTransition() {
-        Truth.assertWithMessage("Transition executed").that(transitionExecuted).isTrue()
+    fun failsToExecuteTransition() {
+        val reader = CachedResultReader(TEST_SCENARIO, TRACE_CONFIG_REQUIRE_CHANGES)
+        Truth.assertWithMessage("Run status").that(reader.runStatus).isEqualTo(RunStatus.RUN_FAILED)
         assertArtifactExists()
     }
 
     @Test
-    fun assertThrowsAssertionError() {
-        val result = runCatching {
-            testParam.assertLayers {
-                assertionExecuted = true
-                throw SimpleFlickerAssertionError(Utils.FAILURE)
+    fun assertThrowsTransitionError() {
+        val results =
+            (0..10).map {
+                runCatching {
+                    testParam.assertLayers {
+                        assertionExecuted = true
+                        error(WRONG_EXCEPTION)
+                    }
+                }
             }
-        }
 
-        Truth.assertWithMessage("Executed").that(assertionExecuted).isTrue()
-        Truth.assertWithMessage("Expected exception").that(result.isSuccess).isFalse()
-        Truth.assertWithMessage("Expected exception")
-            .that(result.exceptionOrNull())
-            .hasMessageThat()
-            .contains(Utils.FAILURE)
+        Truth.assertWithMessage("Executed").that(assertionExecuted).isFalse()
+        results.forEach { result ->
+            Truth.assertWithMessage("Expected exception").that(result.isFailure).isTrue()
+            Truth.assertWithMessage("Expected exception")
+                .that(result.exceptionOrNull())
+                .hasMessageThat()
+                .contains(Utils.FAILURE)
+        }
         val reader = CachedResultReader(TEST_SCENARIO, TRACE_CONFIG_REQUIRE_CHANGES)
-        Truth.assertWithMessage("Run status")
-            .that(reader.runStatus)
-            .isEqualTo(RunStatus.ASSERTION_FAILED)
+        Truth.assertWithMessage("Run status").that(reader.runStatus).isEqualTo(RunStatus.RUN_FAILED)
         assertArtifactExists()
     }
 
@@ -79,10 +77,9 @@ class AssertionErrorTest {
     }
 
     companion object {
-        private var transitionExecuted = false
-        @BeforeClass
-        @JvmStatic
-        fun runTransition() = Utils.runTransition { transitionExecuted = true }
+        private const val WRONG_EXCEPTION = "Wrong exception"
+
+        @BeforeClass @JvmStatic fun runTransition() = Utils.runTransition { error(Utils.FAILURE) }
 
         @ClassRule @JvmField val ENV_CLEANUP = CleanFlickerEnvironmentRule()
     }

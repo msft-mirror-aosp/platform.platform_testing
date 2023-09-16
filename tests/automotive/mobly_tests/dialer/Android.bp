@@ -93,3 +93,29 @@ python_test_host {
         },
     },
 }
+
+python_test_host {
+    name: "BTAddressTest",
+    main: "dialer_test_import_address_details.py",
+    srcs: ["dialer_test_import_address_details.py"],
+    libs: [
+        "mobly",
+        "mbs_utils"
+    ],
+    test_suites: [
+        "catbox",
+    ],
+    test_options: {
+        unit_test: false,
+    },
+    data: [
+        // Package the snippet with the mobly test
+        ":AutomotiveSnippet",
+        ":PhoneSnippet",
+    ],
+    version: {
+        py3: {
+            embedded_launcher: true,
+        },
+    },
+}
