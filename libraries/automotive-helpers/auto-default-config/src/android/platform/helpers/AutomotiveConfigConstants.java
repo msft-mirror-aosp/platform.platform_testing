@@ -55,6 +55,12 @@ public class AutomotiveConfigConstants {
     public static final String SORT_BY_LAST_NAME = "SORT_BY_LAST_NAME";
     public static final String CONTACTS_MENU = "CONTACTS_MENU";
     public static final String CONTACT_NAME = "CONTACT_NAME";
+
+    public static final String CONTACT_ADDRESS = "CONTACT_ADDRESS";
+
+    public static final String CONTACT_HOME_ADDRESS = "CONTACT_HOME_ADDRESS";
+
+    public static final String CONTACT_DETAILS_PAGE = "CONTACT_DETAILS_PAGE";
     public static final String CONTACT_DETAIL = "CONTACT_DETAIL";
     public static final String CALL_HISTORY_INFO = "CALL_HISTORY_INFO";
     public static final String SEARCH_CONTACT = "SEARCH_CONTACT";

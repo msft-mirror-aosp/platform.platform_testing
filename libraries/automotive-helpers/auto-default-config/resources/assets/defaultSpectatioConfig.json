@@ -199,11 +199,43 @@
       "VALUE": "title",
       "PACKAGE": "com.android.car.dialer"
     },
+    "CONTACT_ADDRESS": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "title",
+      "PACKAGE": "com.android.car.dialer"
+    },
+    "CONTACT_HOME_ADDRESS": {
+      "TYPE": "MULTIPLE",
+      "SPECIFIERS": [
+        {
+          "TYPE": "RESOURCE_ID",
+          "VALUE": "title"
+        },
+        {
+          "TYPE": "HAS_ANCESTOR",
+          "MAX_DEPTH": 1,
+          "ANCESTOR": {
+            "TYPE": "HAS_DESCENDANT",
+            "MAX_DEPTH": 1,
+            "DESCENDANT": {
+              "TYPE": "TEXT",
+              "VALUE": "Home"
+            }
+          }
+        }
+
+      ]
+    },
     "CONTACT_DETAIL": {
       "TYPE": "RESOURCE_ID",
       "VALUE": "show_contact_detail_id",
       "PACKAGE": "com.android.car.dialer"
     },
+    "CONTACT_DETAILS_PAGE": {
+      "TYPE": "DESCRIPTION",
+      "VALUE": "com.android.car.ui.utils.ROTARY_CONTAINER"
+    },
+
     "CALL_HISTORY_INFO": {
       "TYPE": "RESOURCE_ID",
       "VALUE": "call_action_id",

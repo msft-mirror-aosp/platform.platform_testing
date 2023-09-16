@@ -22,7 +22,7 @@ from mobly.controllers import android_device
 
 # Number of seconds for the target to stay discoverable on Bluetooth.
 DISCOVERABLE_TIME = 60
-TIME_FOR_PROMPT_TO_LOAD = 3
+TIME_FOR_PROMPT_TO_LOAD = 2
 class BTUtils:
     """A utility that provides access to Bluetooth connectivity controls."""
 
@@ -74,10 +74,9 @@ class BTUtils:
                     logging.info('Device \'%s\' found. Pairing.' % target_name)
                     self.discoverer.mbs.btPairDevice(discovered_addrs[i])
                     self.target_adrr = discovered_addrs[i]
-                    logging.info('Allowing contact sharing on secondary device.')
-                    time.sleep(constants.DEFAULT_WAIT_TIME_FIVE_SECS)
-                    self.press_allow_on_device() ## Attempts multiple presses
+                    logging.info('Allowing time for contacts to sync.')
                     time.sleep(constants.SYNC_WAIT_TIME)
+                    self.press_allow_on_device() ## Attempts multiple presses
                     return
 
     def press_allow_on_device(self):
