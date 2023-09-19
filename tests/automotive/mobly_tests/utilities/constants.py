@@ -65,7 +65,7 @@ BT_PROFILE_STATES = {
     'connected': 2,
     'disconnecting': 3,
 }
-PATH_TO_CONTACTS_VCF_FILE = 'platform_testing/tests/automotive/mobly_tests/mbs_utils/contacts_test.vcf'
+PATH_TO_CONTACTS_VCF_FILE = 'platform_testing/tests/automotive/mobly_tests/utilities/contacts_test.vcf'
 
 PHONE_CONTACTS_DESTINATION_PATH = (
     '/data/data/com.google.android.contacts/cache/contacts.vcf'

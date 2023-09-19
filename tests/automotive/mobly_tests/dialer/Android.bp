@@ -22,7 +22,8 @@ python_test_host {
     srcs: ["bt_utility_test.py"],
     libs: [
         "mobly",
-        "mbs_utils"
+        "mbs_utils",
+        "BluetoothTestLibrary"
     ],
     test_suites: [
         "catbox",
@@ -48,7 +49,8 @@ python_test_host {
     srcs: ["dialer_test_sort_contacts_by_last_name.py"],
     libs: [
         "mobly",
-        "mbs_utils"
+        "mbs_utils",
+        "BluetoothTestLibrary"
     ],
     test_suites: [
         "catbox",
@@ -74,7 +76,8 @@ python_test_host {
     srcs: ["dialer_test_contact_test.py"],
     libs: [
         "mobly",
-        "mbs_utils"
+        "mbs_utils",
+        "BluetoothTestLibrary"
     ],
     test_suites: [
         "catbox",

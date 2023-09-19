@@ -39,28 +39,7 @@ from mbs_utils import bt_utils
 
 
 
-class CallContactSortTest(base_test.BaseTestClass):
-
-    def setup_class(self):
-        # Registering android_device controller module, and declaring that the test
-        # requires at least two Android devices.
-        self.ads = self.register_controller(android_device, min_number=2)
-        # The device used to discover Bluetooth devices.
-        self.discoverer = android_device.get_device(
-            self.ads, label='auto')
-        # Sets the tag that represents this device in logs.
-        self.discoverer.debug_tag = 'discoverer'
-        # The device that is expected to be discovered
-        self.target = android_device.get_device(self.ads, label='phone')
-        self.target.debug_tag = 'target'
-
-        self.target.load_snippet('mbs', android_device.MBS_PACKAGE)
-        self.discoverer.load_snippet('mbs', android_device.MBS_PACKAGE)
-
-        self.call_utils = (spectatio_utils.CallUtils(self.discoverer))
-
-        self.bt_utils = (bt_utils.BTUtils(self.discoverer, self.target))
-
+class CallContactSortTest(bluetooth_base_test.BluetoothBaseTest):
 
     def get_contact_names(self, vcf_path):
         """ Reads just the names from the given vcf file,
@@ -89,7 +68,7 @@ class CallContactSortTest(base_test.BaseTestClass):
         self.bt_utils.pair_primary_to_secondary()
 
 
-    def test_sort_contacts(self):
+    def test_sort_contacts_by_last_name(self):
         # Navigate to the Contacts page
         self.call_utils.open_phone_app()
         self.call_utils.open_contacts()
