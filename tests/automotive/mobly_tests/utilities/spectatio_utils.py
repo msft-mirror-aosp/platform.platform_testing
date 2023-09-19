@@ -99,9 +99,14 @@ class CallUtils:
         logging.info('Getting details for first contact on the page')
         self.device.mbs.openFirstContactDetails()
 
+    def press_home(self):
+        """ Press the Home button to go back to the home page."""
+        logging.info("Pressing HOME ")
+        self.device.mbs.pressHome();
+
     def press_enter_on_device(self, device_target):
         """Press ENTER on device"""
-        logging.info('Press ENTER on device')
+        logging.info('Pressing ENTER on device: ')
         self.execute_shell_on_device(device_target, 'input keyevent KEYCODE_ENTER')
         self.wait_with_log(constants.ONE_SEC)
 
