@@ -23,6 +23,7 @@ from mobly.controllers import android_device
 
 WIFI_COUNTRYCODE_CONFIG_TIME_SEC = 3
 TOGGLE_AIRPLANE_MODE_WAIT_TIME_SEC = 2
+PH_FLAG_WRITE_WAIT_TIME_SEC = 3
 
 LOG_TAGS = [
     'Nearby',
@@ -151,6 +152,35 @@ def _grant_manage_external_storage_permission(
     package_name: The nearbu snippet package name.
   """
   ad.adb.shell(f'appops set --uid {package_name} MANAGE_EXTERNAL_STORAGE allow')
+
+
+def enable_bluetooth_multiplex(ad: android_device.AndroidDevice) -> None:
+  """Enable bluetooth multiplex on the given device."""
+  pname = 'com.google.android.gms.nearby'
+  flag_name = 'mediums_supports_bluetooth_multiplex_socket'
+  flag_type = 'boolean'
+  flag_value = 'true'
+  ad.adb.shell(
+      'am broadcast -a com.google.android.gms.phenotype.FLAG_OVERRIDE '
+      f'--es package {pname} --es user *'
+      f'--esa flags {flag_name}'
+      f'--esa types {flag_type} --esa values {flag_value}'
+      'com.google.android.gms'
+      )
+  time.sleep(PH_FLAG_WRITE_WAIT_TIME_SEC)
+
+  sql_str = (
+      'sqlite3 /data/data/com.google.android.gms/databases/phenotype.db'
+      ' "select name, quote(coalesce(intVal, boolVal, floatVal, stringVal,'
+      ' extensionVal)) from FlagOverrides where committed=1 AND'
+      f' packageName=\'{pname}\';\"'
+  )
+  flag_result = ad.adb.shell(sql_str).decode('utf-8').strip()
+  ad.log.info(flag_result)
+  if '1' in flag_result and flag_name in flag_result:
+    ad.log.info('Read back flag value matches config value.')
+  else:
+    ad.log.info("Read back flag value doesn't match config value.")
 
 
 def enable_airplane_mode(ad: android_device.AndroidDevice) -> None:

@@ -101,6 +101,8 @@ class NCBaseTestClass(base_test.BaseTestClass):
 
     self._disconnect_from_wifi(ad)
 
+    setup_utils.enable_bluetooth_multiplex(ad)
+
     if self.test_parameters.wifi_country_code:
       setup_utils.set_wifi_country_code(
           ad, self.test_parameters.wifi_country_code
