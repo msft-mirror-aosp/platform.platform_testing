@@ -28,6 +28,7 @@ android_test {
         "ub-uiautomator",
         "automotive-config-lib",
         "hamcrest-library",
+        "platform-test-junit-rules",
         "platform-test-options",
         "automotive-notifications-app-helper",
         "automotive-vehiclehardkeys-app-helper",
