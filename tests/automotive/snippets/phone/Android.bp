@@ -26,6 +26,7 @@ android_test {
         "mobly-snippet-lib",
         "mobly-bundled-snippets-lib",
         "automotive-status-bar-helper",
+        "automotive-media-center-app-helper",
     ],
     srcs: ["src/**/*.java"],
     manifest: "AndroidAutomotiveManifest.xml",
