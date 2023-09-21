@@ -22,16 +22,22 @@ import static junit.framework.Assert.assertTrue;
 import android.platform.helpers.HelperAccessor;
 import android.platform.helpers.IAutoNotificationHelper;
 import android.platform.helpers.IAutoNotificationMockingHelper;
+import android.platform.test.rules.ConditionalIgnore;
+import android.platform.test.rules.ConditionalIgnoreRule;
+import android.platform.test.rules.IgnoreOnPortrait;
 
 import androidx.test.runner.AndroidJUnit4;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(AndroidJUnit4.class)
 public class NotificationTest {
+    @Rule public ConditionalIgnoreRule rule = new ConditionalIgnoreRule();
+
     private HelperAccessor<IAutoNotificationHelper> mNotificationHelper;
     private HelperAccessor<IAutoNotificationMockingHelper> mNotificationMockingHelper;
 
@@ -80,6 +86,7 @@ public class NotificationTest {
     }
 
     @Test
+    @ConditionalIgnore(condition = IgnoreOnPortrait.class)
     public void testSwipeAwayNotification() {
         mNotificationHelper.get().tapClearAllBtn();
         mNotificationMockingHelper.get().postNotifications(1);
@@ -102,6 +109,7 @@ public class NotificationTest {
     }
 
     @Test
+    @ConditionalIgnore(condition = IgnoreOnPortrait.class)
     public void testRecentAndOlderNotifications() {
         mNotificationHelper.get().tapClearAllBtn();
         mNotificationMockingHelper.get().postNotifications(1);

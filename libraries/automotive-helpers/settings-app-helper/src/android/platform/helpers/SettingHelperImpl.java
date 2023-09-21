@@ -239,9 +239,6 @@ public class SettingHelperImpl extends AbstractStandardAppHelper implements IAut
         searchBox.setText(item);
         getSpectatioUiUtil().wait5Seconds();
 
-        // close the keyboard to reveal all search results.
-        getSpectatioUiUtil().pressBack();
-
         BySelector searchResultsSelector =
                 getUiElementFromConfig(AutomotiveConfigConstants.SEARCH_RESULTS);
         UiObject2 searchResults = getSpectatioUiUtil().findUiObject(searchResultsSelector);

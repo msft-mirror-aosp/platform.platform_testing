@@ -24,14 +24,19 @@ import android.platform.helpers.IAutoHomeHelper;
 import android.platform.helpers.IAutoUserHelper;
 import android.platform.helpers.MultiUserHelper;
 import android.platform.scenario.multiuser.MultiUserConstants;
+import android.platform.test.rules.ConditionalIgnore;
+import android.platform.test.rules.ConditionalIgnoreRule;
+import android.platform.test.rules.IgnoreOnPortrait;
 
 import androidx.test.runner.AndroidJUnit4;
 
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(AndroidJUnit4.class)
 public class ProfileIconTest {
+    @Rule public ConditionalIgnoreRule rule = new ConditionalIgnoreRule();
 
     private static final String USER_NAME = MultiUserConstants.GUEST_NAME;
 
@@ -47,6 +52,7 @@ public class ProfileIconTest {
     }
 
     @Test
+    @ConditionalIgnore(condition = IgnoreOnPortrait.class)
     public void testToVerifyGuestProfile() throws Exception {
         mUsersHelper.get().switchUser("Driver", USER_NAME);
         UserInfo guest = mMultiUserHelper.getCurrentForegroundUserInfo();

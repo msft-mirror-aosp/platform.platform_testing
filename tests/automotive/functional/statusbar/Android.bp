@@ -33,6 +33,7 @@ android_test {
         "automotive-utility-helper",
         "app-helpers-auto-interfaces",
         "hamcrest-library",
+        "platform-test-junit-rules",
     ],
     srcs: ["src/**/*.java"],
     test_suites: [
