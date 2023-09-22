@@ -35,15 +35,13 @@ class HumanEyeMatcher(
             "Pixels in expected (${expected.size}) does not match pixels in actual (${given.size})"
         }
 
+        val filter = getFilter(width, height, regions)
         var ignored = 0
 
         // Prepare colorDiffArray
         val colorDiffArray =
             DoubleArray(width * height) { index ->
-                val x = index % width
-                val y = index / width
-
-                if (regions.isEmpty() || regions.any { it.containsInclusive(x, y) }) {
+                if (filter[index]) {
                     if (accountForTransparency) {
                         colorDiffWithTransparency(expected[index], given[index])
                     } else {
@@ -226,7 +224,5 @@ class HumanEyeMatcher(
         const val THRESHOLD_ISOLATED_PIXEL = 40.0
 
         const val IGNORED_COLOR_DIFF = -1.0
-
-        private fun Rect.containsInclusive(x: Int, y: Int) = x in left..right && y in top..bottom
     }
 }

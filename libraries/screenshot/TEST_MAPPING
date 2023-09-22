@@ -20,7 +20,9 @@
         {
           "exclude-annotation": "android.platform.test.annotations.Postsubmit"
         }
-      ]
+      ],
+      // The test can't run on AOSP Cuttlefish.
+      "keywords": ["internal"]
     },
     {
       "name": "SystemUIGoogleBiometricsScreenshotTests",
@@ -34,7 +36,9 @@
         {
           "exclude-annotation": "android.platform.test.annotations.Postsubmit"
         }
-      ]
+      ],
+      // The test can't run on AOSP Cuttlefish.
+      "keywords": ["internal"]
     }
   ]
 }

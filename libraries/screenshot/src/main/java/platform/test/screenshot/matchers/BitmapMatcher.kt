@@ -41,23 +41,22 @@ abstract class BitmapMatcher {
         given: IntArray,
         width: Int,
         height: Int,
-        regions: List<Rect> = emptyList<Rect>()
+        regions: List<Rect> = emptyList()
     ): MatchResult
 
-    protected fun getFilter(width: Int, height: Int, regions: List<Rect>): IntArray {
-        if (regions.isEmpty()) { return IntArray(width * height) { 1 } }
-        val bitmapArray = IntArray(width * height) { 0 }
-        for (region in regions) {
-            for (i in region.top..region.bottom) {
-                if (i >= height) { break }
-                for (j in region.left..region.right) {
-                    if (j >= width) { break }
-                    bitmapArray[j + i * width] = 1
-                }
+    protected fun getFilter(width: Int, height: Int, regions: List<Rect>): BooleanArray {
+        return if (regions.isEmpty()) {
+            BooleanArray(width * height) { true }
+        } else {
+            BooleanArray(width * height) { index ->
+                val x = index % width
+                val y = index / width
+                regions.any { it.containsInclusive(x, y) }
             }
         }
-        return bitmapArray
     }
+
+    private fun Rect.containsInclusive(x: Int, y: Int) = x in left..right && y in top..bottom
 }
 
 /**

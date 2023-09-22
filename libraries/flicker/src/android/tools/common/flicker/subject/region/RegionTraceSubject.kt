@@ -39,6 +39,11 @@ class RegionTraceSubject(val trace: RegionTrace, override val reader: Reader? = 
         }
 
     /** {@inheritDoc} */
+    override fun then(): RegionTraceSubject {
+        return super.then() as RegionTraceSubject
+    }
+
+    /** {@inheritDoc} */
     override fun isHigherOrEqual(other: Rect): RegionTraceSubject =
         isHigherOrEqual(Region.from(other))
 
