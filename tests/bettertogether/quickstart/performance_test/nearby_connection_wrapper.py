@@ -15,6 +15,8 @@
 """Utils for handling Nearby Connection rpc."""
 
 import datetime
+import random
+import time
 
 from mobly import asserts
 from mobly import utils
@@ -24,6 +26,10 @@ from mobly.controllers.android_device_lib import snippet_client_v2
 from mobly.snippet import callback_event
 
 from performance_test import nc_constants
+
+# This number should be large enough to cover advertising interval, firmware
+# scheduling timing interval and user action delay
+ADVERTISING_TO_DISCOVERY_MAX_DELAY_SEC = 4
 
 
 class NearbyConnectionWrapper:
@@ -288,6 +294,10 @@ class NearbyConnectionWrapper:
 
     # Start advertising.
     self.start_advertising()
+
+    # Add a random delay between adversting and discovery
+    # to mimic the random delay between two devices' user action
+    time.sleep(ADVERTISING_TO_DISCOVERY_MAX_DELAY_SEC * random.random())
 
     # Start discovery.
     self.start_discovery(timeout=timeouts.discovery_timeout)

@@ -21,11 +21,11 @@ import enum
 NEARBY_RESET_WAIT_TIME = datetime.timedelta(seconds=5)
 WIFI_DISCONNECTION_DELAY = datetime.timedelta(seconds=3)
 
-FIRST_DISCOVERY_TIMEOUT = datetime.timedelta(seconds=15)
+FIRST_DISCOVERY_TIMEOUT = datetime.timedelta(seconds=30)
 FIRST_CONNECTION_INIT_TIMEOUT = datetime.timedelta(seconds=30)
 FIRST_CONNECTION_RESULT_TIMEOUT = datetime.timedelta(seconds=35)
 FILE_1M_PAYLOAD_TRANSFER_TIMEOUT = datetime.timedelta(seconds=110)
-SECOND_DISCOVERY_TIMEOUT = datetime.timedelta(seconds=25)
+SECOND_DISCOVERY_TIMEOUT = datetime.timedelta(seconds=35)
 SECOND_CONNECTION_INIT_TIMEOUT = datetime.timedelta(seconds=10)
 SECOND_CONNECTION_RESULT_TIMEOUT = datetime.timedelta(seconds=25)
 CONNECTION_BANDWIDTH_CHANGED_TIMEOUT = datetime.timedelta(seconds=25)
