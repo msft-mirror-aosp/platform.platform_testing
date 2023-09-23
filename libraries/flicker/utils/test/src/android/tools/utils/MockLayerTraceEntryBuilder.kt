@@ -53,7 +53,9 @@ class MockLayerTraceEntryBuilder() {
                 size = Size.from(bounds.width, bounds.height),
                 layerStackSpace = bounds,
                 transform = Transform.EMPTY,
-                isVirtual = false
+                isVirtual = false,
+                dpiX = 416.0,
+                dpiY = 416.0
             )
         )
         this.layers.add(displayLayer)

@@ -64,17 +64,18 @@ open class ScreenshotTestRule(
 
     private lateinit var testIdentifier: String
 
-    override fun apply(base: Statement, description: Description): Statement = object: Statement() {
-        override fun evaluate() {
-            try {
-                testIdentifier = getTestIdentifier(description)
-                SimpleIconFactory.setPoolEnabled(false)
-                base.evaluate()
-            } finally {
-                SimpleIconFactory.setPoolEnabled(true)
+    override fun apply(base: Statement, description: Description): Statement =
+        object : Statement() {
+            override fun evaluate() {
+                try {
+                    testIdentifier = getTestIdentifier(description)
+                    SimpleIconFactory.setPoolEnabled(false)
+                    base.evaluate()
+                } finally {
+                    SimpleIconFactory.setPoolEnabled(true)
+                }
             }
         }
-    }
 
     open fun getTestIdentifier(description: Description): String =
             "${description.className}_${description.methodName}"
@@ -354,7 +355,8 @@ open class ScreenshotTestRule(
                     writeAction(it)
                 }
             } catch (e: Exception) {
-                throw IOException("Could not write file to storage (path: ${file.absolutePath}). ", e)
+                throw IOException(
+                        "Could not write file to storage (path: ${file.absolutePath}). ", e)
             }
         }
 
@@ -466,7 +468,8 @@ class ScreenshotRuleAsserter private constructor(
         fun setScreenshotProvider(screenshotProvider: BitmapSupplier): Builder =
                 apply { asserter.screenShotter = screenshotProvider }
 
-        fun setOnBeforeScreenshot(run: Runnable): Builder = apply { asserter.beforeScreenshot = run }
+        fun setOnBeforeScreenshot(run: Runnable): Builder =
+                apply { asserter.beforeScreenshot = run }
 
         fun setOnAfterScreenshot(run: Runnable): Builder = apply { asserter.afterScreenshot = run }
 

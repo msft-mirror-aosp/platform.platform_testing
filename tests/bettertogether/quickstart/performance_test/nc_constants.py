@@ -33,14 +33,13 @@ FILE_1G_PAYLOAD_TRANSFER_TIMEOUT = datetime.timedelta(seconds=210)
 WIFI_WLAN_CONNECTING_TIME_OUT = datetime.timedelta(seconds=25)
 DISCONNECTION_TIMEOUT = datetime.timedelta(seconds=15)
 
-BT_TRANSFER_THROUGHPUT_BENCHMARK_KBS = 10.0  # 10KBps
-WIFI_TRANSFER_THROUGHPUT_BENCHMARK_KBS = 10.0 * 1024  # 10MBps
-
-BT_TRANSFER_THROUGHPUT_KBS_PERCENTILE = 95
-WIFI_TRANSFER_THROUGHPUT_KBS_PERCENTILE = 95
+BT_TRANSFER_THROUGHPUT_MEDIAN_BENCHMARK_KBPS = 20  # 20KBps
+WIFI_TRANSFER_THROUGHPUT_MEDIAN_BENCHMARK_KBPS = 10240  # 10MBps
+BT_TRANSFER_SUCCESS_RATE_TARGET_PERCENTAGE = 95  # 95%
+WIFI_TRANSFER_SUCCESS_RATE_TARGET_PERCENTAGE = 95  # 95%
 
 UNSET_LATENCY = datetime.timedelta.max
-UNSET_THROUGHPUT_KBS = -1.0
+UNSET_THROUGHPUT_KBPS = -1.0
 
 
 @enum.unique
@@ -59,19 +58,13 @@ class TestParameters:
   wifi_password: str = ''
   toggle_airplane_mode_target_side: bool = True
   disconnect_wifi_after_test: bool = False
-  bt_transfer_throughput_benchmark_kbs: float = (
-      BT_TRANSFER_THROUGHPUT_BENCHMARK_KBS
+  bt_transfer_throughput_median_benchmark_kbps: float = (
+      BT_TRANSFER_THROUGHPUT_MEDIAN_BENCHMARK_KBPS
   )
-  bt_transfer_throughput_kbs_percentile: int = (
-      BT_TRANSFER_THROUGHPUT_KBS_PERCENTILE
+  wifi_transfer_throughput_median_benchmark_kbps: float = (
+      WIFI_TRANSFER_THROUGHPUT_MEDIAN_BENCHMARK_KBPS
   )
-  wifi_transfer_throughput_benchmark_kbs: float = (
-      WIFI_TRANSFER_THROUGHPUT_BENCHMARK_KBS
-  )
-  wifi_transfer_throughput_kbs_percentile: int = (
-      WIFI_TRANSFER_THROUGHPUT_KBS_PERCENTILE
-  )
-  payload_type: PayloadType = PayloadType.STREAM
+  payload_type: PayloadType = PayloadType.FILE
 
 
 @enum.unique
@@ -141,19 +134,18 @@ class ConnectionSetupQualityInfo:
   medium_upgrade_expected: bool = False
   upgrade_medium: NearbyConnectionMedium | None = None
 
-  def __str__(self):
-    desc = (
-        f'discovery: {round(self.discovery_latency.total_seconds(), 1)}s'
-        + f', connection: {round(self.connection_latency.total_seconds(), 1)}s'
-    )
-    if self.medium_upgrade_latency is not UNSET_LATENCY:
-      desc += (
-          ', upgrade:'
-          + f'{round(self.medium_upgrade_latency.total_seconds(), 1)}s'
+  def get_dict(self):
+    dict_repr = {
+        'discovery': f'{round(self.discovery_latency.total_seconds(), 1)}s',
+        'connection': f'{round(self.connection_latency.total_seconds(), 1)}s'
+    }
+    if self.medium_upgrade_expected:
+      dict_repr['upgrade'] = (
+          f'{round(self.medium_upgrade_latency.total_seconds(), 1)}s'
       )
     if self.upgrade_medium:
-      desc += f', medium: {self.upgrade_medium.name}'
-    return desc
+      dict_repr['medium'] = self.upgrade_medium.name
+    return dict_repr
 
 
 @dataclasses.dataclass(frozen=False)
@@ -163,29 +155,41 @@ class SingleTestResult:
   first_connection_setup_quality_info: ConnectionSetupQualityInfo = (
       dataclasses.field(default_factory=ConnectionSetupQualityInfo)
   )
-  first_bt_transfer_throughput_kbs: float = UNSET_THROUGHPUT_KBS
+  first_bt_transfer_throughput_kbps: float = UNSET_THROUGHPUT_KBPS
   discoverer_wifi_wlan_latency: datetime.timedelta = UNSET_LATENCY
   second_connection_setup_quality_info: ConnectionSetupQualityInfo = (
       dataclasses.field(default_factory=ConnectionSetupQualityInfo)
   )
-  second_wifi_transfer_throughput_kbs: float = UNSET_THROUGHPUT_KBS
+  second_wifi_transfer_throughput_kbps: float = UNSET_THROUGHPUT_KBPS
   advertiser_wifi_wlan_latency: datetime.timedelta = UNSET_LATENCY
   discoverer_wifi_wlan_expected: bool = False
   advertiser_wifi_wlan_expected: bool = False
 
 
 @dataclasses.dataclass(frozen=True)
-class ResultStats:
-  reach_target: bool = False
-  reach_rate: float = 0.0
-  success_rate: float = 0.0
+class LatencyResultStats:
+  average: float
+  percentile_95: float
+  failure_count: int
 
 
 @dataclasses.dataclass(frozen=True)
 class FailTargetSummary:
-  name: str = ''
-  rate: float = 0.0
+  title: str = ''
+  actual: float = 0.0
   goal: float = 0.0
+  unit: str = ''
+
+
+@dataclasses.dataclass(frozen=True)
+class ThroughputResultStats:
+  success_rate: float
+  average_kbps: float
+  percentile_50_kbps: float
+  percentile_95_kbps: float
+  success_count: int
+  fail_targets: list[FailTargetSummary] = dataclasses.field(
+      default_factory=list)
 
 
 @dataclasses.dataclass(frozen=False)
@@ -198,7 +202,7 @@ class QuickStartTestMetrics:
   discoverer_wifi_wlan_latencies: list[
       datetime.timedelta] = dataclasses.field(
           default_factory=list[datetime.timedelta])
-  bt_transfer_throughputs_kbs: list[float] = dataclasses.field(
+  bt_transfer_throughputs_kbps: list[float] = dataclasses.field(
       default_factory=list[float])
   second_discovery_latencies: list[datetime.timedelta] = dataclasses.field(
       default_factory=list[datetime.timedelta]
@@ -211,5 +215,7 @@ class QuickStartTestMetrics:
   advertiser_wifi_wlan_latencies: list[
       datetime.timedelta] = dataclasses.field(
           default_factory=list[datetime.timedelta])
-  wifi_transfer_throughputs_kbs: list[float] = dataclasses.field(
+  wifi_transfer_throughputs_kbps: list[float] = dataclasses.field(
       default_factory=list[float])
+  upgraded_wifi_transfer_mediums: list[NearbyConnectionMedium] = (
+      dataclasses.field(default_factory=list[NearbyConnectionMedium]))

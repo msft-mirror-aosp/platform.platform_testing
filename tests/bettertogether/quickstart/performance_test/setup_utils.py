@@ -115,6 +115,8 @@ def connect_to_wifi_wlan_till_success(
   """Connecting to the specified wifi WLAN."""
   ad.log.info('Start connecting to wifi WLAN')
   wifi_connect_start = datetime.datetime.now()
+  if not wifi_password:
+    wifi_password = None
   connect_to_wifi(ad, wifi_ssid, wifi_password)
   return datetime.datetime.now() - wifi_connect_start
 

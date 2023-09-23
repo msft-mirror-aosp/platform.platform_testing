@@ -116,7 +116,9 @@ class LayerTraceEntryBuilderTest {
                     size = Size.EMPTY,
                     layerStackSpace = Rect.EMPTY,
                     transform = Transform.EMPTY,
-                    isVirtual = false
+                    isVirtual = false,
+                    dpiX = 270.0,
+                    dpiY = 270.0,
                 )
             )
 

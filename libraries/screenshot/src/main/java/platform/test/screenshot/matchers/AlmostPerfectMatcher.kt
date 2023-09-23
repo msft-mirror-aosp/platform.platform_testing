@@ -42,7 +42,9 @@ class AlmostPerfectMatcher(
         var same = 0
         var ignored = 0
 
-        val diffArray = IntArray(width * height) { index ->
+        val diffArray = lazy { IntArray(width * height) { Color.TRANSPARENT } }
+
+        expected.indices.forEach { index ->
             when {
                 !filter[index] -> Color.TRANSPARENT.also { ignored++ }
                 areSame(expected[index], given[index]) -> Color.TRANSPARENT.also { same++ }
@@ -59,7 +61,7 @@ class AlmostPerfectMatcher(
                 .build()
 
         if (different > (acceptableThreshold * width * height)) {
-            val diff = Bitmap.createBitmap(diffArray, width, height, Bitmap.Config.ARGB_8888)
+            val diff = Bitmap.createBitmap(diffArray.value, width, height, Bitmap.Config.ARGB_8888)
             return MatchResult(matches = false, diff = diff, comparisonStatistics = stats)
         }
         return MatchResult(matches = true, diff = null, comparisonStatistics = stats)

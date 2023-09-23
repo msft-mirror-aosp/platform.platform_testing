@@ -199,9 +199,10 @@ class WindowManagerState(
         get() = getWindowStateForAppToken(inputMethodWindowAppToken)
 
     fun getDefaultDisplay(): DisplayContent? =
-        displays.firstOrNull { it.id == PlatformConsts.DEFAULT_DISPLAY }
+        displays.firstOrNull { it.displayId == PlatformConsts.DEFAULT_DISPLAY }
 
-    fun getDisplay(displayId: Int): DisplayContent? = displays.firstOrNull { it.id == displayId }
+    fun getDisplay(displayId: Int): DisplayContent? =
+        displays.firstOrNull { it.displayId == displayId }
 
     fun countStacks(windowingMode: Int, activityType: Int): Int {
         var count = 0
@@ -245,7 +246,7 @@ class WindowManagerState(
         displayId: Int = PlatformConsts.DEFAULT_DISPLAY
     ): Array<Activity> {
         return displays
-            .firstOrNull { it.id == displayId }
+            .firstOrNull { it.displayId == displayId }
             ?.rootTasks
             ?.mapNotNull { stack ->
                 stack.getActivity { activity -> activity.hasWindowState(windowState) }
@@ -266,7 +267,7 @@ class WindowManagerState(
         displayId: Int = PlatformConsts.DEFAULT_DISPLAY
     ): Array<Activity> {
         return displays
-            .firstOrNull { it.id == displayId }
+            .firstOrNull { it.displayId == displayId }
             ?.rootTasks
             ?.mapNotNull { stack ->
                 stack.getActivity { activity -> activity.hasWindow(componentMatcher) }

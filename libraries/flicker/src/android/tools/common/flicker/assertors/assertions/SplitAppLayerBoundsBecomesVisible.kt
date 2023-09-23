@@ -91,20 +91,20 @@ class SplitAppLayerBoundsBecomesVisible(
                         ?: error("$splitScreenDivider component not found")
                 visibleRegion(component)
                     .coversAtMost(
-                        if (activeDisplay.bounds.width > activeDisplay.bounds.height) {
+                        if (activeDisplay.size.width > activeDisplay.size.height) {
                             if (landscapePosLeft) {
                                 Region.from(
                                     0,
                                     0,
                                     (dividerRegion.bounds.left + dividerRegion.bounds.right) / 2,
-                                    activeDisplay.bounds.bottom
+                                    activeDisplay.size.height
                                 )
                             } else {
                                 Region.from(
                                     (dividerRegion.bounds.left + dividerRegion.bounds.right) / 2,
                                     0,
-                                    activeDisplay.bounds.right,
-                                    activeDisplay.bounds.bottom
+                                    activeDisplay.size.width,
+                                    activeDisplay.size.height
                                 )
                             }
                         } else {
@@ -112,15 +112,15 @@ class SplitAppLayerBoundsBecomesVisible(
                                 Region.from(
                                     0,
                                     0,
-                                    activeDisplay.bounds.right,
+                                    activeDisplay.size.width,
                                     (dividerRegion.bounds.top + dividerRegion.bounds.bottom) / 2
                                 )
                             } else {
                                 Region.from(
                                     0,
                                     (dividerRegion.bounds.top + dividerRegion.bounds.bottom) / 2,
-                                    activeDisplay.bounds.right,
-                                    activeDisplay.bounds.bottom
+                                    activeDisplay.size.width,
+                                    activeDisplay.size.height
                                 )
                             }
                         }

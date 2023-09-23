@@ -92,7 +92,7 @@ python_test_host {
         ":nearby_snippet_2",],
     version: {
         py3: {
-            embedded_launcher: true,
+            embedded_launcher: false,
         },
     },
 }

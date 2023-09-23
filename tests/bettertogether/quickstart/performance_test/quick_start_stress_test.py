@@ -160,7 +160,7 @@ class QuickStartStressTest(nc_base_test.NCBaseTestClass):
 
     # 3. transfer file through bluetooth
     file_1_mb = _TRANSFER_FILE_SIZE_1MB
-    self._test_result.first_bt_transfer_throughput_kbs = (
+    self._test_result.first_bt_transfer_throughput_kbps = (
         nearby_snippet_1.transfer_file(
             file_1_mb, nc_constants.FILE_1M_PAYLOAD_TRANSFER_TIMEOUT,
             nc_constants.PayloadType.FILE))
@@ -204,7 +204,7 @@ class QuickStartStressTest(nc_base_test.NCBaseTestClass):
 
     # 6. transfer file through wifi
     file_1_gb = _TRANSFER_FILE_SIZE_1GB
-    self._test_result.second_wifi_transfer_throughput_kbs = (
+    self._test_result.second_wifi_transfer_throughput_kbps = (
         nearby_snippet_2.transfer_file(
             file_1_gb, nc_constants.FILE_1G_PAYLOAD_TRANSFER_TIMEOUT,
             self.test_parameters.payload_type))
@@ -218,14 +218,12 @@ class QuickStartStressTest(nc_base_test.NCBaseTestClass):
     """Writes test report for each iteration."""
 
     quality_info = {
-        '1st connection': str(
-            self._test_result.first_connection_setup_quality_info),
-        'bt_kBps': str(
-            self._test_result.first_bt_transfer_throughput_kbs),
-        '2nd connection': str(
-            self._test_result.second_connection_setup_quality_info),
-        'wifi_kBps': str(
-            self._test_result.second_wifi_transfer_throughput_kbs),
+        '1st connection': (
+            self._test_result.first_connection_setup_quality_info.get_dict()),
+        'bt_kBps': self._test_result.first_bt_transfer_throughput_kbps,
+        '2nd connection': (
+            self._test_result.second_connection_setup_quality_info.get_dict()),
+        'wifi_kBps': self._test_result.second_wifi_transfer_throughput_kbps,
     }
 
     if self._test_result.discoverer_wifi_wlan_expected:
@@ -236,7 +234,7 @@ class QuickStartStressTest(nc_base_test.NCBaseTestClass):
       quality_info['tgt_wifi_connection'] = str(
           round(self._test_result.advertiser_wifi_wlan_latency.total_seconds())
       )
-    test_report = {'quality_info': str(quality_info)}
+    test_report = {'quality_info': quality_info}
 
     self.discoverer.log.info(test_report)
     self.record_data({
@@ -253,8 +251,8 @@ class QuickStartStressTest(nc_base_test.NCBaseTestClass):
     self._quick_start_test_metrics.first_connection_latencies.append(
         self._test_result.first_connection_setup_quality_info.connection_latency
     )
-    self._quick_start_test_metrics.bt_transfer_throughputs_kbs.append(
-        self._test_result.first_bt_transfer_throughput_kbs
+    self._quick_start_test_metrics.bt_transfer_throughputs_kbps.append(
+        self._test_result.first_bt_transfer_throughput_kbps
     )
 
     self._quick_start_test_metrics.second_discovery_latencies.append(
@@ -266,8 +264,10 @@ class QuickStartStressTest(nc_base_test.NCBaseTestClass):
     self._quick_start_test_metrics.second_medium_upgrade_latencies.append(
         self._test_result.second_connection_setup_quality_info.medium_upgrade_latency
     )
-    self._quick_start_test_metrics.wifi_transfer_throughputs_kbs.append(
-        self._test_result.second_wifi_transfer_throughput_kbs
+    self._quick_start_test_metrics.upgraded_wifi_transfer_mediums.append(
+        self._test_result.second_connection_setup_quality_info.upgrade_medium)
+    self._quick_start_test_metrics.wifi_transfer_throughputs_kbps.append(
+        self._test_result.second_wifi_transfer_throughput_kbps
     )
     self._quick_start_test_metrics.discoverer_wifi_wlan_latencies.append(
         self._test_result.discoverer_wifi_wlan_latency)
@@ -276,98 +276,191 @@ class QuickStartStressTest(nc_base_test.NCBaseTestClass):
 
   def _stats_throughput_result(
       self,
+      medium_name: str,
       throughput_indicators: list[float],
-      throughput_benchmark: float,
-      target_reach_percentile: int,
-  ) -> nc_constants.ResultStats:
+      success_rate_target: float,
+      median_benchmark_kbps: float,
+  ) -> nc_constants.ThroughputResultStats:
     """Statistics the throughput test result of all iterations."""
     n = self.performance_test_iterations
-    reach_count = 0
-    success_count = 0
-    for throughput in throughput_indicators:
-      if round(throughput, 1) != nc_constants.UNSET_THROUGHPUT_KBS:
-        success_count += 1
-        if round(throughput, 1) >= throughput_benchmark:
-          reach_count += 1
-    reach_rate = round(reach_count * 100.0 / n, 1)
+    filtered = list(filter(
+        lambda x: x != nc_constants.UNSET_THROUGHPUT_KBPS,
+        throughput_indicators))
+    if not filtered: return nc_constants.ThroughputResultStats(
+        success_rate=0.0,
+        average_kbps=0.0,
+        percentile_50_kbps=0.0,
+        percentile_95_kbps=0.0,
+        success_count=0)
+
+    filtered.sort()
+    success_count = len(filtered)
     success_rate = round(success_count * 100.0 / n, 1)
-    reach_target = True
-    if reach_rate < target_reach_percentile:
-      reach_target = False
-    return nc_constants.ResultStats(reach_target, reach_rate, success_rate)
+    average_kbps = round(sum(filtered) / len(filtered))
+    percentile_50_kbps = filtered[int(len(filtered) * 0.50)]
+    percentile_95_kbps = filtered[int(len(filtered) * 0.95)]
+    fail_targets: list[nc_constants.FailTargetSummary] = []
+    if success_rate < success_rate_target:
+      fail_targets.append(
+          nc_constants.FailTargetSummary(
+              f'{medium_name} transfer success rate',
+              success_rate,
+              success_rate_target,
+              '%')
+      )
+    if percentile_50_kbps < median_benchmark_kbps:
+      fail_targets.append(
+          nc_constants.FailTargetSummary(
+              f'{medium_name} median transfer speed (KBps)',
+              percentile_50_kbps,
+              median_benchmark_kbps
+              )
+      )
+    return nc_constants.ThroughputResultStats(
+        success_rate,
+        average_kbps,
+        percentile_50_kbps,
+        percentile_95_kbps,
+        success_count,
+        fail_targets
+    )
+
+  def _stats_latency_result(
+      self, latency_indicators: list[datetime.timedelta]
+  ) -> nc_constants.LatencyResultStats:
+    n = self.performance_test_iterations
+    filtered = [
+        latency.total_seconds()
+        for latency in latency_indicators
+        if latency != nc_constants.UNSET_LATENCY
+    ]
+    if not filtered:
+      return nc_constants.LatencyResultStats(
+          0.0, 0.0, self.performance_test_iterations
+      )
+
+    filtered.sort()
+    average = round(sum(filtered) / len(filtered), 2)
+    percentile_95 = round(filtered[int(len(filtered) * 0.95)], 2)
+
+    return nc_constants.LatencyResultStats(
+        average, percentile_95, n - len(filtered)
+    )
+
+  def _summary_upgraded_wifi_transfer_mediums(self) -> dict[str, int]:
+    medium_counts = {}
+    for (upgraded_medium
+         ) in self._quick_start_test_metrics.upgraded_wifi_transfer_mediums:
+      if upgraded_medium:
+        medium_counts[upgraded_medium.name] = medium_counts.get(
+            upgraded_medium.name, 0) + 1
+    return medium_counts
 
   def _summary_test_results(self) -> None:
     """Summarizes test results of all iterations."""
-    fail_targets: list[nc_constants.FailTargetSummary] = []
-    reach_target: bool = True
-
     first_bt_transfer_stats = self._stats_throughput_result(
-        self._quick_start_test_metrics.bt_transfer_throughputs_kbs,
-        self.test_parameters.bt_transfer_throughput_benchmark_kbs,
-        self.test_parameters.bt_transfer_throughput_kbs_percentile,
-    )
-    reach_target &= first_bt_transfer_stats.reach_target
-    if not first_bt_transfer_stats.reach_target:
-      fail_targets.append(
-          nc_constants.FailTargetSummary(
-              'first_bt_transfer_reach_rate',
-              first_bt_transfer_stats.reach_rate,
-              self.test_parameters.bt_transfer_throughput_kbs_percentile))
+        'BT',
+        self._quick_start_test_metrics.bt_transfer_throughputs_kbps,
+        nc_constants.BT_TRANSFER_SUCCESS_RATE_TARGET_PERCENTAGE,
+        self.test_parameters.bt_transfer_throughput_median_benchmark_kbps)
 
     second_wifi_transfer_stats = self._stats_throughput_result(
-        self._quick_start_test_metrics.wifi_transfer_throughputs_kbs,
-        self.test_parameters.wifi_transfer_throughput_benchmark_kbs,
-        self.test_parameters.wifi_transfer_throughput_kbs_percentile,
-    )
-    reach_target &= second_wifi_transfer_stats.reach_target
-    if not second_wifi_transfer_stats.reach_target:
-      fail_targets.append(
-          nc_constants.FailTargetSummary(
-              'second_wifi_transfer_reach_rate',
-              second_wifi_transfer_stats.reach_rate,
-              self.test_parameters.wifi_transfer_throughput_kbs_percentile))
+        'Wi-Fi',
+        self._quick_start_test_metrics.wifi_transfer_throughputs_kbps,
+        nc_constants.WIFI_TRANSFER_SUCCESS_RATE_TARGET_PERCENTAGE,
+        self.test_parameters.wifi_transfer_throughput_median_benchmark_kbps)
+
+    first_discovery_stats = self._stats_latency_result(
+        self._quick_start_test_metrics.first_discovery_latencies)
+    first_connection_stats = self._stats_latency_result(
+        self._quick_start_test_metrics.first_connection_latencies)
+    second_discovery_stats = self._stats_latency_result(
+        self._quick_start_test_metrics.second_discovery_latencies)
+    second_connection_stats = self._stats_latency_result(
+        self._quick_start_test_metrics.second_connection_latencies)
+    second_medium_upgrade_stats = self._stats_latency_result(
+        self._quick_start_test_metrics.second_medium_upgrade_latencies)
+
+    passed = True
+    result_message = 'Passed'
+    fail_message = ''
+    if first_bt_transfer_stats.fail_targets:
+      fail_message += self._generate_target_fail_message(
+          first_bt_transfer_stats.fail_targets)
+    if second_wifi_transfer_stats.fail_targets:
+      fail_message += self._generate_target_fail_message(
+          second_wifi_transfer_stats.fail_targets)
+    if fail_message:
+      passed = False
+      result_message = 'Test Failed due to:\n' + fail_message
+
+    detailed_stats = {
+        '0 test iterations': self.performance_test_iterations,
+        '1 Completed BT/Wi-Fi transfer': (
+            f'{first_bt_transfer_stats.success_count}'
+            f' / {second_wifi_transfer_stats.success_count}'),
+        '2 BT transfer failures': {
+            'discovery': first_discovery_stats.failure_count,
+            'connection': first_connection_stats.failure_count,
+            'transfer': self.performance_test_iterations - (
+                first_bt_transfer_stats.success_count),
+        },
+        '3 Wi-Fi transfer failures': {
+            'discovery': second_discovery_stats.failure_count,
+            'connection': second_connection_stats.failure_count,
+            'upgrade': second_medium_upgrade_stats.failure_count,
+            'transfer': self.performance_test_iterations - (
+                second_wifi_transfer_stats.success_count),
+        },
+        '4 Medium upgrade count': (
+            self._summary_upgraded_wifi_transfer_mediums()),
+        '5 Average and 95% of BT transfer speed (KBps)': (
+            f'{first_bt_transfer_stats.average_kbps}'
+            f' / {first_bt_transfer_stats.percentile_95_kbps}'),
+        '6 Average and 95% of Wi-Fi transfer speed(KBps)': (
+            f'{second_wifi_transfer_stats.average_kbps}'
+            f' / {second_wifi_transfer_stats.percentile_95_kbps}'),
+        '7 Average and 95% of discovery latency(sec)': (
+            f'{first_discovery_stats.average}'
+            f' / {first_discovery_stats.percentile_95} (1st), '
+            f'{second_discovery_stats.average}'
+            f' / {second_discovery_stats.percentile_95} (2nd)'),
+        '8 Average and 95% of connection latency(sec)': (
+            f'{first_connection_stats.average}'
+            f' / {first_connection_stats.percentile_95} (1st), '
+            f'{second_connection_stats.average}'
+            f' / {second_connection_stats.percentile_95} (2nd)'),
+        '9 Average and 95% of medium upgrade latency(sec)': (
+            f'{second_medium_upgrade_stats.average}'
+            f' / {second_medium_upgrade_stats.percentile_95} (2nd)'),
+    }
 
     self.record_data({
         'Test Class': self.TAG,
         'sponge_properties': {
-            'test_report_alias_name': (
+            '00_test_report_alias_name': (
                 self.test_parameters.test_report_alias_name),
-            'source_device_serial': self.discoverer.serial,
-            'target_device_serial': self.advertiser.serial,
-            'source_GMS_version': setup_utils.dump_gms_version(
+            '01_test_result': result_message,
+            '02_source_device_serial': self.discoverer.serial,
+            '03_target_device_serial': self.advertiser.serial,
+            '04_source_GMS_version': setup_utils.dump_gms_version(
                 self.discoverer),
-            'target_GMS_version': setup_utils.dump_gms_version(
+            '05_target_GMS_version': setup_utils.dump_gms_version(
                 self.advertiser),
-            'all_iterations': self.performance_test_iterations,
-            'all_qualities_reach_target': reach_target,
-            '1st_bt_transfer_reach_rate': first_bt_transfer_stats.reach_rate,
-            '1st_bt_transfer_throughput_benchmark_kbs': (
-                self.test_parameters.bt_transfer_throughput_benchmark_kbs),
-            '1st_bt_transfer_throughput_kbs_percentile': (
-                self.test_parameters.bt_transfer_throughput_kbs_percentile),
-            '1st_bt_transfer_success_rate': (
-                first_bt_transfer_stats.success_rate),
-
-            '2nd_wifi_transfer_reach_rate': (
-                second_wifi_transfer_stats.reach_rate),
-            '2nd_wifi_transfer_throuput_benchmark_kbs': (
-                self.test_parameters.wifi_transfer_throughput_benchmark_kbs),
-            '2nd_wifi_transfer_throughput_percentile': (
-                self.test_parameters.wifi_transfer_throughput_kbs_percentile),
-            '2nd_wifi_transfer_success_rate': (
-                second_wifi_transfer_stats.success_rate),
+            '06_detailed_stats': detailed_stats
             }
         })
-    if not reach_target:
-      asserts.fail(self._generate_target_fail_message(fail_targets))
+    if not passed:
+      asserts.fail(result_message)
 
   def _generate_target_fail_message(
       self,
       fail_targets: list[nc_constants.FailTargetSummary]) -> str:
-    error_msg = 'Failed due to:\n'
+    error_msg = ''
     for fail_target in fail_targets:
-      error_msg += f'metric: {fail_target.name} is {fail_target.rate}, '
-      error_msg += f'less than {fail_target.goal}.\n'
+      error_msg += (
+          f'{fail_target.title}: {fail_target.actual}{fail_target.unit}'
+          f' < {fail_target.goal}{fail_target.unit}\n')
 
     return error_msg
 

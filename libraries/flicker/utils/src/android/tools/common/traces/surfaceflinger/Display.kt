@@ -20,9 +20,11 @@ import android.tools.common.Position
 import android.tools.common.Rotation
 import android.tools.common.datatypes.Rect
 import android.tools.common.datatypes.Size
+import android.tools.common.traces.wm.DisplayContent
 import android.tools.common.withCache
 import kotlin.js.JsExport
 import kotlin.js.JsName
+import kotlin.math.min
 
 /** Wrapper for DisplayProto (frameworks/native/services/surfaceflinger/layerproto/display.proto) */
 @JsExport
@@ -34,7 +36,9 @@ private constructor(
     @JsName("size") val size: Size,
     @JsName("layerStackSpace") val layerStackSpace: Rect,
     @JsName("transform") val transform: Transform,
-    @JsName("isVirtual") val isVirtual: Boolean
+    @JsName("isVirtual") val isVirtual: Boolean,
+    @JsName("dpiX") val dpiX: Double,
+    @JsName("dpiY") val dpiY: Double,
 ) {
     @JsName("isOff") val isOff = layerStackId == BLANK_LAYER_STACK
     @JsName("isOn") val isOn = !isOff
@@ -57,6 +61,15 @@ private constructor(
             else -> error("Unknown rotation $requestedRotation")
         }
     }
+
+    @JsName("isLargeScreen")
+    val isLargeScreen: Boolean
+        get() {
+            val dpi = dpiX.toInt()
+            val smallestWidth =
+                DisplayContent.dpiFromPx(min(size.width.toFloat(), size.height.toFloat()), dpi)
+            return smallestWidth >= DisplayContent.TABLET_MIN_DPS
+        }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -97,7 +110,9 @@ private constructor(
                     size = Size.EMPTY,
                     layerStackSpace = Rect.EMPTY,
                     transform = Transform.EMPTY,
-                    isVirtual = false
+                    isVirtual = false,
+                    dpiX = 0.0,
+                    dpiY = 0.0,
                 )
             }
 
@@ -109,9 +124,11 @@ private constructor(
             size: Size,
             layerStackSpace: Rect,
             transform: Transform,
-            isVirtual: Boolean
+            isVirtual: Boolean,
+            dpiX: Double,
+            dpiY: Double,
         ): Display = withCache {
-            Display(id, name, layerStackId, size, layerStackSpace, transform, isVirtual)
+            Display(id, name, layerStackId, size, layerStackSpace, transform, isVirtual, dpiX, dpiY)
         }
     }
 }

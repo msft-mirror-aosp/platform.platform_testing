@@ -42,7 +42,7 @@ class TransitionChange(
                 wmTrace
                     ?.entries
                     ?.flatMap { it.windowStates.asList() }
-                    ?.firstOrNull { it.token == change.windowId.toString(16) }
+                    ?.firstOrNull { it.id == change.windowId }
                     ?.name
 
             return buildString {

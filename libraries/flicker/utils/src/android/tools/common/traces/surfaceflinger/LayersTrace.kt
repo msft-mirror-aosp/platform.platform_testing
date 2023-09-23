@@ -90,4 +90,15 @@ data class LayersTrace(override val entries: Array<LayerTraceEntry>) : ITrace<La
         }
             ?: error("No entry before $timestamp in layer trace with on display.")
     }
+
+    fun getLayerDescriptorById(layerId: Int): LayerDescriptor? {
+        for (entry in this.entries) {
+            val layer = entry.getLayerById(layerId)
+            if (layer != null) {
+                return LayerDescriptor(layer)
+            }
+        }
+
+        return null
+    }
 }

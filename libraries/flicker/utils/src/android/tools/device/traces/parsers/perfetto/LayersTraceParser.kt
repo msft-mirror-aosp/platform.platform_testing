@@ -195,7 +195,9 @@ class LayersTraceParser(
                 newSize(display.getChild("size")),
                 newRect(display.getChild("layer_stack_space_rect")),
                 newTransform(display.getChild("transform"), position = null),
-                display.getChild("is_virtual")?.getBoolean() ?: false
+                display.getChild("is_virtual")?.getBoolean() ?: false,
+                display.getChild("dpi_x")?.getFloat()?.toDouble() ?: 0.0,
+                display.getChild("dpi_y")?.getFloat()?.toDouble() ?: 0.0,
             )
         }
 

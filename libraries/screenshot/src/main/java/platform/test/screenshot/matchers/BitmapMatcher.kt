@@ -49,9 +49,7 @@ abstract class BitmapMatcher {
             BooleanArray(width * height) { true }
         } else {
             BooleanArray(width * height) { index ->
-                val x = index % width
-                val y = index / width
-                regions.any { it.containsInclusive(x, y) }
+                regions.any { it.containsInclusive(index % width, index / width) }
             }
         }
     }

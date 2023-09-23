@@ -41,11 +41,13 @@ class PixelPerfectMatcher : BitmapMatcher() {
         var same = 0
         var ignored = 0
 
-        val diffArray = IntArray(width * height) { index ->
+        val diffArray = lazy { IntArray(width * height) { Color.TRANSPARENT } }
+
+        expected.indices.forEach { index ->
             when {
-                !filter[index] -> Color.TRANSPARENT.also { ignored++ }
-                expected[index] == given[index] -> Color.TRANSPARENT.also { same++ }
-                else -> Color.MAGENTA.also { different++ }
+                !filter[index] -> ignored++
+                expected[index] == given[index] -> same++
+                else -> diffArray.value[index] = Color.MAGENTA.also { different++ }
             }
         }
 
@@ -58,7 +60,7 @@ class PixelPerfectMatcher : BitmapMatcher() {
             .build()
 
         return if (different > 0) {
-            val diff = Bitmap.createBitmap(diffArray, width, height, Bitmap.Config.ARGB_8888)
+            val diff = Bitmap.createBitmap(diffArray.value, width, height, Bitmap.Config.ARGB_8888)
             MatchResult(matches = false, diff = diff, comparisonStatistics = stats)
         } else {
             MatchResult(matches = true, diff = null, comparisonStatistics = stats)

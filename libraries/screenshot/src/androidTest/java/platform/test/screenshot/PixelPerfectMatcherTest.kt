@@ -85,8 +85,8 @@ class PixelPerfectMatcherTest {
         val diffImage = result.diff!!.toIntArray()
 
         assertThat(result.matches).isFalse()
-        for (i in 0..first.height - 1) {
-            for (j in 0..first.width - 1) {
+        for (i in 0 until first.height) {
+            for (j in 0 until first.width) {
                 val rowInRange = i >= interestingRegion.top && i <= interestingRegion.bottom
                 val colInRange = j >= interestingRegion.left && j <= interestingRegion.right
                 if (!(rowInRange && colInRange)) {

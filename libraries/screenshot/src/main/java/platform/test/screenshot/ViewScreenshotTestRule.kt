@@ -94,7 +94,11 @@ open class ViewScreenshotTestRule(
             if (originalBitmap == null) {
                 error("timeout while trying to capture view to bitmap")
             }
-            return bitmapWithMaterialYouColorsSimulation(originalBitmap, emulationSpec.isDarkTheme)
+            return bitmapWithMaterialYouColorsSimulation(
+                originalBitmap,
+                emulationSpec.isDarkTheme,
+                /* doPixelAveraging= */ true
+            )
         } else {
             return contentView?.toBitmap() ?: error("contentView is null")
         }

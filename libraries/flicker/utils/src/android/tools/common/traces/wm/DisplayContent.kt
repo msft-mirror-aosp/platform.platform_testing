@@ -33,7 +33,7 @@ import kotlin.math.min
  */
 @JsExport
 class DisplayContent(
-    @JsName("id") val id: Int,
+    @JsName("displayId") val displayId: Int,
     val focusedRootTaskId: Int,
     val resumedActivity: String,
     val singleTaskInstance: Boolean,
@@ -53,7 +53,7 @@ class DisplayContent(
     val cutout: DisplayCutout?,
     private val windowContainer: IWindowContainer
 ) : IWindowContainer by windowContainer {
-    override val name: String = id.toString()
+    override val name: String = displayId.toString()
     override val isVisible: Boolean = false
 
     val isTablet: Boolean
@@ -111,7 +111,7 @@ class DisplayContent(
     }
 
     override fun toString(): String {
-        return "${this::class.simpleName} #$id: name=$title mDisplayRect=$displayRect " +
+        return "${this::class.simpleName} #$displayId: name=$title mDisplayRect=$displayRect " +
             "mAppRect=$appRect mFlags=$flags"
     }
 
@@ -120,7 +120,7 @@ class DisplayContent(
         if (other !is DisplayContent) return false
         if (!super.equals(other)) return false
 
-        if (id != other.id) return false
+        if (displayId != other.displayId) return false
         if (focusedRootTaskId != other.focusedRootTaskId) return false
         if (resumedActivity != other.resumedActivity) return false
         if (defaultPinnedStackBounds != other.defaultPinnedStackBounds) return false
@@ -146,7 +146,7 @@ class DisplayContent(
 
     override fun hashCode(): Int {
         var result = super.hashCode()
-        result = 31 * result + id
+        result = 31 * result + displayId
         result = 31 * result + focusedRootTaskId
         result = 31 * result + resumedActivity.hashCode()
         result = 31 * result + singleTaskInstance.hashCode()
@@ -171,8 +171,15 @@ class DisplayContent(
     }
 
     companion object {
-        private fun dpiFromPx(size: Float, densityDpi: Int): Float {
-            val densityRatio: Float = densityDpi.toFloat() / PlatformConsts.DENSITY_DEFAULT
+        /** From [android.util.DisplayMetrics] */
+        @JsName("DENSITY_DEFAULT") const val DENSITY_DEFAULT = 160f
+
+        /** From [com.android.systemui.shared.recents.utilities.Utilities] */
+        @JsName("TABLET_MIN_DPS") const val TABLET_MIN_DPS = 600f
+
+        @JsName("dpiFromPx")
+        fun dpiFromPx(size: Float, densityDpi: Int): Float {
+            val densityRatio: Float = densityDpi.toFloat() / DENSITY_DEFAULT
             return size / densityRatio
         }
     }

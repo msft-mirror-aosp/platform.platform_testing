@@ -175,7 +175,7 @@ class WindowManagerStateBuilder {
             null
         } else {
             DisplayContent(
-                id = proto.id,
+                displayId = proto.id,
                 focusedRootTaskId = proto.focusedRootTaskId,
                 resumedActivity = proto.resumedActivity?.title ?: "",
                 singleTaskInstance = proto.singleTaskInstance,

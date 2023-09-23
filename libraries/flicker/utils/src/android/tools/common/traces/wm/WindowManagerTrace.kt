@@ -85,4 +85,15 @@ data class WindowManagerTrace(override val entries: Array<WindowManagerState>) :
                 .toTypedArray()
         )
     }
+
+    fun getWindowDescriptorById(id: Int): WindowDescriptor? {
+        for (entry in this.entries) {
+            for (window in entry.windowContainers) {
+                if (window.id == id) {
+                    return WindowDescriptor(window)
+                }
+            }
+        }
+        return null
+    }
 }

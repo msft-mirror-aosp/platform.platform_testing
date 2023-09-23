@@ -28,10 +28,9 @@ import kotlin.js.JsExport
  * Java/Android functionality
  */
 @JsExport
-open class WindowContainer
-constructor(
+open class WindowContainer(
     override val title: String,
-    override val token: String,
+    final override val token: String,
     override val orientation: Int,
     override val layerId: Int,
     _isVisible: Boolean,
@@ -39,6 +38,8 @@ constructor(
     _children: Array<IWindowContainer>,
     override val computedZ: Int
 ) : IConfigurationContainer by configurationContainer, IWindowContainer {
+    override val id: Int = if (token.isEmpty()) -1 else token.toInt(16)
+
     override val children: Array<IWindowContainer> = _children
 
     override var parent: IWindowContainer? = null

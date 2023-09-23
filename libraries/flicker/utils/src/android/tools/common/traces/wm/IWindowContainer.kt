@@ -24,6 +24,8 @@ import kotlin.js.JsName
 interface IWindowContainer : IConfigurationContainer {
     @JsName("title") val title: String
 
+    @JsName("id") val id: Int
+
     @JsName("token") val token: String
 
     @JsName("orientation") val orientation: Int
