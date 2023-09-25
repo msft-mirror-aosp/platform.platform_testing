@@ -296,4 +296,34 @@ public interface IAutoDialHelper extends IAppHelper, Scrollable {
      * <p>This method is adding favorites from the Favorites Tab
      */
     void addFavoritesFromFavoritesTab(String contact);
+    /**
+     * Setup expectations: The bluetooth palette is open
+     *
+     * <p>This method is used for clicking phone button from bluetooth palette
+     */
+    void clickPhoneButton();
+    /**
+     * Setup expectations: The dialer page is open
+     *
+     * <p>This method is used to check if Recents tab is present in dialer page
+     */
+    boolean verifyDialerRecentsTab();
+    /**
+     * Setup expectations: The dialer page is open
+     *
+     * <p>This method is used to check if Contacts tab is present in dialer page
+     */
+    boolean verifyDialerContactsTab();
+    /**
+     * Setup expectations: The dialer page is open
+     *
+     * <p>This method is used to check if Favorites tab is present in dialer page
+     */
+    boolean verifyDialerFavoritesTab();
+    /**
+     * Setup expectations: The dialer page is open
+     *
+     * <p>This method is used to check if Dialpad tab is present in dialer page
+     */
+    boolean verifyDialerDialpadTab();
 }

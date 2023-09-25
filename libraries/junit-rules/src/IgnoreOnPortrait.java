@@ -15,16 +15,22 @@
  */
 package android.platform.test.rules;
 
+import android.content.Context;
+import android.content.res.Configuration;
+
+import androidx.test.platform.app.InstrumentationRegistry;
+
 import java.util.function.Supplier;
 
 /**
- * A condition for the {@link ConditionalIgnoreRule} which will return true if the property
- * 'debug.portrait' is present. CATBox will set this property if the device's screen resolution is
- * taller than it is wide.
+ * A condition for the {@link ConditionalIgnoreRule} which will return true if the device's size as
+ * reported by {@link Context} is taller than it is wide.
  */
 public class IgnoreOnPortrait implements Supplier<Boolean> {
     @Override
     public Boolean get() {
-        return !SystemProperties.get("debug.portrait").isEmpty();
+        Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        Configuration configuration = context.getResources().getConfiguration();
+        return configuration.screenHeightDp > configuration.screenWidthDp;
     }
 }
