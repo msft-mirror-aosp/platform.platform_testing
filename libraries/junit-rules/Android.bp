@@ -16,15 +16,15 @@ package {
     default_applicable_licenses: ["Android-Apache-2.0"],
 }
 
-java_library_static {
+java_library {
     name: "platform-test-junit-rules",
-    host_supported: true,
     srcs: ["src/**/*.java"],
-    sdk_version: "current",
     java_version: "11",
 
     static_libs: [
         "junit",
-    ]
-}
+        "androidx.test.monitor",
+    ],
 
+    sdk_version: "test_current",
+}

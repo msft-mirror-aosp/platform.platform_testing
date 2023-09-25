@@ -1445,6 +1445,39 @@
       "VALUE": "title",
       "PACKAGE": "com.android.car.dialer"
     },
+    "CLICK_PHONE_BUTTON": {
+      "TYPE": "MULTIPLE",
+      "SPECIFIERS": [
+        {
+          "TYPE": "DESCRIPTION",
+          "VALUE": "Phone"
+        },
+        {
+          "TYPE": "CLASS",
+          "VALUE": "android.widget.ToggleButton"
+        }
+      ]
+    },
+    "CONNECT_TO_BLUETOOTH": {
+      "TYPE": "TEXT",
+      "VALUE": "Connect to Bluetooth"
+    },
+    "DIALER_RECENTS": {
+      "TYPE": "TEXT",
+      "VALUE": "Recents"
+    },
+    "DIALER_CONTACTS": {
+      "TYPE": "TEXT",
+      "VALUE": "Contacts"
+    },
+    "DIALER_FAVORITES": {
+      "TYPE": "TEXT",
+      "VALUE": "Favorites"
+    },
+    "DIALER_DIALPAD": {
+      "TYPE": "TEXT",
+      "VALUE": "Dialpad"
+    },
     "LOCATION_ACCESS": {
       "TYPE": "TEXT",
       "VALUE": "Location access"
