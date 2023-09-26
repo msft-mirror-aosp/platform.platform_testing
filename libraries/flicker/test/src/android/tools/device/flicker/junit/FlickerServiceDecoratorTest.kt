@@ -6,8 +6,12 @@ import android.tools.common.flicker.FlickerConfig
 import android.tools.common.flicker.FlickerService
 import android.tools.common.flicker.annotation.ExpectedScenarios
 import android.tools.common.flicker.config.FlickerServiceConfig
+import android.tools.common.io.Reader
 import android.tools.utils.KotlinMockito
+import android.tools.utils.assertThrows
+import com.google.common.truth.Truth
 import org.junit.Test
+import org.junit.runner.Description
 import org.junit.runners.model.FrameworkMethod
 import org.junit.runners.model.TestClass
 import org.mockito.Mockito
@@ -76,5 +80,59 @@ class FlickerServiceDecoratorTest {
                         ?: false
                 }
             )
+    }
+
+    @Test
+    fun failsTestAndNotModuleOnFlickerServiceMethodComputeError() {
+        val flickerMethodComputeError = Throwable("Flicker Method Compute Error")
+
+        val instrumentation = Mockito.mock(Instrumentation::class.java)
+        val testClass = Mockito.mock(TestClass::class.java)
+        val innerDecorator = Mockito.mock(IFlickerJUnitDecorator::class.java)
+        val method = Mockito.mock(FrameworkMethod::class.java)
+        val flickerService = Mockito.mock(FlickerService::class.java)
+        val mockDescription = Mockito.mock(Description::class.java)
+
+        val flickerConfigProviderMethods = Mockito.mock(FrameworkMethod::class.java)
+
+        Mockito.`when`(testClass.getAnnotatedMethods(ExpectedScenarios::class.java))
+            .thenReturn(listOf(method))
+        Mockito.`when`(
+                testClass.getAnnotatedMethods(
+                    android.tools.common.flicker.annotation.FlickerConfigProvider::class.java
+                )
+            )
+            .thenReturn(listOf(flickerConfigProviderMethods))
+        Mockito.`when`(flickerConfigProviderMethods.invokeExplosively(testClass))
+            .thenReturn(FlickerConfig().use(FlickerServiceConfig.DEFAULT))
+        Mockito.`when`(method.annotations).thenReturn(emptyArray())
+        Mockito.`when`(innerDecorator.getTestMethods(KotlinMockito.any(Object::class.java)))
+            .thenReturn(listOf(method))
+        Mockito.`when`(
+                innerDecorator.getChildDescription(KotlinMockito.any(FrameworkMethod::class.java))
+            )
+            .thenReturn(mockDescription)
+
+        Mockito.`when`(flickerService.detectScenarios(KotlinMockito.any(Reader::class.java))).then {
+            throw flickerMethodComputeError
+        }
+
+        val test = Mockito.mock(Object::class.java)
+        val decorator =
+            FlickerServiceDecorator(
+                testClass = testClass,
+                paramString = null,
+                skipNonBlocking = false,
+                inner = innerDecorator,
+                instrumentation = instrumentation,
+                flickerService = flickerService
+            )
+
+        // This should not throw
+        decorator.getTestMethods(test)
+
+        val methodInvoker = decorator.getMethodInvoker(method, test)
+        val exception = assertThrows<Throwable> { methodInvoker.evaluate() }
+        Truth.assertThat(exception.stackTraceToString()).contains(flickerMethodComputeError.message)
     }
 }

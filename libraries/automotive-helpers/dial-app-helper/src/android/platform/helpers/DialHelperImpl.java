@@ -698,4 +698,45 @@ public class DialHelperImpl extends AbstractStandardAppHelper implements IAutoDi
         }
         return listOfContactsResults;
     }
+
+    /** {@inheritDoc} */
+    @Override
+    public void clickPhoneButton() {
+        BySelector phoneSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.CLICK_PHONE_BUTTON);
+        UiObject2 phoneLink = getSpectatioUiUtil().findUiObject(phoneSelector);
+        getSpectatioUiUtil()
+                .validateUiObject(phoneLink, AutomotiveConfigConstants.CLICK_PHONE_BUTTON);
+        getSpectatioUiUtil().clickAndWait(phoneLink);
+        getSpectatioUiUtil().wait5Seconds();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean verifyDialerRecentsTab() {
+        BySelector dialerRecentsSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.DIALER_RECENTS);
+        return getSpectatioUiUtil().hasUiElement(dialerRecentsSelector);
+    }
+    /** {@inheritDoc} */
+    @Override
+    public boolean verifyDialerContactsTab() {
+        BySelector dialerContactsSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.DIALER_CONTACTS);
+        return getSpectatioUiUtil().hasUiElement(dialerContactsSelector);
+    }
+    /** {@inheritDoc} */
+    @Override
+    public boolean verifyDialerFavoritesTab() {
+        BySelector dialerFavoritesSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.DIALER_FAVORITES);
+        return getSpectatioUiUtil().hasUiElement(dialerFavoritesSelector);
+    }
+    /** {@inheritDoc} */
+    @Override
+    public boolean verifyDialerDialpadTab() {
+        BySelector dialerDialpadSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.DIALER_DIALPAD);
+        return getSpectatioUiUtil().hasUiElement(dialerDialpadSelector);
+    }
 }

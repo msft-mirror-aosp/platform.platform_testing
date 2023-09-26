@@ -119,8 +119,13 @@ class FlickerServiceDecorator(
                             "Computing Flicker service tests",
                             instrumentation
                         )
-                        flickerServiceMethodsFor[method] =
-                            computeFlickerServiceTests(reader, testClassName, method)
+                        try {
+                            flickerServiceMethodsFor[method] =
+                                computeFlickerServiceTests(reader, testClassName, method)
+                        } catch (e: Throwable) {
+                            // Failed to compute flicker service methods
+                            innerMethodsResults[method] = e
+                        }
                     }
                 }
 
@@ -156,7 +161,7 @@ class FlickerServiceDecorator(
         return object : Statement() {
             @Throws(Throwable::class)
             override fun evaluate() {
-                val description = getChildDescription(method) ?: error("Missing description")
+                val description = getChildDescription(method)
                 if (isMethodHandledByDecorator(method)) {
                     (method as InjectedTestCase).execute(description)
                 } else {

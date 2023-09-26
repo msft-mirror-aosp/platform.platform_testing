@@ -546,6 +546,7 @@ public class AutomotiveConfigConstants {
     public static final String STORAGE_FILES_SETTINGS = "STORAGE_FILES_SETTINGS";
     public static final String STORAGE_SYSTEM_SETTINGS = "STORAGE_SYSTEM_SETTINGS";
 
+
     // Car Sms Messenger
     public static final String SMS_PACKAGE = "SMS_PACKAGE";
     public static final String OPEN_SMS_ACTIVITY_COMMAND = "OPEN_SMS_ACTIVITY_COMMAND";
@@ -588,4 +589,10 @@ public class AutomotiveConfigConstants {
     // BT related
     public static final String BT_CONNECTED_STATUS = "BT_CONNECTED_STATUS";
     public static final String BT_DISCONNECTED_STATUS = "BT_DISCONNECTED_STATUS";
+    public static final String CLICK_PHONE_BUTTON = "CLICK_PHONE_BUTTON";
+    public static final String CONNECT_TO_BLUETOOTH = "CONNECT_TO_BLUETOOTH";
+    public static final String DIALER_RECENTS = "DIALER_RECENTS";
+    public static final String DIALER_CONTACTS = "DIALER_CONTACTS";
+    public static final String DIALER_FAVORITES = "DIALER_FAVORITES";
+    public static final String DIALER_DIALPAD = "DIALER_DIALPAD";
 }

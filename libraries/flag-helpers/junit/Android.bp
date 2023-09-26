@@ -18,7 +18,7 @@ package {
 
 java_library {
     name: "flag-util",
-    srcs: ["src/**/util/*.java"],
+    srcs: ["src_util/**/*.java"],
     static_libs: [
         "auto_value_annotations",
         "jsr305",
@@ -30,11 +30,7 @@ java_library {
 
 java_library {
     name: "flag-junit-base",
-    srcs: ["src/**/junit/*.java"],
-    exclude_srcs: [
-        "src/**/DeviceFlagsValueProvider.java",
-        "src/**/host/*.java",
-    ],
+    srcs: ["src_base/**/*.java"],
     static_libs: [
         "flag-util",
         "guava",
@@ -48,10 +44,7 @@ java_library {
 
 java_library {
     name: "flag-junit",
-    srcs: ["src/**/junit/*.java"],
-    exclude_srcs: [
-        "src/**/host/*.java",
-    ],
+    srcs: ["src/**/*.java"],
     static_libs: [
         "androidx.test.rules",
         "flag-junit-base",
@@ -64,7 +57,7 @@ java_library {
 
 java_library_host {
     name: "flag-junit-host",
-    srcs: ["src/**/junit/host/*.java"],
+    srcs: ["src_host/**/*.java"],
     static_libs: [
         "flag-junit-base",
         "flag-util",
