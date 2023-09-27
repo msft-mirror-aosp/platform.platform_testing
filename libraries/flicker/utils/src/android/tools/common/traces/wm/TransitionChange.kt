@@ -29,6 +29,24 @@ class TransitionChange(
 
     override fun toString(): String = Formatter(null, null).format(this)
 
+    override fun hashCode(): Int {
+        var result = transitMode.hashCode()
+        result = 31 * result + layerId
+        result = 31 * result + windowId
+        return result
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as TransitionChange
+
+        if (transitMode != other.transitMode) return false
+        if (layerId != other.layerId) return false
+        return windowId == other.windowId
+    }
+
     class Formatter(val layersTrace: LayersTrace?, val wmTrace: WindowManagerTrace?) {
         fun format(change: TransitionChange): String {
             val layerName =

@@ -163,7 +163,21 @@ constructor(
          */
         fun waitForAndVerify() {
             val success = waitFor()
-            require(success) { lastMessage }
+            require(success) {
+                buildString {
+                    appendLine(lastMessage)
+
+                    val wmState = internalState?.wmState
+                    val layerState = internalState?.layerState
+
+                    if (wmState != null) {
+                        appendLine("Last checked WM state at ${wmState.timestamp}.")
+                    }
+                    if (layerState != null) {
+                        appendLine("Last checked layer state at ${layerState.timestamp}.")
+                    }
+                }
+            }
         }
 
         /**

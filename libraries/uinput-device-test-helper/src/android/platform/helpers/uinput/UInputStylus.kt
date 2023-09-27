@@ -15,6 +15,10 @@
  */
 package android.platform.helpers.uinput
 
+import android.platform.uiautomator_helpers.DeviceHelpers.waitForObj
+import androidx.test.uiautomator.BySelector
+import androidx.test.uiautomator.UiObject2
+
 /**
  * Class to represent a stylus as a [UInputDevice]. This can then be used to register a stylus using
  * [android.platform.test.rule.InputDeviceRule].
@@ -103,8 +107,8 @@ class UInputStylus(
       "id": $inputDeviceId,
       "command": "inject",
       "events": [
-        1,    // EV_KEY
-        320,  // BTN_TOOL_PEN
+        $EV_KEY,
+        $BTN_TOOL_PEN,
         1
       ]
     }
@@ -121,30 +125,58 @@ class UInputStylus(
         eventInjector.sendEventsFromInputFile(inputDeviceId, assetsFilePath)
     }
 
+    /** Taps on a point on the screen. */
+    fun tapOnObject(eventInjector: EventInjector, selector: BySelector) {
+        val uiObject: UiObject2 = waitForObj(selector)
+        var xCoordinate: Int = uiObject.visibleBounds.centerX() * SCALING_FACTOR
+        var yCoordinate: Int = uiObject.visibleBounds.centerY() * SCALING_FACTOR
+
+        with(eventInjector) {
+            sendEventWithValues(inputDeviceId, EV_ABS, ABS_X, xCoordinate)
+            sendEventWithValues(inputDeviceId, EV_ABS, ABS_Y, yCoordinate)
+            sendEventWithValues(inputDeviceId, EV_ABS, ABS_PRESSURE, 1000)
+            sendEventWithValues(inputDeviceId, EV_KEY, BTN_TOUCH, KEY_DOWN)
+            sendEventWithValues(inputDeviceId, EV_KEY, BTN_TOUCH, KEY_UP)
+        }
+    }
     private companion object {
+        const val KEY_UP = 0
+        const val KEY_DOWN = 1
+
+        const val EV_KEY = 1
+        const val EV_ABS = 3
         // EV_KEY
         val SUPPORTED_ENVBITS =
             listOf(
-                /* EV_KEY */ 1,
-                /* EV_ABS */ 3,
+                EV_KEY,
+                EV_ABS,
             )
+        const val ABS_X = 0
+        const val ABS_Y = 1
+        const val ABS_PRESSURE = 24
+        const val ABS_TILT_X = 26
+        const val ABS_TILT_Y = 27
         // UI_SET_ABSBIT
         val SUPPORTED_ABSBITS =
             listOf(
-                /* ABS_X */ 0,
-                /* ABS_Y */ 1,
-                /* ABS_PRESSURE */ 24,
-                /* ABS_TILT_X */ 26,
-                /* ABS_TILT_Y */ 27,
+                ABS_X,
+                ABS_Y,
+                ABS_PRESSURE,
+                ABS_TILT_X,
+                ABS_TILT_Y,
             )
+        const val BTN_TOOL_PEN = 320
+        const val BTN_TOUCH = 330
+        const val BTN_STYLUS = 331
+        const val BTN_STYLUS2 = 332
         const val KEY_JOURNAL = 578
         // UI_SET_KEYBIT
         val SUPPORTED_KEYBITS =
             listOf(
-                /* BTN_TOOL_PEN */ 320,
-                /* BTN_TOUCH */ 330,
-                /* BTN_STYLUS */ 331,
-                /* BTN_STYLUS2 */ 332,
+                BTN_TOOL_PEN,
+                BTN_TOUCH,
+                BTN_STYLUS,
+                BTN_STYLUS2,
                 KEY_JOURNAL,
             )
         // Using the below combination of product and vendor ID allows us to remap KEY_JOURNAL to
@@ -153,5 +185,8 @@ class UInputStylus(
         // below combination of IDs.
         const val VENDOR_ID = 0x18d1
         const val PRODUCT_ID = 0x4f80
+
+        // Scaling factor set to 2 as ABS_X, ABS_Y to screen resolution 2:1 for this stylus.
+        const val SCALING_FACTOR = 2
     }
 }

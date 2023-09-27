@@ -136,26 +136,29 @@ class Transition(
                 this
             }
 
-        return Transition(
-            id = this.id,
-            wmData =
-                WmTransitionData(
-                    createTime = wmData.createTime,
-                    sendTime = wmData.sendTime,
-                    abortTime = wmData.abortTime,
-                    finishTime = finishTransition.wmData.finishTime,
-                    startingWindowRemoveTime = wmData.startingWindowRemoveTime,
-                    startTransactionId = wmData.startTransactionId,
-                    finishTransactionId = finishTransition.wmData.finishTransactionId,
-                    type = wmData.type,
-                    changes =
-                        (wmData.changes ?: emptyArray())
-                            .toMutableList()
-                            .apply { addAll(transition.wmData.changes ?: emptyArray()) }
-                            .toTypedArray()
-                ),
-            shellData = shellData
-        )
+        val mergedTransition =
+            Transition(
+                id = this.id,
+                wmData =
+                    WmTransitionData(
+                        createTime = wmData.createTime,
+                        sendTime = wmData.sendTime,
+                        abortTime = wmData.abortTime,
+                        finishTime = finishTransition.wmData.finishTime,
+                        startingWindowRemoveTime = wmData.startingWindowRemoveTime,
+                        startTransactionId = wmData.startTransactionId,
+                        finishTransactionId = finishTransition.wmData.finishTransactionId,
+                        type = wmData.type,
+                        changes =
+                            (wmData.changes ?: emptyArray())
+                                .toMutableSet()
+                                .apply { addAll(transition.wmData.changes ?: emptyArray()) }
+                                .toTypedArray()
+                    ),
+                shellData = shellData
+            )
+
+        return mergedTransition
     }
 
     override fun toString(): String = Formatter(null, null).format(this)
@@ -166,6 +169,7 @@ class Transition(
         fun format(transition: Transition): String = buildString {
             appendLine("Transition#${transition.id}(")
             appendLine("type=${transition.type},")
+            appendLine("handler=${transition.handler},")
             appendLine("aborted=${transition.aborted},")
             appendLine("played=${transition.played},")
             appendLine("createTime=${transition.createTime},")
@@ -178,6 +182,7 @@ class Transition(
             appendLine("startingWindowRemoveTime=${transition.startingWindowRemoveTime},")
             appendLine("startTransactionId=${transition.startTransactionId},")
             appendLine("finishTransactionId=${transition.finishTransactionId},")
+            appendLine("mergedInto=${transition.mergedInto}")
             appendLine("changes=[")
             appendLine(
                 transition.changes
