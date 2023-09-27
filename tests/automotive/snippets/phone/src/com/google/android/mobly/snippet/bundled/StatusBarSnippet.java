@@ -61,7 +61,7 @@ public class StatusBarSnippet implements Snippet {
         mStatusBarHelper.get().openBluetoothPalette();
     }
 
-    @Rpc(description = "Click Bluetooth Button")
+    @Rpc(description = "Click Bluetooth Button on the status bar")
     public void clickBluetoothButton() {
         mStatusBarHelper.get().clickBluetoothButton();
     }
