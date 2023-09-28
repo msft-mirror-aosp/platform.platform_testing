@@ -146,3 +146,15 @@ class CallUtils:
         time.sleep(wait_time)
 
 
+    def open_bluetooth_palette(self):
+        logging.info('Open Bluetooth Palette')
+        self.device.mbs.openBluetoothPalette()
+
+    def click_bluetooth_button(self):
+        logging.info('Click Bluetooth Button')
+        self.device.mbs.clickBluetoothButton()
+
+    def is_bluetooth_connected(self):
+        logging.info('Bluetooth Connected Status')
+        is_connected = self.device.mbs.isBluetoothConnected()
+        return is_connected

@@ -22,6 +22,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.Rect
+import android.os.Build
 import android.os.Bundle
 import android.platform.uiautomator_helpers.DeviceHelpers.shell
 import android.provider.Settings.System
@@ -39,6 +40,7 @@ import platform.test.screenshot.matchers.BitmapMatcher
 import platform.test.screenshot.matchers.MSSIMMatcher
 import platform.test.screenshot.matchers.PixelPerfectMatcher
 import platform.test.screenshot.proto.ScreenshotResultProto
+import java.io.PrintStream
 
 /**
  * Rule to be added to a test to facilitate screenshot testing.
@@ -80,6 +82,9 @@ open class ScreenshotTestRule(
     open fun getTestIdentifier(description: Description): String =
             "${description.className}_${description.methodName}"
 
+    private val isRobolectric = Build.FINGERPRINT.contains("robolectric")
+    private fun isGradle(): Boolean =
+            java.lang.System.getProperty("java.class.path").contains("gradle-worker.jar")
     private fun fetchExpectedImage(goldenIdentifier: String): Bitmap? {
         val instrument = InstrumentationRegistry.getInstrumentation()
         return listOf(
@@ -163,6 +168,18 @@ open class ScreenshotTestRule(
             )
         }
 
+        var actualFilePath : String = ""
+        var expectedFilePath : String = ""
+        if (isGradle() && isRobolectric) {
+            val file = File("/tmp", "local_actual_${goldenIdentifier}.png")
+            val fOut = FileOutputStream(file)
+            actualFilePath = file.absolutePath
+
+            actual.compress(Bitmap.CompressFormat.PNG, 0, fOut)
+            fOut.flush()
+            fOut.close()
+        }
+
         val expected = fetchExpectedImage(goldenIdentifier)
         if (expected == null) {
             reportResult(
@@ -176,6 +193,38 @@ open class ScreenshotTestRule(
                     "'${goldenImagePathManager.goldenIdentifierResolver(goldenIdentifier)}'. " +
                     "Did you mean to check in a new image?"
             )
+        } else {
+            if (isGradle() && isRobolectric) {
+                val file = File("/tmp", "local_golden_${goldenIdentifier}.png")
+                val fOut = FileOutputStream(file)
+                expectedFilePath = file.absolutePath
+
+                expected.compress(Bitmap.CompressFormat.PNG, 0, fOut)
+                fOut.flush()
+                fOut.close()
+            }
+        }
+
+        if (isGradle() && isRobolectric) {
+            val file = File("/tmp", "${goldenIdentifier}.html")
+            println("Screenshot file: ${file.absolutePath}")
+            val fOut = FileOutputStream(file)
+            val printStream = PrintStream(fOut)
+            printStream.println("<!DOCTYPE html>")
+            printStream.println("<meta charset=\"utf-8\">")
+            printStream.println("<title>${goldenIdentifier}</title>")
+            printStream.println("<p><h1>${testIdentifier}</h1></p>")
+            if (expected != null) {
+                printStream.println(
+                        "<p><h2><a href=\"file://${expectedFilePath}\">Expected</a></h2>" +
+                            "<img src=\"local_golden_${goldenIdentifier}.png\" alt=\"Golden\"></p>")
+            }
+            printStream.println(
+                    "<p><h2><a href=\"file://${actualFilePath}\">Actual</a></h2>" +
+                        "<img src=\"local_actual_${goldenIdentifier}.png\" alt=\"Actual\"></p>")
+
+            printStream.flush()
+            printStream.close()
         }
 
         if (actual.width != expected.width || actual.height != expected.height) {

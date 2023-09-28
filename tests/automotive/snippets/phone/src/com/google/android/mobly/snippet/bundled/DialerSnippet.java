@@ -17,9 +17,7 @@
 package com.google.android.mobly.snippet.bundled;
 
 import android.platform.helpers.HelperAccessor;
-import android.platform.helpers.IAutoCarSmsMessengerHelper;
 import android.platform.helpers.IAutoDialHelper;
-import android.platform.helpers.IAutoStatusBarHelper;
 import android.platform.helpers.IAutoVehicleHardKeysHelper;
 
 import com.google.android.mobly.snippet.Snippet;
@@ -31,13 +29,9 @@ import java.util.List;
 public class DialerSnippet implements Snippet {
     private final HelperAccessor<IAutoDialHelper> mDialerHelper;
     private final HelperAccessor<IAutoVehicleHardKeysHelper> mHardKeysHelper;
-    private final HelperAccessor<IAutoCarSmsMessengerHelper> mCarSmsMessengerHelper;
-    private final HelperAccessor<IAutoStatusBarHelper> mStatusBarHelper;
 
     public DialerSnippet() {
         mDialerHelper = new HelperAccessor<>(IAutoDialHelper.class);
-        mCarSmsMessengerHelper = new HelperAccessor<>(IAutoCarSmsMessengerHelper.class);
-        mStatusBarHelper = new HelperAccessor<>(IAutoStatusBarHelper.class);
         mHardKeysHelper = new HelperAccessor<>(IAutoVehicleHardKeysHelper.class);
     }
 
@@ -231,66 +225,6 @@ public class DialerSnippet implements Snippet {
     @Rpc(description = "Add Favorites from favorites tab")
     public void addFavoritesFromFavoritesTab(String contact) {
         mDialerHelper.get().addFavoritesFromFavoritesTab(contact);
-    }
-
-    @Rpc(description = "Open SMS Application.")
-    public void openSmsApp() {
-        mCarSmsMessengerHelper.get().open();
-    }
-
-    @Rpc(description = "Bluetooth SMS Error")
-    public boolean isSmsBluetoothErrorDisplayed() {
-        return mCarSmsMessengerHelper.get().isSmsBluetoothErrorDisplayed();
-    }
-
-    @Rpc(description = "Open Bluetooth Palette")
-    public void openBluetoothPalette() {
-        mStatusBarHelper.get().openBluetoothPalette();
-    }
-
-    @Rpc(description = "Click Bluetooth Button")
-    public void clickBluetoothButton() {
-        mStatusBarHelper.get().clickBluetoothButton();
-    }
-
-    @Rpc(description = "is Bluetooth Connected")
-    public boolean isBluetoothConnected() {
-        return mStatusBarHelper.get().isBluetoothConnected();
-    }
-
-    @Rpc(description = "Verify Bluetooth")
-    public boolean verifyBluetooth() {
-        return mStatusBarHelper.get().verifyBluetooth();
-    }
-
-    @Rpc(description = "Verify Phone")
-    public boolean verifyPhone() {
-        return mStatusBarHelper.get().verifyPhone();
-    }
-
-    @Rpc(description = "Verify Media")
-    public boolean verifyMedia() {
-        return mStatusBarHelper.get().verifyMedia();
-    }
-
-    @Rpc(description = "Verify Device Name")
-    public boolean verifyDeviceName() {
-        return mStatusBarHelper.get().verifyDeviceName();
-    }
-
-    @Rpc(description = "Verify Disabled Bluetooth Profile")
-    public boolean verifyDisabledBluetoothProfile() {
-        return mStatusBarHelper.get().verifyDisabledBluetoothProfile();
-    }
-
-    @Rpc(description = "Verify Disabled Phone Profile")
-    public boolean verifyDisabledPhoneProfile() {
-        return mStatusBarHelper.get().verifyDisabledPhoneProfile();
-    }
-
-    @Rpc(description = "Verify Disabled Media Profile")
-    public boolean verifyDisabledMediaProfile() {
-        return mStatusBarHelper.get().verifyDisabledMediaProfile();
     }
 
     @Rpc(description = "Open Phone Button in Bluetooth Palette")

@@ -1562,18 +1562,8 @@
       "PACKAGE": "com.android.car.messenger"
     },
     "BLUETOOTH_BUTTON": {
-      "TYPE": "MULTIPLE",
-      "SPECIFIERS": [
-        {
-          "TYPE": "RESOURCE_ID",
-          "VALUE": "qc_toggle_button",
-          "PACKAGE": "com.android.systemui"
-        },
-        {
-          "TYPE": "DESCRIPTION",
-          "VALUE": "Bluetooth"
-        }
-      ]
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "qc_toggle_button"
     },
     "PHONE_BUTTON": {
       "TYPE": "DESCRIPTION",

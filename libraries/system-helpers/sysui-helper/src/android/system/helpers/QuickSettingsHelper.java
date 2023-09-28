@@ -54,15 +54,18 @@ public class QuickSettingsHelper {
     private static final String QS_DEFAULT_TILES_RES = "quick_settings_tiles_default";
     private static final BySelector FOOTER_SELECTOR = By.res(SYSTEMUI_PACKAGE, "qs_footer");
     private static final String SYSUI_QS_TILES_SETTING = "sysui_qs_tiles";
+    private static final String SET_QS_TILES_COMMAND = "cmd statusbar set-tiles ";
 
     @NonNull private final UiDevice mDevice;
     @NonNull private final Instrumentation mInstrumentation;
     private List<String> mDefaultQSTileList = null;
     private List<String> mPreviousQSTileList = null;
+    private final CommandsHelper mCommandsHelper;
 
     public QuickSettingsHelper(@NonNull UiDevice device, @NonNull Instrumentation inst) {
         this.mDevice = device;
         mInstrumentation = inst;
+        mCommandsHelper = CommandsHelper.getInstance(mInstrumentation);
         try {
             obtainDefaultQSTiles();
         } catch (Exception e) {
@@ -217,10 +220,8 @@ public class QuickSettingsHelper {
         }
 
         try {
-            Settings.Secure.putString(
-                    mInstrumentation.getContext().getContentResolver(),
-                    SYSUI_QS_TILES_SETTING,
-                    String.join(",", list));
+            String settings = String.join(",", list);
+            mCommandsHelper.executeShellCommand(SET_QS_TILES_COMMAND + settings);
             Thread.sleep(LONG_TIMEOUT);
         } catch (Resources.NotFoundException | InterruptedException e) {
             Log.e(LOG_TAG, "modifyQSTileList fails!", e);

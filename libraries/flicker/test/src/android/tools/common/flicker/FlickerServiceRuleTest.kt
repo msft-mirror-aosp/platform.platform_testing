@@ -108,7 +108,7 @@ class FlickerServiceRuleTest {
         val testRule =
             FlickerServiceRule(
                 metricsCollector = mockFlickerServiceResultsCollector,
-                failTestOnFaasFailure = false
+                failTestOnFlicker = false
             )
         val mockDescription = Description.createTestDescription(this::class.java, "mockTest")
 
@@ -128,7 +128,7 @@ class FlickerServiceRuleTest {
         val testRule =
             FlickerServiceRule(
                 metricsCollector = mockFlickerServiceResultsCollector,
-                failTestOnFaasFailure = true
+                failTestOnFlicker = true
             )
         val mockDescription = Description.createTestDescription(this::class.java, "mockTest")
 
@@ -153,7 +153,7 @@ class FlickerServiceRuleTest {
         val testRule =
             FlickerServiceRule(
                 metricsCollector = mockFlickerServiceResultsCollector,
-                failTestOnFaasFailure = true
+                failTestOnFlicker = true
             )
         val mockDescription = Description.createTestDescription(this::class.java, "mockTest")
 
@@ -174,7 +174,7 @@ class FlickerServiceRuleTest {
             FlickerServiceRule(
                 enabled = false,
                 metricsCollector = mockFlickerServiceResultsCollector,
-                failTestOnFaasFailure = true
+                failTestOnFlicker = true
             )
 
         val mockDescription = Description.createTestDescription(this::class.java, "mockTest")
@@ -199,7 +199,7 @@ class FlickerServiceRuleTest {
         val testRule =
             FlickerServiceRule(
                 metricsCollector = mockFlickerServiceResultsCollector,
-                failTestOnFaasFailure = true
+                failTestOnFlicker = true
             )
         val mockDescription = Description.createTestDescription(this::class.java, "mockTest")
 

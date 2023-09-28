@@ -38,9 +38,7 @@ class TransitionChange(
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as TransitionChange
+        if (other !is TransitionChange) return false
 
         if (transitMode != other.transitMode) return false
         if (layerId != other.layerId) return false
