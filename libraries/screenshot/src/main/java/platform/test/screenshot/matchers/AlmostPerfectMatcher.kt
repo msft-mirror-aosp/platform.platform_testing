@@ -18,7 +18,6 @@ package platform.test.screenshot.matchers
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.Rect
-import kotlin.math.sqrt
 import platform.test.screenshot.proto.ScreenshotResultProto
 
 /**
@@ -46,9 +45,9 @@ class AlmostPerfectMatcher(
 
         expected.indices.forEach { index ->
             when {
-                !filter[index] -> Color.TRANSPARENT.also { ignored++ }
-                areSame(expected[index], given[index]) -> Color.TRANSPARENT.also { same++ }
-                else -> Color.MAGENTA.also { different++ }
+                !filter[index] -> ignored++
+                areSame(expected[index], given[index]) -> same++
+                else -> diffArray.value[index] = Color.MAGENTA.also { different++ }
             }
         }
 
@@ -78,15 +77,16 @@ class AlmostPerfectMatcher(
         val redScalar = if (redMean < 128) 2 else 3
         val blueScalar = if (redMean < 128) 3 else 2
         val greenScalar = 4
-        val correction = sqrt((
-                (redScalar * red * red) +
-                        (greenScalar * green * green) +
-                        (blueScalar * blue * blue))
-                .toDouble())
+        val correction =
+                (redScalar * red * red) + (greenScalar * green * green) + (blueScalar * blue * blue)
         // 1.5 no difference
         // 3.0 observable by experienced human observer
         // 6.0 minimal difference
         // 12.0 perceivable difference
-        return correction <= 3.0
+        return correction <= THRESHOLD_SQ
+    }
+
+    companion object {
+        const val THRESHOLD_SQ = 3 * 3
     }
 }

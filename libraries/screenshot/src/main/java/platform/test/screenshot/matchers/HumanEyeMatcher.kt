@@ -4,7 +4,6 @@ import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.Rect
 import kotlin.math.max
-import kotlin.math.sqrt
 import platform.test.screenshot.proto.ScreenshotResultProto
 
 /**
@@ -39,13 +38,13 @@ class HumanEyeMatcher(
         var ignored = 0
 
         // Prepare colorDiffArray
-        val colorDiffArray =
-            DoubleArray(width * height) { index ->
+        val colorDiffSqArray =
+            IntArray(width * height) { index ->
                 if (filter[index]) {
                     if (accountForTransparency) {
-                        colorDiffWithTransparency(expected[index], given[index])
+                        colorDiffSqWithTransparency(expected[index], given[index])
                     } else {
-                        colorDiff(expected[index], given[index])
+                        colorDiffSq(expected[index], given[index])
                     }
                 } else {
                     ignored++
@@ -53,7 +52,7 @@ class HumanEyeMatcher(
                 }
             }
 
-        fun isIndexSameForLargeArea(index: Int) = isSameForLargeArea(colorDiffArray[index])
+        fun isIndexSameForLargeArea(index: Int) = isSameForLargeArea(colorDiffSqArray[index])
 
         if (!accountForGrouping) {
             val diffArray = lazy { IntArray(width * height) { Color.TRANSPARENT } }
@@ -74,21 +73,22 @@ class HumanEyeMatcher(
             )
         }
 
-        fun getEasiestThresholdFailed(x: Int, y: Int): Double? {
-            val colorDiff = colorDiffArray[x + width * y]
+        fun getEasiestThresholdFailed(x: Int, y: Int): Int? {
+            val colorDiff = colorDiffSqArray[x + width * y]
             return when {
                 colorDiff == IGNORED_COLOR_DIFF -> null
-                colorDiff > THRESHOLD_ISOLATED_PIXEL -> THRESHOLD_ISOLATED_PIXEL
-                colorDiff > THRESHOLD_1PX_LINE_OF_PIXELS -> THRESHOLD_1PX_LINE_OF_PIXELS
-                colorDiff > THRESHOLD_2PX_LINE_OF_PIXELS -> THRESHOLD_2PX_LINE_OF_PIXELS
-                colorDiff > THRESHOLD_BLOCK_OF_PIXELS -> THRESHOLD_BLOCK_OF_PIXELS
-                else -> 0.0
+                colorDiff > THRESHOLD_ISOLATED_PIXEL_SQ -> THRESHOLD_ISOLATED_PIXEL_SQ
+                colorDiff > THRESHOLD_1PX_LINE_OF_PIXELS_SQ -> THRESHOLD_1PX_LINE_OF_PIXELS_SQ
+                colorDiff > THRESHOLD_2PX_LINE_OF_PIXELS_SQ -> THRESHOLD_2PX_LINE_OF_PIXELS_SQ
+                colorDiff > THRESHOLD_BLOCK_OF_PIXELS_SQ -> THRESHOLD_BLOCK_OF_PIXELS_SQ
+                else -> 0
             }
         }
 
         var different = 0
-        val diffArray = lazy { IntArray(colorDiffArray.size) { Color.TRANSPARENT } }
-        colorDiffArray.indices.forEach { index ->
+        val diffArray = lazy { IntArray(colorDiffSqArray.size) { Color.TRANSPARENT } }
+
+        colorDiffSqArray.indices.forEach { index ->
             // Also covers the ignored case
             if (isIndexSameForLargeArea(index)) return@forEach
 
@@ -109,7 +109,7 @@ class HumanEyeMatcher(
             if (leftThreshold != null && currThreshold > leftThreshold) neighbouringDiffs--
             if (rightThreshold != null && currThreshold > rightThreshold) neighbouringDiffs--
 
-            if (!isSame(colorDiffArray[index], neighbouringDiffs)) {
+            if (!isSame(colorDiffSqArray[index], neighbouringDiffs)) {
                 diffArray.value[index] = Color.MAGENTA
                 different++
             }
@@ -125,14 +125,14 @@ class HumanEyeMatcher(
         )
     }
 
-    private fun colorDiffWithTransparency(referenceColor: Int, testColor: Int): Double {
+    private fun colorDiffSqWithTransparency(referenceColor: Int, testColor: Int): Int {
         val diffWithWhite =
-            colorDiff(
+            colorDiffSq(
                 blendWithBackground(referenceColor, Color.WHITE),
                 blendWithBackground(testColor, Color.WHITE)
             )
         val diffWithBlack =
-            colorDiff(
+            colorDiffSq(
                 blendWithBackground(referenceColor, Color.BLACK),
                 blendWithBackground(testColor, Color.BLACK)
             )
@@ -143,18 +143,16 @@ class HumanEyeMatcher(
     // ref
     // R. F. Witzel, R. W. Burnham, and J. W. Onley. Threshold and suprathreshold perceptual color
     // differences. J. Optical Society of America, 63:615{625, 1973. 14
-    private fun colorDiff(referenceColor: Int, testColor: Int): Double {
+    private fun colorDiffSq(referenceColor: Int, testColor: Int): Int {
         val green = Color.green(referenceColor) - Color.green(testColor)
         val blue = Color.blue(referenceColor) - Color.blue(testColor)
         val red = Color.red(referenceColor) - Color.red(testColor)
         val redMean = (Color.red(referenceColor) + Color.red(testColor)) / 2
-        val (redScalar, blueScalar) = if (redMean < 128) Pair(2, 3) else Pair(3, 2)
+        val redScalar = if (redMean < 128) 2 else 3
+        val blueScalar = if (redMean < 128) 3 else 2
         val greenScalar = 4
 
-        return sqrt(
-            ((redScalar * red * red) + (greenScalar * green * green) + (blueScalar * blue * blue))
-                .toDouble()
-        )
+        return (redScalar * red * red) + (greenScalar * green * green) + (blueScalar * blue * blue)
     }
 
     /**
@@ -162,23 +160,23 @@ class HumanEyeMatcher(
      * lines or blocks of differing pixels. This is to emulate the human eye. It is harder to see
      * color differences in very small objects as compared to larger ones.
      */
-    private fun getThreshold(neighbouringDiffs: Int): Double =
+    private fun getThresholdSq(neighbouringDiffs: Int): Int =
         when (neighbouringDiffs) {
             0,
-            1 -> THRESHOLD_ISOLATED_PIXEL
-            2 -> THRESHOLD_1PX_LINE_OF_PIXELS
-            3 -> THRESHOLD_2PX_LINE_OF_PIXELS
-            4 -> THRESHOLD_BLOCK_OF_PIXELS
+            1 -> THRESHOLD_ISOLATED_PIXEL_SQ
+            2 -> THRESHOLD_1PX_LINE_OF_PIXELS_SQ
+            3 -> THRESHOLD_2PX_LINE_OF_PIXELS_SQ
+            4 -> THRESHOLD_BLOCK_OF_PIXELS_SQ
             else ->
                 throw IllegalArgumentException(
                     "Unsupported neighbouringDiffs value: $neighbouringDiffs"
                 )
         }
 
-    private fun isSameForLargeArea(colorDiff: Double) = colorDiff <= THRESHOLD_BLOCK_OF_PIXELS
+    private fun isSameForLargeArea(colorDiff: Int) = colorDiff <= THRESHOLD_BLOCK_OF_PIXELS_SQ
 
-    private fun isSame(colorDiff: Double, neighbouringDiffs: Int) =
-        colorDiff <= getThreshold(neighbouringDiffs)
+    private fun isSame(colorDiff: Int, neighbouringDiffs: Int) =
+        colorDiff <= getThresholdSq(neighbouringDiffs)
 
     /** Any alpha component of the [backgroundColor] will be ignored. */
     private fun blendWithBackground(color: Int, backgroundColor: Int): Int {
@@ -219,11 +217,11 @@ class HumanEyeMatcher(
     }
 
     private companion object {
-        const val THRESHOLD_BLOCK_OF_PIXELS = 3.0
-        const val THRESHOLD_2PX_LINE_OF_PIXELS = 10.0
-        const val THRESHOLD_1PX_LINE_OF_PIXELS = 12.0
-        const val THRESHOLD_ISOLATED_PIXEL = 40.0
+        const val THRESHOLD_BLOCK_OF_PIXELS_SQ = 3 * 3
+        const val THRESHOLD_2PX_LINE_OF_PIXELS_SQ = 10 * 10
+        const val THRESHOLD_1PX_LINE_OF_PIXELS_SQ = 12 * 12
+        const val THRESHOLD_ISOLATED_PIXEL_SQ = 40 * 40
 
-        const val IGNORED_COLOR_DIFF = -1.0
+        const val IGNORED_COLOR_DIFF = -1
     }
 }

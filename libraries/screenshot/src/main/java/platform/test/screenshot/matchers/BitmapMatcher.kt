@@ -16,6 +16,7 @@
 
 package platform.test.screenshot.matchers
 
+import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.graphics.Rect
 import kotlin.collections.List
@@ -44,17 +45,23 @@ abstract class BitmapMatcher {
         regions: List<Rect> = emptyList()
     ): MatchResult
 
+    @SuppressLint("CheckResult")
     protected fun getFilter(width: Int, height: Int, regions: List<Rect>): BooleanArray {
         return if (regions.isEmpty()) {
             BooleanArray(width * height) { true }
         } else {
-            BooleanArray(width * height) { index ->
-                regions.any { it.containsInclusive(index % width, index / width) }
+            val regionsSanitised = regions.map { Rect(it).apply { intersect(0, 0, width, height) } }
+            BooleanArray(width * height).also { filterArr ->
+                regionsSanitised.forEach { region ->
+                    for (x in region.left..region.right) {
+                        for (y in region.top..region.bottom) {
+                            filterArr[y * width + x] = true
+                        }
+                    }
+                }
             }
         }
     }
-
-    private fun Rect.containsInclusive(x: Int, y: Int) = x in left..right && y in top..bottom
 }
 
 /**

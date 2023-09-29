@@ -85,6 +85,33 @@ open class ScreenshotTestRule(
     private val isRobolectric = Build.FINGERPRINT.contains("robolectric")
     private fun isGradle(): Boolean =
             java.lang.System.getProperty("java.class.path").contains("gradle-worker.jar")
+
+    private fun writeLocalTempFile(
+        fileType: OutputFileType,
+        goldenIdentifier: String,
+        bitmap: Bitmap?
+    ): String? {
+        return if (bitmap != null && isGradle() && isRobolectric) {
+            val simpleFileName = when (fileType) {
+                OutputFileType.IMAGE_ACTUAL -> "local_actual_${goldenIdentifier}.png"
+                OutputFileType.IMAGE_DIFF -> "local_diff_${goldenIdentifier}.png"
+                OutputFileType.IMAGE_EXPECTED -> "local_golden_${goldenIdentifier}.png"
+                OutputFileType.RESULT_BIN_PROTO -> "local_bin_${goldenIdentifier}.pb"
+                OutputFileType.RESULT_PROTO -> "local_proto_${goldenIdentifier}.text"
+            }
+            val file = File("/tmp", simpleFileName)
+            val absoluteFilePath = file.absolutePath
+            val fOut = FileOutputStream(file)
+
+            bitmap.compress(Bitmap.CompressFormat.PNG, 0, fOut)
+            fOut.flush()
+            fOut.close()
+            absoluteFilePath
+        } else {
+            null
+        }
+    }
+
     private fun fetchExpectedImage(goldenIdentifier: String): Bitmap? {
         val instrument = InstrumentationRegistry.getInstrumentation()
         return listOf(
@@ -168,18 +195,6 @@ open class ScreenshotTestRule(
             )
         }
 
-        var actualFilePath : String = ""
-        var expectedFilePath : String = ""
-        if (isGradle() && isRobolectric) {
-            val file = File("/tmp", "local_actual_${goldenIdentifier}.png")
-            val fOut = FileOutputStream(file)
-            actualFilePath = file.absolutePath
-
-            actual.compress(Bitmap.CompressFormat.PNG, 0, fOut)
-            fOut.flush()
-            fOut.close()
-        }
-
         val expected = fetchExpectedImage(goldenIdentifier)
         if (expected == null) {
             reportResult(
@@ -193,38 +208,6 @@ open class ScreenshotTestRule(
                     "'${goldenImagePathManager.goldenIdentifierResolver(goldenIdentifier)}'. " +
                     "Did you mean to check in a new image?"
             )
-        } else {
-            if (isGradle() && isRobolectric) {
-                val file = File("/tmp", "local_golden_${goldenIdentifier}.png")
-                val fOut = FileOutputStream(file)
-                expectedFilePath = file.absolutePath
-
-                expected.compress(Bitmap.CompressFormat.PNG, 0, fOut)
-                fOut.flush()
-                fOut.close()
-            }
-        }
-
-        if (isGradle() && isRobolectric) {
-            val file = File("/tmp", "${goldenIdentifier}.html")
-            println("Screenshot file: ${file.absolutePath}")
-            val fOut = FileOutputStream(file)
-            val printStream = PrintStream(fOut)
-            printStream.println("<!DOCTYPE html>")
-            printStream.println("<meta charset=\"utf-8\">")
-            printStream.println("<title>${goldenIdentifier}</title>")
-            printStream.println("<p><h1>${testIdentifier}</h1></p>")
-            if (expected != null) {
-                printStream.println(
-                        "<p><h2><a href=\"file://${expectedFilePath}\">Expected</a></h2>" +
-                            "<img src=\"local_golden_${goldenIdentifier}.png\" alt=\"Golden\"></p>")
-            }
-            printStream.println(
-                    "<p><h2><a href=\"file://${actualFilePath}\">Actual</a></h2>" +
-                        "<img src=\"local_actual_${goldenIdentifier}.png\" alt=\"Actual\"></p>")
-
-            printStream.flush()
-            printStream.close()
         }
 
         if (actual.width != expected.width || actual.height != expected.height) {
@@ -265,7 +248,6 @@ open class ScreenshotTestRule(
                 expected = highlightedBitmap(expected, regions),
                 diff = comparisonResult.diff
             )
-
             throw AssertionError(
                 "Image mismatch! Comparison stats: '${comparisonResult
                     .comparisonStatistics}'"
@@ -334,6 +316,52 @@ open class ScreenshotTestRule(
         }
 
         InstrumentationRegistry.getInstrumentation().sendStatus(bundleStatusInProgress, report)
+
+        if (isGradle() && isRobolectric) {
+            val actualFilePath = writeLocalTempFile(
+                    fileType = OutputFileType.IMAGE_ACTUAL,
+                    goldenIdentifier = goldenIdentifier,
+                    bitmap = actual
+            )
+            val expectedFilePath = writeLocalTempFile(
+                    fileType = OutputFileType.IMAGE_EXPECTED,
+                    goldenIdentifier = goldenIdentifier,
+                    bitmap = expected
+            )
+            val diffFilePath = writeLocalTempFile(
+                    fileType = OutputFileType.IMAGE_DIFF,
+                    goldenIdentifier = goldenIdentifier,
+                    bitmap = diff
+            )
+
+
+            val file = File("/tmp", "${goldenIdentifier}.html")
+            println("file://${file.absolutePath}")
+            val fOut = FileOutputStream(file)
+            val printStream = PrintStream(fOut)
+            printStream.println("<!DOCTYPE html>")
+            printStream.println("<meta charset=\"utf-8\">")
+            printStream.println("<title>${goldenIdentifier}</title>")
+            printStream.println("<p><h1>${testIdentifier}</h1></p>")
+            if (expectedFilePath != null) {
+                printStream.println(
+                    "<p><h2><a href=\"file://${expectedFilePath}\">Expected</a></h2>" +
+                        "<img src=\"local_golden_${goldenIdentifier}.png\" alt=\"Golden\"></p>")
+            }
+            if (actualFilePath != null) {
+                printStream.println(
+                    "<p><h2><a href=\"file://${actualFilePath}\">Actual</a></h2>" +
+                        "<img src=\"local_actual_${goldenIdentifier}.png\" alt=\"Actual\"></p>")
+            }
+
+            if (diffFilePath != null) {
+                printStream.println(
+                    "<p><h2><a href=\"file://${diffFilePath}\">Diff</a></h2>" +
+                        "<img src=\"local_diff_${goldenIdentifier}.png\" alt=\"Diff\"></p>")
+            }
+            printStream.flush()
+            printStream.close()
+        }
     }
 
     internal fun getPathOnDeviceFor(fileType: OutputFileType, goldenIdentifier: String): File {
