@@ -204,6 +204,10 @@
       "VALUE": "title",
       "PACKAGE": "com.android.car.dialer"
     },
+    "BLUETOOTH_DISCONNECTED_LABEL": {
+      "TYPE": "TEXT",
+      "VALUE": "Bluetooth audio disconnected"
+    },
     "CONTACT_HOME_ADDRESS": {
       "TYPE": "MULTIPLE",
       "SPECIFIERS": [

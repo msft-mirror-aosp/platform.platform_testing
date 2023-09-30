@@ -15,13 +15,15 @@
 import logging
 import time
 
-
 from mobly.controllers import android_device
 from mbs_utils import constants
 
 """ This exception may be expanded in the future to provide better error discoverability."""
+
+
 class CallUtilsError(Exception):
-  pass
+    pass
+
 
 class CallUtils:
     """Calling sequence utility for BT calling test using Spectatio UI APIs.
@@ -41,12 +43,10 @@ class CallUtils:
         logging.info('Dial phone number <%s>', callee_number)
         self.device.mbs.dialANumber(callee_number)
 
-
     def end_call(self):
         """  End the call. Throws an error if non call is currently ongoing. """
         logging.info('End the call')
         self.device.mbs.endCall()
-
 
     def execute_shell_on_device(self, device_target, shell_command):
         """Execute any shell command on any device"""
@@ -57,7 +57,6 @@ class CallUtils:
         )
         device_target.adb.shell(shell_command)
 
-
     def get_dialing_number(self):
         """ Get dialing phone number"""
         return self.device.mbs.getDialedNumber()
@@ -65,7 +64,6 @@ class CallUtils:
     def get_home_address_from_details(self):
         """Return the home address of the contact whose details are currently being displayed"""
         return self.device.mbs.getHomeAddress()
-
 
     def import_contacts_from_vcf_file(self, device_target):
         """ Importing contacts from VCF file"""
@@ -89,6 +87,7 @@ class CallUtils:
         """Open contacts"""
         logging.info('Opening contacts')
         self.device.mbs.openContacts()
+
     def open_phone_app(self):
         logging.info('Opening phone app')
         self.device.mbs.openPhoneApp()
@@ -122,7 +121,6 @@ class CallUtils:
             timeout=20,
         )
 
-
     def upload_vcf_contacts_to_device(self, device_target, path_to_contacts_file):
         """Upload contacts do device"""
         self.push_vcf_contacts_to_device(device_target, path_to_contacts_file)
@@ -140,10 +138,17 @@ class CallUtils:
             raise CallUtilsError(
                 "Actual and Expected contacts on dial pad don't match."
             )
+
     def wait_with_log(self, wait_time):
         """ Wait for specific time for debugging"""
         logging.info('Sleep for %s seconds', wait_time)
         time.sleep(wait_time)
+
+    def open_bluetooth_media_app(self):
+        """ Open Bluetooth Audio app """
+        logging.info('Open Bluetooth Audio app')
+        self.device.mbs.openMediaApp();
+        self.wait_with_log(constants.WAIT_ONE_SEC)
 
 
     def open_bluetooth_palette(self):
@@ -158,3 +163,11 @@ class CallUtils:
         logging.info('Bluetooth Connected Status')
         is_connected = self.device.mbs.isBluetoothConnected()
         return is_connected
+
+    def is_bluetooth_audio_disconnected_label_visible(self):
+        """ Return is <Bluetooth Audio disconnected> label present """
+        logging.info('Checking is <Bluetooth Audio disconnected> label present')
+        actual_disconnected_label_status = self.device.mbs.isBluetoothAudioDisconnectedLabelVisible()
+        logging.info('<Bluetooth Audio disconnected> label is present: %s',
+                     actual_disconnected_label_status)
+        return actual_disconnected_label_status
