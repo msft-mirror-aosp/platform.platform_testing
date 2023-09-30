@@ -27,12 +27,17 @@ import android.os.Bundle
 import android.platform.uiautomator_helpers.DeviceHelpers.shell
 import android.provider.Settings.System
 import androidx.test.platform.app.InstrumentationRegistry
+import androidx.test.runner.screenshot.Screenshot
+import com.android.internal.app.SimpleIconFactory
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
 import java.io.IOException
-import androidx.test.runner.screenshot.Screenshot
-import com.android.internal.app.SimpleIconFactory
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.Paths
+import kotlin.io.path.outputStream
+import kotlin.io.path.writeText
 import org.junit.rules.TestRule
 import org.junit.runner.Description
 import org.junit.runners.model.Statement
@@ -40,7 +45,6 @@ import platform.test.screenshot.matchers.BitmapMatcher
 import platform.test.screenshot.matchers.MSSIMMatcher
 import platform.test.screenshot.matchers.PixelPerfectMatcher
 import platform.test.screenshot.proto.ScreenshotResultProto
-import java.io.PrintStream
 
 /**
  * Rule to be added to a test to facilitate screenshot testing.
@@ -86,29 +90,16 @@ open class ScreenshotTestRule(
     private fun isGradle(): Boolean =
             java.lang.System.getProperty("java.class.path").contains("gradle-worker.jar")
 
-    private fun writeLocalTempFile(
-        fileType: OutputFileType,
-        goldenIdentifier: String,
-        bitmap: Bitmap?
-    ): String? {
-        return if (bitmap != null && isGradle() && isRobolectric) {
-            val simpleFileName = when (fileType) {
-                OutputFileType.IMAGE_ACTUAL -> "local_actual_${goldenIdentifier}.png"
-                OutputFileType.IMAGE_DIFF -> "local_diff_${goldenIdentifier}.png"
-                OutputFileType.IMAGE_EXPECTED -> "local_golden_${goldenIdentifier}.png"
-                OutputFileType.RESULT_BIN_PROTO -> "local_bin_${goldenIdentifier}.pb"
-                OutputFileType.RESULT_PROTO -> "local_proto_${goldenIdentifier}.text"
-            }
-            val file = File("/tmp", simpleFileName)
-            val absoluteFilePath = file.absolutePath
-            val fOut = FileOutputStream(file)
+    fun Bitmap.writeTo(path: Path) {
+        // Make sure we either create a new file or overwrite an existing one.
+        check(!Files.exists(path) || Files.isRegularFile(path))
 
-            bitmap.compress(Bitmap.CompressFormat.PNG, 0, fOut)
-            fOut.flush()
-            fOut.close()
-            absoluteFilePath
-        } else {
-            null
+        // Make sure the parent directory exists.
+        Files.createDirectories(path.parent)
+
+        // Write the Bitmap to the given file.
+        path.outputStream().use { stream ->
+            this@writeTo.compress(Bitmap.CompressFormat.PNG, 0, stream)
         }
     }
 
@@ -318,49 +309,55 @@ open class ScreenshotTestRule(
         InstrumentationRegistry.getInstrumentation().sendStatus(bundleStatusInProgress, report)
 
         if (isGradle() && isRobolectric) {
-            val actualFilePath = writeLocalTempFile(
-                    fileType = OutputFileType.IMAGE_ACTUAL,
-                    goldenIdentifier = goldenIdentifier,
-                    bitmap = actual
-            )
-            val expectedFilePath = writeLocalTempFile(
-                    fileType = OutputFileType.IMAGE_EXPECTED,
-                    goldenIdentifier = goldenIdentifier,
-                    bitmap = expected
-            )
-            val diffFilePath = writeLocalTempFile(
-                    fileType = OutputFileType.IMAGE_DIFF,
-                    goldenIdentifier = goldenIdentifier,
-                    bitmap = diff
-            )
+            val localDir = Paths.get("/tmp/screenshots")
+            val actualDir = localDir.resolve("actual")
+            val expectedDir = localDir.resolve("expected")
+            val diffDir = localDir.resolve("diff")
+            val reportDir = localDir.resolve("report")
 
+            val imagePath = goldenImagePathManager.goldenIdentifierResolver(goldenIdentifier)
+            val actualImagePath = actualDir.resolve(imagePath)
+            val expectedImagePath = expectedDir.resolve(imagePath)
+            val diffImagePath = diffDir.resolve(imagePath)
 
-            val file = File("/tmp", "${goldenIdentifier}.html")
-            println("file://${file.absolutePath}")
-            val fOut = FileOutputStream(file)
-            val printStream = PrintStream(fOut)
-            printStream.println("<!DOCTYPE html>")
-            printStream.println("<meta charset=\"utf-8\">")
-            printStream.println("<title>${goldenIdentifier}</title>")
-            printStream.println("<p><h1>${testIdentifier}</h1></p>")
-            if (expectedFilePath != null) {
-                printStream.println(
-                    "<p><h2><a href=\"file://${expectedFilePath}\">Expected</a></h2>" +
-                        "<img src=\"local_golden_${goldenIdentifier}.png\" alt=\"Golden\"></p>")
-            }
-            if (actualFilePath != null) {
-                printStream.println(
-                    "<p><h2><a href=\"file://${actualFilePath}\">Actual</a></h2>" +
-                        "<img src=\"local_actual_${goldenIdentifier}.png\" alt=\"Actual\"></p>")
+            actual.writeTo(actualImagePath)
+            expected?.writeTo(expectedImagePath)
+            diff?.writeTo(diffImagePath)
+
+            check(imagePath.endsWith(imageExtension))
+
+            val reportPath =
+                reportDir.resolve(
+                    imagePath.substring(0, imagePath.length - imageExtension.length) + ".html"
+                )
+
+            println("file://$reportPath")
+            Files.createDirectories(reportPath.parent)
+
+            fun html(bitmap: Bitmap?, image: Path, name: String, alt: String): String {
+                return if (bitmap == null) {
+                    ""
+                } else {
+                    """
+                        <p>
+                            <h2><a href="file://$image">$name</a></h2>
+                            <img src="$image" alt="$alt"/>
+                        </p>
+                    """.trimIndent()
+                }
             }
 
-            if (diffFilePath != null) {
-                printStream.println(
-                    "<p><h2><a href=\"file://${diffFilePath}\">Diff</a></h2>" +
-                        "<img src=\"local_diff_${goldenIdentifier}.png\" alt=\"Diff\"></p>")
-            }
-            printStream.flush()
-            printStream.close()
+            reportPath.writeText(
+                """
+                    <!DOCTYPE html>
+                    <meta charset="utf-8">
+                    <title>$imagePath</title>
+                    <p><h1>$testIdentifier</h1></p>
+                    ${html(expected, expectedImagePath, "Expected", "Golden")}
+                    ${html(actual, actualImagePath, "Actual", "Actual")}
+                    ${html(diff, diffImagePath, "Diff", "Diff")}
+                """.trimIndent()
+            )
         }
     }
 

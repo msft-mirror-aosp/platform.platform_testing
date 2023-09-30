@@ -317,6 +317,7 @@ public class AutomotiveConfigConstants {
     public static final String MEDIA_APP_SCROLL_BACKWARD_BUTTON =
             "MEDIA_APP_SCROLL_BACKWARD_BUTTON";
     public static final String MEDIA_APP_SCROLL_ELEMENT = "MEDIA_APP_SCROLL_ELEMENT";
+    public static final String BLUETOOTH_DISCONNECTED_LABEL = "BLUETOOTH_DISCONNECTED_LABEL";
 
     // SETTINGS CONSTANTS
     public static final String OPEN_SETTINGS_COMMAND = "OPEN_SETTINGS_COMMAND";

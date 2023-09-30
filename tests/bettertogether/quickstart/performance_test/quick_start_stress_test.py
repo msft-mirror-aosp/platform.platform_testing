@@ -172,6 +172,9 @@ class QuickStartStressTest(nc_base_test.NCBaseTestClass):
           advertiser, wifi_ssid, wifi_password)
       advertiser.log.info('connecting to wifi in '
                           f'{round(advertiser_wlan_latency.total_seconds())} s')
+      advertiser.log.info(
+          advertiser.nearby.wifiGetConnectionInfo().get('mFrequency')
+      )
       self._test_result.advertiser_wifi_wlan_expected = True
       self._test_result.advertiser_wifi_wlan_latency = advertiser_wlan_latency
 
