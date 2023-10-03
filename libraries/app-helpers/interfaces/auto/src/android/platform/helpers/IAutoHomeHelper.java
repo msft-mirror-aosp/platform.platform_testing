@@ -98,4 +98,24 @@ public interface IAutoHomeHelper extends IAppHelper {
      * <p>Getting Profiles in a list and comparing based on position
      */
     List<String> getUserProfileNames();
+
+    /**
+     * Setup expectations: To run system Ui adb command.
+     *
+     * <p>Opens Profile Icon button on status bar.
+     */
+    void openSystemUi();
+
+    /**
+     * Setup expectations: To run car Ui adb command.
+     *
+     * <p>Opens Profile Icon button on status bar.
+     */
+    void openCarUi();
+    /**
+     * Setup expectations: SMaps widget should be present on Home screen
+     *
+     * <p>Checks if exists a maps Widget on home screen
+     */
+    boolean hasMapsWidget();
 }
