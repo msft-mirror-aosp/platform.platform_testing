@@ -19,6 +19,8 @@ package android.platform.test.flag.junit;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
+import android.platform.test.flag.util.FlagReadException;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -38,12 +40,6 @@ public final class DeviceFlagsValueProviderTest {
     @After
     public void tearDown() {
         mFlagsValueProvider.tearDownBeforeTest();
-    }
-
-    @Test
-    public void getBoolean_invalidFormat_throwException() {
-        assertThrows(
-                FlagReadException.class, () -> mFlagsValueProvider.getBoolean("invalid_flag_name"));
     }
 
     @Test
@@ -72,6 +68,15 @@ public final class DeviceFlagsValueProviderTest {
                 () ->
                         mFlagsValueProvider.getBoolean(
                                 "android.platform.test.flag.junit.flag_name_2"));
+    }
+
+    @Test
+    public void getBoolean_aconfigFlagWithNameSpace_throwException() throws Exception {
+        assertThrows(
+                FlagReadException.class,
+                () ->
+                        mFlagsValueProvider.getBoolean(
+                                "namespace/android.platform.test.flag.junit.flag_name_1"));
     }
 
     @Test

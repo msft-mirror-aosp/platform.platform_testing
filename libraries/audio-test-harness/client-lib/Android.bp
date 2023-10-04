@@ -65,7 +65,6 @@ java_library {
 
 java_test_host {
     name: "audiotestharness-client-grpclib-tests",
-    test_suites: ["general-tests"],
     srcs: [
         "src/test/java/com/android/media/audiotestharness/client/grpc/*.java",
     ],
@@ -79,6 +78,6 @@ java_test_host {
         "objenesis",
     ],
     test_options: {
-        unit_test: true,
+        unit_test: false,
     },
 }

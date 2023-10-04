@@ -27,4 +27,31 @@ public class Flags {
     public static int flagName2() {
         return 1;
     }
+
+    /** Returns the flag value. */
+    public static boolean flagName3() {
+        return FEATURE_FLAGS.flagName3();
+    }
+
+    /** Another flag. */
+    public static boolean flagName4() {
+        return FEATURE_FLAGS.flagName4();
+    }
+
+    public static void setFeatureFlags(FeatureFlags featureFlagsImpl) {
+        FEATURE_FLAGS = featureFlagsImpl;
+    }
+
+    private static FeatureFlags FEATURE_FLAGS =
+            new FeatureFlags() {
+                @Override
+                public boolean flagName3() {
+                    return false;
+                }
+
+                @Override
+                public boolean flagName4() {
+                    return true;
+                }
+            };
 }

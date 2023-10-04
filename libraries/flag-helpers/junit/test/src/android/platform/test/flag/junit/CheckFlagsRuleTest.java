@@ -21,6 +21,7 @@ import static org.junit.Assert.fail;
 
 import android.platform.test.annotations.RequiresFlagsDisabled;
 import android.platform.test.annotations.RequiresFlagsEnabled;
+import android.platform.test.flag.util.FlagReadException;
 
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
