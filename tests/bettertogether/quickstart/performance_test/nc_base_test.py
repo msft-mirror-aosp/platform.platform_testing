@@ -99,9 +99,17 @@ class NCBaseTestClass(base_test.BaseTestClass):
 
     setup_utils.enable_logs(ad)
 
+    setup_utils.disable_redaction(ad)
+
     self._disconnect_from_wifi(ad)
 
     setup_utils.enable_bluetooth_multiplex(ad)
+
+    if (
+        self.test_parameters.upgrade_medium
+        == nc_constants.NearbyMedium.WIFIAWARE_ONLY.value
+    ):
+      setup_utils.enable_wifi_aware(ad)
 
     if self.test_parameters.wifi_country_code:
       setup_utils.set_wifi_country_code(

@@ -24,9 +24,7 @@ TestBeds:
       test_report_alias_name: "US-2G"
       wifi_ssid: "AP-2437"
       wifi_password: "AP-2437"
-      # 20KBps
       bt_transfer_throughput_median_benchmark_kbps: 20
-      # 10MBps - 10240KBps
       wifi_transfer_throughput_median_benchmark_kbps: 10240
 
 - Name: LocalUS5GTestbed

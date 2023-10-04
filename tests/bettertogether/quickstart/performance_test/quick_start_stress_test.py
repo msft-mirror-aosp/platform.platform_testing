@@ -125,14 +125,19 @@ class QuickStartStressTest(nc_base_test.NCBaseTestClass):
     # 1. discoverer connect to wifi wlan
     self._test_result = nc_constants.SingleTestResult()
     if wifi_ssid:
-      discoverer_wifi_latency = (
-          setup_utils.connect_to_wifi_wlan_till_success(
-              discoverer, wifi_ssid, wifi_password))
+      discoverer_wifi_latency = setup_utils.connect_to_wifi_wlan_till_success(
+          discoverer, wifi_ssid, wifi_password
+      )
       discoverer.log.info(
           'connecting to wifi in '
-          f'{round(discoverer_wifi_latency.total_seconds())} s')
+          f'{round(discoverer_wifi_latency.total_seconds())} s'
+      )
       self._test_result.discoverer_wifi_wlan_expected = True
       self._test_result.discoverer_wifi_wlan_latency = discoverer_wifi_latency
+
+    advertising_discovery_medium = nc_constants.NearbyMedium(
+        self.test_parameters.advertising_discovery_medium
+    )
 
     # 2. set up 1st connection
     nearby_snippet_1 = nearby_connection_wrapper.NearbyConnectionWrapper(
@@ -140,7 +145,7 @@ class QuickStartStressTest(nc_base_test.NCBaseTestClass):
         discoverer,
         advertiser.nearby,
         discoverer.nearby,
-        advertising_discovery_medium=nc_constants.NearbyMedium.BLE_ONLY,
+        advertising_discovery_medium=advertising_discovery_medium,
         connection_medium=nc_constants.NearbyMedium.BT_ONLY,
         upgrade_medium=nc_constants.NearbyMedium.BT_ONLY,
     )
@@ -184,9 +189,11 @@ class QuickStartStressTest(nc_base_test.NCBaseTestClass):
         discoverer,
         advertiser.nearby2,
         discoverer.nearby2,
-        advertising_discovery_medium=nc_constants.NearbyMedium.BLE_ONLY,
+        advertising_discovery_medium=advertising_discovery_medium,
         connection_medium=nc_constants.NearbyMedium.BT_ONLY,
-        upgrade_medium=nc_constants.NearbyMedium.UPGRADE_TO_ALL_WIFI,
+        upgrade_medium=nc_constants.NearbyMedium(
+            self.test_parameters.upgrade_medium
+        ),
     )
     second_connection_setup_timeouts = nc_constants.ConnectionSetupTimeouts(
         nc_constants.SECOND_DISCOVERY_TIMEOUT,

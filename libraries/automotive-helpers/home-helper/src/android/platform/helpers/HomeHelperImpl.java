@@ -226,6 +226,27 @@ public class HomeHelperImpl extends AbstractStandardAppHelper implements IAutoHo
         }
         return true;
     }
+    /** {@inheritDoc} */
+    @Override
+    public void openSystemUi() {
+        getSpectatioUiUtil()
+                .executeShellCommand(
+                        getCommandFromConfig(AutomotiveConfigConstants.OPEN_SYSTEM_UI));
+        getSpectatioUiUtil().wait15Seconds();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void openCarUi() {
+        getSpectatioUiUtil()
+                .executeShellCommand(getCommandFromConfig(AutomotiveConfigConstants.OPEN_CAR_UI));
+        getSpectatioUiUtil().wait15Seconds();
+    }
+    /** {@inheritDoc} */
+    @Override
+    public boolean hasMapsWidget() {
+        BySelector mapsWidgetSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.HOME_MAPS_WIDGET);
+        return (getSpectatioUiUtil().hasUiElement(mapsWidgetSelector));
+    }
 }
-
-

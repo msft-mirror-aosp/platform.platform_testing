@@ -176,39 +176,88 @@ def disable_airplane_mode(ad: android_device.AndroidDevice) -> None:
   time.sleep(TOGGLE_AIRPLANE_MODE_WAIT_TIME_SEC)
 
 
-def enable_bluetooth_multiplex(ad: android_device.AndroidDevice) -> None:
-  """Enable bluetooth multiplex on the given device."""
-  pname = 'com.google.android.gms.nearby'
-  flag_name = 'mediums_supports_bluetooth_multiplex_socket'
-  flag_type = 'boolean'
-  flag_value = 'true'
-  def _is_bt_multiplex_flag_enabled() -> bool:
-    sql_str = (
-        'sqlite3 /data/data/com.google.android.gms/databases/phenotype.db'
-        ' "select name, quote(coalesce(intVal, boolVal, floatVal, stringVal,'
-        ' extensionVal)) from FlagOverrides where committed=1 AND'
-        f' packageName=\'{pname}\';"'
-    )
-    flag_result = ad.adb.shell(sql_str).decode('utf-8').strip()
-    return '1' in flag_result and flag_name in flag_result
+def check_if_ph_flag_committed(
+    ad: android_device.AndroidDevice,
+    pname: str,
+    flag_name: str,
+) -> bool:
+  """Check if P/H flag is committed."""
+  sql_str = (
+      'sqlite3 /data/data/com.google.android.gms/databases/phenotype.db'
+      ' "select name, quote(coalesce(intVal, boolVal, floatVal, stringVal,'
+      ' extensionVal)) from FlagOverrides where committed=1 AND'
+      f' packageName=\'{pname}\';"'
+  )
+  flag_result = ad.adb.shell(sql_str).decode('utf-8').strip()
+  return flag_name in flag_result
 
-  if _is_bt_multiplex_flag_enabled():
-    ad.log.info('bt multiplex flag is already enabled.')
-    return
-  ad.log.info('Enable bluetooth multiplex flag.')
+
+def write_ph_flag(
+    ad: android_device.AndroidDevice,
+    pname: str,
+    flag_name: str,
+    flag_type: str,
+    flag_value: str,
+) -> None:
+  """Write P/H flag."""
   ad.adb.shell(
       'am broadcast -a "com.google.android.gms.phenotype.FLAG_OVERRIDE" '
       f'--es package "{pname}" --es user "*" '
       f'--esa flags "{flag_name}" '
       f'--esa types "{flag_type}" --esa values "{flag_value}" '
       'com.google.android.gms'
-      )
+  )
   time.sleep(PH_FLAG_WRITE_WAIT_TIME_SEC)
 
-  if _is_bt_multiplex_flag_enabled():
-    ad.log.info('bt multiplex flag is enabled successfully.')
+
+def check_and_try_to_write_ph_flag(
+    ad: android_device.AndroidDevice,
+    pname: str,
+    flag_name: str,
+    flag_type: str,
+    flag_value: str,
+) -> None:
+  """Check and try to enable the given flag on the given device."""
+
+  if check_if_ph_flag_committed(ad, pname, flag_name):
+    ad.log.info(f'{flag_name} is already committed.')
+    return
+  ad.log.info(f'write {flag_name}.')
+  write_ph_flag(ad, pname, flag_name, flag_type, flag_value)
+
+  if check_if_ph_flag_committed(ad, pname, flag_name):
+    ad.log.info(f'{flag_name} is configured successfully.')
   else:
-    ad.log.info('failed to enable the bt multiplex flag.')
+    ad.log.info(f'failed to configure {flag_name}.')
+
+
+def enable_bluetooth_multiplex(ad: android_device.AndroidDevice) -> None:
+  """Enable bluetooth multiplex on the given device."""
+  pname = 'com.google.android.gms.nearby'
+  flag_name = 'mediums_supports_bluetooth_multiplex_socket'
+  flag_type = 'boolean'
+  flag_value = 'true'
+  check_and_try_to_write_ph_flag(ad, pname, flag_name, flag_type, flag_value)
+
+
+def enable_wifi_aware(ad: android_device.AndroidDevice) -> None:
+  """Enable wifi aware on the given device."""
+  pname = 'com.google.android.gms.nearby'
+  flag_name = 'mediums_supports_wifi_aware'
+  flag_type = 'boolean'
+  flag_value = 'true'
+
+  check_and_try_to_write_ph_flag(ad, pname, flag_name, flag_type, flag_value)
+
+
+def disable_redaction(ad: android_device.AndroidDevice) -> None:
+  """Disable info log redaction on the given device."""
+  pname = 'com.google.android.gms'
+  flag_name = 'ClientLogging__enable_info_log_redaction'
+  flag_type = 'boolean'
+  flag_value = 'false'
+
+  check_and_try_to_write_ph_flag(ad, pname, flag_name, flag_type, flag_value)
 
 
 def install_apk(ad: android_device.AndroidDevice, apk_path: str) -> None:

@@ -84,7 +84,9 @@ class NearbyConnectionWrapper:
         self.advertising_discovery_medium.value,
         self.upgrade_medium.value,
     )
-    self.advertiser.log.info('Start advertising')
+    self.advertiser.log.info(
+        f'Start advertising {self.advertising_discovery_medium.value}'
+    )
     self._advertiser_connection_lifecycle_callback = advertiser_callback
     self._advertiser_endpoint_id = self.advertiser_nearby.getLocalEndpointId()
 
@@ -92,7 +94,9 @@ class NearbyConnectionWrapper:
       self, timeout: datetime.timedelta
   ) -> None:
     """Starts Nearby Connection discovery."""
-    self.discoverer.log.info('Start discovery')
+    self.discoverer.log.info(
+        f'Start discovery {self.advertising_discovery_medium.value}'
+    )
     self._discoverer_endpoint_discovery_callback = (
         self.discoverer_nearby.startDiscovery(
             self.service_id, self.advertising_discovery_medium.value
@@ -321,7 +325,9 @@ class NearbyConnectionWrapper:
       payload_type: nc_constants.PayloadType) -> float:
     """Sends payloads and returns the transfer speed in kBS."""
     try:
-      transfer_speed_kbs = self._transfer_file(file_size_kb, timeout, payload_type)
+      transfer_speed_kbs = self._transfer_file(
+          file_size_kb, timeout, payload_type
+      )
     finally:
       # clean up
       utils.concurrent_exec(
@@ -337,7 +343,9 @@ class NearbyConnectionWrapper:
     """Sends payloads and returns the transfer speed in kBS."""
     # Creates a file and send it to the advertiser.
     file_name = utils.rand_ascii_str(8)
-    self.discoverer.log.info(f'Start sending payloads with type: {payload_type.name}')
+    self.discoverer.log.info(
+        f'Start sending payloads with type: {payload_type.name}'
+    )
     payload_id = self.discoverer_nearby.sendPayloadWithType(
         self._advertiser_endpoint_id, file_name, file_size_kb, payload_type
     )

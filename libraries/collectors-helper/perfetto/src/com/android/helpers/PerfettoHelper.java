@@ -26,6 +26,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * PerfettoHelper is used to start and stop the perfetto tracing and move the
@@ -60,6 +62,8 @@ public class PerfettoHelper {
     private static final int PERFETTO_KILL_WAIT_COUNT = 12;
     // Check if perfetto is stopped every 5 secs.
     private static final long PERFETTO_KILL_WAIT_TIME = 5000;
+
+    private static Set<Integer> sPerfettoProcessIds = new HashSet<>();
 
     private UiDevice mUIDevice;
 
@@ -124,6 +128,11 @@ public class PerfettoHelper {
             Log.i(LOG_TAG, String.format("Perfetto start command output - %s", startOutput));
             if (startOutput != null && !startOutput.isEmpty()) {
                 mPerfettoProcId = Integer.parseInt(startOutput.trim());
+                sPerfettoProcessIds.add(mPerfettoProcId);
+                Log.i(
+                        LOG_TAG,
+                        String.format(
+                                "Perfetto process id %d added for tracking", mPerfettoProcId));
             }
 
             // If the perfetto background wait option is not used then add a explicit wait after
@@ -132,7 +141,7 @@ public class PerfettoHelper {
                 SystemClock.sleep(1000);
             }
 
-            if(!isTestPerfettoRunning()) {
+            if (!isTestPerfettoRunning(getPerfettoPid())) {
                 return false;
             }
         } catch (IOException ioe) {
@@ -160,7 +169,7 @@ public class PerfettoHelper {
         // Stop the perfetto and copy the output file.
         Log.i(LOG_TAG, "Stopping perfetto.");
         try {
-            if (stopPerfetto()) {
+            if (stopPerfetto(getPerfettoPid())) {
                 if (!copyFileOutput(destinationFile)) {
                     return false;
                 }
@@ -178,15 +187,16 @@ public class PerfettoHelper {
     /**
      * Utility method for stopping perfetto.
      *
+     * @param perfettoProcId perfetto process id.
      * @return true if perfetto is stopped successfully.
      */
-    public boolean stopPerfetto() throws IOException {
-        Log.i(LOG_TAG, String.format("Killing the process id - %d", mPerfettoProcId));
-        String stopOutput = mUIDevice.executeShellCommand(String.format(
-                PERFETTO_STOP_CMD, mPerfettoProcId));
+    public boolean stopPerfetto(int perfettoProcId) throws IOException {
+        Log.i(LOG_TAG, String.format("Killing the process id - %d", perfettoProcId));
+        String stopOutput =
+                mUIDevice.executeShellCommand(String.format(PERFETTO_STOP_CMD, perfettoProcId));
         Log.i(LOG_TAG, String.format("Perfetto stop command output - %s", stopOutput));
         int waitCount = 0;
-        while (isTestPerfettoRunning()) {
+        while (isTestPerfettoRunning(perfettoProcId)) {
             // 60 secs timeout for perfetto shutdown.
             if (waitCount < PERFETTO_KILL_WAIT_COUNT) {
                 // Check every 5 secs if perfetto stopped successfully.
@@ -194,21 +204,53 @@ public class PerfettoHelper {
                 waitCount++;
                 continue;
             }
+            Log.i(LOG_TAG, "Perfetto did not stop.");
             return false;
         }
-        Log.e(LOG_TAG, "Perfetto stopped successfully.");
+        Log.i(LOG_TAG, "Perfetto stopped successfully.");
+        boolean isRemoved = sPerfettoProcessIds.remove(perfettoProcId);
+        Log.i(LOG_TAG, String.format("Process id removed status %s", Boolean.toString(isRemoved)));
+        Log.i(
+                LOG_TAG,
+                String.format("Perfetto process id %d removed for tracking", perfettoProcId));
         return true;
+    }
+
+    /**
+     * Stop all the perfetto process from the given set.
+     *
+     * @param processIds set of perfetto process ids.
+     * @return true if all the perfetto process is stopped otherwise false.
+     */
+    public boolean stopPerfettoProcesses(Set<Integer> processIds) throws IOException {
+        boolean stopSuccess = true;
+        for (int processId : processIds) {
+            if (!stopPerfetto(processId)) {
+                Log.i(
+                        LOG_TAG,
+                        String.format("Failed to stop the perfetto process id - %d", processId));
+                stopSuccess = false;
+            } else {
+                Log.i(
+                        LOG_TAG,
+                        String.format(
+                                "Successfully stopped the perfetto process id - %d", processId));
+            }
+        }
+        return stopSuccess;
     }
 
     /**
      * Check if perfetto process is running or not.
      *
+     * @param perfettoProcId perfetto process id.
      * @return true if perfetto is running otherwise false.
      */
-    private boolean isTestPerfettoRunning() {
+    private boolean isTestPerfettoRunning(int perfettoProcId) {
         try {
-            String perfettoProcStatus = mUIDevice.executeShellCommand(
-                    String.format(PERFETTO_PROC_ID_EXIST_CHECK, mPerfettoProcId));
+            String perfettoProcStatus =
+                    mUIDevice.executeShellCommand(
+                            String.format(PERFETTO_PROC_ID_EXIST_CHECK, perfettoProcId));
             Log.i(LOG_TAG, String.format("Perfetto process id status check - %s",
                     perfettoProcStatus));
             // If proc details not empty then process is still running.
@@ -273,5 +315,9 @@ public class PerfettoHelper {
 
     public int getPerfettoPid() {
         return mPerfettoProcId;
+    }
+
+    public Set<Integer> getPerfettoPids() {
+        return sPerfettoProcessIds;
     }
 }

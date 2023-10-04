@@ -29,7 +29,7 @@ SECOND_DISCOVERY_TIMEOUT = datetime.timedelta(seconds=35)
 SECOND_CONNECTION_INIT_TIMEOUT = datetime.timedelta(seconds=10)
 SECOND_CONNECTION_RESULT_TIMEOUT = datetime.timedelta(seconds=25)
 CONNECTION_BANDWIDTH_CHANGED_TIMEOUT = datetime.timedelta(seconds=25)
-FILE_1G_PAYLOAD_TRANSFER_TIMEOUT = datetime.timedelta(seconds=500)
+FILE_1G_PAYLOAD_TRANSFER_TIMEOUT = datetime.timedelta(seconds=210)
 WIFI_WLAN_CONNECTING_TIME_OUT = datetime.timedelta(seconds=25)
 DISCONNECTION_TIMEOUT = datetime.timedelta(seconds=15)
 
@@ -48,9 +48,27 @@ class PayloadType(enum.IntEnum):
   STREAM = 3
 
 
+@enum.unique
+class NearbyMedium(enum.IntEnum):
+  """Medium options for discovery, advertising, connection and upgrade."""
+
+  AUTO = 0
+  BT_ONLY = 1
+  BLE_ONLY = 2
+  WIFILAN_ONLY = 3
+  WIFIAWARE_ONLY = 4
+  UPGRADE_TO_WEBRTC = 5
+  UPGRADE_TO_WIFIHOTSPOT = 6
+  UPGRADE_TO_WIFIDIRECT = 7
+  BLE_L2CAP_ONLY = 8
+  # including WIFI_WLAN, WIFI_HOTSPOT, WIFI_DIRECT
+  UPGRADE_TO_ALL_WIFI = 9
+
+
 @dataclasses.dataclass(frozen=False)
 class TestParameters:
   """Test parameters to be customized for Nearby Connection."""
+
   test_report_alias_name: str = 'unspecified'
   fast_fail_on_any_error: bool = False
   wifi_country_code: str = ''
@@ -65,21 +83,8 @@ class TestParameters:
       WIFI_TRANSFER_THROUGHPUT_MEDIAN_BENCHMARK_KBPS
   )
   payload_type: PayloadType = PayloadType.FILE
-
-
-@enum.unique
-class NearbyMedium(enum.IntEnum):
-  AUTO = 0
-  BT_ONLY = 1
-  BLE_ONLY = 2
-  WIFILAN_ONLY = 3
-  WIFIAWARE_ONLY = 4
-  UPGRADE_TO_WEBRTC = 5
-  UPGRADE_TO_WIFIHOTSPOT = 6
-  UPGRADE_TO_WIFIDIRECT = 7
-  BLE_L2CAP_ONLY = 8
-  # including WIFI_WLAN, WIFI_HOTSPOT, WIFI_DIRECT
-  UPGRADE_TO_ALL_WIFI = 9
+  advertising_discovery_medium: int = NearbyMedium.AUTO
+  upgrade_medium: int = NearbyMedium.UPGRADE_TO_ALL_WIFI
 
 
 @enum.unique

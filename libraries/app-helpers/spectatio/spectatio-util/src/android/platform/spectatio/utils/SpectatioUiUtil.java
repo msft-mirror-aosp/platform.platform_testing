@@ -47,6 +47,7 @@ public class SpectatioUiUtil {
 
     private static final int SHORT_UI_RESPONSE_WAIT_MS = 1000;
     private static final int LONG_UI_RESPONSE_WAIT_MS = 5000;
+    private static final int EXTRA_LONG_UI_RESPONSE_WAIT_MS = 15000;
     private static final int LONG_PRESS_DURATION_MS = 5000;
     private static final int MAX_SCROLL_COUNT = 100;
     private static final int MAX_SWIPE_STEPS = 10;
@@ -215,6 +216,11 @@ public class SpectatioUiUtil {
 
     public void wait5Seconds() {
         waitNSeconds(LONG_UI_RESPONSE_WAIT_MS);
+    }
+
+    /** Waits for 15 seconds */
+    public void wait15Seconds() {
+        waitNSeconds(EXTRA_LONG_UI_RESPONSE_WAIT_MS);
     }
 
     public void waitNSeconds(int waitTime) {

@@ -104,6 +104,9 @@ public class AutomotiveConfigConstants {
     public static final String HOME_ASSISTANT_CARD = "HOME_ASSISTANT_CARD";
     public static final String HOME_PHONE_CARD = "HOME_PHONE_CARD";
     public static final String HOME_TEMPERATURE_BUTTON = "HOME_TEMPERATURE_BUTTON";
+    public static final String OPEN_SYSTEM_UI = "OPEN_SYSTEM_UI";
+    public static final String OPEN_CAR_UI = "OPEN_CAR_UI";
+    public static final String HOME_MAPS_WIDGET = "HOME_MAPS_WIDGET";
 
     // App Grid Constants
     public static final String OPEN_APP_GRID_COMMAND = "OPEN_APP_GRID_COMMAND";
