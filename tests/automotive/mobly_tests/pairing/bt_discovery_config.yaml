@@ -3,6 +3,6 @@ TestBeds:
     Controllers:
       AndroidDevice:
       - serial: serial_number
-        label: hu
+        label: auto
       - serial: serial_number
         label: phone

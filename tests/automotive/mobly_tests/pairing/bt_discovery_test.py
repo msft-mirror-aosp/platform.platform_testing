@@ -22,7 +22,7 @@ class MultiDeviceTest(base_test.BaseTestClass):
         self.ads = self.register_controller(android_device, min_number=2)
         # The device used to discover Bluetooth devices.
         self.discoverer = android_device.get_device(
-            self.ads, label='hu')
+            self.ads, label='auto')
         # Sets the tag that represents this device in logs.
         self.discoverer.debug_tag = 'discoverer'
         # The device that is expected to be discovered
