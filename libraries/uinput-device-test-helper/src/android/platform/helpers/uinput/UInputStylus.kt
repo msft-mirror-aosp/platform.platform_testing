@@ -56,7 +56,8 @@ class UInputStylus(
         {"code":0x00, "info": {       // ABS_X
           "value": 0,
           "minimum": 0,
-          "maximum": 3199, // Display width * 2 - 1. Hardcoded with values from recording device.
+          // Scaling factor included to mimic actual registration behaviour.
+          "maximum": ${(displayWidth * SCALING_FACTOR) - 1},
           "fuzz": 0,
           "flat": 0,
           "resolution": 0
@@ -64,7 +65,8 @@ class UInputStylus(
         {"code":0x01, "info": {       // ABS_Y
           "value": 0,
           "minimum": 0,
-          "maximum": 5119, // Display height * 2 - 1. Hardcoded with values from recording device.
+          // Scaling factor included to mimic actual registration behaviour.
+          "maximum": ${(displayHeight * SCALING_FACTOR) - 1},
           "fuzz": 0,
           "flat": 0,
           "resolution": 0

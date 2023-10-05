@@ -52,5 +52,9 @@ class BluetoothPalette(bluetooth_base_test.BluetoothBaseTest):
 
 
 if __name__ == '__main__':
-    # Take test args
+    # Pass test arguments after '--' to the test runner.
+    # Needed for Mobly Test Runner
+    if '--' in sys.argv:
+        index = sys.argv.index('--')
+        sys.argv = sys.argv[:1] + sys.argv[index + 1:]
     test_runner.main()

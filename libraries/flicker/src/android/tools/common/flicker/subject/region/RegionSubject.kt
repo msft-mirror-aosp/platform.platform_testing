@@ -378,7 +378,7 @@ class RegionSubject(
     override fun notOverlaps(other: Rect): RegionSubject = apply { notOverlaps(Region.from(other)) }
 
     /** {@inheritDoc} */
-    override fun isSameAspectRatio(other: Region, threshold: Double): IRegionSubject = apply {
+    override fun isSameAspectRatio(other: Region, threshold: Double): RegionSubject = apply {
         val aspectRatio = this.region.width.toFloat() / this.region.height
         val otherAspectRatio = other.width.toFloat() / other.height
         if (abs(aspectRatio - otherAspectRatio) > threshold) {
@@ -415,8 +415,18 @@ class RegionSubject(
         assertEquals("right", Region(arrayOf(displayRect))) { it.right }
     }
 
-    fun isSameAspectRatio(other: RegionSubject, threshold: Double = 0.1): IRegionSubject =
+    fun isSameAspectRatio(other: RegionSubject, threshold: Double = 0.1): RegionSubject =
         isSameAspectRatio(other.region, threshold)
+
+    fun isSameAspectRatio(
+        numerator: Int,
+        denominator: Int,
+        threshold: Double = 0.1
+    ): RegionSubject {
+        val region = Region()
+        region.set(Rect(0, 0, numerator, denominator))
+        return isSameAspectRatio(region, threshold)
+    }
 
     private fun <T : Comparable<T>> assertCompare(
         name: String,
