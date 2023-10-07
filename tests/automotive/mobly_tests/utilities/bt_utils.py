@@ -30,6 +30,11 @@ class BTUtils:
         self.discoverer = discoverer
         self.target = target
 
+    def get_info_from_devices(self, discovered_devices):
+        discovered_names = [device['Name'] for device in discovered_devices]
+        discovered_addresses = [device['Address'] for device in discovered_devices]
+        return discovered_names, discovered_addresses
+
     def discover_secondary_from_primary(self):
         target_name = self.target.mbs.btGetName()
         self.target.log.info('Become discoverable with name "%s" for %ds.',
@@ -39,7 +44,7 @@ class BTUtils:
         discovered_devices = self.discoverer.mbs.btDiscoverAndGetResults()
         self.discoverer.log.debug('Found Bluetooth devices: %s',
                                   pprint.pformat(discovered_devices, indent=2))
-        discovered_names = [device['Name'] for device in discovered_devices]
+        discovered_names, _ = self.get_info_from_devices(discovered_devices)
         logging.info('Verifying the target is discovered by the discoverer.')
         asserts.assert_true(
             target_name in discovered_names,
@@ -53,31 +58,21 @@ class BTUtils:
         self.discoverer.mbs.btEnable()
         self.target.mbs.btEnable()
         logging.info('Setting devices to be discoverable')
-        self.discoverer.mbs.btSetName('discover')
-        self.target.mbs.btSetName('target')
         self.target.mbs.btBecomeDiscoverable(DISCOVERABLE_TIME)
         self.target.mbs.btStartAutoAcceptIncomingPairRequest()
-        target_name = self.target.mbs.btGetName()
-        discovered_names = []
-        discovered_addrs = []
-
+        target_address = self.target.mbs.btGetAddress()
         logging.info('Scanning for discoverable devices')
         # Discovery of target device is tried 5 times.
-        for attempt in range(5):
-            logging.info('Attempt %d', attempt)
-            discovered_devices = self.discoverer.mbs.btDiscoverAndGetResults()
-            discovered_names = [device['Name'] for device in discovered_devices]
-            discovered_addrs = [device['Address'] for device in discovered_devices]
-
-            for i, name in enumerate(discovered_names):
-                if name == target_name:
-                    logging.info('Device \'%s\' found. Pairing.' % target_name)
-                    self.discoverer.mbs.btPairDevice(discovered_addrs[i])
-                    self.target_adrr = discovered_addrs[i]
-                    logging.info('Allowing time for contacts to sync.')
-                    time.sleep(constants.SYNC_WAIT_TIME)
-                    self.press_allow_on_device() ## Attempts multiple presses
-                    return
+        discovered_devices = self.discoverer.mbs.btDiscoverAndGetResults()
+        self.discoverer.mbs.btPairDevice(target_address)
+        logging.info('Allowing time for contacts to sync.')
+        time.sleep(constants.SYNC_WAIT_TIME)
+        paired_devices = self.discoverer.mbs.btGetPairedDevices()
+        _, paired_addresses = self.get_info_from_devices(paired_devices)
+        asserts.assert_true(
+            target_address in paired_addresses,
+            'Failed to pair the target device %s over Bluetooth.' %
+            target_address)
 
     def press_allow_on_device(self):
         """ Repeatedly presses "Allow" on prompts until no more prompts appear"""

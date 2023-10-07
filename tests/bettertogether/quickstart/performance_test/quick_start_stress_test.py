@@ -15,8 +15,8 @@
 """Stress tests for Neaby Connections used by the quick start flow."""
 
 import datetime
-import os
 import logging
+import os
 import sys
 import time
 
@@ -28,6 +28,7 @@ if sys.version_info < (3,10):
 from mobly import asserts
 from mobly import base_test
 from mobly import test_runner
+from mobly.controllers import android_device
 
 # Allows local imports to be resolved via relative path, so the test can be run
 # without building.
@@ -39,6 +40,8 @@ from performance_test import nc_base_test
 from performance_test import nc_constants
 from performance_test import nearby_connection_wrapper
 from performance_test import setup_utils
+
+_NEARBY_SNIPPET_2_PACKAGE_NAME = 'com.google.android.nearby.mobly.snippet.second'
 
 _PERFORMANCE_TEST_REPEAT_COUNT = 100
 _PERFORMANCE_TEST_MAX_CONSECUTIVE_ERROR = 10
@@ -53,49 +56,67 @@ class QuickStartStressTest(nc_base_test.NCBaseTestClass):
 
   performance_test_iterations: int
 
+  # @typing.override
   def __init__(self, configs):
     super().__init__(configs)
+    self._nearby_snippet_2_apk_path: str = None
     self._test_result: nc_constants.SingleTestResult = (
         nc_constants.SingleTestResult())
     self._quick_start_test_metrics: nc_constants.QuickStartTestMetrics = (
         nc_constants.QuickStartTestMetrics())
 
-  def _reset_nearby_connections(self) -> None:
-    """Resets all nearby connections."""
-    self.discoverer.nearby.stopDiscovery()
-    self.discoverer.nearby.stopAllEndpoints()
-    self.advertiser.nearby.stopAdvertising()
-    self.advertiser.nearby.stopAllEndpoints()
+  # @typing.override
+  def setup_test(self):
     self.discoverer.nearby2.stopDiscovery()
     self.discoverer.nearby2.stopAllEndpoints()
     self.advertiser.nearby2.stopAdvertising()
     self.advertiser.nearby2.stopAllEndpoints()
-    time.sleep(nc_constants.NEARBY_RESET_WAIT_TIME.total_seconds())
 
-  def _reset_wifi_connection(self) -> None:
-    """Resets wifi connections on both devices."""
-    self.discoverer.nearby.wifiClearConfiguredNetworks()
-    self.advertiser.nearby.wifiClearConfiguredNetworks()
-    time.sleep(nc_constants.WIFI_DISCONNECTION_DELAY.total_seconds())
-
-  def setup_test(self):
     super().setup_test()
-    self._reset_wifi_connection()
-    self._reset_nearby_connections()
-    if self.test_parameters.toggle_airplane_mode_target_side:
-      setup_utils.toggle_airplane_mode(self.advertiser)
 
+  # @typing.override
   def setup_class(self):
-    super().setup_class()
+    self._nearby_snippet_2_apk_path = self.user_params.get('files', {}).get(
+        'nearby_snippet_2', [''])[0]
     self.performance_test_iterations = getattr(
         self.test_quick_start_performance, base_test.ATTR_REPEAT_CNT)
     logging.info('performance test iterations: %s',
                  self.performance_test_iterations)
 
-  def teardown_class(self):
-    super().teardown_class()
-    # handle summary results
-    self._summary_test_results()
+    super().setup_class()
+
+  # @typing.override
+  def _setup_android_device(self, ad: android_device.AndroidDevice) -> None:
+    super()._setup_android_device(ad)
+    ad.log.info('try to install nearby_snippet_2_apk')
+    if self._nearby_snippet_2_apk_path:
+      setup_utils.install_apk(ad, self._nearby_snippet_2_apk_path)
+    else:
+      ad.log.warning('nearby_snipet_2 apk is not specified, '
+                     'make sure it is installed in the device')
+    ad.load_snippet('nearby2', _NEARBY_SNIPPET_2_PACKAGE_NAME)
+    setup_utils.grant_manage_external_storage_permission(
+        ad, _NEARBY_SNIPPET_2_PACKAGE_NAME
+    )
+
+    setup_utils.enable_bluetooth_multiplex(ad)
+
+    if (
+        self.test_parameters.upgrade_medium
+        == nc_constants.NearbyMedium.WIFIAWARE_ONLY.value
+    ):
+      setup_utils.enable_wifi_aware(ad)
+
+    if self.test_parameters.wifi_country_code:
+      setup_utils.set_wifi_country_code(
+          ad, self.test_parameters.wifi_country_code
+      )
+
+  # @typing.override
+  def _teardown_device(self, ad: android_device.AndroidDevice) -> None:
+    super()._teardown_device(ad)
+    ad.nearby2.transferFilesCleanup()
+    ad.unload_snippet('nearby2')
 
   @base_test.repeat(
       count=_PERFORMANCE_TEST_REPEAT_COUNT,
@@ -135,11 +156,10 @@ class QuickStartStressTest(nc_base_test.NCBaseTestClass):
       self._test_result.discoverer_wifi_wlan_expected = True
       self._test_result.discoverer_wifi_wlan_latency = discoverer_wifi_latency
 
+    # 2. set up 1st connection
     advertising_discovery_medium = nc_constants.NearbyMedium(
         self.test_parameters.advertising_discovery_medium
     )
-
-    # 2. set up 1st connection
     nearby_snippet_1 = nearby_connection_wrapper.NearbyConnectionWrapper(
         advertiser,
         discoverer,
@@ -284,79 +304,6 @@ class QuickStartStressTest(nc_base_test.NCBaseTestClass):
     self._quick_start_test_metrics.advertiser_wifi_wlan_latencies.append(
         self._test_result.advertiser_wifi_wlan_latency)
 
-  def _stats_throughput_result(
-      self,
-      medium_name: str,
-      throughput_indicators: list[float],
-      success_rate_target: float,
-      median_benchmark_kbps: float,
-  ) -> nc_constants.ThroughputResultStats:
-    """Statistics the throughput test result of all iterations."""
-    n = self.performance_test_iterations
-    filtered = list(filter(
-        lambda x: x != nc_constants.UNSET_THROUGHPUT_KBPS,
-        throughput_indicators))
-    if not filtered: return nc_constants.ThroughputResultStats(
-        success_rate=0.0,
-        average_kbps=0.0,
-        percentile_50_kbps=0.0,
-        percentile_95_kbps=0.0,
-        success_count=0)
-
-    filtered.sort()
-    success_count = len(filtered)
-    success_rate = round(success_count * 100.0 / n, 1)
-    average_kbps = round(sum(filtered) / len(filtered))
-    percentile_50_kbps = filtered[int(len(filtered) * 0.50)]
-    percentile_95_kbps = filtered[int(len(filtered) * 0.95)]
-    fail_targets: list[nc_constants.FailTargetSummary] = []
-    if success_rate < success_rate_target:
-      fail_targets.append(
-          nc_constants.FailTargetSummary(
-              f'{medium_name} transfer success rate',
-              success_rate,
-              success_rate_target,
-              '%')
-      )
-    if percentile_50_kbps < median_benchmark_kbps:
-      fail_targets.append(
-          nc_constants.FailTargetSummary(
-              f'{medium_name} median transfer speed (KBps)',
-              percentile_50_kbps,
-              median_benchmark_kbps
-              )
-      )
-    return nc_constants.ThroughputResultStats(
-        success_rate,
-        average_kbps,
-        percentile_50_kbps,
-        percentile_95_kbps,
-        success_count,
-        fail_targets
-    )
-
-  def _stats_latency_result(
-      self, latency_indicators: list[datetime.timedelta]
-  ) -> nc_constants.LatencyResultStats:
-    n = self.performance_test_iterations
-    filtered = [
-        latency.total_seconds()
-        for latency in latency_indicators
-        if latency != nc_constants.UNSET_LATENCY
-    ]
-    if not filtered:
-      return nc_constants.LatencyResultStats(
-          0.0, 0.0, self.performance_test_iterations
-      )
-
-    filtered.sort()
-    average = round(sum(filtered) / len(filtered), 2)
-    percentile_95 = round(filtered[int(len(filtered) * 0.95)], 2)
-
-    return nc_constants.LatencyResultStats(
-        average, percentile_95, n - len(filtered)
-    )
-
   def _summary_upgraded_wifi_transfer_mediums(self) -> dict[str, int]:
     medium_counts = {}
     for (upgraded_medium
@@ -366,6 +313,7 @@ class QuickStartStressTest(nc_base_test.NCBaseTestClass):
             upgraded_medium.name, 0) + 1
     return medium_counts
 
+  # @typing.override
   def _summary_test_results(self) -> None:
     """Summarizes test results of all iterations."""
     first_bt_transfer_stats = self._stats_throughput_result(
@@ -460,20 +408,8 @@ class QuickStartStressTest(nc_base_test.NCBaseTestClass):
             '06_detailed_stats': detailed_stats
             }
         })
-    if not passed:
-      asserts.fail(result_message)
 
-  def _generate_target_fail_message(
-      self,
-      fail_targets: list[nc_constants.FailTargetSummary]) -> str:
-    error_msg = ''
-    for fail_target in fail_targets:
-      error_msg += (
-          f'{fail_target.title}: {fail_target.actual}{fail_target.unit}'
-          f' < {fail_target.goal}{fail_target.unit}\n')
-
-    return error_msg
-
+    asserts.assert_true(passed, result_message)
 
 if __name__ == '__main__':
   test_runner.main()

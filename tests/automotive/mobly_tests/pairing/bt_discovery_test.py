@@ -10,55 +10,23 @@ from mobly import asserts
 from mobly import base_test
 from mobly import test_runner
 from mobly.controllers import android_device
+from bluetooth_test import bluetooth_base_test
 
 # Number of seconds for the target to stay discoverable on Bluetooth.
 DISCOVERABLE_TIME = 120
 
-class MultiDeviceTest(base_test.BaseTestClass):
-
-    def setup_class(self):
-        # Registering android_device controller module, and declaring that the test
-        # requires at least two Android devices.
-        self.ads = self.register_controller(android_device, min_number=2)
-        # The device used to discover Bluetooth devices.
-        self.discoverer = android_device.get_device(
-            self.ads, label='auto')
-        # Sets the tag that represents this device in logs.
-        self.discoverer.debug_tag = 'discoverer'
-        # The device that is expected to be discovered
-        self.target = android_device.get_device(self.ads, label='phone')
-        self.target.debug_tag = 'target'
-        self.target.load_snippet('mbs', android_device.MBS_PACKAGE)
-        self.discoverer.load_snippet('mbs', android_device.MBS_PACKAGE)
+class MultiDeviceTest(bluetooth_base_test.BluetoothBaseTest):
 
     def setup_test(self):
-        # Make sure bluetooth is on.
-        self.target.mbs.btEnable()
-        self.discoverer.mbs.btEnable()
+        super().setup_test()
         # Set Bluetooth name on target device.
         self.target.mbs.btSetName('LookForMe!')
 
     def test_bluetooth_discovery(self):
-        target_name = self.target.mbs.btGetName()
-        self.target.log.info('Become discoverable with name "%s" for %ds.',
-                             target_name, DISCOVERABLE_TIME)
-        self.target.mbs.btBecomeDiscoverable(DISCOVERABLE_TIME)
-        self.discoverer.log.info('Looking for Bluetooth devices.')
-        discovered_devices = self.discoverer.mbs.btDiscoverAndGetResults()
-        self.discoverer.log.debug('Found Bluetooth devices: %s',
-                                  pprint.pformat(discovered_devices, indent=2))
-        discovered_names = [device['Name'] for device in discovered_devices]
-        logging.info('Verifying the target is discovered by the discoverer.')
-        asserts.assert_true(
-            target_name in discovered_names,
-            'Failed to discover the target device %s over Bluetooth.' %
-            target_name)
+        self.bt_utils.discover_secondary_from_primary()
 
-    def teardown_test(self):
-        # Turn Bluetooth off on both devices after test finishes.
-        self.target.mbs.btDisable()
-        self.discoverer.mbs.btDisable()
-
+    def test_bluetooth_pair(self):
+        self.bt_utils.pair_primary_to_secondary()
 
 if __name__ == '__main__':
     # Pass test arguments after '--' to the test runner.
