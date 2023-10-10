@@ -70,9 +70,10 @@
 // For example: ACONFIG_FLAG(android::cts::test, flag_rw)
 
 #if !TEST_WITH_FLAGS_DONT_DEFINE
-#define ACONFIG_FLAG(package, flag)                                         \
-  std::make_pair<std::function<bool()>, std::string>(                       \
-    _FLAG_NAME(package, flag), _FLAG_STRINGFY(package, flag))
+#define ACONFIG_FLAG(package, flag)                                            \
+  std::make_pair<std::function<bool()>, std::string>(                          \
+      static_cast<bool (*)()>(_FLAG_NAME(package, flag)),                      \
+      _FLAG_STRINGFY(package, flag))
 #endif
 
 // Defines a legacy feature flag.

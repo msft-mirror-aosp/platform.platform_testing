@@ -13,6 +13,7 @@
 # limitations under the License.
 
 native_tests := \
+    aaudio_test_mmap_path \
     adbd_test \
     android_logger_test_src_lib \
     android_logger_test_tests_config_log_level \
@@ -99,6 +100,7 @@ native_tests := \
     libuwb_core_tests \
     libuwb_uci_jni_rust_tests \
     libuwb_uci_packet_tests \
+    libuci_hal_android_tests \
     libvintf_test \
     linker-unit-tests \
     logcat-unit-tests \
@@ -231,7 +233,9 @@ native_tests := \
     lmkd_unit_test
 
 ifeq ($(BOARD_IS_AUTOMOTIVE), true)
-native_tests += libwatchdog_test
+native_tests += \
+    libwatchdog_test \
+    evsmanagerd_test
 endif
 
 ifneq ($(strip $(BOARD_PERFSETUP_SCRIPT)),)

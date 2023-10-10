@@ -280,6 +280,9 @@ public class TombstoneParser {
                         case "arm64":
                             arch = Architecture.ARM64;
                             break;
+                        case "riscv64":
+                            arch = Architecture.RISCV64;
+                            break;
                         case "x86":
                             arch = Architecture.X86;
                             break;

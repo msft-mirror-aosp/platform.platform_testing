@@ -36,7 +36,7 @@ android_test {
         "metrics-helper-lib",
         "platform-screenshot-diff-core",
         "platform-test-annotations",
-        "truth-prebuilt",
+        "truth",
         "ub-uiautomator",
     ],
     asset_dirs: ["src/androidTest/assets"],
