@@ -219,7 +219,7 @@ constructor(
         private const val UI_YOUR_LOCATION_DESC = "Your location"
         private const val UI_CLOSE_NAVIGATION_DESC = "Close navigation"
         private const val UI_CONFIRMATION_BUTTONS_PATTERN =
-            "OK|TURN ON|YES, I'M IN|GOT IT|ACCEPT & CONTINUE|START"
+            "OK|TURN ON|YES, I'M IN|GOT IT|ACCEPT & CONTINUE|START|SKIP"
 
         fun getMapIntent(intentString: String): Intent {
             val gmmIntentUri = Uri.parse(intentString)

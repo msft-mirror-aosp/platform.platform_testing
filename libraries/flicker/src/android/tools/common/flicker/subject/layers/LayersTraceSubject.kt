@@ -332,6 +332,7 @@ class LayersTraceSubject(val trace: LayersTrace, override val reader: Reader? = 
                 ComponentNameMatcher.EDGE_BACK_GESTURE_HANDLER,
                 ComponentNameMatcher.COLOR_FADE,
                 ComponentNameMatcher.TRANSITION_SNAPSHOT,
+                ComponentNameMatcher.FLOATING_ROTATION_BUTTON,
                 EdgeExtensionComponentMatcher()
             )
     }

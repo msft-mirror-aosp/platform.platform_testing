@@ -158,13 +158,16 @@ constructor(
             // so we should not check those and instead return immediately.
             return
         }
+        val failedMetrics = metricsCollector.resultsForTest(description).filter { it.failed }
+        val assertionErrors = failedMetrics.flatMap { it.assertionErrors.asList() }
+        assertionErrors.forEach {
+            Logger.e(LOG_TAG, "FaaS reported an assertion failure:")
+            Logger.e(LOG_TAG, it.message)
+            Logger.e(LOG_TAG, it.stackTraceToString())
+        }
+
         if (failTestOnFlicker && testContainsFlicker(description)) {
-            throw metricsCollector
-                .resultsForTest(description)
-                .first { it.failed }
-                .assertionErrors
-                .firstOrNull()
-                ?: error("Unexpectedly missing assertion error")
+            throw assertionErrors.firstOrNull() ?: error("Unexpectedly missing assertion error")
         }
         val flickerTestAnnotation: FlickerTest? =
             description.annotations.filterIsInstance<FlickerTest>().firstOrNull()

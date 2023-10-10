@@ -122,6 +122,8 @@ class ComponentNameMatcher(var component: ComponentName) : IComponentNameMatcher
 
         val VOLUME_DIALOG = ComponentNameMatcher("", "VolumeDialog")
 
+        val FLOATING_ROTATION_BUTTON = ComponentNameMatcher("", "FloatingRotationButton")
+
         val LAUNCHER =
             ComponentNameMatcher(
                 "com.google.android.apps.nexuslauncher",
