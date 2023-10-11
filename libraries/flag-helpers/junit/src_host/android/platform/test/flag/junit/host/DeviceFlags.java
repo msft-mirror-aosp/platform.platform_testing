@@ -26,8 +26,10 @@ import com.android.tradefed.device.DeviceNotAvailableException;
 import com.android.tradefed.device.ITestDevice;
 import com.android.tradefed.log.LogUtil;
 
-import com.google.protobuf.TextFormat;
-
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,8 +54,8 @@ public class DeviceFlags {
     private static final String DUMP_DEVICE_CONFIG_CMD = "device_config list";
 
     /**
-     * Partitions that contain the aconfig_flags.textproto files. Should be consistent with the
-     * partitions defined in core/packaging/flags.mk.
+     * Partitions that contain the aconfig_flags.pb files. Should be consistent with the partitions
+     * defined in core/packaging/flags.mk.
      */
     private static final List<String> FLAG_PARTITIONS =
             List.of("product", "system", "system_ext", "vendor");
@@ -146,15 +148,21 @@ public class DeviceFlags {
 
         for (String flagPartition : FLAG_PARTITIONS) {
             try {
-                String aconfigTextProtoFile =
-                        String.format("/%s/etc/aconfig_flags.textproto", flagPartition);
-                if (!testDevice.doesFileExist(aconfigTextProtoFile)) {
+                String aconfigFlagsPbFilePath =
+                        String.format("/%s/etc/aconfig_flags.pb", flagPartition);
+                if (!testDevice.doesFileExist(aconfigFlagsPbFilePath)) {
+                    LogUtil.CLog.i("Aconfig flags file %s does not exist", aconfigFlagsPbFilePath);
                     continue;
                 }
-                String textProto = testDevice.executeShellCommand("cat " + aconfigTextProtoFile);
-                parsed_flags parsedFlags = TextFormat.parse(textProto, parsed_flags.class);
+                File aconfigFlagsPbFile = testDevice.pullFile(aconfigFlagsPbFilePath);
+                if (aconfigFlagsPbFile.length() <= 1) {
+                    LogUtil.CLog.i("Aconfig flags file %s is empty", aconfigFlagsPbFilePath);
+                    continue;
+                }
+                InputStream aconfigFlagsPbInputStream = new FileInputStream(aconfigFlagsPbFile);
+                parsed_flags parsedFlags = parsed_flags.parseFrom(aconfigFlagsPbInputStream);
                 builder.addAllParsedFlag(parsedFlags.getParsedFlagList());
-            } catch (DeviceNotAvailableException | TextFormat.ParseException e) {
+            } catch (DeviceNotAvailableException | IOException e) {
                 throw new FlagReadException("ALL_FLAGS", e);
             }
         }

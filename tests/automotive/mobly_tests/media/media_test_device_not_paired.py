@@ -33,10 +33,6 @@ class DeviceNotPairedTest(bluetooth_base_test.BluetoothBaseTest):
         asserts.assert_true(self.call_utils.is_bluetooth_audio_disconnected_label_visible(),
                             '<Bluetooth Audio disconnected> label should be present')
 
-    def teardown_test(self):
-        # TODO(b/302283016) remove teardown_test after bug resolved
-        pass
-
 
 if __name__ == '__main__':
     # Pass test arguments after '--' to the test runner.
