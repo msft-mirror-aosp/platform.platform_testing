@@ -34,6 +34,7 @@ import pprint
 
 from bluetooth_test import bluetooth_base_test
 
+
 from mobly import asserts
 from mobly import base_test
 from mobly import test_runner
@@ -61,9 +62,14 @@ class UtilityClassTest(bluetooth_base_test.BluetoothBaseTest):
 
         self.bt_utils.discover_secondary_from_primary()
 
-    def test(self):
+    def test_call_utility(self):
         # Navigate to the constants page
         self.call_utils.open_phone_app()
+
+    def teardown_test(self):
+        # Turn Bluetooth off on both devices after test finishes.
+        self.target.mbs.btDisable()
+        self.discoverer.mbs.btDisable()
 
 
 if __name__ == '__main__':

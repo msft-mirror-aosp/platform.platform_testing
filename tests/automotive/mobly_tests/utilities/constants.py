@@ -21,6 +21,11 @@ BT_DEFAULT_TIMEOUT = 15
 WAIT_ONE_SEC = 1
 WAIT_TWO_SECONDS = 2
 SYNC_WAIT_TIME = 10 # Sometimes syncing between devices can take a while
+DEVICE_CONNECT_WAIT_TIME = 20 # Waiting for device pairing to complete.
+
+# The word or phrase present in a device summary that is connected.
+CONNECTED_SUMMARY_STATUS = "Connected"
+DISCONNECTED_SUMMARY_STATUS = "Disconnected"
 
 BTSNOOP_LOG_PATH_ON_DEVICE = '/data/misc/bluetooth/logs/btsnoop_hci.log'
 BTSNOOP_LAST_LOG_PATH_ON_DEVICE = (
