@@ -328,6 +328,15 @@ public class AutomotiveConfigConstants {
     public static final String TOGGLE_WIFI = "TOGGLE_WIFI";
     public static final String TOGGLE_HOTSPOT = "TOGGLE_HOTSPOT";
     public static final String TOGGLE_BLUETOOTH = "TOGGLE_BLUETOOTH";
+    public static final String TOGGLE_DEVICE_BLUETOOTH = "TOGGLE_DEVICE_BLUETOOTH";
+    public static final String DEVICE_HEADER_SUMMARY = "DEVICE_HEADER_SUMMARY";
+    public static final String DEVICE_CONNECTION_TEXT = "DEVICE_CONNECTION_TOGGLE";
+
+    public static final String DEVICE_CONNECTION_BUTTON = "DEVICE_CONNECTION_BUTTON";
+
+    public static final String DEVICE_CONNECTION_BACK_BUTTON = "DEVICE_CONNECTION_BACK_BUTTON";
+    public static final String DEVICE_FORGET_BUTTON = "DEVICE_FORGET_BUTTON";
+
     public static final String SEARCH = "SEARCH";
     public static final String SEARCH_BOX = "SEARCH_BOX";
     public static final String SEARCH_RESULTS = "SEARCH_RESULTS";

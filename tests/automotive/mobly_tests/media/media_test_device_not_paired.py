@@ -23,8 +23,8 @@ from mobly import test_runner
 class DeviceNotPairedTest(bluetooth_base_test.BluetoothBaseTest):
 
     def setup_test(self):
-        # Disable BT on devices
-        self.target.mbs.btDisable()
+        """Enable and disable BT on Head unit"""
+        self.discoverer.mbs.btEnable()
         self.discoverer.mbs.btDisable()
 
     def test_device_not_paired(self):

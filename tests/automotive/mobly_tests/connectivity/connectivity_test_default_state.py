@@ -54,14 +54,14 @@ class BluetoothDefaultStateTest(base_test.BaseTestClass):
         # Default state test requires no setup.
         pass
 
-    def test_bluetooth_default_state(self):
+    def test_device_connectivity_in_level_two(self):
         # Confirm that the bluetooth state is ON
         asserts.assert_true(
             self.discoverer.mbs.btIsEnabled(),
             "Expected bluetooth to be enabled by default, but it was not.")
 
     def teardown_test(self):
-        # Default state test should still disabled bluetooth after checking default state.
+        # Default state test should still disable bluetooth after checking default state.
         self.discoverer.mbs.btDisable()
 
 
