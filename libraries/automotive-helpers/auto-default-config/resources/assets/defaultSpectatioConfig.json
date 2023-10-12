@@ -1267,6 +1267,55 @@
       "TYPE": "DESCRIPTION",
       "VALUE": "Bluetooth toggle switch"
     },
+    "TOGGLE_DEVICE_BLUETOOTH": {
+      "TYPE": "MULTIPLE",
+      "SPECIFIERS": [
+        {
+          "TYPE": "DESCRIPTION",
+          "VALUE": "Bluetooth"
+        },
+        {
+          "TYPE": "CLASS",
+          "VALUE": "android.widget.ToggleButton"
+        }
+      ]
+    },
+    "DEVICE_HEADER_SUMMARY": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "entity_header_summary",
+      "PACKAGE": "com.android.car.settings"
+    },
+    "DEVICE_CONNECTION_TEXT": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "button1Text",
+      "PACKAGE": "com.android.car.settings"
+    },
+    "DEVICE_CONNECTION_BUTTON": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "button1",
+      "PACKAGE": "com.android.car.settings"
+    },
+    "DEVICE_CONNECTION_BACK_BUTTON": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "car_ui_toolbar_nav_icon_container",
+      "PACKAGE": "com.android.car.settings"
+    },
+    "DEVICE_FORGET_BUTTON": {
+      "TYPE": "MULTIPLE",
+      "SPECIFIERS": [
+        {
+          "TYPE": "CLASS",
+          "VALUE": "android.widget.LinearLayout"
+        },
+        {
+          "TYPE": "HAS_DESCENDANT",
+          "DESCENDANT": {
+            "TYPE": "TEXT",
+            "VALUE": "Forget"
+          }
+        }
+      ]
+    },
     "SEARCH": {
       "TYPE": "DESCRIPTION",
       "VALUE": "Search"
