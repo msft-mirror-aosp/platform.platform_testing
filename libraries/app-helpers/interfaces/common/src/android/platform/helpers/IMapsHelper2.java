@@ -17,10 +17,11 @@
 package android.platform.helpers;
 
 import android.graphics.Rect;
+
 import androidx.test.uiautomator.Direction;
 import androidx.test.uiautomator.UiObject2;
 
-public interface IMapsHelper2 extends IAppHelper2 {
+public interface IMapsHelper2 extends IAppHelper {
     /**
      * Setup expectation: On the standard Map screen in any setup.
      *

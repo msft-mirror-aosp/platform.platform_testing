@@ -61,7 +61,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
-public abstract class AbstractStandardAppHelper2 implements IAppHelper2, IAppHelper {
+public abstract class AbstractStandardAppHelper2 implements IAppHelper {
     private static final String LOG_TAG = AbstractStandardAppHelper2.class.getSimpleName();
     private static final String SCREENSHOT_DIR = "apphelper-screenshots";
     private static final String FAVOR_CMD = "favor-shell-commands";

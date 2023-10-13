@@ -20,7 +20,7 @@ import androidx.test.uiautomator.Direction;
 import androidx.test.uiautomator.UiObject2;
 
 /** {@inheritDoc} */
-public interface IChromeHelper2 extends IAppHelper2 {
+public interface IChromeHelper2 extends IAppHelper {
     enum MenuItem {
         BOOKMARKS("Bookmarks"),
         NEW_TAB("New tab"),

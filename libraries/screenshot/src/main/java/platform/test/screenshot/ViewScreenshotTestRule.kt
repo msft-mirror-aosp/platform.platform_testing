@@ -39,7 +39,8 @@ import platform.test.screenshot.matchers.BitmapMatcher
 open class ViewScreenshotTestRule(
     private val emulationSpec: DeviceEmulationSpec,
     pathManager: GoldenImagePathManager,
-    private val matcher: BitmapMatcher = UnitTestBitmapMatcher
+    private val matcher: BitmapMatcher = UnitTestBitmapMatcher,
+    private val decorFitsSystemWindows: Boolean = false,
 ) : TestRule {
     private val colorsRule = MaterialYouColorsRule()
     private val timeZoneRule = TimeZoneRule()
@@ -66,7 +67,7 @@ open class ViewScreenshotTestRule(
             // Make sure that the activity draws full screen and fits the whole display instead of
             // the system bars.
             val window = activity.window
-            window.setDecorFitsSystemWindows(false)
+            window.setDecorFitsSystemWindows(decorFitsSystemWindows)
 
             // Set the content.
             activity.setContentView(viewProvider(activity), mode.layoutParams)
