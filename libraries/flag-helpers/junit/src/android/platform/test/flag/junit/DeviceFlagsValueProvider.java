@@ -37,11 +37,29 @@ public class DeviceFlagsValueProvider implements IFlagsValueProvider {
 
     private static final Set<String> VALID_BOOLEAN_VALUE = Set.of("true", "false");
 
-    private final UiAutomation mUiAutomation =
-            InstrumentationRegistry.getInstrumentation().getUiAutomation();
+    private final UiAutomation mUiAutomation;
 
     public static CheckFlagsRule createCheckFlagsRule() {
         return new CheckFlagsRule(new DeviceFlagsValueProvider());
+    }
+
+    /**
+     * Creates a {@link CheckFlagsRule} with an existing {@link UiAutomation} instance.
+     *
+     * <p>This is necessary if the test modifies {@link UiAutomation} flags.
+     *
+     * @param uiAutomation The {@link UiAutomation} used by the test.
+     */
+    public static CheckFlagsRule createCheckFlagsRule(UiAutomation uiAutomation) {
+        return new CheckFlagsRule(new DeviceFlagsValueProvider(uiAutomation));
+    }
+
+    public DeviceFlagsValueProvider() {
+        mUiAutomation = InstrumentationRegistry.getInstrumentation().getUiAutomation();
+    }
+
+    private DeviceFlagsValueProvider(UiAutomation uiAutomation) {
+        mUiAutomation = uiAutomation;
     }
 
     @Override

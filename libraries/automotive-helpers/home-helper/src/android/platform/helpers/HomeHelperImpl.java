@@ -226,6 +226,7 @@ public class HomeHelperImpl extends AbstractStandardAppHelper implements IAutoHo
         }
         return true;
     }
+
     /** {@inheritDoc} */
     @Override
     public void openSystemUi() {
@@ -248,5 +249,17 @@ public class HomeHelperImpl extends AbstractStandardAppHelper implements IAutoHo
         BySelector mapsWidgetSelector =
                 getUiElementFromConfig(AutomotiveConfigConstants.HOME_MAPS_WIDGET);
         return (getSpectatioUiUtil().hasUiElement(mapsWidgetSelector));
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void clickAssistantWidget() {
+        BySelector assistantWidgetSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.HOME_TOP_CARD);
+        UiObject2 assistantWidget = getSpectatioUiUtil().findUiObject(assistantWidgetSelector);
+        getSpectatioUiUtil()
+                .validateUiObject(assistantWidget, AutomotiveConfigConstants.HOME_TOP_CARD);
+        getSpectatioUiUtil().clickAndWait(assistantWidget);
+        getSpectatioUiUtil().wait5Seconds();
     }
 }
