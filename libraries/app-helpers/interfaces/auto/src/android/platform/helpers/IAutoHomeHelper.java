@@ -118,4 +118,10 @@ public interface IAutoHomeHelper extends IAppHelper {
      * <p>Checks if exists a maps Widget on home screen
      */
     boolean hasMapsWidget();
+    /**
+     * Setup expectations: To Open Assistant Widget button.
+     *
+     * <p>Opens Assistant Widget button on Home screen
+     */
+    void clickAssistantWidget();
 }
