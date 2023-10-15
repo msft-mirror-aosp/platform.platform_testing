@@ -38,7 +38,7 @@ android_test {
         "handheld-app-helpers",
         "platform-test-options",
         "platform-test-rules",
-        "truth-prebuilt",
+        "truth",
     ],
 
     libs: [

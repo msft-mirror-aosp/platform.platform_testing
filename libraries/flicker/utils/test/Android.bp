@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-
 package {
     default_applicable_licenses: ["Android-Apache-2.0"],
 }
@@ -35,13 +34,13 @@ java_test {
         "-opt-in=kotlin.ExperimentalMultiplatform",
     ],
     optimize: {
-        enabled: false
+        enabled: false,
     },
     srcs: [":FlickerLibTest-Utils-src"],
     static_libs: [
         "flickerlib-parsers",
-        "truth-prebuilt",
-        "mockito-target-extended-minus-junit4"
+        "truth",
+        "mockito-target-extended-minus-junit4",
     ],
 }
 
@@ -55,7 +54,7 @@ android_test {
     certificate: "platform",
     platform_apis: true,
     optimize: {
-        enabled: false
+        enabled: false,
     },
     static_libs: [
         "flickerlib-parsers",
@@ -63,11 +62,11 @@ android_test {
         "flickerlib-trace_processor_shell",
         "FlickerLibTest-Utils",
         "androidx.test.runner",
-        "truth-prebuilt",
+        "truth",
         "mockito-target-extended-minus-junit4",
         "collector-device-lib",
     ],
     data: [
         "trace_config/*",
-    ]
+    ],
 }
