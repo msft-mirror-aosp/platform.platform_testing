@@ -15,15 +15,13 @@
 import logging
 import time
 
+
 from mobly.controllers import android_device
 from mbs_utils import constants
 
 """ This exception may be expanded in the future to provide better error discoverability."""
-
-
 class CallUtilsError(Exception):
     pass
-
 
 class CallUtils:
     """Calling sequence utility for BT calling test using Spectatio UI APIs.
@@ -43,10 +41,12 @@ class CallUtils:
         logging.info('Dial phone number <%s>', callee_number)
         self.device.mbs.dialANumber(callee_number)
 
+
     def end_call(self):
         """  End the call. Throws an error if non call is currently ongoing. """
         logging.info('End the call')
         self.device.mbs.endCall()
+
 
     def execute_shell_on_device(self, device_target, shell_command):
         """Execute any shell command on any device"""
@@ -57,6 +57,7 @@ class CallUtils:
         )
         device_target.adb.shell(shell_command)
 
+
     def get_dialing_number(self):
         """ Get dialing phone number"""
         return self.device.mbs.getDialedNumber()
@@ -64,6 +65,10 @@ class CallUtils:
     def get_home_address_from_details(self):
         """Return the home address of the contact whose details are currently being displayed"""
         return self.device.mbs.getHomeAddress()
+
+    def get_device_summary(self):
+        """Assumes the device summary page is open."""
+        return self.device.mbs.getDeviceSummary()
 
     def import_contacts_from_vcf_file(self, device_target):
         """ Importing contacts from VCF file"""
@@ -97,6 +102,37 @@ class CallUtils:
         Assumes we are on the contacts page. """
         logging.info('Getting details for first contact on the page')
         self.device.mbs.openFirstContactDetails()
+
+    def open_bluetooth_settings(self):
+        """Assumes we are on the home screen.
+        Navigate to the Bluetooth setting page"""
+        logging.info("Pressing the bluetooth indicator icon in the status bar.")
+        self.device.mbs.openBluetoothSettings()
+
+    def press_bluetooth_toggle_on_device(self, device_name):
+        logging.info('Attempting to press the bluetooth toggle on device: ' + device_name)
+        self.device.mbs.pressBluetoothToggleOnDevice(device_name)
+
+    def press_device_entry_on_list_of_paired_devices(self, device_name):
+        logging.info('Attempting to press the device entry on device: ' + device_name)
+        self.device.mbs.pressDeviceName(device_name)
+
+    def device_displays_connected(self):
+        """Assumes the device bluetooth connection settings page is open"""
+        logging.info('Checking whether device is connected.')
+        self.device.mbs.deviceIsConnected()
+
+    def press_forget(self):
+        """Assumes the device bluetooth connection settings page is open"""
+        logging.info('Attempting to press \'Forget\'')
+        self.device.mbs.pressForget()
+
+
+    def press_home_screen_on_status_bar(self):
+        """Presses the Home screen button on the status bar
+        (to return the device to the home screen."""
+        logging.info("Pressing home screen button")
+        self.device.mbs.pressHomeScreen()
 
     def press_home(self):
         """ Press the Home button to go back to the home page."""
