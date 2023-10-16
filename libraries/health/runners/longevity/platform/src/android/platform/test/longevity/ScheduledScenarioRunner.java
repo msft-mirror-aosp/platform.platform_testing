@@ -224,13 +224,14 @@ public class ScheduledScenarioRunner extends LongevityClassRunner {
                         countDownLatch.countDown();
                     }
                 };
-        context.registerReceiver(receiver, wakeUpActionFilter);
+        context.registerReceiver(
+                receiver, wakeUpActionFilter, Context.RECEIVER_EXPORTED /*UNAUDITED*/);
         PendingIntent pendingIntent =
                 PendingIntent.getBroadcast(
                         context,
                         0,
-                        new Intent(wakeUpAction),
-                        PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE_UNAUDITED);
+                        new Intent(wakeUpAction).setPackage(context.getPackageName()),
+                        PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
 
         alarmManager.setExactAndAllowWhileIdle(
                 AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + durationMs, pendingIntent);

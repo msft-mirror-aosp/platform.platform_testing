@@ -18,6 +18,10 @@ package android.platform.test.flag.junit;
 
 /** A Fake Flags to test the {@code AconfigFlagsValueProvider}. */
 public class Flags {
+
+    public static final String FLAG_FLAG_NAME3 = "android.platform.test.flag.junit.flag_name3";
+    public static final String FLAG_FLAG_NAME4 = "android.platform.test.flag.junit.flag_name4";
+
     /** Returns the flag value. */
     public static boolean flagName1() {
         return true;
@@ -30,17 +34,28 @@ public class Flags {
 
     /** Returns the flag value. */
     public static boolean flagName3() {
-        return sFeatureFlags.flagName3();
+        return FEATURE_FLAGS.flagName3();
     }
 
     /** Another flag. */
     public static boolean flagName4() {
-        return sFeatureFlags.flagName4();
+        return FEATURE_FLAGS.flagName4();
     }
 
     public static void setFeatureFlags(FeatureFlags featureFlagsImpl) {
-        sFeatureFlags = featureFlagsImpl;
+        FEATURE_FLAGS = featureFlagsImpl;
     }
 
-    private static FeatureFlags sFeatureFlags;
+    private static FeatureFlags FEATURE_FLAGS =
+            new FeatureFlags() {
+                @Override
+                public boolean flagName3() {
+                    return false;
+                }
+
+                @Override
+                public boolean flagName4() {
+                    return true;
+                }
+            };
 }

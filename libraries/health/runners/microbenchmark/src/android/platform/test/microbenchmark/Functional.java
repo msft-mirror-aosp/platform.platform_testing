@@ -40,9 +40,21 @@ import java.util.stream.Stream;
 
 /**
  * Runner for functional tests that's compatible with annotations used in microbenchmark
- * tests. @Before/@After are nested inside @NoMetricBefore/@NoMetricAfter. TODO(b/205019000): this
- * class is seen as a temporary solution, and is supposed to be eventually replaced with a permanent
- * one.
+ * tests. @Before/@After are nested inside @NoMetricBefore/@NoMetricAfter.
+ *
+ * <p>Microbenchmarks are functional tests executed with the {@link Microbenchmark} test
+ * runner. This runner, in addition to the standard @Before/@After, executes methods annotated with
+ * {@link Microbenchmark.NoMetricBefore} and {@link Microbenchmark.NoMetricAfter} (custom
+ * annotation). Without using this runner, those methods would not be executed (see b/205019000).
+ *
+ * <p>In addition, this runner saves artifacts early, as soon as the failure happens. If the
+ * failure happens in @Before, then the standard error callback would be triggered only after
+ * @After was being executed.
+ * As a consequence, we might have the device in a state different than the failure one
+ * due to cleanups happening in the @After step. See b/265938291 for more context. This class
+ * instead wraps all rules execution with a try-catch, capturing a screenshot as soon as an
+ * exception is thrown. TODO(b/272717025): Save a screenshot for each failure (potentially multiple
+ * per execution)
  */
 public class Functional extends BlockJUnit4ClassRunner {
 

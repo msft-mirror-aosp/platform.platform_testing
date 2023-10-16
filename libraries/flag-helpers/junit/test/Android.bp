@@ -50,6 +50,9 @@
          "objenesis",
          "platform-test-annotations",
      ],
+     libs: [
+         "tradefed",
+     ],
      test_options: {
          unit_test: true,
      },

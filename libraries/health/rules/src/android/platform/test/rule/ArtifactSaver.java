@@ -19,6 +19,7 @@ package android.platform.test.rule;
 import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentation;
 
 import android.os.ParcelFileDescriptor;
+import android.os.Trace;
 
 import androidx.annotation.NonNull;
 import androidx.test.InstrumentationRegistry;
@@ -48,6 +49,11 @@ public class ArtifactSaver {
     }
 
     static File artifactFile(Description description, String prefix, String ext) {
+        return artifactFile(
+                "TestScreenshot-" + prefix + "-" + getClassAndMethodName(description) + "." + ext);
+    }
+
+    private static String getClassAndMethodName(Description description) {
         String suffix = description.getMethodName();
         if (suffix == null) {
             // Can happen when the description is from a ClassRule
@@ -57,18 +63,11 @@ public class ArtifactSaver {
 
         // Can have null class if this is a synthetic suite
         String className = testClass != null ? testClass.getSimpleName() : "SUITE";
-        return artifactFile(
-                "TestScreenshot-"
-                        + prefix
-                        + "-"
-                        + className
-                        + "."
-                        + suffix
-                        + "."
-                        + ext);
+        return className + "." + suffix;
     }
 
     public static void onError(Description description, Throwable e) {
+        Trace.beginSection("ArtifactSaver.onError");
         final UiDevice device = getUiDevice();
         final File hierarchy = artifactFile(description, "Hierarchy", "zip");
 
@@ -111,6 +110,11 @@ public class ArtifactSaver {
             sShouldTakeBugreport = false;
             dumpCommandOutput("bugreportz -s", artifactFile(description, "Bugreport", "zip"));
         }
+
+        dumpCommandOutput(
+                "dumpsys meminfo",
+                artifactFile("MemInfo-OnFailure-" + getClassAndMethodName(description) + ".txt"));
+        Trace.endSection();
     }
 
     private static UiDevice getUiDevice() {

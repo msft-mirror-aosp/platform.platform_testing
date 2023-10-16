@@ -92,8 +92,8 @@ open class ScreenshotTestRule(
     private fun fetchExpectedImage(goldenIdentifier: String): Bitmap? {
         val instrument = InstrumentationRegistry.getInstrumentation()
         return listOf(
-                instrument.targetContext.applicationContext,
-                instrument.context
+            instrument.targetContext.applicationContext,
+            instrument.context
         ).map {
             try {
                 it.assets.open(
@@ -215,17 +215,17 @@ open class ScreenshotTestRule(
             ScreenshotResultProto.DiffResult.Status.FAILED
         }
 
-        reportResult(
-            status = status,
-            assetsPathRelativeToRepo = goldenImagePathManager.assetsPathRelativeToBuildRoot,
-            goldenIdentifier = goldenIdentifier,
-            actual = actual,
-            comparisonStatistics = comparisonResult.comparisonStatistics,
-            expected = highlightedBitmap(expected, regions),
-            diff = comparisonResult.diff
-        )
-
         if (!comparisonResult.matches) {
+            reportResult(
+                status = status,
+                assetsPathRelativeToRepo = goldenImagePathManager.assetsPathRelativeToBuildRoot,
+                goldenIdentifier = goldenIdentifier,
+                actual = actual,
+                comparisonStatistics = comparisonResult.comparisonStatistics,
+                expected = highlightedBitmap(expected, regions),
+                diff = comparisonResult.diff
+            )
+
             throw AssertionError(
                 "Image mismatch! Comparison stats: '${comparisonResult
                     .comparisonStatistics}'"
@@ -248,7 +248,8 @@ open class ScreenshotTestRule(
             .addMetadata(
                 ScreenshotResultProto.Metadata.newBuilder()
                     .setKey("repoRootPath")
-                    .setValue(goldenImagePathManager.deviceLocalPath))
+                    .setValue(goldenImagePathManager.deviceLocalPath)
+            )
 
         if (comparisonStatistics != null) {
             resultProto.comparisonStatistics = comparisonStatistics
@@ -329,15 +330,18 @@ open class ScreenshotTestRule(
         }
 
         var file = getPathOnDeviceFor(fileType, goldenIdentifier)
+        if (file.exists()) {
+            // This typically happens when in one test, the same golden image was repeatedly
+            // compared with. In this scenario, multiple actual/expected/diff images with same
+            // names will be attempted to write to the device.
+            return file
+        }
         try {
             FileOutputStream(file).use {
                 writeAction(it)
             }
         } catch (e: Exception) {
-            throw IOException(
-                "Could not write file to storage (path: ${file.absolutePath}). " +
-                    " Stacktrace: " + e.stackTrace
-            )
+            throw IOException("Could not write file to storage (path: ${file.absolutePath}). ", e)
         }
         return file
     }
@@ -421,7 +425,9 @@ typealias BitmapSupplier = () -> Bitmap
 /**
  * Implements a screenshot asserter based on the ScreenshotRule
  */
-class ScreenshotRuleAsserter private constructor(private val rule: ScreenshotTestRule) : ScreenshotAsserter {
+class ScreenshotRuleAsserter private constructor(
+    private val rule: ScreenshotTestRule
+) : ScreenshotAsserter {
     // use the most constraining matcher as default
     private var matcher: BitmapMatcher = PixelPerfectMatcher()
     private var beforeScreenshot: Runnable? = null
@@ -429,22 +435,20 @@ class ScreenshotRuleAsserter private constructor(private val rule: ScreenshotTes
     // use the instrumentation screenshot as default
     private var screenShotter: BitmapSupplier = { Screenshot.capture().bitmap }
     override fun assertGoldenImage(goldenId: String) {
-        beforeScreenshot?.run();
+        beforeScreenshot?.run()
         try {
             rule.assertBitmapAgainstGolden(screenShotter(), goldenId, matcher)
-        }
-        finally {
-            afterScreenshot?.run();
+        } finally {
+            afterScreenshot?.run()
         }
     }
 
     override fun assertGoldenImage(goldenId: String, areas: List<Rect>) {
-        beforeScreenshot?.run();
+        beforeScreenshot?.run()
         try {
             rule.assertBitmapAgainstGolden(screenShotter(), goldenId, matcher, areas)
-        }
-        finally {
-            afterScreenshot?.run();
+        } finally {
+            afterScreenshot?.run()
         }
     }
 

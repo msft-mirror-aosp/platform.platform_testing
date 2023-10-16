@@ -18,9 +18,13 @@ package android.platform.uiautomator_helpers
 import android.animation.TimeInterpolator
 import android.graphics.Point
 import android.graphics.PointF
+import android.hardware.display.DisplayManager
 import android.os.SystemClock
 import android.os.SystemClock.sleep
+import android.platform.uiautomator_helpers.DeviceHelpers.context
+import android.platform.uiautomator_helpers.TracingUtils.trace
 import android.util.Log
+import android.view.Display.DEFAULT_DISPLAY
 import android.view.InputDevice
 import android.view.MotionEvent
 import android.view.MotionEvent.TOOL_TYPE_FINGER
@@ -34,7 +38,6 @@ import java.util.concurrent.atomic.AtomicInteger
 
 private val DEFAULT_DURATION: Duration = Duration.of(500, MILLIS)
 private val PAUSE_DURATION: Duration = Duration.of(250, MILLIS)
-private val GESTURE_STEP = Duration.of(16, MILLIS)
 
 /**
  * Allows fine control of swipes on the screen.
@@ -94,11 +97,14 @@ object BetterSwipe {
             interpolator: TimeInterpolator = FLING_GESTURE_INTERPOLATOR
         ): Swipe {
             throwIfReleased()
+            val stepTime = calculateStepTime()
             log(
                 "Swiping from $lastPoint to $end in $duration " +
+                    "(step time: ${stepTime.toMillis()}ms)" +
                     "using ${interpolator.javaClass.simpleName}"
             )
-            lastTime = movePointer(duration = duration, from = lastPoint, to = end, interpolator)
+            lastTime =
+                movePointer(duration = duration, from = lastPoint, to = end, interpolator, stepTime)
             lastPoint = end
             return this
         }
@@ -173,15 +179,21 @@ object BetterSwipe {
             duration: Duration,
             from: PointF,
             to: PointF,
-            interpolator: TimeInterpolator
+            interpolator: TimeInterpolator,
+            stepTime: Duration
         ): Long {
-            val stepTimeMs = GESTURE_STEP.toMillis()
+            val stepTimeMs = stepTime.toMillis()
             val durationMs = duration.toMillis()
             val steps = durationMs / stepTimeMs
             val startTime = lastTime
             var currentTime = lastTime
+            val startRealTime = SystemClock.uptimeMillis()
             for (i in 0 until steps) {
-                sleep(stepTimeMs)
+                // The next pointer event shouldn't be dispatched before its time. However, the code
+                // below might take time. So the time to sleep is calculated dynamically, based on
+                // the expected time of this event.
+                val timeToWait = stepTimeMs * i - (SystemClock.uptimeMillis() - startRealTime)
+                if (timeToWait > 0) sleep(stepTimeMs)
                 currentTime += stepTimeMs
                 val progress = interpolator.getInterpolation(i / (steps - 1f))
                 val point = from.lerp(progress, to)
@@ -202,7 +214,7 @@ object BetterSwipe {
         fun moveBy(delta: PointF, duration: Duration = DEFAULT_DURATION): Swipes {
             log("Moving ${swipes.size} touches by $delta")
 
-            val stepTimeMs = GESTURE_STEP.toMillis()
+            val stepTimeMs = calculateStepTime().toMillis()
             val durationMs = duration.toMillis()
             val steps = durationMs / stepTimeMs
             val startTime = lastTime
@@ -274,6 +286,22 @@ private fun PointF.lerp(amount: Float, b: PointF) =
     PointF(lerp(x, b.x, amount), lerp(y, b.y, amount))
 
 private fun lerp(start: Float, stop: Float, amount: Float): Float = start + (stop - start) * amount
+
+private fun calculateStepTime(displayId: Int = DEFAULT_DISPLAY): Duration {
+    return getTimeBetweenFrames(displayId).dividedBy(2)
+}
+
+private fun getTimeBetweenFrames(displayId: Int): Duration {
+    return trace("getMillisBetweenFrames") {
+        val displayManager =
+            context.getSystemService(DisplayManager::class.java)
+                ?: error("Couldn't get DisplayManager")
+        val display = displayManager.getDisplay(displayId)
+        val framesPerSecond = display.refreshRate // Frames per second
+        val millisBetweenFrames = 1000 / framesPerSecond
+        Duration.ofMillis(millisBetweenFrames.toLong())
+    }
+}
 
 /**
  * Interpolator for a fling-like gesture that may leave the surface moving by inertia. Don't use it

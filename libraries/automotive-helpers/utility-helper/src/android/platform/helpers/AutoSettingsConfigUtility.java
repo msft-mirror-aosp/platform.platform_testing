@@ -31,10 +31,6 @@ public class AutoSettingsConfigUtility implements IAutoConfigUtility {
     private static final String SETTING_INTELLIGENCE_PACKAGE = "com.android.settings.intelligence";
     private static final String PERMISSIONS_PACKAGE = "com.android.permissioncontroller";
     private static final String OPEN_SETTINGS_COMMAND = "am start -a android.settings.SETTINGS";
-    private static final String OPEN_QUICK_SETTINGS_COMMAND =
-            "am start -n "
-                    + "com.android.car.settings/"
-                    + "com.android.car.settings.common.CarSettingActivities$QuickSettingActivity";
 
     // Config Maps
     private Map<String, String[]> mSettingsOptionsMap;
@@ -178,9 +174,6 @@ public class AutoSettingsConfigUtility implements IAutoConfigUtility {
         mApplicationConfigMap.put(AutoConfigConstants.SETTINGS_RRO_PACKAGE, SETTING_RRO_PACKAGE);
         // Add default open settings (full settings) command
         mApplicationConfigMap.put(AutoConfigConstants.OPEN_SETTINGS_COMMAND, OPEN_SETTINGS_COMMAND);
-        // Add default open quick settings command
-        mApplicationConfigMap.put(
-                AutoConfigConstants.OPEN_QUICK_SETTINGS_COMMAND, OPEN_QUICK_SETTINGS_COMMAND);
         // Add default settings spli screen UI config
         mApplicationConfigMap.put(AutoConfigConstants.SPLIT_SCREEN_UI, "TRUE");
     }
@@ -223,9 +216,6 @@ public class AutoSettingsConfigUtility implements IAutoConfigUtility {
             Map<String, AutoConfiguration> mSettingsConfigMap) {
         // Full Settings Config
         loadDefaultFullSettingsConfig(mSettingsConfigMap);
-
-        // Quick Settings Config
-        loadDefaultQuickSettingsConfig(mSettingsConfigMap);
 
         // Display Settings Config
         loadDefaultDisplaySettingsConfig(mSettingsConfigMap);
@@ -285,18 +275,6 @@ public class AutoSettingsConfigUtility implements IAutoConfigUtility {
                 AutoConfigConstants.DOWN_BUTTON,
                 new AutoConfigResource(AutoConfigConstants.DESCRIPTION, "Scroll down"));
         mSettingsConfigMap.put(AutoConfigConstants.FULL_SETTINGS, fullSettingsConfiguration);
-    }
-
-    private void loadDefaultQuickSettingsConfig(Map<String, AutoConfiguration> mSettingsConfigMap) {
-        AutoConfiguration quickSettingsConfiguration = new AutoConfiguration();
-        quickSettingsConfiguration.addResource(
-                AutoConfigConstants.OPEN_MORE_SETTINGS,
-                new AutoConfigResource(
-                        AutoConfigConstants.DESCRIPTION, "More", SETTING_APP_PACKAGE));
-        quickSettingsConfiguration.addResource(
-                AutoConfigConstants.NIGHT_MODE,
-                new AutoConfigResource(AutoConfigConstants.TEXT, "Night mode"));
-        mSettingsConfigMap.put(AutoConfigConstants.QUICK_SETTINGS, quickSettingsConfiguration);
     }
 
     private void loadDefaultDisplaySettingsConfig(

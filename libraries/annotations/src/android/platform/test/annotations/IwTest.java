@@ -22,12 +22,14 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Marks a test that should run as part of the Android team's effort in P0 CUJs platform testing and
- * automation enforcement.
+ * Marks a test that should run as part of the Android team's effort in P0 CUJs platform testing
+ * and automation enforcement.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.TYPE})
 public @interface IwTest {
-    /** Defines the IW P0 CUJ focus area which the test class associates to. */
-    String focusArea() default "";
+    /**
+     * Defines the IW P0 CUJ focus area which the test class associates to.
+     */
+     String focusArea() default "";
 }

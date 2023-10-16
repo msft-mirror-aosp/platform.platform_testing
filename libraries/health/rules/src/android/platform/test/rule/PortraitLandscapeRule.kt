@@ -10,14 +10,21 @@ import org.junit.runners.model.Statement
  * Makes each test of the class that uses this rule execute twice, in [Orientation.LANDSCAPE] and
  * [Orientation.PORTRAIT] orientation.
  */
-class PortraitLandscapeRule : TestRule {
+class PortraitLandscapeRule(
+    private val portraitDeviceFilter: List<DeviceTypeFilter> = listOf(DeviceTypeFilter.ANY),
+    private val landscapeDeviceFilter: List<DeviceTypeFilter> = listOf(DeviceTypeFilter.ANY)
+) : TestRule {
 
     override fun apply(base: Statement, description: Description): Statement =
         object : Statement() {
             override fun evaluate() {
                 try {
-                    base.runInOrientation(PORTRAIT)
-                    base.runInOrientation(LANDSCAPE)
+                    if (portraitDeviceFilter.any { it.match() }) {
+                        base.runInOrientation(PORTRAIT)
+                    }
+                    if (landscapeDeviceFilter.any { it.match() }) {
+                        base.runInOrientation(LANDSCAPE)
+                    }
                 } finally {
                     RotationUtils.clearOrientationOverride()
                 }

@@ -22,6 +22,8 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
+import android.aconfig.Aconfig;
+import android.aconfig.Aconfig.parsed_flags;
 import android.platform.test.flag.junit.IFlagsValueProvider;
 import android.platform.test.flag.util.FlagReadException;
 
@@ -30,28 +32,37 @@ import com.android.tradefed.device.ITestDevice;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
+import java.io.File;
+import java.io.FileOutputStream;
+
 @RunWith(JUnit4.class)
 public class HostFlagsValueProviderTest {
     private static final String DEVICE_CONFIG_LIST =
             "namespace1/flag1=true\nnamespace1/flag2=false\nnamespace2/flag1=abc";
-    private static final String ACONFIG_FLAGS_TEXTPROTO =
-            "parsed_flag {\n"
-                    + "  package: \"com.android.flags\"\n"
-                    + "  name: \"my_flag\"\n"
-                    + "  namespace: \"cts\"\n"
-                    + "  description: \"A sample flag\"\n"
-                    + "  bug: \"12345678\"\n"
-                    + "  state: DISABLED\n"
-                    + "  permission: READ_WRITE\n"
-                    + "}\n";
+    private static final parsed_flags ACONFIG_FLAGS =
+            parsed_flags
+                    .newBuilder()
+                    .addParsedFlag(
+                            Aconfig.parsed_flag
+                                    .newBuilder()
+                                    .setPackage("com.android.flags")
+                                    .setName("my_flag")
+                                    .setNamespace("cts")
+                                    .setDescription("A sample flag")
+                                    .addBug("12345678")
+                                    .setState(Aconfig.flag_state.DISABLED)
+                                    .setPermission(Aconfig.flag_permission.READ_WRITE))
+                    .build();
 
     @Rule public final MockitoRule mockito = MockitoJUnit.rule();
+    @Rule public final TemporaryFolder testFolder = new TemporaryFolder();
 
     @Mock private ITestDevice mTestDevice;
 
@@ -59,18 +70,21 @@ public class HostFlagsValueProviderTest {
 
     @Before
     public void initHostFlagsValueProvider() throws Exception {
+        File aconfigFlagsPbFile = testFolder.newFile();
+        ACONFIG_FLAGS.writeTo(new FileOutputStream(aconfigFlagsPbFile));
+
+        File aconfigFlagsEmptyPbFile = testFolder.newFile();
+        parsed_flags.getDefaultInstance().writeTo(new FileOutputStream(aconfigFlagsEmptyPbFile));
         when(mTestDevice.executeShellCommand(eq("device_config list")))
                 .thenReturn(DEVICE_CONFIG_LIST);
         when(mTestDevice.getSerialNumber()).thenReturn("123456");
-        when(mTestDevice.doesFileExist("/system/etc/aconfig_flags.textproto")).thenReturn(true);
-        when(mTestDevice.doesFileExist("/product/etc/aconfig_flags.textproto")).thenReturn(true);
-        when(mTestDevice.doesFileExist("/system_ext/etc/aconfig_flags.textproto"))
-                .thenReturn(false);
-        when(mTestDevice.doesFileExist("/vendor/etc/aconfig_flags.textproto")).thenReturn(false);
-        when(mTestDevice.executeShellCommand("cat /system/etc/aconfig_flags.textproto"))
-                .thenReturn(ACONFIG_FLAGS_TEXTPROTO);
-        when(mTestDevice.executeShellCommand("cat /product/etc/aconfig_flags.textproto"))
-                .thenReturn("# no flags");
+        when(mTestDevice.doesFileExist("/system/etc/aconfig_flags.pb")).thenReturn(true);
+        when(mTestDevice.doesFileExist("/product/etc/aconfig_flags.pb")).thenReturn(true);
+        when(mTestDevice.doesFileExist("/system_ext/etc/aconfig_flags.pb")).thenReturn(false);
+        when(mTestDevice.doesFileExist("/vendor/etc/aconfig_flags.pb")).thenReturn(false);
+        when(mTestDevice.pullFile("/system/etc/aconfig_flags.pb")).thenReturn(aconfigFlagsPbFile);
+        when(mTestDevice.pullFile("/product/etc/aconfig_flags.pb"))
+                .thenReturn(aconfigFlagsEmptyPbFile);
         mHostFlagsValueProvider =
                 new HostFlagsValueProvider(
                         () -> {

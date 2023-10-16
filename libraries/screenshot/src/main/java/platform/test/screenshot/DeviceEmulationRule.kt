@@ -19,6 +19,7 @@ package platform.test.screenshot
 import android.app.UiAutomation
 import android.app.UiModeManager
 import android.content.Context
+import android.os.Build
 import android.os.UserHandle
 import android.view.Display
 import android.view.WindowManagerGlobal
@@ -43,6 +44,7 @@ class DeviceEmulationRule(private val spec: DeviceEmulationSpec) : TestRule {
 
     private val instrumentation = InstrumentationRegistry.getInstrumentation()
     private val uiAutomation = instrumentation.uiAutomation
+    private val isRoblectric = Build.FINGERPRINT.contains("robolectric")
 
     override fun apply(base: Statement, description: Description): Statement {
         // The statement which calls beforeTest() before running the test and afterTest()
@@ -60,33 +62,47 @@ class DeviceEmulationRule(private val spec: DeviceEmulationSpec) : TestRule {
     }
 
     private fun beforeTest() {
-        // Make sure that we are in natural orientation (rotation 0) before we set the screen size
-        uiAutomation.setRotation(UiAutomation.ROTATION_FREEZE_0)
-
         // Emulate the display size and density.
         val display = spec.display
         val density = display.densityDpi
-        val wm = WindowManagerGlobal.getWindowManagerService()
         val (width, height) = getEmulatedDisplaySize()
-        wm.setForcedDisplayDensityForUser(Display.DEFAULT_DISPLAY, density, UserHandle.myUserId())
-        wm.setForcedDisplaySize(Display.DEFAULT_DISPLAY, width, height)
 
-        // Force the dark/light theme.
-        val uiModeManager =
-            InstrumentationRegistry.getInstrumentation()
-                .targetContext
-                .getSystemService(Context.UI_MODE_SERVICE) as UiModeManager
-        uiModeManager.setApplicationNightMode(
-            if (spec.isDarkTheme) {
-                UiModeManager.MODE_NIGHT_YES
-            } else {
-                UiModeManager.MODE_NIGHT_NO
-            }
-        )
+        if (isRoblectric) {
+            // For Robolectric tests use RuntimeEnvironment.setQualifiers until wm is shadowed
+            // b/275751037  to address this issue.
+            val runtimeEnvironment = Class.forName("org.robolectric.RuntimeEnvironment")
+            val setQualifiers =
+                runtimeEnvironment.getDeclaredMethod("setQualifiers", String::class.java)
+            val qualifier = "w${width}dp-h${height}dp-${density}dpi"
+            setQualifiers.invoke(null, qualifier)
+        } else {
+            // Make sure that we are in natural orientation (rotation 0) before we set the screen size
+            uiAutomation.setRotation(UiAutomation.ROTATION_FREEZE_0)
 
-        // Make sure that all devices are in touch mode to avoid screenshot differences
-        // in focused elements when in keyboard mode
-        instrumentation.setInTouchMode(true)
+            val wm = WindowManagerGlobal.getWindowManagerService()
+            wm.setForcedDisplayDensityForUser(
+                Display.DEFAULT_DISPLAY,
+                density,
+                UserHandle.myUserId()
+            )
+            wm.setForcedDisplaySize(Display.DEFAULT_DISPLAY, width, height)
+
+            // Force the dark/light theme.
+            val uiModeManager =
+                InstrumentationRegistry.getInstrumentation()
+                    .targetContext
+                    .getSystemService(Context.UI_MODE_SERVICE) as UiModeManager
+            uiModeManager.setApplicationNightMode(
+                if (spec.isDarkTheme) {
+                    UiModeManager.MODE_NIGHT_YES
+                } else {
+                    UiModeManager.MODE_NIGHT_NO
+                }
+            )
+            // Make sure that all devices are in touch mode to avoid screenshot differences
+            // in focused elements when in keyboard mode
+            instrumentation.setInTouchMode(true)
+        }
     }
 
     /** Get the emulated display size for [spec]. */
@@ -102,7 +118,12 @@ class DeviceEmulationRule(private val spec: DeviceEmulationSpec) : TestRule {
 
     private fun afterTest() {
         // Reset the density and display size.
+        if (isRoblectric) {
+            return
+        }
+
         val wm = WindowManagerGlobal.getWindowManagerService()
+            ?: error("Unable to acquire WindowManager")
         wm.clearForcedDisplayDensityForUser(Display.DEFAULT_DISPLAY, UserHandle.myUserId())
         wm.clearForcedDisplaySize(Display.DEFAULT_DISPLAY)
 
@@ -116,7 +137,7 @@ class DeviceEmulationRule(private val spec: DeviceEmulationSpec) : TestRule {
         instrumentation.resetInTouchMode()
 
         // Unfreeze locked rotation
-        uiAutomation.setRotation(UiAutomation.ROTATION_UNFREEZE);
+        uiAutomation.setRotation(UiAutomation.ROTATION_UNFREEZE)
     }
 }
 

@@ -17,6 +17,10 @@
 package android.platform.helpers.foldable
 
 import android.os.SystemClock
+import android.platform.helpers.foldable.FoldableState.FOLDED
+import android.platform.helpers.foldable.FoldableState.HALF_FOLDED
+import android.platform.helpers.foldable.FoldableState.REAR_DISPLAY
+import android.platform.helpers.foldable.FoldableState.UNFOLDED
 import android.platform.test.rule.TestWatcher
 import android.platform.uiautomator_helpers.TracingUtils.trace
 import android.platform.uiautomator_helpers.WaitUtils.ensureThat
@@ -28,8 +32,9 @@ import org.junit.runner.Description
 /**
  * Provides an interface to use foldable specific features.
  *
- * Should be used as [ClassRule]. To start a test folded or unfolded, use [foldBeforeTestRule] and
- * [unfoldBeforeTestRule].
+ * Should be used as [org.junit.ClassRule]. To start a test folded or unfolded, use
+ * [foldBeforeTestRule], [unfoldBeforeTestRule], [halfFoldBeforeTestRule], and
+ * [rearDisplayBeforeTestRule].
  *
  * Example:
  * ```
@@ -63,6 +68,7 @@ class FoldableRule(private val ensureScreenOn: Boolean = false) : TestWatcher() 
                 ensureThat("screen is on before folding") { screenOn }
             }
             val initialScreenSurface = displaySurface
+            val initialState = currentState
 
             controller.fold()
             SystemClock.sleep(ANIMATION_TIMEOUT) // Let's wait for the unfold animation to finish.
@@ -75,26 +81,84 @@ class FoldableRule(private val ensureScreenOn: Boolean = false) : TestWatcher() 
             uiDevice.sleep()
 
             ensureThat("screen is off after folding") { !screenOn }
-            ensureThat("screen surface decreases after folding") {
-                displaySurface < initialScreenSurface
+            if (initialState == UNFOLDED || initialState == HALF_FOLDED) {
+                ensureThat("screen surface decreases after folding") {
+                    displaySurface < initialScreenSurface
+                }
+            } else {
+                ensureThat("screen surface remains after folding") {
+                    displaySurface == initialScreenSurface
+                }
+            }
+        }
+    }
+
+    fun halfFold() {
+        trace("FoldableRule#halfFold") {
+            check(!controller.isHalfFolded) { "Trying to half-fold when already half-folded" }
+            if (ensureScreenOn) {
+                ensureThat("screen is on before half-folding") { screenOn }
+            }
+            val initialScreenSurface = displaySurface
+            val initialState = currentState
+
+            controller.halfFold()
+            SystemClock.sleep(ANIMATION_TIMEOUT)
+
+            if (initialState == FOLDED || initialState == REAR_DISPLAY) {
+                ensureThat("screen surface increases after half-folding") {
+                    displaySurface > initialScreenSurface
+                }
+            } else {
+                ensureThat("screen surface remains after half-folding") {
+                    displaySurface == initialScreenSurface
+                }
             }
         }
     }
 
     fun unfold() {
         trace("FoldableRule#unfold") {
-            check(controller.isFolded) { "Trying to unfold when already unfolded" }
+            check(!controller.isUnfolded) { "Trying to unfold when already unfolded" }
             if (ensureScreenOn) {
                 ensureThat("screen is on before unfolding") { screenOn }
             }
             val initialScreenSurface = displaySurface
+            val initialState = currentState
 
             controller.unfold()
             SystemClock.sleep(ANIMATION_TIMEOUT) // Let's wait for the unfold animation to finish.
 
             ensureThat("screen is on after unfolding") { screenOn }
-            ensureThat("screen surface increases after unfolding") {
-                displaySurface > initialScreenSurface
+            if (initialState == FOLDED || initialState == REAR_DISPLAY) {
+                ensureThat("screen surface increases after unfolding") {
+                    displaySurface > initialScreenSurface
+                }
+            } else {
+                ensureThat("screen surface remains after unfolding") {
+                    displaySurface == initialScreenSurface
+                }
+            }
+        }
+    }
+
+    fun rearDisplay() {
+        trace("FoldableRule#rearDisplay") {
+            check(!controller.isOnRearDisplay) { "Trying to go to rear display when already there" }
+            val initialScreenSurface = displaySurface
+            val initialState = currentState
+
+            controller.rearDisplay()
+            SystemClock.sleep(ANIMATION_TIMEOUT)
+
+            if (initialState == HALF_FOLDED || initialState == UNFOLDED) {
+                ensureThat("screen surface decreases after going to rear display") {
+                    displaySurface < initialScreenSurface
+                }
+            } else {
+                ensureThat("screen surface remains after going to rear display") {
+                    displaySurface == initialScreenSurface
+                }
             }
         }
     }
@@ -103,8 +167,10 @@ class FoldableRule(private val ensureScreenOn: Boolean = false) : TestWatcher() 
         trace("Setting hinge angle to $angle") { controller.setHingeAngle(angle) }
     }
 
-    val foldBeforeTestRule: TestRule = FoldControlRule(FoldableState.FOLDED)
-    val unfoldBeforeTestRule: TestRule = FoldControlRule(FoldableState.UNFOLDED)
+    val foldBeforeTestRule: TestRule = FoldControlRule(FOLDED)
+    val unfoldBeforeTestRule: TestRule = FoldControlRule(UNFOLDED)
+    val halfFoldBeforeTestRule: TestRule = FoldControlRule(HALF_FOLDED)
+    val rearDisplayBeforeTestRule: TestRule = FoldControlRule(REAR_DISPLAY)
 
     private inner class FoldControlRule(private val startState: FoldableState) : TestWatcher() {
         override fun starting(description: Description?) {
@@ -114,9 +180,10 @@ class FoldableRule(private val ensureScreenOn: Boolean = false) : TestWatcher() 
                     return
                 }
                 when (startState) {
-                    FoldableState.FOLDED -> fold()
-                    FoldableState.UNFOLDED -> unfold()
-                    FoldableState.HALF_FOLDED -> TODO("Not yet supported.")
+                    FOLDED -> fold()
+                    UNFOLDED -> unfold()
+                    HALF_FOLDED -> halfFold()
+                    REAR_DISPLAY -> rearDisplay()
                 }
             }
         }
@@ -124,10 +191,10 @@ class FoldableRule(private val ensureScreenOn: Boolean = false) : TestWatcher() 
 
     private val currentState: FoldableState
         get() =
-            when (controller.isFolded) {
-                true -> FoldableState.FOLDED
-                false -> FoldableState.UNFOLDED
-            }
+            if (controller.isFolded) FOLDED
+            else if (controller.isHalfFolded) HALF_FOLDED
+            else if (controller.isUnfolded) UNFOLDED
+            else if (controller.isOnRearDisplay) REAR_DISPLAY else throw IllegalStateException()
 
     private val screenOn: Boolean
         get() = uiDevice.isScreenOn
@@ -141,5 +208,6 @@ private val ANIMATION_TIMEOUT = TimeUnit.SECONDS.toMillis(3)
 private enum class FoldableState {
     FOLDED,
     UNFOLDED,
-    HALF_FOLDED
+    HALF_FOLDED,
+    REAR_DISPLAY,
 }

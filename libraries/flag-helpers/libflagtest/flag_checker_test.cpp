@@ -19,10 +19,12 @@
 
 #include <flag_checker.h>
 #include <gtest/gtest.h>
+
 #include "android_test_myflags.h"
 
 
 using android::test::flag::CheckFlagCondition;
+using android::test::flag::GetFlagsNotMetRequirements;
 
 class CheckFlagConditionTest : public ::testing::Test {};
 
@@ -69,7 +71,7 @@ TEST_F(CheckFlagConditionTest, aconfig_flag_not_meet_condition) {
       false,
       {
         android::test::myflags::test_flag_true,
-        "flagtest, android::test::myflags, test_flag_true"
+        "android::test::myflags, test_flag_true"
       }
     )
   );
@@ -81,7 +83,7 @@ TEST_F(CheckFlagConditionTest, aconfig_flag_meet_true_condition) {
       true,
       {
         android::test::myflags::test_flag_true,
-        "flagtest, android::test::myflags, test_flag_true"
+        "android::test::myflags, test_flag_true"
       }
     )
   );
@@ -93,8 +95,70 @@ TEST_F(CheckFlagConditionTest, aconfig_flag_meet_false_condition) {
       false,
       {
         android::test::myflags::test_flag_false,
-        "flagtest, android::test::myflags, test_flag_false"
+        "android::test::myflags, test_flag_false"
       }
     )
+  );
+}
+
+class GetFlagsNotMetReqTest : public ::testing::Test {};
+
+TEST_F(GetFlagsNotMetReqTest, empty_flags) {
+  ASSERT_EQ(GetFlagsNotMetRequirements({}).size(), 0);
+}
+
+TEST_F(GetFlagsNotMetReqTest, flag_meet_condition) {
+  auto unsatisfied_flags =
+    GetFlagsNotMetRequirements({
+      {
+        true, {
+          {
+            android::test::myflags::test_flag_true,
+            "android::test::myflags, test_flag_true"
+          }
+        }
+      },
+      {
+        false, {
+          {
+            nullptr,
+            "flagtest, android::test::myflags, test_flag_false"
+          }
+        }
+      },
+    });
+  ASSERT_EQ(unsatisfied_flags.size(), 0);
+}
+
+TEST_F(GetFlagsNotMetReqTest, flag_not_meet_condition) {
+  auto unsatisfied_flags =
+    GetFlagsNotMetRequirements({
+      {
+        false, {
+          {
+            android::test::myflags::test_flag_true,
+            "android::test::myflags, test_flag_true"
+          }
+        }
+      },
+      {
+        true, {
+          {
+            nullptr,
+            "flagtest, android::test::myflags, test_flag_false"
+          }
+        }
+      },
+    });
+  ASSERT_EQ(unsatisfied_flags.size(), 2);
+  ASSERT_FALSE(unsatisfied_flags[0].first);
+  ASSERT_EQ(
+    unsatisfied_flags[0].second,
+    "android::test::myflags, test_flag_true"
+  );
+  ASSERT_TRUE(unsatisfied_flags[1].first);
+  ASSERT_EQ(
+    unsatisfied_flags[1].second,
+    "flagtest, android::test::myflags, test_flag_false"
   );
 }

@@ -16,15 +16,10 @@ package {
     default_applicable_licenses: ["Android-Apache-2.0"],
 }
 
-android_test {
+java_test_host {
     name: "HelloWorldPerformanceTest",
-
     srcs: ["src/**/*.java"],
-    sdk_version: "current",
-    min_sdk_version: "21",
 
-    static_libs: ["androidx.test.runner"],
-    certificate: "platform",
-
-    test_suites: ["device-tests"],
+    libs: ["tradefed"],
+    test_suites: ["general-tests"],
 }

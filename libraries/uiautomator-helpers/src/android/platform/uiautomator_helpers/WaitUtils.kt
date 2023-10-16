@@ -226,16 +226,37 @@ object WaitUtils {
     fun <T> waitForNullable(
         description: String,
         timeout: Duration = DEFAULT_DEADLINE,
-        supplier: () -> T?
+        checker: (T?) -> Boolean = { it != null },
+        supplier: () -> T?,
     ): T? {
         var result: T? = null
 
         ensureThat("Waiting for \"$description\"", timeout, ignoreFailure = true) {
             result = supplier()
-            result != null
+            checker(result)
         }
         return result
     }
+
+    /** Wraps [waitForNullable] using the default checker, and allowing kotlin supplier syntax. */
+    fun <T> waitForNullable(
+        description: String,
+        timeout: Duration = DEFAULT_DEADLINE,
+        supplier: () -> T?,
+    ): T? = waitForNullable(description, timeout, checker = { it != null }, supplier)
+
+    /**
+     * Waits for [supplier] to return a not null and not empty list within [timeout].
+     *
+     * Returns the not-empty list as soon as it's received, or an empty list once reached the
+     * timeout.
+     */
+    fun <T> waitForPossibleEmpty(
+        description: String,
+        timeout: Duration = DEFAULT_DEADLINE,
+        supplier: () -> List<T>?
+    ): List<T> =
+        waitForNullable(description, timeout, { !it.isNullOrEmpty() }, supplier) ?: emptyList()
 
     /**
      * Waits for [supplier] to return a non-null value within [timeout].
