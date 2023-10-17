@@ -25,20 +25,46 @@ import android.platform.test.flag.util.FlagSetException;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.runners.Parameterized;
 
 /** Unit tests for {@code ResetFlagsRule}. */
-@RunWith(JUnit4.class)
+@RunWith(Parameterized.class)
 public final class SetFlagsRuleTest {
 
     @Rule public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
 
+    @Parameterized.Parameters(name = "isInitWithDefault={0}")
+    public static Object[] data() {
+        return new Boolean[] {false, true};
+    }
+
+    public SetFlagsRuleTest(boolean isInitWithDefault) {
+        if (isInitWithDefault) {
+            mSetFlagsRule.initAllFlagsToReleaseConfigDefault();
+        }
+    }
+
     @Test
     public void setFlagValues() {
-        mSetFlagsRule.enableFlags("android.platform.test.flag.junit.flagName3");
-        mSetFlagsRule.disableFlags("android.platform.test.flag.junit.flagName4");
+        mSetFlagsRule.enableFlags(Flags.FLAG_FLAG_NAME3);
+        mSetFlagsRule.disableFlags(Flags.FLAG_FLAG_NAME4);
         assertTrue(Flags.flagName3());
         assertFalse(Flags.flagName4());
+    }
+
+    @Test
+    public void setFlagValuesMultipleTimes() {
+        mSetFlagsRule.enableFlags(Flags.FLAG_FLAG_NAME3);
+        assertTrue(Flags.flagName3());
+
+        mSetFlagsRule.disableFlags("android.platform.test.flag.junit.flag_name3");
+        assertFalse(Flags.flagName3());
+
+        mSetFlagsRule.enableFlags("android.platform.test.flag.junit.flag_name3");
+        assertTrue(Flags.flagName3());
+
+        mSetFlagsRule.disableFlags("android.platform.test.flag.junit.flag_name3");
+        assertFalse(Flags.flagName3());
     }
 
     @Test
@@ -49,15 +75,11 @@ public final class SetFlagsRuleTest {
 
     @Test
     public void setFlagsAfterOneTest() {
-        mSetFlagsRule.enableFlags(
-                "android.platform.test.flag.junit.flagName3",
-                "android.platform.test.flag.junit.flagName4");
+        mSetFlagsRule.enableFlags(Flags.FLAG_FLAG_NAME3, Flags.FLAG_FLAG_NAME4);
         assertTrue(Flags.flagName3());
         assertTrue(Flags.flagName4());
 
-        mSetFlagsRule.disableFlags(
-                "android.platform.test.flag.junit.flagName3",
-                "android.platform.test.flag.junit.flagName4");
+        mSetFlagsRule.disableFlags(Flags.FLAG_FLAG_NAME3, Flags.FLAG_FLAG_NAME4);
         assertFalse(Flags.flagName3());
         assertFalse(Flags.flagName4());
     }
@@ -68,6 +90,11 @@ public final class SetFlagsRuleTest {
                 FlagSetException.class,
                 () -> {
                     mSetFlagsRule.enableFlags("flagName3");
+                });
+        assertThrows(
+                FlagSetException.class,
+                () -> {
+                    mSetFlagsRule.enableFlags("com.fake.package.flag_name3");
                 });
     }
 }

@@ -18,7 +18,6 @@ import datetime
 import time
 from typing import Mapping
 
-from mobly import asserts
 from mobly.controllers import android_device
 
 WIFI_COUNTRYCODE_CONFIG_TIME_SEC = 3
@@ -50,11 +49,10 @@ def set_wifi_country_code(
     ad: AndroidDevice, Mobly Android Device.
     country_code: WiFi Country Code.
   """
-  asserts.skip_if(
-      not ad.is_adb_root,
-      f'Skipped setting wifi country code on device "{ad.serial}" '
-      'because we do not set wifi country code on unrooted phone.',
-  )
+  if (not ad.is_adb_root):
+    ad.log.info(f'Skipped setting wifi country code on device "{ad.serial}" '
+                'because we do not set wifi country code on unrooted phone.')
+    return
   ad.log.info(f'Set Wi-Fi country code to {country_code}.')
   ad.adb.shell('cmd wifi set-wifi-enabled disabled')
   time.sleep(WIFI_COUNTRYCODE_CONFIG_TIME_SEC)
@@ -98,11 +96,7 @@ def dump_gms_version(ad: android_device.AndroidDevice) -> Mapping[str, str]:
 
 
 def toggle_airplane_mode(ad: android_device.AndroidDevice) -> None:
-  asserts.skip_if(
-      not ad.is_adb_root,
-      f'Skipped airplane mode toggling on device "{ad.serial}" '
-      'because we do not do that on unrooted phone.',
-  )
+  """Toggles airplane mode on the given device."""
   ad.log.info('turn on airplane mode')
   enable_airplane_mode(ad)
   ad.log.info('turn off airplane mode')
@@ -153,26 +147,37 @@ def _grant_manage_external_storage_permission(
     ad: AndroidDevice, Mobly Android Device.
     package_name: The nearbu snippet package name.
   """
-  ad.adb.shell(f'appops set --uid {package_name} MANAGE_EXTERNAL_STORAGE allow')
+  try:
+    ad.adb.shell(
+        f'appops set --uid {package_name} MANAGE_EXTERNAL_STORAGE allow'
+    )
+  except Exception:
+    ad.log.info('Failed to grant MANAGE_EXTERNAL_STORAGE permission.')
 
 
 def enable_airplane_mode(ad: android_device.AndroidDevice) -> None:
   """Enables airplane mode on the given device."""
-  ad.adb.shell(['settings', 'put', 'global', 'airplane_mode_on', '1'])
-  ad.adb.shell([
-      'am', 'broadcast', '-a', 'android.intent.action.AIRPLANE_MODE', '--ez',
-      'state', 'true'
-  ])
+  if (ad.is_adb_root):
+    ad.adb.shell(['settings', 'put', 'global', 'airplane_mode_on', '1'])
+    ad.adb.shell([
+        'am', 'broadcast', '-a', 'android.intent.action.AIRPLANE_MODE', '--ez',
+        'state', 'true'
+    ])
+  ad.adb.shell(['svc', 'wifi', 'disable'])
+  ad.adb.shell(['svc', 'bluetooth', 'disable'])
   time.sleep(TOGGLE_AIRPLANE_MODE_WAIT_TIME_SEC)
 
 
 def disable_airplane_mode(ad: android_device.AndroidDevice) -> None:
   """Disables airplane mode on the given device."""
-  ad.adb.shell(['settings', 'put', 'global', 'airplane_mode_on', '0'])
-  ad.adb.shell([
-      'am', 'broadcast', '-a', 'android.intent.action.AIRPLANE_MODE', '--ez',
-      'state', 'false'
-  ])
+  if (ad.is_adb_root):
+    ad.adb.shell(['settings', 'put', 'global', 'airplane_mode_on', '0'])
+    ad.adb.shell([
+        'am', 'broadcast', '-a', 'android.intent.action.AIRPLANE_MODE', '--ez',
+        'state', 'false'
+    ])
+  ad.adb.shell(['svc', 'wifi', 'enable'])
+  ad.adb.shell(['svc', 'bluetooth', 'enable'])
   time.sleep(TOGGLE_AIRPLANE_MODE_WAIT_TIME_SEC)
 
 
@@ -218,6 +223,12 @@ def check_and_try_to_write_ph_flag(
     flag_value: str,
 ) -> None:
   """Check and try to enable the given flag on the given device."""
+  if(not ad.is_adb_root):
+    ad.log.info(
+        "Can't read or write P/H flag value in non-rooted device. Use Mobile"
+        ' Utility app to config instead.'
+    )
+    return
 
   if check_if_ph_flag_committed(ad, pname, flag_name):
     ad.log.info(f'{flag_name} is already committed.')
@@ -247,6 +258,25 @@ def enable_wifi_aware(ad: android_device.AndroidDevice) -> None:
   flag_type = 'boolean'
   flag_value = 'true'
 
+  check_and_try_to_write_ph_flag(ad, pname, flag_name, flag_type, flag_value)
+
+
+def enable_auto_reconnect(ad: android_device.AndroidDevice) -> None:
+  """Enable auto reconnect on the given device."""
+  pname = 'com.google.android.gms.nearby'
+  flag_name = 'connection_safe_to_disconnect_auto_reconnect_enabled'
+  flag_type = 'boolean'
+  flag_value = 'true'
+  check_and_try_to_write_ph_flag(ad, pname, flag_name, flag_type, flag_value)
+
+  flag_name = 'connection_safe_to_disconnect_auto_resume_enabled'
+  flag_type = 'boolean'
+  flag_value = 'true'
+  check_and_try_to_write_ph_flag(ad, pname, flag_name, flag_type, flag_value)
+
+  flag_name = 'connection_safe_to_disconnect_version'
+  flag_type = 'long'
+  flag_value = '4'
   check_and_try_to_write_ph_flag(ad, pname, flag_name, flag_type, flag_value)
 
 

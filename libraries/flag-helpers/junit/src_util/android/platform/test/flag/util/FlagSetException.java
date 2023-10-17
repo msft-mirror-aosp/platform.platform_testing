@@ -25,4 +25,8 @@ public class FlagSetException extends RuntimeException {
     public FlagSetException(String flag, Throwable cause) {
         super(String.format("Flag %s set error", flag), cause);
     }
+
+    public FlagSetException(String flag, String msg, Throwable cause) {
+        super(String.format("Flag %s read error: %s", flag, msg), cause);
+    }
 }

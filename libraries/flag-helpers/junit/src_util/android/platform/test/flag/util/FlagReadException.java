@@ -17,7 +17,7 @@
 package android.platform.test.flag.util;
 
 /** Exception to read flag values. */
-public class FlagReadException extends Exception {
+public class FlagReadException extends RuntimeException {
     public FlagReadException(String flag, String msg) {
         super(String.format("Flag %s read error: %s", flag, msg));
     }
