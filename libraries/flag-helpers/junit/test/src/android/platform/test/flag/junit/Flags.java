@@ -18,6 +18,10 @@ package android.platform.test.flag.junit;
 
 /** A Fake Flags to test the {@code AconfigFlagsValueProvider}. */
 public class Flags {
+
+    public static final String FLAG_FLAG_NAME3 = "android.platform.test.flag.junit.flag_name3";
+    public static final String FLAG_FLAG_NAME4 = "android.platform.test.flag.junit.flag_name4";
+
     /** Returns the flag value. */
     public static boolean flagName1() {
         return true;

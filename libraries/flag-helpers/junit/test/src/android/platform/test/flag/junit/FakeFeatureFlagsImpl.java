@@ -24,20 +24,20 @@ public class FakeFeatureFlagsImpl implements FeatureFlags {
     private HashMap<String, Boolean> mFlagMap = new HashMap<>();
 
     public FakeFeatureFlagsImpl() {
-        this.mFlagMap.put("android.platform.test.flag.junit.flagName3", null);
-        this.mFlagMap.put("android.platform.test.flag.junit.flagName4", null);
+        this.mFlagMap.put(Flags.FLAG_FLAG_NAME3, null);
+        this.mFlagMap.put(Flags.FLAG_FLAG_NAME4, null);
     }
 
     /** Returns the flag value. */
     @Override
     public boolean flagName3() {
-        return this.mFlagMap.get("android.platform.test.flag.junit.flagName3");
+        return this.mFlagMap.get(Flags.FLAG_FLAG_NAME3);
     }
 
     /** another flag */
     @Override
     public boolean flagName4() {
-        return this.mFlagMap.get("android.platform.test.flag.junit.flagName4");
+        return this.mFlagMap.get(Flags.FLAG_FLAG_NAME4);
     }
 
     public void setFlag(String flag, boolean value) {
