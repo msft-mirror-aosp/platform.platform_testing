@@ -83,3 +83,12 @@ IMPOST_CONTACTS_SHELL_COMAND = (
 )
 
 ONE_SEC = 1
+
+TIMEZONE_DICT = {
+    "PST": "Pacific Standard Time",
+    "PDT": "Pacific Daylight Time",
+    "EST": "Eastern Standard Time",
+    "EDT": "Eastern Daylight Time"
+}
+
+DATE_CMD = "date"
