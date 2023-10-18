@@ -67,14 +67,18 @@ class NCBaseTestClass(base_test.BaseTestClass):
       self.advertiser, self.discoverer = self.ads
 
   def _disconnect_from_wifi(self, ad: android_device.AndroidDevice) -> None:
+    if(not ad.is_adb_root):
+      ad.log.info("Can't clear wifi network in non-rooted device")
+      return
     ad.nearby.wifiClearConfiguredNetworks()
     time.sleep(nc_constants.WIFI_DISCONNECTION_DELAY.total_seconds())
 
   def _setup_android_device(self, ad: android_device.AndroidDevice) -> None:
-    asserts.skip_if(
-        not ad.is_adb_root,
-        'The test only can run on userdebug build.',
-    )
+    if (not ad.is_adb_root):
+      if (self.test_parameters.allow_unrooted_device):
+        ad.log.info('Unrooted device is detected. Test coverage is limited')
+      else:
+        asserts.skip('The test only can run on rooted device.')
     ad.debug_tag = ad.serial + '(' + ad.adb.getprop('ro.product.model') + ')'
     ad.log.info('try to install nearby_snippet_apk')
     if self._nearby_snippet_apk_path:
@@ -95,6 +99,7 @@ class NCBaseTestClass(base_test.BaseTestClass):
     setup_utils.enable_logs(ad)
 
     setup_utils.disable_redaction(ad)
+    setup_utils.enable_auto_reconnect(ad)
 
   def setup_test(self):
     if self.test_parameters.toggle_airplane_mode_target_side:

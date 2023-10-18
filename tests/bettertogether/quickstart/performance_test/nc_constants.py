@@ -29,7 +29,7 @@ SECOND_DISCOVERY_TIMEOUT = datetime.timedelta(seconds=35)
 SECOND_CONNECTION_INIT_TIMEOUT = datetime.timedelta(seconds=10)
 SECOND_CONNECTION_RESULT_TIMEOUT = datetime.timedelta(seconds=25)
 CONNECTION_BANDWIDTH_CHANGED_TIMEOUT = datetime.timedelta(seconds=25)
-FILE_1G_PAYLOAD_TRANSFER_TIMEOUT = datetime.timedelta(seconds=210)
+FILE_1G_PAYLOAD_TRANSFER_TIMEOUT = datetime.timedelta(seconds=400)
 WIFI_WLAN_CONNECTING_TIME_OUT = datetime.timedelta(seconds=25)
 DISCONNECTION_TIMEOUT = datetime.timedelta(seconds=15)
 
@@ -85,6 +85,7 @@ class TestParameters:
   payload_type: PayloadType = PayloadType.FILE
   advertising_discovery_medium: int = NearbyMedium.AUTO
   upgrade_medium: int = NearbyMedium.UPGRADE_TO_ALL_WIFI
+  allow_unrooted_device: bool = False
 
 
 @enum.unique
