@@ -21,22 +21,19 @@
 
 """
 
-import sys
 import logging
-import pprint
 
 from mobly import asserts
 from mobly import base_test
-from mobly import test_runner
 from mobly.controllers import android_device
 
 from mbs_utils import constants
 from mbs_utils import spectatio_utils
 from mbs_utils import bt_utils
+from mbs_utils.main_utils import common_main
 
 
 class ImportAddressDetailsTest(base_test.BaseTestClass):
-
     VCF_ADDRESS_HEADER = "ADR"
 
     def setup_class(self):
@@ -67,8 +64,6 @@ class ImportAddressDetailsTest(base_test.BaseTestClass):
                 if line.startswith(self.VCF_ADDRESS_HEADER):
                     return line
 
-
-
     def setup_test(self):
         # Upload contacts to phone device
         file_path = constants.PATH_TO_CONTACTS_VCF_FILE
@@ -96,9 +91,8 @@ class ImportAddressDetailsTest(base_test.BaseTestClass):
         asserts.assert_true(
             self.compare_display_address_to_vcf_line(display_address, vcf_line),
             ("Displayed address does not match address stored in VCF file: " +
-            "\n\tDisplayed address: %s" +
-            "\n\tVCF address: %s") % (display_address, vcf_line))
-
+             "\n\tDisplayed address: %s" +
+             "\n\tVCF address: %s") % (display_address, vcf_line))
 
     def teardown_test(self):
         # Turn Bluetooth off on both devices after test finishes.
@@ -118,8 +112,5 @@ class ImportAddressDetailsTest(base_test.BaseTestClass):
         return True
 
 
-
-
 if __name__ == '__main__':
-    # Take test args
-    test_runner.main()
+    common_main()

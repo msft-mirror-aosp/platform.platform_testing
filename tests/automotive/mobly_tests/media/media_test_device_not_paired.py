@@ -15,9 +15,8 @@
 import sys
 
 from bluetooth_test import bluetooth_base_test
-
 from mobly import asserts
-from mobly import test_runner
+from mbs_utils.main_utils import common_main
 
 
 class DeviceNotPairedTest(bluetooth_base_test.BluetoothBaseTest):
@@ -35,9 +34,4 @@ class DeviceNotPairedTest(bluetooth_base_test.BluetoothBaseTest):
 
 
 if __name__ == '__main__':
-    # Pass test arguments after '--' to the test runner.
-    # Needed for Mobly Test Runner
-    if '--' in sys.argv:
-        index = sys.argv.index('--')
-        sys.argv = sys.argv[:1] + sys.argv[index + 1:]
-    test_runner.main()
+    common_main()
