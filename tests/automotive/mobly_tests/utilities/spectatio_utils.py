@@ -55,7 +55,7 @@ class CallUtils:
             shell_command,
             device_target.serial,
         )
-        device_target.adb.shell(shell_command)
+        return device_target.adb.shell(shell_command)
 
 
     def get_dialing_number(self):
@@ -207,3 +207,15 @@ class CallUtils:
         logging.info('<Bluetooth Audio disconnected> label is present: %s',
                      actual_disconnected_label_status)
         return actual_disconnected_label_status
+
+    def update_device_timezone(self, expected_timezone):
+        logging.info('Update the device timezone to %s',
+                     expected_timezone)
+        self.device.mbs.setTimeZone(expected_timezone)
+        actual_timezone = self.device.mbs.getTimeZone()
+        logging.info('<actual timezone> : %s  and <expected_timezone> %s',
+                     actual_timezone, expected_timezone)
+        if expected_timezone not in actual_timezone:
+            raise CallUtilsError(
+            "Time Zone did not set properly."
+        )

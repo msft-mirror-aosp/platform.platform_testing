@@ -22,6 +22,8 @@ WAIT_ONE_SEC = 1
 WAIT_TWO_SECONDS = 2
 SYNC_WAIT_TIME = 10 # Sometimes syncing between devices can take a while
 DEVICE_CONNECT_WAIT_TIME = 20 # Waiting for device pairing to complete.
+MOBILE_DEVICE_NAME = 'target'
+AUTOMOTIVE_DEVICE_NAME = 'discoverer'
 
 # The word or phrase present in a device summary that is connected.
 CONNECTED_SUMMARY_STATUS = "Connected"
@@ -83,3 +85,29 @@ IMPOST_CONTACTS_SHELL_COMAND = (
 )
 
 ONE_SEC = 1
+
+TIMEZONE_DICT = {
+    "PST": "Pacific Standard Time",
+    "PDT": "Pacific Daylight Time",
+    "EST": "Eastern Standard Time",
+    "EDT": "Eastern Daylight Time"
+}
+
+DATE_CMD = "date"
+
+# KeyEvents
+KEYCODE_ENTER = 'keyevent KEYCODE_ENTER'
+KEYCODE_TAB = 'keyevent KEYCODE_TAB'
+KEYCODE_MEDIA_NEXT = 'keyevent KEYCODE_MEDIA_NEXT'
+KEYCODE_MEDIA_PREVIOUS = 'keyevent KEYCODE_MEDIA_PREVIOUS'
+KEYCODE_MEDIA_PAUSE = 'keyevent KEYCODE_MEDIA_PAUSE'
+KEYCODE_MEDIA_PLAY = 'keyevent KEYCODE_MEDIA_PLAY'
+KEYCODE_MEDIA_STOP = 'keyevent KEYCODE_MEDIA_STOP'
+
+# YouTube Media
+YOUTUBE_MUSIC_PACKAGE = 'com.google.android.apps.youtube.music'
+START_YOUTUBE_MEDIA_SHELL = 'am start ' + YOUTUBE_MUSIC_PACKAGE
+STOP_YOUTUBE_MEDIA_SHELL = 'am force-stop ' + YOUTUBE_MUSIC_PACKAGE
+GET_DUMPSYS_METADATA = 'dumpsys media_session'
+SONG_METADATA_PATTERN = r"description=.[^\n]*"
+DEFAULT_YOUTUBE_MUSIC_PLAYLIST = 'am start -a android.intent.action.VIEW -d https://music.youtube.com/watch?v=sjuOaAf9C70'

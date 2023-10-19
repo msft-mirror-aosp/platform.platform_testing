@@ -18,6 +18,7 @@ package com.google.android.mobly.snippet.bundled;
 
 import android.platform.helpers.HelperAccessor;
 import android.platform.helpers.IAutoBluetoothSettingsHelper;
+import android.platform.helpers.IAutoDateTimeSettingsHelper;
 import android.platform.helpers.IAutoSettingHelper;
 import android.platform.helpers.SettingsConstants;
 
@@ -28,10 +29,12 @@ public class SettingsSnippet implements Snippet {
 
     private HelperAccessor<IAutoSettingHelper> mSettingsHelper;
     private HelperAccessor<IAutoBluetoothSettingsHelper> mBluetoothSettingsHelper;
+    private HelperAccessor<IAutoDateTimeSettingsHelper> mDateTimeSettingsHelper;
 
     public SettingsSnippet() {
         mSettingsHelper = new HelperAccessor<>(IAutoSettingHelper.class);
         mBluetoothSettingsHelper = new HelperAccessor<>(IAutoBluetoothSettingsHelper.class);
+        mDateTimeSettingsHelper = new HelperAccessor<>(IAutoDateTimeSettingsHelper.class);
     }
 
     @Rpc(
@@ -74,4 +77,18 @@ public class SettingsSnippet implements Snippet {
     public void pressForget() {
         mBluetoothSettingsHelper.get().pressForget();
     }
+
+    @Rpc(description = "Get the device timezone")
+    public String getTimeZone() {
+        return mDateTimeSettingsHelper.get().getTimeZone();
+    }
+
+    @Rpc(description = "Open Date time Setting")
+    public void setTimeZone(String timezone) {
+        mSettingsHelper.get().openSetting(SettingsConstants.DATE_AND_TIME_SETTINGS);
+        mDateTimeSettingsHelper.get().setTimeZone(timezone);
+    }
+
+    @Override
+    public void shutdown() {}
 }
