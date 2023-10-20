@@ -16,6 +16,7 @@
 package android.platform.test.rule;
 
 import android.util.Log;
+
 import androidx.annotation.VisibleForTesting;
 
 import com.android.helpers.GarbageCollectionHelper;
@@ -37,15 +38,11 @@ public class GarbageCollectRule extends TestWatcher {
     @VisibleForTesting
     static final String GC_RULE_END = "gc-on-rule-end";
 
-    public GarbageCollectRule() {
-        mGcHelper = initGcHelper();
-    }
+    @VisibleForTesting static final String GC_WAIT_TIME_MS = "gc-wait-time-ms";
 
     public GarbageCollectRule(String... applications) {
-        mGcHelper = initGcHelper(applications);
-    }
 
-    private GarbageCollectionHelper initGcHelper(String... applications) {
+
         // Check if package names are passed via test arguments and split the comma separated
         // package names.
         if (applications == null || applications.length == 0) {
@@ -53,13 +50,22 @@ public class GarbageCollectRule extends TestWatcher {
                 applications = getArguments().getString(GC_APPS).split(",");
             } else {
                 Log.e(TAG, "Cannot force garbage collection because package names are empty.");
-                return null;
             }
         }
 
         mGcHelper = getGcHelper();
         mGcHelper.setUp(applications);
-        return mGcHelper;
+    }
+
+    /** Trigger garbage collection for all processes specified and wait for memory to stabilize. */
+    @VisibleForTesting
+    public void garbageCollect() {
+        // time to wait in ms for memory to stabilize
+        long waitTimeMs = GarbageCollectionHelper.DEFAULT_POST_GC_WAIT_TIME_MS;
+        if (getArguments() != null && getArguments().getString(GC_WAIT_TIME_MS) != null) {
+            waitTimeMs = Long.parseLong(getArguments().getString(GC_WAIT_TIME_MS));
+        }
+        mGcHelper.garbageCollect(waitTimeMs);
     }
 
     @VisibleForTesting
@@ -72,16 +78,15 @@ public class GarbageCollectRule extends TestWatcher {
         if (mGcHelper == null) {
             return;
         }
+
         Log.v(TAG, "Force Garbage collection at the starting of the rule.");
-        mGcHelper.garbageCollect();
+        garbageCollect();
     }
 
     @Override
     protected void finished(Description description) {
-
-        // By default do not force the GC at the end of the rule.
-        if (mGcHelper == null || getArguments() == null)
-            return;
+        // By default, do not force the GC at the end of the rule.
+        if (mGcHelper == null || getArguments() == null) return;
 
         // Check if GC is needed at the end of the rule.
         boolean gcRuleEnd = Boolean.parseBoolean(getArguments().getString(GC_RULE_END, "false"));
@@ -90,6 +95,6 @@ public class GarbageCollectRule extends TestWatcher {
         }
 
         Log.v(TAG, "Force Garbage collection at the end of the rule.");
-        mGcHelper.garbageCollect();
+        garbageCollect();
     }
 }

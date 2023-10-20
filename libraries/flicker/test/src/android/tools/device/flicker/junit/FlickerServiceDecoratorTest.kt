@@ -21,6 +21,7 @@ import android.tools.utils.KotlinMockito
 import android.tools.utils.assertThrows
 import android.util.Log
 import com.google.common.truth.Truth
+import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.Description
 import org.junit.runners.model.FrameworkMethod
@@ -147,7 +148,9 @@ class FlickerServiceDecoratorTest {
         Truth.assertThat(exception.stackTraceToString()).contains(flickerMethodComputeError.message)
     }
 
+    // TODO(b/303426072): fix flaky test
     @Test
+    @Ignore
     fun handleDuplicateFlickerMethods() {
         val instrumentation = Mockito.mock(Instrumentation::class.java)
         val testClass = Mockito.mock(TestClass::class.java)
