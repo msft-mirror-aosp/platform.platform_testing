@@ -285,6 +285,7 @@ public class AutomotiveConfigConstants {
     // Media Center Screen
     public static final String PLAY_PAUSE_BUTTON = "PLAY_PAUSE_BUTTON";
     public static final String MEDIA_SONGS_LIST = "MEDIA_SONGS_LIST";
+    public static final String MEDIA_LAUNCH_BLUETOOTH_AUDIO_COMMAND = "MEDIA_LAUNCH_BLUETOOTH_AUDIO_COMMAND";
     // NEXT_BUTTON from Account Settings
     public static final String PREVIOUS_BUTTON = "PREVIOUS_BUTTON";
     public static final String SHUFFLE_BUTTON = "SHUFFLE_BUTTON";
