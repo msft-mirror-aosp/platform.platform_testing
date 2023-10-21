@@ -66,10 +66,8 @@ class BluetoothBaseTest(base_test.BaseTestClass):
         if target_address in discoverer_paired_addresses:
           logging.info(f"forget {target_address}")
           self.discoverer.mbs.btUnpairDevice(target_address)
-        # disable BT
-        self.target.mbs.btDisable()
-        self.discoverer.mbs.btDisable()
-
+          self.target.mbs.btDisable()
+          self.discoverer.mbs.btDisable()
 
 if __name__ == '__main__':
     # Pass test arguments after '--' to the test runner.

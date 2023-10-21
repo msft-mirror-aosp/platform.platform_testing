@@ -493,4 +493,14 @@ public class MediaCenterHelperImpl extends AbstractStandardAppHelper implements 
         return object;
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public void openBluetoothMediaApp() {
+        getSpectatioUiUtil().pressHome();
+        getSpectatioUiUtil().waitForIdle();
+        getSpectatioUiUtil()
+                .executeShellCommand(
+                        getCommandFromConfig(AutomotiveConfigConstants.MEDIA_LAUNCH_BLUETOOTH_AUDIO_COMMAND));
+    }
+
 }

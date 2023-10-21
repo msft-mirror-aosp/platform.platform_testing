@@ -27,23 +27,16 @@
 
 """
 
-import sys
 import logging
-import pprint
 
 from bluetooth_test import bluetooth_base_test
-
 from mobly import asserts
-from mobly import base_test
-from mobly import test_runner
-from mobly.controllers import android_device
-
 from mbs_utils import constants
-from mbs_utils import spectatio_utils
-from mbs_utils import bt_utils
+from mbs_utils.main_utils import common_main
 
 MOBILE_DEVICE_NAME = 'target'
 AUTOMOTIVE_DEVICE_NAME = 'discoverer'
+
 
 class BluetoothConnectionStatusOnLevelTwo(bluetooth_base_test.BluetoothBaseTest):
 
@@ -73,10 +66,9 @@ class BluetoothConnectionStatusOnLevelTwo(bluetooth_base_test.BluetoothBaseTest)
         summary = self.call_utils.get_device_summary()
         logging.info("Summary received reads: %s" % summary)
         asserts.assert_true((constants.DISCONNECTED_SUMMARY_STATUS in summary),
-                "Expected summary  to contain %s, but instead summary reads: %s"
+                            "Expected summary  to contain %s, but instead summary reads: %s"
                             % (constants.DISCONNECTED_SUMMARY_STATUS, summary))
 
 
 if __name__ == '__main__':
-    # Take test args
-    test_runner.main()
+    common_main()

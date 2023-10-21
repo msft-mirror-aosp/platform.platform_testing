@@ -15,10 +15,7 @@
 import sys
 
 from bluetooth_test import bluetooth_base_test
-
-from mbs_utils import constants
 from mobly import asserts
-from mobly import test_runner
 from mbs_utils.media_utils import MediaUtils
 from mbs_utils.main_utils import common_main
 
