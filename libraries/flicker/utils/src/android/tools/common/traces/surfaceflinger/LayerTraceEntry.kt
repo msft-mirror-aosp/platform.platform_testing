@@ -62,7 +62,7 @@ class LayerTraceEntry(
 
     @JsName("physicalDisplay")
     val physicalDisplay: Display?
-        get() = displays.firstOrNull { !it.isVirtual }
+        get() = displays.firstOrNull { !it.isVirtual && it.isOn }
 
     @JsName("physicalDisplayBounds")
     val physicalDisplayBounds: Rect?

@@ -23,20 +23,9 @@
   
 """
 
-import sys
-import logging
-import pprint
-
 from mobly import asserts
-from mobly import base_test
-from mobly import test_runner
-from mobly.controllers import android_device
-
 from mbs_utils import constants
-from mbs_utils import spectatio_utils
-from mbs_utils import bt_utils
-
-
+from mbs_utils.main_utils import common_main
 
 
 class CallContactSortTest(bluetooth_base_test.BluetoothBaseTest):
@@ -49,15 +38,14 @@ class CallContactSortTest(bluetooth_base_test.BluetoothBaseTest):
         with open(vcf_path, mode='r') as vcf_file:
             for line in vcf_file:
 
-                 if line.startswith("N:"):
-                     name_line = line.split(':')
-                     # Split into first and last name
-                     name_last_and_first = name_line[1].split(';')
-                     name = '{0}, {1}'.format(name_last_and_first[0], name_last_and_first[1])
-                     vcf_names.append(name)
+                if line.startswith("N:"):
+                    name_line = line.split(':')
+                    # Split into first and last name
+                    name_last_and_first = name_line[1].split(';')
+                    name = '{0}, {1}'.format(name_last_and_first[0], name_last_and_first[1])
+                    vcf_names.append(name)
 
         return vcf_names
-
 
     def setup_test(self):
         # Upload contacts to phone device
@@ -66,7 +54,6 @@ class CallContactSortTest(bluetooth_base_test.BluetoothBaseTest):
 
         # Pair the devices
         self.bt_utils.pair_primary_to_secondary()
-
 
     def test_sort_contacts_by_last_name(self):
         # Navigate to the Contacts page
@@ -85,15 +72,13 @@ class CallContactSortTest(bluetooth_base_test.BluetoothBaseTest):
         asserts.assert_true(
             first_contact == top_contact_by_last_name,
             "When sorting by last name, expected %s, found %s" % (top_contact_by_last_name,
-            first_contact))
+                                                                  first_contact))
 
     def teardown_test(self):
-            # Turn Bluetooth off on both devices after test finishes.
-            self.target.mbs.btDisable()
-            self.discoverer.mbs.btDisable()
-
+        # Turn Bluetooth off on both devices after test finishes.
+        self.target.mbs.btDisable()
+        self.discoverer.mbs.btDisable()
 
 
 if __name__ == '__main__':
-    # Take test args
-    test_runner.main()
+    common_main()

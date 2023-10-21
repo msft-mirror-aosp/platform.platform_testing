@@ -216,4 +216,11 @@ public interface IAutoMediaHelper extends IAppHelper, Scrollable {
      * <p>This method is return is Bluetooth Audio disconnected label visible.
      */
     boolean isBluetoothAudioDisconnectedLabelVisible();
+
+    /**
+     * Setup expectations: on home screen.
+     *
+     * <p>This method is used to open Bluetooth Audio screen.
+     */
+    void openBluetoothMediaApp();
 }

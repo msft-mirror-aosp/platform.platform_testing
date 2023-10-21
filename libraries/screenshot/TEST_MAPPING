@@ -9,22 +9,6 @@
       ]
     },
     {
-      "name": "SystemUIGoogleScreenshotTests",
-      "options": [
-        {
-          "exclude-annotation": "org.junit.Ignore"
-        },
-        {
-          "exclude-annotation": "androidx.test.filters.FlakyTest"
-        },
-        {
-          "exclude-annotation": "android.platform.test.annotations.Postsubmit"
-        }
-      ],
-      // The test can't run on AOSP Cuttlefish.
-      "keywords": ["internal"]
-    },
-    {
       "name": "SystemUIGoogleBiometricsScreenshotTests",
       "options": [
         {

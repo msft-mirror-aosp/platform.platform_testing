@@ -85,7 +85,9 @@ instrumentation_tests := \
     FlickerTestApp \
     WMShellFlickerTestsOther \
     WMShellFlickerTestsBubbles \
-    WMShellFlickerTestsPip \
+    WMShellFlickerTestsPip1 \
+    WMShellFlickerTestsPip2 \
+    WMShellFlickerTestsPip3 \
     WMShellFlickerTestsSplitScreenGroup1 \
     WMShellFlickerTestsSplitScreenGroup2 \
     WMShellUnitTests \

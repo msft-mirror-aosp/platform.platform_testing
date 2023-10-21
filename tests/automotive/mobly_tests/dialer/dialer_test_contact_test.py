@@ -13,24 +13,15 @@
 #  limitations under the License.
 
 
-import sys
 import logging
-import pprint
 
 from bluetooth_test import bluetooth_base_test
-
-from mobly import asserts
-from mobly import test_runner
-from mobly.controllers import android_device
-
 from mbs_utils import constants
-from mbs_utils import spectatio_utils
-from mbs_utils import bt_utils
-
-
+from mbs_utils.main_utils import common_main
 
 # Number of seconds for the target to stay discoverable on Bluetooth.
 DISCOVERABLE_TIME = 60
+
 
 class CallContactTest(bluetooth_base_test.BluetoothBaseTest):
 
@@ -58,6 +49,6 @@ class CallContactTest(bluetooth_base_test.BluetoothBaseTest):
         self.call_utils.end_call()
         self.call_utils.wait_with_log(constants.WAIT_TWO_SECONDS)
 
+
 if __name__ == '__main__':
-    # Take test args
-    test_runner.main()
+    common_main()

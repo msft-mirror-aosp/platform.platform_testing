@@ -22,18 +22,10 @@
 
 """
 
-import sys
-import logging
-import pprint
-
 from mobly import asserts
 from mobly import base_test
-from mobly import test_runner
 from mobly.controllers import android_device
-
-from mbs_utils import constants
-from mbs_utils import spectatio_utils
-from mbs_utils import bt_utils
+from mbs_utils.main_utils import common_main
 
 
 class BluetoothDefaultStateTest(base_test.BaseTestClass):
@@ -48,7 +40,6 @@ class BluetoothDefaultStateTest(base_test.BaseTestClass):
             self.ads, label='auto')
         self.discoverer.debug_tag = 'discoverer'
         self.discoverer.load_snippet('mbs', android_device.MBS_PACKAGE)
-
 
     def setup_test(self):
         # Default state test requires no setup.
@@ -65,7 +56,5 @@ class BluetoothDefaultStateTest(base_test.BaseTestClass):
         self.discoverer.mbs.btDisable()
 
 
-
 if __name__ == '__main__':
-    # Take test args
-    test_runner.main()
+    common_main()
