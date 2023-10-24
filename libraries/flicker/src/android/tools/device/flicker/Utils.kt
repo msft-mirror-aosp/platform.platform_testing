@@ -17,9 +17,10 @@
 package android.tools.device.flicker
 
 import android.tools.common.Scenario
+import android.tools.common.io.Reader
 import android.tools.common.traces.component.ComponentNameMatcher
 import android.tools.device.traces.TRACE_CONFIG_REQUIRE_CHANGES
-import android.tools.device.traces.io.ResultReader
+import android.tools.device.traces.io.ResultReaderWithLru
 import android.tools.device.traces.io.ResultWriter
 import android.tools.device.traces.monitors.PerfettoTraceMonitor
 import android.tools.device.traces.monitors.ScreenRecorder
@@ -102,13 +103,13 @@ object Utils {
                 ScreenRecorder(InstrumentationRegistry.getInstrumentation().targetContext)
             ),
         actions: (writer: ResultWriter) -> Unit
-    ): ResultReader {
+    ): Reader {
         val writer = ResultWriter().forScenario(scenario).withOutputDir(outputDir).setRunComplete()
         monitors.fold({ actions.invoke(writer) }) { action, monitor ->
             { monitor.withTracing(writer) { action() } }
         }()
         val result = writer.write()
 
-        return ResultReader(result, TRACE_CONFIG_REQUIRE_CHANGES)
+        return ResultReaderWithLru(result, TRACE_CONFIG_REQUIRE_CHANGES)
     }
 }

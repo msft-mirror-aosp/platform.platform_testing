@@ -21,18 +21,18 @@ import android.graphics.Rect
 import platform.test.screenshot.proto.ScreenshotResultProto
 
 /**
- * Matcher for differences not detectable by human eye
- * The relaxed threshold allows for low quality png storage
+ * Matcher for differences not detectable by human eye.
+ * The relaxed threshold allows for low quality png storage.
  */
 class AlmostPerfectMatcher(
     private val acceptableThreshold: Double = 0.0,
 ) : BitmapMatcher() {
     override fun compareBitmaps(
-            expected: IntArray,
-            given: IntArray,
-            width: Int,
-            height: Int,
-            regions: List<Rect>
+        expected: IntArray,
+        given: IntArray,
+        width: Int,
+        height: Int,
+        regions: List<Rect>
     ): MatchResult {
         check(expected.size == given.size) { "Size of two bitmaps does not match" }
 
@@ -51,19 +51,24 @@ class AlmostPerfectMatcher(
             }
         }
 
-        val stats = ScreenshotResultProto.DiffResult.ComparisonStatistics
-                .newBuilder()
+        val matches = different <= (acceptableThreshold * width * height)
+        val diffBmp =
+            if (different <= 0) null
+            else Bitmap.createBitmap(diffArray.value, width, height, Bitmap.Config.ARGB_8888)
+        if (matches) {
+            ignored += different
+            different = 0
+        }
+
+        val stats =
+            ScreenshotResultProto.DiffResult.ComparisonStatistics.newBuilder()
                 .setNumberPixelsCompared(width * height)
                 .setNumberPixelsIdentical(same)
                 .setNumberPixelsDifferent(different)
                 .setNumberPixelsIgnored(ignored)
                 .build()
 
-        if (different > (acceptableThreshold * width * height)) {
-            val diff = Bitmap.createBitmap(diffArray.value, width, height, Bitmap.Config.ARGB_8888)
-            return MatchResult(matches = false, diff = diff, comparisonStatistics = stats)
-        }
-        return MatchResult(matches = true, diff = null, comparisonStatistics = stats)
+        return MatchResult(matches = matches, diff = diffBmp, comparisonStatistics = stats)
     }
 
     // ref
@@ -78,7 +83,7 @@ class AlmostPerfectMatcher(
         val blueScalar = if (redMean < 128) 3 else 2
         val greenScalar = 4
         val correction =
-                (redScalar * red * red) + (greenScalar * green * green) + (blueScalar * blue * blue)
+            (redScalar * red * red) + (greenScalar * green * green) + (blueScalar * blue * blue)
         // 1.5 no difference
         // 3.0 observable by experienced human observer
         // 6.0 minimal difference

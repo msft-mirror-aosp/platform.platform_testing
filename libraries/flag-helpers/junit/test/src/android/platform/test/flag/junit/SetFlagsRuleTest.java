@@ -97,4 +97,50 @@ public final class SetFlagsRuleTest {
                     mSetFlagsRule.enableFlags("com.fake.package.flag_name3");
                 });
     }
+
+    @Test
+    public void getFakeFeatureFeature_afterSet() {
+        mSetFlagsRule.enableFlags(Flags.FLAG_FLAG_NAME3, Flags.FLAG_FLAG_NAME4);
+        FeatureFlags fakeFlagsImpl1 = mSetFlagsRule.getFakeFeatureFlagsImpl(Flags.FLAG_FLAG_NAME3);
+        assertTrue(fakeFlagsImpl1.flagName3());
+        assertTrue(fakeFlagsImpl1.flagName4());
+
+        FeatureFlags fakeFlagsImpl2 = mSetFlagsRule.getFakeFeatureFlagsImpl(Flags.FLAG_FLAG_NAME4);
+        assertTrue(fakeFlagsImpl1.equals(fakeFlagsImpl2));
+    }
+
+    @Test
+    public void getFakeFeatureFeature_castToWrongType() {
+        mSetFlagsRule.enableFlags(Flags.FLAG_FLAG_NAME3, Flags.FLAG_FLAG_NAME4);
+        assertThrows(
+                ClassCastException.class,
+                () -> {
+                    int fakeFlagsImpl =
+                            mSetFlagsRule.getFakeFeatureFlagsImpl(Flags.FLAG_FLAG_NAME3);
+                });
+        assertThrows(
+                ClassCastException.class,
+                () -> {
+                    Flags fakeFlagsImpl =
+                            mSetFlagsRule.getFakeFeatureFlagsImpl(Flags.FLAG_FLAG_NAME3);
+                });
+        assertThrows(
+                ClassCastException.class,
+                () -> {
+                    FeatureFlagsImpl fakeFlagsImpl =
+                            mSetFlagsRule.getFakeFeatureFlagsImpl(Flags.FLAG_FLAG_NAME3);
+                });
+    }
+
+    private class FeatureFlagsImpl implements FeatureFlags {
+        @Override
+        public boolean flagName3() {
+            return false;
+        }
+
+        @Override
+        public boolean flagName4() {
+            return true;
+        }
+    }
 }

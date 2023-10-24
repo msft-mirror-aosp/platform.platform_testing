@@ -136,10 +136,15 @@ class NearbyConnectionWrapper:
       self,
       medium_upgrade_type: nc_constants.MediumUpgradeType,
       timeout: datetime.timedelta,
+      keep_alive_timeout_ms: int = nc_constants.KEEP_ALIVE_TIMEOUT_BT_MS,
+      keep_alive_interval_ms: int = nc_constants.KEEP_ALIVE_INTERVAL_BT_MS,
   ) -> None:
     """Requests Nearby Connection."""
 
-    self.discoverer.log.info('Start connection request')
+    self.discoverer.log.info(
+        'Start connection request with keep_alive_timeout_ms'
+        f' {keep_alive_timeout_ms}'
+    )
     self._discoverer_connection_lifecycle_callback = (
         self.discoverer_nearby.requestConnection(
             self.discoverer.serial,
@@ -147,8 +152,11 @@ class NearbyConnectionWrapper:
             self.connection_medium.value,
             self.upgrade_medium.value,
             medium_upgrade_type.value,
+            keep_alive_timeout_ms,
+            keep_alive_interval_ms,
         )
     )
+
 
     d_connection_init_event = (
         self._discoverer_connection_lifecycle_callback.waitAndGet(
@@ -293,6 +301,8 @@ class NearbyConnectionWrapper:
       self,
       timeouts: nc_constants.ConnectionSetupTimeouts,
       medium_upgrade_type: nc_constants.MediumUpgradeType = nc_constants.MediumUpgradeType.DEFAULT,
+      keep_alive_timeout_ms: int = nc_constants.KEEP_ALIVE_TIMEOUT_BT_MS,
+      keep_alive_interval_ms: int = nc_constants.KEEP_ALIVE_INTERVAL_BT_MS,
   ) -> None:
     """Starts Nearby Connection between two Android devices."""
 
@@ -309,7 +319,9 @@ class NearbyConnectionWrapper:
     # Request connection.
     self.request_connection(
         medium_upgrade_type=medium_upgrade_type,
-        timeout=timeouts.connection_init_timeout)
+        timeout=timeouts.connection_init_timeout,
+        keep_alive_timeout_ms=keep_alive_timeout_ms,
+        keep_alive_interval_ms=keep_alive_interval_ms)
 
     # Stop discovery.
     self.stop_discovery()

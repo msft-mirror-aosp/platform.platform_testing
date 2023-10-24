@@ -41,6 +41,8 @@ from performance_test import nc_constants
 from performance_test import nearby_connection_wrapper
 from performance_test import setup_utils
 
+_TEST_SCRIPT_VERSION = '1.5'
+
 _NEARBY_SNIPPET_2_PACKAGE_NAME = 'com.google.android.nearby.mobly.snippet.second'
 
 _PERFORMANCE_TEST_REPEAT_COUNT = 100
@@ -92,7 +94,7 @@ class QuickStartStressTest(nc_base_test.NCBaseTestClass):
     if self._nearby_snippet_2_apk_path:
       setup_utils.install_apk(ad, self._nearby_snippet_2_apk_path)
     else:
-      ad.log.warning('nearby_snipet_2 apk is not specified, '
+      ad.log.warning('nearby_snippet_2 apk is not specified, '
                      'make sure it is installed in the device')
     ad.load_snippet('nearby2', _NEARBY_SNIPPET_2_PACKAGE_NAME)
     setup_utils.grant_manage_external_storage_permission(
@@ -223,6 +225,8 @@ class QuickStartStressTest(nc_base_test.NCBaseTestClass):
       nearby_snippet_2.start_nearby_connection(
           timeouts=second_connection_setup_timeouts,
           medium_upgrade_type=nc_constants.MediumUpgradeType.DISRUPTIVE,
+          keep_alive_timeout_ms=self.test_parameters.keep_alive_timeout_ms,
+          keep_alive_interval_ms=self.test_parameters.keep_alive_interval_ms,
       )
     finally:
       self._test_result.second_connection_setup_quality_info = (
@@ -372,30 +376,31 @@ class QuickStartStressTest(nc_base_test.NCBaseTestClass):
         },
         '4 Medium upgrade count': (
             self._summary_upgraded_wifi_transfer_mediums()),
-        '5 Average and 95% of BT transfer speed (KBps)': (
-            f'{first_bt_transfer_stats.average_kbps}'
+        '5 50% and 95% of BT transfer speed (KBps)': (
+            f'{first_bt_transfer_stats.percentile_50_kbps}'
             f' / {first_bt_transfer_stats.percentile_95_kbps}'),
-        '6 Average and 95% of Wi-Fi transfer speed(KBps)': (
-            f'{second_wifi_transfer_stats.average_kbps}'
+        '6 50% and 95% of Wi-Fi transfer speed(KBps)': (
+            f'{second_wifi_transfer_stats.percentile_50_kbps}'
             f' / {second_wifi_transfer_stats.percentile_95_kbps}'),
-        '7 Average and 95% of discovery latency(sec)': (
-            f'{first_discovery_stats.average}'
+        '7 50% and 95% of discovery latency(sec)': (
+            f'{first_discovery_stats.percentile_50}'
             f' / {first_discovery_stats.percentile_95} (1st), '
-            f'{second_discovery_stats.average}'
+            f'{second_discovery_stats.percentile_50}'
             f' / {second_discovery_stats.percentile_95} (2nd)'),
-        '8 Average and 95% of connection latency(sec)': (
-            f'{first_connection_stats.average}'
+        '8 50% and 95% of connection latency(sec)': (
+            f'{first_connection_stats.percentile_50}'
             f' / {first_connection_stats.percentile_95} (1st), '
-            f'{second_connection_stats.average}'
+            f'{second_connection_stats.percentile_50}'
             f' / {second_connection_stats.percentile_95} (2nd)'),
-        '9 Average and 95% of medium upgrade latency(sec)': (
-            f'{second_medium_upgrade_stats.average}'
+        '9 50% and 95% of medium upgrade latency(sec)': (
+            f'{second_medium_upgrade_stats.percentile_50}'
             f' / {second_medium_upgrade_stats.percentile_95} (2nd)'),
     }
 
     self.record_data({
         'Test Class': self.TAG,
         'sponge_properties': {
+            'test_script_version': _TEST_SCRIPT_VERSION,
             '00_test_report_alias_name': (
                 self.test_parameters.test_report_alias_name),
             '01_test_result': result_message,

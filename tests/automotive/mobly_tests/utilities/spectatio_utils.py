@@ -135,7 +135,7 @@ class CallUtils:
     def press_home(self):
         """ Press the Home button to go back to the home page."""
         logging.info("Pressing HOME ")
-        self.device.mbs.pressHome();
+        self.device.mbs.pressHome()
 
     def press_enter_on_device(self, device_target):
         """Press ENTER on device"""
@@ -216,3 +216,9 @@ class CallUtils:
             raise CallUtilsError(
                 "Time Zone did not set properly."
             )
+
+    def is_bluetooth_hfp_error_displayed(self):
+        logging.info('Verify Bluetooth HFP error is displayed,'
+                             'when bluetooth is disconnected')
+        return self.device.mbs.isBluetoothHfpErrorDisplayed()
+

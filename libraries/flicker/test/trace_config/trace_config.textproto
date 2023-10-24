@@ -62,6 +62,7 @@ data_sources: {
       atrace_categories: "binder_driver"
       atrace_categories: "sched_process_exit"
       atrace_apps: "android.tools"
+      atrace_apps: "android.tools.integration"
     }
   }
 }

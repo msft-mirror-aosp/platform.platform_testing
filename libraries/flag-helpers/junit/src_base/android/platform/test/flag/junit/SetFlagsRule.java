@@ -86,6 +86,29 @@ public final class SetFlagsRule implements TestRule {
         }
     }
 
+    /**
+     * Returns a FakeFeatureFlags for the flag with the given name.
+     *
+     * <p>If two flags belong to the same Flags/FeatureFlags, then by calling this method on these
+     * two flags will get the same instance of FakeFeatureFlags.
+     *
+     * <p>The given name must have the format {@code packageName.flagName}, for example: {@code
+     * "com.android.systemui.scene_container"},
+     */
+    public <T> T getFakeFeatureFlagsImpl(String fullFlagName) {
+        Flag flag = Flag.createFlag(fullFlagName);
+        Class<?> flagsClass = getFlagClassFromFlag(flag);
+        Object fakeFlagsImplInstance = mFlagsClassToFakeFlagsImpl.get(flagsClass);
+        if (fakeFlagsImplInstance == null) {
+            throw new UnsupportedOperationException(
+                    String.format(
+                            "Failed to get instance of FakeFeatureFlagsImpl of class %s. Please at"
+                                    + " least set one of the flag in the Flags class.",
+                            flagsClass.getName()));
+        }
+        return (T) fakeFlagsImplInstance;
+    }
+
     @Override
     public Statement apply(Statement base, Description description) {
         return new Statement() {

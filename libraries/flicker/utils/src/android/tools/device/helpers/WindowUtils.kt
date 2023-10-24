@@ -29,7 +29,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 
 object WindowUtils {
 
-    private val displayBoundsCache = LruCache<Rotation, Region>(1)
+    private val displayBoundsCache = LruCache<Rotation, Region>(4)
     private val instrumentation = InstrumentationRegistry.getInstrumentation()
 
     /** Helper functions to retrieve system window sizes and positions. */
