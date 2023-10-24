@@ -27,6 +27,8 @@ from performance_test import nc_constants
 from performance_test import nearby_connection_wrapper
 from performance_test import setup_utils
 
+_TEST_SCRIPT_VERSTION = '1.5'
+
 _DELAY_BETWEEN_EACH_TEST_CYCLE = datetime.timedelta(seconds=5)
 _TRANSFER_FILE_SIZE_1MB = 1024
 
@@ -193,21 +195,22 @@ class EsimTransferOnlyStressTest(nc_base_test.NCBaseTestClass):
             'transfer': self.performance_test_iterations - (
                 bt_transfer_stats.success_count),
         },
-        '3 Average and 95% of BT transfer speed (KBps)': (
-            f'{bt_transfer_stats.average_kbps}'
+        '3 50% and 95% of BT transfer speed (KBps)': (
+            f'{bt_transfer_stats.percentile_50_kbps}'
             f' / {bt_transfer_stats.percentile_95_kbps}'),
-        '4 Average and 95% of discovery latency(sec)': (
-            f'{discovery_stats.average}'
+        '4 50% and 95% of discovery latency(sec)': (
+            f'{discovery_stats.percentile_50}'
             f' / {discovery_stats.percentile_95}'),
 
-        '5 Average and 95% of connection latency(sec)': (
-            f'{connection_stats.average}'
+        '5 50% and 95% of connection latency(sec)': (
+            f'{connection_stats.percentile_50}'
             f' / {connection_stats.percentile_95}'),
     }
 
     self.record_data({
         'Test Class': self.TAG,
         'sponge_properties': {
+            'test_script_verion': _TEST_SCRIPT_VERSTION,
             '00_test_report_alias_name': (
                 self.test_parameters.test_report_alias_name),
             '01_test_result': result_message,
