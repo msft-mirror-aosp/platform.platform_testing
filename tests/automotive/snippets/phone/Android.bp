@@ -39,8 +39,9 @@ android_test {
     static_libs: [
         "mobly-bundled-snippets-lib",
     ],
+    srcs: ["src/**/PhoneSnippet.java"],
     manifest: "AndroidPhoneManifest.xml",
     compile_multilib: "both",
-    sdk_version: "current",
+    target_sdk_version: "31",
     min_sdk_version: "31",
 }
