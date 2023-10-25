@@ -241,8 +241,8 @@ class FlickerServiceResultsCollector(
     }
 
     private fun reportFlickerServiceStatus(record: DataRecord) {
-        val status = if (executionErrors.isEmpty()) "OK" else "EXECUTION_FAILED"
-        record.addStringMetric("${FAAS_METRICS_PREFIX}_STATUS", status)
+        val status = if (executionErrors.isEmpty()) OK_STATUS_CODE else EXECUTION_ERROR_STATUS_CODE
+        record.addStringMetric("${FAAS_METRICS_PREFIX}_STATUS", status.toString())
     }
 
     companion object {
@@ -251,6 +251,8 @@ class FlickerServiceResultsCollector(
         private const val LOG_TAG = "$FLICKER_TAG-Collector"
         const val WINSCOPE_FILE_PATH_KEY = "winscope_file_path"
         const val FLICKER_ASSERTIONS_COUNT_KEY = "flicker_assertions_count"
+        const val OK_STATUS_CODE = 0
+        const val EXECUTION_ERROR_STATUS_CODE = 1
 
         fun getKeyForAssertionResult(result: AssertionResult): String {
             return "$FAAS_METRICS_PREFIX::${result.name}"

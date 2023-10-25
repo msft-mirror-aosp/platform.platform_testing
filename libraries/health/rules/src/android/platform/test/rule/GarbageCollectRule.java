@@ -40,9 +40,15 @@ public class GarbageCollectRule extends TestWatcher {
 
     @VisibleForTesting static final String GC_WAIT_TIME_MS = "gc-wait-time-ms";
 
+    public GarbageCollectRule() {
+        initGcHelper();
+    }
+
     public GarbageCollectRule(String... applications) {
+        initGcHelper(applications);
+    }
 
-
+    private GarbageCollectionHelper initGcHelper(String... applications) {
         // Check if package names are passed via test arguments and split the comma separated
         // package names.
         if (applications == null || applications.length == 0) {
@@ -50,11 +56,13 @@ public class GarbageCollectRule extends TestWatcher {
                 applications = getArguments().getString(GC_APPS).split(",");
             } else {
                 Log.e(TAG, "Cannot force garbage collection because package names are empty.");
+                return null;
             }
         }
 
         mGcHelper = getGcHelper();
         mGcHelper.setUp(applications);
+        return mGcHelper;
     }
 
     /** Trigger garbage collection for all processes specified and wait for memory to stabilize. */

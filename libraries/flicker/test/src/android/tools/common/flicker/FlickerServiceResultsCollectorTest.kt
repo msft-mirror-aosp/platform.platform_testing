@@ -27,7 +27,9 @@ import android.tools.common.flicker.subject.exceptions.SimpleFlickerAssertionErr
 import android.tools.common.io.Reader
 import android.tools.common.traces.wm.TransitionsTrace
 import android.tools.device.flicker.FlickerServiceResultsCollector
+import android.tools.device.flicker.FlickerServiceResultsCollector.Companion.EXECUTION_ERROR_STATUS_CODE
 import android.tools.device.flicker.FlickerServiceResultsCollector.Companion.FLICKER_ASSERTIONS_COUNT_KEY
+import android.tools.device.flicker.FlickerServiceResultsCollector.Companion.OK_STATUS_CODE
 import android.tools.device.flicker.FlickerServiceResultsCollector.Companion.WINSCOPE_FILE_PATH_KEY
 import android.tools.device.flicker.FlickerServiceResultsCollector.Companion.getKeyForAssertionResult
 import android.tools.utils.CleanFlickerEnvironmentRule
@@ -71,7 +73,7 @@ class FlickerServiceResultsCollectorTest {
         Truth.assertThat(runData.hasMetrics()).isFalse()
 
         // Reports only FaaS status
-        Mockito.verify(testData).addStringMetric("FAAS_STATUS", "OK")
+        Mockito.verify(testData).addStringMetric("FAAS_STATUS", OK_STATUS_CODE.toString())
         // No other calls to addStringMetric
         Mockito.verify(testData, Mockito.times(1))
             .addStringMetric(Mockito.anyString(), Mockito.anyString())
@@ -271,7 +273,7 @@ class FlickerServiceResultsCollectorTest {
         Truth.assertThat(collector.executionErrors).isEmpty()
 
         // Reports only FaaS status
-        Mockito.verify(testData).addStringMetric("FAAS_STATUS", "OK")
+        Mockito.verify(testData).addStringMetric("FAAS_STATUS", OK_STATUS_CODE.toString())
     }
 
     @Test
@@ -291,7 +293,8 @@ class FlickerServiceResultsCollectorTest {
 
         Truth.assertThat(collector.executionErrors).isNotEmpty()
 
-        Truth.assertThat(testData.stringMetrics["FAAS_STATUS"]).isEqualTo("EXECUTION_FAILED")
+        Truth.assertThat(testData.stringMetrics["FAAS_STATUS"])
+            .isEqualTo(EXECUTION_ERROR_STATUS_CODE.toString())
     }
 
     private fun createCollector(

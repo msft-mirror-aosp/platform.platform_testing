@@ -177,6 +177,36 @@ class CallUtils:
         """ Wait for specific time for debugging"""
         logging.info('Sleep for %s seconds', wait_time)
         time.sleep(wait_time)
+    # Open contacts detais page
+    def open_details_page(self, contact_name):
+       logging.info('open contacts details page')
+       self.device.mbs.openDetailsPage(contact_name)
+    # Close contact details page
+    def close_details_page(self):
+       logging.info('close contacts details page')
+       self.device.mbs.closeDetailsPage()
+    # Add Remove Favorite contact
+    def add_remove_favorite_contact(self):
+       logging.info('add remove favorite contact')
+       self.device.mbs.addRemoveFavoriteContact()
+    # Add Favorites from Favorite Tab
+    def add_favorites_from_favorites_tab(self, contact_name):
+       logging.info('add favorites from favorites tab')
+       self.device.mbs.addFavoritesFromFavoritesTab(contact_name)
+    # Add Remove Favorite contact
+    def is_contact_in_favorites(self, contact_name, expected_result):
+        logging.info('check if contact is in favorites')
+        actual_result =self.device.mbs.isContactInFavorites(contact_name)
+        logging.info(
+            ' Add/Remove contacts expected : <%s>, Actual : <%s>',
+            expected_result,
+            actual_result,
+        )
+        if expected_result == 'True' and expected_result != actual_result:
+          raise CallUtilsError('Contact not added to favorites')
+        if expected_result == 'False' and expected_result != actual_result:
+          raise CallUtilsError('Contact not removed from favorites')
+
 
     def open_bluetooth_media_app(self):
         """ Open Bluetooth Audio app """
