@@ -847,6 +847,15 @@
       "TYPE": "TEXT",
       "VALUE": "Disconnected"
     },
+    "ENABLE_DISABLE_BT_TOGGLE": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "switch_widget",
+      "PACKAGE": "android"
+    },
+    "CANCEL_BT_AUDIO_CONNECTION_BUTTON": {
+      "TYPE": "TEXT",
+      "VALUE": "Cancel"
+    },
     "DEVICE_MODEL": {
       "TYPE": "TEXT",
       "VALUE": "Model & hardware",

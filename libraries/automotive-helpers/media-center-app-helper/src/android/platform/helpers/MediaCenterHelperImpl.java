@@ -219,7 +219,7 @@ public class MediaCenterHelperImpl extends AbstractStandardAppHelper implements 
                 .validateUiObject(shufflePlaylistButton, AutomotiveConfigConstants.SHUFFLE_BUTTON);
         getSpectatioUiUtil().clickAndWait(shufflePlaylistButton);
         getSpectatioUiUtil().wait5Seconds();
-        }
+    }
 
     /**
      * TODO - Keeping the empty functions for now, to avoid the compilation error in Vendor it will
@@ -503,4 +503,33 @@ public class MediaCenterHelperImpl extends AbstractStandardAppHelper implements 
                         getCommandFromConfig(AutomotiveConfigConstants.MEDIA_LAUNCH_BLUETOOTH_AUDIO_COMMAND));
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public void clickOnBluetoothToggle() {
+        BySelector cenableDisableBluetoothToggle =
+                getUiElementFromConfig(AutomotiveConfigConstants.ENABLE_DISABLE_BT_TOGGLE);
+        UiObject2 cenableDisableBluetooth =
+                getSpectatioUiUtil().findUiObject(cenableDisableBluetoothToggle);
+        getSpectatioUiUtil()
+                .validateUiObject(
+                        cenableDisableBluetooth,
+                        AutomotiveConfigConstants.ENABLE_DISABLE_BT_TOGGLE);
+        getSpectatioUiUtil().clickAndWait(cenableDisableBluetooth);
+        getSpectatioUiUtil().wait5Seconds();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void cancelBluetoothAudioConncetion() {
+        BySelector cancelBluetoothAudioConncetionButton =
+                getUiElementFromConfig(AutomotiveConfigConstants.CANCEL_BT_AUDIO_CONNECTION_BUTTON);
+        UiObject2 cancelBluetoothAudioConncetion =
+                getSpectatioUiUtil().findUiObject(cancelBluetoothAudioConncetionButton);
+        getSpectatioUiUtil()
+                .validateUiObject(
+                        cancelBluetoothAudioConncetion,
+                        AutomotiveConfigConstants.CANCEL_BT_AUDIO_CONNECTION_BUTTON);
+        getSpectatioUiUtil().clickAndWait(cancelBluetoothAudioConncetion);
+        getSpectatioUiUtil().wait5Seconds();
+    }
 }

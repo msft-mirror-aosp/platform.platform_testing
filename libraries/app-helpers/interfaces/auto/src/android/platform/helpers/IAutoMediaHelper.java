@@ -223,4 +223,18 @@ public interface IAutoMediaHelper extends IAppHelper, Scrollable {
      * <p>This method is used to open Bluetooth Audio screen.
      */
     void openBluetoothMediaApp();
+
+    /**
+     * Setup expectations: Bluetooth Settings page opened.
+     *
+     * <p>This method is used to enable/disable Bluetooth conncetion.
+     */
+    void clickOnBluetoothToggle();
+
+    /**
+     * Setup expectations: Bluetooth Audio page opened.
+     *
+     * <p>This method is used to Cancel Bluetooth Audio conncetion.
+     */
+    void cancelBluetoothAudioConncetion();
 }
