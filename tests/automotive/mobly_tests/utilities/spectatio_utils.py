@@ -215,7 +215,7 @@ class CallUtils:
         self.wait_with_log(constants.WAIT_ONE_SEC)
 
     def open_bluetooth_palette(self):
-        logging.info('Open Bluetooth Palette')
+        logging.info('Click on Bluetooth Palette')
         self.device.mbs.openBluetoothPalette()
 
     def click_bluetooth_button(self):

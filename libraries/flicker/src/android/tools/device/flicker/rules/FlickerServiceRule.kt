@@ -134,12 +134,17 @@ constructor(
         metricsCollector.testSkipped(description)
     }
 
-    private fun shouldRun(description: Description): Boolean {
+    private fun shouldRun(description: Description?): Boolean {
         // Only run FaaS if test rule is enabled and on tests with FlickerTest annotation if it's
         // used within the class, otherwise run on all tests
-        return enabled &&
-            (testClassHasFlickerTestAnnotations(description.testClass) ||
-                description.annotations.none { it is FlickerTest })
+        return when {
+            !enabled -> false
+            // Nullable description case is only handled because of b/302018924.
+            description != null ->
+                (testClassHasFlickerTestAnnotations(description.testClass) ||
+                    description.annotations.none { it is FlickerTest })
+            else -> true
+        }
     }
 
     private fun testClassHasFlickerTestAnnotations(testClass: Class<*>): Boolean {
