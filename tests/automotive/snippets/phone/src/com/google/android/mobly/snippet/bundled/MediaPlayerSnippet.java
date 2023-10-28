@@ -86,4 +86,14 @@ public class MediaPlayerSnippet implements Snippet {
     public void openBluetoothMediaApp() {
         mAutoMediaHelper.get().openBluetoothMediaApp();
     }
+
+    @Rpc(description = "Click on Bluetooth conncetion togle")
+    public void clickOnBluetoothToggle() {
+        mAutoMediaHelper.get().clickOnBluetoothToggle();
+    }
+
+    @Rpc(description = "Click on Cancel Bluetooth Audio conncetion button")
+    public void cancelBluetoothAudioConncetion() {
+        mAutoMediaHelper.get().cancelBluetoothAudioConncetion();
+    }
 }

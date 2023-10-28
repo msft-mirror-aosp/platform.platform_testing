@@ -128,3 +128,16 @@ class MediaUtils:
     def open_media_app_on_hu(self):
         logging.info("Open Media app on HU")
         self.discoverer.mbs.openMediaApp()
+
+    def pause_media_on_hu(self):
+        logging.info("Press PAUSE button on HU")
+        self.discoverer.mbs.pauseMedia()
+
+    def play_media_on_hu(self):
+        logging.info("Press PLAY button on HU")
+        self.discoverer.mbs.playMedia()
+
+    def click_on_cancel_bt_audio_connection_button_on_hu(self):
+        logging.info("Click on Cancel Bluetooth Audio connection button on HU")
+        self.discoverer.mbs.cancelBluetoothAudioConncetion()
+

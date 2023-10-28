@@ -23,6 +23,8 @@ from mobly.controllers import android_device
 # Number of seconds for the target to stay discoverable on Bluetooth.
 DISCOVERABLE_TIME = 60
 TIME_FOR_PROMPT_TO_LOAD = 2
+
+
 class BTUtils:
     """A utility that provides access to Bluetooth connectivity controls."""
 
@@ -87,3 +89,7 @@ class BTUtils:
         self.discoverer.mbs.btUnpairDevice(self.target_adrr)
         self.discoverer.mbs.btDisable()
         self.target.mbs.btDisable()
+
+    def click_on_use_bluetooth_toggle(self):
+        logging.info('Click on Use Bluetooth toggle on HU')
+        self.discoverer.mbs.clickOnBluetoothToggle()
