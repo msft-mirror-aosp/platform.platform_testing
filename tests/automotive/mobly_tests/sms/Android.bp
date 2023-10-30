@@ -22,7 +22,8 @@ python_test_host {
     srcs: ["bt_sms_time_sync_test.py"],
     libs: [
         "mobly",
-        "BluetoothTestLibrary",
+        "utilities",
+        "bluetooth_test",
     ],
     test_suites: [
         "catbox",

@@ -16,8 +16,8 @@ import sys
 
 from bluetooth_test import bluetooth_base_test
 from mobly import asserts
-from mbs_utils.media_utils import MediaUtils
-from mbs_utils.main_utils import common_main
+from utilities.media_utils import MediaUtils
+from utilities.main_utils import common_main
 
 
 class IsSongPlayingTest(bluetooth_base_test.BluetoothBaseTest):

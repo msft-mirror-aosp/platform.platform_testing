@@ -35,9 +35,9 @@ from mobly import test_runner
 from mobly.controllers import android_device
 from bluetooth_test import bluetooth_base_test
 
-from mbs_utils import constants
-from mbs_utils import spectatio_utils
-from mbs_utils import bt_utils
+from utilities import constants
+from utilities import spectatio_utils
+from utilities import bt_utils
 
 
 class AddRemoveFavoriteContact(bluetooth_base_test.BluetoothBaseTest):
@@ -76,10 +76,4 @@ class AddRemoveFavoriteContact(bluetooth_base_test.BluetoothBaseTest):
         contact_name, False)
 
 if __name__ == '__main__':
-    # Pass test arguments after '--' to the test runner.
-    # Needed for Mobly Test Runner
-    # TODO:(b/303452618) remove main after bug resolved
-    if '--' in sys.argv:
-        index = sys.argv.index('--')
-        sys.argv = sys.argv[:1] + sys.argv[index + 1:]
-    test_runner.main()
+    common_main()

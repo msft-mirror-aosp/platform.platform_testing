@@ -24,8 +24,12 @@
 """
 
 from mobly import asserts
-from mbs_utils import constants
-from mbs_utils.main_utils import common_main
+from mobly import base_test
+from mobly import test_runner
+from mobly.controllers import android_device
+
+from utilities import constants
+from utilities.main_utils import common_main
 
 
 class CallContactSortTest(bluetooth_base_test.BluetoothBaseTest):
