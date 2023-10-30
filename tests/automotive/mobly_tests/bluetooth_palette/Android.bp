@@ -22,8 +22,8 @@ python_test_host {
     srcs: ["bluetooth_button_enable_disable_test.py"],
     libs: [
         "mobly",
-        "mbs_utils",
-        "BluetoothTestLibrary"
+        "utilities",
+        "bluetooth_test",
     ],
     test_suites: [
         "catbox",

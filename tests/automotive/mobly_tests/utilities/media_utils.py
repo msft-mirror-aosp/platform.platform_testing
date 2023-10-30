@@ -17,7 +17,7 @@ import pprint
 import time
 import re
 
-from mbs_utils import constants
+from utilities import constants
 from mobly import asserts
 from mobly.controllers import android_device
 

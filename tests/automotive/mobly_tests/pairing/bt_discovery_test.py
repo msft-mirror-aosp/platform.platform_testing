@@ -3,7 +3,7 @@ Pairing Test
 """
 
 from bluetooth_test import bluetooth_base_test
-from mbs_utils.main_utils import common_main
+from utilities.main_utils import common_main
 
 # Number of seconds for the target to stay discoverable on Bluetooth.
 DISCOVERABLE_TIME = 120

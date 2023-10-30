@@ -16,8 +16,8 @@ from mobly import base_test
 from mobly import test_runner
 from mobly.controllers import android_device
 
-from mbs_utils import spectatio_utils
-from mbs_utils import bt_utils
+from utilities import spectatio_utils
+from utilities import bt_utils
 
 class BluetoothBaseTest(base_test.BaseTestClass):
 
@@ -26,7 +26,7 @@ class BluetoothBaseTest(base_test.BaseTestClass):
         # Registering android_device controller module, and declaring that the test
         # requires at least two Android devices.
         # This setup will need to be overwritten or extended if a test uses three devices.
-
+        logging.info("Running basic class setup.")
         self.ads = self.register_controller(android_device, min_number=2)
         # The device used to discover Bluetooth devices.
         self.discoverer = android_device.get_device(
@@ -36,16 +36,17 @@ class BluetoothBaseTest(base_test.BaseTestClass):
         # The device that is expected to be discovered
         self.target = android_device.get_device(self.ads, label='phone')
         self.target.debug_tag = 'target'
+        logging.info("\tLoading Snippets.")
         self.target.load_snippet('mbs', android_device.MBS_PACKAGE)
         self.discoverer.load_snippet('mbs', android_device.MBS_PACKAGE)
-
+        logging.info("\tInitializing Utilities")
         self.call_utils = (spectatio_utils.CallUtils(self.discoverer))
-
         self.bt_utils = (bt_utils.BTUtils(self.discoverer, self.target))
 
     def setup_test(self):
         # Make sure bluetooth is on.
         logging.info("Running basic test setup.")
+        logging.info("\tEnabling bluetooth on target and discoverer.")
         self.target.mbs.btEnable()
         self.discoverer.mbs.btEnable()
 
@@ -70,9 +71,4 @@ class BluetoothBaseTest(base_test.BaseTestClass):
           self.discoverer.mbs.btDisable()
 
 if __name__ == '__main__':
-    # Pass test arguments after '--' to the test runner.
-    # Needed for Mobly Test Runner
-    if '--' in sys.argv:
-        index = sys.argv.index('--')
-        sys.argv = sys.argv[:1] + sys.argv[index + 1:]
-    test_runner.main()
+    common_main()

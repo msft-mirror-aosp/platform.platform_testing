@@ -22,8 +22,8 @@ python_test_host {
     srcs: ["media_test_device_not_paired.py"],
     libs: [
         "mobly",
-        "mbs_utils",
-        "BluetoothTestLibrary"
+        "utilities",
+        "bluetooth_test",
     ],
     test_suites: [
         "catbox",
@@ -49,8 +49,8 @@ python_test_host {
     srcs: ["media_test_song_is_playing.py"],
      libs: [
          "mobly",
-         "mbs_utils",
-         "BluetoothTestLibrary"
+         "utilities",
+         "bluetooth_test",
      ],
      test_suites: [
          "catbox",
@@ -76,8 +76,8 @@ python_test_host {
      srcs: ["media_test_synchronized_device_disconnected_connected.py"],
       libs: [
           "mobly",
-          "mbs_utils",
-          "BluetoothTestLibrary"
+          "utilities",
+          "bluetooth_test"
       ],
       test_suites: [
           "catbox",

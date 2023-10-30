@@ -16,8 +16,8 @@
 from bluetooth_test import bluetooth_base_test
 from mobly import asserts
 
-from mbs_utils import constants
-from mbs_utils.main_utils import common_main
+from utilities import constants
+from utilities.main_utils import common_main
 
 
 class BluetoothPalette(bluetooth_base_test.BluetoothBaseTest):
