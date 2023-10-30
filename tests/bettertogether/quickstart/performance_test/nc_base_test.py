@@ -67,14 +67,19 @@ class NCBaseTestClass(base_test.BaseTestClass):
       self.advertiser, self.discoverer = self.ads
 
   def _disconnect_from_wifi(self, ad: android_device.AndroidDevice) -> None:
+    if(not ad.is_adb_root):
+      ad.log.info("Can't clear wifi network in non-rooted device")
+      return
     ad.nearby.wifiClearConfiguredNetworks()
     time.sleep(nc_constants.WIFI_DISCONNECTION_DELAY.total_seconds())
 
   def _setup_android_device(self, ad: android_device.AndroidDevice) -> None:
-    asserts.skip_if(
-        not ad.is_adb_root,
-        'The test only can run on userdebug build.',
-    )
+    if (not ad.is_adb_root):
+      if (self.test_parameters.allow_unrooted_device):
+        ad.log.info('Unrooted device is detected. Test coverage is limited')
+      else:
+        asserts.skip('The test only can run on rooted device.')
+
     ad.debug_tag = ad.serial + '(' + ad.adb.getprop('ro.product.model') + ')'
     ad.log.info('try to install nearby_snippet_apk')
     if self._nearby_snippet_apk_path:
@@ -95,6 +100,7 @@ class NCBaseTestClass(base_test.BaseTestClass):
     setup_utils.enable_logs(ad)
 
     setup_utils.disable_redaction(ad)
+    setup_utils.enable_auto_reconnect(ad)
 
   def setup_test(self):
     if self.test_parameters.toggle_airplane_mode_target_side:
@@ -167,26 +173,30 @@ class NCBaseTestClass(base_test.BaseTestClass):
   ) -> nc_constants.ThroughputResultStats:
     """Statistics the throughput test result of all iterations."""
     n = self.performance_test_iterations
-    filtered = list(filter(
-        lambda x: x != nc_constants.UNSET_THROUGHPUT_KBPS,
-        throughput_indicators))
-    if not filtered: return nc_constants.ThroughputResultStats(
-        success_rate=0.0,
-        average_kbps=0.0,
-        percentile_50_kbps=0.0,
-        percentile_95_kbps=0.0,
-        success_count=0,
-        fail_targets=[
-            nc_constants.FailTargetSummary(
-                f'{medium_name} transfer success rate', 0.0,
-                success_rate_target, '%')])
-
-    filtered.sort()
+    filtered = [x for x in throughput_indicators
+                if x != nc_constants.UNSET_THROUGHPUT_KBPS]
+    if not filtered:
+      # all test cases are failed
+      return nc_constants.ThroughputResultStats(
+          success_rate=0.0,
+          average_kbps=0.0,
+          percentile_50_kbps=0.0,
+          percentile_95_kbps=0.0,
+          success_count=0,
+          fail_targets=[
+              nc_constants.FailTargetSummary(
+                  f'{medium_name} transfer success rate', 0.0,
+                  success_rate_target, '%')])
+    # use the descenting order of the throughput
+    filtered.sort(reverse=True)
     success_count = len(filtered)
-    success_rate = round(success_count * 100.0 / n, 1)
+    success_rate = round(success_count * 100.0 / n,
+                         nc_constants.SUCCESS_RATE_PRECISION_DIGITS)
     average_kbps = round(sum(filtered) / len(filtered))
-    percentile_50_kbps = filtered[int(len(filtered) * 0.50)]
-    percentile_95_kbps = filtered[int(len(filtered) * 0.95)]
+    percentile_50_kbps = filtered[
+        int(len(filtered) * nc_constants.PERCENTILE_50_FACTOR)]
+    percentile_95_kbps = filtered[
+        int(len(filtered) * nc_constants.PERCENTILE_95_FACTOR)]
     fail_targets: list[nc_constants.FailTargetSummary] = []
     if success_rate < success_rate_target:
       fail_targets.append(
@@ -223,25 +233,29 @@ class NCBaseTestClass(base_test.BaseTestClass):
         if latency != nc_constants.UNSET_LATENCY
     ]
     if not filtered:
+      # All test cases are failed.
       return nc_constants.LatencyResultStats(
-          0.0, 0.0, self.performance_test_iterations
-      )
+          average_latency=0.0, percentile_50=0.0,
+          percentile_95=0.0, failure_count=n)
 
     filtered.sort()
-    average = round(sum(filtered) / len(filtered), 2)
-    percentile_95 = round(filtered[int(len(filtered) * 0.95)], 2)
+    average = round(sum(filtered) / len(filtered),
+                    nc_constants.LATENCY_PRECISION_DIGITS) / n
+    percentile_50 = round(
+        filtered[int(len(filtered) * nc_constants.PERCENTILE_50_FACTOR)],
+        nc_constants.LATENCY_PRECISION_DIGITS)
+    percentile_95 = round(
+        filtered[int(len(filtered) * nc_constants.PERCENTILE_95_FACTOR)],
+        nc_constants.LATENCY_PRECISION_DIGITS)
 
     return nc_constants.LatencyResultStats(
-        average, percentile_95, n - len(filtered)
+        average, percentile_50, percentile_95, n - len(filtered)
     )
 
   def _generate_target_fail_message(
       self,
       fail_targets: list[nc_constants.FailTargetSummary]) -> str:
-    error_msg = ''
-    for fail_target in fail_targets:
-      error_msg += (
-          f'{fail_target.title}: {fail_target.actual}{fail_target.unit}'
-          f' < {fail_target.goal}{fail_target.unit}\n')
-
-    return error_msg
+    return ''.join(
+        f'{fail_target.title}: {fail_target.actual}{fail_target.unit}'
+        f' < {fail_target.goal}{fail_target.unit}\n'
+        for fail_target in fail_targets)
