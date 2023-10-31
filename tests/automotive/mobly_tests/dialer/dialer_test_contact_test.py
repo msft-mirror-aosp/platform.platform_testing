@@ -16,12 +16,20 @@
 import logging
 
 from bluetooth_test import bluetooth_base_test
-from mbs_utils import constants
-from mbs_utils.main_utils import common_main
+from utilities.main_utils import common_main
+
+from mobly import asserts
+from mobly import test_runner
+from mobly.controllers import android_device
+
+from utilities import constants
+from utilities import spectatio_utils
+from utilities import bt_utils
+
+
 
 # Number of seconds for the target to stay discoverable on Bluetooth.
 DISCOVERABLE_TIME = 60
-
 
 class CallContactTest(bluetooth_base_test.BluetoothBaseTest):
 

@@ -38,7 +38,7 @@ private constructor(
     val id: Int,
     val parentId: Int,
     val z: Int,
-    val currFrame: Long,
+    currFrameString: String,
     properties: ILayerProperties,
 ) : ILayerProperties by properties {
     val stableId: String = "$id $name"
@@ -46,6 +46,7 @@ private constructor(
     var zOrderRelativeOf: Layer? = null
     var zOrderRelativeParentOf: Int = 0
     val packageName = ComponentName.fromLayerName(name).packageName
+    val currFrame: Long = currFrameString.toLong() // Handles compatibility with JS number type
 
     /**
      * Checks if the [Layer] is a root layer in the hierarchy
@@ -362,7 +363,7 @@ private constructor(
                     stackId,
                     excludesCompositionState
                 )
-            return Layer(name, id, parentId, z, currFrame, properties)
+            return Layer(name, id, parentId, z, currFrame.toString(), properties)
         }
     }
 }

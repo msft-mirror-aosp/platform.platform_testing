@@ -16,7 +16,7 @@ import sys
 
 from bluetooth_test import bluetooth_base_test
 from mobly import asserts
-from mbs_utils.main_utils import common_main
+from utilities.main_utils import common_main
 
 
 class DeviceNotPairedTest(bluetooth_base_test.BluetoothBaseTest):

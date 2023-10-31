@@ -16,15 +16,13 @@ import logging
 import time
 
 from mobly.controllers import android_device
-from mbs_utils import constants
+from utilities import constants
 
 """ This exception may be expanded in the future to provide better error discoverability."""
 
 
 class CallUtilsError(Exception):
     pass
-
-
 class CallUtils:
     """Calling sequence utility for BT calling test using Spectatio UI APIs.
 
@@ -37,6 +35,12 @@ class CallUtils:
 
     def __init__(self, device):
         self.device = device
+
+
+    def device_displays_connected(self):
+        """Assumes the device bluetooth connection settings page is open"""
+        logging.info('Checking whether device is connected.')
+        self.device.mbs.deviceIsConnected()
 
     def dial_a_number(self, callee_number):
         """ Dial phone number """
@@ -105,16 +109,22 @@ class CallUtils:
     def open_bluetooth_settings(self):
         """Assumes we are on the home screen.
         Navigate to the Bluetooth setting page"""
-        logging.info("Pressing the bluetooth indicator icon in the status bar.")
+        logging.info("Opening bluetooth settings (via the Status Bar)")
         self.device.mbs.openBluetoothSettings()
 
     def press_bluetooth_toggle_on_device(self, device_name):
-        logging.info('Attempting to press the bluetooth toggle on device: ' + device_name)
+        logging.info('Attempting to press the bluetooth toggle on device: \'%s\'' % device_name)
         self.device.mbs.pressBluetoothToggleOnDevice(device_name)
 
     def press_device_entry_on_list_of_paired_devices(self, device_name):
         logging.info('Attempting to press the device entry on device: ' + device_name)
-        self.device.mbs.pressDeviceName(device_name)
+        self.device.mbs.pressDeviceInBluetoothSettings(device_name)
+
+    def press_home_screen_on_status_bar(self):
+        """Presses the Home screen button on the status bar
+        (to return the device to the home screen."""
+        logging.info("Pressing home screen button")
+        self.device.mbs.pressHomeScreen()
 
     def device_displays_connected(self):
         """Assumes the device bluetooth connection settings page is open"""
@@ -125,12 +135,6 @@ class CallUtils:
         """Assumes the device bluetooth connection settings page is open"""
         logging.info('Attempting to press \'Forget\'')
         self.device.mbs.pressForget()
-
-    def press_home_screen_on_status_bar(self):
-        """Presses the Home screen button on the status bar
-        (to return the device to the home screen."""
-        logging.info("Pressing home screen button")
-        self.device.mbs.pressHomeScreen()
 
     def press_home(self):
         """ Press the Home button to go back to the home page."""
@@ -154,6 +158,35 @@ class CallUtils:
             [path_to_contacts_file, constants.PHONE_CONTACTS_DESTINATION_PATH],
             timeout=20,
         )
+
+    def validate_three_preference_buttons(self, bluetooth_enabled):
+        """ Checks each of the three preference buttons (bluetooth, phone, audio).
+
+        If bluetooth is enabled, all three buttons should be enabled, and the bluetooth
+        button should be checked.
+
+        If bluetooth is disabled, the bluetooth button should not be checked,
+        and the phone and media buttons should be disabled.
+        """
+        logging.info("Checking the three Preference buttons on the listed device")
+        expected_check_status = "checked" if bluetooth_enabled else "unchecked"
+        if (self.device.mbs.isBluetoothPreferenceChecked() != bluetooth_enabled):
+           logging.info("Bluetooth preference check status does not match expected status: "
+                        + str(bluetooth_enabled))
+           return False
+
+        expected_status = "enabled" if bluetooth_enabled else "disabled"
+        if (self.device.mbs.isPhonePreferenceEnabled()  != bluetooth_enabled):
+            logging.info("Phone preference was does not match expected status: %s",
+                         str(expected_status))
+            return False
+
+        if (self.device.mbs.isMediaPreferenceEnabled() != bluetooth_enabled):
+           logging.info("Media preference does not match enabled status: " + str(expected_status))
+           return False
+
+        return True
+
 
     def upload_vcf_contacts_to_device(self, device_target, path_to_contacts_file):
         """Upload contacts do device"""

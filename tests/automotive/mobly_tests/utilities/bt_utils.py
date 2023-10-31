@@ -16,7 +16,7 @@ import logging
 import pprint
 import time
 
-from mbs_utils import constants
+from utilities import constants
 from mobly import asserts
 from mobly.controllers import android_device
 
@@ -76,7 +76,6 @@ class BTUtils:
             target_address in paired_addresses,
             'Failed to pair the target device %s over Bluetooth.' %
             target_address)
-
     def press_allow_on_device(self):
         """ Repeatedly presses "Allow" on prompts until no more prompts appear"""
         logging.info('Attempting to press ALLOW')

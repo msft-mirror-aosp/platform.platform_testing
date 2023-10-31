@@ -27,10 +27,10 @@ from mobly import asserts
 from mobly import base_test
 from mobly.controllers import android_device
 
-from mbs_utils import constants
-from mbs_utils import spectatio_utils
-from mbs_utils import bt_utils
-from mbs_utils.main_utils import common_main
+from utilities.main_utils import common_main
+from utilities import constants
+from utilities import spectatio_utils
+from utilities import bt_utils
 
 
 class ImportAddressDetailsTest(base_test.BaseTestClass):
@@ -63,6 +63,8 @@ class ImportAddressDetailsTest(base_test.BaseTestClass):
             for line in vcf_file:
                 if line.startswith(self.VCF_ADDRESS_HEADER):
                     return line
+
+
 
     def setup_test(self):
         # Upload contacts to phone device
