@@ -30,10 +30,14 @@ import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.annotation.Nonnull;
+
 /** A {@link TestRule} that helps to set flag values in unit test. */
 public final class SetFlagsRule implements TestRule {
     private static final String FAKE_FEATURE_FLAGS_IMPL_CLASS_NAME = "FakeFeatureFlagsImpl";
+    private static final String FEATURE_FLAGS_CLASS_NAME = "FeatureFlags";
     private static final String FEATURE_FLAGS_FIELD_NAME = "FEATURE_FLAGS";
+    private static final String FLAGS_CLASS_NAME = "Flags";
     private static final String SET_FLAG_METHOD_NAME = "setFlag";
     private static final String RESET_ALL_METHOD_NAME = "resetAll";
 
@@ -53,13 +57,47 @@ public final class SetFlagsRule implements TestRule {
      * value of current release configuration.
      *
      * <p>This methods should be called before calling enable/disableFlags
+     *
+     * @deprecated Prefer {@link #SetFlagsRule(SetFlagsRule.DefaultInitValueType.DEVICE_DEFAULT)}
      */
+    @Deprecated
     public void initAllFlagsToReleaseConfigDefault() {
         if (!mIsInitWithDefault) {
             mFlagsClassToRealFlagsImpl.clear();
             mFlagsClassToFakeFlagsImpl.clear();
         }
         mIsInitWithDefault = true;
+    }
+
+    public enum DefaultInitValueType {
+        /**
+         * Initialize flag value as null
+         *
+         * <p>Flag value need to be set before using
+         */
+        NULL_DEFAULT,
+
+        /**
+         * Initialize flag value with the default value from the device
+         *
+         * <p>If flag value is not overridden by adb, then the default value is from the release
+         * configuration when the test is built.
+         */
+        DEVICE_DEFAULT,
+    }
+
+    public SetFlagsRule() {
+        this(DefaultInitValueType.NULL_DEFAULT);
+    }
+
+    public SetFlagsRule(DefaultInitValueType defaultType) {
+        switch (defaultType) {
+            case DEVICE_DEFAULT:
+                mIsInitWithDefault = true;
+                break;
+            default:
+                break;
+        }
     }
 
     /**
@@ -87,26 +125,34 @@ public final class SetFlagsRule implements TestRule {
     }
 
     /**
-     * Returns a FakeFeatureFlags for the flag with the given name.
+     * Returns a FeatureFlags used by SetFlagsRule of given FeatureFlags
      *
-     * <p>If two flags belong to the same Flags/FeatureFlags, then by calling this method on these
-     * two flags will get the same instance of FakeFeatureFlags.
-     *
-     * <p>The given name must have the format {@code packageName.flagName}, for example: {@code
-     * "com.android.systemui.scene_container"},
+     * @param featureFlagsClass The class of FeatureFlags. The interface of FakeFeatureFlagsImpl
+     * @return A FakeFeatureFlagsImpl in type of FeatureFlags
      */
-    public <T> T getFakeFeatureFlagsImpl(String fullFlagName) {
-        Flag flag = Flag.createFlag(fullFlagName);
-        Class<?> flagsClass = getFlagClassFromFlag(flag);
-        Object fakeFlagsImplInstance = mFlagsClassToFakeFlagsImpl.get(flagsClass);
-        if (fakeFlagsImplInstance == null) {
-            throw new UnsupportedOperationException(
+    public <T> T getFakeFeatureFlags(Class<T> featureFlagsClass) {
+        if (!featureFlagsClass.isInterface()
+                || !featureFlagsClass.getSimpleName().equals(FEATURE_FLAGS_CLASS_NAME)) {
+            throw new IllegalArgumentException(
                     String.format(
-                            "Failed to get instance of FakeFeatureFlagsImpl of class %s. Please at"
-                                    + " least set one of the flag in the Flags class.",
-                            flagsClass.getName()));
+                            "%s is not a FeatureFlags. " + "Please pass in FeatureFlags interface",
+                            featureFlagsClass));
         }
-        return (T) fakeFlagsImplInstance;
+
+        String packageName = featureFlagsClass.getPackageName();
+        String flagsClassName = String.format("%s.%s", packageName, FLAGS_CLASS_NAME);
+        Class<?> flagsClass = null;
+
+        try {
+            flagsClass = Class.forName(flagsClassName);
+        } catch (ClassNotFoundException e) {
+            throw new UnsupportedOperationException(
+                    String.format("Failed to load class %s.", flagsClassName));
+        }
+
+        Object fakeFlagsImplInstance = getOrCreateFakeFlagsImp(flagsClass);
+
+        return featureFlagsClass.cast(fakeFlagsImplInstance);
     }
 
     @Override
@@ -141,45 +187,26 @@ public final class SetFlagsRule implements TestRule {
         }
         Flag flag = Flag.createFlag(fullFlagName);
         Object fakeFlagsImplInstance = null;
-        try {
-            Class<?> flagsClass = getFlagClassFromFlag(flag);
-            fakeFlagsImplInstance = mFlagsClassToFakeFlagsImpl.get(flagsClass);
 
-            if (fakeFlagsImplInstance == null) {
-                // Create a new FakeFeatureFlagsImpl instance
-                fakeFlagsImplInstance = createFakeFlagsImplInstance(flagsClass);
-                mFlagsClassToFakeFlagsImpl.put(flagsClass, fakeFlagsImplInstance);
+        Class<?> flagsClass = getFlagClassFromFlag(flag);
+        fakeFlagsImplInstance = getOrCreateFakeFlagsImp(flagsClass);
 
-                // Store the real FeatureFlagsImpl instance
-                Field featureFlagsField = getFeatureFlagsField(flagsClass);
-                featureFlagsField.setAccessible(true);
-                mFlagsClassToRealFlagsImpl.put(flagsClass, featureFlagsField.get(null));
-
-                if (mIsInitWithDefault) {
-                    populateFakeFlagsImplWithDefault(flagsClass);
-                }
-            }
-
-            Map<Flag, Boolean> flagToValue =
-                    mFlagsClassToFlagDefaultMap.getOrDefault(flagsClass, new HashMap<>());
-            if (flagToValue.isEmpty()) {
-                // Replace FeatureFlags in Flags class with FakeFeatureFlagsImpl
-                replaceFlagsImpl(flagsClass, fakeFlagsImplInstance);
-                mFlagsClassToFlagDefaultMap.put(flagsClass, flagToValue);
-            }
-
-            // Store a copy of the original value so that it can be restored later
-            if (!flagToValue.containsKey(flag)) {
-                flagToValue.put(
-                        flag,
-                        mIsInitWithDefault ? getFlagValue(fakeFlagsImplInstance, flag) : null);
-            }
-
-            // Set desired flag value in the FakeFeatureFlagsImpl
-            setFlagValue(fakeFlagsImplInstance, flag, value);
-        } catch (ReflectiveOperationException e) {
-            throw new FlagSetException(fullFlagName, e);
+        Map<Flag, Boolean> flagToValue =
+                mFlagsClassToFlagDefaultMap.getOrDefault(flagsClass, new HashMap<>());
+        if (flagToValue.isEmpty()) {
+            // Replace FeatureFlags in Flags class with FakeFeatureFlagsImpl
+            replaceFlagsImpl(flagsClass, fakeFlagsImplInstance);
+            mFlagsClassToFlagDefaultMap.put(flagsClass, flagToValue);
         }
+
+        // Store a copy of the original value so that it can be restored later
+        if (!flagToValue.containsKey(flag)) {
+            flagToValue.put(
+                    flag, mIsInitWithDefault ? getFlagValue(fakeFlagsImplInstance, flag) : null);
+        }
+
+        // Set desired flag value in the FakeFeatureFlagsImpl
+        setFlagValue(fakeFlagsImplInstance, flag, value);
     }
 
     private void populateFakeFlagsImplWithDefault(Class<?> flagClass) {
@@ -278,10 +305,15 @@ public final class SetFlagsRule implements TestRule {
         }
     }
 
-    private Object createFakeFlagsImplInstance(Class<?> flagsClass) {
+    @Nonnull
+    private Object getOrCreateFakeFlagsImp(Class<?> flagsClass) {
+        Object fakeFlagsImplInstance = mFlagsClassToFakeFlagsImpl.get(flagsClass);
+        if (fakeFlagsImplInstance != null) {
+            return fakeFlagsImplInstance;
+        }
+
         String packageName = flagsClass.getPackageName();
         String className = String.format("%s.%s", packageName, FAKE_FEATURE_FLAGS_IMPL_CLASS_NAME);
-        Object fakeFlagsImplInstance = null;
 
         try {
             Class<?> flagImplClass = Class.forName(className);
@@ -292,6 +324,25 @@ public final class SetFlagsRule implements TestRule {
                             "Cannot create FakeFeatureFlagsImpl in Flags class %s.",
                             flagsClass.getName()),
                     e);
+        }
+
+        mFlagsClassToFakeFlagsImpl.put(flagsClass, fakeFlagsImplInstance);
+
+        // Store the real FeatureFlagsImpl instance
+        Field featureFlagsField = getFeatureFlagsField(flagsClass);
+        featureFlagsField.setAccessible(true);
+        try {
+            mFlagsClassToRealFlagsImpl.put(flagsClass, featureFlagsField.get(null));
+        } catch (IllegalAccessException e) {
+            throw new UnsupportedOperationException(
+                    String.format(
+                            "Cannot set FakeFeatureFlagsImpl in Flags class %s.",
+                            flagsClass.getName()),
+                    e);
+        }
+
+        if (mIsInitWithDefault) {
+            populateFakeFlagsImplWithDefault(flagsClass);
         }
 
         return fakeFlagsImplInstance;
