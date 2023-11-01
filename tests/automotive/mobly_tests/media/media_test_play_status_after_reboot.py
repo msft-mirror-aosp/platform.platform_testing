@@ -15,11 +15,14 @@
 
 from bluetooth_test import bluetooth_base_test
 from mobly import asserts
-from utilities.media_utils import MediaUtils
-from utilities.main_utils import common_main
+from mbs_utils.media_utils import MediaUtils
+from mbs_utils.main_utils import common_main
+from mobly.controllers import android_device
+from mbs_utils import spectatio_utils
+from mbs_utils import bt_utils
 
 
-class IsSongPlayingTest(bluetooth_base_test.BluetoothBaseTest):
+class IsSongPLayingAfterRebootTest(bluetooth_base_test.BluetoothBaseTest):
 
     def setup_class(self):
         super().setup_class()
@@ -28,8 +31,8 @@ class IsSongPlayingTest(bluetooth_base_test.BluetoothBaseTest):
     def setup_test(self):
         self.bt_utils.pair_primary_to_secondary()
 
-    def test_media_is_song_playing(self):
-        """Tests validating is song playing on HU, and song title"""
+    def test_is_song_playing_after_reboot(self):
+        """Tests validating is song playing on HU after reboot HU"""
         self.media_utils.open_youtube_music_app()
         current_phone_song_title = self.media_utils.get_song_title_from_phone()
         self.media_utils.open_media_app_on_hu()
@@ -38,8 +41,17 @@ class IsSongPlayingTest(bluetooth_base_test.BluetoothBaseTest):
                             'Invalid song titles. '
                             'Song title on phone device and HU should be the same')
 
-        # Switch to the next song on HU
-        self.media_utils.click_next_track_on_hu()
+        # Reboot HU
+        self.discoverer.unload_snippet('mbs')
+        self.media_utils.reboot_hu()
+        self.call_utils.wait_with_log(30)
+        self.discoverer.load_snippet('mbs', android_device.MBS_PACKAGE)
+
+        self.media_utils.open_media_app_on_hu()
+        # Assert song is playing after HU reboot
+        asserts.assert_true(self.media_utils.is_song_playing_on_hu(),
+                            'Song should be playing after HU reboot')
+        # Assert song title same on both devices after HU reboot
         current_next_phone_song_title = self.media_utils.get_song_title_from_phone()
         current_next_hu_song_title = self.media_utils.get_song_title_from_hu()
         asserts.assert_true(current_next_phone_song_title == current_next_hu_song_title,
