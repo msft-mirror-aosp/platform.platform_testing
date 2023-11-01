@@ -83,9 +83,11 @@ class Transition(
 
     @JsName("changes") val changes: Array<TransitionChange> = wmData.changes ?: emptyArray()
 
-    @JsName("mergedInto") val mergedInto = shellData.mergedInto
+    @JsName("mergeTarget") val mergedInto = shellData.mergeTarget
 
     @JsName("handler") val handler = shellData.handler
+
+    @JsName("merged") val merged: Boolean = shellData.mergeTime != null
 
     @JsName("played") val played: Boolean = wmData.finishTime != null
 

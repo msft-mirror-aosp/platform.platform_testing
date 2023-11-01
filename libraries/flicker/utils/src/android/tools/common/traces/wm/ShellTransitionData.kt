@@ -26,7 +26,7 @@ data class ShellTransitionData(
     val mergeTime: Timestamp? = null,
     val abortTime: Timestamp? = null,
     val handler: String? = null,
-    val mergedInto: Int? = null,
+    val mergeTarget: Int? = null,
 ) {
     init {
         // We should never have empty timestamps, those should be passed as null
@@ -43,6 +43,6 @@ data class ShellTransitionData(
             shellData.mergeTime ?: mergeTime,
             shellData.abortTime ?: abortTime,
             shellData.handler ?: handler,
-            shellData.mergedInto ?: mergedInto,
+            shellData.mergeTarget ?: mergeTarget,
         )
 }

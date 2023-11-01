@@ -120,7 +120,7 @@ class ShellTransitionTraceParser :
                             Timestamps.from(elapsedNanos = entry.abortTimeNs)
                         },
                     handler = handlerMapping[entry.handler],
-                    mergedInto = if (entry.mergedInto == 0) null else entry.mergedInto
+                    mergeTarget = if (entry.mergeTarget == 0) null else entry.mergeTarget
                 )
         )
     }

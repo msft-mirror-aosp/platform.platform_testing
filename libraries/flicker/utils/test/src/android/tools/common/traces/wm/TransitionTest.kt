@@ -94,7 +94,7 @@ class TransitionTest {
                         mergeTime = Timestamps.from(23),
                         abortTime = Timestamps.from(24),
                         handler = "Handler1",
-                        mergedInto = 1,
+                        mergeTarget = 1,
                     )
             )
 
@@ -119,7 +119,7 @@ class TransitionTest {
                         mergeTime = Timestamps.from(230),
                         abortTime = Timestamps.from(240),
                         handler = "Handler2",
-                        mergedInto = 10,
+                        mergeTarget = 10,
                     )
             )
 

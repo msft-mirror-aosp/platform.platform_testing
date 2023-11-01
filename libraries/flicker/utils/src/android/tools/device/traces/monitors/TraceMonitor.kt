@@ -55,7 +55,10 @@ abstract class TraceMonitor : ITransitionMonitor {
                 val srcFile = doStop()
                 moveTraceFileToTmpDir(srcFile)
             } catch (e: Throwable) {
-                throw RuntimeException("Could not stop trace", e)
+                throw RuntimeException(
+                    "Could not stop ${traceType.name} trace and save it to ${traceType.fileName}",
+                    e
+                )
             }
         writer.addTraceResult(traceType, artifact)
     }
