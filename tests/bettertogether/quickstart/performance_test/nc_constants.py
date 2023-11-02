@@ -29,7 +29,7 @@ SECOND_DISCOVERY_TIMEOUT = datetime.timedelta(seconds=35)
 SECOND_CONNECTION_INIT_TIMEOUT = datetime.timedelta(seconds=10)
 SECOND_CONNECTION_RESULT_TIMEOUT = datetime.timedelta(seconds=25)
 CONNECTION_BANDWIDTH_CHANGED_TIMEOUT = datetime.timedelta(seconds=25)
-FILE_1G_PAYLOAD_TRANSFER_TIMEOUT = datetime.timedelta(seconds=400)
+FILE_1G_PAYLOAD_TRANSFER_TIMEOUT = datetime.timedelta(seconds=210)
 WIFI_WLAN_CONNECTING_TIME_OUT = datetime.timedelta(seconds=25)
 DISCONNECTION_TIMEOUT = datetime.timedelta(seconds=15)
 
@@ -86,6 +86,8 @@ class TestParameters:
   wifi_ssid: str = ''
   wifi_password: str = ''
   toggle_airplane_mode_target_side: bool = True
+  reset_wifi_connection: bool = True
+  disconnect_bt_after_test: bool = False
   disconnect_wifi_after_test: bool = False
   bt_transfer_throughput_median_benchmark_kbps: float = (
       BT_TRANSFER_THROUGHPUT_MEDIAN_BENCHMARK_KBPS
@@ -171,15 +173,15 @@ class ConnectionSetupQualityInfo:
 class SingleTestResult:
   """The test result of a single iteration."""
 
-  first_connection_setup_quality_info: ConnectionSetupQualityInfo = (
+  connection_setup_quality_info: ConnectionSetupQualityInfo = (
       dataclasses.field(default_factory=ConnectionSetupQualityInfo)
   )
-  first_bt_transfer_throughput_kbps: float = UNSET_THROUGHPUT_KBPS
+  bt_transfer_throughput_kbps: float = UNSET_THROUGHPUT_KBPS
   discoverer_wifi_wlan_latency: datetime.timedelta = UNSET_LATENCY
   second_connection_setup_quality_info: ConnectionSetupQualityInfo = (
       dataclasses.field(default_factory=ConnectionSetupQualityInfo)
   )
-  second_wifi_transfer_throughput_kbps: float = UNSET_THROUGHPUT_KBPS
+  wifi_transfer_throughput_kbps: float = UNSET_THROUGHPUT_KBPS
   advertiser_wifi_wlan_latency: datetime.timedelta = UNSET_LATENCY
   discoverer_wifi_wlan_expected: bool = False
   advertiser_wifi_wlan_expected: bool = False
@@ -229,7 +231,7 @@ class QuickStartTestMetrics:
   )
   second_connection_latencies: list[datetime.timedelta] = dataclasses.field(
       default_factory=list[datetime.timedelta])
-  second_medium_upgrade_latencies: list[
+  medium_upgrade_latencies: list[
       datetime.timedelta] = dataclasses.field(
           default_factory=list[datetime.timedelta])
   advertiser_wifi_wlan_latencies: list[
