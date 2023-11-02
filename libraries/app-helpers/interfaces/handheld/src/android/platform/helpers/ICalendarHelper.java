@@ -16,7 +16,7 @@
 
 package android.platform.helpers;
 
-import androidx.test.uiautomator.Direction;
+import android.support.test.uiautomator.Direction;
 
 public interface ICalendarHelper extends IAppHelper {
     // Enumeration of the available Calendar pages.

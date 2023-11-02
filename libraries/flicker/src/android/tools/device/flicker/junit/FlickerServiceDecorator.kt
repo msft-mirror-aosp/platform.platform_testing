@@ -250,7 +250,7 @@ class FlickerServiceDecorator(
     private fun getFlickerConfig(): FlickerConfig {
         require(testClass.getAnnotatedMethods(ExpectedScenarios::class.java).size == 1) {
             "@ExpectedScenarios missing. " +
-                "getFlickerConfig() maybe to have been called before validation."
+                "getFlickerConfig() may have been called before validation."
         }
 
         val flickerConfigProviderProviderFunction =

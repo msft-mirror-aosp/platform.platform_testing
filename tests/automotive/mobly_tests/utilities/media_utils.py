@@ -38,6 +38,15 @@ class MediaUtils:
         )
         return self.target.adb.shell(shell_command)
 
+    # Execute any shell command on HU
+    def execute_shell_on_hu_device(self, shell_command):
+        self.target.log.info(
+            'Executing shell command: <%s> on HU device <%s>',
+            shell_command,
+            self.discoverer.serial,
+        )
+        return self.discoverer.adb.shell(shell_command)
+
     # Start YouTube Music app on phone device
     def open_youtube_music_app(self):
         logging.info("Open YouTube Music on phone device")
@@ -129,15 +138,29 @@ class MediaUtils:
         logging.info("Open Media app on HU")
         self.discoverer.mbs.openMediaApp()
 
+    # Pause Media app on HU
     def pause_media_on_hu(self):
         logging.info("Press PAUSE button on HU")
         self.discoverer.mbs.pauseMedia()
 
+    # Play Media app on HU
     def play_media_on_hu(self):
         logging.info("Press PLAY button on HU")
         self.discoverer.mbs.playMedia()
 
+    # Click on CANCEL button on Connect BT Audio page on HU
     def click_on_cancel_bt_audio_connection_button_on_hu(self):
         logging.info("Click on Cancel Bluetooth Audio connection button on HU")
         self.discoverer.mbs.cancelBluetoothAudioConncetion()
 
+    # Reboot HU
+    def reboot_hu(self):
+        logging.info("Starting HU reboot...")
+        self.execute_shell_on_hu_device(constants.REBOOT)
+
+    # Is song playing on HU
+    def is_song_playing_on_hu(self):
+        logging.info("Checking is song playing on HU")
+        actual_song_playing_status = self.discoverer.mbs.isPlaying()
+        logging.info("Is song playing: %s", actual_song_playing_status)
+        return actual_song_playing_status

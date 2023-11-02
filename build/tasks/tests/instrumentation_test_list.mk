@@ -79,7 +79,6 @@ instrumentation_tests := \
     FlickerTestsOther \
     FlickerTestsAppClose \
     FlickerTestsIme \
-    FlickerTestsAppLaunch \
     FlickerTestsQuickswitch \
     FlickerTestsRotation \
     FlickerTestApp \

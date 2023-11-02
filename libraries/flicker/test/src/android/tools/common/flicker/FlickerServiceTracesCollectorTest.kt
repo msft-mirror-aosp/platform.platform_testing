@@ -18,7 +18,7 @@ package android.tools.common.flicker
 
 import android.app.Instrumentation
 import android.tools.common.io.TraceType
-import android.tools.device.apphelpers.BrowserAppHelper
+import android.tools.device.apphelpers.ClockAppHelper
 import android.tools.device.flicker.FlickerServiceTracesCollector
 import android.tools.device.flicker.isShellTransitionsEnabled
 import android.tools.device.traces.parsers.WindowManagerStateHelper
@@ -42,7 +42,7 @@ import org.junit.runners.MethodSorters
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class FlickerServiceTracesCollectorTest {
     val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
-    private val testApp: BrowserAppHelper = BrowserAppHelper(instrumentation)
+    private val testApp = ClockAppHelper(instrumentation)
 
     @Before
     fun before() {
@@ -112,8 +112,6 @@ class FlickerServiceTracesCollectorTest {
                 TraceType.SF.fileName
             )
 
-        @ClassRule
-        @JvmField
-        val ENV_CLEANUP = CleanFlickerEnvironmentRule()
+        @ClassRule @JvmField val ENV_CLEANUP = CleanFlickerEnvironmentRule()
     }
 }
