@@ -25,6 +25,7 @@ SYNC_WAIT_TIME = 30 # Sometimes syncing between devices can take a while
 DEVICE_CONNECT_WAIT_TIME = 20 # Waiting for device pairing to complete.
 MOBILE_DEVICE_NAME = 'target'
 AUTOMOTIVE_DEVICE_NAME = 'discoverer'
+REBOOT = 'reboot'
 
 # The word or phrase present in a device summary that is connected.
 CONNECTED_SUMMARY_STATUS = "Connected"
