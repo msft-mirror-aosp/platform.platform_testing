@@ -98,9 +98,9 @@ python_test_host {
 }
 
 python_test_host {
-    name: "esim_transfer_only_stress_test",
-    main: "esim_transfer_only_stress_test.py",
-    srcs: ["esim_transfer_only_stress_test.py",],
+    name: "esim_transfer_stress_test",
+    main: "esim_transfer_stress_test.py",
+    srcs: ["esim_transfer_stress_test.py",],
     libs: [
         "nc_constants",
         "setup_utils",
@@ -115,6 +115,33 @@ python_test_host {
     },
     data: [
         "local_esim_testbed.yml",
+        // package the snippes for atest
+        ":nearby_snippet",],
+    version: {
+        py3: {
+            embedded_launcher: false,
+        },
+    },
+}
+
+python_test_host {
+    name: "nearby_share_stress_test",
+    main: "nearby_share_stress_test.py",
+    srcs: ["nearby_share_stress_test.py",],
+    libs: [
+        "nc_constants",
+        "setup_utils",
+        "nearby_connection_wrapper",
+        "nc_base_test",
+        "mobly",],
+    test_suites: [],
+    test_options: {
+        unit_test: false, // as Mobly tests require device(s)
+        // This tag is used to enable the ATest Mobly runner
+        tags: ["mobly"],
+    },
+    data: [
+        "local_nearby_share_testbed.yml",
         // package the snippes for atest
         ":nearby_snippet",],
     version: {

@@ -103,9 +103,6 @@ class NCBaseTestClass(base_test.BaseTestClass):
     setup_utils.enable_auto_reconnect(ad)
 
   def setup_test(self):
-    if self.test_parameters.toggle_airplane_mode_target_side:
-      setup_utils.toggle_airplane_mode(self.advertiser)
-    self._reset_wifi_connection()
     self._reset_nearby_connection()
 
   def _reset_wifi_connection(self) -> None:

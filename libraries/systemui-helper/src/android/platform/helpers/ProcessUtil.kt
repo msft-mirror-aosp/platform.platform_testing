@@ -18,7 +18,8 @@ class ProcessUtil(private val packageName: String) {
                 val result = shell(killCmd)
                 Log.d(TAG, "Result of \"$killCmd\": \"$result\"")
             }
-        ensureThat("All sysui process restarted") { allProcessesRestarted(initialPids) }
+        ensureThat("All sysui process stopped") { allProcessesStopped(initialPids) }
+        ensureThat("All sysui process restarted") { hasProcessRestarted(initialPids) }
     }
 
     private val pids: List<String>
@@ -29,8 +30,18 @@ class ProcessUtil(private val packageName: String) {
             } else pidofResult.split("\\s".toRegex())
         }
 
-    private fun allProcessesRestarted(initialPidsList: List<String>): Boolean =
+    private fun allProcessesStopped(initialPidsList: List<String>): Boolean =
         (pids intersect initialPidsList).isEmpty()
+
+    /**
+     * We can only test if one process has restarted. If we match against the number of killed
+     * processes, one may have spawned another process later, and this check would fail.
+     *
+     * @param initialPidsList list of pidof $packageName
+     * @return true if there is a new process with name $packageName
+     */
+    private fun hasProcessRestarted(initialPidsList: List<String>): Boolean =
+        (pids subtract initialPidsList).isNotEmpty()
 
     private companion object {
         const val TAG = "ProcessUtils"

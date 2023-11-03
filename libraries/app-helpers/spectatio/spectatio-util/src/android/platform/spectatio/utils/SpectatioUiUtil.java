@@ -554,17 +554,17 @@ public class SpectatioUiUtil {
         int xFinish;
         int yFinish;
 
-        int padXStart = 0;
-        int padXFinish = 0;
-        int padYStart = 0;
-        int padYFinish = 0;
+        int padXStart = 5;
+        int padXFinish = 5;
+        int padYStart = 5;
+        int padYFinish = 5;
 
         switch (swipeFraction) {
-            case DEFAULT:
-                padXStart = 5;
-                padXFinish = 5;
-                padYStart = 5;
-                padYFinish = 5;
+            case FULL:
+                padXStart = 0;
+                padXFinish = 0;
+                padYStart = 0;
+                padYFinish = 0;
                 break;
             case QUARTER:
                 padXStart = bounds.right / 4;
@@ -756,6 +756,40 @@ public class SpectatioUiUtil {
             canScroll = scrollUsingButton(backward);
             scrollCount++;
         }
+    }
+
+    /**
+     * Swipe in a direction until a target UI Object is found
+     *
+     * @param swipeDirection Direction to swipe
+     * @param numOfSteps Ticks per swipe
+     * @param swipeFraction How far to swipe
+     * @param target The UI Object to find
+     * @return The found object, or null if there isn't one
+     */
+    public UiObject2 swipeAndFindUiObject(
+            SwipeDirection swipeDirection,
+            int numOfSteps,
+            SwipeFraction swipeFraction,
+            BySelector target) {
+        validateSelector(target, "Find UI Object");
+        UiObject2 uiObject = findUiObject(target);
+        if (isValidUiObject(uiObject)) {
+            return uiObject;
+        }
+
+        String previousView = null;
+        String currentView = getViewHierarchy();
+        while (!currentView.equals(previousView)) {
+            swipe(swipeDirection, numOfSteps, swipeFraction);
+            uiObject = findUiObject(target);
+            if (isValidUiObject(uiObject)) {
+                return uiObject;
+            }
+            previousView = currentView;
+            currentView = getViewHierarchy();
+        }
+        return null;
     }
 
     private String getViewHierarchy() {

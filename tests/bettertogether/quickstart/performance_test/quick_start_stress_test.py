@@ -145,6 +145,10 @@ class QuickStartStressTest(nc_base_test.NCBaseTestClass):
       wifi_password: str = '',
   ) -> None:
     """Mimics quick start flow test with 2 nearby connections."""
+    if self.test_parameters.toggle_airplane_mode_target_side:
+      setup_utils.toggle_airplane_mode(self.advertiser)
+    if self.test_parameters.reset_wifi_connection:
+      self._reset_wifi_connection()
     # 1. discoverer connect to wifi wlan
     self._test_result = nc_constants.SingleTestResult()
     if wifi_ssid:
@@ -181,13 +185,13 @@ class QuickStartStressTest(nc_base_test.NCBaseTestClass):
           timeouts=first_connection_setup_timeouts,
           medium_upgrade_type=nc_constants.MediumUpgradeType.NON_DISRUPTIVE)
     finally:
-      self._test_result.first_connection_setup_quality_info = (
+      self._test_result.connection_setup_quality_info = (
           nearby_snippet_1.connection_quality_info
       )
 
     # 3. transfer file through bluetooth
     file_1_mb = _TRANSFER_FILE_SIZE_1MB
-    self._test_result.first_bt_transfer_throughput_kbps = (
+    self._test_result.bt_transfer_throughput_kbps = (
         nearby_snippet_1.transfer_file(
             file_1_mb, nc_constants.FILE_1M_PAYLOAD_TRANSFER_TIMEOUT,
             nc_constants.PayloadType.FILE))
@@ -238,7 +242,7 @@ class QuickStartStressTest(nc_base_test.NCBaseTestClass):
 
     # 6. transfer file through wifi
     file_1_gb = _TRANSFER_FILE_SIZE_1GB
-    self._test_result.second_wifi_transfer_throughput_kbps = (
+    self._test_result.wifi_transfer_throughput_kbps = (
         nearby_snippet_2.transfer_file(
             file_1_gb, nc_constants.FILE_1G_PAYLOAD_TRANSFER_TIMEOUT,
             self.test_parameters.payload_type))
@@ -253,11 +257,11 @@ class QuickStartStressTest(nc_base_test.NCBaseTestClass):
 
     quality_info = {
         '1st connection': (
-            self._test_result.first_connection_setup_quality_info.get_dict()),
-        'bt_kBps': self._test_result.first_bt_transfer_throughput_kbps,
+            self._test_result.connection_setup_quality_info.get_dict()),
+        'bt_kBps': self._test_result.bt_transfer_throughput_kbps,
         '2nd connection': (
             self._test_result.second_connection_setup_quality_info.get_dict()),
-        'wifi_kBps': self._test_result.second_wifi_transfer_throughput_kbps,
+        'wifi_kBps': self._test_result.wifi_transfer_throughput_kbps,
     }
 
     if self._test_result.discoverer_wifi_wlan_expected:
@@ -280,13 +284,13 @@ class QuickStartStressTest(nc_base_test.NCBaseTestClass):
   def _collect_current_test_metrics(self) -> None:
     """Collects test result metrics for each iteration."""
     self._quick_start_test_metrics.first_discovery_latencies.append(
-        self._test_result.first_connection_setup_quality_info.discovery_latency
+        self._test_result.connection_setup_quality_info.discovery_latency
     )
     self._quick_start_test_metrics.first_connection_latencies.append(
-        self._test_result.first_connection_setup_quality_info.connection_latency
+        self._test_result.connection_setup_quality_info.connection_latency
     )
     self._quick_start_test_metrics.bt_transfer_throughputs_kbps.append(
-        self._test_result.first_bt_transfer_throughput_kbps
+        self._test_result.bt_transfer_throughput_kbps
     )
 
     self._quick_start_test_metrics.second_discovery_latencies.append(
@@ -295,13 +299,13 @@ class QuickStartStressTest(nc_base_test.NCBaseTestClass):
     self._quick_start_test_metrics.second_connection_latencies.append(
         self._test_result.second_connection_setup_quality_info.connection_latency
     )
-    self._quick_start_test_metrics.second_medium_upgrade_latencies.append(
+    self._quick_start_test_metrics.medium_upgrade_latencies.append(
         self._test_result.second_connection_setup_quality_info.medium_upgrade_latency
     )
     self._quick_start_test_metrics.upgraded_wifi_transfer_mediums.append(
         self._test_result.second_connection_setup_quality_info.upgrade_medium)
     self._quick_start_test_metrics.wifi_transfer_throughputs_kbps.append(
-        self._test_result.second_wifi_transfer_throughput_kbps
+        self._test_result.wifi_transfer_throughput_kbps
     )
     self._quick_start_test_metrics.discoverer_wifi_wlan_latencies.append(
         self._test_result.discoverer_wifi_wlan_latency)
@@ -320,13 +324,13 @@ class QuickStartStressTest(nc_base_test.NCBaseTestClass):
   # @typing.override
   def _summary_test_results(self) -> None:
     """Summarizes test results of all iterations."""
-    first_bt_transfer_stats = self._stats_throughput_result(
+    bt_transfer_stats = self._stats_throughput_result(
         'BT',
         self._quick_start_test_metrics.bt_transfer_throughputs_kbps,
         nc_constants.BT_TRANSFER_SUCCESS_RATE_TARGET_PERCENTAGE,
         self.test_parameters.bt_transfer_throughput_median_benchmark_kbps)
 
-    second_wifi_transfer_stats = self._stats_throughput_result(
+    wifi_transfer_stats = self._stats_throughput_result(
         'Wi-Fi',
         self._quick_start_test_metrics.wifi_transfer_throughputs_kbps,
         nc_constants.WIFI_TRANSFER_SUCCESS_RATE_TARGET_PERCENTAGE,
@@ -340,18 +344,18 @@ class QuickStartStressTest(nc_base_test.NCBaseTestClass):
         self._quick_start_test_metrics.second_discovery_latencies)
     second_connection_stats = self._stats_latency_result(
         self._quick_start_test_metrics.second_connection_latencies)
-    second_medium_upgrade_stats = self._stats_latency_result(
-        self._quick_start_test_metrics.second_medium_upgrade_latencies)
+    medium_upgrade_stats = self._stats_latency_result(
+        self._quick_start_test_metrics.medium_upgrade_latencies)
 
     passed = True
     result_message = 'Passed'
     fail_message = ''
-    if first_bt_transfer_stats.fail_targets:
+    if bt_transfer_stats.fail_targets:
       fail_message += self._generate_target_fail_message(
-          first_bt_transfer_stats.fail_targets)
-    if second_wifi_transfer_stats.fail_targets:
+          bt_transfer_stats.fail_targets)
+    if wifi_transfer_stats.fail_targets:
       fail_message += self._generate_target_fail_message(
-          second_wifi_transfer_stats.fail_targets)
+          wifi_transfer_stats.fail_targets)
     if fail_message:
       passed = False
       result_message = 'Test Failed due to:\n' + fail_message
@@ -359,29 +363,29 @@ class QuickStartStressTest(nc_base_test.NCBaseTestClass):
     detailed_stats = {
         '0 test iterations': self.performance_test_iterations,
         '1 Completed BT/Wi-Fi transfer': (
-            f'{first_bt_transfer_stats.success_count}'
-            f' / {second_wifi_transfer_stats.success_count}'),
+            f'{bt_transfer_stats.success_count}'
+            f' / {wifi_transfer_stats.success_count}'),
         '2 BT transfer failures': {
             'discovery': first_discovery_stats.failure_count,
             'connection': first_connection_stats.failure_count,
             'transfer': self.performance_test_iterations - (
-                first_bt_transfer_stats.success_count),
+                bt_transfer_stats.success_count),
         },
         '3 Wi-Fi transfer failures': {
             'discovery': second_discovery_stats.failure_count,
             'connection': second_connection_stats.failure_count,
-            'upgrade': second_medium_upgrade_stats.failure_count,
+            'upgrade': medium_upgrade_stats.failure_count,
             'transfer': self.performance_test_iterations - (
-                second_wifi_transfer_stats.success_count),
+                wifi_transfer_stats.success_count),
         },
         '4 Medium upgrade count': (
             self._summary_upgraded_wifi_transfer_mediums()),
         '5 50% and 95% of BT transfer speed (KBps)': (
-            f'{first_bt_transfer_stats.percentile_50_kbps}'
-            f' / {first_bt_transfer_stats.percentile_95_kbps}'),
+            f'{bt_transfer_stats.percentile_50_kbps}'
+            f' / {bt_transfer_stats.percentile_95_kbps}'),
         '6 50% and 95% of Wi-Fi transfer speed(KBps)': (
-            f'{second_wifi_transfer_stats.percentile_50_kbps}'
-            f' / {second_wifi_transfer_stats.percentile_95_kbps}'),
+            f'{wifi_transfer_stats.percentile_50_kbps}'
+            f' / {wifi_transfer_stats.percentile_95_kbps}'),
         '7 50% and 95% of discovery latency(sec)': (
             f'{first_discovery_stats.percentile_50}'
             f' / {first_discovery_stats.percentile_95} (1st), '
@@ -393,8 +397,8 @@ class QuickStartStressTest(nc_base_test.NCBaseTestClass):
             f'{second_connection_stats.percentile_50}'
             f' / {second_connection_stats.percentile_95} (2nd)'),
         '9 50% and 95% of medium upgrade latency(sec)': (
-            f'{second_medium_upgrade_stats.percentile_50}'
-            f' / {second_medium_upgrade_stats.percentile_95} (2nd)'),
+            f'{medium_upgrade_stats.percentile_50}'
+            f' / {medium_upgrade_stats.percentile_95}'),
     }
 
     self.record_data({

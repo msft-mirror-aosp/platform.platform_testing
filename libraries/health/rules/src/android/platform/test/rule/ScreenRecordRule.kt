@@ -24,6 +24,7 @@ import android.platform.test.rule.ScreenRecordRule.ScreenRecord
 import android.platform.uiautomator_helpers.DeviceHelpers.shell
 import android.platform.uiautomator_helpers.FailedEnsureException
 import android.platform.uiautomator_helpers.WaitUtils.ensureThat
+import android.platform.uiautomator_helpers.WaitUtils.waitFor
 import android.platform.uiautomator_helpers.WaitUtils.waitForValueToSettle
 import android.util.Log
 import androidx.test.InstrumentationRegistry.getInstrumentation
@@ -133,7 +134,8 @@ constructor(
         val screenRecordingFileDescriptor =
             automation.executeShellCommand("screenrecord --verbose --bugreport $outputFile")
         // Getting latest PID as there might be multiple screenrecording in progress.
-        val screenRecordPid = screenrecordPids.max()
+        val screenRecordPid =
+            waitFor("screenrecording pid") { screenrecordPids.maxOrNull() }
         var success = false
         try {
             runnable()
