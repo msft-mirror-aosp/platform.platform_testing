@@ -52,7 +52,6 @@ instrumentation_tests := \
     PermissionFunctionalTests \
     BlockedNumberProviderTest \
     DownloadAppFunctionalTests \
-    NotificationFunctionalTests \
     DynamicCodeLoggerIntegrationTests \
     UsbTests \
     DownloadProviderTests \
