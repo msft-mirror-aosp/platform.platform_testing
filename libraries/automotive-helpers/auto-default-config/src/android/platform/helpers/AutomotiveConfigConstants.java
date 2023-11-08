@@ -290,6 +290,9 @@ public class AutomotiveConfigConstants {
     public static final String ENABLE_DISABLE_BT_TOGGLE = "ENABLE_DISABLE_BT_TOGGLE";
     public static final String CANCEL_BT_AUDIO_CONNECTION_BUTTON =
             "CANCEL_BT_AUDIO_CONNECTION_BUTTON";
+    public static final String MEDIA_SCROLL_DOWN_BUTTON = "MEDIA_SCROLL_DOWN_BUTTON";
+    public static final String MEDIA_SCROLL_UP_BUTTON = "MEDIA_SCROLL_UP_BUTTON";
+    public static final String MEDIA_SONG_IN_PLAYLIST = "MEDIA_SONG_IN_PLAYLIST";
     // NEXT_BUTTON from Account Settings
     public static final String PREVIOUS_BUTTON = "PREVIOUS_BUTTON";
     public static final String SHUFFLE_BUTTON = "SHUFFLE_BUTTON";

@@ -96,4 +96,16 @@ public class MediaPlayerSnippet implements Snippet {
     public void cancelBluetoothAudioConncetion() {
         mAutoMediaHelper.get().cancelBluetoothAudioConncetion();
     }
+
+    @Rpc(description = "Scroll play list down")
+    public void scrollPlayListDown() {
+        mAutoMediaHelper.get().scrollPlayListDown();
+    }
+
+    @Rpc(description = "Select song from playlist")
+    public void clickOnSongFromPlaylist() {
+        mAutoMediaHelper.get().clickOnSongFromPlaylist();
+    }
+
+
 }

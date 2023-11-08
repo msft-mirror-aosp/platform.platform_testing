@@ -164,3 +164,28 @@ class MediaUtils:
         actual_song_playing_status = self.discoverer.mbs.isPlaying()
         logging.info("Is song playing: %s", actual_song_playing_status)
         return actual_song_playing_status
+
+    # Maximize playing song
+    def maximize_now_playing(self):
+        logging.info("Maximizing playing song on HU")
+        self.discoverer.mbs.maximizeNowPlaying()
+
+    # Minimize playing song
+    def minimize_now_playing(self):
+        logging.info("Maximizing playing song on HU")
+        self.discoverer.mbs.minimizeNowPlaying()
+
+    # Open playlist
+    def open_media_playlist(self):
+        logging.info("Open Playlist content on HU")
+        self.discoverer.mbs.openMediaAppMenuItems()
+
+    # Scroll playlist to the button
+    def scroll_playlist_to_the_button(self):
+        logging.info("Scroll Playlist to the button on HU")
+        self.discoverer.mbs.scrollPlayListDown()
+
+    # Select first visible song from playlist
+    def select_song_from_playlist(self):
+        logging.info("Select song from playlist on HU")
+        self.discoverer.mbs.clickOnSongFromPlaylist()

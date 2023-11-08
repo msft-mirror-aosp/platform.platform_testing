@@ -237,4 +237,19 @@ public interface IAutoMediaHelper extends IAppHelper, Scrollable {
      * <p>This method is used to Cancel Bluetooth Audio conncetion.
      */
     void cancelBluetoothAudioConncetion();
+
+    /**
+     * Setup expectations: Bluetooth Audio page opened.
+     *
+     * <p>This method is used to Scroll down playlist.
+     */
+    void scrollPlayListDown();
+
+
+    /**
+     * Setup expectations: Bluetooth Audio page opened.
+     *
+     * <p>This method is used to select song from playlist.
+     */
+    void clickOnSongFromPlaylist();
 }
