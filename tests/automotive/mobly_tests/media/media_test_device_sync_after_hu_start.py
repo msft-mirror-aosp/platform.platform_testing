@@ -17,9 +17,10 @@ from bluetooth_test import bluetooth_base_test
 from mobly import asserts
 from utilities.media_utils import MediaUtils
 from utilities.main_utils import common_main
+from mobly.controllers import android_device
 
 
-class SelectSongFromPlaylist(bluetooth_base_test.BluetoothBaseTest):
+class IsDeviceSyncedAfterHuStart(bluetooth_base_test.BluetoothBaseTest):
 
     def setup_class(self):
         super().setup_class()
@@ -28,31 +29,21 @@ class SelectSongFromPlaylist(bluetooth_base_test.BluetoothBaseTest):
     def setup_test(self):
         self.bt_utils.pair_primary_to_secondary()
 
-    def test_media_select_song_from_playlist(self):
-        """Tests validating is song playing on HU after after changing song in playlist"""
+    def test_is_hu_synced_after_hu_start(self):
+        """Tests validating is media synced after HU start"""
+        # Reboot HU
+        self.discoverer.unload_snippet('mbs')
+        self.media_utils.reboot_hu()
+        self.call_utils.wait_with_log(10)
         self.media_utils.open_youtube_music_app()
+        self.call_utils.wait_with_log(30)
+        self.discoverer.load_snippet('mbs', android_device.MBS_PACKAGE)
         current_phone_song_title = self.media_utils.get_song_title_from_phone()
         self.media_utils.open_media_app_on_hu()
         current_hu_song_title = self.media_utils.get_song_title_from_hu()
+        asserts.assert_true(self.media_utils.is_song_playing_on_hu(),
+                            'Song should be playing after HU reboot')
         asserts.assert_true(current_phone_song_title == current_hu_song_title,
-                            'Invalid song titles. '
-                            'Song title on phone device and HU should be the same')
-
-        # Maximize playing song
-        self.media_utils.maximize_now_playing()
-        # Open play list
-        self.media_utils.open_media_playlist()
-        # Scroll play list to the button
-        self.media_utils.scroll_playlist_to_the_button()
-        self.media_utils.select_song_from_playlist()
-        self.call_utils.wait_with_log(2)
-        current_next_phone_song_title = self.media_utils.get_song_title_from_phone()
-        current_next_hu_song_title = self.media_utils.get_song_title_from_hu()
-        # Assert song titles are different after scrolling
-        asserts.assert_false(current_hu_song_title == current_next_hu_song_title,
-                             'Invalid song titles. '
-                             'Song title on HU should be different after scrolling')
-        asserts.assert_true(current_next_phone_song_title == current_next_hu_song_title,
                             'Invalid song titles. '
                             'Song title on phone device and HU should be the same')
 

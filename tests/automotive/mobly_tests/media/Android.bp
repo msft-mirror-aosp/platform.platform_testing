@@ -17,6 +17,33 @@ package {
 }
 
 python_test_host {
+    name: "BTMediaIsDeviceSynchedAfterStartHuTest",
+    main: "media_test_device_sync_after_hu_start.py",
+    srcs: ["media_test_device_sync_after_hu_start.py"],
+    libs: [
+        "mobly",
+        "utilities",
+        "bluetooth_test",
+    ],
+    test_suites: [
+        "catbox",
+    ],
+    test_options: {
+        unit_test: false,
+    },
+    data: [
+        // Package the snippet with the mobly test
+        ":AutomotiveSnippet",
+        ":PhoneSnippet",
+    ],
+    version: {
+        py3: {
+            embedded_launcher: true,
+        },
+    },
+}
+
+python_test_host {
     name: "BTMediaSelectSongFromPlaylistTest",
     main: "media_test_select_song_from_playlist.py",
     srcs: ["media_test_select_song_from_playlist.py"],
