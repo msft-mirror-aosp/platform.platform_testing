@@ -120,13 +120,11 @@
     },
     "CONTACT_LIST_SCROLL_FORWARD": {
       "TYPE": "RESOURCE_ID",
-      "VALUE": "car_ui_scrollbar_page_down",
-      "PACKAGE": "com.chassis.car.ui.plugin"
+      "VALUE": "car_ui_scrollbar_page_down"
     },
     "CONTACT_LIST_SCROLL_BACKWARD": {
       "TYPE": "RESOURCE_ID",
-      "VALUE": "car_ui_scrollbar_page_up",
-      "PACKAGE": "com.chassis.car.ui.plugin"
+      "VALUE": "car_ui_scrollbar_page_up"
     },
     "CONTACT_LIST_SCROLL_ELEMENT": {
       "TYPE": "RESOURCE_ID",

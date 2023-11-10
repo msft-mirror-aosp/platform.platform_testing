@@ -25,21 +25,12 @@
 
 """
 
-import sys
-import logging
-import pprint
-
 from mobly import asserts
-from mobly import base_test
-from mobly import test_runner
-from mobly.controllers import android_device
 
 from utilities import constants
-from utilities import spectatio_utils
-from utilities import bt_utils
 from utilities.main_utils import common_main
-
 from bluetooth_test import bluetooth_base_test
+
 
 class BluetoothDisconnectFromSettingsTest(bluetooth_base_test.BluetoothBaseTest):
 
@@ -49,7 +40,6 @@ class BluetoothDisconnectFromSettingsTest(bluetooth_base_test.BluetoothBaseTest)
         self.bt_utils.pair_primary_to_secondary()
 
     def test_disconnect_from_settings(self):
-
         # Allow time for connection to fully sync.
         self.call_utils.wait_with_log(constants.WAIT_THIRTY_SECONDS)
 
@@ -74,6 +64,7 @@ class BluetoothDisconnectFromSettingsTest(bluetooth_base_test.BluetoothBaseTest)
         asserts.assert_true(
             self.call_utils.validate_three_preference_buttons(True),
             "Expected bluetooth, media, and phone buttons to be enabled after reconnection.")
+
 
 if __name__ == '__main__':
     # Take test args

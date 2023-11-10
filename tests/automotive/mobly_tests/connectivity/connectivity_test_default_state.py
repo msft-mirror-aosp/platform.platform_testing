@@ -23,15 +23,9 @@
 """
 
 from mobly import asserts
-from mobly import base_test
-from mobly.controllers import android_device
 from utilities.main_utils import common_main
+from bluetooth_test import bluetooth_base_test
 
-from utilities import constants
-from utilities import spectatio_utils
-from utilities import bt_utils
-
-from bluetooth_base_test import BaseTestClass
 
 class BluetoothDefaultStateTest(bluetooth_base_test.BluetoothBaseTest):
 

@@ -285,3 +285,28 @@ class CallUtils:
                              'when bluetooth is disconnected')
         return self.device.mbs.isBluetoothHfpErrorDisplayed()
 
+    def search_contacts_name(self, contact_name):
+        logging.info('Searching <%s> in contacts', contact_name)
+        self.device.mbs.searchContactsByName(contact_name)
+
+    def sort_contacts_by_first_name(self):
+        logging.info('Sorting contacts by first name')
+        self.device.mbs.sortContactListByFirstName()
+
+    def get_list_of_visible_contacts(self):
+        logging.info('Getting list of visible contacts')
+        actual_visible_contacts_list = self.device.mbs.getListOfAllContacts()
+        logging.info(
+            'Actual list of visible contacts: <%s>', actual_visible_contacts_list
+        )
+        return actual_visible_contacts_list
+
+    def verify_ascending_sorting_order(self, actual_sorting_order):
+        expected_sorting_order = sorted(actual_sorting_order)
+        logging.info(
+            'Expected sorting order: <%s>, Actual sorting order: <%s>',
+        expected_sorting_order,
+        actual_sorting_order,
+    )
+        if actual_sorting_order != expected_sorting_order:
+            raise CallUtilsError("Actual and Expected sorting orders don't match.")
