@@ -2,19 +2,11 @@
 Pairing Test
 """
 
-import sys
-import logging
-import pprint
-
 from mobly import asserts
-from mobly import base_test
 from mobly import test_runner
-from mobly.controllers import android_device
 from bluetooth_test import bluetooth_base_test
 
-from utilities import constants
-from utilities import spectatio_utils
-from utilities import bt_utils
+from mbs_utils.main_utils import common_main
 
 
 class DialerHFPError(bluetooth_base_test.BluetoothBaseTest):

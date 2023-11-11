@@ -43,26 +43,26 @@ class CallUtils:
         self.device.mbs.deviceIsConnected()
 
     def dial_a_number(self, callee_number):
-        """ Dial phone number """
-        logging.info('Dial phone number <%s>', callee_number)
+        """Dial phone number"""
+        logging.info("Dial phone number <%s>", callee_number)
         self.device.mbs.dialANumber(callee_number)
 
     def end_call(self):
-        """  End the call. Throws an error if non call is currently ongoing. """
-        logging.info('End the call')
+        """End the call. Throws an error if non call is currently ongoing."""
+        logging.info("End the call")
         self.device.mbs.endCall()
 
     def execute_shell_on_device(self, device_target, shell_command):
         """Execute any shell command on any device"""
         logging.info(
-            'Executing shell command: <%s> on device <%s>',
+            "Executing shell command: <%s> on device <%s>",
             shell_command,
             device_target.serial,
         )
         return device_target.adb.shell(shell_command)
 
     def get_dialing_number(self):
-        """ Get dialing phone number"""
+        """Get dialing phone number"""
         return self.device.mbs.getDialedNumber()
 
     def get_home_address_from_details(self):
@@ -74,36 +74,36 @@ class CallUtils:
         return self.device.mbs.getDeviceSummary()
 
     def import_contacts_from_vcf_file(self, device_target):
-        """ Importing contacts from VCF file"""
-        logging.info('Importing contacts from VCF file to device Contacts')
+        """Importing contacts from VCF file"""
+        logging.info("Importing contacts from VCF file to device Contacts")
         self.execute_shell_on_device(
             device_target,
             constants.IMPOST_CONTACTS_SHELL_COMAND,
         )
 
     def make_call(self):
-        """ Make call"""
-        logging.info('Make a call')
+        """Make call"""
+        logging.info("Make a call")
         self.device.mbs.makeCall()
 
     def open_call_history(self):
-        """ Open call history """
-        logging.info('Open call history')
+        """Open call history"""
+        logging.info("Open call history")
         self.device.mbs.openCallHistory()
 
     def open_contacts(self):
         """Open contacts"""
-        logging.info('Opening contacts')
+        logging.info("Opening contacts")
         self.device.mbs.openContacts()
 
     def open_phone_app(self):
-        logging.info('Opening phone app')
+        logging.info("Opening phone app")
         self.device.mbs.openPhoneApp()
 
     def open_first_contact_details(self):
         """Open the contact details page for the first contact visible in the contact list.
-        Assumes we are on the contacts page. """
-        logging.info('Getting details for first contact on the page')
+        Assumes we are on the contacts page."""
+        logging.info("Getting details for first contact on the page")
         self.device.mbs.openFirstContactDetails()
 
     def open_bluetooth_settings(self):
@@ -137,20 +137,20 @@ class CallUtils:
         self.device.mbs.pressForget()
 
     def press_home(self):
-        """ Press the Home button to go back to the home page."""
+        """Press the Home button to go back to the home page."""
         logging.info("Pressing HOME ")
         self.device.mbs.pressHome()
 
     def press_enter_on_device(self, device_target):
         """Press ENTER on device"""
-        logging.info('Pressing ENTER on device: ')
-        self.execute_shell_on_device(device_target, 'input keyevent KEYCODE_ENTER')
+        logging.info("Pressing ENTER on device: ")
+        self.execute_shell_on_device(device_target, "input keyevent KEYCODE_ENTER")
         self.wait_with_log(constants.ONE_SEC)
 
     def push_vcf_contacts_to_device(self, device_target, path_to_contacts_file):
         """Pushing contacts file to device using adb command"""
         logging.info(
-            'Pushing VCF contacts to device %s to destination <%s>',
+            "Pushing VCF contacts to device %s to destination <%s>",
             device_target.serial,
             constants.PHONE_CONTACTS_DESTINATION_PATH,
         )
@@ -197,7 +197,7 @@ class CallUtils:
     def verify_contact_name(self, expected_contact):
         actual_dialed_contact = self.device.mbs.getContactName()
         logging.info(
-            'Expected contact name being called: <%s>, Actual: <%s>',
+            "Expected contact name being called: <%s>, Actual: <%s>",
             expected_contact,
             actual_dialed_contact,
         )
@@ -207,8 +207,8 @@ class CallUtils:
             )
 
     def wait_with_log(self, wait_time):
-        """ Wait for specific time for debugging"""
-        logging.info('Sleep for %s seconds', wait_time)
+        """Wait for specific time for debugging"""
+        logging.info("Sleep for %s seconds", wait_time)
         time.sleep(wait_time)
     # Open contacts detais page
     def open_details_page(self, contact_name):
@@ -247,16 +247,44 @@ class CallUtils:
         self.device.mbs.openBluetoothMediaApp();
         self.wait_with_log(constants.WAIT_ONE_SEC)
 
+    def click_phone_button(self):
+        logging.info("Click phone button")
+        self.device.mbs.clickPhoneButton()
+
+    def verify_disabled_phone_profile(self):
+        logging.info("Checks if phone profile is disabled")
+        return self.device.mbs.verifyDisabledPhoneProfile()
+
+    def verify_bluetooth_hfp_error_displayed(self):
+        logging.info("Checks if bluetooth hfp error")
+        return self.device.mbs.isBluetoothHfpErrorDisplayed()
+
+    def verify_dialer_recents_tab(self):
+        logging.info("Checks if dialer recents tab is displayed")
+        return self.device.mbs.verifyDialerRecentsTab()
+
+    def verify_dialer_contacts_tab(self):
+        logging.info("Checks if dialer contacts tab is displayed")
+        return self.device.mbs.verifyDialerContactsTab()
+
+    def verify_dialer_favorites_tab(self):
+        logging.info("Checks if favorites tab is displayed")
+        return self.device.mbs.verifyDialerFavoritesTab()
+
+    def verify_dialer_dialpad_tab(self):
+        logging.info("Checks if dialpad is displayed")
+        return self.device.mbs.verifyDialerDialpadTab()
+
     def open_bluetooth_palette(self):
-        logging.info('Click on Bluetooth Palette')
+        logging.info("Open Bluetooth Palette")
         self.device.mbs.openBluetoothPalette()
 
     def click_bluetooth_button(self):
-        logging.info('Click Bluetooth Button')
+        logging.info("Click Bluetooth Button")
         self.device.mbs.clickBluetoothButton()
 
     def is_bluetooth_connected(self):
-        logging.info('Bluetooth Connected Status')
+        logging.info("Bluetooth Connected Status")
         is_connected = self.device.mbs.isBluetoothConnected()
         return is_connected
 

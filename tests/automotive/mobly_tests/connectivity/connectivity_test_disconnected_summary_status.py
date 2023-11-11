@@ -53,15 +53,15 @@ class BluetoothConnectionStatusOnLevelTwo(bluetooth_base_test.BluetoothBaseTest)
     def test_connection_status_displayed_on_device_screen(self):
         # Open bluetooth settings.
         self.call_utils.open_bluetooth_settings()
-        self.call_utils.wait_with_log(constants.WAIT_TWO_SECONDS)
+        self.call_utils.wait_with_log(2)
 
         # Find the target device and disconnect it on the Level One page
         self.call_utils.press_bluetooth_toggle_on_device(MOBILE_DEVICE_NAME)
-        self.call_utils.wait_with_log(constants.WAIT_TWO_SECONDS)
+        self.call_utils.wait_with_log(2)
 
         # Click on the target device.
         self.call_utils.press_device_entry_on_list_of_paired_devices(MOBILE_DEVICE_NAME)
-        self.call_utils.wait_with_log(constants.WAIT_TWO_SECONDS)
+        self.call_utils.wait_with_log(2)
 
         # Confirm that target device displays "disconnected"
         summary = self.call_utils.get_device_summary()

@@ -77,11 +77,11 @@ class ImportAddressDetailsTest(base_test.BaseTestClass):
     def test_import_address_details(self):
         # Open the dialer app, and then the contacts page
         self.call_utils.open_phone_app()
-        self.call_utils.wait_with_log(constants.WAIT_TWO_SECONDS)
+        self.call_utils.wait_with_log(2)
         self.call_utils.open_contacts()
-        self.call_utils.wait_with_log(constants.WAIT_TWO_SECONDS)
+        self.call_utils.wait_with_log(2)
         self.call_utils.open_first_contact_details()
-        self.call_utils.wait_with_log(constants.WAIT_TWO_SECONDS)
+        self.call_utils.wait_with_log(2)
 
         # Import the first contact's address from the discoverer device.
         display_address = self.call_utils.get_home_address_from_details()

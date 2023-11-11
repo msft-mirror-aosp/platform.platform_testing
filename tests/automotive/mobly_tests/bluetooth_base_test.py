@@ -6,18 +6,16 @@ It also serves as a device-cleaner to help reset devices between tests.
 
 """
 
-import sys
 import logging
-import pprint
 
 
-from mobly import asserts
 from mobly import base_test
-from mobly import test_runner
 from mobly.controllers import android_device
 
 from utilities import spectatio_utils
 from utilities import bt_utils
+from utilities.main_utils import common_main
+
 
 class BluetoothBaseTest(base_test.BaseTestClass):
 
