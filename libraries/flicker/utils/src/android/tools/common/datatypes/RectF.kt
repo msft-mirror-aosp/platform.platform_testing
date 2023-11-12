@@ -20,6 +20,7 @@ import android.tools.common.FloatFormatter
 import android.tools.common.withCache
 import kotlin.js.JsExport
 import kotlin.js.JsName
+import kotlin.math.abs
 
 /**
  * Wrapper for FloatRectProto (frameworks/native/services/surfaceflinger/layerproto/layers.proto)
@@ -74,6 +75,16 @@ private constructor(
             top <= r.top &&
             right >= r.right &&
             bottom >= r.bottom
+    }
+
+    fun containsWithThreshold(r: RectF, threshold: Float = 0.01f): Boolean {
+        // check for empty first
+        return this.left < this.right &&
+            this.top < this.bottom && // now check for containment
+            (left <= r.left || abs(left - r.left) < threshold) &&
+            (top <= r.top || abs(top - r.top) < threshold) &&
+            (right >= r.right || abs(right - r.right) < threshold) &&
+            (bottom >= r.bottom || abs(bottom - r.bottom) < threshold)
     }
 
     /**

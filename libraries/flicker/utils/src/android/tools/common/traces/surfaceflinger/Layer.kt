@@ -190,7 +190,7 @@ private constructor(
                 thisBounds = this.screenBounds
                 innerLayerBounds = innerLayer.screenBounds
             }
-            thisBounds.contains(innerLayerBounds)
+            thisBounds.containsWithThreshold(innerLayerBounds)
         }
     }
 

@@ -200,7 +200,29 @@ class LayersTraceEntryTest {
         Truth.assertThat(entry.timestamp.unixNanos).isEqualTo(Timestamps.empty().unixNanos)
     }
 
+    @Test
+    fun canDetectOccludedByLayerWithinThreshold() {
+        val reader = getLayerTraceReaderFromAsset("layers_trace_enter_overview.perfetto-trace")
+        val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
+
+        // Covers exactly
+        var state = trace.getEntryAt(Timestamps.from(1698103534193295897, 0L))
+        var navBar = state.getLayerById(85) ?: error("Nav bar layer not found")
+
+        Truth.assertThat(navBar.visibilityReason.joinToString()).contains(EXPECTED_OCCLUDE)
+        Truth.assertThat(navBar.isVisible).isFalse()
+
+        // Covers within threshold (b/307401382)
+        state = trace.getEntryAt(Timestamps.from(1698103534183177977, 0L))
+        navBar = state.getLayerById(85) ?: error("Nav bar layer not found")
+
+        Truth.assertThat(navBar.visibilityReason.joinToString()).contains(EXPECTED_OCCLUDE)
+        Truth.assertThat(navBar.isVisible).isFalse()
+    }
+
     companion object {
         @ClassRule @JvmField val ENV_CLEANUP = CleanFlickerEnvironmentRule()
+        private const val EXPECTED_OCCLUDE =
+            "Layer is occluded by: com.android.server.wm.flicker.testapp"
     }
 }
