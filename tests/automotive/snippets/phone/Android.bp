@@ -23,6 +23,7 @@ android_test {
         "automotive-vehiclehardkeys-app-helper",
         "automotive-settings-app-helper",
         "automotive-sms-helper",
+        "automotive-general-ui-helper",
         "mobly-snippet-lib",
         "mobly-bundled-snippets-lib",
         "automotive-status-bar-helper",
@@ -38,10 +39,12 @@ android_test {
     name: "PhoneSnippet",
     static_libs: [
         "mobly-bundled-snippets-lib",
+        "automotive-general-ui-helper",
     ],
-    srcs: ["src/**/PhoneSnippet.java"],
+    srcs: ["src/**/PhoneSnippet.java",
+           "src/**/UISnippet.java"],
     manifest: "AndroidPhoneManifest.xml",
     compile_multilib: "both",
-    target_sdk_version: "31",
+    sdk_version: "current",
     min_sdk_version: "31",
 }

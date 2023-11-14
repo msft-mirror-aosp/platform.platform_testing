@@ -40,6 +40,7 @@
                        com.google.android.mobly.snippet.bundled.BluetoothLeScannerSnippet,
                        com.google.android.mobly.snippet.bundled.PhoneSnippet,
                        com.google.android.mobly.snippet.bundled.LogSnippet,
+                       com.google.android.mobly.snippet.bundled.UISnippet,
                        com.google.android.mobly.snippet.bundled.MediaSnippet,
                        com.google.android.mobly.snippet.bundled.NotificationSnippet,
                        com.google.android.mobly.snippet.bundled.TelephonySnippet,

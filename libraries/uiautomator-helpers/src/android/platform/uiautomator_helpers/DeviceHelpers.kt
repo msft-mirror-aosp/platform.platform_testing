@@ -21,6 +21,7 @@ import android.app.Instrumentation
 import android.content.Context
 import android.graphics.PointF
 import android.os.Bundle
+import android.platform.uiautomator_helpers.DurationUtils.platformAdjust
 import android.platform.uiautomator_helpers.TracingUtils.trace
 import android.platform.uiautomator_helpers.WaitUtils.ensureThat
 import android.platform.uiautomator_helpers.WaitUtils.waitFor
@@ -38,8 +39,9 @@ import java.time.Duration
 private const val TAG = "DeviceHelpers"
 
 object DeviceHelpers {
-    private val SHORT_WAIT = Duration.ofMillis(1500)
-    private val LONG_WAIT = Duration.ofSeconds(10)
+    // Increase the timeouts for slower Cuttlefish emulator performance.
+    private val SHORT_WAIT = Duration.ofMillis(1500).platformAdjust()
+    private val LONG_WAIT = Duration.ofSeconds(10).platformAdjust()
     private val DOUBLE_TAP_INTERVAL = Duration.ofMillis(100)
 
     private val instrumentationRegistry = InstrumentationRegistry.getInstrumentation()

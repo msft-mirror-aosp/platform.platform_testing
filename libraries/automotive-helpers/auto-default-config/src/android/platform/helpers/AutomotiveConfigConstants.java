@@ -18,6 +18,9 @@ package android.platform.helpers;
 
 public class AutomotiveConfigConstants {
 
+    // General UI Elements
+    public static final String GENERAL_UI_PACKAGE = "GENERAL_UI_PACAKAGE";
+
     // Phone App Constants
     public static final String OPEN_DIAL_PAD_COMMAND = "OPEN_DIAL_PAD_COMMAND";
     public static final String OPEN_PHONE_ACTIVITY_COMMAND = "OPEN_PHONE_ACTIVITY_COMMAND";

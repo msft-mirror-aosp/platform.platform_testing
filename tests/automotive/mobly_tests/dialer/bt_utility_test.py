@@ -51,6 +51,11 @@ DISCOVERABLE_TIME = 60
 
 class UtilityClassTest(bluetooth_base_test.BluetoothBaseTest):
 
+    def setup_test(self):
+        super().setup_test()
+        # Pair caller phone with automotive device
+        self.bt_utils.pair_primary_to_secondary()
+
     def test_call_utility(self):
         # Navigate to the phone app page
         self.call_utils.open_phone_app()
