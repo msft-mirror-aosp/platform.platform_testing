@@ -245,7 +245,13 @@ class CallUtils:
         """ Open Bluetooth Audio app """
         logging.info('Open Bluetooth Audio app')
         self.device.mbs.openBluetoothMediaApp();
-        self.wait_with_log(constants.WAIT_ONE_SEC)
+        self.wait_with_log(1)
+
+    def open_bluetooth_sms_app(self):
+        """ Open Bluetooth SMS app """
+        logging.info('Open Bluetooth SMS app')
+        self.device.mbs.openSmsApp();
+        self.wait_with_log(1)
 
     def click_phone_button(self):
         logging.info("Click phone button")
@@ -338,3 +344,11 @@ class CallUtils:
     )
         if actual_sorting_order != expected_sorting_order:
             raise CallUtilsError("Actual and Expected sorting orders don't match.")
+    def is_bluetooth_sms_disconnected_label_visible(self):
+        """ Return is <Bluetooth SMS disconnected> label present """
+        logging.info('Checking is <Bluetooth SMS disconnected> label present')
+        actual_disconnected_label_status = self.device.mbs.isSmsBluetoothErrorDisplayed()
+        logging.info('<Bluetooth SMS disconnected> label is present: %s',
+                     actual_disconnected_label_status)
+        return actual_disconnected_label_status
+
