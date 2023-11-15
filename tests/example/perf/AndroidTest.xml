@@ -20,4 +20,9 @@
     <test class="com.android.tradefed.testtype.HostTest" >
         <option name="class" value="android.test.example.helloworldperformance.HelloWorldPerformanceTest" />
     </test>
+    <!-- Add module-level post processor MetricFilePostProcessor -->
+    <metric_post_processor class="com.android.tradefed.postprocessor.MetricFilePostProcessor">
+        <option name="aggregate-similar-tests" value="true" />
+        <option name="enable-per-test-log" value="false" />
+    </metric_post_processor>
 </configuration>

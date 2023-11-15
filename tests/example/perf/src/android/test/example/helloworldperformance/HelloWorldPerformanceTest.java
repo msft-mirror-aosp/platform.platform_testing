@@ -16,6 +16,9 @@
 
 package android.test.example.helloworldperformance;
 
+import com.android.tradefed.metrics.proto.MetricMeasurement.DataType;
+import com.android.tradefed.metrics.proto.MetricMeasurement.Measurements;
+import com.android.tradefed.metrics.proto.MetricMeasurement.Metric;
 import com.android.tradefed.testtype.DeviceJUnit4ClassRunner;
 import com.android.tradefed.testtype.DeviceJUnit4ClassRunner.TestMetrics;
 
@@ -32,11 +35,21 @@ public class HelloWorldPerformanceTest {
 
     @Test
     public void testHelloWorld() {
-        metrics.addTestMetric("Hello", "world");
+        metrics.addTestMetric(
+                "key_hello_world",
+                Metric.newBuilder()
+                        .setType(DataType.RAW)
+                        .setMeasurements(Measurements.newBuilder().setSingleString("10"))
+                        .build());
     }
 
     @Test
     public void testHalloWelt() {
-        metrics.addTestMetric("Hallo", "Welt");
+        metrics.addTestMetric(
+                "key_hallo_welt",
+                Metric.newBuilder()
+                        .setType(DataType.RAW)
+                        .setMeasurements(Measurements.newBuilder().setSingleString("20"))
+                        .build());
     }
 }
