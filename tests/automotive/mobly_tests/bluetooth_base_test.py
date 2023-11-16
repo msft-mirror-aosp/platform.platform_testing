@@ -51,22 +51,9 @@ class BluetoothBaseTest(base_test.BaseTestClass):
     def teardown_test(self):
         # Turn Bluetooth off on both devices.
         logging.info("Running basic test teardown.")
-        # unpair target from discoverer
-        discoverer_address = self.discoverer.mbs.btGetAddress()
-        target_paired_devices = self.target.mbs.btGetPairedDevices()
-        _, target_paired_addresses = self.bt_utils.get_info_from_devices(target_paired_devices)
-        if discoverer_address in target_paired_addresses:
-          logging.info(f"forget {discoverer_address}")
-          self.target.mbs.btUnpairDevice(discoverer_address)
-        # unpair discoverer from target
-        target_address = self.target.mbs.btGetAddress()
-        discoverer_paired_devices = self.discoverer.mbs.btGetPairedDevices()
-        _, discoverer_paired_addresses = self.bt_utils.get_info_from_devices(discoverer_paired_devices)
-        if target_address in discoverer_paired_addresses:
-          logging.info(f"forget {target_address}")
-          self.discoverer.mbs.btUnpairDevice(target_address)
-          self.target.mbs.btDisable()
-          self.discoverer.mbs.btDisable()
+        self.bt_utils.unpair()
+        self.target.mbs.btDisable()
+        self.discoverer.mbs.btDisable()
 
 if __name__ == '__main__':
     common_main()

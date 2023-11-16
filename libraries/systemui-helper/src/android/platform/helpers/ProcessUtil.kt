@@ -24,7 +24,7 @@ class ProcessUtil(private val packageName: String) {
 
     private val pids: List<String>
         get() {
-            val pidofResult = shell("pidof $packageName")
+            val pidofResult = shell("pidof $packageName").trim()
             return if (pidofResult.isEmpty()) {
                 emptyList()
             } else pidofResult.split("\\s".toRegex())

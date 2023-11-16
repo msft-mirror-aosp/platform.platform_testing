@@ -230,20 +230,26 @@ open class ScreenshotTestRule(
         }
 
         if (!comparisonResult.matches) {
+            val expectedWithHighlight = highlightedBitmap(expected, regions)
             reportResult(
                 status = status,
                 assetsPathRelativeToRepo = goldenImagePathManager.assetsPathRelativeToBuildRoot,
                 goldenIdentifier = goldenIdentifier,
                 actual = actual,
                 comparisonStatistics = comparisonResult.comparisonStatistics,
-                expected = highlightedBitmap(expected, regions),
+                expected = expectedWithHighlight,
                 diff = comparisonResult.diff
             )
+
+            expectedWithHighlight.recycle()
+            expected.recycle()
+
             throw AssertionError(
-                "Image mismatch! Comparison stats: '${comparisonResult
-                    .comparisonStatistics}'"
+                    "Image mismatch! Comparison stats: '${comparisonResult.comparisonStatistics}'"
             )
         }
+
+        expected.recycle()
     }
 
     private fun reportResult(
@@ -502,18 +508,24 @@ class ScreenshotRuleAsserter private constructor(
     private var prevShowTouchesSetting: Int? = null
     override fun assertGoldenImage(goldenId: String) {
         runBeforeScreenshot()
+        var actual: Bitmap? = null
         try {
-            rule.assertBitmapAgainstGolden(screenShotter(), goldenId, matcher)
+            actual = screenShotter()
+            rule.assertBitmapAgainstGolden(actual, goldenId, matcher)
         } finally {
+            actual?.recycle()
             runAfterScreenshot()
         }
     }
 
     override fun assertGoldenImage(goldenId: String, areas: List<Rect>) {
         runBeforeScreenshot()
+        var actual: Bitmap? = null
         try {
-            rule.assertBitmapAgainstGolden(screenShotter(), goldenId, matcher, areas)
+            actual = screenShotter()
+            rule.assertBitmapAgainstGolden(actual, goldenId, matcher, areas)
         } finally {
+            actual?.recycle()
             runAfterScreenshot()
         }
     }
@@ -539,6 +551,10 @@ class ScreenshotRuleAsserter private constructor(
         private var asserter = ScreenshotRuleAsserter(rule)
         fun withMatcher(matcher: BitmapMatcher): Builder = apply { asserter.matcher = matcher }
 
+        /**
+         * The [Bitmap] produced by [screenshotProvider] will be recycled immediately after
+         * assertions are completed. Therefore, do not retain references to created [Bitmap]s.
+         */
         fun setScreenshotProvider(screenshotProvider: BitmapSupplier): Builder =
                 apply { asserter.screenShotter = screenshotProvider }
 

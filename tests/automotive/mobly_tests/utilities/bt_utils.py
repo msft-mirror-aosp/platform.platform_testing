@@ -78,6 +78,23 @@ class BTUtils:
             target_address in paired_addresses,
             'Failed to pair the target device %s over Bluetooth.' %
             target_address)
+
+    def unpair(self):
+        # unpair target from discoverer
+        discoverer_address = self.discoverer.mbs.btGetAddress()
+        target_paired_devices = self.target.mbs.btGetPairedDevices()
+        _, target_paired_addresses = self.get_info_from_devices(target_paired_devices)
+        if discoverer_address in target_paired_addresses:
+            logging.info(f"forget {discoverer_address}")
+            self.target.mbs.btUnpairDevice(discoverer_address)
+        # unpair discoverer from target
+        target_address = self.target.mbs.btGetAddress()
+        discoverer_paired_devices = self.discoverer.mbs.btGetPairedDevices()
+        _, discoverer_paired_addresses = self.get_info_from_devices(discoverer_paired_devices)
+        if target_address in discoverer_paired_addresses:
+            logging.info(f"forget {target_address}")
+            self.discoverer.mbs.btUnpairDevice(target_address)
+
     def press_allow_on_phone(self):
         """ Repeatedly presses "Allow" on prompts until no more prompts appear"""
         logging.info('Attempting to press ALLOW')
