@@ -635,4 +635,56 @@ public class MediaCenterHelperImpl extends AbstractStandardAppHelper implements 
         getSpectatioUiUtil().clickAndWait(songInPlaylistObject);
         getSpectatioUiUtil().wait5Seconds();
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getArtistrTitle() {
+        BySelector artistTitle =
+                getUiElementFromConfig(AutomotiveConfigConstants.ARTIST_TITLE);
+        UiObject2 objectArtistTitle = getSpectatioUiUtil().findUiObject(artistTitle);
+        getSpectatioUiUtil()
+                .validateUiObject(objectArtistTitle, AutomotiveConfigConstants.ARTIST_TITLE);
+        return objectArtistTitle.getText().trim();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getAlbumTitle() {
+        BySelector albumTitle =
+                getUiElementFromConfig(AutomotiveConfigConstants.ALBUM_TITLE);
+        UiObject2 objectAlbumTitle = getSpectatioUiUtil().findUiObject(albumTitle);
+        getSpectatioUiUtil()
+                .validateUiObject(objectAlbumTitle, AutomotiveConfigConstants.ALBUM_TITLE);
+        return objectAlbumTitle.getText().trim();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getSongCurrentPlayingTime() {
+        BySelector songCurrentTime =
+                getUiElementFromConfig(AutomotiveConfigConstants.CURRENT_SONG_TIME);
+        UiObject2 objectSongCurrentTime = getSpectatioUiUtil().findUiObject(songCurrentTime);
+        getSpectatioUiUtil()
+                .validateUiObject(objectSongCurrentTime, AutomotiveConfigConstants.CURRENT_SONG_TIME);
+        return objectSongCurrentTime.getText().trim();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getCurrentSongMaxPlayingTime() {
+        BySelector songMaxPlayingTime =
+                getUiElementFromConfig(AutomotiveConfigConstants.MAX_SONG_TIME);
+        UiObject2 objectSongMaxPlayingTime = getSpectatioUiUtil().findUiObject(songMaxPlayingTime);
+        getSpectatioUiUtil()
+                .validateUiObject(objectSongMaxPlayingTime, AutomotiveConfigConstants.MAX_SONG_TIME);
+        return objectSongMaxPlayingTime.getText().trim();
+    }
 }

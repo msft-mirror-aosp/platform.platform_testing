@@ -1185,6 +1185,26 @@
       "VALUE": "minimized_playback_controls",
       "PACKAGE": "com.android.car.media"
     },
+    "ARTIST_TITLE": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "artist",
+      "PACKAGE": "com.android.car.media"
+    },
+    "ALBUM_TITLE": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "album_title",
+      "PACKAGE": "com.android.car.media"
+    },
+    "CURRENT_SONG_TIME": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "current_time",
+      "PACKAGE": "com.android.car.media"
+    },
+    "MAX_SONG_TIME": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "max_time",
+      "PACKAGE": "com.android.car.media"
+    },
     "TRACK_NAME": {
       "TYPE": "RESOURCE_ID",
       "VALUE": "title",

@@ -27,6 +27,7 @@ DEVICE_CONNECT_WAIT_TIME = 20 # Waiting for device pairing to complete.
 MOBILE_DEVICE_NAME = 'target'
 AUTOMOTIVE_DEVICE_NAME = 'discoverer'
 REBOOT = 'reboot'
+DIALER_THREE_DIGIT_NUMBER = "511"
 
 # The word or phrase present in a device summary that is connected.
 CONNECTED_SUMMARY_STATUS = "Connected"

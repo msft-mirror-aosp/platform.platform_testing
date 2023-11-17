@@ -252,4 +252,32 @@ public interface IAutoMediaHelper extends IAppHelper, Scrollable {
      * <p>This method is used to select song from playlist.
      */
     void clickOnSongFromPlaylist();
+
+    /**
+     * Setup expectations: Media app is open and maximized now playing.
+     *
+     * @return get current artist tile
+     */
+    String getArtistrTitle();
+
+    /**
+     * Setup expectations: Media app is open and maximized now playing.
+     *
+     * @return get current album tile
+     */
+    String getAlbumTitle();
+
+    /**
+     * Setup expectations: Media app is open and maximized now playing.
+     *
+     * @return get current song playing time
+     */
+    String getSongCurrentPlayingTime();
+
+    /**
+     * Setup expectations: Media app is open and maximized now playing.
+     *
+     * @return get current song max playing time
+     */
+    String getCurrentSongMaxPlayingTime();
 }

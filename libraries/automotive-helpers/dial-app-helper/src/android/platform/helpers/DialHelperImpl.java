@@ -636,6 +636,13 @@ public class DialHelperImpl extends AbstractStandardAppHelper implements IAutoDi
         getSpectatioUiUtil()
                 .executeShellCommand(
                         getCommandFromConfig(AutomotiveConfigConstants.OPEN_DIAL_PAD_COMMAND));
+        BySelector dialPadMenuSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.DIAL_PAD_MENU);
+        UiObject2 dialMenuButton = getSpectatioUiUtil().findUiObject(dialPadMenuSelector);
+        getSpectatioUiUtil()
+                .validateUiObject(dialMenuButton, AutomotiveConfigConstants.DIAL_PAD_MENU);
+        getSpectatioUiUtil().clickAndWait(dialMenuButton);
+        getSpectatioUiUtil().wait1Second();
         BySelector dialPadSelector =
                 getUiElementFromConfig(AutomotiveConfigConstants.DIAL_PAD_FRAGMENT);
         UiObject2 dialPad = getSpectatioUiUtil().findUiObject(dialPadSelector);

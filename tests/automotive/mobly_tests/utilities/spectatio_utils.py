@@ -13,6 +13,7 @@
 #  limitations under the License.
 
 import logging
+import re
 import time
 
 from mobly.controllers import android_device
@@ -90,6 +91,7 @@ class CallUtils:
         """Open call history"""
         logging.info("Open call history")
         self.device.mbs.openCallHistory()
+
 
     def open_contacts(self):
         """Open contacts"""
@@ -344,6 +346,7 @@ class CallUtils:
     )
         if actual_sorting_order != expected_sorting_order:
             raise CallUtilsError("Actual and Expected sorting orders don't match.")
+
     def is_bluetooth_sms_disconnected_label_visible(self):
         """ Return is <Bluetooth SMS disconnected> label present """
         logging.info('Checking is <Bluetooth SMS disconnected> label present')
@@ -352,3 +355,53 @@ class CallUtils:
                      actual_disconnected_label_status)
         return actual_disconnected_label_status
 
+    # Verify dialing number the same as expected
+    def verify_dialing_number(self, expected_dialing_number):
+        """Replace all non-digits characters to null"""
+        actual_dialing_number = re.sub(r'\D', '', str(self.get_dialing_number()))
+        logging.info(
+             'Expected dialing number: %s, Actual: %s',
+              expected_dialing_number,
+              actual_dialing_number,
+        )
+        if actual_dialing_number != expected_dialing_number:
+          raise CallUtilsError(
+                "Actual and Expected dialing numbers don't match.")
+
+    def is_ongoing_call_displayed_on_home(self, expected_result):
+        logging.info('Open Home screen and verify the ongoing call')
+        self.device.mbs.isOngoingCallDisplayedOnHome()
+        actual_result = self.device.mbs.isOngoingCallDisplayedOnHome()
+        logging.info(
+            'Call Displayed on home expected : <%s>, Actual : <%s>',
+            expected_result,
+            actual_result,
+        )
+        if expected_result != actual_result:
+          raise CallUtilsError('Ongoing call not displayed on home')
+
+    def get_recent_call_history(self):
+        actual_recent_call_from_history = self.device.mbs.getRecentCallHistory()
+        logging.info(
+            'The latest call from history: <%s>', actual_recent_call_from_history
+        )
+        return actual_recent_call_from_history
+
+    def verify_last_dialed_number(self, expected_last_dialed_number):
+        actual_last_dialed_number = self.get_recent_call_history()
+        actual_last_dialed_number = ''.join(
+            char for char in actual_last_dialed_number if char.isdigit()
+        )
+        logging.info(
+            'Expected last called number: %s, Actual: %s',
+            expected_last_dialed_number,
+            actual_last_dialed_number,
+        )
+        if actual_last_dialed_number != expected_last_dialed_number:
+          raise CallUtilsError(
+              "Actual and Expected last dialed numbers don't match."
+          )
+
+    def open_phone_app_from_home(self):
+        logging.info('Open Phone from Home Screen card.')
+        self.device.mbs.openPhoneAppFromHome()

@@ -296,6 +296,10 @@ public class AutomotiveConfigConstants {
     public static final String MEDIA_SCROLL_DOWN_BUTTON = "MEDIA_SCROLL_DOWN_BUTTON";
     public static final String MEDIA_SCROLL_UP_BUTTON = "MEDIA_SCROLL_UP_BUTTON";
     public static final String MEDIA_SONG_IN_PLAYLIST = "MEDIA_SONG_IN_PLAYLIST";
+    public static final String ARTIST_TITLE = "ARTIST_TITLE";
+    public static final String ALBUM_TITLE = "ALBUM_TITLE";
+    public static final String CURRENT_SONG_TIME = "CURRENT_SONG_TIME";
+    public static final String MAX_SONG_TIME = "MAX_SONG_TIME";
     // NEXT_BUTTON from Account Settings
     public static final String PREVIOUS_BUTTON = "PREVIOUS_BUTTON";
     public static final String SHUFFLE_BUTTON = "SHUFFLE_BUTTON";

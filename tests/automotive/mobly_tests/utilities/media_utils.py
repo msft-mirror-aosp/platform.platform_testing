@@ -189,3 +189,32 @@ class MediaUtils:
     def select_song_from_playlist(self):
         logging.info("Select song from playlist on HU")
         self.discoverer.mbs.clickOnSongFromPlaylist()
+
+    # Get playing Album title
+    def get_album_title_on_hu(self):
+        logging.info("Getting Album title on HU")
+        actual_album_title = self.discoverer.mbs.getAlbumTitle()
+        logging.info("Actual Album title on HU: <%s>", actual_album_title)
+        return actual_album_title
+
+    # Get Artist title on HU
+    def get_artist_title_on_hu(self):
+        logging.info("Getting Artist title on HU")
+        actual_artist_title = self.discoverer.mbs.getArtistrTitle()
+        logging.info("Actual Artist title on HU: <%s>", actual_artist_title)
+        return actual_artist_title
+
+    # Get current song playing time on HU
+    def get_current_song_playing_time_on_hu(self):
+        logging.info("Getting current song playing time on HU")
+        actual_current_song_playing_time = self.discoverer.mbs.getSongCurrentPlayingTime()
+        logging.info("Actual current song playing time on HU: <%s>",
+                     actual_current_song_playing_time)
+        return actual_current_song_playing_time
+
+    def get_current_song_max_playing_time_on_hu(self):
+        logging.info("Getting current song max playing time on HU")
+        actual_current_song_max_playing_time = self.discoverer.mbs.getCurrentSongMaxPlayingTime()
+        logging.info("Actual current song max playing time on HU: <%s>",
+                     actual_current_song_max_playing_time)
+        return actual_current_song_max_playing_time
