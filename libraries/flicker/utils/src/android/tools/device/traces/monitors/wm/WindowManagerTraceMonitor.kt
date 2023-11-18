@@ -36,6 +36,12 @@ open class WindowManagerTraceMonitor : TraceMonitor() {
 
     override fun doStop(): File {
         windowManager.stopWindowTrace()
-        return TRACE_DIR.resolve(TraceType.WM.fileName)
+        return TRACE_DIR.resolve(traceType.fileName)
+    }
+
+    override fun doStopTraces(): Map<TraceType, File> {
+        val result = mutableMapOf(traceType to doStop())
+        result[TraceType.PROTOLOG] = TRACE_DIR.resolve(TraceType.PROTOLOG.fileName)
+        return result
     }
 }

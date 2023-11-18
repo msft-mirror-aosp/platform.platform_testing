@@ -106,6 +106,7 @@ class FlickerServiceTracesCollectorTest {
         val expectedTraces =
             listOf(
                 "wm_trace.winscope",
+                "wm_log.winscope",
                 "wm_transition_trace.winscope",
                 "shell_transition_trace.winscope",
                 "eventlog.winscope",

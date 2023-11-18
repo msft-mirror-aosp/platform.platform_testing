@@ -17,9 +17,12 @@
 package android.tools.device.traces.monitors.wm
 
 import android.tools.common.io.TraceType
+import android.tools.device.traces.TRACE_CONFIG_REQUIRE_CHANGES
+import android.tools.device.traces.io.ResultReader
 import android.tools.device.traces.monitors.TraceMonitorTest
 import android.tools.device.traces.monitors.withWMTracing
 import android.tools.utils.CleanFlickerEnvironmentRule
+import android.tools.utils.newTestResultWriter
 import com.android.server.wm.nano.WindowManagerTraceFileProto
 import com.google.common.truth.Truth
 import org.junit.ClassRule
@@ -51,6 +54,19 @@ class WindowManagerTraceMonitorTest : TraceMonitorTest<WindowManagerTraceMonitor
         }
 
         Truth.assertWithMessage("Could not obtain WM trace").that(trace.entries).isNotEmpty()
+    }
+
+    @Test
+    fun includesProtologTrace() {
+        val monitor = getMonitor()
+        monitor.start()
+        val writer = newTestResultWriter()
+        monitor.stop(writer)
+        val result = writer.write()
+        val reader = ResultReader(result, TRACE_CONFIG_REQUIRE_CHANGES)
+        Truth.assertWithMessage("Trace file exists ${TraceType.PROTOLOG.fileName}")
+            .that(reader.hasTraceFile(TraceType.PROTOLOG))
+            .isTrue()
     }
 
     companion object {

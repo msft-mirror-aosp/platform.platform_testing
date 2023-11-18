@@ -230,3 +230,57 @@ python_test_host {
         },
     },
 }
+
+python_test_host {
+    name: "SearchContactByPhoneNumberTest",
+    main: "dialer_test_search_contact_by_phone_number.py",
+    srcs: ["dialer_test_search_contact_by_phone_number.py"],
+    libs: [
+        "mobly",
+        "utilities",
+        "bluetooth_test",
+    ],
+    test_suites: [
+        "catbox",
+    ],
+    test_options: {
+        unit_test: false,
+    },
+    data: [
+        // Package the snippet with the mobly test
+        ":AutomotiveSnippet",
+        ":PhoneSnippet",
+    ],
+    version: {
+        py3: {
+            embedded_launcher: true,
+        },
+    },
+}
+
+python_test_host {
+    name: "SearchShowingFoundContact",
+    main: "dialer_test_search_showing_found_contacts.py",
+    srcs: ["dialer_test_search_showing_found_contacts.py"],
+    libs: [
+        "mobly",
+        "utilities",
+        "bluetooth_test",
+    ],
+    test_suites: [
+        "catbox",
+    ],
+    test_options: {
+        unit_test: false,
+    },
+    data: [
+        // Package the snippet with the mobly test
+        ":AutomotiveSnippet",
+        ":PhoneSnippet",
+    ],
+    version: {
+        py3: {
+            embedded_launcher: true,
+        },
+    },
+}

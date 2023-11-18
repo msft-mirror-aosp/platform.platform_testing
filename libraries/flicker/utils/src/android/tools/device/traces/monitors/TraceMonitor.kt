@@ -35,6 +35,8 @@ abstract class TraceMonitor : ITransitionMonitor {
     protected abstract fun doStart()
     protected abstract fun doStop(): File
 
+    protected open fun doStopTraces(): Map<TraceType, File> = mapOf(traceType to doStop())
+
     final override fun start() {
         validateStart()
         doStart()
@@ -50,17 +52,16 @@ abstract class TraceMonitor : ITransitionMonitor {
 
     /** Stops monitor. */
     final override fun stop(writer: ResultWriter) {
-        val artifact =
+        val artifacts =
             try {
-                val srcFile = doStop()
-                moveTraceFileToTmpDir(srcFile)
+                doStopTraces().map { (key, value) -> key to moveTraceFileToTmpDir(value) }.toMap()
             } catch (e: Throwable) {
                 throw RuntimeException(
                     "Could not stop ${traceType.name} trace and save it to ${traceType.fileName}",
                     e
                 )
             }
-        writer.addTraceResult(traceType, artifact)
+        artifacts.forEach { (key, value) -> writer.addTraceResult(key, value) }
     }
 
     private fun moveTraceFileToTmpDir(sourceFile: File): File {

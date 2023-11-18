@@ -26,5 +26,6 @@ enum class TraceType(val fileName: String, val isTrace: Boolean) {
     EVENT_LOG("eventlog$WINSCOPE_EXT", isTrace = true),
     SCREEN_RECORDING("transition.mp4", isTrace = true),
     SF_DUMP("trace$PERFETTO_EXT", isTrace = false),
-    WM_DUMP("trace$WINSCOPE_EXT", isTrace = false)
+    WM_DUMP("trace$WINSCOPE_EXT", isTrace = false),
+    PROTOLOG("wm_log$WINSCOPE_EXT", isTrace = true),
 }

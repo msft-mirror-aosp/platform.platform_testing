@@ -13,7 +13,8 @@
 #  limitations under the License.
 
 import sys
-from absl import flags
+# TODO(b/311467339): add asbl support for test runs in the lab
+# from absl import flags
 from mobly import test_runner
 
 
@@ -35,5 +36,6 @@ def common_main():
         index = sys.argv.index('--')
         absl_argv = sys.argv[:index]
         sys.argv = sys.argv[:1] + sys.argv[index + 1:]
-    flags.FLAGS(absl_argv)
+    # TODO(b/311467339): add asbl support for test runs in the lab
+    # flags.FLAGS(absl_argv)
     test_runner.main()

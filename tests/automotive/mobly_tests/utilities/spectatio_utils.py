@@ -355,6 +355,7 @@ class CallUtils:
                      actual_disconnected_label_status)
         return actual_disconnected_label_status
 
+
     # Verify dialing number the same as expected
     def verify_dialing_number(self, expected_dialing_number):
         """Replace all non-digits characters to null"""
@@ -405,3 +406,27 @@ class CallUtils:
     def open_phone_app_from_home(self):
         logging.info('Open Phone from Home Screen card.')
         self.device.mbs.openPhoneAppFromHome()
+
+    # Search contact by name
+    def search_contact_by_name(self, search_contact_name):
+       logging.info('Searching <%s> in contacts', search_contact_name)
+       self.device.mbs.searchContactsByName(search_contact_name)
+
+     # Get first search result
+    def get_first_search_result(self):
+       logging.info('Getting first search result')
+       actual_first_search_result = self.device.mbs.getFirstSearchResult()
+       logging.info('Actual first search result: <%s>', actual_first_search_result)
+       return actual_first_search_result
+
+    # Verify search result contains expected searach input
+    def verify_search_result_contain_target_search(self, expected_search_result):
+       actual_search_result = self.get_first_search_result()
+       logging.info(
+            'Expected search result: <%s>, Actual search result: <%s>',
+            expected_search_result,
+            actual_search_result,
+        )
+       if expected_search_result not in actual_search_result:
+         raise CallUtilsError('Actual search result does not contain Expected.')
+

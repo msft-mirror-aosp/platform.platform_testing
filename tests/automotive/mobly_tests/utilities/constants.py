@@ -28,6 +28,9 @@ MOBILE_DEVICE_NAME = 'target'
 AUTOMOTIVE_DEVICE_NAME = 'discoverer'
 REBOOT = 'reboot'
 DIALER_THREE_DIGIT_NUMBER = "511"
+EXPECTED_CONTACT_FULL_NAME = "John Smith"
+FIRST_DIGIT_OF_SEARCH_CONTACT_NUMBER = "6"
+EXPECTED_PHONE_NUMBER = "611"
 
 # The word or phrase present in a device summary that is connected.
 CONNECTED_SUMMARY_STATUS = "Connected"
