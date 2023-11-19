@@ -283,6 +283,12 @@ class CallUtils:
         logging.info("Checks if dialpad is displayed")
         return self.device.mbs.verifyDialerDialpadTab()
 
+    def open_sms_app(self):
+        """Open sms app"""
+        logging.info('Opening sms app')
+        self.device.mbs.openSmsApp()
+
+
     def open_bluetooth_palette(self):
         logging.info("Open Bluetooth Palette")
         self.device.mbs.openBluetoothPalette()
@@ -430,3 +436,68 @@ class CallUtils:
        if expected_search_result not in actual_search_result:
          raise CallUtilsError('Actual search result does not contain Expected.')
 
+
+    def verify_sms_app_unread_message(self, expected):
+        """Verify unread message on sms app"""
+        logging.info('Verify Unread Message on SMS app')
+        actual_unread_message_badge_displayed = self.device.mbs.isUnreadSmsDisplayed()
+        logging.info(
+            'Unread message Expected: <%s>, Actual: <%s>',
+            expected,
+            actual_unread_message_badge_displayed,
+        )
+        if actual_unread_message_badge_displayed != expected:
+            raise CallUtilsError(
+                "SMS Unread messages - Actual and Expected doesn't match."
+            )
+
+    def verify_sms_preview_text(self, expected, text):
+        """Verify sms preview text"""
+        logging.info('Verify SMS Preview Text')
+        actual_message_preview_displayed = self.device.mbs.isSmsPreviewTextDisplayed(text)
+        logging.info(
+            'SMS Preview Text Expected: <%s>, Actual: <%s>',
+            expected,
+            actual_message_preview_displayed,
+        )
+        if actual_message_preview_displayed != expected:
+            raise CallUtilsError(
+                "SMS Preview Text- Actual and Expected doesn't match."
+            )
+
+    def verify_sms_preview_timestamp(self, expected):
+        """Verify sms preview timestamp"""
+        logging.info('Verify SMS Preview TimeStamp')
+        actual_message_preview_timestamp = self.device.mbs.isSmsTimeStampDisplayed()
+        logging.info(
+            'SMS Preview TimeStamp Expected: <%s>, Actual: <%s>',
+            expected,
+            actual_message_preview_timestamp,
+        )
+        if actual_message_preview_timestamp != expected:
+            raise CallUtilsError(
+                "SMS Preview TimeStamp - Actual and Expected doesn't match."
+            )
+
+    def verify_sms_no_messages_displayed(self, expected):
+        """Verify sms preview timestamp"""
+        logging.info('Verify No Msg displayed')
+        actual_message_preview_timestamp = self.device.mbs.isNoMessagesDisplayed()
+        logging.info(
+            'SMS No Messages Expected: <%s>, Actual: <%s>',
+            expected,
+            actual_message_preview_timestamp,
+        )
+        if actual_message_preview_timestamp != expected:
+            raise CallUtilsError(
+                "No messages - Actual and Expected doesn't match."
+            )
+    def clear_sms_app(self, device_target):
+        """Verify sms preview timestamp"""
+        logging.debug('clearing the sms app')
+        # self.execute_shell_on_device(device_target, constants.ROOT)
+        self.execute_shell_on_device(device_target, constants.DELETE_MESSAGING_DB)
+        self.execute_shell_on_device(device_target, constants.CLEAR_MESSAGING_APP)
+
+    def reboot_device(self, device_target):
+        self.execute_shell_on_device(device_target, constants.REBOOT)

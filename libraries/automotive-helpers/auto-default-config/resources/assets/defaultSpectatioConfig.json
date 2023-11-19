@@ -1670,6 +1670,26 @@
       "VALUE": "error_message",
       "PACKAGE": "com.android.car.messenger"
     },
+    "SMS_UNREAD_BADGE": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "unread_badge",
+      "PACKAGE": "com.android.car.messenger"
+    },
+    "SMS_PREVIEW_TEXT": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "preview",
+      "PACKAGE": "com.android.car.messenger"
+    },
+    "SMS_PREVIEW_TIMESTAMP": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "date_time_view",
+      "PACKAGE": "com.android.car.messenger"
+    },
+    "SMS_EMPTY_MESSAGE": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "empty_message",
+      "PACKAGE": "com.android.car.messenger"
+    },
     "BLUETOOTH_BUTTON": {
       "TYPE": "RESOURCE_ID",
       "VALUE": "qc_toggle_button"

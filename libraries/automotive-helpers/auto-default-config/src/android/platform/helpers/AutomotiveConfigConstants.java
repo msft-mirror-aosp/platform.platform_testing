@@ -579,6 +579,10 @@ public class AutomotiveConfigConstants {
     public static final String SMS_PACKAGE = "SMS_PACKAGE";
     public static final String OPEN_SMS_ACTIVITY_COMMAND = "OPEN_SMS_ACTIVITY_COMMAND";
     public static final String SMS_BLUETOOTH_ERROR = "SMS_BLUETOOTH_ERROR";
+    public static final String SMS_UNREAD_BADGE = "SMS_UNREAD_BADGE";
+    public static final String SMS_PREVIEW_TEXT = "SMS_PREVIEW_TEXT";
+    public static final String SMS_PREVIEW_TIMESTAMP = "SMS_PREVIEW_TIMESTAMP";
+    public static final String SMS_EMPTY_MESSAGE = "SMS_EMPTY_MESSAGE";
 
     // Bluetooth Tests Constants
     public static final String BLUETOOTH_BUTTON = "BLUETOOTH_BUTTON";
