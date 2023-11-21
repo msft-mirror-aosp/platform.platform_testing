@@ -63,7 +63,7 @@ object Displays {
             "foldable_outer",
             width = 1080,
             height = 2092,
-            densityDpi = 408,
+            densityDpi = 420,
         )
 
     val FoldableInner =
@@ -71,7 +71,23 @@ object Displays {
             "foldable_inner",
             width = 2208,
             height = 1840,
-            densityDpi = 380,
+            densityDpi = 420,
+        )
+
+    val TallerFoldableOuter =
+        DisplaySpec(
+            "taller_foldable_outer",
+            width = 1080,
+            height = 2424,
+            densityDpi = 395,
+        )
+
+    val TallerFoldableInner =
+        DisplaySpec(
+            "taller_foldable_inner",
+            width = 2076,
+            height = 2152,
+            densityDpi = 360,
         )
 
     val External480p =
