@@ -436,6 +436,12 @@ public class AutomotiveConfigConstants {
     public static final String USER_SETTINGS_MAKE_ADMIN = "USER_SETTINGS_MAKE_ADMIN";
     public static final String USER_SETTINGS_MAKE_ADMIN_CONFIRM =
             "USER_SETTINGS_MAKE_ADMIN_CONFIRM";
+    public static final String CREATE_NEW_PROFILE_SWITCH = "CREATE_NEW_PROFILE_SWITCH";
+    public static final String MAKE_PHONE_CALLS_SWITCH = "MAKE_PHONE_CALLS_SWITCH";
+    public static final String MESSAGING_VIA_CARS_MOBILE_DATA_SWITCH =
+            "MESSAGING_VIA_CARS_MOBILE_DATA_SWITCH";
+    public static final String INSTALL_NEW_APPS_SWITCH = "INSTALL_NEW_APPS_SWITCH";
+    public static final String UNINSTALL_APPS_SWITCH = "UNINSTALL_APPS_SWITCH";
     public static final String USER_SETTINGS_MAKE_TIME_PATTERN = "USER_SETTINGS_MAKE_TIME_PATTERN";
     public static final String USER_SETTINGS_SCROLL_FORWARD = "USER_SETTINGS_SCROLL_FORWARD";
     public static final String USER_SETTINGS_SCROLL_BACKWARD = "USER_SETTINGS_SCROLL_BACKWARD";

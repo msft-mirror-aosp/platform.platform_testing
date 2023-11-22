@@ -1089,6 +1089,117 @@
       "TYPE": "TEXT",
       "VALUE": "Yes, make admin"
     },
+    "USER_SETTINGS_TOGGLE_BUTTON": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "android:id/switch_widget",
+      "PACKAGE": "com.android.car.settings"
+    },
+    "CREATE_NEW_PROFILE_SWITCH": {
+      "TYPE": "MULTIPLE",
+      "SPECIFIERS": [
+        {
+          "TYPE": "CLASS",
+          "VALUE": "android.widget.Switch"
+        },
+        {
+          "TYPE": "HAS_ANCESTOR",
+          "MAX_DEPTH": 3,
+          "ANCESTOR": {
+            "TYPE": "HAS_DESCENDANT",
+            "MAX_DEPTH": 2,
+            "DESCENDANT": {
+              "TYPE": "TEXT",
+              "VALUE": "Create new profiles"
+            }
+          }
+        }
+      ]
+    },
+    "MAKE_PHONE_CALLS_SWITCH": {
+      "TYPE": "MULTIPLE",
+      "SPECIFIERS": [
+        {
+          "TYPE": "CLASS",
+          "VALUE": "android.widget.Switch"
+        },
+        {
+          "TYPE": "HAS_ANCESTOR",
+          "MAX_DEPTH": 3,
+          "ANCESTOR": {
+            "TYPE": "HAS_DESCENDANT",
+            "MAX_DEPTH": 2,
+            "DESCENDANT": {
+              "TYPE": "TEXT",
+              "VALUE": "Make phone calls"
+            }
+          }
+        }
+      ]
+    },
+    "MESSAGING_VIA_CARS_MOBILE_DATA_SWITCH": {
+      "TYPE": "MULTIPLE",
+      "SPECIFIERS": [
+        {
+          "TYPE": "CLASS",
+          "VALUE": "android.widget.Switch"
+        },
+        {
+          "TYPE": "HAS_ANCESTOR",
+          "MAX_DEPTH": 3,
+          "ANCESTOR": {
+            "TYPE": "HAS_DESCENDANT",
+            "MAX_DEPTH": 2,
+            "DESCENDANT": {
+              "TYPE": "TEXT",
+              "VALUE": "Messaging via car's mobile data"
+            }
+          }
+        }
+      ]
+    },
+    "INSTALL_NEW_APPS_SWITCH": {
+      "TYPE": "MULTIPLE",
+      "SPECIFIERS": [
+        {
+          "TYPE": "CLASS",
+          "VALUE": "android.widget.Switch"
+        },
+        {
+          "TYPE": "HAS_ANCESTOR",
+          "MAX_DEPTH": 3,
+          "ANCESTOR": {
+            "TYPE": "HAS_DESCENDANT",
+            "MAX_DEPTH": 2,
+            "DESCENDANT": {
+              "TYPE": "TEXT",
+              "VALUE": "Install new apps"
+            }
+          }
+        }
+      ]
+    },
+    "UNINSTALL_APPS_SWITCH": {
+      "TYPE": "MULTIPLE",
+      "SPECIFIERS": [
+        {
+          "TYPE": "CLASS",
+          "VALUE": "android.widget.Switch"
+        },
+        {
+          "TYPE": "HAS_ANCESTOR",
+          "MAX_DEPTH": 3,
+          "ANCESTOR": {
+            "TYPE": "HAS_DESCENDANT",
+            "MAX_DEPTH": 2,
+            "DESCENDANT": {
+              "TYPE": "TEXT",
+              "VALUE": "Uninstall apps"
+            }
+          }
+        }
+      ]
+    },
+
     "USER_SETTINGS_MAKE_TIME_PATTERN": {
       "TYPE": "TEXT",
       "VALUE": "(1[012]|[1-9]):[0-5][0-9](\\s)?.*"
@@ -2006,7 +2117,7 @@
         "CONFIG": {
           "UI_ELEMENT": {
             "TYPE": "TEXT",
-            "VALUE": "Bluetooth"
+            "VALUE": "Connected devices"
           }
         },
         "SCROLL_CONFIG": {
@@ -2341,26 +2452,26 @@
       }
     ],
     "PERMISSION_ALLOW_ALL_TIME": [
-        {
-          "NAME": "Click on allow",
-          "TYPE": "SCROLL_TO_FIND_AND_CLICK",
-          "CONFIG": {
-            "UI_ELEMENT": {
-              "TYPE": "TEXT",
-              "VALUE": "Allow all the time"
-            }
-          },
-          "SCROLL_CONFIG": {
-            "SCROLL_ACTION": "USE_GESTURE",
-            "SCROLL_DIRECTION": "VERTICAL",
-            "SCROLL_ELEMENT": {
-              "TYPE": "RESOURCE_ID",
-              "VALUE": "recycler_view",
-              "PACKAGE": "com.android.permissioncontroller"
-            }
+      {
+        "NAME": "Click on allow",
+        "TYPE": "SCROLL_TO_FIND_AND_CLICK",
+        "CONFIG": {
+          "UI_ELEMENT": {
+            "TYPE": "TEXT",
+            "VALUE": "Allow all the time"
+          }
+        },
+        "SCROLL_CONFIG": {
+          "SCROLL_ACTION": "USE_GESTURE",
+          "SCROLL_DIRECTION": "VERTICAL",
+          "SCROLL_ELEMENT": {
+            "TYPE": "RESOURCE_ID",
+            "VALUE": "recycler_view",
+            "PACKAGE": "com.android.permissioncontroller"
           }
         }
-      ],
+      }
+    ],
     "PERMISSION_ALLOW_WHILE_USING_APP": [
       {
         "NAME": "Click on allow",
