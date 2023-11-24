@@ -37,11 +37,10 @@ constructor(
     StandardAppHelper(
         instrumentation,
         "SampleApp",
-        MessagingAppHelper.Companion.getMessagesComponent(pkgManager),
+        getMessagesComponent(pkgManager),
     ) {
     override val openAppIntent =
-        pkgManager.getLaunchIntentForPackage(packageName)
-            ?: error("Unable to find intent for browser")
+        pkgManager.getLaunchIntentForPackage(packageName) ?: error("Unable to find intent for SMS")
 
     companion object {
         private fun getMessagesIntent(): Intent {
@@ -51,10 +50,10 @@ constructor(
         }
 
         private fun getMessagesComponent(pkgManager: PackageManager): ComponentNameMatcher {
-            val intent = MessagingAppHelper.Companion.getMessagesIntent()
+            val intent = getMessagesIntent()
             val resolveInfo =
                 pkgManager.resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY)
-                    ?: error("Unable to resolve browser activity")
+                    ?: error("Unable to resolve SMS activity")
             return ComponentNameMatcher(resolveInfo.activityInfo.packageName, className = "")
         }
     }

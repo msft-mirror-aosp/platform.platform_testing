@@ -16,6 +16,7 @@
 
 package android.tools.device.traces.monitors
 
+import android.tools.common.Logger
 import android.tools.common.ScenarioBuilder
 import android.tools.common.io.TraceType
 import android.tools.device.traces.TRACE_CONFIG_REQUIRE_CHANGES
@@ -38,8 +39,10 @@ abstract class TraceMonitor : ITransitionMonitor {
     protected open fun doStopTraces(): Map<TraceType, File> = mapOf(traceType to doStop())
 
     final override fun start() {
-        validateStart()
-        doStart()
+        Logger.withTracing("${this::class.simpleName}#start") {
+            validateStart()
+            doStart()
+        }
     }
 
     open fun validateStart() {
@@ -54,7 +57,11 @@ abstract class TraceMonitor : ITransitionMonitor {
     final override fun stop(writer: ResultWriter) {
         val artifacts =
             try {
-                doStopTraces().map { (key, value) -> key to moveTraceFileToTmpDir(value) }.toMap()
+                Logger.withTracing("${this::class.simpleName}#stop") {
+                    doStopTraces()
+                        .map { (key, value) -> key to moveTraceFileToTmpDir(value) }
+                        .toMap()
+                }
             } catch (e: Throwable) {
                 throw RuntimeException(
                     "Could not stop ${traceType.name} trace and save it to ${traceType.fileName}",
@@ -79,11 +86,13 @@ abstract class TraceMonitor : ITransitionMonitor {
      * @throws UnsupportedOperationException If tracing is already activated
      */
     fun withTracing(writer: ResultWriter, predicate: () -> Unit) {
-        try {
-            this.start()
-            predicate()
-        } finally {
-            this.stop(writer)
+        Logger.withTracing("${this::class.simpleName}#withTracing") {
+            try {
+                this.start()
+                predicate()
+            } finally {
+                this.stop(writer)
+            }
         }
     }
 
