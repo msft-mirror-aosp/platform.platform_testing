@@ -288,7 +288,6 @@ class CallUtils:
         logging.info('Opening sms app')
         self.device.mbs.openSmsApp()
 
-
     def open_bluetooth_palette(self):
         logging.info("Open Bluetooth Palette")
         self.device.mbs.openBluetoothPalette()
@@ -501,3 +500,32 @@ class CallUtils:
 
     def reboot_device(self, device_target):
         self.execute_shell_on_device(device_target, constants.REBOOT)
+
+    def has_bluetooth_button(self):
+        logging.info('Has Bluetooth Button ')
+        return self.device.mbs.hasBluetoothButton()
+
+    def has_bluetooth_palette_phone_button(self):
+        logging.info('Has Phone Button')
+        return self.device.mbs.hasBluetoothPalettePhoneButton()
+
+    def has_bluetooth_palette_media_button(self):
+        logging.info('Has Media Button')
+        return self.device.mbs.hasBluetoothPaletteMediaButton()
+
+    def verify_device_name(self):
+        logging.info('Verify Device Name')
+        return self.device.mbs.verifyDeviceName()
+
+    def is_bluetooth_button_enabled(self):
+        logging.info('Is Bluetooth Button Enabled')
+        return self.device.mbs.isBluetoothButtonEnabled()
+
+    def is_bluetooth_phone_button_enabled(self):
+        logging.info('Is Bluetooth Palette PhoneButton Enabled')
+        return self.device.mbs.isBluetoothPhoneButtonEnabled()
+
+    def is_bluetooth_media_button_enabled(self):
+        logging.info('Is Bluetooth Palette Media Button Enabled')
+        return self.device.mbs.isBluetoothMediaButtonEnabled()
+

@@ -284,3 +284,30 @@ python_test_host {
         },
     },
 }
+python_test_host {
+    name: "CallingDeclineBtTest",
+    main: "dialer_test_basic_calling_test_with_reject_call.py",
+    srcs: ["dialer_test_basic_calling_test_with_reject_call.py"],
+    libs: [
+        "mobly",
+        "utilities",
+        "BluetoothSMSTestLibrary"
+    ],
+    test_suites: [
+        "catbox",
+    ],
+    test_options: {
+        unit_test: false,
+    },
+    data: [
+        // Package the snippet with the mobly test
+        ":AutomotiveSnippet",
+        ":PhoneSnippet",
+        "bt_3device_config.yaml"
+    ],
+    version: {
+        py3: {
+            embedded_launcher: true,
+        },
+    },
+}

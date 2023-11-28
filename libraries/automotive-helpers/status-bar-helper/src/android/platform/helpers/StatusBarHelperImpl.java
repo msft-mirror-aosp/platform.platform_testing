@@ -205,7 +205,7 @@ public class StatusBarHelperImpl extends AbstractStandardAppHelper implements IA
 
     /** {@inheritDoc} */
     @Override
-    public boolean verifyBluetooth() {
+    public boolean hasBluetoothButton() {
         BySelector bluetoothSelector =
                 getUiElementFromConfig(AutomotiveConfigConstants.BLUETOOTH_BUTTON);
         return getSpectatioUiUtil().hasUiElement(bluetoothSelector);
@@ -219,7 +219,7 @@ public class StatusBarHelperImpl extends AbstractStandardAppHelper implements IA
 
     /** {@inheritDoc} */
     @Override
-    public boolean verifyPhone() {
+    public boolean hasBluetoothPalettePhoneButton() {
         BySelector phoneSelector = getUiElementFromConfig(AutomotiveConfigConstants.PHONE_BUTTON);
         return getSpectatioUiUtil().hasUiElement(phoneSelector);
     }
@@ -234,7 +234,7 @@ public class StatusBarHelperImpl extends AbstractStandardAppHelper implements IA
 
     /** {@inheritDoc} */
     @Override
-    public boolean verifyMedia() {
+    public boolean hasBluetoothPaletteMediaButton() {
         BySelector mediaSelector = getUiElementFromConfig(AutomotiveConfigConstants.MEDIA_BUTTON);
         return getSpectatioUiUtil().hasUiElement(mediaSelector);
     }
@@ -296,7 +296,7 @@ public class StatusBarHelperImpl extends AbstractStandardAppHelper implements IA
 
     /** {@inheritDoc} */
     @Override
-    public boolean verifyDisabledBluetoothProfile() {
+    public boolean isBluetoothButtonEnabled() {
         BySelector disabledBluetoothProfileSelector =
                 getUiElementFromConfig(AutomotiveConfigConstants.BLUETOOTH_BUTTON);
         UiObject2 disabledBluetoothProfile =
@@ -309,7 +309,7 @@ public class StatusBarHelperImpl extends AbstractStandardAppHelper implements IA
 
     /** {@inheritDoc} */
     @Override
-    public boolean verifyDisabledPhoneProfile() {
+    public boolean isBluetoothPhoneButtonEnabled() {
         BySelector disabledPhoneProfileNameSelector =
                 getUiElementFromConfig(AutomotiveConfigConstants.DISABLED_PHONE_PROFILE);
         UiObject2 disabledPhoneProfile =
@@ -322,7 +322,7 @@ public class StatusBarHelperImpl extends AbstractStandardAppHelper implements IA
 
     /** {@inheritDoc} */
     @Override
-    public boolean verifyDisabledMediaProfile() {
+    public boolean isBluetoothMediaButtonEnabled() {
         BySelector disabledMediaProfileNameSelector =
                 getUiElementFromConfig(AutomotiveConfigConstants.DISABLED_MEDIA_PROFILE);
         UiObject2 disabledMediaProfile =
