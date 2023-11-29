@@ -22,22 +22,22 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Indicates that a specific test or class should be run only if all of the given feature flags are
- * enabled in the device's current state. Enforced by the {@code CheckFlagsRule}.
+ * Indicates that {@code SetFlagsRule} should disable all the given feature flags before running the
+ * annotated test or class.
  *
- * <p>This annotation works together with {@link RequiresFlagsDisabled} to define the value that is
- * required of the flag by the test for the test to run. It is an error for either a method or class
- * to require that a particular flag be both enabled and disabled.
+ * <p>This annotation works together with {@link EnableFlags} to define the value of the flag that
+ * needs to be set for the test to run. It is an error for either a method or class to declare that
+ * a flag is set to be both enabled and disabled.
  *
- * <p>If the value of a particular flag is required (by either {@code RequiresFlagsEnabled} or
- * {@code RequiresFlagsDisabled}) by both the class and test method, then the values must be
- * consistent.
+ * <p>If the value for a particular flag is defined (by either {@code EnableFlags} or {@code
+ * DisableFlags}) by both the class and test method, then the values must be consistent.
  *
  * <p>If the value of a one flag is required by an annotation on the class, and the value of a
  * different flag is required by an annotation of the method, then both requirements apply.
  *
- * <p>With {@code CheckFlagsRule}, test(s) will be skipped with 'assumption failed' when any of the
- * required flag on the target Android platform is disabled.
+ * <p>With {@code SetFlagsRule}, the flag will be disabled within the test process for the duration
+ * of the test(s). When being run with {@code FlagsParameterization} that enables the flag, then the
+ * test will be skipped with 'assumption failed'.
  *
  * <p>Both {@code SetFlagsRule} and {@code CheckFlagsRule} will fail the test if a particular flag
  * is both set (with {@code EnableFlags} or {@code DisableFlags}) and required (with {@code
@@ -45,10 +45,10 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.TYPE})
-public @interface RequiresFlagsEnabled {
+public @interface DisableFlags {
     /**
-     * The list of the feature flags that require to be enabled. Each item is the full flag name
-     * with the format {package_name}.{flag_name}.
+     * The list of the feature flags to be disabled. Each item is the full flag name with the format
+     * {package_name}.{flag_name}.
      */
     String[] value();
 }
