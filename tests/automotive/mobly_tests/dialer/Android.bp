@@ -311,3 +311,32 @@ python_test_host {
         },
     },
 }
+
+
+python_test_host {
+    name: "BluetoothMuteUnmuteCallTest",
+    main: "dialer_test_mute_unmute_call.py",
+    srcs: ["dialer_test_mute_unmute_call.py"],
+    libs: [
+        "mobly",
+        "utilities",
+        "bluetooth_test",
+    ],
+    test_suites: [
+        "catbox",
+    ],
+    test_options: {
+        unit_test: false,
+    },
+    data: [
+        // Package the snippet with the mobly test
+        ":AutomotiveSnippet",
+        ":PhoneSnippet",
+    ],
+    version: {
+        py3: {
+            embedded_launcher: true,
+        },
+    },
+}
+

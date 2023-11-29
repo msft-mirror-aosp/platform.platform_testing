@@ -529,3 +529,33 @@ class CallUtils:
         logging.info('Is Bluetooth Palette Media Button Enabled')
         return self.device.mbs.isBluetoothMediaButtonEnabled()
 
+    def enable_driving_mode(self):
+        self.device.mbs.enableDrivingMode()
+
+    def disable_driving_mode(self):
+        self.device.mbs.disableDrivingMode()
+
+    # Check if microphone chip is displayed on status bar
+    def is_microphone_displayed_on_status_bar(self, expected_result):
+       logging.info('Mute the call, verify microphone on status bar')
+       actual_result = self.device.mbs.isMicChipPresentOnStatusBar()
+       logging.info(
+           'Microphone Chip on status bar expected : <%s>, Actual : <%s>',
+           expected_result,
+           actual_result,
+       )
+       if expected_result != actual_result:
+         raise CallUtilsError(
+             'MicroPhone Chip not in sync with call status'
+         )
+
+    # Mute call
+    def mute_call(self):
+        logging.info('Muting call')
+        self.device.mbs.muteCall()
+
+    # Unmute call
+    def unmute_call(self):
+        logging.info('Unmuting call')
+        self.device.mbs.unmuteCall()
+
