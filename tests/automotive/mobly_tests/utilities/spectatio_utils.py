@@ -173,9 +173,9 @@ class CallUtils:
         logging.info("Checking the three Preference buttons on the listed device")
         expected_check_status = "checked" if bluetooth_enabled else "unchecked"
         if (self.device.mbs.isBluetoothPreferenceChecked() != bluetooth_enabled):
-           logging.info("Bluetooth preference check status does not match expected status: "
-                        + str(bluetooth_enabled))
-           return False
+            logging.info("Bluetooth preference check status does not match expected status: "
+                         + str(bluetooth_enabled))
+            return False
 
         expected_status = "enabled" if bluetooth_enabled else "disabled"
         if (self.device.mbs.isPhonePreferenceEnabled()  != bluetooth_enabled):
@@ -184,8 +184,8 @@ class CallUtils:
             return False
 
         if (self.device.mbs.isMediaPreferenceEnabled() != bluetooth_enabled):
-           logging.info("Media preference does not match enabled status: " + str(expected_status))
-           return False
+            logging.info("Media preference does not match enabled status: " + str(expected_status))
+            return False
 
         return True
 
@@ -214,20 +214,20 @@ class CallUtils:
         time.sleep(wait_time)
     # Open contacts detais page
     def open_details_page(self, contact_name):
-       logging.info('open contacts details page')
-       self.device.mbs.openDetailsPage(contact_name)
+        logging.info('open contacts details page')
+        self.device.mbs.openDetailsPage(contact_name)
     # Close contact details page
     def close_details_page(self):
-       logging.info('close contacts details page')
-       self.device.mbs.closeDetailsPage()
+        logging.info('close contacts details page')
+        self.device.mbs.closeDetailsPage()
     # Add Remove Favorite contact
     def add_remove_favorite_contact(self):
-       logging.info('add remove favorite contact')
-       self.device.mbs.addRemoveFavoriteContact()
+        logging.info('add remove favorite contact')
+        self.device.mbs.addRemoveFavoriteContact()
     # Add Favorites from Favorite Tab
     def add_favorites_from_favorites_tab(self, contact_name):
-       logging.info('add favorites from favorites tab')
-       self.device.mbs.addFavoritesFromFavoritesTab(contact_name)
+        logging.info('add favorites from favorites tab')
+        self.device.mbs.addFavoritesFromFavoritesTab(contact_name)
     # Add Remove Favorite contact
     def is_contact_in_favorites(self, contact_name, expected_result):
         logging.info('check if contact is in favorites')
@@ -238,9 +238,9 @@ class CallUtils:
             actual_result,
         )
         if expected_result == 'True' and expected_result != actual_result:
-          raise CallUtilsError('Contact not added to favorites')
+            raise CallUtilsError('Contact not added to favorites')
         if expected_result == 'False' and expected_result != actual_result:
-          raise CallUtilsError('Contact not removed from favorites')
+            raise CallUtilsError('Contact not removed from favorites')
 
 
     def open_bluetooth_media_app(self):
@@ -323,7 +323,7 @@ class CallUtils:
 
     def is_bluetooth_hfp_error_displayed(self):
         logging.info('Verify Bluetooth HFP error is displayed,'
-                             'when bluetooth is disconnected')
+                     'when bluetooth is disconnected')
         return self.device.mbs.isBluetoothHfpErrorDisplayed()
 
     def search_contacts_name(self, contact_name):
@@ -346,9 +346,9 @@ class CallUtils:
         expected_sorting_order = sorted(actual_sorting_order)
         logging.info(
             'Expected sorting order: <%s>, Actual sorting order: <%s>',
-        expected_sorting_order,
-        actual_sorting_order,
-    )
+            expected_sorting_order,
+            actual_sorting_order,
+        )
         if actual_sorting_order != expected_sorting_order:
             raise CallUtilsError("Actual and Expected sorting orders don't match.")
 
@@ -366,12 +366,12 @@ class CallUtils:
         """Replace all non-digits characters to null"""
         actual_dialing_number = re.sub(r'\D', '', str(self.get_dialing_number()))
         logging.info(
-             'Expected dialing number: %s, Actual: %s',
-              expected_dialing_number,
-              actual_dialing_number,
+            'Expected dialing number: %s, Actual: %s',
+            expected_dialing_number,
+            actual_dialing_number,
         )
         if actual_dialing_number != expected_dialing_number:
-          raise CallUtilsError(
+            raise CallUtilsError(
                 "Actual and Expected dialing numbers don't match.")
 
     def is_ongoing_call_displayed_on_home(self, expected_result):
@@ -384,7 +384,7 @@ class CallUtils:
             actual_result,
         )
         if expected_result != actual_result:
-          raise CallUtilsError('Ongoing call not displayed on home')
+            raise CallUtilsError('Ongoing call not displayed on home')
 
     def get_recent_call_history(self):
         actual_recent_call_from_history = self.device.mbs.getRecentCallHistory()
@@ -404,9 +404,9 @@ class CallUtils:
             actual_last_dialed_number,
         )
         if actual_last_dialed_number != expected_last_dialed_number:
-          raise CallUtilsError(
-              "Actual and Expected last dialed numbers don't match."
-          )
+            raise CallUtilsError(
+                "Actual and Expected last dialed numbers don't match."
+            )
 
     def open_phone_app_from_home(self):
         logging.info('Open Phone from Home Screen card.')
@@ -414,26 +414,26 @@ class CallUtils:
 
     # Search contact by name
     def search_contact_by_name(self, search_contact_name):
-       logging.info('Searching <%s> in contacts', search_contact_name)
-       self.device.mbs.searchContactsByName(search_contact_name)
+        logging.info('Searching <%s> in contacts', search_contact_name)
+        self.device.mbs.searchContactsByName(search_contact_name)
 
-     # Get first search result
+    # Get first search result
     def get_first_search_result(self):
-       logging.info('Getting first search result')
-       actual_first_search_result = self.device.mbs.getFirstSearchResult()
-       logging.info('Actual first search result: <%s>', actual_first_search_result)
-       return actual_first_search_result
+        logging.info('Getting first search result')
+        actual_first_search_result = self.device.mbs.getFirstSearchResult()
+        logging.info('Actual first search result: <%s>', actual_first_search_result)
+        return actual_first_search_result
 
     # Verify search result contains expected searach input
     def verify_search_result_contain_target_search(self, expected_search_result):
-       actual_search_result = self.get_first_search_result()
-       logging.info(
+        actual_search_result = self.get_first_search_result()
+        logging.info(
             'Expected search result: <%s>, Actual search result: <%s>',
             expected_search_result,
             actual_search_result,
         )
-       if expected_search_result not in actual_search_result:
-         raise CallUtilsError('Actual search result does not contain Expected.')
+        if expected_search_result not in actual_search_result:
+            raise CallUtilsError('Actual search result does not contain Expected.')
 
 
     def verify_sms_app_unread_message(self, expected):
