@@ -218,3 +218,4 @@ class MediaUtils:
         logging.info("Actual current song max playing time on HU: <%s>",
                      actual_current_song_max_playing_time)
         return actual_current_song_max_playing_time
+
