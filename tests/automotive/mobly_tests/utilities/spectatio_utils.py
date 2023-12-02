@@ -360,7 +360,6 @@ class CallUtils:
                      actual_disconnected_label_status)
         return actual_disconnected_label_status
 
-
     # Verify dialing number the same as expected
     def verify_dialing_number(self, expected_dialing_number):
         """Replace all non-digits characters to null"""
@@ -528,6 +527,40 @@ class CallUtils:
     def is_bluetooth_media_button_enabled(self):
         logging.info('Is Bluetooth Palette Media Button Enabled')
         return self.device.mbs.isBluetoothMediaButtonEnabled()
+    def get_dial_in_number(self):
+        return self.device.mbs.getDialInNumber()
+
+    # Verify dialed number on Dial Pad the same as expected
+    def verify_dialed_number_on_dial_pad(self, expected_dialed_number):
+        actual_dialed_number = self.get_dial_in_number()
+        logging.info('Expected number on Dial Pad: <%s>, Actual: <%s>',
+                     expected_dialed_number,
+                     actual_dialed_number,)
+
+        if actual_dialed_number != expected_dialed_number:
+            raise CallUtilsError(
+                "Actual and Expected dialing numbers on dial pad don't match.")
+    # Delete dialed number on Dial Pad
+    def delete_dialed_number_on_dial_pad(self):
+        logging.info('Deleting dialed number on Dial Pad')
+        self.device.mbs.deleteDialedNumber()
+    # End call on IVI using adb shell command
+    def end_call_using_adb_command(self, device_target):
+        self.execute_shell_on_device(device_target, 'input keyevent KEYCODE_ENDCALL')
+
+    # Make a call most recent history
+    def call_most_recent_call_history(self):
+        logging.info('Calling most recent call in history')
+        self.device.mbs.callMostRecentHistory()
+    # Change audio source to PHONE
+    def change_audio_source_to_phone(self):
+        logging.info('Changing audio source to PHONE')
+        self.device.mbs.changeAudioSourceToPhone()
+    # Change audio source to CAR SPEAKERS
+    def change_audio_source_to_car_speakers(self):
+        logging.info('Changing audio source to CAR SPEAKERS')
+        self.device.mbs.changeAudioSourceToCarSpeakers()
+
 
     def enable_driving_mode(self):
         self.device.mbs.enableDrivingMode()
