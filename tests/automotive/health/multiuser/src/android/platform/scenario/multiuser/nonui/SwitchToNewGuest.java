@@ -51,6 +51,7 @@ public class SwitchToNewGuest {
          */
         // Execute user manager APIs with elevated permissions
         mUiAutomation = getUiAutomation();
+        // TODO: b/302175460 - update minimum SDK version
         mUiAutomation.adoptShellPermissionIdentity(CREATE_USERS_PERMISSION);
         UserInfo currentUser = mMultiUserHelper.getCurrentForegroundUserInfo();
 
