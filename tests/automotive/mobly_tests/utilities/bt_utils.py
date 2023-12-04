@@ -33,6 +33,32 @@ class BTUtils:
         self.target = target
         self.target_adrr = None
 
+    # Skip Android Auto pop-up
+    # TODO @vitalidim remove this function after b/314385914 resolved
+    def handle_android_auto_pop_up(self):
+        logging.info('Checking for Android Auto pop-up on HU')
+        if self.discoverer.mbs.isStartAndroidAutoPopUpPresent():
+            logging.info('Android Auto pop-up is present on HU')
+            logging.info('Click on <NOT NOW> button on HU')
+            self.discoverer.mbs.skipStartAndroidAutoPopUp()
+            asserts.assert_false(self.discoverer.mbs.isStartAndroidAutoPopUpPresent(),
+                                 'Android Auto pop-up should be closed')
+        else:
+            logging.info('Android Auto pop-up is not present on HU')
+
+    # Skip Assistant pop-up
+    # TODO @vitalidim remove this function after b/314386661 resolved
+    def handle_assistant_pop_up(self):
+        logging.info('Checking for Assistant pop-up on HU')
+        if self.discoverer.mbs.isAssistantImprovementPopUpPresent():
+            logging.info('Assistant pop-up is present on HU')
+            logging.info('Click on <CONTINUE> button on HU')
+            self.discoverer.mbs.skipImprovementCallingAndTextingPopUp()
+            asserts.assert_false(self.discoverer.mbs.isAssistantImprovementPopUpPresent(),
+                                 'Assistant pop-up should be closed')
+        else:
+            logging.info('Assistant pop-up is not present on HU')
+
     def get_info_from_devices(self, discovered_devices):
         discovered_names = [device['Name'] for device in discovered_devices]
         discovered_addresses = [device['Address'] for device in discovered_devices]

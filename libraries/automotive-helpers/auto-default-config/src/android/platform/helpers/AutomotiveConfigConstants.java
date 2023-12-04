@@ -371,6 +371,10 @@ public class AutomotiveConfigConstants {
     public static final String LOCATION_SETTINGS_RECENTLY_ACCESSED_MAPS =
             "LOCATION_SETTINGS_RECENTLY_ACCESSED_MAPS";
     public static final String LOCATION_SETTINGS_VIEW_ALL = "LOCATION_SETTINGS_VIEW_ALL";
+    public static final String START_ANDROID_AUTO_POPUP = "START_ANDROID_AUTO_POPUP";
+    public static final String NOT_NOW_START_ANDROID_AUTO_POPUP_BUTTON = "NOT_NOW_START_ANDROID_AUTO_POPUP_BUTTON";
+    public static final String SKIP_ASSISTANT_IMPROVEMENT_PAGE_BUTTON = "SKIP_ASSISTANT_IMPROVEMENT_PAGE_BUTTON";
+    public static final String ASSISTANT_IMPROVEMENT_POPUP = "ASSISTANT_IMPROVEMENT_POPUP";
 
     // App Info Settings Constants
     public static final String APP_INFO_SETTINGS_APP_NAME_ELEMENT =
