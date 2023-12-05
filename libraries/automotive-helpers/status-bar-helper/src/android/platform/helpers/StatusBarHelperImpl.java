@@ -427,4 +427,29 @@ public class StatusBarHelperImpl extends AbstractStandardAppHelper implements IA
                         bluetoothDisconnected, AutomotiveConfigConstants.BT_DISCONNECTED_STATUS);
         return bluetoothDisconnected.isEnabled();
     }
+    /** {@inheritDoc} */
+    @Override
+    public boolean isBluetoothPaletteMediaButtonEnabled() {
+        BySelector bluetoothPaletteMediaButtonSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.MEDIA_BUTTON);
+        UiObject2 bluetoothPaletteMediaButton =
+                getSpectatioUiUtil().findUiObject(bluetoothPaletteMediaButtonSelector);
+        getSpectatioUiUtil()
+                .validateUiObject(
+                        bluetoothPaletteMediaButton, AutomotiveConfigConstants.MEDIA_BUTTON);
+        return bluetoothPaletteMediaButton.isChecked();
+    }
+    /** {@inheritDoc} */
+    @Override
+    public void clickOnBluetoothPaletteMediaButton() {
+        BySelector disabledMediaProfileNameSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.DISABLED_MEDIA_PROFILE);
+        UiObject2 disabledMediaProfile =
+                getSpectatioUiUtil().findUiObject(disabledMediaProfileNameSelector);
+        getSpectatioUiUtil()
+                .validateUiObject(
+                        disabledMediaProfile, AutomotiveConfigConstants.DISABLED_MEDIA_PROFILE);
+        getSpectatioUiUtil().clickAndWait(disabledMediaProfile);
+        getSpectatioUiUtil().wait5Seconds();
+    }
 }

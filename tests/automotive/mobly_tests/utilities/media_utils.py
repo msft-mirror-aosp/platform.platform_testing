@@ -106,9 +106,9 @@ class MediaUtils:
         regex_pattern = re.compile(constants.SONG_METADATA_PATTERN)
         # match regex
         actual_song_metadata = regex_pattern.findall(dumpsys_metadata)[0]
-        logging.info("Actual song metadata: %s", actual_song_metadata)
+        logging.info("Actual song metadata on phone device: %s", actual_song_metadata)
         parsed_song_metadata = actual_song_metadata.split('=')[1]
-        logging.info("Parsed song metadata: %s", parsed_song_metadata)
+        logging.info("Parsed song metadata on phone device: %s", parsed_song_metadata)
         return parsed_song_metadata
 
     # Get song title from phone device
@@ -131,6 +131,12 @@ class MediaUtils:
     def click_next_track_on_hu(self):
         logging.info("Click on NEXT track on HU")
         self.discoverer.mbs.clickNextTrack()
+        time.sleep(constants.WAIT_FOR_LOAD)
+
+    # Click on PREVIOUS track on HU
+    def click_previous_track_on_hu(self):
+        logging.info("Click on PREVIOUS track on HU")
+        self.discoverer.mbs.clickPreviousTrack()
         time.sleep(constants.WAIT_FOR_LOAD)
 
     # Open Media app on HU

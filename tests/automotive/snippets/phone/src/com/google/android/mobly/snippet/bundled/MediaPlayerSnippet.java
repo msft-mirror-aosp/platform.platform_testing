@@ -82,6 +82,11 @@ public class MediaPlayerSnippet implements Snippet {
         return mAutoMediaHelper.get().isBluetoothAudioDisconnectedLabelVisible();
     }
 
+    @Rpc(description = "Is Connect to Bluetooth label present")
+    public boolean isConnectToBluetoothLabelVisible() {
+        return mAutoMediaHelper.get().isConnectToBluetoothLabelVisible();
+    }
+
     @Rpc(description = "Open Bluetooth Audio app")
     public void openBluetoothMediaApp() {
         mAutoMediaHelper.get().openBluetoothMediaApp();

@@ -541,6 +541,13 @@ public class MediaCenterHelperImpl extends AbstractStandardAppHelper implements 
                 getUiElementFromConfig(AutomotiveConfigConstants.BLUETOOTH_DISCONNECTED_LABEL);
         return getSpectatioUiUtil().hasUiElement(isBluetoothAudioDisconnectedLabel);
     }
+    /** {@inheritDoc} */
+    @Override
+    public boolean isConnectToBluetoothLabelVisible() {
+        BySelector connectToBluetoothLabel =
+                getUiElementFromConfig(AutomotiveConfigConstants.CONNECT_TO_BLUETOOTH);
+        return getSpectatioUiUtil().hasUiElement(connectToBluetoothLabel);
+    }
 
     private UiObject2 scrollAndFindApp(BySelector selector) {
 

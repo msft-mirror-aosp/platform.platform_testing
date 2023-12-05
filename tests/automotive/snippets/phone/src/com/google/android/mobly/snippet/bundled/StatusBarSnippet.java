@@ -46,6 +46,12 @@ public class StatusBarSnippet implements Snippet {
         return mStatusBarHelper.get().isBluetoothMediaButtonEnabled();
     }
 
+    /** Clicks on Media Button available on the Bluetooth Palette */
+    @Rpc(description = "Click on Bluetooth Palette Media Button")
+    public void clickOnBluetoothPaletteMediaButton() {
+        mStatusBarHelper.get().clickOnBluetoothPaletteMediaButton();
+    }
+
     @Rpc(description = "is Mobile Connected")
     public boolean isBluetoothConnectedToMobile() {
         return mStatusBarHelper.get().isBluetoothConnectedToMobile();

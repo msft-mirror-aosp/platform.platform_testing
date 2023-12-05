@@ -225,4 +225,18 @@ public interface IAutoStatusBarHelper extends IAppHelper {
      * <p>Get the current time for given time zone</>
      */
     String getCurrentTimeWithTimeZone(String timezone);
+
+    /**
+     * Setup expectations: Open Bluetooth Palette
+     *
+     * <p>This method checks whether media button is enabled
+     */
+    boolean isBluetoothPaletteMediaButtonEnabled();
+
+    /**
+     * Setup expectations: Open Bluetooth Palette
+     *
+     * <p>This method performs click operation on media button
+     */
+    void clickOnBluetoothPaletteMediaButton();
 }

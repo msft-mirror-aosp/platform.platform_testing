@@ -1271,6 +1271,25 @@
       "VALUE": "fragment_container",
       "PACKAGE": "com.android.car.settings"
     },
+    "START_ANDROID_AUTO_POPUP": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "startup_prompt_dialog_title",
+      "PACKAGE": "com.google.android.embedded.projection"
+    },
+    "NOT_NOW_START_ANDROID_AUTO_POPUP_BUTTON": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "startup_prompt_dialog_not_now_button",
+      "PACKAGE": "com.google.android.embedded.projection"
+    },
+    "SKIP_ASSISTANT_IMPROVEMENT_PAGE_BUTTON": {
+      "TYPE": "TEXT",
+      "VALUE": "Continue"
+    },
+    "ASSISTANT_IMPROVEMENT_POPUP": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "car_ui_alert_title",
+      "PACKAGE": "com.google.android.carassistant"
+    },
     "PLAY_PAUSE_BUTTON": {
       "TYPE": "RESOURCE_ID",
       "VALUE": "play_pause_stop",

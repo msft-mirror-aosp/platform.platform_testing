@@ -42,7 +42,10 @@ class CallUtils:
         """Assumes the device bluetooth connection settings page is open"""
         logging.info('Checking whether device is connected.')
         self.device.mbs.deviceIsConnected()
-
+    def open_app_grid(self):
+        """Opens app Grid """
+        logging.info("Opening app grid")
+        self.device.mbs.openAppGrid()
     def dial_a_number(self, callee_number):
         """Dial phone number"""
         logging.info("Dial phone number <%s>", callee_number)
@@ -309,6 +312,18 @@ class CallUtils:
                      actual_disconnected_label_status)
         return actual_disconnected_label_status
 
+    def is_connect_to_bluetooth_label_visible_on_bluetooth_audio_page(self):
+        """ Return is <Connect to Bluetooth> label present """
+        logging.info('Checking is <Connect to Bluetooth> label present')
+        actual_status = self.device.mbs.isBluetoothAudioDisconnectedLabelVisible()
+        logging.info('<Connect to Bluetooth> label is present: %s',actual_status)
+        return actual_status
+
+    def click_cancel_label_visible_on_bluetooth_audio_page(self):
+        """ Clicks on <Cancel> label present on bluetooth Audio page"""
+        self.device.mbs.cancelBluetoothAudioConncetion()
+        logging.info('Clicked on <Cancel> label present on bluetooth Audio page')
+
     def update_device_timezone(self, expected_timezone):
         logging.info('Update the device timezone to %s',
                      expected_timezone)
@@ -527,6 +542,7 @@ class CallUtils:
     def is_bluetooth_media_button_enabled(self):
         logging.info('Is Bluetooth Palette Media Button Enabled')
         return self.device.mbs.isBluetoothMediaButtonEnabled()
+
     def get_dial_in_number(self):
         return self.device.mbs.getDialInNumber()
 
@@ -540,6 +556,7 @@ class CallUtils:
         if actual_dialed_number != expected_dialed_number:
             raise CallUtilsError(
                 "Actual and Expected dialing numbers on dial pad don't match.")
+
     # Delete dialed number on Dial Pad
     def delete_dialed_number_on_dial_pad(self):
         logging.info('Deleting dialed number on Dial Pad')
@@ -552,15 +569,16 @@ class CallUtils:
     def call_most_recent_call_history(self):
         logging.info('Calling most recent call in history')
         self.device.mbs.callMostRecentHistory()
+
     # Change audio source to PHONE
     def change_audio_source_to_phone(self):
         logging.info('Changing audio source to PHONE')
         self.device.mbs.changeAudioSourceToPhone()
+
     # Change audio source to CAR SPEAKERS
     def change_audio_source_to_car_speakers(self):
         logging.info('Changing audio source to CAR SPEAKERS')
         self.device.mbs.changeAudioSourceToCarSpeakers()
-
 
     def enable_driving_mode(self):
         self.device.mbs.enableDrivingMode()
@@ -592,3 +610,7 @@ class CallUtils:
         logging.info('Unmuting call')
         self.device.mbs.unmuteCall()
 
+    def click_on_bluetooth_palette_media_button(self):
+        """Performs click operation on Bluetooth Palette media button"""
+        self.device.mbs.clickOnBluetoothPaletteMediaButton()
+        logging.info("Clicked on bluetooth palette media button")
