@@ -102,6 +102,10 @@ class BTUtils:
             target_address in paired_addresses,
             'Failed to pair the target device %s over Bluetooth.' %
             target_address)
+        time.sleep(constants.DEFAULT_WAIT_TIME_FIVE_SECS)
+        self.handle_android_auto_pop_up()
+        self.handle_assistant_pop_up()
+
     def press_allow_on_device(self):
         """ Repeatedly presses "Allow" on prompts until no more prompts appear"""
         logging.info('Attempting to press ALLOW')

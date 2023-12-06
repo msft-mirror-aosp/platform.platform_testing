@@ -29,6 +29,11 @@ class MediaUtils:
         self.target = target
         self.discoverer = discoverer
 
+    # Enable WIFI on phone device
+    def enable_wifi_on_phone_device(self):
+        logging.info("Enable WIFI on phone device")
+        self.target.mbs.wifiEnable()
+
     # Execute any shell command on phone device
     def execute_shell_on_device(self, shell_command):
         self.target.log.info(
