@@ -319,6 +319,7 @@ public class AutomotiveConfigConstants {
     public static final String MEDIA_APP_DROP_DOWN_MENU = "MEDIA_APP_DROP_DOWN_MENU";
     public static final String MEDIA_APP_NAVIGATION_ICON = "MEDIA_APP_NAVIGATION_ICON";
     public static final String MEDIA_APP_NO_LOGIN_MSG = "MEDIA_APP_NO_LOGIN_MSG";
+    public static final String MOW_PLAYING_LABEL = "MOW_PLAYING_LABEL";
     // Test Media App
     public static final String TEST_MEDIA_ACCOUNT_TYPE = "TEST_MEDIA_ACCOUNT_TYPE";
     public static final String TEST_MEDIA_ACCOUNT_TYPE_PAID = "TEST_MEDIA_ACCOUNT_TYPE_PAID";

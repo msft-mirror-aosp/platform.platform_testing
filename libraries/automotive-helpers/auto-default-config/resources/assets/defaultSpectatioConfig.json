@@ -1355,6 +1355,10 @@
       "VALUE": "car_ui_toolbar_title",
       "PACKAGE": "com.android.car.media"
     },
+    "MOW_PLAYING_LABEL": {
+      "TYPE": "TEXT",
+      "VALUE": "Now Playing"
+    },
     "MEDIA_APP_DROP_DOWN_MENU": {
       "TYPE": "RESOURCE_ID",
       "VALUE": "car_ui_toolbar_menu_item_icon",

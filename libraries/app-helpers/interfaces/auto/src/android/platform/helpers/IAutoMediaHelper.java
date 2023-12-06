@@ -287,4 +287,11 @@ public interface IAutoMediaHelper extends IAppHelper, Scrollable {
      * @return get current song max playing time
      */
     String getCurrentSongMaxPlayingTime();
+
+    /**
+     * Setup expectations: Bluetooth Audio track maximized.
+     *
+     * <p>This method is return is "Now Playing" label visible.
+     */
+    boolean isNowPlayingLabelVisible();
 }

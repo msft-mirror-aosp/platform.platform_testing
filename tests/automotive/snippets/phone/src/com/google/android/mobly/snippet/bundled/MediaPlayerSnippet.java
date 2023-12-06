@@ -117,19 +117,24 @@ public class MediaPlayerSnippet implements Snippet {
         return mAutoMediaHelper.get().getArtistrTitle();
     }
 
-    @Rpc(description ="Get Album tile")
+    @Rpc(description = "Get Album tile")
     public String getAlbumTitle() {
         return mAutoMediaHelper.get().getAlbumTitle();
     }
 
-    @Rpc(description ="Get song current playing time")
+    @Rpc(description = "Get song current playing time")
     public String getSongCurrentPlayingTime() {
         return mAutoMediaHelper.get().getSongCurrentPlayingTime();
     }
 
-    @Rpc(description ="Get song max playing time")
+    @Rpc(description = "Get song max playing time")
     public String getCurrentSongMaxPlayingTime() {
         return mAutoMediaHelper.get().getCurrentSongMaxPlayingTime();
+    }
+
+    @Rpc(description = "Is Now Playing label present")
+    public boolean isNowPlayingLabelVisible() {
+        return mAutoMediaHelper.get().isNowPlayingLabelVisible();
     }
 
 }

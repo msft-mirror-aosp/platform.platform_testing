@@ -225,3 +225,10 @@ class MediaUtils:
                      actual_current_song_max_playing_time)
         return actual_current_song_max_playing_time
 
+    # Check is NOW PLAYING label displayed
+    def is_now_playing_label_displayed(self):
+        logging.info("Checking is <Now Playing> label displayed on HU")
+        actual_is_now_playing_label_display_status = self.discoverer.mbs.isNowPlayingLabelVisible()
+        logging.info("<Now Playing> label displayed: <%s>",
+                     actual_is_now_playing_label_display_status)
+        return actual_is_now_playing_label_display_status

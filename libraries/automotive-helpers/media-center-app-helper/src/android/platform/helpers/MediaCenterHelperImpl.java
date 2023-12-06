@@ -694,4 +694,14 @@ public class MediaCenterHelperImpl extends AbstractStandardAppHelper implements 
                 .validateUiObject(objectSongMaxPlayingTime, AutomotiveConfigConstants.MAX_SONG_TIME);
         return objectSongMaxPlayingTime.getText().trim();
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isNowPlayingLabelVisible() {
+        BySelector isNowPlayingLabel =
+                getUiElementFromConfig(AutomotiveConfigConstants.MOW_PLAYING_LABEL);
+        return getSpectatioUiUtil().hasUiElement(isNowPlayingLabel);
+    }
 }

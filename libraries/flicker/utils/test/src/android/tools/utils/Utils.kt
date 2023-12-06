@@ -110,7 +110,7 @@ fun getWmTraceReaderFromAsset(
     legacyTrace: Boolean = false,
 ): Reader {
     return ParsedTracesReader(
-        artifact = InMemoryArtifact(relativePath),
+        artifact = TestArtifact(relativePath),
         wmTrace =
             WindowManagerTraceParser(legacyTrace)
                 .parse(
@@ -125,7 +125,7 @@ fun getWmTraceReaderFromAsset(
 
 fun getWmDumpReaderFromAsset(relativePath: String): Reader {
     return ParsedTracesReader(
-        artifact = InMemoryArtifact(relativePath),
+        artifact = TestArtifact(relativePath),
         wmTrace = WindowManagerDumpParser().parse(readAsset(relativePath), clearCache = false)
     )
 }
@@ -146,7 +146,7 @@ fun getLayerTraceReaderFromAsset(
                 }
                 .parse(session, from, to)
         }
-    return ParsedTracesReader(artifact = InMemoryArtifact(relativePath), layersTrace = layersTrace)
+    return ParsedTracesReader(artifact = TestArtifact(relativePath), layersTrace = layersTrace)
 }
 
 @Throws(Exception::class)
