@@ -34,6 +34,7 @@ import android.tools.device.traces.monitors.ITransitionMonitor
 import android.tools.device.traces.monitors.PerfettoTraceMonitor
 import android.tools.device.traces.monitors.ScreenRecorder
 import android.tools.device.traces.monitors.events.EventLogMonitor
+import android.tools.device.traces.monitors.view.ViewTraceMonitor
 import android.tools.device.traces.monitors.wm.ShellTransitionTraceMonitor
 import android.tools.device.traces.monitors.wm.WindowManagerTraceMonitor
 import android.tools.device.traces.monitors.wm.WmTransitionTraceMonitor
@@ -153,6 +154,7 @@ fun captureTrace(scenario: Scenario, actions: () -> Unit): ResultReader {
             WmTransitionTraceMonitor(),
             ShellTransitionTraceMonitor(),
             WindowManagerTraceMonitor(),
+            ViewTraceMonitor(),
             PerfettoTraceMonitor().enableLayersTrace().enableTransactionsTrace(),
         )
     try {

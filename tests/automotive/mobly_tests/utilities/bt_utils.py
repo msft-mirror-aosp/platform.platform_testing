@@ -104,6 +104,9 @@ class BTUtils:
             target_address in paired_addresses,
             'Failed to pair the target device %s over Bluetooth.' %
             target_address)
+        time.sleep(constants.DEFAULT_WAIT_TIME_FIVE_SECS)
+        self.handle_android_auto_pop_up()
+        self.handle_assistant_pop_up()
 
     def unpair(self):
         # unpair target from discoverer

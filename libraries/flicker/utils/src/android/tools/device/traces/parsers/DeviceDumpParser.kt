@@ -17,6 +17,7 @@
 package android.tools.device.traces.parsers
 
 import android.tools.common.Logger
+import android.tools.common.io.Reader
 import android.tools.common.traces.DeviceStateDump
 import android.tools.common.traces.DeviceTraceDump
 import android.tools.common.traces.NullableDeviceStateDump
@@ -27,7 +28,6 @@ import android.tools.common.traces.wm.WindowManagerTrace
 import android.tools.device.traces.parsers.perfetto.LayersTraceParser
 import android.tools.device.traces.parsers.perfetto.TraceProcessorSession
 import android.tools.device.traces.parsers.wm.WindowManagerDumpParser
-import android.tools.device.traces.parsers.wm.WindowManagerTraceParser
 
 /**
  * Represents a state dump containing the [WindowManagerTrace] and the [LayersTrace] both parsed and
@@ -102,8 +102,7 @@ class DeviceDumpParser {
          * regular trace. The parsed traces may contain a multiple [WindowManagerState] or
          * [LayerTraceEntry].
          *
-         * @param wmTraceData [WindowManagerTrace] content
-         * @param layersTraceData [LayersTrace] content
+         * @param reader trace reader
          * @param clearCache If the caching used while parsing the proto should be
          *
          * ```
@@ -111,28 +110,9 @@ class DeviceDumpParser {
          * ```
          */
         @JvmStatic
-        fun fromTrace(
-            wmTraceData: ByteArray,
-            layersTraceData: ByteArray,
-            clearCache: Boolean
-        ): DeviceTraceDump {
+        fun fromTrace(reader: Reader): DeviceTraceDump {
             return Logger.withTracing("fromTrace") {
-                DeviceTraceDump(
-                    wmTrace =
-                        if (wmTraceData.isNotEmpty()) {
-                            WindowManagerTraceParser().parse(wmTraceData, clearCache = clearCache)
-                        } else {
-                            null
-                        },
-                    layersTrace =
-                        if (layersTraceData.isNotEmpty()) {
-                            TraceProcessorSession.loadPerfettoTrace(layersTraceData) { session ->
-                                LayersTraceParser().parse(session, clearCache = clearCache)
-                            }
-                        } else {
-                            null
-                        }
-                )
+                DeviceTraceDump(reader.readWmTrace(), reader.readLayersTrace())
             }
         }
     }

@@ -26,6 +26,7 @@ import android.tools.device.traces.parsers.WindowManagerStateHelper
 import android.tools.utils.CleanFlickerEnvironmentRule
 import android.tools.utils.TEST_SCENARIO
 import android.tools.utils.assertArchiveContainsFiles
+import android.tools.utils.getLauncherPackageName
 import androidx.test.platform.app.InstrumentationRegistry
 import com.google.common.truth.Truth
 import java.io.File
@@ -112,7 +113,8 @@ class FlickerServiceTracesCollectorTest {
                 "wm_transition_trace.winscope",
                 "shell_transition_trace.winscope",
                 "eventlog.winscope",
-                TraceType.SF.fileName
+                TraceType.SF.fileName,
+                "${getLauncherPackageName()}_0.vc__view_capture_trace.winscope",
             )
     }
 }

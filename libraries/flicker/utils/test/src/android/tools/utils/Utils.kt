@@ -35,6 +35,7 @@ import android.tools.rules.CacheCleanupRule
 import android.tools.rules.InitializeCrossPlatformRule
 import android.tools.rules.StopAllTracesRule
 import androidx.test.platform.app.InstrumentationRegistry
+import androidx.test.uiautomator.UiDevice
 import com.google.common.io.ByteStreams
 import com.google.common.truth.Truth
 import java.io.File
@@ -198,3 +199,6 @@ fun createDefaultArtifactBuilder(
         .withOutputDir(outputDir)
         .withStatus(status)
         .withFiles(files)
+
+fun getLauncherPackageName() =
+    UiDevice.getInstance(InstrumentationRegistry.getInstrumentation()).launcherPackageName

@@ -36,7 +36,7 @@ constructor(
 ) :
     StandardAppHelper(
         instrumentation,
-        "SampleApp",
+        getMessagesName(pkgManager),
         getMessagesComponent(pkgManager),
     ) {
     override val openAppIntent =
@@ -55,6 +55,15 @@ constructor(
                 pkgManager.resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY)
                     ?: error("Unable to resolve SMS activity")
             return ComponentNameMatcher(resolveInfo.activityInfo.packageName, className = "")
+        }
+
+        private fun getMessagesName(pkgManager: PackageManager): String {
+            val intent = getMessagesIntent()
+            val resolveInfo =
+                pkgManager.resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY)
+                    ?: error("Unable to resolve SMS activity")
+
+            return resolveInfo.loadLabel(pkgManager).toString()
         }
     }
 }

@@ -18,6 +18,7 @@ package android.tools.device.traces.monitors
 
 import android.tools.common.Logger
 import android.tools.common.ScenarioBuilder
+import android.tools.common.Tag
 import android.tools.common.io.TraceType
 import android.tools.device.traces.TRACE_CONFIG_REQUIRE_CHANGES
 import android.tools.device.traces.io.IoUtils
@@ -54,7 +55,7 @@ abstract class TraceMonitor : ITransitionMonitor {
     }
 
     /** Stops monitor. */
-    final override fun stop(writer: ResultWriter) {
+    override fun stop(writer: ResultWriter) {
         val artifacts =
             try {
                 Logger.withTracing("${this::class.simpleName}#stop") {
@@ -102,12 +103,12 @@ abstract class TraceMonitor : ITransitionMonitor {
      * @param predicate Commands to execute
      * @throws UnsupportedOperationException If tracing is already activated
      */
-    fun withTracing(predicate: () -> Unit): ByteArray {
+    fun withTracing(tag: String = Tag.ALL, predicate: () -> Unit): ByteArray {
         val writer = createWriter()
         withTracing(writer, predicate)
         val result = writer.write()
         val reader = ResultReader(result, TRACE_CONFIG_REQUIRE_CHANGES)
-        val bytes = reader.readBytes(traceType) ?: error("Missing trace $traceType")
+        val bytes = reader.readBytes(traceType, tag) ?: error("Missing trace $traceType")
         result.artifact.deleteIfExists()
         return bytes
     }
