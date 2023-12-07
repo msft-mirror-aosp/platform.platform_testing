@@ -46,29 +46,43 @@ class BluetoothBaseTest(base_test.BaseTestClass):
     def setup_test(self):
         # Make sure bluetooth is on.
         logging.info("Running basic test setup.")
-        logging.info("\tEnabling bluetooth on target and discoverer.")
+        logging.info("Enable Bluetooth on Target device")
         self.target.mbs.btEnable()
+        logging.info("Enable Bluetooth on Discoverer device")
         self.discoverer.mbs.btEnable()
 
     def teardown_test(self):
         # Turn Bluetooth off on both devices.
         logging.info("Running basic test teardown.")
-        # unpair target from discoverer
+        # unpair Discoverer device from Target
+        logging.info("Unpair Discoverer device from Target")
         discoverer_address = self.discoverer.mbs.btGetAddress()
+        logging.info(f"Discoverer device address: {discoverer_address}")
         target_paired_devices = self.target.mbs.btGetPairedDevices()
         _, target_paired_addresses = self.bt_utils.get_info_from_devices(target_paired_devices)
+        logging.info(f"Paired devices to Target: {target_paired_devices}")
         if discoverer_address in target_paired_addresses:
-          logging.info(f"forget {discoverer_address}")
-          self.target.mbs.btUnpairDevice(discoverer_address)
-        # unpair discoverer from target
+            logging.info(f"Forget Discoverer device <{discoverer_address}> on Target device")
+            self.target.mbs.btUnpairDevice(discoverer_address)
+        else:
+            logging.info("Discoverer device not founded on Target device")
+        # unpair Target device from Discoverer
+        logging.info("Unpair Target device from Discoverer")
         target_address = self.target.mbs.btGetAddress()
+        logging.info(f"Target device address: {target_address}")
         discoverer_paired_devices = self.discoverer.mbs.btGetPairedDevices()
-        _, discoverer_paired_addresses = self.bt_utils.get_info_from_devices(discoverer_paired_devices)
+        _, discoverer_paired_addresses = self.bt_utils.get_info_from_devices(
+            discoverer_paired_devices)
+        logging.info(f"Paired devices to Discoverer: {discoverer_paired_devices}")
         if target_address in discoverer_paired_addresses:
-          logging.info(f"forget {target_address}")
-          self.discoverer.mbs.btUnpairDevice(target_address)
-          self.target.mbs.btDisable()
-          self.discoverer.mbs.btDisable()
+            logging.info(f"Forget Target device <{target_address}> on Discoverer device")
+            self.discoverer.mbs.btUnpairDevice(target_address)
+        else:
+            logging.info("Target device not founded on Discoverer device")
+        logging.info("Disable Bluetooth on Target device")
+        self.target.mbs.btDisable()
+        logging.info("Disable Bluetooth on Discoverer device")
+        self.discoverer.mbs.btDisable()
 
 if __name__ == '__main__':
     common_main()
