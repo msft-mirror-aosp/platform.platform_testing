@@ -109,20 +109,31 @@ class BTUtils:
         self.handle_assistant_pop_up()
 
     def unpair(self):
-        # unpair target from discoverer
+        # unpair Discoverer device from Target
+        logging.info("Unpair Discoverer device from Target")
         discoverer_address = self.discoverer.mbs.btGetAddress()
+        logging.info(f"Discoverer device address: {discoverer_address}")
         target_paired_devices = self.target.mbs.btGetPairedDevices()
         _, target_paired_addresses = self.get_info_from_devices(target_paired_devices)
+        logging.info(f"Paired devices to Target: {target_paired_devices}")
         if discoverer_address in target_paired_addresses:
-            logging.info(f"forget {discoverer_address}")
+            logging.info(f"Forget Discoverer device <{discoverer_address}> on Target device")
             self.target.mbs.btUnpairDevice(discoverer_address)
-        # unpair discoverer from target
+        else:
+            logging.info("Discoverer device not founded on Target device")
+        # unpair Target device from Discoverer
+        logging.info("Unpair Target device from Discoverer")
         target_address = self.target.mbs.btGetAddress()
+        logging.info(f"Target device address: {target_address}")
         discoverer_paired_devices = self.discoverer.mbs.btGetPairedDevices()
-        _, discoverer_paired_addresses = self.get_info_from_devices(discoverer_paired_devices)
+        _, discoverer_paired_addresses = self.get_info_from_devices(
+            discoverer_paired_devices)
+        logging.info(f"Paired devices to Discoverer: {discoverer_paired_devices}")
         if target_address in discoverer_paired_addresses:
-            logging.info(f"forget {target_address}")
+            logging.info(f"Forget Target device <{target_address}> on Discoverer device")
             self.discoverer.mbs.btUnpairDevice(target_address)
+        else:
+            logging.info("Target device not founded on Discoverer device")
 
     def press_allow_on_phone(self):
         """ Repeatedly presses "Allow" on prompts until no more prompts appear"""
