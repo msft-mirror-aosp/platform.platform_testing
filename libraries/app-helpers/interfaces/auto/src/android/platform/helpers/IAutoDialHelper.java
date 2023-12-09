@@ -50,6 +50,16 @@ public interface IAutoDialHelper extends IAppHelper, Scrollable {
     void pressDeviceOnPrompt();
 
     /**
+     * Press the contact info element on screen containing the given name.
+     *
+     * @param expectedName - The contact name on the contact info element
+     */
+    void pressContactResult(String expectedName);
+
+    /** Assumes contact page is open. Press the mobile call button on a contact page. */
+    void pressMobileCallOnContact();
+
+    /**
      * Setup expectations: The app is open and there is an ongoing call.
      *
      * <p>This method is used to end call using softkey.
@@ -85,6 +95,14 @@ public interface IAutoDialHelper extends IAppHelper, Scrollable {
      * <p>This method is used to get the number entered on dialing screen.
      */
     String getDialedNumber();
+
+    /**
+     * Setup expectations: A call is underway, and the call screen is in focus on the device.
+     *
+     * <p>This method is used to get the number that is currently being dialed, or has been dialed
+     * on a currently-displayed ongoing call
+     */
+    String getDialingNumber();
 
     /**
      * Setup expectations: The app is open and in Dialpad

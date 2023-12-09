@@ -44,7 +44,10 @@ public class AutomotiveConfigConstants {
     public static final String VOICE_CHANNEL_PHONE = "VOICE_CHANNEL_PHONE";
     public static final String VOICE_CHANNEL_CAR = "VOICE_CHANNEL_CAR";
     public static final String DIALED_CONTACT_TYPE = "DIALED_CONTACT_TYPE";
+    public static final String DIALING_NUMBER = "DIALING_NUMBER";
     public static final String CONTACT_SEARCH_BAR = "CONTACT_SEARCH_BAR";
+    public static final String CONTACT_SEARCH_RESULT = "CONTACT_SEARCH_RESULT";
+    public static final String CONTACT_SEARCH_RESULT_NAME = "CONTACT_SEARCH_RESULT_NAME";
     public static final String SEARCH_RESULT = "SEARCH_RESULT";
     public static final String SEARCH_BACK_BUTTON = "SEARCH_BACK_BUTTON";
     public static final String CONTACT_SETTING_SCROLL_ACTION = "CONTACT_SETTING_SCROLL_ACTION";
@@ -67,6 +70,8 @@ public class AutomotiveConfigConstants {
     public static final String CONTACT_DETAIL = "CONTACT_DETAIL";
     public static final String CALL_HISTORY_INFO = "CALL_HISTORY_INFO";
     public static final String SEARCH_CONTACT = "SEARCH_CONTACT";
+
+    public static final String CALL_MOBILE_BUTTON = "CALL_MOBILE_BUTTON";
     public static final String CONTACT_SETTINGS = "CONTACT_SETTINGS";
     public static final String DIAL_PAD_FRAGMENT = "DIAL_PAD_FRAGMENT";
     public static final String DIGIT_ZERO = "0";
@@ -337,6 +342,7 @@ public class AutomotiveConfigConstants {
             "MEDIA_APP_SCROLL_BACKWARD_BUTTON";
     public static final String MEDIA_APP_SCROLL_ELEMENT = "MEDIA_APP_SCROLL_ELEMENT";
     public static final String BLUETOOTH_DISCONNECTED_LABEL = "BLUETOOTH_DISCONNECTED_LABEL";
+    public static final String MEDIA_PLAYLIST_ICON = "MEDIA_PLAYLIST_ICON";
 
     // SETTINGS CONSTANTS
     public static final String OPEN_SETTINGS_COMMAND = "OPEN_SETTINGS_COMMAND";
@@ -383,8 +389,10 @@ public class AutomotiveConfigConstants {
             "LOCATION_SETTINGS_RECENTLY_ACCESSED_MAPS";
     public static final String LOCATION_SETTINGS_VIEW_ALL = "LOCATION_SETTINGS_VIEW_ALL";
     public static final String START_ANDROID_AUTO_POPUP = "START_ANDROID_AUTO_POPUP";
-    public static final String NOT_NOW_START_ANDROID_AUTO_POPUP_BUTTON = "NOT_NOW_START_ANDROID_AUTO_POPUP_BUTTON";
-    public static final String SKIP_ASSISTANT_IMPROVEMENT_PAGE_BUTTON = "SKIP_ASSISTANT_IMPROVEMENT_PAGE_BUTTON";
+    public static final String NOT_NOW_START_ANDROID_AUTO_POPUP_BUTTON =
+            "NOT_NOW_START_ANDROID_AUTO_POPUP_BUTTON";
+    public static final String SKIP_ASSISTANT_IMPROVEMENT_PAGE_BUTTON =
+            "SKIP_ASSISTANT_IMPROVEMENT_PAGE_BUTTON";
     public static final String ASSISTANT_IMPROVEMENT_POPUP = "ASSISTANT_IMPROVEMENT_POPUP";
 
     // App Info Settings Constants

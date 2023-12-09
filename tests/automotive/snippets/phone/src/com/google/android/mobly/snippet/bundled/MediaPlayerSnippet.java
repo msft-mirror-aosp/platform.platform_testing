@@ -137,4 +137,14 @@ public class MediaPlayerSnippet implements Snippet {
         return mAutoMediaHelper.get().isNowPlayingLabelVisible();
     }
 
+
+    @Rpc(description = "Is Playlist icon visible")
+    public boolean isPlaylistIconVisible() {
+        return mAutoMediaHelper.get().isPlaylistIconVisible();
+    }
+
+    @Rpc(description = "Click on PLaylist icon")
+    public void clickOnPlaylistIcon() {
+        mAutoMediaHelper.get().clickOnPlaylistIcon();
+    }
 }

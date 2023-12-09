@@ -1,20 +1,13 @@
-"""Test of calling phone number from history using Mobly and Mobile Harness.
-
+"""Test ability to call a phone number from search results.
 
 - Requires a testbed with one phone in it that can make calls.
-- Requires sl4a be installed on Android devices. See README.md for details.
-- Optional to use --define="dialer_test_phone_number={$PHONE_NUMBER_VALUE}"
-- Default dialer_test_phone_number=dialer_test_phone_number
 
  Steps include:
-        1) Pre-call state check on IVI and phone devices. (OK)
-        2) Make a call to any digits number using IVI
-        3) Assert calling number on IVI same as called
-        4) End call on IVI
-        5) Open call history
-        6) Call most recent phone number
-        7) Assert calling number on IVI same as called
-        8) End call
+1. Tap on Phone icon from facet rail or App launcher to launch Dialer app
+2. Go to 'Contacts' and verify that all Contacts from Mobile Device displayed in Carkit
+3. Click on Search icon and enter any name or alphabet on it
+4. Verify that contacts matching with entered alphabet, name or number is showing in the list
+5. Select the contact and a make a call
 """
 from utilities import constants
 from utilities.main_utils import common_main

@@ -149,20 +149,28 @@
       "VALUE": "user_profile_phone_label",
       "PACKAGE": "com.android.car.dialer"
     },
-    "CONTACT_SEARCH_BAR": {
+    "DIALING_NUMBER": {
       "TYPE": "RESOURCE_ID",
-      "VALUE": "car_ui_toolbar_search_bar",
+      "VALUE": "user_profile_phone_number",
       "PACKAGE": "com.android.car.dialer"
     },
-    "SEARCH_RESULT": {
+    "CONTACT_SEARCH_BAR": {
+      "TYPE": "CLASS",
+      "VALUE": "android.widget.EditText"
+    },
+    "CONTACT_SEARCH_RESULT": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "contact_result",
+      "PACKAGE": "com.android.car.dialer"
+    },
+    "CONTACT_SEARCH_RESULT_NAME": {
       "TYPE": "RESOURCE_ID",
       "VALUE": "contact_name",
       "PACKAGE": "com.android.car.dialer"
     },
     "SEARCH_BACK_BUTTON": {
-      "TYPE": "RESOURCE_ID",
-      "VALUE": "car_ui_toolbar_nav_icon_container",
-      "PACKAGE": "com.android.car.dialer"
+      "TYPE": "DESCRIPTION",
+      "VALUE": "Back"
     },
     "CONTACT_SETTING_SCROLL_FORWARD": {
       "TYPE": "RESOURCE_ID",
@@ -248,8 +256,24 @@
     },
     "SEARCH_CONTACT": {
       "TYPE": "RESOURCE_ID",
-      "VALUE": "menu_item_search",
-      "PACKAGE": "com.android.car.dialer"
+      "VALUE": "car_ui_toolbar_menu_item_icon_container"
+    },
+    "CALL_MOBILE_BUTTON": {
+      "TYPE": "MULTIPLE",
+      "SPECIFIERS": [
+        {
+          "TYPE": "CLASS",
+          "VALUE": "android.view.ViewGroup"
+        },
+        {
+          "TYPE": "HAS_DESCENDANT",
+          "MAX_DEPTH": 1,
+          "DESCENDANT": {
+            "TYPE": "TEXT",
+            "VALUE": "Mobile"
+          }
+        }
+      ]
     },
     "CONTACT_SETTINGS": {
       "TYPE": "RESOURCE_ID",
@@ -1381,7 +1405,7 @@
     "MEDIA_SCROLL_DOWN_BUTTON": {
       "TYPE": "RESOURCE_ID",
       "VALUE": "car_ui_scrollbar_page_down",
-      "PACKAGE": "com.android.car.media"
+      "PACKAGE": "com.chassis.car.ui.plugin"
     },
     "MEDIA_SCROLL_UP_BUTTON": {
       "TYPE": "RESOURCE_ID",
@@ -1392,6 +1416,11 @@
       "TYPE": "RESOURCE_ID",
       "VALUE": "item_container",
       "PACKAGE": "com.android.car.media"
+    },
+    "MEDIA_PLAYLIST_ICON": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "car_ui_toolbar_menu_item_icon",
+      "PACKAGE": "com.chassis.car.ui.plugin"
     },
     "PREVIOUS_BUTTON_HOME_SCREEN": {
       "TYPE": "RESOURCE_ID",
@@ -1515,13 +1544,11 @@
     },
     "PAGE_TITLE": {
       "TYPE": "RESOURCE_ID",
-      "VALUE": "car_ui_toolbar_title",
-      "PACKAGE": "com.android.car.settings"
+      "VALUE": "car_ui_toolbar_title"
     },
     "PERMISSIONS_PAGE_TITLE": {
       "TYPE": "RESOURCE_ID",
-      "VALUE": "car_ui_toolbar_title",
-      "PACKAGE": "com.android.permissioncontroller"
+      "VALUE": "car_ui_toolbar_title"
     },
     "SETTINGS_TITLE_TEXT": {
       "TYPE": "TEXT",
@@ -2042,8 +2069,7 @@
           "SCROLL_DIRECTION": "VERTICAL",
           "SCROLL_ELEMENT": {
             "TYPE": "RESOURCE_ID",
-            "VALUE": "top_level_menu_container",
-            "PACKAGE": "com.android.car.settings"
+            "VALUE": "car_ui_internal_recycler_view"
           }
         }
       }
@@ -2077,8 +2103,7 @@
           "SCROLL_DIRECTION": "VERTICAL",
           "SCROLL_ELEMENT": {
             "TYPE": "RESOURCE_ID",
-            "VALUE": "top_level_menu_container",
-            "PACKAGE": "com.android.car.settings"
+            "VALUE": "car_ui_internal_recycler_view"
           }
         }
       }
@@ -2112,8 +2137,7 @@
           "SCROLL_DIRECTION": "VERTICAL",
           "SCROLL_ELEMENT": {
             "TYPE": "RESOURCE_ID",
-            "VALUE": "top_level_menu_container",
-            "PACKAGE": "com.android.car.settings"
+            "VALUE": "car_ui_internal_recycler_view"
           }
         }
       }
@@ -2147,8 +2171,7 @@
           "SCROLL_DIRECTION": "VERTICAL",
           "SCROLL_ELEMENT": {
             "TYPE": "RESOURCE_ID",
-            "VALUE": "top_level_menu_container",
-            "PACKAGE": "com.android.car.settings"
+            "VALUE": "car_ui_internal_recycler_view"
           }
         }
       }
@@ -2216,8 +2239,7 @@
           "SCROLL_DIRECTION": "VERTICAL",
           "SCROLL_ELEMENT": {
             "TYPE": "RESOURCE_ID",
-            "VALUE": "top_level_menu_container",
-            "PACKAGE": "com.android.car.settings"
+            "VALUE": "car_ui_internal_recycler_view"
           }
         }
       }
@@ -2321,8 +2343,7 @@
           "SCROLL_DIRECTION": "VERTICAL",
           "SCROLL_ELEMENT": {
             "TYPE": "RESOURCE_ID",
-            "VALUE": "top_level_menu_container",
-            "PACKAGE": "com.android.car.settings"
+            "VALUE": "car_ui_internal_recycler_view"
           },
           "SCROLL_MARGIN": "8",
           "SCROLL_WAIT_TIME": "3"

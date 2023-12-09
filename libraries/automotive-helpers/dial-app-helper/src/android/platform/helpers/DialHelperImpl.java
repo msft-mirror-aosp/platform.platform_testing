@@ -86,6 +86,28 @@ public class DialHelperImpl extends AbstractStandardAppHelper implements IAutoDi
     }
 
     /** {@inheritDoc} */
+    @Override
+    public void pressMobileCallOnContact() {
+        BySelector mobileCallButtonSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.CALL_MOBILE_BUTTON);
+
+        UiObject2 mobileCallButton = getSpectatioUiUtil().findUiObject(mobileCallButtonSelector);
+
+        if (mobileCallButton != null) getSpectatioUiUtil().clickAndWait(mobileCallButton);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void pressContactResult(String expectedName) {
+        BySelector searchResultSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.CONTACT_SEARCH_RESULT);
+
+        UiObject2 searchResult = getSpectatioUiUtil().findUiObject(searchResultSelector);
+
+        if (searchResult != null) getSpectatioUiUtil().clickAndWait(searchResult);
+    }
+
+    /** {@inheritDoc} */
     public void open() {
         getSpectatioUiUtil().pressHome();
         getSpectatioUiUtil().wait1Second();
@@ -196,6 +218,17 @@ public class DialHelperImpl extends AbstractStandardAppHelper implements IAutoDi
         UiObject2 dialedNumber = getSpectatioUiUtil().findUiObject(dialedNumberSelector);
         getSpectatioUiUtil()
                 .validateUiObject(dialedNumber, AutomotiveConfigConstants.DIALED_CONTACT_TITLE);
+        return dialedNumber.getText();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String getDialingNumber() {
+        BySelector dialedNumberSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.DIALING_NUMBER);
+        UiObject2 dialedNumber = getSpectatioUiUtil().findUiObject(dialedNumberSelector);
+        getSpectatioUiUtil()
+                .validateUiObject(dialedNumber, AutomotiveConfigConstants.DIALING_NUMBER);
         return dialedNumber.getText();
     }
 
@@ -328,12 +361,12 @@ public class DialHelperImpl extends AbstractStandardAppHelper implements IAutoDi
     /** {@inheritDoc} */
     public String getFirstSearchResult() {
         BySelector searchResultSelector =
-                getUiElementFromConfig(AutomotiveConfigConstants.SEARCH_RESULT);
+                getUiElementFromConfig(AutomotiveConfigConstants.CONTACT_SEARCH_RESULT_NAME);
         UiObject2 searchResult = getSpectatioUiUtil().findUiObject(searchResultSelector);
         getSpectatioUiUtil()
-                .validateUiObject(searchResult, AutomotiveConfigConstants.SEARCH_RESULT);
+                .validateUiObject(
+                        searchResult, AutomotiveConfigConstants.CONTACT_SEARCH_RESULT_NAME);
         String result = searchResult.getText();
-        exitSearchResultPage();
         return result;
     }
 

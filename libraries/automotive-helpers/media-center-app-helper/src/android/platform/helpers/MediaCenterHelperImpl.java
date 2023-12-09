@@ -704,4 +704,30 @@ public class MediaCenterHelperImpl extends AbstractStandardAppHelper implements 
                 getUiElementFromConfig(AutomotiveConfigConstants.MOW_PLAYING_LABEL);
         return getSpectatioUiUtil().hasUiElement(isNowPlayingLabel);
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isPlaylistIconVisible() {
+        BySelector playlistIcon =
+                getUiElementFromConfig(AutomotiveConfigConstants.MEDIA_PLAYLIST_ICON);
+        return getSpectatioUiUtil().hasUiElement(playlistIcon);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void clickOnPlaylistIcon() {
+        BySelector playlistIcon =
+                getUiElementFromConfig(AutomotiveConfigConstants.MEDIA_PLAYLIST_ICON);
+        UiObject2 playlistIconObject =
+                getSpectatioUiUtil().findUiObject(playlistIcon);
+        getSpectatioUiUtil()
+                .validateUiObject(
+                        playlistIconObject,
+                        AutomotiveConfigConstants.MEDIA_PLAYLIST_ICON);
+        getSpectatioUiUtil().clickAndWait(playlistIconObject);
+    }
 }

@@ -22,7 +22,7 @@ BT_DEFAULT_TIMEOUT = 15
 WAIT_ONE_SEC = 1
 WAIT_TWO_SECONDS = 2
 WAIT_THIRTY_SECONDS = 30
-SYNC_WAIT_TIME = 30 # Sometimes syncing between devices can take a while
+SYNC_WAIT_TIME = 15 # Sometimes syncing between devices can take a while
 DEVICE_CONNECT_WAIT_TIME = 20 # Waiting for device pairing to complete.
 MOBILE_DEVICE_NAME = 'target'
 AUTOMOTIVE_DEVICE_NAME = 'discoverer'
@@ -124,3 +124,4 @@ TIMEZONE_DICT = {
 }
 CLEAR_MESSAGING_APP = 'pm clear com.google.android.apps.messaging'
 DELETE_MESSAGING_DB = 'rm /data/data/com.android.providers.telephony/databases/mmssms.db'
+OPEN_NOTIFICATION = 'service call statusbar 1'

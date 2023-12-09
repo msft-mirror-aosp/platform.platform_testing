@@ -18,6 +18,8 @@ package com.google.android.mobly.snippet.bundled;
 
 import android.content.Context;
 import android.os.Build;
+import android.platform.helpers.HelperAccessor;
+import android.platform.helpers.IAutoDialHelper;
 import android.telephony.SubscriptionManager;
 import android.telephony.TelephonyManager;
 
@@ -31,10 +33,13 @@ public class PhoneSnippet implements Snippet {
 
     private final TelephonyManager mTelephonyManager;
     private final SubscriptionManager mSubscriptionManager;
+    private final HelperAccessor<IAutoDialHelper> mDialerHelper =
+            new HelperAccessor<>(IAutoDialHelper.class);
 
     public PhoneSnippet() {
         Context context = InstrumentationRegistry.getInstrumentation().getContext();
         mTelephonyManager = context.getSystemService(TelephonyManager.class);
+
         mSubscriptionManager =
                 (SubscriptionManager)
                         context.getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE);
@@ -50,6 +55,12 @@ public class PhoneSnippet implements Snippet {
         } else {
             return mTelephonyManager.getLine1Number();
         }
+    }
+
+    /** Press the device prompt on screen */
+    @Rpc(description = "Press 'Device' on a prompt, if present.")
+    public void pressDevice() {
+        mDialerHelper.get().pressDeviceOnPrompt();
     }
 
     @Override

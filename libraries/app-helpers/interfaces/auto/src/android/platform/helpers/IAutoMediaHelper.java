@@ -294,4 +294,18 @@ public interface IAutoMediaHelper extends IAppHelper, Scrollable {
      * <p>This method is return is "Now Playing" label visible.
      */
     boolean isNowPlayingLabelVisible();
+
+    /**
+     * Setup expectations: Bluetooth Audio track maximized.
+     *
+     * <p>This method is return is Playlist icon visible.
+     */
+    boolean isPlaylistIconVisible();
+
+    /**
+     * Setup expectations: Bluetooth Audio track maximized.
+     *
+     * <p>This method is used to click on playlist icon.
+     */
+    void clickOnPlaylistIcon();
 }

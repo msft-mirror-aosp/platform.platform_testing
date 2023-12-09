@@ -232,3 +232,17 @@ class MediaUtils:
         logging.info("<Now Playing> label displayed: <%s>",
                      actual_is_now_playing_label_display_status)
         return actual_is_now_playing_label_display_status
+
+    # Check is PLAYLIST icon visible
+    def is_playlist_icon_visible(self):
+        logging.info("Checking is Playlist icon displayed on HU")
+        actual_is_playlist_icon_displayed = self.discoverer.mbs.isPlaylistIconVisible()
+        logging.info("Playlist icon displayed: <%s>",
+                     actual_is_playlist_icon_displayed)
+        return actual_is_playlist_icon_displayed
+
+    # Click on Playlist icon
+    def click_on_playlist_icon(self):
+        logging.info("Click on Playlist icon on HU")
+        self.discoverer.mbs.clickOnPlaylistIcon()
+

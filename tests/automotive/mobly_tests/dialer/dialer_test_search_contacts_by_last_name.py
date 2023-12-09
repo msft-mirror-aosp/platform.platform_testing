@@ -49,7 +49,7 @@ class ContactSearchByLastNameTest(bluetooth_base_test.BluetoothBaseTest):
     self.call_utils.search_contact_by_name(
         expected_last_name
     )
-    self.call_utils.verify_search_result_contain_target_search(
+    self.call_utils.verify_search_results_contain_target_search(
         expected_last_name
     )
 

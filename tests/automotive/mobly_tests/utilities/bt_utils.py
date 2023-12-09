@@ -95,7 +95,7 @@ class BTUtils:
         # Discovery of target device is tried 5 times.
         discovered_devices = self.discoverer.mbs.btDiscoverAndGetResults()
         self.discoverer.mbs.btPairDevice(target_address)
-        logging.info('Allowing time for contacts to sync.')
+        logging.info('Allowing time for contacts to sync')
         time.sleep(constants.SYNC_WAIT_TIME)
         self.press_allow_on_phone()
         paired_devices = self.discoverer.mbs.btGetPairedDevices()
