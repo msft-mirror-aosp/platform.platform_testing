@@ -17,9 +17,7 @@
 package android.tools.device.traces.parsers
 
 import android.tools.common.Logger
-import android.tools.common.io.Reader
 import android.tools.common.traces.DeviceStateDump
-import android.tools.common.traces.DeviceTraceDump
 import android.tools.common.traces.NullableDeviceStateDump
 import android.tools.common.traces.surfaceflinger.LayerTraceEntry
 import android.tools.common.traces.surfaceflinger.LayersTrace
@@ -94,25 +92,6 @@ class DeviceDumpParser {
                     nullableDump.wmState ?: error("WMState dump missing"),
                     nullableDump.layerState ?: error("Layer State dump missing")
                 )
-            }
-        }
-
-        /**
-         * Creates a device state dump containing the WindowManager and Layers trace obtained from a
-         * regular trace. The parsed traces may contain a multiple [WindowManagerState] or
-         * [LayerTraceEntry].
-         *
-         * @param reader trace reader
-         * @param clearCache If the caching used while parsing the proto should be
-         *
-         * ```
-         *                               cleared or remain in memory
-         * ```
-         */
-        @JvmStatic
-        fun fromTrace(reader: Reader): DeviceTraceDump {
-            return Logger.withTracing("fromTrace") {
-                DeviceTraceDump(reader.readWmTrace(), reader.readLayersTrace())
             }
         }
     }

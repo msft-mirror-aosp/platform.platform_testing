@@ -16,8 +16,7 @@
 
 package android.tools.device.traces.monitors
 
-import android.tools.common.traces.DeviceTraceDump
-import android.tools.device.traces.parsers.DeviceDumpParser
+import android.tools.common.io.Reader
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.UiDevice
 import com.google.common.truth.Truth
@@ -38,24 +37,13 @@ class MonitorUtilsTest {
         validateTrace(trace)
     }
 
-    @Test
-    fun recordTraces() {
-        val trace = recordTraces {
-            device.pressHome()
-            device.pressRecentApps()
-        }
-
-        val dump = DeviceDumpParser.fromTrace(trace)
-        validateTrace(dump)
-    }
-
-    private fun validateTrace(dump: DeviceTraceDump) {
+    private fun validateTrace(dump: Reader) {
         Truth.assertWithMessage("Could not obtain SF trace")
-            .that(dump.layersTrace?.entries ?: emptyArray())
+            .that(dump.readLayersTrace()?.entries ?: emptyArray())
             .asList()
             .isNotEmpty()
         Truth.assertWithMessage("Could not obtain WM trace")
-            .that(dump.wmTrace?.entries ?: emptyArray())
+            .that(dump.readWmTrace()?.entries ?: emptyArray())
             .asList()
             .isNotEmpty()
     }

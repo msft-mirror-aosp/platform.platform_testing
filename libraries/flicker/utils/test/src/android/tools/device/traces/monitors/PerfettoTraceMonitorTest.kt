@@ -32,7 +32,7 @@ import org.junit.runners.MethodSorters
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class PerfettoTraceMonitorTest : TraceMonitorTest<PerfettoTraceMonitor>() {
-    override val traceType = TraceType.SF // TODO: ???
+    override val traceType = TraceType.SF
     override fun getMonitor() = PerfettoTraceMonitor().enableLayersTrace().enableTransactionsTrace()
 
     override fun assertTrace(traceData: ByteArray) {
@@ -47,18 +47,6 @@ class PerfettoTraceMonitorTest : TraceMonitorTest<PerfettoTraceMonitor>() {
         }
 
         Truth.assertWithMessage("Could not obtain layers trace").that(trace.entries).isNotEmpty()
-    }
-
-    @Test
-    fun withTransactionsTracingTest() {
-        val trace = withTransactionsTracing {
-            device.pressHome()
-            device.pressRecentApps()
-        }
-
-        Truth.assertWithMessage("Could not obtain transactions trace")
-            .that(trace.entries)
-            .isNotEmpty()
     }
 
     @Test
