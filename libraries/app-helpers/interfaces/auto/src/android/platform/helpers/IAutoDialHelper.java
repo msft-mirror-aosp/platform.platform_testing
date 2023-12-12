@@ -302,6 +302,13 @@ public interface IAutoDialHelper extends IAppHelper, Scrollable {
     List<String> getListOfAllVisibleContacts();
 
     /**
+     * Setup expectations: The call history view is open.
+     *
+     * @return - The number of call histrory entries currently on screen.
+     */
+    int getNumberOfCallHistoryEntries();
+
+    /**
      * Setup expectations: bluetooth is off
      *
      * <p>This method is used for checking if error message is displaye when bluetooth is off

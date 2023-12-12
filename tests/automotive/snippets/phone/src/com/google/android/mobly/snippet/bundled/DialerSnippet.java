@@ -100,6 +100,12 @@ public class DialerSnippet implements Snippet {
         return mDialerHelper.get().getRecentCallHistory();
     }
 
+    /** RPC to get the number of call history entries */
+    @Rpc(description = "Get the number of entries in the display call history.")
+    public int getNumCallHistoryEntries() {
+        return mDialerHelper.get().getNumberOfCallHistoryEntries();
+    }
+
     @Rpc(
             description =
                     "Call contact from list open in foreground e.g. Favorites, Recents, Contacts.")

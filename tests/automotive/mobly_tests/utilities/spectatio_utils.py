@@ -411,6 +411,8 @@ class CallUtils:
         )
         return actual_recent_call_from_history
 
+
+
     def verify_last_dialed_number(self, expected_last_dialed_number):
         actual_last_dialed_number = self.get_recent_call_history()
         actual_last_dialed_number = ''.join(

@@ -120,6 +120,16 @@ public class DialHelperImpl extends AbstractStandardAppHelper implements IAutoDi
 
     /** {@inheritDoc} */
     @Override
+    public int getNumberOfCallHistoryEntries() {
+        BySelector historyEntrySelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.CALL_HISTORY_INFO);
+        ArrayList<UiObject2> callEntries =
+                new ArrayList<UiObject2>(getSpectatioUiUtil().findUiObjects(historyEntrySelector));
+        return callEntries.size();
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public String getPackage() {
         return getPackageFromConfig(AutomotiveConfigConstants.DIAL_PACKAGE);
     }

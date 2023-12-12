@@ -802,8 +802,7 @@
     },
     "NOTIFICATION_SETTINGS_LAYOUT": {
       "TYPE": "RESOURCE_ID",
-      "VALUE": "car_ui_base_layout_content_container",
-      "PACKAGE": "com.android.car.settings"
+      "VALUE": "car_ui_base_layout_content_container"
     },
     "NOTIFICATION_SETTINGS_TITLE": {
       "TYPE": "TEXT",
@@ -858,7 +857,7 @@
     },
     "STATUS_BAR_BLUETOOTH_SETTINGS_PAGE_TITLE": {
       "TYPE": "TEXT",
-      "VALUE": "Bluetooth"
+      "VALUE": "Connected devices"
     },
     "BT_CONNECTED_STATUS": {
       "TYPE": "TEXT",
