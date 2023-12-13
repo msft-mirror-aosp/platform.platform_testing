@@ -36,7 +36,7 @@ FIRST_DIGIT_OF_SEARCH_CONTACT_NUMBER = "6"
 EXPECTED_PHONE_NUMBER = "611"
 ROOT = "root"
 DATE_CMD = "date"
-
+DEFAULT_DIAL_PAD_ENTRY = "Dial a number"
 # The word or phrase present in a device summary that is connected.
 CONNECTED_SUMMARY_STATUS = "Connected"
 DISCONNECTED_SUMMARY_STATUS = "Disconnected"

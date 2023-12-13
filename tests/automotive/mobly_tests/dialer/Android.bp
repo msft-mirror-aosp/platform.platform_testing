@@ -508,6 +508,34 @@ python_test_host {
     main: "dialer_test_search_contacts_and_call.py",
     srcs: ["dialer_test_search_contacts_and_call.py"],
     libs: [
+            "mobly",
+            "utilities",
+            "bluetooth_test"
+    ],
+    test_suites: [
+        "catbox",
+    ],
+    test_options: {
+        unit_test: false,
+    },
+    data: [
+        // Package the snippet with the mobly test
+        ":AutomotiveSnippet",
+        ":PhoneSnippet",
+    ],
+    version: {
+        py3: {
+            embedded_launcher: true,
+        },
+    },
+}
+
+python_test_host {
+    name: "BTDialerPageRefresh",
+    main: "dialer_test_page_refresh.py",
+    srcs: ["dialer_test_page_refresh.py"],
+
+    libs: [
         "mobly",
         "utilities",
         "bluetooth_test"

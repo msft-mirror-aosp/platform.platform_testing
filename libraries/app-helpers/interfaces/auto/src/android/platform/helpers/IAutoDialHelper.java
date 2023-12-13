@@ -109,7 +109,7 @@ public interface IAutoDialHelper extends IAppHelper, Scrollable {
      *
      * <p>This method is used to get the number entered on dialpad
      */
-    String getDialInNumber();
+    String getNumberInDialPad();
 
     /**
      * Setup expectations: The app is open and there is an ongoing call.
@@ -259,6 +259,10 @@ public interface IAutoDialHelper extends IAppHelper, Scrollable {
      * @param contact Contact's details page to be opened.
      */
     void openDetailsPage(String contact);
+
+    /** Setup expectations: The dialer main page is open. Opens the dial pad screen. */
+    void openDialPad();
+
     /**
      * Setup expectations: The app is open.
      *

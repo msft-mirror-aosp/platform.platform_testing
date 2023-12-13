@@ -34,6 +34,7 @@ public class AutomotiveConfigConstants {
     public static final String DIAL_IN_NUMBER = "DIAL_IN_NUMBER";
     public static final String DIALED_CONTACT_TITLE = "DIALED_CONTACT_TITLE";
     public static final String SWITCH_TO_DIAL_PAD = "SWITCH_TO_DIAL_PAD";
+    public static final String DIAL_PAD_BUTTON = "DIAL_PAD_BUTTON";
     public static final String MUTE_CALL = "MUTE_CALL";
     public static final String CONTACT_LIST_SCROLL_ACTION = "CONTACT_LIST_SCROLL_ACTION";
     public static final String CONTACT_LIST_SCROLL_FORWARD = "CONTACT_LIST_SCROLL_FORWARD";

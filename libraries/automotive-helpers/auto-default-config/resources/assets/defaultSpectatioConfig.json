@@ -384,6 +384,23 @@
       "TYPE": "TEXT",
       "VALUE": "Dial.?pad"
     },
+    "DIAL_PAD_BUTTON": {
+      "TYPE": "MULTIPLE",
+      "SPECIFIERS": [
+        {
+          "TYPE": "CLASS",
+          "VALUE": "android.widget.LinearLayout"
+        },
+        {
+          "TYPE": "HAS_DESCENDANT",
+          "MAX_DEPTH": 2,
+          "DESCENDANT": {
+            "TYPE": "TEXT",
+            "VALUE": "Dialpad"
+          }
+        }
+      ]
+    },
     "FAVORITES_MENU": {
       "TYPE": "TEXT",
       "VALUE": "Favo.?rite.?"
