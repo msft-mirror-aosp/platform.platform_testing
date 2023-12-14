@@ -20,6 +20,7 @@ import tempfile
 # from xml import etree has a problem, don't use it.
 from xml.etree import ElementTree
 from mobly.controllers import android_device
+from mobly.controllers.android_device_lib import adb
 
 
 _FINSKY_CONFIG_FILE = '/data/data/com.android.vending/shared_prefs/finsky.xml'
@@ -107,7 +108,10 @@ class GmsAutoUpdatesUtil:
         The path to the updated configuration file.
     """
     path = os.path.join(tmp_dir, f'play_store_config_{name}.xml')
-    self._device.adb.pull([device_path, path])
+    try:
+      self._device.adb.pull([device_path, path])
+    except adb.AdbError as e:
+      self._device.log.warning('failed to pull %s: %s', device_path, e)
 
     config_doc = ElementTree.parse(path) if os.path.isfile(path) else None
 
