@@ -30,6 +30,7 @@ import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * {@link ValidateUiElement} is a deserializer that validates Ui Elements in Spectatio JSON Config
@@ -88,7 +89,7 @@ public class ValidateUiElement implements JsonDeserializer<UiElement> {
             List<UiElement> specifiers =
                     specifiersJson.asList().stream()
                             .map(element -> context.<UiElement>deserialize(element, typeOfT))
-                            .toList();
+                            .collect(Collectors.toList());
 
             int ancestorSpecifiers = 0;
             for (UiElement specifier : specifiers) {
@@ -267,7 +268,7 @@ public class ValidateUiElement implements JsonDeserializer<UiElement> {
                         .map(Entry::getKey)
                         .map(String::trim)
                         .filter(key -> !mSupportedProperties.contains(key))
-                        .toList();
+                        .collect(Collectors.toList());
         if (!unknownProperties.isEmpty()) {
             throw new RuntimeException(
                     String.format(
