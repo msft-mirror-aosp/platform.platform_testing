@@ -30,7 +30,7 @@ from utilities.common_utils import CommonUtils
 from bluetooth_sms_test import bluetooth_sms_base_test
 from mobly.controllers import android_device
 
-class SMSReadAutoSync(bluetooth_sms_base_test.BluetoothSMSBaseTest):
+class SMSReadMessageDBSync(bluetooth_sms_base_test.BluetoothSMSBaseTest):
 
     def setup_class(self):
         super().setup_class()
@@ -53,12 +53,17 @@ class SMSReadAutoSync(bluetooth_sms_base_test.BluetoothSMSBaseTest):
         self.call_utils.wait_with_log(30)
         self.target.load_snippet('mbs', android_device.MBS_PACKAGE)
 
+    def test_read_sms_messagedb_sync(self):
+        # Open the sms app
+        self.call_utils.open_sms_app()
+
+        # Verify that there is no new sms currently
+        #self.call_utils.verify_sms_app_unread_message(False)
+
         # send a new sms
         target_phone_number = self.target.mbs.getPhoneNumber()
         self.phone_notpaired.mbs.sendSms(target_phone_number,constants.SMS_TEXT)
         self.call_utils.wait_with_log(10)
-
-    def test_read_sms_auto_sync(self):
 
         # Verify the new UNREAD sms in IVI device
         self.call_utils.open_sms_app()
@@ -68,9 +73,10 @@ class SMSReadAutoSync(bluetooth_sms_base_test.BluetoothSMSBaseTest):
         self.call_utils.open_notification_on_phone(self.target)
         self.call_utils.wait_with_log(5)
         self.target.mbs.clickUIElementWithText(constants.SMS_TEXT)
-        self.call_utils.wait_with_log(5)
 
         # Verify the SYNC READ sms in IVI device
+        self.call_utils.press_home()
+        self.call_utils.open_sms_app()
         self.call_utils.verify_sms_app_unread_message(False)
         self.call_utils.verify_sms_preview_timestamp(True)
 
