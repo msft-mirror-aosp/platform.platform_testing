@@ -40,6 +40,8 @@ DEFAULT_DIAL_PAD_ENTRY = "Dial a number"
 # The word or phrase present in a device summary that is connected.
 CONNECTED_SUMMARY_STATUS = "Connected"
 DISCONNECTED_SUMMARY_STATUS = "Disconnected"
+DECLINE_CALL_TEXT = "Decline"
+ACCEPT_CALL_TEXT = "Answer"
 
 BTSNOOP_LOG_PATH_ON_DEVICE = '/data/misc/bluetooth/logs/btsnoop_hci.log'
 BTSNOOP_LAST_LOG_PATH_ON_DEVICE = (
@@ -126,3 +128,10 @@ TIMEZONE_DICT = {
 CLEAR_MESSAGING_APP = 'pm clear com.google.android.apps.messaging'
 DELETE_MESSAGING_DB = 'rm /data/data/com.android.providers.telephony/databases/mmssms.db'
 OPEN_NOTIFICATION = 'service call statusbar 1'
+
+# Dialer Page
+NO_PHONE_MESSAGE = "To complete your call, first connect your phone to your car via Bluetooth."
+DIALER_RECENTS_LABEL = "Recents"
+DIALER_CONTACTS_LABEL = "Contacts"
+DIALER_FAVORITES_LABEL = "Favorites"
+DIALER_DIALPAD_LABEL = "Dialpad"

@@ -37,7 +37,6 @@ class CallUtils:
     def __init__(self, device):
         self.device = device
 
-
     def device_displays_connected(self):
         """Assumes the device bluetooth connection settings page is open"""
         logging.info('Checking whether device is connected.')
@@ -106,6 +105,10 @@ class CallUtils:
         logging.info("Opening the dialpad")
         self.device.mbs.openDialPad()
 
+    def open_dialer_settings(self):
+        logging.info("Opening the dialer settings")
+        self.device.mbs.openDialerSettings()
+
     def open_phone_app(self):
         logging.info("Opening phone app")
         self.device.mbs.openPhoneApp()
@@ -121,6 +124,15 @@ class CallUtils:
         Navigate to the Bluetooth setting page"""
         logging.info("Opening bluetooth settings (via the Status Bar)")
         self.device.mbs.openBluetoothSettings()
+
+    def press_active_call_toggle(self):
+        logging.info("Pressing the Active Call toggle")
+        self.device.mbs.pressActiveCallToggle()
+
+    def open_dialer_settings(self):
+        """Open dialer settings"""
+        logging.info('Opening Dialer settings')
+        self.device.mbs.openDialerSettings()
 
     def press_bluetooth_toggle_on_device(self, device_name):
         logging.info('Attempting to press the bluetooth toggle on device: \'%s\'' % device_name)
@@ -139,6 +151,10 @@ class CallUtils:
         (to return the device to the home screen."""
         logging.info("Pressing home screen button")
         self.device.mbs.pressHomeScreen()
+
+    def press_phone_toggle_on_device(self, device_name):
+        logging.info('Attempting to press the media toggle on device: \'%s\'' % device_name)
+        self.device.mbs.pressPhoneToggleOnDevice(device_name)
 
     def device_displays_connected(self):
         """Assumes the device bluetooth connection settings page is open"""
@@ -546,6 +562,14 @@ class CallUtils:
     def is_bluetooth_button_enabled(self):
         logging.info('Is Bluetooth Button Enabled')
         return self.device.mbs.isBluetoothButtonEnabled()
+
+    def is_active_call_enabled(self):
+        logging.info("Verifying whether active call is enabled")
+        return self.device.mbs.isActiveCallEnabled()
+
+    def is_active_call_ongoing_full_screen(self):
+        logging.info("Verify whether an ongoing call is currently showing in full-screen mode")
+        return self.device.mbs.isOngoingCallInFullScreen()
 
     def is_bluetooth_phone_button_enabled(self):
         logging.info('Is Bluetooth Palette PhoneButton Enabled')
