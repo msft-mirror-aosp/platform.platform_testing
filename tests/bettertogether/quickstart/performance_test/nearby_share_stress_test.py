@@ -41,13 +41,13 @@ from performance_test import nc_constants
 from performance_test import nearby_connection_wrapper
 from performance_test import setup_utils
 
-_TEST_SCRIPT_VERSTION = '1.5'
+_TEST_SCRIPT_VERSTION = '1.6'
 
 _DELAY_BETWEEN_EACH_TEST_CYCLE = datetime.timedelta(seconds=5)
 _TRANSFER_FILE_SIZE_1GB = 1024 * 1024
 
 _PERFORMANCE_TEST_REPEAT_COUNT = 100
-_PERFORMANCE_TEST_MAX_CONSECUTIVE_ERROR = 10
+_PERFORMANCE_TEST_MAX_CONSECUTIVE_ERROR = 5
 
 
 class NearbyShareStressTest(nc_base_test.NCBaseTestClass):
@@ -223,10 +223,10 @@ class NearbyShareStressTest(nc_base_test.NCBaseTestClass):
         '0 test iterations': self.performance_test_iterations,
         '1 Completed WiFi transfer': f'{wifi_transfer_stats.success_count}',
         '2 failure counts': {
-            'discovery': discovery_stats.failure_count,
-            'connection': connection_stats.failure_count,
-            'upgrade': medium_upgrade_stats.failure_count,
-            'transfer': self.performance_test_iterations - (
+            '1 discovery': discovery_stats.failure_count,
+            '2 connection': connection_stats.failure_count,
+            '3 upgrade': medium_upgrade_stats.failure_count,
+            '4 transfer': self.performance_test_iterations - (
                 wifi_transfer_stats.success_count),
         },
         '3 50% and 95% of WiFi transfer speed (KBps)': (

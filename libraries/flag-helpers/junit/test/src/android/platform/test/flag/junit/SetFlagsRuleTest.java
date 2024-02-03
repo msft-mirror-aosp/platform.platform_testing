@@ -22,12 +22,13 @@ import static org.junit.Assert.assertTrue;
 
 import android.platform.test.flag.util.FlagSetException;
 
+import org.junit.AssumptionViolatedException;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-/** Unit tests for {@code ResetFlagsRule}. */
+/** Unit tests for {@code SetFlagsRule}. */
 @RunWith(Parameterized.class)
 public final class SetFlagsRuleTest {
 
@@ -187,6 +188,18 @@ public final class SetFlagsRuleTest {
                 () -> {
                     FakeFeatureFlags fakeFlagsImpl =
                             mSetFlagsRule.getFakeFeatureFlags(FakeFeatureFlags.class);
+                });
+    }
+
+    @Test
+    public void skipReadOnlyOptimizedFlag() {
+        FakeFeatureFlagsImpl fakeFlagsImpl =
+                (FakeFeatureFlagsImpl) mSetFlagsRule.getFakeFeatureFlags(FeatureFlags.class);
+        fakeFlagsImpl.readOnlyFlagSet.add(Flags.FLAG_FLAG_NAME3);
+        assertThrows(
+                AssumptionViolatedException.class,
+                () -> {
+                    mSetFlagsRule.enableFlags(Flags.FLAG_FLAG_NAME3);
                 });
     }
 
