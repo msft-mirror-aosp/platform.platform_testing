@@ -17,6 +17,11 @@
 package com.android.sts.common;
 
 import com.android.tradefed.device.ITestDevice;
+import com.android.tradefed.util.CommandResult;
+import com.android.tradefed.util.CommandStatus;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /** Util to manage secondary user */
 public class UserUtils {
@@ -34,21 +39,28 @@ public class UserUtils {
         private boolean mSwitch; // Switch to newly created user
         private int mProfileOf; // Userid associated with managed user
         private int mTestUserId;
+        private Map<String, String> mUserRestrictions; // Map of user-restrictions for new user
 
         /**
          * Create an instance of secondary user.
          *
          * @param device the device {@link ITestDevice} to use.
-         * @throws IllegalArgumentException when {@code device} is null.
+         * @throws Exception
          */
-        public SecondaryUser(ITestDevice device) throws IllegalArgumentException {
+        public SecondaryUser(ITestDevice device) throws Exception {
             // Device should not be null
             if (device == null) {
                 throw new IllegalArgumentException("Device should not be null");
             }
 
+            // Check if device supports multiple users
+            if (!device.isMultiUserSupported()) {
+                throw new IllegalStateException("Device does not support multiple users");
+            }
+
             mDevice = device;
             mName = "testUser"; /* Default username */
+            mUserRestrictions = new HashMap<String, String>();
 
             // Set default value for all flags as false
             mIsDemo = false;
@@ -161,6 +173,17 @@ public class UserUtils {
         }
 
         /**
+         * Set user-restrictions on newly created secondary user.
+         * Note: Setting user-restrictions requires enabling root.
+         *
+         * @return this object for method chaining.
+         */
+        public SecondaryUser withUserRestrictions(Map<String, String> restrictions) {
+            mUserRestrictions.putAll(restrictions);
+            return this;
+        }
+
+        /**
          * Create a secondary user and if required, switch to it. Returns an Autocloseable that
          * removes the secondary user.
          *
@@ -185,16 +208,14 @@ public class UserUtils {
                             + mName;
 
             // Create a new user
-            final String output = mDevice.executeShellCommand(command);
-            if (output.startsWith("Success")) {
-                try {
-                    mTestUserId =
-                            Integer.parseInt(output.substring(output.lastIndexOf(" ")).trim());
-                } catch (NumberFormatException e) {
-                    throw new IllegalStateException(
-                            String.format("Failed to create user, due to : %s", output));
-                }
+            final CommandResult output = mDevice.executeShellV2Command(command);
+            if (output.getStatus() != CommandStatus.SUCCESS) {
+                throw new IllegalStateException(
+                        String.format("Failed to create user, due to : %s", output.toString()));
             }
+            final String outputStdout = output.getStdout();
+            mTestUserId =
+                    Integer.parseInt(outputStdout.substring(outputStdout.lastIndexOf(" ")).trim());
 
             AutoCloseable asSecondaryUser =
                     () -> {
@@ -219,12 +240,32 @@ public class UserUtils {
                         String.format("Failed to start the user: %s", mTestUserId));
             }
 
+            // Add user-restrictions to newly created secondary user
+            if (!mUserRestrictions.isEmpty()) {
+                if (!mDevice.isAdbRoot()) {
+                    throw new IllegalStateException("Setting user-restriction requires root");
+                }
+
+                for (Map.Entry<String, String> entry : mUserRestrictions.entrySet()) {
+                    final CommandResult cmdOutput =
+                            mDevice.executeShellV2Command(
+                                    String.format(
+                                            "pm set-user-restriction --user %d %s %s",
+                                            mTestUserId, entry.getKey(), entry.getValue()));
+                    if (cmdOutput.getStatus() != CommandStatus.SUCCESS) {
+                        asSecondaryUser.close();
+                        throw new IllegalStateException(
+                                String.format(
+                                        "Failed to set user restriction %s value %s with"
+                                                + " message %s",
+                                        entry.getKey(), entry.getValue(), cmdOutput.toString()));
+                    }
+                }
+            }
+
             // Switch to the user if required and the user type is neither managed nor
             // pre-created-only
-            if (mSwitch
-                    && !mIsManaged
-                    && !mIsPreCreateOnly
-                    && !mDevice.switchUser(mTestUserId)) {
+            if (mSwitch && !mIsManaged && !mIsPreCreateOnly && !mDevice.switchUser(mTestUserId)) {
                 // Stop and remove the user
                 asSecondaryUser.close();
                 throw new IllegalStateException(

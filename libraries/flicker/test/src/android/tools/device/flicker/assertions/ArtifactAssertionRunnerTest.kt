@@ -16,19 +16,18 @@
 
 package android.tools.device.flicker.assertions
 
-import android.tools.CleanFlickerEnvironmentRule
-import android.tools.assertExceptionMessage
-import android.tools.common.Tag
-import android.tools.common.assertions.Consts
 import android.tools.common.flicker.assertions.AssertionData
-import android.tools.common.flicker.subject.FlickerSubject
-import android.tools.common.flicker.subject.events.EventLogSubject
+import android.tools.common.flicker.assertions.Consts
+import android.tools.common.flicker.assertions.SubjectsParser
+import android.tools.common.flicker.subject.exceptions.SimpleFlickerAssertionError
 import android.tools.common.io.RunStatus
 import android.tools.device.traces.deleteIfExists
 import android.tools.device.traces.io.IResultData
 import android.tools.device.traces.monitors.events.EventLogMonitor
-import android.tools.newTestResultWriter
-import android.tools.outputFileName
+import android.tools.utils.CleanFlickerEnvironmentRule
+import android.tools.utils.assertExceptionMessage
+import android.tools.utils.newTestResultWriter
+import android.tools.utils.outputFileName
 import com.google.common.truth.Truth
 import org.junit.Before
 import org.junit.ClassRule
@@ -45,7 +44,7 @@ class ArtifactAssertionRunnerTest {
     private val assertionSuccess = newAssertionData { executionCount++ }
     private val assertionFailure = newAssertionData {
         executionCount++
-        error(Consts.FAILURE)
+        throw SimpleFlickerAssertionError(Consts.FAILURE)
     }
 
     @Before
@@ -128,8 +127,12 @@ class ArtifactAssertionRunnerTest {
     }
 
     companion object {
-        private fun newAssertionData(assertion: (FlickerSubject) -> Unit) =
-            AssertionData(Tag.ALL, EventLogSubject::class, assertion)
+        private fun newAssertionData(assertion: () -> Unit) =
+            object : AssertionData {
+                override fun checkAssertion(run: SubjectsParser) {
+                    assertion.invoke()
+                }
+            }
 
         private fun newResultReaderWithEmptySubject(): IResultData {
             val writer = newTestResultWriter()
@@ -139,6 +142,6 @@ class ArtifactAssertionRunnerTest {
             return writer.write()
         }
 
-        @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
+        @ClassRule @JvmField val ENV_CLEANUP = CleanFlickerEnvironmentRule()
     }
 }

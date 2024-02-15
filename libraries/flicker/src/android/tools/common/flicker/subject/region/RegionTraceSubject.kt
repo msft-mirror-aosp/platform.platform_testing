@@ -19,14 +19,14 @@ package android.tools.common.flicker.subject.region
 import android.tools.common.datatypes.Rect
 import android.tools.common.datatypes.Region
 import android.tools.common.flicker.subject.FlickerTraceSubject
-import android.tools.common.io.IReader
+import android.tools.common.io.Reader
 import android.tools.common.traces.region.RegionTrace
 
 /**
  * Subject for [RegionTrace] objects, used to make assertions over behaviors that occur on a
  * sequence of regions.
  */
-class RegionTraceSubject(val trace: RegionTrace, override val reader: IReader? = null) :
+class RegionTraceSubject(val trace: RegionTrace, override val reader: Reader? = null) :
     FlickerTraceSubject<RegionSubject>(), IRegionSubject {
 
     override val subjects by lazy { trace.entries.map { RegionSubject(it, it.timestamp, reader) } }
@@ -37,6 +37,11 @@ class RegionTraceSubject(val trace: RegionTrace, override val reader: IReader? =
         } else {
             "[${trace.components}]"
         }
+
+    /** {@inheritDoc} */
+    override fun then(): RegionTraceSubject {
+        return super.then() as RegionTraceSubject
+    }
 
     /** {@inheritDoc} */
     override fun isHigherOrEqual(other: Rect): RegionTraceSubject =
@@ -141,5 +146,21 @@ class RegionTraceSubject(val trace: RegionTrace, override val reader: IReader? =
         addAssertion("isSameAspectRatio($other, $componentsAsString") {
             it.isSameAspectRatio(other, threshold)
         }
+    }
+
+    override fun hasSameLeftPosition(displayRect: Rect): RegionTraceSubject = apply {
+        addAssertion("hasSameLeftPosition($displayRect") { it.hasSameLeftPosition(displayRect) }
+    }
+
+    override fun hasSameBottomPosition(displayRect: Rect): RegionTraceSubject = apply {
+        addAssertion("hasSameBottomPosition($displayRect") { it.hasSameBottomPosition(displayRect) }
+    }
+
+    override fun hasSameRightPosition(displayRect: Rect): RegionTraceSubject = apply {
+        addAssertion("hasSameRightPosition($displayRect") { it.hasSameRightPosition(displayRect) }
+    }
+
+    override fun hasSameTopPosition(displayRect: Rect): RegionTraceSubject = apply {
+        addAssertion("hasSameTopPosition($displayRect") { it.hasSameTopPosition(displayRect) }
     }
 }

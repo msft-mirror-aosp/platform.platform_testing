@@ -36,7 +36,9 @@ import androidx.test.uiautomator.UiObjectNotFoundException;
 import java.util.List;
 import java.util.regex.Pattern;
 
-/** Helper class for functional test for Mediacenter test */
+/**
+ * Helper class for functional test for Mediacenter test
+ */
 public class MediaCenterHelperImpl extends AbstractStandardAppHelper implements IAutoMediaHelper {
 
     private MediaSessionManager mMediaSessionManager;
@@ -71,44 +73,58 @@ public class MediaCenterHelperImpl extends AbstractStandardAppHelper implements 
                         getActionFromConfig(AutomotiveConfigConstants.MEDIA_APP_SCROLL_DIRECTION));
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void exit() {
         getSpectatioUiUtil().pressHome();
         getSpectatioUiUtil().wait1Second();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getLauncherName() {
         throw new UnsupportedOperationException("Operation not supported.");
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void dismissInitialDialogs() {
         // Nothing to dismiss
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean scrollUpOnePage() {
         return false;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean scrollDownOnePage() {
         return false;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getPackage() {
         return getPackageFromConfig(AutomotiveConfigConstants.MEDIA_CENTER_PACKAGE);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void open() {
         openMediaApp();
     }
@@ -121,121 +137,160 @@ public class MediaCenterHelperImpl extends AbstractStandardAppHelper implements 
                         getCommandFromConfig(AutomotiveConfigConstants.MEDIA_LAUNCH_COMMAND));
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void playMedia() {
         if (!isPlaying()) {
             BySelector playButtonSelector =
                     getUiElementFromConfig(AutomotiveConfigConstants.PLAY_PAUSE_BUTTON);
             UiObject2 playButton = getSpectatioUiUtil().findUiObject(playButtonSelector);
-            validateUiObject(playButton, AutomotiveConfigConstants.PLAY_PAUSE_BUTTON);
+            getSpectatioUiUtil()
+                    .validateUiObject(playButton, AutomotiveConfigConstants.PLAY_PAUSE_BUTTON);
             getSpectatioUiUtil().clickAndWait(playButton);
             getSpectatioUiUtil().wait5Seconds();
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void playPauseMediaFromHomeScreen() {
         BySelector playButtonSelector =
                 getUiElementFromConfig(AutomotiveConfigConstants.PLAY_PAUSE_BUTTON_HOME_SCREEN);
         UiObject2 playButtonHomeScreen = getSpectatioUiUtil().findUiObject(playButtonSelector);
-        validateUiObject(
-                playButtonHomeScreen, AutomotiveConfigConstants.PLAY_PAUSE_BUTTON_HOME_SCREEN);
+        getSpectatioUiUtil()
+                .validateUiObject(
+                        playButtonHomeScreen,
+                        AutomotiveConfigConstants.PLAY_PAUSE_BUTTON_HOME_SCREEN);
         getSpectatioUiUtil().clickAndWait(playButtonHomeScreen);
         getSpectatioUiUtil().wait5Seconds();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void pauseMedia() {
         BySelector pauseButtonSelector =
                 getUiElementFromConfig(AutomotiveConfigConstants.PLAY_PAUSE_BUTTON);
         UiObject2 pauseButton = getSpectatioUiUtil().findUiObject(pauseButtonSelector);
-        validateUiObject(pauseButton, AutomotiveConfigConstants.PLAY_PAUSE_BUTTON);
+        getSpectatioUiUtil()
+                .validateUiObject(pauseButton, AutomotiveConfigConstants.PLAY_PAUSE_BUTTON);
         getSpectatioUiUtil().clickAndWait(pauseButton);
         getSpectatioUiUtil().wait5Seconds();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void clickNextTrack() {
         BySelector nextTrackButtonSelector =
                 getUiElementFromConfig(AutomotiveConfigConstants.NEXT_BUTTON);
         UiObject2 nextTrackButton = getSpectatioUiUtil().findUiObject(nextTrackButtonSelector);
-        validateUiObject(nextTrackButton, AutomotiveConfigConstants.NEXT_BUTTON);
+        getSpectatioUiUtil()
+                .validateUiObject(nextTrackButton, AutomotiveConfigConstants.NEXT_BUTTON);
         getSpectatioUiUtil().clickAndWait(nextTrackButton);
         getSpectatioUiUtil().wait5Seconds();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void clickNextTrackFromHomeScreen() {
         BySelector nextTrackButtonSelector =
                 getUiElementFromConfig(AutomotiveConfigConstants.NEXT_BUTTON_HOME_SCREEN);
         UiObject2 nextTrackHomeScreenButton =
                 getSpectatioUiUtil().findUiObject(nextTrackButtonSelector);
-        validateUiObject(
-                nextTrackHomeScreenButton, AutomotiveConfigConstants.NEXT_BUTTON_HOME_SCREEN);
+        getSpectatioUiUtil()
+                .validateUiObject(
+                        nextTrackHomeScreenButton,
+                        AutomotiveConfigConstants.NEXT_BUTTON_HOME_SCREEN);
         getSpectatioUiUtil().clickAndWait(nextTrackHomeScreenButton);
         getSpectatioUiUtil().wait5Seconds();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void clickPreviousTrack() {
         BySelector previousTrackButtonSelector =
                 getUiElementFromConfig(AutomotiveConfigConstants.PREVIOUS_BUTTON);
         UiObject2 previousTrackMediaCenterButton =
                 getSpectatioUiUtil().findUiObject(previousTrackButtonSelector);
-        validateUiObject(previousTrackMediaCenterButton, AutomotiveConfigConstants.PREVIOUS_BUTTON);
+        getSpectatioUiUtil()
+                .validateUiObject(
+                        previousTrackMediaCenterButton, AutomotiveConfigConstants.PREVIOUS_BUTTON);
         getSpectatioUiUtil().clickAndWait(previousTrackMediaCenterButton);
         getSpectatioUiUtil().wait5Seconds();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void clickPreviousTrackFromHomeScreen() {
         BySelector previousTrackButtonSelector =
                 getUiElementFromConfig(AutomotiveConfigConstants.PREVIOUS_BUTTON_HOME_SCREEN);
         UiObject2 previousTrackHomeScreenButton =
                 getSpectatioUiUtil().findUiObject(previousTrackButtonSelector);
-        validateUiObject(previousTrackHomeScreenButton, AutomotiveConfigConstants.PREVIOUS_BUTTON);
+        getSpectatioUiUtil()
+                .validateUiObject(
+                        previousTrackHomeScreenButton, AutomotiveConfigConstants.PREVIOUS_BUTTON);
         getSpectatioUiUtil().clickAndWait(previousTrackHomeScreenButton);
         getSpectatioUiUtil().wait5Seconds();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void clickShuffleAll() {
         BySelector shufflePlaylistButtonSelector =
                 getUiElementFromConfig(AutomotiveConfigConstants.SHUFFLE_BUTTON);
         UiObject2 shufflePlaylistButton =
                 getSpectatioUiUtil().findUiObject(shufflePlaylistButtonSelector);
-        validateUiObject(shufflePlaylistButton, AutomotiveConfigConstants.SHUFFLE_BUTTON);
+        getSpectatioUiUtil()
+                .validateUiObject(shufflePlaylistButton, AutomotiveConfigConstants.SHUFFLE_BUTTON);
         getSpectatioUiUtil().clickAndWait(shufflePlaylistButton);
         getSpectatioUiUtil().wait5Seconds();
-        }
+    }
 
     /**
      * TODO - Keeping the empty functions for now, to avoid the compilation error in Vendor it will
      * be removed after vendor clean up (b/266449779)
      */
 
-    /** Click the nth instance among the visible menu items */
-    public void clickMenuItem(int instance) {}
+    /**
+     * Click the nth instance among the visible menu items
+     */
+    public void clickMenuItem(int instance) {
+    }
 
     /**
      * TODO - Keeping the empty functions for now, to avoid the compilation error in Vendor it will
      * be removed after vendor clean up (b/266449779)
      */
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public void openMenuWith(String... menuOptions) {}
+    public void openMenuWith(String... menuOptions) {
+    }
 
     /**
      * TODO - Keeping the empty functions for now, to avoid the compilation error in Vendor it will
      * be removed after vendor clean up (b/266449779)
      */
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public void openNowPlayingWith(String trackName) {}
+    public void openNowPlayingWith(String trackName) {
+    }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public String getMediaTrackName() {
         String track;
         BySelector mediaControlSelector =
@@ -250,14 +305,17 @@ public class MediaCenterHelperImpl extends AbstractStandardAppHelper implements 
         return track;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public String getMediaTrackNameFromHomeScreen() {
         String trackName;
         BySelector trackNameSelector =
                 getUiElementFromConfig(AutomotiveConfigConstants.TRACK_NAME_HOME_SCREEN);
         UiObject2 trackNamexTextHomeScreen = getSpectatioUiUtil().findUiObject(trackNameSelector);
-        validateUiObject(
-                trackNamexTextHomeScreen, AutomotiveConfigConstants.TRACK_NAME_HOME_SCREEN);
+        getSpectatioUiUtil()
+                .validateUiObject(
+                        trackNamexTextHomeScreen, AutomotiveConfigConstants.TRACK_NAME_HOME_SCREEN);
         trackName = trackNamexTextHomeScreen.getText();
         return trackName;
     }
@@ -268,9 +326,10 @@ public class MediaCenterHelperImpl extends AbstractStandardAppHelper implements 
                 getUiElementFromConfig(AutomotiveConfigConstants.TRACK_NAME_MINIMIZED_CONTROL);
         UiObject2 trackNameTextMinimizeControl =
                 getSpectatioUiUtil().findUiObject(trackNameSelector);
-        validateUiObject(
-                trackNameTextMinimizeControl,
-                AutomotiveConfigConstants.TRACK_NAME_MINIMIZED_CONTROL);
+        getSpectatioUiUtil()
+                .validateUiObject(
+                        trackNameTextMinimizeControl,
+                        AutomotiveConfigConstants.TRACK_NAME_MINIMIZED_CONTROL);
         trackName = trackNameTextMinimizeControl.getText();
         return trackName;
     }
@@ -279,17 +338,20 @@ public class MediaCenterHelperImpl extends AbstractStandardAppHelper implements 
         String trackName;
         BySelector trackNameSelector = getUiElementFromConfig(AutomotiveConfigConstants.TRACK_NAME);
         UiObject2 trackNameTextPlayback = getSpectatioUiUtil().findUiObject(trackNameSelector);
-        validateUiObject(trackNameTextPlayback, AutomotiveConfigConstants.TRACK_NAME);
+        getSpectatioUiUtil()
+                .validateUiObject(trackNameTextPlayback, AutomotiveConfigConstants.TRACK_NAME);
         trackName = trackNameTextPlayback.getText();
         return trackName;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void goBackToMediaHomePage() {
         minimizeNowPlaying();
         BySelector back_btnSelector = getUiElementFromConfig(AutomotiveConfigConstants.BACK_BUTTON);
         UiObject2 back_btn = getSpectatioUiUtil().findUiObject(back_btnSelector);
-        validateUiObject(back_btn, AutomotiveConfigConstants.BACK_BUTTON);
+        getSpectatioUiUtil().validateUiObject(back_btn, AutomotiveConfigConstants.BACK_BUTTON);
         while (back_btn != null) {
             getSpectatioUiUtil().clickAndWait(back_btn);
             getSpectatioUiUtil().wait5Seconds();
@@ -298,7 +360,9 @@ public class MediaCenterHelperImpl extends AbstractStandardAppHelper implements 
     }
 
     /** Minimize the Now Playing window. */
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void minimizeNowPlaying() {
         BySelector trackNameSelector = getUiElementFromConfig(AutomotiveConfigConstants.TRACK_NAME);
@@ -309,7 +373,9 @@ public class MediaCenterHelperImpl extends AbstractStandardAppHelper implements 
     }
 
     /** Maximize the Now Playing window. */
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void maximizeNowPlaying() {
         BySelector trackNameSelector =
@@ -336,7 +402,9 @@ public class MediaCenterHelperImpl extends AbstractStandardAppHelper implements 
         return menuListItem;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isPlaying() {
         List<MediaController> controllers = mMediaSessionManager.getActiveSessions(null);
@@ -347,24 +415,31 @@ public class MediaCenterHelperImpl extends AbstractStandardAppHelper implements 
         return state.getState() == PlaybackState.STATE_PLAYING;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getMediaAppTitle() {
         BySelector mediaAppTitleSelector =
                 getUiElementFromConfig(AutomotiveConfigConstants.MEDIA_APP_TITLE);
         UiObject2 mediaAppTitle = getSpectatioUiUtil().findUiObject(mediaAppTitleSelector);
-        validateUiObject(mediaAppTitle, AutomotiveConfigConstants.MEDIA_APP_TITLE);
+        getSpectatioUiUtil()
+                .validateUiObject(mediaAppTitle, AutomotiveConfigConstants.MEDIA_APP_TITLE);
         return mediaAppTitle.getText();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void openMediaAppMenuItems() {
         BySelector mediaDropDownMenuSelector =
                 getUiElementFromConfig(AutomotiveConfigConstants.MEDIA_APP_DROP_DOWN_MENU);
         List<UiObject2> menuItemElements =
                 getSpectatioUiUtil().findUiObjects(mediaDropDownMenuSelector);
-        validateUiObject(menuItemElements, AutomotiveConfigConstants.MEDIA_APP_DROP_DOWN_MENU);
+        getSpectatioUiUtil()
+                .validateUiObjects(
+                        menuItemElements, AutomotiveConfigConstants.MEDIA_APP_DROP_DOWN_MENU);
         if (menuItemElements.size() == 0) {
             throw new UnknownUiException("Unable to find Media drop down.");
         }
@@ -373,13 +448,17 @@ public class MediaCenterHelperImpl extends AbstractStandardAppHelper implements 
         getSpectatioUiUtil().clickAndWait(menuItemElements.get(positionOfMenuItemDropDown));
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean areMediaAppsPresent(List<String> mediaAppsNames) {
         BySelector mediaAppPageTitleSelector =
                 getUiElementFromConfig(AutomotiveConfigConstants.MEDIA_APPS_GRID_TITLE);
         UiObject2 mediaAppPageTitle = getSpectatioUiUtil().findUiObject(mediaAppPageTitleSelector);
-        validateUiObject(mediaAppPageTitle, AutomotiveConfigConstants.MEDIA_APPS_GRID_TITLE);
+        getSpectatioUiUtil()
+                .validateUiObject(
+                        mediaAppPageTitle, AutomotiveConfigConstants.MEDIA_APPS_GRID_TITLE);
         if (mediaAppsNames == null || mediaAppsNames.size() == 0) {
             return false;
         }
@@ -418,31 +497,59 @@ public class MediaCenterHelperImpl extends AbstractStandardAppHelper implements 
                 getUiElementFromConfig(AutomotiveConfigConstants.MEDIA_APP_DROP_DOWN_MENU);
         List<UiObject2> menuItemElements =
                 getSpectatioUiUtil().findUiObjects(menuItemElementSelector);
-        validateUiObject(menuItemElements, AutomotiveConfigConstants.MEDIA_APP_DROP_DOWN_MENU);
+        getSpectatioUiUtil()
+                .validateUiObjects(
+                        menuItemElements, AutomotiveConfigConstants.MEDIA_APP_DROP_DOWN_MENU);
         int settingsItemPosition = menuItemElements.size() - 2;
         getSpectatioUiUtil().clickAndWait(menuItemElements.get(settingsItemPosition));
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getMediaAppUserNotLoggedInErrorMessage() {
         BySelector noLoginMsgSelector =
                 getUiElementFromConfig(AutomotiveConfigConstants.MEDIA_APP_NO_LOGIN_MSG);
         UiObject2 noLoginMsg = getSpectatioUiUtil().findUiObject(noLoginMsgSelector);
-        validateUiObject(noLoginMsg, AutomotiveConfigConstants.MEDIA_APP_NO_LOGIN_MSG);
+        getSpectatioUiUtil()
+                .validateUiObject(noLoginMsg, AutomotiveConfigConstants.MEDIA_APP_NO_LOGIN_MSG);
         return noLoginMsg.getText();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void selectMediaTrack(String... menuOptions) {
         for (String option : menuOptions) {
             UiObject2 mediaTrack =
                     scrollAndFindApp(By.text(Pattern.compile(option, Pattern.CASE_INSENSITIVE)));
-            validateUiObject(mediaTrack, String.format("media track: %s", option));
+            getSpectatioUiUtil()
+                    .validateUiObject(mediaTrack, String.format("media track: %s", option));
             mediaTrack.click();
             getSpectatioUiUtil().waitForIdle();
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isBluetoothAudioDisconnectedLabelVisible() {
+        BySelector isBluetoothAudioDisconnectedLabel =
+                getUiElementFromConfig(AutomotiveConfigConstants.BLUETOOTH_DISCONNECTED_LABEL);
+        return getSpectatioUiUtil().hasUiElement(isBluetoothAudioDisconnectedLabel);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isConnectToBluetoothLabelVisible() {
+        BySelector connectToBluetoothLabel =
+                getUiElementFromConfig(AutomotiveConfigConstants.CONNECT_TO_BLUETOOTH);
+        return getSpectatioUiUtil().hasUiElement(connectToBluetoothLabel);
     }
 
     private UiObject2 scrollAndFindApp(BySelector selector) {
@@ -456,21 +563,185 @@ public class MediaCenterHelperImpl extends AbstractStandardAppHelper implements 
                         mScrollableElementSelector,
                         selector,
                         String.format("Scroll through media app grid to find %s", selector));
-        validateUiObject(object, String.format("Given media app %s", selector));
+        getSpectatioUiUtil()
+                .validateUiObject(object, String.format("Given media app %s", selector));
         return object;
     }
 
-    private void validateUiObject(UiObject2 uiObject, String action) {
-        if (uiObject == null) {
-            throw new UnknownUiException(
-                    String.format("Unable to find UI Element for %s.", action));
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void openBluetoothMediaApp() {
+        getSpectatioUiUtil().pressHome();
+        getSpectatioUiUtil().waitForIdle();
+        getSpectatioUiUtil()
+                .executeShellCommand(
+                        getCommandFromConfig(AutomotiveConfigConstants.MEDIA_LAUNCH_BLUETOOTH_AUDIO_COMMAND));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void clickOnBluetoothToggle() {
+        BySelector cenableDisableBluetoothToggle =
+                getUiElementFromConfig(AutomotiveConfigConstants.ENABLE_DISABLE_BT_TOGGLE);
+        UiObject2 cenableDisableBluetooth =
+                getSpectatioUiUtil().findUiObject(cenableDisableBluetoothToggle);
+        getSpectatioUiUtil()
+                .validateUiObject(
+                        cenableDisableBluetooth,
+                        AutomotiveConfigConstants.ENABLE_DISABLE_BT_TOGGLE);
+        getSpectatioUiUtil().clickAndWait(cenableDisableBluetooth);
+        getSpectatioUiUtil().wait5Seconds();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void cancelBluetoothAudioConncetion() {
+        BySelector cancelBluetoothAudioConncetionButton =
+                getUiElementFromConfig(AutomotiveConfigConstants.CANCEL_BT_AUDIO_CONNECTION_BUTTON);
+        UiObject2 cancelBluetoothAudioConncetion =
+                getSpectatioUiUtil().findUiObject(cancelBluetoothAudioConncetionButton);
+        getSpectatioUiUtil()
+                .validateUiObject(
+                        cancelBluetoothAudioConncetion,
+                        AutomotiveConfigConstants.CANCEL_BT_AUDIO_CONNECTION_BUTTON);
+        getSpectatioUiUtil().clickAndWait(cancelBluetoothAudioConncetion);
+        getSpectatioUiUtil().wait5Seconds();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void scrollPlayListDown() {
+        int scrollCount = 0;
+        int MAX_SCROLL_COUNT = 10;
+        boolean canScroll = true;
+        while (canScroll && scrollCount < MAX_SCROLL_COUNT) {
+            canScroll = getSpectatioUiUtil()
+                    .scrollUsingButton(getUiElementFromConfig(AutomotiveConfigConstants.MEDIA_SCROLL_DOWN_BUTTON));
+            scrollCount++;
         }
     }
 
-    private void validateUiObject(List<UiObject2> uiObjects, String action) {
-        if (uiObjects == null) {
-            throw new UnknownUiException(
-                    String.format("Unable to find UI Element for %s.", action));
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void clickOnSongFromPlaylist() {
+        BySelector songInPlaylist =
+                getUiElementFromConfig(AutomotiveConfigConstants.MEDIA_SONG_IN_PLAYLIST);
+        UiObject2 songInPlaylistObject =
+                getSpectatioUiUtil().findUiObject(songInPlaylist);
+        getSpectatioUiUtil()
+                .validateUiObject(
+                        songInPlaylistObject,
+                        AutomotiveConfigConstants.MEDIA_SONG_IN_PLAYLIST);
+        getSpectatioUiUtil().clickAndWait(songInPlaylistObject);
+        getSpectatioUiUtil().wait5Seconds();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getArtistrTitle() {
+        BySelector artistTitle =
+                getUiElementFromConfig(AutomotiveConfigConstants.ARTIST_TITLE);
+        UiObject2 objectArtistTitle = getSpectatioUiUtil().findUiObject(artistTitle);
+        getSpectatioUiUtil()
+                .validateUiObject(objectArtistTitle, AutomotiveConfigConstants.ARTIST_TITLE);
+        return objectArtistTitle.getText().trim();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getAlbumTitle() {
+        BySelector albumTitle =
+                getUiElementFromConfig(AutomotiveConfigConstants.ALBUM_TITLE);
+        UiObject2 objectAlbumTitle = getSpectatioUiUtil().findUiObject(albumTitle);
+        getSpectatioUiUtil()
+                .validateUiObject(objectAlbumTitle, AutomotiveConfigConstants.ALBUM_TITLE);
+        return objectAlbumTitle.getText().trim();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getSongCurrentPlayingTime() {
+        BySelector songCurrentTime =
+                getUiElementFromConfig(AutomotiveConfigConstants.CURRENT_SONG_TIME);
+        UiObject2 objectSongCurrentTime = getSpectatioUiUtil().findUiObject(songCurrentTime);
+        getSpectatioUiUtil()
+                .validateUiObject(objectSongCurrentTime, AutomotiveConfigConstants.CURRENT_SONG_TIME);
+        return objectSongCurrentTime.getText().trim();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getCurrentSongMaxPlayingTime() {
+        BySelector songMaxPlayingTime =
+                getUiElementFromConfig(AutomotiveConfigConstants.MAX_SONG_TIME);
+        UiObject2 objectSongMaxPlayingTime = getSpectatioUiUtil().findUiObject(songMaxPlayingTime);
+        getSpectatioUiUtil()
+                .validateUiObject(objectSongMaxPlayingTime, AutomotiveConfigConstants.MAX_SONG_TIME);
+        return objectSongMaxPlayingTime.getText().trim();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isNowPlayingLabelVisible() {
+        BySelector isNowPlayingLabel =
+                getUiElementFromConfig(AutomotiveConfigConstants.MOW_PLAYING_LABEL);
+        return getSpectatioUiUtil().hasUiElement(isNowPlayingLabel);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isPlaylistIconVisible() {
+        BySelector playlistIcon =
+                getUiElementFromConfig(AutomotiveConfigConstants.MEDIA_PLAYLIST_ICON);
+        return getSpectatioUiUtil().hasUiElement(playlistIcon);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void clickOnPlaylistIcon() {
+        BySelector playlistIcon =
+                getUiElementFromConfig(AutomotiveConfigConstants.MEDIA_PLAYLIST_ICON);
+        UiObject2 playlistIconObject =
+                getSpectatioUiUtil().findUiObject(playlistIcon);
+        getSpectatioUiUtil()
+                .validateUiObject(
+                        playlistIconObject,
+                        AutomotiveConfigConstants.MEDIA_PLAYLIST_ICON);
+        getSpectatioUiUtil().clickAndWait(playlistIconObject);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void grantRestrictedPermissionsForBTMedia(String permission) {
+        if (permission == null || permission.length() < 1) {
+            throw new UnknownUiException("Permission must be provided");
         }
+        mUiAutomation.adoptShellPermissionIdentity(permission);
     }
 }

@@ -25,8 +25,8 @@ android_test {
         "automotive-notifications-app-helper",
         "automotive-utility-helper",
         "app-helpers-auto-interfaces",
-        "ub-uiautomator",
         "hamcrest-library",
+        "platform-test-junit-rules",
     ],
     srcs: ["src/**/*.java"],
     test_suites: [

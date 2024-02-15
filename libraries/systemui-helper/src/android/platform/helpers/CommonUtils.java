@@ -21,7 +21,6 @@ import static android.platform.helpers.ui.UiAutomatorUtils.getUiDevice;
 import static android.platform.helpers.ui.UiSearch.search;
 import static android.platform.uiautomator_helpers.DeviceHelpers.getContext;
 
-import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
 
 import static java.lang.String.format;
@@ -37,14 +36,13 @@ import android.os.Bundle;
 import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
 import android.platform.helpers.features.common.HomeLockscreenPage;
-import android.platform.helpers.ui.UiSearch2;
 import android.platform.test.util.HealthTestingUtils;
-import android.support.test.uiautomator.BySelector;
-import android.support.test.uiautomator.UiObject;
-import android.support.test.uiautomator.UiObjectNotFoundException;
 import android.util.Log;
 
 import androidx.test.platform.app.InstrumentationRegistry;
+import androidx.test.uiautomator.BySelector;
+import androidx.test.uiautomator.UiObject;
+import androidx.test.uiautomator.UiObjectNotFoundException;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -65,6 +63,7 @@ public class CommonUtils {
     private static final int SWIPE_STEPS = 100;
     private static final int DEFAULT_MARGIN = 5;
     private static final String LIST_ALL_USERS_COMMAND = "cmd user list -v --all";
+    private static final String GET_MAIN_USER_COMMAND = "cmd user get-main-user";
 
     private CommonUtils() {
     }
@@ -269,19 +268,6 @@ public class CommonUtils {
     }
 
     /**
-     * Asserts that a given page is visible.
-     *
-     * @param pageSelector      selector helped to verify the page
-     * @param pageName          name of the page to be verified
-     * @param maxTimeoutSeconds max time in seconds to verify the page
-     */
-    public static void assertPageVisible(androidx.test.uiautomator.BySelector pageSelector,
-            String pageName, int maxTimeoutSeconds) {
-        assertThat(UiSearch2.search(null, pageSelector, format("Page[%s]", pageName),
-                maxTimeoutSeconds)).isTrue();
-    }
-
-    /**
      * Asserts that a given page is not visible.
      *
      * @param pageSelector selector helped to verify the page
@@ -291,19 +277,6 @@ public class CommonUtils {
         HealthTestingUtils.waitForCondition(
                 () -> "Page is still visible",
                 () -> !search(null, pageSelector, format("Page[%s]", pageName), 0));
-    }
-
-    /**
-     * Asserts that a given page is visible.
-     *
-     * @param pageSelector      selector helped to verify the page
-     * @param pageName          name of the page to be verified
-     * @param maxTimeoutSeconds max time in seconds to verify the page
-     */
-    public static void assertPageNotVisible(androidx.test.uiautomator.BySelector pageSelector,
-            String pageName, int maxTimeoutSeconds) {
-        assertThat(UiSearch2.search(null, pageSelector, format("Page[%s]", pageName),
-                maxTimeoutSeconds)).isFalse();
     }
 
     /**
@@ -332,7 +305,7 @@ public class CommonUtils {
     }
 
     /**
-     * Returns the current user user ID. NOTE: UserID = 0 is for Owner
+     * Returns the current user user ID. NOTE: UserID = 0 is for System
      *
      * @return a current user ID
      */
@@ -365,6 +338,23 @@ public class CommonUtils {
             Log.d(TAG, line);
         }
         throw new RuntimeException("Failed to find current user ID.");
+    }
+
+    /**
+     * Returns the main user ID. Main user is the main human user on the device.
+     * Returns 0 by default, if there is no main user. Android Auto is example of HSUM without
+     * main user.
+     * 
+     * NOTE: For headless system main user it is NOT 0. Therefore Main user should be used in 
+     * test cases rather than owner or deprecated primary user.
+     */
+    public static int getMainUserId() {
+        ArrayList<String> output = executeShellCommandWithDetailedOutput(GET_MAIN_USER_COMMAND);
+        try {
+            return Integer.parseInt(output.get(0).trim());
+        } catch (NumberFormatException e) {
+            return 0;
+        }
     }
 
     public static boolean isSplitShade() {

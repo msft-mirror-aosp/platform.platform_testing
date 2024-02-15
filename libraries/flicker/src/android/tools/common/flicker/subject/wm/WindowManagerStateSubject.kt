@@ -26,7 +26,7 @@ import android.tools.common.flicker.subject.exceptions.InvalidElementException
 import android.tools.common.flicker.subject.exceptions.InvalidPropertyException
 import android.tools.common.flicker.subject.exceptions.SubjectAssertionError
 import android.tools.common.flicker.subject.region.RegionSubject
-import android.tools.common.io.IReader
+import android.tools.common.io.Reader
 import android.tools.common.traces.component.ComponentNameMatcher
 import android.tools.common.traces.component.IComponentMatcher
 import android.tools.common.traces.wm.WindowManagerState
@@ -58,7 +58,7 @@ import android.tools.common.traces.wm.WindowState
  */
 class WindowManagerStateSubject(
     val wmState: WindowManagerState,
-    override val reader: IReader? = null,
+    override val reader: Reader? = null,
     val trace: WindowManagerTraceSubject? = null,
 ) : FlickerSubject(), IWindowManagerSubject<WindowManagerStateSubject, RegionSubject> {
     override val timestamp = wmState.timestamp
@@ -128,12 +128,26 @@ class WindowManagerStateSubject(
     /** {@inheritDoc} */
     override fun containsAboveAppWindow(
         componentMatcher: IComponentMatcher
-    ): WindowManagerStateSubject = apply { contains(aboveAppWindows, componentMatcher) }
+    ): WindowManagerStateSubject = apply {
+        if (!wmState.contains(componentMatcher)) {
+            throw createElementNotFoundException(componentMatcher)
+        }
+        if (!wmState.isAboveAppWindow(componentMatcher)) {
+            throw createElementNotFoundException(componentMatcher)
+        }
+    }
 
     /** {@inheritDoc} */
     override fun containsBelowAppWindow(
         componentMatcher: IComponentMatcher
-    ): WindowManagerStateSubject = apply { contains(belowAppWindows, componentMatcher) }
+    ): WindowManagerStateSubject = apply {
+        if (!wmState.contains(componentMatcher)) {
+            throw createElementNotFoundException(componentMatcher)
+        }
+        if (!wmState.isBelowAppWindow(componentMatcher)) {
+            throw createElementNotFoundException(componentMatcher)
+        }
+    }
 
     /** {@inheritDoc} */
     override fun isAboveWindow(
@@ -182,7 +196,14 @@ class WindowManagerStateSubject(
     /** {@inheritDoc} */
     override fun containsNonAppWindow(
         componentMatcher: IComponentMatcher
-    ): WindowManagerStateSubject = apply { contains(nonAppWindows, componentMatcher) }
+    ): WindowManagerStateSubject = apply {
+        if (!wmState.contains(componentMatcher)) {
+            throw createElementNotFoundException(componentMatcher)
+        }
+        if (!wmState.isNonAppWindow(componentMatcher)) {
+            throw createElementNotFoundException(componentMatcher)
+        }
+    }
 
     /** {@inheritDoc} */
     override fun isAppWindowOnTop(componentMatcher: IComponentMatcher): WindowManagerStateSubject =
@@ -401,14 +422,31 @@ class WindowManagerStateSubject(
     /** {@inheritDoc} */
     override fun isNonAppWindowVisible(
         componentMatcher: IComponentMatcher
-    ): WindowManagerStateSubject = apply { checkWindowIsVisible(nonAppWindows, componentMatcher) }
+    ): WindowManagerStateSubject = apply {
+        if (!wmState.contains(componentMatcher)) {
+            throw createElementNotFoundException(componentMatcher)
+        }
+        if (!wmState.isNonAppWindow(componentMatcher)) {
+            throw createElementNotFoundException(componentMatcher)
+        }
+        if (!wmState.isVisible(componentMatcher)) {
+            throw createIncorrectVisibilityException(componentMatcher, expectElementVisible = true)
+        }
+    }
 
     /** {@inheritDoc} */
     override fun isAppWindowVisible(
         componentMatcher: IComponentMatcher
     ): WindowManagerStateSubject = apply {
-        containsAppWindow(componentMatcher)
-        checkWindowIsVisible(appWindows, componentMatcher)
+        if (!wmState.contains(componentMatcher)) {
+            throw createElementNotFoundException(componentMatcher)
+        }
+        if (!wmState.isAppWindow(componentMatcher)) {
+            throw createElementNotFoundException(componentMatcher)
+        }
+        if (!wmState.isVisible(componentMatcher)) {
+            throw createIncorrectVisibilityException(componentMatcher, expectElementVisible = true)
+        }
     }
 
     /** {@inheritDoc} */
@@ -506,18 +544,29 @@ class WindowManagerStateSubject(
         }
     }
 
+    private fun createIncorrectVisibilityException(
+        componentMatcher: IComponentMatcher,
+        expectElementVisible: Boolean
+    ) =
+        IncorrectVisibilityException(
+            ExceptionMessageBuilder()
+                .forSubject(this)
+                .forIncorrectVisibility(componentMatcher.toWindowIdentifier(), expectElementVisible)
+        )
+
+    private fun createElementNotFoundException(componentMatcher: IComponentMatcher) =
+        InvalidElementException(
+            ExceptionMessageBuilder()
+                .forSubject(this)
+                .forInvalidElement(
+                    componentMatcher.toWindowIdentifier(),
+                    expectElementExists = true
+                )
+        )
+
     /** {@inheritDoc} */
     override fun isHomeActivityVisible(): WindowManagerStateSubject = apply {
-        if (wmState.homeActivity == null) {
-            val errorMsgBuilder =
-                ExceptionMessageBuilder()
-                    .forSubject(this)
-                    .forInvalidElement("Home activity", expectElementExists = true)
-            throw IncorrectVisibilityException(errorMsgBuilder)
-        }
-
-        val homeIsVisible = wmState.homeActivity?.isVisible ?: false
-        if (!homeIsVisible) {
+        if (!wmState.isHomeActivityVisible) {
             val errorMsgBuilder =
                 ExceptionMessageBuilder()
                     .forSubject(this)

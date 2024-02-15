@@ -16,6 +16,7 @@
 
 package android.platform.uiautomator_helpers
 
+import android.os.SystemClock.uptimeMillis
 import android.animation.TimeInterpolator
 import android.app.Instrumentation
 import android.content.Context
@@ -72,6 +73,8 @@ object DeviceHelpers {
      *
      * Throws an error with message provided by [errorProvider] if the object is not found.
      */
+    @JvmOverloads
+    @JvmStatic
     fun waitForObj(
         selector: BySelector,
         timeout: Duration = LONG_WAIT,
@@ -110,6 +113,14 @@ object DeviceHelpers {
         timeout: Duration = SHORT_WAIT,
     ): UiObject2? =
         waitForNullable("nullable $selector objects", timeout) { uiDevice.findObject(selector) }
+
+    /**
+     * Waits for an object to be visible and returns it. Returns `null` if the object is not found.
+     */
+    fun UiObject2.waitForNullableObj(
+        selector: BySelector,
+        timeout: Duration = SHORT_WAIT,
+    ): UiObject2? = waitForNullable("nullable $selector objects", timeout) { findObject(selector) }
 
     /**
      * Waits for objects matched by [selector] to be visible and returns them. Returns `null` if no
@@ -271,7 +282,7 @@ object DeviceHelpers {
     @JvmStatic
     fun shell(command: String): String {
         trace("Executing shell command: $command") {
-            Log.d(TAG, "Executing Shell Command: $command")
+            Log.d(TAG, "Executing Shell Command: $command at ${uptimeMillis()}ms")
             return try {
                 uiDevice.executeShellCommand(command)
             } catch (e: IOException) {

@@ -17,8 +17,8 @@
 package android.tools.device.flicker.rules
 
 import android.app.Instrumentation
-import android.tools.common.CrossPlatform
 import android.tools.common.FLICKER_TAG
+import android.tools.common.Logger
 import android.tools.common.traces.component.ComponentNameMatcher
 import android.tools.device.apphelpers.StandardAppHelper
 import android.tools.device.traces.parsers.WindowManagerStateHelper
@@ -42,7 +42,7 @@ class LaunchAppRule
 @JvmOverloads
 constructor(
     private val appHelper: StandardAppHelper,
-    private val instrumentation: Instrumentation = appHelper.mInstrumentation,
+    private val instrumentation: Instrumentation = appHelper.instrumentation,
     private val clearCacheAfterParsing: Boolean = true,
     private val wmHelper: WindowManagerStateHelper =
         WindowManagerStateHelper(clearCacheAfterParsing = clearCacheAfterParsing)
@@ -63,8 +63,8 @@ constructor(
     )
 
     override fun starting(description: Description?) {
-        CrossPlatform.log.withTracing("LaunchAppRule:finished") {
-            CrossPlatform.log.v(FLICKER_TAG, "Launching app $appHelper")
+        Logger.withTracing("LaunchAppRule:starting") {
+            Logger.v(FLICKER_TAG, "Launching app $appHelper")
             appHelper.launchViaIntent()
             appHelper.exit(wmHelper)
         }

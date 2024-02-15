@@ -44,10 +44,14 @@ object LaunchAppUtils {
     /** Asserts that a given app is in the foreground. */
     @JvmStatic
     fun assertAppInForeground(app: App) {
-        check(
-            device.wait(Until.hasObject(By.pkg(app.packageName).depth(0)), MAX_TIMEOUT.toMillis())
-        ) {
-            "$app not in the foreground after ${MAX_TIMEOUT.toSeconds()} seconds"
+        assertAppInForeground(app.packageName)
+    }
+
+    /** Asserts that a given app is in the foreground. */
+    @JvmStatic
+    fun assertAppInForeground(packageName: String) {
+        check(device.wait(Until.hasObject(By.pkg(packageName).depth(0)), MAX_TIMEOUT.toMillis())) {
+            "$packageName not in the foreground after ${MAX_TIMEOUT.toSeconds()} seconds"
         }
     }
 
@@ -57,7 +61,10 @@ object LaunchAppUtils {
 
 /** Describes an app that can be launched with [LaunchAppUtils]. */
 enum class App(internal val packageName: String) {
-    CALCULATOR("com.google.android.calculator")
+    CALCULATOR("com.google.android.calculator"),
+    MAPS("com.google.android.apps.maps"),
+    CAMERA("com.google.android.GoogleCamera"),
+    SETTINGS("com.android.settings")
 }
 
 private val MAX_TIMEOUT = Duration.ofSeconds(10)

@@ -20,14 +20,16 @@ import android.app.Instrumentation
 import android.platform.test.rule.NavigationModeRule
 import android.platform.test.rule.PressHomeRule
 import android.platform.test.rule.UnlockScreenRule
-import android.tools.common.CrossPlatform
-import android.tools.common.IScenario
+import android.tools.common.Logger
+import android.tools.common.Scenario
 import android.tools.device.apphelpers.MessagingAppHelper
 import android.tools.device.flicker.datastore.CachedResultWriter
-import android.tools.device.flicker.legacy.IFlickerTestData
+import android.tools.device.flicker.legacy.FlickerTestData
+import android.tools.device.flicker.rules.ArtifactSaverRule
 import android.tools.device.flicker.rules.ChangeDisplayOrientationRule
 import android.tools.device.flicker.rules.LaunchAppRule
 import android.tools.device.flicker.rules.RemoveAllTasksButHomeRule
+import android.tools.device.rules.StopAllTracesRule
 import android.tools.device.traces.io.IResultData
 import android.tools.device.traces.io.ResultWriter
 import org.junit.rules.RuleChain
@@ -38,18 +40,18 @@ import org.junit.runner.Description
  * flicker setup/transition/teardown
  */
 class TransitionRunner(
-    private val scenario: IScenario,
+    private val scenario: Scenario,
     private val instrumentation: Instrumentation,
     private val resultWriter: ResultWriter = CachedResultWriter()
 ) {
     /** Executes [flicker] transition and returns the result */
-    fun execute(flicker: IFlickerTestData, description: Description?): IResultData {
-        return CrossPlatform.log.withTracing("TransitionRunner:execute") {
+    fun execute(flicker: FlickerTestData, description: Description?): IResultData {
+        return Logger.withTracing("TransitionRunner:execute") {
             resultWriter.forScenario(scenario).withOutputDir(flicker.outputDir)
 
             val ruleChain = buildTestRuleChain(flicker)
             try {
-                ruleChain.apply(/* statement */ null, description).evaluate()
+                ruleChain.apply(null, description).evaluate()
                 resultWriter.setRunComplete()
             } catch (e: Throwable) {
                 resultWriter.setRunFailed(e)
@@ -71,14 +73,12 @@ class TransitionRunner(
      * first app launch is handled as a screen size change (similar to a rotation), this causes
      * different problems during testing (e.g. IME now shown on app launch)
      */
-    private fun buildTestRuleChain(flicker: IFlickerTestData): RuleChain {
-        return RuleChain.outerRule(UnlockScreenRule())
-            .around(
-                NavigationModeRule(
-                    scenario.navBarMode.value,
-                    /* changeNavigationModeAfterTest */ false
-                )
-            )
+    private fun buildTestRuleChain(flicker: FlickerTestData): RuleChain {
+        val errorRule = ArtifactSaverRule()
+        return RuleChain.outerRule(errorRule)
+            .around(StopAllTracesRule())
+            .around(UnlockScreenRule())
+            .around(NavigationModeRule(scenario.navBarMode.value, false))
             .around(
                 LaunchAppRule(MessagingAppHelper(instrumentation), clearCacheAfterParsing = false)
             )
@@ -100,7 +100,9 @@ class TransitionRunner(
                     instrumentation
                 )
             )
+            .around(errorRule)
             .around(SetupTeardownRule(flicker, resultWriter, scenario, instrumentation))
+            .around(errorRule)
             .around(TransitionExecutionRule(flicker, resultWriter, scenario, instrumentation))
     }
 }

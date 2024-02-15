@@ -16,39 +16,27 @@
 
 package android.tools.device.flicker
 
-import android.tools.common.CrossPlatform
 import android.tools.common.FLICKER_TAG
-import android.tools.common.IScenario
-import android.tools.common.flicker.ITracesCollector
-import android.tools.common.io.IReader
+import android.tools.common.Logger
+import android.tools.common.Scenario
+import android.tools.common.flicker.TracesCollector
+import android.tools.common.io.Reader
+import android.tools.common.io.TraceType
+import android.tools.device.flicker.Utils.ALL_MONITORS
 import android.tools.device.traces.SERVICE_TRACE_CONFIG
 import android.tools.device.traces.io.ResultReaderWithLru
 import android.tools.device.traces.io.ResultWriter
-import android.tools.device.traces.monitors.events.EventLogMonitor
-import android.tools.device.traces.monitors.surfaceflinger.LayersTraceMonitor
-import android.tools.device.traces.monitors.surfaceflinger.TransactionsTraceMonitor
-import android.tools.device.traces.monitors.wm.ShellTransitionTraceMonitor
-import android.tools.device.traces.monitors.wm.WindowManagerTraceMonitor
-import android.tools.device.traces.monitors.wm.WmTransitionTraceMonitor
 import java.io.File
 import kotlin.io.path.createTempDirectory
 
 class FlickerServiceTracesCollector(
     private val outputDir: File = createTempDirectory().toFile(),
-) : ITracesCollector {
-    private var scenario: IScenario? = null
+) : TracesCollector {
+    private var scenario: Scenario? = null
 
-    private val traceMonitors =
-        listOf(
-            WindowManagerTraceMonitor(),
-            LayersTraceMonitor(),
-            WmTransitionTraceMonitor(),
-            ShellTransitionTraceMonitor(),
-            TransactionsTraceMonitor(),
-            EventLogMonitor()
-        )
+    private val traceMonitors = ALL_MONITORS.filter { it.traceType != TraceType.SCREEN_RECORDING }
 
-    override fun start(scenario: IScenario) {
+    override fun start(scenario: Scenario) {
         reportErrorsBlock("Failed to start traces") {
             require(this.scenario == null) { "Trace still running" }
             traceMonitors.forEach { it.start() }
@@ -56,15 +44,15 @@ class FlickerServiceTracesCollector(
         }
     }
 
-    override fun stop(): IReader {
+    override fun stop(): Reader {
         return reportErrorsBlock("Failed to stop traces") {
             val scenario = this.scenario
             require(scenario != null) { "Scenario not set - make sure trace was started properly" }
 
-            CrossPlatform.log.v(LOG_TAG, "Creating output directory for trace files")
+            Logger.v(LOG_TAG, "Creating output directory for trace files")
             outputDir.mkdirs()
 
-            CrossPlatform.log.v(LOG_TAG, "Stopping trace monitors")
+            Logger.v(LOG_TAG, "Stopping trace monitors")
             val writer = ResultWriter().forScenario(scenario).withOutputDir(outputDir)
             traceMonitors.forEach { it.stop(writer) }
             this.scenario = null
@@ -84,7 +72,7 @@ class FlickerServiceTracesCollector(
         try {
             return block()
         } catch (e: Throwable) {
-            CrossPlatform.log.e(LOG_TAG, msg, e)
+            Logger.e(LOG_TAG, msg, e)
             throw e
         }
     }

@@ -66,7 +66,6 @@ platform_tests += \
     NoLocTestApp \
     NoLocVersionedTestApp_v1 \
     NoLocVersionedTestApp_v2 \
-    NotificationFunctionalTests \
     OverviewFunctionalTests \
     perfetto_trace_processor_shell \
     PerformanceAppTest \
@@ -82,8 +81,6 @@ platform_tests += \
     SimpleServiceTestApp2 \
     SimpleServiceTestApp3 \
     SimpleTestApp \
-    skia_dm \
-    skia_nanobench \
     sl4a \
     SmokeTest \
     SmokeTestApp \
@@ -91,6 +88,7 @@ platform_tests += \
     TouchLatencyJankTestWear \
     trace_config.textproto \
     trace_config_detailed.textproto \
+    trace_config_detailed_heapdump.textproto \
     trace_config_experimental.textproto \
     trace_config_multi_user_cuj_tests.textproto \
     UbSystemUiJankTests \

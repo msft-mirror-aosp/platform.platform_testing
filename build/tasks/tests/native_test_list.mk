@@ -94,7 +94,8 @@ native_tests := \
     libnativehelper_tests \
     libnetworkstats_test \
     libprocinfo_test \
-    libtextclassifier_tests \
+    libtextclassifier_tests-tplus \
+    libtextclassifier_tests-sminus \
     libsurfaceflinger_unittest \
     libunwindstack_unit_test \
     libuwb_core_tests \
@@ -235,7 +236,9 @@ native_tests := \
 ifeq ($(BOARD_IS_AUTOMOTIVE), true)
 native_tests += \
     libwatchdog_test \
-    evsmanagerd_test
+    evsmanagerd_test \
+    sv_2d_session_tests \
+    sv_3d_session_tests
 endif
 
 ifneq ($(strip $(BOARD_PERFSETUP_SCRIPT)),)

@@ -17,20 +17,20 @@
 package android.tools.device.flicker.datastore
 
 import android.annotation.SuppressLint
-import android.tools.CleanFlickerEnvironmentRule
-import android.tools.TEST_SCENARIO
-import android.tools.assertExceptionMessage
 import android.tools.common.Tag
-import android.tools.common.flicker.assertions.AssertionData
+import android.tools.common.flicker.assertions.AssertionDataImpl
 import android.tools.common.flicker.subject.FlickerSubject
 import android.tools.common.flicker.subject.events.EventLogSubject
+import android.tools.common.flicker.subject.exceptions.SimpleFlickerAssertionError
 import android.tools.common.io.RunStatus
 import android.tools.device.traces.monitors.events.EventLogMonitor
-import android.tools.newTestResultWriter
+import android.tools.utils.CleanFlickerEnvironmentRule
+import android.tools.utils.TEST_SCENARIO
+import android.tools.utils.assertExceptionMessage
+import android.tools.utils.newTestResultWriter
 import com.google.common.truth.Truth
 import org.junit.Before
 import org.junit.ClassRule
-import org.junit.Rule
 import org.junit.Test
 
 /** Tests for [CachedAssertionRunner] */
@@ -41,13 +41,14 @@ class CachedAssertionRunnerTest {
     private val assertionSuccess = newAssertionData { executionCount++ }
     private val assertionFailure = newAssertionData {
         executionCount++
-        error(Consts.FAILURE)
+        throw SimpleFlickerAssertionError(Consts.FAILURE)
     }
 
     @Before
     fun setup() {
+        DataStore.clear()
         executionCount = 0
-        val writer = newTestResultWriter()
+        val writer = newTestResultWriter(TEST_SCENARIO)
         val monitor = EventLogMonitor()
         monitor.start()
         monitor.stop(writer)
@@ -122,8 +123,8 @@ class CachedAssertionRunnerTest {
 
     companion object {
         private fun newAssertionData(assertion: (FlickerSubject) -> Unit) =
-            AssertionData(Tag.ALL, EventLogSubject::class, assertion)
+            AssertionDataImpl(Tag.ALL, EventLogSubject::class, assertion)
 
-        @Rule @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
+        @ClassRule @JvmField val ENV_CLEANUP = CleanFlickerEnvironmentRule()
     }
 }

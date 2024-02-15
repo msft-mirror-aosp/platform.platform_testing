@@ -16,14 +16,16 @@
 
 package android.tools.common.flicker
 
-import android.tools.CleanFlickerEnvironmentRule
-import android.tools.common.flicker.assertors.AssertionResult
-import android.tools.common.flicker.assertors.IAssertionResult
-import android.tools.common.flicker.assertors.IFaasAssertion
+import android.tools.common.flicker.assertions.AssertionData
+import android.tools.common.flicker.assertions.AssertionResult
+import android.tools.common.flicker.assertions.SubjectsParser
+import android.tools.common.flicker.subject.exceptions.FlickerAssertionError
+import android.tools.common.flicker.subject.exceptions.SimpleFlickerAssertionError
 import android.tools.device.flicker.IFlickerServiceResultsCollector
 import android.tools.device.flicker.isShellTransitionsEnabled
 import android.tools.device.flicker.legacy.runner.Consts
 import android.tools.device.flicker.rules.FlickerServiceRule
+import android.tools.utils.CleanFlickerEnvironmentRule
 import android.tools.utils.KotlinMockito
 import com.google.common.truth.Truth
 import org.junit.Assume
@@ -106,11 +108,11 @@ class FlickerServiceRuleTest {
         val testRule =
             FlickerServiceRule(
                 metricsCollector = mockFlickerServiceResultsCollector,
-                failTestOnFaasFailure = false
+                failTestOnFlicker = false
             )
         val mockDescription = Description.createTestDescription(this::class.java, "mockTest")
 
-        val assertionError = Throwable("Some assertion error")
+        val assertionError = SimpleFlickerAssertionError("Some assertion error")
         `when`(mockFlickerServiceResultsCollector.resultsForTest(mockDescription))
             .thenReturn(listOf(mockFailureAssertionResult(assertionError)))
 
@@ -126,11 +128,11 @@ class FlickerServiceRuleTest {
         val testRule =
             FlickerServiceRule(
                 metricsCollector = mockFlickerServiceResultsCollector,
-                failTestOnFaasFailure = true
+                failTestOnFlicker = true
             )
         val mockDescription = Description.createTestDescription(this::class.java, "mockTest")
 
-        val assertionError = Throwable("Some assertion error")
+        val assertionError = SimpleFlickerAssertionError("Some assertion error")
         `when`(mockFlickerServiceResultsCollector.resultsForTest(mockDescription))
             .thenReturn(listOf(mockFailureAssertionResult(assertionError)))
 
@@ -145,13 +147,13 @@ class FlickerServiceRuleTest {
     }
 
     @Test
-    fun alwaysThrowsExceptionForExecutionErrors() {
+    fun neverThrowsExceptionForExecutionErrors() {
         val mockFlickerServiceResultsCollector =
             Mockito.mock(IFlickerServiceResultsCollector::class.java)
         val testRule =
             FlickerServiceRule(
                 metricsCollector = mockFlickerServiceResultsCollector,
-                failTestOnFaasFailure = true
+                failTestOnFlicker = true
             )
         val mockDescription = Description.createTestDescription(this::class.java, "mockTest")
 
@@ -161,12 +163,7 @@ class FlickerServiceRuleTest {
 
         testRule.starting(mockDescription)
         testRule.succeeded(mockDescription)
-        try {
-            testRule.finished(mockDescription)
-            error("Exception was not thrown")
-        } catch (e: Throwable) {
-            Truth.assertThat(e).isEqualTo(executionError)
-        }
+        testRule.finished(mockDescription)
     }
 
     @Test
@@ -177,7 +174,7 @@ class FlickerServiceRuleTest {
             FlickerServiceRule(
                 enabled = false,
                 metricsCollector = mockFlickerServiceResultsCollector,
-                failTestOnFaasFailure = true
+                failTestOnFlicker = true
             )
 
         val mockDescription = Description.createTestDescription(this::class.java, "mockTest")
@@ -195,22 +192,45 @@ class FlickerServiceRuleTest {
         Mockito.verifyZeroInteractions(mockFlickerServiceResultsCollector)
     }
 
-    companion object {
-        fun mockFailureAssertionResult(error: Throwable): IAssertionResult {
-            return AssertionResult(
-                object : IFaasAssertion {
-                    override val name: String
-                        get() = "MockAssertion"
-                    override val stabilityGroup: AssertionInvocationGroup
-                        get() = AssertionInvocationGroup.BLOCKING
-                    override fun evaluate(): IAssertionResult {
-                        error("Unimplemented - shouldn't be called")
-                    }
-                },
-                assertionError = error
+    @Test
+    fun assertionFailuresNotReportedIfUnderlyingTestFailed() {
+        val mockFlickerServiceResultsCollector =
+            Mockito.mock(IFlickerServiceResultsCollector::class.java)
+        val testRule =
+            FlickerServiceRule(
+                metricsCollector = mockFlickerServiceResultsCollector,
+                failTestOnFlicker = true
             )
-        }
+        val mockDescription = Description.createTestDescription(this::class.java, "mockTest")
 
-        @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
+        val assertionError = SimpleFlickerAssertionError("Some assertion error")
+        `when`(mockFlickerServiceResultsCollector.resultsForTest(mockDescription))
+            .thenReturn(listOf(mockFailureAssertionResult(assertionError)))
+
+        testRule.starting(mockDescription)
+        testRule.failed(Throwable("Mock failure"), mockDescription)
+
+        // Should not throw any assertion errors
+        testRule.finished(mockDescription)
+    }
+
+    companion object {
+        fun mockFailureAssertionResult(error: FlickerAssertionError) =
+            object : AssertionResult {
+                override val name = "MOCK_SCENARIO#mockAssertion"
+                override val assertionData =
+                    arrayOf<AssertionData>(
+                        object : AssertionData {
+                            override fun checkAssertion(run: SubjectsParser) {
+                                error("Unimplemented - shouldn't be called")
+                            }
+                        }
+                    )
+                override val assertionErrors = arrayOf(error)
+                override val stabilityGroup = AssertionInvocationGroup.BLOCKING
+                override val passed = false
+            }
+
+        @ClassRule @JvmField val ENV_CLEANUP = CleanFlickerEnvironmentRule()
     }
 }

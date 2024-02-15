@@ -28,7 +28,6 @@ android_test {
         "automotive-settings-app-helper",
         "app-helpers-common-interfaces",
         "app-helpers-auto-interfaces",
-        "ub-uiautomator",
         "collector-device-lib-platform",
         "common-platform-scenarios",
         "common-platform-scenario-tests",
@@ -41,6 +40,6 @@ android_test {
     ],
     srcs: ["src/**/*.java"],
     certificate: "platform",
-    test_suites: ["catbox"],
+    test_suites: ["catbox", "ats"],
     privileged: true,
 }

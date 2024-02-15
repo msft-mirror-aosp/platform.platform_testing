@@ -17,25 +17,30 @@
 package android.tools.common.flicker.config.splitscreen
 
 import android.tools.common.flicker.config.AssertionTemplates
-import android.tools.common.flicker.config.FaasScenarioType
-import android.tools.common.flicker.config.IScenarioConfig
+import android.tools.common.flicker.config.FlickerConfigEntry
+import android.tools.common.flicker.config.ScenarioId
 import android.tools.common.flicker.config.TransitionFilters
 import android.tools.common.flicker.extractors.TaggedCujTransitionMatcher
-import android.tools.common.flicker.extractors.TaggedScenarioExtractor
+import android.tools.common.flicker.extractors.TaggedScenarioExtractorBuilder
 import android.tools.common.traces.events.CujType
 
-class SplitScreenResize : IScenarioConfig {
-    override val enabled = true
-
-    override val type = FaasScenarioType.SPLIT_SCREEN_RESIZE
-
-    override val assertionTemplates = AssertionTemplates.RESIZE_SPLITSCREEN_ASSERTIONS
-
-    override val extractor =
-        TaggedScenarioExtractor(
-            targetTag = CujType.CUJ_SPLIT_SCREEN_RESIZE,
-            type,
-            transitionMatcher =
-                TaggedCujTransitionMatcher(TransitionFilters.RESIZE_SPLIT_SCREEN_FILTER)
-        )
-}
+val SplitScreenResize =
+    FlickerConfigEntry(
+        enabled = true,
+        scenarioId = ScenarioId("SPLIT_SCREEN_RESIZE"),
+        assertions = AssertionTemplates.RESIZE_SPLITSCREEN_ASSERTIONS,
+        extractor =
+            TaggedScenarioExtractorBuilder()
+                .setTargetTag(CujType.CUJ_SPLIT_SCREEN_RESIZE)
+                .setTransitionMatcher(
+                    TaggedCujTransitionMatcher(
+                        TransitionFilters.RESIZE_SPLIT_SCREEN_FILTER,
+                        // No match will be found when resizing all the way to dismissing
+                        associatedTransitionRequired = false
+                    )
+                )
+                // If we don't find a matching transition, we probably dismissed splitscreen so
+                // don't consider as a splitscreen resize scenario.
+                .setIgnoreIfNoMatchingTransition(true)
+                .build()
+    )

@@ -16,11 +16,9 @@
 
 package android.tools.common.flicker.extractors
 
-import android.tools.common.CrossPlatform
 import android.tools.common.Timestamp
-import android.tools.common.flicker.ScenarioInstance
-import android.tools.common.flicker.config.FaasScenarioType
-import android.tools.common.io.IReader
+import android.tools.common.Timestamps
+import android.tools.common.io.Reader
 import android.tools.common.traces.events.Cuj
 import android.tools.common.traces.events.CujType
 import android.tools.common.traces.wm.Transition
@@ -28,31 +26,32 @@ import kotlin.math.max
 import kotlin.math.min
 
 class TaggedScenarioExtractor(
-    val targetTag: CujType,
-    val type: FaasScenarioType,
-    val transitionMatcher: TaggedCujTransitionMatcher = TaggedCujTransitionMatcher(),
-    val adjustCuj: (cujEntry: Cuj, reader: IReader) -> Cuj = { cujEntry, reader -> cujEntry }
-) : IScenarioExtractor {
-    override fun extract(reader: IReader): List<ScenarioInstance> {
-
-        val layersTrace = reader.readLayersTrace() ?: error("Missing layers trace")
+    private val targetTag: CujType,
+    private val transitionMatcher: TransitionMatcher?,
+    private val adjustCuj: CujAdjust,
+    private val ignoreIfNoMatchingTransition: Boolean = false,
+) : ScenarioExtractor {
+    override fun extract(reader: Reader): List<TraceSlice> {
         val cujTrace = reader.readCujTrace() ?: error("Missing CUJ trace")
 
         val targetCujEntries =
             cujTrace.entries
                 .filter { it.cuj === targetTag }
                 .filter { !it.canceled }
-                .map { adjustCuj(it, reader) }
+                .map { adjustCuj.adjustCuj(it, reader) }
 
         if (targetCujEntries.isEmpty()) {
             // No scenarios to extract here
             return emptyList()
         }
 
-        return targetCujEntries.map { cujEntry ->
+        return targetCujEntries.mapNotNull { cujEntry ->
             val associatedTransition =
-                transitionMatcher.getMatches(reader, cujEntry).firstOrNull()
-                    ?: error("Missing associated transition")
+                transitionMatcher?.getMatches(reader, cujEntry)?.firstOrNull()
+
+            if (ignoreIfNoMatchingTransition && associatedTransition == null) {
+                return@mapNotNull null
+            }
 
             require(
                 cujEntry.startTimestamp.hasAllTimestamps && cujEntry.endTimestamp.hasAllTimestamps
@@ -62,20 +61,11 @@ class TaggedScenarioExtractor(
                 estimateScenarioStartTimestamp(cujEntry, associatedTransition, reader)
             val endTimestamp = estimateScenarioEndTimestamp(cujEntry, associatedTransition, reader)
 
-            val displayAtStart =
-                Utils.getOnDisplayFor(layersTrace.getFirstEntryWithOnDisplayAfter(startTimestamp))
-            val displayAtEnd =
-                Utils.getOnDisplayFor(layersTrace.getLastEntryWithOnDisplayBefore(endTimestamp))
-
-            ScenarioInstance(
-                type,
-                startRotation = displayAtStart.transform.getRotation(),
-                endRotation = displayAtEnd.transform.getRotation(),
-                startTimestamp = startTimestamp,
-                endTimestamp = endTimestamp,
+            TraceSlice(
+                startTimestamp,
+                endTimestamp,
                 associatedCuj = cujEntry.cuj,
-                associatedTransition = associatedTransition,
-                reader = reader.slice(startTimestamp, endTimestamp)
+                associatedTransition = associatedTransition
             )
         }
     }
@@ -83,7 +73,7 @@ class TaggedScenarioExtractor(
     private fun estimateScenarioStartTimestamp(
         cujEntry: Cuj,
         associatedTransition: Transition?,
-        reader: IReader
+        reader: Reader
     ): Timestamp {
         val interpolatedStartTimestamp =
             if (associatedTransition != null) {
@@ -92,7 +82,7 @@ class TaggedScenarioExtractor(
                 null
             }
 
-        return CrossPlatform.timestamp.from(
+        return Timestamps.from(
             elapsedNanos =
                 min(
                     cujEntry.startTimestamp.elapsedNanos,
@@ -115,28 +105,26 @@ class TaggedScenarioExtractor(
     private fun estimateScenarioEndTimestamp(
         cujEntry: Cuj,
         associatedTransition: Transition?,
-        reader: IReader
+        reader: Reader
     ): Timestamp {
         val interpolatedEndTimestamp =
             if (associatedTransition != null) {
                 Utils.interpolateFinishTimestampFromTransition(associatedTransition, reader)
             } else {
-                null
+                val layersTrace = reader.readLayersTrace() ?: error("Missing layers trace")
+                val nextSfEntry = layersTrace.getFirstEntryWithOnDisplayAfter(cujEntry.endTimestamp)
+                Utils.getFullTimestampAt(nextSfEntry, reader)
             }
 
-        return CrossPlatform.timestamp.from(
+        return Timestamps.from(
             elapsedNanos =
-                max(
-                    cujEntry.endTimestamp.elapsedNanos,
-                    interpolatedEndTimestamp?.elapsedNanos ?: -1L
-                ),
+                max(cujEntry.endTimestamp.elapsedNanos, interpolatedEndTimestamp.elapsedNanos),
             systemUptimeNanos =
                 max(
                     cujEntry.endTimestamp.systemUptimeNanos,
-                    interpolatedEndTimestamp?.systemUptimeNanos ?: -1L
+                    interpolatedEndTimestamp.systemUptimeNanos
                 ),
-            unixNanos =
-                max(cujEntry.endTimestamp.unixNanos, interpolatedEndTimestamp?.unixNanos ?: -1L)
+            unixNanos = max(cujEntry.endTimestamp.unixNanos, interpolatedEndTimestamp.unixNanos)
         )
     }
 }

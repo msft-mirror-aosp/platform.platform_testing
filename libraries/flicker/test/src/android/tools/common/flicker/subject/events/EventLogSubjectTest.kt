@@ -16,15 +16,14 @@
 
 package android.tools.common.flicker.subject.events
 
-import android.tools.CleanFlickerEnvironmentRule
-import android.tools.common.CrossPlatform
+import android.tools.common.Timestamps
 import android.tools.common.flicker.assertions.SubjectsParser
 import android.tools.common.traces.events.EventLog
 import android.tools.common.traces.events.FocusEvent
-import android.tools.device.traces.io.InMemoryArtifact
-import android.tools.device.traces.io.ParsedTracesReader
+import android.tools.utils.CleanFlickerEnvironmentRule
+import android.tools.utils.ParsedTracesReader
+import android.tools.utils.TestArtifact
 import org.junit.ClassRule
-import org.junit.Rule
 import org.junit.Test
 
 /**
@@ -35,12 +34,12 @@ class EventLogSubjectTest {
     fun canDetectFocusChanges() {
         val reader =
             ParsedTracesReader(
-                artifact = InMemoryArtifact.EMPTY,
+                artifact = TestArtifact.EMPTY,
                 eventLog =
                     EventLog(
                         arrayOf(
                             FocusEvent(
-                                CrossPlatform.timestamp.from(unixNanos = 0),
+                                Timestamps.from(unixNanos = 0),
                                 "WinB",
                                 FocusEvent.Type.GAINED,
                                 "test",
@@ -49,7 +48,7 @@ class EventLogSubjectTest {
                                 0
                             ),
                             FocusEvent(
-                                CrossPlatform.timestamp.from(unixNanos = 0),
+                                Timestamps.from(unixNanos = 0),
                                 "test WinA window",
                                 FocusEvent.Type.LOST,
                                 "test",
@@ -58,7 +57,7 @@ class EventLogSubjectTest {
                                 0
                             ),
                             FocusEvent(
-                                CrossPlatform.timestamp.from(unixNanos = 0),
+                                Timestamps.from(unixNanos = 0),
                                 "WinB",
                                 FocusEvent.Type.LOST,
                                 "test",
@@ -67,7 +66,7 @@ class EventLogSubjectTest {
                                 0
                             ),
                             FocusEvent(
-                                CrossPlatform.timestamp.from(unixNanos = 0),
+                                Timestamps.from(unixNanos = 0),
                                 "test WinC",
                                 FocusEvent.Type.GAINED,
                                 "test",
@@ -92,7 +91,7 @@ class EventLogSubjectTest {
     @Test
     fun canDetectFocusDoesNotChange() {
         val reader =
-            ParsedTracesReader(artifact = InMemoryArtifact.EMPTY, eventLog = EventLog(emptyArray()))
+            ParsedTracesReader(artifact = TestArtifact.EMPTY, eventLog = EventLog(emptyArray()))
         val subjectsParser = SubjectsParser(reader)
 
         val subject = subjectsParser.eventLogSubject ?: error("Event log subject not built")
@@ -100,6 +99,6 @@ class EventLogSubjectTest {
     }
 
     companion object {
-        @Rule @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
+        @ClassRule @JvmField val ENV_CLEANUP = CleanFlickerEnvironmentRule()
     }
 }

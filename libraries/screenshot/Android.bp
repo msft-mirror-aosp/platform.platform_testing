@@ -25,19 +25,20 @@ android_test {
         enabled: false
     },
     srcs: [
-        "src/**/*.kt"
+        "src/**/*.java",
+        "src/**/*.kt",
     ],
     static_libs: [
         "androidx.test.core",
         "androidx.test.ext.junit",
         "androidx.test.runner",
         "androidx.test.rules",
+        "androidx.test.uiautomator_uiautomator",
         "launcher-helper-lib",
         "metrics-helper-lib",
         "platform-screenshot-diff-core",
         "platform-test-annotations",
-        "truth-prebuilt",
-        "ub-uiautomator",
+        "truth",
     ],
     asset_dirs: ["src/androidTest/assets"],
     test_suites: ["general-tests"],
@@ -52,6 +53,7 @@ android_library {
         enabled: false
     },
     srcs: [
+        "src/main/java/platform/test/screenshot/**/*.java",
         "src/main/java/platform/test/screenshot/**/*.kt",
     ],
     static_libs: [
@@ -62,6 +64,7 @@ android_library {
         "androidx.test.espresso.core",
         "androidx.appcompat_appcompat",
         "guava",
+        "uiautomator-helpers",
     ],
 }
 

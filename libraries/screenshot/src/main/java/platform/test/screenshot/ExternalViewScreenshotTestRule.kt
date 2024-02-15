@@ -18,6 +18,8 @@ package platform.test.screenshot
 
 import android.app.Activity
 import android.graphics.Color
+import android.os.Build
+import android.platform.uiautomator_helpers.WaitUtils.waitForValueToSettle
 import android.view.View
 import android.view.Window
 import android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
@@ -41,12 +43,14 @@ class ExternalViewScreenshotTestRule(
     private val colorsRule = MaterialYouColorsRule()
     private val deviceEmulationRule = DeviceEmulationRule(emulationSpec)
     private val screenshotRule = ScreenshotTestRule(pathManager)
-    private val delegateRule =
-        RuleChain.outerRule(colorsRule).around(deviceEmulationRule).around(screenshotRule)
+    private val roboRule = RuleChain.outerRule(deviceEmulationRule).around(screenshotRule)
+    private val delegateRule = RuleChain.outerRule(colorsRule).around(roboRule)
     private val matcher = UnitTestBitmapMatcher
+    private val isRobolectric = if (Build.FINGERPRINT.contains("robolectric")) true else false
 
     override fun apply(base: Statement, description: Description): Statement {
-        return delegateRule.apply(base, description)
+        val ruleToApply = if (isRobolectric) roboRule else delegateRule
+        return ruleToApply.apply(base, description)
     }
 
     /**
@@ -55,6 +59,7 @@ class ExternalViewScreenshotTestRule(
      * hardware buffers.
      */
     fun screenshotTest(goldenIdentifier: String, view: View, window: Window? = null) {
+        waitForValueToSettle { view.getChildCountRecursively() }
         view.removeElevationRecursively()
 
         ScreenshotRuleAsserter.Builder(screenshotRule)
@@ -91,6 +96,7 @@ class ExternalViewScreenshotTestRule(
                     layoutInDisplayCutoutMode = LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
                 }
 
+            waitForValueToSettle { rootView.getChildCountRecursively() }
             rootView.removeInsetsRecursively()
             activity.currentFocus?.clearFocus()
         }

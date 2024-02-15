@@ -16,17 +16,23 @@
 
 package android.tools.common.flicker.subject.surfaceflinger
 
-import android.tools.CleanFlickerEnvironmentRule
-import android.tools.TestComponents
-import android.tools.assertFail
-import android.tools.assertThatErrorContainsDebugInfo
-import android.tools.assertThrows
+import android.tools.CleanFlickerEnvironmentRuleWithDataStore
 import android.tools.common.Cache
+import android.tools.common.ScenarioBuilder
+import android.tools.common.Timestamps
 import android.tools.common.datatypes.Region
 import android.tools.common.flicker.subject.layers.LayersTraceSubject
-import android.tools.common.io.IReader
+import android.tools.common.flicker.subject.region.RegionSubject
+import android.tools.common.io.Reader
 import android.tools.common.traces.component.ComponentNameMatcher
-import android.tools.getLayerTraceReaderFromAsset
+import android.tools.device.flicker.datastore.DataStore
+import android.tools.device.flicker.legacy.LegacyFlickerTest
+import android.tools.device.traces.io.IResultData
+import android.tools.utils.TestComponents
+import android.tools.utils.assertFail
+import android.tools.utils.assertThatErrorContainsDebugInfo
+import android.tools.utils.assertThrows
+import android.tools.utils.getLayerTraceReaderFromAsset
 import androidx.test.filters.FlakyTest
 import com.google.common.truth.Truth
 import org.junit.Before
@@ -34,6 +40,7 @@ import org.junit.ClassRule
 import org.junit.FixMethodOrder
 import org.junit.Test
 import org.junit.runners.MethodSorters
+import org.mockito.Mockito
 
 /**
  * Contains [LayersTraceSubject] tests. To run this test: `atest
@@ -48,8 +55,7 @@ class LayersTraceSubjectTest {
 
     @Test
     fun exceptionContainsDebugInfo() {
-        val reader =
-            getLayerTraceReaderFromAsset("layers_trace_launch_split_screen.pb", legacyTrace = true)
+        val reader = getLayerTraceReaderFromAsset("layers_trace_launch_split_screen.perfetto-trace")
         val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
         val error = assertThrows<AssertionError> { LayersTraceSubject(trace, reader).isEmpty() }
         assertThatErrorContainsDebugInfo(error)
@@ -57,7 +63,7 @@ class LayersTraceSubjectTest {
 
     @Test
     fun testCanDetectEmptyRegionFromLayerTrace() {
-        val reader = getLayerTraceReaderFromAsset("layers_trace_emptyregion.pb", legacyTrace = true)
+        val reader = getLayerTraceReaderFromAsset("layers_trace_emptyregion.perfetto-trace")
         val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
         assertFail("SkRegion((0,0,1440,1440)) should cover at least SkRegion((0,0,1440,2880))") {
             LayersTraceSubject(trace, reader)
@@ -70,8 +76,7 @@ class LayersTraceSubjectTest {
 
     @Test
     fun testCanInspectBeginning() {
-        val reader =
-            getLayerTraceReaderFromAsset("layers_trace_launch_split_screen.pb", legacyTrace = true)
+        val reader = getLayerTraceReaderFromAsset("layers_trace_launch_split_screen.perfetto-trace")
         val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
         LayersTraceSubject(trace, reader)
             .first()
@@ -82,8 +87,7 @@ class LayersTraceSubjectTest {
 
     @Test
     fun testCanInspectEnd() {
-        val reader =
-            getLayerTraceReaderFromAsset("layers_trace_launch_split_screen.pb", legacyTrace = true)
+        val reader = getLayerTraceReaderFromAsset("layers_trace_launch_split_screen.perfetto-trace")
         val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
         LayersTraceSubject(trace, reader)
             .last()
@@ -93,8 +97,7 @@ class LayersTraceSubjectTest {
 
     @Test
     fun testAssertionsOnRange() {
-        val reader =
-            getLayerTraceReaderFromAsset("layers_trace_launch_split_screen.pb", legacyTrace = true)
+        val reader = getLayerTraceReaderFromAsset("layers_trace_launch_split_screen.perfetto-trace")
         val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
 
         LayersTraceSubject(trace, reader)
@@ -110,8 +113,7 @@ class LayersTraceSubjectTest {
 
     @Test
     fun testCanDetectChangingAssertions() {
-        val reader =
-            getLayerTraceReaderFromAsset("layers_trace_launch_split_screen.pb", legacyTrace = true)
+        val reader = getLayerTraceReaderFromAsset("layers_trace_launch_split_screen.perfetto-trace")
         val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
         LayersTraceSubject(trace, reader)
             .isVisible(ComponentNameMatcher.NAV_BAR)
@@ -129,10 +131,7 @@ class LayersTraceSubjectTest {
     @Test
     fun testCanDetectIncorrectVisibilityFromLayerTrace() {
         val reader =
-            getLayerTraceReaderFromAsset(
-                "layers_trace_invalid_layer_visibility.pb",
-                legacyTrace = true
-            )
+            getLayerTraceReaderFromAsset("layers_trace_invalid_layer_visibility.perfetto-trace")
         val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
         val error =
             assertThrows<AssertionError> {
@@ -145,7 +144,7 @@ class LayersTraceSubjectTest {
 
         Truth.assertThat(error)
             .hasMessageThat()
-            .contains("layers_trace_invalid_layer_visibility.pb")
+            .contains("layers_trace_invalid_layer_visibility.perfetto-trace")
         Truth.assertThat(error).hasMessageThat().contains("2d22h13m14s303ms")
         Truth.assertThat(error).hasMessageThat().contains("!isVisible")
         Truth.assertThat(error)
@@ -159,10 +158,7 @@ class LayersTraceSubjectTest {
     @Test
     fun testCanDetectInvalidVisibleLayerForMoreThanOneConsecutiveEntry() {
         val reader =
-            getLayerTraceReaderFromAsset(
-                "layers_trace_invalid_visible_layers.pb",
-                legacyTrace = true
-            )
+            getLayerTraceReaderFromAsset("layers_trace_invalid_visible_layers.perfetto-trace")
         val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
         val error =
             assertThrows<AssertionError> {
@@ -177,7 +173,7 @@ class LayersTraceSubjectTest {
         Truth.assertThat(error).hasMessageThat().contains("is not visible for 2 entries")
     }
 
-    private fun testCanDetectVisibleLayersMoreThanOneConsecutiveEntry(reader: IReader) {
+    private fun testCanDetectVisibleLayersMoreThanOneConsecutiveEntry(reader: Reader) {
         val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
         LayersTraceSubject(trace, reader)
             .visibleLayersShownMoreThanOneConsecutiveEntry()
@@ -187,17 +183,14 @@ class LayersTraceSubjectTest {
     @Test
     fun testCanDetectVisibleLayersMoreThanOneConsecutiveEntry() {
         testCanDetectVisibleLayersMoreThanOneConsecutiveEntry(
-            getLayerTraceReaderFromAsset("layers_trace_snapshot_visible.pb", legacyTrace = true)
+            getLayerTraceReaderFromAsset("layers_trace_snapshot_visible.perfetto-trace")
         )
     }
 
     @Test
     fun testCanIgnoreLayerEqualNameInVisibleLayersMoreThanOneConsecutiveEntry() {
         val reader =
-            getLayerTraceReaderFromAsset(
-                "layers_trace_invalid_visible_layers.pb",
-                legacyTrace = true
-            )
+            getLayerTraceReaderFromAsset("layers_trace_invalid_visible_layers.perfetto-trace")
         val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
         LayersTraceSubject(trace, reader)
             .visibleLayersShownMoreThanOneConsecutiveEntry(listOf(ComponentNameMatcher.STATUS_BAR))
@@ -206,8 +199,7 @@ class LayersTraceSubjectTest {
 
     @Test
     fun testCanIgnoreLayerShorterNameInVisibleLayersMoreThanOneConsecutiveEntry() {
-        val reader =
-            getLayerTraceReaderFromAsset("one_visible_layer_launcher_trace.pb", legacyTrace = true)
+        val reader = getLayerTraceReaderFromAsset("one_visible_layer_launcher_trace.perfetto-trace")
         val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
         val launcherComponent =
             ComponentNameMatcher(
@@ -220,7 +212,7 @@ class LayersTraceSubjectTest {
     }
 
     private fun detectRootLayer(fileName: String) {
-        val reader = getLayerTraceReaderFromAsset(fileName, legacyTrace = true)
+        val reader = getLayerTraceReaderFromAsset(fileName)
         val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
         for (entry in trace.entries) {
             val rootLayers = entry.children
@@ -236,17 +228,17 @@ class LayersTraceSubjectTest {
 
     @Test
     fun testCanDetectRootLayer() {
-        detectRootLayer("layers_trace_root.pb")
+        detectRootLayer("layers_trace_root.perfetto-trace")
     }
 
     @Test
     fun testCanDetectRootLayerAOSP() {
-        detectRootLayer("layers_trace_root_aosp.pb")
+        detectRootLayer("layers_trace_root_aosp.perfetto-trace")
     }
 
     @Test
     fun canTestLayerOccludedBySplashScreenLayerIsNotVisible() {
-        val reader = getLayerTraceReaderFromAsset("layers_trace_occluded.pb", legacyTrace = true)
+        val reader = getLayerTraceReaderFromAsset("layers_trace_occluded.perfetto-trace")
         val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
         val entry =
             LayersTraceSubject(trace, reader)
@@ -257,7 +249,7 @@ class LayersTraceSubjectTest {
 
     @Test
     fun testCanDetectLayerExpanding() {
-        val reader = getLayerTraceReaderFromAsset("layers_trace_openchrome.pb", legacyTrace = true)
+        val reader = getLayerTraceReaderFromAsset("layers_trace_openchrome.perfetto-trace")
         val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
         val animation =
             LayersTraceSubject(trace, reader).layers("animation-leash of app_transition#0")
@@ -278,7 +270,7 @@ class LayersTraceSubjectTest {
 
     @Test
     fun checkVisibleRegionAppMinusPipLayer() {
-        val reader = getLayerTraceReaderFromAsset("layers_trace_pip_wmshell.pb", legacyTrace = true)
+        val reader = getLayerTraceReaderFromAsset("layers_trace_pip_wmshell.perfetto-trace")
         val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
         val subject = LayersTraceSubject(trace, reader).last()
 
@@ -296,7 +288,7 @@ class LayersTraceSubjectTest {
 
     @Test
     fun checkVisibleRegionAppPlusPipLayer() {
-        val reader = getLayerTraceReaderFromAsset("layers_trace_pip_wmshell.pb", legacyTrace = true)
+        val reader = getLayerTraceReaderFromAsset("layers_trace_pip_wmshell.perfetto-trace")
         val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
         val subject = LayersTraceSubject(trace, reader).last()
         val pipRegion = subject.visibleRegion(TestComponents.PIP_APP).region
@@ -308,8 +300,7 @@ class LayersTraceSubjectTest {
 
     @Test
     fun checkCanDetectSplashScreen() {
-        val reader =
-            getLayerTraceReaderFromAsset("layers_trace_splashscreen.pb", legacyTrace = true)
+        val reader = getLayerTraceReaderFromAsset("layers_trace_splashscreen.perfetto-trace")
         val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
         LayersTraceSubject(trace, reader)
             .isVisible(TestComponents.LAUNCHER)
@@ -330,8 +321,7 @@ class LayersTraceSubjectTest {
 
     @Test
     fun checkCanDetectMissingSplashScreen() {
-        val reader =
-            getLayerTraceReaderFromAsset("layers_trace_splashscreen.pb", legacyTrace = true)
+        val reader = getLayerTraceReaderFromAsset("layers_trace_splashscreen.perfetto-trace")
         val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
 
         // No splashscreen because no matching activity record
@@ -342,10 +332,49 @@ class LayersTraceSubjectTest {
         }
     }
 
+    @Test
+    fun snapshotStartingWindowLayerCoversExactlyApp() {
+        val reader =
+            getLayerTraceReaderFromAsset(
+                "layers_trace_snapshotStartingWindowLayerCoversExactlyApp.perfetto-trace",
+                from = Timestamps.from(systemUptimeNanos = 1688243428961872440),
+                to = Timestamps.from(systemUptimeNanos = 1688243432147782644)
+            )
+        val component =
+            ComponentNameMatcher(FLICKER_APP_PACKAGE, "$FLICKER_APP_PACKAGE.ImeActivity")
+        val builder = ScenarioBuilder()
+        val flicker = LegacyFlickerTest(builder, { _ -> reader })
+        val scenario = flicker.initialize("test")
+        val result = Mockito.mock(IResultData::class.java)
+        DataStore.addResult(scenario, result)
+        flicker.assertLayers {
+            invoke("snapshotStartingWindowLayerCoversExactlyOnApp") {
+                val snapshotLayers =
+                    it.subjects.filter { subject ->
+                        ComponentNameMatcher.SNAPSHOT.layerMatchesAnyOf(subject.layer) &&
+                            subject.isVisible
+                    }
+                val visibleAreas =
+                    snapshotLayers
+                        .mapNotNull { snapshotLayer -> snapshotLayer.layer.visibleRegion }
+                        .toTypedArray()
+                val snapshotRegion = RegionSubject(visibleAreas, timestamp)
+                // Verify the size of snapshotRegion covers appVisibleRegion exactly in animation.
+                if (snapshotRegion.region.isNotEmpty) {
+                    val appVisibleRegion = it.visibleRegion(component)
+                    snapshotRegion.coversExactly(appVisibleRegion.region)
+                }
+            }
+        }
+    }
+
     companion object {
+        private const val LABEL = "ImeActivity"
+        private const val FLICKER_APP_PACKAGE = "com.android.server.wm.flicker.testapp"
+
         private val DISPLAY_REGION = Region.from(0, 0, 1440, 2880)
         private val DISPLAY_REGION_ROTATED = Region.from(0, 0, 2160, 1080)
 
-        @ClassRule @JvmField val cleanFlickerEnvironmentRule = CleanFlickerEnvironmentRule()
+        @ClassRule @JvmField val ENV_CLEANUP = CleanFlickerEnvironmentRuleWithDataStore()
     }
 }
