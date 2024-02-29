@@ -38,11 +38,11 @@ open class FragmentScreenshotTestRule(
     pathManager: GoldenImagePathManager,
     private val matcher: BitmapMatcher = UnitTestBitmapMatcher,
     private val decorFitsSystemWindows: Boolean = false,
-) : TestRule {
+    private val screenshotRule: ScreenshotTestRule = ScreenshotTestRule(pathManager)
+) : TestRule, BitmapDiffer by screenshotRule, ScreenshotAsserterFactory by screenshotRule {
     private val colorsRule = MaterialYouColorsRule()
     private val timeZoneRule = TimeZoneRule()
     private val deviceEmulationRule = DeviceEmulationRule(emulationSpec)
-    protected val screenshotRule = ScreenshotTestRule(pathManager)
     private val activityRule = ActivityScenarioRule(FragmentScreenshotActivity::class.java)
     private val commonRule =
         RuleChain.outerRule(deviceEmulationRule).around(screenshotRule).around(activityRule)
@@ -99,18 +99,18 @@ open class FragmentScreenshotTestRule(
             beforeScreenshot(activity)
         }
 
-        if (isRobolectric) {
-            val originalBitmap = contentView?.captureToBitmap()?.get(10, TimeUnit.SECONDS)
-            if (originalBitmap == null) {
-                error("timeout while trying to capture view to bitmap")
-            }
-            return bitmapWithMaterialYouColorsSimulation(
+        val originalBitmap = contentView?.captureToBitmapAsync()?.get(10, TimeUnit.SECONDS)
+        if (originalBitmap == null) {
+            error("timeout while trying to capture view to bitmap")
+        }
+        return if (isRobolectric) {
+            bitmapWithMaterialYouColorsSimulation(
                 originalBitmap,
                 emulationSpec.isDarkTheme,
                 /* doPixelAveraging= */ true
             )
         } else {
-            return contentView?.toBitmap() ?: error("contentView is null")
+            originalBitmap
         }
     }
 
@@ -130,7 +130,7 @@ open class FragmentScreenshotTestRule(
         beforeScreenshot: (AppCompatActivity) -> Unit = {},
     ) {
         val bitmap = takeScreenshotFragment(mode, beforeScreenshot, fragment)
-        screenshotRule.assertBitmapAgainstGolden(
+        assertBitmapAgainstGolden(
             bitmap,
             goldenIdentifier,
             matcher,
