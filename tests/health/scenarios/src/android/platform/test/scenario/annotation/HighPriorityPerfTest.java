@@ -14,14 +14,17 @@
  * limitations under the License.
  */
 
-package android.tools
+package android.platform.test.scenario.annotation;
 
-import org.junit.rules.TestWatcher
-import org.junit.runner.Description
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-/** Test rule to configure the [Logger] used during proto parsing and testing */
-class AndroidLoggerSetupRule : TestWatcher() {
-    override fun starting(description: Description?) {
-        CrossPlatform.setLogger(AndroidLogger())
-    }
-}
+/**
+ * Identifies the test as a High Priority test. Usually these tests will be executed in More
+ * branches like next, trunk The issues that are found in these tests will have higher priority
+ */
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE, ElementType.METHOD})
+public @interface HighPriorityPerfTest {}

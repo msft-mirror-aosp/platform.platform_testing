@@ -16,7 +16,6 @@
 
 package android.tools.traces.parsers.perfetto
 
-import android.tools.Logger
 import android.tools.Timestamp
 import android.tools.datatypes.ActiveBuffer
 import android.tools.datatypes.Color
@@ -35,6 +34,7 @@ import android.tools.traces.surfaceflinger.LayersTrace
 import android.tools.traces.surfaceflinger.Transform
 import android.tools.traces.surfaceflinger.Transform.Companion.isFlagClear
 import android.tools.traces.surfaceflinger.Transform.Companion.isFlagSet
+import android.tools.withTracing
 
 /** Parser for [LayersTrace] */
 class LayersTraceParser(
@@ -64,12 +64,12 @@ class LayersTraceParser(
             val snapshotGroups = snapshotsRows.groupBy { it["snapshot_id"] }
 
             for (snapshotId in 0L until snapshotGroups.size) {
-                Logger.withTracing("query + build entry") {
+                withTracing("query + build entry") {
                     val layerRows =
-                        Logger.withTracing("query layer rows") {
+                        withTracing("query layer rows") {
                             input.query(getSqlQueryLayers(snapshotId)) { it }
                         }
-                    Logger.withTracing("build entry") {
+                    withTracing("build entry") {
                         val snapshotRows = snapshotGroups[snapshotId]!!
                         val entry =
                             buildTraceEntry(snapshotRows, layerRows, realToMonotonicTimeOffsetNs)
@@ -95,11 +95,15 @@ class LayersTraceParser(
     ): LayerTraceEntry {
         val snapshotArgs = Args.build(snapshotRows)
         val displays = snapshotArgs.getChildren("displays")?.map { newDisplay(it) } ?: emptyList()
+        val excludesCompositionState =
+            snapshotArgs.getChild("excludes_composition_state")?.getBoolean() ?: false
 
         val idAndLayers =
             layersRows
                 .groupBy { it["layer_id"].toString() }
-                .map { (layerId, layerRows) -> Pair(layerId, newLayer(Args.build(layerRows))) }
+                .map { (layerId, layerRows) ->
+                    Pair(layerId, newLayer(Args.build(layerRows), excludesCompositionState))
+                }
                 .toMutableList()
         idAndLayers.sortBy { it.first.toLong() }
 
@@ -150,7 +154,7 @@ class LayersTraceParser(
                 .trimIndent()
         }
 
-        private fun newLayer(layer: Args, excludeCompositionState: Boolean = false): Layer {
+        private fun newLayer(layer: Args, excludesCompositionState: Boolean): Layer {
             // Differentiate between the cases when there's no HWC data on
             // the trace, and when the visible region is actually empty
             val activeBuffer = newActiveBuffer(layer.getChild("active_buffer"))
@@ -180,7 +184,7 @@ class LayersTraceParser(
                 layer.getChild("is_relative_of")?.getBoolean() ?: false,
                 layer.getChild("z_order_relative_of")?.getInt() ?: 0,
                 layer.getChild("layer_stack")?.getInt() ?: 0,
-                excludeCompositionState
+                excludesCompositionState
             )
         }
 
