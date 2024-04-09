@@ -81,7 +81,7 @@ class Mcc5gWfdDfs5gStaTest(d2d_performance_test_base.D2dPerformanceTestBase):
 
   def _get_throughput_low_tip(self) -> str:
     return (
-        'f{self._throughput_low_string}. This is a MCC test case where WFD uses'
+        f'{self._throughput_low_string}. This is a MCC test case where WFD uses'
         ' a 5G non-DFS channel and STA uses a5G DFS channel. Check with the'
         ' wifi chip vendorabout the possible firmware Tx/Rx issues in MCC mode.'
     )
@@ -89,12 +89,17 @@ class Mcc5gWfdDfs5gStaTest(d2d_performance_test_base.D2dPerformanceTestBase):
   def _is_wifi_ap_ready(self) -> bool:
     return True if self.test_parameters.wifi_dfs_5g_ssid else False
 
-  def _are_devices_capabilities_ok(self) -> bool:
-    return (
-        self.discoverer.supports_5g
-        and self.advertiser.supports_5g
-        and not self.advertiser.enable_sta_dfs_channel_for_peer_network
-    )
+  @property
+  def _devices_capabilities_definition(self) -> dict[str, dict[str, bool]]:
+    return {
+        'discoverer': {
+            'supports_5g': True,
+        },
+        'advertiser': {
+            'supports_5g': True,
+            'enable_sta_dfs_channel_for_peer_network': False,
+        },
+    }
 
 
 if __name__ == '__main__':
