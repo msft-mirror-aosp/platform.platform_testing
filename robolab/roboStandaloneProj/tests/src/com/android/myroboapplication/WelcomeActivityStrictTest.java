@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 The Android Open Source Project
+ * Copyright (C) 2024 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,26 @@
  * limitations under the License.
  */
 
-package android.platform.test.flag.junit;
+package com.android.myroboapplication;
 
-/** A Fake FeatureFlags to test the {@code MockFlagsRule}. */
-public interface FeatureFlags {
+import static org.junit.Assert.assertEquals;
 
-    boolean flagName3();
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 
-    boolean flagName4();
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
-    boolean roEnabled();
+// import org.robolectric.Robolectric;
 
-    boolean roDisabled();
+@RunWith(AndroidJUnit4.class)
+public class WelcomeActivityStrictTest {
+
+    @Before
+    public void setup() throws Exception {}
+
+    @Test
+    public void checkMath() throws Exception {
+        assertEquals(1 + 1, 2);
+    }
 }

@@ -102,7 +102,7 @@ public final class SetFlagsRuleAnnotationsTest {
                             Flags.flagName3();
                         })
                 .prepareTest()
-                .assertFailsWithType(NullPointerException.class);
+                .assertFailsWithType(IllegalArgumentException.class);
     }
 
     @Test
@@ -392,47 +392,6 @@ public final class SetFlagsRuleAnnotationsTest {
             return; // Test passes
         }
         fail("Should not be allowed to set flags after test ends.");
-    }
-
-    @Test
-    public void initAllFlagsToReleaseConfigDefault_worksOutsideOfTestCode() {
-        SetFlagsRule setFlagsRule = new SetFlagsRule(NULL_DEFAULT);
-        setFlagsRule.initAllFlagsToReleaseConfigDefault();
-        new AnnotationTestRuleHelper(setFlagsRule)
-                .setTestCode(
-                        () -> {
-                            setFlagsRule.enableFlags(Flags.FLAG_FLAG_NAME4);
-                            assertFalse(Flags.flagName3());
-                        })
-                .prepareTest()
-                .assertPasses();
-    }
-
-    @Test
-    public void initAllFlagsToReleaseConfigDefault_worksInsideTestCode() {
-        SetFlagsRule setFlagsRule = new SetFlagsRule(NULL_DEFAULT);
-        new AnnotationTestRuleHelper(setFlagsRule)
-                .setTestCode(
-                        () -> {
-                            setFlagsRule.initAllFlagsToReleaseConfigDefault();
-                            setFlagsRule.enableFlags(Flags.FLAG_FLAG_NAME4);
-                            assertFalse(Flags.flagName3());
-                        })
-                .prepareTest()
-                .assertPasses();
-    }
-
-    @Test
-    public void initAllFlagsToReleaseConfigDefault_failsAfterFlagIsSet() {
-        SetFlagsRule setFlagsRule = new SetFlagsRule(NULL_DEFAULT);
-        new AnnotationTestRuleHelper(setFlagsRule)
-                .setTestCode(
-                        () -> {
-                            setFlagsRule.enableFlags(Flags.FLAG_FLAG_NAME4);
-                            setFlagsRule.initAllFlagsToReleaseConfigDefault();
-                        })
-                .prepareTest()
-                .assertFailsWithType(IllegalStateException.class);
     }
 
     @Test
