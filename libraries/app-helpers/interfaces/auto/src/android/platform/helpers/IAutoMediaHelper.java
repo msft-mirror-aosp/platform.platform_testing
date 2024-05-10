@@ -18,7 +18,7 @@ package android.platform.helpers;
 
 import java.util.List;
 
-public interface IAutoMediaHelper extends IAppHelper {
+public interface IAutoMediaHelper extends IAppHelper, Scrollable {
     /**
      * Setup expectations: media app is open
      *
@@ -170,4 +170,142 @@ public interface IAutoMediaHelper extends IAppHelper {
      * @return Error message for no user login
      */
     String getMediaAppUserNotLoggedInErrorMessage();
+
+    /**
+     * Setup expectations: In Media.
+     *
+     * <p>Scroll up on page.
+     */
+    boolean scrollUpOnePage();
+
+    /**
+     * Setup expectations: In Media.
+     *
+     * <p>Scroll down on page.
+     */
+    boolean scrollDownOnePage();
+
+    /**
+     * Setup expectations: media test app is open.
+     *
+     * <p>This method is used to open Folder Menu with menuOptions and scroll into view the track.
+     * Example - openMenu->Folder->Mediafilename->trackName
+     * openMenuWith(Folder,mediafilename,trackName);
+     *
+     * @param menuOptions used to pass multiple level of menu options in one go.
+     */
+    void selectMediaTrack(String... menuOptions);
+
+    /**
+     * Setup expectations: Now Playing is open.
+     *
+     * <p>This method is used to select previous track.
+     */
+    void minimizeNowPlaying();
+
+    /**
+     * Setup expectations: media test app is open and Minimize control bar present.
+     *
+     * <p>This method is used to maximize the play back screen.
+     */
+    void maximizeNowPlaying();
+
+    /**
+     * Setup expectations: Bluetooth Audio page opened.
+     *
+     * <p>This method is return is Bluetooth Audio disconnected label visible.
+     */
+    boolean isBluetoothAudioDisconnectedLabelVisible();
+
+    /**
+     * Setup expectations: Bluetooth Audio page opened.
+     *
+     * <p>This method returns whether connect to bluetooth label visible or not.
+     */
+    boolean isConnectToBluetoothLabelVisible();
+
+    /**
+     * Setup expectations: on home screen.
+     *
+     * <p>This method is used to open Bluetooth Audio screen.
+     */
+    void openBluetoothMediaApp();
+
+    /**
+     * Setup expectations: Bluetooth Settings page opened.
+     *
+     * <p>This method is used to enable/disable Bluetooth conncetion.
+     */
+    void clickOnBluetoothToggle();
+
+    /**
+     * Setup expectations: Bluetooth Audio page opened.
+     *
+     * <p>This method is used to Cancel Bluetooth Audio conncetion.
+     */
+    void cancelBluetoothAudioConncetion();
+
+    /**
+     * Setup expectations: Bluetooth Audio page opened.
+     *
+     * <p>This method is used to Scroll down playlist.
+     */
+    void scrollPlayListDown();
+
+
+    /**
+     * Setup expectations: Bluetooth Audio page opened.
+     *
+     * <p>This method is used to select song from playlist.
+     */
+    void clickOnSongFromPlaylist();
+
+    /**
+     * Setup expectations: Media app is open and maximized now playing.
+     *
+     * @return get current artist tile
+     */
+    String getArtistrTitle();
+
+    /**
+     * Setup expectations: Media app is open and maximized now playing.
+     *
+     * @return get current album tile
+     */
+    String getAlbumTitle();
+
+    /**
+     * Setup expectations: Media app is open and maximized now playing.
+     *
+     * @return get current song playing time
+     */
+    String getSongCurrentPlayingTime();
+
+    /**
+     * Setup expectations: Media app is open and maximized now playing.
+     *
+     * @return get current song max playing time
+     */
+    String getCurrentSongMaxPlayingTime();
+
+    /**
+     * Setup expectations: Bluetooth Audio track maximized.
+     *
+     * <p>This method is return is "Now Playing" label visible.
+     */
+    boolean isNowPlayingLabelVisible();
+
+    /**
+     * Setup expectations: Bluetooth Audio track maximized.
+     *
+     * <p>This method is return is Playlist icon visible.
+     */
+    boolean isPlaylistIconVisible();
+
+    /**
+     * Setup expectations: Bluetooth Audio track maximized.
+     *
+     * <p>This method is used to click on playlist icon.
+     */
+    void clickOnPlaylistIcon();
 }

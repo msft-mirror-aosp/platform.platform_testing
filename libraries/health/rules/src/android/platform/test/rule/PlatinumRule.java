@@ -58,13 +58,14 @@ public class PlatinumRule implements TestRule {
             flavor =
                     UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
                             .executeShellCommand("getprop ro.build.flavor")
-                            .replaceAll("\\s", "");
+                            .replaceAll("\\s", "")
+                            .replace("-userdebug", "");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
         // If the target IS listed in the annotation's parameter, this rule is not applicable.
-        final boolean match = Arrays.asList(annotation.value().split(",")).contains(flavor);
+        final boolean match = Arrays.asList(annotation.devices().split(",")).contains(flavor);
         if (match) return base;
 
         // The test will be skipped upon start.
@@ -75,7 +76,7 @@ public class PlatinumRule implements TestRule {
                         "Skipping the test on target "
                                 + flavor
                                 + " which in not in "
-                                + annotation.value());
+                                + annotation.devices());
             }
         };
     }
@@ -83,6 +84,15 @@ public class PlatinumRule implements TestRule {
     @Retention(RetentionPolicy.RUNTIME)
     @Target({ElementType.TYPE})
     public @interface Platinum {
-        String value();
+        /**
+         * Comma-separated list of devices. The annotated test only runs on listed devices in
+         * monitored test suites.
+         */
+        String devices();
+
+        /**
+         * The bug for tracking the device exclusion. -1 means that no bug is associated.
+         */
+        int bugId() default -1;
     }
 }

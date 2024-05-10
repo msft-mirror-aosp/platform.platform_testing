@@ -15,101 +15,40 @@
 //
 
 package {
+    default_team: "trendy_team_windowing_tools",
     default_applicable_licenses: ["Android-Apache-2.0"],
 }
 
 java_test {
     name: "flickerlib",
     platform_apis: true,
+    kotlincflags: [
+        "-Xmulti-platform",
+        "-opt-in=kotlin.ExperimentalMultiplatform",
+    ],
     optimize: {
         enabled: false
     },
     srcs: [
-        "src/**/*.java",
-        "src/**/*.kt"
+        //"src/android/tools/device/AndroidLogger.kt",
+        "src/android/tools/device/flicker/**/*.kt",
+        "src/android/tools/device/flicker/**/*.eventlog"
+    ],
+    common_srcs: [
+        "src/android/tools/common/**/*.kt",
     ],
     static_libs: [
-        "flickerlib-core",
-        "flickerlib-helpers"
-    ],
-}
-
-java_library {
-    name: "flickerlib-core",
-    platform_apis: true,
-    optimize: {
-        enabled: false
-    },
-    srcs: [
-        "src/com/android/server/wm/flicker/**/*.java",
-        "src/com/android/server/wm/flicker/**/*.kt"
-    ],
-    java_resource_dirs: [
-        "src/com/android/server/wm/flicker/service/resources/"
-    ],
-    exclude_srcs: [
-        "**/helpers/*",
-    ],
-    static_libs: [
+        "flickerlib-apphelpers",
         "flickerlib-helpers",
+        "flickerlib-parsers",
         "compatibility-device-util-axt",
-        "ub-uiautomator",
         "androidx.test.uiautomator_uiautomator",
         "androidx.test.ext.junit",
-        "truth-prebuilt",
         "launcher-helper-lib",
-        "wm-proto-parsers",
         "platform-test-annotations",
         "platform-test-core-rules",
         "health-testing-utils",
         "collector-device-lib",
-        "kotlinx-coroutines-android",
     ],
 }
 
-java_library {
-    name: "flickerlib-helpers",
-    sdk_version: "test_current",
-    optimize: {
-        enabled: false
-    },
-    srcs: [
-        "src/**/helpers/*.java",
-        "src/**/helpers/*.kt",
-    ],
-    static_libs: [
-        "compatibility-device-util-axt",
-        "app-helpers-core",
-        "launcher-helper-lib",
-        "wm-proto-parsers",
-    ],
-}
-
-java_library {
-    name: "wm-proto-parsers",
-    sdk_version: "test_current",
-    optimize: {
-        enabled: false
-    },
-    srcs: [
-        "src/com/android/server/wm/traces/**/*.java",
-        "src/com/android/server/wm/traces/**/*.kt",
-    ],
-    static_libs: [
-        "android-support-annotations",
-        "androidx.test.ext.junit",
-        "platformprotosnano",
-        "layersprotosnano",
-        "flicker-tags-proto",
-    ],
-}
-
-java_library {
-    name: "flicker-tags-proto",
-    srcs: [
-        "**/*.proto",
-    ],
-    optimize: {
-        enabled: false
-    }
-}

@@ -16,8 +16,10 @@
 
 package platform.test.screenshot
 
+import android.app.UiAutomation
 import android.app.UiModeManager
 import android.content.Context
+import android.os.Build
 import android.os.UserHandle
 import android.view.Display
 import android.view.WindowManagerGlobal
@@ -41,18 +43,23 @@ import org.junit.runners.model.Statement
 class DeviceEmulationRule(private val spec: DeviceEmulationSpec) : TestRule {
 
     private val instrumentation = InstrumentationRegistry.getInstrumentation()
+    private val uiAutomation = instrumentation.uiAutomation
+    private val isRoblectric = Build.FINGERPRINT.contains("robolectric")
+
+    companion object {
+        var prevDensity: Int? = -1
+        var prevWidth: Int? = -1
+        var prevHeight: Int? = -1
+        var prevNightMode: Int? = UiModeManager.MODE_NIGHT_AUTO
+        var initialized: Boolean = false
+    }
 
     override fun apply(base: Statement, description: Description): Statement {
-        // The statement which calls beforeTest() before running the test and afterTest()
-        // afterwards.
+        // The statement which calls beforeTest() before running the test.
         return object : Statement() {
             override fun evaluate() {
-                try {
-                    beforeTest()
-                    base.evaluate()
-                } finally {
-                    afterTest()
-                }
+                beforeTest()
+                base.evaluate()
             }
         }
     }
@@ -61,27 +68,55 @@ class DeviceEmulationRule(private val spec: DeviceEmulationSpec) : TestRule {
         // Emulate the display size and density.
         val display = spec.display
         val density = display.densityDpi
-        val wm = WindowManagerGlobal.getWindowManagerService()
         val (width, height) = getEmulatedDisplaySize()
-        wm.setForcedDisplayDensityForUser(Display.DEFAULT_DISPLAY, density, UserHandle.myUserId())
-        wm.setForcedDisplaySize(Display.DEFAULT_DISPLAY, width, height)
 
-        // Force the dark/light theme.
-        val uiModeManager =
-            InstrumentationRegistry.getInstrumentation()
-                .targetContext
-                .getSystemService(Context.UI_MODE_SERVICE) as UiModeManager
-        uiModeManager.setApplicationNightMode(
-            if (spec.isDarkTheme) {
-                UiModeManager.MODE_NIGHT_YES
+        if (isRoblectric) {
+            // For Robolectric tests use RuntimeEnvironment.setQualifiers until wm is shadowed
+            // b/275751037  to address this issue.
+            val runtimeEnvironment = Class.forName("org.robolectric.RuntimeEnvironment")
+            val setQualifiers =
+                runtimeEnvironment.getDeclaredMethod("setQualifiers", String::class.java)
+            val scaledWidth = width * 160 / density
+            val scaledHeight = height * 160 / density
+            val qualifier = "w${scaledWidth}dp-h${scaledHeight}dp-${density}dpi"
+            setQualifiers.invoke(null, qualifier)
+        } else {
+            val curNightMode =
+                if (spec.isDarkTheme) {
+                    UiModeManager.MODE_NIGHT_YES
+                } else {
+                    UiModeManager.MODE_NIGHT_NO
+                }
+
+            if (initialized) {
+                if (prevDensity != density) {
+                    setDisplayDensity(density)
+                }
+                if (prevWidth != width || prevHeight != height) {
+                    setDisplaySize(width, height)
+                }
+                if (prevNightMode != curNightMode) {
+                    setNightMode(curNightMode)
+                }
             } else {
-                UiModeManager.MODE_NIGHT_NO
-            }
-        )
+                // Make sure that we are in natural orientation (rotation 0) before we set the
+                // screen size.
+                uiAutomation.setRotation(UiAutomation.ROTATION_FREEZE_0)
 
-        // Make sure that all devices are in touch mode to avoid screenshot differences
-        // in focused elements when in keyboard mode
-        instrumentation.setInTouchMode(true)
+                setDisplayDensity(density)
+                setDisplaySize(width, height)
+
+                // Force the dark/light theme.
+                setNightMode(curNightMode)
+
+                // Make sure that all devices are in touch mode to avoid screenshot differences
+                // in focused elements when in keyboard mode.
+                instrumentation.setInTouchMode(true)
+
+                // Set the initialization fact.
+                initialized = true
+            }
+        }
     }
 
     /** Get the emulated display size for [spec]. */
@@ -95,20 +130,35 @@ class DeviceEmulationRule(private val spec: DeviceEmulationSpec) : TestRule {
         }
     }
 
-    private fun afterTest() {
-        // Reset the density and display size.
+    private fun setDisplayDensity(density: Int) {
         val wm = WindowManagerGlobal.getWindowManagerService()
-        wm.clearForcedDisplayDensityForUser(Display.DEFAULT_DISPLAY, UserHandle.myUserId())
-        wm.clearForcedDisplaySize(Display.DEFAULT_DISPLAY)
+            ?: error("Unable to acquire WindowManager")
+        wm.setForcedDisplayDensityForUser(
+            Display.DEFAULT_DISPLAY,
+            density,
+            UserHandle.myUserId()
+        )
+        prevDensity = density
+    }
 
-        // Reset the dark/light theme.
-        val uiModeManager =
-            InstrumentationRegistry.getInstrumentation()
-                .targetContext
-                .getSystemService(Context.UI_MODE_SERVICE) as UiModeManager
-        uiModeManager.setApplicationNightMode(UiModeManager.MODE_NIGHT_AUTO)
+    private fun setDisplaySize(
+        width: Int,
+        height: Int
+    ) {
+        val wm = WindowManagerGlobal.getWindowManagerService()
+            ?: error("Unable to acquire WindowManager")
+        wm.setForcedDisplaySize(Display.DEFAULT_DISPLAY, width, height)
+        prevWidth = width
+        prevHeight = height
+    }
 
-        instrumentation.resetInTouchMode()
+    private fun setNightMode(nightMode: Int) {
+       val uiModeManager =
+           InstrumentationRegistry.getInstrumentation()
+               .targetContext
+               .getSystemService(Context.UI_MODE_SERVICE) as UiModeManager
+       uiModeManager.setApplicationNightMode(nightMode)
+       prevNightMode = nightMode
     }
 }
 

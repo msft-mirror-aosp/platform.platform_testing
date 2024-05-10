@@ -22,7 +22,7 @@ java_library {
     name: "AuptLib",
     libs: [
         "androidx.test.runner",
-        "ub-uiautomator",
+        "androidx.test.uiautomator_uiautomator",
         "junit",
         "android.test.runner.stubs",
         "android.test.base.stubs",
@@ -30,20 +30,3 @@ java_library {
     srcs: ["src/**/*.java"],
 }
 
-//#####################################
-
-android_test {
-    name: "AuptRunner",
-
-    platform_apis: true,
-    static_libs: [
-        "androidx.test.runner",
-        "ub-uiautomator",
-        "junit",
-    ],
-    libs: [
-        "android.test.base.stubs",
-        "android.test.runner.stubs",
-    ],
-    srcs: ["src/**/*.java"],
-}

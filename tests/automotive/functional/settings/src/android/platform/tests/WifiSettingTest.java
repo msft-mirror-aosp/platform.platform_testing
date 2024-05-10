@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 The Android Open Source Project
+ * Copyright (C) 2023 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,16 +19,14 @@ package android.platform.tests;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
 
-import android.platform.helpers.AutoConfigConstants;
-import android.platform.helpers.AutoUtility;
 import android.platform.helpers.HelperAccessor;
 import android.platform.helpers.IAutoSettingHelper;
+import android.platform.helpers.SettingsConstants;
 
 import androidx.test.runner.AndroidJUnit4;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -40,14 +38,13 @@ public class WifiSettingTest {
         mSettingHelper = new HelperAccessor<>(IAutoSettingHelper.class);
     }
 
-    @BeforeClass
-    public static void exitSuw() {
-        AutoUtility.exitSuw();
-    }
 
     @Before
     public void openNetworkSetting() {
-        mSettingHelper.get().openSetting(AutoConfigConstants.NETWORK_AND_INTERNET_SETTINGS);
+        mSettingHelper.get().openSetting(SettingsConstants.NETWORK_AND_INTERNET_SETTINGS);
+        assertTrue(
+                "Network and Internet settings did not open",
+                mSettingHelper.get().checkMenuExists("Hotspot"));
     }
 
     @After

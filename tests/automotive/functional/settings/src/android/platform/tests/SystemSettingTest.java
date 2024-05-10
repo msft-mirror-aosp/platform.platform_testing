@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 The Android Open Source Project
+ * Copyright (C) 2023 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,20 +18,19 @@ package android.platform.tests;
 
 import static junit.framework.Assert.assertTrue;
 
-import android.platform.helpers.AutoConfigConstants;
-import android.platform.helpers.AutoUtility;
-import android.platform.helpers.IAutoSystemSettingsHelper;
-import android.platform.helpers.IAutoSettingHelper;
 import android.platform.helpers.HelperAccessor;
-import androidx.test.runner.AndroidJUnit4;
+import android.platform.helpers.IAutoSettingHelper;
+import android.platform.helpers.IAutoSystemSettingsHelper;
+import android.platform.helpers.SettingsConstants;
 
-import java.util.Date;
+import androidx.test.runner.AndroidJUnit4;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.util.Date;
 
 @RunWith(AndroidJUnit4.class)
 public class SystemSettingTest {
@@ -43,14 +42,13 @@ public class SystemSettingTest {
         mSystemSettingsHelper = new HelperAccessor<>(IAutoSystemSettingsHelper.class);
     }
 
-    @BeforeClass
-    public static void exitSuw() {
-        AutoUtility.exitSuw();
-    }
 
     @Before
     public void openSystemFacet() {
-        mSettingHelper.get().openSetting(AutoConfigConstants.SYSTEM_SETTINGS);
+        mSettingHelper.get().openSetting(SettingsConstants.SYSTEM_SETTINGS);
+        assertTrue(
+                "System settings did not open",
+                mSettingHelper.get().checkMenuExists("Languages & input"));
     }
 
     @After

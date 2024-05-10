@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 The Android Open Source Project
+ * Copyright (C) 2023 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,20 +18,19 @@ package android.platform.tests;
 
 import static junit.framework.Assert.assertTrue;
 
-import android.platform.helpers.AutoConfigConstants;
-import android.platform.helpers.AutoUtility;
+import android.platform.helpers.HelperAccessor;
 import android.platform.helpers.IAutoDateTimeSettingsHelper;
 import android.platform.helpers.IAutoSettingHelper;
-import android.platform.helpers.HelperAccessor;
-import androidx.test.runner.AndroidJUnit4;
+import android.platform.helpers.SettingsConstants;
 
-import java.time.LocalDate;
+import androidx.test.runner.AndroidJUnit4;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.time.LocalDate;
 
 @RunWith(AndroidJUnit4.class)
 public class DateTimeSettingTest {
@@ -47,7 +46,7 @@ public class DateTimeSettingTest {
     private static final int DAY = 9;
     private static final LocalDate DATE = LocalDate.of(YEAR, MONTH, DAY);
 
-    private static final String FULL_TIME_TWELVE = "9:23 AM";
+    private static final String FULL_TIME_TWELVE_REGEX = "9:23[ \\x{202f}]AM";
     private static final String FULL_TIME_TWENTYFOUR = "09:23";
     private static final String TIME_ZONE = "Costa Rica";
     private static final String TIME_ZONE_FULL = "GMT-06:00 Central Standard Time";
@@ -57,14 +56,10 @@ public class DateTimeSettingTest {
         mSettingHelper = new HelperAccessor<>(IAutoSettingHelper.class);
     }
 
-    @BeforeClass
-    public static void exitSuw() {
-        AutoUtility.exitSuw();
-    }
 
     @Before
     public void openDateTimeFacet() {
-        mSettingHelper.get().openSetting(AutoConfigConstants.DATE_AND_TIME_SETTINGS);
+        mSettingHelper.get().openSetting(SettingsConstants.DATE_AND_TIME_SETTINGS);
     }
 
     @After
@@ -81,7 +76,7 @@ public class DateTimeSettingTest {
     @Test
     public void testSetTimeTwelveHourFormat() {
         mDateTimeSettingsHelper.get().setTimeInTwelveHourFormat(HOUR, MINUTE, IS_AM);
-        assertTrue(mDateTimeSettingsHelper.get().getTime().equals(FULL_TIME_TWELVE));
+        assertTrue(mDateTimeSettingsHelper.get().getTime().matches(FULL_TIME_TWELVE_REGEX));
     }
 
     @Test

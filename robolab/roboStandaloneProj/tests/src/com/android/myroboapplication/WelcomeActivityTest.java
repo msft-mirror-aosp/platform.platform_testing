@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 The Android Open Source Project
+ * Copyright (C) 2024 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +17,8 @@
 package com.android.myroboapplication;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import android.content.Intent;
-
-import com.android.robotestutil.RobolectricTestUtil;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -48,11 +45,5 @@ public class WelcomeActivityTest {
         Intent expectedIntent = new Intent(activity, LoginActivity.class);
         Intent actual = ShadowApplication.getInstance().getNextStartedActivity();
         assertEquals(expectedIntent.getComponent(), actual.getComponent());
-    }
-
-    @Test
-    public void testTypeCheck() {
-        boolean isRoboTest = RobolectricTestUtil.isRobolectricTest();
-        assertTrue(isRoboTest);
     }
 }

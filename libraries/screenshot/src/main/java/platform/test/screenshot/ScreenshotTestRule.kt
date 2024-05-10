@@ -16,21 +16,29 @@
 
 package platform.test.screenshot
 
+import android.annotation.ColorInt
 import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.Rect
+import android.os.Build
 import android.os.Bundle
+import android.platform.uiautomator_helpers.DeviceHelpers.shell
+import android.provider.Settings.System
 import androidx.test.platform.app.InstrumentationRegistry
+import androidx.test.runner.screenshot.Screenshot
+import com.android.internal.app.SimpleIconFactory
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
 import java.io.IOException
-import androidx.test.runner.screenshot.Screenshot
-import com.android.internal.app.SimpleIconFactory
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.Paths
+import kotlin.io.path.outputStream
+import kotlin.io.path.writeText
 import org.junit.rules.TestRule
-import org.junit.rules.TestWatcher
 import org.junit.runner.Description
 import org.junit.runners.model.Statement
 import platform.test.screenshot.matchers.BitmapMatcher
@@ -45,16 +53,12 @@ import platform.test.screenshot.proto.ScreenshotResultProto
  * comparison against the given golden. All the results (including result proto file) are stored
  * into the device to be retrieved later.
  *
- * @param config To configure where this rule should look for goldens.
- * @param outputRootDir The root directory for output files.
- *
  * @see Bitmap.assertAgainstGolden
  */
 @SuppressLint("SyntheticAccessor")
 open class ScreenshotTestRule(
     val goldenImagePathManager: GoldenImagePathManager
 ) : TestRule {
-
     private val imageExtension = ".png"
     private val resultBinaryProtoFileSuffix = "goldResult.pb"
     // This is used in CI to identify the files.
@@ -65,38 +69,48 @@ open class ScreenshotTestRule(
     private val bundleKeyPrefix = "platform_screenshots_"
 
     private lateinit var testIdentifier: String
-    private lateinit var deviceId: String
 
-    private val testWatcher = object : TestWatcher() {
-        override fun starting(description: Description?) {
-            testIdentifier = "${description!!.className}_${description.methodName}"
-        }
-    }
-
-    override fun apply(base: Statement, description: Description?): Statement {
-        return ScreenshotTestStatement(base)
-            .run { testWatcher.apply(this, description) }
-    }
-
-    class ScreenshotTestStatement(private val base: Statement) : Statement() {
-        override fun evaluate() {
-            try {
-                SimpleIconFactory.setPoolEnabled(false)
-                base.evaluate()
-            } finally {
-                SimpleIconFactory.setPoolEnabled(true)
+    override fun apply(base: Statement, description: Description): Statement =
+        object : Statement() {
+            override fun evaluate() {
+                try {
+                    testIdentifier = getTestIdentifier(description)
+                    SimpleIconFactory.setPoolEnabled(false)
+                    base.evaluate()
+                } finally {
+                    SimpleIconFactory.setPoolEnabled(true)
+                }
             }
+        }
+
+    open fun getTestIdentifier(description: Description): String =
+            "${description.className}_${description.methodName}"
+
+    private val isRobolectric = Build.FINGERPRINT.contains("robolectric")
+    private fun isGradle(): Boolean =
+            java.lang.System.getProperty("java.class.path").contains("gradle-worker.jar")
+
+    fun Bitmap.writeTo(path: Path) {
+        // Make sure we either create a new file or overwrite an existing one.
+        check(!Files.exists(path) || Files.isRegularFile(path))
+
+        // Make sure the parent directory exists.
+        Files.createDirectories(path.parent)
+
+        // Write the Bitmap to the given file.
+        path.outputStream().use { stream ->
+            this@writeTo.compress(Bitmap.CompressFormat.PNG, 0, stream)
         }
     }
 
     private fun fetchExpectedImage(goldenIdentifier: String): Bitmap? {
         val instrument = InstrumentationRegistry.getInstrumentation()
         return listOf(
-                instrument.targetContext.applicationContext,
-                instrument.context
-        ).map {
+            instrument.targetContext.applicationContext,
+            instrument.context
+        ).map { context ->
             try {
-                it.assets.open(
+                context.assets.open(
                     goldenImagePathManager.goldenIdentifierResolver(goldenIdentifier)
                 ).use {
                     return@use BitmapFactory.decodeStream(it)
@@ -126,7 +140,7 @@ open class ScreenshotTestRule(
      * is empty.
      */
     @Deprecated("use the ScreenshotTestRuleAsserter")
-    public fun assertBitmapAgainstGolden(
+    fun assertBitmapAgainstGolden(
         actual: Bitmap,
         goldenIdentifier: String,
         matcher: BitmapMatcher
@@ -159,7 +173,7 @@ open class ScreenshotTestRule(
      * is empty.
      */
     @Deprecated("use the ScreenshotTestRuleAsserter")
-    public fun assertBitmapAgainstGolden(
+    fun assertBitmapAgainstGolden(
         actual: Bitmap,
         goldenIdentifier: String,
         matcher: BitmapMatcher,
@@ -176,7 +190,7 @@ open class ScreenshotTestRule(
         if (expected == null) {
             reportResult(
                 status = ScreenshotResultProto.DiffResult.Status.MISSING_REFERENCE,
-                assetsPathRelativeToRepo = goldenImagePathManager.assetsPathRelativeToRepo,
+                assetsPathRelativeToRepo = goldenImagePathManager.assetsPathRelativeToBuildRoot,
                 goldenIdentifier = goldenIdentifier,
                 actual = actual
             )
@@ -190,7 +204,7 @@ open class ScreenshotTestRule(
         if (actual.width != expected.width || actual.height != expected.height) {
             reportResult(
                 status = ScreenshotResultProto.DiffResult.Status.FAILED,
-                assetsPathRelativeToRepo = goldenImagePathManager.assetsPathRelativeToRepo,
+                assetsPathRelativeToRepo = goldenImagePathManager.assetsPathRelativeToBuildRoot,
                 goldenIdentifier = goldenIdentifier,
                 actual = actual,
                 expected = expected
@@ -215,22 +229,27 @@ open class ScreenshotTestRule(
             ScreenshotResultProto.DiffResult.Status.FAILED
         }
 
-        reportResult(
-            status = status,
-            assetsPathRelativeToRepo = goldenImagePathManager.assetsPathRelativeToRepo,
-            goldenIdentifier = goldenIdentifier,
-            actual = actual,
-            comparisonStatistics = comparisonResult.comparisonStatistics,
-            expected = highlightedBitmap(expected, regions),
-            diff = comparisonResult.diff
-        )
-
         if (!comparisonResult.matches) {
+            val expectedWithHighlight = highlightedBitmap(expected, regions)
+            reportResult(
+                status = status,
+                assetsPathRelativeToRepo = goldenImagePathManager.assetsPathRelativeToBuildRoot,
+                goldenIdentifier = goldenIdentifier,
+                actual = actual,
+                comparisonStatistics = comparisonResult.comparisonStatistics,
+                expected = expectedWithHighlight,
+                diff = comparisonResult.diff
+            )
+
+            expectedWithHighlight.recycle()
+            expected.recycle()
+
             throw AssertionError(
-                "Image mismatch! Comparison stats: '${comparisonResult
-                    .comparisonStatistics}'"
+                    "Image mismatch! Comparison stats: '${comparisonResult.comparisonStatistics}'"
             )
         }
+
+        expected.recycle()
     }
 
     private fun reportResult(
@@ -248,7 +267,8 @@ open class ScreenshotTestRule(
             .addMetadata(
                 ScreenshotResultProto.Metadata.newBuilder()
                     .setKey("repoRootPath")
-                    .setValue(goldenImagePathManager.deviceLocalPath))
+                    .setValue(goldenImagePathManager.deviceLocalPath)
+            )
 
         if (comparisonStatistics != null) {
             resultProto.comparisonStatistics = comparisonStatistics
@@ -293,21 +313,100 @@ open class ScreenshotTestRule(
         }
 
         InstrumentationRegistry.getInstrumentation().sendStatus(bundleStatusInProgress, report)
+
+        if (isGradle() && isRobolectric) {
+            val localDir = Paths.get("/tmp/screenshots")
+            val actualDir = localDir.resolve("actual")
+            val expectedDir = localDir.resolve("expected")
+            val diffDir = localDir.resolve("diff")
+            val reportDir = localDir.resolve("report")
+
+            val imagePath = goldenImagePathManager.goldenIdentifierResolver(goldenIdentifier)
+            val actualImagePath = actualDir.resolve(imagePath)
+            val expectedImagePath = expectedDir.resolve(imagePath)
+            val diffImagePath = diffDir.resolve(imagePath)
+
+            actual.writeTo(actualImagePath)
+            expected?.writeTo(expectedImagePath)
+            diff?.writeTo(diffImagePath)
+
+            check(imagePath.endsWith(imageExtension))
+
+            val reportPath =
+                reportDir.resolve(
+                    imagePath.substring(0, imagePath.length - imageExtension.length) + ".html"
+                )
+
+            println("file://$reportPath")
+            Files.createDirectories(reportPath.parent)
+
+            fun html(bitmap: Bitmap?, image: Path, name: String, alt: String): String {
+                return if (bitmap == null) {
+                    ""
+                } else {
+                    """
+                        <p>
+                            <h2><a href="file://$image">$name</a></h2>
+                            <img src="$image" alt="$alt"/>
+                        </p>
+                    """.trimIndent()
+                }
+            }
+
+            reportPath.writeText(
+                """
+                    <!DOCTYPE html>
+                    <meta charset="utf-8">
+                    <title>$imagePath</title>
+                    <p><h1>$testIdentifier</h1></p>
+                    ${html(expected, expectedImagePath, "Expected", "Golden")}
+                    ${html(actual, actualImagePath, "Actual", "Actual")}
+                    ${html(diff, diffImagePath, "Diff", "Diff")}
+                """.trimIndent()
+            )
+        }
     }
 
     internal fun getPathOnDeviceFor(fileType: OutputFileType, goldenIdentifier: String): File {
-        val imageSuffix = "${goldenImagePathManager}_$goldenIdentifier$imageExtension"
+        val imageSuffix = getOnDeviceImageSuffix(goldenIdentifier)
+        val protoSuffix = getOnDeviceArtifactsSuffix(goldenIdentifier, resultProtoFileSuffix)
+        val binProtoSuffix =
+            getOnDeviceArtifactsSuffix(goldenIdentifier, resultBinaryProtoFileSuffix)
+        val succinctTestIdentifier = getSuccinctTestIdentifier(testIdentifier)
         val fileName = when (fileType) {
             OutputFileType.IMAGE_ACTUAL ->
-                "${testIdentifier}_actual_$imageSuffix"
+                "${succinctTestIdentifier}_actual_$imageSuffix"
             OutputFileType.IMAGE_EXPECTED ->
-                "${testIdentifier}_expected_$imageSuffix"
+                "${succinctTestIdentifier}_expected_$imageSuffix"
             OutputFileType.IMAGE_DIFF ->
-                "${testIdentifier}_diff_$imageSuffix"
-            OutputFileType.RESULT_PROTO -> "${testIdentifier}_$resultProtoFileSuffix"
-            OutputFileType.RESULT_BIN_PROTO -> "${testIdentifier}_$resultBinaryProtoFileSuffix"
+                "${succinctTestIdentifier}_diff_$imageSuffix"
+            OutputFileType.RESULT_PROTO ->
+                "${succinctTestIdentifier}_$protoSuffix"
+            OutputFileType.RESULT_BIN_PROTO ->
+                "${succinctTestIdentifier}_$binProtoSuffix"
         }
         return File(goldenImagePathManager.deviceLocalPath, fileName)
+    }
+
+    open fun getOnDeviceImageSuffix(goldenIdentifier: String): String {
+        val resolvedGoldenIdentifier =
+            goldenImagePathManager.goldenIdentifierResolver(goldenIdentifier)
+                .replace('/', '_')
+                .replace(imageExtension, "")
+        return "$resolvedGoldenIdentifier$imageExtension"
+    }
+
+    open fun getOnDeviceArtifactsSuffix(goldenIdentifier: String, suffix: String): String {
+        val resolvedGoldenIdentifier =
+            goldenImagePathManager.goldenIdentifierResolver(goldenIdentifier)
+                .replace('/', '_')
+                .replace(imageExtension, "")
+        return "${resolvedGoldenIdentifier}_$suffix"
+    }
+
+    open fun getSuccinctTestIdentifier(identifier: String): String {
+        val pattern = Regex("\\[([A-Za-z0-9_]+)\\]")
+        return pattern.replace(identifier, "")
     }
 
     private fun Bitmap.writeToDevice(fileType: OutputFileType, goldenIdentifier: String): File {
@@ -322,95 +421,62 @@ open class ScreenshotTestRule(
         writeAction: (FileOutputStream) -> Unit
     ): File {
         val fileGolden = File(goldenImagePathManager.deviceLocalPath)
-        if (!fileGolden.exists() && !fileGolden.mkdir()) {
+        if (!fileGolden.exists() && !fileGolden.mkdirs()) {
             throw IOException("Could not create folder $fileGolden.")
         }
 
-        var file = getPathOnDeviceFor(fileType, goldenIdentifier)
-        try {
-            FileOutputStream(file).use {
-                writeAction(it)
+        val file = getPathOnDeviceFor(fileType, goldenIdentifier)
+        if (!file.exists()) {
+            // file typically exists when in one test, the same golden image was repeatedly
+            // compared with. In this scenario, multiple actual/expected/diff images with same
+            // names will be attempted to write to the device.
+            try {
+                FileOutputStream(file).use {
+                    writeAction(it)
+                }
+            } catch (e: Exception) {
+                throw IOException(
+                        "Could not write file to storage (path: ${file.absolutePath}). ", e)
             }
-        } catch (e: Exception) {
-            throw IOException(
-                "Could not write file to storage (path: ${file.absolutePath}). " +
-                    " Stacktrace: " + e.stackTrace
-            )
         }
+
         return file
     }
 
-    private fun colorPixel(
-        bitmapArray: IntArray,
-        width: Int,
-        height: Int,
-        row: Int,
-        column: Int,
-        extra: Int,
-        colorForHighlight: Int
-    ) {
-        val startRow = if (row - extra < 0) { 0 } else { row - extra }
-        val endRow = if (row + extra >= height) { height - 1 } else { row + extra }
-        val startColumn = if (column - extra < 0) { 0 } else { column - extra }
-        val endColumn = if (column + extra >= width) { width - 1 } else { column + extra }
-        for (i in startRow..endRow) {
-            for (j in startColumn..endColumn) {
-                bitmapArray[j + i * width] = colorForHighlight
+    /** This will create a new Bitmap with the output (not modifying the [original] Bitmap */
+    private fun highlightedBitmap(original: Bitmap, regions: List<Rect>): Bitmap {
+        if (regions.isEmpty()) return original
+
+        val outputBitmap = original.copy(original.config!!, true)
+        val imageRect = Rect(0, 0, original.width, original.height)
+        val regionLineWidth = 2
+        for (region in regions) {
+            val regionToDraw = Rect(region)
+                    .apply {
+                        inset(-regionLineWidth, -regionLineWidth)
+                        intersect(imageRect)
+                    }
+
+            repeat(regionLineWidth) {
+                drawRectOnBitmap(outputBitmap, regionToDraw, Color.RED)
+                regionToDraw.inset(1, 1)
+                regionToDraw.intersect(imageRect)
             }
         }
+        return outputBitmap
     }
 
-    private fun highlightedBitmap(original: Bitmap?, regions: List<Rect>): Bitmap? {
-        if (original == null || regions.isEmpty()) {
-            return original
+    private fun drawRectOnBitmap(bitmap: Bitmap, rect: Rect, @ColorInt color: Int) {
+        // Draw top and bottom edges
+        for (x in rect.left until rect.right) {
+            bitmap.setPixel(x, rect.top, color)
+            bitmap.setPixel(x, rect.bottom - 1, color)
         }
-        val bitmapArray = original.toIntArray()
-        val colorForHighlight = Color.argb(255, 255, 0, 0)
-        for (region in regions) {
-            for (i in region.top..region.bottom) {
-                if (i >= original.height) { break }
-                colorPixel(
-                    bitmapArray,
-                    original.width,
-                    original.height,
-                    i,
-                    region.left,
-                    /* extra= */2,
-                    colorForHighlight
-                )
-                colorPixel(
-                    bitmapArray,
-                    original.width,
-                    original.height,
-                    i,
-                    region.right,
-                    /* extra= */2,
-                    colorForHighlight
-                )
-            }
-            for (j in region.left..region.right) {
-                if (j >= original.width) { break }
-                colorPixel(
-                    bitmapArray,
-                    original.width,
-                    original.height,
-                    region.top,
-                    j,
-                    /* extra= */2,
-                    colorForHighlight
-                )
-                colorPixel(
-                    bitmapArray,
-                    original.width,
-                    original.height,
-                    region.bottom,
-                    j,
-                    /* extra= */2,
-                    colorForHighlight
-                )
-            }
+        // Draw left and right edge
+        for (y in rect.top until rect.bottom) {
+            bitmap.setPixel(rect.left, y, color)
+            bitmap.setPixel(rect.right - 1, y, color)
         }
-        return Bitmap.createBitmap(bitmapArray, original.width, original.height, original.config)
     }
 }
 
@@ -419,36 +485,85 @@ typealias BitmapSupplier = () -> Bitmap
 /**
  * Implements a screenshot asserter based on the ScreenshotRule
  */
-class ScreenshotRuleAsserter private constructor(private val rule: ScreenshotTestRule) : ScreenshotAsserter {
+class ScreenshotRuleAsserter private constructor(
+    private val rule: ScreenshotTestRule
+) : ScreenshotAsserter {
     // use the most constraining matcher as default
     private var matcher: BitmapMatcher = PixelPerfectMatcher()
+    private var beforeScreenshot: Runnable? = null
+    private var afterScreenshot: Runnable? = null
+
     // use the instrumentation screenshot as default
     private var screenShotter: BitmapSupplier = { Screenshot.capture().bitmap }
+
+    private var pointerLocationSetting: Int
+        get() = shell("settings get system ${System.POINTER_LOCATION}").trim().toIntOrNull() ?: 0
+        set(value) { shell("settings put system ${System.POINTER_LOCATION} $value") }
+
+    private var showTouchesSetting
+        get() = shell("settings get system ${System.SHOW_TOUCHES}").trim().toIntOrNull() ?: 0
+        set(value) { shell("settings put system ${System.SHOW_TOUCHES} $value") }
+
+    private var prevPointerLocationSetting: Int? = null
+    private var prevShowTouchesSetting: Int? = null
     override fun assertGoldenImage(goldenId: String) {
-        rule.assertBitmapAgainstGolden(screenShotter(), goldenId, matcher)
+        runBeforeScreenshot()
+        var actual: Bitmap? = null
+        try {
+            actual = screenShotter()
+            rule.assertBitmapAgainstGolden(actual, goldenId, matcher)
+        } finally {
+            actual?.recycle()
+            runAfterScreenshot()
+        }
     }
 
     override fun assertGoldenImage(goldenId: String, areas: List<Rect>) {
-        rule.assertBitmapAgainstGolden(screenShotter(), goldenId, matcher, areas)
+        runBeforeScreenshot()
+        var actual: Bitmap? = null
+        try {
+            actual = screenShotter()
+            rule.assertBitmapAgainstGolden(actual, goldenId, matcher, areas)
+        } finally {
+            actual?.recycle()
+            runAfterScreenshot()
+        }
+    }
+
+    private fun runBeforeScreenshot() {
+        prevPointerLocationSetting = pointerLocationSetting
+        prevShowTouchesSetting = showTouchesSetting
+
+        if (prevPointerLocationSetting != 0) pointerLocationSetting = 0
+        if (prevShowTouchesSetting != 0) showTouchesSetting = 0
+
+        beforeScreenshot?.run()
+    }
+
+    private fun runAfterScreenshot() {
+        afterScreenshot?.run()
+
+        prevPointerLocationSetting?.let { pointerLocationSetting = it }
+        prevShowTouchesSetting?.let { showTouchesSetting = it }
     }
 
     class Builder(private val rule: ScreenshotTestRule) {
         private var asserter = ScreenshotRuleAsserter(rule)
-        fun withMatcher(matcher: BitmapMatcher): Builder {
-            asserter.matcher = matcher
-            return this
-        }
+        fun withMatcher(matcher: BitmapMatcher): Builder = apply { asserter.matcher = matcher }
 
-        fun setScreenshotProvider(screenshotProvider: BitmapSupplier): Builder {
-            asserter.screenShotter = screenshotProvider
-            return this
-        }
+        /**
+         * The [Bitmap] produced by [screenshotProvider] will be recycled immediately after
+         * assertions are completed. Therefore, do not retain references to created [Bitmap]s.
+         */
+        fun setScreenshotProvider(screenshotProvider: BitmapSupplier): Builder =
+                apply { asserter.screenShotter = screenshotProvider }
 
-        fun build(): ScreenshotAsserter {
-            val built = asserter
-            asserter = ScreenshotRuleAsserter(rule)
-            return built
-        }
+        fun setOnBeforeScreenshot(run: Runnable): Builder =
+                apply { asserter.beforeScreenshot = run }
+
+        fun setOnAfterScreenshot(run: Runnable): Builder = apply { asserter.afterScreenshot = run }
+
+        fun build(): ScreenshotAsserter = asserter.also { asserter = ScreenshotRuleAsserter(rule) }
     }
 }
 
@@ -477,7 +592,7 @@ fun Bitmap.assertAgainstGolden(
     rule: ScreenshotTestRule,
     goldenIdentifier: String,
     matcher: BitmapMatcher = MSSIMMatcher(),
-    regions: List<Rect> = emptyList<Rect>()
+    regions: List<Rect> = emptyList()
 ) {
     rule.assertBitmapAgainstGolden(this, goldenIdentifier, matcher = matcher, regions = regions)
 }

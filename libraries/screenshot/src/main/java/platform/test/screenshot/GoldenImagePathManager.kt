@@ -58,10 +58,17 @@ private const val ORIENTATION_TAG = "orientation"
  */
 open class GoldenImagePathManager @JvmOverloads constructor(
     open val appContext: Context,
-    open val assetsPathRelativeToRepo: String = "assets",
-    open val deviceLocalPath: String = getDeviceOutputDirectory(appContext),
+    open val assetsPathRelativeToBuildRoot: String = "assets",
+    open var deviceLocalPath: String = getDeviceOutputDirectory(appContext),
     open val pathConfig: PathConfig = getSimplePathConfig()
 ) {
+
+    init {
+        val robolectricOverride = System.getProperty("robolectric.artifacts.dir")
+        if (Build.FINGERPRINT.contains("robolectric") && !robolectricOverride.isNullOrEmpty()) {
+            deviceLocalPath = robolectricOverride
+        }
+    }
 
     public val imageExtension = "png"
 
@@ -172,7 +179,7 @@ public fun getDeviceOutputDirectory(context: Context) =
 /* Standard implementations for the usual list of dimensions that affect a golden image. */
 public fun getDeviceModel(): String {
     var model = Build.MODEL.lowercase()
-    arrayOf("phone", "x86_64", "x86", "x64", "gms").forEach {
+    arrayOf("phone", "x86_64", "x86", "x64", "gms", "wear").forEach {
         model = model.replace(it, "")
     }
     return model.trim().replace(" ", "_")
@@ -180,7 +187,7 @@ public fun getDeviceModel(): String {
 
 public fun getDeviceBrand(): String {
     var brand = Build.BRAND.lowercase()
-    arrayOf("phone", "x86_64", "x86", "x64", "gms").forEach {
+    arrayOf("phone", "x86_64", "x86", "x64", "gms", "wear").forEach {
         brand = brand.replace(it, "")
     }
     return brand.trim().replace(" ", "_")

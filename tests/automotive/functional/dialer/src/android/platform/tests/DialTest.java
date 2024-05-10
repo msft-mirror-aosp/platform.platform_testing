@@ -20,7 +20,6 @@ import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
 
-import android.platform.helpers.AutoUtility;
 import android.platform.helpers.HelperAccessor;
 import android.platform.helpers.IAutoDialContactDetailsHelper;
 import android.platform.helpers.IAutoDialContactDetailsHelper.ContactType;
@@ -29,21 +28,19 @@ import android.platform.helpers.IAutoDialHelper.AudioSource;
 import android.platform.helpers.IAutoDialHelper.OrderType;
 import android.platform.helpers.IAutoVehicleHardKeysHelper;
 import android.platform.test.option.StringOption;
+
 import androidx.test.runner.AndroidJUnit4;
 
 import org.junit.After;
-import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.runner.RunWith;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 @RunWith(AndroidJUnit4.class)
 public class DialTest {
     public static final String DIAL_A_NUMBER = "Dial a number";
     public static final String DIALED_CONTACT = "Aaron";
-    public static final String FAVORITES_CONTACT = "Bob";
     public static final String DETAILED_CONTACT = "Aaron";
-    public static final String DIAL_CONTACT_BY_NAME = "Jane Doe";
     public static final String CONTACT_TYPE = "Work";
 
     private static final String SMALL_NUMBER_PARAM = "small-phone-number";
@@ -75,11 +72,6 @@ public class DialTest {
         mDialerHelper = new HelperAccessor<>(IAutoDialHelper.class);
         mContactDetailsHelper = new HelperAccessor<>(IAutoDialContactDetailsHelper.class);
         mVehicleHardKeysHelper = new HelperAccessor<>(IAutoVehicleHardKeysHelper.class);
-    }
-
-    @BeforeClass
-    public static void setUp() {
-        AutoUtility.exitSuw();
     }
 
     @After
@@ -119,19 +111,20 @@ public class DialTest {
     @Test
     public void testHistoryUpdatesCalledContactName() {
         mDialerHelper.get().open();
-        mDialerHelper.get().callContact(DIAL_CONTACT_BY_NAME);
+        String dialContactByName = mSearchContactName.get();
+        mDialerHelper.get().callContact(dialContactByName);
         mDialerHelper.get().endCall();
         mDialerHelper.get().openCallHistory();
         assertTrue(
                 "Call History did not update",
-                mDialerHelper.get().getRecentCallHistory().equals(DIAL_CONTACT_BY_NAME));
+                mDialerHelper.get().getRecentCallHistory().equals(dialContactByName));
     }
 
     @Test
     public void testDeleteDialedNumber() {
         mDialerHelper.get().dialANumber(mSmallPhoneNumber.get());
         mDialerHelper.get().deleteDialedNumber();
-        String numberAfterDelete = mDialerHelper.get().getDialInNumber();
+        String numberAfterDelete = mDialerHelper.get().getNumberInDialPad();
         assertTrue(DIAL_A_NUMBER.equals(numberAfterDelete));
     }
 
@@ -183,17 +176,18 @@ public class DialTest {
     @Test
     public void testDisplayedNameMatchesCalledContactName() {
         mDialerHelper.get().open();
-        mDialerHelper.get().callContact(DIAL_CONTACT_BY_NAME);
+        String dialContactByName = mSearchContactName.get();
+        mDialerHelper.get().callContact(dialContactByName);
         assertTrue(
                 "Contact name is not the same",
-                mDialerHelper.get().getContactName().contains(DIAL_CONTACT_BY_NAME));
+                mDialerHelper.get().getContactName().contains(dialContactByName));
         mDialerHelper.get().endCall();
     }
 
     @Test
     public void testDisplayedContactTypeMatchesCalledContactType() {
         mDialerHelper.get().open();
-        mDialerHelper.get().callContact(DIAL_CONTACT_BY_NAME);
+        mDialerHelper.get().callContact(mSearchContactName.get());
         assertTrue(
                 "Contact detail is not the same",
                 mDialerHelper.get().getContactType().equalsIgnoreCase(CONTACT_TYPE));
@@ -203,10 +197,11 @@ public class DialTest {
     @Test
     public void testSearchContactByName() {
         mDialerHelper.get().open();
-        mDialerHelper.get().searchContactsByName("Jane");
+        String dialContactByName = mSearchContactName.get();
+        mDialerHelper.get().searchContactsByName(dialContactByName);
         assertEquals(
                 "Cannot find contact",
-                DIAL_CONTACT_BY_NAME,
+                dialContactByName,
                 mDialerHelper.get().getFirstSearchResult());
     }
 
@@ -238,18 +233,19 @@ public class DialTest {
     @Test
     public void testAddRemoveFavoriteContact() {
         mDialerHelper.get().open();
-        mDialerHelper.get().openDetailsPage(FAVORITES_CONTACT);
+        String favoritesContact = mSearchContactName.get();
+        mDialerHelper.get().openDetailsPage(favoritesContact);
         mContactDetailsHelper.get().addRemoveFavoriteContact();
         mContactDetailsHelper.get().closeDetailsPage();
         assertTrue(
                 "Contact is not added to favorites.",
-                mDialerHelper.get().isContactInFavorites(FAVORITES_CONTACT));
-        mDialerHelper.get().openDetailsPage(FAVORITES_CONTACT);
+                mDialerHelper.get().isContactInFavorites(favoritesContact));
+        mDialerHelper.get().openDetailsPage(favoritesContact);
         mContactDetailsHelper.get().addRemoveFavoriteContact();
         mContactDetailsHelper.get().closeDetailsPage();
         assertFalse(
                 "Contact is not removed from favorites.",
-                mDialerHelper.get().isContactInFavorites(FAVORITES_CONTACT));
+                mDialerHelper.get().isContactInFavorites(favoritesContact));
     }
 
     @Test

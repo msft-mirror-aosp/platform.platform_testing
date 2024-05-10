@@ -14,6 +14,7 @@
 //
 
 package {
+    default_team: "trendy_team_testing",
     default_applicable_licenses: ["Android-Apache-2.0"],
 }
 
@@ -22,21 +23,23 @@ android_test {
     manifest: "src/androidTest/manifest/AndroidManifest.xml",
     platform_apis: true,
     optimize: {
-        enabled: false
+        enabled: false,
     },
     srcs: [
-        "src/**/*.kt"
+        "src/**/*.java",
+        "src/**/*.kt",
     ],
     static_libs: [
         "androidx.test.core",
         "androidx.test.ext.junit",
         "androidx.test.runner",
         "androidx.test.rules",
+        "androidx.test.uiautomator_uiautomator",
         "launcher-helper-lib",
         "metrics-helper-lib",
         "platform-screenshot-diff-core",
         "platform-test-annotations",
-        "truth-prebuilt",
+        "truth",
         "ub-uiautomator",
     ],
     asset_dirs: ["src/androidTest/assets"],
@@ -47,17 +50,25 @@ android_library {
     name: "platform-screenshot-diff-core",
     manifest: "AndroidManifest.xml",
     platform_apis: true,
+    lint: {
+        test: true,
+    },
     optimize: {
-        enabled: false
+        enabled: false,
     },
     srcs: [
+        "src/main/java/platform/test/screenshot/**/*.java",
         "src/main/java/platform/test/screenshot/**/*.kt",
     ],
     static_libs: [
         "androidx.annotation_annotation",
-	"androidx.test.ext.junit",
+        "androidx.test.ext.junit",
         "platform-screenshot-diff-proto",
         "androidx.test.runner",
+        "androidx.test.espresso.core",
+        "androidx.appcompat_appcompat",
+        "guava",
+        "uiautomator-helpers",
     ],
 }
 
@@ -67,6 +78,6 @@ java_library {
         "**/*.proto",
     ],
     optimize: {
-        enabled: false
-    }
+        enabled: false,
+    },
 }

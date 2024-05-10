@@ -32,7 +32,7 @@ public abstract class LogcatInspector {
      */
     public String mark(String tag) throws IOException {
         String uniqueString = ":::" + UUID.randomUUID().toString();
-        executeShellCommand("log -t " + tag + " " + uniqueString);
+        Closeables.closeQuietly(executeShellCommand("log -t " + tag + " " + uniqueString));
         // This is to guarantee that we only return after the string has been logged, otherwise
         // in practice the case where calling Log.?(<message1>) right after clearAndMark() resulted
         // in <message1> appearing before the unique identifier. It's not guaranteed per the docs
@@ -96,17 +96,34 @@ public abstract class LogcatInspector {
             throws InterruptedException, IOException {
         long timeout = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(timeInSeconds);
         int stringIndex = 0;
+        long lastEpochMicroseconds = 0;
         while (timeout >= System.currentTimeMillis()) {
-            stringIndex = 0;
-            InputStream logcatStream = executeShellCommand("logcat -v brief -d " + filterSpec);
+            // '-v epoch' -> Displays time as seconds since Jan 1 1970.
+            // '-v usec' -> Displays time down the microsecond precision.
+            InputStream logcatStream =
+                    executeShellCommand("logcat -v epoch -v usec -d " + filterSpec);
             BufferedReader logcat = new BufferedReader(new InputStreamReader(logcatStream));
             String line;
             while ((line = logcat.readLine()) != null) {
                 if (line.contains(logcatStrings[stringIndex])) {
-                    stringIndex++;
-                    if (stringIndex >= logcatStrings.length) {
-                        StreamUtil.drainAndClose(logcat);
-                        return stringIndex;
+                    // Now we need to get the timestamp of this log line to ensure that
+                    // this log is after the previously matched log.
+
+                    // Strip the leading spaces and split the line by spaces
+                    String[] splitLine = line.stripLeading().split(" ");
+
+                    // The first one is epoch time in seconds, with microsecond precision.
+                    // It is of the format <epoch time in seconds>.xxxxxx
+                    String epochMicrosecondsStr = splitLine[0].replace(".", "");
+                    long epochMicroseconds = Long.parseLong(epochMicrosecondsStr);
+
+                    // Check that this log time is after previously matched log
+                    if (epochMicroseconds >= lastEpochMicroseconds) {
+                        stringIndex++;
+                        if (stringIndex >= logcatStrings.length) {
+                            StreamUtil.drainAndClose(logcat);
+                            return stringIndex;
+                        }
                     }
                 }
             }

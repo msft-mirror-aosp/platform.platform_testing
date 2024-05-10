@@ -20,17 +20,21 @@ import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
 
 import android.content.pm.UserInfo;
-import android.platform.helpers.AutoConfigConstants;
-import android.platform.helpers.AutoUtility;
 import android.platform.helpers.HelperAccessor;
-import android.platform.helpers.IAutoUserHelper;
 import android.platform.helpers.IAutoSettingHelper;
+import android.platform.helpers.IAutoUserHelper;
 import android.platform.helpers.MultiUserHelper;
+import android.platform.helpers.SettingsConstants;
 import android.platform.scenario.multiuser.MultiUserConstants;
+import android.platform.test.rules.ConditionalIgnore;
+import android.platform.test.rules.ConditionalIgnoreRule;
+import android.platform.test.rules.IgnoreOnPortrait;
 import android.util.Log;
+
 import androidx.test.runner.AndroidJUnit4;
+
 import org.junit.After;
-import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -40,6 +44,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(AndroidJUnit4.class)
 public class DeleteGuestSelfNotAllowed {
+    @Rule public ConditionalIgnoreRule rule = new ConditionalIgnoreRule();
 
     private static final String guestUser = MultiUserConstants.GUEST_NAME;
     private final MultiUserHelper mMultiUserHelper = MultiUserHelper.getInstance();
@@ -51,17 +56,13 @@ public class DeleteGuestSelfNotAllowed {
         mSettingHelper = new HelperAccessor<>(IAutoSettingHelper.class);
     }
 
-    @BeforeClass
-    public static void exitSuw() {
-        AutoUtility.exitSuw();
-    }
-
     @After
     public void goBackToHomeScreen() {
         mSettingHelper.get().goBackToSettingsScreen();
     }
 
     @Test
+    @ConditionalIgnore(condition = IgnoreOnPortrait.class)
     public void testDeleteGuestNotAllowed() throws Exception {
         UserInfo previousUser = mMultiUserHelper.getCurrentForegroundUserInfo();
         // switch to Guest and verify the user switch
@@ -71,7 +72,7 @@ public class DeleteGuestSelfNotAllowed {
         boolean IsDeleteAllowed = true;
         // try to delete self - runtime exception encountered
         try {
-            mSettingHelper.get().openSetting(AutoConfigConstants.PROFILE_ACCOUNT_SETTINGS);
+            mSettingHelper.get().openSetting(SettingsConstants.PROFILE_ACCOUNT_SETTINGS);
             mUsersHelper.get().deleteCurrentUser();
         } catch (RuntimeException err) {
             Log.v(

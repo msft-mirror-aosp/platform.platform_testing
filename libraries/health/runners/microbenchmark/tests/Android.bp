@@ -13,6 +13,7 @@
 // limitations under the License.
 
 package {
+    default_team: "trendy_team_renderscript_nnapi",
     default_applicable_licenses: ["Android-Apache-2.0"],
 }
 
@@ -23,7 +24,7 @@ android_test {
     static_libs: [
         "microbenchmark-device-lib",
         "mockito-target",
-        "truth-prebuilt",
+        "truth",
     ],
     srcs: ["src/**/*.java"],
     test_suites: ["device-tests"],

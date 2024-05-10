@@ -89,14 +89,18 @@ public class FinishActivitiesWithoutProcessKillRule extends TestWatcher {
             // This will remove all the activities associated with the package name without
             // killing the app.
             mContext.getPackageManager().setApplicationEnabledSetting(mPkgName,
-                    PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
+                    PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+                    PackageManager.DONT_KILL_APP);
 
-            if (!waitUntilActivitiesRemoved()) {
-                throw new IllegalStateException("Activities not removed successfully.");
+            try {
+                if (!waitUntilActivitiesRemoved()) {
+                    throw new IllegalStateException("Activities not removed successfully.");
+                }
+            } finally {
+                mContext.getPackageManager().setApplicationEnabledSetting(mPkgName,
+                        PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+                        PackageManager.DONT_KILL_APP);
             }
-
-            mContext.getPackageManager().setApplicationEnabledSetting(mPkgName,
-                    PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP);
         } finally {
             InstrumentationRegistry.getInstrumentation().getUiAutomation()
                     .dropShellPermissionIdentity();

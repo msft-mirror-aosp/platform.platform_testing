@@ -13,6 +13,7 @@
 // limitations under the License.
 
 package {
+    default_team: "trendy_team_test_eng_comms_power",
     default_applicable_licenses: ["Android-Apache-2.0"],
 }
 
@@ -21,8 +22,8 @@ android_test {
     srcs: ["src/**/*.java"],
 
     static_libs: [
-        "ub-uiautomator",
         "androidx.test.janktesthelper",
+        "androidx.test.uiautomator_uiautomator",
         "junit",
     ],
 
@@ -31,4 +32,7 @@ android_test {
     sdk_version: "current",
 
     test_suites: ["device-tests"],
+    data: [
+        ":UiBench",
+    ],
 }

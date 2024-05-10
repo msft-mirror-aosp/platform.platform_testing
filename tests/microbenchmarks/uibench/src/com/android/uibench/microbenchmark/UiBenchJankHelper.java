@@ -16,6 +16,8 @@
 
 package com.android.uibench.microbenchmark;
 
+import android.app.ActivityManager;
+import android.app.HomeVisibilityListener;
 import android.app.Instrumentation;
 import android.content.ComponentName;
 import android.content.Context;
@@ -29,9 +31,15 @@ import android.support.test.uiautomator.UiObject2;
 import android.support.test.uiautomator.Until;
 import android.util.DisplayMetrics;
 import android.view.KeyEvent;
+import android.widget.EditText;
 import android.widget.ListView;
 
+import com.android.compatibility.common.util.ShellIdentityUtils;
+import com.android.compatibility.common.util.TestUtils;
+
 import junit.framework.Assert;
+
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class UiBenchJankHelper extends AbstractStandardAppHelper implements IUiBenchJankHelper {
     public static final int LONG_TIMEOUT = 5000;
@@ -314,6 +322,7 @@ public class UiBenchJankHelper extends AbstractStandardAppHelper implements IUiB
     @Override
     public void openEditTextTyping() {
         launchActivity("EditTextTypeActivity", "Text/EditText Typing");
+        mContents = mDevice.wait(Until.findObject(By.clazz(EditText.class)), FIND_OBJECT_TIMEOUT);
     }
 
     // Open Layout Cache High Hitrate
@@ -360,5 +369,34 @@ public class UiBenchJankHelper extends AbstractStandardAppHelper implements IUiB
         launchActivity("ScrollableWebViewActivity", "WebView/Scrollable WebView");
         mContents =
                 mDevice.wait(Until.findObject(By.res("android", "content")), FIND_OBJECT_TIMEOUT);
+    }
+
+    // Exit the app and ensure going back to home successfully
+    @Override
+    public void exit() {
+        final ActivityManager activityManager =
+                mInstrumentation.getContext().getSystemService(ActivityManager.class);
+        final AtomicBoolean isHomeVisible = new AtomicBoolean();
+        mDevice.pressHome();
+        mDevice.waitForIdle();
+        HomeVisibilityListener homeVisibilityListener =
+                new HomeVisibilityListener() {
+                    @Override
+                    public void onHomeVisibilityChanged(boolean isHomeActivityVisible) {
+                        isHomeVisible.set(isHomeActivityVisible);
+                    }
+                };
+        ShellIdentityUtils.invokeMethodWithShellPermissionsNoReturn(
+                activityManager,
+                (am) -> am.addHomeVisibilityListener(Runnable::run, homeVisibilityListener));
+        try {
+            TestUtils.waitUntil("Failed to exit the app to launcher", isHomeVisible::get);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        } finally {
+            ShellIdentityUtils.invokeMethodWithShellPermissionsNoReturn(
+                    activityManager,
+                    (am) -> am.removeHomeVisibilityListener(homeVisibilityListener));
+        }
     }
 }

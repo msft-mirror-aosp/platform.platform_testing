@@ -13,6 +13,7 @@
 // limitations under the License.
 
 package {
+    default_team: "trendy_team_aaos_framework",
     default_applicable_licenses: ["Android-Apache-2.0"],
 }
 
@@ -20,19 +21,17 @@ android_test {
     name: "AndroidAutomotiveMultiuserTests",
     min_sdk_version: "24",
     static_libs: [
-        "androidx.test.runner",
         "androidx.test.rules",
+        "automotive-config-lib",
         "automotive-multiuser-scenarios",
-        "automotive-utility-helper",
         "automotive-health-test-rules",
         "automotive-settings-app-helper",
         "app-helpers-common-interfaces",
-        "app-helpers-auto-interfaces",
-        "ub-uiautomator",
         "collector-device-lib-platform",
         "common-platform-scenarios",
         "common-platform-scenario-tests",
         "microbenchmark-device-lib",
+        "platform-test-junit-rules",
         "platform-test-rules",
         "platform-test-options",
         "multi-user-helper",

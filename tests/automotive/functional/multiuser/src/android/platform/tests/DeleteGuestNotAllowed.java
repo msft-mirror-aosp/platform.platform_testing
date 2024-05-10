@@ -18,18 +18,20 @@ package android.platform.tests;
 
 import static junit.framework.Assert.assertFalse;
 
-import android.content.pm.UserInfo;
-import android.platform.helpers.AutoConfigConstants;
-import android.platform.helpers.AutoUtility;
 import android.platform.helpers.HelperAccessor;
-import android.platform.helpers.IAutoUserHelper;
 import android.platform.helpers.IAutoSettingHelper;
-import android.platform.helpers.MultiUserHelper;
+import android.platform.helpers.IAutoUserHelper;
+import android.platform.helpers.SettingsConstants;
 import android.platform.scenario.multiuser.MultiUserConstants;
+import android.platform.test.rules.ConditionalIgnore;
+import android.platform.test.rules.ConditionalIgnoreRule;
+import android.platform.test.rules.IgnoreOnPortrait;
+
 import androidx.test.runner.AndroidJUnit4;
+
 import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -38,6 +40,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(AndroidJUnit4.class)
 public class DeleteGuestNotAllowed {
+    @Rule public ConditionalIgnoreRule rule = new ConditionalIgnoreRule();
 
     private static final String guestUser = MultiUserConstants.GUEST_NAME;
     private HelperAccessor<IAutoUserHelper> mUsersHelper;
@@ -48,14 +51,9 @@ public class DeleteGuestNotAllowed {
         mSettingHelper = new HelperAccessor<>(IAutoSettingHelper.class);
     }
 
-    @BeforeClass
-    public static void exitSuw() {
-        AutoUtility.exitSuw();
-    }
-
     @Before
     public void openAccountsFacet() {
-        mSettingHelper.get().openSetting(AutoConfigConstants.PROFILE_ACCOUNT_SETTINGS);
+        mSettingHelper.get().openSetting(SettingsConstants.PROFILE_ACCOUNT_SETTINGS);
     }
 
     @After
@@ -64,6 +62,7 @@ public class DeleteGuestNotAllowed {
     }
 
     @Test
+    @ConditionalIgnore(condition = IgnoreOnPortrait.class)
     public void testDeleteGuestNotAllowed() throws Exception {
         // verify that guest user cannot be seen and deleted from list of profiles
         assertFalse(mUsersHelper.get().isUserPresent(guestUser));

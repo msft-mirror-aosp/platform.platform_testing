@@ -4,6 +4,7 @@ platform_tests += \
     ActivityManagerPerfTestsStubApp2 \
     ActivityManagerPerfTestsStubApp3 \
     ActivityManagerPerfTestsTestApp \
+    AdServicesScenarioTests \
     AndroidTVJankTests \
     AndroidXComposeStartupApp \
     ApiDemos \
@@ -16,7 +17,6 @@ platform_tests += \
     BackgroundDexOptServiceIntegrationTests \
     BandwidthEnforcementTest \
     BandwidthTests \
-    BluetoothTests \
     BootHelperApp \
     BusinessCard \
     CalculatorFunctionalTests \
@@ -63,16 +63,9 @@ platform_tests += \
     MultiDexLegacyVersionedTestApp_v1 \
     MultiDexLegacyVersionedTestApp_v2 \
     MultiDexLegacyVersionedTestApp_v3 \
-    net_test_bluetooth \
-    net_test_btcore \
-    net_test_device \
-    net_test_hci \
-    net_test_osi \
     NoLocTestApp \
     NoLocVersionedTestApp_v1 \
     NoLocVersionedTestApp_v2 \
-    NotificationFunctionalTests \
-    NotificationStressTests \
     OverviewFunctionalTests \
     perfetto_trace_processor_shell \
     PerformanceAppTest \
@@ -82,6 +75,7 @@ platform_tests += \
     PermissionUtils \
     PlatformCommonScenarioTests \
     PowerPerfTest \
+    SdkSandboxPerfScenarioTests \
     SettingsUITests \
     SimpleServiceTestApp1 \
     SimpleServiceTestApp2 \
@@ -95,9 +89,14 @@ platform_tests += \
     SysAppJankTestsWear \
     TouchLatencyJankTestWear \
     trace_config.textproto \
+    trace_config_boot_time.textproto \
+    trace_config_boot_time_stop.textproto \
     trace_config_detailed.textproto \
+    trace_config_detailed_heapdump.textproto \
     trace_config_experimental.textproto \
     trace_config_multi_user_cuj_tests.textproto \
+    trace_config_post_boot.textproto \
+    trace_config_power.textproto \
     UbSystemUiJankTests \
     UbWebViewJankTests \
     UiBench \
@@ -108,6 +107,7 @@ platform_tests += \
     UpdateExternalLocTestApp_v2_none \
     UpdateExtToIntLocTestApp_v1_ext \
     UpdateExtToIntLocTestApp_v2_int \
+    uwb_snippet \
     VersatileTestApp_Auto \
     VersatileTestApp_External \
     VersatileTestApp_Internal \

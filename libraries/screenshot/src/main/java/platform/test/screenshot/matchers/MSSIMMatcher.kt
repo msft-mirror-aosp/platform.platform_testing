@@ -58,11 +58,13 @@ class MSSIMMatcher(
             .setNumberPixelsSimilar(calSSIMResult.numPixelsSimilar)
             .setNumberPixelsIgnored(calSSIMResult.numPixelsIgnored)
             .setNumberPixelsDifferent(
-                calSSIMResult.numPixelsCompared - calSSIMResult.numPixelsSimilar)
+                calSSIMResult.numPixelsCompared - calSSIMResult.numPixelsSimilar
+            )
             .build()
 
         if (calSSIMResult.numPixelsSimilar
-            >= threshold * calSSIMResult.numPixelsCompared.toDouble()) {
+            >= threshold * calSSIMResult.numPixelsCompared.toDouble()
+        ) {
             return MatchResult(
                 matches = true,
                 diff = null,
@@ -85,7 +87,7 @@ class MSSIMMatcher(
         given: IntArray,
         width: Int,
         height: Int,
-        filter: IntArray
+        filter: BooleanArray
     ): SSIMResult {
         return calculateSSIM(ideal, given, 0, width, width, height, filter)
     }
@@ -97,7 +99,7 @@ class MSSIMMatcher(
         stride: Int,
         width: Int,
         height: Int,
-        filter: IntArray
+        filter: BooleanArray
     ): SSIMResult {
         var SSIMTotal = 0.0
         var totalNumPixelsCompared = 0.0
@@ -161,16 +163,16 @@ class MSSIMMatcher(
 
     /**
      * Checks whether a pixel should be ignored. A pixel should be ignored if the corresponding
-     * filter entry is zero.
+     * filter entry is false.
      */
     private fun shouldIgnorePixel(
         x: Int,
         y: Int,
         start: Int,
         stride: Int,
-        filter: IntArray
+        filter: BooleanArray
     ): Boolean {
-        return filter[indexFromXAndY(x, y, stride, start)] == 0
+        return !filter[indexFromXAndY(x, y, stride, start)]
     }
 
     /**
@@ -183,7 +185,7 @@ class MSSIMMatcher(
         stride: Int,
         windowWidth: Int,
         windowHeight: Int,
-        filter: IntArray
+        filter: BooleanArray
     ): Boolean {
         for (y in 0 until windowHeight) {
             for (x in 0 until windowWidth) {
@@ -203,7 +205,7 @@ class MSSIMMatcher(
         stride: Int,
         windowWidth: Int,
         windowHeight: Int,
-        filter: IntArray
+        filter: BooleanArray
     ): Int {
         var numPixelsToCompare = 0
         for (y in 0 until windowHeight) {
@@ -238,7 +240,7 @@ class MSSIMMatcher(
     private fun getMeans(
         pixels0: IntArray,
         pixels1: IntArray,
-        filter: IntArray,
+        filter: BooleanArray,
         start: Int,
         stride: Int,
         windowWidth: Int,
@@ -271,7 +273,7 @@ class MSSIMMatcher(
     private fun getVariances(
         pixels0: IntArray,
         pixels1: IntArray,
-        filter: IntArray,
+        filter: BooleanArray,
         mean0: Double,
         mean1: Double,
         start: Int,

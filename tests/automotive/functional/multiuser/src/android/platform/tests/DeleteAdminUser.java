@@ -19,16 +19,20 @@ package android.platform.tests;
 import static junit.framework.Assert.assertFalse;
 
 import android.os.SystemClock;
-import android.platform.helpers.AutoConfigConstants;
-import android.platform.helpers.AutoUtility;
 import android.platform.helpers.HelperAccessor;
-import android.platform.helpers.IAutoUserHelper;
 import android.platform.helpers.IAutoSettingHelper;
+import android.platform.helpers.IAutoUserHelper;
 import android.platform.helpers.MultiUserHelper;
+import android.platform.helpers.SettingsConstants;
 import android.platform.scenario.multiuser.MultiUserConstants;
+import android.platform.test.rules.ConditionalIgnore;
+import android.platform.test.rules.ConditionalIgnoreRule;
+import android.platform.test.rules.IgnoreOnPortrait;
+
 import androidx.test.runner.AndroidJUnit4;
+
 import org.junit.After;
-import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -37,6 +41,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(AndroidJUnit4.class)
 public class DeleteAdminUser {
+    @Rule public ConditionalIgnoreRule rule = new ConditionalIgnoreRule();
 
     private static final String userName = MultiUserConstants.SECONDARY_USER_NAME;
     private static final int WAIT_TIME = 10000;
@@ -50,25 +55,21 @@ public class DeleteAdminUser {
         mSettingHelper = new HelperAccessor<>(IAutoSettingHelper.class);
     }
 
-    @BeforeClass
-    public static void exitSuw() {
-        AutoUtility.exitSuw();
-    }
-
     @After
     public void goBackToHomeScreen() {
         mSettingHelper.get().goBackToSettingsScreen();
     }
 
     @Test
+    @ConditionalIgnore(condition = IgnoreOnPortrait.class)
     public void testRemoveUser() throws Exception {
         // create new user
         mTargetUserId = mMultiUserHelper.createUser(userName, false);
         SystemClock.sleep(WAIT_TIME);
         // make the new user admin and delete new user
-        mSettingHelper.get().openSetting(AutoConfigConstants.PROFILE_ACCOUNT_SETTINGS);
+        mSettingHelper.get().openSetting(SettingsConstants.PROFILE_ACCOUNT_SETTINGS);
         mUsersHelper.get().makeUserAdmin(userName);
-        mSettingHelper.get().openSetting(AutoConfigConstants.PROFILE_ACCOUNT_SETTINGS);
+        mSettingHelper.get().openSetting(SettingsConstants.PROFILE_ACCOUNT_SETTINGS);
         mUsersHelper.get().deleteUser(userName);
         // verify new user was deleted
         assertFalse(mUsersHelper.get().isUserPresent(userName));

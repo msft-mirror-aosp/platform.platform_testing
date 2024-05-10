@@ -13,6 +13,7 @@
 # limitations under the License.
 
 native_tests := \
+    aaudio_test_mmap_path \
     adbd_test \
     android_logger_test_src_lib \
     android_logger_test_tests_config_log_level \
@@ -93,12 +94,14 @@ native_tests := \
     libnativehelper_tests \
     libnetworkstats_test \
     libprocinfo_test \
-    libtextclassifier_tests \
+    libtextclassifier_tests-tplus \
+    libtextclassifier_tests-sminus \
     libsurfaceflinger_unittest \
     libunwindstack_unit_test \
     libuwb_core_tests \
     libuwb_uci_jni_rust_tests \
     libuwb_uci_packet_tests \
+    libuci_hal_android_tests \
     libvintf_test \
     linker-unit-tests \
     logcat-unit-tests \
@@ -113,24 +116,6 @@ native_tests := \
     mj_system_unittest_gtest \
     mj_util_unittest_gtest \
     mtp_ffs_handle_test \
-    net_test_audio_a2dp_hw \
-    net_test_avrcp \
-    net_test_bluetooth \
-    net_test_bta \
-    net_test_btcore \
-    net_test_btif \
-    net_test_btif_profile_queue \
-    net_test_btpackets \
-    net_test_device \
-    net_test_hci \
-    net_test_osi \
-    net_test_performance \
-    net_test_stack \
-    net_test_stack_ad_parser \
-    net_test_stack_multi_adv \
-    net_test_stack_rfcomm \
-    net_test_stack_smp \
-    net_test_types \
     netd_integration_test \
     netd_unit_test \
     netdutils_test \
@@ -249,7 +234,9 @@ native_tests := \
     lmkd_unit_test
 
 ifeq ($(BOARD_IS_AUTOMOTIVE), true)
-native_tests += libwatchdog_test
+native_tests += \
+    libwatchdog_test \
+    evsmanagerd_test
 endif
 
 ifneq ($(strip $(BOARD_PERFSETUP_SCRIPT)),)

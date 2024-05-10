@@ -18,6 +18,7 @@ instrumentation_tests := \
     LongevityPlatformLibTests \
     ManagedProvisioningTests \
     FrameworksCoreTests \
+    FrameworksCoreGameManagerTests \
     FrameworksMockingCoreTests \
     BinderProxyCountingTestApp \
     BinderProxyCountingTestService \
@@ -28,6 +29,7 @@ instrumentation_tests := \
     FrameworksMockingServicesTests \
     WmTests \
     WmPerfTests \
+    DisplayServiceTests \
     JobTestApp \
     SuspendTestApp \
     FrameworksUtilTests \
@@ -36,6 +38,7 @@ instrumentation_tests := \
     DocumentsUITests \
     ShellTests \
     SystemUITests \
+    TvSystemUITests \
     TestablesTests \
     FrameworksWifiApiTests \
     FrameworksWifiNonUpdatableApiTests \
@@ -49,7 +52,6 @@ instrumentation_tests := \
     PermissionFunctionalTests \
     BlockedNumberProviderTest \
     DownloadAppFunctionalTests \
-    NotificationFunctionalTests \
     DynamicCodeLoggerIntegrationTests \
     UsbTests \
     DownloadProviderTests \
@@ -69,17 +71,31 @@ instrumentation_tests := \
     FrameworksPrivacyLibraryTests \
     SettingsUITests \
     SettingsPerfTests \
-    ExtServicesUnitTests \
+    ExtServicesUnitTests-tplus \
+    ExtServicesUnitTests-sminus \
     FrameworksNetSmokeTests \
     FlickerLibTest \
-    FlickerTests \
+    FlickerTestsOther \
+    FlickerTestsAppClose \
+    FlickerTestsIme \
+    FlickerTestsQuickswitch \
+    FlickerTestsRotation \
     FlickerTestApp \
-    WMShellFlickerTests \
-    WMShellFlickerTestApp \
+    WMShellFlickerTestsOther \
+    WMShellFlickerTestsBubbles \
+    WMShellFlickerTestsPip1 \
+    WMShellFlickerTestsPip2 \
+    WMShellFlickerTestsPip3 \
+    WMShellFlickerTestsSplitScreenGroup1 \
+    WMShellFlickerTestsSplitScreenGroup2 \
     WMShellUnitTests \
     trace_config_detailed.textproto \
     perfetto_trace_processor_shell \
-    CarDeveloperOptionsUnitTests
+    CarDeveloperOptionsUnitTests \
+    SpaPrivilegedLibTests \
+    SettingsSpaUnitTests \
+    SpaLibTests \
+    PermissionServiceMockingTests
 
 ifneq ($(strip $(BOARD_PERFSETUP_SCRIPT)),)
 instrumentation_tests += perf-setup

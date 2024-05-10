@@ -13,6 +13,7 @@
 // limitations under the License.
 
 package {
+    default_team: "trendy_team_gesture_nav",
     default_applicable_licenses: ["Android-Apache-2.0"],
 }
 
@@ -35,5 +36,4 @@ android_test {
     optimize: {
         enabled: false,
     },
-    test_suites: ["device-tests"],
 }

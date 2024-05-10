@@ -19,7 +19,11 @@ package com.android.compatibility.common.util;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import static java.util.stream.Collectors.joining;
+
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.io.Closeables;
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -50,13 +54,16 @@ public abstract class BackupUtils {
             Pattern.compile("^Backup Manager currently (enabled|disabled)$");
     private static final String MATCH_LINE_BACKUP_MANAGER_IS_NOT_PENDING_INIT =
             "(?s)" + "^Backup Manager is .* not pending init.*";  // DOTALL
+    private static final String MATCH_LINE_ONLY_GMS_BACKUP_TRANSPORT_PENDING_INIT =
+            "(?s)" + ".*Pending init: 1.*com.google.android.gms/.backup.BackupTransportService.*";
 
     private static final String BACKUP_DUMPSYS_CURRENT_TOKEN_FIELD = "Current:";
 
     /**
      * Kicks off adb shell {@param command} and return an {@link InputStream} with the command
-     * output stream.
+     * output stream. The return value can be ignored and there might no need to close it.
      */
+    @CanIgnoreReturnValue
     protected abstract InputStream executeShellCommand(String command) throws IOException;
 
     public void executeShellCommandSync(String command) throws IOException {
@@ -64,7 +71,10 @@ public abstract class BackupUtils {
     }
 
     public String getShellCommandOutput(String command) throws IOException {
-        return StreamUtil.readInputStream(executeShellCommand(command));
+        InputStream inputStream = executeShellCommand(command);
+        String result = StreamUtil.readInputStream(inputStream);
+        Closeables.closeQuietly(inputStream);
+        return result;
     }
 
     /** Executes shell command "bmgr backupnow <package>" and assert success. */
@@ -268,6 +278,7 @@ public abstract class BackupUtils {
         while ((str = br.readLine()) != null) {
             out.append(str).append("\n");
         }
+        Closeables.closeQuietly(in);
         return out.toString();
     }
 
@@ -282,7 +293,7 @@ public abstract class BackupUtils {
             throw new RuntimeException("non-parsable output setting bmgr enabled: " + output);
         }
 
-        executeShellCommand("bmgr enable " + enable);
+        Closeables.closeQuietly(executeShellCommand("bmgr enable " + enable));
         return previouslyEnabled;
     }
 
@@ -291,7 +302,7 @@ public abstract class BackupUtils {
      */
     public boolean enableBackupForUser(boolean enable, int userId) throws IOException {
         boolean previouslyEnabled = isBackupEnabledForUser(userId);
-        executeShellCommand(String.format("bmgr --user %d enable %b", userId, enable));
+        executeShellCommandSync(String.format("bmgr --user %d enable %b", userId, enable));
         return previouslyEnabled;
     }
 
@@ -323,12 +334,44 @@ public abstract class BackupUtils {
         return str;
     }
 
+    private String getAllLinesString(InputStream inputStream) {
+        BufferedReader reader =
+                new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
+        return reader.lines().collect(joining());
+    }
+
+    /** Blocks until all backup transports has initialised */
     public void waitForBackupInitialization() throws IOException {
         long tryUntilNanos = System.nanoTime()
                 + TimeUnit.SECONDS.toNanos(BACKUP_PROVISIONING_TIMEOUT_SECONDS);
         while (System.nanoTime() < tryUntilNanos) {
             String output = getLineString(executeShellCommand("dumpsys backup"));
             if (output.matches(MATCH_LINE_BACKUP_MANAGER_IS_NOT_PENDING_INIT)) {
+                return;
+            }
+            try {
+                Thread.sleep(TimeUnit.SECONDS.toMillis(BACKUP_PROVISIONING_POLL_INTERVAL_SECONDS));
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
+            }
+        }
+        throw new IOException("Timed out waiting for backup initialization");
+    }
+
+    /**
+     * Blocks until all backup transports has initialised, or only GmsBackupTransport has not
+     * initialised yet.
+     */
+    public void waitForNonGmsTransportInitialization() throws IOException {
+        long tryUntilNanos =
+                System.nanoTime() + TimeUnit.SECONDS.toNanos(BACKUP_PROVISIONING_TIMEOUT_SECONDS);
+        while (System.nanoTime() < tryUntilNanos) {
+            String output = getAllLinesString(executeShellCommand("dumpsys backup"));
+            if (output.matches(MATCH_LINE_BACKUP_MANAGER_IS_NOT_PENDING_INIT)) {
+                return;
+            }
+            if (output.matches(MATCH_LINE_ONLY_GMS_BACKUP_TRANSPORT_PENDING_INIT)) {
                 return;
             }
             try {

@@ -19,19 +19,27 @@ package {
 java_library {
     name: "platform-test-rules",
     static_libs: [
+        "androidx.benchmark_benchmark-common",
+        "androidx.benchmark_benchmark-macro",
+        "androidx.benchmark_benchmark-macro-junit4",
         "androidx.test.runner",
         "androidx.test.uiautomator_uiautomator",
         "app-helpers-handheld-interfaces",
         "collector-device-lib",
         "collector-device-lib-platform",
+        "//frameworks/base/packages/SystemUI/aconfig:com_android_systemui_flags_lib",
         "guava",
         "memory-helper",
+        "notes-role-test-helper",
         "package-helper",
         "launcher-aosp-tapl",
         "flickerlib",
         "statsd-helper",
         "health-testing-utils",
         "ub-uiautomator",
+        "uiautomator-helpers",
+        "uinput-device-test-helper",
+        "user-helper",
     ],
     srcs: [
         "src/**/*.java",
@@ -43,6 +51,9 @@ java_library {
     name: "platform-test-core-rules",
     sdk_version: "test_current",
     static_libs: [
+        "androidx.benchmark_benchmark-common",
+        "androidx.benchmark_benchmark-macro",
+        "androidx.benchmark_benchmark-macro-junit4",
         "androidx.test.runner",
         "androidx.test.uiautomator_uiautomator",
         "app-helpers-handheld-interfaces",
@@ -59,5 +70,12 @@ java_library {
     srcs: ["src/**/*.java"],
     exclude_srcs: [
         "src/android/platform/test/rule/flicker/**/*.java",
+    ],
+}
+
+filegroup {
+    name: "platform-test-screenshot-rules",
+    srcs: [
+        "src/android/platform/test/rule/DisableAnimationsRule.kt",
     ],
 }
