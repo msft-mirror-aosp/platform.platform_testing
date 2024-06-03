@@ -19,12 +19,13 @@ DIAL_A_NUMBER = 'Dial a number'
 DEFAULT_WAIT_TIME_FIVE_SECS = 5
 DEFAULT_WAIT_TIME_FIFTEEN_SECS = 15
 WAIT_FOR_LOAD = 2
+YOUTUBE_SYNC_TIME = 10
 BT_DEFAULT_TIMEOUT = 15
 WAIT_ONE_SEC = 1
 WAIT_TWO_SECONDS = 2
 WAIT_THIRTY_SECONDS = 30
-SYNC_WAIT_TIME = 15 # Sometimes syncing between devices can take a while
-DEVICE_CONNECT_WAIT_TIME = 20 # Waiting for device pairing to complete.
+SYNC_WAIT_TIME = 15  # Sometimes syncing between devices can take a while
+DEVICE_CONNECT_WAIT_TIME = 20  # Waiting for device pairing to complete.
 MOBILE_DEVICE_NAME = 'target'
 AUTOMOTIVE_DEVICE_NAME = 'discoverer'
 REBOOT = 'reboot'
@@ -54,9 +55,9 @@ PHONE_CONTACTS_DESTINATION_PATH = (
     '/data/data/com.google.android.contacts/cache/contacts.vcf'
 )
 IMPOST_CONTACTS_SHELL_COMAND = (
-        'am start-activity -W -t "text/x-vcard" -d file://'
-        + PHONE_CONTACTS_DESTINATION_PATH
-        + ' -a android.intent.action.VIEW com.google.android.contacts'
+    'am start-activity -W -t "text/x-vcard" -d file://'
+    + PHONE_CONTACTS_DESTINATION_PATH
+    + ' -a android.intent.action.VIEW com.google.android.contacts'
 )
 
 # Should be kept in sync with BluetoothProfile.java
@@ -100,6 +101,13 @@ IMPOST_CONTACTS_SHELL_COMAND = (
     + ' -a android.intent.action.VIEW com.google.android.contacts'
 )
 
+# Screen recording
+SCREEN_RECORDING_COMMAND = 'screenrecord'
+RECORDED_VIDEO_FILE_LOCATION = '/sdcard/'
+RECORDED_VIDEO_FILE_OUTPUT_FILE = '_screenrecord_output_mp4'
+STOP_VIDEO_RECORDING = f'pkill -SIGINT {SCREEN_RECORDING_COMMAND}'
+DELETE_SCREEN_RECORDING = f'rm -f '
+
 ONE_SEC = 1
 
 # KeyEvents
@@ -131,9 +139,9 @@ NULL_VALUE = 'null'
 
 # SMS
 SMS_TEXT = "sms_test"
-REPLY_SMS= "Okay"
+REPLY_SMS = "Okay"
 SMS_REPLY_TEXT = "SMS Reply"
-SMS_TEXT_DRIVE_MODE="Tap to read aloud"
+SMS_TEXT_DRIVE_MODE = "Tap to read aloud"
 TIMEZONE_DICT = {
     "PST": "Pacific Standard Time",
     "PDT": "Pacific Daylight Time",
@@ -150,3 +158,8 @@ DIALER_RECENTS_LABEL = "Recents"
 DIALER_CONTACTS_LABEL = "Contacts"
 DIALER_FAVORITES_LABEL = "Favorites"
 DIALER_DIALPAD_LABEL = "Dialpad"
+
+# Bluetooth Logs
+BLUETOOTH_TAG="setprop persist.log.tag.bluetooth verbose"
+BLUETOOTH_NOOPERABLE="setprop persist.bluetooth.btsnoopenable true"
+BLUETOOTH_BTSNOOP_DEFAULT_MODE="settings put global bluetooth_btsnoop_default_mode full"

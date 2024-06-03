@@ -84,8 +84,6 @@ platform_tests += \
     sl4a \
     SmokeTest \
     SmokeTestApp \
-    SysAppJankTestsWear \
-    TouchLatencyJankTestWear \
     trace_config.textproto \
     trace_config_boot_time.textproto \
     trace_config_boot_time_stop.textproto \
@@ -94,6 +92,7 @@ platform_tests += \
     trace_config_experimental.textproto \
     trace_config_multi_user_cuj_tests.textproto \
     trace_config_post_boot.textproto \
+    trace_config_power.textproto \
     UbSystemUiJankTests \
     UbWebViewJankTests \
     UiBench \

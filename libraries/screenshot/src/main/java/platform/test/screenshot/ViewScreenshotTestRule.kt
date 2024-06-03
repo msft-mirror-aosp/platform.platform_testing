@@ -44,16 +44,23 @@ open class ViewScreenshotTestRule(
     private val screenshotRule: ScreenshotTestRule = ScreenshotTestRule(pathManager)
 ) : TestRule, BitmapDiffer by screenshotRule, ScreenshotAsserterFactory by screenshotRule {
     private val colorsRule = MaterialYouColorsRule()
-    private val fontsRule = MaterialYouColorsAndFontsRule()
+    private val fontsRule = FontsRule()
     private val timeZoneRule = TimeZoneRule()
+    private val hardwareRenderingRule = HardwareRenderingRule()
     private val deviceEmulationRule = DeviceEmulationRule(emulationSpec)
     private val activityRule = ActivityScenarioRule(ScreenshotActivity::class.java)
     private val commonRule =
         RuleChain.outerRule(deviceEmulationRule).around(screenshotRule).around(activityRule)
+
+    // As denoted in `MaterialYouColorsRule` and `FontsRule`, these two rules need to come first,
+    // though their relative orders are not critical.
     private val deviceRule = RuleChain.outerRule(colorsRule).around(commonRule)
     private val roboRule =
-        RuleChain.outerRule(colorsRule).around(fontsRule).around(timeZoneRule).around(commonRule)
+        RuleChain.outerRule(colorsRule).around(fontsRule).around(timeZoneRule)
+            .around(hardwareRenderingRule).around(commonRule)
     private val isRobolectric = if (Build.FINGERPRINT.contains("robolectric")) true else false
+
+    var frameLimit = 10
 
     override fun apply(base: Statement, description: Description): Statement {
         val ruleToApply = if (isRobolectric) roboRule else deviceRule
@@ -63,10 +70,9 @@ open class ViewScreenshotTestRule(
     protected fun takeScreenshot(
         mode: Mode = Mode.WrapContent,
         viewProvider: (ComponentActivity) -> View,
-        beforeScreenshot: (ComponentActivity) -> Unit = {}
+        checkView: (ComponentActivity, View) -> Boolean = { _, _ -> false },
+        subviewId: Int? = null,
     ): Bitmap {
-        var inflatedView: View? = null
-
         activityRule.scenario.onActivity { activity ->
             // Make sure that the activity draws full screen and fits the whole display instead of
             // the system bars.
@@ -74,7 +80,7 @@ open class ViewScreenshotTestRule(
             window.setDecorFitsSystemWindows(decorFitsSystemWindows)
 
             // Set the content.
-            inflatedView = viewProvider(activity)
+            val inflatedView = viewProvider(activity)
             activity.setContentView(inflatedView, mode.layoutParams)
 
             // Elevation/shadows is not deterministic when doing hardware rendering, so we disable
@@ -86,18 +92,35 @@ open class ViewScreenshotTestRule(
 
         // We call onActivity again because it will make sure that our Activity is done measuring,
         // laying out and drawing its content (that we set in the previous onActivity lambda).
-        var contentView: View? = null
-        activityRule.scenario.onActivity { activity ->
-            // Check that the content is what we expected.
-            val content = activity.requireViewById<ViewGroup>(android.R.id.content)
-            assertEquals(1, content.childCount)
-            contentView = content.getChildAt(0)
-            beforeScreenshot(activity)
+        var targetView: View? = null
+        var waitForActivity = true
+        var iterCount = 0
+        while (waitForActivity && iterCount < frameLimit) {
+            activityRule.scenario.onActivity { activity ->
+                // Check that the content is what we expected.
+                val content = activity.requireViewById<ViewGroup>(android.R.id.content)
+                assertEquals(1, content.childCount)
+                targetView =
+                    fetchTargetView(content, subviewId).also {
+                        waitForActivity = checkView(activity, it)
+                    }
+            }
+            iterCount++
         }
 
-        return contentView?.captureToBitmapAsync()?.get(10, TimeUnit.SECONDS)
+        if (waitForActivity) {
+            throw IllegalStateException(
+                "checkView returned true but frameLimit was reached. Increase the frame limit if " +
+                    "more frames are required before the screenshot is taken."
+            )
+        }
+
+        return targetView?.captureToBitmapAsync()?.get(10, TimeUnit.SECONDS)
             ?: error("timeout while trying to capture view to bitmap")
     }
+
+    private fun fetchTargetView(parent: ViewGroup, subviewId: Int?): View =
+        if (subviewId != null) parent.requireViewById(subviewId) else parent.getChildAt(0)
 
     /**
      * Compare the content of the view provided by [viewProvider] with the golden image identified
@@ -107,14 +130,33 @@ open class ViewScreenshotTestRule(
         goldenIdentifier: String,
         mode: Mode = Mode.WrapContent,
         beforeScreenshot: (ComponentActivity) -> Unit = {},
+        subviewId: Int? = null,
+        viewProvider: (ComponentActivity) -> View,
+    ) =
+        screenshotTest(
+            goldenIdentifier,
+            mode,
+            checkView = { activity, _ ->
+                beforeScreenshot(activity)
+                false
+            },
+            subviewId,
+            viewProvider
+        )
+
+    /**
+     * Compare the content of the view provided by [viewProvider] with the golden image identified
+     * by [goldenIdentifier] in the context of [emulationSpec].
+     */
+    fun screenshotTest(
+        goldenIdentifier: String,
+        mode: Mode = Mode.WrapContent,
+        checkView: (ComponentActivity, View) -> Boolean,
+        subviewId: Int? = null,
         viewProvider: (ComponentActivity) -> View,
     ) {
-        val bitmap = takeScreenshot(mode, viewProvider, beforeScreenshot)
-        screenshotRule.assertBitmapAgainstGolden(
-            bitmap,
-            goldenIdentifier,
-            matcher,
-        )
+        val bitmap = takeScreenshot(mode, viewProvider, checkView, subviewId)
+        screenshotRule.assertBitmapAgainstGolden(bitmap, goldenIdentifier, matcher)
     }
 
     /**
@@ -123,6 +165,7 @@ open class ViewScreenshotTestRule(
      */
     fun dialogScreenshotTest(
         goldenIdentifier: String,
+        waitForIdle: () -> Unit = {},
         dialogProvider: (Activity) -> Dialog,
     ) {
         dialogScreenshotTest(
@@ -130,7 +173,8 @@ open class ViewScreenshotTestRule(
             screenshotRule,
             matcher,
             goldenIdentifier,
-            dialogProvider = dialogProvider,
+            waitForIdle,
+            dialogProvider,
         )
     }
 

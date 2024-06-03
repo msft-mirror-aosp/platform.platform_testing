@@ -15,6 +15,7 @@
 //
 
 package {
+    default_team: "trendy_team_windowing_tools",
     default_applicable_licenses: ["Android-Apache-2.0"],
 }
 
@@ -36,6 +37,7 @@ java_test {
         "compatibility-device-util-axt",
         "androidx.test.uiautomator_uiautomator",
         "androidx.test.ext.junit",
+        "androidx.core_core-ktx",
         "launcher-helper-lib",
         "platform-test-annotations",
         "platform-test-core-rules",

@@ -19,10 +19,10 @@ package android.tools.traces.parsers
 import android.app.ActivityTaskManager
 import android.app.Instrumentation
 import android.app.WindowConfiguration
+import android.graphics.Region
 import android.os.SystemClock
 import android.os.Trace
 import android.tools.Rotation
-import android.tools.datatypes.Region
 import android.tools.traces.Condition
 import android.tools.traces.ConditionsFactory
 import android.tools.traces.DeviceStateDump
@@ -96,7 +96,7 @@ constructor(
      * @return The frame [Region] a [WindowState] matching [componentMatcher]
      */
     fun getWindowRegion(componentMatcher: IComponentMatcher): Region =
-        getWindow(componentMatcher)?.frameRegion ?: Region.EMPTY
+        getWindow(componentMatcher)?.frameRegion ?: Region()
 
     /**
      * Class to build conditions for waiting on specific [WindowManagerTrace] and [LayersTrace]
@@ -192,6 +192,22 @@ constructor(
             displayId: Int = Display.DEFAULT_DISPLAY
         ) =
             withFullScreenAppCondition(componentMatcher)
+                .withAppTransitionIdle(displayId)
+                .add(ConditionsFactory.isLayerVisible(componentMatcher))
+
+        /**
+         * Waits for an app matching [componentMatcher] to be visible, in freeform, and for nothing
+         * to be animating
+         *
+         * @param componentMatcher Components to search
+         * @param displayId of the target display
+         */
+        @JvmOverloads
+        fun withFreeformApp(
+            componentMatcher: IComponentMatcher,
+            displayId: Int = Display.DEFAULT_DISPLAY
+        ) =
+            withFreeformAppCondition(componentMatcher)
                 .withAppTransitionIdle(displayId)
                 .add(ConditionsFactory.isLayerVisible(componentMatcher))
 
@@ -422,7 +438,9 @@ constructor(
                 add(ConditionsFactory.isWMStateComplete())
                 if (waitForCondition.isNotEmpty()) {
                     add(
-                        Condition("!shouldWaitForActivities") {
+                        Condition(
+                            "!shouldWaitForActivityState(${waitForCondition.joinToString()})"
+                        ) {
                             !shouldWaitForActivities(it, *waitForCondition)
                         }
                     )
@@ -433,6 +451,13 @@ constructor(
             waitForValidStateCondition(
                 WaitForValidActivityState.Builder(componentMatcher)
                     .setWindowingMode(WindowConfiguration.WINDOWING_MODE_FULLSCREEN)
+                    .setActivityType(WindowConfiguration.ACTIVITY_TYPE_STANDARD)
+                    .build()
+            )
+        fun withFreeformAppCondition(componentMatcher: IComponentMatcher) =
+            waitForValidStateCondition(
+                WaitForValidActivityState.Builder(componentMatcher)
+                    .setWindowingMode(WindowConfiguration.WINDOWING_MODE_FREEFORM)
                     .setActivityType(WindowConfiguration.ACTIVITY_TYPE_STANDARD)
                     .build()
             )

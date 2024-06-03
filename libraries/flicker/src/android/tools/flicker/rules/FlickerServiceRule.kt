@@ -24,6 +24,7 @@ import android.tools.flicker.FlickerServiceResultsCollector
 import android.tools.flicker.FlickerServiceTracesCollector
 import android.tools.flicker.IFlickerServiceResultsCollector
 import android.tools.flicker.annotation.FlickerTest
+import android.tools.flicker.assertions.AssertionResult
 import android.tools.flicker.config.FlickerConfig
 import android.tools.flicker.config.FlickerServiceConfig
 import android.tools.flicker.config.ScenarioId
@@ -49,6 +50,7 @@ open class FlickerServiceRule
 constructor(
     enabled: Boolean = true,
     failTestOnFlicker: Boolean = enabled,
+    failTestOnServiceError: Boolean = false,
     config: FlickerConfig = FlickerConfig().use(FlickerServiceConfig.DEFAULT),
     private val metricsCollector: IFlickerServiceResultsCollector =
         FlickerServiceResultsCollector(
@@ -66,6 +68,12 @@ constructor(
             it.toBoolean()
         }
             ?: failTestOnFlicker
+
+    private val failTestOnServiceError: Boolean =
+        InstrumentationRegistry.getArguments().getString("faas:failTestOnServiceError")?.let {
+            it.toBoolean()
+        }
+            ?: failTestOnServiceError
 
     private var testFailed = false
     private var testSkipped = false
@@ -128,17 +136,19 @@ constructor(
         testSkipped = true
     }
 
-    private fun shouldRun(description: Description?): Boolean {
+    private fun shouldRun(description: Description): Boolean {
         // Only run FaaS if test rule is enabled and on tests with FlickerTest annotation if it's
         // used within the class, otherwise run on all tests
-        return when {
-            !enabled -> false
-            // Nullable description case is only handled because of b/302018924.
-            description != null ->
-                (testClassHasFlickerTestAnnotations(description.testClass) ||
-                    description.annotations.none { it is FlickerTest })
-            else -> true
+        if (!enabled) {
+            return false
         }
+
+        if (description.annotations.none { it is FlickerTest }) {
+            // FlickerTest annotation is not used within the test class, so run on all tests
+            return true
+        }
+
+        return testClassHasFlickerTestAnnotations(description.testClass)
     }
 
     private fun testClassHasFlickerTestAnnotations(testClass: Class<*>): Boolean {
@@ -151,13 +161,22 @@ constructor(
         for (executionError in metricsCollector.executionErrors) {
             Log.e(LOG_TAG, "FaaS reported execution errors", executionError)
         }
+
+        if (failTestOnServiceError && testContainsServiceError()) {
+            throw metricsCollector.executionErrors.first()
+        }
+
         if (testSkipped || testFailed || metricsCollector.executionErrors.isNotEmpty()) {
             // If we had an execution error or the underlying test failed or was skipped, then we
             // have no guarantees about the correctness of the flicker assertions and detect
             // scenarios, so we should not check those and instead return immediately.
             return
         }
-        val failedMetrics = metricsCollector.resultsForTest(description).filter { it.failed }
+
+        val failedMetrics =
+            metricsCollector.resultsForTest(description).filter {
+                it.status == AssertionResult.Status.FAIL
+            }
         val assertionErrors = failedMetrics.flatMap { it.assertionErrors }
         assertionErrors.forEach {
             Log.e(LOG_TAG, "FaaS reported an assertion failure:")
@@ -168,6 +187,7 @@ constructor(
         if (failTestOnFlicker && testContainsFlicker(description)) {
             throw assertionErrors.firstOrNull() ?: error("Unexpectedly missing assertion error")
         }
+
         val flickerTestAnnotation: FlickerTest? =
             description.annotations.filterIsInstance<FlickerTest>().firstOrNull()
         if (failTestOnFlicker && flickerTestAnnotation != null) {
@@ -179,7 +199,11 @@ constructor(
 
     private fun testContainsFlicker(description: Description): Boolean {
         val resultsForTest = metricsCollector.resultsForTest(description)
-        return resultsForTest.any { it.failed }
+        return resultsForTest.any { it.status == AssertionResult.Status.FAIL }
+    }
+
+    private fun testContainsServiceError(): Boolean {
+        return metricsCollector.executionErrors.isNotEmpty()
     }
 
     companion object {

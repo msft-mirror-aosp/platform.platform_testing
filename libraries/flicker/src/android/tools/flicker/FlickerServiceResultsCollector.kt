@@ -25,6 +25,7 @@ import android.tools.ScenarioBuilder
 import android.tools.flicker.assertions.AssertionResult
 import android.tools.flicker.config.FlickerServiceConfig
 import android.tools.flicker.config.ScenarioId
+import android.tools.io.Reader
 import android.tools.io.RunStatus
 import android.tools.traces.getDefaultFlickerOutputDir
 import android.util.Log
@@ -113,6 +114,13 @@ class FlickerServiceResultsCollector(
         }
     }
 
+    override fun testAssumptionFailure(failure: Failure?) {
+        errorReportingBlock {
+            Log.i(LOG_TAG, "testAssumptionFailure")
+            testSkipped = true
+        }
+    }
+
     override fun testSkipped(description: Description) {
         errorReportingBlock {
             Log.i(LOG_TAG, "testSkipped")
@@ -122,12 +130,21 @@ class FlickerServiceResultsCollector(
 
     override fun onTestEnd(testData: DataRecord, description: Description) {
         Log.i(LOG_TAG, "onTestEnd :: collectMetricsPerTest = $collectMetricsPerTest")
-        if (collectMetricsPerTest && !testSkipped) {
+        if (collectMetricsPerTest) {
             val results = errorReportingBlock {
-                return@errorReportingBlock stopTracingAndCollectFlickerMetrics(
-                    testData,
-                    description
-                )
+                Log.i(LOG_TAG, "Stopping trace collection")
+                val reader = tracesCollector.stop()
+                Log.i(LOG_TAG, "Stopped trace collection")
+
+                if (reportOnlyForPassingTests && hasFailedTest) {
+                    return@errorReportingBlock null
+                }
+
+                if (testSkipped) {
+                    return@errorReportingBlock null
+                }
+
+                return@errorReportingBlock collectFlickerMetrics(testData, reader, description)
             }
 
             reportFlickerServiceStatus(
@@ -143,7 +160,15 @@ class FlickerServiceResultsCollector(
         Log.i(LOG_TAG, "onTestRunEnd :: collectMetricsPerTest = $collectMetricsPerTest")
         if (!collectMetricsPerTest) {
             val results = errorReportingBlock {
-                return@errorReportingBlock stopTracingAndCollectFlickerMetrics(runData)
+                Log.i(LOG_TAG, "Stopping trace collection")
+                val reader = tracesCollector.stop()
+                Log.i(LOG_TAG, "Stopped trace collection")
+
+                if (reportOnlyForPassingTests && hasFailedTest) {
+                    return@errorReportingBlock null
+                }
+
+                return@errorReportingBlock collectFlickerMetrics(runData, reader)
             }
 
             reportFlickerServiceStatus(
@@ -155,18 +180,12 @@ class FlickerServiceResultsCollector(
         }
     }
 
-    private fun stopTracingAndCollectFlickerMetrics(
+    private fun collectFlickerMetrics(
         dataRecord: DataRecord,
+        reader: Reader,
         description: Description? = null
     ): Collection<AssertionResult>? {
         return errorReportingBlock {
-            Log.i(LOG_TAG, "Stopping trace collection")
-            val reader = tracesCollector.stop()
-            Log.i(LOG_TAG, "Stopped trace collection")
-            if (reportOnlyForPassingTests && hasFailedTest) {
-                return@errorReportingBlock null
-            }
-
             return@errorReportingBlock try {
                 Log.i(LOG_TAG, "Processing traces")
                 val scenarios = flickerService.detectScenarios(reader)
@@ -176,15 +195,15 @@ class FlickerServiceResultsCollector(
                 assertionResults.addAll(results)
                 if (description != null) {
                     require(assertionResultsByTest[description] == null) {
-                        "Test description already contains flicker assertion results."
+                        "Test description ($description) already contains flicker assertion results"
                     }
                     require(detectedScenariosByTest[description] == null) {
-                        "Test description already contains detected scenarios."
+                        "Test description ($description) already contains detected scenarios"
                     }
                     assertionResultsByTest[description] = results
                     detectedScenariosByTest[description] = scenarios.map { it.type }.distinct()
                 }
-                if (results.any { it.failed }) {
+                if (results.any { it.status == AssertionResult.Status.FAIL }) {
                     reader.artifact.updateStatus(RunStatus.ASSERTION_FAILED)
                 } else {
                     reader.artifact.updateStatus(RunStatus.ASSERTION_SUCCESS)
@@ -227,7 +246,12 @@ class FlickerServiceResultsCollector(
         while (it.hasNext()) {
             val (key, aggregatedResult) = it.next()
             aggregatedResult.results.forEachIndexed { index, result ->
-                val resultStatus = if (result.passed) 0 else 1
+                if (result.status == AssertionResult.Status.ASSUMPTION_VIOLATION) {
+                    // skip
+                    return@forEachIndexed
+                }
+
+                val resultStatus = if (result.status == AssertionResult.Status.PASS) 0 else 1
                 Log.v(LOG_TAG, "Adding metric ${key}_$index = $resultStatus")
                 data.addStringMetric("${key}_$index", "$resultStatus")
             }
@@ -263,7 +287,7 @@ class FlickerServiceResultsCollector(
         dataRecord: DataRecord
     ) {
         val status = if (executionErrors.isEmpty()) OK_STATUS_CODE else EXECUTION_ERROR_STATUS_CODE
-        record.addStringMetric("${FAAS_METRICS_PREFIX}_STATUS", status.toString())
+        record.addStringMetric(FAAS_STATUS_KEY, status.toString())
 
         val maxLineLength = 120
         val statusFile = createFlickerServiceStatusFile(scenario)
@@ -291,7 +315,7 @@ class FlickerServiceResultsCollector(
                 buildString {
                         results?.forEach {
                             append("${it.name} (${it.stabilityGroup}) :: ")
-                            append((if (it.passed) "PASS" else "FAIL") + "\n")
+                            append("${it.status}\n")
                             appendLine(
                                 it.assertionErrors
                                     .joinToString("\n${"-".repeat(maxLineLength / 2)}\n\n") { error
@@ -325,6 +349,7 @@ class FlickerServiceResultsCollector(
         // Unique prefix to add to all FaaS metrics to identify them
         const val FAAS_METRICS_PREFIX = "FAAS"
         private const val LOG_TAG = "$FLICKER_TAG-Collector"
+        const val FAAS_STATUS_KEY = "${FAAS_METRICS_PREFIX}_STATUS"
         const val WINSCOPE_FILE_PATH_KEY = "winscope_file_path"
         const val FAAS_RESULTS_FILE_PATH_KEY = "faas_results_file_path"
         const val FLICKER_ASSERTIONS_COUNT_KEY = "flicker_assertions_count"
@@ -339,19 +364,20 @@ class FlickerServiceResultsCollector(
             val results = mutableListOf<AssertionResult>()
             var failures = 0
             var passes = 0
+            var assumptionViolations = 0
             val errors = mutableListOf<String>()
             var invocationGroup: AssertionInvocationGroup? = null
 
             fun addResult(result: AssertionResult) {
                 results.add(result)
 
-                if (result.failed) {
-                    failures++
-                    result.assertionErrors.forEach {
-                        errors.add(it.message ?: "FAILURE WITHOUT ERROR MESSAGE...")
+                when (result.status) {
+                    AssertionResult.Status.PASS -> passes++
+                    AssertionResult.Status.FAIL -> {
+                        failures++
+                        result.assertionErrors.forEach { errors.add(it.message) }
                     }
-                } else {
-                    passes++
+                    AssertionResult.Status.ASSUMPTION_VIOLATION -> assumptionViolations++
                 }
 
                 if (invocationGroup == null) {

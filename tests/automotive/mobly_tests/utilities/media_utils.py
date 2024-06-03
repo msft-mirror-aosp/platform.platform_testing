@@ -116,9 +116,10 @@ class MediaUtils:
                      actual_dumpsys_metadata)
 
         # assign actual_song_metadata after '=' sign in actual_dumpsys_metadata
-        # if 'null' not in actual_dumpsys_metadata and length of String > 1
+        # if actual_dumpsys_metadata contains less than 3 'null',
+        # and split on '=' is an array with more than 1 element
         actual_song_metadata = [x.split('=', 1)[1] for x in actual_dumpsys_metadata if
-                                constants.NULL_VALUE not in x and len(x.split('=', 1)) > 1]
+                                x.count(constants.NULL_VALUE) < 3 and len(x.split('=', 1)) > 1]
         logging.info("Actual song metadata on phone device: %s", actual_song_metadata)
 
         # assign parsed_song_metadata
@@ -130,7 +131,7 @@ class MediaUtils:
     # Get song title from phone device
     def get_song_title_from_phone(self):
         logging.info("Getting song title from phone device")
-        time.sleep(constants.WAIT_FOR_LOAD)
+        time.sleep(constants.YOUTUBE_SYNC_TIME)
         song_metadata_array = self.get_song_metadata().split(',')
         actual_song_title = song_metadata_array[0]
         logging.info("Actual song title on phone device: %s", actual_song_title)
@@ -158,7 +159,7 @@ class MediaUtils:
     # Open Media app on HU
     def open_media_app_on_hu(self):
         logging.info("Open Media app on HU")
-        self.discoverer.mbs.openMediaApp()
+        self.discoverer.mbs.openBluetoothMediaApp()
 
     # Pause Media app on HU
     def pause_media_on_hu(self):
