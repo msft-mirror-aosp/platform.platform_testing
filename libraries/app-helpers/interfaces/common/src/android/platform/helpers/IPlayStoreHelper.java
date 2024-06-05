@@ -16,6 +16,9 @@
 
 package android.platform.helpers;
 
+import androidx.test.uiautomator.Direction;
+import androidx.test.uiautomator.UiObject2;
+
 public interface IPlayStoreHelper extends IAppHelper {
     /**
      * Setup expectations: The app is open.
@@ -61,4 +64,20 @@ public interface IPlayStoreHelper extends IAppHelper {
      * <p>This method attempts to verify home page element of YouTube.
      */
     void verifyHomePage();
+
+    /**
+     * Setup expectations: Play Store is on the home page.
+     *
+     * <p>Scroll the play store page in the direction and amount passed in
+     *
+     * @return true if scrollable view is findable, or false if not.
+     */
+    boolean scrollPage(Direction dir, float value);
+
+    /**
+     * Setup expectations: Play Store is on the Apps page.
+     *
+     * <p>This method will get a UiObject2 object for Play Store Apps page scroll container.
+     */
+    UiObject2 getScrollPageContainer();
 }

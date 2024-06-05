@@ -131,19 +131,10 @@ public class ValidateUiElement implements JsonDeserializer<UiElement> {
                 validateAndGetValue(JsonConfigConstants.VALUE, jsonObject, /*isOptional*/ false);
 
         // Package is not required for SCROLLABLE, CLICKABLE, TEXT, TEXT_CONTAINS and DESCRIPTION
-        String pkg = null;
 
-        // Package is optional for CLASS
-        if (JsonConfigConstants.CLASS.equals(type)) {
-            pkg = validateAndGetValue(JsonConfigConstants.PACKAGE, jsonObject, /*isOptional*/ true);
-        }
-
-        // Package is required for RESOURCE_ID
-        if (JsonConfigConstants.RESOURCE_ID.equals(type)) {
-            pkg =
-                    validateAndGetValue(
-                            JsonConfigConstants.PACKAGE, jsonObject, /*isOptional*/ false);
-        }
+        // Package is optional for CLASS and RESOURCE_ID
+        String pkg =
+                validateAndGetValue(JsonConfigConstants.PACKAGE, jsonObject, /*isOptional*/ true);
 
         return new UiElement(type, value, pkg);
     }

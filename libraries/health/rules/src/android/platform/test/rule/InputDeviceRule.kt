@@ -19,12 +19,15 @@ import android.hardware.input.InputManager
 import android.os.ParcelFileDescriptor
 import android.platform.helpers.uinput.UInputDevice
 import android.platform.uiautomator_helpers.DeviceHelpers
+import android.util.Log
 import android.view.InputDevice
 import androidx.core.content.getSystemService
 import androidx.test.platform.app.InstrumentationRegistry
-import java.io.Closeable
-import java.io.OutputStream
+import com.google.common.util.concurrent.MoreExecutors
+import com.google.gson.stream.JsonReader
+import java.io.InputStreamReader
 import java.util.concurrent.CountDownLatch
+import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import org.junit.runner.Description
 
@@ -46,12 +49,14 @@ import org.junit.runner.Description
  * }
  * ```
  */
-class InputDeviceRule : TestWatcher() {
+class InputDeviceRule : TestWatcher(), UInputDevice.EventInjector {
 
     private val inputManager = DeviceHelpers.context.getSystemService<InputManager>()!!
     private val deviceAddedMap = mutableMapOf<UInputDevice, CountDownLatch>()
     private val inputManagerDevices = mutableMapOf<DeviceId, UInputDevice>()
-    private val closeablesToCloseOnFinish: MutableList<Closeable> = mutableListOf()
+
+    private lateinit var inputStream: ParcelFileDescriptor.AutoCloseInputStream
+    private lateinit var outputStream: ParcelFileDescriptor.AutoCloseOutputStream
 
     private val inputDeviceListenerDelegate =
         object : InputManager.InputDeviceListener {
@@ -70,6 +75,15 @@ class InputDeviceRule : TestWatcher() {
 
     override fun starting(description: Description?) {
         super.starting(description)
+
+        val (stdOut, stdIn) =
+            InstrumentationRegistry.getInstrumentation()
+                .uiAutomation
+                .executeShellCommandRw("uinput -")
+
+        inputStream = ParcelFileDescriptor.AutoCloseInputStream(stdOut)
+        outputStream = ParcelFileDescriptor.AutoCloseOutputStream(stdIn)
+
         inputManager.registerInputDeviceListener(
             inputDeviceListenerDelegate,
             DeviceHelpers.context.mainThreadHandler
@@ -77,7 +91,9 @@ class InputDeviceRule : TestWatcher() {
     }
 
     override fun finished(description: Description?) {
-        closeablesToCloseOnFinish.forEach { it.close() }
+        inputStream.close()
+        outputStream.close()
+
         inputManager.unregisterInputDeviceListener(inputDeviceListenerDelegate)
         deviceAddedMap.clear()
         inputManagerDevices.clear()
@@ -90,20 +106,9 @@ class InputDeviceRule : TestWatcher() {
      * @throws RuntimeException if the device did not register successfully.
      */
     fun registerDevice(device: UInputDevice) {
-        val parcelFileDescriptors =
-            InstrumentationRegistry.getInstrumentation()
-                .uiAutomation
-                .executeShellCommandRw("uinput -")
-        val (stdOut, stdIn) = parcelFileDescriptors
-        ParcelFileDescriptor.AutoCloseInputStream(stdOut).also { closeablesToCloseOnFinish.add(it) }
-        val outputStream =
-            ParcelFileDescriptor.AutoCloseOutputStream(stdIn).also {
-                closeablesToCloseOnFinish.add(it)
-            }
-
         deviceAddedMap.putIfAbsent(device, CountDownLatch(1))
 
-        writeCommand(device.getRegisterCommand(), outputStream)
+        writeCommand(device.getRegisterCommand())
 
         deviceAddedMap[device]!!.let { latch ->
             latch.await(20, TimeUnit.SECONDS)
@@ -115,8 +120,66 @@ class InputDeviceRule : TestWatcher() {
         }
     }
 
-    private fun writeCommand(command: String, outputStream: OutputStream) {
-        outputStream.write(command.toByteArray())
+    /** Send the [keycode] event, both key down and key up events, for the provided [deviceId]. */
+    override fun sendKeyEvent(deviceId: Int, keycode: Int) {
+        sendEventWithValues(deviceId, EV_KEY, keycode, KEY_DOWN)
+        sendEventWithValues(deviceId, EV_KEY, keycode, KEY_UP)
+    }
+
+    /** Send the [eventType], [keycode], [value] for the provided [deviceId]. */
+    override fun sendEventWithValues(deviceId: Int, eventType: Int, keycode: Int, value: Int) {
+        injectEvdevEvents(deviceId, listOf(eventType, keycode, value, EV_SYN, SYN_REPORT, 0))
+    }
+
+    /**
+     * The provided file should contain Uinput events in json format. The file path should be
+     * relative to the assets root.
+     */
+    override fun sendEventsFromInputFile(deviceId: Int, inputFile: String) {
+        InstrumentationRegistry.getInstrumentation().context.assets.open(inputFile).use {
+            writeCommand(it.readBytes())
+        }
+
+        val executor = MoreExecutors.listeningDecorator(Executors.newCachedThreadPool())
+        val future = executor.submit { waitForEmptyUinputEventQueue() }
+        try {
+            future.get(waitForSyncTokenDurationSeconds, TimeUnit.SECONDS)
+        } catch (e: Exception) {
+            error("Did not receive '$EVENT_REPLAY_COMPLETE_SYNC_TOKEN' within timeout")
+        }
+    }
+
+    /**
+     * Update the time base from which the following events are scheduled to the current time.
+     *
+     * See frameworks/base/cmds/uinput/README.md for a more thorough explanation.
+     *
+     * @param deviceId The id corresponding to [UInputDevice] to update the time base of
+     */
+    override fun updateTimeBase(deviceId: Int) {
+        writeCommand("""{"command": "updateTimeBase", "id": $deviceId}""")
+    }
+
+    /**
+     * Inject array of uinput events for a device. The following is an example of events: [[EV_KEY],
+     * [KEY_UP], [KEY_DOWN], [EV_SYN], [SYN_REPORT], 0]. The number of entries in the provided
+     * [evdevEvents] has to be a multiple of 3.
+     *
+     * @param deviceId The id corresponding to [UInputDevice] to associate with the [evdevEvents]
+     * @param evdevEvents The uinput events to be injected
+     */
+    private fun injectEvdevEvents(deviceId: Int, evdevEvents: List<Int>) {
+        assert(evdevEvents.size % 3 == 0) { "Number of injected events should be a multiple of 3" }
+
+        writeCommand("""{"command": "inject","id": $deviceId,"events": $evdevEvents}""")
+    }
+
+    private fun writeCommand(command: String) {
+        writeCommand(command.toByteArray())
+    }
+
+    private fun writeCommand(command: ByteArray) {
+        outputStream.write(command)
         outputStream.flush()
     }
 
@@ -128,5 +191,72 @@ class InputDeviceRule : TestWatcher() {
         deviceAddedMap[uinputDevice]!!.countDown()
     }
 
+    private fun waitForEmptyUinputEventQueue() {
+        writeCommand(EVENT_REPLAY_COMPLETE_SYNC_TOKEN_EVENT)
+
+        Log.d(
+            "InputDeviceRule",
+            "'$EVENT_REPLAY_COMPLETE_SYNC_TOKEN' sync token sent, waiting for it to be processed..."
+        )
+        var nextSyncToken: String? = null
+        while (nextSyncToken != EVENT_REPLAY_COMPLETE_SYNC_TOKEN) {
+            nextSyncToken = readSyncTokenFromInputStream()
+        }
+        Log.d("InputDeviceRule", "'$EVENT_REPLAY_COMPLETE_SYNC_TOKEN' sync token processed")
+    }
+
+    /**
+     * Returns the syncToken from the inputStream or null if the inputStream contains content other
+     * than a syncToken.
+     */
+    private fun readSyncTokenFromInputStream(): String? {
+        val reader = JsonReader(InputStreamReader(inputStream, Charsets.UTF_8))
+        var reason: String? = null
+        var syncToken: String? = null
+
+        reader.beginObject()
+        while (reader.hasNext()) {
+            when (reader.nextName()) {
+                "reason" -> reason = reader.nextString()
+                "syncToken" -> syncToken = reader.nextString()
+                else -> reader.skipValue()
+            }
+        }
+        reader.endObject()
+
+        if (reason != "sync" || syncToken == null) return null
+
+        return syncToken
+    }
+
     @JvmInline value class DeviceId(val deviceId: Int)
+
+    private companion object {
+        // See
+        // https://cs.android.com/android/kernel/superproject/+/common-android-mainline:common/include/uapi/linux/input-event-codes.h
+        // for these mappings.
+        const val EV_KEY = 1
+        const val EV_SYN = 0
+        const val SYN_REPORT = 0
+        const val KEY_UP = 0
+        const val KEY_DOWN = 1
+
+        const val EVENT_REPLAY_COMPLETE_SYNC_TOKEN = "event_replay_complete"
+        val EVENT_REPLAY_COMPLETE_SYNC_TOKEN_EVENT =
+            """
+            {
+                "id": 1,
+                "command": "sync",
+                "syncToken": "$EVENT_REPLAY_COMPLETE_SYNC_TOKEN"
+            }
+
+            {
+              "id": 1,
+              "command": "delay",
+              "duration": 100
+            }
+            """
+                .trimIndent()
+        const val waitForSyncTokenDurationSeconds = 20L
+    }
 }

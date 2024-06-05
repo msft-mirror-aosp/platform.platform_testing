@@ -27,7 +27,8 @@ java_library {
         "androidx.test.rules",
         "perfetto-helper",
         "junit",
-
+        "mockito-target-minus-junit4",
+        "collector-helper-utilities",
     ],
 
     sdk_version: "current",

@@ -13,6 +13,7 @@
 // limitations under the License.
 
 package {
+    default_team: "trendy_team_aaos_framework",
     default_applicable_licenses: ["Android-Apache-2.0"],
 }
 
@@ -30,6 +31,7 @@ android_test {
         "common-platform-scenarios",
         "common-platform-scenario-tests",
         "microbenchmark-device-lib",
+        "platform-test-junit-rules",
         "platform-test-rules",
         "platform-test-options",
         "multi-user-helper",

@@ -16,6 +16,8 @@
 
 package android.platform.helpers;
 
+import android.support.test.uiautomator.Direction;
+
 public interface IDriveHelper extends IAppHelper {
 
     /**
@@ -97,4 +99,57 @@ public interface IDriveHelper extends IAppHelper {
      * <p>This method will click into settings page and click clear cache.
      */
     public void clearCache();
+
+    /**
+     * Setup expectations: Google Drive is open and file list is visible.
+     *
+     * <p>This method will click on the first file.
+     */
+    public void openFile();
+
+    /**
+     * Setup expectations: Google Drive is open to a scrollable recycler or viewport
+     *
+     * <p>This method will scroll the page in the direction and amount passed in
+     *
+     * @return true if scrollable view is findable, or false if not.
+     */
+    public boolean scrollPage(Direction dir, float value);
+
+    /**
+     * Setup expectations: on a doc page without scrollable recycler or viewport
+     *
+     * <p>Scroll vertically up or down
+     */
+    public void scrollVert(Direction dir);
+
+    /**
+     * Setup expectations: Google Drive is open and Files tab is selected at the bottom
+     *
+     * @param fileName File name to check whether it exist or not
+     */
+    boolean doesFileExist(String fileName);
+
+    /**
+     * Setup expectations: Google Drive is open and Files tab is selected at the bottom
+     *
+     * @param fileName File name to upload from local device documents
+     */
+    void uploadFileFromLocalDeviceDocuments(String fileName);
+
+    /**
+     * Setup expectations: Google Drive is open and Files tab is selected at the bottom
+     *
+     * <p>Given file name is visible and clickable to open
+     *
+     * @param fileName File name to open
+     */
+    void openFile(String fileName);
+
+    /**
+     * Setup expectations: Google Drive is open and Click on file to open in Docs Editor
+     *
+     * <p>Waits until the document is fully opened in Docs Editor
+     */
+    void waitForDocumentToOpen();
 }

@@ -18,37 +18,31 @@ package android.device.collectors;
 
 import android.device.collectors.annotations.OptionClass;
 import android.os.Bundle;
+
 import androidx.annotation.VisibleForTesting;
+
 import com.android.helpers.PinnerHelper;
 
 @OptionClass(alias = "pinner-collector")
 public class PinnerSnapshotListener extends BaseCollectionListener<String> {
-    private static final String TAG = PinnerSnapshotListener.class.getSimpleName();
     private static final String DEFAULT_OUTPUT_DIR = "/sdcard/test_results";
+    @VisibleForTesting static final String OUTPUT_DIR_KEY = "output-dir";
+  private PinnerHelper mPinnerHelper = new PinnerHelper();
 
-    @VisibleForTesting
-    static final String OUTPUT_DIR_KEY = "output-dir";
+  public PinnerSnapshotListener() { createHelperInstance(mPinnerHelper); }
 
-    private PinnerHelper mPinnerHelper = new PinnerHelper();
+  /**
+   * Constructor to simulate receiving the instrumentation arguments. Should not
+   * be used except for testing.
+   */
+  @VisibleForTesting
+  public PinnerSnapshotListener(Bundle args, PinnerHelper helper) {
+    super(args, helper);
+    mPinnerHelper = helper;
+    createHelperInstance(mPinnerHelper);
+  }
 
-    public PinnerSnapshotListener() {
-        createHelperInstance(mPinnerHelper);
-    }
-
-    /**
-     * Constructor to simulate receiving the instrumentation arguments. Should not be used except
-     * for testing.
-     */
-    @VisibleForTesting
-    public PinnerSnapshotListener(Bundle args, PinnerHelper helper) {
-        super(args, helper);
-        mPinnerHelper = helper;
-        createHelperInstance(mPinnerHelper);
-    }
-
-    /**
-     * Adds the options for pinner snapshot collector.
-     */
+    /** Adds the options for pinner snapshot collector. */
     @Override
     public void setupAdditionalArgs() {
         Bundle args = getArgsBundle();

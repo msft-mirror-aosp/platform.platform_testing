@@ -29,7 +29,7 @@ instrumentation_tests := \
     FrameworksMockingServicesTests \
     WmTests \
     WmPerfTests \
-    JobTestApp \
+    DisplayServiceTests \
     SuspendTestApp \
     FrameworksUtilTests \
     MtpServiceTests \
@@ -37,6 +37,7 @@ instrumentation_tests := \
     DocumentsUITests \
     ShellTests \
     SystemUITests \
+    TvSystemUITests \
     TestablesTests \
     FrameworksWifiApiTests \
     FrameworksWifiNonUpdatableApiTests \
@@ -50,7 +51,6 @@ instrumentation_tests := \
     PermissionFunctionalTests \
     BlockedNumberProviderTest \
     DownloadAppFunctionalTests \
-    NotificationFunctionalTests \
     DynamicCodeLoggerIntegrationTests \
     UsbTests \
     DownloadProviderTests \
@@ -74,16 +74,27 @@ instrumentation_tests := \
     ExtServicesUnitTests-sminus \
     FrameworksNetSmokeTests \
     FlickerLibTest \
-    FlickerTests \
+    FlickerTestsOther \
+    FlickerTestsAppClose \
+    FlickerTestsIme \
+    FlickerTestsQuickswitch \
+    FlickerTestsRotation \
     FlickerTestApp \
-    WMShellFlickerTests \
+    WMShellFlickerTestsOther \
+    WMShellFlickerTestsBubbles \
+    WMShellFlickerTestsPip1 \
+    WMShellFlickerTestsPip2 \
+    WMShellFlickerTestsPip3 \
+    WMShellFlickerTestsSplitScreenGroup1 \
+    WMShellFlickerTestsSplitScreenGroup2 \
     WMShellUnitTests \
     trace_config_detailed.textproto \
     perfetto_trace_processor_shell \
     CarDeveloperOptionsUnitTests \
     SpaPrivilegedLibTests \
     SettingsSpaUnitTests \
-    SpaLibTests
+    SpaLibTests \
+    PermissionServiceMockingTests
 
 ifneq ($(strip $(BOARD_PERFSETUP_SCRIPT)),)
 instrumentation_tests += perf-setup

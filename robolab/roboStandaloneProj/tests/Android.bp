@@ -14,6 +14,7 @@
 // limitations under the License.
 
 package {
+    default_team: "trendy_team_testing",
     default_applicable_licenses: ["Android-Apache-2.0"],
 }
 
@@ -24,6 +25,10 @@ android_robolectric_test {
 
     srcs: [
         "src/**/*.java",
+    ],
+
+    exclude_srcs: [
+        "src/com/android/myroboapplication/WelcomeActivityStrictTest.java",
     ],
 
     java_resource_dirs: ["config"],
@@ -37,5 +42,27 @@ android_robolectric_test {
 
     upstream: true,
 
-    test_suites: ["general-tests"],
+    strict_mode: false,
+}
+
+android_robolectric_test {
+    enabled: true,
+
+    name: "MyRoboStrictTests",
+
+    srcs: [
+        "src/com/android/myroboapplication/WelcomeActivityStrictTest.java",
+    ],
+
+    java_resource_dirs: ["config"],
+
+    libs: [
+        "androidx.test.core",
+        "androidx.test.runner",
+        "androidx.test.ext.junit",
+    ],
+
+    instrumentation_for: "MyRoboApplication",
+
+    upstream: true,
 }

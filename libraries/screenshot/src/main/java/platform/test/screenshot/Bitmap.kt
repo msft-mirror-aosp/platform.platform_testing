@@ -16,34 +16,16 @@
 
 package platform.test.screenshot
 
-import android.graphics.Bitmap
-import android.graphics.Canvas
 import android.os.Build
-import android.view.View
 import platform.test.screenshot.matchers.MSSIMMatcher
 import platform.test.screenshot.matchers.PixelPerfectMatcher
-
-/** Draw this [View] into a [Bitmap]. */
-// TODO(b/195673633): Remove this once Compose screenshot tests use hardware rendering for their
-// tests.
-fun View.drawIntoBitmap(): Bitmap {
-    val bitmap =
-        Bitmap.createBitmap(
-            measuredWidth,
-            measuredHeight,
-            Bitmap.Config.ARGB_8888,
-        )
-    val canvas = Canvas(bitmap)
-    draw(canvas)
-    return bitmap
-}
 
 /**
  * The [BitmapMatcher][platform.test.screenshot.matchers.BitmapMatcher] that should be used for
  * screenshot *unit* tests.
  */
 val UnitTestBitmapMatcher =
-    if (Build.CPU_ABI == "x86_64") {
+    if (Build.CPU_ABI == "x86_64" || Build.FINGERPRINT.contains("robolectric")) {
         // Different CPU architectures can sometimes end up rendering differently, so we can't do
         // pixel-perfect matching on different architectures using the same golden. Given that our
         // presubmits are run on cf_x86_64_phone, our goldens should be perfectly matched on the

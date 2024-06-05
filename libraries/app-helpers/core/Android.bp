@@ -20,6 +20,7 @@ package {
 
 java_library {
     name: "app-helpers-core",
+    sdk_version: "test_current",
     libs: [
         "androidx.test.runner",
         "launcher-helper-lib",
@@ -27,6 +28,8 @@ java_library {
     static_libs: [
         "ub-uiautomator",
         "spectatio-util-lib",
+        "compatibility-device-util-axt",
+        "//frameworks/base/packages/SystemUI/aconfig:com_android_systemui_flags_lib",
     ],
     srcs: ["src/**/*.java"],
 }

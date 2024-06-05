@@ -16,6 +16,8 @@
 
 package android.platform.helpers;
 
+import java.util.List;
+
 public interface IAutoDialHelper extends IAppHelper, Scrollable {
 
     /** enum class for contact list order type. */
@@ -37,6 +39,36 @@ public interface IAutoDialHelper extends IAppHelper, Scrollable {
      * @param phoneNumber phone number to dial.
      */
     void dialANumber(String phoneNumber);
+
+    /**
+     * Setup expectations: A prompt allowing the user to select "Device" is open.
+     *
+     * <p>This method is meant to be used when contacts are being uploaded onto a device (the
+     * confirmation dialogue allows either the device to be selected for upload, or for
+     * cancellation.
+     */
+    void pressDeviceOnPrompt();
+
+    /**
+     * Press the contact info element on screen containing the given name.
+     *
+     * @param expectedName - The contact name on the contact info element
+     */
+    void pressContactResult(String expectedName);
+
+    /** Assumes contact page is open. Press the mobile call button on a contact page. */
+    void pressMobileCallOnContact();
+
+    /** Assumes Dialer settings page is open. Press the active call toggle. */
+    void pressActiveCallToggle();
+
+    /**
+     * Assumes home screen is currently open, and the phone card is the bottommost card on the left
+     * side of the screen.
+     *
+     * <p>Press the dialer button on the phone card.
+     */
+    void pressDialerButtonOnPhoneCard();
 
     /**
      * Setup expectations: The app is open and there is an ongoing call.
@@ -76,11 +108,27 @@ public interface IAutoDialHelper extends IAppHelper, Scrollable {
     String getDialedNumber();
 
     /**
+     * Setup expectations: A call is underway, and the call screen is in focus on the device.
+     *
+     * <p>This method is used to get the number that is currently being dialed, or has been dialed
+     * on a currently-displayed ongoing call
+     */
+    String getDialingNumber();
+
+    /**
+     * Setup expectations: A call is underway, and the call screen is in focus on the device.
+     *
+     * <p>This method is used to get the number that is has been dialed /called on a
+     * currently-displayed ongoing call
+     */
+    String getUserProfilePhoneNumber();
+
+    /**
      * Setup expectations: The app is open and in Dialpad
      *
      * <p>This method is used to get the number entered on dialpad
      */
-    String getDialInNumber();
+    String getNumberInDialPad();
 
     /**
      * Setup expectations: The app is open and there is an ongoing call.
@@ -152,6 +200,13 @@ public interface IAutoDialHelper extends IAppHelper, Scrollable {
     void callMostRecentHistory();
 
     /**
+     * Setup expectations: The Phone Dialer Settings page is open.
+     *
+     * <p>This method returns the phone name recorded under the "Connected Phone" settings field.
+     */
+    String getConnectedPhoneName();
+
+    /**
      * Setup expectations: The app is open and there is an ongoing call.
      *
      * <p>This method is used to get the contact name being called.
@@ -207,6 +262,13 @@ public interface IAutoDialHelper extends IAppHelper, Scrollable {
     String getFirstContactFromContactList();
 
     /**
+     * Setup expectations: A Contact details page is open.
+     *
+     * <p>This method is used to get the home address from the currently-open contact.
+     */
+    String getHomeAddress();
+
+    /**
      * Setup expectations: The app is open.
      *
      * <p>This method is used to verify if a contact is added to Favorites.
@@ -223,11 +285,18 @@ public interface IAutoDialHelper extends IAppHelper, Scrollable {
      * @param contact Contact's details page to be opened.
      */
     void openDetailsPage(String contact);
+
+    /** Setup expectations: The dialer main page is open. Opens the dial pad screen. */
+    void openDialPad();
+
     /**
-     * Setup expectations: The app is open.
+     * Setup expectations: The dialer app page is open.
      *
-     * <p>This method is used to check if phone is paired.
+     * <p>This method opens the dialer settings page (via the Settings icon button on the dialer
+     * page.
      */
+    void openDialerSettings();
+
     boolean isPhonePaired();
     /**
      * Setup expectations: The app is open.
@@ -235,4 +304,98 @@ public interface IAutoDialHelper extends IAppHelper, Scrollable {
      * <p>This method is used to open contact list
      */
     void openContacts();
+
+    /**
+     * Setup expectations: The contacts page is open.
+     *
+     * <p>This method is used to open the contact details page of the first visible contact. Throws
+     * an error if no contacts are visible.
+     */
+    void openFirstContactDetails();
+
+    /**
+     * Setup expectations: The app is open and there is an ongoing call.
+     *
+     * <p>This method is used check if ongoing call is displayed on home.
+     */
+    boolean isOngoingCallDisplayedOnHome();
+
+    /**
+     * Setup expectations: None
+     *
+     * @return Whether the screen currently shows an ongoing call (in full-screen mode).
+     */
+    boolean isOngoingCallInFullScreen();
+
+    /**
+     * Setup expectations: The home screen is open
+     *
+     * <p>This method is used for opening phone app from homescreen
+     */
+    void openPhoneAppFromHome();
+
+    /**
+     * Setup expectations: The app is open.
+     *
+     * <p>This method is used to get visible contacts list
+     */
+    List<String> getListOfAllVisibleContacts();
+
+    /**
+     * Setup expectations: The call history view is open.
+     *
+     * @return - The number of call histrory entries currently on screen.
+     */
+    int getNumberOfCallHistoryEntries();
+
+    /**
+     * Setup expectations: the Dialer Settings page is open.
+     *
+     * <p>Returns true if the Active Call feature is enabled, false otherwise.
+     */
+    boolean isActiveCallEnabled();
+
+    /**
+     * Setup expectations: bluetooth is off
+     *
+     * <p>This method is used for checking if error message is displaye when bluetooth is off
+     */
+    boolean isBluetoothHfpErrorDisplayed();
+
+    /**
+     * Setup expectations: The app is open
+     *
+     * <p>This method is adding favorites from the Favorites Tab
+     */
+    void addFavoritesFromFavoritesTab(String contact);
+    /**
+     * Setup expectations: The bluetooth palette is open
+     *
+     * <p>This method is used for clicking phone button from bluetooth palette
+     */
+    void clickPhoneButton();
+    /**
+     * Setup expectations: The dialer page is open
+     *
+     * <p>This method is used to check if Recents tab is present in dialer page
+     */
+    boolean verifyDialerRecentsTab();
+    /**
+     * Setup expectations: The dialer page is open
+     *
+     * <p>This method is used to check if Contacts tab is present in dialer page
+     */
+    boolean verifyDialerContactsTab();
+    /**
+     * Setup expectations: The dialer page is open
+     *
+     * <p>This method is used to check if Favorites tab is present in dialer page
+     */
+    boolean verifyDialerFavoritesTab();
+    /**
+     * Setup expectations: The dialer page is open
+     *
+     * <p>This method is used to check if Dialpad tab is present in dialer page
+     */
+    boolean verifyDialerDialpadTab();
 }

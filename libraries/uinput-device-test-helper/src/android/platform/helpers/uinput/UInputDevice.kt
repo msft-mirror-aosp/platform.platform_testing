@@ -22,16 +22,17 @@ import android.view.InputDevice
  * [android.platform.test.rule.InputDeviceRule].
  */
 abstract class UInputDevice {
+    abstract val inputDeviceId: Int
     abstract val vendorId: Int
     abstract val productId: Int
     abstract val name: String
     abstract val bus: String
-    abstract val supportedKeys: Array<Int>
+    abstract val supportedKeys: List<Int>
 
     // Based on cts/tests/input/res/raw/test_bluetooth_stylus_register.json
-    fun getRegisterCommand(): String {
+    open fun getRegisterCommand(): String {
         return """{
-            "id": 1,
+            "id": $inputDeviceId,
             "type": "uinput",
             "command": "register",
             "name": "$name",
@@ -40,7 +41,7 @@ abstract class UInputDevice {
             "bus": "$bus",
             "configuration":[
                 {"type": 100, "data": [1]},
-                {"type": 101, "data": ${supportedKeys.contentToString()}}
+                {"type": 101, "data": $supportedKeys}
             ]
         }"""
             .trimIndent()
@@ -51,4 +52,12 @@ abstract class UInputDevice {
         this.name == inputDevice.name &&
             this.vendorId == inputDevice.vendorId &&
             this.productId == inputDevice.productId
+
+    /** An interface to inject events for an [UInputDevice]. */
+    interface EventInjector {
+        fun sendKeyEvent(deviceId: Int, keycode: Int)
+        fun sendEventsFromInputFile(deviceId: Int, inputFile: String)
+        fun sendEventWithValues(deviceId: Int, eventType: Int, keycode: Int, value: Int)
+        fun updateTimeBase(deviceId: Int)
+    }
 }

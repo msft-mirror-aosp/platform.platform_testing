@@ -20,8 +20,11 @@ import static org.mockito.Mockito.verify;
 
 import android.app.Instrumentation;
 import android.os.Bundle;
+
 import androidx.test.runner.AndroidJUnit4;
+
 import com.android.helpers.PinnerHelper;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.Description;

@@ -20,12 +20,15 @@ import android.os.Build
 import androidx.test.InstrumentationRegistry
 import androidx.test.uiautomator.UiDevice
 import com.android.internal.R
+import java.lang.RuntimeException
 import kotlin.annotation.AnnotationRetention.RUNTIME
 import kotlin.annotation.AnnotationTarget.ANNOTATION_CLASS
 import kotlin.annotation.AnnotationTarget.CLASS
+import kotlin.annotation.AnnotationTarget.FUNCTION
 import org.junit.AssumptionViolatedException
 import org.junit.rules.TestRule
 import org.junit.runner.Description
+import org.junit.runner.RunWith
 import org.junit.runners.model.Statement
 
 /**
@@ -38,30 +41,53 @@ class DeviceTypeRule : TestRule {
     private val isLargeScreen = isLargeScreen()
     private val isTablet = isTablet()
 
+    // We don't have a clear rule for whether these annotations should be inherited or not, and
+    // it's less confusing if we require them to be explicit
+    private inline fun <reified T : Annotation> Description.getAnnotationClearly(): T? {
+        getAnnotation(T::class.java)?.let {
+            return it
+        }
+        var superClass = testClass.superclass
+        while (superClass != null) {
+            if (superClass.getAnnotation(T::class.java) != null) {
+                val msg =
+                    "DeviceTypeRule requires subclass to have the same device-check " +
+                        "annotations as superclasses: ${T::class.simpleName}"
+                throw RuntimeException(msg)
+            }
+            superClass = superClass.superclass
+        }
+        return null
+    }
+
     override fun apply(base: Statement, description: Description): Statement {
-        val smallScreenAnnotation = description.getAnnotation(SmallScreenOnly::class.java)
+        val smallScreenAnnotation = description.getAnnotationClearly<SmallScreenOnly>()
         if (smallScreenAnnotation != null && isLargeScreen) {
-            return createAssumptionViolatedStatement(
+            return wrongDeviceTypeStatement(
+                description,
                 "Skipping test on ${Build.PRODUCT} as it doesn't have a small screen. " +
                     "Reason why this should only run on small screens: " +
                     "$smallScreenAnnotation.reason."
             )
         }
 
-        if (description.getAnnotation(LargeScreenOnly::class.java) != null && !isLargeScreen) {
-            return createAssumptionViolatedStatement(
+        if (description.getAnnotationClearly<LargeScreenOnly>() != null && !isLargeScreen) {
+            return wrongDeviceTypeStatement(
+                description,
                 "Skipping test on ${Build.PRODUCT} as it doesn't have a large screen."
             )
         }
 
-        if (description.getAnnotation(FoldableOnly::class.java) != null && !isFoldable) {
-            return createAssumptionViolatedStatement(
+        if (description.getAnnotationClearly<FoldableOnly>() != null && !isFoldable) {
+            return wrongDeviceTypeStatement(
+                description,
                 "Skipping test on ${Build.PRODUCT} as it is not a foldable."
             )
         }
 
-        if (description.getAnnotation(TabletOnly::class.java) != null && !isTablet) {
-            return createAssumptionViolatedStatement(
+        if (description.getAnnotationClearly<TabletOnly>() != null && !isTablet) {
+            return wrongDeviceTypeStatement(
+                description,
                 "Skipping test on ${Build.PRODUCT} as it is not a tablet."
             )
         }
@@ -88,12 +114,30 @@ internal fun isTablet(): Boolean {
     return (isLargeScreen() && !isFoldable())
 }
 
-private fun createAssumptionViolatedStatement(message: String) =
-    object : Statement() {
+private fun wrongDeviceTypeStatement(description: Description, message: String): Statement {
+    val annotation = description.getAnnotation(RunWith::class.java)
+    if (
+        annotation != null &&
+            annotation.value.annotations.none {
+                it.annotationClass == HandlesClassLevelExceptions::class
+            }
+    ) {
+        return object : Statement() {
+            override fun evaluate() {
+                throw Exception(
+                    "Test $description has runner ${annotation.value.simpleName} " +
+                        "that is incompatible with DeviceTypeRule checks"
+                )
+            }
+        }
+    }
+
+    return object : Statement() {
         override fun evaluate() {
             throw AssumptionViolatedException(message)
         }
     }
+}
 
 private fun getInstrumentation(): Instrumentation = InstrumentationRegistry.getInstrumentation()
 
@@ -106,14 +150,14 @@ private const val LARGE_SCREEN_DP_THRESHOLD = 600
  * a large-screen device. See [isLargeScreen].
  */
 @Retention(RUNTIME)
-@Target(ANNOTATION_CLASS, CLASS)
+@Target(ANNOTATION_CLASS, CLASS, FUNCTION)
 annotation class SmallScreenOnly(val reason: String)
 
 /** The test will run only on large screens. See [isLargeScreen]. */
-@Retention(RUNTIME) @Target(ANNOTATION_CLASS, CLASS) annotation class LargeScreenOnly
+@Retention(RUNTIME) @Target(ANNOTATION_CLASS, CLASS, FUNCTION) annotation class LargeScreenOnly
 
 /** The test will run only on foldables. */
-@Retention(RUNTIME) @Target(ANNOTATION_CLASS, CLASS) annotation class FoldableOnly
+@Retention(RUNTIME) @Target(ANNOTATION_CLASS, CLASS, FUNCTION) annotation class FoldableOnly
 
 /** The test will run only on tablets. */
-@Retention(RUNTIME) @Target(ANNOTATION_CLASS, CLASS) annotation class TabletOnly
+@Retention(RUNTIME) @Target(ANNOTATION_CLASS, CLASS, FUNCTION) annotation class TabletOnly

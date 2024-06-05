@@ -13,17 +13,42 @@
 // limitations under the License.
 
 package {
+    default_team: "trendy_team_aaos_framework",
     default_applicable_licenses: ["Android-Apache-2.0"],
 }
 
 android_test {
-    name: "AutomotivePhoneSnippet",
+    name: "AutomotiveSnippet",
     static_libs: [
         "automotive-dial-app-helper",
         "automotive-vehiclehardkeys-app-helper",
+        "automotive-settings-app-helper",
+        "automotive-sms-helper",
+        "automotive-general-ui-helper",
         "mobly-snippet-lib",
+        "mobly-bundled-snippets-lib",
+        "automotive-status-bar-helper",
+        "automotive-media-center-app-helper",
     ],
     srcs: ["src/**/*.java"],
+    manifest: "AndroidAutomotiveManifest.xml",
     compile_multilib: "both",
     sdk_version: "current",
+}
+
+android_test {
+    name: "PhoneSnippet",
+    static_libs: [
+        "mobly-bundled-snippets-lib",
+        "automotive-general-ui-helper",
+        "automotive-dial-app-helper",
+        "automotive-phone-helper",
+    ],
+    srcs: ["src/**/PhoneSnippet.java",
+           "src/**/UISnippet.java",
+           "src/**/DialerSnippet.java"],
+    manifest: "AndroidPhoneManifest.xml",
+    compile_multilib: "both",
+    target_sdk_version: "31",
+    min_sdk_version: "31",
 }

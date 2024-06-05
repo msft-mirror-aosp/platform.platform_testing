@@ -22,9 +22,9 @@ import android.platform.test.rule.ScreenRecordRule.Companion.SCREEN_RECORDING_CL
 import android.platform.test.rule.ScreenRecordRule.Companion.SCREEN_RECORDING_TEST_LEVEL_OVERRIDE_KEY
 import android.platform.test.rule.ScreenRecordRule.ScreenRecord
 import android.platform.uiautomator_helpers.DeviceHelpers.shell
-import android.platform.uiautomator_helpers.DeviceHelpers.uiDevice
 import android.platform.uiautomator_helpers.FailedEnsureException
 import android.platform.uiautomator_helpers.WaitUtils.ensureThat
+import android.platform.uiautomator_helpers.WaitUtils.waitFor
 import android.platform.uiautomator_helpers.WaitUtils.waitForValueToSettle
 import android.util.Log
 import androidx.test.InstrumentationRegistry.getInstrumentation
@@ -52,14 +52,31 @@ import org.junit.runners.model.Statement
  *   instrument -w -e <key> true <test>`).
  *
  * Important note: After the file is created, in order to see it in artifacts, it needs to be pulled
- * from the device. Typically, this is done using [FilePullerLogCollector] at module level, changing
+ * from the device. Typically, this is done using `FilePullerLogCollector` at module level, changing
  * AndroidTest.xml.
  *
+ * This rule requires that the device is rooted to be able to write data to the test app's data
+ * directory. You can use `RootTargetPreparer` in your test's AndroidTest.xml to ensure root is
+ * available.
+ *
  * Note that when this rule is set as:
- * - `@ClassRule`, it will check only if the class has the [ScreenRecord] annotation.
- * - `@Rule`, it will check each single test method.
+ * - `@ClassRule`, it will check only if the class has the [ScreenRecord] annotation, and will
+ *   record one video for the entire test class
+ * - `@Rule`, it will check each single test method, and record one video for each test annotated.
+ *   If the class is annotated, then it will record a separate video for every test, regardless of
+ *   if the test is annotated.
+ *
+ * @param keepTestLevelRecordingOnSuccess: Keep a recording of a single test, if the test passes. If
+ *   false, the recording will be deleted. Does not apply to whole-class recordings
+ * @param waitExtraAfterEnd: Sometimes, recordings are cut off by ~3 seconds (b/266186795). If true,
+ *   then all recordings will wait 3 seconds after the test ends before stopping recording
  */
-class ScreenRecordRule : TestRule {
+class ScreenRecordRule
+@JvmOverloads
+constructor(
+    private val keepTestLevelRecordingOnSuccess: Boolean = true,
+    private val waitExtraAfterEnd: Boolean = true,
+) : TestRule {
 
     private val automation: UiAutomation = getInstrumentation().uiAutomation
 
@@ -76,16 +93,27 @@ class ScreenRecordRule : TestRule {
     }
 
     private fun shouldRecordScreen(description: Description): Boolean {
+        if (!isRooted()) {
+            Log.w(TAG, "Device is not rooted. Skipping screen recording.")
+            return false
+        }
+        val screenRecordBinaryAvailable = File("/system/bin/screenrecord").exists()
+        log("screenRecordBinaryAvailable: $screenRecordBinaryAvailable")
+        if (!screenRecordBinaryAvailable) {
+            return false
+        }
         return if (description.isTest) {
-            val screenRecordBinaryAvailable = File("/system/bin/screenrecord").exists()
-            log("screenRecordBinaryAvailable: $screenRecordBinaryAvailable")
-            screenRecordBinaryAvailable &&
-                (description.getAnnotation(ScreenRecord::class.java) != null ||
-                    testLevelOverrideEnabled())
-        } else { // class level
+            description.getAnnotation(ScreenRecord::class.java) != null ||
+                description.testClass.hasAnnotation(ScreenRecord::class.java) ||
+                testLevelOverrideEnabled()
+        } else { // class level annotation is set
             description.testClass.hasAnnotation(ScreenRecord::class.java) ||
                 classLevelOverrideEnabled()
         }
+    }
+
+    private fun isRooted(): Boolean {
+        return "root".equals(shell("whoami").trim())
     }
 
     private fun classLevelOverrideEnabled() =
@@ -120,16 +148,20 @@ class ScreenRecordRule : TestRule {
         val screenRecordingFileDescriptor =
             automation.executeShellCommand("screenrecord --verbose --bugreport $outputFile")
         // Getting latest PID as there might be multiple screenrecording in progress.
-        val screenRecordPid = screenrecordPids.max()
+        val screenRecordPid = waitFor("screenrecording pid") { screenrecordPids.maxOrNull() }
+        var success = false
         try {
             runnable()
+            success = true
         } finally {
             // Doesn't crash if the file doesn't exist, as we want the command output to be logged.
             outputFile.tryWaitingForFileToExists()
 
-            // temporary measure to see if b/266186795 is fixed
-            Thread.sleep(3000)
-            val killOutput = uiDevice.shell("kill -INT $screenRecordPid")
+            if (waitExtraAfterEnd) {
+                // temporary measure to see if b/266186795 is fixed
+                Thread.sleep(3000)
+            }
+            val killOutput = shell("kill -INT $screenRecordPid")
 
             outputFile.tryWaitingForFileSizeToSettle()
 
@@ -143,10 +175,16 @@ class ScreenRecordRule : TestRule {
                     .trimIndent() + screenRecordOutput.prependIndent("   ")
             )
 
+            val shouldDeleteRecording = !keepTestLevelRecordingOnSuccess && success
+            if (shouldDeleteRecording) {
+                shell("rm $outputFile")
+                log("$outputFile deleted, because test passed")
+            }
+
             if (outputFile.exists()) {
                 val fileSizeKb = Files.size(outputFile.toPath()) / 1024
                 log("Screen recording captured at: $outputFile. File size: $fileSizeKb KB")
-            } else {
+            } else if (!shouldDeleteRecording) {
                 Log.e(TAG, "File not created successfully. Can't determine size of $outputFile")
             }
         }
@@ -184,7 +222,7 @@ class ScreenRecordRule : TestRule {
     private fun screenRecordingInProgress() = screenrecordPids.isNotEmpty()
 
     private val screenrecordPids: List<String>
-        get() = uiDevice.shell("pidof screenrecord").split(" ")
+        get() = shell("pidof screenrecord").split(" ").filter { it != "" }
 
     /** Interface to indicate that the test should capture screenrecord */
     @Retention(RetentionPolicy.RUNTIME)

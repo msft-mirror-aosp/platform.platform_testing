@@ -76,7 +76,10 @@ class DeviceEmulationRule(private val spec: DeviceEmulationSpec) : TestRule {
             val runtimeEnvironment = Class.forName("org.robolectric.RuntimeEnvironment")
             val setQualifiers =
                 runtimeEnvironment.getDeclaredMethod("setQualifiers", String::class.java)
-            val qualifier = "w${width}dp-h${height}dp-${density}dpi"
+            val scaledWidth = width * 160 / density
+            val scaledHeight = height * 160 / density
+            val darkMode = if (spec.isDarkTheme) "night" else "notnight"
+            val qualifier = "w${scaledWidth}dp-h${scaledHeight}dp-${darkMode}-${density}dpi"
             setQualifiers.invoke(null, qualifier)
         } else {
             val curNightMode =
@@ -129,34 +132,29 @@ class DeviceEmulationRule(private val spec: DeviceEmulationSpec) : TestRule {
     }
 
     private fun setDisplayDensity(density: Int) {
-        val wm = WindowManagerGlobal.getWindowManagerService()
-            ?: error("Unable to acquire WindowManager")
-        wm.setForcedDisplayDensityForUser(
-            Display.DEFAULT_DISPLAY,
-            density,
-            UserHandle.myUserId()
-        )
+        val wm =
+            WindowManagerGlobal.getWindowManagerService()
+                ?: error("Unable to acquire WindowManager")
+        wm.setForcedDisplayDensityForUser(Display.DEFAULT_DISPLAY, density, UserHandle.myUserId())
         prevDensity = density
     }
 
-    private fun setDisplaySize(
-        width: Int,
-        height: Int
-    ) {
-        val wm = WindowManagerGlobal.getWindowManagerService()
-            ?: error("Unable to acquire WindowManager")
+    private fun setDisplaySize(width: Int, height: Int) {
+        val wm =
+            WindowManagerGlobal.getWindowManagerService()
+                ?: error("Unable to acquire WindowManager")
         wm.setForcedDisplaySize(Display.DEFAULT_DISPLAY, width, height)
         prevWidth = width
         prevHeight = height
     }
 
     private fun setNightMode(nightMode: Int) {
-       val uiModeManager =
-           InstrumentationRegistry.getInstrumentation()
-               .targetContext
-               .getSystemService(Context.UI_MODE_SERVICE) as UiModeManager
-       uiModeManager.setApplicationNightMode(nightMode)
-       prevNightMode = nightMode
+        val uiModeManager =
+            InstrumentationRegistry.getInstrumentation()
+                .targetContext
+                .getSystemService(Context.UI_MODE_SERVICE) as UiModeManager
+        uiModeManager.setApplicationNightMode(nightMode)
+        prevNightMode = nightMode
     }
 }
 

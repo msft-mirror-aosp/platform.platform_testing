@@ -48,7 +48,11 @@ public class ArtifactSaver {
                 fileName);
     }
 
-    static File artifactFile(Description description, String prefix, String ext) {
+    /**
+     * @return a file to store an artifact for test described by description. Providing the same
+     *     prefix and ext will overwrite the same file.
+     */
+    public static File artifactFile(Description description, String prefix, String ext) {
         return artifactFile(
                 "TestScreenshot-" + prefix + "-" + getClassAndMethodName(description) + "." + ext);
     }
@@ -114,6 +118,15 @@ public class ArtifactSaver {
         dumpCommandOutput(
                 "dumpsys meminfo",
                 artifactFile("MemInfo-OnFailure-" + getClassAndMethodName(description) + ".txt"));
+
+        dumpCommandOutput(
+                "cmd statusbar flag | tail +11", // Flags info starts at line 11
+                artifactFile("Flags-OnFailure-" + getClassAndMethodName(description) + ".txt"));
+
+        dumpCommandOutput(
+                "dumpsys activity service SystemUI",
+                artifactFile("SystemUI-OnFailure-" + getClassAndMethodName(description) + ".txt"));
+
         Trace.endSection();
     }
 
