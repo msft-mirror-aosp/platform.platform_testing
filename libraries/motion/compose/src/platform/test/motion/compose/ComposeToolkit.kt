@@ -16,20 +16,30 @@
 
 package platform.test.motion.compose
 
+import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asAndroidBitmap
+import androidx.compose.ui.platform.ViewConfiguration
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.SemanticsNodeInteractionsProvider
+import androidx.compose.ui.test.TouchInjectionScope
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.junit4.ComposeContentTestRule
 import androidx.compose.ui.test.junit4.ComposeTestRule
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onRoot
+import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.IntSize
+import kotlin.math.roundToInt
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
@@ -45,6 +55,7 @@ import org.junit.rules.RuleChain
 import platform.test.motion.MotionTestRule
 import platform.test.motion.RecordedMotion
 import platform.test.motion.RecordedMotion.Companion.create
+import platform.test.motion.compose.ComposeToolkit.Companion.TAG
 import platform.test.motion.compose.values.EnableMotionTestValueCollection
 import platform.test.motion.golden.DataPoint
 import platform.test.motion.golden.Feature
@@ -62,7 +73,11 @@ import platform.test.screenshot.GoldenPathManager
 class ComposeToolkit(
     val composeContentTestRule: ComposeContentTestRule,
     val testScope: TestScope,
-)
+) {
+    internal companion object {
+        const val TAG = "ComposeToolkit"
+    }
+}
 
 /** Runs a motion test in the [ComposeToolkit.testScope] */
 fun MotionTestRule<ComposeToolkit>.runTest(
@@ -115,10 +130,24 @@ typealias MotionControlFn = suspend MotionControlScope.() -> Unit
 interface MotionControlScope : SemanticsNodeInteractionsProvider {
     /** Waits until [check] returns true. Invoked on each frame. */
     suspend fun awaitCondition(check: () -> Boolean)
+
     /** Waits for [count] frames to be processed. */
     suspend fun awaitFrames(count: Int = 1)
+
     /** Waits for [duration] to pass. */
     suspend fun awaitDelay(duration: Duration)
+
+    /**
+     * Performs touch input, and waits for the completion thereof.
+     *
+     * NOTE: Do use this function instead of [SemanticsNodeInteraction.performTouchInput], since
+     * `performTouchInput` will also advance the time of the compose clock, making it impossible to
+     * record motion while performing gestures.
+     */
+    suspend fun performTouchInputAsync(
+        onNode: SemanticsNodeInteraction,
+        gestureControl: TouchInjectionScope.() -> Unit
+    )
 }
 
 /**
@@ -178,6 +207,7 @@ fun MotionTestRule<ComposeToolkit>.recordMotion(
         val screenshotCollector = mutableListOf<ImageBitmap>()
 
         fun recordFrame(frameId: FrameId) {
+            Log.i(TAG, "recordFrame($frameId)")
             frameIdCollector.add(frameId)
             recordingSpec.timeSeriesCapture.invoke(TimeSeriesCaptureScope(this, propertyCollector))
             screenshotCollector.add(onRoot().captureToImage())
@@ -188,6 +218,7 @@ fun MotionTestRule<ComposeToolkit>.recordMotion(
         mainClock.autoAdvance = false
 
         setContent { EnableMotionTestValueCollection { content(playbackStarted) } }
+        Log.i(TAG, "recordMotion() created compose content")
 
         waitForIdle()
 
@@ -198,6 +229,8 @@ fun MotionTestRule<ComposeToolkit>.recordMotion(
                 recordingSpec.motionControl
             )
 
+        Log.i(TAG, "recordMotion() awaiting readyToPlay")
+
         // Wait for the test to allow readyToPlay
         while (!motionControl.readyToPlay) {
             motionControl.nextFrame()
@@ -206,17 +239,22 @@ fun MotionTestRule<ComposeToolkit>.recordMotion(
         if (recordingSpec.recordBefore) {
             recordFrame(SupplementalFrameId("before"))
         }
+        Log.i(TAG, "recordMotion() awaiting recordingStarted")
 
         playbackStarted = true
         while (!motionControl.recordingStarted) {
             motionControl.nextFrame()
         }
 
+        Log.i(TAG, "recordMotion() begin recording")
+
         val startFrameTime = mainClock.currentTime
         while (!motionControl.recordingEnded) {
             recordFrame(TimestampFrameId(mainClock.currentTime - startFrameTime))
             motionControl.nextFrame()
         }
+
+        Log.i(TAG, "recordMotion() end recording")
 
         mainClock.autoAdvance = true
         waitForIdle()
@@ -265,6 +303,7 @@ private class MotionControlImpl(
                 MotionControlState.WaitingToPlay -> false
                 else -> true
             }
+
     val recordingStarted: Boolean
         get() =
             when (state) {
@@ -334,8 +373,109 @@ private class MotionControlImpl(
         onFrame.takeWhile { !check() }.collect {}
     }
 
+    override suspend fun performTouchInputAsync(
+        onNode: SemanticsNodeInteraction,
+        gestureControl: TouchInjectionScope.() -> Unit
+    ) {
+        val node = onNode.fetchSemanticsNode()
+        val density = node.layoutInfo.density
+        val viewConfiguration = node.layoutInfo.viewConfiguration
+        val visibleSize =
+            with(node.boundsInRoot) { IntSize(width.roundToInt(), height.roundToInt()) }
+
+        val touchEventRecorder = TouchEventRecorder(density, viewConfiguration, visibleSize)
+        gestureControl(touchEventRecorder)
+
+        val recordedEntries = touchEventRecorder.recordedEntries
+        for (entry in recordedEntries) {
+            when (entry) {
+                is TouchEventRecorderEntry.AdvanceTime ->
+                    awaitDelay(entry.durationMillis.milliseconds)
+                is TouchEventRecorderEntry.Cancel ->
+                    onNode.performTouchInput { cancel(delayMillis = 0) }
+                is TouchEventRecorderEntry.Down ->
+                    onNode.performTouchInput { down(entry.pointerId, entry.position) }
+                is TouchEventRecorderEntry.Move ->
+                    onNode.performTouchInput { move(delayMillis = 0) }
+                is TouchEventRecorderEntry.Up -> onNode.performTouchInput { up(entry.pointerId) }
+                is TouchEventRecorderEntry.UpdatePointerTo ->
+                    onNode.performTouchInput { updatePointerTo(entry.pointerId, entry.position) }
+            }
+        }
+    }
+
     private fun MotionControlFn.launch(): Job {
         val function = this
         return testScope.launch { function() }
+    }
+}
+
+/** Records the invocations of the [TouchInjectionScope] methods. */
+private sealed interface TouchEventRecorderEntry {
+
+    class AdvanceTime(val durationMillis: Long) : TouchEventRecorderEntry
+
+    object Cancel : TouchEventRecorderEntry
+
+    class Down(val pointerId: Int, val position: Offset) : TouchEventRecorderEntry
+
+    object Move : TouchEventRecorderEntry
+
+    class Up(val pointerId: Int) : TouchEventRecorderEntry
+
+    class UpdatePointerTo(val pointerId: Int, val position: Offset) : TouchEventRecorderEntry
+}
+
+private class TouchEventRecorder(
+    density: Density,
+    override val viewConfiguration: ViewConfiguration,
+    override val visibleSize: IntSize
+) : TouchInjectionScope, Density by density {
+
+    val lastPositions = mutableMapOf<Int, Offset>()
+    val recordedEntries = mutableListOf<TouchEventRecorderEntry>()
+
+    override fun advanceEventTime(durationMillis: Long) {
+        if (durationMillis > 0) {
+            recordedEntries.add(TouchEventRecorderEntry.AdvanceTime(durationMillis))
+        }
+    }
+
+    override fun cancel(delayMillis: Long) {
+        advanceEventTime(delayMillis)
+        recordedEntries.add(TouchEventRecorderEntry.Cancel)
+    }
+
+    override fun currentPosition(pointerId: Int): Offset? {
+        return lastPositions[pointerId]
+    }
+
+    override fun down(pointerId: Int, position: Offset) {
+        recordedEntries.add(TouchEventRecorderEntry.Down(pointerId, position))
+        lastPositions[pointerId] = position
+    }
+
+    override fun move(delayMillis: Long) {
+        advanceEventTime(delayMillis)
+        recordedEntries.add(TouchEventRecorderEntry.Move)
+    }
+
+    @ExperimentalTestApi
+    override fun moveWithHistoryMultiPointer(
+        relativeHistoricalTimes: List<Long>,
+        historicalCoordinates: List<List<Offset>>,
+        delayMillis: Long
+    ) {
+        TODO("Not yet supported")
+    }
+
+    override fun up(pointerId: Int) {
+        recordedEntries.add(TouchEventRecorderEntry.Up(pointerId))
+        lastPositions.remove(pointerId)
+    }
+
+    override fun updatePointerTo(pointerId: Int, position: Offset) {
+        recordedEntries.add(TouchEventRecorderEntry.UpdatePointerTo(pointerId, position))
+        lastPositions[pointerId] = position
     }
 }
