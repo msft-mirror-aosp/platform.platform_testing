@@ -438,7 +438,9 @@ constructor(
                 add(ConditionsFactory.isWMStateComplete())
                 if (waitForCondition.isNotEmpty()) {
                     add(
-                        Condition("!shouldWaitForActivities") {
+                        Condition(
+                            "!shouldWaitForActivityState(${waitForCondition.joinToString()})"
+                        ) {
                             !shouldWaitForActivities(it, *waitForCondition)
                         }
                     )
