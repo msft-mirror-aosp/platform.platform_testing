@@ -177,6 +177,7 @@ enum class DeviceProduct(val product: String) {
     CF_AUTO("cf_x86_64_auto"),
     TANGORPRO("tangorpro"),
     FELIX("felix"),
+    ROBOLECTRIC("robolectric"),
 }
 
 private fun makeAssumptionViolatedStatement(errorMessage: String): Statement =
