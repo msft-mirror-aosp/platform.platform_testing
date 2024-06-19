@@ -27,8 +27,6 @@ import static org.mockito.Mockito.spy;
 
 import android.app.Instrumentation;
 import android.os.Bundle;
-
-import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.runner.AndroidJUnit4;
 
 import org.junit.After;
@@ -71,8 +69,6 @@ public class IncidentReportListenerTest {
         MockitoAnnotations.initMocks(this);
         mListener = spy(new IncidentReportListener());
         mListener.setInstrumentation(mInstrumentation);
-        doReturn(InstrumentationRegistry.getInstrumentation().getUiAutomation())
-                .when(mInstrumentation).getUiAutomation();
     }
 
     @After

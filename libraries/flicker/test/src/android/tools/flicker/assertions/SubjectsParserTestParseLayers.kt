@@ -21,21 +21,21 @@ import android.tools.Timestamp
 import android.tools.flicker.subject.FlickerSubject
 import android.tools.flicker.subject.FlickerTraceSubject
 import android.tools.io.TraceType
-import android.tools.testutils.TestTraces
+import android.tools.utils.TestTraces
 
 @SuppressLint("VisibleForTests")
-class SubjectsParserTestWM : BaseSubjectsParserTest() {
-    override val assetFile = TestTraces.WMTrace.FILE
-    override val expectedStartTime = TestTraces.WMTrace.START_TIME
-    override val expectedEndTime = TestTraces.WMTrace.END_TIME
-    override val subjectName = "WM Trace"
-    override val traceType = TraceType.WM
+class SubjectsParserTestParseLayers : BaseSubjectsParserTestParse() {
+    override val assetFile = TestTraces.LayerTrace.FILE
+    override val expectedStartTime = TestTraces.LayerTrace.START_TIME
+    override val expectedEndTime = TestTraces.LayerTrace.END_TIME
+    override val subjectName = "SF Trace"
+    override val traceType = TraceType.SF
 
-    override fun getTime(timestamp: Timestamp) = timestamp.elapsedNanos
+    override fun getTime(timestamp: Timestamp) = timestamp.systemUptimeNanos
 
     override fun doParseTrace(parser: TestSubjectsParser): FlickerTraceSubject<*>? =
-        parser.doGetWmTraceSubject()
+        parser.doGetLayersTraceSubject()
 
     override fun doParseState(parser: TestSubjectsParser, tag: String): FlickerSubject? =
-        parser.doGetWmStateSubject(tag)
+        parser.doGetLayerTraceEntrySubject(tag)
 }

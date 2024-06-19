@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package android.tools.testutils
+package android.tools.utils
 
 import android.tools.io.Artifact
 import android.tools.io.ResultArtifactDescriptor

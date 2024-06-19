@@ -16,7 +16,7 @@
 
 package android.tools.io
 
-import android.tools.testutils.CleanFlickerEnvironmentRule
+import android.tools.utils.CleanFlickerEnvironmentRule
 import com.google.common.truth.Truth
 import org.junit.ClassRule
 import org.junit.FixMethodOrder

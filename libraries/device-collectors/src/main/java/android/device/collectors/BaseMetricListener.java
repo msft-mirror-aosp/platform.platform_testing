@@ -36,9 +36,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.PrintStream;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -52,9 +50,8 @@ import java.util.Set;
  * test run or test cases. Collectors will have access to {@link DataRecord} objects where they
  * can put results and the base class ensure these results will be send to the instrumentation.
  *
- * Unless the shell is used to write files, any subclass that uses the directory created with
- * {@link #createAndEmptyDirectory(String)} needs external storage permission. So to use this class
- * at runtime in such subclasses, your test need to
+ * Any subclass that calls {@link #createAndEmptyDirectory(String)} needs external storage
+ * permission. So to use this class at runtime, your test need to
  * <a href="{@docRoot}training/basics/data-storage/files.html#GetWritePermission">have storage
  * permission enabled</a>, and preferably granted at install time (to avoid interrupting the test).
  * For testing at desk, run adb install -r -g testpackage.apk
@@ -351,11 +348,6 @@ public class BaseMetricListener extends InstrumentationRunListener {
         }
     }
 
-    private boolean fileExists(File file) {
-        final byte[] cmdOut = executeCommandBlocking("ls -d " + file.getAbsolutePath());
-        return cmdOut != null && cmdOut.length > 0;
-    }
-
     /**
      * Create a directory inside external storage, and optionally empty it.
      *
@@ -369,10 +361,7 @@ public class BaseMetricListener extends InstrumentationRunListener {
         if (empty) {
             executeCommandBlocking("rm -rf " + destDir.getAbsolutePath());
         }
-        if (!fileExists(destDir)) {
-            executeCommandBlocking("mkdir -p " + destDir.getAbsolutePath());
-        }
-        if (!fileExists(destDir)) {
+        if (!destDir.exists() && !destDir.mkdirs()) {
             Log.e(getTag(), "Unable to create dir: " + destDir.getAbsolutePath());
             return null;
         }
@@ -390,40 +379,21 @@ public class BaseMetricListener extends InstrumentationRunListener {
     }
 
     /**
-     * Get an OutputStream to a file using the shell.
+     * Delete a directory and all the file inside.
      *
-     * This allows tests to write to files without requiring storage permissions, which is in
-     * particular useful when testing apps that should not have the permission.
-     * @param file The file where the OutputStream should write to. Will be deleted if existing.
-     * @return A stream to write to the file.
-     */
-    public OutputStream getOutputStreamViaShell(File file) throws IOException {
-        if (fileExists(file)) {
-            Log.w(getTag(), String.format("File exists: %s", file.getAbsolutePath()));
-            recursiveDelete(file);
-        }
-
-        final ParcelFileDescriptor[] fds = getInstrumentation().getUiAutomation()
-            .executeShellCommandRw("sh");
-
-        fds[0].close();
-        final ParcelFileDescriptor stdin = fds[1];
-        final OutputStream os = new ParcelFileDescriptor.AutoCloseOutputStream(stdin);
-
-        final String cmd = "cat > " + file.getAbsolutePath() + "\n";
-        os.write(cmd.getBytes(StandardCharsets.UTF_8));
-
-        return os;
-    }
-
-    /**
-     * Delete a directory and all the files inside.
-     *
-     * @param rootDir the {@link File} directory or file to delete.
+     * @param rootDir the {@link File} directory to delete.
      */
     public void recursiveDelete(File rootDir) {
         if (rootDir != null) {
-            executeCommandBlocking("rm -r " + rootDir.getAbsolutePath());
+            if (rootDir.isDirectory()) {
+                File[] childFiles = rootDir.listFiles();
+                if (childFiles != null) {
+                    for (File child : childFiles) {
+                        recursiveDelete(child);
+                    }
+                }
+            }
+            rootDir.delete();
         }
     }
 

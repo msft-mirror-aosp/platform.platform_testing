@@ -27,7 +27,7 @@ import android.tools.flicker.extractors.ScenarioExtractor
 import android.tools.flicker.extractors.TraceSlice
 import android.tools.getTraceReaderFromScenario
 import android.tools.io.Reader
-import android.tools.testutils.assertThrows
+import android.tools.utils.assertThrows
 import com.google.common.truth.Truth
 import org.junit.Test
 

@@ -16,7 +16,7 @@
 
 @file:JvmName("CommonConstants")
 
-package android.tools.testutils
+package android.tools.utils
 
 import android.tools.traces.component.ComponentNameMatcher
 

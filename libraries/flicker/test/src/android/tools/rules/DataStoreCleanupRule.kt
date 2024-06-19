@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 The Android Open Source Project
+ * Copyright (C) 2023 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,25 +14,38 @@
  * limitations under the License.
  */
 
-package android.tools.testrules
+package android.tools.rules
 
-import android.tools.Cache
-import android.tools.ICache
+import android.annotation.SuppressLint
+import android.tools.flicker.datastore.DataStore
+import android.tools.utils.TEST_SCENARIO
 import org.junit.rules.TestWatcher
 import org.junit.runner.Description
 
-class CacheCleanupRule : TestWatcher() {
-    private var cacheBackup: ICache.Backup? = null
-
+@SuppressLint("VisibleForTests")
+class DataStoreCleanupRule : TestWatcher() {
     override fun starting(description: Description?) {
         super.starting(description)
-        cacheBackup = Cache.backup()
-        Cache.clear()
+        resetDataStore()
     }
 
     override fun finished(description: Description?) {
         super.finished(description)
-        val cacheBackup = cacheBackup ?: return
-        Cache.restore(cacheBackup)
+        resetDataStore()
+    }
+
+    private fun resetDataStore() {
+        val backup = DataStore.backup()
+        DataStore.clear()
+
+        if (backup.cachedResults.containsKey(TEST_SCENARIO)) {
+            backup.cachedResults.remove(TEST_SCENARIO)
+        }
+
+        if (backup.cachedFlickerServiceAssertions.containsKey(TEST_SCENARIO)) {
+            backup.cachedFlickerServiceAssertions.remove(TEST_SCENARIO)
+        }
+
+        DataStore.restore(backup)
     }
 }

@@ -48,7 +48,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(FlickerServiceJUnit4ClassRunner::class)
-class FullServiceRunTest {
+class FullTestRun {
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
     private val wmHelper = WindowManagerStateHelper(instrumentation)
     private val testApp = MessagingAppHelper(instrumentation)

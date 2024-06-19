@@ -20,7 +20,7 @@ import android.tools.Tag
 import android.tools.flicker.subject.events.EventLogSubject
 import android.tools.flicker.subject.layers.LayerTraceEntrySubject
 import android.tools.flicker.subject.wm.WindowManagerStateSubject
-import android.tools.testutils.CleanFlickerEnvironmentRule
+import android.tools.utils.CleanFlickerEnvironmentRule
 import com.google.common.truth.Truth
 import kotlin.reflect.KClass
 import org.junit.ClassRule
@@ -30,10 +30,8 @@ import org.junit.Test
 open class AssertionStateDataFactoryTest {
     protected open val wmAssertionFactory
         get() = AssertionStateDataFactory(WindowManagerStateSubject::class)
-
     protected open val layersAssertionFactory
         get() = AssertionStateDataFactory(LayerTraceEntrySubject::class)
-
     protected open val eventLogAssertionFactory
         get() = AssertionStateDataFactory(EventLogSubject::class)
 

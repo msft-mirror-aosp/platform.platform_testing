@@ -17,13 +17,13 @@
 package android.tools.io
 
 import android.tools.Timestamp
-import android.tools.testutils.TestTraces
 import android.tools.traces.io.ResultReader
+import android.tools.utils.TestTraces
 import org.junit.Assume.assumeTrue
 import org.junit.Before
 
 /** Tests for [ResultReader] parsing [TraceType.TRANSITION] */
-class ResultReaderParseTransitionsTest : BaseResultReaderTestParseTrace() {
+class ResultReaderTestParseTransitions : BaseResultReaderTestParseTrace() {
     override val assetFiles = mapOf(TraceType.PERFETTO to TestTraces.TransitionTrace.FILE)
     override val traceName = "Transitions trace"
     override val startTimeTrace = TestTraces.TransitionTrace.START_TIME
@@ -39,6 +39,5 @@ class ResultReaderParseTransitionsTest : BaseResultReaderTestParseTrace() {
     }
 
     override fun doParse(reader: ResultReader) = reader.readTransitionsTrace()
-
     override fun getTime(traceTime: Timestamp) = traceTime.elapsedNanos
 }
