@@ -102,7 +102,7 @@ IMPOST_CONTACTS_SHELL_COMAND = (
 )
 
 # Screen recording
-SCREEN_RECORDING_COMMAND = 'screenrecord'
+SCREEN_RECORDING_COMMAND = 'screenrecord --time-limit 180'
 RECORDED_VIDEO_FILE_LOCATION = '/sdcard/'
 RECORDED_VIDEO_FILE_OUTPUT_FILE = '_screenrecord_output_mp4_'
 STOP_VIDEO_RECORDING = f'pkill -SIGINT {SCREEN_RECORDING_COMMAND}'
@@ -118,6 +118,8 @@ KEYCODE_MEDIA_PREVIOUS = 'input keyevent KEYCODE_MEDIA_PREVIOUS'
 KEYCODE_MEDIA_PAUSE = 'input keyevent KEYCODE_MEDIA_PAUSE'
 KEYCODE_MEDIA_PLAY = 'input keyevent KEYCODE_MEDIA_PLAY'
 KEYCODE_MEDIA_STOP = 'input keyevent KEYCODE_MEDIA_STOP'
+KEYCODE_WAKEUP = 'input keyevent KEYCODE_WAKEUP'
+DUMPSYS_POWER= 'dumpsys power|grep mWakefulness'
 
 # YouTube Media
 YOUTUBE_MUSIC_PACKAGE = 'com.google.android.apps.youtube.music'
