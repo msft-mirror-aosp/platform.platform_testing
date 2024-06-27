@@ -361,6 +361,16 @@ class CallUtils:
         self.device.mbs.cancelBluetoothAudioConncetion()
         logging.info('Clicked on <Cancel> label present on bluetooth Audio page')
 
+    def handle_bluetooth_audio_pop_up(self):
+        """ Close on BT audio popup if present on bluetooth Audio page"""
+        logging.info('Adding wait to check the Bluetooth Audio popup')
+        time.sleep(constants.DEFAULT_WAIT_TIME_FIVE_SECS)
+        is_bluetooth_media_popup_present = self.is_connect_to_bluetooth_label_visible_on_bluetooth_audio_page()
+        if is_bluetooth_media_popup_present:
+          logging.info('BT Audio popup present, cancelling that.')
+          self.click_cancel_label_visible_on_bluetooth_audio_page()
+
+
     def update_device_timezone(self, expected_timezone):
         logging.info('Update the device timezone to %s',
                      expected_timezone)
@@ -635,6 +645,7 @@ class CallUtils:
     # End call on IVI using adb shell command
     def end_call_using_adb_command(self, device_target):
         self.execute_shell_on_device(device_target, 'input keyevent KEYCODE_ENDCALL')
+        self.execute_shell_on_device(device_target, 'input keyevent KEYCODE_POWER')
 
     # Make a call most recent history
     def call_most_recent_call_history(self):
