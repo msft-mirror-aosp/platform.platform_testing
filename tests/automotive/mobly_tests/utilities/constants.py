@@ -46,6 +46,7 @@ DECLINE_CALL_TEXT = "Decline"
 ANSWER_CALL_TEXT = "Answer"
 ACCEPT_CALL_TEXT = "Accept"
 DISABLE_ANDROID_AUTO_POP_UP = "pm disable --user 10 com.google.android.embedded.projection"
+NOT_NOW_TEXT ="Not Now"
 
 BTSNOOP_LOG_PATH_ON_DEVICE = '/data/misc/bluetooth/logs/btsnoop_hci.log'
 BTSNOOP_LAST_LOG_PATH_ON_DEVICE = (
@@ -102,7 +103,7 @@ IMPOST_CONTACTS_SHELL_COMAND = (
 )
 
 # Screen recording
-SCREEN_RECORDING_COMMAND = 'screenrecord'
+SCREEN_RECORDING_COMMAND = 'screenrecord --time-limit 180'
 RECORDED_VIDEO_FILE_LOCATION = '/sdcard/'
 RECORDED_VIDEO_FILE_OUTPUT_FILE = '_screenrecord_output_mp4_'
 STOP_VIDEO_RECORDING = f'pkill -SIGINT {SCREEN_RECORDING_COMMAND}'
