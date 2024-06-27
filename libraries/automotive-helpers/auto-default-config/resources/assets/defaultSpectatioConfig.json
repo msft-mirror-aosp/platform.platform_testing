@@ -1130,7 +1130,7 @@
     },
     "DATE_TIME_SETTINGS_SET_TIME": {
       "TYPE": "TEXT",
-      "VALUE": "Set time"
+      "VALUE": "Set clock"
     },
     "DATE_TIME_SETTINGS_USE_24_HOUR_FORMAT": {
       "TYPE": "TEXT",
@@ -1410,7 +1410,7 @@
     },
     "ARTIST_TITLE": {
       "TYPE": "RESOURCE_ID",
-      "VALUE": "artist",
+      "VALUE": "subtitle",
       "PACKAGE": "com.android.car.media"
     },
     "ALBUM_TITLE": {
@@ -1850,7 +1850,7 @@
     },
     "TOGGLE_LOCATION": {
       "TYPE": "TEXT",
-      "VALUE": "Use location"
+      "VALUE": "Infotainment apps"
     },
     "LOCATION_SWITCH": {
       "TYPE": "CLASS",
