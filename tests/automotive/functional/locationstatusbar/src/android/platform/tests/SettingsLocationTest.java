@@ -16,17 +16,19 @@
 
 package android.platform.tests;
 
-import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
 
 import android.platform.helpers.HelperAccessor;
 import android.platform.helpers.IAutoSettingHelper;
 import android.platform.helpers.IAutoSettingsLocationHelper;
 import android.platform.helpers.SettingsConstants;
+import android.platform.test.annotations.RequiresFlagsEnabled;
+import android.platform.test.flag.junit.SetFlagsRule;
 
 import androidx.test.runner.AndroidJUnit4;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -35,6 +37,8 @@ public class SettingsLocationTest {
 
     private HelperAccessor<IAutoSettingsLocationHelper> mSettingLocationHelper;
     private HelperAccessor<IAutoSettingHelper> mSettingHelper;
+
+    @Rule public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
 
     public SettingsLocationTest() {
         mSettingHelper = new HelperAccessor<>(IAutoSettingHelper.class);
@@ -49,15 +53,21 @@ public class SettingsLocationTest {
     }
 
     @Test
+    @RequiresFlagsEnabled(
+            com.android.car.settings.Flags.FLAG_REQUIRED_INFOTAINMENT_APPS_SETTINGS_PAGE)
     public void testToVerifyToggleLocation() {
         mSettingLocationHelper.get().locationAccess();
-        mSettingLocationHelper.get().isLocationOn();
-        assertFalse("Location widget is displayed ", mSettingLocationHelper.get().hasMapsWidget());
-        mSettingLocationHelper.get().toggleLocation(true);
+        boolean defaultState = mSettingLocationHelper.get().isLocationOn();
+        String widgetShownMessage = "Location widget is displayed ";
+        String widgetNotShownMessage = "Location widget is not displayed ";
+        mSettingLocationHelper.get().toggleLocation(!defaultState);
         assertTrue(
-                "Location widget is not displayed ", mSettingLocationHelper.get().hasMapsWidget());
-        mSettingLocationHelper.get().toggleLocation(false);
-        assertFalse("Location widget is displayed ", mSettingLocationHelper.get().hasMapsWidget());
+                defaultState ? widgetShownMessage : widgetNotShownMessage,
+                mSettingLocationHelper.get().hasMapsWidget() != defaultState);
+        mSettingLocationHelper.get().toggleLocation(defaultState);
+        assertTrue(
+                defaultState ? widgetShownMessage : widgetNotShownMessage,
+                mSettingLocationHelper.get().hasMapsWidget() == defaultState);
     }
 
     @Test
