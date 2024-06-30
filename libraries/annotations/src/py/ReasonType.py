@@ -12,14 +12,16 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-"""Define the Beto CQ test script version."""
+"""ReasonType enum for @NonApiTest."""
+
+from enum import Enum
 
 
-TEST_SCRIPT_VERSION = '2.3.1'
+class ReasonType(Enum):
+  """The reason types for @NonApiTest.
 
-# VERSION_LOG (only add new description for new version, keep the history log)
-# '2.0.0': 'initial version'
-# '2.1.0': 'add iperf for WFD and fix missing data of failed test cases.'
-# '2.2.0': 'add iperf for AWARE,HOTSPOT mode and disable WLAN deny list.'
-# '2.3.0': 'fix the low NC speed issue.'
-# '2.3.1': 'fix WLAN function test and improve the report format.'
+  The constants of this enumerated type describe various reason types for a CTS
+  test not enforcing API functionalities and behaviors. They are used in
+  conjunction with the @NonApiTest. A new reason type must be reviewed by
+  ape-relpgm-cls@.
+  """

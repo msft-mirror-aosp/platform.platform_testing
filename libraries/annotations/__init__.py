@@ -12,14 +12,11 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-"""Define the Beto CQ test script version."""
+"""Android platform test annotation module."""
 
-
-TEST_SCRIPT_VERSION = '2.3.1'
-
-# VERSION_LOG (only add new description for new version, keep the history log)
-# '2.0.0': 'initial version'
-# '2.1.0': 'add iperf for WFD and fix missing data of failed test cases.'
-# '2.2.0': 'add iperf for AWARE,HOTSPOT mode and disable WLAN deny list.'
-# '2.3.0': 'fix the low NC speed issue.'
-# '2.3.1': 'fix WLAN function test and improve the report format.'
+from .src.py.ApiTest import ApiTest
+from .src.py.CddTest import CddTest
+from .src.py.GmsTest import GmsTest
+from .src.py.NonApiTest import NonApiTest
+from .src.py.ReasonType import ReasonType
+from .src.py.VsrTest import VsrTest
