@@ -40,6 +40,13 @@ object Components {
                 error("Unsupported transition type")
             }
         }
+    val DESKTOP_WALLPAPER =
+        ComponentTemplate("DesktopWallpaper") {
+            ComponentNameMatcher(
+                SYSTEMUI_PACKAGE,
+                "com.android.wm.shell.desktopmode.DesktopWallpaperActivity"
+            )
+        }
 
     private fun isSupported(type: ScenarioId): Boolean {
         return when (type) {
@@ -47,6 +54,7 @@ object Components {
             ScenarioId("CLOSE_APP") -> true
             ScenarioId("CLOSE_LAST_APP") -> true
             ScenarioId("CORNER_RESIZE") -> true
+            ScenarioId("CORNER_RESIZE_TO_MINIMUM_SIZE") -> true
             else -> false
         }
     }
