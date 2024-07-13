@@ -19,6 +19,7 @@ package android.platform.helpers;
 import static junit.framework.Assert.assertTrue;
 
 import android.app.Instrumentation;
+import android.app.time.Capabilities;
 import android.app.time.TimeManager;
 import android.platform.helpers.ScrollUtility.ScrollActions;
 import android.platform.helpers.ScrollUtility.ScrollDirection;
@@ -589,16 +590,23 @@ public class SettingsDateTimeHelperImpl extends AbstractStandardAppHelper
     }
 
     private boolean isAutomaticOn() {
-        mInstrumentation
-                .getUiAutomation()
-                .adoptShellPermissionIdentity("android.permission.MANAGE_TIME_AND_ZONE_DETECTION");
         TimeManager timeManager = mInstrumentation.getContext().getSystemService(TimeManager.class);
         boolean status;
         try {
             status = timeManager
                             .getTimeCapabilitiesAndConfig()
+                            .getCapabilities()
+                            .getConfigureAutoDetectionEnabledCapability()
+                                    == Capabilities.CAPABILITY_POSSESSED
+                    && timeManager
+                            .getTimeCapabilitiesAndConfig()
                             .getConfiguration()
                             .isAutoDetectionEnabled()
+                    && timeManager
+                            .getTimeZoneCapabilitiesAndConfig()
+                            .getCapabilities()
+                            .getConfigureAutoDetectionEnabledCapability()
+                                    == Capabilities.CAPABILITY_POSSESSED
                     && timeManager
                             .getTimeZoneCapabilitiesAndConfig()
                             .getConfiguration()
@@ -606,7 +614,6 @@ public class SettingsDateTimeHelperImpl extends AbstractStandardAppHelper
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        mInstrumentation.getUiAutomation().dropShellPermissionIdentity();
         return status;
     }
 
