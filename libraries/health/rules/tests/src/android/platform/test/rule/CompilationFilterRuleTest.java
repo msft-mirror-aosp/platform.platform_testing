@@ -15,8 +15,9 @@
  */
 package android.platform.test.rule;
 
-import static org.junit.Assert.fail;
 import static com.google.common.truth.Truth.assertThat;
+
+import static org.junit.Assert.fail;
 
 import android.os.Bundle;
 
@@ -25,7 +26,6 @@ import org.junit.Test;
 import org.junit.runner.Description;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
 
 import java.util.ArrayList;
@@ -41,14 +41,43 @@ public class CompilationFilterRuleTest {
         CompilationFilterRule.mCompiledTests.clear();
     }
 
-    /** Tests that this rule will fail to register if no apps are supplied. */
+    /** Tests that this rule will do nothing if no package are supplied. */
     @Test
-    public void testNoAppToCompileFails() throws InitializationError {
-        try {
-            CompilationFilterRule rule = new CompilationFilterRule();
-            fail("An initialization error should have been thrown, but wasn't.");
-        } catch (InitializationError e) {
-        }
+    public void testNoAppToCompile() throws Throwable {
+        Bundle filterBundle = new Bundle();
+        filterBundle.putString(CompilationFilterRule.COMPILE_PACKAGE_NAMES_OPTION, "");
+        TestableCompilationFilterRule rule =
+                new TestableCompilationFilterRule(filterBundle) {
+                    @Override
+                    protected String executeShellCommand(String cmd) {
+                        super.executeShellCommand(cmd);
+                        return CompilationFilterRule.COMPILE_SUCCESS;
+                    }
+                };
+        rule.apply(rule.getTestStatement(), Description.createTestDescription("clzz", "mthd1"))
+                .evaluate();
+    }
+
+    /** Tests that this rule will compile the app after the test, if supplied. */
+    @Test
+    public void testSingleAppToCompile() throws Throwable {
+        Bundle filterBundle = new Bundle();
+        filterBundle.putString(CompilationFilterRule.COMPILE_FILTER_OPTION, "speed");
+        filterBundle.putString(
+                CompilationFilterRule.COMPILE_PACKAGE_NAMES_OPTION, "example.package");
+        TestableCompilationFilterRule rule =
+                new TestableCompilationFilterRule(filterBundle) {
+                    @Override
+                    protected String executeShellCommand(String cmd) {
+                        super.executeShellCommand(cmd);
+                        return CompilationFilterRule.COMPILE_SUCCESS;
+                    }
+                };
+        rule.apply(rule.getTestStatement(), Description.createTestDescription("clzz", "mthd2"))
+                .evaluate();
+        String compileCmd =
+                String.format(CompilationFilterRule.COMPILE_CMD_FORMAT, "speed", "example.package");
+        assertThat(rule.getOperations()).containsExactly("test", compileCmd).inOrder();
     }
 
     /** Tests that this rule will fail to run and throw if the option is bad. */
@@ -107,8 +136,8 @@ public class CompilationFilterRuleTest {
     }
 
     /** Tests that this rule will compile a app only after the first iteration of the test. */
-    @Test
-    public void testOneAppToCompileMultipleIterations() throws Throwable {
+    public void testOneAppToCompileMultipleIterations(Description test1, Description test2)
+            throws Throwable {
         Bundle filterBundle = new Bundle();
         filterBundle.putString(CompilationFilterRule.COMPILE_FILTER_OPTION, "speed");
         TestableCompilationFilterRule rule = new TestableCompilationFilterRule(filterBundle,
@@ -119,19 +148,31 @@ public class CompilationFilterRuleTest {
                 return CompilationFilterRule.COMPILE_SUCCESS;
             }
         };
-        rule.apply(rule.getTestStatement(), Description.createTestDescription("clzz$1", "mthd1"))
-                .evaluate();
-        rule.apply(rule.getTestStatement(), Description.createTestDescription("clzz$2", "mthd1"))
-                .evaluate();
+        rule.apply(rule.getTestStatement(), test1).evaluate();
+        rule.apply(rule.getTestStatement(), test2).evaluate();
         String compileCmd = String.format(CompilationFilterRule.COMPILE_CMD_FORMAT, "speed",
                 "example.package");
         assertThat(rule.getOperations()).containsExactly("test", compileCmd,"test")
                 .inOrder();
     }
 
-    /** Tests that this rule will compile a app multiple times for different tests. */
     @Test
-    public void testOneAppMultipleCompileMultipleTests() throws Throwable {
+    public void testOneAppToCompileMultipleIterations_renameOnClass() throws Throwable {
+        testOneAppToCompileMultipleIterations(
+                Description.createTestDescription("clzz$1", "mthd1"),
+                Description.createTestDescription("clzz$2", "mthd1"));
+    }
+
+    @Test
+    public void testOneAppToCompileMultipleIterations_renameOnMethod() throws Throwable {
+        testOneAppToCompileMultipleIterations(
+                Description.createTestDescription("clzz", "mthd1$1"),
+                Description.createTestDescription("clzz", "mthd1$2"));
+    }
+
+    /** Tests that this rule will compile a app multiple times for different tests. */
+    public void testOneAppMultipleCompileMultipleTests(Description test1, Description test2)
+            throws Throwable {
         Bundle filterBundle = new Bundle();
         filterBundle.putString(CompilationFilterRule.COMPILE_FILTER_OPTION, "speed");
         TestableCompilationFilterRule rule = new TestableCompilationFilterRule(filterBundle,
@@ -142,14 +183,26 @@ public class CompilationFilterRuleTest {
                 return CompilationFilterRule.COMPILE_SUCCESS;
             }
         };
-        rule.apply(rule.getTestStatement(), Description.createTestDescription("clzz$1", "mthd1"))
-                .evaluate();
-        rule.apply(rule.getTestStatement(), Description.createTestDescription("clzz$2", "mthd2"))
-                .evaluate();
+        rule.apply(rule.getTestStatement(), test1).evaluate();
+        rule.apply(rule.getTestStatement(), test2).evaluate();
         String compileCmd = String.format(CompilationFilterRule.COMPILE_CMD_FORMAT, "speed",
                 "example.package");
         assertThat(rule.getOperations()).containsExactly("test", compileCmd, "test", compileCmd)
                 .inOrder();
+    }
+
+    @Test
+    public void testOneAppMultipleCompileMultipleTests_renameOnClass() throws Throwable {
+        testOneAppMultipleCompileMultipleTests(
+                Description.createTestDescription("clzz$1", "mthd1"),
+                Description.createTestDescription("clzz$2", "mthd2"));
+    }
+
+    @Test
+    public void testOneAppMultipleCompileMultipleTests_renameOnMethod() throws Throwable {
+        testOneAppMultipleCompileMultipleTests(
+                Description.createTestDescription("clzz", "mthd1$1"),
+                Description.createTestDescription("clzz", "mthd2$1"));
     }
 
     /** Tests that this rule will compile a app only once for duplicate tests. */

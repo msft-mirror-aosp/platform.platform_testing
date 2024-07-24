@@ -20,12 +20,12 @@ import static java.util.stream.Collectors.joining;
 
 import android.os.SystemClock;
 import android.util.Log;
+
 import androidx.annotation.VisibleForTesting;
 
 import com.google.common.collect.ImmutableList;
 
 import org.junit.runner.Description;
-import org.junit.runners.model.InitializationError;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -42,14 +42,16 @@ public class CompilationFilterRule extends TestWatcher {
     @VisibleForTesting static final String SPEED_PROFILE_FILTER = "speed-profile";
     private static final String PROFILE_SAVE_TIMEOUT = "profile-save-timeout";
     @VisibleForTesting static final String COMPILE_FILTER_OPTION = "compilation-filter";
+
+    @VisibleForTesting
+    static final String COMPILE_PACKAGE_NAMES_OPTION = "compilation-package-names";
+
     @VisibleForTesting static final String COMPILE_SUCCESS = "Success";
     @VisibleForTesting static Set<String> mCompiledTests = new HashSet<>();
 
-    private final String[] mApplications;
+    private String[] mApplications;
 
-    public CompilationFilterRule() throws InitializationError {
-        throw new InitializationError("Must supply an application to compile.");
-    }
+    public CompilationFilterRule() {}
 
     public CompilationFilterRule(String... applications) {
         mApplications = applications;
@@ -60,8 +62,9 @@ public class CompilationFilterRule extends TestWatcher {
 
         // Profile varies based on the test even for the same app. Tracking the test id to make
         // sure the test compiled once after the first iteration of the test.
-        String[] className = description.getClassName().split("\\$");
-        String testId = String.format("%s#%s", className[0], description.getMethodName());
+        String normalizedClassName = description.getClassName().split("\\$")[0];
+        String normalizedMethodName = description.getMethodName().split("\\$")[0];
+        String testId = String.format("%s#%s", normalizedClassName, normalizedMethodName);
         if (mCompiledTests.contains(testId)) {
             Log.d(LOG_TAG, String.format("Test %s already compiled", testId));
             return;
@@ -81,6 +84,10 @@ public class CompilationFilterRule extends TestWatcher {
             throw new IllegalArgumentException(
                     String.format(
                             "Unknown compiler filter: %s, not part of %s", filter, filterOptions));
+        }
+
+        if (getArguments().getString(COMPILE_PACKAGE_NAMES_OPTION) != null) {
+            mApplications = getArguments().getString(COMPILE_PACKAGE_NAMES_OPTION).split(",");
         }
 
         for (String app : mApplications) {

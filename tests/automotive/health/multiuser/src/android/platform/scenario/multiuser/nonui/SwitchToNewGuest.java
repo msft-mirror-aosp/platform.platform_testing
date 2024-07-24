@@ -18,7 +18,6 @@ package android.platform.scenario.multiuser;
 
 import android.app.UiAutomation;
 import android.content.pm.UserInfo;
-import android.os.Build;
 import android.os.SystemClock;
 import android.platform.helpers.MultiUserHelper;
 import android.platform.test.scenario.annotation.Scenario;
@@ -30,6 +29,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+
+import java.util.Locale;
 
 /**
  * This test will always switch to a newly created guest from default initial user.
@@ -51,10 +52,6 @@ public class SwitchToNewGuest {
         /*
         TODO: Create setup util API
          */
-        // Execute these tests only on devices running Android T or higher
-        Assume.assumeTrue(
-                "Skipping below Android T", Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU);
-
         // Execute user manager APIs with elevated permissions
         mUiAutomation = getUiAutomation();
         // TODO: b/302175460 - update minimum SDK version
@@ -71,7 +68,8 @@ public class SwitchToNewGuest {
             mUiAutomation = getUiAutomation();
             mUiAutomation.adoptShellPermissionIdentity(CREATE_USERS_PERMISSION);
             mMultiUserHelper.switchAndWaitForStable(
-                MultiUserConstants.DEFAULT_INITIAL_USER, MultiUserConstants.WAIT_FOR_IDLE_TIME_MS);
+                    MultiUserConstants.DEFAULT_INITIAL_USER,
+                    MultiUserConstants.WAIT_FOR_IDLE_TIME_MS);
 
             // Drop elevated permissions
             mUiAutomation.dropShellPermissionIdentity();
@@ -98,6 +96,10 @@ public class SwitchToNewGuest {
         if (MultiUserConstants.INCLUDE_CREATION_TIME) {
             mGuestId = mMultiUserHelper.createUser(MultiUserConstants.GUEST_NAME, true);
         }
+        Assume.assumeTrue(
+                String.format(
+                        Locale.US, "Target user id is %d but must be greater than 10", mGuestId),
+                mGuestId > 10);
         mMultiUserHelper.switchToUserId(mGuestId);
 
         // Drop elevated permissions

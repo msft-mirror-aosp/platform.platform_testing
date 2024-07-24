@@ -19,6 +19,7 @@ package platform.test.screenshot
 import android.app.Activity
 import android.graphics.Color
 import android.os.Build
+import android.platform.uiautomator_helpers.WaitUtils.waitForValueToSettle
 import android.view.View
 import android.view.Window
 import android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
@@ -26,6 +27,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
 import androidx.test.platform.app.InstrumentationRegistry
+import java.util.concurrent.TimeUnit
 import org.junit.rules.RuleChain
 import org.junit.rules.TestRule
 import org.junit.runner.Description
@@ -36,12 +38,12 @@ import org.junit.runners.model.Statement
  */
 class ExternalViewScreenshotTestRule(
     emulationSpec: DeviceEmulationSpec,
-    pathManager: GoldenImagePathManager
-) : TestRule {
+    pathManager: GoldenImagePathManager,
+    private val screenshotRule: ScreenshotTestRule = ScreenshotTestRule(pathManager)
+) : TestRule, BitmapDiffer by screenshotRule, ScreenshotAsserterFactory by screenshotRule {
 
     private val colorsRule = MaterialYouColorsRule()
     private val deviceEmulationRule = DeviceEmulationRule(emulationSpec)
-    private val screenshotRule = ScreenshotTestRule(pathManager)
     private val roboRule = RuleChain.outerRule(deviceEmulationRule).around(screenshotRule)
     private val delegateRule = RuleChain.outerRule(colorsRule).around(roboRule)
     private val matcher = UnitTestBitmapMatcher
@@ -58,10 +60,11 @@ class ExternalViewScreenshotTestRule(
      * hardware buffers.
      */
     fun screenshotTest(goldenIdentifier: String, view: View, window: Window? = null) {
+        waitForValueToSettle { view.getChildCountRecursively() }
         view.removeElevationRecursively()
 
         ScreenshotRuleAsserter.Builder(screenshotRule)
-            .setScreenshotProvider { view.toBitmap(window) }
+            .setScreenshotProvider { view.captureToBitmapAsync().get(10, TimeUnit.SECONDS) }
             .withMatcher(matcher)
             .build()
             .assertGoldenImage(goldenIdentifier)
@@ -94,6 +97,7 @@ class ExternalViewScreenshotTestRule(
                     layoutInDisplayCutoutMode = LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
                 }
 
+            waitForValueToSettle { rootView.getChildCountRecursively() }
             rootView.removeInsetsRecursively()
             activity.currentFocus?.clearFocus()
         }

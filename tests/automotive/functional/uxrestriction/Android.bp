@@ -13,6 +13,7 @@
 // limitations under the License.
 
 package {
+    default_team: "trendy_team_aaos_framework",
     default_applicable_licenses: ["Android-Apache-2.0"],
 }
 
@@ -25,7 +26,6 @@ android_test {
         "automotive-settings-app-helper",
         "automotive-utility-helper",
         "app-helpers-auto-interfaces",
-        "ub-uiautomator",
         "automotive-config-lib",
         "hamcrest-library",
         "platform-test-junit-rules",

@@ -13,6 +13,7 @@
 // limitations under the License.
 
 package {
+    default_team: "trendy_team_aaos_framework",
     default_applicable_licenses: ["Android-Apache-2.0"],
 }
 
@@ -22,7 +23,8 @@ python_test_host {
     srcs: ["bt_discovery_test.py"],
     libs: [
         "mobly",
-	"BluetoothTestLibrary",
+        "utilities",
+        "bluetooth_test",
     ],
     test_suites: [
         "catbox",

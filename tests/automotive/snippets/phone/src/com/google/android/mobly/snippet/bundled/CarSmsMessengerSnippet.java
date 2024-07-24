@@ -42,6 +42,39 @@ public class CarSmsMessengerSnippet implements Snippet {
         return mCarSmsMessengerHelper.get().isSmsBluetoothErrorDisplayed();
     }
 
+    @Rpc(description = "Checks Unread Sms Badge")
+    public boolean isUnreadSmsDisplayed() {
+        return mCarSmsMessengerHelper.get().isUnreadSmsDisplayed();
+    }
+
+    /** for checking the sms preview */
+    @Rpc(description = "Checks Sms Preview Text")
+    public boolean isSmsPreviewTextDisplayed(String text) {
+        return mCarSmsMessengerHelper.get().isSmsPreviewDisplayed(text);
+    }
+
+    @Rpc(description = "Checks Sms Preview TimeStamp")
+    public boolean isSmsTimeStampDisplayed() {
+        return mCarSmsMessengerHelper.get().isSmsTimeStampDisplayed();
+    }
+
+    @Rpc(description = "Checks Sms No Messages")
+    public boolean isNoMessagesDisplayed() {
+        return mCarSmsMessengerHelper.get().isNoMessagesDisplayed();
+    }
+
+    /** for tapping the sms received in order to read it aloud */
+    @Rpc(description = "Clicks on tap to read aloud text to tead out the message")
+    public void tapToReadAloud() {
+        mCarSmsMessengerHelper.get().tapToReadAloud();
+    }
+
+    /** checks whether the assistant transctption plate is displayed upon tapping received sms */
+    @Rpc(description = "Checks if assistant sms plate is displayed")
+    public boolean isAssistantSMSTranscriptionPlateDisplayed() {
+        return mCarSmsMessengerHelper.get().isAssistantSMSTranscriptionPlateDisplayed();
+    }
+
     @Override
     public void shutdown() {}
 }

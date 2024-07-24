@@ -21,43 +21,20 @@
 
 """
 
-import sys
 import logging
-import pprint
 
 from mobly import asserts
-from mobly import base_test
-from mobly import test_runner
+from bluetooth_test import bluetooth_base_test
 from mobly.controllers import android_device
 
-from mbs_utils import constants
-from mbs_utils import spectatio_utils
-from mbs_utils import bt_utils
+from utilities.main_utils import common_main
+from utilities import constants
+from utilities import spectatio_utils
+from utilities import bt_utils
 
 
-class ImportAddressDetailsTest(base_test.BaseTestClass):
-
+class ImportAddressDetailsTest(bluetooth_base_test.BluetoothBaseTest):
     VCF_ADDRESS_HEADER = "ADR"
-
-    def setup_class(self):
-        # Registering android_device controller module, and declaring that the test
-        # requires at least two Android devices.
-        self.ads = self.register_controller(android_device, min_number=2)
-        # # The device used to discover Bluetooth devices.
-        self.discoverer = android_device.get_device(
-            self.ads, label='auto')
-        # # Sets the tag that represents this device in logs.
-        self.discoverer.debug_tag = 'discoverer'
-        # # The device that is expected to be discovered
-        self.target = android_device.get_device(self.ads, label='phone')
-        self.target.debug_tag = 'target'
-        #
-        self.target.load_snippet('mbs', android_device.MBS_PACKAGE)
-        self.discoverer.load_snippet('mbs', android_device.MBS_PACKAGE)
-        #
-        self.call_utils = (spectatio_utils.CallUtils(self.discoverer))
-        #
-        self.bt_utils = (bt_utils.BTUtils(self.discoverer, self.target))
 
     def get_first_address(self, vcf_path):
         """ Reads the first address from the given vcf file'"""
@@ -66,7 +43,6 @@ class ImportAddressDetailsTest(base_test.BaseTestClass):
             for line in vcf_file:
                 if line.startswith(self.VCF_ADDRESS_HEADER):
                     return line
-
 
 
     def setup_test(self):
@@ -80,11 +56,11 @@ class ImportAddressDetailsTest(base_test.BaseTestClass):
     def test_import_address_details(self):
         # Open the dialer app, and then the contacts page
         self.call_utils.open_phone_app()
-        self.call_utils.wait_with_log(constants.WAIT_TWO_SECONDS)
+        self.call_utils.wait_with_log(2)
         self.call_utils.open_contacts()
-        self.call_utils.wait_with_log(constants.WAIT_TWO_SECONDS)
+        self.call_utils.wait_with_log(2)
         self.call_utils.open_first_contact_details()
-        self.call_utils.wait_with_log(constants.WAIT_TWO_SECONDS)
+        self.call_utils.wait_with_log(2)
 
         # Import the first contact's address from the discoverer device.
         display_address = self.call_utils.get_home_address_from_details()
@@ -96,14 +72,12 @@ class ImportAddressDetailsTest(base_test.BaseTestClass):
         asserts.assert_true(
             self.compare_display_address_to_vcf_line(display_address, vcf_line),
             ("Displayed address does not match address stored in VCF file: " +
-            "\n\tDisplayed address: %s" +
-            "\n\tVCF address: %s") % (display_address, vcf_line))
-
+             "\n\tDisplayed address: %s" +
+             "\n\tVCF address: %s") % (display_address, vcf_line))
 
     def teardown_test(self):
         # Turn Bluetooth off on both devices after test finishes.
-        self.target.mbs.btDisable()
-        self.discoverer.mbs.btDisable()
+        super().teardown_test()
 
     def compare_display_address_to_vcf_line(self, display_address, vcf_address):
         """Confirm that each portion of a display-able street address appears in the vcf line.
@@ -118,8 +92,5 @@ class ImportAddressDetailsTest(base_test.BaseTestClass):
         return True
 
 
-
-
 if __name__ == '__main__':
-    # Take test args
-    test_runner.main()
+    common_main()

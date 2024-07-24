@@ -18,6 +18,7 @@ package android.platform.test.rule
 import android.app.role.RoleManager
 import android.os.Build
 import android.platform.helpers.notesrole.NotesRoleUtil
+import android.provider.Settings
 import org.junit.runner.Description
 
 /**
@@ -34,10 +35,18 @@ class NotesRoleManagerRule
 constructor(
     private val requiredAndroidVersion: Int = Build.VERSION_CODES.UPSIDE_DOWN_CAKE,
     private val requiredNotesRoleHolderPackage: String,
+    private val isStylusEverUsed: Boolean = true,
 ) : TestWatcher() {
 
-    private val notesRoleUtil = NotesRoleUtil(context)
+    /**
+     * A [NotesRoleUtil] helper instance. Should be used in E2E tests for changing and asserting the
+     * current [RoleManager.ROLE_NOTES].
+     */
+    val utils = NotesRoleUtil(context)
+    private val contentResolver = context.contentResolver
+
     private var prevNotesRoleHolder: String? = null
+    private var previousStylusEverUsed: Int = 1
 
     override fun starting(description: Description?) {
         super.starting(description)
@@ -46,23 +55,33 @@ constructor(
         // assertion because not all devices have the Notes role or the required app installed.
         // So this rule takes care of skipping the test on incompatible devices. This is a
         // workaround to run the test on select few devices.
-        notesRoleUtil.checkAndroidRolePackageAssumptions(
+        utils.checkAndroidRolePackageAssumptions(
             requiredAndroidVersion,
             requiredNotesRoleHolderPackage
         )
 
-        prevNotesRoleHolder = notesRoleUtil.getRoleHolderPackageName()
-        notesRoleUtil.setRoleHolder(requiredNotesRoleHolderPackage)
+        prevNotesRoleHolder = utils.getRoleHolderPackageName()
+        utils.setRoleHolder(requiredNotesRoleHolderPackage)
 
         // Kill the supplied Notes role holder app to avoid issues during verification in test.
-        notesRoleUtil.forceStopPackage(requiredNotesRoleHolderPackage)
+        utils.forceStopPackage(requiredNotesRoleHolderPackage)
+
+        previousStylusEverUsed =
+            Settings.Global.getInt(contentResolver, Settings.Global.STYLUS_EVER_USED, /* def= */ 0)
+        setStylusEverUsed(if (isStylusEverUsed) 1 else 0)
     }
 
     override fun finished(description: Description?) {
         super.finished(description)
 
-        notesRoleUtil.forceStopPackage(requiredNotesRoleHolderPackage)
+        utils.forceStopPackage(requiredNotesRoleHolderPackage)
 
-        prevNotesRoleHolder?.let { notesRoleUtil.setRoleHolder(it) }
+        prevNotesRoleHolder?.let { utils.setRoleHolder(it) }
+
+        setStylusEverUsed(previousStylusEverUsed)
+    }
+
+    private fun setStylusEverUsed(stylusEverUsed: Int) {
+        Settings.Global.putInt(contentResolver, Settings.Global.STYLUS_EVER_USED, stylusEverUsed)
     }
 }

@@ -13,6 +13,7 @@
 // limitations under the License.
 
 package {
+    default_team: "trendy_team_platform_build",
     default_applicable_licenses: ["Android-Apache-2.0"],
 }
 
@@ -26,7 +27,7 @@ android_test {
     certificate: "platform",
     static_libs: [
         "androidx.test.rules",
-        "ub-uiautomator",
+        "androidx.test.uiautomator_uiautomator",
         "launcher-helper-lib",
         "sysui-helper",
         "collector-device-lib",
