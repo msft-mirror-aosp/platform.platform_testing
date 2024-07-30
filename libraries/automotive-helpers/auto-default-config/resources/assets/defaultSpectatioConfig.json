@@ -62,7 +62,7 @@
   "COMMANDS": {
     "OPEN_DIAL_PAD_COMMAND": "am start -a android.intent.action.DIAL",
     "OPEN_PHONE_ACTIVITY_COMMAND": "am start -n com.android.car.dialer/.ui.TelecomActivity",
-    "OPEN_SMS_ACTIVITY_COMMAND": "am start -n com.android.car.messenger/.core.ui.launcher.MessageLauncherActivity",
+    "OPEN_SMS_ACTIVITY_COMMAND": "am start -n com.android.car.messenger/com.android.car.messenger.ui.launcher.MessageLauncherActivity",
     "OPEN_APP_GRID_COMMAND": "am start -n com.android.car.carlauncher/.GASAppGridActivity",
     "OPEN_NOTIFICATIONS_COMMAND": "service call statusbar 1",
     "STOP_SETTING_APP_COMMAND": "am force-stop com.android.car.settings",
@@ -100,6 +100,10 @@
     "MOBILE_DIALPAD_ICON": {
       "TYPE": "RESOURCE_ID",
       "VALUE": "dialpad_fab"
+    },
+    "MOBILE_DIALPAD": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "dialpad"
     },
     "MOBILE_DIALPAD_INPUT": {
       "TYPE": "CLASS",
@@ -1130,7 +1134,7 @@
     },
     "DATE_TIME_SETTINGS_SET_TIME": {
       "TYPE": "TEXT",
-      "VALUE": "Set time"
+      "VALUE": "Set clock"
     },
     "DATE_TIME_SETTINGS_USE_24_HOUR_FORMAT": {
       "TYPE": "TEXT",
@@ -1410,7 +1414,7 @@
     },
     "ARTIST_TITLE": {
       "TYPE": "RESOURCE_ID",
-      "VALUE": "artist",
+      "VALUE": "subtitle",
       "PACKAGE": "com.android.car.media"
     },
     "ALBUM_TITLE": {
@@ -1722,7 +1726,7 @@
     },
     "TOGGLE_MICROPHONE": {
       "TYPE": "TEXT",
-      "VALUE": "Use microphone"
+      "VALUE": "Infotainment apps"
     },
     "MICRO_PHONE_MUTED_CHIP_STATUS_BAR": {
       "TYPE": "RESOURCE_ID",
@@ -1850,7 +1854,7 @@
     },
     "TOGGLE_LOCATION": {
       "TYPE": "TEXT",
-      "VALUE": "Use location"
+      "VALUE": "Infotainment apps"
     },
     "LOCATION_SWITCH": {
       "TYPE": "CLASS",
