@@ -60,6 +60,10 @@ class NCBaseTestClass(base_test.BaseTestClass):
     self._nearby_snippet_apk_path: str = None
     self._nearby_snippet_2_apk_path: str = None
     self._nearby_snippet_3p_apk_path: str = None
+    self._openwrt: openwrt_device.OpenWrtDevice | None = None
+    self._sniffer: openwrt_device.OpenWrtDevice | None = None
+    self._wifi_info: wifi_configs.WiFiConfig | None = None
+    self._openwrt_wifi_config: wifi_configs.WiFiConfig | None = None
     self.performance_test_iterations: int = 1
     self.num_bug_reports: int = 0
     self._requires_2_snippet_apks = False
@@ -161,35 +165,43 @@ class NCBaseTestClass(base_test.BaseTestClass):
     if not self.user_params.get('use_auto_controlled_wifi_ap', False):
       return
 
-    self.openwrt = self.register_controller(openwrt_device)[0]
+    openwrt_devices = self.register_controller(openwrt_device)
+    if len(openwrt_devices) >= 2:
+      self._openwrt, self._sniffer = openwrt_devices[:2]
+      logging.debug(
+          'Using device %s as AP and %s as sniffer.',
+          self._openwrt,
+          self._sniffer,
+      )
+    else:
+      self._openwrt = openwrt_devices[0]
+      logging.debug('Using device %s as router.', self._openwrt)
+
     if 'wifi_channel' in self.user_params:
       wifi_channel = self.user_params['wifi_channel']
-      self.wifi_info = self.openwrt.start_wifi(
-          config=wifi_configs.WiFiConfig(
-              channel=wifi_channel,
-              country_code=self._get_country_code(),
-          )
+      self._openwrt_wifi_config = wifi_configs.WiFiConfig(
+          channel=wifi_channel,
+          country_code=self._get_country_code(),
       )
     else:
       wifi_channel = None
-      self.wifi_info = self.openwrt.start_wifi(
-          config=wifi_configs.WiFiConfig(
-              country_code=self._get_country_code(),
-          )
+      self._openwrt_wifi_config = wifi_configs.WiFiConfig(
+          country_code=self._get_country_code(),
       )
+    self._wifi_info = self._openwrt.start_wifi(config=self._openwrt_wifi_config)
 
     if wifi_channel is None:
-      self.test_parameters.wifi_ssid = self.wifi_info.ssid
-      self.test_parameters.wifi_password = self.wifi_info.password
+      self.test_parameters.wifi_ssid = self._wifi_info.ssid
+      self.test_parameters.wifi_password = self._wifi_info.password
     elif wifi_channel == nc_constants.CHANNEL_2G:
-      self.test_parameters.wifi_2g_ssid = self.wifi_info.ssid
-      self.test_parameters.wifi_2g_password = self.wifi_info.password
+      self.test_parameters.wifi_2g_ssid = self._wifi_info.ssid
+      self.test_parameters.wifi_2g_password = self._wifi_info.password
     elif wifi_channel == nc_constants.CHANNEL_5G:
-      self.test_parameters.wifi_5g_ssid = self.wifi_info.ssid
-      self.test_parameters.wifi_5g_password = self.wifi_info.password
+      self.test_parameters.wifi_5g_ssid = self._wifi_info.ssid
+      self.test_parameters.wifi_5g_password = self._wifi_info.password
     elif wifi_channel == nc_constants.CHANNEL_5G_DFS:
-      self.test_parameters.wifi_dfs_5g_ssid = self.wifi_info.ssid
-      self.test_parameters.wifi_dfs_5g_password = self.wifi_info.password
+      self.test_parameters.wifi_dfs_5g_ssid = self._wifi_info.ssid
+      self.test_parameters.wifi_dfs_5g_password = self._wifi_info.password
     else:
       raise ValueError('Unknown Wi-Fi channel: %s' % wifi_channel)
 
@@ -297,6 +309,19 @@ class NCBaseTestClass(base_test.BaseTestClass):
         },
     })
     self._reset_nearby_connection()
+    self._stop_packet_capture(ignore_packets=True)
+    self._start_packet_capture()
+
+  def _start_packet_capture(self) -> None:
+    """Starts packet capture if this test is using a sniffer."""
+    if self._sniffer is not None:
+      self._sniffer.start_packet_capture(wifi_config=self._openwrt_wifi_config)
+
+  def _stop_packet_capture(self, ignore_packets: bool):
+    """Stops packet capture if this test is using a sniffer."""
+    if self._sniffer is not None:
+      test_info = None if ignore_packets else self.current_test_info
+      self._sniffer.stop_packet_capture(test_info)
 
   def _reset_wifi_connection(self) -> None:
     """Resets wifi connections on both devices."""
@@ -341,8 +366,8 @@ class NCBaseTestClass(base_test.BaseTestClass):
         param_list=[[ad] for ad in self.ads],
         raise_on_exception=True,
     )
-    if hasattr(self, 'openwrt'):
-      self.openwrt.services.create_output_excerpts_all(self.current_test_info)
+    if self._openwrt is not None:
+      self._openwrt.services.create_output_excerpts_all(self.current_test_info)
 
   def teardown_class(self) -> None:
     if self.__skipped_test_class:
@@ -358,8 +383,8 @@ class NCBaseTestClass(base_test.BaseTestClass):
         raise_on_exception=True,
     )
 
-    if hasattr(self, 'openwrt') and hasattr(self, 'wifi_info'):
-      self.openwrt.stop_wifi(self.wifi_info)
+    if self._openwrt is not None and self._wifi_info is not None:
+      self._openwrt.stop_wifi(self._wifi_info)
 
   def _dict_to_list(self, dic_str_str: dict[str, str]) -> list[str]:
     return [f' {str1}: {str2}' for str1, str2 in dic_str_str.items()]
@@ -420,6 +445,7 @@ class NCBaseTestClass(base_test.BaseTestClass):
     if self.__skipped_test_class:
       logging.info('Skipping on_fail.')
       return
+    self._stop_packet_capture(ignore_packets=False)
     if self.test_parameters.skip_bug_report:
       logging.info('Skipping bug report.')
       return
@@ -430,3 +456,6 @@ class NCBaseTestClass(base_test.BaseTestClass):
           self.ads,
           destination=self.current_test_info.output_path,
       )
+
+  def on_pass(self, record: records.TestResultRecord) -> None:
+    self._stop_packet_capture(ignore_packets=True)
