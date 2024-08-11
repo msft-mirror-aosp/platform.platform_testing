@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 The Android Open Source Project
+ * Copyright 2022 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,20 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package android.security.sts;
 
-package android.tools.traces.protolog
+import android.app.Activity;
+import android.os.Bundle;
+import android.util.Log;
 
-import android.tools.Timestamps
-import android.tools.TraceEntry
-import com.android.internal.protolog.common.LogLevel
+public class PocActivity extends Activity {
+    private static final String TAG = PocActivity.class.getSimpleName();
 
-class ProtoLogMessage(
-    elapsedTimestamp: Long,
-    val level: LogLevel,
-    val tag: String,
-    val message: String,
-    val stacktrace: String?,
-    val location: String?,
-) : TraceEntry {
-    override val timestamp = Timestamps.from(elapsedNanos = elapsedTimestamp)
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        Log.d(TAG, "poc activity started");
+    }
 }
