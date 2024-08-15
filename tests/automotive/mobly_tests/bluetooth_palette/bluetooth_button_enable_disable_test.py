@@ -26,7 +26,8 @@ class BluetoothPalette(bluetooth_base_test.BluetoothBaseTest):
     def setup_test(self):
         """Setup steps before any test is executed."""
         # Pair the devices
-        self.bt_utils.pair_primary_to_secondary();
+        self.bt_utils.pair_primary_to_secondary()
+        super().enable_recording()
 
     def test_enable_disable_bluetooth_button(self):
         """Tests enable and disable functionality of bluetooth."""

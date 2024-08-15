@@ -38,7 +38,6 @@ native_tests := \
     boringssl_crypto_test \
     boringssl_ssl_test \
     bsdiff_unittest \
-    buffer_hub-test \
     bugreportz_test \
     bytes_test_tests_test_buf \
     bytes_test_tests_test_buf_mut \
@@ -94,6 +93,7 @@ native_tests := \
     libnativehelper_tests \
     libnetworkstats_test \
     libprocinfo_test \
+    librenderengine_test \
     libtextclassifier_tests-tplus \
     libtextclassifier_tests-sminus \
     libsurfaceflinger_unittest \
@@ -236,9 +236,7 @@ native_tests := \
 ifeq ($(BOARD_IS_AUTOMOTIVE), true)
 native_tests += \
     libwatchdog_test \
-    evsmanagerd_test \
-    sv_2d_session_tests \
-    sv_3d_session_tests
+    evsmanagerd_test
 endif
 
 ifneq ($(strip $(BOARD_PERFSETUP_SCRIPT)),)

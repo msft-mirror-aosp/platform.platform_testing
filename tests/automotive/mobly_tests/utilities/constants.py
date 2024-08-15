@@ -19,6 +19,7 @@ DIAL_A_NUMBER = 'Dial a number'
 DEFAULT_WAIT_TIME_FIVE_SECS = 5
 DEFAULT_WAIT_TIME_FIFTEEN_SECS = 15
 WAIT_FOR_LOAD = 2
+YOUTUBE_SYNC_TIME = 10
 BT_DEFAULT_TIMEOUT = 15
 WAIT_ONE_SEC = 1
 WAIT_TWO_SECONDS = 2
@@ -45,6 +46,7 @@ DECLINE_CALL_TEXT = "Decline"
 ANSWER_CALL_TEXT = "Answer"
 ACCEPT_CALL_TEXT = "Accept"
 DISABLE_ANDROID_AUTO_POP_UP = "pm disable --user 10 com.google.android.embedded.projection"
+NOT_NOW_TEXT ="Not Now"
 
 BTSNOOP_LOG_PATH_ON_DEVICE = '/data/misc/bluetooth/logs/btsnoop_hci.log'
 BTSNOOP_LAST_LOG_PATH_ON_DEVICE = (
@@ -101,9 +103,9 @@ IMPOST_CONTACTS_SHELL_COMAND = (
 )
 
 # Screen recording
-SCREEN_RECORDING_COMMAND = 'screenrecord'
+SCREEN_RECORDING_COMMAND = 'screenrecord --time-limit 180'
 RECORDED_VIDEO_FILE_LOCATION = '/sdcard/'
-RECORDED_VIDEO_FILE_OUTPUT_FILE = '_screenrecord_output_mp4'
+RECORDED_VIDEO_FILE_OUTPUT_FILE = '_screenrecord_output_mp4_'
 STOP_VIDEO_RECORDING = f'pkill -SIGINT {SCREEN_RECORDING_COMMAND}'
 DELETE_SCREEN_RECORDING = f'rm -f '
 
@@ -117,6 +119,8 @@ KEYCODE_MEDIA_PREVIOUS = 'input keyevent KEYCODE_MEDIA_PREVIOUS'
 KEYCODE_MEDIA_PAUSE = 'input keyevent KEYCODE_MEDIA_PAUSE'
 KEYCODE_MEDIA_PLAY = 'input keyevent KEYCODE_MEDIA_PLAY'
 KEYCODE_MEDIA_STOP = 'input keyevent KEYCODE_MEDIA_STOP'
+KEYCODE_WAKEUP = 'input keyevent KEYCODE_WAKEUP'
+DUMPSYS_POWER= 'dumpsys power|grep mWakefulness'
 
 # YouTube Media
 YOUTUBE_MUSIC_PACKAGE = 'com.google.android.apps.youtube.music'
