@@ -20,8 +20,8 @@ import android.tools.Timestamp
 import android.tools.Timestamps
 import android.tools.TraceEntry
 import android.tools.flicker.subject.FlickerSubject
-import android.tools.utils.CleanFlickerEnvironmentRule
-import android.tools.utils.assertFail
+import android.tools.testutils.CleanFlickerEnvironmentRule
+import android.tools.testutils.assertFail
 import org.junit.ClassRule
 import org.junit.FixMethodOrder
 import org.junit.Test
@@ -124,7 +124,9 @@ class AssertionsCheckerTest {
         val checker = AssertionsChecker<SimpleEntrySubject>()
         checker.add("isData42") { it.isData42() }
         checker.add("isData0") { it.isData0() }
-        assertFail("never failed: isData42") { checker.test(getTestEntries(42, 42, 42, 42, 42)) }
+        assertFail("Assertion isData42 (block 0) never became false") {
+            checker.test(getTestEntries(42, 42, 42, 42, 42))
+        }
     }
 
     @Test
@@ -165,6 +167,7 @@ class AssertionsCheckerTest {
                     SimpleEntry(Timestamps.from(elapsedNanos = it.toLong()), data[it])
                 )
             }
+
         @ClassRule @JvmField val ENV_CLEANUP = CleanFlickerEnvironmentRule()
     }
 }

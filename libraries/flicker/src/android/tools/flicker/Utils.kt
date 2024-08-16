@@ -40,14 +40,18 @@ object Utils {
     // Order matters since this is used to start traces in the order the monitors are defined here
     // and stop them in reverse order.
     val ALL_MONITORS: List<TraceMonitor> =
-        mutableListOf(
+        mutableListOf<TraceMonitor>(
                 ScreenRecorder(InstrumentationRegistry.getInstrumentation().targetContext),
-                WindowManagerTraceMonitor(),
-                ViewTraceMonitor(),
             )
             .apply {
                 val perfettoMonitorBuilder = PerfettoTraceMonitor.newBuilder()
                 perfettoMonitorBuilder.enableLayersTrace().enableTransactionsTrace()
+
+                if (android.tracing.Flags.perfettoViewCaptureTracing()) {
+                    perfettoMonitorBuilder.enableViewCaptureTrace()
+                } else {
+                    this.add(ViewTraceMonitor())
+                }
 
                 if (android.tracing.Flags.perfettoTransitionTracing()) {
                     perfettoMonitorBuilder.enableTransitionsTrace()
@@ -56,8 +60,18 @@ object Utils {
                     this.add(LegacyShellTransitionTraceMonitor())
                 }
 
+                if (android.tracing.Flags.perfettoWmTracing()) {
+                    perfettoMonitorBuilder.enableWindowManagerTrace()
+                } else {
+                    this.add(WindowManagerTraceMonitor())
+                }
+
                 if (android.tracing.Flags.perfettoProtologTracing()) {
                     perfettoMonitorBuilder.enableProtoLog()
+                }
+
+                if (android.tracing.Flags.perfettoIme()) {
+                    perfettoMonitorBuilder.enableImeTrace()
                 }
 
                 this.add(perfettoMonitorBuilder.build())
