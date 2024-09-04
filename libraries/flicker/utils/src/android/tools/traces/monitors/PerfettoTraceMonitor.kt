@@ -18,7 +18,6 @@ package android.tools.traces.monitors
 
 import android.tools.io.TraceType
 import android.tools.traces.executeShellCommand
-import android.tools.traces.io.IoUtils
 import com.android.internal.protolog.common.LogLevel
 import java.io.File
 import java.util.concurrent.locks.ReentrantLock
@@ -36,35 +35,23 @@ open class PerfettoTraceMonitor(val config: TraceConfig) : TraceMonitor() {
         get() = perfettoPid != null
 
     private var perfettoPid: Int? = null
-    private var configFileInPerfettoDir: File? = null
     private var traceFile: File? = null
-    private var traceFileInPerfettoDir: File? = null
-    private val PERFETTO_CONFIGS_DIR = File("/data/misc/perfetto-configs")
     private val PERFETTO_TRACES_DIR = File("/data/misc/perfetto-traces")
 
+    fun captureDump(): File {
+        doStart()
+        return doStop()
+    }
+
     override fun doStart() {
-        val configFile = File.createTempFile("flickerlib-config-", ".cfg")
-        configFileInPerfettoDir = PERFETTO_CONFIGS_DIR.resolve(requireNotNull(configFile).name)
-
-        traceFile = File.createTempFile(traceType.fileName, "")
-        traceFileInPerfettoDir = PERFETTO_TRACES_DIR.resolve(requireNotNull(traceFile).name)
-
-        configFile.writeBytes(config.toByteArray())
-
-        // Experiment for sporadic failures like b/333220956.
-        // The perfetto command below sometimes fails to find the config file on disk,
-        // so let's try to wait till the file exists on disk.
-        IoUtils.waitFileExists(configFile, 2000)
-
-        IoUtils.moveFile(configFile, requireNotNull(configFileInPerfettoDir))
-        IoUtils.waitFileExists(requireNotNull(configFileInPerfettoDir), 2000)
+        val fileName = File.createTempFile(traceType.fileName, "").name
+        traceFile = PERFETTO_TRACES_DIR.resolve(fileName)
 
         val command =
-            "perfetto --background-wait" +
-                " --config ${configFileInPerfettoDir?.absolutePath}" +
-                " --out ${traceFileInPerfettoDir?.absolutePath}"
-        val stdout = String(executeShellCommand(command))
+            "perfetto --background-wait" + " --config -" + " --out ${traceFile?.absolutePath}"
+        val stdout = String(executeShellCommand(command, config.toByteArray()))
         val pid = stdout.trim().toInt()
+
         perfettoPid = pid
         allPerfettoPidsLock.lock()
         try {
@@ -78,8 +65,6 @@ open class PerfettoTraceMonitor(val config: TraceConfig) : TraceMonitor() {
         require(isEnabled) { "Attempted to stop disabled trace monitor" }
         killPerfettoProcess(requireNotNull(perfettoPid))
         waitPerfettoProcessExits(requireNotNull(perfettoPid))
-        IoUtils.moveFile(requireNotNull(traceFileInPerfettoDir), requireNotNull(traceFile))
-        executeShellCommand("rm ${configFileInPerfettoDir?.absolutePath}")
         perfettoPid = null
         return requireNotNull(traceFile)
     }
@@ -123,12 +108,28 @@ open class PerfettoTraceMonitor(val config: TraceConfig) : TraceMonitor() {
             val collectStackTrace: Boolean,
         )
 
+        fun enableProtoLog(dataSourceName: String): Builder = apply {
+            enableProtoLog(logAll = true, dataSourceName = dataSourceName)
+        }
+
         @JvmOverloads
         fun enableProtoLog(
             logAll: Boolean = true,
-            groupOverrides: List<ProtoLogGroupOverride> = emptyList()
+            groupOverrides: List<ProtoLogGroupOverride> = emptyList(),
+            dataSourceName: String = PROTOLOG_DATA_SOURCE,
         ): Builder = apply {
-            enableCustomTrace(createProtoLogDataSourceConfig(logAll, groupOverrides))
+            enableCustomTrace(
+                createProtoLogDataSourceConfig(logAll, null, groupOverrides, dataSourceName)
+            )
+        }
+
+        @JvmOverloads
+        fun enableProtoLog(
+            defaultLogFrom: LogLevel,
+            groupOverrides: List<ProtoLogGroupOverride> = emptyList(),
+            dataSourceName: String = PROTOLOG_DATA_SOURCE,
+        ): Builder = apply {
+            enableCustomTrace(createProtoLogDataSourceConfig(false, defaultLogFrom, groupOverrides))
         }
 
         fun enableViewCaptureTrace(): Builder = apply {
@@ -136,14 +137,34 @@ open class PerfettoTraceMonitor(val config: TraceConfig) : TraceMonitor() {
             enableCustomTrace(config)
         }
 
-        fun enableWindowManagerTrace(): Builder = apply {
+        fun enableWindowManagerTrace(
+            logFrequency: WindowManagerConfig.LogFrequency =
+                WindowManagerConfig.LogFrequency.LOG_FREQUENCY_FRAME
+        ): Builder = apply {
             val config =
                 DataSourceConfig.newBuilder()
                     .setName(WINDOWMANAGER_DATA_SOURCE)
                     .setWindowmanagerConfig(
                         WindowManagerConfig.newBuilder()
                             .setLogLevel(WindowManagerConfig.LogLevel.LOG_LEVEL_VERBOSE)
-                            .setLogFrequency(WindowManagerConfig.LogFrequency.LOG_FREQUENCY_FRAME)
+                            .setLogFrequency(logFrequency)
+                            .build()
+                    )
+                    .build()
+
+            enableCustomTrace(config)
+        }
+
+        fun enableWindowManagerDump(): Builder = apply {
+            val config =
+                DataSourceConfig.newBuilder()
+                    .setName(WINDOWMANAGER_DATA_SOURCE)
+                    .setWindowmanagerConfig(
+                        WindowManagerConfig.newBuilder()
+                            .setLogLevel(WindowManagerConfig.LogLevel.LOG_LEVEL_VERBOSE)
+                            .setLogFrequency(
+                                WindowManagerConfig.LogFrequency.LOG_FREQUENCY_SINGLE_DUMP
+                            )
                             .build()
                     )
                     .build()
@@ -231,13 +252,21 @@ open class PerfettoTraceMonitor(val config: TraceConfig) : TraceMonitor() {
 
         private fun createProtoLogDataSourceConfig(
             logAll: Boolean,
-            groupOverrides: List<ProtoLogGroupOverride>
+            logFrom: LogLevel?,
+            groupOverrides: List<ProtoLogGroupOverride>,
+            dataSourceName: String = PROTOLOG_DATA_SOURCE,
         ): DataSourceConfig {
             val protoLogConfigBuilder = PerfettoConfig.ProtoLogConfig.newBuilder()
 
             if (logAll) {
                 protoLogConfigBuilder.setTracingMode(
                     PerfettoConfig.ProtoLogConfig.TracingMode.ENABLE_ALL
+                )
+            }
+
+            if (logFrom != null) {
+                protoLogConfigBuilder.setDefaultLogFromLevel(
+                    PerfettoConfig.ProtoLogLevel.forNumber(logFrom.ordinal)
                 )
             }
 
@@ -255,7 +284,7 @@ open class PerfettoTraceMonitor(val config: TraceConfig) : TraceMonitor() {
             }
 
             return DataSourceConfig.newBuilder()
-                .setName(PROTOLOG_DATA_SOURCE)
+                .setName(dataSourceName)
                 .setProtologConfig(protoLogConfigBuilder)
                 .build()
         }
