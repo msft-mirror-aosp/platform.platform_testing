@@ -129,7 +129,14 @@ open class PerfettoTraceMonitor(val config: TraceConfig) : TraceMonitor() {
             groupOverrides: List<ProtoLogGroupOverride> = emptyList(),
             dataSourceName: String = PROTOLOG_DATA_SOURCE,
         ): Builder = apply {
-            enableCustomTrace(createProtoLogDataSourceConfig(false, defaultLogFrom, groupOverrides))
+            enableCustomTrace(
+                createProtoLogDataSourceConfig(
+                    false,
+                    defaultLogFrom,
+                    groupOverrides,
+                    dataSourceName
+                )
+            )
         }
 
         fun enableViewCaptureTrace(): Builder = apply {
@@ -266,7 +273,7 @@ open class PerfettoTraceMonitor(val config: TraceConfig) : TraceMonitor() {
 
             if (logFrom != null) {
                 protoLogConfigBuilder.setDefaultLogFromLevel(
-                    PerfettoConfig.ProtoLogLevel.forNumber(logFrom.ordinal)
+                    PerfettoConfig.ProtoLogLevel.forNumber(logFrom.ordinal + 1)
                 )
             }
 
