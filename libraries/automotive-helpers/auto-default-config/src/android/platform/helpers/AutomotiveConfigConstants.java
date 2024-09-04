@@ -673,4 +673,28 @@ public class AutomotiveConfigConstants {
 
     // Phone Card Identifiers
     public static final String PHONE_CARD_DIALER_BUTTON = "PHONE_CARD_DIALER_BUTTON";
+
+    // Sound Palette
+    public static final String STATUS_BAR_SOUND_BUTTON = "STATUS_BAR_SOUND_BUTTON";
+    public static final String SOUND_PALETTE_INCALL = "SOUND_PALETTE_INCALL";
+    public static final String SOUND_PALETTE_MEDIA = "SOUND_PALETTE_MEDIA";
+    public static final String SOUND_PALETTE_NAVIGATION = "SOUND_PALETTE_NAVIGATION";
+    public static final String SOUND_PALETTE_SOUND_SETTINGS = "SOUND_PALETTE_SOUND_SETTINGS";
+    public static final String SOUND_PALETTE_SOUND_SETTINGS_PAGE_TITLE =
+            "SOUND_PALETTE_SOUND_SETTINGS_PAGE_TITLE";
+
+    // System Setting UI elements
+    public static final String SYSTEM_SETTINGS_UNITS = "SYSTEM_SETTINGS_UNITS";
+    public static final String LANGUAGE_SYSTEM_SETTINGS_AUTOFILL_SERVICE =
+            "LANGUAGE_SYSTEM_SETTINGS_AUTOFILL_SERVICE";
+    public static final String LANGUAGE_SYSTEM_SETTINGS_KEYBOARD =
+            "LANGUAGE_SYSTEM_SETTINGS_KEYBOARD";
+    public static final String LANGUAGE_SYSTEM_SETTINGS_TEXT_TO_SPEECH_OUTPUT =
+            "LANGUAGE_SYSTEM_SETTINGS_TEXT_TO_SPEECH_OUTPUT";
+    public static final String UNIT_SYSTEM_SETTINGS_SPEED = "UNIT_SYSTEM_SETTINGS_SPEED";
+    public static final String UNIT_SYSTEM_SETTINGS_DISTANCE = "UNIT_SYSTEM_SETTINGS_DISTANCE";
+    public static final String UNIT_SYSTEM_SETTINGS_TEMPERATURE =
+            "UNIT_SYSTEM_SETTINGS_TEMPERATURE";
+    public static final String UNIT_SYSTEM_SETTINGS_PRESSURE = "UNIT_SYSTEM_SETTINGS_PRESSURE";
+    public static final String LANGUAGES_INPUT_IN_SYSTEM = "LANGUAGES_INPUT_IN_SYSTEM";
 }
