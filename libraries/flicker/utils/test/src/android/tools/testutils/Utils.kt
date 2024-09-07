@@ -199,7 +199,7 @@ fun getWmDumpReaderFromAsset(relativePathWithoutExtension: String): Reader {
     }
 
     val wmTrace =
-        if (android.tracing.Flags.perfettoWmDump()) {
+        if (android.tracing.Flags.perfettoWmTracing()) {
             parseDump()
         } else {
             parseLegacyDump()

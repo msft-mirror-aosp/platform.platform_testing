@@ -17,10 +17,9 @@
 package android.platform.helpers.foldable
 
 import android.hardware.SensorManager
-import android.hardware.SensorManager.HAL_BYPASS_REPLAY_DATA_INJECTION
 import android.platform.test.rule.TestWatcher
-import org.junit.Assume
 import kotlin.properties.Delegates.notNull
+import org.junit.Assume
 
 /**
  * Allows to inject values to a sensor. Assumes that sensor injection is supported. Note that
@@ -38,8 +37,7 @@ class SensorInjectionController(sensorType: Int) : TestWatcher() {
     fun init() {
         executeShellCommand(SENSOR_SERVICE_ENABLE)
         executeShellCommand(SENSOR_SERVICE_DATA_INJECTION + context.packageName)
-        injectionSupported = sensorManager.initDataInjection(true,
-            HAL_BYPASS_REPLAY_DATA_INJECTION)
+        injectionSupported = sensorManager.initDataInjection(true)
         initialized = true
     }
 
@@ -67,6 +65,6 @@ class SensorInjectionController(sensorType: Int) : TestWatcher() {
 
     companion object {
         private const val SENSOR_SERVICE_ENABLE = "dumpsys sensorservice enable"
-        private const val SENSOR_SERVICE_DATA_INJECTION = "dumpsys sensorservice hal_bypass_replay_data_injection "
+        private const val SENSOR_SERVICE_DATA_INJECTION = "dumpsys sensorservice data_injection "
     }
 }
