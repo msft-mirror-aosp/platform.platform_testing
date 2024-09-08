@@ -278,6 +278,7 @@ public class AutomotiveConfigConstants {
             "SOUND_SETTINGS_SCROLL_BACKWARD_BUTTON";
     public static final String SOUND_SETTINGS_SCROLL_MARGIN = "SOUND_SETTINGS_SCROLL_MARGIN";
     public static final String SOUND_SETTINGS_SCROLL_WAIT_TIME = "SOUND_SETTINGS_SCROLL_WAIT_TIME";
+    public static final String SOUND_SETTING_INCALL = "SOUND_SETTING_INCALL";
 
     // Media Center
     public static final String MEDIA_CENTER_PACKAGE = "MEDIA_CENTER_PACKAGE";
