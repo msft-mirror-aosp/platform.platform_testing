@@ -22,6 +22,7 @@ import android.tools.flicker.config.ScenarioId
 import android.tools.helpers.SYSTEMUI_PACKAGE
 import android.tools.traces.component.ComponentNameMatcher
 import android.tools.traces.component.FullComponentIdMatcher
+import android.tools.traces.component.IComponentMatcher
 import android.tools.traces.wm.Transition
 import android.tools.traces.wm.TransitionType
 
@@ -57,25 +58,28 @@ object Components {
     private fun getDesktopAppForScenario(
         type: ScenarioId,
         associatedTransition: Transition
-    ): FullComponentIdMatcher {
+    ): IComponentMatcher {
         return when (type) {
             ScenarioId("END_DRAG_TO_DESKTOP") -> {
                 val change =
                     associatedTransition.changes.first { it.transitMode == TransitionType.CHANGE }
                 FullComponentIdMatcher(change.windowId, change.layerId)
             }
-            ScenarioId("CLOSE_APP") -> {
-                val change =
-                    associatedTransition.changes.first { it.transitMode == TransitionType.CLOSE }
-                FullComponentIdMatcher(change.windowId, change.layerId)
-            }
+            ScenarioId("CLOSE_APP"),
             ScenarioId("CLOSE_LAST_APP") -> {
                 val change =
                     associatedTransition.changes.first { it.transitMode == TransitionType.CLOSE }
                 FullComponentIdMatcher(change.windowId, change.layerId)
             }
+            ScenarioId("CASCADE_APP") -> {
+                val change =
+                    associatedTransition.changes.first { it.transitMode == TransitionType.OPEN }
+                FullComponentIdMatcher(change.windowId, change.layerId)
+            }
             ScenarioId("CORNER_RESIZE"),
             ScenarioId("CORNER_RESIZE_TO_MINIMUM_SIZE"),
+            ScenarioId("CORNER_RESIZE_TO_MAXIMUM_SIZE"),
+            ScenarioId("EDGE_RESIZE"),
             ScenarioId("SNAP_RESIZE_LEFT_WITH_DRAG"),
             ScenarioId("SNAP_RESIZE_RIGHT_WITH_DRAG"),
             ScenarioId("SNAP_RESIZE_LEFT_WITH_BUTTON"),
