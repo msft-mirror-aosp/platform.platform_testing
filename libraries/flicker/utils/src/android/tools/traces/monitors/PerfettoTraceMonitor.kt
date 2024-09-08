@@ -108,20 +108,35 @@ open class PerfettoTraceMonitor(val config: TraceConfig) : TraceMonitor() {
             val collectStackTrace: Boolean,
         )
 
+        fun enableProtoLog(dataSourceName: String): Builder = apply {
+            enableProtoLog(logAll = true, dataSourceName = dataSourceName)
+        }
+
         @JvmOverloads
         fun enableProtoLog(
             logAll: Boolean = true,
-            groupOverrides: List<ProtoLogGroupOverride> = emptyList()
+            groupOverrides: List<ProtoLogGroupOverride> = emptyList(),
+            dataSourceName: String = PROTOLOG_DATA_SOURCE,
         ): Builder = apply {
-            enableCustomTrace(createProtoLogDataSourceConfig(logAll, null, groupOverrides))
+            enableCustomTrace(
+                createProtoLogDataSourceConfig(logAll, null, groupOverrides, dataSourceName)
+            )
         }
 
         @JvmOverloads
         fun enableProtoLog(
             defaultLogFrom: LogLevel,
-            groupOverrides: List<ProtoLogGroupOverride> = emptyList()
+            groupOverrides: List<ProtoLogGroupOverride> = emptyList(),
+            dataSourceName: String = PROTOLOG_DATA_SOURCE,
         ): Builder = apply {
-            enableCustomTrace(createProtoLogDataSourceConfig(false, defaultLogFrom, groupOverrides))
+            enableCustomTrace(
+                createProtoLogDataSourceConfig(
+                    false,
+                    defaultLogFrom,
+                    groupOverrides,
+                    dataSourceName
+                )
+            )
         }
 
         fun enableViewCaptureTrace(): Builder = apply {
@@ -245,7 +260,8 @@ open class PerfettoTraceMonitor(val config: TraceConfig) : TraceMonitor() {
         private fun createProtoLogDataSourceConfig(
             logAll: Boolean,
             logFrom: LogLevel?,
-            groupOverrides: List<ProtoLogGroupOverride>
+            groupOverrides: List<ProtoLogGroupOverride>,
+            dataSourceName: String = PROTOLOG_DATA_SOURCE,
         ): DataSourceConfig {
             val protoLogConfigBuilder = PerfettoConfig.ProtoLogConfig.newBuilder()
 
@@ -257,7 +273,7 @@ open class PerfettoTraceMonitor(val config: TraceConfig) : TraceMonitor() {
 
             if (logFrom != null) {
                 protoLogConfigBuilder.setDefaultLogFromLevel(
-                    PerfettoConfig.ProtoLogLevel.forNumber(logFrom.ordinal)
+                    PerfettoConfig.ProtoLogLevel.forNumber(logFrom.id)
                 )
             }
 
@@ -266,16 +282,14 @@ open class PerfettoTraceMonitor(val config: TraceConfig) : TraceMonitor() {
                     PerfettoConfig.ProtoLogGroup.newBuilder()
                         .setGroupName(groupOverride.groupName)
                         .setLogFrom(
-                            PerfettoConfig.ProtoLogLevel.forNumber(
-                                groupOverride.logFrom.ordinal + 1
-                            )
+                            PerfettoConfig.ProtoLogLevel.forNumber(groupOverride.logFrom.id)
                         )
                         .setCollectStacktrace(groupOverride.collectStackTrace)
                 )
             }
 
             return DataSourceConfig.newBuilder()
-                .setName(PROTOLOG_DATA_SOURCE)
+                .setName(dataSourceName)
                 .setProtologConfig(protoLogConfigBuilder)
                 .build()
         }
