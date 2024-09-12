@@ -24,17 +24,9 @@ import platform.test.screenshot.proto.ScreenshotResultProto
  * Matcher for differences not detectable by human eye. The relaxed threshold allows for low quality
  * png storage.
  */
-class AlmostPerfectMatcher
-private constructor(
+class AlmostPerfectMatcher(
     private val acceptableThreshold: Double = 0.0,
-    private val acceptableThresholdCount: Int = -1
 ) : BitmapMatcher() {
-    constructor() : this(0.0, -1)
-
-    constructor(acceptableThreshold: Double) : this(acceptableThreshold, -1)
-
-    constructor(acceptableThresholdCount: Int) : this(0.0, acceptableThresholdCount)
-
     override fun compareBitmaps(
         expected: IntArray,
         given: IntArray,
@@ -59,10 +51,7 @@ private constructor(
             }
         }
 
-        val threshold =
-            if (acceptableThresholdCount >= 0) acceptableThresholdCount
-            else (acceptableThreshold * width * height).toInt()
-        val matches = different <= threshold
+        val matches = different <= (acceptableThreshold * width * height)
         val diffBmp =
             if (different <= 0) null
             else Bitmap.createBitmap(diffArray.value, width, height, Bitmap.Config.ARGB_8888)
@@ -111,10 +100,7 @@ private constructor(
             }
         }
 
-        val threshold =
-            if (acceptableThresholdCount >= 0) acceptableThresholdCount
-            else (acceptableThreshold * width * height).toInt()
-        val matches = different <= threshold
+        val matches = different <= (acceptableThreshold * width * height)
         val diffBmp =
             if (different <= 0) null
             else Bitmap.createBitmap(diffArray.value, width, height, Bitmap.Config.ARGB_8888)
