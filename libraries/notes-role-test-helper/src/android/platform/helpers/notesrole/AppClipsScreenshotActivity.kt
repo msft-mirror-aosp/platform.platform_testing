@@ -16,15 +16,92 @@
 
 package android.platform.helpers.notesrole
 
+import android.content.BroadcastReceiver
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT
+import android.content.Intent.FLAG_ACTIVITY_MULTIPLE_TASK
+import android.content.Intent.FLAG_ACTIVITY_NEW_DOCUMENT
+import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
+import android.content.IntentFilter
+import android.os.Bundle
 import androidx.activity.ComponentActivity
 
 /** Empty activity for app clips screenshots. */
 class AppClipsScreenshotActivity : ComponentActivity() {
+
+    private val launchDifferentAppInSplitScreenReceiver: BroadcastReceiver =
+        object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                launchDifferentAppInSplitScreen()
+            }
+        }
+
+    private val launchSameAppInSplitScreenReceiver: BroadcastReceiver =
+        object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                launchSameAppInSplitScreen()
+            }
+        }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        registerReceiver(
+            launchDifferentAppInSplitScreenReceiver,
+            IntentFilter(LAUNCH_DIFFERENT_APP_IN_SPLIT_SCREEN_ACTION),
+            RECEIVER_EXPORTED
+        )
+
+        registerReceiver(
+            launchSameAppInSplitScreenReceiver,
+            IntentFilter(LAUNCH_SAME_APP_IN_SPLIT_SCREEN_ACTION),
+            RECEIVER_EXPORTED
+        )
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        unregisterReceiver(launchDifferentAppInSplitScreenReceiver)
+        unregisterReceiver(launchSameAppInSplitScreenReceiver)
+    }
+
+    private fun launchDifferentAppInSplitScreen() =
+        startActivity(
+            Intent().apply {
+                setComponent(ComponentName(packageName, SPLIT_DIFFERENT_ACTIVITY_NAME))
+                addFlags(
+                    FLAG_ACTIVITY_NEW_TASK or
+                        FLAG_ACTIVITY_LAUNCH_ADJACENT or
+                        FLAG_ACTIVITY_MULTIPLE_TASK or
+                        FLAG_ACTIVITY_NEW_DOCUMENT
+                )
+            }
+        )
+
+    private fun launchSameAppInSplitScreen() =
+        startActivity(
+            Intent().apply {
+                setComponent(this@AppClipsScreenshotActivity.componentName)
+                addFlags(
+                    FLAG_ACTIVITY_NEW_TASK or
+                        FLAG_ACTIVITY_LAUNCH_ADJACENT or
+                        FLAG_ACTIVITY_MULTIPLE_TASK or
+                        FLAG_ACTIVITY_NEW_DOCUMENT
+                )
+            }
+        )
+
     companion object {
+        const val LAUNCH_DIFFERENT_APP_IN_SPLIT_SCREEN_ACTION: String =
+            "LAUNCH_DIFFERENT_APP_IN_SPLIT_SCREEN_ACTION"
+        const val LAUNCH_SAME_APP_IN_SPLIT_SCREEN_ACTION: String =
+            "LAUNCH_SAME_APP_IN_SPLIT_SCREEN_ACTION"
+        private const val SPLIT_DIFFERENT_ACTIVITY_NAME: String =
+            "android.platform.helpers.notesrole.AppClipsScreenshotActivity.Split"
+
         fun getIntent(context: Context): Intent =
-            Intent(context, AppClipsScreenshotActivity::class.java)
-                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            Intent(context, AppClipsScreenshotActivity::class.java).addFlags(FLAG_ACTIVITY_NEW_TASK)
     }
 }

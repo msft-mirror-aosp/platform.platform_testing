@@ -37,6 +37,8 @@ class EnableDisableBluetoothAudioViaMusicButton(bluetooth_base_test.BluetoothBas
   def setup_class(self):
     super().setup_class()
     self.common_utils = CommonUtils(self.target, self.discoverer)
+    super().enable_recording()
+    self.call_utils.press_home()
 
   def setup_test(self):
     """Setup steps before any test is executed."""
@@ -53,7 +55,6 @@ class EnableDisableBluetoothAudioViaMusicButton(bluetooth_base_test.BluetoothBas
     asserts.assert_false(self.call_utils.is_bluetooth_media_button_enabled(),'Media Button is Not disabled')
     self.call_utils.open_bluetooth_media_app()
     self.call_utils.wait_with_log(5)
-    self.call_utils.click_cancel_label_visible_on_bluetooth_audio_page()
     asserts.assert_true(self.call_utils.is_connect_to_bluetooth_label_visible_on_bluetooth_audio_page(), "Connect to Bluetooth Label is not visible")
     self.call_utils.open_bluetooth_palette()
     self.call_utils.click_on_bluetooth_palette_media_button()
