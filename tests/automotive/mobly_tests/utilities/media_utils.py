@@ -195,7 +195,7 @@ class MediaUtils:
 
     # Minimize playing song
     def minimize_now_playing(self):
-        logging.info("Maximizing playing song on HU")
+        logging.info("Minimizing the now playing song on HU")
         self.discoverer.mbs.minimizeNowPlaying()
 
     # Open playlist
@@ -302,3 +302,8 @@ class MediaUtils:
         else:
             logging.error("Invalid FM Radio frequency. Expected pattern: <%s>",
                           constants.FM_FREQUENCY_PATTERN)
+
+    def enable_bt_media_debugging_logs(self):
+        self.execute_shell_on_hu_device(constants.PLAYBACK_VIEW_MODEL)
+        self.execute_shell_on_hu_device(constants.MEDIA_BROWSER_CONNECTOR)
+        self.execute_shell_on_hu_device(constants.SETTINGS_CLOCK_SECONDS)

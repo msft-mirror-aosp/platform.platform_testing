@@ -18,6 +18,7 @@ package android.platform.helpers;
 import android.annotation.Nullable;
 import android.app.ActivityManager;
 import android.car.Car;
+import android.car.CarOccupantZoneManager;
 import android.car.SyncResultCallback;
 import android.car.user.CarUserManager;
 import android.car.user.CarUserManager.UserLifecycleListener;
@@ -56,13 +57,13 @@ public class MultiUserHelper {
     /** For testing purpose we allow a wide range of switching time. */
     private static final int USER_SWITCH_TIMEOUT_SECOND = 300;
 
-    private static final String SWITCH_USER_COMMAND = "cmd car_service switch-user ";
     private static final String CREATE_USER_COMMAND = "cmd car_service create-user ";
 
     private static MultiUserHelper sMultiUserHelper;
     private CarUserManager mCarUserManager;
     private UserManager mUserManager;
     private ActivityManager mActivityManager;
+    private CarOccupantZoneManager mCarOccupantZoneManager;
 
     private MultiUserHelper() {
         Context context = InstrumentationRegistry.getTargetContext();
@@ -70,6 +71,7 @@ public class MultiUserHelper {
         Car car = Car.createCar(context);
         mCarUserManager = (CarUserManager) car.getCarManager(Car.CAR_USER_SERVICE);
         mActivityManager = context.getSystemService(ActivityManager.class);
+        mCarOccupantZoneManager = car.getCarManager(CarOccupantZoneManager.class);
     }
 
     /**
@@ -197,11 +199,6 @@ public class MultiUserHelper {
                 String.format(
                         "Switching from user %d to user %d",
                         getCurrentForegroundUserInfo().id, id));
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-            switchUserUsingShell(id);
-            return;
-        }
-
         final CountDownLatch latch = new CountDownLatch(1);
         // A UserLifeCycleListener to wait for user switch event. It is equivalent to
         // UserSwitchObserver#onUserSwitchComplete callback
@@ -357,14 +354,13 @@ public class MultiUserHelper {
         return mActivityManager.getDisplayIdsForStartingVisibleBackgroundUsers();
     }
 
-    private void switchUserUsingShell(int userId) throws Exception {
-        String retStr = SystemUtil.runShellCommand(SWITCH_USER_COMMAND + userId);
-        if (!retStr.contains("STATUS_SUCCESSFUL")) {
-            throw new Exception(
-                    "failed to switch to user: "
-                            + userId
-                            + ". User switch shell command output: "
-                            + retStr);
-        }
+    /**
+     * Returns the user id for the given display id.
+     *
+     * @param displayId The display id.
+     * @return The user id for the given display id.
+     */
+    public int getUserForDisplayId(int displayId) {
+        return mCarOccupantZoneManager.getUserForDisplayId(displayId);
     }
 }

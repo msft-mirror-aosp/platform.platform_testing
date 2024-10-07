@@ -33,12 +33,14 @@ class PlaylistRendering(bluetooth_base_test.BluetoothBaseTest):
         self.common_utils.enable_wifi_on_phone_device()
         self.bt_utils.pair_primary_to_secondary()
         super().enable_recording()
+        self.media_utils.enable_bt_media_debugging_logs()
 
     def test_playlist_rendering(self):
         """Tests validating is song selectable using playlist on HU"""
         self.media_utils.open_media_app_on_hu()
-        self.call_utils.handle_bluetooth_audio_pop_up()
         self.media_utils.open_youtube_music_app()
+        self.call_utils.wait_with_log(5)
+        self.call_utils.handle_bluetooth_audio_pop_up()
         logging.info("Getting song title from phone device: %s", self.media_utils.get_song_title_from_phone())
         self.media_utils.maximize_now_playing()
         asserts.assert_true(self.media_utils.is_playlist_icon_visible(),

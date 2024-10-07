@@ -27,6 +27,8 @@
     "SECURITY_SETTINGS_SCROLL_DIRECTION": "VERTICAL",
     "NOTIFICATION_LIST_SCROLL_ACTION": "USE_GESTURE",
     "NOTIFICATION_LIST_SCROLL_DIRECTION": "VERTICAL",
+    "SETTINGS_SCROLL_ACTION": "USE_GESTURE",
+    "SETTINGS_SCROLL_DIRECTION": "VERTICAL",
     "SYSTEM_SETTINGS_SCROLL_ACTION": "USE_GESTURE",
     "SYSTEM_SETTINGS_SCROLL_DIRECTION": "VERTICAL",
     "SYSTEM_SETTINGS_SCROLL_MARGIN": "6",
@@ -269,7 +271,6 @@
             }
           }
         }
-
       ]
     },
     "CONTACT_DETAIL": {
@@ -281,7 +282,6 @@
       "TYPE": "DESCRIPTION",
       "VALUE": "com.android.car.ui.utils.ROTARY_CONTAINER"
     },
-
     "CALL_HISTORY_INFO": {
       "TYPE": "RESOURCE_ID",
       "VALUE": "call_action_id",
@@ -1008,6 +1008,27 @@
       "VALUE": "summary",
       "PACKAGE": "android"
     },
+    "USE_BLUETOOTH_SETTINGS_TOGGLE": {
+      "TYPE": "MULTIPLE",
+      "SPECIFIERS": [
+        {
+          "TYPE": "CLASS",
+          "VALUE": "android.widget.Switch"
+        },
+        {
+          "TYPE": "HAS_ANCESTOR",
+          "MAX_DEPTH": 3,
+          "ANCESTOR": {
+            "TYPE": "HAS_DESCENDANT",
+            "MAX_DEPTH": 2,
+            "DESCENDANT": {
+              "TYPE": "TEXT",
+              "VALUE": "Use Bluetooth"
+            }
+          }
+        }
+      ]
+    },
     "DISPLAY_SETTINGS_SCROLL_ELEMENT": {
       "TYPE": "RESOURCE_ID",
       "VALUE": "car_ui_internal_recycler_view",
@@ -1293,7 +1314,6 @@
         }
       ]
     },
-
     "USER_SETTINGS_MAKE_TIME_PATTERN": {
       "TYPE": "TEXT",
       "VALUE": "(1[012]|[1-9]):[0-5][0-9](\\s)?.*"
@@ -1409,7 +1429,7 @@
     },
     "MINIMIZED_MEDIA_CONTROLS": {
       "TYPE": "RESOURCE_ID",
-      "VALUE": "minimized_playback_controls",
+      "VALUE": "minimized_control_bar_layout",
       "PACKAGE": "com.android.car.media"
     },
     "ARTIST_TITLE": {
@@ -1563,6 +1583,11 @@
       "VALUE": "entity_header_summary",
       "PACKAGE": "com.android.car.settings"
     },
+    "DEVICE_HEADER_TITLE": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "entity_header_title",
+      "PACKAGE": "com.android.car.settings"
+    },
     "DEVICE_CONNECTION_TEXT": {
       "TYPE": "RESOURCE_ID",
       "VALUE": "button1Text",
@@ -1575,8 +1600,7 @@
     },
     "DEVICE_CONNECTION_BACK_BUTTON": {
       "TYPE": "RESOURCE_ID",
-      "VALUE": "car_ui_toolbar_nav_icon_container",
-      "PACKAGE": "com.android.car.settings"
+      "VALUE": "car_ui_toolbar_nav_icon"
     },
     "DEVICE_FORGET_BUTTON": {
       "TYPE": "MULTIPLE",
@@ -1608,7 +1632,8 @@
         {
           "TYPE": "DESCRIPTION",
           "VALUE": "com.android.car.ui.utils.ROTARY_CONTAINER"
-        },{
+        },
+        {
           "TYPE": "CLASS",
           "VALUE": "androidx.recyclerview.widget.RecyclerView"
         }
@@ -1625,6 +1650,21 @@
     "SETTINGS_TITLE_TEXT": {
       "TYPE": "TEXT",
       "VALUE": "Settings"
+    },
+    "SETTINGS_SCROLL_FORWARD_BUTTON": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "car_ui_scrollbar_page_down",
+      "PACKAGE": "com.android.car.ui.sharedlibrary"
+    },
+    "SETTINGS_SCROLL_BACKWARD_BUTTON": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "car_ui_scrollbar_page_up",
+      "PACKAGE": "com.android.car.ui.sharedlibrary"
+    },
+    "SETTINGS_SCROLL_ELEMENT": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "top_level_recycler_view",
+      "PACKAGE": "com.android.car.settings"
     },
     "SETTINGS_SUB_SETTING_SCROLL_BACKWARD_BUTTON": {
       "TYPE": "DESCRIPTION",
@@ -1985,7 +2025,7 @@
       "VALUE": "radio_button",
       "PACKAGE": "com.android.permissioncontroller"
     },
-    "PRIVACY_PERMISSION_MANAGER":{
+    "PRIVACY_PERMISSION_MANAGER": {
       "TYPE": "TEXT",
       "VALUE": "Permission manager"
     },
@@ -1993,13 +2033,16 @@
       "TYPE": "MULTIPLE",
       "SPECIFIERS": [
         {
+          "TYPE": "HAS_ANCESTOR",
+          "ANCESTOR": {
+            "TYPE": "CLASS",
+            "VALUE": "android.view.ViewGroup"
+          }
+          },
+        {
           "TYPE": "RESOURCE_ID",
           "VALUE": "qc_summary",
           "PACKAGE": "com.android.systemui"
-        },
-        {
-          "TYPE": "CLASS",
-          "VALUE": "android.widget.TextView"
         }
       ]
     },
@@ -2141,6 +2184,30 @@
       "VALUE": "clock",
       "PACKAGE": "com.android.systemui"
     },
+    "STATUS_BAR_SOUND_BUTTON": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "volume_panel"
+    },
+    "SOUND_PALETTE_INCALL": {
+      "TYPE": "TEXT",
+      "VALUE": "In-call volume"
+    },
+    "SOUND_PALETTE_MEDIA": {
+      "TYPE": "TEXT",
+      "VALUE": "Media volume"
+    },
+    "SOUND_PALETTE_NAVIGATION": {
+      "TYPE": "TEXT",
+      "VALUE": "Navigation volume"
+    },
+    "SOUND_PALETTE_SOUND_SETTINGS": {
+      "TYPE": "TEXT",
+      "VALUE": "Sound settings"
+    },
+    "SOUND_PALETTE_SOUND_SETTINGS_PAGE_TITLE": {
+      "TYPE": "TEXT",
+      "VALUE": "Sound"
+},
     "LANGUAGES_INPUT_IN_SYSTEM": {
       "TYPE": "TEXT",
       "VALUE": "Languages & input"
@@ -2711,5 +2778,3 @@
     ]
   }
 }
-
-

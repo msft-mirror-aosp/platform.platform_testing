@@ -231,6 +231,9 @@ public class AutomotiveConfigConstants {
     // Display Settings Constants
     public static final String BRIGHTNESS_SEEKBAR = "BRIGHTNESS_SEEKBAR";
 
+    // Bluetooth Settings Constants
+    public static final String USE_BLUETOOTH_SETTINGS_TOGGLE = "USE_BLUETOOTH_SETTINGS_TOGGLE";
+
     // Date and time Settings Constants
     public static final String DATE_TIME_SETTINGS_SCROLL_ACTION =
             "DATE_TIME_SETTINGS_SCROLL_ACTION";
@@ -359,6 +362,7 @@ public class AutomotiveConfigConstants {
     public static final String TOGGLE_BLUETOOTH = "TOGGLE_BLUETOOTH";
     public static final String TOGGLE_DEVICE_BLUETOOTH = "TOGGLE_DEVICE_BLUETOOTH";
     public static final String DEVICE_HEADER_SUMMARY = "DEVICE_HEADER_SUMMARY";
+    public static final String DEVICE_HEADER_TITLE = "DEVICE_HEADER_TITLE";
     public static final String DEVICE_CONNECTION_TEXT = "DEVICE_CONNECTION_TOGGLE";
 
     public static final String DEVICE_CONNECTION_BUTTON = "DEVICE_CONNECTION_BUTTON";
@@ -381,6 +385,11 @@ public class AutomotiveConfigConstants {
     public static final String APPS_SETTINGS = "OPEN_APPS_SETTINGS_WORKFLOW";
     public static final String SECURITY_SETTINGS = "OPEN_SECURITY_SETTINGS_WORKFLOW";
 
+    public static final String SETTINGS_SCROLL_ACTION = "SETTINGS_SCROLL_ACTION";
+    public static final String SETTINGS_SCROLL_DIRECTION = "SETTINGS_SCROLL_DIRECTION";
+    public static final String SETTINGS_SCROLL_BACKWARD_BUTTON = "SETTINGS_SCROLL_BACKWARD_BUTTON";
+    public static final String SETTINGS_SCROLL_FORWARD_BUTTON = "SETTINGS_SCROLL_FORWARD_BUTTON";
+    public static final String SETTINGS_SCROLL_ELEMENT = "SETTINGS_SCROLL_ELEMENT";
     public static final String SETTINGS_SUB_SETTING_SCROLL_ACTION =
             "SETTINGS_SUB_SETTING_SCROLL_ACTION";
     public static final String SETTINGS_SUB_SETTING_SCROLL_DIRECTION =
@@ -673,6 +682,15 @@ public class AutomotiveConfigConstants {
 
     // Phone Card Identifiers
     public static final String PHONE_CARD_DIALER_BUTTON = "PHONE_CARD_DIALER_BUTTON";
+
+    // Sound Palette
+    public static final String STATUS_BAR_SOUND_BUTTON = "STATUS_BAR_SOUND_BUTTON";
+    public static final String SOUND_PALETTE_INCALL = "SOUND_PALETTE_INCALL";
+    public static final String SOUND_PALETTE_MEDIA = "SOUND_PALETTE_MEDIA";
+    public static final String SOUND_PALETTE_NAVIGATION = "SOUND_PALETTE_NAVIGATION";
+    public static final String SOUND_PALETTE_SOUND_SETTINGS = "SOUND_PALETTE_SOUND_SETTINGS";
+    public static final String SOUND_PALETTE_SOUND_SETTINGS_PAGE_TITLE =
+            "SOUND_PALETTE_SOUND_SETTINGS_PAGE_TITLE";
 
     // System Setting UI elements
     public static final String SYSTEM_SETTINGS_UNITS = "SYSTEM_SETTINGS_UNITS";

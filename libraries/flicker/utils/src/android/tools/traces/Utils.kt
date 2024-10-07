@@ -21,6 +21,8 @@ package android.tools.traces
 import android.app.UiAutomation
 import android.os.IBinder
 import android.os.ParcelFileDescriptor
+import android.os.Process
+import android.os.SystemClock
 import android.tools.MILLISECOND_AS_NANOSECONDS
 import android.tools.io.TraceType
 import android.tools.traces.monitors.PerfettoTraceMonitor
@@ -29,10 +31,13 @@ import android.tools.traces.surfaceflinger.LayerTraceEntry
 import android.tools.traces.wm.WindowManagerState
 import android.util.Log
 import androidx.test.platform.app.InstrumentationRegistry
+import com.google.protobuf.InvalidProtocolBufferException
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import java.util.Optional
 import java.util.TimeZone
+import perfetto.protos.PerfettoConfig.TracingServiceState
 
 fun formatRealTimestamp(timestampNs: Long): String {
     val timestampMs = timestampNs / MILLISECOND_AS_NANOSECONDS
@@ -112,25 +117,40 @@ fun getCurrentState(
         throw IllegalArgumentException("Only dump types are supported. Invalid types: $traceTypes")
     }
 
+    val requestedWmDump = dumpTypes.contains(TraceType.WM_DUMP)
+    val requestedSfDump = dumpTypes.contains(TraceType.SF_DUMP)
+
     Log.d(LOG_TAG, "Requesting new device state dump")
-    val wmTraceData =
-        if (dumpTypes.contains(TraceType.WM_DUMP)) {
-            if (android.tracing.Flags.perfettoWmTracing()) {
-                PerfettoTraceMonitor.newBuilder().enableWindowManagerDump().build().withTracing {}
-            } else {
-                getCurrentWindowManagerState()
+
+    val perfettoTrace =
+        PerfettoTraceMonitor.newBuilder()
+            .also {
+                if (requestedWmDump && android.tracing.Flags.perfettoWmDump()) {
+                    it.enableWindowManagerDump()
+                }
+
+                if (requestedSfDump) {
+                    it.enableLayersDump()
+                }
             }
+            .build()
+            .withTracing {}
+
+    val wmDump =
+        if (android.tracing.Flags.perfettoWmDump()) {
+            if (requestedWmDump) perfettoTrace else ByteArray(0)
         } else {
-            ByteArray(0)
-        }
-    val layersTraceData =
-        if (dumpTypes.contains(TraceType.SF_DUMP)) {
-            PerfettoTraceMonitor.newBuilder().enableLayersDump().build().withTracing {}
-        } else {
-            ByteArray(0)
+            if (requestedWmDump) {
+                Log.d(LOG_TAG, "Requesting new legacy WM state dump")
+                getCurrentWindowManagerState()
+            } else {
+                ByteArray(0)
+            }
         }
 
-    return Pair(wmTraceData, layersTraceData)
+    val sfDump = if (requestedSfDump) perfettoTrace else ByteArray(0)
+
+    return Pair(wmDump, sfDump)
 }
 
 /**
@@ -147,25 +167,75 @@ fun getCurrentState(
 @JvmOverloads
 fun getCurrentStateDumpNullable(
     vararg dumpTypes: TraceType = arrayOf(TraceType.SF_DUMP, TraceType.WM_DUMP),
-    clearCacheAfterParsing: Boolean = true
+    clearCacheAfterParsing: Boolean = true,
 ): NullableDeviceStateDump {
     val currentStateDump = getCurrentState(*dumpTypes)
     return DeviceDumpParser.fromNullableDump(
         currentStateDump.first,
         currentStateDump.second,
-        clearCacheAfterParsing = clearCacheAfterParsing
+        clearCacheAfterParsing = clearCacheAfterParsing,
     )
 }
 
 @JvmOverloads
 fun getCurrentStateDump(
     vararg dumpTypes: TraceType = arrayOf(TraceType.SF_DUMP, TraceType.WM_DUMP),
-    clearCacheAfterParsing: Boolean = true
+    clearCacheAfterParsing: Boolean = true,
 ): DeviceStateDump {
     val currentStateDump = getCurrentState(*dumpTypes)
     return DeviceDumpParser.fromDump(
         currentStateDump.first,
         currentStateDump.second,
-        clearCacheAfterParsing = clearCacheAfterParsing
+        clearCacheAfterParsing = clearCacheAfterParsing,
     )
+}
+
+@JvmOverloads
+fun busyWaitForDataSourceRegistration(
+    dataSourceName: String,
+    busyWaitIntervalMs: Long = 100,
+    timeoutMs: Long = 10000,
+) {
+    var elapsedMs = 0L
+
+    while (!isDataSourceAvailable(dataSourceName)) {
+        SystemClock.sleep(busyWaitIntervalMs)
+        elapsedMs += busyWaitIntervalMs
+        if (elapsedMs >= timeoutMs) {
+            throw java.lang.RuntimeException(
+                "Data source didn't become available. Waited for: $timeoutMs ms"
+            )
+        }
+    }
+}
+
+fun isDataSourceAvailable(dataSourceName: String): Boolean {
+    val proto = executeShellCommand("perfetto --query-raw")
+
+    try {
+        val state = TracingServiceState.parseFrom(proto)
+
+        var producerId = Optional.empty<Int>()
+
+        for (producer in state.producersList) {
+            if (producer.pid == Process.myPid()) {
+                producerId = Optional.of(producer.id)
+                break
+            }
+        }
+
+        if (!producerId.isPresent) {
+            return false
+        }
+
+        for (ds in state.dataSourcesList) {
+            if (ds.dsDescriptor.name.equals(dataSourceName) && ds.producerId == producerId.get()) {
+                return true
+            }
+        }
+    } catch (e: InvalidProtocolBufferException) {
+        throw RuntimeException(e)
+    }
+
+    return false
 }
