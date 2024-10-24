@@ -24,7 +24,7 @@ python_test_host {
     libs: [
         "mobly",
         "utilities",
-        "bluetooth_test"
+        "bluetooth_test",
     ],
     test_suites: [
         "catbox",
@@ -32,7 +32,7 @@ python_test_host {
     test_options: {
         unit_test: false,
     },
-    data: [
+    device_common_data: [
         // Package the snippet with the mobly test
         ":AutomotiveSnippet",
         ":PhoneSnippet",
@@ -59,7 +59,7 @@ python_test_host {
     test_options: {
         unit_test: false,
     },
-    data: [
+    device_common_data: [
         // Package the snippet with the mobly test
         ":AutomotiveSnippet",
         ":PhoneSnippet",
@@ -86,7 +86,7 @@ python_test_host {
     test_options: {
         unit_test: false,
     },
-    data: [
+    device_common_data: [
         // Package the snippet with the mobly test
         ":AutomotiveSnippet",
         ":PhoneSnippet",
@@ -105,7 +105,7 @@ python_test_host {
     libs: [
         "mobly",
         "utilities",
-        "bluetooth_test"
+        "bluetooth_test",
     ],
     test_suites: [
         "catbox",
@@ -113,7 +113,7 @@ python_test_host {
     test_options: {
         unit_test: false,
     },
-    data: [
+    device_common_data: [
         // Package the snippet with the mobly test
         ":AutomotiveSnippet",
         ":PhoneSnippet",
@@ -132,7 +132,34 @@ python_test_host {
     libs: [
         "mobly",
         "utilities",
-        "bluetooth_test"
+        "bluetooth_test",
+    ],
+    test_suites: [
+        "catbox",
+    ],
+    test_options: {
+        unit_test: false,
+    },
+    device_common_data: [
+        // Package the snippet with the mobly test
+        ":AutomotiveSnippet",
+        ":PhoneSnippet",
+    ],
+    version: {
+        py3: {
+            embedded_launcher: true,
+        },
+    },
+}
+
+python_test_host {
+    name: "BTDisablePhone",
+    main: "connectivity_test_disable_phone.py",
+    srcs: ["connectivity_test_disable_phone.py"],
+    libs: [
+        "mobly",
+        "utilities",
+        "bluetooth_test",
     ],
     test_suites: [
         "catbox",
@@ -153,13 +180,13 @@ python_test_host {
 }
 
 python_test_host {
-    name: "BTDisablePhone",
-    main: "connectivity_test_disable_phone.py",
-    srcs: ["connectivity_test_disable_phone.py"],
+    name: "BTProfilesTest",
+    main: "connectivity_test_bluetooth_profile.py",
+    srcs: ["connectivity_test_bluetooth_profile.py"],
     libs: [
         "mobly",
         "utilities",
-        "bluetooth_test"
+        "bluetooth_test",
     ],
     test_suites: [
         "catbox",
@@ -167,7 +194,7 @@ python_test_host {
     test_options: {
         unit_test: false,
     },
-    data: [
+    device_common_data: [
         // Package the snippet with the mobly test
         ":AutomotiveSnippet",
         ":PhoneSnippet",

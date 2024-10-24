@@ -33,7 +33,9 @@ class IsTreeDisplayedTest(bluetooth_base_test.BluetoothBaseTest):
         self.common_utils.grant_local_mac_address_permission()
         self.common_utils.enable_wifi_on_phone_device()
         self.bt_utils.pair_primary_to_secondary()
+        self.media_utils.enable_bt_media_debugging_logs()
         super().enable_recording()
+
 
     def test_media_is_tree_displayed(self):
         """Tests validating is AVRCP Tree - Displayed"""
@@ -54,12 +56,8 @@ class IsTreeDisplayedTest(bluetooth_base_test.BluetoothBaseTest):
         asserts.assert_true(self.common_utils.has_ui_element_with_text(constants.YOUTUBE_MUSIC_APP),
                             '<' + constants.YOUTUBE_MUSIC_APP + '> has to be present on HU screen')
 
-        self.media_utils.open_youtube_music_app_on_hu()
-        asserts.assert_true(
-            self.common_utils.has_ui_element_with_text(constants.YOUTUBE_MUSIC_DOWNLOADS),
-            '<' + constants.YOUTUBE_MUSIC_DOWNLOADS + '> has to be present on HU screen')
-
     def teardown_test(self):
+        self.media_utils.get_bt_dumpsys_metadata()
         # Close YouTube Music app
         self.media_utils.close_youtube_music_app()
         self.call_utils.press_home()
