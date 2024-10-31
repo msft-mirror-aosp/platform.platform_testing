@@ -127,8 +127,14 @@ class CallUtils:
     def open_bluetooth_settings(self):
         """Assumes we are on the home screen.
         Navigate to the Bluetooth setting page"""
-        logging.info("Opening bluetooth settings (via the Status Bar)")
+        logging.info("Opening bluetooth settings (via the home screen)")
         self.device.mbs.openBluetoothSettings()
+
+    def open_bluetooth_settings_form_status_bar(self):
+        """Assumes we are on the home screen.
+        Navigate to the Bluetooth setting page"""
+        logging.info("Opening bluetooth settings (via the Status Bar)")
+        self.device.mbs.openBluetoothSettingsFromStatusBar()
 
     def press_active_call_toggle(self):
         logging.info("Pressing the Active Call toggle")
@@ -708,3 +714,19 @@ class CallUtils:
 
     def press_phone_home_icon_using_adb_command(self, device_target):
         self.execute_shell_on_device(device_target, 'input keyevent KEYCODE_HOME')
+
+    def get_bt_profile_status_using_adb_command(self, device_target, profile):
+        try:
+           bt_profile_status = self.execute_shell_on_device(device_target, profile).decode('utf8')
+           logging.debug(bt_profile_status)
+           return bt_profile_status
+        except adb.AdbError:
+           logging.info("Adb returned null")
+
+    def get_bt_connection_status_using_adb_command(self, device_target):
+            try:
+               bt_connection_status = self.execute_shell_on_device(device_target, constants.BLUETOOTH_CONNECTION_STATE).decode('utf8')
+               logging.debug(bt_connection_status)
+               return bt_connection_status
+            except adb.AdbError:
+               logging.info("Adb returned null")
