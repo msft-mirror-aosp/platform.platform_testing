@@ -16,6 +16,7 @@
 
 package android.platform.spectatio.configs.validators;
 
+import android.platform.spectatio.configs.CommandLineParameters;
 import android.platform.spectatio.configs.UiElement;
 import android.platform.spectatio.constants.JsonConfigConstants;
 
@@ -47,6 +48,7 @@ public class ValidateUiElement implements JsonDeserializer<UiElement> {
                     JsonConfigConstants.TEXT,
                     JsonConfigConstants.TEXT_CONTAINS,
                     JsonConfigConstants.DESCRIPTION,
+                    JsonConfigConstants.DESCRIPTION_CONTAINS,
                     JsonConfigConstants.CLASS,
                     JsonConfigConstants.DISPLAY_ID,
                     JsonConfigConstants.HAS_ANCESTOR,
@@ -58,6 +60,8 @@ public class ValidateUiElement implements JsonDeserializer<UiElement> {
             Set.of(
                     JsonConfigConstants.TYPE,
                     JsonConfigConstants.VALUE,
+                    JsonConfigConstants.COMMAND_LINE_KEY,
+                    JsonConfigConstants.DEFAULT_VALUE,
                     JsonConfigConstants.PACKAGE,
                     JsonConfigConstants.FLAG,
                     JsonConfigConstants.MAX_DEPTH,
@@ -128,8 +132,17 @@ public class ValidateUiElement implements JsonDeserializer<UiElement> {
                     maxDepth);
         }
 
-        String value =
-                validateAndGetValue(JsonConfigConstants.VALUE, jsonObject, /*isOptional*/ false);
+        String value;
+        if (jsonObject.has(JsonConfigConstants.COMMAND_LINE_KEY)) {
+            String key =
+                    validateAndGetValue(JsonConfigConstants.COMMAND_LINE_KEY, jsonObject, false);
+            String defaultValue =
+                    validateAndGetValue(JsonConfigConstants.DEFAULT_VALUE, jsonObject, false);
+            value = CommandLineParameters.getValue(key, defaultValue);
+            System.out.printf("Key %s has value %s%n", key, value);
+        } else {
+            value = validateAndGetValue(JsonConfigConstants.VALUE, jsonObject, false);
+        }
 
         // Package is not required for SCROLLABLE, CLICKABLE, TEXT, TEXT_CONTAINS and DESCRIPTION
 
