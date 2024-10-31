@@ -74,7 +74,7 @@ open class PerfettoTraceMonitor(val config: TraceConfig) : TraceMonitor() {
             listOf(
                 SurfaceFlingerLayersConfig.TraceFlag.TRACE_FLAG_INPUT,
                 SurfaceFlingerLayersConfig.TraceFlag.TRACE_FLAG_COMPOSITION,
-                SurfaceFlingerLayersConfig.TraceFlag.TRACE_FLAG_VIRTUAL_DISPLAYS
+                SurfaceFlingerLayersConfig.TraceFlag.TRACE_FLAG_VIRTUAL_DISPLAYS,
             )
 
         private val dataSourceConfigs = mutableSetOf<DataSourceConfig>()
@@ -129,7 +129,14 @@ open class PerfettoTraceMonitor(val config: TraceConfig) : TraceMonitor() {
             groupOverrides: List<ProtoLogGroupOverride> = emptyList(),
             dataSourceName: String = PROTOLOG_DATA_SOURCE,
         ): Builder = apply {
-            enableCustomTrace(createProtoLogDataSourceConfig(false, defaultLogFrom, groupOverrides))
+            enableCustomTrace(
+                createProtoLogDataSourceConfig(
+                    false,
+                    defaultLogFrom,
+                    groupOverrides,
+                    dataSourceName,
+                )
+            )
         }
 
         fun enableViewCaptureTrace(): Builder = apply {
@@ -137,13 +144,15 @@ open class PerfettoTraceMonitor(val config: TraceConfig) : TraceMonitor() {
             enableCustomTrace(config)
         }
 
+        @JvmOverloads
         fun enableWindowManagerTrace(
             logFrequency: WindowManagerConfig.LogFrequency =
-                WindowManagerConfig.LogFrequency.LOG_FREQUENCY_FRAME
+                WindowManagerConfig.LogFrequency.LOG_FREQUENCY_FRAME,
+            dataSourceName: String = WINDOWMANAGER_DATA_SOURCE,
         ): Builder = apply {
             val config =
                 DataSourceConfig.newBuilder()
-                    .setName(WINDOWMANAGER_DATA_SOURCE)
+                    .setName(dataSourceName)
                     .setWindowmanagerConfig(
                         WindowManagerConfig.newBuilder()
                             .setLogLevel(WindowManagerConfig.LogLevel.LOG_LEVEL_VERBOSE)
@@ -155,22 +164,24 @@ open class PerfettoTraceMonitor(val config: TraceConfig) : TraceMonitor() {
             enableCustomTrace(config)
         }
 
-        fun enableWindowManagerDump(): Builder = apply {
-            val config =
-                DataSourceConfig.newBuilder()
-                    .setName(WINDOWMANAGER_DATA_SOURCE)
-                    .setWindowmanagerConfig(
-                        WindowManagerConfig.newBuilder()
-                            .setLogLevel(WindowManagerConfig.LogLevel.LOG_LEVEL_VERBOSE)
-                            .setLogFrequency(
-                                WindowManagerConfig.LogFrequency.LOG_FREQUENCY_SINGLE_DUMP
-                            )
-                            .build()
-                    )
-                    .build()
+        @JvmOverloads
+        fun enableWindowManagerDump(dataSourceName: String = WINDOWMANAGER_DATA_SOURCE): Builder =
+            apply {
+                val config =
+                    DataSourceConfig.newBuilder()
+                        .setName(dataSourceName)
+                        .setWindowmanagerConfig(
+                            WindowManagerConfig.newBuilder()
+                                .setLogLevel(WindowManagerConfig.LogLevel.LOG_LEVEL_VERBOSE)
+                                .setLogFrequency(
+                                    WindowManagerConfig.LogFrequency.LOG_FREQUENCY_SINGLE_DUMP
+                                )
+                                .build()
+                        )
+                        .build()
 
-            enableCustomTrace(config)
-        }
+                enableCustomTrace(config)
+            }
 
         fun enableCustomTrace(dataSourceConfig: DataSourceConfig): Builder = apply {
             dataSourceConfigs.add(dataSourceConfig)
@@ -266,7 +277,7 @@ open class PerfettoTraceMonitor(val config: TraceConfig) : TraceMonitor() {
 
             if (logFrom != null) {
                 protoLogConfigBuilder.setDefaultLogFromLevel(
-                    PerfettoConfig.ProtoLogLevel.forNumber(logFrom.ordinal)
+                    PerfettoConfig.ProtoLogLevel.forNumber(logFrom.id)
                 )
             }
 
@@ -275,9 +286,7 @@ open class PerfettoTraceMonitor(val config: TraceConfig) : TraceMonitor() {
                     PerfettoConfig.ProtoLogGroup.newBuilder()
                         .setGroupName(groupOverride.groupName)
                         .setLogFrom(
-                            PerfettoConfig.ProtoLogLevel.forNumber(
-                                groupOverride.logFrom.ordinal + 1
-                            )
+                            PerfettoConfig.ProtoLogLevel.forNumber(groupOverride.logFrom.id)
                         )
                         .setCollectStacktrace(groupOverride.collectStackTrace)
                 )
@@ -320,6 +329,7 @@ open class PerfettoTraceMonitor(val config: TraceConfig) : TraceMonitor() {
             try {
                 allPerfettoPids.forEach { killPerfettoProcess(it) }
                 allPerfettoPids.forEach { waitPerfettoProcessExits(it) }
+                allPerfettoPids.clear()
             } finally {
                 allPerfettoPidsLock.unlock()
             }
