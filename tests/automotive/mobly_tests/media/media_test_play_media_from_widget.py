@@ -42,13 +42,16 @@ class IsAbleToPlayMediaFromWidgetTest(bluetooth_base_test.BluetoothBaseTest):
         self.media_utils.open_youtube_music_app()
         logging.info("Getting song title from phone device: %s", self.media_utils.get_song_title_from_phone())
         self.media_utils.press_pause_song_button()
+        self.call_utils.wait_with_log(3)
         asserts.assert_false(self.media_utils.is_song_playing_on_hu(),
                              'Media player should be on PAUSE mode')
         self.media_utils.play_media_on_hu()
+        self.call_utils.wait_with_log(3)
         asserts.assert_true(self.media_utils.is_song_playing_on_hu(),
                             'Media player should be on PLAY mode')
 
     def teardown_test(self):
+        self.media_utils.get_bt_dumpsys_metadata()
         #   Close YouTube Music app
         self.media_utils.close_youtube_music_app()
         self.call_utils.press_home()
