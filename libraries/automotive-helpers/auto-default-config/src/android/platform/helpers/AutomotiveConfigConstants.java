@@ -197,8 +197,10 @@ public class AutomotiveConfigConstants {
     public static final String HEADSUP_NOTIFICATION = "HEADSUP_NOTIFICATION";
     public static final String HEADSUP_NOTIFICATION_TITLE = "HEADSUP_NOTIFICATION_TITLE";
     public static final String HEADSUP_NOTIFICATION_CONTENT = "HEADSUP_NOTIFICATION_CONTENT";
-    public static final String HEADSUP_NOTIFICATION_PLAY_BUTTON = "HEADSUP_NOTIFICATION_PLAY_BUTTON";
-    public static final String HEADSUP_NOTIFICATION_MUTE_BUTTON = "HEADSUP_NOTIFICATION_MUTE_BUTTON";
+    public static final String HEADSUP_NOTIFICATION_PLAY_BUTTON =
+            "HEADSUP_NOTIFICATION_PLAY_BUTTON";
+    public static final String HEADSUP_NOTIFICATION_MUTE_BUTTON =
+            "HEADSUP_NOTIFICATION_MUTE_BUTTON";
 
     // System Settings Constants
     public static final String SETTINGS_PACKAGE = "SETTINGS_PACKAGE";
@@ -381,6 +383,8 @@ public class AutomotiveConfigConstants {
     public static final String SEARCH_RESULTS = "SEARCH_RESULTS";
     public static final String PAGE_TITLE = "PAGE_TITLE";
     public static final String PERMISSIONS_PAGE_TITLE = "PERMISSIONS_PAGE_TITLE";
+    public static final String OPEN_DIALER_WORKFLOW = "OPEN_DIALER_WORKFLOW";
+    public static final String SEARCH_CONTACTS_WORKFLOW = "SEARCH_CONTACTS_WORKFLOW";
     public static final String DIAL_CONTACT_WORKFLOW = "DIAL_CONTACT_WORKFLOW";
     public static final String SOUND_SETTINGS = "OPEN_SOUND_SETTINGS_WORKFLOW";
     public static final String NETWORK_AND_INTERNET_SETTINGS =
@@ -635,7 +639,8 @@ public class AutomotiveConfigConstants {
     public static final String SMS_PREVIEW_TEXT = "SMS_PREVIEW_TEXT";
     public static final String SMS_PREVIEW_TIMESTAMP = "SMS_PREVIEW_TIMESTAMP";
     public static final String TAP_TO_READ_ALOUD = "TAP_TO_READ_ALOUD";
-    public static final String SMS_CONVERSATION_MUTE_ACTION_BUTTON = "SMS_CONVERSATION_MUTE_ACTION_BUTTON";
+    public static final String SMS_CONVERSATION_MUTE_ACTION_BUTTON =
+            "SMS_CONVERSATION_MUTE_ACTION_BUTTON";
     public static final String ASSISTANT_SMS_TRANSCRIPTION_PLATE =
             "ASSISTANT_SMS_TRANSCRIPTION_PLATE";
     public static final String SMS_EMPTY_MESSAGE = "SMS_EMPTY_MESSAGE";
