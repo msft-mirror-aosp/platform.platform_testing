@@ -509,6 +509,9 @@ public class AutomotiveConfigConstants {
     public static final String NOTIFICATION_FACET_BUTTON = "NOTIFICATION_FACET_BUTTON";
     public static final String HVAC_FACET_BUTTON = "HVAC_FACET_BUTTON";
     public static final String HVAC_PANEL = "HVAC_PANEL";
+    public static final String WIFI_FACET_BUTTON = "WIFI_FACET_BUTTON";
+    public static final String STATUS_BAR_WIFI_SETTINGS = "STATUS_BAR_WIFI_SETTINGS";
+    public static final String STATUS_BAR_DISPLAY_SETTINGS = "STATUS_BAR_DISPLAY_SETTINGS";
 
     // APP info Setting UI ELEMENTS
     public static final String RECENTLY_OPENED_UI_ELEMENT = "RECENTLY_OPENED_UI_ELEMENT";
@@ -556,6 +559,7 @@ public class AutomotiveConfigConstants {
     public static final String CONNECTED_WIFI = "CONNECTED_WIFI";
     public static final String FORGET_WIFI = "FORGET_WIFI";
     public static final String CLOCK_TIME = "CLOCK_TIME";
+    public static final String DATE_COMMAND = "DATE_COMMAND";
 
     // Quick Controls
     public static final String HOME_BLUETOOTH_BUTTON = "HOME_BLUETOOTH_BUTTON";
