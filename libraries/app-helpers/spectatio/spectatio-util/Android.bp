@@ -21,10 +21,13 @@ package {
 java_library {
     name: "spectatio-util-lib",
     static_libs: [
+        "androidx.test.monitor",
         "androidx.test.uiautomator_uiautomator",
         "gson",
         "guava",
+        "escapevelocity",
     ],
     srcs: ["src/**/*.java"],
     sdk_version: "test_current",
+    min_sdk_version: "33",
 }
