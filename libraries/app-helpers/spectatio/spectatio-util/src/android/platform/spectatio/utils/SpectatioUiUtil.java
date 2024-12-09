@@ -1001,23 +1001,20 @@ public class SpectatioUiUtil {
 
     private UiObject2 validateAndGetScrollableObject(BySelector scrollableSelector)
             throws MissingUiElementException {
-        List<UiObject2> scrollableObjects = findUiObjects(scrollableSelector);
-        for (UiObject2 scrollableObject : scrollableObjects) {
-            validateUiObjectAndThrowMissingUiElementException(
-                    scrollableObject, scrollableSelector, /* action= */ "Scroll");
-            if (!scrollableObject.isScrollable()) {
-                scrollableObject = scrollableObject.findObject(By.scrollable(true));
-            }
-            if (scrollableObject != null && scrollableObject.isScrollable()) {
-                // if there are multiple, return the first UiObject that is scrollable
-                return scrollableObject;
-            }
+        UiObject2 scrollableObject = findUiObject(scrollableSelector);
+        validateUiObjectAndThrowMissingUiElementException(
+                scrollableObject, scrollableSelector, /* action= */ "Scroll");
+        if (!scrollableObject.isScrollable()) {
+            scrollableObject = scrollableObject.findObject(By.scrollable(true));
         }
-        throw new IllegalStateException(
-                String.format(
-                        "Cannot scroll; Could not find UI Object for selector %s that is scrollable"
-                                + " or have scrollable children.",
-                        scrollableSelector));
+        if ((scrollableObject == null) || !scrollableObject.isScrollable()) {
+            throw new IllegalStateException(
+                    String.format(
+                            "Cannot scroll; UI Object for selector %s is not scrollable and has no"
+                                    + " scrollable children.",
+                            scrollableSelector));
+        }
+        return scrollableObject;
     }
 
     /**

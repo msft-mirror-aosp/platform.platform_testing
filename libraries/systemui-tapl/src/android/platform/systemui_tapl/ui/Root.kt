@@ -61,8 +61,9 @@ class Root private constructor() {
      * Opens the notification shade. Use this if there is no need to assert the way of opening it.
      *
      * Uses AccessibilityService.GLOBAL_ACTION_NOTIFICATIONS to open the shade, because it turned
-     * out to be more reliable than swipe gestures. Note that GLOBAL_ACTION_NOTIFICATIONS won't open
-     * notifications shade if the lockscreen screen is shown.
+     * out to be more reliable than swipe gestures.
+     * Note that GLOBAL_ACTION_NOTIFICATIONS won't open notifications shade if the lockscreen
+     * screen is shown.
      */
     fun openNotificationShade(): NotificationShade {
         return openNotificationShadeViaGlobalAction()
@@ -98,7 +99,7 @@ class Root private constructor() {
     @JvmOverloads
     fun openNotificationShadeViaSwipe(
         swipeDuration: Duration = Duration.ofMillis(500),
-        heightFraction: Float = 0.1F,
+        heightFraction: Float = 0.1F
     ): NotificationShade {
         trace("Opening notification shade via swipe") {
             val device = uiDevice
@@ -125,7 +126,7 @@ class Root private constructor() {
             .to(
                 PointF(swipeXCoordinate, height),
                 Duration.ofMillis(500),
-                FLING_GESTURE_INTERPOLATOR,
+                FLING_GESTURE_INTERPOLATOR
             )
             .release()
         waitForShadeToOpen()
@@ -150,7 +151,7 @@ class Root private constructor() {
             Point(width / 3 * 2, 0),
             Point(width / 3, distance),
             Point(width / 3 * 2, distance),
-            steps,
+            steps
         )
         waitForShadeToOpen()
         return NotificationShade()
@@ -173,7 +174,7 @@ class Root private constructor() {
     ): Notification {
         return NotificationStack.findHeadsUpNotification(
             identity = identity,
-            assertIsHunState = assertIsHunState,
+            assertIsHunState = assertIsHunState
         )
     }
 
@@ -189,7 +190,7 @@ class Root private constructor() {
             "HUN state Assertion usage error: Notification: ${identity.title} " +
                 "| You can only assert the HUN State of a notification that has an action " +
                 "button.",
-            identity.hasAction,
+            identity.hasAction
         )
         Assert.assertThrows(IllegalStateException::class.java) {
             findHeadsUpNotification(identity, assertIsHunState = false)
@@ -295,7 +296,7 @@ class Root private constructor() {
         assertThat(
                 uiDevice.wait(
                     Until.gone(sysuiResSelector(StatusBar.CLOCK_ID)),
-                    SHORT_TIMEOUT.toLong(),
+                    SHORT_TIMEOUT.toLong()
                 )
             )
             .isTrue()
@@ -389,7 +390,7 @@ class Root private constructor() {
                 KeyCharacterMap.VIRTUAL_KEYBOARD,
                 0,
                 0,
-                InputDevice.SOURCE_KEYBOARD,
+                InputDevice.SOURCE_KEYBOARD
             )
         if (injectEventSync(downEvent)) {
             val upEvent =
@@ -403,7 +404,7 @@ class Root private constructor() {
                     KeyCharacterMap.VIRTUAL_KEYBOARD,
                     0,
                     0,
-                    InputDevice.SOURCE_KEYBOARD,
+                    InputDevice.SOURCE_KEYBOARD
                 )
             if (injectEventSync(upEvent)) {
                 return true
@@ -443,7 +444,7 @@ class Root private constructor() {
             displayBounds.width() / 2,
             displayBounds.height() - Math.round(bottomMandatoryGestureHeight * 2.5f),
             displayBounds.width() / 2,
-            displayBounds.height(),
+            displayBounds.height()
         )
         NotificationShade.waitForShadeToClose()
         return OneHandModeTutorial()
@@ -488,7 +489,7 @@ class Root private constructor() {
             trace("waitForShadeToOpen") {
                 QS_HEADER_SELECTOR.assertVisible(
                     timeout = NOTIFICATION_SHADE_OPEN_TIMEOUT,
-                    errorProvider = { "Notification shade didn't open" },
+                    errorProvider = { "Notification shade didn't open" }
                 )
             }
         }

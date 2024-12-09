@@ -33,10 +33,9 @@ public class AppInfoSettingTest {
     @Before
     public void openAppInfoFacet() {
         mSettingHelper.get().openSetting(SettingsConstants.APPS_SETTINGS);
-        boolean hasAppsInfoUiElement =
-                mSettingHelper.get().checkMenuExists("Reset app grid to A-Z order")
-                        || mSettingHelper.get().checkMenuExists("Recently opened");
-        assertTrue("Apps setting did not open.", hasAppsInfoUiElement);
+        assertTrue(
+                "Apps setting did not open.",
+                mSettingHelper.get().checkMenuExists("Reset app grid to A-Z order"));
         mAppInfoSettingsHelper.get().showAllApps();
     }
 
