@@ -20,9 +20,6 @@
         3) Reply to the sms from paired phone
         4) Verify the reply sms sync in IVI device
 """
-import logging
-
-from mobly import asserts
 from utilities import constants
 from utilities.main_utils import common_main
 from utilities.common_utils import CommonUtils
@@ -40,19 +37,11 @@ class SMSReplyFromPhoneSync(bluetooth_sms_base_test.BluetoothSMSBaseTest):
         # pair the devices
         self.bt_utils.pair_primary_to_secondary()
 
+    def test_reply_from_phone_sms_sync(self):
+
         # wait for user permissions popup & give contacts and sms permissions
         self.call_utils.wait_with_log(20)
         self.common_utils.click_on_ui_element_with_text('Allow')
-
-        # Clearing the sms from the phone
-        self.call_utils.clear_sms_app(self.target)
-        # Reboot Phone
-        self.target.unload_snippet('mbs')
-        self.target.reboot()
-        self.call_utils.wait_with_log(30)
-        self.target.load_snippet('mbs', android_device.MBS_PACKAGE)
-
-    def test_reply_from_phone_sms_sync(self):
 
         # send a new sms
         target_phone_number = self.target.mbs.getPhoneNumber()
@@ -60,8 +49,7 @@ class SMSReplyFromPhoneSync(bluetooth_sms_base_test.BluetoothSMSBaseTest):
         self.call_utils.wait_with_log(10)
         # Verify the new UNREAD sms in IVI device
         self.call_utils.open_sms_app()
-        asserts.assert_true(self.call_utils.verify_sms_app_unread_message(),
-                                    'Message app should contain an unread msg, but there are no unread messages')
+        self.call_utils.verify_sms_app_unread_message(True)
 
         # REPLY to the message on paired phone
         self.call_utils.open_notification_on_phone(self.target)
@@ -71,14 +59,14 @@ class SMSReplyFromPhoneSync(bluetooth_sms_base_test.BluetoothSMSBaseTest):
         # Verify the SYNC Reply sms in IVI device
         self.call_utils.press_home()
         self.call_utils.open_sms_app()
-        asserts.assert_false(self.call_utils.verify_sms_app_unread_message(),
-                                            'Message app should not contain the unread msg, but contains one')
-        self.call_utils.verify_sms_preview_text(constants.REPLY_SMS)
+        self.call_utils.verify_sms_app_unread_message(False)
+        self.call_utils.verify_sms_preview_text(True, constants.REPLY_SMS)
+        super().enable_recording()
 
     def teardown_test(self):
          # Go to home screen
          self.call_utils.press_home()
-         super().teardown_no_video_recording()
+         super().teardown_test()
 
 if __name__ == '__main__':
   common_main()

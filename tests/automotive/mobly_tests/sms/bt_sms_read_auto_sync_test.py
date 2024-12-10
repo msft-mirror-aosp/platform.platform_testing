@@ -24,9 +24,6 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-import logging
-from mobly import asserts
-
 from utilities import constants
 from utilities.main_utils import common_main
 from utilities.common_utils import CommonUtils
@@ -60,14 +57,13 @@ class SMSReadAutoSync(bluetooth_sms_base_test.BluetoothSMSBaseTest):
         target_phone_number = self.target.mbs.getPhoneNumber()
         self.phone_notpaired.mbs.sendSms(target_phone_number,constants.SMS_TEXT)
         self.call_utils.wait_with_log(10)
+        super().enable_recording()
 
     def test_read_sms_auto_sync(self):
 
         # Verify the new UNREAD sms in IVI device
         self.call_utils.open_sms_app()
-        logging.info(self.call_utils.verify_sms_app_unread_message())
-        asserts.assert_true(self.call_utils.verify_sms_app_unread_message(),
-                                    'Message app should contain an unread msg, but there are no unread messages')
+        self.call_utils.verify_sms_app_unread_message(True)
 
         # READ the message on paired phone
         self.call_utils.open_notification_on_phone(self.target)
@@ -76,16 +72,13 @@ class SMSReadAutoSync(bluetooth_sms_base_test.BluetoothSMSBaseTest):
         self.call_utils.wait_with_log(5)
 
         # Verify the SYNC READ sms in IVI device
-        logging.info(self.call_utils.verify_sms_app_unread_message())
-        asserts.assert_false(self.call_utils.verify_sms_app_unread_message(),
-                                            'Message app should not contain the unread msg, but contains one')
+        self.call_utils.verify_sms_app_unread_message(False)
         self.call_utils.verify_sms_preview_timestamp(True)
 
     def teardown_test(self):
          # Go to home screen
          self.call_utils.press_home()
-         self.call_utils.open_sms_app()
-         super().teardown_no_video_recording()
+         super().teardown_test()
 
 if __name__ == '__main__':
   common_main()

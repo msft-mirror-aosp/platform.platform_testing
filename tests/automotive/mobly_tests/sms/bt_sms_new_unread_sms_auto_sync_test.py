@@ -24,9 +24,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-import logging
 
-from mobly import asserts
 from utilities import constants
 from utilities.main_utils import common_main
 from utilities.common_utils import CommonUtils
@@ -44,22 +42,21 @@ class SMSNewUnreadSMSAutoSyncTest(bluetooth_sms_base_test.BluetoothSMSBaseTest):
 
     def setup_test(self):
 
-       # pair the devices
+        # pair the devices
         self.bt_utils.pair_primary_to_secondary()
 
         # wait for user permissions popup & give contacts and sms permissions
         self.call_utils.wait_with_log(20)
         self.common_utils.click_on_ui_element_with_text('Allow')
-        logging.info("Clearing the sms app")
 
         # Clearing the sms from the phone
         self.call_utils.clear_sms_app(self.target)
-        self.call_utils.wait_with_log(10)
         # Reboot Phone
         self.target.unload_snippet('mbs')
         self.target.reboot()
         self.call_utils.wait_with_log(30)
         self.target.load_snippet('mbs', android_device.MBS_PACKAGE)
+        super().enable_recording()
 
     def test_new_unread_sms_auto_sync(self):
         # To test that new unread sms appear on HU
@@ -67,27 +64,23 @@ class SMSNewUnreadSMSAutoSyncTest(bluetooth_sms_base_test.BluetoothSMSBaseTest):
         # Open the sms app
         self.call_utils.open_sms_app()
 
-        logging.info("Verifying that there is no sms currently")
-        asserts.assert_false(self.call_utils.verify_sms_app_unread_message(),
-                            'Message app should be empty, but found existing messages.')
+        # Verify that there is no new sms currently
+        self.call_utils.verify_sms_app_unread_message(False)
 
-        logging.info("Sending the sms from unpaired phone to paired phone")
+        # send a new sms
         target_phone_number = self.target.mbs.getPhoneNumber()
-        logging.info(target_phone_number)
         self.phone_notpaired.mbs.sendSms(target_phone_number,constants.SMS_TEXT)
         self.call_utils.wait_with_log(constants.BT_DEFAULT_TIMEOUT)
 
-        logging.info("Performing the verifications")
-        asserts.assert_true(self.call_utils.verify_sms_app_unread_message(),
-                                    'Messages app should contain messages but found none')
-        self.call_utils.verify_sms_preview_text(constants.SMS_TEXT)
+        # perform the verifications
+        self.call_utils.verify_sms_app_unread_message(True)
+        self.call_utils.verify_sms_preview_text(True, constants.SMS_TEXT)
         self.call_utils.verify_sms_preview_timestamp(True)
 
     def teardown_test(self):
         # Go to home screen
         self.call_utils.press_home()
-        self.call_utils.open_sms_app()
-        super().teardown_no_video_recording()
+        super().teardown_test()
 
 if __name__ == '__main__':
     common_main()

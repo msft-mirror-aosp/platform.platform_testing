@@ -518,16 +518,33 @@ class CallUtils:
             raise CallUtilsError('Actual search result does not contain Expected.')
 
 
-    def verify_sms_app_unread_message(self):
+    def verify_sms_app_unread_message(self, expected):
         """Verify unread message on sms app"""
         logging.info('Verify Unread Message on SMS app')
-        return self.device.mbs.isUnreadSmsDisplayed()
+        actual_unread_message_badge_displayed = self.device.mbs.isUnreadSmsDisplayed()
+        logging.info(
+            'Unread message Expected: <%s>, Actual: <%s>',
+            expected,
+            actual_unread_message_badge_displayed,
+        )
+        if actual_unread_message_badge_displayed != expected:
+            raise CallUtilsError(
+                "SMS Unread messages - Actual and Expected doesn't match."
+            )
 
-    def verify_sms_preview_text(self, text):
+    def verify_sms_preview_text(self, expected, text):
         """Verify sms preview text"""
         logging.info('Verify SMS Preview Text')
-        return self.device.mbs.isSmsPreviewTextDisplayed(text)
         actual_message_preview_displayed = self.device.mbs.isSmsPreviewTextDisplayed(text)
+        logging.info(
+            'SMS Preview Text Expected: <%s>, Actual: <%s>',
+            expected,
+            actual_message_preview_displayed,
+        )
+        if actual_message_preview_displayed != expected:
+            raise CallUtilsError(
+                "SMS Preview Text- Actual and Expected doesn't match."
+            )
 
     def tap_to_read_aloud(self):
         """Tap on Received Text message"""
