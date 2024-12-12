@@ -18,10 +18,10 @@ package android.platform.systemui_tapl.ui
 import android.graphics.PointF
 import android.platform.systemui_tapl.utils.DeviceUtils.LONG_WAIT
 import android.platform.systemui_tapl.utils.DeviceUtils.sysuiResSelector
-import android.platform.uiautomator_helpers.BetterSwipe.from
-import android.platform.uiautomator_helpers.DeviceHelpers.assertVisibility
-import android.platform.uiautomator_helpers.DeviceHelpers.waitForObj
-import android.platform.uiautomator_helpers.PRECISE_GESTURE_INTERPOLATOR
+import android.platform.uiautomatorhelpers.BetterSwipe.from
+import android.platform.uiautomatorhelpers.DeviceHelpers.assertVisibility
+import android.platform.uiautomatorhelpers.DeviceHelpers.waitForObj
+import android.platform.uiautomatorhelpers.PRECISE_GESTURE_INTERPOLATOR
 import androidx.test.uiautomator.UiObject2
 import com.android.systemui.Flags
 import com.google.common.truth.Truth.assertThat
@@ -40,6 +40,11 @@ class BrightnessSlider internal constructor() {
 
     /** Slides from left to right */
     fun swipeFromLeftToRight() {
+        swipeFromLeftToRight(Duration.ofMillis(500))
+    }
+
+    /** Slides from left to right with specifying [swipeDuration] */
+    fun swipeFromLeftToRight(swipeDuration: Duration) {
         val sliderBounds = slider.visibleBounds
         val pointFrom =
             PointF(
@@ -51,8 +56,9 @@ class BrightnessSlider internal constructor() {
                 (sliderBounds.centerX() + sliderBounds.width() / 3).toFloat(),
                 sliderBounds.centerY().toFloat(),
             )
+
         val swipe =
-            from(pointFrom).to(pointTo, Duration.ofMillis(500), PRECISE_GESTURE_INTERPOLATOR)
+            from(pointFrom).to(pointTo, swipeDuration, PRECISE_GESTURE_INTERPOLATOR)
         if (Flags.qsUiRefactorComposeFragment()) {
             // In this case, the slider is moved to an overlay, then we verify:
             // The notification shade is not visible, but

@@ -24,19 +24,19 @@ import android.platform.helpers.LockscreenUtils
 import android.platform.helpers.LockscreenUtils.LockscreenType
 import android.platform.systemui_tapl.utils.DeviceUtils.sysuiResSelector
 import android.platform.systemui_tapl.utils.SYSUI_PACKAGE
-import android.platform.uiautomator_helpers.BetterSwipe.from
-import android.platform.uiautomator_helpers.DeviceHelpers.assertInvisible
-import android.platform.uiautomator_helpers.DeviceHelpers.assertVisibility
-import android.platform.uiautomator_helpers.DeviceHelpers.assertVisible
-import android.platform.uiautomator_helpers.DeviceHelpers.click
-import android.platform.uiautomator_helpers.DeviceHelpers.doubleTapAt
-import android.platform.uiautomator_helpers.DeviceHelpers.shell
-import android.platform.uiautomator_helpers.DeviceHelpers.uiDevice
-import android.platform.uiautomator_helpers.DeviceHelpers.waitForFirstObj
-import android.platform.uiautomator_helpers.DeviceHelpers.waitForObj
-import android.platform.uiautomator_helpers.assertOnTheLeftSide
-import android.platform.uiautomator_helpers.assertOnTheRightSide
-import android.platform.uiautomator_helpers.stableBounds
+import android.platform.uiautomatorhelpers.BetterSwipe.from
+import android.platform.uiautomatorhelpers.DeviceHelpers.assertInvisible
+import android.platform.uiautomatorhelpers.DeviceHelpers.assertVisibility
+import android.platform.uiautomatorhelpers.DeviceHelpers.assertVisible
+import android.platform.uiautomatorhelpers.DeviceHelpers.click
+import android.platform.uiautomatorhelpers.DeviceHelpers.doubleTapAt
+import android.platform.uiautomatorhelpers.DeviceHelpers.shell
+import android.platform.uiautomatorhelpers.DeviceHelpers.uiDevice
+import android.platform.uiautomatorhelpers.DeviceHelpers.waitForFirstObj
+import android.platform.uiautomatorhelpers.DeviceHelpers.waitForObj
+import android.platform.uiautomatorhelpers.assertOnTheLeftSide
+import android.platform.uiautomatorhelpers.assertOnTheRightSide
+import android.platform.uiautomatorhelpers.stableBounds
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.UiObject2
 import com.google.common.truth.Truth
@@ -176,7 +176,7 @@ class Bouncer internal constructor(private val notification: Notification?) {
     /** https://hsv.googleplex.com/5840630509993984?node=26 */
     val pinContainerRect: Rect?
         get() {
-            return waitForObj(sysuiResSelector("pin_container")).visibleBounds
+            return waitForFirstObj(*PIN_CONTAINER_SELECTOR).first.visibleBounds
         }
 
     /** https://hsv.googleplex.com/5550967647895552?node=25 */
@@ -239,6 +239,13 @@ class Bouncer internal constructor(private val notification: Notification?) {
                 By.res(Pattern.compile(SYSUI_PACKAGE + ":id/(pinEntry|passwordEntry)"))
                     .focused(true)
             }
+
+        /** The compose bouncer_text_entry isn't the same as pin_container, but close enough */
+        private val PIN_CONTAINER_SELECTOR =
+            arrayOf(
+                sysuiResSelector("bouncer_text_entry"),
+                sysuiResSelector("pin_container"),
+            )
         /** https://hsv.googleplex.com/5225465733185536?node=54 */
         private val PIN_BOUNCER_DELETE_BUTTON = sysuiResSelector("delete_button")
         /** https://hsv.googleplex.com/5554629610831872?node=52 */
