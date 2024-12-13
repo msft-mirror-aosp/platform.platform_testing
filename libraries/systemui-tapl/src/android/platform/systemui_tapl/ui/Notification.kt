@@ -29,16 +29,16 @@ import android.platform.systemui_tapl.utils.DeviceUtils.androidResSelector
 import android.platform.systemui_tapl.utils.DeviceUtils.sysuiResSelector
 import android.platform.test.scenario.tapl_common.Gestures
 import android.platform.test.scenario.tapl_common.TaplUiDevice
-import android.platform.uiautomator_helpers.BetterSwipe
-import android.platform.uiautomator_helpers.DeviceHelpers.assertInvisible
-import android.platform.uiautomator_helpers.DeviceHelpers.assertVisibility
-import android.platform.uiautomator_helpers.DeviceHelpers.betterSwipe
-import android.platform.uiautomator_helpers.DeviceHelpers.uiDevice
-import android.platform.uiautomator_helpers.DeviceHelpers.waitForNullableObj
-import android.platform.uiautomator_helpers.DeviceHelpers.waitForObj
-import android.platform.uiautomator_helpers.FLING_GESTURE_INTERPOLATOR
-import android.platform.uiautomator_helpers.WaitUtils.ensureThat
-import android.platform.uiautomator_helpers.WaitUtils.retryIfStale
+import android.platform.uiautomatorhelpers.BetterSwipe
+import android.platform.uiautomatorhelpers.DeviceHelpers.assertInvisible
+import android.platform.uiautomatorhelpers.DeviceHelpers.assertVisibility
+import android.platform.uiautomatorhelpers.DeviceHelpers.betterSwipe
+import android.platform.uiautomatorhelpers.DeviceHelpers.uiDevice
+import android.platform.uiautomatorhelpers.DeviceHelpers.waitForNullableObj
+import android.platform.uiautomatorhelpers.DeviceHelpers.waitForObj
+import android.platform.uiautomatorhelpers.FLING_GESTURE_INTERPOLATOR
+import android.platform.uiautomatorhelpers.WaitUtils.ensureThat
+import android.platform.uiautomatorhelpers.WaitUtils.retryIfStale
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.BySelector
@@ -316,6 +316,15 @@ internal constructor(
 
         // Verify that a bubble is visible
         Root.get().bubble
+    }
+
+    /** Clicks the "show bubble" button to show a bubble bar bubble. */
+    fun showBubbleBarBubble() {
+        // Create bubble from the notification
+        TaplUiDevice.waitForObject(BUBBLE_BUTTON_SELECTOR, "Show bubble button").click()
+
+        // Verify that a bubble is visible
+        Root.get().bubbleBar
     }
 
     /** Taps the snooze button on the notification */
