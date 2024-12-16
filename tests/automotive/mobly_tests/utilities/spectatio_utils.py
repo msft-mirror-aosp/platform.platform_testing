@@ -518,33 +518,16 @@ class CallUtils:
             raise CallUtilsError('Actual search result does not contain Expected.')
 
 
-    def verify_sms_app_unread_message(self, expected):
+    def verify_sms_app_unread_message(self):
         """Verify unread message on sms app"""
         logging.info('Verify Unread Message on SMS app')
-        actual_unread_message_badge_displayed = self.device.mbs.isUnreadSmsDisplayed()
-        logging.info(
-            'Unread message Expected: <%s>, Actual: <%s>',
-            expected,
-            actual_unread_message_badge_displayed,
-        )
-        if actual_unread_message_badge_displayed != expected:
-            raise CallUtilsError(
-                "SMS Unread messages - Actual and Expected doesn't match."
-            )
+        return self.device.mbs.isUnreadSmsDisplayed()
 
-    def verify_sms_preview_text(self, expected, text):
+    def verify_sms_preview_text(self, text):
         """Verify sms preview text"""
         logging.info('Verify SMS Preview Text')
+        return self.device.mbs.isSmsPreviewTextDisplayed(text)
         actual_message_preview_displayed = self.device.mbs.isSmsPreviewTextDisplayed(text)
-        logging.info(
-            'SMS Preview Text Expected: <%s>, Actual: <%s>',
-            expected,
-            actual_message_preview_displayed,
-        )
-        if actual_message_preview_displayed != expected:
-            raise CallUtilsError(
-                "SMS Preview Text- Actual and Expected doesn't match."
-            )
 
     def tap_to_read_aloud(self):
         """Tap on Received Text message"""
@@ -614,6 +597,23 @@ class CallUtils:
     def is_bluetooth_button_enabled(self):
         logging.info('Is Bluetooth Button Enabled')
         return self.device.mbs.isBluetoothButtonEnabled()
+
+    def has_bluetooth_toggle_on_message_displayed(self):
+        logging.info('Has Bluetooth Toggle On Message Displayed')
+        return self.device.mbs.hasBluetoothPaletteToggleOnMessage()
+
+    def has_bluetooth_toggle_off_message_displayed(self):
+        logging.info('Has Bluetooth Toggle Off Message Displayed')
+        return self.device.mbs.hasBluetoothPaletteToggleOffMessage()
+
+    def turn_on_off_bluetooth_switch_on_palette(self, switchstate):
+        self.device.mbs.turnOnOffBluetoothSwitchOnPalette(switchstate)
+        logging.info('Expected bluetooth toggle switch status: <%s>',
+                     switchstate)
+
+    def is_bluetooth_toggle_switch_in_palette_on(self):
+        logging.info('Verify whether bluetooth toggle button is enabled in Bluetooth palette')
+        return self.device.mbs.isBluetoothToggleSwitchInPaletteOn()
 
     def is_active_call_enabled(self):
         logging.info("Verifying whether active call is enabled")
