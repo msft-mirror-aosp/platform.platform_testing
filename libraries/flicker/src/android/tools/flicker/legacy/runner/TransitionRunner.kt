@@ -20,10 +20,8 @@ import android.app.Instrumentation
 import android.platform.test.rule.NavigationModeRule
 import android.platform.test.rule.PressHomeRule
 import android.platform.test.rule.UnlockScreenRule
-import android.tools.Logger
 import android.tools.Scenario
 import android.tools.device.apphelpers.MessagingAppHelper
-import android.tools.flicker.datastore.CachedResultWriter
 import android.tools.flicker.legacy.FlickerTestData
 import android.tools.flicker.rules.ArtifactSaverRule
 import android.tools.flicker.rules.ChangeDisplayOrientationRule
@@ -32,6 +30,7 @@ import android.tools.flicker.rules.RemoveAllTasksButHomeRule
 import android.tools.rules.StopAllTracesRule
 import android.tools.traces.io.IResultData
 import android.tools.traces.io.ResultWriter
+import android.tools.withTracing
 import org.junit.rules.RuleChain
 import org.junit.runner.Description
 
@@ -46,7 +45,7 @@ class TransitionRunner(
 ) {
     /** Executes [flicker] transition and returns the result */
     fun execute(flicker: FlickerTestData, description: Description?): IResultData {
-        return Logger.withTracing("TransitionRunner:execute") {
+        return withTracing("TransitionRunner:execute") {
             resultWriter.forScenario(scenario).withOutputDir(flicker.outputDir)
 
             val ruleChain = buildTestRuleChain(flicker)
@@ -75,34 +74,39 @@ class TransitionRunner(
      */
     private fun buildTestRuleChain(flicker: FlickerTestData): RuleChain {
         val errorRule = ArtifactSaverRule()
-        return RuleChain.outerRule(errorRule)
-            .around(StopAllTracesRule())
-            .around(UnlockScreenRule())
-            .around(NavigationModeRule(scenario.navBarMode.value, false))
-            .around(
-                LaunchAppRule(MessagingAppHelper(instrumentation), clearCacheAfterParsing = false)
-            )
-            .around(RemoveAllTasksButHomeRule())
-            .around(
-                ChangeDisplayOrientationRule(
-                    scenario.startRotation,
-                    resetOrientationAfterTest = false,
-                    clearCacheAfterParsing = false
-                )
-            )
-            .around(PressHomeRule())
-            .around(
-                TraceMonitorRule(
-                    flicker.traceMonitors,
-                    scenario,
-                    flicker.wmHelper,
-                    resultWriter,
-                    instrumentation
-                )
-            )
-            .around(errorRule)
-            .around(SetupTeardownRule(flicker, resultWriter, scenario, instrumentation))
-            .around(errorRule)
-            .around(TransitionExecutionRule(flicker, resultWriter, scenario, instrumentation))
+
+        val rules = listOf(
+            StopAllTracesRule(),
+            UnlockScreenRule(),
+            NavigationModeRule(scenario.navBarMode.value, false),
+            LaunchAppRule(MessagingAppHelper(instrumentation), clearCacheAfterParsing = false),
+            RemoveAllTasksButHomeRule(),
+            ChangeDisplayOrientationRule(
+                scenario.startRotation,
+                resetOrientationAfterTest = false,
+                clearCacheAfterParsing = false
+            ),
+            PressHomeRule(),
+            TraceMonitorRule(
+                flicker.traceMonitors,
+                scenario,
+                flicker.wmHelper,
+                resultWriter,
+                instrumentation
+            ),
+            *flicker.rules.toTypedArray(),
+            SetupTeardownRule(flicker, resultWriter, scenario, instrumentation),
+            TransitionExecutionRule(flicker, resultWriter, scenario, instrumentation)
+        )
+
+        return rules.foldIndexed(RuleChain.outerRule(errorRule)) { index, chain, rule ->
+            chain.around(rule).let {
+                if (index != rules.lastIndex) {
+                    it.around(errorRule)
+                } else {
+                    it
+                }
+            }
+        }
     }
 }

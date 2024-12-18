@@ -16,9 +16,9 @@
 
 package android.tools.traces.wm
 
+import android.graphics.Rect
 import android.tools.PlatformConsts
 import android.tools.Rotation
-import android.tools.datatypes.Rect
 import android.tools.traces.component.IComponentMatcher
 import android.tools.traces.wm.Utils.collectDescendants
 import kotlin.math.min
@@ -28,6 +28,9 @@ import kotlin.math.min
  *
  * This is a generic object that is reused by both Flicker and Winscope and cannot access internal
  * Java/Android functionality
+ *
+ * @property displayRect The logical display rect.
+ * @property stableBounds The logical display bounds excluding the navigation and status bar areas.
  */
 class DisplayContent(
     val displayId: Int,
@@ -48,6 +51,7 @@ class DisplayContent(
     val rotation: Rotation,
     val lastOrientation: Int,
     val cutout: DisplayCutout?,
+    val insetsSourceProviders: Array<InsetsSourceProvider>,
     private val windowContainer: WindowContainer
 ) : WindowContainer by windowContainer {
     override val name: String = displayId.toString()
@@ -56,7 +60,7 @@ class DisplayContent(
     val isTablet: Boolean
         get() {
             val smallestWidth =
-                dpiFromPx(min(displayRect.width.toFloat(), displayRect.height.toFloat()), dpi)
+                dpiFromPx(min(displayRect.width().toFloat(), displayRect.height().toFloat()), dpi)
             return smallestWidth >= PlatformConsts.TABLET_MIN_DPS
         }
 

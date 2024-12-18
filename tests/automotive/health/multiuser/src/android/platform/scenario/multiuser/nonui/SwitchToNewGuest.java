@@ -18,12 +18,14 @@ package android.platform.scenario.multiuser;
 
 import android.app.UiAutomation;
 import android.content.pm.UserInfo;
+import android.os.Build;
 import android.os.SystemClock;
 import android.platform.helpers.MultiUserHelper;
 import android.platform.test.scenario.annotation.Scenario;
 
 import androidx.test.platform.app.InstrumentationRegistry;
 
+import org.junit.After;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
@@ -52,47 +54,30 @@ public class SwitchToNewGuest {
         /*
         TODO: Create setup util API
          */
+        // Execute these tests only on devices running Android T or higher
+        Assume.assumeTrue(
+                "Skipping below Android T", Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU);
+
         // Execute user manager APIs with elevated permissions
         mUiAutomation = getUiAutomation();
         // TODO: b/302175460 - update minimum SDK version
         mUiAutomation.adoptShellPermissionIdentity(CREATE_USERS_PERMISSION);
         UserInfo currentUser = mMultiUserHelper.getCurrentForegroundUserInfo();
 
-        // Drop elevated permissions
-        mUiAutomation.dropShellPermissionIdentity();
-
         if (currentUser.id != MultiUserConstants.DEFAULT_INITIAL_USER) {
             SystemClock.sleep(MultiUserConstants.WAIT_FOR_IDLE_TIME_MS);
-
-            // Execute user manager APIs with elevated permissions
-            mUiAutomation = getUiAutomation();
-            mUiAutomation.adoptShellPermissionIdentity(CREATE_USERS_PERMISSION);
             mMultiUserHelper.switchAndWaitForStable(
                     MultiUserConstants.DEFAULT_INITIAL_USER,
                     MultiUserConstants.WAIT_FOR_IDLE_TIME_MS);
-
-            // Drop elevated permissions
-            mUiAutomation.dropShellPermissionIdentity();
         }
 
         if (!MultiUserConstants.INCLUDE_CREATION_TIME) {
-            // Execute user manager APIs with elevated permissions
-            mUiAutomation = getUiAutomation();
-            mUiAutomation.adoptShellPermissionIdentity(CREATE_USERS_PERMISSION);
             mGuestId = mMultiUserHelper.createUser(MultiUserConstants.GUEST_NAME, true);
-
-            // Drop elevated permissions
-            mUiAutomation.dropShellPermissionIdentity();
         }
     }
 
     @Test
     public void testSwitch() throws Exception {
-
-        // Execute user manager APIs with elevated permissions
-        mUiAutomation = getUiAutomation();
-        mUiAutomation.adoptShellPermissionIdentity(CREATE_USERS_PERMISSION);
-
         if (MultiUserConstants.INCLUDE_CREATION_TIME) {
             mGuestId = mMultiUserHelper.createUser(MultiUserConstants.GUEST_NAME, true);
         }
@@ -101,9 +86,11 @@ public class SwitchToNewGuest {
                         Locale.US, "Target user id is %d but must be greater than 10", mGuestId),
                 mGuestId > 10);
         mMultiUserHelper.switchToUserId(mGuestId);
+    }
 
-        // Drop elevated permissions
-        mUiAutomation.dropShellPermissionIdentity();
+    @After
+    public void dropShellPermissionIdentity() {
+        getUiAutomation().dropShellPermissionIdentity();
     }
 
     private UiAutomation getUiAutomation() {

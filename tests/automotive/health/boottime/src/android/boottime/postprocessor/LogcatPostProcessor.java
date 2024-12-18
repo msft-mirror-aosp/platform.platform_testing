@@ -46,11 +46,9 @@ import java.util.stream.Collectors;
 /** A Post Processor that processes text file containing logcat logs into key-value pairs */
 @OptionClass(alias = "logcat-post-processor")
 public class LogcatPostProcessor extends BaseBootTimeTestLogPostProcessor {
-    private static final String BOOT_PHASE_1000 = "starting_phase_1000";
+    private static final String BOOT_COMPLETE_KEY = "boot_complete_key";
     /** Matches the line indicating kernel start. It is starting point of the whole boot process */
     private static final Pattern KERNEL_START_PATTERN = Pattern.compile("Linux version");
-    /** Matches the logcat line indicating boot completed */
-    private static final Pattern LOGCAT_BOOT_COMPLETED = Pattern.compile("Starting phase 1000");
 
     // 03-10 21:43:40.328 1005 1005 D SystemServerTiming:StartWifi took to
     // complete: 3474ms
@@ -81,7 +79,19 @@ public class LogcatPostProcessor extends BaseBootTimeTestLogPostProcessor {
                             + " logcat line. Maybe repeated.")
     private Map<String, String> mBootTimePatterns = new HashMap<>();
 
+    @Option(
+            name = "starting-phase-signal",
+            description =
+                    "Keywords to match the starting phase of the boot.")
+    private String startingPhase = "Starting phase 1000";
+
     private List<Double> mDmesgBootCompleteTimes;
+    private Pattern mBootCompletePattern;
+
+    @Override
+    public void setUp() {
+        mBootCompletePattern = Pattern.compile(startingPhase);
+    }
 
     /** {@inheritDoc} */
     @Override
@@ -124,21 +134,17 @@ public class LogcatPostProcessor extends BaseBootTimeTestLogPostProcessor {
         ArrayListMultimap<String, Double> metrics = ArrayListMultimap.create();
         for (File file : files) {
             LogUtil.CLog.d("Parsing logcat file %s", file.getPath());
-            try (InputStreamReader ir = new InputStreamReader(new FileInputStream(file));
-                    BufferedReader input = new BufferedReader(ir)) {
-                metrics.putAll(Multimaps.forMap(analyzeGranularBootInfo(input)));
+            try {
+                Map<String, Double> granularBootMetricsMap = analyzeGranularBootInfo(file);
+                metrics.putAll(Multimaps.forMap(granularBootMetricsMap));
                 if (!mBootTimePatterns.isEmpty()) {
-                    metrics.putAll(
-                            Multimaps.forMap(
-                                    analyzeCustomBootInfo(
-                                            input, mDmesgBootCompleteTimes.get(iteration))));
+                    Map<String, Double> customBootMetricMap =
+                            analyzeCustomBootInfo(file, mDmesgBootCompleteTimes.get(iteration));
+                    metrics.putAll(Multimaps.forMap(customBootMetricMap));
                 } else {
                     LogUtil.CLog.i(
                             "No boot-time-pattern values provided. Skipping analyzeCustomBootInfo");
                 }
-            } catch (IOException ioe) {
-                LogUtil.CLog.e("Problem parsing the granular boot delay information");
-                LogUtil.CLog.e(ioe);
             } catch (IndexOutOfBoundsException e) {
                 LogUtil.CLog.e("Missing dmesg boot complete signals for iteration %d", iteration);
                 LogUtil.CLog.e(e);
@@ -153,79 +159,91 @@ public class LogcatPostProcessor extends BaseBootTimeTestLogPostProcessor {
      * Parse the logcat file for granular boot info (eg different system services start time) based
      * on the component name or full component name (i.e component_subcompname)
      */
-    private Map<String, Double> analyzeGranularBootInfo(BufferedReader input) throws IOException {
+    private Map<String, Double> analyzeGranularBootInfo(File file) {
         Map<String, Double> metrics = new HashMap<>();
         String[] compStr = new String[0];
         String[] fullCompStr = new String[0];
-        boolean isFilterSet = false;
+        boolean isFilterSet = mComponentNames != null || mFullCompNames != null;
 
-        if (null != mComponentNames) {
+        if (mComponentNames != null) {
             compStr = mComponentNames.split(",");
-            isFilterSet = true;
         }
-        if (null != mFullCompNames) {
+        if (mFullCompNames != null) {
             fullCompStr = mFullCompNames.split(",");
-            isFilterSet = true;
         }
 
         Set<String> compSet = new HashSet<>(Arrays.asList(compStr));
         Set<String> fullCompSet = new HashSet<>(Arrays.asList(fullCompStr));
 
-        TimingsLogParser parser = new TimingsLogParser();
-        List<SystemServicesTimingItem> items = parser.parseSystemServicesTimingItems(input);
-        for (SystemServicesTimingItem item : items) {
-            String componentName = item.getComponent();
-            String fullCompName =
-                    String.format("%s_%s", item.getComponent(), item.getSubcomponent());
-            // If filter not set then capture timing info for all the
-            // components otherwise
-            // only for the given component names and full component
-            // names.
-            if (!isFilterSet
-                    || compSet.contains(componentName)
-                    || fullCompSet.contains(fullCompName)) {
-                Double time = item.getDuration() != null ? item.getDuration() : item.getStartTime();
-                if (time == null) {
-                    continue;
+        try (InputStreamReader ir = new InputStreamReader(new FileInputStream(file));
+                BufferedReader input = new BufferedReader(ir)) {
+            TimingsLogParser parser = new TimingsLogParser();
+            List<SystemServicesTimingItem> items = parser.parseSystemServicesTimingItems(input);
+            for (SystemServicesTimingItem item : items) {
+                String componentName = item.getComponent();
+                String fullCompName =
+                        String.format("%s_%s", item.getComponent(), item.getSubcomponent());
+                // If filter not set then capture timing info for all the components otherwise
+                // only for the given component names and full component names.
+                if (!isFilterSet
+                        || compSet.contains(componentName)
+                        || fullCompSet.contains(fullCompName)) {
+                    Double time =
+                            item.getDuration() != null ? item.getDuration() : item.getStartTime();
+                    if (time != null) {
+                        metrics.put(fullCompName, time);
+                    }
                 }
-                metrics.put(fullCompName, time);
             }
+        } catch (IOException ioe) {
+            LogUtil.CLog.e("Problem parsing the granular boot information");
+            LogUtil.CLog.e(ioe);
         }
         return metrics;
     }
 
     /** Parse the logcat file to get boot time metrics given patterns defined by tester. */
-    private Map<String, Double> analyzeCustomBootInfo(
-            BufferedReader input, double dmesgBootCompleteTime) throws IOException {
+    private Map<String, Double> analyzeCustomBootInfo(File file, double dmesgBootCompleteTime) {
         Map<String, Double> metrics = new HashMap<>();
+        try (InputStreamReader ir = new InputStreamReader(new FileInputStream(file));
+                BufferedReader input = new BufferedReader(ir)) {
+            List<GenericTimingItem> items =
+                    createCustomTimingsParser().parseGenericTimingItems(input);
+            Map<String, GenericTimingItem> itemsMap =
+                    items.stream()
+                            .collect(Collectors.toMap(GenericTimingItem::getName, item -> item));
+            if (!itemsMap.containsKey(BOOT_COMPLETE_KEY)) {
+                LogUtil.CLog.e("Missing boot complete signals from logcat");
+                return metrics;
+            }
+            for (Map.Entry<String, GenericTimingItem> metric : itemsMap.entrySet()) {
+                GenericTimingItem itemsForMetric = metric.getValue();
+                if (itemsForMetric.getName().isEmpty()) {
+                    LogUtil.CLog.e("Missing value for metric %s", metric.getKey());
+                    continue;
+                }
+                double duration = dmesgBootCompleteTime + itemsForMetric.getDuration();
+                metrics.put(metric.getKey(), duration);
+                LogUtil.CLog.d(
+                        "Added boot metric: %s with duration value: %f", metric.getKey(), duration);
+            }
+        } catch (IOException ioe) {
+            LogUtil.CLog.e("Problem parsing the custom boot information");
+            LogUtil.CLog.e(ioe);
+        }
+        return metrics;
+    }
+
+    private TimingsLogParser createCustomTimingsParser() {
         TimingsLogParser parser = new TimingsLogParser();
-        parser.addDurationPatternPair(BOOT_PHASE_1000, KERNEL_START_PATTERN, LOGCAT_BOOT_COMPLETED);
+        parser.addDurationPatternPair(BOOT_COMPLETE_KEY, KERNEL_START_PATTERN, mBootCompletePattern);
         for (Map.Entry<String, String> pattern : mBootTimePatterns.entrySet()) {
             LogUtil.CLog.d(
                     "Adding boot metric with name: %s, pattern: %s",
                     pattern.getKey(), pattern.getValue());
             parser.addDurationPatternPair(
-                    pattern.getKey(), LOGCAT_BOOT_COMPLETED, Pattern.compile(pattern.getValue()));
+                    pattern.getKey(), mBootCompletePattern, Pattern.compile(pattern.getValue()));
         }
-
-        List<GenericTimingItem> items = parser.parseGenericTimingItems(input);
-        Map<String, GenericTimingItem> itemsMap =
-                items.stream().collect(Collectors.toMap(GenericTimingItem::getName, item -> item));
-        if (!itemsMap.containsKey(BOOT_PHASE_1000)) {
-            LogUtil.CLog.e("Missing boot complete signals from logcat");
-            return metrics;
-        }
-        for (Map.Entry<String, GenericTimingItem> metric : itemsMap.entrySet()) {
-            GenericTimingItem itemsForMetric = metric.getValue();
-            if (itemsForMetric.getName().isEmpty()) {
-                LogUtil.CLog.e("Missing value for metric %s", metric.getKey());
-                continue;
-            }
-            double duration = dmesgBootCompleteTime + itemsForMetric.getDuration();
-            metrics.put(metric.getKey(), duration);
-            LogUtil.CLog.d(
-                    "Added boot metric: %s with duration value: %f", metric.getKey(), duration);
-        }
-        return metrics;
+        return parser;
     }
 }

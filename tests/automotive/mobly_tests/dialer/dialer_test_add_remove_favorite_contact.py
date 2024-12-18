@@ -23,47 +23,46 @@
         6) Verify contact is removed from the favorites
 """
 
-# import logging
-
-import sys
-import logging
-import pprint
-
-from mobly import asserts
-from mobly import base_test
-from mobly import test_runner
-from mobly.controllers import android_device
 from bluetooth_test import bluetooth_base_test
 
 from utilities import constants
-from utilities import spectatio_utils
-from utilities import bt_utils
-
+from utilities.main_utils import common_main
+from mobly import asserts
 
 class AddRemoveFavoriteContact(bluetooth_base_test.BluetoothBaseTest):
   """Enable and Disable Bluetooth from Bluetooth Palette."""
 
   def setup_test(self):
     """Setup steps before any test is executed."""
-   # Todo - testing was done by loading contacts manually , this function needs to be tested.
+
     # Upload contacts to phone device
-    file_path = 'platform_testing/tests/automotive/mobly_tests/utils/contacts_test.vcf'
-    self.call_utils.upload_vcf_contacts_to_device(
-        self.target,
-        file_path,
-    )
+    file_path = constants.PATH_TO_CONTACTS_VCF_FILE
+    self.call_utils.upload_vcf_contacts_to_device(self.target, file_path)
+
     self.call_utils.wait_with_log(5)
     # Pair caller phone with automotive device
     self.bt_utils.pair_primary_to_secondary()
+    super().enable_recording()
 
   def test_add_remove_favorite_contact(self):
     """Tests add remove favorite contact."""
-    contact_name = "John Smith"
+    contact_name = "Adam Allen"
     self.call_utils.open_phone_app()
 
     # Adding the contacts to favorites from the favorites tab and verifying it
     self.call_utils.add_favorites_from_favorites_tab(
         contact_name)
+    asserts.assert_true(self.discoverer.mbs.hasUIElementWithText(contact_name),
+                        'Favorite contact should be displayed on Favorites Tab')
+    self.discoverer.mbs.clickUIElementWithText(contact_name)
+
+    self.call_utils.wait_with_log(2)
+    self.call_utils.is_ongoing_call_displayed_on_home(True)
+    self.call_utils.open_phone_app_from_home()
+    asserts.assert_true(self.discoverer.mbs.hasUIElementWithText(contact_name),
+                        'Favorite contact should be displayed on homescreen during call')
+
+    self.call_utils.end_call()
     self.call_utils.is_contact_in_favorites(
         contact_name, True)
     self.call_utils.wait_with_log(10)
@@ -74,6 +73,13 @@ class AddRemoveFavoriteContact(bluetooth_base_test.BluetoothBaseTest):
     self.call_utils.close_details_page()
     self.call_utils.is_contact_in_favorites(
         contact_name, False)
+
+  def teardown_test(self):
+      # End call if test failed
+    self.call_utils.end_call_using_adb_command(self.target)
+    self.call_utils.wait_with_log(5)
+    self.call_utils.press_home()
+    super().teardown_test()
 
 if __name__ == '__main__':
     common_main()

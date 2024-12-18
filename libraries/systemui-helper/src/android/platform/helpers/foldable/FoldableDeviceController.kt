@@ -57,6 +57,7 @@ internal class FoldableDeviceController {
     fun fold() {
         trace("FoldableDeviceController#fold") {
             printInstrumentationStatus(TAG, "Folding")
+            setHingeAngle(0f)
             setDeviceState(foldedState)
         }
     }
@@ -65,6 +66,7 @@ internal class FoldableDeviceController {
     fun unfold() {
         trace("FoldableDeviceController#unfold") {
             printInstrumentationStatus(TAG, "Unfolding")
+            setHingeAngle(180f)
             setDeviceState(unfoldedState)
         }
     }
@@ -73,6 +75,7 @@ internal class FoldableDeviceController {
     fun halfFold() {
         trace("FoldableDeviceController#halfFold") {
             printInstrumentationStatus(TAG, "Half-folding")
+            setHingeAngle(100f)
             setDeviceState(halfFoldedState)
         }
     }
@@ -183,7 +186,9 @@ internal class FoldableDeviceController {
         check(this.await(DEVICE_STATE_MAX_TIMEOUT.toMillis(), TimeUnit.MILLISECONDS), error)
     }
 
-    private val deviceStateCallback = DeviceStateCallback { state -> currentState = state }
+    private val deviceStateCallback = DeviceStateCallback { state ->
+        currentState = state.identifier
+    }
 
     private val deviceStateRequestCallback =
         object : DeviceStateRequest.Callback {

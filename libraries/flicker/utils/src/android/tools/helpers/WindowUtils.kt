@@ -17,39 +17,47 @@
 package android.tools.helpers
 
 import android.graphics.Rect
+import android.graphics.Region
 import android.tools.PlatformConsts
 import android.tools.Rotation
-import android.tools.datatypes.Region
 import android.tools.traces.getCurrentStateDump
-import android.tools.traces.parsers.toAndroidRect
 import android.tools.traces.surfaceflinger.Display
 import android.tools.traces.wm.DisplayContent
+import android.tools.traces.wm.InsetsSource
 import android.util.LruCache
+import android.view.WindowInsets
 import androidx.test.platform.app.InstrumentationRegistry
+import kotlin.math.max
+import kotlin.math.min
 
 object WindowUtils {
 
-    private val displayBoundsCache = LruCache<Rotation, Region>(4)
+    private val displayBoundsCache = LruCache<Rotation, Rect>(4)
     private val instrumentation = InstrumentationRegistry.getInstrumentation()
 
     /** Helper functions to retrieve system window sizes and positions. */
-    private val context = instrumentation.context
+    private val context by lazy { instrumentation.context }
 
     private val resources
-        get() = context.getResources()
+        get() = context.resources
 
     /** Get the display bounds */
     val displayBounds: Rect
         get() {
             val currState = getCurrentStateDump(clearCacheAfterParsing = false)
-            return currState.layerState.physicalDisplay?.layerStackSpace?.toAndroidRect() ?: Rect()
+            return currState.layerState.physicalDisplay?.layerStackSpace ?: Rect()
+        }
+
+    val displayStableBounds: Rect
+        get() {
+            val currState = getCurrentStateDump(clearCacheAfterParsing = false)
+            return currState.wmState.getDefaultDisplay()?.stableBounds ?: Rect()
         }
 
     /** Gets the current display rotation */
     val displayRotation: Rotation
         get() {
             val currState = getCurrentStateDump(clearCacheAfterParsing = false)
-
             return currState.wmState.getRotation(PlatformConsts.DEFAULT_DISPLAY)
         }
 
@@ -58,7 +66,7 @@ object WindowUtils {
      *
      * @param requestedRotation Device rotation
      */
-    fun getDisplayBounds(requestedRotation: Rotation): Region {
+    fun getDisplayBounds(requestedRotation: Rotation): Rect {
         return displayBoundsCache[requestedRotation]
             ?: let {
                 val displayIsRotated = displayRotation.isRotated()
@@ -67,15 +75,38 @@ object WindowUtils {
                 // if the current orientation changes with the requested rotation,
                 // flip height and width of display bounds.
                 val displayBounds = displayBounds
-                val retval: Region
-                if (displayIsRotated != requestedDisplayIsRotated) {
-                    retval = Region.from(0, 0, displayBounds.height(), displayBounds.width())
-                } else {
-                    retval = Region.from(0, 0, displayBounds.width(), displayBounds.height())
-                }
+                val retval =
+                    if (displayIsRotated != requestedDisplayIsRotated) {
+                        Rect(0, 0, displayBounds.height(), displayBounds.width())
+                    } else {
+                        Rect(0, 0, displayBounds.width(), displayBounds.height())
+                    }
                 displayBoundsCache.put(requestedRotation, retval)
                 return retval
             }
+    }
+
+    fun getInsetDisplayBounds(): Rect {
+        val currState = getCurrentStateDump(clearCacheAfterParsing = false)
+        val display = currState.wmState.getDefaultDisplay() ?: error("Missing physical display")
+
+        val insetDisplayBounds = Rect(display.displayRect)
+        display.insetsSourceProviders.forEach {
+            val insetsSource: InsetsSource = it.source ?: return@forEach
+            val insets: Rect = it.frame ?: return@forEach
+            if (!insetsSource.visible) return@forEach
+
+            when (insetsSource.type) {
+                WindowInsets.Type.statusBars() -> {
+                    insetDisplayBounds.top = max(insetDisplayBounds.top, insets.bottom)
+                }
+                WindowInsets.Type.navigationBars() -> {
+                    insetDisplayBounds.bottom = min(insetDisplayBounds.bottom, insets.top)
+                }
+            }
+        }
+
+        return insetDisplayBounds
     }
 
     /** Gets the status bar height with a specific display cutout. */
@@ -96,7 +127,7 @@ object WindowUtils {
      */
     fun getExpectedStatusBarPosition(display: DisplayContent): Region {
         val height = getExpectedStatusBarHeight(display)
-        return Region.from(0, 0, display.displayRect.width, height)
+        return Region(0, 0, display.displayRect.width(), height)
     }
 
     /**
@@ -116,21 +147,20 @@ object WindowUtils {
      */
     fun getNavigationBarPosition(display: Display, isGesturalNavigation: Boolean): Region {
         val navBarWidth = getDimensionPixelSize("navigation_bar_width")
-        val displayHeight = display.layerStackSpace.height
-        val displayWidth = display.layerStackSpace.width
+        val displayHeight = display.layerStackSpace.height()
+        val displayWidth = display.layerStackSpace.width()
         val requestedRotation = display.transform.getRotation()
         val navBarHeight = getNavigationBarFrameHeight(requestedRotation, isGesturalNavigation)
 
         return when {
             // nav bar is at the bottom of the screen
             !requestedRotation.isRotated() || isGesturalNavigation ->
-                Region.from(0, displayHeight - navBarHeight, displayWidth, displayHeight)
+                Region(0, displayHeight - navBarHeight, displayWidth, displayHeight)
             // nav bar is on the right side
             requestedRotation == Rotation.ROTATION_90 ->
-                Region.from(displayWidth - navBarWidth, 0, displayWidth, displayHeight)
+                Region(displayWidth - navBarWidth, 0, displayWidth, displayHeight)
             // nav bar is on the left side
-            requestedRotation == Rotation.ROTATION_270 ->
-                Region.from(0, 0, navBarWidth, displayHeight)
+            requestedRotation == Rotation.ROTATION_270 -> Region(0, 0, navBarWidth, displayHeight)
             else -> error("Unknown rotation $requestedRotation")
         }
     }
@@ -159,13 +189,12 @@ object WindowUtils {
         return when {
             // nav bar is at the bottom of the screen
             !requestedRotation.isRotated() || isGesturalNavigationEnabled ->
-                Region.from(0, displayHeight - navBarHeight, displayWidth, displayHeight)
+                Region(0, displayHeight - navBarHeight, displayWidth, displayHeight)
             // nav bar is on the right side
             requestedRotation == Rotation.ROTATION_90 ->
-                Region.from(displayWidth - navBarWidth, 0, displayWidth, displayHeight)
+                Region(displayWidth - navBarWidth, 0, displayWidth, displayHeight)
             // nav bar is on the left side
-            requestedRotation == Rotation.ROTATION_270 ->
-                Region.from(0, 0, navBarWidth, displayHeight)
+            requestedRotation == Rotation.ROTATION_270 -> Region(0, 0, navBarWidth, displayHeight)
             else -> error("Unknown rotation $requestedRotation")
         }
     }

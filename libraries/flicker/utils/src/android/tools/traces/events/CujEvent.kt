@@ -26,7 +26,7 @@ import android.tools.Timestamps
  */
 class CujEvent(
     timestamp: Timestamp,
-    val cuj: CujType,
+    val cuj: ICujType,
     processId: Int,
     uid: String,
     threadId: Int,
@@ -43,7 +43,7 @@ class CujEvent(
             "processId=$processId, " +
             "uid=$uid, " +
             "threadId=$threadId, " +
-            "tag=$tag" +
+            "eventTag=$eventTag" +
             ")"
     }
 
@@ -70,7 +70,7 @@ class CujEvent(
             )
         }
 
-        private fun getCujMarkerFromData(data: String, cujType: Type): CujType {
+        private fun getCujMarkerFromData(data: String, cujType: Type): ICujType {
             val dataEntries = getDataEntries(data, cujType)
             val eventId = dataEntries.first().toInt()
             return CujType.from(eventId)

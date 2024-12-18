@@ -29,6 +29,8 @@ public class SettingUserHelperImpl extends AbstractStandardAppHelper implements 
 
     // constants
     private static final String TAG = "SettingUserHelperImpl";
+    private static final int MAX_WAIT_COUNT = 4;
+    private static final int WAIT_SEC = 20000;
 
     private ScrollUtility mScrollUtility;
     private ScrollActions mScrollAction;
@@ -91,12 +93,11 @@ public class SettingUserHelperImpl extends AbstractStandardAppHelper implements 
     // opens permission page of a user
     @Override
     public void openPermissionsPage(String user) {
-        if (isUserPresent(user)) {
-            BySelector userSelector = By.text(user);
-            UiObject2 userObject = getSpectatioUiUtil().findUiObject(userSelector);
-            getSpectatioUiUtil().validateUiObject(userObject, String.format("User %s", user));
-            getSpectatioUiUtil().clickAndWait(userObject);
-        }
+        clickbutton(AutomotiveConfigConstants.USER_SETTINGS_MANAGE_OTHER_PROFILES);
+        BySelector userSelector = By.text(user);
+        UiObject2 userObject = getSpectatioUiUtil().findUiObject(userSelector);
+        getSpectatioUiUtil().validateUiObject(userObject, String.format("User %s", user));
+        getSpectatioUiUtil().clickAndWait(userObject);
     }
 
     // delete an existing user
@@ -162,6 +163,7 @@ public class SettingUserHelperImpl extends AbstractStandardAppHelper implements 
     // switch User from current user to given user
     @Override
     public void switchUser(String userFrom, String userTo) {
+        int count = 0;
         goToQuickSettings();
         BySelector userFromSelector = By.text(userFrom);
         UiObject2 userFromObject = getSpectatioUiUtil().findUiObject(userFromSelector);
@@ -171,7 +173,15 @@ public class SettingUserHelperImpl extends AbstractStandardAppHelper implements 
         UiObject2 userToObject = getSpectatioUiUtil().findUiObject(userToSelector);
         getSpectatioUiUtil().validateUiObject(userToObject, String.format("User %s", userTo));
         getSpectatioUiUtil().clickAndWait(userToObject);
-        getSpectatioUiUtil().wait5Seconds();
+        while ((getSpectatioUiUtil()
+                                .findUiObject(
+                                        getUiElementFromConfig(
+                                                AutomotiveConfigConstants.HOME_BOTTOM_CARD))
+                        == null)
+                && count < MAX_WAIT_COUNT) {
+            getSpectatioUiUtil().waitNSeconds(WAIT_SEC);
+            count++;
+        }
     }
 
     // add User via quick settings

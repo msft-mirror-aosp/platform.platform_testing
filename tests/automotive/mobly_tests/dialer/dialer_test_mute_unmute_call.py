@@ -33,11 +33,12 @@ class BluetoothMuteUnmuteCallTest(bluetooth_base_test.BluetoothBaseTest):
     def setup_test(self):
         # Pair the devices
         self.bt_utils.pair_primary_to_secondary()
+        super().enable_recording()
 
     def test_dial_phone_number(self):
         """Tests mute and unmute during phone call functionality."""
         #Variable
-        dialer_test_phone_number = constants.DIALER_THREE_DIGIT_NUMBER
+        dialer_test_phone_number = constants.INFORMATION_THREE_DIGIT_NUMBER
         logging.info(
             'Calling from %s calling to %s',
             self.target.serial,
@@ -65,6 +66,13 @@ class BluetoothMuteUnmuteCallTest(bluetooth_base_test.BluetoothBaseTest):
         self.call_utils.is_microphone_displayed_on_status_bar(
             True)
         self.call_utils.end_call()
+
+    def teardown_test(self):
+        # End call if test failed
+        self.call_utils.end_call_using_adb_command(self.target)
+        self.call_utils.wait_with_log(5)
+        self.call_utils.press_home()
+        super().teardown_test()
 
 if __name__ == '__main__':
         common_main()

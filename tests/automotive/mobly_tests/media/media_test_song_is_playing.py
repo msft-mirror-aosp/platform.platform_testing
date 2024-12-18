@@ -12,12 +12,14 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+import logging
 
 from bluetooth_test import bluetooth_base_test
 from mobly import asserts
 from utilities.media_utils import MediaUtils
 from utilities.common_utils import CommonUtils
 from utilities.main_utils import common_main
+# from utilities.video_utils_service import VideoRecording
 
 
 class IsSongPlayingTest(bluetooth_base_test.BluetoothBaseTest):
@@ -31,12 +33,15 @@ class IsSongPlayingTest(bluetooth_base_test.BluetoothBaseTest):
         self.common_utils.grant_local_mac_address_permission()
         self.common_utils.enable_wifi_on_phone_device()
         self.bt_utils.pair_primary_to_secondary()
+        super().enable_recording()
+        self.media_utils.enable_bt_media_debugging_logs()
 
     def test_media_is_song_playing(self):
         """Tests validating is song playing on HU, and song title"""
+        self.media_utils.open_media_app_on_hu()
+        self.call_utils.handle_bluetooth_audio_pop_up()
         self.media_utils.open_youtube_music_app()
         current_phone_song_title = self.media_utils.get_song_title_from_phone()
-        self.media_utils.open_media_app_on_hu()
         current_hu_song_title = self.media_utils.get_song_title_from_hu()
         asserts.assert_true(current_phone_song_title == current_hu_song_title,
                             'Invalid song titles. '
@@ -51,8 +56,9 @@ class IsSongPlayingTest(bluetooth_base_test.BluetoothBaseTest):
                             'Song title on phone device and HU should be the same')
 
     def teardown_test(self):
-        # Close YouTube Music app
+        #  Close YouTube Music app
         self.media_utils.close_youtube_music_app()
+        self.call_utils.press_home()
         super().teardown_test()
 
 

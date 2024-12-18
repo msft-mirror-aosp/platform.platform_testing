@@ -24,6 +24,7 @@ import android.os.UserHandle
 import android.view.Display
 import android.view.WindowManagerGlobal
 import androidx.test.platform.app.InstrumentationRegistry
+import org.junit.Assume
 import org.junit.rules.TestRule
 import org.junit.runner.Description
 import org.junit.runners.model.Statement
@@ -55,9 +56,16 @@ class DeviceEmulationRule(private val spec: DeviceEmulationSpec) : TestRule {
     }
 
     override fun apply(base: Statement, description: Description): Statement {
+        val skipDarkTheme: String =
+            InstrumentationRegistry.getArguments().getString("skip-dark-theme", "unknown")
+
         // The statement which calls beforeTest() before running the test.
         return object : Statement() {
             override fun evaluate() {
+                Assume.assumeFalse(
+                    "Skipping test: ${description.displayName}, because skip-dark-theme is true.",
+                    skipDarkTheme == "true" && spec.isDarkTheme
+                )
                 beforeTest()
                 base.evaluate()
             }
@@ -78,7 +86,8 @@ class DeviceEmulationRule(private val spec: DeviceEmulationSpec) : TestRule {
                 runtimeEnvironment.getDeclaredMethod("setQualifiers", String::class.java)
             val scaledWidth = width * 160 / density
             val scaledHeight = height * 160 / density
-            val qualifier = "w${scaledWidth}dp-h${scaledHeight}dp-${density}dpi"
+            val darkMode = if (spec.isDarkTheme) "night" else "notnight"
+            val qualifier = "w${scaledWidth}dp-h${scaledHeight}dp-${darkMode}-${density}dpi"
             setQualifiers.invoke(null, qualifier)
         } else {
             val curNightMode =

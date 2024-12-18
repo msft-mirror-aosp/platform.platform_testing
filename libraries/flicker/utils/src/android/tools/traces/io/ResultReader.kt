@@ -16,7 +16,6 @@
 
 package android.tools.traces.io
 
-import android.tools.Logger
 import android.tools.Tag
 import android.tools.Timestamp
 import android.tools.io.Artifact
@@ -25,6 +24,8 @@ import android.tools.io.Reader
 import android.tools.io.ResultArtifactDescriptor
 import android.tools.io.TraceType
 import android.tools.parsers.events.EventLogParser
+import android.tools.traces.TraceConfig
+import android.tools.traces.TraceConfigs
 import android.tools.traces.events.CujTrace
 import android.tools.traces.events.EventLog
 import android.tools.traces.parsers.perfetto.LayersTraceParser
@@ -32,16 +33,17 @@ import android.tools.traces.parsers.perfetto.ProtoLogTraceParser
 import android.tools.traces.parsers.perfetto.TraceProcessorSession
 import android.tools.traces.parsers.perfetto.TransactionsTraceParser
 import android.tools.traces.parsers.perfetto.TransitionsTraceParser
+import android.tools.traces.parsers.perfetto.WindowManagerTraceParser
 import android.tools.traces.parsers.wm.LegacyTransitionTraceParser
+import android.tools.traces.parsers.wm.LegacyWindowManagerTraceParser
 import android.tools.traces.parsers.wm.WindowManagerDumpParser
-import android.tools.traces.parsers.wm.WindowManagerTraceParser
 import android.tools.traces.protolog.ProtoLogTrace
 import android.tools.traces.surfaceflinger.LayersTrace
 import android.tools.traces.surfaceflinger.TransactionsTrace
 import android.tools.traces.wm.TransitionsTrace
 import android.tools.traces.wm.WindowManagerTrace
-import android.tools.traces.TraceConfig
-import android.tools.traces.TraceConfigs
+import android.tools.withTracing
+import android.util.Log
 import androidx.annotation.VisibleForTesting
 import java.io.IOException
 
@@ -55,15 +57,20 @@ open class ResultReader(_result: IResultData, internal val traceConfig: TraceCon
     @VisibleForTesting
     var result = _result
         internal set
+
     override val artifact: Artifact = result.artifact
     override val artifactPath: String
         get() = result.artifact.absolutePath
+
     override val runStatus
         get() = result.runStatus
+
     internal val transitionTimeRange
         get() = result.transitionTimeRange
+
     override val isFailure
         get() = runStatus.isFailure
+
     override val executionError
         get() = result.executionError
 
@@ -77,41 +84,18 @@ open class ResultReader(_result: IResultData, internal val traceConfig: TraceCon
      */
     @Throws(IOException::class)
     override fun readWmState(tag: String): WindowManagerTrace? {
-        return Logger.withTracing("readWmState#$tag") {
+        return withTracing("readWmState#$tag") {
             val descriptor = ResultArtifactDescriptor(TraceType.WM_DUMP, tag)
-            Logger.d(FLICKER_IO_TAG, "Reading WM trace descriptor=$descriptor from $result")
+            Log.d(FLICKER_IO_TAG, "Reading WM trace descriptor=$descriptor from $result")
             val traceData = artifact.readBytes(descriptor)
-            traceData?.let { WindowManagerDumpParser().parse(it, clearCache = true) }
-        }
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @throws IOException if the artifact file doesn't exist or can't be read
-     */
-    @Throws(IOException::class)
-    override fun readWmTrace(): WindowManagerTrace? {
-        return Logger.withTracing("readWmTrace") {
-            val descriptor = ResultArtifactDescriptor(TraceType.WM)
-            artifact.readBytes(descriptor)?.let {
-                val trace =
-                    WindowManagerTraceParser()
-                        .parse(
-                            it,
-                            from = transitionTimeRange.start,
-                            to = transitionTimeRange.end,
-                            addInitialEntry = true,
-                            clearCache = true
-                        )
-                val minimumEntries = minimumTraceEntriesForConfig(traceConfig.wmTrace)
-                require(trace.entries.size >= minimumEntries) {
-                    "WM trace contained ${trace.entries.size} entries, " +
-                        "expected at least $minimumEntries... :: " +
-                        "transition starts at ${transitionTimeRange.start} and " +
-                        "ends at ${transitionTimeRange.end}."
+            traceData?.let {
+                if (android.tracing.Flags.perfettoWmDump()) {
+                    TraceProcessorSession.loadPerfettoTrace(it) { session ->
+                        WindowManagerTraceParser().parse(session)
+                    }
+                } else {
+                    WindowManagerDumpParser().parse(it, clearCache = true)
                 }
-                trace
             }
         }
     }
@@ -122,8 +106,35 @@ open class ResultReader(_result: IResultData, internal val traceConfig: TraceCon
      * @throws IOException if the artifact file doesn't exist or can't be read
      */
     @Throws(IOException::class)
+    override fun readWmTrace(): WindowManagerTrace? {
+        return withTracing("readWmTrace") {
+            val trace =
+                if (android.tracing.Flags.perfettoWmTracing()) {
+                    readPerfettoWindowManagerTrace()
+                } else {
+                    readLegacyWindowManagerTrace()
+                }
+            if (trace != null) {
+                val minimumEntries = minimumTraceEntriesForConfig(traceConfig.wmTrace)
+                require(trace.entries.size >= minimumEntries) {
+                    "WM trace contained ${trace.entries.size} entries, " +
+                        "expected at least $minimumEntries... :: " +
+                        "transition starts at ${transitionTimeRange.start} and " +
+                        "ends at ${transitionTimeRange.end}."
+                }
+            }
+            trace
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @throws IOException if the artifact file doesn't exist or can't be read
+     */
+    @Throws(IOException::class)
     override fun readLayersTrace(): LayersTrace? {
-        return Logger.withTracing("readLayersTrace") {
+        return withTracing("readLayersTrace") {
             val descriptor = ResultArtifactDescriptor(TraceType.SF)
             artifact.readBytes(descriptor)?.let {
                 val trace =
@@ -156,7 +167,7 @@ open class ResultReader(_result: IResultData, internal val traceConfig: TraceCon
      */
     @Throws(IOException::class)
     override fun readLayersDump(tag: String): LayersTrace? {
-        return Logger.withTracing("readLayersDump#$tag") {
+        return withTracing("readLayersDump#$tag") {
             val descriptor = ResultArtifactDescriptor(TraceType.SF_DUMP, tag)
             val traceData = artifact.readBytes(descriptor)
             if (traceData != null) {
@@ -176,7 +187,7 @@ open class ResultReader(_result: IResultData, internal val traceConfig: TraceCon
      */
     @Throws(IOException::class)
     override fun readTransactionsTrace(): TransactionsTrace? =
-        Logger.withTracing("readTransactionsTrace") {
+        withTracing("readTransactionsTrace") {
             doReadTransactionsTrace(from = transitionTimeRange.start, to = transitionTimeRange.end)
         }
 
@@ -199,7 +210,7 @@ open class ResultReader(_result: IResultData, internal val traceConfig: TraceCon
      */
     @Throws(IOException::class)
     override fun readTransitionsTrace(): TransitionsTrace? {
-        return Logger.withTracing("readTransitionsTrace") {
+        return withTracing("readTransitionsTrace") {
             val trace =
                 if (android.tracing.Flags.perfettoTransitionTracing()) {
                     readPerfettoTransitionsTrace()
@@ -226,7 +237,7 @@ open class ResultReader(_result: IResultData, internal val traceConfig: TraceCon
      */
     @Throws(IOException::class)
     override fun readProtoLogTrace(): ProtoLogTrace? {
-        return Logger.withTracing("readProtoLogTrace") {
+        return withTracing("readProtoLogTrace") {
             val traceData = artifact.readBytes(ResultArtifactDescriptor(TraceType.PERFETTO))
 
             traceData?.let {
@@ -239,6 +250,32 @@ open class ResultReader(_result: IResultData, internal val traceConfig: TraceCon
                         )
                 }
             }
+        }
+    }
+
+    private fun readPerfettoWindowManagerTrace(): WindowManagerTrace? {
+        val traceData = artifact.readBytes(ResultArtifactDescriptor(TraceType.PERFETTO))
+
+        return traceData?.let {
+            TraceProcessorSession.loadPerfettoTrace(traceData) { session ->
+                WindowManagerTraceParser()
+                    .parse(session, from = transitionTimeRange.start, to = transitionTimeRange.end)
+            }
+        }
+    }
+
+    private fun readLegacyWindowManagerTrace(): WindowManagerTrace? {
+        val traceData = artifact.readBytes(ResultArtifactDescriptor(TraceType.WM))
+
+        return traceData?.let {
+            LegacyWindowManagerTraceParser()
+                .parse(
+                    it,
+                    from = transitionTimeRange.start,
+                    to = transitionTimeRange.end,
+                    addInitialEntry = true,
+                    clearCache = true
+                )
         }
     }
 
@@ -283,7 +320,7 @@ open class ResultReader(_result: IResultData, internal val traceConfig: TraceCon
      */
     @Throws(IOException::class)
     override fun readEventLogTrace(): EventLog? {
-        return Logger.withTracing("readEventLogTrace") {
+        return withTracing("readEventLogTrace") {
             val descriptor = ResultArtifactDescriptor(TraceType.EVENT_LOG)
             artifact.readBytes(descriptor)?.let {
                 EventLogParser()

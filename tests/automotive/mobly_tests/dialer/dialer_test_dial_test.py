@@ -14,12 +14,12 @@
 
 """Test of basic calling with given digits
  Steps include:
-        1) Precall state check on Seahawk and phone devices. (OK)
-        3) Make a call to any digits number using Seahawk
-        4) Assert calling number on Sehawk same as ten digits number
-        5) End call on Seahawk
-        6) Get latest dialed number from the Seahawk
-        7) Assert dialed number on the Seahawk same as called ten digits number
+        1) Precall state check on IVI device and phone devices. (OK)
+        3) Make a call to any digits number using IVI device
+        4) Assert calling number on IVI device same as ten digits number
+        5) End call on IVI device
+        6) Get latest dialed number from the IVI device
+        7) Assert dialed number on the IVI device same as called ten digits number
 """
 
 from bluetooth_test import bluetooth_base_test
@@ -33,10 +33,11 @@ class BluetoothDialTest(bluetooth_base_test.BluetoothBaseTest):
     def setup_test(self):
         # Pair the devices
         self.bt_utils.pair_primary_to_secondary()
+        super().enable_recording()
 
     def test_dial_large_digits_number(self):
         #Variable
-        dialer_test_phone_number = constants.DIALER_THREE_DIGIT_NUMBER
+        dialer_test_phone_number = constants.INFORMATION_THREE_DIGIT_NUMBER
         #Tests the calling three digits number functionality
         logging.info(
             'Calling from %s calling to %s',
@@ -54,6 +55,13 @@ class BluetoothDialTest(bluetooth_base_test.BluetoothBaseTest):
         self.call_utils.wait_with_log(5)
         self.call_utils.open_call_history()
         self.call_utils.verify_last_dialed_number(dialer_test_phone_number)
+
+    def teardown_test(self):
+        # End call if test failed
+        self.call_utils.end_call_using_adb_command(self.target)
+        self.call_utils.wait_with_log(5)
+        self.call_utils.press_home()
+        super().teardown_test()
 
 if __name__ == '__main__':
     common_main()

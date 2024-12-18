@@ -27,20 +27,11 @@
 
 """
 
-import sys
-import logging
-import pprint
-
 from bluetooth_test import bluetooth_base_test
-
 from mobly import asserts
-from mobly import base_test
-from mobly import test_runner
-from mobly.controllers import android_device
-
+from utilities.main_utils import common_main
 from utilities import constants
-from utilities import spectatio_utils
-from utilities import bt_utils
+import logging
 
 MOBILE_DEVICE_NAME = 'target'
 AUTOMOTIVE_DEVICE_NAME = 'discoverer'
@@ -51,8 +42,13 @@ class BluetoothConnectionStatusOnLevelTwo(bluetooth_base_test.BluetoothBaseTest)
     def setup_test(self):
         # Pair the devices
         self.bt_utils.pair_primary_to_secondary()
+        super().enable_recording()
 
     def test_connection_status_displayed_on_device_screen(self):
+        # Log BT Connection State after pairing
+        bt_connection_state=self.call_utils.get_bt_connection_status_using_adb_command(self.discoverer)
+        logging.info("BT State after pairing : <%s>", bt_connection_state)
+
         # Open bluetooth settings.
         self.call_utils.open_bluetooth_settings()
 
@@ -76,4 +72,4 @@ class BluetoothConnectionStatusOnLevelTwo(bluetooth_base_test.BluetoothBaseTest)
 
 if __name__ == '__main__':
     # Take test args
-    test_runner.main()
+    common_main()

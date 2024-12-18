@@ -27,7 +27,7 @@ java_defaults {
     certificate: "platform",
     platform_apis: true,
     test_suites: ["device-tests"],
-    libs: ["android.test.runner"],
+    libs: ["android.test.runner.stubs.system"],
     optimize: {
         enabled: false,
     },
@@ -40,7 +40,7 @@ java_defaults {
     ],
     data: [
         "trace_config/*",
-    ]
+    ],
 }
 
 android_test {
@@ -54,7 +54,10 @@ android_test {
     ],
     exclude_srcs: [
         "src/android/tools/integration/**/*.kt",
-    ]
+    ],
+    static_libs: [
+        "//frameworks/base/packages/SystemUI/aconfig:com_android_systemui_flags_lib",
+    ],
 }
 
 android_test {
@@ -65,7 +68,10 @@ android_test {
     instrumentation_target_package: "android.tools.integration",
     srcs: [
         "src/android/tools/integration/**/*.kt",
-        "src/android/tools/rules/**/*.kt",
-        "src/android/tools/Utils.kt",
+        "src/android/tools/testrules/**/*.kt",
+        "src/android/tools/TestUtils.kt",
+    ],
+    static_libs: [
+        "//frameworks/base/packages/SystemUI/aconfig:com_android_systemui_flags_lib",
     ],
 }

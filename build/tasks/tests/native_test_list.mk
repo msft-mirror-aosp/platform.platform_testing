@@ -92,7 +92,10 @@ native_tests := \
     libminijail_unittest_gtest \
     libnativehelper_tests \
     libnetworkstats_test \
+    libnfc-nci-jni-tests\
+    libnfc-nci-tests\
     libprocinfo_test \
+    librenderengine_test \
     libtextclassifier_tests-tplus \
     libtextclassifier_tests-sminus \
     libsurfaceflinger_unittest \
@@ -118,7 +121,6 @@ native_tests := \
     netd_integration_test \
     netd_unit_test \
     netdutils_test \
-    nfc_test_utils \
     num-traits_test_src_lib \
     num-traits_test_tests_cast \
     perfetto_integrationtests \

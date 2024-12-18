@@ -35,6 +35,7 @@ class DialerPageRefresh(bluetooth_base_test.BluetoothBaseTest):
     def setup_test(self):
         # Pair the devices
         self.bt_utils.pair_primary_to_secondary()
+        super().enable_recording()
 
     def test_dialer_page_refresh(self):
 
@@ -64,6 +65,11 @@ class DialerPageRefresh(bluetooth_base_test.BluetoothBaseTest):
                             % (constants.DEFAULT_DIAL_PAD_ENTRY,
                                str(stored_number)))
 
+
+    def teardown_test(self):
+        self.call_utils.wait_with_log(5)
+        self.call_utils.press_home()
+        super().teardown_test()
 
 if __name__ == '__main__':
     common_main()

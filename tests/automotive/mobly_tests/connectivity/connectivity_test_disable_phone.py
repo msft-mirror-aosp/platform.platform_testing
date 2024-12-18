@@ -22,19 +22,11 @@
 
 """
 
-import sys
 import logging
-import pprint
 
 from mobly import asserts
-from mobly import test_runner
-from mobly.controllers import android_device
-
+from utilities.main_utils import common_main
 from bluetooth_test import bluetooth_base_test
-
-
-from utilities.spectatio_utils import CallUtils
-from utilities.bt_utils import BTUtils
 from utilities import constants
 
 class BluetoothDisableEnablePhoneTest(bluetooth_base_test.BluetoothBaseTest):
@@ -44,9 +36,14 @@ class BluetoothDisableEnablePhoneTest(bluetooth_base_test.BluetoothBaseTest):
     def setup_test(self):
         # Pair the devices
         self.bt_utils.pair_primary_to_secondary()
+        super().enable_recording()
 
 
     def test_disable_enable_phone(self):
+        # Log BT Connection State after pairing
+        bt_connection_state=self.call_utils.get_bt_connection_status_using_adb_command(self.discoverer)
+        logging.info("BT State after pairing : <%s>", bt_connection_state)
+
         # Navigate to the bluetooth settings page
         self.call_utils.open_bluetooth_settings()
         target_name = self.target.mbs.btGetName()
@@ -96,4 +93,4 @@ class BluetoothDisableEnablePhoneTest(bluetooth_base_test.BluetoothBaseTest):
 
 if __name__ == '__main__':
     # Take test args
-    test_runner.main()
+    common_main()

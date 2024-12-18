@@ -16,8 +16,8 @@
 
 package android.tools.flicker.subject.region
 
-import android.tools.datatypes.Rect
-import android.tools.datatypes.Region
+import android.graphics.Rect
+import android.graphics.Region
 import android.tools.flicker.subject.exceptions.IncorrectRegionException
 
 interface IRegionSubject {
@@ -133,6 +133,14 @@ interface IRegionSubject {
     fun notBiggerThan(other: Region): IRegionSubject
 
     /**
+     * Asserts that region is not smaller than [other], even if the regions don't overlap.
+     *
+     * @param other Area to compare to
+     * @throws AssertionError
+     */
+    fun notSmallerThan(other: Region): IRegionSubject
+
+    /**
      * Asserts that region is positioned to the right and bottom from [other], but the regions can
      * overlap and region can be smaller than [other]
      *
@@ -148,7 +156,7 @@ interface IRegionSubject {
      * @param other Expected area that the center should be in
      * @throws AssertionError
      */
-    fun regionsCenterPointInside(other: Region): IRegionSubject
+    fun regionsCenterPointInside(other: Rect): IRegionSubject
 
     /**
      * Asserts that region covers at least [other], that is, its area covers each point in the

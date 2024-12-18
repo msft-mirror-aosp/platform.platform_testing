@@ -68,6 +68,11 @@ class CallUtils:
         """Get dialing phone number"""
         return self.device.mbs.getDialingNumber()
 
+    def get_user_phone_number(self):
+        """Get user phone number"""
+        return self.device.mbs.getUserProfilePhoneNumber()
+
+
     def get_home_address_from_details(self):
         """Return the home address of the contact whose details are currently being displayed"""
         return self.device.mbs.getHomeAddress()
@@ -122,8 +127,14 @@ class CallUtils:
     def open_bluetooth_settings(self):
         """Assumes we are on the home screen.
         Navigate to the Bluetooth setting page"""
-        logging.info("Opening bluetooth settings (via the Status Bar)")
+        logging.info("Opening bluetooth settings (via the home screen)")
         self.device.mbs.openBluetoothSettings()
+
+    def open_bluetooth_settings_form_status_bar(self):
+        """Assumes we are on the home screen.
+        Navigate to the Bluetooth setting page"""
+        logging.info("Opening bluetooth settings (via the Status Bar)")
+        self.device.mbs.openBluetoothSettingsFromStatusBar()
 
     def press_active_call_toggle(self):
         logging.info("Pressing the Active Call toggle")
@@ -228,7 +239,6 @@ class CallUtils:
 
     def upload_vcf_contacts_to_device(self, device_target, path_to_contacts_file):
         """Upload contacts do device"""
-        self.push_vcf_contacts_to_device(device_target, path_to_contacts_file)
         self.import_contacts_from_vcf_file(device_target)
         device_target.mbs.pressDevice()
 
@@ -297,7 +307,7 @@ class CallUtils:
 
     def verify_disabled_phone_profile(self):
         logging.info("Checks if phone profile is disabled")
-        return self.device.mbs.verifyDisabledPhoneProfile()
+        return self.device.mbs.isBluetoothPhoneButtonEnabled()
 
     def verify_bluetooth_hfp_error_displayed(self):
         logging.info("Checks if bluetooth hfp error")
@@ -357,6 +367,16 @@ class CallUtils:
         self.device.mbs.cancelBluetoothAudioConncetion()
         logging.info('Clicked on <Cancel> label present on bluetooth Audio page')
 
+    def handle_bluetooth_audio_pop_up(self):
+        """ Close on BT audio popup if present on bluetooth Audio page"""
+        logging.info('Adding wait to check the Bluetooth Audio popup')
+        time.sleep(constants.DEFAULT_WAIT_TIME_FIVE_SECS)
+        is_bluetooth_media_popup_present = self.is_connect_to_bluetooth_label_visible_on_bluetooth_audio_page()
+        if is_bluetooth_media_popup_present:
+          logging.info('BT Audio popup present, cancelling that.')
+          self.click_cancel_label_visible_on_bluetooth_audio_page()
+
+
     def update_device_timezone(self, expected_timezone):
         logging.info('Update the device timezone to %s',
                      expected_timezone)
@@ -412,6 +432,21 @@ class CallUtils:
     def verify_dialing_number(self, expected_dialing_number):
         """Replace all non-digits characters to null"""
         actual_dialing_number = re.sub(r'\D', '', str(self.get_dialing_number()))
+        logging.info('dialing number: %s',self.get_dialing_number())
+        logging.info(
+            'Expected dialing number: %s, Actual: %s',
+            expected_dialing_number,
+            actual_dialing_number,
+        )
+        if actual_dialing_number != expected_dialing_number:
+            raise CallUtilsError(
+                "Actual and Expected dialing numbers don't match.")
+
+
+    # Verify dialing number the same as expected
+    def verify_user_phone_number(self, expected_dialing_number):
+        """Replace all non-digits characters to null"""
+        actual_dialing_number = re.sub(r'\D', '', str(self.get_user_phone_number()))
         logging.info(
             'Expected dialing number: %s, Actual: %s',
             expected_dialing_number,
@@ -614,9 +649,11 @@ class CallUtils:
     def delete_dialed_number_on_dial_pad(self):
         logging.info('Deleting dialed number on Dial Pad')
         self.device.mbs.deleteDialedNumber()
+
     # End call on IVI using adb shell command
     def end_call_using_adb_command(self, device_target):
         self.execute_shell_on_device(device_target, 'input keyevent KEYCODE_ENDCALL')
+        self.execute_shell_on_device(device_target, 'input keyevent KEYCODE_POWER')
 
     # Make a call most recent history
     def call_most_recent_call_history(self):
@@ -634,9 +671,11 @@ class CallUtils:
         self.device.mbs.changeAudioSourceToCarSpeakers()
 
     def enable_driving_mode(self):
+        logging.info('Enabling the drive mode')
         self.device.mbs.enableDrivingMode()
 
     def disable_driving_mode(self):
+        logging.info('Disabling the drive mode')
         self.device.mbs.disableDrivingMode()
 
     # Check if microphone chip is displayed on status bar
@@ -675,3 +714,19 @@ class CallUtils:
 
     def press_phone_home_icon_using_adb_command(self, device_target):
         self.execute_shell_on_device(device_target, 'input keyevent KEYCODE_HOME')
+
+    def get_bt_profile_status_using_adb_command(self, device_target, profile):
+        try:
+           bt_profile_status = self.execute_shell_on_device(device_target, profile).decode('utf8')
+           logging.debug(bt_profile_status)
+           return bt_profile_status
+        except adb.AdbError:
+           logging.info("Adb returned null")
+
+    def get_bt_connection_status_using_adb_command(self, device_target):
+            try:
+               bt_connection_status = self.execute_shell_on_device(device_target, constants.BLUETOOTH_CONNECTION_STATE).decode('utf8')
+               logging.debug(bt_connection_status)
+               return bt_connection_status
+            except adb.AdbError:
+               logging.info("Adb returned null")

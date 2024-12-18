@@ -46,6 +46,7 @@ public class AutomotiveConfigConstants {
     public static final String VOICE_CHANNEL_CAR = "VOICE_CHANNEL_CAR";
     public static final String DIALED_CONTACT_TYPE = "DIALED_CONTACT_TYPE";
     public static final String DIALING_NUMBER = "DIALING_NUMBER";
+    public static final String USER_PROFILE_PHONE_NUMBER = "USER_PROFILE_PHONE_NUMBER";
     public static final String CONTACT_SEARCH_BAR = "CONTACT_SEARCH_BAR";
     public static final String CONTACT_SEARCH_RESULT = "CONTACT_SEARCH_RESULT";
     public static final String CONTACT_SEARCH_RESULT_NAME = "CONTACT_SEARCH_RESULT_NAME";
@@ -230,6 +231,9 @@ public class AutomotiveConfigConstants {
     // Display Settings Constants
     public static final String BRIGHTNESS_SEEKBAR = "BRIGHTNESS_SEEKBAR";
 
+    // Bluetooth Settings Constants
+    public static final String USE_BLUETOOTH_SETTINGS_TOGGLE = "USE_BLUETOOTH_SETTINGS_TOGGLE";
+
     // Date and time Settings Constants
     public static final String DATE_TIME_SETTINGS_SCROLL_ACTION =
             "DATE_TIME_SETTINGS_SCROLL_ACTION";
@@ -289,6 +293,7 @@ public class AutomotiveConfigConstants {
             "SOUND_SETTINGS_SCROLL_BACKWARD_BUTTON";
     public static final String SOUND_SETTINGS_SCROLL_MARGIN = "SOUND_SETTINGS_SCROLL_MARGIN";
     public static final String SOUND_SETTINGS_SCROLL_WAIT_TIME = "SOUND_SETTINGS_SCROLL_WAIT_TIME";
+    public static final String SOUND_SETTING_INCALL = "SOUND_SETTING_INCALL";
 
     // Media Center
     public static final String MEDIA_CENTER_PACKAGE = "MEDIA_CENTER_PACKAGE";
@@ -315,6 +320,8 @@ public class AutomotiveConfigConstants {
     public static final String TRACK_NAME = "TRACK_NAME";
     public static final String TRACK_NAME_MINIMIZED_CONTROL = "TRACK_NAME_MINIMIZED_CONTROL";
     public static final String BACK_BUTTON = "BACK_BUTTON";
+    public static final String ACCOUNT_SETTINGS_TRY_ANOTHER_WAY =
+            "ACCOUNT_SETTINGS_TRY_ANOTHER_WAY";
     // Media Center On Home Screen
     public static final String PLAY_PAUSE_BUTTON_HOME_SCREEN = "PLAY_PAUSE_BUTTON_HOME_SCREEN";
     public static final String PREVIOUS_BUTTON_HOME_SCREEN = "PREVIOUS_BUTTON_HOME_SCREEN";
@@ -377,6 +384,11 @@ public class AutomotiveConfigConstants {
     public static final String APPS_SETTINGS = "OPEN_APPS_SETTINGS_WORKFLOW";
     public static final String SECURITY_SETTINGS = "OPEN_SECURITY_SETTINGS_WORKFLOW";
 
+    public static final String SETTINGS_SCROLL_ACTION = "SETTINGS_SCROLL_ACTION";
+    public static final String SETTINGS_SCROLL_DIRECTION = "SETTINGS_SCROLL_DIRECTION";
+    public static final String SETTINGS_SCROLL_BACKWARD_BUTTON = "SETTINGS_SCROLL_BACKWARD_BUTTON";
+    public static final String SETTINGS_SCROLL_FORWARD_BUTTON = "SETTINGS_SCROLL_FORWARD_BUTTON";
+    public static final String SETTINGS_SCROLL_ELEMENT = "SETTINGS_SCROLL_ELEMENT";
     public static final String SETTINGS_SUB_SETTING_SCROLL_ACTION =
             "SETTINGS_SUB_SETTING_SCROLL_ACTION";
     public static final String SETTINGS_SUB_SETTING_SCROLL_DIRECTION =
@@ -661,6 +673,7 @@ public class AutomotiveConfigConstants {
 
     // Phone Device Identifiers
     public static final String MOBILE_CALL_BUTTON = "MOBILE_CALL_BUTTON";
+    public static final String MOBILE_DIALPAD = "MOBILE_DIALPAD";
     public static final String MOBILE_DIAL_PAD_ICON = "MOBILE_DIALPAD_ICON";
     public static final String MOBILE_PHONE_ICON = "MOBILE_PHONE_ICON";
     public static final String PHONE_DEVICE_PACKAGE = "PHONE_DEVICE_PACAKAGE";
@@ -668,4 +681,28 @@ public class AutomotiveConfigConstants {
 
     // Phone Card Identifiers
     public static final String PHONE_CARD_DIALER_BUTTON = "PHONE_CARD_DIALER_BUTTON";
+
+    // Sound Palette
+    public static final String STATUS_BAR_SOUND_BUTTON = "STATUS_BAR_SOUND_BUTTON";
+    public static final String SOUND_PALETTE_INCALL = "SOUND_PALETTE_INCALL";
+    public static final String SOUND_PALETTE_MEDIA = "SOUND_PALETTE_MEDIA";
+    public static final String SOUND_PALETTE_NAVIGATION = "SOUND_PALETTE_NAVIGATION";
+    public static final String SOUND_PALETTE_SOUND_SETTINGS = "SOUND_PALETTE_SOUND_SETTINGS";
+    public static final String SOUND_PALETTE_SOUND_SETTINGS_PAGE_TITLE =
+            "SOUND_PALETTE_SOUND_SETTINGS_PAGE_TITLE";
+
+    // System Setting UI elements
+    public static final String SYSTEM_SETTINGS_UNITS = "SYSTEM_SETTINGS_UNITS";
+    public static final String LANGUAGE_SYSTEM_SETTINGS_AUTOFILL_SERVICE =
+            "LANGUAGE_SYSTEM_SETTINGS_AUTOFILL_SERVICE";
+    public static final String LANGUAGE_SYSTEM_SETTINGS_KEYBOARD =
+            "LANGUAGE_SYSTEM_SETTINGS_KEYBOARD";
+    public static final String LANGUAGE_SYSTEM_SETTINGS_TEXT_TO_SPEECH_OUTPUT =
+            "LANGUAGE_SYSTEM_SETTINGS_TEXT_TO_SPEECH_OUTPUT";
+    public static final String UNIT_SYSTEM_SETTINGS_SPEED = "UNIT_SYSTEM_SETTINGS_SPEED";
+    public static final String UNIT_SYSTEM_SETTINGS_DISTANCE = "UNIT_SYSTEM_SETTINGS_DISTANCE";
+    public static final String UNIT_SYSTEM_SETTINGS_TEMPERATURE =
+            "UNIT_SYSTEM_SETTINGS_TEMPERATURE";
+    public static final String UNIT_SYSTEM_SETTINGS_PRESSURE = "UNIT_SYSTEM_SETTINGS_PRESSURE";
+    public static final String LANGUAGES_INPUT_IN_SYSTEM = "LANGUAGES_INPUT_IN_SYSTEM";
 }

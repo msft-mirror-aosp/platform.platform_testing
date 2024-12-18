@@ -22,20 +22,11 @@
 
 """
 
-import sys
-import logging
-import pprint
-
 from mobly import asserts
-from mobly import test_runner
-from mobly.controllers import android_device
-
+from utilities.main_utils import common_main
 from bluetooth_test import bluetooth_base_test
-
-
-from utilities.spectatio_utils import CallUtils
-from utilities.bt_utils import BTUtils
 from utilities import constants
+import logging
 
 class BluetoothDisableEnableMediaTest(bluetooth_base_test.BluetoothBaseTest):
 
@@ -47,8 +38,13 @@ class BluetoothDisableEnableMediaTest(bluetooth_base_test.BluetoothBaseTest):
         self.bt_utils.pair_primary_to_secondary()
         self.call_utils.wait_with_log(constants.DEVICE_CONNECT_WAIT_TIME)
         self.target_name = self.target.mbs.btGetName()
+        super().enable_recording()
 
     def test_disable_enable_media(self):
+        # Log BT Connection State after pairing
+        bt_connection_state=self.call_utils.get_bt_connection_status_using_adb_command(self.discoverer)
+        logging.info("BT State after pairing : <%s>", bt_connection_state)
+
         # Navigate to the bluetooth settings page
         self.call_utils.open_bluetooth_settings()
         # Disable media for the listed paired device via the preference button
@@ -91,4 +87,4 @@ class BluetoothDisableEnableMediaTest(bluetooth_base_test.BluetoothBaseTest):
 
 if __name__ == '__main__':
     # Take test args
-    test_runner.main()
+    common_main()
