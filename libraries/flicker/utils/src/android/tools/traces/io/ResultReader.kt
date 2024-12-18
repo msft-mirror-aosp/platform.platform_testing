@@ -89,7 +89,7 @@ open class ResultReader(_result: IResultData, internal val traceConfig: TraceCon
             Log.d(FLICKER_IO_TAG, "Reading WM trace descriptor=$descriptor from $result")
             val traceData = artifact.readBytes(descriptor)
             traceData?.let {
-                if (android.tracing.Flags.perfettoWmTracing()) {
+                if (android.tracing.Flags.perfettoWmDump()) {
                     TraceProcessorSession.loadPerfettoTrace(it) { session ->
                         WindowManagerTraceParser().parse(session)
                     }
@@ -145,7 +145,7 @@ open class ResultReader(_result: IResultData, internal val traceConfig: TraceCon
                                 transitionTimeRange.start,
                                 transitionTimeRange.end,
                                 addInitialEntry = true,
-                                clearCache = true
+                                clearCache = true,
                             )
                     }
                 val minimumEntries = minimumTraceEntriesForConfig(traceConfig.layersTrace)
@@ -246,7 +246,7 @@ open class ResultReader(_result: IResultData, internal val traceConfig: TraceCon
                         .parse(
                             session,
                             from = transitionTimeRange.start,
-                            to = transitionTimeRange.end
+                            to = transitionTimeRange.end,
                         )
                 }
             }
@@ -274,7 +274,7 @@ open class ResultReader(_result: IResultData, internal val traceConfig: TraceCon
                     from = transitionTimeRange.start,
                     to = transitionTimeRange.end,
                     addInitialEntry = true,
-                    clearCache = true
+                    clearCache = true,
                 )
         }
     }
@@ -304,7 +304,7 @@ open class ResultReader(_result: IResultData, internal val traceConfig: TraceCon
                     wmSideTraceData,
                     shellSideTraceData,
                     from = transitionTimeRange.start,
-                    to = transitionTimeRange.end
+                    to = transitionTimeRange.end,
                 )
         }
     }

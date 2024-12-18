@@ -98,8 +98,9 @@ class MediaUtils:
     def get_song_metadata(self):
         logging.info("Getting song metadata from phone device")
         # get dumpsys
-        dumpsys_metadata = self.execute_shell_on_device(constants.GET_DUMPSYS_METADATA).decode(
+        dumpsys_metadata = self.execute_shell_on_device(constants.GET_MEDIA_DUMPSYS_METADATA).decode(
             'utf8')
+        logging.debug("Song metadata on phone device before matching regex: %s", dumpsys_metadata)
 
         # compile regex
         regex_pattern = re.compile(constants.SONG_METADATA_PATTERN)
@@ -195,7 +196,7 @@ class MediaUtils:
 
     # Minimize playing song
     def minimize_now_playing(self):
-        logging.info("Maximizing playing song on HU")
+        logging.info("Minimizing the now playing song on HU")
         self.discoverer.mbs.minimizeNowPlaying()
 
     # Open playlist
@@ -302,3 +303,17 @@ class MediaUtils:
         else:
             logging.error("Invalid FM Radio frequency. Expected pattern: <%s>",
                           constants.FM_FREQUENCY_PATTERN)
+
+    def enable_bt_media_debugging_logs(self):
+        self.execute_shell_on_hu_device(constants.PLAYBACK_VIEW_MODEL)
+        self.execute_shell_on_hu_device(constants.MEDIA_BROWSER_CONNECTOR)
+        self.execute_shell_on_hu_device(constants.SETTINGS_CLOCK_SECONDS)
+
+    # Get bt dumpsys from HU device
+    def get_bt_dumpsys_metadata(self):
+        logging.debug("Getting bt dumpsys from HU device")
+        # get bt dumpsys
+        dumpsys_metadata = self.execute_shell_on_hu_device(constants.GET_DUMPSYS_METADATA).decode(
+            'utf8')
+        logging.debug('bt dumpsys before tear down on HU device: %s"',
+                             dumpsys_metadata)

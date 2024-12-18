@@ -231,6 +231,9 @@ public class AutomotiveConfigConstants {
     // Display Settings Constants
     public static final String BRIGHTNESS_SEEKBAR = "BRIGHTNESS_SEEKBAR";
 
+    // Bluetooth Settings Constants
+    public static final String USE_BLUETOOTH_SETTINGS_TOGGLE = "USE_BLUETOOTH_SETTINGS_TOGGLE";
+
     // Date and time Settings Constants
     public static final String DATE_TIME_SETTINGS_SCROLL_ACTION =
             "DATE_TIME_SETTINGS_SCROLL_ACTION";
@@ -359,6 +362,7 @@ public class AutomotiveConfigConstants {
     public static final String TOGGLE_BLUETOOTH = "TOGGLE_BLUETOOTH";
     public static final String TOGGLE_DEVICE_BLUETOOTH = "TOGGLE_DEVICE_BLUETOOTH";
     public static final String DEVICE_HEADER_SUMMARY = "DEVICE_HEADER_SUMMARY";
+    public static final String DEVICE_HEADER_TITLE = "DEVICE_HEADER_TITLE";
     public static final String DEVICE_CONNECTION_TEXT = "DEVICE_CONNECTION_TOGGLE";
 
     public static final String DEVICE_CONNECTION_BUTTON = "DEVICE_CONNECTION_BUTTON";
@@ -381,6 +385,11 @@ public class AutomotiveConfigConstants {
     public static final String APPS_SETTINGS = "OPEN_APPS_SETTINGS_WORKFLOW";
     public static final String SECURITY_SETTINGS = "OPEN_SECURITY_SETTINGS_WORKFLOW";
 
+    public static final String SETTINGS_SCROLL_ACTION = "SETTINGS_SCROLL_ACTION";
+    public static final String SETTINGS_SCROLL_DIRECTION = "SETTINGS_SCROLL_DIRECTION";
+    public static final String SETTINGS_SCROLL_BACKWARD_BUTTON = "SETTINGS_SCROLL_BACKWARD_BUTTON";
+    public static final String SETTINGS_SCROLL_FORWARD_BUTTON = "SETTINGS_SCROLL_FORWARD_BUTTON";
+    public static final String SETTINGS_SCROLL_ELEMENT = "SETTINGS_SCROLL_ELEMENT";
     public static final String SETTINGS_SUB_SETTING_SCROLL_ACTION =
             "SETTINGS_SUB_SETTING_SCROLL_ACTION";
     public static final String SETTINGS_SUB_SETTING_SCROLL_DIRECTION =
@@ -392,6 +401,7 @@ public class AutomotiveConfigConstants {
     public static final String SETTINGS_SUB_SETTING_SCROLL_ELEMENT =
             "SETTINGS_SUB_SETTING_SCROLL_ELEMENT";
     public static final String SETTINGS_TITLE_TEXT = "SETTINGS_TITLE_TEXT";
+    public static final String SETTINGS_BACK_NAV_ICON = "SETTINGS_BACK_NAV_ICON";
     public static final String LOCATION_SETTINGS_RECENTLY_ACCESSED_MAPS =
             "LOCATION_SETTINGS_RECENTLY_ACCESSED_MAPS";
     public static final String LOCATION_SETTINGS_VIEW_ALL = "LOCATION_SETTINGS_VIEW_ALL";
@@ -500,6 +510,11 @@ public class AutomotiveConfigConstants {
     public static final String NOTIFICATION_FACET_BUTTON = "NOTIFICATION_FACET_BUTTON";
     public static final String HVAC_FACET_BUTTON = "HVAC_FACET_BUTTON";
     public static final String HVAC_PANEL = "HVAC_PANEL";
+    public static final String WIFI_FACET_BUTTON = "WIFI_FACET_BUTTON";
+    public static final String SOUND_FACET_BUTTON = "SOUND_FACET_BUTTON";
+    public static final String STATUS_BAR_WIFI_SETTINGS = "STATUS_BAR_WIFI_SETTINGS";
+    public static final String STATUS_BAR_DISPLAY_SETTINGS = "STATUS_BAR_DISPLAY_SETTINGS";
+    public static final String STATUS_BAR_SOUND_SETTINGS = "STATUS_BAR_SOUND_SETTINGS";
 
     // APP info Setting UI ELEMENTS
     public static final String RECENTLY_OPENED_UI_ELEMENT = "RECENTLY_OPENED_UI_ELEMENT";
@@ -547,6 +562,7 @@ public class AutomotiveConfigConstants {
     public static final String CONNECTED_WIFI = "CONNECTED_WIFI";
     public static final String FORGET_WIFI = "FORGET_WIFI";
     public static final String CLOCK_TIME = "CLOCK_TIME";
+    public static final String DATE_COMMAND = "DATE_COMMAND";
 
     // Quick Controls
     public static final String HOME_BLUETOOTH_BUTTON = "HOME_BLUETOOTH_BUTTON";
@@ -697,4 +713,7 @@ public class AutomotiveConfigConstants {
             "UNIT_SYSTEM_SETTINGS_TEMPERATURE";
     public static final String UNIT_SYSTEM_SETTINGS_PRESSURE = "UNIT_SYSTEM_SETTINGS_PRESSURE";
     public static final String LANGUAGES_INPUT_IN_SYSTEM = "LANGUAGES_INPUT_IN_SYSTEM";
+
+    // Soft Keyboard UI elements
+    public static final String SOFT_KEYBOARD_HIDE_BUTTON = "SOFT_KEYBOARD_HIDE_BUTTON";
 }

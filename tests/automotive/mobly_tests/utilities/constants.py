@@ -127,7 +127,8 @@ DUMPSYS_POWER= 'dumpsys power|grep mWakefulness'
 YOUTUBE_MUSIC_PACKAGE = 'com.google.android.apps.youtube.music'
 START_YOUTUBE_MEDIA_SHELL = 'am start ' + YOUTUBE_MUSIC_PACKAGE
 STOP_YOUTUBE_MEDIA_SHELL = 'am force-stop ' + YOUTUBE_MUSIC_PACKAGE
-GET_DUMPSYS_METADATA = 'dumpsys media_session'
+GET_MEDIA_DUMPSYS_METADATA = 'dumpsys media_session'
+GET_DUMPSYS_METADATA = 'dumpsys bluetooth_manager'
 SONG_METADATA_PATTERN = r"description=.[^\n]+"
 DEFAULT_YOUTUBE_MUSIC_PLAYLIST = 'am start -a android.intent.action.VIEW -d https://music.youtube.com/watch?v=nkBJzfHpq_A'
 BLUETOOTH_AUDIO_APP = "Bluetooth Audio"
@@ -167,3 +168,18 @@ DIALER_DIALPAD_LABEL = "Dialpad"
 BLUETOOTH_TAG="setprop persist.log.tag.bluetooth verbose"
 BLUETOOTH_NOOPERABLE="setprop persist.bluetooth.btsnoopenable true"
 BLUETOOTH_BTSNOOP_DEFAULT_MODE="settings put global bluetooth_btsnoop_default_mode full"
+
+# Media Logs
+PLAYBACK_VIEW_MODEL="setprop persist.log.tag.PlaybackViewModel DEBUG"
+MEDIA_BROWSER_CONNECTOR="setprop persist.log.tag.MediaBrowserConnector DEBUG"
+MEDIA_ITEM_REPOSITORY="setprop persist.log.tag.MediaItemsRepository DEBUG"
+MEDIA_SOURCE_MODEL="setprop persist.log.tag.MediaSourceViewModel DEBUG"
+MEDIA_ACTIVITY="setprop persist.log.tag.MediaActivity DEBUG"
+SETTINGS_CLOCK_SECONDS="settings put secure clock_seconds 1"
+
+# Bluetooth State Verification commands
+BLUETOOTH_CONNECTION_STATE = "dumpsys bluetooth_manager | grep ConnectionState"
+BLUETOOTH_MAP = "dumpsys bluetooth_manager | grep -E MceStateMachine"
+BLUETOOTH_HFP ="dumpsys bluetooth_manager | grep HfpClientConnectionService"
+BLUETOOTH_AVRCP =  "dumpsys bluetooth_manager | grep AvrcpControllerStateMachine"
+

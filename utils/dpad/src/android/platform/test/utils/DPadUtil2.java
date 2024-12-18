@@ -27,7 +27,6 @@ import androidx.test.uiautomator.UiDevice;
 
 import java.io.IOException;
 
-
 public class DPadUtil2 {
 
     private static final String TAG = DPadUtil2.class.getSimpleName();
@@ -138,6 +137,8 @@ public class DPadUtil2 {
         return mDevice.pressBack();
     }
 
+    /** Long press the given keycode */
+    @SuppressWarnings("DefaultLocale")
     public boolean longPressKeyCode(int keyCode) {
         try {
             mDevice.executeShellCommand(String.format("input keyevent --longpress %d", keyCode));

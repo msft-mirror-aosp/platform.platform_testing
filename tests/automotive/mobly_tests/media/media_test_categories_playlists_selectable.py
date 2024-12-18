@@ -39,6 +39,7 @@ class IsCategoriesPlaylistsSelectable(bluetooth_base_test.BluetoothBaseTest):
         self.common_utils.grant_local_mac_address_permission()
         self.common_utils.enable_wifi_on_phone_device()
         self.bt_utils.pair_primary_to_secondary()
+        self.media_utils.enable_bt_media_debugging_logs()
         super().enable_recording()
 
     def test_is_categories_playlists_selectable(self):
@@ -70,6 +71,7 @@ class IsCategoriesPlaylistsSelectable(bluetooth_base_test.BluetoothBaseTest):
                                                                  'present on HU')
 
     def teardown_test(self):
+        self.media_utils.get_bt_dumpsys_metadata()
         #  Close YouTube Music app
         self.media_utils.close_youtube_music_app()
         self.call_utils.press_home()

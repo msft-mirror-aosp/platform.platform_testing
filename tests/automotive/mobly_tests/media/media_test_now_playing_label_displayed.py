@@ -32,6 +32,7 @@ class IsNowPlayingLabelDisplayed(bluetooth_base_test.BluetoothBaseTest):
         self.common_utils.grant_local_mac_address_permission()
         self.common_utils.enable_wifi_on_phone_device()
         self.bt_utils.pair_primary_to_secondary()
+        self.media_utils.enable_bt_media_debugging_logs()
         super().enable_recording()
 
     def test_is_now_paying_label_displayed(self):
@@ -48,17 +49,12 @@ class IsNowPlayingLabelDisplayed(bluetooth_base_test.BluetoothBaseTest):
                             '<Now Playing> label should be displayed')
 
     def teardown_test(self):
+        self.media_utils.get_bt_dumpsys_metadata()
         # Minimize now_playing
         self.media_utils.minimize_now_playing()
         # Close YouTube Music app
         self.media_utils.close_youtube_music_app()
         self.call_utils.press_home()
-#         logging.info("Stopping the screen recording on Target")
-#         self.video_utils_service_target.stop_screen_recording()
-#         logging.info("Pull the screen recording from Target")
-#         self.video_utils_service_target.pull_recording_file(self.log_path)
-#         logging.info("delete the screen recording from the Target")
-#         self.video_utils_service_target.delete_screen_recording_from_device()
         super().teardown_test()
 
 

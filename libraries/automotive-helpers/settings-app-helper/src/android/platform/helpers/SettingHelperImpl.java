@@ -41,7 +41,12 @@ public class SettingHelperImpl extends AbstractStandardAppHelper implements IAut
 
     private static final String SCREEN_BRIGHTNESS = "screen_brightness";
 
-    private final ScrollUtility mScrollUtility;
+    private ScrollUtility mScrollUtility;
+    private ScrollActions mScrollAction;
+    private BySelector mBackwardButtonSelector;
+    private BySelector mForwardButtonSelector;
+    private BySelector mScrollableElementSelector;
+    private ScrollDirection mScrollDirection;
     private final SeekUtility mSeekUtility;
     private Context mContext;
     private boolean mUseCommandToOpenSettings = true;
@@ -54,6 +59,18 @@ public class SettingHelperImpl extends AbstractStandardAppHelper implements IAut
                         InstrumentationRegistry.getArguments()
                                 .getString("use_command_to_open_settings", "true"));
         mScrollUtility = ScrollUtility.getInstance(getSpectatioUiUtil());
+        mScrollAction =
+                ScrollActions.valueOf(
+                        getActionFromConfig(AutomotiveConfigConstants.SETTINGS_SCROLL_ACTION));
+        mBackwardButtonSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.SETTINGS_SCROLL_BACKWARD_BUTTON);
+        mForwardButtonSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.SETTINGS_SCROLL_FORWARD_BUTTON);
+        mScrollableElementSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.SETTINGS_SCROLL_ELEMENT);
+        mScrollDirection =
+                ScrollDirection.valueOf(
+                        getActionFromConfig(AutomotiveConfigConstants.SETTINGS_SCROLL_DIRECTION));
         mSeekUtility = SeekUtility.getInstance(getSpectatioUiUtil());
     }
 
@@ -215,6 +232,28 @@ public class SettingHelperImpl extends AbstractStandardAppHelper implements IAut
 
     /** {@inheritDoc} */
     @Override
+    public boolean scrollBackward() {
+        return mScrollUtility.scrollBackward(
+                mScrollAction,
+                mScrollDirection,
+                mBackwardButtonSelector,
+                mScrollableElementSelector,
+                String.format("Scroll backward on the settings menu page"));
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean scrollForward() {
+        return mScrollUtility.scrollForward(
+                mScrollAction,
+                mScrollDirection,
+                mForwardButtonSelector,
+                mScrollableElementSelector,
+                String.format("Scroll forward on the settings menu page"));
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public void searchAndSelect(String item) {
         searchAndSelect(item, 0);
     }
@@ -292,10 +331,24 @@ public class SettingHelperImpl extends AbstractStandardAppHelper implements IAut
         while (count > 0
                 && isAppInForeground()
                 && getSpectatioUiUtil().findUiObjects(titleText) == null) {
-            getSpectatioUiUtil().pressBack();
+            pressSettingsBackNavIcon();
             getSpectatioUiUtil().wait5Seconds(); // to avoid stale object error
             count--;
         }
+    }
+
+    private void pressSettingsBackNavIcon() {
+        UiObject2 navIcon =
+                getSpectatioUiUtil()
+                        .findUiObject(
+                                getUiElementFromConfig(
+                                        AutomotiveConfigConstants.SETTINGS_BACK_NAV_ICON));
+        if (navIcon == null) {
+            // if there is no nav button, use device back for confirmation dialog case
+            getSpectatioUiUtil().pressBack();
+            return;
+        }
+        getSpectatioUiUtil().clickAndWait(navIcon);
     }
 
     /** {@inheritDoc} */
