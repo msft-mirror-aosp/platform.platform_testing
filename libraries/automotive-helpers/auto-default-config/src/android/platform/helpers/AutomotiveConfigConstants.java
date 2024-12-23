@@ -196,6 +196,7 @@ public class AutomotiveConfigConstants {
     public static final String HEADSUP_NOTIFICATION = "HEADSUP_NOTIFICATION";
     public static final String HEADSUP_NOTIFICATION_TITLE = "HEADSUP_NOTIFICATION_TITLE";
     public static final String HEADSUP_NOTIFICATION_CONTENT = "HEADSUP_NOTIFICATION_CONTENT";
+    public static final String HEADSUP_NOTIFICATION_PLAY_BUTTON = "HEADSUP_NOTIFICATION_PLAY_BUTTON";
 
     // System Settings Constants
     public static final String SETTINGS_PACKAGE = "SETTINGS_PACKAGE";

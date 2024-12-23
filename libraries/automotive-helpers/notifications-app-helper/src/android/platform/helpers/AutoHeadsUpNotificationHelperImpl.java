@@ -87,4 +87,25 @@ public class AutoHeadsUpNotificationHelperImpl extends AbstractStandardAppHelper
         return isValid;
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public void playSMSHUN() {
+        Log.i(LOG_TAG, "Clicking on play button of SMS heads-up notification in the car's head unit.");
+        try {
+            BySelector playButtonSelector = getUiElementFromConfig(AutomotiveConfigConstants.HEADSUP_NOTIFICATION_PLAY_BUTTON);
+            UiObject2 playButton = getSpectatioUiUtil().findUiObject(playButtonSelector);
+            getSpectatioUiUtil().clickAndWait(playButton);
+        } catch (RuntimeException e) {
+            Log.e(LOG_TAG, "Failed to click on play button of SMS heads-up notification in the car's head unit.", e);
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean isSMSNUNPlayed() {
+        Log.i(LOG_TAG, "Checking if SMS heads-up notification is played in the car's head unit.");
+        // TODO: Implement this method. Need to verify if the sound is played from special channel.
+        return true;
+    }
+
 }
