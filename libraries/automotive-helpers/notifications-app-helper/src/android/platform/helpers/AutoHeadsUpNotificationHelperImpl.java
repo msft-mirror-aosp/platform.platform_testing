@@ -108,4 +108,16 @@ public class AutoHeadsUpNotificationHelperImpl extends AbstractStandardAppHelper
         return true;
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public void muteSMSHUN() {
+        Log.i(LOG_TAG, "Clicking on play button of SMS heads-up notification in the car's head unit.");
+        try {
+            BySelector muteButtonSelector = getUiElementFromConfig(AutomotiveConfigConstants.HEADSUP_NOTIFICATION_MUTE_BUTTON);
+            UiObject2 muteButton = getSpectatioUiUtil().findUiObject(muteButtonSelector);
+            getSpectatioUiUtil().clickAndWait(muteButton);
+        } catch (RuntimeException e) {
+            Log.e(LOG_TAG, "Failed to click on mute button of SMS heads-up notification in the car's head unit.", e);
+        }
+    }
 }

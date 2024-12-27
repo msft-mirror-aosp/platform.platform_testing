@@ -51,4 +51,9 @@ public class HeadsUpNotificationSnippet implements Snippet {
         return mHeadsUpNotificationHelper.get().isSMSNUNPlayed();
     }
 
+    @Rpc(description = "Mute the SMS heads-up notification in the car's head unit.")
+    public void muteSMSHUN() {
+        mHeadsUpNotificationHelper.get().muteSMSHUN();
+    }
+
 }
