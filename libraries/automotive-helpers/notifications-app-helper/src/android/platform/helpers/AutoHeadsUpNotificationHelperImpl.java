@@ -63,28 +63,27 @@ public class AutoHeadsUpNotificationHelperImpl extends AbstractStandardAppHelper
         Log.i(LOG_TAG, "Checking if heads-up notification displayed in the car's head unit.");
 
         BySelector headsUpNotificationSelector = getUiElementFromConfig(AutomotiveConfigConstants.HEADSUP_NOTIFICATION);
-        UiObject2 headsUpNotification = getSpectatioUiUtil().findUiObject(headsUpNotificationSelector);
+        UiObject2 headsUpNotification = getSpectatioUiUtil().waitForUiObject(headsUpNotificationSelector);
         Log.i(LOG_TAG, "headsUpNotification: " + headsUpNotification);
 
-        boolean isValid = getSpectatioUiUtil().isValidUiObject(headsUpNotification);
-        Log.i(LOG_TAG, "isValid: " + isValid);
-
-        return isValid;
+        return headsUpNotification != null;
     }
 
     /** {@inheritDoc} */
     @Override
     public boolean isSMSHUNDisplayed(String phoneNumber) {
-        Log.i(LOG_TAG, String.format("Checking if SMS heads-up notification from phone number %s is displayed in the car'shead unit.", phoneNumber));
+        Log.i(LOG_TAG, String.format("Checking if SMS heads-up notification from phone number %s is displayed in the car's head unit.", phoneNumber));
 
         BySelector headsUpNotificationTitleSelector = getUiElementFromConfig(AutomotiveConfigConstants.HEADSUP_NOTIFICATION_TITLE);
-        UiObject2 headsUpNotificationTitle = getSpectatioUiUtil().findUiObject(headsUpNotificationTitleSelector);
-        Log.i(LOG_TAG, "headsUpNotification title: " + headsUpNotificationTitle);
+        UiObject2 headsUpNotificationTitle = getSpectatioUiUtil().waitForUiObject(headsUpNotificationTitleSelector);
 
-        boolean isValid = getSpectatioUiUtil().isValidUiObject(headsUpNotificationTitle);
-        Log.i(LOG_TAG, "isValid: " + isValid);
+        if (headsUpNotificationTitle != null) {
+            String titleText = headsUpNotificationTitle.getText(); // Assuming title contains phone number.
+            Log.i(LOG_TAG, "Heads-up notification title text: " + titleText);
+            return titleText != null && titleText.contains(phoneNumber);
+        }
 
-        return isValid;
+        return false;
     }
 
     /** {@inheritDoc} */
