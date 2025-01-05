@@ -71,16 +71,21 @@ public class AutoHeadsUpNotificationHelperImpl extends AbstractStandardAppHelper
 
     /** {@inheritDoc} */
     @Override
-    public boolean isSMSHUNDisplayed(String phoneNumber) {
-        Log.i(LOG_TAG, String.format("Checking if SMS heads-up notification from phone number %s is displayed in the car's head unit.", phoneNumber));
+    public boolean isSMSHUNWWithTitleDisplayed(String text) {
+        Log.i(LOG_TAG, String.format("Checking if SMS heads-up notification with title  %s is displayed in the car's head unit.", text));
+
+        BySelector headsUpNotificationSelector = getUiElementFromConfig(AutomotiveConfigConstants.HEADSUP_NOTIFICATION);
+        UiObject2 headsUpNotification = getSpectatioUiUtil().waitForUiObject(headsUpNotificationSelector);
+        Log.i(LOG_TAG, "Heads-up notification: " + headsUpNotification);
 
         BySelector headsUpNotificationTitleSelector = getUiElementFromConfig(AutomotiveConfigConstants.HEADSUP_NOTIFICATION_TITLE);
-        UiObject2 headsUpNotificationTitle = getSpectatioUiUtil().waitForUiObject(headsUpNotificationTitleSelector);
+        UiObject2 headsUpNotificationTitle = headsUpNotification.findObject(headsUpNotificationTitleSelector);
+        Log.i(LOG_TAG, "Heads-up notification title: " + headsUpNotificationTitle);
 
         if (headsUpNotificationTitle != null) {
-            String titleText = headsUpNotificationTitle.getText(); // Assuming title contains phone number.
+            String titleText = headsUpNotificationTitle.getText().toLowerCase();
             Log.i(LOG_TAG, "Heads-up notification title text: " + titleText);
-            return titleText != null && titleText.contains(phoneNumber);
+            return titleText != null && titleText.contains(text.toLowerCase());
         }
 
         return false;

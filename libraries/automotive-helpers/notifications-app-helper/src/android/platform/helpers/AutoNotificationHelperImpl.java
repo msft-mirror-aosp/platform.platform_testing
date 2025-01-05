@@ -172,7 +172,7 @@ public class AutoNotificationHelperImpl extends AbstractStandardAppHelper
     /** {@inheritDoc} */
     @Override
     public boolean isNotificationWithTitleExists(String text) {
-        getSpectatioUiUtil().wait5Seconds();
+        getSpectatioUiUtil().waitNSeconds(10000);
         open();
 
         BySelector notificationsSelector = getUiElementFromConfig(AutomotiveConfigConstants.NOTIFICATION_BODY);
@@ -194,7 +194,7 @@ public class AutoNotificationHelperImpl extends AbstractStandardAppHelper
     /** {@inheritDoc} */
     @Override
     public boolean isNotificationWithContentExists(String text) {
-        getSpectatioUiUtil().wait5Seconds();
+        getSpectatioUiUtil().waitNSeconds(10000);
         open();
 
         BySelector notificationsSelector = getUiElementFromConfig(AutomotiveConfigConstants.NOTIFICATION_BODY);

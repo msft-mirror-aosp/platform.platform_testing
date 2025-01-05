@@ -1,4 +1,4 @@
-#  Copyright (C) 2024 The Android Open Source Project
+#  Copyright (C) 2025 The Android Open Source Project
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -78,6 +78,9 @@ class NotificationsSMSHUNDisplayedInDrivingMode(
     logging.info("Assert: SMS is displayed as a heads-up notification in the car's head unit.")
     assert self.discoverer.mbs.isHUNDisplayed() is True, (
         "New SMS is not displayed as a heads-up notification."
+    )
+    assert self.discoverer.mbs.isSMSHUNWWithTitleDisplayed(sender_phone_number), (
+        "New SMS is not displayed as a heads-up notification with the correct title."
     )
 
     logging.info("Assert: SMS is displayed in the notification center on the car.")

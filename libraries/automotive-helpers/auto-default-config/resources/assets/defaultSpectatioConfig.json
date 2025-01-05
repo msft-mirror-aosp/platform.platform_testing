@@ -916,36 +916,12 @@
       "VALUE": "notification_headsup"
     },
     "HEADSUP_NOTIFICATION_TITLE": {
-      "TYPE": "MULTIPLE",
-      "SPECIFIERS": [
-        {
-          "TYPE": "RESOURCE_ID",
-          "VALUE": "notification_body_title"
-        },
-        {
-          "TYPE": "HAS_ANCESTOR",
-          "ANCESTOR": {
-            "TYPE": "RESOURCE_ID",
-            "VALUE": "notification_headsup"
-          }
-        }
-      ]
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "notification_body_title"
     },
     "HEADSUP_NOTIFICATION_CONTENT": {
-      "TYPE": "MULTIPLE",
-      "SPECIFIERS": [
-        {
-          "TYPE": "RESOURCE_ID",
-          "VALUE": "notification_body_content"
-        },
-        {
-          "TYPE": "HAS_ANCESTOR",
-          "ANCESTOR": {
-            "TYPE": "RESOURCE_ID",
-            "VALUE": "notification_headsup"
-          }
-        }
-      ]
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "notification_body_content"
     },
     "HEADSUP_NOTIFICATION_PLAY_BUTTON": {
       "TYPE": "MULTIPLE",
