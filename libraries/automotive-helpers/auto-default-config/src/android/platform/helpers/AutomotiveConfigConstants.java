@@ -180,8 +180,9 @@ public class AutomotiveConfigConstants {
     public static final String NOTIFICATION_VIEW = "NOTIFICATION_VIEW";
     public static final String CLEAR_ALL_BUTTON = "CLEAR_ALL_BUTTON";
     public static final String APP_ICON = "APP_ICON";
-    public static final String NOTIFICATION_TITLE = "NOTIFICATION_TITLE";
     public static final String NOTIFICATION_BODY = "NOTIFICATION_BODY";
+    public static final String NOTIFICATION_TITLE = "NOTIFICATION_TITLE";
+    public static final String NOTIFICATION_CONTENT = "NOTIFICATION_CONTENT";
     public static final String NOTIFICATION_LIST_EMPTY = "NOTIFICATION_LIST_EMPTY";
     public static final String NOTIFICATION_LIST_SCROLL_FORWARD_BUTTON =
             "NOTIFICATION_LIST_SCROLL_FORWARD_BUTTON";

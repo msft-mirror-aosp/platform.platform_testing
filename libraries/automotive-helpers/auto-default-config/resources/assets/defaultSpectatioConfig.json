@@ -871,12 +871,17 @@
       "VALUE": "notification_body_icon",
       "PACKAGE": "com.android.systemui"
     },
+    "NOTIFICATION_BODY": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "notification_body",
+      "PACKAGE": "com.android.systemui"
+    },
     "NOTIFICATION_TITLE": {
       "TYPE": "RESOURCE_ID",
       "VALUE": "notification_body_title",
       "PACKAGE": "com.android.systemui"
     },
-    "NOTIFICATION_BODY": {
+    "NOTIFICATION_CONTENT": {
       "TYPE": "RESOURCE_ID",
       "VALUE": "notification_body_content",
       "PACKAGE": "com.android.systemui"
