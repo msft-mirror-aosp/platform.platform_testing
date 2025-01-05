@@ -99,9 +99,12 @@ public class AutoHeadsUpNotificationHelperImpl extends AbstractStandardAppHelper
     @Override
     public void playSMSHUN() {
         Log.i(LOG_TAG, "Clicking on play button of SMS heads-up notification in the car's head unit.");
+        UiObject2 headsUpNotification = findHeadsUpNotification();
+        UiObject2 playButton = headsUpNotification.findObject(
+            getUiElementFromConfig(AutomotiveConfigConstants.HEADSUP_NOTIFICATION_PLAY_BUTTON)
+        );
+
         try {
-            BySelector playButtonSelector = getUiElementFromConfig(AutomotiveConfigConstants.HEADSUP_NOTIFICATION_PLAY_BUTTON);
-            UiObject2 playButton = getSpectatioUiUtil().findUiObject(playButtonSelector);
             getSpectatioUiUtil().clickAndWait(playButton);
         } catch (RuntimeException e) {
             Log.e(LOG_TAG, "Failed to click on play button of SMS heads-up notification in the car's head unit.", e);

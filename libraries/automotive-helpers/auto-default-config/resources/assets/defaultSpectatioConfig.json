@@ -924,20 +924,8 @@
       "VALUE": "notification_body_content"
     },
     "HEADSUP_NOTIFICATION_PLAY_BUTTON": {
-      "TYPE": "MULTIPLE",
-      "SPECIFIERS": [
-        {
-          "TYPE": "RESOURCE_ID",
-          "VALUE": "action_1"
-        },
-        {
-          "TYPE": "HAS_ANCESTOR",
-          "ANCESTOR": {
-            "TYPE": "RESOURCE_ID",
-            "VALUE": "notification_headsup"
-          }
-        }
-      ]
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "action_1"
     },
     "HEADSUP_NOTIFICATION_MUTE_BUTTON": {
       "TYPE": "RESOURCE_ID",
