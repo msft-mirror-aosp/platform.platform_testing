@@ -49,15 +49,11 @@ java {
 // Define the overall plugin
 group = "com.android.security.autorepro"
 
-version = "1.0.0"
+version = "1.0.0-alpha1"
 
 // Define the individual sub-plugins
 gradlePlugin {
     plugins {
-        create("basePlugin") {
-            id = "com.android.security.autorepro.base"
-            implementationClass = "com.android.security.autorepro.BasePlugin"
-        }
         create("submissionPlugin") {
             id = "com.android.security.autorepro.submission"
             implementationClass = "com.android.security.autorepro.SubmissionPlugin"
@@ -73,6 +69,39 @@ gradlePlugin {
         create("ndkTestPlugin") {
             id = "com.android.security.autorepro.ndktest"
             implementationClass = "com.android.security.autorepro.NdkTestPlugin"
+        }
+    }
+}
+
+publishing.publications.withType<MavenPublication>().configureEach {
+    pom {
+        licenses {
+            license {
+                name = "The Apache Software License, Version 2.0"
+                url = "http://www.apache.org/licenses/LICENSE-2.0.txt"
+                distribution = "repo"
+            }
+        }
+        developers {
+            developer {
+                name = "The Android Open Source Project"
+            }
+        }
+    }
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("pluginMaven") {
+            pom {
+                name = "AutoRepro"
+                description = "Gradle plugin to develop Android VRP reports as Tradefed tests."
+            }
+        }
+    }
+    repositories {
+        maven {
+            url = uri(layout.buildDirectory.dir("maven-repo"))
         }
     }
 }

@@ -369,7 +369,7 @@ public class DialHelperImpl extends AbstractStandardAppHelper implements IAutoDi
     public void dialFromList(String contact) {
         UiObject2 contactToCall = getContactFromContactList(contact);
         getSpectatioUiUtil().clickAndWait(contactToCall);
-        executeWorkflow(AutomotiveConfigConstants.DIAL_CONTACT_WORKFLOW);
+        pressMobileCallOnContact();
     }
 
     /** {@inheritDoc} */
@@ -553,7 +553,6 @@ public class DialHelperImpl extends AbstractStandardAppHelper implements IAutoDi
     /** {@inheritDoc} */
     public String getFirstContactFromContactList() {
         openContacts();
-        scrollToTopOfContactList();
         BySelector contactNameSelector =
                 getUiElementFromConfig(AutomotiveConfigConstants.CONTACT_NAME);
         UiObject2 firstContact = getSpectatioUiUtil().findUiObject(contactNameSelector);
@@ -641,15 +640,7 @@ public class DialHelperImpl extends AbstractStandardAppHelper implements IAutoDi
     public void openDialerSettings() {
         BySelector settingsButtonSelector =
                 getUiElementFromConfig(AutomotiveConfigConstants.DIALER_SETTINGS_BUTTON);
-
-        ArrayList<UiObject2> buttonCandidates =
-                new ArrayList<>(getSpectatioUiUtil().findUiObjects(settingsButtonSelector));
-
-        // This is an awkward hard-coding to compensate for the fact that currently the
-        // search button and the settings button have identical metadata.
-        // (The Settings button is the second of the two, hence index 1)
-        // TODO: b/287706588 - Rewrite this UiObject selection to use a new Content Descriptor
-        UiObject2 contactMenuButton = buttonCandidates.get(1);
+        UiObject2 contactMenuButton = getSpectatioUiUtil().findUiObject(settingsButtonSelector);
 
         getSpectatioUiUtil()
                 .validateUiObject(

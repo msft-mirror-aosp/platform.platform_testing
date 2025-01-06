@@ -401,6 +401,7 @@ public class AutomotiveConfigConstants {
     public static final String SETTINGS_SUB_SETTING_SCROLL_ELEMENT =
             "SETTINGS_SUB_SETTING_SCROLL_ELEMENT";
     public static final String SETTINGS_TITLE_TEXT = "SETTINGS_TITLE_TEXT";
+    public static final String SETTINGS_BACK_NAV_ICON = "SETTINGS_BACK_NAV_ICON";
     public static final String LOCATION_SETTINGS_RECENTLY_ACCESSED_MAPS =
             "LOCATION_SETTINGS_RECENTLY_ACCESSED_MAPS";
     public static final String LOCATION_SETTINGS_VIEW_ALL = "LOCATION_SETTINGS_VIEW_ALL";
@@ -459,6 +460,8 @@ public class AutomotiveConfigConstants {
     public static final String USER_SETTINGS_SCROLL_ACTION = "USER_SETTINGS_SCROLL_ACTION";
     public static final String USER_SETTINGS_SCROLL_DIRECTION = "USER_SETTINGS_SCROLL_DIRECTION";
     public static final String USER_SETTINGS_ADD_PROFILE = "USER_SETTINGS_ADD_PROFILE";
+    public static final String USER_SETTINGS_RENAME = "USER_SETTINGS_RENAME";
+    public static final String USER_SETTINGS_PROFILE_NAME_EDIT = "USER_SETTINGS_PROFILE_NAME_EDIT";
     public static final String USER_SETTINGS_DELETE = "USER_SETTINGS_DELETE";
     public static final String USER_SETTINGS_OK = "USER_SETTINGS_OK";
     public static final String USER_SETTINGS_DELETE_SELF = "USER_SETTINGS_DELETE_SELF";
@@ -509,6 +512,11 @@ public class AutomotiveConfigConstants {
     public static final String NOTIFICATION_FACET_BUTTON = "NOTIFICATION_FACET_BUTTON";
     public static final String HVAC_FACET_BUTTON = "HVAC_FACET_BUTTON";
     public static final String HVAC_PANEL = "HVAC_PANEL";
+    public static final String WIFI_FACET_BUTTON = "WIFI_FACET_BUTTON";
+    public static final String SOUND_FACET_BUTTON = "SOUND_FACET_BUTTON";
+    public static final String STATUS_BAR_WIFI_SETTINGS = "STATUS_BAR_WIFI_SETTINGS";
+    public static final String STATUS_BAR_DISPLAY_SETTINGS = "STATUS_BAR_DISPLAY_SETTINGS";
+    public static final String STATUS_BAR_SOUND_SETTINGS = "STATUS_BAR_SOUND_SETTINGS";
 
     // APP info Setting UI ELEMENTS
     public static final String RECENTLY_OPENED_UI_ELEMENT = "RECENTLY_OPENED_UI_ELEMENT";
@@ -556,6 +564,7 @@ public class AutomotiveConfigConstants {
     public static final String CONNECTED_WIFI = "CONNECTED_WIFI";
     public static final String FORGET_WIFI = "FORGET_WIFI";
     public static final String CLOCK_TIME = "CLOCK_TIME";
+    public static final String DATE_COMMAND = "DATE_COMMAND";
 
     // Quick Controls
     public static final String HOME_BLUETOOTH_BUTTON = "HOME_BLUETOOTH_BUTTON";

@@ -25,6 +25,7 @@ import androidx.test.uiautomator.UiObject2;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.TimeZone;
 
 /** Helper file for status bar tests */
 public class StatusBarHelperImpl extends AbstractStandardAppHelper implements IAutoStatusBarHelper {
@@ -426,6 +427,24 @@ public class StatusBarHelperImpl extends AbstractStandardAppHelper implements IA
     }
 
     @Override
+    public String getCurrentTimeZone() {
+        TimeZone currentTimeInZone = TimeZone.getDefault();
+        String currentTimeZoneId = currentTimeInZone.getID();
+        return currentTimeZoneId;
+    }
+
+    @Override
+    public String getDeviceCurrentTimeZone() {
+        String deviceCurrentDateTime =
+                getSpectatioUiUtil()
+                        .executeShellCommand(
+                                getCommandFromConfig(AutomotiveConfigConstants.DATE_COMMAND));
+        String[] dateTime = deviceCurrentDateTime.split(" ");
+        String deviceCurrentTimeZone = dateTime[dateTime.length - 2];
+        return deviceCurrentTimeZone;
+    }
+
+    @Override
     public boolean changeToDayMode() {
         String dayModeResult =
                 getSpectatioUiUtil()
@@ -433,6 +452,7 @@ public class StatusBarHelperImpl extends AbstractStandardAppHelper implements IA
                                 getCommandFromConfig(AutomotiveConfigConstants.DAY_MODE_COMMAND));
 
         boolean result = dayModeResult.contains("changed to: day");
+        getSpectatioUiUtil().wait5Seconds();
         return result;
     }
 
@@ -444,6 +464,7 @@ public class StatusBarHelperImpl extends AbstractStandardAppHelper implements IA
                         .executeShellCommand(
                                 getCommandFromConfig(AutomotiveConfigConstants.NIGHT_MODE_COMMAND));
         boolean result = nightModeResult.contains("changed to: night");
+        getSpectatioUiUtil().wait5Seconds();
         return result;
     }
 

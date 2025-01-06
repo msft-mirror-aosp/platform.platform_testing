@@ -63,18 +63,19 @@
   },
   "COMMANDS": {
     "OPEN_DIAL_PAD_COMMAND": "am start -a android.intent.action.DIAL",
-    "OPEN_PHONE_ACTIVITY_COMMAND": "am start -n com.android.car.dialer/.ui.TelecomActivity",
+    "OPEN_PHONE_ACTIVITY_COMMAND": "am start --user $user_id -n com.android.car.dialer/.ui.TelecomActivity",
     "OPEN_SMS_ACTIVITY_COMMAND": "am start -n com.android.car.messenger/com.android.car.messenger.ui.launcher.MessageLauncherActivity",
-    "OPEN_APP_GRID_COMMAND": "am start -n com.android.car.carlauncher/.GASAppGridActivity",
+    "OPEN_APP_GRID_COMMAND": "am start --user $user_id -n com.android.car.carlauncher/.GASAppGridActivity",
     "OPEN_NOTIFICATIONS_COMMAND": "service call statusbar 1",
     "STOP_SETTING_APP_COMMAND": "am force-stop com.android.car.settings",
-    "OPEN_SETTINGS_COMMAND": "am start -a android.settings.SETTINGS",
-    "MEDIA_LAUNCH_COMMAND": "am start -a android.car.intent.action.MEDIA_TEMPLATE -e android.car.intent.extra.MEDIA_COMPONENT com.android.bluetooth/com.android.bluetooth.avrcpcontroller.BluetoothMediaBrowserService",
+    "OPEN_SETTINGS_COMMAND": "am start --user $user_id -a android.settings.SETTINGS",
+    "MEDIA_LAUNCH_COMMAND": "am start --user $user_id -a android.car.intent.action.MEDIA_TEMPLATE -e android.car.intent.extra.MEDIA_COMPONENT com.android.bluetooth/com.android.bluetooth.avrcpcontroller.BluetoothMediaBrowserService",
     "MEDIA_LAUNCH_BLUETOOTH_AUDIO_COMMAND": "am start -a android.car.intent.action.MEDIA_TEMPLATE -e android.car.intent.extra.MEDIA_COMPONENT com.google.android.bluetooth/com.android.bluetooth.avrcpcontroller.BluetoothMediaBrowserService",
     "NIGHT_MODE_COMMAND": "dumpsys activity service com.android.car/.CarService day-night-mode  night",
     "DAY_MODE_COMMAND": "dumpsys activity service com.android.car/.CarService day-night-mode  day",
     "OPEN_SYSTEM_UI": "am crash com.android.systemui",
-    "OPEN_CAR_UI": "am crash com.android.car"
+    "OPEN_CAR_UI": "am crash com.android.car",
+    "DATE_COMMAND": "date"
   },
   "UI_ELEMENTS": {
     "MAKE_CALL": {
@@ -309,8 +310,8 @@
       ]
     },
     "DIALER_SETTINGS_BUTTON": {
-      "TYPE": "RESOURCE_ID",
-      "VALUE": "car_ui_toolbar_menu_item_icon_container"
+      "TYPE": "DESCRIPTION",
+      "VALUE": "Settings"
     },
     "SEARCH_CONTACT": {
       "TYPE": "RESOURCE_ID",
@@ -564,6 +565,31 @@
     "HVAC_PANEL": {
       "TYPE": "RESOURCE_ID",
       "VALUE": "hvac_panel",
+      "PACKAGE": "com.android.systemui"
+    },
+    "STATUS_BAR_DISPLAY_SETTINGS": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "qc_display_footer_button",
+      "PACKAGE": "com.android.systemui"
+    },
+    "STATUS_BAR_WIFI_SETTINGS": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "qc_connectivity_footer_button",
+      "PACKAGE": "com.android.systemui"
+    },
+    "STATUS_BAR_SOUND_SETTINGS": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "qc_sound_footer_button",
+      "PACKAGE": "com.android.systemui"
+    },
+    "WIFI_FACET_BUTTON": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "connectivity_panel_button",
+      "PACKAGE": "com.android.systemui"
+    },
+    "SOUND_FACET_BUTTON": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "volume_panel",
       "PACKAGE": "com.android.systemui"
     },
     "NOTIFICATION_FACET_BUTTON": {
@@ -1184,6 +1210,15 @@
       "TYPE": "TEXT",
       "VALUE": "Add.*profile"
     },
+    "USER_SETTINGS_RENAME": {
+      "TYPE": "TEXT",
+      "VALUE": "Rename"
+    },
+    "USER_SETTINGS_PROFILE_NAME_EDIT": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "profile_name_text_edit",
+      "PACKAGE": "com.android.car.settings"
+    },
     "USER_SETTINGS_DELETE": {
       "TYPE": "TEXT",
       "VALUE": "Delete"
@@ -1650,6 +1685,11 @@
     "SETTINGS_TITLE_TEXT": {
       "TYPE": "TEXT",
       "VALUE": "Settings"
+    },
+    "SETTINGS_BACK_NAV_ICON": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "car_ui_toolbar_nav_icon",
+      "PACKAGE": "com.chassis.car.ui.plugin"
     },
     "SETTINGS_SCROLL_FORWARD_BUTTON": {
       "TYPE": "RESOURCE_ID",

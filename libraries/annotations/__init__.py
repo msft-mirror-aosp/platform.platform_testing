@@ -16,6 +16,7 @@
 
 from .src.py.ApiTest import ApiTest
 from .src.py.CddTest import CddTest
+from .src.py.DesktopTest import DesktopTest
 from .src.py.GmsTest import GmsTest
 from .src.py.NonApiTest import NonApiTest
 from .src.py.ReasonType import ReasonType
