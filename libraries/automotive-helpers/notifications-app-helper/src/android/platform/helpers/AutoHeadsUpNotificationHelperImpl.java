@@ -133,5 +133,9 @@ public class AutoHeadsUpNotificationHelperImpl extends AbstractStandardAppHelper
         } catch (RuntimeException e) {
             Log.e(LOG_TAG, "Failed to click on mute button of SMS heads-up notification in the car's head unit.", e);
         }
+
+        // Wait extra 1 second for the mute button to be disabled.
+        // If it takes more time, then it is the performance issue.
+        getSpectatioUiUtil().wait1Second();
     }
 }

@@ -2036,6 +2036,11 @@
       "VALUE": "error_message",
       "PACKAGE": "com.android.car.messenger"
     },
+    "SMS_CONVERSATION_TITLE": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "title",
+      "PACKAGE": "com.android.car.messenger"
+    },
     "SMS_UNREAD_BADGE": {
       "TYPE": "RESOURCE_ID",
       "VALUE": "unread_badge",
@@ -2058,6 +2063,11 @@
     "ASSISTANT_SMS_TRANSCRIPTION_PLATE": {
       "TYPE": "RESOURCE_ID",
       "VALUE": "transcription_immersive_container"
+    },
+    "SMS_CONVERSATION_MUTE_ACTION_BUTTON": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "mute_action_button",
+      "PACKAGE": "com.android.car.messenger"
     },
     "SMS_EMPTY_MESSAGE": {
       "TYPE": "RESOURCE_ID",
