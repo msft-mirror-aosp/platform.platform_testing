@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -134,8 +134,20 @@ public class AutoHeadsUpNotificationHelperImpl extends AbstractStandardAppHelper
             Log.e(LOG_TAG, "Failed to click on mute button of SMS heads-up notification in the car's head unit.", e);
         }
 
-        // Wait extra 1 second for the mute button to be disabled.
+        // Wait extra 2 seconds for the mute button to be disabled.
         // If it takes more time, then it is the performance issue.
-        getSpectatioUiUtil().wait1Second();
+        getSpectatioUiUtil().waitNSeconds(2000);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void swipeSMSHUN() {
+        Log.i(LOG_TAG, "Swiping the SMS heads-up notification in the car's head unit.");
+        UiObject2 headsUpNotification = findHeadsUpNotification();
+        getSpectatioUiUtil().swipeLeft(headsUpNotification);
+
+        // Wait extra 2 second for the mute button to be disabled.
+        // If it takes more time, then it is the performance issue.
+        getSpectatioUiUtil().waitNSeconds(2000);
     }
 }
