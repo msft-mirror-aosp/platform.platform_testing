@@ -11,38 +11,21 @@ platform_tests += \
     AppCompatibilityTest \
     AppLaunch \
     AppTransitionTests \
-    AutoLocTestApp \
-    AutoLocVersionedTestApp_v1 \
-    AutoLocVersionedTestApp_v2 \
     BackgroundDexOptServiceIntegrationTests \
     BandwidthEnforcementTest \
     BandwidthTests \
     BootHelperApp \
     BusinessCard \
-    CalculatorFunctionalTests \
     CalendarTests \
     camera_client_test \
     camera_metadata_tests \
     CellBroadcastReceiverTests \
-    ConnectivityManagerTest \
-    ContactsTests \
     CtsCameraTestCases \
-    CtsHardwareTestCases \
-    DataIdleTest \
     Development \
     DeviceHealthChecks \
     DynamicCodeLoggerIntegrationTests \
     DialerJankTests \
-    DownloadManagerTestApp \
     StubIME \
-    ExternalLocAllPermsTestApp \
-    ExternalLocTestApp \
-    ExternalLocVersionedTestApp_v1 \
-    ExternalLocVersionedTestApp_v2 \
-    ExternalSharedPermsBTTestApp \
-    ExternalSharedPermsDiffKeyTestApp \
-    ExternalSharedPermsFLTestApp \
-    ExternalSharedPermsTestApp \
     flatland \
     FrameworkPerf \
     FrameworkPermissionTests \
@@ -50,22 +33,11 @@ platform_tests += \
     FrameworksMockingCoreTests \
     FrameworksPrivacyLibraryTests \
     FrameworksUtilTests \
-    InternalLocTestApp \
     JankMicroBenchmarkTests \
     LauncherIconsApp \
     long_trace_binder_config.textproto \
     long_trace_config.textproto \
     MemoryUsage \
-    MultiDexLegacyTestApp \
-    MultiDexLegacyTestApp2 \
-    MultiDexLegacyTestServices \
-    MultiDexLegacyTestServicesTests \
-    MultiDexLegacyVersionedTestApp_v1 \
-    MultiDexLegacyVersionedTestApp_v2 \
-    MultiDexLegacyVersionedTestApp_v3 \
-    NoLocTestApp \
-    NoLocVersionedTestApp_v1 \
-    NoLocVersionedTestApp_v2 \
     OverviewFunctionalTests \
     perfetto_trace_processor_shell \
     PerformanceAppTest \
@@ -77,9 +49,6 @@ platform_tests += \
     PowerPerfTest \
     SdkSandboxPerfScenarioTests \
     SettingsUITests \
-    SimpleServiceTestApp1 \
-    SimpleServiceTestApp2 \
-    SimpleServiceTestApp3 \
     SimpleTestApp \
     sl4a \
     SmokeTest \
@@ -99,16 +68,7 @@ platform_tests += \
     UiBenchJankTests \
     UiBenchJankTestsWear \
     UiBenchMicrobenchmark \
-    UpdateExternalLocTestApp_v1_ext \
-    UpdateExternalLocTestApp_v2_none \
-    UpdateExtToIntLocTestApp_v1_ext \
-    UpdateExtToIntLocTestApp_v2_int \
     uwb_snippet \
-    VersatileTestApp_Auto \
-    VersatileTestApp_External \
-    VersatileTestApp_Internal \
-    VersatileTestApp_None \
-    VoiceInteraction \
     WifiStrengthScannerUtil \
 
 ifneq ($(strip $(BOARD_PERFSETUP_SCRIPT)),)
