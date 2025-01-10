@@ -64,7 +64,7 @@ public class AutoHeadsUpNotificationHelperImpl extends AbstractStandardAppHelper
 
         try {
             return getSpectatioUiUtil().waitForUiObject(headsUpNotificationSelector);
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             throw new RuntimeException("Heads-up notification not found in the car's head unit.", e);
         }
     }
@@ -81,18 +81,27 @@ public class AutoHeadsUpNotificationHelperImpl extends AbstractStandardAppHelper
     public boolean isSMSHUNWWithTitleDisplayed(String text) {
         Log.i(LOG_TAG, String.format("Checking if SMS heads-up notification with title  %s is displayed in the car's head unit.", text));
         UiObject2 headsUpNotification = findHeadsUpNotification();
-        UiObject2 headsUpNotificationTitle = headsUpNotification.findObject(
-            getUiElementFromConfig(AutomotiveConfigConstants.HEADSUP_NOTIFICATION_TITLE)
-        );
-        Log.i(LOG_TAG, "Heads-up notification title: " + headsUpNotificationTitle);
+        UiObject2 headsUpNotificationTitle = null;
 
-        if (headsUpNotificationTitle != null) {
-            String titleText = headsUpNotificationTitle.getText().toLowerCase();
-            Log.i(LOG_TAG, "Heads-up notification title text: " + titleText);
-            return titleText != null && titleText.contains(text.toLowerCase());
+        if (headsUpNotification == null) {
+            return false;
         }
 
-        return false;
+        try {
+            headsUpNotificationTitle = headsUpNotification.findObject(
+                getUiElementFromConfig(AutomotiveConfigConstants.HEADSUP_NOTIFICATION_TITLE)
+            );
+        } catch (RuntimeException e) {
+            Log.w(LOG_TAG, "Cannot to find heads-up notification title in the car's head unit.", e);
+            return false;
+        }
+
+        if (headsUpNotificationTitle == null) {
+            return false;
+        }
+
+        String titleText = headsUpNotificationTitle.getText().toLowerCase();
+        return titleText != null && titleText.contains(text.toLowerCase());
     }
 
     /** {@inheritDoc} */
@@ -107,7 +116,7 @@ public class AutoHeadsUpNotificationHelperImpl extends AbstractStandardAppHelper
         try {
             getSpectatioUiUtil().clickAndWait(playButton);
         } catch (RuntimeException e) {
-            Log.e(LOG_TAG, "Failed to click on play button of SMS heads-up notification in the car's head unit.", e);
+            throw new RuntimeException("Failed to click on play button of SMS heads-up notification in the car's head unit.", e);
         }
     }
 
@@ -131,12 +140,8 @@ public class AutoHeadsUpNotificationHelperImpl extends AbstractStandardAppHelper
         try {
             getSpectatioUiUtil().clickAndWait(muteButton);
         } catch (RuntimeException e) {
-            Log.e(LOG_TAG, "Failed to click on mute button of SMS heads-up notification in the car's head unit.", e);
+            throw new RuntimeException("Failed to click on mute button of SMS heads-up notification in the car's head unit.", e);
         }
-
-        // Wait extra 2 seconds for the mute button to be disabled.
-        // If it takes more time, then it is the performance issue.
-        getSpectatioUiUtil().waitNSeconds(2000);
     }
 
     /** {@inheritDoc} */
@@ -144,10 +149,11 @@ public class AutoHeadsUpNotificationHelperImpl extends AbstractStandardAppHelper
     public void swipeSMSHUN() {
         Log.i(LOG_TAG, "Swiping the SMS heads-up notification in the car's head unit.");
         UiObject2 headsUpNotification = findHeadsUpNotification();
-        getSpectatioUiUtil().swipeLeft(headsUpNotification);
 
-        // Wait extra 2 second for the mute button to be disabled.
-        // If it takes more time, then it is the performance issue.
-        getSpectatioUiUtil().waitNSeconds(2000);
+        try {
+            getSpectatioUiUtil().swipeLeft(headsUpNotification);
+        } catch (RuntimeException e) {
+            throw new RuntimeException("Failed to swipe the SMS heads-up notification in the car's head unit.", e);
+        }
     }
 }
