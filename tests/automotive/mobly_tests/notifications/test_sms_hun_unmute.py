@@ -58,7 +58,7 @@ class NotificationsSMSHUNUnmute(
     self.target.reboot()
     self.call_utils.wait_with_log(constants.DEVICE_CONNECT_WAIT_TIME)
     self.target.load_snippet('mbs', android_device.MBS_PACKAGE)
-    # super().enable_recording()
+    super().enable_recording()
 
   def test_sms_unmute(self):
     """
@@ -81,14 +81,14 @@ class NotificationsSMSHUNUnmute(
     logging.info("Act: Mute the SMS in the car's head unit.")
     self.discoverer.mbs.muteSMSHUN()
 
-    logging.info("Assert: SMS is not displayed as a heads-up notification.")
-    assert self.discoverer.mbs.isHUNDisplayed() is False, (
-        "New SMS is displayed as a heads-up notification."
+    logging.info("Assert: SMS HUN is dismissed.")
+    assert self.discoverer.mbs.isSMSHUNWWithTitleDisplayed(sender_phone_number) is False, (
+        "SMS HUN is not dismissed after mute."
     )
 
     logging.info("Assert: SMS is not displayed in notification center.")
     assert self.discoverer.mbs.isNotificationWithTitleExists(sender_phone_number) is False, (
-        "SMS is still displayed in the notification center."
+        "SMS is still displayed in the notification center after mute."
     )
 
     logging.info(f"Act: Unmute the conversation from the SMS app in the car's head unit with title {sender_phone_number}.")
@@ -120,5 +120,5 @@ class NotificationsSMSHUNUnmute(
       logging.info("Failed to teardown test: %s", e)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
   common_main()
