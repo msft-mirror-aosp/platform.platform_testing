@@ -871,12 +871,17 @@
       "VALUE": "notification_body_icon",
       "PACKAGE": "com.android.systemui"
     },
+    "NOTIFICATION_BODY": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "notification_body",
+      "PACKAGE": "com.android.systemui"
+    },
     "NOTIFICATION_TITLE": {
       "TYPE": "RESOURCE_ID",
       "VALUE": "notification_body_title",
       "PACKAGE": "com.android.systemui"
     },
-    "NOTIFICATION_BODY": {
+    "NOTIFICATION_CONTENT": {
       "TYPE": "RESOURCE_ID",
       "VALUE": "notification_body_content",
       "PACKAGE": "com.android.systemui"
@@ -905,6 +910,26 @@
     "NOTIFICATION_SETTINGS_TITLE": {
       "TYPE": "TEXT",
       "VALUE": "Notifications"
+    },
+    "HEADSUP_NOTIFICATION" : {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "notification_headsup"
+    },
+    "HEADSUP_NOTIFICATION_TITLE": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "notification_body_title"
+    },
+    "HEADSUP_NOTIFICATION_CONTENT": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "notification_body_content"
+    },
+    "HEADSUP_NOTIFICATION_PLAY_BUTTON": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "action_1"
+    },
+    "HEADSUP_NOTIFICATION_MUTE_BUTTON": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "action_3"
     },
     "ABOUT_MENU": {
       "TYPE": "TEXT",
@@ -1505,7 +1530,12 @@
     "MEDIA_APP_TITLE": {
       "TYPE": "RESOURCE_ID",
       "VALUE": "car_ui_toolbar_title",
-      "PACKAGE": "com.android.car.media"
+      "PACKAGE": "com.chassis.car.ui.plugin"
+    },
+    "RADIO_APP_TITLE": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "car_ui_toolbar_logo",
+      "PACKAGE": "com.chassis.car.ui.plugin"
     },
     "MOW_PLAYING_LABEL": {
       "TYPE": "TEXT",
@@ -1523,12 +1553,11 @@
     },
     "MEDIA_APP_NAVIGATION_ICON": {
       "TYPE": "RESOURCE_ID",
-      "VALUE": "car_ui_toolbar_nav_icon_container",
-      "PACKAGE": "com.android.car.media"
+      "VALUE": "car_ui_toolbar_nav_icon_container"
     },
     "MEDIA_APPS_GRID_TITLE": {
       "TYPE": "RESOURCE_ID",
-      "VALUE": "car_ui_toolbar_title",
+      "VALUE": "app_name",
       "PACKAGE": "com.android.car.carlauncher"
     },
     "MEDIA_SCROLL_DOWN_BUTTON": {
@@ -2011,6 +2040,11 @@
       "VALUE": "error_message",
       "PACKAGE": "com.android.car.messenger"
     },
+    "SMS_CONVERSATION_TITLE": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "title",
+      "PACKAGE": "com.android.car.messenger"
+    },
     "SMS_UNREAD_BADGE": {
       "TYPE": "RESOURCE_ID",
       "VALUE": "unread_badge",
@@ -2033,6 +2067,11 @@
     "ASSISTANT_SMS_TRANSCRIPTION_PLATE": {
       "TYPE": "RESOURCE_ID",
       "VALUE": "transcription_immersive_container"
+    },
+    "SMS_CONVERSATION_MUTE_ACTION_BUTTON": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "mute_action_button",
+      "PACKAGE": "com.android.car.messenger"
     },
     "SMS_EMPTY_MESSAGE": {
       "TYPE": "RESOURCE_ID",
@@ -2083,6 +2122,23 @@
           "TYPE": "RESOURCE_ID",
           "VALUE": "qc_summary",
           "PACKAGE": "com.android.systemui"
+        }
+      ]
+    },
+    "GOOGLE_ACCOUNT_BUTTON": {
+      "TYPE": "MULTIPLE",
+      "SPECIFIERS": [
+        {
+          "TYPE": "HAS_DESCENDANT",
+          "MAX_DEPTH": 2,
+          "DESCENDANT": {
+            "TYPE": "TEXT",
+            "VALUE": "Google"
+          }
+        },
+        {
+          "TYPE": "CLASS",
+          "VALUE": "android.widget.RelativeLayout"
         }
       ]
     },
@@ -2305,6 +2361,66 @@
             "TYPE": "TEXT",
             "VALUE": "Allow"
           }
+        }
+      }
+    ],
+    "OPEN_DIALER_WORKFLOW": [
+      {
+        "NAME": "Go to Home",
+        "TYPE": "PRESS",
+        "CONFIG": {
+          "TEXT": "HOME"
+        }
+      },
+      {
+        "NAME": "Wait 1 second",
+        "TYPE": "WAIT_MS",
+        "CONFIG": {
+          "TEXT": "1000"
+        }
+      },
+      {
+        "NAME": "Open dialer by activity",
+        "TYPE": "COMMAND",
+        "CONFIG": {
+          "TEXT": "am start -n com.android.car.dialer/.ui.TelecomActivity"
+        }
+      },
+      {
+        "NAME": "Wait 1 second",
+        "TYPE": "WAIT_MS",
+        "CONFIG": {
+          "TEXT": "1000"
+        }
+      }
+    ],
+    "SEARCH_CONTACTS_WORKFLOW": [
+      {
+        "NAME": "Open search",
+        "TYPE": "CLICK",
+        "CONFIG": {
+          "UI_ELEMENT_REFERENCE": "SEARCH_CONTACT"
+        }
+      },
+      {
+        "NAME": "Type contact name",
+        "TYPE": "SET_TEXT",
+        "CONFIG": {
+          "UI_ELEMENT_REFERENCE": "CONTACT_SEARCH_BAR"
+        },
+        "SET_TEXT_CONFIG": {
+          "COMMAND_LINE_KEY": "search-contact-name"
+        }
+      },
+      {
+        "NAME": "Check for searched contact",
+        "TYPE": "VALIDATE_VALUE",
+        "CONFIG": {
+          "UI_ELEMENT_REFERENCE": "CONTACT_SEARCH_RESULT_NAME"
+        },
+        "VALIDATION_CONFIG": {
+          "PROPERTY": "TEXT",
+          "EXPECTED_COMMAND_LINE_KEY": "search-contact-name"
         }
       }
     ],

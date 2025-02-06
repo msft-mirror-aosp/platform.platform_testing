@@ -130,13 +130,7 @@ public class DialHelperImpl extends AbstractStandardAppHelper implements IAutoDi
 
     /** {@inheritDoc} */
     public void open() {
-        getSpectatioUiUtil().pressHome();
-        getSpectatioUiUtil().wait1Second();
-        getSpectatioUiUtil()
-                .executeShellCommand(
-                        getCommandFromConfig(
-                                AutomotiveConfigConstants.OPEN_PHONE_ACTIVITY_COMMAND));
-        getSpectatioUiUtil().wait1Second();
+        executeWorkflow(AutomotiveConfigConstants.OPEN_DIALER_WORKFLOW);
     }
 
     /** {@inheritDoc} */
@@ -423,6 +417,12 @@ public class DialHelperImpl extends AbstractStandardAppHelper implements IAutoDi
     }
 
     /** {@inheritDoc} */
+    @Override
+    public void searchContacts() {
+        executeWorkflow(AutomotiveConfigConstants.SEARCH_CONTACTS_WORKFLOW);
+    }
+
+    /** {@inheritDoc} */
     public void searchContactsByName(String contact) {
         openSearchContact();
         UiObject2 searchBox = getSearchBox();
@@ -553,6 +553,7 @@ public class DialHelperImpl extends AbstractStandardAppHelper implements IAutoDi
     /** {@inheritDoc} */
     public String getFirstContactFromContactList() {
         openContacts();
+        scrollToTopOfContactList();
         BySelector contactNameSelector =
                 getUiElementFromConfig(AutomotiveConfigConstants.CONTACT_NAME);
         UiObject2 firstContact = getSpectatioUiUtil().findUiObject(contactNameSelector);

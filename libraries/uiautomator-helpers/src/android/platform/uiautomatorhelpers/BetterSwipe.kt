@@ -23,7 +23,6 @@ import android.os.SystemClock
 import android.os.SystemClock.sleep
 import android.platform.uiautomatorhelpers.DeviceHelpers.context
 import android.platform.uiautomatorhelpers.TracingUtils.trace
-import android.platform.uiautomatorhelpers.WaitUtils.ensureThat
 import android.util.Log
 import android.view.Display.DEFAULT_DISPLAY
 import android.view.InputDevice
@@ -35,6 +34,7 @@ import androidx.test.platform.app.InstrumentationRegistry.getInstrumentation
 import com.google.common.truth.Truth.assertThat
 import java.time.Duration
 import java.time.temporal.ChronoUnit.MILLIS
+import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicInteger
 
 private val DEFAULT_DURATION: Duration = Duration.of(500, MILLIS)
@@ -59,26 +59,124 @@ private val PAUSE_DURATION: Duration = Duration.of(250, MILLIS)
  * ```
  */
 object BetterSwipe {
+    val TAG = "BetterSwipe"
 
+    /** The swipes that have currently not been released, with most recent first. */
+    private val currentSwipes = CopyOnWriteArrayList<Swipe>()
+    // TODO(b/388022364): can this be replaced by currentSwipes?
     private val lastPointerId = AtomicInteger(0)
 
-    /** Starts a swipe from [start] at the current time. */
-    @JvmStatic fun from(start: PointF) = Swipe(start)
+    /**
+     * Release all currently-held swipes, starting with the most recently initiated swipes. (due to
+     * issues like b/383365751, we may sometimes "leak" swipes, and this can be called to state that
+     * all fingers should be up)
+     */
+    @JvmStatic
+    fun releaseAll() {
+        while (currentSwipes.isNotEmpty()) {
+            Log.e(TAG, "releasing, ${currentSwipes.size} current swipes remaining")
+            // Should remove this swipe from the list
+            currentSwipes[0].release()
+        }
+    }
 
     /** Starts a swipe from [start] at the current time. */
-    @JvmStatic fun from(start: Point) = Swipe(PointF(start.x.toFloat(), start.y.toFloat()))
+    // @JvmStatic fun from(start: PointF) = Swipe(start)
+    /**
+     * Swipe from [start] to [end] in time [duration] using [interpolator] and calling [swipeFn]
+     * before the swipe is released. The try/finally forces the release() call, so InputDispatcher
+     * doesn't get confused. (b/377512109).
+     *
+     * @param [start] starting point of swipe.
+     * @param [end] end of swipe
+     * @param [duration] duration of swipe
+     * @param [interpolator] to use (fling or scroll, usually.
+     * @param [swipeFn] lambda on Swipe to send from()/to(), pause(), before release() is called.
+     */
+    @JvmOverloads
+    @JvmStatic
+    fun swipe(
+        start: PointF,
+        end: PointF,
+        duration: Duration = DEFAULT_DURATION,
+        interpolator: TimeInterpolator = FLING_GESTURE_INTERPOLATOR,
+        swipeFn: (Swipe.() -> Unit) = {},
+    ) {
+        var swipe: Swipe? = null
+        try {
+            swipe = Swipe(start)
+            swipe.from()
+            swipe.swipeFn()
+            swipe.to(end, duration, interpolator)
+        } finally {
+            swipe?.release()
+        }
+    }
 
-    class Swipe internal constructor(start: PointF) {
+    /** Variant which takes integer points. */
+    @JvmOverloads
+    @JvmStatic
+    fun swipe(
+        start: Point,
+        end: Point,
+        duration: Duration = DEFAULT_DURATION,
+        interpolator: TimeInterpolator = FLING_GESTURE_INTERPOLATOR,
+        swipeFn: (Swipe.() -> Unit) = {},
+    ) {
+        swipe(
+            PointF(start.x.toFloat(), start.y.toFloat()),
+            PointF(end.x.toFloat(), end.y.toFloat()),
+            duration,
+            interpolator,
+            swipeFn,
+        )
+    }
 
-        private val downTime = SystemClock.uptimeMillis()
+    /**
+     * This variant of swipe only specifies the from point, and delegates the actual swipe to inside
+     * the lambda, for special cases such as BrightnessSlider, which asserts after the first touch,
+     * but before the actual swipe/slide happens.
+     *
+     * @param [start] starting point.
+     * @param [swipeFn] lambda to call after touch down, but before swipe.
+     */
+    @JvmStatic
+    fun swipe(start: PointF, swipeFn: (Swipe.() -> Unit)) {
+        var swipe: Swipe? = null
+        try {
+            swipe = Swipe(start)
+            swipe.from()
+            swipe.swipeFn()
+        } finally {
+            swipe?.release()
+        }
+    }
+
+    /** Variant which takes an integer point. */
+    @JvmOverloads
+    @JvmStatic
+    fun swipe(start: Point, swipeFn: (Swipe.() -> Unit) = {}) {
+        swipe(PointF(start.x.toFloat(), start.y.toFloat()), swipeFn)
+    }
+
+    class Swipe internal constructor(val start: PointF) {
+
+        private var downTime = -1L
         private val pointerId = lastPointerId.incrementAndGet()
         private var lastPoint: PointF = start
         private var lastTime: Long = downTime
         private var released = false
 
         init {
+            currentSwipes.add(0, this)
             log("Touch $pointerId started at $start")
+        }
+
+        internal fun from(): Swipe {
+            throwIfReleased()
+            downTime = SystemClock.uptimeMillis()
             sendPointer(currentTime = downTime, action = MotionEvent.ACTION_DOWN, point = start)
+            return this
         }
 
         /**
@@ -92,8 +190,9 @@ object BetterSwipe {
         fun to(
             end: PointF,
             duration: Duration = DEFAULT_DURATION,
-            interpolator: TimeInterpolator = FLING_GESTURE_INTERPOLATOR
+            interpolator: TimeInterpolator = FLING_GESTURE_INTERPOLATOR,
         ): Swipe {
+            throwIfNotDown()
             throwIfReleased()
             val stepTime = calculateStepTime()
             log(
@@ -118,7 +217,7 @@ object BetterSwipe {
         fun to(
             end: Point,
             duration: Duration = DEFAULT_DURATION,
-            interpolator: TimeInterpolator = FLING_GESTURE_INTERPOLATOR
+            interpolator: TimeInterpolator = FLING_GESTURE_INTERPOLATOR,
         ): Swipe {
             return to(PointF(end.x.toFloat(), end.y.toFloat()), duration, interpolator)
         }
@@ -130,14 +229,19 @@ object BetterSwipe {
 
         /** Moves the pointer up, finishing the swipe. Further calls will result in an exception. */
         @JvmOverloads
+        /*
         fun release(sync: Boolean = true) {
+            currentSwipes.remove(this)
+        */
+        internal fun release(sync: Boolean = true) {
+            currentSwipes.remove(this)
             throwIfReleased()
             log("Touch $pointerId released at $lastPoint")
             sendPointer(
                 currentTime = lastTime,
                 action = MotionEvent.ACTION_UP,
                 point = lastPoint,
-                sync = sync
+                sync = sync,
             )
             lastPointerId.decrementAndGet()
             released = true
@@ -155,11 +259,17 @@ object BetterSwipe {
             check(!released) { "Trying to perform a swipe operation after pointer released" }
         }
 
+        private fun throwIfNotDown() {
+            check(downTime != -1L) {
+                "Trying to perform a swipe operation with pointer not down $downTime"
+            }
+        }
+
         private fun sendPointer(
             currentTime: Long,
             action: Int,
             point: PointF,
-            sync: Boolean = true
+            sync: Boolean = true,
         ) {
             val event = getMotionEvent(downTime, currentTime, action, point, pointerId)
 
@@ -171,23 +281,19 @@ object BetterSwipe {
         }
 
         private fun trySendMotionEvent(event: MotionEvent, sync: Boolean) {
-            ensureThat(
-                    "Injecting motion event",
-                    /* timeout= */ Duration.ofMillis(INJECT_EVENT_TIMEOUT_MILLIS),
-                    /* errorProvider= */ {
-                        "Injecting motion event $event failed after retrying for 10 seconds, " +
-                            "see logcat for the error"
-                    }
-                )
-                /* condition= */ {
-                    try {
-                        return@ensureThat getInstrumentation()
-                            .uiAutomation
-                            .injectInputEvent(event, sync, /* waitForAnimations= */ false)
-                    } catch (t: Throwable) {
-                        throw RuntimeException(t)
-                    }
-                }
+
+            // Do not re-attempt to send ACTION_DOWN and ACTION_UP events
+            // because the InputDispatcher retains state between test runs and
+            // expects an ACTION_UP after each ACTION_DOWN, even if it rejects
+            // the event.
+
+            try {
+                getInstrumentation()
+                    .uiAutomation
+                    .injectInputEvent(event, sync, /* waitForAnimations= */ false)
+            } catch (t: Throwable) {
+                throw RuntimeException(t)
+            }
         }
 
         /** Returns the time when movement finished. */
@@ -196,7 +302,7 @@ object BetterSwipe {
             from: PointF,
             to: PointF,
             interpolator: TimeInterpolator,
-            stepTime: Duration
+            stepTime: Duration,
         ): Long {
             val stepTimeMs = stepTime.toMillis()
             val durationMs = duration.toMillis()
@@ -294,7 +400,7 @@ private fun getMotionEvent(
         /* deviceId= */ 0,
         /* edgeFlags= */ 0,
         /* source= */ InputDevice.SOURCE_TOUCHSCREEN,
-        /* flags= */ 0
+        /* flags= */ 0,
     )
 }
 

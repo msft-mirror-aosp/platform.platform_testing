@@ -5,67 +5,51 @@ platform_tests += \
     ActivityManagerPerfTestsStubApp3 \
     ActivityManagerPerfTestsTestApp \
     AdServicesScenarioTests \
+    AndroidAutomotiveDialScenarioTests \
     AndroidTVJankTests \
     AndroidXComposeStartupApp \
     ApiDemos \
     AppCompatibilityTest \
     AppLaunch \
     AppTransitionTests \
-    AutoLocTestApp \
-    AutoLocVersionedTestApp_v1 \
-    AutoLocVersionedTestApp_v2 \
     BackgroundDexOptServiceIntegrationTests \
     BandwidthEnforcementTest \
     BandwidthTests \
+    benchmarks \
     BootHelperApp \
     BusinessCard \
-    CalculatorFunctionalTests \
     CalendarTests \
     camera_client_test \
     camera_metadata_tests \
     CellBroadcastReceiverTests \
-    ConnectivityManagerTest \
-    ContactsTests \
+    ConnectivityUIDTest \
     CtsCameraTestCases \
-    CtsHardwareTestCases \
-    DataIdleTest \
     Development \
     DeviceHealthChecks \
-    DynamicCodeLoggerIntegrationTests \
     DialerJankTests \
-    DownloadManagerTestApp \
-    StubIME \
-    ExternalLocAllPermsTestApp \
-    ExternalLocTestApp \
-    ExternalLocVersionedTestApp_v1 \
-    ExternalLocVersionedTestApp_v2 \
-    ExternalSharedPermsBTTestApp \
-    ExternalSharedPermsDiffKeyTestApp \
-    ExternalSharedPermsFLTestApp \
-    ExternalSharedPermsTestApp \
+    DynamicCodeLoggerIntegrationTests \
+    FacebookAppsScenarioTests \
     flatland \
+    FlickerTestApp \
     FrameworkPerf \
     FrameworkPermissionTests \
+    FrameworksCoreSystemPropertiesTests \
     FrameworksCoreTests \
     FrameworksMockingCoreTests \
     FrameworksPrivacyLibraryTests \
+    FrameworksSaxTests \
+    FrameworksServicesTests \
     FrameworksUtilTests \
-    InternalLocTestApp \
+    FrameworkTestRunnerTests \
+    hwuimacro \
+    ImageProcessing \
     JankMicroBenchmarkTests \
     LauncherIconsApp \
     long_trace_binder_config.textproto \
     long_trace_config.textproto \
+    mediaframeworktest \
     MemoryUsage \
-    MultiDexLegacyTestApp \
-    MultiDexLegacyTestApp2 \
-    MultiDexLegacyTestServices \
-    MultiDexLegacyTestServicesTests \
-    MultiDexLegacyVersionedTestApp_v1 \
-    MultiDexLegacyVersionedTestApp_v2 \
-    MultiDexLegacyVersionedTestApp_v3 \
-    NoLocTestApp \
-    NoLocVersionedTestApp_v1 \
-    NoLocVersionedTestApp_v2 \
+    mmapPerf \
     OverviewFunctionalTests \
     perfetto_trace_processor_shell \
     PerformanceAppTest \
@@ -74,16 +58,20 @@ platform_tests += \
     PermissionTestAppMV1 \
     PermissionUtils \
     PlatformCommonScenarioTests \
+    PlatformComposeSceneTransitionLayoutDemo \
+    PMC \
     PowerPerfTest \
+    SdkSandboxClient \
+    SdkSandboxCodeProvider \
+    SdkSandboxMediateeProvider \
     SdkSandboxPerfScenarioTests \
+    SdkSandboxWebViewProvider \
     SettingsUITests \
-    SimpleServiceTestApp1 \
-    SimpleServiceTestApp2 \
-    SimpleServiceTestApp3 \
     SimpleTestApp \
     sl4a \
     SmokeTest \
     SmokeTestApp \
+    StubIME \
     trace_config.textproto \
     trace_config_boot_time.textproto \
     trace_config_boot_time_stop.textproto \
@@ -99,19 +87,11 @@ platform_tests += \
     UiBenchJankTests \
     UiBenchJankTestsWear \
     UiBenchMicrobenchmark \
-    UpdateExternalLocTestApp_v1_ext \
-    UpdateExternalLocTestApp_v2_none \
-    UpdateExtToIntLocTestApp_v1_ext \
-    UpdateExtToIntLocTestApp_v2_int \
     uwb_snippet \
-    VersatileTestApp_Auto \
-    VersatileTestApp_External \
-    VersatileTestApp_Internal \
-    VersatileTestApp_None \
-    VoiceInteraction \
-    WifiStrengthScannerUtil \
     wifi_direct_mobly_snippet \
     wifi_aware_snippet_new \
+    WifiStrengthScannerUtil \
+    xaVideoDecoderCapabilities \
 
 ifneq ($(strip $(BOARD_PERFSETUP_SCRIPT)),)
 platform_tests += perf-setup

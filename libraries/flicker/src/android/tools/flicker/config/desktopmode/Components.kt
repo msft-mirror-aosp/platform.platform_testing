@@ -79,16 +79,21 @@ object Components {
                     associatedTransition.changes.first { it.transitMode == TransitionType.CLOSE }
                 FullComponentIdMatcher(change.windowId, change.layerId)
             }
+            ScenarioId("OPEN_APP_WHEN_EXTERNAL_DISPLAY_CONNECTED"),
             ScenarioId("OPEN_UNLIMITED_APPS"),
             ScenarioId("CASCADE_APP") -> {
                 val change =
                     associatedTransition.changes.first { it.transitMode == TransitionType.OPEN }
                 FullComponentIdMatcher(change.windowId, change.layerId)
             }
-            ScenarioId("MINIMIZE_APP"),
-            ScenarioId("MINIMIZE_LAST_APP") -> {
+            ScenarioId("MINIMIZE_APP") -> {
                 val change =
                     associatedTransition.changes.first { it.transitMode == TransitionType.TO_BACK }
+                FullComponentIdMatcher(change.windowId, change.layerId)
+            }
+            ScenarioId("MINIMIZE_LAST_APP") -> {
+                val change =
+                    associatedTransition.changes.last { it.transitMode == TransitionType.TO_BACK }
                 FullComponentIdMatcher(change.windowId, change.layerId)
             }
             ScenarioId("CORNER_RESIZE"),
