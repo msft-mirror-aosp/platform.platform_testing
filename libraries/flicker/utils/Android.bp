@@ -43,7 +43,13 @@ filegroup {
         ":flickerlib-utils-src",
         "src/android/tools/traces/parsers/perfetto/Args.kt",
         "src/android/tools/traces/parsers/perfetto/TraceProcessorSession*",
+        "src/android/tools/traces/parsers/perfetto/ShellServerLifecycleManager.kt",
     ],
+}
+
+filegroup {
+    name: "tpwrap",
+    device_first_srcs: [":trace_processor_shell"],
 }
 
 android_library {
@@ -57,7 +63,6 @@ android_library {
     ],
     static_libs: [
         "flickerlib-parsers",
-        "flickerlib-trace_processor_shell",
         "androidx.test.uiautomator_uiautomator",
     ],
 }
@@ -92,6 +97,9 @@ android_library {
     optimize: {
         enabled: false,
     },
+    assets: [
+        ":tpwrap",
+    ],
     srcs: [
         "src/android/tools/**/*.kt",
     ],
