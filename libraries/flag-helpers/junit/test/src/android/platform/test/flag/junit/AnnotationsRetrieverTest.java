@@ -18,6 +18,8 @@ package android.platform.test.flag.junit;
 
 import static org.junit.Assert.assertEquals;
 
+import android.platform.test.annotations.DisableFlags;
+import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.RequiresFlagsDisabled;
 import android.platform.test.annotations.RequiresFlagsEnabled;
 
@@ -60,6 +62,14 @@ public class AnnotationsRetrieverTest {
     @RequiresFlagsEnabled({"flag1"})
     @RequiresFlagsDisabled({"flag1"})
     static class TestClassHasConflictingAnnotations {}
+
+    @EnableFlags("flag1")
+    @EnableFlags("flag2")
+    @EnableFlags("flag3")
+    @DisableFlags("flag4")
+    @DisableFlags("flag5")
+    @DisableFlags("flag6")
+    static class TestClassHasRepeatedAnnotations {}
 
     private final RequiresFlagsEnabled mRequiresFlagsEnabled =
             createRequiresFlagsEnabled(new String[]{"flag5"});
@@ -177,6 +187,21 @@ public class AnnotationsRetrieverTest {
                 TestClassHasAllAnnotations.class,
                 createRequiresFlagsEnabled(new String[] {"flag3"}),
                 createRequiresFlagsDisabled(new String[] {"flag1"}));
+    }
+
+    @Test
+    public void repeatedFlagAnnotationsAreMerged() {
+        AnnotationsRetriever.FlagAnnotations flagAnnotations = getFlagAnnotations(
+                TestClassHasRepeatedAnnotations.class);
+
+        assertEquals(Map.of(
+                "flag1", true,
+                "flag2", true,
+                "flag3", true,
+                "flag4", false,
+                "flag5", false,
+                "flag6", false),
+                flagAnnotations.mSetFlagValues);
     }
 
     @Test

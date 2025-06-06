@@ -28,6 +28,16 @@ class FeatureFlagsImpl implements FeatureFlags {
     }
 
     @Override
+    public boolean flagName5() {
+        return false;
+    }
+
+    @Override
+    public boolean flagName6() {
+        return false;
+    }
+
+    @Override
     public boolean roEnabled() {
         return true;
     }

@@ -17,6 +17,7 @@
 package android.platform.test.annotations;
 
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
@@ -45,6 +46,7 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.TYPE})
+@Repeatable(value = DisableFlagSet.class)
 public @interface DisableFlags {
     /**
      * The list of the feature flags to be disabled. Each item is the full flag name with the format
