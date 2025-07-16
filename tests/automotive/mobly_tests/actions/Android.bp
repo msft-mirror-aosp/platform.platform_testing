@@ -18,6 +18,25 @@ package {
 }
 
 python_test_host {
+    name: "ActionsGears",
+    main: "gears.py",
+    srcs: ["gears.py"],
+    libs: [
+        "mobly",
+        "utilities",
+    ],
+    test_suites: [
+        "catbox",
+    ],
+    test_options: {
+        unit_test: false,
+    },
+    device_common_data: [
+        ":AutomotiveSnippet",
+    ],
+}
+
+python_test_host {
     name: "ActionsHvac",
     main: "hvac.py",
     srcs: ["hvac.py"],
@@ -33,6 +52,5 @@ python_test_host {
     },
     device_common_data: [
         ":AutomotiveSnippet",
-        ":ValSnippet",
     ],
 }
