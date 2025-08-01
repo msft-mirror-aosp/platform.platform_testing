@@ -47,6 +47,8 @@ public class BackupUtilsTest {
             Pattern.compile("bmgr --user \\d+ enable (true|false)$");
     private static final Pattern ACTIVATE_COMMAND_PATTERN =
             Pattern.compile("bmgr --user \\d+ activate (true|false)$");
+    private static final Pattern WIPE_COMMAND_PATTERN =
+            Pattern.compile("bmgr --user \\d+ wipe \\S+ \\S+");
     private static final Pattern TRANSPORT_COMPONENT_COMMAND_PATTERN =
             Pattern.compile("bmgr --user \\d+ transport -c .*");
 
@@ -55,6 +57,7 @@ public class BackupUtilsTest {
     private boolean mIsDumpsysCommandCalled;
     private boolean mIsEnableCommandCalled;
     private boolean mIsActivateCommandCalled;
+    private boolean mIsWipeCommandCalled;
     private boolean mIsTransportComponentCommandCalled;
 
     private BackupUtils mBackupUtils;
@@ -78,6 +81,7 @@ public class BackupUtilsTest {
         mIsDumpsysCommandCalled = false;
         mIsEnableCommandCalled = false;
         mIsActivateCommandCalled = false;
+        mIsWipeCommandCalled = false;
         mIsTransportComponentCommandCalled = false;
 
         mMockCommandExceptionMap.clear();
@@ -96,6 +100,8 @@ public class BackupUtilsTest {
                             mIsEnableCommandCalled = true;
                         } else if (ACTIVATE_COMMAND_PATTERN.matcher(command).find()) {
                             mIsActivateCommandCalled = true;
+                        } else if (WIPE_COMMAND_PATTERN.matcher(command).find()) {
+                            mIsWipeCommandCalled = true;
                         } else if (TRANSPORT_COMPONENT_COMMAND_PATTERN.matcher(command).find()) {
                             mIsTransportComponentCommandCalled = true;
                         }
@@ -449,6 +455,67 @@ public class BackupUtilsTest {
         onCommandReturns("bmgr --user 10 activate false", "Backup Manager now deactivated");
         expect.that(mBackupUtils.activateBackupForUser(false, 10)).isFalse();
         expect.that(mIsActivateCommandCalled).isTrue();
+    }
+
+    /**
+     * Verifies that wipeAndAssertSuccess completes successfully when the shell command
+     * returns the expected output.
+     */
+    @Test
+    public void testWipeAndAssertSuccess_success() throws Exception {
+        // Arrange: Mock the shell command to return a success message.
+        final String transport = "some.transport";
+        final String packageName = "com.test.package";
+        final String command = String.format("bmgr --user 0 wipe %s %s", transport, packageName);
+        onCommandReturns(command, "Wiped backup data for " + packageName);
+
+        // Act: Call the method under test.
+        mBackupUtils.wipeAndAssertSuccess(transport, packageName);
+
+        // Assert: Verify the correct shell command was called and no exception was thrown.
+        expect.that(mIsWipeCommandCalled).isTrue();
+    }
+
+    /**
+     * Verifies that wipeAndAssertSuccess fails when the shell command returns an
+     * unexpected output.
+     */
+    @Test
+    public void testWipeAndAssertSuccess_failure() {
+        // Arrange: Mock the shell command to return a failure message.
+        final String transport = "some.transport";
+        final String packageName = "com.test.package";
+        final String command = String.format("bmgr --user 0 wipe %s %s", transport, packageName);
+        onCommandReturns(command, "Error: wipe failed");
+
+        // Act & Assert: Expect an AssertionError because the output is incorrect.
+        AssertionError e =
+                assertThrows(
+                        AssertionError.class,
+                        () -> mBackupUtils.wipeAndAssertSuccess(transport, packageName));
+        expect.that(e).hasMessageThat().contains("Wipe not successful");
+        expect.that(mIsWipeCommandCalled).isTrue();
+    }
+
+    /**
+     * Verifies that wipeAndAssertSuccess propagates IOException when the shell command fails.
+     */
+    @Test
+    public void testWipeAndAssertSuccess_ioException() {
+        // Arrange: Mock the shell command to throw an IOException.
+        final String transport = "some.transport";
+        final String packageName = "com.test.package";
+        final String command = String.format("bmgr --user 0 wipe %s %s", transport, packageName);
+        final IOException expectedException = new IOException("Failed to execute wipe");
+        onCommandFails(command, expectedException);
+
+        // Act & Assert: Expect the IOException to be propagated.
+        IOException e =
+                assertThrows(
+                        IOException.class,
+                        () -> mBackupUtils.wipeAndAssertSuccess(transport, packageName));
+        expect.that(e).isSameInstanceAs(expectedException);
+        expect.that(mIsWipeCommandCalled).isTrue();
     }
 
     @Test
