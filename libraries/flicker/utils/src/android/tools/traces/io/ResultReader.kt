@@ -26,6 +26,7 @@ import android.tools.io.TraceType
 import android.tools.parsers.events.EventLogParser
 import android.tools.traces.events.CujTrace
 import android.tools.traces.events.EventLog
+import android.tools.traces.parsers.perfetto.CujTraceParser
 import android.tools.traces.parsers.perfetto.LayersTraceParser
 import android.tools.traces.parsers.perfetto.ProtoLogTraceParser
 import android.tools.traces.parsers.perfetto.TraceProcessorSession
@@ -251,7 +252,22 @@ open class ResultReader(result: IResultData) : Reader {
      * @throws IOException if the artifact file doesn't exist or can't be read
      */
     @Throws(IOException::class)
-    override fun readCujTrace(): CujTrace? = readEventLogTrace()?.cujTrace
+    override fun readCujTrace(): CujTrace? {
+        return withTracing("readCujTrace") {
+            val traceData = readBytes(ResultArtifactDescriptor(TraceType.PERFETTO))
+
+            traceData?.let {
+                TraceProcessorSession.loadPerfettoTrace(traceData) { session ->
+                    CujTraceParser()
+                        .parse(
+                            session,
+                            from = transitionTimeRange.start,
+                            to = transitionTimeRange.end,
+                        )
+                }
+            }
+        }
+    }
 
     /** @return an [Reader] for the subsection of the trace we are reading in this reader */
     override fun slice(startTimestamp: Timestamp, endTimestamp: Timestamp): ResultReader {

@@ -32,8 +32,6 @@ class EventLog(override val entries: Collection<Event>) : Trace<Event> {
 
     val cujEvents: Collection<CujEvent> = entries.filterIsInstance<CujEvent>()
 
-    val cujTrace: CujTrace = CujTrace.from(cujEvents)
-
     companion object {
         const val MAGIC_NUMBER = "EventLog"
     }
