@@ -90,14 +90,14 @@ class LayersTraceParser(
     private fun buildTraceEntry(snapshotRows: List<Row>, layersRows: List<Row>): LayerTraceEntry {
         val snapshotArgs = Args.build(snapshotRows)
         val displays = snapshotArgs.getChildren("displays")?.map { newDisplay(it) } ?: emptyList()
-        val excludesCompositionState =
-            snapshotArgs.getChild("excludes_composition_state")?.getBoolean() ?: false
 
         val idAndLayers =
             layersRows
-                .groupBy { it["layer_id"].toString() }
+                .groupBy { it["layer_row_id"].toString() }
                 .map { (layerId, layerRows) ->
-                    Pair(layerId, newLayer(Args.build(layerRows), excludesCompositionState))
+                    val args = Args.build(layerRows)
+                    val isVisible = layerRows[0]["is_visible"] == 1L
+                    Pair(layerId, newLayer(args, isVisible))
                 }
                 .toMutableList()
         idAndLayers.sortBy { it.first.toLong() }
@@ -109,21 +109,19 @@ class LayersTraceParser(
         val monotonicTime = firstRow["monotonic_ts"].toString().toLong()
         val realtimeTime = firstRow["realtime_ts"].toString().toLong()
 
-        val builder =
-            LayerTraceEntryBuilder()
-                .setBootTimestamp(bootTime)
-                .setMonotonicTimestamp(monotonicTime)
-                .setRealTimestamp(realtimeTime)
-                .setLayers(layers)
-                .setDisplays(displays)
-                .setVSyncId(snapshotArgs.getChild("vsync_id")?.getLong() ?: 0L)
-                .setHwcBlob(snapshotArgs.getChild("hwc_blob")?.getString() ?: "")
-                .setWhere(snapshotArgs.getChild("where")?.getString() ?: "")
-                .setOrphanLayerCallback(orphanLayerCallback)
-                .ignoreLayersStackMatchNoDisplay(ignoreLayersStackMatchNoDisplay)
-                .ignoreVirtualDisplay(ignoreLayersInVirtualDisplay)
-
-        return builder.build()
+        return LayerTraceEntryBuilder()
+            .setBootTimestamp(bootTime)
+            .setMonotonicTimestamp(monotonicTime)
+            .setRealTimestamp(realtimeTime)
+            .setLayers(layers)
+            .setDisplays(displays)
+            .setVSyncId(snapshotArgs.getChild("vsync_id")?.getLong() ?: 0L)
+            .setHwcBlob(snapshotArgs.getChild("hwc_blob")?.getString() ?: "")
+            .setWhere(snapshotArgs.getChild("where")?.getString() ?: "")
+            .setOrphanLayerCallback(orphanLayerCallback)
+            .ignoreLayersStackMatchNoDisplay(ignoreLayersStackMatchNoDisplay)
+            .ignoreVirtualDisplay(ignoreLayersInVirtualDisplay)
+            .build()
     }
 
     companion object {
@@ -145,26 +143,34 @@ class LayersTraceParser(
 
         private fun getSqlQueryLayers(snapshotId: Long): String {
             return """
-                SELECT
-                    sfl.snapshot_id,
-                    sfl.id as layer_id,
-                    args.key as key,
-                    args.display_value as value,
-                    args.value_type
-                FROM
-                    surfaceflinger_layer as sfl
-                INNER JOIN args ON sfl.arg_set_id = args.arg_set_id
-                WHERE snapshot_id = $snapshotId;
-            """
+                       SELECT
+                           sfl.snapshot_id,
+                           sfl.id as layer_row_id,
+                           sfl.is_visible,
+                           args.key as key,
+                           args.display_value as value,
+                           args.value_type
+                       FROM
+                           surfaceflinger_layer as sfl
+                       INNER JOIN args ON sfl.arg_set_id = args.arg_set_id
+                       WHERE snapshot_id = $snapshotId;
+                   """
                 .trimIndent()
         }
 
-        private fun newLayer(layer: Args, excludesCompositionState: Boolean): Layer {
+        private fun newLayer(layer: Args, isVisible: Boolean): Layer {
             // Differentiate between the cases when there's no HWC data on
             // the trace, and when the visible region is actually empty
             val activeBuffer = newActiveBuffer(layer.getChild("active_buffer"))
             val visibleRegion = newRegion(layer.getChild("visible_region")) ?: Region()
             val crop = newCropRect(layer.getChild("crop"))
+
+            val visibilityReason =
+                (layer.getChildren("visibility_reason")?.map { it -> it.getString() })
+                    ?: emptyList<String>() as List<String>
+            val occludedBy =
+                (layer.getChildren("occluded_by")?.map { it -> it.getInt() })
+                    ?: emptyList<Int>() as List<Int>
 
             val cornerRadii =
                 newCornerRadii(
@@ -176,13 +182,12 @@ class LayersTraceParser(
                 name = layer.getChild("name")?.getString() ?: "",
                 id = layer.getChild("id")?.getInt() ?: 0,
                 parentId = layer.getChild("parent")?.getInt() ?: 0,
-                bounds = newRectF(layer.getChild("bounds")),
                 z = layer.getChild("z")?.getInt() ?: 0,
                 visibleRegion = visibleRegion,
                 activeBuffer = activeBuffer,
                 flags = layer.getChild("flags")?.getInt() ?: 0,
+                bounds = newRectF(layer.getChild("bounds")),
                 color = newColor(layer.getChild("color")),
-                isOpaque = layer.getChild("is_opaque")?.getBoolean() ?: false,
                 shadowRadius = layer.getChild("shadow_radius")?.getFloat() ?: 0f,
                 cornerRadii = cornerRadii,
                 screenBounds = newRectF(layer.getChild("screen_bounds")),
@@ -200,21 +205,23 @@ class LayersTraceParser(
                 isRelativeOf = layer.getChild("is_relative_of")?.getBoolean() ?: false,
                 zOrderRelativeOfId = layer.getChild("z_order_relative_of")?.getInt() ?: 0,
                 stackId = layer.getChild("layer_stack")?.getInt() ?: 0,
-                excludesCompositionState = excludesCompositionState,
+                isVisible = isVisible,
+                visibilityReason = visibilityReason,
+                occludedBy = occludedBy,
             )
         }
 
         private fun newDisplay(display: Args): Display {
             return Display.from(
-                display.getChild("id")?.getLong() ?: 0L,
-                display.getChild("name")?.getString() ?: "",
-                display.getChild("layer_stack")?.getInt() ?: 0,
-                newSize(display.getChild("size")),
-                newRect(display.getChild("layer_stack_space_rect")),
-                newTransform(display.getChild("transform"), position = null),
-                display.getChild("is_virtual")?.getBoolean() ?: false,
-                display.getChild("dpi_x")?.getFloat()?.toDouble() ?: 0.0,
-                display.getChild("dpi_y")?.getFloat()?.toDouble() ?: 0.0,
+                id = display.getChild("id")?.getLong() ?: 0L,
+                name = display.getChild("name")?.getString() ?: "",
+                layerStackId = display.getChild("layer_stack")?.getInt() ?: 0,
+                size = newSize(display.getChild("size")),
+                layerStackSpace = newRect(display.getChild("layer_stack_space_rect")),
+                transform = newTransform(display.getChild("transform"), position = null),
+                isVirtual = display.getChild("is_virtual")?.getBoolean() ?: false,
+                dpiX = display.getChild("dpi_x")?.getFloat()?.toDouble() ?: 0.0,
+                dpiY = display.getChild("dpi_y")?.getFloat()?.toDouble() ?: 0.0,
             )
         }
 

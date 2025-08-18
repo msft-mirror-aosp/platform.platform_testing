@@ -63,8 +63,13 @@ constructor(
     val visibleRegion: RegionSubject
         get() = RegionSubject(layer.visibleRegion, timestamp, reader)
 
+    /** Reasons for the lack of visibility of a layer */
     val visibilityReason: Collection<String>
         get() = layer.visibilityReason
+
+    /** Whether the layer is occluded by another */
+    val isOccluded: Boolean
+        get() = isInvisible && layer.occludedBy.isNotEmpty()
 
     /**
      * Visible region calculated by the Composition Engine (when available) or calculated based on

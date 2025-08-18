@@ -65,7 +65,7 @@ class LayersTraceSubjectTest {
     fun testCanDetectEmptyRegionFromLayerTrace() {
         val reader = getLayerTraceReaderFromAsset("layers_trace_emptyregion.perfetto-trace")
         val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
-        assertFail("SkRegion((0,0,1440,1440)) should cover at least SkRegion((0,0,1440,2880))") {
+        assertFail("SkRegion((0,0,2960,1440)) should cover at least SkRegion((0,0,1440,2880))") {
             LayersTraceSubject(trace, reader)
                 .visibleRegion()
                 .coversAtLeast(DISPLAY_REGION)
@@ -244,6 +244,7 @@ class LayersTraceSubjectTest {
             LayersTraceSubject(trace, reader)
                 .getEntryBySystemUpTime(1700382131522L, byMonotonicTimestamp = true)
         entry.isInvisible(TestComponents.SIMPLE_APP)
+        entry.isOccluded(TestComponents.SIMPLE_APP)
         entry.isVisible(ComponentNameMatcher.SPLASH_SCREEN)
     }
 

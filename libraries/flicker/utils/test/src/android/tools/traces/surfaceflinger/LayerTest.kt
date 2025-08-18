@@ -65,79 +65,16 @@ class LayerTest {
     }
 
     @Test
-    fun useVisibleRegionIfCompositionStateIsAvailableForVisibility() {
-        assertThat(
-                makeLayerWithDefaults(
-                        excludeCompositionState = false,
-                        visibleRegion = Region(),
-                        activeBuffer = ActiveBuffer.from(100, 100, 1, 0),
-                    )
-                    .isVisible
-            )
-            .isFalse()
-        assertThat(
-                makeLayerWithDefaults(
-                        excludeCompositionState = false,
-                        visibleRegion = Region(0, 0, 100, 100),
-                        activeBuffer = ActiveBuffer.from(100, 100, 1, 0),
-                    )
-                    .isVisible
-            )
-            .isTrue()
+    fun isRootLayer() {
+        val layer = makeLayerWithDefaults()
+        assertThat(layer.isRootLayer).isTrue()
     }
 
     @Test
-    fun fallbackOnLayerBoundsIfCompositionStateIsNotAvailableForVisibility() {
-        assertThat(
-                makeLayerWithDefaults(
-                        excludeCompositionState = true,
-                        bounds = RectF(),
-                        activeBuffer = ActiveBuffer.from(100, 100, 1, 0),
-                    )
-                    .isVisible
-            )
-            .isFalse()
-        assertThat(
-                makeLayerWithDefaults(
-                        excludeCompositionState = true,
-                        bounds = RectF(0f, 0f, 100f, 100f),
-                        activeBuffer = ActiveBuffer.from(100, 100, 1, 0),
-                    )
-                    .isVisible
-            )
-            .isTrue()
-        assertThat(
-                makeLayerWithDefaults(
-                        excludeCompositionState = true,
-                        visibleRegion = Region(0, 0, 100, 100),
-                        bounds = RectF(),
-                        activeBuffer = ActiveBuffer.from(100, 100, 1, 0),
-                    )
-                    .isVisible
-            )
-            .isFalse()
-    }
-
-    @Test
-    fun isHiddenByPolicy() {
-        val layer = makeLayerWithDefaults(flags = Flag.HIDDEN.value)
-        assertThat(layer.isHiddenByPolicy).isTrue()
-    }
-
-    @Test
-    fun isHiddenByParent() {
-        val parent = makeLayerWithDefaults(flags = Flag.HIDDEN.value)
-        val child = makeLayerWithDefaults()
-        child.parent = parent
-        assertThat(child.isHiddenByParent).isTrue()
-    }
-
-    @Test
-    fun isNotHiddenByParent() {
-        val parent = makeLayerWithDefaults(flags = 0)
-        val child = makeLayerWithDefaults()
-        child.parent = parent
-        assertThat(child.isHiddenByParent).isFalse()
+    fun isNotRootLayer() {
+        val layer = makeLayerWithDefaults()
+        layer.parent = makeLayerWithDefaults()
+        assertThat(layer.isRootLayer).isFalse()
     }
 
     @Test
@@ -152,97 +89,9 @@ class LayerTest {
         assertThat(layer.isTask).isFalse()
     }
 
-    @Test
-    fun contains() {
-        val layer1 =
-            makeLayerWithDefaults(
-                screenBounds = RectF(0f, 0f, 100f, 100f),
-                transform = Transform.EMPTY,
-            )
-        val layer2 =
-            makeLayerWithDefaults(
-                screenBounds = RectF(10f, 10f, 90f, 90f),
-                transform = Transform.EMPTY,
-            )
-        assertThat(layer1.contains(layer2)).isTrue()
-    }
-
-    @Test
-    fun doesNotContain() {
-        val layer1 =
-            makeLayerWithDefaults(
-                screenBounds = RectF(0f, 0f, 100f, 100f),
-                transform = Transform.EMPTY,
-            )
-        val layer2 =
-            makeLayerWithDefaults(
-                screenBounds = RectF(110f, 110f, 190f, 190f),
-                transform = Transform.EMPTY,
-            )
-        assertThat(layer1.contains(layer2)).isFalse()
-    }
-
-    @Test
-    fun overlaps() {
-        val layer1 =
-            makeLayerWithDefaults(
-                screenBounds = RectF(0f, 0f, 100f, 100f),
-                transform = Transform.EMPTY,
-            )
-        val layer2 =
-            makeLayerWithDefaults(
-                screenBounds = RectF(50f, 50f, 150f, 150f),
-                transform = Transform.EMPTY,
-            )
-        assertThat(layer1.overlaps(layer2)).isTrue()
-    }
-
-    @Test
-    fun doesNotOverlap() {
-        val layer1 =
-            makeLayerWithDefaults(
-                screenBounds = RectF(0f, 0f, 100f, 100f),
-                transform = Transform.EMPTY,
-            )
-        val layer2 =
-            makeLayerWithDefaults(
-                screenBounds = RectF(110f, 110f, 190f, 190f),
-                transform = Transform.EMPTY,
-            )
-        assertThat(layer1.overlaps(layer2)).isFalse()
-    }
-
-    @Test
-    fun visibilityReasonIsHidden() {
-        val layer = makeLayerWithDefaults(flags = Flag.HIDDEN.value)
-        assertThat(layer.visibilityReason).contains("Flag is hidden")
-    }
-
-    @Test
-    fun visibilityReasonIsEmptyBuffer() {
-        val layer = makeLayerWithDefaults(activeBuffer = ActiveBuffer.EMPTY)
-        assertThat(layer.visibilityReason).contains("Buffer is empty")
-    }
-
-    @Test
-    fun visibilityReasonIsAlpha() {
-        val layer = makeLayerWithDefaults(color = Color.valueOf(0f, 0f, 0f, 0f))
-        assertThat(layer.visibilityReason).contains("Alpha is 0")
-    }
-
-    /*@Test
-    fun mockProperties() {
-        val properties = mock<ILayerProperties>()
-        whenever(properties.screenBounds).thenReturn(RectF(0f, 0f, 100f, 100f))
-        whenever(properties.transform).thenReturn(Transform.EMPTY)
-        val layer = Layer("test", 1, 0, 0, 0, properties)
-        assertThat(layer.screenBounds).isEqualTo(RectF(0f, 0f, 100f, 100f))
-    }*/
-
     private fun makeLayerWithDefaults(
         name: String = "",
         flags: Int = 0x0,
-        excludeCompositionState: Boolean = false,
         visibleRegion: Region = Region(),
         bounds: RectF = RectF(),
         activeBuffer: ActiveBuffer = ActiveBuffer.EMPTY,
@@ -254,13 +103,12 @@ class LayerTest {
             name = name,
             id = 0,
             parentId = 0,
-            bounds = bounds,
             z = 0,
             visibleRegion = visibleRegion,
             activeBuffer = activeBuffer,
             flags = flags,
+            bounds = bounds,
             color = color,
-            isOpaque = false,
             shadowRadius = -1f,
             cornerRadii = CornerRadii.EMPTY,
             screenBounds = screenBounds,
@@ -274,7 +122,6 @@ class LayerTest {
             isRelativeOf = false,
             zOrderRelativeOfId = -1,
             stackId = -1,
-            excludesCompositionState = excludeCompositionState,
         )
     }
 }
