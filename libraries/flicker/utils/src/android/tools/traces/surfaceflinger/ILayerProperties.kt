@@ -20,7 +20,6 @@ import android.graphics.Color
 import android.graphics.RectF
 import android.graphics.Region
 import android.tools.datatypes.ActiveBuffer
-import android.tools.datatypes.isNotEmpty
 
 /**
  * Common properties of a layer that are not related to their position in the hierarchy
@@ -34,7 +33,6 @@ interface ILayerProperties {
     val flags: Int
     val bounds: RectF
     val color: Color
-    val isOpaque: Boolean
     val shadowRadius: Float
     val cornerRadius: Float
     val screenBounds: RectF
@@ -47,16 +45,6 @@ interface ILayerProperties {
     val isRelativeOf: Boolean
     val zOrderRelativeOfId: Int
     val stackId: Int
-    val excludesCompositionState: Boolean
-
-    val isScaling: Boolean
-        get() = transform.isScaling
-
-    val isTranslating: Boolean
-        get() = transform.isTranslating
-
-    val isRotating: Boolean
-        get() = transform.isRotating
 
     /**
      * Checks if the layer's active buffer is empty
@@ -69,74 +57,12 @@ interface ILayerProperties {
         get() = activeBuffer.isEmpty
 
     /**
-     * Converts flags to human readable tokens.
-     *
-     * @return
-     */
-    val verboseFlags: String
-        get() {
-            val tokens = Flag.values().filter { (it.value and flags) != 0 }.map { it.name }
-
-            return if (tokens.isEmpty()) {
-                ""
-            } else {
-                "${tokens.joinToString("|")} (0x${flags.toString(16)})"
-            }
-        }
-
-    /**
-     * Checks if the [Layer] has a color
-     *
-     * @return
-     */
-    val fillsColor: Boolean
-        get() = color.isNotEmpty()
-
-    /**
-     * Checks if the [Layer] draws a shadow
-     *
-     * @return
-     */
-    val drawsShadows: Boolean
-        get() = shadowRadius > 0
-
-    /**
-     * Checks if the [Layer] has blur
-     *
-     * @return
-     */
-    val hasBlur: Boolean
-        get() = backgroundBlurRadius > 0
-
-    /**
      * Checks if the [Layer] has rounded corners
      *
      * @return
      */
     val hasRoundedCorners: Boolean
         get() = cornerRadius > 0
-
-    /**
-     * Checks if the [Layer] draws has effects, which include:
-     * - is a color layer
-     * - is an effects layers which [fillsColor] or [drawsShadows]
-     *
-     * @return
-     */
-    val hasEffects: Boolean
-        get() {
-            return fillsColor || drawsShadows
-        }
-
-    /**
-     * Checks if the [Layer] has zero requested or inherited alpha
-     *
-     * @return
-     */
-    val hasZeroAlpha: Boolean
-        get() {
-            return color.alpha() == 0f
-        }
 
     fun isAnimating(prevLayerState: ILayerProperties?): Boolean =
         when (prevLayerState) {
