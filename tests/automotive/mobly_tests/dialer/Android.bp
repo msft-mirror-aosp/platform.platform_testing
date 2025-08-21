@@ -549,6 +549,29 @@ python_test_host {
 }
 
 python_test_host {
+    name: "BTCallVolumeTest",
+    main: "dialer_test_call_increase_decrease_volume.py",
+    srcs: ["dialer_test_call_increase_decrease_volume.py"],
+
+    libs: [
+        "mobly",
+        "utilities",
+        "bluetooth_test",
+    ],
+    test_suites: [
+        "catbox",
+    ],
+    test_options: {
+        unit_test: false,
+    },
+    device_common_data: [
+        // Package the snippet with the mobly test
+        ":AutomotiveSnippet",
+        ":PhoneSnippet",
+    ],
+}
+
+python_test_host {
     name: "BTDialerDeclineCall",
     main: "dialer_test_decline_incoming_call.py",
     srcs: ["dialer_test_decline_incoming_call.py"],
