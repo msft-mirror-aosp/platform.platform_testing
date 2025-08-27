@@ -30,6 +30,7 @@ class BTPerformancePairingTest(bluetooth_base_test.BluetoothBaseTest):
 
     def setup_class(self):
         super().setup_class()
+        self.bt_utils.pair_primary_to_secondary()
         self.iterations = DEFAULT_ITERATIONS
         self.iteration_delay = DEFAULT_ITERATION_DELAY_S
         if ITERATIONS_PARAM_NAME in self.user_params:
@@ -37,27 +38,28 @@ class BTPerformancePairingTest(bluetooth_base_test.BluetoothBaseTest):
         else:
             logging.info(f'{ITERATIONS_PARAM_NAME} is not in testbed config. Using default value')
         logging.info(f'Setup {self.__class__.__name__} with {ITERATIONS_PARAM_NAME} = {self.iterations} and iteration delay = {self.iteration_delay}')
-        self.discoverer.services.register('statsd', statsd_collector.StatsdCollector)
-        self.discoverer.bt_connection_time = self.discoverer.services.statsd.add_config('/data/local/tmp/bt_connection_time.pb')
-        self.discoverer.bluetooth_event_metrics = self.discoverer.services.statsd.add_config('/data/local/tmp/bluetooth_event_metrics.pb')
 
     def setup_test(self):
-        super().setup_test()
         super().enable_recording()
 
     def test_pairing(self):
         """Test for pairing/unpairing a HU with a bluetooth device"""
         pairing_success_count = 0
         metrics = {}
+        self.bt_utils.disconnect_profiles()
+        time.sleep(self.iteration_delay)
+        self.discoverer.services.register('statsd', statsd_collector.StatsdCollector)
+        self.discoverer.bt_connection_time = self.discoverer.services.statsd.add_config('/data/local/tmp/bt_connection_time.pb')
+        self.discoverer.bluetooth_event_metrics = self.discoverer.services.statsd.add_config('/data/local/tmp/bluetooth_event_metrics.pb')
         for i in range(1, self.iterations + 1):
             logging.info(f'Pairing iteration {i}')
             try:
-                self.bt_utils.pair_primary_to_secondary()
+                self.bt_utils.connect_profiles()
                 pairing_success_count += 1
                 self.process_per_iteration_metrics(metrics)
             except:
                 logging.error(f'Failed to pair devices on iteration {i}')
-            self.bt_utils.unpair()
+            self.bt_utils.disconnect_profiles()
             time.sleep(self.iteration_delay)
         self.process_per_test_metrics(metrics, pairing_success_count)
         export_to_crystalball(metrics, self.log_path, self.current_test_info.name)
@@ -97,8 +99,10 @@ class BTPerformancePairingTest(bluetooth_base_test.BluetoothBaseTest):
 
     def process_per_test_metrics(self, metrics, pairing_success_count):
         profile_success_rate = {}
+        profile_latency_debug = {}
         for metrics_key in metrics:
             if "-median" in metrics_key:
+                profile_latency_debug[metrics_key[:-7]] = metrics[metrics_key]
                 metrics[metrics_key] = round(statistics.median(metrics[metrics_key]), 2)
             elif "connection_state_changed" in metrics_key:
                 num_of_state_connecting = metrics[metrics_key].count(1)
@@ -108,6 +112,7 @@ class BTPerformancePairingTest(bluetooth_base_test.BluetoothBaseTest):
                     continue
                 profile_success_rate["{headunit}:" + metrics_key + "-success-rate"] = num_of_state_connected / num_of_state_connecting
         metrics.update(profile_success_rate)
+        metrics.update(profile_latency_debug)
         success_rate = pairing_success_count / self.iterations
         metrics['pairing_success_rate'] = success_rate
 

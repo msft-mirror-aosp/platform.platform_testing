@@ -176,3 +176,17 @@ class BTUtils:
           logging.info('Target screen is off, waking it up')
           self.media_utils.execute_shell_on_device(constants.KEYCODE_WAKEUP)
           self.media_utils.execute_shell_on_device(constants.DISMISS_KEYGUARD)
+
+    def connect_profiles(self):
+        logging.info('Connecting Bluetooth profiles.')
+        target_address = self.target.mbs.btGetAddress()
+        logging.info(f'Target device address: {target_address}')
+        self.discoverer.mbs.btConnectProfiles(target_address)
+        logging.info('Successfully initiated connection of Bluetooth profiles.')
+
+    def disconnect_profiles(self):
+        logging.info('Disconnecting Bluetooth profiles.')
+        target_address = self.target.mbs.btGetAddress()
+        logging.info(f'Target device address: {target_address}')
+        self.discoverer.mbs.btDisconnectProfiles(target_address)
+        logging.info('Successfully initiated disconnection of Bluetooth profiles.')
