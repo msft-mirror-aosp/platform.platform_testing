@@ -42,6 +42,8 @@ public class SettingHelperImpl extends AbstractStandardAppHelper implements IAut
     private static final String LOG_TAG = SettingHelperImpl.class.getSimpleName();
 
     private static final String SCREEN_BRIGHTNESS = "screen_brightness";
+
+    private static final String MEDIA_VOLUME = "volume_music_bus";
     private static final int WAIT_MS = 20000;
 
     private static final int SWITCH_TOGGLE_WAIT = 5000;
@@ -534,6 +536,26 @@ public class SettingHelperImpl extends AbstractStandardAppHelper implements IAut
                 SeekUtility.SeekLayout.HORIZONTAL,
                 () -> getValue(SCREEN_BRIGHTNESS));
         return mSeekUtility.seek(SCREEN_BRIGHTNESS, targetPercentage);
+    }
+
+    @Override
+    public int setMediaSoundLevelLow() {
+        mSeekUtility.registerSeekBar(
+                MEDIA_VOLUME,
+                AutomotiveConfigConstants.MEDIA_SOUND_SEEKBAR,
+                SeekUtility.SeekLayout.HORIZONTAL,
+                () -> getValue(MEDIA_VOLUME));
+        return mSeekUtility.seek(MEDIA_VOLUME, 0.1f);
+    }
+
+    @Override
+    public int setMediaSoundLevelHigh() {
+        mSeekUtility.registerSeekBar(
+                MEDIA_VOLUME,
+                AutomotiveConfigConstants.MEDIA_SOUND_SEEKBAR,
+                SeekUtility.SeekLayout.HORIZONTAL,
+                () -> getValue(MEDIA_VOLUME));
+        return mSeekUtility.seek(MEDIA_VOLUME, 0.7f);
     }
 
     /**

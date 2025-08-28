@@ -302,4 +302,18 @@ public interface IAutoSettingHelper extends IAppHelper {
      * <p>This method verifies setting search is empty upon open first time
      */
     void settingSearchEmptyDefault();
+
+    /**
+     * Setup expectation: Decrease the Media sound from Sound Palette.
+     *
+     * <p>This method checks decrease the Media sound from Sound Palette.
+     */
+    int setMediaSoundLevelLow();
+
+    /**
+     * Setup expectation: Increase the Media sound from Sound Palette.
+     *
+     * <p>This method checks increse the Media sound from Sound Palette.
+     */
+    int setMediaSoundLevelHigh();
 }
