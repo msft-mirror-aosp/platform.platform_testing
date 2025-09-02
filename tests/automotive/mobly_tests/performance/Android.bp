@@ -33,6 +33,10 @@ python_test_host {
     test_options: {
         unit_test: false,
     },
+    data: [
+        "bluetooth_event_metrics.pb",
+        "bt_connection_time.pb",
+    ],
     device_common_data: [
         // Package the snippet with the mobly test
         ":AutomotiveSnippet",
