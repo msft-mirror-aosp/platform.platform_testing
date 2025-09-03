@@ -548,6 +548,37 @@ public class MediaCenterHelperImpl extends AbstractStandardAppHelper implements 
         getSpectatioUiUtil().clickAndWait(testMediaAppSettings);
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public void openTestMediaAppSearch() {
+        BySelector testMediaAppSearchSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.MEDIA_APP_SEARCH);
+        UiObject2 testMediaAppSearch =
+                getSpectatioUiUtil().findUiObject(testMediaAppSearchSelector);
+        getSpectatioUiUtil().clickAndWait(testMediaAppSearch);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean isMediaSearchRestrictedMessagedDisplayed() {
+        BySelector testMediaAppSearchRestrictedMessageSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.MEDIA_SEARCH_RESTRICTED_MESSAGE);
+        UiObject2 testMediaAppSearchRestrictedMessage =
+                getSpectatioUiUtil().findUiObject(testMediaAppSearchRestrictedMessageSelector);
+        return testMediaAppSearchRestrictedMessage != null;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean isSearchBarTakingInput() {
+        BySelector searchBarSelector = getUiElementFromConfig(AutomotiveConfigConstants.SEARCH_BOX);
+        UiObject2 searchBar = getSpectatioUiUtil().findUiObject(searchBarSelector);
+        String initialText = searchBar.getText();
+        searchBar.setText("input");
+        String inputText = searchBar.getText();
+        return (!initialText.equals(inputText));
+    }
+
     /**
      * {@inheritDoc}
      */

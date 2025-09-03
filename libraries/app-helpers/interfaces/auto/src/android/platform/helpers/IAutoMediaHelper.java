@@ -174,6 +174,27 @@ public interface IAutoMediaHelper extends IAppHelper, Scrollable {
     void openTestMediaAppSettings();
 
     /**
+     * Setup expectations: Media app is open.
+     *
+     * <p>Opens Test Meida Search
+     */
+    void openTestMediaAppSearch();
+
+    /**
+     * Setup expectations: Media app search is open.
+     *
+     * <p>Validates Media apps search restricted message is displayed
+     */
+    boolean isMediaSearchRestrictedMessagedDisplayed();
+
+    /**
+     * Setup expectations: Media app search is open.
+     *
+     * <p>Validates Test Media App search is taking input
+     */
+    boolean isSearchBarTakingInput();
+
+    /**
      * Setup expectations: Media app is open. Account not logged in.
      *
      * @return Error message for no user login

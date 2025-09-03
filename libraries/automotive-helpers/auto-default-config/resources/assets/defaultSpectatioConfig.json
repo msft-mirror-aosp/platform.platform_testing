@@ -1654,6 +1654,14 @@
       "TYPE": "RESOURCE_ID",
       "VALUE": "menu_item_setting"
     },
+    "MEDIA_APP_SEARCH": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "menu_item_search"
+    },
+    "MEDIA_SEARCH_RESTRICTED_MESSAGE": {
+      "TYPE": "TEXT",
+      "VALUE": "Feature not available while driving"
+    },
     "MEDIA_APP_NO_LOGIN_MSG": {
       "TYPE": "RESOURCE_ID",
       "VALUE": "error_message",
