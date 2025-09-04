@@ -330,6 +330,7 @@ public class AutomotiveConfigConstants {
     public static final String MEDIA_SONG_IN_PLAYLIST = "MEDIA_SONG_IN_PLAYLIST";
     public static final String ARTIST_TITLE = "ARTIST_TITLE";
     public static final String ALBUM_TITLE = "ALBUM_TITLE";
+    public static final String ALBUM_THUMBNAIL = "ALBUM_THUMBNAIL";
     public static final String BASIC_SONGS_CATEGORY = "BASIC_SONGS_CATEGORY";
     public static final String ADVANCED_CATEGORY = "ADVANCED_CATEGORY";
     public static final String RABBIT_HOLE_CATEGORY = "RABBIT_HOLE_CATEGORY";

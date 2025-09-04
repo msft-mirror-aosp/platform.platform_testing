@@ -1553,6 +1553,11 @@
       "VALUE": "album_title",
       "PACKAGE": "com.android.car.media"
     },
+    "ALBUM_THUMBNAIL": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "album_art",
+      "PACKAGE": "com.android.car.media"
+    },
     "BASIC_SONGS_CATEGORY": {
       "TYPE": "MULTIPLE",
       "SPECIFIERS": [

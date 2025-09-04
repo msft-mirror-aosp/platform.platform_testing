@@ -771,6 +771,15 @@ public class MediaCenterHelperImpl extends AbstractStandardAppHelper implements 
         return objectSongCurrentTime.getText().trim();
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public boolean isAlbumThumbnailDisplaying() {
+        BySelector albumThumbnailSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.ALBUM_THUMBNAIL);
+        UiObject2 albumThumbnail = getSpectatioUiUtil().findUiObject(albumThumbnailSelector);
+        return albumThumbnail != null;
+    }
+
     /**
      * {@inheritDoc}
      */

@@ -17,6 +17,7 @@
 package android.platform.tests;
 
 import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertTrue;
 
 import static org.junit.Assert.assertEquals;
@@ -257,5 +258,32 @@ public class MediaTestAppTest {
         assertTrue(
                 "Playlist Scroll Down button is NOT visible",
                 sMediaCenterHelper.get().isPlaylistScrollDownVisible());
+    }
+
+    @Test
+    public void testMetadataOfCurrentPlayingMedia() {
+        Log.i(LOG_TAG, "Act: Select Normal 1H track song");
+        sMediaCenterHelper.get().selectMediaTrack(mDefaultSongName);
+
+        Log.i(LOG_TAG, "Assert: Album title is displaying");
+        assertNotNull("Album title is not displaying", sMediaCenterHelper.get().getAlbumTitle());
+
+        Log.i(LOG_TAG, "Assert: Artist title is displaying");
+        assertNotNull("Artist title is not displaying", sMediaCenterHelper.get().getArtistrTitle());
+
+        Log.i(LOG_TAG, "Assert: Current song playing time is displaying");
+        assertNotNull(
+                "Current song playing time is not displaying",
+                sMediaCenterHelper.get().getSongCurrentPlayingTime());
+
+        Log.i(LOG_TAG, "Assert: Current song max time is disdplaying");
+        assertNotNull(
+                "Current song max playing time is not displaying",
+                sMediaCenterHelper.get().getCurrentSongMaxPlayingTime());
+
+        Log.i(LOG_TAG, "Assert: Album thumbnail is displaying");
+        assertTrue(
+                "Album thumbnail is not displaying",
+                sMediaCenterHelper.get().isAlbumThumbnailDisplaying());
     }
 }

@@ -314,6 +314,13 @@ public interface IAutoMediaHelper extends IAppHelper, Scrollable {
     /**
      * Setup expectations: Media app is open and maximized now playing.
      *
+     * <p>validates album thumbnail is displaying or not
+     */
+    boolean isAlbumThumbnailDisplaying();
+
+    /**
+     * Setup expectations: Media app is open and maximized now playing.
+     *
      * @return get current song playing time
      */
     String getSongCurrentPlayingTime();
