@@ -69,38 +69,39 @@ class DeviceTypeRule : TestRule {
                 description,
                 "Skipping test on ${Build.PRODUCT} as it doesn't have a small screen. " +
                     "Reason why this should only run on small screens: " +
-                    "$smallScreenAnnotation.reason."
+                    "${smallScreenAnnotation.reason}.",
             )
         }
 
         if (description.getAnnotationClearly<LargeScreenOnly>() != null && !isLargeScreen) {
             return wrongDeviceTypeStatement(
                 description,
-                "Skipping test on ${Build.PRODUCT} as it doesn't have a large screen."
+                "Skipping test on ${Build.PRODUCT} as it doesn't have a large screen.",
             )
         }
 
         if (description.getAnnotationClearly<FoldableOnly>() != null && !isFoldable) {
             return wrongDeviceTypeStatement(
                 description,
-                "Skipping test on ${Build.PRODUCT} as it is not a foldable."
+                "Skipping test on ${Build.PRODUCT} as it is not a foldable.",
             )
         }
 
-        if (description.getAnnotationClearly<FoldableOnly>() != null && isFoldable
-            && isCuttlefish) {
+        if (
+            description.getAnnotationClearly<FoldableOnly>() != null && isFoldable && isCuttlefish
+        ) {
             return wrongDeviceTypeStatement(
                 description,
                 "Skipping test on ${Build.PRODUCT} as E2E foldable tests are not " +
-                        "supported on Cuttlefish targets. " +
-                        "See go/e2e-cf-foldable-maybe-not for more details"
+                    "supported on Cuttlefish targets. " +
+                    "See go/e2e-cf-foldable-maybe-not for more details",
             )
         }
 
         if (description.getAnnotationClearly<TabletOnly>() != null && !isTablet) {
             return wrongDeviceTypeStatement(
                 description,
-                "Skipping test on ${Build.PRODUCT} as it is not a tablet."
+                "Skipping test on ${Build.PRODUCT} as it is not a tablet.",
             )
         }
 
@@ -124,7 +125,8 @@ internal fun isFoldable(): Boolean {
     }
 }
 
-private val isCuttlefish get() = Build.BOARD == "cutf"
+private val isCuttlefish
+    get() = Build.BOARD == "cutf"
 
 /** Returns whether the device default display is currently considered large screen. */
 fun isLargeScreen(): Boolean {
