@@ -352,4 +352,18 @@ public interface IAutoMediaHelper extends IAppHelper, Scrollable {
      * <p>This method is used to navigate through different media categories and play song
      */
     boolean checkPlayingTrackFromMediaAppCategories(String automotiveconfig, String track);
+
+    /**
+     * Setup expectations: Media app is open
+     *
+     * <p>This method verifies if the Scroll up option is visible
+     */
+    boolean isPlaylistScrollUpVisible();
+
+    /**
+     * Setup expectations: Media app is open
+     *
+     * <p>This method verifies if the Scroll Down option is visible
+     */
+    boolean isPlaylistScrollDownVisible();
 }

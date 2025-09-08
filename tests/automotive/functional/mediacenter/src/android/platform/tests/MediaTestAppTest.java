@@ -47,6 +47,7 @@ public class MediaTestAppTest {
     private static final String DEFAULT_SONG_NAME = "A normal 1H song";
     private static final String ADVANCE_SONG_NAME = "Standard Custom Actions";
     private static final String RABITHOLE_SONG_NAME = "A normal 15s song";
+    private static final String CUSTOM_SONG_NAME = "Long playback error message";
     private static final String LOG_TAG = MediaTestAppTest.class.getSimpleName();
 
     @ClassRule
@@ -215,5 +216,46 @@ public class MediaTestAppTest {
         sMediaCenterHelper
                 .get()
                 .navigateMediaAppCategories(AutomotiveConfigConstants.BASIC_SONGS_CATEGORY);
+    }
+
+    @Test
+    public void testMediaPlayQueueSongs() {
+        Log.i(LOG_TAG, "Act: Maximize playing song");
+        sMediaCenterHelper.get().maximizeNowPlaying();
+
+        Log.i(LOG_TAG, "Assert: Playlist Icon is visible");
+        assertTrue(
+                "Playlist Icon is NOT visible", sMediaCenterHelper.get().isPlaylistIconVisible());
+
+        Log.i(LOG_TAG, "Act: Open Playlist songs");
+        sMediaCenterHelper.get().clickOnPlaylistIcon();
+
+        Log.i(LOG_TAG, "Act: Select Long playback error message track song");
+        sMediaCenterHelper.get().selectMediaTrack(CUSTOM_SONG_NAME);
+
+        Log.i(LOG_TAG, "Act: Play media song");
+        sMediaCenterHelper.get().playMedia();
+
+        Log.i(LOG_TAG, "Assert: Media song is playing");
+        assertTrue("Song is not playing", sMediaCenterHelper.get().isPlaying());
+
+        Log.i(LOG_TAG, "Assert: Song track changed to Long playback error message");
+        assertEquals(
+                "Song playing has not been changed",
+                CUSTOM_SONG_NAME,
+                sMediaCenterHelper.get().getMediaTrackName());
+
+        Log.i(LOG_TAG, "Act: Open Playlist songs");
+        sMediaCenterHelper.get().clickOnPlaylistIcon();
+
+        Log.i(LOG_TAG, "Assert: Playlist Scroll Up button is visible");
+        assertTrue(
+                "Playlist Scroll Up button is NOT visible",
+                sMediaCenterHelper.get().isPlaylistScrollUpVisible());
+
+        Log.i(LOG_TAG, "Assert: Playlist Scroll Down button is visible");
+        assertTrue(
+                "Playlist Scroll Down button is NOT visible",
+                sMediaCenterHelper.get().isPlaylistScrollDownVisible());
     }
 }

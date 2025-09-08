@@ -1650,6 +1650,22 @@
       "TYPE": "RESOURCE_ID",
       "VALUE": "car_ui_toolbar_menu_item_icon"
     },
+    "MEDIA_APP_QUEUE_MENU": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "car_ui_toolbar_menu_item_icon"
+    },
+    "MEDIA_APP_QUEUE_SCROLL": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "car_ui_scrollbar_track"
+    },
+    "MEDIA_APP_QUEUE_SCROLL_UP": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "car_ui_scrollbar_page_up"
+    },
+    "MEDIA_APP_QUEUE_SCROLL_DOWN": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "car_ui_scrollbar_page_down"
+    },
     "MEDIA_APP_SETTINGS": {
       "TYPE": "RESOURCE_ID",
       "VALUE": "menu_item_setting"
@@ -1685,8 +1701,7 @@
     },
     "MEDIA_PLAYLIST_ICON": {
       "TYPE": "RESOURCE_ID",
-      "VALUE": "car_ui_toolbar_menu_item_icon",
-      "PACKAGE": "com.chassis.car.ui.plugin"
+      "VALUE": "car_ui_toolbar_menu_item_icon"
     },
     "PREVIOUS_BUTTON_HOME_SCREEN": {
       "TYPE": "RESOURCE_ID",
@@ -1718,8 +1733,7 @@
     },
     "MEDIA_APP_SCROLL_ELEMENT": {
       "TYPE": "RESOURCE_ID",
-      "VALUE": "car_ui_internal_recycler_view",
-      "PACKAGE": "com.android.car.ui.sharedlibrary"
+      "VALUE": "car_ui_internal_recycler_view"
     },
     "ACCOUNT_SETTINGS_GOOGLE_SIGN_IN_SCREEN": {
       "TYPE": "TEXT",
