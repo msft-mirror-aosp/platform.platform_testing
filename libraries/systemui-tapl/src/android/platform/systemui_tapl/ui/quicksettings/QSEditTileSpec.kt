@@ -24,6 +24,7 @@ package android.platform.systemui_tapl.ui.quicksettings
  */
 enum class QSEditTileSpec(val desc: String, val spec: String) {
     INTERNET("Internet", "internet"),
+    WIFI("Internet", "wifi"),
     BLUETOOTH("Bluetooth", "bt"),
     MODES("Modes", "dnd"),
     AUTO_ROTATE("Auto-rotate", "rotation"),
