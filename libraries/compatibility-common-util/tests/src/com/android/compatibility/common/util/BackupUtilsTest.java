@@ -16,6 +16,7 @@
 
 package com.android.compatibility.common.util;
 
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 
 import com.android.tradefed.util.RunUtil;
@@ -46,12 +47,15 @@ public class BackupUtilsTest {
             Pattern.compile("bmgr --user \\d+ enable (true|false)$");
     private static final Pattern ACTIVATE_COMMAND_PATTERN =
             Pattern.compile("bmgr --user \\d+ activate (true|false)$");
+    private static final Pattern TRANSPORT_COMPONENT_COMMAND_PATTERN =
+            Pattern.compile("bmgr --user \\d+ transport -c .*");
 
     @Rule public final Expect expect = Expect.create();
 
     private boolean mIsDumpsysCommandCalled;
     private boolean mIsEnableCommandCalled;
     private boolean mIsActivateCommandCalled;
+    private boolean mIsTransportComponentCommandCalled;
 
     private BackupUtils mBackupUtils;
 
@@ -74,6 +78,7 @@ public class BackupUtilsTest {
         mIsDumpsysCommandCalled = false;
         mIsEnableCommandCalled = false;
         mIsActivateCommandCalled = false;
+        mIsTransportComponentCommandCalled = false;
 
         mMockCommandExceptionMap.clear();
         mMockCommandOutputMap.clear();
@@ -91,6 +96,8 @@ public class BackupUtilsTest {
                             mIsEnableCommandCalled = true;
                         } else if (ACTIVATE_COMMAND_PATTERN.matcher(command).find()) {
                             mIsActivateCommandCalled = true;
+                        } else if (TRANSPORT_COMPONENT_COMMAND_PATTERN.matcher(command).find()) {
+                            mIsTransportComponentCommandCalled = true;
                         }
 
                         IOException ex = mMockCommandExceptionMap.get(command);
@@ -442,5 +449,47 @@ public class BackupUtilsTest {
         onCommandReturns("bmgr --user 10 activate false", "Backup Manager now deactivated");
         expect.that(mBackupUtils.activateBackupForUser(false, 10)).isFalse();
         expect.that(mIsActivateCommandCalled).isTrue();
+    }
+
+    @Test
+    public void setBackupTransportComponentForUser_success() throws Exception {
+        // Verifies that the method completes successfully with valid command output.
+        final int userId = 10;
+        final String transportComponent = "test.transport/component";
+        final String command =
+                String.format("bmgr --user %d transport -c %s", userId, transportComponent);
+        final String commandOutput = "Selected transport: " + transportComponent;
+        onCommandReturns(command, commandOutput);
+
+        // Act: The method should execute without throwing an exception.
+        mBackupUtils.setBackupTransportComponentForUser(transportComponent, userId);
+
+        // Assert: The transport component command is called.
+        expect.that(mIsTransportComponentCommandCalled).isTrue();
+    }
+
+    @Test
+    public void setBackupTransportComponentForUser_unknownComponent_throwsRuntimeException() {
+        // Verifies that the method throws a RuntimeException for unexpected command output.
+        final int userId = 10;
+        final String transportComponent = "test.transport/component";
+        final String command =
+                String.format("bmgr --user %d transport -c %s", userId, transportComponent);
+        final String commandOutput = "Error: transport not found";
+        onCommandReturns(command, commandOutput);
+
+        // Act & Assert: The method should throw a RuntimeException due to the unexpected output.
+        RuntimeException thrown =
+                assertThrows(
+                        RuntimeException.class,
+                        () ->
+                                mBackupUtils.setBackupTransportComponentForUser(
+                                        transportComponent, userId));
+
+        // Assert that the exception message is as expected.
+        expect.that(thrown).hasMessageThat().contains("Unexpected output setting bmgr transport -c");
+        expect.that(thrown).hasMessageThat().contains(commandOutput);
+        // Assert that the transport component command is called.
+        expect.that(mIsTransportComponentCommandCalled).isTrue();
     }
 }
