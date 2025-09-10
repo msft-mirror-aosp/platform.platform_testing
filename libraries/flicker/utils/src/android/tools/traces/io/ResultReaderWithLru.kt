@@ -42,12 +42,7 @@ open class ResultReaderWithLru(
     /** {@inheritDoc} */
     @Throws(IOException::class)
     override fun readWmTrace(): WindowManagerTrace? {
-        val descriptor =
-            if (android.tracing.Flags.perfettoWmTracing()) {
-                ResultArtifactDescriptor(TraceType.PERFETTO)
-            } else {
-                ResultArtifactDescriptor(TraceType.WM)
-            }
+        val descriptor = ResultArtifactDescriptor(TraceType.PERFETTO)
         val artifact = reader.artifacts.firstOrNull { it.hasTrace(descriptor) } ?: return null
         val key = CacheKey(artifact.stableId, descriptor, reader.transitionTimeRange)
         return wmTraceCache.logAndReadTrace(key) { reader.readWmTrace() }

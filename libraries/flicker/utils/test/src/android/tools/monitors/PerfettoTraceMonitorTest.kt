@@ -32,7 +32,6 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.android.server.wm.flicker.helpers.ImeAppHelper
 import com.google.common.truth.Truth
 import java.io.File
-import org.junit.Assume.assumeTrue
 import org.junit.ClassRule
 import org.junit.FixMethodOrder
 import org.junit.Test
@@ -203,11 +202,6 @@ class PerfettoTraceMonitorTest : TraceMonitorTest<PerfettoTraceMonitor>() {
 
     @Test
     fun windowManagerTracingTest() {
-        assumeTrue(
-            "PerfettoWmTracing flag should be enabled",
-            android.tracing.Flags.perfettoWmTracing(),
-        )
-
         val traceMonitor = PerfettoTraceMonitor.newBuilder().enableWindowManagerTrace().build()
         val reader =
             traceMonitor.withTracing(resultReaderProvider = { buildResultReader(it) }) {
@@ -239,11 +233,6 @@ class PerfettoTraceMonitorTest : TraceMonitorTest<PerfettoTraceMonitor>() {
 
     @Test
     fun windowManagerDumpTest() {
-        assumeTrue(
-            "PerfettoWmTracing flag should be enabled",
-            android.tracing.Flags.perfettoWmTracing(),
-        )
-
         val reader =
             PerfettoTraceMonitor.newBuilder().enableWindowManagerDump().build().withTracing(
                 resultReaderProvider = { buildResultReader(it) }

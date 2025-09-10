@@ -121,28 +121,12 @@ class FlickerServiceTracesCollectorTest {
 
     companion object {
         val EXPECTED_TRACES_LAUNCHER_ONLY =
-            mutableListOf(TraceType.EVENT_LOG.fileName, TraceType.PERFETTO.fileName)
-                .also {
-                    if (!android.tracing.Flags.perfettoWmTracing()) {
-                        it.add(TraceType.WM.fileName)
-                    }
-                }
-                .toList()
+            mutableListOf(TraceType.EVENT_LOG.fileName, TraceType.PERFETTO.fileName).toList()
 
         val EXPECTED_TRACES_LAUNCHER_FIRST =
-            mutableListOf(TraceType.EVENT_LOG.fileName, TraceType.PERFETTO.fileName)
-                .also {
-                    if (!android.tracing.Flags.perfettoWmTracing()) {
-                        it.add(TraceType.WM.fileName)
-                    }
-                }
-                .toList()
+            mutableListOf(TraceType.EVENT_LOG.fileName, TraceType.PERFETTO.fileName).toList()
 
         val EXPECTED_TRACES_SYSUI_FIRST =
-            mutableListOf(TraceType.EVENT_LOG.fileName, TraceType.PERFETTO.fileName).also {
-                if (!android.tracing.Flags.perfettoWmTracing()) {
-                    it.add(TraceType.WM.fileName)
-                }
-            }
+            mutableListOf(TraceType.EVENT_LOG.fileName, TraceType.PERFETTO.fileName)
     }
 }

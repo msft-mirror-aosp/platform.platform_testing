@@ -23,7 +23,6 @@ import android.tools.traces.monitors.PerfettoTraceMonitor
 import android.tools.traces.monitors.ScreenRecorder
 import android.tools.traces.monitors.TraceMonitor
 import android.tools.traces.monitors.events.EventLogMonitor
-import android.tools.traces.monitors.wm.WindowManagerTraceMonitor
 import android.tools.traces.surfaceflinger.LayersTrace
 import android.tools.traces.wm.TransitionChange
 import android.tools.traces.wm.WindowManagerTrace
@@ -49,13 +48,7 @@ object Utils {
                     .enableViewCaptureTrace()
                     .enableTransitionsTrace()
                     .enableImeTrace()
-
-                if (android.tracing.Flags.perfettoWmTracing()) {
-                    perfettoMonitorBuilder.enableWindowManagerTrace()
-                } else {
-                    this.add(WindowManagerTraceMonitor())
-                }
-
+                    .enableWindowManagerTrace()
                 this.add(perfettoMonitorBuilder.build())
             }
             .apply {

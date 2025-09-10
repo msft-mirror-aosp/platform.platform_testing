@@ -32,13 +32,16 @@ import android.tools.testutils.TestArtifact
 import android.tools.testutils.readAsset
 import android.tools.traces.monitors.ITransitionMonitor
 import android.tools.traces.monitors.PerfettoTraceMonitor
-import android.tools.traces.monitors.wm.WindowManagerTraceMonitor
 import android.tools.traces.parsers.WindowManagerStateHelper
 import android.tools.traces.parsers.perfetto.LayersTraceParser
 import android.tools.traces.parsers.perfetto.TraceProcessorSession
 import android.tools.traces.parsers.perfetto.TransactionsTraceParser
 import android.tools.traces.parsers.perfetto.TransitionsTraceParser
-import android.tools.traces.parsers.wm.LegacyWindowManagerTraceParser
+import android.tools.traces.parsers.perfetto.WindowManagerTraceParser
+import android.tools.traces.surfaceflinger.LayersTrace
+import android.tools.traces.surfaceflinger.TransactionsTrace
+import android.tools.traces.wm.TransitionsTrace
+import android.tools.traces.wm.WindowManagerTrace
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.UiDevice
 import java.io.File
@@ -52,20 +55,28 @@ fun CleanFlickerEnvironmentRuleWithDataStore(): RuleChain =
 internal fun getTraceReaderFromScenario(scenario: String): Reader {
     val scenarioTraces = getScenarioTraces(scenario)
 
-    val (layersTrace, transactionsTrace, transitionsTrace) =
+    data class Traces(
+        val layersTrace: LayersTrace,
+        val transactionsTrace: TransactionsTrace,
+        val transitionsTrace: TransitionsTrace,
+        val wmTrace: WindowManagerTrace,
+    )
+
+    val traces =
         TraceProcessorSession.loadPerfettoTrace(scenarioTraces.perfetto.readBytes()) { session ->
             val layersTrace = LayersTraceParser().parse(session)
             val transactionsTrace = TransactionsTraceParser().parse(session)
             val transitionsTrace = TransitionsTraceParser().parse(session)
-            Triple(layersTrace, transactionsTrace, transitionsTrace)
+            val wmTrace = WindowManagerTraceParser().parse(session)
+            Traces(layersTrace, transactionsTrace, transitionsTrace, wmTrace)
         }
 
     return ParsedTracesReader(
         artifacts = arrayOf(TestArtifact(scenario)),
-        wmTrace = LegacyWindowManagerTraceParser().parse(scenarioTraces.wmTrace.readBytes()),
-        layersTrace = layersTrace,
-        transitionsTrace = transitionsTrace,
-        transactionsTrace = transactionsTrace,
+        wmTrace = traces.wmTrace,
+        layersTrace = traces.layersTrace,
+        transitionsTrace = traces.transitionsTrace,
+        transactionsTrace = traces.transactionsTrace,
         eventLog = EventLogParser().parse(scenarioTraces.eventLog.readBytes()),
     )
 }
@@ -100,10 +111,7 @@ fun createMockedFlicker(
     val uiDevice: UiDevice = UiDevice.getInstance(instrumentation)
     val mockedFlicker = Mockito.mock(AbstractFlickerTestData::class.java)
     val monitors: MutableList<ITransitionMonitor> =
-        mutableListOf(
-            WindowManagerTraceMonitor(),
-            PerfettoTraceMonitor.newBuilder().enableLayersTrace().build(),
-        )
+        mutableListOf(PerfettoTraceMonitor.newBuilder().enableLayersTrace().build())
     extraMonitor?.let { monitors.add(it) }
     Mockito.`when`(mockedFlicker.wmHelper).thenReturn(WindowManagerStateHelper())
     Mockito.`when`(mockedFlicker.device).thenReturn(uiDevice)

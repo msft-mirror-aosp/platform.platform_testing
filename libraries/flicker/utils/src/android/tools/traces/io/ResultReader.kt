@@ -32,7 +32,6 @@ import android.tools.traces.parsers.perfetto.TraceProcessorSession
 import android.tools.traces.parsers.perfetto.TransactionsTraceParser
 import android.tools.traces.parsers.perfetto.TransitionsTraceParser
 import android.tools.traces.parsers.perfetto.WindowManagerTraceParser
-import android.tools.traces.parsers.wm.LegacyWindowManagerTraceParser
 import android.tools.traces.protolog.ProtoLogTrace
 import android.tools.traces.surfaceflinger.LayersTrace
 import android.tools.traces.surfaceflinger.TransactionsTrace
@@ -108,10 +107,16 @@ open class ResultReader(result: IResultData) : Reader {
     @Throws(IOException::class)
     override fun readWmTrace(): WindowManagerTrace? {
         return withTracing("readWmTrace") {
-            if (android.tracing.Flags.perfettoWmTracing()) {
-                readPerfettoWindowManagerTrace()
-            } else {
-                readLegacyWindowManagerTrace()
+            val traceData = readBytes(ResultArtifactDescriptor(TraceType.PERFETTO))
+            traceData?.let {
+                TraceProcessorSession.loadPerfettoTrace(traceData) { session ->
+                    WindowManagerTraceParser()
+                        .parse(
+                            session,
+                            from = transitionTimeRange.start,
+                            to = transitionTimeRange.end,
+                        )
+                }
             }
         }
     }
@@ -221,32 +226,6 @@ open class ResultReader(result: IResultData) : Reader {
                         )
                 }
             }
-        }
-    }
-
-    private fun readPerfettoWindowManagerTrace(): WindowManagerTrace? {
-        val traceData = readBytes(ResultArtifactDescriptor(TraceType.PERFETTO))
-
-        return traceData?.let {
-            TraceProcessorSession.loadPerfettoTrace(traceData) { session ->
-                WindowManagerTraceParser()
-                    .parse(session, from = transitionTimeRange.start, to = transitionTimeRange.end)
-            }
-        }
-    }
-
-    private fun readLegacyWindowManagerTrace(): WindowManagerTrace? {
-        val traceData = readBytes(ResultArtifactDescriptor(TraceType.WM))
-
-        return traceData?.let {
-            LegacyWindowManagerTraceParser()
-                .parse(
-                    it,
-                    from = transitionTimeRange.start,
-                    to = transitionTimeRange.end,
-                    addInitialEntry = true,
-                    clearCache = true,
-                )
         }
     }
 
