@@ -333,6 +333,8 @@ public class AutomotiveConfigConstants {
     public static final String ARTIST_TITLE = "ARTIST_TITLE";
     public static final String ALBUM_TITLE = "ALBUM_TITLE";
     public static final String ALBUM_THUMBNAIL = "ALBUM_THUMBNAIL";
+    public static final String RADIO_STATION_NAME = "RADIO_STATION_NAME";
+    public static final String BROWSE_RADIO_CATEGORY = "BROWSE_RADIO_CATEGORY";
     public static final String BASIC_SONGS_CATEGORY = "BASIC_SONGS_CATEGORY";
     public static final String ADVANCED_CATEGORY = "ADVANCED_CATEGORY";
     public static final String RABBIT_HOLE_CATEGORY = "RABBIT_HOLE_CATEGORY";
@@ -358,6 +360,7 @@ public class AutomotiveConfigConstants {
     public static final String TRACK_NAME_HOME_SCREEN = "TRACK_NAME_HOME_SCREEN";
     // Media Apps Grid
     public static final String MEDIA_APPS_GRID_TITLE = "MEDIA_APPS_GRID_TITLE";
+    public static final String MEDIA_TEST_APP_THUMBNAIL = "MEDIA_TEST_APP_THUMBNAIL";
     // Media App UI View
     public static final String MEDIA_APP_TITLE = "MEDIA_APP_TITLE";
     public static final String MEDIA_APP_DROP_DOWN_MENU = "MEDIA_APP_DROP_DOWN_MENU";

@@ -1573,6 +1573,25 @@
       "VALUE": "album_title",
       "PACKAGE": "com.android.car.media"
     },
+    "RADIO_STATION_NAME": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "station_name",
+      "PACKAGE": "com.android.car.radio"
+    },
+    "BROWSE_RADIO_CATEGORY": {
+      "TYPE": "MULTIPLE",
+      "SPECIFIERS": [
+        {
+          "TYPE": "TEXT",
+          "VALUE": "Browse"
+        },
+        {
+          "TYPE": "RESOURCE_ID",
+          "VALUE": "car_ui_toolbar_tab_item_text",
+          "PACKAGE": "com.android.car.radio"
+        }
+      ]
+    },
     "ALBUM_THUMBNAIL": {
       "TYPE": "RESOURCE_ID",
       "VALUE": "album_art",
@@ -1711,6 +1730,10 @@
     "MEDIA_APP_NAVIGATION_ICON": {
       "TYPE": "RESOURCE_ID",
       "VALUE": "car_ui_toolbar_nav_icon_container"
+    },
+    "MEDIA_TEST_APP_THUMBNAIL": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "media_widget_app_icon"
     },
     "MEDIA_APPS_GRID_TITLE": {
       "TYPE": "RESOURCE_ID",

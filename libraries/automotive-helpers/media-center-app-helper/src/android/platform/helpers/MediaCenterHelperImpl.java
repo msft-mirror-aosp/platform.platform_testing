@@ -43,8 +43,12 @@ public class MediaCenterHelperImpl extends AbstractStandardAppHelper implements 
     private static final String LOG_TAG = MediaCenterHelperImpl.class.getSimpleName();
 
     private static final int WAIT_MS = 10000;
+    private static final String RADIO_APP = "Radio";
     private MediaSessionManager mMediaSessionManager;
     private UiAutomation mUiAutomation;
+
+    private static HelperAccessor<IAutoAppGridHelper> sAppGridHelper =
+            new HelperAccessor<>(IAutoAppGridHelper.class);
 
     private ScrollUtility mScrollUtility;
     private ScrollActions mScrollAction;
@@ -872,5 +876,61 @@ public class MediaCenterHelperImpl extends AbstractStandardAppHelper implements 
         navigateMediaAppCategories(automotiveconfig);
         selectMediaTrack(track);
         return getMediaTrackName().equals(track);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void clickMediaCardThumbnail() {
+        BySelector mediaThumbnailIcon =
+                getUiElementFromConfig(AutomotiveConfigConstants.MEDIA_TEST_APP_THUMBNAIL);
+        UiObject2 mediaThumbnailIconObject = getSpectatioUiUtil().findUiObject(mediaThumbnailIcon);
+        getSpectatioUiUtil()
+                .validateUiObject(
+                        mediaThumbnailIconObject,
+                        AutomotiveConfigConstants.MEDIA_TEST_APP_THUMBNAIL);
+        getSpectatioUiUtil().clickAndWait(mediaThumbnailIconObject);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean isMediaAppOpenAndTrackPlaying(String track) {
+        boolean mediAppOpenStatus = false;
+        if (sAppGridHelper
+                .get()
+                .checkPackageInForeground(AutomotiveConfigConstants.RADIO_PACKAGE)) {
+            if (getRadioStationName().contains(track.substring(0, 4)) && isPlaying()) {
+                mediAppOpenStatus = true;
+            }
+        } else {
+            if (getMediaTrackName().equals(track) && isPlaying()) {
+                mediAppOpenStatus = true;
+            }
+        }
+        minimizeNowPlaying();
+        return mediAppOpenStatus;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String getRadioStationName() {
+        String stationName;
+        BySelector stationNameSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.RADIO_STATION_NAME);
+        UiObject2 stationNameTextPlayback = getSpectatioUiUtil().findUiObject(stationNameSelector);
+        getSpectatioUiUtil()
+                .validateUiObject(
+                        stationNameTextPlayback, AutomotiveConfigConstants.RADIO_STATION_NAME);
+        stationName = stationNameTextPlayback.getText();
+        return stationName;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void openRadioAppAndPlayGivenStation(String media) {
+        sAppGridHelper.get().open();
+        sAppGridHelper.get().openApp(RADIO_APP);
+        navigateMediaAppCategories(AutomotiveConfigConstants.BROWSE_RADIO_CATEGORY);
+        selectMediaTrack(media);
+        exit();
     }
 }
