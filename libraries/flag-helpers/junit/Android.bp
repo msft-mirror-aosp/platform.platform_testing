@@ -49,10 +49,7 @@ java_library {
         "androidx.test.rules",
         "flag-junit-base",
     ],
-    libs: [
-        "framework-configinfrastructure.stubs.module_lib",
-    ],
-    sdk_version: "module_current",
+    sdk_version: "system_current",
 }
 
 java_library_host {
