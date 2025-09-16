@@ -22,6 +22,7 @@ import static junit.framework.Assert.assertTrue;
 import android.platform.helpers.AutomotiveConfigConstants;
 import android.platform.helpers.HelperAccessor;
 import android.platform.helpers.IAutoAppGridHelper;
+import android.platform.helpers.IAutoMediaHelper;
 import android.platform.helpers.IAutoSettingHelper;
 import android.platform.helpers.IAutoVehicleHardKeysHelper;
 import android.platform.helpers.IAutoVehicleHardKeysHelper.DrivingState;
@@ -42,6 +43,10 @@ public class UxRestrictionTest {
     private HelperAccessor<IAutoAppGridHelper> mAppGridHelper;
     private static HelperAccessor<IAutoVehicleHardKeysHelper> sHardKeysHelper =
             new HelperAccessor<>(IAutoVehicleHardKeysHelper.class);
+    private static HelperAccessor<IAutoMediaHelper> sMediaCenterHelper =
+            new HelperAccessor<>(IAutoMediaHelper.class);
+    private static HelperAccessor<IAutoAppGridHelper> sAppGridHelper =
+            new HelperAccessor<>(IAutoAppGridHelper.class);
     private static final String LOG_TAG = UxRestrictionTest.class.getSimpleName();
 
     private static final int SPEED_TWENTY = 20;
@@ -195,5 +200,35 @@ public class UxRestrictionTest {
         String newTitle = sSettingHelper.get().getSettingsPageTitleText();
         Log.i(LOG_TAG, "Assert: System Setting is disabled");
         assertTrue("System settings is not disabled", currentTitle.equals(newTitle));
+    }
+
+    @Test
+    public void testMediaAppUxRestrictionSearch() {
+        Log.i(LOG_TAG, "Act: Open Appgrid");
+        sAppGridHelper.get().open();
+
+        Log.i(LOG_TAG, "Act: Open Test Media App");
+        sAppGridHelper.get().openApp("Test Media App");
+
+        Log.i(LOG_TAG, "Act: Click Test media app search button");
+        sMediaCenterHelper.get().openTestMediaAppSearch();
+
+        Log.i(LOG_TAG, "Assert: Feature not available while driving message is displayed");
+        assertTrue(
+                "Search feature is available while driving",
+                sMediaCenterHelper.get().isMediaSearchRestrictedMessagedDisplayed());
+
+        Log.i(LOG_TAG, "Act: Enter into parking mode");
+        disableDrivingMode();
+
+        Log.i(LOG_TAG, "Assert: Open Appgrid");
+        assertFalse(
+                "Search feature is not available in parking mode",
+                sMediaCenterHelper.get().isMediaSearchRestrictedMessagedDisplayed());
+
+        Log.i(LOG_TAG, "Assert: Search bar is taking input");
+        assertTrue(
+                "Search is not taking input in parking mode",
+                sMediaCenterHelper.get().isSearchBarTakingInput());
     }
 }
