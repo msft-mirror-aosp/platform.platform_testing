@@ -18,6 +18,7 @@ package android.system.helpers;
 
 import static android.content.Context.CONTEXT_IGNORE_SECURITY;
 
+import static com.android.systemui.Flags.qsSplitInternetTile;
 import static com.android.systemui.Flags.qsUiRefactorComposeFragment;
 import static com.android.systemui.Flags.sceneContainer;
 
@@ -89,9 +90,21 @@ public class QuickSettingsHelper {
                         .getResources()
                         .getIdentifier(QS_DEFAULT_TILES_RES, "string", SYSTEMUI_PACKAGE);
         final String defaultQSTiles = sysUIContext.getString(qsTileListResId);
-        mDefaultQSTileList = Arrays.asList(defaultQSTiles.split(","));
+        final String[] splitList = defaultQSTiles.split(",");
+        // Migration from internet to wifi tile and viceversa
+        for (int i = 0; i < splitList.length; i++) {
+            String tile = splitList[i];
+            if ("internet".equals(tile) && qsSplitInternetTile()) {
+                splitList[i] = "wifi";
+            } else if ("wifi".equals(tile) && !qsSplitInternetTile()) {
+                splitList[i] = "internet";
+            }
+        }
+        mDefaultQSTileList = Arrays.asList(splitList);
     }
 
+    /** Deprecated. Use classes in systemui-tapl and tiles in QSBase */
+    @Deprecated
     public enum QuickSettingDefaultTiles {
         WIFI("Wi-Fi"),
         SIM("Mobile data"),

@@ -27,6 +27,11 @@ fun ComposeQuickSettingsTile.clickInternetTileToOpenDialog(): InternetDialog {
     return InternetDialog(displayId)
 }
 
+fun ComposeQuickSettingsTile.clickWifiTileToOpenDialog(): InternetDialog {
+    clickToOpenDialogOnDualTarget()
+    return InternetDialog(displayId)
+}
+
 fun ComposeQuickSettingsTile.clickBluetoothTileToOpenDialog(): BluetoothDialog {
     clickToOpenDialogOnDualTarget()
     return BluetoothDialog(displayId)
