@@ -129,6 +129,12 @@ public class StatusBarSnippet implements Snippet {
         return mStatusBarHelper.get().hasToggleOffMessage();
     }
 
+    /** Open Sound Palette */
+    @Rpc(description = "Open Sound Palette on status bar")
+    public void openSoundPaletteOnStatusBar() {
+        mStatusBarHelper.get().openSoundPaletteOnStatusBar();
+    }
+
     @Override
     public void shutdown() {}
 }

@@ -245,6 +245,8 @@ public class AutomotiveConfigConstants {
     public static final String SYSTEM_SETTINGS_SCROLL_MARGIN = "SYSTEM_SETTINGS_SCROLL_MARGIN";
     public static final String SYSTEM_SETTINGS_SCROLL_WAIT_TIME =
             "SYSTEM_SETTINGS_SCROLL_WAIT_TIME";
+
+    public static final String MEDIA_SOUND_SEEKBAR = "MEDIA_SOUND_SEEKBAR";
     public static final String RECENT_NOTIFICATIONS = "RECENT_NOTIFICATIONS";
     public static final String OLDER_NOTIFICATIONS = "OLDER_NOTIFICATIONS";
     public static final String TEST_NOTIFICATION = "TEST_NOTIFICATION";
