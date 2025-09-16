@@ -358,6 +358,10 @@ public class AutomotiveConfigConstants {
     // Media App UI View
     public static final String MEDIA_APP_TITLE = "MEDIA_APP_TITLE";
     public static final String MEDIA_APP_DROP_DOWN_MENU = "MEDIA_APP_DROP_DOWN_MENU";
+    public static final String MEDIA_APP_QUEUE_MENU = "MEDIA_APP_QUEUE_MENU";
+    public static final String MEDIA_APP_QUEUE_SCROLL = "MEDIA_APP_QUEUE_SCROLL";
+    public static final String MEDIA_APP_QUEUE_SCROLL_UP = "MEDIA_APP_QUEUE_SCROLL_UP";
+    public static final String MEDIA_APP_QUEUE_SCROLL_DOWN = "MEDIA_APP_QUEUE_SCROLL_DOWN";
     public static final String MEDIA_APP_SETTINGS = "MEDIA_APP_SETTINGS";
     public static final String MEDIA_APP_SEARCH = "MEDIA_APP_SEARCH";
     public static final String MEDIA_SEARCH_RESTRICTED_MESSAGE = "MEDIA_SEARCH_RESTRICTED_MESSAGE";
