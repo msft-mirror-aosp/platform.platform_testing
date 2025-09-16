@@ -63,6 +63,7 @@ android_test {
         "FlickerLibTest-Utils",
         "androidx.test.runner",
         "truth",
+        "mockito-kotlin2",
         "mockito-target-extended-minus-junit4",
         "collector-device-lib",
         "wm-flicker-common-app-helpers",

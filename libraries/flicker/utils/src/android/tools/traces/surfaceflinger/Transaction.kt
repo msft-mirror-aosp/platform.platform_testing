@@ -34,10 +34,4 @@ data class Transaction(
             "(pid=$pid, uid=$uid, requestedVSyncId=$requestedVSyncId, postTime=$postTime, " +
             "id=$id)"
     }
-
-    companion object {
-        fun emptyTransaction(): Transaction {
-            return Transaction(0, 0, 0, 0, 0, emptyList())
-        }
-    }
 }

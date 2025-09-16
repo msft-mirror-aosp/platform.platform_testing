@@ -22,6 +22,7 @@ import android.graphics.Region
 import android.tools.datatypes.ActiveBuffer
 import android.tools.datatypes.containsWithThreshold
 import android.tools.datatypes.crop
+import android.tools.datatypes.emptyColor
 import android.tools.traces.component.ComponentName
 import androidx.core.graphics.toRect
 import com.android.internal.annotations.VisibleForTesting
@@ -40,8 +41,8 @@ public constructor(
     val parentId: Int,
     val z: Int,
     val currFrame: Long,
-    properties: ILayerProperties,
-) : ILayerProperties by properties {
+    properties: LayerProperties,
+) : LayerProperties by properties {
     val stableId: String = "$id $name"
     var parent: Layer? = null
     var zOrderRelativeOf: Layer? = null
@@ -320,34 +321,35 @@ public constructor(
 
     companion object {
         @JvmStatic
+        @JvmOverloads
         fun from(
             name: String,
             id: Int,
             parentId: Int,
-            z: Int,
-            visibleRegion: Region,
-            activeBuffer: ActiveBuffer,
-            flags: Int,
             bounds: RectF,
-            color: Color,
-            isOpaque: Boolean,
-            shadowRadius: Float,
-            cornerRadius: Float,
+            z: Int = 0,
+            visibleRegion: Region = Region(),
+            activeBuffer: ActiveBuffer = ActiveBuffer.EMPTY,
+            flags: Int = 0,
+            color: Color = emptyColor(),
+            isOpaque: Boolean = false,
+            shadowRadius: Float = 0.0f,
+            cornerRadius: Float = 0.0f,
             screenBounds: RectF,
-            transform: Transform,
-            currFrame: Long,
-            effectiveScalingMode: Int,
-            bufferTransform: Transform,
-            hwcCompositionType: HwcCompositionType,
-            backgroundBlurRadius: Int,
-            crop: RectF?,
-            isRelativeOf: Boolean,
-            zOrderRelativeOfId: Int,
-            stackId: Int,
-            excludesCompositionState: Boolean,
+            transform: Transform = Transform.EMPTY,
+            currFrame: Long = 0,
+            effectiveScalingMode: Int = 0,
+            bufferTransform: Transform = Transform.EMPTY,
+            hwcCompositionType: HwcCompositionType = HwcCompositionType.HWC_TYPE_UNSPECIFIED,
+            backgroundBlurRadius: Int = 0,
+            crop: RectF? = RectF(),
+            isRelativeOf: Boolean = false,
+            zOrderRelativeOfId: Int = 0,
+            stackId: Int = 0,
+            excludesCompositionState: Boolean = false,
         ): Layer {
             val properties =
-                LayerProperties.from(
+                LayerPropertiesImpl.from(
                     visibleRegion,
                     activeBuffer,
                     flags,
@@ -362,7 +364,7 @@ public constructor(
                     bufferTransform,
                     hwcCompositionType,
                     backgroundBlurRadius,
-                    crop,
+                    crop ?: RectF(),
                     isRelativeOf,
                     zOrderRelativeOfId,
                     stackId,

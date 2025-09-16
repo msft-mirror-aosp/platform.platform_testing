@@ -20,6 +20,7 @@ import android.tools.Cache
 import android.tools.Timestamps
 import android.tools.testutils.CleanFlickerEnvironmentRule
 import android.tools.testutils.getLayerTraceReaderFromAsset
+import android.tools.traces.component.ComponentNameMatcher
 import com.google.common.truth.Truth
 import org.junit.Before
 import org.junit.ClassRule
@@ -31,7 +32,7 @@ import org.junit.runners.MethodSorters
  * Contains [LayerTraceEntry] tests. To run this test: `atest FlickerLibTest:LayersTraceEntryTest`
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-class LayersTraceEntryTest {
+class LayerTraceEntryTest {
     @Before
     fun before() {
         Cache.clear()
@@ -228,19 +229,108 @@ class LayersTraceEntryTest {
         val reader = getLayerTraceReaderFromAsset("layers_trace_launch_split_screen.perfetto-trace")
         val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
 
-        var state =
+        val state =
             trace.getEntryAt(
                 Timestamps.from(
                     elapsedNanos = 90485742427178,
                     elapsedOffsetNanos = 1682359234732002451,
                 )
             )
-        var coveredLayer = state.getLayerById(693) ?: error("Activity layer not found")
-        var coveringLayer = state.getLayerById(690) ?: error("Splash Screen layer not found")
+        val coveredLayer = state.getLayerById(693) ?: error("Activity layer not found")
+        val coveringLayer = state.getLayerById(690) ?: error("Splash Screen layer not found")
 
         Truth.assertThat(coveredLayer.isVisible).isTrue()
         Truth.assertThat(coveringLayer.isVisible).isTrue()
         Truth.assertThat(coveredLayer.coveredBy).contains(coveringLayer)
+    }
+
+    @Test
+    fun canGetLayerWithBuffer() {
+        val reader = getLayerTraceReaderFromAsset("layers_trace_launch_split_screen.perfetto-trace")
+        val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
+        val entry = trace.getEntryExactlyAt(Timestamps.from(systemUptimeNanos = 90480846872160))
+        val component =
+            ComponentNameMatcher(
+                "com.google.android.apps.nexuslauncher",
+                "com.google.android.apps.nexuslauncher.NexusLauncherActivity#0",
+            )
+        val layer = entry.getLayerWithBuffer(component)
+        Truth.assertThat(layer).isNotNull()
+        Truth.assertThat(layer?.name)
+            .isEqualTo(
+                "com.google.android.apps.nexuslauncher/" +
+                    "com.google.android.apps.nexuslauncher.NexusLauncherActivity#0"
+            )
+        Truth.assertThat(layer?.activeBuffer?.isEmpty).isFalse()
+    }
+
+    @Test
+    fun canGetLayerWithBufferReturnsNullForEmptyBuffer() {
+        val reader = getLayerTraceReaderFromAsset("layers_trace_emptyregion.perfetto-trace")
+        val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
+        val entry = trace.getEntryExactlyAt(Timestamps.from(systemUptimeNanos = 922839428857))
+        // Assuming there's a layer that matches this component but has an empty buffer in this
+        // trace
+        val component = ComponentNameMatcher("", "DimLayer#0")
+        val layer = entry.getLayerWithBuffer(component)
+        Truth.assertThat(layer?.activeBuffer?.isEmpty).isTrue()
+    }
+
+    @Test
+    fun canGetLayerById() {
+        val reader = getLayerTraceReaderFromAsset("layers_trace_launch_split_screen.perfetto-trace")
+        val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
+        val entry = trace.getEntryExactlyAt(Timestamps.from(systemUptimeNanos = 90480846872160))
+        // com.google.android.apps.nexuslauncher/com.google.android.apps.nexuslauncher.NexusLauncherActivity#0 has id 700 in this trace
+        val layer = entry.getLayerById(700)
+        Truth.assertThat(layer).isNotNull()
+        Truth.assertThat(layer?.name)
+            .isEqualTo(
+                "com.google.android.apps.nexuslauncher/" +
+                    "com.google.android.apps.nexuslauncher.NexusLauncherActivity#0"
+            )
+    }
+
+    @Test
+    fun canGetLayerByIdReturnsNullForNotFound() {
+        val reader = getLayerTraceReaderFromAsset("layers_trace_launch_split_screen.perfetto-trace")
+        val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
+        val entry = trace.getEntryExactlyAt(Timestamps.from(systemUptimeNanos = 90480846872160))
+        val layer = entry.getLayerById(99999) // Non-existent ID
+        Truth.assertThat(layer).isNull()
+    }
+
+    @Test
+    fun canCheckIsVisible() {
+        val reader = getLayerTraceReaderFromAsset("layers_trace_launch_split_screen.perfetto-trace")
+        val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
+        val entry = trace.getEntryExactlyAt(Timestamps.from(systemUptimeNanos = 90480846872160))
+        val component =
+            ComponentNameMatcher(
+                "com.google.android.apps.nexuslauncher",
+                "com.google.android.apps.nexuslauncher.NexusLauncherActivity#0",
+            )
+        Truth.assertThat(entry.isVisible(component)).isTrue()
+    }
+
+    @Test
+    fun canCheckIsVisibleReturnsFalseForInvisibleLayer() {
+        val reader = getLayerTraceReaderFromAsset("layers_trace_launch_split_screen.perfetto-trace")
+        val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
+        val entry = trace.getEntryExactlyAt(Timestamps.from(systemUptimeNanos = 90480846872160))
+        // Assuming there's an invisible layer in this trace, e.g., a hidden app
+        val component = ComponentNameMatcher("", "com.android.systemui.recents.RecentsActivity#0")
+        Truth.assertThat(entry.isVisible(component)).isFalse()
+    }
+
+    @Test
+    fun canConvertAsTrace() {
+        val reader = getLayerTraceReaderFromAsset("layers_trace_emptyregion.perfetto-trace")
+        val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
+        val entry = trace.entries.first()
+        val singleEntryTrace = entry.asTrace()
+        Truth.assertThat(singleEntryTrace.entries).hasSize(1)
+        Truth.assertThat(singleEntryTrace.entries.first()).isEqualTo(entry)
     }
 
     companion object {

@@ -18,11 +18,8 @@ package android.tools.traces.surfaceflinger
 
 import android.graphics.Rect
 import android.graphics.RectF
-import android.graphics.Region
 import android.tools.Timestamps
-import android.tools.datatypes.ActiveBuffer
 import android.tools.datatypes.Size
-import android.tools.datatypes.emptyColor
 import android.tools.testutils.CleanFlickerEnvironmentRule
 import android.tools.traces.surfaceflinger.Display.Companion.BLANK_LAYER_STACK
 import com.google.common.truth.Truth
@@ -87,25 +84,8 @@ class LayerTraceEntryBuilderTest {
                     name = "layer",
                     id = 1,
                     parentId = -1,
-                    z = 1,
-                    visibleRegion = Region(),
-                    activeBuffer = ActiveBuffer.EMPTY,
-                    flags = 0,
                     bounds = RectF(),
-                    color = emptyColor(),
-                    isOpaque = true,
-                    shadowRadius = 0f,
-                    cornerRadius = 0f,
                     screenBounds = RectF(),
-                    transform = Transform.EMPTY,
-                    currFrame = 0,
-                    effectiveScalingMode = 0,
-                    bufferTransform = Transform.EMPTY,
-                    hwcCompositionType = HwcCompositionType.HWC_TYPE_UNSPECIFIED,
-                    backgroundBlurRadius = 0,
-                    crop = null,
-                    isRelativeOf = false,
-                    zOrderRelativeOfId = 0,
                     stackId = offDisplayStackId,
                     excludesCompositionState = true,
                 )

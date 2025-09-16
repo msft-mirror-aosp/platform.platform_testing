@@ -25,7 +25,7 @@ import android.tools.testutils.getWmTraceReaderFromAsset
 import android.tools.traces.component.ComponentNameMatcher
 import android.tools.traces.component.SurfaceViewBackgroundMatcher
 import android.tools.traces.surfaceflinger.Layer
-import android.tools.traces.surfaceflinger.LayerProperties
+import android.tools.traces.surfaceflinger.LayerPropertiesImpl
 import com.google.common.truth.Truth
 import org.junit.Before
 import org.junit.ClassRule
@@ -229,7 +229,7 @@ class WindowManagerTraceSubjectTest {
                 parentId = 3,
                 z = 4,
                 currFrame = 1,
-                properties = LayerProperties.EMPTY,
+                properties = LayerPropertiesImpl.EMPTY,
             )
         val sv =
             Layer(
@@ -238,7 +238,7 @@ class WindowManagerTraceSubjectTest {
                 parentId = 3,
                 z = 6,
                 currFrame = 1,
-                properties = LayerProperties.EMPTY,
+                properties = LayerPropertiesImpl.EMPTY,
             )
 
         Truth.assertWithMessage("SurfaceView background layer match")
