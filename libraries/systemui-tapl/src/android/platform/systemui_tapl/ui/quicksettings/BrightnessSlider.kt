@@ -16,7 +16,6 @@
 package android.platform.systemui_tapl.ui.quicksettings
 
 import android.graphics.PointF
-import android.graphics.Rect
 import android.platform.systemui_tapl.utils.DeviceUtils.LONG_WAIT
 import android.platform.systemui_tapl.utils.DeviceUtils.sysuiResSelector
 import android.platform.uiautomatorhelpers.BetterSwipe
@@ -26,7 +25,6 @@ import android.platform.uiautomatorhelpers.DeviceHelpers.waitForObj
 import android.platform.uiautomatorhelpers.PRECISE_GESTURE_INTERPOLATOR
 import android.view.Display.DEFAULT_DISPLAY
 import androidx.test.uiautomator.UiObject2
-import com.android.systemui.Flags
 import com.google.common.truth.Truth.assertThat
 import java.time.Duration
 
@@ -59,15 +57,14 @@ class BrightnessSlider internal constructor(private val displayId: Int = DEFAULT
                 (sliderBounds.centerX() + sliderBounds.width() / 3).toFloat(),
                 sliderBounds.centerY().toFloat(),
             )
-        // NOTE: This control logic is less than clean.
-        if (Flags.qsUiRefactorComposeFragment() || Flags.sceneContainer()) {
-            BetterSwipe.swipe(
-                pointFrom,
-                pointTo,
-                swipeDuration,
-                PRECISE_GESTURE_INTERPOLATOR,
-                displayId,
-            )
+
+        BetterSwipe.swipe(
+            pointFrom,
+            pointTo,
+            swipeDuration,
+            PRECISE_GESTURE_INTERPOLATOR,
+            displayId,
+        ) {
             // In this case, the slider is moved to an overlay, then we verify:
             // The notification shade is not visible, but
             sysuiResSelector(UI_NOTIFICATION_SHADE_ID, displayId).assertInvisible()
@@ -75,14 +72,6 @@ class BrightnessSlider internal constructor(private val displayId: Int = DEFAULT
             sysuiResSelector(UI_BRIGHTNESS_SLIDER_ID, displayId).assertVisible()
             // The bounds haven't changed.
             assertThat(slider.visibleBounds).isEqualTo(sliderBounds)
-        } else {
-            var mirrorBounds: Rect? = null
-            BetterSwipe.swipe(pointFrom, displayId) {
-                to(pointTo, swipeDuration, PRECISE_GESTURE_INTERPOLATOR)
-                mirrorBounds = brightnessSliderMirror.visibleBounds
-                assertThat(sliderBounds).isEqualTo(mirrorBounds)
-            }
-            assertThat(mirrorBounds).isEqualTo(slider.visibleBounds)
         }
     }
 
