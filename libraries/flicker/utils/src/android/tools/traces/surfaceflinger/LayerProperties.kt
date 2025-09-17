@@ -31,7 +31,6 @@ private constructor(
     override val flags: Int = 0,
     override val bounds: RectF = RectF(),
     override val color: Color = emptyColor(),
-    private val _isOpaque: Boolean = false,
     override val shadowRadius: Float = 0f,
     override val cornerRadius: Float = 0f,
     override val screenBounds: RectF = RectF(),
@@ -44,9 +43,7 @@ private constructor(
     override val isRelativeOf: Boolean = false,
     override val zOrderRelativeOfId: Int = 0,
     override val stackId: Int = 0,
-    override val excludesCompositionState: Boolean = false,
 ) : ILayerProperties {
-    override val isOpaque: Boolean = if (color.alpha() != 1.0f) false else _isOpaque
 
     override fun hashCode(): Int {
         var result = visibleRegion.hashCode()
@@ -54,7 +51,6 @@ private constructor(
         result = 31 * result + flags
         result = 31 * result + bounds.hashCode()
         result = 31 * result + color.hashCode()
-        result = 31 * result + _isOpaque.hashCode()
         result = 31 * result + shadowRadius.hashCode()
         result = 31 * result + cornerRadius.hashCode()
         result = 31 * result + screenBounds.hashCode()
@@ -68,22 +64,19 @@ private constructor(
         result = 31 * result + zOrderRelativeOfId
         result = 31 * result + stackId
         result = 31 * result + screenBounds.hashCode()
-        result = 31 * result + isOpaque.hashCode()
-        result = 31 * result + excludesCompositionState.hashCode()
         return result
     }
 
     override fun toString(): String {
         return "LayerProperties(visibleRegion=$visibleRegion, activeBuffer=$activeBuffer, " +
-            "flags=$flags, bounds=$bounds, color=$color, _isOpaque=$_isOpaque, " +
+            "flags=$flags, bounds=$bounds, color=$color, " +
             "shadowRadius=$shadowRadius, cornerRadius=$cornerRadius, " +
             "screenBounds=$screenBounds, transform=$transform, " +
             "effectiveScalingMode=$effectiveScalingMode, bufferTransform=$bufferTransform, " +
             "hwcCompositionType=$hwcCompositionType, " +
             "backgroundBlurRadius=$backgroundBlurRadius, crop=$crop, isRelativeOf=$isRelativeOf, " +
             "zOrderRelativeOfId=$zOrderRelativeOfId, stackId=$stackId, " +
-            "screenBounds=$screenBounds, isOpaque=$isOpaque, " +
-            "excludesCompositionState=$excludesCompositionState)"
+            "screenBounds=$screenBounds)"
     }
 
     override fun equals(other: Any?): Boolean {
@@ -95,7 +88,6 @@ private constructor(
         if (flags != other.flags) return false
         if (bounds != other.bounds) return false
         if (color != other.color) return false
-        if (_isOpaque != other._isOpaque) return false
         if (shadowRadius != other.shadowRadius) return false
         if (cornerRadius != other.cornerRadius) return false
         if (screenBounds != other.screenBounds) return false
@@ -109,8 +101,6 @@ private constructor(
         if (zOrderRelativeOfId != other.zOrderRelativeOfId) return false
         if (stackId != other.stackId) return false
         if (screenBounds != other.screenBounds) return false
-        if (isOpaque != other.isOpaque) return false
-        if (excludesCompositionState != other.excludesCompositionState) return false
 
         return true
     }
@@ -125,7 +115,6 @@ private constructor(
             flags: Int,
             bounds: RectF,
             color: Color,
-            isOpaque: Boolean,
             shadowRadius: Float,
             cornerRadius: Float,
             screenBounds: RectF,
@@ -138,7 +127,6 @@ private constructor(
             isRelativeOf: Boolean,
             zOrderRelativeOfId: Int,
             stackId: Int,
-            excludesCompositionState: Boolean,
         ): ILayerProperties {
             return withCache {
                 LayerProperties(
@@ -147,7 +135,6 @@ private constructor(
                     flags,
                     bounds,
                     color,
-                    isOpaque,
                     shadowRadius,
                     cornerRadius,
                     screenBounds,
@@ -160,7 +147,6 @@ private constructor(
                     isRelativeOf,
                     zOrderRelativeOfId,
                     stackId,
-                    excludesCompositionState,
                 )
             }
         }

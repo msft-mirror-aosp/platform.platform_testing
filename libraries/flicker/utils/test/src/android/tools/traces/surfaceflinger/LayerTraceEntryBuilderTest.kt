@@ -89,7 +89,6 @@ class LayerTraceEntryBuilderTest {
                     flags = 0,
                     bounds = RectF(),
                     color = emptyColor(),
-                    isOpaque = true,
                     shadowRadius = 0f,
                     cornerRadius = 0f,
                     screenBounds = RectF(),
@@ -103,7 +102,6 @@ class LayerTraceEntryBuilderTest {
                     isRelativeOf = false,
                     zOrderRelativeOfId = 0,
                     stackId = offDisplayStackId,
-                    excludesCompositionState = true,
                 )
             )
 

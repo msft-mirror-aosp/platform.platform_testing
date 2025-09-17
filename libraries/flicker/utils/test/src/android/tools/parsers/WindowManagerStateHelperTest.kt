@@ -111,7 +111,6 @@ class WindowManagerStateHelperTest {
             flags = 0,
             bounds = rect,
             color = defaultColor(),
-            isOpaque = true,
             shadowRadius = 0f,
             cornerRadius = 0f,
             screenBounds = rect,
@@ -125,7 +124,7 @@ class WindowManagerStateHelperTest {
             isRelativeOf = false,
             zOrderRelativeOfId = -1,
             stackId = 0,
-            excludesCompositionState = false,
+            isVisible = true,
         )
     }
 

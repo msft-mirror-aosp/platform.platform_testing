@@ -66,6 +66,9 @@ constructor(
     val visibilityReason: Collection<String>
         get() = layer.visibilityReason
 
+    val isOccluded: Boolean
+        get() = isInvisible && layer.occludedBy.isNotEmpty()
+
     /**
      * Visible region calculated by the Composition Engine (when available) or calculated based on
      * the layer bounds and transform
