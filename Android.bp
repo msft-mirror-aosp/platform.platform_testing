@@ -879,3 +879,18 @@ test_package {
         dest: "cw_continuous_native_tests-FILE_NAME_TAG_PLACEHOLDER.zip",
     },
 }
+
+test_package {
+    name: "emulator_tests",
+    tests: [
+        "mediaframeworktest",
+        "CtsFragmentTestCases",
+        "HelloWorldTests",
+    ],
+
+    dist: {
+        targets: ["emulator_tests"],
+        prepend_artifact_with_product: true,
+        dest: "emulator_tests-FILE_NAME_TAG_PLACEHOLDER.zip",
+    },
+}
