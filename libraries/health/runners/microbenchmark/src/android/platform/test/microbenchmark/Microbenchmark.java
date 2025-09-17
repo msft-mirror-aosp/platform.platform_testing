@@ -399,12 +399,7 @@ public class Microbenchmark extends BlockJUnit4ClassRunner {
             throw new TerminateEarlyException("the battery drain is above the threshold.");
         }
 
-        // Update the number of iterations this method has been run.
-        if (mRenameIterations) {
-            Description original = super.describeChild(method);
-            mIterations.computeIfPresent(original, (k, v) -> v + 1);
-            mIterations.computeIfAbsent(original, k -> 1);
-        }
+        updateIterations(method);
 
         Description description = describeChild(method);
         if (isIgnored(method)) {
@@ -458,6 +453,44 @@ public class Microbenchmark extends BlockJUnit4ClassRunner {
                 throw new TerminateEarlyException("test failed.");
             }
         }
+    }
+
+    /**
+     * Handles class-level @Before/@Afters or rules failures.
+     *
+     * <p>To ensure a test output that looks correctly to TF, we need to properly notify 'notifier'
+     * repeatedly about all test methods.
+     */
+    @Override
+    protected Statement classBlock(RunNotifier notifier) {
+        return new Statement() {
+            @Override
+            public void evaluate() throws Throwable {
+                try {
+                    Microbenchmark.super.classBlock(notifier).evaluate();
+                } catch (Throwable e) {
+                    final List<FrameworkMethod> methods = getChildren();
+                    if (methods.isEmpty()) {
+                        // If there are no test methods, just rethrow.
+                        throw e;
+                    }
+
+                    for (FrameworkMethod method : methods) {
+                        updateIterations(method);
+                        Functional.notifyTestStartFailFinish(notifier, describeChild(method), e);
+                    }
+                }
+            }
+        };
+    }
+
+    private void updateIterations(FrameworkMethod method) {
+        if (!mRenameIterations) {
+            return;
+        }
+        Description original = super.describeChild(method);
+        mIterations.computeIfPresent(original, (k, v) -> v + 1);
+        mIterations.computeIfAbsent(original, k -> 1);
     }
 
     private Statement withNoMetricsBefores(EachTestNotifier eachNotifier, Object test,
