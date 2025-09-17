@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2025 Google LLC -->
+<configuration description="Two Devices Test: {MODULE}">
+   <!--
+      Template for Two Devices Test.
+      This is common for all tests. Do not modify.
+  -->
+  <option name="test-suite-tag" value="catbox" />
+
+  <device name="device1">
+    <!-- Python Dependencies. Needed Only For First Device -->
+    <target_preparer class="com.android.tradefed.targetprep.PythonVirtualenvPreparer">
+      <option name="disable" value="false" />
+      <option name="dep-module" value="mobly==1.13" />
+      <!-- Required for Parameterization -->
+      <option name="dep-module" value="absl-py==2.1.0" />
+      <!-- Required for test services -->
+      <option name="dep-module" value="grpcio==1.74.0"/>
+      <option name="dep-module" value="protobuf" />
+    </target_preparer>
+
+    <!-- ADB Root -->
+    <target_preparer class="com.android.tradefed.targetprep.RootTargetPreparer" />
+  </device>
+
+  <device name="device2">
+    <!-- ADB Root -->
+    <target_preparer class="com.android.tradefed.targetprep.RootTargetPreparer" />
+  </device>
+
+  <!-- Mobly test defaults for two devices -->
+  <test class="com.android.tradefed.testtype.mobly.MoblyBinaryHostTest">
+    <option name="mobly-par-file-name" value="{MODULE}" />
+    <!-- Timeout limit in milliseconds -->
+    <option name="mobly-test-timeout" value="300000" />
+    <!-- Testbed config file -->
+    <option name="mobly-config-file-name" value="automotive_two_devices_config.yaml" />
+  </test>
+</configuration>
