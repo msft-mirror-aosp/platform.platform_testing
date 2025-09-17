@@ -123,12 +123,9 @@ class NotificationShade internal constructor(val displayId: Int = DEFAULT_DISPLA
 
     /** Click Manage button to open notification settings page. */
     fun openNotificationSettingsFromButton() {
-        val manageBtn =
-            if (Flags.notificationsRedesignFooterView())
-                scrollAndFindButton("Notification settings")
-            else scrollAndFindButton("Manage")
-        assertThat(manageBtn).isNotNull()
-        Gestures.click(manageBtn!!, "Settings button")
+        val settingsBtn = scrollAndFindButton("Notification settings")
+        assertThat(settingsBtn).isNotNull()
+        Gestures.click(settingsBtn!!, "Settings button")
 
         settingsResSelector("app_bar").assertVisible()
     }
@@ -351,8 +348,7 @@ class NotificationShade internal constructor(val displayId: Int = DEFAULT_DISPLA
     companion object {
         private const val WAIT_TIME = 10_000L
         private const val UI_EMPTY_SHADE_VIEW_ID = "no_notifications"
-        private val UI_SETTINGS_BUTTON_ID =
-            if (Flags.notificationsRedesignFooterView()) "settings_button" else "manage_text"
+        private const val UI_SETTINGS_BUTTON_ID = "settings_button"
         private const val UI_QS_CONTAINER_ID = "quick_settings_container"
         private const val UI_RESPONSE_TIMEOUT_MSECS: Long = 3000
         private const val UI_CLEAR_ALL_BUTTON_ID = "dismiss_text"
