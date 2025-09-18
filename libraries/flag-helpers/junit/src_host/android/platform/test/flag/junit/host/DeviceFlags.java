@@ -54,6 +54,8 @@ import javax.annotation.Nullable;
 public class DeviceFlags {
     private static final String DUMP_DEVICE_CONFIG_CMD = "device_config list";
 
+    private static final int MIN_API_LEVEL_WITH_FLAGS = 35;
+
     /**
      * The key is the flag name with namespace ({namespace}/{flagName} for legacy flags,
      * {namespace}/{packageName}.{flagName} for aconfig flags.
@@ -89,7 +91,14 @@ public class DeviceFlags {
         mFlagNameWithNamespaces.clear();
         LogUtil.CLog.i("Dumping all flag values from the device ...");
         getDeviceConfigFlags(testDevice);
-        getAconfigFlags(testDevice);
+        int apiLevel = getApiLevel(testDevice);
+        if (apiLevel < MIN_API_LEVEL_WITH_FLAGS) {
+            LogUtil.CLog.i(
+                    "Aconfig are not supported on %s with api level %d, skip dumping aconfig flags",
+                    testDevice.getSerialNumber(), apiLevel);
+        } else {
+            getAconfigFlags(testDevice);
+        }
         LogUtil.CLog.i("Dumped all flag values from the device.");
     }
 
@@ -177,5 +186,13 @@ public class DeviceFlags {
             }
         }
         return builder.build();
+    }
+
+    private int getApiLevel(ITestDevice testDevice) throws FlagReadException {
+        try {
+            return testDevice.getApiLevel();
+        } catch (DeviceNotAvailableException e) {
+            throw new FlagReadException("ALL_FLAGS", e);
+        }
     }
 }
