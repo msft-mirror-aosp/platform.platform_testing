@@ -27,7 +27,6 @@ import android.tools.traces.parsers.perfetto.WindowManagerTraceParser
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.UiDevice
 import com.google.common.truth.Truth
-import org.junit.Assume
 import org.junit.Before
 import org.junit.ClassRule
 import org.junit.Test
@@ -56,8 +55,6 @@ class WindowManagerTraceParserTest {
 
     @Test
     fun canParseAllEntriesFromNewTrace() {
-        Assume.assumeTrue(android.tracing.Flags.perfettoWmTracing())
-
         val device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
         val monitor = PerfettoTraceMonitor.Builder().enableWindowManagerTrace().build()
         val reader =

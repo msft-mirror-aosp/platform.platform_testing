@@ -19,7 +19,6 @@ package android.tools.rules
 import android.tools.traces.io.ResultWriter
 import android.tools.traces.monitors.PerfettoTraceMonitor
 import android.tools.traces.monitors.TraceMonitor
-import android.tools.traces.monitors.wm.WindowManagerTraceMonitor
 import kotlin.io.path.createTempDirectory
 import kotlin.io.path.name
 import org.junit.rules.TestRule
@@ -31,7 +30,6 @@ class StopAllTracesRule : TestRule {
         return object : Statement() {
             override fun evaluate() {
                 PerfettoTraceMonitor.stopAllSessions()
-                WindowManagerTraceMonitor().stopIfEnabled()
 
                 base?.evaluate()
             }

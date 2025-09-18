@@ -29,7 +29,6 @@ import android.tools.traces.io.IResultData
 import android.tools.traces.io.ResultReader
 import android.tools.traces.io.ResultReaderWithLru
 import android.tools.traces.io.ResultWriter
-import android.tools.traces.monitors.wm.WindowManagerTraceMonitor
 import android.tools.traces.parsers.perfetto.LayersTraceParser
 import android.tools.traces.parsers.perfetto.TraceProcessorSession
 import android.tools.traces.parsers.perfetto.TransactionsTraceParser
@@ -145,18 +144,11 @@ fun withTracing(
     traceMonitors: List<TraceMonitor> =
         mutableListOf<TraceMonitor>()
             .apply {
-                if (!android.tracing.Flags.perfettoWmTracing()) {
-                    this.add(WindowManagerTraceMonitor())
-                }
-            }
-            .apply {
                 val monitorBuilder =
-                    PerfettoTraceMonitor.newBuilder().enableLayersTrace().enableTransactionsTrace()
-
-                if (android.tracing.Flags.perfettoWmTracing()) {
-                    monitorBuilder.enableWindowManagerTrace()
-                }
-
+                    PerfettoTraceMonitor.newBuilder()
+                        .enableLayersTrace()
+                        .enableTransactionsTrace()
+                        .enableWindowManagerTrace()
                 this.add(monitorBuilder.build())
             }
             .toList(),
