@@ -86,6 +86,21 @@ public interface StsLogic {
                         "skipAllTests",
                     });
 
+    // skip all tests to ensure tests are running correctly and are compatible with STS
+    // Exceptions:
+    // * frida (necessary for friday tests)
+    List<String> STS_EXTRA_BUSINESS_LOGIC_PREFLIGHT =
+            Arrays.asList(
+                    new String[] {
+                        "uploadSpl",
+                        "uploadModificationTime",
+                        "uploadKernelBugs",
+                        "uploadMainlineModules",
+                        "preflightTests",
+                        "fridaAssetTemplate",
+                        "mainline",
+                    });
+
     Description getTestDescription();
 
     LocalDate getPlatformSpl();
@@ -108,6 +123,8 @@ public interface StsLogic {
                 return STS_EXTRA_BUSINESS_LOGIC_DEVELOP;
             case "skipAll":
                 return STS_EXTRA_BUSINESS_LOGIC_SKIPALL;
+            case "preflight":
+                return STS_EXTRA_BUSINESS_LOGIC_PREFLIGHT;
             default:
                 throw new RuntimeException(
                         "Could not find Dynamic STS plan in InstrumentationRegistry arguments");
@@ -316,6 +333,25 @@ public interface StsLogic {
             }
         }
         return false;
+    }
+
+    default boolean shouldSkipNonPreflight() {
+        if (getCveBugIds() == null) {
+            // There were no @AsbSecurityTest annotations
+            logInfo(LOG_TAG, "not an ASB test");
+            return false;
+        }
+
+        LocalDate maxTestSpl = getTestEnforcingSpl();
+        // Only run tests that have are in an  ASB and are newer than device SPL
+        if (maxTestSpl == null) {
+            // can't find the test SPL for this ASB test; skip
+            return true;
+        }
+
+        // skip if the test is older than the platform SPL
+        LocalDate platformSpl = getPlatformSpl();
+        return !maxTestSpl.isAfter(platformSpl);
     }
 
     default void skip(String message) {
