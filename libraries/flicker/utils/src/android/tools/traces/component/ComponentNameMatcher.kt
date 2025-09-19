@@ -102,6 +102,7 @@ class ComponentNameMatcher(var component: ComponentName) : IComponentNameMatcher
         // FlickerLibTest still need this field.
         @JvmField val NAV_BAR_LEGACY = ComponentNameMatcher("", "NavigationBar0")
         @JvmField val TASK_BAR = ComponentNameMatcher("", "Taskbar")
+        @JvmField val TASK_BAR_OVERLAY = ComponentNameMatcher("", "Taskbar Overlay")
         // The navigation bar window are unified to "Taskbar".
         @JvmField val NAV_BAR = TASK_BAR
         @JvmField val STATUS_BAR = ComponentNameMatcher("", "StatusBar")
