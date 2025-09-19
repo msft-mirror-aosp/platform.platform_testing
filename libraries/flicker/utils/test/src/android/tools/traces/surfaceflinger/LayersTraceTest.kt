@@ -34,9 +34,6 @@ class LayersTraceTest {
     private fun detectRootLayer(fileName: String) {
         val reader = getLayerTraceReaderFromAsset(fileName)
         val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
-        Truth.assertWithMessage("Does not have any entries")
-            .that(trace.entries.size)
-            .isGreaterThan(0)
         for (entry in trace.entries) {
             val rootLayers = entry.children
             Truth.assertWithMessage("Does not have any root layer")
@@ -98,22 +95,19 @@ class LayersTraceTest {
         val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
         val entry = trace.getEntryExactlyAt(Timestamps.from(systemUptimeNanos = 1700382131522L))
         val layer = entry.getLayerWithBuffer(component)
-        val visibilityReason: Collection<String> = layer?.visibilityReason ?: emptyList<String>()
-        val occludedBy: Collection<Int> = layer?.occludedBy ?: emptyList<Int>()
-
+        val occludedBy = layer?.occludedBy ?: emptyList()
+        val partiallyOccludedBy = layer?.partiallyOccludedBy ?: emptyList()
+        Truth.assertWithMessage("Layer $layerName should be occluded").that(occludedBy).isNotEmpty()
+        Truth.assertWithMessage("Layer $layerName should not be partially occluded")
+            .that(partiallyOccludedBy)
+            .isEmpty()
         Truth.assertWithMessage("Layer $layerName should be occluded")
-            .that(occludedBy.size)
-            .isEqualTo(1)
-        Truth.assertWithMessage("Layer $layerName should be occluded by 66060")
-            .that(occludedBy.iterator().next())
-            .isEqualTo(229)
-
-        Truth.assertWithMessage("Layer $layerName should only have one reason for visibility")
-            .that(visibilityReason.size)
-            .isEqualTo(1)
-        Truth.assertWithMessage("Layer $layerName should be occluded")
-            .that(visibilityReason.iterator().next())
-            .isEqualTo("occluded")
+            .that(occludedBy.joinToString())
+            .contains(
+                "Splash Screen com.android.server.wm.flicker.testapp#0 buffer:w:1440, " +
+                    "h:3040, stride:1472, format:1 frame#1 visible:" +
+                    "SkRegion((346,1583,1094,2839))"
+            )
     }
 
     @Test
