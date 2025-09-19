@@ -16,7 +16,6 @@
 
 package android.platform.systemui_tapl.controller;
 
-import static android.app.Flags.FLAG_API_RICH_ONGOING;
 import static android.app.Notification.CATEGORY_SYSTEM;
 import static android.app.NotificationManager.IMPORTANCE_DEFAULT;
 import static android.app.NotificationManager.IMPORTANCE_HIGH;
@@ -433,7 +432,6 @@ public class NotificationController {
      * @param pkg App to launch, when clicking on notification.
      */
     @NonNull
-    @FlaggedApi(FLAG_API_RICH_ONGOING)
     public NotificationIdentity postProgressStyleNotification(@Nullable String pkg) {
         final Bitmap bitmap = Bitmap.createBitmap(400, 400, Bitmap.Config.ARGB_8888);
         new Canvas(bitmap).drawColor(Color.BLUE);
