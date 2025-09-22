@@ -977,6 +977,17 @@ public class MediaCenterHelperImpl extends AbstractStandardAppHelper implements 
         return mediaCardPauseButton != null;
     }
 
+    @Override
+    public void clickContactsContinueButton() {
+        BySelector continueBtnSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.CONTACTS_ALLOW_CONTINUE_BUTTON);
+
+        if (getSpectatioUiUtil().hasUiElement(continueBtnSelector)) {
+            UiObject2 continueBtnObject = getSpectatioUiUtil().findUiObject(continueBtnSelector);
+            getSpectatioUiUtil().clickAndWait(continueBtnObject);
+        }
+    }
+
     /** {@inheritDoc} */
     @Override
     public boolean isMediaCardNextButtonDisplaying() {

@@ -454,6 +454,13 @@ public interface IAutoMediaHelper extends IAppHelper, Scrollable {
     /**
      * Setup expectations: Media app is open
      *
+     * <p>This method clicks on Continue button on allow contacts pop up
+     */
+    void clickContactsContinueButton();
+
+    /**
+     * Setup expectations: Media app is open
+     *
      * <p>This method verifies if the Scroll Down option is visible
      */
     boolean isPlaylistScrollDownVisible();

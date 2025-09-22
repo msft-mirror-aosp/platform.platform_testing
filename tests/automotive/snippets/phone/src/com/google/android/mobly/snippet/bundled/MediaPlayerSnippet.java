@@ -158,6 +158,11 @@ public class MediaPlayerSnippet implements Snippet {
     public boolean isPlaylistIconVisible() {
         return mAutoMediaHelper.get().isPlaylistIconVisible();
     }
+    /** click on continue button */
+    @Rpc(description = "click on Continue button on Allow contacts pop up")
+    public void clickContactsContinueButton() {
+        mAutoMediaHelper.get().clickContactsContinueButton();
+    }
 
     @Rpc(description = "Click on PLaylist icon")
     public void clickOnPlaylistIcon() {

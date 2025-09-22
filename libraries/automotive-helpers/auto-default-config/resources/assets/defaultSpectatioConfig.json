@@ -881,6 +881,10 @@
       "TYPE": "TEXT",
       "VALUE": "Continue"
     },
+    "CONTACTS_ALLOW_CONTINUE_BUTTON": {
+      "TYPE": "TEXT",
+      "VALUE": "Continue"
+    },
     "LOCK_SCREEN_CONFIRM_BUTTON": {
       "TYPE": "TEXT",
       "VALUE": "Confirm"
