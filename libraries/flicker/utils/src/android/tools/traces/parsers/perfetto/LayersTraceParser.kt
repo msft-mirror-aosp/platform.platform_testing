@@ -97,14 +97,14 @@ class LayersTraceParser(
     ): LayerTraceEntry {
         val snapshotArgs = Args.build(snapshotRows)
         val displays = snapshotArgs.getChildren("displays")?.map { newDisplay(it) } ?: emptyList()
+        val excludesCompositionState =
+            snapshotArgs.getChild("excludes_composition_state")?.getBoolean() ?: false
 
         val idAndLayers =
             layersRows
-                .groupBy { it["layer_row_id"].toString() }
+                .groupBy { it["layer_id"].toString() }
                 .map { (layerId, layerRows) ->
-                    val args = Args.build(layerRows)
-                    val isVisible = layerRows[0]["is_visible"] == 1L
-                    Pair(layerId, newLayer(args, isVisible))
+                    Pair(layerId, newLayer(Args.build(layerRows), excludesCompositionState))
                 }
                 .toMutableList()
         idAndLayers.sortBy { it.first.toLong() }
@@ -128,48 +128,40 @@ class LayersTraceParser(
     companion object {
         private fun getSqlQuerySnapshots(): String {
             return """
-                       SELECT
-                           sfs.id AS snapshot_id,
-                           sfs.ts as ts,
-                           args.key as key,
-                           args.display_value as value,
-                           args.value_type as value_type
-                       FROM surfaceflinger_layers_snapshot AS sfs
-                       INNER JOIN args ON sfs.arg_set_id = args.arg_set_id;
-                   """
-                       .trimIndent()
+                SELECT
+                    sfs.id AS snapshot_id,
+                    sfs.ts as ts,
+                    args.key as key,
+                    args.display_value as value,
+                    args.value_type as value_type
+                FROM surfaceflinger_layers_snapshot AS sfs
+                INNER JOIN args ON sfs.arg_set_id = args.arg_set_id;
+            """
+                .trimIndent()
         }
 
         private fun getSqlQueryLayers(snapshotId: Long): String {
             return """
-                       SELECT
-                           sfl.snapshot_id,
-                           sfl.id as layer_row_id,
-                           sfl.is_visible,
-                           args.key as key,
-                           args.display_value as value,
-                           args.value_type
-                       FROM
-                           surfaceflinger_layer as sfl
-                       INNER JOIN args ON sfl.arg_set_id = args.arg_set_id
-                       WHERE snapshot_id = $snapshotId;
-                   """
-                       .trimIndent()
+                SELECT
+                    sfl.snapshot_id,
+                    sfl.id as layer_id,
+                    args.key as key,
+                    args.display_value as value,
+                    args.value_type
+                FROM
+                    surfaceflinger_layer as sfl
+                INNER JOIN args ON sfl.arg_set_id = args.arg_set_id
+                WHERE snapshot_id = $snapshotId;
+            """
+                .trimIndent()
         }
 
-        private fun newLayer(layer: Args, isVisible: Boolean): Layer {
+        private fun newLayer(layer: Args, excludesCompositionState: Boolean): Layer {
             // Differentiate between the cases when there's no HWC data on
             // the trace, and when the visible region is actually empty
             val activeBuffer = newActiveBuffer(layer.getChild("active_buffer"))
             val visibleRegion = newRegion(layer.getChild("visible_region")) ?: Region()
             val crop = newCropRect(layer.getChild("crop"))
-            val visibilityReason =
-                (layer.getChildren("visibility_reason")?.map { it -> it.getString() })
-                    ?: emptyList<String>() as List<String>
-            val occludedBy =
-                (layer.getChildren("occluded_by")?.map { it -> it.getInt() })
-                    ?: emptyList<Int>() as List<Int>
-
             return Layer.from(
                 layer.getChild("name")?.getString() ?: "",
                 layer.getChild("id")?.getInt() ?: 0,
@@ -180,6 +172,7 @@ class LayersTraceParser(
                 layer.getChild("flags")?.getInt() ?: 0,
                 newRectF(layer.getChild("bounds")),
                 newColor(layer.getChild("color")),
+                layer.getChild("is_opaque")?.getBoolean() ?: false,
                 layer.getChild("shadow_radius")?.getFloat() ?: 0f,
                 layer.getChild("corner_radius")?.getFloat() ?: 0f,
                 newRectF(layer.getChild("screen_bounds")),
@@ -193,9 +186,7 @@ class LayersTraceParser(
                 layer.getChild("is_relative_of")?.getBoolean() ?: false,
                 layer.getChild("z_order_relative_of")?.getInt() ?: 0,
                 layer.getChild("layer_stack")?.getInt() ?: 0,
-                isVisible,
-                visibilityReason,
-                occludedBy,
+                excludesCompositionState,
             )
         }
 

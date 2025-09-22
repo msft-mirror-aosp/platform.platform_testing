@@ -40,11 +40,13 @@ class MockLayerBuilder(private val name: String) {
     private var isVisible = true
     private var absoluteBounds: Rect? = null
     private var zIndex = 0
+    private var isOpaque = true
 
     fun addChild(layer: MockLayerBuilder): MockLayerBuilder = apply { this.children.add(layer) }
 
     fun setContainerLayer(): MockLayerBuilder = apply {
         this.type = "ContainerLayer"
+        this.isOpaque = false
         this.isVisible = false
     }
 
@@ -76,6 +78,7 @@ class MockLayerBuilder(private val name: String) {
                 flags = if (isVisible) 0 else Flag.HIDDEN.value,
                 bounds = absoluteBounds.toRectF(),
                 color = defaultColor(),
+                isOpaque = isVisible && isOpaque,
                 shadowRadius = 0f,
                 cornerRadius = 0f,
                 screenBounds = absoluteBounds.toRectF(),
@@ -84,14 +87,12 @@ class MockLayerBuilder(private val name: String) {
                 effectiveScalingMode = 0,
                 bufferTransform = transform,
                 hwcCompositionType = HwcCompositionType.HWC_TYPE_UNSPECIFIED,
-                backgroundBlurRadius = 0,
                 crop = absoluteBounds.toRectF(),
+                backgroundBlurRadius = 0,
                 isRelativeOf = false,
                 zOrderRelativeOfId = -1,
                 stackId = 0,
-                isVisible = isVisible,
-                visibilityReason = emptyList<String>(),
-                occludedBy = emptyList<Int>(),
+                excludesCompositionState = false,
             )
 
         val layers = mutableListOf<Layer>()

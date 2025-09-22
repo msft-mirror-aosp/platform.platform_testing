@@ -77,13 +77,6 @@ interface ILayerSubject<LayerSubjectType, RegionSubjectType> {
     fun isInvisible(componentMatcher: IComponentMatcher, mustExist: Boolean): LayerSubjectType
 
     /**
-     * Asserts that a [Layer] matching [componentMatcher] is invisible due to occlusion only.
-     *
-     * @param componentMatcher Components to search
-     */
-    fun isOccluded(componentMatcher: IComponentMatcher): LayerSubjectType
-
-    /**
      * Asserts that the entry contains a visible splash screen [Layer] for a [layer] matching
      * [componentMatcher]
      *
