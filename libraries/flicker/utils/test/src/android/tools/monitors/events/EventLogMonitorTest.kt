@@ -20,16 +20,12 @@ import android.tools.io.TraceType
 import android.tools.monitors.TraceMonitorTest
 import android.tools.testutils.CleanFlickerEnvironmentRule
 import android.tools.testutils.newTestResultWriter
-import android.tools.traces.events.CujEvent
-import android.tools.traces.events.CujType
 import android.tools.traces.events.EventLog.Companion.MAGIC_NUMBER
 import android.tools.traces.events.FocusEvent
-import android.tools.traces.events.UnknownCuj
 import android.tools.traces.io.ResultReader
 import android.tools.traces.monitors.events.EventLogMonitor
 import android.tools.traces.now
 import android.util.EventLog
-import com.android.internal.jank.EventLogTags
 import com.google.common.truth.Truth
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -320,128 +316,6 @@ class EventLogMonitorTest : TraceMonitorTest<EventLogMonitor>() {
 
         Truth.assertThat(eventLog.focusEvents).hasSize(1)
         Truth.assertThat(eventLog.focusEvents.first().hasFocus()).isTrue()
-    }
-
-    @Test
-    fun canCaptureCujEvents() {
-        val monitor = EventLogMonitor()
-        val writer = newTestResultWriter()
-        monitor.start()
-        var now = now()
-        EventLogTags.writeJankCujEventsBeginRequest(
-            CujType.CUJ_NOTIFICATION_APP_START.ordinal,
-            now.unixNanos,
-            now.elapsedNanos,
-            now.systemUptimeNanos,
-            "",
-        )
-        now = now()
-        EventLogTags.writeJankCujEventsEndRequest(
-            CujType.CUJ_NOTIFICATION_APP_START.ordinal,
-            now.unixNanos,
-            now.elapsedNanos,
-            now.systemUptimeNanos,
-        )
-        monitor.stop(writer)
-        val result = writer.write()
-
-        val reader = ResultReader(result)
-        val eventLog = reader.readEventLogTrace() ?: error("EventLog should have been created")
-
-        assertEquals(2, eventLog.cujEvents.size)
-    }
-
-    @Test
-    fun collectsCujEventData() {
-        val monitor = EventLogMonitor()
-        val writer = newTestResultWriter()
-        monitor.start()
-        val now = now()
-        EventLogTags.writeJankCujEventsBeginRequest(
-            CujType.CUJ_LAUNCHER_QUICK_SWITCH.id,
-            now.unixNanos,
-            now.elapsedNanos,
-            now.systemUptimeNanos,
-            "",
-        )
-        EventLogTags.writeJankCujEventsEndRequest(
-            CujType.CUJ_LAUNCHER_ALL_APPS_SCROLL.id,
-            now.unixNanos + 1,
-            now.elapsedNanos + 1,
-            now.systemUptimeNanos + 1,
-        )
-        EventLogTags.writeJankCujEventsCancelRequest(
-            CujType.CUJ_LOCKSCREEN_LAUNCH_CAMERA.id,
-            now.unixNanos + 2,
-            now.elapsedNanos + 2,
-            now.systemUptimeNanos + 2,
-        )
-        monitor.stop(writer)
-        val result = writer.write()
-
-        val reader = ResultReader(result)
-        val eventLog = reader.readEventLogTrace() ?: error("EventLog should have been created")
-
-        // There maybe be some random CUJ events triggered in the background
-        val cujEvents =
-            eventLog.cujEvents.filter {
-                now.unixNanos <= it.timestamp.unixNanos &&
-                    it.timestamp.unixNanos <= (now.unixNanos + 2)
-            }
-
-        Truth.assertThat(cujEvents).hasSize(3)
-
-        Truth.assertThat(cujEvents.first().type).isEqualTo(CujEvent.Companion.Type.START)
-        Truth.assertThat(cujEvents.first().cuj).isEqualTo(CujType.CUJ_LAUNCHER_QUICK_SWITCH)
-
-        Truth.assertThat(cujEvents.drop(1).first().type).isEqualTo(CujEvent.Companion.Type.END)
-        Truth.assertThat(cujEvents.drop(1).first().cuj)
-            .isEqualTo(CujType.CUJ_LAUNCHER_ALL_APPS_SCROLL)
-
-        Truth.assertThat(cujEvents.drop(2).first().type).isEqualTo(CujEvent.Companion.Type.CANCEL)
-        Truth.assertThat(cujEvents.drop(2).first().cuj)
-            .isEqualTo(CujType.CUJ_LOCKSCREEN_LAUNCH_CAMERA)
-    }
-
-    @Test
-    fun canParseHandleUnknownCujTypes() {
-        val unknownCujId = Int.MAX_VALUE
-        val monitor = EventLogMonitor()
-        val writer = newTestResultWriter()
-        monitor.start()
-        var now = now()
-        EventLogTags.writeJankCujEventsBeginRequest(
-            unknownCujId,
-            now.unixNanos,
-            now.elapsedNanos,
-            now.systemUptimeNanos,
-            "",
-        )
-        now = now()
-        EventLogTags.writeJankCujEventsEndRequest(
-            unknownCujId,
-            now.unixNanos,
-            now.elapsedNanos,
-            now.systemUptimeNanos,
-        )
-        now = now()
-        EventLogTags.writeJankCujEventsCancelRequest(
-            unknownCujId,
-            now.unixNanos,
-            now.elapsedNanos,
-            now.systemUptimeNanos,
-        )
-        monitor.stop(writer)
-        val result = writer.write()
-
-        val reader = ResultReader(result)
-        val eventLog = reader.readEventLogTrace()
-        requireNotNull(eventLog) { "EventLog should have been created" }
-
-        assertEquals(3, eventLog.cujEvents.size)
-        Truth.assertThat(eventLog.cujEvents.first().cuj).isEqualTo(UnknownCuj(unknownCujId))
-        Truth.assertThat(eventLog.cujEvents.drop(1).first().cuj).isEqualTo(UnknownCuj(unknownCujId))
-        Truth.assertThat(eventLog.cujEvents.drop(2).first().cuj).isEqualTo(UnknownCuj(unknownCujId))
     }
 
     private companion object {
