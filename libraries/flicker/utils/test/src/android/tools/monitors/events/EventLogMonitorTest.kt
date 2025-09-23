@@ -27,8 +27,11 @@ import android.tools.traces.monitors.events.EventLogMonitor
 import android.tools.traces.now
 import android.util.EventLog
 import com.google.common.truth.Truth
+import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
+import org.junit.Assume.assumeFalse
+import org.junit.Before
 import org.junit.ClassRule
 import org.junit.Test
 
@@ -45,6 +48,19 @@ class EventLogMonitorTest : TraceMonitorTest<EventLogMonitor>() {
         Truth.assertThat(traceData.size).isAtLeast(MAGIC_NUMBER.toByteArray().size)
         Truth.assertThat(traceData.slice(0 until MAGIC_NUMBER.toByteArray().size))
             .isEqualTo(MAGIC_NUMBER.toByteArray().asList())
+    }
+
+    @Before
+    override fun before() {
+        assumeFalse(android.tracing.Flags.nativeProtoLogging())
+        super.before()
+    }
+
+    @After
+    override fun teardown() {
+        if (!android.tracing.Flags.nativeProtoLogging()) {
+            super.teardown()
+        }
     }
 
     @Test
