@@ -26,11 +26,11 @@ import android.tools.traces.events.CujType
 val OthersScreenOffShowAod =
     FlickerConfigEntry(
         enabled = false,
-        scenarioId = ScenarioId("SCREEN_OFF_AOD"),
+        scenarioId = ScenarioId("KEYGUARD_TRANSITION_GONE_TO_AOD"),
         assertions = AssertionTemplates.COMMON_ASSERTIONS,
         extractor =
             TaggedScenarioExtractorBuilder()
-                .setTargetTag(CujType.CUJ_SCREEN_OFF_SHOW_AOD)
+                .setTargetTag(CujType.CUJ_KEYGUARD_TRANSITION_GONE_TO_AOD)
                 .setTransitionMatcher(
                     TaggedCujTransitionMatcher(associatedTransitionRequired = false)
                 )
