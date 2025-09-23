@@ -99,8 +99,8 @@ class LockScreen internal constructor(val displayId: Int = DEFAULT_DISPLAY) {
     /** Uses home key to get to the unlocked state, skipping potentially flaky gesture. */
     fun unlockDirectly() {
         uiDevice.pressMenu()
-        lockScreenSelector.assertInvisible { "Lockscreen still visible after swiping up." }
-        assertWithMessage("Device is still locked after swiping up")
+        lockScreenSelector.assertInvisible { "Lockscreen still visible after pressing menu key." }
+        assertWithMessage("Device is still locked after pressing menu key")
             .that(LockscreenController.get().isDeviceLocked)
             .isFalse()
 
