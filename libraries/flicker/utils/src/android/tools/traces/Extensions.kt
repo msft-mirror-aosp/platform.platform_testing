@@ -22,6 +22,7 @@ import android.os.SystemClock
 import android.tools.SECOND_AS_NANOSECONDS
 import android.tools.Timestamp
 import android.tools.Timestamps
+import android.tools.traces.parsers.perfetto.TraceProcessorSession
 import androidx.test.platform.app.InstrumentationRegistry
 import java.io.File
 import java.time.Instant
@@ -49,3 +50,19 @@ fun File.deleteIfExists(): Boolean =
     } else {
         false
     }
+
+fun Long.toTimestamp(input: TraceProcessorSession): Timestamp? {
+    if (this == 0L) {
+        return null
+    }
+
+    val ts = this
+    return input.query("SELECT TO_REALTIME($ts) as real_ts, TO_MONOTONIC($ts) as monotonic_ts") {
+        require(it.size == 1)
+        Timestamps.from(
+            unixNanos = it[0]["real_ts"] as Long,
+            systemUptimeNanos = it[0]["monotonic_ts"] as Long,
+            elapsedNanos = this,
+        )
+    }
+}
