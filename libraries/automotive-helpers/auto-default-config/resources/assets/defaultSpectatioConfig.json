@@ -1563,6 +1563,26 @@
       "VALUE": "minimized_control_bar_layout",
       "PACKAGE": "com.android.car.media"
     },
+    "MEDIA_CARD_SONG_AUTHOR_NAME": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "subtitle"
+    },
+    "MEDIA_CARD_PREVIOUS_BUTTON": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "playback_action_id1"
+    },
+    "MEDIA_CARD_PAUSE_BUTTON": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "play_pause_button"
+    },
+    "MEDIA_CARD_NEXT_BUTTON": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "playback_action_id2"
+    },
+    "PLAYS_LIST_SLIDER": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "media_card_panel_handlebar"
+    },
     "ARTIST_TITLE": {
       "TYPE": "RESOURCE_ID",
       "VALUE": "subtitle",
@@ -1685,6 +1705,18 @@
     "RADIO_APP_TITLE": {
       "TYPE": "RESOURCE_ID",
       "VALUE": "car_ui_toolbar_logo"
+    },
+    "MEDIA_CARD_PLAY_LIST_BUTTON": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "queue_button"
+    },
+    "MEDIA_CARD_QUEUE_LIST": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "queue_list"
+    },
+    "MEDIA_CARD_SONG": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "queue_list_item_title"
     },
     "MOW_PLAYING_LABEL": {
       "TYPE": "TEXT",
