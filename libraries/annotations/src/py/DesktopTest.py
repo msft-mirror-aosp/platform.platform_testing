@@ -23,14 +23,23 @@ class DesktopTest(object):
   Args:
       requirements: the list of Desktop requirements.
       cujs: the list of Desktop cujs.
+      manual: The list of manual tests that this test case provides full or
+        partial coverage for. This is used to track the automation progress of
+        manual tests.
 
   Example:
       @DesktopTest(requirements=['D-0-1', 'D-0-2'], cujs=['cuj-1', 'cuj-2'])
   """
 
-  def __init__(self, requirements: List[str] = [], cujs: List[str] = []):
+  def __init__(
+      self,
+      requirements: List[str] = [],
+      cujs: List[str] = [],
+      manual: List[str] = [],
+  ):
     self._requirements = requirements
     self._cujs = cujs
+    self._manual = manual
 
   def __call__(self, func):
     return func
