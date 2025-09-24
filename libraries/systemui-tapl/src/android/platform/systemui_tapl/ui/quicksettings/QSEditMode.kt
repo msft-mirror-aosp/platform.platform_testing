@@ -29,7 +29,9 @@ import androidx.test.uiautomator.By
 import androidx.test.uiautomator.BySelector
 import androidx.test.uiautomator.UiObject2
 import java.time.Duration
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertTrue
 
 /** System UI test automation object representing QS edit mode. */
 class QSEditMode(val displayId: Int = DEFAULT_DISPLAY) {
@@ -85,6 +87,29 @@ class QSEditMode(val displayId: Int = DEFAULT_DISPLAY) {
         }
     }
 
+    /**
+     * Clicks on the top app bar Remove button
+     *
+     * Throws an [AssertionError] if the button isn't clickable
+     */
+    fun clickOnRemoveButton() {
+        with(waitForObj(REMOVE_BUTTON_SELECTOR)) {
+            assertTrue(isClickable)
+            click()
+        }
+    }
+
+    /**
+     * Asserts the top app bar Remove button's state.
+     *
+     * The Remove button is disabled if there's no selected tile or if the selection is not
+     * removable
+     */
+    fun assertRemoveButtonState(isEnabled: Boolean) {
+        val uiObject = waitForObj(REMOVE_BUTTON_SELECTOR)
+        assertEquals(isEnabled, uiObject.isEnabled)
+    }
+
     private fun UiObject2.scrollUntilFound(selector: BySelector, scrollingUp: Boolean): UiObject2? {
         val offset = visibleBounds.height() * .25f * if (scrollingUp) -1 else 1
         (0 until 10).forEach { _ ->
@@ -112,5 +137,8 @@ class QSEditMode(val displayId: Int = DEFAULT_DISPLAY) {
 
         // https://hsv.googleplex.com/4784770226585600?node=95
         private val BACK_ARROW_SELECTOR = By.desc("Navigate up")
+
+        // https://hsv.googleplex.com/4623996246032384?node=92
+        private val REMOVE_BUTTON_SELECTOR = By.hasChild(By.text("Remove"))
     }
 }
