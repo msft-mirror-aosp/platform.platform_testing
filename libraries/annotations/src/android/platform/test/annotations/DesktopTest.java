@@ -28,4 +28,6 @@ public @interface DesktopTest {
     String[] requirements() default {""};
 
     String[] cujs() default {""};
+
+    String[] manual() default {""};
 }
