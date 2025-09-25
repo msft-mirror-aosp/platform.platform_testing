@@ -14,9 +14,6 @@
       <option name="dep-module" value="mobly==1.13" />
       <!-- Required for Parameterization -->
       <option name="dep-module" value="absl-py==2.1.0" />
-      <!-- Required for test services -->
-      <option name="dep-module" value="grpcio==1.74.0"/>
-      <option name="dep-module" value="protobuf" />
     </target_preparer>
 
     <!-- ADB Root -->
