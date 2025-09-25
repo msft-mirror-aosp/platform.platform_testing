@@ -368,6 +368,13 @@ public interface IAutoMediaHelper extends IAppHelper, Scrollable {
     boolean isRadioAppLaunched();
 
     /**
+     * Setup expectations: Radio is open
+     *
+     * <p>This method returns the Radio station name
+     */
+    String getRadioStationName();
+
+    /**
      * Setup expectations: Media app is open
      *
      * <p>This method is used to navigate through different media categories
@@ -380,6 +387,27 @@ public interface IAutoMediaHelper extends IAppHelper, Scrollable {
      * <p>This method is used to navigate through different media categories and play song
      */
     boolean checkPlayingTrackFromMediaAppCategories(String automotiveconfig, String track);
+
+    /**
+     * Setup expectations: Media card is open
+     *
+     * <p>This method is used to click Media card thumbnail
+     */
+    void clickMediaCardThumbnail();
+
+    /**
+     * Setup expectations: Media card is present
+     *
+     * <p>This method checks Media App opens after Media card thumbnail is clicked
+     */
+    boolean isMediaAppOpenAndTrackPlaying(String track);
+
+    /**
+     * Setup expectations: on home screen.
+     *
+     * <p>This method opens Radio app and play a Radio station
+     */
+    void openRadioAppAndPlayGivenStation(String media);
 
     /**
      * Setup expectations: Media app is open
