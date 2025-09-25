@@ -20,7 +20,8 @@ import android.tools.Timestamp
 
 /** Builder for LayerTraceEntries */
 class LayerTraceEntryBuilder {
-    private var elapsedTimestamp: Long = 0L
+    private var bootTimestamp: Long = 0L
+    private var monotonicTimestamp: Long = 0L
     private var realTimestamp: Long? = null
     private var orphanLayerCallback: ((Layer) -> Boolean)? = null
     private val orphans = mutableListOf<Layer>()
@@ -46,19 +47,17 @@ class LayerTraceEntryBuilder {
         this.displays = displays
     }
 
-    fun setElapsedTimestamp(timestamp: Long): LayerTraceEntryBuilder = apply {
-        this.elapsedTimestamp = timestamp
+    fun setBootTimestamp(timestamp: Long): LayerTraceEntryBuilder = apply {
+        this.bootTimestamp = timestamp
     }
 
-    fun setRealToElapsedTimeOffsetNs(realToElapsedTimeOffsetNs: Long?): LayerTraceEntryBuilder =
-        apply {
-            this.realTimestamp =
-                if (realToElapsedTimeOffsetNs != null && realToElapsedTimeOffsetNs != 0L) {
-                    realToElapsedTimeOffsetNs + elapsedTimestamp
-                } else {
-                    null
-                }
-        }
+    fun setMonotonicTimestamp(timestamp: Long): LayerTraceEntryBuilder = apply {
+        this.monotonicTimestamp = timestamp
+    }
+
+    fun setRealTimestamp(timestamp: Long): LayerTraceEntryBuilder = apply {
+        this.realTimestamp = timestamp
+    }
 
     fun setLayers(layers: Collection<Layer>): LayerTraceEntryBuilder = apply {
         val result = mutableMapOf<Int, Layer>()
@@ -225,7 +224,8 @@ class LayerTraceEntryBuilder {
         notifyOrphansLayers()
 
         return LayerTraceEntry(
-            elapsedTimestamp,
+            bootTimestamp,
+            monotonicTimestamp,
             realTimestamp,
             hwcBlob,
             where,

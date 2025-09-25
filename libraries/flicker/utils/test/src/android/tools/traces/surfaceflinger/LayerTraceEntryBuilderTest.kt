@@ -42,16 +42,18 @@ class LayerTraceEntryBuilderTest {
     fun createsEntryWithCorrectClockTime() {
         val builder =
             LayerTraceEntryBuilder()
-                .setElapsedTimestamp(100)
+                .setBootTimestamp(110)
+                .setMonotonicTimestamp(100)
+                .setRealTimestamp(600)
                 .setLayers(emptyList())
                 .setDisplays(emptyList())
                 .setVSyncId(123)
-                .setRealToElapsedTimeOffsetNs(500)
         val entry = builder.build()
-        Truth.assertThat(entry.elapsedTimestamp).isEqualTo(100)
+        Truth.assertThat(entry.bootTimestamp).isEqualTo(110)
+        Truth.assertThat(entry.monotonicTimestamp).isEqualTo(100)
         Truth.assertThat(entry.clockTimestamp).isEqualTo(600)
 
-        Truth.assertThat(entry.timestamp.elapsedNanos).isEqualTo(Timestamps.empty().elapsedNanos)
+        Truth.assertThat(entry.timestamp.elapsedNanos).isEqualTo(110)
         Truth.assertThat(entry.timestamp.systemUptimeNanos).isEqualTo(100)
         Truth.assertThat(entry.timestamp.unixNanos).isEqualTo(600)
     }
@@ -60,15 +62,17 @@ class LayerTraceEntryBuilderTest {
     fun supportsMissingRealToElapsedTimeOffsetNs() {
         val builder =
             LayerTraceEntryBuilder()
-                .setElapsedTimestamp(100)
+                .setBootTimestamp(110)
+                .setMonotonicTimestamp(100)
                 .setLayers(emptyList())
                 .setDisplays(emptyList())
                 .setVSyncId(123)
         val entry = builder.build()
-        Truth.assertThat(entry.elapsedTimestamp).isEqualTo(100)
+        Truth.assertThat(entry.bootTimestamp).isEqualTo(110)
+        Truth.assertThat(entry.monotonicTimestamp).isEqualTo(100)
         Truth.assertThat(entry.clockTimestamp).isEqualTo(null)
 
-        Truth.assertThat(entry.timestamp.elapsedNanos).isEqualTo(Timestamps.empty().elapsedNanos)
+        Truth.assertThat(entry.timestamp.elapsedNanos).isEqualTo(110)
         Truth.assertThat(entry.timestamp.systemUptimeNanos).isEqualTo(100)
         Truth.assertThat(entry.timestamp.unixNanos).isEqualTo(Timestamps.empty().unixNanos)
     }
@@ -124,7 +128,8 @@ class LayerTraceEntryBuilderTest {
 
         val builder =
             LayerTraceEntryBuilder()
-                .setElapsedTimestamp(100)
+                .setBootTimestamp(100)
+                .setMonotonicTimestamp(100)
                 .setLayers(layers)
                 .setDisplays(displays)
                 .setVSyncId(123)

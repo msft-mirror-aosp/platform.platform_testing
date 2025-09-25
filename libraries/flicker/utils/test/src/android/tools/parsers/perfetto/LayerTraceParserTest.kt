@@ -42,7 +42,7 @@ class LayerTraceParserTest {
             }
         Truth.assertWithMessage("Trace").that(trace.entries).isNotEmpty()
         Truth.assertWithMessage("Trace contains entry")
-            .that(trace.entries.map { it.elapsedTimestamp })
+            .that(trace.entries.map { it.monotonicTimestamp })
             .contains(1700382131522L)
     }
 

@@ -174,7 +174,8 @@ class LayersTraceEntryTest {
     fun usesRealTimestampWhenAvailableAndFallsbackOnElapsedTimestamp() {
         var entry =
             LayerTraceEntry(
-                elapsedTimestamp = 100,
+                bootTimestamp = 110,
+                monotonicTimestamp = 100,
                 clockTimestamp = 600,
                 hwcBlob = "",
                 where = "",
@@ -182,13 +183,14 @@ class LayersTraceEntryTest {
                 vSyncId = 123,
                 _rootLayers = emptyList(),
             )
-        Truth.assertThat(entry.timestamp.elapsedNanos).isEqualTo(Timestamps.empty().elapsedNanos)
+        Truth.assertThat(entry.timestamp.elapsedNanos).isEqualTo(110)
         Truth.assertThat(entry.timestamp.systemUptimeNanos).isEqualTo(100)
         Truth.assertThat(entry.timestamp.unixNanos).isEqualTo(600)
 
         entry =
             LayerTraceEntry(
-                elapsedTimestamp = 100,
+                bootTimestamp = 100,
+                monotonicTimestamp = 100,
                 clockTimestamp = null,
                 hwcBlob = "",
                 where = "",

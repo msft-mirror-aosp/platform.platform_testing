@@ -333,10 +333,10 @@ constructor(val trace: LayersTrace, override val reader: Reader? = null) :
     @JvmOverloads
     fun getEntryBySystemUpTime(
         timestamp: Long,
-        byElapsedTimestamp: Boolean = false,
+        byMonotonicTimestamp: Boolean = false,
     ): LayerTraceEntrySubject {
-        return if (byElapsedTimestamp) {
-            subjects.first { it.entry.elapsedTimestamp == timestamp }
+        return if (byMonotonicTimestamp) {
+            subjects.first { it.entry.monotonicTimestamp == timestamp }
         } else {
             subjects.first { it.entry.timestamp.systemUptimeNanos == timestamp }
         }
