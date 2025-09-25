@@ -111,7 +111,7 @@ class QSEditTile(val tile: QSEditTileSpec, val format: Format, val selected: Boo
             if (format == Format.LARGE) {
                 uiObject.visibleCenter
             } else {
-                Point(centerRight.x + uiObject.visibleBounds.width(), centerRight.y)
+                Point(centerRight.x + uiObject.visibleBounds.width() * 2, centerRight.y)
             }
         BetterSwipe.swipe(start = centerRight, end = end, interpolator = DecelerateInterpolator())
     }
