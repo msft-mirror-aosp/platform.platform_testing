@@ -278,7 +278,7 @@ class PerfettoTraceMonitorTest : TraceMonitorTest<PerfettoTraceMonitor>() {
 
         TraceProcessorSession.loadPerfettoTrace(traceData) { session ->
             val sql =
-                "SELECT RUN_METRIC('android/android_jank_cuj.sql');\n" +
+                "SELECT RUN_METRIC('android/jank/cujs.sql');\n" +
                     "SELECT * FROM android_jank_cuj;"
             session.query(sql) { rows ->
                 require(rows.isNotEmpty()) { "Trace should have at least 1 CUJ" }
