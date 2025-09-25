@@ -100,6 +100,11 @@ constructor(
         findObject(By.res(packageName, MANAGE_WINDOWS_ID)).also { it.click() }
     }
 
+    /** Clicks new window in the menu to open a new instance of the app in a new window. */
+    fun clickNewWindowInMenu() {
+        findObject(By.res(packageName,NEW_WINDOW_ID)).also { it.click() }
+    }
+
     /** Clears the Chrome application's storage and data. */
     fun clearStorage() {
         device.executeShellCommand("pm clear $packageName")
@@ -256,6 +261,7 @@ constructor(
         private const val ADD_TO_HOME_SCREEN_TEXT = "Add to Home screen"
         private const val VOICE_SEARCH_BUTTON_ID = "voice_search_button"
         private const val MANAGE_WINDOWS_ID = "manage_all_windows_menu_id"
+        private const val NEW_WINDOW_ID = "new_window_menu_id"
 
         private val WAIT_TIME_IN_MILLISECONDS = Duration.ofSeconds(3).toMillis()
         private const val MIN_WINDOW_WIDTH_FOR_TAB_TEARING_DP = 475
