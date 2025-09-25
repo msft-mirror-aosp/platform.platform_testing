@@ -242,7 +242,7 @@ class LayersTraceSubjectTest {
         val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
         val entry =
             LayersTraceSubject(trace, reader)
-                .getEntryBySystemUpTime(1700382131522L, byElapsedTimestamp = true)
+                .getEntryBySystemUpTime(1700382131522L, byMonotonicTimestamp = true)
         entry.isInvisible(TestComponents.SIMPLE_APP)
         entry.isVisible(ComponentNameMatcher.SPLASH_SCREEN)
     }

@@ -31,7 +31,8 @@ import androidx.core.graphics.toRectF
  * Java/Android functionality
  */
 class LayerTraceEntry(
-    val elapsedTimestamp: Long,
+    val bootTimestamp: Long,
+    val monotonicTimestamp: Long,
     val clockTimestamp: Long?,
     val hwcBlob: String,
     val where: String,
@@ -40,7 +41,11 @@ class LayerTraceEntry(
     _rootLayers: Collection<Layer>,
 ) : TraceEntry {
     override val timestamp =
-        Timestamps.from(systemUptimeNanos = elapsedTimestamp, unixNanos = clockTimestamp)
+        Timestamps.from(
+            elapsedNanos = bootTimestamp,
+            systemUptimeNanos = monotonicTimestamp,
+            unixNanos = clockTimestamp,
+        )
 
     val stableId: String = this::class.simpleName ?: error("Unable to determine class")
 

@@ -58,9 +58,6 @@ class LayersTraceParser(
     override fun shouldParseEntry(entry: LayerTraceEntry) = true
 
     override fun getEntries(input: TraceProcessorSession): List<LayerTraceEntry> {
-        val realToMonotonicTimeOffsetNs =
-            queryRealToMonotonicTimeOffsetNs(input, "surfaceflinger_layers_snapshot")
-
         return input.query(getSqlQuerySnapshots()) { snapshotsRows ->
             val traceEntries = mutableListOf<LayerTraceEntry>()
             val snapshotGroups = snapshotsRows.groupBy { it["snapshot_id"] }
@@ -73,8 +70,7 @@ class LayersTraceParser(
                         }
                     withTracing("build entry") {
                         val snapshotRows = snapshotGroups[snapshotId]!!
-                        val entry =
-                            buildTraceEntry(snapshotRows, layerRows, realToMonotonicTimeOffsetNs)
+                        val entry = buildTraceEntry(snapshotRows, layerRows)
                         traceEntries.add(entry)
                     }
                 }
@@ -90,11 +86,7 @@ class LayersTraceParser(
 
     override fun doParseEntry(entry: LayerTraceEntry) = entry
 
-    private fun buildTraceEntry(
-        snapshotRows: List<Row>,
-        layersRows: List<Row>,
-        realToMonotonicTimeOffsetNs: Long,
-    ): LayerTraceEntry {
+    private fun buildTraceEntry(snapshotRows: List<Row>, layersRows: List<Row>): LayerTraceEntry {
         val snapshotArgs = Args.build(snapshotRows)
         val displays = snapshotArgs.getChildren("displays")?.map { newDisplay(it) } ?: emptyList()
         val excludesCompositionState =
@@ -111,33 +103,43 @@ class LayersTraceParser(
 
         val layers = idAndLayers.map { it.second }
 
-        return LayerTraceEntryBuilder()
-            .setElapsedTimestamp(snapshotArgs.getChild("elapsed_realtime_nanos")?.getLong() ?: 0L)
-            .setRealToElapsedTimeOffsetNs(realToMonotonicTimeOffsetNs)
-            .setLayers(layers)
-            .setDisplays(displays)
-            .setVSyncId(snapshotArgs.getChild("vsync_id")?.getLong() ?: 0L)
-            .setHwcBlob(snapshotArgs.getChild("hwc_blob")?.getString() ?: "")
-            .setWhere(snapshotArgs.getChild("where")?.getString() ?: "")
-            .setOrphanLayerCallback(orphanLayerCallback)
-            .ignoreLayersStackMatchNoDisplay(ignoreLayersStackMatchNoDisplay)
-            .ignoreVirtualDisplay(ignoreLayersInVirtualDisplay)
-            .build()
+        val firstRow = snapshotRows.first()
+        val bootTime = firstRow["boot_ts"].toString().toLong()
+        val monotonicTime = firstRow["monotonic_ts"].toString().toLong()
+        val realtimeTime = firstRow["realtime_ts"].toString().toLong()
+
+        val builder =
+            LayerTraceEntryBuilder()
+                .setBootTimestamp(bootTime)
+                .setMonotonicTimestamp(monotonicTime)
+                .setRealTimestamp(realtimeTime)
+                .setLayers(layers)
+                .setDisplays(displays)
+                .setVSyncId(snapshotArgs.getChild("vsync_id")?.getLong() ?: 0L)
+                .setHwcBlob(snapshotArgs.getChild("hwc_blob")?.getString() ?: "")
+                .setWhere(snapshotArgs.getChild("where")?.getString() ?: "")
+                .setOrphanLayerCallback(orphanLayerCallback)
+                .ignoreLayersStackMatchNoDisplay(ignoreLayersStackMatchNoDisplay)
+                .ignoreVirtualDisplay(ignoreLayersInVirtualDisplay)
+
+        return builder.build()
     }
 
     companion object {
         private fun getSqlQuerySnapshots(): String {
             return """
-                SELECT
-                    sfs.id AS snapshot_id,
-                    sfs.ts as ts,
-                    args.key as key,
-                    args.display_value as value,
-                    args.value_type as value_type
-                FROM surfaceflinger_layers_snapshot AS sfs
-                INNER JOIN args ON sfs.arg_set_id = args.arg_set_id;
-            """
-                .trimIndent()
+                       SELECT
+                           sfs.id AS snapshot_id,
+                           sfs.ts as boot_ts,
+                           TO_MONOTONIC(sfs.ts) as monotonic_ts,
+                           TO_REALTIME(sfs.ts) as realtime_ts,
+                           args.key as key,
+                           args.display_value as value,
+                           args.value_type as value_type
+                       FROM surfaceflinger_layers_snapshot AS sfs
+                       INNER JOIN args ON sfs.arg_set_id = args.arg_set_id;
+                   """
+                       .trimIndent()
         }
 
         private fun getSqlQueryLayers(snapshotId: Long): String {
