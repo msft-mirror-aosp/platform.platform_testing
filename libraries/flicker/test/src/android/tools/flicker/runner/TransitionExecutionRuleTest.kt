@@ -130,7 +130,7 @@ class TransitionExecutionRuleTest {
         val layerStateValidTag2 =
             reader.readLayersDump(VALID_TAG_2) ?: error("Couldn't parse SF state for $VALID_TAG_2")
 
-        Truth.assertWithMessage("File count").that(reader.countFiles()).isEqualTo(4)
+        Truth.assertWithMessage("File count").that(reader.countFiles()).isEqualTo(2)
         Truth.assertWithMessage("WM State - $VALID_TAG_1")
             .that(wmStateValidTag1.entries)
             .isNotEmpty()

@@ -16,6 +16,7 @@
 
 package android.tools.traces.parsers
 
+import android.tools.io.DumpType
 import android.tools.traces.DeviceStateDump
 import android.tools.traces.NullableDeviceStateDump
 import android.tools.traces.parsers.perfetto.LayersTraceParser
@@ -33,8 +34,7 @@ import android.tools.withTracing
  */
 class DeviceDumpParser {
     companion object {
-        var lastWmTraceData = ByteArray(0)
-        var lastLayersTraceData = ByteArray(0)
+        var lastPerfettoTraceData = ByteArray(0)
 
         /**
          * Creates a device state dump containing the [WindowManagerTrace] and [LayersTrace]
@@ -51,29 +51,19 @@ class DeviceDumpParser {
          */
         @JvmStatic
         fun fromNullableDump(
-            wmTraceData: ByteArray,
-            layersTraceData: ByteArray,
+            perfettoTrace: ByteArray,
+            dumpTypes: Array<DumpType>,
             clearCacheAfterParsing: Boolean,
         ): NullableDeviceStateDump {
             return withTracing("fromNullableDump") {
-                    val hasSfDump = layersTraceData.isNotEmpty()
-                    val hasWmDump = wmTraceData.isNotEmpty()
-
-                    // layersTraceData and wmTraceData correspond to the same perfetto trace file
-                    val perfettoTrace =
-                        if (hasSfDump) {
-                            layersTraceData
-                        } else if (hasWmDump) {
-                            wmTraceData
-                        } else {
-                            null
-                        }
+                    val hasSfDump = dumpTypes.contains(DumpType.SF)
+                    val hasWmDump = dumpTypes.contains(DumpType.WM)
 
                     var wmState: WindowManagerState? = null
                     var layerState: LayerTraceEntry? = null
 
-                    perfettoTrace?.let {
-                        TraceProcessorSession.loadPerfettoTrace(it) { session ->
+                    if (perfettoTrace.isNotEmpty()) {
+                        TraceProcessorSession.loadPerfettoTrace(perfettoTrace) { session ->
                             if (hasSfDump) {
                                 layerState =
                                     LayersTraceParser()
@@ -94,31 +84,24 @@ class DeviceDumpParser {
 
                     NullableDeviceStateDump(wmState = wmState, layerState = layerState)
                 }
-                .also {
-                    lastWmTraceData = wmTraceData
-                    lastLayersTraceData = layersTraceData
-                }
+                .also { lastPerfettoTraceData = perfettoTrace }
         }
 
         /** See [fromNullableDump] */
         @JvmStatic
         fun fromDump(
-            wmTraceData: ByteArray,
-            layersTraceData: ByteArray,
+            perfettoTrace: ByteArray,
+            dumpTypes: Array<DumpType>,
             clearCacheAfterParsing: Boolean,
         ): DeviceStateDump {
             return withTracing("fromDump") {
-                    val nullableDump =
-                        fromNullableDump(wmTraceData, layersTraceData, clearCacheAfterParsing)
-                    DeviceStateDump(
-                        nullableDump.wmState ?: error("WMState dump missing"),
-                        nullableDump.layerState ?: error("Layer State dump missing"),
-                    )
-                }
-                .also {
-                    lastWmTraceData = wmTraceData
-                    lastLayersTraceData = layersTraceData
-                }
+                val nullableDump =
+                    fromNullableDump(perfettoTrace, dumpTypes, clearCacheAfterParsing)
+                DeviceStateDump(
+                    nullableDump.wmState ?: error("WMState dump missing"),
+                    nullableDump.layerState ?: error("Layer State dump missing"),
+                )
+            }
         }
     }
 }

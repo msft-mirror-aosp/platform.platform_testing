@@ -107,9 +107,7 @@ private fun getCurrentWindowManagerState() = doBinderDump("window")
  *
  * @param dumpTypes Flags determining which types of traces should be included in the dump
  */
-fun getCurrentState(
-    vararg dumpTypes: DumpType = arrayOf(DumpType.SF, DumpType.WM)
-): Pair<ByteArray, ByteArray> {
+fun getCurrentState(vararg dumpTypes: DumpType = arrayOf(DumpType.SF, DumpType.WM)): ByteArray {
     if (dumpTypes.isEmpty()) {
         throw IllegalArgumentException("No dump specified")
     }
@@ -136,10 +134,7 @@ fun getCurrentState(
 
     reader.artifacts.forEach { it.deleteIfExists() }
 
-    val wmDump = if (requestedWmDump) perfettoTrace else ByteArray(0)
-    val sfDump = if (requestedSfDump) perfettoTrace else ByteArray(0)
-
-    return Pair(wmDump, sfDump)
+    return perfettoTrace
 }
 
 /**
@@ -155,26 +150,26 @@ fun getCurrentState(
  */
 @JvmOverloads
 fun getCurrentStateDumpNullable(
-    vararg dumpTypes: DumpType = arrayOf(DumpType.SF, DumpType.WM),
+    dumpTypes: Array<DumpType> = arrayOf(DumpType.SF, DumpType.WM),
     clearCacheAfterParsing: Boolean = true,
 ): NullableDeviceStateDump {
-    val currentStateDump = getCurrentState(*dumpTypes)
+    val trace = getCurrentState(*dumpTypes)
     return DeviceDumpParser.fromNullableDump(
-        currentStateDump.first,
-        currentStateDump.second,
+        trace,
+        dumpTypes,
         clearCacheAfterParsing = clearCacheAfterParsing,
     )
 }
 
 @JvmOverloads
 fun getCurrentStateDump(
-    vararg dumpTypes: DumpType = arrayOf(DumpType.SF, DumpType.WM),
+    dumpTypes: Array<DumpType> = arrayOf(DumpType.SF, DumpType.WM),
     clearCacheAfterParsing: Boolean = true,
 ): DeviceStateDump {
-    val currentStateDump = getCurrentState(*dumpTypes)
+    val trace = getCurrentState(*dumpTypes)
     return DeviceDumpParser.fromDump(
-        currentStateDump.first,
-        currentStateDump.second,
+        trace,
+        dumpTypes,
         clearCacheAfterParsing = clearCacheAfterParsing,
     )
 }

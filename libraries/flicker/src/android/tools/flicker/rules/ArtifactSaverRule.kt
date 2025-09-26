@@ -32,17 +32,10 @@ class ArtifactSaverRule : TestWatcher() {
         }
 
         try {
-            if (DeviceDumpParser.lastWmTraceData.isNotEmpty()) {
-                val fileName = getClassAndMethodName(description) + "_winscopeLastWmDump.winscope"
+            if (DeviceDumpParser.lastPerfettoTraceData.isNotEmpty()) {
+                val fileName = getClassAndMethodName(description) + "_winscopeLastDump.winscope"
                 val file = ArtifactSaver.artifactFile(fileName)
-                file.writeBytes(DeviceDumpParser.lastWmTraceData)
-            }
-
-            if (DeviceDumpParser.lastLayersTraceData.isNotEmpty()) {
-                val fileName =
-                    getClassAndMethodName(description) + "_winscopeLastLayersDump.winscope"
-                val file = ArtifactSaver.artifactFile(fileName)
-                file.writeBytes(DeviceDumpParser.lastLayersTraceData)
+                file.writeBytes(DeviceDumpParser.lastPerfettoTraceData)
             }
         } catch (e: Exception) {
             Log.e(FLICKER_TAG, "Failed to write last Winscope dumps on error", e)
