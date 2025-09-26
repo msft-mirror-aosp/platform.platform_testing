@@ -16,10 +16,12 @@
 
 package platform.test.desktop
 
-import android.graphics.Point
-import android.hardware.display.DisplayManager
+import android.provider.Settings
+import android.view.Display
 import androidx.test.platform.app.InstrumentationRegistry
-import com.google.common.truth.Truth.assertWithMessage
+import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
+import kotlin.time.Duration.Companion.seconds
 
 /**
  * A simulated display device returned by a [SimulatedDeviceController].
@@ -28,69 +30,98 @@ import com.google.common.truth.Truth.assertWithMessage
  */
 data class SimulatedDisplayDevice(val d: DisplayDevice) : DisplayDevice by d
 
-/** A controller for simulated peripherals. */
+/**
+ * A controller for simulated peripherals.
+ *
+ * Simulated displays can't be incrementally changed (yet), so they have to be destroyed and
+ * re-created. [DisplayMonitor] may become confused and detect an invalid state, throw an exception.
+ * To avoid this the test needs to ask displays to be fully destroyed by passing empty
+ * [PeripheralsRequest].
+ */
 class SimulatedDeviceController : PeripheralsController {
     private val context = InstrumentationRegistry.getInstrumentation().targetContext
-    private val displayManager = context.getSystemService(DisplayManager::class.java)
-    private val simulatedDisplayTestRule = SimulatedConnectedDisplayTestRule()
-    private var currentDisplaysPeripherals = emptyList<Pair<DisplayPeripheral, Int>>()
+    private var currentDisplaysPeripherals: List<Pair<DisplayPeripheral, Display>>? = null
+    private val displayMonitor = DisplayMonitor(TAG)
+
+    fun close() {
+        displayMonitor.close()
+    }
+
+    fun startMonitoring() = displayMonitor.waitForCondition(TIMEOUT)
+
+    fun stopMonitoring() = displayMonitor.stopMonitoring()
 
     override fun requestPeripherals(request: PeripheralsRequest): PeripheralsResponse {
         request.validate(PeripheralType.SIMULATED, PeripheralType.PHYSICAL_OR_SIMULATED)
-
-        val displayPeripherals = mutableListOf<DisplayPeripheral>()
-
-        request.peripherals.forEach {
-            when (it) {
-                is DisplayPeripheral -> displayPeripherals.add(it)
-            }
-        }
-
-        return setupSimulatedDisplays(displayPeripherals)
+        return setupSimulatedDisplays(request.peripherals.filterIsInstance<DisplayPeripheral>())
     }
 
     private fun setupSimulatedDisplays(peripherals: List<DisplayPeripheral>): PeripheralsResponse {
-        if (peripherals.isEmpty() && currentDisplaysPeripherals.isEmpty()) {
-            return PeripheralsResponse()
+        // If we need some displays created
+        assertTrue(
+            currentDisplaysPeripherals.isNullOrEmpty() || peripherals.isEmpty(),
+            "Simulated displays can't be incrementally changed (yet): " +
+                peripherals +
+                " " +
+                currentDisplaysPeripherals,
+        )
+
+        // Expect new displays created
+        if (!displayMonitor.startMonitoring(createDisplayExpectation(peripherals))) {
+            val displaySettings =
+                peripherals.joinToString(separator = ";") {
+                    "${it.size.width}x${it.size.height}/$DEFAULT_DENSITY,disable_window_interaction"
+                }
+            Settings.Global.putString(
+                context.contentResolver,
+                Settings.Global.OVERLAY_DISPLAY_DEVICES,
+                displaySettings,
+            )
+            assertTrue(displayMonitor.waitForCondition(TIMEOUT), "waitForExpectation failed")
         }
 
-        val displayConfigs: List<Point> = peripherals.map { Point(it.size.width, it.size.height) }
-        val addedDisplayIds = simulatedDisplayTestRule.setupTestDisplays(displayConfigs)
-        assertWithMessage("Failed to setup all requested simulated displays")
-            .that(addedDisplayIds.size)
-            .isEqualTo(peripherals.size)
+        val removedDisplays =
+            currentDisplaysPeripherals?.filterNot { it.first in peripherals } ?: emptyList()
+        currentDisplaysPeripherals =
+            displayMonitor.matchPeripherals(false, peripherals, Display.TYPE_OVERLAY)
 
-        val removedDisplays = currentDisplaysPeripherals.filter { it.first !in peripherals }
-        currentDisplaysPeripherals = peripherals.zip(addedDisplayIds)
+        val curDisplayPeripherals =
+            assertNotNull(currentDisplaysPeripherals, "Could not match all peripherals")
 
         val addedResponse =
             PeripheralsResponse(
-                currentDisplaysPeripherals.map { (peripheral, displayId) ->
+                curDisplayPeripherals.map { (peripheral, display) ->
                     SimulatedDisplayDevice(
-                        AnyDisplayDevice(
-                            peripheral,
-                            connected = true,
-                            displayId,
-                            displayManager.getDisplay(displayId),
-                        )
+                        AnyDisplayDevice(peripheral, connected = true, display.displayId, display)
                     )
                 }
             )
 
         val removedResponse =
             PeripheralsResponse(
-                removedDisplays.map { (peripheral, displayId) ->
+                removedDisplays.map { (peripheral, display) ->
                     SimulatedDisplayDevice(
                         AnyDisplayDevice(
                             peripheral,
                             connected = false,
-                            displayId,
-                            display = null,
+                            display.displayId,
+                            display = display,
                         )
                     )
                 }
             )
 
         return addedResponse + removedResponse
+    }
+
+    private fun createDisplayExpectation(peripherals: List<DisplayPeripheral>): Condition =
+        Condition {
+            displayMonitor.matchPeripherals(it, peripherals, Display.TYPE_OVERLAY) != null
+        }
+
+    private companion object {
+        const val TAG = "Simulated"
+        val TIMEOUT = 10.seconds
+        const val DEFAULT_DENSITY = 160
     }
 }

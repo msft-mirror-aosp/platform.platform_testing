@@ -16,6 +16,8 @@
 
 package platform.test.desktop
 
+import kotlin.time.Duration.Companion.seconds
+
 /**
  * A physical display device returned by a [PhysicalDeviceController].
  *
@@ -25,8 +27,21 @@ data class PhysicalDisplayDevice(val d: DisplayDevice) : DisplayDevice by d
 
 /** A controller for physical peripherals. */
 class PhysicalDeviceController : PeripheralsController {
+    private val displayMonitor = DisplayMonitor(TAG)
+
+    fun close() = displayMonitor.close()
+
+    fun startMonitoring() = displayMonitor.waitForCondition(TIMEOUT)
+
+    fun stopMonitoring() = displayMonitor.stopMonitoring()
+
     override fun requestPeripherals(request: PeripheralsRequest): PeripheralsResponse {
         // TODO: b/351118894 - Implement this.
         return PeripheralsResponse()
+    }
+
+    private companion object {
+        const val TAG = "Physical"
+        val TIMEOUT = 10.seconds
     }
 }

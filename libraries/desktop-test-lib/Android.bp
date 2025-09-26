@@ -29,6 +29,8 @@ java_library {
         "mockito-target-minus-junit4",
         "uiautomator-helpers",
         "truth",
+        "servicestests-utils",
+        "kotlin-test",
     ],
     srcs: [
         "src/**/*.kt",
