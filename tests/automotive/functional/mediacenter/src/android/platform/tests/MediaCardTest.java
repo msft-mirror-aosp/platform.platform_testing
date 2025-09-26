@@ -16,6 +16,7 @@
 
 package android.platform.tests;
 
+import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertTrue;
 
 import android.platform.helpers.AutomotiveConfigConstants;
@@ -40,7 +41,7 @@ public class MediaCardTest {
 
     private static final String TEST_MEDIA_APP = "Test Media App";
 
-    private static final String DEFAULT_SONG_NAME = "A normal 1H song";
+    private static final String DEFAULT_SONG_NAME = "NPV links";
 
     private static final String RADIO_STATION = "99.7 Now!";
     private static final String LOG_TAG = MediaCardTest.class.getSimpleName();
@@ -109,5 +110,47 @@ public class MediaCardTest {
         assertTrue(
                 "Radio App is Not open",
                 sMediaCenterHelper.get().isMediaAppOpenAndTrackPlaying(RADIO_STATION));
+    }
+
+    @Test
+    public void testPlayListButton() {
+        setup();
+
+        Log.i(LOG_TAG, "Act: Click on media card playlist");
+        sMediaCenterHelper.get().openMediaCardPlayList();
+
+        Log.i(LOG_TAG, "Assert: Queue list is displaying");
+        assertTrue("Queue list is not displaying", sMediaCenterHelper.get().isQueueListDisplayed());
+
+        Log.i(LOG_TAG, "Act: Close media card playlist");
+        sMediaCenterHelper.get().closeMediaCardPlayList();
+    }
+
+    @Test
+    public void testMediaCardMetadata() {
+        Log.i(LOG_TAG, "Assert: Playing song name in media card is displaying");
+        assertNotNull(
+                "Media card song is not displaying",
+                sMediaCenterHelper.get().getPlayingSongInMediaCard());
+
+        Log.i(LOG_TAG, "Assert: Playing song author name is displaying");
+        assertNotNull(
+                "Media card song is not displaying",
+                sMediaCenterHelper.get().getMediaCardSongAuthorName());
+
+        Log.i(LOG_TAG, "Assert: Previous button is displaying");
+        assertTrue(
+                "Media card previous button is not displaying",
+                sMediaCenterHelper.get().isMediaCardPreviousButtonDisplaying());
+
+        Log.i(LOG_TAG, "Assert: Pause button displaying");
+        assertTrue(
+                "Media card pause button is not displaying",
+                sMediaCenterHelper.get().isMediaCardPauseButtonDisplaying());
+
+        Log.i(LOG_TAG, "Assert: Next button is displaying");
+        assertTrue(
+                "Media card pause button is not displaying",
+                sMediaCenterHelper.get().isMediaCardNextButtonDisplaying());
     }
 }
