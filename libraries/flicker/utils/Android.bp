@@ -48,8 +48,9 @@ filegroup {
 }
 
 filegroup {
-    name: "tpwrap",
+    name: "trace_processor_shell_device",
     device_first_srcs: [":trace_processor_shell"],
+    visibility: ["//visibility:private"],
 }
 
 android_library {
@@ -98,7 +99,7 @@ android_library {
         enabled: false,
     },
     assets: [
-        ":tpwrap",
+        ":trace_processor_shell_device",
     ],
     srcs: [
         "src/android/tools/**/*.kt",
