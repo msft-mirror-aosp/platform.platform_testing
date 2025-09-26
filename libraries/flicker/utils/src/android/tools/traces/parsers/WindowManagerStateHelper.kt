@@ -26,6 +26,7 @@ import android.graphics.Region
 import android.os.SystemClock
 import android.os.Trace
 import android.tools.Rotation
+import android.tools.io.WINSCOPE_EXT
 import android.tools.traces.Condition
 import android.tools.traces.ConditionsFactory
 import android.tools.traces.DeviceStateDump
@@ -49,6 +50,7 @@ import android.tools.traces.wm.WindowState
 import android.util.Log
 import android.view.Display
 import androidx.test.platform.app.InstrumentationRegistry
+import java.io.File
 import java.util.function.Predicate
 import java.util.function.Supplier
 
@@ -113,13 +115,29 @@ constructor(
     inner class StateSyncBuilder(private val deviceDumpSupplier: Supplier<DeviceStateDump>) {
         private val conditionBuilder = createConditionBuilder()
         private var lastMessage = ""
+        private val failureDumpFiles = mutableListOf<String>()
 
         private fun createConditionBuilder(): WaitCondition.Builder<DeviceStateDump> =
             WaitCondition.Builder(numRetries) { deviceDumpSupplier.get() }
                 .onStart { Trace.beginSection(it) }
                 .onEnd { Trace.endSection() }
                 .onSuccess { updateCurrState(it) }
-                .onFailure { updateCurrState(it) }
+                .onFailure {
+                    updateCurrState(it)
+                    val perfettoDump = DeviceDumpParser.lastPerfettoTraceData
+
+                    if (perfettoDump.isNotEmpty()) {
+                        val file =
+                            File(
+                                instrumentation.context.filesDir,
+                                "wait_condition_failure_${System.currentTimeMillis()}.$WINSCOPE_EXT",
+                            )
+                        file.writeBytes(perfettoDump)
+                        DeviceDumpParser.retainedDumpFiles.add(file)
+                        failureDumpFiles.add(file.name)
+                        Log.e(LOG_TAG, "Saved perfetto dump on failure to ${file.absolutePath}")
+                    }
+                }
                 .onLog { msg, isError ->
                     lastMessage = msg
                     if (isError) {
@@ -182,6 +200,12 @@ constructor(
                     }
                     if (layerState != null) {
                         appendLine("Last checked layer state at ${layerState.timestamp}.")
+                    }
+                    if (failureDumpFiles.isNotEmpty()) {
+                        appendLine(
+                            "See failure dumps in test artifacts: " +
+                                failureDumpFiles.joinToString()
+                        )
                     }
                 }
             }

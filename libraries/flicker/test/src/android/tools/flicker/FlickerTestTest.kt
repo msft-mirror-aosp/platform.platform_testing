@@ -165,12 +165,7 @@ class FlickerTestTest {
     @Test
     fun doesNotExecuteWmTagWithoutTag() {
         val predicate: (FlickerTest) -> Unit = { it.assertWmTag("tag") { executionCount++ } }
-        doWriteTraceExecuteAssertionAndVerify(
-            TraceType.PERFETTO,
-            predicate,
-            TestTraces.WMTrace.FILE,
-            expectedExecutionCount = 0,
-        )
+        doExecuteAssertionWithoutTraceAndVerifyNotExecuted(TraceType.PERFETTO, predicate)
     }
 
     @Test

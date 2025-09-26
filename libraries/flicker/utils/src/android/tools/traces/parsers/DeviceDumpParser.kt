@@ -27,6 +27,7 @@ import android.tools.traces.surfaceflinger.LayersTrace
 import android.tools.traces.wm.WindowManagerState
 import android.tools.traces.wm.WindowManagerTrace
 import android.tools.withTracing
+import java.io.File
 
 /**
  * Represents a state dump containing the [WindowManagerTrace] and the [LayersTrace] both parsed and
@@ -35,6 +36,9 @@ import android.tools.withTracing
 class DeviceDumpParser {
     companion object {
         var lastPerfettoTraceData = ByteArray(0)
+
+        // Dump files to be kept as test artifacts.
+        val retainedDumpFiles = mutableListOf<File>()
 
         /**
          * Creates a device state dump containing the [WindowManagerTrace] and [LayersTrace]
