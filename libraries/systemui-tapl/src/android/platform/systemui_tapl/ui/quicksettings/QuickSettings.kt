@@ -79,16 +79,6 @@ class QuickSettings internal constructor(val displayId: Int = DEFAULT_DISPLAY) {
         return UserSelectionPanel()
     }
 
-    /** Finds a tile by the prefix of its description */
-    fun findTile(tileDesc: String): QuickSettingsTile {
-        // Select by title_label https://hsv.googleplex.com/5476758214148096?node=57
-        val titleLabelSelector = sysuiResSelector("tile_label", displayId).textStartsWith(tileDesc)
-        val tileSelector =
-            By.displayId(displayId).clazz(clazzNamePattern).hasDescendant(titleLabelSelector, 3)
-        waitForObj(tileSelector)
-        return QuickSettingsTile(tileSelector, displayId)
-    }
-
     fun findComposeTile(tileDesc: String): ComposeQuickSettingsTile {
         val smallTileSelector = ComposeQuickSettingsTile.smallTileSelector(tileDesc, displayId)
         val largeTileSelector = ComposeQuickSettingsTile.largeTileSelector(tileDesc, displayId)

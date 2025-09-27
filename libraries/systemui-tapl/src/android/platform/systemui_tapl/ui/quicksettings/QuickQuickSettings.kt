@@ -20,13 +20,11 @@ import android.platform.helpers.ShadeUtils
 import android.platform.systemui_tapl.ui.quicksettings.ComposeQuickSettingsTile.Companion.assertIsTile
 import android.platform.systemui_tapl.utils.DeviceUtils.LONG_WAIT
 import android.platform.systemui_tapl.utils.DeviceUtils.sysuiResSelector
-import android.platform.uiautomatorhelpers.DeviceHelpers.assertVisibility
 import android.platform.uiautomatorhelpers.DeviceHelpers.assertVisible
 import android.platform.uiautomatorhelpers.DeviceHelpers.waitForFirstObj
 import android.platform.uiautomatorhelpers.DeviceHelpers.waitForObj
 import android.view.Display.DEFAULT_DISPLAY
 import androidx.test.uiautomator.UiObject2
-import com.android.systemui.Flags
 import org.junit.Assume.assumeTrue
 
 /**
@@ -50,22 +48,6 @@ class QuickQuickSettings internal constructor(val displayId: Int = DEFAULT_DISPL
         }
         qqsTilesContainer =
             waitForObj(qsTileLayoutSelector) { "Quick quick settings does not have a tile layout" }
-    }
-
-    /**
-     * Get a list of [QuickSettingsTile] objects, each representing one of the tiles visible in the
-     * QuickQuickSettings container. Will fail if there's an element that's not a tile (i.e.,
-     * doesn't have the label view as https://hsv.googleplex.com/4814389392703488?node=22#), only
-     * when the [qsUiRefactorComposeFragment] flag is false.
-     */
-    fun getVisibleTiles(): List<QuickQuickSettingsTile> {
-        val uiTiles = qqsTilesContainer.children
-        if (!Flags.qsUiRefactorComposeFragment()) {
-            uiTiles.forEach { tile ->
-                tile.assertVisibility(tileLabelSelector(displayId), visible = true)
-            }
-        }
-        return uiTiles.map { QuickQuickSettingsTile(it, displayId) }
     }
 
     fun getVisibleComposeTiles(): List<ComposeQuickSettingsTile> {
