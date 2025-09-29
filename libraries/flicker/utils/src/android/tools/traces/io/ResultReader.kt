@@ -88,7 +88,7 @@ open class ResultReader(result: IResultData) : Reader {
     @Throws(IOException::class)
     override fun readWmState(tag: String): WindowManagerTrace? {
         return withTracing("readWmState#$tag") {
-            val descriptor = ResultArtifactDescriptor(TraceType.WM_DUMP, tag)
+            val descriptor = ResultArtifactDescriptor(TraceType.PERFETTO, tag)
             Log.d(FLICKER_IO_TAG, "Reading WM trace descriptor=$descriptor from $result")
             val traceData = readBytes(descriptor)
             traceData?.let {
