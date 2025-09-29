@@ -71,8 +71,13 @@ import platform.test.desktop.LogicalPhysicalDisplayTransformHelper.PointLogicalP
 /**
  * A [TestRule] to support [VirtualMouse] move and drag within a single display / crossing across
  * displays.
+ *
+ * If [deferSetup] is set to true, please call [setupMouse] before calling any move method
  */
-class DesktopMouseTestRule() : TestRule {
+class DesktopMouseTestRule(private val deferSetup: Boolean = false) : TestRule {
+    // TODO(b/445827444): Adopt required permissions as needed for each setup(), move(), etc.
+    //  instead of a one-time adoptPermission from setup-teardown. This needs to be done without
+    //  dropping existing permissions
     private val adoptShellPermissionsTestRule = AdoptShellPermissionsRule(*PERMISSIONS)
     private val fakeAssociationRule = FakeAssociationRule()
     private val context = InstrumentationRegistry.getInstrumentation().targetContext
@@ -123,6 +128,16 @@ class DesktopMouseTestRule() : TestRule {
          */
         override fun before() = runBlocking {
             assumeNotNull(virtualDeviceManager)
+            if (!deferSetup) {
+                setup()
+            }
+        }
+
+        fun setup() = runBlocking {
+            if (virtualDevice != null) {
+                Log.w(TAG, "setup() called more than once, ignoring")
+                return@runBlocking
+            }
             val createdVirtualDevice =
                 virtualDeviceManager.createVirtualDevice(
                     fakeAssociationRule.associationInfo.id,
@@ -214,6 +229,10 @@ class DesktopMouseTestRule() : TestRule {
             virtualDevice = null
             super.after()
         }
+    }
+
+    fun setupMouse() = runBlocking {
+        resourceTracker.setup()
     }
 
     fun startDrag() {
