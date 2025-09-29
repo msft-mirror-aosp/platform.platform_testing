@@ -360,6 +360,17 @@ public class AutomotiveConfigConstants {
     public static final String PREVIOUS_BUTTON_HOME_SCREEN = "PREVIOUS_BUTTON_HOME_SCREEN";
     public static final String NEXT_BUTTON_HOME_SCREEN = "NEXT_BUTTON_HOME_SCREEN";
     public static final String TRACK_NAME_HOME_SCREEN = "TRACK_NAME_HOME_SCREEN";
+    public static final String MEDIA_SOURCE_BUTTON = "MEDIA_SOURCE_BUTTON";
+    public static final String MEDIA_SOURCE_NEWS_BUTTON = "MEDIA_SOURCE_NEWS_BUTTON";
+    public static final String MEDIA_SOURCE_HISTORY_NEWS = "MEDIA_SOURCE_HISTORY_NEWS";
+    public static final String MEDIA_SOURCE_HISTORY_ACTIVE_TITTLE =
+            "MEDIA_SOURCE_HISTORY_ACTIVE_TITTLE";
+    public static final String MEDIA_SOURCE_HISTORY_CARD = "MEDIA_SOURCE_HISTORY_CARD";
+    public static final String MEDIA_SOURCE_TEST_MEDIA_BUTTON = "MEDIA_SOURCE_TEST_MEDIA_BUTTON";
+    public static final String MEDIA_SOURCE_NEWS_CHANNEL = "MEDIA_SOURCE_NEWS_CHANNEL";
+    public static final String MEDIA_SOURCE_HISTORY_TEST_MEDIA_APP =
+            "MEDIA_SOURCE_HISTORY_TEST_MEDIA_APP";
+    public static final String MEDIA_CARD_SONG_TITLE = "MEDIA_CARD_SONG_TITLE";
     // Media Apps Grid
     public static final String MEDIA_APPS_GRID_TITLE = "MEDIA_APPS_GRID_TITLE";
     public static final String MEDIA_TEST_APP_THUMBNAIL = "MEDIA_TEST_APP_THUMBNAIL";

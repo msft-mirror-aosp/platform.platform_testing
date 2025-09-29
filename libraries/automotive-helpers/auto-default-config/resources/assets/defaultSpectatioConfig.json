@@ -2036,6 +2036,99 @@
       "VALUE": "close_target",
       "PACKAGE": "com.android.car.media.testmediaapp"
     },
+    "MEDIA_SOURCE_BUTTON": {
+      "TYPE": "MULTIPLE",
+      "SPECIFIERS": [
+        {
+          "TYPE": "CLASS",
+          "VALUE": "android.widget.ImageButton"
+        },
+        {
+          "TYPE": "RESOURCE_ID",
+          "VALUE": "history_button",
+          "PACKAGE": "com.android.car.carlauncher"
+        }
+      ]
+    },
+    "MEDIA_SOURCE_NEWS_BUTTON": {
+      "TYPE": "MULTIPLE",
+      "SPECIFIERS": [
+        {
+          "TYPE": "TEXT_CONTAINS",
+          "VALUE": "News"
+        },
+        {
+          "TYPE": "CLASS",
+          "VALUE": "android.widget.TextView"
+        }
+      ]
+    },
+    "MEDIA_SOURCE_TEST_MEDIA_BUTTON": {
+      "TYPE": "MULTIPLE",
+      "SPECIFIERS": [
+        {
+          "TYPE": "TEXT_CONTAINS",
+          "VALUE": "Test Media App"
+        },
+        {
+          "TYPE": "CLASS",
+          "VALUE": "android.widget.TextView"
+        }
+      ]
+    },
+    "MEDIA_CARD_SONG_TITLE": {
+      "TYPE": "MULTIPLE",
+      "SPECIFIERS": [
+        {
+          "TYPE": "RESOURCE_ID",
+          "VALUE": "title",
+          "PACKAGE": "com.android.car.carlauncher"
+        },
+        {
+          "TYPE": "CLASS",
+          "VALUE": "android.widget.TextView"
+        }
+      ]
+    },
+    "MEDIA_SOURCE_HISTORY_NEWS": {
+      "TYPE": "MULTIPLE",
+      "SPECIFIERS": [
+        {
+          "TYPE": "CLASS",
+          "VALUE": "android.view.ViewGroup"
+        },
+        {
+          "TYPE": "HAS_DESCENDANT",
+          "DESCENDANT": {
+            "TYPE": "TEXT",
+            "VALUE": "News"
+          }
+        }]
+    },
+    "MEDIA_SOURCE_HISTORY_TEST_MEDIA_APP": {
+      "TYPE": "MULTIPLE",
+      "SPECIFIERS": [
+        {
+          "TYPE": "CLASS",
+          "VALUE": "android.view.ViewGroup"
+        },
+        {
+          "TYPE": "HAS_DESCENDANT",
+          "DESCENDANT": {
+            "TYPE": "TEXT",
+            "VALUE": "Test Media App"
+          }
+        }]
+    },
+    "MEDIA_SOURCE_HISTORY_ACTIVE_TITTLE": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "history_card_title_active",
+      "PACKAGE": "com.android.car.carlauncher"
+    },
+    "MEDIA_SOURCE_HISTORY_CARD": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "history_card_container_active"
+    },
     "CONTACTS_DIALOG_BOX": {
       "TYPE": "RESOURCE_ID",
       "VALUE": "car_ui_list_item_touch_interceptor",

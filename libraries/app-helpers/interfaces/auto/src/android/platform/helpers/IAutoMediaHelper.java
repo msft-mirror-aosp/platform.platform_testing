@@ -478,4 +478,78 @@ public interface IAutoMediaHelper extends IAppHelper, Scrollable {
      * <p>This method plays a song from playlist in media card and returns selected song
      */
     String getPlayingSongInMediaCard();
+
+    /**
+     * Setup expectations: News test app is open.
+     *
+     * <p>This method is used to menuOptions click the track.
+     *
+     * <p>openMenuWith(Folder,mediafilename,trackName);
+     *
+     * @param menuOptions used to pass multiple level of menu options in one go.
+     */
+    void selectNewsTrack(String... menuOptions);
+
+    /**
+     * Setup expectations: on home screen.
+     *
+     * <p>This method is used to open Media Source on Media Card Widget.
+     */
+    void openMediaSource();
+
+    /**
+     * Setup expectations: on Media card
+     *
+     * <p>This method is used to open News from Media Source/ History folder on Media Card Widget.
+     */
+    void openNewsAppFromMediaSource();
+
+    /**
+     * Setup expectations: on Media card
+     *
+     * <p>This method is used to verify News displayed in Media Source history folder on Media Card
+     * Widget.
+     */
+    boolean isNewsDisplayedInMediaSourceHistory();
+
+    /**
+     * Setup expectations: on Media card
+     *
+     * <p>This method is used to get the text of News channel displayed in Media Source history
+     * folder on Media Card Widget.
+     */
+    String getNewsChannelNameFromMediaSourceHistory();
+
+    /**
+     * Setup expectations: on Media card
+     *
+     * <p>This method is used to verify Test Media app displayed in Media Source history folder on
+     * Media Card Widget.
+     */
+    boolean isTestMediaAppDisplayedInMediaSourceHistory();
+
+    /**
+     * Setup expectations: on Media card
+     *
+     * <p>This method is used to get the text of song displayed in Media Source history folder on
+     * Media Card Widget.
+     */
+    String getTestMediaAppSongNameFromMediaSourceHistory();
+
+    /**
+     * Setup expectations: on Media card
+     *
+     * <p>This method is used to click on Song from Media Source/ History folder on Media Card
+     * Widget.
+     */
+    void clickOnTestMediaAppSongFromMediaSource();
+
+    /**
+     * Setup expectations: on Media card
+     *
+     * <p>This method is used to verify the Song playing on Media Card Widget.
+     *
+     * @param defaultSongName is a song name played in Media Player App
+     */
+    boolean isTestMediaAppSongNameDisplayedOnMediaCard(String defaultSongName);
 }
