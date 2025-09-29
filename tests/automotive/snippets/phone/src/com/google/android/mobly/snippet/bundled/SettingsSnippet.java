@@ -175,6 +175,12 @@ public class SettingsSnippet implements Snippet {
         return mSettingsHelper.get().setMediaSoundLevelLow();
     }
 
+    /** Set Sound level from Sound Palette */
+    @Rpc(description = "Set Sound level from sound palette")
+    public int setSoundLevel(double level) {
+        return mSettingsHelper.get().setSoundLevel(level);
+    }
+
     @Override
     public void shutdown() {}
 }

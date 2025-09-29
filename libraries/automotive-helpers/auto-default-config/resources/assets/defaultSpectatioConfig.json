@@ -1211,6 +1211,26 @@
       "TYPE": "DESCRIPTION",
       "VALUE": "Save"
     },
+    "SOUND_SEEKBAR": {
+      "TYPE": "MULTIPLE",
+      "SPECIFIERS": [
+        {
+          "TYPE": "CLASS",
+          "VALUE": "android.widget.SeekBar"
+        },
+        {
+          "TYPE": "HAS_ANCESTOR",
+          "MAX_DEPTH": 2,
+          "ANCESTOR": {
+            "TYPE": "HAS_DESCENDANT",
+            "DESCENDANT": {
+              "TYPE": "TEXT",
+              "VALUE": "In-call volume"
+            }
+          }
+        }
+      ]
+    },
     "BRIGHTNESS_SEEKBAR": {
       "TYPE": "MULTIPLE",
       "SPECIFIERS": [

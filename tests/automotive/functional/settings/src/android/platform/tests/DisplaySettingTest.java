@@ -46,10 +46,10 @@ public class DisplaySettingTest {
                 "Display Setting did not open",
                 mSettingHelper.get().checkMenuExists("Brightness level"));
 
-        int lowBrightness = mSettingHelper.get().setBrightness(0.1f);
+        int lowBrightness = mSettingHelper.get().setBrightness(0.1);
 
         // Increase the screen brightness
-        int highBrightness = mSettingHelper.get().setBrightness(0.9f);
+        int highBrightness = mSettingHelper.get().setBrightness(0.9);
 
         // Verify that the screen brightness has changed.
         assertTrue(

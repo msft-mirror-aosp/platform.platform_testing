@@ -259,7 +259,7 @@ public interface IAutoSettingHelper extends IAppHelper {
      * @param targetPercentage Where on the brightness seekbar to tap
      * @return The brightness value as reported by the service
      */
-    int setBrightness(float targetPercentage);
+    int setBrightness(double targetPercentage);
 
     /**
      * Setup expectation: None
@@ -316,4 +316,13 @@ public interface IAutoSettingHelper extends IAppHelper {
      * <p>This method checks increse the Media sound from Sound Palette.
      */
     int setMediaSoundLevelHigh();
+
+    /**
+     * Setup expectation: Sound Palette is open.
+     *
+     * <p>This method sets the In call volume level from the Sound Palette.
+     *
+     * @param level The desired sound level.
+     */
+    int setSoundLevel(double level);
 }
