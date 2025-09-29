@@ -59,6 +59,5 @@ class ExpandedBubbleBar(val selectedBubble: BubbleBarItem) {
 
     companion object {
         private val BUBBLE_BAR = launcherResSelector("taskbar_bubbles")
-        private val OVERFLOW_BUBBLE = launcherDescSelector("Overflow")
     }
 }
