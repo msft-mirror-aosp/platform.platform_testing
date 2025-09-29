@@ -18,9 +18,12 @@ package com.google.android.display.color;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import com.android.tradefed.device.DeviceNotAvailableException;
 import com.android.tradefed.device.ITestDevice;
+import com.android.tradefed.invoker.TestInformation;
 import com.android.tradefed.testtype.DeviceJUnit4ClassRunner;
 import com.android.tradefed.testtype.junit4.BaseHostJUnit4Test;
+import com.android.tradefed.testtype.junit4.BeforeClassWithInfo;
 
 import org.junit.After;
 import org.junit.Before;
@@ -35,10 +38,12 @@ import java.util.regex.Pattern;
 @RunWith(DeviceJUnit4ClassRunner.class)
 public class HardwareColorTest extends BaseHostJUnit4Test {
     private ITestDevice mDevice;
+    private List<String> mCtmValues;
 
     private static final String NIGHT_LIGHT_SETTING = "night_display_activated";
     private static final String COLOR_ACCESSIBILITY_SETTING =
             "accessibility_display_daltonizer_enabled";
+    private static final String COLOR_INVERSION_SETTING = "accessibility_display_inversion_enabled";
 
     // Matches a hexadecimal blob
     private static final Pattern HEX_DATA_PATTERN = Pattern.compile("^\\s+([0-9a-fA-F]+)\\s*$");
@@ -51,36 +56,54 @@ public class HardwareColorTest extends BaseHostJUnit4Test {
                     + "00000000010000000000000000000000"
                     + "00000000000000000000000000000000"
                     + "0000000001000000";
+    // The duration of the night light animation
+    // See TintController.TRANSITION_DURATION
+    private static final long TRANSITION_DURATION = 3000L;
+
+    /**
+     * Prepares the device for CTM property testing
+     *
+     * @param testInfo Test Information
+     * @throws DeviceNotAvailableException if connection with device is lost and cannot be
+     *     recovered.
+     */
+    @BeforeClassWithInfo
+    public static void init(TestInformation testInfo) throws DeviceNotAvailableException {
+        ITestDevice device = testInfo.getDevice();
+        device.enableAdbRoot();
+        device.setProperty("vendor.hwc.drm.ctm", "DRM_OR_IGNORE");
+        device.executeShellCommand("stop && start");
+        device.waitForDeviceAvailable();
+    }
 
     @Before
-    public void setUp() throws Exception {
+    public void setup() throws DeviceNotAvailableException {
         mDevice = getDevice();
-        mDevice.enableAdbRoot();
-        mDevice.executeShellCommand("stop");
-        mDevice.executeShellCommand("setprop vendor.hwc.drm.ctm DRM_OR_IGNORE");
-        mDevice.executeShellCommand("start");
+        populateCtmValues(mDevice.executeShellCommand("modetest -p"));
+        assertThat(mCtmValues.size()).isGreaterThan(0);
+        for (String value : mCtmValues) assertThat(value).isEqualTo(CTM_IDENTITY);
     }
 
     @After
-    public void tearDown() throws Exception {
-        resetSecureSetting(NIGHT_LIGHT_SETTING);
-        resetSecureSetting(COLOR_ACCESSIBILITY_SETTING);
-        mDevice.executeShellCommand("stop");
-        mDevice.executeShellCommand("setprop dev.bootcomplete 0");
-        mDevice.executeShellCommand("start");
+    public void tearDown() throws DeviceNotAvailableException, InterruptedException {
+        disableSecureSetting(NIGHT_LIGHT_SETTING);
+        disableSecureSetting(COLOR_ACCESSIBILITY_SETTING);
+        disableSecureSetting(COLOR_INVERSION_SETTING);
+        Thread.sleep(TRANSITION_DURATION);
+        mDevice.waitForDeviceAvailable();
     }
 
-    private void enableSecureSetting(String setting) throws Exception {
-        mDevice.executeShellCommand("settings put secure " + setting + " 1");
+    private void enableSecureSetting(String setting) throws DeviceNotAvailableException {
+        mDevice.setSetting("secure", setting, "1");
     }
 
-    private void resetSecureSetting(String setting) throws Exception {
-        mDevice.executeShellCommand("settings reset secure " + setting);
+    private void disableSecureSetting(String setting) throws DeviceNotAvailableException {
+        mDevice.setSetting("secure", setting, "null");
     }
 
-    private static List<String> getCtmValues(String modetestOutput) {
+    private void populateCtmValues(String modetestOutput) {
         if (modetestOutput == null || modetestOutput.isEmpty()) {
-            return null;
+            mCtmValues = null;
         }
 
         StringBuilder hexData = new StringBuilder();
@@ -118,34 +141,33 @@ public class HardwareColorTest extends BaseHostJUnit4Test {
                 inCtmBlock = true;
             }
         }
-        return ctmValues;
+        mCtmValues = ctmValues;
     }
 
     @Test
-    public void testSetNightLight() throws Exception {
-        List<String> ctmValues = getCtmValues(mDevice.executeShellCommand("modetest -p"));
-        assertThat(ctmValues.size()).isGreaterThan(0);
-        for (String value : ctmValues) assertThat(value).isEqualTo(CTM_IDENTITY);
-
+    public void testSetNightLight() throws DeviceNotAvailableException, InterruptedException {
         enableSecureSetting(NIGHT_LIGHT_SETTING);
-        mDevice.waitForDeviceAvailable();
-
-        ctmValues = getCtmValues(mDevice.executeShellCommand("modetest -p"));
-        assertThat(ctmValues.size()).isGreaterThan(0);
-        for (String value : ctmValues) assertThat(value).isNotEqualTo(CTM_IDENTITY);
+        Thread.sleep(TRANSITION_DURATION);
+        populateCtmValues(mDevice.executeShellCommand("modetest -p"));
+        assertThat(mCtmValues.size()).isGreaterThan(0);
+        for (String value : mCtmValues) assertThat(value).isNotEqualTo(CTM_IDENTITY);
     }
 
     @Test
-    public void testSetColorCorrection() throws Exception {
-        List<String> ctmValues = getCtmValues(mDevice.executeShellCommand("modetest -p"));
-        assertThat(ctmValues.size()).isGreaterThan(0);
-        for (String value : ctmValues) assertThat(value).isEqualTo(CTM_IDENTITY);
-
+    public void testSetColorCorrection() throws DeviceNotAvailableException {
         enableSecureSetting(COLOR_ACCESSIBILITY_SETTING);
-        mDevice.waitForDeviceAvailable();
+        populateCtmValues(mDevice.executeShellCommand("modetest -p"));
+        assertThat(mCtmValues.size()).isGreaterThan(0);
+        for (String value : mCtmValues) assertThat(value).isNotEqualTo(CTM_IDENTITY);
+    }
 
-        ctmValues = getCtmValues(mDevice.executeShellCommand("modetest -p"));
-        assertThat(ctmValues.size()).isGreaterThan(0);
-        for (String value : ctmValues) assertThat(value).isNotEqualTo(CTM_IDENTITY);
+    @Test
+    public void testSetColorInversion() throws DeviceNotAvailableException {
+        enableSecureSetting(COLOR_INVERSION_SETTING);
+        populateCtmValues(mDevice.executeShellCommand("modetest -p"));
+        assertThat(mCtmValues.size()).isGreaterThan(0);
+        // TODO(406267714): Color inversion is not supported in DRM HWC and must be performed by the
+        // client
+        for (String value : mCtmValues) assertThat(value).isEqualTo(CTM_IDENTITY);
     }
 }
