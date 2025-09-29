@@ -39,6 +39,7 @@ import org.junit.runner.RunWith;
 
 import java.io.File;
 import java.io.FileWriter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -103,17 +104,21 @@ public class CarPropertyManagerBenchmarkTest {
         ConcurrentLinkedQueue<Long> concurrentLinkedQueue = new ConcurrentLinkedQueue<>();
         CarPropertyConfig<?> hvacTempSetConfig =
                 mCarPropertyManager.getCarPropertyConfig(HVAC_TEMPERATURE_SET);
-        assumeTrue("Cannot set hvacTemp", hvacTempSetConfig != null);
-        int areaId = hvacTempSetConfig.getAreaIdConfigs().get(0).getAreaId();
+
+        assumeTrue("HVAC_TEMPERATURE_SET not supported", hvacTempSetConfig != null);
+
+        ArrayList<Float> supportedValues = new ArrayList<>();
         List<Integer> configArray = hvacTempSetConfig.getConfigArray();
-        Float minTemp;
-        Float maxTemp;
         if (configArray.isEmpty()) {
-            minTemp = (Float) hvacTempSetConfig.getMinValue(areaId);
-            maxTemp = (Float) hvacTempSetConfig.getMaxValue(areaId);
+            int areaId = hvacTempSetConfig.getAreaIds()[0];
+            supportedValues.add((Float) hvacTempSetConfig.getMinValue(areaId));
+            supportedValues.add((Float) hvacTempSetConfig.getMaxValue(areaId));
         } else {
-            minTemp = configArray.get(0) / 10f;
-            maxTemp = configArray.get(1) / 10f;
+            for (int temp = configArray.get(0);
+                    temp <= configArray.get(1);
+                    temp += configArray.get(2)) {
+                supportedValues.add(temp / 10f);
+            }
         }
 
         for (int i = 0; i < NUM_TASKS; i++) {
@@ -123,10 +128,12 @@ public class CarPropertyManagerBenchmarkTest {
                             Random rd = new Random();
                             long timeBeforeRun = System.nanoTime();
                             try {
+                                int randomIndex = rd.nextInt(supportedValues.size());
+                                float randomValue = supportedValues.get(randomIndex);
+                                randomIndex = rd.nextInt(hvacTempSetConfig.getAreaIds().length);
+                                int randomAreaId = hvacTempSetConfig.getAreaIds()[randomIndex];
                                 mCarPropertyManager.setFloatProperty(
-                                        HVAC_TEMPERATURE_SET,
-                                        /* areaId= */ areaId,
-                                        /* val= */ minTemp + rd.nextFloat() * (maxTemp - minTemp));
+                                        HVAC_TEMPERATURE_SET, randomAreaId, randomValue);
                             } catch (IllegalStateException e) {
                                 // This is expected because car service only allows up to 16 sync
                                 // get/set operations happening at the same time.
