@@ -19,7 +19,7 @@ from mobly.controllers.android_device_lib.snippet_client_v2 import Config
 from utilities.main_utils import common_main, get_test_args
 
 
-class VhalHvac(base_test.BaseTestClass):
+class VhalGears(base_test.BaseTestClass):
     def setup_class(self):
         self.ads = self.register_controller(android_device)
         self.main_device = android_device.get_device(self.ads, label='auto')
@@ -35,11 +35,10 @@ class VhalHvac(base_test.BaseTestClass):
         pass
 
     def test_set_driver_temp(self):
-        """Set the driver temperature and check the UI for the resulting expected temp."""
-        self.main_device.mbs.setDriverHvacTemperature("67")
-        asserts.assert_true(self.main_device.mbs.hasUIElementWithText("67"), 'Temperature set')
-        self.main_device.mbs.setDriverHvacTemperature("65")
-        asserts.assert_true(self.main_device.mbs.hasUIElementWithText("65"), 'Temperature set')
+        """Shift the car to park and check the UI for the gear indicator change."""
+        self.main_device.mbs.shiftToPark()
+
+        # todo - where is the gear indicator in the ref device ui?
 
 
 if __name__ == '__main__':

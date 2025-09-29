@@ -31,6 +31,7 @@ android_test {
         "automotive-media-center-app-helper",
         "android-support-multidex",
         "automotive-notifications-app-helper",
+        "vehicle-actions-library",
     ],
     srcs: ["src/**/*.java"],
     manifest: "AndroidAutomotiveManifest.xml",
