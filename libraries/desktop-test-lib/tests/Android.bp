@@ -30,6 +30,7 @@ android_test {
         "android.test.base.stubs.system",
     ],
     static_libs: [
+        "Interactive",
         "androidx.test.rules",
         "mockito-target-minus-junit4",
         "platform-test-annotations",
