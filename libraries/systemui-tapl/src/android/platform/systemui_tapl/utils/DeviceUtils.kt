@@ -66,7 +66,7 @@ object DeviceUtils {
      */
     @JvmStatic
     fun launcherDescSelector(contentDescription: String): BySelector =
-        By.pkg(LAUNCHER_PACKAGE).desc(contentDescription)
+        By.pkg(LAUNCHER_PACKAGE).descStartsWith(contentDescription)
 
     /** Returns a [BySelector] of a resource in android package. */
     @JvmStatic
