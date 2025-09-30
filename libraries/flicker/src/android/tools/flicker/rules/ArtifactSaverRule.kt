@@ -18,6 +18,7 @@ package android.tools.flicker.rules
 
 import android.platform.test.rule.ArtifactSaver
 import android.tools.FLICKER_TAG
+import android.tools.io.WINSCOPE_EXT
 import android.tools.traces.parsers.DeviceDumpParser
 import android.util.Log
 import org.junit.rules.TestWatcher
@@ -32,13 +33,24 @@ class ArtifactSaverRule : TestWatcher() {
         }
 
         try {
-            if (DeviceDumpParser.lastPerfettoTraceData.isNotEmpty()) {
-                val fileName = getClassAndMethodName(description) + "_winscopeLastDump.winscope"
-                val file = ArtifactSaver.artifactFile(fileName)
-                file.writeBytes(DeviceDumpParser.lastPerfettoTraceData)
+            for (dumpFile in DeviceDumpParser.retainedDumpFiles) {
+                try {
+                    val bytes = dumpFile.readBytes()
+                    if (bytes.isEmpty()) {
+                        continue
+                    }
+                    val fileName =
+                        getClassAndMethodName(description) + "_${dumpFile.name}.$WINSCOPE_EXT"
+                    val file = ArtifactSaver.artifactFile(fileName)
+                    file.writeBytes(bytes)
+                } finally {
+                    dumpFile.delete()
+                }
             }
         } catch (e: Exception) {
             Log.e(FLICKER_TAG, "Failed to write last Winscope dumps on error", e)
+        } finally {
+            DeviceDumpParser.retainedDumpFiles.clear()
         }
 
         ArtifactSaver.onError(description, e)
