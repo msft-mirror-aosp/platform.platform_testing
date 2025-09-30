@@ -210,14 +210,14 @@ class LayerTraceEntryTest {
         val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
 
         // Covers exactly
-        var state = trace.getEntryAt(Timestamps.from(1698103534193295897, 0L))
+        var state = trace.getEntryAt(Timestamps.from(unixNanos = 1698103534193295897))
         var navBar = state.getLayerById(85) ?: error("Nav bar layer not found")
 
         Truth.assertThat(navBar.visibilityReason.joinToString()).contains(EXPECTED_OCCLUDE)
         Truth.assertThat(navBar.isVisible).isFalse()
 
         // Covers within threshold (b/307401382)
-        state = trace.getEntryAt(Timestamps.from(1698103534183177977, 0L))
+        state = trace.getEntryAt(Timestamps.from(unixNanos = 1698103534183177977))
         navBar = state.getLayerById(85) ?: error("Nav bar layer not found")
 
         Truth.assertThat(navBar.visibilityReason.joinToString()).contains(EXPECTED_OCCLUDE)
