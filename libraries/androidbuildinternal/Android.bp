@@ -26,3 +26,8 @@ java_import_host {
     name: "libandroid_build_v3_java",
     jars: ["libandroid_build_v3_java.jar"],
 }
+
+java_import_host {
+    name: "libandroid_build_v4_java",
+    jars: ["gapic-google-cloud-ci-build-v4-java-0.0.0-SNAPSHOT-all.jar"],
+}
