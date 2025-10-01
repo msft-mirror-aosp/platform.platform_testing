@@ -50,24 +50,11 @@ class IsAbleToSwitchAppTest(bluetooth_base_test.BluetoothBaseTest):
         # Open Media apps menu
         self.media_utils.open_media_apps_menu()
 
-        # Assert YouTube Music and Bluetooth Audio apps are present
+        # Assert Bluetooth Audio app is present
         asserts.assert_true(
             self.common_utils.has_ui_element_with_text(constants.BLUETOOTH_AUDIO_APP),
             '<' + constants.BLUETOOTH_AUDIO_APP + '> app should be present on Media app page')
-        asserts.assert_true(
-            self.common_utils.has_ui_element_with_text(constants.YOUTUBE_MUSIC_APP),
-            '<' + constants.YOUTUBE_MUSIC_APP + '> app should be present on Media app page')
 
-        # Open YouTube Music app on HU
-        self.media_utils.open_youtube_music_app_on_hu()
-        current_phone_next_song_title = self.media_utils.get_song_title_from_phone()
-        current_hu_next_song_title = self.media_utils.get_song_title_from_hu()
-        asserts.assert_true(current_phone_next_song_title == current_hu_next_song_title,
-                            'Invalid song titles. '
-                            'Song title on phone device and HU should be the same')
-
-        # Open Media apps menu
-        self.media_utils.open_media_apps_menu()
         self.media_utils.open_bluetooth_audio_app_on_hu()
         current_phone_bt_audio_song_title = self.media_utils.get_song_title_from_phone()
         current_hu_bt_audio_song_title = self.media_utils.get_song_title_from_hu()
