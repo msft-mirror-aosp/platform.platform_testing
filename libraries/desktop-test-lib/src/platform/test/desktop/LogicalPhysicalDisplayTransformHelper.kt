@@ -94,7 +94,7 @@ constructor(displayManager: DisplayManager) {
      * @param displayId the ID of the display on which the point should be scaled on
      * @return the point in physical PX coordinates.
      */
-    fun logicalToPhysical(point: PointLogicalPxF, displayId: Int): PointPhysicalPxF {
+    fun logicalToPhysical(point: PointF, displayId: Int): PointPhysicalPxF {
         val inverseTransform =
             displayIdToInverseTransformMap[displayId]
                 ?: error("Failed to fetch inverse displayTransform for display#$displayId")
@@ -171,12 +171,7 @@ constructor(displayManager: DisplayManager) {
         }
     }
 
-    data class PointLogicalPxF(val x: Float, val y: Float) {
-        constructor(x: Int, y: Int) : this(x.toFloat(), y.toFloat())
-
-        fun toPhysicalPx(displayId: Int, displayTransform: LogicalPhysicalDisplayTransformHelper) =
-            displayTransform.logicalToPhysical(this, displayId)
-    }
+    data class PointPhysicalPxF(val x: Float, val y: Float)
 
     data class DeltaPhysicalPxF(val dx: Float, val dy: Float)
 
@@ -188,21 +183,15 @@ constructor(displayManager: DisplayManager) {
     data class DisplayScale(val scaleX: Float, val scaleY: Float)
 
     companion object {
-        data class PointPhysicalPxF(val x: Float, val y: Float)
-
         operator fun PointPhysicalPxF.minus(other: PointPhysicalPxF): DeltaPhysicalPxF {
             val dx = this.x - other.x
             val dy = this.y - other.y
             return DeltaPhysicalPxF(dx, dy)
         }
 
-        operator fun PointLogicalPxF.minus(other: PointLogicalPxF): DeltaLogicalPxF {
-            val dx = this.x - other.x
-            val dy = this.y - other.y
-            return DeltaLogicalPxF(dx, dy)
-        }
-
-        fun PointF.toLogicalPx() = PointLogicalPxF(x, y)
+        fun LogicalDisplayPointPx.getPointPhysicalPx(
+            displayTransform: LogicalPhysicalDisplayTransformHelper
+        ) = displayTransform.logicalToPhysical(this.getPointF(), this.displayId)
 
         val REQUIRED_PERMISSIONS = arrayOf(Manifest.permission.ACCESS_SURFACE_FLINGER)
         private val TIMEOUT: Duration = 10.seconds
