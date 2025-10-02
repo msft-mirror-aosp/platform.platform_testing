@@ -269,10 +269,9 @@ class LayerTraceEntryTest {
         val reader = getLayerTraceReaderFromAsset("layers_trace_emptyregion.perfetto-trace")
         val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
         val entry = trace.getEntryExactlyAt(Timestamps.from(systemUptimeNanos = 922839428857))
-        // Assuming there's a layer that matches this component but has an empty buffer in this
-        // trace
-        val component = ComponentNameMatcher("", "DimLayer#0")
-        val layer = entry.getLayerWithBuffer(component)
+        // Secondary Divider Dim#0 has layer id 42 and null active buffer
+        val layer = entry.getLayerById(42)
+        Truth.assertThat(layer).isNotNull()
         Truth.assertThat(layer?.activeBuffer?.isEmpty).isTrue()
     }
 
@@ -281,8 +280,8 @@ class LayerTraceEntryTest {
         val reader = getLayerTraceReaderFromAsset("layers_trace_launch_split_screen.perfetto-trace")
         val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
         val entry = trace.getEntryExactlyAt(Timestamps.from(systemUptimeNanos = 90480846872160))
-        // com.google.android.apps.nexuslauncher/com.google.android.apps.nexuslauncher.NexusLauncherActivity#0 has id 700 in this trace
-        val layer = entry.getLayerById(700)
+        // com.google.android.apps.nexuslauncher/com.google.android.apps.nexuslauncher.NexusLauncherActivity#0 has id 648 in this trace
+        val layer = entry.getLayerById(648)
         Truth.assertThat(layer).isNotNull()
         Truth.assertThat(layer?.name)
             .isEqualTo(
