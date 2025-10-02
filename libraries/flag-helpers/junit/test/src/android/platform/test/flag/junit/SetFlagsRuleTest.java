@@ -19,6 +19,8 @@ package android.platform.test.flag.junit;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeFalse;
+import static org.junit.Assume.assumeTrue;
 
 import android.platform.test.flag.util.FlagSetException;
 
@@ -105,7 +107,9 @@ public final class SetFlagsRuleTest {
     }
 
     @Test
-    public void skipReadOnlyOptimizedFlag() {
+    public void skipReadOnlyOptimizedFlagIfNoDefaultValue() {
+        assumeFalse(mIsInitWithDefault);
+
         assertThrows(
                 AssumptionViolatedException.class,
                 () -> {
@@ -125,6 +129,25 @@ public final class SetFlagsRuleTest {
                 AssumptionViolatedException.class,
                 () -> {
                     mSetFlagsRule.disableFlags(Flags.FLAG_RO_DISABLED);
+                });
+    }
+
+    @Test
+    public void skipReadOnlyOptimizedFlagIfDefaultValueDiffers() {
+        assumeTrue(mIsInitWithDefault);
+
+        mSetFlagsRule.enableFlags(Flags.FLAG_RO_ENABLED);
+        assertThrows(
+                AssumptionViolatedException.class,
+                () -> {
+                    mSetFlagsRule.disableFlags(Flags.FLAG_RO_ENABLED);
+                });
+
+        mSetFlagsRule.disableFlags(Flags.FLAG_RO_DISABLED);
+        assertThrows(
+                AssumptionViolatedException.class,
+                () -> {
+                    mSetFlagsRule.enableFlags(Flags.FLAG_RO_DISABLED);
                 });
     }
 
