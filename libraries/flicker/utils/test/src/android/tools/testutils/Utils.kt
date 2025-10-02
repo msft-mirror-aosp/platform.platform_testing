@@ -239,14 +239,16 @@ fun getLauncherPackageName() =
 
 fun newEmptyRootContainer(orientation: Int = 0, layerId: Int = 0) =
     RootWindowContainer(
-        WindowContainerImpl(
-            title = "root",
-            token = "",
-            orientation = orientation,
-            layerId = layerId,
-            _isVisible = true,
-            _children = emptyList(),
-            configurationContainer = ConfigurationContainerImpl.EMPTY,
-            computedZ = 0,
-        )
+        isHomeRecentsComponent = false,
+        pendingActivities = listOf<String>(),
+        windowContainer =
+            WindowContainerImpl(
+                title = "root",
+                token = "",
+                orientation = orientation,
+                layerId = layerId,
+                isVisible = true,
+                parentToken = null,
+                configurationContainer = ConfigurationContainerImpl.EMPTY,
+            ),
     )

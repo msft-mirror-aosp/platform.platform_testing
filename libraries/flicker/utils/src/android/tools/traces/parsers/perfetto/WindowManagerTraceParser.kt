@@ -39,20 +39,19 @@ class WindowManagerTraceParser :
 
     override fun getEntries(input: TraceProcessorSession): List<WindowManagerState> {
         return input.query("INCLUDE PERFETTO MODULE android.winscope.windowmanager;") {
-            val realToElapsedTimeOffsetNs = queryRealToElapsedTimeOffsetNs(input, TABLE_NAME)
-
+            val realToElapsedTimeOffsetNs =
+                queryRealToElapsedTimeOffsetNs(input, SNAPSHOT_TABLE_NAME)
             val traceEntries = mutableListOf<WindowManagerState>()
-            val entryIds = queryEntryIds(input)
+            val snapshotIds = getSqlSnapshotIds(input)
 
-            for (entryId in entryIds) {
+            for (snapshotId in snapshotIds) {
                 val entry =
-                    input.query(getSqlQueryEntry(entryId)) { rows ->
-                        val args = Args.build(rows)
-                        WindowManagerStateBuilder(args, realToElapsedTimeOffsetNs).build()
+                    input.query(getSqlQuerySnapshot(snapshotId)) { snapshotRows ->
+                        val containerRows = input.query(getSqlQueryContainers(snapshotId)) { it }
+                        buildTraceEntry(realToElapsedTimeOffsetNs, snapshotRows, containerRows)
                     }
                 traceEntries.add(entry)
             }
-
             traceEntries
         }
     }
@@ -61,13 +60,51 @@ class WindowManagerTraceParser :
 
     override fun doParseEntry(entry: WindowManagerState) = entry
 
-    companion object {
-        val TABLE_NAME = "android_windowmanager"
+    private fun buildTraceEntry(
+        realToElapsedTimeOffsetNs: Long,
+        snapshotRows: List<Row>,
+        containerRows: List<Row>,
+    ): WindowManagerState {
+        val snapshotArgs = Args.build(snapshotRows)
 
-        private fun queryEntryIds(input: TraceProcessorSession): List<Long> {
+        val containers =
+            containerRows
+                .groupBy { it["container_row_id"].toString() }
+                .map { (rowId, rows) ->
+                    val firstRow = rows[0]
+                    Pair(
+                        rowId,
+                        WindowContainerBuilder()
+                            .setArgs(Args.build(rows))
+                            .setTitle(firstRow["title"] as String? ?: "")
+                            .setToken((firstRow["token"] as Long).toInt())
+                            .setParentToken(
+                                firstRow["parent_token"]?.let { (it as Long).toInt() } ?: null
+                            )
+                            .setIsVisible(firstRow["is_visible"] == 1L)
+                            .setContainerType(firstRow["container_type"] as String? ?: "")
+                            .setNameOverride(firstRow["name_override"] as String?)
+                            .build(),
+                    )
+                }
+                .sortedBy { it.first.toInt() }
+                .map { it.second }
+
+        return WindowManagerStateBuilder()
+            .setRealToElapsedTimeOffsetNs(realToElapsedTimeOffsetNs)
+            .setEntry(snapshotArgs)
+            .setContainers(containers)
+            .build()
+    }
+
+    companion object {
+        private const val SNAPSHOT_TABLE_NAME = "android_windowmanager"
+        private const val CONTAINER_TABLE_NAME = "android_windowmanager_windowcontainer"
+
+        private fun getSqlSnapshotIds(input: TraceProcessorSession): List<Long> {
             val sql =
                 """
-                SELECT id FROM $TABLE_NAME ORDER BY ts;
+                SELECT id FROM $SNAPSHOT_TABLE_NAME ORDER BY ts;
             """
                     .trimIndent()
             return input.query(sql) { rows ->
@@ -76,16 +113,37 @@ class WindowManagerTraceParser :
             }
         }
 
-        private fun getSqlQueryEntry(entryId: Long): String {
+        private fun getSqlQuerySnapshot(snapshotId: Long): String {
             return """
-                SELECT
-                    args.key as key,
-                    args.display_value as value,
-                    args.value_type
-                FROM
-                    $TABLE_NAME as wm
-                INNER JOIN args ON wm.arg_set_id = args.arg_set_id
-                WHERE wm.id = $entryId;
+                       SELECT
+                           args.key as key,
+                           args.display_value as value,
+                           args.value_type as value_type
+                       FROM $SNAPSHOT_TABLE_NAME AS snapshot
+                       INNER JOIN args ON snapshot.arg_set_id = args.arg_set_id
+                       WHERE snapshot.id = $snapshotId;
+                   """
+                .trimIndent()
+        }
+
+        private fun getSqlQueryContainers(snapshotId: Long): String {
+            return """
+                       SELECT
+                           container.snapshot_id,
+                           container.id as container_row_id,
+                           container.token,
+                           container.title,
+                           container.parent_token,
+                           container.is_visible,
+                           container.container_type,
+                           args.key as key,
+                           args.display_value as value,
+                           args.value_type
+                       FROM
+                           $CONTAINER_TABLE_NAME as container
+                       INNER JOIN args ON container.arg_set_id = args.arg_set_id
+                       WHERE snapshot_id = $snapshotId
+                       ORDER BY container.id;
             """
                 .trimIndent()
         }
