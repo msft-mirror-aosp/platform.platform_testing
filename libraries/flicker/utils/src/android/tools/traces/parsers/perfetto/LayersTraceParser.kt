@@ -26,6 +26,7 @@ import android.tools.datatypes.Matrix33
 import android.tools.datatypes.Size
 import android.tools.datatypes.emptyColor
 import android.tools.parsers.AbstractTraceParser
+import android.tools.traces.surfaceflinger.CornerRadii
 import android.tools.traces.surfaceflinger.Display
 import android.tools.traces.surfaceflinger.HwcCompositionType
 import android.tools.traces.surfaceflinger.Layer
@@ -164,6 +165,13 @@ class LayersTraceParser(
             val activeBuffer = newActiveBuffer(layer.getChild("active_buffer"))
             val visibleRegion = newRegion(layer.getChild("visible_region")) ?: Region()
             val crop = newCropRect(layer.getChild("crop"))
+
+            val cornerRadii =
+                newCornerRadii(
+                    layer.getChild("corner_radius")?.getFloat() ?: 0f,
+                    layer.getChild("corner_radii"),
+                )
+
             return Layer.from(
                 name = layer.getChild("name")?.getString() ?: "",
                 id = layer.getChild("id")?.getInt() ?: 0,
@@ -176,7 +184,7 @@ class LayersTraceParser(
                 color = newColor(layer.getChild("color")),
                 isOpaque = layer.getChild("is_opaque")?.getBoolean() ?: false,
                 shadowRadius = layer.getChild("shadow_radius")?.getFloat() ?: 0f,
-                cornerRadius = layer.getChild("corner_radius")?.getFloat() ?: 0f,
+                cornerRadii = cornerRadii,
                 screenBounds = newRectF(layer.getChild("screen_bounds")),
                 transform =
                     newTransform(
@@ -300,6 +308,23 @@ class LayersTraceParser(
                 rect?.getChild("right")?.getInt() ?: 0,
                 rect?.getChild("bottom")?.getInt() ?: 0,
             )
+
+        private fun newCornerRadii(cornerRadius: Float, cornerRadiiArgs: Args?): CornerRadii {
+            if (cornerRadiiArgs != null) {
+                val cornerRadii = withCache {
+                    CornerRadii(
+                        cornerRadiiArgs.getChild("tl")?.getFloat() ?: 0f,
+                        cornerRadiiArgs.getChild("tr")?.getFloat() ?: 0f,
+                        cornerRadiiArgs.getChild("bl")?.getFloat() ?: 0f,
+                        cornerRadiiArgs.getChild("br")?.getFloat() ?: 0f,
+                    )
+                }
+                if (!cornerRadii.isEmpty()) {
+                    return cornerRadii
+                }
+            }
+            return withCache { CornerRadii.from(cornerRadius) }
+        }
 
         private fun newTransform(transform: Args?, position: Args?) =
             Transform.from(transform?.getChild("type")?.getInt(), getMatrix(transform, position))

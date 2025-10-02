@@ -262,7 +262,7 @@ class LayerTest {
             color = color,
             isOpaque = false,
             shadowRadius = -1f,
-            cornerRadius = -1f,
+            cornerRadii = CornerRadii.EMPTY,
             screenBounds = screenBounds,
             transform = transform,
             currFrame = -1,

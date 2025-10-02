@@ -307,7 +307,7 @@ constructor(
 
             val hasRoundedCornersLayer =
                 componentMatcher.check(subjects.map { it.layer }) {
-                    it.all { layer -> layer.cornerRadius > 0 }
+                    it.all { layer -> !layer.cornerRadii.isEmpty() }
                 }
 
             if (!hasRoundedCornersLayer) {
@@ -329,7 +329,7 @@ constructor(
 
             val hasNoRoundedCornersLayer =
                 componentMatcher.check(subjects.map { it.layer }) {
-                    it.all { layer -> layer.cornerRadius == 0f }
+                    it.all { layer -> layer.cornerRadii.isEmpty() }
                 }
 
             if (!hasNoRoundedCornersLayer) {
