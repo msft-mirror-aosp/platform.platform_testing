@@ -328,23 +328,26 @@ public final class SetFlagsRule implements TestRule {
             mMutatedFlagsClasses.add(flagsClass);
         }
 
-        // If the test is trying to set the flag value on a read_only flag in an optimized build
-        // skip this test, since it is not a valid testing case
+        // If the test is trying to set the flag value on a read_only flag in an optimized build,
+        // skip this test if the override value differs from the read-only value.
         // The reason for skipping instead of throwning error here is all read_write flag will be
         // change to read_only in the final release configuration. Thus the test could be executed
         // in other release configuration cases
-        // TODO(b/337449119): SetFlagsRule should still run tests that are consistent with the
-        // read-only values of flags. But be careful, if a ClassRule exists, the value returned by
-        // the original FeatureFlags instance may be overridden, and reading it may not be allowed.
         boolean isOptimized =
                 verifyFlag(fakeFlagsImplInstance, flag, IS_FLAG_READ_ONLY_OPTIMIZED_METHOD_NAME);
-        assumeFalse(
-                String.format(
-                        "Flag %s is read_only, and the code is optimized. "
-                                + " The flag value should not be modified on this build"
-                                + " Skip this test.",
-                        flag.fullFlagName()),
-                isOptimized);
+        if (isOptimized) {
+            boolean defaultValueDiffersFromSetValue =
+                    !mIsInitWithDefault || getFlagValue(fakeFlagsImplInstance, flag) != value;
+            assumeFalse(
+                    String.format(
+                            "Flag %s is read_only, and the code is optimized. "
+                                    + " The flag value should not be modified on this build"
+                                    + " Skip this test.",
+                            flag.fullFlagName()),
+                    defaultValueDiffersFromSetValue);
+            // Skip the override; the existing default value yields the same as the set value.
+            return;
+        }
 
         boolean isFinalized =
                 verifyFlag(fakeFlagsImplInstance, flag, IS_FLAG_FINALIZED_METHOD_NAME);
