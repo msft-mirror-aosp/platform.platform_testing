@@ -214,6 +214,16 @@ class CallUtils:
             timeout=20,
         )
 
+    def scroll_down_one_page(self):
+        """Scroll down one page"""
+        logging.info("Scroll down one page")
+        self.device.mbs.scrollContactsDownOnePage()
+
+    def scroll_up_one_page(self):
+        """Scroll up one page"""
+        logging.info("Scroll up one page")
+        self.device.mbs.scrollContactsUpOnePage()
+
     def validate_three_preference_buttons(self, bluetooth_enabled):
         """Checks each of the three preference buttons (bluetooth, phone, audio).
 
@@ -242,7 +252,7 @@ class CallUtils:
 
         return True
 
-    def upload_vcf_contacts_to_device(self, device_target, path_to_contacts_file):
+    def upload_vcf_contacts_to_device(self, device_target):
         """Upload contacts do device"""
         self.import_contacts_from_vcf_file(device_target)
         device_target.mbs.pressDevice()

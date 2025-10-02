@@ -19,3 +19,11 @@ python_library_host {
         "stats_log_pb2",
     ],
 }
+
+python_library_host {
+    name: "jank_collector",
+    srcs: ["jank_collector.py"],
+    libs: [
+        "mobly",
+    ],
+}

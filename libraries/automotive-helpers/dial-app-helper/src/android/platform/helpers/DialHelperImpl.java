@@ -971,4 +971,36 @@ public class DialHelperImpl extends AbstractStandardAppHelper implements IAutoDi
                 getUiElementFromConfig(AutomotiveConfigConstants.CONNECT_TO_BLUETOOTH);
         return getSpectatioUiUtil().hasUiElement(dialerSettingsSelector);
     }
+
+    @Override
+    public boolean scrollDownOnePage() {
+        UiObject2 contacts_list = getSpectatioUiUtil().findUiObject(mScrollableElementSelector);
+        boolean swipeResult = false;
+        if (contacts_list != null && contacts_list.isScrollable()) {
+            swipeResult =
+                    mScrollUtility.scrollForward(
+                            mScrollAction,
+                            mScrollDirection,
+                            mForwardButtonSelector,
+                            mScrollableElementSelector,
+                            String.format("Scroll down one page on contacts list"));
+        }
+        return swipeResult;
+    }
+
+    @Override
+    public boolean scrollUpOnePage() {
+        UiObject2 contacts_list = getSpectatioUiUtil().findUiObject(mScrollableElementSelector);
+        boolean swipeResult = false;
+        if (contacts_list != null && contacts_list.isScrollable()) {
+            swipeResult =
+                    mScrollUtility.scrollBackward(
+                            mScrollAction,
+                            mScrollDirection,
+                            mBackwardButtonSelector,
+                            mScrollableElementSelector,
+                            String.format("Scroll up one page on contacts list"));
+        }
+        return swipeResult;
+    }
 }
