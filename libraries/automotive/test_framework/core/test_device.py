@@ -35,7 +35,9 @@ class TestDeviceAdb:
     """
     end_time = time.time() + timeout
     while time.time() < end_time:
-      if self.grep_from_logcat(self.__LOGCAT_NON_EMPTY_LINES_GREP_TEXT):
+      if self.grep_from_logcat(
+          grep=self.__LOGCAT_NON_EMPTY_LINES_GREP_TEXT, logcat_args='-t 1'
+      ):
         return
     raise Exception('Logcat is not running')
 
