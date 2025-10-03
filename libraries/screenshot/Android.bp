@@ -81,7 +81,7 @@ android_library {
 java_library {
     name: "platform-screenshot-diff-proto",
     srcs: [
-        "**/*.proto",
+        "proto/**/*.proto",
     ],
     optimize: {
         enabled: false,

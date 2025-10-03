@@ -31,7 +31,11 @@ java_defaults {
     srcs: [
         "src/main/java/**/*.java",
     ],
-    static_libs: [],
+    static_libs: [
+        "androidx.test.runner",
+        "guava",
+        "junit",
+    ],
 }
 
 // This version includes robolectric support, but it has a dependency to
@@ -50,10 +54,6 @@ android_library {
 android_library {
     name: "platform-parametric-runner-lib-no-robo",
     defaults: ["platform-parametric-runner-lib_defaults"],
-    static_libs: [
-        "androidx.test.runner",
-        "guava",
-    ],
     exclude_srcs: [
         "src/main/java/platform/test/runner/parameterized/RobolectricParameterizedRunner.java",
     ],
