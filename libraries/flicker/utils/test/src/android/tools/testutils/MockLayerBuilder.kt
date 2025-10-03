@@ -22,6 +22,7 @@ import android.tools.datatypes.ActiveBuffer
 import android.tools.datatypes.Matrix33
 import android.tools.datatypes.defaultColor
 import android.tools.datatypes.intersection
+import android.tools.traces.surfaceflinger.CornerRadii
 import android.tools.traces.surfaceflinger.Flag
 import android.tools.traces.surfaceflinger.HwcCompositionType
 import android.tools.traces.surfaceflinger.Layer
@@ -80,7 +81,7 @@ class MockLayerBuilder(private val name: String) {
                 color = defaultColor(),
                 isOpaque = isVisible && isOpaque,
                 shadowRadius = 0f,
-                cornerRadius = 0f,
+                cornerRadii = CornerRadii.EMPTY,
                 screenBounds = absoluteBounds.toRectF(),
                 transform = transform,
                 currFrame = 0,

@@ -36,7 +36,7 @@ interface LayerProperties {
     val color: Color
     val isOpaque: Boolean
     val shadowRadius: Float
-    val cornerRadius: Float
+    val cornerRadii: CornerRadii
     val screenBounds: RectF
     val transform: Transform
     val effectiveScalingMode: Int
@@ -114,7 +114,7 @@ interface LayerProperties {
      * @return
      */
     val hasRoundedCorners: Boolean
-        get() = cornerRadius > 0
+        get() = !cornerRadii.isEmpty()
 
     /**
      * Checks if the [Layer] draws has effects, which include:

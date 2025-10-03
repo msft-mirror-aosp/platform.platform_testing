@@ -33,6 +33,7 @@ import android.tools.traces.DeviceStateDump
 import android.tools.traces.component.ComponentNameMatcher
 import android.tools.traces.component.IComponentName
 import android.tools.traces.parsers.WindowManagerStateHelper
+import android.tools.traces.surfaceflinger.CornerRadii
 import android.tools.traces.surfaceflinger.HwcCompositionType
 import android.tools.traces.surfaceflinger.Layer
 import android.tools.traces.surfaceflinger.LayerTraceEntryBuilder
@@ -113,7 +114,7 @@ class WindowManagerStateHelperTest {
             color = defaultColor(),
             isOpaque = true,
             shadowRadius = 0f,
-            cornerRadius = 0f,
+            cornerRadii = CornerRadii.EMPTY,
             screenBounds = rect,
             transform = transform,
             currFrame = 0,

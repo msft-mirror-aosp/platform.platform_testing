@@ -179,7 +179,7 @@ class LayerTraceEntry(
                     opaqueLayers.filter {
                         it.stackId == layer.stackId &&
                             it.contains(layer, displaySize) &&
-                            (!it.hasRoundedCorners || (layer.cornerRadius == it.cornerRadius))
+                            (!it.hasRoundedCorners || (layer.cornerRadii == it.cornerRadii))
                     }
                 layer.addOccludedBy(occludedBy)
                 val partiallyOccludedBy =

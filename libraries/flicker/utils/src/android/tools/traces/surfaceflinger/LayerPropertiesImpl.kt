@@ -33,7 +33,7 @@ private constructor(
     override val color: Color,
     private val _isOpaque: Boolean,
     override val shadowRadius: Float,
-    override val cornerRadius: Float,
+    override val cornerRadii: CornerRadii,
     override val screenBounds: RectF,
     override val transform: Transform,
     override val effectiveScalingMode: Int,
@@ -56,7 +56,7 @@ private constructor(
         result = 31 * result + color.hashCode()
         result = 31 * result + _isOpaque.hashCode()
         result = 31 * result + shadowRadius.hashCode()
-        result = 31 * result + cornerRadius.hashCode()
+        result = 31 * result + cornerRadii.hashCode()
         result = 31 * result + screenBounds.hashCode()
         result = 31 * result + transform.hashCode()
         result = 31 * result + effectiveScalingMode
@@ -76,7 +76,7 @@ private constructor(
     override fun toString(): String {
         return "LayerProperties(visibleRegion=$visibleRegion, activeBuffer=$activeBuffer, " +
             "flags=$flags, bounds=$bounds, color=$color, _isOpaque=$_isOpaque, " +
-            "shadowRadius=$shadowRadius, cornerRadius=$cornerRadius, " +
+            "shadowRadius=$shadowRadius, cornerRadii=$cornerRadii, " +
             "screenBounds=$screenBounds, transform=$transform, " +
             "effectiveScalingMode=$effectiveScalingMode, bufferTransform=$bufferTransform, " +
             "hwcCompositionType=$hwcCompositionType, " +
@@ -97,7 +97,7 @@ private constructor(
         if (color != other.color) return false
         if (_isOpaque != other._isOpaque) return false
         if (shadowRadius != other.shadowRadius) return false
-        if (cornerRadius != other.cornerRadius) return false
+        if (cornerRadii != other.cornerRadii) return false
         if (screenBounds != other.screenBounds) return false
         if (transform != other.transform) return false
         if (effectiveScalingMode != other.effectiveScalingMode) return false
@@ -126,7 +126,7 @@ private constructor(
                     color = emptyColor(),
                     _isOpaque = false,
                     shadowRadius = 0f,
-                    cornerRadius = 0f,
+                    cornerRadii = CornerRadii.EMPTY,
                     screenBounds = RectF(),
                     transform = Transform.EMPTY,
                     effectiveScalingMode = 0,
@@ -150,7 +150,7 @@ private constructor(
             color: Color = emptyColor(),
             isOpaque: Boolean = false,
             shadowRadius: Float = 0f,
-            cornerRadius: Float = 0f,
+            cornerRadii: CornerRadii = CornerRadii.EMPTY,
             screenBounds: RectF = RectF(),
             transform: Transform = Transform.EMPTY,
             effectiveScalingMode: Int = 0,
@@ -172,7 +172,7 @@ private constructor(
                     color,
                     isOpaque,
                     shadowRadius,
-                    cornerRadius,
+                    cornerRadii,
                     screenBounds,
                     transform,
                     effectiveScalingMode,

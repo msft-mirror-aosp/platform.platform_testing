@@ -380,8 +380,8 @@ class LayerTraceEntrySubjectTest {
             .contains(imeActivityLayer)
         // because IME activity has rounded corners
         Truth.assertWithMessage("IME activity has rounded corners")
-            .that(imeActivityLayer.cornerRadius)
-            .isGreaterThan(0)
+            .that(imeActivityLayer.cornerRadii.isEmpty())
+            .isFalse()
     }
 
     @Test

@@ -22,14 +22,15 @@ import android.tools.datatypes.Matrix33
 import android.tools.withCache
 
 /**
- * Wrapper for TransformProto (frameworks/native/services/surfaceflinger/layerproto/common.proto)
+ * Wrapper for TransformProto
+ * (external/perfetto/protos/perfetto/trace/android/surfaceflinger_common.proto)
  *
- * This class is used by flicker and Winscope
+ * This class is used by Flicker
  */
 class Transform private constructor(val type: Int?, val matrix: Matrix33) {
 
     /**
-     * Returns true if the applying the transform on an an axis aligned rectangle results in another
+     * Returns true if the applying the transform on an axis aligned rectangle results in another
      * axis aligned rectangle.
      */
     val isSimpleRotation: Boolean = !(type?.isFlagSet(ROT_INVALID_VAL) ?: false)
