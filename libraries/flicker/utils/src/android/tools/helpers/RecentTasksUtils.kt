@@ -25,5 +25,8 @@ object RecentTasksUtils {
         UiDevice.getInstance(instrumentation).executeShellCommand(
             "dumpsys activity service SystemUIService WMShell recents clearAll"
         )
+        UiDevice.getInstance(instrumentation).executeShellCommand(
+            "dumpsys activity service SystemUIService WMShell bubbles removeAll"
+        )
     }
 }
