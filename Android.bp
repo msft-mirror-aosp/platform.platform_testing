@@ -96,6 +96,7 @@ test_package {
         "uwb_snippet",
         "wifi_aware_snippet_new",
         "wifi_direct_mobly_snippet",
+        "wifi_mobly_snippet",
         "WifiStrengthScannerUtil",
     ],
     device_first_tests: [
