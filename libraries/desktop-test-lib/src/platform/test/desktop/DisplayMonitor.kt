@@ -18,6 +18,7 @@ package platform.test.desktop
 
 import android.Manifest.permission.MANAGE_DISPLAYS
 import android.Manifest.permission.MODIFY_USER_PREFERRED_DISPLAY_MODE
+import android.annotation.SuppressLint
 import android.hardware.display.DisplayManager
 import android.hardware.display.DisplayManager.DISPLAY_CATEGORY_ALL_INCLUDING_DISABLED
 import android.hardware.display.DisplayManager.EVENT_TYPE_DISPLAY_ADDED
@@ -56,7 +57,7 @@ fun interface Condition {
  * Observes the changes in displays, and evaluates the condition every time a change happens. If
  * condition was true, but then evaluated to false -> assert error is triggered.
  */
-class DisplayMonitor(caller: String) : AutoCloseable {
+class DisplayMonitor(caller: String, val allowDisablingDisplays: Boolean = false) : AutoCloseable {
     private val tag = "$caller DisplayMonitor"
     private val context = InstrumentationRegistry.getInstrumentation().targetContext
     private val uiAutomation = InstrumentationRegistry.getInstrumentation().uiAutomation
@@ -132,10 +133,10 @@ class DisplayMonitor(caller: String) : AutoCloseable {
     fun getConnectedDisplays(): List<Display> =
         displayManager.getDisplays(DISPLAY_CATEGORY_ALL_INCLUDING_DISABLED).filterNotNull()
 
-    fun getAddedDisplays(): List<Display> = displayManager.displays.filterNotNull()
+    fun getEnabledDisplays(): List<Display> = displayManager.displays.filterNotNull()
 
     /**
-     * Will match peripherals to the currently added displays. May perform other actions to ensure
+     * Will match peripherals to the currently enabled displays. May perform other actions to ensure
      * displays are ready for testing.
      *
      * @param isWaitingForCondition True while waiting for a state change, false if it's a check on
@@ -150,16 +151,16 @@ class DisplayMonitor(caller: String) : AutoCloseable {
         peripherals: List<DisplayPeripheral>,
         displayType: Int,
     ): List<Pair<DisplayPeripheral, Display>>? {
-        val allAddedDisplays = getAddedDisplays()
-        val addedDisplays = allAddedDisplays.filter { it.type == displayType }
+        val allEnabledDisplays = getEnabledDisplays()
+        val enabledDisplays = allEnabledDisplays.filter { it.type == displayType }
         val connectedDisplays = getConnectedDisplays().filter { it.type == displayType }
-        val addedDisplaysIds = addedDisplays.map { it.displayId }
+        val enabledDisplaysIds = enabledDisplays.map { it.displayId }
         val connectedDisplaysIds = connectedDisplays.map { it.displayId }
-        if (addedDisplaysIds.intersect(connectedDisplaysIds).size != addedDisplaysIds.size) {
+        if (enabledDisplaysIds.intersect(connectedDisplaysIds).size != enabledDisplaysIds.size) {
             Log.w(
                 tag,
-                "matchPeripherals: added size(${addedDisplaysIds.size}) is not subset of" +
-                    " connectedDisplaysIds.size(${connectedDisplaysIds.size})",
+                "matchPeripherals: enabled size(${enabledDisplaysIds.size}) is not subset" +
+                    " of connectedDisplaysIds.size(${connectedDisplaysIds.size})",
             )
             return null
         }
@@ -174,7 +175,18 @@ class DisplayMonitor(caller: String) : AutoCloseable {
             logD("matchPeripherals: peripherals=$peripherals")
             return null
         }
-        if (!validateTopology(isWaitingForCondition, allAddedDisplays, matchedDisplays)) {
+        if (
+            isWaitingForCondition &&
+                !verifyAndKeepOnlyMatchedEnabled(enabledDisplays, matched, allowDisablingDisplays)
+        ) {
+            return null
+        }
+        if (isWaitingForCondition && !verifyAndChangeResolutionIfNeeded(matched)) {
+            Log.w(tag, "matchPeripherals: matched, but resolutions need to be changed")
+            logD("matchPeripherals: matched=$matched")
+            return null
+        }
+        if (!validateTopology(isWaitingForCondition, allEnabledDisplays, matchedDisplays)) {
             logW(isWaitingForCondition, "matchPeripherals: Topology is invalid")
             return null
         }
@@ -308,10 +320,10 @@ class DisplayMonitor(caller: String) : AutoCloseable {
 
     private fun validateTopology(
         isWaitingForCondition: Boolean,
-        allAddedDisplays: List<Display>,
+        allEnabledDisplays: List<Display>,
         matchedDisplays: List<Display>,
     ): Boolean {
-        val allAddedDisplayIds = allAddedDisplays.map { it.displayId }
+        val allEnabledDisplayIds = allEnabledDisplays.map { it.displayId }
         val displayIds = matchedDisplays.map { it.displayId }
         val mirroringState =
             Settings.Secure.getInt(
@@ -338,7 +350,7 @@ class DisplayMonitor(caller: String) : AutoCloseable {
             }
             if (
                 isWaitingForCondition // If still waiting for condition (not monitoring)
-                && idsInTopology.intersect(allAddedDisplayIds).size != idsInTopology.size
+                && idsInTopology.intersect(allEnabledDisplayIds).size != idsInTopology.size
             ) {
                 // Displays might be removed, but topology update is delayed.
                 logW(
@@ -347,7 +359,7 @@ class DisplayMonitor(caller: String) : AutoCloseable {
                         " Not all displays from topology are found in all displays, waiting" +
                         " for topology update:" +
                         " idsInTopology=$idsInTopology" +
-                        " allAddedDisplayIds=$allAddedDisplayIds",
+                        " allEnabledDisplayIds=$allEnabledDisplayIds",
                 )
                 return false
             }
@@ -403,6 +415,107 @@ class DisplayMonitor(caller: String) : AutoCloseable {
             PRIVATE_EVENT_TYPE_DISPLAY_CONNECTION_CHANGED,
         )
         displayManager.registerTopologyListener(handler::post, topologyListener)
+    }
+
+    /**
+     * Checks [matched] displays on whether they are all enabled, and enables the [matched] displays
+     * if they are not yet enabled. If [isDisablingDisplaysAllowed] is true, then not [matched]
+     * displays will be disabled.
+     *
+     * @param enabledDisplays all enabled displays.
+     * @param matched list of peripheral to display pairs, display may be disabled at this point.
+     * @param isDisablingDisplaysAllowed if true, allows to disable displays if not [matched].
+     * @return true if all [matched] displays are enabled, and allowed to be disabled are disabled.
+     */
+    private fun verifyAndKeepOnlyMatchedEnabled(
+        enabledDisplays: List<Display>,
+        matched: List<Pair<Peripheral, Display>>,
+        isDisablingDisplaysAllowed: Boolean,
+    ): Boolean {
+        val enabledDisplayIds = enabledDisplays.map { it.displayId }.toSet()
+        val matchedDisabledDisplayIds =
+            matched.map { it.second }.map { it.displayId }.filterNot { it in enabledDisplayIds }
+        if (matchedDisabledDisplayIds.isNotEmpty()) {
+            try {
+                Log.i(tag, "matchPeripherals: Try enable displays $matchedDisabledDisplayIds")
+                enableDisplays(matchedDisabledDisplayIds)
+            } catch (_: SecurityException) {
+                Log.i(tag, "matchPeripherals: Retry enable displays $matchedDisabledDisplayIds")
+                adoptShellPermissions()
+                enableDisplays(matchedDisabledDisplayIds)
+            }
+            return false
+        }
+        if (!isDisablingDisplaysAllowed) {
+            // If we don't allow disabling displays, then number of displays must be equal to
+            // the requested
+            return enabledDisplays.size == matched.size
+        }
+        val matchedDisplayIds = matched.map { it.second.displayId }.toSet()
+        val unmatchedEnabledDisplayIds = enabledDisplayIds.filterNot { it in matchedDisplayIds }
+        if (unmatchedEnabledDisplayIds.isNotEmpty()) {
+            try {
+                Log.i(tag, "matchPeripherals: Try disable displays $unmatchedEnabledDisplayIds")
+                disableDisplays(unmatchedEnabledDisplayIds)
+            } catch (_: SecurityException) {
+                Log.i(tag, "matchPeripherals: Retry disable displays $unmatchedEnabledDisplayIds")
+                adoptShellPermissions()
+                disableDisplays(unmatchedEnabledDisplayIds)
+            }
+            return false
+        }
+        return true
+    }
+
+    private fun verifyAndChangeResolutionIfNeeded(
+        matched: List<Pair<DisplayPeripheral, Display>>
+    ): Boolean =
+        matched.all {
+            val p = it.first
+            val d = it.second
+            if (matchDisplayMode(p)(getDisplayMode(d))) {
+                logD("verifyAndChangeResolutionIfNeeded matched")
+                true
+            } else {
+                logD("verifyAndChangeResolutionIfNeeded Not matched")
+                setUserPreferredDisplayMode(
+                    d.displayId,
+                    d.supportedModes.find(matchDisplayMode(p))!!,
+                )
+                false
+            }
+        }
+
+    private fun getDisplayMode(display: Display): Display.Mode {
+        val userPreferredMode = display.userPreferredDisplayMode
+        if (
+            userPreferredMode != null &&
+                (userPreferredMode.flags and Display.Mode.FLAG_SIZE_OVERRIDE) != 0
+        ) {
+            return userPreferredMode
+        }
+        return display.mode
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun setUserPreferredDisplayMode(displayId: Int, mode: Display.Mode) {
+        logD("setUserPreferredDisplayMode $displayId $mode")
+        try {
+            displayManager.setUserPreferredDisplayMode(displayId, mode, /* storeMode= */ false)
+        } catch (_: SecurityException) {
+            adoptShellPermissions()
+            displayManager.setUserPreferredDisplayMode(displayId, mode, /* storeMode= */ false)
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun enableDisplays(displayIds: List<Int>) {
+        displayIds.forEach(displayManager::enableConnectedDisplay)
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun disableDisplays(displayIds: List<Int>) {
+        displayIds.forEach(displayManager::disableConnectedDisplay)
     }
 
     private companion object {
