@@ -47,6 +47,7 @@
                        com.google.android.mobly.snippet.bundled.ContactDetailsSnippet,
                        com.google.android.mobly.snippet.bundled.DialerSnippet,
                        com.google.android.mobly.snippet.bundled.FileSnippet,
+                       com.google.android.mobly.snippet.bundled.HvacSnippet,
                        com.google.android.mobly.snippet.bundled.LogSnippet,
                        com.google.android.mobly.snippet.bundled.MediaSnippet,
                        com.google.android.mobly.snippet.bundled.NetworkingSnippet,

@@ -573,6 +573,14 @@
       "VALUE": "hvac_temperature_text",
       "PACKAGE": "com.android.systemui"
     },
+    "DRIVER_SEAT_TEMPERATURE_BUTTON": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "seat_heat_level_button_left"
+    },
+    "PASSENGER_SEAT_TEMPERATURE_BUTTON": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "seat_heat_level_button_right"
+    },
     "PHONE_FACET_BUTTON": {
       "TYPE": "RESOURCE_ID",
       "VALUE": "phone_nav",
