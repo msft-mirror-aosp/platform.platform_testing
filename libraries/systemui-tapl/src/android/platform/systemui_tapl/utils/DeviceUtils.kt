@@ -20,6 +20,7 @@ import android.view.Display.DEFAULT_DISPLAY
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.BySelector
 import java.time.Duration
+import java.util.regex.Pattern
 
 const val SYSUI_PACKAGE = "com.android.systemui"
 const val SETTINGS_PACKAGE = "com.android.settings"
@@ -66,7 +67,15 @@ object DeviceUtils {
      */
     @JvmStatic
     fun launcherDescSelector(contentDescription: String): BySelector =
-        By.pkg(LAUNCHER_PACKAGE).descStartsWith(contentDescription)
+        By.pkg(LAUNCHER_PACKAGE).desc(contentDescription)
+
+    /**
+     * Returns a [BySelector] of a resource with the given pattern in the content description
+     * in launcher package.
+     */
+    @JvmStatic
+    fun launcherDescSelector(contentDescription: Pattern): BySelector =
+        By.pkg(LAUNCHER_PACKAGE).desc(contentDescription)
 
     /** Returns a [BySelector] of a resource in android package. */
     @JvmStatic
