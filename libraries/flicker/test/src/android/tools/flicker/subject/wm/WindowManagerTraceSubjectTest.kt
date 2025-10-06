@@ -229,6 +229,9 @@ class WindowManagerTraceSubjectTest {
                 parentId = 3,
                 z = 4,
                 currFrame = 1,
+                isVisible = false,
+                visibilityReason = emptyList<String>(),
+                occludedBy = emptyList<Int>(),
                 properties = LayerPropertiesImpl.EMPTY,
             )
         val sv =
@@ -238,6 +241,9 @@ class WindowManagerTraceSubjectTest {
                 parentId = 3,
                 z = 6,
                 currFrame = 1,
+                isVisible = false,
+                visibilityReason = emptyList<String>(),
+                occludedBy = emptyList<Int>(),
                 properties = LayerPropertiesImpl.EMPTY,
             )
 

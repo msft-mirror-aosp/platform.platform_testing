@@ -87,7 +87,6 @@ class LayerTraceEntryBuilderTest {
                     bounds = RectF(),
                     screenBounds = RectF(),
                     stackId = offDisplayStackId,
-                    excludesCompositionState = true,
                 )
             )
 

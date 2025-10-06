@@ -178,6 +178,19 @@ constructor(val trace: LayersTrace, override val reader: Reader? = null) :
     }
 
     /** {@inheritDoc} */
+    override fun isOccluded(componentMatcher: IComponentMatcher): LayersTraceSubject = apply {
+        isOccluded(componentMatcher, isOptional = false)
+    }
+
+    /** See [isOccluded] */
+    fun isOccluded(componentMatcher: IComponentMatcher, isOptional: Boolean): LayersTraceSubject =
+        apply {
+            addAssertion("isOccluded(${componentMatcher.toLayerIdentifier()})", isOptional) {
+                it.isOccluded(componentMatcher)
+            }
+        }
+
+    /** {@inheritDoc} */
     override fun isSplashScreenVisibleFor(
         componentMatcher: IComponentNameMatcher
     ): LayersTraceSubject = isSplashScreenVisibleFor(componentMatcher, isOptional = false)
