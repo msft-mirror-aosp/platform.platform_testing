@@ -47,6 +47,9 @@ annotation class DeniedDevices(vararg val denied: DeviceProduct)
 @Inherited
 annotation class ScreenshotTestDevices(vararg val allowed: DeviceProduct = [CF_PHONE, CF_TABLET])
 
+/** Does not run the test in deviceless envs */
+@Retention(RUNTIME) @Target(FUNCTION, CLASS) @Inherited annotation class SkipOnDeviceless
+
 /**
  * Only runs the test on [flakyProducts] if this configuration is running flaky tests (see
  * runningFlakyTests parameter on [LimitDevicesRule] constructor Runs it normally on all other
@@ -109,6 +112,9 @@ class LimitDevicesRule(
         if (thisDevice in deniedDevices) {
             return "Skipping test as $thisDevice is in $deniedDevices"
         }
+        if (description.isSkippingOnDeviceless()) {
+            return "Skipping test on deviceless"
+        }
 
         val flakyDevices = description.flakyDevices()
         if (thisDevice in flakyDevices) {
@@ -134,6 +140,10 @@ class LimitDevicesRule(
     private fun Description.deniedDevices(): List<String> =
         listOf(getMostSpecificAnnotation<DeniedDevices>()?.denied).collectProducts()
 
+    private fun Description.isSkippingOnDeviceless(): Boolean =
+        getMostSpecificAnnotation<SkipOnDeviceless>() != null &&
+            Build.PRODUCT == DeviceProduct.ROBOLECTRIC.product
+
     private fun Description.flakyDevices(): List<String> =
         listOf(getMostSpecificAnnotation<FlakyDevices>()?.flaky).collectProducts()
 
@@ -141,6 +151,7 @@ class LimitDevicesRule(
         listOfNotNull(
                 getMostSpecificAnnotation<AllowedDevices>(),
                 getMostSpecificAnnotation<DeniedDevices>(),
+                getMostSpecificAnnotation<SkipOnDeviceless>(),
                 getMostSpecificAnnotation<ScreenshotTestDevices>(),
                 getMostSpecificAnnotation<FlakyDevices>(),
             )
