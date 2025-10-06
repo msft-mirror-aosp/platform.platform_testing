@@ -61,7 +61,7 @@ public class BluetoothAdapterSnippet implements Snippet {
     // Default timeout in seconds for UI update.
     private static final int TIMEOUT_UI_UPDATE_SEC = 8;
     // Timeout in seconds for Bluetooth profile connections.
-    private static final int PROFILE_CONNECTION_TIMEOUT_SEC = 15;
+    private static final int PROFILE_CONNECTION_TIMEOUT_SEC = 120;
     private final Context mContext;
     private static final BluetoothAdapter sBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
     private static final Pattern TEXT_PATTERN_ALLOW =
