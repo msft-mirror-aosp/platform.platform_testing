@@ -16,7 +16,7 @@
 
 package android.platform.systemui_tapl.ui
 
-import android.hardware.display.DisplayManager
+import android.content.Context
 import android.os.SystemClock
 import android.platform.helpers.ShadeUtils
 import android.platform.systemui_tapl.ui.quicksettings.QuickQuickSettings
@@ -30,14 +30,12 @@ import android.platform.test.scenario.tapl_common.TaplUiObject
 import android.platform.uiautomatorhelpers.DeviceHelpers.assertInvisible
 import android.platform.uiautomatorhelpers.DeviceHelpers.assertVisible
 import android.platform.uiautomatorhelpers.DeviceHelpers.betterSwipe
-import android.platform.uiautomatorhelpers.DeviceHelpers.context
 import android.platform.uiautomatorhelpers.DeviceHelpers.uiDevice
 import android.platform.uiautomatorhelpers.DeviceHelpers.waitForObj
 import android.platform.uiautomatorhelpers.FLING_GESTURE_INTERPOLATOR
 import android.view.Display.DEFAULT_DISPLAY
 import android.view.KeyEvent
 import android.view.WindowManager
-import android.view.WindowManager.LayoutParams.TYPE_APPLICATION
 import android.view.WindowMetrics
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.BySelector
@@ -54,9 +52,14 @@ import java.time.Duration
 import kotlin.math.floor
 
 /** System UI test automation object representing the notification shade. */
-class NotificationShade internal constructor(val displayId: Int = DEFAULT_DISPLAY) {
+class NotificationShade
+internal constructor(
+    val displayId: Int = DEFAULT_DISPLAY,
+    val displayContext: Context = Root.get(displayId).displayContext,
+) {
+
     init {
-        if (ShadeUtils.isSplitShadeConfig()) {
+        if (ShadeUtils.isSplitShadeConfig(displayContext)) {
             val qsBounds = quickSettingsContainer.visibleBounds
             val notificationBounds = notificationShadeScrollContainer.visibleBounds
             assertWithMessage(
@@ -65,17 +68,6 @@ class NotificationShade internal constructor(val displayId: Int = DEFAULT_DISPLA
                 .that(qsBounds.right <= notificationBounds.left)
                 .isTrue()
         }
-    }
-
-    private val displayContext by lazy {
-        if (displayId == DEFAULT_DISPLAY) return@lazy context
-
-        // We create a new window context to get accurate bounds for overlay displays
-        val displayManager =
-            context.getSystemService(DisplayManager::class.java)
-                ?: error("Couldn't get DisplayManager")
-        val display = displayManager.getDisplay(displayId)
-        return@lazy context.createWindowContext(display, TYPE_APPLICATION, null)
     }
 
     /* fromLockscreen= */
@@ -276,6 +268,9 @@ class NotificationShade internal constructor(val displayId: Int = DEFAULT_DISPLA
 
     /** Scrolls the shade down. */
     fun scrollDown() {
+        check(displayId == DEFAULT_DISPLAY) {
+            "scrolling shade on external displays is not supported yet"
+        }
         NotificationStack.scrollNotificationListOnce(Direction.DOWN)
     }
 

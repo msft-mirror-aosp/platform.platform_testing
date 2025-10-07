@@ -43,7 +43,7 @@ class UniversalMediaObject internal constructor() {
         val mediaPlayerWidth = mediaCarouselUiObject.visibleBounds.width()
         val deviceWidth = uiDevice.displayWidth
 
-        when (NotificationShade().type!!) {
+        when (NotificationShade().type) {
             NORMAL ->
                 assertWithMessage("Media player in normal shade is not covering the entire space")
                     .that(mediaPlayerWidth)

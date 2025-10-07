@@ -17,6 +17,7 @@
 package android.platform.systemui_tapl.ui
 
 import android.Manifest
+import android.content.Context
 import android.graphics.Point
 import android.graphics.PointF
 import android.graphics.Rect
@@ -52,6 +53,7 @@ import android.view.KeyCharacterMap
 import android.view.KeyEvent
 import android.view.WindowInsets
 import android.view.WindowManager
+import android.view.WindowManager.LayoutParams.TYPE_APPLICATION
 import android.view.WindowMetrics
 import androidx.annotation.RequiresPermission
 import androidx.test.platform.app.InstrumentationRegistry
@@ -75,6 +77,18 @@ import org.junit.Assert.assertThrows
  */
 class Root private constructor(val displayId: Int = DEFAULT_DISPLAY) {
 
+    /** Context containing the configuration for the current display. */
+    val displayContext: Context by lazy {
+        if (displayId == DEFAULT_DISPLAY) return@lazy DeviceHelpers.context
+
+        // Create a new window context to get the correct configuration for the display.
+        val displayManager =
+            DeviceHelpers.context.getSystemService(DisplayManager::class.java)
+                ?: error("Couldn't get DisplayManager")
+        val display = displayManager.getDisplay(displayId)
+        return@lazy DeviceHelpers.context.createWindowContext(display, TYPE_APPLICATION, null)
+    }
+
     /**
      * Opens the notification shade. Use this if there is no need to assert the way of opening it.
      *
@@ -86,7 +100,7 @@ class Root private constructor(val displayId: Int = DEFAULT_DISPLAY) {
         if (Flags.sceneContainer()) {
             uiDevice.executeShellCommand("cmd statusbar expand-notifications-instant")
             waitForShadeToOpen()
-            return NotificationShade(displayId)
+            return NotificationShade(displayId, displayContext)
         } else {
             return openNotificationShadeViaGlobalAction()
         }
@@ -144,7 +158,7 @@ class Root private constructor(val displayId: Int = DEFAULT_DISPLAY) {
             if (Flags.sceneContainer()) {
                 executeShadeExpand()
                 waitForNotificationStackScroller()
-                NotificationShade(displayId)
+                NotificationShade(displayId, displayContext)
             } else {
                 openNotificationShadeViaGlobalAction()
             }
@@ -225,7 +239,7 @@ class Root private constructor(val displayId: Int = DEFAULT_DISPLAY) {
         traceSection("Opening shade via global action") {
             uiDevice.openNotification()
             waitForShadeToOpen()
-            return NotificationShade(displayId)
+            return NotificationShade(displayId, displayContext)
         }
     }
 
@@ -269,7 +283,7 @@ class Root private constructor(val displayId: Int = DEFAULT_DISPLAY) {
                 displayId = displayId,
             )
             waitForShadeToOpen()
-            return NotificationShade(displayId)
+            return NotificationShade(displayId, displayContext)
         }
     }
 
@@ -285,7 +299,7 @@ class Root private constructor(val displayId: Int = DEFAULT_DISPLAY) {
             displayId = displayId,
         )
         waitForShadeToOpen()
-        return NotificationShade(displayId)
+        return NotificationShade(displayId, displayContext)
     }
 
     /** Opens the notification shade via swipe. */
@@ -299,7 +313,7 @@ class Root private constructor(val displayId: Int = DEFAULT_DISPLAY) {
         val steps = swipeDuration.toMillisPart() / 5
         val resId = "com.google.android.apps.nexuslauncher:id/workspace"
         // Wait is only available for UiObject2
-        DeviceHelpers.waitForObj(By.res(resId))
+        waitForObj(By.res(resId))
         val obj = device.findObject(UiSelector().resourceId(resId))
         obj.performTwoPointerGesture(
             Point(width / 3, 0),
@@ -309,7 +323,7 @@ class Root private constructor(val displayId: Int = DEFAULT_DISPLAY) {
             steps,
         )
         waitForShadeToOpen()
-        return NotificationShade()
+        return NotificationShade(displayId, displayContext)
     }
 
     /** Opens notification shade via 3-finger swipe on trackpad */
@@ -330,14 +344,14 @@ class Root private constructor(val displayId: Int = DEFAULT_DISPLAY) {
         )
 
         waitForShadeToOpen()
-        return NotificationShade(displayId)
+        return NotificationShade(displayId, displayContext)
     }
 
     /** Opens notification shade via keyboard shortcut (Meta + N) */
     fun openNotificationShadeViaKeyboardShortcut(): NotificationShade {
         uiDevice.pressKeyCode(KeyEvent.KEYCODE_N, KeyEvent.META_META_ON)
         waitForShadeToOpen()
-        return NotificationShade(displayId)
+        return NotificationShade(displayId, displayContext)
     }
 
     private val qsSelector = sysuiResSelector("quick_settings_panel", displayId)
@@ -435,7 +449,7 @@ class Root private constructor(val displayId: Int = DEFAULT_DISPLAY) {
 
     /** Opens quick settings with a swipe gesture that depends on form factor. */
     fun openQuickSettingsWithSwipe(): QuickSettings {
-        if (ShadeUtils.isDualShadeConfig()) {
+        if (ShadeUtils.isDualShadeConfig(displayContext)) {
             BetterSwipe.swipe(
                 PointF(qsSwipeX, 1f),
                 PointF(qsSwipeX, uiDevice.getDisplayHeight(displayId).toFloat() - 2f),
@@ -838,11 +852,9 @@ class Root private constructor(val displayId: Int = DEFAULT_DISPLAY) {
 
     /** Opens the tutorial by swiping. */
     fun openTutorialViaSwipe(): OneHandModeTutorial {
-        NotificationShade.waitForShadeToClose(displayId)
+        waitForShadeToClose(displayId)
         val windowMetrics: WindowMetrics =
-            DeviceHelpers.context
-                .getSystemService(WindowManager::class.java)!!
-                .getCurrentWindowMetrics()
+            DeviceHelpers.context.getSystemService(WindowManager::class.java)!!.currentWindowMetrics
         val insets: WindowInsets = windowMetrics.getWindowInsets()
         val displayBounds: Rect = windowMetrics.getBounds()
         val bottomMandatoryGestureHeight: Int =
@@ -851,14 +863,14 @@ class Root private constructor(val displayId: Int = DEFAULT_DISPLAY) {
                     WindowInsets.Type.navigationBars() or WindowInsets.Type.displayCutout()
                 )
                 .bottom
-        NotificationShade.waitForShadeToClose(displayId)
+        waitForShadeToClose(displayId)
         uiDevice.betterSwipe(
             displayBounds.width() / 2,
             displayBounds.height() - Math.round(bottomMandatoryGestureHeight * 2.5f),
             displayBounds.width() / 2,
             displayBounds.height(),
         )
-        NotificationShade.waitForShadeToClose(displayId)
+        waitForShadeToClose(displayId)
         return OneHandModeTutorial()
     }
 

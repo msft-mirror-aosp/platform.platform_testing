@@ -33,6 +33,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.platform.helpers.ShadeUtils;
 import android.platform.test.util.HealthTestingUtils;
+import android.platform.uiautomatorhelpers.DeviceHelpers;
 
 import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.uiautomator.By;
@@ -153,7 +154,7 @@ public final class MediaInstrumentation {
         final BySelector umoSelector = By.res(PKG, MEDIA_CONTROLLER_RES_ID)
                 .hasDescendant(mediaTitleSelector);
         UiObject2 notification = mDevice.wait(Until.findObject(umoSelector), WAIT_TIME_MILLIS);
-        if (!ShadeUtils.isDualShadeConfig()) {
+        if (!ShadeUtils.isDualShadeConfig(DeviceHelpers.getContext())) {
             if (notification == null) {
                 // Try to scroll down the QS container to make UMO visible.
                 UiObject2 qsScrollView =
