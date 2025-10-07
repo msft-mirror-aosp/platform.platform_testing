@@ -2,19 +2,24 @@
 
 import json
 import logging
+from typing import Any, Dict
 
 from google import genai
 
 
+class GeminiError(Exception):
+  """Base exception for Gemini-related errors."""
+
+  pass
+
+
 class GeminiUtil:
-  """
-    Util class which provides methods to interact Gemini APIs
-  """
+  """Util class which provides methods to interact Gemini APIs"""
 
-  __LOG_TAG = "GeminiUtil"
+  _LOG_TAG = "GeminiUtil"
 
-  __DEFAULT_MODEL = "gemini-2.5-flash"
-  __INSTRUCTIONS_FOR_GEMINI_MODEL = """
+  _DEFAULT_MODEL = "gemini-2.5-flash"
+  _INSTRUCTIONS_FOR_GEMINI_MODEL = """
     You are an expert UI and UX tester who validates and verifies the presence of specific UI elements on a screen. Your task is to analyze an image of a UI and answer a question about a specific element.
 
     Instructions for Verification:
@@ -62,89 +67,96 @@ class GeminiUtil:
     }
   """
 
-  def __init__(self, api_key: str, model_name: str = __DEFAULT_MODEL):
+  def __init__(self, api_key: str, model_name: str = _DEFAULT_MODEL):
     self._model_name = model_name
     self._client = genai.Client(api_key=api_key)
 
-  def _parse_response(self, response: str) -> str:
-    """
-      Parses the response from the Gemini model.
+  def _parse_response(self, response_text: str) -> Dict[str, Any]:
+    """Parses the JSON response from the Gemini model, cleaning it first.
+
+    Args:
+        response_text: The raw text response from the model.
+
+    Returns:
+        A dictionary parsed from the JSON response.
+
+    Raises:
+        GeminiError: If the response cannot be parsed as JSON.
     """
     try:
-      response_string = response.replace("`", "").replace("json", "")
-      response_string = response_string.strip("\n")
-      return json.loads(response_string)
+      cleaned_text = (
+          response_text.strip()
+          .removeprefix("```json")
+          .removesuffix("```")
+          .strip()
+      )
+      return json.loads(cleaned_text)
     except json.JSONDecodeError as e:
-      logging.error(f"{self.__LOG_TAG}: Error : %s", e)
-      return {
-          "is_element_visible": False,
-          "short_answer": "Error parsing response",
-          "detailed_explanation": "Error parsing response : %s" % e
-      }
+      logging.error(
+          f'{self._LOG_TAG}: Failed to decode JSON response: {response_text}'
+      )
+      raise GeminiError('Failed to parse response from Gemini API.') from e
 
-  def execute_quey_with_image_for_verifying_ui_element_visibility(
+  def verify_ui_element_visibility(
       self, image_path: str, question: str
-  ):
+  ) -> Dict[str, Any]:
     """
-      Uploads an image and asks a question about it to verify the UI element
-      visibility.
+      Uploads an image and asks a question to verify a UI element's visibility.
 
       Args:
           image_path: Path to the image file.
           question: The question to ask about the image.
 
       Returns:
-          The response from the model.
+          A dictionary with the parsed response from the model.
+
+      Raises:
+          GeminiError: If there is an error during API interaction.
     """
     try:
-      # Upload the image using the File API
-      logging.info(
-          f"{self.__LOG_TAG}: Uploading Image : %s",
-          image_path
-      )
+      logging.info(f'{self._LOG_TAG}: Uploading image: {image_path}')
       uploaded_file = self._client.files.upload(file=image_path)
       logging.info(
-          f"{self.__LOG_TAG}: File uploaded : %s",
-          uploaded_file
-      )
+          f'{self._LOG_TAG}: File uploaded successfully: {uploaded_file.name}')
 
-      # Call generate_content with the file and the question
-      logging.info(
-          f"{self.__LOG_TAG}: Executing Query : %s",
-          question
-      )
+      logging.info(f'{self._LOG_TAG}: Executing query: "{question}"')
       response = self._client.models.generate_content(
           model=self._model_name,
           contents=[
               uploaded_file,
-              "\n\n",
-              self.__INSTRUCTIONS_FOR_GEMINI_MODEL,
-              "\n\n",
+              self._INSTRUCTIONS_FOR_GEMINI_MODEL,
               question,
           ],
       )
-      query_response = self._parse_response(response.text)
-      logging.info(
-          f"{self.__LOG_TAG}: Executed Query Response : %s",
-          query_response
-      )
-      return query_response
+
+      parsed_response = self._parse_response(response.text)
+      logging.info(f'{self._LOG_TAG}: Parsed query response: {parsed_response}')
+      return parsed_response
+
     except Exception as e:
       logging.error(
-          f"{self.__LOG_TAG}: Error : %s",
-          e
+          f'{self._LOG_TAG}: An error occurred during Gemini query'
+          f' execution: {e}'
       )
-      return {
-          "is_element_visible": False,
-          "short_answer": "Error executing query",
-          "detailed_explanation": "Error executing query : %s" % e
-      }
+      raise GeminiError('Failed to execute query with Gemini API.') from e
 
-  def is_element_visible(self, response: str) -> bool:
-    return response["is_element_visible"]
+  @staticmethod
+  def is_element_visible(response: Dict[str, Any]) -> bool:
+    """
+      Extracts the 'is_element_visible' field from the response.
+    """
+    return response.get('is_element_visible', False)
 
-  def get_answer_for_query(self, response: str) -> str:
-    return response["short_answer"]
+  @staticmethod
+  def get_short_answer(response: Dict[str, Any]) -> str:
+    """
+      Extracts the 'short_answer' field from the response.
+    """
+    return response.get('short_answer', 'N/A')
 
-  def get_explanation_for_query_response(self, response: str) -> str:
-    return response["detailed_explanation"]
+  @staticmethod
+  def get_detailed_explanation(response: Dict[str, Any]) -> str:
+    """
+      Extracts the 'detailed_explanation' field from the response.
+    """
+    return response.get('detailed_explanation', 'No explanation available.')

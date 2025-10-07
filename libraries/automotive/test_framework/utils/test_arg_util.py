@@ -4,7 +4,7 @@ import argparse
 import sys
 
 
-def parse_test_args():
+def parse_test_args(argv=None):
   """
     Get Test Args
 
@@ -41,6 +41,9 @@ def parse_test_args():
     and escape the space with a backslash.
     e.g. --test_args=k1="some\ value"
   """
+  if argv is None:
+    argv = sys.argv
+
   parser = argparse.ArgumentParser(description='Parse Test Args.')
   group = parser.add_mutually_exclusive_group(required=False)
   group.add_argument(
@@ -50,7 +53,7 @@ def parse_test_args():
       type=str,
       help='A list of test args for the test.',
   )
-  parsed_test_args = parser.parse_known_args(sys.argv)[0]
+  parsed_test_args = parser.parse_known_args(argv)[0]
 
   if not parsed_test_args.test_args:
     return {}
