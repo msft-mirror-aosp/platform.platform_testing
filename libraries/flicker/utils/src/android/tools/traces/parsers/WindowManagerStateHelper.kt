@@ -386,7 +386,7 @@ constructor(
             displayId: Int = Display.DEFAULT_DISPLAY,
         ) =
             withAppTransitionIdle(displayId)
-                .add(ConditionsFactory.isWindowSurfaceShown(componentMatcher).negate())
+                .add(ConditionsFactory.isWindowSurfaceShown(componentMatcher, displayId).negate())
                 .add(ConditionsFactory.isLayerVisible(componentMatcher).negate())
                 .add(ConditionsFactory.isAppTransitionIdle(displayId))
 
@@ -401,10 +401,16 @@ constructor(
         fun withWindowSurfaceAppeared(
             componentMatcher: IComponentMatcher,
             displayId: Int = Display.DEFAULT_DISPLAY,
-        ) =
-            withAppTransitionIdle(displayId)
-                .add(ConditionsFactory.isWindowSurfaceShown(componentMatcher))
-                .add(ConditionsFactory.isLayerVisible(componentMatcher))
+        ): StateSyncBuilder {
+            val stateSyncBuilder =
+                withAppTransitionIdle(displayId)
+                    .add(ConditionsFactory.isWindowSurfaceShown(componentMatcher, displayId))
+            // TODO(b/450119880): Layer verification on another display is not yet supported
+            if (displayId == Display.DEFAULT_DISPLAY) {
+                stateSyncBuilder.add(ConditionsFactory.isLayerVisible(componentMatcher))
+            }
+            return stateSyncBuilder
+        }
 
         /**
          * Wait until least one [LayerState] matching [componentMatcher] is visible
